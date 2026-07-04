@@ -1978,7 +1978,9 @@ function describeStepOutcome(outcome: StepOutcome): string {
 
 // ─── Self-Action Post-Processor (THR-399) ───────────────────────
 
-const SELF_ACTION_TEMPLATE_IDS = new Set([
+/** Exported additively (THR-604) so engineEffectRegistry can aggregate the ids
+ *  the engine post-processes for self-actions. Runtime behavior unchanged. */
+export const SELF_ACTION_TEMPLATE_IDS = new Set([
   'divine.self.stillness',
   'divine.self.recede',
   'divine.self.focus',

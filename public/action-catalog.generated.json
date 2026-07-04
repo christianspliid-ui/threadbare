@@ -1,9 +1,9 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "totals": {
-    "total": 164,
+    "total": 165,
     "byCategory": {
-      "action": 66,
+      "action": 67,
       "artifact": 4,
       "divine": 19,
       "hex": 49,
@@ -18,15 +18,23 @@
       "heart": 25,
       "eye": 26,
       "stone": 10,
-      "star": 28,
+      "star": 29,
       "life": 1
     },
     "byBucket": {
-      "unlockable-generic": 161,
+      "unlockable-generic": 162,
       "generic": 3
     },
-    "beatGranted": 8,
-    "starters": 0
+    "byEffectSource": {
+      "template-ops": 92,
+      "control-spec": 17,
+      "engine-bridge": 44,
+      "none": 8,
+      "aftermath-only": 4
+    },
+    "beatGranted": 12,
+    "starters": 0,
+    "unauthoredEffects": 0
   },
   "entries": [
     {
@@ -54,7 +62,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "You lay an invisible mantle on a mortal — the weight of divine favor made tangible. For a span of ticks they carry the blessing: their deeds within the faction earn double esteem, and their presence in encounters carries the authority of one touched by something greater."
+      "description": "You lay an invisible mantle on a mortal — the weight of divine favor made tangible. For a span of ticks they carry the blessing: their deeds within the faction earn double esteem, and their presence in encounters carries the authority of one touched by something greater.",
+      "technicalEffect": "On success, writes a time-limited `championBlessing` onto the target (a duration plus a faction-reputation-gain multiplier and an encounter-score boost). Expires when its `ticksRemaining` runs out.",
+      "effectSource": "template-ops"
     },
     {
       "id": "action.faction.anoint_successor",
@@ -81,7 +91,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "You weave an invisible thread of inheritance around a mortal. When the current crown falls — and every crown falls — the thread will catch. They do not know yet. The leader they will replace does not know either. You have not chosen when; you have only chosen who."
+      "description": "You weave an invisible thread of inheritance around a mortal. When the current crown falls — and every crown falls — the thread will catch. They do not know yet. The leader they will replace does not know either. You have not chosen when; you have only chosen who.",
+      "technicalEffect": "On success, adds a `will_succeed` edge (target → faction) stamped with `anointedTick`; the succession resolver sorts by most-recent tick, so re-anointment supersedes. Append-only — no prior edge removed.",
+      "effectSource": "template-ops"
     },
     {
       "id": "action.iron.assess-threat",
@@ -106,7 +118,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Studies an enemy formation or opposing force with a martial eye, cataloguing strengths and vulnerabilities. Tactical understanding deepens, revealing the true measure of a threat. A clear assessment allows better counter-strategies to be chosen."
+      "description": "Studies an enemy formation or opposing force with a martial eye, cataloguing strengths and vulnerabilities. Tactical understanding deepens, revealing the true measure of a threat. A clear assessment allows better counter-strategies to be chosen.",
+      "technicalEffect": "A read action: on success, stamps `scouted` and a calculated `threatLevel` onto the target node. On failure, the actor's insight dips slightly.",
+      "effectSource": "template-ops"
     },
     {
       "id": "action.iron.conquer",
@@ -131,7 +145,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Launches a decisive military campaign to break an opposing force and seize their holdings. Victory overwrites the existing order and brings the target location under the conqueror's control. Failure carries steep costs in morale and standing."
+      "description": "Launches a decisive military campaign to break an opposing force and seize their holdings. Victory overwrites the existing order and brings the target location under the conqueror's control. Failure carries steep costs in morale and standing.",
+      "technicalEffect": "On success, removes the target node and adds a `controls` edge from the actor to the location. On failure, the actor loses morale.",
+      "effectSource": "template-ops"
     },
     {
       "id": "action.iron.fortify",
@@ -156,7 +172,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Reinforces a location with disciplined military labor, raising walls and sharpening every defensive measure. The site becomes hardened against assault and more difficult for enemies to breach. Sustained effort compounds the fortification over time."
+      "description": "Reinforces a location with disciplined military labor, raising walls and sharpening every defensive measure. The site becomes hardened against assault and more difficult for enemies to breach. Sustained effort compounds the fortification over time.",
+      "technicalEffect": "On success, raises the target location's `defense` and sets `fortified`. On failure, the location's defense is reduced instead.",
+      "effectSource": "template-ops"
     },
     {
       "id": "action.iron.raise-force",
@@ -181,7 +199,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Summons the martial will of a willing host, drawing fighters to the banner. Troop cohesion tightens and defensive posture strengthens across the force. Effects are amplified near fortifications and loyal settlements."
+      "description": "Summons the martial will of a willing host, drawing fighters to the banner. Troop cohesion tightens and defensive posture strengthens across the force. Effects are amplified near fortifications and loyal settlements.",
+      "technicalEffect": "On success, spawns a new militia `agent` node affiliated with the actor and adds a `commands` edge to the target location. On failure, the actor loses a small amount of reputation.",
+      "effectSource": "template-ops"
     },
     {
       "id": "action.flesh.cultivate",
@@ -206,7 +226,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Provides sustained care and nourishment that builds a target's baseline vitality over time. The effort compounds to produce lasting improvement in health, resilience, and physical capacity. Neglect or incorrect methods can cause regression rather than growth."
+      "description": "Provides sustained care and nourishment that builds a target's baseline vitality over time. The effort compounds to produce lasting improvement in health, resilience, and physical capacity. Neglect or incorrect methods can cause regression rather than growth.",
+      "technicalEffect": "On success, raises the target's `vitality`. On failure, the target's vitality is reduced instead.",
+      "effectSource": "template-ops"
     },
     {
       "id": "action.flesh.heal",
@@ -231,7 +253,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Applies skilled care to a wounded or ailing individual, drawing on knowledge of the body to accelerate recovery. Health returns and the patient is restored to function they had lost. A healer who misjudges the condition can inadvertently worsen the affliction."
+      "description": "Applies skilled care to a wounded or ailing individual, drawing on knowledge of the body to accelerate recovery. Health returns and the patient is restored to function they had lost. A healer who misjudges the condition can inadvertently worsen the affliction.",
+      "technicalEffect": "On success, raises the target's `health`. On failure, the actor's vitality dips.",
+      "effectSource": "template-ops"
     },
     {
       "id": "action.gold.break-agreement",
@@ -256,7 +280,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Unilaterally dissolves a standing contract or treaty, prioritizing short-term gain over trust. The act carries immediate reputational damage but frees the actor from burdensome obligations. Partners who witness the betrayal become wary of future dealings."
+      "description": "Unilaterally dissolves a standing contract or treaty, prioritizing short-term gain over trust. The act carries immediate reputational damage but frees the actor from burdensome obligations. Partners who witness the betrayal become wary of future dealings.",
+      "technicalEffect": "On success, removes the actor's `party_to` edge to the target, reduces the target's `wealth`, and costs the actor reputation. On failure, reputation still dips.",
+      "effectSource": "template-ops"
     },
     {
       "id": "action.gold.buy-influence",
@@ -281,7 +307,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Spreads carefully placed payments to win favor, opening doors that would otherwise remain shut. The target's disposition warms toward the actor, smoothing future negotiations and cooperation. The effect is genuine but transactional — it fades without reinforcement."
+      "description": "Spreads carefully placed payments to win favor, opening doors that would otherwise remain shut. The target's disposition warms toward the actor, smoothing future negotiations and cooperation. The effect is genuine but transactional — it fades without reinforcement.",
+      "technicalEffect": "On success, raises `sentiment` on the actor's `relates_to` edge to the target and spends `wealth`. On failure, reputation and wealth both dip.",
+      "effectSource": "template-ops"
     },
     {
       "id": "action.gold.commission-assassination",
@@ -306,7 +334,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Pays a capable operative to permanently remove a target from the board while keeping the commissioner's hands clean. Success eliminates the threat entirely and leaves no visible trail. Discovery invites catastrophic retaliation and lasting infamy."
+      "description": "Pays a capable operative to permanently remove a target from the board while keeping the commissioner's hands clean. Success eliminates the threat entirely and leaves no visible trail. Discovery invites catastrophic retaliation and lasting infamy.",
+      "technicalEffect": "On success, removes the target node and spends the actor's `wealth`. On failure, the actor loses reputation and some wealth.",
+      "effectSource": "template-ops"
     },
     {
       "id": "action.gold.disrupt-trade",
@@ -331,7 +361,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Sabotages a rival's commercial operations through targeted interference, corrupt agents, or blocked routes. Success strips their wealth and severs trade connections they depend on. Exposure carries reputational damage that lingers long after the act."
+      "description": "Sabotages a rival's commercial operations through targeted interference, corrupt agents, or blocked routes. Success strips their wealth and severs trade connections they depend on. Exposure carries reputational damage that lingers long after the act.",
+      "technicalEffect": "On success, removes the target's `trades_with` edge and reduces the target's `wealth`. On failure, the actor's reputation drops.",
+      "effectSource": "template-ops"
     },
     {
       "id": "action.gold.establish-monopoly",
@@ -356,7 +388,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Systematically buys out rivals and consolidates control over a key commodity or trade corridor. Once dominant, the actor sets prices and terms without competition, extracting maximum value from the market. The act breeds deep resentment among those shut out."
+      "description": "Systematically buys out rivals and consolidates control over a key commodity or trade corridor. Once dominant, the actor sets prices and terms without competition, extracting maximum value from the market. The act breeds deep resentment among those shut out.",
+      "technicalEffect": "On success, stamps monopoly control and a negative `prosperityDelta` on the location, sours local `sentiment`, and spends heavy `wealth`. On failure, reputation and wealth dip.",
+      "effectSource": "template-ops"
     },
     {
       "id": "action.gold.establish-trade",
@@ -381,7 +415,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Opens a formal trade relationship between two parties, creating a channel for ongoing commerce. Wealth flows along the new route and both parties gain access to each other's markets. The connection grows more valuable the longer it is maintained."
+      "description": "Opens a formal trade relationship between two parties, creating a channel for ongoing commerce. Wealth flows along the new route and both parties gain access to each other's markets. The connection grows more valuable the longer it is maintained.",
+      "technicalEffect": "On success, adds a `trades_with` edge to the target and raises the actor's `wealth`. On failure, the actor's wealth dips slightly.",
+      "effectSource": "template-ops"
     },
     {
       "id": "action.gold.fund-construction",
@@ -406,7 +442,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Pours capital into building a new structure that reshapes the economic landscape of a location. The completed building generates opportunity and draws commerce, amplifying the actor's grip on local prosperity. Abandoned projects leave only half-built ruins and wasted coin."
+      "description": "Pours capital into building a new structure that reshapes the economic landscape of a location. The completed building generates opportunity and draws commerce, amplifying the actor's grip on local prosperity. Abandoned projects leave only half-built ruins and wasted coin.",
+      "technicalEffect": "On success, adds a market-district `location` (sublocation) under the target location and spends the actor's `wealth`. On failure, a smaller wealth loss.",
+      "effectSource": "template-ops"
     },
     {
       "id": "action.gold.hire-mercenaries",
@@ -431,7 +469,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Purchases the temporary loyalty of a professional fighting company, bringing their martial expertise under the actor's banner. The hired force bolsters military capability for a limited time before their contract expires. Merc bands are effective but unreliable once the gold runs dry."
+      "description": "Purchases the temporary loyalty of a professional fighting company, bringing their martial expertise under the actor's banner. The hired force bolsters military capability for a limited time before their contract expires. Merc bands are effective but unreliable once the gold runs dry.",
+      "technicalEffect": "On success, mints a retainer `attachment` (an Iron-capable hired force, time-limited) bound to the actor and spends the actor's `wealth`. On failure, a smaller wealth loss.",
+      "effectSource": "template-ops"
     },
     {
       "id": "action.gold.negotiate-agreement",
@@ -456,7 +496,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Formalizes an arrangement between two parties through careful diplomacy and contractual ink. The resulting agreement grants both sides structured obligations and protections. A well-struck deal becomes a lasting foundation for cooperation."
+      "description": "Formalizes an arrangement between two parties through careful diplomacy and contractual ink. The resulting agreement grants both sides structured obligations and protections. A well-struck deal becomes a lasting foundation for cooperation.",
+      "technicalEffect": "On success, creates a treaty `attachment` node binding actor and target and nudges the actor's `wealth` up. On failure, the actor's reputation dips.",
+      "effectSource": "template-ops"
     },
     {
       "id": "action.gold.survey-resources",
@@ -481,7 +523,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Conducts a careful audit of a location's economic assets, mapping the full extent of its wealth. Hidden resources and untapped commodities are brought into clear view. This knowledge enables better trade and exploitation strategies."
+      "description": "Conducts a careful audit of a location's economic assets, mapping the full extent of its wealth. Hidden resources and untapped commodities are brought into clear view. This knowledge enables better trade and exploitation strategies.",
+      "technicalEffect": "A read action: on success, sets `resourcesKnown` on the target location. On failure, the actor's insight dips.",
+      "effectSource": "template-ops"
     },
     {
       "id": "action.gold.tax-trade-route",
@@ -506,7 +550,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Asserts economic dominance over an existing trade corridor by stationing collectors and levying fees. Steady wealth flows to the controlling party as long as the route remains active. Merchants resent the imposition, souring goodwill over time."
+      "description": "Asserts economic dominance over an existing trade corridor by stationing collectors and levying fees. Steady wealth flows to the controlling party as long as the route remains active. Merchants resent the imposition, souring goodwill over time.",
+      "technicalEffect": "On success, stamps the actor as controller and a `taxRate` onto the `trades_with` edge and raises the actor's `wealth`. On failure, reputation dips.",
+      "effectSource": "template-ops"
     },
     {
       "id": "action.gold.trade",
@@ -531,7 +577,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Executes a direct exchange of goods or services along an existing trade route, deepening the commercial bond. Both parties profit when the deal is struck honestly, and the route grows more robust over time. Failure exposes the trader to exploitation."
+      "description": "Executes a direct exchange of goods or services along an existing trade route, deepening the commercial bond. Both parties profit when the deal is struck honestly, and the route grows more robust over time. Failure exposes the trader to exploitation.",
+      "technicalEffect": "On success, raises the `volume` on the existing `trades_with` edge to the target. On failure, the actor's wealth dips.",
+      "effectSource": "template-ops"
     },
     {
       "id": "action.faction.stir_dissent",
@@ -558,7 +606,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "You press a low cold breath into the faction's deliberations. Old grievances surface; small slights remembered. The room grows quieter than it should be — and dissent gathers, not yet voiced, in the silence between answers."
+      "description": "You press a low cold breath into the faction's deliberations. Old grievances surface; small slights remembered. The room grows quieter than it should be — and dissent gathers, not yet voiced, in the silence between answers.",
+      "technicalEffect": "Faction verb (`stir_dissent`): raises the faction's `dissentLevel` by STIR_DISSENT_INCREMENT (clamped to 1). The dissent tick-phase decays and threshold-checks the level, and may seed a member encounter when the bar is crossed.",
+      "effectSource": "template-ops"
     },
     {
       "id": "action.flesh.plague",
@@ -583,7 +633,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Unleashes a targeted curse of sickness and pestilence on an individual or group, degrading their health and fighting ability. The affliction spreads and deepens, weakening the target beyond their capacity to resist. Mishandling the curse risks turning the contagion back on the caster."
+      "description": "Unleashes a targeted curse of sickness and pestilence on an individual or group, degrading their health and fighting ability. The affliction spreads and deepens, weakening the target beyond their capacity to resist. Mishandling the curse risks turning the contagion back on the caster.",
+      "technicalEffect": "On success, sharply reduces the target's `health`. On failure, the actor takes a health backlash.",
+      "effectSource": "template-ops"
     },
     {
       "id": "action.initiative.sabotage",
@@ -610,7 +662,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Whisper doubt into an ongoing initiative. At the next checkpoint it may fail outright. Even if it survives, the setback costs extra ticks."
+      "description": "Whisper doubt into an ongoing initiative. At the next checkpoint it may fail outright. Even if it survives, the setback costs extra ticks.",
+      "technicalEffect": "On success, sets `initiativeSabotaged` on the target, undercutting their next initiative attempt.",
+      "effectSource": "template-ops"
     },
     {
       "id": "action.mentorship.sever",
@@ -637,7 +691,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Force a dramatic break between a mortal and their teacher. The next tick will run a Falling Out arc, and the bond will end with the god's fingerprint on the wound."
+      "description": "Force a dramatic break between a mortal and their teacher. The next tick will run a Falling Out arc, and the bond will end with the god's fingerprint on the wound.",
+      "technicalEffect": "On success, flags `pendingMentorshipSever` on the target — queuing the mentorship bond to be cut.",
+      "effectSource": "template-ops"
     },
     {
       "id": "action.secrets.plant_secret",
@@ -664,7 +720,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "You seed a false truth into the world — a fabricated secret about an agent that begins to take on the weight of the real. The secret is believed because it is delivered by no visible hand, and because doubt is cheaper than certainty. Use it to engineer distrust, protect someone from scrutiny, or move a rival into checkmate."
+      "description": "You seed a false truth into the world — a fabricated secret about an agent that begins to take on the weight of the real. The secret is believed because it is delivered by no visible hand, and because doubt is cheaper than certainty. Use it to engineer distrust, protect someone from scrutiny, or move a rival into checkmate.",
+      "technicalEffect": "On success, fabricates a `knows_secret_of` edge (actor → target, `planted`, unrevealed) of the given `secretType` and magnitude — false leverage that reads as real until investigated.",
+      "effectSource": "template-ops"
     },
     {
       "id": "action.shadow.assassinate",
@@ -689,7 +747,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Sends a skilled killer directly after a target, relying on stealth and precision rather than coin. The actor's own hand is closer to the act than a commission, carrying greater personal risk but also greater certainty of intent. Failure invites devastating exposure."
+      "description": "Sends a skilled killer directly after a target, relying on stealth and precision rather than coin. The actor's own hand is closer to the act than a commission, carrying greater personal risk but also greater certainty of intent. Failure invites devastating exposure.",
+      "technicalEffect": "On success, removes the target node. On failure, the actor loses security.",
+      "effectSource": "template-ops"
     },
     {
       "id": "action.shadow.establish-network",
@@ -714,7 +774,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Builds a covert intelligence network by recruiting trusted operatives and placing them throughout a region. Information flows back through hidden channels, giving the actor an unseen advantage over rivals. Discovery before the network takes root scatters it entirely."
+      "description": "Builds a covert intelligence network by recruiting trusted operatives and placing them throughout a region. Information flows back through hidden channels, giving the actor an unseen advantage over rivals. Discovery before the network takes root scatters it entirely.",
+      "technicalEffect": "On success, spawns a hidden `agent` node allied to the actor and adds a `controls` edge to the location. On failure, the actor loses security.",
+      "effectSource": "template-ops"
     },
     {
       "id": "action.shadow.recruit-agent",
@@ -739,7 +801,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Turns an individual to secret service through a careful approach of leverage, promise, or shared interest. The recruited agent acts as a hidden operative within their existing position, providing access and information. Rejection reveals the attempt and may trigger retaliation."
+      "description": "Turns an individual to secret service through a careful approach of leverage, promise, or shared interest. The recruited agent acts as a hidden operative within their existing position, providing access and information. Rejection reveals the attempt and may trigger retaliation.",
+      "technicalEffect": "On success, adds a secret `serves` edge from the target to the actor. On failure, the actor's reputation dips.",
+      "effectSource": "template-ops"
     },
     {
       "id": "action.shadow.spy",
@@ -764,7 +828,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Dispatches covert agents to observe a target and extract hidden information without detection. Secrets about intentions, capabilities, and vulnerabilities are brought back to the actor. If the agents are caught, the target is alerted and the actor is exposed."
+      "description": "Dispatches covert agents to observe a target and extract hidden information without detection. Secrets about intentions, capabilities, and vulnerabilities are brought back to the actor. If the agents are caught, the target is alerted and the actor is exposed.",
+      "technicalEffect": "A read action: on success, flips the target's `secret` to revealed. On failure, the actor's security dips.",
+      "effectSource": "template-ops"
     },
     {
       "id": "action.social.tip_scales",
@@ -791,7 +857,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "You breathe a word into the space between thoughts during a negotiation or social contest. The target's argument sharpens — or their opponent's resolve wavers. The scales of the conversation shift toward the outcome you desire. Use it to help a bonded agent close a deal, win an argument, or hold firm under pressure."
+      "description": "You breathe a word into the space between thoughts during a negotiation or social contest. The target's argument sharpens — or their opponent's resolve wavers. The scales of the conversation shift toward the outcome you desire. Use it to help a bonded agent close a deal, win an argument, or hold firm under pressure.",
+      "technicalEffect": "On success, raises the target's `socialLeverageShift` — biasing the target toward the caster's side in social-leverage contests.",
+      "effectSource": "template-ops"
     },
     {
       "id": "action.veil.cast-spell",
@@ -816,7 +884,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Shapes raw magical energy into a directed working that binds a lasting enchantment to the target. The spell anchors the caster's will into the fabric of the target, producing persistent effects that endure beyond the moment of casting. Failure bleeds mana and leaves the caster drained."
+      "description": "Shapes raw magical energy into a directed working that binds a lasting enchantment to the target. The spell anchors the caster's will into the fabric of the target, producing persistent effects that endure beyond the moment of casting. Failure bleeds mana and leaves the caster drained.",
+      "technicalEffect": "On success, adds an `enchanted_by` edge (spell magic) to the target. On failure, the actor's mana dips.",
+      "effectSource": "template-ops"
     },
     {
       "id": "action.veil.detect-magic",
@@ -841,7 +911,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Extends arcane perception to sense the presence and nature of hidden magical workings on or within a target. The invisible becomes visible, exposing enchantments, wards, and bound spirits that would otherwise remain concealed. Failure leaves the caster's perceptions dulled."
+      "description": "Extends arcane perception to sense the presence and nature of hidden magical workings on or within a target. The invisible becomes visible, exposing enchantments, wards, and bound spirits that would otherwise remain concealed. Failure leaves the caster's perceptions dulled.",
+      "technicalEffect": "A read action: on success, sets `magicRevealed` on the target. On failure, the actor's insight dips.",
+      "effectSource": "template-ops"
     },
     {
       "id": "action.veil.dispel",
@@ -866,7 +938,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Unmakes an active magical enchantment by disrupting the binding threads that hold it together. The target is freed from the spell's influence as the magical working collapses and dissipates. Resistance from a powerful enchantment can exhaust the caster's reserves."
+      "description": "Unmakes an active magical enchantment by disrupting the binding threads that hold it together. The target is freed from the spell's influence as the magical working collapses and dissipates. Resistance from a powerful enchantment can exhaust the caster's reserves.",
+      "technicalEffect": "On success, removes the target's `enchanted_by` edge. On failure, the actor's mana dips.",
+      "effectSource": "template-ops"
     },
     {
       "id": "action.veil.modify-enchantment",
@@ -891,7 +965,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Reaches into an existing magical working and reshapes its parameters without fully unraveling it. The modified enchantment emerges stronger or better aligned with the caster's intent. Misjudgment of the magical structure can cause the working to destabilize instead."
+      "description": "Reaches into an existing magical working and reshapes its parameters without fully unraveling it. The modified enchantment emerges stronger or better aligned with the caster's intent. Misjudgment of the magical structure can cause the working to destabilize instead.",
+      "technicalEffect": "On success, raises the `strength` on the target's `enchanted_by` edge. On failure, the actor's mana dips.",
+      "effectSource": "template-ops"
     },
     {
       "id": "action.faction.kindle_a_calling",
@@ -918,7 +994,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "You pour heat into the embers the faction has been keeping. Whatever was waiting to be wanted now wants. You do not get to choose which want rises — you only choose to let it."
+      "description": "You pour heat into the embers the faction has been keeping. Whatever was waiting to be wanted now wants. You do not get to choose which want rises — you only choose to let it.",
+      "technicalEffect": "Faction verb (`kindle_a_calling`): biases the faction's latent ambition candidates, draws one via seeded PRNG, replaces the faction's `pursues` edge (unless army-locked), and plants the calling-named encounter on the leader.",
+      "effectSource": "template-ops"
     },
     {
       "id": "action.faction.whisper_leader",
@@ -945,7 +1023,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "You lean close to the one who carries the faction's weight. Not a command — a question they were already asking themselves. They will answer it in their own voice; you have only chosen which voice rises. The next major decision tilts toward the pole you named."
+      "description": "You lean close to the one who carries the faction's weight. Not a command — a question they were already asking themselves. They will answer it in their own voice; you have only chosen which voice rises. The next major decision tilts toward the pole you named.",
+      "technicalEffect": "Faction verb (`whisper_leader`): sets a `divine_whisper_pending` condition and a preferred leadership pole on the faction's leader, nudging their next governance stance. Conflicts with another god's pending whisper are flagged for chronicle prose.",
+      "effectSource": "template-ops"
     },
     {
       "id": "action.heart.assess-loyalty",
@@ -970,7 +1050,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Reads the emotional truth beneath another person's words and behavior to determine where their allegiance truly lies. Hidden resentments, divided loyalties, and secret devotions surface under careful scrutiny. Misreading the signs leaves the actor no wiser than before."
+      "description": "Reads the emotional truth beneath another person's words and behavior to determine where their allegiance truly lies. Hidden resentments, divided loyalties, and secret devotions surface under careful scrutiny. Misreading the signs leaves the actor no wiser than before.",
+      "technicalEffect": "A read action: on success, sets `loyaltyKnown` on the target. On failure, the actor's insight dips.",
+      "effectSource": "template-ops"
     },
     {
       "id": "action.heart.betray",
@@ -995,7 +1077,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Deliberately breaks trust with an ally or intimate, exploiting access and shared history for personal gain. The betrayal destroys the existing bond and inflicts emotional damage that weakens the target's resolve. Discovery before the act is complete turns the weapon back on the betrayer."
+      "description": "Deliberately breaks trust with an ally or intimate, exploiting access and shared history for personal gain. The betrayal destroys the existing bond and inflicts emotional damage that weakens the target's resolve. Discovery before the act is complete turns the weapon back on the betrayer.",
+      "technicalEffect": "On success, removes the `allied_with` edge and drops the target's `morale`. On failure, the actor loses reputation.",
+      "effectSource": "template-ops"
     },
     {
       "id": "action.heart.forge-alliance",
@@ -1020,7 +1104,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Extends a hand of genuine partnership to another party, building a mutual commitment grounded in trust and shared interest. The alliance grants both parties protection, cooperation, and a strengthened social position. Spurned offers leave a quiet wound in the relationship."
+      "description": "Extends a hand of genuine partnership to another party, building a mutual commitment grounded in trust and shared interest. The alliance grants both parties protection, cooperation, and a strengthened social position. Spurned offers leave a quiet wound in the relationship.",
+      "technicalEffect": "On success, adds an `allied_with` edge to the target. On failure, the actor's reputation dips.",
+      "effectSource": "template-ops"
     },
     {
       "id": "action.heart.inspire",
@@ -1045,7 +1131,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Speaks with genuine conviction and personal warmth to rekindle another's sense of purpose and resilience. The inspired individual's morale lifts and their resolve strengthens against adversity. The effect is authentic but requires the speaker's own emotional investment."
+      "description": "Speaks with genuine conviction and personal warmth to rekindle another's sense of purpose and resilience. The inspired individual's morale lifts and their resolve strengthens against adversity. The effect is authentic but requires the speaker's own emotional investment.",
+      "technicalEffect": "On success, raises the target's `morale` and adds an `inspired_by` edge. On failure, the actor's own morale dips.",
+      "effectSource": "template-ops"
     },
     {
       "id": "action.initiative.inspire",
@@ -1072,7 +1160,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Breathe divine ambition into a mortal. Their next initiative scores 0.5 higher, almost guaranteeing they will pursue it over any encounter. Consume on use."
+      "description": "Breathe divine ambition into a mortal. Their next initiative scores 0.5 higher, almost guaranteeing they will pursue it over any encounter. Consume on use.",
+      "technicalEffect": "On success, writes an `initiativeInspireBonus` onto the target — boosting their initiative in the relevant contest.",
+      "effectSource": "template-ops"
     },
     {
       "id": "action.mentorship.inspire",
@@ -1099,7 +1189,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Breathe a duty into a high-capability mortal: pass on what you know. Their next initiative scoring receives a one-time bonus toward Train Apprentice. Consumed on use."
+      "description": "Breathe a duty into a high-capability mortal: pass on what you know. Their next initiative scoring receives a one-time bonus toward Train Apprentice. Consumed on use.",
+      "technicalEffect": "On success, writes a `mentorshipInspireBonus` onto the target mentee.",
+      "effectSource": "template-ops"
     },
     {
       "id": "action.secrets.call_in_favor",
@@ -1126,7 +1218,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "You stir the memory of debt in a mortal chest. They remember what they owe — not as a threat, but as a weight that has been there all along, waiting to be acknowledged. The favor is called in. The debt shifts from owed to paid."
+      "description": "You stir the memory of debt in a mortal chest. They remember what they owe — not as a threat, but as a weight that has been there all along, waiting to be acknowledged. The favor is called in. The debt shifts from owed to paid.",
+      "technicalEffect": "On success, redeems the target's best unredeemed, unbroken `owes_favor` edge directed at the actor (sets `redeemed`). No-op if no redeemable favor is owed.",
+      "effectSource": "template-ops"
     },
     {
       "id": "action.social.embolden",
@@ -1153,7 +1247,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "A warmth fills the target's chest — the certainty that they are not alone. Their voice steadies. Their gaze hardens. In the next confrontation or social challenge, they will not be moved by counter-arguments or intimidation. Use it when a bonded agent needs to hold firm against pressure they might otherwise fold to."
+      "description": "A warmth fills the target's chest — the certainty that they are not alone. Their voice steadies. Their gaze hardens. In the next confrontation or social challenge, they will not be moved by counter-arguments or intimidation. Use it when a bonded agent needs to hold firm against pressure they might otherwise fold to.",
+      "technicalEffect": "On success, sets `counterResistanceActive` on the target, hardening them against an opponent counter-move in the social contest.",
+      "effectSource": "template-ops"
     },
     {
       "id": "action.eye.investigate",
@@ -1178,7 +1274,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Asks focused questions and follows evidence threads to reveal the hidden nature of a person, place, or situation. What is concealed rises to the surface under methodical scrutiny. A failed investigation deepens confusion rather than resolving it."
+      "description": "Asks focused questions and follows evidence threads to reveal the hidden nature of a person, place, or situation. What is concealed rises to the surface under methodical scrutiny. A failed investigation deepens confusion rather than resolving it.",
+      "technicalEffect": "A read action: on success, sets `investigated` on the target. On failure, the actor's insight dips.",
+      "effectSource": "template-ops"
     },
     {
       "id": "action.eye.refine-knowledge",
@@ -1203,7 +1301,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Returns to an existing body of knowledge with fresh perspective, correcting errors and filling gaps in understanding. The refined picture reveals subtleties that earlier investigation missed. A misguided refinement can entrench false conclusions even deeper."
+      "description": "Returns to an existing body of knowledge with fresh perspective, correcting errors and filling gaps in understanding. The refined picture reveals subtleties that earlier investigation missed. A misguided refinement can entrench false conclusions even deeper.",
+      "technicalEffect": "On success, deepens the `depth` on the target's `investigates` edge. On failure, the actor's wisdom dips.",
+      "effectSource": "template-ops"
     },
     {
       "id": "action.eye.research",
@@ -1228,7 +1328,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Initiates a sustained investigation into a subject, systematically gathering evidence and cross-referencing sources. The result is a deep, reliable body of knowledge about the target that informs future decisions. Failure wastes the researcher's time and yields misleading conclusions."
+      "description": "Initiates a sustained investigation into a subject, systematically gathering evidence and cross-referencing sources. The result is a deep, reliable body of knowledge about the target that informs future decisions. Failure wastes the researcher's time and yields misleading conclusions.",
+      "technicalEffect": "On success, adds a deep `investigates` edge to the target. On failure, the actor's insight dips.",
+      "effectSource": "template-ops"
     },
     {
       "id": "action.eye.suppress-knowledge",
@@ -1253,7 +1355,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Actively buries a truth — destroying records, discrediting sources, and pressuring witnesses into silence. The concealed knowledge becomes inaccessible to those who would use it against the actor. Failure allows the suppressed truth to spread further than it would have naturally."
+      "description": "Actively buries a truth — destroying records, discrediting sources, and pressuring witnesses into silence. The concealed knowledge becomes inaccessible to those who would use it against the actor. Failure allows the suppressed truth to spread further than it would have naturally.",
+      "technicalEffect": "On success, removes the target's `investigates` edge. On failure, the actor's reputation dips.",
+      "effectSource": "template-ops"
     },
     {
       "id": "action.faction.surface_doubter",
@@ -1280,7 +1384,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "You let a name rise in the room — the one whose silence has been speaking. They feel themselves seen by something larger than the faction. The seeing is the cost. The seeing is the gift."
+      "description": "You let a name rise in the room — the one whose silence has been speaking. They feel themselves seen by something larger than the faction. The seeing is the cost. The seeing is the gift.",
+      "technicalEffect": "Faction verb (`surface_doubter`): marks the faction's most axiologically misaligned member with the `surfaced_by_divine_attention` condition, plants a delayed doubter-chooses encounter, and nudges `dissentLevel` up by a small amount.",
+      "effectSource": "template-ops"
     },
     {
       "id": "action.flesh.diagnose",
@@ -1305,7 +1411,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Applies careful examination to identify the root cause of a target's physical or psychological condition. Once the ailment is named, it becomes possible to treat effectively rather than guess. Misidentification sends subsequent healing efforts in the wrong direction entirely."
+      "description": "Applies careful examination to identify the root cause of a target's physical or psychological condition. Once the ailment is named, it becomes possible to treat effectively rather than guess. Misidentification sends subsequent healing efforts in the wrong direction entirely.",
+      "technicalEffect": "A read action: on success, sets `ailmentKnown` on the target. On failure, the actor's insight dips.",
+      "effectSource": "template-ops"
     },
     {
       "id": "action.secrets.reveal_secret",
@@ -1332,7 +1440,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "You breathe knowledge into the world — a truth about one agent, delivered to the ears of another. The secret does not disappear; it becomes currency, moving from private weight to shared leverage. Use it to shift the balance of a relationship, trigger a reckoning, or protect someone who is about to be betrayed."
+      "description": "You breathe knowledge into the world — a truth about one agent, delivered to the ears of another. The secret does not disappear; it becomes currency, moving from private weight to shared leverage. Use it to shift the balance of a relationship, trigger a reckoning, or protect someone who is about to be betrayed.",
+      "technicalEffect": "On success, flips the actor's highest-magnitude unrevealed `knows_secret_of` edge about the target to `revealed` — publicising held leverage. No-op if the actor holds no unrevealed secret on the target.",
+      "effectSource": "template-ops"
     },
     {
       "id": "action.stone.assess-structure",
@@ -1357,7 +1467,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Conducts a thorough physical and structural examination of a building or fortification to understand its integrity and potential. Hidden weaknesses, repair needs, and defensive qualities are revealed by the assessment. A flawed survey leaves dangerous gaps in the actor's understanding."
+      "description": "Conducts a thorough physical and structural examination of a building or fortification to understand its integrity and potential. Hidden weaknesses, repair needs, and defensive qualities are revealed by the assessment. A flawed survey leaves dangerous gaps in the actor's understanding.",
+      "technicalEffect": "A read action: on success, sets `assessed` on the target. On failure, the actor's insight dips.",
+      "effectSource": "template-ops"
     },
     {
       "id": "action.stone.build",
@@ -1382,7 +1494,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Lays the groundwork for a permanent structure that reshapes the landscape and serves as a lasting monument to the builder's ambition. The finished building anchors the actor's presence in a location and provides ongoing benefits. Collapsed projects drain resources and leave visible evidence of failure."
+      "description": "Lays the groundwork for a permanent structure that reshapes the landscape and serves as a lasting monument to the builder's ambition. The finished building anchors the actor's presence in a location and provides ongoing benefits. Collapsed projects drain resources and leave visible evidence of failure.",
+      "technicalEffect": "On success, adds a construction `location` node built by the actor. On failure, the actor's resources dip.",
+      "effectSource": "template-ops"
     },
     {
       "id": "action.stone.demolish",
@@ -1407,7 +1521,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Brings deliberate, systematic destruction to a structure until only rubble remains. The cleared site can be repurposed, or the act serves as a demonstration of power that cannot be ignored. Resistance from the structure or its defenders can exhaust the demolition effort."
+      "description": "Brings deliberate, systematic destruction to a structure until only rubble remains. The cleared site can be repurposed, or the act serves as a demonstration of power that cannot be ignored. Resistance from the structure or its defenders can exhaust the demolition effort.",
+      "technicalEffect": "On success, removes the target node. On failure, the actor's resources dip.",
+      "effectSource": "template-ops"
     },
     {
       "id": "action.stone.repair",
@@ -1432,7 +1548,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Dedicates labor and materials to restoring a damaged structure to its former strength and functionality. The repaired building regains its protective and operational qualities, better serving those who rely on it. Poor workmanship can weaken the structure further instead of mending it."
+      "description": "Dedicates labor and materials to restoring a damaged structure to its former strength and functionality. The repaired building regains its protective and operational qualities, better serving those who rely on it. Poor workmanship can weaken the structure further instead of mending it.",
+      "technicalEffect": "On success, raises the target's `integrity`. On failure, the target's integrity is reduced instead.",
+      "effectSource": "template-ops"
     },
     {
       "id": "action.anoint",
@@ -1456,10 +1574,12 @@
       "targetSubtypes": [],
       "requiresReach": null,
       "starter": false,
-      "beatGranted": false,
+      "beatGranted": true,
       "bucket": "unlockable-generic",
-      "bucketDeclared": false,
-      "description": "You set your mark upon a whole order at once — not a soul but a banner, a charter, a creed. The faction becomes yours in the eyes of the world, and the favour you pour out lifts every hand that serves under it, steadily, for as long as your regard endures."
+      "bucketDeclared": true,
+      "description": "You set your mark upon a whole order at once — not a soul but a banner, a charter, a creed. The faction becomes yours in the eyes of the world, and the favour you pour out lifts every hand that serves under it, steadily, for as long as your regard endures.",
+      "technicalEffect": "Beat verb: stamps a `chosen` status on the target faction node (recording the ascendant's primary-reach power from the chosen-power table). The per-tick `phaseChosenFactionPowers` then grants the faction's members a power-keyed reputation gain each tick.",
+      "effectSource": "template-ops"
     },
     {
       "id": "action.bestow",
@@ -1483,10 +1603,12 @@
       "targetSubtypes": [],
       "requiresReach": null,
       "starter": false,
-      "beatGranted": false,
+      "beatGranted": true,
       "bucket": "unlockable-generic",
-      "bucketDeclared": false,
-      "description": "You reach into a soul that already knows your touch and leave a portion of your strength behind. The mortal wakes changed — quicker in your chosen art, and quietly replenished by a wellspring that is, in truth, a sliver of you."
+      "bucketDeclared": true,
+      "description": "You reach into a soul that already knows your touch and leave a portion of your strength behind. The mortal wakes changed — quicker in your chosen art, and quietly replenished by a wellspring that is, in truth, a sliver of you.",
+      "technicalEffect": "Beat verb: mints a 'Divine Gift' artifact bound to the threaded agent via a `possesses` edge, carrying a passive reach bonus (BESTOW_REACH_BONUS in the ascendant's primary reach) and a per-tick quintessence regen (BESTOW_QUINTESSENCE_REGEN). Gated on thread awareness ≥ BESTOW_MIN_AWARENESS; no-op otherwise.",
+      "effectSource": "template-ops"
     },
     {
       "id": "action.consecrate",
@@ -1513,10 +1635,44 @@
       ],
       "requiresReach": null,
       "starter": false,
-      "beatGranted": false,
+      "beatGranted": true,
       "bucket": "unlockable-generic",
-      "bucketDeclared": false,
-      "description": "You sink your presence into the stones of a holy place until the ground itself remembers you. Those who keep faith here are drawn steadily closer to your design — so long as you sustain the devotion that holds the site."
+      "bucketDeclared": true,
+      "description": "You sink your presence into the stones of a holy place until the ground itself remembers you. Those who keep faith here are drawn steadily closer to your design — so long as you sustain the devotion that holds the site.",
+      "technicalEffect": "Sustained: on success spawns a `ControlEffect` that hallows the site, projecting a per-tick thread aura at a per-tick Spirit essence cost. Persists (ticked by phaseControlEffects) until essence lapses or it is deliberately broken.",
+      "effectSource": "control-spec"
+    },
+    {
+      "id": "action.consecrate-relic",
+      "name": "Enshrine Relic",
+      "spellName": "Reliquary of Hallowing",
+      "category": "action",
+      "reach": "star",
+      "sphereAffinity": "spirit",
+      "crudType": "update",
+      "scale": "local",
+      "rarityTier": 2,
+      "rarityName": "Storied",
+      "intrinsicTier": "shaping",
+      "apCost": 1,
+      "essenceCost": 13,
+      "durationMode": "sustained",
+      "hasControlSpec": true,
+      "targetCategories": [
+        "location"
+      ],
+      "targetSubtypes": [
+        "temple",
+        "shrine"
+      ],
+      "requiresReach": null,
+      "starter": false,
+      "beatGranted": true,
+      "bucket": "unlockable-generic",
+      "bucketDeclared": true,
+      "description": "Rather than feed the consecration with a steady stream of devotion, you bind your presence into an enduring relic and enshrine it here. The ground stays hallowed for as long as the relic endures — at no further cost to you — but should it ever be destroyed, the hallowing dies with it.",
+      "technicalEffect": "Sustained: like Consecrate but mints an upkeep relic ('Hallowed Reliquary') that sustains the hallowing without ongoing essence — the consecration holds while the relic exists and ends if the relic is undone.",
+      "effectSource": "control-spec"
     },
     {
       "id": "action.divine-edict",
@@ -1543,7 +1699,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "During a faction conclave, you speak a divine word into the debate — one position grows louder than the others, the room tilts, the vote shifts. The edict does not compel; it weights. The faction still decides, but the scales are no longer level."
+      "description": "During a faction conclave, you speak a divine word into the debate — one position grows louder than the others, the room tilts, the vote shifts. The edict does not compel; it weights. The faction still decides, but the scales are no longer level.",
+      "technicalEffect": "On success, raises the target's `conclaveLeverageShift` — tilting a conclave/court leverage contest toward the caster.",
+      "effectSource": "template-ops"
     },
     {
       "id": "action.faction.recover_doctrine",
@@ -1570,7 +1728,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "You loose a thread of memory — older than any living member, older than the faction's current name. Somewhere, a forgotten teaching surfaces in the minds of those who never knew they were waiting for it. A recovered_doctrine clue you gathered from delving the ruins now lands inside the faction that lost it."
+      "description": "You loose a thread of memory — older than any living member, older than the faction's current name. Somewhere, a forgotten teaching surfaces in the minds of those who never knew they were waiting for it. A recovered_doctrine clue you gathered from delving the ruins now lands inside the faction that lost it.",
+      "technicalEffect": "Faction verb (`recover_doctrine`): consumes a doctrine clue, stamps `recoveredDoctrineId` + expiry on the faction, seeds a doctrine-surfaces encounter on the leader (or anointed champion), and temporarily realigns `reputationAlignment` when the clue carries a realignment.",
+      "effectSource": "template-ops"
     },
     {
       "id": "action.faction.schism",
@@ -1597,7 +1757,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "You plant a doctrinal split inside the faction. Two truths surface where there was one. The crisis is real now — what comes next is not yours to choose."
+      "description": "You plant a doctrinal split inside the faction. Two truths surface where there was one. The crisis is real now — what comes next is not yours to choose.",
+      "technicalEffect": "On success, marks the target faction with a pending schism resolving after SCHISM_PENDING_DURATION_TICKS (snapshotting baseline cohesion); the schism tick-phase later resolves it into a split. Idempotent — re-casting resets the timer without stacking.",
+      "effectSource": "template-ops"
     },
     {
       "id": "action.imbue",
@@ -1625,7 +1787,9 @@
       "beatGranted": true,
       "bucket": "unlockable-generic",
       "bucketDeclared": true,
-      "description": "You press a fragment of your own nature into the object until it holds. The artifact wakes with a power shaped by your dominant sphere — and whoever carries it carries a sliver of you, whether they know it or not."
+      "description": "You press a fragment of your own nature into the object until it holds. The artifact wakes with a power shaped by your dominant sphere — and whoever carries it carries a sliver of you, whether they know it or not.",
+      "technicalEffect": "Beat verb: appends a sphere-flavored `AttachmentEffect` (drawn from the ascendant's primary sphere) to the target artifact's `effects` array. The effect is then read by the standard effect resolver into the holder's modifiers. No-op if the target is not an artifact or the ascendant has no sphere.",
+      "effectSource": "template-ops"
     },
     {
       "id": "action.star.consecrate",
@@ -1650,7 +1814,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Performs sacred rites that bind a location to a higher purpose, infusing the site with divine resonance and marking it as holy ground. Consecrated places attract the faithful and resist corruption. The rites fail when the site resists the specific domain being invoked."
+      "description": "Performs sacred rites that bind a location to a higher purpose, infusing the site with divine resonance and marking it as holy ground. Consecrated places attract the faithful and resist corruption. The rites fail when the site resists the specific domain being invoked.",
+      "technicalEffect": "On success, adds a sacred `blessed_by` edge to the target. On failure, the actor's faith dips.",
+      "effectSource": "template-ops"
     },
     {
       "id": "action.star.deepen-faith",
@@ -1675,7 +1841,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Delivers teachings, miracles, or testimony that strengthens a believer's connection to their spiritual practice and convictions. The deepened faith makes the individual more resilient to doubt and more devoted to the actor's cause. Poorly received teachings can plant seeds of doubt instead."
+      "description": "Delivers teachings, miracles, or testimony that strengthens a believer's connection to their spiritual practice and convictions. The deepened faith makes the individual more resilient to doubt and more devoted to the actor's cause. Poorly received teachings can plant seeds of doubt instead.",
+      "technicalEffect": "On success, raises the target's `faith`. On failure, the actor's faith dips.",
+      "effectSource": "template-ops"
     },
     {
       "id": "action.star.desecrate",
@@ -1700,7 +1868,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Commits deliberate sacrilege against a consecrated site or holy object, severing its divine connection and polluting its spiritual resonance. The desecrated place loses its sacred protection and becomes tainted ground. Divine retribution can strike the perpetrator when the act goes too far."
+      "description": "Commits deliberate sacrilege against a consecrated site or holy object, severing its divine connection and polluting its spiritual resonance. The desecrated place loses its sacred protection and becomes tainted ground. Divine retribution can strike the perpetrator when the act goes too far.",
+      "technicalEffect": "On success, removes the target's `blessed_by` edge. On failure, the actor's faith dips.",
+      "effectSource": "template-ops"
     },
     {
       "id": "action.star.divine",
@@ -1725,7 +1895,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Reads the signs and portents available in the sky, the bones, or the entrails to glimpse the likely fate of a target. A successful reading reveals the direction of events and the forces shaping them. A failed reading provides a dangerously false sense of certainty."
+      "description": "Reads the signs and portents available in the sky, the bones, or the entrails to glimpse the likely fate of a target. A successful reading reveals the direction of events and the forces shaping them. A failed reading provides a dangerously false sense of certainty.",
+      "technicalEffect": "A read action: on success, sets `divined` on the target. On failure, the actor's insight dips.",
+      "effectSource": "template-ops"
     },
     {
       "id": "artifact.enchant",
@@ -1752,7 +1924,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Traces runes of power upon an artifact's surface, binding divine intent into the object's physical form. The enchanted artifact becomes a vessel for ongoing magical effect that persists in the hands of whoever wields it. Poorly formed runes can destabilize the binding and render the artifact inert."
+      "description": "Traces runes of power upon an artifact's surface, binding divine intent into the object's physical form. The enchanted artifact becomes a vessel for ongoing magical effect that persists in the hands of whoever wields it. Poorly formed runes can destabilize the binding and render the artifact inert.",
+      "technicalEffect": "Engine bridge (attachment-tier system): advances the target artifact one magical tier via the ENCHANT_TEMPLATE_ID path, upgrading its tier band and effect strength. Handled outside step ops by the attachment-tier resolver.",
+      "effectSource": "engine-bridge"
     },
     {
       "id": "artifact.curse",
@@ -1780,7 +1954,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Binds a curse of ill fortune and misfortune into the physical form of an artifact, ensuring the curse travels with whoever possesses it. The affliction activates on contact and spreads its effects to the bearer without their knowledge. Dispelling a well-crafted curse binding requires significant magical effort."
+      "description": "Binds a curse of ill fortune and misfortune into the physical form of an artifact, ensuring the curse travels with whoever possesses it. The affliction activates on contact and spreads its effects to the bearer without their knowledge. Dispelling a well-crafted curse binding requires significant magical effort.",
+      "technicalEffect": "INTENDED: lay a harmful effect on the artifact that afflicts its holder. NOT YET WIRED — empty step ops, no engine bridge; deducts essence and narrates only (THR-605).",
+      "effectSource": "none"
     },
     {
       "id": "artifact.nullify",
@@ -1808,7 +1984,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Systematically unravels every enchantment bound to an artifact, stripping away its magical properties and reducing it to an inert physical object. The nullified item retains its material form but no longer carries any special properties. Resisting enchantments may require greater effort to fully extinguish."
+      "description": "Systematically unravels every enchantment bound to an artifact, stripping away its magical properties and reducing it to an inert physical object. The nullified item retains its material form but no longer carries any special properties. Resisting enchantments may require greater effort to fully extinguish.",
+      "technicalEffect": "INTENDED: suppress or strip an artifact’s magical effects. NOT YET WIRED — empty step ops, no engine bridge; deducts essence and narrates only (THR-605).",
+      "effectSource": "none"
     },
     {
       "id": "artifact.attune",
@@ -1835,7 +2013,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Harmonizes an artifact's magical signature with a specific divine sphere, aligning its latent power to a chosen domain. The attuned artifact responds more readily to sphere-aligned practitioners and enhances relevant capabilities. Misalignment causes the artifact to resist use by those of opposing spheres."
+      "description": "Harmonizes an artifact's magical signature with a specific divine sphere, aligning its latent power to a chosen domain. The attuned artifact responds more readily to sphere-aligned practitioners and enhances relevant capabilities. Misalignment causes the artifact to resist use by those of opposing spheres.",
+      "technicalEffect": "INTENDED: bind the artifact more tightly to its holder, strengthening its effects for that bearer. NOT YET WIRED — empty step ops, no engine bridge; deducts essence and narrates only (THR-605).",
+      "effectSource": "none"
     },
     {
       "id": "divine.intimidate",
@@ -1860,7 +2040,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Presses divine force and terrible authority upon a mortal will, making resistance feel futile against a power that cannot be reasoned with. Fear runs cold through the target as the weight of the divine bears down. The intimidated mortal complies but carries resentment that may later surface."
+      "description": "Presses divine force and terrible authority upon a mortal will, making resistance feel futile against a power that cannot be reasoned with. Fear runs cold through the target as the weight of the divine bears down. The intimidated mortal complies but carries resentment that may later surface.",
+      "technicalEffect": "Applies a divine influence (interventionType `intimidate`, Force sphere) to the target agent, biasing their decision-making until the influence decays.",
+      "effectSource": "template-ops"
     },
     {
       "id": "divine.deceive",
@@ -1885,7 +2067,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Drapes a divine illusion over mortal perception, causing the target to see and believe what the deity wills rather than what is real. The deceived mortal acts on false information with absolute confidence in its truth. The veil persists until the divine will withdraws or evidence overwhelms it."
+      "description": "Drapes a divine illusion over mortal perception, causing the target to see and believe what the deity wills rather than what is real. The deceived mortal acts on false information with absolute confidence in its truth. The veil persists until the divine will withdraws or evidence overwhelms it.",
+      "technicalEffect": "Applies a divine influence (interventionType `deceive`, Mind sphere) to the target agent, biasing their decision-making until the influence decays.",
+      "effectSource": "template-ops"
     },
     {
       "id": "divine.self.recede",
@@ -1912,7 +2096,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "The god gathers its power inward rather than expending it outward, preparing the next divine expenditure to cost less than it otherwise would. Like a tide that retreats only to strike harder on its return, the god's next intervention is made from a position of accumulated readiness."
+      "description": "The god gathers its power inward rather than expending it outward, preparing the next divine expenditure to cost less than it otherwise would. Like a tide that retreats only to strike harder on its return, the god's next intervention is made from a position of accumulated readiness.",
+      "technicalEffect": "Stores a `nextActionDiscount` (RECEDE_DISCOUNT_FRACTION) on the ascendant node — the next divine action's essence cost is reduced by that fraction. Self-only.",
+      "effectSource": "template-ops"
     },
     {
       "id": "divine.dream",
@@ -1937,7 +2123,9 @@
       "beatGranted": true,
       "bucket": "unlockable-generic",
       "bucketDeclared": true,
-      "description": "Reaches into the sleeping mind of a mortal and reshapes their dreaming landscape with divine intent. Desires and motivations shift beneath the surface, nudging the sleeper toward choices the deity favors. The effect lingers as a quiet conviction long after waking."
+      "description": "Reaches into the sleeping mind of a mortal and reshapes their dreaming landscape with divine intent. Desires and motivations shift beneath the surface, nudging the sleeper toward choices the deity favors. The effect lingers as a quiet conviction long after waking.",
+      "technicalEffect": "Applies a divine influence (interventionType `dream`, Mind sphere) to the target agent — a decaying `Influence` on their decision loop that biases behaviour and axiological drift until it lapses. Does not mutate the graph directly.",
+      "effectSource": "template-ops"
     },
     {
       "id": "divine.inspire",
@@ -1962,7 +2150,9 @@
       "beatGranted": true,
       "bucket": "unlockable-generic",
       "bucketDeclared": true,
-      "description": "Kindles divine fire within a mortal spirit, igniting a sense of calling and passionate purpose that seems to come from within. The inspired mortal pursues their goals with extraordinary energy and conviction. The flame sustains itself as long as the mortal's belief remains unchallenged."
+      "description": "Kindles divine fire within a mortal spirit, igniting a sense of calling and passionate purpose that seems to come from within. The inspired mortal pursues their goals with extraordinary energy and conviction. The flame sustains itself as long as the mortal's belief remains unchallenged.",
+      "technicalEffect": "Applies a divine influence (interventionType `inspire_intervention`, Life sphere) to the target agent, biasing their decision-making until the influence decays.",
+      "effectSource": "template-ops"
     },
     {
       "id": "divine.persuade",
@@ -1987,7 +2177,9 @@
       "beatGranted": true,
       "bucket": "unlockable-generic",
       "bucketDeclared": true,
-      "description": "Whispers an irresistible conviction into a mortal's soul, making the deity's preferred course feel like the only sensible choice. The mortal acts with sudden certainty, unaware of the divine origin of their resolve. The compulsion fades over time as natural doubt reasserts itself."
+      "description": "Whispers an irresistible conviction into a mortal's soul, making the deity's preferred course feel like the only sensible choice. The mortal acts with sudden certainty, unaware of the divine origin of their resolve. The compulsion fades over time as natural doubt reasserts itself.",
+      "technicalEffect": "Applies a divine influence (interventionType `persuade`, Spirit sphere) to the target agent, biasing their decision-making until the influence decays.",
+      "effectSource": "template-ops"
     },
     {
       "id": "divine.relay.compose_a_clue",
@@ -2012,7 +2204,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Composes a direct clue from divine knowledge and deposits it into a bonded agent's awareness — a certainty about a ruin the god already perceives, bypassing any need for investigation. The agent gains a knows_clue_of edge without experiencing any discovery encounter. A divine mark is left on the agent, discoverable by rival gods via Taste the Wake."
+      "description": "Composes a direct clue from divine knowledge and deposits it into a bonded agent's awareness — a certainty about a ruin the god already perceives, bypassing any need for investigation. The agent gains a knows_clue_of edge without experiencing any discovery encounter. A divine mark is left on the agent, discoverable by rival gods via Taste the Wake.",
+      "technicalEffect": "Engine bridge: creates a `narrowed` `knows_clue_of` edge (bonded agent → a ruin) directly, bypassing Narrative Gravity, and leaves a `divine_mark` `knows_secret_of` edge on the agent. No-op if the agent is not bonded or no ruin exists.",
+      "effectSource": "engine-bridge"
     },
     {
       "id": "divine.relay.whisper_the_direction",
@@ -2037,7 +2231,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Sends a one-time directional nudge along a divine thread, adjusting where a bonded agent will move on the next tick — steering them toward the ruins hex without revealing why they feel drawn there. No clue edge is created; the agent simply finds themselves walking a different path than planned. Subtle enough that most mortals mistake it for their own instinct."
+      "description": "Sends a one-time directional nudge along a divine thread, adjusting where a bonded agent will move on the next tick — steering them toward the ruins hex without revealing why they feel drawn there. No clue edge is created; the agent simply finds themselves walking a different path than planned. Subtle enough that most mortals mistake it for their own instinct.",
+      "technicalEffect": "Engine bridge: overrides the bonded agent's `movementState.destinationId` to the nearest ruin (by hex distance), clearing their movement queue. No-op if the agent is not bonded or no other ruin exists.",
+      "effectSource": "engine-bridge"
     },
     {
       "id": "divine.self.stillness",
@@ -2064,7 +2260,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "The god draws inward, releasing the constant attention that divine will requires and allowing essence to pool in the space of that letting-go. A moment of deliberate stillness restores what constant intervention depletes. The mortal world moves on without celestial interference — and the god is the richer for it."
+      "description": "The god draws inward, releasing the constant attention that divine will requires and allowing essence to pool in the space of that letting-go. A moment of deliberate stillness restores what constant intervention depletes. The mortal world moves on without celestial interference — and the god is the richer for it.",
+      "technicalEffect": "Post-processed after resolution: restores the ascendant's own essence pool for its primary sphere by STILLNESS_ESSENCE_REGEN, clamped to `maxEssence`. No world-graph change.",
+      "effectSource": "engine-bridge"
     },
     {
       "id": "divine.perceive.cast_attention",
@@ -2091,7 +2289,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Turns the full weight of divine perception onto a ruined hex, searching for the faint echo of an undelved site. When any ruin lingers beneath the surface, a vague clue crystallises in the mind of a nearby mortal — a half-formed sense that something important is buried here. The bonded agent must be close enough for the impression to take root."
+      "description": "Turns the full weight of divine perception onto a ruined hex, searching for the faint echo of an undelved site. When any ruin lingers beneath the surface, a vague clue crystallises in the mind of a nearby mortal — a half-formed sense that something important is buried here. The bonded agent must be close enough for the impression to take root.",
+      "technicalEffect": "Engine bridge (perceiveRelay): on a hex carrying a ruin, seeds a `vague` `knows_clue_of` edge to that ruin on a bonded agent within the adjacency gate, chosen by Narrative Gravity. No-op without a ruin or an adjacent bonded agent.",
+      "effectSource": "engine-bridge"
     },
     {
       "id": "divine.perceive.listen_for_a_name",
@@ -2118,7 +2318,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Listens to the stone-memory of a ruined site until the name of the culture that built it surfaces — a ghost of language, art-style, or ritual pattern encoded in the material itself. A bonded agent nearby feels the resonance as a flash of recognition, unlocking culture-specific prose and investigation routes for this site."
+      "description": "Listens to the stone-memory of a ruined site until the name of the culture that built it surfaces — a ghost of language, art-style, or ritual pattern encoded in the material itself. A bonded agent nearby feels the resonance as a flash of recognition, unlocking culture-specific prose and investigation routes for this site.",
+      "technicalEffect": "Engine bridge: seeds a `narrowed` `knows_clue_of` edge on a bonded agent that also carries the ruin's `originCultureId` in its detail. No-op without a ruin or adjacent bonded agent.",
+      "effectSource": "engine-bridge"
     },
     {
       "id": "divine.perceive.read_the_threads",
@@ -2145,7 +2347,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Traces the web of fate-threads converging on a hex to find whether a Place of Power is dormant there — a site of condensed world-soul energy, invisible to normal senses. No bonded agent is required: the god reads directly from the cosmic weave. If a Place of Power exists, a vague clue pointing to it forms in a mortal's awareness."
+      "description": "Traces the web of fate-threads converging on a hex to find whether a Place of Power is dormant there — a site of condensed world-soul energy, invisible to normal senses. No bonded agent is required: the god reads directly from the cosmic weave. If a Place of Power exists, a vague clue pointing to it forms in a mortal's awareness.",
+      "technicalEffect": "Engine bridge: on a hex hosting a Place of Power, seeds a `vague` clue about it to any threaded agent (no adjacency gate). No-op when the hex has no Place of Power.",
+      "effectSource": "engine-bridge"
     },
     {
       "id": "divine.perceive.refine_the_hush",
@@ -2172,7 +2376,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Reaches past the silence that settles over forgotten places and refines a vague impression into something more precise — a narrowed clue that points the mortal toward a specific district, chamber, or approach. The refinement requires a bonded agent already present, whose instincts carry the signal forward."
+      "description": "Reaches past the silence that settles over forgotten places and refines a vague impression into something more precise — a narrowed clue that points the mortal toward a specific district, chamber, or approach. The refinement requires a bonded agent already present, whose instincts carry the signal forward.",
+      "technicalEffect": "Engine bridge: upgrades an existing `vague` `knows_clue_of` edge (bonded agent → ruin on the hex) to `narrowed` precision; if none exists, seeds a fresh narrowed clue via Narrative Gravity.",
+      "effectSource": "engine-bridge"
     },
     {
       "id": "divine.perceive.taste_the_wake",
@@ -2199,7 +2405,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Sweeps the residue of recent divine activity at a hex — the subtle wake any god leaves when they intervene or act through agents. If a rival god has been here, their marks are discoverable. A bonded agent must be present to ground the perception. What the god finds may reveal who else is paying attention to these ruins."
+      "description": "Sweeps the residue of recent divine activity at a hex — the subtle wake any god leaves when they intervene or act through agents. If a rival god has been here, their marks are discoverable. A bonded agent must be present to ground the perception. What the god finds may reveal who else is paying attention to these ruins.",
+      "technicalEffect": "Engine bridge (read): scans agents on the hex for unrevealed `divine_mark` `knows_secret_of` edges and surfaces them via trace — exposing rival gods' marks. No graph mutation; no-op without an adjacent bonded agent.",
+      "effectSource": "engine-bridge"
     },
     {
       "id": "divine.omen",
@@ -2224,7 +2432,9 @@
       "beatGranted": true,
       "bucket": "unlockable-generic",
       "bucketDeclared": true,
-      "description": "Plants a visible sign in the world — an unusual event, an uncanny coincidence, or a symbol that catches the eye of those who are watching. Mortals who recognize the omen feel its pull and adjust their behavior accordingly. Those who miss or misread the sign remain unaffected."
+      "description": "Plants a visible sign in the world — an unusual event, an uncanny coincidence, or a symbol that catches the eye of those who are watching. Mortals who recognize the omen feel its pull and adjust their behavior accordingly. Those who miss or misread the sign remain unaffected.",
+      "technicalEffect": "Applies a divine influence (interventionType `omen`, Spirit sphere) to the target agent, biasing their decision-making until the influence decays.",
+      "effectSource": "template-ops"
     },
     {
       "id": "divine.coincidence",
@@ -2249,7 +2459,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Arranges the threads of probability with divine precision so that events align in a way that seems like mere chance to mortal eyes. Opportunities appear at exactly the right moment, and obstacles dissolve without visible cause. The mortal never suspects the hand behind their good fortune."
+      "description": "Arranges the threads of probability with divine precision so that events align in a way that seems like mere chance to mortal eyes. Opportunities appear at exactly the right moment, and obstacles dissolve without visible cause. The mortal never suspects the hand behind their good fortune.",
+      "technicalEffect": "Applies a divine influence (interventionType `coincidence`, Time sphere) to the target agent, biasing their decision-making until the influence decays.",
+      "effectSource": "template-ops"
     },
     {
       "id": "divine.self.focus",
@@ -2276,7 +2488,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "The god narrows its perception to a single point of intent, excluding all distraction until a crystalline clarity of purpose is achieved. The next divine action is performed from a state of absolute concentration — more likely to succeed, more likely to succeed well. The focus cannot be held for long; it must be used quickly."
+      "description": "The god narrows its perception to a single point of intent, excluding all distraction until a crystalline clarity of purpose is achieved. The next divine action is performed from a state of absolute concentration — more likely to succeed, more likely to succeed well. The focus cannot be held for long; it must be used quickly.",
+      "technicalEffect": "Stores a `nextActionTierBoost` (FOCUS_TIER_BOOST) on the ascendant node — the next action is promoted by that many rarity/attention tiers. Self-only.",
+      "effectSource": "template-ops"
     },
     {
       "id": "divine.self.reveal",
@@ -2303,7 +2517,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "The god briefly strips away the veils of immanence and allows its true nature to shine through — not through a mortal vessel but as raw divine presence. Mortals within range cannot look away and cannot pretend they did not see. The moment passes, but those who witnessed it carry the impression forward: reverence or terror, or both at once."
+      "description": "The god briefly strips away the veils of immanence and allows its true nature to shine through — not through a mortal vessel but as raw divine presence. Mortals within range cannot look away and cannot pretend they did not see. The moment passes, but those who witnessed it carry the impression forward: reverence or terror, or both at once.",
+      "technicalEffect": "Post-processed after resolution: manifests the ascendant's avatar openly at the avatar's hex, projecting a divine-presence effect from that location. No-op when the ascendant has no avatar.",
+      "effectSource": "engine-bridge"
     },
     {
       "id": "divine.afflict_bless",
@@ -2328,7 +2544,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Reaches directly into mortal flesh and spirit to reshape the target's physical condition by divine decree. The touch can grant extraordinary health and resilience, or inflict crippling suffering depending on the deity's intent. The change is immediate and unambiguous, leaving no doubt of divine involvement."
+      "description": "Reaches directly into mortal flesh and spirit to reshape the target's physical condition by divine decree. The touch can grant extraordinary health and resilience, or inflict crippling suffering depending on the deity's intent. The change is immediate and unambiguous, leaving no doubt of divine involvement.",
+      "technicalEffect": "Applies a divine influence (interventionType `afflict_bless`, Life sphere) to the target agent, biasing their decision-making until the influence decays.",
+      "effectSource": "template-ops"
     },
     {
       "id": "hex.scatter",
@@ -2355,7 +2573,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Unleashes a burst of divine martial force upon the gathered mortals of a territory, driving them apart with irresistible pressure. Agents flee, faction organization collapses, and the hex rapidly empties of coordinated activity. Mortals who are deeply bonded to each other or to the land resist the dispersal more stubbornly."
+      "description": "Unleashes a burst of divine martial force upon the gathered mortals of a territory, driving them apart with irresistible pressure. Agents flee, faction organization collapses, and the hex rapidly empties of coordinated activity. Mortals who are deeply bonded to each other or to the land resist the dispersal more stubbornly.",
+      "technicalEffect": "Engine bridge: on success, raises the hex-tile's `corruption` by HEX_SCATTER_CORRUPTION_DELTA. No effect on failure.",
+      "effectSource": "engine-bridge"
     },
     {
       "id": "hex.scorch_earth",
@@ -2382,7 +2602,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Gathers devastating divine force and turns it upon a hex, consuming resources and scarring the terrain beyond immediate use. The scorched land becomes a barrier to those who relied on its fertility and a statement of terrifying power. Recovery takes time and the damage is visible to all who pass through."
+      "description": "Gathers devastating divine force and turns it upon a hex, consuming resources and scarring the terrain beyond immediate use. The scorched land becomes a barrier to those who relied on its fertility and a statement of terrifying power. Recovery takes time and the damage is visible to all who pass through.",
+      "technicalEffect": "Engine bridge: on success, raises the hex-tile's `corruption` by HEX_SCORCH_EARTH_CORRUPTION_DELTA. No effect on failure.",
+      "effectSource": "engine-bridge"
     },
     {
       "id": "hex.smite",
@@ -2409,7 +2631,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Focuses terrible and absolute divine wrath upon a single mortal as an unmistakable demonstration of godly power and displeasure. The targeted individual is struck down by an overwhelming force that cannot be evaded by ordinary means. The act is public in its consequence and sends a clear message to those who witness its aftermath."
+      "description": "Focuses terrible and absolute divine wrath upon a single mortal as an unmistakable demonstration of godly power and displeasure. The targeted individual is struck down by an overwhelming force that cannot be evaded by ordinary means. The act is public in its consequence and sends a clear message to those who witness its aftermath.",
+      "technicalEffect": "Engine bridge: on success, raises the hex-tile's `corruption` by HEX_SMITE_CORRUPTION_DELTA. No effect on failure.",
+      "effectSource": "engine-bridge"
     },
     {
       "id": "hex.claim_resource",
@@ -2436,7 +2660,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Binds a discovered resource deposit to the deity's divine will, establishing a sustained extraction pipeline that generates essence income each tick. The claim is active as long as the binding holds and rivals do not seize control. A resource node under divine claim produces more reliably than unbound deposits."
+      "description": "Binds a discovered resource deposit to the deity's divine will, establishing a sustained extraction pipeline that generates essence income each tick. The claim is active as long as the binding holds and rivals do not seize control. A resource node under divine claim produces more reliably than unbound deposits.",
+      "technicalEffect": "Sustained: `ControlEffect` binding a discovered resource deposit — generates per-tick Matter income at a per-tick Matter cost. Persists until it lapses, is usurped (Gold ≥ t2), or destroyed (Stone ≥ t1).",
+      "effectSource": "control-spec"
     },
     {
       "id": "hex.cultivate",
@@ -2463,7 +2689,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Pours sustained life-essence into a territory in a continuous effort that encourages growth, fertility, and prosperity over time. The land flourishes under the ongoing divine attention, with settlements gaining prosperity faster and ecological recovery accelerating. Cultivation ends abruptly if the divine will is withdrawn or overcome."
+      "description": "Pours sustained life-essence into a territory in a continuous effort that encourages growth, fertility, and prosperity over time. The land flourishes under the ongoing divine attention, with settlements gaining prosperity faster and ecological recovery accelerating. Cultivation ends abruptly if the divine will is withdrawn or overcome.",
+      "technicalEffect": "Sustained: `ControlEffect` adding a small per-tick `divineInfluence` mutation at a per-tick Life cost, accelerating prosperity growth on the hex’s locations. Persists until it lapses or is destroyed (Iron ≥ t1).",
+      "effectSource": "control-spec"
     },
     {
       "id": "hex.seed_life",
@@ -2499,7 +2727,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Pours concentrated vital essence into barren or depleted ground, kick-starting ecological recovery where none should be possible. Greenery takes root and spreads, transforming hostile terrain into land capable of supporting life. The process takes time and the new growth requires protection while it establishes itself."
+      "description": "Pours concentrated vital essence into barren or depleted ground, kick-starting ecological recovery where none should be possible. Greenery takes root and spreads, transforming hostile terrain into land capable of supporting life. The process takes time and the new growth requires protection while it establishes itself.",
+      "technicalEffect": "Engine bridge: on success, raises the hex-tile's `divineInfluence` by HEX_SEED_INFLUENCE_DELTA. No effect on failure.",
+      "effectSource": "engine-bridge"
     },
     {
       "id": "hex.shift_season",
@@ -2526,7 +2756,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Breathes change across a territory, compressing or expanding the natural rhythms of growth and decay through divine influence. The land experiences the effects of a season shift — harvests, dormancy, or flooding — in accelerated time. The natural order reasserts itself gradually after the divine pressure lifts."
+      "description": "Breathes change across a territory, compressing or expanding the natural rhythms of growth and decay through divine influence. The land experiences the effects of a season shift — harvests, dormancy, or flooding — in accelerated time. The natural order reasserts itself gradually after the divine pressure lifts.",
+      "technicalEffect": "Engine bridge: on success, raises the hex-tile's `divineInfluence` by HEX_SHIFT_SEASON_INFLUENCE_DELTA. No effect on failure.",
+      "effectSource": "engine-bridge"
     },
     {
       "id": "hex.impose_decree",
@@ -2553,7 +2785,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Inscribes a divine behavioral constraint upon the fabric of a territory, establishing a law that agents within it feel compelled to obey as long as the decree holds. Highly independent agents resist the constraint, but most mortals comply with the behavioral directive without understanding its divine origin. A counter-decree from a rival divine can replace or nullify the original."
+      "description": "Inscribes a divine behavioral constraint upon the fabric of a territory, establishing a law that agents within it feel compelled to obey as long as the decree holds. Highly independent agents resist the constraint, but most mortals comply with the behavioral directive without understanding its divine origin. A counter-decree from a rival divine can replace or nullify the original.",
+      "technicalEffect": "Sustained: `ControlEffect` imposing a behavioural constraint on all agents at the hex (high-independence agents resist) at a per-tick Spirit cost. Usurp Shadow ≥ t3 / destroy Heart ≥ t2.",
+      "effectSource": "control-spec"
     },
     {
       "id": "hex.incite_exodus",
@@ -2580,7 +2814,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Plants seeds of fear and dissatisfaction in the minds of a territory's inhabitants, slowly poisoning their will to remain until departure feels like the only viable choice. The exodus builds gradually as the sense of dread spreads through the community. Populations with deep cultural roots resist the exodus longer before they finally break."
+      "description": "Plants seeds of fear and dissatisfaction in the minds of a territory's inhabitants, slowly poisoning their will to remain until departure feels like the only viable choice. The exodus builds gradually as the sense of dread spreads through the community. Populations with deep cultural roots resist the exodus longer before they finally break.",
+      "technicalEffect": "Engine bridge: on success, applies an `incite_exodus` Entropy influence (INCITE_EXODUS_STRENGTH, drift away from survival, toward ambition) to every agent on the hex.",
+      "effectSource": "engine-bridge"
     },
     {
       "id": "hex.install_champion",
@@ -2607,7 +2843,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Elevates a chosen agent to faction leadership through sustained divine backing, providing them with the political support and aura of authority needed to hold a difficult position. The champion remains in power as long as the divine support continues and rivals do not mount a successful coup. Abandoning the champion triggers betrayal or deposition."
+      "description": "Elevates a chosen agent to faction leadership through sustained divine backing, providing them with the political support and aura of authority needed to hold a difficult position. The champion remains in power as long as the divine support continues and rivals do not mount a successful coup. Abandoning the champion triggers betrayal or deposition.",
+      "technicalEffect": "Sustained: `ControlEffect` elevating the chosen agent to faction leadership under divine mandate at a per-tick Spirit cost; neglect (lapse) risks betrayal or deposition. Usurp Shadow ≥ t3 / destroy Iron ≥ t2.",
+      "effectSource": "control-spec"
     },
     {
       "id": "hex.seal_tomb",
@@ -2634,7 +2872,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Inscribes sealing wards across every entry point to a ruined site, establishing a divine barrier that prevents all interaction with the ruins while the seal holds. The denial is inexpensive to maintain and effective as a strategic play to keep the ruins inaccessible to rivals. The seal also blocks the deity's own agents from entering, requiring careful timing."
+      "description": "Inscribes sealing wards across every entry point to a ruined site, establishing a divine barrier that prevents all interaction with the ruins while the seal holds. The denial is inexpensive to maintain and effective as a strategic play to keep the ruins inaccessible to rivals. The seal also blocks the deity's own agents from entering, requiring careful timing.",
+      "technicalEffect": "Sustained: `ControlEffect` sealing the ruins so nobody (including the caster) may enter — a cheap denial play — at a per-tick Spirit cost. Persists until it lapses or is destroyed (Stone ≥ t2).",
+      "effectSource": "control-spec"
     },
     {
       "id": "hex.spark_encounter",
@@ -2661,7 +2901,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Weaves threads of fate together, drawing mortals toward an unexpected meeting that would not have happened without divine intervention. The convergence creates conditions for significant events as the gathered parties must respond to each other. The spark is subtle but its consequences can ripple outward in unexpected directions."
+      "description": "Weaves threads of fate together, drawing mortals toward an unexpected meeting that would not have happened without divine intervention. The convergence creates conditions for significant events as the gathered parties must respond to each other. The spark is subtle but its consequences can ripple outward in unexpected directions.",
+      "technicalEffect": "Engine bridge: on success, creates a `divine_spark` `event` node at the first location on the hex and links it with an `occurred_at` edge. No-op if the hex has no locations.",
+      "effectSource": "engine-bridge"
     },
     {
       "id": "hex.amplify_flow",
@@ -2688,7 +2930,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Feeds divine essence into the ambient magical currents of a hex, intensifying the power already flowing through it. Every location in the territory experiences a surge of magical saturation that heightens their existing properties. The amplification is temporary but can tip a balanced location into significant magical activity."
+      "description": "Feeds divine essence into the ambient magical currents of a hex, intensifying the power already flowing through it. Every location in the territory experiences a surge of magical saturation that heightens their existing properties. The amplification is temporary but can tip a balanced location into significant magical activity.",
+      "technicalEffect": "Engine bridge: on success, raises `magicalSaturation` on every location on the hex by AMPLIFY_FLOW_SATURATION_BOOST.",
+      "effectSource": "engine-bridge"
     },
     {
       "id": "hex.anchor_sphere",
@@ -2715,7 +2959,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Drives divine will into the magical substrate of a hex, anchoring the dominant sphere in place against natural drift and rival interference. As long as the anchor holds, the sphere influence cannot shift and competing Shift Dominion attempts are blocked. The anchor requires sustained spirit essence to maintain its grip on the flow."
+      "description": "Drives divine will into the magical substrate of a hex, anchoring the dominant sphere in place against natural drift and rival interference. As long as the anchor holds, the sphere influence cannot shift and competing Shift Dominion attempts are blocked. The anchor requires sustained spirit essence to maintain its grip on the flow.",
+      "technicalEffect": "Sustained: `ControlEffect` locking the hex's dominant sphere in place (blocks rival Shift Dominion) at a per-tick Spirit cost, held only while the hex's `divineInfluence` stays above its sustain threshold. Usurp Veil ≥ t3 / destroy Veil ≥ t2.",
+      "effectSource": "control-spec"
     },
     {
       "id": "hex.attune_leyline",
@@ -2742,7 +2988,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Reaches into the magical substrate of a hex and weaves new pathways for sphere energy where none existed before. The freshly ignited leyline begins channeling power through the territory, changing the local magical ecology. The new pathway is fragile at first and must be established against the resistance of existing flows."
+      "description": "Reaches into the magical substrate of a hex and weaves new pathways for sphere energy where none existed before. The freshly ignited leyline begins channeling power through the territory, changing the local magical ecology. The new pathway is fragile at first and must be established against the resistance of existing flows.",
+      "technicalEffect": "Engine bridge: on success, raises the hex-tile's `divineInfluence` by HEX_ATTUNE_LEYLINE_INFLUENCE_DELTA. No effect on failure.",
+      "effectSource": "engine-bridge"
     },
     {
       "id": "hex.bind_echoes",
@@ -2769,7 +3017,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Reaches into the ancient echoes saturating a ruined site and binds them to the deity's will, transforming the ruins into a sustained node of divine influence. Bound echoes resist rival interference and generate ongoing divine presence benefits while the binding holds. The echoes of the past break free when the binding is shattered or lapses from neglect."
+      "description": "Reaches into the ancient echoes saturating a ruined site and binds them to the deity's will, transforming the ruins into a sustained node of divine influence. Bound echoes resist rival interference and generate ongoing divine presence benefits while the binding holds. The echoes of the past break free when the binding is shattered or lapses from neglect.",
+      "technicalEffect": "Sustained: `ControlEffect` binding the hex’s ruins as an influence node (enables elder-magic tapping, resists rival interference) via a small per-tick `divineInfluence` mutation at a per-tick Spirit cost. Usurp Veil ≥ t2 / destroy Iron ≥ t2.",
+      "effectSource": "control-spec"
     },
     {
       "id": "hex.channel_current",
@@ -2796,7 +3046,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Bends the sphere currents flowing through adjacent hexes, redirecting their flow toward a specific territory and increasing its magical saturation over time. The sustained channel creates a growing concentration of divine influence that raises the territory's sphere score above what natural flow would produce. Rival divine action can seize or shatter the channel entirely."
+      "description": "Bends the sphere currents flowing through adjacent hexes, redirecting their flow toward a specific territory and increasing its magical saturation over time. The sustained channel creates a growing concentration of divine influence that raises the territory's sphere score above what natural flow would produce. Rival divine action can seize or shatter the channel entirely.",
+      "technicalEffect": "Sustained: `ControlEffect` redirecting sphere influence from adjacent hexes toward this one via a per-tick `divineInfluence` mutation, at a per-tick Spirit cost. Usurp Veil ≥ t3 / destroy Veil ≥ t2.",
+      "effectSource": "control-spec"
     },
     {
       "id": "hex.corrupt_land",
@@ -2823,7 +3075,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Reaches into the foundations of a hex with corrupting intent, seeding darkness that spreads through soil and stone over time. The land begins to wither and become hostile to those who dwell there. Left unchecked, the corruption transforms the hex into a blighted zone."
+      "description": "Reaches into the foundations of a hex with corrupting intent, seeding darkness that spreads through soil and stone over time. The land begins to wither and become hostile to those who dwell there. Left unchecked, the corruption transforms the hex into a blighted zone.",
+      "technicalEffect": "Engine bridge: on success, raises the hex-tile's `corruption` by HEX_CORRUPT_CORRUPTION_DELTA. No effect on failure.",
+      "effectSource": "engine-bridge"
     },
     {
       "id": "hex.desecrate",
@@ -2850,7 +3104,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Pours corrupting essence into ancient stones, twisting the character of the ruins from their original nature into something darker and more hostile. The desecrated site becomes a source of dangerous encounters aligned to entropic or chaotic spheres rather than the original historical theme. Protective wards from previous inhabitants may still hold against the corruption."
+      "description": "Pours corrupting essence into ancient stones, twisting the character of the ruins from their original nature into something darker and more hostile. The desecrated site becomes a source of dangerous encounters aligned to entropic or chaotic spheres rather than the original historical theme. Protective wards from previous inhabitants may still hold against the corruption.",
+      "technicalEffect": "Engine bridge: on success, raises the hex-tile's `corruption` by HEX_DESECRATE_CORRUPTION_DELTA. No effect on failure.",
+      "effectSource": "engine-bridge"
     },
     {
       "id": "hex.dispel_wild",
@@ -2877,7 +3133,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Gathers divine authority against the uncontrolled magical forces roiling through a territory and drives them out with decisive force. Hostile and chaotic sphere influences dissolve under the sustained divine effort, restoring a degree of magical calm to the hex. Deeply entrenched wild magic may require multiple applications to fully clear."
+      "description": "Gathers divine authority against the uncontrolled magical forces roiling through a territory and drives them out with decisive force. Hostile and chaotic sphere influences dissolve under the sustained divine effort, restoring a degree of magical calm to the hex. Deeply entrenched wild magic may require multiple applications to fully clear.",
+      "technicalEffect": "Engine bridge: on success, raises the hex-tile's `divineInfluence` by HEX_DISPEL_WILD_INFLUENCE_DELTA. No effect on failure.",
+      "effectSource": "engine-bridge"
     },
     {
       "id": "hex.sever_flow",
@@ -2904,7 +3162,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Reaches into the magical substrate and cuts every line of sphere power passing through a hex, creating a zone where no magic flows. Locations within the severed territory lose their magical properties and sphere-dependent abilities become ineffective. Deeper leylines may carry power through channels too buried to sever."
+      "description": "Reaches into the magical substrate and cuts every line of sphere power passing through a hex, creating a zone where no magic flows. Locations within the severed territory lose their magical properties and sphere-dependent abilities become ineffective. Deeper leylines may carry power through channels too buried to sever.",
+      "technicalEffect": "Engine bridge: on success, raises the hex-tile's `corruption` by HEX_SEVER_FLOW_CORRUPTION_DELTA. No effect on failure.",
+      "effectSource": "engine-bridge"
     },
     {
       "id": "hex.shift_dominion",
@@ -2931,7 +3191,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Grasps the threads of sphere influence in a hex and begins reweaving the magical balance, elevating one sphere at the expense of another. The dominant sphere shifts as divine will redirects the flow of power through the territory. Deeply entrenched sphere dominance resists the rebalancing and may snap back."
+      "description": "Grasps the threads of sphere influence in a hex and begins reweaving the magical balance, elevating one sphere at the expense of another. The dominant sphere shifts as divine will redirects the flow of power through the territory. Deeply entrenched sphere dominance resists the rebalancing and may snap back.",
+      "technicalEffect": "Engine bridge: on success, on each location on the hex boosts the `resonance` sphere-influence by SHIFT_DOMINION_BOOST and reduces the dominant sphere by SHIFT_DOMINION_REDUCTION (via location `update_node` ops).",
+      "effectSource": "engine-bridge"
     },
     {
       "id": "hex.tap_source",
@@ -2958,7 +3220,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Weaves a sustained siphon into a sphere-aligned source node, drawing essence from the concentrated flow continuously as long as the connection holds. The income generated exceeds the maintenance cost, making the tap a net positive investment that compounds over time. Rivals who discover the siphon may attempt to seize or destroy the source."
+      "description": "Weaves a sustained siphon into a sphere-aligned source node, drawing essence from the concentrated flow continuously as long as the connection holds. The income generated exceeds the maintenance cost, making the tap a net positive investment that compounds over time. Rivals who discover the siphon may attempt to seize or destroy the source.",
+      "technicalEffect": "Sustained: `ControlEffect` siphoning a sphere-aligned source — generates per-tick Spirit income at a smaller per-tick Spirit cost. Persists until it lapses, is usurped (Veil ≥ t2, Spirit-aligned), or destroyed (Iron ≥ t2).",
+      "effectSource": "control-spec"
     },
     {
       "id": "hex.ward_against_deep",
@@ -2985,7 +3249,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Weaves a protective ward around an agent who is venturing into dangerous ruins, wrapping them in sustained divine protection against the elder-magic dangers lurking within. Encounter difficulty in the ruins is reduced for the warded agent as long as the divine protection holds. The ward is torn apart by sufficiently ancient or powerful forces in the deep."
+      "description": "Weaves a protective ward around an agent who is venturing into dangerous ruins, wrapping them in sustained divine protection against the elder-magic dangers lurking within. Encounter difficulty in the ruins is reduced for the warded agent as long as the divine protection holds. The ward is torn apart by sufficiently ancient or powerful forces in the deep.",
+      "technicalEffect": "Sustained: `ControlEffect` wrapping the exploring agent so ruin encounter danger is reduced for them, at a per-tick Spirit cost. Persists until it lapses or is destroyed (Veil ≥ t3).",
+      "effectSource": "control-spec"
     },
     {
       "id": "hex.send_herald",
@@ -3012,7 +3278,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Shapes a fragment of divine will into mortal form and sends it forth into the world as a herald bearing the deity's message and intent. The herald is a living agent aligned to the deity's sphere, capable of independent action in pursuit of the divine agenda. Failed manifestation leaves the divine essence formless and dissipated."
+      "description": "Shapes a fragment of divine will into mortal form and sends it forth into the world as a herald bearing the deity's message and intent. The herald is a living agent aligned to the deity's sphere, capable of independent action in pursuit of the divine agenda. Failed manifestation leaves the divine essence formless and dissipated.",
+      "technicalEffect": "Engine bridge: on success, spawns a herald `agent` node at a location on the hex, places it there (`located_at`), and threads it to the actor (auto-resolve tier-1 thread).",
+      "effectSource": "engine-bridge"
     },
     {
       "id": "hex.shepherd_flock",
@@ -3039,7 +3307,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Extends sustained divine presence over the people of a territory, applying constant gentle pressure that draws mortal hearts toward worship of the deity's sphere. The conversion pressure accumulates over time, gradually shifting agent devotion and cultural alignment. The shepherd must maintain the effort or the flock drifts back toward independence."
+      "description": "Extends sustained divine presence over the people of a territory, applying constant gentle pressure that draws mortal hearts toward worship of the deity's sphere. The conversion pressure accumulates over time, gradually shifting agent devotion and cultural alignment. The shepherd must maintain the effort or the flock drifts back toward independence.",
+      "technicalEffect": "Sustained: `ControlEffect` applying steady conversion pressure — agents on the hex drift toward worship of the ascendant’s sphere — at a per-tick Spirit cost. Usurp Heart ≥ t2 (Spirit-aligned) / destroy Shadow ≥ t2.",
+      "effectSource": "control-spec"
     },
     {
       "id": "hex.stir_people",
@@ -3066,7 +3336,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Whispers into the dreams and waking thoughts of a population, gently shifting the collective emotional and cultural orientation of the territory. Faction dispositions realign and cultural values drift toward or away from the deity's sphere as the subtle influence accumulates. Populations with strong cultural identity resist the stirring more effectively."
+      "description": "Whispers into the dreams and waking thoughts of a population, gently shifting the collective emotional and cultural orientation of the territory. Faction dispositions realign and cultural values drift toward or away from the deity's sphere as the subtle influence accumulates. Populations with strong cultural identity resist the stirring more effectively.",
+      "technicalEffect": "Engine bridge: on success, applies a `stir_people` Spirit influence (axiological drift toward novelty, away from ruthlessness) to every agent on the hex.",
+      "effectSource": "engine-bridge"
     },
     {
       "id": "hex.strengthen_thread",
@@ -3093,7 +3365,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Pours sustained divine energy through the thread connecting the deity to an agent, amplifying their capabilities in a flexible reach domain. The enhanced agent performs beyond their normal limits as long as the divine energy flows. The thread returns to its natural state when the enhancement lapses or is forcibly severed."
+      "description": "Pours sustained divine energy through the thread connecting the deity to an agent, amplifying their capabilities in a flexible reach domain. The enhanced agent performs beyond their normal limits as long as the divine energy flows. The thread returns to its natural state when the enhancement lapses or is forcibly severed.",
+      "technicalEffect": "Sustained: `ControlEffect` enhancing the threaded agent's capability in a flexible reach at a per-tick Spirit cost. Persists until it lapses or is destroyed (Veil ≥ t2).",
+      "effectSource": "control-spec"
     },
     {
       "id": "hex.summon_congregation",
@@ -3120,7 +3394,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Sends a divine summons across the land, drawing agents who are receptive to the deity's sphere toward a specific gathering point. Those who answer the call converge from adjacent territories, their arrivals feeling to them like personal choice rather than divine compulsion. Mortals with strong opposing sphere alignment are immune to the summons."
+      "description": "Sends a divine summons across the land, drawing agents who are receptive to the deity's sphere toward a specific gathering point. Those who answer the call converge from adjacent territories, their arrivals feeling to them like personal choice rather than divine compulsion. Mortals with strong opposing sphere alignment are immune to the summons.",
+      "technicalEffect": "Engine bridge: on success, applies a short `summon_congregation` Spirit influence (SUMMON_CONGREGATION_STRENGTH) to every agent on the hex, tagging them `summoned`.",
+      "effectSource": "engine-bridge"
     },
     {
       "id": "hex.attune_thread",
@@ -3147,7 +3423,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Attunes the divine thread connecting the deity to a threaded agent so that it vibrates with sphere-sensing capability, granting passive awareness of sphere currents wherever the agent travels. The attuned agent becomes an unwitting sensor reporting the magical landscape of every hex they enter. The attunement is severed if the thread itself is destroyed."
+      "description": "Attunes the divine thread connecting the deity to a threaded agent so that it vibrates with sphere-sensing capability, granting passive awareness of sphere currents wherever the agent travels. The attuned agent becomes an unwitting sensor reporting the magical landscape of every hex they enter. The attunement is severed if the thread itself is destroyed.",
+      "technicalEffect": "Sustained: `ControlEffect` on the threaded agent granting passive sphere-perception wherever they walk, at a per-tick Spirit cost. Persists until it lapses or is destroyed (Veil ≥ t2).",
+      "effectSource": "control-spec"
     },
     {
       "id": "hex.bestow_vision",
@@ -3174,7 +3452,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Reaches through a divine thread to plant a vivid vision of purpose in a mortal mind, shaping their ambitions and drawing their attention toward a specific goal the deity wishes pursued. The agent wakes with a burning conviction and a clear image of what they must accomplish. Minds with strong resistance dismiss the vision as nightmare."
+      "description": "Reaches through a divine thread to plant a vivid vision of purpose in a mortal mind, shaping their ambitions and drawing their attention toward a specific goal the deity wishes pursued. The agent wakes with a burning conviction and a clear image of what they must accomplish. Minds with strong resistance dismiss the vision as nightmare.",
+      "technicalEffect": "Engine bridge: on success, applies a strong `bestow_vision` Mind influence (BESTOW_VISION_STRENGTH, drift toward courage) to the first agent on the hex.",
+      "effectSource": "engine-bridge"
     },
     {
       "id": "hex.compel_exploration",
@@ -3201,7 +3481,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Weaves a sustained compulsion into the divine threads of nearby agents, creating an irresistible drive to seek out and explore ruins in the surrounding area. The compelled agents pursue this goal with unusual persistence, overriding competing ambitions for as long as the compulsion holds. Strong-willed individuals may shake off the compulsion faster than expected."
+      "description": "Weaves a sustained compulsion into the divine threads of nearby agents, creating an irresistible drive to seek out and explore ruins in the surrounding area. The compelled agents pursue this goal with unusual persistence, overriding competing ambitions for as long as the compulsion holds. Strong-willed individuals may shake off the compulsion faster than expected.",
+      "technicalEffect": "Sustained: `ControlEffect` compelling threaded agents toward the ruins at a per-tick Mind cost. Persists until it lapses or is destroyed (Heart ≥ t2).",
+      "effectSource": "control-spec"
     },
     {
       "id": "hex.dowse_resources",
@@ -3228,7 +3510,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Sends divine perception deep into the earth to locate and identify valuable resources hidden beneath the surface. Ore veins, underground water, and buried deposits shimmer into divine sight. Partial success reveals the presence of resources without pinpointing their exact nature or extent."
+      "description": "Sends divine perception deep into the earth to locate and identify valuable resources hidden beneath the surface. Ore veins, underground water, and buried deposits shimmer into divine sight. Partial success reveals the presence of resources without pinpointing their exact nature or extent.",
+      "technicalEffect": "Engine bridge (read): on success, reveals the hex’s `land` narrative layer and uncovers hidden resource sublocations. No tile mutation.",
+      "effectSource": "engine-bridge"
     },
     {
       "id": "hex.forge_seer_token",
@@ -3255,7 +3539,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Condenses divine perceptive power into a physical vessel, creating an object that carries the gift of sphere awareness wherever its bearer travels. The token hums with latent sight, making the invisible sphere currents of any location apparent to a trained eye. Failure causes the essence to dissipate before it can crystallize into form."
+      "description": "Condenses divine perceptive power into a physical vessel, creating an object that carries the gift of sphere awareness wherever its bearer travels. The token hums with latent sight, making the invisible sphere currents of any location apparent to a trained eye. Failure causes the essence to dissipate before it can crystallize into form.",
+      "technicalEffect": "Engine bridge: on success, spawns a divination-focus `artifact` node ('Seer's Token') and binds it to the actor via a `possessed_by` edge.",
+      "effectSource": "engine-bridge"
     },
     {
       "id": "hex.mark_ground",
@@ -3282,7 +3568,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Inscribes a subtle divine mark into the earth of a ruined site that is invisible to casual observers but irresistible to curious and questing minds. Agents who pass through the area feel an unexplained pull toward investigation that overrides other priorities. The mark fades if the ground rejects the inscription before it sets."
+      "description": "Inscribes a subtle divine mark into the earth of a ruined site that is invisible to casual observers but irresistible to curious and questing minds. Agents who pass through the area feel an unexplained pull toward investigation that overrides other priorities. The mark fades if the ground rejects the inscription before it sets.",
+      "technicalEffect": "Engine bridge: on success, raises the hex-tile's `explorationAttraction` by MARK_GROUND_ATTRACTION_STRENGTH, drawing wandering agents toward it.",
+      "effectSource": "engine-bridge"
     },
     {
       "id": "hex.plant_dream",
@@ -3309,7 +3597,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Reaches through a divine thread to plant vivid visions of ancient ruins and forgotten places in the sleeping mind of a mortal. The agent wakes haunted by compelling images of crumbling towers and sealed vaults, feeling an inexplicable drive to seek the ruins out. The dream is too alien for some minds and they reject it as incoherent nightmare."
+      "description": "Reaches through a divine thread to plant vivid visions of ancient ruins and forgotten places in the sleeping mind of a mortal. The agent wakes haunted by compelling images of crumbling towers and sealed vaults, feeling an inexplicable drive to seek the ruins out. The dream is too alien for some minds and they reject it as incoherent nightmare.",
+      "technicalEffect": "Engine bridge: on success, applies a `plant_dream` Mind influence to the first agent on the hex and grants them a temporary `ruin_seeker` (‘Dream of Buried Places’) trait that expires after a set number of ticks.",
+      "effectSource": "engine-bridge"
     },
     {
       "id": "hex.read_currents",
@@ -3336,7 +3626,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Opens the inner eye to the full depth of magical flows coursing through a hex, reading sphere intensities and their interactions in precise detail. The soul of the land is laid bare — its magical composition, dominant influences, and hidden undercurrents made legible. Turbulent or conflicting flows can obscure the full picture."
+      "description": "Opens the inner eye to the full depth of magical flows coursing through a hex, reading sphere intensities and their interactions in precise detail. The soul of the land is laid bare — its magical composition, dominant influences, and hidden undercurrents made legible. Turbulent or conflicting flows can obscure the full picture.",
+      "technicalEffect": "Engine bridge (read): on success, reveals the hex’s `soul` narrative layer and uncovers hidden sites. No tile mutation.",
+      "effectSource": "engine-bridge"
     },
     {
       "id": "hex.read_stones",
@@ -3363,7 +3655,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Presses divine perception deep into ancient ruins to read the memory encoded in the stone itself, recovering a detailed picture of what once stood and what happened here. Every chamber, hidden passage, and trace of elder magic is revealed to the searching gaze. Too many ages of accumulated forgetting can fragment the memories beyond recovery."
+      "description": "Presses divine perception deep into ancient ruins to read the memory encoded in the stone itself, recovering a detailed picture of what once stood and what happened here. Every chamber, hidden passage, and trace of elder magic is revealed to the searching gaze. Too many ages of accumulated forgetting can fragment the memories beyond recovery.",
+      "technicalEffect": "Engine bridge (read): on success, reveals the hex’s `ruins` narrative layer (full detail) and uncovers hidden ruin sites. No tile mutation.",
+      "effectSource": "engine-bridge"
     },
     {
       "id": "hex.rewrite_history",
@@ -3390,7 +3684,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Reaches into the memory-traces saturating ancient ruins and reshapes what happened here, overwriting the historical record that the stones remember and mortals find. The legacy of the site shifts to tell a new story aligned with the deity's purposes. The oldest and strongest memories resist revision, anchored too deeply to displace."
+      "description": "Reaches into the memory-traces saturating ancient ruins and reshapes what happened here, overwriting the historical record that the stones remember and mortals find. The legacy of the site shifts to tell a new story aligned with the deity's purposes. The oldest and strongest memories resist revision, anchored too deeply to displace.",
+      "technicalEffect": "Engine bridge: on success, updates the target location's `culturalLegacy` to `rewritten` and stamps the rewrite tick.",
+      "effectSource": "engine-bridge"
     },
     {
       "id": "hex.survey",
@@ -3417,7 +3713,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Casts divine sight across a territory to catalogue its features, resources, inhabitants, and notable characteristics. The survey reveals both the land layer and the people layer in a single act of divine perception — terrain, resources, faction presence, and mortal mood all become legible. Partial failures still yield fragments of useful information."
+      "description": "Casts divine sight across a territory to catalogue its features, resources, inhabitants, and notable characteristics. The survey reveals both the land layer and the people layer in a single act of divine perception — terrain, resources, faction presence, and mortal mood all become legible. Partial failures still yield fragments of useful information.",
+      "technicalEffect": "Engine bridge (read): on success, reveals the `land` and `people` narrative layers of the hex (hexRevelation map) and uncovers any hidden sublocations on it. No tile mutation.",
+      "effectSource": "engine-bridge"
     },
     {
       "id": "hex.whisper_intuition",
@@ -3444,7 +3742,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Sends a divine hunch along a thread to an agent, nudging their instincts toward the hidden dangers and rewards of a nearby ruin site. The agent proceeds with an uncanny sense of what to avoid and where to look, as if they have been here before. The whisper is subtle enough that most mortals mistake it for their own cleverness."
+      "description": "Sends a divine hunch along a thread to an agent, nudging their instincts toward the hidden dangers and rewards of a nearby ruin site. The agent proceeds with an uncanny sense of what to avoid and where to look, as if they have been here before. The whisper is subtle enough that most mortals mistake it for their own cleverness.",
+      "technicalEffect": "Engine bridge: on success, writes a time-limited `divineHunch` (WHISPER_INTUITION_HUNCH_STRENGTH) onto the thread edge to the first agent on the hex, and reveals the hex’s `ruins` layer partially. No-op without a threaded agent.",
+      "effectSource": "engine-bridge"
     },
     {
       "id": "hex.bury_past",
@@ -3471,7 +3771,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Commands the ground to close over ruins entirely, swallowing them into darkness and removing their presence from the accessible landscape. The buried ruins become inaccessible to mortals and their resources are denied to all parties indefinitely. Vast or deeply rooted ruins may prove too stubborn to fully conceal."
+      "description": "Commands the ground to close over ruins entirely, swallowing them into darkness and removing their presence from the accessible landscape. The buried ruins become inaccessible to mortals and their resources are denied to all parties indefinitely. Vast or deeply rooted ruins may prove too stubborn to fully conceal.",
+      "technicalEffect": "Engine bridge: on success, raises the hex-tile's `corruption` by HEX_BURY_PAST_CORRUPTION_DELTA. No effect on failure.",
+      "effectSource": "engine-bridge"
     },
     {
       "id": "hex.raise_landmark",
@@ -3498,7 +3800,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Reaches deep into the foundations of a hex and shapes the earth itself, raising a permanent landmark from the ground by divine will. The newly created formation stands as a visible marker that mortals will recognize and navigate by for generations. Resistance from the earth requires immense effort to overcome."
+      "description": "Reaches deep into the foundations of a hex and shapes the earth itself, raising a permanent landmark from the ground by divine will. The newly created formation stands as a visible marker that mortals will recognize and navigate by for generations. Resistance from the earth requires immense effort to overcome.",
+      "technicalEffect": "Engine bridge: on success, raises the hex-tile's `divineInfluence` by HEX_RAISE_LANDMARK_INFLUENCE_DELTA. No effect on failure.",
+      "effectSource": "engine-bridge"
     },
     {
       "id": "hex.rend_earth",
@@ -3525,7 +3829,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Seizes the very bones of the ground and tears them apart with catastrophic force, transforming stable terrain into broken and impassable wreckage. The geological violence is irreversible on any human timescale and leaves the territory fundamentally altered. Only the most extreme divine effort can break the earth in this way."
+      "description": "Seizes the very bones of the ground and tears them apart with catastrophic force, transforming stable terrain into broken and impassable wreckage. The geological violence is irreversible on any human timescale and leaves the territory fundamentally altered. Only the most extreme divine effort can break the earth in this way.",
+      "technicalEffect": "Engine bridge: on success, raises the hex-tile's `corruption` by HEX_REND_EARTH_CORRUPTION_DELTA (the heaviest one-shot corruption delta). No effect on failure.",
+      "effectSource": "engine-bridge"
     },
     {
       "id": "hex.restore_fragment",
@@ -3552,7 +3858,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Undertakes the painstaking work of reassembling a portion of ruins, using divine will to guide the reconstruction of shattered stone and faded enchantment. The restored fragment becomes a functional sublocation that bridges the ancient past and the present day. Damage that is too deep or too diffuse resists even divine restoration efforts."
+      "description": "Undertakes the painstaking work of reassembling a portion of ruins, using divine will to guide the reconstruction of shattered stone and faded enchantment. The restored fragment becomes a functional sublocation that bridges the ancient past and the present day. Damage that is too deep or too diffuse resists even divine restoration efforts.",
+      "technicalEffect": "Engine bridge: on success, spawns a restored-ruin `sublocation` node on the hex and places it via a `located_at` edge.",
+      "effectSource": "engine-bridge"
     },
     {
       "id": "hex.bless_land",
@@ -3579,7 +3887,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Extends divine favor over an entire hex, infusing the soil with benevolent energy that encourages growth and prosperity. The land responds with increased fertility and improved conditions for those who dwell there. The blessing persists as a gentle background influence that enriches the territory."
+      "description": "Extends divine favor over an entire hex, infusing the soil with benevolent energy that encourages growth and prosperity. The land responds with increased fertility and improved conditions for those who dwell there. The blessing persists as a gentle background influence that enriches the territory.",
+      "technicalEffect": "Engine bridge: on success, raises the target hex-tile's `divineInfluence` by HEX_BLESS_INFLUENCE_DELTA (a `HexMutation` applied in phaseHexState). No effect on failure.",
+      "effectSource": "engine-bridge"
     },
     {
       "id": "hex.claim_dominion",
@@ -3606,7 +3916,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Drives divine will deep into the land, proclaiming it as sovereign divine territory and sinking the deity's sphere influence into the earth's foundations as a sustained presence. The claim provides ongoing divine influence that resists natural decay and competing interference. Maintaining the claim requires continuous expenditure of sphere essence."
+      "description": "Drives divine will deep into the land, proclaiming it as sovereign divine territory and sinking the deity's sphere influence into the earth's foundations as a sustained presence. The claim provides ongoing divine influence that resists natural decay and competing interference. Maintaining the claim requires continuous expenditure of sphere essence.",
+      "technicalEffect": "Sustained: spawns a `ControlEffect` that proclaims divine dominion, adding a small per-tick `divineInfluence` mutation at a per-tick Spirit cost. Persists until essence lapses or a rival usurps (Star ≥ t2) / destroys (Iron ≥ t1) it.",
+      "effectSource": "control-spec"
     },
     {
       "id": "hex.consecrate_past",
@@ -3633,7 +3945,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Reaches into ancient ruins and suffuses them with a specific sphere's divine influence, reinterpreting their historical legacy through the deity's domain. Encounters spawned from the ruins begin reflecting the consecrated sphere's themes rather than the ruins' original character. The old powers within the structure may resist being claimed for a new purpose."
+      "description": "Reaches into ancient ruins and suffuses them with a specific sphere's divine influence, reinterpreting their historical legacy through the deity's domain. Encounters spawned from the ruins begin reflecting the consecrated sphere's themes rather than the ruins' original character. The old powers within the structure may resist being claimed for a new purpose.",
+      "technicalEffect": "Engine bridge: on success, raises the hex-tile's `divineInfluence` by HEX_CONSECRATE_PAST_INFLUENCE_DELTA. No effect on failure.",
+      "effectSource": "engine-bridge"
     },
     {
       "id": "hex.forge_instrument",
@@ -3660,7 +3974,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Shapes raw divine power into a physical instrument of focused purpose, imbuing it with the essence of a specific reach domain. The resulting tool amplifies its bearer's capabilities in that domain beyond natural limits. The forging is demanding and failure shatters the incomplete instrument entirely."
+      "description": "Shapes raw divine power into a physical instrument of focused purpose, imbuing it with the essence of a specific reach domain. The resulting tool amplifies its bearer's capabilities in that domain beyond natural limits. The forging is demanding and failure shatters the incomplete instrument entirely.",
+      "technicalEffect": "Engine bridge: on success, spawns a ritual-focus `artifact` node ('Divine Instrument') bound to the actor via a `possessed_by` edge.",
+      "effectSource": "engine-bridge"
     },
     {
       "id": "loc.fortify",
@@ -3693,7 +4009,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Breathes martial purpose into the walls of a fortification, strengthening existing defenses through divine will and physical effort. Garrison morale improves and structural weaknesses are reinforced against assault. The effect is most powerful on sites already dedicated to defense."
+      "description": "Breathes martial purpose into the walls of a fortification, strengthening existing defenses through divine will and physical effort. Garrison morale improves and structural weaknesses are reinforced against assault. The effect is most powerful on sites already dedicated to defense.",
+      "technicalEffect": "INTENDED: harden a settlement against attack, raising its defensive standing. NOT YET WIRED — empty step ops, no engine bridge; deducts essence and narrates only (THR-605).",
+      "effectSource": "none"
     },
     {
       "id": "loc.bless_harvest",
@@ -3726,7 +4044,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Pours life-essence into a settlement's agricultural cycle. The fields swell beyond their season; grain ripens too fast to be reasoned with. Mortals will not say it is the god who did this. They will say it was a good year."
+      "description": "Pours life-essence into a settlement's agricultural cycle. The fields swell beyond their season; grain ripens too fast to be reasoned with. Mortals will not say it is the god who did this. They will say it was a good year.",
+      "technicalEffect": "On success, raises the location's `prosperity` and `populationHealth` by named deltas (LOC_BLESS_HARVEST_*) for LOC_BLESS_HARVEST_DURATION_TICKS.",
+      "effectSource": "template-ops"
     },
     {
       "id": "loc.open_markets",
@@ -3760,7 +4080,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Catalyses trade through a settlement's public square. Stalls multiply by the hour; merchants who never knew each other shake hands. The risk is that a thieves' guild has been waiting for the square to wake up too."
+      "description": "Catalyses trade through a settlement's public square. Stalls multiply by the hour; merchants who never knew each other shake hands. The risk is that a thieves' guild has been waiting for the square to wake up too.",
+      "technicalEffect": "On success, raises the location's `prosperity` and lowers its `unrest` by named deltas (LOC_OPEN_MARKETS_*).",
+      "effectSource": "template-ops"
     },
     {
       "id": "loc.curse_roads",
@@ -3794,7 +4116,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Hexes the trade and travel arteries connecting a settlement to the wider region. The roads still exist — they are simply no longer to be trusted. Caravans turn back; merchants stay home; the settlement begins to starve on its own pride."
+      "description": "Hexes the trade and travel arteries connecting a settlement to the wider region. The roads still exist — they are simply no longer to be trusted. Caravans turn back; merchants stay home; the settlement begins to starve on its own pride.",
+      "technicalEffect": "On success, raises the location's `unrest` by a named delta (LOC_CURSE_ROADS_UNREST_DELTA) for LOC_CURSE_ROADS_DURATION_TICKS.",
+      "effectSource": "template-ops"
     },
     {
       "id": "loc.incite_unrest",
@@ -3821,7 +4145,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Stirs whispers of grievance through a settlement, amplifying existing frustrations and fanning them into open discontent. Tensions rise as the people begin to question those who rule them and challenge the established order. Unrest that goes unaddressed can spiral into open rebellion."
+      "description": "Stirs whispers of grievance through a settlement, amplifying existing frustrations and fanning them into open discontent. Tensions rise as the people begin to question those who rule them and challenge the established order. Unrest that goes unaddressed can spiral into open rebellion.",
+      "technicalEffect": "On success, raises the target location's `unrest` by a named delta, pushing it toward defection/sacking thresholds read elsewhere.",
+      "effectSource": "template-ops"
     },
     {
       "id": "sub.trap",
@@ -3848,7 +4174,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Lays a divine snare within a sublocation that waits patiently for the intended victim to trigger it. The trap is invisible to mortal senses and activates with precision when the right conditions are met. An improperly anchored snare unravels before it can serve its purpose."
+      "description": "Lays a divine snare within a sublocation that waits patiently for the intended victim to trigger it. The trap is invisible to mortal senses and activates with precision when the right conditions are met. An improperly anchored snare unravels before it can serve its purpose.",
+      "technicalEffect": "INTENDED: lay a hidden snare in a sublocation that triggers on the intended victim. NOT YET WIRED — empty step ops, no engine bridge; deducts essence and narrates only (THR-605).",
+      "effectSource": "none"
     },
     {
       "id": "loc.sicken_wells",
@@ -3881,7 +4209,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Folds a divine affliction into a settlement's water supply. Children stop drinking by the third morning; healers will call it the well-fever and not yet think to ask who taught the well to be hungry. Reversible by natural decay and counter-blessing."
+      "description": "Folds a divine affliction into a settlement's water supply. Children stop drinking by the third morning; healers will call it the well-fever and not yet think to ask who taught the well to be hungry. Reversible by natural decay and counter-blessing.",
+      "technicalEffect": "On success, lowers the location's `populationHealth` and `magicalSaturation` and raises `unrest` by named deltas (LOC_SICKEN_WELLS_*) for LOC_SICKEN_WELLS_DURATION_TICKS.",
+      "effectSource": "template-ops"
     },
     {
       "id": "loc.ward",
@@ -3908,7 +4238,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Weaves protective runes into the foundations of a place, erecting an invisible barrier against hostile forces. The ward draws on magical saturation to sustain itself and deflects mundane and supernatural threats alike. The protection holds until the inscribed runes are broken or the magical substrate weakens."
+      "description": "Weaves protective runes into the foundations of a place, erecting an invisible barrier against hostile forces. The ward draws on magical saturation to sustain itself and deflects mundane and supernatural threats alike. The protection holds until the inscribed runes are broken or the magical substrate weakens.",
+      "technicalEffect": "On success, raises the target location's `magicalSaturation` by a named delta (LOC_… ward constant). One-shot property mutation.",
+      "effectSource": "template-ops"
     },
     {
       "id": "sub.sanctify",
@@ -3940,7 +4272,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Consecrates a sublocation to divine purpose through extended rites that suffuse the space with spiritual energy. The sanctified site becomes a point of divine presence that draws the faithful and repels hostile forces. The consecration persists until deliberately broken or the sphere influence drains entirely."
+      "description": "Consecrates a sublocation to divine purpose through extended rites that suffuse the space with spiritual energy. The sanctified site becomes a point of divine presence that draws the faithful and repels hostile forces. The consecration persists until deliberately broken or the sphere influence drains entirely.",
+      "technicalEffect": "INTENDED: consecrate a sublocation into a lasting point of divine presence that draws the faithful and repels hostiles. NOT YET WIRED — empty step ops, no engine bridge (only a sphere-alignment availability gate); deducts essence and narrates only (THR-605).",
+      "effectSource": "none"
     },
     {
       "id": "loc.awaken_spirit",
@@ -3974,7 +4308,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Stirs the spirit of the settlement itself into present awareness. The place remembers — its founders, its lost laws, its half-forgotten customs. v1 raises divine presence sharply and marks the place; spawning the embodied place_spirit actor is filed as a follow-up."
+      "description": "Stirs the spirit of the settlement itself into present awareness. The place remembers — its founders, its lost laws, its half-forgotten customs. v1 raises divine presence sharply and marks the place; spawning the embodied place_spirit actor is filed as a follow-up.",
+      "technicalEffect": "On success, raises the location's `divinePresence` by a named delta (LOC_AWAKEN_SPIRIT_PRESENCE_DELTA).",
+      "effectSource": "template-ops"
     },
     {
       "id": "sub.sanctify_tavern",
@@ -4001,7 +4337,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Breathes a divine warmth into a tavern — the hearth burns brighter, the ale flows sweeter, and travelers feel an inexplicable pull toward its doors. The blessing concentrates social energy for a time, drawing agents from neighboring hexes and amplifying the social encounter rate for all present."
+      "description": "Breathes a divine warmth into a tavern — the hearth burns brighter, the ale flows sweeter, and travelers feel an inexplicable pull toward its doors. The blessing concentrates social energy for a time, drawing agents from neighboring hexes and amplifying the social encounter rate for all present.",
+      "technicalEffect": "INTENDED: bless a tavern to concentrate social energy — drawing agents from neighbouring hexes and amplifying the local social-encounter rate. NOT YET WIRED — empty step ops, no engine bridge; deducts essence and narrates only (THR-605).",
+      "effectSource": "none"
     },
     {
       "id": "sub.vision",
@@ -4028,7 +4366,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Casts divine sight deep into a sublocation to read the history and hidden nature encoded in its physical fabric. Ancient events, concealed mechanisms, and supernatural presences reveal themselves to the searching gaze. Places that actively resist scrutiny remain opaque even under sustained divine attention."
+      "description": "Casts divine sight deep into a sublocation to read the history and hidden nature encoded in its physical fabric. Ancient events, concealed mechanisms, and supernatural presences reveal themselves to the searching gaze. Places that actively resist scrutiny remain opaque even under sustained divine attention.",
+      "technicalEffect": "INTENDED: read a sublocation’s history and hidden nature. NOT YET WIRED — empty step ops, no engine bridge; deducts essence and narrates only (THR-605).",
+      "effectSource": "none"
     },
     {
       "id": "loc.place_of_power",
@@ -4055,7 +4395,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Channels divine essence deep into the ley lines beneath a location, transforming it into a nexus of concentrated magical energy. Practitioners working here find their abilities heightened and their rituals more potent. The awakening draws the attention of those sensitive to such flows of power."
+      "description": "Channels divine essence deep into the ley lines beneath a location, transforming it into a nexus of concentrated magical energy. Practitioners working here find their abilities heightened and their rituals more potent. The awakening draws the attention of those sensitive to such flows of power.",
+      "technicalEffect": "On success, raises the target location's `magicalSaturation` by a larger named delta, seeding it toward Place-of-Power status.",
+      "effectSource": "template-ops"
     },
     {
       "id": "loc.sanctify_square",
@@ -4089,7 +4431,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Consecrates a settlement's public ground to divine presence. The square ceases to be merely a place where people meet — it becomes a place where they remember to mean what they say. Faith-related encounters fire more often here; threads to mortals on this hex deepen."
+      "description": "Consecrates a settlement's public ground to divine presence. The square ceases to be merely a place where people meet — it becomes a place where they remember to mean what they say. Faith-related encounters fire more often here; threads to mortals on this hex deepen.",
+      "technicalEffect": "On success, raises the location's `magicalSaturation` and `divinePresence` by named deltas — establishing a minor sacred site.",
+      "effectSource": "template-ops"
     },
     {
       "id": "whisper_insight",
@@ -4116,7 +4460,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Sends a whisper into the mortal's inner world, touching the deepest values and motivations that define who they are and what they truly want. The truth that surfaces reveals not what the person does but what they care about, providing a window into their decision-making from the inside. Closed or defended minds hold their inner world private against the whisper."
+      "description": "Sends a whisper into the mortal's inner world, touching the deepest values and motivations that define who they are and what they truly want. The truth that surfaces reveals not what the person does but what they care about, providing a window into their decision-making from the inside. Closed or defended minds hold their inner world private against the whisper.",
+      "technicalEffect": "On success, dispatches the `whisper_insight` revelation action, delivering an insight to the target. Effect flows through resolveRevelationAction.",
+      "effectSource": "aftermath-only"
     },
     {
       "id": "observe_agent",
@@ -4143,7 +4489,9 @@
       "beatGranted": true,
       "bucket": "generic",
       "bucketDeclared": true,
-      "description": "Focuses divine sight upon a mortal to read the surface layer of their capabilities and current situation with clarity. A glimpse of what this individual can truly do becomes available, cutting through the ambiguity of casual observation. The gaze is quick and efficient, suited to initial assessment rather than deep understanding."
+      "description": "Focuses divine sight upon a mortal to read the surface layer of their capabilities and current situation with clarity. A glimpse of what this individual can truly do becomes available, cutting through the ambiguity of casual observation. The gaze is quick and efficient, suited to initial assessment rather than deep understanding.",
+      "technicalEffect": "On success, dispatches the `observe` revelation action (revelationEmitter) — surfacing lightweight intelligence about the target agent. No direct graph mutation from the template; effect flows through resolveRevelationAction.",
+      "effectSource": "aftermath-only"
     },
     {
       "id": "scry_agent",
@@ -4170,7 +4518,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Bends sustained divine attention upon a mortal, peeling back every layer of concealment until all capabilities, connections, and hidden nature stand fully revealed. The comprehensive picture that emerges leaves little about the subject unknown to a god with patience enough to look. The effort is significant but the knowledge gained is thorough."
+      "description": "Bends sustained divine attention upon a mortal, peeling back every layer of concealment until all capabilities, connections, and hidden nature stand fully revealed. The comprehensive picture that emerges leaves little about the subject unknown to a god with patience enough to look. The effort is significant but the knowledge gained is thorough.",
+      "technicalEffect": "On success, dispatches the `scry` revelation action — a deeper read of the target agent than Observe. Effect flows through resolveRevelationAction.",
+      "effectSource": "aftermath-only"
     },
     {
       "id": "bind_thread_agent",
@@ -4199,7 +4549,9 @@
       "beatGranted": true,
       "bucket": "generic",
       "bucketDeclared": true,
-      "description": "Reaches out to a mortal and draws a slender thread of divine attention through the veil between worlds, anchoring the agent to the deity's awareness. The mortal feels nothing — a faint warmth, perhaps, quickly forgotten. The thread is delicate but real, carrying the shape of their fate back to divine sight and opening the path for deeper intervention."
+      "description": "Reaches out to a mortal and draws a slender thread of divine attention through the veil between worlds, anchoring the agent to the deity's awareness. The mortal feels nothing — a faint warmth, perhaps, quickly forgotten. The thread is delicate but real, carrying the shape of their fate back to divine sight and opening the path for deeper intervention.",
+      "technicalEffect": "On success, adds a tier-1 `thread` edge (auto-resolve) from the ascendant to the target agent.",
+      "effectSource": "template-ops"
     },
     {
       "id": "bind_thread_agent_strong",
@@ -4228,7 +4580,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Pours sustained divine will into a mortal soul, forcing a deep thread through the veil and locking it at the level of Devoted connection from the moment of binding. The mortal may sense this one — a vivid dream, a strange conviction, a name on the tip of their tongue. The thread is thick and durable, but costs more to establish and demands more to maintain."
+      "description": "Pours sustained divine will into a mortal soul, forcing a deep thread through the veil and locking it at the level of Devoted connection from the moment of binding. The mortal may sense this one — a vivid dream, a strange conviction, a name on the tip of their tongue. The thread is thick and durable, but costs more to establish and demands more to maintain.",
+      "technicalEffect": "On success, adds a `thread` edge at tier 2 (a stronger initial bond than the standard tier-1 bind) from the ascendant to the target agent.",
+      "effectSource": "template-ops"
     },
     {
       "id": "bind_thread_army",
@@ -4257,7 +4611,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Casts a thread of awareness over a marching host, following the army's movements and activities as they cross the land. The thread enables the deity to track the army's current position and state without relying on mortal intelligence networks. Armies that move quickly across territory can sometimes pull the thread taut before it anchors fully."
+      "description": "Casts a thread of awareness over a marching host, following the army's movements and activities as they cross the land. The thread enables the deity to track the army's current position and state without relying on mortal intelligence networks. Armies that move quickly across territory can sometimes pull the thread taut before it anchors fully.",
+      "technicalEffect": "On success, adds a tier-1 `thread` edge (auto-resolve) from the ascendant to the target army.",
+      "effectSource": "template-ops"
     },
     {
       "id": "bind_thread_artifact",
@@ -4284,7 +4640,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Reaches out to an artifact and senses its sphere resonance, establishing a thread of cosmic awareness that links the object to the deity's divine sight. The thread follows the artifact wherever it travels, keeping the deity informed of its location and the nature of its bearer. Heavily shielded or inert artifacts resist the initial resonance reading."
+      "description": "Reaches out to an artifact and senses its sphere resonance, establishing a thread of cosmic awareness that links the object to the deity's divine sight. The thread follows the artifact wherever it travels, keeping the deity informed of its location and the nature of its bearer. Heavily shielded or inert artifacts resist the initial resonance reading.",
+      "technicalEffect": "On success, adds a tier-1 `thread` edge (auto-resolve) from the ascendant to the target artifact.",
+      "effectSource": "template-ops"
     },
     {
       "id": "bind_thread_faction",
@@ -4313,7 +4671,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Weaves a thread of divine influence toward a faction, drawing their collective ambitions and movements into the deity's sphere of awareness. The thread enables monitoring of the faction's activities and unlocks targeted divine actions against their members and operations. A faction's collective will can resist the initial binding if it is strong enough."
+      "description": "Weaves a thread of divine influence toward a faction, drawing their collective ambitions and movements into the deity's sphere of awareness. The thread enables monitoring of the faction's activities and unlocks targeted divine actions against their members and operations. A faction's collective will can resist the initial binding if it is strong enough.",
+      "technicalEffect": "On success, adds a tier-1 `thread` edge (auto-resolve) from the ascendant to the target faction.",
+      "effectSource": "template-ops"
     },
     {
       "id": "bind_thread_location",
@@ -4340,7 +4700,9 @@
       "beatGranted": true,
       "bucket": "generic",
       "bucketDeclared": true,
-      "description": "Extends a thread of divine awareness to a location, binding the place's fate to the deity's attention and enabling ongoing observation and action at a distance. The thread carries information about events at the location back to the deity continuously. Without the thread, divine actions at this location remain blind to its evolving state."
+      "description": "Extends a thread of divine awareness to a location, binding the place's fate to the deity's attention and enabling ongoing observation and action at a distance. The thread carries information about events at the location back to the deity continuously. Without the thread, divine actions at this location remain blind to its evolving state.",
+      "technicalEffect": "On success, adds a tier-1 `thread` edge (auto-resolve) from the ascendant to the target location, opening the divine connection at baseline strength.",
+      "effectSource": "template-ops"
     },
     {
       "id": "dream_sending",
@@ -4367,7 +4729,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Visits a mortal in their dreams and draws out the ambitions, fears, and driving obsessions that shape their waking life, reading them like an open book from within the dreaming mind. Deep psychological truths surface like shapes rising from dark water, legible to a patient divine observer. A dreamscape that actively resists intrusion reveals only fragments before forcing the deity out."
+      "description": "Visits a mortal in their dreams and draws out the ambitions, fears, and driving obsessions that shape their waking life, reading them like an open book from within the dreaming mind. Deep psychological truths surface like shapes rising from dark water, legible to a patient divine observer. A dreamscape that actively resists intrusion reveals only fragments before forcing the deity out.",
+      "technicalEffect": "On success, dispatches the `dream_sending` revelation action, planting a dream-borne message on the target. Effect flows through resolveRevelationAction.",
+      "effectSource": "aftermath-only"
     },
     {
       "id": "thread.dormant",
@@ -4396,7 +4760,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Lets the divine thread go slack, withdrawing active attention from the agent. The agent fades from constant awareness — they will still exist and act, but their encounters no longer surface as tugs. Use when an agent needs no guidance for a time. The thread persists; reactivation is swift."
+      "description": "Lets the divine thread go slack, withdrawing active attention from the agent. The agent fades from constant awareness — they will still exist and act, but their encounters no longer surface as tugs. Use when an agent needs no guidance for a time. The thread persists; reactivation is swift.",
+      "technicalEffect": "On success, sets the thread edge's `courtPosition` to `dormant` — parking the bond so it consumes no active court attention.",
+      "effectSource": "template-ops"
     },
     {
       "id": "thread.reactivate",
@@ -4425,7 +4791,9 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "Pulls the slack thread taut again, restoring full attention to the agent. Encounters will surface as tugs once more, and the agent re-enters the normal curation queue."
+      "description": "Pulls the slack thread taut again, restoring full attention to the agent. Encounters will surface as tugs once more, and the agent re-enters the normal curation queue.",
+      "technicalEffect": "On success, sets the thread edge's `courtPosition` to `retinue` — pulling a dormant bond back into the active court.",
+      "effectSource": "template-ops"
     }
   ]
 }

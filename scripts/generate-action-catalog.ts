@@ -31,13 +31,61 @@ import { fileURLToPath } from 'node:url';
 import { UNIFIED_ACTION_TEMPLATES } from '../src/data/unified-action-templates';
 import { ASCENDANT_ACTION_BUCKETS, type ActionBucket } from '../src/data/ascendant-beat-content';
 import { isStarterActionId } from '../src/engine/actionUnlock';
+import { ENGINE_EFFECT_TEMPLATE_IDS } from '../src/engine/engineEffectRegistry';
 import { RARITY_TIER_NAMES, type RarityTier } from '../src/types/rarity';
 import { REACH_DOMAINS, type ReachDomain } from '../src/types/traits';
-import type { UnifiedActionTemplate } from '../src/types/unifiedAction';
+import {
+  isActionStepBranch,
+  type UnifiedActionTemplate,
+  type ActionStepOrBranch,
+} from '../src/types/unifiedAction';
 
-export const SCHEMA_VERSION = 1;
+export const SCHEMA_VERSION = 2;
 
 const OUTPUT_FILE = 'public/action-catalog.generated.json';
+
+/**
+ * Where a template's mechanical effect is actually wired (THR-604). Derived, not
+ * authored — grounds the authored `technicalEffect` text against what ships.
+ * Precedence (first match wins): a template may match several; the order is a
+ * display choice, not a semantic ranking.
+ *   template-ops   — a step carries GraphOps (onSuccess/onFailure)
+ *   control-spec   — sustained effect via controlSpec
+ *   engine-bridge  — id-keyed engine handling (ENGINE_EFFECT_TEMPLATE_IDS)
+ *   aftermath-only — only aftermathConfig / secretDiscovery / revelationAction
+ *   none           — nothing changes world state (a genuine no-op)
+ */
+export type EffectSource =
+  | 'template-ops'
+  | 'control-spec'
+  | 'engine-bridge'
+  | 'aftermath-only'
+  | 'none';
+
+/** Does this step (or any branch variant / fallback) carry non-empty GraphOps? */
+function stepHasOps(step: ActionStepOrBranch): boolean {
+  if (isActionStepBranch(step)) {
+    return [step.fallback, ...Object.values(step.variants)].some(
+      (s) => s.onSuccess.length > 0 || s.onFailure.length > 0,
+    );
+  }
+  return step.onSuccess.length > 0 || step.onFailure.length > 0;
+}
+
+/** Classify where a template's effect is wired. Pure, deterministic. */
+export function effectSourceFor(template: UnifiedActionTemplate): EffectSource {
+  if (template.steps.some(stepHasOps)) return 'template-ops';
+  if (template.controlSpec != null) return 'control-spec';
+  if (ENGINE_EFFECT_TEMPLATE_IDS.has(template.id)) return 'engine-bridge';
+  if (
+    template.aftermathConfig != null ||
+    template.secretDiscovery != null ||
+    template.revelationAction != null
+  ) {
+    return 'aftermath-only';
+  }
+  return 'none';
+}
 
 /** Top-level catalog facet, mirroring the in-game Codex grouping (codexRegistry.ts). */
 export type CatalogCategory =
@@ -83,6 +131,10 @@ export interface ActionCatalogEntry {
   /** True when `bucket` comes from an explicit `ASCENDANT_ACTION_BUCKETS` entry. */
   readonly bucketDeclared: boolean;
   readonly description: string;
+  /** Authored technical game-effect statement, or null when unauthored (THR-604). */
+  readonly technicalEffect: string | null;
+  /** Derived: where this template's mechanical effect is wired (THR-604). */
+  readonly effectSource: EffectSource;
 }
 
 export interface ActionCatalogData {
@@ -92,8 +144,11 @@ export interface ActionCatalogData {
     readonly byCategory: Record<string, number>;
     readonly byReach: Record<string, number>;
     readonly byBucket: Record<string, number>;
+    readonly byEffectSource: Record<string, number>;
     readonly beatGranted: number;
     readonly starters: number;
+    /** Count of entries with no authored technicalEffect — drift dashboard (THR-604). */
+    readonly unauthoredEffects: number;
   };
   readonly entries: readonly ActionCatalogEntry[];
 }
@@ -170,6 +225,8 @@ function toEntry(template: UnifiedActionTemplate, category: CatalogCategory): Ac
     bucket,
     bucketDeclared: declared,
     description: template.description ?? template.narrativeTemplates?.initiation ?? '',
+    technicalEffect: template.technicalEffect ?? null,
+    effectSource: effectSourceFor(template),
   };
 }
 
@@ -207,8 +264,10 @@ export function buildCatalogData(): ActionCatalogData {
       byCategory: tally(entries, (e) => e.category),
       byReach: tally(entries, (e) => e.reach),
       byBucket: tally(entries, (e) => e.bucket),
+      byEffectSource: tally(entries, (e) => e.effectSource),
       beatGranted: entries.filter((e) => e.beatGranted).length,
       starters: entries.filter((e) => e.starter).length,
+      unauthoredEffects: entries.filter((e) => e.technicalEffect == null).length,
     },
     entries,
   };
@@ -229,6 +288,8 @@ export function generateActionCatalog(opts: GenerateOptions = {}): ActionCatalog
     `| by category ${JSON.stringify(data.totals.byCategory)} ` +
     `| by reach ${JSON.stringify(data.totals.byReach)} ` +
     `| by bucket ${JSON.stringify(data.totals.byBucket)} ` +
+    `| by effectSource ${JSON.stringify(data.totals.byEffectSource)} ` +
+    `| ${data.totals.unauthoredEffects} unauthored effects ` +
     `| ${data.totals.beatGranted} beat-granted, ${data.totals.starters} starters`;
 
   if (opts.dryRun) {

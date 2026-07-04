@@ -572,6 +572,19 @@ export { getAgentIdsAtHex };
 export type { GraphOpGenerator };
 
 /**
+ * All hex-action template ids this bridge implements — the union of the three
+ * id-keyed effect maps (tile mutations, static GraphOps, dynamic GraphOp
+ * generators). Exported additively (THR-604) so engineEffectRegistry has a
+ * single place to ask "does the hex bridge wire this id?". Derived from the
+ * module's own maps so it can never drift from them.
+ */
+export const HEX_BRIDGE_TEMPLATE_IDS: ReadonlySet<string> = new Set<string>([
+  ...Object.keys(HEX_ACTION_MUTATIONS),
+  ...Object.keys(HEX_ACTION_GRAPH_OPS),
+  ...Object.keys(HEX_ACTION_GRAPH_OP_GENERATORS),
+]);
+
+/**
  * Resolve a hex action into hex mutations, revelation mutations, and hidden site reveals.
  * This is the preferred entry point — produces all side effects of a hex action.
  *

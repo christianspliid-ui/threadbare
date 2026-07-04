@@ -918,6 +918,19 @@ export interface UnifiedActionTemplate {
    * If absent, ActionCard falls back to slot.description (narrativeTemplates.initiation). */
   readonly description?: string;
 
+  /**
+   * Technical game-mechanical statement of what this action does (THR-604).
+   * 1–3 sentences, wiki-facing register — names the state that changes (node
+   * property, edge, condition, resource, visibility), the direction/nature of the
+   * change, and duration/persistence when relevant. Sourced from the resolving
+   * code, NOT paraphrased from `description`. Magnitudes stay symbolic (name the
+   * constant or say "scales with X") — never literal numbers (constants are
+   * tunable, NFP #1). Distinct from `description`, which is atmospheric prose for
+   * the in-game card. Consumed by the wiki catalog / Manual Designer-Notes layer,
+   * never by in-game player prose. Omit → catalog renders "—" + `unauthored`.
+   */
+  readonly technicalEffect?: string;
+
   /** Optional custom consequence message for toast/feed output.
    * If absent, falls back to narrativeTemplates.success/failure.
    * Hybrid field: allows selective customization without rewriting all templates. */
