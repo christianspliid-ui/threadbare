@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Threadbearer — Encounters &amp; Aftermath</title>
+<!--
+  Encounters & Aftermath (Game Manual Wiki, W7 / THR-592) — dual-layer manual page.
+  Player-manual prose first ("How it plays"), Designer Notes second.
+  Spec: Docs/plans/2026-07-03-game-manual-wiki.md §5 W7. Source spine:
+  Docs/canon/rulebook.md §7 ("Encounters and Aftermath") + Docs/canon/encounters.md
+  (spec authority for encounter content) + Docs/ubiquitous-language/Encounters.md (terms).
+  Designer-layer sources: src/engine/encounter.ts (pipeline entry), src/engine/resolution.ts
+  (sigmoid → d100 + outcome bands), src/engine/encounterSeeding.ts (PendingEncounterSeed
+  maturation), src/engine/encounterAwareness.ts (hex-granular visibility),
+  src/engine/encounterScoring.ts + src/engine/encounterFilterPipeline.ts (candidate
+  selection), src/engine/encounterAftermath.ts (reaction application + afterimages),
+  src/data/*-encounter-content.ts (linear template families) + src/data/encounters/
+  (branching). KPI baseline: THR-457 harness.
+  This is the player-voice layer over the deep page encounters-agents-reference.html.
+  The shared wiki nav between the WIKI-NAV markers is injected by
+  scripts/generate-design-wiki.ts — do not hand-write it.
+-->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --parchment: #f4edd8;
+    --parchment-dark: #e8dfc8;
+    --ink: #2c1810;
+    --ink-light: #5a3d2b;
+    --ink-faint: #8a7060;
+    --gold: #b8860b;
+    --gold-light: #daa520;
+    --card-bg: #fff8e7;
+    --red: #8b2500;
+    --blue: #1a3a5c;
+    --blue-light: #2d5f8a;
+    --purple: #4a2d6a;
+    --green: #2d5a27;
+
+    --flag-impl: #2d5a27;
+    --flag-design: #8a4a00;
+    --flag-open: #4a2d6a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--parchment);
+    color: var(--ink);
+    font-family: 'Crimson Text', Georgia, serif;
+    font-size: 16px;
+    line-height: 1.6;
+    min-height: 100vh;
+    background-image:
+      radial-gradient(ellipse at 20% 50%, rgba(184,134,11,0.04) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 30%, rgba(74,45,106,0.03) 0%, transparent 50%);
+  }
+
+  .page-wrapper { max-width: 900px; margin: 0 auto; padding: 40px 32px 72px; }
+
+  /* ── Header ── */
+  .header { text-align: center; margin-bottom: 40px; padding-bottom: 28px; border-bottom: 2px solid var(--gold); position: relative; }
+  .header::after { content: ''; position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); width: 55%; height: 1px; background: var(--gold-light); }
+  .header .eyebrow { font-family: 'Cinzel', Georgia, serif; font-size: 0.72rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold); margin-bottom: 10px; }
+  .header h1 { font-family: 'Cinzel', Georgia, serif; font-weight: 700; font-size: 2.4rem; color: var(--ink); letter-spacing: 0.05em; margin-bottom: 12px; }
+  .header .tagline { font-size: 1.12rem; color: var(--ink-light); max-width: 62ch; margin: 0 auto; font-style: italic; }
+
+  /* ── Sections ── */
+  .section { margin-bottom: 34px; }
+  .section > h2 { font-family: 'Cinzel', Georgia, serif; font-size: 1.25rem; color: var(--ink); letter-spacing: 0.03em; margin-bottom: 6px; padding-bottom: 6px; border-bottom: 1px solid var(--parchment-dark); }
+  .section > h2 .lead { display: block; font-family: 'Crimson Text', Georgia, serif; font-size: 0.95rem; font-style: italic; font-weight: 400; color: var(--ink-faint); letter-spacing: 0; margin-top: 4px; }
+  .section h3 { font-family: 'Cinzel', Georgia, serif; font-size: 1rem; color: var(--ink-light); letter-spacing: 0.02em; margin: 20px 0 6px; }
+  .section p { margin-bottom: 12px; }
+  .section p .term { font-weight: 600; color: var(--ink); }
+  .section ul { margin: 0 0 14px 0; padding-left: 0; list-style: none; }
+  .section ul li { position: relative; padding-left: 1.3rem; margin-bottom: 8px; }
+  .section ul li::before { content: '◆'; position: absolute; left: 0; top: 0.05rem; color: var(--gold); font-size: 0.7rem; }
+
+  /* ── Two-shape split (branching / linear) ── */
+  .shapes { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 10px 0 18px; }
+  .shape-card { background: var(--card-bg); border: 1px solid var(--parchment-dark); border-radius: 4px; padding: 16px 18px; border-top: 3px solid var(--gold); }
+  .shape-card.linear { border-top-color: var(--blue-light); }
+  .shape-card h4 { font-family: 'Cinzel', Georgia, serif; font-size: 0.95rem; color: var(--ink); margin: 0 0 6px; }
+  .shape-card p { font-size: 0.86rem; color: var(--ink-light); margin-bottom: 0; }
+  @media (max-width: 620px) { .shapes { grid-template-columns: 1fr; } }
+
+  /* ── Outcome bands ── */
+  .bands { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 10px 0 18px; }
+  .band { background: var(--card-bg); border: 1px solid var(--parchment-dark); border-radius: 4px; padding: 12px 12px; text-align: center; border-top: 3px solid var(--ink-faint); }
+  .band.crit-success { border-top-color: var(--green); }
+  .band.success { border-top-color: var(--gold-light); }
+  .band.failure { border-top-color: var(--ink-faint); }
+  .band.crit-failure { border-top-color: var(--red); }
+  .band h4 { font-family: 'Cinzel', Georgia, serif; font-size: 0.8rem; color: var(--ink); margin: 0 0 4px; }
+  .band p { font-size: 0.78rem; color: var(--ink-faint); margin-bottom: 0; }
+  @media (max-width: 620px) { .bands { grid-template-columns: 1fr 1fr; } }
+
+  /* ── Four design rules ── */
+  .rules { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 10px 0 18px; }
+  .rule-card { background: var(--card-bg); border: 1px solid var(--parchment-dark); border-radius: 4px; padding: 14px 16px; border-left: 3px solid var(--purple); }
+  .rule-card h4 { font-family: 'Cinzel', Georgia, serif; font-size: 0.88rem; color: var(--ink); margin: 0 0 4px; }
+  .rule-card p { font-size: 0.84rem; color: var(--ink-light); margin-bottom: 0; }
+  @media (max-width: 620px) { .rules { grid-template-columns: 1fr; } }
+
+  /* ── Callouts ── */
+  .callout { background: var(--card-bg); border: 1px solid var(--parchment-dark); border-left: 4px solid var(--gold); border-radius: 4px; padding: 14px 18px; margin: 4px 0 18px; }
+  .callout.blue { border-left-color: var(--blue-light); }
+  .callout.purple { border-left-color: var(--purple); }
+  .callout.red { border-left-color: var(--red); }
+  .callout.green { border-left-color: var(--green); }
+  .callout .callout-title { font-family: 'Cinzel', Georgia, serif; font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 6px; }
+  .callout p:last-child { margin-bottom: 0; }
+
+  /* ── Beat chain (scan → moment → aftermath) ── */
+  .chain { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 14px; align-items: center; }
+  .chain .step { font-family: 'Cinzel', Georgia, serif; font-size: 0.74rem; color: var(--ink-light); background: var(--card-bg); border: 1px solid var(--parchment-dark); border-radius: 3px; padding: 3px 9px; white-space: nowrap; }
+  .chain .arrow { color: var(--gold); font-size: 0.8rem; }
+
+  /* ── Designer notes ── */
+  .designer { margin-top: 48px; border-top: 2px solid var(--gold); padding-top: 8px; }
+  .designer > summary { list-style: none; cursor: pointer; padding: 16px 4px; display: flex; align-items: baseline; gap: 12px; }
+  .designer > summary::-webkit-details-marker { display: none; }
+  .designer > summary .chev { font-size: 0.8rem; color: var(--gold); transition: transform 0.15s; }
+  .designer[open] > summary .chev { transform: rotate(90deg); }
+  .designer > summary h2 { font-family: 'Cinzel', Georgia, serif; font-size: 1.3rem; color: var(--ink); letter-spacing: 0.03em; }
+  .designer > summary .sub { font-size: 0.9rem; color: var(--ink-faint); font-style: italic; }
+  .designer-body { padding: 4px 4px 8px; }
+  .designer-body h3 { font-family: 'Cinzel', Georgia, serif; font-size: 0.98rem; color: var(--ink-light); margin: 22px 0 8px; }
+  .designer-body p { margin-bottom: 12px; font-size: 0.97rem; }
+  .designer-body ul { margin: 0 0 14px 0; padding-left: 0; list-style: none; }
+  .designer-body ul li { position: relative; padding-left: 1.2rem; margin-bottom: 7px; font-size: 0.97rem; }
+  .designer-body ul li::before { content: '›'; position: absolute; left: 0.15rem; top: 0; color: var(--ink-faint); }
+  code, .mono { font-family: 'JetBrains Mono', monospace; font-size: 0.84em; color: var(--ink); background: rgba(184,134,11,0.10); padding: 0.05rem 0.32rem; border-radius: 3px; word-break: break-word; }
+
+  .flag { font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; letter-spacing: 0.04em; font-weight: 500; padding: 0.08rem 0.4rem; border-radius: 3px; color: #fff; white-space: nowrap; }
+  .flag.impl { background: var(--flag-impl); }
+  .flag.design { background: var(--flag-design); }
+  .flag.open { background: var(--flag-open); }
+
+  table.tunables { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin: 4px 0 18px; }
+  table.tunables th { text-align: left; font-family: 'Cinzel', Georgia, serif; font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-faint); padding: 6px 10px 6px 0; border-bottom: 1px solid var(--parchment-dark); }
+  table.tunables td { padding: 7px 10px 7px 0; border-bottom: 1px solid var(--parchment-dark); vertical-align: top; color: var(--ink-light); }
+  table.tunables td:first-child { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--ink); white-space: nowrap; }
+
+  .foot { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--parchment-dark); font-size: 0.85rem; color: var(--ink-faint); font-style: italic; }
+  a { color: var(--blue-light); text-decoration: none; border-bottom: 1px solid rgba(45,95,138,0.35); }
+  a:hover { color: var(--blue); border-bottom-color: var(--blue); }
+</style>
+</head>
+<body>
+<!--WIKI-NAV-->
+<style>
+  .wiki-nav { font-family: 'Cinzel', Georgia, serif; background: #2c1810; border-bottom: 2px solid #b8860b; padding: 0.6rem 1.2rem; display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.4rem 1.1rem; }
+  .wiki-nav__brand { color: #daa520; font-weight: 700; letter-spacing: 0.04em; margin-right: 0.6rem; font-size: 0.95rem; }
+  .wiki-nav__link { color: #f4edd8; text-decoration: none; font-size: 0.85rem; letter-spacing: 0.02em; padding: 0.15rem 0.1rem; border-bottom: 2px solid transparent; transition: color 0.15s, border-color 0.15s; }
+  .wiki-nav__link:hover { color: #daa520; }
+  .wiki-nav__link.is-active { color: #daa520; border-bottom-color: #b8860b; font-weight: 700; }
+</style>
+<nav class="wiki-nav" aria-label="Design Reference Wiki">
+  <span class="wiki-nav__brand">⌖ Design Reference Wiki</span>
+  <a class="wiki-nav__link" href="design-wiki.html">Design Wiki</a>
+  <a class="wiki-nav__link" href="run-lifecycle-reference.html">A Run, Start to Finish</a>
+      <a class="wiki-nav__link" href="cosmology-reference.html">Reaches, Spheres &amp; Quintessence</a>
+      <a class="wiki-nav__link" href="turn-structure-reference.html">The Three-Beat Turn</a>
+      <a class="wiki-nav__link" href="divine-actions-reference.html">Divine Actions &amp; Prerequisites</a>
+      <a class="wiki-nav__link" href="threads-court-reference.html">Threads, the Court &amp; The First</a>
+      <a class="wiki-nav__link" href="essence-control-reference.html">Essence, Control &amp; Sustained Power</a>
+      <a class="wiki-nav__link is-active" href="encounters-manual-reference.html" aria-current="page">Encounters &amp; Aftermath</a>
+      <a class="wiki-nav__link" href="encounters-agents-reference.html">Encounters, Agents &amp; Resolution</a>
+      <a class="wiki-nav__link" href="tick-cycle-reference.html">Tick Cycle Reference</a>
+      <a class="wiki-nav__link" href="action-catalog.html">Action Catalog</a>
+</nav>
+<!--/WIKI-NAV-->
+<div class="page-wrapper">
+
+  <header class="header">
+    <div class="eyebrow">Game Manual · Story Engines</div>
+    <h1>Encounters &amp; Aftermath</h1>
+    <p class="tagline">An encounter is not a die roll dressed in prose. It is a framed chapter — the game pulls the camera onto one threaded mortal's crisis and asks the only question that matters: what kind of god are you, toward this?</p>
+  </header>
+
+  <!-- ══════════════════ HOW IT PLAYS ══════════════════ -->
+
+  <section class="section">
+    <h2>An encounter is a framed chapter<span class="lead">The curated moment at the heart of the three-beat turn — one mortal's situation, crystallised, with you looking down on it.</span></h2>
+    <p>Most of what your mortals do happens quietly, in the churn of the simulation. An <span class="term">encounter</span> is when that churn cresting into a <em>moment</em> — a threaded mortal's situation sharpens to a point, and the game frames it for you as a chapter. You read the prose. You weigh what is at stake. And at the critical step you choose a divine intervention from a menu shaped by exactly this situation — or you do nothing, which is always a real choice.</p>
+    <p>Encounters are the middle beat of the turn. The order around them is deliberate:</p>
+    <div class="chain">
+      <span class="step">Scan — you choose whose story to watch</span>
+      <span class="arrow">→</span>
+      <span class="step">The encounter — the chapter</span>
+      <span class="arrow">→</span>
+      <span class="step">Aftermath — the breath before the next scan</span>
+    </div>
+    <p>The encounter is the chapter, not the roll. The pacing you should feel is <span class="term">three to six encounters per session</span> — rationed moments you sit inside — not a churn of prompts every tick. (Turn order and pacing are the <a href="turn-structure-reference.html">The Three-Beat Turn</a> page; here we care about the moment itself.)</p>
+  </section>
+
+  <section class="section">
+    <h2>Two shapes, one format<span class="lead">Encounters come branching or recurring. They share a single underlying format and split only on how they are made.</span></h2>
+    <p>Every encounter — no matter its shape — is built from the same underlying definition. What differs is authorship and how it enters the world:</p>
+    <div class="shapes">
+      <div class="shape-card">
+        <h4>Branching encounters</h4>
+        <p>Hand-authored, multi-step chapters with real forks — your choice sends the mortal down a genuinely different path, not the same path in a different colour. These are the set-piece stories, written one at a time with full aftermath.</p>
+      </div>
+      <div class="shape-card linear">
+        <h4>Recurring (template) encounters</h4>
+        <p>Systemic moments — guild, social, tavern, combat, borderland — that fire again and again across the world, instantiated from templates that share a spine but vary in who, where, and why. The texture of a living world in motion.</p>
+      </div>
+    </div>
+    <p>You will rarely need to tell them apart in play. They read the same, they resolve the same, and they close the same way. The distinction matters to the people who write them, not to the god who lives them.</p>
+  </section>
+
+  <section class="section">
+    <h2>You see the hex, you see everything on it<span class="lead">Awareness is hex-granular — the unit of "what can I perceive" is the whole tile, not the individual encounter.</span></h2>
+    <p>An encounter is only yours to act on if you are <span class="term">aware</span> of it — and awareness works at the level of the <em>hex</em>. If you can see a tile, you see <em>everything</em> on it: every location, every sublocation, every encounter cresting anywhere across it. There is no fog <em>within</em> a hex you can already see.</p>
+    <p>Whether you can see a <em>distant</em> hex is a matter of reach: the game measures the hex-coordinate distance from where your attention sits to the tile in question, and compares it against how far your awareness carries in that domain. Close enough, and the chapter surfaces to you. Too far, and it unfolds unwatched — the world does not wait for a god who was looking elsewhere.</p>
+    <div class="callout blue">
+      <div class="callout-title">Awareness never hides content from you as a design lever</div>
+      <p>Awareness is about <em>where your attention reaches on the map</em>, not about the game withholding options to create mystery. Once a hex is in view, its encounters are fully legible — the game never uses "you don't know enough yet" to hide a choice. Knowing more can <em>enrich</em> a moment, but it never gates one away.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>One curve for peasants and gods<span class="lead">Every attempt in the game resolves the same way — a capability score bent through a curve into a probability, then a single roll.</span></h2>
+    <p>There is exactly one resolution engine in Threadbearer, and it governs everyone. A farmhand trying to talk down a mob and an Ascendant trying to bind an entropy well run through the <em>same</em> machine: the relevant capability is bent through a smooth curve into a probability of success, and then a single hidden roll settles it. No special dice for gods. No separate combat system. One spine, everywhere.</p>
+    <p>What you feel of this is deliberately soft. The game does not show you a percentage or a die. It shows you a <em>situation</em> and lets the prose carry the odds — a mortal who is clearly outmatched reads as outmatched. The roll resolves into one of a few <span class="term">outcome bands</span>, and the band decides how the chapter turns:</p>
+    <div class="bands">
+      <div class="band crit-success">
+        <h4>Critical success</h4>
+        <p>Beyond what you hoped — a moment that echoes forward.</p>
+      </div>
+      <div class="band success">
+        <h4>Success</h4>
+        <p>The intervention lands. The path bends your way.</p>
+      </div>
+      <div class="band failure">
+        <h4>Failure</h4>
+        <p>It doesn't take — but the story moves anyway.</p>
+      </div>
+      <div class="band crit-failure">
+        <h4>Critical failure</h4>
+        <p>It rebounds — a scar, a grudge, a new tension.</p>
+      </div>
+    </div>
+    <p>Between a clean win and a clean miss there is also room for <span class="term">success at a cost</span> — the intervention lands, but it takes something with it. And the <em>critical</em> swings are a matter of the dice doubling on themselves: when the hidden roll comes up matched (11, 22, and so on) the outcome tips to its extreme — a triumph that echoes, or a failure that wounds.</p>
+    <p>Because the same curve governs the mighty and the meek, an underdog's win is never impossible and a favourite's loss is never off the table. That is the point: a world where the odds always held would have no chapters worth reading.</p>
+  </section>
+
+  <section class="section">
+    <h2>Aftermath reshapes the mortal, not you<span class="lead">Resolution lands, and the consequences are written into the mortal's life — their traits, their bonds, their reputation, the book of their run.</span></h2>
+    <p>When the roll settles, the encounter does not simply end — it <span class="term">closes</span>. The aftermath is the last beat: the resolution lands, the world graph shifts, and a <span class="term">reaction</span> is chosen — by you, or, if you let the chapter run unattended, by the encounter itself falling into its default. That reaction writes real consequences: it can shift the mortal's traits, thicken or fray a thread, move reputation, and leave a chronicle entry the mortal carries for the rest of the run.</p>
+    <p>The crucial thing to hold onto: aftermath reshapes <em>the protagonist's</em> trajectory, not the god's. You do not level up. The mortal you touched walks away changed — braver or broken, indebted or embittered — and that change is what the next chapter is built on.</p>
+    <div class="callout red">
+      <div class="callout-title">Failure is plot, not punishment</div>
+      <p>A roll going against you is not a dead end — it is a hook. When an intervention fails, the aftermath's job is to make the <em>next</em> chapter more interesting: a scar that becomes a vendetta, a humiliation that hardens into resolve, a thread pulled taut instead of snapped. A flat "you failed, nothing happened" is a content bug, never a balance one. The world is supposed to be more interesting because you tried and missed.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>The shape of a good choice<span class="lead">The best encounters do not ask you to succeed — they ask you to decide who you are willing to be.</span></h2>
+    <p>The encounters that land hardest pose a dilemma in the plain sense: a moment where there is no clean win, only a choice between things you value. Steady the frightened heir and you make a ruler who leans on you; let them face the fear alone and you make one who never will. Both are "successes." Neither is free.</p>
+    <p>Underneath every well-made encounter are four rules its authors hold to. You never see them named, but you feel their effects — they are why a Threadbearer choice feels like a choice about <em>character</em> rather than a lever on a machine:</p>
+    <div class="rules">
+      <div class="rule-card">
+        <h4>Path over adjective</h4>
+        <p>Every choice changes the <em>path</em> the story takes — not just the colour of the same outcome.</p>
+      </div>
+      <div class="rule-card">
+        <h4>The moral axis is structural</h4>
+        <p>Each encounter's Reach carries a virtue↔vice axis (Iron: Protector ↔ Conqueror). Your choice tilts the mortal toward one pole.</p>
+      </div>
+      <div class="rule-card">
+        <h4>Verbs are soft-power</h4>
+        <p>You "stir her resolve," you don't "make her fight." A god nudges; it does not puppet. Every verb is a whisper, not a hand.</p>
+      </div>
+      <div class="rule-card">
+        <h4>Every primitive is clickable</h4>
+        <p>Every thing an encounter names — a place, an item, a faction, a rival — is itself a detail you can open and act on.</p>
+      </div>
+    </div>
+    <div class="callout purple">
+      <div class="callout-title">You are a god, never the character</div>
+      <p>Every choice in an encounter is a <em>divine</em> choice — to whisper, to steady, to withdraw, to strengthen. You never step into the mortal's shoes and act as them. "Let them handle it" is always on the table, and sometimes it is the truest thing a god can do.</p>
+    </div>
+  </section>
+
+  <!-- ══════════════════ DESIGNER NOTES ══════════════════ -->
+
+  <details class="designer" open>
+    <summary>
+      <span class="chev">▶</span>
+      <span>
+        <h2>Designer Notes</h2>
+        <span class="sub">The UnifiedActionTemplate format, the two pipelines and the candidate filter cascade, sigmoid → d100 resolution and its bands, hex-granular awareness, seeding &amp; hidden marks, the aftermath reaction engine, the four design rules, and the honest KPI baseline.</span>
+      </span>
+    </summary>
+    <div class="designer-body">
+
+      <p>Status flags follow the rulebook convention: <span class="flag impl">IMPL</span> shipped and wired, <span class="flag design">DESIGN</span> specified but partially or not yet wired, <span class="flag open">OPEN</span> an unresolved question (referenced from the rulebook — this page mints none). <strong>Synthesis authority for this page is <code>Docs/canon/rulebook.md</code> §7 ("Encounters and Aftermath"); the spec authority for encounter <em>content</em> is <code>Docs/canon/encounters.md</code>; terminology authority is <code>Docs/ubiquitous-language/Encounters.md</code>.</strong> Where any surface disagrees, the UL wins on terms and the canon page wins on current spec.</p>
+
+      <h3>One format: UnifiedActionTemplate <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li>Every encounter — branching or linear — is a <code>UnifiedActionTemplate</code> (UAT), the single encounter format since THR-108. The older <code>EncounterTemplate</code> format is <em>removed</em> from the codebase; do not author or reference it. Templates are stored as <code>action_template</code> nodes and instantiated at a location for a specific agent.</li>
+        <li>The two shapes split on pipeline, not format: <strong>branching</strong> encounters live in <code>src/data/encounters/</code> and use authored <code>ActionStepBranch</code> arms (exemplars <code>rival-shrine-betrayal.ts</code>, <code>flawed-steel.ts</code>); <strong>linear template</strong> families (guild/social/tavern/combat/borderland) are compiled via the <code>template-encounter-rewrite</code> skill and live in the <code>src/data/*-encounter-content.ts</code> files. <code>ActionStepBranch</code> is exclusive to branching encounters (THR-191).</li>
+      </ul>
+
+      <h3>Candidate selection — the filter cascade <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li>Which encounter fires where runs through the staged filter pipeline (<code>src/engine/encounterFilterPipeline.ts</code>): awareness + faction awareness → visibility gating → prerequisites → threat floor (currently disabled) → a performance cap of <code>MAX_SCORED_CANDIDATES = 40</code> before scoring. Scoring (<code>src/engine/encounterScoring.ts</code>) computes <code>finalScore = valuePerTick × desireMultiplier + resonance</code>; results are cached (<code>encounterCache.ts</code>, invalidated on <code>structuralCacheVersion</code>).</li>
+        <li>Candidacy is <em>fully visible</em> — intel/visibility never <em>hides</em> a candidate (rejected 2026-05-07, THR-138); intel may only <em>enrich</em>. Branching candidates get a curator boost and a reserved slot past the cap (<code>BRANCHING_CAP_RESERVE = 1</code>) so an eligible branching template is not starved out by cheaper linear ones — the direct lever against the "0 branching fires" KPI gap below.</li>
+      </ul>
+
+      <h3>Resolution: sigmoid → d100 <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li>The "sigmoid" and the "d100" live in two files. <strong>The sigmoid produces the capability:</strong> <code>src/engine/domainCapability.ts</code> bends a raw per-Reach score through <code>sigmoid(x) = 1 / (1 + e^(−k(x − midpoint)))</code> with <code>SIGMOID_MIDPOINT = 10</code>, <code>SIGMOID_K = 0.4</code>, yielding a 0–1 Domain Capability. <strong>The d100 resolves against a linear threshold derived from it</strong> (<code>src/engine/resolutionService.ts</code>): <code>probability = capability + sphereFactor − difficulty + modifiers + influenceNudge</code>, clamped to <code>[PROBABILITY_FLOOR 0.05, PROBABILITY_CEILING 0.95]</code>; the threshold is <code>Math.floor(probability × 100)</code> and a seeded roll <code>1–100</code> succeeds when <code>roll ≤ threshold</code>.</li>
+        <li><strong>Crits are the Phase 2 doubles model:</strong> a roll of matched digits (11, 22, … 99; 100 is not doubles) at or under threshold → <code>critical_success</code>, over threshold → <code>critical_failure</code>. A skilled actor (high threshold) catches more doubles under the line, so skill shifts <em>which</em> crits land, not just how often you succeed. An intermediate <code>success_at_cost</code> band also exists.</li>
+        <li>Scale tempers difficulty (<code>src/engine/resolutionScaleAdjust.ts</code>): <code>SCALE_DIFFICULTY_OFFSETS</code> (<code>personal −0.20 … cosmic +0.10</code>), <code>MIN_PROBABILITY_BY_SCALE</code> (<code>personal 0.70 … cosmic 0.05</code>), and <code>CRIT_FAILURE_PERMITTED_BY_SCALE</code> (personal/local crit-failure disabled — small acts don't catastrophically backfire). No special-cased entity types — the same machine governs a peasant and an Ascendant (load-bearing decision, CLAUDE.md). Determinism (NFP #3): seeded roll, no <code>Math.random()</code>; traces <code>resolution_input</code> / <code>resolution_result</code>.</li>
+      </ul>
+
+      <h3>Hex-granular awareness <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li><code>filterByAwareness()</code> (<code>src/engine/encounterAwareness.ts</code>): within-hex visibility is automatic (distance 0 — see the hex, see every location/sublocation/encounter on it); cross-hex visibility resolves both agent and encounter to hex coordinates and compares hex distance against per-reach awareness range. Hops = <code>BASE_AWARENESS_HOPS 1 + floor(capability / CAPABILITY_PER_HOP 0.15)</code>, capped at <code>MAX_AWARENESS_HOPS 5</code>, gated by <code>AWARENESS_THRESHOLD 0.05</code>, with <code>EDGE_HEX_AWARENESS_BONUS 1</code> for border hexes. The location distance matrix is <em>not</em> used — the location-hop model was rejected (CLAUDE.md Rejected Approaches).</li>
+      </ul>
+
+      <h3>Seeding &amp; hidden marks <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li><strong>Encounter seeds</strong> (<code>PendingEncounterSeed</code>) are the causal prehistory of encounters: created by engine phases, prior outcomes, and aftermath reactions, they sit in <code>GameState.pendingEncounterSeeds</code> and are evaluated each tick by <code>evaluateEncounterSeeds()</code> (<code>src/engine/encounterSeeding.ts</code>) — maturing when <code>tick ≥ eligibleAfterTick</code>. Template-direct seeds spawn a specific UAT via <code>createUnifiedAction()</code>; family-only seeds emit a narrative event (v1 advisory). The <code>caused_by</code> edge (via <code>spawnedFromSeedId</code>, THR-143) makes the chain inspectable; expired seeds "wither" fail-soft. Trace: <code>encounter_seed_triggered</code>.</li>
+        <li><strong>Hidden marks</strong> (<code>HiddenMark</code>, <code>src/engine/hiddenMarks.ts</code>) are concealed consequences planted on an agent — invisible to other agents, held in <code>GameState.hiddenMarks[]</code> (not graph nodes, for cheap querying), revealable by a future encounter whose family matches the mark's <code>revealFamilies</code> (a <code>MARK_REVEAL_SCORING_BONUS</code> nudges those encounters up, THR-112). Consumed probabilistically (<code>REVEAL_PROBABILITY_MULT = 0.9</code> × severity) and decayed (<code>MARK_DECAY_GRACE_TICKS = 20</code>, <code>MARK_DECAY_PER_TICK = 0.02</code>, dropped below <code>MARK_DECAY_FLOOR = 0.05</code>) in <code>phaseHiddenMarkDecay.ts</code>. Visible to the player only via the Debug Panel, never in normal play — the engine's slow-burn setup mechanism.</li>
+      </ul>
+
+      <h3>Aftermath — reactions &amp; afterimages <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li>Aftermath (<code>src/engine/encounterAftermath.ts</code>, plus the aftermath phase) applies the selected <code>Reaction</code>'s world-graph mutations via <code>GraphOp</code>: trait writes, reputation shifts, edge mutations, chronicle entries persisted in agent history. Reactions reshape <em>the protagonist</em>. If unattended, the encounter falls into its default reaction.</li>
+        <li>The <code>criticalSuccessAfterimage</code> / <code>criticalFailureAfterimage</code> fields are real in the ActionStep schema, consumed by <code>selectBandAfterimage</code> (<code>src/engine/encounter.ts:100–103</code>) to attach band-specific closing prose to a critical outcome. They are sparsely authored — the subject of THR-584 (author afterimages for the top-20 hot templates).</li>
+      </ul>
+
+      <h3>"Dilemma" here is the plain word, not the Dilemma <em>system</em> <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li>The player layer uses "dilemma" descriptively (a hard choice with no clean win). It is <em>not</em> the named Dilemma system, which is a separate <strong>divine-meeting</strong> mechanism: <code>src/engine/dilemmaSelection.ts</code> selects <code>EnrichedDilemmaTemplate</code>s (resonance-scored) for ascendant meetings — a distinct type from <code>UnifiedActionTemplate</code>, not part of encounter resolution. A UL-disambiguation candidate; do not wire encounter aftermath through the dilemma-meeting path.</li>
+      </ul>
+
+      <h3>The four design rules — the executor's contract <span class="flag design">DESIGN</span></h3>
+      <ul>
+        <li>Quoted verbatim from <code>Docs/plans/2026-05-04-encounter-experience-design-plan.md</code> §1 (also in <code>Docs/canon/encounters.md</code>): (1) <strong>Path over adjective</strong> — every choice changes the path, not the adjective; (2) <strong>the moral axis is structural</strong> — each encounter's primary Reach maps to an archetype-pair axis (Iron: Protector ↔ Conqueror; full eight in <code>cosmology.md</code>), and each choice tilts the agent toward one pole; (3) <strong>verbs are encounter-specific, soft-power flavoured</strong> — "Stir her resolve," never full control; (4) <strong>every primitive is clickable</strong> — every node an encounter names has a detail page. Flagged <span class="flag design">DESIGN</span> because they are an editorial contract enforced by authoring discipline, not engine-enforced.</li>
+        <li><strong>Player-as-god framing is binding</strong> (rejected: player-as-character). All choices are god actions (whisper, steady, withdraw, strengthen); "let them handle it" is always valid. Any choice that makes the mortal the agent is a drift bug.</li>
+      </ul>
+
+      <h3>KPI reality check — the honest gap <span class="flag design">DESIGN</span></h3>
+      <ul>
+        <li>The systems that host the curated chapter are <span class="flag impl">IMPL</span> and rich; the <em>content volume and tuning</em> are catching up. The THR-457 KPI harness recorded a <strong>June-11 baseline of ~89% encounter failure and 0 branching fires per 30 ticks</strong>. Post-fix (June-22, <code>Docs/audits/2026-06-22-encounter-content-and-delivery-assessment.md</code>): failure improved to <strong>29–33%</strong> (target ≤35%, met), branching rose to <strong>~0.5/30t</strong> (target ≥1, still red), and template <em>concentration</em> stayed red — one template (<code>confront_the_unknown</code>) took ~37% of selections (target ≤8% top-share). The manual describes the <em>intended</em> curated-chapter experience; this note keeps the delivery gap honest rather than papering over it. (The June-22 tree was 32 commits behind main — a fresh <code>npm run gameplay-report</code> re-measure is advised.)</li>
+      </ul>
+
+      <h3>Constants</h3>
+      <table class="tunables">
+        <thead><tr><th>Constant</th><th>Value</th><th>Purpose · file</th></tr></thead>
+        <tbody>
+          <tr><td>SIGMOID_MIDPOINT</td><td>10</td><td>Capability sigmoid midpoint · <code>src/engine/domainCapability.ts:13</code></td></tr>
+          <tr><td>SIGMOID_K</td><td>0.4</td><td>Capability sigmoid steepness · <code>src/engine/domainCapability.ts:14</code></td></tr>
+          <tr><td>PROBABILITY_FLOOR / CEILING</td><td>0.05 / 0.95</td><td>Resolution threshold clamp · <code>src/engine/resolutionService.ts:57,60</code></td></tr>
+          <tr><td>SCALE_DIFFICULTY_OFFSETS</td><td>−0.20 … +0.10</td><td>Difficulty by scale (personal→cosmic) · <code>src/engine/resolutionScaleAdjust.ts:36</code></td></tr>
+          <tr><td>CRIT_FAILURE_PERMITTED_BY_SCALE</td><td>personal/local = false</td><td>Small acts can't crit-fail · <code>resolutionScaleAdjust.ts:69</code></td></tr>
+          <tr><td>MAX_SCORED_CANDIDATES</td><td>40</td><td>Candidate cap before scoring · <code>src/data/agent-behavior-constants.ts:97</code></td></tr>
+          <tr><td>BRANCHING_CAP_RESERVE</td><td>1</td><td>Reserved branching slot past cap · <code>branchingConstants.ts</code></td></tr>
+          <tr><td>AWARENESS_THRESHOLD</td><td>0.05</td><td>Min capability to perceive beyond own hex · <code>agent-behavior-constants.ts:47</code></td></tr>
+          <tr><td>CAPABILITY_PER_HOP / MAX_AWARENESS_HOPS</td><td>0.15 / 5</td><td>Cross-hex awareness range · <code>agent-behavior-constants.ts:55,59</code></td></tr>
+          <tr><td>MARK_DECAY_GRACE_TICKS</td><td>20</td><td>Ticks before a hidden mark decays · <code>src/engine/hiddenMarks.ts:29</code></td></tr>
+          <tr><td>REVEAL_PROBABILITY_MULT</td><td>0.9</td><td>Hidden-mark reveal chance × severity · <code>hiddenMarks.ts:25</code></td></tr>
+          <tr><td>Encounter format</td><td>UnifiedActionTemplate</td><td>Single format since THR-108 · <code>src/types/unifiedAction.ts</code></td></tr>
+          <tr><td>Session pacing</td><td>3–6 / session</td><td><span class="flag design">DESIGN</span> discipline, not tuned · encounter experience plan §3</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Canon &amp; terminology</h3>
+      <ul>
+        <li>Synthesis authority: <code>Docs/canon/rulebook.md</code> §7. Content-spec authority: <code>Docs/canon/encounters.md</code> (the four rules, exemplars, rejected approaches, populated-variants framework). Systemic capabilities authors must use: <code>Docs/plans/2026-04-16-systemic-wiring-guide.md</code>.</li>
+        <li>UL authority (terminology wins on any disagreement): <code>Docs/ubiquitous-language/Encounters.md</code> (Encounter, UnifiedActionTemplate, Aftermath, Reaction, Encounter Seed, Hidden Mark, Encounter Awareness, Court Position, Causation). <em>Note:</em> the encounter-role "Court Position" here is distinct from the influence <code>CourtPosition</code> (<code>the_first|retinue|watched|dormant</code>) on the <a href="threads-court-reference.html">threads</a> page — a UL name-collision.</li>
+        <li>Adjacent Manual pages: <a href="turn-structure-reference.html">The Three-Beat Turn</a> (scan → moment → aftermath), <a href="divine-actions-reference.html">Divine Actions &amp; Prerequisites</a> (the intervention menu at the critical step), <a href="cosmology-reference.html">Reaches, Spheres &amp; Quintessence</a> (the archetype-pair moral axes). Deep drill-down: <a href="encounters-agents-reference.html">Encounters, Agents &amp; Resolution</a> (the resolution pipeline and agent decision engine in full).</li>
+      </ul>
+
+      <h3>Open questions <span class="flag open">OPEN</span></h3>
+      <ul>
+        <li>Referenced, not minted here: the 3–6-encounters-per-session pacing is held as design discipline pending real KPI session data (rulebook §7 open item); the branch-count ceiling (3-branch editorial target) has no hard engine enforcement (<code>encounters.md</code> Open Questions). This page opens no new rulebook question.</li>
+      </ul>
+
+    </div>
+  </details>
+
+  <div class="foot">
+    Game Manual Wiki · W7 (THR-592). Player layer describes current shipped behavior; anything not yet wired is flagged <span class="flag design">DESIGN</span> and introduced as &quot;intended&quot;. Terminology is UL-exact; where this page and the UL disagree, the UL wins and this page is a drift bug.
+  </div>
+
+</div>
+</body>
+</html>
