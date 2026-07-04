@@ -56,6 +56,7 @@ import type { SimulationRuntime } from '../src/engine/simulationRuntime';
 import { setTrackedAgents, getBalanceEvents, selectDefaultTrackedHero } from '../src/engine/balanceTelemetry';
 import { buildBalanceRunSummary, buildBalanceAgentJourneySummary } from '../src/engine/balanceSummary';
 import { computeGameplayKpiReport, isBranchingTemplate } from '../src/engine/kpi/gameplayKpi';
+import { isEncounterAction } from '../src/engine/chapterArchive';
 import { forceOfferBeatById } from '../src/engine/ascendantBeat';
 import { ASCENDANT_SPINE, ASCENDANT_BEAT_POOL } from '../src/data/ascendant-beat-content';
 import { ALL_DELIVERY_BEATS, eligibleDeliveryBeats, sourceTemplateIdOf } from '../src/engine/deliveryBeatAdapter';
@@ -372,6 +373,40 @@ function printEncounters(): void {
   }
   if (actions.length > 20) {
     console.log(dim(`  ... and ${actions.length - 20} more`));
+  }
+}
+
+// THR-603: list archived + active encounter chapters, optionally filtered by agent.
+function printChapters(agentQuery?: string): void {
+  const archive = state.chapterArchive ?? [];
+  const active = state.unifiedActions.filter(a => !a.resolved && isEncounterAction(a.templateId));
+  let records = archive;
+  let activeList = active;
+  if (agentQuery) {
+    const node = resolveAgentNode(agentQuery);
+    const id = node?.id;
+    if (!id) {
+      console.log(header(`Chapters — no agent matched "${agentQuery}"`));
+      return;
+    }
+    records = archive.filter(r => r.actorId === id || r.participants.some(p => p.id === id));
+    activeList = active.filter(a => a.actorId === id);
+  }
+  console.log(
+    header(
+      `Chapters — archived ${records.length}, active ${activeList.length}${agentQuery ? ` (filter: ${agentQuery})` : ''}`,
+    ),
+  );
+  for (const r of records.slice(-20)) {
+    const threaded = r.threaded ? '  ✦threaded' : '';
+    console.log(
+      `  ${dim(r.actionId.slice(0, 8))}  ${r.actorName}  ${r.templateName}  ${r.outcome}  ${r.steps.length} steps  t${r.startTick}→${r.resolvedTick}${threaded}`,
+    );
+  }
+  if (records.length > 20) console.log(dim(`  ... and ${records.length - 20} older`));
+  for (const a of activeList.slice(0, 20)) {
+    const actorName = state.graph.getNode(a.actorId)?.name ?? a.actorId.slice(0, 8);
+    console.log(`  ${dim(a.actionId.slice(0, 8))}  ${actorName}  ${a.templateId}  ${dim(`ACTIVE step:${a.currentStep}`)}`);
   }
 }
 
@@ -1019,6 +1054,7 @@ function printHelp(): void {
   console.log(`  ${BOLD}mandate${RESET}          Mandate status`);
   console.log(`  ${BOLD}essence${RESET}          Essence pool`);
   console.log(`  ${BOLD}encounters${RESET}       Active unified actions`);
+  console.log(`  ${BOLD}chapters${RESET} [agent]  Archived + active encounter chapters (THR-603), optionally by agent|@hero`);
   console.log(`  ${BOLD}factions${RESET}         List factions`);
   console.log(`  ${BOLD}genome${RESET} <name>    Inspect settlement genome result (sublocations, NPCs, archetype)`);
   console.log(`  ${BOLD}traces${RESET} [N]       Show last N traces (default 10)`);
@@ -1651,6 +1687,9 @@ function handleCommand(line: string): boolean {
     case 'encounters':
     case 'actions':
       printEncounters();
+      break;
+    case 'chapters':
+      printChapters(arg || undefined);
       break;
     case 'factions':
       printFactions();

@@ -897,6 +897,27 @@ if (import.meta.env.DEV) {
       return exportFn(runtime);
     },
 
+    // Chapter archive (THR-603) — resolved encounter chapters, always readable.
+    // Optional filter matches actor id/name, template id, or a participant id/name.
+    getChapterArchive: (filter?: string) => {
+      const state = _gameStateProvider?.();
+      const archive = state?.chapterArchive ?? [];
+      const needle = filter?.toLowerCase();
+      const records = needle
+        ? archive.filter(
+            r =>
+              r.actorId === filter ||
+              r.actorId.includes(filter!) ||
+              r.actorName.toLowerCase().includes(needle) ||
+              r.templateId.toLowerCase().includes(needle) ||
+              r.participants.some(
+                p => p.id === filter || p.name.toLowerCase().includes(needle),
+              ),
+          )
+        : archive;
+      return { count: records.length, records };
+    },
+
     // Encounter log exports — returns TSV strings for writing to disk
     getEncounterLogAll: () =>
       Promise.all([

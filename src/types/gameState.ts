@@ -14,6 +14,7 @@ import type { DoomClockState, DoomClockDefinition, DoomClockArchetype } from './
 import type { NarrativeEvent, ChronicleEntry } from './narrative';
 import type { EncounterProgress } from './encounter';
 import type { UnifiedAction, PendingEncounterSeed, HiddenMark, IntelligenceRecord } from './unifiedAction';
+import type { ChapterRecord } from './chapterRecord';
 import type { ActiveDelve, DelveQueueEntry, PendingEmergenceDecision } from '../engine/ruins/delveTypes';
 import type { HexMutation } from './hexMutation';
 import type { NotificationDirective } from './notification';
@@ -228,6 +229,14 @@ export interface GameState {
 
   // Unified Actions (replaces actionsInProgress + encounterProgress)
   unifiedActions: UnifiedAction[];
+  /**
+   * Persistent archive of resolved encounter chapters (THR-603). Resolved
+   * `unifiedActions` are pruned after `RESOLVED_ACTION_RETENTION_TICKS`; this array
+   * keeps a compact, always-readable snapshot of each resolved encounter for the whole
+   * run, powering the Chapter Ledger. Built at orchestrator cleanup before the prune.
+   * Optional so old saves load as an empty ledger (fail-soft).
+   */
+  chapterArchive?: readonly ChapterRecord[];
   /** Run-scoped unlocked actions (Starter actions are always available regardless).
    *  Grown by the `unlock_action` aftermath effect when a beat is resolved (THR-500). */
   unlockedActionIds?: readonly string[];

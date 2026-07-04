@@ -142,6 +142,15 @@ export interface SimulationRuntime {
   proseCache: Map<string, string>;
   /** Tick at which proseCache was last evicted. Starts at -1. */
   proseCacheTick: number;
+
+  // ── Doom-phase curation generosity (THR-603) ──
+  /**
+   * Doom-phase generosity multiplier applied to the branching curator's bias,
+   * recomputed once per tick in the orchestrator from
+   * `CURATION_PHASE_MULTIPLIERS[getJourneyPhase(doomClock.progress)]`. Neutral (1.0)
+   * until the first tick sets it. Read by `computeBranchingCuratorMultiplier`.
+   */
+  curationPhaseMultiplier: number;
 }
 
 // ─── Factory ──────────────────────────────────────────────────────
@@ -169,6 +178,7 @@ export function createSimulationRuntime(): SimulationRuntime {
     detailPageCacheTick: -Infinity,
     proseCache: new Map(),
     proseCacheTick: -1,
+    curationPhaseMultiplier: 1.0,
   };
 }
 
