@@ -9,19 +9,19 @@
  * | Name                              | Default                                        | Purpose                                 |
  * |-----------------------------------|------------------------------------------------|-----------------------------------------|
  * | SCALE_DIFFICULTY_OFFSETS          | {personal:−0.20, local:−0.10, regional:0, cosmic:+0.10} | Per-scale additive difficulty bias |
- * | MIN_PROBABILITY_BY_SCALE          | {personal:0.45, local:0.35, regional:0.20, cosmic:0.05}  | Per-scale soft probability floor   |
- * | CRIT_FAILURE_PERMITTED_BY_SCALE   | {personal:false, local:false, regional:true, cosmic:true}| Crit-fail gating by scale          |
+ * | MIN_PROBABILITY_BY_SCALE          | {personal:0.70, local:0.65, regional:0.20, cosmic:0.05}  | Per-scale soft probability floor   |
+ * | CRIT_FAILURE_SEVERITY_BY_SCALE    | {personal:'minor', local:'minor', regional:'standard', cosmic:'severe'} | Crit-fail consequence tier by scale (THR-571 E2) |
  *
  * ─── Fail-soft ──────────────────────────────────────────────────────
  * | scale undefined on template        | Treated as 'regional' (neutral, no adjustment)           |
  * | missing key in SCALE_DIFFICULTY_OFFSETS | offset = 0, log warning once per process          |
  * | missing key in MIN_PROBABILITY_BY_SCALE | fall through to PROBABILITY_FLOOR                 |
- * | missing key in CRIT_FAILURE_PERMITTED   | default true (back-compat, crit-fail allowed)     |
+ * | missing key in CRIT_FAILURE_SEVERITY   | default 'standard' (back-compat, moderate stakes) |
  */
 
 import { PROBABILITY_FLOOR } from './resolutionService';
 import type { ActionScale } from '../types/unifiedAction';
-import type { OutcomeType } from '../types/resolution';
+import type { ComplicationSeverity } from '../types/complication';
 
 // ─── Scale Constants ─────────────────────────────────────────────────
 
@@ -50,6 +50,14 @@ export const SCALE_DIFFICULTY_OFFSETS: Record<ActionScale, number> = {
  * Falls back to PROBABILITY_FLOOR for actors with very low capability —
  * the floor is a "capable actor should succeed at this rate" guarantee,
  * not a global minimum for all actors.
+ *
+ * THR-571 note (2026-07-03): a floor *retune* (lowering personal/local) was
+ * investigated to lift clean_success back into its KPI band, but the evidence
+ * refuted it — lowering the floor converts floored successes-at-cost into
+ * honest *failures*, it does not create clean successes. Clean success is
+ * limited by how many acting agents have raw P above the floor (a capability
+ * distribution question), not by the floor value. Values left unchanged; the
+ * clean_success / at_cost band calibration is a design decision (see THR-571).
  */
 export const MIN_PROBABILITY_BY_SCALE: Record<ActionScale, number> = {
   personal: 0.70,
@@ -59,18 +67,25 @@ export const MIN_PROBABILITY_BY_SCALE: Record<ActionScale, number> = {
 };
 
 /**
- * Whether doubles-over-threshold escalate to critical_failure.
+ * Consequence tier for a doubles-over-threshold critical_failure, by scale.
  *
- * Narrative rationale: critical failures must "read as drama".
- * A personal-scale social fumble or local-stakes errand gone wrong
- * is unfortunate, not catastrophic. Regional and cosmic actions
- * carry genuine stakes where disaster is meaningful.
+ * THR-571 E2 — replaces the old boolean `CRIT_FAILURE_PERMITTED_BY_SCALE` gate
+ * that mapped `critical_failure → failure` at personal/local scale. That gate
+ * suppressed the critical-failure *classification* entirely — it never reached
+ * prose, aftermath, KPI, or chronicle, so the whole tail read as dead air.
+ *
+ * The new model keeps the classification alive at every scale (the dice can
+ * still astonish) and scales only the *mechanical consequence*: a personal
+ * social fumble is a humiliation (`minor` complication tier), a cosmic-scale
+ * catastrophe is `severe`. Severity keys into the existing complication system
+ * (`complicationSelection.ts` — the crit-failure branch consumes this via the
+ * `critFailureSeverity` field on `ComplicationContext`).
  */
-export const CRIT_FAILURE_PERMITTED_BY_SCALE: Record<ActionScale, boolean> = {
-  personal: false,
-  local:    false,
-  regional: true,
-  cosmic:   true,
+export const CRIT_FAILURE_SEVERITY_BY_SCALE: Record<ActionScale, ComplicationSeverity> = {
+  personal: 'minor',
+  local:    'minor',
+  regional: 'standard',
+  cosmic:   'severe',
 };
 
 // ─── Helpers ─────────────────────────────────────────────────────────
@@ -122,22 +137,23 @@ export function applyScaleDifficultyAdjust(
   return { adjustedDifficulty, scaleOffsetApplied: scaleOffset, scaleFloorApplied };
 }
 
+/** Fail-soft default when a scale is missing from the severity map. */
+export const DEFAULT_CRIT_FAILURE_SEVERITY: ComplicationSeverity = 'standard';
+
 /**
- * Downgrade critical_failure to failure for scales that don't permit crit-fails.
+ * Resolve the complication-severity tier for a critical_failure at a given scale.
  *
- * Applied after resolution, at the caller boundary — analogous to the resist
- * mechanism. No changes to the pure-math resolver required.
+ * THR-571 E2 — replaces `applyScaleCritFailureGate`. The critical_failure
+ * outcome is no longer rewritten; instead this returns the severity tier that
+ * the complication selector uses to pick a scale-appropriate consequence. The
+ * outcome classification always survives (crit-failure tail is now reachable).
  *
- * @param outcome Raw outcome from the resolver
- * @param scale   Template scale; undefined treated as 'regional'
- * @returns       Downgraded outcome (if applicable) or original outcome
+ * @param scale Template scale; undefined treated as 'regional'
+ * @returns     The complication severity tier for this scale's crit-failures
  */
-export function applyScaleCritFailureGate(
-  outcome: OutcomeType,
+export function resolveCritFailureSeverity(
   scale: ActionScale | undefined,
-): OutcomeType {
-  if (outcome !== 'critical_failure') return outcome;
+): ComplicationSeverity {
   const resolvedScale: ActionScale = scale ?? 'regional';
-  const permit = CRIT_FAILURE_PERMITTED_BY_SCALE[resolvedScale] ?? true;
-  return permit ? outcome : 'failure';
+  return CRIT_FAILURE_SEVERITY_BY_SCALE[resolvedScale] ?? DEFAULT_CRIT_FAILURE_SEVERITY;
 }

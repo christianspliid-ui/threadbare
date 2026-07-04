@@ -86,6 +86,41 @@ export interface SimulationRuntime {
    */
   branchingFiresTotal: number;
 
+  // ── Failure-story counters (THR-571 C1) ──
+  /**
+   * Cumulative count of resolved actions whose final outcome was failure/critical_failure
+   * this session. Incremented once per newly-resolved failure-band action in the
+   * orchestrator's resolved-action cleanup, BEFORE `unifiedActions` is pruned — the same
+   * lifetime-counter pattern as branchingFiresTotal (THR-470), so failure_story_rate reads
+   * an honest full-run denominator rather than the windowed/pruned snapshot. This is the
+   * denominator for the KPI `failure_story_rate`.
+   */
+  failureOutcomesTotal: number;
+  /**
+   * Cumulative count of those failure-band resolutions that left ≥1 story artifact
+   * (a complication, an encounter seed, or a hidden mark — guaranteed by the C1 post-pass).
+   * Numerator for failure_story_rate. The post-pass places a scale-appropriate fallback
+   * hidden mark whenever a failure would otherwise leave nothing, so this tracks the
+   * denominator closely by design.
+   */
+  failureStoryArtifactsTotal: number;
+
+  // ── Outcome-ladder tail counters (THR-571 U1 re-band) ──
+  /**
+   * Cumulative count of resolved actions this session (any outcome). Incremented once per
+   * newly-resolved action in the orchestrator's resolved-action cleanup, BEFORE `unifiedActions`
+   * is pruned — the same lifetime-counter pattern as branchingFiresTotal (THR-470). This is the
+   * honest full-run denominator for the clean/crit-success rates, which are rare-signal bands:
+   * at ~72 resolved/window a windowed ≥2% tail is 1–2 events (too noisy to gate — a real run can
+   * read 0% purely from small-window variance). The lifetime numerator/denominator make those
+   * bands stable enough to threshold. See the design gate on THR-571 (2026-07-04).
+   */
+  resolvedActionsTotal: number;
+  /** Cumulative count of clean `success` resolutions this session. Numerator for the lifetime clean_success_rate. */
+  cleanSuccessTotal: number;
+  /** Cumulative count of `critical_success` resolutions this session. Numerator for the lifetime crit_success_rate. */
+  critSuccessTotal: number;
+
   // ── Threaded beat counter (THR-541) ──
   /**
    * Cumulative count of "rich" encounters (multi-step or branching — see isRichTemplate)
@@ -170,6 +205,11 @@ export function createSimulationRuntime(): SimulationRuntime {
     balanceTelemetryVersion: 0,
     eligibilityFunnel: createEligibilityFunnelCounters(0),
     branchingFiresTotal: 0,
+    failureOutcomesTotal: 0,
+    failureStoryArtifactsTotal: 0,
+    resolvedActionsTotal: 0,
+    cleanSuccessTotal: 0,
+    critSuccessTotal: 0,
     threadedBeatsTotal: 0,
     foreshadowingCache: new Map(),
     threadStoryCache: new Map(),

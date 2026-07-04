@@ -1327,3 +1327,25 @@ Leaf-first extraction of `GameView.tsx` (god-component) into presentational subc
 | Surface | File | Wiring |
 |---|---|---|
 | Top-bar / HUD strip (THR-579) | `src/components/Game/GameView/GameViewTopBar.tsx` (new) | Extracted the header cluster (SimulationControls, WorldSoulIndicator, AttentionPoolIndicator, DoomBar, OmenIndicator, RivalsButton, Read-the-Threads `IconButton`, Settings gear + `SettingsPanel`) verbatim. `GameView.tsx` renders `<GameViewTopBar … />` at the top of its return, passing `gameState` + discrete values/setters as props (`GameViewTopBarProps`). The 8 top-bar-only component imports moved from `GameView.tsx` into the leaf. Browser-verified at 1920×1080: full-width bar renders (1920×94), settings-toggle opens `SettingsPanel`, 0 console errors. |
+
+---
+
+## Cool-failure story-artifact guarantee (THR-571 C1)
+
+Every resolved `failure` / `critical_failure` action must leave ≥1 persistent story artifact so no failure reads as dead air. A post-pass detects an already-present artifact (step complication, aftermath-planted hidden mark, or `future_hook` encounter seed) and, when none exists, plants a scale-appropriate fallback hidden mark. Two lifetime counters back the KPI `failure_story_rate`.
+
+| Module | Orchestrator phase | UI / read site | GameState flow | Trace categories | Debug visibility |
+|---|---|---|---|---|---|
+| `src/engine/failureStoryArtifact.ts` (`guaranteeFailureStoryArtifact`) | Called in the resolved-action cleanup at the newly-resolved transition (same site as `branchingFiresTotal`), before the prune — `orchestrator.ts` | Fallback marks are discoverable by future encounters via the existing hidden-mark reveal loop (`consumeMatchingMarks`); the `failure_story_rate` row surfaces in `gameplay-report` / CLI KPI | Appends to `GameState.hiddenMarks` + a low-significance `TickEvent`; increments `SimulationRuntime.failureOutcomesTotal` / `failureStoryArtifactsTotal` (flow through `KpiRuntimeView` into `computeGameplayKpiReport`) | `outcome_story_artifact` (new — `source: existing\|fallback`, `artifactKind: complication\|seed\|mark\|none`) + reuses `hidden_mark_placed` for fallbacks | `failure_story_rate` KPI threshold (live once counters exist); `outcome_story_artifact` traces in the trace buffer |
+
+**Trace registry:** `outcome_story_artifact` added to `TraceCategory` union, `TRACE_CATEGORIES` array, and `TraceEntry` union with a typed `OutcomeStoryArtifactTrace` interface in `src/types/trace.ts`.
+
+---
+
+## Outcome-ladder distribution surfacing + KPI re-band (THR-571 U1)
+
+The outcome ladder made observable: a live histogram of the resolution split plus each KPI band's green/amber/red verdict, so the world's texture (at-cost-dominant, clean/crit rare) reads at a glance. Pure surfacing over `computeGameplayKpiReport` — no new outcome logic. The **re-band** (design gate 2026-07-04, "accept the capability-poor world") re-fits the bands so scrape-through owns the success mass and clean/crit are rare signals: at-cost ceiling 0.45→0.70, total-success floor 0.55→0.50, clean floor 0.20→0.03, crit-failure ceiling 0.05→0.15, failure ceiling 0.40→0.50. Clean/crit-success now read from **lifetime counters** (`resolvedActionsTotal` / `cleanSuccessTotal` / `critSuccessTotal` on `SimulationRuntime` + `KpiRuntimeView`, incremented at the newly-resolved transition) instead of the windowed snapshot — a windowed ≥N% tail over ~72 resolved/window is 1–2 events, too noisy to gate. Crit-success is **advisory** (`KpiThresholdEvaluation.advisory`, report-but-don't-gate): too rare (0.7–1.6% lifetime) to gate with margin.
+
+| Module | Orchestrator phase | UI / read site | GameState flow | Trace categories | Debug visibility |
+|---|---|---|---|---|---|
+| `computeGameplayKpiReport` (existing) | Lifetime counters incremented in resolved-action cleanup at the newly-resolved transition (same site as `branchingFiresTotal`) — `orchestrator.ts` | CLI `status` outcome line (`scripts/cli.ts` `printStatus`); **DebugPanel KPI tab** (`KpiDebugTab.tsx`) — full Outcome Ladder section (total/clean/at-cost/crit-succ/crit-fail/story) + advisory rows dimmed with `(adv)`; **chronicle band** (`ChapterView.tsx`) — final outcome rendered as a lexicon band ("won, at a price" / rare-tier gold-red for crits), never the raw enum | `SimulationRuntime.resolvedActionsTotal` / `cleanSuccessTotal` / `critSuccessTotal` → `KpiRuntimeView` → `computeGameplayKpiReport` | none new | `__DEBUG.getOutcomeDistribution(windowTicks?)` → `{ tick, seed, outcomes, thresholds }` (`src/debug-bridge.ts` + `.d.ts`); `windowTicks` filters the histogram by `completedAtTick`, cumulative rows stay lifetime |

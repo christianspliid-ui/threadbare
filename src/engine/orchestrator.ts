@@ -161,6 +161,8 @@ import type { ResourceInstance } from '../types/resource';
 import { createEncounterEventNode } from './encounterEventNode';
 import type { SimulationRuntime } from './simulationRuntime';
 import { isBranchingTemplate, isRichTemplate } from './kpi/gameplayKpi';
+import { guaranteeFailureStoryArtifact } from './failureStoryArtifact';
+import type { UnifiedAction } from '../types/unifiedAction';
 import { accumulateImportance, checkGraduationThreshold, graduateRarity, getImportanceDelta, getRarityTier } from './rarity';
 import {
   DIVINE_PROXIMITY_RADIUS_HEXES,
@@ -2677,6 +2679,9 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
     // here — BEFORE the prune below discards its steps/choices/aftermath. This decouples
     // "always readable" from `RESOLVED_ACTION_RETENTION_TICKS` (which stays unchanged).
     const newlyArchived: ChapterRecord[] = [];
+    // THR-571 C1: collect newly-resolved actions so the failure→story-artifact guarantee
+    // runs at the same transition, before the prune.
+    const newlyResolved: UnifiedAction[] = [];
     const stamped = s.unifiedActions.map(a => {
       if (a.resolved && a.completedAtTick == null) {
         // THR-470: count each branching fire exactly once, here at the newly-resolved
@@ -2685,11 +2690,19 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
         if (runtime && isBranchingTemplate(a.templateId)) runtime.branchingFiresTotal++;
         // THR-541: same pattern for threaded beats (rich = multi-step or branching).
         if (runtime && isRichTemplate(a.templateId)) runtime.threadedBeatsTotal++;
+        // THR-571 U1 re-band: lifetime denominator + clean/crit-success numerators for the
+        // rare-signal tail bands (windowed rates are too noisy at ~72 resolved/window).
+        if (runtime) {
+          runtime.resolvedActionsTotal++;
+          if (a.outcome === 'success') runtime.cleanSuccessTotal++;
+          else if (a.outcome === 'critical_success') runtime.critSuccessTotal++;
+        }
         const stampedAction = { ...a, completedAtTick: s.tick };
         if (isEncounterAction(a.templateId)) {
           const record = buildChapterRecord(stampedAction, s, runtime);
           if (record) newlyArchived.push(record);
         }
+        newlyResolved.push(stampedAction);
         return stampedAction;
       }
       return a;
@@ -2701,10 +2714,17 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
     for (const rec of newlyArchived) {
       emitChapterArchivedTrace(rec, s.tick, nextArchive?.length ?? 0);
     }
+    s = { ...s, chapterArchive: nextArchive, unifiedActions: stamped };
+    // THR-571 C1: every newly-resolved failure/critical_failure must leave ≥1 story artifact
+    // (a fallback hidden mark when none is present) and count toward failure_story_rate.
+    // Runs at the same newly-resolved transition as the branching counter, before the prune,
+    // so the lifetime counters are honest and each fallback mark is placed exactly once.
+    for (const a of newlyResolved) {
+      s = guaranteeFailureStoryArtifact(s, a, s.tick, runtime);
+    }
     s = {
       ...s,
-      chapterArchive: nextArchive,
-      unifiedActions: stamped.filter(a =>
+      unifiedActions: s.unifiedActions.filter(a =>
         !a.resolved || a.completedAtTick == null || s.tick - a.completedAtTick < RESOLVED_ACTION_RETENTION_TICKS,
       ),
     };

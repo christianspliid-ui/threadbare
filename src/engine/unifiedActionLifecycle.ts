@@ -161,6 +161,7 @@ export function advanceStep(
       resolved: true,
       outcome: actionOutcome,
       stepOutcomes: newStepOutcomes,
+      hadCriticalStep: computeHadCriticalStep(newStepOutcomes),
     };
   }
 
@@ -174,6 +175,7 @@ export function advanceStep(
       resolved: true,
       outcome: finalOutcome,
       stepOutcomes: newStepOutcomes,
+      hadCriticalStep: computeHadCriticalStep(newStepOutcomes),
     };
   }
 
@@ -264,20 +266,18 @@ function computeStepDuration(
  * Phase 3: Determine the overall action outcome from the full step outcome history.
  *
  * Rules:
- * - All steps critical_success → critical_success
  * - Any step failure/critical_failure with continue_weakened → success_at_cost
  * - Any success_at_cost step → success_at_cost (costs propagate)
- * - Mix of successes only → success
- * - Critical success on final step upgrades success → critical_success
- *   (only if no failures/costs earlier)
+ * - Any critical_success step on an otherwise clean run → critical_success
+ *   (THR-571: relaxed from "all-crit OR final-step-crit" so a single fluke of
+ *   brilliance is not aggregated away when it lands mid-action)
+ * - Mix of plain successes only → success
  */
 function computeFinalActionOutcome(stepOutcomes: readonly StepOutcome[]): UnifiedActionOutcome {
   if (stepOutcomes.length === 0) return 'failure';
 
   const hasAnyFailure = stepOutcomes.some(isStepFailure);
   const hasAnyCost = stepOutcomes.includes('success_at_cost') || stepOutcomes.includes('near_miss');
-  const allCritSuccess = stepOutcomes.every(o => o === 'critical_success');
-  const lastOutcome = stepOutcomes[stepOutcomes.length - 1];
 
   // If any step was a failure that continued (continue_weakened), the action
   // succeeded but at cost — the agent pushed through damaged
@@ -286,11 +286,24 @@ function computeFinalActionOutcome(stepOutcomes: readonly StepOutcome[]): Unifie
   // Any step was success_at_cost → whole action is success_at_cost
   if (hasAnyCost) return 'success_at_cost';
 
-  // All crits → critical_success
-  if (allCritSuccess) return 'critical_success';
-
-  // Final step crit with clean run → critical_success
-  if (lastOutcome === 'critical_success') return 'critical_success';
+  // THR-571: any critical-success step on a clean run (no failures/costs, guaranteed
+  // by the early returns above) → critical_success. Previously required all-crit or a
+  // final-step crit, which made surviving crits nearly unreachable at aggregation.
+  if (stepOutcomes.some(o => o === 'critical_success')) return 'critical_success';
 
   return 'success';
+}
+
+/**
+ * THR-571: Reduce a step-outcome history to the polarity of any mid-action critical
+ * step, preserved on the resolved action so prose/aftermath can reference it even when
+ * the final outcome collapses to success_at_cost. A disaster survived ('failure') wins
+ * over a fluke of brilliance ('success') when both occurred; null when neither did.
+ */
+export function computeHadCriticalStep(
+  stepOutcomes: readonly StepOutcome[],
+): 'success' | 'failure' | null {
+  if (stepOutcomes.some(o => o === 'critical_failure')) return 'failure';
+  if (stepOutcomes.some(o => o === 'critical_success')) return 'success';
+  return null;
 }

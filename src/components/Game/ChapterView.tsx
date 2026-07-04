@@ -9,7 +9,7 @@
  */
 
 import type { ChapterRecord } from '../../types/chapterRecord';
-import type { StepOutcome } from '../../types/unifiedAction';
+import type { StepOutcome, UnifiedActionOutcome } from '../../types/unifiedAction';
 
 interface ChapterViewProps {
   chapter: ChapterRecord;
@@ -37,6 +37,34 @@ const OUTCOME_TONE: Record<StepOutcome, string> = {
   failure: 'var(--text-secondary, #9a8f80)',
   critical_failure: 'var(--sphere-ruin, #a05050)',
 };
+
+/**
+ * THR-571 U1: the chapter's FINAL outcome band, named in the lexicon (never the raw enum).
+ * At-cost is the world's texture ("won, at a price"); the crit bands get the rare-tier
+ * gold/red accent so a player's eye catches the outcomes a god notices.
+ */
+const FINAL_OUTCOME_LABEL: Record<UnifiedActionOutcome, string> = {
+  critical_success: 'a triumph',
+  success: 'it held',
+  success_at_cost: 'won, at a price',
+  contested_won: 'won, contested',
+  contested_lost: 'lost, contested',
+  failure: 'it faltered',
+  critical_failure: 'it broke',
+};
+
+const FINAL_OUTCOME_TONE: Record<UnifiedActionOutcome, string> = {
+  critical_success: 'var(--accent-gold, #d4af37)',
+  success: 'var(--sphere-life, #6a9a5a)',
+  success_at_cost: 'var(--accent-amber, #c8963c)',
+  contested_won: 'var(--sphere-life, #6a9a5a)',
+  contested_lost: 'var(--text-secondary, #9a8f80)',
+  failure: 'var(--text-secondary, #9a8f80)',
+  critical_failure: 'var(--sphere-ruin, #a05050)',
+};
+
+/** The two rare-tier bands a god notices — get a heavier accent weight in the header. */
+const RARE_OUTCOMES: ReadonlySet<UnifiedActionOutcome> = new Set(['critical_success', 'critical_failure']);
 
 function EntityLink({
   id,
@@ -92,9 +120,14 @@ function Prose({ text }: { text: string }) {
 }
 
 export function ChapterView({ chapter, onOpenEntity, onBack }: ChapterViewProps) {
-  const statusLine = chapter.resolved
-    ? `resolved · ${chapter.outcome ?? 'unknown'}`
-    : 'unfolding';
+  const finalOutcome = chapter.resolved ? chapter.outcome : undefined;
+  const outcomeBand = finalOutcome
+    ? {
+        label: FINAL_OUTCOME_LABEL[finalOutcome] ?? finalOutcome,
+        tone: FINAL_OUTCOME_TONE[finalOutcome] ?? 'var(--text-secondary, #9a8f80)',
+        rare: RARE_OUTCOMES.has(finalOutcome),
+      }
+    : null;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3, 12px)' }}>
@@ -132,7 +165,19 @@ export function ChapterView({ chapter, onOpenEntity, onBack }: ChapterViewProps)
           {' · at '}
           <EntityLink id={chapter.targetId} name={chapter.targetName} onOpenEntity={onOpenEntity} />
           {' · '}
-          {statusLine}
+          {outcomeBand ? (
+            <span
+              style={{
+                color: outcomeBand.tone,
+                fontWeight: outcomeBand.rare ? 600 : 'inherit',
+                letterSpacing: outcomeBand.rare ? '0.02em' : undefined,
+              }}
+            >
+              {outcomeBand.rare && '✦ '}{outcomeBand.label}
+            </span>
+          ) : (
+            'unfolding'
+          )}
           {chapter.threaded && ' · ✦ threaded'}
         </div>
       </div>

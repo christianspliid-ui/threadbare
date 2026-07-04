@@ -112,10 +112,12 @@ export function KpiDebugTab({ currentTick }: { currentTick: number }) {
           const col = statusColor(t.status);
           const mark = t.status === 'green' ? '✓' : t.status === 'red' ? '✗' : '~';
           const dir = t.direction === 'above_is_bad' ? '≤' : '≥';
+          // THR-571: advisory rows (crit-success tail) are report-but-don't-gate — dim them
+          // so a reader sees they never fail the run.
           return (
-            <div key={t.metric} style={ROW_STYLE}>
+            <div key={t.metric} style={{ ...ROW_STYLE, opacity: t.advisory ? 0.6 : 1 }}>
               <span style={{ color: col, width: '12px', flexShrink: 0 }}>{mark}</span>
-              <span style={{ flex: 1, color: 'var(--text-secondary)' }}>{t.metric}</span>
+              <span style={{ flex: 1, color: 'var(--text-secondary)' }}>{t.metric}{t.advisory ? ' (adv)' : ''}</span>
               <span style={{ color: col }}>{fix2(t.value)}</span>
               <span style={MUTED}>{dir}{fix2(t.threshold)}</span>
             </div>
@@ -123,14 +125,19 @@ export function KpiDebugTab({ currentTick }: { currentTick: number }) {
         })}
       </div>
 
-      {/* Outcome distribution */}
+      {/* Outcome distribution — the full outcome ladder (THR-571). At-cost is the world's
+          texture; clean/crit-success are rare signals (lifetime rates); every failure → story. */}
       <div style={SECTION_STYLE}>
-        <div style={HEADER_STYLE}>Outcome Distribution {o.insufficientData ? <span style={{ color: '#c4a84a' }}>(low data n={o.total})</span> : `(n=${o.total})`}</div>
+        <div style={HEADER_STYLE}>Outcome Ladder {o.insufficientData ? <span style={{ color: '#c4a84a' }}>(low data n={o.total})</span> : `(n=${o.total})`}</div>
         {!o.insufficientData && (
           <>
-            <div style={ROW_STYLE}><span style={MUTED}>Failure rate:</span><span>{pct(o.failureRate)}</span></div>
-            <div style={ROW_STYLE}><span style={MUTED}>Crit-fail rate:</span><span>{pct(o.critFailRate)}</span></div>
-            <div style={ROW_STYLE}><span style={MUTED}>Clean success:</span><span>{pct(o.cleanSuccessRate)}</span></div>
+            <div style={ROW_STYLE}><span style={{ ...MUTED, flex: 1 }}>Total success:</span><span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{pct(o.totalSuccessRate)}</span></div>
+            <div style={{ ...ROW_STYLE, paddingLeft: '8px' }}><span style={{ ...MUTED, flex: 1 }}>· clean success:</span><span>{pct(o.cleanSuccessRate)}</span></div>
+            <div style={{ ...ROW_STYLE, paddingLeft: '8px' }}><span style={{ ...MUTED, flex: 1 }}>· at-cost (texture):</span><span>{pct(o.atCostShare)}</span></div>
+            <div style={{ ...ROW_STYLE, paddingLeft: '8px' }}><span style={{ ...MUTED, flex: 1 }}>· crit success (adv):</span><span>{pct(o.critSuccessRate)}</span></div>
+            <div style={ROW_STYLE}><span style={{ ...MUTED, flex: 1 }}>Failure rate:</span><span>{pct(o.failureRate)}</span></div>
+            <div style={{ ...ROW_STYLE, paddingLeft: '8px' }}><span style={{ ...MUTED, flex: 1 }}>· crit failure:</span><span>{pct(o.critFailRate)}</span></div>
+            <div style={ROW_STYLE}><span style={{ ...MUTED, flex: 1 }}>Failure→story:</span><span>{o.failureStoryRate === null ? 'n/a' : pct(o.failureStoryRate)}</span></div>
           </>
         )}
       </div>
