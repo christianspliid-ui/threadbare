@@ -2,7 +2,7 @@
 name: encounter-pipeline
 description: Automated encounter pipeline v2. Runs draft → editorial+revision → systems+merge → implementation for complete encounter delivery. Triggers on "encounter pipeline", "draft encounter", "run encounter pipeline", "author encounter", or "/encounter-pipeline".
 model: opus
-last_validated_against: 2026-05-12
+last_validated_against: 2026-07-05
 ---
 
 > **Load before authoring:** `Docs/canon/rulebook-quick-reference.md` (always — the synthesis layer for rules of play). Load `Docs/canon/rulebook.md` (full rulebook) when the work touches a specific rule of play and you need depth, status flags, or source citations.
@@ -48,6 +48,8 @@ If `Docs/canon/encounters.md` is missing or inaccessible, fall back to the pre-r
 **Player-as-god framing constraint.** The player is a god who observes through threads and intervenes indirectly. They NEVER make choices for the character. When writing encounter choices, intervention options, or any player-facing decision point: the choices must be what the *god* does (whisper, send vision, steady, strengthen, withdraw), never what the *mortal* does (say this, go there, fight). The mortal acts according to their personality and the god's influence. "Let them handle it" must always be a valid option.
 
 **The editorial agent must check against these principles.** If a draft has structurally correct encounters but emotionally inert prose — if failure is just "you failed" with a number change, if choices have obvious right answers, if the player wouldn't care about the outcome — the editorial agent should REVISE, not PASS. **Additionally, any encounter where the player "chooses how the character responds" must be rejected and reframed as divine intervention.**
+
+**Register enforcement (plainspoken Malazan, THR-609).** The editorial agent must also check register. **Baseline is the default:** step narration, choice `intent` bodies, and aftermath overviews are plain, concrete, one idea per sentence, dry wit over ornament — no archaic diction, no stacked metaphor, no word that sends a reader to a dictionary. **Choice labels and card names are interactive text — always plain** (no metaphor, no ambiguity about what the click does). The **only** place sustained lyricism is earned is a declared **peak** surface: the final (climax) step of a branching encounter and major aftermath beats — and even there, one figurative image per paragraph. A draft that reaches for lyricism in ordinary narration should REVISE. Declare non-default fields with the additive `register?: 'baseline' | 'character' | 'peak'` field (absent → baseline). Canon: [`Docs/canon/prose.md` § the register model](../../../Docs/canon/prose.md); deterministic floor: `registerCompliance` in `window.__DEBUG.proseQualityReport()`.
 
 ## Quality Exemplar
 

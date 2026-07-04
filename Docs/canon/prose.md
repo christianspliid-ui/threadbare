@@ -1,7 +1,7 @@
 ---
 domain: prose
-last_reviewed: 2026-05-06
-reviewer: cowork
+last_reviewed: 2026-07-05
+reviewer: claude-code
 ul_shards: [Prose, Encounters]
 status: live
 ---
@@ -45,7 +45,7 @@ The four pipelines compose: a vignette step calls enrichment; an entity descript
 - **Cosmology Canon (terminology authority for reach/sphere terms):** [Docs/canon/cosmology.md](cosmology.md) — 8 Reaches, 12 Spheres, Quintessence as meta-property (not a Reach).
 - **Compiled brief:** [Docs/authoring-brief.md](../authoring-brief.md) — sha-pinned preamble regenerated via `npm run build-authoring-brief`; staleness check `npm run check:authoring-brief`.
 - **Narrative Lexicon (10-tier per-Reach vocabulary):** `NARRATIVE_LEXICON` in [src/types/traits.ts](../../src/types/traits.ts).
-- **Exemplars:** [Docs/exemplars.md](../exemplars.md) — encounter-prose exemplars `rival-shrine-betrayal.ts` (10/10), `flawed-steel.ts` (9/10). Standalone prose exemplar row is **TBD** (open question, below).
+- **Exemplars:** [Docs/exemplars.md](../exemplars.md) — encounter-prose exemplars `rival-shrine-betrayal.ts` (10/10), `flawed-steel.ts` (9/10), plus inline **baseline-register** and **peak-register** prose exemplars (THR-609) showing the register contrast.
 
 ## Threadbare voice rules (read once, hold throughout)
 
@@ -59,6 +59,37 @@ The aesthetic is a hard constraint, not a stylistic suggestion. Drift is the mos
 - **Dry wit over comedy. Irony over sentimentality.**
 
 The full voice articulation lives in `Obsidian → Systems/Tonal Bible.md` and `Systems/Narrative Engine.md` (verify freshness — vault Systems pages can lag code; if these pages contradict UL or this Canon page, the UL/Canon wins and the vault page needs a `drift-scan` issue).
+
+## The register model (settled — plainspoken Malazan, THR-609)
+
+The voice rules above say *what* the texture is. The register model says *how plain* — and it is enforced, because content has been drifting lyrical in practice despite the rules. **Plainness is the baseline; lyricism is the rationed exception, not the default.** Malazan is not high lyrical literature all the time — its funniest, most human beats are plain-spoken squad banter. That is the default voice here. This is a diction calibration, not a length cut: long prose stays a feature.
+
+Every player-facing string belongs to exactly one of three registers.
+
+**1. Baseline narration — the default, the large majority of words the player reads.**
+Plain, concrete, active. Short-to-medium sentences, one idea each. Concrete nouns and verbs over abstractions. Dry understatement and deadpan humor are the preferred texture — soldiers talking around a fire, not the Kharkanas high register. Stacked metaphors, archaic diction, and ornamental subordinate clauses are drift. If a word would send a reader to a dictionary, it does not belong in baseline.
+
+**2. Character voice — dialogue and agent-attributed lines.**
+Idiosyncratic per persona, but comprehension-first: wit over ornament. A character may be florid *as characterization* — sparingly, at most one such voice per scene (the Kruppe allowance) — but the narration around them stays baseline.
+
+**3. Peak register — rationed lyricism.**
+Reserved for designated surfaces: doom stage transitions, the Twilight Phase, encounter climax steps (the final step of a branching encounter), major aftermath beats, and World-Soul / Echo prose. Here the cosmic-melancholy lyric is earned. Budget: at most one figurative image per paragraph; sentence rhythm may stretch. Rare vocabulary is allowed only when the sentence glosses it in context.
+
+**Hard rule — interactive text is always plain.** Choice labels, action-card names, buttons, IPK keywords, tooltips, panel headings: no metaphor, no archaic words, no ambiguity about what a click does. A player must never misread an affordance because the label was being literary. IPK keywords are the learning engine — they stay mechanical-plain.
+
+### Declaring a register in content
+
+Register is an **additive optional field** on content entries / template prose fields: `register?: 'baseline' | 'character' | 'peak'`. **Absent → `baseline`** (the strictest common case). Only declare `peak` on the designated surfaces above; only declare `character` on dialogue-attributed lines. Do not reach for `peak` to license a lyrical impulse in baseline narration — that is exactly the drift this model exists to stop.
+
+### The scorer is the floor, not the ceiling
+
+The prose-QA audit ([`registerCompliance`](../../src/engine/content-eval/registerCompliance.ts) in the THR-490 harness — `window.__DEBUG.proseQualityReport()`) measures register drift deterministically: average sentence length, rare-word density, figurative-image density per paragraph, and interactive-label plainness. A `warn` with editorial sign-off may still ship (NFP #5 — the scorer serves the voice, not the reverse); a `fail` requires either a rewrite or an honest register re-declaration. Thresholds are named constants in [`registerRubric.ts`](../../src/data/content-eval/registerRubric.ts) — tune the constant, never special-case the prose.
+
+### Before / after (authoring reference)
+
+- **Label** — wrong: *"Beseech the Sundered Veil."* right: *"Part the Veil."*
+- **Baseline** — wrong: *"The merchant's ambit had grown parlous, freighted with the weight of unspoken covenants."* right: *"The merchant owed too many people too much. He'd started checking the door."*
+- **Peak** (allowed, doom transition): *"The bells stopped. Whatever had been holding its breath beneath the city let it out."*
 
 ## Per-template quality bar (5 questions, ask every time)
 
@@ -100,11 +131,11 @@ If a draft has the player choosing what the mortal does, it is wrong even if the
 
 ## Open questions
 
-- **Prose exemplar TBD** — `Docs/exemplars.md` row for standalone prose is a placeholder ("`<TBD - promote when a clear exemplar ships>`"). Encounter exemplars cover *encounter-embedded* prose, not standalone prose tables. Promote a content-table exemplar (e.g. a single high-quality `BIOME_PROSE` entry, an enrichment-aware vignette) when one ships.
+- **Prose exemplar** — *resolved (THR-609):* `Docs/exemplars.md` now carries inline baseline-register and peak-register prose exemplars showing the register contrast. A promoted *content-table* exemplar (e.g. a single high-quality `BIOME_PROSE` entry, an enrichment-aware vignette) is still welcome when one ships, but the standalone-prose row is no longer a placeholder.
 - **Vault Systems freshness** — `Obsidian → Systems/Tonal Bible.md` and `Systems/Narrative Engine.md` may lag code. The first agent who touches them should verify against this page and the UL Prose shard, then either update them or open a `drift-scan` issue.
 - **`success_at_cost` outcome wiring** — the outcome ladder includes `success_at_cost`; runtime support is partial (Phase 3). Author content with it in mind; verify before relying on it.
 - **Routine prose `ShapedTemplate` coverage** — target is 5 shapes (`svo | aftermath | inverted | compound | fragment`) per event type. Current pool coverage is uneven; new templates should fill the gap.
 
 ## Last-reviewed
 
-2026-05-06 by Cowork. Review trigger: monthly, or when any linked plan moves to `superseded`, or when the systemic wiring guide gains a new capability that prose authors must respect.
+2026-07-05 by Claude Code (THR-609 — added the register model section). Review trigger: monthly, or when any linked plan moves to `superseded`, or when the systemic wiring guide gains a new capability that prose authors must respect.

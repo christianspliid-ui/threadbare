@@ -13,7 +13,7 @@ description: >
   content", "sphere vocabulary", "cultural prose", "spell flavor", "effect
   prose", "movement content", "content table", "write prose".
 model: opus
-last_validated_against: 2026-05-12
+last_validated_against: 2026-07-05
 ---
 
 > **Load before authoring:** `Docs/canon/rulebook-quick-reference.md` (always — the synthesis layer for rules of play). Load `Docs/canon/rulebook.md` (full rulebook) when the work touches a specific rule of play and you need depth, status flags, or source citations.
@@ -51,6 +51,8 @@ If the Canon page disagrees with this skill, the Canon page wins until this skil
 5. **Does this serve the three-beat loop?** Content surfaces during portfolio scan (Beat 1), curated moments (Beat 2), or aftermath (Beat 3). Which beat does this content serve? Is it pulling its weight in that beat?
 
 **When in doubt, write the scene first.** Before filling in template fields (ID, severity, effects, reach affinity), write the moment as a paragraph of prose. What is the protagonist doing? What goes wrong (or right)? What does the player read? What do they feel? Then extract the template fields from the scene. This is the reverse of the usual workflow — and it produces dramatically better content.
+
+**Register (plainspoken Malazan, THR-609): write baseline unless the surface is a designated peak.** Plainness is the default and the large majority of what you author. **baseline** — plain, concrete, one idea per sentence, dry wit over ornament; no archaic diction, no stacked metaphor, no word that sends the reader to a dictionary. **character** — dialogue only; wit over ornament. **peak** — rationed lyricism, only on doom transitions, Twilight, encounter climax steps, major aftermath, World-Soul prose. **Interactive text (labels, action-card names, IPK keywords, tooltips) is always plain.** Declare a non-default register with the additive `register?: 'baseline' | 'character' | 'peak'` field (absent → baseline). Canon: [`Docs/canon/prose.md` § the register model](../../../Docs/canon/prose.md). Deterministic floor: `registerCompliance` in `window.__DEBUG.proseQualityReport()` — measures sentence length, rare-word density, figurative density, label plainness.
 
 ## Content Tables Reference
 
