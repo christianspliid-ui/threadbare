@@ -206,6 +206,6 @@ Run through this before marking a task as done:
 - [ ] If phase ordering changed → orchestrator integration test exists and passes
 - [ ] If `MovementState` changed → verified all 15 consumer files handle new shape (see blast radius in road-aware-movement design doc)
 - [ ] If HexMapV2 data flow changed → visual verification at `?view=game&seeded` at all zoom tiers
-- [ ] No new `describe.skip` blocks added without a tracking issue in BACKLOG.md
+- [ ] No new `describe.skip` blocks added without a tracking issue in Linear (Threadbare team)
 - [ ] No new `vi.mock` at integration boundaries without a corresponding contract test
 - [ ] PRNG is seeded in all new movement/decision tests

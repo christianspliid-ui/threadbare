@@ -99,20 +99,29 @@ Reaches and Spheres are **orthogonal axes**. Spheres flavor *how* a reach's acti
 
 ### Cosmological Pattern — reach × archetype-axis
 
-Each of the 8 Reaches maps to an archetype-pair axis (the moral dimension in the Cosmological Pattern). These axes drive encounter tilt in the encounter experience design:
+Each of the 8 Reaches maps to an archetype-pair axis (the moral dimension in the Cosmological Pattern). The **virtue pole** (left) and **vice pole** (right) each carry a plain behavioral word that names how that pole shows up in a character. These axes drive encounter tilt in the encounter experience design.
 
-| Reach | Archetype axis |
-|-------|----------------|
-| Iron | Protector ↔ Conqueror |
-| Gold | Patron ↔ Extractor |
-| Shadow | Saboteur ↔ Deceiver |
-| Veil | Seer ↔ Manipulator |
-| Heart | Sworn ↔ Renegade |
-| Eye | Witness ↔ Judge |
-| Stone | Keeper ↔ Destroyer |
-| Star | Beacon ↔ Wrecker |
+| Reach | Virtue pole | Vice pole |
+|-------|-------------|-----------|
+| Iron | Protector (Brave) | Conqueror (Power-Hungry) |
+| Gold | Patron (Generous) | Extractor (Greedy) |
+| Shadow | Broker (Fair) | Manipulator (Scheming) |
+| Veil | Weaver (Patient) | Unraveller (Impatient) |
+| Heart | Sworn (Loyal) | Renegade (Disloyal) |
+| Eye | Seer (Perceptive) | Inquisitor (Judgemental) |
+| Stone | Keeper (Dependable) | Destroyer (Reckless) |
+| Star | Beacon (Guiding) | Wrecker (Misleading) |
 
-**Source:** `Brainstorms/brainstorm-cosmological-symmetry.md` (2026-03-28).
+**Behavioral words are deliberately plain** (not literary) for in-game readability — see the change note below.
+
+**Note on 2026-06-29 revision:** Four pole names changed from the original 2026-03-28 brainstorm, and two terms relocated between reaches:
+- Shadow: Saboteur → **Broker**, Deceiver → **Manipulator** (Shadow redefined around covert social leverage — the chaotic-good thieves-guild fixer — not just stealth/sabotage).
+- Veil: Seer → **Weaver**, Manipulator → **Unraveller** (thread-motif: weaving vs unravelling the threads of fate/magic).
+- Eye: Witness → **Seer**, Judge → **Inquisitor**.
+- Star: Wanderer → **Beacon**.
+- **`Manipulator` relocated Veil → Shadow** and **`Seer` relocated Veil → Eye.** Any content/code referencing these archetype names by reach must be checked against this table.
+
+**Source:** approved by user (creative director), 2026-06-29 — supersedes the archetype-pole names in `Brainstorms/brainstorm-cosmological-symmetry.md` (2026-03-28). See `Docs/plans/2026-06-29-archetype-virtue-vice-layer.md` for the full decision record and wiring spec.
 
 ### Key sources
 

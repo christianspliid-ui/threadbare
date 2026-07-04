@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Threadbearer — Opening &amp; Action Availability</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0c0b10;        /* near black */
+    --panel:#15131c;
+    --panel2:#1c1925;
+    --ink:#e8ddc7;        /* bone */
+    --ink-dim:#a99f8c;
+    --line:#2c2737;
+    --gold:#c9a24a;
+    --gold-dim:#7d6a35;
+    --crimson:#a14352;
+    /* reach colors */
+    --eye:#5aa6c9; --heart:#c95a86; --star:#b48bd6; --veil:#6f8fb0;
+    --shadow:#7a6f97; --iron:#b06a46; --stone:#8c8470; --gold-r:#c9a24a; --life:#6bb079;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:'EB Garamond',Georgia,serif;font-size:17px;line-height:1.5;
+    background-image:radial-gradient(circle at 20% -10%,#1a1726 0,transparent 45%),radial-gradient(circle at 100% 0,#171320 0,transparent 40%);}
+  .wrap{max-width:1500px;margin:0 auto;padding:38px 40px 80px}
+  h1{font-family:'Cormorant Garamond',serif;font-weight:700;font-size:46px;letter-spacing:.5px;margin:0 0 4px;color:var(--ink)}
+  h1 .sub{color:var(--gold)}
+  .lede{color:var(--ink-dim);font-style:italic;max-width:880px;margin:0 0 6px}
+  .note{color:var(--gold-dim);font-size:14px;max-width:880px;margin:10px 0 0;border-left:2px solid var(--gold-dim);padding-left:12px}
+  h2{font-family:'Cormorant Garamond',serif;font-weight:600;font-size:27px;color:var(--gold);
+    margin:46px 0 14px;padding-bottom:6px;border-bottom:1px solid var(--line);letter-spacing:.3px}
+  h2 .n{color:var(--gold-dim);font-size:19px;margin-right:8px}
+  .grid{display:grid;gap:14px}
+  .panel{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:10px;padding:16px 18px}
+  .panel h3{font-family:'Cormorant Garamond',serif;font-size:21px;margin:0 0 6px;color:var(--ink)}
+  .panel p{margin:4px 0;color:var(--ink-dim)}
+  .small{font-size:14px}
+  code{font-family:'SF Mono',ui-monospace,Menlo,monospace;font-size:13px;color:var(--gold);background:#000;padding:1px 6px;border-radius:4px;border:1px solid var(--line)}
+  .two{grid-template-columns:1fr 1fr}
+  .four{grid-template-columns:repeat(4,1fr)}
+  .tag{display:inline-block;font-size:12px;letter-spacing:.5px;text-transform:uppercase;padding:2px 8px;border-radius:20px;border:1px solid var(--line);color:var(--ink-dim)}
+  .tag.floor{color:#0c0b10;background:var(--gold);border-color:var(--gold);font-weight:600}
+  .tag.unlock{color:var(--gold);border-color:var(--gold-dim)}
+  .tag.reach{color:var(--star);border-color:#4a3d5e}
+  /* gate cascade */
+  .cascade{display:flex;flex-direction:column;gap:0;max-width:760px}
+  .gate{display:flex;align-items:center;gap:14px;padding:9px 14px;border:1px solid var(--line);background:var(--panel);position:relative}
+  .gate:first-child{border-top-left-radius:10px;border-top-right-radius:10px}
+  .gate:last-child{border-bottom-left-radius:10px;border-bottom-right-radius:10px}
+  .gate+.gate{border-top:none}
+  .gate .num{width:26px;height:26px;flex:0 0 26px;border-radius:50%;border:1px solid var(--gold-dim);color:var(--gold);display:flex;align-items:center;justify-content:center;font-size:13px}
+  .gate .gname{font-weight:500;color:var(--ink);min-width:150px}
+  .gate .gdesc{color:var(--ink-dim);font-size:14px}
+  .gate.lever{background:linear-gradient(90deg,#2a2238,var(--panel));border-color:var(--gold-dim)}
+  .gate.lever .num{background:var(--gold);color:#0c0b10;border-color:var(--gold)}
+  .gate.lever .gname{color:var(--gold)}
+  .leverkey{font-size:13px;color:var(--gold);margin:8px 0 0}
+  /* timeline */
+  .timeline{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-top:6px}
+  .beat{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;border-top:3px solid var(--gold-dim)}
+  .beat .turn{font-size:12px;letter-spacing:1px;text-transform:uppercase;color:var(--gold-dim)}
+  .beat h4{font-family:'Cormorant Garamond',serif;font-size:19px;margin:2px 0 8px;color:var(--ink)}
+  .beat .row{font-size:13px;color:var(--ink-dim);margin:3px 0}
+  .beat .row b{color:var(--ink);font-weight:600}
+  .beat.pool{border-top-color:var(--star);background:linear-gradient(180deg,#191525,var(--panel2))}
+  /* surfaces */
+  .surf{display:grid;grid-template-columns:1.1fr 1.6fr .9fr;gap:0;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .surf .cell{padding:10px 14px;border-bottom:1px solid var(--line)}
+  .surf .head .cell{background:#000;color:var(--gold);font-size:13px;letter-spacing:.5px;text-transform:uppercase}
+  .surf .row{display:contents}
+  .surf .row .cell:nth-child(2){color:var(--ink-dim)}
+  /* dials */
+  table.dials{width:100%;border-collapse:collapse;font-size:15px}
+  table.dials th,table.dials td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+  table.dials th{color:var(--gold);font-weight:600;font-family:'Cormorant Garamond',serif;font-size:18px}
+  table.dials td:first-child{white-space:nowrap}
+  .reachchips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+  .rc{font-size:12px;padding:2px 9px;border-radius:20px;color:#0c0b10;font-weight:600}
+  .legendrow{display:flex;gap:18px;flex-wrap:wrap;align-items:center;color:var(--ink-dim);font-size:14px;margin-top:8px}
+  .bucket{border-left:3px solid var(--line);padding-left:14px;margin:4px 0}
+  .bucket.g{border-color:var(--gold)} .bucket.u{border-color:var(--gold-dim)} .bucket.r{border-color:var(--star)}
+  .arrow{color:var(--gold-dim);text-align:center;font-size:20px;line-height:.6;margin:-2px 0}
+  .foot{margin-top:50px;color:var(--gold-dim);font-size:13px;border-top:1px solid var(--line);padding-top:16px}
+  a{color:var(--gold)}
+</style>
+</head>
+<body>
+<nav style="position:sticky;top:0;z-index:999;display:flex;gap:4px;align-items:center;flex-wrap:wrap;background:rgba(0,0,0,.92);border-bottom:1px solid #2c2737;padding:9px 22px;font-family:'EB Garamond',Georgia,serif;font-size:15px">
+  <a href="/design-wiki.html" style="color:#c9a24a;text-decoration:none;font-weight:600;padding:5px 11px;margin-right:8px">⌂ Design Wiki</a>
+  <a href="/opening-system.html" style="color:#c9a24a;background:#2a2238;text-decoration:none;padding:5px 11px;border-radius:6px">Opening &amp; Availability</a>
+  <a href="/action-catalog.html" style="color:#e8ddc7;text-decoration:none;padding:5px 11px;border-radius:6px">Action Catalog</a>
+  <a href="/tick-cycle-reference.html" style="color:#e8ddc7;text-decoration:none;padding:5px 11px;border-radius:6px">Tick Cycle</a>
+  <a href="/encounters-agents-reference.html" style="color:#e8ddc7;text-decoration:none;padding:5px 11px;border-radius:6px">Encounters &amp; Agents</a>
+</nav>
+<div class="wrap">
+  <h1>Threadbearer — <span class="sub">Opening &amp; Action Availability</span></h1>
+  <p class="lede">How a divine action becomes available to the player, and when. This is the knob-board for the opening experience — the system we tune to make the game start good and fun.</p>
+  <p class="note">Reflects the Ascendant Beats — Divine Cadence design (shipped per Linear, 2026-06-28). Companion to the canonical doc <code>Docs/plans/2026-06-28-opening-and-action-availability.md</code> and the visual catalog <code>action-catalog.html</code>.</p>
+
+  <h2><span class="n">1</span>The two axes</h2>
+  <div class="grid two">
+    <div class="panel"><h3>Does the action exist?</h3><p>The <b>catalog</b> — ~114 ascendant templates today, plus the Ascendant Beats verbs. Grows slowly. See <code>action-catalog.html</code>.</p></div>
+    <div class="panel" style="border-color:var(--gold-dim)"><h3>Is it available <i>right now</i>?</h3><p>The <b>availability system</b> — floor → unlocks → gates → surfaces. <span style="color:var(--gold)">This is where the opening is tuned.</span></p></div>
+  </div>
+
+  <h2><span class="n">2</span>The floor — turn 1</h2>
+  <div class="panel">
+    <p style="font-size:19px;color:var(--ink)">A fresh run shows <span class="tag floor">Move</span> &nbsp;<span class="tag floor">Investiture</span> &nbsp;— and nothing else.</p>
+    <p>Every hex verb, agent intervention, and AscendantBar Self/Rare action is hidden until unlocked. The legacy intervention wheel was <b>retired</b> (THR-501); agent interventions now flow through the unlock-gated <code>divine.*</code> templates. <code>STARTER_ACTION_IDS = [move, investiture]</code>; <code>runUnlockedActionIds</code> grows from there as beats grant.</p>
+  </div>
+
+  <h2><span class="n">3</span>The four surfaces an action can appear on</h2>
+  <div class="surf">
+    <div class="head row"><div class="cell">Surface</div><div class="cell">What it shows</div><div class="cell">Gate</div></div>
+    <div class="row"><div class="cell">Hex / location drawer</div><div class="cell">hex · location · faction · artifact verbs for the selected target</div><div class="cell"><code>getTargetActionSlots</code></div></div>
+    <div class="row"><div class="cell">Agent action hand</div><div class="cell">bind-thread + <code>divine.*</code> interventions for a selected agent</div><div class="cell">now passes the unlock set</div></div>
+    <div class="row"><div class="cell">AscendantBar — Core</div><div class="cell"><b>Move + Investiture</b> only — always on</div><div class="cell">ungated</div></div>
+    <div class="row"><div class="cell">AscendantBar — Self / Rare</div><div class="cell">innate self-actions (Meditate / Withdraw / …)</div><div class="cell">unlock-gated (turn 1 = empty)</div></div>
+  </div>
+
+  <h2><span class="n">4</span>The gate cascade — how one action is filtered</h2>
+  <p class="small" style="color:var(--ink-dim);margin-bottom:10px">Each candidate runs the cascade; the first failing gate hides (or dims) it. The two gold gates are the opening's tuning levers.</p>
+  <div class="cascade">
+    <div class="gate"><span class="num">1</span><span class="gname">Node-type</span><span class="gdesc">target type ∈ template <code>targetCategories</code></span></div>
+    <div class="gate"><span class="num">2</span><span class="gname">Subtype</span><span class="gdesc"><code>targetSubtypes</code> match</span></div>
+    <div class="gate"><span class="num">3</span><span class="gname">Thread-dedup</span><span class="gdesc">hide <code>bind_thread_*</code> when a thread already exists</span></div>
+    <div class="gate"><span class="num">4</span><span class="gname">Trait</span><span class="gdesc"><code>requiredTargetTraits</code> present</span></div>
+    <div class="gate"><span class="num">5</span><span class="gname">Node-property</span><span class="gdesc"><code>requiredNodeProperties</code> match</span></div>
+    <div class="gate"><span class="num">6</span><span class="gname">Revelation</span><span class="gdesc">narrative layer revealed</span></div>
+    <div class="gate lever"><span class="num">7</span><span class="gname">Unlock ★</span><span class="gdesc"><code>isActionRevealed(t, runUnlockedActionIds)</code> — the opening's main lever</span></div>
+    <div class="gate lever"><span class="num">8</span><span class="gname">Reach ★</span><span class="gdesc"><code>requiresReach</code> ∈ your two domains — <b>permanent</b> filter (§6)</span></div>
+    <div class="gate"><span class="num">9</span><span class="gname">Sphere</span><span class="gdesc">accessible spheres — soft (shows locked)</span></div>
+    <div class="gate"><span class="num">10</span><span class="gname">Essence</span><span class="gdesc">affordable</span></div>
+    <div class="gate"><span class="num">11</span><span class="gname">Range</span><span class="gdesc">within local hex range</span></div>
+  </div>
+  <p class="leverkey">★ When tuning the opening we move gates 7 (unlock) and 8 (reach). The rest are structural.</p>
+
+  <h2><span class="n">5</span>The unlock model — three buckets</h2>
+  <div class="panel">
+    <p>Within-run only today (per-account meta deferred → THR-480). <code>runUnlockedActionIds</code> starts at the floor and the <code>unlock_action</code> aftermath pushes IDs in as beats resolve.</p>
+    <div class="bucket g"><b style="color:var(--gold)">Generic</b> — always (the floor): <code>move</code>, <code>investiture</code></div>
+    <div class="bucket u"><b style="color:var(--gold)">Unlockable-generic</b> — earned via beats, any ascendant: <code>invest.thread_actor</code>, <code>imbue</code>, <code>consecrate</code>, <code>bestow</code>, <code>anoint</code></div>
+    <div class="bucket r"><b style="color:var(--star)">Reach-gated</b> — earned via beats <i>and</i> within your two domains: reach-specific investment cards</div>
+  </div>
+
+  <h2><span class="n">6</span>The two-domain lock</h2>
+  <div class="panel" style="border-color:#4a3d5e">
+    <p style="color:var(--ink)">Every ascendant has exactly <b>one primary + one secondary domain (reach)</b>, fixed for the whole run. No third domain is ever reachable — a card needing one is hidden the entire game, never shown even as aspiration. Spheres are the orthogonal axis (also primary+secondary, fixed at chargen). Expression-card magic is flavored by these two axes.</p>
+    <div class="reachchips">
+      <span class="rc" style="background:var(--eye)">eye</span><span class="rc" style="background:var(--heart)">heart</span><span class="rc" style="background:var(--star)">star</span><span class="rc" style="background:var(--veil)">veil</span><span class="rc" style="background:var(--shadow)">shadow</span><span class="rc" style="background:var(--iron)">iron</span><span class="rc" style="background:var(--stone)">stone</span><span class="rc" style="background:var(--gold-r)">gold</span><span class="rc" style="background:var(--life)">life</span>
+    </div>
+    <p class="small" style="margin-top:8px">Of the nine reaches, a given run uses exactly two. The rest are dark for that game.</p>
+  </div>
+
+  <h2><span class="n">7</span>The opening engine — the Director &amp; the beat timeline</h2>
+  <p class="small" style="color:var(--ink-dim);margin-bottom:10px">The <code>phaseAscendantBeatDirector</code> offers one beat at a time. Resolving it (offer→enter→resolve, THR-517) clears <code>pending</code> and runs aftermath incl. <code>unlock_action</code>. Spine first (scripted), then the pool (living world).</p>
+  <div class="timeline">
+    <div class="beat"><div class="turn">Turn ~0</div><h4>0 · The First</h4><div class="row"><b>Seeds:</b> threaded actor</div><div class="row"><b>Grants:</b> thread-actor, observe</div></div>
+    <div class="beat"><div class="turn">Turn ~2</div><h4>1 · The Seat</h4><div class="row"><b>Seeds:</b> throne (mana)</div><div class="row"><b>Grants:</b> thread-location</div></div>
+    <div class="beat"><div class="turn">Turn ~4</div><h4>2 · A Thing Left Behind</h4><div class="row"><b>Seeds:</b> threaded artifact</div><div class="row"><b>Grants:</b> endow-artifact</div></div>
+    <div class="beat"><div class="turn">Turn ~6</div><h4>3 · The First Word</h4><div class="row"><b>Grants:</b> first expressive verb (identity-biased)</div></div>
+    <div class="beat"><div class="turn">Turn ~8</div><h4>4 · A Path Opens</h4><div class="row"><b>Selection:</b> choose 1 of N</div></div>
+    <div class="beat pool"><div class="turn">Then, every ~9</div><h4>Pool</h4><div class="row">intro · invest · select · delivery</div><div class="row" style="color:var(--star)">eligibility + identity bias</div></div>
+  </div>
+
+  <h2><span class="n">8</span>The tuning dials — what we change to make the start fun</h2>
+  <table class="dials">
+    <tr><th>Dial</th><th>Default</th><th>Effect on the opening</th></tr>
+    <tr><td><code>STARTER_ACTION_IDS</code></td><td>[move, investiture]</td><td>what's on screen at turn 1</td></tr>
+    <tr><td>spine grant map</td><td>per Beat 0–4</td><td><b style="color:var(--gold)">which cards arrive, in what order</b> — the most important lever</td></tr>
+    <tr><td><code>SPINE_TRIGGER_TURNS</code></td><td>[0, 2, 4, 6, 8]</td><td>how fast the scripted opening doles out cards/threads</td></tr>
+    <tr><td><code>BEAT_BASE_INTERVAL</code></td><td>9</td><td>how often the world "calls" after the spine</td></tr>
+    <tr><td><code>BEAT_INTERVAL_JITTER</code> / <code>BEAT_MIN_GAP</code></td><td>±2 / 4</td><td>rhythm variation and anti-spam floor</td></tr>
+    <tr><td><code>BEAT_KIND_WEIGHTS</code></td><td>intro 3 / invest 4 / select 1 / delivery 2</td><td>the flavor mix of the living world</td></tr>
+    <tr><td><code>ESSENCE_PER_SEAT</code></td><td>1.0</td><td>how fast the throne funds early actions</td></tr>
+  </table>
+
+  <h2><span class="n">9</span>What we iterate on (answer by playtest, not on paper)</h2>
+  <div class="grid two">
+    <div class="panel small"><p>· Does turn 1 = 2 cards feel empowering or empty? (Candidate: fire Beat 0 on turn 0–1 so bind-thread + observe arrive immediately.)</p><p>· Is the spine cadence too slow/fast for a first session?</p><p>· Does the pool kick in at the right moment, with the right texture?</p></div>
+    <div class="panel small"><p>· Reach-gated cards: surfaced as aspiration, or invisible until earned? (Currently invisible.)</p><p>· Do Self/Rare innate actions belong in the opening at all? (Currently gated.)</p><p style="color:var(--gold)">The point of making availability data-driven is that we answer these by feel, fast.</p></div>
+  </div>
+
+  <div class="foot">Threadbearer · Opening &amp; Action Availability · 2026-06-28 · design-level (shipped per Linear; code-true regeneration pending a synced checkout).</div>
+</div>
+</body>
+</html>

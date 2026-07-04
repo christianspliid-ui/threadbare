@@ -8,10 +8,38 @@ The **Design Reference Wiki** is the set of browsable, hand-built HTML system-de
 
 | File | Role |
 |------|------|
-| `public/wiki-manifest.json` | Single source of truth. `{ home, title, pages: [{id, file, title, blurb, section}], backlog?: [{id, title, blurb, section}] }`. |
+| `public/wiki-manifest.json` | Single source of truth. `{ home, title, pages: [{id, file, title, blurb, section, sources?}], backlog?: [{id, title, blurb, section, sources?}] }`. `sources` is an optional array of repo globs — the freshness contract (see below). |
 | `scripts/generate-design-wiki.ts` | Generator. Regenerates the hub and re-injects the managed nav into every manifest page. Idempotent. |
-| `scripts/check-design-wiki.ts` | Guardrail. Fails if a served `public/*-reference.html` is missing from the manifest, a manifest page points at a missing file, or a backlog id collides with a page id. |
+| `scripts/check-design-wiki.ts` | Guardrail. Fails if a served `public/*-reference.html` is missing from the manifest, a manifest page points at a missing file, a backlog id collides with a page id, or a `sources` field is present but not an array of non-empty string globs. |
+| `scripts/check-wiki-freshness.ts` | **Advisory** freshness lint. Warns when changed code matches a page's `sources` globs but the page HTML wasn't updated in the same diff. See "Freshness contract" below. |
 | `public/design-wiki.html` | **Generated** hub. Cards per page (grouped by `section`) + a "To document next" list from `backlog`. Do not edit by hand. |
+
+## Sections
+
+The `section` field groups pages on the hub (and orders sections by first appearance in the manifest). Two sections are in use:
+
+- **Manual** — player-facing, dual-layer system pages (the Game Manual Wiki, THR-586–602). Player-manual prose first, Designer Notes second.
+- **Deep Reference** — the pre-existing deep pages (`encounters-agents-reference`, `tick-cycle-reference`, `action-catalog`). These are the drill-down targets that a Manual page's Designer Notes link into.
+
+### Dual-layer page template (Manual pages)
+
+Every Manual page follows one shape (full spec: `Docs/plans/2026-07-03-game-manual-wiki.md` §3):
+
+1. `<h1>` title + a one-line "what this system is" in plain language.
+2. **How it plays** — player-manual voice: plain, concrete, no raw constants or code identifiers. Describes current shipped behavior; design-only behavior is introduced with "planned:".
+3. **Designer notes** — a delimited section carrying `[IMPL]/[DESIGN]/[OPEN]` status flags (rulebook convention), named tunables + values + file, pipeline/phase pointers, canon-page links, UL shard anchors, and the relevant Deep Reference page. Open questions are *referenced* from the rulebook — pages never mint new ones.
+4. Managed nav via the `<!--WIKI-NAV-->` markers (generator-owned).
+5. Self-contained static HTML matching the existing pages' style. No external CDNs.
+
+Terminology is UL-exact (game title in player copy: **Threadbearer**); where a page and the UL disagree, the UL wins and the page is a drift bug.
+
+## Freshness contract
+
+**Working agreement (user directive, 2026-07-03, settled):** *when the code of a core game system is changed, the relevant wiki page must be updated in the same PR.* Made mechanical in three parts:
+
+1. **`sources` globs.** Each manifest page may declare `sources: string[]` — repo globs for the code it documents (e.g. `"src/engine/stealth*.ts"`). This is the contract.
+2. **`npm run check:wiki-freshness`** (advisory, chained into `npm run check:process`). For the current branch vs `WIKI_FRESHNESS_BASE` (default `origin/main`), if a changed file matches a page's `sources` and that page's HTML was *not* also changed, it warns and names the page. Constants: `WIKI_FRESHNESS_MODE` (`advisory` | `blocking`, default `advisory`) and `WIKI_FRESHNESS_BASE`. Advisory while it stabilizes; flipping to blocking is a later user verdict. Fail-soft: no resolvable git diff → `skipped`, exit 0; malformed glob → warn, skip that glob, exit 0; missing manifest → defer to `check:design-wiki`, exit 0.
+3. **CLAUDE.md Definition-of-Done bullet** "Update the Design Reference Wiki" closes the loop from a code change back to its page.
 
 ## How it runs
 
@@ -38,6 +66,10 @@ The `check:design-wiki` guardrail (chained into `npm run check:process`) ensures
 - When a skill regenerates a wiki page wholesale, it may emit the `<!--WIKI-NAV-->` markers (or nothing — the generator inserts after `<body>`), but it must not write its own nav links.
 - Sibling generators that follow the same convention: `scripts/generate-ul-dashboard-data.ts`, `scripts/generate-impediment-dashboard.ts`.
 
-## Current state (THR-521)
+## Current state (THR-585)
 
-Seeded with the two pages that exist on `main`: `encounters-agents-reference.html` and `tick-cycle-reference.html`. `opening-system.html` and `action-catalog.html` are listed in `backlog` ("To document next") because the pages themselves never landed (THR-519 shipped docs only, no generator/pages). When those pages are authored, move them from `backlog` to `pages`.
+Three pages exist, all now in the **Deep Reference** section: `encounters-agents-reference.html`, `tick-cycle-reference.html`, `action-catalog.html`. Each carries a tight `sources` glob so the freshness lint exercises the contract from day one. The `backlog` is empty — `opening-system` was absorbed by the Game Manual Wiki's run-lifecycle page (W1).
+
+The **Manual** section is empty until the Game Manual Wiki page tickets land (THR-586–602): 17 dual-layer player-manual pages, each registered with `section: "Manual"` and its own `sources` globs. See `Docs/plans/2026-07-03-game-manual-wiki.md` for the domain model and per-page specs.
+
+> Historical note (THR-521): the wiki was seeded with the two pages then on `main`; `opening-system` and `action-catalog` sat in `backlog` because their pages hadn't landed. `action-catalog` has since been authored; `opening-system` was folded into the Manual.
