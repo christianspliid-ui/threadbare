@@ -341,6 +341,11 @@ export function filterByOutgrowth(
   // Fail-soft: missing agent node → no filtering
   if (!graph.getNode(agentId)) return [...entries];
 
+  // THR-581: agentId is fixed, so capability per reach is invariant across entries.
+  // Memoize the expensive graph-walking computeCapability per reach (≤9) instead of
+  // recomputing it per entry — a dominant slice of the large-map agent_decision stall.
+  const capCache = new Map<ReachDomain, number>();
+
   const result: EncounterCacheEntry[] = [];
   for (const entry of entries) {
     const avgDifficulty =
@@ -348,7 +353,13 @@ export function filterByOutgrowth(
 
     let cap: number;
     try {
-      cap = computeCapability(graph, agentId, entry.reachPrimary);
+      const cached = capCache.get(entry.reachPrimary);
+      if (cached !== undefined) {
+        cap = cached;
+      } else {
+        cap = computeCapability(graph, agentId, entry.reachPrimary);
+        capCache.set(entry.reachPrimary, cap);
+      }
     } catch {
       cap = 0.5; // Fail-soft: unknown capability → neutral
     }
@@ -424,9 +435,16 @@ export function filterByThreat(
     | undefined;
   const courageValue = axiologicalProfile?.courage_prudence ?? 0;
 
+  // THR-581: memoize capability per reach (fixed agentId) — see filterByOutgrowth.
+  const capCache = new Map<ReachDomain, number>();
+
   const result: EncounterCacheEntry[] = [];
   for (const entry of entries) {
-    const capabilityNorm = computeCapability(graph, agentId, entry.reachPrimary);
+    let capabilityNorm = capCache.get(entry.reachPrimary);
+    if (capabilityNorm === undefined) {
+      capabilityNorm = computeCapability(graph, agentId, entry.reachPrimary);
+      capCache.set(entry.reachPrimary, capabilityNorm);
+    }
     const capability = capabilityNorm * 100;
 
     if (isWithinThreatTolerance(capability, entry.threatRating, courageValue)) {

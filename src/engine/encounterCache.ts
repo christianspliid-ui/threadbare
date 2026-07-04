@@ -31,7 +31,7 @@ import type { WorldGraph } from './graph';
 import { getEncountersByLocationType, getEncountersBySublocationAndLocation } from '../data/encounter-content';
 import { LOCATION_BRANCHING_ENCOUNTER_TEMPLATES } from '../data/unified-action-templates';
 import { hexKey } from '../lib/hexKey';
-import { hexDistance } from '../lib/hexMath';
+import { hexDistance, offsetToCube, cubeToOffset } from '../lib/hexMath';
 import { DANGER_DIFFICULTY_SCALE } from './worldgen/constants';
 
 // ─── Constants (re-exported from central tuning file) ───────────
@@ -321,6 +321,16 @@ function locationDangerLevel(graph: WorldGraph, locationId: string, dangerMap?: 
 
 // ─── Cache Manager ──────────────────────────────────────────────
 
+/**
+ * Number of hexes within `range` steps on a hex grid (hex-disk area): 3·r·(r+1)+1.
+ * The bounded neighborhood probe in `getEntriesNearHex` inspects this many candidate
+ * hexes independent of map size, so it is the crossover point past which probing
+ * beats scanning every occupied hex. Pure geometry — no tuning knob needed (NFP #1/#7).
+ */
+function hexDiskArea(range: number): number {
+  return 3 * range * (range + 1) + 1;
+}
+
 export class EncounterCacheManager {
   /** locationId → entries for that location */
   private byLocation = new Map<string, EncounterCacheEntry[]>();
@@ -328,8 +338,16 @@ export class EncounterCacheManager {
   /** hexKey → entries at that hex (spatial index for awareness filtering) */
   private byHex = new Map<string, EncounterCacheEntry[]>();
 
-  /** hexKey → {col, row} for iteration during spatial queries */
-  private hexCoords = new Map<string, { col: number; row: number }>();
+  /**
+   * hexKey → {col, row, seq}. `seq` records first-insertion order so the bounded
+   * neighborhood probe can re-order its matches into the exact same sequence a
+   * full `hexCoords` scan would produce — keeping output byte-identical regardless
+   * of which strategy `getEntriesNearHex` picks (determinism parity, NFP #3).
+   */
+  private hexCoords = new Map<string, { col: number; row: number; seq: number }>();
+
+  /** Monotonic counter assigning insertion order to hexes as they are first indexed. */
+  private hexSeqCounter = 0;
 
   /** Current difficulty tier — updated on each full cache rebuild */
   private currentTier: string = 'early';
@@ -346,6 +364,7 @@ export class EncounterCacheManager {
     this.byLocation.clear();
     this.byHex.clear();
     this.hexCoords.clear();
+    this.hexSeqCounter = 0;
     this.dangerMap = dangerMap;
     const newTier = selectDifficultyTier(tick);
     const baseMult = getDifficultyMultiplier(newTier);
@@ -380,7 +399,7 @@ export class EncounterCacheManager {
       this.byHex.set(key, [...entries]);
     }
     if (!this.hexCoords.has(key)) {
-      this.hexCoords.set(key, { col, row });
+      this.hexCoords.set(key, { col, row, seq: this.hexSeqCounter++ });
     }
   }
 
@@ -485,18 +504,58 @@ export class EncounterCacheManager {
 
   /**
    * Return cached entries within `maxRange` hex distance of the given hex.
-   * Uses the spatial index for O(nearby hexes) instead of O(all entries).
-   * Falls back to getAllEntries() if the hex index is empty.
+   *
+   * Two strategies, chosen per-call by a self-tuning crossover (NFP #7):
+   *   - **scan-all** — walk every occupied hex, keep those in range. O(occupied hexes).
+   *   - **neighborhood probe** — enumerate only the hexes within `maxRange` (a fixed
+   *     `hexDiskArea(maxRange)` candidates, independent of map size) and look each up
+   *     directly. O(1) in map size. This is the fix for the large-map `agent_decision`
+   *     super-linear stall (THR-581): scan-all made agent_decision cost
+   *     ≈ agents × occupied-hexes, a product of two map-growing terms.
+   *
+   * Both strategies emit entries in identical `hexCoords`-insertion order (the probe
+   * re-sorts its matches by `seq`), so the choice never changes output — the
+   * downstream reroute max and scoreAndSelect stable-sort tie-breaks stay deterministic
+   * (NFP #3). Falls back to getAllEntries() when the hex index is empty.
    */
   getEntriesNearHex(col: number, row: number, maxRange: number): readonly EncounterCacheEntry[] {
     if (this.byHex.size === 0) return this.getAllEntries();
-    const result: EncounterCacheEntry[] = [];
-    for (const [key, coord] of this.hexCoords) {
-      if (hexDistance({ col, row }, coord) <= maxRange) {
+
+    // Crossover: probe examines ~hexDiskArea(maxRange) candidate hexes; scan-all
+    // examines every occupied hex. Use whichever inspects fewer.
+    if (this.byHex.size <= hexDiskArea(maxRange)) {
+      const result: EncounterCacheEntry[] = [];
+      for (const [key, coord] of this.hexCoords) {
+        if (hexDistance({ col, row }, coord) <= maxRange) {
+          const entries = this.byHex.get(key);
+          if (entries) result.push(...entries);
+        }
+      }
+      return result;
+    }
+
+    // Neighborhood probe: enumerate the cube-coordinate disk of radius `maxRange`
+    // around the center hex. hexDistance == max(|dq|,|dr|,|ds|), so bounding each
+    // axis to [-maxRange, maxRange] yields exactly the in-range set.
+    const center = offsetToCube({ col, row });
+    const matched: { seq: number; entries: EncounterCacheEntry[] }[] = [];
+    for (let dq = -maxRange; dq <= maxRange; dq++) {
+      const drLo = Math.max(-maxRange, -dq - maxRange);
+      const drHi = Math.min(maxRange, -dq + maxRange);
+      for (let dr = drLo; dr <= drHi; dr++) {
+        const off = cubeToOffset({ q: center.q + dq, r: center.r + dr, s: center.s - dq - dr });
+        const key = hexKey(off.col, off.row);
         const entries = this.byHex.get(key);
-        if (entries) result.push(...entries);
+        if (entries) {
+          const meta = this.hexCoords.get(key);
+          matched.push({ seq: meta ? meta.seq : 0, entries });
+        }
       }
     }
+    // Reproduce scan-all iteration order (hexCoords insertion order) for byte parity.
+    matched.sort((a, b) => a.seq - b.seq);
+    const result: EncounterCacheEntry[] = [];
+    for (const m of matched) result.push(...m.entries);
     return result;
   }
 
