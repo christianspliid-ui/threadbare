@@ -99,6 +99,14 @@
       "sources": ["src/engine/visibility.ts", "src/engine/phaseHexState.ts", "src/engine/phaseMagicalSaturation.ts", "src/engine/hexActorIndex.ts", "src/engine/encounterAwareness.ts", "src/types/visibility.ts", "src/types/hexMutation.ts", "src/data/terrain-transformation-content.ts", "src/lib/hexMath.ts"]
     },
     {
+      "id": "settlements-economy-reference",
+      "file": "settlements-economy-reference.html",
+      "title": "Settlements, Prosperity & Trade",
+      "blurb": "How settlements rise and fall on their own — the four tiers (hamlet → town → city, with capital fixed) and the sustained-prosperity thresholds that promote or demote them; prosperity as an equilibrium value drifting toward conditions and unrest as a settlement's instability; trade routes that decay when un-travelled; and terrain-seeded resources plus rare anomalies that set a place's ceiling. Honest scope: the economy is texture serving story, not a trading sim.",
+      "section": "Manual",
+      "sources": ["src/engine/phaseSublocations.ts", "src/engine/phaseSettlementPromotion.ts", "src/engine/phaseSettlementReassessment.ts", "src/engine/phaseProsperity.ts", "src/engine/phaseUnrest.ts", "src/engine/phaseTradeRouteDecay.ts", "src/engine/tradeRoute.ts", "src/engine/phaseEconomicTraits.ts", "src/engine/phaseEconomicChronicle.ts", "src/engine/economicChronicle.ts", "src/engine/resourceSeeding.ts"]
+    },
+    {
       "id": "encounters-agents-reference",
       "file": "encounters-agents-reference.html",
       "title": "Encounters, Agents & Resolution",
