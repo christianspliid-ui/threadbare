@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Threadbearer — The Three-Beat Turn</title>
+<!--
+  Turn Structure Reference (Game Manual Wiki, W3 / THR-588) — dual-layer manual page.
+  Player-manual prose first ("How it plays"), Designer Notes second.
+  Spec: Docs/plans/2026-07-03-game-manual-wiki.md §5 W3. Source spine:
+  Docs/canon/rulebook.md §3, src/engine/orchestrator.ts (runTick single-step
+  contract — beat contract only, not the phase list), src/data/attention-constants.ts
+  (TICKS_PER_DAY / ATTENTION_BASE_CAPACITY), Docs/plans/2026-05-04-encounter-experience-design-plan.md
+  (pacing target). The shared wiki nav between the WIKI-NAV markers is injected by
+  scripts/generate-design-wiki.ts — do not hand-write it.
+-->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --parchment: #f4edd8;
+    --parchment-dark: #e8dfc8;
+    --ink: #2c1810;
+    --ink-light: #5a3d2b;
+    --ink-faint: #8a7060;
+    --gold: #b8860b;
+    --gold-light: #daa520;
+    --card-bg: #fff8e7;
+    --red: #8b2500;
+    --blue: #1a3a5c;
+    --blue-light: #2d5f8a;
+    --purple: #4a2d6a;
+    --green: #2d5a27;
+
+    --flag-impl: #2d5a27;
+    --flag-design: #8a4a00;
+    --flag-open: #4a2d6a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--parchment);
+    color: var(--ink);
+    font-family: 'Crimson Text', Georgia, serif;
+    font-size: 16px;
+    line-height: 1.6;
+    min-height: 100vh;
+    background-image:
+      radial-gradient(ellipse at 20% 50%, rgba(184,134,11,0.04) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 30%, rgba(74,45,106,0.03) 0%, transparent 50%);
+  }
+
+  .page-wrapper { max-width: 900px; margin: 0 auto; padding: 40px 32px 72px; }
+
+  /* ── Header ── */
+  .header { text-align: center; margin-bottom: 40px; padding-bottom: 28px; border-bottom: 2px solid var(--gold); position: relative; }
+  .header::after { content: ''; position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); width: 55%; height: 1px; background: var(--gold-light); }
+  .header .eyebrow { font-family: 'Cinzel', Georgia, serif; font-size: 0.72rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold); margin-bottom: 10px; }
+  .header h1 { font-family: 'Cinzel', Georgia, serif; font-weight: 700; font-size: 2.4rem; color: var(--ink); letter-spacing: 0.05em; margin-bottom: 12px; }
+  .header .tagline { font-size: 1.12rem; color: var(--ink-light); max-width: 62ch; margin: 0 auto; font-style: italic; }
+
+  /* ── Sections ── */
+  .section { margin-bottom: 34px; }
+  .section > h2 { font-family: 'Cinzel', Georgia, serif; font-size: 1.25rem; color: var(--ink); letter-spacing: 0.03em; margin-bottom: 6px; padding-bottom: 6px; border-bottom: 1px solid var(--parchment-dark); }
+  .section > h2 .lead { display: block; font-family: 'Crimson Text', Georgia, serif; font-size: 0.95rem; font-style: italic; font-weight: 400; color: var(--ink-faint); letter-spacing: 0; margin-top: 4px; }
+  .section h3 { font-family: 'Cinzel', Georgia, serif; font-size: 1rem; color: var(--ink-light); letter-spacing: 0.02em; margin: 20px 0 6px; }
+  .section p { margin-bottom: 12px; }
+  .section p .term { font-weight: 600; color: var(--ink); }
+  .section ul { margin: 0 0 14px 0; padding-left: 0; list-style: none; }
+  .section ul li { position: relative; padding-left: 1.3rem; margin-bottom: 8px; }
+  .section ul li::before { content: '◆'; position: absolute; left: 0; top: 0.05rem; color: var(--gold); font-size: 0.7rem; }
+
+  /* ── The three beats (player-facing) ── */
+  .beats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin: 10px 0 18px; }
+  .beat { background: var(--card-bg); border: 1px solid var(--parchment-dark); border-radius: 4px; padding: 16px 18px; border-top: 3px solid var(--gold); position: relative; }
+  .beat .beat-num { font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; letter-spacing: 0.08em; color: var(--ink-faint); text-transform: uppercase; }
+  .beat h4 { font-family: 'Cinzel', Georgia, serif; font-size: 1.05rem; color: var(--ink); margin: 3px 0 8px; letter-spacing: 0.02em; }
+  .beat p { font-size: 0.94rem; color: var(--ink-light); margin-bottom: 0; }
+  .beat.scan { border-top-color: var(--blue-light); }
+  .beat.moment { border-top-color: var(--gold); }
+  .beat.aftermath { border-top-color: var(--purple); }
+  @media (max-width: 720px) { .beats { grid-template-columns: 1fr; } }
+
+  /* ── Callouts ── */
+  .callout { background: var(--card-bg); border: 1px solid var(--parchment-dark); border-left: 4px solid var(--gold); border-radius: 4px; padding: 14px 18px; margin: 4px 0 18px; }
+  .callout.blue { border-left-color: var(--blue-light); }
+  .callout.purple { border-left-color: var(--purple); }
+  .callout .callout-title { font-family: 'Cinzel', Georgia, serif; font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 6px; }
+  .callout p:last-child { margin-bottom: 0; }
+
+  /* ── Order-matters cards ── */
+  .ortho { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin: 6px 0 16px; }
+  .ortho-card { background: var(--card-bg); border: 1px solid var(--parchment-dark); border-radius: 4px; padding: 14px 18px; border-top: 3px solid var(--blue-light); }
+  .ortho-card h4 { font-family: 'Cinzel', Georgia, serif; font-size: 0.92rem; color: var(--ink); margin-bottom: 6px; }
+  .ortho-card p { font-size: 0.92rem; color: var(--ink-light); margin-bottom: 0; }
+  @media (max-width: 720px) { .ortho { grid-template-columns: 1fr; } }
+
+  /* ── Time strip ── */
+  .timestrip { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 12px; align-items: center; }
+  .timestrip .tick { font-family: 'Cinzel', Georgia, serif; font-size: 0.74rem; color: var(--ink-light); background: var(--card-bg); border: 1px solid var(--parchment-dark); border-radius: 3px; padding: 3px 8px; white-space: nowrap; }
+  .timestrip .tick.dawn { color: var(--ink); border-color: var(--gold); }
+  .timestrip .dots { color: var(--gold); font-size: 0.8rem; letter-spacing: 0.1em; }
+
+  /* ── Designer notes ── */
+  .designer { margin-top: 48px; border-top: 2px solid var(--gold); padding-top: 8px; }
+  .designer > summary { list-style: none; cursor: pointer; padding: 16px 4px; display: flex; align-items: baseline; gap: 12px; }
+  .designer > summary::-webkit-details-marker { display: none; }
+  .designer > summary .chev { font-size: 0.8rem; color: var(--gold); transition: transform 0.15s; }
+  .designer[open] > summary .chev { transform: rotate(90deg); }
+  .designer > summary h2 { font-family: 'Cinzel', Georgia, serif; font-size: 1.3rem; color: var(--ink); letter-spacing: 0.03em; }
+  .designer > summary .sub { font-size: 0.9rem; color: var(--ink-faint); font-style: italic; }
+  .designer-body { padding: 4px 4px 8px; }
+  .designer-body h3 { font-family: 'Cinzel', Georgia, serif; font-size: 0.98rem; color: var(--ink-light); margin: 22px 0 8px; }
+  .designer-body p { margin-bottom: 12px; font-size: 0.97rem; }
+  .designer-body ul { margin: 0 0 14px 0; padding-left: 0; list-style: none; }
+  .designer-body ul li { position: relative; padding-left: 1.2rem; margin-bottom: 7px; font-size: 0.97rem; }
+  .designer-body ul li::before { content: '›'; position: absolute; left: 0.15rem; top: 0; color: var(--ink-faint); }
+  code, .mono { font-family: 'JetBrains Mono', monospace; font-size: 0.84em; color: var(--ink); background: rgba(184,134,11,0.10); padding: 0.05rem 0.32rem; border-radius: 3px; word-break: break-word; }
+
+  .flag { font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; letter-spacing: 0.04em; font-weight: 500; padding: 0.08rem 0.4rem; border-radius: 3px; color: #fff; white-space: nowrap; }
+  .flag.impl { background: var(--flag-impl); }
+  .flag.design { background: var(--flag-design); }
+  .flag.open { background: var(--flag-open); }
+
+  table.tunables { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin: 4px 0 18px; }
+  table.tunables th { text-align: left; font-family: 'Cinzel', Georgia, serif; font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-faint); padding: 6px 10px 6px 0; border-bottom: 1px solid var(--parchment-dark); }
+  table.tunables td { padding: 7px 10px 7px 0; border-bottom: 1px solid var(--parchment-dark); vertical-align: top; color: var(--ink-light); }
+  table.tunables td:first-child { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--ink); white-space: nowrap; }
+
+  .foot { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--parchment-dark); font-size: 0.85rem; color: var(--ink-faint); font-style: italic; }
+  a { color: var(--blue-light); text-decoration: none; border-bottom: 1px solid rgba(45,95,138,0.35); }
+  a:hover { color: var(--blue); border-bottom-color: var(--blue); }
+</style>
+</head>
+<body>
+<!--WIKI-NAV-->
+<style>
+  .wiki-nav { font-family: 'Cinzel', Georgia, serif; background: #2c1810; border-bottom: 2px solid #b8860b; padding: 0.6rem 1.2rem; display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.4rem 1.1rem; }
+  .wiki-nav__brand { color: #daa520; font-weight: 700; letter-spacing: 0.04em; margin-right: 0.6rem; font-size: 0.95rem; }
+  .wiki-nav__link { color: #f4edd8; text-decoration: none; font-size: 0.85rem; letter-spacing: 0.02em; padding: 0.15rem 0.1rem; border-bottom: 2px solid transparent; transition: color 0.15s, border-color 0.15s; }
+  .wiki-nav__link:hover { color: #daa520; }
+  .wiki-nav__link.is-active { color: #daa520; border-bottom-color: #b8860b; font-weight: 700; }
+</style>
+<nav class="wiki-nav" aria-label="Design Reference Wiki">
+  <span class="wiki-nav__brand">⌖ Design Reference Wiki</span>
+  <a class="wiki-nav__link" href="design-wiki.html">Design Wiki</a>
+  <a class="wiki-nav__link" href="run-lifecycle-reference.html">A Run, Start to Finish</a>
+      <a class="wiki-nav__link" href="cosmology-reference.html">Reaches, Spheres &amp; Quintessence</a>
+      <a class="wiki-nav__link is-active" href="turn-structure-reference.html" aria-current="page">The Three-Beat Turn</a>
+      <a class="wiki-nav__link" href="divine-actions-reference.html">Divine Actions &amp; Prerequisites</a>
+      <a class="wiki-nav__link" href="threads-court-reference.html">Threads, the Court &amp; The First</a>
+      <a class="wiki-nav__link" href="essence-control-reference.html">Essence, Control &amp; Sustained Power</a>
+      <a class="wiki-nav__link" href="encounters-manual-reference.html">Encounters &amp; Aftermath</a>
+      <a class="wiki-nav__link" href="clocks-reference.html">Doom, the Mandate &amp; Omens</a>
+      <a class="wiki-nav__link" href="encounters-agents-reference.html">Encounters, Agents &amp; Resolution</a>
+      <a class="wiki-nav__link" href="tick-cycle-reference.html">Tick Cycle Reference</a>
+      <a class="wiki-nav__link" href="action-catalog.html">Action Catalog</a>
+</nav>
+<!--/WIKI-NAV-->
+<div class="page-wrapper">
+
+  <header class="header">
+    <div class="eyebrow">Game Manual · The Turn</div>
+    <h1>The Three-Beat Turn</h1>
+    <p class="tagline">The world does not run on a clock of its own. It waits. It moves only when you choose to look, to act, and to let the consequences land — and it always moves in that order.</p>
+  </header>
+
+  <!-- ══════════════════ HOW IT PLAYS ══════════════════ -->
+
+  <section class="section">
+    <h2>The turn is yours to advance<span class="lead">This is a turn-based god-game. Time does not pass until you say so.</span></h2>
+    <p>Nothing in the world happens behind your back on a timer. The simulation is <span class="term">turn-based</span>: the clock is frozen until you advance it, and every advance is a deliberate act. You are never rushed by a ticking wall-clock, never punished for pausing to think. A god watching from a height has all the time in the world — the world is the one that runs out of it.</p>
+    <p>Because you hold the clock, the tempo of a session is yours. You can sit for a long while inside one mortal's crisis, or sweep through several quiet ticks where you do nothing at all. <span class="term">Doing nothing is always a valid move.</span> Restraint is not passivity for a god — choosing <em>not</em> to intervene is itself an intervention, and the game treats it as one.</p>
+  </section>
+
+  <section class="section">
+    <h2>Scan → Curated Moment → Aftermath<span class="lead">Every turn is a rhythm of three beats, always in this order.</span></h2>
+    <p>A turn is not a single click. It is a small arc of three beats — you look, you enter a moment, you live with the result. Each beat has a different feel and a different demand on you.</p>
+    <div class="beats">
+      <div class="beat scan">
+        <div class="beat-num">Beat One</div>
+        <h4>Scan</h4>
+        <p>You look across your portfolio of threaded mortals. The world surfaces signals — a thread under stress, an encounter cresting, a tug on your attention — but <em>whose</em> story to watch is your choice. The scan is what makes you a god looking down rather than a reader turning pages.</p>
+      </div>
+      <div class="beat moment">
+        <div class="beat-num">Beat Two</div>
+        <h4>Curated Moment</h4>
+        <p>You enter a mortal's situation. A framed encounter opens — concrete, particular, grown from this mortal's own entanglements. You read the prose, weigh the options, and at the turning point choose a divine nudge from a menu shaped to the moment. Or you choose nothing.</p>
+      </div>
+      <div class="beat aftermath">
+        <div class="beat-num">Beat Three</div>
+        <h4>Aftermath</h4>
+        <p>The moment resolves. Threads thicken or fray, the world shifts, and closing prose ends the chapter. This beat asks the least of your hands and the most of your attention — you sit with what happened before you look again. Then time advances, and the next scan begins.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Why the order is load-bearing<span class="lead">The three beats are not interchangeable. The sequence is the design.</span></h2>
+    <p>The beats always run scan, then moment, then aftermath — and each boundary carries a meaning that would be lost if you rearranged them.</p>
+    <div class="ortho">
+      <div class="ortho-card">
+        <h4>Scan before the moment</h4>
+        <p>Means you <em>chose</em> to look here. The encounter you enter is one you selected out of many — not one the game shoved at you. Agency lives in the gap between all the stories and the one you opened.</p>
+      </div>
+      <div class="ortho-card">
+        <h4>Moment before aftermath</h4>
+        <p>Means every consequence is anchored to a moment you witnessed. The world does not mutate in the abstract; it mutates because of a chapter you were present for.</p>
+      </div>
+      <div class="ortho-card">
+        <h4>Aftermath before the next scan</h4>
+        <p>Means the world has already moved by the time you look again. You do not get to freeze it between turns — you are a god, not an editor with an undo key.</p>
+      </div>
+    </div>
+    <p>Read together, the order encodes the whole premise: a being who <em>chooses</em> to attend, <em>witnesses</em> what unfolds, and <em>lives with</em> a world that keeps turning whether or not it is watched.</p>
+  </section>
+
+  <section class="section">
+    <h2>How time passes<span class="lead">When you advance the turn, the world moves by a fixed, small amount.</span></h2>
+    <p>Each advance moves the world forward by one <span class="term">tick</span> — two in-world hours. Twelve ticks make one in-world day, so a single day is a dawn-to-dawn ribbon of twelve steps you walk through at your own pace.</p>
+    <div class="timestrip">
+      <span class="tick dawn">Dawn</span>
+      <span class="dots">···</span>
+      <span class="tick">+2h</span>
+      <span class="tick">+4h</span>
+      <span class="tick">+6h</span>
+      <span class="tick">+8h</span>
+      <span class="tick">+10h</span>
+      <span class="tick">Midday</span>
+      <span class="tick">···</span>
+      <span class="tick dawn">Next Dawn</span>
+    </div>
+    <p>The tick is the world's heartbeat and the unit every other system beats to — needs stir, threads settle, clocks creep, encounters ripen, all measured in ticks. A tick is short enough that a day has real texture and long enough that you are not micromanaging minutes. You are watching a world unfold, not steering a character through a schedule.</p>
+  </section>
+
+  <section class="section">
+    <h2>Encounters are chapters, not turns<span class="lead">The curated moment is the game's chapter unit — and there are only a handful per sitting.</span></h2>
+    <p>It would be easy to imagine an encounter fires on every tick. It does not. The curated moment is meant to be <em>rare and weighty</em> — a real chapter with a beginning, a choice, and a consequence, not a slot machine you pull each step. The intended rhythm is roughly <span class="term">three to six encounters across a whole session</span> (planned target), with many quieter ticks between them where you scan, tend your portfolio, and let the world breathe.</p>
+    <div class="callout purple">
+      <div class="callout-title">A note on pacing</div>
+      <p>That "three to six per session" figure is a <em>design discipline</em>, not yet a tuned dial the game enforces. It names the feel we are building toward: chapters that earn their place. As real play data arrives, a gentle stopping-point signal may be added so a session finds its natural close.</p>
+    </div>
+    <p>The point of the frozen clock, the deliberate scan, and the rationed chapters is the same: to make each moment you <em>do</em> enter feel chosen. A god who could see everything at once and act every tick would be a spreadsheet. The three-beat turn keeps you a witness with a hand — looking, choosing, and living with it.</p>
+  </section>
+
+  <!-- ══════════════════ DESIGNER NOTES ══════════════════ -->
+
+  <details class="designer" open>
+    <summary>
+      <span class="chev">▶</span>
+      <span>
+        <h2>Designer Notes</h2>
+        <span class="sub">The single-step contract, the pacing constants, and where the full phase order lives.</span>
+      </span>
+    </summary>
+    <div class="designer-body">
+
+      <p>Status flags follow the rulebook convention: <span class="flag impl">IMPL</span> shipped and wired, <span class="flag design">DESIGN</span> specified but partially or not yet wired, <span class="flag open">OPEN</span> an unresolved question (referenced from the rulebook — this page mints none). <strong>Synthesis authority for this page is <code>Docs/canon/rulebook.md</code> §3;</strong> where any surface disagrees, the rulebook and the UL win on their respective boundaries.</p>
+
+      <h3>The turn is turn-based — single-step contract <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li>The world advances exactly one tick per player command. <code>runTick(state, scryTargets, runtime): GameState</code> in <code>src/engine/orchestrator.ts</code> is a pure single-step function — it takes a <code>GameState</code>, runs one full tick, and returns the next <code>GameState</code>. Nothing in the engine auto-advances the clock; the caller decides when to step.</li>
+        <li>Each tick begins by cloning state with <code>tick: state.tick + 1</code> and clearing <code>tickEvents</code>. Every phase is a pure function that takes state pieces in and returns partial updates the orchestrator merges — the &quot;beat contract&quot; the player experiences is the front-of-tick framing over this phase pipeline, not a separate scheduler.</li>
+        <li>&quot;Do nothing is always valid&quot; is structural, not a special case: advancing a tick with no divine action queued simply runs the world's own phases (agent decisions, clocks, decay) and returns. The five verbs stay implicit substrate (rulebook §4, Open Q #2 resolved) — there is no &quot;pass turn&quot; action to fire.</li>
+      </ul>
+
+      <h3>Tick granularity <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li><code>TICKS_PER_DAY = 12</code> (<code>src/data/attention-constants.ts:14</code>) — one tick is two in-world hours; twelve ticks make one day. This is the load-bearing pacing constant every time-based system beats to (needs, decay, clocks, encounter ripening).</li>
+        <li>Time-of-day and day-count are derived from the tick counter, not stored separately — determinism (NFP #3) means the same tick index always maps to the same in-world hour.</li>
+      </ul>
+
+      <h3>Scan / portfolio surface <span class="flag design">DESIGN</span></h3>
+      <ul>
+        <li>The Scan beat leans on the attention system, which is partially wired: <code>ATTENTION_BASE_CAPACITY = 6</code> (<code>src/data/attention-constants.ts:19</code>) is the base pool, but the full portfolio surface — attention tugs, thread-stress signals, the whole scan UI — is in progress under the <strong>Attention Tier Model</strong> project. The beat contract is stable; the surface that dresses it is not fully built. See the attention-story page (W16) for the deep treatment.</li>
+      </ul>
+
+      <h3>Encounter pacing target <span class="flag design">DESIGN</span></h3>
+      <ul>
+        <li>&quot;Three to six encounters per <em>session</em> — not per tick&quot; is the pacing target from <code>Docs/plans/2026-05-04-encounter-experience-design-plan.md</code>. It is held as <strong>design discipline, not a tuned or enforced dial</strong>; there is no session-length governor in code.</li>
+        <li>Rulebook Open Q #4 (session length) is <strong>deferred to KPI data</strong> (<code>last_considered: 2026-06-23</code>): a soft stopping-point signal is a candidate once the THR-457 KPI harness yields real session data. This page references that open question; it does not mint a new one.</li>
+      </ul>
+
+      <h3>The full phase order lives elsewhere</h3>
+      <ul>
+        <li>This page documents the player-facing <em>beat contract</em>, not the phase list. The complete tick pipeline — the twelve orchestrator acts and forty-plus phases, each with its reads, writes, and RNG tags in execution order — is the <a href="tick-cycle-reference.html">Tick Cycle Reference</a> (Deep Reference). Go there for the mechanical order of operations inside a single tick.</li>
+        <li>Phase execution is split between an inline sequence in <code>runTick</code> and a registered-phase runner (<code>runRegisteredPhases</code> over <code>PHASE_PLAN</code>); the tick-cycle page is the authoritative render of both.</li>
+      </ul>
+
+      <h3>Constants</h3>
+      <table class="tunables">
+        <thead><tr><th>Constant</th><th>Value</th><th>Purpose · file</th></tr></thead>
+        <tbody>
+          <tr><td>TICKS_PER_DAY</td><td>12</td><td>Ticks per in-world day (1 tick = 2h) · <code>src/data/attention-constants.ts:14</code></td></tr>
+          <tr><td>ATTENTION_BASE_CAPACITY</td><td>6</td><td>Base attention pool the Scan beat draws on · <code>src/data/attention-constants.ts:19</code></td></tr>
+          <tr><td>Encounters / session</td><td>3–6</td><td>Pacing target (design discipline, not enforced) · <code>Docs/plans/2026-05-04-encounter-experience-design-plan.md</code></td></tr>
+        </tbody>
+      </table>
+
+      <h3>Canon &amp; terminology</h3>
+      <ul>
+        <li>Synthesis authority: <code>Docs/canon/rulebook.md</code> §3 (the three-beat turn, order rationale, tick granularity). The <em>why</em> lives in the Vision core-loop page.</li>
+        <li>UL authority (terminology wins on any disagreement): <code>Docs/ubiquitous-language/Encounters.md</code> (Encounter, Aftermath, Reaction).</li>
+        <li>Deep Reference drill-down: <a href="tick-cycle-reference.html">Tick Cycle Reference</a> (every phase inside a tick, in order). Adjacent Manual pages: <a href="encounters-manual-reference.html">Encounters &amp; Aftermath</a> (the curated moment in depth) and the attention-story page (the Scan surface).</li>
+      </ul>
+
+      <h3>Open questions <span class="flag open">OPEN</span></h3>
+      <ul>
+        <li>Referenced, not minted here: session length (rulebook Open Q #4) and the Doom + Mandate dual-clock exchange rate (Open Q #5) are both deferred to post-THR-457 KPI data. This page surfaces the pacing question; it does not resolve it.</li>
+      </ul>
+
+    </div>
+  </details>
+
+  <div class="foot">
+    Game Manual Wiki · W3 (THR-588). Player layer describes current shipped behavior; anything not yet wired is flagged <span class="flag design">DESIGN</span> and introduced as &quot;planned&quot;. Terminology is UL-exact; where this page and the UL disagree, the UL wins and this page is a drift bug.
+  </div>
+
+</div>
+</body>
+</html>

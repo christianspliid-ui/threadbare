@@ -3,33 +3,93 @@
   "title": "The Fantasy World Simulator — Design Reference Wiki",
   "pages": [
     {
+      "id": "run-lifecycle-reference",
+      "file": "run-lifecycle-reference.html",
+      "title": "A Run, Start to Finish",
+      "blurb": "The shape of a whole run — remembrance and your two domains, the opening spine and The First, the middle game, how either clock ends the run, and what the World-Soul carries into the next.",
+      "section": "Manual",
+      "sources": ["src/engine/ascendantBeat*.ts", "src/engine/worldGeneration*.ts", "src/types/remembrance.ts", "src/data/archetype-content.ts", "src/data/backstory-content.ts"]
+    },
+    {
+      "id": "cosmology-reference",
+      "file": "cosmology-reference.html",
+      "title": "Reaches, Spheres & Quintessence",
+      "blurb": "The two axes of every divine act — Eight Reaches (what you do) and Twelve Spheres (what fuels it), orthogonal by design — plus each Reach's virtue/vice moral axis, the Domain Capability word-ladder, and Quintessence as narrative centrality (not a ninth Reach).",
+      "section": "Manual",
+      "sources": ["src/engine/phaseSphereAggregation*.ts", "src/engine/phaseQuintessence*.ts", "src/engine/capability*.ts", "src/engine/cosmology.ts", "src/types/traits.ts", "src/types/quintessence.ts"]
+    },
+    {
+      "id": "turn-structure-reference",
+      "file": "turn-structure-reference.html",
+      "title": "The Three-Beat Turn",
+      "blurb": "How a turn works — the world waits until you advance it; each turn runs scan → curated moment → aftermath in a load-bearing order; time in ticks (two hours, twelve per day); and encounters as rationed chapters, not per-tick rolls.",
+      "section": "Manual",
+      "sources": ["src/engine/orchestrator.ts"]
+    },
+    {
+      "id": "divine-actions-reference",
+      "file": "divine-actions-reference.html",
+      "title": "Divine Actions & Prerequisites",
+      "blurb": "The five verbs every divine act reduces to (Create/Find/Change/Destroy/Control), why some action cards never appear (Reach outside your two domains — permanent; sphere misalignment; too little capability), the Generalized Action Targeting cascade, and the two reach signatures you acquire as story moments.",
+      "section": "Manual",
+      "sources": ["src/engine/targetActions*.ts", "src/engine/sphereScaling*.ts", "src/data/reach-signature-content.ts", "src/data/action-template-content.ts", "src/types/unifiedAction.ts"]
+    },
+    {
+      "id": "threads-court-reference",
+      "file": "threads-court-reference.html",
+      "title": "Threads, the Court & The First",
+      "blurb": "The thread as a two-way bond — your investment depth (the five influence tiers) versus the mortal's awareness (unaware → intuition → faith → communion); the four court positions; The First's doom-clock-scheduled hero's journey; familiarity as player-side progressive disclosure; and why holding a thread deeply costs upkeep and makes you louder to rivals.",
+      "section": "Manual",
+      "sources": ["src/engine/influence.ts", "src/engine/familiarity.ts", "src/engine/journeyEngine.ts", "src/engine/returnEngine.ts", "src/types/influence.ts", "src/types/familiarity.ts", "src/types/journeyEngine.ts", "src/data/influence-content.ts", "src/data/journey-content.ts"]
+    },
+    {
+      "id": "essence-control-reference",
+      "file": "essence-control-reference.html",
+      "title": "Essence, Control & Sustained Power",
+      "blurb": "Divine fuel is per-Sphere and tight on purpose — where essence comes from (a baseline flow, worshippers, places of power, an Aspect's conduit) and how it splits along your alignment (0.35/0.25/0.40); Control as sustained commitment (upkeep, the slot cap, the three ways a working lapses); the usurp/destroy contestation trade where age is the defence; and the long strategic works that erode when neglected.",
+      "section": "Manual",
+      "sources": ["src/engine/essenceIncome.ts", "src/engine/phaseControlEffects.ts", "src/engine/controlContestationResolver.ts", "src/engine/phaseStrategicProjects.ts", "src/engine/strategicActionLifecycle.ts", "src/types/influence.ts", "src/data/influence-content.ts", "src/data/strategic-action-constants.ts", "src/data/aspect-content.ts"]
+    },
+    {
+      "id": "encounters-manual-reference",
+      "file": "encounters-manual-reference.html",
+      "title": "Encounters & Aftermath",
+      "blurb": "The encounter as a framed chapter, not a die roll — the two shapes (branching and recurring) that share one UnifiedActionTemplate format; hex-granular awareness (see the hex, see everything on it); the single sigmoid→d100 resolution curve for peasants and gods, with doubles-based crits; aftermath as the mortal's trajectory shift; failure as plot; and the four encounter design rules. Player-voice layer over the deep encounters-agents-reference page.",
+      "section": "Manual",
+      "sources": ["src/engine/encounter*.ts", "src/engine/resolution*.ts", "src/engine/domainCapability.ts", "src/engine/hiddenMark*.ts", "src/data/*-encounter-content.ts", "src/types/unifiedAction.ts"]
+    },
+    {
+      "id": "clocks-reference",
+      "file": "clocks-reference.html",
+      "title": "Doom, the Mandate & Omens",
+      "blurb": "The two clocks that pressure every run from opposite directions — the Doom Clock (seven archetypes, five Whispers→Culmination stages, escalations as world events) counting down to an Unmaking that always lands, and the Victory Mandate (three stages, your declared win-state) counting up; the one-pool-two-clocks tension made concrete by mandate checkpoints that bank counter-omens or owe doom severity; and omens as the pressure made visible.",
+      "section": "Manual",
+      "sources": ["src/engine/phaseDoom*.ts", "src/engine/doomClock*.ts", "src/engine/doomIdentityMilestones.ts", "src/engine/phaseMandate*.ts", "src/engine/mandate.ts", "src/engine/mandateGenerator.ts", "src/engine/phaseOmenAgenda*.ts", "src/types/doomClock.ts", "src/types/mandate.ts", "src/types/omen.ts", "src/data/doom-content.ts", "src/data/mandate-content.ts", "src/data/omenTemplates.ts"]
+    },
+    {
       "id": "encounters-agents-reference",
       "file": "encounters-agents-reference.html",
       "title": "Encounters, Agents & Resolution",
-      "blurb": "Nine Reaches, Domain Capability, species, traits, attachments, the encounter types, the resolution pipeline, divine intervention, and the agent decision pipeline.",
-      "section": "Systems"
+      "blurb": "Eight Reaches, Domain Capability, species, traits, attachments, the encounter types, the resolution pipeline, divine intervention, and the agent decision pipeline.",
+      "section": "Deep Reference",
+      "sources": ["src/engine/encounter.ts", "src/engine/resolution.ts", "src/engine/phaseAgentDecision.ts"]
     },
     {
       "id": "tick-cycle-reference",
       "file": "tick-cycle-reference.html",
       "title": "Tick Cycle Reference",
       "blurb": "All 12 orchestrator acts and 40+ phases in tick order, each with its reads, writes, and RNG tags.",
-      "section": "Systems"
+      "section": "Deep Reference",
+      "sources": ["src/engine/orchestrator.ts"]
     },
     {
       "id": "action-catalog",
       "file": "action-catalog.html",
       "title": "Action Catalog",
       "blurb": "Browsable, code-true catalog of every ascendant-facing action template — spheres, reaches, costs, and real availability buckets.",
-      "section": "Systems"
+      "section": "Deep Reference",
+      "sources": ["src/data/action-template-content.ts"]
     }
   ],
-  "backlog": [
-    {
-      "id": "opening-system",
-      "title": "Opening & Availability",
-      "blurb": "How a run opens: ascendant identity, the First, availability gates, and the first turns.",
-      "section": "Systems"
-    }
-  ]
+  "backlog": []
 }

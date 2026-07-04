@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Threadbearer — Essence, Control &amp; Sustained Power</title>
+<!--
+  Essence, Control & Sustained Power (Game Manual Wiki, W6 / THR-591) — dual-layer manual page.
+  Player-manual prose first ("How it plays"), Designer Notes second.
+  Spec: Docs/plans/2026-07-03-game-manual-wiki.md §5 W6. Source spine:
+  Docs/canon/rulebook.md §6 ("Your Resources" — the plan cites "§5", predating the
+  rulebook renumber that inserted §5 The Cosmology and pushed Resources to §6).
+  Designer-layer sources: src/types/influence.ts (EssencePool, EssenceDistribution,
+  SphereAlignment), src/data/influence-content.ts (BASE_ESSENCE_PER_TICK and the
+  per-source generation + pool-ceiling constants), src/engine/essenceIncome.ts
+  (per-sphere net income view, the 0.35/0.25/0.40 alignment split),
+  src/engine/phaseControlEffects.ts (the sustained-effect tick engine — drain,
+  threshold, and relic-upkeep sustain models + lapse reasons),
+  src/engine/controlContestationResolver.ts (usurp/destroy resolution, TB-045),
+  src/engine/phaseStrategicProjects.ts + src/data/strategic-action-constants.ts
+  (the ambition-driven strategic project / control-degradation lifecycle),
+  src/data/aspect-content.ts (ASPECT_ESSENCE_PER_TICK conduit income).
+  The shared wiki nav between the WIKI-NAV markers is injected by
+  scripts/generate-design-wiki.ts — do not hand-write it.
+-->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --parchment: #f4edd8;
+    --parchment-dark: #e8dfc8;
+    --ink: #2c1810;
+    --ink-light: #5a3d2b;
+    --ink-faint: #8a7060;
+    --gold: #b8860b;
+    --gold-light: #daa520;
+    --card-bg: #fff8e7;
+    --red: #8b2500;
+    --blue: #1a3a5c;
+    --blue-light: #2d5f8a;
+    --purple: #4a2d6a;
+    --green: #2d5a27;
+
+    --flag-impl: #2d5a27;
+    --flag-design: #8a4a00;
+    --flag-open: #4a2d6a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--parchment);
+    color: var(--ink);
+    font-family: 'Crimson Text', Georgia, serif;
+    font-size: 16px;
+    line-height: 1.6;
+    min-height: 100vh;
+    background-image:
+      radial-gradient(ellipse at 20% 50%, rgba(184,134,11,0.04) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 30%, rgba(74,45,106,0.03) 0%, transparent 50%);
+  }
+
+  .page-wrapper { max-width: 900px; margin: 0 auto; padding: 40px 32px 72px; }
+
+  /* ── Header ── */
+  .header { text-align: center; margin-bottom: 40px; padding-bottom: 28px; border-bottom: 2px solid var(--gold); position: relative; }
+  .header::after { content: ''; position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); width: 55%; height: 1px; background: var(--gold-light); }
+  .header .eyebrow { font-family: 'Cinzel', Georgia, serif; font-size: 0.72rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold); margin-bottom: 10px; }
+  .header h1 { font-family: 'Cinzel', Georgia, serif; font-weight: 700; font-size: 2.4rem; color: var(--ink); letter-spacing: 0.05em; margin-bottom: 12px; }
+  .header .tagline { font-size: 1.12rem; color: var(--ink-light); max-width: 62ch; margin: 0 auto; font-style: italic; }
+
+  /* ── Sections ── */
+  .section { margin-bottom: 34px; }
+  .section > h2 { font-family: 'Cinzel', Georgia, serif; font-size: 1.25rem; color: var(--ink); letter-spacing: 0.03em; margin-bottom: 6px; padding-bottom: 6px; border-bottom: 1px solid var(--parchment-dark); }
+  .section > h2 .lead { display: block; font-family: 'Crimson Text', Georgia, serif; font-size: 0.95rem; font-style: italic; font-weight: 400; color: var(--ink-faint); letter-spacing: 0; margin-top: 4px; }
+  .section h3 { font-family: 'Cinzel', Georgia, serif; font-size: 1rem; color: var(--ink-light); letter-spacing: 0.02em; margin: 20px 0 6px; }
+  .section p { margin-bottom: 12px; }
+  .section p .term { font-weight: 600; color: var(--ink); }
+  .section ul { margin: 0 0 14px 0; padding-left: 0; list-style: none; }
+  .section ul li { position: relative; padding-left: 1.3rem; margin-bottom: 8px; }
+  .section ul li::before { content: '◆'; position: absolute; left: 0; top: 0.05rem; color: var(--gold); font-size: 0.7rem; }
+
+  /* ── Essence sources: labelled contribution rows ── */
+  .sources { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 10px 0 18px; }
+  .src-card { background: var(--card-bg); border: 1px solid var(--parchment-dark); border-radius: 4px; padding: 14px 16px; border-left: 3px solid var(--gold); }
+  .src-card h4 { font-family: 'Cinzel', Georgia, serif; font-size: 0.9rem; color: var(--ink); margin: 0 0 4px; }
+  .src-card p { font-size: 0.86rem; color: var(--ink-light); margin-bottom: 0; }
+  @media (max-width: 680px) { .sources { grid-template-columns: 1fr; } }
+
+  /* ── Alignment split (primary / secondary / rest) ── */
+  .split { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 10px 0 18px; }
+  .split-col { background: var(--card-bg); border: 1px solid var(--parchment-dark); border-radius: 4px; padding: 14px; text-align: center; border-top: 3px solid var(--gold); }
+  .split-col.secondary { border-top-color: var(--gold-light); }
+  .split-col.rest { border-top-color: var(--ink-faint); }
+  .split-col .pct { font-family: 'Cinzel', Georgia, serif; font-size: 1.5rem; color: var(--ink); font-weight: 700; }
+  .split-col h4 { font-family: 'Cinzel', Georgia, serif; font-size: 0.86rem; color: var(--ink-light); margin: 4px 0 4px; }
+  .split-col p { font-size: 0.8rem; color: var(--ink-faint); margin-bottom: 0; }
+  @media (max-width: 560px) { .split { grid-template-columns: 1fr; } }
+
+  /* ── Sustain / lapse models ── */
+  .sustain { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 10px 0 18px; }
+  .sustain-card { background: var(--card-bg); border: 1px solid var(--parchment-dark); border-radius: 4px; padding: 14px 16px; border-top: 3px solid var(--blue-light); }
+  .sustain-card h4 { font-family: 'Cinzel', Georgia, serif; font-size: 0.9rem; color: var(--ink); margin: 0 0 6px; }
+  .sustain-card p { font-size: 0.84rem; color: var(--ink-light); margin-bottom: 0; }
+  @media (max-width: 720px) { .sustain { grid-template-columns: 1fr; } }
+
+  /* ── Contest cards (usurp / destroy) ── */
+  .contest { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 10px 0 18px; }
+  .contest-card { background: var(--card-bg); border: 1px solid var(--parchment-dark); border-radius: 4px; padding: 16px 18px; border-top: 3px solid var(--red); }
+  .contest-card h4 { font-family: 'Cinzel', Georgia, serif; font-size: 0.95rem; color: var(--red); margin: 0 0 6px; }
+  .contest-card p { font-size: 0.86rem; color: var(--ink-light); margin-bottom: 0; }
+  @media (max-width: 620px) { .contest { grid-template-columns: 1fr; } }
+
+  /* ── Callouts ── */
+  .callout { background: var(--card-bg); border: 1px solid var(--parchment-dark); border-left: 4px solid var(--gold); border-radius: 4px; padding: 14px 18px; margin: 4px 0 18px; }
+  .callout.blue { border-left-color: var(--blue-light); }
+  .callout.purple { border-left-color: var(--purple); }
+  .callout.red { border-left-color: var(--red); }
+  .callout .callout-title { font-family: 'Cinzel', Georgia, serif; font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 6px; }
+  .callout p:last-child { margin-bottom: 0; }
+
+  /* ── Ladder chain (player-facing) ── */
+  .chain { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 14px; align-items: center; }
+  .chain .step { font-family: 'Cinzel', Georgia, serif; font-size: 0.74rem; color: var(--ink-light); background: var(--card-bg); border: 1px solid var(--parchment-dark); border-radius: 3px; padding: 3px 9px; white-space: nowrap; }
+  .chain .arrow { color: var(--gold); font-size: 0.8rem; }
+
+  /* ── Designer notes ── */
+  .designer { margin-top: 48px; border-top: 2px solid var(--gold); padding-top: 8px; }
+  .designer > summary { list-style: none; cursor: pointer; padding: 16px 4px; display: flex; align-items: baseline; gap: 12px; }
+  .designer > summary::-webkit-details-marker { display: none; }
+  .designer > summary .chev { font-size: 0.8rem; color: var(--gold); transition: transform 0.15s; }
+  .designer[open] > summary .chev { transform: rotate(90deg); }
+  .designer > summary h2 { font-family: 'Cinzel', Georgia, serif; font-size: 1.3rem; color: var(--ink); letter-spacing: 0.03em; }
+  .designer > summary .sub { font-size: 0.9rem; color: var(--ink-faint); font-style: italic; }
+  .designer-body { padding: 4px 4px 8px; }
+  .designer-body h3 { font-family: 'Cinzel', Georgia, serif; font-size: 0.98rem; color: var(--ink-light); margin: 22px 0 8px; }
+  .designer-body p { margin-bottom: 12px; font-size: 0.97rem; }
+  .designer-body ul { margin: 0 0 14px 0; padding-left: 0; list-style: none; }
+  .designer-body ul li { position: relative; padding-left: 1.2rem; margin-bottom: 7px; font-size: 0.97rem; }
+  .designer-body ul li::before { content: '›'; position: absolute; left: 0.15rem; top: 0; color: var(--ink-faint); }
+  code, .mono { font-family: 'JetBrains Mono', monospace; font-size: 0.84em; color: var(--ink); background: rgba(184,134,11,0.10); padding: 0.05rem 0.32rem; border-radius: 3px; word-break: break-word; }
+
+  .flag { font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; letter-spacing: 0.04em; font-weight: 500; padding: 0.08rem 0.4rem; border-radius: 3px; color: #fff; white-space: nowrap; }
+  .flag.impl { background: var(--flag-impl); }
+  .flag.design { background: var(--flag-design); }
+  .flag.open { background: var(--flag-open); }
+
+  table.tunables { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin: 4px 0 18px; }
+  table.tunables th { text-align: left; font-family: 'Cinzel', Georgia, serif; font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-faint); padding: 6px 10px 6px 0; border-bottom: 1px solid var(--parchment-dark); }
+  table.tunables td { padding: 7px 10px 7px 0; border-bottom: 1px solid var(--parchment-dark); vertical-align: top; color: var(--ink-light); }
+  table.tunables td:first-child { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--ink); white-space: nowrap; }
+
+  .foot { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--parchment-dark); font-size: 0.85rem; color: var(--ink-faint); font-style: italic; }
+  a { color: var(--blue-light); text-decoration: none; border-bottom: 1px solid rgba(45,95,138,0.35); }
+  a:hover { color: var(--blue); border-bottom-color: var(--blue); }
+</style>
+</head>
+<body>
+<!--WIKI-NAV-->
+<style>
+  .wiki-nav { font-family: 'Cinzel', Georgia, serif; background: #2c1810; border-bottom: 2px solid #b8860b; padding: 0.6rem 1.2rem; display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.4rem 1.1rem; }
+  .wiki-nav__brand { color: #daa520; font-weight: 700; letter-spacing: 0.04em; margin-right: 0.6rem; font-size: 0.95rem; }
+  .wiki-nav__link { color: #f4edd8; text-decoration: none; font-size: 0.85rem; letter-spacing: 0.02em; padding: 0.15rem 0.1rem; border-bottom: 2px solid transparent; transition: color 0.15s, border-color 0.15s; }
+  .wiki-nav__link:hover { color: #daa520; }
+  .wiki-nav__link.is-active { color: #daa520; border-bottom-color: #b8860b; font-weight: 700; }
+</style>
+<nav class="wiki-nav" aria-label="Design Reference Wiki">
+  <span class="wiki-nav__brand">⌖ Design Reference Wiki</span>
+  <a class="wiki-nav__link" href="design-wiki.html">Design Wiki</a>
+  <a class="wiki-nav__link" href="run-lifecycle-reference.html">A Run, Start to Finish</a>
+      <a class="wiki-nav__link" href="cosmology-reference.html">Reaches, Spheres &amp; Quintessence</a>
+      <a class="wiki-nav__link" href="turn-structure-reference.html">The Three-Beat Turn</a>
+      <a class="wiki-nav__link" href="divine-actions-reference.html">Divine Actions &amp; Prerequisites</a>
+      <a class="wiki-nav__link" href="threads-court-reference.html">Threads, the Court &amp; The First</a>
+      <a class="wiki-nav__link is-active" href="essence-control-reference.html" aria-current="page">Essence, Control &amp; Sustained Power</a>
+      <a class="wiki-nav__link" href="encounters-manual-reference.html">Encounters &amp; Aftermath</a>
+      <a class="wiki-nav__link" href="clocks-reference.html">Doom, the Mandate &amp; Omens</a>
+      <a class="wiki-nav__link" href="encounters-agents-reference.html">Encounters, Agents &amp; Resolution</a>
+      <a class="wiki-nav__link" href="tick-cycle-reference.html">Tick Cycle Reference</a>
+      <a class="wiki-nav__link" href="action-catalog.html">Action Catalog</a>
+</nav>
+<!--/WIKI-NAV-->
+<div class="page-wrapper">
+
+  <header class="header">
+    <div class="eyebrow">Game Manual · Acting on the World</div>
+    <h1>Essence, Control &amp; Sustained Power</h1>
+    <p class="tagline">Divine fuel is the one thing you never have enough of. Every act spends it, every held thread costs it, and every sustained working keeps costing it — turn after turn — until you let go or a rival tears it away.</p>
+  </header>
+
+  <!-- ══════════════════ HOW IT PLAYS ══════════════════ -->
+
+  <section class="section">
+    <h2>Essence is your divine fuel<span class="lead">Not one pool but twelve — one for each Sphere. Power is coloured, and colour is a constraint.</span></h2>
+    <p><span class="term">Influence Essence</span> is what a divine act is made of. You do not have a single bank of power; you have <span class="term">a separate pool for every Sphere</span> — Force and Mind, Matter and Time, Light and Darkness, all twelve. An action drawn from Force spends your Force pool; a working of Matter draws down Matter. The kind of god you are decides which pools fill fastest, and which run dry the moment you overreach.</p>
+    <p>This is why two gods with the same total essence can afford completely different turns. A Force-aligned Ascendant swims in the pool that fuels raw imposition and starves in the pool that fuels subtle mind-work. Your Sphere alignment is not a flavour label — it is the shape of your wallet.</p>
+    <div class="callout">
+      <div class="callout-title">The economy is tight on purpose</div>
+      <p>Most turns you cannot afford every intervention you can see. That is not a balance oversight — it is the texture of play. The pressure to choose <em>which one</em> act matters this turn is the whole game leaning on you. A god who could do everything would feel nothing.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Where essence comes from<span class="lead">Worshippers, holy ground, and the depth of your portfolio. Fuel is drawn from the world you are woven into.</span></h2>
+    <p>Essence regenerates every turn from the reach you have into the world. The more of the world holds you — in belief, in place, in bonded lives — the more fuel flows back:</p>
+    <div class="sources">
+      <div class="src-card">
+        <h4>A baseline flow</h4>
+        <p>You are a god; a thin current of essence returns to you each turn simply for existing in the world.</p>
+      </div>
+      <div class="src-card">
+        <h4>Worshippers (your threads)</h4>
+        <p>Every mortal you hold a thread to feeds you a little each turn. A wide portfolio is a wide intake.</p>
+      </div>
+      <div class="src-card">
+        <h4>Places of power</h4>
+        <p>Holy ground and wells of the numinous you control return more than ordinary land — and your <span class="term">home seat</span>, the throne of your presence, most of all.</p>
+      </div>
+      <div class="src-card">
+        <h4>An Aspect's conduit</h4>
+        <p>A mortal raised into a living <span class="term">Aspect</span> of you becomes a channel, pouring back extra fuel while they live.</p>
+      </div>
+    </div>
+    <p>But income does not arrive in a lump — it is <span class="term">poured into your pools along your alignment</span>. The largest share flows to your primary Sphere, a smaller share to your secondary, and the remainder is split thin across the other ten. Your nature decides not just how much you gain but <em>where</em> it lands:</p>
+    <div class="split">
+      <div class="split-col">
+        <div class="pct">35%</div>
+        <h4>Primary Sphere</h4>
+        <p>The bulk of every turn's income.</p>
+      </div>
+      <div class="split-col secondary">
+        <div class="pct">25%</div>
+        <h4>Secondary Sphere</h4>
+        <p>A strong second current.</p>
+      </div>
+      <div class="split-col rest">
+        <div class="pct">40%</div>
+        <h4>The other ten</h4>
+        <p>Split thin — a trickle to each.</p>
+      </div>
+    </div>
+    <p>Holding threads costs as well as feeds: the upkeep of your deepest bonds is drawn from your <em>primary</em> pool each turn, so a large, deep court quietly taxes the very Sphere you rely on most. (The thread ladder and its upkeep are the <a href="threads-court-reference.html">Threads, the Court &amp; The First</a> page; here we care only that they are a running cost against your fuel.)</p>
+  </section>
+
+  <section class="section">
+    <h2>Control — power you keep spending<span class="lead">Most acts happen and are done. A Control working does not end — it holds, and holding is a commitment renewed every turn.</span></h2>
+    <p>Four of the five divine verbs resolve in a moment: you Create, Find, Change, or Destroy, and the world shifts. <span class="term">Control</span> is different — it is the signature verb, and it does not finish. When you seize a hex, bind a well, or hold a mind under your will, you open a <span class="term">sustained effect</span> that keeps working turn after turn: draining fuel, pressing its Sphere onto the land, doing its quiet job for as long as you can pay.</p>
+    <p>Every held working is a standing cost. Each turn, your Control effects are charged in order of age — oldest first — from the pools they draw on. Two things follow from that, and they are the heart of Control as a strategic choice:</p>
+    <ul>
+      <li><span class="term">Sustained power is rationed by upkeep, not just by cast cost.</span> You can afford to <em>start</em> more workings than you can afford to <em>keep</em>. The question is never "can I do this once" but "can I hold this while holding everything else."</li>
+      <li><span class="term">Control slots cap how many workings you can hold at once.</span> Beyond the essence drain, there is a hard ceiling on concurrent sustained effects — a limit that rises with your Domain Capability. Holding is a scarce commitment, and choosing what to let lapse is part of the game. <em>(The exact slot ceiling is still being tuned — see Designer Notes.)</em></li>
+    </ul>
+    <div class="callout blue">
+      <div class="callout-title">A held working is a visible thing in the world</div>
+      <p>When you sustain a Control effect it is not a hidden buff on your sheet — it becomes a <span class="term">standing presence on the hex</span>, a node the world can see and act against. That visibility is the price of holding ground: what you keep, others can find, and what others can find, they can take.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>How a working ends<span class="lead">A Control effect lapses one of three quiet ways — or is torn from you by a rival who wanted it more.</span></h2>
+    <p>No sustained effect lasts forever. It ends when you can no longer meet its terms. There are three ways a working lapses on its own:</p>
+    <div class="sustain">
+      <div class="sustain-card">
+        <h4>The fuel runs out</h4>
+        <p>The most common end. If your pools cannot cover the upkeep this turn, the effect lapses — and when several fail at once, the <em>newest</em> are dropped first, so your oldest, deepest holds survive longest.</p>
+      </div>
+      <div class="sustain-card">
+        <h4>A condition breaks</h4>
+        <p>Some workings hold only while the world stays a certain way — a hex kept corrupted, a place kept prosperous. Let that condition slip and the effect falls, no fuel spent, its reason gone.</p>
+      </div>
+      <div class="sustain-card">
+        <h4>Its anchor is lost</h4>
+        <p>A working bound to a relic pays no upkeep while the relic endures — but if that anchor is shattered, the effect it was holding up collapses with it.</p>
+      </div>
+    </div>
+    <p>And then there is the end you do not choose. Because a held working is a visible node, a <span class="term">rival god with the right power can contest it</span> — reach onto your hex and try to take what you hold. Contestation runs two ways:</p>
+    <div class="contest">
+      <div class="contest-card">
+        <h4>Usurp</h4>
+        <p>The rival <em>seizes</em> the working — ownership transfers, and everything you sank into it now serves them. Your investment does not vanish; it changes hands. And the theft is loud: you will almost always feel it happen.</p>
+      </div>
+      <div class="contest-card">
+        <h4>Destroy</h4>
+        <p>The rival <em>shatters</em> the working outright. It is simply gone, and the ground it held goes with it. Nothing transfers — this is denial, not conquest.</p>
+      </div>
+    </div>
+    <div class="callout red">
+      <div class="callout-title">The longer you hold, the harder you are to unseat</div>
+      <p>An old working is a rooted one. The longer a Control effect has stood, the harder it is for a rival to usurp or destroy — age is its own defence. A working you have held for a season is a fortress; one you seized last turn is a tent. This rewards patience and punishes the god who grabs everything and holds nothing long enough to matter.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>The long works<span class="lead">Some undertakings are too large for a single act. They run as projects — advancing a step at a time, and eroding if you look away.</span></h2>
+    <p>Not everything resolves in one moment of divine will. The largest ambitions — a settlement raised, a stronghold consolidated, a region turned — run as <span class="term">strategic projects</span>: multi-turn works that advance a step each turn rather than snapping into being. And the holds you establish through them are not self-tending. A control stance left <span class="term">unattended</span> begins to degrade after a short grace period — the world reasserts itself against neglect, and a grip you stop renewing slowly opens.</p>
+    <p>The lesson is the same one the whole system keeps teaching: in Threadbearer, power is not a thing you <em>own</em>. It is a thing you <em>keep spending to keep</em>.</p>
+    <div class="callout purple">
+      <div class="callout-title">Fuel is where the two clocks meet</div>
+      <p>Every drop of essence you pour into holding ground is a drop you did not spend slowing the Doom Clock or pushing your Mandate. The tight economy is not just about this turn's action — it is the exchange rate between everything you want. What that trade <em>costs</em>, exactly, is the subject of the <a href="clocks-reference.html">Doom, the Mandate &amp; Omens</a> page.</p>
+    </div>
+  </section>
+
+  <!-- ══════════════════ DESIGNER NOTES ══════════════════ -->
+
+  <details class="designer" open>
+    <summary>
+      <span class="chev">▶</span>
+      <span>
+        <h2>Designer Notes</h2>
+        <span class="sub">Per-sphere pools, the alignment split, the essence phase, the sustained-effect tick engine and its three lapse models, the contestation resolver, and the strategic-project lifecycle.</span>
+      </span>
+    </summary>
+    <div class="designer-body">
+
+      <p>Status flags follow the rulebook convention: <span class="flag impl">IMPL</span> shipped and wired, <span class="flag design">DESIGN</span> specified but partially or not yet wired, <span class="flag open">OPEN</span> an unresolved question (referenced from the rulebook — this page mints none). <strong>Synthesis authority for this page is <code>Docs/canon/rulebook.md</code> §6 ("Your Resources").</strong> The plan doc cites "§5"; that predates the 2026-06-23 rulebook renumber (THR-414) that inserted §5 The Cosmology and pushed Resources to §6. Where any surface disagrees, the rulebook and the UL win on their respective boundaries.</p>
+
+      <h3>Per-Sphere essence pools <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li>Essence is <code>EssencePool = Record&lt;SphereName, number&gt;</code> (<code>src/types/influence.ts</code>) — one numeric pool per Sphere, twelve in all. There is no single aggregate balance; every action, upkeep charge, and detection loss is debited from a <em>specific</em> Sphere's pool.</li>
+        <li>The pool ceiling scales with portfolio size: <code>BASE_MAX_ESSENCE = 50</code> plus <code>MAX_ESSENCE_PER_THREAD = 5</code> per held thread (<code>computeMaxEssence</code>, <code>src/engine/influence.ts</code>). Wider court, deeper reservoir.</li>
+      </ul>
+
+      <h3>Generation &amp; the alignment split <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li>Gross per-tick generation sums a fixed set of source terms (<code>computeEssenceIncome</code>, <code>src/engine/essenceIncome.ts</code>; mirrored by <code>computeEssenceGeneration</code> in <code>influence.ts</code>): <code>BASE_ESSENCE_PER_TICK = 1.0</code>, plus <code>ESSENCE_PER_THREAD = 0.1</code> × threads, plus <code>ESSENCE_PER_PLACE_OF_POWER = 0.5</code> per controlled place of power, plus <code>ESSENCE_PER_SEAT = 1.0</code> for the home seat (a named higher-yield place of power identified by <code>homeSeatLocationId</code>, THR-502 — replaces rather than stacks with the ordinary place-of-power term for that location), plus <code>ASPECT_ESSENCE_PER_TICK = 0.3</code> per living (non-mythic-echo) <code>aspect_of</code> conduit (THR-479).</li>
+        <li>The total is then <strong>distributed by Sphere alignment</strong>, not credited flat (<code>distributeByAlignment</code>): <code>primary × 0.35</code>, <code>secondary × 0.25</code>, and the remaining <code>0.40</code> split evenly across the other ten Spheres (<code>perOther = total × 0.40 / 10</code>). These three fractions are the <code>EssenceDistribution</code> shape; identity defaults set primary/secondary from the Ascendant's <code>SphereAlignment</code>.</li>
+        <li>Thread upkeep is netted out of the <em>primary</em> pool: <code>computeEssenceIncome</code> subtracts <code>Σ TIER_MAINTENANCE[tier]</code> across all threads from <code>net[primary]</code>. So a deep court is a standing tax on your primary Sphere specifically.</li>
+        <li>Active Control effects with <code>perTickIncome</code> add per-sphere income on top (not distributed by alignment) — an effect can be a net fuel <em>source</em> (e.g. a "Tap the Source" working, <code>TAP_SOURCE_BASE_INCOME = 0.8</code> vs <code>TAP_SOURCE_SUSTAIN_COST = 0.2</code>).</li>
+      </ul>
+
+      <h3>The essence phase &amp; the control-effect tick engine <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li>Order matters: <code>phaseControlEffects</code> (<code>src/engine/phaseControlEffects.ts</code>) runs <em>after</em> the essence phase, so income is credited before upkeep is charged. It iterates active effects <strong>oldest-first by <code>establishedTick</code></strong> for payment, and lapses failures <strong>LIFO (newest-first)</strong> — the design intent that your oldest, deepest holds are the last to fall when fuel runs short.</li>
+        <li>Per effect per tick: (a) threshold check → lapse <code>threshold_failed</code> if unmet; (b) relic-upkeep substitute check → lapse <code>upkeep_relic_destroyed</code> if the sustaining relic is gone, else waive cost while it exists (THR-509); (c) debit <code>perTickCost</code> per Sphere, refunding partial debits and marking <code>essence_depleted</code> if any Sphere can't pay; (d) apply <code>perTickMutations</code> / <code>perTickGraphOps</code> / thread auras / sphere-pressure; (e) credit <code>perTickIncome</code>; (f) increment <code>ticksActive</code>. Every step emits a <code>ControlEffectTickTrace</code> or <code>ControlEffectLapseTrace</code> (NFP #2).</li>
+        <li>The three sustain models in the player layer map to real branches: <strong>drain</strong> = <code>perTickCost</code> (the default), <strong>threshold</strong> = <code>sustainThreshold</code> (a hex/location field comparison), <strong>ritual/relic</strong> = <code>getUpkeepStatus</code> waiving cost against a sustaining relic. All three are <span class="flag impl">IMPL</span> in the tick engine. The rulebook's §6 "[DESIGN — contestation reactions specified, not all wired]" flag applies to the <em>full</em> Control mechanic (slot cap + rival-driven contestation), not to the per-tick sustain engine, which ships.</li>
+        <li>Fail-soft (NFP #4): a missing owner node lapses the effect as <code>voluntarily_released</code>; unknown threshold targets are treated as satisfied; arithmetic-only, never throws. THR-551 adds a seeded per-tick rift-leak roll (deterministic per <code>seed + tick × RIFT_LEAK_SEED_OFFSET + hash(effectId)</code>).</li>
+      </ul>
+
+      <h3>Control slots — the cap is not finalised <span class="flag design">DESIGN</span></h3>
+      <ul>
+        <li>The rulebook §6 states the concurrent-slot cap "scales with your Domain Capability tier" but the <strong>slot-cap formula is not yet in code</strong> — no <code>CONTROL_SLOT</code>/<code>maxControlSlots</code> constant exists (confirmed by grep). The player layer describes the intended ceiling and flags it as tuning-pending; the tick engine currently sustains as many effects as essence allows.</li>
+        <li>Design pointer: the Control mechanic and slot model live in <code>Docs/plans/2026-03-17-world-state-and-hex-actions-design.md</code>.</li>
+      </ul>
+
+      <h3>Contestation — usurp / destroy resolver <span class="flag impl">IMPL</span> <span class="flag design">DESIGN</span></h3>
+      <ul>
+        <li>Resolution is <span class="flag impl">IMPL</span> in <code>src/engine/controlContestationResolver.ts</code> (TB-045) and invoked from <code>unifiedActionResolution.ts</code>: <code>findContestableEffects</code> gates on active + not-owner + prerequisite match (<code>meetsPrerequisites</code> — a reach-tier and/or aligned/opposing-sphere check); <code>resolveContestation</code> rolls <code>probability = clamp(capability − difficulty, 0.05, 0.95)</code>; <code>applyContestationOutcome</code> either transfers <code>ownerId</code> (usurp — inherits all sunk investment) or sets <code>active = false, lapseReason = 'destroyed'</code>.</li>
+        <li>Age is the defence: <code>computeContestationDifficulty = min(CONTESTATION_MAX_DIFFICULTY 0.85, CONTESTATION_BASE_DIFFICULTY 0.5 + ticksActive × CONTESTATION_TICKS_ACTIVE_SCALING 0.01)</code>. Usurp is loud: <code>USURP_DETECTION_RISK = 0.8</code>.</li>
+        <li>The <span class="flag design">DESIGN</span> half is the full rival-driven loop — the resolver exists and is callable, but the autonomous rival contestation cadence is the "not all wired" part the rulebook flags. A parallel <code>src/engine/contestation.ts</code> covers the encounter-side contest path.</li>
+      </ul>
+
+      <h3>Strategic projects &amp; control degradation <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li><code>phaseStrategicProjects</code> (<code>src/engine/phaseStrategicProjects.ts</code>, orchestrator phase 2a.55) is a <em>progression</em> phase — it advances existing <code>state.strategicState.projects</code> and degrades neglected <code>controls</code>, it does not plan. Gated by <code>ENABLE_STRATEGIC_ACTIONS = true</code> (currently on); no-op when there is no strategic state.</li>
+        <li>Cadence constants (<code>src/data/strategic-action-constants.ts</code>): <code>STRATEGIC_PROJECT_PROGRESS_PER_TICK = 1</code>, <code>STRATEGIC_DEFAULT_PROJECT_TIMEOUT_TICKS = 18</code> (fail-soft timeout for stalled projects), <code>STRATEGIC_CONTROL_NEGLECT_GRACE_TICKS = 10</code> (ticks before an unattended control stance begins degrading), <code>STRATEGIC_CATALYST_SEED_CHANCE = 0.65</code> (completions may seed a follow-up encounter). Progression logic in <code>advanceStrategicProjects</code> (<code>src/engine/strategicActionLifecycle.ts</code>).</li>
+        <li>Scope note: this is the ambition-driven strategic-action lifecycle, shared by actors pursuing ambitions and the Ascendant's held stances. The player layer frames it as "the long works"; the mechanism is the same system.</li>
+      </ul>
+
+      <h3>Constants</h3>
+      <table class="tunables">
+        <thead><tr><th>Constant</th><th>Value</th><th>Purpose · file</th></tr></thead>
+        <tbody>
+          <tr><td>BASE_ESSENCE_PER_TICK</td><td>1.0</td><td>Baseline per-tick generation · <code>src/data/influence-content.ts:15</code></td></tr>
+          <tr><td>ESSENCE_PER_THREAD</td><td>0.1</td><td>Per-tick income per held thread · <code>src/data/influence-content.ts:18</code></td></tr>
+          <tr><td>ESSENCE_PER_PLACE_OF_POWER</td><td>0.5</td><td>Per-tick per controlled place of power · <code>src/data/influence-content.ts:23</code></td></tr>
+          <tr><td>ESSENCE_PER_SEAT</td><td>1.0</td><td>Per-tick from the home seat (throne) · <code>src/data/influence-content.ts:33</code></td></tr>
+          <tr><td>ASPECT_ESSENCE_PER_TICK</td><td>0.3</td><td>Conduit income per living Aspect · <code>src/data/aspect-content.ts:39</code></td></tr>
+          <tr><td>EssenceDistribution</td><td>0.35 / 0.25 / 0.40</td><td>Primary / secondary / rest income split · <code>src/engine/essenceIncome.ts:29</code></td></tr>
+          <tr><td>BASE_MAX_ESSENCE</td><td>50</td><td>Base pool ceiling · <code>src/data/influence-content.ts:36</code></td></tr>
+          <tr><td>MAX_ESSENCE_PER_THREAD</td><td>5</td><td>Pool-ceiling added per thread · <code>src/data/influence-content.ts:37</code></td></tr>
+          <tr><td>TAP_SOURCE_BASE_INCOME</td><td>0.8</td><td>Income from a Tap-the-Source effect · <code>src/engine/phaseControlEffects.ts:49</code></td></tr>
+          <tr><td>CONTESTATION_BASE_DIFFICULTY</td><td>0.5</td><td>Base difficulty to contest a working · <code>src/engine/controlContestationResolver.ts:29</code></td></tr>
+          <tr><td>CONTESTATION_TICKS_ACTIVE_SCALING</td><td>0.01</td><td>Added difficulty per tick of age · <code>src/engine/controlContestationResolver.ts:32</code></td></tr>
+          <tr><td>CONTESTATION_MAX_DIFFICULTY</td><td>0.85</td><td>Age-difficulty cap · <code>src/engine/controlContestationResolver.ts:35</code></td></tr>
+          <tr><td>USURP_DETECTION_RISK</td><td>0.8</td><td>Chance the owner detects a usurp · <code>src/engine/controlContestationResolver.ts:38</code></td></tr>
+          <tr><td>STRATEGIC_CONTROL_NEGLECT_GRACE_TICKS</td><td>10</td><td>Ticks before unattended control degrades · <code>src/data/strategic-action-constants.ts:60</code></td></tr>
+          <tr><td>CONTROL_SLOT cap</td><td>—</td><td><span class="flag design">DESIGN</span> not yet a constant in code</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Canon &amp; terminology</h3>
+      <ul>
+        <li>Synthesis authority: <code>Docs/canon/rulebook.md</code> §6 ("Your Resources" — Influence Essence, Control slots, the contestation trade). Cosmology spine (the Spheres these pools are keyed to): <code>Docs/canon/cosmology.md</code>.</li>
+        <li>UL authority (terminology wins on any disagreement): <code>Docs/ubiquitous-language/Cosmology.md</code> (Sphere, Sphere Alignment), <code>Docs/ubiquitous-language/Agents.md</code> (Thread, Portfolio Pin, Ascendant).</li>
+        <li>Adjacent Manual pages: <a href="divine-actions-reference.html">Divine Actions &amp; Prerequisites</a> (the five verbs, with Control as the signature), <a href="threads-court-reference.html">Threads, the Court &amp; The First</a> (the threads that feed and tax your pools), <a href="clocks-reference.html">Doom, the Mandate &amp; Omens</a> (the two clocks essence is traded between), and <a href="stealth-rivals-reference.html">Stealth, Detection &amp; Rival Gods</a> (the rivals who contest your held workings). Deep drill-down: <a href="encounters-agents-reference.html">Encounters, Agents &amp; Resolution</a>.</li>
+      </ul>
+
+      <h3>Open questions <span class="flag open">OPEN</span></h3>
+      <ul>
+        <li>Referenced, not minted here: the Control slot-cap formula (rulebook §6, "slot cap formula not yet finalised in code") and the full rival-driven contestation loop remain <span class="flag design">DESIGN</span>. This page opens no new rulebook question; the dual-clock exchange-rate that essence spending sits behind is rulebook Open Q #5 (deferred to KPI data), surfaced on the <a href="clocks-reference.html">clocks</a> page.</li>
+      </ul>
+
+    </div>
+  </details>
+
+  <div class="foot">
+    Game Manual Wiki · W6 (THR-591). Player layer describes current shipped behavior; anything not yet wired is flagged <span class="flag design">DESIGN</span> and introduced as &quot;intended&quot;. Terminology is UL-exact; where this page and the UL disagree, the UL wins and this page is a drift bug.
+  </div>
+
+</div>
+</body>
+</html>

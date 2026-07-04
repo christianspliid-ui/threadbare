@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Threadbearer — Doom, the Mandate &amp; Omens</title>
+<!--
+  Doom, the Mandate & Omens (Game Manual Wiki, W8 / THR-593) — dual-layer manual page.
+  Player-manual prose first ("How it plays"), Designer Notes second.
+  Spec: Docs/plans/2026-07-03-game-manual-wiki.md §5 W8. Source spine:
+  Docs/canon/rulebook.md §8 ("The Clocks") + §9 ("Winning and Losing").
+  Designer-layer sources: src/types/doomClock.ts (archetypes, stages, card effect
+  types, clock state), src/engine/doomClock.ts (archetype card blueprints +
+  progression), src/engine/phaseDoom.ts (escalation resolution + severity),
+  src/data/doom-content.ts + src/data/doom/*.json (per-archetype stage names &
+  thresholds), src/engine/doomIdentityMilestones.ts (milestone hook),
+  src/types/mandate.ts + src/engine/mandate.ts + src/engine/phaseMandate.ts +
+  src/engine/mandateGenerator.ts + src/data/mandate-content.ts (Victory Mandate),
+  src/types/omen.ts + src/data/omenTemplates.ts + src/engine/phaseOmenAgenda.ts
+  (Omen Agenda), src/data/game-config.ts (tuning constants).
+  The shared wiki nav between the WIKI-NAV markers is injected by
+  scripts/generate-design-wiki.ts — do not hand-write it.
+-->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --parchment: #f4edd8;
+    --parchment-dark: #e8dfc8;
+    --ink: #2c1810;
+    --ink-light: #5a3d2b;
+    --ink-faint: #8a7060;
+    --gold: #b8860b;
+    --gold-light: #daa520;
+    --card-bg: #fff8e7;
+    --red: #8b2500;
+    --blue: #1a3a5c;
+    --blue-light: #2d5f8a;
+    --purple: #4a2d6a;
+    --green: #2d5a27;
+
+    --flag-impl: #2d5a27;
+    --flag-design: #8a4a00;
+    --flag-open: #4a2d6a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--parchment);
+    color: var(--ink);
+    font-family: 'Crimson Text', Georgia, serif;
+    font-size: 16px;
+    line-height: 1.6;
+    min-height: 100vh;
+    background-image:
+      radial-gradient(ellipse at 20% 50%, rgba(139,37,0,0.05) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 30%, rgba(184,134,11,0.04) 0%, transparent 50%);
+  }
+
+  .page-wrapper { max-width: 900px; margin: 0 auto; padding: 40px 32px 72px; }
+
+  /* ── Header ── */
+  .header { text-align: center; margin-bottom: 40px; padding-bottom: 28px; border-bottom: 2px solid var(--gold); position: relative; }
+  .header::after { content: ''; position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); width: 55%; height: 1px; background: var(--gold-light); }
+  .header .eyebrow { font-family: 'Cinzel', Georgia, serif; font-size: 0.72rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold); margin-bottom: 10px; }
+  .header h1 { font-family: 'Cinzel', Georgia, serif; font-weight: 700; font-size: 2.4rem; color: var(--ink); letter-spacing: 0.05em; margin-bottom: 12px; }
+  .header .tagline { font-size: 1.12rem; color: var(--ink-light); max-width: 64ch; margin: 0 auto; font-style: italic; }
+
+  /* ── Sections ── */
+  .section { margin-bottom: 34px; }
+  .section > h2 { font-family: 'Cinzel', Georgia, serif; font-size: 1.25rem; color: var(--ink); letter-spacing: 0.03em; margin-bottom: 6px; padding-bottom: 6px; border-bottom: 1px solid var(--parchment-dark); }
+  .section > h2 .lead { display: block; font-family: 'Crimson Text', Georgia, serif; font-size: 0.95rem; font-style: italic; font-weight: 400; color: var(--ink-faint); letter-spacing: 0; margin-top: 4px; }
+  .section h3 { font-family: 'Cinzel', Georgia, serif; font-size: 1rem; color: var(--ink-light); letter-spacing: 0.02em; margin: 20px 0 6px; }
+  .section p { margin-bottom: 12px; }
+  .section p .term { font-weight: 600; color: var(--ink); }
+  .section ul { margin: 0 0 14px 0; padding-left: 0; list-style: none; }
+  .section ul li { position: relative; padding-left: 1.3rem; margin-bottom: 8px; }
+  .section ul li::before { content: '◆'; position: absolute; left: 0; top: 0.05rem; color: var(--gold); font-size: 0.7rem; }
+
+  /* ── Two-clock split ── */
+  .clocks { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 10px 0 18px; }
+  .clock-card { background: var(--card-bg); border: 1px solid var(--parchment-dark); border-radius: 4px; padding: 16px 18px; border-top: 3px solid var(--red); }
+  .clock-card.mandate { border-top-color: var(--gold-light); }
+  .clock-card h4 { font-family: 'Cinzel', Georgia, serif; font-size: 0.95rem; color: var(--ink); margin: 0 0 6px; }
+  .clock-card .kicker { font-family: 'Cinzel', Georgia, serif; font-size: 0.6rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 4px; }
+  .clock-card p { font-size: 0.86rem; color: var(--ink-light); margin-bottom: 0; }
+  @media (max-width: 620px) { .clocks { grid-template-columns: 1fr; } }
+
+  /* ── Seven archetypes ── */
+  .archetypes { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 10px 0 18px; }
+  .arch { background: var(--card-bg); border: 1px solid var(--parchment-dark); border-radius: 4px; padding: 11px 14px; border-left: 3px solid var(--red); }
+  .arch h4 { font-family: 'Cinzel', Georgia, serif; font-size: 0.84rem; color: var(--ink); margin: 0 0 2px; }
+  .arch p { font-size: 0.8rem; color: var(--ink-light); margin: 0; }
+  .arch .end { display: block; font-size: 0.74rem; color: var(--ink-faint); font-style: italic; margin-top: 3px; }
+  @media (max-width: 620px) { .archetypes { grid-template-columns: 1fr; } }
+
+  /* ── Five stages ── */
+  .stages { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 14px; align-items: center; }
+  .stages .stage { font-family: 'Cinzel', Georgia, serif; font-size: 0.74rem; color: var(--ink-light); background: var(--card-bg); border: 1px solid var(--parchment-dark); border-radius: 3px; padding: 3px 10px; white-space: nowrap; }
+  .stages .stage.last { border-color: var(--red); color: var(--red); font-weight: 600; }
+  .stages .arrow { color: var(--gold); font-size: 0.8rem; }
+
+  /* ── Three mandate stages ── */
+  .msteps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 10px 0 18px; }
+  .mstep { background: var(--card-bg); border: 1px solid var(--parchment-dark); border-radius: 4px; padding: 13px 15px; border-top: 3px solid var(--gold-light); }
+  .mstep h4 { font-family: 'Cinzel', Georgia, serif; font-size: 0.82rem; color: var(--ink); margin: 0 0 4px; }
+  .mstep p { font-size: 0.82rem; color: var(--ink-light); margin: 0; }
+  @media (max-width: 620px) { .msteps { grid-template-columns: 1fr; } }
+
+  /* ── Callouts ── */
+  .callout { background: var(--card-bg); border: 1px solid var(--parchment-dark); border-left: 4px solid var(--gold); border-radius: 4px; padding: 14px 18px; margin: 4px 0 18px; }
+  .callout.blue { border-left-color: var(--blue-light); }
+  .callout.purple { border-left-color: var(--purple); }
+  .callout.red { border-left-color: var(--red); }
+  .callout.green { border-left-color: var(--green); }
+  .callout .callout-title { font-family: 'Cinzel', Georgia, serif; font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 6px; }
+  .callout p:last-child { margin-bottom: 0; }
+
+  /* ── Beat chain ── */
+  .chain { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 14px; align-items: center; }
+  .chain .step { font-family: 'Cinzel', Georgia, serif; font-size: 0.74rem; color: var(--ink-light); background: var(--card-bg); border: 1px solid var(--parchment-dark); border-radius: 3px; padding: 3px 9px; white-space: nowrap; }
+  .chain .arrow { color: var(--gold); font-size: 0.8rem; }
+
+  /* ── Designer notes ── */
+  .designer { margin-top: 48px; border-top: 2px solid var(--gold); padding-top: 8px; }
+  .designer > summary { list-style: none; cursor: pointer; padding: 16px 4px; display: flex; align-items: baseline; gap: 12px; }
+  .designer > summary::-webkit-details-marker { display: none; }
+  .designer > summary .chev { font-size: 0.8rem; color: var(--gold); transition: transform 0.15s; }
+  .designer[open] > summary .chev { transform: rotate(90deg); }
+  .designer > summary h2 { font-family: 'Cinzel', Georgia, serif; font-size: 1.3rem; color: var(--ink); letter-spacing: 0.03em; }
+  .designer > summary .sub { font-size: 0.9rem; color: var(--ink-faint); font-style: italic; }
+  .designer-body { padding: 4px 4px 8px; }
+  .designer-body h3 { font-family: 'Cinzel', Georgia, serif; font-size: 0.98rem; color: var(--ink-light); margin: 22px 0 8px; }
+  .designer-body p { margin-bottom: 12px; font-size: 0.97rem; }
+  .designer-body ul { margin: 0 0 14px 0; padding-left: 0; list-style: none; }
+  .designer-body ul li { position: relative; padding-left: 1.2rem; margin-bottom: 7px; font-size: 0.97rem; }
+  .designer-body ul li::before { content: '›'; position: absolute; left: 0.15rem; top: 0; color: var(--ink-faint); }
+  code, .mono { font-family: 'JetBrains Mono', monospace; font-size: 0.84em; color: var(--ink); background: rgba(184,134,11,0.10); padding: 0.05rem 0.32rem; border-radius: 3px; word-break: break-word; }
+
+  .flag { font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; letter-spacing: 0.04em; font-weight: 500; padding: 0.08rem 0.4rem; border-radius: 3px; color: #fff; white-space: nowrap; }
+  .flag.impl { background: var(--flag-impl); }
+  .flag.design { background: var(--flag-design); }
+  .flag.open { background: var(--flag-open); }
+
+  table.tunables { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin: 4px 0 18px; }
+  table.tunables th { text-align: left; font-family: 'Cinzel', Georgia, serif; font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-faint); padding: 6px 10px 6px 0; border-bottom: 1px solid var(--parchment-dark); }
+  table.tunables td { padding: 7px 10px 7px 0; border-bottom: 1px solid var(--parchment-dark); vertical-align: top; color: var(--ink-light); }
+  table.tunables td:first-child { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--ink); white-space: nowrap; }
+
+  .foot { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--parchment-dark); font-size: 0.85rem; color: var(--ink-faint); font-style: italic; }
+  a { color: var(--blue-light); text-decoration: none; border-bottom: 1px solid rgba(45,95,138,0.35); }
+  a:hover { color: var(--blue); border-bottom-color: var(--blue); }
+</style>
+</head>
+<body>
+<!--WIKI-NAV-->
+<style>
+  .wiki-nav { font-family: 'Cinzel', Georgia, serif; background: #2c1810; border-bottom: 2px solid #b8860b; padding: 0.6rem 1.2rem; display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.4rem 1.1rem; }
+  .wiki-nav__brand { color: #daa520; font-weight: 700; letter-spacing: 0.04em; margin-right: 0.6rem; font-size: 0.95rem; }
+  .wiki-nav__link { color: #f4edd8; text-decoration: none; font-size: 0.85rem; letter-spacing: 0.02em; padding: 0.15rem 0.1rem; border-bottom: 2px solid transparent; transition: color 0.15s, border-color 0.15s; }
+  .wiki-nav__link:hover { color: #daa520; }
+  .wiki-nav__link.is-active { color: #daa520; border-bottom-color: #b8860b; font-weight: 700; }
+</style>
+<nav class="wiki-nav" aria-label="Design Reference Wiki">
+  <span class="wiki-nav__brand">⌖ Design Reference Wiki</span>
+  <a class="wiki-nav__link" href="design-wiki.html">Design Wiki</a>
+  <a class="wiki-nav__link" href="run-lifecycle-reference.html">A Run, Start to Finish</a>
+      <a class="wiki-nav__link" href="cosmology-reference.html">Reaches, Spheres &amp; Quintessence</a>
+      <a class="wiki-nav__link" href="turn-structure-reference.html">The Three-Beat Turn</a>
+      <a class="wiki-nav__link" href="divine-actions-reference.html">Divine Actions &amp; Prerequisites</a>
+      <a class="wiki-nav__link" href="threads-court-reference.html">Threads, the Court &amp; The First</a>
+      <a class="wiki-nav__link" href="essence-control-reference.html">Essence, Control &amp; Sustained Power</a>
+      <a class="wiki-nav__link" href="encounters-manual-reference.html">Encounters &amp; Aftermath</a>
+      <a class="wiki-nav__link is-active" href="clocks-reference.html" aria-current="page">Doom, the Mandate &amp; Omens</a>
+      <a class="wiki-nav__link" href="encounters-agents-reference.html">Encounters, Agents &amp; Resolution</a>
+      <a class="wiki-nav__link" href="tick-cycle-reference.html">Tick Cycle Reference</a>
+      <a class="wiki-nav__link" href="action-catalog.html">Action Catalog</a>
+</nav>
+<!--/WIKI-NAV-->
+<div class="page-wrapper">
+
+  <header class="header">
+    <div class="eyebrow">Game Manual · The Long Game</div>
+    <h1>Doom, the Mandate &amp; Omens</h1>
+    <p class="tagline">Two clocks pressure every run from opposite directions — one counting down to an Unmaking that <em>will</em> arrive, one counting up toward the world you declared you would make. The run is the space between them, and the omens are that pressure made visible.</p>
+  </header>
+
+  <!-- ══════════════════ HOW IT PLAYS ══════════════════ -->
+
+  <section class="section">
+    <h2>Two clocks, opposite directions<span class="lead">Doom counts down to a catastrophe that always lands. The Mandate counts up toward your declared win. You never have essence enough for both.</span></h2>
+    <p>A run in Threadbearer is not open-ended. From the first tick, two clocks are already running, and they pull against each other:</p>
+    <div class="clocks">
+      <div class="clock-card">
+        <div class="kicker">Counts down · always lands</div>
+        <h4>The Doom Clock</h4>
+        <p>An Unmaking is coming. It has a <span class="term">shape</span> — one of seven catastrophes — and it escalates through five thematic stages until it arrives. Your interventions can slow it. The rival gods' interventions speed it. Either way, it lands.</p>
+      </div>
+      <div class="clock-card mandate">
+        <div class="kicker">Counts up · your win path</div>
+        <h4>The Victory Mandate</h4>
+        <p>Your declared win-state — a shape you want the world to take before the end. It advances through three stages as you push the world toward it. Reach it before Doom culminates, and <em>you</em> shaped what survived.</p>
+      </div>
+    </div>
+    <p>The tension is the whole game. Pushing the Mandate harder spends essence that could have <em>decelerated</em> Doom. Bracing against a Doom escalation eats turns you would have spent advancing the Mandate. There is one pool of divine fuel and two demands on it, and you will never satisfy both cleanly. <em>That is the point.</em></p>
+  </section>
+
+  <section class="section">
+    <h2>The Doom Clock — seven shapes of an ending<span class="lead">Every run's doom is one of seven archetypes, each named for the shape of its catastrophe. The archetype colours everything the clock does.</span></h2>
+    <p>At worldgen your run is given a <span class="term">doom archetype</span> — the particular way this world is going to end if nothing stops it. There are seven, and the archetype is not cosmetic: it decides the flavour of every escalation, the sphere the ending is aligned to, and the language the world uses as the shadow lengthens.</p>
+    <div class="archetypes">
+      <div class="arch">
+        <h4>Breach</h4>
+        <p>An outside force breaking through reality.</p>
+        <span class="end">Strange Whispers → The Breach</span>
+      </div>
+      <div class="arch">
+        <h4>Convergence</h4>
+        <p>All forces drawn toward a single point.</p>
+        <span class="end">Distant Pull → The Singularity</span>
+      </div>
+      <div class="arch">
+        <h4>Changing</h4>
+        <p>A new cosmic order replacing the old.</p>
+        <span class="end">Old Winds Die → The New Order</span>
+      </div>
+      <div class="arch">
+        <h4>Sundering</h4>
+        <p>The world itself breaking apart.</p>
+        <span class="end">Hairline Fractures → The Sundering</span>
+      </div>
+      <div class="arch">
+        <h4>Failing</h4>
+        <p>A core force of creation weakening.</p>
+        <span class="end">Waning Light → The Failing</span>
+      </div>
+      <div class="arch">
+        <h4>Ascension</h4>
+        <p>Something climbing toward godhood.</p>
+        <span class="end">Mortal Spark → The Ascension</span>
+      </div>
+      <div class="arch">
+        <h4>Reckoning</h4>
+        <p>Past debts coming due.</p>
+        <span class="end">Old Debts Surface → The Reckoning</span>
+      </div>
+    </div>
+    <p>Whatever its shape, a doom escalates through the same five-stage arc — each archetype simply names the stages in its own voice:</p>
+    <div class="stages">
+      <span class="stage">Whispers</span>
+      <span class="arrow">→</span>
+      <span class="stage">Signs</span>
+      <span class="arrow">→</span>
+      <span class="stage">Tremors</span>
+      <span class="arrow">→</span>
+      <span class="stage">Crisis</span>
+      <span class="arrow">→</span>
+      <span class="stage last">Culmination</span>
+    </div>
+    <p>Each stage transition is not just a change of mood — it fires a <span class="term">world event</span>. Reality frays, a settlement's fortune shocks, corruption creeps across hexes, threaded mortals feel the pressure. These are real changes to the world, flavoured by the archetype's sphere: a Breach thins the barriers between realms; a Reckoning sharpens memory and gathers witnesses. The clock does not merely warn you it is coming — it <em>changes the world on the way</em>.</p>
+    <div class="callout red">
+      <div class="callout-title">You cannot stop it — only shape how you meet it</div>
+      <p>The Doom Clock is not a boss you defeat. It is the horizon of the run. You can slow its approach, blunt a given escalation, and choose what you protect while it closes — but a run that lets the clock run out is not a run you failed. It is a run that <em>ended the other way</em>. The question the clock keeps asking is never "can you win?" It is "who were you, in the time you had?"</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>The Victory Mandate — the world you meant to make<span class="lead">Your declared win-state, advancing through three stages. Fulfil it before Doom culminates and the world survives in a shape you chose.</span></h2>
+    <p>Against the countdown runs your <span class="term">Victory Mandate</span> — the win path. You declare (or have declared for you, out of who you remembered being) a goal for the world: a sphere brought to dominance, a court raised, a configuration of the world made real. It is a graph-state goal with a clock of its own, running in parallel to Doom.</p>
+    <p>Every mandate moves through the same three stages, from declaration to fulfilment:</p>
+    <div class="msteps">
+      <div class="mstep">
+        <h4>Setup</h4>
+        <p>The intent is declared and the first ground is laid. The world begins to lean your way.</p>
+      </div>
+      <div class="mstep">
+        <h4>Escalation</h4>
+        <p>The push in earnest — the world visibly bends toward the shape you named, checkpoint by checkpoint.</p>
+      </div>
+      <div class="mstep">
+        <h4>Culmination</h4>
+        <p>The declared state is reached. If Doom has not yet arrived, the world survives — and it survives as <em>yours</em>.</p>
+      </div>
+    </div>
+    <p>You are never told a raw percentage. The Mandate surfaces as a sense of the world tilting: a sphere rising through the reaches, a court thickening around you, an old order giving way. The mandate's shape is drawn from the god you remembered being at the start of the run — a builder's mandate is not a sovereign's — so pursuing it is also an expression of who you are.</p>
+  </section>
+
+  <section class="section">
+    <h2>One pool, two clocks<span class="lead">The clocks are not independent. How you fare against the Mandate feeds directly back into how hard Doom bites.</span></h2>
+    <p>The two clocks talk to each other. The Mandate lays down <span class="term">checkpoints</span> pinned to the Doom Clock's own progress — moments where the world takes stock of whether you are keeping pace. Beat a checkpoint handily and you <em>bank</em> against the dark: the surplus softens the next doom escalation when it lands. Fall short of one, and the arrears are added to the next escalation's bite — a doom you neglected arrives harder.</p>
+    <div class="chain">
+      <span class="step">Outperform a checkpoint</span>
+      <span class="arrow">→</span>
+      <span class="step">Bank a counter-omen</span>
+      <span class="arrow">→</span>
+      <span class="step">Next doom escalation softened</span>
+    </div>
+    <div class="chain">
+      <span class="step">Fall behind a checkpoint</span>
+      <span class="arrow">→</span>
+      <span class="step">Severity owed</span>
+      <span class="arrow">→</span>
+      <span class="step">Next doom escalation bites harder</span>
+    </div>
+    <p>This is the exchange rate of the whole game made concrete. There is no separate "doom meter" you top up in isolation — the way you spend your attention on the Mandate <em>is</em> your relationship with Doom. Race the win too hard and you arrive at each escalation unbraced; hunker down against Doom and the Mandate slips out of reach. The good runs live in the narrow band where both are barely survivable at once.</p>
+  </section>
+
+  <section class="section">
+    <h2>Omens — the pressure made visible<span class="lead">Between the big escalations, the world speaks in omens: short atmospheric tracks that colour the mood, tilt what happens, and tell you which way the wind is turning.</span></h2>
+    <p>You do not read the clocks off a dial. You read them off the <span class="term">world</span> — and the world's chief instrument for that is the <span class="term">omen</span>. An omen is a short-lived thematic pressure line, a run of atmosphere that lasts a handful of days and then passes. At any moment the world can carry up to two: a <em>primary</em> omen — usually an echo of the doom you are living under, or a seasonal hush when doom is quiet — and an optional <em>secondary</em> omen when some sphere surges or a culture strains.</p>
+    <p>Omens are not only decoration. While one runs, it tilts the world: it makes some kinds of moment more likely to surface and others less, and a surging sphere presses gently on the balance of the cosmos. And when a doom stage turns over, its omens turn with it — the old atmosphere is swept aside for the new, so the mood of the world always matches the hour of its ending.</p>
+    <div class="callout purple">
+      <div class="callout-title">Three registers of the same pressure</div>
+      <p>The clocks make themselves felt in three ways, softest to loudest: <strong>omens</strong> (ambient mood tracks that bias and colour), <strong>escalation events</strong> (the world-changing cards a doom stage fires), and — for the mortal closest to you — <strong>journey beats</strong>, the chapters of <a href="threads-court-reference.html">The First's</a> hero's journey, which are themselves scheduled against the Doom Clock. As the clock deepens, your First's story deepens with it. The horizon and the hero move together.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Both endings make the next world<span class="lead">Whichever clock runs out, the run does not simply stop. It resolves into an ending — and the ending seeds what comes after.</span></h2>
+    <p>A run ends one of two ways, and neither is a game-over screen. If the <span class="term">Mandate completes</span>, the world survives in the shape you chose. If the <span class="term">Doom Clock culminates</span> first, the Unmaking arrives and the world is remade or unmade after its archetype. Both are <em>kinds of endings</em>, not kinds of wins.</p>
+    <p>Either way, the ending flows into the <a href="run-lifecycle-reference.html">Twilight</a> — the sequence where you no longer act, only witness. What mattered most is harvested into echoes, the World-Soul remembers, and the <em>next</em> world is shaped as a response to this one. A run that ended in grief seeds the next world with grief; a triumphant mandate seeds it with order. You are never playing for a score. You are playing for the kind of god you were this run to become an ingredient in the next.</p>
+    <div class="callout green">
+      <div class="callout-title">Neither clock is a fail state</div>
+      <p>It is worth saying plainly: losing the race to Doom is not losing the game. The game is not, structurally, about winning — it is about what kind of being you chose to be toward a world you could not save unconditionally. The run that produced a story you can tell was a good run, whichever clock ran out first.</p>
+    </div>
+  </section>
+
+  <!-- ══════════════════ DESIGNER NOTES ══════════════════ -->
+
+  <details class="designer" open>
+    <summary>
+      <span class="chev">▶</span>
+      <span>
+        <h2>Designer Notes</h2>
+        <span class="sub">The seven <code>DOOM_CLOCK_ARCHETYPES</code> and five stages, the escalation card model and severity formula, the Victory Mandate's sphere-growth evaluator and checkpoint feedback, the wired clock-interplay (and what in it is still un-tuned), the Omen Agenda, tick-loop wiring, and the honest [DESIGN] edges.</span>
+      </span>
+    </summary>
+    <div class="designer-body">
+
+      <p>Status flags follow the rulebook convention: <span class="flag impl">IMPL</span> shipped and wired, <span class="flag design">DESIGN</span> specified but partially or not yet wired, <span class="flag open">OPEN</span> an unresolved question (referenced from the rulebook — this page mints none). <strong>Synthesis authority for this page is <code>Docs/canon/rulebook.md</code> §8 ("The Clocks") + §9 ("Winning and Losing"); sphere flavouring authority is <code>Docs/canon/cosmology.md</code>; terminology authority is the UL Cosmology and Encounters shards.</strong> Where any surface disagrees, the UL wins on terms and the canon page wins on current spec.</p>
+
+      <h3>The Doom Clock <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li><strong>Seven archetypes</strong> — <code>DOOM_CLOCK_ARCHETYPES</code> = <code>breach, convergence, changing, sundering, failing, ascension, reckoning</code> (<code>src/types/doomClock.ts:13</code>). Each carries a one-line description in the type and a full card blueprint (5 stage cards + climax variants, sphere-aspected) in <code>src/engine/doomClock.ts:63–589</code>: breach→entropy, convergence→force, changing→chaos, sundering→force, failing→time, ascension→spirit, reckoning→mind.</li>
+        <li><strong>Five generic stages</strong> — <code>DOOM_STAGE_NAMES</code> = <code>['Whispers','Signs','Tremors','Crisis','Culmination']</code> (<code>src/types/doomClock.ts:19</code>). Each archetype <em>renames</em> them thematically in <code>src/data/doom/&lt;archetype&gt;.json</code> (e.g. breach: <code>Strange Whispers → Reality Cracks → The Thinning → Barriers Fail → The Breach</code>). Default stage thresholds are a uniform <code>[0.20, 0.40, 0.60, 0.80, 1.0]</code> fraction of <code>totalTicks</code> (<code>DEFAULT_THRESHOLDS</code>, loaded from JSON via <code>src/data/doom-content.ts</code>).</li>
+        <li><strong>Escalation events</strong> carry a systemic payload: <code>DoomCardEffectType</code> ∈ <code>{hex_corruption, hex_divine_drain, location_unrest, prosperity_shock, location_pressure, agent_pressure}</code> against a <code>DoomCardTargetKind</code> ∈ <code>{random_hexes, settlements, prosperous_settlements, all_locations, threaded_agents}</code> (<code>doomClock.ts:23–36</code>). Magnitudes are tuned in <code>src/data/game-config.ts</code>: <code>DOOM_CARD_HEX_TARGET_COUNT 6</code>, <code>DOOM_CARD_HEX_DELTA 0.18</code>, <code>DOOM_CARD_UNREST_DELTA 12</code>, <code>DOOM_CARD_PROSPERITY_DELTA −8</code>, <code>DOOM_CARD_PRESSURE_MAGNITUDE 3</code>.</li>
+        <li><strong>Progression &amp; severity</strong> (<code>src/engine/phaseDoom.ts</code>): <code>currentTick</code> advances by <code>tickModifier</code> (default <code>1.0</code>, floor <code>0.1</code>) — player interventions decelerate, rival interventions accelerate; <code>progress = currentTick / totalTicks</code>. Each escalation resolves at <code>severity = max(DOOM_MIN_SEVERITY 0.5, 1 + penalty − counterOmensSpent × DOOM_COUNTER_OMEN_SOFTENING 0.5)</code>. Determinism (NFP #3): seeded card draws, no <code>Math.random()</code>; traces on stage transition + card resolution.</li>
+        <li><strong>Doom identity milestones</strong> — <code>src/engine/doomIdentityMilestones.ts</code> flips <code>triggered=true</code> and emits a <code>doom_milestone</code> trace when <code>progress</code> crosses a milestone threshold. The trigger hook is <span class="flag impl">IMPL</span>; the milestone <em>matrix population</em> (which milestones exist, per identity) is <span class="flag design">DESIGN</span>.</li>
+      </ul>
+
+      <h3>The Victory Mandate <span class="flag impl">IMPL</span> (sphere-growth) · <span class="flag design">DESIGN</span> (narrative type)</h3>
+      <ul>
+        <li><strong>Three stages</strong> — <code>MandateStage</code> = <code>'setup' | 'escalation' | 'culmination'</code> (<code>src/types/mandate.ts:15</code>); four <code>MandateType</code>s (<code>graph_state, narrative, sphere_dominance, simulation_achievable</code>). Twelve authored templates in <code>src/data/mandate-content.ts</code> (<code>MANDATE_TEMPLATES</code> + <code>MANDATE_MILESTONE_PROSE</code>).</li>
+        <li><strong>Two runtime evaluators</strong> (<code>src/engine/phaseMandate.ts</code>): the live path is <code>sphere_growth</code> (remembrance-driven) — it compares <code>worldSoul.aggregate.totalBySphere</code> for the primary/secondary spheres against run-start baselines and advances setup→escalation→culmination by checkpoints passed. The <code>legacy</code> graph-condition evaluator (<code>src/engine/mandate.ts</code>) is <span class="flag impl">IMPL</span> but rarely selected. The <code>narrative</code> type has <em>no</em> evaluator (<code>type:'custom'</code> always returns false) — <span class="flag design">DESIGN</span>.</li>
+        <li><strong>Targets &amp; court shapes</strong> (<code>src/data/game-config.ts</code>): <code>MANDATE_PRIMARY_TARGET_DELTA 0.18</code>, <code>MANDATE_SECONDARY_TARGET_DELTA 0.10</code> — the fractional sphere growth required for culmination. A court-shaped secondary objective (<code>web_relationships / circle_retinue / high_house_settlements / abyss_anomalies</code>, one of four <code>MandateCourtType</code>s) tracks alongside.</li>
+      </ul>
+
+      <h3>Clock interplay — wired, tuning open <span class="flag impl">IMPL</span> mechanism · <span class="flag open">OPEN</span> tuning</h3>
+      <ul>
+        <li>The doom↔mandate feedback is <strong>live code</strong>, not a design sketch: <code>phaseMandate.ts:334–339</code> writes <code>counterOmens</code> and <code>nextEscalationSeverityModifier</code> straight into <code>state.doomClock</code>. Checkpoints fire at <code>MANDATE_CHECKPOINT_THRESHOLDS = [0.40, 0.60, 0.80, 1.00]</code> of <em>doom progress</em>. A checkpoint <em>passed and exceeded</em> (by ≥ <code>MANDATE_COUNTER_OMEN_MARGIN 0.02</code>) banks <code>counterOmens += 1</code>; a <em>missed</em> checkpoint adds <code>severityPenalty += 1</code>. Banked counter-omens soften the next escalation via <code>DOOM_COUNTER_OMEN_SOFTENING 0.5</code> in the severity formula above.</li>
+        <li><strong>What is un-tuned (rulebook Open Q #5):</strong> the <em>exchange-rate constants</em> themselves — the softening factor, the penalty/reward magnitudes, the checkpoint deltas — are held as design discipline pending real playtest/KPI data. The mechanism is wired; the balance dial is not turned. This page references that open question; it mints none.</li>
+      </ul>
+
+      <h3>The Omen Agenda <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li><strong>Two slots, four categories</strong> — <code>OmenState</code> holds a <code>primary</code> + optional <code>secondary</code> <code>ActiveOmen</code> plus capped history (<code>OMEN_MAX_HISTORY 20</code>). Categories (<code>OmenCategory</code>): <code>doom_echo</code> (primary — matched to the run's archetype + doom stage), <code>seasonal</code> (primary fallback when doom is quiet), <code>sphere_surge</code> and <code>cultural</code> (secondary, trigger-gated). Templates in <code>src/data/omenTemplates.ts</code>.</li>
+        <li><strong>Effects &amp; selection</strong> (<code>src/engine/phaseOmenAgenda.ts</code>): omens bias encounter-type scoring (capped at <code>OMEN_ENCOUNTER_BIAS_CAP 0.4</code>) and a <code>sphere_surge</code> presses per-tick sphere pressure (capped <code>OMEN_SPHERE_PRESSURE_CAP 0.05</code>, gated by <code>OMEN_SPHERE_DOMINANCE_THRESHOLD 0.25</code>). First activation at <code>OMEN_FIRST_ACTIVATION_TICK 3</code>; secondary needs score ≥ <code>OMEN_SECONDARY_THRESHOLD 0.4</code>; a doom stage transition force-expires the primary omen (<code>OMEN_DOOM_STAGE_FORCE_EXPIRE = true</code>). Beats emit on interval (<code>OMEN_BEAT_INTERVAL_DEFAULT 3</code>).</li>
+        <li><strong>Emitted omens</strong> (THR-115) are a distinct, aftermath-spawned kind: <code>EmittedOmen</code> with global/regional/local scope, decayed by the registered <code>emittedOmenDecayPhase</code>; they bias encounters via <code>EMITTED_OMEN_ENCOUNTER_AFFINITY</code>. Content gap flagged honestly: <code>doom_echo</code> omen tracks are authored for six archetypes but <strong>Ascension is deferred (THR-79)</strong>, and 6 of 12 <code>sphere_surge</code> tracks are stubs.</li>
+      </ul>
+
+      <h3>Tick-loop wiring <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li><code>doomPhase</code> runs in the <code>pre-doom</code> slot and <code>mandatePhase</code> in <code>post-narrative</code> (both registered in <code>src/engine/phases/index.ts</code>). <code>emittedOmenDecayPhase</code> is registered in <code>post-doom</code>. The main <code>phaseOmenAgenda</code> still runs <em>inline</em> in <code>src/engine/orchestrator.ts:2006</code> (not yet migrated to the phase registry — a known pre-registry holdover, not a bug). For the full tick order see <a href="tick-cycle-reference.html">Tick Cycle Reference</a>.</li>
+        <li>Determinism &amp; fail-soft (NFPs #3–#4): all clock/omen draws are seeded; a missing doom definition or malformed omen template falls through to the seasonal/no-op path rather than throwing — the tick loop never crashes on clock state.</li>
+      </ul>
+
+      <h3>Constants</h3>
+      <table class="tunables">
+        <thead><tr><th>Constant</th><th>Value</th><th>Purpose · file</th></tr></thead>
+        <tbody>
+          <tr><td>DOOM_CLOCK_ARCHETYPES</td><td>7</td><td>Doom shapes · <code>src/types/doomClock.ts:13</code></td></tr>
+          <tr><td>DOOM_STAGE_NAMES</td><td>5</td><td>Whispers→Culmination · <code>doomClock.ts:19</code></td></tr>
+          <tr><td>DEFAULT_THRESHOLDS</td><td>0.20 … 1.0</td><td>Stage entry (fraction of totalTicks) · <code>doom/*.json</code></td></tr>
+          <tr><td>DOOM_MIN_SEVERITY</td><td>0.5</td><td>Escalation severity floor · <code>game-config.ts:90</code></td></tr>
+          <tr><td>DOOM_COUNTER_OMEN_SOFTENING</td><td>0.5</td><td>Severity reduction per banked counter-omen · <code>game-config.ts:93</code></td></tr>
+          <tr><td>DOOM_CARD_HEX_DELTA</td><td>0.18</td><td>Corruption per hex card · <code>game-config.ts:78</code></td></tr>
+          <tr><td>MANDATE (stages / types)</td><td>3 / 4</td><td>setup·escalation·culmination · <code>src/types/mandate.ts:15,8</code></td></tr>
+          <tr><td>MANDATE_PRIMARY_TARGET_DELTA</td><td>0.18</td><td>Primary sphere growth for culmination · <code>game-config.ts:49</code></td></tr>
+          <tr><td>MANDATE_CHECKPOINT_THRESHOLDS</td><td>[0.40,0.60,0.80,1.00]</td><td>Doom-progress checkpoints · <code>game-config.ts:55</code></td></tr>
+          <tr><td>MANDATE_COUNTER_OMEN_MARGIN</td><td>0.02</td><td>Over-delivery margin to bank a counter-omen · <code>game-config.ts:58</code></td></tr>
+          <tr><td>OMEN slots / categories</td><td>2 / 4</td><td>primary+secondary · <code>src/types/omen.ts:17,128</code></td></tr>
+          <tr><td>OMEN_ENCOUNTER_BIAS_CAP</td><td>0.4</td><td>Max encounter-type bias from an omen · <code>phaseOmenAgenda.ts</code></td></tr>
+          <tr><td>OMEN_SPHERE_PRESSURE_CAP</td><td>0.05</td><td>Max per-tick sphere pressure (sphere_surge) · <code>phaseOmenAgenda.ts</code></td></tr>
+          <tr><td>OMEN_MAX_HISTORY</td><td>20</td><td>Completed-omen ring size · <code>phaseOmenAgenda.ts</code></td></tr>
+        </tbody>
+      </table>
+
+      <h3>Canon &amp; terminology</h3>
+      <ul>
+        <li>Synthesis authority: <code>Docs/canon/rulebook.md</code> §8 (The Clocks) + §9 (Winning and Losing). Sphere flavouring (each doom/omen is sphere-aspected): <code>Docs/canon/cosmology.md</code>. Systemic capabilities authors must use when an escalation or reaction should seed content: <code>Docs/plans/2026-04-16-systemic-wiring-guide.md</code>.</li>
+        <li>UL authority (terminology wins on any disagreement): the Cosmology shard (Sphere — clocks are sphere-flavoured) and Encounters shard (Encounter Seed — escalation events seed encounters). Game title in player copy: <strong>Threadbearer</strong>.</li>
+        <li>Adjacent Manual pages: <a href="run-lifecycle-reference.html">A Run, Start to Finish</a> (where the clocks sit in the whole arc, and the Twilight ending they both feed), <a href="threads-court-reference.html">Threads, the Court &amp; The First</a> (the First's doom-scheduled journey beats), <a href="essence-control-reference.html">Essence, Control &amp; Sustained Power</a> (the one pool both clocks draw on), <a href="cosmology-reference.html">Reaches, Spheres &amp; Quintessence</a> (the sphere each archetype is aspected to).</li>
+      </ul>
+
+      <h3>Open questions <span class="flag open">OPEN</span></h3>
+      <ul>
+        <li>Referenced, not minted here: <strong>Open Q #5</strong> — the doom↔mandate exchange-rate constants are un-tuned pending KPI/playtest data (rulebook §8, deferred 2026-06-23); <strong>Open Q #6</strong> — Twilight authorship vs. emergence (which harvested threads close the finale) awaits a lightweight authored-beats + procedural-selection split (rulebook §8, spawned). This page opens no new rulebook question.</li>
+      </ul>
+
+    </div>
+  </details>
+
+  <div class="foot">
+    Game Manual Wiki · W8 (THR-593). Player layer describes current shipped behavior; anything not yet wired is flagged <span class="flag design">DESIGN</span> and introduced as &quot;intended&quot;. Terminology is UL-exact; where this page and the UL disagree, the UL wins and this page is a drift bug.
+  </div>
+
+</div>
+</body>
+</html>

@@ -45,7 +45,15 @@
 <nav class="wiki-nav" aria-label="Design Reference Wiki">
   <span class="wiki-nav__brand">⌖ Design Reference Wiki</span>
   <a class="wiki-nav__link is-active" href="design-wiki.html" aria-current="page">Design Wiki</a>
-  <a class="wiki-nav__link" href="encounters-agents-reference.html">Encounters, Agents &amp; Resolution</a>
+  <a class="wiki-nav__link" href="run-lifecycle-reference.html">A Run, Start to Finish</a>
+      <a class="wiki-nav__link" href="cosmology-reference.html">Reaches, Spheres &amp; Quintessence</a>
+      <a class="wiki-nav__link" href="turn-structure-reference.html">The Three-Beat Turn</a>
+      <a class="wiki-nav__link" href="divine-actions-reference.html">Divine Actions &amp; Prerequisites</a>
+      <a class="wiki-nav__link" href="threads-court-reference.html">Threads, the Court &amp; The First</a>
+      <a class="wiki-nav__link" href="essence-control-reference.html">Essence, Control &amp; Sustained Power</a>
+      <a class="wiki-nav__link" href="encounters-manual-reference.html">Encounters &amp; Aftermath</a>
+      <a class="wiki-nav__link" href="clocks-reference.html">Doom, the Mandate &amp; Omens</a>
+      <a class="wiki-nav__link" href="encounters-agents-reference.html">Encounters, Agents &amp; Resolution</a>
       <a class="wiki-nav__link" href="tick-cycle-reference.html">Tick Cycle Reference</a>
       <a class="wiki-nav__link" href="action-catalog.html">Action Catalog</a>
 </nav>
@@ -56,11 +64,48 @@
       <p>The browsable system-design pages for The Fantasy World Simulator. This hub and the nav on every page are generated from <code>public/wiki-manifest.json</code> by <code>scripts/generate-design-wiki.ts</code> on every build.</p>
     </header>
     <section class="wiki-section">
-      <h2>Systems</h2>
+      <h2>Manual</h2>
+      <div class="wiki-grid">
+      <a class="wiki-card" href="run-lifecycle-reference.html">
+        <h3>A Run, Start to Finish</h3>
+        <p>The shape of a whole run — remembrance and your two domains, the opening spine and The First, the middle game, how either clock ends the run, and what the World-Soul carries into the next.</p>
+      </a>
+      <a class="wiki-card" href="cosmology-reference.html">
+        <h3>Reaches, Spheres &amp; Quintessence</h3>
+        <p>The two axes of every divine act — Eight Reaches (what you do) and Twelve Spheres (what fuels it), orthogonal by design — plus each Reach's virtue/vice moral axis, the Domain Capability word-ladder, and Quintessence as narrative centrality (not a ninth Reach).</p>
+      </a>
+      <a class="wiki-card" href="turn-structure-reference.html">
+        <h3>The Three-Beat Turn</h3>
+        <p>How a turn works — the world waits until you advance it; each turn runs scan → curated moment → aftermath in a load-bearing order; time in ticks (two hours, twelve per day); and encounters as rationed chapters, not per-tick rolls.</p>
+      </a>
+      <a class="wiki-card" href="divine-actions-reference.html">
+        <h3>Divine Actions &amp; Prerequisites</h3>
+        <p>The five verbs every divine act reduces to (Create/Find/Change/Destroy/Control), why some action cards never appear (Reach outside your two domains — permanent; sphere misalignment; too little capability), the Generalized Action Targeting cascade, and the two reach signatures you acquire as story moments.</p>
+      </a>
+      <a class="wiki-card" href="threads-court-reference.html">
+        <h3>Threads, the Court &amp; The First</h3>
+        <p>The thread as a two-way bond — your investment depth (the five influence tiers) versus the mortal's awareness (unaware → intuition → faith → communion); the four court positions; The First's doom-clock-scheduled hero's journey; familiarity as player-side progressive disclosure; and why holding a thread deeply costs upkeep and makes you louder to rivals.</p>
+      </a>
+      <a class="wiki-card" href="essence-control-reference.html">
+        <h3>Essence, Control &amp; Sustained Power</h3>
+        <p>Divine fuel is per-Sphere and tight on purpose — where essence comes from (a baseline flow, worshippers, places of power, an Aspect's conduit) and how it splits along your alignment (0.35/0.25/0.40); Control as sustained commitment (upkeep, the slot cap, the three ways a working lapses); the usurp/destroy contestation trade where age is the defence; and the long strategic works that erode when neglected.</p>
+      </a>
+      <a class="wiki-card" href="encounters-manual-reference.html">
+        <h3>Encounters &amp; Aftermath</h3>
+        <p>The encounter as a framed chapter, not a die roll — the two shapes (branching and recurring) that share one UnifiedActionTemplate format; hex-granular awareness (see the hex, see everything on it); the single sigmoid→d100 resolution curve for peasants and gods, with doubles-based crits; aftermath as the mortal's trajectory shift; failure as plot; and the four encounter design rules. Player-voice layer over the deep encounters-agents-reference page.</p>
+      </a>
+      <a class="wiki-card" href="clocks-reference.html">
+        <h3>Doom, the Mandate &amp; Omens</h3>
+        <p>The two clocks that pressure every run from opposite directions — the Doom Clock (seven archetypes, five Whispers→Culmination stages, escalations as world events) counting down to an Unmaking that always lands, and the Victory Mandate (three stages, your declared win-state) counting up; the one-pool-two-clocks tension made concrete by mandate checkpoints that bank counter-omens or owe doom severity; and omens as the pressure made visible.</p>
+      </a>
+      </div>
+    </section>
+    <section class="wiki-section">
+      <h2>Deep Reference</h2>
       <div class="wiki-grid">
       <a class="wiki-card" href="encounters-agents-reference.html">
         <h3>Encounters, Agents &amp; Resolution</h3>
-        <p>Nine Reaches, Domain Capability, species, traits, attachments, the encounter types, the resolution pipeline, divine intervention, and the agent decision pipeline.</p>
+        <p>Eight Reaches, Domain Capability, species, traits, attachments, the encounter types, the resolution pipeline, divine intervention, and the agent decision pipeline.</p>
       </a>
       <a class="wiki-card" href="tick-cycle-reference.html">
         <h3>Tick Cycle Reference</h3>
@@ -72,16 +117,7 @@
       </a>
       </div>
     </section>
-    <section class="wiki-section wiki-section--backlog">
-      <h2>To document next</h2>
-      <div class="wiki-grid">
-        <div class="wiki-card wiki-card--planned" aria-disabled="true">
-          <h3>Opening &amp; Availability</h3>
-          <p>How a run opens: ascendant identity, the First, availability gates, and the first turns.</p>
-          <span class="wiki-card__badge">planned</span>
-        </div>
-      </div>
-    </section>
+
     <footer class="wiki-foot">
       Generated from <code>public/wiki-manifest.json</code>. To add a page: drop its HTML in <code>public/</code>, register it in the manifest, and run <code>npm run build</code>.
     </footer>
