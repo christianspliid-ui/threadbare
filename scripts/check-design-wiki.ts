@@ -7,7 +7,8 @@
  * Fails when:
  *   - a served public/*-reference.html page is missing from the manifest, or
  *   - a manifest page points at a public/ file that doesn't exist, or
- *   - a backlog id collides with a real page id.
+ *   - a backlog id collides with a real page id, or
+ *   - a page/backlog `sources` field is present but not an array of non-empty strings.
  *
  * Run via `npm run check:design-wiki` (also chained into `npm run check:process`).
  */
@@ -16,8 +17,9 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-type ManifestPage = { id: string; file: string };
-type Manifest = { home: string; pages: ManifestPage[]; backlog?: { id: string }[] };
+type ManifestPage = { id: string; file: string; sources?: unknown };
+type BacklogEntry = { id: string; sources?: unknown };
+type Manifest = { home: string; pages: ManifestPage[]; backlog?: BacklogEntry[] };
 
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(SCRIPT_DIR, "..");
@@ -69,6 +71,24 @@ function main(): void {
       errors.push(`backlog id "${entry.id}" collides with a real page id`);
     }
   }
+
+  // `sources` (the freshness contract, THR-585) is optional, but when present it
+  // must be an array of non-empty strings — the advisory check:wiki-freshness lint
+  // treats each entry as a repo glob.
+  const validateSources = (kind: string, id: string, sources: unknown): void => {
+    if (sources === undefined) return;
+    if (!Array.isArray(sources)) {
+      errors.push(`${kind} "${id}" has a "sources" field that is not an array`);
+      return;
+    }
+    sources.forEach((glob, i) => {
+      if (typeof glob !== "string" || glob.trim() === "") {
+        errors.push(`${kind} "${id}" sources[${i}] must be a non-empty string glob`);
+      }
+    });
+  };
+  for (const page of manifest.pages) validateSources("page", page.id, page.sources);
+  for (const entry of manifest.backlog ?? []) validateSources("backlog", entry.id, entry.sources);
 
   if (errors.length > 0) fail(errors);
 

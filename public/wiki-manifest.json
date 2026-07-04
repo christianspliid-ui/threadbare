@@ -6,30 +6,26 @@
       "id": "encounters-agents-reference",
       "file": "encounters-agents-reference.html",
       "title": "Encounters, Agents & Resolution",
-      "blurb": "Nine Reaches, Domain Capability, species, traits, attachments, the encounter types, the resolution pipeline, divine intervention, and the agent decision pipeline.",
-      "section": "Systems"
+      "blurb": "Eight Reaches, Domain Capability, species, traits, attachments, the encounter types, the resolution pipeline, divine intervention, and the agent decision pipeline.",
+      "section": "Deep Reference",
+      "sources": ["src/engine/encounter.ts", "src/engine/resolution.ts", "src/engine/phaseAgentDecision.ts"]
     },
     {
       "id": "tick-cycle-reference",
       "file": "tick-cycle-reference.html",
       "title": "Tick Cycle Reference",
       "blurb": "All 12 orchestrator acts and 40+ phases in tick order, each with its reads, writes, and RNG tags.",
-      "section": "Systems"
+      "section": "Deep Reference",
+      "sources": ["src/engine/orchestrator.ts"]
     },
     {
       "id": "action-catalog",
       "file": "action-catalog.html",
       "title": "Action Catalog",
       "blurb": "Browsable, code-true catalog of every ascendant-facing action template — spheres, reaches, costs, and real availability buckets.",
-      "section": "Systems"
+      "section": "Deep Reference",
+      "sources": ["src/data/action-template-content.ts"]
     }
   ],
-  "backlog": [
-    {
-      "id": "opening-system",
-      "title": "Opening & Availability",
-      "blurb": "How a run opens: ascendant identity, the First, availability gates, and the first turns.",
-      "section": "Systems"
-    }
-  ]
+  "backlog": []
 }
