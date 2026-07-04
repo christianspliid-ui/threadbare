@@ -19,6 +19,14 @@
       "sources": ["src/engine/phaseSphereAggregation*.ts", "src/engine/phaseQuintessence*.ts", "src/engine/capability*.ts", "src/engine/cosmology.ts", "src/types/traits.ts", "src/types/quintessence.ts"]
     },
     {
+      "id": "turn-structure-reference",
+      "file": "turn-structure-reference.html",
+      "title": "The Three-Beat Turn",
+      "blurb": "How a turn works — the world waits until you advance it; each turn runs scan → curated moment → aftermath in a load-bearing order; time in ticks (two hours, twelve per day); and encounters as rationed chapters, not per-tick rolls.",
+      "section": "Manual",
+      "sources": ["src/engine/orchestrator.ts"]
+    },
+    {
       "id": "encounters-agents-reference",
       "file": "encounters-agents-reference.html",
       "title": "Encounters, Agents & Resolution",
