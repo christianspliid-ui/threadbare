@@ -3,6 +3,14 @@
   "title": "The Fantasy World Simulator — Design Reference Wiki",
   "pages": [
     {
+      "id": "run-lifecycle-reference",
+      "file": "run-lifecycle-reference.html",
+      "title": "A Run, Start to Finish",
+      "blurb": "The shape of a whole run — remembrance and your two domains, the opening spine and The First, the middle game, how either clock ends the run, and what the World-Soul carries into the next.",
+      "section": "Manual",
+      "sources": ["src/engine/ascendantBeat*.ts", "src/engine/worldGeneration*.ts", "src/types/remembrance.ts", "src/data/archetype-content.ts", "src/data/backstory-content.ts"]
+    },
+    {
       "id": "encounters-agents-reference",
       "file": "encounters-agents-reference.html",
       "title": "Encounters, Agents & Resolution",
