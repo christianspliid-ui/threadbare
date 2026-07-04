@@ -8,7 +8,7 @@ description: >
   Triggers on "attachment pipeline", "author attachments", "create attachments",
   "new items", "new possessions", "new conditions", "new bestowed powers".
 model: opus
-last_validated_against: 2026-05-12
+last_validated_against: 2026-07-05
 ---
 
 > **Load before authoring:** `Docs/canon/rulebook-quick-reference.md` (always — the synthesis layer for rules of play). Load `Docs/canon/rulebook.md` (full rulebook) when the work touches a specific rule of play and you need depth, status flags, or source citations.
@@ -29,3 +29,5 @@ Then continue with the existing pre-reads:
 - if the brief is missing or stale: `Docs/plans/2026-04-16-game-design-direction.md`
 
 Every attachment should evoke a human condition, not just modify a number.
+
+**Register (plainspoken Malazan, THR-609): baseline is the default.** Attachment names are **interactive text — always plain** (no metaphor, no archaic diction; a player reads the name to know what the item is). Description and flavor prose are **baseline register** — plain, concrete, dry wit over ornament — unless the attachment is a marquee/high-rarity artifact whose lore legitimately reaches for **peak** (declare it). Declare a non-default register with the additive `register?: 'baseline' | 'character' | 'peak'` field (absent → baseline). Canon: [`Docs/canon/prose.md` § the register model](../../../Docs/canon/prose.md); deterministic floor: `registerCompliance` in `window.__DEBUG.proseQualityReport()`.

@@ -9,7 +9,7 @@ description: >
   "backstory", "encounter history", "biography", "forecast tier",
   "prose enrichment", "{name}", "{artifact}", "{ally}", "conditional block".
 model: opus
-last_validated_against: 2026-05-12
+last_validated_against: 2026-07-05
 ---
 
 > **Load before authoring:** `Docs/canon/rulebook-quick-reference.md` (always — the synthesis layer for rules of play). Load `Docs/canon/rulebook.md` (full rulebook) when the work touches a specific rule of play and you need depth, status flags, or source citations.
@@ -25,6 +25,12 @@ Covers the four dynamic prose systems that run at generation time. Load `prose-p
 Before any other reference, read `Docs/canon/prose.md`. It is the live navigation layer for this domain — it lists the current spec pointers, rejected approaches, and active design plans. Linked targets are authoritative; this skill follows the Canon page's pointers, not parallel ones.
 
 If the Canon page disagrees with this skill, the Canon page wins until this skill is rewritten. File a `drift-scan`-labeled Linear issue when you see disagreement.
+
+---
+
+## Register: plainspoken Malazan (THR-609)
+
+**Plainness is the baseline; lyricism is the rationed exception.** Vignette parts (Scene / Lens / Stakes / Forecast) and enriched prose are **baseline register** by default — plain, concrete, one idea per sentence, dry wit over ornament; no archaic diction, no stacked metaphor. The one place lyricism is earned is a **peak** surface (encounter climax step, major aftermath, Twilight, doom transition, World-Soul prose) — declare it, and even then budget one figurative image per paragraph. Enrichment placeholders (`{name}`, `{ally:…}`, conditional blocks) and the 3–5-variant minimum are non-negotiable: a register rewrite must never flatten a placeholder into a hardcoded name or collapse variants. Declare non-default register with the additive `register?: 'baseline' | 'character' | 'peak'` field (absent → baseline). Canon: [`Docs/canon/prose.md` § the register model](../../../Docs/canon/prose.md); deterministic floor: `registerCompliance` in `window.__DEBUG.proseQualityReport()`.
 
 ---
 

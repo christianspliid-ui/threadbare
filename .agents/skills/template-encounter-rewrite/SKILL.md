@@ -9,7 +9,7 @@ description: >
   quality", "social encounter rewrite", "tavern encounter rewrite", "template
   encounter", "encounter quality pass", "prose quality pass", "write encounter".
 model: opus
-last_validated_against: 2026-05-16
+last_validated_against: 2026-07-05
 ---
 
 > **Load before authoring:** `Docs/canon/rulebook-quick-reference.md` (always — the synthesis layer for rules of play). Load `Docs/canon/rulebook.md` (full rulebook) when the work touches a specific rule of play and you need depth, status flags, or source citations.
@@ -141,7 +141,9 @@ All linear template encounters use this shape. You are responsible for authoring
 
 ### Bar 1: Prose Quality
 
-Every narrative field must meet the Threadbare aesthetic:
+Every narrative field must meet the Threadbare aesthetic — at the **baseline register** unless the field is a designated peak surface.
+
+**Register (plainspoken Malazan, THR-609): plainness is the default.** Template-encounter narration is **baseline** — plain, concrete, one idea per sentence, dry wit over ornament; no archaic diction, no stacked metaphor. The only peak-register field in a linear template is a climactic beat, and even then it is one earned image, not sustained lyricism. `likelyBurden` and any label-class field are **interactive text — always plain** (no metaphor, ≤ a handful of words for labels). Declare a non-baseline field with the additive `register?: 'baseline' | 'character' | 'peak'` field (absent → baseline). Full model: [`Docs/canon/prose.md` § the register model](../../../Docs/canon/prose.md); deterministic floor: `registerCompliance` in `window.__DEBUG.proseQualityReport()`.
 
 **Open with sensory/scene detail.** Where is the agent? What do they see, smell, hear? Ground the moment physically before anything happens.
 

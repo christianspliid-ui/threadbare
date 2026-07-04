@@ -24,6 +24,12 @@ import {
   FORECAST_DIGIT_PATTERN,
   PROBABILITY_PHRASES,
 } from './detectors';
+import {
+  scoreRegisterCompliance,
+  type RegisterBand,
+  type RegisterComplianceResult,
+  type RegisterKind,
+} from './registerCompliance';
 
 // ---------------------------------------------------------------------------
 // Public types
@@ -48,6 +54,11 @@ export interface ProseQualityResult {
   readonly band: ProseBand;
   readonly flags: readonly ProseQualityFlag[];
   readonly marquee: boolean;
+  /** Register-compliance verdict (THR-609). Orthogonal to `score`/`band` — the
+   *  register dimension serves the voice, not the reverse (NFP #5): a `warn`
+   *  may ship with editorial sign-off, a `fail` needs a rewrite or an honest
+   *  register re-declaration. */
+  readonly registerCompliance: RegisterComplianceResult;
 }
 
 export interface ProseQualityBatchResult {
@@ -58,6 +69,15 @@ export interface ProseQualityBatchResult {
     readonly warn: number;
     readonly fail: number;
     readonly error: number;
+    /** Register-compliance counts across the batch (THR-609). */
+    readonly register: {
+      readonly pass: number;
+      readonly warn: number;
+      readonly fail: number;
+      readonly skipped: number;
+      /** Entries scored at the defaulted `baseline` register (no explicit declaration). */
+      readonly undeclared: number;
+    };
   };
   readonly bottomTail: readonly ProseQualityResult[];
   readonly marqueeEntries: readonly ProseQualityResult[];
@@ -72,6 +92,9 @@ export interface EvalInput {
   readonly marquee?: boolean;
   /** Prose fields to evaluate: fieldName → text content. */
   readonly fields: Readonly<Record<string, string>>;
+  /** Declared register (THR-609). Absent ⇒ scored as `baseline` (the strictest
+   *  common case) and flagged `undeclared` in the batch summary. */
+  readonly register?: RegisterKind;
 }
 
 /** Overrides for any rubric constant. Callers may supply a partial config; missing keys use defaults. */
@@ -343,6 +366,10 @@ export function scoreProseEntry(entry: EvalInput, cfg?: Partial<ProseQualityConf
   const hasGate = flags.some((f) => f.severity === 'gate');
   const score = computeScore(flags, config);
   const band = scoreToBand(score, hasGate, config);
+  const registerCompliance = scoreRegisterCompliance({
+    register: entry.register,
+    fields: entry.fields,
+  });
 
   return {
     entryId: entry.entryId,
@@ -352,6 +379,7 @@ export function scoreProseEntry(entry: EvalInput, cfg?: Partial<ProseQualityConf
     band,
     flags,
     marquee: entry.marquee ?? false,
+    registerCompliance,
   };
 }
 
@@ -383,6 +411,12 @@ export function scoreProseBatch(
           },
         ],
         marquee: entry.marquee ?? false,
+        registerCompliance: {
+          register: entry.register ?? 'baseline',
+          declared: entry.register !== undefined,
+          band: 'skipped',
+          metrics: [],
+        },
       });
     }
   }
@@ -390,12 +424,21 @@ export function scoreProseBatch(
   // Sort worst-first (lowest score first; error entries sort first at score 0)
   const sorted = [...results].sort((a, b) => a.score - b.score);
 
+  const countRegister = (b: RegisterBand) =>
+    results.filter((r) => r.registerCompliance.band === b).length;
   const summary = {
     total: results.length,
     pass: results.filter((r) => r.band === 'pass').length,
     warn: results.filter((r) => r.band === 'warn').length,
     fail: results.filter((r) => r.band === 'fail').length,
     error: results.filter((r) => r.band === 'error').length,
+    register: {
+      pass: countRegister('pass'),
+      warn: countRegister('warn'),
+      fail: countRegister('fail'),
+      skipped: countRegister('skipped'),
+      undeclared: results.filter((r) => !r.registerCompliance.declared).length,
+    },
   };
 
   const tailCount = Math.max(1, Math.ceil(results.length * config.batchTailFraction));
