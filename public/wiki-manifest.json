@@ -35,6 +35,14 @@
       "sources": ["src/engine/targetActions*.ts", "src/engine/sphereScaling*.ts", "src/data/reach-signature-content.ts", "src/data/action-template-content.ts", "src/types/unifiedAction.ts"]
     },
     {
+      "id": "threads-court-reference",
+      "file": "threads-court-reference.html",
+      "title": "Threads, the Court & The First",
+      "blurb": "The thread as a two-way bond — your investment depth (the five influence tiers) versus the mortal's awareness (unaware → intuition → faith → communion); the four court positions; The First's doom-clock-scheduled hero's journey; familiarity as player-side progressive disclosure; and why holding a thread deeply costs upkeep and makes you louder to rivals.",
+      "section": "Manual",
+      "sources": ["src/engine/influence.ts", "src/engine/familiarity.ts", "src/engine/journeyEngine.ts", "src/engine/returnEngine.ts", "src/types/influence.ts", "src/types/familiarity.ts", "src/types/journeyEngine.ts", "src/data/influence-content.ts", "src/data/journey-content.ts"]
+    },
+    {
       "id": "encounters-agents-reference",
       "file": "encounters-agents-reference.html",
       "title": "Encounters, Agents & Resolution",

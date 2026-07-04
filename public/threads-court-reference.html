@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Threadbearer — Threads, the Court &amp; The First</title>
+<!--
+  Threads, the Court & The First (Game Manual Wiki, W5 / THR-590) — dual-layer manual page.
+  Player-manual prose first ("How it plays"), Designer Notes second.
+  Spec: Docs/plans/2026-07-03-game-manual-wiki.md §5 W5. Source spine:
+  Docs/canon/rulebook.md §6 ("Your Resources" — the plan cites "§5", predating the
+  rulebook renumber that inserted §5 The Cosmology and pushed Resources to §6).
+  Designer-layer sources: src/types/influence.ts (InfluenceTier 0–4, CourtPosition,
+  CampbellianPhase, ThreadEdgeProperties.awareness, AspectEdgeProperties),
+  src/engine/influence.ts (maintenance, checkTierPromotion, dropAgent),
+  src/data/influence-content.ts (TIER_NAMES / TIER_MAINTENANCE / TIER_PROMOTION_THRESHOLDS
+  and the economy constants), src/engine/familiarity.ts + src/types/familiarity.ts
+  (player-side knowledge fog-of-war — distinct from the mortal's awareness field),
+  src/engine/journeyEngine.ts + src/types/journeyEngine.ts + src/data/journey-content.ts
+  (doom-clock-scheduled Campbellian arc for The First), src/engine/returnEngine.ts
+  (the algorithmic Return convergence).
+  The shared wiki nav between the WIKI-NAV markers is injected by
+  scripts/generate-design-wiki.ts — do not hand-write it.
+-->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --parchment: #f4edd8;
+    --parchment-dark: #e8dfc8;
+    --ink: #2c1810;
+    --ink-light: #5a3d2b;
+    --ink-faint: #8a7060;
+    --gold: #b8860b;
+    --gold-light: #daa520;
+    --card-bg: #fff8e7;
+    --red: #8b2500;
+    --blue: #1a3a5c;
+    --blue-light: #2d5f8a;
+    --purple: #4a2d6a;
+    --green: #2d5a27;
+
+    --flag-impl: #2d5a27;
+    --flag-design: #8a4a00;
+    --flag-open: #4a2d6a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--parchment);
+    color: var(--ink);
+    font-family: 'Crimson Text', Georgia, serif;
+    font-size: 16px;
+    line-height: 1.6;
+    min-height: 100vh;
+    background-image:
+      radial-gradient(ellipse at 20% 50%, rgba(184,134,11,0.04) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 30%, rgba(74,45,106,0.03) 0%, transparent 50%);
+  }
+
+  .page-wrapper { max-width: 900px; margin: 0 auto; padding: 40px 32px 72px; }
+
+  /* ── Header ── */
+  .header { text-align: center; margin-bottom: 40px; padding-bottom: 28px; border-bottom: 2px solid var(--gold); position: relative; }
+  .header::after { content: ''; position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); width: 55%; height: 1px; background: var(--gold-light); }
+  .header .eyebrow { font-family: 'Cinzel', Georgia, serif; font-size: 0.72rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold); margin-bottom: 10px; }
+  .header h1 { font-family: 'Cinzel', Georgia, serif; font-weight: 700; font-size: 2.4rem; color: var(--ink); letter-spacing: 0.05em; margin-bottom: 12px; }
+  .header .tagline { font-size: 1.12rem; color: var(--ink-light); max-width: 62ch; margin: 0 auto; font-style: italic; }
+
+  /* ── Sections ── */
+  .section { margin-bottom: 34px; }
+  .section > h2 { font-family: 'Cinzel', Georgia, serif; font-size: 1.25rem; color: var(--ink); letter-spacing: 0.03em; margin-bottom: 6px; padding-bottom: 6px; border-bottom: 1px solid var(--parchment-dark); }
+  .section > h2 .lead { display: block; font-family: 'Crimson Text', Georgia, serif; font-size: 0.95rem; font-style: italic; font-weight: 400; color: var(--ink-faint); letter-spacing: 0; margin-top: 4px; }
+  .section h3 { font-family: 'Cinzel', Georgia, serif; font-size: 1rem; color: var(--ink-light); letter-spacing: 0.02em; margin: 20px 0 6px; }
+  .section p { margin-bottom: 12px; }
+  .section p .term { font-weight: 600; color: var(--ink); }
+  .section ul { margin: 0 0 14px 0; padding-left: 0; list-style: none; }
+  .section ul li { position: relative; padding-left: 1.3rem; margin-bottom: 8px; }
+  .section ul li::before { content: '◆'; position: absolute; left: 0; top: 0.05rem; color: var(--gold); font-size: 0.7rem; }
+
+  /* ── The two-way bond: paired ladders ── */
+  .bond { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin: 10px 0 18px; }
+  .bond-col { background: var(--card-bg); border: 1px solid var(--parchment-dark); border-radius: 4px; padding: 16px 18px; }
+  .bond-col.you { border-top: 3px solid var(--gold); }
+  .bond-col.them { border-top: 3px solid var(--blue-light); }
+  .bond-col h4 { font-family: 'Cinzel', Georgia, serif; font-size: 0.92rem; color: var(--ink); margin-bottom: 4px; }
+  .bond-col .sub { font-size: 0.82rem; color: var(--ink-faint); font-style: italic; margin-bottom: 10px; }
+  .bond-col ol { margin: 0; padding-left: 1.2rem; }
+  .bond-col ol li { margin-bottom: 5px; font-size: 0.92rem; color: var(--ink-light); }
+  .bond-col ol li .name { font-weight: 600; color: var(--ink); }
+  @media (max-width: 680px) { .bond { grid-template-columns: 1fr; } }
+
+  /* ── Court positions ── */
+  .court { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 10px 0 18px; }
+  .court-card { background: var(--card-bg); border: 1px solid var(--parchment-dark); border-radius: 4px; padding: 14px; border-top: 3px solid var(--blue-light); }
+  .court-card.first { border-top-color: var(--gold); border-top-width: 4px; background: #fdf4e0; }
+  .court-card h4 { font-family: 'Cinzel', Georgia, serif; font-size: 0.9rem; color: var(--ink); margin: 0 0 6px; letter-spacing: 0.01em; }
+  .court-card.first h4 { color: var(--red); }
+  .court-card p { font-size: 0.84rem; color: var(--ink-light); margin-bottom: 0; }
+  .court-card .code-name { display: block; font-family: 'JetBrains Mono', monospace; font-size: 0.56rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--gold); margin-bottom: 4px; }
+  @media (max-width: 760px) { .court { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 420px) { .court { grid-template-columns: 1fr; } }
+
+  /* ── Journey phases ── */
+  .journey { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin: 10px 0 16px; }
+  .jphase { background: var(--card-bg); border: 1px solid var(--parchment-dark); border-radius: 4px; padding: 12px 12px; border-top: 3px solid var(--purple); }
+  .jphase .n { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; color: var(--gold); }
+  .jphase h4 { font-family: 'Cinzel', Georgia, serif; font-size: 0.82rem; color: var(--ink); margin: 2px 0 5px; }
+  .jphase p { font-size: 0.78rem; color: var(--ink-light); margin-bottom: 0; }
+  @media (max-width: 780px) { .journey { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 420px) { .journey { grid-template-columns: 1fr; } }
+
+  /* ── Callouts ── */
+  .callout { background: var(--card-bg); border: 1px solid var(--parchment-dark); border-left: 4px solid var(--gold); border-radius: 4px; padding: 14px 18px; margin: 4px 0 18px; }
+  .callout.blue { border-left-color: var(--blue-light); }
+  .callout.purple { border-left-color: var(--purple); }
+  .callout.red { border-left-color: var(--red); }
+  .callout .callout-title { font-family: 'Cinzel', Georgia, serif; font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 6px; }
+  .callout p:last-child { margin-bottom: 0; }
+
+  /* ── Ladder chain (player-facing) ── */
+  .chain { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 14px; align-items: center; }
+  .chain .step { font-family: 'Cinzel', Georgia, serif; font-size: 0.74rem; color: var(--ink-light); background: var(--card-bg); border: 1px solid var(--parchment-dark); border-radius: 3px; padding: 3px 9px; white-space: nowrap; }
+  .chain .arrow { color: var(--gold); font-size: 0.8rem; }
+
+  /* ── Designer notes ── */
+  .designer { margin-top: 48px; border-top: 2px solid var(--gold); padding-top: 8px; }
+  .designer > summary { list-style: none; cursor: pointer; padding: 16px 4px; display: flex; align-items: baseline; gap: 12px; }
+  .designer > summary::-webkit-details-marker { display: none; }
+  .designer > summary .chev { font-size: 0.8rem; color: var(--gold); transition: transform 0.15s; }
+  .designer[open] > summary .chev { transform: rotate(90deg); }
+  .designer > summary h2 { font-family: 'Cinzel', Georgia, serif; font-size: 1.3rem; color: var(--ink); letter-spacing: 0.03em; }
+  .designer > summary .sub { font-size: 0.9rem; color: var(--ink-faint); font-style: italic; }
+  .designer-body { padding: 4px 4px 8px; }
+  .designer-body h3 { font-family: 'Cinzel', Georgia, serif; font-size: 0.98rem; color: var(--ink-light); margin: 22px 0 8px; }
+  .designer-body p { margin-bottom: 12px; font-size: 0.97rem; }
+  .designer-body ul { margin: 0 0 14px 0; padding-left: 0; list-style: none; }
+  .designer-body ul li { position: relative; padding-left: 1.2rem; margin-bottom: 7px; font-size: 0.97rem; }
+  .designer-body ul li::before { content: '›'; position: absolute; left: 0.15rem; top: 0; color: var(--ink-faint); }
+  code, .mono { font-family: 'JetBrains Mono', monospace; font-size: 0.84em; color: var(--ink); background: rgba(184,134,11,0.10); padding: 0.05rem 0.32rem; border-radius: 3px; word-break: break-word; }
+
+  .flag { font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; letter-spacing: 0.04em; font-weight: 500; padding: 0.08rem 0.4rem; border-radius: 3px; color: #fff; white-space: nowrap; }
+  .flag.impl { background: var(--flag-impl); }
+  .flag.design { background: var(--flag-design); }
+  .flag.open { background: var(--flag-open); }
+
+  table.tunables { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin: 4px 0 18px; }
+  table.tunables th { text-align: left; font-family: 'Cinzel', Georgia, serif; font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-faint); padding: 6px 10px 6px 0; border-bottom: 1px solid var(--parchment-dark); }
+  table.tunables td { padding: 7px 10px 7px 0; border-bottom: 1px solid var(--parchment-dark); vertical-align: top; color: var(--ink-light); }
+  table.tunables td:first-child { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--ink); white-space: nowrap; }
+
+  .foot { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--parchment-dark); font-size: 0.85rem; color: var(--ink-faint); font-style: italic; }
+  a { color: var(--blue-light); text-decoration: none; border-bottom: 1px solid rgba(45,95,138,0.35); }
+  a:hover { color: var(--blue); border-bottom-color: var(--blue); }
+</style>
+</head>
+<body>
+<!--WIKI-NAV-->
+<style>
+  .wiki-nav { font-family: 'Cinzel', Georgia, serif; background: #2c1810; border-bottom: 2px solid #b8860b; padding: 0.6rem 1.2rem; display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.4rem 1.1rem; }
+  .wiki-nav__brand { color: #daa520; font-weight: 700; letter-spacing: 0.04em; margin-right: 0.6rem; font-size: 0.95rem; }
+  .wiki-nav__link { color: #f4edd8; text-decoration: none; font-size: 0.85rem; letter-spacing: 0.02em; padding: 0.15rem 0.1rem; border-bottom: 2px solid transparent; transition: color 0.15s, border-color 0.15s; }
+  .wiki-nav__link:hover { color: #daa520; }
+  .wiki-nav__link.is-active { color: #daa520; border-bottom-color: #b8860b; font-weight: 700; }
+</style>
+<nav class="wiki-nav" aria-label="Design Reference Wiki">
+  <span class="wiki-nav__brand">⌖ Design Reference Wiki</span>
+  <a class="wiki-nav__link" href="design-wiki.html">Design Wiki</a>
+  <a class="wiki-nav__link" href="run-lifecycle-reference.html">A Run, Start to Finish</a>
+      <a class="wiki-nav__link" href="cosmology-reference.html">Reaches, Spheres &amp; Quintessence</a>
+      <a class="wiki-nav__link" href="turn-structure-reference.html">The Three-Beat Turn</a>
+      <a class="wiki-nav__link" href="divine-actions-reference.html">Divine Actions &amp; Prerequisites</a>
+      <a class="wiki-nav__link is-active" href="threads-court-reference.html" aria-current="page">Threads, the Court &amp; The First</a>
+      <a class="wiki-nav__link" href="encounters-agents-reference.html">Encounters, Agents &amp; Resolution</a>
+      <a class="wiki-nav__link" href="tick-cycle-reference.html">Tick Cycle Reference</a>
+      <a class="wiki-nav__link" href="action-catalog.html">Action Catalog</a>
+</nav>
+<!--/WIKI-NAV-->
+<div class="page-wrapper">
+
+  <header class="header">
+    <div class="eyebrow">Game Manual · Acting on the World</div>
+    <h1>Threads, the Court &amp; The First</h1>
+    <p class="tagline">A god does not command a world — it reaches into a few chosen lives and holds on. Every thread you spin is a two-way bond: you invest, and the mortal, in their own time, comes to feel it.</p>
+  </header>
+
+  <!-- ══════════════════ HOW IT PLAYS ══════════════════ -->
+
+  <section class="section">
+    <h2>The thread is a two-way bond<span class="lead">Your side is investment. Their side is experience. The game refuses to let you forget there is another half.</span></h2>
+    <p>A <span class="term">thread</span> is the line of divine attention that runs from you down to a single mortal. It is how your power actually enters the world — not as a decree over everyone, but as a held connection to <em>this</em> life, and that one, and a handful of others. You spin a thread by binding a mortal, and you keep it by paying its upkeep, turn after turn.</p>
+    <p>But a thread has two ends, and they move at different speeds. On <span class="term">your</span> end there is depth — how much you have invested. On <span class="term">their</span> end there is experience — how the mortal comes to feel the presence leaning on their fate. You can pour everything into a thread and the mortal may still only <em>sense</em> something; recognition of a god is not bought, it is earned by repetition and time.</p>
+    <div class="bond">
+      <div class="bond-col you">
+        <h4>Your investment</h4>
+        <div class="sub">How deep the thread runs — grows with maintained upkeep.</div>
+        <ol>
+          <li><span class="name">Unaware</span> — a thread barely spun</li>
+          <li><span class="name">Curious</span> — the first real hold</li>
+          <li><span class="name">Recognized</span> — a lasting connection</li>
+          <li><span class="name">Devoted</span> — a deep, costly bond</li>
+          <li><span class="name">Enthralled</span> — the mortal is yours</li>
+        </ol>
+      </div>
+      <div class="bond-col them">
+        <h4>Their experience</h4>
+        <div class="sub">How the mortal perceives the connection — moves on its own clock.</div>
+        <ol>
+          <li><span class="name">Unaware</span> — they feel nothing yet</li>
+          <li><span class="name">Intuition</span> — an unnameable pull</li>
+          <li><span class="name">Faith</span> — they believe, and name you</li>
+          <li><span class="name">Communion</span> — they answer back</li>
+        </ol>
+      </div>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Deepening a thread takes maintained time, not a single spend</div>
+      <p>You establish a thread cheaply, but each deeper level of investment demands <span class="term">continuous upkeep held current over many turns</span> before it will rise. Miss the upkeep and the thread stalls where it is — the mortal drifts, and your grip loosens. Beyond the top level of investment lies a rarer thing still: an <span class="term">Aspect</span>, a mortal who has become a partial aspect of you. That is not another rung on the ladder; it is a separate, permanent apex, and it survives even the mortal's death as lasting myth.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>The court — how you hold what you hold<span class="lead">Threads are not a flat list. Each has a place in your court, from the one who anchors you to the ones who merely sleep under your eye.</span></h2>
+    <p>As your threads multiply, they organise into a <span class="term">court</span> — four positions that say what each held mortal <em>is</em> to you. The court is how the game keeps a growing portfolio legible: at a glance you see who anchors your presence, who you keep close, who you are only watching, and who has faded to the background.</p>
+    <div class="court">
+      <div class="court-card first">
+        <span class="code-name">the_first</span>
+        <h4>The First</h4>
+        <p>The one bonded mortal who anchors your divine presence in the world — the protagonist of your opening arc.</p>
+      </div>
+      <div class="court-card">
+        <span class="code-name">retinue</span>
+        <h4>Retinue</h4>
+        <p>Close-held. The mortals you have chosen to keep near, tend, and shape with intent.</p>
+      </div>
+      <div class="court-card">
+        <span class="code-name">watched</span>
+        <h4>Watched</h4>
+        <p>Kept in view. A thread exists, but you are observing more than steering — a life you have not yet committed to.</p>
+      </div>
+      <div class="court-card">
+        <span class="code-name">dormant</span>
+        <h4>Dormant</h4>
+        <p>Faded to the background. The bond persists but sleeps, waiting for a reason to matter again.</p>
+      </div>
+    </div>
+    <p>A thread can exist with no named position at all — a bare connection. The court is the layer of <em>meaning</em> you lay over your threads, and moving a mortal from watched to retinue is a small declaration: <span class="term">this one, I have decided, is mine to tend.</span></p>
+  </section>
+
+  <section class="section">
+    <h2>The First and the shape of a life<span class="lead">Your first bonded mortal is not just a resource — they are the hero of a story that the doom clock is quietly telling.</span></h2>
+    <p>Among all your threads, one holds a special place: <span class="term">The First</span>, the mortal bonded to you at the start, who anchors your presence and becomes the protagonist of your opening arc. The First does not merely exist in your portfolio — they <em>live a story</em>, an arc shaped after the classic hero's journey, unfolding across five phases.</p>
+    <div class="journey">
+      <div class="jphase"><span class="n">I</span><h4>Call</h4><p>The ordinary life, and the summons that disturbs it.</p></div>
+      <div class="jphase"><span class="n">II</span><h4>Road of Trials</h4><p>The testing — a run of challenges that reveal who they are.</p></div>
+      <div class="jphase"><span class="n">III</span><h4>Crisis</h4><p>The turning point, where the stakes become personal and sharp.</p></div>
+      <div class="jphase"><span class="n">IV</span><h4>Ordeal</h4><p>The deepest trial — the moment that will define the whole arc.</p></div>
+      <div class="jphase"><span class="n">V</span><h4>Return</h4><p>The reckoning — the journey resolves and its ripples spread outward.</p></div>
+    </div>
+    <div class="callout purple">
+      <div class="callout-title">The doom clock is the storyteller</div>
+      <p>You do not schedule these beats — the <span class="term">Doom Clock</span> does. As the world winds toward its Unmaking, The First's journey advances in step with it: the closer doom comes, the deeper into the arc your mortal travels. When a beat arrives, the game pulls the camera onto them and offers you a <span class="term">moment to shape</span> — a choice that bends where their story goes next. The final Return needs no choice from you; it resolves on its own, gathering up everything the arc has become and letting it ripple through the world they leave changed.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Coming to know them<span class="lead">Feeling a mortal's presence is one thing. Actually knowing who they are is another — and it, too, is earned.</span></h2>
+    <p>Binding a thread does not hand you a mortal's whole character. At first they are a <span class="term">stranger</span> — a name, a place, little more. What you know about them grows with <span class="term">familiarity</span>, a separate track from how deep your thread runs. Familiarity is the fog lifting: as it rises, the game reveals more of who this person truly is — their traits, their bonds, the buried shape of their character sheet.</p>
+    <p>You build familiarity by being present in their life:</p>
+    <ul>
+      <li><span class="term">Nearness</span> — keeping your avatar close to them, a slow trickle every turn.</li>
+      <li><span class="term">Scrying</span> and searching — deliberate acts of looking, worth far more than passive proximity.</li>
+      <li><span class="term">Binding and deepening the thread</span> — the act of taking a mortal into your court reveals a great deal at once.</li>
+      <li><span class="term">Shared moments</span> — a dilemma or an encounter you steer them through leaves you knowing them better.</li>
+    </ul>
+    <p>Some gods see more, faster: a god of the <span class="term">Eye</span> learns any mortal quicker than most, while <span class="term">Shadow</span> lays a mortal's hidden traits bare early, and <span class="term">Heart</span> reveals the bonds they carry. What you can know is coloured by the kind of god you are.</p>
+    <div class="callout blue">
+      <div class="callout-title">Two directions of knowing, across one thread</div>
+      <p>It is worth holding these apart. <span class="term">Familiarity</span> is <em>you</em> coming to know <em>them</em> — the character sheet opening under your attention. <span class="term">Awareness</span> is <em>them</em> coming to know <em>you</em> — intuition ripening into faith. The two move independently: you can know a mortal intimately while they still have no idea you exist, or a whole village can hold you in faith while you have never once looked closely at any single face among them.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>The trade — why depth is never free<span class="lead">Every thread you hold, and every level you raise it to, costs you something. That cost is the point.</span></h2>
+    <p>Threads are power, and power in Threadbearer is never given away. Holding a mortal has a running price, and holding them <em>deeply</em> costs more than holding them lightly — the upkeep rises with every level of investment. A large court is a heavy court. Most runs you cannot afford to deepen every thread you would like to, and choosing <em>which few</em> to raise is the texture of the game.</p>
+    <p>Depth buys real things in return. Each thread you hold widens your reservoir of divine fuel and the ceiling it can hold, and the intended reward of a deep, aligned bond is that shaping that mortal along your nature comes <em>easier</em>. But the same depth that makes your touch surer also makes you <span class="term">louder</span>: the more of yourself you pour into a thread, the brighter your signature burns to the rival gods who scan their domains for exactly that light. Reach deep enough and you no longer whisper — you announce.</p>
+    <div class="callout red">
+      <div class="callout-title">The god's dilemma in miniature</div>
+      <p>This is the whole game compressed into one relationship. To matter to a mortal you must invest, and to invest is to be seen — by them, and by your rivals. There is no way to hold a thread deeply and quietly. Every bond you treasure is a light in the dark that something else can follow home.</p>
+    </div>
+  </section>
+
+  <!-- ══════════════════ DESIGNER NOTES ══════════════════ -->
+
+  <details class="designer" open>
+    <summary>
+      <span class="chev">▶</span>
+      <span>
+        <h2>Designer Notes</h2>
+        <span class="sub">The thread edge and its tiers, the awareness field, court positions, the doom-scheduled journey, the familiarity engine, and the Aspect apex.</span>
+      </span>
+    </summary>
+    <div class="designer-body">
+
+      <p>Status flags follow the rulebook convention: <span class="flag impl">IMPL</span> shipped and wired, <span class="flag design">DESIGN</span> specified but partially or not yet wired, <span class="flag open">OPEN</span> an unresolved question (referenced from the rulebook — this page mints none). <strong>Synthesis authority for this page is <code>Docs/canon/rulebook.md</code> §6 ("Your Resources").</strong> The plan doc cites "§5"; that predates the 2026-06-23 rulebook renumber (THR-414) that inserted §5 The Cosmology and pushed Resources to §6. Where any surface disagrees, the rulebook and the UL win on their respective boundaries.</p>
+
+      <h3>The thread edge &amp; investment depth <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li>A thread is a <code>thread</code> edge (ascendant → mortal) carrying <code>ThreadEdgeProperties</code> (<code>src/types/influence.ts:52</code>). The direction is god→mortal (flipped from the deprecated mortal→god <code>worships</code> edge). Investment depth lives in <code>tier: InfluenceTier</code> where <code>InfluenceTier = 0 | 1 | 2 | 3 | 4</code> (<code>src/types/influence.ts:35</code>).</li>
+        <li>Upkeep runs in <code>processInfluenceMaintenance()</code> (<code>src/engine/influence.ts</code>): each tick, every thread deducts <code>TIER_MAINTENANCE[tier]</code> from the ascendant's <em>primary</em> sphere pool and increments <code>ticksAtCurrentTier</code>; a thread that cannot pay sets <code>maintenanceCurrent = false</code> and stops accruing.</li>
+        <li>Promotion runs in <code>checkTierPromotion()</code>: a thread rises to the next tier once <code>ticksAtCurrentTier ≥ TIER_PROMOTION_THRESHOLDS[nextTier]</code> <em>and</em> maintenance is current. Tiers never auto-demote; the surface phase is <code>phaseInfluenceTierPromotion</code> (emits a <code>backstory_unlock</code> alert per promoted mortal).</li>
+        <li>Dropping a thread (<code>dropAgent()</code>) removes the edge and scales the consequence by tier: tier 0–1 <code>minimal</code>, 2 <code>crisis_of_faith</code>, 3 <code>wild_card</code>, 4 <code>catastrophic_severance</code>; tier ≥ 2 also assigns the <code>trait.abandoned_by_divine</code> scar (cool-failure — a drop is plot, not just bookkeeping).</li>
+        <li>Each thread also feeds the economy: <code>ESSENCE_PER_THREAD = 0.1</code>/tick income and <code>MAX_ESSENCE_PER_THREAD = 5</code> added to the pool ceiling (<code>computeEssenceGeneration</code> / <code>computeMaxEssence</code>, <code>src/engine/influence.ts</code>). Full essence economy is the <a href="essence-control-reference.html">Essence, Control &amp; Sustained Power</a> page (W6).</li>
+      </ul>
+
+      <h3>The tier-name ladder — rulebook-resolved, code map lags <span class="flag impl">IMPL</span> <span class="flag open">OPEN</span></h3>
+      <ul>
+        <li>The engine keeps <strong>five integer tiers (0–4)</strong>. The rulebook resolved the naming (Open Q #1, 2026-06-23, THR-414): the five narrative names <strong>Unaware → Curious → Recognized → Devoted → Enthralled</strong> map one-to-one onto tiers 0–4, and <strong>'Aspect' is a separate apex milestone, not a sixth rung.</strong> The player layer above uses these resolved names — <em>do not re-open this question here</em> (referenced, not minted).</li>
+        <li>The current code map has <strong>not yet been reconciled</strong> to that verdict: <code>TIER_NAMES</code> (<code>src/data/influence-content.ts:44</code>) still reads <code>{0:'Unaware', 1:'Touched', 2:'Devoted', 3:'Champion', 4:'Aspect'}</code> — working names that predate the resolution and put "Aspect" at tier 4 rather than modelling it as the separate apex. The rulebook flags "a small code ticket for the name-map + Aspect flag" as a follow-up; this page treats the rulebook names as authoritative and the code map as the drift to close.</li>
+      </ul>
+
+      <h3>Awareness — the mortal's half of the thread <span class="flag impl">IMPL</span> <span class="flag design">DESIGN</span></h3>
+      <ul>
+        <li><code>ThreadEdgeProperties.awareness</code> (<code>src/types/influence.ts:70</code>) is the mortal's <em>experience</em> of the connection: <code>'unaware' | 'intuition' | 'faith' | 'communion'</code>. It is stored and moves independently of <code>tier</code> — the field is <span class="flag impl">IMPL</span>.</li>
+        <li>The mortal's <em>response</em> through that awareness — the two-way texture the rulebook insists on — is the <strong>Agent Feedback System</strong> (<code>Docs/plans/2026-05-11-agent-feedback-system.md</code>, <strong>THR-402</strong>), still <span class="flag design">DESIGN</span>. The awareness ladder exists as data ahead of the full loop that lets mortals answer back.</li>
+      </ul>
+
+      <h3>Court positions <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li><code>CourtPosition = 'the_first' | 'retinue' | 'watched' | 'dormant'</code> (<code>src/types/influence.ts:40</code>), stored as <code>ThreadEdgeProperties.courtPosition</code> (nullable — a thread may carry no named position). It is portfolio organisation layered over threads, read by systems that prioritise which mortals get attention/vignettes (e.g. journey beats gate on <code>courtPosition === 'the_first'</code>).</li>
+        <li><strong>Naming-collision note (UL drift candidate, not an open question):</strong> the influence <code>CourtPosition</code> here is a <em>different</em> concept from the "Court Position" in <code>Docs/ubiquitous-language/Encounters.md</code> (the numeric encounter-role property set via the CLI <code>--courtPosition</code> flag). Same words, two systems. Flagged for a future UL disambiguation pass; the page uses the influence meaning throughout.</li>
+      </ul>
+
+      <h3>The First's Campbellian journey <span class="flag impl">IMPL</span> <span class="flag design">DESIGN</span></h3>
+      <ul>
+        <li><code>CampbellianPhase = 'call' | 'road_of_trials' | 'crisis' | 'ordeal' | 'return'</code> (<code>src/types/influence.ts:43</code>), tracked as <code>ThreadEdgeProperties.storyPhase</code> on First-position threads. The arc is <strong>doom-clock scheduled</strong>: <code>getJourneyPhase(doomProgress)</code> maps the doom clock's progress fraction to a phase via <code>PHASE_BOUNDARIES</code> (<code>src/types/journeyEngine.ts</code>), and <code>phaseJourneyBeat()</code> (<code>src/engine/journeyEngine.ts</code>) fires a beat when the clock crosses a beat threshold not yet in <code>beatHistory</code>.</li>
+        <li>Beats select a template+variant from <code>JOURNEY_BEAT_TEMPLATES</code> (<code>src/data/journey-content.ts</code>) by scoring variants against a four-axis <code>StateSnapshot</code> (power / influence / relationship / ambition), then seeded-weighted-random over the top candidates (deterministic per <code>hashSeed(seed, agentId, phase, beatIndex)</code>). The chosen beat becomes a <code>PendingVignette</code> at max priority for the UI to render.</li>
+        <li>The <strong>Return</strong> phase is algorithmic, not a player choice: <code>executeReturn()</code> (<code>src/engine/returnEngine.ts</code>) runs a convergence that resolves the arc and produces ripple results, surfaced as a choice-less return vignette. Fail-soft (NFP #4): a beat with no valid template is skipped rather than throwing; an Ordeal that never fired is force-fired once <code>doomProgress ≥ ORDEAL_FORCE_FIRE_THRESHOLD</code> so no First reaches Return without their defining trial.</li>
+        <li>Overall wiring is <span class="flag impl">IMPL</span> for scheduling, snapshotting, template selection, and Return; the rulebook flags the broader journey wiring as "partially implemented," so richer beat content and downstream consequence remain <span class="flag design">DESIGN</span> in places.</li>
+      </ul>
+
+      <h3>Familiarity — player-side knowledge fog-of-war <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li>Familiarity is a <strong>separate system from the thread's awareness</strong>, and points the other way: it is the <em>player's</em> progressive disclosure of a mortal, not the mortal's perception of the god. <code>FamiliarityMap</code> is <code>Map&lt;actorId, number&gt;</code> ∈ <code>[0,1]</code> (<code>src/engine/familiarity.ts</code>), with knowledge levels <code>stranger → recognised → known → intimate → transparent</code> at thresholds <code>0 / 0.2 / 0.4 / 0.6 / 0.8</code> (<code>src/types/familiarity.ts</code>).</li>
+        <li>Gains (<code>FAMILIARITY_GAINS</code>): <code>proximity 0.01</code>/tick (<code>phaseFamiliarityGain</code>, actors near the avatar hex), <code>scry 0.15</code>, <code>narrative_contact 0.05</code>, <code>dilemma 0.10</code>, and thread-bind grants <code>worship_tier_1/2/3 = 0.3/0.5/0.7</code> (the "Phase 2a.1" grant when a <code>bind_thread_*</code> action resolves). Sphere bonuses: <code>eye ×1.5</code> multiplier, <code>shadow</code> reveals traits one level early, <code>heart</code> reveals bonds one level early (<code>SPHERE_FAMILIARITY_BONUSES</code>).</li>
+        <li><strong>The plan's one-liner conflates the two directions.</strong> W5's brief says "familiarity — how mortals come to know you," but the <code>familiarity</code> engine is <em>you</em> coming to know <em>them</em> (character-sheet disclosure). The mortal-knows-god direction is the <code>awareness</code> field above. The player layer keeps them distinct; this note records the source discrepancy per the plan's own thesis that writing the player layer surfaces exactly this kind of ambiguity.</li>
+      </ul>
+
+      <h3>The Aspect apex <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li>Beyond the five tiers, an <strong>Aspect</strong> is modelled as its own <code>aspect_of</code> edge with <code>AspectEdgeProperties</code> (<code>src/types/influence.ts:105</code>), not a sixth tier (<strong>THR-479</strong>). It is permanent (<code>survivesDeath: true</code>) — on the mortal's death the edge persists as a <code>mythicEcho</code> rather than being garbage-collected. A living Aspect channels <code>ASPECT_ESSENCE_PER_TICK</code> of extra income (a mythic echo channels none).</li>
+      </ul>
+
+      <h3>Constants</h3>
+      <table class="tunables">
+        <thead><tr><th>Constant</th><th>Value</th><th>Purpose · file</th></tr></thead>
+        <tbody>
+          <tr><td>InfluenceTier</td><td>0–4</td><td>Investment-depth range on a thread · <code>src/types/influence.ts:35</code></td></tr>
+          <tr><td>TIER_MAINTENANCE</td><td>0 / 0.5 / 1 / 2 / 4</td><td>Per-tick upkeep by tier · <code>src/data/influence-content.ts:53</code></td></tr>
+          <tr><td>TIER_PROMOTION_THRESHOLDS</td><td>0 / 0 / 30 / 90 / 180</td><td>Maintained ticks to reach each tier · <code>src/data/influence-content.ts:62</code></td></tr>
+          <tr><td>RECRUIT_COST</td><td>5</td><td>Essence to establish a Tier-1 thread · <code>src/data/influence-content.ts:73</code></td></tr>
+          <tr><td>ESSENCE_PER_THREAD</td><td>0.1</td><td>Per-tick income per held thread · <code>src/data/influence-content.ts:18</code></td></tr>
+          <tr><td>MAX_ESSENCE_PER_THREAD</td><td>5</td><td>Pool-ceiling added per thread · <code>src/data/influence-content.ts:37</code></td></tr>
+          <tr><td>FAMILIARITY_THRESHOLDS</td><td>0 / .2 / .4 / .6 / .8</td><td>Knowledge-level cutoffs · <code>src/types/familiarity.ts:16</code></td></tr>
+          <tr><td>FAMILIARITY_GAINS.proximity</td><td>0.01</td><td>Per-tick nearness familiarity · <code>src/types/familiarity.ts:37</code></td></tr>
+          <tr><td>FAMILIARITY_GAINS.scry</td><td>0.15</td><td>Familiarity from a deliberate look · <code>src/types/familiarity.ts:37</code></td></tr>
+        </tbody>
+      </table>
+
+      <h3>Canon &amp; terminology</h3>
+      <ul>
+        <li>Synthesis authority: <code>Docs/canon/rulebook.md</code> §6 (threads, influence tiers, court positions, The First, stealth trade). Cosmology spine (spheres these threads are coloured by): <code>Docs/canon/cosmology.md</code>.</li>
+        <li>UL authority (terminology wins on any disagreement): <code>Docs/ubiquitous-language/Agents.md</code> (The First, Thread, Portfolio Pin, Ascendant). Court-position naming collision noted above is a UL drift candidate against <code>Docs/ubiquitous-language/Encounters.md</code>.</li>
+        <li>Adjacent Manual pages: <a href="divine-actions-reference.html">Divine Actions &amp; Prerequisites</a> (how you spin and shape threads), <a href="essence-control-reference.html">Essence, Control &amp; Sustained Power</a> (the fuel threads cost and generate), and <a href="run-lifecycle-reference.html">A Run, Start to Finish</a> (where The First is bonded and the opening spine begins). The detection half of "the trade" belongs to the stealth-and-rivals page.</li>
+      </ul>
+
+      <h3>Open questions <span class="flag open">OPEN</span></h3>
+      <ul>
+        <li>Referenced, not minted here: the tier-name / Aspect-flag code reconciliation (rulebook Open Q #1, resolved in design, follow-up code ticket pending) is surfaced above as drift, not re-opened. This page opens no new question; the Court-Position naming collision is logged as a UL-proposal candidate rather than a rulebook open question.</li>
+      </ul>
+
+    </div>
+  </details>
+
+  <div class="foot">
+    Game Manual Wiki · W5 (THR-590). Player layer describes current shipped behavior; anything not yet wired is flagged <span class="flag design">DESIGN</span> and introduced as &quot;intended&quot;. Terminology is UL-exact; where this page and the UL disagree, the UL wins and this page is a drift bug.
+  </div>
+
+</div>
+</body>
+</html>
