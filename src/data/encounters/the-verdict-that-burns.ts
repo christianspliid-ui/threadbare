@@ -97,6 +97,16 @@ const step1DeliverTheVerdict: ActionStep = {
     'The verdict came out mangled — half-condemnation, a sentence softened mid-breath — so the law neither ' +
     'cleanly reached the lord nor cleanly spared the region, and the fire started anyway over a judgment no ' +
     'one quite respected.',
+  criticalSuccessAfterimage:
+    'The magistrate spoke the word so cleanly that even the captains at the back wall hesitated before they ' +
+    'rose. The region burned — it was always going to burn — but the burning had a shape now, a reason ' +
+    'carved into the record that the survivors could hold. In the bad years after, the law that reached the ' +
+    'strongest man alive became the one thing the region agreed was worth rebuilding toward.',
+  criticalFailureAfterimage:
+    'The magistrate said the word and then could not stop saying it, the cold refusal tipping over into ' +
+    'something wild — accusations past the writ, names not on the charge. The lord\'s captains rose to a ' +
+    'judgment that had already discredited itself, and the region burned for a verdict no one could later ' +
+    'defend as justice. Even the coal went cold.',
   successMetadata: { reputationDelta: 0.12 },
   failureMetadata: { reputationDelta: -0.12 },
 };
@@ -133,6 +143,16 @@ const step1BearWitness: ActionStep = {
   failureAfterimage:
     'The withholding came out as a botch — the truth half-recorded, the technicality too flimsy to respect — ' +
     'so the lord walked under a judgment that fooled no one and the record itself was left open to denial.',
+  criticalSuccessAfterimage:
+    'The magistrate built the record so completely — every fact nailed down, every witness sworn — that ' +
+    'withholding the hammer did not bury the crime, only delayed it. The lord walked, and the region kept ' +
+    'its decade, and the pages the magistrate left behind became the thing that reached him in the end, ' +
+    'years on, when the region was strong enough to answer what it had only witnessed.',
+  criticalFailureAfterimage:
+    'The withholding came apart in the magistrate\'s hands. The record went down half-written and the ' +
+    'technicality would not stand, so the lord walked free of a truth that had never quite been fixed in ' +
+    'place. The region got neither justice nor a clean account of why it had none, and the magistrate\'s ' +
+    'name became a byword for the judge who looked away and could not even do that well.',
   successMetadata: { reputationDelta: 0.1 },
   failureMetadata: { reputationDelta: -0.12 },
 };

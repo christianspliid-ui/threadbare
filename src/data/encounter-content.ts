@@ -134,6 +134,14 @@ type EncounterEntry = {
     difficulty: number;
     duration?: number;
     narrative: string;
+    /** Band-specific afterimage shown when this step resolves as a critical
+     *  success — the rare, flawless outcome. Falls through to the base
+     *  onSuccess.narrative afterimage when absent (THR-584). */
+    criticalSuccessAfterimage?: string;
+    /** Band-specific afterimage shown when this step resolves as a critical
+     *  failure — the rare, ruinous outcome. Falls through to the base
+     *  onFailure.narrative afterimage when absent (THR-584). */
+    criticalFailureAfterimage?: string;
     onSuccess: {
       narrative: string;
       rewardPool?: import('../types/attachments').RewardPoolRecipe;
@@ -199,6 +207,8 @@ function toUnifiedTemplate(e: EncounterEntry): UnifiedActionTemplate {
         narrativeTemplate: step.narrative,
         successAfterimage: step.onSuccess.narrative,
         failureAfterimage: step.onFailure.narrative,
+        criticalSuccessAfterimage: step.criticalSuccessAfterimage,
+        criticalFailureAfterimage: step.criticalFailureAfterimage,
         successMetadata: toOutcomeMeta(step.onSuccess),
         failureMetadata: toOutcomeMeta(step.onFailure),
       };
@@ -2286,6 +2296,8 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
         duration: 1,
         narrative: 'The tavern keeper appears, {adj} with rage. {actor} must face {adj} consequences.',
+        criticalSuccessAfterimage: '{actor} not only settles the keeper\'s rage but leaves the tavern better than {they} found it — the broken table replaced, a song started, {their} name buying a round it did not pay for. This becomes the house\'s favorite story about the night everything nearly went wrong.',
+        criticalFailureAfterimage: 'The keeper\'s anger finds a footing {actor} cannot argue past, and by morning the whole town has the tale — the stranger who broke the place and could not make it right. The doors that matter here shut before {they} reach them.',
         onSuccess: {
           narrative: '{actor} {verb}s the tavern keeper\'s anger with {adj} words. {They} pay for damages and leave {adj} and respected.',
           reputationDelta: 0.15,
@@ -5347,6 +5359,8 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         difficulty: MODERATE_DIFFICULTY_BASE + MODERATE_DIFFICULTY_STEP,
         duration: 2,
         narrative: 'The final test is not skill — it is allegiance. {actor} must declare what {they} stand for before the assembled guild.',
+        criticalSuccessAfterimage: '{actor} says something the guild did not know it was waiting to hear. The masters offer not just the oath but a place near the center of things — and a few of the older ones watch {them} the way you watch a successor.',
+        criticalFailureAfterimage: 'The declaration lands wrong before the whole assembled guild — not merely hollow but revealing, a glimpse of {actor} that the masters will not unsee. Membership is not withheld this once. It is closed.',
         onSuccess: {
           narrative: '{actor}\'s words ring {adj} and true. The guild offers the oath of membership.',
           reputationDelta: 0.10,
@@ -5394,6 +5408,8 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         difficulty: HARD_DIFFICULTY_BASE + HARD_DIFFICULTY_STEP,
         duration: 3,
         narrative: 'Days of work, each piece {adj} and precise. The patron visits to inspect progress, asking questions that probe {actor}\'s every decision.',
+        criticalSuccessAfterimage: 'The patron sets down every objection prepared in advance and simply looks. Word of the piece travels faster than {actor} can follow it, and other patrons begin to arrive before the varnish has dried.',
+        criticalFailureAfterimage: 'The work fails at the unveiling — a flaw {actor} had talked past surfaces under the patron\'s hand. The commission is refused, the fee withheld, and the story reaches the guild before {actor} does.',
         onSuccess: {
           narrative: 'The patron {verb}s with delight. {Actor} has produced something remarkable — a piece that will outlast them both.',
           reputationDelta: 0.14,
@@ -5623,6 +5639,8 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         difficulty: HARD_DIFFICULTY_BASE + HARD_DIFFICULTY_STEP,
         duration: 3,
         narrative: 'Containment means separating families, closing markets, enforcing {adj} quarantine against a people already broken by fear.',
+        criticalSuccessAfterimage: 'The outbreak does not merely fade — it breaks against {actor} and turns. Households that had shut their doors open them again to nurse their neighbors. The settlement will remember the sickness as the season it learned to hold together.',
+        criticalFailureAfterimage: 'The quarantine breaks in the worst place, and {actor} keeps the memory of which door {they} chose to bar and which {they} left open. The settlement survives. It does not forgive, and it does not forget who decided.',
         onSuccess: {
           narrative: '{actor} holds the line with {adj} compassion and firm resolve. The outbreak peaks and begins to fade.',
           reputationDelta: 0.15,
@@ -6622,6 +6640,8 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         difficulty: DEADLY_DIFFICULTY_BASE + DEADLY_DIFFICULTY_STEP,
         duration: 3,
         narrative: 'The dragon sets its {adj} terms: a contest of will, cunning, and endurance that few mortals survive. {actor} accepts.',
+        criticalSuccessAfterimage: '{actor} does not merely endure the contest — {they} turn it, and set the dragon a question it has not been asked in an age. The creature goes still, then answers. What passes between them is not victory but recognition. The dragon keeps few names. It keeps this one.',
+        criticalFailureAfterimage: '{actor} fails the contest in a way the dragon finds genuinely interesting, which is worse than losing. It lets {them} go with a parting word that will not stop echoing — a truth about {actor} that {they} would have paid the dragon to keep to itself.',
         onSuccess: {
           narrative: '{actor} endures the {adj} contest to its end. The dragon acknowledges them — and acknowledging is enough.',
           reputationDelta: 0.18,
@@ -6741,6 +6761,8 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         difficulty: DEADLY_DIFFICULTY_BASE + DEADLY_DIFFICULTY_STEP,
         duration: 3,
         narrative: 'The tournament final. Every eye in the city watches. {actor} must be {adj} more than skilled — they must be an event.',
+        criticalSuccessAfterimage: '{actor} takes the final without a killing blow — the reigning champion lowers a blade and kneels. The city will tell this version for a generation, and each retelling makes the name larger.',
+        criticalFailureAfterimage: '{actor} falls in the final round, and the fall is the kind the crowd goes silent for. The name still travels — but attached now to a single ruinous mistake that no one here will let {them} forget.',
         onSuccess: {
           narrative: '{actor} wins the Grand Tournament. The name {verb}s through the crowd and out across the world.',
           reputationDelta: 0.22,
@@ -7418,6 +7440,8 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         difficulty: UNIVERSAL_DIFFICULTY_BASE + UNIVERSAL_DIFFICULTY_STEP,
         duration: 1,
         narrative: 'Improvisation is its own craft. {actor} works with what the land provides, bending {adj} skill to necessity.',
+        criticalSuccessAfterimage: 'The repair holds better than the thing did new. {actor} stumbles on an old improvement in the fixing — a balance, a set to the grip — and keeps it for everything {they} mend after.',
+        criticalFailureAfterimage: 'The fix fails at the worst moment to learn it failed — not on the bench but later, when the thing was needed. {actor} carries the lesson longer than {they} carry the broken gear.',
         onSuccess: {
           narrative: 'Not perfect, but serviceable. {actor} tests the repair — it holds. Good enough for what lies ahead.',
           reputationDelta: 0.03,
@@ -7983,6 +8007,8 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         difficulty: MODERATE_DIFFICULTY_BASE + MODERATE_DIFFICULTY_STEP - 5,
         duration: 1,
         narrative: 'Both parties have what the other wants. The {adj} question is who blinks first on the price.',
+        criticalSuccessAfterimage: '{actor} closes the deal and walks away with more than was on the table — a traveler, impressed, lets slip where the good roads lead and who to name at the far end of them. The goods were never the real prize.',
+        criticalFailureAfterimage: 'The deal collapses, and it collapses with an insult {actor} did not intend. The travelers move on and carry the story down every road they take. Some doors close a week\'s walk away before {actor} ever knocks.',
         onSuccess: {
           narrative: '{actor} closes the deal at {adj} favorable terms. Both parties leave satisfied.',
           reputationDelta: 0.08,
@@ -8235,6 +8261,8 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         difficulty: MODERATE_DIFFICULTY_BASE + MODERATE_DIFFICULTY_STEP + 5,
         duration: 2,
         narrative: 'The objective is reached. {actor} must accomplish what {they} came for in the {adj} dark, with whatever time the shadows allow.',
+        criticalSuccessAfterimage: '{actor} takes what {they} came for and leaves something else in its place — a small rearrangement that will have the household blaming each other for weeks. No one hunts a thief who left the count unchanged.',
+        criticalFailureAfterimage: 'The task comes apart at the last reach, and {actor} leaves a mark {they} cannot take back — a print, a dropped thing, a face half-seen. The job is unfinished, and now someone is looking for the shape of {them} in the dark.',
         onSuccess: {
           narrative: '{actor} completes the task with {adj} clean efficiency. Gone before the sun rises.',
           reputationDelta: 0.12,
@@ -8292,6 +8320,8 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         difficulty: HARD_DIFFICULTY_BASE + HARD_DIFFICULTY_STEP,
         duration: 3,
         narrative: 'The {adj} final test: produce something in the local tradition that the masters cannot dismiss.',
+        criticalSuccessAfterimage: 'The masters do not praise the work. They go quiet, and one of them takes it apart to understand how {actor} did in a single season what should not be done at all. The tradition changes shape around the piece.',
+        criticalFailureAfterimage: 'The piece fails in front of the assembled masters — a seam splits as it is lifted, in the one way the tradition warns against. The story of it outlives the shame, a cautionary example handed to every apprentice after.',
         onSuccess: {
           narrative: '{actor}\'s work {verb}s the masters. The craft tradition has a new practitioner — and a new direction.',
           reputationDelta: 0.15,
@@ -8347,6 +8377,8 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         difficulty: HARD_DIFFICULTY_BASE + HARD_DIFFICULTY_STEP,
         duration: 2,
         narrative: 'There is no clever approach. The {adj} thing requires direct confrontation — will against will, presence against presence.',
+        criticalSuccessAfterimage: '{actor} does not merely outlast the thing — {they} name it, and the naming undoes it. Where it stood, the air closes like a wound healing clean.',
+        criticalFailureAfterimage: 'The unknown takes something {actor} cannot name in return. {They} walk out whole in body, but a door was left open behind {their} eyes, and it does not shut.',
         onSuccess: {
           narrative: '{actor} does not flinch. The {adj} unknown meets someone it cannot unsettle and withdraws.',
           reputationDelta: 0.15,
@@ -8419,6 +8451,8 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         difficulty: HARD_DIFFICULTY_BASE + HARD_DIFFICULTY_STEP * 2,
         duration: 2,
         narrative: 'The final ceremony of commitment. {actor} must hold the {adj} alliance together through the moment when its full cost becomes clear to all parties.',
+        criticalSuccessAfterimage: '{actor} seals the alliance and, in the same breath, binds a partner no one thought could be brought to the table. The room recalculates. What was an agreement is now a power that will outlast its makers.',
+        criticalFailureAfterimage: 'The alliance dissolves at the sealing, and it dissolves loudly — a partner names the true price aloud, in front of everyone. {actor} leaves not with nothing but with less: enemies who now know exactly what {they} were reaching for.',
         onSuccess: {
           narrative: '{actor} seals the {adj} alliance with the kind of authority that makes everyone present believe it will hold.',
           reputationDelta: 0.18,
@@ -8466,6 +8500,8 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         difficulty: HARD_DIFFICULTY_BASE + HARD_DIFFICULTY_STEP,
         duration: 2,
         narrative: 'The {adj} raw impression must be interpreted — turned from feeling into {adj} knowledge that can be acted upon.',
+        criticalSuccessAfterimage: 'The impressions do not just resolve — they open. {actor} reads not only what happened in this place but the shape of what it wanted, and the knowing settles in like a language {they} always spoke.',
+        criticalFailureAfterimage: 'The interpretation turns on {actor}. For a moment {they} hold every layer of the place at once — every act, every intention — and the weight of it leaves a ringing that follows {them} into other rooms, other days.',
         onSuccess: {
           narrative: '{actor} makes the {adj} translation successfully. What was felt becomes known.',
           reputationDelta: 0.14,

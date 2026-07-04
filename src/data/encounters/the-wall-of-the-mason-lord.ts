@@ -86,6 +86,16 @@ const step1HardenTheirResolve: ActionStep = {
     'The resolve held but the work went wrong — a section settled badly in the frozen ground, and the wall ' +
     'rose finished but flawed, safe enough to doom the far side and weak enough to fail the near one some ' +
     'harder winter to come.',
+  criticalSuccessAfterimage:
+    'The wall did not merely rise — it rose perfect, courses so true the frost could find no seam to pry. ' +
+    'Masons would come from three regions to study how it was set. The valley behind it would not know an ' +
+    'unguarded night again in the mason-lord\'s lifetime, and the cost of that safety stood plain in granite ' +
+    'for anyone west of it to read.',
+  criticalFailureAfterimage:
+    'The mason-lord\'s certainty never wavered, and that was the ruin of it — they drove the work through a ' +
+    'frost-heaved footing they should have stopped to fix, trusting resolve to do a mason\'s job. The wall ' +
+    'rose finished and proud and wrong, and the winter it was built to survive is the winter it will come ' +
+    'down in, on the very valley it was meant to save.',
   successMetadata: { reputationDelta: 0.16 },
   failureMetadata: { reputationDelta: -0.1 },
 };
@@ -118,6 +128,16 @@ const step1LetTheDoubtIn: ActionStep = {
   failureAfterimage:
     'The mason-lord faltered without quite walking away; the wall stood half-built and undefended, and the ' +
     'region got neither the safety of the stone nor the clean conscience of refusing it.',
+  criticalSuccessAfterimage:
+    'The mason-lord came down off the wall for good, and word of why traveled further than any finished ' +
+    'rampart could. Herders on the far side who never learned the name spoke of the valley that would not ' +
+    'wall them out. The half-wall stayed a half-wall, and became, without anyone intending it, the most ' +
+    'honored thing the mason-lord never built.',
+  criticalFailureAfterimage:
+    'The doubt did not free the mason-lord — it froze them. They could neither lay the last courses nor walk ' +
+    'away clean, and stood on the half-wall through the turning season while the choice rotted. The valley ' +
+    'got the danger of an open pass and the shame of a builder who could not finish, and remembered the ' +
+    'mason-lord for the one thing worse than cruelty or mercy: nothing at all.',
   successMetadata: { reputationDelta: 0.08 },
   failureMetadata: { reputationDelta: -0.12 },
 };

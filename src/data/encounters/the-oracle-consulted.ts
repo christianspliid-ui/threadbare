@@ -108,6 +108,8 @@ const step1ReadOpenly: ActionStep = {
   failureMetadata: { reputationDelta: 0.00 },
   successAfterimage: 'The reading completed. The second scholar sat down. The name repeated three times.',
   failureAfterimage: 'The reading reached most of the text but not all — something in the resolution lost its edge.',
+  criticalSuccessAfterimage: 'The reading does not just complete — it opens a door the scholars did not know was there. The name repeated three times turns out to unlock a second inscription they had shelved as unreadable. They will build a decade of work on this morning, and they will remember who read it first.',
+  criticalFailureAfterimage: 'The reading runs off the rails at the crucial line, and the {title} does not notice, and the scholars do not either. They copy it down as gospel — a border, a name, a claim — all subtly wrong. A year from now a dispute will be settled on the strength of a mistranslation no one thought to question.',
 };
 
 const step1GiveRiddle: ActionStep = {
@@ -136,6 +138,8 @@ const step1GiveRiddle: ActionStep = {
   failureMetadata: { reputationDelta: 0.00 },
   successAfterimage: 'The scholars talking faster than they had been. The name, hanging. The agent left.',
   failureAfterimage: 'The frame was offered but did not catch — the scholars looked at each other and then at their hands.',
+  criticalSuccessAfterimage: 'The frame lands like a struck flint. The scholars race past the answer the {title} withheld and arrive somewhere better — a whole reading the tablet only hinted at — and when they publish it, the credit runs backward to the oracle who would not simply tell them.',
+  criticalFailureAfterimage: 'The frame points the scholars at exactly the wrong meaning, and being clever, they follow it a long way. Months from now they will still be defending a reading built on a wrong turn, and the {title} who meant to teach them the land has taught them to trust a false map.',
 };
 
 const step1Branch: ActionStepBranch = {
