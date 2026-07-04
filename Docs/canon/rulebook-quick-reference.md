@@ -53,7 +53,7 @@ The two-way thread: you intervene; the mortal responds. The response is part of 
 
 A **curated chapter**, not a flat roll. Two pipelines, one format (`UnifiedActionTemplate`): authored *branching* encounters and systemic *linear template* encounters. Encounter awareness is **hex-granular** — if you see the hex, you see everything on it.
 
-Resolution: **sigmoid → d100**, unified. No alternative dice.
+Resolution: **sigmoid → d100**, unified. No alternative dice. Outcomes land on a five-band ladder — *clean · at-cost · failure · crit-success · crit-failure*. The world is capability-poor by design, so **success-at-cost (scraping through) is the dominant, expected texture**; clean and critical success are rare signals a god notices. Critical failure survives at every scale (only its severity scales), and **every failure leaves a story artifact** — no outcome is dead air.
 
 Four design rules: (1) Path over adjective. (2) Moral axis is structural — each Reach maps to an archetype-pair (Iron: Protector ↔ Conqueror, etc.). (3) Verbs are encounter-specific, soft-power flavoured. (4) Every primitive is clickable.
 

@@ -2690,6 +2690,13 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
         if (runtime && isBranchingTemplate(a.templateId)) runtime.branchingFiresTotal++;
         // THR-541: same pattern for threaded beats (rich = multi-step or branching).
         if (runtime && isRichTemplate(a.templateId)) runtime.threadedBeatsTotal++;
+        // THR-571 U1 re-band: lifetime denominator + clean/crit-success numerators for the
+        // rare-signal tail bands (windowed rates are too noisy at ~72 resolved/window).
+        if (runtime) {
+          runtime.resolvedActionsTotal++;
+          if (a.outcome === 'success') runtime.cleanSuccessTotal++;
+          else if (a.outcome === 'critical_success') runtime.critSuccessTotal++;
+        }
         const stampedAction = { ...a, completedAtTick: s.tick };
         if (isEncounterAction(a.templateId)) {
           const record = buildChapterRecord(stampedAction, s, runtime);

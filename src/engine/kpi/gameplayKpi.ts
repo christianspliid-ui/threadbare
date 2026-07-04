@@ -31,6 +31,7 @@ import {
   KPI_AT_COST_SHARE_MIN,
   KPI_AT_COST_SHARE_MAX,
   KPI_CRIT_TAIL_MIN,
+  KPI_CRIT_SUCCESS_MIN,
   KPI_FAILURE_STORY_MIN,
 } from './kpiConstants';
 
@@ -133,6 +134,12 @@ export interface KpiThresholdEvaluation {
   threshold: number;
   direction: 'below_is_bad' | 'above_is_bad';
   status: KpiStatus;
+  /**
+   * THR-571 U1 re-band: advisory rows are report-but-don't-gate — the status is still
+   * computed and shown (so a regression is visible) but overall PASS/FAIL logic ignores it.
+   * Used for the crit-success tail, which is too rare to gate reliably in a capability-poor world.
+   */
+  advisory?: boolean;
 }
 
 export interface GameplayKpiReport {
@@ -162,6 +169,16 @@ export interface KpiRuntimeView {
   failureOutcomesTotal?: number;
   /** THR-571 C1: cumulative count of those failures that left ≥1 story artifact. Numerator for failure_story_rate. */
   failureStoryArtifactsTotal?: number;
+  /**
+   * THR-571 U1 re-band: cumulative count of resolved actions this session (any outcome).
+   * Denominator for the lifetime clean/crit-success rates. Absent on pre-U1 builds → the
+   * rates fall back to the windowed byOutcome snapshot.
+   */
+  resolvedActionsTotal?: number;
+  /** THR-571 U1 re-band: cumulative clean-success count. Numerator for lifetime clean_success_rate. */
+  cleanSuccessTotal?: number;
+  /** THR-571 U1 re-band: cumulative critical-success count. Numerator for lifetime crit_success_rate. */
+  critSuccessTotal?: number;
 }
 
 /** Create a fresh set of funnel counters for a new session. */
@@ -191,6 +208,7 @@ function evalThreshold(
   value: number,
   threshold: number,
   direction: 'below_is_bad' | 'above_is_bad',
+  advisory = false,
 ): KpiThresholdEvaluation {
   let status: KpiStatus;
   const amber = threshold * KPI_AMBER_BAND;
@@ -203,7 +221,9 @@ function evalThreshold(
     else if (value <= threshold + amber) status = 'amber';
     else status = 'red';
   }
-  return { metric, label, value, threshold, direction, status };
+  return advisory
+    ? { metric, label, value, threshold, direction, status, advisory }
+    : { metric, label, value, threshold, direction, status };
 }
 
 // THR-577: These two template caches are intentionally left at module scope (unlike
@@ -273,15 +293,33 @@ function buildOutcomes(
       ? (failureOutcomesTotal > 0 ? failureStoryArtifactsTotal / failureOutcomesTotal : 1)
       : null;
 
+  // THR-571 U1 re-band: clean_success and crit_success are rare-signal bands. A windowed
+  // ≥N% tail over ~72 resolved/window is 1–2 events — too noisy to gate (a real run reads
+  // 0% purely from small-window variance). Prefer the runtime's lifetime numerator/denominator
+  // (survives pruning) when present; fall back to the windowed snapshot for pure-state tests
+  // / pre-U1 builds. Mirrors how failure_story/branching already prefer lifetime counters.
+  const resolvedActionsTotal = runtime?.resolvedActionsTotal;
+  const cleanSuccessTotal = runtime?.cleanSuccessTotal;
+  const critSuccessTotal = runtime?.critSuccessTotal;
+  const useLifetimeTails =
+    resolvedActionsTotal !== undefined && resolvedActionsTotal > 0 &&
+    cleanSuccessTotal !== undefined && critSuccessTotal !== undefined;
+  const cleanSuccessRate = useLifetimeTails
+    ? cleanSuccessTotal! / resolvedActionsTotal!
+    : (total > 0 ? cleanSuccessCount / total : 0);
+  const critSuccessRate = useLifetimeTails
+    ? critSuccessTotal! / resolvedActionsTotal!
+    : (total > 0 ? critSuccessCount / total : 0);
+
   return {
     total,
     byOutcome,
     failureRate: total > 0 ? failureCount / total : 0,
     critFailRate: total > 0 ? critFailCount / total : 0,
-    cleanSuccessRate: total > 0 ? cleanSuccessCount / total : 0,
+    cleanSuccessRate,
     totalSuccessRate: total > 0 ? totalSuccessCount / total : 0,
     atCostShare: total > 0 ? atCostCount / total : 0,
-    critSuccessRate: total > 0 ? critSuccessCount / total : 0,
+    critSuccessRate,
     failureStoryRate,
     insufficientData: total < 10,
   };
@@ -451,7 +489,9 @@ function buildThresholds(
     evalThreshold('total_success_max', 'Total Success ≤', outcomes.totalSuccessRate, KPI_TOTAL_SUCCESS_MAX, 'above_is_bad'),
     evalThreshold('at_cost_min', 'At-Cost Share ≥', outcomes.atCostShare, KPI_AT_COST_SHARE_MIN, 'below_is_bad'),
     evalThreshold('at_cost_max', 'At-Cost Share ≤', outcomes.atCostShare, KPI_AT_COST_SHARE_MAX, 'above_is_bad'),
-    evalThreshold('crit_success_rate', 'Crit-Success Tail', outcomes.critSuccessRate, KPI_CRIT_TAIL_MIN, 'below_is_bad'),
+    // Crit-success is ADVISORY (report-but-don't-gate) — too rare to gate reliably in a
+    // capability-poor world (THR-571 U1 re-band). Crit-failure remains a hard gate.
+    evalThreshold('crit_success_rate', 'Crit-Success Tail (advisory)', outcomes.critSuccessRate, KPI_CRIT_SUCCESS_MIN, 'below_is_bad', true),
     evalThreshold('crit_failure_rate', 'Crit-Failure Tail', outcomes.critFailRate, KPI_CRIT_TAIL_MIN, 'below_is_bad'),
     evalThreshold('template_top_share', 'Top Template Share', concentration.topShare, KPI_TEMPLATE_TOP_SHARE_MAX, 'above_is_bad'),
     evalThreshold('template_entropy', 'Template Entropy', concentration.entropy, KPI_TEMPLATE_ENTROPY_MIN, 'below_is_bad'),

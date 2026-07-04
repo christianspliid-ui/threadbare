@@ -219,8 +219,10 @@ function main(): void {
       const elapsed = ((Date.now() - start) / 1000).toFixed(1);
       results.push({ ascendant, report });
       if (!args.jsonOnly) {
-        const allGreen = report.thresholds.every(t => t.status === 'green');
-        const hasRed = report.thresholds.some(t => t.status === 'red');
+        // Advisory rows (e.g. crit-success tail, THR-571) are report-but-don't-gate.
+        const gating = report.thresholds.filter(t => !t.advisory);
+        const allGreen = gating.every(t => t.status === 'green');
+        const hasRed = gating.some(t => t.status === 'red');
         const overall = hasRed ? `${RED}FAIL${RESET}` : allGreen ? `${GREEN}PASS${RESET}` : `${YELLOW}WARN${RESET}`;
         const reachNote = ascendant ? `  ${DIM}primaryReach=${resolvePrimaryReach(ascendant)}${RESET}` : '';
         console.log(`${overall}  ${DIM}${elapsed}s${RESET}${reachNote}`);

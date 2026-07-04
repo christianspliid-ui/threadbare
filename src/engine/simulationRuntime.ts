@@ -105,6 +105,22 @@ export interface SimulationRuntime {
    */
   failureStoryArtifactsTotal: number;
 
+  // ── Outcome-ladder tail counters (THR-571 U1 re-band) ──
+  /**
+   * Cumulative count of resolved actions this session (any outcome). Incremented once per
+   * newly-resolved action in the orchestrator's resolved-action cleanup, BEFORE `unifiedActions`
+   * is pruned — the same lifetime-counter pattern as branchingFiresTotal (THR-470). This is the
+   * honest full-run denominator for the clean/crit-success rates, which are rare-signal bands:
+   * at ~72 resolved/window a windowed ≥2% tail is 1–2 events (too noisy to gate — a real run can
+   * read 0% purely from small-window variance). The lifetime numerator/denominator make those
+   * bands stable enough to threshold. See the design gate on THR-571 (2026-07-04).
+   */
+  resolvedActionsTotal: number;
+  /** Cumulative count of clean `success` resolutions this session. Numerator for the lifetime clean_success_rate. */
+  cleanSuccessTotal: number;
+  /** Cumulative count of `critical_success` resolutions this session. Numerator for the lifetime crit_success_rate. */
+  critSuccessTotal: number;
+
   // ── Threaded beat counter (THR-541) ──
   /**
    * Cumulative count of "rich" encounters (multi-step or branching — see isRichTemplate)
@@ -191,6 +207,9 @@ export function createSimulationRuntime(): SimulationRuntime {
     branchingFiresTotal: 0,
     failureOutcomesTotal: 0,
     failureStoryArtifactsTotal: 0,
+    resolvedActionsTotal: 0,
+    cleanSuccessTotal: 0,
+    critSuccessTotal: 0,
     threadedBeatsTotal: 0,
     foreshadowingCache: new Map(),
     threadStoryCache: new Map(),
