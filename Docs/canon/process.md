@@ -28,7 +28,7 @@ Load this page once at session start instead of re-reading the corresponding CLA
 
 ## Current spec — coordination
 
-- **Coordination protocol (canonical):** [`Docs/plans/2026-04-13-linear-coordination-protocol.md`](../plans/2026-04-13-linear-coordination-protocol.md). The "Coordination Failure Modes — Hard Rules" section (Rules 1–9) explains why each constraint below is non-negotiable.
+- **Coordination protocol (canonical):** [`Docs/plans/2026-04-13-linear-coordination-protocol.md`](../plans/2026-04-13-linear-coordination-protocol.md). The "Coordination Failure Modes — Hard Rules" section (Rules 1–10) explains why each constraint below is non-negotiable.
 - **Two agents, one executor queue:** [CLAUDE.md → Cowork vs Claude Code](../../CLAUDE.md). Cowork designs and plans (no code, no git). Claude Code is the single executor; it implements, commits with `Fixes THR-XX`, and relies on the merge-to-main auto-close. (Codex and the second `Ready for Codex` queue were retired 2026-06-23, THR-486.)
 - **One executor queue:** CC pulls from Ready for Dev (`assignee:null`, sorted by priority in memory). UL: [`Coordination` → Ready for Dev](../ubiquitous-language/Coordination.md).
 - **Claim-before-read:** [`UL/Coordination` → Claim-before-read](../ubiquitous-language/Coordination.md). First mutating call after selecting an issue is `save_issue(state: "In Dev", assignee: "me")`, then `get_issue(id)` to verify the write stuck (impediment #48 — silent state drops).
@@ -38,6 +38,14 @@ Load this page once at session start instead of re-reading the corresponding CLA
 - **Merge-gated Done:** [`UL/Coordination` → Fixes THR-XX](../ubiquitous-language/Coordination.md), [`UL/Coordination` → In Dev](../ubiquitous-language/Coordination.md). Never call `save_issue(state: "Done")` manually. The `Fixes THR-XX` (or `Closes`/`Resolves`) keyword in the commit body **and PR body** on the merge to main transitions the issue straight to Done — the only valid Done transition (THR-487). Manual Done has caused premature closes of reopened issues.
 - **Coordination Block (in every handoff):** [`UL/Coordination` → Coordination Block](../ubiquitous-language/Coordination.md). Every handoff needs `Suggested model` (advisory — the CC automation runs Opus regardless), `Parallel-safe with`, `Mutex with`. Missing block = don't claim; bounce.
 - **Pickup entrypoint (CC):** [`.claude/skills/pull-work/SKILL.md`](../../.claude/skills/pull-work/SKILL.md). Run `/pull-work` for the canonical safe-claim flow with verify-after-write and dirty-worktree fallback.
+
+## User review interface (Christian)
+
+Christian's interface to the development system is **chat only, plain language only** (settled 2026-07-04, THR-608). Full rationale: [`Docs/plans/2026-07-04-user-review-interface.md`](../plans/2026-07-04-user-review-interface.md). Three hard rules:
+
+1. **No diff/PR review by Christian.** A Done-when like "diff-reviewed by Christian" is invalid. When human sign-off is genuinely needed, the agent presents a plain-language chat summary (what changed, why, what could be lost, a recommendation) and asks a single yes/no question. Chat approval satisfies the gate; record `human gate satisfied via chat review <date>` as a Linear comment so the executor may merge.
+2. **Christian does not read Linear.** Linear is the agents' coordination surface, not a channel to the user. Anything needing his attention is surfaced in **chat** — primarily via the hourly `keep-work-flowing` Cowork session output. A Linear comment addressed to Christian reaches no one.
+3. **Technical assessments are agent verdicts.** CI/CD state, git forensics, merge mechanics, not-a-defect determinations, sandbox issues: the agent decides, acts (e.g. Cancel with a closing comment), and records the reasoning on the issue. Only creative/product/design-vision decisions go to Christian, framed in game terms. Codified as coordination-protocol Rule 10.
 
 ## Continuous improvement loop
 

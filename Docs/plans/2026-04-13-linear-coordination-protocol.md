@@ -272,6 +272,19 @@ $ npx vite build
 
 ---
 
+### Rule 10 — Christian is a chat-only, plain-language reviewer
+
+**Rule:** Never write a Done-when criterion that requires Christian to review a diff, a PR, or a Linear issue/comment — his only interface to the development system is plain-language chat. When a change genuinely needs human sign-off, the agent surfaces a plain-language summary in chat (what changed, why, what could be lost, a recommendation) and asks one yes/no question; chat approval satisfies the human gate and is recorded as `human gate satisfied via chat review <date>` on the issue so the executor may merge. Technical verdicts — CI/CD state, git forensics, merge mechanics, not-a-defect determinations, sandbox issues — are the agent's to decide, act on, and record; they never go to Christian. Only creative/product/design-vision decisions go to Christian, framed in game terms.
+
+**Why:** THR-575 sat parked 4+ hourly executor cycles behind a "diff-reviewed by Christian" gate, starving the executor lane (THR-580 idle behind it); THR-606 sat In Dev after CC correctly assessed it as not-a-defect, awaiting a close only Christian was presumed able to make — a pure technical verdict he cannot help with. Both blocks were artifacts of assuming a review interface (diffs, Linear) that does not exist. Settled 2026-07-04 (THR-608).
+
+**How to apply:**
+- Handoff templates and Done-when checklists must not contain "diff-reviewed by Christian"-style gates. Human sign-off, when needed, is a chat summary + one yes/no question, recorded as a Linear comment (`human gate satisfied via chat review <date>`).
+- Anything needing Christian's attention is surfaced in **chat** — primarily the hourly `keep-work-flowing` Cowork session output — never a Linear comment addressed to him.
+- If an issue is complete but parked behind a human gate that is actually a technical verdict, the agent resolves it (e.g. Cancel with a closing comment, or merge once CI is green) rather than parking the lane. Full rationale: `Docs/plans/2026-07-04-user-review-interface.md`.
+
+---
+
 ## Model selection (advisory, not a queue filter)
 
 A single hourly CC automation runs on **Opus** and pulls the top of Ready for Dev. The model is fixed at the automation level — it is not chosen per issue, and the `model:*` label does **not** route anything.
