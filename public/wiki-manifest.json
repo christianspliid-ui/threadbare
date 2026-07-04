@@ -11,6 +11,14 @@
       "sources": ["src/engine/ascendantBeat*.ts", "src/engine/worldGeneration*.ts", "src/types/remembrance.ts", "src/data/archetype-content.ts", "src/data/backstory-content.ts"]
     },
     {
+      "id": "cosmology-reference",
+      "file": "cosmology-reference.html",
+      "title": "Reaches, Spheres & Quintessence",
+      "blurb": "The two axes of every divine act — Eight Reaches (what you do) and Twelve Spheres (what fuels it), orthogonal by design — plus each Reach's virtue/vice moral axis, the Domain Capability word-ladder, and Quintessence as narrative centrality (not a ninth Reach).",
+      "section": "Manual",
+      "sources": ["src/engine/phaseSphereAggregation*.ts", "src/engine/phaseQuintessence*.ts", "src/engine/capability*.ts", "src/engine/cosmology.ts", "src/types/traits.ts", "src/types/quintessence.ts"]
+    },
+    {
       "id": "encounters-agents-reference",
       "file": "encounters-agents-reference.html",
       "title": "Encounters, Agents & Resolution",

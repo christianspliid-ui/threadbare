@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Threadbearer — Reaches, Spheres &amp; Quintessence</title>
+<!--
+  Cosmology Reference (Game Manual Wiki, W2 / THR-587) — dual-layer manual page.
+  Player-manual prose first ("How it plays"), Designer Notes second.
+  Spec: Docs/plans/2026-07-03-game-manual-wiki.md §5 W2. Source spine:
+  Docs/canon/cosmology.md (authoritative), Docs/ubiquitous-language/Cosmology.md,
+  src/types/traits.ts (ReachDomain / NARRATIVE_LEXICON), src/engine/cosmology.ts
+  (SPHERE_OPPOSITES / SPHERE_ALLIES), src/engine/phaseSphereAggregation.ts,
+  src/engine/phaseQuintessence.ts, src/engine/capabilityGrowth.ts. The shared wiki
+  nav between the WIKI-NAV markers is injected by scripts/generate-design-wiki.ts —
+  do not hand-write it.
+-->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --parchment: #f4edd8;
+    --parchment-dark: #e8dfc8;
+    --ink: #2c1810;
+    --ink-light: #5a3d2b;
+    --ink-faint: #8a7060;
+    --gold: #b8860b;
+    --gold-light: #daa520;
+    --card-bg: #fff8e7;
+    --red: #8b2500;
+    --blue: #1a3a5c;
+    --blue-light: #2d5f8a;
+    --purple: #4a2d6a;
+    --green: #2d5a27;
+
+    --flag-impl: #2d5a27;
+    --flag-design: #8a4a00;
+    --flag-open: #4a2d6a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--parchment);
+    color: var(--ink);
+    font-family: 'Crimson Text', Georgia, serif;
+    font-size: 16px;
+    line-height: 1.6;
+    min-height: 100vh;
+    background-image:
+      radial-gradient(ellipse at 20% 50%, rgba(184,134,11,0.04) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 30%, rgba(74,45,106,0.03) 0%, transparent 50%);
+  }
+
+  .page-wrapper { max-width: 900px; margin: 0 auto; padding: 40px 32px 72px; }
+
+  /* ── Header ── */
+  .header { text-align: center; margin-bottom: 40px; padding-bottom: 28px; border-bottom: 2px solid var(--gold); position: relative; }
+  .header::after { content: ''; position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); width: 55%; height: 1px; background: var(--gold-light); }
+  .header .eyebrow { font-family: 'Cinzel', Georgia, serif; font-size: 0.72rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold); margin-bottom: 10px; }
+  .header h1 { font-family: 'Cinzel', Georgia, serif; font-weight: 700; font-size: 2.4rem; color: var(--ink); letter-spacing: 0.05em; margin-bottom: 12px; }
+  .header .tagline { font-size: 1.12rem; color: var(--ink-light); max-width: 62ch; margin: 0 auto; font-style: italic; }
+
+  /* ── Sections ── */
+  .section { margin-bottom: 34px; }
+  .section > h2 { font-family: 'Cinzel', Georgia, serif; font-size: 1.25rem; color: var(--ink); letter-spacing: 0.03em; margin-bottom: 6px; padding-bottom: 6px; border-bottom: 1px solid var(--parchment-dark); }
+  .section > h2 .lead { display: block; font-family: 'Crimson Text', Georgia, serif; font-size: 0.95rem; font-style: italic; font-weight: 400; color: var(--ink-faint); letter-spacing: 0; margin-top: 4px; }
+  .section h3 { font-family: 'Cinzel', Georgia, serif; font-size: 1rem; color: var(--ink-light); letter-spacing: 0.02em; margin: 20px 0 6px; }
+  .section p { margin-bottom: 12px; }
+  .section p .term { font-weight: 600; color: var(--ink); }
+  .section ul { margin: 0 0 14px 0; padding-left: 0; list-style: none; }
+  .section ul li { position: relative; padding-left: 1.3rem; margin-bottom: 8px; }
+  .section ul li::before { content: '◆'; position: absolute; left: 0; top: 0.05rem; color: var(--gold); font-size: 0.7rem; }
+
+  /* ── Lore tables (player-facing) ── */
+  .lore-table { width: 100%; border-collapse: collapse; font-size: 0.98rem; margin: 6px 0 16px; }
+  .lore-table th { text-align: left; font-family: 'Cinzel', Georgia, serif; font-size: 0.64rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-faint); padding: 7px 12px 7px 0; border-bottom: 1px solid var(--gold); }
+  .lore-table td { padding: 8px 12px 8px 0; border-bottom: 1px solid var(--parchment-dark); vertical-align: top; color: var(--ink-light); }
+  .lore-table td:first-child { color: var(--ink); font-weight: 600; white-space: nowrap; }
+  .lore-table td .pole-virtue { color: var(--green); font-weight: 600; }
+  .lore-table td .pole-vice { color: var(--red); font-weight: 600; }
+
+  /* ── Sphere pair grid ── */
+  .spheres { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 18px; margin: 6px 0 16px; }
+  .sphere-pair { background: var(--card-bg); border: 1px solid var(--parchment-dark); border-radius: 4px; padding: 10px 14px; }
+  .sphere-pair .pair-poles { font-family: 'Cinzel', Georgia, serif; font-size: 0.95rem; color: var(--ink); margin-bottom: 3px; }
+  .sphere-pair .pair-poles .vs { color: var(--gold); font-weight: 400; padding: 0 0.3rem; }
+  .sphere-pair .pair-note { font-size: 0.9rem; color: var(--ink-faint); }
+  @media (max-width: 640px) { .spheres { grid-template-columns: 1fr; } }
+
+  /* ── Callouts ── */
+  .callout { background: var(--card-bg); border: 1px solid var(--parchment-dark); border-left: 4px solid var(--gold); border-radius: 4px; padding: 14px 18px; margin: 4px 0 18px; }
+  .callout.blue { border-left-color: var(--blue-light); }
+  .callout.purple { border-left-color: var(--purple); }
+  .callout .callout-title { font-family: 'Cinzel', Georgia, serif; font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 6px; }
+  .callout p:last-child { margin-bottom: 0; }
+
+  /* ── Orthogonality example ── */
+  .ortho { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 6px 0 16px; }
+  .ortho-card { background: var(--card-bg); border: 1px solid var(--parchment-dark); border-radius: 4px; padding: 14px 18px; border-top: 3px solid var(--blue-light); }
+  .ortho-card h4 { font-family: 'Cinzel', Georgia, serif; font-size: 0.95rem; color: var(--ink); margin-bottom: 6px; }
+  .ortho-card p { font-size: 0.95rem; color: var(--ink-light); margin-bottom: 0; }
+  @media (max-width: 640px) { .ortho { grid-template-columns: 1fr; } }
+
+  /* ── Capability ladder ── */
+  .ladder { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 8px; align-items: center; }
+  .ladder .rung { font-family: 'Cinzel', Georgia, serif; font-size: 0.82rem; color: var(--ink-light); background: var(--card-bg); border: 1px solid var(--parchment-dark); border-radius: 3px; padding: 3px 9px; }
+  .ladder .rung.low { color: var(--ink-faint); }
+  .ladder .rung.high { color: var(--ink); border-color: var(--gold); }
+  .ladder .arrow { color: var(--gold); font-size: 0.8rem; }
+
+  /* ── Designer notes ── */
+  .designer { margin-top: 48px; border-top: 2px solid var(--gold); padding-top: 8px; }
+  .designer > summary { list-style: none; cursor: pointer; padding: 16px 4px; display: flex; align-items: baseline; gap: 12px; }
+  .designer > summary::-webkit-details-marker { display: none; }
+  .designer > summary .chev { font-size: 0.8rem; color: var(--gold); transition: transform 0.15s; }
+  .designer[open] > summary .chev { transform: rotate(90deg); }
+  .designer > summary h2 { font-family: 'Cinzel', Georgia, serif; font-size: 1.3rem; color: var(--ink); letter-spacing: 0.03em; }
+  .designer > summary .sub { font-size: 0.9rem; color: var(--ink-faint); font-style: italic; }
+  .designer-body { padding: 4px 4px 8px; }
+  .designer-body h3 { font-family: 'Cinzel', Georgia, serif; font-size: 0.98rem; color: var(--ink-light); margin: 22px 0 8px; }
+  .designer-body p { margin-bottom: 12px; font-size: 0.97rem; }
+  .designer-body ul { margin: 0 0 14px 0; padding-left: 0; list-style: none; }
+  .designer-body ul li { position: relative; padding-left: 1.2rem; margin-bottom: 7px; font-size: 0.97rem; }
+  .designer-body ul li::before { content: '›'; position: absolute; left: 0.15rem; top: 0; color: var(--ink-faint); }
+  code, .mono { font-family: 'JetBrains Mono', monospace; font-size: 0.84em; color: var(--ink); background: rgba(184,134,11,0.10); padding: 0.05rem 0.32rem; border-radius: 3px; word-break: break-word; }
+
+  .flag { font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; letter-spacing: 0.04em; font-weight: 500; padding: 0.08rem 0.4rem; border-radius: 3px; color: #fff; white-space: nowrap; }
+  .flag.impl { background: var(--flag-impl); }
+  .flag.design { background: var(--flag-design); }
+  .flag.open { background: var(--flag-open); }
+
+  table.tunables { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin: 4px 0 18px; }
+  table.tunables th { text-align: left; font-family: 'Cinzel', Georgia, serif; font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-faint); padding: 6px 10px 6px 0; border-bottom: 1px solid var(--parchment-dark); }
+  table.tunables td { padding: 7px 10px 7px 0; border-bottom: 1px solid var(--parchment-dark); vertical-align: top; color: var(--ink-light); }
+  table.tunables td:first-child { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--ink); white-space: nowrap; }
+
+  .foot { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--parchment-dark); font-size: 0.85rem; color: var(--ink-faint); font-style: italic; }
+  a { color: var(--blue-light); text-decoration: none; border-bottom: 1px solid rgba(45,95,138,0.35); }
+  a:hover { color: var(--blue); border-bottom-color: var(--blue); }
+</style>
+</head>
+<body>
+<!--WIKI-NAV-->
+<style>
+  .wiki-nav { font-family: 'Cinzel', Georgia, serif; background: #2c1810; border-bottom: 2px solid #b8860b; padding: 0.6rem 1.2rem; display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.4rem 1.1rem; }
+  .wiki-nav__brand { color: #daa520; font-weight: 700; letter-spacing: 0.04em; margin-right: 0.6rem; font-size: 0.95rem; }
+  .wiki-nav__link { color: #f4edd8; text-decoration: none; font-size: 0.85rem; letter-spacing: 0.02em; padding: 0.15rem 0.1rem; border-bottom: 2px solid transparent; transition: color 0.15s, border-color 0.15s; }
+  .wiki-nav__link:hover { color: #daa520; }
+  .wiki-nav__link.is-active { color: #daa520; border-bottom-color: #b8860b; font-weight: 700; }
+</style>
+<nav class="wiki-nav" aria-label="Design Reference Wiki">
+  <span class="wiki-nav__brand">⌖ Design Reference Wiki</span>
+  <a class="wiki-nav__link" href="design-wiki.html">Design Wiki</a>
+  <a class="wiki-nav__link" href="run-lifecycle-reference.html">A Run, Start to Finish</a>
+      <a class="wiki-nav__link is-active" href="cosmology-reference.html" aria-current="page">Reaches, Spheres &amp; Quintessence</a>
+      <a class="wiki-nav__link" href="encounters-agents-reference.html">Encounters, Agents &amp; Resolution</a>
+      <a class="wiki-nav__link" href="tick-cycle-reference.html">Tick Cycle Reference</a>
+      <a class="wiki-nav__link" href="action-catalog.html">Action Catalog</a>
+</nav>
+<!--/WIKI-NAV-->
+<div class="page-wrapper">
+
+  <header class="header">
+    <div class="eyebrow">Game Manual · The Cosmos</div>
+    <h1>Reaches, Spheres &amp; Quintessence</h1>
+    <p class="tagline">Two questions govern every act of a god: <em>what are you doing?</em> and <em>what is fuelling it?</em> The first answer is a Reach. The second is a Sphere. They are separate axes, and the whole texture of the world lives in how they combine.</p>
+  </header>
+
+  <!-- ══════════════════ HOW IT PLAYS ══════════════════ -->
+
+  <section class="section">
+    <h2>Two axes, not one<span class="lead">Everything a god does is described by a Reach and coloured by a Sphere. Neither contains the other.</span></h2>
+    <p>When you act on the world, two independent things are always true at once. There is <span class="term">what you are doing</span> — pressing a mortal toward courage, buying loyalty, hiding a truth, breaking a wall. That is a <span class="term">Reach</span>. And there is <span class="term">what the act is made of</span> — the cosmic energy it draws on, which decides how it feels and what it costs. That is a <span class="term">Sphere</span>.</p>
+    <p>There are <span class="term">Eight Reaches</span> and <span class="term">Twelve Spheres</span>, and they are <em>orthogonal</em>: any Reach can be powered by any Sphere. The same gesture in two different Spheres is not the same gesture. This is the engine that makes the world feel large — eight things to do, twelve ways to mean them.</p>
+    <div class="callout purple">
+      <div class="callout-title">Quintessence is not a ninth Reach</div>
+      <p>A third idea rides alongside the two axes: <span class="term">Quintessence</span> — how present, central, and hard-to-erase a being is in the story. It is a meta-property, not a Reach and not a Sphere. It is covered at the end of this page, and it matters more than its quiet nature suggests.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>The Eight Reaches — what you do<span class="lead">Eight domains of action. A god favours two of them for a whole run; a mortal can grow along any.</span></h2>
+    <p>A Reach is a <em>category of doing</em>. It says nothing about good or evil, magic or muscle — only about the kind of pressure being applied to the world.</p>
+    <table class="lore-table">
+      <thead><tr><th>Reach</th><th>The domain it covers</th></tr></thead>
+      <tbody>
+        <tr><td>Iron</td><td>Strength, force, martial action, direct confrontation</td></tr>
+        <tr><td>Gold</td><td>Wealth, influence, social capital, patronage, trade</td></tr>
+        <tr><td>Shadow</td><td>Stealth, deception, sabotage, covert leverage, hidden action</td></tr>
+        <tr><td>Veil</td><td>Magic, divination, supernatural perception, ritual</td></tr>
+        <tr><td>Heart</td><td>Emotion, loyalty, persuasion, personal bonds</td></tr>
+        <tr><td>Eye</td><td>Knowledge, observation, judgment, intelligence</td></tr>
+        <tr><td>Stone</td><td>Endurance, craftsmanship, building, preservation</td></tr>
+        <tr><td>Star</td><td>Travel, fate, faith, navigation, survival, long distances</td></tr>
+      </tbody>
+    </table>
+    <p>Your remembered identity settles on <span class="term">one primary and one secondary Reach</span>, permanent for the run — the actions a god can ever take come from those two domains. Mortals below you are not bound this way; a peasant, a general, and a spymaster differ mostly in <em>which</em> Reaches they have grown, and how far.</p>
+    <div class="callout blue">
+      <div class="callout-title">There is no ninth Reach</div>
+      <p>An earlier design had a "Flesh" Reach for the body and survival. It is gone — its ground was split among the eight above (healing folded into Gold, athletics into Iron, the body's craft into Stone, survival into Star) and its old job of "are you fading out of the story?" became <span class="term">Quintessence</span>. If you meet "Flesh" or "nine Reaches" anywhere, that source is stale.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>The Twelve Spheres — what fuels it<span class="lead">Twelve cosmic energies in two families. They colour a Reach's action rather than changing what it is.</span></h2>
+    <p>A Sphere is the <em>material</em> of an act — the flavour of energy it runs on. The Spheres come in two families.</p>
+
+    <h3>The Foundation four — the elder energies</h3>
+    <p>The Foundation Spheres are the world's oldest, rawest cosmic axes: <span class="term">Chaos ↔ Order</span> and <span class="term">Light ↔ Darkness</span>. They govern the deep grain of reality — change against stability, revelation against concealment. A god does not walk in already aligned to these; the Foundation energies are elder magic, met in the world — in ruins, relics, and old places of power — rather than chosen at your remembrance.</p>
+    <div class="spheres">
+      <div class="sphere-pair"><div class="pair-poles">Chaos<span class="vs">↔</span>Order</div><div class="pair-note">Change, disruption, entropy-as-creation — against stability, law, and structure.</div></div>
+      <div class="sphere-pair"><div class="pair-poles">Light<span class="vs">↔</span>Darkness</div><div class="pair-note">Illumination, truth, clarity — against mystery, shadow, and concealment.</div></div>
+    </div>
+
+    <h3>The Creation eight — the working energies</h3>
+    <p>The Creation Spheres are the everyday energies a god shapes the living world with. They fall into four opposed pairs — each Sphere has one true opposite that resists it and one neighbour that reinforces it.</p>
+    <div class="spheres">
+      <div class="sphere-pair"><div class="pair-poles">Force<span class="vs">↔</span>Mind</div><div class="pair-note">Physical power and momentum — against thought, intelligence, and will.</div></div>
+      <div class="sphere-pair"><div class="pair-poles">Matter<span class="vs">↔</span>Time</div><div class="pair-note">Substance and crafting — against duration, memory, and causality.</div></div>
+      <div class="sphere-pair"><div class="pair-poles">Energy<span class="vs">↔</span>Spirit</div><div class="pair-note">Vitality, fire, kinetic power — against soul, essence, and divine nature.</div></div>
+      <div class="sphere-pair"><div class="pair-poles">Life<span class="vs">↔</span>Entropy</div><div class="pair-note">Growth, biology, healing — against decay, dissolution, and transformation.</div></div>
+    </div>
+    <p>The world you play in is not evenly lit by all twelve. Each world is seeded with its own <span class="term">cosmology</span> — a weighting that makes some Spheres abundant and others rare — so a world thick with Spirit and Mind plays nothing like one drowning in Entropy.</p>
+  </section>
+
+  <section class="section">
+    <h2>Orthogonality in play<span class="lead">Same Reach, different Sphere, different story. This is the point of keeping the axes separate.</span></h2>
+    <p>Because a Reach never contains a Sphere, the same action reads completely differently depending on what fuels it. Take one Reach — <span class="term">Heart</span>, the domain of loyalty and bonds — and change only the Sphere:</p>
+    <div class="ortho">
+      <div class="ortho-card">
+        <h4>Heart, fuelled by Light</h4>
+        <p>Devotion offered openly — a bond of trust the mortal understands and would name aloud. Loyalty as clarity.</p>
+      </div>
+      <div class="ortho-card">
+        <h4>Heart, fuelled by Darkness</h4>
+        <p>The same bond, but half-hidden — an attachment they feel and cannot quite explain. Loyalty as spell.</p>
+      </div>
+    </div>
+    <p>Neither is "the real Heart action" — both are. Eight Reaches times twelve Spheres is the combinatorial space the whole content library draws from, and why two gods who both "work through the Heart" can feel like different religions.</p>
+  </section>
+
+  <section class="section">
+    <h2>The moral axis of each Reach<span class="lead">Every Reach runs between a virtue and a vice. Which way a character leans is drawn by their choices, not fixed at birth.</span></h2>
+    <p>Each Reach carries a built-in <em>moral dimension</em> — a pair of archetypes at opposite ends of the same domain. The virtue pole and the vice pole are two ways of being powerful in the same Reach, and a mortal's arc tilts them along it as they act. An Iron soul is somewhere on the line between Protector and Conqueror; where they end up is a story you can lean on.</p>
+    <table class="lore-table">
+      <thead><tr><th>Reach</th><th>Virtue pole</th><th>Vice pole</th></tr></thead>
+      <tbody>
+        <tr><td>Iron</td><td><span class="pole-virtue">Protector</span> · brave</td><td><span class="pole-vice">Conqueror</span> · power-hungry</td></tr>
+        <tr><td>Gold</td><td><span class="pole-virtue">Patron</span> · generous</td><td><span class="pole-vice">Extractor</span> · greedy</td></tr>
+        <tr><td>Shadow</td><td><span class="pole-virtue">Broker</span> · fair</td><td><span class="pole-vice">Manipulator</span> · scheming</td></tr>
+        <tr><td>Veil</td><td><span class="pole-virtue">Weaver</span> · patient</td><td><span class="pole-vice">Unraveller</span> · impatient</td></tr>
+        <tr><td>Heart</td><td><span class="pole-virtue">Sworn</span> · loyal</td><td><span class="pole-vice">Renegade</span> · disloyal</td></tr>
+        <tr><td>Eye</td><td><span class="pole-virtue">Seer</span> · perceptive</td><td><span class="pole-vice">Inquisitor</span> · judgemental</td></tr>
+        <tr><td>Stone</td><td><span class="pole-virtue">Keeper</span> · dependable</td><td><span class="pole-vice">Destroyer</span> · reckless</td></tr>
+        <tr><td>Star</td><td><span class="pole-virtue">Beacon</span> · guiding</td><td><span class="pole-vice">Wrecker</span> · misleading</td></tr>
+      </tbody>
+    </table>
+    <p>The pull is gentle and directional — a Gold merchant who keeps choosing to hoard drifts toward Extractor; one who keeps giving drifts toward Patron. You do not set a mortal's morality directly. You lean on the choices, and the axis does the rest.</p>
+  </section>
+
+  <section class="section">
+    <h2>How deep a Reach runs — Domain Capability<span class="lead">Within a Reach, capability is a climbing ladder of named tiers, not a raw number the game shows you.</span></h2>
+    <p>Having a Reach is not the same as being formidable in it. Every actor — mortal or god — has a <span class="term">Domain Capability</span> in each Reach: how far along it they have grown. Capability is what the game checks when it decides whether an action is even possible; a deep Iron warrior can attempt things a soft one cannot.</p>
+    <p>You never see a bare score. Capability surfaces as a <em>word</em> that climbs as the actor grows — a ten-rung ladder unique to each Reach. Iron, for example, runs:</p>
+    <div class="ladder">
+      <span class="rung low">Frail</span><span class="arrow">›</span>
+      <span class="rung low">Soft</span><span class="arrow">›</span>
+      <span class="rung">Sturdy</span><span class="arrow">›</span>
+      <span class="rung">Trained</span><span class="arrow">›</span>
+      <span class="rung">Steeled</span><span class="arrow">›</span>
+      <span class="rung">Tempered</span><span class="arrow">›</span>
+      <span class="rung high">Fearsome</span><span class="arrow">›</span>
+      <span class="rung high">Dread</span><span class="arrow">›</span>
+      <span class="rung high">Ruinous</span><span class="arrow">›</span>
+      <span class="rung high">Cataclysmic</span>
+    </div>
+    <p>Gold climbs from <span class="term">Destitute</span> to <span class="term">Imperial</span>; Veil from <span class="term">Mundane</span> to <span class="term">Mythic</span>; every Reach has its own vocabulary. Mortals grow their capability by <em>doing</em> — succeeding at encounter steps in a Reach deepens it. A god's power to act, likewise, grows within its two chosen domains rather than spreading thin across all eight.</p>
+  </section>
+
+  <section class="section">
+    <h2>Quintessence — how present you are in the story<span class="lead">A quiet meter of centrality and self. High Quintessence is sovereign and hard to move; low Quintessence is threadbare and at risk of being written out.</span></h2>
+    <p><span class="term">Quintessence</span> is the odd one out — not what you do (a Reach), not what fuels it (a Sphere), but <em>how strongly you exist in the story at all</em>. It measures a being's integrity of self and centrality to the tale being told.</p>
+    <ul>
+      <li><span class="term">High Quintessence</span> — sovereign, confident, fully present. Hard to manipulate, hard to reduce, central to the story. The world writes them <em>in</em>.</li>
+      <li><span class="term">Low Quintessence</span> — thinning, threadbare, easier to bend through indirect pressure. At risk of dropping out of the story — through death, transformation, or simply becoming a symbol or tool rather than a self.</li>
+    </ul>
+    <p>It is a narrative concept, not a health bar. A character does not need a sword to their throat to be in danger — a proud noble who has been slowly hollowed out, made into other people's instrument, is losing Quintessence just as surely as one who is dying. When it reaches nothing, the being passes out of the story in whatever way fits: a person dies or transforms, a place falls to ruins. This is the abstract, story-first replacement for the old body-and-survival "Flesh" idea — the same slot, a wholly different meaning.</p>
+    <div class="callout">
+      <div class="callout-title">Why this matters to a god</div>
+      <p>A threadbare mortal is easier to lean on — indirect nudges bite deeper when a self is thinning. Threadbare-ness is both a vulnerability you can exploit in others and a fate you can rescue a favoured mortal from.</p>
+    </div>
+  </section>
+
+  <!-- ══════════════════ DESIGNER NOTES ══════════════════ -->
+
+  <details class="designer" open>
+    <summary>
+      <span class="chev">▶</span>
+      <span>
+        <h2>Designer Notes</h2>
+        <span class="sub">Implementation status, key surfaces, and canon pointers for the cosmology.</span>
+      </span>
+    </summary>
+    <div class="designer-body">
+
+      <p>Status flags follow the rulebook convention: <span class="flag impl">IMPL</span> shipped and wired, <span class="flag design">DESIGN</span> specified but partially or not yet wired, <span class="flag open">OPEN</span> an unresolved question (referenced from the rulebook — this page mints none). <strong>Canon authority for everything on this page is <code>Docs/canon/cosmology.md</code>;</strong> where any surface disagrees, the canon page and the UL win.</p>
+
+      <h3>The Eight Reaches <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li>Source of truth is the <code>ReachDomain</code> union in <code>src/types/traits.ts</code>: <code>iron | gold | shadow | veil | heart | eye | stone | star</code>. Iterated as <code>REACH_DOMAINS</code>.</li>
+        <li>Flesh was the deprecated 9th Reach, removed in TB-075 (2026-03-28) and its content migrated (healing → Gold, athletics → Iron, body-craft → Stone, survival → Star). Do not reintroduce <code>reach: 'flesh'</code> in content data — it is stale. A lingering "all 9 domains" comment in <code>computeFullProfile</code> is a doc artifact; the union is eight.</li>
+        <li>A god's permanent two-domain pair is the top-ranked entries in the ascendant's <code>domainAffinities</code>; the <code>requiresReach</code> action gate (THR-503) enforces set-membership so out-of-domain cards never surface. See the run-lifecycle (W1) and divine-actions (W4) pages.</li>
+      </ul>
+
+      <h3>The Twelve Spheres &amp; opposition <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li><code>SPHERE_NAMES</code> (12) partitions into Foundation (<code>chaos, order, light, darkness</code>) and Creation (<code>force, matter, energy, life, mind, spirit, time, entropy</code>).</li>
+        <li>Opposition and ally maps live in <code>src/engine/cosmology.ts</code>: <code>SPHERE_OPPOSITES</code> / <code>SPHERE_OPPOSITIONS</code> (foundation pairs at max 5/5 opposition; creation pairs force↔mind, matter↔time, energy↔spirit, life↔entropy) and <code>SPHERE_ALLIES</code> (chaos↔darkness, order↔light; creation quadrant bridges force↔matter, energy↔life, mind↔spirit, time↔entropy). These feed the resolution modifier pipeline.</li>
+        <li>Per-world weighting is a <code>CosmologyProfile</code> seeded at worldgen (stored on <code>GameState.cosmology</code>); presets in <code>COSMOLOGY_PRESETS</code> (balanced, elemental_dominance, living_world, mystic_realm, entropic, material). <code>createBalancedCosmology</code> / <code>normalizeCosmology</code> / <code>adjustSphere</code> keep weights summing to 1.</li>
+      </ul>
+
+      <h3>Foundation-as-elder-magic framing <span class="flag design">DESIGN</span></h3>
+      <ul>
+        <li>The player-layer claim that the Foundation four are met in the world rather than chosen at remembrance is a <em>design framing</em> of the cosmology, not a hard-coded chargen lock in a single constant. The seeded dev identity aligns to Creation spheres (<code>DEV_ASCENDANT_IDENTITY</code>, hunger.witness / mind+spirit), consistent with the framing. Treat the "never at chargen" line as intended texture; there is no <code>foundationLocked</code> flag to point at.</li>
+      </ul>
+
+      <h3>Archetype-pair moral axes <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li>The virtue/vice poles per Reach are the 2026-06-29 revision recorded in <code>Docs/canon/cosmology.md</code> (supersedes the 2026-03-28 brainstorm names). Wiring spec: <code>Docs/plans/2026-06-29-archetype-virtue-vice-layer.md</code>. Note two relocations — <code>Manipulator</code> moved Veil → Shadow, <code>Seer</code> moved Veil → Eye — so content referencing archetype names by Reach must be checked against the canon table.</li>
+        <li>Behavioural words (brave, greedy, loyal, …) are deliberately plain for in-game readability; moral drift tilts an agent along its Reach's axis (agents page W10).</li>
+      </ul>
+
+      <h3>Domain Capability &amp; the word ladder <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li><code>NARRATIVE_LEXICON</code> (<code>src/types/traits.ts</code>) is the 10-rung label ladder, one array per Reach. <code>src/engine/domainCapability.ts</code> computes a raw score → sigmoid capability (<code>SIGMOID_MIDPOINT = 10</code>, <code>SIGMOID_K = 0.4</code>) → tier → label; <code>computeTier</code> indexes the lexicon.</li>
+        <li>Growth is encounter-driven and deterministic — <code>src/engine/capabilityGrowth.ts</code>: <code>BASE_ENCOUNTER_GROWTH = 0.5</code>, <code>PROMOTION_ELIGIBLE_MULTIPLIER = 2.0</code>, <code>DIMINISHING_RETURNS_FACTOR = 0.7</code>, <code>FAILURE_GROWTH_FRACTION = 0.2</code> (constants re-exported from <code>src/data/agent-behavior-constants.ts</code>). No PRNG.</li>
+      </ul>
+
+      <h3>Quintessence <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li>A derived meta-property on <code>actor</code> and <code>location</code> nodes, <strong>not</strong> a Reach. Constants in <code>src/types/quintessence.ts</code>: thresholds <code>STRAINED 0.50 / WEAKENED 0.25 / CRITICAL 0.10 / DISSOLUTION 0.0</code>, <code>QUINTESSENCE_PASSIVE_REGEN = 0.002</code>/tick, defaults <code>1.0</code>, erosion amounts for overchannel (<code>0.05</code>) and encounter failure (<code>0.03</code>).</li>
+        <li><code>src/engine/phaseQuintessence.ts</code> processes erosion/recovery events, applies passive regen, and runs zero-state dissolution (<code>ZERO_STATE_RULES</code>: actor → death_or_transformation, location → ruins_or_void). Phase order: after <code>phaseSpherePressure</code>, before <code>phaseSphereAggregation</code>.</li>
+        <li>Framing is user-verdicted (2026-05-05): centrality/threadbare-ness, an abstract successor to Flesh's survival framing — see canon. The UL <code>Quintessence</code> entry is authoritative for the definition (the older "vitality/life force" gloss in the Cosmology shard's Quintessence line is flagged stale in canon).</li>
+      </ul>
+
+      <h3>Sphere aggregation into the World-Soul <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li><code>src/engine/phaseSphereAggregation.ts</code> sums every entity's <code>sphereAffinity</code> into the global <code>state.worldSoul.aggregate</code> (weighted: hex-scale locations 1.0, agents 0.2, factions 0.1) and mirrors the normalized form into <code>FundamentState.sphereWeights</code>. This is the sphere-side link from the living world to the World-Soul (twilight page W17).</li>
+      </ul>
+
+      <h3>Constants</h3>
+      <table class="tunables">
+        <thead><tr><th>Constant</th><th>Value</th><th>Purpose · file</th></tr></thead>
+        <tbody>
+          <tr><td>SIGMOID_MIDPOINT / SIGMOID_K</td><td>10 / 0.4</td><td>Capability score → tier curve · <code>src/engine/domainCapability.ts</code></td></tr>
+          <tr><td>NARRATIVE_LEXICON</td><td>8 × 10</td><td>Per-Reach 10-rung capability label ladder · <code>src/types/traits.ts</code></td></tr>
+          <tr><td>BASE_ENCOUNTER_GROWTH</td><td>0.5</td><td>Capability gain per successful step · <code>src/data/agent-behavior-constants.ts</code></td></tr>
+          <tr><td>QUINTESSENCE_THRESHOLDS</td><td>0.50 / 0.25 / 0.10 / 0.0</td><td>Strained · Weakened · Critical · Dissolution · <code>src/types/quintessence.ts</code></td></tr>
+          <tr><td>QUINTESSENCE_PASSIVE_REGEN</td><td>0.002</td><td>Per-tick self-recovery toward full presence · <code>src/types/quintessence.ts</code></td></tr>
+        </tbody>
+      </table>
+
+      <h3>Canon &amp; terminology</h3>
+      <ul>
+        <li>Authoritative: <code>Docs/canon/cosmology.md</code> (Reach table, Sphere pairs, archetype poles, Quintessence framing, and the stale-source warning list).</li>
+        <li>UL authority (terminology wins on any disagreement): <code>Docs/ubiquitous-language/Cosmology.md</code> (Reach, Sphere, Foundation, Creation, Domain Capability, Quintessence, Prerequisite).</li>
+        <li>Deep Reference drill-downs: <a href="encounters-agents-reference.html">Encounters, Agents &amp; Resolution</a> (capability + resolution in context), <a href="action-catalog.html">Action Catalog</a> (real Reach/Sphere costs per template).</li>
+      </ul>
+
+      <h3>Open questions <span class="flag open">OPEN</span></h3>
+      <ul>
+        <li>Referenced, not minted here: the <code>[[The Cosmological Pattern]]</code> vault wikilink resolves to nothing (canon Open Questions; fall back to <code>Brainstorms/brainstorm-cosmological-symmetry.md</code>), and stale-documentation propagation across vault/skill surfaces is tracked under the canonical-documentation-strategy Phase 5 remediation (THR-307).</li>
+      </ul>
+
+    </div>
+  </details>
+
+  <div class="foot">
+    Game Manual Wiki · W2 (THR-587). Player layer describes current shipped behavior; anything not yet wired is flagged <span class="flag design">DESIGN</span> and introduced as "planned" or "framing". Terminology is UL-exact; where this page and the UL disagree, the UL wins and this page is a drift bug.
+  </div>
+
+</div>
+</body>
+</html>
