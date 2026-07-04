@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Threadbearer — Armies, Battles &amp; Lairs</title>
+<!--
+  Armies, Battles & Lairs (Game Manual Wiki, W14 / THR-599) — dual-layer manual
+  page. Player-manual prose first ("How it plays"), Designer Notes second.
+  Spec: Docs/plans/2026-07-03-game-manual-wiki.md §5 W14; template §3.
+  Systems spec authority: Docs/plans/2026-03-29-conflict-and-destruction-design.md
+  (TB-073 conflict & destruction — armies/battles/sieges, Phases 1–4) and the M2.5
+  monster-encounters plan (.planning/phases/m2.5-monster-encounters/ — lairs). The
+  shared wiki nav between the WIKI-NAV markers is injected by
+  scripts/generate-design-wiki.ts — do not hand-write it.
+
+  Accuracy notes (verified against code this pass — do not "correct" back):
+  - The whole army→battle→siege→lair chain is IMPL and wired into orchestrator.ts
+    (phaseArmyMovement, phaseArmyAttrition, phaseBattleDetection, phaseBattleTick,
+    phaseLairEscalation, phaseArmyNotifications, all in Act 2.35x). Not shallow design.
+  - Armies are actor nodes with an armyState bag (src/types/army.ts). They are RAISED
+    BY FACTIONS pursuing a military ambition (only territorial_expansion and revenge —
+    MILITARY_AMBITION_TYPES). Needs a commander at Iron tier >= 4, faction Gold tier
+    >= 3, and MAX_ARMIES_PER_FACTION = 1 ("tune upward later" — a deliberate low cap,
+    IMPL). Also spawned at worldgen (worldSeed) and by the reach-signature warhost
+    aftermath (encounterAftermath.raiseWarhostForce).
+  - Army "Quintessence" here is COHESION/HEALTH (0–quintessenceMax per army), a DIFFERENT
+    meaning from cosmological Quintessence (narrative centrality). Real term collision —
+    flag it, do not conflate.
+  - Attrition (phaseArmyAttrition) is deterministic, no PRNG: base + terrain + off-road +
+    underfunded + monster-territory. Crosses four one-way thresholds (strained 70% → supply
+    crisis, weakened 50% → desertion, critical 30% → mutiny, collapse 10% → disband encounter).
+    Q hits 0 → force-disband. "Underfunded" is a simple faction prosperity < 0.2 heuristic,
+    NOT a real treasury — honest DESIGN simplification.
+  - Battle detection: hostile = DIFFERENT FACTIONS (battleResolution "simplified — no alliance
+    system yet"). Flag DESIGN. Two hostile armies at a hex → field battle; an army at a
+    hostile settlement → siege. Momentum tug-of-war, resolution at |momentum| >= 8, max 5
+    ticks (stalemate if close), or army collapse.
+  - Spotlights: thread-connected battles pull condition-filtered templates (55% success,
+    seeded PRNG); no-thread battles are chronicle-only simple rolls. Aftermath (battleAftermath)
+    is IMPL: destruction severity minor/major/total, commander fate retreated/captured/killed,
+    settlement prosperity loss, refugees, sphere-pressure erosion.
+  - Sieges (siegeResolution): accelerating pacing, wall fortification favors defenders,
+    starvation at tick 15, regional encounters pulled in within hex range 5. IMPL.
+  - Lairs (lairSeeding + lairEscalation): seeded at worldgen by danger zone density; every 25
+    ticks emit sphere pressure, upgrade minor→major (named elite, 30t) → legendary (monster
+    faction, 60t), spread to adjacent wilderness/borderland hexes, and cleared lairs reinfest.
+  - Honest scope: war is a story generator, not a wargame. Keep the scope note; there is no
+    tactics screen, no unit micro, no hand-set battle orders.
+  - No dedicated UL shard for army/battle/lair/siege terms yet — a known gap, noted not opened.
+-->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --parchment: #f4edd8;
+    --parchment-dark: #e8dfc8;
+    --ink: #2c1810;
+    --ink-light: #5a3d2b;
+    --ink-faint: #8a7060;
+    --gold: #b8860b;
+    --gold-light: #daa520;
+    --card-bg: #fff8e7;
+    --red: #8b2500;
+    --blue: #1a3a5c;
+    --blue-light: #2d5f8a;
+    --purple: #4a2d6a;
+    --green: #2d5a27;
+
+    --flag-impl: #2d5a27;
+    --flag-design: #8a4a00;
+    --flag-open: #4a2d6a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--parchment);
+    color: var(--ink);
+    font-family: 'Crimson Text', Georgia, serif;
+    font-size: 16px;
+    line-height: 1.6;
+    min-height: 100vh;
+    background-image:
+      radial-gradient(ellipse at 20% 50%, rgba(139,37,0,0.05) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 30%, rgba(184,134,11,0.04) 0%, transparent 50%);
+  }
+
+  .page-wrapper { max-width: 900px; margin: 0 auto; padding: 40px 32px 72px; }
+
+  /* ── Header ── */
+  .header { text-align: center; margin-bottom: 40px; padding-bottom: 28px; border-bottom: 2px solid var(--gold); position: relative; }
+  .header::after { content: ''; position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); width: 55%; height: 1px; background: var(--gold-light); }
+  .header .eyebrow { font-family: 'Cinzel', Georgia, serif; font-size: 0.72rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold); margin-bottom: 10px; }
+  .header h1 { font-family: 'Cinzel', Georgia, serif; font-weight: 700; font-size: 2.4rem; color: var(--ink); letter-spacing: 0.05em; margin-bottom: 12px; }
+  .header .tagline { font-size: 1.12rem; color: var(--ink-light); max-width: 64ch; margin: 0 auto; font-style: italic; }
+
+  /* ── Sections ── */
+  .section { margin-bottom: 34px; }
+  .section > h2 { font-family: 'Cinzel', Georgia, serif; font-size: 1.25rem; color: var(--ink); letter-spacing: 0.03em; margin-bottom: 6px; padding-bottom: 6px; border-bottom: 1px solid var(--parchment-dark); }
+  .section > h2 .lead { display: block; font-family: 'Crimson Text', Georgia, serif; font-size: 0.95rem; font-style: italic; font-weight: 400; color: var(--ink-faint); letter-spacing: 0; margin-top: 4px; }
+  .section h3 { font-family: 'Cinzel', Georgia, serif; font-size: 1rem; color: var(--ink-light); letter-spacing: 0.02em; margin: 20px 0 6px; }
+  .section p { margin-bottom: 12px; }
+  .section p .term { font-weight: 600; color: var(--ink); }
+  .section ul { margin: 0 0 14px 0; padding-left: 0; list-style: none; }
+  .section ul li { position: relative; padding-left: 1.3rem; margin-bottom: 8px; }
+  .section ul li::before { content: '◆'; position: absolute; left: 0; top: 0.05rem; color: var(--gold); font-size: 0.7rem; }
+
+  /* ── Ladder (army size / attrition thresholds / lair tiers) ── */
+  .tiers { margin: 12px 0 18px; }
+  .tier { display: grid; grid-template-columns: 8.4rem 1fr; gap: 0 12px; align-items: baseline; padding: 9px 0; border-bottom: 1px solid var(--parchment-dark); }
+  .tier .name { font-family: 'Cinzel', Georgia, serif; font-size: 0.84rem; color: var(--gold); letter-spacing: 0.04em; }
+  .tier .desc { font-size: 0.94rem; color: var(--ink-light); }
+  .tier .desc .who { font-weight: 600; color: var(--ink); }
+  @media (max-width: 620px) { .tier { grid-template-columns: 1fr; gap: 2px; } }
+
+  /* ── Card grid ── */
+  .card-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 10px 0 18px; }
+  .card-grid.three { grid-template-columns: repeat(3, 1fr); }
+  .card { background: var(--card-bg); border: 1px solid var(--parchment-dark); border-radius: 4px; padding: 11px 14px; border-left: 3px solid var(--gold); }
+  .card.blue { border-left-color: var(--blue-light); }
+  .card.red { border-left-color: var(--red); }
+  .card.green { border-left-color: var(--green); }
+  .card.purple { border-left-color: var(--purple); }
+  .card h4 { font-family: 'Cinzel', Georgia, serif; font-size: 0.84rem; color: var(--ink); margin: 0 0 2px; }
+  .card p { font-size: 0.8rem; color: var(--ink-light); margin: 0; }
+  @media (max-width: 620px) { .card-grid, .card-grid.three { grid-template-columns: 1fr; } }
+
+  /* ── Callouts ── */
+  .callout { background: var(--card-bg); border: 1px solid var(--parchment-dark); border-left: 4px solid var(--gold); border-radius: 4px; padding: 14px 18px; margin: 4px 0 18px; }
+  .callout.blue { border-left-color: var(--blue-light); }
+  .callout.purple { border-left-color: var(--purple); }
+  .callout.red { border-left-color: var(--red); }
+  .callout.green { border-left-color: var(--green); }
+  .callout .callout-title { font-family: 'Cinzel', Georgia, serif; font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 6px; }
+  .callout p:last-child { margin-bottom: 0; }
+
+  /* ── Designer notes ── */
+  .designer { margin-top: 48px; border-top: 2px solid var(--gold); padding-top: 8px; }
+  .designer > summary { list-style: none; cursor: pointer; padding: 16px 4px; display: flex; align-items: baseline; gap: 12px; }
+  .designer > summary::-webkit-details-marker { display: none; }
+  .designer > summary .chev { font-size: 0.8rem; color: var(--gold); transition: transform 0.15s; }
+  .designer[open] > summary .chev { transform: rotate(90deg); }
+  .designer > summary h2 { font-family: 'Cinzel', Georgia, serif; font-size: 1.3rem; color: var(--ink); letter-spacing: 0.03em; }
+  .designer > summary .sub { font-size: 0.9rem; color: var(--ink-faint); font-style: italic; }
+  .designer-body { padding: 4px 4px 8px; }
+  .designer-body h3 { font-family: 'Cinzel', Georgia, serif; font-size: 0.98rem; color: var(--ink-light); margin: 22px 0 8px; }
+  .designer-body p { margin-bottom: 12px; font-size: 0.97rem; }
+  .designer-body ul { margin: 0 0 14px 0; padding-left: 0; list-style: none; }
+  .designer-body ul li { position: relative; padding-left: 1.2rem; margin-bottom: 7px; font-size: 0.97rem; }
+  .designer-body ul li::before { content: '›'; position: absolute; left: 0.15rem; top: 0; color: var(--ink-faint); }
+  code, .mono { font-family: 'JetBrains Mono', monospace; font-size: 0.84em; color: var(--ink); background: rgba(184,134,11,0.10); padding: 0.05rem 0.32rem; border-radius: 3px; word-break: break-word; }
+
+  .flag { font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; letter-spacing: 0.04em; font-weight: 500; padding: 0.08rem 0.4rem; border-radius: 3px; color: #fff; white-space: nowrap; }
+  .flag.impl { background: var(--flag-impl); }
+  .flag.design { background: var(--flag-design); }
+  .flag.open { background: var(--flag-open); }
+
+  table.tunables { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin: 4px 0 18px; }
+  table.tunables th { text-align: left; font-family: 'Cinzel', Georgia, serif; font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-faint); padding: 6px 10px 6px 0; border-bottom: 1px solid var(--parchment-dark); }
+  table.tunables td { padding: 7px 10px 7px 0; border-bottom: 1px solid var(--parchment-dark); vertical-align: top; color: var(--ink-light); }
+  table.tunables td:first-child { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--ink); white-space: nowrap; }
+
+  .foot { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--parchment-dark); font-size: 0.85rem; color: var(--ink-faint); font-style: italic; }
+  a { color: var(--blue-light); text-decoration: none; border-bottom: 1px solid rgba(45,95,138,0.35); }
+  a:hover { color: var(--blue); border-bottom-color: var(--blue); }
+</style>
+</head>
+<body>
+<!--WIKI-NAV-->
+<style>
+  .wiki-nav { font-family: 'Cinzel', Georgia, serif; background: #2c1810; border-bottom: 2px solid #b8860b; padding: 0.6rem 1.2rem; display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.4rem 1.1rem; }
+  .wiki-nav__brand { color: #daa520; font-weight: 700; letter-spacing: 0.04em; margin-right: 0.6rem; font-size: 0.95rem; }
+  .wiki-nav__link { color: #f4edd8; text-decoration: none; font-size: 0.85rem; letter-spacing: 0.02em; padding: 0.15rem 0.1rem; border-bottom: 2px solid transparent; transition: color 0.15s, border-color 0.15s; }
+  .wiki-nav__link:hover { color: #daa520; }
+  .wiki-nav__link.is-active { color: #daa520; border-bottom-color: #b8860b; font-weight: 700; }
+</style>
+<nav class="wiki-nav" aria-label="Design Reference Wiki">
+  <span class="wiki-nav__brand">⌖ Design Reference Wiki</span>
+  <a class="wiki-nav__link" href="design-wiki.html">Design Wiki</a>
+  <a class="wiki-nav__link" href="run-lifecycle-reference.html">A Run, Start to Finish</a>
+      <a class="wiki-nav__link" href="cosmology-reference.html">Reaches, Spheres &amp; Quintessence</a>
+      <a class="wiki-nav__link" href="turn-structure-reference.html">The Three-Beat Turn</a>
+      <a class="wiki-nav__link" href="divine-actions-reference.html">Divine Actions &amp; Prerequisites</a>
+      <a class="wiki-nav__link" href="threads-court-reference.html">Threads, the Court &amp; The First</a>
+      <a class="wiki-nav__link" href="essence-control-reference.html">Essence, Control &amp; Sustained Power</a>
+      <a class="wiki-nav__link" href="encounters-manual-reference.html">Encounters &amp; Aftermath</a>
+      <a class="wiki-nav__link" href="clocks-reference.html">Doom, the Mandate &amp; Omens</a>
+      <a class="wiki-nav__link" href="interface-reference.html">Reading the Interface</a>
+      <a class="wiki-nav__link" href="agents-reference.html">The Mortals</a>
+      <a class="wiki-nav__link" href="factions-cultures-reference.html">Factions, Cultures &amp; Secrets</a>
+      <a class="wiki-nav__link" href="world-map-reference.html">The World: Hexes, Terrain &amp; Sight</a>
+      <a class="wiki-nav__link" href="settlements-economy-reference.html">Settlements, Prosperity &amp; Trade</a>
+      <a class="wiki-nav__link is-active" href="armies-battles-reference.html" aria-current="page">Armies, Battles &amp; Lairs</a>
+      <a class="wiki-nav__link" href="encounters-agents-reference.html">Encounters, Agents &amp; Resolution</a>
+      <a class="wiki-nav__link" href="tick-cycle-reference.html">Tick Cycle Reference</a>
+      <a class="wiki-nav__link" href="action-catalog.html">Action Catalog</a>
+</nav>
+<!--/WIKI-NAV-->
+<div class="page-wrapper">
+
+  <header class="header">
+    <div class="eyebrow">Game Manual · The Living World</div>
+    <h1>Armies, Battles &amp; Lairs</h1>
+    <p class="tagline">War in Threadbearer is a story generator, not a wargame. Armies raise themselves, march, tire, and clash without a single order from you; battles resolve out in the world, never on a tactics screen; and the monsters in the dark grow stronger the longer they are left alone.</p>
+  </header>
+
+  <!-- ══════════════════ HOW IT PLAYS ══════════════════ -->
+
+  <section class="section">
+    <h2>Armies raise themselves, march, and wear down<span class="lead">You do not build or command armies. Factions raise them when their ambitions turn to conquest — and from the moment a host takes the field, it is losing strength to the road, the weather, and its own hunger.</span></h2>
+    <p>An <span class="term">army</span> is a body of soldiers a faction musters when it decides to take by force what it cannot get by other means. A faction reaches for war only when its heart is set on it — when it hungers to <span class="term">expand its territory</span> or to take <span class="term">revenge</span> — and only when it has both a capable warlord to lead the host and the coin to raise it. When those conditions align, a host takes the field on its own. You never press the button; you shape the pressures that make a faction want war, and the world does the mustering.</p>
+    <p>Hosts come in three sizes. A <span class="term">warband</span> is a fast, small raiding force; a <span class="term">regiment</span> is a proper standing army; and a <span class="term">host</span> is a great slow horde. The bigger the army, the harder it hits and the slower it moves — a warband darts across the map while a host grinds forward one weary league at a time. All of them move far slower than a lone traveller, and the land punishes them: forests, mountains, and swamps drag at a marching column far more than they slow a single mortal, while a good road is worth more to an army than to anyone.</p>
+    <div class="tiers">
+      <div class="tier"><span class="name">Warband</span><span class="desc"><span class="who">A fast raiding force.</span> The smallest and quickest host — strikes and slips away.</span></div>
+      <div class="tier"><span class="name">Regiment</span><span class="desc"><span class="who">A standing army.</span> The middle strength — steady on the march, dangerous in the field.</span></div>
+      <div class="tier"><span class="name">Host</span><span class="desc"><span class="who">A great horde.</span> The largest force — hits hardest, crawls slowest, costs the most to keep fed.</span></div>
+    </div>
+    <p>Every host is <span class="term">wearing down</span> from the day it is raised. Marching costs it; hard terrain costs it more; camping off the roads and going unfed cost it most of all. You never see the number that measures a host's condition — you see the <em>consequences</em> when it slips too far, delivered as encounters: a supply crisis, then desertion, then open mutiny, and finally the host dissolving into a scatter of broken men. A war that drags on does not need to be lost in the field; a host left too long in the wild will simply come apart.</p>
+    <div class="callout red">
+      <div class="callout-title">The land is the third army</div>
+      <p>An army that marches through mountains in the rain, far from any road and with an empty treasury behind it, is bleeding strength every single turn — and if its territory is haunted by monsters, it bleeds faster still. You do not have to meet a host in battle to defeat it. Cut its roads, ruin the faction that pays it, or simply let the wilderness do the work.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Battles resolve in the world, not on a board<span class="lead">When two hostile hosts meet on the same ground, a battle begins — and it plays out as a story unfolding over several turns, tilted this way and that by moments you can reach into, never a grid of units you push around.</span></h2>
+    <p>When two armies belonging to <span class="term">rival factions</span> stand on the same hex, they fight. A battle is not a puzzle you solve — it is a <span class="term">momentum</span> struggle that swings back and forth over a handful of turns. One side gains the upper hand, then the other; both bleed strength as they clash; and when the momentum tips far enough one way, or the fighting simply drags on too long, the battle breaks in a victory, a stalemate, or the ruin of both.</p>
+    <p>What decides which way it tips are its <span class="term">turning points</span> — the charge that breaks a line, the captain who falls, the flank that folds. When you have a <span class="term">thread</span> to someone caught up in the fighting, these turning points come to you as moments you can shape: intervene, and you can hand a wavering line its courage or its rout. When no thread ties you to the battle, it still resolves — you simply read about it afterward in the chronicle, decided without you.</p>
+    <div class="callout">
+      <div class="callout-title">A battle is a chapter, not a chess match</div>
+      <p>There is no tactics screen, no unit selection, no orders to give. A battle is a sequence of framed moments — the same kind of encounter you meet everywhere else in the game — strung along a shifting tide. Your leverage is the same leverage you have everywhere: the mortals you are bound to, and what you are willing to spend to move them.</p>
+    </div>
+    <h3>The aftermath is where war leaves its mark</h3>
+    <p>When a battle ends, its consequences ripple outward. A crushing defeat can annihilate the losing host outright; a lesser one sends it reeling in retreat. The defeated <span class="term">commander</span> may escape, be dragged off in chains, or die on the field. Settlements caught in the path of war lose prosperity, refugees stream out from the ruin, and the very ground takes on the character of the slaughter — a battlefield is a wound in the world, not just a line in a ledger.</p>
+  </section>
+
+  <section class="section">
+    <h2>Sieges — when the walls become the battle<span class="lead">March a hostile army up to a settlement and the fight changes shape. Walls favour the defender, hunger favours the attacker, and the longer it grinds on the tighter the noose draws.</span></h2>
+    <p>When an army arrives at a settlement held by an <span class="term">enemy faction</span>, it does not simply fight — it lays <span class="term">siege</span>. A siege is a slower, crueller cousin of a field battle. The defenders begin with the advantage, because <span class="term">walls</span> are worth a great deal: a fortress is far harder to take than an open field, and a garrison that has had time to prepare its ground is harder still. But a siege is a waiting game the attacker can win by patience alone — as the days drag on, the pressure mounts, the moments come faster and sharper, and eventually <span class="term">starvation</span> begins to gnaw at whoever is trapped inside.</p>
+    <p>A siege does not stay contained to its own walls. It <span class="term">pulls in the country around it</span> — nearby villages, wandering mortals, and rival powers within a few hexes are all drawn into its orbit, caught up in the encounters a great siege throws off. A city under siege is a regional event, and the whole land feels it.</p>
+    <div class="callout blue">
+      <div class="callout-title">Every siege is a place with a name</div>
+      <p>Because a siege is fought over a settlement you can see on the map, its fall is never abstract. A taken city loses its prosperity and its people; a siege lifted is a deliverance the chronicle will remember. War, in Threadbearer, always has a where and a who.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Lairs escalate if you leave them alone<span class="lead">The wild places of the world are not empty. Monster lairs sit in the borderlands and the deep wilderness, and every one you ignore grows — stronger, then named, then a power of its own — while poisoning the land around it.</span></h2>
+    <p>Scattered through the untamed hexes at the world's making are <span class="term">lairs</span> — the dens of the things that live beyond the reach of any faction. A lair is not a static hazard. Left undisturbed, it <span class="term">escalates</span>: a minor den festers into a major one, crowned by a <span class="term">named elite</span> — a monster with a name and a story of its own — and a major lair left long enough becomes <span class="term">legendary</span>, seeding an entire monster faction that can contest the map like any other power. Worse, a thriving lair breeds: it can throw off new dens into the neighbouring wilds, so an ignored corner of the map does not stay one lair — it becomes a spreading blight.</p>
+    <p>A lair also <span class="term">poisons the ground it sits on</span>. It presses its own sphere into the surrounding hexes, warping the land's character over time, and armies that march through monster-haunted territory bleed strength faster for it. And clearing a lair is not always the end of it: if the tainted ground is left untended and no faction takes the site, the darkness can seep back in and the lair <span class="term">reinfests</span>.</p>
+    <div class="tiers">
+      <div class="tier"><span class="name">Minor lair</span><span class="desc"><span class="who">A fresh den.</span> The starting state. Festers into a major lair if left alone long enough.</span></div>
+      <div class="tier"><span class="name">Major lair</span><span class="desc"><span class="who">Crowned by a named elite.</span> A monster with a name — a real encounter, not a nameless threat.</span></div>
+      <div class="tier"><span class="name">Legendary lair</span><span class="desc"><span class="who">A monster faction is born.</span> The den has become a power on the map with designs of its own.</span></div>
+    </div>
+    <div class="callout green">
+      <div class="callout-title">Honest scope — war is a story engine, not a wargame</div>
+      <p>None of this is a strategy game hiding inside Threadbearer. You will never draw up a battle line, set a supply chain, or issue a march order. Armies, battles, sieges, and lairs exist to make the world feel like it has <em>weight and consequence</em> — to give conquest, ruin, and the creeping dark a place in the story you are shaping. War is texture with teeth: it happens to the world whether you watch it or not, and your part is to decide when, and for whom, to reach in.</p>
+    </div>
+  </section>
+
+  <!-- ══════════════════ DESIGNER NOTES ══════════════════ -->
+
+  <details class="designer" open>
+    <summary>
+      <span class="chev">▶</span>
+      <span>
+        <h2>Designer Notes</h2>
+        <span class="sub">Armies as faction-raised actor nodes with Quintessence attrition and threshold encounters; momentum-driven field battles with thread-gated spotlights and IMPL aftermath; sieges as an accelerating battle subtype with wall fortification and starvation; and lair escalation minor→major→legendary with reinfestation — with honest IMPL/DESIGN status and the two deliberate simplifications flagged.</span>
+      </span>
+    </summary>
+    <div class="designer-body">
+
+      <p>Status flags follow the rulebook convention: <span class="flag impl">IMPL</span> shipped and wired, <span class="flag design">DESIGN</span> specified but partial or a deliberate simplification, <span class="flag open">OPEN</span> an unresolved question (referenced, never minted here). Systems-spec authority: <code>Docs/plans/2026-03-29-conflict-and-destruction-design.md</code> (TB-073 conflict &amp; destruction, Phases 1–4) for armies/battles/sieges, and the M2.5 monster-encounters plan for lairs. <strong>The whole chain is IMPL and wired</strong> — <code>orchestrator.ts</code> runs <code>phaseArmyMovement</code> → <code>phaseArmyAttrition</code> → <code>phaseBattleDetection</code> → <code>phaseBattleTick</code> → <code>phaseLairEscalation</code> → <code>phaseArmyNotifications</code> in Act&nbsp;2.35x every tick. <strong>Terminology collision (honest note):</strong> an army's <code>quintessence</code> field is its <em>cohesion / health</em> (0–<code>quintessenceMax</code>), a different meaning from cosmological <em>Quintessence</em> (narrative centrality, see <a href="cosmology-reference.html">Reaches, Spheres &amp; Quintessence</a>). The code reuses the word; the player layer above deliberately calls it "strength / condition" to avoid the collision.</p>
+
+      <h3>Armies — spawning &amp; size <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li>Armies are <code>actor</code> nodes carrying an <code>armyState</code> bag (<code>src/types/army.ts</code>); commander, faction, location, and objective are all graph edges (<code>commanded_by</code>, <code>member_of</code>, <code>located_at</code>). Three sizes — <code>warband</code>/<code>regiment</code>/<code>host</code> (headcount 100/1000/10000) — determined from the faction's Gold capability tier (<code>determineSizeCategory</code>).</li>
+        <li><code>phaseFactionAmbitions</code> raises an army (<code>armySpawning.spawnArmy</code>) when a faction pursues a military ambition and <code>isEligibleForArmySpawn</code> passes: the ambition type is in <code>MILITARY_AMBITION_TYPES</code> (<strong>only <code>territorial_expansion</code> and <code>revenge</code></strong>), a member sits at Iron capability tier ≥ <code>ARMY_SPAWN_IRON_TIER_MIN 4</code> (the commander — highest-Iron member), the faction's Gold tier ≥ <code>ARMY_SPAWN_GOLD_TIER_MIN 3</code>, and the faction is under <code>MAX_ARMIES_PER_FACTION 1</code>. Armies are also seeded at worldgen (<code>worldSeed.spawnArmy</code>) and raised by the reach-signature warhost aftermath (<code>encounterAftermath.raiseWarhostForce</code>, see <a href="divine-actions-reference.html">Divine Actions &amp; Prerequisites</a>).</li>
+        <li><strong>DESIGN — deliberate low cap:</strong> <code>MAX_ARMIES_PER_FACTION = 1</code> is annotated "tune upward later" in <code>army.ts</code>. One host per faction at a time is a chosen throttle, not a bug — flag it so it is not mistaken for a richer force economy.</li>
+      </ul>
+
+      <h3>Movement <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li><code>phaseArmyMovement(state)</code> pathfinds each army toward its <code>objective.targetNodeId</code> via <code>findShortestPath</code> + <code>tickMovement</code>. Deterministic, no PRNG; fail-soft (unknown terrain → plains cost, no path → stay put and keep taking attrition).</li>
+        <li>Army terrain costs (<code>ARMY_MOVEMENT_COST_MULTIPLIERS</code>) are steeper than an agent's — plains 1.5, forest 2.5, mountains/glacier 4.0, water/ocean/lake ∞ (impassable). Roads discount <code>ARMY_ROAD_DISCOUNT 0.4</code> (40% off — stronger than for agents). Speed is inverse to size (<code>ARMY_SPEED</code> warband 2 / regiment 1.5 / host 1).</li>
+      </ul>
+
+      <h3>Attrition &amp; threshold encounters <span class="flag impl">IMPL</span> <span class="flag design">DESIGN</span></h3>
+      <ul>
+        <li><code>phaseArmyAttrition(state)</code> is deterministic (no PRNG). Per tick a host loses <code>ARMY_BASE_ATTRITION 0.5</code> + terrain (<code>terrainCost × TERRAIN_ATTRITION_FACTOR 0.3</code>) + <code>OFF_ROAD_ATTRITION_PENALTY 0.8</code> when not on a road + <code>UNDERFUNDED_ATTRITION_PENALTY 1.5</code> when the faction can't pay + <code>MONSTER_TERRITORY_ATTRITION 1.2</code> when an active lair sits on the hex. Clamped to 0.</li>
+        <li>Four one-way <code>QUINTESSENCE_THRESHOLDS</code> (fractions of max) fire encounters as strength drops: <code>strained 0.70 → army.threshold.supply_crisis</code>, <code>weakened 0.50 → army.threshold.desertion</code>, <code>critical 0.30 → army.threshold.mutiny</code>, <code>collapse 0.10 → army.threshold.disbandment</code>. One per tick, each fires once (tracked in <code>thresholdsFired</code>). Quintessence 0 → <code>disbandArmy</code> removes the node.</li>
+        <li><strong>DESIGN — "underfunded" is a heuristic, not a treasury:</strong> <code>checkUnderfunded</code> returns true when the faction's <code>prosperity &lt; 0.2</code> (or no faction). There is no per-tick gold ledger deducting <code>maintenanceCost</code> yet — the maintenance constants exist on <code>armyState</code> but the funding check is a prosperity proxy. Flag it; do not describe a real war chest.</li>
+      </ul>
+
+      <h3>Field battles — detection, momentum, resolution <span class="flag impl">IMPL</span> <span class="flag design">DESIGN</span></h3>
+      <ul>
+        <li><code>phaseBattleDetection(state)</code> groups armies by hex; two colocated armies create a <code>field_battle</code> node (attacker = later-raised); an army colocated with a hostile-controlled settlement creates a siege instead (<code>createSiegeNode</code>).</li>
+        <li><strong>DESIGN — hostility is faction-difference only:</strong> <code>areHostile</code> returns true whenever two armies belong to different factions ("simplified — no alliance system yet"). There is no alliance, truce, or neutrality model — any two foreign hosts that meet will fight. Flag it.</li>
+        <li>Initial momentum is <code>log2(sizeRatio) × SIZE_MOMENTUM_SCALE 1.5</code>, clamped to ±(<code>BATTLE_RESOLUTION_THRESHOLD 8</code> − 2) so spotlights always matter. <code>tickBattle</code> applies <code>BATTLE_COMBAT_ATTRITION 2.0</code>/tick to both hosts, shifts momentum, and resolves when <code>|momentum| ≥ 8</code>, at <code>FIELD_BATTLE_MAX_DURATION 5</code> ticks (stalemate if <code>|momentum| &lt; 2</code>), or on army collapse.</li>
+        <li><strong>Spotlights (<code>battleSpotlights.ts</code> + <code>battle-spotlight-content.ts</code>, 10 templates):</strong> if the player has a thread to a battle participant (<code>hasThreadToBattle</code>), <code>selectSpotlight</code> picks a condition-filtered template and a seeded roll (55% success) applies its <code>momentumOnSuccess</code>/<code>momentumOnFailure</code>. No thread → chronicle-only: a simple seeded roll nudges momentum with no surfaced encounter.</li>
+      </ul>
+
+      <h3>Battle aftermath <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li><code>battleAftermath.applyAftermath(state, battleState, resolutionType)</code> scales consequences by destruction severity — <code>minor</code>/<code>major</code>/<code>total</code> from final momentum magnitude vs the loser's remaining strength (<code>TOTAL_DESTRUCTION_THRESHOLD 10</code>, <code>MAJOR_DESTRUCTION_THRESHOLD 6</code>).</li>
+        <li>Commander fate (<code>CommanderFate</code>): minor → always <code>retreated</code>; major → 50/50 <code>captured</code>/<code>retreated</code>; total → <code>COMMANDER_DEATH_CHANCE_TOTAL 0.30</code> <code>killed</code> else <code>captured</code> (out of play for <code>COMMANDER_CAPTURE_DURATION 10</code> ticks). Settlements take <code>PROSPERITY_LOSS_MINOR 0.20</code>/<code>PROSPERITY_LOSS_MAJOR 0.50</code>; refugees generate (<code>REFUGEE_GENERATION_MAJOR 1</code>/<code>TOTAL 3</code>); the hex gets aftermath sphere pressure (<code>AFTERMATH_BASE_SPHERE_PRESSURE 3 ×</code> severity multiplier).</li>
+      </ul>
+
+      <h3>Sieges <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li><code>siegeResolution.ts</code> reuses the battle node with <code>battleType: 'siege'</code>. Pacing accelerates: spotlight interval = <code>max(1, SIEGE_INITIAL_INTERVAL 5 − floor(elapsed / SIEGE_ACCELERATION_RATE 6))</code>. Defenders open with <code>SIEGE_DEFENDER_MOMENTUM_BONUS 2</code> and bleed less (<code>SIEGE_COMBAT_ATTRITION_DEFENDER 0.5</code> vs attacker <code>1.0</code>). Fortification multiplies effective defender size (<code>FORTIFICATION_BASIC 10</code>, <code>FORTIFICATION_GRAND 30</code>, <code>PREPARED_DEFENSE_MULTIPLIER 3</code>, capped <code>TACTICAL_MAX_MULTIPLIER 20</code>; a breach drops it to <code>BREACH_FORTIFICATION_REDUCTION 0.3</code>).</li>
+        <li>Resolution at <code>|momentum| ≥ SIEGE_RESOLUTION_THRESHOLD 12</code> or <code>SIEGE_MAX_DURATION 40</code> ticks. A starvation beat fires once at <code>SIEGE_STARVATION_TICK 15</code>. Regional encounters (<code>SIEGE_REGIONAL_TEMPLATES</code>, 14 siege-encounter entries total) pull in entities within <code>SIEGE_REGIONAL_ENCOUNTER_RANGE 5</code> hexes; tiers resolve via <code>attentionTier</code> with a <code>retinue</code> court-position fallback so siege beats still surface.</li>
+      </ul>
+
+      <h3>Lairs — seeding, escalation, reinfestation <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li><code>lairSeeding.seedMonsterLairs</code> (called from <code>gameInit</code>) places lairs at worldgen by danger-zone density: wilderness <code>0.08</code>, borderland <code>0.03</code>, heartland <code>0.005</code>, capital <code>0.0</code> (never), boosted by tile danger, min separation 3.</li>
+        <li><code>phaseLairEscalation(state)</code> runs every <code>LAIR_ESCALATION_INTERVAL 25</code> ticks. Each active lair emits <code>LAIR_SPHERE_PRESSURE_EMISSION 8</code> of its dominant sphere onto its site (environmental feedback); upgrades <code>minor→major</code> after <code>LAIR_UPGRADE_MIN_TICKS 30</code> (spawns a named elite actor via <code>createNamedElite</code>, placed to enter the encounter pipeline) and <code>major→legendary</code> after <code>LAIR_LEGENDARY_MIN_TICKS 60</code> (<code>seedMonsterFaction</code>); and rolls adjacent spawning (<code>LAIR_ADJACENT_SPAWN_CHANCE 0.15</code>/neighbor) in wilderness/borderland only. Seeded PRNG (<code>seed + tick × 71</code>).</li>
+        <li>Cleared lairs (<code>locationSubtype 'cleared_lair'</code>) reinfest when <code>ticksSinceCleared ≥ LAIR_REINFESTATION_MIN_TICKS 20</code>, the hex's dominant-sphere score ≥ <code>LAIR_SPAWN_SPHERE_THRESHOLD 60</code>, and no non-monster faction controls the site. Armies on an active-lair hex take <code>MONSTER_TERRITORY_ATTRITION 1.2</code> extra attrition (cleared lairs don't count).</li>
+      </ul>
+
+      <h3>Player-facing surfacing <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li><code>phaseArmyNotifications(state, nextEventId)</code> converts army/battle/siege traces into player <code>TickEvent</code>s: <code>army_raised</code>, <code>army_disbanded</code>, battle <code>started</code>/<code>resolved</code>, <code>siege_established</code>, and attrition threshold crossings. Battle/siege spotlights surface as encounters through the normal encounter + attention pipeline (see <a href="encounters-manual-reference.html">Encounters &amp; Aftermath</a> and <a href="attention-story-reference.html">Attention, the Digest &amp; the Chronicle</a>). All army/battle traces use category <code>faction_ambition</code>.</li>
+      </ul>
+
+      <h3>Tick placement <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li>Order within the tick (<code>orchestrator.ts</code>, Act 2.35x): <code>phaseArmyMovement</code> (2.352) → <code>phaseArmyAttrition</code> (2.355) → <code>phaseBattleDetection</code> (2.356) → <code>phaseBattleTick</code> (2.357, routes field vs siege) → <code>phaseLairEscalation</code> (2.3575, gated to every 25th tick) → <code>phaseArmyNotifications</code> (2.358). Movement and attrition run before detection so colocation and strength are current; escalation runs after battles so a fight at a lair hex resolves first.</li>
+      </ul>
+
+      <h3>Constants</h3>
+      <table class="tunables">
+        <thead><tr><th>Constant</th><th>Value</th><th>Purpose · file</th></tr></thead>
+        <tbody>
+          <tr><td>MAX_ARMIES_PER_FACTION</td><td>1</td><td>Simultaneous armies per faction (DESIGN — "tune upward later") · <code>army.ts:59</code></td></tr>
+          <tr><td>ARMY_SPAWN_IRON_TIER_MIN</td><td>4</td><td>Min commander Iron tier to raise a host · <code>army.ts:50</code></td></tr>
+          <tr><td>ARMY_SPAWN_GOLD_TIER_MIN</td><td>3</td><td>Min faction Gold tier to raise a host · <code>army.ts:53</code></td></tr>
+          <tr><td>ARMY_ROAD_DISCOUNT</td><td>0.4</td><td>Road movement discount for armies · <code>armyMovement.ts:51</code></td></tr>
+          <tr><td>ARMY_BASE_ATTRITION</td><td>0.5</td><td>Baseline Quintessence loss per tick · <code>armyAttrition.ts:21</code></td></tr>
+          <tr><td>OFF_ROAD_ATTRITION_PENALTY</td><td>0.8</td><td>Extra attrition when off-road · <code>armyAttrition.ts:27</code></td></tr>
+          <tr><td>MONSTER_TERRITORY_ATTRITION</td><td>1.2</td><td>Extra attrition on an active-lair hex · <code>armyAttrition.ts:33</code></td></tr>
+          <tr><td>BATTLE_RESOLUTION_THRESHOLD</td><td>8</td><td>Momentum magnitude that ends a field battle · <code>battle.ts:47</code></td></tr>
+          <tr><td>FIELD_BATTLE_MAX_DURATION</td><td>5</td><td>Ticks before forced field-battle resolution · <code>battle.ts:56</code></td></tr>
+          <tr><td>BATTLE_COMBAT_ATTRITION</td><td>2.0</td><td>Quintessence loss/tick in active combat · <code>battle.ts:59</code></td></tr>
+          <tr><td>SIEGE_RESOLUTION_THRESHOLD</td><td>12</td><td>Momentum magnitude that ends a siege · <code>battle.ts:94</code></td></tr>
+          <tr><td>SIEGE_MAX_DURATION</td><td>40</td><td>Ticks before forced siege resolution · <code>battle.ts:91</code></td></tr>
+          <tr><td>SIEGE_STARVATION_TICK</td><td>15</td><td>Tick the starvation beat fires · <code>battle.ts:100</code></td></tr>
+          <tr><td>FORTIFICATION_GRAND</td><td>30</td><td>Effective defender-size multiplier, grand fortress · <code>battle.ts:71</code></td></tr>
+          <tr><td>LAIR_ESCALATION_INTERVAL</td><td>25</td><td>Ticks between lair escalation passes · <code>lairEscalation.ts:31</code></td></tr>
+          <tr><td>LAIR_UPGRADE_MIN_TICKS</td><td>30</td><td>Min age before minor→major (named elite) · <code>lairEscalation.ts:40</code></td></tr>
+          <tr><td>LAIR_LEGENDARY_MIN_TICKS</td><td>60</td><td>Min age before major→legendary (monster faction) · <code>lairEscalation.ts:43</code></td></tr>
+          <tr><td>LAIR_ADJACENT_SPAWN_CHANCE</td><td>0.15</td><td>Per-neighbor adjacent lair spawn chance · <code>lairEscalation.ts:49</code></td></tr>
+          <tr><td>COMMANDER_DEATH_CHANCE_TOTAL</td><td>0.30</td><td>Commander death chance on total defeat · <code>battleAftermath.ts:57</code></td></tr>
+        </tbody>
+      </table>
+
+      <h3>Canon &amp; terminology</h3>
+      <ul>
+        <li>Systems spec: <code>Docs/plans/2026-03-29-conflict-and-destruction-design.md</code> (TB-073 — armies/battles/sieges) and the M2.5 monster-encounters plan (lairs). Phase &amp; type sources: <code>armyMovement.ts</code>, <code>armyAttrition.ts</code>, <code>armySpawning.ts</code>, <code>armyNotifications.ts</code>, <code>battleResolution.ts</code>, <code>battleAftermath.ts</code>, <code>battleSpotlights.ts</code>, <code>siegeResolution.ts</code>, <code>lairEscalation.ts</code>, <code>lairSeeding.ts</code>, <code>src/types/army.ts</code>, <code>src/types/battle.ts</code>; content in <code>army-encounter-content.ts</code>, <code>siege-encounter-content.ts</code>, <code>battle-spotlight-content.ts</code>.</li>
+        <li>UL: no dedicated military shard yet — <em>army</em>, <em>battle</em>, <em>siege</em>, <em>lair</em>, and army <em>Quintessence</em> (cohesion) are a known documentation gap (surface a <code>UL-proposal</code> to close it). Note the collision with cosmological <em>Quintessence</em> flagged above; <code>Docs/ubiquitous-language/Cosmology.md</code> owns the cosmological term.</li>
+        <li>Adjacent Manual pages: <a href="factions-cultures-reference.html">Factions, Cultures &amp; Secrets</a> (factions raise armies from their ambitions), <a href="world-map-reference.html">The World: Hexes, Terrain &amp; Sight</a> (the terrain and danger zones armies march through and lairs seed into), <a href="settlements-economy-reference.html">Settlements, Prosperity &amp; Trade</a> (what a siege costs a settlement), <a href="clocks-reference.html">Doom, the Mandate &amp; Omens</a> (war as pressure). Game title in player copy: <strong>Threadbearer</strong>.</li>
+      </ul>
+
+      <h3>Open questions <span class="flag open">OPEN</span></h3>
+      <ul>
+        <li>None minted here. The clearest honest gaps are the two flagged DESIGN simplifications — the missing alliance/neutrality model (hostility is faction-difference only) and the prosperity-proxy funding check (no real war-chest ledger) — plus the deliberate single-army cap and the missing UL military shard. All are design/documentation debt, referenced not opened. New open questions surface in chat and land in the rulebook's Open Questions list, never on this page.</li>
+      </ul>
+
+    </div>
+  </details>
+
+  <div class="foot">
+    Game Manual Wiki · W14 (THR-599). Player layer describes current shipped behaviour; deliberate simplifications are flagged <span class="flag design">DESIGN</span> and unresolved questions <span class="flag open">OPEN</span>. Terminology is UL-exact where the UL covers it; military terms have no shard yet (a noted gap), and army "Quintessence" means cohesion, not the cosmological term. War is a story generator, not a wargame — the one framing this page must never oversell.
+  </div>
+
+</div>
+</body>
+</html>
