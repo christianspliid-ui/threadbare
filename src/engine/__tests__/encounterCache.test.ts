@@ -13,6 +13,7 @@ import type { UnifiedActionTemplate } from '../../types/unifiedAction';
 import { isActionStepBranch } from '../../types/unifiedAction';
 import { DIFFICULTY_TIER_MULTIPLIERS } from '../../data/agent-behavior-constants';
 import { LOCATION_BRANCHING_ENCOUNTER_TEMPLATES } from '../../data/unified-action-templates';
+import { hexDistance } from '../../lib/hexMath';
 
 /** Count of branching encounter templates whose locationSubtypes include the given type. */
 function branchingCountForType(locationType: string): number {
@@ -393,5 +394,127 @@ describe('EncounterCacheEntry field correctness', () => {
     for (const entry of cache.getEntriesForLocation('loc.1')) {
       expect(entry.remotePenalty).toBe(0);
     }
+  });
+});
+
+// ─── getEntriesNearHex — bounded neighborhood probe equivalence (THR-581) ──────
+//
+// The large-map fix replaces the O(occupied-hexes) scan inside getEntriesNearHex
+// with an O(1)-in-map-size neighborhood probe once the map is big enough. Both
+// strategies MUST return byte-identical output (same entries, same order) so the
+// downstream reroute max + scoreAndSelect stable-sort tie-breaks stay deterministic
+// (NFP #3). These tests reconstruct the old scan-all output from public data and
+// assert deep equality against getEntriesNearHex.
+
+describe('EncounterCacheManager.getEntriesNearHex — probe/scan equivalence (THR-581)', () => {
+  /** A location placed on a specific hex. */
+  interface PlacedLoc { id: string; col: number; row: number; }
+
+  /** Add `cols`×`rows` town locations, one per hex, in row-major insertion order. */
+  function buildGrid(graph: WorldGraph, cols: number, rows: number): PlacedLoc[] {
+    const placed: PlacedLoc[] = [];
+    for (let c = 0; c < cols; c++) {
+      for (let r = 0; r < rows; r++) {
+        const id = `loc.${c}.${r}`;
+        graph.addNode({
+          id,
+          type: 'location',
+          name: `Town ${c},${r}`,
+          properties: { locationType: 'town', hexCol: c, hexRow: r },
+        });
+        placed.push({ id, col: c, row: r });
+      }
+    }
+    return placed;
+  }
+
+  /**
+   * Reference implementation of the ORIGINAL scan-all-in-range algorithm, rebuilt
+   * from public data. Mirrors hexCoords insertion order (first-seen hex among
+   * locations in graph-node order) and per-hex entry grouping exactly.
+   */
+  function referenceNearHex(
+    cache: EncounterCacheManager,
+    placed: PlacedLoc[],
+    center: { col: number; row: number },
+    range: number,
+  ): unknown[] {
+    const seenOrder: string[] = [];
+    const byHex = new Map<string, unknown[]>();
+    for (const loc of placed) {
+      const entries = cache.getEntriesForLocation(loc.id);
+      if (entries.length === 0) continue;
+      const key = `${loc.col},${loc.row}`;
+      if (!byHex.has(key)) {
+        seenOrder.push(key);
+        byHex.set(key, []);
+      }
+      byHex.get(key)!.push(...entries);
+    }
+    const result: unknown[] = [];
+    for (const key of seenOrder) {
+      const [c, r] = key.split(',').map(Number);
+      if (hexDistance(center, { col: c, row: r }) <= range) {
+        result.push(...byHex.get(key)!);
+      }
+    }
+    return result;
+  }
+
+  // spatialQueryRange in production is MAX_AWARENESS_HOPS(5)+EDGE_HEX_AWARENESS_BONUS(1)+1 = 7.
+  // hexDiskArea(7) = 169, so a 14×14 = 196-hex grid crosses the probe threshold.
+  it('probe branch (large map) matches scan-all output byte-for-byte', () => {
+    const graph = makeGraph();
+    const placed = buildGrid(graph, 14, 14); // 196 occupied hexes > hexDiskArea(7)=169 → probe
+    const cache = new EncounterCacheManager();
+    cache.buildFullCache(graph);
+
+    const centers = [
+      { col: 7, row: 7 },   // interior
+      { col: 0, row: 0 },   // corner
+      { col: 13, row: 13 }, // opposite corner
+      { col: 3, row: 10 },  // off-center
+    ];
+    for (const center of centers) {
+      for (const range of [1, 2, 5, 7]) {
+        const actual = cache.getEntriesNearHex(center.col, center.row, range);
+        const expected = referenceNearHex(cache, placed, center, range);
+        expect(actual.length).toBe(expected.length);
+        expect(actual).toEqual(expected); // deep equality → same entries, same order
+      }
+    }
+  });
+
+  it('scan-all branch (small map) still matches reference', () => {
+    const graph = makeGraph();
+    const placed = buildGrid(graph, 4, 4); // 16 occupied hexes ≤ hexDiskArea(7) → scan-all
+    const cache = new EncounterCacheManager();
+    cache.buildFullCache(graph);
+
+    for (const center of [{ col: 1, row: 1 }, { col: 3, row: 0 }]) {
+      for (const range of [1, 3, 7]) {
+        const actual = cache.getEntriesNearHex(center.col, center.row, range);
+        const expected = referenceNearHex(cache, placed, center, range);
+        expect(actual).toEqual(expected);
+      }
+    }
+  });
+
+  it('probe returns the complete in-range set (no dropped hexes)', () => {
+    const graph = makeGraph();
+    buildGrid(graph, 14, 14);
+    const cache = new EncounterCacheManager();
+    cache.buildFullCache(graph);
+
+    // Range covering the whole grid must return every entry, exactly once.
+    const all = cache.getAllEntries();
+    const near = cache.getEntriesNearHex(7, 7, 100);
+    expect(near.length).toBe(all.length);
+  });
+
+  it('empty index falls back to getAllEntries', () => {
+    const cache = new EncounterCacheManager();
+    cache.buildFullCache(makeGraph()); // no locations → byHex empty
+    expect(cache.getEntriesNearHex(0, 0, 7)).toEqual([]);
   });
 });

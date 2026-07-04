@@ -38,7 +38,7 @@ import { initMovementState } from './movementExecution';
 import { buildHexMovementPath } from './hexMovementPath';
 import { findShortestPath } from './pathfinding';
 import { computeEdgeCost } from './movementCost';
-import { emitTrace } from './traceBuffer';
+import { emitTrace, emitPhaseTiming, isProfilingEnabled } from './traceBuffer';
 import type { TraceEntry, IdleDecisionTrace } from '../types/trace';
 import { IDLE_SCORE_THRESHOLD, COOLDOWN_FULL_POOL_SIZE, COOLDOWN_MINIMUM, MAX_COMPLETIONS_PER_TEMPLATE, IDLE_FORCED_TRAVEL_THRESHOLD, NOVELTY_EMA_DECAY } from '../data/agent-behavior-constants';
 import { REROUTE_SCORE_MULTIPLIER, DECISION_REEVALUATION_TICKS } from '../data/movement-content';
@@ -222,6 +222,12 @@ export function phaseAgentDecision(
   const graph = state.graph;
   // Max spatial query range: MAX_AWARENESS_HOPS + edge hex bonus + 1 (safety margin for effects)
   const spatialQueryRange = MAX_AWARENESS_HOPS + EDGE_HEX_AWARENESS_BONUS + 1;
+  // THR-581: accumulate the per-tick encounter-awareness pre-filter cost so the
+  // neighborhood-probe optimization is measured, not assumed (NFP #2/#7). Gated on
+  // profiling → zero cost when off; emitted ONCE per tick (never per-agent, which
+  // would flood the timing ring — see reference_trace_buffer_per_tick_volume).
+  const profiling = isProfilingEnabled();
+  let awarenessMs = 0;
   const newEvents: TickEvent[] = [];
   const newEncounterProgress: EncounterProgress[] = [];
   const newUnifiedActions: UnifiedAction[] = [];
@@ -336,9 +342,11 @@ export function phaseAgentDecision(
           if (agentLocId) {
             // Spatial pre-filter for reroute check
             const movingHex = resolveLocationToHex(graph, agentLocId);
+            const awStart1 = profiling ? performance.now() : 0;
             const rerouteEntries = movingHex
               ? encounterCache.getEntriesNearHex(movingHex.col, movingHex.row, spatialQueryRange)
               : encounterCache.getAllEntries();
+            if (profiling) awarenessMs += performance.now() - awStart1;
             let bestAltScore = 0;
             let bestAltLocationId: string | null = null;
 
@@ -516,9 +524,11 @@ export function phaseAgentDecision(
 
       // Spatial pre-filter: only fetch cache entries near the agent's hex
       const agentHex = resolveLocationToHex(graph, locationId);
+      const awStart2 = profiling ? performance.now() : 0;
       const nearbyEntries = agentHex
         ? encounterCache.getEntriesNearHex(agentHex.col, agentHex.row, spatialQueryRange)
         : encounterCache.getAllEntries();
+      if (profiling) awarenessMs += performance.now() - awStart2;
 
       // Merge static cache entries with dynamic social + faction + lifecycle entries
       const dynamicEntries = [...socialEntries, ...factionEntries, ...lifecycleEntries];
@@ -1459,6 +1469,18 @@ export function phaseAgentDecision(
       // Fail-soft: per-agent error → skip this agent, continue loop
       continue;
     }
+  }
+
+  // THR-581: emit the aggregated awareness timing once per tick. Surfaces in the
+  // `profile` table / DebugPanel Phases tab as a sub-row of `agent_decision`, so the
+  // neighborhood-probe win is attributable to the pre-filter (NFP #2).
+  if (profiling) {
+    emitPhaseTiming({
+      tick: state.tick,
+      phase: 'agent_decision_awareness',
+      durationMs: awarenessMs,
+      summary: `agent_decision_awareness: ${awarenessMs.toFixed(2)}ms across ${actors.length} actors`,
+    });
   }
 
   // Merge premonitions into existing queue (discard stale entries)

@@ -158,6 +158,23 @@ export function filterByAwareness(
   // Pre-compute a cache of locationId → hex coords to avoid repeated lookups
   const hexCache = new Map<string, { col: number; row: number } | null>();
 
+  // THR-581: agentId is fixed for the whole call, so per-reach awareness range is
+  // invariant across every entry. computeCapability walks trait/artifact/controls
+  // edges — expensive — and there are only 9 reaches, so caching per reach collapses
+  // hundreds of redundant graph walks per agent into ≤9. This was the dominant
+  // super-linear driver of the large-map agent_decision stall (ad_filter ≈ 300ms →
+  // filterByAwareness recomputed capability per-entry). Identical values → no
+  // behavior change (determinism parity, NFP #3), just fewer graph traversals (NFP #7).
+  const rangeCache = new Map<ReachDomain, number>();
+  const awarenessRangeOf = (reach: ReachDomain): number => {
+    let range = rangeCache.get(reach);
+    if (range === undefined) {
+      range = computeAwarenessHops(computeCapability(graph, agentId, reach), reach);
+      rangeCache.set(reach, range);
+    }
+    return range;
+  };
+
   const result: EncounterCacheEntry[] = [];
 
   for (const entry of entries) {
@@ -181,16 +198,10 @@ export function filterByAwareness(
       continue;
     }
 
-    // Cross-hex: compute capability in both reaches
-    const primaryCap = computeCapability(graph, agentId, entry.reachPrimary);
-    const secondaryCap = entry.reachSecondary
-      ? computeCapability(graph, agentId, entry.reachSecondary)
-      : 0;
-
-    // Best visibility channel: max range from either reach
-    const primaryRange = computeAwarenessHops(primaryCap, entry.reachPrimary);
+    // Cross-hex: best visibility channel = max per-reach range (memoized per reach).
+    const primaryRange = awarenessRangeOf(entry.reachPrimary);
     const secondaryRange = entry.reachSecondary
-      ? computeAwarenessHops(secondaryCap, entry.reachSecondary)
+      ? awarenessRangeOf(entry.reachSecondary)
       : 0;
     const maxRange = Math.max(primaryRange, secondaryRange) + edgeBonus + effectAwarenessBonus;
 
