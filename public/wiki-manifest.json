@@ -67,6 +67,14 @@
       "sources": ["src/engine/phaseDoom*.ts", "src/engine/doomClock*.ts", "src/engine/doomIdentityMilestones.ts", "src/engine/phaseMandate*.ts", "src/engine/mandate.ts", "src/engine/mandateGenerator.ts", "src/engine/phaseOmenAgenda*.ts", "src/types/doomClock.ts", "src/types/mandate.ts", "src/types/omen.ts", "src/data/doom-content.ts", "src/data/mandate-content.ts", "src/data/omenTemplates.ts"]
     },
     {
+      "id": "interface-reference",
+      "file": "interface-reference.html",
+      "title": "Reading the Interface",
+      "blurb": "A guided tour of the game screen — the one-viewport, no-scroll contract; the always-on frame (essence, the two clocks, omens, attention, identity, rivals); the drill-in from hex to location to sublocation; the panels (threads, retinue, chronicle, narrative feed); the Action Drawer; the encounter surfaces and the deeper sheets; and a cross-reference from every other Manual page to the surface where its system shows its face. Source spine is the IA manifest (62 surfaces).",
+      "section": "Manual",
+      "sources": ["src/data/ia-manifest.ts"]
+    },
+    {
       "id": "encounters-agents-reference",
       "file": "encounters-agents-reference.html",
       "title": "Encounters, Agents & Resolution",

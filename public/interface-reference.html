@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Threadbearer — Reading the Interface</title>
+<!--
+  Reading the Interface (Game Manual Wiki, W9 / THR-594) — dual-layer manual page.
+  Player-manual prose first ("How it plays"), Designer Notes second.
+  Spec: Docs/plans/2026-07-03-game-manual-wiki.md §5 W9. Source spine and
+  synthesis authority for this page is the IA manifest — src/data/ia-manifest.ts
+  (IA_SURFACES: 62 surfaces, view/mount/reads[] commitment) — browsable in-game at
+  ?view=cms#ia-surfaces. Viewport contract (1920×1080, html/body/#root height:100dvh
+  overflow:hidden) is enforced in src/index.css:201-202 and documented in CLAUDE.md
+  (## Viewport Contract). The shared wiki nav between the WIKI-NAV markers is injected
+  by scripts/generate-design-wiki.ts — do not hand-write it.
+-->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --parchment: #f4edd8;
+    --parchment-dark: #e8dfc8;
+    --ink: #2c1810;
+    --ink-light: #5a3d2b;
+    --ink-faint: #8a7060;
+    --gold: #b8860b;
+    --gold-light: #daa520;
+    --card-bg: #fff8e7;
+    --red: #8b2500;
+    --blue: #1a3a5c;
+    --blue-light: #2d5f8a;
+    --purple: #4a2d6a;
+    --green: #2d5a27;
+
+    --flag-impl: #2d5a27;
+    --flag-design: #8a4a00;
+    --flag-open: #4a2d6a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--parchment);
+    color: var(--ink);
+    font-family: 'Crimson Text', Georgia, serif;
+    font-size: 16px;
+    line-height: 1.6;
+    min-height: 100vh;
+    background-image:
+      radial-gradient(ellipse at 20% 50%, rgba(26,58,92,0.05) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 30%, rgba(184,134,11,0.04) 0%, transparent 50%);
+  }
+
+  .page-wrapper { max-width: 900px; margin: 0 auto; padding: 40px 32px 72px; }
+
+  /* ── Header ── */
+  .header { text-align: center; margin-bottom: 40px; padding-bottom: 28px; border-bottom: 2px solid var(--gold); position: relative; }
+  .header::after { content: ''; position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); width: 55%; height: 1px; background: var(--gold-light); }
+  .header .eyebrow { font-family: 'Cinzel', Georgia, serif; font-size: 0.72rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold); margin-bottom: 10px; }
+  .header h1 { font-family: 'Cinzel', Georgia, serif; font-weight: 700; font-size: 2.4rem; color: var(--ink); letter-spacing: 0.05em; margin-bottom: 12px; }
+  .header .tagline { font-size: 1.12rem; color: var(--ink-light); max-width: 64ch; margin: 0 auto; font-style: italic; }
+
+  /* ── Sections ── */
+  .section { margin-bottom: 34px; }
+  .section > h2 { font-family: 'Cinzel', Georgia, serif; font-size: 1.25rem; color: var(--ink); letter-spacing: 0.03em; margin-bottom: 6px; padding-bottom: 6px; border-bottom: 1px solid var(--parchment-dark); }
+  .section > h2 .lead { display: block; font-family: 'Crimson Text', Georgia, serif; font-size: 0.95rem; font-style: italic; font-weight: 400; color: var(--ink-faint); letter-spacing: 0; margin-top: 4px; }
+  .section h3 { font-family: 'Cinzel', Georgia, serif; font-size: 1rem; color: var(--ink-light); letter-spacing: 0.02em; margin: 20px 0 6px; }
+  .section p { margin-bottom: 12px; }
+  .section p .term { font-weight: 600; color: var(--ink); }
+  .section ul { margin: 0 0 14px 0; padding-left: 0; list-style: none; }
+  .section ul li { position: relative; padding-left: 1.3rem; margin-bottom: 8px; }
+  .section ul li::before { content: '◆'; position: absolute; left: 0; top: 0.05rem; color: var(--gold); font-size: 0.7rem; }
+
+  /* ── Screen schematic ── */
+  .screen-mock { border: 2px solid var(--ink-light); border-radius: 5px; background: var(--card-bg); margin: 14px 0 8px; overflow: hidden; }
+  .screen-mock .mk-row { display: flex; align-items: stretch; }
+  .screen-mock .mk-cell { padding: 8px 10px; font-family: 'Cinzel', Georgia, serif; font-size: 0.66rem; letter-spacing: 0.04em; color: var(--ink-light); border: 1px solid var(--parchment-dark); }
+  .screen-mock .mk-top { flex: 1; text-align: center; background: rgba(184,134,11,0.10); color: var(--ink); font-weight: 600; }
+  .screen-mock .mk-mid { min-height: 108px; }
+  .screen-mock .mk-rail { width: 27%; display: flex; align-items: center; justify-content: center; text-align: center; background: rgba(26,58,92,0.05); }
+  .screen-mock .mk-map { flex: 1; display: flex; align-items: center; justify-content: center; text-align: center; font-family: 'Cinzel', Georgia, serif; font-size: 0.8rem; letter-spacing: 0.08em; color: var(--ink-faint); font-weight: 600; }
+  .screen-mock .mk-bot { flex: 1; text-align: center; background: rgba(139,37,0,0.06); color: var(--ink); font-weight: 600; }
+  .screen-mock .mk-note { display: block; font-family: 'Crimson Text', Georgia, serif; font-size: 0.72rem; font-style: italic; letter-spacing: 0; color: var(--ink-faint); font-weight: 400; margin-top: 2px; }
+  @media (max-width: 620px) { .screen-mock .mk-rail { width: 34%; } }
+
+  /* ── Surface groups ── */
+  .surf-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 10px 0 18px; }
+  .surf { background: var(--card-bg); border: 1px solid var(--parchment-dark); border-radius: 4px; padding: 11px 14px; border-left: 3px solid var(--blue-light); }
+  .surf.act { border-left-color: var(--red); }
+  .surf.drill { border-left-color: var(--gold); }
+  .surf h4 { font-family: 'Cinzel', Georgia, serif; font-size: 0.84rem; color: var(--ink); margin: 0 0 2px; }
+  .surf p { font-size: 0.8rem; color: var(--ink-light); margin: 0; }
+  @media (max-width: 620px) { .surf-grid { grid-template-columns: 1fr; } }
+
+  /* ── Mount legend ── */
+  .mounts { display: flex; flex-wrap: wrap; gap: 8px 16px; margin: 8px 0 16px; }
+  .mount { display: inline-flex; align-items: baseline; gap: 7px; font-size: 0.86rem; color: var(--ink-light); }
+  .mtag { font-family: 'JetBrains Mono', monospace; font-size: 0.64rem; letter-spacing: 0.04em; font-weight: 500; padding: 0.08rem 0.44rem; border-radius: 3px; color: #fff; white-space: nowrap; }
+  .mtag.always { background: var(--blue-light); }
+  .mtag.drillin { background: var(--gold); }
+  .mtag.modal { background: var(--purple); }
+
+  /* ── Callouts ── */
+  .callout { background: var(--card-bg); border: 1px solid var(--parchment-dark); border-left: 4px solid var(--gold); border-radius: 4px; padding: 14px 18px; margin: 4px 0 18px; }
+  .callout.blue { border-left-color: var(--blue-light); }
+  .callout.purple { border-left-color: var(--purple); }
+  .callout.red { border-left-color: var(--red); }
+  .callout.green { border-left-color: var(--green); }
+  .callout .callout-title { font-family: 'Cinzel', Georgia, serif; font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 6px; }
+  .callout p:last-child { margin-bottom: 0; }
+
+  /* ── Drill chain ── */
+  .chain { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 14px; align-items: center; }
+  .chain .step { font-family: 'Cinzel', Georgia, serif; font-size: 0.74rem; color: var(--ink-light); background: var(--card-bg); border: 1px solid var(--parchment-dark); border-radius: 3px; padding: 3px 9px; white-space: nowrap; }
+  .chain .arrow { color: var(--gold); font-size: 0.8rem; }
+
+  /* ── Cross-reference table ── */
+  table.xref { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin: 4px 0 18px; }
+  table.xref th { text-align: left; font-family: 'Cinzel', Georgia, serif; font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-faint); padding: 6px 10px 6px 0; border-bottom: 1px solid var(--parchment-dark); }
+  table.xref td { padding: 8px 10px 8px 0; border-bottom: 1px solid var(--parchment-dark); vertical-align: top; color: var(--ink-light); }
+  table.xref td:first-child { color: var(--ink); font-weight: 600; white-space: nowrap; }
+
+  /* ── Designer notes ── */
+  .designer { margin-top: 48px; border-top: 2px solid var(--gold); padding-top: 8px; }
+  .designer > summary { list-style: none; cursor: pointer; padding: 16px 4px; display: flex; align-items: baseline; gap: 12px; }
+  .designer > summary::-webkit-details-marker { display: none; }
+  .designer > summary .chev { font-size: 0.8rem; color: var(--gold); transition: transform 0.15s; }
+  .designer[open] > summary .chev { transform: rotate(90deg); }
+  .designer > summary h2 { font-family: 'Cinzel', Georgia, serif; font-size: 1.3rem; color: var(--ink); letter-spacing: 0.03em; }
+  .designer > summary .sub { font-size: 0.9rem; color: var(--ink-faint); font-style: italic; }
+  .designer-body { padding: 4px 4px 8px; }
+  .designer-body h3 { font-family: 'Cinzel', Georgia, serif; font-size: 0.98rem; color: var(--ink-light); margin: 22px 0 8px; }
+  .designer-body p { margin-bottom: 12px; font-size: 0.97rem; }
+  .designer-body ul { margin: 0 0 14px 0; padding-left: 0; list-style: none; }
+  .designer-body ul li { position: relative; padding-left: 1.2rem; margin-bottom: 7px; font-size: 0.97rem; }
+  .designer-body ul li::before { content: '›'; position: absolute; left: 0.15rem; top: 0; color: var(--ink-faint); }
+  code, .mono { font-family: 'JetBrains Mono', monospace; font-size: 0.84em; color: var(--ink); background: rgba(184,134,11,0.10); padding: 0.05rem 0.32rem; border-radius: 3px; word-break: break-word; }
+
+  .flag { font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; letter-spacing: 0.04em; font-weight: 500; padding: 0.08rem 0.4rem; border-radius: 3px; color: #fff; white-space: nowrap; }
+  .flag.impl { background: var(--flag-impl); }
+  .flag.design { background: var(--flag-design); }
+  .flag.open { background: var(--flag-open); }
+
+  table.tunables { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin: 4px 0 18px; }
+  table.tunables th { text-align: left; font-family: 'Cinzel', Georgia, serif; font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-faint); padding: 6px 10px 6px 0; border-bottom: 1px solid var(--parchment-dark); }
+  table.tunables td { padding: 7px 10px 7px 0; border-bottom: 1px solid var(--parchment-dark); vertical-align: top; color: var(--ink-light); }
+  table.tunables td:first-child { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--ink); white-space: nowrap; }
+
+  .foot { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--parchment-dark); font-size: 0.85rem; color: var(--ink-faint); font-style: italic; }
+  a { color: var(--blue-light); text-decoration: none; border-bottom: 1px solid rgba(45,95,138,0.35); }
+  a:hover { color: var(--blue); border-bottom-color: var(--blue); }
+</style>
+</head>
+<body>
+<!--WIKI-NAV-->
+<style>
+  .wiki-nav { font-family: 'Cinzel', Georgia, serif; background: #2c1810; border-bottom: 2px solid #b8860b; padding: 0.6rem 1.2rem; display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.4rem 1.1rem; }
+  .wiki-nav__brand { color: #daa520; font-weight: 700; letter-spacing: 0.04em; margin-right: 0.6rem; font-size: 0.95rem; }
+  .wiki-nav__link { color: #f4edd8; text-decoration: none; font-size: 0.85rem; letter-spacing: 0.02em; padding: 0.15rem 0.1rem; border-bottom: 2px solid transparent; transition: color 0.15s, border-color 0.15s; }
+  .wiki-nav__link:hover { color: #daa520; }
+  .wiki-nav__link.is-active { color: #daa520; border-bottom-color: #b8860b; font-weight: 700; }
+</style>
+<nav class="wiki-nav" aria-label="Design Reference Wiki">
+  <span class="wiki-nav__brand">⌖ Design Reference Wiki</span>
+  <a class="wiki-nav__link" href="design-wiki.html">Design Wiki</a>
+  <a class="wiki-nav__link" href="run-lifecycle-reference.html">A Run, Start to Finish</a>
+      <a class="wiki-nav__link" href="cosmology-reference.html">Reaches, Spheres &amp; Quintessence</a>
+      <a class="wiki-nav__link" href="turn-structure-reference.html">The Three-Beat Turn</a>
+      <a class="wiki-nav__link" href="divine-actions-reference.html">Divine Actions &amp; Prerequisites</a>
+      <a class="wiki-nav__link" href="threads-court-reference.html">Threads, the Court &amp; The First</a>
+      <a class="wiki-nav__link" href="essence-control-reference.html">Essence, Control &amp; Sustained Power</a>
+      <a class="wiki-nav__link" href="encounters-manual-reference.html">Encounters &amp; Aftermath</a>
+      <a class="wiki-nav__link" href="clocks-reference.html">Doom, the Mandate &amp; Omens</a>
+      <a class="wiki-nav__link is-active" href="interface-reference.html" aria-current="page">Reading the Interface</a>
+      <a class="wiki-nav__link" href="encounters-agents-reference.html">Encounters, Agents &amp; Resolution</a>
+      <a class="wiki-nav__link" href="tick-cycle-reference.html">Tick Cycle Reference</a>
+      <a class="wiki-nav__link" href="action-catalog.html">Action Catalog</a>
+</nav>
+<!--/WIKI-NAV-->
+<div class="page-wrapper">
+
+  <header class="header">
+    <div class="eyebrow">Game Manual · Meta &amp; Interface</div>
+    <h1>Reading the Interface</h1>
+    <p class="tagline">A guided tour of the screen — the map at the centre, the frame of always-on gauges around it, the panels you drill into, and the drawer where you act. Every system in this manual shows its face somewhere here; this page is the map of the map.</p>
+  </header>
+
+  <!-- ══════════════════ HOW IT PLAYS ══════════════════ -->
+
+  <section class="section">
+    <h2>One screen, no scrolling<span class="lead">The world fills exactly one viewport. The map is the centre; everything else is a frame that reads the same world back to you in a different register.</span></h2>
+    <p>Threadbearer is played on a single screen. Nothing scrolls off the bottom, nothing hides below a fold — the whole interface is one glance, so your attention is spent on the <em>world</em>, not on hunting for controls. The <span class="term">hex map</span> sits at the centre and <em>is</em> the world; wrapped around it is a frame of always-visible gauges, and tucked into the edges are the panels and drawers you open when you want to look closer or act.</p>
+    <div class="screen-mock" role="img" aria-label="Schematic of the game screen: identity and clocks along the top, panels and feeds in the side rails, the hex map in the centre, the action drawer and event feed along the bottom.">
+      <div class="mk-row">
+        <div class="mk-cell mk-top">Top frame — who you are &amp; the two clocks<span class="mk-note">identity · essence · doom · omen · mandate · attention</span></div>
+      </div>
+      <div class="mk-row">
+        <div class="mk-cell mk-rail">Left / right rails<span class="mk-note">threads · retinue · chronicle · rivals · hex sidebar</span></div>
+        <div class="mk-cell mk-map">THE HEX MAP<span class="mk-note">the world itself</span></div>
+        <div class="mk-cell mk-rail">Detail on click<span class="mk-note">hex → location → sublocation · agent cards · sheets</span></div>
+      </div>
+      <div class="mk-row">
+        <div class="mk-cell mk-bot">Bottom frame — where you act &amp; what just happened<span class="mk-note">action drawer · toasts · alerts · narrative feed</span></div>
+      </div>
+    </div>
+    <p>The regions above are not exact pixels — layouts shift as the game grows — but the <em>logic</em> is stable: <strong>who you are and how the run is going</strong> live at the top, <strong>the world</strong> lives in the middle, <strong>what you can do and what just happened</strong> live at the bottom, and <strong>the deeper story</strong> is one click away in the rails.</p>
+  </section>
+
+  <section class="section">
+    <h2>The always-on frame<span class="lead">A ring of gauges that are always on screen. You never open them to check the run's pulse — they are simply there, all the time.</span></h2>
+    <p>These surfaces are mounted <span class="term">always</span>: no click summons them, they are part of the frame. Read left-to-right and top-to-bottom, they answer "how is the run going?" without you asking.</p>
+    <div class="surf-grid">
+      <div class="surf"><h4>Essence Panel</h4><p>Your divine fuel, held <em>per Sphere</em> — the tight economy every action spends from. Always visible so a cost is never a surprise.</p></div>
+      <div class="surf"><h4>Simulation Controls</h4><p>Pause, advance, and the tick counter. The world waits here until you tell it to move — this is where "do nothing" is expressed.</p></div>
+      <div class="surf"><h4>Doom Bar</h4><p>The countdown made into a strip. Click it to expand the full archetype detail. The shadow you are always living under.</p></div>
+      <div class="surf"><h4>Omen Indicator</h4><p>The world's atmospheric pressure — up to two active omens. Click for the omen detail. The mood of the hour.</p></div>
+      <div class="surf"><h4>Mandate Tracker</h4><p>Your declared win-state, tilting toward or away. Click for the full stakes. The count-up against the count-down.</p></div>
+      <div class="surf"><h4>Ascendant Bar &amp; Identity Chip</h4><p>Who you remembered being — your two domains and hunger, in a compact strip. Click opens your full sheet.</p></div>
+      <div class="surf"><h4>Attention Indicator</h4><p>You cannot watch everything. This shows how much attention is spoken for and when a thread is tugging for it.</p></div>
+      <div class="surf"><h4>World Pulse &amp; Live-Location Bar</h4><p>The world's breathing state (phase, tick rate) and a context strip naming whatever hex or place you have focused.</p></div>
+      <div class="surf act"><h4>Toast Stack</h4><p>Transient notices that rise and fade — a mortal became, a thread deepened. Filtered to what a player should feel.</p></div>
+      <div class="surf act"><h4>Alert Bar</h4><p>A persistent row for the loud events — the ones you should not miss even while looking elsewhere.</p></div>
+      <div class="surf"><h4>Rivals Button</h4><p>A compact read on the other gods watching your domain. Click opens the full rival panel.</p></div>
+      <div class="surf"><h4>Avatar HUD</h4><p>Appears only when you have taken a body in the world — the extra readout an embodied god needs.</p></div>
+    </div>
+    <div class="callout blue">
+      <div class="callout-title">The gauges are the manual made live</div>
+      <p>Almost every system this manual describes has a face in the always-on frame. The <a href="essence-control-reference.html">essence</a> economy is the Essence Panel; the <a href="clocks-reference.html">two clocks</a> are the Doom Bar and Mandate Tracker; the omen agenda is the Omen Indicator; your <a href="run-lifecycle-reference.html">remembered identity</a> is the Ascendant Bar; <a href="stealth-rivals-reference.html">rival gods</a> are the Rivals Button; <a href="attention-story-reference.html">attention</a> is its own indicator. Learning the frame <em>is</em> learning where each system lives.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>The map, and drilling in<span class="lead">The map is the world. Click into it and you descend one tier at a time — hex, then location, then sublocation — never skipping a rung.</span></h2>
+    <p>The <span class="term">hex map</span> is not a picture of the world; it is the world. What you can see is governed by fog of war and your sight, and what sits on a hex — settlements, mortals, armies, works — is drawn there directly. Click a hex and the interface <em>drills in</em>: a breadcrumb appears, a sidebar lists what the hex holds, and a per-hex chronicle shows what has happened there.</p>
+    <div class="chain">
+      <span class="step">Click a hex</span>
+      <span class="arrow">→</span>
+      <span class="step">Hex detail (breadcrumb · sidebar · chronicle)</span>
+      <span class="arrow">→</span>
+      <span class="step">Location view</span>
+      <span class="arrow">→</span>
+      <span class="step">Sublocation / agent card</span>
+    </div>
+    <p>This mirrors the world's own structure exactly: everything sits at <em>hex → location → sublocation</em>, and the interface walks you down that ladder one rung at a time rather than teleporting you into a wall of detail. A <span class="term">location view</span> shows a settlement's sublocations and who lives there; an <span class="term">agent info card</span> is the light, in-rail read on a single mortal before you commit to the full dossier. The world map's own systems — terrain, sight, three-tier position — get their own page in <a href="world-map-reference.html">The World: Hexes, Terrain &amp; Sight</a>.</p>
+  </section>
+
+  <section class="section">
+    <h2>The panels — scanning your portfolio<span class="lead">The rails hold the panels where you read your relationships and the run's unfolding story: threads, retinue, chronicle, and the narrative feed.</span></h2>
+    <p>Where the always-on frame answers "how is the run going?", the <span class="term">panels</span> answer "who are my people and what is happening to them?" They open in the rails without leaving the map:</p>
+    <div class="surf-grid">
+      <div class="surf drill"><h4>Threads Panel</h4><p>Your woven bonds — every thread you hold, with its stakes. Click one for the full thread detail and its story-so-far.</p></div>
+      <div class="surf drill"><h4>Retinue Panel</h4><p>The mortals bonded closest to you — your core portfolio-scan surface, where you take stock of who is in your orbit.</p></div>
+      <div class="surf drill"><h4>Chronicle Panel</h4><p>The rolling feed of the run's most significant events — the book of the world being written as you play.</p></div>
+      <div class="surf drill"><h4>Narrative Feed</h4><p>The prose stream — what is happening, told in the game's voice rather than as numbers. The run's ongoing narration.</p></div>
+      <div class="surf drill"><h4>Thread Detail &amp; Strand View</h4><p>A single bond up close — participants, stakes, history — with a story-so-far digest of what you may have missed.</p></div>
+      <div class="surf drill"><h4>Hex Sidebar &amp; Hex Chronicle</h4><p>The contents of the hex you selected and the events particular to it — the map's own rail companions.</p></div>
+    </div>
+    <p>The thread and court systems these panels surface are the subject of <a href="threads-court-reference.html">Threads, the Court &amp; The First</a>; the chronicle and narrative feed belong to <a href="attention-story-reference.html">Attention, the Digest &amp; the Chronicle</a>. The panels are the window; those pages are the machinery behind the glass.</p>
+  </section>
+
+  <section class="section">
+    <h2>The Action Drawer — where you act<span class="lead">Every intervention you make begins in one place: the drawer of action cards, filtered to whatever you have in focus.</span></h2>
+    <p>Acting on the world happens through the <span class="term">Action Drawer</span>. It is not a fixed menu of buttons — it is a pool of cards <em>filtered by context</em>: pick a target, and the drawer shows only the actions that target can actually receive, given your two domains, your Sphere alignment, your essence, and your reach. A card that never appears is telling you something true — that this act is outside what you are, here, now.</p>
+    <div class="callout red">
+      <div class="callout-title">Why a card is missing is part of the interface</div>
+      <p>The drawer's silences are legible, not broken. An action outside your two permanent domains simply never shows; a Sphere-misaligned or too-costly card is filtered out; a target you have not yet <em>found</em> cannot be shaped. The full logic of the five verbs and their prerequisites is in <a href="divine-actions-reference.html">Divine Actions &amp; Prerequisites</a>, and every template is browsable in the <a href="action-catalog.html">Action Catalog</a>. Committing an intervention passes through a short confirmation step before it fires.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>The curated moment — encounters on screen<span class="lead">When a chapter frames itself around a mortal, the interface steps forward: the veil, the choice set, the vignette. These are the moments the whole turn is built to deliver.</span></h2>
+    <p>Most of the turn is you scanning and nudging. But when an <a href="encounters-manual-reference.html">encounter</a> reaches the surface, the interface changes register to give it room:</p>
+    <div class="surf-grid">
+      <div class="surf act"><h4>Encounter Veil</h4><p>The overlay for an encounter you are watching in progress — the framed chapter given the screen's full attention.</p></div>
+      <div class="surf act"><h4>Choice-Set Modal</h4><p>When a branching encounter asks the player to decide, the choices surface here. Your call, not the mortal's.</p></div>
+      <div class="surf act"><h4>Journey-Vignette Modal</h4><p>A beat in The First's hero's journey, popped forward as a short authored moment when the clock schedules it.</p></div>
+      <div class="surf act"><h4>Intervention Confirm</h4><p>The nudge / whisper / vision confirmation — the last beat before your divine will touches the world.</p></div>
+    </div>
+    <p>These are the pay-off of the three-beat turn described in <a href="turn-structure-reference.html">The Three-Beat Turn</a>: scan, then the <em>curated moment</em> the interface makes room for, then the aftermath that reshapes a mortal's course.</p>
+  </section>
+
+  <section class="section">
+    <h2>The deeper sheets<span class="lead">One more layer down are the full dossiers — modals you open when a compact card is not enough. They cover the whole cast of the world.</span></h2>
+    <p>When you want everything about a thing, you open its <span class="term">sheet</span> — a modal that takes over the screen with the full record. Each entity in the world has one:</p>
+    <div class="surf-grid">
+      <div class="surf"><h4>Ascendant Sheet</h4><p>Your own full profile — identity, echoes, and your bonds to the World-Soul across runs.</p></div>
+      <div class="surf"><h4>Agent Profile &amp; Intelligence</h4><p>A mortal's full dossier — backstory strata, traits, and what you have learned about them.</p></div>
+      <div class="surf"><h4>Faction Sheet</h4><p>A faction's rank structure, agenda, membership, and trust — the shape of an organised power.</p></div>
+      <div class="surf"><h4>Army &amp; Artifact Sheets</h4><p>A host's composition, morale, and objective; an artifact's origin, properties, and the hands it has passed through.</p></div>
+      <div class="surf"><h4>Location Profile</h4><p>A place in full — prosperity, factions present, inhabitants, and structures.</p></div>
+      <div class="surf"><h4>Rival / Doom / Omen / Mandate Detail</h4><p>The expanded reads behind the frame's compact gauges — the full story of a clock, an omen, or a rival god.</p></div>
+      <div class="surf"><h4>Scry Overlay &amp; Agenda Picker</h4><p>The divine-vision overlay that reveals a hex, and the picker for setting a long strategic agenda.</p></div>
+      <div class="surf"><h4>Harvest Screen</h4><p>The end-of-run ritual — where echoes are gathered and the World-Soul remembers. Only when the run is ending.</p></div>
+    </div>
+    <p>The Harvest Screen belongs to the run's close, covered in <a href="run-lifecycle-reference.html">A Run, Start to Finish</a>; the factions, agents, and armies these sheets open onto are the subject of the living-world pages once they land.</p>
+  </section>
+
+  <section class="section">
+    <h2>Where each system shows its face<span class="lead">Every other page in this manual describes a system. Here is the surface — or surfaces — where that system meets your eyes.</span></h2>
+    <table class="xref">
+      <thead><tr><th>Manual page</th><th>Where it shows on screen</th></tr></thead>
+      <tbody>
+        <tr><td><a href="run-lifecycle-reference.html">A Run, Start to Finish</a></td><td>Ascendant Bar &amp; Sheet; the Harvest Screen at the end.</td></tr>
+        <tr><td><a href="cosmology-reference.html">Reaches, Spheres &amp; Quintessence</a></td><td>The per-Sphere Essence Panel; every filtered card in the Action Drawer.</td></tr>
+        <tr><td><a href="turn-structure-reference.html">The Three-Beat Turn</a></td><td>Simulation Controls (scan), the Encounter Veil (curated moment), the aftermath toasts.</td></tr>
+        <tr><td><a href="divine-actions-reference.html">Divine Actions &amp; Prerequisites</a></td><td>The Action Drawer and its Intervention Confirm step.</td></tr>
+        <tr><td><a href="threads-court-reference.html">Threads, the Court &amp; The First</a></td><td>Threads Panel, Retinue Panel, Thread Detail, and the journey-vignette modal.</td></tr>
+        <tr><td><a href="essence-control-reference.html">Essence, Control &amp; Sustained Power</a></td><td>The Essence Panel; the Agenda Picker for strategic works.</td></tr>
+        <tr><td><a href="encounters-manual-reference.html">Encounters &amp; Aftermath</a></td><td>Encounter Veil, Choice-Set Modal, and the aftermath feed.</td></tr>
+        <tr><td><a href="clocks-reference.html">Doom, the Mandate &amp; Omens</a></td><td>Doom Bar, Mandate Tracker, Omen Indicator — and their detail modals.</td></tr>
+        <tr><td><a href="world-map-reference.html">The World: Hexes, Terrain &amp; Sight</a></td><td>The hex map and its drill-in: breadcrumb, sidebar, location view.</td></tr>
+        <tr><td><a href="attention-story-reference.html">Attention, the Digest &amp; the Chronicle</a></td><td>Attention Indicator, Chronicle Panel, Narrative Feed, story-so-far digest.</td></tr>
+        <tr><td><a href="stealth-rivals-reference.html">Stealth, Detection &amp; Rival Gods</a></td><td>Rivals Button and the Rival Panel; the Scry Overlay.</td></tr>
+      </tbody>
+    </table>
+    <p class="term" style="font-size:0.86rem; color:var(--ink-faint); font-style:italic; font-weight:400;">Some rows link forward to Manual pages still being written — the wiki's own navigation bar above always lists what has landed.</p>
+  </section>
+
+  <section class="section">
+    <h2>The other rooms<span class="lead">Beyond the live game there are a handful of reference and setup views — the same interface language, different purposes.</span></h2>
+    <p>The game is one <span class="term">view</span> among several. Before a run you pass through the <span class="term">start page</span> and <span class="term">ascendant selection</span> (choosing who you were, with a cosmology drill-in). Alongside the live game sit reference rooms: the <span class="term">Codex</span> (a browsable catalogue of divine actions, conditions, and agreements), the <span class="term">Content Browser</span> (CMS), the <span class="term">Ubiquitous Language dashboard</span> (the game's glossary), and the <span class="term">Style Guide</span> (the component reference). These are not part of the moment-to-moment loop — they are where you go to look something up — but they share the same frame, the same nav, and the same one-screen discipline.</p>
+  </section>
+
+  <!-- ══════════════════ DESIGNER NOTES ══════════════════ -->
+
+  <details class="designer" open>
+    <summary>
+      <span class="chev">▶</span>
+      <span>
+        <h2>Designer Notes</h2>
+        <span class="sub">The IA manifest as the authority, the 62-surface commitment with its view / mount / reads[] discipline, the viewport contract, WebGL assertion caveat, and the freshness contract that keeps this page honest.</span>
+      </span>
+    </summary>
+    <div class="designer-body">
+
+      <p>Status flags follow the rulebook convention: <span class="flag impl">IMPL</span> shipped and wired, <span class="flag design">DESIGN</span> specified but partially or not yet wired, <span class="flag open">OPEN</span> an unresolved question (referenced, never minted here). <strong>The synthesis authority for this page is not the rulebook but the <em>IA manifest</em> — <code>src/data/ia-manifest.ts</code> (<code>IA_SURFACES</code>) — browsable in-game at <code>?view=cms#ia-surfaces</code>. The IA manifest is the commitment document of what the player should see; this page is its player-voice narration.</strong> Terminology authority remains the UL; where a surface name and the UL disagree, the UL wins and the surface is a drift bug.</p>
+
+      <h3>The manifest is the authority <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li><strong>62 surfaces</strong> — <code>IA_SURFACES</code> is an array of <code>IASurface</code> records (<code>src/data/ia-manifest.ts</code>). Each carries a <code>surface</code> id (e.g. <code>game.action-drawer</code>), a <code>view</code>, a <code>mount</code>, and a <code>reads[]</code> list. The in-game viewer at <code>?view=cms#ia-surfaces</code> renders all of them with view/mount badges, the <code>reads[]</code> tables, and an "Open this surface" link where an <code>openUrl</code> is declared.</li>
+        <li><strong>Seven views</strong> — <code>SurfaceView</code> = <code>start | ascendant | game | codex | styleguide | cms | ul</code>. Of the 62, <strong>47 are the <code>game</code> view</strong> — the surfaces this page tours; the remaining 15 are the start/selection flow and the reference rooms (codex, CMS, UL, styleguide).</li>
+        <li><strong>Three mounts</strong> — <code>SurfaceMount</code> = <code>always | modal | drillin</code>, the load-bearing distinction the player layer is organised around:</li>
+      </ul>
+      <div class="mounts">
+        <span class="mount"><span class="mtag always">always</span> the frame — mounted for the whole session, never summoned (17 game surfaces).</span>
+        <span class="mount"><span class="mtag drillin">drillin</span> the panels — opened in the rails without leaving the map (11 game surfaces).</span>
+        <span class="mount"><span class="mtag modal">modal</span> the sheets — full takeover, opened and dismissed (19 game surfaces).</span>
+      </div>
+
+      <h3>Surface → reads[] discipline <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li>Every surface declares which <code>GameState</code> paths it reads and the <code>reader</code> component that consumes them, each with a <code>visible_when</code> predicate (e.g. <code>game.mandate-tracker</code> reads <code>mandateState</code> visible-when <code>mandateState !== null</code>). This is the contract the interface-audit and <code>playtest-interface</code> tooling asserts against — a surface that stops reading its declared state, or renders when its predicate is false, is a regression the manifest catches.</li>
+        <li>The player-facing filter matters: <code>game.toast-stack</code> reads <code>tickEvents</code> only <em>with a notification directive</em>, and <code>game.alert-bar</code> only those <em>marked alert-level</em>. Not every tick event reaches the player — the routing is deliberate (see <a href="attention-story-reference.html">Attention, the Digest &amp; the Chronicle</a>).</li>
+        <li>The <code>game.action-drawer</code> open/close state is exposed for tests via <code>__DEBUG.getActiveUIState().actionDrawerOpen</code>; the drawer's cards are context-filtered per target, not a fixed set (see <a href="divine-actions-reference.html">Divine Actions</a>).</li>
+      </ul>
+
+      <h3>The viewport contract <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li><strong>1920×1080, one viewport, nothing scrolls.</strong> <code>html, body, #root</code> are pinned to <code>height: 100dvh; overflow: hidden</code> (<code>src/index.css:201–202</code>); full-screen layouts use <code>h-screen flex flex-col overflow-hidden</code> and child panels scroll internally via <code>flex-1 overflow-y-auto</code>. A component that renders off-screen at 1920×1080 is a bug of the same severity as a broken interaction. Modals cap at <code>max-height: 85vh</code>; absolute overlays use <code>inset: 0</code> within their parent. Full rule: CLAUDE.md <em>§ Viewport Contract</em>.</li>
+        <li><strong>WebGL caveat.</strong> <code>game.hex-map</code> is a Three.js scene; DOM tools (Playwright <code>snapshot</code>/<code>inspect</code>) see only a blank <code>&lt;canvas&gt;</code>. Its assertions run through <code>__DEBUG.snapshotScene()</code>, and visual verification uses Claude-in-Chrome, not Playwright. The manifest note on the surface records this explicitly.</li>
+      </ul>
+
+      <h3>Freshness contract &amp; wiring <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li>This page's <code>sources</code> glob in <code>public/wiki-manifest.json</code> is <code>src/data/ia-manifest.ts</code>. When the manifest changes and this page does not, <code>npm run check:wiki-freshness</code> (advisory, chained in <code>check:process</code>) prints a warning — the mechanical form of the working agreement that a changed core surface updates its wiki page in the same PR.</li>
+        <li>Determinism &amp; fail-soft (NFPs #3–#4): the manifest is a static data file and this page is static HTML — no runtime state, no PRNG, nothing to crash. Inspectability (NFP #2) is served by the in-game <code>?view=cms#ia-surfaces</code> viewer and the per-surface <code>reads[]</code> tables rather than by traces.</li>
+      </ul>
+
+      <h3>Constants</h3>
+      <table class="tunables">
+        <thead><tr><th>Constant</th><th>Value</th><th>Purpose · file</th></tr></thead>
+        <tbody>
+          <tr><td>IA_SURFACES.length</td><td>62</td><td>Total committed surfaces · <code>src/data/ia-manifest.ts</code></td></tr>
+          <tr><td>SurfaceView</td><td>7</td><td>start·ascendant·game·codex·styleguide·cms·ul · <code>ia-manifest.ts:9</code></td></tr>
+          <tr><td>SurfaceMount</td><td>3</td><td>always·modal·drillin · <code>ia-manifest.ts:8</code></td></tr>
+          <tr><td>game-view surfaces</td><td>47</td><td>17 always · 11 drillin · 19 modal</td></tr>
+          <tr><td>viewport</td><td>1920×1080</td><td>Contractual resolution · CLAUDE.md § Viewport Contract</td></tr>
+          <tr><td>height / overflow</td><td>100dvh / hidden</td><td>No-scroll enforcement · <code>src/index.css:201–202</code></td></tr>
+          <tr><td>modal max-height</td><td>85vh</td><td>Modal primitive cap · CLAUDE.md § Viewport Contract</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Canon &amp; terminology</h3>
+      <ul>
+        <li>Surface authority: <code>src/data/ia-manifest.ts</code> (the commitment) + the in-game viewer <code>?view=cms#ia-surfaces</code>. Layout law: CLAUDE.md <em>§ Viewport Contract</em>. Component reference: the Style Guide, <code>?view=styleguide</code> (<code>src/components/StyleGuide/StyleGuide.tsx</code>).</li>
+        <li>UL authority (terminology wins on any disagreement): every surface name should trace to a UL term (Thread, Retinue, Chronicle, Omen, Mandate, Doom Clock, Encounter). Game title in player copy: <strong>Threadbearer</strong>.</li>
+        <li>Adjacent Manual pages — this page is the hub that cross-links them all: <a href="run-lifecycle-reference.html">A Run, Start to Finish</a>, <a href="cosmology-reference.html">Reaches, Spheres &amp; Quintessence</a>, <a href="turn-structure-reference.html">The Three-Beat Turn</a>, <a href="divine-actions-reference.html">Divine Actions &amp; Prerequisites</a>, <a href="threads-court-reference.html">Threads, the Court &amp; The First</a>, <a href="essence-control-reference.html">Essence, Control &amp; Sustained Power</a>, <a href="encounters-manual-reference.html">Encounters &amp; Aftermath</a>, <a href="clocks-reference.html">Doom, the Mandate &amp; Omens</a>. For the tick order behind the frame, the deep <a href="tick-cycle-reference.html">Tick Cycle Reference</a>.</li>
+      </ul>
+
+      <h3>Open questions <span class="flag open">OPEN</span></h3>
+      <ul>
+        <li>None minted here. Surfaces flagged in the manifest as partial (e.g. the avatar/embodiment HUD, which shows only when an ascendant is embodied) are tracked in their own domain pages and Linear issues, not as interface open questions. This page reports the manifest as it stands; where the manifest and shipped UI diverge, the manifest is the commitment and the gap is a bug to file.</li>
+      </ul>
+
+    </div>
+  </details>
+
+  <div class="foot">
+    Game Manual Wiki · W9 (THR-594). Player layer describes current shipped surfaces; anything not yet wired is flagged <span class="flag design">DESIGN</span> and introduced as &quot;intended&quot;. Terminology is UL-exact; where this page and the UL disagree, the UL wins and this page is a drift bug. Surface authority is the IA manifest (<code>src/data/ia-manifest.ts</code>, <code>?view=cms#ia-surfaces</code>).
+  </div>
+
+</div>
+</body>
+</html>
