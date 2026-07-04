@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Threadbearer — The World: Hexes, Terrain &amp; Sight</title>
+<!--
+  The World: Hexes, Terrain & Sight (Game Manual Wiki, W12 / THR-597) — dual-layer
+  manual page. Player-manual prose first ("How it plays"), Designer Notes second.
+  Spec: Docs/plans/2026-07-03-game-manual-wiki.md §5 W12; template §3.
+  Canon authority: Docs/canon/hex-map.md (settled hex-map decisions). Terminology
+  authority is the UL (Docs/ubiquitous-language/Graph.md — HexTile, TerrainType,
+  Three-tier Position Model, located_at Edge, Hex/Location/Sublocation). The shared
+  wiki nav between the WIKI-NAV markers is injected by
+  scripts/generate-design-wiki.ts — do not hand-write it.
+
+  Accuracy notes (verified against code this pass — do not "correct" back):
+  - Hex mutable state lives on the flat GameState.tiles[] array, NOT the graph.
+    Hexes are not graph nodes; only locations/sublocations/actors are. This is the
+    load-bearing decision (CLAUDE.md § Load-Bearing Architectural Decisions).
+  - Two DISTINCT sight systems, both hex-distance based:
+    (1) player fog of war — visibility.ts / recalcVisibility, states
+        unexplored|visible|remembered; sources are avatar + retinue + scry.
+        AVATAR_SIGHT_RANGE 0, AGENT_SIGHT_RANGE 1, SCRY_SIGHT_RANGE 0 (types/visibility.ts).
+    (2) agent encounter awareness — encounterAwareness.ts / filterByAwareness,
+        per-reach hop budget (AWARENESS_THRESHOLD 0.05, BASE 1, PER_HOP 0.15, MAX 5).
+    Do not conflate them — one is what the god sees, the other is what a mortal sees.
+  - Magical saturation (phaseMagicalSaturation) decays a per-LOCATION property, not a
+    per-hex-tile field. Corruption / divineInfluence are per-hex-tile (phaseHexState).
+  - Location-hop awareness (distance-matrix BFS) is a REJECTED approach; hex distance
+    is the awareness oracle. Don't reintroduce it.
+-->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --parchment: #f4edd8;
+    --parchment-dark: #e8dfc8;
+    --ink: #2c1810;
+    --ink-light: #5a3d2b;
+    --ink-faint: #8a7060;
+    --gold: #b8860b;
+    --gold-light: #daa520;
+    --card-bg: #fff8e7;
+    --red: #8b2500;
+    --blue: #1a3a5c;
+    --blue-light: #2d5f8a;
+    --purple: #4a2d6a;
+    --green: #2d5a27;
+
+    --flag-impl: #2d5a27;
+    --flag-design: #8a4a00;
+    --flag-open: #4a2d6a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--parchment);
+    color: var(--ink);
+    font-family: 'Crimson Text', Georgia, serif;
+    font-size: 16px;
+    line-height: 1.6;
+    min-height: 100vh;
+    background-image:
+      radial-gradient(ellipse at 20% 50%, rgba(26,58,92,0.05) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 30%, rgba(184,134,11,0.04) 0%, transparent 50%);
+  }
+
+  .page-wrapper { max-width: 900px; margin: 0 auto; padding: 40px 32px 72px; }
+
+  /* ── Header ── */
+  .header { text-align: center; margin-bottom: 40px; padding-bottom: 28px; border-bottom: 2px solid var(--gold); position: relative; }
+  .header::after { content: ''; position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); width: 55%; height: 1px; background: var(--gold-light); }
+  .header .eyebrow { font-family: 'Cinzel', Georgia, serif; font-size: 0.72rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold); margin-bottom: 10px; }
+  .header h1 { font-family: 'Cinzel', Georgia, serif; font-weight: 700; font-size: 2.4rem; color: var(--ink); letter-spacing: 0.05em; margin-bottom: 12px; }
+  .header .tagline { font-size: 1.12rem; color: var(--ink-light); max-width: 64ch; margin: 0 auto; font-style: italic; }
+
+  /* ── Sections ── */
+  .section { margin-bottom: 34px; }
+  .section > h2 { font-family: 'Cinzel', Georgia, serif; font-size: 1.25rem; color: var(--ink); letter-spacing: 0.03em; margin-bottom: 6px; padding-bottom: 6px; border-bottom: 1px solid var(--parchment-dark); }
+  .section > h2 .lead { display: block; font-family: 'Crimson Text', Georgia, serif; font-size: 0.95rem; font-style: italic; font-weight: 400; color: var(--ink-faint); letter-spacing: 0; margin-top: 4px; }
+  .section h3 { font-family: 'Cinzel', Georgia, serif; font-size: 1rem; color: var(--ink-light); letter-spacing: 0.02em; margin: 20px 0 6px; }
+  .section p { margin-bottom: 12px; }
+  .section p .term { font-weight: 600; color: var(--ink); }
+  .section ul { margin: 0 0 14px 0; padding-left: 0; list-style: none; }
+  .section ul li { position: relative; padding-left: 1.3rem; margin-bottom: 8px; }
+  .section ul li::before { content: '◆'; position: absolute; left: 0; top: 0.05rem; color: var(--gold); font-size: 0.7rem; }
+
+  /* ── Tier ladder (hex → location → sublocation) ── */
+  .tiers { margin: 12px 0 18px; }
+  .tier { display: grid; grid-template-columns: 7.2rem 1fr; gap: 0 12px; align-items: baseline; padding: 9px 0; border-bottom: 1px solid var(--parchment-dark); }
+  .tier .name { font-family: 'Cinzel', Georgia, serif; font-size: 0.84rem; color: var(--gold); letter-spacing: 0.04em; }
+  .tier .desc { font-size: 0.94rem; color: var(--ink-light); }
+  .tier .desc .who { font-weight: 600; color: var(--ink); }
+  @media (max-width: 620px) { .tier { grid-template-columns: 1fr; gap: 2px; } }
+
+  /* ── Card grid ── */
+  .card-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 10px 0 18px; }
+  .card-grid.three { grid-template-columns: repeat(3, 1fr); }
+  .card { background: var(--card-bg); border: 1px solid var(--parchment-dark); border-radius: 4px; padding: 11px 14px; border-left: 3px solid var(--gold); }
+  .card.blue { border-left-color: var(--blue-light); }
+  .card.red { border-left-color: var(--red); }
+  .card.green { border-left-color: var(--green); }
+  .card.purple { border-left-color: var(--purple); }
+  .card h4 { font-family: 'Cinzel', Georgia, serif; font-size: 0.84rem; color: var(--ink); margin: 0 0 2px; }
+  .card p { font-size: 0.8rem; color: var(--ink-light); margin: 0; }
+  @media (max-width: 620px) { .card-grid, .card-grid.three { grid-template-columns: 1fr; } }
+
+  /* ── Callouts ── */
+  .callout { background: var(--card-bg); border: 1px solid var(--parchment-dark); border-left: 4px solid var(--gold); border-radius: 4px; padding: 14px 18px; margin: 4px 0 18px; }
+  .callout.blue { border-left-color: var(--blue-light); }
+  .callout.purple { border-left-color: var(--purple); }
+  .callout.red { border-left-color: var(--red); }
+  .callout.green { border-left-color: var(--green); }
+  .callout .callout-title { font-family: 'Cinzel', Georgia, serif; font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 6px; }
+  .callout p:last-child { margin-bottom: 0; }
+
+  /* ── Designer notes ── */
+  .designer { margin-top: 48px; border-top: 2px solid var(--gold); padding-top: 8px; }
+  .designer > summary { list-style: none; cursor: pointer; padding: 16px 4px; display: flex; align-items: baseline; gap: 12px; }
+  .designer > summary::-webkit-details-marker { display: none; }
+  .designer > summary .chev { font-size: 0.8rem; color: var(--gold); transition: transform 0.15s; }
+  .designer[open] > summary .chev { transform: rotate(90deg); }
+  .designer > summary h2 { font-family: 'Cinzel', Georgia, serif; font-size: 1.3rem; color: var(--ink); letter-spacing: 0.03em; }
+  .designer > summary .sub { font-size: 0.9rem; color: var(--ink-faint); font-style: italic; }
+  .designer-body { padding: 4px 4px 8px; }
+  .designer-body h3 { font-family: 'Cinzel', Georgia, serif; font-size: 0.98rem; color: var(--ink-light); margin: 22px 0 8px; }
+  .designer-body p { margin-bottom: 12px; font-size: 0.97rem; }
+  .designer-body ul { margin: 0 0 14px 0; padding-left: 0; list-style: none; }
+  .designer-body ul li { position: relative; padding-left: 1.2rem; margin-bottom: 7px; font-size: 0.97rem; }
+  .designer-body ul li::before { content: '›'; position: absolute; left: 0.15rem; top: 0; color: var(--ink-faint); }
+  code, .mono { font-family: 'JetBrains Mono', monospace; font-size: 0.84em; color: var(--ink); background: rgba(184,134,11,0.10); padding: 0.05rem 0.32rem; border-radius: 3px; word-break: break-word; }
+
+  .flag { font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; letter-spacing: 0.04em; font-weight: 500; padding: 0.08rem 0.4rem; border-radius: 3px; color: #fff; white-space: nowrap; }
+  .flag.impl { background: var(--flag-impl); }
+  .flag.design { background: var(--flag-design); }
+  .flag.open { background: var(--flag-open); }
+
+  table.tunables { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin: 4px 0 18px; }
+  table.tunables th { text-align: left; font-family: 'Cinzel', Georgia, serif; font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-faint); padding: 6px 10px 6px 0; border-bottom: 1px solid var(--parchment-dark); }
+  table.tunables td { padding: 7px 10px 7px 0; border-bottom: 1px solid var(--parchment-dark); vertical-align: top; color: var(--ink-light); }
+  table.tunables td:first-child { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--ink); white-space: nowrap; }
+
+  .foot { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--parchment-dark); font-size: 0.85rem; color: var(--ink-faint); font-style: italic; }
+  a { color: var(--blue-light); text-decoration: none; border-bottom: 1px solid rgba(45,95,138,0.35); }
+  a:hover { color: var(--blue); border-bottom-color: var(--blue); }
+</style>
+</head>
+<body>
+<!--WIKI-NAV-->
+<style>
+  .wiki-nav { font-family: 'Cinzel', Georgia, serif; background: #2c1810; border-bottom: 2px solid #b8860b; padding: 0.6rem 1.2rem; display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.4rem 1.1rem; }
+  .wiki-nav__brand { color: #daa520; font-weight: 700; letter-spacing: 0.04em; margin-right: 0.6rem; font-size: 0.95rem; }
+  .wiki-nav__link { color: #f4edd8; text-decoration: none; font-size: 0.85rem; letter-spacing: 0.02em; padding: 0.15rem 0.1rem; border-bottom: 2px solid transparent; transition: color 0.15s, border-color 0.15s; }
+  .wiki-nav__link:hover { color: #daa520; }
+  .wiki-nav__link.is-active { color: #daa520; border-bottom-color: #b8860b; font-weight: 700; }
+</style>
+<nav class="wiki-nav" aria-label="Design Reference Wiki">
+  <span class="wiki-nav__brand">⌖ Design Reference Wiki</span>
+  <a class="wiki-nav__link" href="design-wiki.html">Design Wiki</a>
+  <a class="wiki-nav__link" href="run-lifecycle-reference.html">A Run, Start to Finish</a>
+      <a class="wiki-nav__link" href="cosmology-reference.html">Reaches, Spheres &amp; Quintessence</a>
+      <a class="wiki-nav__link" href="turn-structure-reference.html">The Three-Beat Turn</a>
+      <a class="wiki-nav__link" href="divine-actions-reference.html">Divine Actions &amp; Prerequisites</a>
+      <a class="wiki-nav__link" href="threads-court-reference.html">Threads, the Court &amp; The First</a>
+      <a class="wiki-nav__link" href="essence-control-reference.html">Essence, Control &amp; Sustained Power</a>
+      <a class="wiki-nav__link" href="encounters-manual-reference.html">Encounters &amp; Aftermath</a>
+      <a class="wiki-nav__link" href="clocks-reference.html">Doom, the Mandate &amp; Omens</a>
+      <a class="wiki-nav__link" href="interface-reference.html">Reading the Interface</a>
+      <a class="wiki-nav__link" href="agents-reference.html">The Mortals</a>
+      <a class="wiki-nav__link" href="factions-cultures-reference.html">Factions, Cultures &amp; Secrets</a>
+      <a class="wiki-nav__link is-active" href="world-map-reference.html" aria-current="page">The World: Hexes, Terrain &amp; Sight</a>
+      <a class="wiki-nav__link" href="encounters-agents-reference.html">Encounters, Agents &amp; Resolution</a>
+      <a class="wiki-nav__link" href="tick-cycle-reference.html">Tick Cycle Reference</a>
+      <a class="wiki-nav__link" href="action-catalog.html">Action Catalog</a>
+</nav>
+<!--/WIKI-NAV-->
+<div class="page-wrapper">
+
+  <header class="header">
+    <div class="eyebrow">Game Manual · The Living World</div>
+    <h1>The World: Hexes, Terrain &amp; Sight</h1>
+    <p class="tagline">Every mortal, every settlement, every buried ruin sits somewhere. The map is that somewhere — a grid of hexes you can shape, corrupt, and restore, seen through a fog that lifts only where you or your own are looking.</p>
+  </header>
+
+  <!-- ══════════════════ HOW IT PLAYS ══════════════════ -->
+
+  <section class="section">
+    <h2>The world is a grid of hexes<span class="lead">The whole world is one field of hexagonal tiles. Each hex is a patch of ground with a terrain, a look, and a mutable state you can change.</span></h2>
+    <p>Threadbearer's world is a single continuous map of <span class="term">hexes</span> — flat-topped hexagonal tiles laid edge to edge. Every hex has a <span class="term">terrain</span>: grassland, forest, mountain, marsh, desert, tundra, ocean, and a good many more, each with its own colour and character on the map. Terrain is not just scenery; it shapes how hard a place is to cross, what tends to live there, and what a moment set there feels like.</p>
+    <p>A hex is also more than fixed ground. Beneath its terrain each tile carries a small ledger of <span class="term">mutable state</span> — how much of your divine influence has soaked into it, how much corruption has taken root — and those numbers rise when you act on the land and ebb on their own over time. Enough of either, held long enough, and the very terrain of a hex can change: blighted ground degrades, hallowed ground is restored. The map is a thing you write on, not just a board you play across.</p>
+    <div class="callout">
+      <div class="callout-title">How big is the world</div>
+      <p>The map's size is chosen at world generation. A <em>medium</em> world is a few hundred hexes across its span; a <em>large</em> world runs to a thousand or more. Bigger worlds hold more mortals and more story, at the cost of a heavier simulation — which is why testing sometimes prefers the medium size.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Where things are — three nested tiers<span class="lead">Everything in the world resolves to a hex, but not everything sits <em>directly</em> on one. Position nests: a hex holds locations, a location holds sublocations, and a mortal stands on exactly one rung.</span></h2>
+    <p>The world's places are arranged in three tiers that nest inside one another. This is how the game answers the simple question <em>where is this?</em> for every mortal, settlement, and encounter.</p>
+    <div class="tiers">
+      <div class="tier"><span class="name">Hex</span><span class="desc"><span class="who">The tile itself.</span> The coarsest unit of place — a patch of the map with terrain and state. Everything ultimately resolves to a hex.</span></div>
+      <div class="tier"><span class="name">Location</span><span class="desc"><span class="who">A named place on a hex.</span> A village, a keep, a shrine, a ruin. A hex can hold several. This is where most of the world's life happens.</span></div>
+      <div class="tier"><span class="name">Sublocation</span><span class="desc"><span class="who">A place inside a place.</span> The tavern within the town, the vault within the keep. The finest grain of position, nested one level below a location.</span></div>
+    </div>
+    <p>A mortal always stands on <em>exactly one</em> of these tiers at a time — pinned to their most specific place, whether that is a sublocation, a location, or (out in the wild, with no built place around them) the bare hex. When any system needs to reason about distance or sight, it reads a mortal's position and follows the nesting <em>upward</em>: a sublocation sits inside its location, which sits on its hex. Two mortals in different taverns of the same town are, to the world's geometry, standing on the same hex.</p>
+    <div class="callout blue">
+      <div class="callout-title">Why the tiers matter to you</div>
+      <p>When you drill into the map — hex, then location, then sublocation — you are walking down these same tiers. And because everything resolves to a hex, the game can answer "who else is here?" and "what can this person see?" cleanly, no matter how deep inside a place someone is standing.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>The land remembers what you do to it<span class="lead">Divine influence and corruption are the two forces that mark a hex. They build when acted on, fade when left alone, and — past a threshold — remake the terrain itself.</span></h2>
+    <p>Two opposed pressures write themselves onto the land. <span class="term">Divine influence</span> is the imprint of your hand — where you have blessed, warded, or worked wonders, the ground carries a glow of it. <span class="term">Corruption</span> is the opposite stain, spread by dark workings, festering ruins, and the slow rot of an unmaking world. Both are held on the hex, and both <span class="term">decay</span> a little every turn: influence fades faster than corruption, so a blessing is a thing you must renew while a blight lingers.</p>
+    <p>When either pressure is pushed high enough and held there, the hex <span class="term">transforms</span>. Corruption soaked past its threshold degrades a hex's terrain toward something ruined; sustained divine influence past its own, higher threshold restores it. A hex remembers its original ground beneath the change, and once it transforms it will not transform again until a cooling-off period has passed — so the land shifts in deliberate steps, not a flicker every turn. This is the slow, visible way a god reshapes a corner of the world.</p>
+    <div class="callout green">
+      <div class="callout-title">Magical saturation — a place's charge</div>
+      <p>Built places carry one more kind of charge: <span class="term">magical saturation</span>, the concentration of arcane energy at a <em>location</em>. You raise it by warding a place or founding a seat of power, and by working sphere-aligned wonders there; left alone, it bleeds away each turn. A saturated place makes magical acts easier, draws the arcane-minded toward it, and widens what can be sensed nearby. Saturation belongs to the location, not the raw hex — it is the mark of a <em>place</em>, where influence and corruption are the mark of the <em>ground</em>.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Sight, and the fog over the world<span class="lead">You do not see the whole world at once. Fog covers what no one of yours is watching — and, separately, each mortal sees only so far across the hexes themselves.</span></h2>
+    <p>A god is not omniscient here. The map wears a <span class="term">fog of war</span>, and a hex you have never watched sits <span class="term">unexplored</span> — dark, unknown. You lift the fog by <em>looking</em>: through your avatar where it walks, through the mortals of your retinue out in the world, and through scrying a distant thread. Wherever one of those eyes reaches, the hexes around it turn <span class="term">visible</span>, and you see what is truly there, now.</p>
+    <p>Look away and the world does not vanish, but it goes stale. A hex you have seen and then left slips to <span class="term">remembered</span>: you keep the picture of it as it last was — the places, the faces — but you are no longer told what changes there until you look again. The fog is not ignorance so much as <em>old news</em>. Your sight is narrow and your attention finite, and the map quietly reminds you that ruling by watching means always choosing where <em>not</em> to look.</p>
+    <div class="callout purple">
+      <div class="callout-title">The mortals have their own sight</div>
+      <p>Your fog is one thing; what a <em>mortal</em> can perceive is another. A mortal is aware of everything on their own hex automatically — see the hex, see everything on it, every location and sublocation and unfolding <a href="encounters-manual-reference.html">encounter</a>. Beyond their own hex, how far they notice depends on their <a href="cosmology-reference.html">Domain Capability</a>: a capable, worldly mortal senses opportunities several hexes off, while a green one barely sees past their own doorstep. Awareness is measured in hexes, plainly — not in tangled paths between places.</p>
+    </div>
+  </section>
+
+  <!-- ══════════════════ DESIGNER NOTES ══════════════════ -->
+
+  <details class="designer" open>
+    <summary>
+      <span class="chev">▶</span>
+      <span>
+        <h2>Designer Notes</h2>
+        <span class="sub">Hexes as flat array state (not graph nodes), the three-tier <code>located_at</code> position model, per-hex terrain transformation, per-location magical saturation, the two hex-distance sight systems (player fog of war vs. agent encounter awareness), and the per-tick hex→actor index — with honest IMPL/DESIGN status.</span>
+      </span>
+    </summary>
+    <div class="designer-body">
+
+      <p>Status flags follow the rulebook convention: <span class="flag impl">IMPL</span> shipped and wired, <span class="flag design">DESIGN</span> specified but partially or not yet wired, <span class="flag open">OPEN</span> an unresolved question (referenced, never minted here). Canon authority for this page is <code>Docs/canon/hex-map.md</code>; terminology authority is the UL <code>Docs/ubiquitous-language/Graph.md</code> (<em>HexTile</em>, <em>TerrainType</em>, <em>Three-tier Position Model</em>, <em>located_at Edge</em>, <em>Hex/Location/Sublocation</em>). Where a term here and the UL disagree, the UL wins and this page is a drift bug.</p>
+
+      <h3>Load-bearing: hexes are not graph nodes <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li><strong>Hex mutable state lives in <code>GameState.tiles[]</code>, a flat array — never the graph.</strong> The world graph holds nodes (locations, sublocations, actors, artifacts…) and typed edges; hex tiles are plain array state indexed by <code>coord.{col,row}</code>. A <code>HexTile</code> carries <code>terrain</code>, <code>baseTerrain</code>, <code>divineInfluence</code>, <code>corruption</code>, <code>explorationAttraction</code>, and <code>terrainTransformedTick</code> (<code>src/types/index.ts</code>). This is a settled decision (CLAUDE.md § Load-Bearing Architectural Decisions) — do not model hexes as nodes.</li>
+        <li>Hex actions therefore do not mutate the graph. They produce <code>HexMutation[]</code> (<code>src/types/hexMutation.ts</code>: <code>{col, row, field, delta}</code>) accumulated on <code>state.pendingHexMutations</code> and applied in <code>phaseHexState</code>.</li>
+      </ul>
+
+      <h3>Three-tier position model <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li><strong>hex → location → sublocation.</strong> An actor occupies exactly one tier via a single <code>located_at</code> edge pointing to the most specific node they stand on. Resolution is upward: a sublocation carries <code>parentLocationId</code> → parent location → <code>hexCol</code>/<code>hexRow</code> → hex. All spatial reasoning resolves to the hex level.</li>
+        <li>Reference resolver: <code>resolveLocationToHex(graph, locationId)</code> in <code>encounterAwareness.ts</code> — recurses through <code>parentLocationId</code> for sublocations, then reads <code>hexCol</code>/<code>hexRow</code>; returns <code>null</code> (fail-soft) when coordinates are missing.</li>
+        <li><strong>Honest note on the dual representation:</strong> the canonical relationship is the <code>located_at</code> edge (used by <code>visibility.ts</code> and <code>encounterAwareness.ts</code>), while <code>hexActorIndex.ts</code> reads the mirror property <code>actor.properties.locationId</code> to build a fast per-tick index. Both resolve up to the same hex; the edge is the model of record.</li>
+      </ul>
+
+      <h3>Hex state tick — terrain transformation <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li><code>phaseHexState(state, pendingMutations)</code> (orchestrator, mid-tick) runs once per tick, pure over <code>state.tiles</code>. Per hex: apply pending mutations → decay <code>divineInfluence</code> by <code>HEX_DIVINE_INFLUENCE_DECAY_RATE = 0.02</code>, <code>corruption</code> by <code>HEX_CORRUPTION_DECAY_RATE = 0.01</code> (and <code>explorationAttraction</code> at the influence rate) → terrain transform checks → emit a <code>hex_state</code> trace per meaningfully-changed hex. All-zero, unchanged hexes short-circuit.</li>
+        <li><strong>Transformation:</strong> <code>corruption ≥ HEX_CORRUPTION_TRANSFORM_THRESHOLD 0.7</code> degrades terrain (via <code>getTerrainTransformation('corruption', terrain)</code>); <code>divineInfluence ≥ HEX_DIVINE_TRANSFORM_THRESHOLD 0.8</code> restores it — degradation wins if both fire. <code>baseTerrain</code> preserves the original ground; <code>HEX_TRANSFORM_COOLDOWN_TICKS = 10</code> gates re-transformation. Transformation table: <code>src/data/terrain-transformation-content.ts</code>.</li>
+      </ul>
+
+      <h3>Magical saturation — per location, not per hex <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li><code>phaseMagicalSaturation(state)</code> decays the <code>magicalSaturation</code> property on <em>location</em> nodes (mutates graph node properties in place, like reputation decay) by <code>MAGICAL_SATURATION_DECAY_RATE = 0.02</code>/tick, clamped <code>[0,1]</code>; emits a <code>saturation_tick</code> trace per changed location. Zero-saturation locations short-circuit.</li>
+        <li>Saturation is driven <em>up</em> by other systems (Ward, Place of Power, sphere-aligned encounters); this phase is only the natural decay. High-saturation effects (magical-action scoring bonus above <code>MAGICAL_SATURATION_VEIL_BONUS_THRESHOLD 0.5</code>, Veil-reach attraction, widened visibility above <code>…VISIBILITY_THRESHOLD 0.3</code>) are applied by their own consumers — a location-scoped charge, distinct from the hex-scoped <code>divineInfluence</code>/<code>corruption</code>.</li>
+      </ul>
+
+      <h3>Player fog of war <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li><code>recalcVisibility(prev, sources, graph, tick, cols, rows)</code> (<code>visibility.ts</code>, inline near the end of <code>runTick</code>) recomputes a <code>VisibilityMap</code> keyed <code>"col,row"</code> over the whole grid. Three states: <code>unexplored</code> → <code>visible</code> (in range of any LOS source) → <code>remembered</code> (was visible, now out of range; a <code>StaleSnapshot</code> of location + agent names is captured at <code>tick − 1</code>). Newly-visible hexes auto-reveal the land layer.</li>
+        <li><code>collectLOSSources</code> gathers line-of-sight from three origins — the avatar (<code>AVATAR_SIGHT_RANGE = 0</code>), retinue agents on non-dormant threads at tier ≥ 1 (<code>AGENT_SIGHT_RANGE = 1</code>), and scry targets (<code>SCRY_SIGHT_RANGE = 0</code>) — each range passing through <code>getModifiedValue(…, 'los_range', …)</code> for effect modifiers. Ranges are deliberately tight: sight is narrow, and the fog is a real constraint, not decoration.</li>
+      </ul>
+
+      <h3>Agent encounter awareness — hex distance, not location hops <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li>Separate from player fog: <code>filterByAwareness(entries, agentId, agentLocationId, graph, …)</code> (<code>encounterAwareness.ts</code>) decides which cached encounters a <em>mortal</em> can perceive. Same-hex entries (distance 0) are always visible — see the hex, see everything on it. Cross-hex visibility uses <code>hexDistance</code> against a per-reach hop budget.</li>
+        <li><code>computeAwarenessHops(capability, reach)</code>: below <code>AWARENESS_THRESHOLD 0.05</code> → 0 hops (own hex only); otherwise <code>BASE_AWARENESS_HOPS 1 + floor(capability / CAPABILITY_PER_HOP 0.15)</code>, capped at <code>MAX_AWARENESS_HOPS 5</code>. Best of the entry's primary/secondary reach range wins; map-edge hexes get <code>EDGE_HEX_AWARENESS_BONUS 1</code>, plus any <code>range_modifier</code> effect bonus.</li>
+        <li><strong>Rejected:</strong> location-hop awareness (BFS over the distance-matrix via <code>adjacent</code> edges). It was inconsistent (sublocations invisible, same-hex vs cross-hex ambiguous, irregular topology). Hex distance is geometric, predictable, and sublocation-agnostic — the awareness oracle. The distance matrix still exists for encounter scoring, but is <em>not</em> the visibility source.</li>
+      </ul>
+
+      <h3>Per-tick hex→actor index <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li><code>buildHexActorIndex(graph)</code> (<code>hexActorIndex.ts</code>, THR-188) builds a pure, module-state-free <code>Map&lt;"col,row", string[]&gt;</code> of the <code>individual</code> actors on each hex, resolving each actor's <code>locationId</code> (up through <code>parentLocationId</code> for sublocations) to hex coordinates. Unresolvable actors fall to <code>unresolvedCount</code> for a fail-soft trace. Iteration follows stable insertion order for determinism. <code>getActorsOnHex(index, col, row)</code> reads a bucket.</li>
+      </ul>
+
+      <h3>Tick placement <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li>Mid-tick: <code>phaseHexState</code> (applies <code>pendingHexMutations</code>, then clears them) → <code>phaseMagicalSaturation</code>. Late-tick, after phases settle: inline <code>recalcVisibility</code> + land auto-reveal. <code>buildHexActorIndex</code> and <code>filterByAwareness</code> are helper calls invoked where encounter/awareness scoring needs them, not scheduled phases.</li>
+      </ul>
+
+      <h3>Constants</h3>
+      <table class="tunables">
+        <thead><tr><th>Constant</th><th>Value</th><th>Purpose · file</th></tr></thead>
+        <tbody>
+          <tr><td>HEX_DIVINE_INFLUENCE_DECAY_RATE</td><td>0.02</td><td>Per-tick influence fade · <code>phaseHexState.ts:29</code></td></tr>
+          <tr><td>HEX_CORRUPTION_DECAY_RATE</td><td>0.01</td><td>Per-tick corruption fade · <code>:30</code></td></tr>
+          <tr><td>HEX_CORRUPTION_TRANSFORM_THRESHOLD</td><td>0.7</td><td>Corruption → terrain degrade · <code>:31</code></td></tr>
+          <tr><td>HEX_DIVINE_TRANSFORM_THRESHOLD</td><td>0.8</td><td>Influence → terrain restore · <code>:32</code></td></tr>
+          <tr><td>HEX_TRANSFORM_COOLDOWN_TICKS</td><td>10</td><td>Ticks between transforms · <code>:33</code></td></tr>
+          <tr><td>MAGICAL_SATURATION_DECAY_RATE</td><td>0.02</td><td>Per-tick location saturation fade · <code>phaseMagicalSaturation.ts:25</code></td></tr>
+          <tr><td>AVATAR_SIGHT_RANGE</td><td>0</td><td>Fog: avatar LOS hexes · <code>types/visibility.ts:31</code></td></tr>
+          <tr><td>AGENT_SIGHT_RANGE</td><td>1</td><td>Fog: retinue-agent LOS hexes · <code>:32</code></td></tr>
+          <tr><td>SCRY_SIGHT_RANGE</td><td>0</td><td>Fog: scry-target LOS hexes · <code>:33</code></td></tr>
+          <tr><td>AWARENESS_THRESHOLD</td><td>0.05</td><td>Min capability to see beyond own hex · <code>agent-behavior-constants.ts:47</code></td></tr>
+          <tr><td>BASE_AWARENESS_HOPS</td><td>1</td><td>Hops granted above threshold · <code>:51</code></td></tr>
+          <tr><td>CAPABILITY_PER_HOP</td><td>0.15</td><td>Capability per extra awareness hop · <code>:55</code></td></tr>
+          <tr><td>MAX_AWARENESS_HOPS</td><td>5</td><td>Awareness hard cap · <code>:59</code></td></tr>
+          <tr><td>EDGE_HEX_AWARENESS_BONUS</td><td>1</td><td>Map-border awareness bonus · <code>:64</code></td></tr>
+        </tbody>
+      </table>
+
+      <h3>Canon &amp; terminology</h3>
+      <ul>
+        <li>Canon: <code>Docs/canon/hex-map.md</code> — the settled hex-map decisions (raw Three.js renderer, flat-top odd-q offset grid, <code>HEX_SIZE = 10</code>, three-tier position, hex-distance awareness). Renderer skills: <code>hexmap-core</code> (architecture) + <code>hexmap-layers</code> (features). Coordinate math: <code>src/lib/hexMath.ts</code> (<code>hexToPixel</code>, <code>hexDistance</code>, <code>hexNeighbors</code>, cube conversions).</li>
+        <li>UL: <code>Docs/ubiquitous-language/Graph.md</code> — <em>HexTile</em>, <em>TerrainType</em>, <em>Three-tier Position Model</em>, <em>located_at Edge</em>, <em>Hex</em>/<em>Location</em>/<em>Sublocation</em>.</li>
+        <li>Adjacent Manual pages: <a href="factions-cultures-reference.html">Factions, Cultures &amp; Secrets</a> (cultures sit on the map), <a href="agents-reference.html">The Mortals</a> (who stands on the hexes), <a href="encounters-manual-reference.html">Encounters &amp; Aftermath</a> (awareness gates what a mortal can act on), <a href="divine-actions-reference.html">Divine Actions &amp; Prerequisites</a> (the acts that mutate hex state and lift fog). Deep dive: <a href="encounters-agents-reference.html">Encounters, Agents &amp; Resolution</a>. Game title in player copy: <strong>Threadbearer</strong>.</li>
+      </ul>
+
+      <h3>Open questions <span class="flag open">OPEN</span></h3>
+      <ul>
+        <li>None minted here. Tick-loop performance on <em>large</em> maps under <code>?view=game&amp;seeded</code> (THR-162/163/164/165) is the honest known constraint — the renderer is healthy; the stalls are upstream in the engine, and testing prefers <code>?view=game&amp;seeded&amp;size=medium</code> while those issues are open. It is referenced here from <code>Docs/canon/hex-map.md</code> § Open questions, not opened anew.</li>
+      </ul>
+
+    </div>
+  </details>
+
+  <div class="foot">
+    Game Manual Wiki · W12 (THR-597). Player layer describes current shipped behaviour; anything not yet wired is flagged <span class="flag design">DESIGN</span> or <span class="flag open">OPEN</span>. Terminology is UL-exact; where this page and the UL disagree, the UL wins and this page is a drift bug. Hexes are flat array state, not graph nodes — the one load-bearing decision this page must never soften.
+  </div>
+
+</div>
+</body>
+</html>
