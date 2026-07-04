@@ -19,6 +19,7 @@ import type {
 } from '../types/unifiedAction';
 import type { ActorType } from '../types/graph';
 import { ACTION_TEMPLATES, type ActionTemplateData } from './action-template-content';
+import { ACTION_TECHNICAL_EFFECTS } from './action-technical-effects';
 import { ENCOUNTER_TEMPLATES, getAnyEncounterById } from './encounter-content';
 import { ASCENDANT_POOL_BEAT_TEMPLATES } from './ascendant-pool-beat-templates';
 import { ANOMALY_ENCOUNTER_TEMPLATES } from './encounter-anomaly-content';
@@ -4805,7 +4806,7 @@ export const AGENT_INTERVENTION_TEMPLATES: UnifiedActionTemplate[] = [
  * All templates in unified format.
  * Migration functions are applied eagerly at module load time.
  */
-export const UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
+const RAW_UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   ...ACTION_TEMPLATES.map(migrateActionTemplate),
   ...ENCOUNTER_TEMPLATES,
   ...DIVINE_ACTION_TEMPLATES,
@@ -4949,6 +4950,20 @@ export const UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   // Effect shell proof pack — flip_table + result_bands (THR-53)
   ...EFFECT_SHELL_PROOF_TEMPLATES,
 ];
+
+/**
+ * THR-604: overlay authored `technicalEffect` text (a single reviewable map in
+ * `action-technical-effects.ts`) onto the assembled templates. Additive and
+ * idempotent — a template already carrying an inline `technicalEffect` keeps it;
+ * an id absent from the map is left untouched (renders "—"/`unauthored` in the
+ * catalog). Applied once at module load.
+ */
+export const UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] =
+  RAW_UNIFIED_ACTION_TEMPLATES.map((t) => {
+    if (t.technicalEffect != null) return t;
+    const authored = ACTION_TECHNICAL_EFFECTS[t.id];
+    return authored ? { ...t, technicalEffect: authored } : t;
+  });
 
 /**
  * Location-based branching encounter templates authored in src/data/encounters/.

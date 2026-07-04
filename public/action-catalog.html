@@ -105,6 +105,19 @@
   .badge--beat { color: var(--gold); border-color: var(--gold); background: rgba(184,134,11,0.08); }
   .badge--essence { font-family: 'JetBrains Mono', monospace; color: var(--reach-veil); border-color: var(--reach-veil); }
 
+  /* ── Effect-source badges (THR-604) ─────────────────────────── */
+  .badge--effect { color: #fff; border-color: transparent; }
+  .badge--effect.src-template-ops { background: #2e6b3e; }
+  .badge--effect.src-engine-bridge { background: #1a5a5a; }
+  .badge--effect.src-control-spec { background: #4a2d6a; }
+  .badge--effect.src-aftermath-only { background: #a06a12; }
+  .badge--effect.src-none { background: #9a3a3a; }
+  .badge--effect.src-unauthored { color: var(--ink-faint); background: transparent; border-color: var(--ink-faint); font-style: italic; }
+
+  .drawer__effect { font-size: 0.95rem; line-height: 1.5; color: var(--ink); background: #fffdf5; border: 1px solid var(--parchment-dark); border-left: 3px solid var(--reach-eye); border-radius: 3px; padding: 0.6rem 0.75rem; margin-bottom: 1.1rem; }
+  .drawer__effect-label { font-family: 'Cinzel', Georgia, serif; font-size: 0.58rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-faint); display: block; margin-bottom: 0.3rem; }
+  .drawer__effect.is-unauthored { color: var(--ink-faint); font-style: italic; border-left-color: var(--ink-faint); }
+
   .empty-state { text-align: center; color: var(--ink-faint); padding: 3rem 1rem; font-style: italic; }
 
   /* ── Detail drawer ──────────────────────────────────────── */
@@ -189,6 +202,10 @@
       <select id="f-bucket"><option value="">All</option></select>
     </div>
     <div class="filter-field">
+      <label for="f-effect">Effect wiring</label>
+      <select id="f-effect"><option value="">All</option></select>
+    </div>
+    <div class="filter-field">
       <label for="f-sort">Sort by</label>
       <select id="f-sort">
         <option value="spell">Spell name</option>
@@ -219,7 +236,20 @@
   const cap = (s) => s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
   const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
+  // THR-604 — derived effect-source → catalog badge label. Tells whether (and how)
+  // an action's mechanical effect is actually wired.
+  const SCHEMA_MIN_EFFECTS = 2;
+  const EFFECT_SOURCE_LABELS = {
+    'template-ops': 'wired · template',
+    'engine-bridge': 'wired · engine',
+    'control-spec': 'sustained',
+    'aftermath-only': 'aftermath',
+    'none': 'not wired',
+  };
+  const effectLabel = (src) => EFFECT_SOURCE_LABELS[src] || src || '—';
+
   let DATA = null;
+  let HAS_EFFECTS = false; // set from schemaVersion once data loads
   const el = (id) => document.getElementById(id);
 
   function uniqueSorted(entries, key) {
@@ -239,6 +269,23 @@
     return `<span class="badge ${cls}"${style}>${esc(text)}</span>`;
   }
 
+  function sourceBadge(e) {
+    if (!HAS_EFFECTS) return '';
+    const authored = e.technicalEffect != null;
+    const cls = authored ? 'src-' + e.effectSource : 'src-unauthored';
+    const label = authored ? effectLabel(e.effectSource) : 'unauthored';
+    return `<span class="badge badge--effect ${cls}">${esc(label)}</span>`;
+  }
+
+  // Drawer "Effect" block. Missing text → em-dash + unauthored note (visible gap).
+  function effectHtml(e) {
+    if (!HAS_EFFECTS) return '';
+    if (e.technicalEffect == null) {
+      return `<div class="drawer__effect is-unauthored"><span class="drawer__effect-label">Effect</span>— (unauthored)</div>`;
+    }
+    return `<div class="drawer__effect"><span class="drawer__effect-label">Effect</span>${esc(e.technicalEffect)}</div>`;
+  }
+
   function cardHtml(e) {
     const badges = [
       badge(cap(e.reach), 'badge--reach', reachColor(e.reach)),
@@ -246,6 +293,7 @@
       e.essenceCost != null ? badge('◈ ' + e.essenceCost, 'badge--essence') : '',
       badge(e.bucket, 'badge--bucket'),
       e.beatGranted ? badge('beat', 'badge--beat') : '',
+      sourceBadge(e),
     ].filter(Boolean).join('');
     return `<button class="action-card" data-id="${esc(e.id)}" style="border-left-color:${reachColor(e.reach)}">
       <div class="action-card__spell">${esc(e.spellName || e.name)}</div>
@@ -258,6 +306,7 @@
   function applyFilters() {
     const q = el('search').value.trim().toLowerCase();
     const fc = el('f-category').value, fr = el('f-reach').value, fra = el('f-rarity').value, fb = el('f-bucket').value;
+    const fe = el('f-effect').value;
     const sort = el('f-sort').value;
 
     let rows = DATA.entries.filter((e) => {
@@ -265,6 +314,7 @@
       if (fr && e.reach !== fr) return false;
       if (fra && String(e.rarityTier) !== fra) return false;
       if (fb && e.bucket !== fb) return false;
+      if (fe && (e.effectSource || '') !== fe) return false;
       if (q) {
         const hay = (e.id + ' ' + e.name + ' ' + (e.spellName || '')).toLowerCase();
         if (!hay.includes(q)) return false;
@@ -284,9 +334,16 @@
 
     el('grid').innerHTML = rows.map(cardHtml).join('');
     el('empty').hidden = rows.length > 0;
-    el('stats').textContent =
+    let statsText =
       `Showing ${rows.length} of ${DATA.totals.total} templates · ${DATA.totals.beatGranted} beat-granted · ` +
       Object.entries(DATA.totals.byBucket).map(([k, v]) => `${v} ${k}`).join(' · ');
+    if (HAS_EFFECTS && DATA.totals.byEffectSource) {
+      const src = Object.entries(DATA.totals.byEffectSource)
+        .map(([k, v]) => `${v} ${effectLabel(k)}`).join(' · ');
+      const unauth = DATA.totals.unauthoredEffects || 0;
+      statsText += ` │ effect wiring: ${src}` + (unauth ? ` · ${unauth} unauthored` : '');
+    }
+    el('stats').textContent = statsText;
   }
 
   function openDrawer(id) {
@@ -322,7 +379,9 @@
         ${badge(e.rarityName, 'badge--rarity', RARITY_COLORS[e.rarityTier])}
         ${badge(e.bucket, 'badge--bucket')}
         ${e.beatGranted ? badge('beat-granted', 'badge--beat') : ''}
+        ${sourceBadge(e)}
       </div>
+      ${effectHtml(e)}
       ${e.description ? `<p class="drawer__desc">${esc(e.description)}</p>` : ''}
       <table class="drawer__table"><tbody>${rows}</tbody></table>`;
     el('drawer').classList.add('is-open');
@@ -337,17 +396,25 @@
 
   function init(data) {
     DATA = data;
+    HAS_EFFECTS = (data.schemaVersion ?? 0) >= SCHEMA_MIN_EFFECTS;
     populateSelect(el('f-category'), uniqueSorted(data.entries, 'category'), cap);
     populateSelect(el('f-reach'), uniqueSorted(data.entries, 'reach'), cap);
     populateSelect(el('f-rarity'), [...new Set(data.entries.map((e) => e.rarityTier))].sort(), (t) => `${data.entries.find((e) => e.rarityTier === t).rarityName} (${t})`);
     populateSelect(el('f-bucket'), uniqueSorted(data.entries, 'bucket'));
 
+    const effectField = el('f-effect').closest('.filter-field');
+    if (HAS_EFFECTS) {
+      populateSelect(el('f-effect'), uniqueSorted(data.entries, 'effectSource'), effectLabel);
+    } else if (effectField) {
+      effectField.hidden = true; // legacy schema: no effect data to filter on
+    }
+
     el('filter-bar').hidden = false;
-    ['search', 'f-category', 'f-reach', 'f-rarity', 'f-bucket', 'f-sort'].forEach((id) => {
+    ['search', 'f-category', 'f-reach', 'f-rarity', 'f-bucket', 'f-effect', 'f-sort'].forEach((id) => {
       el(id).addEventListener('input', applyFilters);
     });
     el('reset').addEventListener('click', () => {
-      ['search', 'f-category', 'f-reach', 'f-rarity', 'f-bucket'].forEach((id) => { el(id).value = ''; });
+      ['search', 'f-category', 'f-reach', 'f-rarity', 'f-bucket', 'f-effect'].forEach((id) => { el(id).value = ''; });
       el('f-sort').value = 'spell';
       applyFilters();
     });
