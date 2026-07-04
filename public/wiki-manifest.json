@@ -91,6 +91,14 @@
       "sources": ["src/engine/factionReputation.ts", "src/engine/factionAmbitions.ts", "src/engine/factionTopology.ts", "src/engine/chosenFactionPowers.ts", "src/engine/phaseFactionActions.ts", "src/engine/phaseFactionSuccession.ts", "src/engine/phaseSchismResolution.ts", "src/engine/phaseSecretsFavors.ts", "src/engine/secretGeneration.ts", "src/engine/socialLeverage.ts", "src/engine/phases/faction*.ts", "src/engine/phases/schism*.ts", "src/engine/cultur*.ts", "src/data/faction-constants.ts", "src/data/faction-definitions.ts", "src/data/*-definition.ts", "src/types/faction.ts", "src/types/secretsFavors.ts"]
     },
     {
+      "id": "world-map-reference",
+      "file": "world-map-reference.html",
+      "title": "The World: Hexes, Terrain & Sight",
+      "blurb": "The world as a grid of hexes you can shape — the three nested tiers of place (hex → location → sublocation, one rung at a time); terrain and how divine influence, corruption, and per-location magical saturation remake it; and the two hex-distance sight systems, the god's fog of war (unexplored → visible → remembered) and each mortal's own encounter awareness. Load-bearing: hexes are flat array state, not graph nodes.",
+      "section": "Manual",
+      "sources": ["src/engine/visibility.ts", "src/engine/phaseHexState.ts", "src/engine/phaseMagicalSaturation.ts", "src/engine/hexActorIndex.ts", "src/engine/encounterAwareness.ts", "src/types/visibility.ts", "src/types/hexMutation.ts", "src/data/terrain-transformation-content.ts", "src/lib/hexMath.ts"]
+    },
+    {
       "id": "encounters-agents-reference",
       "file": "encounters-agents-reference.html",
       "title": "Encounters, Agents & Resolution",
