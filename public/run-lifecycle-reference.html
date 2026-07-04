@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Threadbearer — A Run, Start to Finish</title>
+<!--
+  Run Lifecycle Reference (Game Manual Wiki, W1 / THR-586) — dual-layer manual page.
+  Player-manual prose first ("How it plays"), Designer Notes second.
+  Spec: Docs/plans/2026-07-03-game-manual-wiki.md §5 W1. Source spine:
+  Docs/canon/rulebook.md §1/§8/§9, src/data/ascendant-beat-content.ts,
+  src/types/remembrance.ts. The shared wiki nav between the WIKI-NAV markers is
+  injected by scripts/generate-design-wiki.ts — do not hand-write it.
+-->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --parchment: #f4edd8;
+    --parchment-dark: #e8dfc8;
+    --ink: #2c1810;
+    --ink-light: #5a3d2b;
+    --ink-faint: #8a7060;
+    --gold: #b8860b;
+    --gold-light: #daa520;
+    --card-bg: #fff8e7;
+    --red: #8b2500;
+    --blue: #1a3a5c;
+    --blue-light: #2d5f8a;
+    --purple: #4a2d6a;
+    --green: #2d5a27;
+
+    --flag-impl: #2d5a27;
+    --flag-design: #8a4a00;
+    --flag-open: #4a2d6a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--parchment);
+    color: var(--ink);
+    font-family: 'Crimson Text', Georgia, serif;
+    font-size: 16px;
+    line-height: 1.6;
+    min-height: 100vh;
+    background-image:
+      radial-gradient(ellipse at 20% 50%, rgba(184,134,11,0.04) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 30%, rgba(74,45,106,0.03) 0%, transparent 50%);
+  }
+
+  .page-wrapper { max-width: 900px; margin: 0 auto; padding: 40px 32px 72px; }
+
+  /* ── Header ── */
+  .header { text-align: center; margin-bottom: 40px; padding-bottom: 28px; border-bottom: 2px solid var(--gold); position: relative; }
+  .header::after { content: ''; position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); width: 55%; height: 1px; background: var(--gold-light); }
+  .header .eyebrow { font-family: 'Cinzel', Georgia, serif; font-size: 0.72rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold); margin-bottom: 10px; }
+  .header h1 { font-family: 'Cinzel', Georgia, serif; font-weight: 700; font-size: 2.4rem; color: var(--ink); letter-spacing: 0.05em; margin-bottom: 12px; }
+  .header .tagline { font-size: 1.12rem; color: var(--ink-light); max-width: 60ch; margin: 0 auto; font-style: italic; }
+
+  /* ── Sections ── */
+  .section { margin-bottom: 34px; }
+  .section > h2 { font-family: 'Cinzel', Georgia, serif; font-size: 1.25rem; color: var(--ink); letter-spacing: 0.03em; margin-bottom: 6px; padding-bottom: 6px; border-bottom: 1px solid var(--parchment-dark); }
+  .section > h2 .lead { display: block; font-family: 'Crimson Text', Georgia, serif; font-size: 0.95rem; font-style: italic; font-weight: 400; color: var(--ink-faint); letter-spacing: 0; margin-top: 4px; }
+  .section h3 { font-family: 'Cinzel', Georgia, serif; font-size: 1rem; color: var(--ink-light); letter-spacing: 0.02em; margin: 20px 0 6px; }
+  .section p { margin-bottom: 12px; }
+  .section p .term { font-weight: 600; color: var(--ink); }
+  .section ul { margin: 0 0 14px 0; padding-left: 0; list-style: none; }
+  .section ul li { position: relative; padding-left: 1.3rem; margin-bottom: 8px; }
+  .section ul li::before { content: '◆'; position: absolute; left: 0; top: 0.05rem; color: var(--gold); font-size: 0.7rem; }
+
+  /* ── Spine (opening beats) ── */
+  .spine { counter-reset: beat -1; margin: 4px 0 16px; }
+  .spine-beat { display: grid; grid-template-columns: 2.2rem 1fr; gap: 0 14px; padding: 12px 0; border-bottom: 1px dashed var(--parchment-dark); }
+  .spine-beat:last-child { border-bottom: none; }
+  .spine-beat .num { counter-increment: beat; font-family: 'Cinzel', Georgia, serif; font-size: 0.95rem; color: var(--gold); text-align: center; padding-top: 2px; }
+  .spine-beat .num::before { content: counter(beat); }
+  .spine-beat .beat-title { font-family: 'Cinzel', Georgia, serif; font-size: 0.95rem; color: var(--ink); margin-bottom: 2px; }
+  .spine-beat .beat-body { font-size: 0.98rem; color: var(--ink-light); }
+
+  /* ── Callouts ── */
+  .callout { background: var(--card-bg); border: 1px solid var(--parchment-dark); border-left: 4px solid var(--gold); border-radius: 4px; padding: 14px 18px; margin: 4px 0 18px; }
+  .callout.blue { border-left-color: var(--blue-light); }
+  .callout.purple { border-left-color: var(--purple); }
+  .callout .callout-title { font-family: 'Cinzel', Georgia, serif; font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 6px; }
+  .callout p:last-child { margin-bottom: 0; }
+
+  /* ── The two endings ── */
+  .endings { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 6px 0 16px; }
+  .ending { background: var(--card-bg); border: 1px solid var(--parchment-dark); border-radius: 4px; padding: 14px 18px; }
+  .ending.doom { border-top: 3px solid var(--red); }
+  .ending.mandate { border-top: 3px solid var(--gold); }
+  .ending h4 { font-family: 'Cinzel', Georgia, serif; font-size: 0.95rem; color: var(--ink); margin-bottom: 6px; }
+  .ending p { font-size: 0.95rem; color: var(--ink-light); margin-bottom: 0; }
+  @media (max-width: 640px) { .endings { grid-template-columns: 1fr; } }
+
+  /* ── Designer notes ── */
+  .designer { margin-top: 48px; border-top: 2px solid var(--gold); padding-top: 8px; }
+  .designer > summary { list-style: none; cursor: pointer; padding: 16px 4px; display: flex; align-items: baseline; gap: 12px; }
+  .designer > summary::-webkit-details-marker { display: none; }
+  .designer > summary .chev { font-size: 0.8rem; color: var(--gold); transition: transform 0.15s; }
+  .designer[open] > summary .chev { transform: rotate(90deg); }
+  .designer > summary h2 { font-family: 'Cinzel', Georgia, serif; font-size: 1.3rem; color: var(--ink); letter-spacing: 0.03em; }
+  .designer > summary .sub { font-size: 0.9rem; color: var(--ink-faint); font-style: italic; }
+  .designer-body { padding: 4px 4px 8px; }
+  .designer-body h3 { font-family: 'Cinzel', Georgia, serif; font-size: 0.98rem; color: var(--ink-light); margin: 22px 0 8px; }
+  .designer-body p { margin-bottom: 12px; font-size: 0.97rem; }
+  .designer-body ul { margin: 0 0 14px 0; padding-left: 0; list-style: none; }
+  .designer-body ul li { position: relative; padding-left: 1.2rem; margin-bottom: 7px; font-size: 0.97rem; }
+  .designer-body ul li::before { content: '›'; position: absolute; left: 0.15rem; top: 0; color: var(--ink-faint); }
+  code, .mono { font-family: 'JetBrains Mono', monospace; font-size: 0.84em; color: var(--ink); background: rgba(184,134,11,0.10); padding: 0.05rem 0.32rem; border-radius: 3px; word-break: break-word; }
+
+  .flag { font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; letter-spacing: 0.04em; font-weight: 500; padding: 0.08rem 0.4rem; border-radius: 3px; color: #fff; white-space: nowrap; }
+  .flag.impl { background: var(--flag-impl); }
+  .flag.design { background: var(--flag-design); }
+  .flag.open { background: var(--flag-open); }
+
+  table.tunables { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin: 4px 0 18px; }
+  table.tunables th { text-align: left; font-family: 'Cinzel', Georgia, serif; font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-faint); padding: 6px 10px 6px 0; border-bottom: 1px solid var(--parchment-dark); }
+  table.tunables td { padding: 7px 10px 7px 0; border-bottom: 1px solid var(--parchment-dark); vertical-align: top; color: var(--ink-light); }
+  table.tunables td:first-child { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--ink); white-space: nowrap; }
+
+  .foot { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--parchment-dark); font-size: 0.85rem; color: var(--ink-faint); font-style: italic; }
+  a { color: var(--blue-light); text-decoration: none; border-bottom: 1px solid rgba(45,95,138,0.35); }
+  a:hover { color: var(--blue); border-bottom-color: var(--blue); }
+</style>
+</head>
+<body>
+<!--WIKI-NAV-->
+<style>
+  .wiki-nav { font-family: 'Cinzel', Georgia, serif; background: #2c1810; border-bottom: 2px solid #b8860b; padding: 0.6rem 1.2rem; display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.4rem 1.1rem; }
+  .wiki-nav__brand { color: #daa520; font-weight: 700; letter-spacing: 0.04em; margin-right: 0.6rem; font-size: 0.95rem; }
+  .wiki-nav__link { color: #f4edd8; text-decoration: none; font-size: 0.85rem; letter-spacing: 0.02em; padding: 0.15rem 0.1rem; border-bottom: 2px solid transparent; transition: color 0.15s, border-color 0.15s; }
+  .wiki-nav__link:hover { color: #daa520; }
+  .wiki-nav__link.is-active { color: #daa520; border-bottom-color: #b8860b; font-weight: 700; }
+</style>
+<nav class="wiki-nav" aria-label="Design Reference Wiki">
+  <span class="wiki-nav__brand">⌖ Design Reference Wiki</span>
+  <a class="wiki-nav__link" href="design-wiki.html">Design Wiki</a>
+  <a class="wiki-nav__link is-active" href="run-lifecycle-reference.html" aria-current="page">A Run, Start to Finish</a>
+      <a class="wiki-nav__link" href="encounters-agents-reference.html">Encounters, Agents &amp; Resolution</a>
+      <a class="wiki-nav__link" href="tick-cycle-reference.html">Tick Cycle Reference</a>
+      <a class="wiki-nav__link" href="action-catalog.html">Action Catalog</a>
+</nav>
+<!--/WIKI-NAV-->
+<div class="page-wrapper">
+
+  <header class="header">
+    <div class="eyebrow">Game Manual · The Run</div>
+    <h1>A Run, Start to Finish</h1>
+    <p class="tagline">One world, one lifetime of a god. This is the shape of a whole run — from remembering who you were, through the middle game, to the ending that feeds the next world.</p>
+  </header>
+
+  <!-- ══════════════════ HOW IT PLAYS ══════════════════ -->
+
+  <section class="section">
+    <h2>What a run is<span class="lead">A single playthrough is the life of one god over one world, beginning to end.</span></h2>
+    <p>You are an <span class="term">Ascendant</span> — a mortal who climbed the long ladder, transcended, and now looks down at a world still full of mortals on it. You are not the protagonist and you never will be. The protagonists are the mortals below; the whole game lives in the gap between what they choose and what you can lean them toward.</p>
+    <p>A run carries you from the moment you <span class="term">remember who you were</span>, through your first threads and the middle game, to a <span class="term">Twilight</span> that ends the world one way or another. Every run asks a single question and answers it in the story you leave behind: <em>what kind of god are you?</em></p>
+  </section>
+
+  <section class="section">
+    <h2>Remembrance — choosing who you were<span class="lead">Before the world opens, you assemble the god you became out of the mortal you were.</span></h2>
+    <p>A run opens in <span class="term">remembrance</span>. You piece together two halves of yourself:</p>
+    <ul>
+      <li><span class="term">The mortal echo</span> — where you came from and what drove you, and the name you carried when you were still one of them.</li>
+      <li><span class="term">The divine transformation</span> — the <span class="term">hunger</span> that now defines you (Witness, Maker, Sovereign, and others), the <span class="term">sphere</span> that fuels you, and the <span class="term">court</span> you keep.</li>
+    </ul>
+    <p>This identity is a <em>starting taste</em>, not a class. It tilts which mortals catch your eye and which spheres come cheaply — but the world, not the character sheet, reveals whether you keep it. Nothing here locks you into a playstyle; it colours where you begin.</p>
+  </section>
+
+  <section class="section">
+    <h2>Your two domains<span class="lead">Every god favours exactly two Reaches, fixed for the entire run.</span></h2>
+    <p>Of the <span class="term">Eight Reaches</span> — the activities a god acts through — your remembered identity settles on <span class="term">one primary and one secondary domain</span>. These two are permanent for the run. They decide which divine actions ever appear to you: cards that belong to Reaches outside your two domains simply never show, no matter how much power you gather. This is a boundary, not a wall to climb — it is the shape of <em>this</em> god, and a different remembrance next run draws a different pair.</p>
+    <p>What grows <em>within</em> your domains is your reach — your capability climbs as you act, opening deeper and rarer expressions of the two Reaches you already own.</p>
+  </section>
+
+  <section class="section">
+    <h2>The opening — The First, and a path that opens<span class="lead">A short scripted arc teaches the god's basic gestures and ends with a choice.</span></h2>
+    <p>The world does not drop you into open play cold. A brief authored spine walks you through a god's first five gestures — each one a small, voiced moment, each one granting the tool it describes:</p>
+    <div class="spine">
+      <div class="spine-beat"><div class="num"></div><div><div class="beat-title">The First</div><div class="beat-body">Of all the souls below, one burns at a pitch only you can hear. You lean close and a single thread spins out — your first bond to a mortal. Whatever kind of god you become is answered first in <span class="term">The First</span>.</div></div></div>
+      <div class="spine-beat"><div class="num"></div><div><div class="beat-title">The Seat</div><div class="beat-body">A god adrift is only weather. You bind a place to yourself and call it your <span class="term">seat</span> — the faith that gathers there rises back to you as power, tide after tide.</div></div></div>
+      <div class="spine-beat"><div class="num"></div><div><div class="beat-title">A Thing Left Behind</div><div class="beat-body">You press a sliver of your nature into a humble object and it wakes — your first <span class="term">artifact</span>, carrying your will into hands you will never touch.</div></div></div>
+      <div class="spine-beat"><div class="num"></div><div><div class="beat-title">The First Word</div><div class="beat-body">A god is known by what it asks of the world. You speak your first word into a mortal mind — not a command, but a pressure, a leaning, a dream they mistake for their own.</div></div></div>
+      <div class="spine-beat"><div class="num"></div><div><div class="beat-title">A Path Opens</div><div class="beat-body">Three shapes of devotion lie before you. The <span class="term">dreamer</span> reads the deep water of sleeping minds; the <span class="term">prophet</span> writes warnings across the waking sky; the <span class="term">patron</span> lifts the worthy higher than they could climb alone. You choose one — and with it receive your <span class="term">primary reach signature</span>, your domain's headline power.</div></div></div>
+    </div>
+    <div class="callout purple">
+      <div class="callout-title">Your second signature comes later</div>
+      <p>The primary reach signature is granted here, in the opening. The <span class="term">secondary signature</span> — the headline power of your other domain — arrives later in the run as its own story moment, not at the start. Acquiring divine power is itself an event, not a menu.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>The middle game<span class="lead">The long stretch where you play the god you chose to be.</span></h2>
+    <p>Play settles into the <span class="term">three-beat turn</span>: you <span class="term">scan</span> the world, step into a <span class="term">curated moment</span>, and sit with the <span class="term">aftermath</span> before scanning again. The world is turn-based — the clock only advances when you say so, and one tick is two in-world hours, twelve to a day. Doing nothing is always a valid move.</p>
+    <p>Across the middle game your threads deepen from distant intuition toward devotion; your <span class="term">essence</span> pools fill from worshippers and places of power and drain into the effects you sustain; your court grows around The First. And two clocks tighten in the background — the middle game is the space you have before one of them runs out.</p>
+  </section>
+
+  <section class="section">
+    <h2>How a run ends<span class="lead">Either clock ends the run. Neither is, structurally, a win or a loss.</span></h2>
+    <p>Two clocks pressure every run from opposite directions, and whichever lands first ends it:</p>
+    <div class="endings">
+      <div class="ending mandate">
+        <h4>The Mandate completes</h4>
+        <p>Your declared win-state is satisfied before the Unmaking arrives. The world survives — and <em>you</em> shaped what survives.</p>
+      </div>
+      <div class="ending doom">
+        <h4>The Doom Clock culminates</h4>
+        <p>The Unmaking comes before your Mandate is met. The world is remade or unmade, in the shape of its doom.</p>
+      </div>
+    </div>
+    <p>Either way, the run passes into the <span class="term">Twilight Phase</span> — its closing chapter. In Twilight you do not act; you <em>witness</em>. The world collapses or transforms, the threads you held resolve, and <span class="term">echoes</span> are harvested from what mattered most: <span class="term">Legacy</span> from mortals whose arcs completed, <span class="term">Monument</span> from places where the world changed, <span class="term">Relic</span> from artifacts you bound deeply.</p>
+    <div class="callout blue">
+      <div class="callout-title">Both endings are kinds of endings, not kinds of wins</div>
+      <p>The game is not, structurally, about winning. It is about <em>what kind of being you chose to be toward a world you could not save unconditionally.</em> A run that produced a story you can tell in prose was a good run — whichever clock ran out first.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>What carries over<span class="lead">The kind of god you were becomes an ingredient in the next world.</span></h2>
+    <p>You are not playing for a high score. The echoes harvested in Twilight update the <span class="term">World-Soul</span> that underlies every cycle, and the next run draws on it — thematic weight, biased generation, a world subtly shaped by every god that came before. A pacifist Witness whose run ended in Doom seeds the next world with grief; a triumphal Sovereign who completed a Mandate seeds it with order. The next world is not a sequel — it is a <em>response</em>.</p>
+    <p><em>Planned:</em> alongside the World-Soul, a run also feeds a per-account layer of <span class="term">permanent unlocks</span> that widen the run-start picker — the remembrance options you can choose from — so the account, not just the world, accumulates across runs. This metaprogression layer is still being built.</p>
+  </section>
+
+  <!-- ══════════════════ DESIGNER NOTES ══════════════════ -->
+
+  <details class="designer" open>
+    <summary>
+      <span class="chev">▶</span>
+      <span>
+        <h2>Designer Notes</h2>
+        <span class="sub">Implementation status, key surfaces, and canon pointers for the run lifecycle.</span>
+      </span>
+    </summary>
+    <div class="designer-body">
+
+      <p>Status flags follow the rulebook convention: <span class="flag impl">IMPL</span> shipped and wired, <span class="flag design">DESIGN</span> specified but partially or not yet wired, <span class="flag open">OPEN</span> an unresolved question (referenced from the rulebook — this page mints none).</p>
+
+      <h3>Identity &amp; remembrance <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li><code>AscendantIdentity</code> (<code>src/types/remembrance.ts</code>) carries the mortal echo (<code>mortalName</code>, <code>originFragmentId</code>, <code>driveFragmentId</code>, <code>timeSinceAscension</code>) and the divine transformation (<code>hungerId</code>, <code>sphereAlignment</code>, <code>courtType</code>, <code>mandateDirection</code>, <code>domainAffinities</code>, <code>personalitySeed</code>).</li>
+        <li>The "two domains" are the top-ranked entries in <code>domainAffinities: Partial&lt;Record&lt;ReachDomain, number&gt;&gt;</code> — the primary and secondary Reaches for the run.</li>
+        <li>Dev seeding: <code>DEV_ASCENDANT_IDENTITY</code> (hunger.witness) backs the <code>?view=game&amp;seeded</code> quick-start; see CLAUDE.md dev URLs.</li>
+        <li>Remembrance flow, ascendant selection, and worldgen are the run's entry points; identity is a starting taste, not a class (rulebook §1).</li>
+      </ul>
+
+      <h3>The opening spine &amp; beat director <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li><code>ASCENDANT_SPINE</code> (<code>src/data/ascendant-beat-content.ts</code>) — five scripted <code>BeatDefinition</code>s in order: <code>beat.spine.opening</code> (The First), <code>the_seat</code>, <code>thing_left_behind</code>, <code>the_first_word</code>, <code>a_path_opens</code>. Authored copy in <code>SPINE_BEAT_PRESENTATION</code>; surfaced by <code>AscendantBeatModal.tsx</code>.</li>
+        <li>Beat 4 (<code>a_path_opens</code>) is <code>kind: 'selection'</code> — the 1-of-3 god-path choice (dreamer / prophet / patron) — and <em>also</em> carries <code>grantsReachSignature: 'primary'</code>. The two grants are orthogonal: the selection grants the chosen path, the signature slot grants the run's primary reach signature on top (THR-523).</li>
+        <li>The <span class="term">secondary</span> reach signature is a dynamic <code>grantsReachSignature: 'secondary'</code> pool beat, not part of the scripted spine — acquired later in the run (THR-523 / THR-553 / THR-555). Both signatures are resolved from the ascendant's ranked <code>domainAffinities</code>.</li>
+        <li>Beat scheduling &amp; resolution: <code>src/engine/ascendantBeat.ts</code>, <code>src/engine/ascendantBeatSeeding.ts</code>. Types: <code>src/types/ascendantBeat.ts</code>.</li>
+      </ul>
+
+      <h3>Two-domain permanence <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li>The domain boundary is a permanent set-membership filter, not an aspiration: <code>getTargetActionSlots()</code> applies the <code>requiresReach</code> gate (THR-503) so action cards for out-of-domain Reaches never surface. Capability grows within a domain; the pair itself does not change mid-run.</li>
+        <li>Deep drill-down: <a href="action-catalog.html">Action Catalog</a> (real availability buckets) and the divine-actions manual page (W4).</li>
+      </ul>
+
+      <h3>Run end, Twilight &amp; metaprogression <span class="flag design">DESIGN</span></h3>
+      <ul>
+        <li>Both clocks and the Twilight trigger are specified in rulebook §8–§9. The Doom Clock is <span class="flag impl">IMPL</span> (<code>DOOM_CLOCK_ARCHETYPES</code> / <code>DOOM_STAGE_NAMES</code>, <code>src/types/doomClock.ts</code>); the Victory Mandate's three-stage structure is named but not all stages are wired.</li>
+        <li>Twilight, echo harvest (Legacy / Monument / Relic), and World-Soul next-cycle seeding are partial: <code>src/types/worldSoul.ts</code> plus adjacent plans. Sphere aggregation into the soul is the most-wired piece; harvest and next-cycle injection are partial.</li>
+        <li>Per-account permanent unlocks + run-start picker are the metaprogression carryover layer; unlock-model verdicts live in the THR-390 design audit. Not yet built as an account-persistent layer.</li>
+      </ul>
+
+      <h3>Constants</h3>
+      <table class="tunables">
+        <thead><tr><th>Constant</th><th>Value</th><th>Purpose · file</th></tr></thead>
+        <tbody>
+          <tr><td>TICKS_PER_DAY</td><td>12</td><td>Turn cadence (tick = 2 in-world hours) · <code>src/data/attention-constants.ts</code></td></tr>
+          <tr><td>SPINE_TRIGGER_TURNS</td><td>per-beat</td><td>Turn thresholds gating each of the 5 spine beats · <code>src/data/ascendant-beat-content.ts</code></td></tr>
+          <tr><td>DOOM_STAGE_NAMES</td><td>5 stages</td><td>Whispers · Signs · Tremors · Crisis · Culmination · <code>src/types/doomClock.ts</code></td></tr>
+        </tbody>
+      </table>
+
+      <h3>Canon &amp; terminology</h3>
+      <ul>
+        <li>Rulebook: <code>Docs/canon/rulebook.md</code> §1 (What You Are), §8 (The Clocks), §9 (Winning and Losing). Cosmology framing: <code>Docs/canon/cosmology.md</code>.</li>
+        <li>UL authority (terminology wins on any disagreement): <code>Docs/ubiquitous-language/Agents.md</code> (Ascendant, Thread, The First), <code>Docs/ubiquitous-language/Cosmology.md</code> (Reach, Sphere).</li>
+        <li>Deep Reference drill-downs: <a href="encounters-agents-reference.html">Encounters, Agents &amp; Resolution</a>, <a href="tick-cycle-reference.html">Tick Cycle Reference</a>.</li>
+      </ul>
+
+      <h3>Open questions <span class="flag open">OPEN</span></h3>
+      <ul>
+        <li>Referenced, not minted here: Twilight authorship vs. emergence (rulebook Open Q #6) and session length / "3–6 encounters per session" as discipline vs. tuned target (rulebook Open Q #4).</li>
+      </ul>
+
+    </div>
+  </details>
+
+  <div class="foot">
+    Game Manual Wiki · W1 (THR-586). Player layer describes current shipped behavior; anything not yet wired is flagged <span class="flag design">DESIGN</span> and introduced as "planned". Terminology is UL-exact; where this page and the UL disagree, the UL wins and this page is a drift bug.
+  </div>
+
+</div>
+</body>
+</html>
