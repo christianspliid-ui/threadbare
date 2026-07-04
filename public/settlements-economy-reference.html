@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Threadbearer — Settlements, Prosperity &amp; Trade</title>
+<!--
+  Settlements, Prosperity & Trade (Game Manual Wiki, W13 / THR-598) — dual-layer
+  manual page. Player-manual prose first ("How it plays"), Designer Notes second.
+  Spec: Docs/plans/2026-07-03-game-manual-wiki.md §5 W13; template §3.
+  Systems spec authority: Docs/plans/2026-03-17-gold-reach-economic-systems-design.md
+  (the Gold Reach economic systems design — settlement tiers, prosperity, trade,
+  economic traits). No dedicated UL shard covers these economic terms yet (see the
+  honest UL-gap note in Designer Notes). The shared wiki nav between the WIKI-NAV
+  markers is injected by scripts/generate-design-wiki.ts — do not hand-write it.
+
+  Accuracy notes (verified against code this pass — do not "correct" back):
+  - Settlement tiers are hamlet → town → city, with capital fixed (never promotes
+    or demotes). Promotion at sustained prosperity ≥ 70 for 20 ticks; demotion at
+    ≤ 20 for the same window (phaseSettlementPromotion.ts). Sickness / low
+    population health suppresses promotion.
+  - Prosperity is an EQUILIBRIUM model (phaseProsperity.ts): a 0–100 value drifting
+    toward a target set by trade routes, faction presence, corruption, unrest,
+    divine influence, sphere affinity; plus one-time shocks. Resources set the
+    carrying-capacity CEILING, not passive growth. Cities/capitals pay upkeep.
+  - Unrest (phaseUnrest.ts) is DECAY-ONLY in its own phase — it is driven UP by
+    encounter complications (complicationEffects.ts), doom effects (phaseDoom.ts),
+    and player actions; the phase only decays it and emits threshold-CLEAR traces.
+    Unrest genuinely influences action resolution, omen aggregation, and survey
+    prose (IMPL). The named defection (70) / sack (90) threshold CONSEQUENCES are
+    risk markers, not auto-fired settlement-loss events — flag DESIGN, do not claim
+    an automatic sack fires.
+  - Trade routes are enriched `trades_with` edges (tradeRoute.ts), volume 1–10,
+    decaying 1/tick after a 5-tick freshness window (phaseTradeRouteDecay.ts).
+  - Base resources are timber/stone/ore/water (terrain-seeded, resourceSeeding.ts);
+    10 anomaly resources sit on special anomaly locations (ANOMALY_RESOURCE_MAP).
+  - Honest scope: the economy is texture serving story, not a trading sim. Keep the
+    scope note; do not oversell it into a market simulation.
+-->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --parchment: #f4edd8;
+    --parchment-dark: #e8dfc8;
+    --ink: #2c1810;
+    --ink-light: #5a3d2b;
+    --ink-faint: #8a7060;
+    --gold: #b8860b;
+    --gold-light: #daa520;
+    --card-bg: #fff8e7;
+    --red: #8b2500;
+    --blue: #1a3a5c;
+    --blue-light: #2d5f8a;
+    --purple: #4a2d6a;
+    --green: #2d5a27;
+
+    --flag-impl: #2d5a27;
+    --flag-design: #8a4a00;
+    --flag-open: #4a2d6a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--parchment);
+    color: var(--ink);
+    font-family: 'Crimson Text', Georgia, serif;
+    font-size: 16px;
+    line-height: 1.6;
+    min-height: 100vh;
+    background-image:
+      radial-gradient(ellipse at 20% 50%, rgba(26,58,92,0.05) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 30%, rgba(184,134,11,0.04) 0%, transparent 50%);
+  }
+
+  .page-wrapper { max-width: 900px; margin: 0 auto; padding: 40px 32px 72px; }
+
+  /* ── Header ── */
+  .header { text-align: center; margin-bottom: 40px; padding-bottom: 28px; border-bottom: 2px solid var(--gold); position: relative; }
+  .header::after { content: ''; position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); width: 55%; height: 1px; background: var(--gold-light); }
+  .header .eyebrow { font-family: 'Cinzel', Georgia, serif; font-size: 0.72rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold); margin-bottom: 10px; }
+  .header h1 { font-family: 'Cinzel', Georgia, serif; font-weight: 700; font-size: 2.4rem; color: var(--ink); letter-spacing: 0.05em; margin-bottom: 12px; }
+  .header .tagline { font-size: 1.12rem; color: var(--ink-light); max-width: 64ch; margin: 0 auto; font-style: italic; }
+
+  /* ── Sections ── */
+  .section { margin-bottom: 34px; }
+  .section > h2 { font-family: 'Cinzel', Georgia, serif; font-size: 1.25rem; color: var(--ink); letter-spacing: 0.03em; margin-bottom: 6px; padding-bottom: 6px; border-bottom: 1px solid var(--parchment-dark); }
+  .section > h2 .lead { display: block; font-family: 'Crimson Text', Georgia, serif; font-size: 0.95rem; font-style: italic; font-weight: 400; color: var(--ink-faint); letter-spacing: 0; margin-top: 4px; }
+  .section h3 { font-family: 'Cinzel', Georgia, serif; font-size: 1rem; color: var(--ink-light); letter-spacing: 0.02em; margin: 20px 0 6px; }
+  .section p { margin-bottom: 12px; }
+  .section p .term { font-weight: 600; color: var(--ink); }
+  .section ul { margin: 0 0 14px 0; padding-left: 0; list-style: none; }
+  .section ul li { position: relative; padding-left: 1.3rem; margin-bottom: 8px; }
+  .section ul li::before { content: '◆'; position: absolute; left: 0; top: 0.05rem; color: var(--gold); font-size: 0.7rem; }
+
+  /* ── Tier ladder (hamlet → capital) ── */
+  .tiers { margin: 12px 0 18px; }
+  .tier { display: grid; grid-template-columns: 7.2rem 1fr; gap: 0 12px; align-items: baseline; padding: 9px 0; border-bottom: 1px solid var(--parchment-dark); }
+  .tier .name { font-family: 'Cinzel', Georgia, serif; font-size: 0.84rem; color: var(--gold); letter-spacing: 0.04em; }
+  .tier .desc { font-size: 0.94rem; color: var(--ink-light); }
+  .tier .desc .who { font-weight: 600; color: var(--ink); }
+  @media (max-width: 620px) { .tier { grid-template-columns: 1fr; gap: 2px; } }
+
+  /* ── Card grid ── */
+  .card-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 10px 0 18px; }
+  .card-grid.three { grid-template-columns: repeat(3, 1fr); }
+  .card { background: var(--card-bg); border: 1px solid var(--parchment-dark); border-radius: 4px; padding: 11px 14px; border-left: 3px solid var(--gold); }
+  .card.blue { border-left-color: var(--blue-light); }
+  .card.red { border-left-color: var(--red); }
+  .card.green { border-left-color: var(--green); }
+  .card.purple { border-left-color: var(--purple); }
+  .card h4 { font-family: 'Cinzel', Georgia, serif; font-size: 0.84rem; color: var(--ink); margin: 0 0 2px; }
+  .card p { font-size: 0.8rem; color: var(--ink-light); margin: 0; }
+  @media (max-width: 620px) { .card-grid, .card-grid.three { grid-template-columns: 1fr; } }
+
+  /* ── Callouts ── */
+  .callout { background: var(--card-bg); border: 1px solid var(--parchment-dark); border-left: 4px solid var(--gold); border-radius: 4px; padding: 14px 18px; margin: 4px 0 18px; }
+  .callout.blue { border-left-color: var(--blue-light); }
+  .callout.purple { border-left-color: var(--purple); }
+  .callout.red { border-left-color: var(--red); }
+  .callout.green { border-left-color: var(--green); }
+  .callout .callout-title { font-family: 'Cinzel', Georgia, serif; font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 6px; }
+  .callout p:last-child { margin-bottom: 0; }
+
+  /* ── Designer notes ── */
+  .designer { margin-top: 48px; border-top: 2px solid var(--gold); padding-top: 8px; }
+  .designer > summary { list-style: none; cursor: pointer; padding: 16px 4px; display: flex; align-items: baseline; gap: 12px; }
+  .designer > summary::-webkit-details-marker { display: none; }
+  .designer > summary .chev { font-size: 0.8rem; color: var(--gold); transition: transform 0.15s; }
+  .designer[open] > summary .chev { transform: rotate(90deg); }
+  .designer > summary h2 { font-family: 'Cinzel', Georgia, serif; font-size: 1.3rem; color: var(--ink); letter-spacing: 0.03em; }
+  .designer > summary .sub { font-size: 0.9rem; color: var(--ink-faint); font-style: italic; }
+  .designer-body { padding: 4px 4px 8px; }
+  .designer-body h3 { font-family: 'Cinzel', Georgia, serif; font-size: 0.98rem; color: var(--ink-light); margin: 22px 0 8px; }
+  .designer-body p { margin-bottom: 12px; font-size: 0.97rem; }
+  .designer-body ul { margin: 0 0 14px 0; padding-left: 0; list-style: none; }
+  .designer-body ul li { position: relative; padding-left: 1.2rem; margin-bottom: 7px; font-size: 0.97rem; }
+  .designer-body ul li::before { content: '›'; position: absolute; left: 0.15rem; top: 0; color: var(--ink-faint); }
+  code, .mono { font-family: 'JetBrains Mono', monospace; font-size: 0.84em; color: var(--ink); background: rgba(184,134,11,0.10); padding: 0.05rem 0.32rem; border-radius: 3px; word-break: break-word; }
+
+  .flag { font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; letter-spacing: 0.04em; font-weight: 500; padding: 0.08rem 0.4rem; border-radius: 3px; color: #fff; white-space: nowrap; }
+  .flag.impl { background: var(--flag-impl); }
+  .flag.design { background: var(--flag-design); }
+  .flag.open { background: var(--flag-open); }
+
+  table.tunables { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin: 4px 0 18px; }
+  table.tunables th { text-align: left; font-family: 'Cinzel', Georgia, serif; font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-faint); padding: 6px 10px 6px 0; border-bottom: 1px solid var(--parchment-dark); }
+  table.tunables td { padding: 7px 10px 7px 0; border-bottom: 1px solid var(--parchment-dark); vertical-align: top; color: var(--ink-light); }
+  table.tunables td:first-child { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--ink); white-space: nowrap; }
+
+  .foot { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--parchment-dark); font-size: 0.85rem; color: var(--ink-faint); font-style: italic; }
+  a { color: var(--blue-light); text-decoration: none; border-bottom: 1px solid rgba(45,95,138,0.35); }
+  a:hover { color: var(--blue); border-bottom-color: var(--blue); }
+</style>
+</head>
+<body>
+<!--WIKI-NAV-->
+<style>
+  .wiki-nav { font-family: 'Cinzel', Georgia, serif; background: #2c1810; border-bottom: 2px solid #b8860b; padding: 0.6rem 1.2rem; display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.4rem 1.1rem; }
+  .wiki-nav__brand { color: #daa520; font-weight: 700; letter-spacing: 0.04em; margin-right: 0.6rem; font-size: 0.95rem; }
+  .wiki-nav__link { color: #f4edd8; text-decoration: none; font-size: 0.85rem; letter-spacing: 0.02em; padding: 0.15rem 0.1rem; border-bottom: 2px solid transparent; transition: color 0.15s, border-color 0.15s; }
+  .wiki-nav__link:hover { color: #daa520; }
+  .wiki-nav__link.is-active { color: #daa520; border-bottom-color: #b8860b; font-weight: 700; }
+</style>
+<nav class="wiki-nav" aria-label="Design Reference Wiki">
+  <span class="wiki-nav__brand">⌖ Design Reference Wiki</span>
+  <a class="wiki-nav__link" href="design-wiki.html">Design Wiki</a>
+  <a class="wiki-nav__link" href="run-lifecycle-reference.html">A Run, Start to Finish</a>
+      <a class="wiki-nav__link" href="cosmology-reference.html">Reaches, Spheres &amp; Quintessence</a>
+      <a class="wiki-nav__link" href="turn-structure-reference.html">The Three-Beat Turn</a>
+      <a class="wiki-nav__link" href="divine-actions-reference.html">Divine Actions &amp; Prerequisites</a>
+      <a class="wiki-nav__link" href="threads-court-reference.html">Threads, the Court &amp; The First</a>
+      <a class="wiki-nav__link" href="essence-control-reference.html">Essence, Control &amp; Sustained Power</a>
+      <a class="wiki-nav__link" href="encounters-manual-reference.html">Encounters &amp; Aftermath</a>
+      <a class="wiki-nav__link" href="clocks-reference.html">Doom, the Mandate &amp; Omens</a>
+      <a class="wiki-nav__link" href="interface-reference.html">Reading the Interface</a>
+      <a class="wiki-nav__link" href="agents-reference.html">The Mortals</a>
+      <a class="wiki-nav__link" href="factions-cultures-reference.html">Factions, Cultures &amp; Secrets</a>
+      <a class="wiki-nav__link" href="world-map-reference.html">The World: Hexes, Terrain &amp; Sight</a>
+      <a class="wiki-nav__link is-active" href="settlements-economy-reference.html" aria-current="page">Settlements, Prosperity &amp; Trade</a>
+      <a class="wiki-nav__link" href="encounters-agents-reference.html">Encounters, Agents &amp; Resolution</a>
+      <a class="wiki-nav__link" href="tick-cycle-reference.html">Tick Cycle Reference</a>
+      <a class="wiki-nav__link" href="action-catalog.html">Action Catalog</a>
+</nav>
+<!--/WIKI-NAV-->
+<div class="page-wrapper">
+
+  <header class="header">
+    <div class="eyebrow">Game Manual · The Living World</div>
+    <h1>Settlements, Prosperity &amp; Trade</h1>
+    <p class="tagline">Villages rise into cities and slump back into hamlets, all on their own. Prosperity and unrest are a settlement's pulse; trade routes are its arteries; the land beneath it sets the ceiling on how large it can ever grow.</p>
+  </header>
+
+  <!-- ══════════════════ HOW IT PLAYS ══════════════════ -->
+
+  <section class="section">
+    <h2>Settlements grow and shrink on their own<span class="lead">A place that thrives for long enough grows into something bigger; a place that suffers for long enough falls. You do not build settlements tier by tier — you shape the conditions, and the world does the rest.</span></h2>
+    <p>Every built place in the world sits at one of four sizes. A <span class="term">hamlet</span> is a scatter of homes; a <span class="term">town</span> is a proper market; a <span class="term">city</span> is a seat of trade and power; and a <span class="term">capital</span> is the fixed heart of a realm. The first three are alive to their fortunes: hold a hamlet in good times long enough and it grows into a town, then a city — and let a city rot in hard times long enough and it shrinks the same way, city to town to hamlet. Growth is never a single lucky season; a place has to <em>sustain</em> its fortune for a good stretch before it changes.</p>
+    <p>A capital is the exception — it never grows and never falls. It is the anchor its realm is measured against, not a fortune that swings. And a settlement that is sick — its wells poisoned, its people ailing — cannot grow no matter how rich it is; a place must be healthy as well as prosperous to rise.</p>
+    <div class="tiers">
+      <div class="tier"><span class="name">Hamlet</span><span class="desc"><span class="who">A handful of homes.</span> The smallest settled place. Grows into a town on sustained good fortune.</span></div>
+      <div class="tier"><span class="name">Town</span><span class="desc"><span class="who">A market and a wall.</span> The middle rung — can rise to a city or slip back to a hamlet.</span></div>
+      <div class="tier"><span class="name">City</span><span class="desc"><span class="who">A seat of trade and power.</span> The largest that fortune alone can build — and the first to feel the cost of hard times, since it must be fed.</span></div>
+      <div class="tier"><span class="name">Capital</span><span class="desc"><span class="who">The fixed heart of a realm.</span> Never promotes, never demotes. An anchor, not a fortune.</span></div>
+    </div>
+    <div class="callout">
+      <div class="callout-title">When a settlement changes, it is a moment</div>
+      <p>A rise or a fall is not a silent number. When a place grows or shrinks a tier, the world marks it — a chronicle entry is written ("A Settlement Rises", "A Settlement Falls"), and the place is quietly re-appraised: a grown city gains the kinds of places a city should have, a fallen hamlet loses what it can no longer support.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Prosperity and unrest — a settlement's pulse<span class="lead">Prosperity is how well a place is doing; unrest is how close it is to boiling over. Together they are the vital signs that decide whether a settlement rises, holds, or falls.</span></h2>
+    <p><span class="term">Prosperity</span> is a settlement's wealth and health of trade, measured on a scale from destitute to flourishing. It does not drift at random — it always moves <em>toward a target</em> set by the place's real conditions: live trade routes and a strong faction presence lift the target; corruption in the ground, high unrest, and a sickly economy drag it down; a matching sphere in the world's makeup nudges it either way. If nothing about a place changes, its prosperity settles and stays put. When it moves, it moves for a reason you can name — a road opened, a raid struck, a blessing landed. Growth and decline always trace to a visible cause.</p>
+    <p><span class="term">Unrest</span> is the other half of the pulse — political instability, the pressure of a people ready to riot, defect, or be sacked. Unrest builds when things go wrong: a betrayal in an encounter, the poisonous reach of the Doom Clock, a god stirring the pot on purpose. Left alone, it cools a little every turn, and prosperity cools it faster — a content, well-fed town settles quickly. But push it high enough and it becomes a real danger: a deeply unsettled place is a place where loyalties fray and worse things wait. Unrest colours everything that happens there — the odds of what mortals attempt, the omens the world throws up, the tone of the reports you read.</p>
+    <div class="callout red">
+      <div class="callout-title">Two dials worth watching</div>
+      <p>Prosperity and unrest pull against each other. A rich, calm settlement climbs toward a promotion; a poor, seething one slides toward a fall. If you want a place to grow, you feed its prosperity and drain its unrest — open trade, plant your influence, settle its people. If you want a rival's stronghold to crumble, you do the reverse.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Trade routes — the arteries between places<span class="lead">Settlements that trade with one another are richer for it. A route is a living thing: use it and it thrives, neglect it and it withers to nothing.</span></h2>
+    <p>Where two settlements exchange goods, a <span class="term">trade route</span> runs between them — a road carrying a particular kind of ware, with a <span class="term">volume</span> that measures how much flows along it. A busy route is worth real prosperity to both ends. But a route is only as alive as its last caravan: leave it un-travelled for a while and its volume begins to bleed away, turn by turn, until — if no one trades on it again — the road falls silent and the route dissolves entirely. A route can also be <em>threatened</em> by bandits or war, or <em>controlled</em> by a faction that taxes what passes, and either shows in what the route is worth.</p>
+    <p>This is why a web of trade is a fragile, tended thing rather than a permanent fixture. Roads that carry commerce hold the realm together; roads that carry nothing quietly disappear, and the places they once fed feel the loss.</p>
+    <div class="callout blue">
+      <div class="callout-title">A road falling silent is news</div>
+      <p>When a trade route finally dies, the world records it — "A Road Falls Silent" — and the settlements at either end take a one-time knock to their prosperity, feeling the artery close. New routes, likewise, arrive as good news and a small lift. The economy speaks in these small, legible events.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>The land sets the ceiling<span class="lead">Resources are what the ground beneath a settlement can give. They do not make a place grow — they decide how large it is <em>allowed</em> to grow, and where the rare and remarkable can be found.</span></h2>
+    <p>Every place is seeded, at the world's making, with the <span class="term">resources</span> its terrain affords: <span class="term">timber</span> from forests, <span class="term">stone</span> and <span class="term">ore</span> from mountains, <span class="term">water</span> from rivers and coasts. These common goods set a settlement's <span class="term">carrying capacity</span> — the ceiling on how prosperous it can become. A rich vein of ore or a broad stand of timber lets a place grow large; a barren hex holds it small, no matter how much trade or blessing it receives. Resources are the ground's promise, not a river of passive income; they cap what is possible rather than pouring wealth in.</p>
+    <p>Scattered across the map, too, are rarer places — <span class="term">anomalies</span>. A gem deposit, a crystal cavern, a golden grove, a sunken treasury: each hides an uncommon resource found nowhere in ordinary terrain, and each quietly draws the curious and the perceptive toward it. The sharp-eyed and the veil-touched among mortals feel the pull of an undiscovered anomaly like a scent on the wind, and the discovery of one is a small event in itself.</p>
+    <div class="callout green">
+      <div class="callout-title">Honest scope — this is texture, not a trading sim</div>
+      <p>Threadbearer's economy exists to make the world feel <em>alive and consequential</em>, not to be played as a market. You will never balance a ledger or set a tax rate by hand. Settlements rise and fall, roads open and close, fortunes turn — and all of it feeds the story of a place: who prospers, who suffers, what a god's meddling did to a corner of the world. The economy is a story engine wearing a merchant's coat.</p>
+    </div>
+  </section>
+
+  <!-- ══════════════════ DESIGNER NOTES ══════════════════ -->
+
+  <details class="designer" open>
+    <summary>
+      <span class="chev">▶</span>
+      <span>
+        <h2>Designer Notes</h2>
+        <span class="sub">Settlement tier promotion/demotion on sustained prosperity, the prosperity equilibrium model, unrest as a decay-only phase driven up elsewhere, enriched <code>trades_with</code> route decay, settlement-genome reassessment, economic traits and the economic chronicle, and terrain-seeded resources plus anomalies — with honest IMPL/DESIGN status.</span>
+      </span>
+    </summary>
+    <div class="designer-body">
+
+      <p>Status flags follow the rulebook convention: <span class="flag impl">IMPL</span> shipped and wired, <span class="flag design">DESIGN</span> specified but partially or not yet wired, <span class="flag open">OPEN</span> an unresolved question (referenced, never minted here). The systems-spec authority for this page is <code>Docs/plans/2026-03-17-gold-reach-economic-systems-design.md</code> (the Gold Reach economic systems design). <strong>Honest UL note:</strong> the Ubiquitous Language shards do not yet carry dedicated entries for <em>Prosperity</em>, <em>Unrest</em>, <em>Trade Route</em>, or the settlement-tier subtypes — this is a known documentation gap, noted not re-opened; the code (<code>phaseProsperity.ts</code> et al.) is the working authority until a UL shard is minted.</p>
+
+      <h3>Settlement tier promotion / demotion <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li><code>phaseSettlementPromotion(state, runtime?)</code> runs once per tick, <em>after</em> <code>phaseProsperity</code>. It walks all <code>location</code> nodes whose <code>locationSubtype</code> is a settlement subtype (<code>hamlet</code>, <code>town</code>, <code>city</code>, <code>capital</code>), skipping <code>capital</code> entirely — capitals never change tier.</li>
+        <li>Each settlement carries two sustain counters on its node properties: <code>prosperitySustainAboveTicks</code> and <code>prosperitySustainBelowTicks</code>. When prosperity is <code>≥ SETTLEMENT_PROMOTION_PROSPERITY 70</code> the above-counter increments (and the below-counter resets); when <code>≤ SETTLEMENT_DEMOTION_PROSPERITY 20</code> the below-counter increments (above resets); the mid-band leaves both alone. A tier change fires when a counter reaches <code>SETTLEMENT_PROMOTION_SUSTAIN_TICKS 20</code> — promotion <code>hamlet→town→city</code>, demotion <code>city→town→hamlet</code>. Counters reset to 0 after any change.</li>
+        <li><strong>Health gate (THR-401):</strong> promotion is suppressed while a settlement is sickened (<code>wellsSickenedUntilTick</code> in the future) or its <code>populationHealth</code> is below <code>LOC_HEALTH_DAMPENER_THRESHOLD</code> — a sick place cannot grow, and its above-counter is reset to be safe. Demotion has no such gate.</li>
+        <li>A tier change mutates <code>locationSubtype</code> in place, calls <code>applyEncounterCacheUpdate(runtime, …onLocationTypeChanged)</code> so encounter scoring sees the new type, emits a <code>settlement_tier_change</code> trace, resolves an economic-chronicle entry (significance 0.9, fail-soft to a plain <code>TickEvent</code> if template resolution returns null), and sets <code>pendingReassessment</code> for the next phase.</li>
+      </ul>
+
+      <h3>Prosperity — equilibrium model <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li><code>phaseProsperity(state)</code> models prosperity as a <code>0–100</code> value that <em>drifts toward a target</em> at <code>PROSPERITY_DRIFT_RATE 0.05</code> (minimum step <code>PROSPERITY_DRIFT_MIN 0.1</code>, per-tick change clamped to <code>PROSPERITY_DELTA_CLAMP 2</code>). Pure arithmetic — no PRNG. If conditions are static, prosperity settles; every movement traces to a named input.</li>
+        <li><strong>Target inputs:</strong> <code>PROSPERITY_TRADE_BONUS_PER_ROUTE 8</code> per live route; <code>FACTION_PRESENCE_BONUS 5</code> (cap <code>15</code>); corruption penalty above <code>CORRUPTION_TARGET_THRESHOLD 0.2</code> (up to <code>−25</code>); divine-influence bonus above <code>DIVINE_TARGET_THRESHOLD 0.3</code> (up to <code>+15</code>); unrest penalty above <code>UNREST_TARGET_THRESHOLD 30</code> (up to <code>−20</code>); a small sphere-affinity term (Life/Energy bonus, Entropy penalty, capped at <code>PROSPERITY_SPHERE_CAP 0.15</code>).</li>
+        <li><strong>Carrying capacity is a ceiling, not income:</strong> <code>BASE_CARRYING_CAPACITY 30 + resources × RESOURCE_CAPACITY_RATE 0.5</code>, capped at <code>MAX_CARRYING_CAPACITY 100</code>. Cities and capitals pay upkeep (<code>UPKEEP_CITY 5</code>, <code>UPKEEP_CAPITAL 8</code>) — they decay toward decline without active support.</li>
+        <li><strong>Shocks:</strong> one-time deltas pushed by upstream phases via <code>state.prosperityShocks</code> — e.g. <code>SHOCK_TRADE_ROUTE_ESTABLISHED +3</code>, <code>SHOCK_TRADE_ROUTE_LOST −3</code>, <code>SHOCK_FACTION_ARRIVAL +2</code>. Tier bands (<code>PROSPERITY_TIER_FLOURISHING 80</code> / <code>PROSPEROUS 60</code> / <code>MODEST 40</code> / <code>STRUGGLING 20</code>) are the named prose thresholds.</li>
+      </ul>
+
+      <h3>Unrest — decay-only phase, driven up elsewhere <span class="flag impl">IMPL</span> <span class="flag design">DESIGN</span></h3>
+      <ul>
+        <li><code>phaseUnrest(state)</code> is <strong>decay-only</strong>. Per settlement it applies <code>UNREST_DECAY_RATE 1</code>/tick, plus an extra <code>UNREST_PROSPERITY_DAMPER 0.5</code> when prosperity &gt; 60, minus a health-bleed when population health is low (THR-401). It clamps to <code>[0,100]</code>, writes back <code>location.properties.unrest</code>, and emits an <code>unrest_tick</code> trace. It is <em>not</em> where unrest rises.</li>
+        <li>Unrest is driven <strong>up</strong> by other systems: encounter complications (<code>complicationEffects.ts</code>), Doom Clock effects (<code>phaseDoom.ts</code>), and player actions (e.g. Incite Unrest). It is <strong>read</strong> as a real pressure by action resolution (<code>unifiedActionResolution.ts</code> — unrest at the location shifts outcomes), omen aggregation (<code>phaseOmenAgenda.ts</code>), and survey prose (<code>surveyProseComposer.ts</code>). That loop is IMPL.</li>
+        <li><strong>DESIGN — threshold consequences:</strong> <code>UNREST_DEFECTION_THRESHOLD 70</code> and <code>UNREST_SACK_THRESHOLD 90</code> are named <em>risk markers</em>. The phase only emits <code>defection_cleared</code> / <code>sack_risk_cleared</code> traces when unrest decays back below them; an automatic defection roll or settlement-sack event at those thresholds is <strong>not</strong> auto-fired here. Treat the thresholds as documented risk lines feeding scoring and prose, not as a wired settlement-loss trigger.</li>
+      </ul>
+
+      <h3>Trade route decay <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li>Trade routes are enriched <code>trades_with</code> graph edges (<code>tradeRoute.ts</code>, additive over the pre-existing <code>volume</code> field): <code>volume 1–TRADE_ROUTE_MAX_VOLUME 10</code>, plus <code>goodsType</code>, <code>established</code>, <code>lastTraded</code>, <code>controlledBy</code> (a taxing faction/agent, or null), and <code>threatened</code>. All fields fail-soft to canonical defaults via <code>readTradeRouteProps</code>.</li>
+        <li><code>phaseTradeRouteDecay(state)</code>: a route is stale when <code>currentTick − lastTraded &gt; TRADE_ROUTE_FRESHNESS_WINDOW 5</code>. Stale routes lose <code>TRADE_ROUTE_DECAY_RATE 1</code> volume/tick; at volume 0 the edge is removed, a <code>trade_route_dissolved</code> summary trace fires, a <code>SHOCK_TRADE_ROUTE_LOST −3</code> prosperity shock is pushed to both endpoints, and an economic-chronicle "A Road Falls Silent" entry is resolved.</li>
+      </ul>
+
+      <h3>Settlement genome reassessment <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li><code>phaseSettlementReassessment(state)</code> consumes the <code>pendingReassessment</code> flag set by a tier change (or any other trigger). After <code>PROMOTION_REASSESSMENT_DELAY</code> (so it never runs on the same tick as the change), it re-runs <code>runSettlementGenome</code> to update the settlement's archetype, sublocation menu, and NPC budget for its new size. Actual sublocation creation/destruction from the genome result is handled by <code>phaseSublocations</code> (materialization).</li>
+        <li><code>phaseSublocations(state, cache, runtime)</code> spawns and dissolves sublocations per predicate — e.g. a <code>mine</code> spawns only where the location has <code>ore</code> or <code>stone</code> resource — so a settlement's interior places track both its tier and its ground.</li>
+      </ul>
+
+      <h3>Economic traits &amp; the economic chronicle <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li><code>phaseEconomicTraits(state)</code> (after <code>phaseProsperity</code>) assigns/removes eight economic <code>has_trait</code> traits that emerge from activity: <code>trade-baron</code>, <code>guild-sworn</code>, <code>monopolist</code>, <code>smuggler</code>, <code>patron</code> (reputations/masteries) and <code>bankrupt</code>, <code>debt-laden</code>, <code>coin-cursed</code> (scars/conditions) — gated by wealth tiers (<code>WEALTH_TIER_WEALTHY</code> etc.) and thresholds such as <code>ECON_TRAIT_TRADE_BARON_MIN_ROUTES</code>.</li>
+        <li><code>phaseEconomicChronicle(state)</code> and <code>economicChronicle.ts</code> resolve economic events into chronicle chapters. Twelve triggers are titled: settlement promotion/demotion, trade route established/died, guild founded, monopoly established/broken, mercenary hire, assassination commissioned, agreement broken, and wealth tier up/down. Deterministic (seeded per node), fail-soft to a plain event if a template is missing.</li>
+      </ul>
+
+      <h3>Resources &amp; anomalies <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li><code>seedLocationResources(graph, locationIds, cosmology, rng)</code> (<code>resourceSeeding.ts</code>, called during <code>seedWorld()</code>) places terrain-based resources — the four base goods <code>timber</code>, <code>stone</code>, <code>ore</code>, <code>water</code> from <code>TERRAIN_RESOURCE_TABLE</code>, with cosmology sphere weights biasing quantities (<code>COSMOLOGY_RESOURCE_BONUS 15</code>). Resources feed prosperity's carrying-capacity ceiling, not passive income.</li>
+        <li><strong>Anomalies:</strong> ten special anomaly locations map to uncommon resources via <code>ANOMALY_RESOURCE_MAP</code> (<code>gem_deposit→gemstones</code>, <code>crystal_cavern→arcane_crystal</code>, <code>golden_grove→golden_sap</code>, <code>herb_garden→medicinal_herb</code>, <code>ancient_vault→ancient_relic</code>, <code>sunken_treasury→sunken_gold</code>, <code>fossil_bed→fossil_amber</code>, <code>iron_seep→star_metal</code>, <code>pearl_shoal→pearls</code>, <code>glowcap_hollow→glowcap</code>). An undiscovered anomaly (<code>isAnomalyLocation</code>) grants an encounter-scoring <em>discovery bonus</em> to Eye/Veil-skilled agents (<code>computeAnomalyDiscoveryBonus</code>, <code>encounterScoring.ts</code>) — the perceptive are drawn to find them.</li>
+      </ul>
+
+      <h3>Tick placement <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li>Order within the tick (<code>orchestrator.ts</code>): <code>phaseTradeRouteDecay</code> → … → <code>phaseProsperity</code> → <code>phaseEconomicTraits</code> → <code>phaseSettlementPromotion</code> → <code>phaseSettlementReassessment</code> → … → <code>phaseUnrest</code> → … → <code>phaseSublocations</code> → <code>phaseEconomicChronicle</code>. Prosperity is computed before promotion reads it; reassessment follows the tier change it reacts to; the chronicle closes the economic beat.</li>
+      </ul>
+
+      <h3>Constants</h3>
+      <table class="tunables">
+        <thead><tr><th>Constant</th><th>Value</th><th>Purpose · file</th></tr></thead>
+        <tbody>
+          <tr><td>SETTLEMENT_PROMOTION_PROSPERITY</td><td>70</td><td>Prosperity at/above which the promotion counter accrues · <code>phaseProsperity.ts:57</code></td></tr>
+          <tr><td>SETTLEMENT_DEMOTION_PROSPERITY</td><td>20</td><td>Prosperity at/below which the demotion counter accrues · <code>:63</code></td></tr>
+          <tr><td>SETTLEMENT_PROMOTION_SUSTAIN_TICKS</td><td>20</td><td>Sustain window for a tier change (both directions) · <code>:60</code></td></tr>
+          <tr><td>PROSPERITY_DRIFT_RATE</td><td>0.05</td><td>Fraction of the gap to target closed per tick · <code>:79</code></td></tr>
+          <tr><td>PROSPERITY_DELTA_CLAMP</td><td>2</td><td>Max prosperity change per tick · <code>:76</code></td></tr>
+          <tr><td>PROSPERITY_TRADE_BONUS_PER_ROUTE</td><td>8</td><td>Target lift per live trade route · <code>:87</code></td></tr>
+          <tr><td>BASE_CARRYING_CAPACITY</td><td>30</td><td>Prosperity ceiling floor before resources · <code>:125</code></td></tr>
+          <tr><td>MAX_CARRYING_CAPACITY</td><td>100</td><td>Absolute prosperity ceiling · <code>:131</code></td></tr>
+          <tr><td>UPKEEP_CITY / UPKEEP_CAPITAL</td><td>5 / 8</td><td>Per-tick upkeep drag on large settlements · <code>:136,139</code></td></tr>
+          <tr><td>UNREST_DECAY_RATE</td><td>1</td><td>Natural unrest cooling per tick · <code>phaseUnrest.ts:25</code></td></tr>
+          <tr><td>UNREST_PROSPERITY_DAMPER</td><td>0.5</td><td>Extra decay when prosperity &gt; 60 · <code>:26</code></td></tr>
+          <tr><td>UNREST_DEFECTION_THRESHOLD</td><td>70</td><td>Defection risk marker (DESIGN — not auto-fired) · <code>:27</code></td></tr>
+          <tr><td>UNREST_SACK_THRESHOLD</td><td>90</td><td>Sack risk marker (DESIGN — not auto-fired) · <code>:28</code></td></tr>
+          <tr><td>TRADE_ROUTE_MAX_VOLUME</td><td>10</td><td>Volume ceiling on a <code>trades_with</code> edge · <code>tradeRoute.ts:18</code></td></tr>
+          <tr><td>TRADE_ROUTE_DECAY_RATE</td><td>1</td><td>Volume lost per tick once stale · <code>:21</code></td></tr>
+          <tr><td>TRADE_ROUTE_FRESHNESS_WINDOW</td><td>5</td><td>Idle ticks before decay begins · <code>:27</code></td></tr>
+          <tr><td>COSMOLOGY_RESOURCE_BONUS</td><td>15</td><td>Max resource quantity bonus from sphere weight · <code>resource-content.ts:589</code></td></tr>
+        </tbody>
+      </table>
+
+      <h3>Canon &amp; terminology</h3>
+      <ul>
+        <li>Systems spec: <code>Docs/plans/2026-03-17-gold-reach-economic-systems-design.md</code> — the Gold Reach economic systems design (settlement tiers, prosperity equilibrium, trade routes, economic traits). Phase source: <code>phaseProsperity.ts</code>, <code>phaseSettlementPromotion.ts</code>, <code>phaseSettlementReassessment.ts</code>, <code>phaseUnrest.ts</code>, <code>phaseTradeRouteDecay.ts</code>, <code>tradeRoute.ts</code>, <code>phaseEconomicTraits.ts</code>, <code>economicChronicle.ts</code>, <code>resourceSeeding.ts</code>, <code>phaseSublocations.ts</code>.</li>
+        <li>UL: no dedicated economic shard yet — <em>Prosperity</em>, <em>Unrest</em>, <em>Trade Route</em>, and the settlement subtypes are a known documentation gap (surface a <code>UL-proposal</code> if it needs closing). Related places live in <code>Docs/ubiquitous-language/Graph.md</code> (Location / Sublocation nodes, the <code>trades_with</code> edge).</li>
+        <li>Adjacent Manual pages: <a href="world-map-reference.html">The World: Hexes, Terrain &amp; Sight</a> (the ground settlements sit on, and its resources), <a href="factions-cultures-reference.html">Factions, Cultures &amp; Secrets</a> (faction presence lifts prosperity; factions tax routes), <a href="agents-reference.html">The Mortals</a> (who prospers and riots), <a href="clocks-reference.html">Doom, the Mandate &amp; Omens</a> (doom effects drive unrest up). Game title in player copy: <strong>Threadbearer</strong>.</li>
+      </ul>
+
+      <h3>Open questions <span class="flag open">OPEN</span></h3>
+      <ul>
+        <li>None minted here. The clearest honest gap is the unwired <em>consequence</em> of the unrest defection/sack thresholds (flagged DESIGN above) and the missing UL economic shard — both are documentation/design debt, referenced not opened. New open questions surface in chat and land in the rulebook's Open Questions list, never on this page.</li>
+      </ul>
+
+    </div>
+  </details>
+
+  <div class="foot">
+    Game Manual Wiki · W13 (THR-598). Player layer describes current shipped behaviour; anything not yet wired is flagged <span class="flag design">DESIGN</span> or <span class="flag open">OPEN</span>. Terminology is UL-exact where the UL covers it; economic terms have no shard yet (a noted gap). The economy is texture serving story, not a trading sim — the one framing this page must never oversell.
+  </div>
+
+</div>
+</body>
+</html>
