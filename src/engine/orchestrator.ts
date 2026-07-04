@@ -112,8 +112,16 @@ import { phaseMandate, resetMandateCounter } from './phaseMandate';
 export { phaseMandate } from './phaseMandate';
 import { resetInfluenceCounter } from './interventionEffects';
 import { resetMeetingCounter } from './meetingEncounter';
-import { phaseJourneyBeat } from './journeyEngine';
+import { phaseJourneyBeat, getJourneyPhase } from './journeyEngine';
 import { JOURNEY_BEAT_TEMPLATES } from '../data/journey-content';
+import { CURATION_PHASE_MULTIPLIERS } from './encounter/branchingConstants';
+import {
+  buildChapterRecord,
+  appendChapters,
+  emitChapterArchivedTrace,
+  isEncounterAction,
+} from './chapterArchive';
+import type { ChapterRecord } from '../types/chapterRecord';
 import { phaseOmenAgenda, resetOmenCounter } from './phaseOmenAgenda';
 import { phaseComposition } from './phaseComposition';
 import { phaseAscendantBeatDirector } from './ascendantBeat';
@@ -1980,6 +1988,14 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   const newYear = Math.floor(s.tick / 360);
   s = { ...s, clock: { ...s.clock, currentTick: s.tick, season: newSeason, year: newYear } };
 
+  // THR-603: recompute the doom-phase curation-generosity multiplier once per tick,
+  // before agent decisions score encounters. A gentle world-pressure lean — encounter
+  // density stays player-authored; this only nudges branching-quest surfacing as doom climbs.
+  if (runtime) {
+    const phase = getJourneyPhase(s.doomClock.progress);
+    runtime.curationPhaseMultiplier = CURATION_PHASE_MULTIPLIERS[phase];
+  }
+
   // Track events per phase for trace
   const phaseEventCounts: Record<string, number> = {};
   let agentsProcessed = 0;
@@ -2657,6 +2673,10 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
 
   // Stamp completedAtTick on newly-resolved actions, then prune old resolved ones
   if (s.unifiedActions && s.unifiedActions.length > 0) {
+    // THR-603: distil each newly-resolved encounter into a persistent ChapterRecord
+    // here — BEFORE the prune below discards its steps/choices/aftermath. This decouples
+    // "always readable" from `RESOLVED_ACTION_RETENTION_TICKS` (which stays unchanged).
+    const newlyArchived: ChapterRecord[] = [];
     const stamped = s.unifiedActions.map(a => {
       if (a.resolved && a.completedAtTick == null) {
         // THR-470: count each branching fire exactly once, here at the newly-resolved
@@ -2665,12 +2685,25 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
         if (runtime && isBranchingTemplate(a.templateId)) runtime.branchingFiresTotal++;
         // THR-541: same pattern for threaded beats (rich = multi-step or branching).
         if (runtime && isRichTemplate(a.templateId)) runtime.threadedBeatsTotal++;
-        return { ...a, completedAtTick: s.tick };
+        const stampedAction = { ...a, completedAtTick: s.tick };
+        if (isEncounterAction(a.templateId)) {
+          const record = buildChapterRecord(stampedAction, s, runtime);
+          if (record) newlyArchived.push(record);
+        }
+        return stampedAction;
       }
       return a;
     });
+    const nextArchive =
+      newlyArchived.length > 0 ? appendChapters(s.chapterArchive ?? [], newlyArchived) : s.chapterArchive;
+    // One trace per archived chapter — bounded by the resolution rate, not agent count,
+    // so this cannot flood the ring buffer the way a per-agent burst would.
+    for (const rec of newlyArchived) {
+      emitChapterArchivedTrace(rec, s.tick, nextArchive?.length ?? 0);
+    }
     s = {
       ...s,
+      chapterArchive: nextArchive,
       unifiedActions: stamped.filter(a =>
         !a.resolved || a.completedAtTick == null || s.tick - a.completedAtTick < RESOLVED_ACTION_RETENTION_TICKS,
       ),

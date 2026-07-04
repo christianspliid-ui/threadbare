@@ -1,4 +1,4 @@
-export type TabId = 'overview' | 'prowess' | 'attachments' | 'bonds' | 'journey' | 'chronicle';
+export type TabId = 'overview' | 'prowess' | 'attachments' | 'bonds' | 'journey' | 'chronicle' | 'chapters';
 
 interface TabBarProps {
   activeTab: TabId;
@@ -12,6 +12,7 @@ const TABS: { id: TabId; label: string }[] = [
   { id: 'bonds', label: 'Bonds' },
   { id: 'journey', label: 'Journey' },
   { id: 'chronicle', label: 'Chronicle' },
+  { id: 'chapters', label: 'Chapters' },
 ];
 
 export function TabBar({ activeTab, onTabChange }: TabBarProps) {

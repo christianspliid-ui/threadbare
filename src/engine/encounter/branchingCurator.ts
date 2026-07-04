@@ -39,6 +39,13 @@ import {
 export interface BranchingCuratorRuntime {
   eligibilityFunnel: EligibilityFunnelCounters | null;
   traceBuffer?: TraceBuffer;
+  /**
+   * Doom-phase generosity multiplier (THR-603), computed once per tick from
+   * `CURATION_PHASE_MULTIPLIERS[getJourneyPhase(doomClock.progress)]`. Absent →
+   * treated as 1.0 (neutral). Multiplies the branching bias so a crumbling world
+   * surfaces branching quests a little more readily.
+   */
+  curationPhaseMultiplier?: number;
 }
 
 /**
@@ -73,8 +80,11 @@ export function computeBranchingCuratorMultiplier(
     }
   }
 
-  emitCuratorNudgeTrace(runtime?.traceBuffer, agentId, entry.templateId, tick);
-  return BRANCHING_CURATOR_BIAS_WEIGHT;
+  // THR-603: gentle doom-phase generosity ramp — a crumbling world crests more crises.
+  const phaseMultiplier = runtime?.curationPhaseMultiplier ?? 1.0;
+  const boost = BRANCHING_CURATOR_BIAS_WEIGHT * phaseMultiplier;
+  emitCuratorNudgeTrace(runtime?.traceBuffer, agentId, entry.templateId, tick, phaseMultiplier);
+  return boost;
 }
 
 /**
@@ -86,6 +96,7 @@ function emitCuratorNudgeTrace(
   agentId: string,
   templateId: string,
   tick: number,
+  curationPhaseMultiplier: number,
 ): void {
   if (!traceBuffer) return;
   traceBuffer.push({
@@ -93,7 +104,9 @@ function emitCuratorNudgeTrace(
     tick,
     agentId,
     templateId,
-    weight: BRANCHING_CURATOR_BIAS_WEIGHT,
+    weight: BRANCHING_CURATOR_BIAS_WEIGHT * curationPhaseMultiplier,
     cooldownTicks: BRANCHING_CURATOR_COOLDOWN,
+    // THR-603: additive field — the doom-phase generosity multiplier applied this tick.
+    curationPhaseMultiplier,
   });
 }

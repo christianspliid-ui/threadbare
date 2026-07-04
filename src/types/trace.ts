@@ -273,7 +273,9 @@ export type TraceCategory =
   | 'ascendant.signature.rift'
   | 'ascendant.signature.rift_leak'
   // Reach signature: Stone / The Great Work (THR-552)
-  | 'ascendant.signature.unique_location';
+  | 'ascendant.signature.unique_location'
+  // Encounter chapter archive (THR-603)
+  | 'encounter.chapter_archived';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'action_selection', 'narrative_generation', 'context_harvest',
@@ -519,6 +521,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'ascendant.signature.rift_leak',
   // Reach signature: Stone / The Great Work (THR-552)
   'ascendant.signature.unique_location',
+  // Encounter chapter archive (THR-603)
+  'encounter.chapter_archived',
 ];
 
 /** Base shape for all trace entries */
@@ -1814,7 +1818,21 @@ export type TraceEntry =
   | BeatSkippedTrace
   | BeatResolvedTrace
   | BeatSeededTrace
-  | ActionUnlockGrantedTrace;
+  | ActionUnlockGrantedTrace
+  // Encounter chapter archive (THR-603)
+  | ChapterArchivedTrace;
+
+/** Trace: a resolved encounter was distilled into a persistent Chapter Record. THR-603 */
+export interface ChapterArchivedTrace extends TraceBase {
+  category: 'encounter.chapter_archived';
+  actionId: string;
+  templateId: string;
+  outcome: string; // UnifiedActionOutcome
+  /** Whether the actor was threaded at resolution time. */
+  threaded: boolean;
+  /** Post-append archive size — surfaces eviction pressure (inspectability). */
+  archiveSize: number;
+}
 
 /** Trace: the Director scheduled an ascendant beat to offer this turn. THR-500 */
 export interface BeatScheduledTrace extends TraceBase {
@@ -2381,6 +2399,8 @@ export interface BranchingCuratorNudgeTrace extends TraceBase {
   /** Multiplier applied to the template's finalScore. */
   weight: number;
   cooldownTicks: number;
+  /** THR-603: doom-phase generosity multiplier folded into `weight` this tick (1.0 = neutral). */
+  curationPhaseMultiplier?: number;
 }
 
 /** Full resolution input payload emitted at every NPC action resolution (THR-451 Phase A). */

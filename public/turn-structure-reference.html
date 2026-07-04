@@ -236,13 +236,13 @@
   </section>
 
   <section class="section">
-    <h2>Encounters are chapters, not turns<span class="lead">The curated moment is the game's chapter unit — and there are only a handful per sitting.</span></h2>
-    <p>It would be easy to imagine an encounter fires on every tick. It does not. The curated moment is meant to be <em>rare and weighty</em> — a real chapter with a beginning, a choice, and a consequence, not a slot machine you pull each step. The intended rhythm is roughly <span class="term">three to six encounters across a whole session</span> (planned target), with many quieter ticks between them where you scan, tend your portfolio, and let the world breathe.</p>
+    <h2>Encounters are chapters, not turns<span class="lead">The curated moment is the game's chapter unit — and you author how many by how many threads you weave.</span></h2>
+    <p>It would be easy to imagine an encounter fires on every tick. It does not. The curated moment is a real chapter with a beginning, a choice, and a consequence, not a slot machine you pull each step. But their <em>density is largely yours to author</em>: a quiet portfolio goes many ticks between chapters; a god with a dozen threads in motion generates them far more often. The world adds a gentle lean toward more chapters as the doom clock climbs — a crumbling world crests more crises. The game never rations chapters. Between them are quieter ticks where you scan, tend your portfolio, and let the world breathe.</p>
     <div class="callout purple">
-      <div class="callout-title">A note on pacing</div>
-      <p>That "three to six per session" figure is a <em>design discipline</em>, not yet a tuned dial the game enforces. It names the feel we are building toward: chapters that earn their place. As real play data arrives, a gentle stopping-point signal may be added so a session finds its natural close.</p>
+      <div class="callout-title">A note on density</div>
+      <p>Encounter density is <em>player-authored</em>, with a gentle world-pressure lean toward more as doom climbs (<code>CURATION_PHASE_MULTIPLIERS</code> — set to flat to disable). "Three to six per session" is retired as doctrine; it survives only as an untuned observation about a comfortable single sitting. The real design problem is not <em>how many</em> — it is <em>reading many at once</em>, answered by the <span class="term">Chapter Ledger</span>: every encounter, running or finished, stays fully readable for the whole run. What remains open is only whether the game should offer a soft stopping-point signal, pending real play data.</p>
     </div>
-    <p>The point of the frozen clock, the deliberate scan, and the rationed chapters is the same: to make each moment you <em>do</em> enter feel chosen. A god who could see everything at once and act every tick would be a spreadsheet. The three-beat turn keeps you a witness with a hand — looking, choosing, and living with it.</p>
+    <p>The point of the frozen clock, the deliberate scan, and the chapters you choose to enter is the same: to make each moment you <em>do</em> enter feel chosen. A god who could see everything at once and act every tick would be a spreadsheet. The three-beat turn keeps you a witness with a hand — looking, choosing, and living with it.</p>
   </section>
 
   <!-- ══════════════════ DESIGNER NOTES ══════════════════ -->
@@ -277,10 +277,10 @@
         <li>The Scan beat leans on the attention system, which is partially wired: <code>ATTENTION_BASE_CAPACITY = 6</code> (<code>src/data/attention-constants.ts:19</code>) is the base pool, but the full portfolio surface — attention tugs, thread-stress signals, the whole scan UI — is in progress under the <strong>Attention Tier Model</strong> project. The beat contract is stable; the surface that dresses it is not fully built. See the attention-story page (W16) for the deep treatment.</li>
       </ul>
 
-      <h3>Encounter pacing target <span class="flag design">DESIGN</span></h3>
+      <h3>Encounter density <span class="flag design">DESIGN→IMPL</span></h3>
       <ul>
-        <li>&quot;Three to six encounters per <em>session</em> — not per tick&quot; is the pacing target from <code>Docs/plans/2026-05-04-encounter-experience-design-plan.md</code>. It is held as <strong>design discipline, not a tuned or enforced dial</strong>; there is no session-length governor in code.</li>
-        <li>Rulebook Open Q #4 (session length) is <strong>deferred to KPI data</strong> (<code>last_considered: 2026-06-23</code>): a soft stopping-point signal is a candidate once the THR-457 KPI harness yields real session data. This page references that open question; it does not mint a new one.</li>
+        <li>Encounter density is <strong>player-authored</strong> (more threads woven and interventions made → more chapters) with a <strong>gentle doom-phase lean</strong> (<code>CURATION_PHASE_MULTIPLIERS</code>, <code>branchingConstants.ts</code>; set flat to disable). The game <strong>never rations</strong> chapters — settled 2026-07-04, THR-603. "Three to six per session" is retired as doctrine.</li>
+        <li>Rulebook Open Q #4: the <em>density</em> half is now <strong>resolved</strong>; only the <em>stopping-point signal</em> half remains deferred to KPI data (<code>last_considered: 2026-07-04</code>) — a soft "good place to stop" nudge, once the THR-457 harness yields real session data. This page references that open question; it does not mint a new one.</li>
       </ul>
 
       <h3>The full phase order lives elsewhere</h3>
@@ -295,7 +295,7 @@
         <tbody>
           <tr><td>TICKS_PER_DAY</td><td>12</td><td>Ticks per in-world day (1 tick = 2h) · <code>src/data/attention-constants.ts:14</code></td></tr>
           <tr><td>ATTENTION_BASE_CAPACITY</td><td>6</td><td>Base attention pool the Scan beat draws on · <code>src/data/attention-constants.ts:19</code></td></tr>
-          <tr><td>Encounters / session</td><td>3–6</td><td>Pacing target (design discipline, not enforced) · <code>Docs/plans/2026-05-04-encounter-experience-design-plan.md</code></td></tr>
+          <tr><td>Encounter density</td><td>player-authored + doom lean</td><td>Settled THR-603; never rationed · <code>CURATION_PHASE_MULTIPLIERS</code> in <code>branchingConstants.ts</code></td></tr>
         </tbody>
       </table>
 

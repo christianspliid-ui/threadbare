@@ -74,6 +74,7 @@ import { FactionSheet } from './FactionSheet';
 import { ArmySheet } from './ArmySheet';
 import { ArtifactSheet } from './ArtifactSheet';
 import { AgentProfileModal } from './AgentProfileModal';
+import { ChapterLedger } from './ChapterLedger';
 import { StrandView } from './StrandView';
 import { InterventionConfirm } from './InterventionConfirm';
 import { ChoiceSetModal } from './ChoiceSetModal';
@@ -233,6 +234,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   // ── Read the Threads panel state ──
   const [readThreadsOpen, setReadThreadsOpen] = useState(false);
   const [lastReadThreadsTick, setLastReadThreadsTick] = useState(0);
+  // THR-603: Chapter Ledger overlay open/close.
+  const [chapterLedgerOpen, setChapterLedgerOpen] = useState(false);
 
   // ── Last viewed tick tracking (drives "new" badges on digest entries) ──
   const { markViewed, getLastViewedTick } = useLastViewedTick();
@@ -3636,6 +3639,32 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                   sustainedControls={sustainedControls}
                   onChampionChipClick={openAgentProfileForId}
                 />
+                {/* THR-603: open the Chapter Ledger — every encounter, always readable */}
+                <button
+                  type="button"
+                  onClick={() => setChapterLedgerOpen(true)}
+                  style={{
+                    marginTop: 'var(--panel-padding)',
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px',
+                    padding: '8px',
+                    background: 'var(--bg-panel, rgba(255,255,255,0.02))',
+                    border: '1px solid var(--border-subtle, #40382c)',
+                    borderRadius: '8px',
+                    color: 'var(--text-secondary)',
+                    cursor: 'pointer',
+                    fontSize: 'var(--text-sm)',
+                  }}
+                  aria-label="Open the Chapter Ledger"
+                >
+                  📖 Chapter Ledger
+                  <span style={{ color: 'var(--text-tertiary, #6a6255)', fontSize: 'var(--text-xs)' }}>
+                    {gameState.chapterArchive?.length ?? 0}
+                  </span>
+                </button>
                 <div style={{ marginTop: 'var(--panel-padding)' }}>
                   <WorldPulse
                     gameState={gameState}
@@ -3708,9 +3737,22 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
             onClose={handleCloseProfile}
             scrollToNewStrata={agentInfoCard.backstory?.strata.some(s => s.isNew) ?? false}
             knowledge={profileModalAgentId ? gameState.agentKnowledge.get(profileModalAgentId) : undefined}
+            gameState={gameState}
+            runtime={runtime}
+            onOpenEntity={openAgentProfileForId}
           />
         )}
       </AnimateMount>
+
+      {/* Chapter Ledger — always-readable archive of every encounter (THR-603) */}
+      {chapterLedgerOpen && (
+        <ChapterLedger
+          gameState={gameState}
+          runtime={runtime}
+          onClose={() => setChapterLedgerOpen(false)}
+          onOpenEntity={openAgentProfileForId}
+        />
+      )}
 
       {/* Delve progress overlay — active delves for bonded agents (THR-152) */}
       {(gameState.activeDelves?.some(d => !d.aborted && d.beatIndex <= d.totalBeats) || gameState.pendingEmergenceDecision) && (

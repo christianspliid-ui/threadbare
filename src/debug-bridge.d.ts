@@ -470,6 +470,15 @@ export interface DebugBridge {
    */
   setHomeSeat: (locationRef?: string) => SetHomeSeatResult;
 
+  /**
+   * Resolved encounter Chapter Records (THR-603), always readable for the whole run.
+   * Optional `filter` matches actor id/name, template id, or a participant id/name.
+   */
+  getChapterArchive: (filter?: string) => {
+    count: number;
+    records: ReadonlyArray<import('./types/chapterRecord').ChapterRecord>;
+  };
+
   getEncounterLogAll: () => Promise<EncounterLogSummary>;
   exportEncounterLogAll: (agentNames?: Record<string, string>, seed?: string) => Promise<EncounterLogExportResult>;
   /** Returns total encounter cache full-rebuild count for this session (THR-187). */

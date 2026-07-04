@@ -20,6 +20,9 @@ import { ChronicleTab } from './tabs/ChronicleTab';
 import { AttachmentsTab } from './tabs/AttachmentsTab';
 import { IconButton } from '../shared/IconButton';
 import { getSphereColor } from '../../data/sphereIcons';
+import { ChapterLedger } from './ChapterLedger';
+import type { GameState } from '../../types/gameState';
+import type { SimulationRuntime } from '../../engine/simulationRuntime';
 
 export interface AgentProfileModalProps {
   card: AgentInfoCardData;
@@ -29,9 +32,15 @@ export interface AgentProfileModalProps {
   scrollToNewStrata?: boolean;
   /** Per-agent multi-facet knowledge — when present, enables facet-gated sections */
   knowledge?: AgentKnowledge;
+  /** Live game state — enables the Chapters tab (THR-603). */
+  gameState?: GameState;
+  /** Simulation runtime — used to build live active-chapter views in the Chapters tab. */
+  runtime?: SimulationRuntime;
+  /** Open another entity's profile from a chapter's cast. */
+  onOpenEntity?: (id: string) => void;
 }
 
-export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata, knowledge }: AgentProfileModalProps) {
+export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata, knowledge, gameState, runtime, onOpenEntity }: AgentProfileModalProps) {
   const [activeTab, setActiveTab] = useState<TabId>(
     scrollToNewStrata ? 'chronicle' : 'overview'
   );
@@ -228,6 +237,21 @@ export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata, k
             knowledge={knowledge}
             scrollToNewStrata={scrollToNewStrata}
           />
+        )}
+        {activeTab === 'chapters' && (
+          gameState ? (
+            <ChapterLedger
+              gameState={gameState}
+              runtime={runtime}
+              filterAgentId={card.id}
+              embedded
+              onOpenEntity={onOpenEntity}
+            />
+          ) : (
+            <div style={{ color: 'var(--text-tertiary, #6a6255)', fontStyle: 'italic' }}>
+              Chapters unavailable.
+            </div>
+          )
         )}
       </div>
 

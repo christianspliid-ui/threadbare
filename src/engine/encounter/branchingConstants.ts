@@ -53,3 +53,22 @@ export const BRANCHING_QUEST_SKIP_OUTGROWTH = true;
  *  Ensures at least N branching templates survive to scoring even when candidates > MAX_SCORED_CANDIDATES.
  *  Tuned from 1→3 in THR-465 to lift branching fire rate from 0.25–0.5/30t toward ≥1/30t. */
 export const BRANCHING_CAP_RESERVE = 3;
+
+/**
+ * Gentle doom-phase generosity ramp on `BRANCHING_CURATOR_BIAS_WEIGHT` (THR-603).
+ *
+ * As the doom clock climbs, the curator grows more willing to surface nearly-eligible
+ * branching encounters for threaded agents — a crumbling world crests more crises.
+ * This is a *lean*, not a forced curve: encounter density stays player-authored; the
+ * ramp only nudges the surfacing rate for branching quest encounters.
+ *
+ * Keyed by Campbellian journey phase (derived from `doomClock.progress` via
+ * `getJourneyPhase`). Set every entry to `1.0` to disable the ramp entirely.
+ */
+export const CURATION_PHASE_MULTIPLIERS = {
+  call: 0.9,
+  road_of_trials: 1.0,
+  crisis: 1.15,
+  ordeal: 1.3,
+  return: 1.5,
+} as const satisfies Record<import('../../types/influence').CampbellianPhase, number>;

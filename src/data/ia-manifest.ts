@@ -657,9 +657,55 @@ export const IA_SURFACES: IASurface[] = [
         "state_path": "agentKnowledge",
         "reader": "AgentProfileModal",
         "visible_when": "always"
+      },
+      {
+        "state_path": "chapterArchive",
+        "reader": "AgentProfileModal",
+        "visible_when": "Chapters tab"
+      },
+      {
+        "state_path": "unifiedActions",
+        "reader": "AgentProfileModal",
+        "visible_when": "Chapters tab"
       }
     ],
-    "notes": "Full agent dossier with backstory strata, intelligence, traits.\n"
+    "notes": "Full agent dossier with backstory strata, intelligence, traits. Chapters tab (THR-603): this entity's active + archived encounter chapters (as actor or bound participant).\n"
+  },
+  {
+    "surface": "game.chapter-ledger",
+    "view": "game",
+    "mount": "drillin",
+    "reads": [
+      {
+        "state_path": "chapterArchive",
+        "reader": "ChapterLedger",
+        "visible_when": "always"
+      },
+      {
+        "state_path": "unifiedActions",
+        "reader": "ChapterLedger",
+        "visible_when": "always"
+      }
+    ],
+    "notes": "Chapter Ledger (THR-603): one list merging active encounters (live unifiedActions) and resolved chapters (chapterArchive), newest first, filtered/paginated. Player-authored density's load-management surface.\n"
+  },
+  {
+    "surface": "game.chapter-view",
+    "view": "game",
+    "mount": "drillin",
+    "reads": [
+      {
+        "state_path": "chapterArchive",
+        "reader": "ChapterView",
+        "visible_when": "always"
+      },
+      {
+        "state_path": "unifiedActions",
+        "reader": "ChapterView",
+        "visible_when": "active chapter"
+      }
+    ],
+    "notes": "Chapter View (THR-603): full reading surface for one chapter — per-step prose as enriched, step outcomes in the narrative lexicon, the player's own choices, complications, aftermath. Drill-in from a ledger row or Chapters tab.\n"
   },
   {
     "surface": "game.agent-intelligence-panel",
