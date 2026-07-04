@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Threadbearer — Divine Actions &amp; Prerequisites</title>
+<!--
+  Divine Actions Reference (Game Manual Wiki, W4 / THR-589) — dual-layer manual page.
+  Player-manual prose first ("How it plays"), Designer Notes second.
+  Spec: Docs/plans/2026-07-03-game-manual-wiki.md §5 W4. Source spine:
+  Docs/canon/rulebook.md §4 ("What You Can Do") + Docs/canon/cosmology.md.
+  Designer-layer sources: src/engine/targetActions.ts (getTargetActionSlots +
+  filter cascade + requiresReach gate, THR-503), src/engine/sphereScaling.ts
+  (spherePowerMultiplier, THR-548), src/data/reach-signature-content.ts (the
+  eight invest.<reach>.<name> templates + SIGNATURE_BASE_COST), src/data/
+  ascendant-beat-content.ts (ASCENDANT_ACTION_BUCKETS), src/types/unifiedAction.ts.
+  The shared wiki nav between the WIKI-NAV markers is injected by
+  scripts/generate-design-wiki.ts — do not hand-write it.
+-->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --parchment: #f4edd8;
+    --parchment-dark: #e8dfc8;
+    --ink: #2c1810;
+    --ink-light: #5a3d2b;
+    --ink-faint: #8a7060;
+    --gold: #b8860b;
+    --gold-light: #daa520;
+    --card-bg: #fff8e7;
+    --red: #8b2500;
+    --blue: #1a3a5c;
+    --blue-light: #2d5f8a;
+    --purple: #4a2d6a;
+    --green: #2d5a27;
+
+    --flag-impl: #2d5a27;
+    --flag-design: #8a4a00;
+    --flag-open: #4a2d6a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--parchment);
+    color: var(--ink);
+    font-family: 'Crimson Text', Georgia, serif;
+    font-size: 16px;
+    line-height: 1.6;
+    min-height: 100vh;
+    background-image:
+      radial-gradient(ellipse at 20% 50%, rgba(184,134,11,0.04) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 30%, rgba(74,45,106,0.03) 0%, transparent 50%);
+  }
+
+  .page-wrapper { max-width: 900px; margin: 0 auto; padding: 40px 32px 72px; }
+
+  /* ── Header ── */
+  .header { text-align: center; margin-bottom: 40px; padding-bottom: 28px; border-bottom: 2px solid var(--gold); position: relative; }
+  .header::after { content: ''; position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); width: 55%; height: 1px; background: var(--gold-light); }
+  .header .eyebrow { font-family: 'Cinzel', Georgia, serif; font-size: 0.72rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold); margin-bottom: 10px; }
+  .header h1 { font-family: 'Cinzel', Georgia, serif; font-weight: 700; font-size: 2.4rem; color: var(--ink); letter-spacing: 0.05em; margin-bottom: 12px; }
+  .header .tagline { font-size: 1.12rem; color: var(--ink-light); max-width: 62ch; margin: 0 auto; font-style: italic; }
+
+  /* ── Sections ── */
+  .section { margin-bottom: 34px; }
+  .section > h2 { font-family: 'Cinzel', Georgia, serif; font-size: 1.25rem; color: var(--ink); letter-spacing: 0.03em; margin-bottom: 6px; padding-bottom: 6px; border-bottom: 1px solid var(--parchment-dark); }
+  .section > h2 .lead { display: block; font-family: 'Crimson Text', Georgia, serif; font-size: 0.95rem; font-style: italic; font-weight: 400; color: var(--ink-faint); letter-spacing: 0; margin-top: 4px; }
+  .section h3 { font-family: 'Cinzel', Georgia, serif; font-size: 1rem; color: var(--ink-light); letter-spacing: 0.02em; margin: 20px 0 6px; }
+  .section p { margin-bottom: 12px; }
+  .section p .term { font-weight: 600; color: var(--ink); }
+  .section ul { margin: 0 0 14px 0; padding-left: 0; list-style: none; }
+  .section ul li { position: relative; padding-left: 1.3rem; margin-bottom: 8px; }
+  .section ul li::before { content: '◆'; position: absolute; left: 0; top: 0.05rem; color: var(--gold); font-size: 0.7rem; }
+
+  /* ── The five verbs (player-facing) ── */
+  .verbs { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin: 12px 0 18px; }
+  .verb { background: var(--card-bg); border: 1px solid var(--parchment-dark); border-radius: 4px; padding: 14px 14px; border-top: 3px solid var(--blue-light); }
+  .verb h4 { font-family: 'Cinzel', Georgia, serif; font-size: 1rem; color: var(--ink); margin: 0 0 6px; letter-spacing: 0.02em; }
+  .verb p { font-size: 0.86rem; color: var(--ink-light); margin-bottom: 0; }
+  .verb.control { border-top-color: var(--gold); border-top-width: 4px; background: #fdf4e0; }
+  .verb.control h4 { color: var(--red); }
+  .verb .sig-tag { display: block; font-family: 'JetBrains Mono', monospace; font-size: 0.58rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--gold); margin-bottom: 4px; }
+  @media (max-width: 760px) { .verbs { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 440px) { .verbs { grid-template-columns: 1fr; } }
+
+  /* ── Reason / gate cards ── */
+  .ortho { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin: 6px 0 16px; }
+  .ortho-card { background: var(--card-bg); border: 1px solid var(--parchment-dark); border-radius: 4px; padding: 14px 18px; border-top: 3px solid var(--red); }
+  .ortho-card h4 { font-family: 'Cinzel', Georgia, serif; font-size: 0.92rem; color: var(--ink); margin-bottom: 6px; }
+  .ortho-card p { font-size: 0.92rem; color: var(--ink-light); margin-bottom: 0; }
+  .ortho-card .permanent { color: var(--red); font-weight: 600; }
+  @media (max-width: 720px) { .ortho { grid-template-columns: 1fr; } }
+
+  /* ── Callouts ── */
+  .callout { background: var(--card-bg); border: 1px solid var(--parchment-dark); border-left: 4px solid var(--gold); border-radius: 4px; padding: 14px 18px; margin: 4px 0 18px; }
+  .callout.blue { border-left-color: var(--blue-light); }
+  .callout.purple { border-left-color: var(--purple); }
+  .callout .callout-title { font-family: 'Cinzel', Georgia, serif; font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 6px; }
+  .callout p:last-child { margin-bottom: 0; }
+
+  /* ── Cascade chain (player-facing) ── */
+  .chain { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 14px; align-items: center; }
+  .chain .step { font-family: 'Cinzel', Georgia, serif; font-size: 0.74rem; color: var(--ink-light); background: var(--card-bg); border: 1px solid var(--parchment-dark); border-radius: 3px; padding: 3px 9px; white-space: nowrap; }
+  .chain .arrow { color: var(--gold); font-size: 0.8rem; }
+
+  /* ── Designer notes ── */
+  .designer { margin-top: 48px; border-top: 2px solid var(--gold); padding-top: 8px; }
+  .designer > summary { list-style: none; cursor: pointer; padding: 16px 4px; display: flex; align-items: baseline; gap: 12px; }
+  .designer > summary::-webkit-details-marker { display: none; }
+  .designer > summary .chev { font-size: 0.8rem; color: var(--gold); transition: transform 0.15s; }
+  .designer[open] > summary .chev { transform: rotate(90deg); }
+  .designer > summary h2 { font-family: 'Cinzel', Georgia, serif; font-size: 1.3rem; color: var(--ink); letter-spacing: 0.03em; }
+  .designer > summary .sub { font-size: 0.9rem; color: var(--ink-faint); font-style: italic; }
+  .designer-body { padding: 4px 4px 8px; }
+  .designer-body h3 { font-family: 'Cinzel', Georgia, serif; font-size: 0.98rem; color: var(--ink-light); margin: 22px 0 8px; }
+  .designer-body p { margin-bottom: 12px; font-size: 0.97rem; }
+  .designer-body ul { margin: 0 0 14px 0; padding-left: 0; list-style: none; }
+  .designer-body ul li { position: relative; padding-left: 1.2rem; margin-bottom: 7px; font-size: 0.97rem; }
+  .designer-body ul li::before { content: '›'; position: absolute; left: 0.15rem; top: 0; color: var(--ink-faint); }
+  code, .mono { font-family: 'JetBrains Mono', monospace; font-size: 0.84em; color: var(--ink); background: rgba(184,134,11,0.10); padding: 0.05rem 0.32rem; border-radius: 3px; word-break: break-word; }
+
+  .flag { font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; letter-spacing: 0.04em; font-weight: 500; padding: 0.08rem 0.4rem; border-radius: 3px; color: #fff; white-space: nowrap; }
+  .flag.impl { background: var(--flag-impl); }
+  .flag.design { background: var(--flag-design); }
+  .flag.open { background: var(--flag-open); }
+
+  table.tunables { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin: 4px 0 18px; }
+  table.tunables th { text-align: left; font-family: 'Cinzel', Georgia, serif; font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-faint); padding: 6px 10px 6px 0; border-bottom: 1px solid var(--parchment-dark); }
+  table.tunables td { padding: 7px 10px 7px 0; border-bottom: 1px solid var(--parchment-dark); vertical-align: top; color: var(--ink-light); }
+  table.tunables td:first-child { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--ink); white-space: nowrap; }
+
+  .foot { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--parchment-dark); font-size: 0.85rem; color: var(--ink-faint); font-style: italic; }
+  a { color: var(--blue-light); text-decoration: none; border-bottom: 1px solid rgba(45,95,138,0.35); }
+  a:hover { color: var(--blue); border-bottom-color: var(--blue); }
+</style>
+</head>
+<body>
+<!--WIKI-NAV-->
+<style>
+  .wiki-nav { font-family: 'Cinzel', Georgia, serif; background: #2c1810; border-bottom: 2px solid #b8860b; padding: 0.6rem 1.2rem; display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.4rem 1.1rem; }
+  .wiki-nav__brand { color: #daa520; font-weight: 700; letter-spacing: 0.04em; margin-right: 0.6rem; font-size: 0.95rem; }
+  .wiki-nav__link { color: #f4edd8; text-decoration: none; font-size: 0.85rem; letter-spacing: 0.02em; padding: 0.15rem 0.1rem; border-bottom: 2px solid transparent; transition: color 0.15s, border-color 0.15s; }
+  .wiki-nav__link:hover { color: #daa520; }
+  .wiki-nav__link.is-active { color: #daa520; border-bottom-color: #b8860b; font-weight: 700; }
+</style>
+<nav class="wiki-nav" aria-label="Design Reference Wiki">
+  <span class="wiki-nav__brand">⌖ Design Reference Wiki</span>
+  <a class="wiki-nav__link" href="design-wiki.html">Design Wiki</a>
+  <a class="wiki-nav__link" href="run-lifecycle-reference.html">A Run, Start to Finish</a>
+      <a class="wiki-nav__link" href="cosmology-reference.html">Reaches, Spheres &amp; Quintessence</a>
+      <a class="wiki-nav__link" href="turn-structure-reference.html">The Three-Beat Turn</a>
+      <a class="wiki-nav__link is-active" href="divine-actions-reference.html" aria-current="page">Divine Actions &amp; Prerequisites</a>
+      <a class="wiki-nav__link" href="encounters-agents-reference.html">Encounters, Agents &amp; Resolution</a>
+      <a class="wiki-nav__link" href="tick-cycle-reference.html">Tick Cycle Reference</a>
+      <a class="wiki-nav__link" href="action-catalog.html">Action Catalog</a>
+</nav>
+<!--/WIKI-NAV-->
+<div class="page-wrapper">
+
+  <header class="header">
+    <div class="eyebrow">Game Manual · Acting on the World</div>
+    <h1>Divine Actions &amp; Prerequisites</h1>
+    <p class="tagline">Everything you do to the world is one of five verbs — and most of what you <em>could</em> do is quietly withheld until you have earned the right to see it.</p>
+  </header>
+
+  <!-- ══════════════════ HOW IT PLAYS ══════════════════ -->
+
+  <section class="section">
+    <h2>Five verbs, and only five<span class="lead">Every divine act, however dressed, is one of these underneath.</span></h2>
+    <p>You never pick a verb from a menu — the game teaches them through the moments themselves, never as filter chips on a wheel. But underneath every intervention you will ever make, there is one of exactly five things a god does to a world. Knowing the five is knowing the whole grammar of your power.</p>
+    <div class="verbs">
+      <div class="verb">
+        <h4>Create</h4>
+        <p>Bring something into being — an artifact, a settlement, a bond between mortals that was not there before.</p>
+      </div>
+      <div class="verb">
+        <h4>Find</h4>
+        <p>Perceive and reveal. Search the world, lift the fog, surface what was hidden from you.</p>
+      </div>
+      <div class="verb">
+        <h4>Change</h4>
+        <p>A one-shot alteration for a one-time cost. Fire and forget — the world keeps the mark, not the leash.</p>
+      </div>
+      <div class="verb">
+        <h4>Destroy</h4>
+        <p>Remove, corrupt, scatter, erase. The unmaking verb, and often the loudest.</p>
+      </div>
+      <div class="verb control">
+        <span class="sig-tag">The Signature Verb</span>
+        <h4>Control</h4>
+        <p>A <em>sustained</em> grip. Ongoing upkeep, held open turn after turn — and contestable by any rival god who meets the same bar you did.</p>
+      </div>
+    </div>
+    <div class="callout">
+      <div class="callout-title">Why Control is the god-game's signature</div>
+      <p>The other four verbs resolve and end. <span class="term">Control</span> is the one that stays. It is not a bigger Change — it is a standing commitment that drains essence for as long as you hold it, and every held thing is a visible prize a rival can try to <em>usurp</em> (take from you) or <em>shatter</em>. Choosing to Control is choosing to keep spending, and to be seen keeping it.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>You can't shape what you haven't seen<span class="lead">Find is the verb that unlocks the others. Perception comes before power.</span></h2>
+    <p>There is a natural order to the verbs, and it is not arbitrary. <span class="term">Find gates Change and Control.</span> You cannot reshape a mortal's fate, or take sustained hold of a place, before you have perceived it — the fog has to lift before the hand can land. The chain the game leans you toward is <span class="term">Find → Change or Create → Control</span>: see it, touch it, then keep it.</p>
+    <div class="chain">
+      <span class="step">Find</span>
+      <span class="arrow">→</span>
+      <span class="step">Change · Create</span>
+      <span class="arrow">→</span>
+      <span class="step">Control</span>
+    </div>
+    <p>This gate is deliberately <em>soft</em>, not an iron law. It is taught through which actions a target offers, not enforced as a wall that throws you back — you will feel the ordering as the shape of what is available, the way a story withholds a door until you have found the key.</p>
+  </section>
+
+  <section class="section">
+    <h2>Everything you look at is an action target<span class="lead">Focus a node, and the game asks what a god could do to it here.</span></h2>
+    <p>Threadbearer has no fixed list of buttons. Instead, <span class="term">every node you focus on in a detail view</span> — a mortal, a location, a sublocation, a hex, an artifact — becomes a target, and the action drawer fills with exactly the interventions that make sense <em>for that thing, in that place, for you</em>. Open a peasant and you are offered peasant-shaped acts; open a ruined temple and the offers change entirely.</p>
+    <p>The drawer is assembled fresh each time by asking a cascade of questions about the target and about you: what kind of node is it, what particular sort, what does it already carry, which cosmic energies does it answer to, can you afford it, is it in reach. Whatever survives every question is what you may do. There is no slot count and no cap on the imagined space — "what is doable here" is open-ended and grown from data, never a hand-authored list.</p>
+  </section>
+
+  <section class="section">
+    <h2>Why some cards never appear<span class="lead">An empty drawer is information. The absences are as designed as the offers.</span></h2>
+    <p>Sometimes you focus a target and an obvious power simply isn't there. That is not a bug — the game hides what you cannot attempt, so that "visible" and "possible" mean the same thing. There are three reasons a card stays dark:</p>
+    <div class="ortho">
+      <div class="ortho-card">
+        <h4>Outside your two domains</h4>
+        <p>Your identity grants exactly two Reaches, fixed for the whole run. A power belonging to a Reach you do not hold <span class="permanent">never appears — not even as aspiration.</span> This wall is permanent by design.</p>
+      </div>
+      <div class="ortho-card">
+        <h4>Sphere misalignment</h4>
+        <p>Many acts answer to a specific cosmic energy. If your sphere alignment does not resonate with what the action demands, it stays hidden until your alignment does.</p>
+      </div>
+      <div class="ortho-card">
+        <h4>Not capable enough</h4>
+        <p>Some acts ask a minimum <em>Domain Capability</em> — a tier of competence in the relevant Reach. Below the bar, "can you do this kind of thing?" answers no, and the card waits.</p>
+      </div>
+    </div>
+    <p>The first of these is worth dwelling on, because it is the one that never changes. Sphere and capability are things you can grow into over a run. A Reach outside your two domains is a door that was walled off when you chose who you were, and stays walled off until the run ends. <span class="term">You are a particular kind of god, not a universal one</span> — and the drawer is where that particularity is felt, turn to turn.</p>
+  </section>
+
+  <section class="section">
+    <h2>Your two reach signatures<span class="lead">Beyond the shared verbs, each run hands you two headline powers — as story, never from a shop.</span></h2>
+    <p>The five verbs are the grammar every god shares. On top of them, each run grants you exactly <span class="term">two reach signatures</span> — one headline divine power for each of your two domains. The Warhost for Iron, Rend the Gate for Veil, the Great Work for Stone, and so on across all eight Reaches: the signature is the thing your kind of god is <em>known</em> for.</p>
+    <p>You do not buy them. A signature is <span class="term">permanently reach-gated</span> — a signature for a Reach outside your domains will never be offered — and it arrives as a <span class="term">moment in your story</span>, not a purchase:</p>
+    <ul>
+      <li>Your <span class="term">primary</span> signature is granted at the culmination of the opening spine — Beat 4, "A Path Opens" — alongside your choice of god-path.</li>
+      <li>Your <span class="term">secondary</span> arrives later, when the living world next calls on your deeper domain.</li>
+    </ul>
+    <div class="callout purple">
+      <div class="callout-title">Signatures scale with your sphere power</div>
+      <p>How hard a signature lands is not fixed. It scales with your <span class="term">sphere power</span> — the same cosmic strength that colours the rest of your expression. A god steeped in their sphere throws a heavier signature than one only lightly aligned; the price rises with the potency, so mastery makes the act <em>mightier</em>, never merely cheaper.</p>
+    </div>
+  </section>
+
+  <!-- ══════════════════ DESIGNER NOTES ══════════════════ -->
+
+  <details class="designer" open>
+    <summary>
+      <span class="chev">▶</span>
+      <span>
+        <h2>Designer Notes</h2>
+        <span class="sub">The targeting cascade, the reach gate, sphere-power scaling, and where signatures are authored.</span>
+      </span>
+    </summary>
+    <div class="designer-body">
+
+      <p>Status flags follow the rulebook convention: <span class="flag impl">IMPL</span> shipped and wired, <span class="flag design">DESIGN</span> specified but partially or not yet wired, <span class="flag open">OPEN</span> an unresolved question (referenced from the rulebook — this page mints none). <strong>Synthesis authority for this page is <code>Docs/canon/rulebook.md</code> §4;</strong> the cosmology spine is <code>Docs/canon/cosmology.md</code>. Where any surface disagrees, the rulebook and the UL win on their respective boundaries.</p>
+
+      <h3>Five verbs as implicit substrate <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li>Create / Find / Change / Destroy / Control are CRUD-ish verbs threaded through <code>UnifiedActionTemplate</code> (<code>src/types/unifiedAction.ts</code>), the single action format since THR-108. They are <strong>not</strong> surfaced as ActionDrawer filter chips — resolved as implicit substrate, taught through encounter prose (rulebook §4, Open Q resolved 2026-06-23). No "pick a verb" UI exists by design.</li>
+        <li>Control's <em>sustained</em> semantics (upkeep drain, contestation via <code>usurp</code>/<code>destroy</code> reactions, the visible control-effect node a rival can target) are the part still landing — see the essence-control page (W6) for the sustain-model detail. <span class="flag design">DESIGN</span> for the sustain/contestation half; the verb tag itself is <span class="flag impl">IMPL</span>.</li>
+      </ul>
+
+      <h3>Generalized Action Targeting — the filter cascade <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li><code>getTargetActionSlots(params): WheelSlot[]</code> in <code>src/engine/targetActions.ts</code> is the core function. It takes a <code>TargetContext</code> for any focused graph node and returns the drawer's slots. There is no fixed slot count; <code>MAX_SLOTS = 20</code> is only a UI-overflow guard (<code>TARGET_ACTION_CONSTANTS</code>).</li>
+        <li>The cascade runs in this order (file header, code-true): <strong>1</strong> node-type (<code>targetCategories</code> ∋ <code>nodeType</code>) → <strong>2</strong> subtype (<code>targetSubtypes</code>) → <strong>3</strong> traits (<code>requiredTargetTraits</code>) &amp; <strong>3b</strong> node-properties (<code>requiredNodeProperties</code>) → <strong>reach</strong> (<code>requiresReach</code>, below) → <strong>4</strong> sphere (<code>sphereAffinity</code> ∈ <code>accessibleSpheres</code>) → <strong>5</strong> essence (affordable <code>essenceCost</code>) → <strong>6</strong> range (hex distance from avatar) → <strong>7</strong> revelation (<code>narrativeLayer</code> revealed on the target hex). Each rejection increments a per-gate counter for inspectability (NFP #2).</li>
+        <li>119+ unified templates span the CRUD, encounter, divine, location, attachment, sublocation, and hex categories. The browsable, code-true catalog is the <a href="action-catalog.html">Action Catalog</a> (Deep Reference); its buckets come from <code>ASCENDANT_ACTION_BUCKETS</code> (<code>src/data/ascendant-beat-content.ts:465</code>).</li>
+        <li>Rejected approaches (do not reintroduce): the AgentWheel and any fixed / capped action-slot list. The open-ended data-driven pool replaced both (CLAUDE.md Rejected Approaches).</li>
+      </ul>
+
+      <h3>The reach gate — permanent, set-membership <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li>Templates declaring <code>requiresReach</code> are hidden unless the ascendant's affinity in that Reach meets <code>REACH_GATE_MIN_AFFINITY = 0.2</code> (<code>src/data/influence-content.ts:92</code>). Below the bar, the slot is dropped and <code>counts.byReach</code> increments. Gate logic: <code>src/engine/targetActions.ts</code> ~L238, shipped in <strong>THR-503</strong>.</li>
+        <li>This is a <strong>permanent set-membership filter, not aspiration</strong>: an ascendant's two Reaches are fixed for the run, so a card requiring a third Reach can never surface — distinct from within-run unlock gates (revelation/essence/capability), which a player can grow past.</li>
+        <li>Fail-soft (NFP #4): an unknown <code>requiresReach</code> value logs a <code>console.warn</code> and <em>ungates</em> the template rather than hiding it — a content typo degrades to "visible," never to a silently missing action.</li>
+      </ul>
+
+      <h3>Sphere-power scaling <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li><code>spherePowerMultiplier(sphereScore)</code> (<code>src/engine/sphereScaling.ts:25</code>, <strong>THR-548</strong>) linearly interpolates a per-sphere score ∈ <code>[0, MAX_SPHERE_SCORE=10]</code> to a multiplier in <code>[SIGNATURE_SCALE_FLOOR = 0.6, SIGNATURE_SCALE_CEIL = 2.0]</code>. Monotonic non-decreasing; the score is clamped before interpolation so garbage input never escapes the floor/ceil band.</li>
+        <li><code>scaledEffect(base, mult)</code> scales effect magnitude directly. <code>scaledCost(base, mult)</code> floors the multiplier at <code>1×</code> — cost never drops below <code>base</code>, so sphere mastery makes an action <em>more potent, never cheaper</em>. This is the general sphere-power helper, reusable beyond signatures.</li>
+      </ul>
+
+      <h3>Reach signatures — authoring &amp; acquisition <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li>The eight headline powers are the <code>invest.&lt;reach&gt;.&lt;name&gt;</code> templates in <code>REACH_SIGNATURE_CONTENT_TEMPLATES</code> (<code>src/data/reach-signature-content.ts</code>), e.g. <code>invest.gold.patronage_network</code>, <code>invest.shadow.brokers_web</code>, <code>invest.star.beacon_of_fate</code>. Per-reach base cost lives in <code>SIGNATURE_BASE_COST</code>; they are catalogued <code>reach-gated</code> in <code>ASCENDANT_ACTION_BUCKETS</code>.</li>
+        <li>Signature magnitude uses <code>SIGNATURE_DEFAULT_BASE_VALUE = 3</code> (composed default) or <code>SIGNATURE_BESPOKE_BASE_VALUE = 5</code> (authored <code>SIGNATURE_MATRIX</code> entries with a richer trigger), then scaled by <code>spherePowerMultiplier</code> at fire time.</li>
+        <li>Acquisition is story-driven, not menu-driven: <code>BeatDefinition.grantsReachSignature</code> resolves per-run from ranked domain affinities in <code>resolvePendingBeat</code>. Primary lands at Beat 4 ("A Path Opens"); secondary via the <code>beat.pool.invest.reach_signature</code> pool beat (<strong>THR-523</strong>).</li>
+      </ul>
+
+      <h3>The Find-gates-Change/Control chain <span class="flag design">DESIGN</span></h3>
+      <ul>
+        <li>"You can't Update what you haven't Read" is kept deliberately <strong>soft</strong>: per-template prerequisites plus layer-revelation gating (the revelation gate, step 7 above), <em>not</em> a hard runtime invariant (verdict 2026-06-23, THR-414). An advisory content-lint to flag Change/Control templates that aren't Find-gated is tracked as THR-476.</li>
+      </ul>
+
+      <h3>Constants</h3>
+      <table class="tunables">
+        <thead><tr><th>Constant</th><th>Value</th><th>Purpose · file</th></tr></thead>
+        <tbody>
+          <tr><td>REACH_GATE_MIN_AFFINITY</td><td>0.2</td><td>Min domain affinity to see a <code>requiresReach</code> template · <code>src/data/influence-content.ts:92</code></td></tr>
+          <tr><td>MAX_SPHERE_SCORE</td><td>10</td><td>Top of the per-sphere score range · <code>src/types/sphereAffinity.ts:53</code></td></tr>
+          <tr><td>SIGNATURE_SCALE_FLOOR</td><td>0.6</td><td>Sphere-power multiplier at score 0 · <code>src/data/reach-signature-content.ts:32</code></td></tr>
+          <tr><td>SIGNATURE_SCALE_CEIL</td><td>2.0</td><td>Sphere-power multiplier at MAX_SPHERE_SCORE · <code>src/data/reach-signature-content.ts:38</code></td></tr>
+          <tr><td>SIGNATURE_DEFAULT_BASE_VALUE</td><td>3</td><td>Composed-default signature magnitude · <code>src/data/reach-signature-content.ts:105</code></td></tr>
+          <tr><td>SIGNATURE_BESPOKE_BASE_VALUE</td><td>5</td><td>Authored (matrix) signature magnitude · <code>src/data/reach-signature-content.ts:114</code></td></tr>
+          <tr><td>MAX_SLOTS</td><td>20</td><td>Drawer overflow guard (not a design cap) · <code>src/engine/targetActions.ts</code> <code>TARGET_ACTION_CONSTANTS</code></td></tr>
+        </tbody>
+      </table>
+
+      <h3>Canon &amp; terminology</h3>
+      <ul>
+        <li>Synthesis authority: <code>Docs/canon/rulebook.md</code> §4 (five verbs, Find-gate, targeting cascade, reach signatures). Cosmology spine: <code>Docs/canon/cosmology.md</code> (the eight Reaches and twelve Spheres these actions combine).</li>
+        <li>UL authority (terminology wins on any disagreement): <code>Docs/ubiquitous-language/Cosmology.md</code> (Reach, Sphere, Domain Capability, Prerequisite) and <code>Docs/ubiquitous-language/Encounters.md</code> (UnifiedActionTemplate).</li>
+        <li>Deep Reference drill-down: <a href="action-catalog.html">Action Catalog</a> (every ascendant-facing template with its real availability bucket). Adjacent Manual pages: <a href="cosmology-reference.html">Reaches, Spheres &amp; Quintessence</a> (the two axes every action combines) and <a href="essence-control-reference.html">Essence, Control &amp; Sustained Power</a> (the Control verb's economy).</li>
+      </ul>
+
+      <h3>Open questions <span class="flag open">OPEN</span></h3>
+      <ul>
+        <li>Referenced, not minted here: the Control slot-cap formula (rulebook §6, not yet finalised in code) is surfaced on the essence-control page (W6). This page describes the gate cascade and signatures; it opens no new question.</li>
+      </ul>
+
+    </div>
+  </details>
+
+  <div class="foot">
+    Game Manual Wiki · W4 (THR-589). Player layer describes current shipped behavior; anything not yet wired is flagged <span class="flag design">DESIGN</span> and introduced as &quot;planned&quot;. Terminology is UL-exact; where this page and the UL disagree, the UL wins and this page is a drift bug.
+  </div>
+
+</div>
+</body>
+</html>
