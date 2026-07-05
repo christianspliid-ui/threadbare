@@ -1,6 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import { scoreRegisterCompliance } from '../registerCompliance';
 import { scoreProseEntry, scoreProseBatch } from '../proseQualityScore';
+import {
+  REGISTER_GAME_TERM_WHITELIST,
+  REGISTER_ORNATE_WORDS,
+} from '../../../data/register-common-words';
+
+const labelBand = (name: string) =>
+  scoreRegisterCompliance({ fields: { name } }).metrics.find(
+    (m) => m.name === 'interactivePlainness',
+  )?.band;
 
 describe('scoreRegisterCompliance', () => {
   describe('register resolution', () => {
@@ -120,6 +129,52 @@ describe('scoreRegisterCompliance', () => {
       const r = scoreRegisterCompliance({ fields: { name: 'Ask the guard about the missing grain sacks now' } });
       const metric = r.metrics.find((m) => m.name === 'interactivePlainness');
       expect(metric?.band).toBe('warn');
+    });
+  });
+
+  describe('game-term whitelist calibration (THR-609 Pass A)', () => {
+    it('lets the Star-reach faith lexicon pass as plain labels', () => {
+      // Domain-standard action verbs — not archaic drift.
+      expect(labelBand('Consecrate the Ground')).toBe('pass');
+      expect(labelBand('Sanctify the Square')).toBe('pass');
+    });
+
+    it('treats the Lorekeepers Covenant faction name as a proper noun', () => {
+      expect(labelBand('Join the Lorekeepers Covenant')).toBe('pass');
+    });
+
+    it('lets named concepts and plain compound entity names pass', () => {
+      expect(labelBand('The Apotheosis')).toBe('pass');
+      expect(labelBand('The Gleaming Vein')).toBe('pass');
+      expect(labelBand('The Undying Flame')).toBe('pass');
+    });
+
+    it('does not over-whitelist — genuinely ornate labels still fail', () => {
+      // Guard: the calibration must not swallow real drift.
+      expect(labelBand('Beseech the Ineffable')).toBe('fail');
+      expect(labelBand('The Crepuscular Reverie')).toBe('fail');
+    });
+
+    it('leaves genuinely elevated diction flagged in baseline prose', () => {
+      // luminous / eternal / unbidden were deliberately NOT whitelisted.
+      for (const word of ['luminous', 'eternal', 'unbidden']) {
+        expect(REGISTER_GAME_TERM_WHITELIST.has(word)).toBe(false);
+        expect(REGISTER_ORNATE_WORDS.has(word)).toBe(true);
+      }
+    });
+
+    it('stops flagging Covenant-heavy faction prose as ornate drift', () => {
+      // The calibration goal: recurring faction proper noun no longer trips
+      // rareWordDensity in otherwise-plain Lorekeepers prose.
+      const r = scoreRegisterCompliance({
+        register: 'baseline',
+        fields: {
+          narrative:
+            'The Covenant keeps its ledgers in the old hall. Join the Covenant and its ' +
+            'archivists will teach you to read the older hands. The Covenant pays in access, not coin.',
+        },
+      });
+      expect(r.metrics.find((m) => m.name === 'rareWordDensity')?.band).toBe('pass');
     });
   });
 

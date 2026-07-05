@@ -74,9 +74,19 @@ export const REGISTER_ORNATE_WORDS: ReadonlySet<string> = new Set([
 ]);
 
 /** Domain terms that must never count toward ornate density even if a variant
- *  looks elevated: Reach/Sphere names, UL terms, recurring game vocabulary.
- *  Lowercased. (A safety net — none of these are in the ornate set, but if an
- *  author's proper noun collides with future edits, list it here.) */
+ *  looks elevated: Reach/Sphere names, UL terms, recurring game vocabulary,
+ *  and proper nouns from the graph. Lowercased.
+ *
+ *  This is the game-specific override layer over REGISTER_ORNATE_WORDS: a word
+ *  that reads as elevated in *generic* prose (so it earns its place in the
+ *  denylist) but is domain-standard *here* is listed below and never counts as
+ *  ornate drift. The two-layer design is intentional (plan §Engine — the rare
+ *  metric is "tokens outside a common list, plus a whitelist for game terms:
+ *  reach/sphere names, UL terms, proper nouns from the graph"): keep the denylist
+ *  general, and record the game-specific exceptions here. Some entries below
+ *  (covenant, consecrate, sanctify, hallowed, apotheosis) deliberately shadow
+ *  denylist members — the whitelist wins in `isRareToken` (registerCompliance.ts).
+ *  THR-609 Pass A calibration. */
 export const REGISTER_GAME_TERM_WHITELIST: ReadonlySet<string> = new Set([
   // Reaches
   'iron', 'gold', 'shadow', 'veil', 'heart', 'eye', 'stone', 'star',
@@ -89,4 +99,19 @@ export const REGISTER_GAME_TERM_WHITELIST: ReadonlySet<string> = new Set([
   'thread', 'threads', 'worshipper', 'worshippers', 'investiture', 'retinue',
   'sublocation', 'sublocations', 'hex', 'aftermath', 'encounter', 'encounters',
   'vignette', 'vignettes', 'chronicle', 'chronicler', 'echoes', 'echo',
+  // --- THR-609 Pass A calibration (game-term overrides of the ornate denylist) ---
+  // Faction proper noun (graph): the Lorekeepers Covenant
+  // (src/data/lorekeepers-covenant-encounter-content.ts). "Covenant" reads as the
+  // faction's name across ~8 encounters, not as archaic diction.
+  'covenant', 'covenants',
+  // Star-reach faith-action lexicon — the reach's core, deliberately consistent
+  // religious-action vocabulary (Consecrate/Sanctify actions, "hallowed ground").
+  // Domain-standard verbs a literate player reads without friction, not drift.
+  'consecrate', 'consecration', 'sanctify', 'sanctification', 'hallowed',
+  // Named game concept: the Aspect apotheosis / capstone encounter
+  // ("The Apotheosis", APOTHEOSIS_ENCOUNTER_TEMPLATE_ID; doom-identity matrices).
+  'apotheosis', 'apotheoses',
+  // Plain compound words carried by fixed graph entity names ("The Gleaming Vein",
+  // "The Undying Flame") — Germanic and comprehensible; ornate only when stacked.
+  'gleaming', 'undying',
 ]);
