@@ -10,16 +10,6 @@ describe('PARCHMENT_FOG_CONSTANTS', () => {
     expect(PARCHMENT_FOG_CONSTANTS.PARCHMENT_TEXTURE_PATH).toBe('/textures/parchment-512.png');
   });
 
-  it('has sepia strength between 0 and 1', () => {
-    expect(PARCHMENT_FOG_CONSTANTS.SEPIA_STRENGTH).toBeGreaterThan(0);
-    expect(PARCHMENT_FOG_CONSTANTS.SEPIA_STRENGTH).toBeLessThanOrEqual(1);
-  });
-
-  it('has sepia brightness scale between 0 and 1', () => {
-    expect(PARCHMENT_FOG_CONSTANTS.SEPIA_BRIGHTNESS_SCALE).toBeGreaterThan(0);
-    expect(PARCHMENT_FOG_CONSTANTS.SEPIA_BRIGHTNESS_SCALE).toBeLessThanOrEqual(1);
-  });
-
   it('has fog state values for all three states', () => {
     expect(PARCHMENT_FOG_CONSTANTS.FOG_STATE_UNEXPLORED).toBe(0.0);
     expect(PARCHMENT_FOG_CONSTANTS.FOG_STATE_REMEMBERED).toBe(0.5);

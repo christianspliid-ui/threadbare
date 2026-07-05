@@ -5,7 +5,7 @@
  *
  * Architecture:
  * - Unexplored hexes: parchment overlay mesh (FogOverlayMesh) covers everything
- * - Remembered hexes: sepia-tinted terrain colors via CPU color swap
+ * - Remembered hexes: full terrain colors, live layers (agents/events) hidden
  * - Visible hexes: full terrain colors, all layers visible
  *
  * NFP #1: Uses PARCHMENT_FOG_CONSTANTS — no new magic numbers.
@@ -15,7 +15,7 @@
 import { useEffect } from 'react';
 import * as THREE from 'three';
 import type { VisibilityMap } from '../../../types/visibility';
-import { isLayerVisibleForHex, toSepia } from '../scene/FogCulling';
+import { isLayerVisibleForHex } from '../scene/FogCulling';
 import { setFogOverlayAlpha, flushFogOverlay } from '../scene/FogOverlayMesh';
 import type { FogOverlayResult } from '../scene/FogOverlayMesh';
 import type { SignifierGroupMeta } from '../scene/SignifierMesh';
@@ -41,7 +41,6 @@ export interface UseFogCullingParams {
 /**
  * Applies fog-of-war:
  * - Fog overlay (parchment) for unexplored hexes
- * - Sepia-tinted terrain colors for remembered hexes
  * - Signifier/location culling per hex visibility state
  */
 export function useFogCulling({
@@ -112,31 +111,22 @@ export function useFogCulling({
 
     // ── Fog enabled: apply per-hex colors ──
 
-    for (const [key, hexVis] of visibilityMap) {
+    for (const [key] of visibilityMap) {
       const idx = indexByKey.get(key);
       if (idx === undefined) continue;
       const entry = meshMap.get(idx);
       if (!entry) continue;
 
-      if (hexVis.state === 'remembered') {
-        // Sepia-tinted terrain color
-        const r = colors[idx * 3 + 0];
-        const g = colors[idx * 3 + 1];
-        const b = colors[idx * 3 + 2];
-        const [sr, sg, sb] = toSepia(r, g, b);
-        color.setRGB(sr, sg, sb, THREE.SRGBColorSpace);
-        entry.mesh.setColorAt(entry.instanceIdx, color);
-      } else {
-        // Visible or unexplored: use original terrain color
-        // (unexplored hexes are covered by the overlay anyway)
-        color.setRGB(
-          colors[idx * 3 + 0],
-          colors[idx * 3 + 1],
-          colors[idx * 3 + 2],
-          THREE.SRGBColorSpace,
-        );
-        entry.mesh.setColorAt(entry.instanceIdx, color);
-      }
+      // All states use the original terrain color — remembered hexes keep the
+      // full palette (sepia tint removed 2026-07-05); unexplored hexes are
+      // covered by the parchment overlay anyway.
+      color.setRGB(
+        colors[idx * 3 + 0],
+        colors[idx * 3 + 1],
+        colors[idx * 3 + 2],
+        THREE.SRGBColorSpace,
+      );
+      entry.mesh.setColorAt(entry.instanceIdx, color);
     }
     if (land.instanceColor) land.instanceColor.needsUpdate = true;
     if (water.instanceColor) water.instanceColor.needsUpdate = true;
