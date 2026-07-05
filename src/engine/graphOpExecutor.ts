@@ -8,6 +8,14 @@ import type { GraphOp, GraphOpContext, GraphOpResult, GraphOpBatchResult } from 
 import { resolveRef } from '../types/graphOp';
 import { emitTrace } from './traceBuffer';
 import { hydrateToTier } from './npcGraduation';
+import type { SphereName } from '../types';
+import type { EssenceSource, SourceKind } from '../types/essenceSource';
+import { readEssenceSource } from './essenceSources';
+import {
+  deriveSourceTier,
+  SANCTITY_BUILD_PER_ACTION,
+  SANCTITY_DEFEND_RESTORE,
+} from '../data/essence-sources';
 
 interface ExecuteOptions {
   tick?: number;
@@ -151,6 +159,15 @@ function executeSingleOp(
 
       case 'plant_secret':
         return executePlantSecret(graph, op, ctx);
+
+      case 'consecrate_source':
+        return executeConsecrateSource(graph, op, ctx);
+
+      case 'sanctify_source':
+        return executeSanctifySource(graph, op, ctx);
+
+      case 'defend_source':
+        return executeDefendSource(graph, op, ctx);
 
       default:
         return {
@@ -561,4 +578,147 @@ function executePlantSecret(
   } catch (err) {
     return { op, success: false, error: err instanceof Error ? err.message : String(err) };
   }
+}
+
+// ─── THR-611 Essence-source ops (Divine Economy — Build / Defend loop) ────────
+//
+// These three ops mutate the `essenceSource` property bag on a host node the
+// player acts on. They need only the graph + `GraphOpContext` (actor / target /
+// tick), never full GameState, so they live here as graph-executor cases (the
+// resolution split routes them through `graphOnlyOps` → executeGraphOps). Tier
+// derivation is centralized in `data/essence-sources.ts` — the ops never hardcode
+// a tier. Per the Slice-1 precedent (`phaseEssenceSources`), these do not call
+// `touchWorld()`: the source tick phase re-derives tiers and income every tick and
+// `worldVersion` bumps per tick during play, so UI reflects the change within one
+// tick (an accepted, documented 1-tick lag). All three are fail-soft (NFP #4).
+
+const SOURCE_KINDS: readonly SourceKind[] = [
+  'placeOfPower',
+  'shrine',
+  'faithfulCommunity',
+  'relic',
+  'rite',
+];
+
+/** Read the acting ascendant's primary sphere (for untyped-source consecration). */
+function readActorPrimarySphere(
+  graph: WorldGraph,
+  actorId: string,
+): SphereName | undefined {
+  const actor = graph.getNode(actorId);
+  const alignment = actor?.properties?.sphereAlignment as
+    | { primary?: SphereName }
+    | undefined;
+  return alignment?.primary;
+}
+
+/**
+ * Consecrate the target host into a **typed** essence source (Build / Create leg).
+ * Assigns a `sphereAffinity` (op-specified, else the ascendant's primary sphere)
+ * so its income routes to that sphere, marks it discovered, and ensures a
+ * `controls` edge so the income actually flows. Idempotent: re-consecrating an
+ * already-typed source is a no-op success. A migrated, untyped place of power is
+ * upgraded in place (sanctity / contested / desecrated state preserved).
+ */
+function executeConsecrateSource(
+  graph: WorldGraph,
+  op: GraphOp,
+  ctx: GraphOpContext,
+): GraphOpResult {
+  const targetId = resolveRef(op.nodeId ?? op.target ?? '$target', ctx);
+  const host = graph.getNode(targetId);
+  if (!host) return { op, success: false, error: `consecrate_source: host ${targetId} not found` };
+
+  const existing = readEssenceSource(host.properties);
+  // Already a typed source → idempotent success (don't clobber built sanctity).
+  if (existing?.sphereAffinity) return { op, success: true };
+
+  const sphere = (op.sourceSphere as SphereName | undefined)
+    ?? readActorPrimarySphere(graph, ctx.actorId);
+  if (!sphere) {
+    return { op, success: false, error: 'consecrate_source: no sphere (op.sourceSphere absent and actor has no primary sphere alignment)' };
+  }
+
+  const kind: SourceKind = (SOURCE_KINDS as readonly string[]).includes(op.sourceKind ?? '')
+    ? (op.sourceKind as SourceKind)
+    : 'shrine';
+
+  const sanctity = existing?.sanctity ?? 0;
+  const contested = !!existing?.contestedBy;
+  const desecrated = !!existing?.desecrated;
+  const source: EssenceSource = {
+    kind,
+    sphereAffinity: sphere,
+    sanctity,
+    tier: deriveSourceTier(sanctity, { contested, desecrated }),
+    discoveredBy: ctx.actorId,
+    contestedBy: existing?.contestedBy,
+    desecrated: existing?.desecrated,
+    originTick: existing?.originTick ?? ctx.tick,
+  };
+  graph.updateNode(host.id, { properties: { ...host.properties, essenceSource: source } });
+
+  // Ensure the ascendant controls the host so `computeSourceIncome` sees it.
+  const alreadyControls = graph
+    .getOutgoingEdges(ctx.actorId, 'controls')
+    .some((e) => e.target === targetId);
+  let createdId: string | undefined;
+  if (!alreadyControls) {
+    createdId = `edge_controls_${++opCounter}`;
+    graph.addEdge({ id: createdId, source: ctx.actorId, target: targetId, type: 'controls', properties: {} });
+  }
+
+  return { op, success: true, createdId };
+}
+
+/**
+ * Raise a typed source's sanctity toward flowering (Build leg). Requires a
+ * pre-consecrated (typed) source — sanctifying an untyped host does nothing for
+ * income, so it fail-softs with guidance to consecrate first. Re-derives the tier.
+ */
+function executeSanctifySource(
+  graph: WorldGraph,
+  op: GraphOp,
+  ctx: GraphOpContext,
+): GraphOpResult {
+  const targetId = resolveRef(op.nodeId ?? op.target ?? '$target', ctx);
+  const host = graph.getNode(targetId);
+  const src = readEssenceSource(host?.properties);
+  if (!host || !src) return { op, success: false, error: `sanctify_source: no essence source on ${targetId}` };
+  if (!src.sphereAffinity) return { op, success: false, error: 'sanctify_source: source is untyped — consecrate it first' };
+
+  const sanctity = Math.min(1, src.sanctity + SANCTITY_BUILD_PER_ACTION);
+  const tier = deriveSourceTier(sanctity, { contested: !!src.contestedBy, desecrated: !!src.desecrated });
+  graph.updateNode(host.id, {
+    properties: { ...host.properties, essenceSource: { ...src, sanctity, tier } },
+  });
+  return { op, success: true };
+}
+
+/**
+ * Defend / ward a source (Defend leg): clear `contestedBy` and `desecrated`, and
+ * restore a chunk of sanctity, then re-derive the (now uncontested) tier. Works
+ * whether or not the source was under attack — reinforcing an unthreatened source
+ * is a harmless sanctity top-up.
+ */
+function executeDefendSource(
+  graph: WorldGraph,
+  op: GraphOp,
+  ctx: GraphOpContext,
+): GraphOpResult {
+  const targetId = resolveRef(op.nodeId ?? op.target ?? '$target', ctx);
+  const host = graph.getNode(targetId);
+  const src = readEssenceSource(host?.properties);
+  if (!host || !src) return { op, success: false, error: `defend_source: no essence source on ${targetId}` };
+
+  const sanctity = Math.min(1, src.sanctity + SANCTITY_DEFEND_RESTORE);
+  const restored: EssenceSource = {
+    ...src,
+    sanctity,
+    contestedBy: undefined,
+    desecrated: false,
+    tier: deriveSourceTier(sanctity, { contested: false, desecrated: false }),
+  };
+  graph.updateNode(host.id, { properties: { ...host.properties, essenceSource: restored } });
+  return { op, success: true };
 }
