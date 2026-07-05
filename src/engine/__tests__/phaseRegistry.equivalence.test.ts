@@ -70,6 +70,10 @@ const EXPECTED_PHASE_IDS: readonly string[] = [
   'autonomous_aftermath',
   // pre-economy slot
   'reputation_decay',
+  // Mortal economy stock-tier derivation (THR-615): no ordering constraints, so
+  // the alphabetical tie-break places it after reputation_decay ('repu' < 'reso'),
+  // still before the inline economy block (prosperity) reads resourceBalance.
+  'resource_stock_tiers',
   // post-economy slot (afterPhase chain preserves inline ordering)
   'ambition_progress',
   // Core personality foundation phase (THR-542): no ordering constraints, so the

@@ -277,7 +277,9 @@ export type TraceCategory =
   // Reach signature: Stone / The Great Work (THR-552)
   | 'ascendant.signature.unique_location'
   // Encounter chapter archive (THR-603)
-  | 'encounter.chapter_archived';
+  | 'encounter.chapter_archived'
+  // Mortal economy — resource stock tiers (THR-615)
+  | 'resource_stock_tier_change';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'action_selection', 'narrative_generation', 'context_harvest',
@@ -327,6 +329,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'strategic_world_change',
   'omen_selection',
   'omen_beat',
+  // Mortal economy — resource stock tiers (THR-615)
+  'resource_stock_tier_change',
   // Fix: three TraceEntry members that were defined but missing from this array (THR-111)
   'graph_op_execution',
   'choice_set_player_resolved',
@@ -1850,7 +1854,23 @@ export type TraceEntry =
   | BeatSeededTrace
   | ActionUnlockGrantedTrace
   // Encounter chapter archive (THR-603)
-  | ChapterArchivedTrace;
+  | ChapterArchivedTrace
+  // Mortal economy — resource stock tiers (THR-615)
+  | ResourceStockTierChangeTrace;
+
+/** Trace: a location's resource crossed a stock tier boundary. THR-615 */
+export interface ResourceStockTierChangeTrace extends TraceBase {
+  category: 'resource_stock_tier_change';
+  locationId: string;
+  resourceId: string;
+  /** Previous tier, or 'unset' on the first derivation for this resource. */
+  fromTier: 'scarce' | 'adequate' | 'surplus' | 'unset';
+  toTier: 'scarce' | 'adequate' | 'surplus';
+  /** Normalized supply − demand balance that produced the new tier. */
+  balance: number;
+  /** Whether a threaded agent's home location produced a livelihood tug. */
+  emittedTug: boolean;
+}
 
 /** Trace: a resolved encounter was distilled into a persistent Chapter Record. THR-603 */
 export interface ChapterArchivedTrace extends TraceBase {

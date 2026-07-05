@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Threadbearer — Livelihoods &amp; the Resource Web</title>
+<!--
+  Livelihoods & the Resource Web (Game Manual Wiki, W18 / THR-615) — dual-layer
+  manual page. Player-manual prose first ("How it plays"), Designer Notes second.
+  Systems spec authority: Docs/plans/2026-07-04-mortal-economy-resource-web.md
+  (Mortal Economy — The Resource Web, Phase 1). Companion to the settlements page,
+  which owns settlements, prosperity, trade routes, and carrying capacity; this
+  page owns the activated resource layer that sits under them. The shared wiki nav
+  between the WIKI-NAV markers is injected by scripts/generate-design-wiki.ts —
+  do not hand-write it.
+
+  Accuracy notes (verified against code this pass — do not "correct" back):
+  - Resources are NOT graph nodes — they are a Record<string, ResourceInstance>
+    on location-node properties, seeded by resourceSeeding.ts from terrain.
+  - phaseResourceStockTiers.ts (pre-economy slot, before phaseProsperity) derives a
+    coarse scarce|adequate|surplus tier per resource per location from supply
+    (quantity/100) minus local demand (a prosperity + sublocation-density proxy),
+    scaled by the resource class's scarcitySensitivity. Tier boundaries:
+    STOCK_SCARCE_THRESHOLD −0.3, STOCK_SURPLUS_THRESHOLD +0.4.
+  - The aggregate resourceBalance (base-value-weighted, ∈[-1,1]) is stored on the
+    location and read by phaseProsperity as an additive equilibrium term
+    (RESOURCE_BALANCE_PROSPERITY_WEIGHT 0.15 → ±15 on the target). Carrying
+    capacity (settlements page) stays the ceiling; this term is the surplus/scarcity
+    nudge on top — they are NOT the same signal.
+  - Full-detail event work is spotlight-capped at ECON_PHASE_SPOTLIGHT_CAP 40
+    locations/tick; beyond the cap tiers still update (coarse), no events fire.
+  - Chronicle: resource_scarcity / resource_glut triggers (economicChronicle.ts),
+    staple/strategic + baseValue ≥ 0.6, on genuine crossings only (first derivation
+    is silent — no trace, no chronicle, to avoid a tick-1 burst).
+  - Livelihood tug: a bonded, non-dormant mortal whose home settlement holds a
+    staple in scarce (Famine) or surplus (Glut) pulls a Gold-reach thread tug on the
+    existing attention system (phaseAttention machinery). State-based + deduped.
+  - Honest scope: P1 activates the decorative layer. Trade cargo manifests, route
+    events, faction control, sphere drift, and divine economic verbs are P2–P4
+    (flagged DESIGN below) — do not describe them as shipped.
+-->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --parchment: #f4edd8;
+    --parchment-dark: #e8dfc8;
+    --ink: #2c1810;
+    --ink-light: #5a3d2b;
+    --ink-faint: #8a7060;
+    --gold: #b8860b;
+    --gold-light: #daa520;
+    --card-bg: #fff8e7;
+    --red: #8b2500;
+    --blue: #1a3a5c;
+    --blue-light: #2d5f8a;
+    --purple: #4a2d6a;
+    --green: #2d5a27;
+
+    --flag-impl: #2d5a27;
+    --flag-design: #8a4a00;
+    --flag-open: #4a2d6a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--parchment);
+    color: var(--ink);
+    font-family: 'Crimson Text', Georgia, serif;
+    font-size: 16px;
+    line-height: 1.6;
+    min-height: 100vh;
+    background-image:
+      radial-gradient(ellipse at 20% 50%, rgba(26,58,92,0.05) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 30%, rgba(184,134,11,0.04) 0%, transparent 50%);
+  }
+
+  .page-wrapper { max-width: 900px; margin: 0 auto; padding: 40px 32px 72px; }
+
+  /* ── Header ── */
+  .header { text-align: center; margin-bottom: 40px; padding-bottom: 28px; border-bottom: 2px solid var(--gold); position: relative; }
+  .header::after { content: ''; position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); width: 55%; height: 1px; background: var(--gold-light); }
+  .header .eyebrow { font-family: 'Cinzel', Georgia, serif; font-size: 0.72rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold); margin-bottom: 10px; }
+  .header h1 { font-family: 'Cinzel', Georgia, serif; font-weight: 700; font-size: 2.4rem; color: var(--ink); letter-spacing: 0.05em; margin-bottom: 12px; }
+  .header .tagline { font-size: 1.12rem; color: var(--ink-light); max-width: 64ch; margin: 0 auto; font-style: italic; }
+
+  /* ── Sections ── */
+  .section { margin-bottom: 34px; }
+  .section > h2 { font-family: 'Cinzel', Georgia, serif; font-size: 1.25rem; color: var(--ink); letter-spacing: 0.03em; margin-bottom: 6px; padding-bottom: 6px; border-bottom: 1px solid var(--parchment-dark); }
+  .section > h2 .lead { display: block; font-family: 'Crimson Text', Georgia, serif; font-size: 0.95rem; font-style: italic; font-weight: 400; color: var(--ink-faint); letter-spacing: 0; margin-top: 4px; }
+  .section h3 { font-family: 'Cinzel', Georgia, serif; font-size: 1rem; color: var(--ink-light); letter-spacing: 0.02em; margin: 20px 0 6px; }
+  .section p { margin-bottom: 12px; }
+  .section p .term { font-weight: 600; color: var(--ink); }
+  .section ul { margin: 0 0 14px 0; padding-left: 0; list-style: none; }
+  .section ul li { position: relative; padding-left: 1.3rem; margin-bottom: 8px; }
+  .section ul li::before { content: '◆'; position: absolute; left: 0; top: 0.05rem; color: var(--gold); font-size: 0.7rem; }
+
+  /* ── Tier ladder ── */
+  .tiers { margin: 12px 0 18px; }
+  .tier { display: grid; grid-template-columns: 7.2rem 1fr; gap: 0 12px; align-items: baseline; padding: 9px 0; border-bottom: 1px solid var(--parchment-dark); }
+  .tier .name { font-family: 'Cinzel', Georgia, serif; font-size: 0.84rem; color: var(--gold); letter-spacing: 0.04em; }
+  .tier .desc { font-size: 0.94rem; color: var(--ink-light); }
+  .tier .desc .who { font-weight: 600; color: var(--ink); }
+  @media (max-width: 620px) { .tier { grid-template-columns: 1fr; gap: 2px; } }
+
+  /* ── Card grid ── */
+  .card-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 10px 0 18px; }
+  .card-grid.three { grid-template-columns: repeat(3, 1fr); }
+  .card { background: var(--card-bg); border: 1px solid var(--parchment-dark); border-radius: 4px; padding: 11px 14px; border-left: 3px solid var(--gold); }
+  .card.blue { border-left-color: var(--blue-light); }
+  .card.red { border-left-color: var(--red); }
+  .card.green { border-left-color: var(--green); }
+  .card.purple { border-left-color: var(--purple); }
+  .card h4 { font-family: 'Cinzel', Georgia, serif; font-size: 0.84rem; color: var(--ink); margin: 0 0 2px; }
+  .card p { font-size: 0.8rem; color: var(--ink-light); margin: 0; }
+  @media (max-width: 620px) { .card-grid, .card-grid.three { grid-template-columns: 1fr; } }
+
+  /* ── Callouts ── */
+  .callout { background: var(--card-bg); border: 1px solid var(--parchment-dark); border-left: 4px solid var(--gold); border-radius: 4px; padding: 14px 18px; margin: 4px 0 18px; }
+  .callout.blue { border-left-color: var(--blue-light); }
+  .callout.purple { border-left-color: var(--purple); }
+  .callout.red { border-left-color: var(--red); }
+  .callout.green { border-left-color: var(--green); }
+  .callout .callout-title { font-family: 'Cinzel', Georgia, serif; font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 6px; }
+  .callout p:last-child { margin-bottom: 0; }
+
+  /* ── Designer notes ── */
+  .designer { margin-top: 48px; border-top: 2px solid var(--gold); padding-top: 8px; }
+  .designer > summary { list-style: none; cursor: pointer; padding: 16px 4px; display: flex; align-items: baseline; gap: 12px; }
+  .designer > summary::-webkit-details-marker { display: none; }
+  .designer > summary .chev { font-size: 0.8rem; color: var(--gold); transition: transform 0.15s; }
+  .designer[open] > summary .chev { transform: rotate(90deg); }
+  .designer > summary h2 { font-family: 'Cinzel', Georgia, serif; font-size: 1.3rem; color: var(--ink); letter-spacing: 0.03em; }
+  .designer > summary .sub { font-size: 0.9rem; color: var(--ink-faint); font-style: italic; }
+  .designer-body { padding: 4px 4px 8px; }
+  .designer-body h3 { font-family: 'Cinzel', Georgia, serif; font-size: 0.98rem; color: var(--ink-light); margin: 22px 0 8px; }
+  .designer-body p { margin-bottom: 12px; font-size: 0.97rem; }
+  .designer-body ul { margin: 0 0 14px 0; padding-left: 0; list-style: none; }
+  .designer-body ul li { position: relative; padding-left: 1.2rem; margin-bottom: 7px; font-size: 0.97rem; }
+  .designer-body ul li::before { content: '›'; position: absolute; left: 0.15rem; top: 0; color: var(--ink-faint); }
+  code, .mono { font-family: 'JetBrains Mono', monospace; font-size: 0.84em; color: var(--ink); background: rgba(184,134,11,0.10); padding: 0.05rem 0.32rem; border-radius: 3px; word-break: break-word; }
+
+  .flag { font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; letter-spacing: 0.04em; font-weight: 500; padding: 0.08rem 0.4rem; border-radius: 3px; color: #fff; white-space: nowrap; }
+  .flag.impl { background: var(--flag-impl); }
+  .flag.design { background: var(--flag-design); }
+  .flag.open { background: var(--flag-open); }
+
+  table.tunables { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin: 4px 0 18px; }
+  table.tunables th { text-align: left; font-family: 'Cinzel', Georgia, serif; font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-faint); padding: 6px 10px 6px 0; border-bottom: 1px solid var(--parchment-dark); }
+  table.tunables td { padding: 7px 10px 7px 0; border-bottom: 1px solid var(--parchment-dark); vertical-align: top; color: var(--ink-light); }
+  table.tunables td:first-child { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--ink); white-space: nowrap; }
+
+  .foot { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--parchment-dark); font-size: 0.85rem; color: var(--ink-faint); font-style: italic; }
+  a { color: var(--blue-light); text-decoration: none; border-bottom: 1px solid rgba(45,95,138,0.35); }
+  a:hover { color: var(--blue); border-bottom-color: var(--blue); }
+</style>
+</head>
+<body>
+<!--WIKI-NAV-->
+<style>
+  .wiki-nav { font-family: 'Cinzel', Georgia, serif; background: #2c1810; border-bottom: 2px solid #b8860b; padding: 0.6rem 1.2rem; display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.4rem 1.1rem; }
+  .wiki-nav__brand { color: #daa520; font-weight: 700; letter-spacing: 0.04em; margin-right: 0.6rem; font-size: 0.95rem; }
+  .wiki-nav__link { color: #f4edd8; text-decoration: none; font-size: 0.85rem; letter-spacing: 0.02em; padding: 0.15rem 0.1rem; border-bottom: 2px solid transparent; transition: color 0.15s, border-color 0.15s; }
+  .wiki-nav__link:hover { color: #daa520; }
+  .wiki-nav__link.is-active { color: #daa520; border-bottom-color: #b8860b; font-weight: 700; }
+</style>
+<nav class="wiki-nav" aria-label="Design Reference Wiki">
+  <span class="wiki-nav__brand">⌖ Design Reference Wiki</span>
+  <a class="wiki-nav__link" href="design-wiki.html">Design Wiki</a>
+  <a class="wiki-nav__link" href="run-lifecycle-reference.html">A Run, Start to Finish</a>
+      <a class="wiki-nav__link" href="cosmology-reference.html">Reaches, Spheres &amp; Quintessence</a>
+      <a class="wiki-nav__link" href="turn-structure-reference.html">The Three-Beat Turn</a>
+      <a class="wiki-nav__link" href="divine-actions-reference.html">Divine Actions &amp; Prerequisites</a>
+      <a class="wiki-nav__link" href="threads-court-reference.html">Threads, the Court &amp; The First</a>
+      <a class="wiki-nav__link" href="essence-control-reference.html">Essence, Control &amp; Sustained Power</a>
+      <a class="wiki-nav__link" href="encounters-manual-reference.html">Encounters &amp; Aftermath</a>
+      <a class="wiki-nav__link" href="clocks-reference.html">Doom, the Mandate &amp; Omens</a>
+      <a class="wiki-nav__link" href="interface-reference.html">Reading the Interface</a>
+      <a class="wiki-nav__link" href="agents-reference.html">The Mortals</a>
+      <a class="wiki-nav__link" href="factions-cultures-reference.html">Factions, Cultures &amp; Secrets</a>
+      <a class="wiki-nav__link" href="world-map-reference.html">The World: Hexes, Terrain &amp; Sight</a>
+      <a class="wiki-nav__link" href="settlements-economy-reference.html">Settlements, Prosperity &amp; Trade</a>
+      <a class="wiki-nav__link is-active" href="livelihoods-reference.html" aria-current="page">Livelihoods &amp; the Resource Web</a>
+      <a class="wiki-nav__link" href="armies-battles-reference.html">Armies, Battles &amp; Lairs</a>
+      <a class="wiki-nav__link" href="encounters-agents-reference.html">Encounters, Agents &amp; Resolution</a>
+      <a class="wiki-nav__link" href="tick-cycle-reference.html">Tick Cycle Reference</a>
+      <a class="wiki-nav__link" href="action-catalog.html">Action Catalog</a>
+</nav>
+<!--/WIKI-NAV-->
+<div class="page-wrapper">
+
+  <header class="header">
+    <div class="eyebrow">Game Manual · The Living World</div>
+    <h1>Livelihoods &amp; the Resource Web</h1>
+    <p class="tagline">Every place lives on what its ground can give. A granary full or a granary empty, a road of cheap iron or a famine of grain — the world's livelihoods are visible, and when they turn, your bonded mortals feel it.</p>
+  </header>
+
+  <!-- ══════════════════ HOW IT PLAYS ══════════════════ -->
+
+  <section class="section">
+    <h2>The land has a livelihood, and it shows<span class="lead">Look at a place and you are told, in plain words, how its people are eating and working — not in numbers, but in the state of its granaries, its yards, its stalls.</span></h2>
+    <p>Every settled place holds the <span class="term">resources</span> its terrain affords — grain and grazing in the lowlands, timber in the forests, stone and ore in the mountains, fish and water along the rivers and coasts. Open a location and you will find its <span class="term">Livelihood</span> written out: a place with more than it needs reads as full and easy, a place scraping by reads as thin and watchful. You never see a stock level or a price. You see a granary described as overflowing or a fishing town whose nets come up light.</p>
+    <p>What decides the reading is simple: how much the ground gives, against how much the people need. A thin harvest in a crowded city is a crisis; the same harvest in an empty valley is a surplus. Big, prosperous places eat far more than sparse ones, so a resource that is plentiful in the wild can still run short where the crowds are.</p>
+    <div class="tiers">
+      <div class="tier"><span class="name">Scarce</span><span class="desc"><span class="who">Too little to go around.</span> Stores run low, prices climb, and the poor go without first. For a staple, this is a Famine.</span></div>
+      <div class="tier"><span class="name">Adequate</span><span class="desc"><span class="who">Enough, most seasons.</span> The unremarkable middle — the tables are set and the yards keep working.</span></div>
+      <div class="tier"><span class="name">Surplus</span><span class="desc"><span class="who">More than can be used.</span> Plenty spills into the markets and worth collapses. For a staple, this is a Glut.</span></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Famine and Glut — when a staple turns<span class="lead">Food and water are what a people live on. When a staple crosses into scarcity or drowns in surplus, it carries a name and a weight the rest of the economy does not.</span></h2>
+    <p>Two words in the world's reports carry real force. <span class="term">Famine</span> is a staple — grain, grazing, fish, water — fallen into scarcity: hungry people, and hunger breeds desperation and trouble. <span class="term">Glut</span> is the opposite ruin: a staple so abundant its worth collapses, and those who traded in it are undone. Both are turning points, not background texture — a place in Famine is a place where things are about to go wrong, and a place in Glut is a place where a fortune just evaporated.</p>
+    <p>When a staple crosses one of these lines, the world writes it into the Great Chronicle — "A Scarcity Bites", "A Glut Descends" — so the turn of a livelihood becomes part of the story of a place, the same way a settlement's rise or a road's death does.</p>
+    <div class="callout red">
+      <div class="callout-title">Scarcity and surplus feed prosperity</div>
+      <p>A place that meets its needs prospers; a place in shortage or drowning in unsellable surplus does not. The balance of a settlement's livelihoods is one of the forces that lifts or drags its prosperity over time — so a famine is not just grim flavour, it is a weight on the whole place's fortunes.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Your people feel it — the livelihood tug<span class="lead">The economy is not a spreadsheet you audit. It reaches into your turn through the mortals you are bound to.</span></h2>
+    <p>When one of your <span class="term">threaded</span> mortals — a soul you have reached down and bonded — lives in a settlement that falls into Famine or rises into Glut, the thread <span class="term">tugs</span>. It joins the same pull the attention system gives you for a mortal facing a dangerous encounter: a signal that here, now, one of your own is caught in something worth your notice. A famine tugs hard; a glut, more softly. You are never forced to act — but the world has told you that your bonded farmer's village is starving, and left the choice in your hands.</p>
+    <div class="callout">
+      <div class="callout-title">The economy in your hands</div>
+      <p>This is the point of an activated economy: it is not a menu of taxes and tariffs, it is a set of pressures your people live inside. The livelihood tug puts the world's livelihoods into your turn loop from the first — so a shortage is something you <em>feel through the thread</em>, not a number you go looking for.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Resources have a cosmic grain<span class="lead">What a land produces is not just wealth — it is a leaning toward one of the world's Spheres, so an economy is legible as cosmology.</span></h2>
+    <p>Every kind of resource belongs to a <span class="term">class</span> and leans toward a <span class="term">Sphere</span>. Grain and grazing and fish and water are <span class="term">staples</span>, aligned with <span class="term">Life</span> — the things a people must have. Timber, stone, ore, and peat are <span class="term">strategic</span> goods, the materials of building and war. Gems, pearls, dyes, and rare herbs are <span class="term">luxuries</span> — high in worth, low in need, quick to glut. And the rarest finds — arcane crystal, star-metal, ancient relics, sunken gold — are <span class="term">arcane</span> goods, worth the most and consumed the least. A valley of grain leans Life; a corridor of war-iron leans Matter and Force. The map's livelihoods and the map's cosmology are the same picture read two ways.</p>
+    <div class="card-grid">
+      <div class="card green"><h4>Staple · Life</h4><p>Grain, grazing, fish, water. Eaten by everyone; the Famine and Glut drivers.</p></div>
+      <div class="card"><h4>Strategic · Matter / Force</h4><p>Timber, stone, ore, peat. Building and war materials, moderately consumed.</p></div>
+      <div class="card purple"><h4>Luxury · Mind / Spirit</h4><p>Gems, pearls, herbs, glowcap. High worth, low need, glut-prone.</p></div>
+      <div class="card blue"><h4>Arcane · Time / Energy</h4><p>Crystal, star-metal, relics, sunken gold. Rarest and most valuable; barely consumed.</p></div>
+    </div>
+    <div class="callout green">
+      <div class="callout-title">Honest scope — this is Phase 1</div>
+      <p>Right now, the resource web is <em>activated and felt</em>: livelihoods read as prose, staples swing into Famine and Glut, your threaded mortals tug when their home turns, and the balance feeds prosperity. Trade caravans carrying named cargo, banditry on the iron road, factions seizing a resource by the throat, and divine verbs to bless a harvest or blight a field are coming — but they are not here yet. This page describes what lives today.</p>
+    </div>
+  </section>
+
+  <!-- ══════════════════ DESIGNER NOTES ══════════════════ -->
+
+  <details class="designer" open>
+    <summary>
+      <span class="chev">▶</span>
+      <span>
+        <h2>Designer Notes</h2>
+        <span class="sub">Resources as location properties, the stock-tier derivation phase and its supply-vs-demand model, the resource-class table with sphere affinities, the additive prosperity balance term, the Famine/Glut chronicle triggers, and the livelihood thread tug — with honest IMPL/DESIGN status.</span>
+      </span>
+    </summary>
+    <div class="designer-body">
+
+      <p>Status flags follow the rulebook convention: <span class="flag impl">IMPL</span> shipped and wired, <span class="flag design">DESIGN</span> specified but not yet wired, <span class="flag open">OPEN</span> an unresolved question (referenced, never minted here). The systems-spec authority for this page is <code>Docs/plans/2026-07-04-mortal-economy-resource-web.md</code> (Mortal Economy — The Resource Web, Phase 1). The companion page <a href="settlements-economy-reference.html">Settlements, Prosperity &amp; Trade</a> owns settlements, the prosperity equilibrium model, trade routes, and carrying capacity. <strong>Honest UL note:</strong> there is still no dedicated economic UL shard — <em>Livelihood</em>, <em>Stock Tier</em>, <em>Famine</em>, <em>Glut</em> are code-authoritative until one is minted (the same known gap the settlements page records).</p>
+
+      <h3>Resources are location properties, not nodes <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li>Despite a <code>resource</code> node type existing in the schema, resources live as a <code>Record&lt;string, ResourceInstance&gt;</code> on location-node properties (<code>src/types/resource.ts</code>). Each instance is <code>{ quantity 0–100, renewable, renewalRate, stockTier? }</code>. <code>seedLocationResources</code> (<code>resourceSeeding.ts</code>) populates them from <code>TERRAIN_RESOURCE_TABLE</code> at world-gen. THR-615 added the optional <code>stockTier</code> field (additive; absent → treated as <code>adequate</code>).</li>
+      </ul>
+
+      <h3>Stock-tier derivation <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li><code>phaseResourceStockTiers(state, ctx)</code> (<code>src/engine/phases/resourceStockTiers.ts</code>) runs in the declarative registry's <code>pre-economy</code> slot, ordered after <code>reputation_decay</code> and before the inline economy block — so <code>phaseProsperity</code> reads a fresh balance the same tick.</li>
+        <li>The pure derivation lives in <code>resourceEconomy.ts</code>. Local demand is a population proxy: <code>DEMAND_BASE 0.15 + (prosperity/100)·DEMAND_PROSPERITY_WEIGHT 0.35 + min(sublocations/DEMAND_SUBLOCATION_CAP 6, 1)·DEMAND_SUBLOCATION_WEIGHT 0.30</code>, clamped to <code>[0,1]</code>. Per resource, <code>balance = clamp(quantity/100 − demand·scarcitySensitivity, −1, 1)</code>; the tier is <code>scarce</code> at <code>≤ STOCK_SCARCE_THRESHOLD −0.3</code>, <code>surplus</code> at <code>≥ STOCK_SURPLUS_THRESHOLD +0.4</code>, else <code>adequate</code>. Deterministic; no PRNG.</li>
+        <li>The location's aggregate <code>resourceBalance</code> (base-value-weighted mean of per-resource balances, ∈<code>[-1,1]</code>) is stored on the node for prosperity and the DebugPanel. Tier changes call <code>touchWorld(runtime)</code> (they shift encounter-scoring inputs, per the <code>locationSubtype</code> precedent).</li>
+        <li><strong>Spotlight cap:</strong> locations are sorted prosperity-desc then id, and only the first <code>ECON_PHASE_SPOTLIGHT_CAP 40</code> get full-detail work (crossing traces, chronicle, tugs). Beyond the cap, tiers and balance still update (coarse) — never skipped silently. <strong>First-derivation is silent:</strong> a resource crossing from no-tier to any tier emits no trace or chronicle, avoiding a tick-1 burst that would flood the 2000-entry trace ring; only genuine tier <em>changes</em> narrate.</li>
+      </ul>
+
+      <h3>Resource classes <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li><code>src/data/resource-classes.ts</code> keys 18 resource types to a <code>ResourceClass { category, primarySphere, baseValue, scarcitySensitivity }</code>. Categories: <code>staple</code> (Life food/water, high sensitivity, Famine/Glut drivers), <code>strategic</code> (Matter/Force building &amp; war materials), <code>luxury</code> (glut-prone trade goods), <code>arcane</code> (rare, high value, barely consumed). <code>primarySphere</code> mirrors <code>RESOURCE_DEFINITIONS[id].sphereAffinities[0]</code> — a consistency test asserts they never drift.</li>
+      </ul>
+
+      <h3>Prosperity coupling <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li><code>computeEquilibriumTarget</code> in <code>phaseProsperity.ts</code> adds <code>resourceBalance · RESOURCE_BALANCE_PROSPERITY_WEIGHT 0.15 · 100</code> (±15 max) to the settlement's equilibrium target, read via <code>readLocationResourceBalance</code>. It is an additive term <em>on top of</em> carrying capacity — capacity is the ceiling the land affords, the balance term is the surplus/scarcity nudge; they are distinct signals. Both <code>resourceBalance</code> and <code>resourceBalanceBonus</code> are attributable in the <code>prosperity_tick</code> trace breakdown.</li>
+      </ul>
+
+      <h3>Chronicle — Famine &amp; Glut <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li>Two triggers were added to <code>economicChronicle.ts</code> / <code>economic-chronicle-content.ts</code>: <code>resource_scarcity</code> ("A Scarcity Bites", significance 0.7) and <code>resource_glut</code> ("A Glut Descends", 0.5), each with four baseline-register templates using the existing <code>{settlement}</code>/<code>{resource}</code> placeholders. The phase resolves an entry only on a genuine crossing of a <em>staple or strategic</em> resource with <code>baseValue ≥ CHRONICLE_MIN_BASE_VALUE 0.6</code> — keeping luxury noise out of the Great Chronicle.</li>
+      </ul>
+
+      <h3>Livelihood thread tug <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li>When a bonded, non-dormant mortal's home settlement holds a <em>staple</em> in <code>scarce</code> or <code>surplus</code>, the phase pushes a <code>ThreadTug</code> (reach <code>gold</code>; threat <code>hard</code> for Famine, <code>moderate</code> for Glut) onto <code>state.activeThreadTugs</code>, riding the existing attention machinery (<code>phaseAttention</code> preserves it; <code>useAgentInteraction</code> attends it — it resolves by <code>agentId</code>, so no backing encounter is needed). Residents are grouped by their home <em>resourced</em> location, walking sublocation → parent so a mortal in a settlement's inn still counts. State-based and deduped by a <code>${agentId}::${resourceId}</code> key carried on the tug, so a persistent famine tugs once, not every tick.</li>
+      </ul>
+
+      <h3>UI &amp; inspection <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li><strong>Livelihood line</strong> — <code>LocationView.tsx</code> renders a prose-only Livelihood section from the location's resource tiers (scarce/surplus first, else the dominant resource's steady prose), with <strong>Famine</strong>/<strong>Glut</strong> as interactive in-prose keywords (<code>renderProseWithIPK</code> extended with an economic-keyword branch; tooltips in <code>ECONOMY_KEYWORD_TOOLTIPS</code>).</li>
+        <li><strong>DebugPanel Economy tab</strong> — <code>EconomyDebugTab.tsx</code> lists the tier distribution and every resourced location's per-resource tiers, aggregate balance, and monopoly state, sorted most-scarce first (numbers shown here, debug-only).</li>
+        <li><strong>Traces</strong> — <code>resource_stock_tier_change</code> per crossing (with the driving balance and whether a tug fired); <code>prosperity_tick</code> now carries <code>resourceBalance</code>/<code>resourceBalanceBonus</code>. Inspect headlessly via the CLI <code>eval</code> command.</li>
+      </ul>
+
+      <h3>Constants</h3>
+      <table class="tunables">
+        <thead><tr><th>Constant</th><th>Value</th><th>Purpose · file</th></tr></thead>
+        <tbody>
+          <tr><td>STOCK_SCARCE_THRESHOLD</td><td>−0.3</td><td>Balance at/below which a resource is scarce · <code>resource-classes.ts</code></td></tr>
+          <tr><td>STOCK_SURPLUS_THRESHOLD</td><td>+0.4</td><td>Balance at/above which a resource is surplus · <code>resource-classes.ts</code></td></tr>
+          <tr><td>RESOURCE_BALANCE_PROSPERITY_WEIGHT</td><td>0.15</td><td>±100× share of the prosperity target from balance · <code>resource-classes.ts</code></td></tr>
+          <tr><td>ECON_PHASE_SPOTLIGHT_CAP</td><td>40</td><td>Locations at full-detail (events) per tick · <code>resource-classes.ts</code></td></tr>
+          <tr><td>DEMAND_BASE</td><td>0.15</td><td>Floor demand for any location · <code>resource-classes.ts</code></td></tr>
+          <tr><td>DEMAND_PROSPERITY_WEIGHT</td><td>0.35</td><td>Demand contribution from prosperity/100 · <code>resource-classes.ts</code></td></tr>
+          <tr><td>DEMAND_SUBLOCATION_WEIGHT</td><td>0.30</td><td>Demand contribution from sublocation density · <code>resource-classes.ts</code></td></tr>
+          <tr><td>CHRONICLE_MIN_BASE_VALUE</td><td>0.6</td><td>Min base value for a Famine/Glut chronicle entry · <code>resource-classes.ts</code></td></tr>
+        </tbody>
+      </table>
+
+      <h3>Canon &amp; terminology</h3>
+      <ul>
+        <li>Systems spec: <code>Docs/plans/2026-07-04-mortal-economy-resource-web.md</code>. Phase/source: <code>phases/resourceStockTiers.ts</code>, <code>resourceEconomy.ts</code>, <code>resource-classes.ts</code>, <code>phaseProsperity.ts</code> (balance term), <code>economicChronicle.ts</code> + <code>economic-chronicle-content.ts</code> (Famine/Glut), <code>LocationView.tsx</code> (Livelihood line), <code>EconomyDebugTab.tsx</code>, <code>ProseKeyword.tsx</code> (economic IPK).</li>
+        <li>UL: no economic shard yet — <em>Livelihood</em>, <em>Stock Tier</em>, <em>Famine</em>, <em>Glut</em> are code-authoritative (surface a <code>UL-proposal</code> to close the gap). Related terms live in <code>Docs/ubiquitous-language/Graph.md</code>.</li>
+        <li>Adjacent Manual pages: <a href="settlements-economy-reference.html">Settlements, Prosperity &amp; Trade</a> (prosperity, trade routes, carrying capacity), <a href="world-map-reference.html">The World: Hexes, Terrain &amp; Sight</a> (terrain that seeds resources), <a href="threads-court-reference.html">Threads, the Court &amp; The First</a> (the thread the livelihood tug pulls on), <a href="cosmology-reference.html">Reaches, Spheres &amp; Quintessence</a> (the Spheres resources lean toward). Game title in player copy: <strong>Threadbearer</strong>.</li>
+      </ul>
+
+      <h3>Open questions <span class="flag open">OPEN</span></h3>
+      <ul>
+        <li>None minted here. The named gaps are the missing economic UL shard (documentation debt) and the P2–P4 layers — trade cargo manifests, route-event encounters, faction control &amp; monopoly resolution, sphere drift, and divine economic verbs — all referenced in the systems spec, not opened on this page.</li>
+      </ul>
+
+    </div>
+  </details>
+
+  <div class="foot">
+    Game Manual Wiki · W18 (THR-615). Player layer describes current shipped behaviour (Phase 1 — resource activation); the trade, faction, and divine-verb layers are flagged DESIGN in the systems spec and are not yet wired. The economy is texture serving story, not a trading sim — the framing this page shares with its settlements companion.
+  </div>
+
+</div>
+</body>
+</html>

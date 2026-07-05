@@ -43,6 +43,7 @@ import { corePersonalityPhase } from './corePersonality';
 import { autonomousAftermathPhase } from './phaseAutonomousAftermath';
 import { mandatePhase } from './mandate';
 import { factionSuccessionPhase } from './factionSuccession';
+import { resourceStockTiersPhase } from './resourceStockTiers';
 
 export const ENGINE_PHASES: readonly EnginePhase[] = [
   // pre-doom
@@ -53,6 +54,7 @@ export const ENGINE_PHASES: readonly EnginePhase[] = [
   emittedOmenDecayPhase,
   // pre-economy
   reputationDecayPhase,
+  resourceStockTiersPhase, // THR-615: derive stock tiers before prosperity reads resourceBalance
   // post-economy (chained via afterPhase to preserve inline order)
   ambitionProgressPhase,
   factionAmbitionsPhase,

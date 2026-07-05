@@ -23,7 +23,10 @@ export type EconomicChronicleTrigger =
   | 'assassination_commissioned'
   | 'agreement_broken'
   | 'wealth_tier_up'
-  | 'wealth_tier_down';
+  | 'wealth_tier_down'
+  // Mortal economy — resource stock crossings (THR-615)
+  | 'resource_scarcity'
+  | 'resource_glut';
 
 // ─── Significance defaults per trigger ──────────────────────────────────────
 
@@ -40,6 +43,8 @@ export const ECONOMIC_CHRONICLE_SIGNIFICANCE: Record<EconomicChronicleTrigger, n
   agreement_broken: 0.7,
   wealth_tier_up: 0.5,
   wealth_tier_down: 0.6,
+  resource_scarcity: 0.7,
+  resource_glut: 0.5,
 };
 
 // ─── Chronicle Templates ────────────────────────────────────────────────────
@@ -156,6 +161,20 @@ export const ECONOMIC_CHRONICLE_TEMPLATES: Record<EconomicChronicleTrigger, stri
     '{actor}\'s fortunes crumble. They count themselves among the {tierLabel} now. {flavor}',
     'The decline is measured in coin. {actor} is {tierLabel} now. {flavor}',
     '{actor} has less than they did. The new station: {tierLabel}. {flavor}',
+  ],
+
+  // Mortal economy — resource stock crossings (THR-615). Baseline register.
+  resource_scarcity: [
+    'Famine has come to {settlement}. The {resource} has run short, and the people go hungry.',
+    'The {resource} at {settlement} has failed. Prices climb, tempers fray, and the poor go without.',
+    '{settlement} counts its {resource} now, and finds too little. A hard season is coming.',
+    'Word from {settlement}: the {resource} is scarce. Those who can hoard it do, and the rest make do.',
+  ],
+  resource_glut: [
+    'A glut of {resource} has swamped {settlement}. It sells for almost nothing, and those who traded in it are ruined.',
+    '{settlement} has more {resource} than it can use. The surplus rots in the yards while its worth collapses.',
+    'The {resource} floods {settlement}\'s markets. Cheap plenty for the buyer, quiet ruin for the seller.',
+    'So much {resource} has come to {settlement} that no one will pay for it. The abundance is its own kind of trouble.',
   ],
 };
 
