@@ -63,6 +63,12 @@ export interface WheelSlot {
   /** Wiki-facing statement of what state this action changes (THR-604 `technicalEffect`).
    * Surfaced as the focused card's "Effect" block (THR-610). Absent → block hidden. */
   technicalEffect?: string;
+  /** Plain-prose effects line (THR-639) — one player-facing sentence stating what the
+   * action does, what it touches, and what it costs. Rendered on the focused ActionCard
+   * face (shared by the Action Drawer and the Ascendant Beat unlock modal). Sourced from
+   * `actionEffectsProse(template)`. Distinct from `technicalEffect` (mechanical/wiki-facing);
+   * this is atmospheric-but-instructional player prose. Absent → line hidden. */
+  effectsLine?: string;
   /** Where this action's mechanical effect is wired (THR-604 derivation). Drives the
    * wiring badge next to the Effect block. Only meaningful when technicalEffect is set. */
   effectSource?: EffectSource;
