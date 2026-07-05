@@ -386,6 +386,21 @@ export const ASCENDANT_BEAT_POOL: readonly BeatDefinition[] = [
     grantsActionIds: ['action.anoint'],
   },
 
+  // — Divine-economy source loop (THR-611 Slice 3): surfaces the find→claim→build→defend
+  //   verbs shipped in Slice 2 (#531). One beat grants the whole loop because the three
+  //   are useless apart — you consecrate a place, THEN deepen it, THEN ward the *same*
+  //   source — mirroring `the_hallowed_place` granting both consecrate variants together.
+  //   `unlockable-generic` (see ASCENDANT_ACTION_BUCKETS): universal, sphere-flavored, not
+  //   two-domain reach-locked. —
+  {
+    beatId: 'beat.pool.invest.the_wellspring',
+    kind: 'investment',
+    trigger: { kind: 'cadence' },
+    eligibility: { kind: 'unthreaded_target' },
+    templateId: 'beat.pool.invest.the_wellspring',
+    grantsActionIds: ['loc.consecrate_source', 'loc.sanctify_source', 'loc.defend_source'],
+  },
+
   // — Selection beats (BEAT_KIND_WEIGHTS.selection): choose 1-of-N within-run. The
   //   picker offers the listed cards; resolution unlocks the chosen one. —
   {
@@ -474,6 +489,15 @@ export const ASCENDANT_ACTION_BUCKETS: Readonly<Record<string, ActionBucketEntry
   'action.consecrate-relic': { bucket: 'unlockable-generic' },
   'action.bestow': { bucket: 'unlockable-generic' },
   'action.anoint': { bucket: 'unlockable-generic' },
+  // Divine-economy source-loop verbs (THR-611 Slice 3), granted by
+  // `beat.pool.invest.the_wellspring`: claim/type a source, deepen it, ward it. Universal
+  // like consecrate/bestow/anoint — flavored by the ascendant's primary sphere
+  // (`consecrate_source` types the host to it) rather than gated on the two-domain reach
+  // lock. `reach: 'star'` on these templates is their cosmic-energy axis, not a
+  // `requiresReach` gate, so they surface for every run once unlocked.
+  'loc.consecrate_source': { bucket: 'unlockable-generic' },
+  'loc.sanctify_source': { bucket: 'unlockable-generic' },
+  'loc.defend_source': { bucket: 'unlockable-generic' },
   // Spine-granted expressive verbs (THR-504): The First Word + the three god-paths.
   'divine.persuade': { bucket: 'unlockable-generic' },
   'divine.dream': { bucket: 'unlockable-generic' },
