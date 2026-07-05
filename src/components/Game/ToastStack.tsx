@@ -3,6 +3,7 @@ import { AnimateMount } from '../shared/AnimateMount';
 import type { ToastItem } from '../../types/notification';
 import type { NavigationTarget } from '../../types/notification';
 import { getSphereColor } from '../../data/sphereIcons';
+import { EncounterNotificationCard } from './EncounterNotificationCard';
 
 /** Band → left-border accent colour mapping. Fail-soft: unknown band → undefined (falls through to sphere/gold). */
 const BAND_ACCENT: Record<string, string> = {
@@ -115,19 +116,29 @@ export function ToastStack({ toasts, onDismiss, onSelectAgent, onNavigate }: Toa
               }}
               onContextMenu={(e) => handleRightClickDismiss(e, toast.id)}
               role="status"
-              aria-label={navTarget ? `${toast.message} — ${NAV_TOOLTIPS[navTarget.kind]}` : toast.message}
+              aria-label={
+                toast.encounterCard
+                  ? `${toast.encounterCard.agentName} — ${toast.encounterCard.encounterName}. ${toast.encounterCard.meta}`
+                  : navTarget
+                    ? `${toast.message} — ${NAV_TOOLTIPS[navTarget.kind]}`
+                    : toast.message
+              }
               aria-description="Right-click to dismiss"
             >
-              <span
-                className="flex-1 leading-snug"
-                style={{
-                  fontSize: 'var(--text-xs)',
-                  color: 'var(--text-secondary)',
-                  fontFamily: 'var(--font-body)',
-                }}
-              >
-                {toast.message}
-              </span>
+              {toast.encounterCard ? (
+                <EncounterNotificationCard card={toast.encounterCard} accentColor={accentColor} />
+              ) : (
+                <span
+                  className="flex-1 leading-snug"
+                  style={{
+                    fontSize: 'var(--text-xs)',
+                    color: 'var(--text-secondary)',
+                    fontFamily: 'var(--font-body)',
+                  }}
+                >
+                  {toast.message}
+                </span>
+              )}
               {toast.count > 1 && (
                 <span
                   className="flex-shrink-0 px-1.5 py-0.5 rounded-full font-bold"

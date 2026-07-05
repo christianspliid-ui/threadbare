@@ -539,6 +539,12 @@ export interface DebugBridge {
 
   /** Compose and return the story-so-far for an agent by id, id prefix, or partial name (THR-455). Returns null if not available. */
   getThreadStory(agentRef: string): import('./engine/threadDigest').ThreadStoryComposition | null;
+
+  /** THR-636 — captured per-step replay records for an agent's active/most-recent unified-action encounter.
+   *  Resolves the agent by exact id, id prefix, then case-insensitive partial name. */
+  getStepProse(agentRef: string):
+    | { actionId: string; actorName: string; records: import('./types/stepProseRecord').StepProseRecord[] }
+    | { error: string };
   /** @internal GameView registers the thread story provider here */
   _registerThreadStoryProvider(fn: (agentRef: string) => import('./engine/threadDigest').ThreadStoryComposition | null): void;
 

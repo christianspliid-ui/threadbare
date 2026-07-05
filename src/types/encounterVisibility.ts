@@ -76,6 +76,17 @@ export interface EncounterNotification {
   resolved: boolean;
   /** Outcome band tag (e.g. 'fortunate') — populated by engine when propagation is wired (THR-461 follow-up). */
   narrativeTag?: string;
+  // ─── Structured-card context (THR-636) — additive, all optional ───
+  /** Total steps in the encounter, for the card's "step N of M" meta line. */
+  totalSteps?: number;
+  /** The just-resolved step's outcome band (distinct from the whole-notification narrativeTag). */
+  outcomeBand?: string;
+  /** Hex column of the encounter, resolved via the three-tier position model at emission. */
+  hexCol?: number;
+  /** Hex row of the encounter. */
+  hexRow?: number;
+  /** Human-readable location label for the card + veil context strip. */
+  locationLabel?: string;
 }
 
 /**

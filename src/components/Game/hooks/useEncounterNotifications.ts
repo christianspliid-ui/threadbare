@@ -7,10 +7,42 @@
  */
 
 import { useRef, useMemo, useCallback } from 'react';
-import type { ToastItem } from '../../../types/notification';
+import type { ToastItem, EncounterToastCard } from '../../../types/notification';
 import type { EncounterNotification } from '../../../types/encounterVisibility';
 import type { GameState } from '../../../types/gameState';
-import { TOAST_DURATION_MS } from '../../../types/notification';
+import {
+  TOAST_DURATION_MS,
+  ENCOUNTER_TOAST_DURATION_MULT,
+  NOTIF_TEASER_MAX_CHARS,
+} from '../../../types/notification';
+import { outcomeBandWord } from '../../../data/outcome-band-content';
+
+/** First sentence of the prose, clamped to NOTIF_TEASER_MAX_CHARS with an ellipsis. */
+function buildTease(prose: string): string {
+  const firstSentence = prose.split(/(?<=[.!?])\s/)[0] ?? prose;
+  const trimmed = firstSentence.trim();
+  if (trimmed.length <= NOTIF_TEASER_MAX_CHARS) return trimmed;
+  return trimmed.slice(0, NOTIF_TEASER_MAX_CHARS).trimEnd() + '…';
+}
+
+/** Build the structured card model for an encounter notification (THR-636). */
+function buildEncounterCard(notif: EncounterNotification): EncounterToastCard {
+  const bandWord = notif.outcomeBand ? outcomeBandWord(notif.outcomeBand) : undefined;
+  let meta: string;
+  if (notif.kind === 'aftermath') {
+    meta = bandWord ? `concluded · ${bandWord}` : 'concluded';
+  } else {
+    const stepNum = (notif.stepIndex ?? 0) + 1;
+    const stepPart = notif.totalSteps ? `step ${stepNum} of ${notif.totalSteps}` : `step ${stepNum}`;
+    meta = bandWord ? `${stepPart} · ${bandWord}` : stepPart;
+  }
+  return {
+    agentName: notif.agentName,
+    encounterName: notif.encounterName,
+    meta,
+    tease: buildTease(notif.prose),
+  };
+}
 
 interface UseEncounterNotificationsParams {
   encounterNotifications: EncounterNotification[] | undefined;
@@ -62,10 +94,11 @@ export function useEncounterNotifications({
         message: notif.prose,
         count: 1,
         createdTick: notif.createdTick,
-        expiresAt: now + TOAST_DURATION_MS * 2, // Encounter toasts last longer
+        expiresAt: now + TOAST_DURATION_MS * ENCOUNTER_TOAST_DURATION_MULT, // Encounter toasts last longer
         actorId: notif.agentId,
         onClick: onOpenEncounter ? makeOnClick(notif) : undefined,
-        band: notif.narrativeTag,
+        band: notif.outcomeBand ?? notif.narrativeTag,
+        encounterCard: buildEncounterCard(notif),
       });
     }
 

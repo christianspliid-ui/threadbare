@@ -4,6 +4,8 @@ import type {
   EncounterStageModel,
   EncounterStageChoiceModel,
   EncounterStageResolutionCheckModel,
+  EncounterStageHeaderModel,
+  EncounterStageHistoryModel,
 } from './encounter-stage/types';
 
 // ── Thread tier types ──────────────────────────────────────────────
@@ -23,6 +25,10 @@ export interface EncounterVeilProps {
   onDisregard: () => void;
   onAcknowledgeAftermath: () => void;
   onAftermathReaction: (reactionId: string) => void;
+  /** THR-636 — clicking the character chip opens the agent's detail surface. */
+  onSelectAgent?: (agentId: string) => void;
+  /** THR-636 — "Show on map": close the veil and pan the camera to the encounter hex. */
+  onShowOnMap?: (col: number, row: number) => void;
 }
 
 // ── Design tokens ──────────────────────────────────────────────────
@@ -40,6 +46,19 @@ const ART_OPACITY: Record<ThreadTier, number> = {
   strong: 0.85,
   light: 0.6,
   watched: 0.35,
+};
+
+/** Minimum clickable hit area per step dot — visual dot stays small, padding grows (THR-636). */
+const STEP_NAV_MIN_HIT_PX = 24;
+
+/** Resolved-step outcome → step-dot colour. Success/failure at a glance (THR-636). */
+const OUTCOME_DOT_COLOR: Record<string, string> = {
+  critical_success: 'rgba(134, 239, 172, 0.9)',
+  success:          'rgba(134, 239, 172, 0.55)',
+  success_at_cost:  'rgba(212, 175, 55, 0.7)',
+  near_miss:        'rgba(212, 160, 55, 0.6)',
+  failure:          'rgba(248, 113, 113, 0.6)',
+  critical_failure: '#b91c1c',
 };
 
 /** Type glow colors for choice top line */
@@ -104,12 +123,16 @@ export function EncounterVeil({
   onDisregard,
   onAcknowledgeAftermath,
   onAftermathReaction,
+  onSelectAgent,
+  onShowOnMap,
 }: EncounterVeilProps) {
   const [visible, setVisible] = useState(false);
   const [selectedChoiceId, setSelectedChoiceId] = useState<string | null>(null);
   // Watched tier state
   const [peeked, setPeeked] = useState(false);
   const [boostAmount, setBoostAmount] = useState(0);
+  // THR-636 — index of the resolved step being replayed, or null for "the present".
+  const [replayStepIndex, setReplayStepIndex] = useState<number | null>(null);
 
   // Trigger entrance animation after mount
   useEffect(() => {
@@ -122,6 +145,7 @@ export function EncounterVeil({
       setSelectedChoiceId(null);
       setPeeked(false);
       setBoostAmount(0);
+      setReplayStepIndex(null);
     }
   }, [open]);
 
@@ -1000,6 +1024,12 @@ export function EncounterVeil({
 
   const selectedChoice = model.choices.find((c) => c.id === selectedChoiceId);
 
+  // THR-636 — the resolved step being replayed (read-only past), or null for "the present".
+  const replayEntry =
+    replayStepIndex !== null && model.history[replayStepIndex]?.status === 'resolved'
+      ? model.history[replayStepIndex]
+      : null;
+
   // ── Inline style helpers ───────────────────────────────────────
   function entranceStyle(
     delay: number,
@@ -1176,51 +1206,15 @@ export function EncounterVeil({
           overflowY: 'auto',
         }}
       >
-        {/* Step dots */}
-        <div
-          style={{
-            display: 'flex',
-            gap: 8,
-            alignItems: 'center',
-            marginBottom: 24,
-            ...entranceStyle(ENTRANCE_DELAYS.stepDots, 0.8),
-          }}
-        >
-          {model.history.map((step, i) => (
-            <div
-              key={step.stepId}
-              style={{
-                width: step.status === 'current' ? 8 : 6,
-                height: step.status === 'current' ? 8 : 6,
-                borderRadius: '50%',
-                background:
-                  step.status === 'current'
-                    ? GOLD
-                    : step.status === 'resolved'
-                      ? 'rgba(134, 239, 172, 0.4)'
-                      : TEXT_GHOST,
-                opacity: step.status === 'current' ? 0.6 : 1,
-                boxShadow:
-                  step.status === 'current'
-                    ? '0 0 8px rgba(212, 175, 55, 0.2)'
-                    : 'none',
-                transition: 'all 0.4s ease',
-              }}
-              aria-label={`Step ${i + 1}: ${step.stepLabel}`}
-            />
-          ))}
-          <span
-            style={{
-              fontFamily: FONT_PROSE,
-              fontStyle: 'italic',
-              fontSize: 'var(--text-xs)',
-              color: TEXT_GHOST,
-              marginLeft: 6,
-              letterSpacing: '0.04em',
-            }}
-          >
-            {currentStepIndex + 1} of {totalSteps}
-          </span>
+        {/* Step navigator — outcome-coloured, clickable resolved steps enter replay */}
+        <div style={entranceStyle(ENTRANCE_DELAYS.stepDots, 0.8)}>
+          <StepNavigator
+            history={model.history}
+            currentStepIndex={currentStepIndex}
+            totalSteps={totalSteps}
+            replayStepIndex={replayStepIndex}
+            onSelectStep={setReplayStepIndex}
+          />
         </div>
 
         {/* Encounter title */}
@@ -1238,7 +1232,18 @@ export function EncounterVeil({
           {model.header.title}
         </div>
 
-        {/* Agent/subtitle line */}
+        {/* Context strip — character (portrait + name), location + Show on map, reach chip */}
+        <div style={entranceStyle(ENTRANCE_DELAYS.agentLine, 0.8)}>
+          <ContextStrip
+            header={model.header}
+            threadTier={threadTier}
+            onSelectAgent={onSelectAgent}
+            onShowOnMap={onShowOnMap}
+            onDisregard={onDisregard}
+          />
+        </div>
+
+        {/* Encounter description subtitle */}
         {model.header.subtitle && (
           <div
             style={{
@@ -1247,7 +1252,6 @@ export function EncounterVeil({
               fontSize: 'var(--text-xs)',
               color: TEXT_WHISPER,
               marginBottom: 20,
-              ...entranceStyle(ENTRANCE_DELAYS.agentLine, 0.8),
             }}
           >
             {model.header.subtitle}
@@ -1266,8 +1270,12 @@ export function EncounterVeil({
           }}
         />
 
-        {/* Prose paragraphs */}
+        {/* Prose — live narrative, or a resolved step's frozen replay (THR-636) */}
         <div style={entranceStyle(ENTRANCE_DELAYS.prose, 1.0, 12)}>
+          {replayEntry ? (
+            <StepReplayView entry={replayEntry} onReturn={() => setReplayStepIndex(null)} />
+          ) : (
+          <>
           {model.narrative.paragraphs.map((para, pIdx) => {
             const text = para.segments.map((s) => s.text).join('');
             // Drop cap on first paragraph
@@ -1361,9 +1369,12 @@ export function EncounterVeil({
               </div>
             );
           })()}
+          </>
+          )}
         </div>
 
-        {/* ── Choice blocks ─────────────────────────────── */}
+        {/* ── Choice blocks (hidden while replaying a resolved step) ── */}
+        {!replayEntry && (
         <div
           style={{
             marginTop: 28,
@@ -1379,6 +1390,7 @@ export function EncounterVeil({
             />
           ))}
         </div>
+        )}
       </div>
 
       {/* ── Footer chrome ─────────────────────────────────── */}
@@ -1438,7 +1450,7 @@ export function EncounterVeil({
           </button>
           <button
             onClick={handleIntervene}
-            disabled={!selectedChoice}
+            disabled={!selectedChoice || replayEntry !== null}
             style={{
               background: 'transparent',
               border: 'none',
@@ -1447,8 +1459,8 @@ export function EncounterVeil({
               fontSize: 'var(--text-xs)',
               letterSpacing: '0.06em',
               color: GOLD,
-              opacity: selectedChoice ? 0.7 : 0.3,
-              cursor: selectedChoice ? 'pointer' : 'default',
+              opacity: selectedChoice && !replayEntry ? 0.7 : 0.3,
+              cursor: selectedChoice && !replayEntry ? 'pointer' : 'default',
               padding: '8px 0',
               transition: 'all 0.4s ease',
             }}
@@ -1750,5 +1762,415 @@ function ChoiceBlock({ choice, selected, onClick }: ChoiceBlockProps) {
         </div>
       )}
     </button>
+  );
+}
+
+// ── ContextStrip sub-component (THR-636) ───────────────────────────
+function ContextStrip({
+  header,
+  threadTier,
+  onSelectAgent,
+  onShowOnMap,
+  onDisregard,
+}: {
+  header: EncounterStageHeaderModel;
+  threadTier: ThreadTier;
+  onSelectAgent?: (agentId: string) => void;
+  onShowOnMap?: (col: number, row: number) => void;
+  onDisregard: () => void;
+}) {
+  const name = header.agentName ?? header.familyLabel;
+  const canSelectAgent = Boolean(header.focalActorId && onSelectAgent);
+  const hasHex = header.hexCol !== undefined && header.hexRow !== undefined;
+  const canShowOnMap = hasHex && Boolean(onShowOnMap);
+  const hasLocation = Boolean(header.locationLabel) && header.locationLabel !== 'Unknown Location';
+
+  return (
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 12,
+        flexWrap: 'wrap',
+        marginBottom: 16,
+      }}
+    >
+      {/* Character — portrait + name (clickable to agent detail) */}
+      {name && (
+        <button
+          onClick={canSelectAgent ? () => onSelectAgent!(header.focalActorId!) : undefined}
+          disabled={!canSelectAgent}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            background: 'transparent',
+            border: 'none',
+            padding: 0,
+            cursor: canSelectAgent ? 'pointer' : 'default',
+          }}
+          aria-label={canSelectAgent ? `View ${name}` : name}
+        >
+          <div
+            style={{
+              width: 28,
+              height: 28,
+              borderRadius: '50%',
+              border: '1px solid rgba(212, 175, 55, 0.3)',
+              background: header.portraitUrl
+                ? `url(${header.portraitUrl}) center/cover`
+                : 'rgba(212, 175, 55, 0.06)',
+              opacity: ART_OPACITY[threadTier],
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+              fontFamily: FONT_DISPLAY,
+              fontSize: 'var(--text-xs)',
+              color: 'rgba(212, 175, 55, 0.5)',
+            }}
+          >
+            {!header.portraitUrl && name[0]}
+          </div>
+          <span
+            style={{
+              fontFamily: FONT_DISPLAY,
+              fontSize: 'var(--text-xs)',
+              letterSpacing: '0.06em',
+              color: TEXT_WARM,
+              textDecoration: canSelectAgent ? 'underline' : 'none',
+              textUnderlineOffset: 3,
+            }}
+          >
+            {name}
+          </span>
+        </button>
+      )}
+
+      {/* Reach chip — current step's reach */}
+      {header.reachLabel && (
+        <span
+          style={{
+            fontFamily: FONT_PROSE,
+            fontStyle: 'italic',
+            fontSize: 'var(--text-xs)',
+            color: 'rgba(212, 175, 55, 0.6)',
+            letterSpacing: '0.05em',
+            border: '1px solid rgba(212, 175, 55, 0.15)',
+            borderRadius: 2,
+            padding: '2px 8px',
+          }}
+        >
+          {header.reachLabel}
+        </span>
+      )}
+
+      {/* Location + "Show on map" camera-focus link */}
+      {hasLocation && (
+        <span
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 8,
+            fontFamily: FONT_PROSE,
+            fontStyle: 'italic',
+            fontSize: 'var(--text-xs)',
+            color: TEXT_WHISPER,
+            letterSpacing: '0.04em',
+          }}
+        >
+          {header.locationLabel}
+          {canShowOnMap && (
+            <button
+              onClick={() => {
+                onShowOnMap!(header.hexCol!, header.hexRow!);
+                onDisregard();
+              }}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                cursor: 'pointer',
+                color: GOLD,
+                opacity: 0.55,
+                fontFamily: FONT_PROSE,
+                fontStyle: 'italic',
+                fontSize: 'var(--text-xs)',
+                letterSpacing: '0.04em',
+                padding: 0,
+                textDecoration: 'underline',
+                textUnderlineOffset: 3,
+              }}
+            >
+              Show on map
+            </button>
+          )}
+        </span>
+      )}
+    </div>
+  );
+}
+
+// ── StepNavigator sub-component (THR-636) ──────────────────────────
+function StepNavigator({
+  history,
+  currentStepIndex,
+  totalSteps,
+  replayStepIndex,
+  onSelectStep,
+}: {
+  history: EncounterStageModel['history'];
+  currentStepIndex: number;
+  totalSteps: number;
+  replayStepIndex: number | null;
+  onSelectStep: (index: number | null) => void;
+}) {
+  return (
+    <div style={{ display: 'flex', gap: 0, alignItems: 'center', marginBottom: 24 }}>
+      {history.map((step, i) => {
+        const isCurrent = step.status === 'current';
+        const isResolved = step.status === 'resolved';
+        const isReplaying = replayStepIndex === i;
+        const clickable = isResolved || isCurrent;
+        const dotColor = isReplaying || isCurrent
+          ? GOLD
+          : isResolved
+            ? (step.outcome ? (OUTCOME_DOT_COLOR[step.outcome] ?? 'rgba(134, 239, 172, 0.5)') : 'rgba(134, 239, 172, 0.5)')
+            : TEXT_GHOST;
+        const size = isCurrent || isReplaying ? 9 : 7;
+        const title = isResolved
+          ? `Step ${i + 1} — ${step.outcomeWord ?? 'resolved'}`
+          : isCurrent
+            ? `Step ${i + 1} — in progress`
+            : `Step ${i + 1}`;
+        return (
+          <button
+            key={step.stepId}
+            onClick={clickable ? () => onSelectStep(isCurrent || isReplaying ? null : i) : undefined}
+            disabled={!clickable}
+            title={title}
+            aria-label={title}
+            style={{
+              width: STEP_NAV_MIN_HIT_PX,
+              height: STEP_NAV_MIN_HIT_PX,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: 'transparent',
+              border: 'none',
+              padding: 0,
+              cursor: clickable ? 'pointer' : 'default',
+            }}
+          >
+            <span
+              style={{
+                width: size,
+                height: size,
+                borderRadius: '50%',
+                background: dotColor,
+                boxShadow: isReplaying
+                  ? '0 0 8px rgba(212, 175, 55, 0.4)'
+                  : isCurrent
+                    ? '0 0 8px rgba(212, 175, 55, 0.2)'
+                    : 'none',
+                outline: isReplaying ? '2px solid rgba(212, 175, 55, 0.5)' : 'none',
+                outlineOffset: 2,
+                opacity: isCurrent && !isReplaying ? 0.7 : 1,
+                transition: 'all 0.3s ease',
+              }}
+            />
+          </button>
+        );
+      })}
+      <span
+        style={{
+          fontFamily: FONT_PROSE,
+          fontStyle: 'italic',
+          fontSize: 'var(--text-xs)',
+          color: TEXT_GHOST,
+          marginLeft: 8,
+          letterSpacing: '0.04em',
+        }}
+      >
+        {replayStepIndex !== null
+          ? `replaying ${replayStepIndex + 1} of ${totalSteps}`
+          : `${currentStepIndex + 1} of ${totalSteps}`}
+      </span>
+    </div>
+  );
+}
+
+// ── StepReplayView sub-component (THR-636) ─────────────────────────
+function StepReplayView({
+  entry,
+  onReturn,
+}: {
+  entry: EncounterStageHistoryModel;
+  onReturn: () => void;
+}) {
+  const prose = entry.replayNarrative || entry.afterimage || '';
+  const outcomeColor = entry.outcome ? (OUTCOME_DOT_COLOR[entry.outcome] ?? GOLD) : GOLD;
+  return (
+    <div>
+      {/* Replay header — step label · outcome word · reach */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'baseline',
+          gap: 12,
+          marginBottom: 14,
+          flexWrap: 'wrap',
+        }}
+      >
+        <span
+          style={{
+            fontFamily: FONT_DISPLAY,
+            fontSize: 'var(--text-xs)',
+            letterSpacing: '0.14em',
+            textTransform: 'uppercase',
+            color: TEXT_GHOST,
+          }}
+        >
+          {entry.stepLabel}
+        </span>
+        {entry.outcomeWord && (
+          <span
+            style={{
+              fontFamily: FONT_PROSE,
+              fontStyle: 'italic',
+              fontSize: 'var(--text-xs)',
+              color: outcomeColor,
+              letterSpacing: '0.05em',
+            }}
+          >
+            {entry.outcomeWord}
+          </span>
+        )}
+        {entry.reachLabel && (
+          <span
+            style={{
+              fontFamily: FONT_PROSE,
+              fontStyle: 'italic',
+              fontSize: 'var(--text-xs)',
+              color: 'rgba(212, 175, 55, 0.55)',
+              border: '1px solid rgba(212, 175, 55, 0.15)',
+              borderRadius: 2,
+              padding: '1px 7px',
+            }}
+          >
+            {entry.reachLabel}
+          </span>
+        )}
+      </div>
+
+      {/* Frozen narrative the player saw at this step's resolution */}
+      {prose && (
+        <p
+          style={{
+            fontFamily: FONT_PROSE,
+            fontStyle: 'italic',
+            fontSize: 'var(--text-xs)',
+            lineHeight: 1.85,
+            color: TEXT_WARM,
+            marginBottom: 14,
+            maxWidth: 540,
+          }}
+        >
+          {prose}
+        </p>
+      )}
+
+      {/* Afterimage, if distinct from the narrative */}
+      {entry.afterimage && entry.afterimage !== prose && (
+        <p
+          style={{
+            fontFamily: FONT_PROSE,
+            fontStyle: 'italic',
+            fontSize: 'var(--text-xs)',
+            lineHeight: 1.7,
+            color: TEXT_WHISPER,
+            marginBottom: 14,
+            maxWidth: 540,
+          }}
+        >
+          {entry.afterimage}
+        </p>
+      )}
+
+      {/* The god-action taken on this step */}
+      {entry.choiceText && (
+        <div
+          style={{
+            fontFamily: FONT_DISPLAY,
+            fontStyle: 'italic',
+            fontSize: 'var(--text-xs)',
+            color: GOLD,
+            opacity: 0.5,
+            marginBottom: 14,
+            paddingLeft: 12,
+            borderLeft: '1px solid rgba(212, 175, 55, 0.15)',
+            lineHeight: 1.7,
+          }}
+        >
+          You whispered: {entry.choiceText}
+        </div>
+      )}
+
+      {/* Complication, if one fired */}
+      {entry.complication && (
+        <div
+          style={{
+            marginTop: 8,
+            marginBottom: 14,
+            paddingTop: 12,
+            borderTop: '1px solid rgba(212, 175, 55, 0.15)',
+          }}
+        >
+          <div
+            style={{
+              fontSize: 'var(--text-xs)',
+              color: 'rgba(212, 175, 55, 0.5)',
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+              marginBottom: 6,
+            }}
+          >
+            ⊘ {entry.complication.name}
+          </div>
+          <p
+            style={{
+              fontFamily: FONT_PROSE,
+              fontStyle: 'italic',
+              fontSize: 'var(--text-xs)',
+              lineHeight: 1.7,
+              color: 'rgba(212, 175, 55, 0.7)',
+              margin: 0,
+              maxWidth: 500,
+            }}
+          >
+            {entry.complication.prose}
+          </p>
+        </div>
+      )}
+
+      {/* Return to the present */}
+      <button
+        onClick={onReturn}
+        style={{
+          background: 'transparent',
+          border: 'none',
+          fontFamily: FONT_PROSE,
+          fontStyle: 'italic',
+          fontSize: 'var(--text-xs)',
+          letterSpacing: '0.06em',
+          color: GOLD,
+          opacity: 0.6,
+          cursor: 'pointer',
+          padding: '8px 0',
+          marginTop: 8,
+        }}
+      >
+        ← Return to the present
+      </button>
+    </div>
   );
 }
