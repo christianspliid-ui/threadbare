@@ -82,7 +82,10 @@ export type GraphOpType =
   | 'anoint_successor' // THR-432: anoint the target agent as their faction's next heir (creates will_succeed edge)
   | 'imbue_item'     // THR-508: append a sphere-flavored power to a target artifact node
   | 'bestow_power'   // THR-512: grant a threaded agent a divine-gift artifact (reach bonus + quintessence regen)
-  | 'anoint_faction'; // THR-513: flag a target faction as the ascendant's chosen — grants a domain-keyed chosen power (consumed by phaseChosenFactionPowers)
+  | 'anoint_faction' // THR-513: flag a target faction as the ascendant's chosen — grants a domain-keyed chosen power (consumed by phaseChosenFactionPowers)
+  | 'consecrate_source' // THR-611: turn the target host into a typed essence source (Build/Create leg) + ensure a controls edge
+  | 'sanctify_source' // THR-611: raise a typed source's sanctity toward flowering (Build leg)
+  | 'defend_source';  // THR-611: clear contestation / desecration and restore a source's sanctity (Defend leg)
 
 /**
  * Payload for the apply_influence GraphOp.
@@ -170,6 +173,21 @@ export interface GraphOp {
 
   /** For `op: 'plant_schism'`: ticks until the pending crisis resolves. */
   schismResolutionDelay?: number;
+
+  // ─ THR-611 essence-source ops ─
+
+  /**
+   * For `op: 'consecrate_source'`: the essence-source kind to create.
+   * Typed as string here to avoid a circular import of `SourceKind` from the
+   * types barrel; the executor narrows/defaults it (unknown → 'shrine').
+   */
+  sourceKind?: string;
+  /**
+   * For `op: 'consecrate_source'`: which sphere the new source's income feeds.
+   * Omit → defaults to the acting ascendant's PRIMARY sphere (read at runtime).
+   * Typed as string here for the same circular-import reason as `sourceKind`.
+   */
+  sourceSphere?: string;
 }
 
 // ─── Result Types ───────────────────────────────────────────────

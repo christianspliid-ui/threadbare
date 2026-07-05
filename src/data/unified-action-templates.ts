@@ -1804,6 +1804,119 @@ const LOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     },
   },
 
+  // ─── Divine Economy — essence-source verbs (THR-611, Slice 2) ─────────────
+  // The Build → Defend loop over essence sources. Consecrate types a place to
+  // your primary sphere and binds it (income begins); Deepen raises it toward
+  // flowering (~2x income); Ward clears rival contestation and restores it.
+  // Real graph-op step effects (consecrate_source / sanctify_source /
+  // defend_source) mutate the `essenceSource` bag — not no-op cards (cf. THR-605).
+  // Surfacing (an Ascendant-Beat unlock_action grant, or a starter-floor
+  // decision) is deferred to the UI slice — the empty starter floor (THR-501) is
+  // left intact here. Find/Claim of *uncontrolled* sources (needs latent-source
+  // worldgen seeding) is likewise a deferred slice.
+
+  {
+    id: 'loc.consecrate_source',
+    name: 'Consecrate a Source',
+    spellName: 'First Devotion',
+    rarityTier: 2,
+    intrinsicTier: 'shaping',
+    description: 'Claims a place as a wellspring of your power and dedicates it to your foremost sphere. From now on it feeds you directly — dormant at first, but yours, and yours to raise.',
+    technicalEffect: 'Turns the location into a typed essence source feeding your primary sphere and binds it to you. It begins at the dormant tier (base income); Deepen the Source raises it toward flowering.',
+    reach: 'star',
+    crudType: 'create',
+    scale: 'local',
+    steps: [{
+      reach: 'star',
+      duration: { min: 2, max: 3 },
+      difficulty: 0.30,
+      onSuccess: [
+        { op: 'consecrate_source', nodeId: '$target' },
+      ],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: 5,
+    actorAffinities: ['ascendant'],
+    targetCategories: ['location'],
+    targetSubtypes: ['settlement', 'hamlet', 'town', 'city', 'capital', 'shrine'],
+    motivations: ['tradition_novelty', 'loyalty_ambition'],
+    narrativeTemplates: {
+      initiation: 'kneels at the heart of the place and names it — not aloud, but the way a god names a thing to make it belong to them',
+      success: 'the ground answers to you now; what happens here happens partly for your sake',
+      failure: 'the place stays only itself; whatever was reached for did not take hold in the stone',
+    },
+  },
+
+  {
+    id: 'loc.sanctify_source',
+    name: 'Deepen the Source',
+    spellName: 'Tended Ground',
+    rarityTier: 1,
+    intrinsicTier: 'background',
+    description: 'Pours devotion into a source you have already consecrated, drawing it toward its flowering. A tended source gives far more than an untended one.',
+    technicalEffect: 'Raises a consecrated source\'s sanctity. Enough repetitions carry it from dormant to flowering, roughly doubling its income. Has no effect on an unconsecrated place.',
+    reach: 'star',
+    crudType: 'update',
+    scale: 'local',
+    steps: [{
+      reach: 'star',
+      duration: { min: 1, max: 2 },
+      difficulty: 0.25,
+      onSuccess: [
+        { op: 'sanctify_source', nodeId: '$target' },
+      ],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: 3,
+    actorAffinities: ['ascendant'],
+    targetCategories: ['location'],
+    targetSubtypes: ['settlement', 'hamlet', 'town', 'city', 'capital', 'shrine'],
+    motivations: ['preservation_transformation', 'tradition_novelty'],
+    narrativeTemplates: {
+      initiation: 'returns to the source and gives it what such things hunger for — attention, and the patience to keep giving it',
+      success: 'the place grows heavier with meaning; more of your power runs through it than did yesterday',
+      failure: 'the devotion spills wide and finds no root; the source is no deeper than before',
+    },
+  },
+
+  {
+    id: 'loc.defend_source',
+    name: 'Ward the Source',
+    spellName: 'Held Against Them',
+    rarityTier: 2,
+    intrinsicTier: 'shaping',
+    description: 'Drives off whatever has been bleeding a source of yours and shores up what was lost. A contested source leaks; a warded one holds.',
+    technicalEffect: 'Clears any rival contestation or desecration on the source and restores a measure of its sanctity, returning it to an uncontested tier.',
+    reach: 'star',
+    crudType: 'update',
+    scale: 'local',
+    steps: [{
+      reach: 'star',
+      duration: { min: 1, max: 2 },
+      difficulty: 0.30,
+      onSuccess: [
+        { op: 'defend_source', nodeId: '$target' },
+      ],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: 4,
+    actorAffinities: ['ascendant'],
+    targetCategories: ['location'],
+    targetSubtypes: ['settlement', 'hamlet', 'town', 'city', 'capital', 'shrine'],
+    motivations: ['loyalty_ambition', 'sacrifice_survival'],
+    narrativeTemplates: {
+      initiation: 'sets a hand over the wounded place and refuses, with a god\'s whole weight, to let it be taken',
+      success: 'the draining stops; whatever had its teeth in the source lets go, and the place begins to mend',
+      failure: 'the ward will not close; the source goes on bleeding into hands that are not yours',
+    },
+  },
+
   {
     id: 'loc.awaken_spirit',
     name: 'Awaken the Spirit of the Place',

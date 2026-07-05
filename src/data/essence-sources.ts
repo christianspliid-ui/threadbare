@@ -31,8 +31,15 @@ export const SOURCE_DR_BASE = 0.8;
 /** Per-source per-tick Control maintenance (charged to the primary sphere). */
 export const SOURCE_CONTROL_SUSTAIN = 0.15;
 
-/** Sanctity gained per successful Build action. */
+/** Sanctity gained per successful Build (Sanctify) action. */
 export const SANCTITY_BUILD_PER_ACTION = 0.15;
+
+/**
+ * Sanctity restored per successful Defend (Ward) action — larger than a Build
+ * step because defending is reactive triage against an active drain, not slow
+ * cultivation. Also clears `contestedBy` / `desecrated` (see the defend op).
+ */
+export const SANCTITY_DEFEND_RESTORE = 0.25;
 
 /** Sanctity lost per tick while contested and undefended. */
 export const SANCTITY_DRAIN_PER_TICK_CONTESTED = 0.02;
