@@ -85,7 +85,9 @@ export type GraphOpType =
   | 'anoint_faction' // THR-513: flag a target faction as the ascendant's chosen — grants a domain-keyed chosen power (consumed by phaseChosenFactionPowers)
   | 'consecrate_source' // THR-611: turn the target host into a typed essence source (Build/Create leg) + ensure a controls edge
   | 'sanctify_source' // THR-611: raise a typed source's sanctity toward flowering (Build leg)
-  | 'defend_source';  // THR-611: clear contestation / desecration and restore a source's sanctity (Defend leg)
+  | 'defend_source'  // THR-611: clear contestation / desecration and restore a source's sanctity (Defend leg)
+  | 'find_source'    // THR-611 Slice 4: reveal latent (undiscovered) essence sources within range of the target (Find leg)
+  | 'claim_source';  // THR-611 Slice 4: establish a controls edge to a discovered, uncontrolled source (Claim leg)
 
 /**
  * Payload for the apply_influence GraphOp.
@@ -188,6 +190,12 @@ export interface GraphOp {
    * Typed as string here for the same circular-import reason as `sourceKind`.
    */
   sourceSphere?: string;
+  /**
+   * For `op: 'find_source'`: hex range within which latent sources are revealed,
+   * centered on the resolved target location. Omit → the tunable
+   * `SOURCE_DISCOVERY_RANGE_HOPS` default (read at runtime).
+   */
+  discoveryRangeHops?: number;
 }
 
 // ─── Result Types ───────────────────────────────────────────────

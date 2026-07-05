@@ -398,7 +398,10 @@ export const ASCENDANT_BEAT_POOL: readonly BeatDefinition[] = [
     trigger: { kind: 'cadence' },
     eligibility: { kind: 'unthreaded_target' },
     templateId: 'beat.pool.invest.the_wellspring',
-    grantsActionIds: ['loc.consecrate_source', 'loc.sanctify_source', 'loc.defend_source'],
+    grantsActionIds: [
+      'loc.find_source', 'loc.claim_source', // Slice 4: front half — discover + take uncontrolled sources
+      'loc.consecrate_source', 'loc.sanctify_source', 'loc.defend_source',
+    ],
   },
 
   // — Selection beats (BEAT_KIND_WEIGHTS.selection): choose 1-of-N within-run. The
@@ -498,6 +501,10 @@ export const ASCENDANT_ACTION_BUCKETS: Readonly<Record<string, ActionBucketEntry
   'loc.consecrate_source': { bucket: 'unlockable-generic' },
   'loc.sanctify_source': { bucket: 'unlockable-generic' },
   'loc.defend_source': { bucket: 'unlockable-generic' },
+  // Slice 4: the front half of the loop — find latent sources (Eye) and claim
+  // discovered ones (Star). Same `unlockable-generic` bucket + `the_wellspring` grant.
+  'loc.find_source': { bucket: 'unlockable-generic' },
+  'loc.claim_source': { bucket: 'unlockable-generic' },
   // Spine-granted expressive verbs (THR-504): The First Word + the three god-paths.
   'divine.persuade': { bucket: 'unlockable-generic' },
   'divine.dream': { bucket: 'unlockable-generic' },

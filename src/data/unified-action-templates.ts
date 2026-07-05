@@ -1810,10 +1810,9 @@ const LOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   // flowering (~2x income); Ward clears rival contestation and restores it.
   // Real graph-op step effects (consecrate_source / sanctify_source /
   // defend_source) mutate the `essenceSource` bag — not no-op cards (cf. THR-605).
-  // Surfacing (an Ascendant-Beat unlock_action grant, or a starter-floor
-  // decision) is deferred to the UI slice — the empty starter floor (THR-501) is
-  // left intact here. Find/Claim of *uncontrolled* sources (needs latent-source
-  // worldgen seeding) is likewise a deferred slice.
+  // Surfacing is the `the_wellspring` Ascendant Beat (Slice 3); Find/Claim of
+  // *uncontrolled* sources — with latent-source worldgen seeding — shipped in
+  // Slice 4 (see `loc.find_source` / `loc.claim_source` below).
 
   {
     id: 'loc.consecrate_source',
@@ -1914,6 +1913,81 @@ const LOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
       initiation: 'sets a hand over the wounded place and refuses, with a god\'s whole weight, to let it be taken',
       success: 'the draining stops; whatever had its teeth in the source lets go, and the place begins to mend',
       failure: 'the ward will not close; the source goes on bleeding into hands that are not yours',
+    },
+  },
+
+  // ─── Divine Economy — Find → Claim (THR-611, Slice 4) ─────────────────────
+  // The front half of the loop: latent sources are seeded uncontrolled + hidden
+  // at worldgen (essenceSourceSeeding.ts). Find reveals the ones near a place you
+  // can see; Claim binds a discovered one, and — because worldgen types it by its
+  // own locale — it pours *its* sphere the moment you take it (distinct from
+  // Consecrate, which dedicates a plain place to *your* sphere). Real graph-op
+  // steps (find_source / claim_source); surfaced by `the_wellspring` beat.
+
+  {
+    id: 'loc.find_source',
+    name: 'Search for Wellsprings',
+    spellName: 'The Seeking Sight',
+    rarityTier: 1,
+    intrinsicTier: 'background',
+    description: 'Casts your attention across a stretch of the world and marks where power lies latent in the land — the springs and hollows and old stones that could be made to feed you, if you claimed them.',
+    technicalEffect: 'Reveals nearby latent essence sources (hidden until found). Once revealed, a source can be Claimed. Reveals nothing if there is no undiscovered source in range.',
+    reach: 'eye',
+    crudType: 'read',
+    scale: 'regional',
+    steps: [{
+      reach: 'eye',
+      duration: { min: 1, max: 1 },
+      difficulty: 0.20,
+      onSuccess: [
+        { op: 'find_source', nodeId: '$target' },
+      ],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: 3,
+    actorAffinities: ['ascendant'],
+    targetCategories: ['location'],
+    motivations: ['revelation_discretion', 'tradition_novelty'],
+    narrativeTemplates: {
+      initiation: 'lets a god\'s attention move over the land the way wind moves over water, feeling for where it runs deep',
+      success: 'the land gives up its quiet places to you; you know now where power waits to be taken',
+      failure: 'the sight finds only surface; whatever sleeps in this country keeps itself hidden a while longer',
+    },
+  },
+
+  {
+    id: 'loc.claim_source',
+    name: 'Claim a Wellspring',
+    spellName: 'Taken for a God',
+    rarityTier: 2,
+    intrinsicTier: 'shaping',
+    description: 'Lays hold of a source you have found and makes it answer to you. Where a consecrated place is dedicated to your own sphere, a claimed wellspring keeps the character of its country — and pours that into you from the moment it is yours.',
+    technicalEffect: 'Binds a discovered latent source to you (a controls edge), so its typed income — the sphere of its own locale — begins to flow. Must be Found first. Deepen or Ward it thereafter like any source.',
+    reach: 'star',
+    crudType: 'update',
+    scale: 'local',
+    steps: [{
+      reach: 'star',
+      duration: { min: 1, max: 2 },
+      difficulty: 0.30,
+      onSuccess: [
+        { op: 'claim_source', nodeId: '$target' },
+      ],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: 5,
+    actorAffinities: ['ascendant'],
+    targetCategories: ['location'],
+    targetSubtypes: ['grove', 'cavern', 'hot_spring', 'monument', 'ancient_road'],
+    motivations: ['loyalty_ambition', 'preservation_transformation'],
+    narrativeTemplates: {
+      initiation: 'sets a claim on the place the way a god sets a name — quietly, and past any arguing',
+      success: 'the wellspring turns toward you; what it holds, it holds for your sake now',
+      failure: 'the place will not be held; whatever runs beneath it slips your grasp and stays its own',
     },
   },
 

@@ -1,13 +1,13 @@
 {
   "schemaVersion": 2,
   "totals": {
-    "total": 165,
+    "total": 170,
     "byCategory": {
       "action": 67,
       "artifact": 4,
       "divine": 19,
       "hex": 49,
-      "location": 14,
+      "location": 19,
       "threads": 12
     },
     "byReach": {
@@ -16,23 +16,23 @@
       "shadow": 20,
       "veil": 22,
       "heart": 25,
-      "eye": 26,
+      "eye": 27,
       "stone": 10,
-      "star": 29,
+      "star": 33,
       "life": 1
     },
     "byBucket": {
-      "unlockable-generic": 162,
+      "unlockable-generic": 167,
       "generic": 3
     },
     "byEffectSource": {
-      "template-ops": 92,
+      "template-ops": 97,
       "control-spec": 17,
       "engine-bridge": 44,
       "none": 8,
       "aftermath-only": 4
     },
-    "beatGranted": 12,
+    "beatGranted": 17,
     "starters": 0,
     "unauthoredEffects": 0
   },
@@ -1218,7 +1218,7 @@
       "beatGranted": false,
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
-      "description": "You stir the memory of debt in a mortal chest. They remember what they owe — not as a threat, but as a weight that has been there all along, waiting to be acknowledged. The favor is called in. The debt shifts from owed to paid.",
+      "description": "You stir the memory of debt in a mortal chest. They remember what they owe — not a threat, but a weight that has been there all along, waiting to be acknowledged. The favor is called in. The debt shifts from owed to paid.",
       "technicalEffect": "On success, redeems the target's best unredeemed, unbroken `owes_favor` edge directed at the actor (sets `redeemed`). No-op if no redeemable favor is owed.",
       "effectSource": "template-ops"
     },
@@ -4371,6 +4371,35 @@
       "effectSource": "none"
     },
     {
+      "id": "loc.find_source",
+      "name": "Search for Wellsprings",
+      "spellName": "The Seeking Sight",
+      "category": "location",
+      "reach": "eye",
+      "sphereAffinity": null,
+      "crudType": "read",
+      "scale": "regional",
+      "rarityTier": 1,
+      "rarityName": "Mundane",
+      "intrinsicTier": "background",
+      "apCost": 1,
+      "essenceCost": 3,
+      "durationMode": "instant",
+      "hasControlSpec": false,
+      "targetCategories": [
+        "location"
+      ],
+      "targetSubtypes": [],
+      "requiresReach": null,
+      "starter": false,
+      "beatGranted": true,
+      "bucket": "unlockable-generic",
+      "bucketDeclared": true,
+      "description": "Casts your attention across a stretch of the world and marks where power lies latent in the land — the springs and hollows and old stones that could be made to feed you, if you claimed them.",
+      "technicalEffect": "Reveals nearby latent essence sources (hidden until found). Once revealed, a source can be Claimed. Reveals nothing if there is no undiscovered source in range.",
+      "effectSource": "template-ops"
+    },
+    {
       "id": "loc.place_of_power",
       "name": "Place of Power",
       "spellName": "Leyline Nexus",
@@ -4397,6 +4426,149 @@
       "bucketDeclared": false,
       "description": "Channels divine essence deep into the ley lines beneath a location, transforming it into a nexus of concentrated magical energy. Practitioners working here find their abilities heightened and their rituals more potent. The awakening draws the attention of those sensitive to such flows of power.",
       "technicalEffect": "On success, raises the target location's `magicalSaturation` by a larger named delta, seeding it toward Place-of-Power status.",
+      "effectSource": "template-ops"
+    },
+    {
+      "id": "loc.claim_source",
+      "name": "Claim a Wellspring",
+      "spellName": "Taken for a God",
+      "category": "location",
+      "reach": "star",
+      "sphereAffinity": null,
+      "crudType": "update",
+      "scale": "local",
+      "rarityTier": 2,
+      "rarityName": "Storied",
+      "intrinsicTier": "shaping",
+      "apCost": 1,
+      "essenceCost": 5,
+      "durationMode": "instant",
+      "hasControlSpec": false,
+      "targetCategories": [
+        "location"
+      ],
+      "targetSubtypes": [
+        "grove",
+        "cavern",
+        "hot_spring",
+        "monument",
+        "ancient_road"
+      ],
+      "requiresReach": null,
+      "starter": false,
+      "beatGranted": true,
+      "bucket": "unlockable-generic",
+      "bucketDeclared": true,
+      "description": "Lays hold of a source you have found and makes it answer to you. Where a consecrated place is dedicated to your own sphere, a claimed wellspring keeps the character of its country — and pours that into you from the moment it is yours.",
+      "technicalEffect": "Binds a discovered latent source to you (a controls edge), so its typed income — the sphere of its own locale — begins to flow. Must be Found first. Deepen or Ward it thereafter like any source.",
+      "effectSource": "template-ops"
+    },
+    {
+      "id": "loc.consecrate_source",
+      "name": "Consecrate a Source",
+      "spellName": "First Devotion",
+      "category": "location",
+      "reach": "star",
+      "sphereAffinity": null,
+      "crudType": "create",
+      "scale": "local",
+      "rarityTier": 2,
+      "rarityName": "Storied",
+      "intrinsicTier": "shaping",
+      "apCost": 1,
+      "essenceCost": 5,
+      "durationMode": "instant",
+      "hasControlSpec": false,
+      "targetCategories": [
+        "location"
+      ],
+      "targetSubtypes": [
+        "settlement",
+        "hamlet",
+        "town",
+        "city",
+        "capital",
+        "shrine"
+      ],
+      "requiresReach": null,
+      "starter": false,
+      "beatGranted": true,
+      "bucket": "unlockable-generic",
+      "bucketDeclared": true,
+      "description": "Claims a place as a wellspring of your power and dedicates it to your foremost sphere. From now on it feeds you directly — dormant at first, but yours, and yours to raise.",
+      "technicalEffect": "Turns the location into a typed essence source feeding your primary sphere and binds it to you. It begins at the dormant tier (base income); Deepen the Source raises it toward flowering.",
+      "effectSource": "template-ops"
+    },
+    {
+      "id": "loc.defend_source",
+      "name": "Ward the Source",
+      "spellName": "Held Against Them",
+      "category": "location",
+      "reach": "star",
+      "sphereAffinity": null,
+      "crudType": "update",
+      "scale": "local",
+      "rarityTier": 2,
+      "rarityName": "Storied",
+      "intrinsicTier": "shaping",
+      "apCost": 1,
+      "essenceCost": 4,
+      "durationMode": "instant",
+      "hasControlSpec": false,
+      "targetCategories": [
+        "location"
+      ],
+      "targetSubtypes": [
+        "settlement",
+        "hamlet",
+        "town",
+        "city",
+        "capital",
+        "shrine"
+      ],
+      "requiresReach": null,
+      "starter": false,
+      "beatGranted": true,
+      "bucket": "unlockable-generic",
+      "bucketDeclared": true,
+      "description": "Drives off whatever has been bleeding a source of yours and shores up what was lost. A contested source leaks; a warded one holds.",
+      "technicalEffect": "Clears any rival contestation or desecration on the source and restores a measure of its sanctity, returning it to an uncontested tier.",
+      "effectSource": "template-ops"
+    },
+    {
+      "id": "loc.sanctify_source",
+      "name": "Deepen the Source",
+      "spellName": "Tended Ground",
+      "category": "location",
+      "reach": "star",
+      "sphereAffinity": null,
+      "crudType": "update",
+      "scale": "local",
+      "rarityTier": 1,
+      "rarityName": "Mundane",
+      "intrinsicTier": "background",
+      "apCost": 1,
+      "essenceCost": 3,
+      "durationMode": "instant",
+      "hasControlSpec": false,
+      "targetCategories": [
+        "location"
+      ],
+      "targetSubtypes": [
+        "settlement",
+        "hamlet",
+        "town",
+        "city",
+        "capital",
+        "shrine"
+      ],
+      "requiresReach": null,
+      "starter": false,
+      "beatGranted": true,
+      "bucket": "unlockable-generic",
+      "bucketDeclared": true,
+      "description": "Pours devotion into a source you have already consecrated, drawing it toward its flowering. A tended source gives far more than an untended one.",
+      "technicalEffect": "Raises a consecrated source's sanctity. Enough repetitions carry it from dormant to flowering, roughly doubling its income. Has no effect on an unconsecrated place.",
       "effectSource": "template-ops"
     },
     {
