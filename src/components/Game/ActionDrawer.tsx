@@ -4,6 +4,7 @@ import type { WheelSlot } from '../../engine/wheel';
 import { Tooltip } from '../shared/Tooltip';
 import { Button } from '../shared/Button';
 import { renderProseWithIPK } from '../ProseKeyword';
+import { effectLabel, EFFECT_SOURCE_BADGE_COLORS } from '../../data/actionEffectSource';
 
 // ─── Layer Filter Types ───────────────────────────────────────────────────
 
@@ -246,6 +247,67 @@ export const ActionDrawer: React.FC<ActionDrawerProps> = React.memo(
                   playing={false}
                 />
               </div>
+              {/* Effect block — technical statement of what state this action changes
+                  (THR-610). Only the detail/focused state carries it; absent → hidden. */}
+              {focusedSlot.technicalEffect && (
+                <div
+                  data-testid="action-effect-block"
+                  className="anim-card-fly-up mt-3 pointer-events-none"
+                  style={{
+                    maxWidth: '400px',
+                    padding: '0.55rem 0.7rem',
+                    borderRadius: 'var(--radius-md, 4px)',
+                    background: 'rgba(0,0,0,0.55)',
+                    borderLeft: '3px solid var(--border-gold, #d4a040)',
+                    backdropFilter: 'blur(4px)',
+                  }}
+                >
+                  <div
+                    className="flex items-center gap-2"
+                    style={{ marginBottom: '0.3rem' }}
+                  >
+                    <span
+                      style={{
+                        fontFamily: 'var(--font-display, serif)',
+                        fontSize: '0.58rem',
+                        letterSpacing: '0.1em',
+                        textTransform: 'uppercase',
+                        color: 'var(--text-tertiary, #a09880)',
+                      }}
+                    >
+                      Effect
+                    </span>
+                    {focusedSlot.effectSource && (
+                      <span
+                        data-testid="action-effect-badge"
+                        style={{
+                          fontSize: '0.55rem',
+                          fontWeight: 600,
+                          letterSpacing: '0.02em',
+                          textTransform: 'uppercase',
+                          padding: '0.05rem 0.35rem',
+                          borderRadius: '3px',
+                          color: '#fff',
+                          background: EFFECT_SOURCE_BADGE_COLORS[focusedSlot.effectSource],
+                        }}
+                      >
+                        {effectLabel(focusedSlot.effectSource)}
+                      </span>
+                    )}
+                  </div>
+                  <p
+                    style={{
+                      fontFamily: 'var(--font-body, sans-serif)',
+                      fontSize: 'var(--text-xs, 0.75rem)',
+                      color: 'var(--text-secondary, #c0b8a0)',
+                      lineHeight: 1.5,
+                      margin: 0,
+                    }}
+                  >
+                    {focusedSlot.technicalEffect}
+                  </p>
+                </div>
+              )}
               {/* Sphere prose below focused card */}
               {focusedProse && (
                 <p

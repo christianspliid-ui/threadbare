@@ -926,8 +926,10 @@ export interface UnifiedActionTemplate {
    * code, NOT paraphrased from `description`. Magnitudes stay symbolic (name the
    * constant or say "scales with X") — never literal numbers (constants are
    * tunable, NFP #1). Distinct from `description`, which is atmospheric prose for
-   * the in-game card. Consumed by the wiki catalog / Manual Designer-Notes layer,
-   * never by in-game player prose. Omit → catalog renders "—" + `unauthored`.
+   * the in-game card. Consumed by the wiki catalog / Manual Designer-Notes layer
+   * AND surfaced in-game (THR-610) as the ActionDrawer focused-card + Codex "Effect"
+   * block — mechanical text, not atmospheric player prose. Omit → catalog renders
+   * "—" + `unauthored`; the in-game Effect block is hidden entirely.
    */
   readonly technicalEffect?: string;
 

@@ -71,6 +71,43 @@ describe('ActionDrawer', () => {
     expect(onSlotClick).toHaveBeenCalledWith('dream');
   });
 
+  // ── Effect block (THR-610) ───────────────────────────────────────────────
+
+  it('shows the Effect block + wiring badge on a focused card that carries technicalEffect', () => {
+    const effectSlots: WheelSlot[] = [
+      {
+        ...mockSlots[1],
+        id: 'ta:hex.bless_land', label: 'Bless Land', type: 'target_action',
+        technicalEffect: "On success, raises the hex-tile's `divineInfluence`.",
+        effectSource: 'engine-bridge',
+      },
+    ];
+    render(
+      <ActionDrawer open={true} slots={effectSlots} targetName="Hex (3,7)" targetLabel="Desert"
+        onSlotClick={vi.fn()} onClose={vi.fn()} />
+    );
+    // No Effect block until a card is focused
+    expect(screen.queryByTestId('action-effect-block')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByTestId('action-card-ta:hex.bless_land'));
+    const block = screen.getByTestId('action-effect-block');
+    expect(block).toBeInTheDocument();
+    expect(block).toHaveTextContent("raises the hex-tile's");
+    // effectSource → catalog-mirrored label
+    expect(screen.getByTestId('action-effect-badge')).toHaveTextContent('wired · engine');
+  });
+
+  it('hides the Effect block on a focused card with no technicalEffect', () => {
+    render(
+      <ActionDrawer open={true} slots={mockSlots} targetName="Kael" targetLabel="Tier 2 Zealot"
+        onSlotClick={vi.fn()} onClose={vi.fn()} />
+    );
+    // mockSlots carry no technicalEffect — focusing must not render an empty Effect label
+    fireEvent.click(screen.getByTestId('action-card-dream'));
+    expect(screen.getByTestId('action-drawer-backdrop')).toBeInTheDocument();
+    expect(screen.queryByTestId('action-effect-block')).not.toBeInTheDocument();
+  });
+
   it('clicking backdrop dismisses focused card', () => {
     render(
       <ActionDrawer open={true} slots={mockSlots} targetName="Kael" targetLabel="Tier 2 Zealot"

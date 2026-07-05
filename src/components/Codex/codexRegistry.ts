@@ -15,6 +15,7 @@ import type { RarityTier } from '../../types/rarity';
 import type { GraphNode } from '../../types/graph';
 import { getAttachmentGlyph } from '../Game/attachmentGlyphs';
 import { isStarterActionId } from '../../engine/actionUnlock';
+import { effectSourceFor, type EffectSource } from '../../data/actionEffectSource';
 
 // ─── Types ───────────────────────────────────────────────────────
 
@@ -30,6 +31,11 @@ export interface CodexEntry {
   subtitle: string;
   summary: string;
   flavorText?: string;
+  /** Technical statement of what state this action changes (THR-604 `technicalEffect`).
+   * Surfaced in the Codex detail panel (THR-610). Absent for non-action entries. */
+  technicalEffect?: string;
+  /** Where the action's effect is wired (THR-604 derivation) — drives the wiring badge. */
+  effectSource?: EffectSource;
   tags: string[];
   /** Extra key-value details shown in the detail panel */
   details: { label: string; value: string }[];
@@ -257,6 +263,8 @@ function mapDivineAction(template: typeof UNIFIED_ACTION_TEMPLATES[number]): Cod
     subtitle: `${REACH_DISPLAY[reach] ?? reach} \u00B7 ${template.sphereAffinity ?? 'unknown'} sphere`,
     summary: template.description ?? '',
     flavorText: template.narrativeTemplates?.initiation,
+    technicalEffect: template.technicalEffect,
+    effectSource: effectSourceFor(template),
     tags: [reach, template.sphereAffinity ?? '', template.crudType].filter(Boolean),
     isStarter: template.starter === true || isStarterActionId(template.id),
     details: [
@@ -285,6 +293,8 @@ function mapMortalAction(template: typeof UNIFIED_ACTION_TEMPLATES[number]): Cod
     subtitle: `${REACH_DISPLAY[reach] ?? reach} \u00B7 ${template.crudType}`,
     summary: template.description ?? '',
     flavorText: template.narrativeTemplates?.initiation,
+    technicalEffect: template.technicalEffect,
+    effectSource: effectSourceFor(template),
     tags: [reach, template.crudType, template.scale, template.sphereAffinity ?? ''].filter(Boolean),
     isStarter: template.starter === true || isStarterActionId(template.id),
     details: [
@@ -317,6 +327,8 @@ function mapTargetAction(
     subtitle: `${REACH_DISPLAY[reach] ?? reach} \u00B7 ${template.crudType}`,
     summary: template.description ?? '',
     flavorText: template.narrativeTemplates?.initiation,
+    technicalEffect: template.technicalEffect,
+    effectSource: effectSourceFor(template),
     tags: [reach, template.crudType, template.scale, template.sphereAffinity ?? ''].filter(Boolean),
     isStarter: template.starter === true || isStarterActionId(template.id),
     details: [

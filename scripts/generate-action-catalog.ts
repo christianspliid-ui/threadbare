@@ -31,61 +31,22 @@ import { fileURLToPath } from 'node:url';
 import { UNIFIED_ACTION_TEMPLATES } from '../src/data/unified-action-templates';
 import { ASCENDANT_ACTION_BUCKETS, type ActionBucket } from '../src/data/ascendant-beat-content';
 import { isStarterActionId } from '../src/engine/actionUnlock';
-import { ENGINE_EFFECT_TEMPLATE_IDS } from '../src/engine/engineEffectRegistry';
+import { effectSourceFor, type EffectSource } from '../src/data/actionEffectSource';
 import { RARITY_TIER_NAMES, type RarityTier } from '../src/types/rarity';
 import { REACH_DOMAINS, type ReachDomain } from '../src/types/traits';
-import {
-  isActionStepBranch,
-  type UnifiedActionTemplate,
-  type ActionStepOrBranch,
-} from '../src/types/unifiedAction';
+import { type UnifiedActionTemplate } from '../src/types/unifiedAction';
 
 export const SCHEMA_VERSION = 2;
 
 const OUTPUT_FILE = 'public/action-catalog.generated.json';
 
 /**
- * Where a template's mechanical effect is actually wired (THR-604). Derived, not
- * authored — grounds the authored `technicalEffect` text against what ships.
- * Precedence (first match wins): a template may match several; the order is a
- * display choice, not a semantic ranking.
- *   template-ops   — a step carries GraphOps (onSuccess/onFailure)
- *   control-spec   — sustained effect via controlSpec
- *   engine-bridge  — id-keyed engine handling (ENGINE_EFFECT_TEMPLATE_IDS)
- *   aftermath-only — only aftermathConfig / secretDiscovery / revelationAction
- *   none           — nothing changes world state (a genuine no-op)
+ * `EffectSource` and its `effectSourceFor` classifier now live in the shared
+ * `src/data/actionEffectSource.ts` (THR-610) so the in-game ActionDrawer + Codex
+ * read the exact same wiring derivation. Re-exported here to preserve the
+ * generator's public surface (imported by its test).
  */
-export type EffectSource =
-  | 'template-ops'
-  | 'control-spec'
-  | 'engine-bridge'
-  | 'aftermath-only'
-  | 'none';
-
-/** Does this step (or any branch variant / fallback) carry non-empty GraphOps? */
-function stepHasOps(step: ActionStepOrBranch): boolean {
-  if (isActionStepBranch(step)) {
-    return [step.fallback, ...Object.values(step.variants)].some(
-      (s) => s.onSuccess.length > 0 || s.onFailure.length > 0,
-    );
-  }
-  return step.onSuccess.length > 0 || step.onFailure.length > 0;
-}
-
-/** Classify where a template's effect is wired. Pure, deterministic. */
-export function effectSourceFor(template: UnifiedActionTemplate): EffectSource {
-  if (template.steps.some(stepHasOps)) return 'template-ops';
-  if (template.controlSpec != null) return 'control-spec';
-  if (ENGINE_EFFECT_TEMPLATE_IDS.has(template.id)) return 'engine-bridge';
-  if (
-    template.aftermathConfig != null ||
-    template.secretDiscovery != null ||
-    template.revelationAction != null
-  ) {
-    return 'aftermath-only';
-  }
-  return 'none';
-}
+export { effectSourceFor, type EffectSource };
 
 /** Top-level catalog facet, mirroring the in-game Codex grouping (codexRegistry.ts). */
 export type CatalogCategory =
