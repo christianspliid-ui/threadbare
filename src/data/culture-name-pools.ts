@@ -55,24 +55,28 @@ export const FOUNDATION_NAMES: Record<string, string[]> = {
     'Ryx', 'Zephka', 'Torva', 'Jaxis', 'Ylura', 'Krenn', 'Shivex',
     'Azra', 'Flick', 'Bressa', 'Nyx', 'Quirra', 'Vendal', 'Ossa',
     'Tavik', 'Ildra', 'Mokk', 'Sylene', 'Haxx', 'Druja',
+    'Vraxx', 'Skell', 'Turvane', 'Ziksa', 'Ekko', 'Draska', 'Qell', 'Marn',
   ],
   order: [
     'Aldric', 'Seren', 'Tormund', 'Elara', 'Baldur', 'Callista',
     'Hemming', 'Valda', 'Osric', 'Maren', 'Geralt', 'Linnea',
     'Edric', 'Thessa', 'Conrad', 'Astrid', 'Sigurd', 'Helena',
     'Leofric', 'Brenna',
+    'Roderic', 'Ingmar', 'Cordelia', 'Halvard', 'Ansel', 'Bertrand', 'Sabina', 'Wulfram',
   ],
   light: [
     'Solenne', 'Aurel', 'Liora', 'Cael', 'Luminara', 'Davin',
     'Alethia', 'Sevrin', 'Ilina', 'Beacon', 'Clariel', 'Orin',
     'Asha', 'Gallant', 'Miriel', 'Caelen', 'Adara', 'Lucen',
     'Theron', 'Suria',
+    'Serapha', 'Elowen', 'Castian', 'Aurin', 'Halcyon', 'Veren', 'Solara', 'Elior',
   ],
   darkness: [
     'Vesper', 'Morthane', 'Lilith', 'Ashke', 'Corvane', 'Noctis',
     'Umbra', 'Ravka', 'Selene', 'Grigor', 'Morvyn', 'Hesper',
     'Dhalia', 'Cinder', 'Kethra', 'Luthane', 'Shade', 'Ravenna',
     'Bael', 'Sorcha',
+    'Mordecai', 'Nyssa', 'Draven', 'Corvus', 'Malka', 'Threnody', 'Ossric', 'Erebos',
   ],
 };
 
@@ -84,41 +88,49 @@ export const SPHERE_NAMES_POOL: Record<string, string[]> = {
     'Ironhide', 'Braga', 'Riven', 'Thane', 'Korr', 'Wulfgar',
     'Skara', 'Varric', 'Haldra', 'Grint', 'Sable', 'Fenrik',
     'Tyra', 'Bron', 'Kael-Mar',
+    'Torvald', 'Maulk', 'Ryza', 'Dolf', 'Grendan',
   ],
   matter: [
     'Delver', 'Petra', 'Anvik', 'Quarren', 'Cobalt', 'Marl',
     'Ingrid', 'Tarn', 'Basalt', 'Henna', 'Slatewood', 'Forren',
     'Odda', 'Cleft', 'Gneiss',
+    'Corbel', 'Argile', 'Steda', 'Flintlock', 'Corben',
   ],
   energy: [
     'Volta', 'Pyrra', 'Strahl', 'Embra', 'Coronal', 'Flux',
     'Vittra', 'Galvyn', 'Seren', 'Arken', 'Kindra', 'Bolter',
     'Nimbus', 'Elysca', 'Whiteflash',
+    'Ignis', 'Radia', 'Fulmen', 'Voltane', 'Sear',
   ],
   life: [
     'Rowan', 'Linden', 'Briar', 'Fern', 'Hazel', 'Sylva',
     'Oren', 'Meadow', 'Celosia', 'Thorn', 'Wren', 'Yarrow',
     'Moss', 'Tansy', 'Alder',
+    'Sorrel', 'Vervain', 'Fennow', 'Cress', 'Elm',
   ],
   mind: [
     'Lexan', 'Cipher', 'Sage', 'Rune', 'Quill', 'Noema',
     'Dex', 'Lorica', 'Pensiv', 'Axton', 'Lograine', 'Mnemis',
     'Scrivell', 'Lucian', 'Aphra',
+    'Codex', 'Glypha', 'Vellum', 'Syntar', 'Ponder',
   ],
   spirit: [
     'Eidolon', 'Wraith', 'Somna', 'Reverie', 'Hallow', 'Whisper',
     'Seraphiel', 'Myst', 'Koda', 'Animus', 'Litany', 'Vigil',
     'Psalm', 'Requiem', 'Aethel',
+    'Threnos', 'Cantor', 'Orison', 'Shrive', 'Psalter',
   ],
   time: [
     'Epoch', 'Meridian', 'Solstice', 'Duskwell', 'Relic', 'Chronn',
     'Vestige', 'Hourglass', 'Dial', 'Aeon', 'Twillen', 'Yester',
     'Memento', 'Kairn', 'Perdure',
+    'Gloaming', 'Antique', 'Waneth', 'Dusklen', 'Horolo',
   ],
   entropy: [
     'Ashward', 'Decay', 'Wane', 'Corrode', 'Marrow', 'Attrith',
     'Erode', 'Blight', 'Rust', 'Hollow', 'Cinder', 'Scour',
     'Remnant', 'Tatter', 'Pallid',
+    'Moulder', 'Frayn', 'Ruinal', 'Slough', 'Wither',
   ],
 };
 
@@ -136,6 +148,8 @@ export const GENERIC_NAMES: string[] = [
   'Rask', 'Taven', 'Vessen', 'Wender', 'Xen', 'Corran', 'Essra', 'Feldin',
   'Jael', 'Lowen', 'Mav', 'Nesrin', 'Renn', 'Tarin', 'Gresh', 'Oswen',
   'Dellis', 'Kelven', 'Sareth', 'Allev', 'Brinne', 'Paven', 'Effra', 'Ixin',
+  'Halven', 'Prewitt', 'Sannis', 'Dolan', 'Brisa', 'Corry', 'Feln', 'Marek',
+  'Tovin', 'Sella', 'Rhoen', 'Casp', 'Delwyn', 'Nira', 'Perrin', 'Vann',
 ];
 
 // ─── Settlement Name Fragments (Culture-Keyed) ─────────────────

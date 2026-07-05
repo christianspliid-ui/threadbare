@@ -466,6 +466,177 @@ export const SUBTYPE_ESTABLISHING_PROSE: Record<string, string[]> = {
     '{name} has the quiet hostility of a place that does not require visitors. The land is sufficient unto itself, and the silence says so.',
     'At {name}, the only paths are those worn by creatures that were here before and will be here after. The wilderness tolerates passage but does not encourage it.',
   ],
+  // ── Sphere-resonant wonder locations (THR-612) ──
+  healing_spring: [
+    'The water at {name} runs clear and a little too warm. People come here carrying wounds and leave lighter, though no one has ever found the source, and the ones who dig for it stop coming back.',
+    '{name} is a spring that mends. A cut held under it closes by morning. The locals leave offerings they cannot afford and ask no questions, which is the only sensible way to treat a thing that gives without explaining itself.',
+    'Steam drifts off the pool at {name} in the cold. The moss around it grows thick and green year-round. Sick animals find their way here on their own; that is how the place was first found.',
+  ],
+  master_forge: [
+    'The forge at {name} has not gone cold in living memory. Metal worked here holds an edge longer than it should. Smiths travel a season\'s road to strike a single blade on its anvil, and count the trip cheap.',
+    '{name} is a workshop the way a temple is a room. The heat off its hearth carries the smell of iron and something older. What comes out of it is a little too good, and everyone who owns such a piece guards where they got it.',
+    'There is a mark that appears on tools finished at {name} — faint, in the grain of the metal, put there by nothing anyone can name. Buyers pay double for it. Sellers do not explain it.',
+  ],
+  living_archive: [
+    'The shelves at {name} rearrange themselves. Leave a book in the wrong place and it is filed correctly by the time you turn around. The keepers, if there are keepers, are never seen doing the work.',
+    '{name} holds more than it should be able to. Rooms open off rooms that were not there the day before. Scholars who stay too long start finding books addressed to them, in their own hand, that they do not remember writing.',
+    'Dust does not gather at {name}. The records here keep themselves — corrected, cross-referenced, and complete, including entries about events that have not happened yet.',
+  ],
+  fey_crossing: [
+    'The air at {name} tastes of a season that isn\'t the one outside. Paths here lead somewhere and then somewhere else. Travelers who cut through come out a day older, or a year, and cannot agree on which.',
+    '{name} is a place the world forgot to finish closing. Light bends wrong at its edges. The locals mark the boundary with stones and do not step past them after dark, and they are right not to.',
+    'At {name} the veil between here and elsewhere wore through. Things cross both ways. What comes in from the other side is beautiful and does not belong, and knows it, and does not care.',
+  ],
+  sacrifice_site: [
+    'The ground at {name} is dark in a way rain does not wash out. Old stone, older stains. Power pools here for anyone willing to pay its price, and the price is always the same.',
+    '{name} was built to feed something. The altar still stands. The grooves cut into it still run downhill to a channel, and the channel still remembers what it was for.',
+    'Nothing grows within a stone\'s throw of {name}. The silence has weight. Whatever was bargained for here was granted, and the debt was never fully settled.',
+  ],
+  convergence: [
+    '{name} is where power gathers on its own, the way water finds the low ground. What accumulates here draws those who want it, and they rarely arrive peacefully.',
+    'The lines of force in the land all bend toward {name}. Standing at its center, the air feels thick, expectant. Every faction within reach has a claim, and none of them will say so out loud.',
+    'At {name} something has pooled that was meant to stay dispersed. It hums under the feet. It has started fights that outlived the people who began them, and it will start more.',
+  ],
+  time_scar: [
+    'Time does not run true at {name}. A candle burns down in an afternoon or a week. Old men remember the place from a childhood that could not have fit inside their years.',
+    '{name} is a wound in the hours. Echoes bleed through it — footsteps with no walker, a bell for a tower that fell long ago. The locals have learned not to answer them.',
+    'Stand still at {name} and you may see the same moment twice, slightly changed. The land here caught on something and tore, and it has been snagging on the same instant ever since.',
+  ],
+  standing_stones: [
+    'The stones at {name} were set by hands no one remembers, in a pattern no one has explained. They lean the way old teeth lean. On certain nights they hum, low enough to feel more than hear.',
+    '{name} is a ring of raised stone older than the oldest name for the land. Frost never quite settles on them. People come to ask questions of the stones, and sometimes leave believing they were answered.',
+    'No two accounts of {name} agree on how many stones there are. They have stood through every collapse the region has suffered and outlasted every hand that tried to move them.',
+  ],
+  shadow_hollow: [
+    '{name} is where magic went wrong and stayed wrong. The light falls short here, as if the air were thicker than it looks. Nothing that crawls out of the hollow is quite what it was when it went in.',
+    'The hollow at {name} swallows sound. Torches gutter at its lip for no wind. Whatever spell broke here left a hole, and the hole has been widening, patiently, ever since.',
+    'At {name} the dark has body. It pools in the low ground and does not lift at dawn. The animals go around it. The people who did not learn to went the way of the light.',
+  ],
+  ley_nexus: [
+    '{name} is where the deep currents surface. The hair stands on your arms within a hundred paces. Mages feel it like a struck bell; those without the sight only feel uneasy and do not know why.',
+    'Raw power runs close to the ground at {name}. Metal sings faintly here. Iron left overnight comes back magnetized, or warm, or subtly changed in ways that take a while to notice.',
+    'The land\'s hidden veins cross at {name} and the crossing shows — in the way flame leans toward it, in the way a compass gives up. Those who can draw on it call it a gift. The land seems to consider it a leak.',
+  ],
+  // ── Wilderness interest locations (THR-612) ──
+  cavern: [
+    'The mouth of {name} breathes — cool air out in the heat, warmer air in the cold. It runs back further than anyone has bothered to map. What torchlight reaches is worn smooth by water and time.',
+    '{name} goes down into the dark by stages. Every passage forks. Careful people mark their way and still come out somewhere they did not expect, or do not come out.',
+    'Water drips somewhere deep in {name}, steady as a clock. The stone holds old handprints and older bones. People shelter in the first chamber and leave the rest alone, which is wisdom.',
+  ],
+  grove: [
+    'The trees at {name} stand older and thicker than the wood around them, in a ring too neat to be accident. It is quiet under them in a way that feels watched. People lower their voices without deciding to.',
+    '{name} was sacred to someone once, and the trees have kept the shape of that devotion. Nothing rots on its floor. Cut a branch here and the whole grove seems to take note.',
+    'At the heart of {name} stands a tree that was old when the oldest names were young. The light comes green and slow. Those who sleep beneath it wake with dreams they did not ask for.',
+  ],
+  hot_spring: [
+    'The pools at {name} steam year-round, fed from somewhere hot and deep. The water smells faintly of the underworld and soothes an aching back all the same. Travelers detour for it and pay the toll gladly.',
+    '{name} bubbles up warm from cracked stone, ringed with pale mineral crust. Animals gather at its edges in the frost. The heat comes from below, from a fire the land keeps and does not share.',
+    'Bathers at {name} come out red and loose-limbed and a little dazed. The spring gives up its warmth freely. What it takes, if it takes anything, is too slow to notice.',
+  ],
+  shipwreck: [
+    'The hull at {name} lies where the sea spat it out, ribs to the sky, going grey. Gulls nest in it. The tide picks through the wreck twice a day and leaves what it does not want.',
+    '{name} was a ship once, and a good one, before the water had its say. Its cargo is long scattered, but people still comb the sand around it, and now and then the sand gives something back.',
+    'Salt has eaten most of {name} down to the frame. What names it carried are gone off the boards. Beachcombers work it at low tide and do not linger, because the wreck creaks like it remembers sinking.',
+  ],
+  ancient_road: [
+    '{name} is a road from before — laid stone straight through country that has forgotten roads, going from nowhere anyone knows to nowhere anyone can reach. It is still the fastest way across, for those who trust it.',
+    'The paving at {name} outlasted the empire that laid it. Grass grows in the joints. It runs level and true where the newer tracks wander, a promise kept by a hand long dead.',
+    '{name} was built to carry armies and still could. Milestones stand at intervals, worn blank. Where the old road goes, the land is easier; where it stops, it stops for a reason nobody remembers.',
+  ],
+  monument: [
+    '{name} was raised to keep a name that the raising outlived. The stone leans, the carving has softened to suggestion, and no one now can say whose grave it marks. Travelers leave a small stone at its base out of habit older than the reason.',
+    'The mound at {name} holds someone the land thought worth remembering. Grass covers it now, neat as a made bed. People do not dig here. The few who tried are a cautionary story told at the right kind of fire.',
+    '{name} is a marker for the dead, or for something the living wanted watched. It has stood through every season the region can throw at it. Birds will not perch on it, and the locals have stopped finding that strange.',
+  ],
+  // ── Natural anomalies / economy locations (THR-612) ──
+  gem_deposit: [
+    'The rock at {name} glints where it\'s broken — hard bright color threaded through dull stone. Word of it draws prospectors and, close behind them, the men who tax prospectors.',
+    '{name} holds stones worth more than the ground they sit in. The seam runs shallow enough to work and rich enough to kill over, which it has, more than once.',
+    'Someone chipped color out of the cliff at {name} and did not clean up after themselves. The glitter in the tailings is enough to keep a steady traffic of hopeful, hungry people coming.',
+  ],
+  golden_grove: [
+    'The trees at {name} weep a slow amber sap that hardens gold in the sun. It is worth carrying and hard to gather, and the grove yields it grudgingly, a bead at a time.',
+    '{name} is a stand of trees that bleed treasure. The sap catches the light like honey and sells like silver. The trees are few, they do not spread, and everyone who works them knows it.',
+    'Cut bark at {name} and it runs gold — sticky, fragrant, precious. The grove has been tapped for generations and gives no sign of tiring, which is either luck or something watching over it.',
+  ],
+  crystal_cavern: [
+    'The walls of {name} are grown through with crystal that rings when struck, each vein a different note. Mages prize the shards. Getting them out without shattering the tone is the trick, and few have the patience.',
+    '{name} is lit by its own stone — pale crystal that holds a glow after the torches leave. The formations resonate with a struck note and hold it far too long. Harvesters work in silence, so as not to wake the whole cavern at once.',
+    'Deep in {name} the crystal grows in sheets and spears, cold and faintly humming. It is a reagent worth the descent. The cavern seems to grow it back, slowly, in patterns that were not there before.',
+  ],
+  ancient_vault: [
+    '{name} is a door in the rock that was sealed on purpose, by people who had reason. The seal has held through the fall of everything that made it. What is behind it is either a fortune or a warning, and possibly both.',
+    'The vault at {name} was built to outlast its owners and did. Its mechanisms are still set, still waiting. Those who force it find wealth from before the collapse — and the traps the wealthy of that age thought worth the expense.',
+    '{name} sits sealed and patient in the ruin, a strongbox the size of a hall. The lock is a puzzle in a dead language. More than one clever crew has gone in after it and not come back to explain what they found.',
+  ],
+  sunken_treasury: [
+    'The water at {name} is dark and deeper than it looks, and somewhere under it lies the wealth of a drowned people. Divers go down on a held breath and come up with a little, or not at all.',
+    '{name} swallowed a fortune when it swallowed the town. On still days you can see shapes below — walls, a roof, the glint of something that was gold. The lake keeps most of it and gives up the rest one careless coin at a time.',
+    'Something rich sank at {name} and the water closed over it. The locals fish the shallows and speak of the deep part in low voices. What the flood took, it has not been in a hurry to return.',
+  ],
+  herb_garden: [
+    '{name} grows the plants that healers cross countries for — wild, untended, thick in a way that looks almost deliberate. Those who know the leaves come quietly and take only what they need, because the ones who stripped it bare found it did not grow back the same.',
+    'The ground at {name} favors the useful weeds: fever-root, bloodstem, the pale flower that dulls pain. No one planted them. They simply thrive here, and the wise treat that as a courtesy worth returning.',
+    '{name} is a physician\'s larder gone wild. The air smells green and sharp with medicine. Herb-women work it by an old etiquette — a cutting for a cutting, nothing greedy — and the garden keeps giving.',
+  ],
+  fossil_bed: [
+    'The stone at {name} is full of bones that were old before there were men to find them. Some still hold a faint charge, a warmth, a wrongness. Diggers sell them to mages and do not ask what they\'re for.',
+    '{name} lays the deep past bare — great ribs and jaws locked in rock, too big for anything living now. The oldest of them hum faintly to those with the sight. The land here dreams of what it used to carry.',
+    'Wind and time have peeled {name} back to a graveyard of monsters. The bones come out of the shale whole, and a few of them are not entirely dead in the way bones should be.',
+  ],
+  iron_seep: [
+    '{name} bleeds metal — a rust-red seep where the ground gives up iron without the trouble of a mine. It is not pure and it is not much, but it is at the surface, and in the wrong season that makes it worth fighting for.',
+    'The rock at {name} sweats ore. Red crust rings the seep, and the stream below it runs the color of old blood. Smiths in a hurry work it for what it is: iron for the taking, if you can hold the ground.',
+    '{name} is a scab of raw metal on open stone. Strategic, everyone calls it, which is another way of saying men have died over less. The seep does not care who holds it and keeps bleeding either way.',
+  ],
+  pearl_shoal: [
+    'The shallows at {name} hide beds of shell that hold pearls, and the divers who work them hold their breath a long time for the chance. The good ones grow rich. The unlucky ones stay down.',
+    '{name} is a stretch of water that pays in pearls for anyone with the lungs to earn them. The beds lie just deep enough to be dangerous. Coastal folk work them in season and guard the location like a secret, badly.',
+    'Under the calm at {name} the shell-beds spread thick, each one a maybe. Pearls come up small and perfect and worth a season\'s wage. The sea sets the price in held breath and does not haggle.',
+  ],
+  glowcap_hollow: [
+    'The hollow at {name} glows faintly after dark, lit from below by fungus that shouldn\'t give light and does. Alchemists pay for the caps. Gathering them means going into the glow, and the glow does strange things to the sense of time.',
+    '{name} is dim and damp and lit by mushrooms — pale blue, cold, growing thick on the rot. The caps are a reagent worth the descent. Those who breathe the spores too long come out humming and do not remember the tune.',
+    'Down in {name} the light comes from the fungus, soft and greenish and wrong. It is beautiful in the way deep places sometimes are. Harvesters work it fast and leave faster, before the quiet starts to feel like company.',
+  ],
+  // ── Monster / danger locations (THR-612) ──
+  nest: [
+    '{name} is a hive grown to the size of a hall — chambers of chewed earth and spittle, humming with whatever built it. The land around it is stripped bare and picked clean. Nothing sensible walks in willingly.',
+    'Something bred at {name} and kept breeding. The nest sprawls now, layered and reeking, alive with movement in its depths. Herders lose stock to it and the count goes up each season.',
+    'The creatures that made {name} did not make it small. It rises in ridges and tunnels, warm to the touch, loud with a sound between a purr and a swarm. Whatever rules it has not been seen, only the work of its children.',
+  ],
+  haunted_ground: [
+    '{name} does not rest. The dead here are restless, and they make it known — cold that finds the bone, a weeping with no mouth, footsteps that stop when you stop. People cross it by day and never by choice at night.',
+    'Something died badly at {name}, or a great many things did, and none of them left. The air holds a grief that is not yours. Livestock will not graze it. The grass grows tall and grey and no one cuts it.',
+    'At {name} the veil to the other side hangs thin and torn. Shapes move at the edge of the eye. The locals leave the ground to its tenants and warn strangers off, and the strangers who don\'t listen tend to stop being strangers and start being stories.',
+  ],
+  corruption_zone: [
+    '{name} is spreading, and what it spreads is wrongness. The plants grow in shapes that hurt to look at; the water runs a color with no name. Each season the dead ring around it widens by another few paces.',
+    'Something rotted at {name} that was not meant to rot, and the rot has ambition. It creeps outward, patient and sure. Animals that stray in come out changed, if they come out. The locals burn the edge back and lose ground anyway.',
+    'The land at {name} has soured to the root. Blight has body here — a haze, a smell, a wrongness in the shapes things take. It is still small enough to fence and too stubborn to stop, and everyone downwind knows which way it grows.',
+  ],
+  // ── Lairs (THR-612) ──
+  lair: [
+    '{name} is a den, and something has claimed it. Bones ring the entrance, cracked for their marrow. The reek carries on the wind. Whatever lives here has learned the country hunts it, and hunts back.',
+    'Something dangerous keeps {name}, and keeps it well. The approach is littered with the remains of the last things to misjudge it. The locals know the location the way they know a bad stretch of road — by who failed to come back from it.',
+    '{name} is the home of a predator that outgrew the wild. The ground is packed hard by its passing, strewn with what it did not finish. It hunts a wide circle and returns here to sleep, which is the only time it can be found.',
+  ],
+  cleared_lair: [
+    '{name} was a den once, and something worse lived in it, until a company with steel and grudge went in and did not stop until it was quiet. The bones at the mouth are old now. The reek has faded to memory.',
+    'The thing that held {name} is dead. A faction saw to it, and left their mark on the entrance so the country would know who to thank. The den stands empty, aired out, waiting — dens rarely stay empty for long.',
+    '{name} was cleared at cost. You can read the fight in the scoring on the stone, the rusted arrowheads, the single grave dug apart from the rest. For now the location is safe. For now.',
+  ],
+  // ── Ruins layer (THR-612) ──
+  elder_ruin: [
+    '{name} is older than ruin — a work of the deep past that the world has half-swallowed and never fully digested. Its stones fit without mortar. Those who delve it come back rich, or changed, or not at all.',
+    'The ruin at {name} was raised by hands that knew things since forgotten, and it remembers them still. The dark inside is patient. What waits down there was left on purpose, and it has had a very long time to wait.',
+    '{name} predates the names for the country around it. The delvers who work it speak of chambers that go too deep and doors that were locked from the inside. It gives up its secrets grudgingly, one crew at a time, and keeps some for itself.',
+  ],
+  place_of_power: [
+    '{name} was a ruin once and is now a wellspring — a place where power rises from the deep work beneath it, steady and cold and free to anyone who can hold the ground. Gods notice such places. So do their rivals.',
+    'Something was woken at {name}, or unsealed, and now the old ruin pours out a stream that does not run dry. Essence pools here for the taking. Holding it is the hard part, and the part that draws the wrong kind of attention.',
+    '{name} hums with a power that used to sleep. The ruin\'s deep machinery turns again, feeding a source that renews itself faster than it can be spent. It is a prize worth a war, and in time it usually becomes one.',
+  ],
 };
 
 // ─── Faction Control Prose ───────────────────────────────────────────────────
