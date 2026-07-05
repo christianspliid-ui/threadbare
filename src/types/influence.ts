@@ -169,6 +169,21 @@ export interface AscendantProperties {
    * Cleared after consumed. 1 = +1 effective tier.
    */
   nextActionTierBoost?: number;
+  /**
+   * God-side reach practice accumulation (THR-613, plan §3.1). Additive raw-score
+   * contribution to Domain Capability per reach, accrued when the player resolves an
+   * in-domain action. Only the ascendant carries this bag; `computeRawScore` reads it
+   * generically (undefined elsewhere → +0, so it is purely additive). Property bag —
+   * no new node/edge type. Lazy-init: absent → treated as 0.
+   */
+  reachPractice?: Partial<Record<ReachDomain, number>>;
+  /**
+   * Last-fired Domain Capability tier per reach (THR-613, plan §3.2). Seeded from the
+   * current derived tier on the first progression-phase run (no spurious beat); a
+   * Deepening beat fires and the snapshot advances by one step whenever the live tier
+   * rises above the snapshot. Absent → seed on first run.
+   */
+  reachTierSnapshot?: Partial<Record<ReachDomain, number>>;
 }
 
 /**

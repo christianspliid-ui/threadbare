@@ -281,7 +281,12 @@ export type TraceCategory =
   // Encounter chapter archive (THR-603)
   | 'encounter.chapter_archived'
   // Mortal economy — resource stock tiers (THR-615)
-  | 'resource_stock_tier_change';
+  | 'resource_stock_tier_change'
+  // Player action progression — god-side capability growth (THR-613)
+  | 'ascendant.progression.practice'
+  | 'ascendant.progression.tier_up'
+  | 'ascendant.progression.deepening_enqueued'
+  | 'ascendant.progression.control_release';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'action_selection', 'narrative_generation', 'context_harvest',
@@ -534,6 +539,11 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'ascendant.signature.unique_location',
   // Encounter chapter archive (THR-603)
   'encounter.chapter_archived',
+  // Player action progression — god-side capability growth (THR-613)
+  'ascendant.progression.practice',
+  'ascendant.progression.tier_up',
+  'ascendant.progression.deepening_enqueued',
+  'ascendant.progression.control_release',
 ];
 
 /** Base shape for all trace entries */
@@ -1859,7 +1869,12 @@ export type TraceEntry =
   // Encounter chapter archive (THR-603)
   | ChapterArchivedTrace
   // Mortal economy — resource stock tiers (THR-615)
-  | ResourceStockTierChangeTrace;
+  | ResourceStockTierChangeTrace
+  // Player action progression — god-side capability growth (THR-613)
+  | PlayerPracticeTrace
+  | PlayerTierUpTrace
+  | DeepeningEnqueueTrace
+  | ControlReleaseTrace;
 
 /** Trace: a location's resource crossed a stock tier boundary. THR-615 */
 export interface ResourceStockTierChangeTrace extends TraceBase {
@@ -1962,6 +1977,55 @@ export interface ActionUnlockGrantedTrace extends TraceBase {
   turn: number;
   actionId: string;
   via: 'beat' | 'debug';
+}
+
+/**
+ * Trace: the ascendant accrued reach practice from resolving an in-domain action
+ * (THR-613, plan §3.1). `total` is the post-accrual `reachPractice[reach]` — the
+ * additive raw-score term feeding Domain Capability. `delta` is this action's gain.
+ */
+export interface PlayerPracticeTrace extends TraceBase {
+  category: 'ascendant.progression.practice';
+  turn: number;
+  reach: ReachDomain;
+  delta: number;
+  total: number;
+}
+
+/**
+ * Trace: the ascendant's derived Domain Capability tier in a reach rose (THR-613,
+ * plan §3.2). Emitted once per tier step when the progression phase advances the
+ * snapshot and enqueues the matching Deepening beat.
+ */
+export interface PlayerTierUpTrace extends TraceBase {
+  category: 'ascendant.progression.tier_up';
+  turn: number;
+  reach: ReachDomain;
+  fromTier: number;
+  toTier: number;
+}
+
+/**
+ * Trace: a Deepening beat was enqueued (set `pending`) before the Beat Director ran,
+ * preempting the cadence draw for that turn (THR-613, plan §3.2).
+ */
+export interface DeepeningEnqueueTrace extends TraceBase {
+  category: 'ascendant.progression.deepening_enqueued';
+  turn: number;
+  reach: ReachDomain;
+  beatId: string;
+}
+
+/**
+ * Trace: a sustained control was released from the Covenants panel (THR-613, plan
+ * §3.4). Declared with the progression trace family; emitted by the `release_control`
+ * op in Slice 4.
+ */
+export interface ControlReleaseTrace extends TraceBase {
+  category: 'ascendant.progression.control_release';
+  turn: number;
+  controlId: string;
+  contested: boolean;
 }
 
 /** Trace: a mortal became an Aspect of the god (apex milestone grant). THR-479 */

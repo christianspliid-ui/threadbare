@@ -34,7 +34,7 @@ import {
   sortByPriority,
   resolveStepDefinition,
 } from './unifiedActionLifecycle';
-import { isStepSuccess, isStepFailure } from '../types/unifiedAction';
+import { isStepSuccess, isStepFailure, isActionStepBranch } from '../types/unifiedAction';
 import { computeCapability } from './domainCapability';
 import { resolveAction as resolveActionLegacy } from './resolution';
 import { resolveAction as resolveActionShared, isSuccessOutcome } from './resolutionService';
@@ -65,6 +65,7 @@ import type { RevelationMutation } from './revelationResolver';
 import { applyRevelationMutations } from './revelationResolver';
 import { applyEncounterGrowth } from './capabilityGrowth';
 import { handleTierPromotion } from './tierPromotion';
+import { accruePlayerReachPractice } from './phaseAscendantProgression';
 import type { ControlEffect } from '../types/controlEffect';
 import { spawnControlEffect } from './controlEffectSpawn';
 import type { SpherePressureEvent } from '../types/sphereAffinity';
@@ -2490,6 +2491,24 @@ export function phaseUnifiedActionProgress(
           agentId: targetNodeForRarity.id,
         } as import('../types/trace').RarityImportanceTrace);
       }
+    }
+
+    // Player reach-practice accrual (THR-613, plan §3.1): god-side Domain Capability
+    // growth. When the ascendant resolves an action carrying an in-domain reach, accrue
+    // practice into `reachPractice[reach]` — the additive raw-score term the
+    // progression phase reads to detect tier crossings. Fail-soft: off-domain reach or
+    // non-ascendant actor → no-op inside the helper.
+    if (updatedAction.resolved && completing_action.actorId === state.ascendantId) {
+      const resolvedStep = template.steps[completing_action.currentStep];
+      const stepDifficulty =
+        resolvedStep && !isActionStepBranch(resolvedStep) ? resolvedStep.difficulty : 0;
+      accruePlayerReachPractice(
+        state.graph,
+        state.ascendantId,
+        template.reach,
+        stepDifficulty,
+        state.tick,
+      );
     }
 
     // Spawn ControlEffect for successful sustained actions (TB-044)

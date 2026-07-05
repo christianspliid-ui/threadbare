@@ -89,6 +89,11 @@ const KIND_PRESENTATION: Record<BeatKind, BeatPresentation> = {
     prose: 'A scene unfolds before you, delivered not by mortal pathing but by your own sight.',
     cta: 'Witness',
   },
+  deepening: {
+    eyebrow: 'A Deepening',
+    prose: 'The world has learned the shape of your will. Where once your urging only leaned, now it commands — something has decided you are to be obeyed in this.',
+    cta: 'Receive',
+  },
 };
 
 /** Title-case the most specific segment of a dotted beat id, e.g. `…the_worthy_mortal` → "The Worthy Mortal". */

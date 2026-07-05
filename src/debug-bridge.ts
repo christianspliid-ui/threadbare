@@ -241,6 +241,21 @@ if (import.meta.env.DEV) {
       return { sources, sourceIncome: computeSourceIncome(graph, ascId) };
     },
 
+    /**
+     * Player action progression readout (THR-613 §3.6): per permanent reach, the
+     * ascendant's accrued reach practice, live Domain Capability + tier, last-fired
+     * tier snapshot, and whether a Deepening beat is pending. Read-only; returns
+     * { reaches, pendingBeatId } or { error }.
+     */
+    getAscendantProgression: async () => {
+      const state = _gameStateProvider?.();
+      if (!state) return { error: 'no live game state' };
+      const { getAscendantProgress } = await import('./engine/phaseAscendantProgression');
+      const progress = getAscendantProgress(state);
+      if (!progress) return { error: 'no ascendant found' };
+      return progress;
+    },
+
     // ── Encounter step-prose replay records (THR-636) ───────────────────────
     /**
      * Return the captured per-step replay records for an agent's active (or
