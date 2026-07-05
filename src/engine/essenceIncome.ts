@@ -19,6 +19,7 @@ import {
 import { ASPECT_ESSENCE_PER_TICK } from '../data/aspect-content';
 import type { WorldGraph } from './graph';
 import type { ControlEffect } from '../types/controlEffect';
+import { computeSourceIncome, readEssenceSource } from './essenceSources';
 
 function emptyPool(): EssencePool {
   return Object.fromEntries(SPHERE_NAMES.map(s => [s, 0])) as EssencePool;
@@ -69,7 +70,10 @@ export function computeEssenceIncome(
   for (const edge of controlEdges) {
     if (edge.target === homeSeatLocationId) continue;
     const loc = graph.getNode(edge.target);
-    if (loc?.properties.isPlaceOfPower) {
+    if (!loc) continue;
+    // Typed essence sources (THR-611) are counted in the source term below.
+    if (readEssenceSource(loc.properties)?.sphereAffinity) continue;
+    if (loc.properties.isPlaceOfPower) {
       totalRate += ESSENCE_PER_PLACE_OF_POWER;
     }
   }
@@ -97,6 +101,14 @@ export function computeEssenceIncome(
 
   const net = { ...gross };
   net[alignment.primary] = gross[alignment.primary] - totalMaintenance;
+
+  // Typed essence-source income (THR-611) — per-sphere, tier/DR scaled. Mirrors
+  // the term in computeEssenceGeneration; untyped sources stay on the legacy path.
+  const sourceIncome = computeSourceIncome(graph, ascendantId);
+  for (const [sphere, amount] of Object.entries(sourceIncome)) {
+    const s = sphere as SphereName;
+    if (amount && SPHERE_NAMES.includes(s)) net[s] = (net[s] ?? 0) + amount;
+  }
 
   // Control effect income (per-sphere, not distributed by alignment)
   if (controlEffects) {
