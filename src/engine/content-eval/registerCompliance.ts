@@ -71,6 +71,14 @@ export interface RegisterComplianceResult {
 export interface RegisterInput {
   readonly register?: RegisterKind;
   readonly fields: Readonly<Record<string, string>>;
+  /** Per-field register overrides (THR-609). A field's register resolves as
+   *  `fieldRegisters[field] ?? register ?? 'baseline'`. Lets one entry carry a
+   *  baseline body and a peak aftermath beat without either being mis-scored
+   *  under a single entry-level register. Absent ⇒ every field uses the
+   *  entry-level default (behaviour identical to the pre-THR-609 single-register
+   *  path). Keys match the `fields` map; a `foo.choiceId` field falls back to its
+   *  `foo` base name if only the base is declared. */
+  readonly fieldRegisters?: Readonly<Record<string, RegisterKind>>;
 }
 
 // ---------------------------------------------------------------------------
@@ -186,15 +194,47 @@ function bandForValue(value: number, warnAt: number, failAt: number): RegisterBa
   return 'pass';
 }
 
-/** The narrative (non-label) fields joined for sentence/rare/figurative metrics. */
-function narrativeText(fields: Readonly<Record<string, string>>): string {
-  const parts: string[] = [];
-  for (const [fieldName, text] of Object.entries(fields)) {
+/** Resolve one field's register: an exact per-field override wins; else the
+ *  field's base name (before any `.choiceId` suffix); else the entry-level
+ *  register; else `baseline`. */
+function resolveFieldRegister(
+  fieldName: string,
+  entryRegister: RegisterKind | undefined,
+  fieldRegisters: Readonly<Record<string, RegisterKind>> | undefined,
+): RegisterKind {
+  if (fieldRegisters) {
+    const exact = fieldRegisters[fieldName];
+    if (exact) return exact;
+    const base = fieldName.split('.')[0];
+    const byBase = fieldRegisters[base];
+    if (byBase) return byBase;
+  }
+  return entryRegister ?? 'baseline';
+}
+
+/** Group the narrative (non-label) fields by resolved register. Each group keeps
+ *  its fields as a list (not pre-joined) so avgSentenceLength can count sentences
+ *  per field — an unpunctuated fragment (e.g. a lowercase `narrative`/`success`
+ *  clause) is one clause, not zero. Joining first would fold a fragment's words
+ *  into a sibling field's sentence count and wildly inflate words/sentence.
+ *  Labels are excluded (scored by interactivePlainness under a hard rule).
+ *  Preserves register insertion order for deterministic metric ordering. */
+function narrativeGroupsByRegister(
+  entry: RegisterInput,
+): Array<{ register: RegisterKind; texts: string[] }> {
+  const order: RegisterKind[] = [];
+  const groups = new Map<RegisterKind, string[]>();
+  for (const [fieldName, text] of Object.entries(entry.fields)) {
     if (typeof text !== 'string' || text.trim().length === 0) continue;
     if (isLabelField(fieldName)) continue; // labels scored by interactivePlainness
-    parts.push(text);
+    const register = resolveFieldRegister(fieldName, entry.register, entry.fieldRegisters);
+    if (!groups.has(register)) {
+      groups.set(register, []);
+      order.push(register);
+    }
+    groups.get(register)!.push(text);
   }
-  return parts.join('\n\n');
+  return order.map((register) => ({ register, texts: groups.get(register)! }));
 }
 
 function isLabelField(fieldName: string): boolean {
@@ -202,10 +242,20 @@ function isLabelField(fieldName: string): boolean {
   return LABEL_CLASS_FIELD_NAMES.includes(base);
 }
 
-function computeAvgSentenceLength(text: string, t: RegisterThresholds): RegisterMetric {
-  const tokens = tokenize(text);
-  const sentences = countSentences(stripPlaceholders(text));
-  const value = sentences > 0 ? tokens.length / sentences : 0;
+/** Mean words/sentence across a register group's fields. Sentences are counted
+ *  per field (each non-empty field contributes at least one), so a lowercase
+ *  fragment without terminal punctuation counts as one clause rather than
+ *  collapsing into a sibling field's sentence count (THR-609 — fixes the
+ *  fragment-inflation artifact that failed plainspoken action prose). */
+function computeAvgSentenceLength(texts: readonly string[], t: RegisterThresholds): RegisterMetric {
+  let totalTokens = 0;
+  let totalSentences = 0;
+  for (const text of texts) {
+    if (text.trim().length === 0) continue;
+    totalTokens += tokenize(text).length;
+    totalSentences += countSentences(stripPlaceholders(text));
+  }
+  const value = totalSentences > 0 ? totalTokens / totalSentences : 0;
   const warnAt = t.maxAvgSentenceLen;
   const failAt = t.maxAvgSentenceLen * REGISTER_WARN_TO_FAIL_RATIO;
   const band = bandForValue(value, warnAt, failAt);
@@ -313,7 +363,9 @@ function worstBand(bands: readonly RegisterBand[]): RegisterBand {
  * single `skipped` band with the reason in the metric detail (NFP #4).
  */
 export function scoreRegisterCompliance(entry: RegisterInput): RegisterComplianceResult {
-  const declared = entry.register !== undefined;
+  const declared =
+    entry.register !== undefined ||
+    (entry.fieldRegisters !== undefined && Object.keys(entry.fieldRegisters).length > 0);
   const register: RegisterKind = entry.register ?? 'baseline';
 
   try {
@@ -335,14 +387,28 @@ export function scoreRegisterCompliance(entry: RegisterInput): RegisterComplianc
       };
     }
 
-    const t = thresholdsFor(register);
-    const prose = narrativeText(entry.fields);
+    // Score narrative fields per resolved register group: a baseline body and a
+    // peak aftermath beat in the same entry each get their own thresholds
+    // (THR-609). Single-register entries collapse to one group — behaviour is
+    // identical to the pre-per-field path.
+    const groups = narrativeGroupsByRegister(entry);
     const metrics: RegisterMetric[] = [];
 
-    if (prose.trim().length > 0) {
-      metrics.push(computeAvgSentenceLength(prose, t));
-      metrics.push(computeRareWordDensity(prose, t));
-      metrics.push(computeFigurativeDensity(prose, t));
+    for (const { register: groupRegister, texts } of groups) {
+      const joined = texts.join('\n\n');
+      if (joined.trim().length === 0) continue;
+      const t = thresholdsFor(groupRegister);
+      // Tag non-baseline group metrics so the report says which register a
+      // verdict was scored under (NFP #2 inspectability); baseline stays
+      // untagged to preserve the existing single-register detail format.
+      const tag = groupRegister === 'baseline' ? '' : `[${groupRegister}] `;
+      for (const metric of [
+        computeAvgSentenceLength(texts, t),
+        computeRareWordDensity(joined, t),
+        computeFigurativeDensity(joined, t),
+      ]) {
+        metrics.push(tag ? { ...metric, detail: tag + metric.detail } : metric);
+      }
     }
     const labelMetric = computeInteractivePlainness(entry.fields);
     if (labelMetric) metrics.push(labelMetric);

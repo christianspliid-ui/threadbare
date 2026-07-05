@@ -14,6 +14,7 @@
 // (NFP #4 fail-soft).
 
 import type { EvalInput } from './proseQualityScore';
+import type { RegisterKind } from './registerCompliance';
 import type { GraphNode } from '../../types/graph';
 import {
   UNIFIED_ACTION_TEMPLATES,
@@ -60,6 +61,28 @@ function collectErrorEntry(table: string, err: unknown): EvalInput {
     fields: { detail: `collector failed for ${table}: ${message}` },
   };
 }
+
+// ---------------------------------------------------------------------------
+// Per-field register declarations (THR-609)
+// ---------------------------------------------------------------------------
+//
+// Canon (Docs/canon/prose.md § the register model) designates a small set of
+// surfaces as *peak* register — rationed lyricism, scored under the peak
+// thresholds instead of the plainspoken baseline. Everything else defaults to
+// baseline. Keys are matched by field base name (the part before any
+// `.choiceId` suffix), so declaring `aftermath` covers every `aftermath.<id>`
+// and `aftermath.fallback` field the encounter collector emits.
+//
+// Only unambiguous canon peak surfaces are declared here. Outcome prose
+// (success/failure/contested) stays baseline by default: plain is the rule, and
+// leaving a genuinely-drifted outcome line at baseline surfaces it for rewrite
+// rather than hiding it under peak tolerances.
+
+/** Encounter fields scored under peak register: the major aftermath beats
+ *  (chronicler-voice overviews), a canon peak surface. */
+const ENCOUNTER_FIELD_REGISTERS: Readonly<Record<string, RegisterKind>> = {
+  aftermath: 'peak',
+};
 
 // ---------------------------------------------------------------------------
 // Per-table collectors
@@ -109,6 +132,7 @@ function collectEncounters(): EvalInput[] {
       contentType: 'encounter',
       marquee: typeof t.rarityTier === 'number' && t.rarityTier >= 3,
       fields,
+      fieldRegisters: ENCOUNTER_FIELD_REGISTERS,
     });
   }
 

@@ -95,6 +95,12 @@ export interface EvalInput {
   /** Declared register (THR-609). Absent ⇒ scored as `baseline` (the strictest
    *  common case) and flagged `undeclared` in the batch summary. */
   readonly register?: RegisterKind;
+  /** Per-field register overrides (THR-609). A field's register resolves as
+   *  `fieldRegisters[field] ?? register ?? 'baseline'`, letting one entry carry
+   *  a baseline body and a peak aftermath/climax beat without either being
+   *  mis-scored under a single entry-level register. Absent ⇒ every field uses
+   *  the entry-level default. */
+  readonly fieldRegisters?: Readonly<Record<string, RegisterKind>>;
 }
 
 /** Overrides for any rubric constant. Callers may supply a partial config; missing keys use defaults. */
@@ -369,6 +375,7 @@ export function scoreProseEntry(entry: EvalInput, cfg?: Partial<ProseQualityConf
   const registerCompliance = scoreRegisterCompliance({
     register: entry.register,
     fields: entry.fields,
+    fieldRegisters: entry.fieldRegisters,
   });
 
   return {
