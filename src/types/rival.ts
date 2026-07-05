@@ -24,6 +24,32 @@ export interface RivalDefinition {
   secondarySphere?: SphereName;
 }
 
+/**
+ * UI-facing summary of one active rival scheme (THR-66). Denormalized onto
+ * RivalState each tick so RivalPanel can render scheme cards without needing
+ * the activeCompositions ledger. The canonical record is the ActiveComposition.
+ */
+export interface RivalSchemeSummary {
+  /** The backing ActiveComposition id. */
+  compositionId: string;
+  /** Scheme family id (`corruptive` | `territorial`). */
+  family: string;
+  /** Human-readable family label for the card title. */
+  label: string;
+  /** Kebab-case id of the most recently activated phase, or 'pending' before phase 1. */
+  phase: string;
+  /** 1-based index of the current phase (0 = not yet started). */
+  phaseIndex: number;
+  /** Total phases in the scheme (always 4). */
+  totalPhases: number;
+  /** Escalation tier the scheme launched at. */
+  escalationTier: number;
+  /** Lifecycle status mirrored from the ActiveComposition. */
+  status: 'active' | 'completed' | 'failed';
+  /** True when the player has a live counter surface against this scheme. */
+  contested: boolean;
+}
+
 /** Runtime state tracking for a rival god */
 export interface RivalState {
   rivalId: string;
@@ -37,6 +63,13 @@ export interface RivalState {
   ticksSinceAction?: number;
   /** Per-agent awareness 0.0-1.0 — how much attention this rival is paying to each agent */
   agentAwareness?: Partial<Record<string, number>>;
+  // ── Scheme activation (THR-66) — additive/optional ──
+  /** Composition ids of schemes this rival currently runs (active only). */
+  activeSchemeIds?: string[];
+  /** Tick this rival last launched a scheme (for launch cooldown). */
+  lastSchemeLaunchTick?: number;
+  /** UI-facing scheme summaries (active + recently terminal), maintained by phaseRivalActions. */
+  schemes?: RivalSchemeSummary[];
 }
 
 /** Rival archetype generation templates */

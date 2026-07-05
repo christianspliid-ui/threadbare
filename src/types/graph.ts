@@ -119,7 +119,9 @@ export type EdgeType =
   | 'embodies_spirit_of'
   // Faction succession (THR-432)
   | 'will_succeed'         // agent → faction: anointed to inherit faction leadership on next leader exit
-  | 'leads';               // agent → faction: the seated leader of this faction (authoritative when present)
+  | 'leads'                // agent → faction: the seated leader of this faction (authoritative when present)
+  // Rival schemes (THR-66)
+  | 'sponsors_scheme';     // rival actor → materialized target node (location it is scheming against)
 
 /**
  * Typed properties for encounter_template nodes (design plan §3.8).

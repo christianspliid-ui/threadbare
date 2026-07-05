@@ -1796,6 +1796,11 @@ export type TraceEntry =
   | CompositionPhaseActivatedTrace
   | CompositionFailedTrace
   | CompositionPhaseEvalFailedTrace
+  // Rival scheme traces (THR-66)
+  | RivalSchemeLaunchedTrace
+  | RivalSchemePhaseAdvancedTrace
+  | RivalSchemeCounteredTrace
+  | RivalSchemeCompletedTrace
   // Composition dual-voice story-beat wiring (THR-254)
   | CompositionStoryBeatTemplateMissingTrace
   // Encounter foreshadowing (THR-389)
@@ -2331,6 +2336,44 @@ export interface CompositionPhaseEvalFailedTrace extends TraceBase {
   compositionId: string;
   phaseId: string;
   error: string;
+}
+
+// ─── Rival scheme traces (THR-66) ────────────────────────────────
+
+/** Trace: a rival launched a multi-phase scheme. */
+export interface RivalSchemeLaunchedTrace extends TraceBase {
+  category: 'rival.scheme_launched';
+  rivalId: string;
+  compositionId: string;
+  family: string;
+  escalationTier: number;
+  targetNodeId?: string;
+}
+
+/** Trace: a scheme phase activated and its concrete move fired. */
+export interface RivalSchemePhaseAdvancedTrace extends TraceBase {
+  category: 'rival.scheme_phase_advanced';
+  rivalId: string;
+  compositionId: string;
+  phaseId: string;
+  move: string;
+  targetNodeId?: string;
+}
+
+/** Trace: the player countered a scheme (stalled it or failed it). */
+export interface RivalSchemeCounteredTrace extends TraceBase {
+  category: 'rival.scheme_countered';
+  rivalId: string;
+  compositionId: string;
+  outcome: 'stalled' | 'failed';
+  byActorId?: string;
+}
+
+/** Trace: a scheme ran all four phases to completion. */
+export interface RivalSchemeCompletedTrace extends TraceBase {
+  category: 'rival.scheme_completed';
+  rivalId: string;
+  compositionId: string;
 }
 
 // ═══════════════════════════════════════════════════════════════════

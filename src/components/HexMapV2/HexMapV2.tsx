@@ -58,6 +58,9 @@ import {
 } from './scene/ReachSignatureSignifierMesh';
 import type { ReachSignatureSignifierLayerGroup } from './scene/ReachSignatureSignifierMesh';
 import type { ReachSignatureMarker } from '../../engine/reachSignatureMarkers';
+import { createRivalInfluenceLayer } from './scene/RivalInfluenceMesh';
+import type { RivalInfluenceLayer } from './scene/RivalInfluenceMesh';
+import type { RivalInfluenceMarker } from '../../engine/rivalInfluenceMarkers';
 import { tickAgentAnimations } from './agents/agentAnimationState';
 import type { AgentAnimState } from './agents/agentAnimationState';
 import { createMovementTrailMesh, updateTrails } from './scene/MovementTrailMesh';
@@ -286,6 +289,8 @@ export interface HexMapV2Props {
   armies?: ArmyRenderData[];
   /** Ascendant reach-signature footprints (warhost/rift/wonder) — THR-554. */
   reachSignatureMarkers?: ReachSignatureMarker[];
+  /** Rival-scheme influence markers — sphere-tinted outlines on contested hexes (THR-66). */
+  rivalInfluenceMarkers?: RivalInfluenceMarker[];
   /** Battle/siege indicator data for combat overlays (Plan 12-07+) */
   battles?: BattleIndicatorData[];
   /** Thread line data — avatar-to-agent relationship lines (Attention UI) */
@@ -506,7 +511,7 @@ function createSelectionOverlayMesh(size: number, color: string): THREE.Mesh {
  */
 const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
   function HexMapV2(
-    { tiles, cols, rows, seed = 42, hoveredHex, selectedHex, onHexClick, onHexHover, onAgentClick, onArmyClick, riverPaths, lakeIds, regionData, locations, anomalies, roadPaths, agents, armies, reachSignatureMarkers, battles, threadLines, activityIcons, strategicOverlays, activeTugs, attentionRatio = 1.0, visibilityMap, fogEnabled = false, showOrganicShore = true, overlayOpen = false, selectionColor, moveDestinationHex, onCameraCenterHex, locationActivityMap, spotlightedAgentId, spotlightThreadColor, shouldCenterOnAgent },
+    { tiles, cols, rows, seed = 42, hoveredHex, selectedHex, onHexClick, onHexHover, onAgentClick, onArmyClick, riverPaths, lakeIds, regionData, locations, anomalies, roadPaths, agents, armies, reachSignatureMarkers, rivalInfluenceMarkers, battles, threadLines, activityIcons, strategicOverlays, activeTugs, attentionRatio = 1.0, visibilityMap, fogEnabled = false, showOrganicShore = true, overlayOpen = false, selectionColor, moveDestinationHex, onCameraCenterHex, locationActivityMap, spotlightedAgentId, spotlightThreadColor, shouldCenterOnAgent },
     ref,
   ) {
     const containerRef = useRef<HTMLDivElement>(null);
@@ -533,6 +538,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
     const anomalyShimmerLayerRef = useRef<AnomalyShimmerLayerGroup | null>(null);
     const locationRaritySignifierLayerRef = useRef<LocationRaritySignifierLayerGroup | null>(null);
     const reachSignatureSignifierLayerRef = useRef<ReachSignatureSignifierLayerGroup | null>(null);
+    const rivalInfluenceLayerRef = useRef<RivalInfluenceLayer | null>(null);
 
     // Thread line and activity icon layer refs (Attention UI)
     const threadLineLayerRef = useRef<ThreadLineLayer | null>(null);
@@ -1474,6 +1480,10 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
             reachSignatureSignifierLayerRef.current.dispose();
             reachSignatureSignifierLayerRef.current = null;
           }
+          if (rivalInfluenceLayerRef.current) {
+            rivalInfluenceLayerRef.current.dispose();
+            rivalInfluenceLayerRef.current = null;
+          }
           if (threadLineLayerRef.current) {
             threadLineLayerRef.current.dispose();
             threadLineLayerRef.current = null;
@@ -1658,6 +1668,31 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
       scene.add(layer.signifierGroup);
       reachSignatureSignifierLayerRef.current = layer;
     }, [reachSignatureMarkers]);
+
+    // ── Incremental rival-influence overlay rebuild (THR-66) ──
+    // Keyed on markers (not the scene build) so scheme footprints appear/vanish
+    // as rivals materialize and the player counters them mid-run — the
+    // `locations` prop never changes for a scheme, so the main scene effect
+    // would not rebuild for them.
+    useEffect(() => {
+      const scene = sceneRef.current;
+      if (!scene) return;
+
+      if (rivalInfluenceLayerRef.current) {
+        scene.remove(rivalInfluenceLayerRef.current.group);
+        rivalInfluenceLayerRef.current.dispose();
+        rivalInfluenceLayerRef.current = null;
+      }
+
+      const markers = rivalInfluenceMarkers ?? [];
+      if (markers.length === 0) return;
+
+      const layer = createRivalInfluenceLayer(markers);
+      // Scheme targets are locations, so gate on the location group's visibility.
+      layer.group.visible = locationGroupRef.current?.visible ?? false;
+      scene.add(layer.group);
+      rivalInfluenceLayerRef.current = layer;
+    }, [rivalInfluenceMarkers]);
 
     // Update selection ring + zoom target when selectedHex prop changes
     useEffect(() => {

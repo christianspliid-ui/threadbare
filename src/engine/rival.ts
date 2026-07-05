@@ -6,9 +6,11 @@ import { SPHERE_NAMES } from '../types/index';
 import type {
   RivalDefinition,
   RivalState,
-  RivalBehavior,
   RivalAction,
 } from '../types/rival';
+import type { GameState, ActiveComposition } from '../types/gameState';
+import type { Phase } from '../composition-dsl/schema';
+import type { ThreadEdgeProperties } from '../types/influence';
 import {
   RIVAL_NAME_PREFIXES,
   RIVAL_NAME_SUFFIXES,
@@ -17,6 +19,18 @@ import {
   ACTION_TYPES,
 } from '../data/rival-content';
 import { IDENTITY_RIVAL_BIAS_WEIGHT } from '../types/doomIdentity';
+import {
+  RIVAL_MAX_ESCALATION_TIER,
+  RIVAL_MAX_CONCURRENT_SCHEMES,
+  RIVAL_SCHEME_LAUNCH_COOLDOWN_TICKS,
+  RIVAL_SCHEME_PROBE_WEIGHT,
+  RIVAL_ESCALATION_DOOM_WEIGHT,
+  RIVAL_ESCALATION_ADVANCEMENT_WEIGHT,
+} from '../data/rival-scheme-config';
+import {
+  eligibleSchemeFamilies,
+  type RivalSchemeFamily,
+} from '../data/rival-schemes';
 
 // ─── Seeded PRNG ──────────────────────────────────────────────────
 
@@ -191,4 +205,192 @@ export function updateRivalState(
   }
 
   return updated;
+}
+
+// ─── Rival Schemes (THR-66) ──────────────────────────────────────
+//
+// A scheme is a four-phase arc riding the THR-225 composition phase runner.
+// The rival invests each tick to arm the next phase via world-flags; the
+// runner activates armed phases; phaseRivalActions executes each phase's
+// concrete move on activation. Selection, escalation, and the launch builder
+// below are pure + deterministic (NFP #3): all randomness comes from the
+// seeded rival rng passed in — no Math.random().
+
+/** World-flag key helpers — the single source of truth for scheme flag names,
+ *  shared by the launch builder and phaseRivalActions so they never drift. */
+export const schemeFlags = {
+  ready: (compositionId: string, phaseId: string) =>
+    `scheme.${compositionId}.${phaseId}-ready`,
+  moveDone: (compositionId: string, phaseId: string) =>
+    `scheme.${compositionId}.${phaseId}-done`,
+  invest: (compositionId: string) => `scheme.${compositionId}.invest`,
+  counters: (compositionId: string) => `scheme.${compositionId}.counters`,
+  stallUntil: (compositionId: string) => `scheme.${compositionId}.stall-until`,
+  completedNoted: (compositionId: string) => `scheme.${compositionId}.completed-noted`,
+} as const;
+
+/**
+ * Escalation tier (0..RIVAL_MAX_ESCALATION_TIER), a pure function of state.
+ * Blends the doom-clock stage with a player-advancement proxy (highest thread
+ * InfluenceTier). Fail-soft to doom-stage-only when no thread proxy is readable
+ * (Step 0.3). Monotonic in both inputs → satisfies exit criterion 3.
+ */
+export function computeRivalEscalationTier(state: GameState): number {
+  // Doom component: currentStage is 1..5 → normalize to 0..1.
+  const stage = state.doomClock?.currentStage ?? 1;
+  const doomComponent = Math.max(0, Math.min(1, (stage - 1) / 4));
+
+  // Advancement proxy: highest InfluenceTier (0..4) across the ascendant's
+  // thread edges → normalize to 0..1. Fail-soft to 0 if unreadable.
+  let advancementComponent = 0;
+  try {
+    const ascendantId = state.ascendantId;
+    if (ascendantId) {
+      const threads = state.graph.getOutgoingEdges(ascendantId, 'thread');
+      let maxTier = 0;
+      for (const edge of threads) {
+        const tier = (edge.properties as unknown as ThreadEdgeProperties)?.tier ?? 0;
+        if (tier > maxTier) maxTier = tier;
+      }
+      advancementComponent = Math.max(0, Math.min(1, maxTier / 4));
+    }
+  } catch {
+    advancementComponent = 0; // fail-soft to doom-stage-only
+  }
+
+  const blended =
+    RIVAL_ESCALATION_DOOM_WEIGHT * doomComponent +
+    RIVAL_ESCALATION_ADVANCEMENT_WEIGHT * advancementComponent;
+
+  // Map 0..1 → 0..RIVAL_MAX_ESCALATION_TIER (integer, clamped).
+  const tier = Math.floor(blended * (RIVAL_MAX_ESCALATION_TIER + 1));
+  return Math.max(0, Math.min(RIVAL_MAX_ESCALATION_TIER, tier));
+}
+
+/**
+ * Decide whether a rival launches a scheme this action tick, and which family.
+ * Returns the chosen family, or null (meaning: make a cheap probe move instead).
+ * Pure — consumes the seeded rival rng stream.
+ */
+export function selectRivalScheme(
+  rival: RivalDefinition,
+  rivalState: RivalState,
+  escalationTier: number,
+  launchTick: number,
+  rng: () => number,
+): { family: RivalSchemeFamily | null; reason: string } {
+  // Capacity gate.
+  const activeCount = (rivalState.activeSchemeIds ?? []).length;
+  const cap =
+    RIVAL_MAX_CONCURRENT_SCHEMES[
+      Math.min(escalationTier, RIVAL_MAX_CONCURRENT_SCHEMES.length - 1)
+    ] ?? 1;
+  if (activeCount >= cap) {
+    return { family: null, reason: 'at-capacity' };
+  }
+
+  // Cadence gate.
+  const lastLaunch = rivalState.lastSchemeLaunchTick;
+  if (
+    lastLaunch !== undefined &&
+    launchTick - lastLaunch < RIVAL_SCHEME_LAUNCH_COOLDOWN_TICKS
+  ) {
+    return { family: null, reason: 'cooldown' };
+  }
+
+  // Eligibility.
+  const eligible = eligibleSchemeFamilies(rival.behavior, escalationTier);
+  if (eligible.length === 0) {
+    return { family: null, reason: 'no-eligible-family' };
+  }
+
+  // Probe vs launch.
+  if (rng() < RIVAL_SCHEME_PROBE_WEIGHT) {
+    return { family: null, reason: 'probe' };
+  }
+
+  const pick = eligible[Math.floor(rng() * eligible.length)] ?? eligible[0];
+  return { family: pick, reason: 'launch' };
+}
+
+/** The outcome of building a scheme launch — applied immutably by
+ *  phaseRivalActions or in-place by the debug bridge. */
+export interface SchemeLaunchPlan {
+  composition: ActiveComposition;
+  /** world-flag deltas to merge: phase-1 armed + invest counter reset. */
+  worldFlagUpdates: Record<string, unknown>;
+  /** rivalState with activeSchemeIds + lastSchemeLaunchTick updated. */
+  updatedRivalState: RivalState;
+}
+
+function substituteSchemeProse(
+  raw: string,
+  rivalName: string,
+  targetName: string,
+): string {
+  return raw
+    .replace(/\{rival\}/g, rivalName)
+    .replace(/\{location\}/g, targetName)
+    .replace(/\{target\}/g, targetName);
+}
+
+/**
+ * Build a scheme launch: a four-phase ActiveComposition attributed to the
+ * rival, plus the world-flag deltas that arm phase 1. Pure — the seeded
+ * variantRng picks one prose variant per beat and bakes it into the phase
+ * rationale so the runner's Chronicle entry is attributed.
+ */
+export function buildRivalScheme(
+  rival: RivalDefinition,
+  rivalState: RivalState,
+  family: RivalSchemeFamily,
+  _escalationTier: number,
+  launchTick: number,
+  targetLocationId: string | undefined,
+  targetLocationName: string | undefined,
+  variantRng: () => number,
+): SchemeLaunchPlan {
+  const compositionId = `rival-scheme-${rival.id}-${family.id}-t${launchTick}`;
+  const targetName = targetLocationName ?? 'the reach';
+
+  const phases: Phase[] = family.beats.map((beat) => {
+    const variants = beat.proseVariants;
+    const chosen = variants[Math.floor(variantRng() * variants.length)] ?? variants[0];
+    return {
+      id: beat.phaseId,
+      activatesAt: {
+        op: 'world-flag',
+        key: schemeFlags.ready(compositionId, beat.phaseId),
+        value: true,
+      },
+      activates: [],
+      rationale: substituteSchemeProse(chosen, rival.name, targetName),
+    };
+  });
+
+  const composition: ActiveComposition = {
+    compositionId,
+    firedAtTick: launchTick,
+    activatedPhaseIds: [],
+    phaseActivationTicks: {},
+    resolvedNodes: targetLocationId ? { target: targetLocationId } : {},
+    status: 'active',
+    lastEvaluationTick: launchTick,
+    phases,
+    sponsorRivalId: rival.id,
+    schemeFamily: family.id,
+  };
+
+  const worldFlagUpdates: Record<string, unknown> = {
+    [schemeFlags.ready(compositionId, family.beats[0].phaseId)]: true,
+    [schemeFlags.invest(compositionId)]: 0,
+  };
+
+  const updatedRivalState: RivalState = {
+    ...rivalState,
+    activeSchemeIds: [...(rivalState.activeSchemeIds ?? []), compositionId],
+    lastSchemeLaunchTick: launchTick,
+  };
+
+  return { composition, worldFlagUpdates, updatedRivalState };
 }

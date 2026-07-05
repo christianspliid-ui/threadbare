@@ -1121,5 +1121,90 @@ if (import.meta.env.DEV) {
       if (!match) return { error: `no authored entry matching "${entryId}"` };
       return scoreOne(match);
     },
+
+    // THR-66: rival scheme inspection — reads the denormalized RivalState.schemes summaries.
+    getRivalSchemes: () => {
+      const state = _gameStateProvider?.();
+      if (!state) return [];
+      const out: Array<{
+        rivalId: string;
+        compositionId: string;
+        family: string;
+        phase: string;
+        escalationTier: number;
+        status: 'active' | 'completed' | 'failed';
+      }> = [];
+      for (const rs of state.rivalStates ?? []) {
+        for (const s of rs.schemes ?? []) {
+          out.push({
+            rivalId: rs.rivalId,
+            compositionId: s.compositionId,
+            family: s.family,
+            phase: s.phase,
+            escalationTier: s.escalationTier,
+            status: s.status,
+          });
+        }
+      }
+      return out;
+    },
+
+    // THR-66: force-launch a rival scheme (dev/QA). Mutates live state in place;
+    // the engine picks it up next tick.
+    forceRivalScheme: async (rivalName: string, family: string) => {
+      const state = _gameStateProvider?.();
+      if (!state) return { success: false, message: 'Game not loaded' };
+      const rival = state.rivalDefinitions.find(
+        (r) =>
+          r.id === rivalName ||
+          r.id.startsWith(rivalName) ||
+          r.name.toLowerCase().includes(rivalName.toLowerCase()),
+      );
+      if (!rival) return { success: false, message: `Rival "${rivalName}" not found` };
+      const [{ buildRivalScheme, computeRivalEscalationTier }, { getRivalSchemeFamily }] =
+        await Promise.all([import('./engine/rival'), import('./data/rival-schemes')]);
+      const fam = getRivalSchemeFamily(family);
+      if (!fam) return { success: false, message: `Unknown scheme family "${family}"` };
+      const rsIdx = state.rivalStates.findIndex((s) => s.rivalId === rival.id);
+      if (rsIdx < 0) return { success: false, message: 'Rival has no runtime state' };
+      const tier = computeRivalEscalationTier(state);
+      let target: { id: string; name: string } | undefined;
+      if (fam.requiresTarget) {
+        const loc = state.graph
+          .getNodesByType('location')
+          .find(
+            (l) => l.properties.parentLocationId === undefined && l.properties.hexCol !== undefined,
+          );
+        if (!loc) return { success: false, message: 'No target location available' };
+        target = { id: loc.id, name: (loc.properties.name as string | undefined) ?? loc.id };
+      }
+      // Simple LCG rng — dev-only tool, determinism not required here.
+      let seed = (state.tick + 1) | 0;
+      const rng = () => {
+        seed = (seed * 1103515245 + 12345) & 0x7fffffff;
+        return seed / 0x7fffffff;
+      };
+      const plan = buildRivalScheme(
+        rival,
+        state.rivalStates[rsIdx],
+        fam,
+        tier,
+        state.tick,
+        target?.id,
+        target?.name,
+        rng,
+      );
+      state.activeCompositions = [...(state.activeCompositions ?? []), plan.composition];
+      state.worldFlags = { ...(state.worldFlags ?? {}), ...plan.worldFlagUpdates };
+      state.rivalStates[rsIdx] = plan.updatedRivalState;
+      return {
+        success: true,
+        message: `Launched ${fam.label} for ${rival.name}${target ? ` against ${target.name}` : ''}`,
+        rivalId: rival.id,
+        rivalName: rival.name,
+        family: fam.id,
+        compositionId: plan.composition.compositionId,
+      };
+    },
   };
 }

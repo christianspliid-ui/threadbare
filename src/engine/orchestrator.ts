@@ -6,7 +6,7 @@
  * Each tick phase is a pure function: takes GameState pieces in,
  * returns partial updates out. The orchestrator merges updates.
  */
-import type { GameState, TickEvent } from '../types/gameState';
+import type { GameState, TickEvent, ActiveComposition } from '../types/gameState';
 import type { WorldGraph } from './graph';
 import { STEALTH_DECAY_PER_TICK } from '../types/gameState';
 import type { SphereName } from '../types/index';
@@ -18,7 +18,23 @@ import {
 } from './influence';
 import { recalcVisibility, collectLOSSources } from './visibility';
 import { RIVAL_ACTION_TEMPLATES } from '../data/rival-content';
-import { selectRivalAction } from './rival';
+import {
+  selectRivalAction,
+  computeRivalEscalationTier,
+  selectRivalScheme,
+  buildRivalScheme,
+  schemeFlags,
+} from './rival';
+import { getRivalSchemeFamily } from '../data/rival-schemes';
+import type { RivalSchemeSummary, RivalDefinition, RivalState } from '../types/rival';
+import {
+  RIVAL_SCHEME_PHASE_INVEST_TICKS,
+  RIVAL_SCHEME_STALL_TICKS,
+  RIVAL_SCHEME_COUNTERS_TO_FAIL,
+  RIVAL_SCHEME_SPHERE_PRESSURE_PER_PHASE,
+  RIVAL_SCHEME_CRACK_PRESSURE_MULTIPLIER,
+  RIVAL_SCHEME_HOSTILITY_PER_MOVE,
+} from '../data/rival-scheme-config';
 import {
   computeStakes,
   resolveDilemma,
@@ -46,7 +62,14 @@ import { PHASE_PLAN } from './phases';
 import { tickEffects } from './effectTick';
 import { processEffectEvent, applyEffectEventResult } from './effects/effectEvents';
 import { executeEffect } from './effectExecutors';
-import type { TraceEntry, TickPhaseProfileTrace } from '../types/trace';
+import type {
+  TraceEntry,
+  TickPhaseProfileTrace,
+  RivalSchemeLaunchedTrace,
+  RivalSchemePhaseAdvancedTrace,
+  RivalSchemeCounteredTrace,
+  RivalSchemeCompletedTrace,
+} from '../types/trace';
 import {
   resolveEncounter,
   advanceEncounter,
@@ -1615,73 +1638,506 @@ export function phaseFamiliarityGain(state: GameState): Partial<GameState> {
   return { familiarityMap: map };
 }
 
-// ─── Phase 3: Rival Actions (simplified for vertical slice) ───────
+// ─── Phase 3: Rival Actions — multi-phase schemes (THR-66) ────────
+//
+// A rival, on its action tick, may launch a *scheme*: a four-phase arc
+// (rumor → materialization → response → crack) riding the shipped THR-225
+// composition phase runner. Between/instead of schemes, rivals make cheap
+// *probe* moves (the legacy flat action). Scheme phases advance on world-flags
+// the rival invests each tick; the runner activates armed phases; this phase
+// executes each phase's concrete move on activation, attributes it, and runs
+// the counter-play → stall → fail loop.
+
+/**
+ * Emit a rival-scheme trace with per-type field checking. `emitTrace`'s param
+ * `Omit<TraceEntry, ...>` collapses a union to its common fields, so extra
+ * fields (rivalId, move, …) can't be passed directly; this helper keeps the
+ * discriminated-union shape and casts once at the boundary.
+ */
+type RivalTraceInput =
+  | Omit<RivalSchemeLaunchedTrace, 'id' | 'timestamp'>
+  | Omit<RivalSchemePhaseAdvancedTrace, 'id' | 'timestamp'>
+  | Omit<RivalSchemeCounteredTrace, 'id' | 'timestamp'>
+  | Omit<RivalSchemeCompletedTrace, 'id' | 'timestamp'>;
+function emitRivalTrace(trace: RivalTraceInput): void {
+  emitTrace(trace as unknown as Omit<TraceEntry, 'id' | 'timestamp'>);
+}
+
+/** Read a numeric world-flag, defaulting to 0. */
+function readSchemeNum(worldFlags: Record<string, unknown>, key: string): number {
+  const v = worldFlags[key];
+  return typeof v === 'number' ? v : 0;
+}
+
+/** Pick a top-level location to target with a scheme (fail-soft: undefined if none). */
+function selectSchemeTarget(
+  state: GameState,
+  alreadyTargeted: Set<string>,
+  rng: () => number,
+): { id: string; name: string } | undefined {
+  const locations = state.graph.getNodesByType('location').filter((loc) => {
+    if (loc.properties.parentLocationId !== undefined) return false; // top-level only
+    if (loc.properties.hexCol === undefined || loc.properties.hexRow === undefined) return false;
+    return !alreadyTargeted.has(loc.id);
+  });
+  if (locations.length === 0) return undefined;
+  const pick = locations[Math.floor(rng() * locations.length)];
+  const name =
+    (typeof pick.properties.name === 'string' && pick.properties.name) || pick.id;
+  return { id: pick.id, name };
+}
+
+/** True when the player has pushed back on a scheme's target (counter-play surface). */
+function detectSchemeCounter(
+  state: GameState,
+  active: ActiveComposition,
+): { countered: boolean; byActorId?: string } {
+  const targetId = active.resolvedNodes.target;
+  if (!targetId) return { countered: false };
+  const targetNode = state.graph.getNode(targetId);
+  if (!targetNode) return { countered: true }; // target destroyed → scheme loses its ground
+  const ascendantId = state.ascendantId;
+  if (!ascendantId) return { countered: false };
+  // Player directly controls / holds the contested location.
+  for (const type of ['controls', 'holds_place_of_power'] as const) {
+    const inc = state.graph.getIncomingEdges(targetId, type);
+    const hit = inc.find((e) => e.source === ascendantId);
+    if (hit) return { countered: true, byActorId: ascendantId };
+  }
+  // Player has a thread to an actor standing at the target — they are present there.
+  const occupants = state.graph.getIncomingEdges(targetId, 'located_at');
+  for (const occ of occupants) {
+    const threads = state.graph.getIncomingEdges(occ.source, 'thread');
+    if (threads.some((e) => e.source === ascendantId)) {
+      return { countered: true, byActorId: occ.source };
+    }
+  }
+  return { countered: false };
+}
+
+/** Cool-failure chronicle beat — a half-thwarted scheme is canonically half-thwarted. */
+function makeSchemeCoolFailure(
+  rival: RivalDefinition,
+  familyLabel: string,
+  targetName: string | undefined,
+  compositionId: string,
+  sphere: SphereName,
+  targetLocation: string,
+  tick: number,
+): ChronicleEntry {
+  const where = targetName ?? 'the reach';
+  return {
+    id: `rival_scheme_failed_${compositionId}_${tick}`,
+    tier: 'chronicle',
+    title: `${rival.name}'s scheme unravels`,
+    prose: `The ${familyLabel.toLowerCase()} ${rival.name} set against ${where} comes apart, half-finished. What it already broke stays broken; the rest never comes.`,
+    promptContext: {
+      actors: [rival.id],
+      location: targetLocation,
+      sphere,
+      mood: 'grim',
+    },
+    tick,
+  };
+}
+
+/** Legacy flat "probe" move — keeps rivals present between schemes. */
+function rivalProbeMove(
+  state: GameState,
+  rival: RivalDefinition,
+  rivalState: RivalState,
+  rng: () => number,
+  events: TickEvent[],
+  spherePressures: SpherePressureEvent[],
+): void {
+  const identityRivalBias = state.doomIdentityMatrix?.rivalBehaviorBias;
+  const awarenessValues = Object.values(rivalState.agentAwareness ?? {}).filter(
+    (v): v is number => typeof v === 'number',
+  );
+  const maxAwareness = awarenessValues.length > 0 ? Math.max(...awarenessValues) : 0;
+  const effectiveRivalState =
+    maxAwareness > 0
+      ? {
+          ...rivalState,
+          hostilityToPlayer: Math.min(
+            1.0,
+            rivalState.hostilityToPlayer + maxAwareness * RIVAL_AWARENESS_HOSTILITY_WEIGHT,
+          ),
+        }
+      : rivalState;
+  const rivalAction = selectRivalAction(rival, effectiveRivalState, rng(), identityRivalBias);
+  const templates = RIVAL_ACTION_TEMPLATES[rivalAction.type] ?? ['{rival} acts against you'];
+  const template = templates[Math.floor(rng() * templates.length)];
+  events.push({
+    id: nextEventId(),
+    tick: state.tick,
+    type: 'rival_action',
+    message: template.replace(/{rival}/g, rival.name),
+    significance: 0.7,
+    notification: { channel: 'toast' },
+  });
+  if (rival.primarySphere) {
+    spherePressures.push({
+      targetEntityId: rival.id,
+      sphere: rival.primarySphere,
+      magnitude: RIVAL_PRESSURE_MAGNITUDE,
+      source: 'rival',
+      sourceId: rival.id,
+    });
+  }
+}
+
+/** Denormalize active + recently-terminal schemes into UI summaries for RivalPanel. */
+function buildSchemeSummaries(
+  comps: ActiveComposition[],
+  rivalId: string,
+  worldFlags: Record<string, unknown>,
+  escalationTier: number,
+  tick: number,
+): RivalSchemeSummary[] {
+  return comps
+    .filter((c) => c.sponsorRivalId === rivalId && c.schemeFamily)
+    .map((c) => {
+      const family = getRivalSchemeFamily(c.schemeFamily!);
+      const phaseIndex = c.activatedPhaseIds.length;
+      const lastPhase = c.activatedPhaseIds[c.activatedPhaseIds.length - 1] ?? 'pending';
+      const contested =
+        readSchemeNum(worldFlags, schemeFlags.stallUntil(c.compositionId)) > tick ||
+        readSchemeNum(worldFlags, schemeFlags.counters(c.compositionId)) > 0;
+      return {
+        compositionId: c.compositionId,
+        family: c.schemeFamily!,
+        label: family?.label ?? c.schemeFamily!,
+        phase: lastPhase,
+        phaseIndex,
+        totalPhases: family?.beats.length ?? 4,
+        escalationTier,
+        status: c.status,
+        contested,
+      };
+    });
+}
 
 export function phaseRivalActions(state: GameState): Partial<GameState> {
   const rng = mulberry32(state.seed + state.tick * 37);
   const events: TickEvent[] = [];
   const spherePressures: SpherePressureEvent[] = [];
-  const newRivalStates = [...state.rivalStates];
+  const coolFailures: ChronicleEntry[] = [];
+  const newRivalStates: RivalState[] = [...state.rivalStates];
+  const worldFlags: Record<string, unknown> = { ...(state.worldFlags ?? {}) };
+  let activeCompositions: ActiveComposition[] = [...(state.activeCompositions ?? [])];
+  const escalationTier = computeRivalEscalationTier(state);
+
+  // Locations already under an active scheme — don't stack two on one place.
+  const alreadyTargeted = new Set<string>();
+  for (const c of activeCompositions) {
+    if (c.sponsorRivalId && c.status === 'active' && c.resolvedNodes.target) {
+      alreadyTargeted.add(c.resolvedNodes.target);
+    }
+  }
 
   for (let i = 0; i < state.rivalDefinitions.length; i++) {
     const rival = state.rivalDefinitions[i];
-    const rivalState = newRivalStates[i];
+    let rivalState = newRivalStates[i];
 
-    // Rivals act every ~10 ticks
-    const ticksSince = (rivalState.ticksSinceAction ?? 0) + 1;
-    newRivalStates[i] = { ...rivalState, ticksSinceAction: ticksSince };
+    // ── 1. Maintain this rival's schemes (every tick) ──
+    const myComps = activeCompositions.filter(
+      (c) => c.sponsorRivalId === rival.id && c.schemeFamily && c.status !== 'failed',
+    );
+    for (const active of myComps) {
+      const family = getRivalSchemeFamily(active.schemeFamily!);
+      if (!family) continue; // fail-soft: unknown family
+      const compId = active.compositionId;
+      const targetId = active.resolvedNodes.target;
+      const targetNode = targetId ? state.graph.getNode(targetId) : undefined;
+      const targetName = targetNode
+        ? ((targetNode.properties.name as string | undefined) ?? targetId)
+        : undefined;
+      const pressureTarget = targetNode && targetId ? targetId : rival.id;
 
-    if (ticksSince >= 8 + Math.floor(rng() * 5)) {
-      newRivalStates[i] = {
-        ...newRivalStates[i],
-        ticksSinceAction: 0,
-        interventionCount: rivalState.interventionCount + 1,
-      };
-
-      // Select rival action type probabilistically (doom identity bias applied).
-      // Boost effective hostility by max agentAwareness so aware rivals act more aggressively.
-      const rivalRoll = rng();
-      const identityRivalBias = state.doomIdentityMatrix?.rivalBehaviorBias;
-      const awarenessValues = Object.values(rivalState.agentAwareness ?? {});
-      const maxAwareness = awarenessValues.length > 0 ? Math.max(...awarenessValues) : 0;
-      const effectiveRivalState = maxAwareness > 0
-        ? { ...rivalState, hostilityToPlayer: Math.min(1.0, rivalState.hostilityToPlayer + maxAwareness * RIVAL_AWARENESS_HOSTILITY_WEIGHT) }
-        : rivalState;
-      const rivalAction = selectRivalAction(rival, effectiveRivalState, rivalRoll, identityRivalBias);
-      const actionType = rivalAction.type;
-
-      const templates = RIVAL_ACTION_TEMPLATES[actionType] ?? ['{rival} acts against you'];
-      const templateIdx = Math.floor(rng() * templates.length);
-      const template = templates[templateIdx];
-      const actionDesc = template.replace(/{rival}/g, rival.name);
-
-      events.push({
-        id: nextEventId(),
-        tick: state.tick,
-        type: 'rival_action',
-        message: actionDesc,
-        significance: 0.7,
-        notification: { channel: 'toast' },
-      });
-
-      // Sphere pressure: rival acts push pressure in their primary sphere.
-      // Target: rival's own node (their sphere of influence in the world).
-      // Fail-soft: skip if rival has no primarySphere.
-      if (rival.primarySphere) {
-        spherePressures.push({
-          targetEntityId: rival.id,
-          sphere: rival.primarySphere,
-          magnitude: RIVAL_PRESSURE_MAGNITUDE,
-          source: 'rival',
-          sourceId: rival.id,
+      // 1a. Execute the concrete move for each activated-but-not-yet-moved phase.
+      //     Runs even when the runner has flipped status to 'completed' (so the
+      //     crack move still fires) — moveDone flags keep it idempotent.
+      for (const phaseId of active.activatedPhaseIds) {
+        const doneKey = schemeFlags.moveDone(compId, phaseId);
+        if (worldFlags[doneKey] === true) continue;
+        const beat = family.beats.find((b) => b.phaseId === phaseId);
+        if (!beat) {
+          worldFlags[doneKey] = true;
+          continue;
+        }
+        try {
+          switch (beat.move) {
+            case 'rumor':
+              break; // narration only — the runner emits the Chronicle beat
+            case 'materialize': {
+              if (targetNode && targetId) {
+                const edgeId = `edge_sponsors_scheme_${rival.id}_${compId}`;
+                const exists = state.graph
+                  .getOutgoingEdges(rival.id, 'sponsors_scheme')
+                  .some((e) => e.id === edgeId);
+                if (!exists) {
+                  state.graph.addEdge({
+                    id: edgeId,
+                    source: rival.id,
+                    target: targetId,
+                    type: 'sponsors_scheme',
+                    properties: {
+                      compositionId: compId,
+                      family: family.id,
+                      establishedTick: state.tick,
+                    },
+                  });
+                }
+              }
+              if (rival.primarySphere) {
+                spherePressures.push({
+                  targetEntityId: pressureTarget,
+                  sphere: rival.primarySphere,
+                  magnitude: RIVAL_SCHEME_SPHERE_PRESSURE_PER_PHASE,
+                  source: 'rival',
+                  sourceId: rival.id,
+                });
+              }
+              break;
+            }
+            case 'escalate':
+              if (rival.primarySphere) {
+                spherePressures.push({
+                  targetEntityId: pressureTarget,
+                  sphere: rival.primarySphere,
+                  magnitude: RIVAL_SCHEME_SPHERE_PRESSURE_PER_PHASE,
+                  source: 'rival',
+                  sourceId: rival.id,
+                });
+              }
+              break;
+            case 'crack': {
+              if (rival.primarySphere) {
+                spherePressures.push({
+                  targetEntityId: pressureTarget,
+                  sphere: rival.primarySphere,
+                  magnitude:
+                    RIVAL_SCHEME_SPHERE_PRESSURE_PER_PHASE * RIVAL_SCHEME_CRACK_PRESSURE_MULTIPLIER,
+                  source: 'rival',
+                  sourceId: rival.id,
+                });
+              }
+              events.push({
+                id: nextEventId(),
+                tick: state.tick,
+                type: 'rival_action',
+                message: `${rival.name}'s ${family.label.toLowerCase()} breaks over ${targetName ?? 'the reach'}.`,
+                significance: 0.85,
+                notification: { channel: 'toast' },
+              });
+              break;
+            }
+          }
+        } catch {
+          emitTrace({
+            category: 'engine_warning' as const,
+            tick: state.tick,
+            summary: `rival.scheme_move_failed ${compId}/${phaseId}`,
+          });
+        }
+        rivalState = {
+          ...rivalState,
+          hostilityToPlayer: Math.min(
+            1.0,
+            rivalState.hostilityToPlayer + RIVAL_SCHEME_HOSTILITY_PER_MOVE,
+          ),
+        };
+        worldFlags[doneKey] = true;
+        emitRivalTrace({
+          category: 'rival.scheme_phase_advanced' as const,
+          tick: state.tick,
+          summary: `${rival.name} advances ${family.id}/${phaseId} (${beat.move})`,
+          rivalId: rival.id,
+          compositionId: compId,
+          phaseId,
+          move: beat.move,
+          targetNodeId: targetId,
         });
       }
+
+      // Completion noting — runner marks status 'completed' when all phases fired.
+      if (active.status === 'completed') {
+        const notedKey = schemeFlags.completedNoted(compId);
+        if (worldFlags[notedKey] !== true) {
+          worldFlags[notedKey] = true;
+          rivalState = {
+            ...rivalState,
+            activeSchemeIds: (rivalState.activeSchemeIds ?? []).filter((id) => id !== compId),
+          };
+          emitRivalTrace({
+            category: 'rival.scheme_completed' as const,
+            tick: state.tick,
+            summary: `${rival.name}'s ${family.id} scheme completed`,
+            rivalId: rival.id,
+            compositionId: compId,
+          });
+        }
+        continue; // no counter/invest on a finished scheme
+      }
+
+      // 1b. Counter-play detection (only while genuinely active).
+      const stallUntil = readSchemeNum(worldFlags, schemeFlags.stallUntil(compId));
+      if (stallUntil > state.tick) {
+        continue; // still in a stall window — no invest
+      }
+      const counter = detectSchemeCounter(state, active);
+      if (counter.countered) {
+        const counters = readSchemeNum(worldFlags, schemeFlags.counters(compId)) + 1;
+        worldFlags[schemeFlags.counters(compId)] = counters;
+        if (counters >= RIVAL_SCHEME_COUNTERS_TO_FAIL) {
+          activeCompositions = activeCompositions.map((c) =>
+            c.compositionId === compId ? { ...c, status: 'failed' as const } : c,
+          );
+          try {
+            state.graph.removeEdge(`edge_sponsors_scheme_${rival.id}_${compId}`);
+          } catch {
+            /* fail-soft: edge may not exist yet */
+          }
+          rivalState = {
+            ...rivalState,
+            activeSchemeIds: (rivalState.activeSchemeIds ?? []).filter((id) => id !== compId),
+          };
+          coolFailures.push(
+            makeSchemeCoolFailure(
+              rival,
+              family.label,
+              targetName,
+              compId,
+              rival.primarySphere ?? 'entropy',
+              targetId ?? 'world',
+              state.tick,
+            ),
+          );
+          emitRivalTrace({
+            category: 'rival.scheme_countered' as const,
+            tick: state.tick,
+            summary: `${rival.name}'s ${family.id} scheme failed`,
+            rivalId: rival.id,
+            compositionId: compId,
+            outcome: 'failed' as const,
+            byActorId: counter.byActorId,
+          });
+        } else {
+          const nextBeat = family.beats.find((b) => !active.activatedPhaseIds.includes(b.phaseId));
+          if (nextBeat) worldFlags[schemeFlags.ready(compId, nextBeat.phaseId)] = false;
+          worldFlags[schemeFlags.invest(compId)] = 0;
+          worldFlags[schemeFlags.stallUntil(compId)] = state.tick + RIVAL_SCHEME_STALL_TICKS;
+          emitRivalTrace({
+            category: 'rival.scheme_countered' as const,
+            tick: state.tick,
+            summary: `${rival.name}'s ${family.id} scheme stalled`,
+            rivalId: rival.id,
+            compositionId: compId,
+            outcome: 'stalled' as const,
+            byActorId: counter.byActorId,
+          });
+        }
+        continue; // no invest on a countered scheme this tick
+      }
+
+      // 1c. Investment → arm the next phase once the previous one has fired.
+      const readyCount = family.beats.filter(
+        (b) => worldFlags[schemeFlags.ready(compId, b.phaseId)] === true,
+      ).length;
+      if (readyCount < family.beats.length) {
+        const invest = readSchemeNum(worldFlags, schemeFlags.invest(compId)) + 1;
+        const threshold =
+          RIVAL_SCHEME_PHASE_INVEST_TICKS[
+            Math.min(escalationTier, RIVAL_SCHEME_PHASE_INVEST_TICKS.length - 1)
+          ] ?? 14;
+        const nextBeat = family.beats[readyCount];
+        const prevBeat = family.beats[readyCount - 1];
+        const prevFired = prevBeat
+          ? active.activatedPhaseIds.includes(prevBeat.phaseId) &&
+            worldFlags[schemeFlags.moveDone(compId, prevBeat.phaseId)] === true
+          : true;
+        if (invest >= threshold && nextBeat && prevFired) {
+          worldFlags[schemeFlags.ready(compId, nextBeat.phaseId)] = true;
+          worldFlags[schemeFlags.invest(compId)] = 0;
+        } else {
+          worldFlags[schemeFlags.invest(compId)] = invest;
+        }
+      }
     }
+
+    // ── 2. Action decision every ~10 ticks: launch a scheme or probe ──
+    const ticksSince = (rivalState.ticksSinceAction ?? 0) + 1;
+    rivalState = { ...rivalState, ticksSinceAction: ticksSince };
+    if (ticksSince >= 8 + Math.floor(rng() * 5)) {
+      rivalState = { ...rivalState, ticksSinceAction: 0 };
+      const decision = selectRivalScheme(rival, rivalState, escalationTier, state.tick, rng);
+      let launched = false;
+      if (decision.family) {
+        const family = decision.family;
+        const target = family.requiresTarget
+          ? selectSchemeTarget(state, alreadyTargeted, rng)
+          : undefined;
+        if (!family.requiresTarget || target) {
+          const plan = buildRivalScheme(
+            rival,
+            rivalState,
+            family,
+            escalationTier,
+            state.tick,
+            target?.id,
+            target?.name,
+            rng,
+          );
+          activeCompositions = [...activeCompositions, plan.composition];
+          Object.assign(worldFlags, plan.worldFlagUpdates);
+          rivalState = { ...plan.updatedRivalState, interventionCount: rivalState.interventionCount + 1 };
+          if (target) alreadyTargeted.add(target.id);
+          const launchMsg = `${rival.name} sets a ${family.label.toLowerCase()} in motion${target ? ` against ${target.name}` : ''}.`;
+          events.push({
+            id: nextEventId(),
+            tick: state.tick,
+            type: 'rival_action',
+            message: launchMsg,
+            significance: 0.75,
+            notification: { channel: 'toast' },
+          });
+          emitRivalTrace({
+            category: 'rival.scheme_launched' as const,
+            tick: state.tick,
+            summary: launchMsg,
+            rivalId: rival.id,
+            compositionId: plan.composition.compositionId,
+            family: family.id,
+            escalationTier,
+            targetNodeId: target?.id,
+          });
+          launched = true;
+        }
+      }
+      if (!launched) {
+        // Probe fallback (probe roll, no eligible family, at capacity, or no target).
+        rivalState = { ...rivalState, interventionCount: rivalState.interventionCount + 1 };
+        rivalProbeMove(state, rival, rivalState, rng, events, spherePressures);
+      }
+    }
+
+    // ── 3. Rebuild UI scheme summaries + persist ──
+    rivalState = {
+      ...rivalState,
+      schemes: buildSchemeSummaries(activeCompositions, rival.id, worldFlags, escalationTier, state.tick),
+    };
+    newRivalStates[i] = rivalState;
   }
 
   return {
     rivalStates: newRivalStates,
+    activeCompositions,
+    worldFlags,
     tickEvents: [...state.tickEvents, ...events],
+    ...(coolFailures.length > 0
+      ? { chronicleEntries: [...(state.chronicleEntries ?? []), ...coolFailures] }
+      : {}),
     ...(spherePressures.length > 0
       ? { pendingSpherePressures: [...(state.pendingSpherePressures ?? []), ...spherePressures] }
       : {}),
