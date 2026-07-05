@@ -729,7 +729,7 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     spellName: 'Burden of Obligation',
     rarityTier: 2,
     intrinsicTier: 'present',
-    description: 'You stir the memory of debt in a mortal chest. They remember what they owe — not as a threat, but as a weight that has been there all along, waiting to be acknowledged. The favor is called in. The debt shifts from owed to paid.',
+    description: 'You stir the memory of debt in a mortal chest. They remember what they owe — not a threat, but a weight that has been there all along, waiting to be acknowledged. The favor is called in. The debt shifts from owed to paid.',
     reach: 'heart',
     crudType: 'update',
     scale: 'personal',

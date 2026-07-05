@@ -412,15 +412,15 @@ export const VERDICT_THAT_BURNS_TEMPLATE: UnifiedActionTemplate = withEncounterC
 
   narrativeTemplates: {
     initiation:
-      'A threaded magistrate must judge the war-lord who held the region together for a massacre the evidence ' +
-      'proves beyond doubt — but a true verdict pulls the keystone and the region burns. The god decides ' +
+      'A threaded magistrate must judge the war-lord who held the region together, for a massacre the evidence ' +
+      'proves beyond doubt. But a true verdict pulls the keystone and the region burns. The god decides ' +
       'whether the hammer falls or the truth is witnessed and the sentence withheld.',
     success:
-      'The magistrate does what the god leans them toward — speaks the burning verdict or records the truth ' +
-      'and withholds the hammer — and a whole region either goes up in the fire that justice lit or keeps its ' +
+      'The magistrate does what the god leans them toward — speaks the burning verdict, or records the truth ' +
+      'and withholds the hammer. A whole region either goes up in the fire that justice lit, or keeps its ' +
       'fragile peace at the price of a reckoning deferred.',
     failure:
-      'The judgment comes out mangled — a half-condemnation, or a withholding too flimsy to respect — and the ' +
+      'The judgment comes out mangled — a half-condemnation, or a withholding too flimsy to respect. The ' +
       'region gets neither clean justice nor clean peace.',
   },
 
@@ -434,9 +434,9 @@ export const VERDICT_THAT_BURNS_TEMPLATE: UnifiedActionTemplate = withEncounterC
         intent:
           'Put the cold refusal in them to let the size of a consequence change the size of a fact, and let ' +
           'the true word out: guilty, and the sentence the law requires. The law will reach the strongest man ' +
-          'alive for the first time in the region\'s history — and the region will burn for it, the militia ' +
-          'in revolt, the kin-towns rising, the decade of peace gone up like a dry barn and the bad years come ' +
-          'round again with your blessing on the verdict that lit them. Justice that lands, paid for by ' +
+          'alive for the first time in the region\'s history. And the region will burn for it: the militia ' +
+          'in revolt, the kin-towns rising, the decade of peace gone up like a dry barn. The bad years come ' +
+          'round again, with your blessing on the verdict that lit them. Justice that lands, paid for by ' +
           'everyone who lives under it.',
         targetLabel: 'The magistrate',
         interventionType: 'coercive',

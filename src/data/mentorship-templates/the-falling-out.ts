@@ -114,7 +114,7 @@ export const MENTORSHIP_THE_FALLING_OUT_TEMPLATE: UnifiedActionTemplate = {
         label: 'Take a side',
         intent:
           'The god chooses. The current of divine attention tilts toward one of them — the apprentice ' +
-          'standing taller in their grievance, or the teacher\'s authority cracking like a whip in the room — ' +
+          'standing taller in their grievance, or the teacher\'s authority cracking open in the room — ' +
           'and the other is left holding the cracked end of the bond. The rupture deepens past the point ' +
           'where ordinary time will close it. Whichever party the god has cut loose will carry that cutting ' +
           'as a story.',

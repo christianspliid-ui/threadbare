@@ -405,15 +405,15 @@ export const GRANARIES_IN_THE_FAMINE_YEAR_TEMPLATE: UnifiedActionTemplate = with
 
   narrativeTemplates: {
     initiation:
-      'A threaded merchant-prince holds the region\'s entire grain supply in a famine year — the only thing ' +
-      'between a whole region and starvation. The god decides whether to press them into opening the granaries ' +
-      'or to stay its hand and let the market corner the region.',
+      'A threaded merchant-prince holds the region\'s entire grain supply in a famine year. It is the only ' +
+      'thing between a whole region and starvation. The god decides whether to press them into opening the ' +
+      'granaries or to stay its hand and let the market corner the region.',
     success:
-      'The merchant does what the god leans them toward — opens the granaries at a loss or corners the grain ' +
-      'at the starvation price — and a whole region is either fed and left free or fed and sold, a generation ' +
+      'The merchant does what the god leans them toward — opens the granaries at a loss, or corners the grain ' +
+      'at the starvation price. A whole region is either fed and left free, or fed and sold, a generation ' +
       'into debt.',
     failure:
-      'The choosing comes out clumsy — a hedged half-generosity or a botched cornering — and the region is ' +
+      'The choosing comes out clumsy — a hedged half-generosity, or a botched cornering. The region is ' +
       'fed thin and unevenly, living but unforgiving.',
   },
 
