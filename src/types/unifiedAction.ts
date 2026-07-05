@@ -1144,6 +1144,15 @@ export interface UnifiedAction {
    * Cast to ComplicationResult at consumer sites.
    */
   readonly stepComplications?: readonly (StepComplicationSlot | null)[];
+  /**
+   * THR-636: per-resolved-step replay records — the enriched prose the player
+   * saw at each step's resolution, frozen so the encounter step-navigator can
+   * replay a past step without re-enriching against a moved-on world. Additive/
+   * optional; capped at STEP_PROSE_HISTORY_MAX (drop-oldest). Typed as
+   * readonly unknown[] here to avoid widening unifiedAction.ts's import graph;
+   * cast to StepProseRecord[] at consumer sites (src/types/stepProseRecord.ts).
+   */
+  readonly stepProseHistory?: readonly unknown[];
   /** Graph event node ID created when this action's first step resolved (THR-143). */
   readonly eventNodeId?: string;
   /** Source event node ID to emit a caused_by edge on first step resolution (THR-143). Cleared after use. */

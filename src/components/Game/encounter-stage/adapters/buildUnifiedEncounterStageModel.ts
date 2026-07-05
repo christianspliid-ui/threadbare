@@ -14,7 +14,7 @@ import type { GameState } from '../../../../types/gameState';
 import { enrichProse, gatherNarrativeContext } from '../../../../engine/proseEnrichment';
 import type { NarrativeContext } from '../../../../engine/proseEnrichment';
 import type { SimulationRuntime } from '../../../../engine/simulationRuntime';
-import { stepOutcomeToOutcomeBand } from '../../../../data/outcome-band-content';
+import { stepOutcomeToOutcomeBand, stepOutcomeWord } from '../../../../data/outcome-band-content';
 import { autoLinkNarrative, collectSupportBundleEntities } from '../narrativeLinker';
 import { resolveStepDefinition } from '../../../../engine/unifiedActionLifecycle';
 import { getPortraitUrl } from '../../../../data/portrait-assets';
@@ -24,6 +24,7 @@ import type {
   EncounterSupportBinding,
 } from '../../../../types/encounter';
 import type { EncounterNotification } from '../../../../types/encounterVisibility';
+import type { StepProseRecord } from '../../../../types/stepProseRecord';
 import {
   isActionStepBranch,
   isStepSuccess,
@@ -117,13 +118,22 @@ function getCurrentStep(
 
 // ─── Section Builders ─────────────────────────────────────────────
 
+/** Plain keyword label for a reach domain (e.g. 'shadow' → 'Shadow'). */
+function reachLabelFor(reach: string): string {
+  return reach.length > 0 ? reach.charAt(0).toUpperCase() + reach.slice(1) : reach;
+}
+
 function buildHeader(
   args: BuildUnifiedEncounterStageModelArgs,
   ctx: NarrativeContext,
 ): EncounterStageModel['header'] {
-  const { template, activeAction, agentName, threadTier, graph } = args;
+  const { template, activeAction, agentName, threadTier, graph, notification } = args;
   const currentStep = getCurrentStep(template, activeAction);
   const rawSubtitle = template.description ?? template.narrativeTemplates.initiation;
+
+  // Portrait for the focal agent — same resolution the aftermath actor-moments use.
+  const actorNode = graph.getNode(activeAction.actorId);
+  const archetypeId = actorNode?.properties?.narrativeArchetype as string | undefined;
 
   return {
     title: template.name,
@@ -132,6 +142,12 @@ function buildHeader(
     threatLabel: difficultyToThreatLabel(currentStep.difficulty),
     threadTier,
     familyLabel: agentName,
+    agentName,
+    focalActorId: activeAction.actorId,
+    portraitUrl: getPortraitUrl(archetypeId),
+    hexCol: notification.hexCol,
+    hexRow: notification.hexRow,
+    reachLabel: reachLabelFor(currentStep.reach),
   };
 }
 
@@ -288,8 +304,14 @@ function buildHistory(
 
     let afterimage: string | undefined;
     let complication: { prose: string; name: string; severity: 'minor' | 'standard' | 'severe'; category: string } | undefined;
+    // THR-636 replay fields
+    let outcome: import('../../../../types/unifiedAction').StepOutcome | undefined;
+    let outcomeWord: string | undefined;
+    let reachLabel: string | undefined;
+    let replayNarrative: string | undefined;
+    let choiceText: string | undefined;
     if (isResolved) {
-      const outcome = activeAction.stepOutcomes[index];
+      outcome = activeAction.stepOutcomes[index];
       const success = isStepSuccess(outcome);
       // Use authored afterimage text if available, otherwise fall back to bare status
       const resolvedStep = resolveStepDefinition(template, index, activeAction.choiceHistory);
@@ -310,6 +332,18 @@ function buildHistory(
           category: complicationSlot.category,
         };
       }
+
+      // Prefer the frozen replay record captured at resolution (THR-636); fall back
+      // to the re-rendered afterimage summary when no record exists (old saves,
+      // legacy path, cap overflow) — never blank, never re-enriched-into-a-wrong-past.
+      outcomeWord = stepOutcomeWord(outcome);
+      reachLabel = reachLabelFor(resolvedStep.reach);
+      const record = (activeAction.stepProseHistory as readonly StepProseRecord[] | undefined)?.find(
+        (r) => r.index === index,
+      );
+      replayNarrative = record?.narrativeProse || undefined;
+      choiceText = record?.choiceText
+        ?? activeAction.choiceHistory?.find((c) => c.stepIndex === index)?.choiceText;
     }
 
     return {
@@ -318,6 +352,11 @@ function buildHistory(
       status: isResolved ? 'resolved' as const : isCurrent ? 'current' as const : 'future' as const,
       afterimage,
       complication,
+      outcome,
+      outcomeWord,
+      reachLabel,
+      replayNarrative,
+      choiceText,
     };
   });
 }

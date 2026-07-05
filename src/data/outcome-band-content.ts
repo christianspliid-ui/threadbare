@@ -139,3 +139,37 @@ const STEP_OUTCOME_TO_BAND: Record<StepOutcome, OutcomeBand> = {
 export function stepOutcomeToOutcomeBand(outcome: StepOutcome): OutcomeBand {
   return STEP_OUTCOME_TO_BAND[outcome] ?? 'neutral';
 }
+
+// ─── Outcome-band words (THR-636) ───────────────────────────────────────────────
+
+/**
+ * Single plain-register word per outcome band (THR-636). Used on notification
+ * cards and step-navigator states where a one-word verdict — not a phrase — is
+ * wanted. Interactive/at-a-glance text stays plain per THR-609.
+ *
+ * This is the single source for band→word; do not fork a second lexicon. Derive
+ * from a raw `StepOutcome` via `stepOutcomeWord` (which routes through the band).
+ */
+export const OUTCOME_BAND_WORDS: Record<OutcomeBand, string> = {
+  surge: 'triumphed',
+  neutral: 'held',
+  strained: 'faltered',
+  fortunate: 'wavered',
+  setback: 'broke',
+  catastrophe: 'collapsed',
+};
+
+/** Neutral fallback word when a band is unknown/absent (fail-soft). */
+export const OUTCOME_BAND_WORD_FALLBACK = 'unfolded';
+
+/** The plain-register word for an outcome band. Unknown band → 'unfolded'. */
+export function outcomeBandWord(band: OutcomeBand | string | undefined): string {
+  if (!band) return OUTCOME_BAND_WORD_FALLBACK;
+  return OUTCOME_BAND_WORDS[band as OutcomeBand] ?? OUTCOME_BAND_WORD_FALLBACK;
+}
+
+/** The plain-register word for a raw step outcome (routes through its band). */
+export function stepOutcomeWord(outcome: StepOutcome | undefined): string {
+  if (!outcome) return OUTCOME_BAND_WORD_FALLBACK;
+  return outcomeBandWord(stepOutcomeToOutcomeBand(outcome));
+}

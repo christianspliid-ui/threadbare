@@ -241,6 +241,33 @@ if (import.meta.env.DEV) {
       return { sources, sourceIncome: computeSourceIncome(graph, ascId) };
     },
 
+    // ── Encounter step-prose replay records (THR-636) ───────────────────────
+    /**
+     * Return the captured per-step replay records for an agent's active (or
+     * most-recent) unified-action encounter. Resolves the agent by exact id,
+     * id prefix, then case-insensitive partial name — same notes as gotoAgent.
+     */
+    getStepProse: (agentRef: string) => {
+      const state = _gameStateProvider?.();
+      if (!state) return { error: 'no live game state' };
+      const graph = state.graph;
+      const ref = agentRef.trim();
+      const lc = ref.toLowerCase();
+      const actors = graph.getNodesByType('actor');
+      const actor =
+        actors.find(n => n.id === ref) ??
+        actors.find(n => n.id.startsWith(ref)) ??
+        actors.find(n => (n.name ?? '').toLowerCase().includes(lc));
+      if (!actor) return { error: `no actor matched "${agentRef}"` };
+      const actions = state.unifiedActions ?? [];
+      const action =
+        actions.find(a => a.actorId === actor.id && !a.resolved) ??
+        actions.find(a => a.actorId === actor.id);
+      if (!action) return { error: `no unified action for ${actor.name ?? actor.id}` };
+      const records = (action.stepProseHistory ?? []) as import('./types/stepProseRecord').StepProseRecord[];
+      return { actionId: action.actionId, actorName: actor.name ?? actor.id, records };
+    },
+
     // ── Ascendant Beats — Divine Cadence (THR-507) ──────────────────────────
     listBeats: async () => {
       const { ASCENDANT_SPINE, ASCENDANT_BEAT_POOL } = await import('./data/ascendant-beat-content');

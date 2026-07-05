@@ -41,6 +41,7 @@ import type {
 export type TraceCategory =
   | 'action_selection' | 'narrative_generation' | 'context_harvest'
   | 'dilemma_resolution' | 'tick_summary' | 'encounter_resolution'
+  | 'encounter_step_prose_recorded'
   | 'familiarity_change' | 'movement' | 'intervention_effect'
   | 'action_execution' | 'modifier_resolution'
   | 'prosperity_tick' | 'wealth_delta'
@@ -285,6 +286,7 @@ export type TraceCategory =
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'action_selection', 'narrative_generation', 'context_harvest',
   'dilemma_resolution', 'tick_summary', 'encounter_resolution',
+  'encounter_step_prose_recorded',
   'familiarity_change', 'movement', 'intervention_effect',
   'action_execution', 'modifier_resolution',
   'prosperity_tick', 'wealth_delta',

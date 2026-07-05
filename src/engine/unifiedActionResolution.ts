@@ -47,6 +47,9 @@ import { applyAnointSuccessor } from './anointSuccessor';
 import { applyImbueItem, applyBestowPower, applyAnointFaction } from './ascendantExpression';
 import { SCHISM_PENDING_DURATION_TICKS } from '../data/game-config';
 import { emitTrace } from './traceBuffer';
+import { enrichProse, gatherNarrativeContext } from './proseEnrichment';
+import { stepOutcomeToOutcomeBand } from '../data/outcome-band-content';
+import { STEP_PROSE_HISTORY_MAX, type StepProseRecord } from '../types/stepProseRecord';
 import {
   detectContestations,
   resolveContestationPair,
@@ -1464,6 +1467,72 @@ export function executeStepResult(
       stepComplications: [...prevComplications, consequence.complication],
     };
   }
+
+  // THR-636: freeze the enriched prose the player saw for this just-resolved
+  // step so the encounter step-navigator can replay it exactly. Placeholders
+  // ({ally}, {artifact}) resolve against live world state, so re-rendering later
+  // could show a *different* past — capture-at-resolution is the design. The
+  // seeded resolution `rng` is threaded into enrichProse (NEVER Math.random) so
+  // the same seed + same tick stores the same record (NFP #3). Fail-soft: any
+  // throw stores the raw template prose and never crashes the tick loop.
+  if (step) {
+    const resolvedStepIndex = action.currentStep;
+    let narrativeProse = step.narrativeTemplate ?? '';
+    let afterimageProse: string | undefined;
+    try {
+      const proseCtx = gatherNarrativeContext(
+        state.graph,
+        action.actorId,
+        undefined,
+        undefined,
+        state.doomIdentityMatrix,
+        state,
+        tick,
+      );
+      narrativeProse = enrichProse(step.narrativeTemplate ?? '', proseCtx, { runtime, rng }) || narrativeProse;
+      const rawAfterimage = isStepSuccess(outcome) ? step.successAfterimage : step.failureAfterimage;
+      if (rawAfterimage) {
+        const stepCtx = { ...proseCtx, outcomeBand: stepOutcomeToOutcomeBand(outcome) };
+        afterimageProse = enrichProse(rawAfterimage, stepCtx, { runtime, rng });
+      }
+    } catch {
+      // narrativeProse already holds the raw template; a malformed step never sinks the tick.
+    }
+    const choiceMemory = action.choiceHistory?.find(c => c.stepIndex === resolvedStepIndex);
+    const record: StepProseRecord = {
+      index: resolvedStepIndex,
+      label: step.narrativeTemplate
+        ? `Step ${resolvedStepIndex + 1}: ${step.reach}`
+        : `Step ${resolvedStepIndex + 1}`,
+      narrativeProse,
+      afterimageProse,
+      outcome,
+      reach: step.reach,
+      choiceId: choiceMemory?.choiceId,
+      choiceText: choiceMemory?.choiceText,
+      complicationProse: consequence.complication?.prose,
+      tick,
+    };
+    const priorRecords = (finalAction.stepProseHistory ?? []) as readonly StepProseRecord[];
+    const mergedRecords = [...priorRecords, record];
+    const cappedRecords =
+      mergedRecords.length > STEP_PROSE_HISTORY_MAX
+        ? mergedRecords.slice(mergedRecords.length - STEP_PROSE_HISTORY_MAX)
+        : mergedRecords;
+    finalAction = { ...finalAction, stepProseHistory: cappedRecords };
+    emitTrace({
+      category: 'encounter_step_prose_recorded',
+      tick,
+      actionId: action.actionId,
+      actorId: action.actorId,
+      stepIndex: resolvedStepIndex,
+      outcomeBand: stepOutcomeToOutcomeBand(outcome),
+      reach: step.reach,
+      proseLength: narrativeProse.length,
+      summary: `step_prose_recorded: ${template.name} step ${resolvedStepIndex + 1} ${outcome}`,
+    } as any);
+  }
+
   const rewardName = finalAction.resolved
     ? resolveUnifiedReward(action, outcome, stepMetadata, state, tick, runtime)
     : undefined;

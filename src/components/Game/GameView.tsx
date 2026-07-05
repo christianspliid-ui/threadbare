@@ -3868,6 +3868,13 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
             onDisregard={handleEncounterDisregard}
             onAcknowledgeAftermath={handleEncounterAcknowledgeAftermath}
             onAftermathReaction={handleEncounterAftermathReaction}
+            onSelectAgent={handleAgentSelect}
+            onShowOnMap={(col, row) => {
+              if (hexMapRef.current) {
+                const px = hexToPixel({ col, row }, HEX_CONSTANTS.HEX_SIZE);
+                hexMapRef.current.centerOn(px.x, -px.y, RETINUE_EYE_ZOOM_SCALE);
+              }
+            }}
           />
         </div>
       )}

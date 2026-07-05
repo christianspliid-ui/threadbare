@@ -27,11 +27,13 @@ import {
   ATTENTION_MODE_CHANGE_COST,
   VISIBILITY_BY_POSITION,
 } from '../types/encounterVisibility';
-import { getThreadsFrom, getAgentLocation, getAvatarsOf } from './graphQueries';
+import { getThreadsFrom, getAgentLocation, getAgentLocationId, getAvatarsOf } from './graphQueries';
 import { emitTrace } from './traceBuffer';
 import { getAnyEncounterById } from '../data/encounter-content';
 import { getUnifiedTemplateById } from '../data/unified-action-templates';
 import { resolveStepDefinition } from './unifiedActionLifecycle';
+import { resolveLocationToHex } from './encounterAwareness';
+import { stepOutcomeToOutcomeBand } from '../data/outcome-band-content';
 
 // ─── Notification Generation ───────────────────────────────────────
 
@@ -130,7 +132,7 @@ export function buildEncounterNotification(
   courtPosition: CourtPosition | null,
   attentionMode: 'pause' | 'auto_resolve',
   tick: number,
-  metadata?: Partial<Pick<EncounterNotification, 'kind' | 'sourceSystem' | 'stepIndex' | 'actionId' | 'stepId' | 'narrativeTag'>>,
+  metadata?: Partial<Pick<EncounterNotification, 'kind' | 'sourceSystem' | 'stepIndex' | 'actionId' | 'stepId' | 'narrativeTag' | 'totalSteps' | 'outcomeBand' | 'hexCol' | 'hexRow' | 'locationLabel'>>,
 ): EncounterNotification | null {
   const depth = getVisibilityDepth(courtPosition);
   if (depth === 'none') return null;
@@ -374,6 +376,8 @@ export function phaseEncounterVisibility(
 
     const locationNode = getAgentLocation(graph, ep.actorId);
     const locationName = locationNode?.name ?? 'unknown location';
+    const epLocationId = getAgentLocationId(graph, ep.actorId);
+    const epHex = epLocationId ? resolveLocationToHex(graph, epLocationId) : null;
 
     // Agents without an explicit courtPosition default to retinue behaviour
     const courtPosition = threadInfo.props.courtPosition ?? 'retinue';
@@ -391,6 +395,9 @@ export function phaseEncounterVisibility(
       {
         sourceSystem: 'legacy_encounter',
         stepIndex,
+        locationLabel: locationNode?.name,
+        hexCol: epHex?.col,
+        hexRow: epHex?.row,
       },
     );
 
@@ -445,12 +452,18 @@ export function phaseEncounterVisibility(
 
     const locationNode = getAgentLocation(graph, action.actorId);
     const locationName = locationNode?.name ?? 'unknown location';
+    const actionLocationId = getAgentLocationId(graph, action.actorId);
+    const actionHex = actionLocationId ? resolveLocationToHex(graph, actionLocationId) : null;
     const courtPosition = threadInfo.props.courtPosition ?? 'retinue';
     const defaultMode = VISIBILITY_BY_POSITION[courtPosition]?.defaultAttentionMode ?? 'auto_resolve';
     const encounterName = encounter?.name ?? unifiedTemplate?.name ?? action.templateId;
     const resolvedTemplate = unifiedTemplate ?? undefined;
     const currentStep = resolvedTemplate
       ? resolveStepDefinition(resolvedTemplate, stepIndex, action.choiceHistory)
+      : undefined;
+    // The band of the step that just resolved (currentStep advanced past it).
+    const lastResolvedOutcome = action.stepOutcomes.length > 0
+      ? action.stepOutcomes[action.stepOutcomes.length - 1]
       : undefined;
 
     const notification = buildEncounterNotification(
@@ -467,6 +480,11 @@ export function phaseEncounterVisibility(
         stepIndex,
         actionId: action.actionId,
         stepId: currentStep?.id,
+        totalSteps: resolvedTemplate?.steps.length,
+        outcomeBand: lastResolvedOutcome ? stepOutcomeToOutcomeBand(lastResolvedOutcome) : undefined,
+        locationLabel: locationNode?.name,
+        hexCol: actionHex?.col,
+        hexRow: actionHex?.row,
       },
     );
 
@@ -520,8 +538,14 @@ export function phaseEncounterVisibility(
 
     const locationNode = getAgentLocation(graph, action.actorId);
     const locationName = locationNode?.name ?? 'unknown location';
+    const aftermathLocationId = getAgentLocationId(graph, action.actorId);
+    const aftermathHex = aftermathLocationId ? resolveLocationToHex(graph, aftermathLocationId) : null;
     const courtPosition = threadInfo.props.courtPosition ?? 'retinue';
     const defaultMode = VISIBILITY_BY_POSITION[courtPosition]?.defaultAttentionMode ?? 'auto_resolve';
+    const aftermathStepTemplate = getUnifiedTemplateById(action.templateId);
+    const finalStepOutcome = action.stepOutcomes.length > 0
+      ? action.stepOutcomes[action.stepOutcomes.length - 1]
+      : undefined;
 
     const notification = buildEncounterNotification(
       action.actorId,
@@ -538,6 +562,11 @@ export function phaseEncounterVisibility(
         stepIndex: action.currentStep,
         actionId: action.actionId,
         narrativeTag: action.aftermathSummary.narrativeTag,
+        totalSteps: aftermathStepTemplate?.steps.length,
+        outcomeBand: finalStepOutcome ? stepOutcomeToOutcomeBand(finalStepOutcome) : undefined,
+        locationLabel: locationNode?.name,
+        hexCol: aftermathHex?.col,
+        hexRow: aftermathHex?.row,
       },
     );
 
