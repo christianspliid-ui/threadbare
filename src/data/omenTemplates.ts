@@ -1393,7 +1393,7 @@ const FAILING_OMENS: OmenTrackTemplate[] = [
 const ASCENSION_OMENS: OmenTrackTemplate[] = [
   {
     id: 'omen.ascension.luminous_hunger',
-    name: 'Luminous Hunger',
+    name: 'Shining Hunger',
     category: 'doom_echo',
     tagline: 'A longing without object. Something in everyone reaching upward.',
     doomArchetypes: ['ascension'],
