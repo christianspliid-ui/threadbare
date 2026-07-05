@@ -5,14 +5,17 @@
  * about an encounter they're moving toward. Runs on click — never per-tick.
  * Results are cached per (agentId, encounterId, intelligenceVersion, interventionVersion).
  *
- * Phase 1 + 3: variant selection consults EncounterForeshadowing.variants[] when present.
- * Falls back to encounter-specific fallback, then to GENERIC_FORESHADOWING_FALLBACK.
+ * Variant selection consults EncounterForeshadowing.variants[] when present, then
+ * the encounter-specific fallback. With no authored prose it composes a
+ * grammatical, varied passage via composeGenericForeshadowing (THR-631) rather
+ * than the old buggy single-string GENERIC_FORESHADOWING_FALLBACK.
  */
 
 import type { GameState } from '../../types/gameState';
 import type { SimulationRuntime } from '../simulationRuntime';
 import type { ForeshadowingResult, ForeshadowingSignals, ForeshadowingVariant } from './types';
-import { GENERIC_FORESHADOWING_FALLBACK, resolveForeshadowingPlaceholders } from './genericFallback';
+import { resolveForeshadowingPlaceholders } from './genericFallback';
+import { composeGenericForeshadowing } from './composeGeneric';
 import { attributeRecentInterventions } from './attributeRecentInterventions';
 import { FORESHADOWING_CACHE_MAX_ENTRIES } from './constants';
 import { getUnifiedTemplateById } from '../../data/unified-action-templates';
@@ -197,17 +200,22 @@ export function getEncounterForeshadowing(
     const pickedVariant = foreshadowingDef
       ? selectVariant(foreshadowingDef.variants, signals, agentId, encounterId)
       : null;
-    const templateString = pickedVariant?.template
-      ?? foreshadowingDef?.fallback
-      ?? GENERIC_FORESHADOWING_FALLBACK;
+    const authoredTemplate = pickedVariant?.template ?? foreshadowingDef?.fallback ?? null;
     const variantId = pickedVariant?.id ?? null;
 
-    const prose = resolveForeshadowingPlaceholders(
-      templateString,
-      agentName,
-      encounterHeading,
-      pronounSubject,
-    );
+    // Authored variant or per-template fallback → resolve its placeholders.
+    // No authored prose → composed-generic path (THR-631): grammatical across
+    // he/she/they and never routes the encounter title into a place slot.
+    const prose = authoredTemplate
+      ? resolveForeshadowingPlaceholders(authoredTemplate, agentName, encounterHeading, pronounSubject)
+      : composeGenericForeshadowing({
+          agentId,
+          encounterId,
+          agentName,
+          subjectPronoun: pronounSubject,
+          dominantReach: signals.dominantReach,
+          intelTier: signals.intelligenceTier,
+        }).prose;
 
     const interventionAttribution = attributeRecentInterventions(
       state, agentId, encounterId, tick,
