@@ -3701,7 +3701,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         duration: 4,
         narrative: '{actor} must transcribe {adj} knowledge to {adj} mediums before {adj} originals {verb} away.',
         onSuccess: {
-          narrative: '{actor}\'s {adj} diligence {verb}s the knowledge {adj}. It {verb}s eternal, {adj} preserved.',
+          narrative: '{actor}\'s {adj} diligence {verb}s the knowledge {adj}. It {verb}s intact, {adj} preserved.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
           rewardPool: {

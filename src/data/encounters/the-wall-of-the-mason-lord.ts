@@ -393,14 +393,14 @@ export const WALL_OF_THE_MASON_LORD_TEMPLATE: UnifiedActionTemplate = withEncoun
   narrativeTemplates: {
     initiation:
       'A threaded mason-lord stands on a half-built wall across a mountain pass, weighing a permanence ' +
-      'against a mercy: raise the stone and seal one region safe behind it, or leave it unfinished and ' +
+      'against a mercy. Raise the stone and seal one region safe behind it, or leave it unfinished and ' +
       'keep the pass — and its danger, and its mercy — open. The god decides whether the doubt holds or breaks.',
     success:
-      'The mason-lord makes the choice the god leans them toward — to finish the wall or to walk away from ' +
-      'it — and a whole region, and the lands beyond it, are decided by where the stone stops.',
+      'The mason-lord makes the choice the god leans them toward — to finish the wall, or to walk away from ' +
+      'it. A whole region, and the lands beyond it, are decided by where the stone stops.',
     failure:
       'The work goes wrong in the choosing — a flawed wall, or a faltering that walks away from neither ' +
-      'safety nor mercy cleanly — and the region gets the worse of both the granite and the open pass.',
+      'safety nor mercy cleanly. The region gets the worse of both the granite and the open pass.',
   },
 
   illustrationUrl: '/concept-art/encounters/placeholder.jpg',

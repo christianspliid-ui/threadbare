@@ -560,7 +560,7 @@ export const ROAD_AMBUSH_TEMPLATE: UnifiedActionTemplate = withEncounterContract
         id: 'turn_the_chaos',
         label: 'Turn the Chaos',
         intent:
-          'The god sees the ambush not as a crisis to solve but as a knot of force that can be redirected. Both sides are committed, exhausted, and too far in to think clearly. The god\'s Iron-reach attention does not strengthen either side -- it freezes them both, a subtle thickening of the air, a weight on every raised arm, a pause manufactured from divine pressure. In that pause, the god\'s real work begins: reading what can be extracted from the wreckage. A crate spills. A desperate captain\'s mind cracks open to suggestion. The violence is not ended -- it is harvested.',
+          'The god does not see the ambush as a crisis to solve. It sees a knot of force that can be redirected. Both sides are committed, exhausted, and too far in to think clearly. The god\'s Iron-reach attention does not strengthen either side -- it freezes them both, a subtle thickening of the air, a weight on every raised arm, a pause manufactured from divine pressure. In that pause, the god\'s real work begins: reading what can be extracted from the wreckage. A crate spills. A desperate captain\'s mind cracks open to suggestion. The violence is not ended -- it is harvested.',
         targetLabel: 'Dragan Halfmast',
         essenceCost: 2,
         likelyBurden:

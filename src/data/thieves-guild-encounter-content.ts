@@ -503,9 +503,9 @@ export const THIEVES_GUILD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
       variants: {},
       fallback: {
         overview:
-          'Whether the crates were lightened or the plan fell apart, the warehouse exists in ' +
-          '{location}\'s commercial district with a new story attached to it — one that the ' +
-          'merchant owners don\'t yet know how to read.',
+          'Whether the crates were lightened or the plan fell apart, the warehouse in ' +
+          '{location}\'s commercial district now carries a new story. The merchant owners ' +
+          'don\'t yet know how to read it.',
         changes: [
           {
             id: 'warehouse_raid_exposure',

@@ -555,7 +555,7 @@ export const PILGRIMS_OFFERING_TEMPLATE: UnifiedActionTemplate = withEncounterCo
         id: 'accept_graciously',
         label: 'Receive what is given.',
         intent:
-          'The god settles the agent into the weight of what the pilgrim has carried here — ' +
+          'The god settles the agent into everything the pilgrim has carried here — ' +
           'not just the herbs but the years. The acceptance is real and its fullness is legible ' +
           'to the pilgrim because the god makes it legible: not performance, not kindness as ' +
           'a technique, but the actual act of receiving something that was meant to be received.',

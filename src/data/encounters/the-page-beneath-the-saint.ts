@@ -384,16 +384,16 @@ export const PAGE_BENEATH_THE_SAINT_TEMPLATE: UnifiedActionTemplate = withEncoun
 
   narrativeTemplates: {
     initiation:
-      'A threaded archivist has found the original founding chronicle of a regional faith — proof that its ' +
-      'venerated saint was an invention and its whole order rests on a forged page. The god decides whether ' +
-      'the comforting truth stays buried or the disruptive one is let into the light.',
+      'A threaded archivist has found the original founding chronicle of a regional faith. It is proof that ' +
+      'the venerated saint was an invention, and that the whole order rests on a forged page. The god decides ' +
+      'whether the comforting truth stays buried or the disruptive one is let into the light.',
     success:
       'The archivist does what the god leans them toward — re-seals the page deeper, or carries it into the ' +
-      'light — and a faith that orders a whole region either stands untouched on a known lie or comes apart ' +
+      'light. A faith that orders a whole region either stands untouched on a known lie, or comes apart ' +
       'around a truth it can no longer bury.',
     failure:
       'The choosing goes clumsy — a botched burial that rots for later, or a half-leaked truth too easy to ' +
-      'deny — and the region gets neither a clean comfort nor a clean reckoning.',
+      'deny. The region gets neither a clean comfort nor a clean reckoning.',
   },
 
   illustrationUrl: '/concept-art/encounters/placeholder.jpg',
@@ -406,7 +406,7 @@ export const PAGE_BENEATH_THE_SAINT_TEMPLATE: UnifiedActionTemplate = withEncoun
         intent:
           'Make the truth feel like cruelty and the lie feel like mercy, until the archivist re-seals the ' +
           'page deeper than they found it. The regional faith will stand untouched — its calendar, its courts, ' +
-          'the river-lamps in the windows of the dying — all of it resting, knowingly, on a forgery you helped ' +
+          'the river-lamps in the windows of the dying. All of it rests, knowingly, on a forgery you helped ' +
           'press back into the dark. The comfort is real and the farmers die easier for it; the cost is one ' +
           'keeper carrying the fact that could end everything, for the rest of their life, with your name on ' +
           'the not-looking.',
@@ -419,7 +419,7 @@ export const PAGE_BENEATH_THE_SAINT_TEMPLATE: UnifiedActionTemplate = withEncoun
         intent:
           'Give them nothing — no vision, no permission, no push — and let a person who spent forty years ' +
           'learning true from false do what they cannot help doing: bring the proof into the light. The faith ' +
-          'that ordered the region for two centuries will crack — schism, scattering, the old devout grieving ' +
+          'that ordered the region for two centuries will crack. Schism, scattering, the old devout grieving ' +
           'a comfort they now know was staged, the young building something colder and truer in the rubble. ' +
           'The dying will not be comforted the way they were; they will also not be lied to. A reckoning ' +
           'through restraint, paid for by everyone who loved the river.',

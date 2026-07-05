@@ -1936,7 +1936,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       mechanicalSummary: '+0.08 Star, +0.06 Heart, restores 1 essence per tick (requires Star > 0.10), 1-hex aura: +0.02 Heart to allies, blocks Iron actions (too peaceful to fight)',
       censusTag: { scale: 'cosmic' },
       lossCondition: 'permanent',
-      flavorText: 'The cup is always full. It tastes like the first meal you remember, like the last drink before sleep. Those who share it speak more softly afterward.',
+      flavorText: 'The cup is always full. It tastes like the first meal you remember — the last drink before sleep. Those who share it speak more softly afterward.',
       effects: [
         { type: 'passive', reach: 'star', value: 0.08 },
         { type: 'passive', reach: 'heart', value: 0.06 },
@@ -3199,7 +3199,7 @@ export const REWARD_BESTOWED_POWERS: GraphNode[] = [
       description: 'The watch remembers you as someone who kept a hard line without turning the city against itself.',
       maxLevel: 1,
       visibility: 'discoverable',
-      flavorText: 'A quiet nod from a captain, a gate waved open half a beat sooner, a ledger mark that says you made the city easier to govern instead of harder.',
+      flavorText: 'A quiet nod from a captain. A gate waved open half a beat sooner, a ledger mark that says you made the city easier to govern instead of harder.',
       mechanicalSummary: '+0.03 Heart, +0.03 Eye, +0.02 Iron, same-faction cooperation bias +0.1',
       effects: [
         { type: 'passive', reach: 'heart', value: 0.03 },
@@ -3263,7 +3263,7 @@ export const REWARD_BESTOWED_POWERS: GraphNode[] = [
       subcategory: 'bestowed',
       tier: 2,
       tags: ['#bestowed', '#shadow', '#heart', '#ruins'],
-      description: 'Hear the whispers of the recently dead. They offer counsel, sometimes unbidden.',
+      description: 'Hear the whispers of the recently dead. They offer counsel, sometimes unasked.',
       maxLevel: 1,
       visibility: 'discoverable',
       flavorText: 'The dead speak softly, but they never stop. You learn to listen selectively.',
