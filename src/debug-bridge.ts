@@ -864,6 +864,25 @@ if (import.meta.env.DEV) {
       } satisfies ForeshadowingDebugResult;
     },
 
+    /**
+     * THR-631: return the raw Motive Receipt an agent's most recent encounter
+     * selection emitted — the ranked decision-causality contributions the scorer
+     * computed. Accepts an actor id, id prefix, or partial name. Returns null if
+     * no agent matches or the agent has not selected an encounter yet.
+     */
+    getMotiveReceipt: (agentQuery: string) => {
+      const state = _gameStateProvider?.();
+      if (!state) return null;
+      const actors = state.graph.getNodesByType('actor');
+      const agent = actors.find(n =>
+        n.id === agentQuery
+        || n.id.startsWith(agentQuery)
+        || n.name.toLowerCase().includes(agentQuery.toLowerCase())
+      );
+      if (!agent) return null;
+      return (agent.properties?.motiveReceipt as import('./types/foreshadowing').MotiveReceipt | undefined) ?? null;
+    },
+
     /** Returns the current encounter novelty record (surface-keyed since THR-475). Keys are surfaceKeys; values are last-selected tick. */
     getEncounterNoveltyRecord: () => {
       const state = _gameStateProvider?.();
