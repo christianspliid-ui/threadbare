@@ -3,7 +3,7 @@
  *
  * The shader supports three visual states via a per-instance float attribute (aFogState):
  * - 0.0 (unexplored): samples a parchment texture
- * - 0.5 (remembered): uses instance color (sepia-tinted CPU-side)
+ * - 0.5 (remembered): uses instance color (full terrain color)
  * - 1.0 (visible): uses instance color (full terrain color)
  *
  * NFP #1: All magic numbers are named constants in PARCHMENT_FOG_CONSTANTS.
@@ -15,13 +15,9 @@
 export const PARCHMENT_FOG_CONSTANTS = {
   /** Path to the pre-baked parchment texture asset. */
   PARCHMENT_TEXTURE_PATH: '/textures/parchment-512.png',
-  /** Blend factor for sepia tint: 0 = original color, 1 = full sepia. */
-  SEPIA_STRENGTH: 0.7,
-  /** Brightness multiplier for remembered hexes (slight dimming vs visible). */
-  SEPIA_BRIGHTNESS_SCALE: 0.85,
   /** Per-instance fog state value: unexplored (parchment texture). */
   FOG_STATE_UNEXPLORED: 0.0,
-  /** Per-instance fog state value: remembered (sepia-tinted terrain). */
+  /** Per-instance fog state value: remembered (full terrain color). */
   FOG_STATE_REMEMBERED: 0.5,
   /** Per-instance fog state value: visible (full terrain color). */
   FOG_STATE_VISIBLE: 1.0,

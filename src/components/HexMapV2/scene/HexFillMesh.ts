@@ -141,7 +141,10 @@ export function createHexFillMesh(
       elevation: tile.geoParams.elevation,
       lakeId,
     });
-    color.setRGB(r, g, b);
+    // Palette colors are sRGB — flag them so Three.js converts to the linear
+    // working space; otherwise the renderer's sRGB output encode double-brightens
+    // (washed-out map). Must match the setRGB calls in useFogCulling.
+    color.setRGB(r, g, b, THREE.SRGBColorSpace);
     landMesh.setColorAt(i, color);
   }
 
@@ -158,7 +161,7 @@ export function createHexFillMesh(
       elevation: tile.geoParams.elevation,
       lakeId,
     });
-    color.setRGB(r, g, b);
+    color.setRGB(r, g, b, THREE.SRGBColorSpace);
     waterMesh.setColorAt(i, color);
   }
 
@@ -192,7 +195,7 @@ export function updateHexColors(
       elevation: tile.geoParams.elevation,
       lakeId,
     });
-    color.setRGB(r, g, b);
+    color.setRGB(r, g, b, THREE.SRGBColorSpace);
     result.landMesh.setColorAt(i, color);
   }
   if (result.landMesh.instanceColor) result.landMesh.instanceColor.needsUpdate = true;
@@ -206,7 +209,7 @@ export function updateHexColors(
       elevation: tile.geoParams.elevation,
       lakeId,
     });
-    color.setRGB(r, g, b);
+    color.setRGB(r, g, b, THREE.SRGBColorSpace);
     result.waterMesh.setColorAt(i, color);
   }
   if (result.waterMesh.instanceColor) result.waterMesh.instanceColor.needsUpdate = true;
