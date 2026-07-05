@@ -13,6 +13,7 @@ import type { StrategicRuntimeState, BehaviorFamily } from '../../../types/strat
 import type { OmenState } from '../../../types/omen';
 import type { DoomIdentityMatrix } from '../../../types/doomIdentity';
 import type { HiddenMark, PendingEncounterSeed } from '../../../types/unifiedAction';
+import type { MotiveReceipt } from '../../../types/foreshadowing';
 import type { TickEvent, RegionDetectionState, ArchetypeDrift } from '../../../types/gameState';
 import type { ControlEffect } from '../../../types/controlEffect';
 import type { SphereName } from '../../../types/index';
@@ -214,7 +215,10 @@ export function DebugTabContent({
     return (
       <div style={{ padding: 'var(--space-3)', display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', overflowY: 'auto' }}>
         {foreshadowingTraces.map((t, i) => {
-          const ft = t as unknown as { cacheHit: boolean; agentId: string; encounterId: string; summary: string; error?: string };
+          const ft = t as unknown as {
+            cacheHit: boolean; agentId: string; encounterId: string; summary: string; error?: string;
+            receipt?: MotiveReceipt | null; compositionKeys?: string[];
+          };
           return (
             <div
               key={i}
@@ -228,6 +232,12 @@ export function DebugTabContent({
             >
               <div>{ft.summary}</div>
               {ft.error && <div style={{ color: '#b85450', marginTop: '2px' }}>{ft.error}</div>}
+              {ft.receipt && <ForeshadowingReceiptTable receipt={ft.receipt} />}
+              {!ft.receipt && ft.compositionKeys && ft.compositionKeys.length > 0 && (
+                <div style={{ marginTop: '3px', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', fontSize: '0.62rem' }}>
+                  {ft.compositionKeys.join(' · ')} <span style={{ opacity: 0.6 }}>(composed-generic — no receipt)</span>
+                </div>
+              )}
             </div>
           );
         })}
@@ -268,6 +278,48 @@ export function DebugTabContent({
         <TraceEntryItem key={trace.id} trace={trace} isExpanded={expandedTraceId === trace.id} onToggle={() => onToggleTrace(trace.id)} />
       ))}
     </>
+  );
+}
+
+// ── Foreshadowing receipt table (THR-631) ──────────────────────────────────────
+
+/**
+ * Renders the Motive Receipt behind a foreshadowing resolution — the ranked
+ * decision-causality contributions the scorer computed, the real intel tier,
+ * the completion-forecast expectation, and the composition provenance keys.
+ * Debug surface only; weights shown as numbers here (never player-facing).
+ */
+function ForeshadowingReceiptTable({ receipt }: { receipt: MotiveReceipt }) {
+  const metaStyle: React.CSSProperties = {
+    fontSize: '0.62rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)',
+    marginTop: '3px', display: 'flex', flexWrap: 'wrap', gap: '8px',
+  };
+  const barTrack: React.CSSProperties = {
+    flex: 1, height: '6px', background: 'var(--border-subtle)', borderRadius: '3px', overflow: 'hidden',
+  };
+  return (
+    <div style={{ marginTop: '5px', display: 'flex', flexDirection: 'column', gap: '3px' }}>
+      <div style={metaStyle}>
+        <span>intel: <strong style={{ color: 'var(--text-secondary)' }}>{receipt.intelTier}</strong></span>
+        <span>expect: <strong style={{ color: 'var(--text-secondary)' }}>{receipt.expectation}</strong></span>
+        <span>reach: <strong style={{ color: 'var(--text-secondary)' }}>{receipt.dominantReach}</strong></span>
+        <span>@tick {receipt.decidedAtTick}</span>
+      </div>
+      {receipt.contributions.map((c, ci) => {
+        const pct = Math.round(c.weight * 100);
+        const detail = c.provenance?.detail ?? c.provenance?.nodeId ?? c.provenance?.interventionId;
+        return (
+          <div key={ci} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.66rem', fontFamily: 'var(--font-mono)' }}>
+            <span style={{ minWidth: '84px', color: 'var(--accent-gold)' }}>{c.kind}</span>
+            <div style={barTrack}>
+              <div style={{ width: `${pct}%`, height: '100%', background: 'color-mix(in srgb, var(--accent-gold) 60%, transparent)' }} />
+            </div>
+            <span style={{ minWidth: '34px', textAlign: 'right', color: 'var(--text-secondary)' }}>{pct}%</span>
+            {detail && <span style={{ color: 'var(--text-muted)', maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{detail}</span>}
+          </div>
+        );
+      })}
+    </div>
   );
 }
 

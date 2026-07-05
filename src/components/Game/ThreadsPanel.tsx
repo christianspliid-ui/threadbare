@@ -627,10 +627,15 @@ function CompactThreadRow({
           : node.activityLabel)
     : null;
 
-  // Foreshadowing prose for tooltip on pending encounter chip (not active encounters)
+  // Foreshadowing prose for tooltip on pending encounter chip (not active encounters).
+  // THR-631: the tooltip renders the single S2 "pull" sentence (tooltipProse) when
+  // the receipt-driven path produced one; otherwise it falls back to the full passage.
   const foreshadowingProse: string | undefined =
     node.category === 'agent' && encounterDecisionCandidate && getForeshadowing && !agentEncounter
-      ? getForeshadowing(node.id, encounterDecisionCandidate.templateId).prose
+      ? (() => {
+          const fs = getForeshadowing(node.id, encounterDecisionCandidate.templateId);
+          return fs.tooltipProse ?? fs.prose;
+        })()
       : undefined;
 
   // Strategic badge
