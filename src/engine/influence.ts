@@ -22,6 +22,7 @@ import type { WorldGraph } from './graph';
 import type { ControlEffect } from '../types/controlEffect';
 import { assignTrait } from './traits';
 import { ASPECT_ESSENCE_PER_TICK } from '../data/aspect-content';
+import { computeSourceIncome, readEssenceSource } from './essenceSources';
 
 // ─── Pool Operations ─────────────────────────────────────────────────
 
@@ -132,7 +133,13 @@ export function computeEssenceGeneration(
   for (const edge of controlEdges) {
     if (edge.target === homeSeatLocationId) continue;
     const loc = graph.getNode(edge.target);
-    if (loc && loc.properties.isPlaceOfPower) {
+    if (!loc) continue;
+    // Typed essence sources (THR-611) route to their own sphere via the source
+    // term below — skip them here so they are not double-counted in the
+    // alignment-distributed place-of-power term. Untyped / dormant migrated
+    // places of power keep the legacy term, preserving existing income exactly.
+    if (readEssenceSource(loc.properties)?.sphereAffinity) continue;
+    if (loc.properties.isPlaceOfPower) {
       totalRate += ESSENCE_PER_PLACE_OF_POWER;
     }
   }
@@ -154,6 +161,16 @@ export function computeEssenceGeneration(
   }
 
   const gen = distributeByAlignment(totalRate, alignment);
+
+  // 3c. Typed essence-source income (THR-611). Routed to each source's own
+  //     sphereAffinity (not alignment-distributed), tier- and DR-scaled. Untyped
+  //     / dormant migrated places of power stay on the legacy term above, so a
+  //     save with no built (typed) sources yields identical income (NFP #6).
+  const sourceIncome = computeSourceIncome(graph, ascendantId);
+  for (const [sphere, amount] of Object.entries(sourceIncome)) {
+    const s = sphere as SphereName;
+    if (amount && SPHERE_NAMES.includes(s)) gen[s] = (gen[s] ?? 0) + amount;
+  }
 
   // 4. Control effect income (per-sphere, not distributed by alignment)
   if (controlEffects) {

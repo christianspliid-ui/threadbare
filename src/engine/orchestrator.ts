@@ -126,6 +126,7 @@ import { phaseMentorship } from './phaseMentorship';
 import { phaseStrategicProjects } from './phaseStrategicProjects';
 import { phaseDivinePremonition } from './phaseDivinePremonition';
 import { phaseControlEffects, resetControlEffectsCounter } from './phaseControlEffects';
+import { phaseEssenceSources } from './phaseEssenceSources';
 import { phaseEffectShells } from './phaseEffectShells';
 // phaseDoom and phaseMandate are extracted to their own files with sphere pressure wiring.
 // Imported for internal runTick use; re-exported for backward compatibility (tests import from orchestrator).
@@ -2857,6 +2858,12 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
 
   // ─── Resources & Divine ───────────────────────────────────────────────────────
   // What the player earns and spends this tick.
+
+  // Phase 5.9: Essence Sources (THR-611) — migrate/recompute source tiers before
+  // income so typed source yields and tier multipliers are fresh this tick.
+  s = { ...s, ...phaseEssenceSources(s) };
+  phaseEventCounts['essence_sources'] = s.tickEvents.length - prevEventCount;
+  prevEventCount = s.tickEvents.length;
 
   // Phase 6: Essence
   s = { ...s, ...phaseEssence(s) };

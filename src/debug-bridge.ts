@@ -204,6 +204,39 @@ if (import.meta.env.DEV) {
       },
     },
 
+    // ── Essence Sources — Divine Economy (THR-611) ─────────────────────────
+    /**
+     * List the ascendant's controlled essence sources with their tier, kind,
+     * sphere typing, and private sanctity — plus the typed per-sphere income
+     * breakdown. Read-only; returns { sources, sourceIncome } or { error }.
+     */
+    getEssenceSources: async () => {
+      const state = _gameStateProvider?.();
+      if (!state) return { error: 'no live game state' };
+      const { readEssenceSource, computeSourceIncome } = await import('./engine/essenceSources');
+      const graph = state.graph;
+      const ascId = state.ascendantId;
+      const sources = graph
+        .getOutgoingEdges(ascId, 'controls')
+        .map((edge) => {
+          const host = graph.getNode(edge.target);
+          const src = readEssenceSource(host?.properties);
+          if (!host || !src) return null;
+          return {
+            hostId: host.id,
+            hostName: host.name ?? host.id,
+            kind: src.kind,
+            tier: src.tier,
+            sphereAffinity: src.sphereAffinity ?? null,
+            sanctity: src.sanctity,
+            contestedBy: src.contestedBy ?? null,
+            desecrated: !!src.desecrated,
+          };
+        })
+        .filter((x): x is NonNullable<typeof x> => x !== null);
+      return { sources, sourceIncome: computeSourceIncome(graph, ascId) };
+    },
+
     // ── Ascendant Beats — Divine Cadence (THR-507) ──────────────────────────
     listBeats: async () => {
       const { ASCENDANT_SPINE, ASCENDANT_BEAT_POOL } = await import('./data/ascendant-beat-content');
