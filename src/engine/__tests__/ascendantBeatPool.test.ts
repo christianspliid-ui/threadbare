@@ -4,6 +4,7 @@ import {
   phaseAscendantBeatDirector,
   drawFromPool,
   resolveAscendantBeat,
+  resolvePendingBeat,
 } from '../ascendantBeat';
 import {
   ASCENDANT_SPINE,
@@ -12,7 +13,8 @@ import {
   collectGrantedActionIds,
   BEAT_KIND_WEIGHTS,
 } from '../../data/ascendant-beat-content';
-import { UNIFIED_ACTION_TEMPLATES } from '../../data/unified-action-templates';
+import { UNIFIED_ACTION_TEMPLATES, getUnifiedTemplateById } from '../../data/unified-action-templates';
+import { isActionRevealed } from '../actionUnlock';
 import { REACH_SIGNATURE_CONTENT_TEMPLATES } from '../../data/reach-signature-content';
 import { clearTraces, enableTracing, disableTracing } from '../traceBuffer';
 import type { GameState } from '../../types/gameState';
@@ -166,6 +168,45 @@ describe('Ascendant Beat starter pool + unlock catalogue (THR-505)', () => {
   it('every bucketed action id resolves to a real UnifiedActionTemplate', () => {
     for (const id of Object.keys(ASCENDANT_ACTION_BUCKETS)) {
       expect(REAL_TEMPLATE_IDS.has(id), `bucketed action "${id}" has no template`).toBe(true);
+    }
+  });
+
+  // THR-611 Slice 3 — verb surfacing. Slice 2 (#531) shipped the source-loop verbs but
+  // nothing granted them, so they were unreachable (empty THR-501 starter floor). The
+  // `the_wellspring` investment beat is the surfacing: resolving it unlocks all three and
+  // flips the within-run reveal gate, proving Slice 2's work is now player-reachable.
+  it('the_wellspring beat unlocks the three divine-economy source verbs (THR-611 Slice 3)', () => {
+    const SOURCE_VERBS = ['loc.consecrate_source', 'loc.sanctify_source', 'loc.defend_source'];
+    const beat = ASCENDANT_BEAT_POOL.find(b => b.beatId === 'beat.pool.invest.the_wellspring');
+    expect(beat, 'the_wellspring pool beat missing').toBeDefined();
+    expect(beat!.grantsActionIds).toEqual(SOURCE_VERBS);
+
+    // Drive the real resolve path: a pending offer of the beat, resolved with the same
+    // templateResolver the UI injects (getUnifiedTemplateById-backed missing-template gate).
+    const pending: AscendantBeatState = {
+      spineCursor: -1,
+      pending: {
+        beatId: 'beat.pool.invest.the_wellspring',
+        kind: 'investment',
+        offeredTurn: 30,
+        boundNodeIds: [],
+        trigger: { kind: 'cadence' },
+      },
+      history: [],
+      lastBeatTurn: 30,
+    };
+    const res = resolvePendingBeat(
+      directorState(31, pending),
+      {},
+      (id) => getUnifiedTemplateById(id) !== undefined,
+    );
+
+    expect(res.resolved).toBe(true);
+    expect(res.grantedActionIds).toEqual(SOURCE_VERBS);
+    // Each verb is now in unlockedActionIds AND passes the within-run reveal gate.
+    for (const id of SOURCE_VERBS) {
+      expect(res.state.unlockedActionIds).toContain(id);
+      expect(isActionRevealed(getUnifiedTemplateById(id)!, res.state.unlockedActionIds)).toBe(true);
     }
   });
 

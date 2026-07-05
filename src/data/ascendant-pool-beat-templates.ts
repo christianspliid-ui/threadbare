@@ -247,6 +247,19 @@ const INVESTMENT_TEMPLATES: UnifiedActionTemplate[] = [
     failure: 'the moment passes ungiven; the banners stay only banners',
   }),
 
+  // — Divine-economy source loop (THR-611 Slice 3): grants the consecrate → sanctify →
+  //   defend verbs that let the god claim a place, deepen what it yields, and hold it
+  //   against a draining rival. Anchors on The First ({name}); plain register (THR-609). —
+  poolBeatTemplate({
+    id: 'beat.pool.invest.the_wellspring',
+    name: 'The Wellspring',
+    description:
+      'There is ground in the world that could be made to feed you — a place where the devotion of mortals pools instead of draining away, the way it once pooled around {name} before your thread ever reached them. Claimed and named, such a place becomes a source of your own: it gives you strength of its particular kind, tide after patient tide. But a source left untended stays shallow, and a source left unguarded can be bled by hands that are not yours. Learn the whole of it now — to claim a place and turn it toward you, to deepen what it gives until it flowers, and to hold it fast when something comes to drain it.',
+    initiation: 'a place where devotion pools waits, unclaimed, ready to be turned toward you',
+    success: 'you learn to raise a wellspring of your own — to claim it, deepen it, and hold it',
+    failure: 'the moment passes; the ground keeps its gathered strength to itself a while longer',
+  }),
+
   // — Reach-signature acquisition (THR-523): the *secondary* signature. The specific
   //   power depends on the ascendant's second domain, so the prose names no reach — it
   //   frames the moment a second face of the god's nature deepens from habit into a
