@@ -52,6 +52,7 @@ import {
 } from '../data/ascendant-beat-content';
 import { REACH_DOMAINS, type ReachDomain } from '../types/traits';
 import { REACH_SIGNATURE_ID_BY_REACH } from '../data/reach-signature-content';
+import { ASCENDANT_DEEPENING_BEATS, getDeepeningBeatById } from '../data/ascendant-deepening-beats';
 import { eligibleDeliveryBeats, getDeliveryBeatById } from './deliveryBeatAdapter';
 import { seedBeatGraph } from './ascendantBeatSeeding';
 import { applyEncounterAftermathReaction } from './encounterAftermath';
@@ -439,6 +440,16 @@ export function forceOfferBeatById(
       def: deliveryDef,
     };
   }
+  // Deepening beats (THR-613) are enqueued directly by `phaseAscendantProgression`, never
+  // drawn — but `__DEBUG.fireBeat('beat.deepening.<reach>')` still needs to force-offer one
+  // for browser-verifying the vignette. Bind nothing (they operate on the ascendant itself).
+  const deepeningDef = getDeepeningBeatById(beatId);
+  if (deepeningDef) {
+    return {
+      next: offer(beats, deepeningDef, deepeningDef.trigger, turn, ASCENDANT_DEEPENING_BEATS.length, [], /*advanceSpine*/ false),
+      def: deepeningDef,
+    };
+  }
   return null;
 }
 
@@ -555,12 +566,19 @@ export function resolveAscendantBeat(
   return { ...beats, pending: null, history: [...beats.history, record] };
 }
 
-/** Look a beat up across all three catalogues (spine, static pool, delivery adapter). */
+/**
+ * Look a beat up across every catalogue: the scripted spine, the static cadence pool, the
+ * delivery adapter, and the god-side Deepening beats (THR-613). Deepening beats are enqueued
+ * directly by `phaseAscendantProgression` (they never ride the Director's draw), so without
+ * this branch `resolvePendingBeat` would skip an enqueued Deepening as `missing_template` and
+ * the tier-crossing vignette would never reach the player.
+ */
 function findBeatDefinition(beatId: string): BeatDefinition | null {
   return (
     ASCENDANT_SPINE.find(b => b.beatId === beatId) ??
     ASCENDANT_BEAT_POOL.find(b => b.beatId === beatId) ??
     getDeliveryBeatById(beatId) ??
+    getDeepeningBeatById(beatId) ??
     null
   );
 }
