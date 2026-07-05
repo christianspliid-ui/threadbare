@@ -13,9 +13,12 @@
 
 import type { GameState } from '../../types/gameState';
 import type { SimulationRuntime } from '../simulationRuntime';
+import type { ForeshadowingResolutionTrace } from '../../types/trace';
 import type { ForeshadowingResult, ForeshadowingSignals, ForeshadowingVariant } from './types';
 import { resolveForeshadowingPlaceholders } from './genericFallback';
 import { composeGenericForeshadowing } from './composeGeneric';
+import { composeReceiptForeshadowing } from './composeReceipt';
+import { readMotiveReceipt } from './receiptRead';
 import { attributeRecentInterventions } from './attributeRecentInterventions';
 import { FORESHADOWING_CACHE_MAX_ENTRIES } from './constants';
 import { getUnifiedTemplateById } from '../../data/unified-action-templates';
@@ -203,19 +206,37 @@ export function getEncounterForeshadowing(
     const authoredTemplate = pickedVariant?.template ?? foreshadowingDef?.fallback ?? null;
     const variantId = pickedVariant?.id ?? null;
 
-    // Authored variant or per-template fallback → resolve its placeholders.
-    // No authored prose → composed-generic path (THR-631): grammatical across
-    // he/she/they and never routes the encounter title into a place slot.
-    const prose = authoredTemplate
-      ? resolveForeshadowingPlaceholders(authoredTemplate, agentName, encounterHeading, pronounSubject)
-      : composeGenericForeshadowing({
-          agentId,
-          encounterId,
-          agentName,
-          subjectPronoun: pronounSubject,
-          dominantReach: signals.dominantReach,
-          intelTier: signals.intelligenceTier,
-        }).prose;
+    // Resolution order (THR-631): authored variant/per-template fallback wins;
+    // else the receipt-driven path renders the real decision causality; else the
+    // composed-generic path (still grammatical across he/she/they, never routes
+    // the encounter title into a place slot).
+    let prose: string;
+    let tooltipProse: string | undefined;
+    let compositionKeys: string[] | undefined;
+    const receipt = authoredTemplate ? null : readMotiveReceipt(agentNode, encounterId);
+
+    if (authoredTemplate) {
+      prose = resolveForeshadowingPlaceholders(authoredTemplate, agentName, encounterHeading, pronounSubject);
+    } else if (receipt) {
+      const composed = composeReceiptForeshadowing(
+        { agentId, encounterId, agentName, subjectPronoun: pronounSubject },
+        receipt,
+      );
+      prose = composed.prose;
+      tooltipProse = composed.tooltipProse;
+      compositionKeys = composed.compositionKeys;
+    } else {
+      const composed = composeGenericForeshadowing({
+        agentId,
+        encounterId,
+        agentName,
+        subjectPronoun: pronounSubject,
+        dominantReach: signals.dominantReach,
+        intelTier: signals.intelligenceTier,
+      });
+      prose = composed.prose;
+      compositionKeys = composed.compositionKeys;
+    }
 
     const interventionAttribution = attributeRecentInterventions(
       state, agentId, encounterId, tick,
@@ -223,13 +244,14 @@ export function getEncounterForeshadowing(
 
     result = {
       prose,
+      tooltipProse,
       variantId,
       signals,
       interventionAttribution,
       resolvedAtTick: tick,
     };
 
-    emitTrace({
+    const resolvedTrace: Omit<ForeshadowingResolutionTrace, 'id' | 'timestamp'> = {
       category: 'foreshadowing',
       tick,
       agentId,
@@ -239,8 +261,11 @@ export function getEncounterForeshadowing(
       signals,
       interventionAttributionId: interventionAttribution?.interventionId ?? null,
       cacheHit: false,
-      summary: `foreshadowing resolved (${variantId ? `variant:${variantId}` : 'generic fallback'}): ${agentId} → ${encounterId}`,
-    });
+      compositionKeys,
+      receipt,
+      summary: `foreshadowing resolved (${variantId ? `variant:${variantId}` : receipt ? 'receipt' : 'generic'}): ${agentId} → ${encounterId}`,
+    };
+    emitTrace(resolvedTrace);
   } catch (err) {
     // Fail-soft: never crash the caller. Return a neutral placeholder.
     // The error is captured in the trace for diagnostics.

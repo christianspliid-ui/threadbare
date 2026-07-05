@@ -10,6 +10,7 @@ import type {
   ForeshadowingTopMotive,
 } from '../../types/foreshadowing';
 import type { ReachDomain } from '../../types/traits';
+import type { ForeshadowingResolutionTrace } from '../../types/trace';
 import { emitTrace } from '../traceBuffer';
 import { gatherNarrativeContext, enrichProse } from '../proseEnrichment';
 import type { WorldGraph } from '../graph';
@@ -24,6 +25,8 @@ import {
   INTERVENTION_ATTRIBUTION_WINDOW,
 } from './constants';
 import { composeGenericForeshadowing } from './composeGeneric';
+import { composeReceiptForeshadowing } from './composeReceipt';
+import { readMotiveReceipt } from './receiptRead';
 
 const TOP_MOTIVE_PRIORITY: readonly ForeshadowingTopMotive[] = [
   'awareness',
@@ -327,23 +330,52 @@ export function getEncounterForeshadowing({
   const variant = variants.find(item => matchesWhen(item.when, signals)) ?? null;
   const authoredTemplate = variant?.template ?? definition?.fallback ?? null;
 
-  // Authored variant / per-template fallback → formatProse (enrichProse pipeline).
-  // No authored prose → composed-generic path (THR-631): grounded at the
-  // candidate's location and grammatical across he/she/they.
-  const prose = authoredTemplate
-    ? formatProse(graph, agentId, authoredTemplate, candidate, interventionAttribution)
-    : composeGenericForeshadowing({
+  // Resolution order (THR-631): authored variant/per-template fallback →
+  // formatProse; else the receipt-driven path (real decision causality off the
+  // agent node); else the composed-generic path (grounded at the candidate's
+  // location, grammatical across he/she/they).
+  const agentNode = graph.getNode(agentId);
+  const receipt = authoredTemplate
+    ? null
+    : readMotiveReceipt(agentNode, candidate.templateId, candidate.locationId);
+
+  let prose: string;
+  let tooltipProse: string | undefined;
+  let compositionKeys: string[] | undefined;
+
+  if (authoredTemplate) {
+    prose = formatProse(graph, agentId, authoredTemplate, candidate, interventionAttribution);
+  } else if (receipt) {
+    const composed = composeReceiptForeshadowing(
+      {
         agentId,
         encounterId: candidate.templateId,
-        agentName: graph.getNode(agentId)?.name ?? agentId,
-        subjectPronoun: resolveSubjectPronoun(graph.getNode(agentId)?.properties?.gender),
-        dominantReach: signals.dominantReach,
-        intelTier: signals.intelligenceTier,
+        agentName: agentNode?.name ?? agentId,
+        subjectPronoun: resolveSubjectPronoun(agentNode?.properties?.gender),
         locationName: candidate.locationName,
-      }).prose;
+      },
+      receipt,
+    );
+    prose = composed.prose;
+    tooltipProse = composed.tooltipProse;
+    compositionKeys = composed.compositionKeys;
+  } else {
+    const composed = composeGenericForeshadowing({
+      agentId,
+      encounterId: candidate.templateId,
+      agentName: agentNode?.name ?? agentId,
+      subjectPronoun: resolveSubjectPronoun(agentNode?.properties?.gender),
+      dominantReach: signals.dominantReach,
+      intelTier: signals.intelligenceTier,
+      locationName: candidate.locationName,
+    });
+    prose = composed.prose;
+    compositionKeys = composed.compositionKeys;
+  }
 
   const result: ForeshadowingResult = {
     prose,
+    tooltipProse,
     variantId: variant?.id ?? null,
     signals,
     interventionAttribution,
@@ -351,7 +383,7 @@ export function getEncounterForeshadowing({
   };
 
   writeForeshadowingCache(runtime, cacheKey, result);
-  emitTrace({
+  const resolvedTrace: Omit<ForeshadowingResolutionTrace, 'id' | 'timestamp'> = {
     category: 'foreshadowing',
     tick,
     agentId,
@@ -361,8 +393,11 @@ export function getEncounterForeshadowing({
     signals,
     interventionAttributionId: interventionAttribution?.interventionId ?? null,
     cacheHit: false,
-    summary: `foreshadowing resolved for ${candidate.templateId}`,
-  });
+    compositionKeys,
+    receipt,
+    summary: `foreshadowing resolved for ${candidate.templateId}${receipt ? ' (receipt)' : ''}`,
+  };
+  emitTrace(resolvedTrace);
 
   return result;
 }

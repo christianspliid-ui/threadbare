@@ -43,9 +43,13 @@ if (import.meta.env.DEV) {
     locationId: string;
     locationName: string;
     prose: string;
+    /** Single-sentence tooltip render (THR-631); null on the authored path. */
+    tooltipProse: string | null;
     variantId: string | null;
     resolvedAtTick: number;
     signals: import('./types/foreshadowing').ForeshadowingSignals;
+    /** The Motive Receipt driving this foreshadowing (THR-631), or null. */
+    receipt: import('./types/foreshadowing').MotiveReceipt | null;
     interventionAttribution: import('./types/foreshadowing').ForeshadowingInterventionAttribution | null;
   }
 
@@ -842,6 +846,7 @@ if (import.meta.env.DEV) {
       if (!candidate) return null;
 
       const { getEncounterForeshadowing } = await import('./engine/foreshadowing/encounterForeshadowing');
+      const { readMotiveReceipt } = await import('./engine/foreshadowing/receiptRead');
       const result = getEncounterForeshadowing({
         runtime,
         graph: state.graph,
@@ -850,6 +855,7 @@ if (import.meta.env.DEV) {
         decision,
         candidate,
       });
+      const receipt = readMotiveReceipt(agent, candidate.templateId, candidate.locationId);
 
       return {
         templateId: candidate.templateId,
@@ -857,9 +863,11 @@ if (import.meta.env.DEV) {
         locationId: candidate.locationId,
         locationName: candidate.locationName,
         prose: result.prose,
+        tooltipProse: result.tooltipProse ?? null,
         variantId: result.variantId,
         resolvedAtTick: result.resolvedAtTick,
         signals: result.signals,
+        receipt,
         interventionAttribution: result.interventionAttribution,
       } satisfies ForeshadowingDebugResult;
     },

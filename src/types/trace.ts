@@ -20,6 +20,7 @@ import type { BehaviorFamily, StrategicVerb, StrategicExecutionMode } from './st
 import type { ComplicationSeverity } from './complication';
 import type { SyllableTemplate } from './culture';
 import type { ReliabilityBand } from '../engine/intelligence';
+import type { MotiveReceipt } from './foreshadowing';
 import type { IntelligenceCategory } from './unifiedAction';
 import type { NarrativeEventType, NarrativeTier } from './narrative';
 import type { ForeshadowingSignals } from './foreshadowing';
@@ -2418,6 +2419,14 @@ export interface ForeshadowingResolutionTrace extends TraceBase {
   cacheHit: boolean;
   /** Populated only on resolver error (fail-soft path). */
   error?: string;
+  /**
+   * THR-631 Phase B: provenance of each composed clause when the receipt-driven
+   * or composed-generic path rendered the prose, e.g.
+   * ['knowledge:rumor', 'pull:ambition', 'expect:perilous/hedged'].
+   */
+  compositionKeys?: string[];
+  /** THR-631 Phase B: the Motive Receipt consumed, or null on the generic path. */
+  receipt?: MotiveReceipt | null;
 }
 
 // ═══════════════════════════════════════════════════════════════════

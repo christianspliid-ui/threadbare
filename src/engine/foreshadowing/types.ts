@@ -24,6 +24,12 @@ export interface InterventionAttribution {
 export interface ForeshadowingResult {
   /** 2–4 sentences, enriched via graph-walking prose pipeline. */
   prose: string;
+  /**
+   * Single-sentence render for the thread-card tooltip (the S2 pull sentence).
+   * Present only on the receipt-driven path (THR-631 Phase B); undefined on the
+   * authored-variant path, where callers fall back to `prose`.
+   */
+  tooltipProse?: string;
   /** Which variant matched, or null when the generic fallback was used. */
   variantId: string | null;
   signals: ForeshadowingSignals;
