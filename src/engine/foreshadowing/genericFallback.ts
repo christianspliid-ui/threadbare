@@ -12,6 +12,12 @@
  * encounter-specific variants are backfilled by content passes.
  */
 
+/**
+ * @deprecated THR-631 — the resolvers no longer use this single-string fallback;
+ * the composed-generic path (`composeGeneric.ts`) replaced it because this string
+ * breaks subject–verb agreement ("{He} believe"). Retained only until the
+ * two-resolver unification (THR-631 remaining Phase A) removes the last references.
+ */
 export const GLOBAL_FORESHADOWING_FALLBACK_TEMPLATE =
   '{name} has heard of trouble in {encounter_location}. {They} believe {they} can be useful there, though {they} cannot yet say how.';
 
@@ -21,6 +27,12 @@ export const GLOBAL_FORESHADOWING_FALLBACK_TEMPLATE =
  *   {encounter.heading}           → encounter template name / heading
  *   {pronoun.subject}             → they/he/she
  *   {pronoun.subject_capitalized} → They/He/She
+ */
+/**
+ * @deprecated THR-631 — replaced by the composed-generic path (`composeGeneric.ts`).
+ * This string jams the encounter *heading* into a place slot ("trouble in Weave a
+ * Political Alliance") and breaks agreement ("They believes"). Kept only for the
+ * existing token-shape test until the two-resolver unification removes it.
  */
 export const GENERIC_FORESHADOWING_FALLBACK =
   '{name.first} has heard of trouble in {encounter.heading}. ' +
