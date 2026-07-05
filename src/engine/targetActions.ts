@@ -27,6 +27,7 @@ import { hexDistance } from './delivery';
 import { hexKey } from '../lib/hexKey';
 import { isActionRevealed } from './actionUnlock';
 import { REACH_GATE_MIN_AFFINITY } from '../data/influence-content';
+import { effectSourceFor } from '../data/actionEffectSource';
 import { emitTrace } from './traceBuffer';
 
 // ─── Constants ──────────────────────────────────────────────────────────────
@@ -321,6 +322,8 @@ export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
       perTickCostLabel,
       spellName: template.spellName,
       technicalDescription: template.description,
+      technicalEffect: template.technicalEffect,
+      effectSource: effectSourceFor(template),
       narrativeLayer: template.narrativeLayer as WheelSlot['narrativeLayer'],
       rarityTier: template.rarityTier,
     });

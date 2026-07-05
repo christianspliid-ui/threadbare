@@ -1,6 +1,7 @@
 import { memo } from 'react';
 import type { CodexEntry } from './codexRegistry';
 import { SectionHeading } from '../shared/SectionHeading';
+import { effectLabel, EFFECT_SOURCE_BADGE_COLORS } from '../../data/actionEffectSource';
 
 interface CodexDetailPanelProps {
   entry: CodexEntry | null;
@@ -131,6 +132,45 @@ export const CodexDetailPanel = memo(function CodexDetailPanel({
               }}
             >
               {entry.summary}
+            </p>
+          </div>
+        )}
+
+        {/* Technical effect — what state this action changes + where it's wired (THR-610).
+            Absent for non-action entries (possessions/conditions/agreements) → hidden. */}
+        {entry.technicalEffect && (
+          <div data-testid="codex-effect-block">
+            <div className="flex items-center gap-2">
+              <SectionHeading as="h3">Effect</SectionHeading>
+              {entry.effectSource && (
+                <span
+                  data-testid="codex-effect-badge"
+                  style={{
+                    fontSize: '0.55rem',
+                    fontWeight: 600,
+                    letterSpacing: '0.02em',
+                    textTransform: 'uppercase',
+                    padding: '0.05rem 0.35rem',
+                    borderRadius: '3px',
+                    color: '#fff',
+                    background: EFFECT_SOURCE_BADGE_COLORS[entry.effectSource],
+                  }}
+                >
+                  {effectLabel(entry.effectSource)}
+                </span>
+              )}
+            </div>
+            <p
+              style={{
+                fontSize: 'var(--text-xs)',
+                color: 'var(--text-secondary)',
+                lineHeight: 1.5,
+                marginTop: '0.25rem',
+                borderLeft: '2px solid var(--border-subtle)',
+                paddingLeft: '0.6rem',
+              }}
+            >
+              {entry.technicalEffect}
             </p>
           </div>
         )}
