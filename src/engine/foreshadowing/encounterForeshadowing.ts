@@ -23,7 +23,7 @@ import {
   INTEL_TIER_UNKNOWN_BELOW,
   INTERVENTION_ATTRIBUTION_WINDOW,
 } from './constants';
-import { GLOBAL_FORESHADOWING_FALLBACK_TEMPLATE } from './genericFallback';
+import { composeGenericForeshadowing } from './composeGeneric';
 
 const TOP_MOTIVE_PRIORITY: readonly ForeshadowingTopMotive[] = [
   'awareness',
@@ -60,6 +60,16 @@ type InterventionLikeRecord = {
 
 function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
+}
+
+/** Subject pronoun from a graph node's `gender` property. Defaults to they/them. */
+function resolveSubjectPronoun(gender: unknown): string {
+  if (typeof gender !== 'string') return 'they';
+  switch (gender.toLowerCase()) {
+    case 'male': case 'm': return 'he';
+    case 'female': case 'f': return 'she';
+    default: return 'they';
+  }
 }
 
 function asFiniteNumber(value: unknown): number | null {
@@ -315,12 +325,25 @@ export function getEncounterForeshadowing({
   const definition = template?.foreshadowing;
   const variants = definition?.variants ?? [];
   const variant = variants.find(item => matchesWhen(item.when, signals)) ?? null;
-  const resolvedTemplate = variant?.template
-    ?? definition?.fallback
-    ?? GLOBAL_FORESHADOWING_FALLBACK_TEMPLATE;
+  const authoredTemplate = variant?.template ?? definition?.fallback ?? null;
+
+  // Authored variant / per-template fallback → formatProse (enrichProse pipeline).
+  // No authored prose → composed-generic path (THR-631): grounded at the
+  // candidate's location and grammatical across he/she/they.
+  const prose = authoredTemplate
+    ? formatProse(graph, agentId, authoredTemplate, candidate, interventionAttribution)
+    : composeGenericForeshadowing({
+        agentId,
+        encounterId: candidate.templateId,
+        agentName: graph.getNode(agentId)?.name ?? agentId,
+        subjectPronoun: resolveSubjectPronoun(graph.getNode(agentId)?.properties?.gender),
+        dominantReach: signals.dominantReach,
+        intelTier: signals.intelligenceTier,
+        locationName: candidate.locationName,
+      }).prose;
 
   const result: ForeshadowingResult = {
-    prose: formatProse(graph, agentId, resolvedTemplate, candidate, interventionAttribution),
+    prose,
     variantId: variant?.id ?? null,
     signals,
     interventionAttribution,
