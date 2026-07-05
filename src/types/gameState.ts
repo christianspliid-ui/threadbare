@@ -50,6 +50,16 @@ export interface ActiveComposition {
   resolvedNodes: Record<string, string>;
   status: 'active' | 'completed' | 'failed';
   lastEvaluationTick: number;
+  /**
+   * Inline phase list. The phase runner (phaseComposition) reads phases from
+   * here directly (v1 has no recipe registry — TODO(THR-226)). Rival schemes
+   * (THR-66) attach their four phases at launch.
+   */
+  phases?: import('../composition-dsl/schema').Phase[];
+  /** Rival-scheme attribution (THR-66) — the rival actor sponsoring this composition. */
+  sponsorRivalId?: string;
+  /** Rival-scheme family id (THR-66), e.g. `corruptive` | `territorial`. */
+  schemeFamily?: string;
 }
 import type { DoomIdentityMatrix } from './doomIdentity';
 import { DEFAULT_DOOM_TICKS as CONFIG_DEFAULT_DOOM_TICKS } from '../data/game-config';

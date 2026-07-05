@@ -84,6 +84,70 @@ export const RivalPanel = React.memo(function RivalPanel({ definitions, states }
                   {rivalState?.lastAction && (
                     <ListRow.Subtitle>Last: {rivalState.lastAction}</ListRow.Subtitle>
                   )}
+                  {rivalState?.schemes && rivalState.schemes.length > 0 && (
+                    <div className="mt-2 space-y-1" aria-label={`${def.name} active schemes`}>
+                      {rivalState.schemes.map((scheme) => {
+                        const failed = scheme.status === 'failed';
+                        const done = scheme.status === 'completed';
+                        return (
+                          <div
+                            key={scheme.compositionId}
+                            className="rounded px-1.5 py-1"
+                            role="group"
+                            aria-label={`${scheme.label}, phase ${scheme.phaseIndex} of ${scheme.totalPhases}, ${scheme.status}`}
+                            style={{
+                              backgroundColor: 'var(--bg-surface)',
+                              border: '1px solid var(--border-subtle)',
+                              opacity: failed ? 0.55 : 1,
+                            }}
+                          >
+                            <div className="flex items-center justify-between gap-2">
+                              <span
+                                style={{
+                                  fontSize: 'var(--text-xs)',
+                                  color: 'var(--text-secondary)',
+                                  textDecoration: failed ? 'line-through' : 'none',
+                                }}
+                              >
+                                {scheme.label}
+                              </span>
+                              {scheme.contested && !failed && !done && (
+                                <span
+                                  className="uppercase tracking-wider"
+                                  style={{ fontSize: '0.6rem', color: 'var(--color-warning, #d9a441)' }}
+                                >
+                                  Contested
+                                </span>
+                              )}
+                              {done && (
+                                <span className="uppercase tracking-wider" style={{ fontSize: '0.6rem', color }}>
+                                  Done
+                                </span>
+                              )}
+                            </div>
+                            <div className="mt-1 flex gap-1">
+                              {Array.from({ length: scheme.totalPhases }).map((_, idx) => (
+                                <span
+                                  key={idx}
+                                  className="rounded-full transition-all duration-300"
+                                  style={{
+                                    width: '0.4rem',
+                                    height: '0.4rem',
+                                    backgroundColor:
+                                      idx < scheme.phaseIndex ? color : 'var(--bg-raised, #2a2a2a)',
+                                    border:
+                                      idx === scheme.phaseIndex && !done && !failed
+                                        ? `1px solid ${color}`
+                                        : '1px solid transparent',
+                                  }}
+                                />
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               </ListRow>
             </div>

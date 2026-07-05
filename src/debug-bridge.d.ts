@@ -567,6 +567,26 @@ export interface DebugBridge {
    *  Returns the entry's ProseQualityResult, or { error } if no entry matches. */
   scoreProseEntry: (entryId: string) => Promise<import('./engine/content-eval/proseQualityScore').ProseQualityResult | { error: string }>;
 
+  /** THR-66 — List active/terminal rival schemes across all rivals. */
+  getRivalSchemes: () => Array<{
+    rivalId: string;
+    compositionId: string;
+    family: string;
+    phase: string;
+    escalationTier: number;
+    status: 'active' | 'completed' | 'failed';
+  }>;
+  /** THR-66 — Force-launch a rival scheme for QA. Accepts rival id, id prefix, or partial name,
+   *  and a family id (`corruptive` | `territorial`). Mutates live state; engine picks it up next tick. */
+  forceRivalScheme: (rivalName: string, family: string) => Promise<{
+    success: boolean;
+    message: string;
+    rivalId?: string;
+    rivalName?: string;
+    family?: string;
+    compositionId?: string;
+  }>;
+
   /** THR-430 — Schism inspection: list pending schisms in the live game state. */
   schism: {
     list: () => ReadonlyArray<{

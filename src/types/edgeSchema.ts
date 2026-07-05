@@ -467,6 +467,20 @@ export const EDGE_SCHEMA: Record<EdgeType, EdgeSchema> = {
       + 'score-derived leadership). Set/cleared by phaseFactionSuccession. Properties: '
       + 'seatedTick, conferredVia (anointment | natural).',
   },
+
+  // ── Rival schemes (THR-66) ──────────────────────────────────
+  sponsors_scheme: {
+    type: 'sponsors_scheme',
+    sourceNodeType: 'actor',
+    targetNodeType: 'location',
+    direction: 'directed',
+    cardinality: 'many-to-many',
+    requiredProperties: [],
+    description: 'Rival actor sponsors a scheme against a target location. Bound at the '
+      + 'materialization phase by phaseRivalActions; removed when the scheme fails. Drives '
+      + 'the RivalPanel attribution and the HexMapV2 rival-influence overlay. Properties: '
+      + 'compositionId, family, establishedTick.',
+  },
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────

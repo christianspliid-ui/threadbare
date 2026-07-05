@@ -48,6 +48,7 @@ import type { ArmyState } from '../../types/army';
 import type { BattleState } from '../../types/battle';
 import { extractRoadPaths } from '../../engine/roadNetwork';
 import { buildReachSignatureMarkers } from '../../engine/reachSignatureMarkers';
+import { buildRivalInfluenceMarkers } from '../../engine/rivalInfluenceMarkers';
 import { getRetinueAgents, getSustainedControlNodes } from '../../engine/retinue';
 import { TIER_NAMES } from '../../data/influence-content';
 import type { ThreadedNode, ThreadedFaction, SustainedControlNode } from '../../engine/retinue';
@@ -910,6 +911,13 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   const reachSignatureMarkers = useMemo(
     () => buildReachSignatureMarkers(gameState.graph, gameState.controlEffects),
     [gameState.graph, gameState.controlEffects, runtime.worldVersion],
+  );
+
+  // Rival-scheme influence markers → map overlay (THR-66). Recomputed on graph
+  // mutation (materialize adds a sponsors_scheme edge; failure removes it).
+  const rivalInfluenceMarkers = useMemo(
+    () => buildRivalInfluenceMarkers(gameState.graph, gameState.rivalDefinitions),
+    [gameState.graph, gameState.rivalDefinitions, runtime.worldVersion],
   );
 
   // ── Military render data adapters (graph → ArmyRenderData[], BattleRenderData[], SiegeRenderData[]) ──
@@ -3209,6 +3217,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                   agents={agentRenderDataWithActivity}
                   armies={armyRenderData}
                   reachSignatureMarkers={reachSignatureMarkers}
+                  rivalInfluenceMarkers={rivalInfluenceMarkers}
                   battles={battleRenderData}
                   sieges={siegeRenderData}
                   threadLines={threadLineData}

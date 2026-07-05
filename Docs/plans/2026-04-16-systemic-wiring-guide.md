@@ -1464,3 +1464,23 @@ At render time, `buildUnifiedEncounterStageModel` spreads `outcomeBand: stepOutc
 **Scope:** Afterimage fields only. `narrativeTemplate` (step bodies) and aftermath prose (`recent_event.message`) do not receive `outcomeBand` — they are authored to a fixed voice. If you want band-aware body prose, route it through the afterimage fields or propose an extension.
 
 **Trace verification:** `outcome_band_prose_selected` trace type, defined in `src/types/trace.ts`. Fields: `band`, `phraseId`, `phraseTable: 'outcome_phrase' | 'q_flavor'`.
+
+---
+
+## Capability: Rival schemes (THR-66)
+
+Rivals launch **multi-phase schemes** — a `Composition` of `kind: 'rival-scheme'` with four phases (rumor → materialization → response → crack) that rides the THR-225 composition phase runner. This is the antagonist layer content authors extend when they want rival-driven pressure.
+
+**How it works:** `phaseRivalActions` (orchestrator) decides on a rival's ~10-tick action tick whether to launch a scheme (`selectRivalScheme`) or make a cheap probe (the legacy flat action). On launch it builds an `ActiveComposition` from a `RivalSchemeFamily` (`buildRivalScheme` in `src/engine/rival.ts`), attaches the four phases inline, stamps `sponsorRivalId`/`schemeFamily`, and arms phase 1 via a world-flag. Each subsequent tick the rival **invests** (increments a world-flag counter); when it clears `RIVAL_SCHEME_PHASE_INVEST_TICKS[tier]` the next phase's readiness world-flag is set, the runner activates that phase, and `phaseRivalActions` executes the phase's concrete **move**.
+
+**Authoring a new family:** add a `RivalSchemeFamily` in `src/data/rival-schemes/` (see `corruptive.ts`/`territorial.ts`). Each of the four `beats` declares a `move` (`rumor` | `materialize` | `escalate` | `crack`), a `voice`, and ≥3 attributed prose variants with `{rival}`/`{location}` placeholders (baseline register per THR-609; lyricism reserved for the crack beat). Register the family in `src/data/rival-schemes/index.ts`, set `eligibleBehaviors` + `minTier`. The move kinds are executed by the switch in `phaseRivalActions`; a genuinely new move kind means extending both the `RivalSchemeMoveKind` union (`types.ts`) and that switch.
+
+**Escalation:** `computeRivalEscalationTier(state)` blends the doom stage with the highest ascendant thread `InfluenceTier` (fail-soft to doom-only) → tier 0–3. Tier scales max concurrent schemes, invest speed, and family ambition — all in `src/data/rival-scheme-config.ts`. Nothing bespoke; it rides the existing clocks.
+
+**Attribution + surfaces:** every scheme is attributed via `ActiveComposition.sponsorRivalId` + a `sponsors_scheme` edge (rival → target location, bound at the materialize move) + the denormalized `RivalState.schemes` summary. Surfaces: RivalPanel scheme cards + phase chips, ChronicleRail (the runner's phase story beats + a cool-failure beat on fail), launch/crack toasts, and the HexMapV2 rival-influence overlay (`buildRivalInfluenceMarkers` → `RivalInfluenceMesh`). Never leave a scheme move with only an engine-state surface.
+
+**Counter-play:** `detectSchemeCounter` treats player presence at the target (a `thread`/`controls`/`holds_place_of_power` edge, or the target destroyed) as a counter — stall once, fail on the second. A failed scheme's already-activated phases stay real (half-thwarted is canonically half-thwarted) and it emits a cool-failure chronicle beat.
+
+**Traces:** `rival.scheme_launched`, `rival.scheme_phase_advanced` (carries `move`), `rival.scheme_countered` (`stalled`|`failed`), `rival.scheme_completed` — all in `src/types/trace.ts`.
+
+**Debug:** `window.__DEBUG.getRivalSchemes()` lists active/terminal schemes; `window.__DEBUG.forceRivalScheme(rivalName, family)` launches one for QA.
