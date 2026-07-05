@@ -178,6 +178,74 @@ describe('scoreRegisterCompliance', () => {
     });
   });
 
+  describe('per-field sentence counting (THR-609 fragment-inflation fix)', () => {
+    it('does not fail an entry of plainspoken unpunctuated fragments', () => {
+      // A short punctuated description plus three lowercase fragment fields
+      // (narrative/success/failure) with no terminal punctuation — the exact
+      // shape of a divine action template. Before the fix these fragments'
+      // words folded into the description's single sentence and inflated
+      // words/sentence past the fail ceiling.
+      const r = scoreRegisterCompliance({
+        register: 'baseline',
+        fields: {
+          description: 'The gate stood open.',
+          narrative: 'reaches into the stone-memory of the ruin for the name of its long-dead makers',
+          success: 'a name surfaces and the culture that raised this place is a mystery no longer',
+          failure: 'the memory is too fragmented and the name will not rise from the broken dark',
+        },
+      });
+      const metric = r.metrics.find((m) => m.name === 'avgSentenceLength');
+      expect(metric?.band).not.toBe('fail');
+    });
+
+    it('counts each non-empty field as at least one sentence', () => {
+      // Four fragment fields, none punctuated: four sentences, not one.
+      const r = scoreRegisterCompliance({
+        register: 'baseline',
+        fields: { a: 'a short plain clause', b: 'another short one', c: 'a third here', d: 'and a fourth' },
+      });
+      const metric = r.metrics.find((m) => m.name === 'avgSentenceLength');
+      expect(metric?.band).toBe('pass');
+    });
+  });
+
+  describe('per-field register (THR-609 register-declaration wiring)', () => {
+    const longSentence =
+      'The council met at dawn and argued until the lamps burned low and still no one would say aloud the thing that every single person in that cold room already knew.';
+
+    it('scores a peak-declared field under peak thresholds, not baseline', () => {
+      const withDecl = scoreRegisterCompliance({
+        fields: { aftermath: longSentence },
+        fieldRegisters: { aftermath: 'peak' },
+      });
+      const withoutDecl = scoreRegisterCompliance({
+        fields: { aftermath: longSentence },
+      });
+      // Same stretched single sentence: baseline fails it; peak only warns.
+      expect(withoutDecl.band).toBe('fail');
+      expect(withDecl.band).not.toBe('fail');
+    });
+
+    it('resolves a base field name for suffixed keys (aftermath.<choiceId>)', () => {
+      const r = scoreRegisterCompliance({
+        fields: { 'aftermath.choice_a': longSentence },
+        fieldRegisters: { aftermath: 'peak' },
+      });
+      expect(r.band).not.toBe('fail');
+      // Peak-group metrics are tagged for inspectability.
+      const tagged = r.metrics.find((m) => m.detail.startsWith('[peak]'));
+      expect(tagged).toBeDefined();
+    });
+
+    it('marks an entry declared when only per-field registers are present', () => {
+      const r = scoreRegisterCompliance({
+        fields: { aftermath: 'A plain line.' },
+        fieldRegisters: { aftermath: 'peak' },
+      });
+      expect(r.declared).toBe(true);
+    });
+  });
+
   describe('fail-soft', () => {
     it('skips (never throws) when there is no scoreable prose', () => {
       const r = scoreRegisterCompliance({ fields: {} });

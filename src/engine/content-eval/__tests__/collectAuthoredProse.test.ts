@@ -55,4 +55,16 @@ describe('collectAuthoredProse', () => {
     const { pass, warn, fail, error } = batch.summary;
     expect(pass + warn + fail + error).toBe(batch.summary.total);
   });
+
+  it('declares encounter aftermath beats as peak register (THR-609)', () => {
+    // The major-aftermath surface is a canon peak register; the collector must
+    // tag it so peak lyricism is not mis-scored under baseline thresholds.
+    const withAftermath = corpus.filter(
+      (e) => e.contentType === 'encounter' && Object.keys(e.fields).some((k) => k.startsWith('aftermath')),
+    );
+    expect(withAftermath.length).toBeGreaterThan(0);
+    for (const e of withAftermath) {
+      expect(e.fieldRegisters?.aftermath).toBe('peak');
+    }
+  });
 });
