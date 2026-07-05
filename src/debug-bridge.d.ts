@@ -123,9 +123,13 @@ export interface DebugForeshadowingResult {
   locationId: string;
   locationName: string;
   prose: string;
+  /** Single-sentence tooltip render (THR-631); null on the authored path. */
+  tooltipProse: string | null;
   variantId: string | null;
   resolvedAtTick: number;
   signals: import('./types/foreshadowing').ForeshadowingSignals;
+  /** The Motive Receipt driving this foreshadowing (THR-631), or null. */
+  receipt: import('./types/foreshadowing').MotiveReceipt | null;
   interventionAttribution: import('./types/foreshadowing').ForeshadowingInterventionAttribution | null;
 }
 
