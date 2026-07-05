@@ -26,6 +26,8 @@ import type { ResourceInstance } from '../types/resource';
 import type { SphereAffinity, SpherePressureEvent } from '../types/sphereAffinity';
 import { emitTrace } from './traceBuffer';
 import { getNodeSphereAffinity } from './sphereAffinity';
+import { readLocationResourceBalance } from './resourceEconomy';
+import { RESOURCE_BALANCE_PROSPERITY_WEIGHT } from '../data/resource-classes';
 import { IDENTITY_PROSPERITY_MODIFIER_CAP } from '../types/doomIdentity';
 import {
   LOC_HEALTH_DEFAULT_BASELINE,
@@ -421,6 +423,13 @@ function computeEquilibriumTarget(
   const presenceBonus = divinePresence >= LOC_PRESENCE_PROSPERITY_THRESHOLD ? LOC_PRESENCE_PROSPERITY_BONUS : 0;
   target += presenceBonus;
 
+  // THR-615: resource balance (surplus/scarcity vs local demand) nudges the target.
+  // Derived by phaseResourceStockTiers earlier in the tick and stored on props.
+  // Fail-soft: absent → 0 (no effect). ±RESOURCE_BALANCE_PROSPERITY_WEIGHT × 100.
+  const resourceBalance = readLocationResourceBalance(props);
+  const resourceBalanceBonus = resourceBalance * RESOURCE_BALANCE_PROSPERITY_WEIGHT * 100;
+  target += resourceBalanceBonus;
+
   // THR-401: low populationHealth dampens the equilibrium target (multiplier).
   // Fail-soft: absent property defaults to LOC_HEALTH_DEFAULT_BASELINE.
   const populationHealth = typeof props.populationHealth === 'number'
@@ -455,6 +464,8 @@ function computeEquilibriumTarget(
       presenceBonus,
       populationHealth,
       healthDampenerApplied,
+      resourceBalance,
+      resourceBalanceBonus,
     },
   };
 }
@@ -476,6 +487,10 @@ interface EquilibriumBreakdown {
   presenceBonus: number;
   populationHealth: number;
   healthDampenerApplied: number;
+  /** THR-615: normalized aggregate resource balance ∈ [-1, 1]. */
+  resourceBalance: number;
+  /** THR-615: prosperity target contribution from resource balance. */
+  resourceBalanceBonus: number;
 }
 
 // ─── Phase Function ──────────────────────────────────────────────────────────

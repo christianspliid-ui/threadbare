@@ -24,6 +24,9 @@ import { Play, Square, Loader2 } from 'lucide-react';
 import { INITIATIVE_TEMPLATE_MAP } from '../../data/initiative-templates';
 import { GuildQuestPanel } from './GuildQuestPanel';
 import type { InitiativeProgress } from '../../types/initiative';
+import type { ResourceInstance, StockTier } from '../../types/resource';
+import { getResourceClass, getResourceTierProse } from '../../data/resource-classes';
+import { renderProseWithIPK } from '../ProseKeyword';
 
 interface LocationViewProps {
   location: GraphNode;
@@ -783,6 +786,62 @@ const SublocationDetailView = memo(function SublocationDetailView({
   );
 });
 
+// ──── Sub-component: Livelihood line (THR-615) ────
+// Prose-first read of the location's resource stock tiers. No numbers — a
+// granary described as full or empty, with Famine/Glut as IPK keywords.
+const LivelihoodLine = memo(function LivelihoodLine({ location }: { location: GraphNode }) {
+  const resources = ((location.properties ?? {}).resources ?? {}) as Record<string, ResourceInstance>;
+  const entries = Object.entries(resources).filter(([, r]) => r && typeof r.quantity === 'number');
+  if (entries.length === 0) return null;
+
+  const rank = (t: StockTier | undefined) => (t === 'scarce' ? 0 : t === 'surplus' ? 1 : 2);
+  const notable = entries
+    .filter(([, r]) => r.stockTier === 'scarce' || r.stockTier === 'surplus')
+    .sort((a, b) => rank(a[1].stockTier) - rank(b[1].stockTier))
+    .slice(0, 3);
+
+  let text: string;
+  if (notable.length > 0) {
+    text = notable
+      .map(([id, r]) => {
+        const tier = r.stockTier as StockTier;
+        const isStaple = getResourceClass(id).category === 'staple';
+        const keyword = isStaple && tier === 'scarce' ? '**Famine** — '
+          : isStaple && tier === 'surplus' ? '**Glut** — ' : '';
+        return keyword + getResourceTierProse(id, tier);
+      })
+      .join(' ');
+  } else {
+    // All adequate — name the most abundant resource's steady prose.
+    const dominant = entries.sort((a, b) => (b[1].quantity ?? 0) - (a[1].quantity ?? 0))[0];
+    text = getResourceTierProse(dominant[0], 'adequate');
+  }
+
+  return (
+    <div className="mx-6 mt-3" style={{ maxWidth: '820px' }}>
+      <div
+        className="rounded-lg border px-4 py-3"
+        style={{ backgroundColor: 'var(--bg-raised)', borderColor: 'var(--border-gold)' }}
+      >
+        <p
+          className="uppercase"
+          style={{
+            fontSize: 'var(--text-xs)',
+            color: 'var(--text-tertiary)',
+            letterSpacing: '0.5px',
+            marginBottom: '0.35rem',
+          }}
+        >
+          Livelihood
+        </p>
+        <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)', lineHeight: '1.6' }}>
+          {renderProseWithIPK(text)}
+        </p>
+      </div>
+    </div>
+  );
+});
+
 export const LocationView = memo(function LocationView({
   location,
   agents,
@@ -1156,6 +1215,9 @@ export const LocationView = memo(function LocationView({
           </span>
         </div>
       )}
+
+      {/* Livelihood line — resource stock tiers as prose (THR-615) */}
+      <LivelihoodLine location={location} />
 
       {/* Conditional: Sublocation view or flat layout */}
       {sublocationData.sublocations.length > 0 ? (

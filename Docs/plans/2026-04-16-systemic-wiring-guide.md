@@ -94,6 +94,8 @@ Available conditionals: `has_artifact`, `has_ally`, `has_rival`, `has_faction`, 
 
 **Hex-level prose uses a separate composer — not `enrichProse`:** As of THR-415, the `hex.survey` divine action emits a `survey_completed` TickEvent whose message is built by `composeSurveyPeopleProse` in `src/engine/surveyProseComposer.ts`. This is a hex-scoped prose composer (averaging location unrest, listing controlling factions) that operates on the graph directly and does not go through `proseEnrichment.ts`. If you add other hex-scoped revelation events (e.g. a HexChronicle people-layer), write a new composer in the same pattern rather than routing through `enrichProse`.
 
+**Economic In-Prose Keywords (THR-615):** any prose rendered through `renderProseWithIPK` (`src/components/ProseKeyword.tsx`) now recognises four economic keywords in `**bold**` markers — `**Famine**`, `**Glut**`, `**Monopoly**`, `**Embargo**` — rendering them as gold, tooltip'd terms (tooltips in `ECONOMY_KEYWORD_TOOLTIPS`, `src/data/resource-classes.ts`) alongside the existing sphere keywords. Use them in location/economy prose to give scarcity and surplus mechanical weight. Separately, the mortal-economy phase auto-narrates staple stock crossings into the Great Chronicle via the `resource_scarcity` / `resource_glut` chronicle triggers (`economicChronicle.ts`) — these fire from the engine, not per-encounter; you don't invoke them, but be aware the world already speaks about famines and gluts, so don't hardcode duplicate "the harvest failed" lines in encounter prose.
+
 ---
 
 ### Capability 2: Encounter Seeding — Consequences That Grow Into Future Stories

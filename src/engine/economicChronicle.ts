@@ -258,6 +258,8 @@ function formatChronicleTitle(trigger: EconomicChronicleTrigger): string {
     agreement_broken: 'A Pact Betrayed',
     wealth_tier_up: 'Fortune Rises',
     wealth_tier_down: 'Fortune Falls',
+    resource_scarcity: 'A Scarcity Bites',
+    resource_glut: 'A Glut Descends',
   };
   return titles[trigger];
 }

@@ -107,6 +107,14 @@
       "sources": ["src/engine/phaseSublocations.ts", "src/engine/phaseSettlementPromotion.ts", "src/engine/phaseSettlementReassessment.ts", "src/engine/phaseProsperity.ts", "src/engine/phaseUnrest.ts", "src/engine/phaseTradeRouteDecay.ts", "src/engine/tradeRoute.ts", "src/engine/phaseEconomicTraits.ts", "src/engine/phaseEconomicChronicle.ts", "src/engine/economicChronicle.ts", "src/engine/resourceSeeding.ts"]
     },
     {
+      "id": "livelihoods-reference",
+      "file": "livelihoods-reference.html",
+      "title": "Livelihoods & the Resource Web",
+      "blurb": "The activated resource economy (Phase 1) — how every place's Livelihood reads in prose from its resource stock tiers (scarce/adequate/surplus), when a staple crosses into Famine or Glut, how supply-vs-demand balance nudges prosperity, how a bonded mortal's home turning hungry pulls a livelihood thread tug, and the resource-class table that leans each good toward a Sphere. Companion to the settlements page; honest scope: P1 activates the layer, trade cargo and divine verbs come later.",
+      "section": "Manual",
+      "sources": ["src/engine/phases/resourceStockTiers.ts", "src/engine/resourceEconomy.ts", "src/data/resource-classes.ts", "src/engine/phaseProsperity.ts", "src/engine/economicChronicle.ts", "src/data/economic-chronicle-content.ts", "src/components/Game/LocationView.tsx", "src/components/Game/debug/EconomyDebugTab.tsx", "src/components/ProseKeyword.tsx", "src/types/resource.ts"]
+    },
+    {
       "id": "armies-battles-reference",
       "file": "armies-battles-reference.html",
       "title": "Armies, Battles & Lairs",

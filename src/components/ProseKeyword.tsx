@@ -16,6 +16,7 @@
 import type { SphereName } from '../types';
 import { getSphereColor } from '../data/sphereIcons';
 import { SPHERE_TOOLTIPS } from '../data/sphereTooltips';
+import { ECONOMY_KEYWORD_TOOLTIPS, ECONOMY_KEYWORD_SET } from '../data/resource-classes';
 import { Tooltip } from './shared/Tooltip';
 
 // ─── Props ────────────────────────────────────────────────────────────────────
@@ -40,6 +41,35 @@ export function ProseKeyword({ sphere, children }: ProseKeywordProps) {
           color,
           fontWeight: 700,
           textDecoration: 'underline',
+          textDecorationColor: `${color}88`,
+          cursor: 'help',
+        }}
+        role="term"
+        tabIndex={0}
+      >
+        {children}
+      </span>
+    </Tooltip>
+  );
+}
+
+// ─── Economic keyword (IPK, THR-615) ───────────────────────────────────────────
+
+/**
+ * Renders an economic In-Prose Keyword (Famine / Glut / Monopoly / Embargo) as
+ * bold, dotted-underlined text with a plain-language tooltip. Uses the Gold reach
+ * color so economic pressure reads as economic, not cosmological.
+ */
+function EconomyKeyword({ keyword, children }: { keyword: string; children: React.ReactNode }) {
+  const color = '#c9a227'; // gold — the economic reach
+  const tooltipText = ECONOMY_KEYWORD_TOOLTIPS[keyword] ?? '';
+  return (
+    <Tooltip label={keyword} desc={tooltipText}>
+      <span
+        style={{
+          color,
+          fontWeight: 700,
+          textDecoration: 'underline dotted',
           textDecorationColor: `${color}88`,
           cursor: 'help',
         }}
@@ -97,8 +127,15 @@ export function renderProseWithIPK(text: string): React.ReactNode {
           {inner}
         </ProseKeyword>,
       );
+    } else if (ECONOMY_KEYWORD_SET.has(normalized)) {
+      // Economic keyword — Famine / Glut / Monopoly / Embargo (THR-615)
+      parts.push(
+        <EconomyKeyword key={`ipk-econ-${keyCounter++}`} keyword={normalized}>
+          {inner}
+        </EconomyKeyword>,
+      );
     } else {
-      // Not a recognised sphere — emit plain bold text
+      // Not a recognised sphere or economic keyword — emit plain bold text
       parts.push(<strong key={`bold-${keyCounter++}`}>{inner}</strong>);
     }
 

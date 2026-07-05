@@ -7,6 +7,15 @@
 
 import type { SphereName, TerrainType } from './index';
 
+/**
+ * Coarse stock tier for a resource at a location (THR-615).
+ *
+ * Derived each tick from supply (quantity) minus local demand (population proxy).
+ * This is the signal prose, encounters, and the Livelihood UI read — the
+ * underlying scalar balance never surfaces to the player.
+ */
+export type StockTier = 'scarce' | 'adequate' | 'surplus';
+
 /** A resource instance at a specific location. */
 export interface ResourceInstance {
   /** Abundance scale 0-100 (0 = exhausted, 100 = maximum abundance). */
@@ -15,6 +24,11 @@ export interface ResourceInstance {
   renewable: boolean;
   /** Per-cycle renewal fraction (0-1). Only meaningful if renewable=true. */
   renewalRate: number;
+  /**
+   * Coarse stock tier derived by `phaseResourceStockTiers` (THR-615).
+   * Absent until the first derivation runs; readers treat absent as 'adequate'.
+   */
+  stockTier?: StockTier;
 }
 
 /** Static definition of a resource type — lives in content data. */
