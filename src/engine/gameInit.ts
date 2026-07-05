@@ -40,6 +40,7 @@ import { seedElderRuins } from './ruins/elderRuinSeeding';
 import { generateCultureIdentities, toCultureForWorldgen } from './cultureGenerator';
 import { mulberry32 } from '../lib/prng';
 import { seedAllRarityTiers } from './raritySeeding';
+import { seedLatentEssenceSources } from './essenceSourceSeeding';
 import { assignInitialAmbitions } from './ambitionAssignment';
 import { AMBITION_TEMPLATES } from '../data/ambition-templates';
 import type { AmbitionAgentSnapshot } from './ambitionSelection';
@@ -51,6 +52,9 @@ const CULTURE_SEED_OFFSET = 87671;
 
 /** PRNG offset for rarity tier seeding. Unique prime — no collision with other seeding passes. */
 const RARITY_SEED_OFFSET = 113513;
+
+/** PRNG offset for latent essence-source seeding (THR-611). Unique prime — no collision. */
+const LATENT_SOURCE_SEED_OFFSET = 156041;
 
 // ─── Map Size Presets (NFP #1: Tunability) ───────────────────────
 
@@ -213,6 +217,15 @@ export function initializeGameState(
   {
     const rarityRng = mulberry32(seed + RARITY_SEED_OFFSET);
     seedAllRarityTiers(graph, rarityRng);
+  }
+
+  // ── Seed latent essence sources (THR-611 Slice 4) ──────────────────
+  // After location sphere-affinity seeding (sources type by locale) and after
+  // lairs/ruins (their subtypes are excluded by the eligible filter). Latent =
+  // hidden + uncontrolled → zero income until Found + Claimed (additive, NFP #6).
+  {
+    const latentSourceRng = mulberry32(seed + LATENT_SOURCE_SEED_OFFSET);
+    seedLatentEssenceSources(graph, latentSourceRng);
   }
 
   // Ensure starting location exists — pick a habitable tile near center

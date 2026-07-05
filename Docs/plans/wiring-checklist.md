@@ -6,9 +6,9 @@
 
 ---
 
-## Essence Sources — Divine Economy Substrate (THR-611, Slice 1)
+## Essence Sources — Divine Economy Substrate (THR-611, Slices 1–4)
 
-Engine substrate for the essence-source find/claim/build/defend loop. Slice 1 ships the income substrate; player-facing content + UI are follow-on slices (THR-611 stays In Dev).
+Engine substrate + verb loop for the essence-source find→claim→build→defend loop. Slice 1 = income substrate; Slice 2 = build/defend verb ops; Slice 3 = beat surfacing; Slice 4 = find/claim + latent-source worldgen seeding. Player-UI + encounters + rulebook/manual are the remaining follow-on slices (THR-611 stays In Dev).
 
 | Wiring surface | Location | Notes |
 |---|---|---|
@@ -19,7 +19,12 @@ Engine substrate for the essence-source find/claim/build/defend loop. Slice 1 sh
 | Income integration | `computeEssenceGeneration` (`src/engine/influence.ts`) + `computeEssenceIncome` (`src/engine/essenceIncome.ts`) | Typed source income added post-distribution to each source's own sphere; untyped/dormant migrated places of power skipped by the typed term and kept on the legacy place-of-power loop → legacy income provably unchanged. |
 | Debug | `src/debug-bridge.ts` | `__DEBUG.getEssenceSources()` → `{ sources, sourceIncome }` (read-only). |
 | Tests | `src/engine/__tests__/essenceSources.test.ts` | 15 tests: tier/DR helpers, typed routing, migration idempotency, contested drain, and the legacy-income-unchanged contract (bit-for-bit per sphere). |
-| Deferred (follow-on slices) | — | `essence_source_phase` `TraceCategory` registration; find/claim/build/defend templates; discovery/consecration/defend encounters; IPK/codex/chronicle prose; portfolio income-by-source panel + WebGL hex signifiers; rulebook + Game-Manual-Wiki essence page. |
+| Build/Defend verb ops (Slice 2) | `src/types/graphOp.ts` + `src/engine/graphOpExecutor.ts` | `consecrate_source`/`sanctify_source`/`defend_source` executor cases (routed via `graphOnlyOps`→`executeGraphOps`, no resolution change). Templates `loc.consecrate_source`/`loc.sanctify_source`/`loc.defend_source`. |
+| Find/Claim verb ops (Slice 4) | `src/types/graphOp.ts` + `src/engine/graphOpExecutor.ts` | `find_source` (reveal latent sources within `op.discoveryRangeHops ?? SOURCE_DISCOVERY_RANGE_HOPS` hexes of target; `findLatentSourcesInRange` in `essenceSources.ts`) + `claim_source` (ascendant→host `controls` edge; enforces Find→Claim prerequisite; idempotent). Templates `loc.find_source` (Eye/read) / `loc.claim_source` (Star/update). |
+| Worldgen seeding (Slice 4) | `src/engine/essenceSourceSeeding.ts` → `gameInit.ts` | `seedLatentEssenceSources(graph, rng)` after location sphere-affinity seeding (`LATENT_SOURCE_SEED_OFFSET`); seeds `LATENT_SOURCE_SEED_COUNT` latent (`discoveredBy` undefined) `placeOfPower` bags on wild-interest subtypes, typed by locale dominant sphere. Deterministic; does not exclude mundane-controlled hosts. |
+| Surfacing (Slices 3–4) | `src/data/ascendant-beat-content.ts` | `beat.pool.invest.the_wellspring` `grantsActionIds` now the whole 5-verb loop (find/claim/consecrate/sanctify/defend); all five `unlockable-generic` in `ASCENDANT_ACTION_BUCKETS`. Empty THR-501 starter floor left intact. |
+| Tests (Slices 2/4) | `graphOpExecutor.essenceSources.test.ts`, `graphOpExecutor.findClaimSources.test.ts`, `essenceSourceSeeding.test.ts`, `ascendantBeatPool.test.ts` | 13 + 8 + 6 op/seeding tests; beat-pool grant asserts the five-verb loop. |
+| Deferred (follow-on slices) | — | `essence_source_phase` + `source_*` `TraceCategory` registration; discovery/consecration/defend encounters; IPK/codex/chronicle prose; portfolio income-by-source panel + WebGL hex signifiers + DebugPanel essence-sources tab; rulebook + Game-Manual-Wiki essence page. |
 
 ## Mortal Economy — Resource Web P1 (THR-615)
 

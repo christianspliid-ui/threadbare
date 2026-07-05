@@ -14,6 +14,8 @@
 import type { SphereName } from '../types';
 import type { EssenceSource } from '../types/essenceSource';
 import type { WorldGraph } from './graph';
+import { hexDistance } from './delivery';
+import { resolveLocationToHex } from './encounterAwareness';
 import {
   BASE_SOURCE_INCOME,
   deriveSourceTier,
@@ -28,6 +30,29 @@ export function readEssenceSource(
 ): EssenceSource | undefined {
   const src = properties?.essenceSource;
   return src && typeof src === 'object' ? (src as EssenceSource) : undefined;
+}
+
+/**
+ * Find latent (undiscovered) essence sources within `rangeHops` hexes of a
+ * center hex. "Latent" = carries an `essenceSource` bag whose `discoveredBy` is
+ * undefined (fog-consistent: hidden until a Find reveals it). Walks all location
+ * nodes — acceptable because a Find is a rare, deliberate player action and
+ * sources are few; not a per-tick path. Returns the matching host location ids.
+ */
+export function findLatentSourcesInRange(
+  graph: WorldGraph,
+  center: { col: number; row: number },
+  rangeHops: number,
+): string[] {
+  const found: string[] = [];
+  for (const loc of graph.getNodesByType('location')) {
+    const src = readEssenceSource(loc.properties);
+    if (!src || src.discoveredBy) continue; // not a source, or already discovered
+    const hex = resolveLocationToHex(graph, loc.id);
+    if (!hex) continue; // fail-soft: unplaceable host is skipped
+    if (hexDistance(center, hex) <= rangeHops) found.push(loc.id);
+  }
+  return found;
 }
 
 /**

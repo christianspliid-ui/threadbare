@@ -10,11 +10,13 @@ import { emitTrace } from './traceBuffer';
 import { hydrateToTier } from './npcGraduation';
 import type { SphereName } from '../types';
 import type { EssenceSource, SourceKind } from '../types/essenceSource';
-import { readEssenceSource } from './essenceSources';
+import { readEssenceSource, findLatentSourcesInRange } from './essenceSources';
+import { resolveLocationToHex } from './encounterAwareness';
 import {
   deriveSourceTier,
   SANCTITY_BUILD_PER_ACTION,
   SANCTITY_DEFEND_RESTORE,
+  SOURCE_DISCOVERY_RANGE_HOPS,
 } from '../data/essence-sources';
 
 interface ExecuteOptions {
@@ -168,6 +170,12 @@ function executeSingleOp(
 
       case 'defend_source':
         return executeDefendSource(graph, op, ctx);
+
+      case 'find_source':
+        return executeFindSource(graph, op, ctx);
+
+      case 'claim_source':
+        return executeClaimSource(graph, op, ctx);
 
       default:
         return {
@@ -721,4 +729,65 @@ function executeDefendSource(
   };
   graph.updateNode(host.id, { properties: { ...host.properties, essenceSource: restored } });
   return { op, success: true };
+}
+
+/**
+ * Find (reveal) latent essence sources near the target (Find leg, THR-611 Slice 4).
+ * Resolves the target location to a hex, reveals every latent (undiscovered)
+ * source within `op.discoveryRangeHops ?? SOURCE_DISCOVERY_RANGE_HOPS` hexes by
+ * stamping `discoveredBy = actorId`. Fail-soft: an unplaceable target or an empty
+ * neighbourhood is a no-op success (a Find that reveals nothing is not a failure).
+ * `createdIds` is unused; the revealed count rides in the (no-op) result.
+ */
+function executeFindSource(
+  graph: WorldGraph,
+  op: GraphOp,
+  ctx: GraphOpContext,
+): GraphOpResult {
+  const targetId = resolveRef(op.nodeId ?? op.target ?? '$target', ctx);
+  const center = resolveLocationToHex(graph, targetId);
+  if (!center) return { op, success: true }; // unplaceable target → nothing to scan
+
+  const range = typeof op.discoveryRangeHops === 'number'
+    ? op.discoveryRangeHops
+    : SOURCE_DISCOVERY_RANGE_HOPS;
+
+  const latent = findLatentSourcesInRange(graph, center, range);
+  for (const locId of latent) {
+    const host = graph.getNode(locId);
+    const src = readEssenceSource(host?.properties);
+    if (!host || !src) continue;
+    graph.updateNode(host.id, {
+      properties: { ...host.properties, essenceSource: { ...src, discoveredBy: ctx.actorId } },
+    });
+  }
+  return { op, success: true };
+}
+
+/**
+ * Claim a discovered source (Claim leg, THR-611 Slice 4): establish the
+ * `controls` edge actor→host so the source's typed income begins flowing.
+ * Requires an already-**discovered** source (you cannot claim what you have not
+ * found — the Find→Claim prerequisite). Fail-soft: no bag → error; undiscovered
+ * → error; already-controlled → idempotent success.
+ */
+function executeClaimSource(
+  graph: WorldGraph,
+  op: GraphOp,
+  ctx: GraphOpContext,
+): GraphOpResult {
+  const targetId = resolveRef(op.nodeId ?? op.target ?? '$target', ctx);
+  const host = graph.getNode(targetId);
+  const src = readEssenceSource(host?.properties);
+  if (!host || !src) return { op, success: false, error: `claim_source: no essence source on ${targetId}` };
+  if (!src.discoveredBy) return { op, success: false, error: 'claim_source: source not yet discovered — Find it first' };
+
+  const alreadyControls = graph
+    .getOutgoingEdges(ctx.actorId, 'controls')
+    .some((e) => e.target === targetId);
+  if (alreadyControls) return { op, success: true }; // idempotent
+
+  const createdId = `edge_controls_${++opCounter}`;
+  graph.addEdge({ id: createdId, source: ctx.actorId, target: targetId, type: 'controls', properties: {} });
+  return { op, success: true, createdId };
 }

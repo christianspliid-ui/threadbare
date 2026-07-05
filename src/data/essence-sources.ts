@@ -45,6 +45,35 @@ export const SANCTITY_DEFEND_RESTORE = 0.25;
 export const SANCTITY_DRAIN_PER_TICK_CONTESTED = 0.02;
 
 /**
+ * Hex range within which a Find action reveals latent essence sources, centered
+ * on the targeted location. A flat tunable for now; a later slice may make it
+ * capability-driven (per-reach awareness, per the plan's `SOURCE_DISCOVERY_RANGE_HOPS`
+ * "per-reach awareness" note).
+ */
+export const SOURCE_DISCOVERY_RANGE_HOPS = 3;
+
+/**
+ * Target number of latent (undiscovered, uncontrolled) `placeOfPower` sources
+ * seeded at worldgen. Capped by the count of eligible host locations, so smaller
+ * maps get fewer. Kept deliberately small (plan: "sources are few and player-owned").
+ */
+export const LATENT_SOURCE_SEED_COUNT = 6;
+
+/**
+ * Location subtypes eligible to host a worldgen-seeded latent `placeOfPower`
+ * source — natural / wild interest points (groves, caverns, springs, monuments,
+ * old roads), never settlements, the seat, ruins, or lairs. These read as
+ * "places of latent power" the god has yet to find and claim.
+ */
+export const LATENT_SOURCE_HOST_SUBTYPES: readonly string[] = [
+  'grove',
+  'cavern',
+  'hot_spring',
+  'monument',
+  'ancient_road',
+];
+
+/**
  * Base per-tick yield by source kind. `placeOfPower` keeps the legacy
  * `ESSENCE_PER_PLACE_OF_POWER` value so a migrated, untyped, dormant place of
  * power contributes exactly what it did before (NFP #6, additive).

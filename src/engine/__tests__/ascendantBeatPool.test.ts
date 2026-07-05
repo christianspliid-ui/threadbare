@@ -173,10 +173,14 @@ describe('Ascendant Beat starter pool + unlock catalogue (THR-505)', () => {
 
   // THR-611 Slice 3 — verb surfacing. Slice 2 (#531) shipped the source-loop verbs but
   // nothing granted them, so they were unreachable (empty THR-501 starter floor). The
-  // `the_wellspring` investment beat is the surfacing: resolving it unlocks all three and
-  // flips the within-run reveal gate, proving Slice 2's work is now player-reachable.
-  it('the_wellspring beat unlocks the three divine-economy source verbs (THR-611 Slice 3)', () => {
-    const SOURCE_VERBS = ['loc.consecrate_source', 'loc.sanctify_source', 'loc.defend_source'];
+  // `the_wellspring` investment beat is the surfacing: resolving it unlocks the whole
+  // find→claim→build→defend loop and flips the within-run reveal gate, proving Slices 2
+  // (build/defend verbs) and 4 (find/claim verbs) are now player-reachable.
+  it('the_wellspring beat unlocks the divine-economy source loop verbs (THR-611 Slice 3 + 4)', () => {
+    const SOURCE_VERBS = [
+      'loc.find_source', 'loc.claim_source',
+      'loc.consecrate_source', 'loc.sanctify_source', 'loc.defend_source',
+    ];
     const beat = ASCENDANT_BEAT_POOL.find(b => b.beatId === 'beat.pool.invest.the_wellspring');
     expect(beat, 'the_wellspring pool beat missing').toBeDefined();
     expect(beat!.grantsActionIds).toEqual(SOURCE_VERBS);
