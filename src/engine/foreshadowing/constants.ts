@@ -23,3 +23,17 @@ export const INTERVENTION_ATTRIBUTION_WINDOW = 12;
 
 /** Per-session LRU cap on cached foreshadowing results. @range 128-512 */
 export const FORESHADOWING_CACHE_MAX_ENTRIES = 256;
+
+// ─── Motive Receipt (THR-631 Phase B) ───────────────────────────────────────
+
+/** Max contributions kept on a receipt (ranked by weight, top-N). @range 2-5 */
+export const RECEIPT_TOP_CONTRIBUTIONS = 3;
+
+/** Contribution share below which a contribution is dropped from the receipt. @range 0.05-0.20 */
+export const RECEIPT_MIN_WEIGHT = 0.10;
+
+/** Second-contribution weight required before an optional stake/misgiving clause renders. @range 0.15-0.35 */
+export const STAKE_CLAUSE_MIN_WEIGHT = 0.20;
+
+/** Scale converting multiplicative score terms (e.g. rarityMultiplier) to additive deltas for normalization. @range 0.5-2.0 */
+export const MULTIPLIER_DELTA_SCALE = 1.0;

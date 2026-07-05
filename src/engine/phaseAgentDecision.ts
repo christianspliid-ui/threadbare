@@ -28,6 +28,8 @@ import {
 } from '../types/encounter';
 import { runFilterPipeline } from './encounterFilterPipeline';
 import { scoreAndSelect, NOVELTY_CATEGORY_WINDOW_TICKS, type FamiliarityRecord, type ScoredCandidate, type EncounterNoveltyRecord } from './encounterScoring';
+import { findActionableIntelligence } from './intelligence';
+import { buildMotiveReceipt } from './foreshadowing/motiveReceipt';
 import { resolveIdleBehavior } from './idleBehavior';
 import { isEncounterOccupied } from './encounter';
 import { getAnyEncounterById } from '../data/encounter-content';
@@ -851,6 +853,42 @@ export function phaseAgentDecision(
 
       if (decision.selected) {
         const sel = decision.selected;
+
+        // THR-631 Phase B: emit the Motive Receipt — the real decision causality
+        // the scorer computed for the winning candidate, kept instead of thrown
+        // away. Stored on the agent node (internal decision data → property, not
+        // an edge) for foreshadowing prose, trace, and DebugPanel. Fresh node ref
+        // avoids clobbering earlier same-tick writes (same pattern as familiarity).
+        try {
+          const locNodeForReceipt = graph.getNode(sel.entry.locationId);
+          const receiptRegion =
+            typeof locNodeForReceipt?.properties?.region === 'string'
+              ? (locNodeForReceipt.properties.region as string)
+              : typeof locNodeForReceipt?.properties?.regionId === 'string'
+                ? (locNodeForReceipt.properties.regionId as string)
+                : undefined;
+          const intelMatch = sel.intelBonus > 0 && agentIntelligence.length > 0
+            ? findActionableIntelligence(agentIntelligence, agentId, {
+                templateId: sel.entry.templateId,
+                locationId: sel.entry.locationId,
+                targetAgentId: sel.entry.targetAgentId,
+                region: receiptRegion,
+              })
+            : undefined;
+          const receipt = buildMotiveReceipt(
+            sel,
+            intelMatch?.reliability ?? null,
+            intelMatch?.recordId ?? null,
+            state.tick,
+          );
+          const freshForReceipt = graph.getNode(agentId);
+          if (freshForReceipt) {
+            freshForReceipt.properties.motiveReceipt = receipt;
+          }
+        } catch {
+          // Fail-soft: receipt is a presentation/inspectability layer — never
+          // block the decision phase if it fails.
+        }
 
         // Phase 4: Record forecast at decision time for drift tracking
         if (runtime) {
