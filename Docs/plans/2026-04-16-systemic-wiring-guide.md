@@ -1204,6 +1204,7 @@ Content authoring often needs to verify "did my effect actually fire?" DebugPane
 | Emergent personality traits (THR-527) | `personality_trait_emerged` (grant + release; `details.kind`, `details.axisId`, `details.position`) |
 | Origin-vignette birth seeding (THR-561) | `personality_origin_seeded` (aggregate per tick; `details.kind`: `seeded` \| `unknown_axis`, `details.count`, `details.vignettesApplied`) |
 | Core personality foundation (THR-542) | `core_personality` (`details.kind`: `seeded` \| `emerge` \| `fade` \| `bend`) |
+| God-side progression (THR-613) | `ascendant.progression.practice`, `ascendant.progression.tier_up`, `ascendant.progression.deepening_enqueued` |
 
 **How to use:** Open DebugPanel (backtick or F1), select the Trace tab, check the category filter chips. Full TypeScript interface definitions for each trace type live in `src/types/trace.ts`.
 
@@ -1226,6 +1227,10 @@ Beneath the 8 reach moral axes sits a second, more fundamental layer: the **Core
 - **bend** — under low normalized Quintessence, the Core nudges coupled reach axes toward a pole (`coreBendContributions`). A nudge that is *added* to reach drift, **never a cap** (the cold philanthropist stays possible). Emits `core_personality`/`bend`.
 
 **Slice status (THR-542):** Engine foundation (slice 1) ✅ and the Content layer (slice 2 / THR-544 — origin-vignette library + emergent-trait defs, wired into seeding and emerge/fade) ✅ have shipped. The **Star re-scope** (Beacon/Wrecker, THR-545) and the **character-sheet Core section** (UI, THR-546) remain. The colour read and the bend nudge are wired as mechanics + traces; their *consumption* (prose tone, reach-drift application) lands with later slices.
+
+### Deepening beats — god-side tier-crossing vignettes (THR-613)
+
+The **ascendant** grows too, not only mortals. It accrues `reachPractice` in its two permanent reaches by resolving in-domain actions (`accruePlayerReachPractice`, fed through the same Domain-Capability sigmoid the agents use — one source of truth). When that practice pushes the god's tier up in a reach, the `phaseAscendantProgression` phase enqueues a **Deepening beat** (`beat.deepening.<reach>`) into the shipped Ascendant Beat Director's `pending` slot and writes a one-line chronicle entry. **For content authors:** the eight vignettes live in `src/data/ascendant-deepening-beats.ts` — `ASCENDANT_DEEPENING_BEATS` (the `BeatDefinition`s, catalogued in `ascendantBeat.ts`) + `DEEPENING_BEAT_PRESENTATION` (per-reach authored prose, plain register) + `deepeningChronicleProse`. They are **prose-first** — a Deepening beat grants *no* card in v1 (the tier-up itself, already applied, unlocks deeper tier-gated templates in that reach); the growth is *narrated*, never "+1 tier". To reshape how a deepening reads for a reach, edit its `DEEPENING_BEAT_PRESENTATION` entry; the beat is enqueued by the engine, so there is no Director-pool weight to tune. (Card-choice offers + the reach-flavored modal wiring are later slices; the milestone/discovery **breadth** beats — Axis B, coordinated with THR-611 essence sources — are a follow-up.)
 
 ---
 

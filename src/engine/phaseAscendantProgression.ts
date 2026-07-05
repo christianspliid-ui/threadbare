@@ -27,6 +27,8 @@ import type { WorldGraph } from './graph';
 import type { ReachDomain } from '../types/traits';
 import type { AscendantProperties } from '../types/influence';
 import type { PendingBeat } from '../types/ascendantBeat';
+import type { ChronicleEntry } from '../types/narrative';
+import type { SphereName } from '../types/index';
 import { computeCapability, computeTier } from './domainCapability';
 import { difficultyScaling } from './capabilityGrowth';
 import { emitTrace } from './traceBuffer';
@@ -37,6 +39,7 @@ import {
   DEEPENING_BEAT_MAX_PER_TICK,
   deepeningBeatIdForReach,
 } from '../data/player-progression';
+import { deepeningChronicleProse } from '../data/ascendant-deepening-beats';
 
 type EmitInput = Parameters<typeof emitTrace>[0];
 
@@ -126,6 +129,11 @@ export function phaseAscendantProgression(state: GameState): Partial<GameState> 
   let snapshotChanged = false;
   let pending: PendingBeat | null = null;
   let enqueuedThisTick = 0;
+  // Chronicle lines written 1:1 with each enqueued Deepening beat (plan §4.3). The god's
+  // primary sphere colours the entry; fall back to 'order' when the alignment is absent
+  // (fail-soft — a chronicle line must never crash the phase).
+  const newChronicle: ChronicleEntry[] = [];
+  const primarySphere: SphereName = props.sphereAlignment?.primary ?? 'order';
 
   for (const reach of reaches) {
     const cap = computeCapability(graph, ascId, reach);
@@ -169,6 +177,21 @@ export function phaseAscendantProgression(state: GameState): Partial<GameState> 
         beatId: pending.beatId,
         summary: `Deepening beat enqueued: ${pending.beatId}`,
       } as unknown as EmitInput);
+      // Write the run's book: one chronicle line per tier crossing (plan §4.3), reach-named
+      // and sphere-coloured, alongside the Deepening vignette the beat will present.
+      newChronicle.push({
+        id: `deepening-${reach}-${turn}`,
+        tier: 'chronicle',
+        title: `A Deepening in ${reach.charAt(0).toUpperCase() + reach.slice(1)}`,
+        prose: deepeningChronicleProse(reach),
+        promptContext: {
+          actors: [ascId],
+          location: '',
+          sphere: primarySphere,
+          mood: 'reverent',
+        },
+        tick: turn,
+      });
     }
     // If a crossing is detected but we cannot enqueue this tick (pending occupied,
     // spine active, or the per-tick cap is hit) the snapshot is left unchanged, so the
@@ -178,10 +201,15 @@ export function phaseAscendantProgression(state: GameState): Partial<GameState> 
   if (snapshotChanged) {
     node.properties.reachTierSnapshot = snapshot;
   }
+  const patch: Partial<GameState> = {};
   if (pending && beats) {
-    return { ascendantBeats: { ...beats, pending, lastBeatTurn: turn } };
+    patch.ascendantBeats = { ...beats, pending, lastBeatTurn: turn };
   }
-  return {};
+  if (newChronicle.length > 0) {
+    // Fail-soft (NFP #4): a legacy save / minimal fixture may lack the array.
+    patch.chronicleEntries = [...(state.chronicleEntries ?? []), ...newChronicle];
+  }
+  return patch;
 }
 
 /** One reach's live progression readout — for the debug bridge + (Slice 3+) UI. */
