@@ -24,10 +24,14 @@
 
 import { memo, useMemo } from 'react';
 import { Modal } from '../shared/Modal';
+import { ActionCard } from './ActionCard';
+import type { WheelSlot } from '../../engine/wheel';
 import type { PendingBeat, BeatKind } from '../../types/ascendantBeat';
+import type { UnifiedActionTemplate } from '../../types/unifiedAction';
 import { getBeatDefinitionById } from '../../engine/ascendantBeat';
 import { SPINE_BEAT_PRESENTATION } from '../../data/ascendant-beat-content';
 import { getUnifiedTemplateById } from '../../data/unified-action-templates';
+import { actionEffectsProse } from '../../data/actionEffectsProse';
 
 // ─── Props ──────────────────────────────────────────────────────────
 
@@ -96,9 +100,134 @@ function humanizeBeatId(beatId: string): string {
     .join(' ');
 }
 
-/** Display name for a granted action id — its template name, falling back to the id. */
-function actionDisplayName(actionId: string): string {
-  return getUnifiedTemplateById(actionId)?.name ?? actionId;
+// ─── Unlock-reveal cards (THR-639) ──────────────────────────────────
+
+/** Focused ActionCard face size — mirrors ActionCard SIZE_CONFIG.focused (400 × 400·7/5). */
+const FOCUSED_CARD_W = 400;
+const FOCUSED_CARD_H = 560;
+/** Scale factor applied to the focused face inside the beat modal. */
+const UNLOCK_CARD_SCALE = 0.8;
+/** Max cards per row before wrapping to a second row. */
+const UNLOCK_CARD_ROW_MAX = 3;
+/** Gap between reveal cards. */
+const UNLOCK_CARD_GAP_PX = 24;
+
+const SCALED_CARD_W = Math.round(FOCUSED_CARD_W * UNLOCK_CARD_SCALE);
+const SCALED_CARD_H = Math.round(FOCUSED_CARD_H * UNLOCK_CARD_SCALE);
+
+/**
+ * Build a display-only WheelSlot from an action template so the real focused
+ * ActionCard renders unmodified (THR-639). `state: available` (full brightness); the
+ * card is made non-interactive via ActionCard's `interactive` prop, not this slot.
+ * Uses the bare template id so art (`getActionArt`) and the type line resolve exactly
+ * as they do for the Action Drawer's focused card.
+ */
+export function templateToPreviewSlot(template: UnifiedActionTemplate): WheelSlot {
+  return {
+    id: template.id,
+    label: template.name,
+    type: 'target_action',
+    angleDeg: 0,
+    available: true,
+    lockedReason: null,
+    essenceCost: template.essenceCost ?? 0,
+    detectionRisk: 0,
+    sphere: template.sphereAffinity ?? null,
+    interventionType: null,
+    rangeStatus: 'unlimited',
+    hexDistance: null,
+    description: template.narrativeTemplates.initiation,
+    durationMode: template.durationMode,
+    spellName: template.spellName,
+    technicalDescription: template.description,
+    effectsLine: actionEffectsProse(template),
+    narrativeLayer: template.narrativeLayer as WheelSlot['narrativeLayer'],
+    rarityTier: template.rarityTier,
+  };
+}
+
+/** Modal max-width sized to hold up to UNLOCK_CARD_ROW_MAX cards in one row. */
+function unlockRowMaxWidth(cardCount: number): number {
+  const cols = Math.min(Math.max(cardCount, 1), UNLOCK_CARD_ROW_MAX);
+  return Math.max(600, cols * SCALED_CARD_W + (cols - 1) * UNLOCK_CARD_GAP_PX + 96);
+}
+
+const TEXT_FALLBACK_STYLE: React.CSSProperties = {
+  background: 'var(--bg-surface)',
+  border: '1px solid var(--border-subtle)',
+  borderRadius: '6px',
+  padding: 'var(--space-3)',
+  fontSize: 'var(--text-xs)',
+  color: 'var(--text-muted)',
+  textAlign: 'center',
+  alignSelf: 'center',
+};
+
+/**
+ * A wrapping row of focused ActionCards, one per granted action id. Non-selection
+ * beats pass `interactive={false}` (pure reveal — the footer button resolves); selection
+ * beats pass `interactive` + `onPick` so clicking a card chooses it. Fail-soft: a granted
+ * id with no template renders a text line and warns (plan fail-soft table row 1).
+ */
+function UnlockCardRow({
+  actionIds,
+  interactive,
+  onPick,
+}: {
+  actionIds: readonly string[];
+  interactive: boolean;
+  onPick?: (actionId: string) => void;
+}) {
+  return (
+    <div
+      data-testid={interactive ? 'beat-selection-picker' : 'beat-unlock-cards'}
+      style={{
+        display: 'flex',
+        flexWrap: 'wrap',
+        gap: `${UNLOCK_CARD_GAP_PX}px`,
+        justifyContent: 'center',
+        alignItems: 'flex-start',
+      }}
+    >
+      {actionIds.map(actionId => {
+        const template = getUnifiedTemplateById(actionId);
+        if (!template) {
+          console.warn(
+            `[AscendantBeatModal] no template for granted action "${actionId}" — rendering text fallback.`,
+          );
+          return (
+            <div key={actionId} data-action-id={actionId} style={TEXT_FALLBACK_STYLE}>
+              You will learn: {actionId}
+            </div>
+          );
+        }
+        const slot = templateToPreviewSlot(template);
+        return (
+          <div
+            key={actionId}
+            data-action-id={actionId}
+            style={{ width: SCALED_CARD_W, height: SCALED_CARD_H, flex: '0 0 auto' }}
+          >
+            <div
+              style={{
+                width: FOCUSED_CARD_W,
+                height: FOCUSED_CARD_H,
+                transform: `scale(${UNLOCK_CARD_SCALE})`,
+                transformOrigin: 'top left',
+              }}
+            >
+              <ActionCard
+                slot={slot}
+                size="focused"
+                interactive={interactive}
+                onClick={() => onPick?.(actionId)}
+              />
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
 }
 
 // ─── Styles ─────────────────────────────────────────────────────────
@@ -122,20 +251,6 @@ const PRIMARY_BUTTON_STYLE: React.CSSProperties = {
   letterSpacing: '0.06em',
   cursor: 'pointer',
   fontWeight: 700,
-};
-
-const CHOICE_CARD_STYLE: React.CSSProperties = {
-  display: 'flex',
-  flexDirection: 'column',
-  gap: 'var(--space-1)',
-  textAlign: 'left',
-  background: 'var(--bg-surface)',
-  border: '1px solid var(--border-subtle)',
-  borderRadius: '6px',
-  padding: 'var(--space-3)',
-  cursor: 'pointer',
-  color: 'var(--text-primary)',
-  width: '100%',
 };
 
 // ─── Component ──────────────────────────────────────────────────────
@@ -162,8 +277,12 @@ export const AscendantBeatModal = memo(function AscendantBeatModal({
   // Backdrop / Esc → dismiss for optional beats; for spine (no onClose) it stays put.
   const handleClose = onClose ?? (() => { /* spine beats are not dismissable */ });
 
+  // Widen the modal so the focused ActionCard row (up to 3 across) fits without
+  // clipping; falls back to the default width when there are no grant cards to show.
+  const maxWidth = grants.length > 0 ? unlockRowMaxWidth(grants.length) : 600;
+
   return (
-    <Modal open={open} onClose={handleClose} aria-label={`Ascendant beat: ${title}`}>
+    <Modal open={open} onClose={handleClose} maxWidth={maxWidth} aria-label={`Ascendant beat: ${title}`}>
       <Modal.Header>
         <div
           style={{
@@ -204,49 +323,11 @@ export const AscendantBeatModal = memo(function AscendantBeatModal({
         </p>
 
         {isSelection ? (
-          <div
-            data-testid="beat-selection-picker"
-            style={{ display: 'grid', gap: 'var(--space-2)' }}
-          >
-            {grants.map(actionId => (
-              <button
-                key={actionId}
-                type="button"
-                style={CHOICE_CARD_STYLE}
-                onClick={() => onResolve(actionId)}
-                data-action-id={actionId}
-              >
-                <span
-                  style={{
-                    fontFamily: 'var(--font-display)',
-                    fontSize: 'var(--text-sm)',
-                    color: 'var(--text-primary)',
-                  }}
-                >
-                  {actionDisplayName(actionId)}
-                </span>
-                <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
-                  {getUnifiedTemplateById(actionId)?.description ?? actionId}
-                </span>
-              </button>
-            ))}
-          </div>
+          // Selection beat: real focused cards, clickable — choosing a card resolves it.
+          <UnlockCardRow actionIds={grants} interactive onPick={onResolve} />
         ) : (
-          grants.length > 0 && (
-            <div
-              style={{
-                background: 'var(--bg-surface)',
-                border: '1px solid var(--border-subtle)',
-                borderRadius: '6px',
-                padding: 'var(--space-3)',
-                fontSize: 'var(--text-xs)',
-                color: 'var(--text-muted)',
-                textAlign: 'center',
-              }}
-            >
-              You will learn: {grants.map(actionDisplayName).join(', ')}
-            </div>
-          )
+          // Non-selection beat: real focused cards as a pure reveal; the footer button resolves.
+          grants.length > 0 && <UnlockCardRow actionIds={grants} interactive={false} />
         )}
       </Modal.Body>
       {!isSelection && (

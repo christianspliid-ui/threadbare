@@ -193,6 +193,13 @@ interface ActionCardProps {
   size?: 'hand' | 'focused';
   /** Outcome band to display on the spent overlay (e.g. 'fortunate'). Absent → default success overlay. */
   outcomeBand?: string;
+  /**
+   * Whether the card is a live play affordance. Default true (all existing call sites).
+   * Set false for pure display — e.g. the Ascendant Beat unlock reveal (THR-639): the
+   * card stays full-brightness but drops the click handler and the "Click to activate"
+   * hint so it reads as a shown card, not a playable one. Additive (NFP #6).
+   */
+  interactive?: boolean;
 }
 
 // ─── Type-line parser ──────────────────────────────────────────────────────
@@ -216,7 +223,7 @@ function parseTypeLine(slotId: string): { reach: string; crud: string } {
  * ActionCard component — displays a single action slot as a card.
  */
 export const ActionCard = React.memo(function ActionCard({
-  slot, onClick, playing = false, size = 'hand', outcomeBand,
+  slot, onClick, playing = false, size = 'hand', outcomeBand, interactive = true,
 }: ActionCardProps) {
   const glyph = getWheelSlotGlyph(slot.id);
   const sphereColor = slot.sphere ? getSphereColor(slot.sphere) : undefined;
@@ -262,6 +269,7 @@ export const ActionCard = React.memo(function ActionCard({
   // Click handler — in focused mode, always call onClick (activation)
   // In hand mode, also always call onClick (drawer manages focus state)
   const handleClick = useCallback(() => {
+    if (!interactive) return; // display-only card (THR-639 unlock reveal) — no play affordance
     if (isAvailable && !playing) {
       onClick(slot.id);
     } else if (!isAvailable && !playing) {
@@ -269,7 +277,7 @@ export const ActionCard = React.memo(function ActionCard({
       if (shakeTimer.current) clearTimeout(shakeTimer.current);
       shakeTimer.current = setTimeout(() => setShaking(false), 400);
     }
-  }, [isAvailable, playing, onClick, slot.id]);
+  }, [interactive, isAvailable, playing, onClick, slot.id]);
 
   // ── Hand layout ─────────────────────────────────────────────────
   if (size === 'hand') {
@@ -471,13 +479,14 @@ export const ActionCard = React.memo(function ActionCard({
           borderRight: '1px solid var(--border-medium)',
           borderBottom: '1px solid var(--border-medium)',
           ...containerStyle,
+          ...(interactive ? {} : { cursor: 'default' }),
         }}
         onClick={handleClick}
-        role="button"
-        aria-disabled={!isAvailable && !playing ? true : undefined}
-        tabIndex={playing ? -1 : 0}
+        role={interactive ? 'button' : undefined}
+        aria-disabled={interactive && !isAvailable && !playing ? true : undefined}
+        tabIndex={interactive && !playing ? 0 : -1}
         onKeyDown={(e) => {
-          if ((e.key === 'Enter' || e.key === ' ')) {
+          if (interactive && (e.key === 'Enter' || e.key === ' ')) {
             e.preventDefault();
             handleClick();
           }
@@ -622,6 +631,24 @@ export const ActionCard = React.memo(function ActionCard({
           </div>
         )}
 
+        {/* ── 4b. Effects line (THR-639) — plain-prose "what it does" ──── */}
+        {slot.effectsLine && (
+          <div
+            data-testid="action-card-effects-line"
+            style={{
+              fontFamily: 'var(--font-body, "Alegreya Sans", sans-serif)',
+              fontSize: cfg.descSize,
+              fontWeight: 400,
+              color: 'var(--text-tertiary)',
+              lineHeight: 1.5,
+              marginBottom: '8px',
+              flexShrink: 1,
+            }}
+          >
+            {slot.effectsLine}
+          </div>
+        )}
+
         {/* ── 5. Spacer to push stats to bottom ─────────────────────── */}
         <div style={{ marginTop: 'auto' }} />
 
@@ -673,7 +700,7 @@ export const ActionCard = React.memo(function ActionCard({
         )}
 
         {/* Focused mode: activation hint */}
-        {isAvailable && !playing && (
+        {isAvailable && !playing && interactive && (
           <div
             className="mt-2 text-center py-1.5 rounded border"
             style={{
