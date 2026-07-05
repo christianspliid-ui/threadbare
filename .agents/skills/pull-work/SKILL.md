@@ -1,7 +1,7 @@
 ---
 name: pull-work
 description: Canonical Claude Code pickup workflow for claiming Linear work safely from Ready for Dev.
-last_validated_against: 2026-05-12
+last_validated_against: 2026-07-05
 ---
 
 # Pull Work
@@ -168,18 +168,18 @@ git fetch origin main
 git log origin/main --grep="Fixes <resumed-issue-id>" --grep="Closes <resumed-issue-id>" --grep="Resolves <resumed-issue-id>" --regexp-ignore-case --extended-regexp --oneline
 ```
 
-**If the result is empty:** the work is genuinely still in flight. Continue from Step 5 (Reopened safety check) — skip Steps 2–4 (concurrent-session parallel, coordination block, claim) because the claim already exists.
+**If the result is empty:** the work is genuinely still in flight. Continue to Step 1.8 (checkpoint-resume), then Step 5 (Reopened safety check) — skip Steps 2–4 (concurrent-session parallel, coordination block, claim) because the claim already exists.
 
-**If the result is non-empty:** the commit landed but the auto-close did not fire.
-1. Post a comment on the issue: `Upstream-shipped check during resume found commit {sha} "{first-line}". Auto-close did not fire — please verify the merge keyword in the commit body and close manually if appropriate.`
-2. Do NOT release the claim (leaving the issue In Dev preserves the audit trail; the human reviewer can close it manually after verifying the commit). Do NOT call `save_issue(state: "Done")` — Rule 3 forbids it.
+**If the result is non-empty:** the commit landed but the auto-close did not fire. Do not park the WIP=1 slot waiting on a review that never comes (THR-608: Christian doesn't read Linear, so the retired "human reviewer" never closes it).
+1. Post a comment on the issue: `Upstream-shipped check during resume found commit {sha} "{first-line}". Auto-close did not fire.`
+2. Unassign to free the WIP=1 slot: `save_issue(id, assignee: null)` — keep state In Dev, verify-after-write per impediment #48. Do NOT release to Ready for Dev, and do NOT call `save_issue(state: "Done")` — Rule 3 forbids CC closing. The hourly `keep-work-flowing` Cowork task triages unassigned In Dev issues: it verifies the SHA on origin/main and closes the issue as Done (Cowork owns state transitions; the merge-gated-Done rule binds CC, not Cowork cleanup of verified-shipped work).
 3. Exit cleanly.
 
 **Trace lines** (NFP #2):
 
 ```
-[pull-work] Step 1.7: resume THR-247 — upstream-clean. Continuing to Step 5.
-[pull-work] Step 1.7: resume THR-247 — upstream-shipped, commit a1b2c3d. Posting comment, exit.
+[pull-work] Step 1.7: resume THR-247 — upstream-clean. Continuing to Step 1.8.
+[pull-work] Step 1.7: resume THR-247 — upstream-shipped, commit a1b2c3d. Posting comment, unassigning, exit.
 ```
 
 **Fail-soft:** if `git fetch origin main` errors (network down, auth issue, sandbox limitation), log a warning and proceed to Step 5 (resume in flight). The check is best-effort and must not strand a real in-flight issue when the network is unavailable.
@@ -189,7 +189,31 @@ git log origin/main --grep="Fixes <resumed-issue-id>" --grep="Closes <resumed-is
 | Constant | Default | Purpose |
 |---|---|---|
 | `UPSTREAM_GREP_KEYWORDS` | `Fixes\|Closes\|Resolves` | Auto-close keywords accepted by Linear |
-| `RESUME_UPSTREAM_FAIL_SOFT` | `true` | If `git fetch` fails, proceed to Step 5 rather than refusing resume |
+| `RESUME_UPSTREAM_FAIL_SOFT` | `true` | If `git fetch` fails, proceed to Step 1.8 rather than refusing resume |
+
+### Step 1.8 — Checkpoint-resume — read prior-run checkpoints before re-reading the plan doc
+
+Reached only on the Step 1.7 upstream-clean path (work still in flight). Before re-reading the plan doc or writing any code, read the latest comments (`list_comments(id, orderBy:"createdAt", limit:5)`) for a **checkpoint comment** left by a prior unfinished run. The `tb-opus-pickup` prompt requires an unfinished pass to post one: what's done, what remains, branch/worktree name, next step.
+
+- **If a checkpoint exists:** continue from it — do not re-implement from scratch. Resume on the named branch/worktree and pick up at the recorded next step, then proceed to Step 5.
+- **If `MAX_CHECKPOINTS_BEFORE_SPLIT` (3) or more checkpoint comments exist without a ship:** the issue is churning and needs re-scoping. Post a recommend-split comment, unassign (`save_issue(id, assignee: null)` — keep state In Dev, verify-after-write per impediment #48), and exit clean. Cowork re-scopes.
+- **If no checkpoint exists:** fall through to Step 5 and re-read the plan doc as normal.
+
+**Constant:**
+
+| Constant | Default | Purpose |
+|---|---|---|
+| `MAX_CHECKPOINTS_BEFORE_SPLIT` | 3 | Checkpoint comments without a ship that trigger the recommend-split escalation |
+
+**Trace lines** (NFP #2 — exactly one fires):
+
+```
+[pull-work] Step 1.8: checkpoint found (branch pickup/thr-247, next: wire phase). Resuming from checkpoint.
+[pull-work] Step 1.8: no checkpoint — falling through to Step 5 plan-doc re-read.
+[pull-work] Step 1.8: 3 checkpoints without ship — recommend-split, unassign, exit.
+```
+
+**Fail-soft:** if `list_comments` errors, log a warning and fall through to Step 5 (re-read the plan doc). A comment-read failure must not strand a genuinely in-flight issue.
 
 ### Step 2 - Concurrent-session parallel check
 
@@ -412,7 +436,7 @@ If the issue has label `Reopened`, read all comments back to the original handof
 - The "In Dev" slice for the executor's own assignee (computed in Step 1) is non-empty (Rule 6: WIP=1 across all sessions).
 - The latest handoff comment is missing any required coordination line (`Suggested model`, `Parallel-safe with`, `Mutex with`).
 - `save_issue` claim cannot be verified by `get_issue` after one retry.
-- The upstream-shipped check (Step 4.4 fresh-claim or Step 1.7 resume) finds a `Fixes <issue-id>` / `Closes <issue-id>` / `Resolves <issue-id>` commit on `origin/main`. Pickup exits with a comment noting the upstream commit hash; the human reviewer closes the issue manually if appropriate.
+- The upstream-shipped check (Step 4.4 fresh-claim or Step 1.7 resume) finds a `Fixes <issue-id>` / `Closes <issue-id>` / `Resolves <issue-id>` commit on `origin/main`. Pickup exits with a comment noting the upstream commit hash. Step 4.4 releases the fresh claim back to Ready for Dev; Step 1.7 unassigns but keeps the issue In Dev so the hourly `keep-work-flowing` Cowork triage verifies the SHA and closes it as Done.
 
 ## Output Contract
 
