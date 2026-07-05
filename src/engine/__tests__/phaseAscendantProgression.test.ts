@@ -6,11 +6,20 @@ import {
   getAscendantProgress,
 } from '../phaseAscendantProgression';
 import { computeCapability, computeTier } from '../domainCapability';
-import { createInitialAscendantBeatState } from '../ascendantBeat';
-import { deepeningBeatIdForReach } from '../../data/player-progression';
+import {
+  createInitialAscendantBeatState,
+  getBeatDefinitionById,
+  resolvePendingBeat,
+} from '../ascendantBeat';
+import {
+  deepeningBeatIdForReach,
+  SOURCE_MILESTONE_BEAT_ID,
+  MILESTONE_SOURCES_FOR_BEAT,
+} from '../../data/player-progression';
 import type { GameState } from '../../types/gameState';
 import type { AscendantBeatState, PendingBeat } from '../../types/ascendantBeat';
 import type { ReachDomain } from '../../types/traits';
+import type { SourceTier } from '../../types/essenceSource';
 
 // ─── Fixtures ────────────────────────────────────────────────────────────────
 
@@ -56,7 +65,45 @@ function ascProps(state: GameState) {
   return state.graph.getNode('asc-1')!.properties as {
     reachPractice?: Partial<Record<ReachDomain, number>>;
     reachTierSnapshot?: Partial<Record<ReachDomain, number>>;
+    sourceMilestoneFired?: boolean;
   };
+}
+
+/** Add a controlled essence source (host + `controls` edge) to the ascendant's graph. */
+function addControlledSource(state: GameState, id: string, tier: SourceTier = 'dormant'): void {
+  state.graph.addNode({
+    id,
+    type: 'location',
+    name: id,
+    properties: {
+      locationType: 'location',
+      essenceSource: { kind: 'placeOfPower', sanctity: 0.1, tier, originTick: 0 },
+    },
+  });
+  state.graph.addEdge({
+    id: `edge.controls_${id}`,
+    source: 'asc-1',
+    target: id,
+    type: 'controls',
+    properties: {},
+  });
+}
+
+/**
+ * Snapshot the current derived tiers for the given reaches, so a milestone-focused
+ * fixture never *also* fires a Deepening beat (the Deepening loop seeds/advances the
+ * snapshot; pre-seeding it to the live tier keeps the milestone the only enqueue).
+ */
+function liveTierSnapshot(
+  affinities: Partial<Record<ReachDomain, number>>,
+  caps?: Partial<Record<ReachDomain, number>>,
+): Partial<Record<ReachDomain, number>> {
+  const probe = progressionState(0, { domainAffinities: affinities, domainCapabilities: caps });
+  const snap: Partial<Record<ReachDomain, number>> = {};
+  for (const reach of Object.keys(affinities) as ReachDomain[]) {
+    snap[reach] = computeTier(computeCapability(probe.graph, 'asc-1', reach));
+  }
+  return snap;
 }
 
 // ─── Snapshot seeding ────────────────────────────────────────────────────────
@@ -201,6 +248,99 @@ describe('accruePlayerReachPractice', () => {
   });
 });
 
+// ─── Axis-B source milestone (Slice 2b) ──────────────────────────────────────
+
+describe('phaseAscendantProgression — essence-source breadth milestone', () => {
+  const AFF = { iron: 5, gold: 3 };
+
+  it('enqueues the milestone beat exactly once at MILESTONE_SOURCES_FOR_BEAT controlled sources', () => {
+    const state = progressionState(30, { domainAffinities: AFF, reachTierSnapshot: liveTierSnapshot(AFF) });
+    for (let i = 0; i < MILESTONE_SOURCES_FOR_BEAT; i++) addControlledSource(state, `src-${i}`);
+
+    const result = phaseAscendantProgression(state);
+
+    const pending = result.ascendantBeats?.pending as PendingBeat;
+    expect(pending?.beatId).toBe(SOURCE_MILESTONE_BEAT_ID);
+    expect(pending.kind).toBe('milestone');
+    expect(pending.boundNodeIds).toEqual(['asc-1']);
+    // One-shot latch set; a milestone chronicle line written.
+    expect(ascProps(state).sourceMilestoneFired).toBe(true);
+    expect(result.chronicleEntries?.some(e => e.id === 'milestone-sources-30')).toBe(true);
+  });
+
+  it('fires on the first flowering source even below the count threshold', () => {
+    const state = progressionState(30, { domainAffinities: AFF, reachTierSnapshot: liveTierSnapshot(AFF) });
+    addControlledSource(state, 'src-flower', 'flowering'); // 1 source < threshold, but flowering
+
+    const result = phaseAscendantProgression(state);
+    expect(result.ascendantBeats?.pending?.beatId).toBe(SOURCE_MILESTONE_BEAT_ID);
+    expect(ascProps(state).sourceMilestoneFired).toBe(true);
+  });
+
+  it('does not re-fire once the latch is set', () => {
+    const state = progressionState(30, {
+      domainAffinities: AFF,
+      reachTierSnapshot: liveTierSnapshot(AFF),
+    });
+    for (let i = 0; i < MILESTONE_SOURCES_FOR_BEAT; i++) addControlledSource(state, `src-${i}`);
+    // Pre-latch: milestone already fired earlier this run.
+    state.graph.getNode('asc-1')!.properties.sourceMilestoneFired = true;
+
+    const result = phaseAscendantProgression(state);
+    expect(result.ascendantBeats).toBeUndefined();
+  });
+
+  it('does not fire below the threshold with no flowering source', () => {
+    const state = progressionState(30, { domainAffinities: AFF, reachTierSnapshot: liveTierSnapshot(AFF) });
+    addControlledSource(state, 'src-0'); // 1 dormant source, threshold is 3
+    const result = phaseAscendantProgression(state);
+    expect(result.ascendantBeats).toBeUndefined();
+    expect(ascProps(state).sourceMilestoneFired).toBeUndefined();
+  });
+
+  it('yields the tick to a Deepening beat when both fire, leaving the milestone latch unset', () => {
+    // iron crosses a tier (snapshot lags) AND the source milestone is reached.
+    const state = progressionState(30, {
+      domainAffinities: AFF,
+      domainCapabilities: { iron: 12, gold: 3 },
+      reachTierSnapshot: { iron: 1, gold: computeTier(computeCapability(
+        progressionState(0, { domainAffinities: AFF, domainCapabilities: { iron: 12, gold: 3 } }).graph,
+        'asc-1', 'gold',
+      )) },
+    });
+    for (let i = 0; i < MILESTONE_SOURCES_FOR_BEAT; i++) addControlledSource(state, `src-${i}`);
+
+    const result = phaseAscendantProgression(state);
+    // Deepening wins the single pending slot; the milestone waits (latch unset → retries next tick).
+    expect(result.ascendantBeats?.pending?.beatId).toBe(deepeningBeatIdForReach('iron'));
+    expect(ascProps(state).sourceMilestoneFired).toBeUndefined();
+  });
+
+  it('the enqueued milestone beat resolves through the catalogue, granting nothing', () => {
+    const def = getBeatDefinitionById(SOURCE_MILESTONE_BEAT_ID);
+    expect(def?.kind).toBe('milestone');
+    expect(def?.grantsActionIds ?? []).toEqual([]);
+
+    const pending: PendingBeat = {
+      beatId: SOURCE_MILESTONE_BEAT_ID,
+      kind: 'milestone',
+      offeredTurn: 30,
+      boundNodeIds: ['asc-1'],
+      trigger: { kind: 'turn', minTurn: 30 },
+    };
+    const state = progressionState(
+      31,
+      { domainAffinities: AFF },
+      { ...createInitialAscendantBeatState(), spineCursor: -1, pending },
+    );
+    const res = resolvePendingBeat(state);
+    expect(res.resolved).toBe(true);
+    expect(res.grantedActionIds).toEqual([]);
+    expect(res.state.ascendantBeats?.pending).toBeNull();
+    expect(res.state.ascendantBeats?.history.some(h => h.beatId === SOURCE_MILESTONE_BEAT_ID)).toBe(true);
+  });
+});
+
 // ─── Debug readout ───────────────────────────────────────────────────────────
 
 describe('getAscendantProgress', () => {
@@ -230,5 +370,18 @@ describe('getAscendantProgress', () => {
     const gold = report.reaches.find(r => r.reach === 'gold')!;
     expect(gold.isPrimary).toBe(false);
     expect(gold.pendingDeepening).toBe(false);
+    // Axis-B portfolio readout (Slice 2b): no sources controlled, milestone unfired.
+    expect(report.controlledSources).toBe(0);
+    expect(report.sourceMilestoneFired).toBe(false);
+  });
+
+  it('reports controlled sources and the milestone latch (Axis-B readout)', () => {
+    const state = progressionState(30, { domainAffinities: { iron: 5, gold: 3 } });
+    addControlledSource(state, 'src-a');
+    addControlledSource(state, 'src-b');
+    state.graph.getNode('asc-1')!.properties.sourceMilestoneFired = true;
+    const report = getAscendantProgress(state)!;
+    expect(report.controlledSources).toBe(2);
+    expect(report.sourceMilestoneFired).toBe(true);
   });
 });

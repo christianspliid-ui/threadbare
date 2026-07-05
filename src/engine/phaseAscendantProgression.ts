@@ -37,9 +37,13 @@ import {
   PLAYER_DIMINISHING_RETURNS_FACTOR,
   SECONDARY_REACH_PRACTICE_MULT,
   DEEPENING_BEAT_MAX_PER_TICK,
+  MILESTONE_SOURCES_FOR_BEAT,
+  SOURCE_MILESTONE_BEAT_ID,
   deepeningBeatIdForReach,
 } from '../data/player-progression';
 import { deepeningChronicleProse } from '../data/ascendant-deepening-beats';
+import { sourceMilestoneChronicleProse } from '../data/ascendant-milestone-beats';
+import { readSourceMilestone } from './essenceSources';
 
 type EmitInput = Parameters<typeof emitTrace>[0];
 
@@ -198,6 +202,49 @@ export function phaseAscendantProgression(state: GameState): Partial<GameState> 
     // same crossing is re-detected next tick — no beat is lost and none double-fires.
   }
 
+  // Axis-B breadth milestone (plan §4.2): the first tick the ascendant controls
+  // MILESTONE_SOURCES_FOR_BEAT essence sources OR holds a flowering source, enqueue the
+  // one-shot source-milestone recognition beat. Latched by `sourceMilestoneFired` so it
+  // fires exactly once per run. A Deepening enqueued this tick already occupies `pending`
+  // (single slot), so the milestone waits for a free tick — the latch is set only on a
+  // successful enqueue, mirroring the Deepening re-detect semantics (no milestone lost).
+  if (pending === null && canEnqueue && !props.sourceMilestoneFired) {
+    const milestone = readSourceMilestone(graph, ascId);
+    const reachedByCount = milestone.count >= MILESTONE_SOURCES_FOR_BEAT;
+    if (reachedByCount || milestone.hasFlowering) {
+      node.properties.sourceMilestoneFired = true;
+      pending = {
+        beatId: SOURCE_MILESTONE_BEAT_ID,
+        kind: 'milestone',
+        offeredTurn: turn,
+        boundNodeIds: [ascId],
+        trigger: { kind: 'turn', minTurn: turn },
+      };
+      emitTrace({
+        category: 'ascendant.progression.milestone_enqueued',
+        tick: turn,
+        turn,
+        controlledSources: milestone.count,
+        viaFlowering: !reachedByCount && milestone.hasFlowering,
+        beatId: pending.beatId,
+        summary: `source milestone reached (${milestone.count} sources${milestone.hasFlowering ? ', flowering' : ''}) → ${pending.beatId}`,
+      } as unknown as EmitInput);
+      newChronicle.push({
+        id: `milestone-sources-${turn}`,
+        tier: 'chronicle',
+        title: 'A Widening of Your Reach',
+        prose: sourceMilestoneChronicleProse(),
+        promptContext: {
+          actors: [ascId],
+          location: '',
+          sphere: primarySphere,
+          mood: 'reverent',
+        },
+        tick: turn,
+      });
+    }
+  }
+
   if (snapshotChanged) {
     node.properties.reachTierSnapshot = snapshot;
   }
@@ -230,6 +277,10 @@ export interface AscendantReachProgress {
 export function getAscendantProgress(state: GameState): {
   reaches: AscendantReachProgress[];
   pendingBeatId: string | null;
+  /** Controlled essence sources (Axis-B breadth), excluding the home seat. */
+  controlledSources: number;
+  /** True once the Axis-B source milestone has fired this run (one-shot latch). */
+  sourceMilestoneFired: boolean;
 } | null {
   const graph = state.graph;
   const node = graph.getNode(state.ascendantId);
@@ -252,5 +303,11 @@ export function getAscendantProgress(state: GameState): {
         pendingBeatId === deepeningBeatIdForReach(reach),
     };
   });
-  return { reaches, pendingBeatId };
+  const milestone = readSourceMilestone(graph, state.ascendantId);
+  return {
+    reaches,
+    pendingBeatId,
+    controlledSources: milestone.count,
+    sourceMilestoneFired: !!props.sourceMilestoneFired,
+  };
 }

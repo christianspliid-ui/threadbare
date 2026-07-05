@@ -420,6 +420,8 @@ export interface DebugBridge {
     | {
         reaches: import('./engine/phaseAscendantProgression').AscendantReachProgress[];
         pendingBeatId: string | null;
+        controlledSources: number;
+        sourceMilestoneFired: boolean;
       }
     | { error: string }
   >;

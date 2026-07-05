@@ -286,6 +286,7 @@ export type TraceCategory =
   | 'ascendant.progression.practice'
   | 'ascendant.progression.tier_up'
   | 'ascendant.progression.deepening_enqueued'
+  | 'ascendant.progression.milestone_enqueued'
   | 'ascendant.progression.control_release';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
@@ -543,6 +544,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'ascendant.progression.practice',
   'ascendant.progression.tier_up',
   'ascendant.progression.deepening_enqueued',
+  'ascendant.progression.milestone_enqueued',
   'ascendant.progression.control_release',
 ];
 
@@ -1874,6 +1876,7 @@ export type TraceEntry =
   | PlayerPracticeTrace
   | PlayerTierUpTrace
   | DeepeningEnqueueTrace
+  | MilestoneEnqueueTrace
   | ControlReleaseTrace;
 
 /** Trace: a location's resource crossed a stock tier boundary. THR-615 */
@@ -2013,6 +2016,23 @@ export interface DeepeningEnqueueTrace extends TraceBase {
   category: 'ascendant.progression.deepening_enqueued';
   turn: number;
   reach: ReachDomain;
+  beatId: string;
+}
+
+/**
+ * Trace: the Axis-B essence-source breadth milestone was reached and its recognition
+ * beat enqueued (THR-613, plan §4.2, Slice 2b). Emitted once per run — the first tick
+ * the ascendant controls `MILESTONE_SOURCES_FOR_BEAT` sources or holds a flowering
+ * source (`viaFlowering` records which threshold tripped). Preempts the cadence draw
+ * for that turn, exactly like the Deepening enqueue.
+ */
+export interface MilestoneEnqueueTrace extends TraceBase {
+  category: 'ascendant.progression.milestone_enqueued';
+  turn: number;
+  /** Controlled essence sources at the moment the milestone fired. */
+  controlledSources: number;
+  /** True when the first-flowering threshold tripped the milestone (else the count threshold). */
+  viaFlowering: boolean;
   beatId: string;
 }
 

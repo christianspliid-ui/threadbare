@@ -41,10 +41,19 @@ export const SECONDARY_REACH_PRACTICE_MULT = 0.7;
 export const DEEPENING_BEAT_MAX_PER_TICK = 1;
 
 /**
- * Controlled essence sources that fire a breadth (milestone) beat (plan §3.5).
- * Reserved for Slice 2 (coordinate THR-611 source-tier transitions).
+ * Controlled essence sources that fire a breadth (milestone) beat (plan §3.5). The
+ * Axis-B milestone fires the first tick the ascendant controls this many sources OR
+ * holds a flowering source (Slice 2b; coordinates THR-611 source-tier transitions).
  */
 export const MILESTONE_SOURCES_FOR_BEAT = 3;
+
+/**
+ * Deterministic id for the single Axis-B essence-source milestone beat (plan §4.2).
+ * Enqueued directly by `phaseAscendantProgression`; content + presentation live in
+ * `src/data/ascendant-milestone-beats.ts`. One id (not per-reach) — the milestone is
+ * a portfolio-level breadth marker, orthogonal to the two permanent reaches.
+ */
+export const SOURCE_MILESTONE_BEAT_ID = 'beat.milestone.sources';
 
 /**
  * Deterministic Deepening beat id for a reach. Slice 2 authors the matching

@@ -154,6 +154,43 @@ export function migrateControlledPlacesOfPower(
   return migrated;
 }
 
+/** Aggregate read of the ascendant's controlled-source portfolio for the Axis-B milestone. */
+export interface SourceMilestoneRead {
+  /** Controlled essence sources (hosts carrying a source bag), excluding the home seat. */
+  count: number;
+  /** True if any controlled source has reached the `flowering` tier. */
+  hasFlowering: boolean;
+}
+
+/**
+ * Read the ascendant's controlled-source portfolio for the Axis-B breadth milestone
+ * (THR-613, plan §4.2). Counts hosts reachable by a `controls` edge that carry an
+ * `essenceSource` bag, excluding the home seat (which is a distinct income term, per
+ * {@link computeSourceIncome}). `hasFlowering` is true when any such source's derived
+ * tier is `flowering`. O(controlled hosts); pure (no PRNG, no mutation) — fail-soft to
+ * `{ count: 0, hasFlowering: false }` when the ascendant is absent.
+ */
+export function readSourceMilestone(
+  graph: WorldGraph,
+  ascendantId: string,
+): SourceMilestoneRead {
+  const node = graph.getNode(ascendantId);
+  if (!node) return { count: 0, hasFlowering: false };
+  const homeSeatLocationId = node.properties.homeSeatLocationId as string | undefined;
+
+  let count = 0;
+  let hasFlowering = false;
+  for (const edge of graph.getOutgoingEdges(ascendantId, 'controls')) {
+    if (edge.target === homeSeatLocationId) continue; // seat is a distinct income term, not a source
+    const host = graph.getNode(edge.target);
+    const src = readEssenceSource(host?.properties);
+    if (!src) continue;
+    count++;
+    if (src.tier === 'flowering') hasFlowering = true;
+  }
+  return { count, hasFlowering };
+}
+
 export interface SourceTierRecompute {
   sourceCount: number;
   tierChanges: number;

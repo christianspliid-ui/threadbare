@@ -94,6 +94,11 @@ const KIND_PRESENTATION: Record<BeatKind, BeatPresentation> = {
     prose: 'The world has learned the shape of your will. Where once your urging only leaned, now it commands — something has decided you are to be obeyed in this.',
     cta: 'Receive',
   },
+  milestone: {
+    eyebrow: 'A Widening',
+    prose: 'Your reach has grown wider in the world. What began in one place has spread to many, and the faith that pools in them runs, now, to a single hand.',
+    cta: 'Receive',
+  },
 };
 
 /** Title-case the most specific segment of a dotted beat id, e.g. `…the_worthy_mortal` → "The Worthy Mortal". */

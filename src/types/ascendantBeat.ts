@@ -22,7 +22,8 @@ export type BeatKind =
   | 'investment'       // offer initial investment into actor/location/item/faction
   | 'selection'        // choose 1-of-N capability/path
   | 'delivery'         // wrap an existing branching encounter (THR-452 content)
-  | 'deepening';       // god-side tier-crossing beat — Domain Capability rose in a reach (THR-613)
+  | 'deepening'        // god-side tier-crossing beat — Domain Capability rose in a reach (THR-613)
+  | 'milestone';       // god-side breadth milestone — an Axis-B threshold reached, e.g. N controlled essence sources (THR-613)
 
 /** Why a beat became eligible. Structured + serializable for traces + prose. */
 export type BeatTriggerKind =

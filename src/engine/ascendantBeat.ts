@@ -53,6 +53,7 @@ import {
 import { REACH_DOMAINS, type ReachDomain } from '../types/traits';
 import { REACH_SIGNATURE_ID_BY_REACH } from '../data/reach-signature-content';
 import { ASCENDANT_DEEPENING_BEATS, getDeepeningBeatById } from '../data/ascendant-deepening-beats';
+import { ASCENDANT_MILESTONE_BEATS, getMilestoneBeatById } from '../data/ascendant-milestone-beats';
 import { eligibleDeliveryBeats, getDeliveryBeatById } from './deliveryBeatAdapter';
 import { seedBeatGraph } from './ascendantBeatSeeding';
 import { applyEncounterAftermathReaction } from './encounterAftermath';
@@ -450,6 +451,18 @@ export function forceOfferBeatById(
       def: deepeningDef,
     };
   }
+  // Milestone beats (THR-613 Slice 2b) are likewise enqueued directly by
+  // `phaseAscendantProgression` when an Axis-B threshold trips, never drawn — but
+  // `__DEBUG.fireBeat('beat.milestone.sources')` still needs to force-offer one for
+  // browser-verifying the vignette. Bind the ascendant itself.
+  const milestoneDef = getMilestoneBeatById(beatId);
+  if (milestoneDef) {
+    const asc = state?.ascendantId ? [state.ascendantId] : [];
+    return {
+      next: offer(beats, milestoneDef, milestoneDef.trigger, turn, ASCENDANT_MILESTONE_BEATS.length, asc, /*advanceSpine*/ false),
+      def: milestoneDef,
+    };
+  }
   return null;
 }
 
@@ -579,6 +592,7 @@ function findBeatDefinition(beatId: string): BeatDefinition | null {
     ASCENDANT_BEAT_POOL.find(b => b.beatId === beatId) ??
     getDeliveryBeatById(beatId) ??
     getDeepeningBeatById(beatId) ??
+    getMilestoneBeatById(beatId) ??
     null
   );
 }

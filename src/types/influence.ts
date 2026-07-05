@@ -184,6 +184,14 @@ export interface AscendantProperties {
    * rises above the snapshot. Absent → seed on first run.
    */
   reachTierSnapshot?: Partial<Record<ReachDomain, number>>;
+  /**
+   * One-shot latch for the Axis-B essence-source breadth milestone (THR-613, plan §4.2).
+   * Set true the first tick the ascendant controls `MILESTONE_SOURCES_FOR_BEAT` essence
+   * sources OR holds a flowering source, when `phaseAscendantProgression` enqueues the
+   * `beat.milestone.sources` recognition beat. Latched so the milestone fires exactly once
+   * per run. Absent → not yet reached (lazy-init; legacy saves treat absent as false).
+   */
+  sourceMilestoneFired?: boolean;
 }
 
 /**
