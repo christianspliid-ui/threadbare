@@ -149,6 +149,7 @@ import type { ChapterRecord } from '../types/chapterRecord';
 import { phaseOmenAgenda, resetOmenCounter } from './phaseOmenAgenda';
 import { phaseComposition } from './phaseComposition';
 import { phaseAscendantBeatDirector } from './ascendantBeat';
+import { phaseAscendantProgression } from './phaseAscendantProgression';
 import { phaseEncounterVisibility } from './encounterVisibility';
 import { phaseAscendantHandFilter } from './orchestrator/phaseAscendantHandFilter';
 import { phaseChoiceResolution } from './orchestrator/phaseChoiceResolution';
@@ -2486,6 +2487,15 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   // Placement preserves byte-equivalent ordering for phaseEmittedOmenDecay (THR-238 Land 2).
   // Future post-doom phases run AFTER phaseDoom/Journey/Omen and BEFORE phaseComposition.
   s = runRegisteredPhases(s, phaseCtx, 'post-doom', PHASE_PLAN);
+  prevEventCount = s.tickEvents.length;
+
+  // Phase 1.7: Ascendant Progression — god-side tier-crossing detection (THR-613).
+  // Runs immediately before the Beat Director: on an upward Domain Capability crossing
+  // it sets `ascendantBeats.pending` to a Deepening beat, so the Director (which skips
+  // when `pending` is set) yields the turn to it — Deepening beats take priority over
+  // the cadence draw without any change to the Director itself.
+  s = { ...s, ...phaseAscendantProgression(s) };
+  phaseEventCounts['ascendant_progression'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
 
   // Phase 1.75: Ascendant Beat Director — decide which beat (if any) to OFFER this

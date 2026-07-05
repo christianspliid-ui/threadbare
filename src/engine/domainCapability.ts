@@ -79,6 +79,13 @@ export function computeRawScore(
     }
   }
 
+  // God-side reach practice (THR-613, plan §3.1): the ascendant accrues a
+  // `reachPractice` bag as it acts in its two permanent reaches. Additive raw-score
+  // term feeding the same sigmoid — one source of truth, no parallel XP number. Only
+  // the ascendant carries this bag; undefined elsewhere → +0 (purely additive).
+  const reachPractice = node?.properties.reachPractice as DomainContributions | undefined;
+  total += reachPractice?.[domain] ?? 0;
+
   return total;
 }
 

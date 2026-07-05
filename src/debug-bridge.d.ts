@@ -412,6 +412,17 @@ export interface DebugBridge {
     outcomes: import('./engine/kpi/gameplayKpi').OutcomeDistribution;
     thresholds: import('./engine/kpi/gameplayKpi').KpiThresholdEvaluation[];
   } | null>;
+  /**
+   * Player action progression readout (THR-613): per permanent reach, accrued reach
+   * practice, live Domain Capability + tier, tier snapshot, and pending-Deepening flag.
+   */
+  getAscendantProgression: () => Promise<
+    | {
+        reaches: import('./engine/phaseAscendantProgression').AscendantReachProgress[];
+        pendingBeatId: string | null;
+      }
+    | { error: string }
+  >;
   /** @internal GameView registers the SimulationRuntime provider for balance telemetry access */
   _registerRuntimeProvider: (fn: () => import('./engine/simulationRuntime').SimulationRuntime | null) => void;
   /** @internal GameView registers encounter spawn / world-spawn callbacks here */

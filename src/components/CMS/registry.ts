@@ -98,6 +98,7 @@ import { IA_SURFACES } from '../../data/ia-manifest';
 import * as threat from '../../data/threat-content';
 import * as agentVisual from '../../data/agent-visual-content';
 import * as gameConfig from '../../data/game-config';
+import * as playerProgression from '../../data/player-progression';
 import * as influence from '../../data/influence-content';
 import { TUNABLE_GROUPS } from './tunableConstants';
 
@@ -1155,6 +1156,22 @@ export const CONTENT_REGISTRY: ContentRegistryEntry[] = [
     ),
     viewer: 'constants',
     sourceFile: 'src/data/threat-content.ts',
+  },
+  {
+    id: 'player-progression-constants',
+    label: 'Player Progression',
+    category: 'Configuration',
+    description: 'God-side capability growth (THR-613): reach-practice accrual rate, diminishing returns, secondary-reach lag, Deepening-beat cadence.',
+    data: constants(
+      ['PLAYER_PRACTICE_PER_ACTION', playerProgression.PLAYER_PRACTICE_PER_ACTION, 'Base reach-practice per resolved in-domain player action'],
+      ['PLAYER_DIMINISHING_RETURNS_FACTOR', playerProgression.PLAYER_DIMINISHING_RETURNS_FACTOR, 'How strongly high capability damps further practice (0–1)'],
+      ['PLAYER_PRACTICE_ENCOUNTER_SHAPE', playerProgression.PLAYER_PRACTICE_ENCOUNTER_SHAPE, 'Practice from shaping an in-domain encounter step (Slice 2)'],
+      ['SECONDARY_REACH_PRACTICE_MULT', playerProgression.SECONDARY_REACH_PRACTICE_MULT, 'Secondary reach accrues slower — identity lead axis'],
+      ['DEEPENING_BEAT_MAX_PER_TICK', playerProgression.DEEPENING_BEAT_MAX_PER_TICK, 'Max Deepening beats enqueued per tick (dedup cap)'],
+      ['MILESTONE_SOURCES_FOR_BEAT', playerProgression.MILESTONE_SOURCES_FOR_BEAT, 'Controlled essence sources that fire a breadth beat (Slice 2, coordinate THR-611)'],
+    ),
+    viewer: 'constants',
+    sourceFile: 'src/data/player-progression.ts',
   },
   {
     id: 'influence-constants',
