@@ -292,6 +292,11 @@ export interface GameState {
   // Control effects — sustained divine effects with per-tick costs, ticked by phaseControlEffects
   controlEffects?: ControlEffect[];
 
+  // Queued by the Covenants panel when the player releases a sustained control (THR-613 §3.4);
+  // consumed by phaseControlEffects, which lapses each named effect as 'voluntarily_released'
+  // and clears the queue. Holds effectIds.
+  pendingControlReleases?: string[];
+
   // Generic effect system runtime state — cooldowns, stacks, decay values per attachment.
   // Keyed by attachment identity (node ID for possessions/traits, edge ID for agreements).
   // Ticked by phaseEffectTick.

@@ -423,6 +423,23 @@ export interface DebugBridge {
       }
     | { error: string }
   >;
+  /** List the god's active sustained controls ("covenants", THR-613 §5.A). Read-only. */
+  listControlEffects: () =>
+    | {
+        covenants: Array<{
+          effectId: string;
+          templateId: string;
+          targetNodeId?: string;
+          contested: boolean;
+          hasCost: boolean;
+        }>;
+        pendingReleases: string[];
+      }
+    | { error: string };
+  /** Queue a voluntary release of a sustained control (THR-613 §3.4), mirroring the Covenants panel. */
+  releaseControl: (effectId: string) =>
+    | { success: true; effectId: string; matchedActiveEffect: boolean; pendingReleases: string[] }
+    | { error: string };
   /** @internal GameView registers the SimulationRuntime provider for balance telemetry access */
   _registerRuntimeProvider: (fn: () => import('./engine/simulationRuntime').SimulationRuntime | null) => void;
   /** @internal GameView registers encounter spawn / world-spawn callbacks here */
