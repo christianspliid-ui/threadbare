@@ -18,6 +18,7 @@ import { BarSection } from './BarSection';
 import { IdentityStrip } from './IdentityStrip';
 import { EssenceBlock } from './EssenceBlock';
 import { ReachesBlock } from './ReachesBlock';
+import { SignaturesBlock } from './SignaturesBlock';
 import { ActionsBlock } from './ActionsBlock';
 import { MandateBlock } from './MandateBlock';
 import { HooksBlock } from './HooksBlock';
@@ -28,6 +29,7 @@ import {
   selectActionTray,
   selectMandateRow,
   selectReachRows,
+  selectSignaturePaths,
 } from './selectors';
 import styles from './styles.module.css';
 
@@ -37,6 +39,10 @@ const ASCENDANT_BAR_SECTION_DEFAULT_OPEN = {
   // Open by default: the two permanent reaches are the player's identity anchor, and the
   // progression curve is unreadable if the depth readout is folded away (THR-613 §5.D).
   reaches: true,
+  // Closed by default: the signature-path readout is supplementary legibility (which
+  // headline powers are yours vs. another incarnation's), not always-critical, and eight
+  // rows would push the always-open sections below the fold on the 360px rail.
+  signatures: false,
   essence: true,
   actions: true,
   mandate: true,
@@ -100,6 +106,17 @@ export function AscendantBar({
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [gameState, worldVersion],
   );
+  const signaturePaths = useMemo(
+    () => selectSignaturePaths(gameState),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [gameState, worldVersion],
+  );
+  // Count = the god's own paths (available + acquirable); the not-this-incarnation
+  // paths are context, not a tally of what the player holds.
+  const yourSignatureCount = useMemo(
+    () => signaturePaths.filter((p) => p.state !== 'locked_incarnation').length,
+    [signaturePaths],
+  );
 
   const actionCount = 2 + actionTray.self.length + actionTray.rare.length; // 2 = hardcoded core (Move + Investiture)
   const hookCount = useMemo(() => {
@@ -127,6 +144,17 @@ export function AscendantBar({
         placeholder="Your domains are not yet settled."
       >
         <ReachesBlock rows={reachRows} />
+      </BarSection>
+
+      {/* 2b. Signatures (the eight reach powers — yours vs. another incarnation's) */}
+      <BarSection
+        label="Signatures"
+        count={yourSignatureCount}
+        open={open.signatures}
+        onToggle={() => toggle('signatures')}
+        placeholder="Your paths of power are not yet settled."
+      >
+        <SignaturesBlock paths={signaturePaths} />
       </BarSection>
 
       {/* 3. Essence */}
