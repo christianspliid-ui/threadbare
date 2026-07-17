@@ -1,9 +1,26 @@
 # Linear Coordination Protocol
 
-> **Date:** 2026-04-13 (single-executor consolidation 2026-06-23, THR-486)
+> **Date:** 2026-04-13 (single-executor consolidation 2026-06-23, THR-486; design→session-type reframing 2026-07-18, THR-649)
 > **Type:** Process infrastructure
 > **Status:** Active — single-executor model live
 > **Supersedes:** BACKLOG.md as source of truth, HANDOVER.md as handoff mechanism
+
+---
+
+## Session-type reframing (Pure Claude Code Migration, THR-649)
+
+Design and execution are now two **Claude Code session types**, not two runtimes. The former "Cowork"
+design role is a CC **design session** (`.claude/skills/design-session/SKILL.md`); the executor is the CC
+pickup lane (`.claude/skills/pull-work/SKILL.md`, `tb-opus-pickup`). **Read every "Cowork" reference in this
+doc as "the CC design session."** Role separation is preserved — a design session designs and plans, never
+writes `src/` — but it is a session-type discipline, not a runtime one.
+
+**The one mechanical change:** a CC design session **commits its own plan doc directly** via a `docs/plan-*`
+PR (CI-gated, merged immediately) — no `plan-pending-commit` label, no hourly `flush-plan-docs`, no auto-flush
+fallback. The label+flush pipeline still coexists during the migration parallel-run and is retired in Phase 3
+(THR-654); until then, the flush sections below describe the **legacy** path and the direct-PR flow (Design
+Session Handoff, below) is the current one for CC design sessions. See
+`Docs/plans/2026-07-17-pure-claude-code-migration.md`.
 
 ---
 
@@ -24,14 +41,14 @@ Two agents (Cowork and Claude Code) coordinate via markdown files: BACKLOG.md fo
 
 ---
 
-## Two Agents, One Executor Queue
+## Two Session Types, One Executor Queue
 
-This project runs **two agents**:
+This project runs **two Claude Code session types** (see the session-type reframing above):
 
-- **Cowork** — designs, plans, researches, documents. Owns the design states and the handoff. Never writes code or runs git.
-- **Claude Code (CC)** — the single executor. Implements, tests, commits, pushes, merges. Pulls from one queue: **Ready for Dev**.
+- **Design session** — designs, plans, researches, documents. Owns the design states and the handoff. Never writes `src/` or implements. Commits its plan doc directly via a `docs/plan-*` PR. Skill: `design-session`.
+- **Executor session (CC)** — the single executor. Implements, tests, commits, pushes, merges. Pulls from one queue: **Ready for Dev**. Skill: `pull-work` / `tb-opus-pickup`.
 
-There is one executor and one executor queue. CC runs as an **hourly Opus automation** that pulls the top item from Ready for Dev (WIP=1) each cycle, plus any number of interactive sessions the user starts by hand. All of them honor WIP=1 across sessions (Rule 6).
+There is one executor and one executor queue. The executor runs as an **hourly Opus automation** that pulls the top item from Ready for Dev (WIP=1) each cycle, plus any number of interactive sessions the user starts by hand. All of them honor WIP=1 across sessions (Rule 6). Design sessions do not consume the executor WIP slot — they hand off *to* it.
 
 ---
 
@@ -42,17 +59,17 @@ Seven states organized into one design swimlane and one implementation lane. **R
 | State | Linear Type | Swimlane | Owner | Meaning |
 |-------|-------------|----------|-------|---------|
 | **Idea** | backlog | — | Anyone | Raw idea, not committed. Equivalent to 💡 |
-| **Todo** | unstarted | — | Cowork | Committed to doing, needs design/planning. Equivalent to 📋 |
-| **In Design** | started | Discovery & Design | Cowork | Cowork is actively designing or researching. Equivalent to 🎨 |
-| **Implementation Planning** | started | Discovery & Design | Cowork | Cowork is writing the specific implementation plan and action items for the executor. Equivalent to 📐 |
-| **Ready for Dev** | started | Handoff | Cowork → CC | Plan complete, handoff comment written. **Claude Code** pulls from here. |
-| **In Dev** | started | Implementation | CC | Claude Code is implementing. Equivalent to 🏗️ |
+| **Todo** | unstarted | — | Design session | Committed to doing, needs design/planning. Equivalent to 📋 |
+| **In Design** | started | Discovery & Design | Design session | A design session is actively designing or researching. Equivalent to 🎨 |
+| **Implementation Planning** | started | Discovery & Design | Design session | The design session is writing the specific implementation plan and action items for the executor. Equivalent to 📐 |
+| **Ready for Dev** | started | Handoff | Design → Executor | Plan complete, plan doc merged, handoff comment written. The **executor session** pulls from here. |
+| **In Dev** | started | Implementation | Executor (CC) | The executor session is implementing. Equivalent to 🏗️ |
 | **Done** | completed | — | — | Shipped, documented, deployed. Equivalent to ✅ |
 
 ### One Swimlane, One Handoff Lane
 
-**Discovery & Design (Cowork):** Idea → Todo → In Design → Implementation Planning → Ready for Dev
-**Implementation (CC):** In Dev → Done
+**Discovery & Design (design session):** Idea → Todo → In Design → Implementation Planning → Ready for Dev
+**Implementation (executor session):** In Dev → Done
 
 - **CC pulls from Ready for Dev** (`list_issues state:"Ready for Dev" assignee:null`) on an hourly cycle, plus on demand in interactive sessions.
 
@@ -71,7 +88,7 @@ Idea → Todo → In Design → Implementation Planning → Ready for Dev → In
 **WIP limit: 1 In Dev issue per project.** CC must finish and ship its current In Dev issue before pulling another from the same project. This prevents merge conflicts and write collisions from parallel work in overlapping files. Issues from *different* projects can be In Dev simultaneously if they don't share files (e.g. two interactive sessions, or an interactive session alongside the hourly automation), but same-project work is strictly serial. See Rule 6 for the cross-session WIP=1 invariant.
 
 **Handoff point:**
-- **Implementation Planning** is where Cowork writes the plan. **Ready for Dev** is the handoff queue. Cowork moves issues there when the plan is complete and the handoff comment is written.
+- **Implementation Planning** is where the design session writes the plan. **Ready for Dev** is the handoff queue. The design session moves issues there when the plan is complete, the plan doc is merged, and the handoff comment is written.
 - **Done** is the executor closeout. When CC finishes and pushes with `Fixes THR-XX` in the commit body **and** the PR body, merge to `main` triggers Linear's auto-close straight to Done (`linear-autoclose.yml`).
 
 **Stale-claim auto-release sweep (THR-250).** A GitHub Action runs every 12 hours and detects `In Dev` issues whose `updatedAt` timestamp has not changed in more than 48 hours. This covers the session-death edge case (crash or exit without releasing). When a stale claim is found: (1) a warning comment is posted on the issue naming the last-activity date and the projected release time; (2) after a 24-hour grace window, the issue is automatically transitioned back to `Ready for Dev` and the assignee is cleared, making it eligible for the next pickup cycle. The sweep applies only to the Threadbare team. To opt an issue out (intentional long-running WIP, blocked on external, awaiting approval), apply the **`Parked`** label — the sweep skips all `Parked`-labeled issues entirely. A human applies the `Parked` label; the script auto-creates the label in the team on first run if it doesn't already exist. The sweep runs in dry-run mode by default; trigger it via `workflow_dispatch` with `dry_run: false` to perform live writes.
@@ -80,7 +97,7 @@ Idea → Todo → In Design → Implementation Planning → Ready for Dev → In
 
 Every feature in this project touches three pillars: **Engine** (systems, tick loop, graph), **Content** (encounters, prose, templates, data), and **UI** (components, modals, HexMap, player controls). Designs and plans that cover only one or two pillars produce incomplete features that get deferred indefinitely. The exit criteria below enforce coverage of all three.
 
-**In Design → Implementation Planning** (Cowork gate — design completeness + quality)
+**In Design → Implementation Planning** (design-session gate — design completeness + quality)
 
 *Structural gate (all issues):*
 - [ ] **Engine pillar** — systems design covers all engine changes (graph nodes/edges, tick phases, resolution, tracing)
@@ -102,7 +119,7 @@ Every feature in this project touches three pillars: **Engine** (systems, tick l
 - [ ] **Value justification** — which core loop beat it serves, standalone value, opportunity cost
 - [ ] Infrastructure-only issues may skip quality gate with explicit "N/A — infrastructure only" note
 
-**Implementation Planning → Ready for Dev** (Cowork gate — plan completeness)
+**Implementation Planning → Ready for Dev** (design-session gate — plan completeness)
 - [ ] Plan doc exists in `Docs/plans/` (named `YYYY-MM-DD-topic.md`)
 - [ ] **Engine action items** — numbered, specific steps for engine/systems implementation
 - [ ] **Content action items** — numbered steps for templates, prose tables, encounter packets, data
@@ -130,10 +147,10 @@ Every feature in this project touches three pillars: **Engine** (systems, tick l
 
 ## Role Boundaries (encoded in workflow)
 
-| Agent | Can move TO | Cannot move TO |
+| Session type | Can move TO | Cannot move TO |
 |-------|-----------|----------------|
-| Cowork | Idea, Todo, In Design, Implementation Planning, Ready for Dev | In Dev, Done |
-| Claude Code | In Dev (from Ready for Dev only), Done (via merge-keyword only) | Idea, Todo, In Design, Implementation Planning, Ready for Dev |
+| Design session | Idea, Todo, In Design, Implementation Planning, Ready for Dev | In Dev, Done |
+| Executor session (CC) | In Dev (from Ready for Dev only), Done (via merge-keyword only) | Idea, Todo, In Design, Implementation Planning, Ready for Dev |
 | User | Any state | — |
 
 This makes role violations visible: if an issue is In Design but code changes appear, something went wrong.
@@ -297,9 +314,10 @@ A single hourly CC automation runs on **Opus** and pulls the top of Ready for De
 
 ## Agent Session Protocols
 
-### Cowork Session Start
-1. **Board scan (state-filtered):** Run one query per actionable state — `list_issues(team:"Threadbare", state:"<state>", limit:100, orderBy:"updatedAt", includeArchived:false)` — across the states Cowork owns: `In Design`, `Implementation Planning`, `Ready for Dev`, `In Dev`, `Todo`. Optionally include `Idea` when explicitly grooming the backlog. **Never include `Done` or `Canceled`** — they aren't actionable, and an unfiltered scan overflows the response budget once those states accumulate (Limitations §, 2026-05-06: an unfiltered `list_issues(limit:250)` returned 386KB and tripped the response cap). If the Linear MCP exposes an array-valued state filter (`state_in:[...]` or equivalent), prefer one call with the full state list over the per-state fan-out. Bucket the combined results by status in memory.
+### Design Session Start
+1. **Board scan (state-filtered):** Run one query per actionable state — `list_issues(team:"Threadbare", state:"<state>", limit:100, orderBy:"updatedAt", includeArchived:false)` — across the design states: `In Design`, `Implementation Planning`, `Ready for Dev`, `In Dev`, `Todo`. Optionally include `Idea` when explicitly grooming the backlog. **Never include `Done` or `Canceled`** — they aren't actionable, and an unfiltered scan overflows the response budget once those states accumulate (Limitations §, 2026-05-06: an unfiltered `list_issues(limit:250)` returned 386KB and tripped the response cap). If the Linear MCP exposes an array-valued state filter (`state_in:[...]` or equivalent), prefer one call with the full state list over the per-state fan-out. Bucket the combined results by status in memory.
 2. Check if any "Ready for Dev" items have been sitting >2 sessions → flag to user.
+3. Run the design-governance checklist and the direct plan-doc PR flow — see `.claude/skills/design-session/SKILL.md`.
 
 ### Claude Code Session Start
 
@@ -315,14 +333,21 @@ A single hourly CC automation runs on **Opus** and pulls the top of Ready for De
 6. **Read the `Suggested model` line (advisory).** It tells you the work type Cowork sized the issue for. The scheduled automation always runs Opus regardless; interactive sessions may use any model. The label does not gate pickup.
 7. On completion: commit with `Fixes THR-XX` in the body, put `Fixes THR-XX` in the PR body, and push — the merge-to-main keyword auto-closes the issue to Done. **Do not manually transition In Dev → Done (Rule 3).**
 
-### Cowork Handoff (replaces HANDOVER.md)
-When Cowork finishes a design and writes the implementation plan:
+### Design Session Handoff (replaces HANDOVER.md)
+When a design session finishes a design and writes the implementation plan:
 1. **Verify exit criteria** — check all items in "Implementation Planning → Ready for Dev" above. Every pillar must have action items or an explicit N/A.
+1b. **Commit the plan doc directly (CC design sessions).** Open a `docs/plan-<basename>` PR, wait for the
+    `Test · Typecheck · Build` check to go green, and merge before moving the issue to Ready for Dev — the
+    executor needs the doc on `main`. **Scrub every closeable reference** (no `Fixes/Closes/Resolves`, no bare
+    `THR-XXX`, no linear-issue URL in the commit / branch / PR title / PR body — THR-510). See
+    `.claude/skills/design-session/SKILL.md` § Step 4 for the exact commands. *(Legacy Cowork path, coexisting
+    until THR-654: apply the `plan-pending-commit` label and let the hourly `flush-plan-docs` task commit the
+    doc — do NOT use this path from a CC design session.)*
 2. Move issue: Implementation Planning → Ready for Dev
 2b. **Also put the `Plan doc:` path in the issue *description*** (not only the handoff comment) —
-    a line like `**Plan doc:** \`Docs/plans/YYYY-MM-DD-topic.md\``. `flush-plan-docs` parses the
-    description first and the handoff comment as a fallback (THR-645); keeping the path in both
-    places is belt-and-suspenders so neither location is a single point of failure.
+    a line like `**Plan doc:** \`Docs/plans/YYYY-MM-DD-topic.md\``. The executor reads it to locate the plan;
+    the legacy `flush-plan-docs` parser also parses the description first and the handoff comment as a fallback
+    (THR-645). Keeping the path in both places is belt-and-suspenders so neither location is a single point of failure.
 3. Add handoff comment using this template:
 
 ```
@@ -346,7 +371,7 @@ When Cowork finishes a design and writes the implementation plan:
 ### Wiring action items
 1. ...
 
-### Files changed by Cowork
+### Files changed by the design session
 - ...
 
 ### Grey zones / CC decisions needed
