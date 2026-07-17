@@ -111,10 +111,26 @@ Both are optional per template. Some actions require only competence; some only 
 
 **Your two reach signatures.** Beyond the shared verbs, each run grants you exactly two **reach signatures** — one headline divine power for each of your two domains (Warhost for Iron, Rend the Gate for Veil, the Great Work for Stone, and so on for all eight Reaches) [IMPL — the eight `invest.<reach>.<name>` templates in `src/data/reach-signature-content.ts`, catalogued `reach-gated` in `ASCENDANT_ACTION_BUCKETS`]. A signature is **permanently reach-gated**: a card requiring a Reach outside your two domains never appears, not even as aspiration [IMPL — `requiresReach` gate in `getTargetActionSlots()`, THR-503]. You acquire them as story moments, not from a menu: your **primary** signature arrives at the culmination of the opening spine (Beat 4, "A Path Opens"), alongside your choice of god-path; your **secondary** arrives later, when the living world next calls on your deeper domain [IMPL — `BeatDefinition.grantsReachSignature`, resolved per-run from your ranked domain affinities in `resolvePendingBeat`; Beat 4 + the `beat.pool.invest.reach_signature` pool beat, THR-523]. How hard a signature hits scales with your **sphere power** — the same power that fuels the rest of your expression [IMPL — `spherePowerMultiplier`, `src/data/reach-signature-content.ts`, THR-548].
 
+### How your power grows within a run
+
+The five verbs and your two signatures are fixed at the start, but your *reach into them* deepens as you play. Power grows along **three axes**, all surfaced through the shipped Ascendant Beat cadence — there is no separate "level-up" screen [DESIGN — three-axis progression spine, [Docs/plans/2026-07-05-player-action-progression-v1.md](../plans/2026-07-05-player-action-progression-v1.md) §2, THR-613].
+
+- **Depth (Axis A)** — divine activity in one of your two Reaches accrues **reach practice**, which feeds the same Domain Capability sigmoid the agents use (one source of truth, no parallel XP number). When your capability crosses a tier boundary a **Deepening beat** fires — a prose vignette addressed to you that narrates the growth. A Deepening grants **no new card**: the reward is that deeper tier-gated templates in that Reach become newly reachable [IMPL — `reachPractice` accrual + tier-crossing detection in [src/engine/phaseAscendantProgression.ts](../../src/engine/phaseAscendantProgression.ts); eight beats, one per Reach, in [src/data/ascendant-deepening-beats.ts](../../src/data/ascendant-deepening-beats.ts); tunables in [src/data/player-progression.ts](../../src/data/player-progression.ts); THR-613 Slices 1–2].
+- **Breadth (Axis B)** — new named cards arrive as one-off unlocks. A **milestone beat** fires once you hold `MILESTONE_SOURCES_FOR_BEAT` controlled essence sources (or your first *flowering* source) and grants an economy-flavored breadth card no other beat dispenses; **discovery** (Ruins → Delve) is the third breadth path [IMPL — `beat.milestone.the_wellspring_flows` in [src/data/ascendant-milestone-beats.ts](../../src/data/ascendant-milestone-beats.ts), fired from the same progression phase; THR-613 Slice 2b].
+- **Sustained commitment (Axis C)** — your **Control-slot cap scales with tier**, so a deeper god can hold more covenants at once [IMPL — cap derived from tier]. A dedicated **Covenants** surface to review and voluntarily release sustained controls is designed but not yet built [DESIGN — Covenants panel + `release_control` op, plan §5.A / §3.4, THR-613 Slice 4 pending].
+
+**The locked-state grammar.** So that "I can't do this" is never ambiguous, a card sits in one of three states:
+
+- **Available** — prerequisites met; the card is in your drawer.
+- **Acquirable this run** — inside your two Reaches but gated by a tier you can still cross or a card you can still earn: *not yet*.
+- **Locked this incarnation** — a Reach outside your two permanent domains: *not this run*, ever [IMPL — the reach gate permanently hides identity-locked cards, THR-503].
+
+Your two Reaches and their current depth are always visible in the ascendant bar's **Reaches** readout (prose tier words, not numbers), and all eight reach **Signatures** are partitioned into the three states above so the permanence is legible rather than invisible [IMPL — Reaches + Signatures readouts in [src/components/Game/ascendant-bar/](../../src/components/Game/ascendant-bar/), THR-613 Slices 3a–3b]. Extending the three-state grammar to *every* card in the live ActionDrawer is designed but deferred [DESIGN — per-card drawer grammar, plan §5.B, THR-613 Slice 3b tail].
+
 ```
 Owns: synthesis only.
 Definitions: Docs/ubiquitous-language/Cosmology.md (Reach, Sphere, Domain Capability, Prerequisite), Docs/ubiquitous-language/Encounters.md (UnifiedActionTemplate)
-Spec: Docs/canon/cosmology.md (eight Reaches, twelve Spheres), Docs/canon/engine.md
+Spec: Docs/canon/cosmology.md (eight Reaches, twelve Spheres), Docs/canon/engine.md, Docs/plans/2026-07-05-player-action-progression-v1.md (in-run progression — Axis A/B/C spine)
 Why: TheFantasyWorldSimulator/Vision/02-non-negotiables.md (§1 — divine remove, not direct control)
 ```
 
@@ -267,4 +283,4 @@ When the next quarterly architecture-assessment runs, the deferred items (4, 5) 
 
 ## Last-reviewed
 
-2026-06-23 by Cowork (THR-414 Phase 1 review pass — verdicted all 6 open questions + the manual↔card Cosmology drift; added §5 The Cosmology, renumbered former §5–§8 to §6–§9, folded resolved verdicts inline, spawned THR-476). Previous: 2026-05-11 by Cowork (Opus 4.6 executor pass on THR-403 Phase 1). Review trigger: monthly (or when [`monthly-rulebook-review`](https://linear.app/threadbare/issue/THR-405) lands and runs), and whenever a plan touches rules of play and updates a section.
+2026-07-17 by Claude Code (THR-613 progression-legibility slice — added §4 subsection "How your power grows within a run": the three-axis progression spine (Depth/Breadth/Sustained-commitment), Deepening + milestone beats, and the Available / Acquirable-this-run / Locked-this-incarnation grammar; honest [IMPL] vs [DESIGN] flags for the still-pending Slice 3b-tail drawer grammar and Slice 4 Covenants panel). Previous: 2026-06-23 by Cowork (THR-414 Phase 1 review pass — verdicted all 6 open questions + the manual↔card Cosmology drift; added §5 The Cosmology, renumbered former §5–§8 to §6–§9, folded resolved verdicts inline, spawned THR-476). Earlier: 2026-05-11 by Cowork (Opus 4.6 executor pass on THR-403 Phase 1). Review trigger: monthly (or when [`monthly-rulebook-review`](https://linear.app/threadbare/issue/THR-405) lands and runs), and whenever a plan touches rules of play and updates a section.
