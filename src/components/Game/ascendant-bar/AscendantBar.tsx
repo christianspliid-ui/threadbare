@@ -1,8 +1,8 @@
 /**
  * AscendantBar — persistent left rail (360 px) for the hexmap screen.
  *
- * Shows ascendant self-state: identity + quintessence, essence, actions,
- * mandate, and hooks (conditions / clues / vows). Five foldable sections.
+ * Shows ascendant self-state: identity + quintessence, reaches, essence, actions,
+ * mandate, and hooks (conditions / clues / vows). Six foldable sections.
  *
  * Prose-first, no numbers, 1920×1080 viewport contract.
  * Supersedes: IdentityChip (top bar), AvatarHUD overlay, EssencePanel (right rail),
@@ -17,6 +17,7 @@ import type { AscendantIdentity } from '../../../types/remembrance';
 import { BarSection } from './BarSection';
 import { IdentityStrip } from './IdentityStrip';
 import { EssenceBlock } from './EssenceBlock';
+import { ReachesBlock } from './ReachesBlock';
 import { ActionsBlock } from './ActionsBlock';
 import { MandateBlock } from './MandateBlock';
 import { HooksBlock } from './HooksBlock';
@@ -26,12 +27,16 @@ import {
   selectEssenceRows,
   selectActionTray,
   selectMandateRow,
+  selectReachRows,
 } from './selectors';
 import styles from './styles.module.css';
 
 // ── Default section open/closed state (NFP #1: tunability) ──────────────────
 const ASCENDANT_BAR_SECTION_DEFAULT_OPEN = {
   identity: true,
+  // Open by default: the two permanent reaches are the player's identity anchor, and the
+  // progression curve is unreadable if the depth readout is folded away (THR-613 §5.D).
+  reaches: true,
   essence: true,
   actions: true,
   mandate: true,
@@ -90,6 +95,11 @@ export function AscendantBar({
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [gameState, worldVersion],
   );
+  const reachRows = useMemo(
+    () => selectReachRows(gameState),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [gameState, worldVersion],
+  );
 
   const actionCount = 2 + actionTray.self.length + actionTray.rare.length; // 2 = hardcoded core (Move + Investiture)
   const hookCount = useMemo(() => {
@@ -108,7 +118,18 @@ export function AscendantBar({
         onOpen={onOpenSheet}
       />
 
-      {/* 2. Essence */}
+      {/* 2. Reaches (two permanent domains + depth) */}
+      <BarSection
+        label="Reaches"
+        count={reachRows.length}
+        open={open.reaches}
+        onToggle={() => toggle('reaches')}
+        placeholder="Your domains are not yet settled."
+      >
+        <ReachesBlock rows={reachRows} />
+      </BarSection>
+
+      {/* 3. Essence */}
       <BarSection
         label="Essence"
         count={essenceRows.length}
@@ -118,7 +139,7 @@ export function AscendantBar({
         <EssenceBlock rows={essenceRows} />
       </BarSection>
 
-      {/* 3. Actions */}
+      {/* 4. Actions */}
       <BarSection
         label="Actions"
         count={actionCount}
@@ -129,7 +150,7 @@ export function AscendantBar({
         <ActionsBlock tray={actionTray} onMove={onMove} onInvestiture={onInvestiture} />
       </BarSection>
 
-      {/* 4. Mandate */}
+      {/* 5. Mandate */}
       <BarSection
         label="Mandate"
         open={open.mandate}
@@ -141,7 +162,7 @@ export function AscendantBar({
         ) : null}
       </BarSection>
 
-      {/* 5. Hooks (conditions / clues / vows) */}
+      {/* 6. Hooks (conditions / clues / vows) */}
       <BarSection
         label="Hooks"
         count={hookCount}

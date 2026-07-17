@@ -137,3 +137,42 @@ export const MANDATE_TREND_ARROW: Record<string, string> = {
   ebbing:  '▼',
   failing: '↓',
 };
+
+// ─── Reach copy — the two permanent domains (THR-613 §5.D) ────────────────────
+
+/**
+ * Per-reach display name + tooltip body for the bar's Reaches readout.
+ *
+ * An ascendant has exactly one primary and one secondary reach, fixed for the run.
+ * The bar names both so the player's identity and its depth are legible at a glance —
+ * the anchor the progression curve hangs off. The body says what the reach *is*, in
+ * plain register; the tier word beside it (from `NARRATIVE_LEXICON`) says how deep the
+ * god currently runs in it.
+ */
+export interface ReachCopy {
+  label: string;
+  body: string;
+}
+
+export const REACH_COPY: Record<string, ReachCopy> = {
+  iron:   { label: 'Iron',   body: 'War, force, and the holding of ground — what you can make the world do by strength.' },
+  gold:   { label: 'Gold',   body: 'Trade, debt, and appetite — what you can make the world do by what it wants.' },
+  shadow: { label: 'Shadow', body: 'Secrets, rumor, and the unseen hand — what you can make the world do without being seen doing it.' },
+  veil:   { label: 'Veil',   body: 'The threshold between the seen world and the other, and what crosses it when you press.' },
+  heart:  { label: 'Heart',  body: 'Devotion, grief, and loyalty — what you can make the world do by being loved or mourned.' },
+  eye:    { label: 'Eye',    body: 'Sight, knowing, and foretelling — what the world cannot keep from you.' },
+  stone:  { label: 'Stone',  body: 'Roots, endurance, and what outlasts — what you can make the world keep.' },
+  star:   { label: 'Star',   body: 'Faith, rite, and the naming of the sacred — what you can make the world hold holy.' },
+};
+
+/** Eyebrow labels for the two permanent domains. */
+export const REACH_RANK_LABEL = {
+  primary: 'Primary',
+  secondary: 'Secondary',
+} as const;
+
+/** Shown when a Deepening beat is waiting in this reach — "not yet", never "+1". */
+export const REACH_DEEPENING_PENDING_COPY = 'Something has shifted here. Attend the beat.';
+
+/** Placeholder when the ascendant's reaches cannot be read (legacy save / no ascendant). */
+export const REACH_EMPTY_COPY = 'Your domains are not yet settled.';

@@ -18,6 +18,9 @@ import {
 } from '../../../types/quintessence';
 import { getOriginPortraitUrl } from '../../../data/avatar-portrait-assets';
 import { UNIFIED_ACTION_TEMPLATES } from '../../../data/unified-action-templates';
+import { REACH_COPY } from '../../../data/ascendant-bar-content';
+import { getAscendantProgress } from '../../../engine/phaseAscendantProgression';
+import { getNarrativeLabel } from '../../../engine/domainCapability';
 import { classifyTrayTier, type AscendantTrayTier } from '../../../engine/ascendantTray';
 import { isActionRevealed } from '../../../engine/actionUnlock';
 import type { UnifiedActionTemplate } from '../../../types/unifiedAction';
@@ -222,4 +225,49 @@ export function selectMandateRow(gameState: GameState): MandateRowView | null {
     stage: STAGE_LABELS[currentStageIdx] ?? 'I',
     trend,
   };
+}
+
+// ─── Reaches — the two permanent domains + current depth (THR-613 §5.D) ───────
+
+export interface ReachRowView {
+  reach: string;
+  /** Authored display name, e.g. "Iron". */
+  label: string;
+  /** Tooltip body — what this reach is. */
+  body: string;
+  /** Prose tier word from NARRATIVE_LEXICON, e.g. "Tempered". Never a number. */
+  tierWord: string;
+  rank: 'primary' | 'secondary';
+  /** A Deepening beat is queued for this reach — the tier-up is waiting to be entered. */
+  pendingDeepening: boolean;
+}
+
+/**
+ * The ascendant's two permanent reaches and how deep the god currently runs in each.
+ *
+ * Reads the engine's `getAscendantProgress` rather than recomputing capability here, so
+ * the bar shows the same tier the Deepening beat fires on — one source of truth (the
+ * tier the player reads and the tier the beat trips on cannot drift apart).
+ *
+ * Fail-soft (NFP #4): returns [] when there is no ascendant or the progression state is
+ * unreadable; the caller renders `REACH_EMPTY_COPY` rather than throwing.
+ */
+export function selectReachRows(gameState: GameState): ReachRowView[] {
+  const progress = getAscendantProgress(gameState);
+  if (!progress) return [];
+  return progress.reaches.map((r) => {
+    const copy = REACH_COPY[r.reach];
+    // Fail-soft (NFP #4): if capability/tier come back non-finite (e.g. a malformed
+    // trait edge upstream), fall back to the lowest tier word rather than rendering
+    // "NaN" or an empty slot. Defence in depth alongside the computeRawScore guard.
+    const safeTier = Number.isFinite(r.tier) ? r.tier : 1;
+    return {
+      reach: r.reach,
+      label: copy?.label ?? r.reach,
+      body: copy?.body ?? '',
+      tierWord: getNarrativeLabel(r.reach, safeTier),
+      rank: r.isPrimary ? 'primary' : 'secondary',
+      pendingDeepening: r.pendingDeepening,
+    };
+  });
 }

@@ -52,7 +52,12 @@ export function computeRawScore(
     const assignment = edge.properties as unknown as TraitAssignmentProperties;
     const contributions = traitDef.domainContributions as DomainContributions | undefined;
     const base = contributions?.[domain] ?? 0;
-    total += base * assignment.level;
+    // Fail-soft (NFP #4): condition/clue trait edges (and any edge that forgets to set
+    // `level`) leave `level` undefined; `base * undefined` is NaN, which poisons the
+    // whole raw score and, through the sigmoid, makes every reach's capability NaN. A
+    // missing level means "present, unscaled" → default to 1. No-op for real capability
+    // traits (worldgen/culture/growth all set a numeric level).
+    total += base * (assignment.level ?? 1);
   }
 
   // Walk artifact edges (possesses, bonded_to)
