@@ -53,6 +53,7 @@ import {
 import { REACH_DOMAINS, type ReachDomain } from '../types/traits';
 import { REACH_SIGNATURE_ID_BY_REACH } from '../data/reach-signature-content';
 import { ASCENDANT_DEEPENING_BEATS, getDeepeningBeatById } from '../data/ascendant-deepening-beats';
+import { ASCENDANT_MILESTONE_BEATS, getMilestoneBeatById } from '../data/ascendant-milestone-beats';
 import { eligibleDeliveryBeats, getDeliveryBeatById } from './deliveryBeatAdapter';
 import { seedBeatGraph } from './ascendantBeatSeeding';
 import { applyEncounterAftermathReaction } from './encounterAftermath';
@@ -450,6 +451,16 @@ export function forceOfferBeatById(
       def: deepeningDef,
     };
   }
+  // Milestone beats (THR-613) are likewise enqueued directly by `phaseAscendantProgression`
+  // on a holdings threshold, never drawn — but `__DEBUG.fireBeat` must be able to force-offer
+  // one to browser-verify the vignette + its card grant without farming three sources first.
+  const milestoneDef = getMilestoneBeatById(beatId);
+  if (milestoneDef) {
+    return {
+      next: offer(beats, milestoneDef, milestoneDef.trigger, turn, ASCENDANT_MILESTONE_BEATS.length, [], /*advanceSpine*/ false),
+      def: milestoneDef,
+    };
+  }
   return null;
 }
 
@@ -579,6 +590,7 @@ function findBeatDefinition(beatId: string): BeatDefinition | null {
     ASCENDANT_BEAT_POOL.find(b => b.beatId === beatId) ??
     getDeliveryBeatById(beatId) ??
     getDeepeningBeatById(beatId) ??
+    getMilestoneBeatById(beatId) ??
     null
   );
 }
