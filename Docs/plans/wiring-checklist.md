@@ -208,6 +208,26 @@ Multiplicative novelty penalty applied in `scoreAndSelect` to break template-rep
 
 ---
 
+## Player Action Progression — Slice 2b milestone breadth beats (THR-613)
+
+Axis B (palette **breadth**), the companion to Slice 1's Axis A (reach **depth**). When the god's holdings cross a named threshold, a **Milestone beat** fires — and unlike a Deepening it **grants a card**, because breadth is the axis where a new verb is the honest reward.
+
+| Surface | Path | Notes |
+|---|---|---|
+| Source counter | `countControlledSources(graph, ascendantId)` in `src/engine/essenceSources.ts` | Pure read → `{ total, flowering }`; walks the ascendant's `controls` edges. Never writes tiers — `phaseEssenceSources` runs earlier in the tick and owns the recompute, so the tiers read here are fresh. Fail-soft: unknown ascendant / bagless host → not counted. |
+| Orchestrator phase | Axis-B branch inside the existing `phaseAscendantProgression` (`src/engine/phaseAscendantProgression.ts`) | **No new phase.** Enqueues `beat.milestone.the_wellspring_flows` into `ascendantBeats.pending` at `MILESTONE_SOURCES_FOR_BEAT` sources **or** the first `flowering` source. Runs only when a Deepening did not take the slot this tick (Deepening wins; the milestone is threshold- not edge-based, so it re-detects next tick). Rides the `pending` slot → **Beat Director untouched**. |
+| Node property bag | `AscendantProperties.milestoneBeatsFired?` in `src/types/influence.ts` | Additive `readonly string[]`; no new node/edge type. Recorded at **enqueue**, not on resolution — a beat that is offered but dismissed must not re-fire every tick, and a count that dips then recovers must not re-trigger. |
+| Beat kind | `'milestone'` added to `BeatKind` (`src/types/ascendantBeat.ts`); presentation entry in `AscendantBeatModal.tsx` `KIND_PRESENTATION` (the record is exhaustive over `BeatKind`) | Slice 3 surfaces the authored `MILESTONE_BEAT_PRESENTATION` in place of the generic copy (same staging as Deepening). |
+| Content catalogue | `src/data/ascendant-milestone-beats.ts` | `ASCENDANT_MILESTONE_BEATS` + `getMilestoneBeatById` + `MILESTONE_BEAT_PRESENTATION` + `milestoneChronicleProse`. Consulted by `findBeatDefinition` / `forceOfferBeatById` (`ascendantBeat.ts`) so an enqueued milestone **resolves** (records a `BeatRecord`) instead of skipping as `missing_template`. |
+| Unlock catalogue | `ASCENDANT_ACTION_BUCKETS` + `collectGrantedActionIds()` (`src/data/ascendant-beat-content.ts`) | Grants `loc.open_markets` (`unlockable-generic`) — a shipped Gold economy card no beat previously granted, hence unreachable under the empty THR-501 starter floor. `collectGrantedActionIds` now includes the milestone catalogue so the existing bucket drift-guards cover it. **Rule:** a milestone grant must never duplicate another beat's (re-revealing a held card is a fake reveal) — contract-tested. |
+| Constants | `src/data/player-progression.ts` | `MILESTONE_SOURCES_FOR_BEAT` (3), `MILESTONE_FLOWERING_FOR_BEAT` (1), `MILESTONE_SOURCE_BEAT_ID`. |
+| Trace category | `src/types/trace.ts` | `ascendant.progression.milestone_enqueued` in `TraceCategory`, `TRACE_CATEGORIES`, and the `TraceEntry` union (`MilestoneEnqueueTrace`, carries `sourceCount`/`floweringCount` — the counts that fired it). |
+| Debug | existing `__DEBUG.fireBeat(beatId)` | `fireBeat('beat.milestone.the_wellspring_flows')` force-offers the beat for browser-verify without farming three sources first. |
+| Tests | `src/engine/__tests__/phaseAscendantMilestone.test.ts` | 16 tests: both thresholds, below-threshold silence, once-per-run dedup across ticks, Deepening priority, spine/pending gating, catalogue resolution, no-fake-reveal guard. |
+| Deferred | THR-656 | Art for `loc.open_markets` (renders a placeholder icon; cosmetic only). |
+
+---
+
 ## Player Action Progression — Slice 1 engine substrate (THR-613)
 
 God-side capability growth: the ascendant's Domain Capability tier rises in-run as it acts in its two permanent reaches, and crossing a tier fires a **Deepening beat** through the shipped Ascendant Beat Director. Slice 1 is the engine substrate only — the ActionDrawer three-state locked grammar, ascendant-bar tier readout, Deepening modal, and Covenants panel are Slices 3–4.
