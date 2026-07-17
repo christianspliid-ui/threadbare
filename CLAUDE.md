@@ -145,6 +145,10 @@ const one = await window.__DEBUG.scoreProseEntry('divine.coincidence')  // Prose
 // Outcome-ladder distribution + KPI threshold verdicts (THR-571 U1):
 const dist = await window.__DEBUG.getOutcomeDistribution()   // { tick, seed, outcomes, thresholds } — live resolution split + green/amber/red bands
 const windowed = await window.__DEBUG.getOutcomeDistribution(30)  // histogram restricted to actions completed in the last 30 ticks
+
+// Entity Visual resolver readout (THR-637) — "why is this showing a fallback?":
+const ev = await window.__DEBUG.resolveEntityVisual('Serafina')  // node id/name (exact→partial-id→partial-name)
+// -> { matchedId, matchedName, descriptor: { tier:'art'|'fallback', src?, glyph, gradientIndex, alt, kind } } or { error }
 ```
 
 See `src/debug-bridge.ts` for the full API and `src/debug-bridge.d.ts` for types.

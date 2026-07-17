@@ -18,7 +18,9 @@ import { generateEntityProse } from '../../engine/proseGenerator';
 import { Tooltip } from '../shared/Tooltip';
 import { SectionHeading } from '../shared/SectionHeading';
 import { StepDots } from '../shared/StepDots';
-import { getSublocationConceptArt, getLocationConceptArt } from '../../data/sublocation-concept-art';
+import { getSublocationConceptArt } from '../../data/sublocation-concept-art';
+import { EntityVisual } from '../shared/EntityVisual';
+import type { TerrainType } from '../../types';
 import { useNarration } from '../../services/narration/useNarration';
 import { Play, Square, Loader2 } from 'lucide-react';
 import { INITIATIVE_TEMPLATE_MAP } from '../../data/initiative-templates';
@@ -866,7 +868,6 @@ export const LocationView = memo(function LocationView({
   const locProps = (location.properties ?? {}) as Record<string, unknown>;
   const locType = typeof locProps.locationType === 'string' ? locProps.locationType : 'location';
   const locationSubtype = typeof locProps.locationSubtype === 'string' ? locProps.locationSubtype : locType;
-  const locationArt = getLocationConceptArt(locationSubtype);
 
   // ── Sublocation drill-down state ──
   const [selectedSublocationId, setSelectedSublocationId] = useState<string | null>(null);
@@ -1135,85 +1136,26 @@ export const LocationView = memo(function LocationView({
               <PlaceOfPowerInspector location={location} graph={graph} tick={tick ?? 0} />
             )}
           </div>
-          {/* Concept art placeholder — themed per location type */}
-          <div
-            className="rounded-lg border overflow-hidden flex items-center justify-center"
-            style={{
-              width: '40%',
-              flexShrink: 0,
-              background: locationArt.gradient,
-              borderColor: 'var(--border-gold)',
-              position: 'relative',
-            }}
-          >
-            <span
-              style={{
-                fontSize: '56px',
-                color: locationArt.glyphColor,
-                opacity: 0.45,
-                filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.6))',
-                userSelect: 'none',
-              }}
-              aria-hidden="true"
-            >
-              {locationArt.glyph}
-            </span>
-            <span
-              style={{
-                position: 'absolute',
-                bottom: '6px',
-                right: '10px',
-                fontSize: 'var(--text-xs)',
-                color: locationArt.glyphColor,
-                opacity: 0.35,
-                fontFamily: 'var(--font-display)',
-                letterSpacing: '1.5px',
-                textTransform: 'uppercase',
-              }}
-            >
-              Concept Art
-            </span>
-          </div>
+          {/* Hero landscape — Entity Visual Header primitive (THR-637).
+              Real pickConceptArt landscape for the hex terrain; falls back to a
+              designed glyph tile when no landscape matches. */}
+          <EntityVisual
+            size="hero"
+            entity={{ id: location.id, kind: 'location', name: location.name }}
+            graph={graph}
+            opts={{ terrain: hexTerrain as TerrainType }}
+            style={{ width: '40%', flexShrink: 0, aspectRatio: 'auto', height: '100%' }}
+          />
         </div>
       ) : (
-        <div
-          className="mx-6 mt-5 rounded-lg border overflow-hidden flex items-center justify-center"
-          style={{
-            aspectRatio: '16/9',
-            maxHeight: '220px',
-            background: locationArt.gradient,
-            borderColor: 'var(--border-gold)',
-            position: 'relative',
-          }}
-        >
-          <span
-            style={{
-              fontSize: '64px',
-              color: locationArt.glyphColor,
-              opacity: 0.35,
-              filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.6))',
-              userSelect: 'none',
-            }}
-            aria-hidden="true"
-          >
-            {locationArt.glyph}
-          </span>
-          <span
-            style={{
-              position: 'absolute',
-              bottom: '8px',
-              right: '12px',
-              fontSize: 'var(--text-xs)',
-              color: locationArt.glyphColor,
-              opacity: 0.3,
-              fontFamily: 'var(--font-display)',
-              letterSpacing: '1.5px',
-              textTransform: 'uppercase',
-            }}
-          >
-            Concept Art
-          </span>
-        </div>
+        <EntityVisual
+          size="hero"
+          entity={{ id: location.id, kind: 'location', name: location.name }}
+          graph={graph}
+          opts={{ terrain: hexTerrain as TerrainType }}
+          className="mx-6 mt-5"
+          style={{ maxHeight: '220px' }}
+        />
       )}
 
       {/* Livelihood line — resource stock tiers as prose (THR-615) */}

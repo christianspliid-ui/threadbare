@@ -24,6 +24,9 @@ import { RivalIcon } from '../shared/RivalIcon';
 import { SectionHeading } from '../shared/SectionHeading';
 import { AnimateMount } from '../shared/AnimateMount';
 import { EntityCard } from '../shared/EntityCard';
+import { EntityVisual } from '../shared/EntityVisual';
+import type { EntityVisualDescriptor } from '../shared/entityVisualResolver';
+import { ENTITY_GRADIENT_COUNT } from '../../data/entity-visual-fallbacks';
 import { DomainCard } from '../shared/DomainCard';
 import { GameErrorBoundary } from '../shared/GameErrorBoundary';
 import type { RarityTier } from '../../types/rarity';
@@ -113,6 +116,7 @@ const SECTIONS = [
   { id: 'sectionheading', label: 'SectionHeading' },
   { id: 'animatemount', label: 'AnimateMount' },
   { id: 'entitycard', label: 'EntityCard' },
+  { id: 'entity-visual', label: 'EntityVisual (THR-637)' },
   { id: 'domaincard', label: 'DomainCard' },
   { id: 'activityicon', label: 'ActivityIcon' },
   { id: 'culture-phonetics', label: 'CulturePhoneticsInspector' },
@@ -984,9 +988,89 @@ export default function StyleGuide() {
             </div>
           </section>
 
+          {/* ── EntityVisual (THR-637) ─────────────────────────── */}
+          <section id="section-entity-visual" style={{ marginBottom: SECTION_GAP }}>
+            <SectionHeading ornamental>EntityVisual — Entity Visual Header (THR-637)</SectionHeading>
+            <div style={{ marginTop: '1.25rem' }}>
+              <GameErrorBoundary>
+                <EntityVisualDemo />
+              </GameErrorBoundary>
+            </div>
+          </section>
+
           <div style={{ height: '4rem' }} />
         </div>
       </main>
+    </div>
+  );
+}
+
+// ─── EntityVisual demo (THR-637) ──────────────────────────────────────────────
+
+function mkVisual(partial: Partial<EntityVisualDescriptor> & Pick<EntityVisualDescriptor, 'tier' | 'glyph' | 'kind' | 'alt'>): EntityVisualDescriptor {
+  return { gradientIndex: 0, ...partial };
+}
+
+function EntityVisualDemo() {
+  const heroArt = mkVisual({ tier: 'art', src: '/concept-art/mountains.png', glyph: '⌂', gradientIndex: 4, alt: 'Ashen Peaks', kind: 'location' });
+  const heroFallback = mkVisual({ tier: 'fallback', glyph: '⌂', gradientIndex: 2, alt: 'Unmapped Reach', kind: 'location' });
+  const portraitArt = mkVisual({ tier: 'art', src: '/portraits/trickster.png', glyph: 'K', gradientIndex: 1, alt: 'Kael', kind: 'agent' });
+  const portraitFallback = mkVisual({ tier: 'fallback', glyph: 'S', gradientIndex: 3, alt: 'Serafina', kind: 'agent' });
+  const chipArt = mkVisual({ tier: 'art', src: '/portraits/oathkeeper.png', glyph: 'V', gradientIndex: 5, alt: 'Veiren', kind: 'agent' });
+  const chipFaction = mkVisual({ tier: 'fallback', glyph: '⚜', gradientIndex: 0, alt: 'The Covenant', kind: 'faction' });
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+      <Label>
+        Three sizes (hero 16:9 · portrait 3:4 · chip), each shown in the art tier
+        (curated image) and the designed fallback tier (authored glyph on an
+        id-hashed Threadbare gradient). Fallbacks are deliberate states, never
+        placeholder gray.
+      </Label>
+
+      <Row>
+        <div style={{ width: 280 }}>
+          <Label>hero — art</Label>
+          <EntityVisual size="hero" descriptor={heroArt} />
+        </div>
+        <div style={{ width: 280 }}>
+          <Label>hero — fallback</Label>
+          <EntityVisual size="hero" descriptor={heroFallback} />
+        </div>
+      </Row>
+
+      <Row>
+        <div style={{ width: 120 }}>
+          <Label>portrait — art</Label>
+          <EntityVisual size="portrait" descriptor={portraitArt} />
+        </div>
+        <div style={{ width: 120 }}>
+          <Label>portrait — fallback</Label>
+          <EntityVisual size="portrait" descriptor={portraitFallback} />
+        </div>
+      </Row>
+
+      <div>
+        <Label>chip — art · fallback (person initial) · fallback (faction glyph)</Label>
+        <Row>
+          <EntityVisual size="chip" descriptor={chipArt} />
+          <EntityVisual size="chip" descriptor={portraitFallback} />
+          <EntityVisual size="chip" descriptor={chipFaction} />
+        </Row>
+      </div>
+
+      <div>
+        <Label>Fallback gradient palette — {ENTITY_GRADIENT_COUNT} id-hashed gradients</Label>
+        <Row>
+          {Array.from({ length: ENTITY_GRADIENT_COUNT }, (_, i) => (
+            <EntityVisual
+              key={i}
+              size="chip"
+              descriptor={mkVisual({ tier: 'fallback', glyph: '◇', gradientIndex: i, alt: `gradient ${i}`, kind: 'unknown' })}
+            />
+          ))}
+        </Row>
+      </div>
     </div>
   );
 }

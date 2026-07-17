@@ -19,6 +19,9 @@ import { JourneyTab } from './tabs/JourneyTab';
 import { ChronicleTab } from './tabs/ChronicleTab';
 import { AttachmentsTab } from './tabs/AttachmentsTab';
 import { IconButton } from '../shared/IconButton';
+import { EntityVisual } from '../shared/EntityVisual';
+import { resolveEntityVisual } from '../shared/entityVisualResolver';
+import type { KnowledgeLevel } from '../../types/familiarity';
 import { getSphereColor } from '../../data/sphereIcons';
 import { ChapterLedger } from './ChapterLedger';
 import type { GameState } from '../../types/gameState';
@@ -104,44 +107,27 @@ export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata, k
           />
         </div>
         <div className="flex gap-4 mb-3">
-          {/* Portrait — 3:4 aspect ratio, click to expand */}
-          <div
-            data-testid="portrait-silhouette"
-            className="rounded overflow-hidden flex-shrink-0"
-            style={{
-              width: '120px',
-              minWidth: '120px',
-              height: '160px',
-              cursor: card.portraitUrl && card.knowledgeLevel !== 'stranger' ? 'pointer' : undefined,
-              background:
-                card.knowledgeLevel === 'stranger'
-                  ? 'linear-gradient(135deg, rgba(0,0,0,0.8) 0%, rgba(51,51,51,0.6) 100%)'
-                  : !card.portraitUrl
-                    ? 'linear-gradient(135deg, rgba(120,53,15,0.4) 0%, rgba(30,27,46,0.8) 100%)'
-                    : undefined,
-            }}
-            onClick={() => {
-              if (card.portraitUrl && card.knowledgeLevel !== 'stranger') setPortraitExpanded(true);
-            }}
-            role={card.portraitUrl && card.knowledgeLevel !== 'stranger' ? 'button' : undefined}
-            tabIndex={card.portraitUrl && card.knowledgeLevel !== 'stranger' ? 0 : undefined}
-            onKeyDown={(e) => {
-              if ((e.key === 'Enter' || e.key === ' ') && card.portraitUrl && card.knowledgeLevel !== 'stranger') {
-                e.preventDefault();
-                setPortraitExpanded(true);
-              }
-            }}
-            aria-label={card.portraitUrl && card.knowledgeLevel !== 'stranger' ? `View full portrait of ${card.name}` : undefined}
-          >
-            {card.knowledgeLevel !== 'stranger' && card.portraitUrl && (
-              <img
-                src={card.portraitUrl}
-                alt={`Portrait of ${card.name}`}
-                className="w-full h-full object-cover"
-                loading="lazy"
+          {/* Portrait — Entity Visual Header primitive (THR-637). Knowledge-gated
+              by the resolver; click-to-expand only when real art resolves. */}
+          {(() => {
+            const portraitVisual = resolveEntityVisual(
+              { id: card.id, kind: 'agent', name: card.name, knownSrc: card.portraitUrl },
+              null,
+              { knowledgeLevel: card.knowledgeLevel as KnowledgeLevel },
+            );
+            const canExpand = portraitVisual.tier === 'art';
+            return (
+              <EntityVisual
+                size="portrait"
+                shape="rounded"
+                descriptor={portraitVisual}
+                data-testid="portrait-silhouette"
+                onClick={canExpand ? () => setPortraitExpanded(true) : undefined}
+                aria-label={canExpand ? `Portrait of ${card.name}` : undefined}
+                style={{ width: '120px', minWidth: '120px', height: '160px' }}
               />
-            )}
-          </div>
+            );
+          })()}
 
           {/* Header Text */}
           <div className="flex-1">
