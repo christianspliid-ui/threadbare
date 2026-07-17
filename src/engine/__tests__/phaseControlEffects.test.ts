@@ -344,6 +344,80 @@ describe('phaseControlEffects', () => {
   });
 });
 
+describe('phaseControlEffects — player release (THR-613 §3.4)', () => {
+  it('lapses a released effect as voluntarily_released and does not charge its cost', () => {
+    const effect = makeEffect({ effectId: 'rel_1', perTickCost: { force: 0.5 } });
+    const state = makeMinimalState({
+      controlEffects: [effect],
+      pendingControlReleases: ['rel_1'],
+    });
+    state.essencePool.force = 10;
+
+    const result = phaseControlEffects(state);
+
+    const lapsed = result.controlEffects!.find((e) => e.effectId === 'rel_1');
+    expect(lapsed?.active).toBe(false);
+    expect(lapsed?.lapseReason).toBe('voluntarily_released');
+    // No cost charged on the release tick — the effect pays nothing more.
+    expect(result.essencePool!.force).toBeCloseTo(10);
+    // Its slot is freed and it did not accrue another active tick.
+    expect(lapsed?.ticksActive).toBe(0);
+  });
+
+  it('clears the release queue after consuming it', () => {
+    const effect = makeEffect({ effectId: 'rel_2' });
+    const state = makeMinimalState({
+      controlEffects: [effect],
+      pendingControlReleases: ['rel_2'],
+    });
+
+    const result = phaseControlEffects(state);
+    expect(result.pendingControlReleases).toEqual([]);
+  });
+
+  it('emits a control_effect_lapsed tick event on release', () => {
+    const effect = makeEffect({ effectId: 'rel_3' });
+    const state = makeMinimalState({
+      controlEffects: [effect],
+      pendingControlReleases: ['rel_3'],
+    });
+
+    const result = phaseControlEffects(state);
+    const released = result.tickEvents!.find((e) => e.type === 'control_effect_lapsed');
+    expect(released).toBeDefined();
+  });
+
+  it('leaves other active effects untouched when one is released', () => {
+    const keep = makeEffect({ effectId: 'keep', perTickCost: { force: 0.5 } });
+    const release = makeEffect({ effectId: 'drop', perTickCost: { force: 0.5 } });
+    const state = makeMinimalState({
+      controlEffects: [keep, release],
+      pendingControlReleases: ['drop'],
+    });
+    state.essencePool.force = 10;
+
+    const result = phaseControlEffects(state);
+    const kept = result.controlEffects!.find((e) => e.effectId === 'keep');
+    const dropped = result.controlEffects!.find((e) => e.effectId === 'drop');
+    expect(kept?.active).toBe(true);
+    expect(kept?.ticksActive).toBe(1); // kept effect ticked and paid
+    expect(dropped?.active).toBe(false);
+    expect(dropped?.lapseReason).toBe('voluntarily_released');
+    // Only the kept effect's 0.5 was charged.
+    expect(result.essencePool!.force).toBeCloseTo(9.5);
+  });
+
+  it('clears a dangling release queue even when no effects exist (fail-soft)', () => {
+    const state = makeMinimalState({
+      controlEffects: [],
+      pendingControlReleases: ['stale_id'],
+    });
+
+    const result = phaseControlEffects(state);
+    expect(result.pendingControlReleases).toEqual([]);
+  });
+});
+
 describe('computeControlEffectIncome', () => {
   it('returns empty object for no active effects', () => {
     const result = computeControlEffectIncome([]);

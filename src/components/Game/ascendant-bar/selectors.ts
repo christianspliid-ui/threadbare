@@ -18,7 +18,7 @@ import {
 } from '../../../types/quintessence';
 import { getOriginPortraitUrl } from '../../../data/avatar-portrait-assets';
 import { UNIFIED_ACTION_TEMPLATES } from '../../../data/unified-action-templates';
-import { REACH_COPY } from '../../../data/ascendant-bar-content';
+import { REACH_COPY, COVENANT_UPKEEP_COPY } from '../../../data/ascendant-bar-content';
 import type { SignaturePathState } from '../../../data/ascendant-bar-content';
 import { REACH_SIGNATURE_CONTENT_TEMPLATES } from '../../../data/reach-signature-content';
 import { getAscendantProgress } from '../../../engine/phaseAscendantProgression';
@@ -346,4 +346,56 @@ export function selectSignaturePaths(gameState: GameState): SignaturePathView[] 
     // Both locked: alphabetical by reach label for a stable layout.
     return a.reachLabel.localeCompare(b.reachLabel);
   });
+}
+
+// ─── Covenants — the god's sustained controls (THR-613 §5.A) ───────────────────
+
+export interface CovenantRowView {
+  effectId: string;
+  /** The covenant's ongoing prose — what the god is holding (narrativeTemplates.active). */
+  title: string;
+  /** Where it's held — the resolved target node name, else the land at its hex. */
+  target: string;
+  /** Plain-register upkeep phrase (cost / income / free). Never a raw float. */
+  upkeepLine: string;
+  /** A rival is contesting this covenant (a contestation encounter is live). */
+  contested: boolean;
+}
+
+/**
+ * The god's active sustained controls, one row per covenant (plan §5.A). Reads the
+ * live `controlEffects`, keeps only the ascendant's own active ones, and hides any
+ * the player has already queued for release this tick (optimistic — the row leaves
+ * the panel the instant Release is pressed, before phaseControlEffects consumes it).
+ *
+ * Prose-first: the upkeep reads as a phrase, and the per-tick cost/income floats are
+ * never surfaced. Pure; memoize on worldVersion. Fail-soft (NFP #4): missing target
+ * node → falls back to the hex coordinate rather than throwing.
+ */
+export function selectCovenantRows(gameState: GameState): CovenantRowView[] {
+  const effects = gameState.controlEffects ?? [];
+  const ownerId = gameState.ascendantId;
+  const releasing = new Set(gameState.pendingControlReleases ?? []);
+
+  return effects
+    .filter((e) => e.active && e.ownerId === ownerId && !releasing.has(e.effectId))
+    .map((e) => {
+      const targetNode = e.targetNodeId ? gameState.graph.getNode(e.targetNodeId) : null;
+      const target = targetNode?.name ?? `the land at (${e.targetHexCol}, ${e.targetHexRow})`;
+      const hasCost = Object.values(e.perTickCost).some((v) => (v ?? 0) > 0);
+      const hasIncome = e.perTickIncome
+        ? Object.values(e.perTickIncome).some((v) => (v ?? 0) > 0)
+        : false;
+      const upkeepLine =
+        hasCost ? COVENANT_UPKEEP_COPY.cost
+        : hasIncome ? COVENANT_UPKEEP_COPY.income
+        : COVENANT_UPKEEP_COPY.free;
+      return {
+        effectId: e.effectId,
+        title: e.narrativeTemplates.active,
+        target,
+        upkeepLine,
+        contested: !!e.encounterNodeId,
+      };
+    });
 }

@@ -256,6 +256,41 @@ if (import.meta.env.DEV) {
       return progress;
     },
 
+    /**
+     * List the god's active sustained controls ("covenants", THR-613 §5.A): the
+     * effectIds, target, and per-tick cost/income the Covenants panel renders. Includes
+     * any ids already queued for release this tick (`pendingReleases`). Read-only.
+     */
+    listControlEffects: () => {
+      const state = _gameStateProvider?.();
+      if (!state) return { error: 'no live game state' };
+      const owner = state.ascendantId;
+      const covenants = (state.controlEffects ?? [])
+        .filter((e) => e.active && e.ownerId === owner)
+        .map((e) => ({
+          effectId: e.effectId,
+          templateId: e.templateId,
+          targetNodeId: e.targetNodeId,
+          contested: !!e.encounterNodeId,
+          hasCost: Object.values(e.perTickCost).some((v) => (v ?? 0) > 0),
+        }));
+      return { covenants, pendingReleases: state.pendingControlReleases ?? [] };
+    },
+
+    /**
+     * Queue a voluntary release of a sustained control (THR-613 §3.4). Mirrors the
+     * Covenants panel's Release button headlessly: enqueues the effectId; the next
+     * tick's phaseControlEffects lapses it as 'voluntarily_released'. Advance one tick
+     * to see the panel row disappear (the queue is consumed there). Returns the queue.
+     */
+    releaseControl: (effectId: string) => {
+      const state = _gameStateProvider?.();
+      if (!state) return { error: 'no live game state' };
+      const exists = (state.controlEffects ?? []).some((e) => e.effectId === effectId && e.active);
+      state.pendingControlReleases = [...(state.pendingControlReleases ?? []), effectId];
+      return { success: true, effectId, matchedActiveEffect: exists, pendingReleases: state.pendingControlReleases };
+    },
+
     // ── Encounter step-prose replay records (THR-636) ───────────────────────
     /**
      * Return the captured per-step replay records for an agent's active (or

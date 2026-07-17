@@ -3186,6 +3186,14 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
           onOpenMandate={() => setMandateDetailOpen(true)}
           onMove={handleAvatarMoveClick}
           onInvestiture={handleScryWithMutex}
+          onReleaseControl={(effectId) =>
+            // Queue a voluntary release; phaseControlEffects lapses it next tick (THR-613 §3.4).
+            // The row leaves the panel immediately because selectCovenantRows hides queued ids.
+            setGameState((prev) => ({
+              ...prev,
+              pendingControlReleases: [...(prev.pendingControlReleases ?? []), effectId],
+            }))
+          }
         />
 
         {/* ── Center: map / hex zoom / location ── */}

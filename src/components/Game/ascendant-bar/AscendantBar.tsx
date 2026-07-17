@@ -20,6 +20,7 @@ import { EssenceBlock } from './EssenceBlock';
 import { ReachesBlock } from './ReachesBlock';
 import { SignaturesBlock } from './SignaturesBlock';
 import { ActionsBlock } from './ActionsBlock';
+import { CovenantsBlock } from './CovenantsBlock';
 import { MandateBlock } from './MandateBlock';
 import { HooksBlock } from './HooksBlock';
 import {
@@ -30,6 +31,7 @@ import {
   selectMandateRow,
   selectReachRows,
   selectSignaturePaths,
+  selectCovenantRows,
 } from './selectors';
 import styles from './styles.module.css';
 
@@ -45,6 +47,9 @@ const ASCENDANT_BAR_SECTION_DEFAULT_OPEN = {
   signatures: false,
   essence: true,
   actions: true,
+  // Closed by default: covenants are supplementary (most turns hold zero or one), and an
+  // open, potentially multi-row list would push the always-open sections below the fold.
+  covenants: false,
   mandate: true,
   hooks: false,
 } as const;
@@ -59,6 +64,8 @@ interface AscendantBarProps {
   onOpenMandate: () => void;
   onMove?: () => void;
   onInvestiture?: () => void;
+  /** Queue a voluntary release of a sustained control (THR-613 §3.4). */
+  onReleaseControl?: (effectId: string) => void;
 }
 
 export function AscendantBar({
@@ -71,6 +78,7 @@ export function AscendantBar({
   onOpenMandate,
   onMove,
   onInvestiture,
+  onReleaseControl,
 }: AscendantBarProps) {
   const [open, setOpen] = useState({ ...ASCENDANT_BAR_SECTION_DEFAULT_OPEN });
   const toggle = (key: keyof typeof open) => setOpen((o) => ({ ...o, [key]: !o[key] }));
@@ -116,6 +124,11 @@ export function AscendantBar({
   const yourSignatureCount = useMemo(
     () => signaturePaths.filter((p) => p.state !== 'locked_incarnation').length,
     [signaturePaths],
+  );
+  const covenantRows = useMemo(
+    () => selectCovenantRows(gameState),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [gameState, worldVersion],
   );
 
   const actionCount = 2 + actionTray.self.length + actionTray.rare.length; // 2 = hardcoded core (Move + Investiture)
@@ -176,6 +189,17 @@ export function AscendantBar({
         placeholder="No innate actions available."
       >
         <ActionsBlock tray={actionTray} onMove={onMove} onInvestiture={onInvestiture} />
+      </BarSection>
+
+      {/* 4b. Covenants (sustained controls the god holds — THR-613 §5.A) */}
+      <BarSection
+        label="Covenants"
+        count={covenantRows.length}
+        open={open.covenants}
+        onToggle={() => toggle('covenants')}
+        placeholder="You hold nothing in a lasting grip."
+      >
+        <CovenantsBlock rows={covenantRows} onRelease={onReleaseControl} />
       </BarSection>
 
       {/* 5. Mandate */}

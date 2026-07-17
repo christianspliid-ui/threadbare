@@ -212,3 +212,33 @@ export const SIGNATURE_GROUP_COPY = {
 
 /** Placeholder when the ascendant's paths cannot be read (legacy save / no ascendant). */
 export const SIGNATURE_EMPTY_COPY = 'Your paths of power are not yet settled.';
+
+// ─── Covenants — sustained-control surface (THR-613 §5.A) ──────────────────────
+
+/**
+ * A covenant is a sustained control: something the god *holds* rather than *does*,
+ * draining (or feeding) essence every tick until it lapses or is released. The
+ * Covenants panel is where the player sees what they are holding and can let it go.
+ * Prose-first, no raw floats — the upkeep reads as a phrase, never a number.
+ */
+
+/** Placeholder when the god holds no sustained controls. */
+export const COVENANT_EMPTY_COPY = 'You hold nothing in a lasting grip.';
+
+/** The Release control's label + hover title. */
+export const COVENANT_RELEASE_LABEL = 'Release';
+export const COVENANT_RELEASE_TITLE =
+  'Let this covenant lapse — the hold ends and its upkeep stops. Nothing is refunded.';
+
+/** Badge shown when a rival is contesting the covenant. */
+export const COVENANT_CONTESTED_COPY = 'Contested';
+
+/** Upkeep lines, keyed by whether the covenant costs, earns, or sustains itself. */
+export const COVENANT_UPKEEP_COPY = {
+  /** Drains essence each tick. */
+  cost: 'Draws on your essence, moment to moment.',
+  /** Net-generates essence each tick. */
+  income: 'Feeds essence back to you as it holds.',
+  /** No per-tick drain (threshold-only or relic-sustained). */
+  free: 'Sustains itself — it asks nothing of you.',
+} as const;

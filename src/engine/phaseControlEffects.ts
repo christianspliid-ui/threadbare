@@ -55,6 +55,13 @@ export const TAP_SOURCE_SUSTAIN_COST = 0.2;
 export const CLAIM_RESOURCE_INCOME_MULTIPLIER = 1.0;
 
 /**
+ * Significance of the tick event emitted when the player voluntarily releases a
+ * covenant from the Covenants panel (THR-613 §3.4). Lower than a forced lapse
+ * (0.7) — a deliberate release is quieter news than one the god couldn't help.
+ */
+export const CONTROL_RELEASE_EVENT_SIGNIFICANCE = 0.5;
+
+/**
  * PRNG seed offset for the per-tick rift leak roll (THR-551). Combined with
  * `state.seed`, `state.tick`, and a hash of the effect id so each rift rolls an
  * independent, deterministic, replayable stream (same seed+tick+effect → same
@@ -122,7 +129,16 @@ function compareOp(a: number, op: '>=' | '<=' | '>' | '<', b: number): boolean {
 
 export function phaseControlEffects(state: GameState): Partial<GameState> {
   const effects = state.controlEffects ?? [];
-  if (effects.length === 0) return {};
+
+  // Player-initiated releases (THR-613 §3.4) queued by the Covenants panel this tick.
+  const releaseQueue = state.pendingControlReleases ?? [];
+  const releasedIds = new Set(releaseQueue);
+
+  if (effects.length === 0) {
+    // Nothing to tick. Still clear any dangling release requests (fail-soft) so a
+    // queue entry for an already-removed effect never accumulates.
+    return releaseQueue.length > 0 ? { pendingControlReleases: [] } : {};
+  }
 
   // Deep copy mutable state
   const pool: EssencePool = { ...state.essencePool };
@@ -142,6 +158,39 @@ export function phaseControlEffects(state: GameState): Partial<GameState> {
   const updatedEffects: ControlEffect[] = [];
 
   for (const effect of sorted) {
+    // ─── Player release (THR-613 §3.4) — voluntary lapse before any payment ───
+    // A Covenants-panel Release request lapses the effect this tick: it pays nothing
+    // more and frees its slot. A contested effect is abandoned — its contestation
+    // encounter, if any, resolves in the rival's favour next tick (no extra work here).
+    if (releasedIds.has(effect.effectId)) {
+      const contested = !!effect.encounterNodeId;
+      updatedEffects.push({
+        ...effect,
+        active: false,
+        lapseReason: 'voluntarily_released',
+      });
+
+      emitTrace({
+        tick: state.tick,
+        turn: state.tick,
+        category: 'ascendant.progression.control_release',
+        controlId: effect.effectId,
+        contested,
+        summary: `covenant released: ${effect.templateId}${contested ? ' (contested — abandoned)' : ''}`,
+      } as any);
+
+      newEvents.push({
+        id: nextEventId(state.tick),
+        tick: state.tick,
+        type: 'control_effect_lapsed',
+        message: effect.narrativeTemplates.lapsed,
+        significance: CONTROL_RELEASE_EVENT_SIGNIFICANCE,
+        hexCoords: { col: effect.targetHexCol, row: effect.targetHexRow },
+      });
+
+      continue;
+    }
+
     // ─── Fail-soft: owner must still exist ───
     const ownerNode = state.graph.getNode(effect.ownerId);
     if (!ownerNode) {
@@ -487,6 +536,8 @@ export function phaseControlEffects(state: GameState): Partial<GameState> {
     pendingHexMutations: [...(state.pendingHexMutations ?? []), ...newMutations],
     tickEvents: [...state.tickEvents, ...newEvents],
     pendingSpherePressures: pressures,
+    // Consume the release queue (THR-613 §3.4): each request was applied above.
+    ...(releaseQueue.length > 0 ? { pendingControlReleases: [] } : {}),
   };
 }
 
