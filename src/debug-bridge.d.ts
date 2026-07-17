@@ -423,6 +423,15 @@ export interface DebugBridge {
       }
     | { error: string }
   >;
+  /** Entity Visual resolver readout (THR-637): tier/source/gradient/kind for a node id or name. Read-only. */
+  resolveEntityVisual: (ref: string) => Promise<
+    | {
+        matchedId: string;
+        matchedName: string;
+        descriptor: import('./components/shared/entityVisualResolver').EntityVisualDescriptor;
+      }
+    | { error: string }
+  >;
   /** List the god's active sustained controls ("covenants", THR-613 §5.A). Read-only. */
   listControlEffects: () =>
     | {

@@ -48,6 +48,8 @@ This folder is the single source of truth for all UI decisions. It is structured
 | `components.md` | Component inventory, sizing per breakpoint, scaling notes |
 | `interactions.md` | Hover, focus, active, disabled states; cursor rules; keyboard patterns |
 | `primitives.md` | Shared primitive component specs (Button, Card, Modal, etc.) |
+| `entity-visual-header.md` | **Entity Visual Header pattern** (THR-637) — every detail surface opens with its subject's image via the `EntityVisual` primitive + resolver |
+| `artifact-representation.md` | **Artifact Representation pattern** (THR-639) — generalizes the above with an *information* obligation (art + identity + player-relevant prose) |
 
 ---
 

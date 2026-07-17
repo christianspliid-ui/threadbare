@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { createPortal } from 'react-dom';
+import { EntityVisual } from '../shared/EntityVisual';
 import type {
   EncounterStageModel,
   EncounterStageChoiceModel,
@@ -406,27 +407,18 @@ export function EncounterVeil({
                   key={actor.id}
                   style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}
                 >
-                  {/* Portrait circle */}
-                  <div
-                    style={{
-                      width: 36,
-                      height: 36,
-                      borderRadius: '50%',
-                      border: '1px solid rgba(212, 175, 55, 0.3)',
-                      background: actor.portraitUrl
-                        ? `url(${actor.portraitUrl}) center/cover`
-                        : 'rgba(212, 175, 55, 0.06)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      flexShrink: 0,
-                      fontFamily: FONT_DISPLAY,
-                      fontSize: 'var(--text-xs)',
-                      color: 'rgba(212, 175, 55, 0.5)',
+                  {/* Portrait circle — Entity Visual Header primitive (THR-637) */}
+                  <EntityVisual
+                    size="chip"
+                    shape="circle"
+                    entity={{
+                      id: actor.id,
+                      kind: 'agent',
+                      name: actor.actorName,
+                      knownSrc: actor.portraitUrl,
                     }}
-                  >
-                    {!actor.portraitUrl && actor.actorName[0]}
-                  </div>
+                    style={{ width: 36, height: 36 }}
+                  />
                   {/* Name + summary */}
                   <div>
                     <div
@@ -1811,27 +1803,18 @@ function ContextStrip({
           }}
           aria-label={canSelectAgent ? `View ${name}` : name}
         >
-          <div
-            style={{
-              width: 28,
-              height: 28,
-              borderRadius: '50%',
-              border: '1px solid rgba(212, 175, 55, 0.3)',
-              background: header.portraitUrl
-                ? `url(${header.portraitUrl}) center/cover`
-                : 'rgba(212, 175, 55, 0.06)',
-              opacity: ART_OPACITY[threadTier],
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0,
-              fontFamily: FONT_DISPLAY,
-              fontSize: 'var(--text-xs)',
-              color: 'rgba(212, 175, 55, 0.5)',
+          {/* Character portrait — Entity Visual Header primitive (THR-637) */}
+          <EntityVisual
+            size="chip"
+            shape="circle"
+            entity={{
+              id: header.focalActorId ?? name,
+              kind: 'agent',
+              name,
+              knownSrc: header.portraitUrl,
             }}
-          >
-            {!header.portraitUrl && name[0]}
-          </div>
+            style={{ width: 28, height: 28, opacity: ART_OPACITY[threadTier] }}
+          />
           <span
             style={{
               fontFamily: FONT_DISPLAY,

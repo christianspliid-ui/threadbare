@@ -257,6 +257,41 @@ if (import.meta.env.DEV) {
     },
 
     /**
+     * Entity Visual resolver readout (THR-637): given a node id or name (exact →
+     * partial-id → case-insensitive partial-name), return the resolver's decision
+     * — tier, chosen source, gradient index, kind. Answers "why is this showing a
+     * fallback?" in one call. For location nodes, terrain is read from the hex tile
+     * so the concept-art landscape resolves exactly as it does on screen. Read-only.
+     */
+    resolveEntityVisual: async (ref: string) => {
+      const state = _gameStateProvider?.();
+      if (!state) return { error: 'no live game state' };
+      const graph = state.graph;
+      const candidates = [
+        ...graph.getNodesByType('actor'),
+        ...graph.getNodesByType('location'),
+        ...graph.getNodesByType('artifact'),
+        ...graph.getNodesByType('artifact_legendary'),
+      ];
+      const lower = ref.toLowerCase();
+      const node =
+        graph.getNode(ref) ??
+        candidates.find((n) => n.id.startsWith(ref)) ??
+        candidates.find((n) => n.name?.toLowerCase().includes(lower));
+      if (!node) return { error: `no node matching "${ref}"` };
+      const { resolveEntityVisual } = await import('./components/shared/entityVisualResolver');
+      // Best-effort terrain for location nodes so the landscape resolves on-screen.
+      let terrain: import('./types').TerrainType | undefined;
+      const col = node.properties?.hexCol;
+      const row = node.properties?.hexRow;
+      if (typeof col === 'number' && typeof row === 'number') {
+        terrain = state.tiles.find((t) => t.coord.col === col && t.coord.row === row)?.terrain;
+      }
+      const descriptor = resolveEntityVisual({ id: node.id, name: node.name }, graph, { terrain });
+      return { matchedId: node.id, matchedName: node.name, descriptor };
+    },
+
+    /**
      * List the god's active sustained controls ("covenants", THR-613 §5.A): the
      * effectIds, target, and per-tick cost/income the Covenants panel renders. Includes
      * any ids already queued for release this tick (`pendingReleases`). Read-only.
