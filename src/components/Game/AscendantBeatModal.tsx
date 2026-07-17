@@ -29,7 +29,9 @@ import type { WheelSlot } from '../../engine/wheel';
 import type { PendingBeat, BeatKind } from '../../types/ascendantBeat';
 import type { UnifiedActionTemplate } from '../../types/unifiedAction';
 import { getBeatDefinitionById } from '../../engine/ascendantBeat';
-import { SPINE_BEAT_PRESENTATION } from '../../data/ascendant-beat-content';
+import { SPINE_BEAT_PRESENTATION, type SpineBeatPresentation } from '../../data/ascendant-beat-content';
+import { DEEPENING_BEAT_PRESENTATION } from '../../data/ascendant-deepening-beats';
+import { MILESTONE_BEAT_PRESENTATION } from '../../data/ascendant-milestone-beats';
 import { getUnifiedTemplateById } from '../../data/unified-action-templates';
 import { actionEffectsProse } from '../../data/actionEffectsProse';
 
@@ -99,6 +101,26 @@ const KIND_PRESENTATION: Record<BeatKind, BeatPresentation> = {
     prose: 'What you hold in the world has stopped merely belonging to you and started paying you back. A reach you had not thought to use is open to you now.',
     cta: 'Receive',
   },
+};
+
+/**
+ * Every authored, beat-id-keyed presentation, merged into one lookup (THR-613 §5.C).
+ *
+ * The scripted spine (THR-504), the per-reach Deepening vignettes (Slice 2) and the
+ * essence-source Milestone vignette (Slice 2b) all share `SpineBeatPresentation`'s
+ * shape and all key by `beatId`, so one table serves them. Authored copy always wins
+ * over the kind-derived placeholder below: without this, a Deepening resolved to the
+ * same "the world has learned the shape of your will" card for all eight reaches, and
+ * the reach-flavored prose the content slices shipped never reached the player.
+ *
+ * Ids are disjoint by construction (`beat.spine.*` / `beat.deepening.*` /
+ * `beat.milestone.*`); a contract test pins that so a future collision cannot silently
+ * shadow one table with another.
+ */
+const AUTHORED_BEAT_PRESENTATION: Readonly<Record<string, SpineBeatPresentation>> = {
+  ...SPINE_BEAT_PRESENTATION,
+  ...DEEPENING_BEAT_PRESENTATION,
+  ...MILESTONE_BEAT_PRESENTATION,
 };
 
 /** Title-case the most specific segment of a dotted beat id, e.g. `…the_worthy_mortal` → "The Worthy Mortal". */
@@ -273,15 +295,16 @@ export const AscendantBeatModal = memo(function AscendantBeatModal({
   proseOverride,
 }: AscendantBeatModalProps) {
   const def = useMemo(() => getBeatDefinitionById(pending.beatId), [pending.beatId]);
-  // Presentation precedence: spine authored copy (THR-504) → enriched template prose for
-  // pool beats (THR-514, supplied by GameView) → kind-derived placeholder. Eyebrow + CTA
-  // always come from the spine/kind table (templates carry only title + body).
-  const spine = SPINE_BEAT_PRESENTATION[pending.beatId];
+  // Presentation precedence: authored per-beat copy (spine THR-504 / Deepening / Milestone)
+  // → enriched template prose for pool beats (THR-514, supplied by GameView) → kind-derived
+  // placeholder. Eyebrow + CTA always come from the authored/kind table (templates carry
+  // only title + body).
+  const authored = AUTHORED_BEAT_PRESENTATION[pending.beatId];
   const kindPresentation = KIND_PRESENTATION[pending.kind] ?? KIND_PRESENTATION.spine;
-  const presentation = spine ?? kindPresentation;
+  const presentation = authored ?? kindPresentation;
   const grants = def?.grantsActionIds ?? [];
   const isSelection = pending.kind === 'selection';
-  const title = proseOverride?.title ?? spine?.title ?? humanizeBeatId(pending.beatId);
+  const title = proseOverride?.title ?? authored?.title ?? humanizeBeatId(pending.beatId);
   const prose = proseOverride?.prose ?? presentation.prose;
 
   // Backdrop / Esc → dismiss for optional beats; for spine (no onClose) it stays put.
@@ -374,7 +397,10 @@ export const AscendantBeatOfferBanner = memo(function AscendantBeatOfferBanner({
   pending,
   onEnter,
 }: AscendantBeatOfferBannerProps) {
-  const eyebrow = (KIND_PRESENTATION[pending.kind] ?? KIND_PRESENTATION.spine).eyebrow;
+  // Same precedence as the modal, so the banner and the card it opens agree.
+  const eyebrow =
+    AUTHORED_BEAT_PRESENTATION[pending.beatId]?.eyebrow ??
+    (KIND_PRESENTATION[pending.kind] ?? KIND_PRESENTATION.spine).eyebrow;
   return (
     <button
       type="button"

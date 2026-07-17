@@ -195,4 +195,41 @@ describe('Domain Capability', () => {
       expect(getTopContributors(graph, 'actor.thorin', 'iron', 3).map((entry) => entry.sourceId)).not.toContain('trait.condition.deep_stab_wound');
     });
   });
+
+  describe('has_trait edge with no level — fail-soft, no NaN poisoning (THR-613)', () => {
+    it('a trait edge missing `level` does not make the raw score NaN', () => {
+      const g = new WorldGraph();
+      g.addNode({ id: 'god', type: 'actor', name: 'God', properties: { actorType: 'ascendant' } });
+      // A condition/clue-style trait: node has no domainContributions, edge omits level
+      // (exactly how the dev-seeded ascendant's clue/condition traits are wired).
+      g.addNode({
+        id: 'trait.clue.whisper', type: 'trait', name: 'A Whisper',
+        properties: { subcategory: 'clue', tags: [], flavorText: 'Half-remembered.' },
+      });
+      g.addEdge({ id: 'e1', source: 'god', target: 'trait.clue.whisper', type: 'has_trait', properties: {} });
+
+      const raw = computeRawScore(g, 'god', 'eye');
+      expect(Number.isNaN(raw)).toBe(false);
+      expect(raw).toBe(0); // no contribution, but a real number
+
+      const cap = computeCapability(g, 'god', 'eye');
+      expect(Number.isFinite(cap)).toBe(true);
+      const tier = computeTier(cap);
+      expect(Number.isFinite(tier)).toBe(true);
+      expect(getNarrativeLabel('eye', tier)).toMatch(/\w/);
+    });
+
+    it('an unleveled trait WITH domainContributions counts once (level defaults to 1)', () => {
+      const g = new WorldGraph();
+      g.addNode({ id: 'god', type: 'actor', name: 'God', properties: { actorType: 'ascendant' } });
+      g.addNode({
+        id: 'trait.iron_gift', type: 'trait', name: 'Iron Gift',
+        properties: { subcategory: 'innate', domainContributions: { iron: 4 }, tags: [] },
+      });
+      g.addEdge({ id: 'e1', source: 'god', target: 'trait.iron_gift', type: 'has_trait', properties: {} });
+
+      // base 4 × default level 1 = 4 — not NaN, not dropped.
+      expect(computeRawScore(g, 'god', 'iron')).toBe(4);
+    });
+  });
 });
