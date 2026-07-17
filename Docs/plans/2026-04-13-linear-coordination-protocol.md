@@ -319,6 +319,10 @@ A single hourly CC automation runs on **Opus** and pulls the top of Ready for De
 When Cowork finishes a design and writes the implementation plan:
 1. **Verify exit criteria** — check all items in "Implementation Planning → Ready for Dev" above. Every pillar must have action items or an explicit N/A.
 2. Move issue: Implementation Planning → Ready for Dev
+2b. **Also put the `Plan doc:` path in the issue *description*** (not only the handoff comment) —
+    a line like `**Plan doc:** \`Docs/plans/YYYY-MM-DD-topic.md\``. `flush-plan-docs` parses the
+    description first and the handoff comment as a fallback (THR-645); keeping the path in both
+    places is belt-and-suspenders so neither location is a single point of failure.
 3. Add handoff comment using this template:
 
 ```

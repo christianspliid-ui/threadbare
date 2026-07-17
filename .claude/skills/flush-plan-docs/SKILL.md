@@ -1,7 +1,7 @@
 ---
 name: flush-plan-docs
 description: Commit Cowork-authored plan docs tagged with `plan-pending-commit` to origin/main via the scheduled flush workflow.
-last_validated_against: 2026-06-29
+last_validated_against: 2026-07-17
 ---
 
 # flush-plan-docs
@@ -45,19 +45,41 @@ Call `get_issue(id)` to get the full description and issue identifier (e.g. `THR
 
 ### 2b. Parse plan-doc path
 
-Extract the plan-doc path from the description using these patterns (try in order):
+Extract the plan-doc path using these patterns (try in order). **Parse the description first;
+only if the description yields zero paths, fall back to the latest handoff comment** (THR-645):
+the Cowork handoff protocol writes the `**Plan doc:**` path in the handoff *comment*, not the
+description, so a description-only parse bounced 15+ times in a single day (THR-636/613/614/431).
+
+**Patterns** (applied to whichever text block is being parsed):
 
 1. Backtick-quoted: `` `Docs/plans/[a-z0-9-]+\.md` `` or `` `Docs/audits/[a-z0-9-]+\.md` ``
 2. Plain mention: `Docs/plans/[a-z0-9-]+\.md` or `Docs/audits/[a-z0-9-]+\.md`
 3. Explicit label: `Plan doc:\s*\`?(Docs/(?:plans|audits)/[a-z0-9-]+\.md)\`?`
+   (matches the `**Plan doc:** \`Docs/plans/…md\`` handoff-comment form — the surrounding `**`
+   bold markers do not interfere).
 
-If **zero paths found**: bounce — post comment explaining the parse failure, leave label intact,
-continue to next issue. Do not commit.
+**i. Description parse.** Run the patterns against the `get_issue(id)` description from 2a.
 
-If **multiple distinct paths found**: bounce — post comment listing the ambiguous paths, leave
-label intact, continue to next issue.
+**ii. Comment fallback — only if the description yields zero paths.** Call
+`list_comments(id, orderBy: "createdAt", limit: 10)` and run the **same** patterns against the
+comment bodies, **newest first**. Take the path from the most recent comment that yields exactly
+one in-scope path. This is the standard Cowork handoff, where the `**Plan doc:**` line lives in
+the handoff comment rather than the description.
 
-If **exactly one path found**: proceed to 2c.
+**Exclusion (both passes) — never `.intent-proposals/`.** Drop any candidate whose path contains
+`/.intent-proposals/`. Those are intent-judge companions (`Docs/plans/.intent-proposals/*`), not
+plan docs, and must never be auto-committed. (The `[a-z0-9-]+` segment already cannot match the
+leading `.` of `.intent-proposals`, but apply this as an explicit guard so a hand-typed variant
+can't slip through.)
+
+If **zero paths found** in the description **and** the fallback comments: bounce — post comment
+explaining the parse failure, leave label intact, continue to next issue. Do not commit.
+
+If **multiple distinct paths found** in the chosen source: bounce — post comment listing the
+ambiguous paths, leave label intact, continue to next issue.
+
+If **exactly one path found**: proceed to 2c. The scope guards in 2c and the single-path staging
+verification in 2d apply identically whether the path came from the description or a comment.
 
 ### 2c. Scope guard
 
@@ -297,6 +319,13 @@ Then a final summary: `[flush-plan-docs] Done. X processed, Y bounced, Z swept.`
   The branch-fallback path in Step 2f is the designed behavior, not an error condition.
 - **Impediment #112:** Branch-fallback previously committed locally but never pushed or opened a PR.
   Fixed in THR-423 (2026-05-12): push + PR are now required steps with verify-after-write.
+- **THR-645 (2026-07-17):** the plan-doc path parse read the **description only**, but Cowork's
+  handoff protocol writes `**Plan doc:**` in the handoff *comment* — so the skill found zero paths
+  and bounced 15+ times in one day (THR-636/613/614), one wasted hourly cycle each. Fixed in
+  THR-645: Step 2b now falls back to parsing the latest handoff comment (`list_comments`, newest
+  first) when the description yields nothing, with the identical 2c scope guards and an explicit
+  `/.intent-proposals/` exclusion. Belt-and-suspenders authoring fix: the coordination-protocol
+  handoff template + CLAUDE.md now require the `Plan doc:` path in the issue **description** too.
 - **Impediment #140 family / THR-510:** flush commits/PRs/branches that carried a `THR-XXX` token
   (bare, as a `Closes <url>` line, or in the branch name) made GitHub→Linear auto-close every
   referenced issue on merge. Fixed in THR-510 (2026-06-28): issue identifiers are now scrubbed from
