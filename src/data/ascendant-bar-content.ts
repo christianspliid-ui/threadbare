@@ -176,3 +176,39 @@ export const REACH_DEEPENING_PENDING_COPY = 'Something has shifted here. Attend 
 
 /** Placeholder when the ascendant's reaches cannot be read (legacy save / no ascendant). */
 export const REACH_EMPTY_COPY = 'Your domains are not yet settled.';
+
+// ─── Reach-signature paths — three-state legibility (THR-613 §5.B) ─────────────
+
+/**
+ * The eight reach signatures are the identity-defining headline powers, one per
+ * Reach. The Signatures readout partitions them into the three states the plan
+ * requires the player to be able to tell apart (§5.B):
+ *
+ *   - `available`          — a signature in one of your reaches you have already
+ *                            earned this run.
+ *   - `acquirable`         — a signature in one of your reaches, not yet earned
+ *                            ("not *yet*").
+ *   - `locked_incarnation` — a signature of a reach outside your permanent domains
+ *                            ("not *this run*"): a path only another incarnation
+ *                            would walk. The reach gate keeps these out of the live
+ *                            drawer; the readout is where their permanence is legible.
+ *
+ * Prose-first, no numbers — the permanence reads without a stat sheet.
+ */
+export type SignaturePathState = 'available' | 'acquirable' | 'locked_incarnation';
+
+/** One-line hint shown beneath a signature's name, keyed by its state. Plain register. */
+export const SIGNATURE_STATE_COPY: Record<SignaturePathState, string> = {
+  available: 'Yours to call.',
+  acquirable: 'Open to you — not yet earned.',
+  locked_incarnation: 'Not this incarnation.',
+};
+
+/** Group headers for the two partitions the readout shows. */
+export const SIGNATURE_GROUP_COPY = {
+  yours: 'Your Paths',
+  other: 'Not This Incarnation',
+} as const;
+
+/** Placeholder when the ascendant's paths cannot be read (legacy save / no ascendant). */
+export const SIGNATURE_EMPTY_COPY = 'Your paths of power are not yet settled.';

@@ -19,6 +19,8 @@ import {
 import { getOriginPortraitUrl } from '../../../data/avatar-portrait-assets';
 import { UNIFIED_ACTION_TEMPLATES } from '../../../data/unified-action-templates';
 import { REACH_COPY } from '../../../data/ascendant-bar-content';
+import type { SignaturePathState } from '../../../data/ascendant-bar-content';
+import { REACH_SIGNATURE_CONTENT_TEMPLATES } from '../../../data/reach-signature-content';
 import { getAscendantProgress } from '../../../engine/phaseAscendantProgression';
 import { getNarrativeLabel } from '../../../engine/domainCapability';
 import { classifyTrayTier, type AscendantTrayTier } from '../../../engine/ascendantTray';
@@ -269,5 +271,79 @@ export function selectReachRows(gameState: GameState): ReachRowView[] {
       rank: r.isPrimary ? 'primary' : 'secondary',
       pendingDeepening: r.pendingDeepening,
     };
+  });
+}
+
+// ─── Reach-signature paths — the three-state legibility surface (THR-613 §5.B) ─
+
+export interface SignaturePathView {
+  reach: string;
+  /** Authored reach display name, e.g. "Iron". */
+  reachLabel: string;
+  /** The signature's display name, e.g. "Warhost". */
+  name: string;
+  /** The signature's spell/title name, e.g. "The Call to Arms". Null if unauthored. */
+  spellName: string | null;
+  state: SignaturePathState;
+  /** True for the god's primary reach (rank 0 in the domain ordering). */
+  isPrimary: boolean;
+}
+
+/**
+ * The eight reach signatures partitioned into the three legible states (plan §5.B):
+ * available / acquirable (both in the god's permanent domains) and
+ * locked-this-incarnation (a signature of a reach the god did not take).
+ *
+ * The god's domains come from `getAscendantProgress` — the same read the Reaches
+ * readout and the Deepening beat use, so the three surfaces cannot drift on what
+ * counts as "your reach". Earned-ness comes from `unlockedActionIds` (a signature
+ * is granted by its reach's acquisition beat → its id lands in the unlock set).
+ *
+ * Ordering: your paths first (primary reach first, then secondary), then the
+ * not-this-incarnation paths alphabetically by reach label — a stable, deterministic
+ * layout independent of the template declaration order.
+ *
+ * Pure; memoize on worldVersion. Fail-soft (NFP #4): returns [] when there is no
+ * ascendant / progression is unreadable, so the caller renders SIGNATURE_EMPTY_COPY
+ * rather than throwing.
+ */
+export function selectSignaturePaths(gameState: GameState): SignaturePathView[] {
+  const progress = getAscendantProgress(gameState);
+  if (!progress) return [];
+
+  // reach → rank within the god's domains (0 = primary). Absent ⇒ not a domain.
+  const domainRank = new Map<string, number>();
+  progress.reaches.forEach((r, i) => domainRank.set(r.reach, i));
+  const unlocked = new Set(gameState.unlockedActionIds ?? []);
+
+  const views: SignaturePathView[] = REACH_SIGNATURE_CONTENT_TEMPLATES.map((tmpl) => {
+    const reach = tmpl.reach as string;
+    const rank = domainRank.get(reach);
+    const inDomain = rank !== undefined;
+    const state: SignaturePathState = !inDomain
+      ? 'locked_incarnation'
+      : unlocked.has(tmpl.id)
+        ? 'available'
+        : 'acquirable';
+    return {
+      reach,
+      reachLabel: REACH_COPY[reach]?.label ?? reach,
+      name: tmpl.name,
+      spellName: tmpl.spellName ?? null,
+      state,
+      isPrimary: rank === 0,
+    };
+  });
+
+  return views.sort((a, b) => {
+    const aYours = a.state !== 'locked_incarnation';
+    const bYours = b.state !== 'locked_incarnation';
+    if (aYours !== bYours) return aYours ? -1 : 1;
+    if (aYours) {
+      // Both yours: preserve domain rank (primary first).
+      return (domainRank.get(a.reach) ?? 0) - (domainRank.get(b.reach) ?? 0);
+    }
+    // Both locked: alphabetical by reach label for a stable layout.
+    return a.reachLabel.localeCompare(b.reachLabel);
   });
 }
