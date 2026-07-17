@@ -184,6 +184,14 @@ export interface AscendantProperties {
    * rises above the snapshot. Absent → seed on first run.
    */
   reachTierSnapshot?: Partial<Record<ReachDomain, number>>;
+  /**
+   * Milestone (breadth) beat ids already enqueued this run (THR-613, plan §4.2). A
+   * milestone names a threshold the god's holdings crossed once — it must never re-fire
+   * when the count dips and recovers — so the id is recorded here at *enqueue* time
+   * rather than inferred from beat history (a beat that is offered but never resolved
+   * would otherwise re-fire every tick). Absent → nothing has fired yet.
+   */
+  milestoneBeatsFired?: readonly string[];
 }
 
 /**

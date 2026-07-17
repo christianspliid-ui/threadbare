@@ -22,6 +22,9 @@
 
 import type { BeatDefinition, BeatKind } from '../types/ascendantBeat';
 import type { ReachDomain } from '../types/traits';
+// Value import; `ascendant-milestone-beats.ts` imports only the `SpineBeatPresentation`
+// *type* back from here, which erases at compile — so there is no runtime cycle.
+import { ASCENDANT_MILESTONE_BEATS } from './ascendant-milestone-beats';
 
 // ─── Cadence constants (NFP #1) ──────────────────────────────────────────────
 
@@ -505,6 +508,13 @@ export const ASCENDANT_ACTION_BUCKETS: Readonly<Record<string, ActionBucketEntry
   // discovered ones (Star). Same `unlockable-generic` bucket + `the_wellspring` grant.
   'loc.find_source': { bucket: 'unlockable-generic' },
   'loc.claim_source': { bucket: 'unlockable-generic' },
+  // Divine-economy breadth card (THR-613 Slice 2b), granted by the essence-source
+  // milestone beat (`beat.milestone.the_wellspring_flows`). A shipped Gold card that no
+  // beat previously granted — unreachable under the empty THR-501 starter floor — so the
+  // milestone hands over a real new verb rather than re-revealing a held one. Like the
+  // source verbs above, `reach: 'gold'` is its cosmic-energy axis, not a `requiresReach`
+  // gate: it surfaces for every run once unlocked, which is the point of a *breadth* card.
+  'loc.open_markets': { bucket: 'unlockable-generic' },
   // Spine-granted expressive verbs (THR-504): The First Word + the three god-paths.
   'divine.persuade': { bucket: 'unlockable-generic' },
   'divine.dream': { bucket: 'unlockable-generic' },
@@ -533,7 +543,10 @@ export const ASCENDANT_ACTION_BUCKETS: Readonly<Record<string, ActionBucketEntry
  */
 export function collectGrantedActionIds(): readonly string[] {
   const ids = new Set<string>();
-  for (const beat of [...ASCENDANT_SPINE, ...ASCENDANT_BEAT_POOL]) {
+  // Milestone beats (THR-613) are not pool-drawn — `phaseAscendantProgression` enqueues
+  // them directly — but they *do* grant, so they belong in the catalogue view the bucket
+  // drift-guards check. Deepening beats are deliberately absent: they grant nothing.
+  for (const beat of [...ASCENDANT_SPINE, ...ASCENDANT_BEAT_POOL, ...ASCENDANT_MILESTONE_BEATS]) {
     for (const id of beat.grantsActionIds ?? []) ids.add(id);
   }
   return [...ids];

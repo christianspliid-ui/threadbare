@@ -37,9 +37,14 @@ import {
   PLAYER_DIMINISHING_RETURNS_FACTOR,
   SECONDARY_REACH_PRACTICE_MULT,
   DEEPENING_BEAT_MAX_PER_TICK,
+  MILESTONE_SOURCES_FOR_BEAT,
+  MILESTONE_FLOWERING_FOR_BEAT,
+  MILESTONE_SOURCE_BEAT_ID,
   deepeningBeatIdForReach,
 } from '../data/player-progression';
 import { deepeningChronicleProse } from '../data/ascendant-deepening-beats';
+import { milestoneChronicleProse } from '../data/ascendant-milestone-beats';
+import { countControlledSources } from './essenceSources';
 
 type EmitInput = Parameters<typeof emitTrace>[0];
 
@@ -196,6 +201,50 @@ export function phaseAscendantProgression(state: GameState): Partial<GameState> 
     // If a crossing is detected but we cannot enqueue this tick (pending occupied,
     // spine active, or the per-tick cap is hit) the snapshot is left unchanged, so the
     // same crossing is re-detected next tick — no beat is lost and none double-fires.
+  }
+
+  // Axis B (breadth): the essence-source milestone (plan §4.2). Checked only when a
+  // Deepening did not take the slot this tick — a tier crossing is the rarer, more
+  // personal moment, so it wins the tick and the milestone re-detects on the next one
+  // (it is threshold-based, not edge-based, so waiting loses nothing).
+  const firedMilestones: string[] = [...(props.milestoneBeatsFired ?? [])];
+  if (canEnqueue && !pending && !firedMilestones.includes(MILESTONE_SOURCE_BEAT_ID)) {
+    const { total, flowering } = countControlledSources(graph, ascId);
+    if (total >= MILESTONE_SOURCES_FOR_BEAT || flowering >= MILESTONE_FLOWERING_FOR_BEAT) {
+      pending = {
+        beatId: MILESTONE_SOURCE_BEAT_ID,
+        kind: 'milestone',
+        offeredTurn: turn,
+        boundNodeIds: [ascId],
+        trigger: { kind: 'turn', minTurn: turn },
+      };
+      // Recorded at enqueue (not on resolution): a milestone names a threshold crossed
+      // once, so it must not re-fire if the beat is dismissed or the count later dips.
+      firedMilestones.push(MILESTONE_SOURCE_BEAT_ID);
+      node.properties.milestoneBeatsFired = firedMilestones;
+      emitTrace({
+        category: 'ascendant.progression.milestone_enqueued',
+        tick: turn,
+        turn,
+        beatId: MILESTONE_SOURCE_BEAT_ID,
+        sourceCount: total,
+        floweringCount: flowering,
+        summary: `Milestone beat enqueued: ${MILESTONE_SOURCE_BEAT_ID} (${total} source(s), ${flowering} flowering)`,
+      } as unknown as EmitInput);
+      newChronicle.push({
+        id: `milestone-${MILESTONE_SOURCE_BEAT_ID}-${turn}`,
+        tier: 'chronicle',
+        title: 'A Wellspring',
+        prose: milestoneChronicleProse(MILESTONE_SOURCE_BEAT_ID),
+        promptContext: {
+          actors: [ascId],
+          location: '',
+          sphere: primarySphere,
+          mood: 'reverent',
+        },
+        tick: turn,
+      });
+    }
   }
 
   if (snapshotChanged) {

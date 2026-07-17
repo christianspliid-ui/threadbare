@@ -41,10 +41,24 @@ export const SECONDARY_REACH_PRACTICE_MULT = 0.7;
 export const DEEPENING_BEAT_MAX_PER_TICK = 1;
 
 /**
- * Controlled essence sources that fire a breadth (milestone) beat (plan §3.5).
- * Reserved for Slice 2 (coordinate THR-611 source-tier transitions).
+ * Controlled essence sources that fire the breadth (milestone) beat (plan §3.5/§4.2).
+ * Reached by counting the ascendant's `controls` edges into source-bearing hosts.
  */
 export const MILESTONE_SOURCES_FOR_BEAT = 3;
+
+/**
+ * Flowering sources that fire the milestone beat on their own (plan §4.2 — "at
+ * `MILESTONE_SOURCES_FOR_BEAT` controlled sources **or** first Flowering source").
+ * A single flowering source is a deeper achievement than three dormant ones — it
+ * means the god actually tended what it took — so it qualifies alone.
+ */
+export const MILESTONE_FLOWERING_FOR_BEAT = 1;
+
+/**
+ * The essence-source milestone beat id (plan §4.2, Axis B breadth). One per run,
+ * deduped through `AscendantProperties.milestoneBeatsFired`.
+ */
+export const MILESTONE_SOURCE_BEAT_ID = 'beat.milestone.the_wellspring_flows';
 
 /**
  * Deterministic Deepening beat id for a reach. Slice 2 authors the matching

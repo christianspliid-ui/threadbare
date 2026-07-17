@@ -154,6 +154,43 @@ export function migrateControlledPlacesOfPower(
   return migrated;
 }
 
+/** Aggregate read of the god's essence-source holdings (THR-613 §4.2). */
+export interface ControlledSourceCount {
+  /** Every source the ascendant `controls`, whatever its tier. */
+  total: number;
+  /** Of those, the ones currently at the `flowering` tier. */
+  flowering: number;
+}
+
+/**
+ * Count the ascendant's controlled essence sources, split out by flowering tier
+ * (THR-613 §4.2). A pure read — it never writes tiers; the per-tick recompute in
+ * {@link recomputeControlledSourceTiers} owns that, and runs in `phaseEssenceSources`
+ * earlier in the tick, so the tiers this reads are already fresh.
+ *
+ * Exists so the progression phase can detect the essence-source *milestone* without
+ * reaching into the source model's internals or duplicating the `controls`-edge walk.
+ * Fail-soft (NFP #4): missing ascendant / hosts without a source bag → not counted.
+ */
+export function countControlledSources(
+  graph: WorldGraph,
+  ascendantId: string,
+): ControlledSourceCount {
+  const node = graph.getNode(ascendantId);
+  if (!node) return { total: 0, flowering: 0 };
+
+  let total = 0;
+  let flowering = 0;
+  for (const edge of graph.getOutgoingEdges(ascendantId, 'controls')) {
+    const host = graph.getNode(edge.target);
+    const src = readEssenceSource(host?.properties);
+    if (!host || !src) continue;
+    total++;
+    if (src.tier === 'flowering') flowering++;
+  }
+  return { total, flowering };
+}
+
 export interface SourceTierRecompute {
   sourceCount: number;
   tierChanges: number;

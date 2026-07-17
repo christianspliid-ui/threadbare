@@ -286,6 +286,7 @@ export type TraceCategory =
   | 'ascendant.progression.practice'
   | 'ascendant.progression.tier_up'
   | 'ascendant.progression.deepening_enqueued'
+  | 'ascendant.progression.milestone_enqueued'
   | 'ascendant.progression.control_release';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
@@ -543,6 +544,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'ascendant.progression.practice',
   'ascendant.progression.tier_up',
   'ascendant.progression.deepening_enqueued',
+  'ascendant.progression.milestone_enqueued',
   'ascendant.progression.control_release',
 ];
 
@@ -1874,6 +1876,7 @@ export type TraceEntry =
   | PlayerPracticeTrace
   | PlayerTierUpTrace
   | DeepeningEnqueueTrace
+  | MilestoneEnqueueTrace
   | ControlReleaseTrace;
 
 /** Trace: a location's resource crossed a stock tier boundary. THR-615 */
@@ -2014,6 +2017,20 @@ export interface DeepeningEnqueueTrace extends TraceBase {
   turn: number;
   reach: ReachDomain;
   beatId: string;
+}
+
+/**
+ * Trace: a Milestone (breadth) beat was enqueued because the god's holdings crossed a
+ * named threshold (THR-613, plan §4.2). Carries the counts that fired it so the
+ * inspector can see *why* without re-deriving them — `sourceCount` / `floweringCount`
+ * are the essence-source reads at enqueue time.
+ */
+export interface MilestoneEnqueueTrace extends TraceBase {
+  category: 'ascendant.progression.milestone_enqueued';
+  turn: number;
+  beatId: string;
+  sourceCount: number;
+  floweringCount: number;
 }
 
 /**
