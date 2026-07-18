@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Threadbearer — Twilight, Echoes &amp; the World-Soul</title>
+<!--
+  Twilight, Echoes & the World-Soul (Game Manual Wiki, W17 / THR-602) — dual-layer
+  manual page. Player-manual prose first ("How it plays"), Designer Notes second.
+  Spec: Docs/plans/2026-07-03-game-manual-wiki.md §5 W17; template §3.
+  Highest [DESIGN] density of the set — status flags are mandatory; do NOT describe
+  unshipped behaviour as real. The shared wiki nav between the WIKI-NAV markers is
+  injected by scripts/generate-design-wiki.ts — do not hand-write it.
+
+  Accuracy notes (verified against code this pass — do not "correct" back):
+  - TWO parallel run-end/persistence implementations coexist. The WIRED one is
+    echo.ts + cycleEnd.ts + chronicle.ts. The richer worldSoul.ts (Fundament +
+    Resonance) model is DESIGN/unwired — do not conflate them.
+  - Per-tick global sphere aggregate is IMPL & wired: phaseSphereAggregation
+    (orchestrator.ts:3024) writes worldSoul.aggregate {totalBySphere, dominantSphere,
+    entityCount} each tick. This is the ONLY live part of GameState.worldSoul.
+  - Twilight (the Unmaking) entry is IMPL but doom-expiry-only: phaseDoomExpiry
+    (orchestrator.ts:2338) — when doomClock.expired && phase==='playing', sets
+    phase:'twilight' with the "The Unmaking begins" popup. The other two designed
+    triggers (mandate_complete, player_concession, in worldSoul.ts UnmakingTrigger)
+    are NOT wired as entry points.
+  - Twilight play is a plain countdown: runTwilightTick (cycleEnd.ts) counts
+    TWILIGHT_TICKS (game-config.ts = 7) then → phase 'harvest'. The designed
+    "weakened play" successPenalty (worldSoul.ts TRIGGER_PENALTY 0.4/0.3/0.2) has NO
+    wired consumer — grep successPenalty finds no non-test caller. So twilight applies
+    NO action-success penalty today. Flag weakened play DESIGN.
+  - Harvest is IMPL: computeHarvest (cycleEnd.ts) scores individual actors + locations
+    + artifacts by computeSignificanceScore(edgeCount, eventCount, nodeType); harvest
+    type triumphant (mandateState.completed) / somber (doomClock.progress > 0.9) /
+    bittersweet (else); cosmic echo counts 5/4/3; chronicleSummary line. HarvestScreen
+    (GameView.tsx:3753) renders it from harvestResult (useSimulation.ts).
+  - Legacy / Monument / Relic ARE the code's echo types: echo.ts nodeTypeToEchoType
+    maps actor→'legacy', location→'monument', artifact→'relic'. This is the wired
+    vocabulary — use it. (Fundament/Resonance is the SEPARATE worldSoul.ts layer.)
+  - THE load-bearing honest call: echoes carry across cycles + degrade + enter the
+    chronicle, but do NOT yet mechanically seed the next world. collectInjections
+    (echo.ts — legacy→cultural_template, monument→location_feature, relic→quest_seed)
+    has NO non-test caller. Injection hooks are built and unit-tested but nothing
+    consumes them. Flag next-world seeding DESIGN.
+  - Divine echoes are a STUB: computeHarvest returns divineEchoSlots (3/2/1) and the
+    HarvestScreen literally says "(selection coming in a future update)";
+    transitionToNewCycle is called with an EMPTY divine-echo array
+    (useSimulation.ts:134). Divine echo selection = DESIGN.
+  - "Next world" is the same world continued, not regenerated: transitionToNewCycle
+    (cycleEnd.ts) returns {...state, cycle+1, tick:0, phase:'transition'} — it degrades
+    echoes, builds a chronicle Volume, resets per-cycle logs, but does NOT re-run
+    worldgen. No fresh cosmos is seeded. Flag re-seeding DESIGN.
+  - worldSoul.ts Fundament (sphereWeights coefficient ledger) + Resonance (curated
+    ResonanceMemory fragments) are defined + unit-tested but UNWIRED at cycle
+    transition: blendFundaments / captureMemory / applyFundamentShift /
+    executeCycleTransition / buildHarvestOutcome / initiateTwilight have NO non-test
+    callers. GameState.worldSoul.fundament/resonance exist but are never shifted by
+    play nor blended at harvest. DESIGN.
+  - Echo constants: ECHO_DEGRADATION_RATE 0.15, ECHO_FADE_THRESHOLD 0.9 (types/echo.ts).
+    TWILIGHT_TICKS 7 (game-config.ts). COSMIC_ECHO_CANDIDATES 10 (cycleEnd.ts).
+  - NO UL shard covers World-Soul / Twilight / Unmaking / Harvest / Echo / Fundament /
+    Resonance. The only UL mention of "World-Soul" is incidental (Agents.md Rival def:
+    rivals are generated from the World-Soul). Terminology authority is the design docs
+    + the code types + rulebook §8/§10. Flag the UL gap; do not re-open it.
+  - Rulebook Open Q #6 (rulebook.md:303): "Twilight authorship vs. emergence" —
+    reference only, do not mint a new open question.
+-->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --parchment: #f4edd8;
+    --parchment-dark: #e8dfc8;
+    --ink: #2c1810;
+    --ink-light: #5a3d2b;
+    --ink-faint: #8a7060;
+    --gold: #b8860b;
+    --gold-light: #daa520;
+    --card-bg: #fff8e7;
+    --red: #8b2500;
+    --blue: #1a3a5c;
+    --blue-light: #2d5f8a;
+    --purple: #4a2d6a;
+    --green: #2d5a27;
+
+    --flag-impl: #2d5a27;
+    --flag-design: #8a4a00;
+    --flag-open: #4a2d6a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--parchment);
+    color: var(--ink);
+    font-family: 'Crimson Text', Georgia, serif;
+    font-size: 16px;
+    line-height: 1.6;
+    min-height: 100vh;
+    background-image:
+      radial-gradient(ellipse at 20% 50%, rgba(74,45,106,0.05) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 30%, rgba(184,134,11,0.04) 0%, transparent 50%);
+  }
+
+  .page-wrapper { max-width: 900px; margin: 0 auto; padding: 40px 32px 72px; }
+
+  /* ── Header ── */
+  .header { text-align: center; margin-bottom: 40px; padding-bottom: 28px; border-bottom: 2px solid var(--gold); position: relative; }
+  .header::after { content: ''; position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); width: 55%; height: 1px; background: var(--gold-light); }
+  .header .eyebrow { font-family: 'Cinzel', Georgia, serif; font-size: 0.72rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold); margin-bottom: 10px; }
+  .header h1 { font-family: 'Cinzel', Georgia, serif; font-weight: 700; font-size: 2.4rem; color: var(--ink); letter-spacing: 0.05em; margin-bottom: 12px; }
+  .header .tagline { font-size: 1.12rem; color: var(--ink-light); max-width: 64ch; margin: 0 auto; font-style: italic; }
+
+  /* ── Sections ── */
+  .section { margin-bottom: 34px; }
+  .section > h2 { font-family: 'Cinzel', Georgia, serif; font-size: 1.25rem; color: var(--ink); letter-spacing: 0.03em; margin-bottom: 6px; padding-bottom: 6px; border-bottom: 1px solid var(--parchment-dark); }
+  .section > h2 .lead { display: block; font-family: 'Crimson Text', Georgia, serif; font-size: 0.95rem; font-style: italic; font-weight: 400; color: var(--ink-faint); letter-spacing: 0; margin-top: 4px; }
+  .section h3 { font-family: 'Cinzel', Georgia, serif; font-size: 1rem; color: var(--ink-light); letter-spacing: 0.02em; margin: 20px 0 6px; }
+  .section p { margin-bottom: 12px; }
+  .section p .term { font-weight: 600; color: var(--ink); }
+  .section ul { margin: 0 0 14px 0; padding-left: 0; list-style: none; }
+  .section ul li { position: relative; padding-left: 1.3rem; margin-bottom: 8px; }
+  .section ul li::before { content: '◆'; position: absolute; left: 0; top: 0.05rem; color: var(--gold); font-size: 0.7rem; }
+
+  /* ── Ladder (thresholds / tiers / phases) ── */
+  .tiers { margin: 12px 0 18px; }
+  .tier { display: grid; grid-template-columns: 8.4rem 1fr; gap: 0 12px; align-items: baseline; padding: 9px 0; border-bottom: 1px solid var(--parchment-dark); }
+  .tier .name { font-family: 'Cinzel', Georgia, serif; font-size: 0.84rem; color: var(--gold); letter-spacing: 0.04em; }
+  .tier .desc { font-size: 0.94rem; color: var(--ink-light); }
+  .tier .desc .who { font-weight: 600; color: var(--ink); }
+  @media (max-width: 620px) { .tier { grid-template-columns: 1fr; gap: 2px; } }
+
+  /* ── Card grid ── */
+  .card-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 10px 0 18px; }
+  .card-grid.three { grid-template-columns: repeat(3, 1fr); }
+  .card { background: var(--card-bg); border: 1px solid var(--parchment-dark); border-radius: 4px; padding: 11px 14px; border-left: 3px solid var(--gold); }
+  .card.blue { border-left-color: var(--blue-light); }
+  .card.red { border-left-color: var(--red); }
+  .card.green { border-left-color: var(--green); }
+  .card.purple { border-left-color: var(--purple); }
+  .card h4 { font-family: 'Cinzel', Georgia, serif; font-size: 0.84rem; color: var(--ink); margin: 0 0 2px; }
+  .card p { font-size: 0.8rem; color: var(--ink-light); margin: 0; }
+  @media (max-width: 620px) { .card-grid, .card-grid.three { grid-template-columns: 1fr; } }
+
+  /* ── Callouts ── */
+  .callout { background: var(--card-bg); border: 1px solid var(--parchment-dark); border-left: 4px solid var(--gold); border-radius: 4px; padding: 14px 18px; margin: 4px 0 18px; }
+  .callout.blue { border-left-color: var(--blue-light); }
+  .callout.purple { border-left-color: var(--purple); }
+  .callout.red { border-left-color: var(--red); }
+  .callout.green { border-left-color: var(--green); }
+  .callout .callout-title { font-family: 'Cinzel', Georgia, serif; font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 6px; }
+  .callout p:last-child { margin-bottom: 0; }
+
+  /* ── Designer notes ── */
+  .designer { margin-top: 48px; border-top: 2px solid var(--gold); padding-top: 8px; }
+  .designer > summary { list-style: none; cursor: pointer; padding: 16px 4px; display: flex; align-items: baseline; gap: 12px; }
+  .designer > summary::-webkit-details-marker { display: none; }
+  .designer > summary .chev { font-size: 0.8rem; color: var(--gold); transition: transform 0.15s; }
+  .designer[open] > summary .chev { transform: rotate(90deg); }
+  .designer > summary h2 { font-family: 'Cinzel', Georgia, serif; font-size: 1.3rem; color: var(--ink); letter-spacing: 0.03em; }
+  .designer > summary .sub { font-size: 0.9rem; color: var(--ink-faint); font-style: italic; }
+  .designer-body { padding: 4px 4px 8px; }
+  .designer-body h3 { font-family: 'Cinzel', Georgia, serif; font-size: 0.98rem; color: var(--ink-light); margin: 22px 0 8px; }
+  .designer-body p { margin-bottom: 12px; font-size: 0.97rem; }
+  .designer-body ul { margin: 0 0 14px 0; padding-left: 0; list-style: none; }
+  .designer-body ul li { position: relative; padding-left: 1.2rem; margin-bottom: 7px; font-size: 0.97rem; }
+  .designer-body ul li::before { content: '›'; position: absolute; left: 0.15rem; top: 0; color: var(--ink-faint); }
+  code, .mono { font-family: 'JetBrains Mono', monospace; font-size: 0.84em; color: var(--ink); background: rgba(184,134,11,0.10); padding: 0.05rem 0.32rem; border-radius: 3px; word-break: break-word; }
+
+  .flag { font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; letter-spacing: 0.04em; font-weight: 500; padding: 0.08rem 0.4rem; border-radius: 3px; color: #fff; white-space: nowrap; }
+  .flag.impl { background: var(--flag-impl); }
+  .flag.design { background: var(--flag-design); }
+  .flag.open { background: var(--flag-open); }
+
+  table.tunables { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin: 4px 0 18px; }
+  table.tunables th { text-align: left; font-family: 'Cinzel', Georgia, serif; font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-faint); padding: 6px 10px 6px 0; border-bottom: 1px solid var(--parchment-dark); }
+  table.tunables td { padding: 7px 10px 7px 0; border-bottom: 1px solid var(--parchment-dark); vertical-align: top; color: var(--ink-light); }
+  table.tunables td:first-child { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--ink); white-space: nowrap; }
+
+  .foot { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--parchment-dark); font-size: 0.85rem; color: var(--ink-faint); font-style: italic; }
+  a { color: var(--blue-light); text-decoration: none; border-bottom: 1px solid rgba(45,95,138,0.35); }
+  a:hover { color: var(--blue); border-bottom-color: var(--blue); }
+</style>
+</head>
+<body>
+<!--WIKI-NAV-->
+<style>
+  .wiki-nav { font-family: 'Cinzel', Georgia, serif; background: #2c1810; border-bottom: 2px solid #b8860b; padding: 0.6rem 1.2rem; display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.4rem 1.1rem; }
+  .wiki-nav__brand { color: #daa520; font-weight: 700; letter-spacing: 0.04em; margin-right: 0.6rem; font-size: 0.95rem; }
+  .wiki-nav__link { color: #f4edd8; text-decoration: none; font-size: 0.85rem; letter-spacing: 0.02em; padding: 0.15rem 0.1rem; border-bottom: 2px solid transparent; transition: color 0.15s, border-color 0.15s; }
+  .wiki-nav__link:hover { color: #daa520; }
+  .wiki-nav__link.is-active { color: #daa520; border-bottom-color: #b8860b; font-weight: 700; }
+</style>
+<nav class="wiki-nav" aria-label="Design Reference Wiki">
+  <span class="wiki-nav__brand">⌖ Design Reference Wiki</span>
+  <a class="wiki-nav__link" href="design-wiki.html">Design Wiki</a>
+  <a class="wiki-nav__link" href="run-lifecycle-reference.html">A Run, Start to Finish</a>
+      <a class="wiki-nav__link" href="cosmology-reference.html">Reaches, Spheres &amp; Quintessence</a>
+      <a class="wiki-nav__link" href="turn-structure-reference.html">The Three-Beat Turn</a>
+      <a class="wiki-nav__link" href="divine-actions-reference.html">Divine Actions &amp; Prerequisites</a>
+      <a class="wiki-nav__link" href="threads-court-reference.html">Threads, the Court &amp; The First</a>
+      <a class="wiki-nav__link" href="essence-control-reference.html">Essence, Control &amp; Sustained Power</a>
+      <a class="wiki-nav__link" href="encounters-manual-reference.html">Encounters &amp; Aftermath</a>
+      <a class="wiki-nav__link" href="clocks-reference.html">Doom, the Mandate &amp; Omens</a>
+      <a class="wiki-nav__link" href="interface-reference.html">Reading the Interface</a>
+      <a class="wiki-nav__link" href="agents-reference.html">The Mortals</a>
+      <a class="wiki-nav__link" href="factions-cultures-reference.html">Factions, Cultures &amp; Secrets</a>
+      <a class="wiki-nav__link" href="world-map-reference.html">The World: Hexes, Terrain &amp; Sight</a>
+      <a class="wiki-nav__link" href="settlements-economy-reference.html">Settlements, Prosperity &amp; Trade</a>
+      <a class="wiki-nav__link" href="livelihoods-reference.html">Livelihoods &amp; the Resource Web</a>
+      <a class="wiki-nav__link" href="armies-battles-reference.html">Armies, Battles &amp; Lairs</a>
+      <a class="wiki-nav__link" href="stealth-rivals-reference.html">Stealth, Detection &amp; Rival Gods</a>
+      <a class="wiki-nav__link" href="attention-story-reference.html">Attention, the Digest &amp; the Chronicle</a>
+      <a class="wiki-nav__link is-active" href="twilight-worldsoul-reference.html" aria-current="page">Twilight, Echoes &amp; the World-Soul</a>
+      <a class="wiki-nav__link" href="encounters-agents-reference.html">Encounters, Agents &amp; Resolution</a>
+      <a class="wiki-nav__link" href="tick-cycle-reference.html">Tick Cycle Reference</a>
+      <a class="wiki-nav__link" href="action-catalog.html">Action Catalog</a>
+</nav>
+<!--/WIKI-NAV-->
+<div class="page-wrapper">
+
+  <header class="header">
+    <div class="eyebrow">Game Manual · The Long Game</div>
+    <h1>Twilight, Echoes &amp; the World-Soul</h1>
+    <p class="tagline">Every world ends. When yours does, you do not fight it — you witness it. What the age was gets weighed, a few bright things are kept, and the next world begins as a response to the last. This is how a run closes, and how one run becomes an ingredient of the next.</p>
+  </header>
+
+  <!-- ══════════════════ HOW IT PLAYS ══════════════════ -->
+
+  <section class="section">
+    <h2>How a run ends — you witness, you do not act<span class="lead">When the Doom clock runs out, the world enters its last chapter: the Unmaking. Your part changes. You stop shaping and start watching the ending you have been steering toward all along.</span></h2>
+    <p>A run does not end with a defeat screen. It ends with the <span class="term">Unmaking</span> — a twilight the world passes through before it is gone. When your <span class="term">Doom clock</span> reaches its end, the world tips into this closing phase: a short stretch of quiet, waning turns that carry the story to its close. The mood is the game's — cosmic melancholy, not failure. You were never the protagonist who could be beaten; you were the god who watched a world live and now watches it end.</p>
+    <p>In these last turns your hand lightens. The Unmaking is a passage, not a battle: the world lives out its final turns and then falls still, and you look on. It is the deliberate opposite of the frantic finale most games reach for — an ending you inhabit rather than one you scramble against.</p>
+    <div class="callout purple">
+      <div class="callout-title">Planned — the world at its weakest</div>
+      <p>The design intent is for these closing turns to be <em>weakened</em> ones, where the god's touch no longer lands as surely — a felt loss of grip as the world unravels. Today the twilight is a plain countdown; the harder-to-act penalty is planned, not yet in play. The Designer Notes below say exactly what runs and what is still on the drawing board.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>The harvest — what the age leaves behind<span class="lead">When the twilight ends, the world's most significant things are gathered as echoes: the mortals who mattered, the places that mattered, the artifacts that mattered. A few survive the ending. The rest pass on with the world.</span></h2>
+    <p>After the last turn comes the <span class="term">harvest</span>: the world is weighed, and its brightest few threads are preserved as <span class="term">echoes</span>. An echo is not the thing itself — the world is ending, and everything in it ends with it — but a remembered shape of it, strong enough to carry into what comes next. Echoes come in three kinds, one for each kind of thing a world holds:</p>
+    <div class="card-grid three">
+      <div class="card green"><h4>Legacy</h4><p>An echo of a <strong>mortal</strong> who mattered — a life whose deeds and bonds left the deepest mark on the age.</p></div>
+      <div class="card blue"><h4>Monument</h4><p>An echo of a <strong>place</strong> — a settlement, a ruin, a wonder that became a fixed point in the world's story.</p></div>
+      <div class="card purple"><h4>Relic</h4><p>An echo of an <strong>artifact</strong> — an object whose passage through the age gathered enough weight to outlast it.</p></div>
+    </div>
+    <p>How many echoes survive depends on how the age <em>ended</em>. A world carried to a fulfilled purpose ends in a <span class="term">triumphant age</span> and keeps the most. A world that simply ran out of time ends <span class="term">somber</span> and keeps the fewest. Anything between is <span class="term">bittersweet</span>. The ending is not just a verdict on your play — it decides how much of this world reaches the next.</p>
+    <div class="callout green">
+      <div class="callout-title">Which things become echoes</div>
+      <p>Echoes are chosen by <em>significance</em>, not by you directly — the world offers up the mortals, places, and artifacts that were most woven into its story, and the strongest are preserved. Alongside them, the age is meant to grant a few <span class="term">divine echoes</span> — traces of the kind of god <em>you</em> were, chosen by your hand. That personal harvest is planned: the closing screen shows the slots, but the choosing arrives in a later update.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>The World-Soul remembering<span class="lead">Beneath every world is the World-Soul — the deep substrate that outlives any single cycle. The harvested echoes fold into it, and the chronicle of the run is bound into a finished volume. Nothing that mattered is simply deleted.</span></h2>
+    <p>The world you played was one expression of something older: the <span class="term">World-Soul</span>, the substrate from which each cosmos is drawn and to which each returns. When a world ends, its harvest does not vanish — the surviving echoes settle into the World-Soul, and the run's story is bound shut as a completed <span class="term">chronicle volume</span>: the book of that age, kept even though the age is over.</p>
+    <p>Echoes carried this way are not permanent. Each cycle they endure, they <span class="term">fade</span> a little, until the faintest of them are finally let go. A Legacy that shaped one world may still colour the next, and perhaps the one after — but given enough cycles, even the brightest memory softens and is released. The World-Soul remembers, but it does not hoard.</p>
+    <div class="callout blue">
+      <div class="callout-title">Planned — the deeper ledger</div>
+      <p>The design reaches further than what runs today. The World-Soul is meant to keep a <span class="term">coefficient ledger</span> — a running sense of which cosmic forces have grown strong across many worlds — and a set of curated <span class="term">memory fragments</span> drawn from each run's chronicle, which would tilt the tone and balance of the next cosmos. Those layers are designed and tested but not yet feeding the game; what carries across cycles right now is the echoes and the chronicle. The Designer Notes name exactly which part is which.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>The next world — a response, not a sequel<span class="lead">A new cycle is not "level two." It is the next answer the World-Soul gives, shaped by what the last world became — and, one day, by the kind of god you chose to be. The end of one run is the seed of another.</span></h2>
+    <p>When you choose to go on, the world turns over into a new <span class="term">cycle</span>. This is not a fresh start that forgets everything, nor a sequel that continues the same plot. It is meant as a <em>response</em>: the next world reflecting the shape of the last, its echoes surfacing as familiar names, half-remembered places, and objects whose story reaches back beyond living memory. The chronicle grows another volume; the long book of your play keeps being written.</p>
+    <p>This is where the game's longest promise lives — the <span class="term">metaprogression</span> idea that the kind of god you were becomes an <em>ingredient</em> of what comes next. A world you ruled with mercy and a world you unmade in shadow should not seed the same successor. That promise is the horizon the run-end systems are built toward.</p>
+    <div class="callout red">
+      <div class="callout-title">Honest scope — how much of "the next world" runs today</div>
+      <p>Today a new cycle carries its echoes and its chronicle forward and counts up — but the successor world is the same one continued, not a freshly re-drawn cosmos, and the echoes do not yet reshape it. The mechanism for an echo to seed the next world's culture, places, or quests is built but not yet switched on. The "next world as a response" is real as a direction and partial in practice. The Designer Notes below draw the line precisely.</p>
+    </div>
+  </section>
+
+  <!-- ══════════════════ DESIGNER NOTES ══════════════════ -->
+
+  <details class="designer" open>
+    <summary>
+      <span class="chev">▶</span>
+      <span>
+        <h2>Designer Notes</h2>
+        <span class="sub">Twilight-on-doom-expiry and the significance-scored harvest of Legacy/Monument/Relic echoes are IMPL &amp; wired (echo.ts + cycleEnd.ts); echoes carry across cycles, degrade, and bind into the chronicle. What is DESIGN: echoes mechanically seeding the next world, divine-echo selection, weakened twilight play, re-seeding a fresh cosmos, and the whole worldSoul.ts Fundament/Resonance ledger. Honest flags throughout — this is the highest-DESIGN-density page of the manual.</span>
+      </span>
+    </summary>
+    <div class="designer-body">
+
+      <p>Status flags follow the rulebook convention: <span class="flag impl">IMPL</span> shipped and wired, <span class="flag design">DESIGN</span> specified but partial, dormant, or unwired, <span class="flag open">OPEN</span> an unresolved question (referenced, never minted here). <strong>Two run-end implementations coexist</strong> — read this first: the <em>wired</em> one is <code>src/engine/echo.ts</code> + <code>src/engine/cycleEnd.ts</code> + <code>src/engine/chronicle.ts</code> (echoes + chronicle volumes); the <em>richer, unwired</em> one is <code>src/types/worldSoul.ts</code> + <code>src/engine/worldSoul.ts</code> (Fundament + Resonance). They are separate models; do not conflate them. Sources: <code>src/types/worldSoul.ts</code>, <code>src/engine/worldSoul.ts</code>, <code>src/engine/phaseSphereAggregation.ts</code>, <code>src/engine/cycleEnd.ts</code>, <code>src/engine/echo.ts</code>, <code>src/types/echo.ts</code>, <code>src/engine/chronicle.ts</code>, <code>src/components/Game/HarvestScreen.tsx</code>, <code>src/components/Game/hooks/useSimulation.ts</code>, <code>src/data/game-config.ts</code>. Design docs: <code>Docs/plans/2026-03-04-phase4a-world-soul-and-unmaking.md</code>, <code>Docs/plans/2026-03-04-phase4b-echoes-and-chronicle.md</code>.</p>
+
+      <div class="callout red">
+        <div class="callout-title">The load-bearing honest call for this page</div>
+        <p>Echoes carry across cycles, degrade, and enter the chronicle — but they do <strong>not yet mechanically seed the next world.</strong> Each <code>EchoDefinition</code> is built with an <code>injection</code> hook (<code>echo.ts</code>: <code>legacy→cultural_template</code>, <code>monument→location_feature</code>, <code>relic→quest_seed</code>), and <code>collectInjections</code> gathers the active ones — but <code>collectInjections</code> has <strong>no non-test caller</strong>. Nothing consumes the injections, so an echo's mechanical influence on the next cosmos is <span class="flag design">DESIGN</span>. Likewise <code>transitionToNewCycle</code> (<code>cycleEnd.ts</code>) does <strong>not re-run worldgen</strong> — it returns <code>{...state, cycle+1, tick:0, phase:'transition'}</code>, degrading echoes and binding a chronicle volume but continuing the <em>same</em> graph. The player layer above is written around what actually runs (echoes preserved + chronicle bound + cycle counter advanced), with the "next world reshaped by the last" marked planned.</p>
+      </div>
+
+      <h3>Per-tick sphere aggregate <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li><code>phaseSphereAggregation(state)</code> runs once per tick (<code>orchestrator.ts:3024</code>) and writes <code>state.worldSoul.aggregate</code> — a <code>SphereAggregate</code> of <code>totalBySphere</code> (weighted sum of every entity's sphere scores), the <code>dominantSphere</code>, and <code>entityCount</code>. This is the <strong>only live field of <code>GameState.worldSoul</code></strong>; the Fundament and Resonance layers on the same object are unwired (below).</li>
+      </ul>
+
+      <h3>Twilight — the Unmaking <span class="flag impl">IMPL</span> (entry + countdown) · <span class="flag design">DESIGN</span> (weakened play, other triggers)</h3>
+      <ul>
+        <li><strong>Entry is doom-expiry-only.</strong> <code>phaseDoomExpiry</code> (<code>orchestrator.ts:2338</code>): when <code>doomClock.expired &amp;&amp; phase==='playing'</code>, it sets <code>phase:'twilight'</code> and fires the <em>"The Unmaking begins. The world trembles."</em> popup. The two other designed triggers in <code>worldSoul.ts</code>'s <code>UnmakingTrigger</code> — <code>mandate_complete</code> and <code>player_concession</code> — are <strong>not wired as entry points</strong> (<span class="flag design">DESIGN</span>).</li>
+        <li><strong>Twilight is a plain countdown.</strong> <code>runTwilightTick</code> (<code>cycleEnd.ts</code>) increments a counter each tick until <code>TWILIGHT_TICKS</code> (<code>game-config.ts</code> = <code>7</code>), then sets <code>phase:'harvest'</code>; <code>useSimulation.ts</code> drives this (<code>doTick</code>'s <code>twilight</code> branch). The designed <strong>weakened play</strong> — a per-action success penalty during the Unmaking (<code>worldSoul.ts</code> <code>TRIGGER_PENALTY</code> <code>0.4/0.3/0.2</code>, via <code>initiateTwilight</code>'s <code>successPenalty</code>) — has <strong>no wired consumer</strong>; grep <code>successPenalty</code> finds no non-test caller. Today the twilight applies no penalty (<span class="flag design">DESIGN</span>).</li>
+      </ul>
+
+      <h3>Harvest — significance-scored echoes <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li><code>computeHarvest(state)</code> (<code>cycleEnd.ts</code>) runs when twilight completes. It scores every individual <code>actor</code>, <code>location</code>, and <code>artifact</code> node by <code>computeSignificanceScore(edgeCount, eventCount, nodeType)</code> — edges held plus chronicle entries that name the node — and keeps the top few as cosmic echo candidates.</li>
+        <li><strong>Harvest type</strong> is set by how the age closed: <code>triumphant</code> if <code>mandateState.completed</code>, else <code>somber</code> if <code>doomClock.progress &gt; 0.9</code>, else <code>bittersweet</code>. Cosmic echo counts scale with it — <code>5 / 4 / 3</code> (triumphant / bittersweet / somber) — and a one-line <code>chronicleSummary</code> is generated naming the brightest echo.</li>
+        <li><strong>Echo kinds.</strong> <code>echo.ts</code> <code>nodeTypeToEchoType</code> maps <code>actor→'legacy'</code>, <code>location→'monument'</code>, <code>artifact→'relic'</code> — the player-facing Legacy / Monument / Relic. Each <code>EchoDefinition</code> takes the top-two cosmology spheres as <code>sphereAffinities</code> and a built (but unconsumed) <code>injection</code> hook.</li>
+        <li><strong>Surface.</strong> <code>HarvestScreen</code> (<code>GameView.tsx:3753</code>, fed by <code>harvestResult</code> in <code>useSimulation.ts</code>) shows the age title, the summary, the preserved cosmic echoes as cards (name, summary, sphere tags, significance %), and a <em>Begin Next Cycle</em> button.</li>
+      </ul>
+
+      <h3>Divine echoes <span class="flag design">DESIGN</span></h3>
+      <ul>
+        <li><code>computeHarvest</code> returns <code>divineEchoSlots</code> (<code>3 / 2 / 1</code> by harvest type) and <code>HarvestScreen</code> renders them, but the copy reads literally <em>"(selection coming in a future update)"</em>. <code>handleBeginNextCycle</code> calls <code>transitionToNewCycle(..., [] /* divine echoes */, ...)</code> (<code>useSimulation.ts:134</code>) with an <strong>empty</strong> divine array — the player cannot yet choose the god's-own echoes. Cosmic echoes ship; divine echoes are the personal-harvest slot awaiting its picker.</li>
+      </ul>
+
+      <h3>Cycle transition — echo persistence &amp; chronicle binding <span class="flag impl">IMPL</span> · <span class="flag design">DESIGN</span> (re-seeding)</h3>
+      <ul>
+        <li><code>transitionToNewCycle</code> (<code>cycleEnd.ts</code>): degrades every surviving echo by <code>ECHO_DEGRADATION_RATE 0.15</code> (fade at <code>ECHO_FADE_THRESHOLD 0.9</code>, then pruned), keeps the survivors, appends the new cosmic echoes, and binds a chronicle <strong>Volume</strong> from this cycle's <code>chronicleEntries</code> — titled with the doom-identity chapter title when available (<code>doomIdentityMatrix.chronicleChapterTitles</code>, THR-21) and closed with the harvest summary. Echo-thread appearances are recorded. Then <code>cycle+1</code>, <code>tick:0</code>, <code>phase:'transition'</code>, and the per-cycle logs reset.</li>
+        <li><strong>No fresh cosmos.</strong> The function does <em>not</em> re-run worldgen — the same graph continues into the next cycle. A regenerated world seeded by the last one's echoes is <span class="flag design">DESIGN</span> (and blocks on the unwired <code>collectInjections</code>, see the red callout).</li>
+      </ul>
+
+      <h3>The World-Soul ledger — Fundament &amp; Resonance <span class="flag design">DESIGN</span></h3>
+      <ul>
+        <li><code>worldSoul.ts</code> defines a full persistence model: <strong>Fundament</strong> (a 12-sphere <code>sphereWeights</code> coefficient ledger + <code>cycleCount</code>) and <strong>Resonance</strong> (up to <code>MAX_RESONANCE_MEMORIES 10</code> curated <code>ResonanceMemory</code> fragments, each degrading per cycle). It ships helpers — <code>applyFundamentShift</code>, <code>blendFundaments</code>, <code>captureMemory</code>, <code>degradeMemories</code>, <code>initiateTwilight</code>, <code>buildHarvestOutcome</code>, <code>executeCycleTransition</code> — all pure and unit-tested.</li>
+        <li><strong>None of it is wired.</strong> Every one of those functions has <em>no non-test caller</em>. <code>GameState.worldSoul.fundament</code> / <code>resonance</code> exist on the type but are never shifted by play nor blended at harvest in the running game — the wired cross-cycle memory is the echo/chronicle path above, not this ledger. Treat the entire Fundament/Resonance layer as designed-but-dormant.</li>
+      </ul>
+
+      <h3>Where it runs</h3>
+      <ul>
+        <li>Per-tick: <code>phaseSphereAggregation</code> (<code>orchestrator.ts:3024</code>) and the doom-expiry twilight trigger <code>phaseDoomExpiry</code> (<code>orchestrator.ts:2338</code>). The twilight&nbsp;→&nbsp;harvest&nbsp;→&nbsp;transition sequence itself is driven from the React layer in <code>useSimulation.ts</code> (<code>doTick</code>'s <code>twilight</code> branch, the phase-watch effect, and <code>handleBeginNextCycle</code>), not from a registry tick phase — because it is a between-cycles flow, not a per-tick one.</li>
+      </ul>
+
+      <h3>Constants</h3>
+      <table class="tunables">
+        <thead><tr><th>Constant</th><th>Value</th><th>Purpose · file</th></tr></thead>
+        <tbody>
+          <tr><td>TWILIGHT_TICKS</td><td>7</td><td>Length of the Unmaking countdown (wired) · <code>game-config.ts</code></td></tr>
+          <tr><td>COSMIC_ECHO_CANDIDATES</td><td>10</td><td>Top nodes considered for cosmic echoes · <code>cycleEnd.ts</code></td></tr>
+          <tr><td>Cosmic echo count (triumphant / bittersweet / somber)</td><td>5 / 4 / 3</td><td>Echoes preserved by harvest type · <code>cycleEnd.ts</code></td></tr>
+          <tr><td>Divine echo slots (triumphant / bittersweet / somber)</td><td>3 / 2 / 1</td><td>Divine slots shown — selection DESIGN · <code>cycleEnd.ts</code></td></tr>
+          <tr><td>Harvest-type doom threshold</td><td>0.9</td><td><code>doomClock.progress &gt; 0.9</code> → somber · <code>cycleEnd.ts</code></td></tr>
+          <tr><td>ECHO_DEGRADATION_RATE</td><td>0.15</td><td>Echo fade added per cycle · <code>types/echo.ts</code></td></tr>
+          <tr><td>ECHO_FADE_THRESHOLD</td><td>0.9</td><td>Degradation at which an echo is released · <code>types/echo.ts</code></td></tr>
+          <tr><td>MAX_RESONANCE_MEMORIES</td><td>10</td><td>Resonance fragment cap (DESIGN — unwired) · <code>worldSoul.ts</code></td></tr>
+          <tr><td>TWILIGHT_TICK_RANGE</td><td>{5, 10}</td><td>Designed twilight length range (DESIGN — the wired value is TWILIGHT_TICKS) · <code>worldSoul.ts</code></td></tr>
+          <tr><td>TRIGGER_PENALTY (doom / concession / mandate)</td><td>0.4 / 0.3 / 0.2</td><td>Weakened-play penalty by trigger (DESIGN — unwired) · <code>worldSoul.ts</code></td></tr>
+        </tbody>
+      </table>
+
+      <h3>Canon &amp; terminology</h3>
+      <ul>
+        <li>Rulebook spine: <code>Docs/canon/rulebook.md</code> <strong>§10 "Winning and Losing"</strong> (how a run resolves) and <strong>§8 "The Clocks"</strong> (the Doom clock whose expiry triggers the Unmaking). Design docs: <code>Docs/plans/2026-03-04-phase4a-world-soul-and-unmaking.md</code> and <code>Docs/plans/2026-03-04-phase4b-echoes-and-chronicle.md</code>.</li>
+        <li><strong>UL gap (noted, not opened):</strong> no Ubiquitous-Language shard defines <em>World-Soul</em>, <em>Twilight</em>, <em>Unmaking</em>, <em>Harvest</em>, <em>Echo</em>, <em>Fundament</em>, or <em>Resonance</em>. The only UL mention of "World-Soul" is incidental — <code>Agents.md</code>'s <em>Rival</em> definition notes rivals are generated from the World-Soul. Terminology authority for this page is the code types (<code>worldSoul.ts</code> / <code>echo.ts</code>) plus the design docs and rulebook §8/§10.</li>
+        <li>Adjacent Manual pages: <a href="run-lifecycle-reference.html">A Run, Start to Finish</a> (the lifecycle this page ends), <a href="clocks-reference.html">Doom, the Mandate &amp; Omens</a> (the Doom clock that triggers the Unmaking, and the Mandate that colours the harvest), <a href="cosmology-reference.html">Reaches, Spheres &amp; Quintessence</a> (the spheres an echo carries), <a href="attention-story-reference.html">Attention, the Digest &amp; the Chronicle</a> (the chronicle a run's harvest binds into a volume). Game title in player copy: <strong>Threadbearer</strong>.</li>
+      </ul>
+
+      <h3>Open questions <span class="flag open">OPEN</span></h3>
+      <ul>
+        <li>Referenced, not minted: rulebook <strong>Open Q #6 — "Twilight authorship vs. emergence"</strong> (<code>rulebook.md:303</code>). The standing verdict is a lightweight split — authored closing beats plus a procedural echo-selection rule for which emergent threads get harvested into the finale — with the spec task to be filed as a follow-up. This page describes the current echo-selection (significance-scored) and leaves the authored-beats question to the rulebook.</li>
+        <li>The clearest honest gap is the one in the red callout: <code>collectInjections</code> is authored and unit-tested but has no per-cycle consumer, so echoes do not yet reshape the next world, and the whole <code>worldSoul.ts</code> Fundament/Resonance ledger is dormant. That is implementation debt, referenced not opened. New open questions surface in chat and land in the rulebook's Open Questions list, never on this page.</li>
+      </ul>
+
+    </div>
+  </details>
+
+  <div class="foot">
+    Game Manual Wiki · W17 (THR-602). Player layer describes current shipped behaviour — the Unmaking begins on Doom expiry, twilight runs as a countdown, and the harvest preserves significance-scored Legacy / Monument / Relic echoes that carry across cycles, degrade, and bind into the chronicle (all <span class="flag impl">IMPL</span>). Weakened twilight play, divine-echo selection, echoes seeding the next world, a re-drawn cosmos, and the entire Fundament/Resonance ledger are <span class="flag design">DESIGN</span> and flagged as such. Every world ends — and what mattered in it becomes an ingredient of what comes next.
+  </div>
+
+</div>
+</body>
+</html>
