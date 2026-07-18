@@ -1,31 +1,32 @@
 # Briefing
 
-**Generated:** 2026-07-18 09:12 local (07:12 UTC) · by `keep-work-flowing-cc` (first briefing, seeded by THR-650)
+**Generated:** 2026-07-18 11:02 local (09:02 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task — the replacement for the old Cowork "keep-work-flowing" chat brief. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
 ## Needs Christian
 
-1. **Your working copy of the game is running behind.** The home folder on this machine is 37 commits behind the shipped version and still sitting on an old feature branch, with a handful of half-finished notes never committed. If you start a morning session there, you'll be building on week-old ground. **Fix:** in `C:\Users\chris\Dev\Projects\TheFantasyWorldSimulator`, run `git switch main && git pull` (then tidy the stray uncommitted files). Two minutes; nothing else self-heals it.
-
-2. **The "move everything into Claude Code" changeover is underway and will need one yes from you soon.** We're partway through retiring the old Cowork setup (this briefing task is one of the new pieces). Nothing is being deleted yet — that's deliberate. Before anything old gets torn out, you'll get a plain-language list of exactly what goes, to approve. No action this hour; just so it's not a surprise when it lands.
-
-3. **One design idea turned out to already exist — worth a quick verdict.** "Autonomous notables" (faction leaders, nations, and armies acting on their own to make the world feel alive) was queued as new design work. It turns out the whole war/army/battle system it describes was already built — it's just switched off and never fires. So the real question isn't "build it" but **"do you want that dormant living-world layer turned on?"** A design session can take it from there once you've said yes/no.
+1. **Three of your own design docs are stranded on this machine and were never shared with the team — including the plan several in-flight tickets depend on.** Digging into last hour's "your working copy is behind" warning turned up something more specific: this machine's copy isn't just behind, it's sitting in a disconnected state with four of your own commits from Friday evening that never made it to the shared repo. One of them is the full **Pure Claude Code Migration plan** — the document six active tickets (including the ones already marked done) point to as their spec. Right now that plan doc doesn't exist anywhere but this machine. The other two are its brainstorm companion and the entity-visual-header design doc. **Fix — do this before anything else touches this folder:**
+   ```
+   cd C:\Users\chris\Dev\Projects\TheFantasyWorldSimulator
+   git branch rescue/2026-07-17-detached-plans 053c867a
+   git switch main
+   git pull
+   ```
+   That saves the four stranded commits under a safe name first, *then* catches the folder up. After that, the three plan docs need a normal PR onto `main` (a design session can do this) — and the 19 other uncommitted files sitting in that folder need a quick look: keep what's real, drop what's scratch.
 
 ## Queue
 
-**Healthy** — 17 items ready for the executor, which is draining them roughly one an hour. No starvation.
-
-- **One item is quietly stuck:** "Mortal Economy — trade cargo manifests" (THR-616) is waiting on its Phase 1 groundwork (THR-615), and that groundwork isn't in the queue yet. So THR-616 will keep getting skipped until Phase 1 is planned. Not urgent, but it won't unstick itself.
+**Backed up** — 17 items ready for the executor, most of it not new: 11 of the 17 haven't been touched since 2026-07-05 (13 days cold). The 3 fresh, high-priority ones are: player-action progression design (THR-613), the war-system reconciliation you already green-lit (THR-614), and a new one from today about making existing systems more visible to design agents (THR-658). No item is genuinely stuck this cycle — last hour's note about a "blocked" economy ticket (THR-616) was based on stale text; its actual blocker shipped 13 days ago.
 
 ## Freshness
 
-Home tree **stale** — 37 behind, on branch `claude/sad-bartik-421eef`, with uncommitted changes. See "Needs Christian" #1 for the fix. (Shipped code is current as of 2026-07-18 00:18.)
+Home tree **stale and disconnected** — 45 commits behind `origin/main`, `HEAD` detached (not on any branch) at a commit with unshipped work, plus 19 other uncommitted files. See "Needs Christian" #1 — that item **is** this freshness ping; the two aren't separate problems this hour.
 
 ## What's moving
 
-- **This task (THR-650)** — building the hourly briefing you're reading. Once it merges, it refreshes on its own every hour.
-- **Two bigger design pieces are in flight:** player-action progression (how your powers grow over a run) and the autonomous-notables verdict above. Both are multi-session and expected to sit "in progress" for a while.
+- **The "autonomous notables" verdict from last hour is settled** — you already approved re-scoping it from "build a war system" to "wake up the one that's already built" via chat review. It's queued (THR-614), no longer needs you.
+- **Pure Claude Code migration is on track** — 4 of 9 phase-1/2 pieces shipped (this briefing task included). Next up is a verification gate that isn't queued yet; nothing for you to approve until the demolition phase, which still gets a plain-language list first, as promised.
 
 ---
 *Standing asks live in [`Design/user-actions.md`](user-actions.md). This file is regenerated hourly by the `keep-work-flowing-cc` scheduled task; if the timestamp at the top looks old, check the task's `lastRunAt` in the scheduled-task list to tell "nothing new to report" from "task stopped running."*
