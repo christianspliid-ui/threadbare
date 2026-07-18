@@ -1,8 +1,8 @@
 # User Action Required
 
-**Last updated:** 2026-06-23 (full rebuild from the 2026-06-23 retro — replaces the 2026-04-27 seed that went 57 days stale; `LINEAR_API_KEY` for Codex confirmed set same day, moved to Resolved)
+**Last updated:** 2026-07-18 (light refresh by the new hourly `keep-work-flowing-cc` CC task — THR-650; last full rebuild was the 2026-06-23 retro)
 **Owner of items below:** Christian. Everyone else's blockers go in Linear or `Docs/impediments.md`.
-**Refresh cadence:** Cowork rebuilds this on retro day from the active impediment log. Items are removed when resolved.
+**Refresh cadence:** The hourly `keep-work-flowing-cc` scheduled task keeps this current (prunes resolved items, adds newly-surfaced Christian-owned ones); the `retrospective` skill still does the deep periodic rebuild. This is the slow-moving standing-asks list — the fresh-this-hour view is [`Design/briefing.md`](briefing.md).
 
 ## How this works
 
@@ -21,8 +21,8 @@ When an item resolves: delete it from this file, mark the corresponding impedime
 
 ## 1. Refresh the home worktree + confirm "This machine" scheduled tasks are firing · WILL NOT SELF-HEAL
 
-**Status:** Open · home tree ~11 days / 38 commits stale; no retro fired for ~4 weeks (3 missed weekly runs: 06-03, 06-10, 06-17)
-**Source:** This retro (home-tree precheck `behind:38 + stale-branch:265h`; retro automation gap)
+**Status:** Open · home tree still stale — 2026-07-18 freshness ping: 37 commits behind `origin/main`, on feature branch `claude/sad-bartik-421eef`, with uncommitted changes (see item #3). Persisting since the 06-23 retro.
+**Source:** 2026-06-23 retro + 2026-07-18 `keep-work-flowing-cc` freshness ping (retro E1)
 
 **Fix — two parts.**
 - **Refresh the tree:** `git fetch && git pull` on the home worktree (or `git fetch && git rebase origin/main` if on a feature branch) before the next design session.
@@ -60,8 +60,8 @@ When an item resolves: delete it from this file, mark the corresponding impedime
 
 ## 4. Confirm whether Linear-from-scheduled-context is now reliable · INFORMATIONAL
 
-**Status:** Open question · Linear MCP was reachable from the scheduled retro context on 2026-06-23 (first time in four retros)
-**Source:** This retro (Ask #4)
+**Status:** Trending resolved · Linear MCP has now been reachable from scheduled/autonomous CC context on 2026-06-23 and again 2026-07-18 (this `keep-work-flowing-cc` run queried the board and claimed an issue from a scheduled context without issue). Two clean data points; keep the hedge one more cycle, then close.
+**Source:** 2026-06-23 retro (Ask #4) + 2026-07-18 scheduled-context confirmation
 
 **Fix.** Confirm whether the Linear MCP is dependably reachable from scheduled/autonomous contexts. If reliable, Cowork can self-file the small encodable experiments (dashboard-commit wiring, etc.) instead of asking, and drop the "needs-Linear-verification" hedge. If it's intermittent, say so and the hedge stays the norm.
 
@@ -71,7 +71,7 @@ When an item resolves: delete it from this file, mark the corresponding impedime
 
 ## Resolved this period
 
-- **2026-06-23 — `LINEAR_API_KEY` set in the Codex automation environment** (was item #1; impediment #141, 17 recurrences). Confirmed by Christian same day the retro surfaced it. Unblocks the entire Codex executor lane — Codex can now run the WIP gate, scan `Ready for Codex`, claim, and post closeouts, and the stranded backlog (THR-481/478/476 etc.) can drain on the next pickup cycle. To be removed on next retro day.
+- **2026-06-23 — `LINEAR_API_KEY` set in the Codex automation environment** (was item #1; impediment #141, 17 recurrences). Confirmed by Christian same day the retro surfaced it. _Superseded 2026-06-23 by the full Codex-lane retirement (THR-486): there is now a single Opus executor and one `Ready for Dev` queue, so the Codex-specific unblock is moot. Kept for the audit trail; safe to prune at the next full retro rebuild._
 - **2026-06-23 — GitHub Pro / branch protection resolved** (was item #4 in the prior seed; impediment #56). Branch protection is now active on `main` with `Test · Typecheck · Build` as a required status check (THR-282 shipped 2026-04-30). The "CI stays advisory because branch protection can't be enforced" concern is closed. To be removed on next retro day.
 
 ---
