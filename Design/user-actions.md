@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-07-18, 19:28 local (light refresh by the hourly `keep-work-flowing-cc` CC task; last full rebuild was the 2026-06-23 retro)
+**Last updated:** 2026-07-18, 20:28 local (light refresh by the hourly `keep-work-flowing-cc` CC task; last full rebuild was the 2026-06-23 retro)
 **Owner of items below:** Christian. Everyone else's blockers go in Linear or `Docs/impediments.md`.
 **Refresh cadence:** The hourly `keep-work-flowing-cc` scheduled task keeps this current (prunes resolved items, adds newly-surfaced Christian-owned ones); the `retrospective` skill still does the deep periodic rebuild. This is the slow-moving standing-asks list — the fresh-this-hour view is [`Design/briefing.md`](briefing.md).
 
@@ -51,10 +51,10 @@ Then triage the other uncommitted working-tree files (item #3).
 
 ## 3. Triage orphan uncommitted changes in working trees · WILL NOT SELF-HEAL
 
-**Status:** Open · ~60 days · ~20 non-`.codesight` files uncommitted on the home tree as of 2026-07-18 19:28, which is also 29 commits behind `origin/main` (mostly `Docs/plans/` drafts and `.intent-proposals/`; run `git fetch && git rebase origin/main` first, then triage)
-**Source:** Impediment #59 + 2026-07-18 `keep-work-flowing-cc` freshness ping
+**Status:** Open · ~60 days · **~85 non-`.codesight` files uncommitted** on the home tree as of 2026-07-18 20:28. The tree is now **current** with `origin/main` (0 behind — last hour it was 29 behind and has since fast-forwarded), so the "rebase first" step is no longer needed. The dirty set is **larger than earlier briefings assumed** and is no longer just `Docs/plans/` drafts — it now includes a stack of `src/engine/army*`, `battle*`, Codex/AscendantBar/GameView/DebugTab component edits, plus staged plan-doc + script deletions. These are almost certainly stale local echoes of work that already shipped cleanly through `origin/main` (the TB-073 war system and the orphaned-card inspector both merged), but the volume warrants a **careful** triage, not a blind `git checkout -- .`
+**Source:** Impediment #59 + 2026-07-18 `keep-work-flowing-cc` freshness pings
 
-**Fix.** Run `git status` on `main`; for each tracked-but-uncommitted file, attribute it to a Linear issue (commit with `Fixes THR-XX`) or `git checkout --` discard. Untracked files: same triage — `git add` + commit if intentional, `rm` if not.
+**Fix.** Run `git status` on `main`; for each tracked-but-uncommitted file, confirm the same change is already on `origin/main` (`git diff origin/main -- <file>` shows nothing meaningful) before `git checkout --` discarding it; attribute any genuinely-new change to a Linear issue and commit with `Fixes THR-XX`. Untracked files: same triage — `git add` + commit if intentional, `rm` if not.
 
 **What breaks if not done.** This is the upstream cause of the Codex dirty-worktree bounces (~50% of automation slots historically wasted). [THR-277](https://linear.app/threadbare/issue/THR-277) makes pickup resilient *to* dirty state via worktree isolation, but it doesn't clean the state. Until the orphan changes are triaged, the dirty worktree stays dirty.
 
