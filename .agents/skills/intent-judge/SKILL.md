@@ -10,7 +10,7 @@ description: >
   by Cowork after writing any plan doc in Docs/plans/ or Docs/audits/ and
   before the Linear state transitions to Ready for Dev.
   Also callable manually via `/intent-judge <plan-doc-path>`.
-last_validated_against: 2026-05-11
+last_validated_against: 2026-07-18
 ---
 
 # Intent Judge
@@ -135,6 +135,7 @@ For each, produce: **PASS / GAP / VIOLATION** + quoted evidence.
 8. **Load-bearing decisions** — Violates a settled decision in CLAUDE.md's Load-Bearing Architectural Decisions?
 9. **Blast radius** — If touched files include any with ≥100 importers, is there a Blast Radius section?
 10. **Kill criteria** — Does the plan state how we'll know if the approach is wrong, and what we do then?
+11. **Substrate existence (Engine-pillar plans, THR-658)** — Does the plan open with a `## Substrate inventory` section, and does it match reality? Read `Docs/canon/systems-inventory.md`, match the plan's premise nouns/aliases against it, and score VIOLATION if the plan proposes to *build* a subsystem the inventory already lists (a 🟠 DORMANT badge still counts as existing — it must be *activated*, not rebuilt) or if an Engine-pillar plan lacks the `## Substrate inventory` section. This is the dimension that would have caught THR-614's green-field war plan. PASS / N/A if there is no Engine pillar.
 
 ## Verdict aggregation rubric
 
@@ -143,7 +144,7 @@ Applied in order — first match wins:
 1. **High-risk impact class with no explicit user sign-off line in action proposal** → **Escalate**.
 2. **Any GAP on dimension 1 (intent fidelity)** → **Escalate**. The user needs to clarify intent before the executor starts coding.
 3. **Any VIOLATION on dimensions 1, 5, 7, or 8** → **Block**. These need a fresh draft.
-4. **Any VIOLATION on dimensions 2, 3, 4, 6, 9, or 10** → **Revise**. Author can fix without user input.
+4. **Any VIOLATION on dimensions 2, 3, 4, 6, 9, 10, or 11** → **Revise**. Author can fix without user input.
 5. **3+ GAPs across any dimensions** → **Revise**.
 6. **0–2 GAPs and no VIOLATIONs** → **Allow**.
 

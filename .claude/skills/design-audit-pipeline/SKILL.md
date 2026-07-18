@@ -1,7 +1,7 @@
 ---
 name: design-audit-pipeline
 description: Fork plan-finalization audit into three independent subagents (NFP / three-pillar / Vision). Triggered at Cowork plan-doc finalization after intent-judge Allow. Also invokable manually via /design-audit.
-last_validated_against: 2026-06-13
+last_validated_against: 2026-07-18
 ---
 
 # Design Audit Pipeline

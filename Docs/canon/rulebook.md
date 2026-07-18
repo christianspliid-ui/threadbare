@@ -15,8 +15,11 @@ status: live
 **Status flags.** Every rule statement is tagged inline:
 
 - `[IMPL]` — implemented in current code; behaviour matches the description. Where a number is cited, the constant name + path is given so the drift check can verify it.
+- `[IMPL — dormant]` — implemented and wired into the tick loop, but producing no output in a standard seed-42 run (built but silent). **These must still appear here, not be omitted** — an unlisted dormant system is exactly what let THR-614 plan a green-field rebuild of the already-wired war system. Cross-check against `Docs/canon/systems-inventory.md`, whose 🟠 DORMANT badge is the generated source for this flag.
 - `[DESIGN]` — designed in a plan doc; not yet implemented, partially implemented, or implemented under a different name. The plan is cited inline.
 - `[OPEN]` — open question. The rule is not yet decided. Tracked in the Open Questions section at the bottom of this page.
+
+**Completeness rule (THR-658).** A built-but-dormant system is a *rule of play that exists*, so it belongs in this synthesis with an `[IMPL — dormant]` flag — never left out because it "doesn't fire yet." The monthly rulebook review ([THR-417](https://linear.app/threadbare/issue/THR-417)) reconciles this page against the 🟠 DORMANT rows of `Docs/canon/systems-inventory.md` and adds any missing entry.
 
 **Stale-source warning.** The rulebook is the *synthesis* of the rules of play, not a definition. When this page disagrees with the [Ubiquitous Language](../ubiquitous-language/README.md), UL wins on terms. When this page disagrees with a per-domain canon page (`cosmology.md`, `encounters.md`, etc.), that canon page wins on current spec. When this page disagrees with code, the code wins on `[IMPL]` claims — but it is also a drift signal, surfaced by the Phase 2 lint scan. The rulebook is meant to *invite* such disagreement; that is its job.
 
