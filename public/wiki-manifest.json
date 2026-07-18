@@ -131,6 +131,14 @@
       "sources": ["src/engine/stealth*.ts", "src/engine/rival*.ts", "src/engine/phaseHiddenMarkDecay*.ts", "src/engine/phaseIntelligenceDecay*.ts", "src/data/rival-content.ts"]
     },
     {
+      "id": "attention-story-reference",
+      "file": "attention-story-reference.html",
+      "title": "Attention, the Digest & the Chronicle",
+      "blurb": "How one god watches a whole world without keeping up with all of it — the renewing attention pool (scarce by design, cheaper to attend the mortals closest to you); the curator that sifts the threads and surfaces the few that matter as tugs, promoting genuine turning points to spotlighted story beats on a cooldown; the digest that keeps everything you looked away from, read back through Read the Threads or composed per thread as a story-so-far; and the three-tier prose engine (Routine/Notable/Chronicle) that turns every event into a moment, taught through interactive prose keywords rather than numbers. Honest scope: the digest is appended every tick but its per-tick prune is dormant, so reads self-limit by lookback window.",
+      "section": "Manual",
+      "sources": ["src/engine/phaseAttention*.ts", "src/engine/attentionTier*.ts", "src/engine/digestBuffer*.ts", "src/engine/narrative*.ts", "src/engine/prose*.ts"]
+    },
+    {
       "id": "encounters-agents-reference",
       "file": "encounters-agents-reference.html",
       "title": "Encounters, Agents & Resolution",
