@@ -10,7 +10,7 @@
  */
 
 import type { GameState } from '../types/gameState';
-import type { ArmySizeCategory } from '../types/army';
+import type { ArmySizeCategory, ArmyObjective, ArmyState } from '../types/army';
 import {
   ARMY_SPAWN_IRON_TIER_MIN,
   ARMY_SPAWN_GOLD_TIER_MIN,
@@ -18,11 +18,13 @@ import {
   ARMY_QUINTESSENCE_BASE,
   ARMY_MAINTENANCE_COST,
   ARMY_SIZE_HEADCOUNT,
+  SETTLEMENT_TARGET_SUBTYPES,
   determineSizeCategory,
 } from '../types/army';
 import { requiresMilitaryForce } from '../types/faction';
 import type { FactionAmbitionType } from '../types/faction';
 import { computeCapability, computeTier } from './domainCapability';
+import { findShortestPath } from './pathfinding';
 import { emitTrace } from './traceBuffer';
 
 // ─── Eligibility ────────────────────────────────────────────────────────
@@ -114,6 +116,60 @@ export function selectCommander(
   return bestId;
 }
 
+// ─── Objective Selection ────────────────────────────────────────────────
+
+/**
+ * Choose a march objective for a freshly-raised army: the nearest reachable
+ * settlement controlled by a hostile (different) faction. Without an objective
+ * an army sits at its muster point forever (phaseArmyMovement skips null-objective
+ * armies) — this is the link that turns a spawned army into a marching, fighting
+ * one (TB-073 / THR-614 activation).
+ *
+ * Deterministic (NFP #3): candidates ranked by path hop-count, ties broken by
+ * lexicographic node id — no PRNG. Fail-soft (NFP #4): returns null when the army
+ * has no location, its location is not a pathable location node, or no hostile
+ * settlement is reachable; the caller leaves the army idle rather than throwing.
+ */
+export function selectArmyObjective(
+  state: GameState,
+  armyId: string,
+  factionId: string,
+): ArmyObjective | null {
+  const graph = state.graph;
+  const rawStartId = graph.getOutgoingEdges(armyId, 'located_at')[0]?.target;
+  if (!rawStartId) return null;
+  // Climb a sublocation start to its parent settlement — only top-level locations
+  // carry the adjacency edges pathfinding needs (three-tier model).
+  const parentStartId = graph.getNode(rawStartId)?.properties.parentLocationId as string | undefined;
+  const startId = parentStartId ?? rawStartId;
+  const startNode = graph.getNode(startId);
+  if (!startNode || startNode.type !== 'location') return null;
+
+  const candidates: { id: string; hops: number }[] = [];
+  for (const loc of graph.getNodesByType('location')) {
+    const subtype = loc.properties.locationSubtype as string | undefined;
+    if (!subtype || !SETTLEMENT_TARGET_SUBTYPES.includes(subtype)) continue;
+
+    // Controlling faction: a `controls` edge points faction → location (the
+    // canonical settlement-control model — see worldSeed.ts).
+    const controller = graph.getIncomingEdges(loc.id, 'controls')[0]?.source;
+    if (!controller || controller === factionId) continue;
+
+    if (loc.id === startId) {
+      // Already garrisoned atop a hostile settlement — besiege in place (0 hops).
+      candidates.push({ id: loc.id, hops: 0 });
+      continue;
+    }
+    const path = findShortestPath(graph, armyId, startId, loc.id);
+    if (!path) continue;
+    candidates.push({ id: loc.id, hops: path.path.length });
+  }
+  if (candidates.length === 0) return null;
+
+  candidates.sort((a, b) => a.hops - b.hops || (a.id < b.id ? -1 : 1));
+  return { type: 'conquer', targetNodeId: candidates[0].id, estimatedAttrition: 0 };
+}
+
 // ─── Army Spawning ──────────────────────────────────────────────────────
 
 /**
@@ -142,10 +198,16 @@ export function spawnArmy(
   const commanderNode = graph.getNode(commanderId);
   if (!factionNode || !commanderNode) return null;
 
-  // Get spawn location (commander's current location)
+  // Get spawn location (commander's current location), resolved up to the parent
+  // settlement when the commander stands in a sublocation (three-tier model). An
+  // army musters at the settlement, not inside a gatehouse room — the sublocation
+  // isn't in the location adjacency graph, so an army stationed there could neither
+  // pick a march target nor path out (THR-614).
   const commanderLocEdges = graph.getOutgoingEdges(commanderId, 'located_at');
-  const locationId = commanderLocEdges[0]?.target;
-  if (!locationId) return null;
+  const rawLocationId = commanderLocEdges[0]?.target;
+  if (!rawLocationId) return null;
+  const parentLocationId = graph.getNode(rawLocationId)?.properties.parentLocationId as string | undefined;
+  const locationId = parentLocationId ?? rawLocationId;
 
   const armyId = `army_${factionId}_${state.tick}`;
   const armyName = `${factionNode.name} — ${size === 'warband' ? 'Warband' : size === 'regiment' ? 'Regiment' : 'Host'}`;
@@ -215,10 +277,24 @@ export function spawnArmy(
       },
     });
 
+    // Give the army a march objective (nearest hostile settlement) so it advances
+    // and reaches a battle/siege instead of idling at its muster point (THR-614).
+    const objective = selectArmyObjective(state, armyId, factionId);
+    if (objective) {
+      const armyNode = graph.getNode(armyId);
+      const armyState = armyNode?.properties.armyState as ArmyState | undefined;
+      if (armyNode && armyState) {
+        graph.updateNode(armyId, {
+          properties: { ...armyNode.properties, armyState: { ...armyState, objective } },
+        });
+      }
+    }
+
     emitTrace({
       tick: state.tick,
       category: 'faction_ambition',
-      summary: `Army "${armyName}" raised at ${graph.getNode(locationId)?.name ?? locationId}, commanded by ${commanderNode.name}`,
+      summary: `Army "${armyName}" raised at ${graph.getNode(locationId)?.name ?? locationId}, commanded by ${commanderNode.name}`
+        + (objective ? ` — marching to ${graph.getNode(objective.targetNodeId)?.name ?? objective.targetNodeId}` : ' — no hostile target found, holding'),
       factionId,
       armyId,
       commanderId,

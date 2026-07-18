@@ -127,6 +127,33 @@ export function selectAmbitionType(
   return candidates[candidates.length - 1].type;
 }
 
+// ─── Army spawn attempt ─────────────────────────────────────────────────
+
+/**
+ * Attempt to raise an army for a faction pursuing a military ambition.
+ *
+ * Fires for BOTH newly-created and standing military ambitions (THR-614): a
+ * faction that becomes spawn-eligible only after its ambition was set (e.g. it
+ * later gains an Iron-tier commander, or was ineligible at ambition creation)
+ * would otherwise never raise an army, because the original spawn attempt was a
+ * one-shot at ambition-creation time. `isEligibleForArmySpawn` already caps at
+ * `MAX_ARMIES_PER_FACTION`, so re-attempting each evaluation interval is a no-op
+ * once an army exists — no spam.
+ */
+function maybeSpawnArmy(
+  state: GameState,
+  factionId: string,
+  ambitionType: FactionAmbitionType,
+  ambitionId: string,
+): void {
+  if (!requiresMilitaryForce(ambitionType)) return;
+  if (!isEligibleForArmySpawn(state, factionId)) return;
+  const commander = selectCommander(state, factionId);
+  if (commander) {
+    spawnArmy(state, factionId, commander, ambitionId);
+  }
+}
+
 // ─── Phase ──────────────────────────────────────────────────────────────
 
 /**
@@ -196,7 +223,17 @@ export function phaseFactionAmbitions(state: GameState): void {
         }
       }
 
-      if (ambitionStillActive) continue; // Active ambition still valid — skip creation
+      if (ambitionStillActive) {
+        // Standing military ambition: retry the spawn in case the faction only
+        // became eligible after the ambition was first set (THR-614 activation).
+        maybeSpawnArmy(
+          state,
+          faction.id,
+          activeAmbition.properties.ambitionType as FactionAmbitionType,
+          activeAmbition.id,
+        );
+        continue; // Active ambition still valid — skip creation
+      }
     }
 
     // Create new ambition
@@ -241,12 +278,7 @@ export function phaseFactionAmbitions(state: GameState): void {
     });
 
     // ── Army spawning (TB-073 M2-02) ──
-    // If the new ambition requires military force, attempt to spawn an army
-    if (requiresMilitaryForce(ambitionType) && isEligibleForArmySpawn(state, faction.id)) {
-      const commander = selectCommander(state, faction.id);
-      if (commander) {
-        spawnArmy(state, faction.id, commander, ambitionId);
-      }
-    }
+    // If the new ambition requires military force, attempt to spawn an army.
+    maybeSpawnArmy(state, faction.id, ambitionType, ambitionId);
   }
 }

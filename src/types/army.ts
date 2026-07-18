@@ -58,6 +58,15 @@ export const ARMY_CREATION_GOLD_COST = 50;
 /** Simultaneous active armies per faction (tune upward later) */
 export const MAX_ARMIES_PER_FACTION = 1;
 
+/**
+ * Location subtypes a raised army may march against as a conquest objective.
+ * A settlement controlled by a hostile faction becomes a siege target on arrival
+ * (see `phaseBattleDetection`). Kept here so the target set is tunable in one place.
+ */
+export const SETTLEMENT_TARGET_SUBTYPES: readonly string[] = [
+  'hamlet', 'town', 'city', 'capital', 'castle', 'fort',
+];
+
 /** Starting quintessence by army size */
 export const ARMY_QUINTESSENCE_BASE: Record<ArmySizeCategory, number> = {
   warband: 30,
