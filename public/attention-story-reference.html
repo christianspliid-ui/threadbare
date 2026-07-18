@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Threadbearer — Attention, the Digest &amp; the Chronicle</title>
+<!--
+  Attention, the Digest & the Chronicle (Game Manual Wiki, W16 / THR-601) — dual-layer
+  manual page. Player-manual prose first ("How it plays"), Designer Notes second.
+  Spec: Docs/plans/2026-07-03-game-manual-wiki.md §5 W16; template §3.
+  The shared wiki nav between the WIKI-NAV markers is injected by
+  scripts/generate-design-wiki.ts — do not hand-write it.
+
+  Accuracy notes (verified against code this pass — do not "correct" back):
+  - Attention pool is IMPL & wired: phaseAttention (orchestrator.ts:2669) regens the
+    pool via regenAttention (attentionPool.ts) — pool + attentionRegen capped at
+    attentionCapacity. State lives on the ascendant NODE properties
+    (attentionPool/attentionCapacity/attentionRegen). ATTENTION_BASE_CAPACITY 6,
+    ATTENTION_BASE_REGEN 0.4. Attend costs: moderate 1.0 / hard+deadly 1.5 /
+    story_beat 2.0, times a court multiplier the_first 0.5 / retinue 1.0 / watched 1.5
+    (so attending your First is HALF cost). All in attention-constants.ts.
+  - Attention TIERS (attentionTier.ts) are IMPL: TIER_MATRIX maps (courtPosition x
+    intrinsicTier) -> effectiveTier — watched demotes one tier, retinue preserves,
+    the_first promotes background->shaping; dormant/unthreaded -> 'invisible'.
+    checkMidEncounterPromotion promotes background->shaping on tier-1 triggers
+    (wound/discovery/chainAdvance/tierPromotion) and any->story_beat on tier-2
+    (chainCulmination/multiAgentConvergence/doomThreshold/battleEscalation).
+  - Curator + thread tugs IMPL & wired inside phaseAttention: scoreCurationCandidates
+    (curator.ts) picks shaping encounters to surface as ThreadTugs; expired unattended
+    tugs -> a "missed" digest entry; demoted (curated-out) candidates -> a digest entry
+    with wasCuratedOut=true. THREAD_TUG_LINGER 3, MAX_CONCURRENT_TUGS 3. Pacing governor
+    (pacingGovernor.ts) fires/queues story_beat encounters — STORY_BEAT_COOLDOWN 12,
+    STORY_BEAT_QUEUE_MAX 3, overflow demotes the ejected beat back to 'shaping'.
+  - THE load-bearing honest call for this page: the DIGEST BUFFER is APPENDED but NOT
+    PRUNED at runtime. appendDigestEntry is wired (orchestrator.ts:1190 + phaseAttention),
+    but pruneDigestBuffer and DIGEST_BUFFER_RETENTION (48) have NO production caller —
+    grep finds them only in digestBuffer.test.ts. The buffer grows unbounded; reads
+    self-limit by lookback window instead (STORY_DIGEST_LOOKBACK_TICKS 36). Flag the
+    prune DESIGN/dormant; do NOT describe a 48-tick rolling window as enforced.
+  - Read the Threads panel IS wired (GameView.tsx:3811, modal at :3007): reads the digest
+    over a chosen window at an essence cost (READ_THREADS_COST_6/12/24/36 = 2/4/8/12,
+    READ_THREADS_COOLDOWN 6). Story-so-far digest (threadDigest.ts / StorySoFarPanel.tsx /
+    useThreadStorySoFar.ts) composes up to STORY_DIGEST_MAX_BEATS 5 beats over the 36-tick
+    lookback, min STORY_DIGEST_MIN_BEATS 2, ranked by BEAT_SIG_* weights; feature-flagged
+    STORY_SO_FAR_DIGEST_ENABLED true.
+  - Notability IMPL: isNotableEntry (attentionTier.ts) — quintessence loss >= 0.3
+    (NOTABLE_QUINTESSENCE_LOSS), |reputation delta| >= 0.3 (NOTABLE_REPUTATION_DELTA),
+    attachment lost, tier promotion, chain completion, or a wound.
+  - Narrative engine (narrative.ts) IMPL: three prose tiers Routine / Notable / Chronicle;
+    SPHERE_VOCABULARY flavors verbs; cultural palettes substitute at 30%. Chronicle tier
+    -> ChronicleEntry held on GameState.chronicleEntries[] (tier-3, end-of-cycle). Four
+    prose pipelines per Docs/canon/prose.md: graph-walking resolvers (proseGenerator/
+    proseResolvers/proseComposer), narrative engine, vignette prose, enrichment (enrichProse).
+  - IPK = Interactive Prose Keyword (src/components/ProseKeyword.tsx), NOT an inference/
+    learning system. canon/prose.md:78 frames it as "the learning engine" in the sense that
+    the player learns the systems by hovering interactive prose keywords (sphere/economy
+    names) instead of ever reading numbers. Keep it plain: IPK = the way prose teaches.
+  - W16 DOES have a UL shard (unlike W15): Docs/ubiquitous-language/Prose.md covers IPK,
+    Chronicle Entry, Narrative Event, Thread Tug, Narrative Lexicon. Cite it as authority.
+-->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --parchment: #f4edd8;
+    --parchment-dark: #e8dfc8;
+    --ink: #2c1810;
+    --ink-light: #5a3d2b;
+    --ink-faint: #8a7060;
+    --gold: #b8860b;
+    --gold-light: #daa520;
+    --card-bg: #fff8e7;
+    --red: #8b2500;
+    --blue: #1a3a5c;
+    --blue-light: #2d5f8a;
+    --purple: #4a2d6a;
+    --green: #2d5a27;
+
+    --flag-impl: #2d5a27;
+    --flag-design: #8a4a00;
+    --flag-open: #4a2d6a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--parchment);
+    color: var(--ink);
+    font-family: 'Crimson Text', Georgia, serif;
+    font-size: 16px;
+    line-height: 1.6;
+    min-height: 100vh;
+    background-image:
+      radial-gradient(ellipse at 20% 50%, rgba(74,45,106,0.05) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 30%, rgba(184,134,11,0.04) 0%, transparent 50%);
+  }
+
+  .page-wrapper { max-width: 900px; margin: 0 auto; padding: 40px 32px 72px; }
+
+  /* ── Header ── */
+  .header { text-align: center; margin-bottom: 40px; padding-bottom: 28px; border-bottom: 2px solid var(--gold); position: relative; }
+  .header::after { content: ''; position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); width: 55%; height: 1px; background: var(--gold-light); }
+  .header .eyebrow { font-family: 'Cinzel', Georgia, serif; font-size: 0.72rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold); margin-bottom: 10px; }
+  .header h1 { font-family: 'Cinzel', Georgia, serif; font-weight: 700; font-size: 2.4rem; color: var(--ink); letter-spacing: 0.05em; margin-bottom: 12px; }
+  .header .tagline { font-size: 1.12rem; color: var(--ink-light); max-width: 64ch; margin: 0 auto; font-style: italic; }
+
+  /* ── Sections ── */
+  .section { margin-bottom: 34px; }
+  .section > h2 { font-family: 'Cinzel', Georgia, serif; font-size: 1.25rem; color: var(--ink); letter-spacing: 0.03em; margin-bottom: 6px; padding-bottom: 6px; border-bottom: 1px solid var(--parchment-dark); }
+  .section > h2 .lead { display: block; font-family: 'Crimson Text', Georgia, serif; font-size: 0.95rem; font-style: italic; font-weight: 400; color: var(--ink-faint); letter-spacing: 0; margin-top: 4px; }
+  .section h3 { font-family: 'Cinzel', Georgia, serif; font-size: 1rem; color: var(--ink-light); letter-spacing: 0.02em; margin: 20px 0 6px; }
+  .section p { margin-bottom: 12px; }
+  .section p .term { font-weight: 600; color: var(--ink); }
+  .section ul { margin: 0 0 14px 0; padding-left: 0; list-style: none; }
+  .section ul li { position: relative; padding-left: 1.3rem; margin-bottom: 8px; }
+  .section ul li::before { content: '◆'; position: absolute; left: 0; top: 0.05rem; color: var(--gold); font-size: 0.7rem; }
+
+  /* ── Ladder (thresholds / tiers / phases) ── */
+  .tiers { margin: 12px 0 18px; }
+  .tier { display: grid; grid-template-columns: 8.4rem 1fr; gap: 0 12px; align-items: baseline; padding: 9px 0; border-bottom: 1px solid var(--parchment-dark); }
+  .tier .name { font-family: 'Cinzel', Georgia, serif; font-size: 0.84rem; color: var(--gold); letter-spacing: 0.04em; }
+  .tier .desc { font-size: 0.94rem; color: var(--ink-light); }
+  .tier .desc .who { font-weight: 600; color: var(--ink); }
+  @media (max-width: 620px) { .tier { grid-template-columns: 1fr; gap: 2px; } }
+
+  /* ── Card grid ── */
+  .card-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 10px 0 18px; }
+  .card-grid.three { grid-template-columns: repeat(3, 1fr); }
+  .card { background: var(--card-bg); border: 1px solid var(--parchment-dark); border-radius: 4px; padding: 11px 14px; border-left: 3px solid var(--gold); }
+  .card.blue { border-left-color: var(--blue-light); }
+  .card.red { border-left-color: var(--red); }
+  .card.green { border-left-color: var(--green); }
+  .card.purple { border-left-color: var(--purple); }
+  .card h4 { font-family: 'Cinzel', Georgia, serif; font-size: 0.84rem; color: var(--ink); margin: 0 0 2px; }
+  .card p { font-size: 0.8rem; color: var(--ink-light); margin: 0; }
+  @media (max-width: 620px) { .card-grid, .card-grid.three { grid-template-columns: 1fr; } }
+
+  /* ── Callouts ── */
+  .callout { background: var(--card-bg); border: 1px solid var(--parchment-dark); border-left: 4px solid var(--gold); border-radius: 4px; padding: 14px 18px; margin: 4px 0 18px; }
+  .callout.blue { border-left-color: var(--blue-light); }
+  .callout.purple { border-left-color: var(--purple); }
+  .callout.red { border-left-color: var(--red); }
+  .callout.green { border-left-color: var(--green); }
+  .callout .callout-title { font-family: 'Cinzel', Georgia, serif; font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 6px; }
+  .callout p:last-child { margin-bottom: 0; }
+
+  /* ── Designer notes ── */
+  .designer { margin-top: 48px; border-top: 2px solid var(--gold); padding-top: 8px; }
+  .designer > summary { list-style: none; cursor: pointer; padding: 16px 4px; display: flex; align-items: baseline; gap: 12px; }
+  .designer > summary::-webkit-details-marker { display: none; }
+  .designer > summary .chev { font-size: 0.8rem; color: var(--gold); transition: transform 0.15s; }
+  .designer[open] > summary .chev { transform: rotate(90deg); }
+  .designer > summary h2 { font-family: 'Cinzel', Georgia, serif; font-size: 1.3rem; color: var(--ink); letter-spacing: 0.03em; }
+  .designer > summary .sub { font-size: 0.9rem; color: var(--ink-faint); font-style: italic; }
+  .designer-body { padding: 4px 4px 8px; }
+  .designer-body h3 { font-family: 'Cinzel', Georgia, serif; font-size: 0.98rem; color: var(--ink-light); margin: 22px 0 8px; }
+  .designer-body p { margin-bottom: 12px; font-size: 0.97rem; }
+  .designer-body ul { margin: 0 0 14px 0; padding-left: 0; list-style: none; }
+  .designer-body ul li { position: relative; padding-left: 1.2rem; margin-bottom: 7px; font-size: 0.97rem; }
+  .designer-body ul li::before { content: '›'; position: absolute; left: 0.15rem; top: 0; color: var(--ink-faint); }
+  code, .mono { font-family: 'JetBrains Mono', monospace; font-size: 0.84em; color: var(--ink); background: rgba(184,134,11,0.10); padding: 0.05rem 0.32rem; border-radius: 3px; word-break: break-word; }
+
+  .flag { font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; letter-spacing: 0.04em; font-weight: 500; padding: 0.08rem 0.4rem; border-radius: 3px; color: #fff; white-space: nowrap; }
+  .flag.impl { background: var(--flag-impl); }
+  .flag.design { background: var(--flag-design); }
+  .flag.open { background: var(--flag-open); }
+
+  table.tunables { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin: 4px 0 18px; }
+  table.tunables th { text-align: left; font-family: 'Cinzel', Georgia, serif; font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-faint); padding: 6px 10px 6px 0; border-bottom: 1px solid var(--parchment-dark); }
+  table.tunables td { padding: 7px 10px 7px 0; border-bottom: 1px solid var(--parchment-dark); vertical-align: top; color: var(--ink-light); }
+  table.tunables td:first-child { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--ink); white-space: nowrap; }
+
+  .foot { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--parchment-dark); font-size: 0.85rem; color: var(--ink-faint); font-style: italic; }
+  a { color: var(--blue-light); text-decoration: none; border-bottom: 1px solid rgba(45,95,138,0.35); }
+  a:hover { color: var(--blue); border-bottom-color: var(--blue); }
+</style>
+</head>
+<body>
+<!--WIKI-NAV-->
+<style>
+  .wiki-nav { font-family: 'Cinzel', Georgia, serif; background: #2c1810; border-bottom: 2px solid #b8860b; padding: 0.6rem 1.2rem; display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.4rem 1.1rem; }
+  .wiki-nav__brand { color: #daa520; font-weight: 700; letter-spacing: 0.04em; margin-right: 0.6rem; font-size: 0.95rem; }
+  .wiki-nav__link { color: #f4edd8; text-decoration: none; font-size: 0.85rem; letter-spacing: 0.02em; padding: 0.15rem 0.1rem; border-bottom: 2px solid transparent; transition: color 0.15s, border-color 0.15s; }
+  .wiki-nav__link:hover { color: #daa520; }
+  .wiki-nav__link.is-active { color: #daa520; border-bottom-color: #b8860b; font-weight: 700; }
+</style>
+<nav class="wiki-nav" aria-label="Design Reference Wiki">
+  <span class="wiki-nav__brand">⌖ Design Reference Wiki</span>
+  <a class="wiki-nav__link" href="design-wiki.html">Design Wiki</a>
+  <a class="wiki-nav__link" href="run-lifecycle-reference.html">A Run, Start to Finish</a>
+      <a class="wiki-nav__link" href="cosmology-reference.html">Reaches, Spheres &amp; Quintessence</a>
+      <a class="wiki-nav__link" href="turn-structure-reference.html">The Three-Beat Turn</a>
+      <a class="wiki-nav__link" href="divine-actions-reference.html">Divine Actions &amp; Prerequisites</a>
+      <a class="wiki-nav__link" href="threads-court-reference.html">Threads, the Court &amp; The First</a>
+      <a class="wiki-nav__link" href="essence-control-reference.html">Essence, Control &amp; Sustained Power</a>
+      <a class="wiki-nav__link" href="encounters-manual-reference.html">Encounters &amp; Aftermath</a>
+      <a class="wiki-nav__link" href="clocks-reference.html">Doom, the Mandate &amp; Omens</a>
+      <a class="wiki-nav__link" href="interface-reference.html">Reading the Interface</a>
+      <a class="wiki-nav__link" href="agents-reference.html">The Mortals</a>
+      <a class="wiki-nav__link" href="factions-cultures-reference.html">Factions, Cultures &amp; Secrets</a>
+      <a class="wiki-nav__link" href="world-map-reference.html">The World: Hexes, Terrain &amp; Sight</a>
+      <a class="wiki-nav__link" href="settlements-economy-reference.html">Settlements, Prosperity &amp; Trade</a>
+      <a class="wiki-nav__link" href="livelihoods-reference.html">Livelihoods &amp; the Resource Web</a>
+      <a class="wiki-nav__link" href="armies-battles-reference.html">Armies, Battles &amp; Lairs</a>
+      <a class="wiki-nav__link" href="stealth-rivals-reference.html">Stealth, Detection &amp; Rival Gods</a>
+      <a class="wiki-nav__link is-active" href="attention-story-reference.html" aria-current="page">Attention, the Digest &amp; the Chronicle</a>
+      <a class="wiki-nav__link" href="encounters-agents-reference.html">Encounters, Agents &amp; Resolution</a>
+      <a class="wiki-nav__link" href="tick-cycle-reference.html">Tick Cycle Reference</a>
+      <a class="wiki-nav__link" href="action-catalog.html">Action Catalog</a>
+</nav>
+<!--/WIKI-NAV-->
+<div class="page-wrapper">
+
+  <header class="header">
+    <div class="eyebrow">Game Manual · Story Engines</div>
+    <h1>Attention, the Digest &amp; the Chronicle</h1>
+    <p class="tagline">You are one god watching a whole living world. You cannot see all of it at once — and the game is built around that limit, not in spite of it. What you miss is kept for you; what matters is brought to you; and everything, watched or not, is written down.</p>
+  </header>
+
+  <!-- ══════════════════ HOW IT PLAYS ══════════════════ -->
+
+  <section class="section">
+    <h2>You cannot watch everything<span class="lead">Attention is a pool that fills slowly and empties when you lean in. It is the game's honest answer to a world too large for one pair of eyes: you choose the few moments to truly attend, and trust the rest to unfold without you.</span></h2>
+    <p>A world of hundreds of mortals is always moving, and you are one witness. Threadbearer does not ask you to keep up with all of it. Instead it gives you a small, renewing pool of <span class="term">attention</span> — the measure of how much you can lean into the world right now. It refills a little every turn, up to a modest ceiling, and it drains when you choose to attend a moment closely rather than let it pass.</p>
+    <p>Because attention is scarce, every choice to look is a real choice. Leaning into a hard, dangerous encounter costs more than a small one. And it is <span class="term">cheaper to attend the mortals closest to you</span>: turning your gaze on your First — the mortal at the heart of your story — costs half what it does to attend someone you merely watch from afar. The court you have built shapes what you can afford to notice.</p>
+    <div class="callout purple">
+      <div class="callout-title">Doing nothing is always allowed</div>
+      <p>The pool is not a bar you must keep full or empty. Letting a turn pass without spending attention is a legitimate move — the world runs on, the digest fills, and your pool climbs back toward its ceiling. Scarcity here is a lens that makes the moments you <em>do</em> choose feel chosen, not a punishment for looking away.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>When a thread strains, it tugs<span class="lead">You do not have to hunt the world for the moments worth your attention. A curator watches the threads on your behalf and surfaces the few that matter as gentle tugs — and quietly files the rest into the digest so nothing is lost.</span></h2>
+    <p>Left to raw chance, the moments worth attending would be buried under the noise of an entire simulated world. So a hidden <span class="term">curator</span> does the sifting for you. Each turn it looks over the encounters forming on the mortals you are threaded to, weighs them — how close that mortal is to you, whether the moment advances a longer story, whether it touches your ambitions — and lifts the strongest few into view as <span class="term">thread tugs</span>: a felt pull toward a life that has reached a moment.</p>
+    <p>A tug does not wait forever. It <span class="term">lingers a few turns</span> and then lets go; you can hold only a handful at once. If you attend it, you step into that moment. If you let it expire, the encounter still resolves on its own at a quiet baseline — and it is written into the digest as a moment you did not reach, so you can find it later. Even the moments the curator decides <em>not</em> to raise are filed away rather than erased.</p>
+    <p>A rarer kind of moment overrides the ordinary rhythm entirely. When a story reaches a genuine turning point — a chain of encounters coming to its head, several mortals converging, the Doom clock crossing a stage — the curated moment is promoted to a <span class="term">story beat</span>, a spotlighted scene the pacing holds space for so it does not collide with another. Beats are rationed on a cooldown so they land like chapter breaks, not a stream.</p>
+  </section>
+
+  <section class="section">
+    <h2>The digest — what happened while you looked away<span class="lead">Everything you did not attend is kept. The digest is the world's memory of the turns you spent elsewhere, and you can spend a little essence to sit down and read it — for the whole world, or for a single thread.</span></h2>
+    <p>Every unattended moment — the tugs that expired, the encounters the curator set aside, the quiet resolutions across the map — is recorded in the <span class="term">digest</span>: a running account of what the world did while your gaze was elsewhere. You are never told you missed something and left to wonder what. It is all there, waiting.</p>
+    <p>You reach it through <span class="term">Read the Threads</span>, a divine act that costs a little essence and shows you the recent past. You choose how far back to look — a short window is cheap, a long one costs more — and the further you reach, the more of the world's quiet life you take in at once. It is a deliberate pause: the god sitting down to catch up on the turns spent looking away.</p>
+    <p>For a single mortal, the same record composes into a <span class="term">story so far</span> — a short, ordered account of that thread's recent life, drawn from its most significant beats: the wounds, the discoveries, the turns that changed them. A run against a hundred lives becomes, thread by thread, a set of small stories you can read whenever you return to a face you care about.</p>
+    <div class="callout green">
+      <div class="callout-title">Honest scope — the digest keeps everything, on purpose</div>
+      <p>Today the digest holds the full record of the run — it is not yet trimmed to a rolling window as it grows, so the reading views deliberately limit themselves to a recent span (a few game days) rather than the buffer doing the trimming. In practice you read the recent past; the long-tail record simply sits behind it. The Designer Notes below say exactly which part of this is shipped and which is still on the drawing board.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>The chronicle — the book of your run<span class="lead">Beneath the tugs and the digest, the game is always writing. Ordinary turns become plain lines; notable turns get a richer telling; and the true turning points are set down in the chronicle — the run's book, remembered even after the world ends.</span></h2>
+    <p>Threadbearer never shows you a number where it can show you a moment. Every event the world produces is turned into prose — and how richly depends on how much it matters. A routine happening becomes a <span class="term">plain line</span> in the feed. Something <span class="term">notable</span> — a mortal wounded, an attachment lost, a rank won, a hard loss of standing — earns a fuller, more coloured telling. And the genuine turning points of a run are set down in the <span class="term">chronicle</span>: the lasting record of who your world became, kept even after the run is over.</p>
+    <p>The prose is not generic. It takes its colour from the <span class="term">sphere</span> the moment moved through, so a deed of Iron reads differently from one of Veil; and where a mortal belongs to a culture, the telling picks up that culture's voice. This is the <span class="term">narrative feed</span> — the surface where the run tells itself back to you, turn by turn, as a story rather than a ledger.</p>
+    <p>Woven through that prose are <span class="term">interactive keywords</span> — the names of spheres, resources, and forces, rendered so you can hover or tap them to learn what they mean. They are how the game teaches you its own systems: not a manual you must go read, but the words in the story itself, ready to explain themselves. You learn Threadbearer by reading it.</p>
+    <div class="callout blue">
+      <div class="callout-title">Three ways the world tells itself</div>
+      <p>The same event can be told plainly, told richly, or set down for keeps — the game chooses the register to match the weight of the moment. Most turns are plain; the striking ones are coloured; the pivotal ones become chronicle. The point is that <em>nothing</em> is reduced to a stat readout: the story is the interface.</p>
+    </div>
+  </section>
+
+  <!-- ══════════════════ DESIGNER NOTES ══════════════════ -->
+
+  <details class="designer" open>
+    <summary>
+      <span class="chev">▶</span>
+      <span>
+        <h2>Designer Notes</h2>
+        <span class="sub">A renewing attention pool and a curator that surfaces thread tugs (both IMPL &amp; wired in phaseAttention); a digest that is appended every tick but not yet pruned at runtime (append IMPL, prune DESIGN/dormant); and a three-tier prose engine feeding the narrative feed and chronicle, with IPK as the learning surface (IMPL) — honest status flags throughout.</span>
+      </span>
+    </summary>
+    <div class="designer-body">
+
+      <p>Status flags follow the rulebook convention: <span class="flag impl">IMPL</span> shipped and wired, <span class="flag design">DESIGN</span> specified but partial or dormant, <span class="flag open">OPEN</span> an unresolved question (referenced, never minted here). Sources: <code>src/engine/phaseAttention.ts</code>, <code>src/engine/attentionPool.ts</code>, <code>src/engine/attentionTier.ts</code>, <code>src/engine/curator.ts</code>, <code>src/engine/pacingGovernor.ts</code>, <code>src/engine/digestBuffer.ts</code>, <code>src/engine/threadDigest.ts</code>, <code>src/engine/narrative.ts</code>, <code>src/engine/proseGenerator.ts</code> / <code>proseResolvers.ts</code> / <code>proseComposer.ts</code> / <code>proseEnrichment.ts</code>, <code>src/data/attention-constants.ts</code>, <code>src/data/narrative-content.ts</code>, <code>src/types/attention.ts</code>, <code>src/types/narrative.ts</code>. Design doc: <code>Docs/plans/2026-04-05-attention-tier-model-design.md</code>.</p>
+
+      <div class="callout red">
+        <div class="callout-title">The load-bearing honest call for this page</div>
+        <p>The <strong>digest buffer accumulates but is not pruned at runtime.</strong> <code>appendDigestEntry</code> is wired (<code>orchestrator.ts:1190</code> and inside <code>phaseAttention</code>), but <code>pruneDigestBuffer</code> and <code>DIGEST_BUFFER_RETENTION</code> (<code>48</code>) have <strong>no production caller</strong> — grep finds them only in <code>digestBuffer.test.ts</code>. The buffer grows for the length of the run; the reading surfaces self-limit by lookback window (<code>STORY_DIGEST_LOOKBACK_TICKS 36</code>) rather than the buffer trimming itself. Treat the 48-tick retention as <span class="flag design">DESIGN</span> / dormant — the constant and the pure prune function exist and are unit-tested, but nothing calls them each tick. The player layer above is written around what actually runs (windowed reads over an untrimmed record).</p>
+      </div>
+
+      <h3>Attention pool — renewing, node-held <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li><code>phaseAttention(state, templates, rng)</code> runs once per tick (<code>orchestrator.ts:2669</code>). It reads/initialises the pool from the ascendant <em>node</em> properties (<code>attentionPool</code> / <code>attentionCapacity</code> / <code>attentionRegen</code>), regens via <code>regenAttention</code> (<code>attentionPool.ts</code>: <code>min(pool + regen, capacity)</code>), and writes back in place per the graph-mutation convention.</li>
+        <li>Ceiling <code>ATTENTION_BASE_CAPACITY 6</code>, regen <code>ATTENTION_BASE_REGEN 0.4</code>/tick. Visual bands (<code>attentionPoolVisualState</code>): focused / busy / strained thresholds at fill fractions <code>0.6 / 0.3 / 0.1</code>.</li>
+        <li>Attend cost = threat base × court multiplier (<code>attentionPool.ts</code>). Base: <code>ATTEND_COST_MODERATE 1.0</code>, <code>ATTEND_COST_HARD 1.5</code> (deadly shares the hard base), <code>ATTEND_COST_STORY_BEAT 2.0</code>. Court multiplier: <code>the_first 0.5</code>, <code>retinue 1.0</code>, <code>watched 1.5</code> — attending your First is half price; dormant threads generate nothing.</li>
+      </ul>
+
+      <h3>Attention tiers &amp; mid-encounter promotion <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li><code>resolveEffectiveTier(intrinsicTier, courtPosition)</code> (<code>attentionTier.ts</code>) maps an encounter's intrinsic tier through the agent's court position via <code>TIER_MATRIX</code>: <strong>watched</strong> demotes one tier (<code>story_beat→shaping</code>, <code>shaping→background</code>), <strong>retinue</strong> preserves, <strong>the_first</strong> promotes <code>background→shaping</code>. Dormant or unthreaded → <code>'invisible'</code>.</li>
+        <li><code>checkMidEncounterPromotion</code> can lift a tier during resolution: tier-1 triggers (<code>wound</code>, <code>discovery</code>, <code>chainAdvance</code>, <code>tierPromotion</code>) promote <code>background→shaping</code>; tier-2 triggers (<code>chainCulmination</code>, <code>multiAgentConvergence</code>, <code>doomThreshold</code>, <code>battleEscalation</code>) promote any tier → <code>story_beat</code>. <code>story_beat</code> is the ceiling.</li>
+      </ul>
+
+      <h3>Curator &amp; thread tugs <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li>Inside <code>phaseAttention</code>: shaping-tier unified actions (and legacy <code>encounterProgress</code>) on threaded, non-dormant agents become <code>CurationCandidate</code>s scored by <code>scoreCurationCandidates</code> (<code>curator.ts</code>) — signals include court position, recency, chain-stage (<code>classifyChainStage</code>), faction-thread count, and ambition alignment (<code>agentPursuesReach</code>). The top set become <code>ThreadTug</code> records.</li>
+        <li>Tugs linger <code>THREAD_TUG_LINGER 3</code> ticks; the player holds at most <code>MAX_CONCURRENT_TUGS 3</code>. An expired <em>unattended</em> tug writes a "missed" <code>DigestEntry</code>; a curated-out (demoted) candidate writes a <code>DigestEntry</code> with <code>wasCuratedOut=true</code>. Emits <code>attention_pool</code> and <code>curator_decision</code> traces.</li>
+        <li><strong>Pacing governor</strong> (<code>pacingGovernor.ts</code>): <code>story_beat</code>-tier encounters fire immediately if the slot is open (<code>canFireStoryBeat</code>) or queue (<code>enqueueStoryBeat</code>/<code>dequeueStoryBeat</code>). <code>STORY_BEAT_COOLDOWN 12</code>, <code>STORY_BEAT_QUEUE_MAX 3</code>; overflow demotes the ejected beat back to <code>shaping</code> for curator pickup (<code>STORY_BEAT_QUEUE_OVERFLOW_DEMOTE true</code>). <strong>Note the 1-tick delay:</strong> <code>phaseAttention</code> runs before <code>phaseAgentDecision</code>, so encounters created this tick surface next tick — intentional per the design doc.</li>
+      </ul>
+
+      <h3>Digest &amp; Read the Threads <span class="flag impl">IMPL</span> (append + read) · <span class="flag design">DESIGN</span> (prune) </h3>
+      <ul>
+        <li><code>digestBuffer.ts</code> exposes <code>appendDigestEntry</code> (wired), plus pure <code>pruneDigestBuffer</code> and <code>queryDigest</code>. Prune is <strong>not wired</strong> (see the red callout) — <code>DIGEST_BUFFER_RETENTION 48</code> is dormant.</li>
+        <li><code>ReadTheThreadsPanel</code> (<code>GameView.tsx:3811</code>, modal registered <code>:3007</code>) reads the digest over a chosen window at an essence cost: <code>READ_THREADS_COST_6/12/24/36 = 2/4/8/12</code>, gated by <code>READ_THREADS_COOLDOWN 6</code>.</li>
+        <li>Per-thread <strong>story-so-far</strong> (<code>threadDigest.ts</code> → <code>StorySoFarPanel.tsx</code> via <code>useThreadStorySoFar.ts</code>): composes up to <code>STORY_DIGEST_MAX_BEATS 5</code> beats over the <code>STORY_DIGEST_LOOKBACK_TICKS 36</code> window (min <code>STORY_DIGEST_MIN_BEATS 2</code> to render), ranked by <code>BEAT_SIG_*</code> weights (notable 0.40 dominant; capability / attachment / quintessence / recency 0.15 each), with <code>BEAT_SIG_PIVOT_MIN 0.55</code> distinguishing pivot from compound beats. LRU cache <code>STORY_DIGEST_CACHE_SIZE 32</code>; master flag <code>STORY_SO_FAR_DIGEST_ENABLED true</code>.</li>
+        <li><strong>Notability</strong> (<code>isNotableEntry</code>, <code>attentionTier.ts</code>): quintessence loss ≥ <code>NOTABLE_QUINTESSENCE_LOSS 0.3</code>, |reputation delta| ≥ <code>NOTABLE_REPUTATION_DELTA 0.3</code>, any attachment lost, a tier promotion, a chain completion, or a wound.</li>
+      </ul>
+
+      <h3>Narrative feed, chronicle &amp; the prose pipelines <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li><code>narrative.ts</code> generates three prose tiers: <strong>Routine</strong> (template-stitched fragments), <strong>Notable</strong> (enhanced templates with conditional clauses), <strong>Chronicle</strong> (structured, highest weight). <code>SPHERE_VOCABULARY</code> flavors verbs/adjectives by sphere; cultural palettes substitute at ~30% (<code>culturalProse.ts</code>).</li>
+        <li>Chronicle-tier events become <code>ChronicleEntry</code> records on <code>GameState.chronicleEntries[]</code> (tier-3, retained for the end-of-cycle chronicle). The narrative feed and recent-activity surfaces (<code>NarrativeFeed.tsx</code>, <code>RecentActivityLog.tsx</code>, <code>ChroniclePanel.tsx</code>, <code>HexChronicle.tsx</code>) render them.</li>
+        <li>Four composing pipelines (see <code>Docs/canon/prose.md</code>): graph-walking resolvers (<code>proseGenerator.ts</code> / <code>proseResolvers.ts</code> / <code>proseComposer.ts</code>), the narrative engine, vignette prose (Scene / Lens / Stakes / Forecast), and <code>enrichProse()</code> (<code>proseEnrichment.ts</code>) for placeholders (<code>{name}</code>, <code>{ally}</code>, <code>{artifact}</code>) and conditional blocks.</li>
+        <li><strong>IPK = Interactive Prose Keyword</strong> (<code>src/components/ProseKeyword.tsx</code>) — sphere and economy names rendered as hover/tap-to-explain keywords. Per <code>canon/prose.md</code> this <em>is</em> "the learning engine": the player learns the systems through interactive keywords in the prose, never through raw numbers. IPK labels stay mechanical-plain (register hard rule). Not an inference / player-modelling system — the name means the interactive keyword, not "inferred knowledge".</li>
+      </ul>
+
+      <h3>Where it runs</h3>
+      <ul>
+        <li>Per-tick attention work is a single phase — <code>phaseAttention</code> (<code>orchestrator.ts:2669</code>), which runs before <code>phaseAgentDecision</code> so newly-created encounters surface one tick later. Digest entries are appended both there and during encounter resolution (<code>orchestrator.ts:1190</code>). Prose is generated on demand by the feed/chronicle surfaces, not on a dedicated tick phase.</li>
+      </ul>
+
+      <h3>Constants</h3>
+      <table class="tunables">
+        <thead><tr><th>Constant</th><th>Value</th><th>Purpose · file</th></tr></thead>
+        <tbody>
+          <tr><td>ATTENTION_BASE_CAPACITY</td><td>6</td><td>Max attention the player holds · <code>attention-constants.ts</code></td></tr>
+          <tr><td>ATTENTION_BASE_REGEN</td><td>0.4</td><td>Attention regained per tick · <code>attention-constants.ts</code></td></tr>
+          <tr><td>ATTEND_COST_MODERATE / HARD / STORY_BEAT</td><td>1.0 / 1.5 / 2.0</td><td>Base attend cost by difficulty · <code>attention-constants.ts</code></td></tr>
+          <tr><td>COURT_COST_MULTIPLIER_FIRST / RETINUE / WATCHED</td><td>0.5 / 1.0 / 1.5</td><td>Attend-cost multiplier by court position · <code>attention-constants.ts</code></td></tr>
+          <tr><td>THREAD_TUG_LINGER</td><td>3</td><td>Ticks a tug lingers before expiring · <code>attention-constants.ts</code></td></tr>
+          <tr><td>MAX_CONCURRENT_TUGS</td><td>3</td><td>Simultaneous tugs the player can hold · <code>attention-constants.ts</code></td></tr>
+          <tr><td>STORY_BEAT_COOLDOWN</td><td>12</td><td>Ticks between story beats on a thread · <code>attention-constants.ts</code></td></tr>
+          <tr><td>STORY_BEAT_QUEUE_MAX</td><td>3</td><td>Max queued story beats before overflow · <code>attention-constants.ts</code></td></tr>
+          <tr><td>DIGEST_BUFFER_RETENTION</td><td>48</td><td>Intended retention window (DESIGN — prune unwired) · <code>attention-constants.ts</code></td></tr>
+          <tr><td>READ_THREADS_COOLDOWN</td><td>6</td><td>Ticks between Read-the-Threads uses · <code>attention-constants.ts</code></td></tr>
+          <tr><td>READ_THREADS_COST_6 / 12 / 24 / 36</td><td>2 / 4 / 8 / 12</td><td>Essence to read a digest window · <code>attention-constants.ts</code></td></tr>
+          <tr><td>STORY_DIGEST_LOOKBACK_TICKS</td><td>36</td><td>Story-so-far lookback (3 game days) · <code>attention-constants.ts</code></td></tr>
+          <tr><td>STORY_DIGEST_MAX_BEATS / MIN_BEATS</td><td>5 / 2</td><td>Beats per composed story · <code>attention-constants.ts</code></td></tr>
+          <tr><td>BEAT_SIG_NOTABLE</td><td>0.40</td><td>Dominant beat-significance weight · <code>attention-constants.ts</code></td></tr>
+          <tr><td>BEAT_SIG_CAPABILITY / ATTACHMENT / QUINTESSENCE / RECENCY</td><td>0.15 each</td><td>Secondary significance weights · <code>attention-constants.ts</code></td></tr>
+          <tr><td>BEAT_SIG_PIVOT_MIN</td><td>0.55</td><td>Min significance for a pivot beat · <code>attention-constants.ts</code></td></tr>
+          <tr><td>NOTABLE_QUINTESSENCE_LOSS / NOTABLE_REPUTATION_DELTA</td><td>0.3 / 0.3</td><td>Notability thresholds · <code>attention-constants.ts</code></td></tr>
+        </tbody>
+      </table>
+
+      <h3>Canon &amp; terminology</h3>
+      <ul>
+        <li>Prose spec authority: <code>Docs/canon/prose.md</code> (four pipelines, three authoring skills, the register model). Design doc for attention/digest: <code>Docs/plans/2026-04-05-attention-tier-model-design.md</code>.</li>
+        <li>UL: this page <em>does</em> have shard coverage — <code>Docs/ubiquitous-language/Prose.md</code> is authoritative for <em>IPK</em>, <em>Chronicle Entry</em>, <em>Narrative Event</em>, <em>Thread Tug</em>, and <em>Narrative Lexicon</em>. Attention-pool / digest / curator terms are engine-side (design-doc authority) with no dedicated shard yet — a minor gap, noted not opened.</li>
+        <li>Adjacent Manual pages: <a href="turn-structure-reference.html">The Three-Beat Turn</a> (the scan → curated moment → aftermath rhythm attention serves), <a href="threads-court-reference.html">Threads, the Court &amp; The First</a> (court positions that set attend cost and tier), <a href="encounters-manual-reference.html">Encounters &amp; Aftermath</a> (the moments a tug leads into), <a href="essence-control-reference.html">Essence, Control &amp; Sustained Power</a> (the essence Read the Threads spends), <a href="clocks-reference.html">Doom, the Mandate &amp; Omens</a> (the doom threshold that promotes a beat). Deep dive: <a href="encounters-agents-reference.html">Encounters, Agents &amp; Resolution</a>. Game title in player copy: <strong>Threadbearer</strong>.</li>
+      </ul>
+
+      <h3>Open questions <span class="flag open">OPEN</span></h3>
+      <ul>
+        <li>None minted here. The clearest honest gap is the unwired digest prune — <code>pruneDigestBuffer</code> / <code>DIGEST_BUFFER_RETENTION</code> are authored and unit-tested but have no per-tick caller, so the buffer is untrimmed at runtime and reads self-limit by lookback window. That is implementation debt, referenced not opened. New open questions surface in chat and land in the rulebook's Open Questions list, never on this page.</li>
+      </ul>
+
+    </div>
+  </details>
+
+  <div class="foot">
+    Game Manual Wiki · W16 (THR-601). Player layer describes current shipped behaviour — the attention pool, curator, thread tugs, story-so-far digest, and the three-tier prose engine are all <span class="flag impl">IMPL</span> and wired. The digest's per-tick prune is <span class="flag design">DESIGN</span>-only (append ships, retention is dormant) and flagged as such. Terminology is UL-exact where the UL Prose shard covers it. You cannot watch everything — so the world keeps what you miss and writes down what you see.
+  </div>
+
+</div>
+</body>
+</html>
