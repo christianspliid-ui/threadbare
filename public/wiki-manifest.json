@@ -139,6 +139,14 @@
       "sources": ["src/engine/phaseAttention*.ts", "src/engine/attentionTier*.ts", "src/engine/digestBuffer*.ts", "src/engine/narrative*.ts", "src/engine/prose*.ts"]
     },
     {
+      "id": "twilight-worldsoul-reference",
+      "file": "twilight-worldsoul-reference.html",
+      "title": "Twilight, Echoes & the World-Soul",
+      "blurb": "How a run ends and becomes an ingredient of the next — the Unmaking that begins when the Doom clock expires (a twilight you witness, not fight); the harvest that preserves the age's most significant Legacy (mortals), Monument (places), and Relic (artifacts) echoes, scaled by whether the age closed triumphant, somber, or bittersweet; the World-Soul that carries those echoes across cycles as they degrade and binds each run into a chronicle volume; and the next world as a response, not a sequel. Highest-DESIGN-density page: weakened twilight play, divine-echo selection, echoes seeding the next world, a re-drawn cosmos, and the whole Fundament/Resonance ledger are designed but not yet wired — flagged throughout.",
+      "section": "Manual",
+      "sources": ["src/types/worldSoul.ts", "src/engine/worldSoul.ts", "src/engine/phaseSphereAggregation*.ts", "src/engine/cycleEnd.ts", "src/engine/echo.ts", "src/types/echo.ts", "src/engine/chronicle.ts", "src/components/Game/HarvestScreen.tsx"]
+    },
+    {
       "id": "encounters-agents-reference",
       "file": "encounters-agents-reference.html",
       "title": "Encounters, Agents & Resolution",
