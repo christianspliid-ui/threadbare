@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-07-18 (light refresh by the new hourly `keep-work-flowing-cc` CC task — THR-650; last full rebuild was the 2026-06-23 retro)
+**Last updated:** 2026-07-18, 11:02 local (light refresh by the hourly `keep-work-flowing-cc` CC task; last full rebuild was the 2026-06-23 retro)
 **Owner of items below:** Christian. Everyone else's blockers go in Linear or `Docs/impediments.md`.
 **Refresh cadence:** The hourly `keep-work-flowing-cc` scheduled task keeps this current (prunes resolved items, adds newly-surfaced Christian-owned ones); the `retrospective` skill still does the deep periodic rebuild. This is the slow-moving standing-asks list — the fresh-this-hour view is [`Design/briefing.md`](briefing.md).
 
@@ -19,16 +19,21 @@ When an item resolves: delete it from this file, mark the corresponding impedime
 
 ---
 
-## 1. Refresh the home worktree + confirm "This machine" scheduled tasks are firing · WILL NOT SELF-HEAL
+## 1. Rescue + refresh the home worktree — it now has unshipped commits, not just staleness · WILL NOT SELF-HEAL
 
-**Status:** Open · home tree still stale — 2026-07-18 freshness ping: 37 commits behind `origin/main`, on feature branch `claude/sad-bartik-421eef`, with uncommitted changes (see item #3). Persisting since the 06-23 retro.
-**Source:** 2026-06-23 retro + 2026-07-18 `keep-work-flowing-cc` freshness ping (retro E1)
+**Status:** Open · worse than last cycle. 2026-07-18 11:02 freshness ping: 45 commits behind `origin/main` (was 37), `HEAD` **detached** (not on any branch — was on `claude/sad-bartik-421eef` last cycle), plus 19 uncommitted files. The detached tip (`053c867a`) carries **4 commits that never reached `origin/main`**, including the full `Docs/plans/2026-07-17-pure-claude-code-migration.md` spec that THR-648–655 all point to, its brainstorm companion, and `Docs/plans/2026-07-05-entity-visual-header.md`. None of the three exist on `origin/main` today.
+**Source:** 2026-06-23 retro + 2026-07-18 `keep-work-flowing-cc` freshness ping (retro E1), escalated this cycle after tracing the detached tip
 
-**Fix — two parts.**
-- **Refresh the tree:** `git fetch && git pull` on the home worktree (or `git fetch && git rebase origin/main` if on a feature branch) before the next design session.
-- **Verify the schedulers:** confirm `weekly-workflow-retro` (and `keep-work-flowing`, `daily-backlog-grooming`, the other "This machine" tasks) are still scheduled and that the machine was powered on during their windows. These run on your machine; when it's off they skip silently with no heartbeat.
+**Fix — order matters, rescue before refresh.**
+```
+cd C:\Users\chris\Dev\Projects\TheFantasyWorldSimulator
+git branch rescue/2026-07-17-detached-plans 053c867a
+git switch main
+git pull
+```
+Then: open a normal PR landing the 3 plan docs from `rescue/2026-07-17-detached-plans` onto `main` (a design session can do this), and triage the 19 other uncommitted files (item #3). Separately, verify the schedulers: confirm `weekly-workflow-retro` and the other "This machine" tasks are still scheduled and the machine was on during their windows.
 
-**What breaks if not done.** Any agent starting design on the stale tree risks building on ~11-day-old state — exactly what the THR-391 freshness guard exists to catch. And without a per-task heartbeat we can't tell "machine was off" from "task broke" — the 4-week retro gap is the symptom, and the two newest impediments (#140, #141) sat unsurfaced by any retro until 06-23.
+**What breaks if not done.** Any agent starting design on this tree risks building on 45-commit-old state — and worse, the plan doc six Linear tickets already reference as their spec doesn't exist on `main` at all, only on this one machine, one `git switch` away from becoming unreachable.
 
 ---
 
@@ -45,10 +50,10 @@ When an item resolves: delete it from this file, mark the corresponding impedime
 
 ---
 
-## 3. Triage 8+ orphan uncommitted changes in working trees · WILL NOT SELF-HEAL
+## 3. Triage orphan uncommitted changes in working trees · WILL NOT SELF-HEAL
 
-**Status:** Open · ~60 days
-**Source:** Impediment #59
+**Status:** Open · ~60 days · 19 non-`.codesight` files uncommitted on the home tree as of 2026-07-18 (mostly `Docs/plans/` drafts and `.intent-proposals/`)
+**Source:** Impediment #59 + 2026-07-18 `keep-work-flowing-cc` freshness ping
 
 **Fix.** Run `git status` on `main`; for each tracked-but-uncommitted file, attribute it to a Linear issue (commit with `Fixes THR-XX`) or `git checkout --` discard. Untracked files: same triage — `git add` + commit if intentional, `rm` if not.
 
@@ -58,21 +63,11 @@ When an item resolves: delete it from this file, mark the corresponding impedime
 
 ---
 
-## 4. Confirm whether Linear-from-scheduled-context is now reliable · INFORMATIONAL
-
-**Status:** Trending resolved · Linear MCP has now been reachable from scheduled/autonomous CC context on 2026-06-23 and again 2026-07-18 (this `keep-work-flowing-cc` run queried the board and claimed an issue from a scheduled context without issue). Two clean data points; keep the hedge one more cycle, then close.
-**Source:** 2026-06-23 retro (Ask #4) + 2026-07-18 scheduled-context confirmation
-
-**Fix.** Confirm whether the Linear MCP is dependably reachable from scheduled/autonomous contexts. If reliable, Cowork can self-file the small encodable experiments (dashboard-commit wiring, etc.) instead of asking, and drop the "needs-Linear-verification" hedge. If it's intermittent, say so and the hedge stays the norm.
-
-**What breaks if not done.** Scheduled Cowork/retro runs keep hedging every conclusion that depends on live queue state, and keep deferring small self-fileable fixes to a human instead of filing them directly.
-
----
-
 ## Resolved this period
 
 - **2026-06-23 — `LINEAR_API_KEY` set in the Codex automation environment** (was item #1; impediment #141, 17 recurrences). Confirmed by Christian same day the retro surfaced it. _Superseded 2026-06-23 by the full Codex-lane retirement (THR-486): there is now a single Opus executor and one `Ready for Dev` queue, so the Codex-specific unblock is moot. Kept for the audit trail; safe to prune at the next full retro rebuild._
 - **2026-06-23 — GitHub Pro / branch protection resolved** (was item #4 in the prior seed; impediment #56). Branch protection is now active on `main` with `Test · Typecheck · Build` as a required status check (THR-282 shipped 2026-04-30). The "CI stays advisory because branch protection can't be enforced" concern is closed. To be removed on next retro day.
+- **2026-07-18 — Linear-from-scheduled-context confirmed reliable** (was item #4; three clean data points now: 2026-06-23, and two `keep-work-flowing-cc` runs on 2026-07-18). The hedge is dropped — scheduled/autonomous CC sessions can trust the Linear MCP without caveating conclusions on it.
 
 ---
 
