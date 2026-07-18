@@ -123,6 +123,14 @@
       "sources": ["src/engine/armyMovement.ts", "src/engine/armyAttrition.ts", "src/engine/armySpawning.ts", "src/engine/armyNotifications.ts", "src/engine/battleResolution.ts", "src/engine/battleAftermath.ts", "src/engine/battleSpotlights.ts", "src/engine/siegeResolution.ts", "src/engine/lairEscalation.ts", "src/engine/lairSeeding.ts", "src/types/army.ts", "src/types/battle.ts", "src/data/army-encounter-content.ts", "src/data/siege-encounter-content.ts", "src/data/battle-spotlight-content.ts"]
     },
     {
+      "id": "stealth-rivals-reference",
+      "file": "stealth-rivals-reference.html",
+      "title": "Stealth, Detection & Rival Gods",
+      "blurb": "The two audiences that watch every divine act — mortals whose awareness of you slowly grows, and rival gods who scan the regions for a rising power. How region-level detection pressure climbs with your louder acts and fades when you go quiet (crossing the top seeds a rival strike); the generated rivals (never a fixed pantheon) with their four temperaments and four-phase schemes you can counter; and the hidden marks and ageing intelligence that wait beneath the surface. Honest scope: the finer per-mortal suspicion ladder is designed but dormant; region pressure is what ships.",
+      "section": "Manual",
+      "sources": ["src/engine/stealth*.ts", "src/engine/rival*.ts", "src/engine/phaseHiddenMarkDecay*.ts", "src/engine/phaseIntelligenceDecay*.ts", "src/data/rival-content.ts"]
+    },
+    {
       "id": "encounters-agents-reference",
       "file": "encounters-agents-reference.html",
       "title": "Encounters, Agents & Resolution",

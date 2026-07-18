@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Threadbearer — Stealth, Detection &amp; Rival Gods</title>
+<!--
+  Stealth, Detection & Rival Gods (Game Manual Wiki, W15 / THR-600) — dual-layer
+  manual page. Player-manual prose first ("How it plays"), Designer Notes second.
+  Spec: Docs/plans/2026-07-03-game-manual-wiki.md §5 W15; template §3.
+  The shared wiki nav between the WIKI-NAV markers is injected by
+  scripts/generate-design-wiki.ts — do not hand-write it.
+
+  Accuracy notes (verified against code this pass — do not "correct" back):
+  - The LIVE detection surface is REGION-LEVEL detection pressure, not a per-mortal
+    suspicion ladder. phaseDetectionPressure (orchestrator.ts:2640) + encounters/
+    detectionPressure.ts: each encounter choice you commit in a region raises that
+    region's pressure by the choice's essence cost (small_breath 1 / fuller_breath 2 /
+    deep_breath 3) times a sphere-visibility multiplier (primary 0.8 quieter, secondary
+    1.0, off-alignment 1.2 louder), then decays DETECTION_DECAY_RATE_PER_TICK 0.005/tick.
+    Thresholds: notice 0.5, turn 0.8, encounter 1.0. Crossing encounter (1.0) seeds a
+    shadow.rival_strike encounter. Pressure is clamped 0..1. IMPL & wired.
+  - The TWO-AUDIENCE per-actor model in src/engine/stealth.ts (mortal suspicion
+    unaware/suspicion/realization/revelation at 3/8/15; rival scrutiny unaware/noticed/
+    identified/targeted at 5/12/20; DETECTION_SCORE_BY_TYPE per intervention type) is
+    AUTHORED AND UNIT-TESTED (stealth.test.ts) but NOT called by any tick phase — no
+    live caller of processMortalDetection/processRivalDetection outside tests. Flag it
+    DESIGN / dormant. Do NOT describe the per-mortal suspicion ladder as shipped.
+  - regionDetection.ts is GEOGRAPHIC region clustering (watershed), NOT stealth. Not
+    part of this page.
+  - Rivals: generateRivals (gameInit.ts:281) seeds 2 + floor(rng*3) = 2..4 rivals from
+    the player's OPPOSING spheres; four behaviors aggressive/subtle/territorial/
+    expansionist (rival-content.ts); oppositionStrength 0.5..1.0. Rejected: fixed
+    pantheon. IMPL.
+  - Rival actions: phaseRivalActions (orchestrator.ts:2859) + selectRivalAction —
+    weighted recruit/intervene/expand/attack/wait, hostility>0.7 biases toward attack,
+    doom-identity bias applied. updateRivalState. IMPL & wired.
+  - Rival schemes (THR-66): four-phase arc rumor -> materialization -> response ->
+    crack riding the THR-225 composition runner; escalation tier 0..3 = doom-stage
+    (weight 0.6) + player-advancement proxy (highest thread InfluenceTier, weight 0.4);
+    per-tier scheme cap [1,1,2,3]; launch cooldown 24t; probe weight 0.35; counter-play
+    stall 12t, 2 counters to fail; families corruptive + territorial. IMPL & wired.
+  - Hidden marks (hiddenMarks.ts + phaseHiddenMarkDecay.ts, orchestrator.ts:2916):
+    delayed-reveal consequences on agents, held on GameState (NOT graph nodes). Reveal
+    prob = severity * REVEAL_PROBABILITY_MULT 0.9 at a matching encounter; decay grace
+    MARK_DECAY_GRACE_TICKS 20, then MARK_DECAY_PER_TICK 0.02 exponential to floor 0.05;
+    both reveal and decay-drop emit observable traces + chronicle events. IMPL & wired.
+  - Intelligence (intelligence.ts + phaseIntelligenceDecay.ts, orchestrator.ts:2921):
+    6 categories; reliability bands reliable>=0.7 / uncertain>=0.4 / dubious; decay
+    INTEL_RELIABILITY_DECAY_PER_TICK 0.001 after grace 20; records held by agents. IMPL.
+  - No dedicated UL shard for stealth/detection/rival terms — a known gap, noted not opened.
+-->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --parchment: #f4edd8;
+    --parchment-dark: #e8dfc8;
+    --ink: #2c1810;
+    --ink-light: #5a3d2b;
+    --ink-faint: #8a7060;
+    --gold: #b8860b;
+    --gold-light: #daa520;
+    --card-bg: #fff8e7;
+    --red: #8b2500;
+    --blue: #1a3a5c;
+    --blue-light: #2d5f8a;
+    --purple: #4a2d6a;
+    --green: #2d5a27;
+
+    --flag-impl: #2d5a27;
+    --flag-design: #8a4a00;
+    --flag-open: #4a2d6a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--parchment);
+    color: var(--ink);
+    font-family: 'Crimson Text', Georgia, serif;
+    font-size: 16px;
+    line-height: 1.6;
+    min-height: 100vh;
+    background-image:
+      radial-gradient(ellipse at 20% 50%, rgba(74,45,106,0.05) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 30%, rgba(184,134,11,0.04) 0%, transparent 50%);
+  }
+
+  .page-wrapper { max-width: 900px; margin: 0 auto; padding: 40px 32px 72px; }
+
+  /* ── Header ── */
+  .header { text-align: center; margin-bottom: 40px; padding-bottom: 28px; border-bottom: 2px solid var(--gold); position: relative; }
+  .header::after { content: ''; position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); width: 55%; height: 1px; background: var(--gold-light); }
+  .header .eyebrow { font-family: 'Cinzel', Georgia, serif; font-size: 0.72rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold); margin-bottom: 10px; }
+  .header h1 { font-family: 'Cinzel', Georgia, serif; font-weight: 700; font-size: 2.4rem; color: var(--ink); letter-spacing: 0.05em; margin-bottom: 12px; }
+  .header .tagline { font-size: 1.12rem; color: var(--ink-light); max-width: 64ch; margin: 0 auto; font-style: italic; }
+
+  /* ── Sections ── */
+  .section { margin-bottom: 34px; }
+  .section > h2 { font-family: 'Cinzel', Georgia, serif; font-size: 1.25rem; color: var(--ink); letter-spacing: 0.03em; margin-bottom: 6px; padding-bottom: 6px; border-bottom: 1px solid var(--parchment-dark); }
+  .section > h2 .lead { display: block; font-family: 'Crimson Text', Georgia, serif; font-size: 0.95rem; font-style: italic; font-weight: 400; color: var(--ink-faint); letter-spacing: 0; margin-top: 4px; }
+  .section h3 { font-family: 'Cinzel', Georgia, serif; font-size: 1rem; color: var(--ink-light); letter-spacing: 0.02em; margin: 20px 0 6px; }
+  .section p { margin-bottom: 12px; }
+  .section p .term { font-weight: 600; color: var(--ink); }
+  .section ul { margin: 0 0 14px 0; padding-left: 0; list-style: none; }
+  .section ul li { position: relative; padding-left: 1.3rem; margin-bottom: 8px; }
+  .section ul li::before { content: '◆'; position: absolute; left: 0; top: 0.05rem; color: var(--gold); font-size: 0.7rem; }
+
+  /* ── Ladder (thresholds / temperaments / scheme phases) ── */
+  .tiers { margin: 12px 0 18px; }
+  .tier { display: grid; grid-template-columns: 8.4rem 1fr; gap: 0 12px; align-items: baseline; padding: 9px 0; border-bottom: 1px solid var(--parchment-dark); }
+  .tier .name { font-family: 'Cinzel', Georgia, serif; font-size: 0.84rem; color: var(--gold); letter-spacing: 0.04em; }
+  .tier .desc { font-size: 0.94rem; color: var(--ink-light); }
+  .tier .desc .who { font-weight: 600; color: var(--ink); }
+  @media (max-width: 620px) { .tier { grid-template-columns: 1fr; gap: 2px; } }
+
+  /* ── Card grid ── */
+  .card-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 10px 0 18px; }
+  .card-grid.three { grid-template-columns: repeat(3, 1fr); }
+  .card { background: var(--card-bg); border: 1px solid var(--parchment-dark); border-radius: 4px; padding: 11px 14px; border-left: 3px solid var(--gold); }
+  .card.blue { border-left-color: var(--blue-light); }
+  .card.red { border-left-color: var(--red); }
+  .card.green { border-left-color: var(--green); }
+  .card.purple { border-left-color: var(--purple); }
+  .card h4 { font-family: 'Cinzel', Georgia, serif; font-size: 0.84rem; color: var(--ink); margin: 0 0 2px; }
+  .card p { font-size: 0.8rem; color: var(--ink-light); margin: 0; }
+  @media (max-width: 620px) { .card-grid, .card-grid.three { grid-template-columns: 1fr; } }
+
+  /* ── Callouts ── */
+  .callout { background: var(--card-bg); border: 1px solid var(--parchment-dark); border-left: 4px solid var(--gold); border-radius: 4px; padding: 14px 18px; margin: 4px 0 18px; }
+  .callout.blue { border-left-color: var(--blue-light); }
+  .callout.purple { border-left-color: var(--purple); }
+  .callout.red { border-left-color: var(--red); }
+  .callout.green { border-left-color: var(--green); }
+  .callout .callout-title { font-family: 'Cinzel', Georgia, serif; font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 6px; }
+  .callout p:last-child { margin-bottom: 0; }
+
+  /* ── Designer notes ── */
+  .designer { margin-top: 48px; border-top: 2px solid var(--gold); padding-top: 8px; }
+  .designer > summary { list-style: none; cursor: pointer; padding: 16px 4px; display: flex; align-items: baseline; gap: 12px; }
+  .designer > summary::-webkit-details-marker { display: none; }
+  .designer > summary .chev { font-size: 0.8rem; color: var(--gold); transition: transform 0.15s; }
+  .designer[open] > summary .chev { transform: rotate(90deg); }
+  .designer > summary h2 { font-family: 'Cinzel', Georgia, serif; font-size: 1.3rem; color: var(--ink); letter-spacing: 0.03em; }
+  .designer > summary .sub { font-size: 0.9rem; color: var(--ink-faint); font-style: italic; }
+  .designer-body { padding: 4px 4px 8px; }
+  .designer-body h3 { font-family: 'Cinzel', Georgia, serif; font-size: 0.98rem; color: var(--ink-light); margin: 22px 0 8px; }
+  .designer-body p { margin-bottom: 12px; font-size: 0.97rem; }
+  .designer-body ul { margin: 0 0 14px 0; padding-left: 0; list-style: none; }
+  .designer-body ul li { position: relative; padding-left: 1.2rem; margin-bottom: 7px; font-size: 0.97rem; }
+  .designer-body ul li::before { content: '›'; position: absolute; left: 0.15rem; top: 0; color: var(--ink-faint); }
+  code, .mono { font-family: 'JetBrains Mono', monospace; font-size: 0.84em; color: var(--ink); background: rgba(184,134,11,0.10); padding: 0.05rem 0.32rem; border-radius: 3px; word-break: break-word; }
+
+  .flag { font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; letter-spacing: 0.04em; font-weight: 500; padding: 0.08rem 0.4rem; border-radius: 3px; color: #fff; white-space: nowrap; }
+  .flag.impl { background: var(--flag-impl); }
+  .flag.design { background: var(--flag-design); }
+  .flag.open { background: var(--flag-open); }
+
+  table.tunables { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin: 4px 0 18px; }
+  table.tunables th { text-align: left; font-family: 'Cinzel', Georgia, serif; font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-faint); padding: 6px 10px 6px 0; border-bottom: 1px solid var(--parchment-dark); }
+  table.tunables td { padding: 7px 10px 7px 0; border-bottom: 1px solid var(--parchment-dark); vertical-align: top; color: var(--ink-light); }
+  table.tunables td:first-child { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--ink); white-space: nowrap; }
+
+  .foot { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--parchment-dark); font-size: 0.85rem; color: var(--ink-faint); font-style: italic; }
+  a { color: var(--blue-light); text-decoration: none; border-bottom: 1px solid rgba(45,95,138,0.35); }
+  a:hover { color: var(--blue); border-bottom-color: var(--blue); }
+</style>
+</head>
+<body>
+<!--WIKI-NAV-->
+<style>
+  .wiki-nav { font-family: 'Cinzel', Georgia, serif; background: #2c1810; border-bottom: 2px solid #b8860b; padding: 0.6rem 1.2rem; display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.4rem 1.1rem; }
+  .wiki-nav__brand { color: #daa520; font-weight: 700; letter-spacing: 0.04em; margin-right: 0.6rem; font-size: 0.95rem; }
+  .wiki-nav__link { color: #f4edd8; text-decoration: none; font-size: 0.85rem; letter-spacing: 0.02em; padding: 0.15rem 0.1rem; border-bottom: 2px solid transparent; transition: color 0.15s, border-color 0.15s; }
+  .wiki-nav__link:hover { color: #daa520; }
+  .wiki-nav__link.is-active { color: #daa520; border-bottom-color: #b8860b; font-weight: 700; }
+</style>
+<nav class="wiki-nav" aria-label="Design Reference Wiki">
+  <span class="wiki-nav__brand">⌖ Design Reference Wiki</span>
+  <a class="wiki-nav__link" href="design-wiki.html">Design Wiki</a>
+  <a class="wiki-nav__link" href="run-lifecycle-reference.html">A Run, Start to Finish</a>
+      <a class="wiki-nav__link" href="cosmology-reference.html">Reaches, Spheres &amp; Quintessence</a>
+      <a class="wiki-nav__link" href="turn-structure-reference.html">The Three-Beat Turn</a>
+      <a class="wiki-nav__link" href="divine-actions-reference.html">Divine Actions &amp; Prerequisites</a>
+      <a class="wiki-nav__link" href="threads-court-reference.html">Threads, the Court &amp; The First</a>
+      <a class="wiki-nav__link" href="essence-control-reference.html">Essence, Control &amp; Sustained Power</a>
+      <a class="wiki-nav__link" href="encounters-manual-reference.html">Encounters &amp; Aftermath</a>
+      <a class="wiki-nav__link" href="clocks-reference.html">Doom, the Mandate &amp; Omens</a>
+      <a class="wiki-nav__link" href="interface-reference.html">Reading the Interface</a>
+      <a class="wiki-nav__link" href="agents-reference.html">The Mortals</a>
+      <a class="wiki-nav__link" href="factions-cultures-reference.html">Factions, Cultures &amp; Secrets</a>
+      <a class="wiki-nav__link" href="world-map-reference.html">The World: Hexes, Terrain &amp; Sight</a>
+      <a class="wiki-nav__link" href="settlements-economy-reference.html">Settlements, Prosperity &amp; Trade</a>
+      <a class="wiki-nav__link" href="livelihoods-reference.html">Livelihoods &amp; the Resource Web</a>
+      <a class="wiki-nav__link" href="armies-battles-reference.html">Armies, Battles &amp; Lairs</a>
+      <a class="wiki-nav__link is-active" href="stealth-rivals-reference.html" aria-current="page">Stealth, Detection &amp; Rival Gods</a>
+      <a class="wiki-nav__link" href="encounters-agents-reference.html">Encounters, Agents &amp; Resolution</a>
+      <a class="wiki-nav__link" href="tick-cycle-reference.html">Tick Cycle Reference</a>
+      <a class="wiki-nav__link" href="action-catalog.html">Action Catalog</a>
+</nav>
+<!--/WIKI-NAV-->
+<div class="page-wrapper">
+
+  <header class="header">
+    <div class="eyebrow">Game Manual · The Living World</div>
+    <h1>Stealth, Detection &amp; Rival Gods</h1>
+    <p class="tagline">You are not the only power in the world, and nothing you do is truly unseen. Every act you commit in a region leaves a wake — and somewhere out in the dark, a rival god is watching for exactly that wake to rise.</p>
+  </header>
+
+  <!-- ══════════════════ HOW IT PLAYS ══════════════════ -->
+
+  <section class="section">
+    <h2>Two audiences are watching your hand<span class="lead">Everything you do in the world is noticed by someone. The mortals you touch slowly come to sense the divine; and the other gods scan the land for the signature of a rising power. Acting is never free of consequence — only of cost you can see.</span></h2>
+    <p>When you reach into the world, two kinds of watcher take note. The first is the <span class="term">mortals</span> themselves: a hand that keeps intervening in a life is a hand a mortal begins, dimly, to feel. That slow awakening — from a stranger to something felt in dreams to open faith — is the story of a <a href="threads-court-reference.html">thread</a>, and it belongs to that page. The second watcher is the one this page is about: the <span class="term">rival gods</span>, cosmic powers who share your world and scan the regions of it for signs of another god at work.</p>
+    <p>You cannot act loudly and stay hidden. But you <em>can</em> act quietly. Some deeds draw far more notice than others, and acting inside the reach of your own strongest sphere is quieter than acting far outside it. The whole art of stealth in Threadbearer is choosing <span class="term">where</span>, <span class="term">how heavily</span>, and <span class="term">how visibly</span> to spend — knowing that the region remembers your presence for a while, and that a rival is counting.</p>
+    <div class="callout purple">
+      <div class="callout-title">Being seen is a resource, not a fail state</div>
+      <p>Detection is not a stealth meter you must keep at zero. It is a pressure you spend against, the way you spend essence. A bold god who draws rivals down on their works is playing a different game from a patient one who never shows their hand — neither is wrong. The question is only whether you are ready for who is coming.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Detection pressure — the price of being seen<span class="lead">Each region of the world carries a quiet tally of how much divine meddling it has felt lately. Your choices push it up; time lets it fade. Push it high enough and a rival strikes at that place.</span></h2>
+    <p>Every <span class="term">region</span> — a stretch of the map with its own name and character — carries a hidden measure of <span class="term">detection pressure</span>: how conspicuous the divine hand has been there of late. When you commit to a choice inside an encounter, the weight of that choice raises the pressure of the region it happened in. A small, careful nudge barely stirs it; a deep, forceful intervention pushes it hard. And the same act is <span class="term">louder or quieter depending on your alignment</span> — working through the sphere you are strongest in blends into the world and draws less notice, while acting far outside your nature stands out and draws more.</p>
+    <p>Pressure does not only climb. Left alone, a region <span class="term">forgets</span> — its pressure ebbs a little every turn, so a place you have not touched in a while goes quiet again. This is the rhythm of stealth: act, then let the wake settle before you act again in the same place, or spread your work across regions so no single one lights up.</p>
+    <p>As a region's pressure rises it crosses thresholds you feel as escalation. First it draws a faint <span class="term">notice</span>; then it colours the <span class="term">turn</span> around it; and if it climbs to the very top, it boils over into a <span class="term">rival strike</span> — an encounter in which an opposing power reaches into that region precisely because you made too much noise there.</p>
+    <div class="tiers">
+      <div class="tier"><span class="name">Notice</span><span class="desc"><span class="who">The first stir.</span> The region has felt enough meddling to register it. The wake is visible but harmless.</span></div>
+      <div class="tier"><span class="name">Turn</span><span class="desc"><span class="who">The mood shifts.</span> Pressure is high enough to colour what happens here — attention is gathering on this place.</span></div>
+      <div class="tier"><span class="name">Rival strike</span><span class="desc"><span class="who">The reckoning.</span> Pressure peaks and an opposing god reaches into the region — a strike seeded because you were seen.</span></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Rival gods — generated, opposed, and alive<span class="lead">Your rivals are not a fixed cast. Each world spins up a handful of gods built to stand against exactly the kind of power you are, each with a temperament of its own — and they act on the world whether or not you are watching.</span></h2>
+    <p>Threadbearer has no fixed pantheon of villains. At the making of each world, a small number of <span class="term">rival gods</span> are conjured to oppose you specifically — their natures drawn from the spheres you are <em>weakest</em> in, so a rival is always a counterweight to your own strengths. Each is given a generated name and a <span class="term">temperament</span> that shapes how it behaves, and each carries a measure of <span class="term">hostility</span> toward you that grows every time it turns its hand against your works.</p>
+    <p>Left to themselves, rivals do not sit idle. Turn by turn a rival chooses a move according to its nature — quietly recruiting mortals to its cause, meddling in the world as you do, expanding its grip over new regions, or striking directly at what you have built. The more hostile a rival becomes, the more its choices tilt toward open attack.</p>
+    <div class="card-grid">
+      <div class="card red"><h4>Aggressive</h4><p>Reaches for the sword first. Strikes at your works far more readily than it schemes or waits.</p></div>
+      <div class="card purple"><h4>Subtle</h4><p>Prefers the quiet knife. Works through intervention and recruitment; rarely attacks in the open.</p></div>
+      <div class="card blue"><h4>Territorial</h4><p>Guards and grows its ground. Leans toward expanding its regions and holding what it has.</p></div>
+      <div class="card green"><h4>Expansionist</h4><p>Hungers for reach. Recruits and spreads relentlessly, always pushing into new country.</p></div>
+    </div>
+    <div class="callout blue">
+      <div class="callout-title">A rival is a mirror, not a menu</div>
+      <p>Because a rival is built to oppose your spheres, it will always be strong where you are weak. You cannot pick your enemies from a list — the world hands you the gods you were made to struggle against, and part of learning a run is learning who woke up across the map from you.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Schemes — the slow move against your works<span class="lead">A rival's most dangerous acts are not single blows but schemes: patient, multi-stage plots that build in the dark, announce themselves, and strike — and which you can catch and unravel before they land.</span></h2>
+    <p>Beyond its turn-by-turn meddling, a rival can commit to a <span class="term">scheme</span> — a deliberate, staged plot aimed at your works or at a place you care about. A scheme unfolds in four movements. It begins as a <span class="term">rumor</span>, a barely-there stirring; it gathers into a <span class="term">materialization</span> as the rival commits real weight to it; the world offers a chance for <span class="term">response</span>; and finally it reaches its <span class="term">crack</span> — the payoff blow that lands hardest of all.</p>
+    <p>Schemes grow bolder as a run darkens. The nearer the world drifts toward its Doom, and the higher <em>you</em> have climbed in power, the more ambitious and the faster a rival's schemes become — and the more of them a single rival will run at once. A quiet early game invites at most a cautious plot; a late game against a mighty ascendant invites several converging at speed.</p>
+    <p>A scheme is not an unstoppable clock. When you catch one forming, you can <span class="term">counter</span> it — each successful stall buys time and drags the plot back, and enough counters unravel it entirely before it ever cracks. Reading the world for the first rumor of a scheme, and choosing when to spend against it, is one of the quiet arts of a long run.</p>
+    <div class="tiers">
+      <div class="tier"><span class="name">Rumor</span><span class="desc"><span class="who">The first whisper.</span> The rival begins to invest in a plot; almost nothing shows yet.</span></div>
+      <div class="tier"><span class="name">Materialization</span><span class="desc"><span class="who">It takes shape.</span> The scheme gathers real weight and becomes something you can see and name.</span></div>
+      <div class="tier"><span class="name">Response</span><span class="desc"><span class="who">The world reacts.</span> The plot's pressure ripples outward; the window to counter is widest here.</span></div>
+      <div class="tier"><span class="name">Crack</span><span class="desc"><span class="who">The blow lands.</span> If uncountered, the scheme reaches its payoff — the hardest-hitting beat of all.</span></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>What the world remembers, and forgets<span class="lead">Two kinds of hidden knowledge move beneath the surface of a run — consequences you have planted that wait to surface, and things mortals have learned that slowly go stale. Both fade if never used.</span></h2>
+    <p>Some of your deeds do not resolve at once. A <span class="term">hidden mark</span> is a concealed consequence you leave on a mortal — a debt, a curse, a buried truth — that does not announce itself. It waits, invisible, until a fitting encounter comes along and <span class="term">reveals</span> it, turning a moment of play into the delayed echo of something you did long ago. The deeper the mark, the more likely it is to surface when its moment arrives.</p>
+    <p>But a mark does not wait forever. After a grace period it begins to <span class="term">fade</span>, losing weight each turn, and if nothing ever triggers it the mark eventually slips away — quietly noted in the chronicle so the loss is never invisible. A consequence you plant and never cash in is a consequence the world will, in time, forget.</p>
+    <p>The mortals of the world carry their own hidden knowledge, too — <span class="term">intelligence</span> about shrines, agent networks, trade routes, troop movements, court secrets, and lore. Fresh knowledge is <span class="term">reliable</span>; but knowledge ages, drifting from reliable to <span class="term">uncertain</span> to <span class="term">dubious</span> as the world moves on and no one refreshes it. What a mortal knew last season is not what they can trust today.</p>
+    <div class="callout green">
+      <div class="callout-title">Honest scope — what ships, and what is still on the drawing board</div>
+      <p>The detection you feel today is <em>region-level</em>: each region carries one pressure value that your choices raise and time lowers, and a rival strikes when a region boils over. A finer, per-mortal model — where a single person's suspicion of you climbs from unease to open realization to revelation — is designed but <span class="flag design">DESIGN</span>-only and not yet wired into play. Rivals, their schemes, hidden marks, and ageing intelligence are all live. Where a system is only partly built, the Designer Notes below say so plainly.</p>
+    </div>
+  </section>
+
+  <!-- ══════════════════ DESIGNER NOTES ══════════════════ -->
+
+  <details class="designer" open>
+    <summary>
+      <span class="chev">▶</span>
+      <span>
+        <h2>Designer Notes</h2>
+        <span class="sub">Region-level detection pressure (IMPL) driven by encounter choice-cost and sphere visibility; a fully-authored but dormant per-actor two-audience model (DESIGN); generated rivals with four temperaments and a four-phase scheme system (IMPL); and the delayed-reveal hidden-mark and ageing-intelligence primitives (IMPL) — with honest status flags throughout.</span>
+      </span>
+    </summary>
+    <div class="designer-body">
+
+      <p>Status flags follow the rulebook convention: <span class="flag impl">IMPL</span> shipped and wired, <span class="flag design">DESIGN</span> specified but partial or dormant, <span class="flag open">OPEN</span> an unresolved question (referenced, never minted here). Sources: <code>src/engine/stealth.ts</code>, <code>src/engine/orchestrator/phaseDetectionPressure.ts</code>, <code>src/engine/encounters/detectionPressure.ts</code>, <code>src/engine/rival.ts</code>, <code>src/data/rival-content.ts</code>, <code>src/data/rival-scheme-config.ts</code>, <code>src/data/rival-schemes/</code>, <code>src/engine/hiddenMarks.ts</code> + <code>phaseHiddenMarkDecay.ts</code>, <code>src/engine/intelligence.ts</code> + <code>phaseIntelligenceDecay.ts</code>, <code>src/types/stealth.ts</code>, <code>src/types/rival.ts</code>.</p>
+
+      <div class="callout red">
+        <div class="callout-title">The load-bearing honest call for this page</div>
+        <p>There are <strong>two</strong> detection systems in the tree, and only one is live. <strong>Region detection pressure</strong> (<code>phaseDetectionPressure</code>, wired at <code>orchestrator.ts:2640</code>) is the shipped surface. The <strong>per-actor two-audience escalation model</strong> in <code>stealth.ts</code> — mortal suspicion and rival scrutiny ladders — is fully authored and unit-tested (<code>stealth.test.ts</code>) but <strong>has no live caller</strong>: nothing outside tests invokes <code>processMortalDetection</code> / <code>processRivalDetection</code>. It is <span class="flag design">DESIGN</span> / dormant. The player layer above is deliberately written around the region-pressure model that actually runs. (Unrelated: <code>regionDetection.ts</code> is geographic region <em>clustering</em>, not stealth.)</p>
+      </div>
+
+      <h3>Detection pressure — region-level, choice-cost driven <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li><code>phaseDetectionPressure(state)</code> reads <code>state.pendingChoiceCommits</code>: every encounter choice a mortal commits this tick resolves to the mortal's <em>region</em> (<code>resolveRegionIdForAgent</code> walks <code>located_at</code> → sublocation → parent location → <code>regionId</code>) and pushes that region's pressure up via <code>applyDetectionDelta</code>. Then the whole set decays (<code>decayDetectionPressure</code>). Pressure is clamped <code>[0, MAX_DETECTION_PRESSURE 1]</code>.</li>
+        <li><strong>Delta per choice</strong> = base choice-cost × sphere-visibility multiplier. Base cost is the choice's essence weight: <code>small_breath 1</code>, <code>fuller_breath 2</code>, <code>deep_breath 3</code> (<code>baseDetectionDeltaForCost</code>). The multiplier is set by how the encounter's <code>sphereAffinity</code> lines up with your identity: acting in your <strong>primary</strong> sphere = <code>0.8</code> (quieter), <strong>secondary</strong> = <code>1.0</code>, off-alignment = <code>1.2</code> (louder) — <code>resolveSphereVisibilityMultiplier</code> in <code>phaseDetectionPressure.ts</code>.</li>
+        <li><strong>Thresholds</strong> (<code>getDetectionThresholdCrossings</code>): <code>DETECTION_THRESHOLD_NOTICE 0.5</code> → <code>turn</code> at <code>DETECTION_THRESHOLD_TURN 0.8</code> → <code>encounter</code> at <code>DETECTION_THRESHOLD_ENCOUNTER 1.0</code>. Crossing <code>encounter</code> seeds a <code>shadow.rival_strike</code> encounter (<code>buildDetectionSeed</code>, priority 100, guarded against duplicates per region). Each crossing emits a <code>detection_threshold_crossed</code> trace.</li>
+        <li>Decay is <code>DETECTION_DECAY_RATE_PER_TICK 0.005</code>/tick (all constants in <code>src/data/encounter-experience-constants.ts</code>). State is held on <code>GameState.regionalDetectionPressure</code> (mirrored to legacy <code>regionDetection</code>).</li>
+      </ul>
+
+      <h3>Two-audience per-actor model — authored, dormant <span class="flag design">DESIGN</span></h3>
+      <ul>
+        <li><code>stealth.ts</code> implements a richer model that is <strong>not wired</strong>: per-actor <code>MortalDetectionState</code> with a suspicion ladder <code>unaware → suspicion (3) → realization (8) → revelation (15)</code> (<code>MORTAL_AWARENESS_THRESHOLDS</code>), and per-rival-per-region <code>RivalDetectionState</code> with a scrutiny ladder <code>unaware → noticed (5) → identified (12) → targeted (20)</code> (<code>RIVAL_AWARENESS_THRESHOLDS</code>). Each intervention adds a per-type score (<code>DETECTION_SCORE_BY_TYPE</code>: <code>coincidence 3.0</code>, <code>afflict_bless 2.5</code>, <code>deceive/intimidate 1.5</code>, <code>persuade/omen 1.0</code>, <code>dream/inspire 0.5</code>) and both ladders decay.</li>
+        <li>The functions are pure, exported, and covered by <code>stealth.test.ts</code> / <code>stealth-mandate-integration.test.ts</code>, but grep confirms no tick phase calls them — a build-but-dormant model, not a shipped one. Activating it (or reconciling it with the region-pressure model) is design/engine work, not documented here as live.</li>
+      </ul>
+
+      <h3>Rival generation <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li><code>generateRivals(playerAlignment, seed)</code> (called from <code>gameInit.ts:281</code>) seeds <code>2 + floor(rng()*3)</code> = <strong>2–4 rivals</strong> per world. Each rival's primary sphere is drawn from the player's four <em>lowest</em> spheres (<code>opposingSpheres</code>), so rivals are counterweights by construction; <code>buildOpposingProfile</code> gives them a full <code>CosmologyProfile</code> (primary weight 0.30–0.45). Names come from <code>RIVAL_NAME_PREFIXES</code> × <code>RIVAL_NAME_SUFFIXES</code> (<code>rival-content.ts</code>), de-duplicated. <code>oppositionStrength</code> 0.5–1.0. <strong>Rejected: fixed pantheon</strong> — rivals are generated from the World-Soul, per the load-bearing decisions.</li>
+        <li><code>createRivalState(id)</code> initialises <code>hostilityToPlayer 0.5</code>, counters, and region list. Rival RNG is a local <code>mulberry32(seed)</code> for deterministic generation (NFP #3).</li>
+      </ul>
+
+      <h3>Rival actions <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li><code>phaseRivalActions(state)</code> (<code>orchestrator.ts:2859</code>) drives each rival. <code>selectRivalAction(rival, state, roll, identityBias)</code> picks from <code>recruit / intervene / expand / attack / wait</code> using <code>BEHAVIOR_WEIGHTS[behavior]</code> (<code>rival-content.ts</code>): e.g. <code>aggressive</code> attacks 0.45 / waits 0.10; <code>subtle</code> intervenes 0.35 / attacks 0.10; <code>territorial</code> expands 0.30; <code>expansionist</code> expands 0.35 / recruits 0.30. When <code>hostilityToPlayer &gt; 0.7</code>, <code>attack</code> weight gets +0.15. A doom-identity bias (<code>IDENTITY_RIVAL_BIAS_WEIGHT</code>) nudges the weights toward the world's doom archetype.</li>
+        <li><code>updateRivalState</code> applies the outcome: <code>recruit</code> ++agentsControlled, <code>intervene/attack</code> ++interventionCount, <code>expand</code> adds a region, <code>attack</code> also bumps <code>hostilityToPlayer</code> +0.05 (capped 1.0). The seeded <code>roll</code> comes from the tick RNG — the <code>Math.random()</code> fallback in the signature is a dev-only safety net (breaks determinism).</li>
+      </ul>
+
+      <h3>Rival schemes (THR-66) <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li>A scheme is a four-phase arc — <strong>rumor → materialization → response → crack</strong> — that rides the shipped THR-225 composition phase runner (<code>rival-schemes/</code> holds the <code>corruptive</code> and <code>territorial</code> families). The rival invests each tick to arm the next phase via world-flags (<code>schemeFlags</code>); the runner activates armed phases; <code>phaseRivalActions</code> executes each phase's concrete move on activation. All selection/escalation/launch code is pure + deterministic (seeded rival RNG, no <code>Math.random()</code>).</li>
+        <li><strong>Escalation tier</strong> (<code>computeRivalEscalationTier</code>, 0–<code>RIVAL_MAX_ESCALATION_TIER 3</code>) blends the doom-clock stage (<code>RIVAL_ESCALATION_DOOM_WEIGHT 0.6</code>) with a player-advancement proxy — the highest thread <code>InfluenceTier</code> across the ascendant's threads (<code>RIVAL_ESCALATION_ADVANCEMENT_WEIGHT 0.4</code>), fail-soft to doom-only. Monotonic in both inputs.</li>
+        <li><strong>Gates</strong> (<code>selectRivalScheme</code>): concurrent-scheme cap by tier <code>RIVAL_MAX_CONCURRENT_SCHEMES [1,1,2,3]</code>; launch cooldown <code>RIVAL_SCHEME_LAUNCH_COOLDOWN_TICKS 24</code>; a <code>RIVAL_SCHEME_PROBE_WEIGHT 0.35</code> chance to make a cheap probe instead; ambitious (territorial) families unlock at <code>RIVAL_SCHEME_AMBITIOUS_FAMILY_MIN_TIER 1</code>. Phase-arm investment ticks drop with tier (<code>[14,11,8,6]</code>) so higher tiers escalate faster.</li>
+        <li><strong>Counter-play:</strong> a player stall adds <code>RIVAL_SCHEME_STALL_TICKS 12</code>; <code>RIVAL_SCHEME_COUNTERS_TO_FAIL 2</code> successful counters unravel a scheme. Each phase move pushes <code>RIVAL_SCHEME_SPHERE_PRESSURE_PER_PHASE 0.04</code> in the rival's primary sphere; the crack beat multiplies it <code>RIVAL_SCHEME_CRACK_PRESSURE_MULTIPLIER 2.5×</code>. Surfaced via <code>RivalPanel</code> + a hex overlay; inspect with <code>__DEBUG.getRivalSchemes()</code> / <code>__DEBUG.forceRivalScheme()</code>.</li>
+      </ul>
+
+      <h3>Hidden marks — delayed reveal + decay <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li>A <code>HiddenMark</code> is a concealed consequence on an agent, held on <code>GameState.hiddenMarks</code> (<strong>not</strong> a graph node), planted by encounter aftermath. At scoring time matching marks boost candidate encounters; at resolution <code>consumeMatchingMarks</code> rolls <code>rng() &lt; severity × REVEAL_PROBABILITY_MULT 0.9</code> per mark whose <code>revealFamilies</code> prefix-match the resolved <code>templateId</code>, and on a hit removes the mark, emits <code>hidden_mark_revealed</code>, and appends a high-significance (<code>0.7</code>) chronicle event. A mark is never consumed the same tick it is placed.</li>
+        <li><code>phaseHiddenMarkDecay(state)</code> (<code>orchestrator.ts:2916</code>): after <code>MARK_DECAY_GRACE_TICKS 20</code>, severity decays <code>× (1 − MARK_DECAY_PER_TICK 0.02)</code> per tick; below <code>MARK_DECAY_FLOOR 0.05</code> the mark is dropped with an observable <code>hidden_mark_revealed</code> trace (<code>revealedBy: 'decay:severity_floor'</code>) and a low-significance (<code>0.3</code>) chronicle event so the fade is never silent (THR-132).</li>
+      </ul>
+
+      <h3>Intelligence — ageing knowledge <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li><code>IntelligenceRecord</code>s are queryable knowledge held by agents on <code>GameState.intelligenceRecords</code> across six categories (<code>shrine_location</code>, <code>agent_network</code>, <code>trade_route</code>, <code>military_position</code>, <code>political_secret</code>, <code>cultural_knowledge</code>). They feed scoring boosts, prose enrichment, resolution-match observation, and difficulty modifiers; consumption never removes a record.</li>
+        <li>Reliability bands: <code>reliable ≥ RELIABILITY_THRESHOLD_RELIABLE 0.7</code>, <code>uncertain ≥ RELIABILITY_THRESHOLD_UNCERTAIN 0.4</code>, else <code>dubious</code>. <code>phaseIntelligenceDecay(state)</code> (<code>orchestrator.ts:2921</code>) drops reliability by <code>INTEL_RELIABILITY_DECAY_PER_TICK 0.001</code>/tick after <code>INTEL_RELIABILITY_GRACE_TICKS 20</code> (floor <code>0.0</code>); a band crossing emits a low-significance (<code>0.25</code>) staleness chronicle event. Pure arithmetic, no PRNG.</li>
+      </ul>
+
+      <h3>Tick placement <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li>Detection pressure runs mid-tick (<code>phaseDetectionPressure</code>, <code>orchestrator.ts:2640</code>, after choice commits are gathered); colocation-based detection at <code>phaseColocationDetection</code> (<code>:2759</code>); rival actions at <code>phaseRivalActions</code> (<code>:2859</code>); then the two decay phases cluster late — <code>phaseHiddenMarkDecay</code> (<code>:2916</code>) immediately before <code>phaseIntelligenceDecay</code> (<code>:2921</code>), alongside the other decay phases.</li>
+      </ul>
+
+      <h3>Constants</h3>
+      <table class="tunables">
+        <thead><tr><th>Constant</th><th>Value</th><th>Purpose · file</th></tr></thead>
+        <tbody>
+          <tr><td>DETECTION_THRESHOLD_NOTICE</td><td>0.5</td><td>Region pressure that draws first notice · <code>encounter-experience-constants.ts</code></td></tr>
+          <tr><td>DETECTION_THRESHOLD_TURN</td><td>0.8</td><td>Pressure that colours the region's turn · <code>encounter-experience-constants.ts</code></td></tr>
+          <tr><td>DETECTION_THRESHOLD_ENCOUNTER</td><td>1.0</td><td>Pressure that seeds a <code>shadow.rival_strike</code> · <code>encounter-experience-constants.ts</code></td></tr>
+          <tr><td>DETECTION_DECAY_RATE_PER_TICK</td><td>0.005</td><td>Region pressure lost per tick · <code>encounter-experience-constants.ts</code></td></tr>
+          <tr><td>CHOICE_ESSENCE_COST_SMALL / FULLER / DEEP</td><td>1 / 2 / 3</td><td>Base detection delta by choice weight · <code>encounter-experience-constants.ts</code></td></tr>
+          <tr><td>MORTAL_AWARENESS_THRESHOLDS</td><td>3 / 8 / 15</td><td>Suspicion → realization → revelation (DESIGN, dormant) · <code>types/stealth.ts</code></td></tr>
+          <tr><td>RIVAL_AWARENESS_THRESHOLDS</td><td>5 / 12 / 20</td><td>Noticed → identified → targeted (DESIGN, dormant) · <code>types/stealth.ts</code></td></tr>
+          <tr><td>RIVAL_MAX_ESCALATION_TIER</td><td>3</td><td>Top scheme escalation tier · <code>rival-scheme-config.ts:18</code></td></tr>
+          <tr><td>RIVAL_MAX_CONCURRENT_SCHEMES</td><td>[1,1,2,3]</td><td>Simultaneous schemes per rival, by tier · <code>rival-scheme-config.ts:21</code></td></tr>
+          <tr><td>RIVAL_SCHEME_LAUNCH_COOLDOWN_TICKS</td><td>24</td><td>Min ticks between a rival's launches · <code>rival-scheme-config.ts:24</code></td></tr>
+          <tr><td>RIVAL_SCHEME_PROBE_WEIGHT</td><td>0.35</td><td>Chance of a cheap probe over a scheme · <code>rival-scheme-config.ts:42</code></td></tr>
+          <tr><td>RIVAL_SCHEME_COUNTERS_TO_FAIL</td><td>2</td><td>Successful counters that unravel a scheme · <code>rival-scheme-config.ts:36</code></td></tr>
+          <tr><td>RIVAL_ESCALATION_DOOM_WEIGHT / ADVANCEMENT</td><td>0.6 / 0.4</td><td>Escalation-tier blend (doom vs player rise) · <code>rival-scheme-config.ts:51</code></td></tr>
+          <tr><td>MARK_DECAY_GRACE_TICKS</td><td>20</td><td>Ticks before a hidden mark starts to fade · <code>hiddenMarks.ts:29</code></td></tr>
+          <tr><td>MARK_DECAY_PER_TICK</td><td>0.02</td><td>Fraction of mark severity lost per tick · <code>hiddenMarks.ts:33</code></td></tr>
+          <tr><td>REVEAL_PROBABILITY_MULT</td><td>0.9</td><td>Reveal chance = severity × this · <code>hiddenMarks.ts:25</code></td></tr>
+          <tr><td>INTEL_RELIABILITY_DECAY_PER_TICK</td><td>0.001</td><td>Reliability lost per tick past grace · <code>intelligence.ts:39</code></td></tr>
+          <tr><td>INTEL_RELIABILITY_GRACE_TICKS</td><td>20</td><td>Ticks before intel begins to age · <code>intelligence.ts:45</code></td></tr>
+        </tbody>
+      </table>
+
+      <h3>Canon &amp; terminology</h3>
+      <ul>
+        <li>Phase &amp; type sources: <code>stealth.ts</code> + <code>types/stealth.ts</code> (dormant two-audience model), <code>orchestrator/phaseDetectionPressure.ts</code> + <code>encounters/detectionPressure.ts</code> (live region pressure), <code>rival.ts</code> + <code>rival-content.ts</code> + <code>rival-scheme-config.ts</code> + <code>rival-schemes/</code> + <code>types/rival.ts</code> (rivals &amp; schemes), <code>hiddenMarks.ts</code> + <code>phaseHiddenMarkDecay.ts</code>, <code>intelligence.ts</code> + <code>phaseIntelligenceDecay.ts</code>.</li>
+        <li>UL: no dedicated stealth/detection/rival shard yet — <em>detection pressure</em>, <em>rival god</em>, <em>scheme</em>, <em>hidden mark</em>, and <em>intelligence</em> are a known documentation gap (surface a <code>UL-proposal</code> to close it, don't re-open). Rivals-from-World-Soul (rejected: fixed pantheon) is a load-bearing decision in <a href="cosmology-reference.html">the cosmology</a>.</li>
+        <li>Adjacent Manual pages: <a href="threads-court-reference.html">Threads, the Court &amp; The First</a> (the mortal-awareness ladder — the <em>other</em> audience), <a href="encounters-manual-reference.html">Encounters &amp; Aftermath</a> (how a rival strike or a mark reveal surfaces, and where hidden marks are planted), <a href="clocks-reference.html">Doom, the Mandate &amp; Omens</a> (the doom stage that escalates schemes), <a href="world-map-reference.html">The World: Hexes, Terrain &amp; Sight</a> (the regions detection pressure is keyed to). Game title in player copy: <strong>Threadbearer</strong>.</li>
+      </ul>
+
+      <h3>Open questions <span class="flag open">OPEN</span></h3>
+      <ul>
+        <li>None minted here. The clearest honest gaps are the dormant per-actor two-audience model (<code>stealth.ts</code> authored + tested but unwired — whether to activate it or fold it into region pressure), and the missing UL stealth/detection/rival shard. Both are design/documentation debt, referenced not opened. New open questions surface in chat and land in the rulebook's Open Questions list, never on this page.</li>
+      </ul>
+
+    </div>
+  </details>
+
+  <div class="foot">
+    Game Manual Wiki · W15 (THR-600). Player layer describes current shipped behaviour — the live detection surface is region-level pressure; the per-mortal suspicion ladder is <span class="flag design">DESIGN</span>-only and flagged as such. Rivals, schemes, hidden marks, and ageing intelligence are all <span class="flag impl">IMPL</span> and wired. Terminology is UL-exact where the UL covers it; stealth/detection/rival terms have no shard yet (a noted gap). You are watched whether you watch back or not.
+  </div>
+
+</div>
+</body>
+</html>
