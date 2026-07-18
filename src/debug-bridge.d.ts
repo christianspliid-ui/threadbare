@@ -616,6 +616,11 @@ export interface DebugBridge {
    *  Returns the entry's ProseQualityResult, or { error } if no entry matches. */
   scoreProseEntry: (entryId: string) => Promise<import('./engine/content-eval/proseQualityScore').ProseQualityResult | { error: string }>;
 
+  /** THR-659 — Orphaned action-card inspector. Reports player-castable templates that no
+   *  run can ever surface (neither starter, static beat grant, nor dynamic reach signature).
+   *  Pure + deterministic; independent of any live session. */
+  listUnreachableActions: () => Promise<import('./engine/content-eval/unreachableActions').UnreachableActionReport>;
+
   /** THR-66 — List active/terminal rival schemes across all rivals. */
   getRivalSchemes: () => Array<{
     rivalId: string;
