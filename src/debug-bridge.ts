@@ -1378,5 +1378,89 @@ if (import.meta.env.DEV) {
         compositionId: plan.composition.compositionId,
       };
     },
+
+    // THR-614 (war seam 3) — headless army/battle readout for CLI/automated
+    // verification. The DebugPanel "Armies" tab renders the same graph state
+    // visually; these return plain data so a headless run can assert war fired
+    // without a browser. Ground-truth read: no monster-faction filter (unlike
+    // the tab's display choice) — headless inspection wants the full picture.
+    getArmies: () => {
+      const state = _gameStateProvider?.();
+      if (!state) return [];
+      const graph = state.graph;
+      const tick = state.tick ?? 0;
+      return graph
+        .getNodesByType('actor')
+        .filter((n) => n.properties.armyState != null)
+        .map((army) => {
+          const as = army.properties.armyState as import('./types/army').ArmyState;
+          const cmdEdge = graph.getOutgoingEdges(army.id, 'commanded_by')[0];
+          const commander = cmdEdge ? graph.getNode(cmdEdge.target) : null;
+          const facEdge = graph.getOutgoingEdges(army.id, 'member_of')[0];
+          const faction = facEdge ? graph.getNode(facEdge.target) : null;
+          const locEdge = graph.getOutgoingEdges(army.id, 'located_at')[0];
+          const location = locEdge ? graph.getNode(locEdge.target) : null;
+          const objTarget = as.objective ? graph.getNode(as.objective.targetNodeId) : null;
+          return {
+            id: army.id,
+            name: army.name,
+            faction: faction?.name ?? null,
+            factionId: faction?.id ?? null,
+            commander: commander?.name ?? null,
+            location: location?.name ?? null,
+            locationId: location?.id ?? null,
+            size: as.size,
+            headcount: as.headcount,
+            quintessence: as.quintessence,
+            quintessenceMax: as.quintessenceMax,
+            quintessencePct:
+              as.quintessenceMax > 0
+                ? Math.round((as.quintessence / as.quintessenceMax) * 100)
+                : 0,
+            objective: as.objective
+              ? {
+                  type: as.objective.type,
+                  targetNodeId: as.objective.targetNodeId,
+                  targetName: objTarget?.name ?? null,
+                }
+              : null,
+            raisedTick: as.raisedTick,
+            ticksActive: tick - as.raisedTick,
+            maintenanceCost: as.maintenanceCost,
+          };
+        });
+    },
+
+    // THR-614 (war seam 3) — headless battle readout. Companion to getArmies.
+    getBattles: () => {
+      const state = _gameStateProvider?.();
+      if (!state) return [];
+      const graph = state.graph;
+      const tick = state.tick ?? 0;
+      return graph
+        .getNodesByType('actor')
+        .filter((n) => n.properties.battleState != null)
+        .map((battle) => {
+          const bs = battle.properties.battleState as import('./types/battle').BattleState;
+          // Mirrors BATTLE_RESOLUTION_THRESHOLD (8) / SIEGE_RESOLUTION_THRESHOLD (12)
+          // in types/battle.ts — kept inline to keep this reader sync + import-free.
+          const resolutionThreshold = bs.battleType === 'siege' ? 12 : 8;
+          return {
+            id: battle.id,
+            name: battle.name,
+            battleType: bs.battleType,
+            momentum: bs.momentum,
+            resolutionThreshold,
+            leader:
+              bs.momentum > 0 ? 'attacker' : bs.momentum < 0 ? 'defender' : 'even',
+            startedTick: bs.startedTick,
+            ticksElapsed: tick - bs.startedTick,
+            attackerArmyId: bs.attackerArmyId,
+            defenderArmyId: bs.defenderArmyId,
+            settlementId: bs.settlementId ?? null,
+            spotlightCount: bs.spotlightHistory.length,
+          };
+        });
+    },
   };
 }
