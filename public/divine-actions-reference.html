@@ -263,6 +263,26 @@
     </div>
   </section>
 
+  <section class="section">
+    <h2>Three states of a power — the path codex<span class="lead">The drawer shows only what you can do now. The codex shows the whole shape of your becoming.</span></h2>
+    <p>Because the drawer hides what you cannot yet attempt, it answers "what now?" cleanly — but it cannot answer "what could I still become?" That question lives in the <span class="term">codex</span>, a browsable catalog of every divine act. Open it from your character sheet (or the Signatures readout on your dashboard), and each card wears one of three plain marks for <em>this</em> incarnation:</p>
+    <div class="ortho">
+      <div class="ortho-card">
+        <h4>Yours</h4>
+        <p>A power already in your hand — revealed into this run's palette and ready to call. These are the cards the drawer offers when their target and cost allow.</p>
+      </div>
+      <div class="ortho-card">
+        <h4>Within reach</h4>
+        <p>In your domains, but <em>not yet earned</em> this run. A path still open to you — through a deepening, a beat's gift, or a milestone. This is your <span class="term">becoming</span>: what you have not done yet, but could.</p>
+      </div>
+      <div class="ortho-card">
+        <h4>Another life</h4>
+        <p>A power of a Reach you did not take. <span class="permanent">Not this incarnation</span> — it belongs to a different kind of god. The codex shows it greyed so the wall is legible, where the drawer simply keeps it dark.</p>
+      </div>
+    </div>
+    <p>The codex is deliberately kept <span class="term">out of the drawer</span>: your turn-to-turn hand stays clean, holding only what you can actually play, while the fuller map of your identity — held, earnable, and forever-elsewhere — waits one click away. From the dashboard, "what you could still become" opens the codex already filtered to <em>within reach</em> — the shortest read of your run's remaining arc.</p>
+  </section>
+
   <!-- ══════════════════ DESIGNER NOTES ══════════════════ -->
 
   <details class="designer" open>
@@ -296,6 +316,14 @@
         <li>Templates declaring <code>requiresReach</code> are hidden unless the ascendant's affinity in that Reach meets <code>REACH_GATE_MIN_AFFINITY = 0.2</code> (<code>src/data/influence-content.ts:92</code>). Below the bar, the slot is dropped and <code>counts.byReach</code> increments. Gate logic: <code>src/engine/targetActions.ts</code> ~L238, shipped in <strong>THR-503</strong>.</li>
         <li>This is a <strong>permanent set-membership filter, not aspiration</strong>: an ascendant's two Reaches are fixed for the run, so a card requiring a third Reach can never surface — distinct from within-run unlock gates (revelation/essence/capability), which a player can grow past.</li>
         <li>Fail-soft (NFP #4): an unknown <code>requiresReach</code> value logs a <code>console.warn</code> and <em>ungates</em> the template rather than hiding it — a content typo degrades to "visible," never to a silently missing action.</li>
+      </ul>
+
+      <h3>The path codex — three-state legibility, out of the drawer <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li><strong>Slice 3b-tail (THR-613).</strong> The design gate (2026-07-18, human-reviewed) resolved <em>against</em> putting "acquirable this run" ghost cards in the live drawer — the flood-control risk under the empty THR-501 starter floor, and the blast radius of touching the <code>getTargetActionSlots</code> filter cascade. The full three-state catalog lives in the <strong>Codex</strong> instead (<code>?view=codex</code>), reachable pre-filtered from the character sheet. Drawer card population is unchanged.</li>
+        <li>The three states — <code>available</code> ("Yours") / <code>acquirable</code> ("Within reach") / <code>locked_incarnation</code> ("Another life") — reuse the shipped <code>SignaturePathState</code> grammar + copy the Signatures readout uses (<code>src/data/ascendant-bar-content.ts</code>), so the character-sheet readout and the codex can never drift. State logic: <code>codexEntryRunState</code> (<code>src/components/Codex/codexRunState.ts</code>).</li>
+        <li><strong>Correctness callout:</strong> the "Another life" lock keys on <code>requiresReach</code> (the real reach gate), <em>never</em> on the card's <code>reach</code> classification tag — so a universal (<code>reach: 'star'</code>, no gate) card is never wrongly greyed out. This matches exactly what the drawer hides. The eight <code>invest.*</code> signatures are the only reach-locked cards, and are now catalogued in the codex so the "Another life" state is legible at all.</li>
+        <li>Held vs. within-reach partitions by <code>isActionRevealed</code> (<code>unlockedActionIds</code> + the empty THR-501 starter floor). The domain set comes from <code>getAscendantProgress</code> — the same read the Reaches/Signatures readouts use.</li>
       </ul>
 
       <h3>Sphere-power scaling <span class="flag impl">IMPL</span></h3>

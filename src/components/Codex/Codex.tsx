@@ -12,8 +12,34 @@ import type { CodexEntry } from './codexRegistry';
 import { CodexSidebar } from './CodexSidebar';
 import { CodexCard } from './CodexCard';
 import { CodexDetailPanel } from './CodexDetailPanel';
+import {
+  codexEntryRunState,
+  CODEX_RUN_STATE_FILTERS,
+  type CodexRunContext,
+  type CodexRunState,
+  type CodexRunStateFilter,
+} from './codexRunState';
 
-export default function Codex() {
+interface CodexProps {
+  /**
+   * Live incarnation context (THR-613 Slice 3b-tail). When present, every ascendant card
+   * carries a Held / Within-reach / Another-life badge and a state filter appears. Absent
+   * for the standalone `?view=codex` route → the plain catalog, unchanged.
+   */
+  runContext?: CodexRunContext | null;
+  /** Pre-select a state filter when opening (the character-sheet deep-link passes `acquirable`). */
+  initialStateFilter?: CodexRunStateFilter;
+  /** Rendered inside the game as an overlay: swaps "Back to Game" for a Close button. */
+  embedded?: boolean;
+  onClose?: () => void;
+}
+
+export default function Codex({
+  runContext = null,
+  initialStateFilter = 'all',
+  embedded = false,
+  onClose,
+}: CodexProps = {}) {
   const categories = useMemo(() => getCodexCategories(), []);
   const allEntries = useMemo(() => getAllCodexEntries(), []);
 
@@ -22,6 +48,15 @@ export default function Codex() {
   const [selectedEntryId, setSelectedEntryId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [starterOnly, setStarterOnly] = useState(false);
+  const [stateFilter, setStateFilter] = useState<CodexRunStateFilter>(initialStateFilter);
+
+  // Per-entry incarnation state, keyed by id. Empty when there is no live ascendant.
+  const runStateById = useMemo(() => {
+    const map = new Map<string, CodexRunState | null>();
+    if (!runContext) return map;
+    for (const entry of allEntries) map.set(entry.id, codexEntryRunState(entry, runContext));
+    return map;
+  }, [allEntries, runContext]);
 
   const starterCount = useMemo(
     () => allEntries.filter((entry) => entry.isStarter === true).length,
@@ -32,6 +67,10 @@ export default function Codex() {
     let entries = allEntries.filter(e => e.category === selectedCategory);
     if (starterOnly) {
       entries = entries.filter(e => e.isStarter === true);
+    }
+    // Incarnation state filter — only meaningful with a live ascendant. `all` is a no-op.
+    if (runContext && stateFilter !== 'all') {
+      entries = entries.filter(e => runStateById.get(e.id) === stateFilter);
     }
     if (selectedSubcategory) {
       entries = entries.filter(e => e.subcategory === selectedSubcategory);
@@ -45,7 +84,7 @@ export default function Codex() {
       );
     }
     return entries;
-  }, [allEntries, selectedCategory, selectedSubcategory, searchQuery, starterOnly]);
+  }, [allEntries, selectedCategory, selectedSubcategory, searchQuery, starterOnly, runContext, stateFilter, runStateById]);
 
   const selectedEntry = useMemo(() => {
     if (!selectedEntryId) return null;
@@ -127,18 +166,74 @@ export default function Codex() {
           Starter ({starterCount})
         </button>
 
-        {/* Back to game link */}
-        <a
-          href="?view=game"
+        {/* Close (embedded overlay) or back-to-game link (standalone route) */}
+        {embedded ? (
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close codex"
+            style={{
+              fontSize: 'var(--text-xs)',
+              color: 'var(--accent-gold-dim)',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+            }}
+          >
+            Close ✕
+          </button>
+        ) : (
+          <a
+            href="?view=game"
+            style={{
+              fontSize: 'var(--text-xs)',
+              color: 'var(--accent-gold-dim)',
+              textDecoration: 'none',
+            }}
+          >
+            Back to Game
+          </a>
+        )}
+      </header>
+
+      {/* Incarnation state filter (THR-613 Slice 3b-tail) — only with a live ascendant. */}
+      {runContext && (
+        <div
+          className="flex items-center gap-2 px-4 flex-shrink-0"
           style={{
-            fontSize: 'var(--text-xs)',
-            color: 'var(--accent-gold-dim)',
-            textDecoration: 'none',
+            height: '38px',
+            backgroundColor: 'var(--bg-deep)',
+            borderBottom: '1px solid var(--border-subtle)',
           }}
         >
-          Back to Game
-        </a>
-      </header>
+          <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', marginRight: 4 }}>
+            This incarnation
+          </span>
+          {CODEX_RUN_STATE_FILTERS.map((f) => {
+            const active = stateFilter === f.id;
+            return (
+              <button
+                key={f.id}
+                type="button"
+                onClick={() => setStateFilter(f.id)}
+                data-state-filter={f.id}
+                aria-pressed={active}
+                style={{
+                  borderRadius: '999px',
+                  border: '1px solid var(--border-subtle)',
+                  padding: '3px 10px',
+                  fontSize: 'var(--text-xs)',
+                  color: active ? 'var(--accent-gold)' : 'var(--text-muted)',
+                  backgroundColor: active ? 'var(--accent-gold-glow)' : 'var(--bg-surface)',
+                  cursor: 'pointer',
+                }}
+              >
+                {f.label}
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {/* Main content */}
       <div className="flex flex-1 overflow-hidden">
@@ -179,7 +274,11 @@ export default function Codex() {
               style={{ minHeight: '200px', color: 'var(--text-muted)' }}
             >
               <p style={{ fontSize: 'var(--text-sm)' }}>
-                {searchQuery ? 'No entries match your search.' : 'No entries in this category.'}
+                {searchQuery
+                  ? 'No entries match your search.'
+                  : runContext && stateFilter !== 'all'
+                    ? 'No paths here in this state.'
+                    : 'No entries in this category.'}
               </p>
             </div>
           ) : (
@@ -194,6 +293,7 @@ export default function Codex() {
                   key={entry.id}
                   entry={entry}
                   isSelected={entry.id === selectedEntryId}
+                  runState={runContext ? runStateById.get(entry.id) : undefined}
                   onClick={() => setSelectedEntryId(
                     entry.id === selectedEntryId ? null : entry.id
                   )}
