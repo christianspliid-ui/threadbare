@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-07-18, 15:29 local (light refresh by the hourly `keep-work-flowing-cc` CC task; last full rebuild was the 2026-06-23 retro)
+**Last updated:** 2026-07-18, 17:30 local (light refresh by the hourly `keep-work-flowing-cc` CC task; last full rebuild was the 2026-06-23 retro)
 **Owner of items below:** Christian. Everyone else's blockers go in Linear or `Docs/impediments.md`.
 **Refresh cadence:** The hourly `keep-work-flowing-cc` scheduled task keeps this current (prunes resolved items, adds newly-surfaced Christian-owned ones); the `retrospective` skill still does the deep periodic rebuild. This is the slow-moving standing-asks list — the fresh-this-hour view is [`Design/briefing.md`](briefing.md).
 
@@ -51,7 +51,7 @@ Then triage the other uncommitted working-tree files (item #3).
 
 ## 3. Triage orphan uncommitted changes in working trees · WILL NOT SELF-HEAL
 
-**Status:** Open · ~60 days · ~20 non-`.codesight` files uncommitted on the home tree as of 2026-07-18 15:29, which is also 17 commits behind `origin/main` (mostly `Docs/plans/` drafts and `.intent-proposals/`; run `git fetch && git rebase origin/main` first, then triage)
+**Status:** Open · ~60 days · ~20 non-`.codesight` files uncommitted on the home tree as of 2026-07-18 17:30, which is also 20 commits behind `origin/main` (mostly `Docs/plans/` drafts and `.intent-proposals/`; run `git fetch && git rebase origin/main` first, then triage)
 **Source:** Impediment #59 + 2026-07-18 `keep-work-flowing-cc` freshness ping
 
 **Fix.** Run `git status` on `main`; for each tracked-but-uncommitted file, attribute it to a Linear issue (commit with `Fixes THR-XX`) or `git checkout --` discard. Untracked files: same triage — `git add` + commit if intentional, `rm` if not.
