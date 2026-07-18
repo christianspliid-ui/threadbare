@@ -648,6 +648,47 @@ export interface DebugBridge {
       baselineCohesion?: number;
     }>;
   };
+
+  /** THR-614 (war seam 3) — Headless readout of active armies (ground-truth graph
+   *  read; no monster-faction filter). Companion to the DebugPanel "Armies" tab. */
+  getArmies: () => Array<{
+    id: string;
+    name: string;
+    faction: string | null;
+    factionId: string | null;
+    commander: string | null;
+    location: string | null;
+    locationId: string | null;
+    size: 'warband' | 'regiment' | 'host';
+    headcount: number;
+    quintessence: number;
+    quintessenceMax: number;
+    quintessencePct: number;
+    objective: {
+      type: 'raid' | 'conquer' | 'defend' | 'intercept' | 'reinforce_siege';
+      targetNodeId: string;
+      targetName: string | null;
+    } | null;
+    raisedTick: number;
+    ticksActive: number;
+    maintenanceCost: number;
+  }>;
+
+  /** THR-614 (war seam 3) — Headless readout of active battles/sieges. */
+  getBattles: () => Array<{
+    id: string;
+    name: string;
+    battleType: 'field_battle' | 'siege';
+    momentum: number;
+    resolutionThreshold: number;
+    leader: 'attacker' | 'defender' | 'even';
+    startedTick: number;
+    ticksElapsed: number;
+    attackerArmyId: string;
+    defenderArmyId: string;
+    settlementId: string | null;
+    spotlightCount: number;
+  }>;
 }
 
 declare global {
