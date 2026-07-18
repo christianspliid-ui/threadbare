@@ -513,6 +513,14 @@ export interface ScoredCandidate {
   rarityMultiplier: number;
   roleAffinityMultiplier: number;
   markRevealBonus: number;
+  /** Signed axiological delta the divine value overlay added toward this encounter's motivations (THR-641). 0 when the agent is under no divine influence. Receipt keeps positive mass only. */
+  divineOverlayBonus: number;
+  /** Raw social-bond desire modifier for the encounter's target agent (THR-641). 0 when the encounter has no target agent; may be negative for antagonistic bonds. */
+  bondBonus: number;
+  /** Additive reputation/personality scoring term for the encounter's reach (THR-641; = computeReputationScoringBonus). Already folded into finalScore's baseScore. */
+  reputationBonus: number;
+  /** Hex distance from the agent to the encounter location (THR-641); Infinity when unreachable. Receipt derives the `proximity` pull from it. */
+  hexDistanceToEntry: number;
   /** Flat additive boost from actionable intelligence held by the agent (THR-113). 0 or INTEL_SCORING_BONUS. */
   intelBonus: number;
   /** Flat additive bias from doom identity + active omen state for this encounter type (THR-81). */
@@ -812,6 +820,7 @@ function resolveProfile(
   agentId: string,
   tick: number,
   fundament?: FundamentState,
+  options?: { skipDivineOverlay?: boolean },
 ): AxiologicalProfile {
   const zeroProfile = Object.fromEntries(
     VALUE_PAIRS.map((p) => [p, 0]),
@@ -824,8 +833,10 @@ function resolveProfile(
     (node.properties?.axiologicalProfile as AxiologicalProfile | undefined) ??
     zeroProfile;
 
-  // Apply divine influence overlay if present
-  const influences = getDivineInfluences(graph, agentId);
+  // Apply divine influence overlay if present. `skipDivineOverlay` builds the
+  // otherwise-identical profile without it, so the motive receipt can attribute
+  // the divine value-overlay delta as its own contribution (THR-641).
+  const influences = options?.skipDivineOverlay ? [] : getDivineInfluences(graph, agentId);
   let profile = influences.length > 0
     ? buildValueOverlay(baseProfile, influences, tick)
     : baseProfile;
@@ -983,6 +994,15 @@ export function scoreAndSelect(
 
   const profile = resolveProfile(graph, agentId, tick, fundament);
 
+  // For the motive receipt's `divine` contribution (THR-641): resolve the same
+  // profile without the divine value overlay so each candidate can attribute the
+  // overlay's steering as its own labeled term. Gated — only pay the extra resolve
+  // when the agent is actually under divine influence; otherwise the delta is 0.
+  const hasDivineInfluence = getDivineInfluences(graph, agentId).length > 0;
+  const profileWithoutDivine = hasDivineInfluence
+    ? resolveProfile(graph, agentId, tick, fundament, { skipDivineOverlay: true })
+    : profile;
+
   // Pre-fetch behavior weights once per agent (behavior_weight effects)
   const behaviorWeights = effectStates !== undefined
     ? getBehaviorWeights(graph, agentId, effectStates)
@@ -1084,6 +1104,13 @@ export function scoreAndSelect(
     // 7. Axiological score — raw signed alignment over the encounter's motivation pairs.
     const axiologicalScore = computeDesireScore(entry.motivations, profile);
 
+    // 7a. Divine value-overlay delta (THR-641) — how much the divine influence
+    // overlay shifted alignment toward THIS encounter's motivations. Signed; the
+    // receipt keeps only positive mass (steering *toward* the matter).
+    const divineOverlayBonus = hasDivineInfluence
+      ? axiologicalScore - computeDesireScore(entry.motivations, profileWithoutDivine)
+      : 0;
+
     // 7b. Personality bias (THR-531) — amplify the axiological alignment so agents clearly
     // gravitate toward encounters matching their dominant axes ("strong & legible"). At
     // PERSONALITY_SELECTION_WEIGHT = 1.0 this reproduces the pre-THR-531 baseline.
@@ -1105,9 +1132,13 @@ export function scoreAndSelect(
     // D.1: Amplify personality signal — clamp to ≥0.01 before exponentiation to prevent NaN
     desireMultiplier = Math.pow(Math.max(desireMultiplier, 0.01), PERSONALITY_SCORE_EXPONENT);
 
+    // Social bond modifier (hoisted so the receipt can surface it as the `bond`
+    // contribution, THR-641). 0 when the encounter has no target agent.
+    const bondBonus = entry.targetAgentId
+      ? computeBondModifier(graph, agentId, entry.targetAgentId)
+      : 0;
     if (entry.targetAgentId) {
-      const bondMod = computeBondModifier(graph, agentId, entry.targetAgentId);
-      desireMultiplier *= (1.0 + bondMod);
+      desireMultiplier *= (1.0 + bondBonus);
     }
 
     // D.2: Behavior weight multiplier (behavior_weight effects on the agent)
@@ -1251,6 +1282,10 @@ export function scoreAndSelect(
       rarityMultiplier,
       roleAffinityMultiplier,
       markRevealBonus,
+      divineOverlayBonus,
+      bondBonus,
+      reputationBonus,
+      hexDistanceToEntry: distance,
       intelBonus,
       identityBiasBonus,
       noveltyMultiplier,

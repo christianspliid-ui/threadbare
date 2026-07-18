@@ -57,6 +57,10 @@ function makeCandidate(overrides: Partial<ScoredCandidate> = {}): ScoredCandidat
     rarityMultiplier: 1,
     roleAffinityMultiplier: 1,
     markRevealBonus: 0,
+    divineOverlayBonus: 0,
+    bondBonus: 0,
+    reputationBonus: 0,
+    hexDistanceToEntry: Infinity,
     intelBonus: 0,
     identityBiasBonus: 0,
     noveltyMultiplier: 1,
@@ -212,5 +216,75 @@ describe('buildMotiveReceipt', () => {
     expect(receipt.intelTier).toBe('expert');
     const intel = receipt.contributions.find(c => c.kind === 'intel');
     expect(intel?.provenance?.detail).toBe('intel.rec.123');
+  });
+
+  // THR-641: the four previously-folded scorer terms now surface as receipt kinds.
+  it('surfaces the divine value-overlay delta as a divine contribution', () => {
+    const receipt = buildMotiveReceipt(
+      makeCandidate({ ambitionBoost: 1, divineOverlayBonus: 2 }),
+      null,
+      null,
+      1,
+    );
+    const divine = receipt.contributions.find(c => c.kind === 'divine');
+    expect(divine).toBeDefined();
+    expect(divine!.weight).toBeCloseTo(2 / 3, 5);
+    // A negative (steering-away) delta contributes no positive mass.
+    const away = buildMotiveReceipt(
+      makeCandidate({ ambitionBoost: 1, divineOverlayBonus: -2 }),
+      null,
+      null,
+      1,
+    );
+    expect(away.contributions.map(c => c.kind)).not.toContain('divine');
+  });
+
+  it('surfaces the bond modifier (scaled by MULTIPLIER_DELTA_SCALE) with bonded-agent provenance', () => {
+    const receipt = buildMotiveReceipt(
+      makeCandidate({
+        entry: makeEntry({ targetAgentId: 'agent.ally' } as Partial<EncounterCacheEntry>),
+        ambitionBoost: 1,
+        bondBonus: 1,
+      }),
+      null,
+      null,
+      1,
+    );
+    const bond = receipt.contributions.find(c => c.kind === 'bond');
+    expect(bond).toBeDefined();
+    expect(bond!.provenance?.nodeId).toBe('agent.ally');
+  });
+
+  it('surfaces the reputation scoring term as a reputation contribution', () => {
+    const receipt = buildMotiveReceipt(
+      makeCandidate({ ambitionBoost: 1, reputationBonus: 3, entry: makeEntry({ reachPrimary: 'heart' }) }),
+      null,
+      null,
+      1,
+    );
+    const rep = receipt.contributions.find(c => c.kind === 'reputation');
+    expect(rep).toBeDefined();
+    expect(rep!.weight).toBeCloseTo(0.75, 5);
+    expect(rep!.provenance?.detail).toBe('heart');
+  });
+
+  it('derives proximity from hex distance; Infinity (unreachable) contributes nothing', () => {
+    // Same hex (distance 0) → strong proximity pull dominates a weak other term.
+    const near = buildMotiveReceipt(
+      makeCandidate({ personalityBias: 0.05, hexDistanceToEntry: 0 }),
+      null,
+      null,
+      1,
+    );
+    expect(near.contributions.map(c => c.kind)).toContain('proximity');
+
+    // Unreachable → no proximity contribution.
+    const unreachable = buildMotiveReceipt(
+      makeCandidate({ ambitionBoost: 1, hexDistanceToEntry: Infinity }),
+      null,
+      null,
+      1,
+    );
+    expect(unreachable.contributions.map(c => c.kind)).not.toContain('proximity');
   });
 });
