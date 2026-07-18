@@ -114,6 +114,22 @@ Dev-only DebugPanel tab that audits the static authored-content library against 
 
 ---
 
+## DebugPanel Orphaned Cards Tab (THR-659)
+
+Dev-only DebugPanel tab that reports player-castable action templates no run can ever surface — neither a starter, a static beat grant (`collectGrantedActionIds()`), nor a dynamic reach-signature grant (`REACH_SIGNATURE_ID_BY_REACH`). Pure, deterministic, session-independent set arithmetic over static registries — never runs in the tick loop.
+
+| Surface | Path | Notes |
+|---|---|---|
+| Report module (engine) | `src/engine/content-eval/unreachableActions.ts` (new) | Pure `reportUnreachableActions(): UnreachableActionReport`. `isPlayerReachableTemplate` = `actorAffinities.includes('ascendant')` (the drawer's player-vs-mortal boundary, cited to `targetActions.ts`/`useTargetActions`). Reachable = static beat grant ∪ starter (flag or `STARTER_ACTION_IDS`) ∪ dynamic reach-signature. Fail-soft: coalesces missing fields; a granted-set throw degrades to a loud `warning`, never crashes. No GameState / tick / PRNG. |
+| DebugPanel tab | `src/components/Game/debug/DebugTabContent.tsx` | `'orphaned-cards'` added to `ViewMode` union + `TABS` array (label `Orphaned Cards`, append-only) + render branch + import; delegates to `<OrphanedCardsDebugTab>`. |
+| Tab component | `src/components/Game/debug/OrphanedCardsDebugTab.tsx` (new) | Imports the pure module directly (no `__DEBUG` dependency). Summary band (unreachable / player-reachable / granted / signatures / starters), id/name filter, capped table (`ORPHANED_TAB_ROW_LIMIT=300`, `id·name·reach·crud`), empty-state + warning row. `data-testid="orphaned-cards-view"` / `"orphaned-cards-row"`. |
+| Debug bridge | `src/debug-bridge.ts` + `src/debug-bridge.d.ts` | `window.__DEBUG.listUnreachableActions()` → `UnreachableActionReport` (async, lazy `import()`, mirrors `proseQualityReport`). Pure read, no state mutation. |
+| GameState flow | None | Reads static registries (`UNIFIED_ACTION_TEMPLATES`, beat grants, reach signatures, starter ids), not GameState. |
+| Traces | None | Not a tick phase; inspectability delivered via the `__DEBUG` return contract (the report object is the inspectable artifact). |
+| Tests | `src/engine/content-eval/__tests__/unreachableActions.test.ts` (new) | 9 tests: determinism, sorted-by-id, summary consistency, excludes beat-granted (`divine.persuade`), includes ungranted residual (`loc.fortify`), ascendant-affinity-only entries, excludes dynamic reach-signatures, no happy-path warning. |
+
+---
+
 ## Phase 6 — Reward & Attachment Economy Expansion, Slice A (THR-63)
 
 Universal band differentiation for all action templates; `near_miss` as 6th StepOutcome band.

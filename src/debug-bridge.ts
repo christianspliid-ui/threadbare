@@ -1294,6 +1294,15 @@ if (import.meta.env.DEV) {
       return scoreOne(match);
     },
 
+    // THR-659: orphaned action-card inspector. Player-castable templates that no run
+    // can ever surface — neither a starter, a static beat grant, nor a dynamic reach
+    // signature. Pure + deterministic; independent of any live session. Mirrors the
+    // DebugPanel "Orphaned Cards" tab so the same report is scriptable from CLI.
+    listUnreachableActions: async () => {
+      const { reportUnreachableActions } = await import('./engine/content-eval/unreachableActions');
+      return reportUnreachableActions();
+    },
+
     // THR-66: rival scheme inspection — reads the denormalized RivalState.schemes summaries.
     getRivalSchemes: () => {
       const state = _gameStateProvider?.();

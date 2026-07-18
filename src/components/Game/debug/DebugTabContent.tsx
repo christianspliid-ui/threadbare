@@ -54,11 +54,12 @@ import { KpiDebugTab } from './KpiDebugTab';
 import { ProseQualityView } from './ProseQualityView';
 import { EconomyDebugTab } from './EconomyDebugTab';
 import { EssenceSourcesDebugTab } from './EssenceSourcesDebugTab';
+import { OrphanedCardsDebugTab } from './OrphanedCardsDebugTab';
 import { EMPTY_STATE_STYLE } from './debugPanelStyles';
 import type { KnowsClueOfEdgeProperties } from '../../../types/knowledge';
 import type { FlipTableRuntimeState } from '../../../types/contentShells';
 
-export type ViewMode = 'feed' | 'agent-follow' | 'tick-inspector' | 'social' | 'encounters' | 'encounter-seeds' | 'hidden-marks' | 'journey' | 'webgl' | 'factions' | 'spheres' | 'revelation-log' | 'knowledge-gaps' | 'armies' | 'cli' | 'strategic' | 'omens' | 'cultures' | 'secrets-favors' | 'clues' | 'ruins' | 'recent-events' | 'shells' | 'compositions' | 'phases' | 'choices' | 'drift' | 'hand' | 'detection' | 'forecast' | 'foreshadowing' | 'action-unlocks' | 'beats' | 'sustained-controls' | 'kpi' | 'prose-quality' | 'economy' | 'essence-sources';
+export type ViewMode = 'feed' | 'agent-follow' | 'tick-inspector' | 'social' | 'encounters' | 'encounter-seeds' | 'hidden-marks' | 'journey' | 'webgl' | 'factions' | 'spheres' | 'revelation-log' | 'knowledge-gaps' | 'armies' | 'cli' | 'strategic' | 'omens' | 'cultures' | 'secrets-favors' | 'clues' | 'ruins' | 'recent-events' | 'shells' | 'compositions' | 'phases' | 'choices' | 'drift' | 'hand' | 'detection' | 'forecast' | 'foreshadowing' | 'action-unlocks' | 'beats' | 'sustained-controls' | 'kpi' | 'prose-quality' | 'economy' | 'essence-sources' | 'orphaned-cards';
 
 export const TABS: { id: ViewMode; label: string }[] = [
   { id: 'feed', label: 'Feed' }, { id: 'agent-follow', label: 'Agent' },
@@ -87,6 +88,7 @@ export const TABS: { id: ViewMode; label: string }[] = [
   { id: 'prose-quality', label: 'Prose QA' },
   { id: 'economy', label: 'Economy' },
   { id: 'essence-sources', label: 'Essence Sources' },
+  { id: 'orphaned-cards', label: 'Orphaned Cards' },
 ];
 
 export interface DebugTabContentProps {
@@ -250,6 +252,7 @@ export function DebugTabContent({
   if (viewMode === 'prose-quality') return <ProseQualityView />;
   if (viewMode === 'economy') return <EconomyDebugTab graph={graph} currentTick={currentTick} />;
   if (viewMode === 'essence-sources') return <EssenceSourcesDebugTab graph={graph} currentTick={currentTick} />;
+  if (viewMode === 'orphaned-cards') return <OrphanedCardsDebugTab />;
   if (viewMode === 'sustained-controls') {
     return (
       <SustainedControlsDebugTab
