@@ -23,10 +23,11 @@
 
 import { mulberry32 } from '../../lib/prng';
 import type { MotiveReceipt } from '../../types/foreshadowing';
-import { realize, pronounNumber } from './realizer';
+import { realize, pronounNumber, objectPronoun } from './realizer';
 import {
   KNOWLEDGE_CLAUSES,
   MOTIVE_CLAUSES,
+  MOTIVE_CLAUSES_BY_REACH,
   EXPECTATION_BY_FORECAST,
   LOW_INTEL_HEDGE_TAILS,
   STAKE_CLAUSES,
@@ -88,6 +89,8 @@ export function composeReceiptForeshadowing(
   const firstName = agentName.split(' ')[0] || agentName;
   const subject = subjectPronoun.trim().toLowerCase() || 'they';
   const Subject = subject.charAt(0).toUpperCase() + subject.slice(1);
+  const objectForm = objectPronoun(subject);
+  const ObjectForm = objectForm.charAt(0).toUpperCase() + objectForm.slice(1);
   const number = pronounNumber(subject);
 
   const tier = receipt.intelTier in KNOWLEDGE_CLAUSES ? receipt.intelTier : 'unknown';
@@ -107,14 +110,26 @@ export function composeReceiptForeshadowing(
 
   // Fixed pick order keeps the seed → prose mapping stable.
   const knowledgeTpl = pick(KNOWLEDGE_CLAUSES[tier]);
-  const motivePool = MOTIVE_CLAUSES[topKind] ?? MOTIVE_CLAUSES.personality;
+  // Reach-flavored S2 (THR-640): for the top-4 contribution kinds, a sub-table
+  // keyed on the receipt's dominantReach adds Reach-specific flavour; other kinds
+  // (or an unflavoured Reach) fall back to the base kind pool, then personality.
+  const reachPool = MOTIVE_CLAUSES_BY_REACH[topKind]?.[receipt.dominantReach];
+  const motivePool = reachPool ?? MOTIVE_CLAUSES[topKind] ?? MOTIVE_CLAUSES.personality;
   const motiveTpl = pick(motivePool);
   const expectationTpl = pick(EXPECTATION_BY_FORECAST[forecast]);
   const lowIntel = tier === 'unknown' || tier === 'rumor';
   const hedgeTail = lowIntel ? pick(LOW_INTEL_HEDGE_TAILS) : null;
   const stakeTpl = hasStake ? pick(STAKE_CLAUSES[second.kind] ?? DEFAULT_STAKE_CLAUSES) : null;
 
-  const slots = { name: firstName, subject, Subject, matter, place: locationName };
+  const slots = {
+    name: firstName,
+    subject,
+    Subject,
+    object: objectForm,
+    Object: ObjectForm,
+    matter,
+    place: locationName,
+  };
   const ctx = { number, slots };
 
   const s1 = realize(knowledgeTpl, ctx);
@@ -127,7 +142,7 @@ export function composeReceiptForeshadowing(
 
   const compositionKeys = [
     `knowledge:${tier}`,
-    `pull:${topKind}`,
+    reachPool ? `pull:${topKind}/${receipt.dominantReach}` : `pull:${topKind}`,
     `expect:${forecast}${lowIntel ? '/hedged' : ''}`,
     ...(hasStake ? [`stake:${second.kind}`] : []),
   ];

@@ -15,7 +15,7 @@
 import { mulberry32 } from '../../lib/prng';
 import type { ForeshadowingIntelligenceTier } from '../../types/foreshadowing';
 import { REACH_DOMAINS, type ReachDomain } from '../../types/traits';
-import { realize, pronounNumber } from './realizer';
+import { realize, pronounNumber, objectPronoun } from './realizer';
 import {
   KNOWLEDGE_CLAUSES,
   PULL_CLAUSES,
@@ -75,6 +75,8 @@ export function composeGenericForeshadowing(
   const firstName = agentName.split(' ')[0] || agentName;
   const subject = subjectPronoun.trim().toLowerCase() || 'they';
   const Subject = subject.charAt(0).toUpperCase() + subject.slice(1);
+  const objectForm = objectPronoun(subject);
+  const ObjectForm = objectForm.charAt(0).toUpperCase() + objectForm.slice(1);
   const number = pronounNumber(subject);
 
   const reach = isReachDomain(dominantReach) ? dominantReach : null;
@@ -89,7 +91,15 @@ export function composeGenericForeshadowing(
   const pullTpl = pick(pullPool);
   const expectationTpl = pick(EXPECTATION_CLAUSES[tier]);
 
-  const slots = { name: firstName, subject, Subject, matter, place: locationName };
+  const slots = {
+    name: firstName,
+    subject,
+    Subject,
+    object: objectForm,
+    Object: ObjectForm,
+    matter,
+    place: locationName,
+  };
   const ctx = { number, slots };
 
   const prose = [
