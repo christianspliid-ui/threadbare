@@ -70,7 +70,11 @@ scripts/playtest.mjs
 
 # Large assets moved to Obsidian vault (2026-04-06)
 Docs/source-pdfs/
-Design/
+Design/*
+# ...except the two PM-inbox files the keep-work-flowing-cc task tracks (THR-650).
+# (Uses `Design/*`, not `Design/`, so git can re-include files below an otherwise-ignored dir.)
+!Design/briefing.md
+!Design/user-actions.md
 
 # Python TTS server
 .venv/
