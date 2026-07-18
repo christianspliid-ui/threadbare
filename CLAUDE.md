@@ -459,8 +459,9 @@ Current recurring task registry:
 |------|---------|------|------|---------|
 | **:00** | Hourly | CC pickup (`tb-opus-pickup` — single Opus executor lane) | `0 * * * *` | CC automation lane |
 | **:15** | Hourly | `flush-plan-docs` | `15 * * * *` | CC automation lane |
+| **:20** | Hourly | `keep-work-flowing-cc` (CC PM brief — refreshes `Design/briefing.md`) | `20 * * * *` | CC automation lane |
 | **:30** | Hourly | *(free — was Codex pickup, retired THR-486)* | — | — |
-| **:45** | Hourly | `keep-work-flowing` (Cowork PM) | `45 * * * *` | This machine |
+| **:45** | Hourly | `keep-work-flowing` (Cowork PM — superseded by `keep-work-flowing-cc`, THR-650; runs during migration parallel-run only) | `45 * * * *` | This machine |
 | **09:06** | Daily | `daily-backlog-grooming` | `6 9 * * *` | This machine |
 | **Wed 09:04** | Weekly | `weekly-workflow-retro` | `4 9 * * 3` | This machine |
 | **Fri 14:00** | Weekly | Drift scan (GitHub Action) | n/a (Actions cron) | GitHub Actions |
@@ -470,7 +471,7 @@ Current recurring task registry:
 | **Sun 16:03** | Weekly | `weekly-memory-grooming` | `3 16 * * 0` | CC automation lane |
 | **1st 09:00** | Monthly | `monthly-rulebook-review` (needs creation — THR-417) | `0 9 1 * *` | TBD |
 
-**Slot allocation.** Hourly Linear-MCP-using tasks occupy the quarter-hour slots: :00 (CC pickup), :15 (`flush-plan-docs`), :45 (Cowork PM). The :30 slot is free since the Codex pickup was retired (THR-486). Daily and weekly tasks pick non-quarter-hour minutes (e.g., :04, :06, :09). When registering a new hourly task, pick the next free 5-minute offset within a quarter-hour band and update this table in the same commit.
+**Slot allocation.** Hourly Linear-MCP-using tasks occupy the quarter-hour slots: :00 (CC pickup), :15 (`flush-plan-docs`), :20 (`keep-work-flowing-cc` PM brief — fires ~:28 after jitter, deliberately after the :00 pickup so the brief reflects post-pickup state), :45 (Cowork PM, migration parallel-run only). The :30 slot is free since the Codex pickup was retired (THR-486). Daily and weekly tasks pick non-quarter-hour minutes (e.g., :04, :06, :09). When registering a new hourly task, pick the next free 5-minute offset within a quarter-hour band and update this table in the same commit.
 
 ## Skill Tree Layout
 
