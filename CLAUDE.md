@@ -485,7 +485,7 @@ The repo has two skill directories; they serve different agents and do NOT have 
 
 **When you edit a skill, bump `last_validated_against` to today's date** if you changed instructions, examples, or referenced systems. Skip bumps for typo-only/format-only edits. This field records an explicit correctness affirmation, not a file-modified timestamp. If you review a skill and confirm it is still accurate without content edits, you may still bump the date in a small one-line commit.
 
-**Skills that only exist in `.agents/skills/`** are Cowork/Gemini-only by design (currently: `content-catalog-manager`, `defuddle`, `design-council`, `json-canvas`, `obsidian-bases`, `obsidian-cli`, `obsidian-markdown`, `playtest-interface`). CC cannot load these — do not route CC to them.
+**Skills that only exist in `.agents/skills/`** are currently: `content-catalog-manager`, `defuddle`, `json-canvas`, `obsidian-bases`, `obsidian-cli`, `obsidian-markdown`. CC cannot load these — do not route CC to them. Per the Pure Claude Code Migration skill-tree audit (THR-651), these six are **marked for retirement** — CC does Obsidian-vault work via the filesystem directly (`OBSIDIAN_VAULT_PATH`), and `content-catalog-manager` had no usage in the trailing 60 days. They remain in `.agents/` until the Phase 3 `.agents/skills/` deletion (THR-654); do not port them. (`design-council` and `playtest-interface` were ported to `.claude/skills/` in the same audit — browser MCP verified working from a CC session — and are now shared skills.)
 
 **When adding a new skill:** decide its audience first. CC-needed → `.claude/skills/`. Cowork/Gemini-only → `.agents/skills/`. Both → `.claude/skills/` and let the hook mirror.
 
@@ -525,12 +525,12 @@ Context for specific problem types lives in on-demand skills. **Always load the 
 | Vault — enrich pages | `vault-enrich` | Add cross-refs, expand content, fix issues. `/kb-enrich [page]` |
 | Image manipulation | `image-manipulation` | Geometric clipping, alpha masks, hex tile pipeline |
 | QA sweeps | `qa-orchestrator` | Systematic UI/UX/frontend QA |
-| Interface regression sweep | `playtest-interface` | Cowork-runnable interface playtest — drives Chrome MCP through the game, asserts every IA manifest surface via `__DEBUG`, produces structured PASS/FAIL/SURPRISE report. `/playtest-interface [url]` |
+| Interface regression sweep | `playtest-interface` | Interface playtest — drives a browser MCP session through the game, asserts every IA manifest surface via `__DEBUG`, produces structured PASS/FAIL/SURPRISE report. `/playtest-interface [url]` |
 | Testing & contracts | `testing-patterns` | Writing tests for engine or HexMapV2 changes. Contract test patterns, dependency maps, anti-patterns, coverage gap reference. |
 | Encounter tuning & analysis | `agent-analyser` | Analysing encounter log TSV exports for agent behavior, balance, variety, movement, capability growth, idle rates. Upload logs and ask for analysis. |
 | **Impediment reporting (always active)** | `impediment-reporter` | **Every session, every agent.** Log blockers and workarounds to `Docs/impediments.md` as they occur. Part of Definition of Done. |
 | Continuous improvement | `retrospective` | Review impediment log, analyze patterns, implement quick-fix improvements, backlog larger ones. Run with `/retrospective`. |
-| Multi-perspective design | `design-council` *(.agents/ only)* | Run a sociocratic, consent-based design discussion with multiple perspectives (content, engine, coordination, etc.). Forward-looking counterpart to `retrospective`. Trigger with `/design-council` or "let's get multiple perspectives on this". |
+| Multi-perspective design | `design-council` | Run a sociocratic, consent-based design discussion with multiple perspectives (content, engine, coordination, etc.). Forward-looking counterpart to `retrospective`. Trigger with `/design-council` or "let's get multiple perspectives on this". |
 | Pre-handoff intent check | `intent-judge` | Before applying `plan-pending-commit` to any plan doc. Auto-spawned subagent that scores the plan against the user's verbatim ask. Returns Allow / Revise / Block / Escalate. `/intent-judge <path>` for manual runs. |
 | Pickup entrypoint (CC) | `pull-work` | Canonical CC pickup flow: safe-claim, verify-after-write, dirty-worktree fallback. Run with `/pull-work`. |
 | Plan-doc flush (Cowork) | `flush-plan-docs` | Hourly scheduled task that commits files referenced by `plan-pending-commit` label to `origin/main` and clears the label. Cowork applies the label after writing a plan doc; do not commit plan docs directly. |
