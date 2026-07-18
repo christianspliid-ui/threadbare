@@ -76,6 +76,7 @@ const HARD_CODED_REQUIRED_HEADINGS = [
 ] as const;
 const PLAN_DOC_SKIP_PATTERNS = [
   /\/_template\.md$/u,
+  /\/INDEX\.md$/u, // generated catalog (rebuild-plans-index), not a plan doc
   /\/wiring-checklist\.md$/u,
   /\/README\.md$/u,
   /-brainstorm\.md$/u,
