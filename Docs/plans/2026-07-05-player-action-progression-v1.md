@@ -133,6 +133,9 @@ A dedicated surface, **separate from the ActionDrawer**, for ongoing Control com
 
 ### 5.B ActionDrawer locked-state grammar — three visible states
 
+> **SUPERSEDED (2026-07-18, Slice 3b-tail, human-reviewed design call).** The "acquirable this run" middle state is **not** rendered in the live ActionDrawer — surfacing every unlock-gated in-reach card there floods the drawer under the empty THR-501 starter floor, and touching `getTargetActionSlots` carries live-gameplay blast radius. Instead the full three-state catalog lives in the **Codex** (`?view=codex`; in-game overlay), reachable pre-filtered from the character sheet + Signatures readout. The drawer's card population is unchanged. The three states below still describe the *grammar* — they now render as Codex card badges (`codexEntryRunState`, `src/components/Codex/codexRunState.ts`), keyed on `requiresReach` (not the `reach` tag). Table retained for the state definitions.
+
+
 | State | Meaning | Render |
 |---|---|---|
 | **Available** | Prereqs met | Normal card |

@@ -37,6 +37,11 @@ interface AscendantSheetProps {
   avatarName: string;
   sphereColor: string;
   originFragmentId: string;
+  /**
+   * Open the Codex path catalog, pre-filtered (THR-613 Slice 3b-tail). The sheet closes
+   * first so the two full-screen surfaces never stack.
+   */
+  onOpenCodex?: (filter?: import('../Codex/codexRunState').CodexRunStateFilter) => void;
 }
 
 // ─── Constants & helpers ──────────────────────────────────────────────────────
@@ -147,6 +152,7 @@ export function AscendantSheet({
   avatarName,
   sphereColor,
   originFragmentId,
+  onOpenCodex,
 }: AscendantSheetProps) {
   const primarySphere = archetype.sphereAlignment.primary;
   const secondarySphere = archetype.sphereAlignment.secondary;
@@ -318,6 +324,28 @@ export function AscendantSheet({
                 );
               })}
             </div>
+            {onOpenCodex && (
+              <button
+                type="button"
+                data-testid="sheet-codex-link"
+                onClick={() => {
+                  // Close the sheet first — the Codex overlay and this modal both sit at the
+                  // same layer, so they must never stack.
+                  onClose();
+                  onOpenCodex('acquirable');
+                }}
+                className="mt-2 text-xs italic"
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  padding: 0,
+                  cursor: 'pointer',
+                  color: 'var(--accent-gold)',
+                }}
+              >
+                Browse the path codex — what you could still become →
+              </button>
+            )}
           </section>
 
           {/* Essence — split into Creation and Foundation groups */}

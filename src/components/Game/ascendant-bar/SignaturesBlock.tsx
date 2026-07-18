@@ -18,9 +18,12 @@ import {
   SIGNATURE_EMPTY_COPY,
 } from '../../../data/ascendant-bar-content';
 import type { SignaturePathView } from './selectors';
+import type { CodexRunStateFilter } from '../../Codex/codexRunState';
 
 interface SignaturesBlockProps {
   paths: SignaturePathView[];
+  /** Open the full Codex path catalog, optionally pre-filtered (THR-613 Slice 3b-tail). */
+  onOpenCodex?: (filter?: CodexRunStateFilter) => void;
 }
 
 function GroupLabel({ text }: { text: string }) {
@@ -109,18 +112,52 @@ function SignatureRow({ path }: { path: SignaturePathView }) {
   );
 }
 
-export function SignaturesBlock({ paths }: SignaturesBlockProps) {
+/**
+ * A quiet footer link into the full Codex path catalog (THR-613 Slice 3b-tail). The
+ * eight signatures above are the headline powers; the Codex holds every card in the same
+ * three-state grammar. "Within reach" deep-links to the acquirable filter — the god's
+ * "what I could still become" this run.
+ */
+function CodexLink({ onOpenCodex }: { onOpenCodex: (filter?: CodexRunStateFilter) => void }) {
+  return (
+    <button
+      type="button"
+      data-testid="signatures-codex-link"
+      onClick={() => onOpenCodex('acquirable')}
+      style={{
+        alignSelf: 'flex-start',
+        background: 'none',
+        border: 'none',
+        padding: 0,
+        marginTop: 2,
+        cursor: 'pointer',
+        fontFamily: 'var(--font-body)',
+        fontStyle: 'italic',
+        fontSize: 11,
+        color: 'var(--accent-gold-dim)',
+        letterSpacing: '0.02em',
+      }}
+    >
+      What you could still become →
+    </button>
+  );
+}
+
+export function SignaturesBlock({ paths, onOpenCodex }: SignaturesBlockProps) {
   if (paths.length === 0) {
     return (
-      <div
-        style={{
-          fontFamily: 'var(--font-body)',
-          fontStyle: 'italic',
-          fontSize: 12,
-          color: 'var(--text-muted)',
-        }}
-      >
-        {SIGNATURE_EMPTY_COPY}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+        <div
+          style={{
+            fontFamily: 'var(--font-body)',
+            fontStyle: 'italic',
+            fontSize: 12,
+            color: 'var(--text-muted)',
+          }}
+        >
+          {SIGNATURE_EMPTY_COPY}
+        </div>
+        {onOpenCodex && <CodexLink onOpenCodex={onOpenCodex} />}
       </div>
     );
   }
@@ -146,6 +183,7 @@ export function SignaturesBlock({ paths }: SignaturesBlockProps) {
           ))}
         </div>
       )}
+      {onOpenCodex && <CodexLink onOpenCodex={onOpenCodex} />}
     </div>
   );
 }

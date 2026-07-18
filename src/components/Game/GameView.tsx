@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
+import { useState, useCallback, useMemo, useEffect, useRef, lazy, Suspense } from 'react';
 import { SPHERE_NAMES, type CosmologyProfile } from '../../types';
 import type { AscendantArchetype } from '../../types/influence';
 import { resumeMusic as resumeTheme, getMusicVolume, setMusicVolume, isMusicMuted, toggleMusicMute } from '../../audio/MusicChannel';
@@ -101,6 +101,10 @@ import { useNotificationNavigation } from './hooks/useNotificationNavigation';
 import { useNotificationPreferences } from './hooks/useNotificationPreferences';
 import { IdentityChip } from './IdentityChip';
 import { AscendantBar } from './ascendant-bar/AscendantBar';
+import { buildCodexRunContext, type CodexRunStateFilter } from '../Codex/codexRunState';
+// Codex overlay (THR-613 Slice 3b-tail): the full three-state catalog, reachable from the
+// ascendant bar. Lazy so the codex registry stays out of the main game bundle.
+const Codex = lazy(() => import('../Codex/Codex'));
 import { AscendantSheet } from './AscendantSheet';
 import { EventPopup } from './EventPopup';
 import { courtPositionToThreadTier } from './encounter-stage/types';
@@ -304,6 +308,14 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
 
   // ── Ascendant sheet modal state ──
   const [ascendantSheetOpen, setAscendantSheetOpen] = useState(false);
+
+  // ── Codex overlay (THR-613 Slice 3b-tail): full three-state path catalog ──
+  const [codexOpen, setCodexOpen] = useState(false);
+  const [codexInitialFilter, setCodexInitialFilter] = useState<CodexRunStateFilter>('all');
+  const openCodex = useCallback((filter: CodexRunStateFilter = 'all') => {
+    setCodexInitialFilter(filter);
+    setCodexOpen(true);
+  }, []);
 
   // ── Ascendant beat: whether the player has "entered" the pending beat (THR-517) ──
   const [beatEntered, setBeatEntered] = useState(false);
@@ -3184,6 +3196,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
           worldVersion={runtime.worldVersion}
           onOpenSheet={() => setAscendantSheetOpen(true)}
           onOpenMandate={() => setMandateDetailOpen(true)}
+          onOpenCodex={openCodex}
           onMove={handleAvatarMoveClick}
           onInvestiture={handleScryWithMutex}
           onReleaseControl={(effectId) =>
@@ -3970,7 +3983,36 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         avatarName={avatarName}
         sphereColor={sphereColor}
         originFragmentId={ascendantIdentity?.originFragmentId ?? ''}
+        onOpenCodex={openCodex}
       />
+
+      {/* Codex overlay — full three-state path catalog for this incarnation (THR-613 Slice 3b-tail) */}
+      {codexOpen && (
+        <div
+          className="fixed inset-0"
+          style={{ zIndex: 60 }}
+          role="dialog"
+          aria-label="Path codex"
+        >
+          <Suspense
+            fallback={
+              <div
+                className="h-screen flex items-center justify-center"
+                style={{ backgroundColor: 'var(--bg-abyss)', color: 'var(--text-muted)' }}
+              >
+                Loading Codex…
+              </div>
+            }
+          >
+            <Codex
+              embedded
+              onClose={() => setCodexOpen(false)}
+              runContext={buildCodexRunContext(gameState)}
+              initialStateFilter={codexInitialFilter}
+            />
+          </Suspense>
+        </div>
+      )}
 
       {/* Doom clock detail modal */}
       <DoomClockDetail

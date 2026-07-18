@@ -14,6 +14,7 @@ import React, { useMemo, useState } from 'react';
 import type { GameState } from '../../../types/gameState';
 import type { AscendantArchetype } from '../../../types/influence';
 import type { AscendantIdentity } from '../../../types/remembrance';
+import type { CodexRunStateFilter } from '../../Codex/codexRunState';
 import { BarSection } from './BarSection';
 import { IdentityStrip } from './IdentityStrip';
 import { EssenceBlock } from './EssenceBlock';
@@ -66,6 +67,8 @@ interface AscendantBarProps {
   onInvestiture?: () => void;
   /** Queue a voluntary release of a sustained control (THR-613 §3.4). */
   onReleaseControl?: (effectId: string) => void;
+  /** Open the Codex path catalog, optionally pre-filtered to a run state (THR-613 Slice 3b-tail). */
+  onOpenCodex?: (filter?: CodexRunStateFilter) => void;
 }
 
 export function AscendantBar({
@@ -79,6 +82,7 @@ export function AscendantBar({
   onMove,
   onInvestiture,
   onReleaseControl,
+  onOpenCodex,
 }: AscendantBarProps) {
   const [open, setOpen] = useState({ ...ASCENDANT_BAR_SECTION_DEFAULT_OPEN });
   const toggle = (key: keyof typeof open) => setOpen((o) => ({ ...o, [key]: !o[key] }));
@@ -167,7 +171,7 @@ export function AscendantBar({
         onToggle={() => toggle('signatures')}
         placeholder="Your paths of power are not yet settled."
       >
-        <SignaturesBlock paths={signaturePaths} />
+        <SignaturesBlock paths={signaturePaths} onOpenCodex={onOpenCodex} />
       </BarSection>
 
       {/* 3. Essence */}

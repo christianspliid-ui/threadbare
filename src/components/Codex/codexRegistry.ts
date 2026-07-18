@@ -36,6 +36,20 @@ export interface CodexEntry {
   technicalEffect?: string;
   /** Where the action's effect is wired (THR-604 derivation) — drives the wiring badge. */
   effectSource?: EffectSource;
+  /**
+   * The reach the drawer's reach gate keys on (THR-503 `requiresReach`). Present only on
+   * reach-locked cards (the eight signatures); absent on universal cards. Drives the
+   * Codex "locked this incarnation" state (THR-613 Slice 3b-tail) — NOT the `reach` tag,
+   * so universal (`star`/no-gate) cards are never wrongly greyed out.
+   */
+  requiresReach?: string;
+  /**
+   * True for cards the ascendant (player) can play — the surfaces the incarnation
+   * three-state grammar applies to (divine / hex / place / artifact / thread actions and
+   * the reach signatures). False/absent for mortal actions, possessions, conditions,
+   * agreements, which carry no incarnation state.
+   */
+  isAscendantAction?: boolean;
   tags: string[];
   /** Extra key-value details shown in the detail panel */
   details: { label: string; value: string }[];
@@ -265,6 +279,8 @@ function mapDivineAction(template: typeof UNIFIED_ACTION_TEMPLATES[number]): Cod
     flavorText: template.narrativeTemplates?.initiation,
     technicalEffect: template.technicalEffect,
     effectSource: effectSourceFor(template),
+    requiresReach: template.requiresReach,
+    isAscendantAction: true,
     tags: [reach, template.sphereAffinity ?? '', template.crudType].filter(Boolean),
     isStarter: template.starter === true || isStarterActionId(template.id),
     details: [
@@ -329,6 +345,8 @@ function mapTargetAction(
     flavorText: template.narrativeTemplates?.initiation,
     technicalEffect: template.technicalEffect,
     effectSource: effectSourceFor(template),
+    requiresReach: template.requiresReach,
+    isAscendantAction: true,
     tags: [reach, template.crudType, template.scale, template.sphereAffinity ?? ''].filter(Boolean),
     isStarter: template.starter === true || isStarterActionId(template.id),
     details: [
@@ -399,8 +417,14 @@ export function getAllCodexEntries(): CodexEntry[] {
 
   const entries: CodexEntry[] = [];
 
-  // Divine actions
-  const divineTemplates = UNIFIED_ACTION_TEMPLATES.filter(t => t.id.startsWith('divine.'));
+  // Divine actions — the generic divine interventions plus the eight reach signatures
+  // (`invest.*`, THR-503). The signatures are the only reach-*locked* ascendant cards, so
+  // cataloguing them here is what makes the "locked this incarnation" state legible in the
+  // Codex (THR-613 Slice 3b-tail) — the live drawer hides them, and without this they were
+  // absent from the catalog entirely.
+  const divineTemplates = UNIFIED_ACTION_TEMPLATES.filter(
+    t => t.id.startsWith('divine.') || t.id.startsWith('invest.'),
+  );
   for (const t of divineTemplates) entries.push(mapDivineAction(t));
 
   // Mortal actions
