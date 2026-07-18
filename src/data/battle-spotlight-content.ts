@@ -58,15 +58,15 @@ const SPOTLIGHT_MOMENTUM_CRITICAL = 4; // Battle-defining
 // ─── Condition Helpers (inline — no circular imports) ────────────────────────
 
 /**
- * Check if a battle participant army has quintessence below a percentage.
+ * Check if a battle participant army has cohesion below a percentage.
  * Used by last_stand condition.
  */
 function armyBelowQPercent(state: GameState, armyId: string, pct: number): boolean {
   const node = state.graph.getNode(armyId);
   if (!node) return false;
-  const army = node.properties.armyState as { quintessence: number; quintessenceMax: number } | undefined;
-  if (!army || army.quintessenceMax <= 0) return false;
-  return army.quintessence / army.quintessenceMax < pct;
+  const army = node.properties.armyState as { cohesion: number; cohesionMax: number } | undefined;
+  if (!army || army.cohesionMax <= 0) return false;
+  return army.cohesion / army.cohesionMax < pct;
 }
 
 /**
@@ -225,7 +225,7 @@ export const BATTLE_SPOTLIGHT_TEMPLATES: SpotlightTemplate[] = [
     momentumOnFailure: -SPOTLIGHT_MOMENTUM_MINOR,
   },
 
-  // 8. Last Stand — an army's quintessence drops below 20%
+  // 8. Last Stand — an army's cohesion drops below 20%
   {
     id: 'battle.spotlight.last_stand',
     name: 'Last Stand',

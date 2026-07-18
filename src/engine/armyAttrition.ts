@@ -1,7 +1,7 @@
 /**
  * Army Attrition — TB-073 Phase 2.
  *
- * Each tick, armies lose Quintessence based on terrain, supply status,
+ * Each tick, armies lose Cohesion based on terrain, supply status,
  * and marching conditions. The player never sees the number — only the
  * consequences when thresholds are crossed, delivered as encounters.
  *
@@ -17,7 +17,7 @@ import { emitTrace } from './traceBuffer';
 
 // ─── Constants ───────────────────────────────────────────────────────────
 
-/** Baseline Quintessence loss per tick (even at rest) */
+/** Baseline Cohesion loss per tick (even at rest) */
 export const ARMY_BASE_ATTRITION = 0.5;
 
 /** Multiplied by terrain cost, added to attrition */
@@ -29,11 +29,11 @@ export const OFF_ROAD_ATTRITION_PENALTY = 0.8;
 /** Extra attrition when faction can't pay maintenance */
 export const UNDERFUNDED_ATTRITION_PENALTY = 1.5;
 
-/** Additional Quintessence loss per tick when army occupies a monster-infested hex (active lair present) */
+/** Additional Cohesion loss per tick when army occupies a monster-infested hex (active lair present) */
 export const MONSTER_TERRITORY_ATTRITION = 1.2;
 
-/** Quintessence threshold percentages (fraction of max) */
-export const QUINTESSENCE_THRESHOLDS = {
+/** Cohesion threshold percentages (fraction of max) */
+export const COHESION_THRESHOLDS = {
   strained: 0.70,
   weakened: 0.50,
   critical: 0.30,
@@ -51,13 +51,13 @@ export const THRESHOLD_ENCOUNTER_TEMPLATES: Record<string, string> = {
 // ─── Phase ──────────────────────────────────────────────────────────────
 
 /**
- * Process Quintessence attrition for all active armies.
+ * Process Cohesion attrition for all active armies.
  *
  * Runs every tick. For each army:
  * 1. Calculate attrition from terrain + supply + road status
- * 2. Subtract from Quintessence (clamped to 0)
+ * 2. Subtract from Cohesion (clamped to 0)
  * 3. Check for threshold crossings → spawn encounters
- * 4. At Quintessence 0 → force disbandment
+ * 4. At Cohesion 0 → force disbandment
  */
 export function phaseArmyAttrition(state: GameState): void {
   const armyNodes = state.graph.getNodesByType('actor')
@@ -104,22 +104,22 @@ export function phaseArmyAttrition(state: GameState): void {
         + attritionSources.underfunded
         + attritionSources.monsterTerritory;
 
-      const quintessenceBefore = armyState.quintessence;
-      const quintessenceAfter = Math.max(0, quintessenceBefore - totalAttrition);
+      const cohesionBefore = armyState.cohesion;
+      const cohesionAfter = Math.max(0, cohesionBefore - totalAttrition);
 
       // Update army state
       const updatedArmyState: ArmyState = {
         ...armyState,
-        quintessence: quintessenceAfter,
+        cohesion: cohesionAfter,
       };
 
       // Check threshold crossings
       let thresholdCrossed: string | undefined;
-      const qPercent = quintessenceAfter / armyState.quintessenceMax;
+      const qPercent = cohesionAfter / armyState.cohesionMax;
       const thresholdsFired = [...armyState.thresholdsFired];
 
-      for (const [name, threshold] of Object.entries(QUINTESSENCE_THRESHOLDS)) {
-        const previousPercent = quintessenceBefore / armyState.quintessenceMax;
+      for (const [name, threshold] of Object.entries(COHESION_THRESHOLDS)) {
+        const previousPercent = cohesionBefore / armyState.cohesionMax;
         if (previousPercent > threshold && qPercent <= threshold && !thresholdsFired.includes(name)) {
           thresholdCrossed = name;
           thresholdsFired.push(name);
@@ -138,18 +138,18 @@ export function phaseArmyAttrition(state: GameState): void {
       emitTrace({
         tick: state.tick,
         category: 'faction_ambition',
-        summary: `Army ${armyNode.name}: Q ${quintessenceBefore.toFixed(1)}→${quintessenceAfter.toFixed(1)} (−${totalAttrition.toFixed(1)})${thresholdCrossed ? ` [${thresholdCrossed}]` : ''}`,
+        summary: `Army ${armyNode.name}: cohesion ${cohesionBefore.toFixed(1)}→${cohesionAfter.toFixed(1)} (−${totalAttrition.toFixed(1)})${thresholdCrossed ? ` [${thresholdCrossed}]` : ''}`,
         armyId: armyNode.id,
         event: 'attrition',
-        quintessenceBefore,
-        quintessenceAfter,
+        cohesionBefore,
+        cohesionAfter,
         attritionAmount: totalAttrition,
         attritionSources,
         thresholdCrossed,
       });
 
-      // Force disbandment at Quintessence 0
-      if (quintessenceAfter <= 0) {
+      // Force disbandment at Cohesion 0
+      if (cohesionAfter <= 0) {
         disbandArmy(state, armyNode.id);
       }
     } catch (err) {
@@ -219,7 +219,7 @@ export function disbandArmy(state: GameState, armyId: string): void {
   emitTrace({
     tick: state.tick,
     category: 'faction_ambition',
-    summary: `Army "${armyNode.name}" disbanded — Quintessence depleted`,
+    summary: `Army "${armyNode.name}" disbanded — Cohesion depleted`,
     armyId,
     factionId,
     commanderId,

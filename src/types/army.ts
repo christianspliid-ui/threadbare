@@ -26,10 +26,10 @@ export interface ArmyState {
   headcount: number;
   /** Current objective — what the army is trying to do */
   objective: ArmyObjective | null;
-  /** Quintessence score — army cohesion/quality/health. Silently degrades */
-  quintessence: number;
-  /** Maximum quintessence at full strength */
-  quintessenceMax: number;
+  /** Cohesion score — army cohesion/quality/health. Silently degrades */
+  cohesion: number;
+  /** Maximum cohesion at full strength */
+  cohesionMax: number;
   /** Tick the army was raised */
   raisedTick: number;
   /** Gold cost per tick to maintain */
@@ -67,8 +67,8 @@ export const SETTLEMENT_TARGET_SUBTYPES: readonly string[] = [
   'hamlet', 'town', 'city', 'capital', 'castle', 'fort',
 ];
 
-/** Starting quintessence by army size */
-export const ARMY_QUINTESSENCE_BASE: Record<ArmySizeCategory, number> = {
+/** Starting cohesion by army size */
+export const ARMY_COHESION_BASE: Record<ArmySizeCategory, number> = {
   warband: 30,
   regiment: 60,
   host: 100,

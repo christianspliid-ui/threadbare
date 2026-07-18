@@ -92,7 +92,7 @@ describe('signature_warhost', () => {
     const army = result.state.graph.getNode(armyMember!.source)!;
     expect(army.properties.actorType).toBe('group');
     expect(army.properties.warhost).toBe(true);
-    expect((army.properties.armyState as { quintessence: number }).quintessence).toBe(60);
+    expect((army.properties.armyState as { cohesion: number }).cohesion).toBe(60);
     // commanded_by → leader, located_at → leader's location
     expect(result.state.graph.getOutgoingEdges(army.id, 'commanded_by')[0]?.target).toBe('leader-1');
     expect(result.state.graph.getOutgoingEdges(army.id, 'located_at')[0]?.target).toBe('loc-keep');

@@ -181,7 +181,7 @@ export const FACTION_DRIFT_TO_RIVAL_INITIAL_REPUTATION = 0.1;
  * Base warhost force strength before sphere-power scaling (NFP #1). The
  * `signature_warhost` aftermath computes `scaledEffect(WARHOST_BASE_STRENGTH, mult)`
  * where `mult = spherePowerMultiplier(score) ∈ [SIGNATURE_SCALE_FLOOR, SIGNATURE_SCALE_CEIL]`.
- * Default 30 matches a warband's base quintessence (ARMY_QUINTESSENCE_BASE.warband),
+ * Default 30 matches a warband's base cohesion (ARMY_COHESION_BASE.warband),
  * so a no-mastery warhost (mult 0.6) raises a weak warband and a maxed one (mult 2.0)
  * raises a regiment-scale host.
  */

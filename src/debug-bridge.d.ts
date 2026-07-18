@@ -661,9 +661,9 @@ export interface DebugBridge {
     locationId: string | null;
     size: 'warband' | 'regiment' | 'host';
     headcount: number;
-    quintessence: number;
-    quintessenceMax: number;
-    quintessencePct: number;
+    cohesion: number;
+    cohesionMax: number;
+    cohesionPct: number;
     objective: {
       type: 'raid' | 'conquer' | 'defend' | 'intercept' | 'reinforce_siege';
       targetNodeId: string;

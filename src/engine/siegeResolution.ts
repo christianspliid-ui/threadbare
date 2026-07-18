@@ -315,11 +315,11 @@ export function tickSiege(state: GameState, siegeNodeId: string): void {
   const attackerState = attackerNode.properties.armyState as ArmyState;
 
   // 1. Apply asymmetric combat attrition
-  const newAttackerQ = Math.max(0, attackerState.quintessence - SIEGE_COMBAT_ATTRITION_ATTACKER);
+  const newAttackerQ = Math.max(0, attackerState.cohesion - SIEGE_COMBAT_ATTRITION_ATTACKER);
   graph.updateNode(bs.attackerArmyId, {
     properties: {
       ...attackerNode.properties,
-      armyState: { ...attackerState, quintessence: newAttackerQ },
+      armyState: { ...attackerState, cohesion: newAttackerQ },
     },
   });
 

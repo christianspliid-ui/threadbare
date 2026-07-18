@@ -55,7 +55,7 @@ export const FIELD_BATTLE_SPOTLIGHT_INTERVAL = 1;
 /** Maximum ticks before forced resolution */
 export const FIELD_BATTLE_MAX_DURATION = 5;
 
-/** Quintessence loss per tick during active combat */
+/** Cohesion loss per tick during active combat */
 export const BATTLE_COMBAT_ATTRITION = 2.0;
 
 /** How much size ratio translates to initial momentum */
@@ -102,8 +102,8 @@ export const SIEGE_STARVATION_TICK = 15;
 /** How far the siege broadcasts regional encounters (hex distance) */
 export const SIEGE_REGIONAL_ENCOUNTER_RANGE = 5;
 
-/** Attacker Quintessence loss per tick during siege (lower than field — waiting) */
+/** Attacker Cohesion loss per tick during siege (lower than field — waiting) */
 export const SIEGE_COMBAT_ATTRITION_ATTACKER = 1.0;
 
-/** Defender Quintessence loss per tick during siege (even lower — behind walls) */
+/** Defender Cohesion loss per tick during siege (even lower — behind walls) */
 export const SIEGE_COMBAT_ATTRITION_DEFENDER = 0.5;

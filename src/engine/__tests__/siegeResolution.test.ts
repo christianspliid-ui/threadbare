@@ -59,8 +59,8 @@ function addArmy(graph: WorldGraph, id: string, factionId: string, locationId: s
         size: 'warband',
         headcount,
         objective: null,
-        quintessence: 30,
-        quintessenceMax: 30,
+        cohesion: 30,
+        cohesionMax: 30,
         raisedTick: 0,
         maintenanceCost: 2,
         thresholdsFired: [],
@@ -210,9 +210,9 @@ describe('tickSiege', () => {
   });
 
   it('applies asymmetric attrition (attacker loses more)', () => {
-    const qBefore = (graph.getNode('army1')?.properties.armyState as ArmyState).quintessence;
+    const qBefore = (graph.getNode('army1')?.properties.armyState as ArmyState).cohesion;
     tickSiege(makeState(1, graph), siegeId);
-    const qAfter = (graph.getNode('army1')?.properties.armyState as ArmyState).quintessence;
+    const qAfter = (graph.getNode('army1')?.properties.armyState as ArmyState).cohesion;
     expect(qAfter).toBeLessThan(qBefore);
   });
 
@@ -248,13 +248,13 @@ describe('tickSiege', () => {
     expect(graph.getNode(siegeId)).toBeUndefined();
   });
 
-  it('resolves when attacker quintessence hits 0', () => {
+  it('resolves when attacker cohesion hits 0', () => {
     // Set attacker Q very low
     const armyNode = graph.getNode('army1')!;
     graph.updateNode('army1', {
       properties: {
         ...armyNode.properties,
-        armyState: { ...(armyNode.properties.armyState as ArmyState), quintessence: 0.5 },
+        armyState: { ...(armyNode.properties.armyState as ArmyState), cohesion: 0.5 },
       },
     });
 

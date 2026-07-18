@@ -73,7 +73,7 @@ export function ArmiesTabContent({ graph, currentTick, onZoomToLocation }: Armie
             const faction = memEdges[0] ? graph.getNode(memEdges[0].target) : null;
             const locEdges = graph.getOutgoingEdges(army.id, 'located_at');
             const location = locEdges[0] ? graph.getNode(locEdges[0].target) : null;
-            const qPct = ((as.quintessence as number) / Math.max(1, as.quintessenceMax as number) * 100);
+            const qPct = ((as.cohesion as number) / Math.max(1, as.cohesionMax as number) * 100);
             const ticksActive = currentTick - (as.raisedTick as number);
 
             return (
@@ -92,9 +92,9 @@ export function ArmiesTabContent({ graph, currentTick, onZoomToLocation }: Armie
                   <span style={DETAIL_VALUE_STYLE}>{String(as.size)} ({as.headcount})</span>
                 </div>
                 <div style={DETAIL_ROW_STYLE}>
-                  <span style={DETAIL_LABEL_STYLE}>Quintessence:</span>
+                  <span style={DETAIL_LABEL_STYLE}>Cohesion:</span>
                   <span style={{ ...DETAIL_VALUE_STYLE, color: qPct < 30 ? FIELD_BATTLE_COLOR : qPct < 70 ? '#fbbf24' : '#4ade80' }}>
-                    {(as.quintessence as number).toFixed(1)} / {as.quintessenceMax as number} ({qPct.toFixed(0)}%)
+                    {(as.cohesion as number).toFixed(1)} / {as.cohesionMax as number} ({qPct.toFixed(0)}%)
                   </span>
                 </div>
                 <div style={DETAIL_ROW_STYLE}>

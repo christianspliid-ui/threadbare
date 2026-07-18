@@ -84,7 +84,7 @@ export function getArmyMovementCost(terrainType: string, isOnRoad: boolean): num
  * Each tick:
  * 1. If army has active movement queue, tick their movement
  * 2. If army has objective but no movement queue, pathfind and initiate movement
- * 3. Fail-soft: if no path found, army stays in place (quintessence still degrades)
+ * 3. Fail-soft: if no path found, army stays in place (cohesion still degrades)
  */
 export function phaseArmyMovement(state: GameState): void {
   const armyNodes = state.graph.getNodesByType('actor')

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { WorldGraph } from '../graph';
 import { isEligibleForArmySpawn, selectCommander, spawnArmy } from '../armySpawning';
-import { ARMY_SPAWN_IRON_TIER_MIN, MAX_ARMIES_PER_FACTION, ARMY_QUINTESSENCE_BASE } from '../../types/army';
+import { ARMY_SPAWN_IRON_TIER_MIN, MAX_ARMIES_PER_FACTION, ARMY_COHESION_BASE } from '../../types/army';
 import type { GameState } from '../../types/gameState';
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
@@ -129,7 +129,7 @@ describe('isEligibleForArmySpawn', () => {
       name: 'Existing Army',
       properties: {
         actorType: 'group',
-        armyState: { size: 'warband', quintessence: 30, quintessenceMax: 30 },
+        armyState: { size: 'warband', cohesion: 30, cohesionMax: 30 },
       },
     });
     graph.addEdge({
@@ -225,7 +225,7 @@ describe('spawnArmy', () => {
 
     const armyState = armyNode!.properties.armyState as Record<string, unknown>;
     expect(armyState.size).toBe('warband'); // gold tier ~4 → warband
-    expect(armyState.quintessence).toBe(ARMY_QUINTESSENCE_BASE.warband);
+    expect(armyState.cohesion).toBe(ARMY_COHESION_BASE.warband);
     expect(armyState.raisedTick).toBe(10);
   });
 

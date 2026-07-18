@@ -39,8 +39,8 @@ function addArmy(
     size: opts?.size ?? 'warband',
     headcount: opts?.headcount ?? 100,
     objective: null,
-    quintessence: opts?.quintessence ?? 30,
-    quintessenceMax: opts?.quintessenceMax ?? 30,
+    cohesion: opts?.cohesion ?? 30,
+    cohesionMax: opts?.cohesionMax ?? 30,
     raisedTick: opts?.raisedTick ?? 0,
     maintenanceCost: 2,
     thresholdsFired: [],
@@ -185,8 +185,8 @@ describe('tickBattle', () => {
     addHex(graph, 'hex1');
     addFaction(graph, 'f1');
     addFaction(graph, 'f2');
-    addArmy(graph, 'army_a', 'f1', 'hex1', { quintessence: 30, quintessenceMax: 30 });
-    addArmy(graph, 'army_d', 'f2', 'hex1', { quintessence: 30, quintessenceMax: 30 });
+    addArmy(graph, 'army_a', 'f1', 'hex1', { cohesion: 30, cohesionMax: 30 });
+    addArmy(graph, 'army_d', 'f2', 'hex1', { cohesion: 30, cohesionMax: 30 });
 
     const state = makeState(0, graph);
     battleId = createBattleNode(state, 'army_a', 'army_d', 'hex1')!;
@@ -198,8 +198,8 @@ describe('tickBattle', () => {
     const aState = graph.getNode('army_a')?.properties.armyState as ArmyState;
     const dState = graph.getNode('army_d')?.properties.armyState as ArmyState;
 
-    expect(aState.quintessence).toBe(30 - BATTLE_COMBAT_ATTRITION);
-    expect(dState.quintessence).toBe(30 - BATTLE_COMBAT_ATTRITION);
+    expect(aState.cohesion).toBe(30 - BATTLE_COMBAT_ATTRITION);
+    expect(dState.cohesion).toBe(30 - BATTLE_COMBAT_ATTRITION);
   });
 
   it('resolves when momentum crosses threshold', () => {
@@ -233,13 +233,13 @@ describe('tickBattle', () => {
     expect(graph.getNode(battleId)).toBeUndefined();
   });
 
-  it('resolves as defender_victory when attacker quintessence hits 0', () => {
+  it('resolves as defender_victory when attacker cohesion hits 0', () => {
     // Set attacker Q very low
     const attackerNode = graph.getNode('army_a')!;
     graph.updateNode('army_a', {
       properties: {
         ...attackerNode.properties,
-        armyState: { ...(attackerNode.properties.armyState as ArmyState), quintessence: 1 },
+        armyState: { ...(attackerNode.properties.armyState as ArmyState), cohesion: 1 },
       },
     });
 

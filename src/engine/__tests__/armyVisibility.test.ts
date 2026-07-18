@@ -80,8 +80,8 @@ function addArmy(
       armyState: {
         size,
         headcount: 100,
-        quintessence: 30,
-        quintessenceMax: 30,
+        cohesion: 30,
+        cohesionMax: 30,
         raisedTick: 1,
         maintenanceCost: 2,
         thresholdsFired: [],
@@ -183,7 +183,7 @@ describe('buildArmyRenderData', () => {
       name: 'Homeless Army',
       properties: {
         actorType: 'group',
-        armyState: { size: 'warband', headcount: 100, quintessence: 30, quintessenceMax: 30, raisedTick: 1, maintenanceCost: 2, thresholdsFired: [], objective: null },
+        armyState: { size: 'warband', headcount: 100, cohesion: 30, cohesionMax: 30, raisedTick: 1, maintenanceCost: 2, thresholdsFired: [], objective: null },
       },
     });
     const data = buildArmyRenderData(graph);
@@ -199,7 +199,7 @@ describe('buildArmyRenderData', () => {
       name: 'Factionless Army',
       properties: {
         actorType: 'group',
-        armyState: { size: 'warband', headcount: 100, quintessence: 30, quintessenceMax: 30, raisedTick: 1, maintenanceCost: 2, thresholdsFired: [], objective: null },
+        armyState: { size: 'warband', headcount: 100, cohesion: 30, cohesionMax: 30, raisedTick: 1, maintenanceCost: 2, thresholdsFired: [], objective: null },
       },
     });
     graph.addEdge({
