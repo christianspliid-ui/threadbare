@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-07-18, 11:02 local (light refresh by the hourly `keep-work-flowing-cc` CC task; last full rebuild was the 2026-06-23 retro)
+**Last updated:** 2026-07-18, 12:29 local (light refresh by the hourly `keep-work-flowing-cc` CC task; last full rebuild was the 2026-06-23 retro)
 **Owner of items below:** Christian. Everyone else's blockers go in Linear or `Docs/impediments.md`.
 **Refresh cadence:** The hourly `keep-work-flowing-cc` scheduled task keeps this current (prunes resolved items, adds newly-surfaced Christian-owned ones); the `retrospective` skill still does the deep periodic rebuild. This is the slow-moving standing-asks list — the fresh-this-hour view is [`Design/briefing.md`](briefing.md).
 
@@ -19,21 +19,20 @@ When an item resolves: delete it from this file, mark the corresponding impedime
 
 ---
 
-## 1. Rescue + refresh the home worktree — it now has unshipped commits, not just staleness · WILL NOT SELF-HEAL
+## 1. Land the 3 rescued plan docs onto `main` — commits are safe, just not shared yet · WILL NOT SELF-HEAL
 
-**Status:** Open · worse than last cycle. 2026-07-18 11:02 freshness ping: 45 commits behind `origin/main` (was 37), `HEAD` **detached** (not on any branch — was on `claude/sad-bartik-421eef` last cycle), plus 19 uncommitted files. The detached tip (`053c867a`) carries **4 commits that never reached `origin/main`**, including the full `Docs/plans/2026-07-17-pure-claude-code-migration.md` spec that THR-648–655 all point to, its brainstorm companion, and `Docs/plans/2026-07-05-entity-visual-header.md`. None of the three exist on `origin/main` today.
-**Source:** 2026-06-23 retro + 2026-07-18 `keep-work-flowing-cc` freshness ping (retro E1), escalated this cycle after tracing the detached tip
+**Status:** Open · **de-escalated 2026-07-18 11:25.** The urgent part is done: the home tree is back on `main` and the detached tip was parked as branch `rescue/2026-07-17-detached-plans` **before** the catch-up — so the 4 previously-stranded commits are safe, not one `git switch` from being lost. What remains is mechanical: three plan docs still live only on that rescue branch and are **not** on `origin/main` yet — `Docs/plans/2026-07-17-pure-claude-code-migration.md` (the spec THR-648–655 reference), its brainstorm companion, and `Docs/plans/2026-07-05-entity-visual-header.md`.
+**Source:** 2026-06-23 retro + 2026-07-18 `keep-work-flowing-cc` freshness pings (retro E1); rescue verified complete 2026-07-18 11:25
 
-**Fix — order matters, rescue before refresh.**
+**Fix — a design session can do this; it is not a Christian-only task.**
 ```
-cd C:\Users\chris\Dev\Projects\TheFantasyWorldSimulator
-git branch rescue/2026-07-17-detached-plans 053c867a
-git switch main
-git pull
+git fetch
+git switch -c docs/land-rescued-plans rescue/2026-07-17-detached-plans
+# cherry-pick / restore only the 3 plan-doc files onto a branch off current main, open a PR
 ```
-Then: open a normal PR landing the 3 plan docs from `rescue/2026-07-17-detached-plans` onto `main` (a design session can do this), and triage the 19 other uncommitted files (item #3). Separately, verify the schedulers: confirm `weekly-workflow-retro` and the other "This machine" tasks are still scheduled and the machine was on during their windows.
+Then triage the other uncommitted working-tree files (item #3).
 
-**What breaks if not done.** Any agent starting design on this tree risks building on 45-commit-old state — and worse, the plan doc six Linear tickets already reference as their spec doesn't exist on `main` at all, only on this one machine, one `git switch` away from becoming unreachable.
+**What breaks if not done.** Six Linear tickets reference a plan doc that exists only on the `rescue/*` branch, not on `origin/main`, so any agent reading from `main` can't find the spec. No longer a data-loss risk (the commits are branch-anchored), just a sharing gap.
 
 ---
 
@@ -52,7 +51,7 @@ Then: open a normal PR landing the 3 plan docs from `rescue/2026-07-17-detached-
 
 ## 3. Triage orphan uncommitted changes in working trees · WILL NOT SELF-HEAL
 
-**Status:** Open · ~60 days · 19 non-`.codesight` files uncommitted on the home tree as of 2026-07-18 (mostly `Docs/plans/` drafts and `.intent-proposals/`)
+**Status:** Open · ~60 days · ~16 non-`.codesight` files uncommitted on the home tree as of 2026-07-18 12:29, which is also 10 commits behind `origin/main` (mostly `Docs/plans/` drafts and `.intent-proposals/`; run `git fetch && git rebase origin/main` first, then triage)
 **Source:** Impediment #59 + 2026-07-18 `keep-work-flowing-cc` freshness ping
 
 **Fix.** Run `git status` on `main`; for each tracked-but-uncommitted file, attribute it to a Linear issue (commit with `Fixes THR-XX`) or `git checkout --` discard. Untracked files: same triage — `git add` + commit if intentional, `rm` if not.
