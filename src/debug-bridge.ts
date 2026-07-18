@@ -1411,11 +1411,11 @@ if (import.meta.env.DEV) {
             locationId: location?.id ?? null,
             size: as.size,
             headcount: as.headcount,
-            quintessence: as.quintessence,
-            quintessenceMax: as.quintessenceMax,
-            quintessencePct:
-              as.quintessenceMax > 0
-                ? Math.round((as.quintessence / as.quintessenceMax) * 100)
+            cohesion: as.cohesion,
+            cohesionMax: as.cohesionMax,
+            cohesionPct:
+              as.cohesionMax > 0
+                ? Math.round((as.cohesion / as.cohesionMax) * 100)
                 : 0,
             objective: as.objective
               ? {

@@ -15,7 +15,7 @@ import {
   ARMY_SPAWN_IRON_TIER_MIN,
   ARMY_SPAWN_GOLD_TIER_MIN,
   MAX_ARMIES_PER_FACTION,
-  ARMY_QUINTESSENCE_BASE,
+  ARMY_COHESION_BASE,
   ARMY_MAINTENANCE_COST,
   ARMY_SIZE_HEADCOUNT,
   SETTLEMENT_TARGET_SUBTYPES,
@@ -224,8 +224,8 @@ export function spawnArmy(
           size,
           headcount: ARMY_SIZE_HEADCOUNT[size],
           objective: null,
-          quintessence: ARMY_QUINTESSENCE_BASE[size],
-          quintessenceMax: ARMY_QUINTESSENCE_BASE[size],
+          cohesion: ARMY_COHESION_BASE[size],
+          cohesionMax: ARMY_COHESION_BASE[size],
           raisedTick: state.tick,
           maintenanceCost: ARMY_MAINTENANCE_COST[size],
           thresholdsFired: [],
@@ -301,7 +301,7 @@ export function spawnArmy(
       event: 'army_raised',
       size,
       headcount: ARMY_SIZE_HEADCOUNT[size],
-      quintessence: ARMY_QUINTESSENCE_BASE[size],
+      cohesion: ARMY_COHESION_BASE[size],
     });
 
     return armyId;
@@ -323,11 +323,11 @@ export function spawnArmy(
 
 /**
  * Map a sphere-scaled warhost strength to an army size category, reusing the
- * existing army quintessence-base values as the thresholds (no new size constants).
+ * existing army cohesion-base values as the thresholds (no new size constants).
  */
 function warhostSizeForStrength(strength: number): ArmySizeCategory {
-  if (strength >= ARMY_QUINTESSENCE_BASE.host) return 'host';
-  if (strength >= ARMY_QUINTESSENCE_BASE.regiment) return 'regiment';
+  if (strength >= ARMY_COHESION_BASE.host) return 'host';
+  if (strength >= ARMY_COHESION_BASE.regiment) return 'regiment';
   return 'warband';
 }
 
@@ -339,12 +339,12 @@ function warhostSizeForStrength(strength: number): ArmySizeCategory {
  * an `armyState` bag, wired by `commanded_by` / `member_of` / `located_at` edges) —
  * NOT a new node type (load-bearing rule). It differs from {@link spawnArmy} only in
  * that the force is divinely commanded: no faction-ambition coupling (no `pursues`
- * edge), no eligibility/Gold-tier gate, and its quintessence is set from the
+ * edge), no eligibility/Gold-tier gate, and its cohesion is set from the
  * sphere-scaled warhost strength rather than the faction's Gold tier. The army carries
  * `objective: null` (a supported idle state — `armyMovement` skips null-objective
  * armies) and a `warhost: true` marker for inspection.
  *
- * Determinism (NFP #3): no PRNG — id, size, and quintessence derive only from inputs.
+ * Determinism (NFP #3): no PRNG — id, size, and cohesion derive only from inputs.
  * Fail-soft (NFP #4): returns null on missing faction/leader, a leader with no
  * location, or any graph error (caller falls back to a faction property + sentiment
  * shift). Never throws.
@@ -369,7 +369,7 @@ export function raiseWarhostForce(
   if (!locationId) return null;
 
   const size = warhostSizeForStrength(strength);
-  const quintessence = Math.max(1, Math.round(strength));
+  const cohesion = Math.max(1, Math.round(strength));
   const armyId = `warhost_${factionId}_${tick}`;
   const armyName = `${factionNode.name} — Warhost`;
 
@@ -385,8 +385,8 @@ export function raiseWarhostForce(
           size,
           headcount: ARMY_SIZE_HEADCOUNT[size],
           objective: null,
-          quintessence,
-          quintessenceMax: quintessence,
+          cohesion,
+          cohesionMax: cohesion,
           raisedTick: tick,
           maintenanceCost: ARMY_MAINTENANCE_COST[size],
           thresholdsFired: [],

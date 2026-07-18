@@ -6,7 +6,7 @@ import {
   TERRAIN_ATTRITION_FACTOR,
   OFF_ROAD_ATTRITION_PENALTY,
   UNDERFUNDED_ATTRITION_PENALTY,
-  QUINTESSENCE_THRESHOLDS,
+  COHESION_THRESHOLDS,
   MONSTER_TERRITORY_ATTRITION,
 } from '../armyAttrition';
 import { getArmyTerrainCost, getArmyMovementCost, ARMY_ROAD_DISCOUNT } from '../armyMovement';
@@ -29,8 +29,8 @@ function addArmy(
     size: 'warband',
     headcount: 100,
     objective: null,
-    quintessence: opts?.quintessence ?? 30,
-    quintessenceMax: opts?.quintessenceMax ?? 30,
+    cohesion: opts?.cohesion ?? 30,
+    cohesionMax: opts?.cohesionMax ?? 30,
     raisedTick: 0,
     maintenanceCost: 2,
     thresholdsFired: opts?.thresholdsFired ?? [],
@@ -168,7 +168,7 @@ describe('phaseArmyAttrition', () => {
 
   it('applies base attrition each tick', () => {
     addLocation(graph, 'loc1', 'plains', true); // on road
-    addArmy(graph, 'army1', 'loc1', { quintessence: 30, quintessenceMax: 30 });
+    addArmy(graph, 'army1', 'loc1', { cohesion: 30, cohesionMax: 30 });
     addFaction(graph, 'f1', 'army1', 0.5); // well-funded
 
     phaseArmyAttrition(makeState(1, graph));
@@ -176,12 +176,12 @@ describe('phaseArmyAttrition', () => {
     const state = getArmyState(graph, 'army1');
     // base (0.5) + terrain (1.5 * 0.3 = 0.45) + offRoad (0 — on road) + underfunded (0)
     const expected = 30 - (ARMY_BASE_ATTRITION + 1.5 * TERRAIN_ATTRITION_FACTOR);
-    expect(state.quintessence).toBeCloseTo(expected, 5);
+    expect(state.cohesion).toBeCloseTo(expected, 5);
   });
 
   it('adds terrain attrition for difficult terrain', () => {
     addLocation(graph, 'loc1', 'mountains', true);
-    addArmy(graph, 'army1', 'loc1', { quintessence: 30, quintessenceMax: 30 });
+    addArmy(graph, 'army1', 'loc1', { cohesion: 30, cohesionMax: 30 });
     addFaction(graph, 'f1', 'army1', 0.5);
 
     phaseArmyAttrition(makeState(1, graph));
@@ -189,36 +189,36 @@ describe('phaseArmyAttrition', () => {
     const state = getArmyState(graph, 'army1');
     // mountains cost = 4.0, terrain attrition = 4.0 * 0.3 = 1.2
     const expected = 30 - (ARMY_BASE_ATTRITION + 4.0 * TERRAIN_ATTRITION_FACTOR);
-    expect(state.quintessence).toBeCloseTo(expected, 5);
+    expect(state.cohesion).toBeCloseTo(expected, 5);
   });
 
   it('adds off-road penalty when not on road', () => {
     addLocation(graph, 'loc1', 'plains', false); // no road
-    addArmy(graph, 'army1', 'loc1', { quintessence: 30, quintessenceMax: 30 });
+    addArmy(graph, 'army1', 'loc1', { cohesion: 30, cohesionMax: 30 });
     addFaction(graph, 'f1', 'army1', 0.5);
 
     phaseArmyAttrition(makeState(1, graph));
 
     const state = getArmyState(graph, 'army1');
     const expected = 30 - (ARMY_BASE_ATTRITION + 1.5 * TERRAIN_ATTRITION_FACTOR + OFF_ROAD_ATTRITION_PENALTY);
-    expect(state.quintessence).toBeCloseTo(expected, 5);
+    expect(state.cohesion).toBeCloseTo(expected, 5);
   });
 
   it('adds underfunded penalty when faction prosperity too low', () => {
     addLocation(graph, 'loc1', 'plains', true);
-    addArmy(graph, 'army1', 'loc1', { quintessence: 30, quintessenceMax: 30 });
+    addArmy(graph, 'army1', 'loc1', { cohesion: 30, cohesionMax: 30 });
     addFaction(graph, 'f1', 'army1', 0.1); // low prosperity = underfunded
 
     phaseArmyAttrition(makeState(1, graph));
 
     const state = getArmyState(graph, 'army1');
     const expected = 30 - (ARMY_BASE_ATTRITION + 1.5 * TERRAIN_ATTRITION_FACTOR + UNDERFUNDED_ATTRITION_PENALTY);
-    expect(state.quintessence).toBeCloseTo(expected, 5);
+    expect(state.cohesion).toBeCloseTo(expected, 5);
   });
 
-  it('clamps quintessence to 0 (never negative)', () => {
+  it('clamps cohesion to 0 (never negative)', () => {
     addLocation(graph, 'loc1', 'mountains', false);
-    addArmy(graph, 'army1', 'loc1', { quintessence: 1, quintessenceMax: 30 });
+    addArmy(graph, 'army1', 'loc1', { cohesion: 1, cohesionMax: 30 });
     addFaction(graph, 'f1', 'army1', 0.1);
 
     phaseArmyAttrition(makeState(1, graph));
@@ -229,9 +229,9 @@ describe('phaseArmyAttrition', () => {
 
   it('fires threshold encounter at 70% crossing', () => {
     addLocation(graph, 'loc1', 'plains', true);
-    // Set quintessence just above 70% threshold: 30 * 0.70 = 21
+    // Set cohesion just above 70% threshold: 30 * 0.70 = 21
     // Attrition = 0.5 + 0.45 = 0.95, so start at 21.5 → crosses to ~20.55
-    addArmy(graph, 'army1', 'loc1', { quintessence: 21.5, quintessenceMax: 30 });
+    addArmy(graph, 'army1', 'loc1', { cohesion: 21.5, cohesionMax: 30 });
     addFaction(graph, 'f1', 'army1', 0.5);
 
     phaseArmyAttrition(makeState(1, graph));
@@ -243,8 +243,8 @@ describe('phaseArmyAttrition', () => {
   it('fires each threshold only once', () => {
     addLocation(graph, 'loc1', 'plains', true);
     addArmy(graph, 'army1', 'loc1', {
-      quintessence: 21.5,
-      quintessenceMax: 30,
+      cohesion: 21.5,
+      cohesionMax: 30,
       thresholdsFired: ['strained'], // already fired
     });
     addFaction(graph, 'f1', 'army1', 0.5);
@@ -256,9 +256,9 @@ describe('phaseArmyAttrition', () => {
     expect(state.thresholdsFired.filter(t => t === 'strained')).toHaveLength(1);
   });
 
-  it('disbands army at quintessence 0', () => {
+  it('disbands army at cohesion 0', () => {
     addLocation(graph, 'loc1', 'plains', true);
-    addArmy(graph, 'army1', 'loc1', { quintessence: 0.5, quintessenceMax: 30 });
+    addArmy(graph, 'army1', 'loc1', { cohesion: 0.5, cohesionMax: 30 });
     addFaction(graph, 'f1', 'army1', 0.5);
 
     phaseArmyAttrition(makeState(1, graph));
@@ -269,7 +269,7 @@ describe('phaseArmyAttrition', () => {
 
   it('commander survives army disbandment', () => {
     addLocation(graph, 'loc1', 'plains', true);
-    addArmy(graph, 'army1', 'loc1', { quintessence: 0.5, quintessenceMax: 30 });
+    addArmy(graph, 'army1', 'loc1', { cohesion: 0.5, cohesionMax: 30 });
     addFaction(graph, 'f1', 'army1', 0.5);
 
     // Add commander
@@ -306,8 +306,8 @@ describe('phaseArmyAttrition', () => {
           size: 'warband',
           headcount: 100,
           objective: null,
-          quintessence: 30,
-          quintessenceMax: 30,
+          cohesion: 30,
+          cohesionMax: 30,
           raisedTick: 0,
           maintenanceCost: 2,
           thresholdsFired: [],
@@ -333,7 +333,7 @@ describe('monster territory attrition', () => {
 
   it('army at hex with no lair receives standard attrition only (no monster bonus)', () => {
     addLocation(graph, 'hex1', 'plains', true); // on road, no lair
-    addArmy(graph, 'army1', 'hex1', { quintessence: 30, quintessenceMax: 30 });
+    addArmy(graph, 'army1', 'hex1', { cohesion: 30, cohesionMax: 30 });
     addFaction(graph, 'f1', 'army1', 0.5);
 
     phaseArmyAttrition(makeState(1, graph));
@@ -341,13 +341,13 @@ describe('monster territory attrition', () => {
     const state = getArmyState(graph, 'army1');
     // Standard: base + terrain (no off-road, no underfunded, no monster)
     const expectedStandard = 30 - (ARMY_BASE_ATTRITION + 1.5 * TERRAIN_ATTRITION_FACTOR);
-    expect(state.quintessence).toBeCloseTo(expectedStandard, 5);
+    expect(state.cohesion).toBeCloseTo(expectedStandard, 5);
   });
 
   it('army at hex with active lair receives standard attrition + MONSTER_TERRITORY_ATTRITION bonus', () => {
     addLocation(graph, 'hex1', 'plains', true);
     addLair(graph, 'lair1', 'hex1', 'lair'); // active lair at same hex
-    addArmy(graph, 'army1', 'hex1', { quintessence: 30, quintessenceMax: 30 });
+    addArmy(graph, 'army1', 'hex1', { cohesion: 30, cohesionMax: 30 });
     addFaction(graph, 'f1', 'army1', 0.5);
 
     phaseArmyAttrition(makeState(1, graph));
@@ -356,13 +356,13 @@ describe('monster territory attrition', () => {
     // Should be MORE loss than standard (monster bonus applied)
     const expectedStandard = 30 - (ARMY_BASE_ATTRITION + 1.5 * TERRAIN_ATTRITION_FACTOR);
     const expectedWithMonster = expectedStandard - MONSTER_TERRITORY_ATTRITION;
-    expect(state.quintessence).toBeCloseTo(expectedWithMonster, 5);
+    expect(state.cohesion).toBeCloseTo(expectedWithMonster, 5);
   });
 
   it('army at hex with cleared_lair receives NO monster attrition', () => {
     addLocation(graph, 'hex1', 'plains', true);
     addLair(graph, 'lair1', 'hex1', 'cleared_lair'); // cleared lair — no monster attrition
-    addArmy(graph, 'army1', 'hex1', { quintessence: 30, quintessenceMax: 30 });
+    addArmy(graph, 'army1', 'hex1', { cohesion: 30, cohesionMax: 30 });
     addFaction(graph, 'f1', 'army1', 0.5);
 
     phaseArmyAttrition(makeState(1, graph));
@@ -370,13 +370,13 @@ describe('monster territory attrition', () => {
     const state = getArmyState(graph, 'army1');
     // Should match standard attrition only (no monster bonus)
     const expectedStandard = 30 - (ARMY_BASE_ATTRITION + 1.5 * TERRAIN_ATTRITION_FACTOR);
-    expect(state.quintessence).toBeCloseTo(expectedStandard, 5);
+    expect(state.cohesion).toBeCloseTo(expectedStandard, 5);
   });
 
   it('monster attrition is additive (added to existing attrition, not replacing it)', () => {
     addLocation(graph, 'hex1', 'plains', false); // no road = off-road penalty
     addLair(graph, 'lair1', 'hex1', 'lair'); // active lair
-    addArmy(graph, 'army1', 'hex1', { quintessence: 30, quintessenceMax: 30 });
+    addArmy(graph, 'army1', 'hex1', { cohesion: 30, cohesionMax: 30 });
     addFaction(graph, 'f1', 'army1', 0.5);
 
     phaseArmyAttrition(makeState(1, graph));
@@ -389,6 +389,6 @@ describe('monster territory attrition', () => {
       OFF_ROAD_ATTRITION_PENALTY +
       MONSTER_TERRITORY_ATTRITION
     );
-    expect(state.quintessence).toBeCloseTo(expected, 5);
+    expect(state.cohesion).toBeCloseTo(expected, 5);
   });
 });

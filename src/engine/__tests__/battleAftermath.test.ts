@@ -77,7 +77,7 @@ function setupSettlementBattle(graph: WorldGraph, opts?: {
     name: 'Attacker Army',
     properties: {
       actorType: 'group',
-      armyState: { size: 'warband', headcount: 100, quintessence: 20, quintessenceMax: 30, raisedTick: 0, maintenanceCost: 2, thresholdsFired: [] } as ArmyState,
+      armyState: { size: 'warband', headcount: 100, cohesion: 20, cohesionMax: 30, raisedTick: 0, maintenanceCost: 2, thresholdsFired: [] } as ArmyState,
     },
   });
   graph.addEdge({ id: 'e_mem_a', source: 'army_a', target: 'f_atk', type: 'member_of', properties: { role: 'army', rank: 'army', joinedTick: 0 } });
@@ -91,8 +91,8 @@ function setupSettlementBattle(graph: WorldGraph, opts?: {
       actorType: 'group',
       armyState: {
         size: 'warband', headcount: 100,
-        quintessence: opts?.loserQ ?? 5,
-        quintessenceMax: opts?.loserQMax ?? 30,
+        cohesion: opts?.loserQ ?? 5,
+        cohesionMax: opts?.loserQMax ?? 30,
         raisedTick: 0, maintenanceCost: 2, thresholdsFired: [],
       } as ArmyState,
     },
@@ -171,11 +171,11 @@ describe('calculateDestructionSeverity', () => {
     expect(calculateDestructionSeverity(MAJOR_DESTRUCTION_THRESHOLD, 0.5)).toBe('major');
   });
 
-  it('returns total for high momentum + low quintessence', () => {
+  it('returns total for high momentum + low cohesion', () => {
     expect(calculateDestructionSeverity(TOTAL_DESTRUCTION_THRESHOLD, 0.1)).toBe('total');
   });
 
-  it('returns major (not total) if quintessence still high', () => {
+  it('returns major (not total) if cohesion still high', () => {
     expect(calculateDestructionSeverity(TOTAL_DESTRUCTION_THRESHOLD, 0.5)).toBe('major');
   });
 });

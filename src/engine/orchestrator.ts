@@ -2740,7 +2740,7 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   // Phase 2.352: Army Movement (TB-073 — armies advance toward objectives)
   phaseArmyMovement(s);
 
-  // Phase 2.355: Army Attrition (TB-073 — Quintessence degradation during march)
+  // Phase 2.355: Army Attrition (TB-073 — cohesion degradation during march)
   phaseArmyAttrition(s);
 
   // Phase 2.356: Battle Detection (TB-073 — hostile army colocation → battle node)

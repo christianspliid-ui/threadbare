@@ -207,19 +207,19 @@ export function tickBattle(state: GameState, battleNodeId: string): void {
   const defenderState = defenderNode.properties.armyState as ArmyState;
 
   // 1. Apply combat attrition to both armies
-  const newAttackerQ = Math.max(0, attackerState.quintessence - BATTLE_COMBAT_ATTRITION);
-  const newDefenderQ = Math.max(0, defenderState.quintessence - BATTLE_COMBAT_ATTRITION);
+  const newAttackerQ = Math.max(0, attackerState.cohesion - BATTLE_COMBAT_ATTRITION);
+  const newDefenderQ = Math.max(0, defenderState.cohesion - BATTLE_COMBAT_ATTRITION);
 
   graph.updateNode(bs.attackerArmyId, {
     properties: {
       ...attackerNode.properties,
-      armyState: { ...attackerState, quintessence: newAttackerQ },
+      armyState: { ...attackerState, cohesion: newAttackerQ },
     },
   });
   graph.updateNode(bs.defenderArmyId, {
     properties: {
       ...defenderNode.properties,
-      armyState: { ...defenderState, quintessence: newDefenderQ },
+      armyState: { ...defenderState, cohesion: newDefenderQ },
     },
   });
 

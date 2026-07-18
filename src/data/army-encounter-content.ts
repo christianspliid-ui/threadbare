@@ -7,8 +7,8 @@
  *     - mc.army.raise              Raise an Army (Iron muster + Gold pay)
  *     - army.aftermath.refugees    Refugees at the Gates
  *
- *   Threshold encounters (spawned when Quintessence degrades past defined
- *   percentages — see QUINTESSENCE_THRESHOLDS in src/engine/armyAttrition.ts):
+ *   Threshold encounters (spawned when Cohesion degrades past defined
+ *   percentages — see COHESION_THRESHOLDS in src/engine/armyAttrition.ts):
  *     - army.threshold.supply_crisis    (strained, ≤70% Q)
  *     - army.threshold.desertion        (weakened, ≤50% Q)
  *     - army.threshold.mutiny           (critical, ≤30% Q)
@@ -24,7 +24,7 @@
  *
  * Programmatic-spawn signal: `locationSubtypes: []` is preserved on the lifecycle
  * and threshold templates. They are not selected from the location pool; they
- * fire by lifecycle trigger (army-raise initiative, Quintessence threshold
+ * fire by lifecycle trigger (army-raise initiative, Cohesion threshold
  * crossings, refugee aftermath of major destruction).
  *
  * NFP #1: All difficulty values are named constants.
@@ -260,7 +260,7 @@ export const ARMY_RAISE_TEMPLATE: UnifiedActionTemplate = {
 // ─── army.threshold.supply_crisis — Supply Crisis ────────────────────────
 
 /**
- * Fires when an army's Quintessence drops below the `strained` threshold (≤70%).
+ * Fires when an army's Cohesion drops below the `strained` threshold (≤70%).
  * Empty locationSubtypes — spawned by lifecycle trigger, not location selection.
  */
 export const ARMY_THRESHOLD_SUPPLY_CRISIS_TEMPLATE: UnifiedActionTemplate = {
@@ -405,7 +405,7 @@ export const ARMY_THRESHOLD_SUPPLY_CRISIS_TEMPLATE: UnifiedActionTemplate = {
 // ─── army.threshold.desertion — Desertion Wave ───────────────────────────
 
 /**
- * Fires when Quintessence drops below the `weakened` threshold (≤50%).
+ * Fires when Cohesion drops below the `weakened` threshold (≤50%).
  */
 export const ARMY_THRESHOLD_DESERTION_TEMPLATE: UnifiedActionTemplate = {
   id: 'army.threshold.desertion',
@@ -563,7 +563,7 @@ export const ARMY_THRESHOLD_DESERTION_TEMPLATE: UnifiedActionTemplate = {
 // ─── army.threshold.mutiny — Mutiny ──────────────────────────────────────
 
 /**
- * Fires when Quintessence drops below the `critical` threshold (≤30%).
+ * Fires when Cohesion drops below the `critical` threshold (≤30%).
  */
 export const ARMY_THRESHOLD_MUTINY_TEMPLATE: UnifiedActionTemplate = {
   id: 'army.threshold.mutiny',
@@ -724,7 +724,7 @@ export const ARMY_THRESHOLD_MUTINY_TEMPLATE: UnifiedActionTemplate = {
 // ─── army.threshold.disbandment — Forced Disbandment ─────────────────────
 
 /**
- * Fires when Quintessence collapses below the `collapse` threshold (≤10%).
+ * Fires when Cohesion collapses below the `collapse` threshold (≤10%).
  * One step. Auto-fail difficulty — the army is past the point where any test can save it.
  * The narrative beat is the disbandment itself.
  */

@@ -57,8 +57,8 @@ function addArmy(
     size: opts?.size ?? 'warband',
     headcount: opts?.headcount ?? 100,
     objective: null,
-    quintessence: opts?.quintessence ?? 30,
-    quintessenceMax: opts?.quintessenceMax ?? 30,
+    cohesion: opts?.cohesion ?? 30,
+    cohesionMax: opts?.cohesionMax ?? 30,
     raisedTick: opts?.raisedTick ?? 0,
     maintenanceCost: 2,
     thresholdsFired: [],
@@ -119,7 +119,7 @@ function setBattleQForArmy(graph: WorldGraph, armyId: string, q: number, qMax: n
   const node = graph.getNode(armyId)!;
   const army = node.properties.armyState as ArmyState;
   graph.updateNode(armyId, {
-    properties: { ...node.properties, armyState: { ...army, quintessence: q, quintessenceMax: qMax } },
+    properties: { ...node.properties, armyState: { ...army, cohesion: q, cohesionMax: qMax } },
   });
 }
 
@@ -223,7 +223,7 @@ describe('getEligibleSpotlights', () => {
     expect(eligible.map(t => t.id)).not.toContain('battle.spotlight.commander_peril');
   });
 
-  it('returns last_stand when army quintessence below 20%', () => {
+  it('returns last_stand when army cohesion below 20%', () => {
     setBattleQForArmy(graph, 'army_r', 1, 30); // 3.3% — below threshold
     const state = makeState(2, graph);
     const eligible = getEligibleSpotlights(state, battleId);
@@ -256,7 +256,7 @@ describe('selectSpotlight', () => {
   it('returns null when no eligible templates', () => {
     // Set up a battle state where no conditions are met
     // momentum = 5 (not near zero, not < -3, not >= 3 for moral_dilemma since it fires threshold)
-    // Armies at 100% quintessence, no artifacts, no third army, no rivals
+    // Armies at 100% cohesion, no artifacts, no third army, no rivals
     setBattleMomentum(graph, battleId, 5);
     // Moral dilemma condition: momentum >= 3 — so it would be eligible; fire it first
     const node = graph.getNode(battleId)!;

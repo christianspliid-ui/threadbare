@@ -151,7 +151,7 @@ const ev = await window.__DEBUG.resolveEntityVisual('Serafina')  // node id/name
 // -> { matchedId, matchedName, descriptor: { tier:'art'|'fallback', src?, glyph, gradientIndex, alt, kind } } or { error }
 
 // War readout (THR-614 seam 3) — headless "did war actually fire?" check, no browser needed:
-const armies = window.__DEBUG.getArmies()    // [{ name, faction, commander, location, size, quintessence, objective:{type,targetName}, ticksActive, ... }]
+const armies = window.__DEBUG.getArmies()    // [{ name, faction, commander, location, size, cohesion, objective:{type,targetName}, ticksActive, ... }]
 const battles = window.__DEBUG.getBattles()  // [{ name, battleType, momentum, resolutionThreshold, leader, ticksElapsed, spotlightCount, ... }]
 // Ground-truth graph read (no monster-faction filter). The DebugPanel "Armies" tab renders the same state visually.
 ```

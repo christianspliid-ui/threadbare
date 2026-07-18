@@ -81,10 +81,10 @@ export const AFTERMATH_BASE_SPHERE_PRESSURE = 3;
  */
 export function calculateDestructionSeverity(
   finalMomentum: number,
-  loserQuintessencePercent: number,
+  loserCohesionPercent: number,
 ): DestructionSeverity {
   const magnitude = Math.abs(finalMomentum);
-  if (magnitude >= TOTAL_DESTRUCTION_THRESHOLD && loserQuintessencePercent < 0.15) return 'total';
+  if (magnitude >= TOTAL_DESTRUCTION_THRESHOLD && loserCohesionPercent < 0.15) return 'total';
   if (magnitude >= MAJOR_DESTRUCTION_THRESHOLD) return 'major';
   return 'minor';
 }
@@ -299,7 +299,7 @@ export function applyAftermath(
   const loserNode = graph.getNode(loserArmyId);
   const loserState = loserNode?.properties.armyState as ArmyState | undefined;
   const loserQPercent = loserState
-    ? loserState.quintessence / Math.max(1, loserState.quintessenceMax)
+    ? loserState.cohesion / Math.max(1, loserState.cohesionMax)
     : 0;
 
   const severity = calculateDestructionSeverity(

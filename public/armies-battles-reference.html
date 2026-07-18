@@ -24,9 +24,10 @@
     >= 3, and MAX_ARMIES_PER_FACTION = 1 ("tune upward later" — a deliberate low cap,
     IMPL). Also spawned at worldgen (worldSeed) and by the reach-signature warhost
     aftermath (encounterAftermath.raiseWarhostForce).
-  - Army "Quintessence" here is COHESION/HEALTH (0–quintessenceMax per army), a DIFFERENT
-    meaning from cosmological Quintessence (narrative centrality). Real term collision —
-    flag it, do not conflate.
+  - Army cohesion is HEALTH/QUALITY (0–cohesionMax per army), a DIFFERENT concept from
+    cosmological Quintessence (narrative centrality). The code originally overloaded the
+    word "quintessence" for both; THR-614 renamed the army field to cohesion to end the
+    collision — the field is now armyState.cohesion / cohesionMax throughout.
   - Attrition (phaseArmyAttrition) is deterministic, no PRNG: base + terrain + off-road +
     underfunded + monster-territory. Crosses four one-way thresholds (strained 70% → supply
     crisis, weakened 50% → desertion, critical 30% → mutiny, collapse 10% → disband encounter).
@@ -268,7 +269,7 @@
       <span class="chev">▶</span>
       <span>
         <h2>Designer Notes</h2>
-        <span class="sub">Armies as faction-raised actor nodes with Quintessence attrition and threshold encounters; momentum-driven field battles with thread-gated spotlights and IMPL aftermath; sieges as an accelerating battle subtype with wall fortification and starvation; and lair escalation minor→major→legendary with reinfestation — with honest IMPL/DESIGN status and the two deliberate simplifications flagged.</span>
+        <span class="sub">Armies as faction-raised actor nodes with cohesion attrition and threshold encounters; momentum-driven field battles with thread-gated spotlights and IMPL aftermath; sieges as an accelerating battle subtype with wall fortification and starvation; and lair escalation minor→major→legendary with reinfestation — with honest IMPL/DESIGN status and the two deliberate simplifications flagged.</span>
       </span>
     </summary>
     <div class="designer-body">
@@ -291,7 +292,7 @@
       <h3>Attrition &amp; threshold encounters <span class="flag impl">IMPL</span> <span class="flag design">DESIGN</span></h3>
       <ul>
         <li><code>phaseArmyAttrition(state)</code> is deterministic (no PRNG). Per tick a host loses <code>ARMY_BASE_ATTRITION 0.5</code> + terrain (<code>terrainCost × TERRAIN_ATTRITION_FACTOR 0.3</code>) + <code>OFF_ROAD_ATTRITION_PENALTY 0.8</code> when not on a road + <code>UNDERFUNDED_ATTRITION_PENALTY 1.5</code> when the faction can't pay + <code>MONSTER_TERRITORY_ATTRITION 1.2</code> when an active lair sits on the hex. Clamped to 0.</li>
-        <li>Four one-way <code>QUINTESSENCE_THRESHOLDS</code> (fractions of max) fire encounters as strength drops: <code>strained 0.70 → army.threshold.supply_crisis</code>, <code>weakened 0.50 → army.threshold.desertion</code>, <code>critical 0.30 → army.threshold.mutiny</code>, <code>collapse 0.10 → army.threshold.disbandment</code>. One per tick, each fires once (tracked in <code>thresholdsFired</code>). Quintessence 0 → <code>disbandArmy</code> removes the node.</li>
+        <li>Four one-way <code>COHESION_THRESHOLDS</code> (fractions of max) fire encounters as strength drops: <code>strained 0.70 → army.threshold.supply_crisis</code>, <code>weakened 0.50 → army.threshold.desertion</code>, <code>critical 0.30 → army.threshold.mutiny</code>, <code>collapse 0.10 → army.threshold.disbandment</code>. One per tick, each fires once (tracked in <code>thresholdsFired</code>). Cohesion 0 → <code>disbandArmy</code> removes the node.</li>
         <li><strong>DESIGN — "underfunded" is a heuristic, not a treasury:</strong> <code>checkUnderfunded</code> returns true when the faction's <code>prosperity &lt; 0.2</code> (or no faction). There is no per-tick gold ledger deducting <code>maintenanceCost</code> yet — the maintenance constants exist on <code>armyState</code> but the funding check is a prosperity proxy. Flag it; do not describe a real war chest.</li>
       </ul>
 
@@ -340,12 +341,12 @@
           <tr><td>ARMY_SPAWN_IRON_TIER_MIN</td><td>4</td><td>Min commander Iron tier to raise a host · <code>army.ts:50</code></td></tr>
           <tr><td>ARMY_SPAWN_GOLD_TIER_MIN</td><td>3</td><td>Min faction Gold tier to raise a host · <code>army.ts:53</code></td></tr>
           <tr><td>ARMY_ROAD_DISCOUNT</td><td>0.4</td><td>Road movement discount for armies · <code>armyMovement.ts:51</code></td></tr>
-          <tr><td>ARMY_BASE_ATTRITION</td><td>0.5</td><td>Baseline Quintessence loss per tick · <code>armyAttrition.ts:21</code></td></tr>
+          <tr><td>ARMY_BASE_ATTRITION</td><td>0.5</td><td>Baseline cohesion loss per tick · <code>armyAttrition.ts:21</code></td></tr>
           <tr><td>OFF_ROAD_ATTRITION_PENALTY</td><td>0.8</td><td>Extra attrition when off-road · <code>armyAttrition.ts:27</code></td></tr>
           <tr><td>MONSTER_TERRITORY_ATTRITION</td><td>1.2</td><td>Extra attrition on an active-lair hex · <code>armyAttrition.ts:33</code></td></tr>
           <tr><td>BATTLE_RESOLUTION_THRESHOLD</td><td>8</td><td>Momentum magnitude that ends a field battle · <code>battle.ts:47</code></td></tr>
           <tr><td>FIELD_BATTLE_MAX_DURATION</td><td>5</td><td>Ticks before forced field-battle resolution · <code>battle.ts:56</code></td></tr>
-          <tr><td>BATTLE_COMBAT_ATTRITION</td><td>2.0</td><td>Quintessence loss/tick in active combat · <code>battle.ts:59</code></td></tr>
+          <tr><td>BATTLE_COMBAT_ATTRITION</td><td>2.0</td><td>Cohesion loss/tick in active combat · <code>battle.ts:59</code></td></tr>
           <tr><td>SIEGE_RESOLUTION_THRESHOLD</td><td>12</td><td>Momentum magnitude that ends a siege · <code>battle.ts:94</code></td></tr>
           <tr><td>SIEGE_MAX_DURATION</td><td>40</td><td>Ticks before forced siege resolution · <code>battle.ts:91</code></td></tr>
           <tr><td>SIEGE_STARVATION_TICK</td><td>15</td><td>Tick the starvation beat fires · <code>battle.ts:100</code></td></tr>
@@ -361,7 +362,7 @@
       <h3>Canon &amp; terminology</h3>
       <ul>
         <li>Systems spec: <code>Docs/plans/2026-03-29-conflict-and-destruction-design.md</code> (TB-073 — armies/battles/sieges) and the M2.5 monster-encounters plan (lairs). Phase &amp; type sources: <code>armyMovement.ts</code>, <code>armyAttrition.ts</code>, <code>armySpawning.ts</code>, <code>armyNotifications.ts</code>, <code>battleResolution.ts</code>, <code>battleAftermath.ts</code>, <code>battleSpotlights.ts</code>, <code>siegeResolution.ts</code>, <code>lairEscalation.ts</code>, <code>lairSeeding.ts</code>, <code>src/types/army.ts</code>, <code>src/types/battle.ts</code>; content in <code>army-encounter-content.ts</code>, <code>siege-encounter-content.ts</code>, <code>battle-spotlight-content.ts</code>.</li>
-        <li>UL: no dedicated military shard yet — <em>army</em>, <em>battle</em>, <em>siege</em>, <em>lair</em>, and army <em>Quintessence</em> (cohesion) are a known documentation gap (surface a <code>UL-proposal</code> to close it). Note the collision with cosmological <em>Quintessence</em> flagged above; <code>Docs/ubiquitous-language/Cosmology.md</code> owns the cosmological term.</li>
+        <li>UL: no dedicated military shard yet — <em>army</em>, <em>battle</em>, <em>siege</em>, <em>lair</em>, and army <em>cohesion</em> are a known documentation gap (surface a <code>UL-proposal</code> to close it). The former collision with cosmological <em>Quintessence</em> is resolved (THR-614 renamed the army field to cohesion); <code>Docs/ubiquitous-language/Cosmology.md</code> owns the cosmological term.</li>
         <li>Adjacent Manual pages: <a href="factions-cultures-reference.html">Factions, Cultures &amp; Secrets</a> (factions raise armies from their ambitions), <a href="world-map-reference.html">The World: Hexes, Terrain &amp; Sight</a> (the terrain and danger zones armies march through and lairs seed into), <a href="settlements-economy-reference.html">Settlements, Prosperity &amp; Trade</a> (what a siege costs a settlement), <a href="clocks-reference.html">Doom, the Mandate &amp; Omens</a> (war as pressure). Game title in player copy: <strong>Threadbearer</strong>.</li>
       </ul>
 
