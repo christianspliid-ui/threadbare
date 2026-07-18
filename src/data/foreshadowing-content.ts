@@ -18,9 +18,12 @@
  *    the only place variable agreement is correct.
  *  • Verbs whose subject is `{name}` (a proper name, always 3rd-person singular)
  *    or `{matter}` (always singular) are written out directly — never `{v:}`.
- *  • `{subject}` / `{Subject}` appear ONLY in subject position. No possessive or
- *    object pronouns (their/them/him) — those carry a second agreement axis and
- *    are avoided entirely in Phase A.
+ *  • `{subject}` / `{Subject}` appear ONLY in subject position. A pronoun in
+ *    object position ("moves {object} closer", "this is {object} all over") uses
+ *    `{object}` / `{Object}` (them/him/her) — the case axis the realizer resolves
+ *    via `objectPronoun` (THR-640). Never route a subject slot into object position.
+ *  • Possessive pronouns (their/his/her) are still avoided — use `{name}`'s form
+ *    ("the grain of {name}") instead of a possessive slot.
  *  • Modals (can, will, would, may, might, must) are invariant across persons and
  *    are safe after any pronoun without a `{v:}` slot.
  *
@@ -181,13 +184,13 @@ export const MOTIVE_CLAUSES: Record<MotiveContributionKind, readonly string[]> =
   ambition: [
     '{Subject} {v:want} this, and {subject} {v:mean} to take it while the taking is good.',
     '{Subject} {v:see} {matter} as a rung, and {subject} {v:intend} to climb it.',
-    '{Subject} {v:reckon} {matter} moves {subject} closer to what {subject} {v:want}.',
+    '{Subject} {v:reckon} {matter} moves {object} closer to what {subject} {v:want}.',
     'There is a thing {subject} {v:want}, and {matter} sits square on the way to it.',
   ],
   personality: [
     '{Subject} {v:go} because this is the kind of thing {subject} always {v:go} toward.',
     '{Subject} {v:take} {matter} on because it fits how {subject} {v:move} through the world.',
-    'This is {subject} all over — {subject} {v:mean} to meet {matter} head-on.',
+    'This is {object} all over — {subject} {v:mean} to meet {matter} head-on.',
     '{Subject} {v:answer} {matter} the way {subject} {v:answer} most things, plainly and soon.',
   ],
   intel: [
@@ -262,6 +265,89 @@ export const MOTIVE_CLAUSES: Record<MotiveContributionKind, readonly string[]> =
     'The road to {matter} is short, and {subject} {v:take} the short road.',
     '{Matter} is on the way, and {subject} will not waste the steps.',
   ],
+};
+
+/**
+ * S2 reach-flavor sub-tables (THR-640) for the four most common contribution
+ * kinds. When a receipt's top kind is one of these AND its dominantReach has a
+ * sub-table below, the composer prefers these Reach-specific variants over the
+ * base `MOTIVE_CLAUSES[kind]` pool — the same motive reads differently depending
+ * on the cosmic energy behind it (iron martial, gold commerce, shadow stealth,
+ * veil magic, heart social, eye knowledge, star faith). Only the *relevant*
+ * Reaches per kind are flavored; any other Reach falls back to the base pool.
+ * ≥3 variants per (kind, reach). Same authoring rules as MOTIVE_CLAUSES.
+ */
+export const MOTIVE_CLAUSES_BY_REACH: Partial<
+  Record<MotiveContributionKind, Partial<Record<ReachDomain, readonly string[]>>>
+> = {
+  ambition: {
+    iron: [
+      '{Subject} {v:mean} to take {matter} by strength, and let the taking speak for itself.',
+      '{Subject} {v:see} a hard climb in {matter}, and {subject} {v:mean} to fight up every foot of it.',
+      '{Subject} {v:reckon} {matter} falls to whoever hits hardest, and {subject} {v:intend} to be that one.',
+    ],
+    gold: [
+      '{Subject} {v:see} a fortune in {matter}, and {subject} {v:mean} to be the hand that banks it.',
+      '{Subject} {v:reckon} {matter} is the making of a fortune, and {subject} will not let it walk.',
+      'There is coin and standing both in {matter}, and {subject} {v:want} the whole of it.',
+    ],
+    star: [
+      '{Subject} {v:believe} {matter} is a rung fate set out, and {subject} {v:mean} to climb it.',
+      '{Subject} {v:feel} a greatness owed in {matter}, and {subject} {v:go} to claim what is owed.',
+      '{Subject} {v:take} {matter} for a charge laid down from above, and {subject} will not set it aside.',
+    ],
+  },
+  personality: {
+    iron: [
+      '{Subject} {v:go} at {matter} straight on, the only way {subject} {v:know} how.',
+      '{Subject} {v:meet} {matter} head-on, the way {subject} {v:meet} everything.',
+      'This is how {subject} always {v:move} — into {matter}, not around it.',
+    ],
+    heart: [
+      '{Subject} {v:take} {matter} to heart, the way {subject} {v:take} most things.',
+      '{Subject} {v:go} to {matter} because {subject} always {v:go} where people need answering.',
+      '{Subject} {v:read} {matter} as a matter of people first, the way {subject} always {v:have}.',
+    ],
+    shadow: [
+      '{Subject} {v:come} at {matter} quiet, the way {subject} {v:come} at most things.',
+      '{Subject} {v:watch} {matter} first, as {subject} always {v:do}.',
+      '{Subject} {v:keep} {matter} close and {v:say} little, the way {subject} always {v:have}.',
+    ],
+  },
+  intel: {
+    eye: [
+      '{Subject} {v:know} more of {matter} than {subject} {v:let} on, and {subject} {v:mean} to use it.',
+      'What {subject} {v:know} of {matter} points one way, and {subject} {v:trust} the knowing.',
+      '{Subject} {v:have} read {matter} to its roots, and {subject} {v:move} on what {subject} {v:find}.',
+    ],
+    veil: [
+      '{Subject} {v:see} a hidden turn in {matter} that others do not, and {subject} {v:mean} to take it.',
+      '{Subject} {v:know} the sign laid over {matter}, and {subject} {v:read} it plainly.',
+      '{Subject} already {v:hold} a secret to {matter}, and {subject} {v:go} to spend it.',
+    ],
+    shadow: [
+      '{Subject} {v:hold} a secret about {matter} that few others do, and {subject} {v:mean} to use it.',
+      '{Subject} {v:know} who moves behind {matter}, and {subject} {v:trust} that knowing over any rumor.',
+      'What {subject} {v:know} of {matter} came the quiet way, and {subject} {v:reckon} it sound.',
+    ],
+  },
+  divine: {
+    star: [
+      '{Subject} {v:take} {matter} for a charge from on high, and {subject} {v:mean} to answer it.',
+      '{Subject} {v:feel} a hand at the back over {matter}, steady and sure, and {subject} {v:heed} it.',
+      '{Subject} {v:believe} the powers above want {matter} done, and {subject} will not refuse them.',
+    ],
+    veil: [
+      '{Subject} {v:read} a sign in {matter}, and {subject} {v:follow} where it points.',
+      '{Subject} {v:feel} the unseen stir around {matter}, and {subject} {v:take} it for a call.',
+      'Something past the plain world has settled on {matter}, and {subject} {v:mean} to heed it.',
+    ],
+    heart: [
+      '{Subject} {v:feel} a higher will in {matter}, and it speaks to {name} in the tongue of mercy.',
+      '{Subject} {v:take} {matter} for a charge of mercy laid on {name}, and {subject} {v:mean} to bear it.',
+      '{Subject} {v:believe} a kindness beyond reckoning wants {matter} done, and {subject} {v:go} to do it.',
+    ],
+  },
 };
 
 /**

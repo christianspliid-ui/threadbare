@@ -14,7 +14,13 @@
  *
  * Slots:
  *   {name} {place} {matter} {person} {faction} {subject} {Subject}  — filled from `slots`
+ *   {object} {Object}                                              — object-case pronoun
  *   {v:lemma}                                                       — conjugated verb
+ *
+ * Object pronouns ({object}/{Object} — them/him/her) carry a case axis, not a
+ * number axis: a clause that places a pronoun in object position ("moves {object}
+ * closer") must use these slots, never the subject slots, or it renders "moves
+ * they closer" (THR-640). `objectPronoun` maps the subject form to its object case.
  *
  * Fail-soft: an unknown verb lemma is emitted unconjugated, and a missing noun
  * slot collapses to empty rather than throwing (NFP #4). The realizer never
@@ -30,6 +36,21 @@ export type GrammaticalNumber = 'singular' | 'plural';
  */
 export function pronounNumber(subject: string): GrammaticalNumber {
   return subject.trim().toLowerCase() === 'they' ? 'plural' : 'singular';
+}
+
+/**
+ * Map a subject pronoun to its object-case form, for `{object}` / `{Object}`
+ * slots: they→them, he→him, she→her, it→it. Unknown input falls back to `them`
+ * (matching the `they` default used everywhere else — fail-soft, never throws).
+ */
+export function objectPronoun(subject: string): string {
+  switch (subject.trim().toLowerCase()) {
+    case 'he': return 'him';
+    case 'she': return 'her';
+    case 'it': return 'it';
+    case 'they':
+    default: return 'them';
+  }
 }
 
 /** Irregular present-tense verbs: lemma → [3rd-person singular, plural/base]. */

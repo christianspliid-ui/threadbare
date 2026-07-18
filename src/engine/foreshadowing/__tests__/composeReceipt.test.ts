@@ -5,6 +5,7 @@ import { STAKE_CLAUSE_MIN_WEIGHT } from '../constants';
 import type { MotiveReceipt, MotiveContribution } from '../../../types/foreshadowing';
 import {
   MOTIVE_CLAUSES,
+  MOTIVE_CLAUSES_BY_REACH,
   EXPECTATION_BY_FORECAST,
   STAKE_CLAUSES,
   DEFAULT_STAKE_CLAUSES,
@@ -127,7 +128,31 @@ describe('composeReceiptForeshadowing', () => {
     const receipt = makeReceipt({ contributions: [] });
     expect(() => composeReceiptForeshadowing(BASE_INPUT, receipt)).not.toThrow();
     const { compositionKeys } = composeReceiptForeshadowing(BASE_INPUT, receipt);
-    expect(compositionKeys).toContain('pull:personality');
+    // `pull:personality` (base) or `pull:personality/<reach>` (reach-flavored).
+    expect(compositionKeys.some(k => k.startsWith('pull:personality'))).toBe(true);
+  });
+
+  it('flavors S2 by Reach for the top-4 kinds, keying the composition (THR-640)', () => {
+    // ambition + gold has a reach sub-table → key carries the reach suffix.
+    const flavored = composeReceiptForeshadowing(
+      BASE_INPUT,
+      makeReceipt({ contributions: [{ kind: 'ambition', weight: 0.9 }], dominantReach: 'gold' }),
+    );
+    expect(flavored.compositionKeys).toContain('pull:ambition/gold');
+
+    // ambition + stone has no sub-table → falls back to the base kind key.
+    const unflavored = composeReceiptForeshadowing(
+      BASE_INPUT,
+      makeReceipt({ contributions: [{ kind: 'ambition', weight: 0.9 }], dominantReach: 'stone' }),
+    );
+    expect(unflavored.compositionKeys).toContain('pull:ambition');
+
+    // A kind with no reach sub-tables at all keeps the base key.
+    const noSubtable = composeReceiptForeshadowing(
+      BASE_INPUT,
+      makeReceipt({ contributions: [{ kind: 'proximity', weight: 0.9 }], dominantReach: 'gold' }),
+    );
+    expect(noSubtable.compositionKeys).toContain('pull:proximity');
   });
 });
 
@@ -139,6 +164,10 @@ describe('composeReceiptForeshadowing', () => {
 
 const RECEIPT_CLAUSES: string[] = [
   ...Object.values(MOTIVE_CLAUSES).flat(),
+  // Reach-flavor sub-tables (THR-640) — swept alongside the base pools.
+  ...Object.values(MOTIVE_CLAUSES_BY_REACH).flatMap(byReach =>
+    Object.values(byReach ?? {}).flatMap(v => v ?? []),
+  ),
   ...Object.values(EXPECTATION_BY_FORECAST).flat(),
   ...Object.values(STAKE_CLAUSES).flatMap(v => v ?? []),
   ...DEFAULT_STAKE_CLAUSES,
@@ -163,10 +192,14 @@ describe('receipt clause agreement sweep', () => {
 
   for (const { subject, Subject } of PRONOUNS) {
     it(`renders every clause grammatically for "${subject}"`, () => {
+      const object = subject === 'they' ? 'them' : subject === 'he' ? 'him' : 'her';
+      const Object_ = object.charAt(0).toUpperCase() + object.slice(1);
       const slots = {
         name: 'Kael',
         subject,
         Subject,
+        object,
+        Object: Object_,
         matter: 'what stirs at Ashmarket',
         place: 'Ashmarket',
       };
@@ -203,4 +236,66 @@ describe('receipt clause agreement sweep', () => {
       }
     });
   }
+});
+
+// ── Object-case lint (THR-640) ───────────────────────────────────────────────
+// A pronoun in object position must use the `{object}`/`{Object}` slot, never the
+// subject slot — else it renders "moves they closer" / "this is they all over".
+// This static lint flags a subject slot sitting directly after a token that
+// unambiguously demands object case: the copula (predicate-nominative idiom) and
+// transitive verbs / object prepositions whose next word is their object. It runs
+// on the raw clause strings, so it catches the authoring mistake at the source
+// regardless of which pronoun is later filled in.
+
+const OBJECT_PRECEDERS = [
+  // Copula — "this is {object} all over".
+  'is', 'are', 'was', 'were',
+  // Transitive verbs whose direct object follows immediately.
+  'moves', 'move', 'moved', 'makes', 'make', 'made', 'sets', 'set',
+  'leads', 'lead', 'led', 'sends', 'send', 'sent', 'points', 'point',
+  'steers', 'steer', 'drives', 'drive', 'drove', 'pushes', 'push',
+  'carries', 'carry', 'carried', 'brings', 'bring', 'brought',
+  'gives', 'give', 'gave', 'shows', 'show', 'showed', 'tells', 'tell', 'told',
+  'keeps', 'keep', 'kept', 'puts', 'put', 'pulls', 'pull', 'drags', 'drag',
+  // Object prepositions.
+  'for', 'with', 'at', 'from', 'into', 'toward', 'towards', 'upon',
+  'against', 'beside', 'behind', 'near', 'unto', 'onto',
+];
+
+const OBJECT_POSITION_RE = new RegExp(
+  `\\b(${OBJECT_PRECEDERS.join('|')}) \\{[Ss]ubject\\}`,
+);
+
+describe('receipt clause object-case lint', () => {
+  it('never places a subject slot in object position (use {object}/{Object})', () => {
+    for (const clause of RECEIPT_CLAUSES) {
+      const match = clause.match(OBJECT_POSITION_RE);
+      expect(
+        match,
+        `subject slot in object position ("${match?.[0]}") — use {object}/{Object} in: ${clause}`,
+      ).toBeNull();
+    }
+  });
+
+  it('renders the fixed object-position clauses grammatically for they/he/she', () => {
+    // The two THR-640 fixes: "moves {object} closer" and "this is {object} all over".
+    const cases = [
+      { subject: 'they', object: 'them' },
+      { subject: 'he', object: 'him' },
+      { subject: 'she', object: 'her' },
+    ];
+    for (const { subject, object } of cases) {
+      const rendered = realize('{Subject} {v:reckon} {matter} moves {object} closer.', {
+        number: pronounNumber(subject),
+        slots: {
+          subject,
+          Subject: subject.charAt(0).toUpperCase() + subject.slice(1),
+          object,
+          matter: 'the road ahead',
+        },
+      });
+      expect(rendered).toContain(`moves ${object} closer`);
+      expect(rendered).not.toMatch(/moves (they|he|she) /);
+    }
+  });
 });
