@@ -1,5 +1,5 @@
 ---
-status: proposal
+status: partially-implemented (war core shipped — see Implementation Status banner)
 issue: THR-614
 project: Thematic Pressure & Living World
 author: Cowork (autonomous scheduled session, 2026-07-05; rescoped same day per Christian — "I want war to land so I can evaluate real gameplay, so scope for full gameplay")
@@ -14,6 +14,28 @@ builds_on: 2026-07-05-rival-activation-schemes.md (THR-66, shipped), 2026-06-29-
 **Rescope (Christian, 2026-07-05):** *"I want war to land so I can evaluate real gameplay, so please scope for full gameplay."*
 
 This plan now covers **the complete war system as playable gameplay**, not a stub. The prior draft deferred sieges/attrition/destruction to a follow-on ceiling; per the rescope, that ceiling — the fully-designed TB-073 conflict system — is **promoted into scope**. War is delivered as a **playable vertical you can evaluate**, then deepened. The surrounding non-military living-world autonomy (leaders making claims, feuding, building, succession) rides alongside as texture.
+
+---
+
+> ## ⚠️ Implementation Status (added 2026-07-18, THR-614 seam 4) — read this before the green-field prose below
+>
+> **This document reads as green-field. It is not.** When THR-614 was picked up (2026-07-17), substrate verification found the entire TB-073 army/battle/siege/destruction system (~3,300 engine lines) **already built and wired** into `orchestrator.ts` (phases 2.352–2.358), with content (`battle-spotlight-content.ts`) and UI (`ArmySpriteMesh`, `BattleIndicatorMesh`, `ArmySheet`, DebugPanel Armies tab) — provenance old-milestone `TB-073 M2-*` commits, predating this plan. The plan was authored without a tree check; the "build it" framing below is therefore **misleading**. Treat the sections below as *design intent / rationale*, not a build list.
+>
+> **What THR-614 actually did (re-scoped 2026-07-18, human-approved):** *activate + reconcile* the dormant system, not build it.
+>
+> - **Seam 1 — activation (PR #578, `76dc7adf`).** War never fired because of three structural bugs, not gate tuning: objective assignment was entirely missing (armies spawned with `objective: null` and never marched), spawn was one-shot (standing military ambitions never raised an army), and the commander stood in a sublocation off the location graph (pathfinding failed). Fixed via `selectArmyObjective`, `maybeSpawnArmy` retry, and sublocation→parent-settlement muster resolution. Exit criterion met: army raised @tick 10, resolved siege @tick 11 (seed 42 medium).
+> - **Seam 3 — inspectability (PR #579, `7ecee170`).** Added `window.__DEBUG.getArmies()` / `getBattles()` headless bridge reads. The DebugPanel "Armies" tab already existed (phase-22 split).
+> - **Seam 4 — this reconciliation (docs).** Added rulebook §9 "The World at War" (`Docs/canon/rulebook.md`) with honest `[IMPL]` flags; added this banner.
+>
+> **What genuinely remains:**
+> - **Seam 2 — the `cohesion` rename** (below, §"Correction baked in"): **not yet done.** Code still names army health `armyState.quintessence` / `quintessenceMax` / `ARMY_QUINTESSENCE_BASE` and the `QUINTESSENCE_*` attrition constants. The rename to `cohesion` is a wide, careful pass tracked as THR-614 seam 2.
+> - **Dead gate:** `territorial_expansion` is unreachable (`EXPANSION_PROSPERITY_THRESHOLD = 0.6` reads a faction `prosperity` prop nothing sets), so `revenge` is the only live war trigger. A balance slice.
+> - **Non-war notable agendas** (Claim/Feud/Rite/Succession four-phase families) — the part that is *actually* unbuilt — deferred to **THR-630**. Siege depth = **THR-628/629**; army-supply/trade coupling = **THR-626** (blocked on THR-615/616).
+> - **Shipped-vs-plan deviation:** the plan's "no new orchestrator battle phase — battles tick inside the encounter phase" guardrail was *not* followed; battles run in dedicated phases 2.356/2.357. The rulebook §9 records this.
+>
+> Full forensics in the THR-614 Linear checkpoint comments (2026-07-17 verdict + 2026-07-18 seam-1/seam-3 checkpoints).
+
+---
 
 ## What "full gameplay" means here — the player's loop
 
