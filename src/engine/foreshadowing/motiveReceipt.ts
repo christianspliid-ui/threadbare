@@ -24,6 +24,7 @@ import {
   INTEL_TIER_RUMOR_BELOW,
   INTEL_TIER_UNKNOWN_BELOW,
   MULTIPLIER_DELTA_SCALE,
+  PROXIMITY_RECEIPT_SCALE,
   RECEIPT_MIN_WEIGHT,
   RECEIPT_TOP_CONTRIBUTIONS,
 } from './constants';
@@ -57,30 +58,39 @@ interface RawTerm {
  * Extract the labeled additive contribution terms this slice captures.
  *
  * Captured (1:1 to a `MotiveContributionKind`): ambition, personality, intel,
- * mark, resonance, hunch, doom_identity, chain, exploration, rarity.
+ * mark, resonance, hunch, doom_identity, chain, exploration, rarity, and — since
+ * THR-641 surfaced the scorer's previously-folded terms — divine, bond,
+ * reputation, proximity. All 14 receipt kinds are now reachable.
  *
- * Not yet captured (require surfacing terms the scorer folds into `baseScore`
- * or does not expose as labeled fields): divine (value-overlay delta), bond
- * (bond modifier), reputation (reputation term), proximity (inverse travel
- * cost). Also unmapped by the fixed kind vocabulary: ruins/attraction/anomaly
- * bonuses. These are a follow-up — either extend the vocabulary or label the
- * scorer terms — and are documented so the receipt is honest about its scope.
+ * Presentation scaling lives here (not the scorer) so `ScoredCandidate` carries
+ * raw mechanical facts: `rarity`/`bond` convert their multiplier to an additive
+ * delta via `MULTIPLIER_DELTA_SCALE`; `proximity` is `PROXIMITY_RECEIPT_SCALE`
+ * over `1 + hexDistance` (0 when unreachable). Still unmapped by the fixed kind
+ * vocabulary: ruins/attraction/anomaly bonuses (a follow-up if the vocabulary grows).
  */
 function extractRawTerms(candidate: ScoredCandidate, intelRecordId: string | null): RawTerm[] {
   const rarityDelta = (candidate.rarityMultiplier - 1) * MULTIPLIER_DELTA_SCALE;
+  const bondDelta = candidate.bondBonus * MULTIPLIER_DELTA_SCALE;
   const resonanceTotal = candidate.resonance + candidate.globalResonance;
+  const proximityTerm = Number.isFinite(candidate.hexDistanceToEntry)
+    ? PROXIMITY_RECEIPT_SCALE / (1 + candidate.hexDistanceToEntry)
+    : 0;
 
   const terms: RawTerm[] = [
     { kind: 'ambition', term: candidate.ambitionBoost, provenance: { detail: candidate.entry.reachPrimary } },
     { kind: 'personality', term: candidate.personalityBias },
     { kind: 'intel', term: candidate.intelBonus, provenance: intelRecordId ? { detail: intelRecordId } : undefined },
     { kind: 'mark', term: candidate.markRevealBonus },
+    { kind: 'divine', term: candidate.divineOverlayBonus },
+    { kind: 'bond', term: bondDelta, provenance: candidate.entry.targetAgentId ? { nodeId: candidate.entry.targetAgentId } : undefined },
+    { kind: 'reputation', term: candidate.reputationBonus, provenance: { detail: candidate.entry.reachPrimary } },
     { kind: 'resonance', term: resonanceTotal, provenance: candidate.entry.sphereAffinity ? { detail: candidate.entry.sphereAffinity } : undefined },
     { kind: 'hunch', term: candidate.hunchBonus },
     { kind: 'doom_identity', term: candidate.identityBiasBonus },
     { kind: 'chain', term: candidate.chainBonus },
     { kind: 'exploration', term: candidate.explorationBonus },
     { kind: 'rarity', term: rarityDelta },
+    { kind: 'proximity', term: proximityTerm },
   ];
 
   return terms;

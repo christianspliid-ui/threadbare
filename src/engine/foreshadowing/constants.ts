@@ -37,3 +37,10 @@ export const STAKE_CLAUSE_MIN_WEIGHT = 0.20;
 
 /** Scale converting multiplicative score terms (e.g. rarityMultiplier) to additive deltas for normalization. @range 0.5-2.0 */
 export const MULTIPLIER_DELTA_SCALE = 1.0;
+
+/**
+ * Receipt-only scale for the proximity pull term: contribution = SCALE / (1 + hexDistance).
+ * Descriptive (feeds foreshadowing emphasis) — never fed back into the scorer's finalScore.
+ * Kept below AMBITION_REACH_BOOST (0.5) so proximity headlines a receipt only when stronger
+ * pulls are weak ("no reason to look past it"), not for every same-hex pick. @range 0.1-0.5 */
+export const PROXIMITY_RECEIPT_SCALE = 0.2;
