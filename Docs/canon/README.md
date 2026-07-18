@@ -24,6 +24,8 @@ Layer 3 — Plans (Docs/plans/)
 
 Agent loading order: load UL index always → load the relevant Canon page first when starting authoring work → descend into plans only when answering a *why* question.
 
+**Fallback discovery — the plans index.** Canon pages are curated and don't cover every domain. When no Canon page points at the plan you need, consult [`Docs/plans/INDEX.md`](../plans/INDEX.md) — the generated, exhaustive catalog of every design plan (date, topic, linked Linear issue, and a ⚠️ marker on plans that declare themselves stale or are superseded by a later plan). It is the fallback catalog underneath this curated layer; regenerate it with `npm run rebuild-plans-index`.
+
 ## Page schema
 
 Every Canon page must use this frontmatter and section structure:
