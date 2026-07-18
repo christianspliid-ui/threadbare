@@ -13,6 +13,7 @@ Before auditing:
 1. Read `{{PLAN_DOC_PATH}}` — the plan doc you are auditing.
 2. Read `Docs/plans/_template.md` — the structural contract for plan docs. The required sections listed in the template are the acceptance criteria for each pillar.
 3. Read `Docs/plans/wiring-checklist.md` — to verify the Wiring section connects pillars to orchestrator phases, UI components, and GameState fields.
+4. **If the plan has an Engine pillar:** read `Docs/canon/systems-inventory.md` — the generated map of every subsystem already wired into the engine. You need it for the substrate check below.
 
 Do NOT read additional files beyond these unless the plan doc references a specific file you must verify.
 
@@ -34,7 +35,12 @@ Return a single block of text ≤300 words containing:
 
 3. A Wiring section check: does the plan doc have a Wiring section that connects each active pillar to orchestrator phase, UI component, GameState field, traces, and debug visibility? One sentence.
 
-4. A one-line overall verdict: `PILLAR AUDIT: PASS` / `PILLAR AUDIT: PASS-with-notes` / `PILLAR AUDIT: FAIL — <which pillars or sections are missing>`.
+4. **Substrate-existence check (Engine-pillar plans only, THR-658):** Does the plan open with a `## Substrate inventory` section stating what already exists and whether the plan **extends / activates / replaces** it? Cross-check the plan's premise nouns against `Docs/canon/systems-inventory.md`. Two failure modes:
+   - **Missing section** — an Engine-pillar plan with no `## Substrate inventory` section → this dimension is `REVISE`.
+   - **Green-field duplication** — the plan proposes to *build* a system the inventory already lists (matched by name or alias; a 🟠 DORMANT badge still counts as existing — it must be *activated*, not rebuilt) without acknowledging it → this dimension is `REVISE`. Name the inventory subsystem it duplicates.
+   If the plan has no Engine pillar, write "Substrate check: N/A (no Engine pillar)."
+
+5. A one-line overall verdict: `PILLAR AUDIT: PASS` / `PILLAR AUDIT: PASS-with-notes` / `PILLAR AUDIT: REVISE — <substrate collision or missing Substrate inventory section>` / `PILLAR AUDIT: FAIL — <which pillars or sections are missing>`.
 
 ## Verdict Format
 
