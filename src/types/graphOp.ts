@@ -87,7 +87,11 @@ export type GraphOpType =
   | 'sanctify_source' // THR-611: raise a typed source's sanctity toward flowering (Build leg)
   | 'defend_source'  // THR-611: clear contestation / desecration and restore a source's sanctity (Defend leg)
   | 'find_source'    // THR-611 Slice 4: reveal latent (undiscovered) essence sources within range of the target (Find leg)
-  | 'claim_source';  // THR-611 Slice 4: establish a controls edge to a discovered, uncontrolled source (Claim leg)
+  | 'claim_source'   // THR-611 Slice 4: establish a controls edge to a discovered, uncontrolled source (Claim leg)
+  | 'attune_artifact' // THR-605: append a deterministic sphere-flavored effect + stamp attunedSphere on the target artifact
+  | 'curse_artifact'  // THR-605: append a concealed per-tick quintessence-drain effect + cursed/curseConcealed flags
+  | 'nullify_artifact'// THR-605: strip all effects + attune/curse/enchant state from the target artifact
+  | 'fortify_location';// THR-605: raise the target location's fortificationMultiplier toward a cap (siege consumer)
 
 /**
  * Payload for the apply_influence GraphOp.

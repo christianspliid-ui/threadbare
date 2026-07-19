@@ -1669,7 +1669,9 @@ const LOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
       reach: 'iron',
       duration: { min: 2, max: 4 },
       difficulty: 0.30,
-      onSuccess: [],
+      onSuccess: [
+        { op: 'fortify_location', nodeId: '$target' },
+      ],
       onFailure: [],
       failBehavior: 'fail_action',
     }],
@@ -2412,7 +2414,9 @@ const ATTACHMENT_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
       reach: 'heart',
       duration: { min: 1, max: 2 },
       difficulty: 0.20,
-      onSuccess: [],
+      onSuccess: [
+        { op: 'attune_artifact', nodeId: '$target' },
+      ],
       onFailure: [],
       failBehavior: 'fail_action',
     }],
@@ -2441,7 +2445,9 @@ const ATTACHMENT_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
       reach: 'veil',
       duration: { min: 1, max: 2 },
       difficulty: 0.25,
-      onSuccess: [],
+      onSuccess: [
+        { op: 'nullify_artifact', nodeId: '$target' },
+      ],
       onFailure: [],
       failBehavior: 'fail_action',
     }],
@@ -2471,7 +2477,9 @@ const ATTACHMENT_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
       reach: 'shadow',
       duration: { min: 1, max: 3 },
       difficulty: 0.35,
-      onSuccess: [],
+      onSuccess: [
+        { op: 'curse_artifact', nodeId: '$target' },
+      ],
       onFailure: [],
       failBehavior: 'fail_action',
     }],

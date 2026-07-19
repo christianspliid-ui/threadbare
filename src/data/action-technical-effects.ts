@@ -207,11 +207,11 @@ export const ACTION_TECHNICAL_EFFECTS: Readonly<Record<string, string>> = {
   'artifact.enchant':
     'Engine bridge (attachment-tier system): advances the target artifact one magical tier via the ENCHANT_TEMPLATE_ID path, upgrading its tier band and effect strength. Handled outside step ops by the attachment-tier resolver.',
   'artifact.attune':
-    'INTENDED: bind the artifact more tightly to its holder, strengthening its effects for that bearer. NOT YET WIRED — empty step ops, no engine bridge; deducts essence and narrates only (THR-605).',
+    'Aligns the artifact to your primary sphere: appends a matching passive bonus to its effects (applied to whoever bears it) and stamps its attuned sphere. Deliberate — the same sphere every time.',
   'artifact.nullify':
-    'INTENDED: suppress or strip an artifact’s magical effects. NOT YET WIRED — empty step ops, no engine bridge; deducts essence and narrates only (THR-605).',
+    'Strips every applied effect from the artifact and clears its attune, curse, and enchant state, leaving an inert object. The bearer loses all of its bonuses and curses.',
   'artifact.curse':
-    'INTENDED: lay a harmful effect on the artifact that afflicts its holder. NOT YET WIRED — empty step ops, no engine bridge; deducts essence and narrates only (THR-605).',
+    'Binds a concealed misfortune to the artifact: a small per-tick quintessence drain on whoever carries it, plus hidden cursed flags. The drain travels with the object without the bearer’s knowledge.',
 
   // ─── loc.* / sub.* — location & sublocation property mutations ────────────
   'loc.ward':
@@ -221,7 +221,7 @@ export const ACTION_TECHNICAL_EFFECTS: Readonly<Record<string, string>> = {
   'loc.incite_unrest':
     "On success, raises the target location's `unrest` by a named delta, pushing it toward defection/sacking thresholds read elsewhere.",
   'loc.fortify':
-    'INTENDED: harden a settlement against attack, raising its defensive standing. NOT YET WIRED — empty step ops, no engine bridge; deducts essence and narrates only (THR-605).',
+    'Raises the location’s fortification multiplier (read by siege resolution) by a fixed step, up to a cap. The first fortify builds on the site’s inherent defensibility; a breach lowers the same value.',
   'loc.bless_harvest':
     "On success, raises the location's `prosperity` and `populationHealth` by named deltas (LOC_BLESS_HARVEST_*) for LOC_BLESS_HARVEST_DURATION_TICKS.",
   'loc.open_markets':

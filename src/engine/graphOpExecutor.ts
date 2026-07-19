@@ -11,6 +11,12 @@ import { hydrateToTier } from './npcGraduation';
 import type { SphereName } from '../types';
 import type { EssenceSource, SourceKind } from '../types/essenceSource';
 import { readEssenceSource, findLatentSourcesInRange } from './essenceSources';
+import {
+  applyAttuneArtifact,
+  applyCurseArtifact,
+  applyNullifyArtifact,
+  applyFortifyLocation,
+} from './ascendantWards';
 import { resolveLocationToHex } from './encounterAwareness';
 import {
   deriveSourceTier,
@@ -176,6 +182,18 @@ function executeSingleOp(
 
       case 'claim_source':
         return executeClaimSource(graph, op, ctx);
+
+      case 'attune_artifact':
+        return applyAttuneArtifact(graph, op, ctx);
+
+      case 'curse_artifact':
+        return applyCurseArtifact(graph, op, ctx);
+
+      case 'nullify_artifact':
+        return applyNullifyArtifact(graph, op, ctx);
+
+      case 'fortify_location':
+        return applyFortifyLocation(graph, op, ctx);
 
       default:
         return {
