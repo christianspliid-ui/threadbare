@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-07-19, 15:28 local (light refresh by the hourly `keep-work-flowing-cc` CC task; last full rebuild was the 2026-06-23 retro)
+**Last updated:** 2026-07-19, 16:28 local (light refresh by the hourly `keep-work-flowing-cc` CC task; last full rebuild was the 2026-06-23 retro)
 **Owner of items below:** Christian. Everyone else's blockers go in Linear or `Docs/impediments.md`.
 **Refresh cadence:** The hourly `keep-work-flowing-cc` scheduled task keeps this current (prunes resolved items, adds newly-surfaced Christian-owned ones); the `retrospective` skill still does the deep periodic rebuild. This is the slow-moving standing-asks list — the fresh-this-hour view is [`Design/briefing.md`](briefing.md).
 
@@ -16,45 +16,6 @@ For each item:
 - **Source** = `Docs/impediments.md` entry numbers + occurrence count, so the cost is visible.
 
 When an item resolves: delete it from this file, mark the corresponding impediment as resolved in the dashboard regen, note the close in the next retro under "What shipped." No history retained here — `git log` + the retros are the audit trail.
-
----
-
-## 0. Reinstall local dependencies — `npm run dev` / `npm test` are broken on the home tree · WILL NOT SELF-HEAL
-
-**Status:** Open · **newly surfaced 2026-07-19 11:29** by the hourly `keep-work-flowing-cc` run; **re-verified still broken 2026-07-19 15:28** — fourth consecutive run (`node_modules/.bin` still absent entirely, while 276 top-level packages are present, confirming the packages are there but unlaunchable; `npm exec -- vite --version` still returns `'vite' is not recognized`).
-**Source:** Discovered directly this run — the pre-commit `lint:plan-doc` hook failed with `'esbuild' is not recognized`, and the root cause turned out to be broader than the deps-free-worktree case already logged as impediment #186.
-
-**Evidence.** `C:\Users\chris\Dev\Projects\TheFantasyWorldSimulator\node_modules` contains 276 top-level packages, but **`node_modules/.bin` does not exist at all** — the binary shims npm scripts rely on were never created (consistent with the known `esbuild` / `npm install` `spawn EPERM` failure mode, impediment #21). Probed and confirmed this run:
-
-```
-$ npm exec -- vite --version
-'vite' is not recognized as an internal or external command
-$ npx --no-install vitest --version
-'vitest' is not recognized as an internal or external command
-```
-
-Consequence: **every** `npm run` script that shells out to a binary — `dev`, `test`, `build`, and the `lint:plan-doc` pre-commit step — fails in the home tree. CI is unaffected (it installs cleanly), which is why this stayed invisible.
-
-**Fix — Christian, on the home machine, in the project folder:**
-```
-npm install
-```
-Let it run to completion. If it fails with `EPERM` on `esbuild`, retry once; if it still fails, that is impediment #21 recurring and worth logging rather than looping.
-
-**Workaround in the meantime (agents only, not a substitute).** Which workaround works depends on where you are committing from:
-
-- **From the home tree** (has `node_modules`): putting the platform binary on `PATH` is enough —
-  ```
-  export PATH="$PWD/node_modules/@esbuild/win32-x64:$PATH"
-  ```
-- **From a scratch worktree** (no `node_modules` at all): **the `export PATH` line above does not work** — verified failing 2026-07-19 13:10. On Windows, npm runs each script through `cmd.exe`, which does not inherit the bash-exported `PATH` in a usable form, so the hook still dies with `'esbuild' is not recognized`. What *does* work is giving the worktree its own shim directory, which npm prepends to `PATH` automatically:
-  ```
-  mkdir -p node_modules/.bin
-  cp <home-tree>/node_modules/@esbuild/win32-x64/esbuild.exe node_modules/.bin/
-  ```
-  Both pre-commit hooks (`check:skill-sync`, `lint:plan-doc`) then run green.
-
-**What breaks if not done.** No local dev server, no local test runs, no local production build — so the "run it in the browser and screenshot it" step in the Definition of Done cannot be satisfied from this tree, and the pre-commit lint step fails on every commit.
 
 ---
 
@@ -90,7 +51,9 @@ Then triage the other uncommitted working-tree files (item #3).
 
 ## 3. Triage orphan uncommitted changes in working trees · WILL NOT SELF-HEAL
 
-**Status:** Open · ~60 days · **~85 non-`.codesight` files uncommitted** on the home tree as of 2026-07-19 15:28. **The tree is not on `main` — it is in a detached-HEAD state**, parked on `013c1044` (2026-07-18 evening), **69 commits behind** `origin/main` (64 at 14:30, 60 at 13:29, 58 at 11:29 — climbing roughly one per hourly briefing merge; alarm threshold is 10). It is **zero commits ahead**, so nothing unique lives on the detached snapshot and re-attaching risks no loss. The local `main` branch itself is healthy — the working copy simply is not pointed at it. It stays behind because it is too dirty for the hourly auto-sync to fast-forward, so it slips further each cycle until the dirt is cleared.
+**Status:** Open · ~60 days · **~85 non-`.codesight` files uncommitted** on the home tree as of 2026-07-19 16:28. **The tree is not on `main` — it is in a detached-HEAD state**, parked on `013c1044` (2026-07-18 evening), **75 commits behind** `origin/main` (69 at 15:28, 64 at 14:30, 60 at 13:29, 58 at 11:29 — climbing roughly one per hourly briefing merge; alarm threshold is 10). It is **zero commits ahead**, so nothing unique lives on the detached snapshot and re-attaching risks no loss. The local `main` branch itself is healthy — the working copy simply is not pointed at it.
+
+**Escalation 2026-07-19 16:28 — the hourly auto-sync has stopped attempting the repair altogether.** `C:\Users\chris\bin\threadbare-autosync.log` shows the failure mode changed this morning: through 09:50 it logged `skip: you have uncommitted changes that would be overwritten (N behind)`; from the 11:00 run onward every entry reads `skip: on branch 'HEAD' (not main)`. The detached state is a *harder* stop than the dirt was — the task no longer even measures the drift. Nothing will reduce this number until the commands below are run by hand.
 
 **Triage resolved 2026-07-19 15:28 — the pile is now split into "safe to discard" and "must keep".** Earlier revisions of this item called for a careful file-by-file pass without saying which files were actually at risk. That pass has now been done:
 
@@ -122,6 +85,7 @@ Then handle the 15 untracked docs separately (`git status --porcelain | grep '^?
 
 - **2026-06-23 — `LINEAR_API_KEY` set in the Codex automation environment** (was item #1; impediment #141, 17 recurrences). Confirmed by Christian same day the retro surfaced it. _Superseded 2026-06-23 by the full Codex-lane retirement (THR-486): there is now a single Opus executor and one `Ready for Dev` queue, so the Codex-specific unblock is moot. Kept for the audit trail; safe to prune at the next full retro rebuild._
 - **2026-06-23 — GitHub Pro / branch protection resolved** (was item #4 in the prior seed; impediment #56). Branch protection is now active on `main` with `Test · Typecheck · Build` as a required status check (THR-282 shipped 2026-04-30). The "CI stays advisory because branch protection can't be enforced" concern is closed. To be removed on next retro day.
+- **2026-07-19 — local dependencies reinstalled; `npm run dev` / `npm test` work again on the home tree** (was item #0, surfaced 2026-07-19 11:29, re-verified broken across four consecutive hourly runs). Confirmed resolved at the 16:28 run: `node_modules/.bin` now exists with **99 shims** (was absent entirely), 284 top-level packages (was 276), and `npm exec -- vite --version` returns `vite/7.3.1 win32-x64 node-v24.14.0` instead of `'vite' is not recognized`. Local dev server, test runs, production build, and the `lint:plan-doc` / `check:skill-sync` pre-commit hooks are all unblocked from the home tree, which restores the browser-screenshot step of the Definition of Done. The worktree-specific `.bin` shim workaround documented under that item is still valid for **scratch worktrees**, which have no `node_modules` of their own — see impediment #186.
 - **2026-07-18 — Linear-from-scheduled-context confirmed reliable** (was item #4; three clean data points now: 2026-06-23, and two `keep-work-flowing-cc` runs on 2026-07-18). The hedge is dropped — scheduled/autonomous CC sessions can trust the Linear MCP without caveating conclusions on it.
 
 ---
