@@ -12,6 +12,8 @@ import type { SphereName } from '../types';
 import type { EssenceSource, SourceKind } from '../types/essenceSource';
 import { readEssenceSource, findLatentSourcesInRange } from './essenceSources';
 import { resolveLocationToHex } from './encounterAwareness';
+import { getFortificationModifier } from './siegeResolution';
+import { FORTIFY_MULTIPLIER_BONUS, FORTIFY_MULTIPLIER_MAX } from '../types/battle';
 import {
   deriveSourceTier,
   SANCTITY_BUILD_PER_ACTION,
@@ -176,6 +178,9 @@ function executeSingleOp(
 
       case 'claim_source':
         return executeClaimSource(graph, op, ctx);
+
+      case 'fortify_location':
+        return executeFortifyLocation(graph, op, ctx);
 
       default:
         return {
@@ -790,4 +795,42 @@ function executeClaimSource(
   const createdId = `edge_controls_${++opCounter}`;
   graph.addEdge({ id: createdId, source: ctx.actorId, target: targetId, type: 'controls', properties: {} });
   return { op, success: true, createdId };
+}
+
+// ─── THR-605 Slice 1: fortify_location ───────────────────────────────────────
+//
+// Raise the target location's `fortificationMultiplier` property by
+// `FORTIFY_MULTIPLIER_BONUS`, clamped to `FORTIFY_MULTIPLIER_MAX`. The property
+// is read by `siegeResolution.ts` (initial-momentum calc + breach path), which
+// falls back to the subtype base `getFortificationModifier(...)` when unset — so
+// the first fortify seeds the base before bumping it. Needs only graph + ctx, so
+// it lives here as a graph-executor case (auto-routed via `graphOnlyOps`), like
+// the THR-611 essence-source ops. A relative `update_node` change could add but
+// not cap; the clamp is why this is a composed op. Fail-soft: missing location →
+// error result (fail-soft success at the action layer).
+
+/**
+ * Fortify a location: bump its `fortificationMultiplier` toward the grand-fortress
+ * cap. Seeds from the subtype base on the first cast, then adds one wall tier per
+ * cast up to `FORTIFY_MULTIPLIER_MAX`. Consumed by `siegeResolution.ts`.
+ */
+function executeFortifyLocation(
+  graph: WorldGraph,
+  op: GraphOp,
+  ctx: GraphOpContext,
+): GraphOpResult {
+  const targetId = resolveRef(op.nodeId ?? op.target ?? '$target', ctx);
+  const location = graph.getNode(targetId);
+  if (!location) return { op, success: false, error: `fortify_location: location ${targetId} not found` };
+
+  const subtype = location.properties.locationSubtype as string | undefined;
+  const current = typeof location.properties.fortificationMultiplier === 'number'
+    ? (location.properties.fortificationMultiplier as number)
+    : getFortificationModifier(subtype);
+
+  const fortified = Math.min(FORTIFY_MULTIPLIER_MAX, current + FORTIFY_MULTIPLIER_BONUS);
+  graph.updateNode(location.id, {
+    properties: { ...location.properties, fortificationMultiplier: fortified },
+  });
+  return { op, success: true };
 }

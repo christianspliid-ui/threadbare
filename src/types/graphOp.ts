@@ -87,7 +87,8 @@ export type GraphOpType =
   | 'sanctify_source' // THR-611: raise a typed source's sanctity toward flowering (Build leg)
   | 'defend_source'  // THR-611: clear contestation / desecration and restore a source's sanctity (Defend leg)
   | 'find_source'    // THR-611 Slice 4: reveal latent (undiscovered) essence sources within range of the target (Find leg)
-  | 'claim_source';  // THR-611 Slice 4: establish a controls edge to a discovered, uncontrolled source (Claim leg)
+  | 'claim_source'   // THR-611 Slice 4: establish a controls edge to a discovered, uncontrolled source (Claim leg)
+  | 'fortify_location'; // THR-605 Slice 1: raise a location's fortificationMultiplier (capped), consumed by siegeResolution
 
 /**
  * Payload for the apply_influence GraphOp.
