@@ -515,6 +515,13 @@ export const ASCENDANT_ACTION_BUCKETS: Readonly<Record<string, ActionBucketEntry
   // source verbs above, `reach: 'gold'` is its cosmic-energy axis, not a `requiresReach`
   // gate: it surfaces for every run once unlocked, which is the point of a *breadth* card.
   'loc.open_markets': { bucket: 'unlockable-generic' },
+  // THR-616 P2: the two first divine *economic* verbs, granted alongside
+  // open_markets by the same essence-source milestone. Both were shipped but
+  // unreachable (no beat granted them, empty THR-501 floor). `reach` is their
+  // cosmic-energy axis (gold / shadow), not a `requiresReach` gate, so they
+  // surface for every run once unlocked — correct for breadth cards.
+  'loc.bless_harvest': { bucket: 'unlockable-generic' },
+  'loc.blight': { bucket: 'unlockable-generic' },
   // Spine-granted expressive verbs (THR-504): The First Word + the three god-paths.
   'divine.persuade': { bucket: 'unlockable-generic' },
   'divine.dream': { bucket: 'unlockable-generic' },

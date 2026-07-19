@@ -44,6 +44,8 @@ import {
   LOC_BLESS_HARVEST_PROSPERITY_DELTA,
   LOC_BLESS_HARVEST_HEALTH_DELTA,
   LOC_BLESS_HARVEST_DURATION_TICKS,
+  LOC_BLIGHT_PROSPERITY_DELTA,
+  LOC_BLIGHT_HEALTH_DELTA,
   LOC_OPEN_MARKETS_PROSPERITY_DELTA,
   LOC_OPEN_MARKETS_UNREST_DELTA,
   LOC_SANCTIFY_MAGSAT_DELTA,
@@ -1703,7 +1705,7 @@ const LOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     spellName: 'Quiet Loam',
     rarityTier: 1,
     intrinsicTier: 'background',
-    description: 'Pours life-essence into a settlement\'s agricultural cycle. The fields swell beyond their season; grain ripens too fast to be reasoned with. Mortals will not say it is the god who did this. They will say it was a good year.',
+    description: 'Pours life-essence into a settlement\'s agricultural cycle. The fields swell beyond their season; grain ripens too fast to be reasoned with, and the granaries fill toward glut. Mortals will not say it is the god who did this. They will say it was a good year.',
     reach: 'gold',
     crudType: 'update',
     scale: 'local',
@@ -1716,6 +1718,9 @@ const LOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
           prosperity: `+${LOC_BLESS_HARVEST_PROSPERITY_DELTA}`,
           populationHealth: `+${LOC_BLESS_HARVEST_HEALTH_DELTA}`,
         } },
+        // THR-616 P2: also swell the staple resource stock toward Glut — the
+        // economic leg over the P1 stock-tier substrate (tier re-derives next tick).
+        { op: 'bless_harvest', nodeId: '$target' },
       ],
       onFailure: [],
       failBehavior: 'fail_action',
@@ -1731,6 +1736,46 @@ const LOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
       initiation: 'kneels into the loam at the field\'s edge, pressing palms to soil that has fed these people for generations',
       success: 'grain swells in the husk before harvest is due — the miller\'s wife will say a prayer was answered; the miller will say it does not matter why',
       failure: 'the wind shifts wrong; whatever was reached for slips between divine hands, and the field is only a field',
+    },
+  },
+
+  {
+    id: 'loc.blight',
+    name: 'Blight the Fields',
+    spellName: 'The Slow Rot',
+    rarityTier: 1,
+    intrinsicTier: 'background',
+    description: 'Turns a settlement\'s harvest against itself. The grain blackens in the ear, the herds sicken, the stores draw down toward famine. Mortals will not name the god who did this. They will say it was a bad year, and pray it does not come again.',
+    reach: 'shadow',
+    crudType: 'update',
+    scale: 'local',
+    steps: [{
+      reach: 'shadow',
+      duration: { min: 2, max: 3 },
+      difficulty: 0.25,
+      onSuccess: [
+        { op: 'update_node', nodeId: '$target', changes: {
+          prosperity: `${LOC_BLIGHT_PROSPERITY_DELTA}`,
+          populationHealth: `${LOC_BLIGHT_HEALTH_DELTA}`,
+        } },
+        // THR-616 P2: draw the staple resource stock toward Famine — the
+        // economic inverse of Bless the Harvest (tier re-derives next tick).
+        { op: 'blight_harvest', nodeId: '$target' },
+      ],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: 4,
+    actorAffinities: ['ascendant'],
+    sphereAffinity: 'entropy',
+    targetCategories: ['location'],
+    targetSubtypes: ['settlement', 'hamlet', 'town', 'city', 'capital'],
+    motivations: ['mercy_ruthlessness', 'preservation_transformation'],
+    narrativeTemplates: {
+      initiation: 'lets a breath fall over the ripening fields, and the breath carries something that does not belong to the season',
+      success: 'the grain darkens in the ear before it can be cut — the reeve will call it a bad year; the hungry will call it worse',
+      failure: 'the rot fails to catch; the fields shrug off the touch and ripen as they always have',
     },
   },
 

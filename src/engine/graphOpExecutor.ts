@@ -23,6 +23,13 @@ import {
   SANCTITY_DEFEND_RESTORE,
   SOURCE_DISCOVERY_RANGE_HOPS,
 } from '../data/essence-sources';
+import { readResources } from './resourceEconomy';
+import { getResourceClass } from '../data/resource-classes';
+import type { ResourceInstance } from '../types/resource';
+import {
+  LOC_BLESS_HARVEST_STOCK_DELTA,
+  LOC_BLIGHT_STOCK_DELTA,
+} from '../data/location-action-constants';
 
 interface ExecuteOptions {
   tick?: number;
@@ -196,6 +203,12 @@ function executeSingleOp(
 
       case 'scry_sublocation':
         return executeScrySublocation(graph, op, ctx);
+
+      case 'bless_harvest':
+        return executeBlessHarvest(graph, op, ctx);
+
+      case 'blight_harvest':
+        return executeBlightHarvest(graph, op, ctx);
 
       default:
         return {
@@ -1000,4 +1013,86 @@ function executeScrySublocation(
     }
   }
   return { op, success: true };
+}
+
+// ─── THR-616 P2: bless_harvest / blight_harvest ───────────────────────────────
+//
+// The two first divine *economic* verbs act on the P1 resource stock substrate
+// (`resourceEconomy.ts`), not just the prosperity scalar THR-401's Bless the
+// Harvest already moved. Each shifts the `quantity` of every *staple* resource
+// (grain / grazing / fish / water — the famine drivers) at the target location by
+// a named delta, clamped to the 0-100 abundance scale. The coarse tier
+// (`scarce | adequate | surplus`) re-derives next tick in `phaseResourceStockTiers`,
+// which is what prose, encounters, and the Livelihood UI read — so the god tilts
+// the harvest toward Glut or Famine without ever touching a visible number.
+//
+// Both need only graph + ctx (the target location id), so they live here as
+// graph-executor cases auto-routed via `graphOnlyOps`, exactly like fortify and
+// the THR-605 artifact/scry ops. No `touchWorld()` here: the stock-tier phase
+// already touches the world when a derived tier actually changes (the
+// `locationSubtype` precedent), so touching on the raw quantity write would
+// over-invalidate. Deterministic — no PRNG, no visible magnitudes.
+//
+// Fail-soft (NFP #4): a missing location returns an error result (fail-soft
+// success at the action layer); a location with no staple resources returns a
+// no-op success (the fields are simply not the kind the verb can reach).
+
+/**
+ * Shift every staple resource's quantity at the target location by `delta`,
+ * clamped to the [0, 100] abundance scale. Shared body of bless_harvest /
+ * blight_harvest. Fail-soft: a missing location returns an error result; a
+ * location with no staple resources returns a no-op success.
+ */
+function adjustStapleQuantities(
+  graph: WorldGraph,
+  op: GraphOp,
+  ctx: GraphOpContext,
+  delta: number,
+): GraphOpResult {
+  const targetId = resolveRef(op.nodeId ?? op.target ?? '$target', ctx);
+  const location = graph.getNode(targetId);
+  if (!location) return { op, success: false, error: `${op.op}: location ${targetId} not found` };
+
+  const resources = readResources(location.properties);
+  const next: Record<string, ResourceInstance> = { ...resources };
+  let changed = false;
+  for (const [resourceId, instance] of Object.entries(resources)) {
+    if (!instance || typeof instance.quantity !== 'number') continue;
+    if (getResourceClass(resourceId).category !== 'staple') continue;
+    const adjusted = Math.max(0, Math.min(100, instance.quantity + delta));
+    if (adjusted === instance.quantity) continue;
+    next[resourceId] = { ...instance, quantity: adjusted };
+    changed = true;
+  }
+
+  if (changed) {
+    graph.updateNode(location.id, { properties: { resources: next } });
+  }
+  return { op, success: true };
+}
+
+/**
+ * Bless the Harvest (economic leg): swell every staple resource at the target
+ * toward Glut by `LOC_BLESS_HARVEST_STOCK_DELTA`. Consumed by the stock-tier
+ * phase next tick. Fail-soft: no location → error; no staples → no-op success.
+ */
+function executeBlessHarvest(
+  graph: WorldGraph,
+  op: GraphOp,
+  ctx: GraphOpContext,
+): GraphOpResult {
+  return adjustStapleQuantities(graph, op, ctx, LOC_BLESS_HARVEST_STOCK_DELTA);
+}
+
+/**
+ * Blight (economic leg): draw every staple resource at the target toward Famine
+ * by `LOC_BLIGHT_STOCK_DELTA`. The inverse of bless_harvest. Fail-soft: no
+ * location → error; no staples → no-op success.
+ */
+function executeBlightHarvest(
+  graph: WorldGraph,
+  op: GraphOp,
+  ctx: GraphOpContext,
+): GraphOpResult {
+  return adjustStapleQuantities(graph, op, ctx, -LOC_BLIGHT_STOCK_DELTA);
 }
