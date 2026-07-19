@@ -86,6 +86,7 @@ const ACTION_ART: Record<string, string> = {
   'loc.place_of_power': '/assets/actions/leyline-nexus.jpg',
   'loc.incite_unrest': '/assets/actions/seeds-of-discord.jpg',
   'loc.fortify': '/assets/actions/iron-bulwark.jpg',
+  'loc.open_markets': '/assets/actions/awning-unfurled.jpg',
   'sub.sanctify': '/assets/actions/sacred-ground.jpg',
   'sub.trap': '/assets/actions/hidden-snare.jpg',
   'sub.vision': '/assets/actions/place-memory.jpg',
