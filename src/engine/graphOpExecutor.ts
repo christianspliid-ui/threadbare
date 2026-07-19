@@ -14,6 +14,9 @@ import { readEssenceSource, findLatentSourcesInRange } from './essenceSources';
 import { resolveLocationToHex } from './encounterAwareness';
 import { getFortificationModifier } from './siegeResolution';
 import { FORTIFY_MULTIPLIER_BONUS, FORTIFY_MULTIPLIER_MAX } from '../types/battle';
+import type { AttachmentEffect } from '../types/effects';
+import { SPHERE_EFFECT_TABLE } from './ascendantPrimitives';
+import { CURSE_QUINTESSENCE_DRAIN } from '../data/ascendant-expression-constants';
 import {
   deriveSourceTier,
   SANCTITY_BUILD_PER_ACTION,
@@ -181,6 +184,15 @@ function executeSingleOp(
 
       case 'fortify_location':
         return executeFortifyLocation(graph, op, ctx);
+
+      case 'attune_artifact':
+        return executeAttuneArtifact(graph, op, ctx);
+
+      case 'curse_artifact':
+        return executeCurseArtifact(graph, op, ctx);
+
+      case 'nullify_artifact':
+        return executeNullifyArtifact(graph, op, ctx);
 
       default:
         return {
@@ -831,6 +843,107 @@ function executeFortifyLocation(
   const fortified = Math.min(FORTIFY_MULTIPLIER_MAX, current + FORTIFY_MULTIPLIER_BONUS);
   graph.updateNode(location.id, {
     properties: { ...location.properties, fortificationMultiplier: fortified },
+  });
+  return { op, success: true };
+}
+
+// ─── THR-605 Slice 2: artifact trio (attune / curse / nullify) ───────────────
+//
+// All three write the same `properties.effects: AttachmentEffect[]` array that
+// `collectAttachmentEffects` (effectWalker.ts) reads off any possessed/bonded
+// artifact — so each is genuinely consumed, no new consumer subsystem. They need
+// only graph + ctx (the acting ascendant is `ctx.actorId`, resolved from
+// `graphOnlyOps`), so they live here as graph-executor cases like fortify and the
+// THR-611 essence ops. Attune reads the ascendant's primary sphere via the local
+// `readActorPrimarySphere` helper. All fail-soft: a missing/non-artifact target
+// returns an error result (fail-soft success at the action layer, per NFP #4).
+
+/**
+ * Attune an artifact to the ascendant's primary sphere. Appends the sphere's
+ * canonical positive `AttachmentEffect` (`SPHERE_EFFECT_TABLE[sphere][0]` — the
+ * deterministic, RNG-free counterpart to imbue's seeded pick) to the artifact's
+ * `effects` array and stamps `attunedSphere`. Consumed by the effect walker for
+ * whoever holds the artifact. Fail-soft: no ascendant sphere / no vocabulary for
+ * the sphere → no-op success (nothing appended). No `aligned_with` edge: that edge
+ * only admits actor/location sources and is read only for actor/location context,
+ * so an artifact edge would be write-only theatre — the stamp + effect carry the
+ * alignment.
+ */
+function executeAttuneArtifact(
+  graph: WorldGraph,
+  op: GraphOp,
+  ctx: GraphOpContext,
+): GraphOpResult {
+  const targetId = resolveRef(op.nodeId ?? op.target ?? '$target', ctx);
+  const artifact = graph.getNode(targetId);
+  if (!artifact) return { op, success: false, error: `attune_artifact: artifact ${targetId} not found` };
+  if (artifact.type !== 'artifact') return { op, success: false, error: `attune_artifact: ${targetId} is not an artifact` };
+
+  const sphere = readActorPrimarySphere(graph, ctx.actorId);
+  if (!sphere) return { op, success: true }; // fail-soft: unaligned ascendant → no-op success
+  const effect = SPHERE_EFFECT_TABLE[sphere]?.[0];
+  if (!effect) return { op, success: true }; // fail-soft: no vocab for sphere → no-op success
+
+  const existing = (artifact.properties.effects as AttachmentEffect[] | undefined) ?? [];
+  graph.updateNode(artifact.id, {
+    properties: { effects: [...existing, effect], attunedSphere: sphere },
+  });
+  return { op, success: true };
+}
+
+/**
+ * Curse an artifact so misfortune travels with whoever carries it. Appends a
+ * concealed per-tick quintessence drain (`CURSE_QUINTESSENCE_DRAIN`, applied as a
+ * negative-amount `resource_manipulate` — the direct inverse of the bestow regen
+ * boon) to the artifact's `effects` array and sets `cursed` / `curseConcealed`.
+ * The drain is consumed each tick by `tickResourceManipulate` for the bearer;
+ * the bearer is not told, matching the prose. Fail-soft: missing/non-artifact → error.
+ */
+function executeCurseArtifact(
+  graph: WorldGraph,
+  op: GraphOp,
+  ctx: GraphOpContext,
+): GraphOpResult {
+  const targetId = resolveRef(op.nodeId ?? op.target ?? '$target', ctx);
+  const artifact = graph.getNode(targetId);
+  if (!artifact) return { op, success: false, error: `curse_artifact: artifact ${targetId} not found` };
+  if (artifact.type !== 'artifact') return { op, success: false, error: `curse_artifact: ${targetId} is not an artifact` };
+
+  const curse: AttachmentEffect = {
+    type: 'resource_manipulate',
+    resource: 'quintessence',
+    target: 'self',
+    amount: -CURSE_QUINTESSENCE_DRAIN,
+    mode: 'per_tick',
+  };
+  const existing = (artifact.properties.effects as AttachmentEffect[] | undefined) ?? [];
+  graph.updateNode(artifact.id, {
+    properties: { effects: [...existing, curse], cursed: true, curseConcealed: true },
+  });
+  return { op, success: true };
+}
+
+/**
+ * Nullify an artifact: strip every applied `effects` entry (whatever imbue /
+ * attune / curse wrote) and clear the attune/curse flags back to inert. The
+ * inverse of imbue/attune/curse; the bearer loses all applied bonuses and curses
+ * via the effect walker. Fail-soft: nullifying an already-inert artifact clears
+ * nothing and still succeeds. Scoped to the `effects` array (the artifact-trio
+ * substrate) — the separate `enchanted_by` spell-edge mechanic is untouched.
+ */
+function executeNullifyArtifact(
+  graph: WorldGraph,
+  op: GraphOp,
+  ctx: GraphOpContext,
+): GraphOpResult {
+  const targetId = resolveRef(op.nodeId ?? op.target ?? '$target', ctx);
+  const artifact = graph.getNode(targetId);
+  if (!artifact) return { op, success: false, error: `nullify_artifact: artifact ${targetId} not found` };
+  if (artifact.type !== 'artifact') return { op, success: false, error: `nullify_artifact: ${targetId} is not an artifact` };
+
+  // updateNode merges properties, so overwrite (don't delete) the keys to inert.
+  graph.updateNode(artifact.id, {
+    properties: { effects: [], attunedSphere: undefined, cursed: false, curseConcealed: false },
   });
   return { op, success: true };
 }

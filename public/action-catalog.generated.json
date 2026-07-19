@@ -26,10 +26,10 @@
       "generic": 3
     },
     "byEffectSource": {
-      "template-ops": 98,
+      "template-ops": 101,
       "control-spec": 17,
       "engine-bridge": 44,
-      "none": 7,
+      "none": 4,
       "aftermath-only": 4
     },
     "beatGranted": 18,
@@ -1955,8 +1955,8 @@
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
       "description": "Binds a curse of ill fortune and misfortune into the physical form of an artifact, ensuring the curse travels with whoever possesses it. The affliction activates on contact and spreads its effects to the bearer without their knowledge. Dispelling a well-crafted curse binding requires significant magical effort.",
-      "technicalEffect": "INTENDED: lay a harmful effect on the artifact that afflicts its holder. NOT YET WIRED — empty step ops, no engine bridge; deducts essence and narrates only (THR-605).",
-      "effectSource": "none"
+      "technicalEffect": "Appends a concealed per-tick quintessence drain (CURSE_QUINTESSENCE_DRAIN, the inverse of the bestow regen boon) to the artifact's effects[] and sets cursed / curseConcealed. Consumed each tick by the effect walker for whoever holds it; the bearer is not told. Clamped at 0 quintessence, never negative.",
+      "effectSource": "template-ops"
     },
     {
       "id": "artifact.nullify",
@@ -1985,8 +1985,8 @@
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
       "description": "Systematically unravels every enchantment bound to an artifact, stripping away its magical properties and reducing it to an inert physical object. The nullified item retains its material form but no longer carries any special properties. Resisting enchantments may require greater effort to fully extinguish.",
-      "technicalEffect": "INTENDED: suppress or strip an artifact’s magical effects. NOT YET WIRED — empty step ops, no engine bridge; deducts essence and narrates only (THR-605).",
-      "effectSource": "none"
+      "technicalEffect": "Clears the artifact's effects[] array (every imbued/attuned/cursed power) and resets the attunedSphere / cursed / curseConcealed flags to inert. The inverse of imbue/attune/curse; the bearer loses all applied bonuses and curses via the effect walker. Fail-soft on an already-inert artifact.",
+      "effectSource": "template-ops"
     },
     {
       "id": "artifact.attune",
@@ -2014,8 +2014,8 @@
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
       "description": "Harmonizes an artifact's magical signature with a specific divine sphere, aligning its latent power to a chosen domain. The attuned artifact responds more readily to sphere-aligned practitioners and enhances relevant capabilities. Misalignment causes the artifact to resist use by those of opposing spheres.",
-      "technicalEffect": "INTENDED: bind the artifact more tightly to its holder, strengthening its effects for that bearer. NOT YET WIRED — empty step ops, no engine bridge; deducts essence and narrates only (THR-605).",
-      "effectSource": "none"
+      "technicalEffect": "Appends the ascendant's primary-sphere positive passive (the canonical SPHERE_EFFECT_TABLE effect — RNG-free) to the artifact's effects[] and stamps attunedSphere. Persistent; consumed by the effect walker, so whoever holds the artifact gains the sphere-aligned reach bonus.",
+      "effectSource": "template-ops"
     },
     {
       "id": "divine.intimidate",

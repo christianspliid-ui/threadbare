@@ -114,3 +114,23 @@ export const ANOINT_COST = 6;
  * standing (which drives rank, access, and bonuses — see factionReputation.ts).
  */
 export const CHOSEN_FACTION_REPUTATION_PER_TICK = 0.003;
+
+// ─── THR-605 Slice 2: Artifact trio (attune / curse / nullify) ────────────────
+// The three artifact-ward verbs write the same `properties.effects` array the
+// effect walker (`collectAttachmentEffects`) reads off any possessed/bonded
+// artifact — so each is genuinely consumed, no new consumer subsystem:
+//   • attune  → appends the ascendant's-sphere positive passive (SPHERE_EFFECT_TABLE)
+//   • curse   → appends a concealed per-tick quintessence drain (inverse of the
+//               bestow regen boon), consumed by `tickResourceManipulate`
+//   • nullify → clears the array + the attune/curse flags back to inert
+
+/**
+ * Per-tick quintessence a cursed artifact drains from whoever carries it. Applied
+ * as a NEGATIVE-amount per-tick `resource_manipulate` effect — the direct inverse
+ * of the bestow boon (`BESTOW_QUINTESSENCE_REGEN` = 0.01), sized one notch higher
+ * so an unnoticed curse is a real drag on the bearer's action economy. Clamped at
+ * 0 (never negative) by `tickResourceManipulate` (effectTick.ts). The bearer is
+ * not told (`curseConcealed`), matching the prose "spreads its effects … without
+ * their knowledge."
+ */
+export const CURSE_QUINTESSENCE_DRAIN = 0.02;
