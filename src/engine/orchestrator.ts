@@ -1210,10 +1210,10 @@ export function phaseEncounterProgressionV2(state: GameState, runtime?: Simulati
           ? `${agentName} completed '${encounterName}'${details}`
           : `${agentName} has completed their encounter.`,
         significance: 0.8,
-        ...(isRetinue && {
-          actorId: progress.actorId,
-          notification: { channel: 'toast' as const },
-        }),
+        // THR-664: the event still feeds the event log, but no longer raises a
+        // toast — the encounter's conclusion surfaces as an aftermath badge on
+        // the agent's thread row.
+        ...(isRetinue && { actorId: progress.actorId }),
       });
     } else if (progress.status === 'abandoned') {
       const details = summarizeOutcome(result.outcome, false, rewardName);
@@ -1225,10 +1225,8 @@ export function phaseEncounterProgressionV2(state: GameState, runtime?: Simulati
           ? `${agentName} failed '${encounterName}'${details}`
           : `${agentName} failed their encounter step.`,
         significance: 0.5,
-        ...(isRetinue && {
-          actorId: progress.actorId,
-          notification: { channel: 'toast' as const },
-        }),
+        // THR-664: event-log only; the failure surfaces as an aftermath badge.
+        ...(isRetinue && { actorId: progress.actorId }),
       });
     } else {
       events.push({

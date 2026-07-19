@@ -135,7 +135,7 @@ import { createMeetingEncounterState, createAgentFromMeeting, isMeetTheFirstAvai
 import { buildStubAscendantLens } from '../../types/hunger';
 import type { AscendantLens } from '../../types/hunger';
 import { useNotifications } from './hooks/useNotifications';
-import { useEncounterNotifications } from './hooks/useEncounterNotifications';
+import { selectEncounterBadges, type EncounterBadgeModel } from './encounterBadgeModel';
 import { toggleAttentionMode } from '../../engine/encounterVisibility';
 import { useTopBarHotkeys } from './hooks/useTopBarHotkeys';
 import { computeEssenceIncome } from '../../engine/essenceIncome';
@@ -1234,17 +1234,20 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
 
   // ── Encounter notification surfacing (TB-040 / TB-055) ──
   /** Open the tiered encounter modal from a notification (toast click or auto-interrupt) */
-  const handleOpenEncounterFromNotification = useCallback((notif: EncounterNotification) => {
+  // Returns whether the modal actually opened — a stale notification (missing
+  // template, no live runtime, or a step the encounter has already moved past)
+  // declines, and callers must not treat it as read (THR-664).
+  const handleOpenEncounterFromNotification = useCallback((notif: EncounterNotification): boolean => {
     const template = getUnifiedTemplateById(notif.encounterId);
-    if (!template) return;
+    if (!template) return false;
     const { encounter, activeAction } = selectEncounterRuntimeForNotification(
       notif,
       gameState.encounterProgress,
       gameState.unifiedActions,
       gameState.tick,
     );
-    if (!encounter) return;
-    if (notif.stepIndex !== undefined && notif.stepIndex !== encounter.currentStepIndex) return;
+    if (!encounter) return false;
+    if (notif.stepIndex !== undefined && notif.stepIndex !== encounter.currentStepIndex) return false;
     const threadTier = courtPositionToThreadTier(notif.courtPosition);
     const clearanceGateRuntimeId = activeAction?.clearanceGateIds?.[0];
     const clearanceGateStateSnapshot = clearanceGateRuntimeId
@@ -1263,13 +1266,32 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       activeActionSnapshot: activeAction,
       clearanceGateStateSnapshot,
     });
+    return true;
   }, [gameState.clearanceGateStates, gameState.encounterProgress, gameState.tick, gameState.unifiedActions]);
 
-  const encounterToasts = useEncounterNotifications({
-    encounterNotifications: gameState.encounterNotifications,
-    setGameState,
-    onOpenEncounter: handleOpenEncounterFromNotification,
-  });
+  // THR-664: encounter activity is anchored to the entity it concerns. Pending
+  // notifications become badges on the agent's thread row instead of toasts in
+  // the global queue.
+  const encounterBadges = useMemo(
+    () => selectEncounterBadges(gameState.encounterNotifications),
+    [gameState.encounterNotifications],
+  );
+
+  /**
+   * Badge click — open the encounter modal, then mark that notification read so
+   * the badge clears. If the modal declines to open (stale notification), the
+   * badge stays: clearing it would drop the beat with nothing shown.
+   */
+  const handleOpenEncounterBadge = useCallback((badge: EncounterBadgeModel) => {
+    if (!handleOpenEncounterFromNotification(badge.primary)) return;
+    const openedId = badge.primary.id;
+    setGameState(prev => ({
+      ...prev,
+      encounterNotifications: (prev.encounterNotifications ?? []).map(n =>
+        n.id === openedId ? { ...n, viewed: true } : n,
+      ),
+    }));
+  }, [handleOpenEncounterFromNotification, setGameState]);
 
   // ── Keyboard hotkeys ──
   useTopBarHotkeys({
@@ -3214,7 +3236,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
           <div className="flex-1 overflow-hidden relative">
             {/* Toast notifications */}
             <ToastStack
-              toasts={[...notificationState.toasts, ...encounterToasts, ...actionToasts]}
+              toasts={[...notificationState.toasts, ...actionToasts]}
               onDismiss={handleDismissToast}
               onSelectAgent={handleAgentSelect}
               onNavigate={handleNotificationNavigate}
@@ -3662,10 +3684,10 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                   onZoomToLocation={handleZoomToLocation}
                   activeEncounters={retinueActiveEncounters}
                   agentEncounterDecisions={latestThreadEncounterDecisions}
-                  onEncounterClick={handleEncounterClick}
                   onToggleAttentionMode={handleToggleAttentionMode}
                   agentStrategicSummaries={agentStrategicSummaries}
-                  getForeshadowing={handleGetForeshadowing}
+                  encounterBadges={encounterBadges}
+                  onOpenEncounterBadge={handleOpenEncounterBadge}
                   sustainedControls={sustainedControls}
                   onChampionChipClick={openAgentProfileForId}
                 />

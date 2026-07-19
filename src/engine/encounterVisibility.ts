@@ -123,6 +123,24 @@ export function generateEncounterProse(
 /**
  * Build an EncounterNotification for a threaded agent entering an encounter.
  */
+/**
+ * Participants an encounter notification anchors to (THR-664).
+ *
+ * The actor is always a participant. An actor-typed target joins them, so one
+ * notification can badge both threaded rows instead of being duplicated per agent.
+ * Non-actor targets (locations, artifacts, resources) are ignored — they have no
+ * thread row that renders encounter badges.
+ */
+export function resolveEncounterParticipantIds(
+  graph: WorldGraph,
+  actorId: string,
+  targetId: string | undefined,
+): string[] {
+  if (!targetId || targetId === actorId) return [actorId];
+  if (graph.getNode(targetId)?.type !== 'actor') return [actorId];
+  return [actorId, targetId];
+}
+
 export function buildEncounterNotification(
   agentId: string,
   agentName: string,
@@ -132,7 +150,7 @@ export function buildEncounterNotification(
   courtPosition: CourtPosition | null,
   attentionMode: 'pause' | 'auto_resolve',
   tick: number,
-  metadata?: Partial<Pick<EncounterNotification, 'kind' | 'sourceSystem' | 'stepIndex' | 'actionId' | 'stepId' | 'narrativeTag' | 'totalSteps' | 'outcomeBand' | 'hexCol' | 'hexRow' | 'locationLabel'>>,
+  metadata?: Partial<Pick<EncounterNotification, 'kind' | 'sourceSystem' | 'stepIndex' | 'actionId' | 'stepId' | 'narrativeTag' | 'totalSteps' | 'outcomeBand' | 'hexCol' | 'hexRow' | 'locationLabel' | 'participantIds'>>,
 ): EncounterNotification | null {
   const depth = getVisibilityDepth(courtPosition);
   if (depth === 'none') return null;
@@ -398,6 +416,7 @@ export function phaseEncounterVisibility(
         locationLabel: locationNode?.name,
         hexCol: epHex?.col,
         hexRow: epHex?.row,
+        participantIds: resolveEncounterParticipantIds(graph, ep.actorId, ep.targetAgentId),
       },
     );
 
@@ -485,6 +504,7 @@ export function phaseEncounterVisibility(
         locationLabel: locationNode?.name,
         hexCol: actionHex?.col,
         hexRow: actionHex?.row,
+        participantIds: resolveEncounterParticipantIds(graph, action.actorId, action.targetId),
       },
     );
 
@@ -567,6 +587,7 @@ export function phaseEncounterVisibility(
         locationLabel: locationNode?.name,
         hexCol: aftermathHex?.col,
         hexRow: aftermathHex?.row,
+        participantIds: resolveEncounterParticipantIds(graph, action.actorId, action.targetId),
       },
     );
 
