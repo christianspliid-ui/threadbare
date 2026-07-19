@@ -1,32 +1,27 @@
 # Briefing
 
-**Generated:** 2026-07-18 19:28 local (17:28 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-07-19 05:30 local (03:30 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task — the replacement for the old Cowork "keep-work-flowing" chat brief. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
 ## Needs Christian
 
-**Nothing needs a decision from you right now.** No creative or design-vision call is waiting this cycle. The only note is the same housekeeping one: this machine's copy of the project has drifted a little further behind the shared line (now 29 commits) and still has the same uncommitted working files. It's a single git command, spelled out under **Freshness**, and your morning session's own freshness guard will catch it anyway. Nothing lost, nothing urgent.
+**Nothing needs a decision only you can make this cycle.** No creative or design-vision call is waiting — the whole ready queue is technical executor work.
+
+One standing heads-up, not a task: if you open an interactive session on this machine, **refresh first**. The home copy has now drifted **37 commits** behind the shared line (was 26 last cycle) — well past the safety line of 10, and still climbing — and still carries ~85 uncommitted local edits. The habit `git fetch && git rebase origin/main` before you begin saves you from building on old ground, but do the edit-pile triage first (see below) so the rebase has a clean tree to land on. That refresh + triage is executor/design-session work (item #3 in [`Design/user-actions.md`](user-actions.md) + ticket THR-660), not a Christian chore.
 
 ## Queue
 
-**Healthy** — 14 items ready for the executor, nothing urgent or high-priority among them. What's left is all medium/low: the last three game-manual pages (stealth & rivals, attention & story, twilight & world-soul), a batch of small motive-receipt clean-ups, the six "no-op" ascendant actions that still need real effects, and a few infrastructure tidy-ups. Most of these have sat since 2026-07-05 — backlog sediment waiting its turn, not stuck work. One economy ticket (THR-616) still *reads* "blocked," but that's stale text: I checked, and its blocker (THR-615) shipped on 2026-07-05, so it's actually free to pull. New in the ready line today: THR-660, which fixes the root cause of these very freshness nags — see below.
+**Healthy** — 8 items ready for the executor. Nothing urgent or high-priority among them: the top is a cluster of mediums — untrack `.codesight/` to stop the chronic dirt (THR-660), a UL proposal (THR-607), and an economy ticket (THR-616). THR-616 still *reads* "blocked by THR-615" in its description, but THR-615 shipped 2026-07-05 (Done), so it is **free to pull** — no real blocker on the board this cycle. The rest are low-priority tidy-ups: art for one economy card (THR-656), retiring Codex remnants (THR-634), two small motive-receipt clean-ups (THR-642/643), and an economy-feed key warning (THR-644). Five of those (THR-607/634/642/643/644) have sat since 2026-07-05 — backlog sediment waiting its turn behind the active feature threads, not stuck work.
 
 ## Freshness
 
-Home tree **needs a quick refresh** — it's on `main` but now **29 commits behind** `origin/main` (today's merges plus the last few hourly briefings all landed while this copy sat), and it still carries the same uncommitted working files. Before you start the morning session:
-
-```
-git fetch && git rebase origin/main
-```
-
-Then triage the leftover plan-doc drafts in the working tree (tracked as item #3 in [`Design/user-actions.md`](user-actions.md)). No detached-HEAD or data-loss situation — just ordinary catch-up. A ticket already exists to stop this recurring (THR-660, below).
+Home tree is on `main` but now **37 commits behind** `origin/main` (26 last cycle) — **past the alarm threshold of 10**, and climbing steadily each hour. Same standing cause: this copy carries a **large set of uncommitted local edits** (~85 non-`.codesight` files), which is too dirty for the hourly auto-sync to fast-forward, so it slips further behind each cycle. Those local copies are almost certainly stale echoes of already-merged work (the war system and card-inspector both shipped cleanly through the shared line), but at ~85 files they deserve a *careful* look before anything is discarded — not a blind wipe. That triage is item #3 in [`Design/user-actions.md`](user-actions.md), executor/design-session work. THR-660 (in the queue) attacks the recurring `.codesight/` cause and, once landed, lets the hourly auto-sync catch this copy up on its own.
 
 ## What's moving
 
-- **The single-executor CLAUDE.md trim shipped (THR-575).** The opening coordination section got slimmed down and the impediment log updated — both landed today via PR #588. That was one of the items sitting in the ready line last hour.
-- **A ticket now targets the chronic dirt.** THR-660 (filed today, ready for the executor) untracks the `.codesight/` files that keep this machine's copy dirty every hour — the direct cause of the "please refresh / please triage" notes you keep seeing here. When it lands, this section should quiet down on its own.
-- **Player-action progression (THR-613)** is the active feature thread — multi-session, ships a slice at a time and stays "in dev" between slices; expected, not stuck.
+- **Six no-op ascendant actions (THR-605)** is the actively-assigned In-Dev item — real effects for `artifact.attune/nullify/curse`, `loc.fortify`, `sub.trap`, `sub.vision`. It ships a slice at a time under an interactive session; progressing, not stuck.
+- **Player-action progression (THR-613)** remains the active multi-session feature thread — it ships a slice at a time and stays "in dev" between slices; expected, not stuck.
 - **The Pure Claude Code migration gate (THR-652, urgent)** is in progress. Its go/no-go check includes this briefing updating hourly for two straight days — which is happening as you read this.
 
 ---
