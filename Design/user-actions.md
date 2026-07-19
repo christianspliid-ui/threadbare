@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-07-19, 11:29 local (light refresh by the hourly `keep-work-flowing-cc` CC task; last full rebuild was the 2026-06-23 retro)
+**Last updated:** 2026-07-19, 13:10 local (light refresh by the hourly `keep-work-flowing-cc` CC task; last full rebuild was the 2026-06-23 retro)
 **Owner of items below:** Christian. Everyone else's blockers go in Linear or `Docs/impediments.md`.
 **Refresh cadence:** The hourly `keep-work-flowing-cc` scheduled task keeps this current (prunes resolved items, adds newly-surfaced Christian-owned ones); the `retrospective` skill still does the deep periodic rebuild. This is the slow-moving standing-asks list — the fresh-this-hour view is [`Design/briefing.md`](briefing.md).
 
@@ -21,7 +21,7 @@ When an item resolves: delete it from this file, mark the corresponding impedime
 
 ## 0. Reinstall local dependencies — `npm run dev` / `npm test` are broken on the home tree · WILL NOT SELF-HEAL
 
-**Status:** Open · **newly surfaced 2026-07-19 11:29** by the hourly `keep-work-flowing-cc` run.
+**Status:** Open · **newly surfaced 2026-07-19 11:29** by the hourly `keep-work-flowing-cc` run; **re-verified still broken 2026-07-19 13:10** (`node_modules/.bin` still absent, `npm exec -- vite --version` still fails).
 **Source:** Discovered directly this run — the pre-commit `lint:plan-doc` hook failed with `'esbuild' is not recognized`, and the root cause turned out to be broader than the deps-free-worktree case already logged as impediment #186.
 
 **Evidence.** `C:\Users\chris\Dev\Projects\TheFantasyWorldSimulator\node_modules` contains 276 top-level packages, but **`node_modules/.bin` does not exist at all** — the binary shims npm scripts rely on were never created (consistent with the known `esbuild` / `npm install` `spawn EPERM` failure mode, impediment #21). Probed and confirmed this run:
@@ -82,7 +82,7 @@ Then triage the other uncommitted working-tree files (item #3).
 
 ## 3. Triage orphan uncommitted changes in working trees · WILL NOT SELF-HEAL
 
-**Status:** Open · ~60 days · **~85 non-`.codesight` files uncommitted** on the home tree as of 2026-07-19 11:29. **New this cycle: the tree is no longer on `main` — it is in a detached-HEAD state**, parked on `013c1044` (2026-07-18 evening), **58 commits behind** `origin/main` (54 last cycle, climbing steadily; alarm threshold is 10). The local `main` branch itself is healthy and only ~3 behind — the working copy simply is not pointed at it. It stays behind because it is too dirty for the hourly auto-sync to fast-forward, so it slips further each cycle until the dirt is cleared. The dirty set is **larger than earlier briefings assumed** and is no longer just `Docs/plans/` drafts — it now includes a stack of `src/engine/army*`, `battle*`, Codex/AscendantBar/GameView/DebugTab component edits, plus staged plan-doc + script deletions. These are almost certainly stale local echoes of work that already shipped cleanly through `origin/main` (the TB-073 war system and the orphaned-card inspector both merged), but the volume warrants a **careful** triage, not a blind `git checkout -- .`
+**Status:** Open · ~60 days · **~85 non-`.codesight` files uncommitted** on the home tree as of 2026-07-19 13:10. **The tree is not on `main` — it is in a detached-HEAD state**, parked on `013c1044` (2026-07-18 evening), **59 commits behind** `origin/main` (58 at 11:29, 54 before that — climbing roughly one per hourly briefing merge; alarm threshold is 10). The local `main` branch itself is healthy and only ~3 behind — the working copy simply is not pointed at it. It stays behind because it is too dirty for the hourly auto-sync to fast-forward, so it slips further each cycle until the dirt is cleared. The dirty set is **larger than earlier briefings assumed** and is no longer just `Docs/plans/` drafts — it now includes a stack of `src/engine/army*`, `battle*`, Codex/AscendantBar/GameView/DebugTab component edits, plus staged plan-doc + script deletions. These are almost certainly stale local echoes of work that already shipped cleanly through `origin/main` (the TB-073 war system and the orphaned-card inspector both merged), but the volume warrants a **careful** triage, not a blind `git checkout -- .`
 **Source:** Impediment #59 + 2026-07-18/19 `keep-work-flowing-cc` freshness pings
 
 **Fix.** Triage first, then re-attach — **the previously-published `git fetch && git rebase origin/main` no longer applies from a detached HEAD.** For each tracked-but-uncommitted file, confirm the same change is already on `origin/main` (`git diff origin/main -- <file>` shows nothing meaningful) before `git checkout --` discarding it; attribute any genuinely-new change to a Linear issue and commit with `Fixes THR-XX`. Untracked files: same triage — `git add` + commit if intentional, `rm` if not. Once clean:
