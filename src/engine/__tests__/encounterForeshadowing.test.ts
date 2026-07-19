@@ -31,7 +31,7 @@ describe('encounter foreshadowing resolver', () => {
     enableTracing();
   });
 
-  it('returns authored plague variant for matching signal window', () => {
+  it('prefers the most specific authored variant over a broader one (THR-642)', () => {
     const graph = new WorldGraph();
     graph.addNode({
       id: 'agent-1',
@@ -74,11 +74,70 @@ describe('encounter foreshadowing resolver', () => {
       candidate,
     });
 
-    expect(result.variantId).toBe('plague_outbreak.briefed');
-    expect(result.prose).toContain('Ashmarket');
+    // Signals here are intelligenceTier:'briefed', topMotive:'awareness',
+    // dominantReach:'eye' — which two authored variants match: `briefed`
+    // (1 clause) and `healer_curiosity` (2 clauses). Before THR-642 this path
+    // scanned first-match and returned `briefed` purely because it is listed
+    // earlier; the unified selector picks the more specific variant instead, so
+    // authoring order no longer decides the winner.
+    expect(result.variantId).toBe('plague_outbreak.healer_curiosity');
+    expect(result.prose).toContain('Serafina');
     const traces = getTraces().filter(trace => trace.category === 'foreshadowing');
     expect(traces).toHaveLength(1);
     expect(traces[0].summary).toContain('encounter.plague_outbreak');
+  });
+
+  it('grounds an authored variant at the candidate location', () => {
+    const graph = new WorldGraph();
+    graph.addNode({
+      id: 'agent-1',
+      type: 'actor',
+      name: 'Serafina',
+      properties: {
+        actorType: 'individual',
+        primaryReach: 'heart',
+        interventionHistory: [],
+      },
+    });
+
+    const runtime = createSimulationRuntime();
+    // reachPrimary 'heart' excludes the eye-gated `healer_curiosity` variant, so
+    // `briefed` wins alone — it is the variant carrying {encounter_location}.
+    const candidate: BalanceEncounterPoolCandidate = {
+      rank: 1,
+      templateId: 'encounter.plague_outbreak',
+      templateName: 'Plague Outbreak',
+      locationId: 'location-ashmarket',
+      locationName: 'Ashmarket',
+      action: 'start_local',
+      reachPrimary: 'heart',
+      reachSecondary: 'eye',
+      encounterType: 'assist',
+      threatBand: 'hard',
+      stepCount: 2,
+      totalTickCost: 5,
+      rewardEstimate: 0.65,
+      completionProb: 0.64,
+      travelCost: 0,
+      finalScore: 1.2,
+      selected: true,
+    };
+
+    const result = getEncounterForeshadowing({
+      runtime,
+      graph,
+      tick: 12,
+      agentId: 'agent-1',
+      decision: makeDecision(candidate),
+      candidate,
+    });
+
+    expect(result.variantId).toBe('plague_outbreak.briefed');
+    expect(result.prose).toContain('Ashmarket');
+    // THR-642: the agent/pronoun placeholder pass used to be tooltip-only, so
+    // authored variants rendered here shipped raw tokens to the player.
+    expect(result.prose).toContain('Serafina');
+    expect(result.prose).not.toMatch(/\{[a-z_.]+\}/i);
   });
 
   it('reuses cache on second call and emits cache-hit trace', () => {
