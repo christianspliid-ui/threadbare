@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-07-19, 14:30 local (light refresh by the hourly `keep-work-flowing-cc` CC task; last full rebuild was the 2026-06-23 retro)
+**Last updated:** 2026-07-19, 15:28 local (light refresh by the hourly `keep-work-flowing-cc` CC task; last full rebuild was the 2026-06-23 retro)
 **Owner of items below:** Christian. Everyone else's blockers go in Linear or `Docs/impediments.md`.
 **Refresh cadence:** The hourly `keep-work-flowing-cc` scheduled task keeps this current (prunes resolved items, adds newly-surfaced Christian-owned ones); the `retrospective` skill still does the deep periodic rebuild. This is the slow-moving standing-asks list — the fresh-this-hour view is [`Design/briefing.md`](briefing.md).
 
@@ -21,7 +21,7 @@ When an item resolves: delete it from this file, mark the corresponding impedime
 
 ## 0. Reinstall local dependencies — `npm run dev` / `npm test` are broken on the home tree · WILL NOT SELF-HEAL
 
-**Status:** Open · **newly surfaced 2026-07-19 11:29** by the hourly `keep-work-flowing-cc` run; **re-verified still broken 2026-07-19 14:30** — third consecutive run (`node_modules/.bin` still absent entirely, while 276 top-level packages are present, confirming the packages are there but unlaunchable; `npm exec -- vite --version` still returns `'vite' is not recognized`).
+**Status:** Open · **newly surfaced 2026-07-19 11:29** by the hourly `keep-work-flowing-cc` run; **re-verified still broken 2026-07-19 15:28** — fourth consecutive run (`node_modules/.bin` still absent entirely, while 276 top-level packages are present, confirming the packages are there but unlaunchable; `npm exec -- vite --version` still returns `'vite' is not recognized`).
 **Source:** Discovered directly this run — the pre-commit `lint:plan-doc` hook failed with `'esbuild' is not recognized`, and the root cause turned out to be broader than the deps-free-worktree case already logged as impediment #186.
 
 **Evidence.** `C:\Users\chris\Dev\Projects\TheFantasyWorldSimulator\node_modules` contains 276 top-level packages, but **`node_modules/.bin` does not exist at all** — the binary shims npm scripts rely on were never created (consistent with the known `esbuild` / `npm install` `spawn EPERM` failure mode, impediment #21). Probed and confirmed this run:
@@ -90,14 +90,27 @@ Then triage the other uncommitted working-tree files (item #3).
 
 ## 3. Triage orphan uncommitted changes in working trees · WILL NOT SELF-HEAL
 
-**Status:** Open · ~60 days · **~85 non-`.codesight` files uncommitted** on the home tree as of 2026-07-19 14:30. **The tree is not on `main` — it is in a detached-HEAD state**, parked on `013c1044` (2026-07-18 evening), **64 commits behind** `origin/main` (60 at 13:29, 59 at 13:10, 58 at 11:29 — climbing roughly one per hourly briefing merge; alarm threshold is 10). It is **zero commits ahead**, so nothing unique lives on the detached snapshot and re-attaching risks no loss. The local `main` branch itself is healthy and only ~3 behind — the working copy simply is not pointed at it. It stays behind because it is too dirty for the hourly auto-sync to fast-forward, so it slips further each cycle until the dirt is cleared. The dirty set is **larger than earlier briefings assumed** and is no longer just `Docs/plans/` drafts — it now includes a stack of `src/engine/army*`, `battle*`, Codex/AscendantBar/GameView/DebugTab component edits, plus staged plan-doc + script deletions. These are almost certainly stale local echoes of work that already shipped cleanly through `origin/main` (the TB-073 war system and the orphaned-card inspector both merged), but the volume warrants a **careful** triage, not a blind `git checkout -- .`
-**Source:** Impediment #59 + 2026-07-18/19 `keep-work-flowing-cc` freshness pings
+**Status:** Open · ~60 days · **~85 non-`.codesight` files uncommitted** on the home tree as of 2026-07-19 15:28. **The tree is not on `main` — it is in a detached-HEAD state**, parked on `013c1044` (2026-07-18 evening), **69 commits behind** `origin/main` (64 at 14:30, 60 at 13:29, 58 at 11:29 — climbing roughly one per hourly briefing merge; alarm threshold is 10). It is **zero commits ahead**, so nothing unique lives on the detached snapshot and re-attaching risks no loss. The local `main` branch itself is healthy — the working copy simply is not pointed at it. It stays behind because it is too dirty for the hourly auto-sync to fast-forward, so it slips further each cycle until the dirt is cleared.
 
-**Fix.** Triage first, then re-attach — **the previously-published `git fetch && git rebase origin/main` no longer applies from a detached HEAD.** For each tracked-but-uncommitted file, confirm the same change is already on `origin/main` (`git diff origin/main -- <file>` shows nothing meaningful) before `git checkout --` discarding it; attribute any genuinely-new change to a Linear issue and commit with `Fixes THR-XX`. Untracked files: same triage — `git add` + commit if intentional, `rm` if not. Once clean:
+**Triage resolved 2026-07-19 15:28 — the pile is now split into "safe to discard" and "must keep".** Earlier revisions of this item called for a careful file-by-file pass without saying which files were actually at risk. That pass has now been done:
+
+- **Tracked edits (~70 files) — safe to discard.** `src/engine/army*`, `battle*`, Codex/AscendantBar/GameView/DebugTab component edits, plus staged plan-doc and script *deletions*. Verified: `HEAD` is an ancestor of `origin/main` (no unique commits anywhere on the snapshot), and the staged deletions target files that are **present and healthy on `origin/main`** (spot-checked `Docs/plans/2026-07-17-pure-claude-code-migration.md`, `Docs/canon/systems-inventory.md`, `Docs/plans/2026-07-05-thr-637-entity-visual-header.md`). These are stale local echoes of work that already shipped cleanly (the TB-073 war system and the orphaned-card inspector both merged).
+- **Untracked files (15) — NOT on `origin/main`; do not blanket-clean.** `Docs/judge-metrics/2026-W29.md`, nine `Docs/plans/.intent-proposals/*.md`, and five `Docs/plans/2026-07-04|05-*-brainstorm.md` / exploration docs. Each was checked against `origin/main` individually and none exist there. A `git clean -fd` destroys them. They need their own pass: keep and commit onto a `docs/*` branch if still wanted, delete if superseded.
+
+**Source:** Impediment #59 + 2026-07-18/19 `keep-work-flowing-cc` freshness pings; safe/unsafe split established 2026-07-19 15:28
+
+**Fix.** Because the tracked pile is now confirmed discardable, the re-attach no longer has to wait on triage — and **the untracked docs survive these commands**, so this is safe to run before deciding their fate:
 
 ```
-git switch main && git pull
+cd C:\Users\chris\Dev\Projects\TheFantasyWorldSimulator
+git fetch origin
+git switch -f main
+git reset --hard origin/main
 ```
+
+Then handle the 15 untracked docs separately (`git status --porcelain | grep '^??'` to list them).
+
+**Command history — two earlier published fixes are wrong, do not use them.** `git fetch && git rebase origin/main` does not work from a detached HEAD. `git switch main && git pull` (published 2026-07-19 14:30) will refuse or drag the dirty tracked edits along at this volume; `switch -f` + `reset --hard` is the working form.
 
 **What breaks if not done.** This is the upstream cause of the Codex dirty-worktree bounces (~50% of automation slots historically wasted). [THR-277](https://linear.app/threadbare/issue/THR-277) makes pickup resilient *to* dirty state via worktree isolation, but it doesn't clean the state. Until the orphan changes are triaged, the dirty worktree stays dirty.
 
