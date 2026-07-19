@@ -101,3 +101,33 @@ The role an agent plays in an encounter's social or political framing. Court Pos
 **Status:** canonical
 
 The `caused_by` edge linking one encounter event to the encounter seed or prior event that triggered it. Causation makes the causal chain of encounters inspectable — you can trace why an encounter happened back through prior seeds and events. Used by the trace system and the Debug Panel's encounter inspector.
+
+---
+
+### Chapter
+
+**Aliases:** Encounter Chapter
+**Also see:** `[[Encounter]]`, `[[Aftermath]]`, `[[Chapter Record]]`, `[[Chapter Ledger]]`
+**Status:** canonical
+
+The reading unit of a resolved (or in-progress) encounter: its opening, each step as the player read it, the player's own interventions, complications, and aftermath. "The encounter is the chapter" — a Chapter is the same event as an Encounter, viewed as a persistent, readable narrative record rather than an in-flight simulation object. Active chapters are read live from `gameState.unifiedActions`; resolved chapters are snapshotted into `gameState.chapterArchive` as Chapter Records (THR-603).
+
+---
+
+### Chapter Record
+
+**Aliases:** ChapterRecord
+**Also see:** `[[Chapter]]`, `[[Chapter Ledger]]`, `[[Encounter]]`, `[[Aftermath]]`, `[[UnifiedActionTemplate]]`
+**Status:** canonical
+
+The compact, self-contained snapshot of a resolved encounter (`ChapterRecord`, `src/types/chapterRecord.ts`) appended to `gameState.chapterArchive` at orchestrator cleanup, before resolved `UnifiedAction`s are pruned after `RESOLVED_ACTION_RETENTION_TICKS`. It captures the opening, steps (each with the prose the player read, the outcome band, complications, and the player's own interventions), aftermath, and participants. Prose is snapshotted post-`enrichProse()`, so a resolved chapter reads identically forever — even after the actor dies or the world moves on. Lives in its own file rather than `unifiedAction.ts` to keep its blast radius small.
+
+---
+
+### Chapter Ledger
+
+**Aliases:** the Ledger
+**Also see:** `[[Chapter]]`, `[[Chapter Record]]`, `[[Encounter]]`
+**Status:** canonical
+
+The always-readable list (`ChapterLedger` UI, IA surface `game.chapter-ledger`) that merges active encounters (live `unifiedActions`) and resolved chapters (`chapterArchive`) into one newest-first, filterable view. It is the load-management answer to player-authored encounter density: the player can revisit any chapter's full narrative for the whole run instead of losing it to the resolved-action prune (THR-603).
