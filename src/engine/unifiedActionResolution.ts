@@ -44,7 +44,7 @@ import { executeGraphOps } from './graphOpExecutor';
 import { applyFactionGovernanceVerb } from './factionGovernanceVerbs';
 import { applyPlantSchism } from './schismPlant';
 import { applyAnointSuccessor } from './anointSuccessor';
-import { applyImbueItem, applyBestowPower, applyAnointFaction } from './ascendantExpression';
+import { applyImbueItem, applyBestowPower, applyAnointFaction, applyPlantTrap } from './ascendantExpression';
 import { SCHISM_PENDING_DURATION_TICKS } from '../data/game-config';
 import { emitTrace } from './traceBuffer';
 import { enrichProse, gatherNarrativeContext } from './proseEnrichment';
@@ -1113,6 +1113,7 @@ export function executeStepResult(
     const imbueItemOps: GraphOp[] = [];
     const bestowPowerOps: GraphOp[] = [];
     const anointFactionOps: GraphOp[] = [];
+    const plantTrapOps: GraphOp[] = [];
     const graphOnlyOps: GraphOp[] = [];
     for (const op of ops) {
       if (op.op === 'faction_verb') factionVerbOps.push(op);
@@ -1121,6 +1122,7 @@ export function executeStepResult(
       else if (op.op === 'imbue_item') imbueItemOps.push(op);
       else if (op.op === 'bestow_power') bestowPowerOps.push(op);
       else if (op.op === 'anoint_faction') anointFactionOps.push(op);
+      else if (op.op === 'plant_trap') plantTrapOps.push(op);
       else graphOnlyOps.push(op);
     }
 
@@ -1220,6 +1222,25 @@ export function executeStepResult(
         const resolvedFactionId = factionRef === '$target' ? action.targetId : factionRef;
         try {
           applyAnointFaction(state.graph, action.actorId, resolvedFactionId, tick);
+        } catch {
+          // Fail-soft per NFP #4: log nothing, never crash the tick.
+        }
+      }
+    }
+
+    if (plantTrapOps.length > 0) {
+      // THR-605 Slice 4 — Plant Trap targets a sublocation; the helper resolves
+      // the intended victim currently present there (or on its hex) and plants a
+      // PendingEncounterSeed that spawns the authored trap beat against them.
+      // Needs full GameState to mutate `pendingEncounterSeeds`, so it lives here
+      // in the resolution-intercept path (not the graph-executor case like the
+      // other THR-605 slices). The acting ascendant is the player-god
+      // (action.actorId); the target sublocation is action.targetId.
+      for (const op of plantTrapOps) {
+        const subRef = op.nodeId ? op.nodeId : action.targetId;
+        const resolvedSublocationId = subRef === '$target' ? action.targetId : subRef;
+        try {
+          applyPlantTrap(state, action.actorId, resolvedSublocationId, tick);
         } catch {
           // Fail-soft per NFP #4: log nothing, never crash the tick.
         }

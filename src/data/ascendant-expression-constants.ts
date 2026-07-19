@@ -134,3 +134,35 @@ export const CHOSEN_FACTION_REPUTATION_PER_TICK = 0.003;
  * their knowledge."
  */
 export const CURSE_QUINTESSENCE_DRAIN = 0.02;
+
+// ─── THR-605 Slice 4: Plant Trap (sub.trap) ───────────────────────────────────
+// `[trap] <sublocation>` plants a concealed snare. There is no hex-arrival gate
+// in the encounter-seed substrate (`evaluateEncounterSeeds` spawns a seed's
+// template for its `targetAgentId` the moment `tick >= eligibleAfterTick`,
+// regardless of where that agent stands), so the plan's "no targetAgentId, fires
+// on the next agent to occupy the hex" is unreachable without net-new machinery.
+// The honest reuse of the existing consumed substrate: pick the intended victim
+// already present at the trapped sublocation (or, failing that, its hex) at plant
+// time and seed the authored `encounter.trap.sprung` beat against them — the same
+// seed → spawn path the faction governance verbs use. Genuinely consumed: the
+// victim is pulled into a real, failable negative encounter.
+
+/** Template id of the authored trap-sprung beat the seed spawns. */
+export const TRAP_SPRUNG_TEMPLATE_ID = 'encounter.trap.sprung';
+
+/**
+ * Encounter-seed priority stamped on a planted trap. Mirrors the seed-schema
+ * `priority` field the faction seeds set; higher means the sprung-trap beat
+ * outranks ambient beats where a scorer compares seeds. `evaluateEncounterSeeds`
+ * spawns eligible seeds directly (it does not currently rank by priority), so this
+ * is schema-forward rather than load-bearing today.
+ */
+export const TRAP_SEED_PRIORITY = 0.8;
+
+/**
+ * Ticks between planting the snare and its earliest spring. 0 = live on the next
+ * tick's seed evaluation, catching the victim who is standing in it now (matching
+ * the prose "waits patiently … activates … when the right conditions are met" —
+ * the condition being their presence). Raise to make a trap lie dormant longer.
+ */
+export const TRAP_SEED_DELAY_TICKS = 0;
