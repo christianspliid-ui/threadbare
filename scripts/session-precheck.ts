@@ -60,9 +60,6 @@ const TEST_PROBE_FILE_CANDIDATES = [
 const COMPUTER_USE_TRUE_VALUES = new Set(["1", "true", "yes", "enabled", "granted", "read"]);
 const COMPUTER_USE_FALSE_VALUES = new Set(["0", "false", "no", "disabled", "denied", "none"]);
 const COMPUTER_USE_ENV_CANDIDATES = [
-  "CODEX_COMPUTER_USE",
-  "CODEX_COMPUTER_USE_GRANTED",
-  "CODEX_CUA_ENABLED",
   "OPENAI_COMPUTER_USE",
   "OPENAI_CUA_ENABLED",
 ] as const;
@@ -245,15 +242,6 @@ function probeComputerUseGrantStatus(): ProbeResult {
       name: "cu",
       status: "unknown",
       detail: `${envName}=${rawValue} (unrecognized value)`,
-    };
-  }
-
-  const originator = process.env.CODEX_INTERNAL_ORIGINATOR_OVERRIDE;
-  if (originator) {
-    return {
-      name: "cu",
-      status: "unknown",
-      detail: `originator=${originator}; no explicit computer-use env flag`,
     };
   }
 
