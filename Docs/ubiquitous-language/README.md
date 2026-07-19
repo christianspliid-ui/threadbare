@@ -63,6 +63,9 @@ Load this file at session start (referenced from CLAUDE.md). Load specific shard
 - **[Encounter Awareness](./Encounters.md#encounter-awareness)** — hex-granular visibility; agent sees all encounters on hexes within awareness range
 - **[Court Position](./Encounters.md#court-position)** — the role an agent plays in an encounter's framing; affects scoring and prose
 - **[Causation](./Encounters.md#causation)** — the `caused_by` edge linking encounter events to their seeds; makes causal chains inspectable
+- **[Chapter](./Encounters.md#chapter)** — the reading unit of a resolved or in-progress encounter; opening, steps, interventions, aftermath
+- **[Chapter Record](./Encounters.md#chapter-record)** — compact post-`enrichProse()` snapshot of a resolved encounter (`ChapterRecord`) appended to `chapterArchive`
+- **[Chapter Ledger](./Encounters.md#chapter-ledger)** — always-readable list (`game.chapter-ledger`) merging active encounters and resolved chapters
 
 ### Prose
 
@@ -126,4 +129,4 @@ Load this file at session start (referenced from CLAUDE.md). Load specific shard
 
 ---
 
-*v1.1 — 79 canonical terms (THR-294 added GameState, HexTile, TerrainType, Implementation Plan, AxiologicalProfile, ValuePair). Coverage expands via the propose-new-term flow. UL wins on terminology disagreements.*
+*v1.2 — 82 canonical terms (THR-607 added Chapter, Chapter Record, Chapter Ledger). Coverage expands via the propose-new-term flow. UL wins on terminology disagreements.*
