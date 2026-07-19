@@ -4,6 +4,26 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { ThreadsPanel } from '../ThreadsPanel';
 import type { ThreadedNode } from '../../../engine/retinue';
 import type { BalanceEvent } from '../../../types/balanceEval';
+import type { EncounterNotification } from '../../../types/encounterVisibility';
+import { selectEncounterBadges } from '../encounterBadgeModel';
+
+function makeNotification(overrides: Partial<EncounterNotification> = {}): EncounterNotification {
+  return {
+    id: 'notif-1',
+    agentId: 'agent-1',
+    agentName: 'Seraphel',
+    courtPosition: 'retinue',
+    encounterId: 'enc.plague',
+    encounterName: 'Plague Outbreak',
+    prose: 'The sickness spreads.',
+    choices: [],
+    createdTick: 10,
+    autoResolveTick: null,
+    viewed: false,
+    resolved: false,
+    ...overrides,
+  };
+}
 
 // ─── Test fixtures ─────────────────────────────────────────────────
 
@@ -155,14 +175,15 @@ describe('ThreadsPanel', () => {
       />
     );
     expect(screen.getByText('Seraphel')).toBeTruthy();
-    // Secondary info: "Thornwall · Idling"
-    expect(screen.getByText(/Thornwall/)).toBeTruthy();
+    // THR-664: the location line is gone from agent rows — it duplicates the
+    // detail panel, and the row needs the space for the encounter badge.
+    expect(screen.queryByText(/Thornwall/)).toBeNull();
   });
 
-  it('shows encounter pool counts for agent rows when telemetry is available', () => {
+  it('no longer renders the encounter-pool button or the action chip (THR-664)', () => {
     render(
       <ThreadsPanel
-        threadedNodes={[makeAgent()]}
+        threadedNodes={[makeAgent({ activityLabel: 'Going to Green-shroud' })]}
         selectedNodeId={null}
         onNodeSelect={noop}
         onCenterOnHex={noop}
@@ -170,184 +191,99 @@ describe('ThreadsPanel', () => {
       />
     );
 
-    expect(screen.getByText('Pool 3 / 12')).toBeTruthy();
+    // Both moved to the agent detail panel; the row's encounter affordance is the badge.
+    expect(screen.queryByTestId('encounter-pool-button')).toBeNull();
+    expect(screen.queryByText(/^Pool /)).toBeNull();
+    expect(screen.queryByText('Going to Green-shroud')).toBeNull();
   });
 
-  it('opens encounter pool modal with ranked candidates in priority order', () => {
+  it('renders an encounter badge on the row a pending notification anchors to (THR-664)', () => {
+    render(
+      <ThreadsPanel
+        threadedNodes={[makeAgent()]}
+        selectedNodeId={null}
+        onNodeSelect={noop}
+        onCenterOnHex={noop}
+        encounterBadges={selectEncounterBadges([makeNotification({ stepIndex: 1, totalSteps: 3 })])}
+        onOpenEncounterBadge={noop}
+      />
+    );
+
+    const badge = screen.getByTestId('thread-encounter-badge');
+    expect(badge.getAttribute('data-encounter-badge-kind')).toBe('encounter');
+    expect(badge.getAttribute('aria-label')).toContain('Plague Outbreak');
+    expect(badge.getAttribute('aria-label')).toContain('step 2 of 3');
+  });
+
+  it('renders no badge when nothing is pending', () => {
+    render(
+      <ThreadsPanel
+        threadedNodes={[makeAgent()]}
+        selectedNodeId={null}
+        onNodeSelect={noop}
+        onCenterOnHex={noop}
+        encounterBadges={selectEncounterBadges([makeNotification({ viewed: true })])}
+        onOpenEncounterBadge={noop}
+      />
+    );
+
+    expect(screen.queryByTestId('thread-encounter-badge')).toBeNull();
+  });
+
+  it('opens the encounter without selecting the row when the badge is clicked', () => {
     const onNodeSelect = vi.fn();
+    const onOpenEncounterBadge = vi.fn();
+    const notif = makeNotification();
     render(
       <ThreadsPanel
         threadedNodes={[makeAgent()]}
         selectedNodeId={null}
         onNodeSelect={onNodeSelect}
         onCenterOnHex={noop}
-        agentEncounterDecisions={new Map([[
-          'agent-1',
-          makeEncounterDecision({
-            rankedEncounterPool: [
-              {
-                rank: 1,
-                templateId: 'encounter.merchant_gambit',
-                templateName: "Merchant's Gambit",
-                locationId: 'loc-2',
-                locationName: 'Green-shroud',
-                action: 'queue_movement',
-                reachPrimary: 'gold',
-                reachSecondary: 'eye',
-                encounterType: 'trade',
-                threatBand: 'moderate',
-                stepCount: 3,
-                totalTickCost: 4,
-                rewardEstimate: 1.1,
-                completionProb: 0.62,
-                travelCost: 0.58,
-                finalScore: 1.42,
-                selected: true,
-              },
-              {
-                rank: 2,
-                templateId: 'encounter.shadow_hunt',
-                templateName: 'The Shadow Hunt',
-                locationId: 'loc-3',
-                locationName: 'Sacred Grove',
-                action: 'queue_movement',
-                reachPrimary: 'shadow',
-                reachSecondary: 'star',
-                encounterType: 'steal',
-                threatBand: 'moderate',
-                stepCount: 3,
-                totalTickCost: 4,
-                rewardEstimate: 1.1,
-                completionProb: 0.53,
-                travelCost: 0.71,
-                finalScore: 1.11,
-                selected: false,
-              },
-            ],
-          }),
-        ]])}
+        encounterBadges={selectEncounterBadges([notif])}
+        onOpenEncounterBadge={onOpenEncounterBadge}
       />
     );
 
-    fireEvent.click(screen.getByLabelText('Open encounter pool for Seraphel'));
+    fireEvent.click(screen.getByTestId('thread-encounter-badge'));
 
+    expect(onOpenEncounterBadge).toHaveBeenCalledTimes(1);
+    expect(onOpenEncounterBadge.mock.calls[0][0].primary).toBe(notif);
+    // The badge click must not fall through to row selection.
     expect(onNodeSelect).not.toHaveBeenCalled();
-    expect(screen.getByRole('dialog', { name: 'Seraphel encounter pool' })).toBeTruthy();
-    const items = screen.getAllByTestId('encounter-pool-item');
-    expect(items).toHaveLength(2);
-    expect(items[0].textContent).toContain("Merchant's Gambit");
-    expect(items[0].textContent).toContain('Chosen');
-    expect(items[1].textContent).toContain('The Shadow Hunt');
   });
 
-  it('groups repeated encounter templates into one modal row with destination count', () => {
+  it('marks a concluded encounter as aftermath until it is read', () => {
     render(
       <ThreadsPanel
         threadedNodes={[makeAgent()]}
         selectedNodeId={null}
         onNodeSelect={noop}
         onCenterOnHex={noop}
-        agentEncounterDecisions={new Map([[
-          'agent-1',
-          makeEncounterDecision({
-            rankedEncounterPool: [
-              {
-                rank: 1,
-                templateId: 'encounter.master_local_craft',
-                templateName: 'Master the Local Craft',
-                locationId: 'loc-2',
-                locationName: 'Inn',
-                action: 'queue_movement',
-                reachPrimary: 'stone',
-                reachSecondary: 'gold',
-                encounterType: 'create',
-                threatBand: 'hard',
-                stepCount: 2,
-                totalTickCost: 5,
-                rewardEstimate: 1.0,
-                completionProb: 0.51,
-                travelCost: 0.6,
-                finalScore: 1.2,
-                selected: true,
-              },
-              {
-                rank: 2,
-                templateId: 'encounter.master_local_craft',
-                templateName: 'Master the Local Craft',
-                locationId: 'loc-3',
-                locationName: 'Well Fountain',
-                action: 'queue_movement',
-                reachPrimary: 'stone',
-                reachSecondary: 'gold',
-                encounterType: 'create',
-                threatBand: 'hard',
-                stepCount: 2,
-                totalTickCost: 5,
-                rewardEstimate: 1.0,
-                completionProb: 0.48,
-                travelCost: 0.7,
-                finalScore: 1.1,
-                selected: false,
-              },
-            ],
-          }),
-        ]])}
+        encounterBadges={selectEncounterBadges([makeNotification({ kind: 'aftermath' })])}
+        onOpenEncounterBadge={noop}
       />
     );
 
-    fireEvent.click(screen.getByLabelText('Open encounter pool for Seraphel'));
-
-    expect(screen.getByText('Top 2 contains 2 copies of Master the Local Craft (100%)')).toBeTruthy();
-    expect(screen.getByRole('tab', { name: 'Raw priority list (2)' }).getAttribute('aria-selected')).toBe('true');
-
-    const items = screen.getAllByTestId('encounter-pool-item');
-    expect(items).toHaveLength(2);
-    expect(items[0].textContent).toContain('#1 Master the Local Craft');
-    expect(items[1].textContent).toContain('#2 Master the Local Craft');
-
-    fireEvent.click(screen.getByRole('tab', { name: 'Grouped templates (1)' }));
-
-    const groupedItems = screen.getAllByTestId('encounter-pool-item');
-    expect(groupedItems).toHaveLength(1);
-    expect(groupedItems[0].textContent).toContain('2 destinations');
+    const badge = screen.getByTestId('thread-encounter-badge');
+    expect(badge.getAttribute('data-encounter-badge-kind')).toBe('aftermath');
+    expect(badge.getAttribute('aria-label')).toContain('concluded');
   });
 
-  it('shows the chosen encounter as a badge even when the agent is still moving toward it', () => {
+  it('badges both threaded participants of a two-agent encounter', () => {
+    const notif = makeNotification({ participantIds: ['agent-1', 'agent-2'] });
     render(
       <ThreadsPanel
-        threadedNodes={[makeAgent({ activityLabel: 'Going to Green-shroud' })]}
+        threadedNodes={[makeAgent(), makeAgent({ id: 'agent-2', name: 'Kael' })]}
         selectedNodeId={null}
         onNodeSelect={noop}
         onCenterOnHex={noop}
-        agentEncounterDecisions={new Map([[
-          'agent-1',
-          makeEncounterDecision({
-            decisionType: 'queue_movement',
-            rankedEncounterPool: [{
-              rank: 1,
-              templateId: 'encounter.merchant_gambit',
-              templateName: "Merchant's Gambit",
-              locationId: 'loc-2',
-              locationName: 'Green-shroud',
-              action: 'queue_movement',
-              reachPrimary: 'gold',
-              reachSecondary: 'eye',
-              encounterType: 'trade',
-              threatBand: 'moderate',
-              stepCount: 3,
-              totalTickCost: 4,
-              rewardEstimate: 1.1,
-              completionProb: 0.62,
-              travelCost: 0.58,
-              finalScore: 1.42,
-              selected: true,
-            }],
-          }),
-        ]])}
+        encounterBadges={selectEncounterBadges([notif])}
+        onOpenEncounterBadge={noop}
       />
     );
 
-    expect(screen.getByText("Merchant's Gambit")).toBeTruthy();
+    expect(screen.getAllByTestId('thread-encounter-badge')).toHaveLength(2);
   });
 
   it('does not render sections with 0 entries', () => {

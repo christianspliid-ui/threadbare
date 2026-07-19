@@ -3,13 +3,12 @@ import type { ThreadedNode, ThreadCategory, SustainedControlNode, SustainedContr
 import { groupThreadedNodes, SUSTAIN_BAR_MIN_VISIBLE_FRACTION, SUSTAIN_LAPSE_RISK_TIGHTENING_TICKS } from '../../engine/retinue';
 import type { UnifiedActionTemplate } from '../../types/unifiedAction';
 import type { BalanceEvent, BalanceEncounterPoolCandidate } from '../../types/balanceEval';
-import type { ForeshadowingResult } from '../../engine/foreshadowing/types';
-import { Tooltip } from '../shared/Tooltip';
 import type { ActiveEncounterDisplay } from './encounterNotificationRuntime';
 import { SectionHeading } from '../shared/SectionHeading';
 import { Modal } from '../shared/Modal';
-import { StepDots } from '../shared/StepDots';
 import { ActivityIcon, type ActivityKind } from '../shared/ActivityIcon';
+import { EncounterBadge } from './EncounterBadge';
+import type { EncounterBadgeModel } from './encounterBadgeModel';
 import { SphereIcon, sphereFromReach } from '../shared/SphereIcon';
 import {
   getSustainedStatusLabel,
@@ -69,11 +68,17 @@ interface ThreadsPanelProps {
   onZoomToLocation?: (locationId: string) => void;
   activeEncounters?: Map<string, { encounter: ActiveEncounterDisplay; template: UnifiedActionTemplate }>;
   agentEncounterDecisions?: Map<string, BalanceEvent>;
-  onEncounterClick?: (agentId: string, encounter: ActiveEncounterDisplay, template: UnifiedActionTemplate) => void;
   onToggleAttentionMode?: (threadEdgeId: string) => void;
   /** Per-agent strategic summaries for badge display. Only agents with strategic activity will have entries. */
   agentStrategicSummaries?: Map<string, AgentStrategicSummary>;
-  getForeshadowing?: (agentId: string, encounterId: string) => ForeshadowingResult;
+  /**
+   * THR-664: pending encounter notifications keyed by the thread row they anchor
+   * to. Replaces the global encounter toast queue — encounter activity shows on
+   * the entity's own card.
+   */
+  encounterBadges?: Map<string, EncounterBadgeModel>;
+  /** Opens the encounter modal for a badge's primary notification. */
+  onOpenEncounterBadge?: (badge: EncounterBadgeModel) => void;
   /**
    * Sustained-control rows from `getSustainedControlNodes`. THR-418 — renders Hexes
    * and Sources sections in the right-bar plus a folded "claim status" line on
@@ -105,12 +110,13 @@ interface CompactThreadRowProps {
   onCenterOnHex: (locationId: string) => void;
   activeEncounters?: Map<string, { encounter: ActiveEncounterDisplay; template: UnifiedActionTemplate }>;
   agentEncounterDecision?: BalanceEvent;
-  onEncounterClick?: (agentId: string, encounter: ActiveEncounterDisplay, template: UnifiedActionTemplate) => void;
   onToggleAttentionMode?: (threadEdgeId: string) => void;
-  onOpenEncounterPool?: (agentName: string, decision: BalanceEvent) => void;
   /** Strategic summary for this agent, if they have active strategic activity. */
   strategicSummary?: AgentStrategicSummary;
-  getForeshadowing?: (agentId: string, encounterId: string) => ForeshadowingResult;
+  /** THR-664: pending encounter notifications anchored to this row, if any. */
+  encounterBadge?: EncounterBadgeModel;
+  /** Opens the encounter modal for the badge's primary notification. */
+  onOpenEncounterBadge?: (badge: EncounterBadgeModel) => void;
   /**
    * THR-418: optional click handler for the champion chip on agent rows.
    * When omitted, the chip renders as a static badge with no click affordance.
@@ -212,25 +218,6 @@ function ThreadPortrait({ name, id, sphere, selected, size = 52 }: ThreadPortrai
         >{initials}</text>
       </g>
     </svg>
-  );
-}
-
-function ThreadActionChip({ label }: { label: string }) {
-  return (
-    <div style={{
-      display: 'inline-flex', alignItems: 'center', gap: 6,
-      padding: '4px 10px',
-      background: 'var(--bg-raised)',
-      border: '1px solid var(--border-subtle)',
-      borderRadius: 4,
-      fontFamily: 'var(--font-body)', fontSize: 'var(--text-xs)',
-      color: 'var(--accent-gold)',
-      fontStyle: 'italic', letterSpacing: '0.02em',
-      minWidth: 0, overflow: 'hidden',
-    }}>
-      <span style={{ color: 'var(--text-muted)', fontStyle: 'normal', flexShrink: 0 }}>⇢</span>
-      <span className="truncate">{label}</span>
-    </div>
   );
 }
 
@@ -565,11 +552,10 @@ function CompactThreadRow({
   onCenterOnHex,
   activeEncounters,
   agentEncounterDecision,
-  onEncounterClick,
   onToggleAttentionMode,
-  onOpenEncounterPool,
   strategicSummary,
-  getForeshadowing,
+  encounterBadge,
+  onOpenEncounterBadge,
   onChampionChipClick,
   locationClaimStatus,
 }: CompactThreadRowProps) {
@@ -596,12 +582,6 @@ function CompactThreadRow({
     node.category === 'agent' && activeEncounters
       ? activeEncounters.get(node.id)
       : undefined;
-  const encounterPool = node.category === 'agent'
-    ? getVisibleEncounterPool(agentEncounterDecision)
-    : null;
-  const encounterPoolBaseline = node.category === 'agent'
-    ? getEncounterPoolBaseline(agentEncounterDecision)
-    : null;
   const encounterDecisionCandidate = node.category === 'agent'
     ? getSelectedEncounterPoolCandidate(agentEncounterDecision)
     : null;
@@ -617,26 +597,6 @@ function CompactThreadRow({
             )
           : 'hourglass' as const)
     : null;
-
-  // Action chip label (active encounter > pending decision > activity label)
-  const actionChipLabel: string | null = node.category === 'agent'
-    ? (agentEncounter
-        ? agentEncounter.template.name
-        : encounterDecisionCandidate && agentEncounterDecision?.decisionType !== 'idle'
-          ? encounterDecisionCandidate.templateName
-          : node.activityLabel)
-    : null;
-
-  // Foreshadowing prose for tooltip on pending encounter chip (not active encounters).
-  // THR-631: the tooltip renders the single S2 "pull" sentence (tooltipProse) when
-  // the receipt-driven path produced one; otherwise it falls back to the full passage.
-  const foreshadowingProse: string | undefined =
-    node.category === 'agent' && encounterDecisionCandidate && getForeshadowing && !agentEncounter
-      ? (() => {
-          const fs = getForeshadowing(node.id, encounterDecisionCandidate.templateId);
-          return fs.tooltipProse ?? fs.prose;
-        })()
-      : undefined;
 
   // Strategic badge
   const familyPresentation = strategicSummary
@@ -662,7 +622,9 @@ function CompactThreadRow({
   let eyeLocationId: string | null = null;
 
   if (node.category === 'agent') {
-    secondaryInfo = node.locationName;
+    // THR-664: the location line is gone from agent rows — it duplicates the
+    // detail panel and the row needs the space for the encounter badge. The zoom
+    // affordance still resolves to the same location.
     eyeLocationId = node.locationId;
   } else if (node.category === 'location') {
     secondaryInfo = node.controllingFaction
@@ -776,6 +738,12 @@ function CompactThreadRow({
             {/* Activity icon — agents only */}
             {node.category === 'agent' && activityKind && (
               <ActivityIcon kind={activityKind} size={18} color="var(--text-secondary)" />
+            )}
+
+            {/* THR-664: encounter badge — the row's encounter affordance. Pending
+                beats and unread aftermath surface here instead of a global toast. */}
+            {encounterBadge && onOpenEncounterBadge && (
+              <EncounterBadge badge={encounterBadge} onOpen={onOpenEncounterBadge} />
             )}
 
             {/* Zoom to location */}
@@ -909,93 +877,18 @@ function CompactThreadRow({
             </div>
           )}
 
-          {/* Row 3: pool · action chip · auto toggle (agents only) */}
-          {node.category === 'agent' && (
+          {/* Row 3: auto toggle (agents only).
+              THR-664 removed the encounter-pool button and the action chip — both
+              duplicate the agent detail panel, and the encounter affordance is now
+              the badge in row 1. */}
+          {node.category === 'agent' && node.courtPosition && onToggleAttentionMode && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
-              {/* Encounter pool button */}
-              {encounterPool !== null && (
-                <button
-                  type="button"
-                  data-testid="encounter-pool-button"
-                  aria-label={`Open encounter pool for ${node.name}`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (agentEncounterDecision && onOpenEncounterPool) {
-                      onOpenEncounterPool(node.name, agentEncounterDecision);
-                    }
-                  }}
-                  style={{
-                    flexShrink: 0,
-                    padding: 0,
-                    fontFamily: 'var(--font-body)',
-                    fontSize: 'var(--text-xs)',
-                    color: encounterPool > 0 ? 'var(--text-secondary)' : 'var(--accent-gold)',
-                    lineHeight: 1.2,
-                    backgroundColor: 'transparent',
-                    border: 'none',
-                    cursor: agentEncounterDecision && onOpenEncounterPool ? 'pointer' : 'default',
-                    textDecoration: agentEncounterDecision && onOpenEncounterPool ? 'underline' : 'none',
-                    textUnderlineOffset: '2px',
-                  }}
-                >
-                  Pool {encounterPool}
-                  {encounterPoolBaseline !== null && encounterPoolBaseline !== encounterPool
-                    ? ` / ${encounterPoolBaseline}`
-                    : ''}
-                </button>
-              )}
-
-              {/* Action chip — encounter in progress shows clickable step-chip, otherwise label */}
-              {actionChipLabel !== null && (
-                agentEncounter && onEncounterClick ? (
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onEncounterClick(node.id, agentEncounter.encounter, agentEncounter.template);
-                    }}
-                    style={{
-                      display: 'inline-flex', alignItems: 'center', gap: 6,
-                      padding: '4px 10px',
-                      background: 'var(--bg-raised)',
-                      border: '1px solid var(--border-subtle)',
-                      borderRadius: 4,
-                      fontFamily: 'var(--font-body)', fontSize: 'var(--text-xs)',
-                      color: 'var(--accent-gold)',
-                      fontStyle: 'italic', letterSpacing: '0.02em',
-                      cursor: 'pointer',
-                      minWidth: 0, overflow: 'hidden', flex: 1,
-                    }}
-                  >
-                    <span style={{ color: 'var(--text-muted)', fontStyle: 'normal', flexShrink: 0 }}>⇢</span>
-                    <span className="truncate">{agentEncounter.template.name}</span>
-                    <StepDots
-                      total={agentEncounter.template.steps.length}
-                      current={agentEncounter.encounter.currentStepIndex}
-                    />
-                  </button>
-                ) : (
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    {foreshadowingProse ? (
-                      <Tooltip label={actionChipLabel} desc={foreshadowingProse}>
-                        <ThreadActionChip label={actionChipLabel} />
-                      </Tooltip>
-                    ) : (
-                      <ThreadActionChip label={actionChipLabel} />
-                    )}
-                  </div>
-                )
-              )}
-
-              {/* Auto toggle */}
-              {node.courtPosition && onToggleAttentionMode && (
-                <div style={{ marginLeft: 'auto' }}>
-                  <AutoToggle
-                    on={node.attentionMode === 'auto_resolve'}
-                    onToggle={() => onToggleAttentionMode(node.threadEdgeId)}
-                  />
-                </div>
-              )}
+              <div style={{ marginLeft: 'auto' }}>
+                <AutoToggle
+                  on={node.attentionMode === 'auto_resolve'}
+                  onToggle={() => onToggleAttentionMode(node.threadEdgeId)}
+                />
+              </div>
             </div>
           )}
         </div>
@@ -1194,10 +1087,10 @@ export const ThreadsPanel = React.memo(function ThreadsPanel({
   onZoomToLocation,
   activeEncounters,
   agentEncounterDecisions,
-  onEncounterClick,
   onToggleAttentionMode,
   agentStrategicSummaries,
-  getForeshadowing,
+  encounterBadges,
+  onOpenEncounterBadge,
   sustainedControls,
   onChampionChipClick,
 }: ThreadsPanelProps) {
@@ -1365,11 +1258,10 @@ export const ThreadsPanel = React.memo(function ThreadsPanel({
                             onCenterOnHex={onCenterOnHex}
                             activeEncounters={activeEncounters}
                             agentEncounterDecision={node.category === 'agent' ? agentEncounterDecisions?.get(node.id) : undefined}
-                            onEncounterClick={onEncounterClick}
                             onToggleAttentionMode={onToggleAttentionMode}
-                            onOpenEncounterPool={(agentName, decision) => setEncounterPoolModal({ agentName, decision })}
                             strategicSummary={node.category === 'agent' ? agentStrategicSummaries?.get(node.id) : undefined}
-                            getForeshadowing={getForeshadowing}
+                            encounterBadge={node.category === 'agent' ? encounterBadges?.get(node.id) : undefined}
+                            onOpenEncounterBadge={onOpenEncounterBadge}
                             onChampionChipClick={onChampionChipClick}
                             locationClaimStatus={claimStatus}
                           />

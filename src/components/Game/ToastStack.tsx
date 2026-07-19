@@ -4,16 +4,9 @@ import type { ToastItem } from '../../types/notification';
 import type { NavigationTarget } from '../../types/notification';
 import { getSphereColor } from '../../data/sphereIcons';
 import { EncounterNotificationCard } from './EncounterNotificationCard';
-
-/** Band → left-border accent colour mapping. Fail-soft: unknown band → undefined (falls through to sphere/gold). */
-const BAND_ACCENT: Record<string, string> = {
-  surge:       'var(--positive)',
-  fortunate:   'var(--accent-near-miss)',
-  neutral:     'var(--text-tertiary)',
-  strained:    'var(--warning)',
-  setback:     'var(--negative)',
-  catastrophe: '#b91c1c',
-};
+// Band → left-border accent colour. Shared with the thread-row encounter badge
+// (THR-664). Fail-soft: unknown band → undefined, falls through to sphere/gold.
+import { BAND_ACCENT } from './outcomeBandAccent';
 
 /** Glyph indicating what clicking a notification navigates to */
 const NAV_GLYPHS: Record<NavigationTarget['kind'], string> = {

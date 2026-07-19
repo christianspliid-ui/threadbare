@@ -87,6 +87,13 @@ export interface EncounterNotification {
   hexRow?: number;
   /** Human-readable location label for the card + veil context strip. */
   locationLabel?: string;
+  /**
+   * All agents the encounter is about (THR-664) — the actor plus any agent target.
+   * Anchors the notification to every threaded participant's thread row without
+   * duplicating the notification. Always includes `agentId` when populated;
+   * absent on older records, where `agentId` is the only participant.
+   */
+  participantIds?: string[];
 }
 
 /**
