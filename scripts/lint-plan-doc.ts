@@ -35,7 +35,6 @@ const REQUIRED_COORDINATION_KEYS = [
   'Suggested model',
   'Parallel-safe with',
   'Mutex with',
-  'Codex review',
   'Files to touch',
 ] as const;
 const HIGH_IMPACT_FILES = [

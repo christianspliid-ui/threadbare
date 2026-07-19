@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Worktree orphan scanner — files local content that lives only in a Codex/Claude
+ * Worktree orphan scanner — files local content that lives only in a Claude Code
  * worktree and has not been merged into main or the canonical Obsidian vault.
  *
  * Runs locally (not in CI — the GitHub Actions runner can't see the user's

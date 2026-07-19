@@ -37,5 +37,5 @@ Example:
 - Apply or remove labels.
 
 Acting on the verdict is the invoker's job. Cowork's plan-doc workflow handles
-the standard Allow → Ready for Dev/Codex transition; for manual `/intent-judge`
+the standard Allow → Ready for Dev transition; for manual `/intent-judge`
 runs, the human invoker decides what to do with Revise/Block/Escalate verdicts.
