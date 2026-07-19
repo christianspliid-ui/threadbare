@@ -79,6 +79,20 @@ export const TACTICAL_MAX_MULTIPLIER = 20;
 /** Fortification multiplier after breach (30% of original) */
 export const BREACH_FORTIFICATION_REDUCTION = 0.3;
 
+/**
+ * THR-605: additive fortification bump applied per `loc.fortify` cast — one
+ * basic-wall tier's worth on the fortification scale (1 unfortified → 30 grand
+ * fortress). A keep starting at the default (1) reaches grand-fortress grade in
+ * ~3 casts.
+ */
+export const FORTIFY_MULTIPLIER_BONUS = FORTIFICATION_BASIC;
+
+/**
+ * THR-605: cap on a location's fortificationMultiplier so repeated `loc.fortify`
+ * tops out at grand-fortress grade and can never make a site unbesiegeable.
+ */
+export const FORTIFY_MULTIPLIER_MAX = FORTIFICATION_GRAND;
+
 // ─── Siege Constants ────────────────────────────────────────────────────
 
 /** Ticks between spotlights at siege start */

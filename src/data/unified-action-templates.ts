@@ -1662,6 +1662,7 @@ const LOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     rarityTier: 1,
     intrinsicTier: 'background',
     description: 'Breathes martial purpose into the walls of a fortification, strengthening existing defenses through divine will and physical effort. Garrison morale improves and structural weaknesses are reinforced against assault. The effect is most powerful on sites already dedicated to defense.',
+    technicalEffect: 'Raises the target location\'s fortificationMultiplier by FORTIFY_MULTIPLIER_BONUS (seeding from its subtype base on the first cast), clamped to FORTIFY_MULTIPLIER_MAX. Persistent until a siege breach reduces it. Consumed by siege resolution: a fortified site starts sieges with higher defender momentum.',
     reach: 'iron',
     crudType: 'update',
     scale: 'regional',
@@ -1669,7 +1670,9 @@ const LOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
       reach: 'iron',
       duration: { min: 2, max: 4 },
       difficulty: 0.30,
-      onSuccess: [],
+      onSuccess: [
+        { op: 'fortify_location', nodeId: '$target' },
+      ],
       onFailure: [],
       failBehavior: 'fail_action',
     }],

@@ -206,9 +206,12 @@ export function createSiegeNode(
   const attackerState = attackerNode.properties.armyState as ArmyState | undefined;
   if (!attackerState) return null;
 
-  // Get settlement fortification
+  // Get settlement fortification. Honor an ascendant-raised fortificationMultiplier
+  // (THR-605 loc.fortify) when present, matching the breach path's read; fall back
+  // to the subtype base otherwise.
   const locationSubtype = settlementNode.properties.locationSubtype as string | undefined;
-  const fortification = getFortificationModifier(locationSubtype);
+  const fortification = (settlementNode.properties.fortificationMultiplier as number)
+    ?? getFortificationModifier(locationSubtype);
 
   // Garrison strength: use settlement's approximate population as defender headcount
   // Simple heuristic: hamlet=50, town=200, city=500, capital=1000

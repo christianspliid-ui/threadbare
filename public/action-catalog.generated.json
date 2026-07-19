@@ -26,13 +26,13 @@
       "generic": 3
     },
     "byEffectSource": {
-      "template-ops": 97,
+      "template-ops": 98,
       "control-spec": 17,
       "engine-bridge": 44,
-      "none": 8,
+      "none": 7,
       "aftermath-only": 4
     },
-    "beatGranted": 17,
+    "beatGranted": 18,
     "starters": 0,
     "unauthoredEffects": 0
   },
@@ -4010,8 +4010,8 @@
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
       "description": "Breathes martial purpose into the walls of a fortification, strengthening existing defenses through divine will and physical effort. Garrison morale improves and structural weaknesses are reinforced against assault. The effect is most powerful on sites already dedicated to defense.",
-      "technicalEffect": "INTENDED: harden a settlement against attack, raising its defensive standing. NOT YET WIRED — empty step ops, no engine bridge; deducts essence and narrates only (THR-605).",
-      "effectSource": "none"
+      "technicalEffect": "Raises the target location's fortificationMultiplier by FORTIFY_MULTIPLIER_BONUS (seeding from its subtype base on the first cast), clamped to FORTIFY_MULTIPLIER_MAX. Persistent until a siege breach reduces it. Consumed by siege resolution: a fortified site starts sieges with higher defender momentum.",
+      "effectSource": "template-ops"
     },
     {
       "id": "loc.bless_harvest",
@@ -4077,9 +4077,9 @@
       ],
       "requiresReach": null,
       "starter": false,
-      "beatGranted": false,
+      "beatGranted": true,
       "bucket": "unlockable-generic",
-      "bucketDeclared": false,
+      "bucketDeclared": true,
       "description": "Catalyses trade through a settlement's public square. Stalls multiply by the hour; merchants who never knew each other shake hands. The risk is that a thieves' guild has been waiting for the square to wake up too.",
       "technicalEffect": "On success, raises the location's `prosperity` and lowers its `unrest` by named deltas (LOC_OPEN_MARKETS_*).",
       "effectSource": "template-ops"
