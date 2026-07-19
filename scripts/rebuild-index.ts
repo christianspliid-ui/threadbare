@@ -20,7 +20,6 @@ const SKIP_DIRS = new Set([
   '.agents',
   '.planning',
   '.superpowers',
-  '.ai-codex',
   '.cache',
   '.pytest_cache',
   'Docs',
