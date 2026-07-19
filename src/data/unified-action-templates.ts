@@ -2576,6 +2576,7 @@ const SUBLOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     rarityTier: 1,
     intrinsicTier: 'background',
     description: 'Casts divine sight deep into a sublocation to read the history and hidden nature encoded in its physical fabric. Ancient events, concealed mechanisms, and supernatural presences reveal themselves to the searching gaze. Places that actively resist scrutiny remain opaque even under sustained divine attention.',
+    technicalEffect: 'Reveals concealed knowledge on the sublocation\'s hex: flips every unrevealed knows_secret_of edge held by any actor there to revealed. Consumed by the agent detail panel (which lists only unrevealed secrets) and by secret-decay, which exempts revealed secrets from fading. Deterministic. Fail-soft: a hex with nothing concealed keeps its silence.',
     reach: 'heart',
     crudType: 'read',
     scale: 'local',
@@ -2583,7 +2584,9 @@ const SUBLOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
       reach: 'heart',
       duration: { min: 1, max: 1 },
       difficulty: 0.15,
-      onSuccess: [],
+      onSuccess: [
+        { op: 'scry_sublocation', nodeId: '$target' },
+      ],
       onFailure: [],
       failBehavior: 'fail_action',
     }],

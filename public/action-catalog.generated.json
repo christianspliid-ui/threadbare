@@ -26,10 +26,10 @@
       "generic": 3
     },
     "byEffectSource": {
-      "template-ops": 101,
+      "template-ops": 102,
       "control-spec": 17,
       "engine-bridge": 44,
-      "none": 4,
+      "none": 3,
       "aftermath-only": 4
     },
     "beatGranted": 18,
@@ -4367,8 +4367,8 @@
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
       "description": "Casts divine sight deep into a sublocation to read the history and hidden nature encoded in its physical fabric. Ancient events, concealed mechanisms, and supernatural presences reveal themselves to the searching gaze. Places that actively resist scrutiny remain opaque even under sustained divine attention.",
-      "technicalEffect": "INTENDED: read a sublocation’s history and hidden nature. NOT YET WIRED — empty step ops, no engine bridge; deducts essence and narrates only (THR-605).",
-      "effectSource": "none"
+      "technicalEffect": "Reveals concealed knowledge on the sublocation's hex: flips every unrevealed knows_secret_of edge held by any actor there to revealed. Consumed by the agent detail panel (which lists only unrevealed secrets) and by secret-decay, which exempts revealed secrets from fading. Deterministic. Fail-soft: a hex with nothing concealed keeps its silence.",
+      "effectSource": "template-ops"
     },
     {
       "id": "loc.find_source",

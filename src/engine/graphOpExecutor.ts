@@ -194,6 +194,9 @@ function executeSingleOp(
       case 'nullify_artifact':
         return executeNullifyArtifact(graph, op, ctx);
 
+      case 'scry_sublocation':
+        return executeScrySublocation(graph, op, ctx);
+
       default:
         return {
           op,
@@ -945,5 +948,56 @@ function executeNullifyArtifact(
   graph.updateNode(artifact.id, {
     properties: { effects: [], attunedSphere: undefined, cursed: false, curseConcealed: false },
   });
+  return { op, success: true };
+}
+
+// ─── THR-605 Slice 3: scry_sublocation ───────────────────────────────────────
+//
+// A "read" action whose world change is a reveal: it flips every concealed
+// `knows_secret_of` edge (`revealed: false` → `true`) held by any actor on the
+// target sublocation's hex. That flip is genuinely consumed — `agentDetail.ts`
+// filters to *unrevealed* secrets when it lists what an agent hides, so revealing
+// surfaces those secrets in the agent panel, and `phaseSecretsFavors.ts` exempts
+// revealed secrets from decay so they persist. Awareness is hex-granular (the
+// load-bearing rule): resolving the sublocation up to its hex and scanning every
+// actor on that hex mirrors the perceive-family `taste_the_wake` reveal, but this
+// version actually flips the flag instead of only tracing. Needs only graph +
+// ctx, so it lives here as a graph-executor case (auto-routed via `graphOnlyOps`)
+// like fortify and the artifact trio. Deterministic — no PRNG, no magnitudes.
+// Fail-soft: an unplaced target or a hex with nothing concealed returns success
+// with nothing revealed (the place "keeps its silence", per the prose).
+
+/**
+ * Scry a sublocation: reveal concealed secrets on its hex. Resolves the target up
+ * to its hex, then flips every unrevealed `knows_secret_of` edge held by any actor
+ * on that hex to `revealed: true`. Consumed by `agentDetail.ts` (surfaces the
+ * secret) + `phaseSecretsFavors.ts` (revealed secrets no longer decay). Fail-soft:
+ * unplaced target or nothing concealed → no-op success.
+ */
+function executeScrySublocation(
+  graph: WorldGraph,
+  op: GraphOp,
+  ctx: GraphOpContext,
+): GraphOpResult {
+  const targetId = resolveRef(op.nodeId ?? op.target ?? '$target', ctx);
+  const target = graph.getNode(targetId);
+  if (!target) return { op, success: false, error: `scry_sublocation: target ${targetId} not found` };
+
+  const hex = resolveLocationToHex(graph, targetId);
+  if (!hex) return { op, success: true }; // fail-soft: unplaced target → nothing to reveal
+
+  for (const actor of graph.getNodesByType('actor')) {
+    const locEdges = graph.getOutgoingEdges(actor.id, 'located_at');
+    if (!locEdges.length) continue;
+    const actorHex = resolveLocationToHex(graph, locEdges[0].target);
+    if (!actorHex || actorHex.col !== hex.col || actorHex.row !== hex.row) continue;
+
+    for (const secret of graph.getOutgoingEdges(actor.id, 'knows_secret_of')) {
+      if (secret.properties.revealed) continue;
+      graph.updateEdge(secret.id, {
+        properties: { ...secret.properties, revealed: true },
+      });
+    }
+  }
   return { op, success: true };
 }

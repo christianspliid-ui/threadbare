@@ -91,7 +91,8 @@ export type GraphOpType =
   | 'fortify_location' // THR-605 Slice 1: raise a location's fortificationMultiplier (capped), consumed by siegeResolution
   | 'attune_artifact'  // THR-605 Slice 2: append the ascendant's-sphere positive effect to an artifact + stamp attunedSphere (consumed by the effect walker)
   | 'curse_artifact'   // THR-605 Slice 2: append a concealed per-tick quintessence drain to an artifact + set cursed flags (consumed by the effect walker)
-  | 'nullify_artifact'; // THR-605 Slice 2: strip an artifact's effects + attune/curse flags back to inert (inverse of imbue/attune/curse)
+  | 'nullify_artifact' // THR-605 Slice 2: strip an artifact's effects + attune/curse flags back to inert (inverse of imbue/attune/curse)
+  | 'scry_sublocation'; // THR-605 Slice 3: reveal concealed knows_secret_of secrets on agents at the target sublocation's hex (consumed by agentDetail + secret-decay protection)
 
 /**
  * Payload for the apply_influence GraphOp.
