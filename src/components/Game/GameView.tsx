@@ -167,7 +167,7 @@ import type { UnifiedAction } from '../../types/unifiedAction';
 import type { ClearanceGateRuntimeState } from '../../types/contentShells';
 import { touchStructure, touchWorld } from '../../engine/simulationRuntime';
 import { applyAscendantBuffs } from '../../engine/ascendantBuffs';
-import { getEncounterForeshadowing } from '../../engine/foreshadowing/getEncounterForeshadowing';
+import { getEncounterForeshadowingById } from '../../engine/foreshadowing/encounterForeshadowing';
 import { executeEffect } from '../../engine/effectExecutors';
 import type { ExecutionContext } from '../../engine/effectExecutors';
 import { emitTrace } from '../../engine/traceBuffer';
@@ -520,7 +520,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
 
   const handleGetForeshadowing = useCallback(
     (agentId: string, encounterId: string) =>
-      getEncounterForeshadowing(gameState, agentId, encounterId, gameState.tick, runtime),
+      getEncounterForeshadowingById(gameState, agentId, encounterId, gameState.tick, runtime),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [gameState, runtime],
   );

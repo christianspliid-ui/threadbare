@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { getEncounterForeshadowing } from '../getEncounterForeshadowing';
+import { getEncounterForeshadowingById } from '../encounterForeshadowing';
 import { attributeRecentInterventions } from '../attributeRecentInterventions';
 import { resolveForeshadowingPlaceholders, GENERIC_FORESHADOWING_FALLBACK } from '../genericFallback';
 import { createSimulationRuntime } from '../../simulationRuntime';
@@ -92,7 +92,7 @@ describe('attributeRecentInterventions (Phase 1 stub)', () => {
   });
 });
 
-describe('getEncounterForeshadowing', () => {
+describe('getEncounterForeshadowingById', () => {
   let runtime: SimulationRuntime;
 
   beforeEach(() => {
@@ -103,7 +103,7 @@ describe('getEncounterForeshadowing', () => {
 
   it('returns prose for a known agent (selects most-specific variant for plague_outbreak)', () => {
     const state = makeState('agent-1', 'Kael Thornweaver', 'male');
-    const result = getEncounterForeshadowing(state, 'agent-1', 'encounter.plague_outbreak', 10, runtime);
+    const result = getEncounterForeshadowingById(state, 'agent-1', 'encounter.plague_outbreak', 10, runtime);
 
     expect(result.prose).toContain('Kael');
     // plague_outbreak Phase-1 signals: intelligenceTier:'unknown', topMotive:'awareness', dominantReach:'eye'
@@ -115,7 +115,7 @@ describe('getEncounterForeshadowing', () => {
 
   it('uses the agent first name in prose', () => {
     const state = makeState('agent-2', 'Serafina Valdris', 'female');
-    const result = getEncounterForeshadowing(state, 'agent-2', 'encounter.plague_outbreak', 5, runtime);
+    const result = getEncounterForeshadowingById(state, 'agent-2', 'encounter.plague_outbreak', 5, runtime);
 
     expect(result.prose).toContain('Serafina');
     expect(result.prose).not.toContain('Valdris');
@@ -125,7 +125,7 @@ describe('getEncounterForeshadowing', () => {
     const graph = new WorldGraph();
     const state = { graph, intelligenceRecords: [], unifiedActions: [], tick: 0 } as unknown as GameState;
 
-    const result = getEncounterForeshadowing(state, 'missing-agent', 'encounter.plague_outbreak', 0, runtime);
+    const result = getEncounterForeshadowingById(state, 'missing-agent', 'encounter.plague_outbreak', 0, runtime);
     // Should not throw — prose may be generic but must be a string
     expect(typeof result.prose).toBe('string');
     expect(result.prose.length).toBeGreaterThan(0);
@@ -134,8 +134,8 @@ describe('getEncounterForeshadowing', () => {
   describe('cache', () => {
     it('returns the same result on the second call (cache hit)', () => {
       const state = makeState('agent-3', 'Dorn');
-      const r1 = getEncounterForeshadowing(state, 'agent-3', 'encounter.plague_outbreak', 1, runtime);
-      const r2 = getEncounterForeshadowing(state, 'agent-3', 'encounter.plague_outbreak', 2, runtime);
+      const r1 = getEncounterForeshadowingById(state, 'agent-3', 'encounter.plague_outbreak', 1, runtime);
+      const r2 = getEncounterForeshadowingById(state, 'agent-3', 'encounter.plague_outbreak', 2, runtime);
 
       // Same object reference — served from cache
       expect(r1).toBe(r2);
@@ -145,8 +145,8 @@ describe('getEncounterForeshadowing', () => {
     it('resolves afresh for a different agent', () => {
       const state1 = makeState('agent-a', 'Alpha');
       const state2 = makeState('agent-b', 'Beta');
-      const r1 = getEncounterForeshadowing(state1, 'agent-a', 'encounter.plague_outbreak', 1, runtime);
-      const r2 = getEncounterForeshadowing(state2, 'agent-b', 'encounter.plague_outbreak', 1, runtime);
+      const r1 = getEncounterForeshadowingById(state1, 'agent-a', 'encounter.plague_outbreak', 1, runtime);
+      const r2 = getEncounterForeshadowingById(state2, 'agent-b', 'encounter.plague_outbreak', 1, runtime);
 
       expect(r1).not.toBe(r2);
       expect(r1.prose).toContain('Alpha');
@@ -155,17 +155,17 @@ describe('getEncounterForeshadowing', () => {
 
     it('resolves afresh for a different encounter', () => {
       const state = makeState('agent-4', 'Mira');
-      const r1 = getEncounterForeshadowing(state, 'agent-4', 'encounter.plague_outbreak', 1, runtime);
-      const r2 = getEncounterForeshadowing(state, 'agent-4', 'encounter.guild_audition', 1, runtime);
+      const r1 = getEncounterForeshadowingById(state, 'agent-4', 'encounter.plague_outbreak', 1, runtime);
+      const r2 = getEncounterForeshadowingById(state, 'agent-4', 'encounter.guild_audition', 1, runtime);
 
       expect(r1).not.toBe(r2);
     });
 
     it('cache is cleared by foreshadowingCache.clear()', () => {
       const state = makeState('agent-5', 'Tomas');
-      const r1 = getEncounterForeshadowing(state, 'agent-5', 'encounter.plague_outbreak', 1, runtime);
+      const r1 = getEncounterForeshadowingById(state, 'agent-5', 'encounter.plague_outbreak', 1, runtime);
       runtime.foreshadowingCache.clear();
-      const r2 = getEncounterForeshadowing(state, 'agent-5', 'encounter.plague_outbreak', 2, runtime);
+      const r2 = getEncounterForeshadowingById(state, 'agent-5', 'encounter.plague_outbreak', 2, runtime);
 
       // Different object after cache clear
       expect(r1).not.toBe(r2);
@@ -180,7 +180,7 @@ describe('getEncounterForeshadowing', () => {
 
     it('emits a foreshadowing trace on first resolution', () => {
       const state = makeState('agent-t', 'Trace');
-      getEncounterForeshadowing(state, 'agent-t', 'encounter.plague_outbreak', 7, runtime);
+      getEncounterForeshadowingById(state, 'agent-t', 'encounter.plague_outbreak', 7, runtime);
 
       const traces = getTraces().filter(t => t.category === 'foreshadowing');
       expect(traces.length).toBeGreaterThanOrEqual(1);
@@ -192,9 +192,9 @@ describe('getEncounterForeshadowing', () => {
 
     it('emits a cache-hit trace on second call', () => {
       const state = makeState('agent-tc', 'TraceCached');
-      getEncounterForeshadowing(state, 'agent-tc', 'encounter.plague_outbreak', 3, runtime);
+      getEncounterForeshadowingById(state, 'agent-tc', 'encounter.plague_outbreak', 3, runtime);
       clearTraces();
-      getEncounterForeshadowing(state, 'agent-tc', 'encounter.plague_outbreak', 4, runtime);
+      getEncounterForeshadowingById(state, 'agent-tc', 'encounter.plague_outbreak', 4, runtime);
 
       const traces = getTraces().filter(t => t.category === 'foreshadowing');
       expect(traces.length).toBeGreaterThanOrEqual(1);
@@ -206,7 +206,7 @@ describe('getEncounterForeshadowing', () => {
   describe('signals', () => {
     it('defaults to unknown intelligence tier and awareness motive in Phase 1', () => {
       const state = makeState('agent-s', 'Signals');
-      const result = getEncounterForeshadowing(state, 'agent-s', 'encounter.plague_outbreak', 1, runtime);
+      const result = getEncounterForeshadowingById(state, 'agent-s', 'encounter.plague_outbreak', 1, runtime);
 
       expect(result.signals.intelligenceTier).toBe('unknown');
       expect(result.signals.topMotive).toBe('awareness');
