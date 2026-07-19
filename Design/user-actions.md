@@ -41,10 +41,18 @@ npm install
 ```
 Let it run to completion. If it fails with `EPERM` on `esbuild`, retry once; if it still fails, that is impediment #21 recurring and worth logging rather than looping.
 
-**Workaround in the meantime (agents only, not a substitute).** Put the platform binary directly on `PATH` for a single command — this is what unblocked the commit hook this run:
-```
-export PATH="$PWD/node_modules/@esbuild/win32-x64:$PATH"
-```
+**Workaround in the meantime (agents only, not a substitute).** Which workaround works depends on where you are committing from:
+
+- **From the home tree** (has `node_modules`): putting the platform binary on `PATH` is enough —
+  ```
+  export PATH="$PWD/node_modules/@esbuild/win32-x64:$PATH"
+  ```
+- **From a scratch worktree** (no `node_modules` at all): **the `export PATH` line above does not work** — verified failing 2026-07-19 13:10. On Windows, npm runs each script through `cmd.exe`, which does not inherit the bash-exported `PATH` in a usable form, so the hook still dies with `'esbuild' is not recognized`. What *does* work is giving the worktree its own shim directory, which npm prepends to `PATH` automatically:
+  ```
+  mkdir -p node_modules/.bin
+  cp <home-tree>/node_modules/@esbuild/win32-x64/esbuild.exe node_modules/.bin/
+  ```
+  Both pre-commit hooks (`check:skill-sync`, `lint:plan-doc`) then run green.
 
 **What breaks if not done.** No local dev server, no local test runs, no local production build — so the "run it in the browser and screenshot it" step in the Definition of Done cannot be satisfied from this tree, and the pre-commit lint step fails on every commit.
 
