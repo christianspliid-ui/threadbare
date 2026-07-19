@@ -1,28 +1,28 @@
 # Briefing
 
-**Generated:** 2026-07-19 14:30 local (12:30 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-07-19 15:28 local (13:28 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task — the replacement for the old Cowork "keep-work-flowing" chat brief. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
 ## Needs Christian
 
-**The same two items. Both re-checked this run, both still open, neither has moved.**
+**One item changed this hour, and it changed in your favour.**
 
-**1. The war question — the one real design call.**
+**1. The war question — you may have already answered it by playing.**
 
-The war system woke up on Saturday: armies march, battles resolve, sieges hold. Three follow-on pieces were written to deepen it, and all three are still parked, unstarted:
+For the last several briefs this was the top ask: three war follow-ons — deeper battles, sieges that tighten as they drag, and what a war *leaves behind* — were written, their blocker cleared on Saturday, and they sat waiting on a steer about whether deepening war is where the next stretch of effort goes.
 
-- **Battle depth** — more ways a battle can turn: last stands, a commander's luck running out, terrain and morale actually mattering.
-- **Sieges** — a siege that tightens as it drags, pulls the region's attention toward it, and starves the place out.
-- **Aftermath** — what a war *leaves behind*, plus giving the world's notable figures ambitions beyond fighting.
+**What changed:** you played, and you filed four pieces of work off the back of it — the notification rework. Encounters and tugs move onto the entity's card in the Threads panel instead of firing into a global toast queue, and agents you hold no thread with stop shouting at you entirely. That is now the highest-priority thing on the board, and the foundation piece is already being built.
 
-**Why you and not an agent:** all three were written back when we believed the war system had to be built from scratch. It turned out to already exist — it just wasn't switched on. So the plans describe building things that may be half-built already. Confirmed again this run: nothing technical is holding them, their blocker cleared yesterday. They're waiting on a steer.
+So the question is narrower than it was:
 
-**The question:** is deepening war where the next stretch of work should go, or should that effort land somewhere else? Either answer is fine. Say the word and a design session will re-scope them against what's actually in the code first, so you're choosing against reality instead of a stale plan.
+> **Is the notification rework the next stretch, with war deferred until it's done — or do you want both moving in parallel?**
+
+Either answer is fine and neither is urgent this week. The reason to answer at all is that the three war pieces still describe *building* things that turned out to be already built — the war system was dormant, not missing. Whenever they get picked up they need a re-scope against what's actually in the code first. If you say "war is later," they sit safely as they are. If you say "both," someone should do that re-scope now, so you're choosing against reality rather than a stale plan.
 
 **2. The game still won't start on your machine.**
 
-Re-probed this run, still broken, same signature: the packages are installed (276 of them), but the launcher shims npm uses to actually *run* them were never created — the folder that should hold them still doesn't exist. Anything that starts the game or the tests dies with `'vite' is not recognized`.
+Re-probed this run — fourth consecutive check, unchanged. The packages are installed (276 of them), but the launcher shims npm uses to actually *run* them were never created; that folder still doesn't exist. Anything that starts the game or the tests dies with `'vite' is not recognized`.
 
 **Fix — one command, in the project folder:**
 
@@ -32,39 +32,45 @@ npm install
 
 This one is yours because it's your machine and it needs to finish uninterrupted — not something the hourly automation should do underneath you. Nothing is wrong with the code; the shipped game builds fine on the server, which is why it went unnoticed. It only bites when *you* sit down to play or test locally.
 
-Separately, the usual standing heads-up rather than a task: if you open a session on this machine, **refresh first** — see **Freshness**, and note the refresh command is not the one older briefings gave.
-
 ## Queue
 
-**Down to two, and they are the scrapings.** THR-634 — the last of the Codex leftovers — merged since the previous brief, which is good news that makes the line shorter: what remains is two low-priority motive-receipt tidy-ups and an economy-feed warning. **Both have sat since 2026-07-05 — fourteen days**, past the point where I call it stale rather than patient.
+**Recovered — five waiting, up from two, and this time they aren't scraps.** Last hour's warning that the executor would run dry within a cycle or two is withdrawn: your play session put three real pieces of the notification rework on the board, two of them high priority.
 
-**The concern from last hour, now one notch sharper.** Nothing high-priority is queued at all. The three war pieces sit one column back with their blocker cleared; two spin-offs from the ascendant-actions work are parked further back still. The line looks alive by count, but it is two scraps deep and everything genuinely valuable is behind the decision above. The executor will run dry within a cycle or two — that is the practical reason the war question matters this week rather than whenever.
+Two caveats, both mild:
 
-Nothing in the ready line is blocked. Two threads are mid-flight and expected to stay that way between slices: economy Phase 2 and the migration gate.
+- **Two of the three new pieces are waiting on the third.** The badge itself — the thing an encounter or a tug actually appears *on* — is being built right now. Removing the map vibration, and stopping unthreaded agents from toasting, both hang off that badge existing, so they unblock on their own when it lands. Nothing to do.
+- **The two oldest items are properly stale** — a motive-receipt documentation tidy-up and an economy-feed warning, both sitting since 2026-07-05, now **fourteen days** old. Neither is important; they're just old enough that I'd rather name them than keep quietly counting them as queue depth.
+
+One process note for the agents rather than for you: three items are marked in-flight against a limit of one, and two of those have nobody attached — the economy phase-2 work and the migration go/no-go gate. Parked rather than lost, but they should be picked back up or released.
 
 ## Freshness
 
-**Same shape, drifting further.** The home copy is still "detached" — parked on an old commit rather than pointed at `main` — and is now **64 commits behind** `origin/main` (60 last cycle). Its `main` branch itself is fine; the working copy just isn't on it. Nothing unique lives on that snapshot, so nothing is at risk of being lost by moving off it.
+**Still drifting, and now measurably worse: 69 commits behind** `origin/main` (64 last hour, 60 before that). The home copy remains "detached" — parked on an old commit rather than pointed at `main` — and still carries **~85 uncommitted local edits**, which is why the hourly auto-sync can't fast-forward it and why it slips further each cycle.
 
-It also still carries **~85 uncommitted local edits** (engine army/battle files, some component edits, plus staged plan-doc and script deletions) — too dirty for the hourly auto-sync to fast-forward, which is exactly why it drifts further each hour.
+**New this run — I checked what is actually at risk, and the answer is: less than earlier briefs implied, but not nothing.**
 
-Before an interactive session: triage the edit pile first (item #3 in [`Design/user-actions.md`](user-actions.md)), then re-attach and pull:
+- The detached snapshot has **no unique commits**. Everything on it is already on `main`; re-attaching loses nothing.
+- The ~85 tracked edits (engine army/battle files, some component edits, staged plan-doc and script deletions) are **stale echoes of work that already shipped**. I confirmed the staged deletions target files that are present and healthy on `main`. Safe to discard.
+- **But 15 untracked files are not on `main` at all** — a batch of design proposals, brainstorm docs, and a judge-metrics file. Those are genuinely unique and a blanket clean would destroy them. They survive the commands below, which is precisely why these are the commands to use.
+
+Before an interactive session:
 
 ```
-git switch main && git pull
+cd C:\Users\chris\Dev\Projects\TheFantasyWorldSimulator
+git fetch origin
+git switch -f main
+git reset --hard origin/main
 ```
 
-*(Older briefings said `git fetch && git rebase origin/main`. That was correct while the tree was on `main`; it will not work from a detached state. Use the line above.)*
+That re-attaches you to `main`, discards the stale tracked edits, and **leaves the 15 unique untracked docs in place** for a separate look. *(Ignore the `git switch main && git pull` line from earlier briefs — with this many local edits it will refuse or drag the mess along. `git fetch && git rebase origin/main`, from briefs before that, does not work from a detached state at all.)*
 
-The `.codesight` untracking landed this morning and stopped the tree from *re-dirtying itself* every session, so once this one-time pile is cleared the auto-sync should keep the copy current on its own. The pile itself still needs a human pass — it's the one thing between you and a self-maintaining local copy.
+Yesterday's `.codesight` untracking stopped the tree from *re-dirtying itself* every session, so once this one-time pile is cleared the auto-sync should keep the copy current on its own.
 
 ## What's moving
 
-Quieter hour than the last few, as expected after yesterday's dozen-ticket run:
-
-- **Codex retirement finished (THR-634).** The stale Codex scaffolding — the old orientation file and its supporting folder — is out of the repo. That closes the single-executor cleanup that started back in June; there is now one executor and one queue, with nothing left in the tree implying otherwise.
-- **Everything else is the same work continuing.** Economy Phase 2 and the migration gate are both mid-flight; neither is stuck, both stay open between slices by design.
-- **The Pure Claude Code migration gate is close.** Its briefing-cadence check continues to hold: this file has refreshed hourly without a gap since 2026-07-18 15:36 — now well past the two consecutive days the gate asks for, so the cadence half of that evidence is satisfied.
+- **The entity-anchored badge went into build** — the surface the rest of the notification rework hangs off.
+- **Saturday's war activation is confirmed shipped and closed.**
+- **A correction to last hour's brief on the migration gate.** It claimed this file had refreshed "hourly without a gap" and was "well past" the two consecutive days the gate wants. Checking the actual history: the task has been firing since 2026-07-18 09:15 — about **30 hours** — and several hours show no commit (02:00, 08:00–09:00, 11:00–12:00 today). Those are almost certainly *quiet* runs rather than missed ones, because this task deliberately skips committing when nothing substantive changed, and the run log backs that up. But the honest read is that the two-day bar is met around **tomorrow morning**, not already, and whoever closes that gate should cite the task's run log rather than this file's commit history.
 
 ---
 *Standing asks live in [`Design/user-actions.md`](user-actions.md). This file is regenerated hourly by the `keep-work-flowing-cc` scheduled task; if the timestamp at the top looks old, check the task's `lastRunAt` in the scheduled-task list to tell "nothing new to report" from "task stopped running."*
