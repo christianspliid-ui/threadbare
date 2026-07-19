@@ -26,10 +26,10 @@
       "generic": 3
     },
     "byEffectSource": {
-      "template-ops": 102,
+      "template-ops": 103,
       "control-spec": 17,
       "engine-bridge": 44,
-      "none": 3,
+      "none": 2,
       "aftermath-only": 4
     },
     "beatGranted": 18,
@@ -4175,8 +4175,8 @@
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
       "description": "Lays a divine snare within a sublocation that waits patiently for the intended victim to trigger it. The trap is invisible to mortal senses and activates with precision when the right conditions are met. An improperly anchored snare unravels before it can serve its purpose.",
-      "technicalEffect": "INTENDED: lay a hidden snare in a sublocation that triggers on the intended victim. NOT YET WIRED — empty step ops, no engine bridge; deducts essence and narrates only (THR-605).",
-      "effectSource": "none"
+      "technicalEffect": "Plants a concealed snare in the target sublocation: seeds the encounter.trap.sprung beat against the intended victim present there (or on its hex) via pendingEncounterSeeds. Consumed by encounter seeding, which spawns a real, failable negative encounter for that agent whose harm lands through its condition-weighted reward pools. Fail-soft: an empty room plants nothing and still succeeds.",
+      "effectSource": "template-ops"
     },
     {
       "id": "loc.sicken_wells",

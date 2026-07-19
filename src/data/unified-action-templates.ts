@@ -132,6 +132,7 @@ import {
 } from './temple-of-spheres-encounter-content';
 import { FACTION_ACTION_ENCOUNTER_TEMPLATES } from './faction-action-encounters';
 import { FACTION_GOVERNANCE_ENCOUNTER_TEMPLATES } from './faction-governance-encounters';
+import { ASCENDANT_TRAP_ENCOUNTER_TEMPLATES } from './ascendant-trap-encounters';
 import {
   DIVINE_EDICT_ESSENCE_COST,
   ANOINT_CHAMPION_ESSENCE_COST,
@@ -2546,6 +2547,7 @@ const SUBLOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     rarityTier: 1,
     intrinsicTier: 'background',
     description: 'Lays a divine snare within a sublocation that waits patiently for the intended victim to trigger it. The trap is invisible to mortal senses and activates with precision when the right conditions are met. An improperly anchored snare unravels before it can serve its purpose.',
+    technicalEffect: 'Plants a concealed snare in the target sublocation: seeds the encounter.trap.sprung beat against the intended victim present there (or on its hex) via pendingEncounterSeeds. Consumed by encounter seeding, which spawns a real, failable negative encounter for that agent whose harm lands through its condition-weighted reward pools. Fail-soft: an empty room plants nothing and still succeeds.',
     reach: 'shadow',
     crudType: 'create',
     scale: 'local',
@@ -2553,7 +2555,9 @@ const SUBLOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
       reach: 'shadow',
       duration: { min: 1, max: 2 },
       difficulty: 0.30,
-      onSuccess: [],
+      onSuccess: [
+        { op: 'plant_trap', nodeId: '$target' },
+      ],
       onFailure: [],
       failBehavior: 'fail_action',
     }],
@@ -5109,6 +5113,8 @@ const RAW_UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   ...FACTION_ACTION_ENCOUNTER_TEMPLATES,
   // Faction Governance encounters — THR-400 (dissent surfaces, leader crossroads, doctrine surfaces, doubter chooses)
   ...FACTION_GOVERNANCE_ENCOUNTER_TEMPLATES,
+  // Ascendant Trap encounter — THR-605 Slice 4 (the beat sub.trap's planted snare springs)
+  ...ASCENDANT_TRAP_ENCOUNTER_TEMPLATES,
   RIVAL_SHRINE_BETRAYAL_TEMPLATE,
   WANDERING_HEALER_SHRINE_ACCESS_TEMPLATE,
   FLAWED_STEEL_TEMPLATE,

@@ -26,16 +26,24 @@
  */
 
 import type { WorldGraph } from './graph';
+import type { GameState } from '../types/gameState';
+import type { GraphNode } from '../types/graph';
+import type { PendingEncounterSeed } from '../types/unifiedAction';
 import type { SphereName } from '../types/index';
 import type { ReachDomain } from '../types/traits';
 import type { AttachmentEffect } from '../types/effects';
 import type { AscendantProperties } from '../types/influence';
 import { pickSphereFlavoredEffect, applyChosenStatusGrant } from './ascendantPrimitives';
 import type { ChosenPower } from './ascendantPrimitives';
+import { resolveLocationToHex } from './encounterAwareness';
+import { getAgentsAtLocation } from './graphQueries';
 import {
   BESTOW_REACH_BONUS,
   BESTOW_QUINTESSENCE_REGEN,
   BESTOW_MIN_AWARENESS,
+  TRAP_SPRUNG_TEMPLATE_ID,
+  TRAP_SEED_PRIORITY,
+  TRAP_SEED_DELAY_TICKS,
 } from '../data/ascendant-expression-constants';
 import { emitTrace } from './traceBuffer';
 
@@ -415,6 +423,143 @@ function emitAnointNoOp(
     summary: `anoint no-op: ${reason} (faction ${factionId})`,
     ascendantId,
     factionId,
+    failSoft: reason,
+  } as never);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// THR-605 Slice 4: Plant Trap
+// ═══════════════════════════════════════════════════════════════════════════
+
+export interface PlantTrapResult {
+  readonly success: boolean;
+  /** The seed planted (null on no-op). */
+  readonly seedId: string | null;
+  /** The victim the trap was seeded against (null on no-op). */
+  readonly victimId: string | null;
+  /** Why the plant no-opped, when it did. */
+  readonly failSoft?: 'missing_sublocation' | 'no_target_present';
+}
+
+/**
+ * Pick the intended victim of a trap planted in `sublocationId`, deterministically.
+ * Prefers an individual actor located directly at the sublocation; failing that,
+ * broadens to any individual actor standing on the sublocation's hex (hex-granular
+ * awareness, the load-bearing rule). Excludes the acting ascendant so a god never
+ * springs its own snare. Ties resolve by ascending node id — deterministic (NFP #3).
+ */
+function selectTrapVictim(
+  graph: WorldGraph,
+  ascendantId: string,
+  sublocationId: string,
+): GraphNode | undefined {
+  const isVictim = (n: GraphNode): boolean =>
+    n.id !== ascendantId && n.properties.actorType === 'individual';
+
+  // Tier 1: agents standing directly in the trapped sublocation.
+  const direct = getAgentsAtLocation(graph, sublocationId).filter(isVictim);
+  if (direct.length > 0) {
+    return direct.sort((a, b) => a.id.localeCompare(b.id))[0];
+  }
+
+  // Tier 2: broaden to the sublocation's hex.
+  const hex = resolveLocationToHex(graph, sublocationId);
+  if (!hex) return undefined;
+  const onHex: GraphNode[] = [];
+  for (const actor of graph.getNodesByType('actor')) {
+    if (!isVictim(actor)) continue;
+    const locEdges = graph.getOutgoingEdges(actor.id, 'located_at');
+    if (!locEdges.length) continue;
+    const actorHex = resolveLocationToHex(graph, locEdges[0].target);
+    if (actorHex && actorHex.col === hex.col && actorHex.row === hex.row) {
+      onHex.push(actor);
+    }
+  }
+  if (onHex.length === 0) return undefined;
+  return onHex.sort((a, b) => a.id.localeCompare(b.id))[0];
+}
+
+/**
+ * Plant a concealed snare in a sublocation (THR-605 Slice 4).
+ *
+ * The encounter-seed substrate has no hex-arrival gate — `evaluateEncounterSeeds`
+ * spawns a seed's template for its `targetAgentId` as soon as it is eligible,
+ * wherever that agent stands. So rather than the (unreachable) "fires on the next
+ * agent to arrive", this seeds the authored `encounter.trap.sprung` beat against
+ * the intended victim already present at the sublocation (or its hex) at plant
+ * time. That seed is genuinely consumed: `evaluateEncounterSeeds` pulls the victim
+ * into a real, failable negative encounter whose harm lands via its `condition`-
+ * weighted reward pools — the same seed → spawn path the faction governance verbs
+ * use. `state.pendingEncounterSeeds` is mutated in place (mirrors `plantSeed` in
+ * factionGovernanceVerbs.ts).
+ *
+ * Fail-soft (NFP #4): a missing sublocation or an empty room plants nothing and
+ * still resolves as success — a god may set a snare where no prey yet walks.
+ *
+ * @param state         Live GameState (mutated: pendingEncounterSeeds).
+ * @param ascendantId   The player-god planting the trap (never the victim).
+ * @param sublocationId Target sublocation node.
+ * @param tick          Current tick (eligibility base + trace + seed id).
+ */
+export function applyPlantTrap(
+  state: GameState,
+  ascendantId: string,
+  sublocationId: string,
+  tick: number,
+): PlantTrapResult {
+  const sublocation = state.graph.getNode(sublocationId);
+  if (!sublocation) {
+    emitPlantTrapNoOp(ascendantId, sublocationId, 'missing_sublocation', tick);
+    return { success: false, seedId: null, victimId: null, failSoft: 'missing_sublocation' };
+  }
+
+  const victim = selectTrapVictim(state.graph, ascendantId, sublocationId);
+  if (!victim) {
+    emitPlantTrapNoOp(ascendantId, sublocationId, 'no_target_present', tick);
+    return { success: true, seedId: null, victimId: null, failSoft: 'no_target_present' };
+  }
+
+  const seedId = `trap_${sublocationId}_${victim.id}_${tick}`;
+  const seed: PendingEncounterSeed = {
+    seedId,
+    sourceEncounterId: `plant_trap_${sublocationId}_${tick}`,
+    sourceReactionId: 'plant_trap',
+    templateId: TRAP_SPRUNG_TEMPLATE_ID,
+    targetAgentId: victim.id,
+    eligibleAfterTick: tick + TRAP_SEED_DELAY_TICKS,
+    priority: TRAP_SEED_PRIORITY,
+    seedLabel: 'a hidden snare',
+    plantedTick: tick,
+  };
+  state.pendingEncounterSeeds = [...(state.pendingEncounterSeeds ?? []), seed];
+
+  emitTrace({
+    tick,
+    category: ASCENDANT_EXPRESSION_TRACE_CATEGORY,
+    type: 'plant_trap',
+    summary: `plant_trap: snare set in ${sublocation.name ?? sublocationId} → springs on ${victim.name ?? victim.id}`,
+    ascendantId,
+    sublocationId,
+    victimId: victim.id,
+    seedId,
+  } as never);
+
+  return { success: true, seedId, victimId: victim.id };
+}
+
+function emitPlantTrapNoOp(
+  ascendantId: string,
+  sublocationId: string,
+  reason: NonNullable<PlantTrapResult['failSoft']>,
+  tick: number,
+): void {
+  emitTrace({
+    tick,
+    category: ASCENDANT_EXPRESSION_TRACE_CATEGORY,
+    type: 'plant_trap',
+    summary: `plant_trap no-op: ${reason} (sublocation ${sublocationId})`,
+    ascendantId,
+    sublocationId,
     failSoft: reason,
   } as never);
 }
