@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-07-19, 16:28 local (light refresh by the hourly `keep-work-flowing-cc` CC task; last full rebuild was the 2026-06-23 retro)
+**Last updated:** 2026-07-19, 22:29 local (light refresh by the hourly `keep-work-flowing-cc` CC task; last full rebuild was the 2026-06-23 retro)
 **Owner of items below:** Christian. Everyone else's blockers go in Linear or `Docs/impediments.md`.
 **Refresh cadence:** The hourly `keep-work-flowing-cc` scheduled task keeps this current (prunes resolved items, adds newly-surfaced Christian-owned ones); the `retrospective` skill still does the deep periodic rebuild. This is the slow-moving standing-asks list — the fresh-this-hour view is [`Design/briefing.md`](briefing.md).
 
@@ -51,7 +51,7 @@ Then triage the other uncommitted working-tree files (item #3).
 
 ## 3. Triage orphan uncommitted changes in working trees · WILL NOT SELF-HEAL
 
-**Status:** Open · ~60 days · **~85 non-`.codesight` files uncommitted** on the home tree as of 2026-07-19 16:28. **The tree is not on `main` — it is in a detached-HEAD state**, parked on `013c1044` (2026-07-18 evening), **75 commits behind** `origin/main` (69 at 15:28, 64 at 14:30, 60 at 13:29, 58 at 11:29 — climbing roughly one per hourly briefing merge; alarm threshold is 10). It is **zero commits ahead**, so nothing unique lives on the detached snapshot and re-attaching risks no loss. The local `main` branch itself is healthy — the working copy simply is not pointed at it.
+**Status:** Open · ~60 days · **~85 non-`.codesight` files uncommitted** on the home tree as of 2026-07-19 22:29. **The tree is not on `main` — it is in a detached-HEAD state**, parked on `013c1044` (2026-07-18 evening), **77 commits behind** `origin/main` (75 at 16:28, 69 at 15:28, 64 at 14:30, 60 at 13:29, 58 at 11:29 — climbing with each merge to `main`; alarm threshold is 10). It is **zero commits ahead**, so nothing unique lives on the detached snapshot and re-attaching risks no loss. The local `main` branch itself is healthy — the working copy simply is not pointed at it.
 
 **Escalation 2026-07-19 16:28 — the hourly auto-sync has stopped attempting the repair altogether.** `C:\Users\chris\bin\threadbare-autosync.log` shows the failure mode changed this morning: through 09:50 it logged `skip: you have uncommitted changes that would be overwritten (N behind)`; from the 11:00 run onward every entry reads `skip: on branch 'HEAD' (not main)`. The detached state is a *harder* stop than the dirt was — the task no longer even measures the drift. Nothing will reduce this number until the commands below are run by hand.
 
