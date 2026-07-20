@@ -435,7 +435,29 @@ Work is not "done" until it is deployed and documented. Do all of these automati
 - [ ] Read this file for orientation
 - [ ] **Read the Ubiquitous Language index** — `Docs/ubiquitous-language/README.md` (always-load, ~3k tokens). Load individual shard files on demand when the task touches their domain. **UL wins on terminology disagreements** — when this file, Obsidian, plan docs, or code comments conflict with the UL, the UL definition is correct and the conflicting source needs reconciliation (open a `UL-proposal` Linear issue).
 - [ ] **First tool call of any coding session:** run `node --experimental-strip-types scripts/session-precheck.ts` and compare its `fingerprint ...` line against expected sandbox capabilities before starting feature work
-- [ ] **Read the freshness signal.** The precheck output line `fingerprint ... freshness=<value>` reports working-tree staleness vs `origin/main`. If `freshness` is `behind:*`, `stale-branch:*`, or any combination thereof, the agent MUST surface this to the user as the **first thing in the response**, with the exact fix command (`git fetch && git pull` for main; `git fetch && git rebase origin/main` for other branches). Do not begin design work until the user has either resolved the staleness or explicitly acknowledged it. `freshness=unknown` is *not* a free pass — surface it and ask the user to confirm whether the tree is current.
+- [ ] **Read the freshness signal.** The precheck output line `fingerprint ... freshness=<value>` reports working-tree state vs `origin/main`. The value is one of seven keys, each with its own action:
+
+  | `freshness=` | Meaning | Action |
+  |---|---|---|
+  | `current` | On a branch, up to date | Proceed |
+  | `ahead:N` | Local commits not pushed | Proceed; push at closeout |
+  | `behind:N` | Branch genuinely trails `origin/main` | Surface first; `git fetch && git pull` on main, `git fetch && git rebase origin/main` elsewhere |
+  | `stale-branch:Xh` | Old closeout branch still checked out | Surface first; close it out or switch to main |
+  | `parked-at-ancestor` | Detached at an older snapshot, **nothing unique stranded** | **Run the repair yourself, then continue** (see below) |
+  | `parked-with-unique-commits:N` | Detached with commits that exist nowhere else | **Stop.** Do not reset. Run `git log origin/main..HEAD --oneline` and surface the SHAs |
+  | `unknown` | Probe could not determine state | Surface it; ask the user to confirm the tree is current |
+
+  For `behind:*` / `stale-branch:*` / `unknown`, surface it as the **first thing in the response** and do not begin design work until the user has resolved or explicitly acknowledged it.
+
+  **`parked-at-ancestor` is the one case an agent may fix without asking.** The precheck has already proven `git rev-list --count origin/main..HEAD == 0`, so nothing authored can be lost — untracked files survive and the stash is recoverable. Run the repair, note it in one line, and carry on:
+
+  ```bash
+  git stash push -m home-tree-recovery   # harmless no-op if the tree is clean
+  git switch main
+  git pull --ff-only origin main
+  ```
+
+  Never read a behind-count off a detached HEAD. `HEAD..origin/main` on a parked HEAD is arithmetically true and semantically false; treating it as decay is what turned a two-command repair into a multi-day escalation (THR-671).
 - [ ] **Check Linear for work** — query issues by state per the protocol in `Docs/plans/2026-04-13-linear-coordination-protocol.md`:
   - **Cowork:** Run the board scan from `Docs/plans/2026-04-13-linear-coordination-protocol.md` § Cowork Session Start — a state-filtered fan-out across In Design, Implementation Planning, Ready for Dev, In Dev, and Todo, bucketed in memory by `status` (never an unfiltered `list_issues` — it overflows the response budget; see Limitations §).
   - **Claude Code:** `list_issues state:"Ready for Dev" assignee:null` (pick up handoffs), `list_issues state:"In Dev" assignee:"me"` (resume active work)

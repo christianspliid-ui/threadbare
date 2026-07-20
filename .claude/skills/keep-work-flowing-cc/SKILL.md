@@ -1,7 +1,7 @@
 ---
 name: keep-work-flowing-cc
 description: Hourly headless Claude Code PM brief — scans the Linear queue, pings home-tree freshness, and rewrites Design/briefing.md + refreshes Design/user-actions.md. The CC replacement for the Cowork keep-work-flowing task (Pure Claude Code Migration, THR-650). The briefing file IS the inbox — no chat surfacing.
-last_validated_against: 2026-07-18
+last_validated_against: 2026-07-21
 ---
 
 # Keep Work Flowing (CC)
@@ -45,16 +45,33 @@ Verify-after-write on any Linear write (impediment #48) — but this task rarely
 
 Christian's morning session runs on the **home** worktree: `C:\Users\chris\Dev\Projects\TheFantasyWorldSimulator`. If it is stale or dirty, his session starts on old state — exactly what the THR-391 freshness guard exists to catch.
 
+Measure **three independent things** and word them distinctly. Conflating them is what produced the false "77 commits behind and climbing" alarm that turned a two-command repair into days of escalation (THR-671).
+
 ```bash
 HOME_TREE="C:/Users/chris/Dev/Projects/TheFantasyWorldSimulator"
 git -C "$HOME_TREE" fetch origin main --quiet
+
+# (a) Autosync health — is local main behind the remote? Measured on main, never on HEAD.
+MAIN_BEHIND=$(git -C "$HOME_TREE" rev-list --count main..origin/main)
+
+# (b) Parked off-branch? — is HEAD somewhere other than main, and is anything stranded there?
 BRANCH=$(git -C "$HOME_TREE" rev-parse --abbrev-ref HEAD)
-BEHIND=$(git -C "$HOME_TREE" rev-list --count HEAD..origin/main)
-AHEAD=$(git -C "$HOME_TREE" rev-list --count origin/main..HEAD)
-DIRTY=$(git -C "$HOME_TREE" status --porcelain | grep -v "^.. .codesight" | wc -l)
+UNIQUE=$(git -C "$HOME_TREE" rev-list --count origin/main..HEAD)
+
+# (c) Dirt — only TRACKED modifications block autosync; untracked files are inert.
+TRACKED_DIRTY=$(git -C "$HOME_TREE" status --porcelain --untracked-files=no | grep -vc "\.codesight")
+UNTRACKED=$(git -C "$HOME_TREE" ls-files --others --exclude-standard | grep -vc "\.codesight")
 ```
 
-Flag in the briefing when: `BRANCH` is not `main`, `BEHIND > FRESHNESS_BEHIND_THRESHOLD` (10), or `DIRTY > 0`. Give the exact fix command (`git fetch && git rebase origin/main`, or `git switch main && git pull`, plus orphan-triage for dirty files). If clean and on main, say "home tree current" in one line.
+Report each separately:
+
+- **(a) Autosync:** flag when `MAIN_BEHIND > FRESHNESS_BEHIND_THRESHOLD` (10) — local `main` genuinely trails the remote, so autosync is not keeping up. Fix: `git switch main && git pull --ff-only origin main`.
+- **(b) Parked:** flag when `BRANCH` is not `main`. **Never report a behind-count for a HEAD that is not on `main`** — `HEAD..origin/main` on a parked HEAD is arithmetically true and semantically meaningless. Word it by the `UNIQUE` count instead:
+  - `UNIQUE == 0` → *"home tree is parked at an older snapshot; nothing unique is stranded there."* Give the safe repair verbatim: `git stash push -m home-tree-recovery && git switch main && git pull --ff-only origin main`.
+  - `UNIQUE > 0` → *"home tree is parked off-branch with N commits that exist nowhere else."* Do **not** offer a repair command; say the SHAs need a session (`git log origin/main..HEAD --oneline`).
+- **(c) Dirt:** flag `TRACKED_DIRTY > 0` (blocks autosync — needs triage or a stash). Mention `UNTRACKED > 0` only as a note; untracked files never block anything and are not an alarm.
+
+If on `main`, `MAIN_BEHIND` is 0, and `TRACKED_DIRTY` is 0, say "home tree current" in one line and move on.
 
 **Fail-soft:** if the home tree is unreachable (path missing, git error), log a one-line warning in the briefing and continue — the freshness ping must never abort the run.
 

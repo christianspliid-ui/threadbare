@@ -304,12 +304,47 @@ export function probeBranchStaleness(
   const branch = branchResult.stdout.trim();
 
   if (branch === "HEAD") {
+    // Parked off-branch. The only thing that matters is whether anything unique is
+    // stranded here — a behind-count against origin/main is arithmetically true but
+    // semantically false for a detached HEAD, and reading it as decay is what turned a
+    // two-command repair into days of escalation (THR-671).
+    const uniqueResult = runCmd(
+      GIT_EXECUTABLE,
+      ["rev-list", "--count", "origin/main..HEAD"],
+      GIT_REVLIST_TIMEOUT_MS,
+    );
+    if (!uniqueResult.ok) {
+      // Fail-soft: cannot prove the park is loss-free, so do not advertise the repair.
+      return {
+        name: "freshness",
+        status: "unknown",
+        durationMs: Date.now() - startMs,
+        detail: "detached HEAD; could not count unique commits — inspect manually before any reset",
+        freshnessKey: "detached",
+      };
+    }
+    const uniqueCommits = parseInt(uniqueResult.stdout.trim(), 10) || 0;
+
+    if (uniqueCommits > 0) {
+      return {
+        name: "freshness",
+        status: "no",
+        durationMs: Date.now() - startMs,
+        detail:
+          `parked off-branch with ${uniqueCommits} unique commit(s) — do NOT reset; ` +
+          "run `git log origin/main..HEAD --oneline` and hand the SHAs to a session",
+        freshnessKey: `parked-with-unique-commits:${uniqueCommits}`,
+      };
+    }
+
     return {
       name: "freshness",
-      status: "unknown",
+      status: "no",
       durationMs: Date.now() - startMs,
-      detail: "detached HEAD",
-      freshnessKey: "detached",
+      detail:
+        "parked at an ancestor of origin/main, nothing unique stranded — safe repair: " +
+        "`git stash push -m home-tree-recovery && git switch main && git pull --ff-only origin main`",
+      freshnessKey: "parked-at-ancestor",
     };
   }
 
