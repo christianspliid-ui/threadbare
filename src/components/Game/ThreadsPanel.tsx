@@ -9,6 +9,8 @@ import { Modal } from '../shared/Modal';
 import { ActivityIcon, type ActivityKind } from '../shared/ActivityIcon';
 import { EncounterBadge } from './EncounterBadge';
 import type { EncounterBadgeModel } from './encounterBadgeModel';
+import { ThreadTugBadge } from './ThreadTugBadge';
+import type { ThreadTugBadgeModel } from './threadTugBadgeModel';
 import { SphereIcon, sphereFromReach } from '../shared/SphereIcon';
 import {
   getSustainedStatusLabel,
@@ -80,6 +82,13 @@ interface ThreadsPanelProps {
   /** Opens the encounter modal for a badge's primary notification. */
   onOpenEncounterBadge?: (badge: EncounterBadgeModel) => void;
   /**
+   * THR-665: unattended thread tugs keyed by the row they anchor to. Replaces the
+   * map's tug vibration — the shaping-tier signal shows on the entity's own card.
+   */
+  tugBadges?: Map<string, ThreadTugBadgeModel>;
+  /** Attends a tug badge's primary tug and selects the agent. */
+  onAttendTugBadge?: (badge: ThreadTugBadgeModel) => void;
+  /**
    * Sustained-control rows from `getSustainedControlNodes`. THR-418 — renders Hexes
    * and Sources sections in the right-bar plus a folded "claim status" line on
    * location rows when an effect targets a thread'd location.
@@ -117,6 +126,10 @@ interface CompactThreadRowProps {
   encounterBadge?: EncounterBadgeModel;
   /** Opens the encounter modal for the badge's primary notification. */
   onOpenEncounterBadge?: (badge: EncounterBadgeModel) => void;
+  /** THR-665: unattended thread tug anchored to this row, if any. */
+  tugBadge?: ThreadTugBadgeModel;
+  /** Attends the tug badge's primary tug and selects the agent. */
+  onAttendTugBadge?: (badge: ThreadTugBadgeModel) => void;
   /**
    * THR-418: optional click handler for the champion chip on agent rows.
    * When omitted, the chip renders as a static badge with no click affordance.
@@ -556,6 +569,8 @@ function CompactThreadRow({
   strategicSummary,
   encounterBadge,
   onOpenEncounterBadge,
+  tugBadge,
+  onAttendTugBadge,
   onChampionChipClick,
   locationClaimStatus,
 }: CompactThreadRowProps) {
@@ -744,6 +759,12 @@ function CompactThreadRow({
                 beats and unread aftermath surface here instead of a global toast. */}
             {encounterBadge && onOpenEncounterBadge && (
               <EncounterBadge badge={encounterBadge} onOpen={onOpenEncounterBadge} />
+            )}
+
+            {/* THR-665: tug badge — the row's "about to happen" affordance. Replaces
+                the map's tug vibration; clicking attends the tug for its stated cost. */}
+            {tugBadge && onAttendTugBadge && (
+              <ThreadTugBadge badge={tugBadge} onAttend={onAttendTugBadge} />
             )}
 
             {/* Zoom to location */}
@@ -1091,6 +1112,8 @@ export const ThreadsPanel = React.memo(function ThreadsPanel({
   agentStrategicSummaries,
   encounterBadges,
   onOpenEncounterBadge,
+  tugBadges,
+  onAttendTugBadge,
   sustainedControls,
   onChampionChipClick,
 }: ThreadsPanelProps) {
@@ -1262,6 +1285,8 @@ export const ThreadsPanel = React.memo(function ThreadsPanel({
                             strategicSummary={node.category === 'agent' ? agentStrategicSummaries?.get(node.id) : undefined}
                             encounterBadge={node.category === 'agent' ? encounterBadges?.get(node.id) : undefined}
                             onOpenEncounterBadge={onOpenEncounterBadge}
+                            tugBadge={node.category === 'agent' ? tugBadges?.get(node.id) : undefined}
+                            onAttendTugBadge={onAttendTugBadge}
                             onChampionChipClick={onChampionChipClick}
                             locationClaimStatus={claimStatus}
                           />
