@@ -1,16 +1,16 @@
 # Briefing
 
-**Generated:** 2026-07-20 23:54 local (21:54 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-07-21 00:54 local (22:54 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task — the replacement for the old Cowork "keep-work-flowing" chat brief. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
 ## Needs Christian
 
-**Two things, both carried, both still keeping.** Nothing new arrived this hour.
+**The same two questions as last hour. Nothing new arrived.**
 
 > **1. Is the notification rework the next stretch, with war deferred until it's done — or do you want both moving in parallel?**
 
-Three war follow-ons sit written and waiting: deeper battles, sieges that tighten as they drag, and what a war *leaves behind*. Two are high priority. Re-verified again this run: their stated blocker closed on Saturday, all three still carry text claiming they're blocked, and they describe building things that partly already exist — the war system turned out to be dormant rather than missing.
+Three war follow-ons sit written and waiting: deeper battles, sieges that tighten as they drag, and what a war *leaves behind*. Two are high priority. Re-checked this run: all three still carry text saying they're blocked by a ticket that finished on 2026-07-18, and all three describe building things that partly already exist — the war system turned out to be dormant rather than missing.
 
 They sit in the planning column, which the executor never pulls from, so they aren't starving anything. **Answer this when you next think about direction, not because this file asked.** If war is later, they sit safely as-is. If it's both, someone re-scopes them against the real code first, so you're choosing against reality rather than a stale plan.
 
@@ -22,17 +22,17 @@ Nothing else needs you.
 
 ## Queue
 
-**Healthy — ten waiting, nothing in development right now.** The executor is between turns; its next pickup is in about five minutes.
+**Healthy — nine waiting, nothing in development right now.** The executor is between turns; its next pickup is in about five minutes.
 
-- **Nothing is blocked.** Re-verified this run: the economy item's stated predecessor finished on 2026-07-05. Its description still claims otherwise — cosmetic, and it isn't top of queue.
-- **The two oldest items are properly stale** — a documentation tidy-up and a console warning, both untouched since 2026-07-05, now **fifteen days** old. Both lowest priority. Naming them rather than counting them as real queue depth.
-- **Last night's "high-priority item that looks untouched" is resolved.** The "pause the world when a card or dilemma is open" fix needed re-basing before it could go in; that happened and it landed at 23:20. No longer a queue concern.
+- **Nothing is blocked.** The economy item still carries text naming a predecessor that finished on 2026-07-05 — cosmetic, and it isn't top of queue.
+- **The two oldest items are properly stale** — a documentation tidy-up and a console warning, both untouched since 2026-07-05, now **sixteen days** old. Both lowest priority. Naming them rather than counting them as real queue depth.
+- Top of queue is the "stop the machinery from disturbing your working copy" fix — the one high-priority item waiting.
 
 ## Freshness
 
-**Your working copy looks dirty. It isn't — and this is worth one paragraph, because it's the fault we've been chasing all week.**
+**Your working copy reads dirty. It isn't — same phantom as the last few nights, verified again rather than assumed.**
 
-The tree is on `main`, **sixteen commits behind**, and shows three files as changed. I compared all three against the shared copy byte for byte: **they are identical to it.** Nothing was edited here. They read as "changed" only because the pointer marking where you are sits at this morning's commit while the files themselves already hold tonight's content. That's the phantom-staleness pattern — the same one that, on 2026-07-18, presented as 68 "staged" files that would have reverted shipped work if anyone had committed them.
+The tree is on `main`, **twenty commits behind**, and shows three files as changed. I compared all three against the shared copy byte for byte: **they are identical to it.** Nothing was edited here. They read as "changed" only because the pointer marking where you are sits at this morning's commit while the files themselves already hold tonight's content.
 
 **Nothing you wrote is at risk, and nothing is decaying.** To bring it level:
 
@@ -50,14 +50,9 @@ Per the standing rule, this task doesn't repair the tree itself — a scheduled 
 
 ## What's moving
 
-**A good night.** Four things landed since the last brief:
+**One thing landed since the last brief, and it's a small piece of self-repair:** the freshness check that writes this very section can now tell "parked on a differently-named branch" apart from "genuinely behind." That distinction is what made this file report an escalating, alarming-looking behind-count for several days when nothing was actually wrong. Five sibling tickets from the same investigation remain queued.
 
-- **Per-agent notifications now respect threading** — you only get pinged for threads you're actually attending.
-- **The "pause the world" fix landed** — the simulation now holds whenever a blocking card or dilemma is open, centrally, rather than each screen remembering to do it.
-- **The scheduled-job registry finished its cutover** to the Claude Code side.
-- **Six git/CI tickets became pickable** — their shared spec merged earlier tonight, so an executor can read it from anywhere rather than only from this machine.
-
-**One backlog worth naming, not acting on:** thirteen documentation pull requests are still open, the oldest from 2026-06-12. The cause is understood — the rule that a change must be level with the shared copy before it can go in means each one falls behind the moment anything else lands, and nothing re-freshens them. Four *did* merge tonight, so the path works; it just needs a nudge each time. The fix ("merge it automatically once checks pass") is queued and correctly aimed, and the conflict-rot pattern got written into the impediment log tonight so it stops being rediscovered.
+**One backlog worth naming, not acting on:** fourteen documentation pull requests are still open, the oldest from 2026-06-12. The cause is understood — the rule that a change must be level with the shared copy before it can go in means each one falls behind the moment anything else lands, and nothing re-freshens them. The fix ("merge it automatically once checks pass") is queued and correctly aimed.
 
 Mildly absurd twist, unchanged: **this briefing lands every hour, and each landing is what pushes the rest further behind.**
 
