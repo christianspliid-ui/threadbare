@@ -1,49 +1,51 @@
 # Briefing
 
-**Generated:** 2026-07-20 11:05 local (09:05 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-07-20 11:54 local (09:54 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task — the replacement for the old Cowork "keep-work-flowing" chat brief. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
 ## Needs Christian
 
-**Still one item, and it's the same one. Day four.**
+**One item — and I've been overstating its urgency for three days. Correcting that.**
 
-Three war follow-ons sit written and waiting: deeper battles, sieges that tighten as they drag, and what a war *leaves behind*. Their blocker cleared on Saturday. Nobody has moved them, because the choice is yours:
+The question itself is still open and still yours:
 
 > **Is the notification rework the next stretch, with war deferred until it's done — or do you want both moving in parallel?**
 
-Two of the three are high priority. All three still carry text saying they're blocked by work that finished two days ago, and all three describe building things that turned out to already exist — the war system was dormant, not missing.
+Three war follow-ons sit written and waiting: deeper battles, sieges that tighten as they drag, and what a war *leaves behind*. Two are high priority. Their blocker cleared Saturday, and all three still carry text saying they're blocked — plus they describe building things that partly already exist, since the war system turned out to be dormant rather than missing.
 
-Either answer ends it. Say "war is later" and they sit safely as they are. Say "both" and someone re-scopes them against the actual code first, so you're choosing against reality rather than a stale plan.
+**What I got wrong:** I've been framing this as something waiting on you. It isn't. Those three sit in the planning column, which the executor never pulls from — so they aren't starving anything, and twelve other items are queued ahead of them regardless. Nothing degrades while this question goes unanswered.
+
+So: **answer it when you next think about direction, not because this file asked.** If you say "war is later," they sit safely as-is. If you say "both," someone re-scopes them against the real code first so you're choosing against reality rather than a stale plan. Either way it keeps.
 
 Nothing else needs you.
 
 ## Queue
 
-**Healthy — twelve waiting, one in development.** The queue grew by five overnight: the git/CI investigation turned its findings into six concrete tickets.
+**Healthy — twelve waiting, one in development.** Unchanged in count since last hour.
 
 Being worked on right now: the final step of moving off Cowork.
 
-**One thing worth flagging, and it isn't yours to fix.** Six of the twelve waiting tickets — including both top-priority ones — open with "read the plan doc first." **That plan doc exists only on this machine and has never been saved to the shared repository.** An agent that picks up one of those tickets from a fresh copy will not find it. The hourly doc-committing task is supposed to catch exactly this and hasn't yet. If it misses again next hour, that's a real fault worth naming rather than a hiccup.
+**The plan-doc gap has had its first clean miss.** Six of the twelve waiting tickets — including both top-priority ones — open with "read the plan doc first," and that doc exists only on this machine, never saved to the shared repository. The hourly task that's supposed to catch this **ran at 11:04 with the tracking label already in place and did not pick it up.** That's one confirmed miss rather than a hiccup, and it points at a specific cause: the flush likely runs somewhere the file isn't visible. Its next attempt is 12:03 — about ten minutes out. If that one misses too, the fault is proven and should be filed. Not yours to fix either way.
 
 Two smaller notes:
 
-- **Nothing is blocked.** Last hour's economy item confirmed clear — its predecessor shipped on 2026-07-05.
-- **The two oldest items are still properly stale** — a documentation tidy-up and a console warning, both sitting since 2026-07-05, now **fifteen days** old. Neither matters; naming them rather than counting them as queue depth.
+- **Nothing is blocked.** Re-verified: the economy item's predecessor shipped 2026-07-05.
+- **The two oldest items are properly stale** — a documentation tidy-up and a console warning, both sitting since 2026-07-05, now **fifteen days** old. Both lowest priority. Naming them rather than counting them as real queue depth.
 
 ## Freshness
 
-**Fine, but it happened again.** Your working copy was moved off `main` onto a scratch branch at the top of this hour — the fourth time in four days.
+**Clean, and last hour's problem cleared itself.** Your working copy is back on `main`, exactly level with the shared version — nothing ahead, nothing behind, no modified files.
 
-**Nothing is behind, and nothing is at risk.** The branch it landed on is byte-for-byte identical to the shared `main`, so unlike the earlier events there is no drift to repair and no alarming number to report. This is exactly the fault the investigation ticketed yesterday, now caught on the hour it happened instead of days later. The containment fix is queued and high priority.
+The scratch branch it was parked on at 11:00 is gone from under it. That park was the harmless variant (the branch sat at exactly `main`, so nothing drifted), and it resolved without anyone touching it — which is the first time one of these four events has self-healed. Worth noting because it's evidence the containment fix already queued is aimed at the right thing.
 
-The only residue is 16 untracked design drafts in the tree. Not urgent, not yours; a design session can do the keep-or-delete pass.
+The only residue is the same 16 untracked design drafts. Not urgent, not yours; now covered by a queued ticket rather than sitting unowned.
 
 ## What's moving
 
-- **The migration off Cowork is on its last step**, in development now. When it lands, Cowork leaves the loop and this file becomes the only place work surfaces to you.
+- **The migration off Cowork is on its last step**, in development now — and partly landed already: this briefing task has moved to its new hourly slot. When the rest lands, Cowork leaves the loop and this file becomes the only place work surfaces to you.
 - **The git/CI friction investigation converted into work.** Six tickets, two high priority: stop the working copy being moved off `main`, and stop the freshness check crying wolf about it. One of the six is a bug report to send upstream — the fault appears to be in the Claude Code app itself, not in anything we wrote.
-- **Housekeeping is drifting.** 28 working copies and 38 stashed change-sets have accumulated on this machine; a cleanup script that should be pruning them has been failing silently. Ticketed, medium priority. Nothing at risk — it's clutter, not damage.
+- **Housekeeping is still drifting.** Accumulated working copies and stashed change-sets on this machine, with a cleanup script that's been failing silently. Ticketed, medium priority. Clutter, not damage.
 
 ---
 *Standing asks live in [`Design/user-actions.md`](user-actions.md). This file is regenerated hourly by the `keep-work-flowing-cc` scheduled task; if the timestamp at the top looks old, check the task's `lastRunAt` in the scheduled-task list to tell "nothing new to report" from "task stopped running."*
