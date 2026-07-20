@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-07-20, 21:55 local (light refresh by the hourly `keep-work-flowing-cc` CC task; last full rebuild was the 2026-06-23 retro)
+**Last updated:** 2026-07-20 (item 2 added by the THR-653 Cowork cutover; light refresh at 21:55 local by the hourly `keep-work-flowing-cc` CC task; last full rebuild was the 2026-06-23 retro)
 **Owner of items below:** Christian. Everyone else's blockers go in Linear or `Docs/impediments.md`.
 **Refresh cadence:** The hourly `keep-work-flowing-cc` scheduled task keeps this current (prunes resolved items, adds newly-surfaced Christian-owned ones); the `retrospective` skill still does the deep periodic rebuild. This is the slow-moving standing-asks list — the fresh-this-hour view is [`Design/briefing.md`](briefing.md).
 
@@ -30,13 +30,43 @@ git fetch
 git checkout rescue/2026-07-17-detached-plans -- Docs/plans/2026-07-05-entity-visual-header.md
 # commit onto a docs/* branch off current main, open a PR
 ```
-Then triage the other uncommitted working-tree files (item #3).
+Then triage the other uncommitted working-tree files (item #4).
 
 **What breaks if not done.** Nothing live — the only remaining stranded doc backs an already-shipped feature. No data-loss risk (commits are branch-anchored), no active spec gap.
 
 ---
 
-## 2. Decide the Obsidian MCP path · RECURRING
+## 2. Turn off the old Cowork automations · WILL NOT SELF-HEAL · ONLY YOU CAN DO THIS
+
+**Status:** Open, new 2026-07-20 · blocks the last step of the move off Cowork
+**Source:** THR-653 (cutover). Follow-up port work: THR-677.
+
+**What happened.** The move off Cowork is essentially done. The Claude Code side now runs the hourly pickup, the hourly briefing (moved to the :45 slot, taking over the one Cowork used), the Friday retrospective, and the Sunday memory tidy-up. Two of those — the retro and the memory tidy-up — had been *written down* as already running for weeks but had in fact never been switched on. They are on now.
+
+The one thing Claude Code cannot do is reach into Cowork and switch its old copies off. Those live inside the Cowork app, and nothing on this machine can see or change them. So until you flip them, a few jobs run twice.
+
+**Fix — in the Cowork app, disable these four scheduled tasks:**
+
+```
+keep-work-flowing        (hourly)      — replaced by keep-work-flowing-cc
+daily-backlog-grooming   (daily 09:06) — see note below before disabling
+weekly-workflow-retro    (Wed 09:04)   — see note below before disabling
+weekly-project-hygiene   (Sun 10:04)   — see note below before disabling
+```
+
+**Leave `weekly-invoice-check` alone.** It is yours, not Threadbare's, and is deliberately out of scope.
+
+**One catch worth knowing before you flip the bottom three.** `keep-work-flowing` is safe to disable immediately — its replacement is live and proven. The other three have no Claude Code replacement yet, because their instructions only exist inside Cowork and cannot be read from outside it. Disabling them stops those jobs entirely until they are rebuilt.
+
+`daily-backlog-grooming` is the one that matters — it is what keeps the work queue moving, and it wrote the handoff that started this very task. If you disable it, the queue stops being groomed until THR-677 lands.
+
+**So, one question:** would you rather paste those three task prompts out of Cowork so they can be copied over exactly — or should Claude Code write fresh versions and show you a trial run before switching them on? Either answer unblocks THR-677; the first is faithful, the second is faster.
+
+**What breaks if not done.** Nothing breaks, but a handful of jobs run twice a day/week (two grooming passes, two retro documents on the same Friday), and the migration cannot be declared finished. No data is at risk either way.
+
+---
+
+## 3. Decide the Obsidian MCP path · RECURRING
 
 **Status:** Open · ~60 days · ~12 occurrences
 **Source:** Impediments #66, #71, #75, #86
@@ -49,7 +79,7 @@ Then triage the other uncommitted working-tree files (item #3).
 
 ---
 
-## 3. Decide the fate of 16 untracked design docs — one of them is load-bearing · WILL NOT SELF-HEAL
+## 4. Decide the fate of 16 untracked design docs — one of them is load-bearing · WILL NOT SELF-HEAL
 
 **Status:** Open · **escalated 2026-07-20 11:05** from cosmetic to blocking-adjacent. Count is now **16** (was 15): `Docs/judge-metrics/2026-W29.md`, nine `Docs/plans/.intent-proposals/*.md`, five `Docs/plans/2026-07-04|05-*` brainstorm / exploration docs — and, new this morning, **`Docs/plans/2026-07-20-git-cicd-clean-delivery.md`**. All exist **nowhere on `origin/main`** (verified `git cat-file -e origin/main:<path>`).
 
@@ -69,7 +99,7 @@ Then triage the other uncommitted working-tree files (item #3).
 
 ---
 
-## 4. Recurring: something re-parks the home tree off `main` · INVESTIGATED — FIXES TICKETED
+## 5. Recurring: something re-parks the home tree off `main` · INVESTIGATED — FIXES TICKETED
 
 **Status:** Cause found (2026-07-20 investigation) · **recurred 2026-07-20 ~11:00 — fourth event in four days — and SELF-CLEARED by 11:54** (tree verified back on `main`, 0 ahead / 0 behind, no modified tracked files; only the 16 untracked drafts remain) · **still clean at 21:55; no fifth event** · **will keep recurring until THR-672 lands**, but the 07-20 event is the first to resolve with no human or agent repair — evidence the benign park is genuinely self-limiting and THR-672's auto-reattach is aimed correctly
 **Source:** `Docs/plans/2026-07-20-git-cicd-clean-delivery.md` (root cause + tickets THR-671…676); forensics in `Docs/audits/2026-07-20-git-cicd-forensics/`
@@ -103,7 +133,7 @@ First verify nothing unique is stranded: `git rev-list --count origin/main..HEAD
 
 ## Resolved this period
 
-- **2026-07-20 — home tree repaired; the "N commits behind and climbing" alarm was measuring the wrong thing.** The tree is back on `main` at `8d481fbd`, 0 ahead / 0 behind, no modified tracked files; the auto-sync guard passes again. **Correction to the record:** the escalating behind-count this file reported for days (58 → 64 → 69 → 75 → 77 → 79) measured a *frozen detached snapshot* against a moving `origin/main`. Local `main` was **0/0 with `origin/main` the entire time** — the tree was parked beside `main`, never lagging behind it. Nothing was decaying; nothing was at risk. Repair took `git stash push` + `git switch main` and needed no `reset --hard`. **The 68 staged files were worse than "stale echoes"**: diffed against their base they were 221 insertions / 3,379 deletions, reversing THR-614's `quintessence`→`cohesion` rename and THR-575's CLAUDE.md trim — phantom staleness, not authored damage: the CC harness moved `refs/heads/main` forward via plumbing *while `main` was checked out* (07-18 20:01, reflog + autosync-log correlation), which leaves index and working files at the old content and makes `git status` report the delta as "staged changes" — nobody staged anything (see `Docs/plans/2026-07-20-git-cicd-clean-delivery.md` § 1.3, correcting the earlier `git checkout <old-ref> -- <paths>` theory). Committing them would have reverted shipped work. They are stashed at `stash@{0}`, recoverable. The 11 unstaged edits were `.codesight` noise plus a CLAUDE.md change already present verbatim on `origin/main`. Residual work moved to items #3 (untracked docs) and #4 (the recurring cause). _Prunable at the next full retro._
+- **2026-07-20 — home tree repaired; the "N commits behind and climbing" alarm was measuring the wrong thing.** The tree is back on `main` at `8d481fbd`, 0 ahead / 0 behind, no modified tracked files; the auto-sync guard passes again. **Correction to the record:** the escalating behind-count this file reported for days (58 → 64 → 69 → 75 → 77 → 79) measured a *frozen detached snapshot* against a moving `origin/main`. Local `main` was **0/0 with `origin/main` the entire time** — the tree was parked beside `main`, never lagging behind it. Nothing was decaying; nothing was at risk. Repair took `git stash push` + `git switch main` and needed no `reset --hard`. **The 68 staged files were worse than "stale echoes"**: diffed against their base they were 221 insertions / 3,379 deletions, reversing THR-614's `quintessence`→`cohesion` rename and THR-575's CLAUDE.md trim — phantom staleness, not authored damage: the CC harness moved `refs/heads/main` forward via plumbing *while `main` was checked out* (07-18 20:01, reflog + autosync-log correlation), which leaves index and working files at the old content and makes `git status` report the delta as "staged changes" — nobody staged anything (see `Docs/plans/2026-07-20-git-cicd-clean-delivery.md` § 1.3, correcting the earlier `git checkout <old-ref> -- <paths>` theory). Committing them would have reverted shipped work. They are stashed at `stash@{0}`, recoverable. The 11 unstaged edits were `.codesight` noise plus a CLAUDE.md change already present verbatim on `origin/main`. Residual work moved to items #4 (untracked docs) and #5 (the recurring cause). _Prunable at the next full retro._
 - **2026-06-23 — `LINEAR_API_KEY` set in the Codex automation environment** (was item #1; impediment #141, 17 recurrences). Confirmed by Christian same day the retro surfaced it. _Superseded 2026-06-23 by the full Codex-lane retirement (THR-486): there is now a single Opus executor and one `Ready for Dev` queue, so the Codex-specific unblock is moot. Kept for the audit trail; safe to prune at the next full retro rebuild._
 - **2026-06-23 — GitHub Pro / branch protection resolved** (was item #4 in the prior seed; impediment #56). Branch protection is now active on `main` with `Test · Typecheck · Build` as a required status check (THR-282 shipped 2026-04-30). The "CI stays advisory because branch protection can't be enforced" concern is closed. To be removed on next retro day.
 - **2026-07-19 — local dependencies reinstalled; `npm run dev` / `npm test` work again on the home tree** (was item #0, surfaced 2026-07-19 11:29, re-verified broken across four consecutive hourly runs). Confirmed resolved at the 16:28 run: `node_modules/.bin` now exists with **99 shims** (was absent entirely), 284 top-level packages (was 276), and `npm exec -- vite --version` returns `vite/7.3.1 win32-x64 node-v24.14.0` instead of `'vite' is not recognized`. Local dev server, test runs, production build, and the `lint:plan-doc` / `check:skill-sync` pre-commit hooks are all unblocked from the home tree, which restores the browser-screenshot step of the Definition of Done. The worktree-specific `.bin` shim workaround documented under that item is still valid for **scratch worktrees**, which have no `node_modules` of their own — see impediment #186.
