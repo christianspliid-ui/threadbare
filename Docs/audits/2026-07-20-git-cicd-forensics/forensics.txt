@@ -1,0 +1,338 @@
+# Home-tree forensics captured 2026-07-20 before recovery
+## rev-parse HEAD
+013c104465f6dafbbe0dd97decacd706c1071503
+## main vs origin/main
+behind: 0 ahead: 0
+## HEAD unique commits vs origin/main
+0
+## reflog
+013c1044 HEAD@{2026-07-19 10:55:03 +0200}: checkout: moving from main to HEAD
+013c1044 HEAD@{2026-07-19 05:32:21 +0200}: checkout: moving from docs/briefing-2026-07-19-0530 to main
+399e9da9 HEAD@{2026-07-19 05:31:50 +0200}: commit: docs(briefing): refresh Design/briefing.md
+013c1044 HEAD@{2026-07-19 05:31:49 +0200}: checkout: moving from main to docs/briefing-2026-07-19-0530
+013c1044 HEAD@{2026-07-18 20:01:06 +0200}: 
+6f1c4c51 HEAD@{2026-07-18 12:47:19 +0200}: checkout: moving from docs/claude-md-schedule-table-fix to main
+6f1c4c51 HEAD@{2026-07-18 12:46:01 +0200}: checkout: moving from main to docs/claude-md-schedule-table-fix
+6f1c4c51 HEAD@{2026-07-18 11:21:21 +0200}: pull origin main: Fast-forward
+fdf6a1c3 HEAD@{2026-07-18 11:21:16 +0200}: checkout: moving from 053c867ab3ed01069fc7650a76aa9f8a8ec3f305 to main
+053c867a HEAD@{2026-07-18 09:01:41 +0200}: checkout: moving from claude/sad-bartik-421eef to HEAD
+053c867a HEAD@{2026-07-17 17:07:57 +0200}: checkout: moving from docs/plan-flush-2026-07-17-migration-batch to claude/sad-bartik-421eef
+053c867a HEAD@{2026-07-17 17:07:05 +0200}: checkout: moving from claude/sad-bartik-421eef to docs/plan-flush-2026-07-17-migration-batch
+053c867a HEAD@{2026-07-17 17:06:57 +0200}: commit: docs(plan): commit intent-proposals/2026-07-17-pure-claude-code-migration
+8fa552c2 HEAD@{2026-07-17 17:06:50 +0200}: commit: docs(plan): commit 2026-07-17-pure-claude-code-migration-brainstorm
+59ea82df HEAD@{2026-07-17 17:05:05 +0200}: commit: docs(plan): commit 2026-07-17-pure-claude-code-migration
+cf2f2dd5 HEAD@{2026-07-17 15:00:56 +0200}: checkout: moving from cf2f2dd5e2f02ff6501102c791a03adc49958aa9 to claude/sad-bartik-421eef
+cf2f2dd5 HEAD@{2026-07-17 10:36:13 +0200}: checkout: moving from main to HEAD
+cf2f2dd5 HEAD@{2026-07-05 22:08:39 +0200}: checkout: moving from docs/plan-flush-2026-07-05-entity-visual-header to main
+cf2f2dd5 HEAD@{2026-07-05 22:07:27 +0200}: checkout: moving from main to docs/plan-flush-2026-07-05-entity-visual-header
+cf2f2dd5 HEAD@{2026-07-05 22:07:21 +0200}: commit (amend): docs(plan): commit 2026-07-05-entity-visual-header
+42b749ce HEAD@{2026-07-05 22:06:13 +0200}: commit: docs(plan): commit 2026-07-05-thr-637-entity-visual-header
+a17d4fc5 HEAD@{2026-07-05 20:01:44 +0200}: merge refs/remotes/origin/main: Fast-forward
+cad1b2b0 HEAD@{2026-07-05 18:01:43 +0200}: merge refs/remotes/origin/main: Fast-forward
+1b890c92 HEAD@{2026-07-05 17:07:53 +0200}: checkout: moving from docs/plan-flush-2026-07-05-action-unlock-reveal-and-artifact-representation to main
+0eae7bd7 HEAD@{2026-07-05 17:06:21 +0200}: rebase (finish): returning to refs/heads/docs/plan-flush-2026-07-05-action-unlock-reveal-and-artifact-representation
+0eae7bd7 HEAD@{2026-07-05 17:06:21 +0200}: rebase (pick): docs(plan): commit 2026-07-05-action-unlock-reveal-and-artifact-representation
+1b890c92 HEAD@{2026-07-05 17:06:20 +0200}: rebase (start): checkout origin/main
+bcaadbff HEAD@{2026-07-05 17:06:20 +0200}: checkout: moving from main to docs/plan-flush-2026-07-05-action-unlock-reveal-and-artifact-representation
+1b890c92 HEAD@{2026-07-05 17:06:20 +0200}: reset: moving to origin/main
+bcaadbff HEAD@{2026-07-05 17:06:19 +0200}: checkout: moving from main to main
+bcaadbff HEAD@{2026-07-05 17:05:40 +0200}: commit: docs(plan): commit 2026-07-05-action-unlock-reveal-and-artifact-representation
+3688c21a HEAD@{2026-07-05 15:09:13 +0200}: commit: docs(plan): commit 2026-07-05-player-action-progression-v1
+5835facb HEAD@{2026-07-05 15:08:58 +0200}: reset: moving to origin/main
+b9770fc7 HEAD@{2026-07-05 15:08:58 +0200}: checkout: moving from main to main
+b9770fc7 HEAD@{2026-07-05 15:07:11 +0200}: commit: docs(plan): commit 2026-07-05-autonomous-notables
+5835facb HEAD@{2026-07-05 14:51:30 +0200}: pull: Fast-forward
+76998e12 HEAD@{2026-07-05 14:49:57 +0200}: pull: Fast-forward
+4c9d84b3 HEAD@{2026-07-05 14:29:25 +0200}: checkout: moving from docs-impediment-180 to main
+26d5ed55 HEAD@{2026-07-05 14:29:03 +0200}: checkout: moving from main to docs-impediment-180
+4c9d84b3 HEAD@{2026-07-05 14:29:03 +0200}: reset: moving to origin/main
+26d5ed55 HEAD@{2026-07-05 14:28:47 +0200}: commit: docs(impediments): log #180 — __DEBUG getHealthReport/toggleFog return values unreliable from javascript_tool
+4c9d84b3 HEAD@{2026-07-05 14:27:32 +0200}: checkout: moving from main to main
+4c9d84b3 HEAD@{2026-07-05 14:27:31 +0200}: pull --ff-only origin main: Fast-forward
+baf10d28 HEAD@{2026-07-05 14:27:30 +0200}: checkout: moving from thr-635-hexmap-color-space-sepia-removal to main
+d99d44e0 HEAD@{2026-07-05 14:13:35 +0200}: commit: fix(hexmap): sRGB-flag hex fill instance colors + remove sepia remembered tint
+baf10d28 HEAD@{2026-07-05 14:11:42 +0200}: checkout: moving from main to thr-635-hexmap-color-space-sepia-removal
+baf10d28 HEAD@{2026-07-05 14:01:41 +0200}: merge refs/remotes/origin/main: Fast-forward
+b4196be6 HEAD@{2026-07-05 13:02:34 +0200}: merge refs/remotes/origin/main: Fast-forward
+2cf0bd03 HEAD@{2026-07-05 12:01:41 +0200}: merge refs/remotes/origin/main: Fast-forward
+0bf78ca9 HEAD@{2026-07-05 11:09:59 +0200}: reset: moving to origin/main
+cd1ee374 HEAD@{2026-07-05 11:09:57 +0200}: checkout: moving from docs/plan-flush-2026-07-05-motive-receipt-foreshadowing to main
+cd1ee374 HEAD@{2026-07-05 11:07:40 +0200}: checkout: moving from main to docs/plan-flush-2026-07-05-motive-receipt-foreshadowing
+cd1ee374 HEAD@{2026-07-05 11:07:34 +0200}: commit (amend): docs(plan): commit 2026-07-05-motive-receipt-foreshadowing
+f05c7b2b HEAD@{2026-07-05 11:06:16 +0200}: commit: docs(plan): commit 2026-07-05-thr-631-motive-receipt-foreshadowing
+25c1d14b HEAD@{2026-07-05 08:09:55 +0200}: checkout: moving from docs/plan-flush-2026-07-05-divine-economy-essence-sources to main
+1fb58451 HEAD@{2026-07-05 08:09:07 +0200}: cherry-pick: docs(plan): commit 2026-07-05-divine-economy-essence-sources
+a85347c3 HEAD@{2026-07-05 08:09:06 +0200}: reset: moving to origin/main
+25c1d14b HEAD@{2026-07-05 08:09:06 +0200}: checkout: moving from main to docs/plan-flush-2026-07-05-divine-economy-essence-sources
+25c1d14b HEAD@{2026-07-05 08:07:53 +0200}: checkout: moving from docs/plan-flush-2026-07-05-divine-economy-essence-sources to main
+25c1d14b HEAD@{2026-07-05 08:06:32 +0200}: checkout: moving from main to docs/plan-flush-2026-07-05-divine-economy-essence-sources
+## status
+M  .agents/skills/design-audit-pipeline/SKILL.md
+M  .agents/skills/design-audit-pipeline/agents/pillar-prompt.md
+M  .agents/skills/intent-judge/SKILL.md
+ D .agents/skills/qa-orchestrator/.fuse_hidden00000c5a00000002
+M  .claude/settings.local.json
+M  .claude/skills/design-audit-pipeline/SKILL.md
+M  .claude/skills/design-audit-pipeline/agents/pillar-prompt.md
+M  .claude/skills/intent-judge/SKILL.md
+ D .claude/skills/qa-orchestrator/.fuse_hidden00000c5a00000002
+ M .codesight/components.md
+ M .codesight/config.md
+ M .codesight/coverage.md
+ M .codesight/graph.md
+ M .codesight/libs.md
+ M .codesight/middleware.md
+ M .codesight/wiki/libraries.md
+ M .codesight/wiki/ui.md
+MM CLAUDE.md
+M  Docs/canon/rulebook.md
+D  Docs/canon/systems-inventory.md
+M  Docs/changelog.md
+M  Docs/impediments.md
+D  Docs/plans/.intent-proposals/2026-07-17-pure-claude-code-migration.md
+D  Docs/plans/.intent-proposals/2026-07-18-unreachable-action-inspector.md
+M  Docs/plans/2026-07-05-autonomous-notables.md
+M  Docs/plans/2026-07-05-player-action-progression-v1.md
+D  Docs/plans/2026-07-05-thr-637-entity-visual-header-brainstorm.md
+D  Docs/plans/2026-07-05-thr-637-entity-visual-header.md
+D  Docs/plans/2026-07-17-pure-claude-code-migration-brainstorm.md
+D  Docs/plans/2026-07-17-pure-claude-code-migration.md
+D  Docs/plans/2026-07-18-unreachable-action-inspector-brainstorm.md
+D  Docs/plans/2026-07-18-unreachable-action-inspector.md
+M  Docs/plans/wiring-checklist.md
+M  Docs/project-history.md
+M  Docs/project-status.md
+M  package.json
+M  public/armies-battles-reference.html
+M  public/divine-actions-reference.html
+D  scripts/generate-systems-inventory.ts
+M  src/components/Codex/Codex.tsx
+M  src/components/Codex/CodexCard.tsx
+D  src/components/Codex/__tests__/codexRunState.test.ts
+M  src/components/Codex/codexRegistry.ts
+D  src/components/Codex/codexRunState.ts
+M  src/components/Game/AscendantSheet.tsx
+M  src/components/Game/GameView.tsx
+M  src/components/Game/ascendant-bar/AscendantBar.tsx
+M  src/components/Game/ascendant-bar/SignaturesBlock.tsx
+M  src/components/Game/debug/ArmiesTabContent.tsx
+M  src/components/Game/debug/DebugTabContent.tsx
+D  src/components/Game/debug/OrphanedCardsDebugTab.tsx
+M  src/data/army-encounter-content.ts
+M  src/data/battle-spotlight-content.ts
+M  src/data/game-config.ts
+M  src/debug-bridge.d.ts
+M  src/debug-bridge.ts
+M  src/engine/__tests__/armyAttrition.test.ts
+M  src/engine/__tests__/armyMovement.test.ts
+M  src/engine/__tests__/armySpawning.test.ts
+M  src/engine/__tests__/armyVisibility.test.ts
+M  src/engine/__tests__/battleAftermath.test.ts
+M  src/engine/__tests__/battleResolution.test.ts
+M  src/engine/__tests__/battleSpotlights.test.ts
+M  src/engine/__tests__/encounterAftermath-signature_warhost.test.ts
+M  src/engine/__tests__/siegeRegionalEncounters.test.ts
+M  src/engine/__tests__/siegeResolution.test.ts
+M  src/engine/armyAttrition.ts
+M  src/engine/armyMovement.ts
+M  src/engine/armySpawning.ts
+M  src/engine/battleAftermath.ts
+M  src/engine/battleResolution.ts
+D  src/engine/content-eval/__tests__/unreachableActions.test.ts
+D  src/engine/content-eval/unreachableActions.ts
+M  src/engine/factionAmbitions.ts
+M  src/engine/orchestrator.ts
+M  src/engine/siegeResolution.ts
+M  src/types/army.ts
+M  src/types/battle.ts
+?? Docs/judge-metrics/2026-W29.md
+?? Docs/plans/.intent-proposals/2026-07-03-encounter-balance-outcome-ladder.md
+?? Docs/plans/.intent-proposals/2026-07-03-game-manual-wiki.md
+?? Docs/plans/.intent-proposals/2026-07-04-action-catalog-gameplay-effects.md
+?? Docs/plans/.intent-proposals/2026-07-04-encounter-density-and-chapter-ledger.md
+?? Docs/plans/.intent-proposals/2026-07-05-autonomous-notables.md
+?? Docs/plans/.intent-proposals/2026-07-05-thr-636-encounter-context-ux.md
+?? Docs/plans/.intent-proposals/2026-07-05-thr-637-entity-visual-header.md
+?? Docs/plans/.intent-proposals/action-unlock-reveal-and-artifact-representation.md
+?? Docs/plans/.intent-proposals/thr-631-motive-receipt-foreshadowing.md
+?? Docs/plans/2026-07-04-action-catalog-gameplay-effects-brainstorm.md
+?? Docs/plans/2026-07-04-encounter-density-and-chapter-ledger-brainstorm.md
+?? Docs/plans/2026-07-04-flow-web-exploration.md
+?? Docs/plans/2026-07-04-large-map-stall-agent-decision-fix.md
+?? Docs/plans/2026-07-05-thr-631-motive-receipt-foreshadowing-brainstorm.md
+## staged diffstat
+ .agents/skills/design-audit-pipeline/SKILL.md      |   2 +-
+ .../design-audit-pipeline/agents/pillar-prompt.md  |   8 +-
+ .agents/skills/intent-judge/SKILL.md               |   5 +-
+ .claude/settings.local.json                        |   6 +-
+ .claude/skills/design-audit-pipeline/SKILL.md      |   2 +-
+ .../design-audit-pipeline/agents/pillar-prompt.md  |   8 +-
+ .claude/skills/intent-judge/SKILL.md               |   5 +-
+ CLAUDE.md                                          |  44 +-
+ Docs/canon/rulebook.md                             |  34 +-
+ Docs/canon/systems-inventory.md                    | 371 -------------
+ Docs/changelog.md                                  |   8 -
+ Docs/impediments.md                                |   5 +-
+ .../2026-07-17-pure-claude-code-migration.md       |  62 ---
+ .../2026-07-18-unreachable-action-inspector.md     |  58 ---
+ Docs/plans/2026-07-05-autonomous-notables.md       |  24 +-
+ .../2026-07-05-player-action-progression-v1.md     |   3 -
+ ...7-05-thr-637-entity-visual-header-brainstorm.md |  41 --
+ .../2026-07-05-thr-637-entity-visual-header.md     | 215 --------
+ ...-07-17-pure-claude-code-migration-brainstorm.md |  32 --
+ .../plans/2026-07-17-pure-claude-code-migration.md | 177 -------
+ ...7-18-unreachable-action-inspector-brainstorm.md |  32 --
+ .../2026-07-18-unreachable-action-inspector.md     | 238 ---------
+ Docs/plans/wiring-checklist.md                     |  36 +-
+ Docs/project-history.md                            |  13 -
+ Docs/project-status.md                             |   2 +-
+ package.json                                       |   4 +-
+ public/armies-battles-reference.html               |  17 +-
+ public/divine-actions-reference.html               |  28 -
+ scripts/generate-systems-inventory.ts              | 573 ---------------------
+ src/components/Codex/Codex.tsx                     | 124 +----
+ src/components/Codex/CodexCard.tsx                 |  47 --
+ .../Codex/__tests__/codexRunState.test.ts          | 151 ------
+ src/components/Codex/codexRegistry.ts              |  28 +-
+ src/components/Codex/codexRunState.ts              | 106 ----
+ src/components/Game/AscendantSheet.tsx             |  28 -
+ src/components/Game/GameView.tsx                   |  44 +-
+ src/components/Game/ascendant-bar/AscendantBar.tsx |   6 +-
+ .../Game/ascendant-bar/SignaturesBlock.tsx         |  58 +--
+ src/components/Game/debug/ArmiesTabContent.tsx     |   6 +-
+ src/components/Game/debug/DebugTabContent.tsx      |   5 +-
+ .../Game/debug/OrphanedCardsDebugTab.tsx           | 161 ------
+ src/data/army-encounter-content.ts                 |  14 +-
+ src/data/battle-spotlight-content.ts               |  10 +-
+ src/data/game-config.ts                            |   2 +-
+ src/debug-bridge.d.ts                              |  46 --
+ src/debug-bridge.ts                                |  93 ----
+ src/engine/__tests__/armyAttrition.test.ts         |  60 +--
+ src/engine/__tests__/armyMovement.test.ts          |   8 +-
+ src/engine/__tests__/armySpawning.test.ts          |   6 +-
+ src/engine/__tests__/armyVisibility.test.ts        |   8 +-
+ src/engine/__tests__/battleAftermath.test.ts       |  10 +-
+ src/engine/__tests__/battleResolution.test.ts      |  16 +-
+ src/engine/__tests__/battleSpotlights.test.ts      |  10 +-
+ .../encounterAftermath-signature_warhost.test.ts   |   2 +-
+ .../__tests__/siegeRegionalEncounters.test.ts      |   4 +-
+ src/engine/__tests__/siegeResolution.test.ts       |  12 +-
+ src/engine/armyAttrition.ts                        |  40 +-
+ src/engine/armyMovement.ts                         |   2 +-
+ src/engine/armySpawning.ts                         | 110 +---
+ src/engine/battleAftermath.ts                      |   6 +-
+ src/engine/battleResolution.ts                     |   8 +-
+ .../__tests__/unreachableActions.test.ts           |  84 ---
+ src/engine/content-eval/unreachableActions.ts      | 151 ------
+ src/engine/factionAmbitions.ts                     |  48 +-
+ src/engine/orchestrator.ts                         |   2 +-
+ src/engine/siegeResolution.ts                      |   4 +-
+ src/types/army.ts                                  |  21 +-
+ src/types/battle.ts                                |   6 +-
+ 68 files changed, 221 insertions(+), 3379 deletions(-)
+## unstaged diffstat
+ .../qa-orchestrator/.fuse_hidden00000c5a00000002   | 146 -------
+ .../qa-orchestrator/.fuse_hidden00000c5a00000002   | 146 -------
+ .codesight/components.md                           |  76 +++-
+ .codesight/config.md                               |   5 +
+ .codesight/coverage.md                             |   2 +-
+ .codesight/graph.md                                |  56 +--
+ .codesight/libs.md                                 | 444 +++++++++++++++++++--
+ .codesight/middleware.md                           |  23 +-
+ .codesight/wiki/libraries.md                       |  58 +--
+ .codesight/wiki/ui.md                              |  78 +++-
+ CLAUDE.md                                          |   5 +-
+ 11 files changed, 630 insertions(+), 409 deletions(-)
+## worktrees
+C:/Users/chris/Dev/Projects/TheFantasyWorldSimulator                                                013c1044 (detached HEAD)
+C:/Users/chris/Dev/Projects/TheFantasyWorldSimulator/.claude/worktrees/adoring-burnell-2e3b51       84f5aa91 [claude/adoring-burnell-2e3b51]
+C:/Users/chris/Dev/Projects/TheFantasyWorldSimulator/.claude/worktrees/affectionate-bassi-6fbf71    2c98e510 [claude/elastic-lumiere-82c275]
+C:/Users/chris/Dev/Projects/TheFantasyWorldSimulator/.claude/worktrees/busy-wilson-fc61c4           0385812d [claude/loving-raman-9481f4]
+C:/Users/chris/Dev/Projects/TheFantasyWorldSimulator/.claude/worktrees/charming-aryabhata-6dd4e9    62d7a867 [claude/charming-aryabhata-6dd4e9]
+C:/Users/chris/Dev/Projects/TheFantasyWorldSimulator/.claude/worktrees/competent-swirles-fbe3e4     4f1bac39 [claude/vibrant-goodall-bb7fb5]
+C:/Users/chris/Dev/Projects/TheFantasyWorldSimulator/.claude/worktrees/festive-fermi-95c895         1855fdc9 [claude/festive-fermi-95c895]
+C:/Users/chris/Dev/Projects/TheFantasyWorldSimulator/.claude/worktrees/festive-hermann-2597af       2e18c821 [claude/festive-hermann-2597af]
+C:/Users/chris/Dev/Projects/TheFantasyWorldSimulator/.claude/worktrees/friendly-mccarthy-89c3f3     eed1cb12 [claude/magical-chaum-723670]
+C:/Users/chris/Dev/Projects/TheFantasyWorldSimulator/.claude/worktrees/heuristic-hermann-6fe390     44ec8422 [claude/heuristic-hermann-6fe390]
+C:/Users/chris/Dev/Projects/TheFantasyWorldSimulator/.claude/worktrees/hopeful-shaw-3150f4          c9d05708 [claude/hopeful-shaw-3150f4]
+C:/Users/chris/Dev/Projects/TheFantasyWorldSimulator/.claude/worktrees/infallible-aryabhata-5b652f  cc043cff [claude/charming-kepler-5b9e60]
+C:/Users/chris/Dev/Projects/TheFantasyWorldSimulator/.claude/worktrees/jovial-mcnulty-37a4c9        03bfa7f3 [claude/fervent-banach-8bf1b7]
+C:/Users/chris/Dev/Projects/TheFantasyWorldSimulator/.claude/worktrees/musing-hermann-fda6dd        8d481fbd [claude/musing-hermann-fda6dd]
+C:/Users/chris/Dev/Projects/TheFantasyWorldSimulator/.claude/worktrees/nice-blackwell-a9d534        31ec482e [claude/keen-diffie-06b040]
+C:/Users/chris/Dev/Projects/TheFantasyWorldSimulator/.claude/worktrees/nostalgic-ramanujan-23f1a8   dc88951b [claude/nostalgic-ramanujan-23f1a8]
+C:/Users/chris/Dev/Projects/TheFantasyWorldSimulator/.claude/worktrees/optimistic-yalow-faa7e0      d9abe5c5 [claude/awesome-easley-ab7d9e]
+C:/Users/chris/Dev/Projects/TheFantasyWorldSimulator/.claude/worktrees/pensive-cannon-a77505        4f1bac39 [claude/quirky-cray-16d853]
+C:/Users/chris/Dev/Projects/TheFantasyWorldSimulator/.claude/worktrees/pensive-galileo-345fbc       72312d9f [claude/pensive-galileo-345fbc]
+C:/Users/chris/Dev/Projects/TheFantasyWorldSimulator/.claude/worktrees/pensive-jang-193d86          309ee994 [claude/pensive-jang-193d86]
+C:/Users/chris/Dev/Projects/TheFantasyWorldSimulator/.claude/worktrees/pensive-khayyam-5bdbde       0810972c [docs/thr611-slice5-impediment]
+C:/Users/chris/Dev/Projects/TheFantasyWorldSimulator/.claude/worktrees/quirky-booth-73f200          44ec8422 [claude/suspicious-faraday-e094a7]
+C:/Users/chris/Dev/Projects/TheFantasyWorldSimulator/.claude/worktrees/relaxed-hellman-6cbdfa       6398e1c0 [claude/nifty-nightingale-4811b2]
+C:/Users/chris/Dev/Projects/TheFantasyWorldSimulator/.claude/worktrees/silly-curie-2631a3           dee8e05f [claude/focused-swartz-9170f1]
+C:/Users/chris/Dev/Projects/TheFantasyWorldSimulator/.claude/worktrees/thr-668-interrupt-auto-pause 8fdfce07 [worktree-thr-668-interrupt-auto-pause]
+C:/Users/chris/Dev/Projects/TheFantasyWorldSimulator/.claude/worktrees/vigilant-bhabha-510e0a       0a535532 [claude/vigilant-bhabha-510e0a]
+C:/Users/chris/Dev/Projects/TheFantasyWorldSimulator/.claude/worktrees/wonderful-shirley-692b4e     27de1750 [docs/thr-609-impediment-175]
+## branches
+* (HEAD detached at 013c1044)
+  christianspliid/thr-571-encounter-balance-systemic-redesign-attack-the-89-failure-0
++ claude/adoring-burnell-2e3b51
++ claude/awesome-easley-ab7d9e
++ claude/charming-aryabhata-6dd4e9
++ claude/charming-kepler-5b9e60
+  claude/competent-swirles-fbe3e4
++ claude/elastic-lumiere-82c275
++ claude/fervent-banach-8bf1b7
++ claude/festive-fermi-95c895
++ claude/festive-hermann-2597af
++ claude/focused-swartz-9170f1
+  claude/gifted-thompson-7d9c8e
++ claude/heuristic-hermann-6fe390
++ claude/hopeful-shaw-3150f4
+  claude/jovial-ramanujan-d7c3e2
++ claude/keen-diffie-06b040
+  claude/kind-shamir-d254e5
++ claude/loving-raman-9481f4
++ claude/magical-chaum-723670
++ claude/musing-hermann-fda6dd
++ claude/nifty-nightingale-4811b2
++ claude/nostalgic-ramanujan-23f1a8
+  claude/pensive-cannon-a77505
++ claude/pensive-galileo-345fbc
++ claude/pensive-jang-193d86
++ claude/quirky-cray-16d853
++ claude/suspicious-faraday-e094a7
++ claude/vibrant-goodall-bb7fb5
++ claude/vigilant-bhabha-510e0a
+  claude/zealous-yonath-d06285
+  docs/briefing-2026-07-19-1030
+  docs/plan-flush-2026-07-05-entity-visual-header
+  docs/plan-flush-2026-07-05-motive-receipt-foreshadowing
+  docs/plan-flush-2026-07-05-player-action-progression-v1
+  docs/plan-flush-2026-07-17-migration-batch
++ docs/thr-609-impediment-175
++ docs/thr611-slice5-impediment
+  main
+  rescue/2026-07-17-detached-plans
+  thr-601-attention-story-wiki
++ worktree-thr-668-interrupt-auto-pause
+  remotes/origin/HEAD -> origin/main
+  remotes/origin/christianspliid/thr-571-encounter-balance-systemic-redesign-attack-the-89-failure-0
+  remotes/origin/christianspliid/thr-75-mentorship-encounters-plus-plan-docs
+  remotes/origin/claude/charming-aryabhata-6dd4e9
+  remotes/origin/claude/dreamy-leavitt-7544ef
+  remotes/origin/claude/frosty-greider-4342b5
+  remotes/origin/claude/hungry-dirac-3acb11
+  remotes/origin/claude/jolly-zhukovsky-6abe00
+  remotes/origin/docs/briefing-2026-07-18-0925
+  remotes/origin/docs/briefing-2026-07-19-0028
+  remotes/origin/docs/briefing-2026-07-19-2229
+  remotes/origin/docs/plan-flush-2026-07-03-game-manual-wiki
+  remotes/origin/docs/plan-flush-2026-07-04-mortal-economy-resource-web
+  remotes/origin/docs/plan-flush-2026-07-04-user-review-interface
+  remotes/origin/docs/plan-flush-2026-07-04-voice-register-plainspoken-malazan
+  remotes/origin/docs/plan-flush-2026-07-05-entity-visual-header
+  remotes/origin/docs/plan-flush-2026-07-05-motive-receipt-foreshadowing
+  remotes/origin/docs/plan-flush-2026-07-05-player-action-progression-v1
+  remotes/origin/docs/plan-flush-2026-07-05-six-noop-ascendant-actions
+  remotes/origin/docs/plan-flush-2026-07-17-migration-batch
+  remotes/origin/main
+  remotes/origin/worktree-thr-668-interrupt-auto-pause
