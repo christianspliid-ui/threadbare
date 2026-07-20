@@ -1,0 +1,1810 @@
+diff --git a/.agents/skills/qa-orchestrator/.fuse_hidden00000c5a00000002 b/.agents/skills/qa-orchestrator/.fuse_hidden00000c5a00000002
+deleted file mode 100644
+index bdc777b6..00000000
+--- a/.agents/skills/qa-orchestrator/.fuse_hidden00000c5a00000002
++++ /dev/null
+@@ -1,146 +0,0 @@
+-# QA Test Surface Registry
+-
+-Last updated: 2026-03-10
+-
+-This file is the single source of truth for every testable UI surface in The Fantasy World Simulator. The QA orchestrator uses this registry to ensure full coverage across sweeps.
+-
+-## How to Use
+-
+-- **During QA sweeps:** Each surface listed here must be verified at least once per full sweep. Track coverage with the `lastTested` and `status` fields in the companion JSON file.
+-- **After implementing a new component:** Add an entry here. If you skip this step, QA sweeps will miss the new surface.
+-- **After removing a component:** Mark the entry as `deprecated` rather than deleting it, so historical findings still resolve.
+-
+-## Surface Categories
+-
+-| Category | Description |
+-|----------|-------------|
+-| `screen` | Full-viewport phase (world creation, character selection, main game) |
+-| `panel` | Major sidebar or center-area panel |
+-| `widget` | Small status display, progress bar, or HUD element |
+-| `overlay` | Modal, popover, or full-screen overlay that appears over the game |
+-| `sub-component` | Building block embedded inside a panel or overlay |
+-| `utility` | Shared component used across multiple surfaces (tooltip, error boundary) |
+-| `dev` | Debug-only or experimental view |
+-
+-## Surface Registry
+-
+-### Phase 1: World Generation
+-
+-| ID | Surface | Component | Category | File | Testable Actions | Prerequisites |
+-|----|---------|-----------|----------|------|------------------|---------------|
+-| S-001 | World Gen Screen | App (worldgen phase) | screen | App.tsx | Page loads, phase routing works | Dev server running |
+-| S-002 | Cosmology Panel | CosmologyPanel | panel | components/Cosmology/CosmologyPanel.tsx | Drag sphere sliders, enter seed, select presets, click Generate World | On worldgen phase |
+-| S-003 | Sphere Slider | SphereSlider | sub-component | components/Cosmology/SphereSlider.tsx | Drag slider, value updates, label displays | Inside CosmologyPanel |
+-| S-004 | Hex Map (worldgen) | HexMap | panel | components/HexMap/HexMap.tsx | Renders after generation, zoom/pan, hover shows info | World generated |
+-| S-005 | Hex Info Panel | InfoPanel | widget | components/UI/InfoPanel.tsx | Shows terrain/elevation/temp/moisture on hover | Hovering a hex tile |
+-
+-### Phase 2: Ascendant Selection
+-
+-| ID | Surface | Component | Category | File | Testable Actions | Prerequisites |
+-|----|---------|-----------|----------|------|------------------|---------------|
+-| S-010 | Character Selection Screen | AscendantSelection | screen | components/Ascendant/AscendantSelection.tsx | 4 archetype cards generated, select one, enter name, click Ascend | World generated |
+-| S-011 | Archetype Card | ArchetypeCard | sub-component | components/Ascendant/ArchetypeCard.tsx | Click to select, shows spheres/flavor/domains, highlight state | Inside AscendantSelection |
+-
+-### Phase 3: Main Game — Layout & Controls
+-
+-| ID | Surface | Component | Category | File | Testable Actions | Prerequisites |
+-|----|---------|-----------|----------|------|------------------|---------------|
+-| S-020 | Main Game View | GameView | screen | components/Game/GameView.tsx | All panels render, layout correct, no crashes | Ascended |
+-| S-021 | Simulation Controls | SimulationControls | widget | components/Game/SimulationControls.tsx | Season icon, year/tick display, play/pause, step, speed slider | In game |
+-| S-022 | Doom Bar | DoomBar | widget | components/Game/DoomBar.tsx | Progress bar fills, stage label updates, pulse animation on change | In game, doom > 0 |
+-| S-023 | Mandate Tracker | MandateTracker | widget | components/Game/MandateTracker.tsx | Stage pips render, progress bar fills, click for details | Mandate exists |
+-| S-024 | Essence Panel | EssencePanel | widget | components/Game/EssencePanel.tsx | 8 sphere bars render, values update on tick, pulse on change, sorted by alignment | In game |
+-| S-025 | Rival Panel | RivalPanel | widget | components/Game/RivalPanel.tsx | Rival gods list, icons, behavior colors, status text | Rivals generated |
+-| S-026 | Avatar HUD | AvatarHUD | widget | components/Game/AvatarHUD.tsx | Avatar name, Center/Move/Wheel/Scry/Zoom buttons functional | World map view |
+-| S-027 | Narrative Log | NarrativeLog | widget | components/Game/NarrativeLog.tsx | Events appear after ticks, type-colored, auto-opens on intervention beats | In game |
+-
+-### Phase 3: Main Game — World Map
+-
+-| ID | Surface | Component | Category | File | Testable Actions | Prerequisites |
+-|----|---------|-----------|----------|------|------------------|---------------|
+-| S-030 | Hex Map (game) | HexMap | panel | components/HexMap/HexMap.tsx | Zoom/pan, fog of war (black/dim/visible), location overlays, avatar position | In game |
+-| S-031 | Hex Tile | HexTile | sub-component | components/HexMap/HexTile.tsx | Terrain image renders, location overlay icon, hex clip mask | Inside HexMap |
+-| S-032 | Coastline Overlay | CoastlineOverlay | sub-component | components/HexMap/CoastlineOverlay.tsx | Coastline lines render correctly around land/water boundaries | Inside HexMap |
+-| S-033 | Hex Defs | HexDefs | sub-component | components/HexMap/HexDefs.tsx | SVG clip paths defined correctly | Inside HexMap |
+-
+-### Phase 3: Main Game — Hex Zoom
+-
+-| ID | Surface | Component | Category | File | Testable Actions | Prerequisites |
+-|----|---------|-----------|----------|------|------------------|---------------|
+-| S-040 | Hex Zoom View | HexZoomView | panel | components/Game/HexZoomView.tsx | Large hex SVG, locations as circles, agents as orbit indicators, connection lines | Clicked a hex |
+-| S-041 | Hex Breadcrumb | HexBreadcrumb | widget | components/Game/HexBreadcrumb.tsx | Coords, terrain, location count, sight level, sphere influence | In hex zoom |
+-| S-042 | Hex Flavor Panel | HexFlavorPanel | panel | components/Game/HexFlavorPanel.tsx | Terrain flavor text, sight explanation, culture/faction summaries | In hex zoom |
+-| S-043 | Hex POI Panel | HexPoiPanel | panel | components/Game/HexPoiPanel.tsx | Scrollable location list with agent counts | In hex zoom |
+-
+-### Phase 3: Main Game — Location View
+-
+-| ID | Surface | Component | Category | File | Testable Actions | Prerequisites |
+-|----|---------|-----------|----------|------|------------------|---------------|
+-| S-050 | Location View | LocationView | panel | components/Game/LocationView.tsx | Location interior, agents present, encounter display, prose generation | Clicked a location |
+-| S-051 | Encounter Log | EncounterLog | sub-component | components/Game/EncounterLog.tsx | Active/completed encounters, threat color, progress steps, narrative text | Inside LocationView |
+-
+-### Phase 3: Main Game — Right Sidebar (Agent Info)
+-
+-| ID | Surface | Component | Category | File | Testable Actions | Prerequisites |
+-|----|---------|-----------|----------|------|------------------|---------------|
+-| S-060 | Retinue Panel | RetinuePanel | panel | components/Game/RetinuePanel.tsx | Agent list, tier badges, selection highlight, zoom buttons | No agent selected |
+-| S-061 | Agent Info Card | AgentInfoCard | panel | components/Game/AgentInfoCard.tsx | Name, portrait, domains, knowledge level, prose | Agent selected |
+-| S-062 | World Pulse | WorldPulse | widget | components/Game/WorldPulse.tsx | Tick, active agent count, culture count, mood summary | No agent selected |
+-
+-### Phase 3: Main Game — Overlays & Modals
+-
+-| ID | Surface | Component | Category | File | Testable Actions | Prerequisites |
+-|----|---------|-----------|----------|------|------------------|---------------|
+-| S-070 | Agent Wheel | AgentWheel | overlay | components/Game/AgentWheel.tsx | Radial menu with action slots, opens on agent click in hex zoom | In hex zoom, click agent |
+-| S-071 | Action Drawer | ActionDrawer | overlay | components/Game/ActionDrawer.tsx | Bottom drawer, agent header, horizontally scrolling action cards | Action triggered via HUD or wheel |
+-| S-072 | Action Card | ActionCard | sub-component | components/Game/ActionCard.tsx | Glyph, name, cost, detection risk, range info, click triggers confirm | Inside ActionDrawer |
+-| S-073 | Intervention Confirm | InterventionConfirm | overlay | components/Game/InterventionConfirm.tsx | Cost, detection risk, range, essence requirement, confirm/cancel | Clicked an ActionCard |
+-| S-074 | Agenda Picker | AgendaPicker | overlay | components/Game/AgendaPicker.tsx | Centered modal, agenda template list, selection | Intervention requires agenda |
+-| S-075 | Agent Profile Modal | AgentProfileModal | overlay | components/Game/AgentProfileModal.tsx | Full-screen, abilities, cooperation strategy, knowledge levels | Click "View Profile" |
+-| S-076 | Agent Detail Panel | AgentDetailPanel | panel | components/Game/AgentDetailPanel.tsx | Domain grid, allegiances, strategies | Alternative agent view |
+-| S-077 | Strand View | StrandView | overlay | components/Game/StrandView.tsx | Six strands (Presence/Desires/Bonds/Ambitions/Beliefs/Fears), insights | Click "View Psyche" |
+-| S-078 | Harvest Screen | HarvestScreen | overlay | components/Game/HarvestScreen.tsx | Full-screen cycle end, harvest type, echoes, "Begin Next Cycle" | Cycle ends |
+-| S-079 | Scry Overlay | ScryOverlay | overlay | components/Game/ScryOverlay.tsx | Divine court visualization, position slots, assignment UI, title proposals | Click "Scry" in HUD |
+-
+-### Debug & Dev Surfaces
+-
+-| ID | Surface | Component | Category | File | Testable Actions | Prerequisites |
+-|----|---------|-----------|----------|------|------------------|---------------|
+-| S-090 | Debug Panel | DebugPanel | dev | components/Game/DebugPanel.tsx | Feed/Agent-follow/Tick-inspector tabs, trace entries, category filters | Debug mode on (backtick) |
+-| S-091 | Magic Glow Tiles | MagicGlowTiles | dev | components/UI/MagicGlowTiles.tsx | Sphere color visualization with layered glows | URL param `?view=glow` |
+-| S-092 | Taxonomy Viewer | TaxonomyViewer | dev | components/TaxonomyViewer/TaxonomyViewer.tsx | Force-directed graph of cosmological taxonomy | Separate route/view |
+-| S-093 | Node Detail | NodeDetail | sub-component | components/TaxonomyViewer/NodeDetail.tsx | Sidebar detail for selected taxonomy node | Inside TaxonomyViewer |
+-
+-### Shared/Utility Components
+-
+-| ID | Surface | Component | Category | File | Testable Actions | Prerequisites |
+-|----|---------|-----------|----------|------|------------------|---------------|
+-| S-100 | Error Boundary | GameErrorBoundary | utility | components/shared/GameErrorBoundary.tsx | Catches render errors, shows fallback UI | Error in child |
+-| S-101 | Tooltip System | Tooltip | utility | components/shared/Tooltip.tsx | Dynamic tooltips with chaining and portal rendering | Hover interactive elements |
+-| S-102 | Progress Bar | ProgressBar | utility | components/shared/ProgressBar.tsx | Horizontal bar with glow effect | Used by DoomBar, MandateTracker, etc. |
+-| S-103 | Entity Card | EntityCard | utility | components/shared/EntityCard.tsx | Sidebar card for agents/cultures/factions with sections | Used in multiple panels |
+-| S-104 | Sphere Icon | SphereIcon | utility | components/shared/SphereIcon.tsx | Colored glyph for a sphere | Used throughout |
+-| S-105 | Rival Icon | RivalIcon | utility | components/shared/RivalIcon.tsx | Overlapping colored circles for rival affinities | Inside RivalPanel |
+-| S-106 | Animate Mount | AnimateMount | utility | components/shared/AnimateMount.tsx | Portal animation wrapper for entering/exiting overlays | Used by overlays |
+-
+-### Cross-Cutting Concerns (tested across all surfaces)
+-
+-| ID | Concern | Description | Surfaces Affected |
+-|----|---------|-------------|-------------------|
+-| X-001 | Keyboard Navigation | Tab order, Enter/Space on interactive elements, Escape to close overlays | All overlays, all interactive widgets |
+-| X-002 | STYLE.md Compliance | Brightness ranges, sphere colors, typography, fog of war | All visible surfaces |
+-| X-003 | Responsive Layout | Panels don't overlap, no horizontal scroll, sidebar widths | All panels/widgets |
+-| X-004 | Error States | Null/undefined data → graceful fallback, not crash | All panels that render data |
+-| X-005 | Loading States | Skeleton/spinner while data loads, no flash of empty content | Panels that fetch/compute |
+-| X-006 | Animation & Transitions | Enter/exit animations smooth, no layout jumps | All overlays, AnimateMount wrappers |
+-| X-007 | State Persistence | Closing/reopening panels preserves user selections | Debug panel, agent selection |
+-
+-## Maintenance
+-
+-When adding a surface:
+-1. Pick the next available ID in the appropriate section
+-2. Fill in all columns
+-3. Update the count below
+-
+-**Total surfaces: 46 testable components + 7 cross-cutting concerns**
+-**Last full sweep coverage: 0/46** (registry is new — first tracked sweep pending)
+diff --git a/.claude/skills/qa-orchestrator/.fuse_hidden00000c5a00000002 b/.claude/skills/qa-orchestrator/.fuse_hidden00000c5a00000002
+deleted file mode 100644
+index bdc777b6..00000000
+--- a/.claude/skills/qa-orchestrator/.fuse_hidden00000c5a00000002
++++ /dev/null
+@@ -1,146 +0,0 @@
+-# QA Test Surface Registry
+-
+-Last updated: 2026-03-10
+-
+-This file is the single source of truth for every testable UI surface in The Fantasy World Simulator. The QA orchestrator uses this registry to ensure full coverage across sweeps.
+-
+-## How to Use
+-
+-- **During QA sweeps:** Each surface listed here must be verified at least once per full sweep. Track coverage with the `lastTested` and `status` fields in the companion JSON file.
+-- **After implementing a new component:** Add an entry here. If you skip this step, QA sweeps will miss the new surface.
+-- **After removing a component:** Mark the entry as `deprecated` rather than deleting it, so historical findings still resolve.
+-
+-## Surface Categories
+-
+-| Category | Description |
+-|----------|-------------|
+-| `screen` | Full-viewport phase (world creation, character selection, main game) |
+-| `panel` | Major sidebar or center-area panel |
+-| `widget` | Small status display, progress bar, or HUD element |
+-| `overlay` | Modal, popover, or full-screen overlay that appears over the game |
+-| `sub-component` | Building block embedded inside a panel or overlay |
+-| `utility` | Shared component used across multiple surfaces (tooltip, error boundary) |
+-| `dev` | Debug-only or experimental view |
+-
+-## Surface Registry
+-
+-### Phase 1: World Generation
+-
+-| ID | Surface | Component | Category | File | Testable Actions | Prerequisites |
+-|----|---------|-----------|----------|------|------------------|---------------|
+-| S-001 | World Gen Screen | App (worldgen phase) | screen | App.tsx | Page loads, phase routing works | Dev server running |
+-| S-002 | Cosmology Panel | CosmologyPanel | panel | components/Cosmology/CosmologyPanel.tsx | Drag sphere sliders, enter seed, select presets, click Generate World | On worldgen phase |
+-| S-003 | Sphere Slider | SphereSlider | sub-component | components/Cosmology/SphereSlider.tsx | Drag slider, value updates, label displays | Inside CosmologyPanel |
+-| S-004 | Hex Map (worldgen) | HexMap | panel | components/HexMap/HexMap.tsx | Renders after generation, zoom/pan, hover shows info | World generated |
+-| S-005 | Hex Info Panel | InfoPanel | widget | components/UI/InfoPanel.tsx | Shows terrain/elevation/temp/moisture on hover | Hovering a hex tile |
+-
+-### Phase 2: Ascendant Selection
+-
+-| ID | Surface | Component | Category | File | Testable Actions | Prerequisites |
+-|----|---------|-----------|----------|------|------------------|---------------|
+-| S-010 | Character Selection Screen | AscendantSelection | screen | components/Ascendant/AscendantSelection.tsx | 4 archetype cards generated, select one, enter name, click Ascend | World generated |
+-| S-011 | Archetype Card | ArchetypeCard | sub-component | components/Ascendant/ArchetypeCard.tsx | Click to select, shows spheres/flavor/domains, highlight state | Inside AscendantSelection |
+-
+-### Phase 3: Main Game — Layout & Controls
+-
+-| ID | Surface | Component | Category | File | Testable Actions | Prerequisites |
+-|----|---------|-----------|----------|------|------------------|---------------|
+-| S-020 | Main Game View | GameView | screen | components/Game/GameView.tsx | All panels render, layout correct, no crashes | Ascended |
+-| S-021 | Simulation Controls | SimulationControls | widget | components/Game/SimulationControls.tsx | Season icon, year/tick display, play/pause, step, speed slider | In game |
+-| S-022 | Doom Bar | DoomBar | widget | components/Game/DoomBar.tsx | Progress bar fills, stage label updates, pulse animation on change | In game, doom > 0 |
+-| S-023 | Mandate Tracker | MandateTracker | widget | components/Game/MandateTracker.tsx | Stage pips render, progress bar fills, click for details | Mandate exists |
+-| S-024 | Essence Panel | EssencePanel | widget | components/Game/EssencePanel.tsx | 8 sphere bars render, values update on tick, pulse on change, sorted by alignment | In game |
+-| S-025 | Rival Panel | RivalPanel | widget | components/Game/RivalPanel.tsx | Rival gods list, icons, behavior colors, status text | Rivals generated |
+-| S-026 | Avatar HUD | AvatarHUD | widget | components/Game/AvatarHUD.tsx | Avatar name, Center/Move/Wheel/Scry/Zoom buttons functional | World map view |
+-| S-027 | Narrative Log | NarrativeLog | widget | components/Game/NarrativeLog.tsx | Events appear after ticks, type-colored, auto-opens on intervention beats | In game |
+-
+-### Phase 3: Main Game — World Map
+-
+-| ID | Surface | Component | Category | File | Testable Actions | Prerequisites |
+-|----|---------|-----------|----------|------|------------------|---------------|
+-| S-030 | Hex Map (game) | HexMap | panel | components/HexMap/HexMap.tsx | Zoom/pan, fog of war (black/dim/visible), location overlays, avatar position | In game |
+-| S-031 | Hex Tile | HexTile | sub-component | components/HexMap/HexTile.tsx | Terrain image renders, location overlay icon, hex clip mask | Inside HexMap |
+-| S-032 | Coastline Overlay | CoastlineOverlay | sub-component | components/HexMap/CoastlineOverlay.tsx | Coastline lines render correctly around land/water boundaries | Inside HexMap |
+-| S-033 | Hex Defs | HexDefs | sub-component | components/HexMap/HexDefs.tsx | SVG clip paths defined correctly | Inside HexMap |
+-
+-### Phase 3: Main Game — Hex Zoom
+-
+-| ID | Surface | Component | Category | File | Testable Actions | Prerequisites |
+-|----|---------|-----------|----------|------|------------------|---------------|
+-| S-040 | Hex Zoom View | HexZoomView | panel | components/Game/HexZoomView.tsx | Large hex SVG, locations as circles, agents as orbit indicators, connection lines | Clicked a hex |
+-| S-041 | Hex Breadcrumb | HexBreadcrumb | widget | components/Game/HexBreadcrumb.tsx | Coords, terrain, location count, sight level, sphere influence | In hex zoom |
+-| S-042 | Hex Flavor Panel | HexFlavorPanel | panel | components/Game/HexFlavorPanel.tsx | Terrain flavor text, sight explanation, culture/faction summaries | In hex zoom |
+-| S-043 | Hex POI Panel | HexPoiPanel | panel | components/Game/HexPoiPanel.tsx | Scrollable location list with agent counts | In hex zoom |
+-
+-### Phase 3: Main Game — Location View
+-
+-| ID | Surface | Component | Category | File | Testable Actions | Prerequisites |
+-|----|---------|-----------|----------|------|------------------|---------------|
+-| S-050 | Location View | LocationView | panel | components/Game/LocationView.tsx | Location interior, agents present, encounter display, prose generation | Clicked a location |
+-| S-051 | Encounter Log | EncounterLog | sub-component | components/Game/EncounterLog.tsx | Active/completed encounters, threat color, progress steps, narrative text | Inside LocationView |
+-
+-### Phase 3: Main Game — Right Sidebar (Agent Info)
+-
+-| ID | Surface | Component | Category | File | Testable Actions | Prerequisites |
+-|----|---------|-----------|----------|------|------------------|---------------|
+-| S-060 | Retinue Panel | RetinuePanel | panel | components/Game/RetinuePanel.tsx | Agent list, tier badges, selection highlight, zoom buttons | No agent selected |
+-| S-061 | Agent Info Card | AgentInfoCard | panel | components/Game/AgentInfoCard.tsx | Name, portrait, domains, knowledge level, prose | Agent selected |
+-| S-062 | World Pulse | WorldPulse | widget | components/Game/WorldPulse.tsx | Tick, active agent count, culture count, mood summary | No agent selected |
+-
+-### Phase 3: Main Game — Overlays & Modals
+-
+-| ID | Surface | Component | Category | File | Testable Actions | Prerequisites |
+-|----|---------|-----------|----------|------|------------------|---------------|
+-| S-070 | Agent Wheel | AgentWheel | overlay | components/Game/AgentWheel.tsx | Radial menu with action slots, opens on agent click in hex zoom | In hex zoom, click agent |
+-| S-071 | Action Drawer | ActionDrawer | overlay | components/Game/ActionDrawer.tsx | Bottom drawer, agent header, horizontally scrolling action cards | Action triggered via HUD or wheel |
+-| S-072 | Action Card | ActionCard | sub-component | components/Game/ActionCard.tsx | Glyph, name, cost, detection risk, range info, click triggers confirm | Inside ActionDrawer |
+-| S-073 | Intervention Confirm | InterventionConfirm | overlay | components/Game/InterventionConfirm.tsx | Cost, detection risk, range, essence requirement, confirm/cancel | Clicked an ActionCard |
+-| S-074 | Agenda Picker | AgendaPicker | overlay | components/Game/AgendaPicker.tsx | Centered modal, agenda template list, selection | Intervention requires agenda |
+-| S-075 | Agent Profile Modal | AgentProfileModal | overlay | components/Game/AgentProfileModal.tsx | Full-screen, abilities, cooperation strategy, knowledge levels | Click "View Profile" |
+-| S-076 | Agent Detail Panel | AgentDetailPanel | panel | components/Game/AgentDetailPanel.tsx | Domain grid, allegiances, strategies | Alternative agent view |
+-| S-077 | Strand View | StrandView | overlay | components/Game/StrandView.tsx | Six strands (Presence/Desires/Bonds/Ambitions/Beliefs/Fears), insights | Click "View Psyche" |
+-| S-078 | Harvest Screen | HarvestScreen | overlay | components/Game/HarvestScreen.tsx | Full-screen cycle end, harvest type, echoes, "Begin Next Cycle" | Cycle ends |
+-| S-079 | Scry Overlay | ScryOverlay | overlay | components/Game/ScryOverlay.tsx | Divine court visualization, position slots, assignment UI, title proposals | Click "Scry" in HUD |
+-
+-### Debug & Dev Surfaces
+-
+-| ID | Surface | Component | Category | File | Testable Actions | Prerequisites |
+-|----|---------|-----------|----------|------|------------------|---------------|
+-| S-090 | Debug Panel | DebugPanel | dev | components/Game/DebugPanel.tsx | Feed/Agent-follow/Tick-inspector tabs, trace entries, category filters | Debug mode on (backtick) |
+-| S-091 | Magic Glow Tiles | MagicGlowTiles | dev | components/UI/MagicGlowTiles.tsx | Sphere color visualization with layered glows | URL param `?view=glow` |
+-| S-092 | Taxonomy Viewer | TaxonomyViewer | dev | components/TaxonomyViewer/TaxonomyViewer.tsx | Force-directed graph of cosmological taxonomy | Separate route/view |
+-| S-093 | Node Detail | NodeDetail | sub-component | components/TaxonomyViewer/NodeDetail.tsx | Sidebar detail for selected taxonomy node | Inside TaxonomyViewer |
+-
+-### Shared/Utility Components
+-
+-| ID | Surface | Component | Category | File | Testable Actions | Prerequisites |
+-|----|---------|-----------|----------|------|------------------|---------------|
+-| S-100 | Error Boundary | GameErrorBoundary | utility | components/shared/GameErrorBoundary.tsx | Catches render errors, shows fallback UI | Error in child |
+-| S-101 | Tooltip System | Tooltip | utility | components/shared/Tooltip.tsx | Dynamic tooltips with chaining and portal rendering | Hover interactive elements |
+-| S-102 | Progress Bar | ProgressBar | utility | components/shared/ProgressBar.tsx | Horizontal bar with glow effect | Used by DoomBar, MandateTracker, etc. |
+-| S-103 | Entity Card | EntityCard | utility | components/shared/EntityCard.tsx | Sidebar card for agents/cultures/factions with sections | Used in multiple panels |
+-| S-104 | Sphere Icon | SphereIcon | utility | components/shared/SphereIcon.tsx | Colored glyph for a sphere | Used throughout |
+-| S-105 | Rival Icon | RivalIcon | utility | components/shared/RivalIcon.tsx | Overlapping colored circles for rival affinities | Inside RivalPanel |
+-| S-106 | Animate Mount | AnimateMount | utility | components/shared/AnimateMount.tsx | Portal animation wrapper for entering/exiting overlays | Used by overlays |
+-
+-### Cross-Cutting Concerns (tested across all surfaces)
+-
+-| ID | Concern | Description | Surfaces Affected |
+-|----|---------|-------------|-------------------|
+-| X-001 | Keyboard Navigation | Tab order, Enter/Space on interactive elements, Escape to close overlays | All overlays, all interactive widgets |
+-| X-002 | STYLE.md Compliance | Brightness ranges, sphere colors, typography, fog of war | All visible surfaces |
+-| X-003 | Responsive Layout | Panels don't overlap, no horizontal scroll, sidebar widths | All panels/widgets |
+-| X-004 | Error States | Null/undefined data → graceful fallback, not crash | All panels that render data |
+-| X-005 | Loading States | Skeleton/spinner while data loads, no flash of empty content | Panels that fetch/compute |
+-| X-006 | Animation & Transitions | Enter/exit animations smooth, no layout jumps | All overlays, AnimateMount wrappers |
+-| X-007 | State Persistence | Closing/reopening panels preserves user selections | Debug panel, agent selection |
+-
+-## Maintenance
+-
+-When adding a surface:
+-1. Pick the next available ID in the appropriate section
+-2. Fill in all columns
+-3. Update the count below
+-
+-**Total surfaces: 46 testable components + 7 cross-cutting concerns**
+-**Last full sweep coverage: 0/46** (registry is new — first tracked sweep pending)
+diff --git a/.codesight/components.md b/.codesight/components.md
+index 4bc78ef4..1054d71a 100644
+--- a/.codesight/components.md
++++ b/.codesight/components.md
+@@ -1,5 +1,57 @@
+ # Components
+ 
++- **App** — `Design\Claudedesignhandooffs\Ascendant bar-handoff\ascendant-bar\project\lib\App.jsx`
++- **VARA_ESSENCE** — `Design\Claudedesignhandooffs\Ascendant bar-handoff\ascendant-bar\project\lib\AscendantBar.jsx`
++- **ChipTooltip** — props: title, body, kindLabel, tone — `Design\Claudedesignhandooffs\Ascendant bar-handoff\ascendant-bar\project\lib\Chips.jsx`
++- **TopBarStub** — props: onOpenMenu — `Design\Claudedesignhandooffs\Ascendant bar-handoff\ascendant-bar\project\lib\Chrome.jsx`
++- **TREND_COLOR** — `Design\Claudedesignhandooffs\Ascendant bar-handoff\ascendant-bar\project\lib\EssenceStrip.jsx`
++- **Overlay** — props: open, onClose, title, eyebrow, width — `Design\Claudedesignhandooffs\Ascendant bar-handoff\ascendant-bar\project\lib\Overlays.jsx`
++- **SectionHeading** — props: count, ornamental — `Design\Claudedesignhandooffs\Ascendant bar-handoff\ascendant-bar\project\lib\Primitives.jsx`
++- **SphereIcon** — props: sphere, size — `Design\Claudedesignhandooffs\Ascendant bar-handoff\ascendant-bar\project\lib\SphereIcon.jsx`
++- **LEXICON** — `Design\Claudedesignhandooffs\Ascendant bar-handoff\ascendant-bar\project\lib\SphereIconDecay.jsx`
++- **App** — `Design\Claudedesignhandooffs\ascendant-bar\project\lib\App.jsx`
++- **VARA_ACTIONS** — `Design\Claudedesignhandooffs\ascendant-bar\project\lib\AscendantBar.jsx`
++- **ChipTooltip** — props: title, body, kindLabel, tone — `Design\Claudedesignhandooffs\ascendant-bar\project\lib\Chips.jsx`
++- **TopBarStub** — props: onOpenMenu — `Design\Claudedesignhandooffs\ascendant-bar\project\lib\Chrome.jsx`
++- **TREND_COLOR** — `Design\Claudedesignhandooffs\ascendant-bar\project\lib\EssenceStrip.jsx`
++- **Overlay** — props: open, onClose, title, eyebrow, width — `Design\Claudedesignhandooffs\ascendant-bar\project\lib\Overlays.jsx`
++- **SectionHeading** — props: count, ornamental — `Design\Claudedesignhandooffs\ascendant-bar\project\lib\Primitives.jsx`
++- **SphereIcon** — props: sphere, size — `Design\Claudedesignhandooffs\ascendant-bar\project\lib\SphereIcon.jsx`
++- **LEXICON** — `Design\Claudedesignhandooffs\ascendant-bar\project\lib\SphereIconDecay.jsx`
++- **ACTION_BAR_TOOLS** — `Design\Claudedesignhandooffs\new-hexmap-sidebars\project\src\ActionBar.jsx`
++- **ActivityIcon** — props: kind, size, color — `Design\Claudedesignhandooffs\new-hexmap-sidebars\project\src\ActivityIcon.jsx`
++- **AGENTS** — `Design\Claudedesignhandooffs\new-hexmap-sidebars\project\src\App.jsx`
++- **DEMO_SPHERES** — `Design\Claudedesignhandooffs\new-hexmap-sidebars\project\src\ComponentsPage.jsx`
++- **EssencePanel** — props: spheres, variant — `Design\Claudedesignhandooffs\new-hexmap-sidebars\project\src\EssencePanel.jsx`
++- **HexTile** — props: cx, cy, r, fill, stroke, borderColor, borderEdges — `Design\Claudedesignhandooffs\new-hexmap-sidebars\project\src\MapStage.jsx`
++- **NOTIFICATION_KIND** — `Design\Claudedesignhandooffs\new-hexmap-sidebars\project\src\NotificationFeed.jsx`
++- **SectionHeading** — props: count, ornamental — `Design\Claudedesignhandooffs\new-hexmap-sidebars\project\src\Primitives.jsx`
++- **MandateBlock** — props: compact — `Design\Claudedesignhandooffs\new-hexmap-sidebars\project\src\RightRail.jsx`
++- **SphereIcon** — props: sphere, size, color — `Design\Claudedesignhandooffs\new-hexmap-sidebars\project\src\SphereIcon.jsx`
++- **ThreadPortrait** — props: agent, size, selected — `Design\Claudedesignhandooffs\new-hexmap-sidebars\project\src\Threads.jsx`
++- **LucideIcon** — props: name, size, stroke, color — `Design\Claudedesignhandooffs\new-hexmap-sidebars\project\src\TopBar.jsx`
++- **APortraits** — `Design\Claudedesignhandooffs\Threadbearer Design System-handoff\threadbearer-design-system\project\landing\direction-a.jsx`
++- **BPortraits** — `Design\Claudedesignhandooffs\Threadbearer Design System-handoff\threadbearer-design-system\project\landing\direction-b.jsx`
++- **CPortraits** — `Design\Claudedesignhandooffs\Threadbearer Design System-handoff\threadbearer-design-system\project\landing\direction-c.jsx`
++- **Portrait** — props: sphere, name, src — `Design\Claudedesignhandooffs\Threadbearer Design System-handoff\threadbearer-design-system\project\ui_kits\threadbearer-game\AgentDetail.jsx`
++- **App** — `Design\Claudedesignhandooffs\Threadbearer Design System-handoff\threadbearer-design-system\project\ui_kits\threadbearer-game\App.jsx`
++- **InterventionModal** — props: kind, agent, onClose, onConfirm — `Design\Claudedesignhandooffs\Threadbearer Design System-handoff\threadbearer-design-system\project\ui_kits\threadbearer-game\InterventionModal.jsx`
++- **SectionHeading** — props: count, ornamental — `Design\Claudedesignhandooffs\Threadbearer Design System-handoff\threadbearer-design-system\project\ui_kits\threadbearer-game\Primitives.jsx`
++- **RETINUE** — `Design\Claudedesignhandooffs\Threadbearer Design System-handoff\threadbearer-design-system\project\ui_kits\threadbearer-game\RetinuePanel.jsx`
++- **OMENS** — `Design\Claudedesignhandooffs\Threadbearer Design System-handoff\threadbearer-design-system\project\ui_kits\threadbearer-game\RightRail.jsx`
++- **SphereIcon** — props: sphere, size — `Design\Claudedesignhandooffs\Threadbearer Design System-handoff\threadbearer-design-system\project\ui_kits\threadbearer-game\SphereIcon.jsx`
++- **TopBar** — props: cycle, season, doom, onSettings — `Design\Claudedesignhandooffs\Threadbearer Design System-handoff\threadbearer-design-system\project\ui_kits\threadbearer-game\TopBar.jsx`
++- **APortraits** — `Design\Claudedesignhandooffs\threadbearer-design-system\project\landing\direction-a.jsx`
++- **BPortraits** — `Design\Claudedesignhandooffs\threadbearer-design-system\project\landing\direction-b.jsx`
++- **CPortraits** — `Design\Claudedesignhandooffs\threadbearer-design-system\project\landing\direction-c.jsx`
++- **Portrait** — props: sphere, name, src — `Design\Claudedesignhandooffs\threadbearer-design-system\project\ui_kits\threadbearer-game\AgentDetail.jsx`
++- **App** — `Design\Claudedesignhandooffs\threadbearer-design-system\project\ui_kits\threadbearer-game\App.jsx`
++- **InterventionModal** — props: kind, agent, onClose, onConfirm — `Design\Claudedesignhandooffs\threadbearer-design-system\project\ui_kits\threadbearer-game\InterventionModal.jsx`
++- **SectionHeading** — props: count, ornamental — `Design\Claudedesignhandooffs\threadbearer-design-system\project\ui_kits\threadbearer-game\Primitives.jsx`
++- **RETINUE** — `Design\Claudedesignhandooffs\threadbearer-design-system\project\ui_kits\threadbearer-game\RetinuePanel.jsx`
++- **OMENS** — `Design\Claudedesignhandooffs\threadbearer-design-system\project\ui_kits\threadbearer-game\RightRail.jsx`
++- **SphereIcon** — props: sphere, size — `Design\Claudedesignhandooffs\threadbearer-design-system\project\ui_kits\threadbearer-game\SphereIcon.jsx`
++- **TopBar** — props: cycle, season, doom, onSettings — `Design\Claudedesignhandooffs\threadbearer-design-system\project\ui_kits\threadbearer-game\TopBar.jsx`
+ - **DC** — `Docs\plans\v7-design-pass\design-canvas.jsx`
+ - **App** — `Docs\plans\v7-design-pass\parts\app.jsx`
+ - **SPHERE** — `Docs\plans\v7-design-pass\parts\encounter-shell.jsx`
+@@ -28,29 +80,36 @@
+ - **CodexSidebar** — props: categories, selectedCategory, selectedSubcategory, onSelectCategory, onSelectSubcategory — `src\components\Codex\CodexSidebar.tsx`
+ - **CosmologyPanel** — props: cosmology, seed, onCosmologyChange, onSeedChange, onGenerate — `src\components\Cosmology\CosmologyPanel.tsx`
+ - **SphereSlider** — props: sphere, value, onChange — `src\components\Cosmology\SphereSlider.tsx`
+-- **ActionCard** — props: slot, onClick, playing, size — `src\components\Game\ActionCard.tsx`
++- **ActionCard** — props: slot, onClick, playing, size, outcomeBand, interactive — `src\components\Game\ActionCard.tsx`
+ - **ActionDrawer** — props: open, slots, _targetName, _targetLabel, onSlotClick, onClose, playingCardId, hexRevelation, gatedActionCounts — `src\components\Game\ActionDrawer.tsx`
+ - **AgendaPicker** — props: agendas, onSelect, onCancel, sphere — `src\components\Game\AgendaPicker.tsx`
+ - **AgentDetailPanel** — props: detail, activity, onBack, onViewPsyche, onIntervene, onLocationClick, onAttachmentClick, digestBuffer, currentTick, lastViewedTick — `src\components\Game\AgentDetailPanel.tsx`
+-- **AgentInfoCard** — props: card, onViewProfile, onBack, onZoomToLocation, graph, seed, tick, strategicState — `src\components\Game\AgentInfoCard.tsx`
++- **AgentInfoCard** — props: card, onViewProfile, onBack, onZoomToLocation, graph, seed, tick, runtime, strategicState — `src\components\Game\AgentInfoCard.tsx`
+ - **AgentIntelligencePanel** — props: entries, isStranger, maxRecords — `src\components\Game\AgentIntelligencePanel.tsx`
+-- **AgentProfileModal** — props: card, profile, onClose, scrollToNewStrata, knowledge — `src\components\Game\AgentProfileModal.tsx`
++- **AgentProfileModal** — props: card, profile, onClose, scrollToNewStrata, knowledge, gameState, runtime, onOpenEntity — `src\components\Game\AgentProfileModal.tsx`
+ - **AgentWheel** — props: slots, agentName, agentTitle, cx, cy, onSlotClick, onDismiss — `src\components\Game\AgentWheel.tsx`
+ - **AlertBar** — props: alerts, onDismiss, onSelectAgent, onNavigate — `src\components\Game\AlertBar.tsx`
+ - **ArmySheet** — props: name, onClose — `src\components\Game\ArmySheet.tsx`
+ - **ArtifactSheet** — props: name, onClose — `src\components\Game\ArtifactSheet.tsx`
+ - **ActionsBlock** — props: tray, onFire, onMove, onInvestiture — `src\components\Game\ascendant-bar\ActionsBlock.tsx`
+-- **AscendantBar** — props: gameState, archetype, _ascendantIdentity, avatarName, worldVersion, onOpenSheet, onOpenMandate, onMove, onInvestiture — `src\components\Game\ascendant-bar\AscendantBar.tsx`
++- **AscendantBar** — props: gameState, archetype, _ascendantIdentity, avatarName, worldVersion, onOpenSheet, onOpenMandate, onMove, onInvestiture, onReleaseControl — `src\components\Game\ascendant-bar\AscendantBar.tsx`
+ - **BarSection** — props: label, count, open, onToggle, placeholder — `src\components\Game\ascendant-bar\BarSection.tsx`
++- **CovenantsBlock** — props: rows, onRelease — `src\components\Game\ascendant-bar\CovenantsBlock.tsx`
+ - **EssenceBlock** — props: rows — `src\components\Game\ascendant-bar\EssenceBlock.tsx`
+ - **HooksBlock** — props: gameState — `src\components\Game\ascendant-bar\HooksBlock.tsx`
+ - **IdentityStrip** — props: identity, quintessence, treatment, onOpen — `src\components\Game\ascendant-bar\IdentityStrip.tsx`
+ - **MandateBlock** — props: mandate, onOpen — `src\components\Game\ascendant-bar\MandateBlock.tsx`
++- **ReachesBlock** — props: rows — `src\components\Game\ascendant-bar\ReachesBlock.tsx`
++- **SignaturesBlock** — props: paths — `src\components\Game\ascendant-bar\SignaturesBlock.tsx`
++- **AscendantBeatModal** — props: open, pending, onResolve, onClose, proseOverride — `src\components\Game\AscendantBeatModal.tsx`
++- **AscendantBeatOfferBanner** — props: pending, onEnter — `src\components\Game\AscendantBeatModal.tsx`
+ - **AscendantSheet** — props: open, onClose, gameState, archetype, avatarName, sphereColor, originFragmentId — `src\components\Game\AscendantSheet.tsx`
+ - **AttachmentDetailView** — props: attachment, onBack, onViewCodex — `src\components\Game\AttachmentDetailView.tsx`
+ - **AttachmentRow** — props: name, subcategory, tier, mechanicalSummary, ticksRemaining, totalTicks, durationLabel, onClick, sourceEncounterId, activeVow — `src\components\Game\AttachmentRow.tsx`
+ - **AttentionPoolIndicator** — props: attentionPool, attentionCapacity, attentionRegen — `src\components\Game\AttentionPoolIndicator.tsx`
+ - **AvatarHUD** — props: sphereColor, onCenterOnAvatar, onMoveClick, onWheelClick, onScryClick, moveMode — `src\components\Game\AvatarHUD.tsx`
++- **ChapterLedger** — props: gameState, runtime, onClose, filterAgentId, embedded, onOpenEntity — `src\components\Game\ChapterLedger.tsx`
++- **ChapterView** — props: chapter, onOpenEntity, onBack — `src\components\Game\ChapterView.tsx`
+ - **ChoiceSetModal** — props: pending, onResolve, onDismiss — `src\components\Game\ChoiceSetModal.tsx`
+ - **AgentEntry** — props: name, sphereColor, archetypeName, onClick — `src\components\Game\chronicle\AgentEntry.tsx`
+ - **EventBlock** — props: label, text — `src\components\Game\chronicle\EventBlock.tsx`
+@@ -64,6 +123,7 @@
+ - **ScryProvider** — props: value — `src\components\Game\contexts\ScryContext.tsx`
+ - **ActionUnlocksView** — `src\components\Game\debug\ActionUnlocksView.tsx`
+ - **ArmiesTabContent** — props: graph, currentTick, onZoomToLocation — `src\components\Game\debug\ArmiesTabContent.tsx`
++- **BeatsDebugTab** — props: currentTick — `src\components\Game\debug\BeatsDebugTab.tsx`
+ - **BondOverlay** — props: graph, hexSize, visibleAgents, showBonds, showDecisionVectors — `src\components\Game\debug\BondOverlay.tsx`
+ - **CommandTab** — props: retinueAgents, followAgentId — `src\components\Game\debug\CommandTab.tsx`
+ - **CompositionView** — props: activeCompositions, currentTick, doomClockStage — `src\components\Game\debug\CompositionView.tsx`
+@@ -72,9 +132,11 @@
+ - **DecisionBreakdown** — props: agentId, traces — `src\components\Game\debug\DecisionBreakdown.tsx`
+ - **DetectionStateInspector** — props: regionalDetectionPressure, traces, currentTick — `src\components\Game\debug\DetectionStateInspector.tsx`
+ - **DriftVisualiser** — props: archetypeDrift, traces, retinueAgents — `src\components\Game\debug\DriftVisualiser.tsx`
++- **EconomyDebugTab** — props: graph, currentTick — `src\components\Game\debug\EconomyDebugTab.tsx`
+ - **EncounterCacheView** — props: cacheEntries, encounterProgress, currentTick, followAgentId, onZoomToLocation, graph, seed — `src\components\Game\debug\EncounterCacheView.tsx`
+ - **EncounterChoiceInspector** — props: traces, retinueAgents — `src\components\Game\debug\EncounterChoiceInspector.tsx`
+ - **EncounterSeedsTab** — props: seeds, currentTick, retinueAgents, regionalDetectionPressure — `src\components\Game\debug\EncounterSeedsTab.tsx`
++- **EssenceSourcesDebugTab** — props: graph, currentTick — `src\components\Game\debug\EssenceSourcesDebugTab.tsx`
+ - **FactionDebugContent** — props: graph, onZoomToLocation — `src\components\Game\debug\FactionDebugContent.tsx`
+ - **ForecastFactorsInspector** — props: traces — `src\components\Game\debug\ForecastFactorsInspector.tsx`
+ - **HandStateInspector** — props: traces — `src\components\Game\debug\HandStateInspector.tsx`
+@@ -82,7 +144,8 @@
+ - **JourneyDebugContent** — props: encounterNotifications, pendingVignettes, _currentTick — `src\components\Game\debug\JourneyDebugContent.tsx`
+ - **KnowledgeComparisonTab** — props: agentKnowledge, graph — `src\components\Game\debug\KnowledgeComparisonTab.tsx`
+ - **KpiDebugTab** — props: currentTick — `src\components\Game\debug\KpiDebugTab.tsx`
+-- **PhasesDebugTab** — props: traces — `src\components\Game\debug\PhasesDebugTab.tsx`
++- **PhasesDebugTab** — props: traces, currentTick — `src\components\Game\debug\PhasesDebugTab.tsx`
++- **ProseQualityView** — `src\components\Game\debug\ProseQualityView.tsx`
+ - **RecentEventsView** — props: getRecentEvents — `src\components\Game\debug\RecentEventsView.tsx`
+ - **RelationshipGraph** — props: agentId, graph — `src\components\Game\debug\RelationshipGraph.tsx`
+ - **RevelationLogTab** — props: traces, _agentKnowledge — `src\components\Game\debug\RevelationLogTab.tsx`
+@@ -121,11 +184,13 @@
+ - **ThreadStrip** — props: thread — `src\components\Game\Encounter\ThreadStrip.tsx`
+ - **ClearanceGatePanel** — props: shellState, signals — `src\components\Game\encounter-stage\shells\ClearanceGatePanel.tsx`
+ - **EncounterLog** — props: progress, template, agentName, onClick — `src\components\Game\EncounterLog.tsx`
++- **EncounterNotificationCard** — props: card, accentColor — `src\components\Game\EncounterNotificationCard.tsx`
+ - **EncounterVeil** — props: open, model, threadTier, essence, tick, autoResolveTick, onIntervene, onBoost, onPeek, onDisregard — `src\components\Game\EncounterVeil.tsx`
+ - **EssencePanel** — props: pool, maxEssence, primarySphere, secondarySphere, income, compact — `src\components\Game\EssencePanel.tsx`
+ - **EventLog** — props: entries — `src\components\Game\EventLog.tsx`
+ - **EventPopup** — props: popup, queueLength, onDismiss, onChoice — `src\components\Game\EventPopup.tsx`
+ - **FactionSheet** — props: factionId, name, graph, onClose, onOpenTargetActions — `src\components\Game\FactionSheet.tsx`
++- **GameViewTopBar** — props: gameState, seasonName, year, running, speed, handleToggleRunning, doTick, setSpeed, attentionPool, attentionCapacity — `src\components\Game\GameView\GameViewTopBar.tsx`
+ - **GameView** — props: archetype, avatarName, cosmology, seed, mapSize, ascendantIdentity, preSeeded — `src\components\Game\GameView.tsx`
+ - **GuildQuestPanel** — props: location, graph, tick, onNavigateToRuin — `src\components\Game\GuildQuestPanel.tsx`
+ - **HarvestScreen** — props: harvest, cycle, onBeginNextCycle — `src\components\Game\HarvestScreen.tsx`
+@@ -219,6 +284,7 @@
+ - **DomainCard** — props: reach, tier, agentName, gender, revealed — `src\components\shared\DomainCard.tsx`
+ - **Dropdown** — props: trigger, open, onOpenChange, align — `src\components\shared\Dropdown.tsx`
+ - **EntityCard** — props: header, sections, onBack, onViewCodex, onZoomToLocation — `src\components\shared\EntityCard.tsx`
++- **EntityVisual** — props: size, descriptor, entity, graph, opts, shape, onClick, className, style, ariaLabel — `src\components\shared\EntityVisual.tsx`
+ - **IconButton** — props: icon, badge, active, size, variant, disabled, style, className — `src\components\shared\IconButton.tsx`
+ - **ListRow** — props: accentColor, selected, onClick, trailing, className — `src\components\shared\ListRow.tsx`
+ - **Modal** — props: open, onClose, maxWidth, animation — `src\components\shared\Modal.tsx`
+diff --git a/.codesight/config.md b/.codesight/config.md
+index 2a1f898a..1695bc06 100644
+--- a/.codesight/config.md
++++ b/.codesight/config.md
+@@ -6,6 +6,7 @@
+ - `CODEX_INTERNAL_ORIGINATOR_OVERRIDE` **required** — scripts\session-precheck.ts
+ - `DEV` **required** — src\components\Game\GameView.tsx
+ - `DRIFT_SCAN_BASELINE_PATH` **required** — scripts\drift-scan\index.ts
++- `DRY_RUN` **required** — scripts\stale-claim-sweep\index.ts
+ - `LINEAR_API_KEY` **required** — scripts\check-process.ts
+ - `NANOBANANANA_API_KEY` (has default) — .env.example
+ - `NODE_ENV` **required** — src\components\Game\GuildQuestPanel.tsx
+@@ -18,6 +19,10 @@
+ - `REVIEW_HEARTBEAT_INTERVAL_SEC` **required** — scripts\review\wrapper.ts
+ - `REVIEW_SIGTERM_GRACE_SEC` **required** — scripts\review\wrapper.ts
+ - `REVIEW_WALL_CLOCK_TIMEOUT_SEC` **required** — scripts\review\wrapper.ts
++- `STALE_CLAIM_TRACKED_LIST_PATH` **required** — scripts\stale-claim-sweep\index.ts
++- `VERCEL_OIDC_TOKEN` (has default) — .env.local
++- `WIKI_FRESHNESS_BASE` **required** — scripts\check-wiki-freshness.ts
++- `WIKI_FRESHNESS_MODE` **required** — scripts\check-wiki-freshness.ts
+ 
+ ## Config Files
+ 
+diff --git a/.codesight/coverage.md b/.codesight/coverage.md
+index 0ef047dd..8ad47f08 100644
+--- a/.codesight/coverage.md
++++ b/.codesight/coverage.md
+@@ -1,4 +1,4 @@
+ # Test Coverage
+ 
+ > **0%** of routes and models are covered by tests
+-> 754 test files found
++> 827 test files found
+diff --git a/.codesight/graph.md b/.codesight/graph.md
+index 3822973e..b52a0e6c 100644
+--- a/.codesight/graph.md
++++ b/.codesight/graph.md
+@@ -2,36 +2,36 @@
+ 
+ ## Most Imported Files (change these carefully)
+ 
+-- `src\engine\graph.ts` — imported by **497** files
+-- `src\types\gameState.ts` — imported by **314** files
+-- `src\types\unifiedAction.ts` — imported by **238** files
+-- `src\types\index.ts` — imported by **210** files
+-- `src\types\traits.ts` — imported by **207** files
+-- `src\engine\traceBuffer.ts` — imported by **202** files
+-- `src\types\graph.ts` — imported by **119** files
+-- `src\types\agent.ts` — imported by **113** files
+-- `src\types\influence.ts` — imported by **99** files
+-- `src\engine\simulationRuntime.ts` — imported by **84** files
+-- `src\types\encounter.ts` — imported by **79** files
+-- `src\types\trace.ts` — imported by **73** files
+-- `src\lib\hexMath.ts` — imported by **62** files
++- `src\engine\graph.ts` — imported by **553** files
++- `src\types\gameState.ts` — imported by **364** files
++- `src\types\unifiedAction.ts` — imported by **288** files
++- `src\types\traits.ts` — imported by **262** files
++- `src\engine\traceBuffer.ts` — imported by **240** files
++- `src\types\index.ts` — imported by **229** files
++- `src\types\graph.ts` — imported by **130** files
++- `src\types\agent.ts` — imported by **129** files
++- `src\types\influence.ts` — imported by **113** files
++- `src\engine\simulationRuntime.ts` — imported by **111** files
++- `src\types\encounter.ts` — imported by **85** files
++- `src\types\trace.ts` — imported by **81** files
++- `src\lib\hexMath.ts` — imported by **63** files
++- `src\data\unified-action-templates.ts` — imported by **61** files
++- `src\lib\prng.ts` — imported by **59** files
+ - `src\types\faction.ts` — imported by **58** files
+ - `src\types\disposition.ts` — imported by **51** files
+-- `src\lib\prng.ts` — imported by **51** files
+-- `src\data\unified-action-templates.ts` — imported by **49** files
+-- `src\data\sphereIcons.ts` — imported by **45** files
+-- `src\types\rarity.ts` — imported by **43** files
+-- `src\types\encounter-contract.ts` — imported by **42** files
++- `src\data\sphereIcons.ts` — imported by **46** files
++- `src\types\effects.ts` — imported by **46** files
++- `src\types\rarity.ts` — imported by **44** files
+ 
+ ## Import Map (who imports what)
+ 
+-- `src\engine\graph.ts` ← `src\components\AgentInfoCard\AgentInfoCard.tsx`, `src\components\Game\AgentInfoCard.tsx`, `src\components\Game\debug\ArmiesTabContent.tsx`, `src\components\Game\debug\BondOverlay.tsx`, `src\components\Game\debug\CulturePhoneticsInspector.tsx` +492 more
+-- `src\types\gameState.ts` ← `scripts\cli.ts`, `scripts\playtest-format.ts`, `scripts\playtest.ts`, `scripts\__tests__\playtest-format.test.ts`, `src\components\Game\ascendant-bar\AscendantBar.tsx` +309 more
+-- `src\types\unifiedAction.ts` ← `scripts\cli.ts`, `src\components\Game\ActionDrawer.tsx`, `src\components\Game\ActionDrawer.tsx`, `src\components\Game\ascendant-bar\selectors.ts`, `src\components\Game\debug\DebugTabContent.tsx` +233 more
+-- `src\types\index.ts` ← `scripts\cli.ts`, `scripts\playtest.ts`, `src\components\Game\ActionCard.tsx`, `src\components\Game\debug\DebugTabContent.tsx`, `src\components\Game\DebugPanel.tsx` +205 more
+-- `src\types\traits.ts` ← `src\components\CMS\registry.ts`, `src\components\Game\AgentDetailPanel.tsx`, `src\components\Game\AgentInfoCard.tsx`, `src\components\Game\AscendantSheet.tsx`, `src\components\Game\AscendantSheet.tsx` +202 more
+-- `src\engine\traceBuffer.ts` ← `src\components\Game\DebugPanel.tsx`, `src\components\Game\encounterHandoff.ts`, `src\components\Game\GameView.tsx`, `src\components\Game\hooks\useAvatarData.ts`, `src\components\Game\__tests__\DebugPanel-intervention.test.tsx` +197 more
+-- `src\types\graph.ts` ← `scripts\cli.ts`, `src\components\Codex\codexRegistry.ts`, `src\components\Game\debug\BondOverlay.tsx`, `src\components\Game\debug\EncounterCacheView.tsx`, `src\components\Game\debug\RelationshipGraph.tsx` +114 more
+-- `src\types\agent.ts` ← `src\data\action-template-content.ts`, `src\data\agenda-content.ts`, `src\data\counter-argument-content.ts`, `src\data\domain-words.ts`, `src\data\encounter-content.ts` +108 more
+-- `src\types\influence.ts` ← `src\App.tsx`, `src\components\Ascendant\ArchetypeCard.tsx`, `src\components\Ascendant\AscendantSelection.tsx`, `src\components\Game\ascendant-bar\AscendantBar.tsx`, `src\components\Game\ascendant-bar\selectors.ts` +94 more
+-- `src\engine\simulationRuntime.ts` ← `scripts\balance-eval.ts`, `scripts\cli.ts`, `scripts\cli.ts`, `scripts\gameplay-report.ts`, `src\components\Game\GameView.tsx` +79 more
++- `src\engine\graph.ts` ← `src\components\AgentInfoCard\AgentInfoCard.tsx`, `src\components\Game\AgentInfoCard.tsx`, `src\components\Game\ascendant-bar\__tests__\covenantRows.test.ts`, `src\components\Game\ascendant-bar\__tests__\reachRows.test.ts`, `src\components\Game\ascendant-bar\__tests__\signaturePaths.test.ts` +548 more
++- `src\types\gameState.ts` ← `scripts\cli.ts`, `scripts\playtest-format.ts`, `scripts\playtest.ts`, `scripts\__tests__\playtest-format.test.ts`, `src\components\Game\AgentProfileModal.tsx` +359 more
++- `src\types\unifiedAction.ts` ← `scripts\cli.ts`, `scripts\content-census.ts`, `scripts\generate-action-catalog.ts`, `scripts\lint-find-first.ts`, `scripts\__tests__\lint-find-first.test.ts` +283 more
++- `src\types\traits.ts` ← `scripts\content-census.ts`, `scripts\encounter-volume-model.ts`, `scripts\gameplay-report.ts`, `scripts\generate-action-catalog.ts`, `src\components\CMS\registry.ts` +257 more
++- `src\engine\traceBuffer.ts` ← `src\components\Game\DebugPanel.tsx`, `src\components\Game\encounterHandoff.ts`, `src\components\Game\GameView.tsx`, `src\components\Game\hooks\useAvatarData.ts`, `src\components\Game\__tests__\DebugPanel-intervention.test.tsx` +235 more
++- `src\types\index.ts` ← `scripts\cli.ts`, `scripts\playtest.ts`, `src\components\Game\ActionCard.tsx`, `src\components\Game\debug\DebugTabContent.tsx`, `src\components\Game\DebugPanel.tsx` +224 more
++- `src\types\graph.ts` ← `scripts\cli.ts`, `src\components\Codex\codexRegistry.ts`, `src\components\Game\debug\BondOverlay.tsx`, `src\components\Game\debug\EncounterCacheView.tsx`, `src\components\Game\debug\EssenceSourcesDebugTab.tsx` +125 more
++- `src\types\agent.ts` ← `src\data\action-template-content.ts`, `src\data\agenda-content.ts`, `src\data\counter-argument-content.ts`, `src\data\domain-words.ts`, `src\data\encounter-content.ts` +124 more
++- `src\types\influence.ts` ← `src\App.tsx`, `src\components\Ascendant\ArchetypeCard.tsx`, `src\components\Ascendant\AscendantSelection.tsx`, `src\components\Game\ascendant-bar\AscendantBar.tsx`, `src\components\Game\ascendant-bar\selectors.ts` +108 more
++- `src\engine\simulationRuntime.ts` ← `scripts\balance-eval.ts`, `scripts\cli.ts`, `scripts\cli.ts`, `scripts\gameplay-report.ts`, `src\components\Game\AgentInfoCard.tsx` +106 more
+diff --git a/.codesight/libs.md b/.codesight/libs.md
+index 8b8ab8dc..161cc741 100644
+--- a/.codesight/libs.md
++++ b/.codesight/libs.md
+@@ -34,6 +34,14 @@
+   - const LINEAR_API_URL
+   - _...4 more_
+ - `scripts\enhance-frontmatter.ts` — function enhanceFrontmatter: (options) => void
++- `scripts\generate-action-catalog.ts`
++  - function buildCatalogData: () => ActionCatalogData
++  - function generateActionCatalog: (opts) => ActionCatalogData
++  - interface ActionCatalogEntry
++  - interface ActionCatalogData
++  - interface GenerateOptions
++  - type CatalogCategory
++  - _...1 more_
+ - `scripts\generate-hex-tile.py`
+   - function make_hex_mask: (size, inset, feather) -> Image.Image
+   - function apply_hex_mask: (img, mask) -> Image.Image
+@@ -59,6 +67,14 @@
+ - `scripts\inspiration-ingest\runIngest.ts` — function runInspirationIngest: (source, options) => Promise<IngestionResult>
+ - `scripts\inspiration-ingest\sources.ts` — function loadRawInspirationSources: (source) => Promise<RawInspirationSource[]>
+ - `scripts\inspiration-ingest\writeInspiration.ts` — function writeInspirationRecords: (incomingRecords, options) => Promise<IngestionResult>, const DEFAULT_INSPIRATION_DATA_PATH
++- `scripts\linearAutoclose.mjs`
++  - function extractCloseableIssueIds: (texts) => void
++  - function isDocsFlushContext: ({...}, title }) => void
++  - function extractNativeCloseableIssueIds: (texts) => void
++  - function evaluateFlushCloseGuard: ({...}, title, body, commitMessages) => void
++  - const CLOSE_KEYWORD_PATTERN
++  - const DOCS_FLUSH_BRANCH_PATTERN
++  - _...2 more_
+ - `scripts\lint-encounter-content.ts`
+   - function runEncounterContentLint: (target) => EncounterLintRunResult
+   - interface EncounterLintIssue
+@@ -66,7 +82,15 @@
+   - interface EncounterLintRunResult
+   - type EncounterLintSeverity
+   - type EncounterLintRuleId
+-  - _...3 more_
++  - _...1 more_
++- `scripts\lint-find-first.ts`
++  - function classifyFindGate: (template) => FindGateVerdict
++  - function runFindFirstLint: (templates) => FindFirstLintResult
++  - interface FindGateViolation
++  - interface FindFirstLintSummary
++  - interface FindFirstLintResult
++  - type FindGateTemplate
++  - _...2 more_
+ - `scripts\lint-rulebook.ts`
+   - function lintRulebookVsUl: (rulebookText, repoRoot) => SignalResult
+   - function lintRulebookVsCanon: (rulebookText, repoRoot) => SignalResult
+@@ -104,6 +128,14 @@
+   - type BranchStalenessResult
+   - const STALENESS_BEHIND_THRESHOLD
+   - const STALENESS_BRANCH_AGE_THRESHOLD_MS
++- `scripts\stale-claim-sweep\constants.ts`
++  - function buildWarningComment: (lastActivity, releaseAt) => string
++  - const STALE_THRESHOLD_HOURS
++  - const GRACE_PERIOD_HOURS
++  - const SWEEP_CRON
++  - const PARKED_LABEL_NAME
++  - const PARKED_LABEL_COLOR
++  - _...4 more_
+ - `scripts\validate-world-model.ts` — function validateWorldModel: (model) => ValidationResult, interface ValidationResult
+ - `scripts\vision-audit.ts`
+   - function resolveVisionDir: (vaultFlag) => string | null
+@@ -197,6 +229,16 @@
+   - interface ActionTemplateData
+   - type ActorType
+   - const ACTION_TEMPLATES: ActionTemplateData[]
++- `src\data\actionEffectSource.ts`
++  - function effectSourceFor: (template) => EffectSource
++  - function effectLabel: (src) => string
++  - type EffectSource
++  - const EFFECT_SOURCE_LABELS: Readonly<Record<EffectSource, string>>
++  - const EFFECT_SOURCE_BADGE_COLORS: Readonly<Record<EffectSource, string>>
++- `src\data\actionEffectsProse.ts`
++  - function actionEffectsProse: (template) => string
++  - const EFFECTS_LINE_MAX_CHARS
++  - const ACTION_EFFECTS_PROSE: Record<string, string>
+ - `src\data\agenda-consequence-templates.ts`
+   - function getAgendaConsequenceMessage: (interventionType, category, context, seed) => string
+   - interface AgendaConsequenceContext
+@@ -245,15 +287,33 @@
+   - function quintessenceLine: (sphere, band) => string
+   - interface ArchetypeCopy
+   - interface SphereCopy
++  - interface ReachCopy
++  - type SignaturePathState
+   - const ARCHETYPE_COPY: Record<string, ArchetypeCopy>
+-  - const SPHERE_COPY: Partial<Record<SphereName, SphereCopy>>
+-  - const BAND_TOOLTIP: Record<QuintessenceBand, { label: string; body: string }>
+-  - _...6 more_
++  - _...20 more_
++- `src\data\ascendant-beat-content.ts`
++  - function isSpineBeatId: (beatId) => boolean
++  - function collectGrantedActionIds: () => readonly string[]
++  - interface SpineBeatPresentation
++  - interface ActionBucketEntry
++  - type ActionBucket
++  - const BEAT_BASE_INTERVAL
++  - _...15 more_
++- `src\data\ascendant-deepening-beats.ts`
++  - function getDeepeningBeatById: (beatId) => BeatDefinition | null
++  - function deepeningChronicleProse: (reach) => string
++  - const ASCENDANT_DEEPENING_BEATS: readonly BeatDefinition[]
++  - const DEEPENING_BEAT_PRESENTATION: Readonly<Record<string, SpineBeatPresentation>>
+ - `src\data\ascendant-lens-content.ts`
+   - function getAscendantLensLine: (sphere, context, rng) => void
+   - type SceneContext
+   - const ALL_SCENE_CONTEXTS: SceneContext[]
+   - const ASCENDANT_LENS: Partial<Record<SphereName, Record<SceneContext, string[]>>>
++- `src\data\ascendant-milestone-beats.ts`
++  - function getMilestoneBeatById: (beatId) => BeatDefinition | null
++  - function milestoneChronicleProse: (beatId) => string
++  - const ASCENDANT_MILESTONE_BEATS: readonly BeatDefinition[]
++  - const MILESTONE_BEAT_PRESENTATION: Readonly<Record<string, SpineBeatPresentation>>
+ - `src\data\avatar-portrait-assets.ts`
+   - function getOriginPortraitUrl: (originFragmentId) => string
+   - function getSphereFrameUrl: (primarySphere) => string
+@@ -291,6 +351,12 @@
+   - function getConceptArtUrl: (entryId) => string | null
+   - interface ConceptArtEntry
+   - const CONCEPT_ART_REGISTRY: ConceptArtEntry[]
++- `src\data\core-origin-vignettes.ts`
++  - function CORE_ORIGIN_VIGNETTES_BY_CONTINUUM
++  - interface CoreOriginVignette
++  - type CoreOriginVignettePole
++  - type CoreOriginVignetteMagnitude
++  - const CORE_ORIGIN_VIGNETTES: readonly CoreOriginVignette[]
+ - `src\data\culture-content.ts`
+   - function getFoundationModifier: (id) => FoundationModifier | undefined
+   - function getCreationSphereModifier: (sphere) => CreationSphereModifier | undefined
+@@ -346,13 +412,29 @@
+   - function toStepFallbackReach: (template, stepIndex) => EncounterChoiceReach
+   - function toEncounterChoiceReach: (template, stepIndex, choice) => EncounterChoiceReach
+   - function toEncounterArchetypePole: (reach, choice) => EncounterArchetypePole
+-  - function encodeEncounterContractMetadata: (contract) => string
+-  - function buildFallbackEncounterChoice: (template, stepIndex, reach) => void
+-  - _...15 more_
++  - function resolveEncounterArchetypePole: (reach, choice) => EncounterArchetypePole
++  - function resolveChoiceDrift: (reach, choice) => ResolvedChoiceDrift
++  - _...18 more_
+ - `src\data\encounter-contract-validators.ts`
+   - function parseEncounterContract: (contract) => EncounterContract
+   - function isEncounterContract: (contract) => contract is EncounterContract
+   - const encounterContractSchema: z.ZodType<EncounterContract>
++- `src\data\entity-visual-fallbacks.ts`
++  - function isPersonKind: (kind) => boolean
++  - function fallbackGlyphFor: (kind, name) => string
++  - function hashEntityId: (id) => number
++  - function gradientIndexForId: (id) => number
++  - interface EntityGradient
++  - type EntityVisualKind
++  - _...3 more_
++- `src\data\essence-sources.ts`
++  - function deriveSourceTier: (sanctity, opts) => SourceTier
++  - function sourceTierMultiplier: (tier) => number
++  - function sourceDepthMultiplier: (rank) => number
++  - const SANCTITY_FLOWERING_THRESHOLD
++  - const SOURCE_FLOWERING_MULTIPLIER
++  - const SOURCE_CONTESTED_PENALTY
++  - _...9 more_
+ - `src\data\event-aggregation-content.ts`
+   - function getAggregatePhrasePool: (size) => AggregatePhraseEntry[]
+   - function crowdSizeCategory: (n) => AggregateCrowdSize
+@@ -381,6 +463,14 @@
+   - function getFactionVoice: (factionDefId) => FactionVoiceEntry | undefined
+   - interface FactionVoiceEntry
+   - const FACTION_VOICE_BIBLE: readonly FactionVoiceEntry[]
++- `src\data\foreshadowing-content.ts`
++  - function matterAtPlace: (locationName) => string
++  - const KNOWLEDGE_CLAUSES: Record<ForeshadowingIntelligenceTier, readonly string[]>
++  - const PULL_CLAUSES: Record<ReachDomain, readonly string[]>
++  - const EXPECTATION_CLAUSES: Record<ForeshadowingIntelligenceTier, readonly string[]>
++  - const DEFAULT_PULL_CLAUSES: readonly string[]
++  - const MATTER_NO_PLACE: readonly string[]
++  - _...5 more_
+ - `src\data\game-theory-content.ts` — function getStrategyWeights: (archetypeId) => Record<CooperationStrategy, number>, const SOCIAL_ORIENTATION_MAP: Record<string, SocialOrientation>
+ - `src\data\hex-tile-assets.ts`
+   - function getHexTileUrl: (_terrain) => string
+@@ -469,6 +559,28 @@
+   - interface ArchetypeFrictionPair
+   - type FoundationSphere
+   - _...8 more_
++- `src\data\origin-vignettes.ts`
++  - function getOriginVignetteById: (id) => OriginVignette | undefined
++  - interface OriginVignette
++  - type OriginVignettePole
++  - type OriginVignetteMagnitude
++  - const ORIGIN_VIGNETTES: readonly OriginVignette[]
++- `src\data\outcome-band-content.ts`
++  - function stepOutcomeToOutcomeBand: (outcome) => OutcomeBand
++  - function outcomeBandWord: (band) => string
++  - function stepOutcomeWord: (outcome) => string
++  - const OUTCOME_BAND_PHRASE_HISTORY_WINDOW
++  - const OUTCOME_BAND_PROSE: Record<OutcomeBand, PhraseEntry[]>
++  - const OUTCOME_BAND_Q_FLAVOR: Record<OutcomeBand, PhraseEntry[]>
++  - _...2 more_
++- `src\data\player-progression.ts`
++  - function deepeningBeatIdForReach: (reach) => string
++  - const PLAYER_PRACTICE_PER_ACTION
++  - const PLAYER_DIMINISHING_RETURNS_FACTOR
++  - const PLAYER_PRACTICE_ENCOUNTER_SHAPE
++  - const SECONDARY_REACH_PRACTICE_MULT
++  - const DEEPENING_BEAT_MAX_PER_TICK
++  - _...3 more_
+ - `src\data\portrait-assets.ts`
+   - function getPortraitUrl: (archetypeId) => string | null
+   - function getAgentPortraitUrlFromProperties: (properties, unknown> | undefined) => string | null
+@@ -503,11 +615,31 @@
+   - const RANGERS_BROTHERHOOD_ELITE_TEMPLATES: UnifiedActionTemplate[]
+   - const RANGERS_BROTHERHOOD_SOCIAL_TEMPLATES: UnifiedActionTemplate[]
+   - _...4 more_
++- `src\data\reach-signature-content.ts`
++  - function composeDefaultSignature: (reach, sphere) => SignatureIndividualization
++  - function resolveSignatureIndividualization: (reach, primarySphere) => SignatureIndividualization
++  - interface SphereTwistSpec
++  - interface SignatureIndividualization
++  - type SignatureMatrix
++  - const SIGNATURE_SCALE_FLOOR
++  - _...18 more_
+ - `src\data\reputation-trait-content.ts`
+   - function getReputationTraitId: (reach, polarity) => string
+   - const REPUTATION_TRAIT_DEFINITIONS: ReputationTraitNode[]
+   - const REPUTATION_TRAIT_MAP: ReadonlyMap<string, ReputationTraitNode>
+   - const REACH_REPUTATION_TRAIT_IDS: readonly string[]
++- `src\data\resource-classes.ts`
++  - function getResourceClass: (resourceId) => ResourceClass
++  - function getResourceTierProse: (resourceId, tier) => string
++  - interface ResourceClass
++  - type ResourceClassCategory
++  - const STOCK_SCARCE_THRESHOLD
++  - const STOCK_SURPLUS_THRESHOLD
++  - _...15 more_
++- `src\data\rival-schemes\index.ts`
++  - function getRivalSchemeFamily: (id) => RivalSchemeFamily | undefined
++  - function eligibleSchemeFamilies: (behavior, escalationTier) => RivalSchemeFamily[]
++  - const RIVAL_SCHEME_FAMILIES: readonly RivalSchemeFamily[]
+ - `src\data\ruins-delve-content.ts`
+   - function resolveDelveProseEntry: (archetype, beatName, outcome) => DelveProseEntry
+   - interface DelveProseEntry
+@@ -602,7 +734,13 @@
+   - const LOCATION_ACTION_POST_EFFECT_TEMPLATE_IDS
+   - const THREAD_CREATION_TEMPLATES: UnifiedActionTemplate[]
+   - const THREAD_MANAGEMENT_TEMPLATES: UnifiedActionTemplate[]
+-  - _...2 more_
++  - _...3 more_
++- `src\data\__fixtures__\ascendant-reach-fixtures.ts`
++  - function buildReachAscendantIdentity: (reach, map, CreationSphereName>) => AscendantIdentity
++  - function getAscendantReachIdentity: (reach) => AscendantIdentity
++  - const REACH_PRIMARY_SPHERE: Record<ReachDomain, CreationSphereName>
++  - const REPORT_ASCENDANT_REACHES: ReachDomain[]
++  - const ASCENDANT_REACH_FIXTURES: Record<ReachDomain, AscendantIdentity>
+ - `src\engine\actionCandidates.ts` — function generateActionCandidates: (graph, actorId, locationId) => ActionCandidate[]
+ - `src\engine\actionLifecycle.ts`
+   - function resetActionCounter: () => void
+@@ -632,7 +770,7 @@
+   - interface ActiveIntent
+   - interface TopValue
+   - interface BondSummary
+-  - _...9 more_
++  - _...11 more_
+ - `src\engine\agentLifecycle.ts`
+   - function resetLifecycleCounter: () => void
+   - function phaseAgentLifecycle: (state, nextEventId) => void
+@@ -709,23 +847,61 @@
+   - function isEligibleForArmySpawn: (state, factionId) => boolean
+   - function selectCommander: (state, factionId) => string | null
+   - function spawnArmy: (state, factionId, commanderId, ambitionNodeId) => string | null
++  - function raiseWarhostForce: (state, factionId, leaderId, strength, tick) => string | null
+ - `src\engine\artSelection.ts` — function selectArt: (library, requestTags, seed) => ArtAsset, interface ArtAsset
+ - `src\engine\ascendant.ts`
+   - function generateArchetypes: (count, seed) => AscendantArchetype[]
+   - function createAscendant: (graph, config) => CreateAscendantResult
+   - function createAscendantFromIdentity: (graph, identity, startLocationId) => CreateAscendantResult
++  - function getAscendantDomainAffinities: (graph, ascendantId) => Partial<Record<ReachDomain, number>> | undefined
+   - interface CreateAscendantResult
++- `src\engine\ascendantBeat.ts`
++  - function createInitialAscendantBeatState: () => AscendantBeatState
++  - function isTriggerSatisfied: (trigger, state, turn) => boolean
++  - function computeIdentityBias: (beat, state) => number
++  - function resolveReachSignatureGrant: (state, slot) => string | null
++  - function bindBeatSubject: (beat, state) => readonly string[]
++  - function isBeatEligible: (beat, state) => boolean
++  - _...7 more_
++- `src\engine\ascendantBeatSeeding.ts`
++  - function seedBeatGraph: (state, beat, turn) => BeatSeedResult
++  - interface BeatSeedResult
++  - const BEAT_SEEDED_TRACE_CATEGORY
+ - `src\engine\ascendantBuffs.ts` — function applyAscendantBuffs: (template, graph, ascendantId, tick) => BuffApplicationResult, interface BuffApplicationResult
++- `src\engine\ascendantExpression.ts`
++  - function getAscendantPrimarySphere: (graph, ascendantId) => SphereName | undefined
++  - function applyImbueItem: (graph, ascendantId, artifactId, rng) => void
++  - function getAscendantPrimaryReach: (graph, ascendantId) => ReachDomain | undefined
++  - function applyBestowPower: (graph, ascendantId, agentId, tick) => BestowPowerResult
++  - function applyAnointFaction: (graph, ascendantId, factionId, tick) => AnointFactionResult
++  - interface ImbueItemResult
++  - _...3 more_
+ - `src\engine\ascendantFeedback.ts` — function applyAscendantFeedback: (graph, ascendantId, interventionType, sphere, tick) => void
+ - `src\engine\ascendantLens.ts`
+   - function resolveLensOverlay: (overlays, hungerId) => LensOverlay | undefined
+   - function shouldFireMortalEcho: (lens, dilemmaEmotionalTags, echoThreshold) => boolean
+   - function composeLensedProse: (baseProse, overlays, lens, dilemmaEmotionalTags) => string
++- `src\engine\ascendantPrimitives.ts`
++  - function getUpkeepStatus: (effect, graph) => UpkeepStatus
++  - function applyCoLocatedThreadAura: (graph, locationId, ascendantId, spec, tick) => CoLocatedThreadAuraResult
++  - function applyChosenStatusGrant: (graph, nodeId, domain, byAscendantId, tick) => ChosenStatusGrantResult
++  - function pickSphereFlavoredEffect: (sphere, rng) => void
++  - interface CoLocatedThreadAuraResult
++  - interface ChosenPower
++  - _...7 more_
+ - `src\engine\ascendantTray.ts`
+   - function classifyTrayTier: (template, 'rarityTier' | 'intrinsicTier' | 'actorAffinities' | 'targetCategories' | 'targetSubtypes' | 'trayTier'>, ctx) => AscendantTrayTier
+   - type AscendantTrayTier
+   - const TRAY_RARE_RARITY_TIER_MIN
+   - const TRAY_SELF_TARGET_CATEGORIES
++- `src\engine\aspects.ts`
++  - function getAspectEdges: (graph, ascendantId) => GraphEdge[]
++  - function getLivingAspectEdges: (graph, ascendantId) => GraphEdge[]
++  - function getAspectEdgeForMortal: (graph, mortalId) => GraphEdge | undefined
++  - function isAspect: (graph, mortalId) => boolean
++  - function grantAspect: (graph, params, runtime?) => GrantAspectResult
++  - function isApotheosisEligible: (threadEdge, tick) => boolean
++  - _...5 more_
+ - `src\engine\attachmentSlotResolver.ts`
+   - function resolveSlotTag: (slotTag, subcategory) => string | undefined
+   - function collectAgentAttachmentInventory: (graph, agentId) => SlotInventoryEntry[]
+@@ -780,7 +956,9 @@
+   - function getTargetBands: (metricId, scope?) => BalanceMetricBand[]
+   - function getTargetBand: (metricId, scope) => BalanceMetricBand | null
+   - const BALANCE_TARGETS_VERSION
+-  - const DEFAULT_BALANCE_TARGETS: BalanceTargets
++  - const EARLY_GAME_TICK_WINDOW
++  - const EARLY_GAME_SUCCESS_RATE_TARGET
++  - _...2 more_
+ - `src\engine\balanceTelemetry.ts`
+   - function createBalanceTelemetry: (opts?) => BalanceTelemetry
+   - function recordBalanceEvent: (runtime, partialEvent, 'seq'>) => void
+@@ -817,6 +995,18 @@
+   - function computeGrowthAmount: (stepDifficulty, success, tierPromotionEligible, currentCapability) => number
+   - function applyEncounterGrowth: (graph, agentId, domain, stepDifficulty, success, tierPromotionEligible, growthMultiplier) => GrowthResult
+   - interface GrowthResult
++- `src\engine\chapterArchive.ts`
++  - function isEncounterAction: (templateId) => boolean
++  - function getChapterTemplateName: (templateId) => string
++  - function buildChapterRecord: (action, state, runtime?) => ChapterRecord | null
++  - function appendChapters: (archive, newRecords, cap, batch) => readonly ChapterRecord[]
++  - function emitChapterArchivedTrace: (record, tick, archiveSize) => void
++  - const CHAPTER_ARCHIVE_CAP
++  - _...2 more_
++- `src\engine\chosenFactionPowers.ts`
++  - function phaseChosenFactionPowers: (state) => Partial<GameState>
++  - const CHOSEN_FACTION_POWER_TRACE_CATEGORY
++  - const CHOSEN_POWER_EFFECT_TABLE: Record<string, number>
+ - `src\engine\chronicle.ts`
+   - function createGreatChronicle: () => GreatChronicle
+   - function getVolumeTitle: (archetype, cycleNumber) => string
+@@ -851,6 +1041,39 @@
+   - function resolveConditionOverflow: (slotTag, count, cap, items, agentId, roll) => ConditionOverflowResult | null
+   - interface ConditionOverflowResult
+   - type ConditionOverflowEvent
++- `src\engine\content-eval\collectAuthoredProse.ts` — function collectAuthoredProse: () => EvalInput[]
++- `src\engine\content-eval\proseQualityScore.ts`
++  - function scoreProseEntry: (entry, cfg?) => ProseQualityResult
++  - function scoreProseBatch: (entries, cfg?) => ProseQualityBatchResult
++  - interface ProseQualityFlag
++  - interface ProseQualityResult
++  - interface ProseQualityBatchResult
++  - interface EvalInput
++  - _...3 more_
++- `src\engine\content-eval\registerCompliance.ts`
++  - function scoreRegisterCompliance: (entry) => RegisterComplianceResult
++  - interface RegisterMetric
++  - interface RegisterComplianceResult
++  - interface RegisterInput
++  - type RegisterKind
++  - type RegisterBand
++  - _...1 more_
++- `src\engine\contentCensus\adapters.ts`
++  - function resolveEncounters: () => CensusEntry[]
++  - function resolveActions: () => CensusEntry[]
++  - function resolveAttachments: () => CensusEntry[]
++  - function resolveSpells: () => CensusEntry[]
++  - function resolveArtifacts: () => CensusEntry[]
++  - function resolveConditions: () => CensusEntry[]
++  - _...3 more_
++- `src\engine\contentCensus\matrix.ts`
++  - function buildMatrices: (entries) => CensusMatrix[]
++  - function buildDesertList: (matrices) => DesertEntry[]
++  - function buildEmptyList: (matrices) => EmptyEntry[]
++  - function buildUntaggedList: (matrices) => UntaggedGroup[]
++  - function buildSummary: (matrices) => TypeSummary[]
++  - function buildReport: (date, entries) => CensusReport
++  - _...2 more_
+ - `src\engine\contestation.ts`
+   - function detectContestations: (completing, templates) => ContestationPair[]
+   - function resolveContestationPair: (attacker, defender, attackerTemplate, defenderTemplate, state, rng) => void
+@@ -870,7 +1093,15 @@
+   - function applyContestationOutcome: (effect, outcome, tick) => void
+   - interface ContestationCandidate
+   - _...6 more_
+-- `src\engine\controlEffectSpawn.ts` — function resetEffectCounter: () => void, function spawnControlEffect: (action, template, tick) => void
++- `src\engine\controlEffectSpawn.ts` — function resetEffectCounter: () => void, function spawnControlEffect: (action, template, tick, graph?) => void
++- `src\engine\core\coreMechanics.ts`
++  - function coreValue: (core, continuumId) => number
++  - function seedCoreProfile: (rng) => void
++  - function seedCoreProfileWithVignettes: (rng) => void
++  - function colourReachExpression: (core, word) => CoreColouring
++  - function coreBendContributions: (core, quintessenceNorm) => CoreBendContribution[]
++  - function coreEmergentSignal: (core) => CoreEmergence[]
++  - _...5 more_
+ - `src\engine\cosmology.ts`
+   - function createBalancedCosmology: () => CosmologyProfile
+   - function normalizeCosmology: (profile) => CosmologyProfile
+@@ -981,6 +1212,14 @@
+   - function getDeliveryInfo: (interventionType) => DeliveryInfo
+   - interface HexPosition
+   - interface DeliveryInfo
++- `src\engine\deliveryBeatAdapter.ts`
++  - function deliveryBeatIdFor: (templateId) => string
++  - function sourceTemplateIdOf: (beatId) => string | null
++  - function isDeliverableBranchingEncounter: (template) => boolean
++  - function branchingEncounterToDeliveryBeat: (template) => BeatDefinition
++  - function getDeliveryBeatById: (beatId) => BeatDefinition | undefined
++  - function eligibleDeliveryBeats: (deliveredBeatIds) => readonly BeatDefinition[]
++  - _...3 more_
+ - `src\engine\depressionFilling.ts` — function fillDepressions: (data) => void
+ - `src\engine\depressionLakes.ts` — function promoteDepressionLakes: (data) => void
+ - `src\engine\deriveLocationActivities.ts`
+@@ -990,10 +1229,7 @@
+   - interface DeriveLocationActivitiesResult
+   - const LOCATION_ACTIVITY_CONSTANTS
+   - const MURMUR_TEMPLATES: Readonly<Record<LocationPulse, Readonly<Record<ActivityCategory, readonly string[]>>>>
+-- `src\engine\detailPageGenerator.ts`
+-  - function clearDetailPageCache: () => void
+-  - function generateDetailPage: (input) => DetailPage
+-  - interface GenerateDetailPageInput
++- `src\engine\detailPageGenerator.ts` — function generateDetailPage: (input) => DetailPage, interface GenerateDetailPageInput
+ - `src\engine\detailPageResolvers.ts`
+   - function seedFor: (ctx, sectionTypeId) => number
+   - function fillPlaceholders: (template, values, string>) => string
+@@ -1049,6 +1285,7 @@
+   - function advanceDoomClock: (state) => DoomClockState
+   - function accelerateDoomClock: (state, amount) => DoomClockState
+   - function decelerateDoomClock: (state, amount) => DoomClockState
++- `src\engine\doomIdentityMilestones.ts` — function evaluateIdentityMilestones: (state, progress) => void
+ - `src\engine\dream.ts`
+   - function computeAlignmentFactor: (profile, motivations) => AlignmentFactor
+   - function computeInterventionCost: (params, 'ascendant'>;
+@@ -1163,10 +1400,10 @@
+   - function appendRecentEvent: (existing, event) => TickEvent[]
+   - function resolveAftermathTarget: (effect, action) => AftermathTarget
+   - function resolveAftermathContextForAgent: (state, agentId, reactionId?) => ResolvedAftermathContext | ResolveAftermathContextError
++  - function bindReachSignatureTargets: (effect, action, graph) => EncounterAftermathReactionEffect
+   - function applyEncounterAftermathReaction: (state, action, reaction, tick, runtime) => void
+   - interface ResolvedAftermathContext
+-  - interface AftermathMutationSummary
+-  - _...8 more_
++  - _...10 more_
+ - `src\engine\encounterAwareness.ts`
+   - function resolveLocationToHex: (graph, locationId) => void
+   - function computeAwarenessHops: (capability, reach) => number
+@@ -1229,6 +1466,8 @@
+   - _...1 more_
+ - `src\engine\encounters\driftAccumulator.ts`
+   - function applyDriftMagnitude: (drift, agentId, axisId, signedMagnitude, tick) => DriftApplicationResult
++  - function liveAxisPosition: (baseline, driftDelta) => number
++  - function driftDeltaFor: (drift, agentId, axisId) => number
+   - function decayAllDrift: (drift, decayRate, tick) => ArchetypeDrift[]
+   - interface DriftApplicationResult
+ - `src\engine\encounters\encounterTemplateGraph.ts`
+@@ -1262,6 +1501,14 @@
+   - function evaluatePlaceGate: (template, context) => PlaceGateResult
+   - interface PlaceGateContext
+   - interface PlaceGateResult
++- `src\engine\encounters\reactionChooser.ts`
++  - function computeAxisLeans: (graph, archetypeDrift, agentId) => AxisLeans | null
++  - function inferReactionLean: (reaction, primaryReach) => ReactionLean
++  - function scoreReaction: (lean, agentLeans, weight) => number
++  - function chooseAlignedReaction: (reactions, agentLeans, primaryReach, weight) => ReactionChoice
++  - interface ReactionDominant
++  - interface ReactionChoice
++  - _...2 more_
+ - `src\engine\encounters\relationshipResolver.ts` — function getRelationship: (graph, actorIdA, actorIdB) => RelationshipResult, type RelationshipResult
+ - `src\engine\encounterScoring.ts`
+   - function computeResonance: (hexAffinity, encounterSphere) => number
+@@ -1270,12 +1517,22 @@
+   - function computeFamiliarityPenalty: (record, templateId) => number
+   - function computeExplorationBonus: (record, locationId, currentTick) => number
+   - function computeRuinsBonus: (graph, locationId, agentId) => number
+-  - _...26 more_
++  - _...29 more_
+ - `src\engine\encounterSeeding.ts` — function evaluateEncounterSeeds: (state, tick, rng) => void
+ - `src\engine\encounterSupportBundle.ts`
+   - function prepareEncounterSupportBundle: (state, template, targetId, fallbackLocationId?) => EncounterSupportBinding[]
+   - function prepareEncounterSupportBundleForContext: (state, template, targetId, fallbackLocationId?) => PreparedEncounterSupportBundleResult
+   - interface PreparedEncounterSupportBundleResult
++- `src\engine\encounterSurface.ts`
++  - function computeSurfaceKey: (entry, 'templateId' | 'reachPrimary' | 'sublocationTypeId' | 'targetAgentRole'
++  >) => SurfaceKey
++  - function getSurfaceAxisValues: (entry, 'reachPrimary' | 'sublocationTypeId' | 'targetAgentRole'
++  >) => SurfaceAxisValues
++  - interface SurfaceAxisValues
++  - type SurfaceKey
++  - const SURFACE_KEY_AXES: readonly string[]
++  - const SURFACES_PER_RUN_TARGET
++  - _...2 more_
+ - `src\engine\encounterTimeline.ts`
+   - function appendEvent: (agentId, event) => void
+   - function getTimeline: (agentId) => readonly TimelineEvent[]
+@@ -1287,11 +1544,20 @@
+   - function getVisibilityDepth: (courtPosition) => EncounterVisibilityDepth
+   - function generateInterventionChoices: (courtPosition, encounterName) => EncounterInterventionChoice[]
+   - function generateEncounterProse: (depth, agentName, encounterName, locationName) => string
+-  - function buildEncounterNotification: (agentId, agentName, encounterId, encounterName, locationName, courtPosition, attentionMode, tick, metadata?, 'kind' | 'sourceSystem' | 'stepIndex' | 'actionId' | 'stepId'>>) => EncounterNotification | null
++  - function buildEncounterNotification: (agentId, agentName, encounterId, encounterName, locationName, courtPosition, attentionMode, tick, metadata?, 'kind' | 'sourceSystem' | 'stepIndex' | 'actionId' | 'stepId' | 'narrativeTag' | 'totalSteps' | 'outcomeBand' | 'hexCol' | 'hexRow' | 'locationLabel'>>) => EncounterNotification | null
+   - function applyEncounterIntervention: (graph, ascendantId, agentId, encounterId, choice, threadEdgeId, tick) => void
+   - function toggleAttentionMode: (graph, threadEdgeId, ascendantId, tick) => void
+   - _...1 more_
+ - `src\engine\essenceIncome.ts` — function computeEssenceIncome: (graph, ascendantId, controlEffects?) => EssencePool
++- `src\engine\essenceSources.ts`
++  - function readEssenceSource: (properties, unknown> | undefined) => EssenceSource | undefined
++  - function findLatentSourcesInRange: (graph, center, rangeHops) => string[]
++  - function computeSourceIncome: (graph, ascendantId) => Partial<Record<SphereName, number>>
++  - function migrateControlledPlacesOfPower: (graph, ascendantId, tick) => number
++  - function countControlledSources: (graph, ascendantId) => ControlledSourceCount
++  - function recomputeControlledSourceTiers: (graph, ascendantId) => SourceTierRecompute
++  - _...2 more_
++- `src\engine\essenceSourceSeeding.ts` — function seedLatentEssenceSources: (graph, rng) => void
+ - `src\engine\eventAggregation.ts`
+   - function aggregateColocationEvents: (events, rng) => void
+   - const EVENT_AGGREGATE_MIN_GROUP_SIZE
+@@ -1349,6 +1615,14 @@
+   - function decideSchismOutcome: (state, factionId, baselineCohesion, prngSample, weights) => SchismDecision
+   - interface SchismDecisionInputs
+   - interface SchismDecision
++- `src\engine\failureStoryArtifact.ts`
++  - function detectExistingStoryArtifact: (state, action) => ExistingArtifact | null
++  - function guaranteeFailureStoryArtifact: (state, action, tick, runtime) => GameState
++  - interface FailureStoryCounters
++  - const FAILURE_ARTIFACT_SEVERITY_BY_SCALE: Record<ActionScale, number>
++  - const FAILURE_ARTIFACT_CATEGORY: Record<'failure' | 'critical_failure', HiddenMarkCategory>
++  - const FAILURE_ARTIFACT_REVEAL_FAMILIES: readonly string[]
++  - _...2 more_
+ - `src\engine\familiarity.ts`
+   - function getFamiliarity: (map, objectId) => number
+   - function addFamiliarity: (map, objectId, amount, multiplier) => FamiliarityMap
+@@ -1364,14 +1638,31 @@
+   - const TEMP_NOISE_SCALE
+   - _...7 more_
+ - `src\engine\foreshadowing\attributeRecentInterventions.ts` — function attributeRecentInterventions: (state, agentId, encounterId, currentTick) => InterventionAttribution | null
++- `src\engine\foreshadowing\composeGeneric.ts`
++  - function composeGenericForeshadowing: (input) => ComposedGenericForeshadowing
++  - interface ComposeGenericInput
++  - interface ComposedGenericForeshadowing
++- `src\engine\foreshadowing\composeReceipt.ts`
++  - function composeReceiptForeshadowing: (input, receipt) => ComposedReceiptForeshadowing
++  - interface ComposeReceiptInput
++  - interface ComposedReceiptForeshadowing
+ - `src\engine\foreshadowing\encounterForeshadowing.ts` — function getEncounterForeshadowing: ({...}, graph, tick, agentId, decision, candidate, }) => ForeshadowingResult, interface EncounterForeshadowingRequest
+ - `src\engine\foreshadowing\genericFallback.ts`
+   - function resolveForeshadowingPlaceholders: (template, agentName, encounterHeading, pronounSubject) => string
+   - const GLOBAL_FORESHADOWING_FALLBACK_TEMPLATE
+   - const GENERIC_FORESHADOWING_FALLBACK
+ - `src\engine\foreshadowing\getEncounterForeshadowing.ts` — function getEncounterForeshadowing: (state, agentId, encounterId, tick, runtime) => ForeshadowingResult
++- `src\engine\foreshadowing\motiveReceipt.ts` — function intelTierFromReliability: (reliability) => ForeshadowingIntelligenceTier, function buildMotiveReceipt: (candidate, intelReliability, intelRecordId, decidedAtTick) => MotiveReceipt
++- `src\engine\foreshadowing\realizer.ts`
++  - function pronounNumber: (subject) => GrammaticalNumber
++  - function objectPronoun: (subject) => string
++  - function conjugate: (lemma, number) => string
++  - function realize: (template, ctx) => string
++  - interface RealizeContext
++  - type GrammaticalNumber
++- `src\engine\foreshadowing\receiptRead.ts` — function readMotiveReceipt: (node, templateId, locationId?) => MotiveReceipt | null
+ - `src\engine\gameInit.ts`
+-  - function initializeGameState: (archetype, avatarName, cosmology, seed, cols, rows) => void
++  - function initializeGameState: (archetype, avatarName, cosmology, seed, cols, rows, doomArchetype?) => void
+   - function initializeGameStateFromIdentity: (identity, seed, cosmologyOverride?, mapSizeOverride?) => ReturnType<typeof initializeGameState>
+   - function devSeedTheFirst: (state) => string
+   - function devSeedAscendantTestPackage: (state) => void
+@@ -1412,7 +1703,7 @@
+   - function parseHexTargetId: (targetId) => void
+   - interface HexActionResult
+   - const HEX_BLESS_INFLUENCE_DELTA
+-  - _...24 more_
++  - _...25 more_
+ - `src\engine\hexActorIndex.ts`
+   - function hexKey: (col, row) => HexKey
+   - function buildHexActorIndex: (graph) => HexActorIndex
+@@ -1465,7 +1756,7 @@
+   - function spendEssence: (pool, sphere, cost) => boolean
+   - function generateEssence: (pool, generation, maxEssence) => void
+   - function computeEssenceGeneration: (graph, ascendantId, controlEffects?) => EssenceGeneration
+-  - _...8 more_
++  - _...10 more_
+ - `src\engine\initiativeCandidates.ts` — function generateInitiativeCandidates: (graph, agentId, locationId, tick, activeAmbitionTemplateIds) => InitiativeCandidateResult, interface InitiativeCandidateResult
+ - `src\engine\initiativeLifecycle.ts` — function startInitiative: (graph, candidate, tick, rng) => void
+ - `src\engine\initiativeOutcomes.ts` — function executeInitiativeOutcomes: (state, graph, progress, template, runtime?) => OutcomeResult, interface OutcomeResult
+@@ -1512,11 +1803,11 @@
+ - `src\engine\kpi\gameplayKpi.ts`
+   - function createEligibilityFunnelCounters: (sinceTick) => EligibilityFunnelCounters
+   - function isBranchingTemplate: (templateId) => boolean
++  - function isRichTemplate: (templateId) => boolean
+   - function computeGameplayKpiReport: (state, runtime?) => GameplayKpiReport
+   - interface EligibilityFunnelCounters
+   - interface OutcomeDistribution
+-  - interface TemplateEntry
+-  - _...10 more_
++  - _...11 more_
+ - `src\engine\lairEscalation.ts`
+   - function phaseLairEscalation: (state) => void
+   - const LAIR_ESCALATION_INTERVAL
+@@ -1610,13 +1901,13 @@
+   - function runDivineProximityPhase: (state) => DivineProximityPhaseResult
+   - _...9 more_
+ - `src\engine\outcomeConsequences.ts`
++  - function isRiskyTemplate: (templateId) => boolean
+   - function isProvingSliceTemplate: (templateId) => boolean
+   - function computeOutcomeConsequence: (templateId, outcome, actorId, tick, context?) => OutcomeConsequence
++  - interface AttachmentDropIntent
+   - interface OutcomeConsequence
+-  - const CRITICAL_SUCCESS_GROWTH_MULTIPLIER
+-  - const SUCCESS_AT_COST_GROWTH_MULTIPLIER
+-  - const CRITICAL_FAILURE_QUINTESSENCE_PENALTY
+-  - _...2 more_
++  - type OutcomeBand
++  - _...12 more_
+ - `src\engine\pacingGovernor.ts`
+   - function canFireStoryBeat: (pacing, currentTick) => boolean
+   - function enqueueStoryBeat: (pacing, beat) => QueuedStoryBeat | null
+@@ -1629,7 +1920,19 @@
+   - interface RoadSegmentInfo
+   - interface PathResult
+   - interface HexPathResult
++- `src\engine\personality\originBaseline.ts`
++  - function drawOriginVignettes: (rng) => void
++  - function vignetteAxisContribution: (v) => void
++  - function sumAxisContributions: (maps) => void
++  - function computeOriginBaseline: (rng) => void
++  - interface BaselineComputation
++  - type AxisContributionMap
+ - `src\engine\phaseAgentDecision.ts` — function phaseAgentDecision: (state, encounterCache, distanceMatrix, rng) => void
++- `src\engine\phaseAscendantProgression.ts`
++  - function accruePlayerReachPractice: (graph, ascendantId, reach, stepDifficulty0to1, tick) => number | null
++  - function phaseAscendantProgression: (state) => Partial<GameState>
++  - function getAscendantProgress: (state) => void
++  - interface AscendantReachProgress
+ - `src\engine\phaseAttention.ts` — function resetTugCounter: () => void, function phaseAttention: (state, templates, rng) => void
+ - `src\engine\phaseColocationDetection.ts` — function resetColocationEventCounter: () => void, function phaseColocationDetection: (state) => Partial<GameState>
+ - `src\engine\phaseComposition.ts` — function phaseComposition: (state) => Partial<GameState>
+@@ -1640,6 +1943,7 @@
+   - const TAP_SOURCE_BASE_INCOME
+   - const TAP_SOURCE_SUSTAIN_COST
+   - const CLAIM_RESOURCE_INCOME_MULTIPLIER
++  - _...2 more_
+ - `src\engine\phaseDivinePremonition.ts` — function phaseDivinePremonition: (state, rng) => void
+ - `src\engine\phaseDoom.ts` — function resetDoomCounter: () => void, function phaseDoom: (state) => Partial<GameState>
+ - `src\engine\phaseEconomicChronicle.ts` — function phaseEconomicChronicle: (state) => Partial<GameState>
+@@ -1649,6 +1953,7 @@
+   - function resetEncounterTraitInit: () => void
+   - function processEncounterMastery: (graph, actorId, encounterId, stepSuccess, isCompleted, tick) => void
+   - function processEncounterConditions: (graph, actorId, encounterId, stepSuccess, isCompleted, tick) => void
++- `src\engine\phaseEssenceSources.ts` — function phaseEssenceSources: (state) => Partial<GameState>
+ - `src\engine\phaseFactionActions.ts` — function phaseFactionActions: (state) => void, const FACTION_ACTION_TEMPLATES: ReadonlyMap<FactionActionType, FactionActionTemplate>
+ - `src\engine\phaseFactionSuccession.ts` — function phaseFactionSuccession: (state) => void
+ - `src\engine\phaseHexState.ts`
+@@ -1702,6 +2007,20 @@
+   - function determinePolarity: (template, graph, agentId) => 'positive' | 'negative' | null
+   - function processReputationTally: (graph, agentId, encounterId, stepSuccess, encounterCompleted, tick) => void
+   - function phaseReputationTraits: (state) => Partial<GameState>
++- `src\engine\phases\corePersonality.ts`
++  - function processCorePersonality: (state) => CorePersonalityResult
++  - interface CorePersonalityResult
++  - const corePersonalityPhase: EnginePhase
++- `src\engine\phases\personalityOriginSeed.ts`
++  - function processPersonalityOriginSeed: (state) => OriginSeedResult
++  - interface OriginSeedResult
++  - const personalityOriginSeedPhase: EnginePhase
++- `src\engine\phases\personalityTraitEmerge.ts`
++  - function processPersonalityTraitEmergence: (state) => PersonalityEmergenceResult
++  - interface PersonalityEmergenceResult
++  - const personalityTraitEmergePhase: EnginePhase
++- `src\engine\phases\phaseAutonomousAftermath.ts` — function processAutonomousAftermath: (state, ctx) => PhaseResult, const autonomousAftermathPhase: EnginePhase
++- `src\engine\phases\resourceStockTiers.ts` — function phaseResourceStockTiers: (state, ctx) => PhaseResult, const resourceStockTiersPhase: EnginePhase
+ - `src\engine\phaseSchismResolution.ts` — function phaseSchismResolution: (state, runtime?) => void
+ - `src\engine\phaseSecretsFavors.ts` — function phaseSecretsFavors: (state) => Partial<GameState>
+ - `src\engine\phaseSettlementPromotion.ts` — function phaseSettlementPromotion: (state, runtime?) => Partial<GameState>
+@@ -1723,12 +2042,12 @@
+ - `src\engine\phaseStrategicProjects.ts` — function phaseStrategicProjects: (state, rng) => void
+ - `src\engine\phaseSublocations.ts`
+   - function phaseSublocations: (state, encounterCache?, runtime?) => Partial<GameState>
++  - function getSublocationFamilyCounts: () => Record<ReachDomain, number>
++  - interface ConditionalSublocationSpec
+   - const SUBLOC_MARKET_SPAWN_PROSPERITY
+   - const SUBLOC_MARKET_DISSOLVE_PROSPERITY
+   - const SUBLOC_SMUGGLER_SPAWN_PROSPERITY
+-  - const SUBLOC_MARKET_TRADE_BONUS
+-  - const SUBLOC_MARKET_VOLUME_BONUS
+-  - _...3 more_
++  - _...7 more_
+ - `src\engine\phaseTradeRouteDecay.ts` — function phaseTradeRouteDecay: (state) => Partial<GameState>
+ - `src\engine\phaseUnrest.ts`
+   - function phaseUnrest: (state) => Partial<GameState>
+@@ -1743,7 +2062,7 @@
+   - function forecastStepExpectedUtility: (capability, difficulty, rewardScale, modifiers?) => number
+   - function forecastEncounterExpectedUtility: (entry, agentId, graph, rewardScale?) => EncounterForecast
+   - interface EncounterForecast
+-  - _...9 more_
++  - _...10 more_
+ - `src\engine\portfolioManager.ts`
+   - function isPortfolioPinned: (node) => boolean
+   - function getPortfolioPinnedAgents: (graph) => GraphNode[]
+@@ -1770,13 +2089,13 @@
+ - `src\engine\proseComposer.ts` — function composeProse: (layers) => string, function composeSummary: (layers) => string
+ - `src\engine\proseEnrichment.ts`
+   - function gatherNarrativeContext: (graph, agentId, meetingRecord?, beatHistory?, doomIdentityMatrix?, state?, tick?) => NarrativeContext
+-  - function enrichProse: (template, ctx) => string
++  - function enrichProse: (template, ctx, opts?) => void
+   - function generateMeetingCallback: (ctx, rng) => void
+   - interface NarrativeContext
+   - const ENRICHMENT_ARTIFACT_MIN_TIER
+   - const ENRICHMENT_ALLY_MIN_TRUST
+   - _...2 more_
+-- `src\engine\proseGenerator.ts` — function clearProseCache: () => void, function generateEntityProse: (nodeId, graph, seed, mode, tick) => string
++- `src\engine\proseGenerator.ts` — function generateEntityProse: (nodeId, graph, seed, mode, tick, runtime?) => string
+ - `src\engine\proseResolvers.ts`
+   - function subtypeResolver: (nodeId, graph, seed) => ProseLayer[]
+   - function biomeResolver: (nodeId, graph, seed) => ProseLayer[]
+@@ -1807,6 +2126,12 @@
+   - function getImportanceDelta: (source) => number
+   - _...1 more_
+ - `src\engine\raritySeeding.ts` — function seedAllRarityTiers: (graph, rng) => void
++- `src\engine\reachSignatureMarkers.ts`
++  - function buildReachSignatureMarkers: (graph, controlEffects) => ReachSignatureMarker[]
++  - interface ReachSignatureMarker
++  - type ReachSignatureMarkerKind
++  - const WARHOST_MARKER_PROP
++  - const UNIQUE_LOCATION_GENERATOR
+ - `src\engine\regionDetection.ts`
+   - function edgeBorderCost: (current, neighbor, hasRiverEdge) => number
+   - function detectRegionsBorderCost: (tiles, riverPaths, cols, seedHexes) => void
+@@ -1846,18 +2171,27 @@
+   - _...1 more_
+ - `src\engine\resolutionScaleAdjust.ts`
+   - function applyScaleDifficultyAdjust: (difficulty, capability, sphereFactor, mods, scale) => void
+-  - function applyScaleCritFailureGate: (outcome, scale) => OutcomeType
++  - function resolveCritFailureSeverity: (scale) => ComplicationSeverity
+   - const SCALE_DIFFICULTY_OFFSETS: Record<ActionScale, number>
+   - const MIN_PROBABILITY_BY_SCALE: Record<ActionScale, number>
+-  - const CRIT_FAILURE_PERMITTED_BY_SCALE: Record<ActionScale, boolean>
++  - const CRIT_FAILURE_SEVERITY_BY_SCALE: Record<ActionScale, ComplicationSeverity>
++  - const DEFAULT_CRIT_FAILURE_SEVERITY: ComplicationSeverity
+ - `src\engine\resolutionService.ts`
+-  - function normalizeLegacyDifficulty: (rawDifficulty) => number
+   - function computeResolutionThreshold: (inputs) => number
+   - function classifyResolutionRoll: (probability, roll) => ResolutionRollBreakdown
+   - function computeOutcomeProbabilities: (inputs) => ResolutionProbabilitySummary
+   - function forecastAction: (inputs) => ResolutionProbabilitySummary
+   - function resolveAction: (inputs, rng) => void
+-  - _...6 more_
++  - function isSuccessOutcome: (outcome) => boolean
++  - _...4 more_
++- `src\engine\resourceEconomy.ts`
++  - function readResources: (props, unknown>) => Record<string, ResourceInstance>
++  - function computeLocationDemand: (props, unknown>, sublocationCount) => number
++  - function computeResourceBalance: (instance, demand, resourceId) => number
++  - function tierFromBalance: (balance) => StockTier
++  - function deriveLocationStockTiers: (props, unknown>, sublocationCount) => LocationStockDerivation
++  - function readLocationResourceBalance: (props, unknown>) => number
++  - _...1 more_
+ - `src\engine\resourceSeeding.ts` — function seedLocationResources: (graph, locationIds, cosmology, rng) => void
+ - `src\engine\retinue.ts`
+   - function getRetinueAgents: (graph, ascendantId) => RetinueAgent[]
+@@ -1918,6 +2252,10 @@
+   - function selectRivalAction: (rival, state, deterministicRoll?, /** Doom identity rival-behavior bias — weight deltas scaled by IDENTITY_RIVAL_BIAS_WEIGHT. */
+   identityBias?, number>>) => RivalAction
+   - function updateRivalState: (state, action) => RivalState
++  - function computeRivalEscalationTier: (state) => number
++  - function selectRivalScheme: (rival, rivalState, escalationTier, launchTick, rng) => void
++  - _...3 more_
++- `src\engine\rivalInfluenceMarkers.ts` — function buildRivalInfluenceMarkers: (graph, rivals) => RivalInfluenceMarker[], interface RivalInfluenceMarker
+ - `src\engine\riverGeneration.ts` — function generateRivers: (data) => void
+ - `src\engine\roadNetwork.ts`
+   - function generateRoadEdges: (graph, tiles, cols, rows) => void
+@@ -2040,6 +2378,10 @@
+   - function getDominantSphere: (affinity) => SphereName | null
+   - function applyAxiologicalShift: (profile, mapping) => AxiologicalProfile
+   - _...3 more_
++- `src\engine\sphereScaling.ts`
++  - function spherePowerMultiplier: (sphereScore) => number
++  - function scaledEffect: (base, mult) => number
++  - function scaledCost: (base, mult) => number
+ - `src\engine\stealth.ts`
+   - function createMortalDetectionState: (actorId) => MortalDetectionState
+   - function getMortalAwarenessLevel: (score) => MortalAwarenessLevel
+@@ -2162,7 +2504,7 @@
+   - function clearTraces: () => void
+   - function enableTracing: () => void
+   - function disableTracing: () => void
+-  - _...4 more_
++  - _...14 more_
+ - `src\engine\tradeRoute.ts`
+   - function readTradeRouteProps: (raw, unknown>) => Required<TradeRouteProperties>
+   - function isRouteStale: (lastTraded, currentTick) => boolean
+@@ -2189,7 +2531,7 @@
+   - function progressUnifiedAction: (action) => UnifiedAction
+   - function isStepComplete: (action) => boolean
+   - function advanceStep: (action, outcome, template, rng) => void
+-  - _...5 more_
++  - _...6 more_
+ - `src\engine\unifiedActionPhases.ts`
+   - function resetPhaseEventCounter: () => void
+   - function phaseIdleSelection: (state, rng) => void
+@@ -2203,7 +2545,7 @@
+   - function resolveUncontestedStep: (action, template, state, rng) => void
+   - function executeStepResult: (action, template, outcome, ops, state, rng) => void
+   - function phaseUnifiedActionProgress: (state, templates, rng) => void
+-  - _...1 more_
++  - _...2 more_
+ - `src\engine\unifiedCandidates.ts` — function generateUnifiedCandidates: (graph, actorId, locationId, templates, activeActions, effectStates?, EffectRuntimeState>) => ActionCandidate[], const THREAT_REACTION_BONUS
+ - `src\engine\viewLevel.ts`
+   - function getRegions: (graph) => GraphNode[]
+@@ -2334,6 +2676,7 @@
+ - `src\services\narration\ServerBackend.ts` — class ServerBackend
+ - `src\services\narration\useNarration.ts` — function useNarration: () => void
+ - `src\services\narration\WorkerBackend.ts` — function encodeWav: (samples, sampleRate) => ArrayBuffer, class WorkerBackend
++- `src\testing\ascendantReachHarness.ts` — function buildAscendantReachState: (reach, seed, opts) => ReturnType<typeof initializeGameStateFromIdentity>, interface BuildAscendantReachStateOptions
+ - `src\testing\contentInvariants.ts`
+   - function assertValidUnifiedTemplate: (template) => void
+   - function assertValidStep: (step, templateId) => void
+@@ -2360,11 +2703,27 @@
+   - const ARMY_SIZE_HEADCOUNT: Record<ArmySizeCategory, number>
+   - const ARMY_SPAWN_IRON_TIER_MIN
+   - _...5 more_
++- `src\types\axisRegistry.ts`
++  - function getAxisByReach: (reach) => CanonicalAxis
++  - function getAxisById: (axisId) => CanonicalAxis | undefined
++  - function getPoleLabel: (axisId, side) => AxisPole | undefined
++  - function getAxisByValuePair: (valuePair) => CanonicalAxis | undefined
++  - function reachToAxisId: (reach) => string
++  - function axisIdToReach: (axisId) => ReachDomain | undefined
++  - _...10 more_
+ - `src\types\climate.ts`
+   - function getClimateGroup: (terrain) => ClimateGroup
+   - type ClimateGroup
+   - const BIOME_CLIMATE_MAP: Record<string, ClimateGroup>
+   - const DEFAULT_CLIMATE: ClimateGroup
++- `src\types\coreRegistry.ts`
++  - function getCoreContinuum: (continuumId) => CoreContinuum | undefined
++  - function getCorePoleLabel: (continuumId, side) => CorePole | undefined
++  - interface CorePole
++  - interface CoreReachCoupling
++  - interface CoreContinuum
++  - type CorePoleSide
++  - _...6 more_
+ - `src\types\edgeSchema.ts`
+   - function matchesNodeType: (actualType, allowedTypes) => boolean
+   - interface EdgeSchema
+@@ -2415,8 +2774,9 @@
+   - interface ResourceInstance
+   - interface ResourceDefinition
+   - interface TerrainResourceEntry
++  - type StockTier
+   - const RESOURCE_ABUNDANCE_THRESHOLDS
+-  - const RESOURCE_ICONS: Record<string, string>
++  - _...1 more_
+ - `src\types\secretsFavors.ts`
+   - function secretMagnitudeProse: (magnitude) => string
+   - function favorMagnitudeProse: (magnitude) => string
+diff --git a/.codesight/middleware.md b/.codesight/middleware.md
+index 073a85c2..300bf452 100644
+--- a/.codesight/middleware.md
++++ b/.codesight/middleware.md
+@@ -1,13 +1,9 @@
+ # Middleware
+ 
+-## auth
+-- authoring-brief — `Docs\authoring-brief.md`
+-- 2026-05-05-canonical-documentation-strategy — `Docs\plans\2026-05-05-canonical-documentation-strategy.md`
+-- 2026-05-09-auto-generated-ledgers — `Docs\plans\2026-05-09-auto-generated-ledgers.md`
+-- generate-impediment-dashboard — `scripts\generate-impediment-dashboard.ts`
+-- courtStrategicPack — `src\data\strategic-packs\courtStrategicPack.ts`
+-
+ ## custom
++- action.star.consecrate — `Actions\Star\action.star.consecrate.md`
++- action.star.desecrate — `Actions\Star\action.star.desecrate.md`
++- consent-integrate — `Design\distributions\design-council-v1.0\prompts\consent-integrate.md`
+ - 2026-03-06-content-strategy — `Docs\plans\2026-03-06-content-strategy.md`
+ - 2026-03-10-qa-test-strategy — `Docs\plans\2026-03-10-qa-test-strategy.md`
+ - 2026-03-10-visual-asset-strategy — `Docs\plans\2026-03-10-visual-asset-strategy.md`
+@@ -16,8 +12,13 @@
+ - 2026-04-12-encounter-actor-test-strategy — `Docs\plans\2026-04-12-encounter-actor-test-strategy.md`
+ - 2026-04-15-strategic-actions-ui-visibility-design — `Docs\plans\2026-04-15-strategic-actions-ui-visibility-design.md`
+ - 2026-05-05-canonical-documentation-strategy-brainstorm — `Docs\plans\2026-05-05-canonical-documentation-strategy-brainstorm.md`
++- rel.generates — `Relationships\rel.generates.md`
++- rel.venerates — `Relationships\rel.venerates.md`
++- generate-action-catalog — `scripts\generate-action-catalog.ts`
++- generate-design-wiki — `scripts\generate-design-wiki.ts`
+ - generate-hex-tile — `scripts\generate-hex-tile.py`
+ - generate-ul-dashboard-data — `scripts\generate-ul-dashboard-data.ts`
++- generate-action-catalog.test — `scripts\__tests__\generate-action-catalog.test.ts`
+ - generate-ul-dashboard-data.test — `scripts\__tests__\generate-ul-dashboard-data.test.ts`
+ - generateVault.test — `scripts\__tests__\generateVault.test.ts`
+ - StrategicMarkerMesh — `src\components\HexMapV2\scene\StrategicMarkerMesh.ts`
+@@ -44,6 +45,14 @@
+ - strategicBehaviorFamilies.test — `src\engine\__tests__\strategicBehaviorFamilies.test.ts`
+ - strategicAction — `src\types\strategicAction.ts`
+ 
++## auth
++- authoring-brief — `Docs\authoring-brief.md`
++- 2026-05-05-canonical-documentation-strategy — `Docs\plans\2026-05-05-canonical-documentation-strategy.md`
++- 2026-05-09-auto-generated-ledgers — `Docs\plans\2026-05-09-auto-generated-ledgers.md`
++- 2026-06-22-thr-465-branching-fire-rate-tuning — `Docs\plans\2026-06-22-thr-465-branching-fire-rate-tuning.md`
++- generate-impediment-dashboard — `scripts\generate-impediment-dashboard.ts`
++- courtStrategicPack — `src\data\strategic-packs\courtStrategicPack.ts`
++
+ ## rate-limit
+ - 2026-04-23-linear-mcp-rate-limits — `Docs\plans\2026-04-23-linear-mcp-rate-limits.md`
+ 
+diff --git a/.codesight/wiki/libraries.md b/.codesight/wiki/libraries.md
+index 1906de43..1debb061 100644
+--- a/.codesight/wiki/libraries.md
++++ b/.codesight/wiki/libraries.md
+@@ -2,14 +2,14 @@
+ 
+ > **Navigation aid.** Library inventory extracted via AST. Read the source files listed here before modifying exported functions.
+ 
+-**508 library files** across 15 modules
++**568 library files** across 15 modules
+ 
+-## Engine (359 files)
++## Engine (396 files)
+ 
+ - `src\engine\phaseProsperity.ts` — getProsperityTier, computeBaseIncome, computeEquilibriumTargetWithSphere, phaseProsperity, ProsperityTier, PopulationTrend, …
+ - `src\engine\graphQueries.ts` — getAgentsAtLocation, getAllActorsAtLocation, getAgentLocation, getAgentLocationId, getSublocationsAt, getLocationsInRegion, …
+-- `src\engine\intelligence.ts` — getAgentIntelligence, getIntelligenceByCategory, hasIntelligenceAbout, getRegionIntelligence, hasRegionIntelligence, buildIntelligenceView, …
+ - `src\engine\encounterScoring.ts` — computeResonance, computeEncounterResonance, computeWorldSoulValueDrift, computeFamiliarityPenalty, computeExplorationBonus, computeRuinsBonus, …
++- `src\engine\intelligence.ts` — getAgentIntelligence, getIntelligenceByCategory, hasIntelligenceAbout, getRegionIntelligence, hasRegionIntelligence, buildIntelligenceView, …
+ - `src\engine\hexActionBridge.ts` — resolveHexAction, resolveHexActionFull, isHexTargetId, parseHexTargetId, HexActionResult, HEX_BLESS_INFLUENCE_DELTA, …
+ - `src\engine\strategicPresentation.ts` — getProgressLabel, getHealthLabel, getBehaviorFamilyPresentation, getAgentStrategicSummary, getAgentStrategicHistory, getHexStrategicOverlays, …
+ - `src\engine\retinue.ts` — getRetinueAgents, derivePopulationHealthLabel, deriveDivinePresenceLabel, getThreadedNodes, groupThreadedNodes, getSustainedControlNodes, …
+@@ -17,34 +17,39 @@
+ - `src\engine\proseResolvers.ts` — subtypeResolver, biomeResolver, cultureResolver, sphereResolver, factionResolver, populationResolver, …
+ - `src\engine\rewardPool.ts` — assembleRewardPool, drawFromPool, getTierCurveForOutcome, resolveRewardRecipe, instantiateReward, instantiateAgreementReward, …
+ - `src\engine\worldGenData.ts` — createWorldGenData, toHexTiles, RiverPath, WorldGenData, RIVER_SOURCE_COUNT_MIN, RIVER_SOURCE_COUNT_MAX, …
++- `src\engine\traceBuffer.ts` — emitTrace, getTraces, getTracesForAgent, clearTraces, enableTracing, disableTracing, …
+ - `src\engine\battleAftermath.ts` — calculateDestructionSeverity, determineCommanderFate, generateRefugeeEncounters, applyAftermath, DestructionSeverity, CommanderFate, …
+ - `src\engine\effectExecutors.ts` — executeTeleport, executeForcedMove, executeSpawn, executeDispel, executeAlterTerrain, executeTransfer, …
++- `src\engine\outcomeConsequences.ts` — isRiskyTemplate, isProvingSliceTemplate, computeOutcomeConsequence, AttachmentDropIntent, OutcomeConsequence, OutcomeBand, …
++- `src\engine\agentDetail.ts` — getAgentDetail, getAgentInfoCard, getAgentFullProfile, ActiveIntent, TopValue, BondSummary, …
+ - `src\engine\balanceTelemetry.ts` — createBalanceTelemetry, recordBalanceEvent, getBalanceEvents, getTrackedAgentIds, setTrackedAgents, getTrackedAgentEvents, …
+ - `src\engine\factionNetwork.ts` — areFactionsHostile, getFactionNodes, getFactionDefinitionForNode, getFactionDefinition, getFactionNetworkSummary, getDoubterCandidate, …
++- `src\engine\kpi\gameplayKpi.ts` — createEligibilityFunnelCounters, isBranchingTemplate, isRichTemplate, computeGameplayKpiReport, EligibilityFunnelCounters, OutcomeDistribution, …
+ - `src\engine\strands.ts` — getPresenceStrand, getDesiresStrand, getBondsStrand, getAmbitionsStrand, getBeliefsStrand, getFearsStrand, …
+ - `src\engine\worldSoul.ts` — createDefaultFundament, normalizeSphereWeights, applyFundamentShift, applyBatchShifts, blendFundaments, createResonanceState, …
++- `src\engine\encounterAftermath.ts` — appendRecentEvent, resolveAftermathTarget, resolveAftermathContextForAgent, bindReachSignatureTargets, applyEncounterAftermathReaction, ResolvedAftermathContext, …
+ - `src\engine\hiddenMarks.ts` — getAgentHiddenMarks, getHiddenMarksByCategory, hasHiddenMark, checkMarkReveals, removeHiddenMark, revealHiddenMark, …
+-- `src\engine\kpi\gameplayKpi.ts` — createEligibilityFunnelCounters, isBranchingTemplate, computeGameplayKpiReport, EligibilityFunnelCounters, OutcomeDistribution, TemplateEntry, …
++- `src\engine\influence.ts` — createEmptyEssencePool, createStartingEssencePool, canAfford, spendEssence, generateEssence, computeEssenceGeneration, …
+ - `src\engine\phaseOmenAgenda.ts` — resetOmenCounter, phaseOmenAgenda, deriveOmenEncounterBias, phaseEmittedOmenDecay, deriveEmittedOmenEncounterBias, OMEN_FIRST_ACTIVATION_TICK, …
+-- `src\engine\tickHealthMonitor.ts` — validateTickOutput, appendCrashLog, getLatestReport, getHealthLog, getCrashLog, clearCrashLog, …
+-- `src\engine\agentDetail.ts` — getAgentDetail, getAgentInfoCard, getAgentFullProfile, ActiveIntent, TopValue, BondSummary, …
+-- `src\engine\guildSeeding.ts` — determineGuildType, deriveReachPreferences, generateGuildDomainCapabilities, generateGuildAxiologicalProfile, seedGuilds, GuildType, …
+-- `src\engine\meetingEncounter.ts` — resetMeetingCounter, getFilteredIntentOptions, generateCandidates, selectDilemmas, applyDilemmaChoice, applyAxiologicalShifts, …
+-- `src\engine\orchestrator.ts` — resetDecisionCache, getEncounterCacheManager, resetEventCounter, phaseEncounterProgressionV2, phaseDilemmaDetection, runDivineProximityPhase, …
+-- _…and 334 more files_
++- _…and 371 more files_
+ 
+-## Data (77 files)
++## Data (93 files)
+ 
+ - `src\data\uiColorPalette.ts` — getHostilityColor, STRAND_COLORS, SENTIMENT_POSITIVE, SENTIMENT_NEUTRAL, SENTIMENT_NEGATIVE, SENTIMENT_GREEN, …
+ - `src\data\culture-content.ts` — getFoundationModifier, getCreationSphereModifier, getBiomeModifier, getFormativeTraitSeed, getBehavioralTraitSeed, getInsiderBeat, …
+-- `src\data\encounter-contract-builder.ts` — toEncounterChoiceCost, toStepFallbackReach, toEncounterChoiceReach, toEncounterArchetypePole, encodeEncounterContractMetadata, buildFallbackEncounterChoice, …
++- `src\data\ascendant-bar-content.ts` — quintessenceLine, ArchetypeCopy, SphereCopy, ReachCopy, SignaturePathState, ARCHETYPE_COPY, …
++- `src\data\encounter-contract-builder.ts` — toEncounterChoiceCost, toStepFallbackReach, toEncounterChoiceReach, toEncounterArchetypePole, resolveEncounterArchetypePole, resolveChoiceDrift, …
++- `src\data\reach-signature-content.ts` — composeDefaultSignature, resolveSignatureIndividualization, SphereTwistSpec, SignatureIndividualization, SignatureMatrix, SIGNATURE_SCALE_FLOOR, …
++- `src\data\ascendant-beat-content.ts` — isSpineBeatId, collectGrantedActionIds, SpineBeatPresentation, ActionBucketEntry, ActionBucket, BEAT_BASE_INTERVAL, …
+ - `src\data\movement-content.ts` — getTerrainTax, getLocationEntryTax, TERRAIN_TAXES, LOCATION_ENTRY_TAXES, BASE_EDGE_TRAVERSAL_COST, DECISION_REEVALUATION_TICKS, …
++- `src\data\resource-classes.ts` — getResourceClass, getResourceTierProse, ResourceClass, ResourceClassCategory, STOCK_SCARCE_THRESHOLD, STOCK_SURPLUS_THRESHOLD, …
+ - `src\data\encounter-content.ts` — resolveEncounterNarrative, getEncountersByLocationType, getEncountersBySublocationAndLocation, getEncountersForLocation, getEncounterById, getAnyEncounterById, …
++- `src\data\essence-sources.ts` — deriveSourceTier, sourceTierMultiplier, sourceDepthMultiplier, SANCTITY_FLOWERING_THRESHOLD, SOURCE_FLOWERING_MULTIPLIER, SOURCE_CONTESTED_PENALTY, …
+ - `src\data\opposition-content.ts` — getFoundationOpposition, getCreationSphereTension, getArchetypeFriction, CreationSphereTension, ArchetypeFrictionPair, FoundationSphere, …
+ - `src\data\premonition-content.ts` — getQuintessenceProseTier, composeRetconLine, RetconInput, QuintessenceProseTier, AmbitionProseCategory, WHISPER_VIGNETTE_TEMPLATES, …
+-- `src\data\ascendant-bar-content.ts` — quintessenceLine, ArchetypeCopy, SphereCopy, ARCHETYPE_COPY, SPHERE_COPY, BAND_TOOLTIP, …
+ - `src\data\army-encounter-content.ts` — getArmyEncounterById, ArmyEncounterMeta, ARMY_ENCOUNTER_META, ARMY_RAISE_TEMPLATE, ARMY_THRESHOLD_SUPPLY_CRISIS_TEMPLATE, ARMY_THRESHOLD_DESERTION_TEMPLATE, …
+ - `src\data\culture-name-pools.ts` — buildSettlementCultureRoots, getSettlementCultureSuffixes, buildCultureNamePool, pickCulturalName, WANDERER_FALLBACK_BANNED_PATTERNS, FOUNDATION_NAMES, …
++- `src\data\foreshadowing-content.ts` — matterAtPlace, KNOWLEDGE_CLAUSES, PULL_CLAUSES, EXPECTATION_CLAUSES, DEFAULT_PULL_CLAUSES, MATTER_NO_PLACE, …
+ - `src\data\holy-order-dawn-encounter-content.ts` — getHolyOrderDawnEncounterById, HOLY_ORDER_DAWN_ENCOUNTER_META, HOLY_ORDER_DAWN_ENCOUNTER_TEMPLATES, HOLY_ORDER_DAWN_SENIOR_TEMPLATES, HOLY_ORDER_DAWN_ELITE_TEMPLATES, HOLY_ORDER_DAWN_SOCIAL_TEMPLATES, …
+ - `src\data\lorekeepers-covenant-encounter-content.ts` — getLorekeeperCovenantEncounterById, LOREKEEPERS_COVENANT_ENCOUNTER_META, LOREKEEPERS_COVENANT_ENCOUNTER_TEMPLATES, LOREKEEPERS_SENIOR_TEMPLATES, LOREKEEPERS_ELITE_TEMPLATES, LOREKEEPERS_SOCIAL_TEMPLATES, …
+ - `src\data\mercenary-encounter-content.ts` — getMercenaryEncounterById, MERCENARY_ENCOUNTER_META, MERCENARY_ENCOUNTER_TEMPLATES, MERCENARY_SENIOR_TEMPLATES, MERCENARY_ELITE_TEMPLATES, MERCENARY_SOCIAL_TEMPLATES, …
+@@ -55,14 +60,9 @@
+ - `src\data\underking-court-encounter-content.ts` — getUnderkingCourtEncounterById, UNDERKING_COURT_ENCOUNTER_META, UNDERKING_COURT_ENCOUNTER_TEMPLATES, UNDERKING_COURT_SENIOR_TEMPLATES, UNDERKING_COURT_ELITE_TEMPLATES, UNDERKING_COURT_SOCIAL_TEMPLATES, …
+ - `src\data\archetype-content.ts` — getArchetype, getArchetypeTone, getArchetypeBeatPatterns, getArchetypeVignette, ToneKeywords, NarrativeRequirement, …
+ - `src\data\domain-words.ts` — getDomainTier, getDomainWord, getValueWord, getReputationWord, getBondStrengthWord, DOMAIN_WORD_SCALES, …
+-- `src\data\event-aggregation-content.ts` — getAggregatePhrasePool, crowdSizeCategory, AggregatePhraseEntry, AggregateCrowdSize, AGGREGATE_PHRASE_POOL_MIN, AGGREGATE_PHRASES_SMALL, …
+-- `src\data\faction-schism-content.ts` — generateSplinterName, formatSchismPlantChronicle, formatSchismReformChronicle, formatSchismSplitChronicle, SCHISM_PLANT_CHRONICLE_TEMPLATE, SCHISM_REFORM_CHRONICLE_TEMPLATE, …
+-- `src\data\sphereIcons.ts` — getSphereColor, getSphereSymbol, getSphereImagePath, getWheelSlotGlyph, getAgentColor, SphereIconDef, …
+-- `src\data\faction-encounter-content.ts` — getFactionEncounterById, getFactionTemplateIds, FACTION_ENCOUNTER_META, FACTION_SOCIAL_TEMPLATES, FACTION_ENCOUNTER_TEMPLATES, FACTION_JOIN_TEMPLATE, …
+-- `src\data\unified-action-templates.ts` — encounterTypeToCrud, migrateActionTemplate, getUnifiedTemplateById, LOCATION_ACTION_POST_EFFECT_TEMPLATE_IDS, THREAD_CREATION_TEMPLATES, THREAD_MANAGEMENT_TEMPLATES, …
+-- _…and 52 more files_
++- _…and 68 more files_
+ 
+-## Scripts (23 files)
++## Scripts (27 files)
+ 
+ - `scripts\vision-audit.ts` — resolveVisionDir, extractVisionFileRefs, parseFrontmatterAliases, extractPremises, findUncitedPremises, parseTasteProfile, …
+ - `scripts\drift-scan\index.ts` — parseCodesightImporters, evaluateCouplingCreep, countBrokenWindowsFromCorpus, evaluateBrokenWindows, evaluateTestSuiteHealth, parseUlShardTerms, …
+@@ -71,8 +71,12 @@
+ - `scripts\generate-ul-dashboard-data.ts` — slugifyHeading, buildDashboardData, generateDashboardData, ULShard, ULSeeAlsoLink, ULTerm, …
+ - `scripts\generate-hex-tile.py` — make_hex_mask, apply_hex_mask, black_to_transparent, build_prompt, build_magic_prompt, generate_image, …
+ - `scripts\drift-scan\linear.ts` — linearGql, ensureDriftScanLabelId, resolveBacklogStateId, findIssueByExactTitle, createDriftIssue, LINEAR_API_URL, …
+-- `scripts\lint-encounter-content.ts` — runEncounterContentLint, EncounterLintIssue, EncounterLintSummary, EncounterLintRunResult, EncounterLintSeverity, EncounterLintRuleId, …
++- `scripts\stale-claim-sweep\constants.ts` — buildWarningComment, STALE_THRESHOLD_HOURS, GRACE_PERIOD_HOURS, SWEEP_CRON, PARKED_LABEL_NAME, PARKED_LABEL_COLOR, …
+ - `scripts\playtest-format.ts` — formatDashboard, formatNarrativeLog, formatTraceDeepDive, formatFullReport, Snapshot, PlaytestReportData, …
++- `scripts\linearAutoclose.mjs` — extractCloseableIssueIds, isDocsFlushContext, extractNativeCloseableIssueIds, evaluateFlushCloseGuard, CLOSE_KEYWORD_PATTERN, DOCS_FLUSH_BRANCH_PATTERN, …
++- `scripts\lint-find-first.ts` — classifyFindGate, runFindFirstLint, FindGateViolation, FindFirstLintSummary, FindFirstLintResult, FindGateTemplate, …
++- `scripts\generate-action-catalog.ts` — buildCatalogData, generateActionCatalog, ActionCatalogEntry, ActionCatalogData, GenerateOptions, CatalogCategory, …
++- `scripts\lint-encounter-content.ts` — runEncounterContentLint, EncounterLintIssue, EncounterLintSummary, EncounterLintRunResult, EncounterLintSeverity, EncounterLintRuleId, …
+ - `scripts\lint-rulebook.ts` — lintRulebookVsUl, lintRulebookVsCanon, lintRulebookVsCode, lintRulebookVsVision, lintQuickReferenceVsRulebook, SignalResult
+ - `scripts\review\types.ts` — isHeartbeat, isFindings, ReviewFinding, ReviewFindings, ReviewWrapperTrace, HeartbeatLine
+ - `scripts\session-precheck.ts` — probeBranchStaleness, BranchStalenessResult, STALENESS_BEHIND_THRESHOLD, STALENESS_BRANCH_AGE_THRESHOLD_MS
+@@ -85,22 +89,23 @@
+ - `scripts\inspiration-ingest\hash.ts` — createContentHash
+ - `scripts\inspiration-ingest\normalize.ts` — normalizeInspirationSource
+ - `scripts\inspiration-ingest\runIngest.ts` — runInspirationIngest
+-- `scripts\inspiration-ingest\sources.ts` — loadRawInspirationSources
+-- `scripts\rebuild-index.ts` — rebuildIndex
++- _…and 2 more files_
+ 
+-## Types (13 files)
++## Types (15 files)
+ 
+ - `src\types\unifiedAction.ts` — createDefaultHexRevelation, isActionStepBranch, isStepSuccess, isStepFailure, ActionStepOutcomeMetadata, IntelligenceRecord, …
+ - `src\types\secretsFavors.ts` — secretMagnitudeProse, favorMagnitudeProse, secretTypeProse, KnowsSecretOfEdgeProperties, OwesFavorEdgeProperties, SecretType, …
+ - `src\types\sphereAffinity.ts` — triangleCost, triangleTotal, createDefaultSphereAffinity, getTerrainSphereScores, SphereAffinity, SpherePressureEvent, …
+ - `src\types\agentKnowledge.ts` — createEmptyAgentKnowledge, AgentKnowledge, BondRevelationSource, DEPTH_DILEMMA, DEPTH_ENCOUNTER_OBSERVED, DEPTH_DIVINE_ACTION, …
+ - `src\types\faction.ts` — requiresMilitaryForce, computeRankFromReputation, FactionRankBonus, FactionRankTier, ExpulsionConsequence, FactionEncounterMeta, …
++- `src\types\axisRegistry.ts` — getAxisByReach, getAxisById, getPoleLabel, getAxisByValuePair, reachToAxisId, axisIdToReach, …
+ - `src\types\quintessence.ts` — quintessenceToWord, getQuintessenceRatio, clampQuintessence, getQuintessenceThresholdState, isAtTranscendence, getQuintessenceBand, …
++- `src\types\coreRegistry.ts` — getCoreContinuum, getCorePoleLabel, CorePole, CoreReachCoupling, CoreContinuum, CorePoleSide, …
+ - `src\types\army.ts` — determineSizeCategory, ArmyState, ArmyObjective, ArmySizeCategory, ARMY_SIZE_HEADCOUNT, ARMY_SPAWN_IRON_TIER_MIN, …
+ - `src\types\graphOp.ts` — isSymbolicRef, resolveRef, GraphOpContext, InfluencePayload, GraphOp, GraphOpResult, …
+ - `src\types\hunger.ts` — buildStubAscendantLens, deriveIntentFromHunger, HungerDefinition, AscendantLens, DerivedIntent, HungerId, …
++- `src\types\resource.ts` — getAbundanceLabel, ResourceInstance, ResourceDefinition, TerrainResourceEntry, StockTier, RESOURCE_ABUNDANCE_THRESHOLDS, …
+ - `src\types\rarity.ts` — getRarityName, getRarityColor, clampRarityTier, RarityTier, RARITY_TIER_NAMES, RARITY_TIER_COLORS
+-- `src\types\resource.ts` — getAbundanceLabel, ResourceInstance, ResourceDefinition, TerrainResourceEntry, RESOURCE_ABUNDANCE_THRESHOLDS, RESOURCE_ICONS
+ - `src\types\edgeSchema.ts` — matchesNodeType, EdgeSchema, GRAPH_SCHEMA_VALIDATION_ENABLED, GRAPH_SCHEMA_THROW_ON_UNKNOWN, EDGE_SCHEMA
+ - `src\types\climate.ts` — getClimateGroup, ClimateGroup, BIOME_CLIMATE_MAP, DEFAULT_CLIMATE
+ 
+@@ -148,10 +153,11 @@
+ - `src\hooks\useDetailModal.ts` — useDetailModal
+ - `src\hooks\useLastViewedTick.ts` — useLastViewedTick
+ 
+-## Testing (2 files)
++## Testing (3 files)
+ 
+ - `src\testing\contentInvariants.ts` — assertValidUnifiedTemplate, assertValidStep, assertNoDuplicateIds, assertAllValidReaches
+ - `src\testing\intelProseCategoryLint.ts` — isIntelCategoryPlausible, runIntelProseCategoryLint, IntelProseCategoryWarning, IntelProseCategoryLintResult
++- `src\testing\ascendantReachHarness.ts` — buildAscendantReachState, BuildAscendantReachStateOptions
+ 
+ ## Batch_hex_clip.py (1 files)
+ 
+diff --git a/.codesight/wiki/ui.md b/.codesight/wiki/ui.md
+index 333fce5f..e91b50ee 100644
+--- a/.codesight/wiki/ui.md
++++ b/.codesight/wiki/ui.md
+@@ -2,10 +2,62 @@
+ 
+ > **Navigation aid.** Component inventory and prop signatures extracted via AST. Read the source files before adding props or modifying component logic.
+ 
+-**249 components** (react)
++**315 components** (react)
+ 
+ ## Components
+ 
++- **App** — `Design\Claudedesignhandooffs\Ascendant bar-handoff\ascendant-bar\project\lib\App.jsx`
++- **VARA_ESSENCE** — `Design\Claudedesignhandooffs\Ascendant bar-handoff\ascendant-bar\project\lib\AscendantBar.jsx`
++- **ChipTooltip** — props: title, body, kindLabel, tone — `Design\Claudedesignhandooffs\Ascendant bar-handoff\ascendant-bar\project\lib\Chips.jsx`
++- **TopBarStub** — props: onOpenMenu — `Design\Claudedesignhandooffs\Ascendant bar-handoff\ascendant-bar\project\lib\Chrome.jsx`
++- **TREND_COLOR** — `Design\Claudedesignhandooffs\Ascendant bar-handoff\ascendant-bar\project\lib\EssenceStrip.jsx`
++- **Overlay** — props: open, onClose, title, eyebrow, width — `Design\Claudedesignhandooffs\Ascendant bar-handoff\ascendant-bar\project\lib\Overlays.jsx`
++- **SectionHeading** — props: count, ornamental — `Design\Claudedesignhandooffs\Ascendant bar-handoff\ascendant-bar\project\lib\Primitives.jsx`
++- **SphereIcon** — props: sphere, size — `Design\Claudedesignhandooffs\Ascendant bar-handoff\ascendant-bar\project\lib\SphereIcon.jsx`
++- **LEXICON** — `Design\Claudedesignhandooffs\Ascendant bar-handoff\ascendant-bar\project\lib\SphereIconDecay.jsx`
++- **App** — `Design\Claudedesignhandooffs\ascendant-bar\project\lib\App.jsx`
++- **VARA_ACTIONS** — `Design\Claudedesignhandooffs\ascendant-bar\project\lib\AscendantBar.jsx`
++- **ChipTooltip** — props: title, body, kindLabel, tone — `Design\Claudedesignhandooffs\ascendant-bar\project\lib\Chips.jsx`
++- **TopBarStub** — props: onOpenMenu — `Design\Claudedesignhandooffs\ascendant-bar\project\lib\Chrome.jsx`
++- **TREND_COLOR** — `Design\Claudedesignhandooffs\ascendant-bar\project\lib\EssenceStrip.jsx`
++- **Overlay** — props: open, onClose, title, eyebrow, width — `Design\Claudedesignhandooffs\ascendant-bar\project\lib\Overlays.jsx`
++- **SectionHeading** — props: count, ornamental — `Design\Claudedesignhandooffs\ascendant-bar\project\lib\Primitives.jsx`
++- **SphereIcon** — props: sphere, size — `Design\Claudedesignhandooffs\ascendant-bar\project\lib\SphereIcon.jsx`
++- **LEXICON** — `Design\Claudedesignhandooffs\ascendant-bar\project\lib\SphereIconDecay.jsx`
++- **ACTION_BAR_TOOLS** — `Design\Claudedesignhandooffs\new-hexmap-sidebars\project\src\ActionBar.jsx`
++- **ActivityIcon** — props: kind, size, color — `Design\Claudedesignhandooffs\new-hexmap-sidebars\project\src\ActivityIcon.jsx`
++- **AGENTS** — `Design\Claudedesignhandooffs\new-hexmap-sidebars\project\src\App.jsx`
++- **DEMO_SPHERES** — `Design\Claudedesignhandooffs\new-hexmap-sidebars\project\src\ComponentsPage.jsx`
++- **EssencePanel** — props: spheres, variant — `Design\Claudedesignhandooffs\new-hexmap-sidebars\project\src\EssencePanel.jsx`
++- **HexTile** — props: cx, cy, r, fill, stroke, borderColor, borderEdges — `Design\Claudedesignhandooffs\new-hexmap-sidebars\project\src\MapStage.jsx`
++- **NOTIFICATION_KIND** — `Design\Claudedesignhandooffs\new-hexmap-sidebars\project\src\NotificationFeed.jsx`
++- **SectionHeading** — props: count, ornamental — `Design\Claudedesignhandooffs\new-hexmap-sidebars\project\src\Primitives.jsx`
++- **MandateBlock** — props: compact — `Design\Claudedesignhandooffs\new-hexmap-sidebars\project\src\RightRail.jsx`
++- **SphereIcon** — props: sphere, size, color — `Design\Claudedesignhandooffs\new-hexmap-sidebars\project\src\SphereIcon.jsx`
++- **ThreadPortrait** — props: agent, size, selected — `Design\Claudedesignhandooffs\new-hexmap-sidebars\project\src\Threads.jsx`
++- **LucideIcon** — props: name, size, stroke, color — `Design\Claudedesignhandooffs\new-hexmap-sidebars\project\src\TopBar.jsx`
++- **APortraits** — `Design\Claudedesignhandooffs\Threadbearer Design System-handoff\threadbearer-design-system\project\landing\direction-a.jsx`
++- **BPortraits** — `Design\Claudedesignhandooffs\Threadbearer Design System-handoff\threadbearer-design-system\project\landing\direction-b.jsx`
++- **CPortraits** — `Design\Claudedesignhandooffs\Threadbearer Design System-handoff\threadbearer-design-system\project\landing\direction-c.jsx`
++- **Portrait** — props: sphere, name, src — `Design\Claudedesignhandooffs\Threadbearer Design System-handoff\threadbearer-design-system\project\ui_kits\threadbearer-game\AgentDetail.jsx`
++- **App** — `Design\Claudedesignhandooffs\Threadbearer Design System-handoff\threadbearer-design-system\project\ui_kits\threadbearer-game\App.jsx`
++- **InterventionModal** — props: kind, agent, onClose, onConfirm — `Design\Claudedesignhandooffs\Threadbearer Design System-handoff\threadbearer-design-system\project\ui_kits\threadbearer-game\InterventionModal.jsx`
++- **SectionHeading** — props: count, ornamental — `Design\Claudedesignhandooffs\Threadbearer Design System-handoff\threadbearer-design-system\project\ui_kits\threadbearer-game\Primitives.jsx`
++- **RETINUE** — `Design\Claudedesignhandooffs\Threadbearer Design System-handoff\threadbearer-design-system\project\ui_kits\threadbearer-game\RetinuePanel.jsx`
++- **OMENS** — `Design\Claudedesignhandooffs\Threadbearer Design System-handoff\threadbearer-design-system\project\ui_kits\threadbearer-game\RightRail.jsx`
++- **SphereIcon** — props: sphere, size — `Design\Claudedesignhandooffs\Threadbearer Design System-handoff\threadbearer-design-system\project\ui_kits\threadbearer-game\SphereIcon.jsx`
++- **TopBar** — props: cycle, season, doom, onSettings — `Design\Claudedesignhandooffs\Threadbearer Design System-handoff\threadbearer-design-system\project\ui_kits\threadbearer-game\TopBar.jsx`
++- **APortraits** — `Design\Claudedesignhandooffs\threadbearer-design-system\project\landing\direction-a.jsx`
++- **BPortraits** — `Design\Claudedesignhandooffs\threadbearer-design-system\project\landing\direction-b.jsx`
++- **CPortraits** — `Design\Claudedesignhandooffs\threadbearer-design-system\project\landing\direction-c.jsx`
++- **Portrait** — props: sphere, name, src — `Design\Claudedesignhandooffs\threadbearer-design-system\project\ui_kits\threadbearer-game\AgentDetail.jsx`
++- **App** — `Design\Claudedesignhandooffs\threadbearer-design-system\project\ui_kits\threadbearer-game\App.jsx`
++- **InterventionModal** — props: kind, agent, onClose, onConfirm — `Design\Claudedesignhandooffs\threadbearer-design-system\project\ui_kits\threadbearer-game\InterventionModal.jsx`
++- **SectionHeading** — props: count, ornamental — `Design\Claudedesignhandooffs\threadbearer-design-system\project\ui_kits\threadbearer-game\Primitives.jsx`
++- **RETINUE** — `Design\Claudedesignhandooffs\threadbearer-design-system\project\ui_kits\threadbearer-game\RetinuePanel.jsx`
++- **OMENS** — `Design\Claudedesignhandooffs\threadbearer-design-system\project\ui_kits\threadbearer-game\RightRail.jsx`
++- **SphereIcon** — props: sphere, size — `Design\Claudedesignhandooffs\threadbearer-design-system\project\ui_kits\threadbearer-game\SphereIcon.jsx`
++- **TopBar** — props: cycle, season, doom, onSettings — `Design\Claudedesignhandooffs\threadbearer-design-system\project\ui_kits\threadbearer-game\TopBar.jsx`
+ - **DC** — `Docs\plans\v7-design-pass\design-canvas.jsx`
+ - **App** — `Docs\plans\v7-design-pass\parts\app.jsx`
+ - **SPHERE** — `Docs\plans\v7-design-pass\parts\encounter-shell.jsx`
+@@ -34,29 +86,36 @@
+ - **CodexSidebar** — props: categories, selectedCategory, selectedSubcategory, onSelectCategory, onSelectSubcategory — `src\components\Codex\CodexSidebar.tsx`
+ - **CosmologyPanel** — props: cosmology, seed, onCosmologyChange, onSeedChange, onGenerate — `src\components\Cosmology\CosmologyPanel.tsx`
+ - **SphereSlider** — props: sphere, value, onChange — `src\components\Cosmology\SphereSlider.tsx`
+-- **ActionCard** — props: slot, onClick, playing, size — `src\components\Game\ActionCard.tsx`
++- **ActionCard** — props: slot, onClick, playing, size, outcomeBand, interactive — `src\components\Game\ActionCard.tsx`
+ - **ActionDrawer** — props: open, slots, _targetName, _targetLabel, onSlotClick, onClose, playingCardId, hexRevelation, gatedActionCounts — `src\components\Game\ActionDrawer.tsx`
+ - **AgendaPicker** — props: agendas, onSelect, onCancel, sphere — `src\components\Game\AgendaPicker.tsx`
+ - **AgentDetailPanel** — props: detail, activity, onBack, onViewPsyche, onIntervene, onLocationClick, onAttachmentClick, digestBuffer, currentTick, lastViewedTick — `src\components\Game\AgentDetailPanel.tsx`
+-- **AgentInfoCard** — props: card, onViewProfile, onBack, onZoomToLocation, graph, seed, tick, strategicState — `src\components\Game\AgentInfoCard.tsx`
++- **AgentInfoCard** — props: card, onViewProfile, onBack, onZoomToLocation, graph, seed, tick, runtime, strategicState — `src\components\Game\AgentInfoCard.tsx`
+ - **AgentIntelligencePanel** — props: entries, isStranger, maxRecords — `src\components\Game\AgentIntelligencePanel.tsx`
+-- **AgentProfileModal** — props: card, profile, onClose, scrollToNewStrata, knowledge — `src\components\Game\AgentProfileModal.tsx`
++- **AgentProfileModal** — props: card, profile, onClose, scrollToNewStrata, knowledge, gameState, runtime, onOpenEntity — `src\components\Game\AgentProfileModal.tsx`
+ - **AgentWheel** — props: slots, agentName, agentTitle, cx, cy, onSlotClick, onDismiss — `src\components\Game\AgentWheel.tsx`
+ - **AlertBar** — props: alerts, onDismiss, onSelectAgent, onNavigate — `src\components\Game\AlertBar.tsx`
+ - **ArmySheet** — props: name, onClose — `src\components\Game\ArmySheet.tsx`
+ - **ArtifactSheet** — props: name, onClose — `src\components\Game\ArtifactSheet.tsx`
+ - **ActionsBlock** — props: tray, onFire, onMove, onInvestiture — `src\components\Game\ascendant-bar\ActionsBlock.tsx`
+-- **AscendantBar** — props: gameState, archetype, _ascendantIdentity, avatarName, worldVersion, onOpenSheet, onOpenMandate, onMove, onInvestiture — `src\components\Game\ascendant-bar\AscendantBar.tsx`
++- **AscendantBar** — props: gameState, archetype, _ascendantIdentity, avatarName, worldVersion, onOpenSheet, onOpenMandate, onMove, onInvestiture, onReleaseControl — `src\components\Game\ascendant-bar\AscendantBar.tsx`
+ - **BarSection** — props: label, count, open, onToggle, placeholder — `src\components\Game\ascendant-bar\BarSection.tsx`
++- **CovenantsBlock** — props: rows, onRelease — `src\components\Game\ascendant-bar\CovenantsBlock.tsx`
+ - **EssenceBlock** — props: rows — `src\components\Game\ascendant-bar\EssenceBlock.tsx`
+ - **HooksBlock** — props: gameState — `src\components\Game\ascendant-bar\HooksBlock.tsx`
+ - **IdentityStrip** — props: identity, quintessence, treatment, onOpen — `src\components\Game\ascendant-bar\IdentityStrip.tsx`
+ - **MandateBlock** — props: mandate, onOpen — `src\components\Game\ascendant-bar\MandateBlock.tsx`
++- **ReachesBlock** — props: rows — `src\components\Game\ascendant-bar\ReachesBlock.tsx`
++- **SignaturesBlock** — props: paths — `src\components\Game\ascendant-bar\SignaturesBlock.tsx`
++- **AscendantBeatModal** — props: open, pending, onResolve, onClose, proseOverride — `src\components\Game\AscendantBeatModal.tsx`
++- **AscendantBeatOfferBanner** — props: pending, onEnter — `src\components\Game\AscendantBeatModal.tsx`
+ - **AscendantSheet** — props: open, onClose, gameState, archetype, avatarName, sphereColor, originFragmentId — `src\components\Game\AscendantSheet.tsx`
+ - **AttachmentDetailView** — props: attachment, onBack, onViewCodex — `src\components\Game\AttachmentDetailView.tsx`
+ - **AttachmentRow** — props: name, subcategory, tier, mechanicalSummary, ticksRemaining, totalTicks, durationLabel, onClick, sourceEncounterId, activeVow — `src\components\Game\AttachmentRow.tsx`
+ - **AttentionPoolIndicator** — props: attentionPool, attentionCapacity, attentionRegen — `src\components\Game\AttentionPoolIndicator.tsx`
+ - **AvatarHUD** — props: sphereColor, onCenterOnAvatar, onMoveClick, onWheelClick, onScryClick, moveMode — `src\components\Game\AvatarHUD.tsx`
++- **ChapterLedger** — props: gameState, runtime, onClose, filterAgentId, embedded, onOpenEntity — `src\components\Game\ChapterLedger.tsx`
++- **ChapterView** — props: chapter, onOpenEntity, onBack — `src\components\Game\ChapterView.tsx`
+ - **ChoiceSetModal** — props: pending, onResolve, onDismiss — `src\components\Game\ChoiceSetModal.tsx`
+ - **AgentEntry** — props: name, sphereColor, archetypeName, onClick — `src\components\Game\chronicle\AgentEntry.tsx`
+ - **EventBlock** — props: label, text — `src\components\Game\chronicle\EventBlock.tsx`
+@@ -70,6 +129,7 @@
+ - **ScryProvider** — props: value — `src\components\Game\contexts\ScryContext.tsx`
+ - **ActionUnlocksView** — `src\components\Game\debug\ActionUnlocksView.tsx`
+ - **ArmiesTabContent** — props: graph, currentTick, onZoomToLocation — `src\components\Game\debug\ArmiesTabContent.tsx`
++- **BeatsDebugTab** — props: currentTick — `src\components\Game\debug\BeatsDebugTab.tsx`
+ - **BondOverlay** — props: graph, hexSize, visibleAgents, showBonds, showDecisionVectors — `src\components\Game\debug\BondOverlay.tsx`
+ - **CommandTab** — props: retinueAgents, followAgentId — `src\components\Game\debug\CommandTab.tsx`
+ - **CompositionView** — props: activeCompositions, currentTick, doomClockStage — `src\components\Game\debug\CompositionView.tsx`
+@@ -78,9 +138,11 @@
+ - **DecisionBreakdown** — props: agentId, traces — `src\components\Game\debug\DecisionBreakdown.tsx`
+ - **DetectionStateInspector** — props: regionalDetectionPressure, traces, currentTick — `src\components\Game\debug\DetectionStateInspector.tsx`
+ - **DriftVisualiser** — props: archetypeDrift, traces, retinueAgents — `src\components\Game\debug\DriftVisualiser.tsx`
++- **EconomyDebugTab** — props: graph, currentTick — `src\components\Game\debug\EconomyDebugTab.tsx`
+ - **EncounterCacheView** — props: cacheEntries, encounterProgress, currentTick, followAgentId, onZoomToLocation, graph, seed — `src\components\Game\debug\EncounterCacheView.tsx`
+ - **EncounterChoiceInspector** — props: traces, retinueAgents — `src\components\Game\debug\EncounterChoiceInspector.tsx`
+ - **EncounterSeedsTab** — props: seeds, currentTick, retinueAgents, regionalDetectionPressure — `src\components\Game\debug\EncounterSeedsTab.tsx`
++- **EssenceSourcesDebugTab** — props: graph, currentTick — `src\components\Game\debug\EssenceSourcesDebugTab.tsx`
+ - **FactionDebugContent** — props: graph, onZoomToLocation — `src\components\Game\debug\FactionDebugContent.tsx`
+ - **ForecastFactorsInspector** — props: traces — `src\components\Game\debug\ForecastFactorsInspector.tsx`
+ - **HandStateInspector** — props: traces — `src\components\Game\debug\HandStateInspector.tsx`
+@@ -88,7 +150,8 @@
+ - **JourneyDebugContent** — props: encounterNotifications, pendingVignettes, _currentTick — `src\components\Game\debug\JourneyDebugContent.tsx`
+ - **KnowledgeComparisonTab** — props: agentKnowledge, graph — `src\components\Game\debug\KnowledgeComparisonTab.tsx`
+ - **KpiDebugTab** — props: currentTick — `src\components\Game\debug\KpiDebugTab.tsx`
+-- **PhasesDebugTab** — props: traces — `src\components\Game\debug\PhasesDebugTab.tsx`
++- **PhasesDebugTab** — props: traces, currentTick — `src\components\Game\debug\PhasesDebugTab.tsx`
++- **ProseQualityView** — `src\components\Game\debug\ProseQualityView.tsx`
+ - **RecentEventsView** — props: getRecentEvents — `src\components\Game\debug\RecentEventsView.tsx`
+ - **RelationshipGraph** — props: agentId, graph — `src\components\Game\debug\RelationshipGraph.tsx`
+ - **RevelationLogTab** — props: traces, _agentKnowledge — `src\components\Game\debug\RevelationLogTab.tsx`
+@@ -127,11 +190,13 @@
+ - **ThreadStrip** — props: thread — `src\components\Game\Encounter\ThreadStrip.tsx`
+ - **ClearanceGatePanel** — props: shellState, signals — `src\components\Game\encounter-stage\shells\ClearanceGatePanel.tsx`
+ - **EncounterLog** — props: progress, template, agentName, onClick — `src\components\Game\EncounterLog.tsx`
++- **EncounterNotificationCard** — props: card, accentColor — `src\components\Game\EncounterNotificationCard.tsx`
+ - **EncounterVeil** — props: open, model, threadTier, essence, tick, autoResolveTick, onIntervene, onBoost, onPeek, onDisregard — `src\components\Game\EncounterVeil.tsx`
+ - **EssencePanel** — props: pool, maxEssence, primarySphere, secondarySphere, income, compact — `src\components\Game\EssencePanel.tsx`
+ - **EventLog** — props: entries — `src\components\Game\EventLog.tsx`
+ - **EventPopup** — props: popup, queueLength, onDismiss, onChoice — `src\components\Game\EventPopup.tsx`
+ - **FactionSheet** — props: factionId, name, graph, onClose, onOpenTargetActions — `src\components\Game\FactionSheet.tsx`
++- **GameViewTopBar** — props: gameState, seasonName, year, running, speed, handleToggleRunning, doTick, setSpeed, attentionPool, attentionCapacity — `src\components\Game\GameView\GameViewTopBar.tsx`
+ - **GameView** — props: archetype, avatarName, cosmology, seed, mapSize, ascendantIdentity, preSeeded — `src\components\Game\GameView.tsx`
+ - **GuildQuestPanel** — props: location, graph, tick, onNavigateToRuin — `src\components\Game\GuildQuestPanel.tsx`
+ - **HarvestScreen** — props: harvest, cycle, onBeginNextCycle — `src\components\Game\HarvestScreen.tsx`
+@@ -225,6 +290,7 @@
+ - **DomainCard** — props: reach, tier, agentName, gender, revealed — `src\components\shared\DomainCard.tsx`
+ - **Dropdown** — props: trigger, open, onOpenChange, align — `src\components\shared\Dropdown.tsx`
+ - **EntityCard** — props: header, sections, onBack, onViewCodex, onZoomToLocation — `src\components\shared\EntityCard.tsx`
++- **EntityVisual** — props: size, descriptor, entity, graph, opts, shape, onClick, className, style, ariaLabel — `src\components\shared\EntityVisual.tsx`
+ - **IconButton** — props: icon, badge, active, size, variant, disabled, style, className — `src\components\shared\IconButton.tsx`
+ - **ListRow** — props: accentColor, selected, onClick, trailing, className — `src\components\shared\ListRow.tsx`
+ - **Modal** — props: open, onClose, maxWidth, animation — `src\components\shared\Modal.tsx`
+diff --git a/CLAUDE.md b/CLAUDE.md
+index bc4c2757..919f194c 100644
+--- a/CLAUDE.md
++++ b/CLAUDE.md
+@@ -459,8 +459,9 @@ Current recurring task registry:
+ |------|---------|------|------|---------|
+ | **:00** | Hourly | CC pickup (`tb-opus-pickup` — single Opus executor lane) | `0 * * * *` | CC automation lane |
+ | **:15** | Hourly | `flush-plan-docs` | `15 * * * *` | CC automation lane |
++| **:20** | Hourly | `keep-work-flowing-cc` (CC PM brief — refreshes `Design/briefing.md`) | `20 * * * *` | CC automation lane |
+ | **:30** | Hourly | *(free — was Codex pickup, retired THR-486)* | — | — |
+-| **:45** | Hourly | `keep-work-flowing` (Cowork PM) | `45 * * * *` | This machine |
++| **:45** | Hourly | `keep-work-flowing` (Cowork PM — superseded by `keep-work-flowing-cc`, THR-650; runs during migration parallel-run only) | `45 * * * *` | This machine |
+ | **09:06** | Daily | `daily-backlog-grooming` | `6 9 * * *` | This machine |
+ | **Wed 09:04** | Weekly | `weekly-workflow-retro` | `4 9 * * 3` | This machine |
+ | **Fri 14:00** | Weekly | Drift scan (GitHub Action) | n/a (Actions cron) | GitHub Actions |
+@@ -470,7 +471,7 @@ Current recurring task registry:
+ | **Sun 16:03** | Weekly | `weekly-memory-grooming` | `3 16 * * 0` | CC automation lane |
+ | **1st 09:00** | Monthly | `monthly-rulebook-review` (needs creation — THR-417) | `0 9 1 * *` | TBD |
+ 
+-**Slot allocation.** Hourly Linear-MCP-using tasks occupy the quarter-hour slots: :00 (CC pickup), :15 (`flush-plan-docs`), :45 (Cowork PM). The :30 slot is free since the Codex pickup was retired (THR-486). Daily and weekly tasks pick non-quarter-hour minutes (e.g., :04, :06, :09). When registering a new hourly task, pick the next free 5-minute offset within a quarter-hour band and update this table in the same commit.
++**Slot allocation.** Hourly Linear-MCP-using tasks occupy the quarter-hour slots: :00 (CC pickup), :15 (`flush-plan-docs`), :20 (`keep-work-flowing-cc` PM brief — fires ~:28 after jitter, deliberately after the :00 pickup so the brief reflects post-pickup state), :45 (Cowork PM, migration parallel-run only). The :30 slot is free since the Codex pickup was retired (THR-486). Daily and weekly tasks pick non-quarter-hour minutes (e.g., :04, :06, :09). When registering a new hourly task, pick the next free 5-minute offset within a quarter-hour band and update this table in the same commit.
+ 
+ ## Skill Tree Layout
+ 
