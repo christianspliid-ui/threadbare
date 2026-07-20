@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-07-20, 10:22 local (light refresh by the hourly `keep-work-flowing-cc` CC task; last full rebuild was the 2026-06-23 retro)
+**Last updated:** 2026-07-20, 11:05 local (light refresh by the hourly `keep-work-flowing-cc` CC task; last full rebuild was the 2026-06-23 retro)
 **Owner of items below:** Christian. Everyone else's blockers go in Linear or `Docs/impediments.md`.
 **Refresh cadence:** The hourly `keep-work-flowing-cc` scheduled task keeps this current (prunes resolved items, adds newly-surfaced Christian-owned ones); the `retrospective` skill still does the deep periodic rebuild. This is the slow-moving standing-asks list — the fresh-this-hour view is [`Design/briefing.md`](briefing.md).
 
@@ -49,32 +49,37 @@ Then triage the other uncommitted working-tree files (item #3).
 
 ---
 
-## 3. Decide the fate of 15 untracked design docs · WILL NOT SELF-HEAL
+## 3. Decide the fate of 16 untracked design docs — one of them is load-bearing · WILL NOT SELF-HEAL
 
-**Status:** Open (small) · **reduced from the ~85-file crisis 2026-07-20 10:05**; count re-verified as exactly 15 at the 10:22 run — the home tree is repaired (see Resolved). All that remains is a keep-or-delete decision on 15 untracked docs that exist **nowhere on `origin/main`**: `Docs/judge-metrics/2026-W29.md`, nine `Docs/plans/.intent-proposals/*.md`, and five `Docs/plans/2026-07-04|05-*` brainstorm / exploration docs. They survived the repair untouched and are sitting in the working tree now.
+**Status:** Open · **escalated 2026-07-20 11:05** from cosmetic to blocking-adjacent. Count is now **16** (was 15): `Docs/judge-metrics/2026-W29.md`, nine `Docs/plans/.intent-proposals/*.md`, five `Docs/plans/2026-07-04|05-*` brainstorm / exploration docs — and, new this morning, **`Docs/plans/2026-07-20-git-cicd-clean-delivery.md`**. All exist **nowhere on `origin/main`** (verified `git cat-file -e origin/main:<path>`).
 
-**Fix — a design session can do this; it is not a Christian-only task.** List them with `git status --porcelain | grep '^??'`, then per file: commit onto a `docs/*` branch if still wanted, delete if superseded. **Do not `git clean -fd`** — that destroys all 15 without review.
+**The new one is not a draft.** THR-671, 672, 673, 674, 675 and 676 — six Ready-for-Dev tickets, two of them High — all open with "**Plan doc:** `Docs/plans/2026-07-20-git-cicd-clean-delivery.md` — read first." An executor claiming any of them from a fresh clone or an isolation worktree will not find it. THR-671 carries `plan-pending-commit`, so the hourly `flush-plan-docs` task (:15) *should* land it; it had not as of 11:05. **If it is still untracked after the next :15 run, treat `flush-plan-docs` as broken for home-tree-only docs and file it** — the likely fault is the flush running from a worktree where the untracked file does not exist.
 
-**What breaks if not done.** Nothing operational. They keep the tree cosmetically dirty, which no longer blocks the auto-sync (that guard only fails on *tracked* modifications), but they are unbacked-up drafts living on one machine.
+**Fix — a design session can do this; it is not a Christian-only task.** Land the git/CI-CD plan doc first and independently (`docs/*` branch → PR), then triage the other 15: `git status --porcelain | grep '^??'`, per file commit if still wanted, delete if superseded. **Do not `git clean -fd`** — that destroys all 16 without review, including the live plan doc.
+
+**What breaks if not done.** Six queued tickets reference a spec their executor cannot read — the top of the queue silently starves or ships guesswork. The other 15 remain unbacked-up drafts on one machine.
 
 ---
 
-## 4. Recurring: something re-parks the home tree off `main` · UNDER INVESTIGATION
+## 4. Recurring: something re-parks the home tree off `main` · INVESTIGATED — FIXES TICKETED
 
-**Status:** Open · cause unidentified · **expect recurrence within days** · no recurrence on 2026-07-20 as of the 10:22 run (tree still on `main`, 0/0) — one clean morning after three consecutive detach events is not yet evidence of a fix
-**Source:** reflog forensics 2026-07-20; `C:\Users\chris\bin\threadbare-autosync.log`
+**Status:** Cause found (2026-07-20 investigation) · **recurred 2026-07-20 ~11:00 — fourth event in four days** · **will keep recurring until THR-672 lands**, but recurrence now self-identifies within the hour and the repair below is verified safe
+**Source:** `Docs/plans/2026-07-20-git-cicd-clean-delivery.md` (root cause + tickets THR-671…676); forensics in `Docs/audits/2026-07-20-git-cicd-forensics/`
 
-Three times in three days, something ran a bare `git checkout HEAD` on the home tree, detaching it from `main`:
+Four times in four days, the harness has moved the home tree off `main` at a scheduled-session spawn:
 
 ```
-07-19 10:55  moving from main to HEAD
-07-18 09:01  moving from claude/sad-bartik-421eef to HEAD
-07-17 10:36  moving from main to HEAD
+07-20 ~11:00  moving from main to claude/friendly-ptolemy-c55480   ← named branch, AT origin/main (harmless)
+07-19 10:55   moving from main to HEAD                             ← detached
+07-18 09:01   moving from claude/sad-bartik-421eef to HEAD         ← detached
+07-17 10:36   moving from main to HEAD                             ← detached
 ```
 
-`threadbare-autosync.ps1` is **not** the culprit — its only checkout is `git checkout HEAD -- .codesight`, and the pathspec form neither moves HEAD nor writes a reflog entry. The 07-18 event starting from a `claude/*` branch points at agent session tooling, but that is inference, not a finding.
+**The 07-20 event is the benign variant** and is worth distinguishing: the tree landed on a *named* branch sitting at exactly `origin/main` (0 ahead / 0 behind), so no content drifted and no repair was needed — only the branch *name* differs from `main`. This is precisely the case THR-671 exists to stop mis-reporting as "N commits behind," and the case THR-672's auto-sync should silently re-attach.
 
-**This is not a Christian action item** — it is listed here so the next agent that finds a detached tree recognises a known recurring fault rather than re-diagnosing it from scratch. A scoped investigation covers this along with worktree sprawl (27 worktrees, 42 local branches) and the misleading freshness metric.
+**Found (2026-07-20 investigation):** no agent ran it — transcript search across every project directory finds no executed bare `git checkout HEAD` in any session, and agent shell commands always transcript. The actor is the **Claude Code app/harness layer**, the same non-transcript layer that syncs local `refs/heads/main` to `origin/main` via plumbing at scheduled-session spawn seconds (empty-reflog-message updates at :01 each hour; the 07-18 09:01:41 detach is 48 s after the :00:53 `tb-opus-pickup` spawn). The exact code path inside the app is unproven — THR-676 prepares the upstream report. Containment is THR-672: the hourly auto-sync learns to re-attach the safe parked case itself, so a recurrence heals within the hour instead of festering for days.
+
+**This is not a Christian action item** — it is listed here so the next agent that finds a detached tree recognises a known fault with a known safe repair rather than re-diagnosing it from scratch.
 
 **Recovery, if you find the tree detached again** — two commands, loses nothing authored:
 
@@ -90,7 +95,7 @@ First verify nothing unique is stranded: `git rev-list --count origin/main..HEAD
 
 ## Resolved this period
 
-- **2026-07-20 — home tree repaired; the "N commits behind and climbing" alarm was measuring the wrong thing.** The tree is back on `main` at `8d481fbd`, 0 ahead / 0 behind, no modified tracked files; the auto-sync guard passes again. **Correction to the record:** the escalating behind-count this file reported for days (58 → 64 → 69 → 75 → 77 → 79) measured a *frozen detached snapshot* against a moving `origin/main`. Local `main` was **0/0 with `origin/main` the entire time** — the tree was parked beside `main`, never lagging behind it. Nothing was decaying; nothing was at risk. Repair took `git stash push` + `git switch main` and needed no `reset --hard`. **The 68 staged files were worse than "stale echoes"**: diffed against their base they were 221 insertions / 3,379 deletions, reversing THR-614's `quintessence`→`cohesion` rename and THR-575's CLAUDE.md trim — an older snapshot staged over a newer base, most likely by a `git checkout <old-ref> -- <paths>`. Committing them would have reverted shipped work. They are stashed at `stash@{0}`, recoverable. The 11 unstaged edits were `.codesight` noise plus a CLAUDE.md change already present verbatim on `origin/main`. Residual work moved to items #3 (untracked docs) and #4 (the recurring cause). _Prunable at the next full retro._
+- **2026-07-20 — home tree repaired; the "N commits behind and climbing" alarm was measuring the wrong thing.** The tree is back on `main` at `8d481fbd`, 0 ahead / 0 behind, no modified tracked files; the auto-sync guard passes again. **Correction to the record:** the escalating behind-count this file reported for days (58 → 64 → 69 → 75 → 77 → 79) measured a *frozen detached snapshot* against a moving `origin/main`. Local `main` was **0/0 with `origin/main` the entire time** — the tree was parked beside `main`, never lagging behind it. Nothing was decaying; nothing was at risk. Repair took `git stash push` + `git switch main` and needed no `reset --hard`. **The 68 staged files were worse than "stale echoes"**: diffed against their base they were 221 insertions / 3,379 deletions, reversing THR-614's `quintessence`→`cohesion` rename and THR-575's CLAUDE.md trim — phantom staleness, not authored damage: the CC harness moved `refs/heads/main` forward via plumbing *while `main` was checked out* (07-18 20:01, reflog + autosync-log correlation), which leaves index and working files at the old content and makes `git status` report the delta as "staged changes" — nobody staged anything (see `Docs/plans/2026-07-20-git-cicd-clean-delivery.md` § 1.3, correcting the earlier `git checkout <old-ref> -- <paths>` theory). Committing them would have reverted shipped work. They are stashed at `stash@{0}`, recoverable. The 11 unstaged edits were `.codesight` noise plus a CLAUDE.md change already present verbatim on `origin/main`. Residual work moved to items #3 (untracked docs) and #4 (the recurring cause). _Prunable at the next full retro._
 - **2026-06-23 — `LINEAR_API_KEY` set in the Codex automation environment** (was item #1; impediment #141, 17 recurrences). Confirmed by Christian same day the retro surfaced it. _Superseded 2026-06-23 by the full Codex-lane retirement (THR-486): there is now a single Opus executor and one `Ready for Dev` queue, so the Codex-specific unblock is moot. Kept for the audit trail; safe to prune at the next full retro rebuild._
 - **2026-06-23 — GitHub Pro / branch protection resolved** (was item #4 in the prior seed; impediment #56). Branch protection is now active on `main` with `Test · Typecheck · Build` as a required status check (THR-282 shipped 2026-04-30). The "CI stays advisory because branch protection can't be enforced" concern is closed. To be removed on next retro day.
 - **2026-07-19 — local dependencies reinstalled; `npm run dev` / `npm test` work again on the home tree** (was item #0, surfaced 2026-07-19 11:29, re-verified broken across four consecutive hourly runs). Confirmed resolved at the 16:28 run: `node_modules/.bin` now exists with **99 shims** (was absent entirely), 284 top-level packages (was 276), and `npm exec -- vite --version` returns `vite/7.3.1 win32-x64 node-v24.14.0` instead of `'vite' is not recognized`. Local dev server, test runs, production build, and the `lint:plan-doc` / `check:skill-sync` pre-commit hooks are all unblocked from the home tree, which restores the browser-screenshot step of the Definition of Done. The worktree-specific `.bin` shim workaround documented under that item is still valid for **scratch worktrees**, which have no `node_modules` of their own — see impediment #186.
