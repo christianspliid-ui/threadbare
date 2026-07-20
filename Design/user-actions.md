@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-07-20 (item 2 added by the THR-653 Cowork cutover; light refresh at 22:54 local by the hourly `keep-work-flowing-cc` CC task; last full rebuild was the 2026-06-23 retro)
+**Last updated:** 2026-07-20 (item 2 added by the THR-653 Cowork cutover; light refresh at 23:54 local by the hourly `keep-work-flowing-cc` CC task; last full rebuild was the 2026-06-23 retro)
 **Owner of items below:** Christian. Everyone else's blockers go in Linear or `Docs/impediments.md`.
 **Refresh cadence:** The hourly `keep-work-flowing-cc` scheduled task keeps this current (prunes resolved items, adds newly-surfaced Christian-owned ones); the `retrospective` skill still does the deep periodic rebuild. This is the slow-moving standing-asks list — the fresh-this-hour view is [`Design/briefing.md`](briefing.md).
 
@@ -21,7 +21,7 @@ When an item resolves: delete it from this file, mark the corresponding impedime
 
 ## 1. Turn off the old Cowork automations · WILL NOT SELF-HEAL · ONLY YOU CAN DO THIS
 
-**Status:** Open, new 2026-07-20 · blocks the last step of the move off Cowork · **carried unanswered through the 22:54 run**
+**Status:** Open, new 2026-07-20 · blocks the last step of the move off Cowork · **carried unanswered through the 23:54 run**
 **Source:** THR-653 (cutover). Follow-up port work: THR-677.
 
 **What happened.** The move off Cowork is essentially done. The Claude Code side now runs the hourly pickup, the hourly briefing (moved to the :45 slot, taking over the one Cowork used), the Friday retrospective, and the Sunday memory tidy-up. Two of those — the retro and the memory tidy-up — had been *written down* as already running for weeks but had in fact never been switched on. They are on now.
@@ -84,7 +84,7 @@ git checkout rescue/2026-07-17-detached-plans -- Docs/plans/2026-07-05-entity-vi
 
 **What remains is ordinary debris:** 15 untracked drafts on this machine only — `Docs/judge-metrics/2026-W29.md`, nine `Docs/plans/.intent-proposals/*.md`, five `Docs/plans/2026-07-04|05-*` brainstorm / exploration docs. THR-674 is the queued ticket that owns their triage.
 
-**The flush pipeline works; merging is the slow step.** Retracted at 21:55 and re-confirmed tonight: `flush-plan-docs` correctly branched and opened #638, and #638 then merged — end-to-end proof the path functions. But **thirteen documentation PRs remain open and unmerged**, oldest #327 (2026-06-12), then #488 (2026-07-03), #512/#514/#516/#525/#532/#543/#551 (2026-07-04–05), #557 (2026-07-17), #571/#599 (briefings), #641 (tonight's impediment log). Branch protection runs in **strict mode** (branches must be up to date with `main`), so every open docs PR is knocked `BEHIND` the moment anything lands — and nothing re-freshens them. `Test · Typecheck · Build` shows `SKIPPED` on docs-only PRs, which is expected and is *not* the blocker.
+**The flush pipeline works; merging is the slow step.** Retracted at 21:55 and re-confirmed across the 22:54 and 23:54 runs: `flush-plan-docs` correctly branched and opened #638, and **four PRs merged tonight** (#638 plan doc, #639/#643 briefings, #644 impediment log) — end-to-end proof the path functions when nudged. But **thirteen documentation PRs remain open and unmerged**, oldest #327 (2026-06-12), then #488 (2026-07-03), #512/#514/#516/#525/#532/#543/#551 (2026-07-04–05), #557 (2026-07-17), #571/#599 (briefings), #641 (impediment log). Branch protection runs in **strict mode** (branches must be up to date with `main`), so every open docs PR is knocked `BEHIND` the moment anything lands — and nothing re-freshens them. `Test · Typecheck · Build` shows `SKIPPED` on docs-only PRs, which is expected and is *not* the blocker. The conflict-rot pattern was written into `Docs/impediments.md` on 2026-07-20 23:21 so it stops being rediscovered each run.
 
 **Self-inflicted feedback loop, unchanged:** this briefing task merges its own PR every hour, and each of those merges is what pushes the rest `BEHIND` again.
 
@@ -98,7 +98,7 @@ git checkout rescue/2026-07-17-detached-plans -- Docs/plans/2026-07-05-entity-vi
 
 ## 5. Recurring: something re-parks the home tree off `main` · INVESTIGATED — FIXES TICKETED
 
-**Status:** Cause found (2026-07-20 investigation) · last event 2026-07-20 ~11:00 (fourth in four days), **self-cleared by 11:54** with no human or agent repair · **no fifth event through the 22:54 run** — the tree is on `main`, ordinary-lag only (9 commits behind, two stale tracked file copies, nothing authored at risk) · **will keep recurring until THR-672 lands**, but the 07-20 event resolving itself is evidence the benign park is self-limiting and THR-672's auto-reattach is aimed correctly
+**Status:** Cause found (2026-07-20 investigation) · last event 2026-07-20 ~11:00 (fourth in four days), **self-cleared by 11:54** with no human or agent repair · **no fifth event through the 23:54 run** — the tree is on `main`, 16 behind, with three tracked files reading as changed that are **byte-identical to `origin/main`** (verified `git diff origin/main -- <path>` empty for all three): phantom staleness, not authored work · **will keep recurring until THR-672 lands**, but the 07-20 event resolving itself is evidence the benign park is self-limiting and THR-672's auto-reattach is aimed correctly
 **Source:** `Docs/plans/2026-07-20-git-cicd-clean-delivery.md` (root cause + tickets THR-671…676; now readable on `origin/main`); forensics in `Docs/audits/2026-07-20-git-cicd-forensics/`
 
 Four times in four days, the harness has moved the home tree off `main` at a scheduled-session spawn:
@@ -126,7 +126,7 @@ git switch main
 
 First verify nothing unique is stranded: `git rev-list --count origin/main..HEAD` must return `0`. Untracked files survive both commands. **Do not use** `git fetch && git rebase origin/main` (fails from detached HEAD) or `git switch main && git pull` (drags dirty tracked edits).
 
-**Ordinary lag is a different, safer case** (what the tree shows tonight): on `main`, behind by N, with stale tracked copies. Repair is `git checkout -- <stale files> && git pull` — no stash, no switch.
+**Ordinary lag is a different, safer case** (what the tree shows tonight): on `main`, behind by N, with tracked files reading as changed. **Check before repairing** — `git diff origin/main -- <path>` empty means the file already holds upstream content and the "change" is an artefact of `HEAD` sitting behind, not an edit. Repair is then `git reset && git checkout -- <files> && git pull --ff-only`, plus deleting any staged-new file already present on `origin/main` — no stash, no switch, nothing lost. Only if that diff is **non-empty** is there authored work to preserve.
 
 ---
 
