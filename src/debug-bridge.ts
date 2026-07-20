@@ -35,6 +35,8 @@ if (import.meta.env.DEV) {
     actionDrawerOpen: boolean;
     scryActive: boolean;
     cameraFocusHex: { col: number; row: number } | null;
+    /** Whether the sim run loop is active (THR-668 interrupt auto-pause verification). */
+    simRunning: boolean;
   }
 
   interface ForeshadowingDebugResult {
@@ -76,6 +78,7 @@ if (import.meta.env.DEV) {
     actionDrawerOpen: false,
     scryActive: false,
     cameraFocusHex: null,
+    simRunning: false,
   });
 
   // React components register their debug-panel toggle here

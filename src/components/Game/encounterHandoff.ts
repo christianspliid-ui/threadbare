@@ -13,10 +13,10 @@
  * NFP #4 (fail-soft): missing trace category or null target id is logged and ignored;
  *   the handoff still returns timing data so the UI can still complete its transition.
  *
- * Note: world-freeze (turn-based contract) is already enforced by the existing
- * `encounterModalOpen` effect in GameView, which calls `setRunning(false)` whenever
- * the encounter modal mounts. This module does not duplicate that behavior — it
- * only sets spotlight + emits trace + surfaces timing.
+ * Note: world-freeze (turn-based contract) is already enforced by the central
+ * interrupt auto-pause in GameView (`useInterruptAutoPause`), which calls
+ * `setRunning(false)` whenever the encounter modal mounts. This module does not
+ * duplicate that behavior — it only sets spotlight + emits trace + surfaces timing.
  */
 
 import { emitTrace } from '../../engine/traceBuffer';
