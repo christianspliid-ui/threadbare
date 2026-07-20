@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-07-20, 10:05 local (light refresh by the hourly `keep-work-flowing-cc` CC task; last full rebuild was the 2026-06-23 retro)
+**Last updated:** 2026-07-20, 10:22 local (light refresh by the hourly `keep-work-flowing-cc` CC task; last full rebuild was the 2026-06-23 retro)
 **Owner of items below:** Christian. Everyone else's blockers go in Linear or `Docs/impediments.md`.
 **Refresh cadence:** The hourly `keep-work-flowing-cc` scheduled task keeps this current (prunes resolved items, adds newly-surfaced Christian-owned ones); the `retrospective` skill still does the deep periodic rebuild. This is the slow-moving standing-asks list — the fresh-this-hour view is [`Design/briefing.md`](briefing.md).
 
@@ -51,7 +51,7 @@ Then triage the other uncommitted working-tree files (item #3).
 
 ## 3. Decide the fate of 15 untracked design docs · WILL NOT SELF-HEAL
 
-**Status:** Open (small) · **reduced from the ~85-file crisis 2026-07-20 10:05** — the home tree is repaired (see Resolved). All that remains is a keep-or-delete decision on 15 untracked docs that exist **nowhere on `origin/main`**: `Docs/judge-metrics/2026-W29.md`, nine `Docs/plans/.intent-proposals/*.md`, and five `Docs/plans/2026-07-04|05-*` brainstorm / exploration docs. They survived the repair untouched and are sitting in the working tree now.
+**Status:** Open (small) · **reduced from the ~85-file crisis 2026-07-20 10:05**; count re-verified as exactly 15 at the 10:22 run — the home tree is repaired (see Resolved). All that remains is a keep-or-delete decision on 15 untracked docs that exist **nowhere on `origin/main`**: `Docs/judge-metrics/2026-W29.md`, nine `Docs/plans/.intent-proposals/*.md`, and five `Docs/plans/2026-07-04|05-*` brainstorm / exploration docs. They survived the repair untouched and are sitting in the working tree now.
 
 **Fix — a design session can do this; it is not a Christian-only task.** List them with `git status --porcelain | grep '^??'`, then per file: commit onto a `docs/*` branch if still wanted, delete if superseded. **Do not `git clean -fd`** — that destroys all 15 without review.
 
@@ -61,7 +61,7 @@ Then triage the other uncommitted working-tree files (item #3).
 
 ## 4. Recurring: something re-parks the home tree off `main` · UNDER INVESTIGATION
 
-**Status:** Open · cause unidentified · **expect recurrence within days**
+**Status:** Open · cause unidentified · **expect recurrence within days** · no recurrence on 2026-07-20 as of the 10:22 run (tree still on `main`, 0/0) — one clean morning after three consecutive detach events is not yet evidence of a fix
 **Source:** reflog forensics 2026-07-20; `C:\Users\chris\bin\threadbare-autosync.log`
 
 Three times in three days, something ran a bare `git checkout HEAD` on the home tree, detaching it from `main`:
