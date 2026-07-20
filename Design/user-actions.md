@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-07-19, 22:29 local (light refresh by the hourly `keep-work-flowing-cc` CC task; last full rebuild was the 2026-06-23 retro)
+**Last updated:** 2026-07-20, 10:05 local (light refresh by the hourly `keep-work-flowing-cc` CC task; last full rebuild was the 2026-06-23 retro)
 **Owner of items below:** Christian. Everyone else's blockers go in Linear or `Docs/impediments.md`.
 **Refresh cadence:** The hourly `keep-work-flowing-cc` scheduled task keeps this current (prunes resolved items, adds newly-surfaced Christian-owned ones); the `retrospective` skill still does the deep periodic rebuild. This is the slow-moving standing-asks list — the fresh-this-hour view is [`Design/briefing.md`](briefing.md).
 
@@ -49,40 +49,48 @@ Then triage the other uncommitted working-tree files (item #3).
 
 ---
 
-## 3. Triage orphan uncommitted changes in working trees · WILL NOT SELF-HEAL
+## 3. Decide the fate of 15 untracked design docs · WILL NOT SELF-HEAL
 
-**Status:** Open · ~60 days · **~85 non-`.codesight` files uncommitted** on the home tree as of 2026-07-19 22:29. **The tree is not on `main` — it is in a detached-HEAD state**, parked on `013c1044` (2026-07-18 evening), **77 commits behind** `origin/main` (75 at 16:28, 69 at 15:28, 64 at 14:30, 60 at 13:29, 58 at 11:29 — climbing with each merge to `main`; alarm threshold is 10). It is **zero commits ahead**, so nothing unique lives on the detached snapshot and re-attaching risks no loss. The local `main` branch itself is healthy — the working copy simply is not pointed at it.
+**Status:** Open (small) · **reduced from the ~85-file crisis 2026-07-20 10:05** — the home tree is repaired (see Resolved). All that remains is a keep-or-delete decision on 15 untracked docs that exist **nowhere on `origin/main`**: `Docs/judge-metrics/2026-W29.md`, nine `Docs/plans/.intent-proposals/*.md`, and five `Docs/plans/2026-07-04|05-*` brainstorm / exploration docs. They survived the repair untouched and are sitting in the working tree now.
 
-**Escalation 2026-07-19 16:28 — the hourly auto-sync has stopped attempting the repair altogether.** `C:\Users\chris\bin\threadbare-autosync.log` shows the failure mode changed this morning: through 09:50 it logged `skip: you have uncommitted changes that would be overwritten (N behind)`; from the 11:00 run onward every entry reads `skip: on branch 'HEAD' (not main)`. The detached state is a *harder* stop than the dirt was — the task no longer even measures the drift. Nothing will reduce this number until the commands below are run by hand.
+**Fix — a design session can do this; it is not a Christian-only task.** List them with `git status --porcelain | grep '^??'`, then per file: commit onto a `docs/*` branch if still wanted, delete if superseded. **Do not `git clean -fd`** — that destroys all 15 without review.
 
-**Triage resolved 2026-07-19 15:28 — the pile is now split into "safe to discard" and "must keep".** Earlier revisions of this item called for a careful file-by-file pass without saying which files were actually at risk. That pass has now been done:
+**What breaks if not done.** Nothing operational. They keep the tree cosmetically dirty, which no longer blocks the auto-sync (that guard only fails on *tracked* modifications), but they are unbacked-up drafts living on one machine.
 
-- **Tracked edits (~70 files) — safe to discard.** `src/engine/army*`, `battle*`, Codex/AscendantBar/GameView/DebugTab component edits, plus staged plan-doc and script *deletions*. Verified: `HEAD` is an ancestor of `origin/main` (no unique commits anywhere on the snapshot), and the staged deletions target files that are **present and healthy on `origin/main`** (spot-checked `Docs/plans/2026-07-17-pure-claude-code-migration.md`, `Docs/canon/systems-inventory.md`, `Docs/plans/2026-07-05-thr-637-entity-visual-header.md`). These are stale local echoes of work that already shipped cleanly (the TB-073 war system and the orphaned-card inspector both merged).
-- **Untracked files (15) — NOT on `origin/main`; do not blanket-clean.** `Docs/judge-metrics/2026-W29.md`, nine `Docs/plans/.intent-proposals/*.md`, and five `Docs/plans/2026-07-04|05-*-brainstorm.md` / exploration docs. Each was checked against `origin/main` individually and none exist there. A `git clean -fd` destroys them. They need their own pass: keep and commit onto a `docs/*` branch if still wanted, delete if superseded.
+---
 
-**Source:** Impediment #59 + 2026-07-18/19 `keep-work-flowing-cc` freshness pings; safe/unsafe split established 2026-07-19 15:28
+## 4. Recurring: something re-parks the home tree off `main` · UNDER INVESTIGATION
 
-**Fix.** Because the tracked pile is now confirmed discardable, the re-attach no longer has to wait on triage — and **the untracked docs survive these commands**, so this is safe to run before deciding their fate:
+**Status:** Open · cause unidentified · **expect recurrence within days**
+**Source:** reflog forensics 2026-07-20; `C:\Users\chris\bin\threadbare-autosync.log`
+
+Three times in three days, something ran a bare `git checkout HEAD` on the home tree, detaching it from `main`:
+
+```
+07-19 10:55  moving from main to HEAD
+07-18 09:01  moving from claude/sad-bartik-421eef to HEAD
+07-17 10:36  moving from main to HEAD
+```
+
+`threadbare-autosync.ps1` is **not** the culprit — its only checkout is `git checkout HEAD -- .codesight`, and the pathspec form neither moves HEAD nor writes a reflog entry. The 07-18 event starting from a `claude/*` branch points at agent session tooling, but that is inference, not a finding.
+
+**This is not a Christian action item** — it is listed here so the next agent that finds a detached tree recognises a known recurring fault rather than re-diagnosing it from scratch. A scoped investigation covers this along with worktree sprawl (27 worktrees, 42 local branches) and the misleading freshness metric.
+
+**Recovery, if you find the tree detached again** — two commands, loses nothing authored:
 
 ```
 cd C:\Users\chris\Dev\Projects\TheFantasyWorldSimulator
-git fetch origin
-git switch -f main
-git reset --hard origin/main
+git stash push -m "home-tree-recovery"
+git switch main
 ```
 
-Then handle the 15 untracked docs separately (`git status --porcelain | grep '^??'` to list them).
-
-**Command history — two earlier published fixes are wrong, do not use them.** `git fetch && git rebase origin/main` does not work from a detached HEAD. `git switch main && git pull` (published 2026-07-19 14:30) will refuse or drag the dirty tracked edits along at this volume; `switch -f` + `reset --hard` is the working form.
-
-**What breaks if not done.** This is the upstream cause of the Codex dirty-worktree bounces (~50% of automation slots historically wasted). [THR-277](https://linear.app/threadbare/issue/THR-277) makes pickup resilient *to* dirty state via worktree isolation, but it doesn't clean the state. Until the orphan changes are triaged, the dirty worktree stays dirty.
-
-**Mitigated by:** [THR-277](https://linear.app/threadbare/issue/THR-277) — worktree isolation in pull-work routes pickup around dirty state while orphan triage is pending. **Shipped 2026-07-19:** [THR-660](https://linear.app/threadbare/issue/THR-660) (Done, PRs #616/#617) untracked the gitignored-but-committed `.codesight/` files that were the largest chronic contributor to the dirty tree. This stops the *recurring* per-session re-dirtying, so once this one-time ~85-file triage is done and the tree pulls THR-660, the deterministic `ThreadbareRepoAutoSync` task can fast-forward the home tree each hour instead of skipping on dirt. The one-time triage below is still required — THR-660 prevents the tree from re-dirtying itself, but does not clear the edits already sitting there.
+First verify nothing unique is stranded: `git rev-list --count origin/main..HEAD` must return `0`. Untracked files survive both commands. **Do not use** `git fetch && git rebase origin/main` (fails from detached HEAD) or `git switch main && git pull` (drags dirty tracked edits).
 
 ---
 
 ## Resolved this period
 
+- **2026-07-20 — home tree repaired; the "N commits behind and climbing" alarm was measuring the wrong thing.** The tree is back on `main` at `8d481fbd`, 0 ahead / 0 behind, no modified tracked files; the auto-sync guard passes again. **Correction to the record:** the escalating behind-count this file reported for days (58 → 64 → 69 → 75 → 77 → 79) measured a *frozen detached snapshot* against a moving `origin/main`. Local `main` was **0/0 with `origin/main` the entire time** — the tree was parked beside `main`, never lagging behind it. Nothing was decaying; nothing was at risk. Repair took `git stash push` + `git switch main` and needed no `reset --hard`. **The 68 staged files were worse than "stale echoes"**: diffed against their base they were 221 insertions / 3,379 deletions, reversing THR-614's `quintessence`→`cohesion` rename and THR-575's CLAUDE.md trim — an older snapshot staged over a newer base, most likely by a `git checkout <old-ref> -- <paths>`. Committing them would have reverted shipped work. They are stashed at `stash@{0}`, recoverable. The 11 unstaged edits were `.codesight` noise plus a CLAUDE.md change already present verbatim on `origin/main`. Residual work moved to items #3 (untracked docs) and #4 (the recurring cause). _Prunable at the next full retro._
 - **2026-06-23 — `LINEAR_API_KEY` set in the Codex automation environment** (was item #1; impediment #141, 17 recurrences). Confirmed by Christian same day the retro surfaced it. _Superseded 2026-06-23 by the full Codex-lane retirement (THR-486): there is now a single Opus executor and one `Ready for Dev` queue, so the Codex-specific unblock is moot. Kept for the audit trail; safe to prune at the next full retro rebuild._
 - **2026-06-23 — GitHub Pro / branch protection resolved** (was item #4 in the prior seed; impediment #56). Branch protection is now active on `main` with `Test · Typecheck · Build` as a required status check (THR-282 shipped 2026-04-30). The "CI stays advisory because branch protection can't be enforced" concern is closed. To be removed on next retro day.
 - **2026-07-19 — local dependencies reinstalled; `npm run dev` / `npm test` work again on the home tree** (was item #0, surfaced 2026-07-19 11:29, re-verified broken across four consecutive hourly runs). Confirmed resolved at the 16:28 run: `node_modules/.bin` now exists with **99 shims** (was absent entirely), 284 top-level packages (was 276), and `npm exec -- vite --version` returns `vite/7.3.1 win32-x64 node-v24.14.0` instead of `'vite' is not recognized`. Local dev server, test runs, production build, and the `lint:plan-doc` / `check:skill-sync` pre-commit hooks are all unblocked from the home tree, which restores the browser-screenshot step of the Definition of Done. The worktree-specific `.bin` shim workaround documented under that item is still valid for **scratch worktrees**, which have no `node_modules` of their own — see impediment #186.
