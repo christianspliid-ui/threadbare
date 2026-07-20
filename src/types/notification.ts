@@ -152,11 +152,45 @@ export interface PopupItem {
   tick: number;
 }
 
+/**
+ * A threaded agent's own beat, waiting on that agent's row (THR-666).
+ *
+ * Personality becomings, complications, ambition milestones, lifecycle beats and
+ * rarity graduations used to toast globally. They are about one person, so they
+ * now collect on that person's card in the Threads panel — the same place their
+ * encounters and tugs surface — instead of scrolling past in a shared queue.
+ */
+export interface EntityNotice {
+  /** Source TickEvent id. */
+  id: string;
+  /** Thread row this notice belongs to. */
+  agentId: string;
+  message: string;
+  sphere?: SphereName;
+  tick: number;
+  /** Category the event routed under — drives the notice's glyph. */
+  category: NotificationCategoryKey;
+  /** Where clicking should navigate — normally the agent themselves. */
+  navigationTarget?: NavigationTarget;
+}
+
 export interface NotificationState {
   toasts: ToastItem[];
   alerts: AlertItem[];
   popupQueue: PopupItem[];
+  /**
+   * Per-agent beats diverted to thread rows by the threading gate (THR-666).
+   * Optional so every pre-THR-666 construction site stays valid; the router
+   * always returns it populated.
+   */
+  entityNotices?: EntityNotice[];
 }
+
+/**
+ * Cap on retained per-agent notices (THR-666). A row badge is a "look here"
+ * signal, not an archive — the chronicle keeps the full history.
+ */
+export const ENTITY_NOTICE_MAX_RETAINED = 60;
 
 export const TOAST_MAX_VISIBLE = 4;
 export const TOAST_DURATION_MS = 4000;

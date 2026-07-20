@@ -17,6 +17,9 @@ const EMPTY_STATE: NotificationState = {
   toasts: [],
   alerts: [],
   popupQueue: [],
+  // THR-666 — the router always returns this slice, so the "unchanged state"
+  // comparison needs it present on the way in too.
+  entityNotices: [],
 };
 
 const NOW = 1000;

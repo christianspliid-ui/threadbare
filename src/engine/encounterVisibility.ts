@@ -295,30 +295,40 @@ export function toggleAttentionMode(
  * Scans all active encounters against threaded agents.
  * Produces EncounterNotification entries for the UI.
  */
-export function phaseEncounterVisibility(
-  state: GameState,
-): { notifications: EncounterNotification[]; events: TickEvent[] } {
-  const { graph, ascendantId, tick } = state;
-  const notifications: EncounterNotification[] = [];
-  const events: TickEvent[] = [];
+export interface ThreadedAgentEntry {
+  threadEdgeId: string;
+  props: ThreadEdgeProperties;
+}
 
-  // Get all threads from the ascendant
-  const threads = getThreadsFrom(graph, ascendantId);
+/**
+ * Every agent the player currently holds a live thread to.
+ *
+ * Threading is the game's attention contract: an agent the ascendant is not
+ * threaded to is not the player's business, and nothing about them should reach
+ * a player-facing surface. Both the encounter-visibility phase and the
+ * notification threading gate (THR-666) read this same map, so "who is threaded"
+ * has exactly one definition.
+ *
+ * Includes all threaded agents regardless of court position — agents without an
+ * explicit position default to 'retinue' behaviour. Dormant threads are excluded:
+ * a dormant thread is a thread the player has deliberately set down.
+ *
+ * The ascendant's own avatar actor(s) are always included at 'the_first'. The
+ * avatar is connected via `avatar_of`, not a thread edge, so it never appears in
+ * the thread scan — but the player must always see their own character.
+ */
+export function collectThreadedAgents(
+  graph: WorldGraph,
+  ascendantId: string,
+): Map<string, ThreadedAgentEntry> {
+  const threadedAgents = new Map<string, ThreadedAgentEntry>();
 
-  // Build a map of threaded agent IDs → thread info.
-  // Include all threaded agents regardless of courtPosition;
-  // agents without an explicit position default to 'retinue' behaviour.
-  // Dormant agents are excluded — they generate no notifications.
-  const threadedAgents = new Map<string, { threadEdgeId: string; props: ThreadEdgeProperties }>();
-  for (const edge of threads) {
+  for (const edge of getThreadsFrom(graph, ascendantId)) {
     const props = edge.properties as ThreadEdgeProperties;
     if (props.courtPosition === 'dormant') continue; // dormant = no notifications
     threadedAgents.set(edge.target, { threadEdgeId: edge.id, props });
   }
 
-  // Always include the ascendant's own avatar actor(s) at 'the_first' court position.
-  // The avatar is connected via avatar_of, not a thread edge, so it never appears in
-  // threadedAgents — but the ascendant must always see their own character's encounters.
   for (const avatarNode of getAvatarsOf(graph, ascendantId)) {
     if (!threadedAgents.has(avatarNode.id)) {
       threadedAgents.set(avatarNode.id, {
@@ -331,6 +341,18 @@ export function phaseEncounterVisibility(
       });
     }
   }
+
+  return threadedAgents;
+}
+
+export function phaseEncounterVisibility(
+  state: GameState,
+): { notifications: EncounterNotification[]; events: TickEvent[] } {
+  const { graph, ascendantId, tick } = state;
+  const notifications: EncounterNotification[] = [];
+  const events: TickEvent[] = [];
+
+  const threadedAgents = collectThreadedAgents(graph, ascendantId);
 
   if (threadedAgents.size === 0) return { notifications, events };
 

@@ -1505,3 +1505,30 @@ The outcome ladder made observable: a live histogram of the resolution split plu
 | Module | Orchestrator phase | UI / read site | GameState flow | Trace categories | Debug visibility |
 |---|---|---|---|---|---|
 | `computeGameplayKpiReport` (existing) | Lifetime counters incremented in resolved-action cleanup at the newly-resolved transition (same site as `branchingFiresTotal`) — `orchestrator.ts` | CLI `status` outcome line (`scripts/cli.ts` `printStatus`); **DebugPanel KPI tab** (`KpiDebugTab.tsx`) — full Outcome Ladder section (total/clean/at-cost/crit-succ/crit-fail/story) + advisory rows dimmed with `(adv)`; **chronicle band** (`ChapterView.tsx`) — final outcome rendered as a lexicon band ("won, at a price" / rare-tier gold-red for crits), never the raw enum | `SimulationRuntime.resolvedActionsTotal` / `cleanSuccessTotal` / `critSuccessTotal` → `KpiRuntimeView` → `computeGameplayKpiReport` | none new | `__DEBUG.getOutcomeDistribution(windowTicks?)` → `{ tick, seed, outcomes, thresholds }` (`src/debug-bridge.ts` + `.d.ts`); `windowTicks` filters the histogram by `completedAtTick`, cumulative rows stay lifetime |
+
+---
+
+## Notification threading gate + entity notice badge (THR-666)
+
+Threading is the attention contract: an agent the ascendant holds no thread to is not the player's business. `routeNotifications` previously filtered by category preference and fog-of-war only, so any producer attaching `notification: { channel: 'toast' }` to a per-agent event toasted globally — strangers announced their becomings and misfortunes to a god who had never met them.
+
+| Module | Orchestrator phase | UI / read site | GameState flow | Trace categories | Debug visibility |
+|---|---|---|---|---|---|
+| `src/engine/notificationThreadingGate.ts` (new) — `resolveEventRouting` / `buildThreadingGate` / `isMortalAgentNode` | None (UI-side routing, not a tick phase) | `useNotifications` builds the gate per routing pass and passes it to `routeNotifications` | Reads `gameState.graph` + `gameState.ascendantId`; writes `NotificationState.entityNotices` | None (pure routing decision; the underlying TickEvents already trace) | `[data-testid="thread-entity-notice-badge"]` + `data-notice-badge-category` / `-count` attributes |
+| `src/components/Game/entityNoticeBadgeModel.ts` (new) — `selectEntityNoticeBadges` | — | `GameView` `noticeBadges` memo → `ThreadsPanel` → `CompactThreadRow` → `EntityNoticeBadge` | Pure selector over `notificationState.entityNotices` | — | — |
+
+**Routing contract:** `resolveEventRouting` returns one of three outcomes per event.
+
+| Outcome | When | Effect |
+|---|---|---|
+| `global` | No `actorId`; or the event type is in `ALWAYS_GLOBAL_EVENT_TYPES`; or the actor is not a mortal agent | Toasts/alerts/popups exactly as before |
+| `entity` | Actor is a mortal with a live (non-dormant) thread | `toast` channel only diverts to the agent's row; `alert` and `popup` still escalate globally |
+| `suppress` | Actor is a mortal the player holds no live thread to | No player-facing notification at all. **The TickEvent is untouched** — it still reaches the tick event log and the chronicle |
+
+**Constants (NFP #1):** `ALWAYS_GLOBAL_EVENT_TYPES` (doom, omens, settlement/economy, discovery, faction, army, divine feedback), `ENTITY_DIVERTED_CHANNELS` (`toast` only), `ENTITY_NOTICE_MAX_RETAINED` (60), `NOTICE_CATEGORY_ACCENT` / `NOTICE_CATEGORY_LABEL` / `NOTICE_BADGE_COUNT_DISPLAY_MAX`.
+
+**Shared threading definition:** `collectThreadedAgents(graph, ascendantId)` was extracted from `phaseEncounterVisibility` (`src/engine/encounterVisibility.ts`) and is now the single source of truth for "who is threaded" — the gate and the encounter-visibility phase read the same map, so the two surfaces cannot disagree.
+
+**Mortal-agent predicate — read this before touching the gate:** a mortal is `node.type === 'actor' && node.properties.actorType === 'individual'`, matching the lifecycle/ambition/expression phases. `GraphNode` has **no `category` field** (that belongs to `ThreadedNode` in the UI layer); an early draft keyed on `node.category === 'agent'`, which would have made the gate silently no-op. Graph-backed tests in `notificationThreadingGate.test.ts` cover this — the injected-predicate unit tests pass either way.
+
+**Badge family:** third sibling of `EncounterBadge` (THR-664) and `ThreadTugBadge` (THR-665), same `IconButton` + `Tooltip` primitives, category-tinted through existing tokens. The row now reads as one vocabulary in three tenses — the tug says "about to happen", the encounter badge "happening", the notice badge "happened to them".

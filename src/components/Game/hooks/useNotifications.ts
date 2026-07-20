@@ -2,8 +2,10 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import type { TickEvent } from '../../../types/gameState';
 import type { NotificationState, PopupItem, NotificationPreferences, ToastItem } from '../../../types/notification';
 import type { VisibilityMap } from '../../../types/visibility';
+import type { WorldGraph } from '../../../engine/graph';
 import { routeNotifications } from '../../../engine/notificationRouter';
 import { filterEventsByVisibility } from '../../../engine/notificationVisibilityFilter';
+import { buildThreadingGate } from '../../../engine/notificationThreadingGate';
 
 // ─── Pure Helpers (exported for testing) ────────────────────────
 
@@ -23,11 +25,17 @@ function advancePopupQueue(state: NotificationState): NotificationState {
   return { ...state, popupQueue: state.popupQueue.slice(1) };
 }
 
+/** THR-666: reading an agent's row clears the notices that were waiting on it. */
+function clearEntityNotices(state: NotificationState, agentId: string): NotificationState {
+  return { ...state, entityNotices: (state.entityNotices ?? []).filter(n => n.agentId !== agentId) };
+}
+
 export const useNotificationsTestHelpers = {
   expireToasts,
   dismissAlert,
   dismissToast,
   advancePopupQueue,
+  clearEntityNotices,
 };
 
 // ─── Hook ───────────────────────────────────────────────────────
@@ -39,6 +47,12 @@ interface UseNotificationsParams {
   visibilityMap: VisibilityMap;
   /** Notification preferences — controls which categories are shown and duration mode */
   preferences?: NotificationPreferences;
+  /**
+   * THR-666: world graph + ascendant, used to build the threading gate. When
+   * omitted the gate is off and every event routes globally (pre-gate behaviour).
+   */
+  graph?: WorldGraph;
+  ascendantId?: string;
 }
 
 export interface UseNotificationsReturn {
@@ -50,6 +64,8 @@ export interface UseNotificationsReturn {
   handlePopupChoice: (effect: string) => void;
   /** Push a toast directly (bypasses tick event routing — for immediate player feedback). */
   pushToast: (toast: ToastItem) => void;
+  /** THR-666: clear the per-agent notices waiting on one thread row. */
+  handleClearEntityNotices: (agentId: string) => void;
 }
 
 export function useNotifications({
@@ -58,17 +74,28 @@ export function useNotifications({
   setRunning,
   visibilityMap,
   preferences,
+  graph,
+  ascendantId,
 }: UseNotificationsParams): UseNotificationsReturn {
   const [state, setState] = useState<NotificationState>({
     toasts: [],
     alerts: [],
     popupQueue: [],
+    entityNotices: [],
   });
 
   const prevTickEventsRef = useRef<TickEvent[]>([]);
   const wasRunningRef = useRef(running);
   const runningRef = useRef(running);
   runningRef.current = running;
+
+  // The graph is mutated in place, so it is read through a ref rather than
+  // tracked as an effect dependency — the gate is rebuilt per routing pass
+  // instead, which is a thread scan and cheap at thread-count scale.
+  const graphRef = useRef(graph);
+  graphRef.current = graph;
+  const ascendantIdRef = useRef(ascendantId);
+  ascendantIdRef.current = ascendantId;
 
   // Route new tick events into notification state
   useEffect(() => {
@@ -80,7 +107,12 @@ export function useNotifications({
     prevTickEventsRef.current = tickEvents;
     const now = Date.now();
     const filtered = filterEventsByVisibility(tickEvents, visibilityMap);
-    setState(prev => routeNotifications(filtered, prev, now, preferences));
+    const currentGraph = graphRef.current;
+    const currentAscendantId = ascendantIdRef.current;
+    const gate = currentGraph && currentAscendantId
+      ? buildThreadingGate(currentGraph, currentAscendantId)
+      : undefined;
+    setState(prev => routeNotifications(filtered, prev, now, preferences, gate));
   }, [tickEvents, preferences]);
 
   // Toast expiry timer — pauses when sim is paused
@@ -113,6 +145,10 @@ export function useNotifications({
     setState(prev => dismissAlert(prev, id));
   }, []);
 
+  const handleClearEntityNotices = useCallback((agentId: string) => {
+    setState(prev => clearEntityNotices(prev, agentId));
+  }, []);
+
   const handleDismissPopup = useCallback(() => {
     setState(prev => {
       const next = advancePopupQueue(prev);
@@ -140,5 +176,6 @@ export function useNotifications({
     handleDismissPopup,
     handlePopupChoice,
     pushToast,
+    handleClearEntityNotices,
   };
 }
