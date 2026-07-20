@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-07-20, 11:54 local (light refresh by the hourly `keep-work-flowing-cc` CC task; last full rebuild was the 2026-06-23 retro)
+**Last updated:** 2026-07-20, 21:55 local (light refresh by the hourly `keep-work-flowing-cc` CC task; last full rebuild was the 2026-06-23 retro)
 **Owner of items below:** Christian. Everyone else's blockers go in Linear or `Docs/impediments.md`.
 **Refresh cadence:** The hourly `keep-work-flowing-cc` scheduled task keeps this current (prunes resolved items, adds newly-surfaced Christian-owned ones); the `retrospective` skill still does the deep periodic rebuild. This is the slow-moving standing-asks list — the fresh-this-hour view is [`Design/briefing.md`](briefing.md).
 
@@ -55,9 +55,15 @@ Then triage the other uncommitted working-tree files (item #3).
 
 **The new one is not a draft.** THR-671, 672, 673, 674, 675 and 676 — six Ready-for-Dev tickets, two of them High — all open with "**Plan doc:** `Docs/plans/2026-07-20-git-cicd-clean-delivery.md` — read first." An executor claiming any of them from a fresh clone or an isolation worktree will not find it.
 
-**First clean miss recorded 2026-07-20 11:54.** THR-671 carries `plan-pending-commit`, applied 10:38. `flush-plan-docs` then ran at **11:04** (`lastRunAt` 09:04:11 UTC) with the label in place and did **not** land the doc — verified still absent via `git cat-file -e origin/main:<path>`. That is one unambiguous miss, not a timing race. Next attempt: **12:03** (`nextRunAt` 10:03:49 UTC). **If 12:03 also misses, treat `flush-plan-docs` as broken for home-tree-only docs and file it** — the likely fault is the flush running from a worktree where the untracked file does not exist, so it never sees a file to commit.
+**CORRECTED 2026-07-20 21:55 — `flush-plan-docs` is NOT broken; retract the 11:54 "first clean miss" finding.** The 11:54 entry theorised the flush ran from a worktree where the untracked file was invisible. That theory is **wrong**. The flush ran tonight at 19:50 UTC and did its job correctly: it created branch `docs/plan-flush-2026-07-20-git-cicd-clean-delivery` and opened **PR #638** carrying the doc. The 11:04 "miss" was the machine being asleep, not a fault (nothing ran 11:55→21:50 local).
 
-**Fix — a design session can do this; it is not a Christian-only task.** Land the git/CI-CD plan doc first and independently (`docs/*` branch → PR), then triage the other 15: `git status --porcelain | grep '^??'`, per file commit if still wanted, delete if superseded. **Do not `git clean -fd`** — that destroys all 16 without review, including the live plan doc. Note THR-674 is now the queued ticket covering the other-15 triage, so this item's residue is shrinking to the plan-doc landing alone.
+**The real fault is one step downstream: flush PRs open but never merge.** Seven docs PRs are open and unmerged — #638 (tonight), #557 (2026-07-17), #551, #543, #532, #525 (2026-07-05), #599/#571 (briefings). Diagnosis from `gh pr view`: #557 is `mergeable=MERGEABLE` but `mergeStateStatus=BEHIND`. Branch protection runs in **strict mode** (branches must be up to date with `main`), so every open docs PR is knocked `BEHIND` the moment anything lands on `main` — and nothing re-freshens them, so they queue indefinitely. `Test · Typecheck · Build` shows `SKIPPED` on docs-only PRs, which is expected and is *not* the blocker (see memory: skipped-but-`CLEAN` is mergeable).
+
+**Self-inflicted feedback loop worth naming:** this briefing task merges its own PR every hour, and each of those merges is what pushes all seven flush PRs `BEHIND` again.
+
+**THR-675 (auto-merge on green) is the correct systemic fix and is already queued** — it needs no re-scoping in light of this finding. Interim manual unblock for any single stranded doc: `gh pr merge <N> --merge` after `gh pr update-branch <N>`.
+
+**Fix — a design session can do this; it is not a Christian-only task.** The git/CI-CD plan doc is **already on PR #638** as of 21:51 — it needs *merging*, not authoring (`gh pr update-branch 638 && gh pr merge 638 --merge`). Then triage the other 15: `git status --porcelain | grep '^??'`, per file commit if still wanted, delete if superseded. **Do not `git clean -fd`** — that destroys all 16 without review, including the live plan doc. Note THR-674 is now the queued ticket covering the other-15 triage, so this item's residue is shrinking to the plan-doc landing alone.
 
 **What breaks if not done.** Six queued tickets reference a spec their executor cannot read — the top of the queue silently starves or ships guesswork. The other 15 remain unbacked-up drafts on one machine.
 
@@ -65,7 +71,7 @@ Then triage the other uncommitted working-tree files (item #3).
 
 ## 4. Recurring: something re-parks the home tree off `main` · INVESTIGATED — FIXES TICKETED
 
-**Status:** Cause found (2026-07-20 investigation) · **recurred 2026-07-20 ~11:00 — fourth event in four days — and SELF-CLEARED by 11:54** (tree verified back on `main`, 0 ahead / 0 behind, no modified tracked files; only the 16 untracked drafts remain) · **will keep recurring until THR-672 lands**, but the 07-20 event is the first to resolve with no human or agent repair — evidence the benign park is genuinely self-limiting and THR-672's auto-reattach is aimed correctly
+**Status:** Cause found (2026-07-20 investigation) · **recurred 2026-07-20 ~11:00 — fourth event in four days — and SELF-CLEARED by 11:54** (tree verified back on `main`, 0 ahead / 0 behind, no modified tracked files; only the 16 untracked drafts remain) · **still clean at 21:55; no fifth event** · **will keep recurring until THR-672 lands**, but the 07-20 event is the first to resolve with no human or agent repair — evidence the benign park is genuinely self-limiting and THR-672's auto-reattach is aimed correctly
 **Source:** `Docs/plans/2026-07-20-git-cicd-clean-delivery.md` (root cause + tickets THR-671…676); forensics in `Docs/audits/2026-07-20-git-cicd-forensics/`
 
 Four times in four days, the harness has moved the home tree off `main` at a scheduled-session spawn:
