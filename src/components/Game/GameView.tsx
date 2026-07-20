@@ -137,6 +137,7 @@ import type { AscendantLens } from '../../types/hunger';
 import { useNotifications } from './hooks/useNotifications';
 import { selectEncounterBadges, type EncounterBadgeModel } from './encounterBadgeModel';
 import { selectThreadTugBadges } from './threadTugBadgeModel';
+import { selectEntityNoticeBadges, type EntityNoticeBadgeModel } from './entityNoticeBadgeModel';
 import { toggleAttentionMode } from '../../engine/encounterVisibility';
 import { useTopBarHotkeys } from './hooks/useTopBarHotkeys';
 import { computeEssenceIncome } from '../../engine/essenceIncome';
@@ -1045,6 +1046,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     handleDismissAlert,
     handleDismissPopup,
     handlePopupChoice,
+    handleClearEntityNotices,
   } = useNotifications({
     tickEvents: gameState.tickEvents,
     running,
@@ -1052,6 +1054,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     visibilityMap: effectiveVisibilityMap,
     suspendChoicePopups: interruptSuppressedUntilTick !== null && gameState.tick < interruptSuppressedUntilTick,
     preferences: notificationPrefs,
+    // THR-666 threading gate — an unthreaded agent's beat never reaches the player.
+    graph: gameState.graph,
+    ascendantId: gameState.ascendantId,
   });
 
   // ── Divine Premonition modal state ──
@@ -1273,6 +1278,25 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     () => selectThreadTugBadges(gameState.activeThreadTugs, attentionPool),
     [gameState.activeThreadTugs, attentionPool],
   );
+
+  // THR-666: and the same treatment for a threaded agent's own beats — becomings,
+  // complications, ambition milestones. The threading gate has already dropped
+  // every unthreaded agent's notifications, so whatever reaches here is someone
+  // the player is actually watching.
+  const noticeBadges = useMemo(
+    () => selectEntityNoticeBadges(notificationState.entityNotices),
+    [notificationState.entityNotices],
+  );
+
+  /**
+   * Notice-badge click — open the agent's thread, then clear their notices. This
+   * is only news, so reading it is the whole interaction; there is nothing to
+   * resolve and nothing to pay.
+   */
+  const handleOpenNoticeBadge = useCallback((badge: EntityNoticeBadgeModel) => {
+    handleThreadNodeSelect(badge.agentId, 'agent');
+    handleClearEntityNotices(badge.agentId);
+  }, [handleThreadNodeSelect, handleClearEntityNotices]);
 
   /**
    * Badge click — open the encounter modal, then mark that notification read so
@@ -3686,6 +3710,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                   onOpenEncounterBadge={handleOpenEncounterBadge}
                   tugBadges={tugBadges}
                   onAttendTugBadge={attendThreadTug}
+                  noticeBadges={noticeBadges}
+                  onOpenNoticeBadge={handleOpenNoticeBadge}
                   sustainedControls={sustainedControls}
                   onChampionChipClick={openAgentProfileForId}
                 />
