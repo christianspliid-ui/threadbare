@@ -38,7 +38,7 @@ import { createBattleIndicatorLayer, tickBattleIndicators } from './scene/Battle
 import type { BattleIndicatorLayerGroup } from './scene/BattleIndicatorLayer';
 import type { BattleIndicatorData } from './scene/BattleIndicatorLayer';
 import { createThreadLineMesh } from './scene/ThreadLineMesh';
-import type { ThreadLineData, ThreadLineLayer, TugData } from './scene/ThreadLineMesh';
+import type { ThreadLineData, ThreadLineLayer } from './scene/ThreadLineMesh';
 import { createActivityIconLayer } from './scene/ActivityIconMesh';
 import type { ActivityIconData, ActivityIconLayer } from './scene/ActivityIconMesh';
 import { createStrategicMarkerLayer } from './scene/StrategicMarkerMesh';
@@ -299,8 +299,6 @@ export interface HexMapV2Props {
   activityIcons?: ActivityIconData[];
   /** Strategic hex overlays — project dots and control pips per hex. */
   strategicOverlays?: Map<string, HexStrategicOverlay>;
-  /** Rich tug data keyed by agent ID — drives reach-coloured vibration animation. */
-  activeTugs?: Map<string, TugData>;
   /**
    * Attention pool fill ratio 0.0-1.0 (pool / capacity).
    * Scales thread line opacity: depleted pool = dimmer lines.
@@ -511,7 +509,7 @@ function createSelectionOverlayMesh(size: number, color: string): THREE.Mesh {
  */
 const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
   function HexMapV2(
-    { tiles, cols, rows, seed = 42, hoveredHex, selectedHex, onHexClick, onHexHover, onAgentClick, onArmyClick, riverPaths, lakeIds, regionData, locations, anomalies, roadPaths, agents, armies, reachSignatureMarkers, rivalInfluenceMarkers, battles, threadLines, activityIcons, strategicOverlays, activeTugs, attentionRatio = 1.0, visibilityMap, fogEnabled = false, showOrganicShore = true, overlayOpen = false, selectionColor, moveDestinationHex, onCameraCenterHex, locationActivityMap, spotlightedAgentId, spotlightThreadColor, shouldCenterOnAgent },
+    { tiles, cols, rows, seed = 42, hoveredHex, selectedHex, onHexClick, onHexHover, onAgentClick, onArmyClick, riverPaths, lakeIds, regionData, locations, anomalies, roadPaths, agents, armies, reachSignatureMarkers, rivalInfluenceMarkers, battles, threadLines, activityIcons, strategicOverlays, attentionRatio = 1.0, visibilityMap, fogEnabled = false, showOrganicShore = true, overlayOpen = false, selectionColor, moveDestinationHex, onCameraCenterHex, locationActivityMap, spotlightedAgentId, spotlightThreadColor, shouldCenterOnAgent },
     ref,
   ) {
     const containerRef = useRef<HTMLDivElement>(null);
@@ -1746,11 +1744,6 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
     useEffect(() => {
       threadLineLayerRef.current?.rebuild(threadLines ?? []);
     }, [threadLines]);
-
-    // ── Active tugs update — drives vibration animation on tugged thread lines ──
-    useEffect(() => {
-      threadLineLayerRef.current?.setActiveTugs(activeTugs ?? new Map());
-    }, [activeTugs]);
 
     // ── Activity icon layer rebuild when activityIcons prop changes ──
     useEffect(() => {

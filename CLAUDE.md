@@ -456,37 +456,45 @@ Work is not "done" until it is deployed and documented. Do all of these automati
 1. 14:00 UTC — GitHub Action drift scan runs and posts per-signal Linear issues (label: `drift-scan`) in Continuous Improvement.
 2. ~15:00 UTC — Weekly retrospective (via `retrospective` skill) reads that week's `drift-scan`-labeled issues as its **first input** before the impediment log. Run via the `weekly-retro` scheduled task or manually with `/retrospective`.
 
-To create the `weekly-retro` scheduled task (do this once in a non-scheduled CC session):
-```
-create_scheduled_task(
-  taskId: "weekly-retro",
-  description: "Run weekly retrospective reading drift-scan issues + impediments log (Fridays ~1 hour after drift scan)",
-  cronExpression: "0 17 * * 5",  // adjust to your local time equivalent of 15:00 UTC
-  prompt: "Run the weekly retrospective. Invoke the retrospective skill via the Skill tool and follow it exactly. It will load this week's drift-scan-labeled Linear issues from Continuous Improvement as Step 0, then synthesize with Docs/impediments.md. Write output to Design/retros/retro-YYYY-MM-DD.md. Implement quick wins. Open Linear issues for larger improvements. Execute autonomously."
-)
-```
+The `weekly-retro` scheduled task is **registered and live** in the CC lane (created 2026-07-20, THR-653) — `0 17 * * 5`, fires ~17:09 local. It had been documented here as a task-to-create since the cycle was written, but had never actually been registered with the scheduler. Prompt: `C:\Users\chris\.claude\scheduled-tasks\weekly-retro\SKILL.md`.
 
 ### Scheduled Tasks
 
-Current recurring task registry:
+Current recurring task registry. **Verified against `list_scheduled_tasks` on 2026-07-20 (THR-653 cutover).** The scheduler adds a deterministic per-task jitter of a few minutes to the cron minute, so **the slot name, the cron minute, and the actual fire time are three different things** — the `Fires` column is the one that matters operationally. The pre-cutover version of this table was drifted (it listed `flush-plan-docs` at `15 * * * *` when the registered cron is `0 * * * *`, and listed `weekly-retro` / `weekly-memory-grooming` as live CC tasks when neither had ever been registered).
 
-| Slot | Cadence | Task | Cron | Runtime |
-|------|---------|------|------|---------|
-| **:00** | Hourly | CC pickup (`tb-opus-pickup` — single Opus executor lane) | `0 * * * *` | CC automation lane |
-| **:15** | Hourly | `flush-plan-docs` | `15 * * * *` | CC automation lane |
-| **:20** | Hourly | `keep-work-flowing-cc` (CC PM brief — refreshes `Design/briefing.md`) | `20 * * * *` | CC automation lane |
-| **:30** | Hourly | *(free — was Codex pickup, retired THR-486)* | — | — |
-| **:45** | Hourly | `keep-work-flowing` (Cowork PM — superseded by `keep-work-flowing-cc`, THR-650; runs during migration parallel-run only) | `45 * * * *` | This machine |
-| **09:06** | Daily | `daily-backlog-grooming` | `6 9 * * *` | This machine |
-| **Wed 09:04** | Weekly | `weekly-workflow-retro` | `4 9 * * 3` | This machine |
-| **Fri 14:00** | Weekly | Drift scan (GitHub Action) | n/a (Actions cron) | GitHub Actions |
-| **Fri ~15:00** | Weekly | `weekly-retro` | `0 15 * * 5` | CC automation lane |
-| **Sun 10:04** | Weekly | `weekly-project-hygiene` | `4 10 * * 0` | This machine |
-| **Sun 10:06** | Weekly | `weekly-invoice-check` | `6 10 * * 0` | This machine |
-| **Sun 16:03** | Weekly | `weekly-memory-grooming` | `3 16 * * 0` | CC automation lane |
-| **1st 09:00** | Monthly | `monthly-rulebook-review` (needs creation — THR-417) | `0 9 1 * *` | TBD |
+**CC automation lane — registered and live:**
 
-**Slot allocation.** Hourly Linear-MCP-using tasks occupy the quarter-hour slots: :00 (CC pickup), :15 (`flush-plan-docs`), :20 (`keep-work-flowing-cc` PM brief — fires ~:28 after jitter, deliberately after the :00 pickup so the brief reflects post-pickup state), :45 (Cowork PM, migration parallel-run only). The :30 slot is free since the Codex pickup was retired (THR-486). Daily and weekly tasks pick non-quarter-hour minutes (e.g., :04, :06, :09). When registering a new hourly task, pick the next free 5-minute offset within a quarter-hour band and update this table in the same commit.
+| Slot | Cadence | Task | Cron | Fires |
+|------|---------|------|------|-------|
+| **:00** | Hourly | CC pickup (`tb-opus-pickup` — single Opus executor lane) | `0 * * * *` | ~:00:53 |
+| **:00** | Hourly | `flush-plan-docs` | `0 * * * *` | ~:03:49 |
+| **:45** | Hourly | `keep-work-flowing-cc` (CC PM brief — refreshes `Design/briefing.md` + `Design/user-actions.md`) | `45 * * * *` | ~:53:13 |
+| **Fri 17:00** | Weekly | `weekly-retro` | `0 17 * * 5` | ~17:09 |
+| **Sun 16:03** | Weekly | `weekly-memory-grooming` | `3 16 * * 0` | ~16:10 |
+
+**GitHub Actions:**
+
+| Slot | Cadence | Task | Cron |
+|------|---------|------|------|
+| **Fri 14:00 UTC** | Weekly | Drift scan — posts `drift-scan` Linear issues to Continuous Improvement | n/a (Actions cron) |
+
+**Cowork lane — still enabled, pending Christian's disable (THR-653).** CC cannot read or disable these: they live in Cowork app state, are invisible to `list_scheduled_tasks`, and have no `SKILL.md` on CC disk. The disable is a Christian-owned switch tracked in `Design/user-actions.md`.
+
+| Slot | Cadence | Task | Disposition |
+|------|---------|------|-------------|
+| **:45** | Hourly | `keep-work-flowing` | Superseded by `keep-work-flowing-cc` (THR-650) — **disable** |
+| **09:06** | Daily | `daily-backlog-grooming` | Needs a CC port — THR-677 |
+| **Wed 09:04** | Weekly | `weekly-workflow-retro` | Needs a CC port — THR-677 |
+| **Sun 10:04** | Weekly | `weekly-project-hygiene` | Needs a CC port *after* THR-654 — THR-677 |
+| **Sun 10:06** | Weekly | `weekly-invoice-check` | **Out of scope — personal, not Threadbare. Do not touch.** |
+
+**Not created:**
+
+| Slot | Cadence | Task | Status |
+|------|---------|------|--------|
+| **1st 09:00** | Monthly | `monthly-rulebook-review` | Never registered — THR-417 |
+
+**Slot allocation.** Hourly Linear-MCP-using tasks are spaced so their *fire times* don't overlap: `tb-opus-pickup` at ~:00:53, `flush-plan-docs` at ~:03:49, `keep-work-flowing-cc` at ~:53:13 (deliberately late in the hour so the brief reflects post-pickup state; it moved from the :20 slot to :45 in the THR-653 cutover, taking over the slot the Cowork PM task vacates). Daily and weekly tasks pick non-quarter-hour minutes (e.g., :04, :06, :09). When registering a new hourly task, pick a cron minute whose *jittered* fire time leaves a clear gap from the ones above, then record both the cron and the observed fire time here in the same commit.
 
 ## Skill Tree Layout
 

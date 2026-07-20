@@ -1,12 +1,15 @@
 import type { TickEvent } from '../types/gameState';
 import type {
-  NotificationState, ToastItem, AlertItem, PopupItem,
+  NotificationState, ToastItem, AlertItem, PopupItem, EntityNotice,
   NavigationTarget, NotificationCategoryKey, NotificationPreferences,
 } from '../types/notification';
 import {
   TOAST_MAX_VISIBLE, TOAST_DURATION_MS, ALERT_MAX_VISIBLE,
+  ENTITY_NOTICE_MAX_RETAINED,
   DEFAULT_NOTIFICATION_PREFS,
 } from '../types/notification';
+import type { ThreadingGate } from './notificationThreadingGate';
+import { ENTITY_DIVERTED_CHANNELS } from './notificationThreadingGate';
 
 // ─── Navigation Target Derivation ──────────────────────────────
 
@@ -87,11 +90,17 @@ const PERMANENT_TOAST_EXPIRY = Infinity;
 
 // ─── Router ────────────────────────────────────────────────────
 
+/**
+ * @param gate THR-666 threading gate. When omitted, every event routes globally —
+ *   the pre-gate behaviour, kept so callers without a world graph (tests, the
+ *   headless CLI) work unchanged.
+ */
 export function routeNotifications(
   tickEvents: TickEvent[],
   currentState: NotificationState,
   now: number,
   preferences?: NotificationPreferences,
+  gate?: ThreadingGate,
 ): NotificationState {
   const prefs = preferences ?? DEFAULT_NOTIFICATION_PREFS;
 
@@ -99,6 +108,7 @@ export function routeNotifications(
   const newToasts: ToastItem[] = [...currentState.toasts];
   const newAlerts: AlertItem[] = [...currentState.alerts];
   const newPopupQueue: PopupItem[] = [...currentState.popupQueue];
+  const newEntityNotices: EntityNotice[] = [...(currentState.entityNotices ?? [])];
 
   // Track collapsing within this batch
   const toastByMessage = new Map<string, ToastItem>();
@@ -114,6 +124,24 @@ export function routeNotifications(
 
     const { channel, icon, popup } = event.notification;
     const navTarget = deriveNavigationTarget(event);
+
+    // THR-666 threading gate. An unthreaded mortal's beat is dropped outright;
+    // a threaded mortal's toast is diverted to their row. The event itself is
+    // untouched either way — it still reaches the tick log and the chronicle.
+    const routing = gate?.resolveEventRouting(event) ?? 'global';
+    if (routing === 'suppress') continue;
+    if (routing === 'entity' && ENTITY_DIVERTED_CHANNELS.has(channel) && event.actorId) {
+      newEntityNotices.push({
+        id: event.id,
+        agentId: event.actorId,
+        message: event.message,
+        sphere: event.sphere,
+        tick: event.tick,
+        category,
+        navigationTarget: navTarget,
+      });
+      continue;
+    }
 
     // Determine expiry based on preference mode
     const isPermanent = categoryPrefs.mode === 'permanent';
@@ -188,5 +216,6 @@ export function routeNotifications(
     toasts: newToasts.slice(-TOAST_MAX_VISIBLE),
     alerts: newAlerts.slice(-ALERT_MAX_VISIBLE),
     popupQueue: newPopupQueue,
+    entityNotices: newEntityNotices.slice(-ENTITY_NOTICE_MAX_RETAINED),
   };
 }
