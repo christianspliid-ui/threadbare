@@ -13,6 +13,18 @@ Triggered by the `plan-pending-commit` Linear label. Runs hourly via scheduled t
 
 Invoke this skill via the Skill tool: `/flush-plan-docs`
 
+## Home-tree git rule (THR-672)
+
+The plan docs this skill publishes are authored into the **home tree** (`C:\Users\chris\Dev\Projects\TheFantasyWorldSimulator`) and exist nowhere else until it runs. That does **not** make the home tree this skill's working directory.
+
+**Never run `git checkout`, `git switch`, `git commit`, `git merge`, `git rebase`, or `git reset` with the home tree as CWD.** The home tree is a read-only mirror of `main`, owned by `threadbare-autosync.ps1`. Earlier flush runs did their branch-and-commit dance there and left it parked on a session branch, which stops autosync dead and manufactures phantom "staged" diffs (§ 1 of `Docs/plans/2026-07-20-git-cicd-clean-delivery.md`).
+
+- **Allowed against the home tree:** read-only `git -C "$HOME_TREE" …` queries and reading file contents.
+- **The write side runs in this session's own worktree.** Branches are repo-global and `git push` works from any worktree.
+- **The relocation step (Step 2c.5):** read the plan doc's contents from the home tree, write them to the same repo-relative path in **this worktree**, and `git add`/`commit`/`push` there. Every scope guard and staging verification below applies to the copy in this worktree.
+
+`$HOME_TREE` below always means the home tree; an unqualified `git` command always means this session's worktree.
+
 ## When This Runs
 
 A scheduled CC task fires this skill every hour at :15. Cowork applies the `plan-pending-commit`
@@ -86,15 +98,25 @@ verification in 2d apply identically whether the path came from the description 
 Verify all of these. If any check fails, bounce with a specific comment and continue to next issue.
 
 1. **Prefix check:** path must start with `Docs/plans/` or `Docs/audits/`. No other directories.
-2. **File exists:** check with `git ls-files --others --exclude-standard <path>` (untracked) or
-   `git status --porcelain <path>` (modified tracked). Also accept if file exists in the tree via
-   direct filesystem check.
-3. **Already committed check:** run `git log --oneline -1 -- <path>`. If output is non-empty,
-   the file is already in git history — skip the commit, just remove the label and post:
+2. **File exists:** check with `git -C "$HOME_TREE" ls-files --others --exclude-standard <path>`
+   (untracked) or `git -C "$HOME_TREE" status --porcelain <path>` (modified tracked). Also accept
+   if the file exists via a direct filesystem read of `$HOME_TREE/<path>`.
+3. **Already committed check:** run `git log --oneline -1 -- <path>` (this worktree, against
+   `origin/main` history). If output is non-empty, the file is already in git history — skip the
+   commit, just remove the label and post:
    `Plan doc already committed at <sha> (not by this skill). Label removed.`
-4. **Uncommitted check:** `git status --porcelain <path>` must show the file as untracked (`??`)
-   or modified (`M`). If it shows nothing and also has no git history, bounce:
+4. **Uncommitted check:** `git -C "$HOME_TREE" status --porcelain <path>` must show the file as
+   untracked (`??`) or modified (`M`). If it shows nothing and also has no git history, bounce:
    `File not found in working tree and not in git history. Nothing to commit.`
+
+### 2c.5. Relocate into this worktree (THR-672)
+
+Read `$HOME_TREE/<path>` and write those exact bytes to `<path>` in **this session's worktree**,
+creating parent directories as needed. This is the only file write the skill performs, and it is a
+copy — the authored content is never edited. From here on, every `git` command is unqualified and
+therefore runs in this worktree.
+
+Do **not** `cd` to the home tree to commit the original.
 
 ### 2d. Stage and verify
 
@@ -122,20 +144,20 @@ Capture the commit SHA from the output.
 
 ### 2f. Push
 
-```bash
-git push origin main
-```
+**Always the branch + PR path.** Direct `git push origin main` is unconditionally rejected by
+branch protection (impediment #110), and since THR-672 the commit lives on this worktree's branch
+rather than on `main`, so pushing `main` would not carry it anyway. Do not attempt it.
 
-If push succeeds: proceed to Step 3.
+The following steps are all **REQUIRED** — do not stop after the commit:
 
-If push is rejected (non-fast-forward / GH013 error per impediments #83/84/110):
-fall back to flush-branch path. The following steps are all **REQUIRED** — do not
-stop after the commit:
-
-1. Create branch (**branch name MUST NOT contain the issue identifier** — THR-510):
+1. Create branch off current `origin/main` (**branch name MUST NOT contain the issue identifier**
+   — THR-510):
    ```bash
-   git checkout -b docs/plan-flush-<plan-doc-basename>
+   git fetch origin main
+   git switch -c docs/plan-flush-<plan-doc-basename> origin/main
    ```
+   Run this **before** the Step 2d staging, so the commit lands on the flush branch rather than on
+   whatever branch the session worktree started on.
    Use the plan-doc basename (ID-free, e.g. `docs/plan-flush-2026-06-28-some-topic`). A
    `THR-XXX` token in the branch name links the issue to the PR and closes it on merge.
 
@@ -287,7 +309,13 @@ After all issues from Step 1 have been processed, run an independent cleanup pas
   `linear.app/.../issue/THR-XXX` URL. Committing a plan doc never resolves its issue — emitting any
   of these makes GitHub→Linear sweep the referenced issue(s) to Done (the recurring bug this skill
   caused 3×). The only issue↔PR link is the Step 3 confirmation comment posted *on the issue*.
-- **Never edits any file.** Only `git add` + `git commit` + `git push`. No `Write`, `Edit`, or file mutations.
+- **Never edits authored content.** The only file write permitted is the Step 2c.5 byte-for-byte
+  copy of the plan doc from the home tree into this worktree. No `Edit` of plan-doc contents, ever.
+- **Never mutates the home tree.** Read-only `git -C "$HOME_TREE"` queries and file reads only —
+  no `checkout`/`switch`/`commit`/`merge`/`rebase`/`reset`, and no deletes (THR-672). The original
+  copy is left in place; disposition of published leftovers is THR-674's triage, not this skill's.
+  Known consequence — an untracked leftover at a path `main` now tracks blocks autosync's
+  fast-forward until cleared; tracked as THR-678.
 - **Refuses to run if staging area is non-empty** at skill entry (Step 0).
 - **Refuses to stage anything outside `Docs/plans/` or `Docs/audits/`** — scope guard exits before `git add`.
 - **Never sets issue state.** Only removes the `plan-pending-commit` label. Cowork owns state transitions.

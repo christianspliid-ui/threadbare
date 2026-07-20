@@ -23,6 +23,15 @@ You are a project manager, not an executor. **Do not implement issues, write pro
 - **Plain language for Christian (THR-608).** Christian does not read diffs, PRs, or Linear. Anything addressed to him is plain English, framed in game terms where relevant. Only creative / design-vision decisions go to him. Technical verdicts (CI state, merge mechanics, not-a-defect calls) are the agent's — do not ask Christian to adjudicate those.
 - **Do not fabricate asks.** If nothing genuinely needs Christian this hour, say so plainly. An honest "nothing needs you right now" beats an invented task.
 - **Never put a `Fixes/Closes/Resolves THR-XX` keyword in a recurring briefing commit.** The keyword auto-closes issues on merge (THR-510 / impediment #140). Briefing commits are heartbeats, not issue closures.
+- **Never run a git state op with the home tree as CWD** — see the rule below.
+
+## Home-tree git rule (THR-672)
+
+**Never run `git checkout`, `git switch`, `git commit`, `git merge`, `git rebase`, or `git reset` with the home tree (`C:\Users\chris\Dev\Projects\TheFantasyWorldSimulator`) as the working directory.** The home tree is a read-only mirror of `main`, owned by `threadbare-autosync.ps1`. Scheduled sessions that ran branch dances there left it parked on a session branch — which stops autosync dead and manufactures phantom "staged" diffs that read as catastrophic damage (§ 1 of `Docs/plans/2026-07-20-git-cicd-clean-delivery.md`).
+
+- **Allowed against the home tree:** read-only `git -C "$HOME_TREE" …` queries (`status`, `rev-parse`, `rev-list`, `log`, `ls-files`) and reading file contents.
+- **Everything that writes** — branch, commit, push, PR — happens in **this session's own worktree**. Branches are repo-global and `git push` works from any worktree, so relocating the write side costs nothing.
+- If a file you must publish exists only in the home tree, **copy its contents into this worktree** and commit it here. Never `cd` to the home tree to commit it.
 
 ## Procedure
 
@@ -119,10 +128,12 @@ This is the standing Christian-owned list, not the hourly brief. Refresh, don't 
 
 ### 5. Land the changes
 
+**Write and commit the two files in this session's own worktree, never in the home tree** (Home-tree git rule above). The home tree is read-only to this task — step 2's freshness ping is `git -C` queries only, and the refreshed briefing reaches the home tree the normal way, via autosync fast-forwarding `main` after the PR merges.
+
 Direct `git push origin main` is rejected by branch protection. Mirror the `flush-plan-docs` pattern:
 
 - **Commit only on substantive change.** If the only diff in `Design/briefing.md` is the generated-at timestamp line (and `user-actions.md` is unchanged), **do not commit** — the scheduled-task `lastRunAt` is the "task fired" heartbeat; a timestamp-only commit every hour is pure noise. Trace `[keep-work-flowing-cc] no substantive change — skipping commit (heartbeat via lastRunAt).`
-- On substantive change: stage **only** `Design/briefing.md` and `Design/user-actions.md`, commit as `docs(briefing): refresh Design/briefing.md` (NO THR keyword), then `git push origin main`; on rejection, push a `docs/briefing-<date>` branch and open a PR (docs-only → CI passes fast). Let it merge on green.
+- On substantive change: from this worktree, `git fetch origin main`, create/reset a `docs/briefing-<date>` branch off `origin/main`, stage **only** `Design/briefing.md` and `Design/user-actions.md`, commit as `docs(briefing): refresh Design/briefing.md` (NO THR keyword), push the branch and open a PR (docs-only → CI passes fast). Let it merge on green. Do **not** attempt `git push origin main` from a session — branch protection always rejects it (impediment #110), and the retry dance is what tempted earlier runs into home-tree checkouts.
 
 **Constants:**
 
