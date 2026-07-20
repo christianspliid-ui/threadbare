@@ -39,8 +39,8 @@ import {
 } from '../../../engine/strands';
 import { useInterventionAudio } from './useInterventionAudio';
 import { getSphereColor } from '../../../data/sphereIcons';
-import { computeAttendCost } from '../../../engine/attentionPool';
-import type { CourtPosition } from '../../../types/influence';
+import { ATTENTION_BASE_CAPACITY } from '../../../data/attention-constants';
+import type { ThreadTugBadgeModel } from '../threadTugBadgeModel';
 
 interface UseAgentInteractionParams {
   gameState: GameState;
@@ -649,47 +649,45 @@ export function useAgentInteraction({
     if (category === 'agent') {
       // Use existing agent selection flow for agents
       handleAgentSelect(nodeId);
-
-      // ── Thread tug attend: clicking a tugged agent spends attention and marks tug attended ──
-      const activeTug = (gameState.activeThreadTugs ?? []).find(
-        t => t.agentId === nodeId && !t.attended,
-      );
-      if (activeTug) {
-        // courtPosition on ThreadTug is CourtPosition — dormant agents should not generate tugs,
-        // but default to 'retinue' if one somehow slips through.
-        const safePosition = (activeTug.courtPosition !== 'dormant'
-          ? activeTug.courtPosition
-          : 'retinue') as Exclude<CourtPosition, 'dormant'>;
-        const cost = computeAttendCost(activeTug.threatLevel, safePosition);
-
-        // Deduct from attention pool (in-place mutation — same pattern as graph mutations)
-        const ascNode = gameState.graph.getNode(gameState.ascendantId);
-        if (ascNode) {
-          const currentPool = (ascNode.properties.attentionPool as number) ?? 6;
-          // Reject the attend if the pool is insufficient — open agent panel but do not attend
-          if (currentPool < cost) {
-            setSelectedAgentId(nodeId);
-            setDrawerOpen(true);
-            setStrandViewAgent(null);
-            setSelectedThreadNode({ nodeId, category });
-            setSelectedHexCoord(null);
-            return;
-          }
-          ascNode.properties.attentionPool = currentPool - cost;
-        }
-
-        // Mark tug as attended via new array so useMemo deps detect the change
-        setGameState(s => ({
-          ...s,
-          activeThreadTugs: (s.activeThreadTugs ?? []).map(t =>
-            t === activeTug ? { ...t, attended: true } : t,
-          ),
-        }));
-      }
     }
     setSelectedThreadNode({ nodeId, category });
     setSelectedHexCoord(null);
-  }, [handleAgentSelect, gameState, setGameState]);
+  }, [handleAgentSelect]);
+
+  /**
+   * THR-665: attend a thread tug from its row badge.
+   *
+   * Attending is what lets `phaseEncounterVisibility` emit notifications for the
+   * agent's shaping-tier encounter, so it costs attention. That cost used to be
+   * charged silently whenever the player clicked a tugged agent on the map — a
+   * hidden price on plain selection. It is now spent only here, from a badge that
+   * states the number before the click.
+   *
+   * Selecting the agent always happens; the spend is skipped when the pool cannot
+   * cover it, matching the badge's `affordable === false` state.
+   */
+  const attendThreadTug = useCallback((badge: ThreadTugBadgeModel) => {
+    handleThreadNodeSelect(badge.agentId, 'agent');
+
+    const ascNode = gameState.graph.getNode(gameState.ascendantId);
+    if (!ascNode) return;
+
+    const currentPool = (ascNode.properties.attentionPool as number) ?? ATTENTION_BASE_CAPACITY;
+    if (currentPool < badge.attendCost) return;
+
+    // In-place property mutation — same pattern as graph mutations, so it must
+    // participate in the version system or the pool readout serves a stale value.
+    ascNode.properties.attentionPool = currentPool - badge.attendCost;
+    if (runtime) touchWorld(runtime);
+
+    // Mark the tug attended via a new array so useMemo deps detect the change.
+    setGameState(s => ({
+      ...s,
+      activeThreadTugs: (s.activeThreadTugs ?? []).map(t =>
+        t.id === badge.primary.id ? { ...t, attended: true } : t,
+      ),
+    }));
+  }, [handleThreadNodeSelect, gameState, setGameState, runtime]);
 
   const handleThreadDetailClose = useCallback(() => {
     setSelectedThreadNode(null);
@@ -742,6 +740,7 @@ export function useAgentInteraction({
     strandData,
     handleAgentSelect,
     handleThreadNodeSelect,
+    attendThreadTug,
     handleThreadDetailClose,
     handleWheelSlotClick,
     handleAgendaSelect,

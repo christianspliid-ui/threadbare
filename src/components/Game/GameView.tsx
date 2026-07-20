@@ -36,7 +36,7 @@ import type { ArmyRenderData } from '../HexMapV2/scene/ArmySpriteMesh';
 import { ARMY_SIZE_SMALL_MAX } from '../HexMapV2/scene/ArmySpriteMesh';
 import type { BattleRenderData } from '../HexMapV2/scene/BattleIndicatorMesh';
 import type { SiegeRenderData } from '../HexMapV2/scene/SiegeIndicatorMesh';
-import type { ThreadLineData, TugData } from '../HexMapV2/scene/ThreadLineMesh';
+import type { ThreadLineData } from '../HexMapV2/scene/ThreadLineMesh';
 import type { ActivityIconData } from '../HexMapV2/scene/ActivityIconMesh';
 import {
   ACTIVITY_ICON_OPACITY_BACKGROUND,
@@ -136,6 +136,7 @@ import { buildStubAscendantLens } from '../../types/hunger';
 import type { AscendantLens } from '../../types/hunger';
 import { useNotifications } from './hooks/useNotifications';
 import { selectEncounterBadges, type EncounterBadgeModel } from './encounterBadgeModel';
+import { selectThreadTugBadges } from './threadTugBadgeModel';
 import { toggleAttentionMode } from '../../engine/encounterVisibility';
 import { useTopBarHotkeys } from './hooks/useTopBarHotkeys';
 import { computeEssenceIncome } from '../../engine/essenceIncome';
@@ -377,6 +378,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     strandData,
     handleAgentSelect,
     handleThreadNodeSelect,
+    attendThreadTug,
     handleWheelSlotClick,
     handleInterventionConfirm,
     handleInterventionCancel,
@@ -694,19 +696,6 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     }
     return result;
   }, [gameState.graph, gameState.ascendantId, avatarNodeId, runtime.worldVersion]);
-
-  // ── Active tug data — drives reach-coloured vibration animation on thread lines ──
-  // Unattended tugs only; attended tugs have already been acknowledged by the player.
-  const activeTugData = useMemo<Map<string, TugData>>(() => {
-    const tugs = gameState.activeThreadTugs ?? [];
-    const map = new Map<string, TugData>();
-    for (const t of tugs) {
-      if (!t.attended) {
-        map.set(t.agentId, { reachPrimary: t.reachPrimary, threatLevel: t.threatLevel });
-      }
-    }
-    return map;
-  }, [gameState.activeThreadTugs]);
 
   // ── Attention pool/capacity — component-level so they're in scope everywhere ──
   const { attentionPool, attentionCapacity } = useMemo(() => {
@@ -1275,6 +1264,14 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   const encounterBadges = useMemo(
     () => selectEncounterBadges(gameState.encounterNotifications),
     [gameState.encounterNotifications],
+  );
+
+  // THR-665: the same treatment for thread tugs — the shaping-tier "about to
+  // happen" signal. Replaces the map's tug vibration, which no player perceived.
+  // Depends on the pool so an unaffordable tug renders as such.
+  const tugBadges = useMemo(
+    () => selectThreadTugBadges(gameState.activeThreadTugs, attentionPool),
+    [gameState.activeThreadTugs, attentionPool],
   );
 
   /**
@@ -3265,7 +3262,6 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                   sieges={siegeRenderData}
                   threadLines={threadLineData}
                   activityIcons={activityIconData}
-                  activeTugs={activeTugData}
                   attentionRatio={attentionRatio}
                   visibilityMap={fogDisabled ? undefined : effectiveVisibilityMap}
                   fogEnabled={!fogDisabled}
@@ -3688,6 +3684,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                   agentStrategicSummaries={agentStrategicSummaries}
                   encounterBadges={encounterBadges}
                   onOpenEncounterBadge={handleOpenEncounterBadge}
+                  tugBadges={tugBadges}
+                  onAttendTugBadge={attendThreadTug}
                   sustainedControls={sustainedControls}
                   onChampionChipClick={openAgentProfileForId}
                 />
