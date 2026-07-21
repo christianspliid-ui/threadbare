@@ -36,6 +36,29 @@ function mulberry32(seed: number): () => number {
   };
 }
 
+// ─── Per-entity seed derivation ─────────────────────────────────────────────
+
+/**
+ * Derive a per-entity chronicle seed from a base seed and an entity id.
+ *
+ * The entity id must be hashed in full. `entityId.charCodeAt(0)` reads only the
+ * first character, and location/agent/edge ids share a common prefix, so every
+ * entity in a tick collapsed onto a single seed. Two consequences, both bugs:
+ * the `evt_econ_<trigger>_<tick>_<seed>` id was no longer unique (duplicate
+ * React keys in the event feed), and every entity drew the same template
+ * variant, erasing prose variety. (THR-644)
+ *
+ * Determinism (NFP #3) is preserved: same base seed + same entity id always
+ * yields the same chronicle seed.
+ */
+export function chronicleSeed(baseSeed: number, entityId: string): number {
+  let h = 0;
+  for (let i = 0; i < entityId.length; i++) {
+    h = (Math.imul(31, h) + entityId.charCodeAt(i)) | 0;
+  }
+  return baseSeed + Math.abs(h);
+}
+
 // ─── Context for template resolution ────────────────────────────────────────
 
 export interface EconomicChronicleContext {

@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import {
   resolveEconomicChronicle,
   resolveNamesFromGraph,
+  chronicleSeed,
   type EconomicChronicleContext,
 } from '../economicChronicle';
 import { WorldGraph } from '../graph';
@@ -21,6 +22,39 @@ beforeEach(() => {
 
 afterEach(() => {
   clearTraces();
+});
+
+// ─── chronicleSeed — per-entity seed derivation (THR-644) ───────────────────
+
+describe('chronicleSeed', () => {
+  // Location ids share a common prefix, which is exactly what broke the old
+  // `seed + id.charCodeAt(0)` derivation.
+  const SAME_PREFIX_IDS = ['loc_ashford', 'loc_ironhold', 'loc_dunmere'];
+
+  it('is deterministic — same base seed and entity id yield the same seed', () => {
+    expect(chronicleSeed(42, 'loc_ashford')).toBe(chronicleSeed(42, 'loc_ashford'));
+  });
+
+  it('distinguishes entity ids that share a first character', () => {
+    const seeds = SAME_PREFIX_IDS.map(id => chronicleSeed(150, id));
+    expect(new Set(seeds).size).toBe(SAME_PREFIX_IDS.length);
+  });
+
+  it('produces unique event ids for same-tick demotions of different settlements', () => {
+    // Reproduces THR-644: two settlement_demotion events in tick 36 collided on
+    // `evt_econ_settlement_demotion_36_150`, duplicating the React list key.
+    const ids = SAME_PREFIX_IDS.map(locId => {
+      const result = resolveEconomicChronicle(
+        'settlement_demotion',
+        { settlement: locId, oldType: 'town', newType: 'hamlet', locationId: locId },
+        36,
+        chronicleSeed(150, locId),
+      );
+      return result!.tickEvent.id;
+    });
+
+    expect(new Set(ids).size).toBe(ids.length);
+  });
 });
 
 // ─── resolveEconomicChronicle ───────────────────────────────────────────────
