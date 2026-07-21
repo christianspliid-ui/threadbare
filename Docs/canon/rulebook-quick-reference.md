@@ -1,7 +1,7 @@
 ---
 domain: rulebook
-last_reviewed: 2026-06-23
-reviewer: cowork
+last_reviewed: 2026-07-21
+reviewer: claude-code
 ul_shards: [Cosmology, Agents, Encounters, Prose, Graph]
 status: live
 companion_of: rulebook.md
@@ -58,6 +58,14 @@ Resolution: **sigmoid → d100**, unified. No alternative dice. Outcomes land on
 Four design rules: (1) Path over adjective. (2) Moral axis is structural — each Reach maps to an archetype-pair (Iron: Protector ↔ Conqueror, etc.). (3) Verbs are encounter-specific, soft-power flavoured. (4) Every primitive is clickable.
 
 **Failure is plot, not punishment.** Aftermath reshapes the protagonist's trajectory; it always produces narrative texture.
+
+## The World at Work
+
+Locations hold **resource stocks** in named classes (staple / strategic / luxury / arcane), resolving to three tiers: **scarce · adequate · surplus**. Tier drives prosperity, and surfaces as a plain-prose **Livelihood** line — you read hunger or glut, never a number.
+
+Trade routes carry a **cargo manifest** naming what actually moves, derived from what each endpoint has spare and what it wants. Merchants prefer **complementary** partners — a surplus beside a shortage beats two towns with the same granary.
+
+Two economic verbs are yours: **Bless the Harvest** (Gold / Life) swells a settlement's staples toward glut; **Blight the Fields** (Shadow / Entropy) draws them toward famine. Both are staple-only, both arrive as milestone unlocks rather than starting cards, and both land a beat later — you tilt the season's odds, you do not farm.
 
 ## The Clocks and the Ending
 

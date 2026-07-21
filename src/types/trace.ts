@@ -282,6 +282,8 @@ export type TraceCategory =
   | 'encounter.chapter_archived'
   // Mortal economy — resource stock tiers (THR-615)
   | 'resource_stock_tier_change'
+  // Mortal economy — trade cargo manifests (THR-616)
+  | 'route_cargo_assigned'
   // Player action progression — god-side capability growth (THR-613)
   | 'ascendant.progression.practice'
   | 'ascendant.progression.tier_up'
@@ -340,6 +342,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'omen_beat',
   // Mortal economy — resource stock tiers (THR-615)
   'resource_stock_tier_change',
+  // Mortal economy — trade cargo manifests (THR-616)
+  'route_cargo_assigned',
   // Fix: three TraceEntry members that were defined but missing from this array (THR-111)
   'graph_op_execution',
   'choice_set_player_resolved',
@@ -1872,6 +1876,8 @@ export type TraceEntry =
   | ChapterArchivedTrace
   // Mortal economy — resource stock tiers (THR-615)
   | ResourceStockTierChangeTrace
+  // Mortal economy — trade cargo manifests (THR-616)
+  | RouteCargoAssignedTrace
   // Player action progression — god-side capability growth (THR-613)
   | PlayerPracticeTrace
   | PlayerTierUpTrace
@@ -1891,6 +1897,22 @@ export interface ResourceStockTierChangeTrace extends TraceBase {
   balance: number;
   /** Whether a threaded agent's home location produced a livelihood tug. */
   emittedTug: boolean;
+}
+
+/** Trace: a trade route was assigned (or refreshed) a cargo manifest. THR-616 */
+export interface RouteCargoAssignedTrace extends TraceBase {
+  category: 'route_cargo_assigned';
+  /** The trades_with edge id. */
+  edgeId: string;
+  /** Endpoint node ids. */
+  sourceId: string;
+  targetId: string;
+  /** Resource ids carried, highest value first. */
+  goods: string[];
+  /** Summed base value of the carried goods (route richness). */
+  totalValue: number;
+  /** Whether the manifest carries a staple. */
+  carriesStaple: boolean;
 }
 
 /** Trace: a resolved encounter was distilled into a persistent Chapter Record. THR-603 */

@@ -93,7 +93,9 @@ export type GraphOpType =
   | 'curse_artifact'   // THR-605 Slice 2: append a concealed per-tick quintessence drain to an artifact + set cursed flags (consumed by the effect walker)
   | 'nullify_artifact' // THR-605 Slice 2: strip an artifact's effects + attune/curse flags back to inert (inverse of imbue/attune/curse)
   | 'scry_sublocation' // THR-605 Slice 3: reveal concealed knows_secret_of secrets on agents at the target sublocation's hex (consumed by agentDetail + secret-decay protection)
-  | 'plant_trap'; // THR-605 Slice 4: plant a concealed snare in a sublocation — seeds the encounter.trap.sprung beat against a co-located victim (consumed by evaluateEncounterSeeds → spawns a real trap encounter)
+  | 'plant_trap' // THR-605 Slice 4: plant a concealed snare in a sublocation — seeds the encounter.trap.sprung beat against a co-located victim (consumed by evaluateEncounterSeeds → spawns a real trap encounter)
+  | 'bless_harvest'  // THR-616 P2: raise every staple resource's quantity at the target location (stock tier re-derives next tick via phaseResourceStockTiers)
+  | 'blight_harvest'; // THR-616 P2: lower every staple resource's quantity at the target location (inverse of bless_harvest)
 
 /**
  * Payload for the apply_influence GraphOp.

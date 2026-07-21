@@ -56,7 +56,17 @@ export const ASCENDANT_MILESTONE_BEATS: readonly BeatDefinition[] = [
     kind: 'milestone',
     trigger: { kind: 'turn' },
     identity: { reach: 'gold', sphere: 'order' },
-    grantsActionIds: ['loc.open_markets'],
+    // THR-616 P2: the same milestone that hands over `loc.open_markets` also
+    // grants the two first divine *economic* verbs — Bless the Harvest and Blight
+    // — because this is the moment the world's livelihoods enter the player's
+    // hands ("a god who holds ground can lean on the ground"), for good or ill.
+    // Both were shipped-but-unreachable (no beat granted them, the THR-501 floor
+    // is empty), exactly the orphan case the open_markets grant note describes.
+    // NOTE (design): a dedicated economy-onset beat — e.g. keyed to the P1
+    // livelihood tug (a threaded agent's home crossing into Famine/Glut) — would
+    // frame these more precisely than the order-themed source milestone; folding
+    // them in here is the additive reachability fix, re-homing is a later refinement.
+    grantsActionIds: ['loc.open_markets', 'loc.bless_harvest', 'loc.blight'],
   },
 ];
 

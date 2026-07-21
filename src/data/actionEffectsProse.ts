@@ -79,6 +79,12 @@ export const ACTION_EFFECTS_PROSE: Record<string, string> = {
     'Pours devotion into a wellspring you hold, drawing it toward its flowering and far greater yield.',
   'loc.defend_source':
     'Drives off whatever bleeds a wellspring of yours and mends it, holding it against rival gods.',
+
+  // — First divine economic verbs (THR-616 P2) —
+  'loc.bless_harvest':
+    'Swells a settlement\'s harvest and stores toward plenty; the fields yield more than the season should allow.',
+  'loc.blight':
+    'Turns a settlement\'s harvest against itself, drawing its fields and stores down toward famine.',
 };
 
 // ─── Composed fallback ───────────────────────────────────────────────────────
