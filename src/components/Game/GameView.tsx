@@ -251,7 +251,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   // ── Use simulation hook ──
   const {
     gameState, setGameState, tiles, riverPaths, lakeIds, regionData,
-    running, speed, harvestResult, doTick, handleBeginNextCycle,
+    running, speed, harvestResult, doTick, runTicksSync, handleBeginNextCycle,
     handleToggleRunning, setRunning, setSpeed, seasonName, year, maxEssence, COLS, ROWS,
     runtime,
   } = useSimulation({ archetype, avatarName, cosmology, seed, scryState, mapSize, ascendantIdentity, preSeeded });
@@ -2065,6 +2065,12 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     if (!import.meta.env.DEV || !window.__DEBUG) return;
     window.__DEBUG._registerGameStateProvider(() => _gameStateRef.current);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Debug bridge: synchronous tick batch (THR-689) ────────────────────────
+  useEffect(() => {
+    if (!import.meta.env.DEV || !window.__DEBUG) return;
+    window.__DEBUG._registerTickBridge((n: number) => runTicksSync(n));
+  }, [runTicksSync]);
 
   // ── Debug bridge: Ascendant Beat Director controls (THR-507) ──────────────
   useEffect(() => {

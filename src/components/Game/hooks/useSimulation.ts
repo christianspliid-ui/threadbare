@@ -21,6 +21,8 @@ import type { HarvestResult } from '../../../engine/cycleEnd';
 import { computeMaxEssence } from '../../../engine/influence';
 import type { ScryState } from '../../../types/scry';
 import { getScryTargetHexes } from '../../../engine/visibility';
+import { runTickBatch } from '../../../engine/debugTickBatch';
+import type { DebugTickBatchResult } from '../../../engine/debugTickBatch';
 
 interface UseSimulationParams {
   archetype: AscendantArchetype;
@@ -106,6 +108,28 @@ export function useSimulation({
     }
   }, []);
 
+  // ── Debug: synchronous tick batch (THR-689) ──
+  // Calling doTick() n times in a row would NOT advance n ticks: doTick reads
+  // gameStateRef.current, which React only refreshes on render, so every iteration
+  // would tick from the same `prev` and the counter would move by 1. The batch keeps
+  // its own cursor and commits once at the end.
+  const runTicksSync = useCallback((n: number): Omit<DebugTickBatchResult, 'state'> => {
+    // Auto-pause: leaving the interval armed would let it resume mid-inspection from
+    // the state we just advanced, which is exactly the ambiguity the caller is avoiding.
+    setRunning(false);
+    const { state, ...result } = runTickBatch(
+      gameStateRef.current,
+      n,
+      runtimeRef.current,
+      s => getScryTargetHexes(scryStateRef.current, s.graph),
+    );
+    // Update the ref before setGameState so a subsequent call in the same task —
+    // before React re-renders — starts from the advanced state, not the stale one.
+    gameStateRef.current = state;
+    setGameState(state);
+    return result;
+  }, []);
+
   // Watch for phase transition to twilight (doom expired)
   useEffect(() => {
     if (gameState.phase === 'twilight' && !harvestResult) {
@@ -165,6 +189,8 @@ export function useSimulation({
     setSpeed,
     harvestResult,
     doTick,
+    /** THR-689: advance n ticks synchronously, bypassing the document.hidden-throttled interval. */
+    runTicksSync,
     handleBeginNextCycle,
     handleToggleRunning,
     setRunning,

@@ -1115,6 +1115,23 @@ export interface TickCrashTrace extends TraceBase {
   stack?: string;
 }
 
+/**
+ * Trace: a `__DEBUG.tick(n)` batch advanced the sim (THR-689).
+ * Exactly one entry per call — never one per tick, which would evict most of a run's
+ * real traces from the 2000-entry ring buffer.
+ */
+export interface DebugTickBatchTrace extends TraceBase {
+  category: 'debug_tick_batch';
+  /** Ticks asked for, before clamping to DEBUG_TICK_MAX. */
+  requested: number;
+  /** Ticks actually advanced. */
+  ticksRun: number;
+  /** True when `requested` exceeded DEBUG_TICK_MAX. */
+  capped: boolean;
+  stoppedReason: 'completed' | 'capped' | 'phase_left_playing' | 'error';
+  durationMs: number;
+}
+
 /** Trace: hidden sublocation discovered on a hex */
 export interface HiddenSiteRevealedTrace extends TraceBase {
   category: 'revelation';
@@ -1734,6 +1751,7 @@ export type TraceEntry =
   | ControlEffectEstablishedTrace
   | LayerRevealedTrace
   | HiddenSiteRevealedTrace
+  | DebugTickBatchTrace
   | RevelationTrace
   | InteractionDepthTrace
   | ReputationTraitTrace

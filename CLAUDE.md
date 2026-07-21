@@ -14,7 +14,7 @@ This is the reference card. The full protocol — and why each rule is non-negot
 
 **In a design session:** Track everything in **Linear** (Threadbare team). Write plan docs into `Docs/plans/` or `Docs/audits/` and commit them directly via a `docs/plan-*` PR — CI-gated, merged immediately. Put the `**Plan doc:** \`Docs/plans/…md\`` path in the issue **description** *and* the handoff comment. Hand off by moving the issue to **Ready for Dev** with a **coordination block** in the handoff comment — `Suggested model` (advisory; the `model:*` label is a work-type signal, not a queue filter — CC always runs Opus), `Parallel-safe with`, `Mutex with`. The Linear state transition *is* the handoff — there is no out-of-band signal. See `.claude/skills/design-session/SKILL.md`.
 
-**Ticket-authoring rules (THR-688)** — three rules bind every ticket you write, full text + motivating examples in the protocol doc § *Ticket-authoring rules*: (A) **predicates, not counts** — a sweep ticket states its membership predicate, never a snapshot count that rots before pickup; (B) **mutex lines carry their reason** — `Mutex with: THR-XXX (both edit <file>)`, and an executor may reverse a mutex only when the stated reason is verifiably inapplicable, recorded in a comment; (C) **Done-whens match the pillar** — browser evidence for UI-pillar surfaces only, engine/content accepted via CLI/headless sweeps. Until THR-689 ships, no Done-when may require running N ticks in an automated browser tab — `document.hidden` throttles the loop to 1 tick/click.
+**Ticket-authoring rules (THR-688)** — three rules bind every ticket you write, full text + motivating examples in the protocol doc § *Ticket-authoring rules*: (A) **predicates, not counts** — a sweep ticket states its membership predicate, never a snapshot count that rots before pickup; (B) **mutex lines carry their reason** — `Mutex with: THR-XXX (both edit <file>)`, and an executor may reverse a mutex only when the stated reason is verifiably inapplicable, recorded in a comment; (C) **Done-whens match the pillar** — browser evidence for UI-pillar surfaces only, engine/content accepted via CLI/headless sweeps. A Done-when may require running N ticks in an automated browser tab **only via `window.__DEBUG.tick(n)`** (THR-689, shipped 2026-07-21): `document.hidden` throttles the interval loop to 1 tick/click, so a Done-when that depends on Play-button ticking is still unreachable by construction.
 
 **In an execution session:** Start with `/pull-work`. Pull the top **Ready for Dev** / `assignee:null` issue (sort by priority in memory — `orderBy:priority` errors, impediment #49). **Claim before you read:** `save_issue(id, assignee:"me", state:"In Dev")`, then `get_issue(id)` to confirm the write stuck (silent drops, impediment #48); only then read the plan doc. **Read the latest comment first** — the `Reopened` label means read all comments back to the original handoff. **WIP = 1** In Dev across all sessions and worktrees — parallel work happens on *different* issues. **Never `save_issue(state:"Done")` from CC** — put `Fixes THR-XX` in the commit body *and* the PR body (impediment #140) and let the merge auto-close fire straight to Done. Check `Docs/plans/` for the design doc before writing code.
 
@@ -95,6 +95,18 @@ Key commands at the `fws>` prompt: `tick [N]` (advance ticks), `run [N] [--auto-
 Dev-only API exposed on `window.__DEBUG` (tree-shaken in prod). Use from `preview_eval`, `javascript_tool`, or browser console.
 
 ```javascript
+// Advance the simulation headlessly (THR-689) — the sanctioned way to satisfy any
+// "run N ticks and observe X" browser Done-when. An automated tab reports
+// `document.hidden`, which throttles the interval tick loop to ~1 tick per click;
+// this drives the same runTick pipeline synchronously instead. Auto-pauses the run loop.
+window.__DEBUG.tick()        // 1 tick
+window.__DEBUG.tick(40)      // 40 ticks
+// -> { ticksRun, tick, durationMs, requested, capped, stoppedReason }
+// Clamped to DEBUG_TICK_MAX (200) per call — a larger request returns capped:true
+// rather than an error. stoppedReason is 'completed' | 'capped' | 'phase_left_playing'
+// | 'error'; a mid-batch throw returns partial progress, never propagates (fail-soft).
+// Emits exactly ONE aggregate `debug_tick_batch` trace per call, never one per tick.
+
 // Debug panel control (opens panel + enables tracing automatically):
 // Keyboard shortcuts in-game:
 // - `F1` opens the Debug Panel directly to the CLI tab
