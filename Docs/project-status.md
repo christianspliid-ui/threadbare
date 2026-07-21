@@ -15,7 +15,7 @@
 - **Encounter Format Migration (Now):** ✅ Phases 0-9 complete. All guilds migrated.
 - **Content Architecture (Now):** ✅ THR-86/88/239 shipped.
 - **UI Visual Overhaul — Design System v1 (Now):** ✅ Project complete. THR-178 Deferral shipped 2026-05-08.
-- **Continuous Improvement (Now):** THR-671/672/675 ✅ (git/CI-CD clean delivery: freshness signal + inert home tree + frictionless PRs). THR-674 partially shipped (scope item 1; items 2–3 returned for re-scope), THR-673 blocked on it. THR-303/305/306/307/309/311/312/313/314/315/316/354/355/356/357/358/359/266/396/404/510 ✅. THR-304 Phase 5 series complete (5a vault THR-356 ✅, 5b repo THR-359 ✅). THR-360 (Category B code residue) queued.
+- **Continuous Improvement (Now):** THR-671/672/673/675 ✅ (git/CI-CD clean delivery: freshness signal + inert home tree + reaper hardening + frictionless PRs). THR-674 partially shipped (scope item 1; items 2–3 returned for re-scope). THR-676 report drafted and committed, **awaiting Christian's yes/no on public filing** (`Design/user-actions.md` item 6) — stays In Dev until answered. THR-303/305/306/307/309/311/312/313/314/315/316/354/355/356/357/358/359/266/396/404/510 ✅. THR-304 Phase 5 series complete (5a vault THR-356 ✅, 5b repo THR-359 ✅). THR-360 (Category B code residue) queued.
 - **Social Systems Expansion (Now):** THR-28/27/30/51/29/41/34/31/35 shipped. ✅ THR-254/253. THR-78 queued.
 - **Thematic Pressure & Living World (Next):** ✅ THR-19/122/125/126/80/128/127. THR-87 blocked by THR-116.
 
