@@ -1,6 +1,6 @@
-# Upstream bug report (draft) — Claude Code harness mutates the home repository's git state
+# Upstream bug report — Claude Code harness mutates the home repository's git state
 
-**Status:** DRAFT — not yet filed. External posting is gated on Christian's explicit approval in chat (THR-676 § Scope 2).
+**Status:** FILED 2026-07-21 as [anthropics/claude-code#79713](https://github.com/anthropics/claude-code/issues/79713). Christian approved filing in chat; the body below was pasted verbatim.
 **Target:** `anthropics/claude-code` issue tracker.
 **Prepared:** 2026-07-21 by the `tb-opus-pickup` executor lane, under THR-676.
 **Evidence base:** `Docs/audits/2026-07-20-git-cicd-forensics/` (this directory) + `Docs/plans/2026-07-20-git-cicd-clean-delivery.md` § 1.
@@ -122,7 +122,9 @@ We are happy to supply full reflogs, the staged patch, or run any diagnostic tha
 
 ## Filing checklist (internal — not part of the report body)
 
-- [ ] Christian approves filing in chat (surfaced via `Design/briefing.md`)
-- [ ] File at `anthropics/claude-code` with the body above
-- [ ] Record the resulting issue URL in a comment on THR-676
-- [ ] Cross-link the URL into `CLAUDE.md` § Known Sandbox Limitations, replacing "Upstream bug report: THR-676"
+- [x] Christian approves filing in chat (surfaced via `Design/briefing.md`) — approved 2026-07-21
+- [x] File at `anthropics/claude-code` with the body above — [#79713](https://github.com/anthropics/claude-code/issues/79713)
+- [x] Record the resulting issue URL in a comment on THR-676
+- [x] Cross-link the URL into `CLAUDE.md` § Known Sandbox Limitations, replacing "Upstream bug report: THR-676"
+
+Checklist complete — THR-676 closed out 2026-07-21. Watch [#79713](https://github.com/anthropics/claude-code/issues/79713) for upstream response; if the harness behaviour changes, revisit the containment note in `CLAUDE.md` § Known Sandbox Limitations.
