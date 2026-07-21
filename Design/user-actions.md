@@ -174,9 +174,13 @@ First verify nothing unique is stranded: `git rev-list --count origin/main..HEAD
 
 **Why it needs you.** Writing the report is agent work and needs no permission. **Posting it publicly does** — it would describe your machine's setup and quote excerpts from your repository's reflog and history on a public issue tracker. That is a disclosure decision, not a technical verdict, so it is not the agent's to make.
 
+**The report is now written and committed** — `Docs/audits/2026-07-20-git-cicd-forensics/upstream-report.md` (2026-07-21 07:0x run). Read it before answering if you want to see exactly what would be disclosed: it names Windows 11 / Claude Code 2.1.90, describes the scheduled-session setup, and quotes ten reflog lines plus file/line counts. It does **not** include repository contents, file paths from your work, or anything about the game.
+
+That run also captured a **live reproduction**: an empty-message `refs/heads/main` update at `07:01:30`, two seconds before that session's own worktree was created, with the home tree detached at the time. The report quotes it.
+
 **Fix — answer yes or no in chat.**
-- **Yes** → the report is written, committed to `Docs/audits/2026-07-20-git-cicd-forensics/upstream-report.md`, filed upstream, and the issue link recorded on THR-676.
-- **No** → the report is still written and committed locally; only the public filing is skipped. THR-676 closes either way.
+- **Yes** → the report is filed at `anthropics/claude-code` and the issue link recorded on THR-676.
+- **No** → nothing further happens; the report stays internal as a local record. THR-676 closes either way.
 
 **What breaks if not answered.** THR-676 can be worked but not finished, and it is presently the only non-stale item in the Ready-for-Dev queue — so the executor lane has nothing else substantial to pull. The upstream fault itself stays contained locally regardless (THR-671/672 shipped), so this is about closing the loop, not about risk.
 
