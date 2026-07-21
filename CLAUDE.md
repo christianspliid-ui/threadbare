@@ -68,7 +68,7 @@ npm run dev    # start Vite dev server with hot reload
 
 **`?seeded` ≠ `--seed 42` (intentional divergence):** The `?seeded` URL uses the `DEV_ASCENDANT_IDENTITY` (hunger.witness, large map, derived cosmology). The CLI `--seed 42` uses a balanced cosmology and medium map. They generate different worlds with the same numeric seed. For roughly equivalent worlds: use `?view=game&seeded&size=medium` in browser vs `npm run cli -- --seed 42 --map medium`. For large-map CLI testing: `npm run cli -- --seed 42 --map large` (still differs in cosmology).
 
-**Note for automated sessions:** The sandbox VM has isolated networking. Use `npx tsc --noEmit`, `npx vite build`, and `npm test` to verify. The user must run `npm run dev` on their own machine.
+**Note for automated sessions:** The sandbox VM has isolated networking. Use `npm test` and `npx vite build` to verify (for types, see the Pre-commit note on `tsc -b` — `tsc --noEmit` proves nothing here). The user must run `npm run dev` on their own machine.
 
 ### Headless CLI (`npm run cli`)
 
@@ -277,7 +277,7 @@ Cross-boundary testing rules, contract test patterns, pre-commit verification ch
 
 **Pre-commit minimum (always do these):**
 1. `npm test` — all tests pass
-2. `npx tsc --noEmit` — type check clean
+2. **Typecheck — do NOT run `npx tsc --noEmit`.** It is a **no-op** in this repo: the root `tsconfig.json` sets `files: []`, so it exits 0 unconditionally no matter how broken the code is. Citing its exit 0 as evidence is gate theater (THR-686). The authoritative type gate is CI's `Test · Typecheck · Build` (which runs `tsc -b`). For *local* evidence, run `npx tsc -b --force` and show **zero net-new** errors — the baseline is heavily red (~3.5k, THR-489), so the only meaningful local check is a diff of the error set with and without your change, not an absolute count.
 3. `npx vite build` — production build succeeds (confirms Vercel will deploy)
 4. `npm run check:process` — advisory workflow/process lint (non-blocking while it stabilizes)
 5. `npm run lint:plan-doc` — advisory plan-doc structure lint for `Docs/plans/*.md` (non-blocking while it stabilizes)
@@ -407,7 +407,7 @@ This protocol exists because: a bug where `@hero` resolved to the wrong actor wa
 
 Work is not "done" until it is deployed and documented. Do all of these automatically — do not ask, do not stop at "ready to push?", just do it.
 
-- [ ] **Commit** all changes — the closing commit's message body **must** include `Fixes THR-XX` (or `Closes THR-XX` / `Resolves THR-XX`). This triggers the Linear auto-close workflow on push to `main`. Include verification evidence either in the commit body or closing Linear comment: raw terminal output for `npm test`, `npx tsc --noEmit`, and `npx vite build`, or a link to a green CI run for the same commit. Example: `docs: update project-status for THR-8\n\nFixes THR-8`
+- [ ] **Commit** all changes — the closing commit's message body **must** include `Fixes THR-XX` (or `Closes THR-XX` / `Resolves THR-XX`). This triggers the Linear auto-close workflow on push to `main`. Include verification evidence either in the commit body or closing Linear comment: raw terminal output for `npm test` and `npx vite build` (plus a `tsc -b` net-new diff when the change touches TypeScript — never `tsc --noEmit`, which is a no-op here), or a link to a green CI run for the same commit. Example: `docs: update project-status for THR-8\n\nFixes THR-8`
   - **Put `Fixes THR-XX` in the PR description body too, not only the commit body.** When the merge is a non-squash merge commit (`Merge pull request #N…`), GitHub's merge commit does **not** carry the feature commit's body, so Linear's integration never sees the keyword and the auto-close silently misses (impediment #140, THR-453). The keyword must appear in the PR body so the close fires regardless of merge strategy.
 - [ ] **Push** to GitHub (`git push`, with `-u origin <branch>` if needed)
 - [ ] **Merge** feature branches into main immediately — don't leave branches waiting. **Queue it with `gh pr merge --auto --merge` and move on; do not poll-wait on CI** (THR-675). GitHub holds the merge until the required `Test · Typecheck · Build` check is green and merges with no session present. Branch protection and the required check are unchanged — auto-merge removes the waiting, not the gate.

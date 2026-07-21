@@ -81,6 +81,15 @@ const PLAN_DOC_SKIP_PATTERNS = [
   /-brainstorm\.md$/u,
   /-grill-me\.md$/u,
 ] as const;
+// Opt-out marker for standing reference docs that live in Docs/plans/ but are not
+// dated plan docs and never will be (THR-686). A filename/date-prefix rule cannot
+// express this: the canonical offender, `2026-04-16-systemic-wiring-guide.md`, is
+// itself date-prefixed, so scoping to `20??-??-??-*.md` would still lint it and
+// still emit its 31 deterministic false findings. The doc declares its own kind.
+const PLAN_DOC_EXEMPT_PATTERN = /^>\s*\*\*lint_plan_doc:\*\*\s*exempt\b/mu;
+// Only the head of the file is scanned for the marker, so a mention of the opt-out
+// in prose further down (e.g. this rule being documented) cannot silently exempt.
+const PLAN_DOC_EXEMPT_SCAN_LINES = 15;
 
 function normalizeRepoPath(value: string): string {
   return value.trim().replaceAll('\\', '/');
@@ -162,6 +171,24 @@ function collectAllPlanFiles(): string[] {
 
 function shouldSkipPlanDoc(repoPath: string): boolean {
   return PLAN_DOC_SKIP_PATTERNS.some((pattern) => pattern.test(`/${repoPath}`));
+}
+
+/**
+ * True when the doc declares itself exempt via a `> **lint_plan_doc:** exempt` line
+ * in its first PLAN_DOC_EXEMPT_SCAN_LINES lines. Fail-soft (NFP #4): an unreadable
+ * file is reported as not-exempt so it still gets linted rather than silently passing.
+ */
+function isPlanDocExempt(repoPath: string): boolean {
+  try {
+    const head = fs
+      .readFileSync(toAbsolutePath(repoPath), 'utf8')
+      .split(/\r?\n/u)
+      .slice(0, PLAN_DOC_EXEMPT_SCAN_LINES)
+      .join('\n');
+    return PLAN_DOC_EXEMPT_PATTERN.test(head);
+  } catch {
+    return false;
+  }
 }
 
 function addFinding(findings: Finding[], finding: Finding): void {
@@ -594,7 +621,7 @@ function collectTargetFiles(mode: CandidateMode, cliPaths: string[]): string[] {
     .filter((file) => file.startsWith(PLAN_DOC_PREFIX) && file.endsWith('.md'))
     .filter((file) => fs.existsSync(toAbsolutePath(file)));
 
-  return planDocs.filter((file) => !shouldSkipPlanDoc(file));
+  return planDocs.filter((file) => !shouldSkipPlanDoc(file) && !isPlanDocExempt(file));
 }
 
 function printFindings(findings: Finding[], strict: boolean): number {

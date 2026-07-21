@@ -39,7 +39,7 @@ npm run dev    # start Vite dev server with hot reload
 
 **For all testing, use `?view=game&seeded`** — this skips the remembrance flow, ascendant selection, AND the Meet The First encounter, loading directly into a fully populated game with a bonded First agent. Only use bare `?view=game` when testing identity-less paths, and only test the worldgen/selection/remembrance screens when those screens are the subject of the test.
 
-**Note for Cowork/Codex sessions:** The sandbox VM has isolated networking. Use `npx tsc --noEmit`, `npx vite build`, and `npm test` to verify. The user must run `npm run dev` on their own machine.
+**Note for Cowork/Codex sessions:** The sandbox VM has isolated networking. Use `npm test` and `npx vite build` to verify (for types see the Pre-commit note on `tsc -b`; `tsc --noEmit` is a no-op here). The user must run `npm run dev` on their own machine.
 
 ### Headless CLI (`npm run cli`)
 
@@ -143,7 +143,7 @@ Cross-boundary testing rules, contract test patterns, pre-commit verification ch
 
 **Pre-commit minimum (always do these):**
 1. `npm test` — all tests pass
-2. `npx tsc --noEmit` — type check clean
+2. **Typecheck — do NOT run `npx tsc --noEmit`.** Root `tsconfig.json` sets `files: []`, so it exits 0 unconditionally and proves nothing (THR-686). CI's `Test · Typecheck · Build` is the authoritative gate; for local evidence run `npx tsc -b --force` and show zero *net-new* errors against the (heavily red) baseline.
 3. `npx vite build` — production build succeeds (confirms Vercel will deploy)
 
 ## Viewport Contract (1920×1080)
