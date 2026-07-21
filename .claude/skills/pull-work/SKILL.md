@@ -1,7 +1,7 @@
 ---
 name: pull-work
 description: Canonical Claude Code pickup workflow for claiming Linear work safely from Ready for Dev.
-last_validated_against: 2026-07-05
+last_validated_against: 2026-07-21
 ---
 
 # Pull Work
@@ -24,7 +24,7 @@ Run as `/pull-work` (auto-pick top Ready for Dev issue) or `/pull-work THR-123` 
 
 **Constant:** `MAX_CLAIM_RETRIES = 3`
 
-1. **Board scan** — consume the Step 1 board-scan (already built): one `list_issues(team:"Threadbare", limit:250, orderBy:"updatedAt", includeArchived:false)` call, bucket in memory by `status`. Sort Ready-for-Dev candidates by priority (1=Urgent first), then oldest `createdAt` as tie-break. Pick the top unassigned candidate.
+1. **Board scan** — consume the Step 1 board-scan (already built): **two state-filtered `list_issues` calls**, not one unfiltered 250-issue sweep. Sort Ready-for-Dev candidates by priority (1=Urgent first), then oldest `createdAt` as tie-break. Pick the top unassigned candidate.
 1.5. **WIP gate** — if the "In Dev" slice filtered to `assignee:"me"` is empty, continue to step 2. If exactly one entry, route to Step 1.7 (resume-from-In-Dev upstream-shipped check) instead of exiting clean. If more than one entry, this is a Rule 6 violation — output the cross-session-leak trace line and exit 1.
 2. **Claim** — `save_issue(id, assignee:"me", state:"In Dev")`.
 3. **Verify** — `get_issue(id)`. Confirm both `assignee` and `state` match.
@@ -127,14 +127,20 @@ Before any pickup work, sweep for stale `tfws-pickup-*` and `tfws-resume-*` work
 
 If any Linear MCP call in this session returns a rate-limit error (HTTP 429 / MCP rate-limit response), pause 2 minutes, retry once, then if still limited log an impediment via `impediment-reporter` and exit cleanly without claiming. Do not retry in tight loops.
 
-### Step 1 — Single board scan
+### Step 1 — Two state-filtered board scans
 
-If no issue id was provided, fire one call: `list_issues(team:"Threadbare", limit:250, orderBy:"updatedAt", includeArchived:false)`. In memory, bucket the response by `status` to produce:
-- The "In Dev" slice filtered to `assignee:"me"` — for WIP check
-- The "Ready for Dev" slice filtered to `assignee:null` — for pickup candidates
-- The "In Dev" slice across all assignees — for the concurrent-session parallel check (Step 2)
+If no issue id was provided, fire **two** calls:
 
-Sort the Ready-for-Dev candidates by priority in memory (impediment #49 rejects `orderBy:priority` at runtime); oldest `createdAt` is tie-break. Pick the top.
+```
+list_issues(team:"Threadbare", state:"In Dev",        limit:50,  includeArchived:false)
+list_issues(team:"Threadbare", state:"Ready for Dev", assignee:null, limit:100, includeArchived:false)
+```
+
+The first response gives both In-Dev slices you need: filter to `assignee:"me"` for the WIP gate (Step 1.5), and read it across all assignees for the concurrent-session parallel check (Step 2). The second is the pickup-candidate list.
+
+**Do not use a single unfiltered `limit:250` sweep.** That call returns roughly 390k characters and is rejected outright on response size, so the canonical path used to fail at step one and every run improvised its own scan (THR-686). State-filtering is what keeps the response inside budget — this now matches what `keep-work-flowing-cc` § 1 already does, so the two skills no longer contradict each other.
+
+Sort the Ready-for-Dev candidates by priority **in memory** (impediment #49 — `orderBy:"priority"` is accepted by the schema but rejected at runtime; `orderBy` defaults to `updatedAt`, which is fine). Oldest `createdAt` is the tie-break. Pick the top.
 
 If a specific issue id was provided, skip to Step 3.
 

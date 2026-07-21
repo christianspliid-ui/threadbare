@@ -1,5 +1,7 @@
 # Systemic Wiring Guide — What the Engine Can Do, and Why It Matters for What You Write
 
+> **lint_plan_doc:** exempt — standing reference for content authors, not a dated plan doc. It has no Engine/Content/UI pillars, no constants table, and no coordination block because it proposes no work; it describes capabilities that already ship. See THR-686.
+
 **Date:** 2026-04-16
 **Purpose:** This document exists because LLMs are good at writing prose but bad at knowing what a bespoke game engine can do with that prose. The result is hardcoded fiction masquerading as game content. This guide fixes that by explaining the engine's dynamic capabilities *before* you start writing — because knowing what the system can do should change what you decide to write.
 

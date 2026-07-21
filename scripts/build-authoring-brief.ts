@@ -328,7 +328,18 @@ async function main(): Promise<void> {
   console.info(`info: wrote ${lineCount} lines to ${AUTHORING_BRIEF_OUTPUT_PATH}`);
 }
 
-// Only execute main when this is the entry point, not when imported by tests
-if (fileURLToPath(import.meta.url) === process.argv[1]) {
+// Only execute main when this module is the generator entry point — not when it is
+// imported by tests, and not when it is imported by the read-only drift check.
+//
+// NOTE (THR-686): `fileURLToPath(import.meta.url) === process.argv[1]` is NOT a
+// sufficient guard here. `check:authoring-brief` bundles this module *into* its own
+// entry file via `esbuild --bundle`, which rewrites `import.meta.url` to point at
+// `.cache/check-authoring-brief.mjs` — the bundle's own path, and therefore equal to
+// `process.argv[1]`. The guard evaluated true and the generator wrote
+// `Docs/authoring-brief.md` as a side effect of a check, corrupting dirty working
+// trees mid-run. Gate on the entry file's *name* instead: bundling preserves the
+// importer's outfile name, so a bundled check never matches.
+const entryBasename = path.basename(process.argv[1] ?? "");
+if (entryBasename.startsWith("build-authoring-brief")) {
   void main();
 }

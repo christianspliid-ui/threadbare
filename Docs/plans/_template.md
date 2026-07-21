@@ -178,7 +178,7 @@ interface <TraceName>Trace {
 *Every closeout commit must include `Fixes THR-XXX` and verification evidence (npm test, tsc, vite build raw output or green CI link) per CLAUDE.md § Definition of Done.*
 
 - [ ] <primary acceptance criterion>
-- [ ] `npm test`, `npx tsc --noEmit`, `npx vite build` all pass
+- [ ] `npm test` and `npx vite build` pass; types verified via `tsc -b --force` net-new diff (not `tsc --noEmit` — no-op here, THR-686)
 - [ ] Closing commit body includes `Fixes THR-XXX`
 - [ ] Browser-verify screenshot at 1920×1080 included **OR** `Browser-verify exempt: <reason>` stated in commit body
 
