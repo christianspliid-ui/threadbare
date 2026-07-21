@@ -373,6 +373,49 @@ if (import.meta.env.DEV) {
       return { actionId: action.actionId, actorName: actor.name ?? actor.id, records };
     },
 
+    /**
+     * THR-694 — scene-context readout for an agent's active (or most-recent) unified
+     * action: the resolved scene target (id / name / kind / actor→target relation) and
+     * the bound support cast. The DoD state-assertion hook for the Scene Integration
+     * slices ("is the scene wired?"). Resolves the agent by exact id, id prefix, then
+     * case-insensitive partial name — same notes as gotoAgent. Read-only.
+     */
+    inspectSceneContext: async (agentRef: string) => {
+      const state = _gameStateProvider?.();
+      if (!state) return { error: 'no live game state' };
+      const graph = state.graph;
+      const ref = agentRef.trim();
+      const lc = ref.toLowerCase();
+      const actors = graph.getNodesByType('actor');
+      const actor =
+        actors.find(n => n.id === ref) ??
+        actors.find(n => n.id.startsWith(ref)) ??
+        actors.find(n => (n.name ?? '').toLowerCase().includes(lc));
+      if (!actor) return { error: `no actor matched "${agentRef}"` };
+      const actions = state.unifiedActions ?? [];
+      const action =
+        actions.find(a => a.actorId === actor.id && !a.resolved) ??
+        actions.find(a => a.actorId === actor.id);
+      if (!action) return { error: `no unified action for ${actor.name ?? actor.id}` };
+      const { resolveSceneTargetContext } = await import('./engine/proseEnrichment');
+      const target = resolveSceneTargetContext(graph, actor.id, action.targetId);
+      const bindings = (action.supportBindings ?? []).map(b => ({
+        key: b.key,
+        nodeId: b.nodeId,
+        name: graph.getNode(b.nodeId)?.name ?? null,
+        reused: b.reused,
+      }));
+      return {
+        actionId: action.actionId,
+        templateId: action.templateId,
+        targetId: action.targetId,
+        targetName: target?.name ?? null,
+        targetKind: target?.kind ?? null,
+        relation: target?.relation ?? null,
+        bindings,
+      };
+    },
+
     // ── Ascendant Beats — Divine Cadence (THR-507) ──────────────────────────
     listBeats: async () => {
       const { ASCENDANT_SPINE, ASCENDANT_BEAT_POOL } = await import('./data/ascendant-beat-content');

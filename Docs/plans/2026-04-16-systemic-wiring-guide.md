@@ -72,6 +72,11 @@ Every `narrative` field in steps and outcomes supports dynamic text substitution
 | `{doom_verb}` | Doom archetype vocabulary — action verb | "fractures" (breach) / "gathers" (convergence) |
 | `{doom_adj}` | Doom archetype vocabulary — adjective | "fractured" (breach) / "inexorable" (convergence) |
 | `{doom_atmosphere}` | Doom archetype vocabulary — atmospheric phrase | "something presses through" (breach) |
+| `{target}` | Scene target — the entity the encounter is *with* (THR-694). Falls back to "the other party" | "Serafina" |
+| `{target:they\|them\|their\|s}` (+ capitalized) | Target's pronouns; neutral fallback | "she/her/her/s" |
+| `{target:faction}` | Target's faction name; falls back to "their people" | "The Iron Wardens" |
+
+**Scene target (THR-694):** On the encounter path, prose can name the entity the action is *with* — the resolved `action.targetId` (another agent or a location) — instead of "the other party." The `{target:*}` family is populated only when the caller passes `opts.targetId` to `gatherNarrativeContext` (the encounter stage model and action-resolution paths do); self-targeted actions, deleted targets, and all non-encounter prose leave it absent, so every token falls back and absence reads as absence. **Never write a `{target}` that assumes a referent** — a scene that only makes sense with a named other party must guard it with `{?has_target}`. Location-kind targets resolve `{target}` (the place name) only; their pronoun/faction/relation tokens use fallbacks.
 
 **How to verify:** Run the DebugPanel Trace tab filtered on `narrative_generation`. Every step and outcome narrative you see in game should render with placeholders resolved — not as literal `{name}` / `{?has_faction}` text. The regression locks live in `src/engine/__tests__/unifiedAdapterProseEnrichment.test.ts`.
 
@@ -88,7 +93,7 @@ no one to answer to but the road.{/no_faction}
 That thought alone steadies {their} hand.{/has_ally}
 ```
 
-Available conditionals: `has_artifact`, `has_ally`, `has_rival`, `has_faction`, `has_title`. Each has an inverse: `no_artifact`, `no_ally`, etc.
+Available conditionals: `has_artifact`, `has_ally`, `has_rival`, `has_faction`, `has_title`. Each has an inverse: `no_artifact`, `no_ally`, etc. **Scene target (THR-694):** `has_target` / `no_target` (presence pair) and `target_is_ally` / `target_is_rival` / `target_is_stranger` (the actor→target relation, classified via the ±0.35 sentiment thresholds). A location-kind target is present (`has_target` true) but carries no relation, so all three `target_is_*` conditionals resolve false for it.
 
 **Why this changes what you write:** When you know prose can branch on whether the agent has allies or artifacts, you write scenes that *use* those relationships. A betrayal scene where the agent has no allies reads differently from one where their strongest ally might hear about it. A discovery scene where the agent carries a storied artifact reads differently from one where they have nothing. These aren't cosmetic — they change the emotional texture of the moment. **Write scenes where the conditionals matter, not scenes where they're decoration.**
 

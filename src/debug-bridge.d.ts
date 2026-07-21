@@ -611,6 +611,23 @@ export interface DebugBridge {
   getStepProse(agentRef: string):
     | { actionId: string; actorName: string; records: import('./types/stepProseRecord').StepProseRecord[] }
     | { error: string };
+
+  /** THR-694 — scene-context readout for an agent's active/most-recent unified action:
+   *  the resolved scene target (id/name/kind/relation) and the bound support cast.
+   *  DoD state-assertion hook for the Scene Integration slices. Resolves the agent by
+   *  exact id, id prefix, then case-insensitive partial name. */
+  inspectSceneContext(agentRef: string): Promise<
+    | {
+        actionId: string;
+        templateId: string;
+        targetId: string;
+        targetName: string | null;
+        targetKind: 'agent' | 'location' | null;
+        relation: 'ally' | 'rival' | 'stranger' | null;
+        bindings: Array<{ key: string; nodeId: string; name: string | null; reused: boolean }>;
+      }
+    | { error: string }
+  >;
   /** @internal GameView registers the thread story provider here */
   _registerThreadStoryProvider(fn: (agentRef: string) => import('./engine/threadDigest').ThreadStoryComposition | null): void;
 
