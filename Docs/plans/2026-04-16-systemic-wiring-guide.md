@@ -520,10 +520,8 @@ foreshadowing?: {
   template: string;         // Prose template with {name.first}, {pronoun.subject}, {encounter.heading}
   when: {
     intelligenceTier?: 'unknown' | 'rumor' | 'briefed' | 'expert';
-    topMotive?: 'awareness' | 'threat' | 'opportunity' | 'duty' | 'curiosity';
+    topMotive?: 'awareness' | 'visibility' | 'prereqs' | 'threat' | 'capability' | 'cooldown';
     dominantReach?: string;           // e.g. 'eye', 'heart', 'shadow'
-    hasMark?: string;                 // Phase 3 — deferred
-    hasReputation?: string;           // Phase 3 — deferred
   };
 }
 ```
@@ -539,12 +537,14 @@ foreshadowing?: {
 
 **Variant selection:** The engine picks the most-specific matching variant (most conditions specified in `when`). Ties at the same specificity are broken deterministically with PRNG seeded from `agentId + encounterId`. If no variant matches, falls back to `foreshadowing.fallback`, then to `GENERIC_FORESHADOWING_FALLBACK`.
 
-**Phase 1 signals (current):**
-- `intelligenceTier`: always `'unknown'`
-- `topMotive`: always `'awareness'`
-- `dominantReach`: encounter template's `reach` field (e.g. `'eye'` for plague_outbreak)
+**Signals (live — no longer Phase-1 stubs):**
+- `intelligenceTier`: derived from the candidate's `completionProb` via `resolveIntelligenceTier`
+- `topMotive`: derived from the agent's real decision via `resolveTopMotive`
+- `dominantReach`: the candidate's `reachPrimary`, falling back to the template's `reach`
 
-Phase 3 will derive these from actual agent intelligence records and encounter-pool funnel scores. The variant system is already live — content authored now will automatically use real signals in Phase 3 without changes.
+Only the no-candidate path (foreshadowing an encounter the agent has not actually selected) still returns the `'unknown'` / `'awareness'` defaults. Variants authored against these conditions match on real agent state.
+
+> **Note on tiers:** this path's `intelligenceTier` is a *proxy* derived from `completionProb`. The Motive Receipt path (Capability 11) carries the **real** tier read off the matched `IntelligenceRecord` reliability. Where both exist, the receipt is the truthier signal — that is the whole reason it was built.
 
 **Why this changes what you write:** When authoring `foreshadowing` variants, you're writing inside an agent's head — what they've heard, what they fear, what they hope for. The prose should reflect the agent's epistemic state, not objective facts about the encounter. A variant for `intelligenceTier: 'rumor'` should feel uncertain and second-hand. A variant for `topMotive: 'threat'` should feel defensive. The encounter itself hasn't happened yet — the agent is projecting.
 
@@ -575,7 +575,65 @@ Phase 3 will derive these from actual agent intelligence records and encounter-p
 }
 ```
 
-**Where to find the implementation:** `src/engine/foreshadowing/getEncounterForeshadowing.ts` for the resolver, `src/engine/foreshadowing/constants.ts` for the cache cap, `src/types/unifiedAction.ts` for the `EncounterForeshadowing` + `ForeshadowingVariant` interfaces.
+**Where to find the implementation:** `src/engine/foreshadowing/encounterForeshadowing.ts` for the resolver, `src/engine/foreshadowing/constants.ts` for the cache cap, `src/types/foreshadowing.ts` for the `EncounterForeshadowingDefinition` + `EncounterForeshadowingVariant` interfaces.
+
+---
+
+### Capability 11: The Motive Receipt — Why the Agent Actually Chose It (THR-631)
+
+Capability 10 asks an authored variant to *guess* at an agent's reason. The Motive Receipt stops guessing: the scorer already computes the real decision causality every tick, so the engine now keeps it instead of throwing it away. Foreshadowing prose, the trace, and the DebugPanel all read the same receipt — **"why did this agent choose this encounter" is the same answer everywhere.**
+
+**What it carries** (`MotiveReceipt`, `src/types/foreshadowing.ts`) — stored as the `motiveReceipt` **property** on the agent node, not an edge (no system traverses encounter → "agents who chose me because X"). Overwritten on each new selection; serializes with the graph.
+
+| Field | Meaning |
+|---|---|
+| `templateId` / `locationId` | The selection this receipt explains |
+| `contributions[]` | Top `RECEIPT_TOP_CONTRIBUTIONS` (3) reasons, ranked by `weight` (normalized 0..1 share of positive score mass) |
+| `intelTier` | **Real** tier from the matched `IntelligenceRecord` reliability — *not* `completionProb` |
+| `expectation` | `ForecastTier` from `completionProb` (reuses the vignette outcome-forecast tiers) |
+| `dominantReach` | Reach that dominated the decision |
+| `decidedAtTick` | Seeds prose variety; a new decision yields fresh prose |
+
+**Contribution kinds** (`MotiveContributionKind`) — each maps to a scorer term: `ambition`, `personality`, `intel`, `mark`, `divine`, `bond`, `reputation`, `resonance`, `rarity`, `hunch`, `doom_identity`, `chain`, `exploration`, `proximity`. A contribution below `RECEIPT_MIN_WEIGHT` (0.10) is dropped.
+
+**How prose consumes it** (`composeReceipt.ts`) — four sentences, each keyed to a different part of the receipt:
+
+| Sentence | Keyed on | Table |
+|---|---|---|
+| S1 knowledge | `intelTier` | `KNOWLEDGE_CLAUSES` |
+| S2 pull/motive | **top contribution kind** (+ `dominantReach` flavour) | `MOTIVE_CLAUSES_BY_REACH` → `MOTIVE_CLAUSES` → `personality` |
+| S3 expectation | `expectation` forecast tier, with an em-dash hedge tail below `briefed` | `EXPECTATION_BY_FORECAST` + `LOW_INTEL_HEDGE_TAILS` |
+| S4 stake *(optional)* | **second** contribution kind, only if its weight ≥ `STAKE_CLAUSE_MIN_WEIGHT` (0.20) | `STAKE_CLAUSES` → `DEFAULT_STAKE_CLAUSES` |
+
+Tooltip render = S2 only. Panel render = S1–S3 (+S4). All tables live in `src/data/foreshadowing-content.ts`.
+
+**Determinism:** clause selection is seeded on `(agentId, templateId) XOR decidedAtTick` — the same decision always yields the same prose; a new decision yields fresh variety. No `Math.random()` (NFP #3).
+
+**Fail-soft:** `readMotiveReceipt` (`receiptRead.ts`) rejects a receipt whose `templateId`/`locationId` doesn't match the encounter being foreshadowed (the agent has since chosen something else), and the caller falls back to the composed-generic path. A missing clause key falls back to the `personality` / default pools. The composer never throws (NFP #4).
+
+**Authoring clause variants — use the typed-slot realizer, never raw pronouns.** Clause templates are realized by `realizer.ts`, which exists to make two specific bugs impossible:
+
+| Slot | Fills with |
+|---|---|
+| `{name}` | Agent's first name |
+| `{subject}` / `{Subject}` | `he` / `she` / `they` (subject case) |
+| `{object}` / `{Object}` | `him` / `her` / `them` (**object case**) |
+| `{place}` | Location name — *only ever* a location, never an encounter title |
+| `{matter}` | The thing at stake ("what stirs at Ashmarket") |
+| `{v:lemma}` | Verb conjugated to the subject's number |
+
+Two rules are enforced by tests, not convention:
+
+1. **Every verb after a subject slot must be `{v:lemma}`.** Writing `"{Subject} believes"` breaks for `they`. The *agreement sweep* in `composeReceipt.test.ts` renders every clause in every pool against he/she/they and fails on both `"They believes"` and `"He believe"`. It derives verb forms from the real `conjugate` function, so **adding a clause with a new verb needs no test edit** — but adding a clause with a bare verb will fail the suite.
+2. **A pronoun in object position must use `{object}`/`{Object}`.** Writing `"moves {subject} closer"` renders "moves they closer". The *object-case lint* statically flags a subject slot following a copula, transitive verb, or object preposition.
+
+Both sweeps run over `MOTIVE_CLAUSES`, `MOTIVE_CLAUSES_BY_REACH`, `EXPECTATION_BY_FORECAST`, `STAKE_CLAUSES`, and `DEFAULT_STAKE_CLAUSES`. Add a pool and you must add it to the sweep, or it ships unchecked.
+
+**Authored overrides still win.** An encounter with an authored `foreshadowing` block (Capability 10) uses its variant; the receipt path is what runs when no authored variant matches. Author variants for encounters whose *specific* fiction matters; let the receipt carry the systemic long tail.
+
+**Inspecting it:** `window.__DEBUG.getMotiveReceipt(agentQuery)` returns the live receipt; `__DEBUG.getForeshadowing(agentQuery, templateQuery?)` returns the rendered result. The existing `foreshadowing` trace gained `compositionKeys` (which clause pools fired, e.g. `pull:ambition/iron`) and `receipt` (the consumed receipt, or `null` on the generic path) — **no new trace category**.
+
+**Where to find the implementation:** `motiveReceipt.ts` (build), `receiptRead.ts` (read + validate), `composeReceipt.ts` (compose), `realizer.ts` (surface realization), `constants.ts` (tunables), `src/data/foreshadowing-content.ts` (clause tables).
 
 ---
 

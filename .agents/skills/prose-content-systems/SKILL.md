@@ -5,15 +5,17 @@ description: >
   The "add content here" skill. Covers narrative engine (sphere vocabulary,
   cultural prose), generic effect system (spell flavorText, backlash
   narrativeTemplate), encounter content packages (115 templates + 10 faction
-  files), faction reputation system (prose impact), and movement content
-  (terrain/location taxes — prose relevance). Also pointers to content-files-reference.md.
+  files), faction reputation system (prose impact), movement content
+  (terrain/location taxes — prose relevance), and receipt-driven foreshadowing
+  clause authoring (typed slots, agreement sweep). Also pointers to content-files-reference.md.
   Load for day-to-day content work: encounter templates, narrative event prose,
   faction-specific content, spell flavor text, content tables. Triggers on
   "encounter content", "encounter template", "faction encounter", "narrative
   content", "sphere vocabulary", "cultural prose", "spell flavor", "effect
-  prose", "movement content", "content table", "write prose".
+  prose", "movement content", "content table", "write prose", "foreshadowing
+  clause", "motive receipt".
 model: opus
-last_validated_against: 2026-07-05
+last_validated_against: 2026-07-21
 ---
 
 > **Load before authoring:** `Docs/canon/rulebook-quick-reference.md` (always — the synthesis layer for rules of play). Load `Docs/canon/rulebook.md` (full rulebook) when the work touches a specific rule of play and you need depth, status flags, or source citations.
@@ -272,3 +274,83 @@ Movement taxes influence where agents go, which determines what encounters they 
 | `DISTANCE_DECAY_FACTOR` | 0.15 | Score decay per hex of distance |
 | `ROAD_MAJOR_COST_MULTIPLIER` | 0.4 | Major road discount |
 | `ROAD_TRAIL_COST_MULTIPLIER` | 0.7 | Trail discount |
+
+---
+
+## System 11: Receipt-Driven Foreshadowing Clauses (THR-631)
+
+**Files:** `src/data/foreshadowing-content.ts` (clause tables) · `src/engine/foreshadowing/` (composer, realizer)
+
+Foreshadowing is the 2–4 sentences the player reads about an encounter an agent is *moving toward* — written from inside the agent's head, before anything has happened. Two paths produce it:
+
+- **Authored variants** — per-encounter, hand-written. Use when a specific encounter's fiction matters. See Capability 10 in the systemic wiring guide.
+- **Receipt-driven clauses** — systemic, composed from the **Motive Receipt** (the real decision causality the scorer computed). This is the long tail, and it is where most of your clause-authoring effort goes.
+
+You are not writing whole passages here. **You are writing interchangeable clauses that the composer assembles**, so every clause must stand alone and read correctly beside any other.
+
+### The four sentence slots
+
+| Sentence | Table | Keyed on |
+|---|---|---|
+| S1 knowledge | `KNOWLEDGE_CLAUSES` | Real intel tier (`unknown` / `rumor` / `briefed` / `expert`) |
+| S2 pull | `MOTIVE_CLAUSES_BY_REACH` → `MOTIVE_CLAUSES` | Top contribution kind, optionally Reach-flavoured |
+| S3 expectation | `EXPECTATION_BY_FORECAST` (+ `LOW_INTEL_HEDGE_TAILS`) | Forecast tier; hedge tail attaches below `briefed` |
+| S4 stake *(optional)* | `STAKE_CLAUSES` → `DEFAULT_STAKE_CLAUSES` | Second contribution kind, only if weight ≥ 0.20 |
+
+S2 alone is the tooltip. Write it so it works as a **single standalone sentence** — it is the one the player sees most.
+
+### Typed slots — never write a bare pronoun or verb
+
+Clause templates go through `realizer.ts`. Use the slots; they exist because two specific bugs shipped before:
+
+| Slot | Fills with |
+|---|---|
+| `{name}` | Agent's first name |
+| `{subject}` / `{Subject}` | `he` / `she` / `they` — **subject case only** |
+| `{object}` / `{Object}` | `him` / `her` / `them` — **object case** |
+| `{place}` | A location name. Never an encounter title. |
+| `{matter}` | The thing at stake ("what stirs at Ashmarket") |
+| `{v:lemma}` | Verb, conjugated to the subject's number |
+
+```typescript
+// ✅ correct
+'{Subject} {v:believe} the road ends somewhere worth standing.'
+'Something about it {v:move} {object} closer than caution allows.'
+
+// ❌ agreement bug — renders "They believes"
+'{Subject} believes the road ends somewhere worth standing.'
+
+// ❌ case bug — renders "moves they closer"
+'Something about it moves {subject} closer than caution allows.'
+
+// ❌ category error — {place} is never an encounter title
+'{name} has heard of trouble in {place}.'   // ...when {place} got a title
+```
+
+### Two tests police this — write to them, not around them
+
+Both live in `composeReceipt.test.ts` and sweep every clause pool:
+
+1. **Agreement sweep** — renders every clause against he/she/they and fails on `"They believes"` *or* `"He believe"`. It derives verb forms from the real `conjugate()`, so a clause using a new verb needs **no test edit** — but a clause with a bare verb fails the suite.
+2. **Object-case lint** — statically flags a `{subject}` slot sitting after a copula, transitive verb, or object preposition.
+
+Each clause must also **end in terminal punctuation** and leave **no unresolved `{}`**.
+
+> **If you add a new clause pool, add it to the sweep arrays in `composeReceipt.test.ts`.** A pool that isn't in `RECEIPT_CLAUSES` ships unchecked — that is the one way to reintroduce both bugs.
+
+### Authoring rules specific to this system
+
+- **Never name the encounter.** The agent is projecting, not reading a quest title. The composer deliberately never surfaces the encounter heading.
+- **Match the epistemic state.** An `unknown` S1 must feel like hearsay; an `expert` S1 must feel earned. S3 below `briefed` gets a hedge tail — don't also hedge inside the clause, or it double-hedges.
+- **Write the kind, not the number.** S2 is keyed on a contribution *kind* (`ambition`, `bond`, `mark`, `divine`…), never a weight. "Because it serves the thing they've been building" — not "because ambition scored 0.4."
+- **Keep clauses tense-consistent** (present) and **person-consistent** (third). The composer joins them with a single space; a mismatch reads as a seam.
+- **Reach flavour is optional.** `MOTIVE_CLAUSES_BY_REACH` covers the top-4 kinds; anything unflavoured falls back to the base kind pool, then `personality`. Add Reach variants only where the Reach genuinely changes the texture.
+
+### Verifying your clauses
+
+```javascript
+window.__DEBUG.getMotiveReceipt('Serafina')          // the live receipt
+window.__DEBUG.getForeshadowing('Serafina')          // the rendered passage
+```
+
+The `foreshadowing` trace carries `compositionKeys` (which pools fired, e.g. `pull:ambition/iron`, `stake:bond`) and the consumed `receipt` — use it to confirm your clause actually surfaced rather than a fallback.
