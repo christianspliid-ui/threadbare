@@ -80,6 +80,7 @@ const PLAN_DOC_SKIP_PATTERNS = [
   /\/README\.md$/u,
   /-brainstorm\.md$/u,
   /-grill-me\.md$/u,
+  /\/\.intent-proposals\//u, // intent-judge action proposals, a different document type (THR-692)
 ] as const;
 // Opt-out marker for standing reference docs that live in Docs/plans/ but are not
 // dated plan docs and never will be (THR-686). A filename/date-prefix rule cannot
