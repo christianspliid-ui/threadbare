@@ -84,6 +84,16 @@ If on `main`, `MAIN_BEHIND` is 0, and `TRACKED_DIRTY` is 0, say "home tree curre
 
 **Fail-soft:** if the home tree is unreachable (path missing, git error), log a one-line warning in the briefing and continue — the freshness ping must never abort the run.
 
+**Reaper health (THR-673).** The hourly git reaper writes one `SUMMARY:` line per run. Tail it so a silently-dead reaper surfaces within the hour instead of going unnoticed for days (the 07-06→07-17 gap):
+
+```bash
+REAPER_LOG="C:/Users/chris/Dev/Projects/clean-stale-git.log"
+REAPER_SUMMARY=$(grep '^SUMMARY:' "$REAPER_LOG" 2>/dev/null | tail -1)
+REAPER_LAST=$(grep -c '^===== clean-stale-git' "$REAPER_LOG" 2>/dev/null)   # run count, for a liveness sniff
+```
+
+Report one line under **Freshness**: the counts from `REAPER_SUMMARY`, plus a flag when the newest `===== clean-stale-git` header is **more than 2 hours old** ("reaper silent > 2h" — it is registered hourly, so a gap means the Task Scheduler refused it again). If `needs-disposition` is non-zero, add it as a note, not an alarm: those are stale *unmerged* worktrees deliberately never auto-deleted, and they need a human call. **Fail-soft:** log file missing or unreadable → one-line note, continue.
+
 ### 3. Compose `Design/briefing.md`
 
 Overwrite the file. Structure (keep it short — this is a brief, not a report):
