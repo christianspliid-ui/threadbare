@@ -503,6 +503,17 @@ Current recurring task registry. **Verified against `list_scheduled_tasks` on 20
 |------|---------|------|------|
 | **Fri 14:00 UTC** | Weekly | Drift scan — posts `drift-scan` Linear issues to Continuous Improvement | n/a (Actions cron) |
 
+**Windows Task Scheduler lane** (host-machine tasks; invisible to `list_scheduled_tasks`):
+
+| Slot | Cadence | Task | Trigger | Fires |
+|------|---------|------|---------|-------|
+| **:40** | Hourly | `Threadbare Git Cleanup` — runs `C:/Users/chris/Dev/Projects/clean-stale-git.sh` (prunes merged worktrees/branches, escalates stale unmerged ones) | Once at 00:40, repeat every 1h | :40 (no jitter) |
+
+The reaper was daily until THR-673 moved it to hourly at the free `:40` offset. Two things about it are load-bearing:
+
+- **It runs only while Christian is logged on** (`Logon Mode: Interactive only`). Making it run headless requires storing a password, which agents must not do — so a machine that is off or logged out simply misses runs. `StartWhenAvailable` catches up on the next opportunity; that is the intended containment, not a bug.
+- **It never deletes a live session's worktree.** `WORKTREE_MIN_IDLE_MINUTES` (180) skips any worktree whose git admin dir shows recent activity, and the orphan-dir sweep skips directories with recent file activity. Removing this guard re-opens the THR-673 failure: a rebased, uncommitted session worktree looks exactly like merged debris, and reaping it mid-session unregisters it, which lets the *next* run delete that session's branch.
+
 **Cowork lane — still enabled, pending Christian's disable (THR-653).** CC cannot read or disable these: they live in Cowork app state, are invisible to `list_scheduled_tasks`, and have no `SKILL.md` on CC disk. The disable is a Christian-owned switch tracked in `Design/user-actions.md`.
 
 | Slot | Cadence | Task | Disposition |
