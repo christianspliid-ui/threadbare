@@ -564,6 +564,7 @@ export function buildUnifiedEncounterStageModel(
     args.doomIdentityMatrix,
     args.gameState,
     args.tick,
+    { targetId: activeAction.targetId }, // THR-694 — name the scene's other party in prose
   );
 
   // Show illustration at step 0 only (opening scene), not during aftermath

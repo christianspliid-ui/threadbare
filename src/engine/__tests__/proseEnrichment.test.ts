@@ -89,6 +89,13 @@ function createTestGraph(): WorldGraph {
     properties: { sentiment: -0.6, basis: 'rivalry' },
   });
 
+  // Stranger (no relates_to edge to agent_1) — used for THR-694 target relation tests.
+  // Carries a gender + faction so target pronoun/faction resolution can be exercised.
+  g.addNode({
+    id: 'agent_4', name: 'Dellan', type: 'actor',
+    properties: { actorType: 'individual', gender: 'male' },
+  });
+
   // Faction membership (leader)
   g.addNode({
     id: 'faction_1', name: 'The Iron Wardens', type: 'actor', category: 'faction',
@@ -97,6 +104,11 @@ function createTestGraph(): WorldGraph {
   g.addEdge({
     id: 'edge_faction', source: 'agent_1', target: 'faction_1', type: 'member_of',
     properties: { role: 'leader', rank: 4 },
+  });
+  // agent_4 is a rank-and-file member of the same faction (for {target:faction} tests).
+  g.addEdge({
+    id: 'edge_faction_4', source: 'agent_4', target: 'faction_1', type: 'member_of',
+    properties: { role: 'member', rank: 1 },
   });
 
   // Reputation trait
@@ -588,6 +600,125 @@ describe('generateMeetingCallback', () => {
       const result = generateMeetingCallback(ctx, () => 0.1);
       expect(result, `callback should exist for reach: ${reach}`).not.toBeNull();
     }
+  });
+});
+
+// ─── Scene target (THR-694) ───────────────────────────────────────
+
+describe('gatherNarrativeContext — scene target (THR-694)', () => {
+  const gather = (targetId: string) =>
+    gatherNarrativeContext(createTestGraph(), 'agent_1', undefined, undefined, undefined, undefined, undefined, { targetId });
+
+  it('populates an agent target with ally relation (sentiment 0.8 ≥ 0.35)', () => {
+    const ctx = gather('agent_2'); // Torren
+    expect(ctx.target).toBeDefined();
+    expect(ctx.target!.id).toBe('agent_2');
+    expect(ctx.target!.kind).toBe('agent');
+    expect(ctx.target!.name).toBe('Torren');
+    expect(ctx.target!.relation).toBe('ally');
+  });
+
+  it('classifies a rival relation (sentiment -0.6 ≤ -0.35)', () => {
+    expect(gather('agent_3').target!.relation).toBe('rival'); // Vex
+  });
+
+  it('classifies a stranger when no relates_to edge exists', () => {
+    const ctx = gather('agent_4'); // Dellan — no bond to agent_1
+    expect(ctx.target!.relation).toBe('stranger');
+    expect(ctx.target!.pronouns).toEqual({ they: 'he', them: 'him', their: 'his', s: 's' });
+    expect(ctx.target!.factionName).toBe('The Iron Wardens');
+  });
+
+  it('resolves a location-kind target to name only (no pronouns/relation/faction)', () => {
+    const ctx = gather('loc_1'); // Ashenmoor
+    expect(ctx.target!.kind).toBe('location');
+    expect(ctx.target!.name).toBe('Ashenmoor');
+    expect(ctx.target!.pronouns).toBeUndefined();
+    expect(ctx.target!.relation).toBeUndefined();
+    expect(ctx.target!.factionName).toBeUndefined();
+  });
+
+  it('omits the block for a self-targeted action (absence must read as absence)', () => {
+    expect(gather('agent_1').target).toBeUndefined();
+  });
+
+  it('omits the block for a missing/deleted target node', () => {
+    expect(gather('ghost_id').target).toBeUndefined();
+  });
+
+  it('omits the block when no targetId is passed (all non-encounter callers)', () => {
+    const ctx = gatherNarrativeContext(createTestGraph(), 'agent_1');
+    expect(ctx.target).toBeUndefined();
+  });
+});
+
+describe('enrichProse — scene target placeholders (THR-694)', () => {
+  const allyTarget: NarrativeContext['target'] = {
+    id: 'agent_2', kind: 'agent', name: 'Torren',
+    pronouns: { they: 'he', them: 'him', their: 'his', s: 's' },
+    factionName: 'The Iron Wardens', relation: 'ally',
+  };
+
+  it('resolves {target} to the target name', () => {
+    const ctx = createMinimalContext({ target: allyTarget });
+    expect(enrichProse('You meet {target}.', ctx)).toBe('You meet Torren.');
+  });
+
+  it('falls back to "the other party" when no target block', () => {
+    const ctx = createMinimalContext(); // no target
+    expect(enrichProse('You meet {target}.', ctx)).toBe('You meet the other party.');
+  });
+
+  it('resolves target pronouns (lower + capitalized)', () => {
+    const ctx = createMinimalContext({ target: allyTarget });
+    expect(enrichProse('{target:They} draw{target:s} {target:their} blade against {target:them}.', ctx))
+      .toBe('He draws his blade against him.');
+  });
+
+  it('falls back to neutral they/them for target pronouns when absent', () => {
+    const ctx = createMinimalContext();
+    expect(enrichProse('{target:They} raise{target:s} {target:their} hand.', ctx))
+      .toBe('They raise their hand.');
+  });
+
+  it('resolves {target:faction} and falls back to "their people"', () => {
+    expect(enrichProse('{target:faction}', createMinimalContext({ target: allyTarget }))).toBe('The Iron Wardens');
+    expect(enrichProse('{target:faction}', createMinimalContext())).toBe('their people');
+  });
+
+  it('strips unknown {target:typo} tokens instead of leaking raw braces', () => {
+    const ctx = createMinimalContext({ target: allyTarget });
+    expect(enrichProse('weird {target:bogus} thing', ctx)).toBe('weird  thing');
+  });
+
+  it('resolves {?target_is_ally|rival|stranger} conditionals against relation', () => {
+    const ally = createMinimalContext({ target: allyTarget });
+    expect(enrichProse('{?target_is_ally}old friend{/target_is_ally}', ally)).toBe('old friend');
+    expect(enrichProse('{?target_is_rival}enemy{/target_is_rival}', ally)).toBe('');
+
+    const rival = createMinimalContext({ target: { id: 'x', kind: 'agent', name: 'Vex', relation: 'rival' } });
+    expect(enrichProse('{?target_is_rival}enemy{/target_is_rival}', rival)).toBe('enemy');
+
+    const stranger = createMinimalContext({ target: { id: 'y', kind: 'agent', name: 'Dellan', relation: 'stranger' } });
+    expect(enrichProse('{?target_is_stranger}unknown{/target_is_stranger}', stranger)).toBe('unknown');
+  });
+
+  it('resolves {?has_target}/{?no_target} presence conditionals', () => {
+    const withTarget = createMinimalContext({ target: allyTarget });
+    expect(enrichProse('{?has_target}someone is here{/has_target}', withTarget)).toBe('someone is here');
+    expect(enrichProse('{?no_target}alone{/no_target}', withTarget)).toBe('');
+
+    const noTarget = createMinimalContext();
+    expect(enrichProse('{?no_target}alone{/no_target}', noTarget)).toBe('alone');
+    expect(enrichProse('{?has_target}someone{/has_target}', noTarget)).toBe('');
+  });
+
+  it('treats a location-kind target as present but relation-less', () => {
+    const loc = createMinimalContext({ target: { id: 'loc_1', kind: 'location', name: 'Ashenmoor' } });
+    // has_target true, but no relation → all relation conditionals fail; {target} names the place
+    expect(enrichProse('{?has_target}at {target}{/has_target}', loc)).toBe('at Ashenmoor');
+    expect(enrichProse('{?target_is_stranger}x{/target_is_stranger}', loc)).toBe('');
+    expect(enrichProse('{target:faction}', loc)).toBe('their people'); // fallback for location
   });
 });
 

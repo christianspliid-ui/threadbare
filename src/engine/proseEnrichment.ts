@@ -30,6 +30,7 @@ import {
   getAgentMemberships,
   getAgentLocation,
 } from './graphQueries';
+import { ALLY_SENTIMENT_THRESHOLD, ENEMY_SENTIMENT_THRESHOLD } from '../data/effect-constants';
 import {
   buildIntelligenceView,
   emitIntelligenceReferenced,
@@ -61,6 +62,27 @@ export const ENRICHMENT_MAX_NAMED_ALLIES = 2;
 export const CALLBACK_PROSE_PROBABILITY = 0.7;
 
 // ─── Narrative Context ─────────────────────────────────────────────
+
+/**
+ * Scene target context (THR-694) — the entity an encounter action is *with*: the
+ * resolved `action.targetId`, which is another agent or a location. Populated only on
+ * the encounter-prose paths; absent for self-targeted actions, missing/deleted targets,
+ * and all non-encounter prose — so `{target}` reads as "the other party" and never
+ * infers a referent. Enables the `{target}` / `{target:they|them|their|s}` /
+ * `{target:faction}` placeholders and the `{?target_is_ally|rival|stranger}` /
+ * `{?has_target}` / `{?no_target}` conditionals in `enrichProse`.
+ */
+export interface SceneTargetContext {
+  id: string;
+  kind: 'agent' | 'location';
+  name: string;
+  /** Agent-kind targets only; location-kind targets omit this. */
+  pronouns?: { they: string; them: string; their: string; s: string };
+  /** Agent-kind targets only. */
+  factionName?: string;
+  /** Actor→target relation from the outgoing `relates_to` sentiment; agent-kind only. */
+  relation?: 'ally' | 'rival' | 'stranger';
+}
 
 /**
  * Full narrative context for prose enrichment.
@@ -126,10 +148,61 @@ export interface NarrativeContext {
    * `{group}` resolves to a neutral fallback. Distinct from `{culture}`/`{faction}`, which
    * resolve the *anchor agent's* own culture/faction, not an arbitrary bound group. */
   boundGroupName?: string;
+
+  /** Scene target (THR-694) — the entity the encounter is *with*. Absent → the
+   * `{target:*}` placeholders and `{?*_target}` conditionals fall back to "no other
+   * party". See {@link SceneTargetContext}. Populated by encounter-path callers that
+   * pass `opts.targetId`. */
+  target?: SceneTargetContext;
+}
+
+/**
+ * Resolve the scene-target block (THR-694) for an actor→target pair.
+ *
+ * Returns undefined when there is no distinct other party — a missing or self target
+ * (`targetId === actorId`), or a target whose node has been deleted — so `{target}`
+ * reads as absence and never invents a referent. Agent-kind targets carry pronouns, a
+ * faction name, and an actor→target `relation` classified via the shared
+ * ALLY/ENEMY sentiment thresholds (no edge → 'stranger'); location-kind targets carry
+ * name only.
+ */
+export function resolveSceneTargetContext(
+  graph: WorldGraph,
+  actorId: string,
+  targetId: string | undefined,
+): SceneTargetContext | undefined {
+  if (!targetId || targetId === actorId) return undefined;
+  const node = graph.getNode(targetId);
+  if (!node) return undefined;
+
+  const kind: 'agent' | 'location' = node.type === 'location' ? 'location' : 'agent';
+  if (kind === 'location') {
+    return { id: targetId, kind, name: node.name ?? 'that place' };
+  }
+
+  const pronouns = getPronouns((node.properties?.gender as string) ?? '');
+  const factionName = getAgentMemberships(graph, targetId)[0]?.group.name;
+
+  // Actor→target relation from the outgoing relates_to edge sentiment. Reuses the same
+  // ±0.35 thresholds as the alone/outnumbered co-location classifier (no new tunable).
+  // Absence of an edge is a neutral acquaintance → 'stranger'.
+  const bond = getAgentBonds(graph, actorId).find(b => b.agent.id === targetId);
+  let relation: 'ally' | 'rival' | 'stranger' = 'stranger';
+  if (bond) {
+    if (bond.sentiment >= ALLY_SENTIMENT_THRESHOLD) relation = 'ally';
+    else if (bond.sentiment <= ENEMY_SENTIMENT_THRESHOLD) relation = 'rival';
+  }
+
+  return { id: targetId, kind, name: node.name ?? 'the other party', pronouns, factionName, relation };
 }
 
 /**
  * Gather narrative context from the graph for a given agent.
+ *
+ * `opts.targetId` (THR-694) populates the scene `target` block when it resolves to a
+ * distinct node — omitted for self-targeted actions. Callers on the encounter path
+ * (`buildUnifiedEncounterStageModel`, `unifiedActionResolution`) pass the active
+ * action's `targetId`; all other callers leave it absent and get today's behavior.
  */
 export function gatherNarrativeContext(
   graph: WorldGraph,
@@ -139,6 +212,7 @@ export function gatherNarrativeContext(
   doomIdentityMatrix?: DoomIdentityMatrix | null,
   state?: GameState,
   tick?: number,
+  opts?: { targetId?: string },
 ): NarrativeContext {
   const agentNode = graph.getNode(agentId);
   const props = agentNode?.properties ?? {};
@@ -239,6 +313,7 @@ export function gatherNarrativeContext(
     doomAtmosphere,
     intelligence,
     tick,
+    target: resolveSceneTargetContext(graph, agentId, opts?.targetId),
   };
 }
 
@@ -343,6 +418,24 @@ export function enrichProse(
   // Faction
   result = result.replace(/{faction}/g,
     ctx.factionRank?.factionName ?? 'their people');
+
+  // Scene target (THR-694) — the entity the encounter is *with*. Every token carries a
+  // fallback so absence reads as absence ("the other party") and no raw token leaks.
+  // Colon-form tokens are resolved (and residually stripped) before the bare `{target}`,
+  // which has no colon and is never matched by the colon patterns.
+  const tgt = ctx.target;
+  const tgtP = tgt?.pronouns;
+  result = result.replace(/\{target:faction\}/g, tgt?.factionName ?? 'their people');
+  result = result.replace(/\{target:They\}/g, capitalize(tgtP?.they ?? 'they'));
+  result = result.replace(/\{target:Them\}/g, capitalize(tgtP?.them ?? 'them'));
+  result = result.replace(/\{target:Their\}/g, capitalize(tgtP?.their ?? 'their'));
+  result = result.replace(/\{target:they\}/g, tgtP?.they ?? 'they');
+  result = result.replace(/\{target:them\}/g, tgtP?.them ?? 'them');
+  result = result.replace(/\{target:their\}/g, tgtP?.their ?? 'their');
+  result = result.replace(/\{target:s\}/g, tgtP?.s ?? '');
+  // Residual strip: unknown {target:*} tokens never leak (matches only the colon form).
+  result = result.replace(/\{target:[^}]+\}/g, '');
+  result = result.replace(/\{target\}/g, tgt?.name ?? 'the other party');
 
   // Bound subject group (THR-522) — the specific culture/faction an Ascendant introduction
   // beat surfaces. Resolves to the Director-bound name when present, else a neutral fallback
@@ -456,6 +549,13 @@ function resolveConditionals(prose: string, ctx: NarrativeContext): string {
     no_faction: ctx.factionRank == null,
     has_title: ctx.titles.length > 0,
     no_title: ctx.titles.length === 0,
+    // Scene target (THR-694). A location-kind target is present (has_target true) but
+    // carries no relation, so all three relation conditionals resolve false for it.
+    has_target: ctx.target != null,
+    no_target: ctx.target == null,
+    target_is_ally: ctx.target?.relation === 'ally',
+    target_is_rival: ctx.target?.relation === 'rival',
+    target_is_stranger: ctx.target?.relation === 'stranger',
   };
 
   // Intelligence conditionals (THR-113) — {?knows_<category>} / {?no_<category>}.

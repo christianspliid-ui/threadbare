@@ -1510,6 +1510,7 @@ export function executeStepResult(
         state.doomIdentityMatrix,
         state,
         tick,
+        { targetId: action.targetId }, // THR-694 — name the scene's other party in prose
       );
       narrativeProse = enrichProse(step.narrativeTemplate ?? '', proseCtx, { runtime, rng }) || narrativeProse;
       const rawAfterimage = isStepSuccess(outcome) ? step.successAfterimage : step.failureAfterimage;
