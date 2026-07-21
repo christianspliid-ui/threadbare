@@ -534,6 +534,26 @@ The gate is unchanged: branch protection stays on, the required check still has 
 
 **After queuing auto-merge, the session's shipping work is done.** Proceed to the worktree cleanup below and exit; do not block on the merge landing. If the check later fails, the PR stays open and the issue stays In Dev — the next hourly run resumes it via the Step 1.7 upstream-shipped check, which will find no `Fixes` commit on `main` and correctly treat the work as still in flight.
 
+## Closeout — resolving a conflicted closeout-docs PR
+
+Every ship appends rows to the same table heads (`Docs/changelog.md`, `Docs/project-history.md`, `Docs/impediments.md`), so a PR that idles — human-gated ones idle **by design** — reliably goes `CONFLICTING` in those files alone, with zero code conflicts. THR-668's PR sat ~31 h and rotted this way; a whole run was burned hand-resolving table rows.
+
+`.gitattributes` marks those three files `merge=union`, which makes **local** merges of that shape resolve automatically, keeping both rows.
+
+**GitHub does not honor it.** Measured 2026-07-21 (THR-691) with the attribute present on the base branch: the merges API returned `409 Merge conflict`, and a PR of the same shape read `mergeable: CONFLICTING` / `mergeStateStatus: DIRTY`. Union is a built-in driver, but GitHub's server-side merge does not consult `.gitattributes`. So the web "Resolve conflicts" button and auto-merge stay unable to settle these — **resolve locally and push**:
+
+```bash
+git fetch origin main
+git merge origin/main        # union auto-resolves the three closeout docs
+git push
+```
+
+The merge prints `Auto-merging Docs/changelog.md` and exits 0 with both sides' rows present and the table header intact. Auto-merge then proceeds normally once the PR is no longer conflicting.
+
+**Check the result before pushing** — union keeps *both* sides of every conflicting hunk, which is right for appended rows and wrong for an edited one. If the same row was modified on both branches you get it twice, so skim `git diff origin/main -- Docs/` for duplicates rather than trusting the clean exit.
+
+`Docs/project-status.md` is deliberately **excluded** from union: it has a 60-line cap and rewrite semantics, so union would duplicate rewritten lines instead of merging them. Conflicts there are still resolved by hand.
+
 ## Closeout — remove the temporary worktree
 
 **Attempt cleanup immediately after push** — do not wait for the merge-to-main auto-close, because that fires on GitHub after the CC session ends and no session will be active to run the cleanup. Run cleanup from the home worktree (`$REPO_ROOT`) right after `git push` succeeds:

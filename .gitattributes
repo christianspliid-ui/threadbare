@@ -12,3 +12,23 @@
 *.ttf binary
 *.eot binary
 *.svg text eol=lf
+
+# Append-only closeout docs — union merge (THR-691).
+# Every shipped ticket appends rows to the same table heads, so any PR that idles
+# is otherwise guaranteed to conflict with the next ship in these files alone.
+# `union` is a built-in git merge driver: on a conflicting hunk it keeps BOTH
+# sides' lines instead of writing conflict markers. Safe here precisely because
+# these files are append-only — a row is added, never edited in place.
+#
+# Deliberately EXCLUDES Docs/project-status.md: it has a 60-line cap and rewrite
+# semantics, so union would duplicate rewritten lines rather than merge them.
+#
+# Applies to LOCAL `git merge` only. GitHub's server-side merge ignores this
+# attribute — measured 2026-07-21 (THR-691): with these lines present on the
+# base branch, the merges API returned 409 and the PR read
+# `mergeable: CONFLICTING`. A docs-table PR that idles into CONFLICTING must be
+# resolved by merging locally and pushing — see `.claude/skills/pull-work/SKILL.md`
+# § "Closeout — resolving a conflicted closeout-docs PR".
+Docs/changelog.md merge=union
+Docs/project-history.md merge=union
+Docs/impediments.md merge=union
