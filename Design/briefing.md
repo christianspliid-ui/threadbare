@@ -1,69 +1,68 @@
 # Briefing
 
-**Generated:** 2026-07-21 14:54 local (12:54 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-07-21 16:54 local (14:54 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task — the replacement for the old Cowork "keep-work-flowing" chat brief. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
 ## Needs Christian
 
-**Same three as last hour. Nothing new landed on your plate; one of them is now overdue.**
+**Nothing urgent this hour.** Three things carried, none blocking — but the first is a ten-second command that has now waited five hours.
 
-> **1. One click: switch off the old hourly `keep-work-flowing` in the Cowork app.**
-
-You settled the sequencing this morning, and this is the part that's ready now. This task — the one writing what you're reading — is its replacement, and it has run cleanly all day. Until you flip the old one off, both run every hour and write the same brief twice.
-
-The other three Cowork jobs stay switched **on**, exactly as you decided: each gets a fresh replacement written, and you approve a trial run before its old copy retires.
-
-> **2. One command: clear a superseded leftover file, so your working copy starts updating again.**
-
-**Third hour carrying this, and the drift keeps widening: 4 behind → 14 → now 18.** It will not stop on its own.
-
-Nothing is at risk and the cause is still small. One file on your copy — this task's own standing-asks file — has an outdated edit sitting on it from a run that failed to save properly this morning. **That content is not lost:** a later run carried it forward and banked it. What's on your disk is a stale duplicate of work already saved. I re-checked that this hour rather than assuming it.
-
-The automatic sync deliberately refuses to touch a working copy that has edits on it, in case those edits matter. This one doesn't. Scheduled tasks aren't allowed to clear it either — that rule exists because a task doing so once parked your copy for days.
-
-**Fix — one command, any time:**
+> **1. One command to unstick your working copy.**
 
 ```
 git -C "C:/Users/chris/Dev/Projects/TheFantasyWorldSimulator" checkout -- Design/user-actions.md
 ```
 
-*Noted for the record: this has now met the bar the file itself set for turning it into a ticket — the sync could safely discard an edit it can prove is already banked. An agent can file and fix that; it doesn't need you.*
+A leftover file is stopping your working copy from updating itself; it is now 22 commits behind. The file is a stale duplicate of something already saved — discarding it loses nothing, and it's verified fresh each hour. Full detail under **Freshness** below.
 
-> **3. A steer: what's the next stretch of actual game?**
+> **2. One switch left in the Cowork app: turn off `keep-work-flowing`.**
 
-Carried, not urgent — the queue is fed and the executor won't idle. But **every one of the seven ready jobs is still plumbing**: build-pipeline fixes, ticket-writing rules, a board audit. Nothing on the list makes the game different to play.
+You settled the sequencing this morning — fresh versions get written and shown to you as a trial before each old job is switched off. That leaves exactly one you can flip **today**: the hourly `keep-work-flowing`. Its replacement is live and proven; it wrote this brief.
 
-The machine is fed, but it's feeding on itself. That's a fair place to be for a day — the tooling genuinely was unreliable and it's being fixed properly. It just shouldn't become the default by accident. The two nearest directions, both half-built rather than speculative:
+The other three (daily queue grooming, the Wednesday workflow review, the Sunday tidy-up) stay on until their replacements pass a trial you approve. That work is ticketed and currently in development.
 
-- **War, deepened.** The war system came alive on the 18th. Designed but not built: **battles with real texture** (turning points, commanders in peril, last stands), **sieges that tighten as they drag** instead of resolving flat, and **what a war leaves behind** in a region afterward.
-- **The economy, made visible.** Goods move along the roads now, but the player can't see any of it. Missing: **things going wrong on trade routes** — banditry, embargoes, tolls surfacing as encounters — and **the map showing what's actually travelling** a road when you look at it.
+> **3. The next creative stretch — no longer urgent, but still yours.**
 
-A rough word is enough — "war", "economy", or something else. **"Finish the plumbing first" is also a real answer** — say that and this stops being asked.
+Six jobs appeared in the queue this afternoon, so the executor has hours of work and the lane is not idling. But all six are **plumbing** — build-system honesty, ticket-writing rules, a headless way to advance the simulation during testing. None of them moves the game itself forward.
+
+So the question stands, without the pressure it had at lunchtime: **war or economy?**
+
+- **War, deepened.** The war system came alive on the 18th. Designed but unbuilt: battles with real texture (turning points, commanders in peril, last stands), sieges that tighten as they drag instead of resolving flat, and the mark a war leaves on a region once it ends.
+- **The economy, made visible.** Goods move, but the player can't see it. Missing: things going wrong on trade routes — banditry, embargoes, tolls surfacing as encounters — and the map showing what's actually travelling a road when you look at it.
+
+A one-word steer is enough. A design session does the rest.
 
 ## Queue
 
-**Healthy — seven jobs ready to start, nothing in progress.** Down one from last hour because one shipped, not because anything went wrong.
+**Healthy — six jobs ready to start, one in development.** The empty queue reported at lunchtime is closed; it refilled around 11:15.
 
-- **Nothing is stuck and nothing is stale.** No job waits on unfinished work; the oldest was written yesterday.
-- **Nothing is mid-flight.** The lane is free rather than blocked — it finished what it picked up and hasn't reached the next hour yet.
-- **All seven are infrastructure.** Six are self-maintenance, one is migration cleanup. That's the substance behind item 3 above.
+- **Six ready for pickup**, all from this morning's pattern assessment, all in Continuous Improvement: a headless tick bridge for browser testing (THR-689), a board-integrity audit (THR-687), a merge driver to stop idle pull requests rotting into conflicts (THR-691), bringing generated files into the build (THR-690), ticket-authoring rules (THR-688), and a lint-scope fix (THR-692).
+- **Nothing is blocked.** Checked the dependency links directly — the six cross-reference each other but none waits on another.
+- **Nothing is stale.** All six were filed today.
+- **One job in development** — porting the three Cowork job prompts (THR-677), claimed and moving.
 
 ## Freshness
 
-**Your working copy is still drifting — 18 commits behind, up from 14 an hour ago.** See item 2 for the one-command fix.
+**Same one command as the last four hours — this is the fifth.** The drift is now **22 commits behind** (was 4 → 14 → 18 → 20).
 
-It's on the right branch, nothing is stranded and nothing is lost. This is not decay: it's a sync that cannot run while the stray file sits there, so the gap simply widens each hour.
+```
+git -C "C:/Users/chris/Dev/Projects/TheFantasyWorldSimulator" checkout -- Design/user-actions.md
+```
 
-The automatic stale-branch cleanup is healthy — last run 14:40, fourteen minutes ago, tracking 21 work folders, 27 branches, no shelved work and nothing awaiting a decision.
+Nothing is at risk and nothing is stranded — the tree is on `main`, not parked off it, and holds no commits that exist nowhere else. One leftover file is blocking the automatic sync, which refuses to update a tree with local edits. **That file is a stale duplicate, re-verified again this run:** its on-disk copy differs from the published one by 39 lines in, 54 out, i.e. it is strictly the older text. The content it once held was saved to the repository hours ago. Discarding it loses nothing.
+
+An agent cannot run this for you — scheduled sessions are barred from touching your working copy, which is the rule that keeps it stable. **The narrow fix that would end the repetition is agent work and is still unfiled** (teach the auto-repair to discard a local edit it can prove is already published); it has now been flagged across three runs without being picked up.
+
+The automatic stale-branch cleanup is healthy — last run 16:40, fourteen minutes ago, tracking 21 work folders and 28 branches, with **no stashes and nothing flagged for your decision**, holding steady since yesterday's disposal pass.
 
 ## What's moving
 
-**One thing closed this hour, cleanly.**
+- **The bug report is filed.** You said yes, and it went up as [issue #79713](https://github.com/anthropics/claude-code/issues/79713) on the Claude Code tracker. That question is closed and won't be asked again.
+- **The queue went from empty to six** in about twenty minutes, off a systematic look at what has been going wrong in the pipeline — near-misses like a generated file that ships stale with no test failure, and browser tests that can't actually advance the simulation.
+- **The git housekeeping has visibly settled.** The stash pile that read 38 deep this morning is at zero, and no work folders need a human call.
 
-- **The upstream bug report ticket closed at 14:06.** The last step was a one-line cross-link in the project's own instructions, pointing at the public report you approved this morning. That ends the three-day investigation into why your working copy kept detaching itself — cause identified, contained locally, and now reported to the people who can fix it properly.
-
-**Unchanged and still worth naming:** fourteen older pull requests remain open and unmerged, oldest from 12 June. Nine of them are orphans of a job that was deleted this morning and will never refresh themselves — worth a single bulk decision, which an agent can make.
+**Unchanged:** fourteen older pull requests are still open, oldest from 12 June. Three now need conflict resolution rather than a refresh, including the one feature branch (#553, the essence-source milestone beat, sitting since 5 July). Auto-merge only helps requests opened after it shipped, so this backlog still drains by hand.
 
 ---
 *Standing asks live in [`Design/user-actions.md`](user-actions.md). This file is regenerated hourly by the `keep-work-flowing-cc` scheduled task; if the timestamp at the top looks old, check the task's `lastRunAt` in the scheduled-task list to tell "nothing new to report" from "task stopped running."*

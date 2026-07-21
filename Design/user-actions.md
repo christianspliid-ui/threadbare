@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-07-21 (refresh at 14:54 local by the hourly `keep-work-flowing-cc` CC task — **item 2 carried a third consecutive hour** at 18 behind, up from 14; it has now met its own bar for becoming a ticket. Item 3's ready-list narrowed to seven after THR-676 closed at 14:06. Nothing pruned. The 13:54 refresh escalated item 2; the 12:54 refresh added it; the 11:54 refresh pruned the upstream-report consent and narrowed item 1 to a single switch. Last full rebuild was the 2026-06-23 retro)
+**Last updated:** 2026-07-21 (refresh at 16:54 local by the hourly `keep-work-flowing-cc` CC task — **item 2 carried a fifth consecutive hour** at 22 behind, up from 20; supersession re-verified by diff, ticket still unfiled for a third hour. Item 3 unchanged at six ready / one in development. Item 4 re-counted live, unchanged at 14. Nothing pruned. The 15:54 refresh narrowed item 3's ready-list; the 14:54 refresh flagged the ticket bar; the 13:54 refresh escalated item 2; the 11:54 refresh pruned the upstream-report consent and narrowed item 1 to a single switch. Last full rebuild was the 2026-06-23 retro)
 **Owner of items below:** Christian. Everyone else's blockers go in Linear or `Docs/impediments.md`.
 **Refresh cadence:** The hourly `keep-work-flowing-cc` scheduled task keeps this current (prunes resolved items, adds newly-surfaced Christian-owned ones); the `retrospective` skill still does the deep periodic rebuild. This is the slow-moving standing-asks list — the fresh-this-hour view is [`Design/briefing.md`](briefing.md).
 
@@ -21,7 +21,7 @@ When an item resolves: delete it from this file, mark the corresponding impedime
 
 ## 1. Turn off the old Cowork automations · WILL NOT SELF-HEAL · ONLY YOU CAN DO THIS
 
-**Status:** DECIDED 2026-07-21 in chat · **narrowed to a single action: disable `keep-work-flowing` in the Cowork app.** The other three stay ON until their CC replacements each pass a trial you approve — THR-677 is unblocked, in Ready for Dev, and carries exactly that scope
+**Status:** DECIDED 2026-07-21 in chat · **narrowed to a single action: disable `keep-work-flowing` in the Cowork app.** The other three stay ON until their CC replacements each pass a trial you approve — **THR-677 is now In Dev (picked up ~15:02), no longer merely queued**, and carries exactly that scope
 **Source:** THR-653 (cutover). Follow-up port work: THR-677.
 
 **What happened.** The move off Cowork is done. The Claude Code side now runs the hourly pickup, the hourly briefing (moved to the :45 slot, taking over the one Cowork used), the Friday retrospective, and the Sunday memory tidy-up. Two of those — the retro and the memory tidy-up — had been *written down* as already running for weeks but had in fact never been switched on. They are on now. The bridging scaffolding was demolished on the morning of 07-21.
@@ -34,7 +34,7 @@ The one thing Claude Code cannot do is reach into Cowork and switch its old copi
 keep-work-flowing        (hourly)      — replaced by keep-work-flowing-cc, SAFE TO DISABLE NOW
 ```
 
-**Leave these three ON until their replacements pass a trial (THR-677):**
+**Leave these three ON until their replacements pass a trial (THR-677 — in development now):**
 
 ```
 daily-backlog-grooming   (daily 09:06)
@@ -56,34 +56,34 @@ weekly-project-hygiene   (Sun 10:04)
 
 ## 2. Clear a superseded leftover file so the home tree resumes auto-updating · WILL NOT SELF-HEAL · ONLY YOU CAN DO THIS
 
-**Status:** Open, **third consecutive run** (12:54 → 13:54 → 14:54) · **drift 4 → 14 → 18 behind.** The widening is now measured across three hours rather than inferred. Still small and mechanical, still will not clear itself.
-**Source:** Home-tree freshness ping at the 14:54 run — on `main`, **18 behind** (14 at 13:54, 4 at 12:54), **1 tracked modification** (`Design/user-actions.md`), 0 untracked, nothing stranded (`origin/main..HEAD` = 0). Supersession re-verified this run, not assumed: the working copy diffs 39/52 lines against `origin/main`'s newer 13:54 version, i.e. it is strictly older content.
+**Status:** Open, **fifth consecutive run** (12:54 → 13:54 → 14:54 → 15:54 → 16:54) · **drift 4 → 14 → 18 → 20 → 22 behind.** The widening is measured across five hours rather than inferred. Still small and mechanical, still will not clear itself.
+**Source:** Home-tree freshness ping at the 16:54 run — on `main`, **22 behind** (20 at 15:54, 18 at 14:54, 14 at 13:54, 4 at 12:54), **1 tracked modification** (`Design/user-actions.md`), 0 untracked, nothing stranded (`origin/main..HEAD` = 0). Supersession re-verified this run, not assumed: the working copy diffs 39 insertions / 54 deletions against `origin/main`'s newer 15:54 version, i.e. it is strictly older content — it is still the 10:54 text.
 
 **What it is.** The home tree carries a modified `Design/user-actions.md` left by the 10:54 run, which hit its fail-soft path and could not commit. **The content is not at risk and nothing is stranded:** the 11:54 run carried those same chat edits forward and landed them on `origin/main`, so the copy on disk is now an *outdated duplicate* of work already saved.
 
-**Why it needs you.** `threadbare-autosync.ps1` only fast-forwards a tree with **0 tracked modifications** (THR-672's guard), so the home tree has stopped catching up — hence the 4-behind reading, which will grow each hour until the file is cleared. Scheduled sessions are barred from running `checkout` against the home tree (THR-672, the rule this task follows), so an agent cannot do it.
+**Why it needs you.** `threadbare-autosync.ps1` only fast-forwards a tree with **0 tracked modifications** (THR-672's guard), so the home tree has stopped catching up — hence the behind-count, which grows every hour until the file is cleared. Scheduled sessions are barred from running `checkout` against the home tree (THR-672, the rule this task follows), so an agent cannot do it.
 
 **Fix — one command, in your interactive session:**
 ```
 git -C "C:/Users/chris/Dev/Projects/TheFantasyWorldSimulator" checkout -- Design/user-actions.md
 ```
 
-**What breaks if not done.** Nothing is lost or at risk. The home tree simply stops getting newer, so a morning session there starts on progressively staler state — exactly the failure the freshness guard exists to catch. **The drift is measured across three hours: 4 → 14 → 18 behind.** **This is the known gap named in the home-tree repair entry below:** the self-heal guard needs a clean tree, so a stall landing on an already-dirty tree still needs a hand.
+**What breaks if not done.** Nothing is lost or at risk. The home tree simply stops getting newer, so a morning session there starts on progressively staler state — exactly the failure the freshness guard exists to catch. **The drift is measured across five hours: 4 → 14 → 18 → 20 → 22 behind.** **This is the known gap named in the home-tree repair entry below:** the self-heal guard needs a clean tree, so a stall landing on an already-dirty tree still needs a hand.
 
-**Ticket bar reached — this is now agent work, not yours.** The prior version of this item set "one more run and it is worth a ticket"; that run has happened. The fix is narrow and safe: extend THR-672's self-heal guard so it may discard a tracked modification whose content is **provably already on `origin/main`** (verifiable by diff, as done here), rather than requiring a strictly clean tree. Filing it is outside this task's remit — it writes only these two files — so an executor or design session should pick it up. **Your one command still clears today's instance immediately.**
+**Ticket bar reached (14:54) and still unfiled at 16:54, a third consecutive hour — this is agent work, not yours.** The fix is narrow and safe: extend THR-672's self-heal guard so it may discard a tracked modification whose content is **provably already on `origin/main`** (verifiable by diff, exactly as re-verified this run), rather than requiring a strictly clean tree. Filing it is outside this task's remit — it writes only these two files — so an executor or design session should pick it up. **Your one command still clears today's instance immediately.**
 
 ---
 
 ## 3. Name the next game-facing stretch · CHRISTIAN ACTION · WILL NOT SELF-HEAL
 
-**Status:** Open, carried unchanged from 11:54. Its original premise ("the queue is empty and the executor idles") is gone — the lane is fed. **The urgency is gone; the question is not:** *every ready item is self-maintenance.*
-**Source:** Board scan at the 14:54 `keep-work-flowing-cc` run: 7 Ready for Dev (all unassigned), 0 In Dev, 0 blocked, 0 stale. Down one from 13:54 — THR-676 closed at 14:06, and nothing arrived to replace it.
+**Status:** Open, carried from 11:54. Its original premise ("the queue is empty and the executor idles") is gone — the lane is fed *and visibly moving*. **The urgency is gone; the question is not:** *every ready item is still self-maintenance.*
+**Source:** Board scan at the 16:54 `keep-work-flowing-cc` run: 6 Ready for Dev (all unassigned), **1 In Dev** (THR-677, still), 0 blocked, 0 stale — unchanged from 15:54. Blocked-status checked directly against the dependency links this run rather than inferred from description text: the six cross-reference one another but none is `blockedBy` another.
 
-**The seven ready items, by what they actually do:** a headless tick bridge so automated browsers can advance the sim (THR-689); a board-integrity audit for issues auto-closed without a landing commit (THR-687); a union merge driver so idle PRs stop rotting (THR-691); generated artifacts brought into the build graph (THR-690); ticket-authoring rules (THR-688); the Cowork prompt port (THR-677); and a plan-doc lint scope fix (THR-692).
+**The six ready items, by what they actually do:** a headless tick bridge so automated browsers can advance the sim (THR-689); a board-integrity audit for issues auto-closed without a landing commit (THR-687); a union merge driver so idle PRs stop rotting (THR-691); generated artifacts brought into the build graph (THR-690); ticket-authoring rules (THR-688); and a plan-doc lint scope fix (THR-692). **In development:** the Cowork prompt port (THR-677) — the prerequisite for the remaining three switches in item 1.
 
 **Board-hygiene note (agent-decidable, not yours):** THR-680 (stash triage) and THR-681 (worktree disposition) both sit in Todo but were **overtaken by THR-674's disposal pass at 13:13**, which cleared all 38 stashes and all 6 flagged worktrees. They are candidates for closure as superseded — an executor or design session can settle that without you.
 
-Six of the seven sit in **Continuous Improvement**; the seventh is migration cleanup. **None of them adds a system, a piece of content, or anything visible in the game.** That is a legitimate state to be in — the tooling genuinely was lying about passing gates, and that is worth a day. But it should be a *chosen* state, not a default one, and choosing is yours by the standing rule (THR-608).
+All six sit in **Continuous Improvement**; the item in development is migration cleanup. **None of them adds a system, a piece of content, or anything visible in the game.** That is a legitimate state to be in — the tooling genuinely was lying about passing gates, and that is worth a day. But it should be a *chosen* state, not a default one, and choosing is yours by the standing rule (THR-608).
 
 **Why an agent cannot answer this.** Deciding which direction the game takes next is a creative-direction call. Re-scoping the chosen direction against the real code is then a design session's job, not yours.
 
@@ -100,7 +100,7 @@ Six of the seven sit in **Continuous Improvement**; the seventh is migration cle
 
 ## 4. PR merge backlog — 14 open, oldest 2026-06-12 · SYSTEMIC FIX SHIPPED 2026-07-21 05:22
 
-**Status:** Open (not blocking) · **count unchanged at 14, re-verified 14:54** — across two further merges since the last check (#676 briefing, #677 THR-676 cross-link), again confirming the "does not retroactively rescue" prediction below. Oldest still #327 (2026-06-12). THR-691 (union merge driver for append-only closeout docs) sits in Ready for Dev and directly targets the conflict-rot mechanism.
+**Status:** Open (not blocking) · **count unchanged at 14, re-verified 16:54** by live `gh pr list`, not carried forward — a further merge landed since the last check (#679, the 15:54 briefing) and the backlog still did not move, a fifth confirmation of the "does not retroactively rescue" prediction below. **Three of the fourteen now read `DIRTY`** (#327, #553, #641) — they need conflict resolution, not just a refresh. Oldest still #327 (2026-06-12). THR-691 (union merge driver for append-only closeout docs) sits in Ready for Dev and directly targets the conflict-rot mechanism.
 
 **The pipeline works; merging is the slow step.** A steady stream merges end-to-end (the hourly briefings, #646/#648 for THR-671/672, #650 THR-616 economy slices, #654/#655 for THR-674, #657 THR-675, #661 THR-676's write-up, #665 THR-644, #667 THR-654, #670 THR-685) — proof the path functions. But **fourteen PRs remain open and unmerged** (thirteen docs + one feature): oldest #327 (2026-06-12), then #488 (2026-07-03), #512/#514/#516/#525/#532/#543/#551 (2026-07-04–05), #553 (feature: Axis-B milestone beat, 2026-07-05), #557 (2026-07-17), #571/#599 (briefings), #641 (impediment log). Branch protection runs in **strict mode** (branches must be up to date with `main`), so every open docs PR is knocked `BEHIND` the moment anything lands — and nothing re-freshens them. `Test · Typecheck · Build` shows `SKIPPED` on docs-only PRs, which is expected and is *not* the blocker.
 
