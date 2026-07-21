@@ -444,6 +444,21 @@ On success: issue is claimed (`In Dev`, assigned to `me`), plan doc loaded, and 
 
 On refusal: leave the issue unclaimed when possible, post a concise bounce note, and stop.
 
+## Closeout — ship with auto-merge, don't poll CI
+
+**Standard closeout is `gh pr merge --auto --merge`.** GitHub holds the merge until the required `Test · Typecheck · Build` check goes green, then merges without a session present. Do not sit in a poll loop waiting on CI — that burned 3–8 minutes of session wall-clock per ship for no added safety (THR-675).
+
+```bash
+gh pr create --title "<type>(thr-XXX): <summary>" --body "...Fixes THR-XXX..."
+gh pr merge --auto --merge
+```
+
+The gate is unchanged: branch protection stays on, the required check still has to pass, and a red check simply means the PR never merges. Auto-merge removes the *waiting*, not the *gate* — this is the H6 verdict from `Docs/plans/2026-07-20-git-cicd-clean-delivery.md`, which kept the PR gate precisely because it caught a phantom 3,379-line reversal before it reached `main`.
+
+`Fixes THR-XXX` must still appear in **both** the commit body and the PR body — on a non-squash merge the merge commit drops the commit body and Linear's auto-close misses it (impediment #140). `--merge` (not `--squash`) keeps the feature commit's body in history.
+
+**After queuing auto-merge, the session's shipping work is done.** Proceed to the worktree cleanup below and exit; do not block on the merge landing. If the check later fails, the PR stays open and the issue stays In Dev — the next hourly run resumes it via the Step 1.7 upstream-shipped check, which will find no `Fixes` commit on `main` and correctly treat the work as still in flight.
+
 ## Closeout — remove the temporary worktree
 
 **Attempt cleanup immediately after push** — do not wait for the merge-to-main auto-close, because that fires on GitHub after the CC session ends and no session will be active to run the cleanup. Run cleanup from the home worktree (`$REPO_ROOT`) right after `git push` succeeds:
