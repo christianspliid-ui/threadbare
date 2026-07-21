@@ -1,64 +1,70 @@
 # Briefing
 
-**Generated:** 2026-07-21 12:54 local (10:54 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-07-21 13:54 local (11:54 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task — the replacement for the old Cowork "keep-work-flowing" chat brief. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
 ## Needs Christian
 
-**A quiet hour. Nothing new has gone wrong; one small thing needs your hand, and the open question is unchanged.**
+**Three things, all carried: one click, one small command, one steer. Nothing new landed on your plate this hour.**
 
-> **1. Flip one switch in the Cowork app: disable `keep-work-flowing`.**
+> **1. One click: switch off the old hourly `keep-work-flowing` in the Cowork app.**
 
-Carried, unchanged. This is the only Cowork job safe to turn off right now — its replacement is the task writing this file. The other three stay on until each one's replacement passes a trial you approve, exactly as you decided this morning.
+You settled the sequencing this morning, and this is the part that's ready now. This task — the one writing what you're reading — is its replacement, and it has run cleanly all day. Until you flip the old one off, both run every hour and write the same brief twice.
 
-Nothing breaks if you leave it. You just get two copies of this brief until you do.
+The other three Cowork jobs stay switched **on**, exactly as you decided: each gets a fresh replacement written, and you approve a trial run before its old copy retires. That work is queued and waiting.
 
-> **2. New: a leftover file is stopping your working copy from updating itself.**
+> **2. One command: clear a superseded leftover file, so your working copy starts updating again.**
 
-Small and harmless, but it won't clear on its own. Your working copy has a modified `Design/user-actions.md` sitting in it — left behind by a run two hours ago that couldn't finish saving. **The content is not at risk**: last hour's run committed it properly, so what's on your disk is now an outdated duplicate of what's already saved.
+Carried from last hour, and **it is getting worse rather than holding steady** — your working copy was 4 commits behind then, and is 14 behind now. It will keep drifting each hour until this is cleared.
 
-The automatic catch-up only runs on a perfectly clean copy, so it has stopped. Your copy is four commits behind as a result — harmless today, but it will drift further each hour until the file is cleared:
+The cause is small and nothing is at risk. One file on your copy — this task's own standing-asks file — has an edit sitting on it from a run that failed to save properly at 10:54. **That content is not lost:** the 11:54 run carried it forward and saved it to the main copy. What's left on your disk is an outdated duplicate of work already banked.
+
+The automatic sync deliberately refuses to touch a working copy that has edits on it, in case those edits matter. This one doesn't. Scheduled tasks aren't allowed to clear it either — that rule exists because a task doing so once parked your copy for days.
+
+**Fix — one command, any time:**
 
 ```
 git -C "C:/Users/chris/Dev/Projects/TheFantasyWorldSimulator" checkout -- Design/user-actions.md
 ```
 
-Scheduled runs are deliberately barred from touching your working copy this way — that rule is what stopped the recurring damage last week — so this one genuinely needs your session.
+> **3. A steer: what's the next stretch of actual game?**
 
-> **3. Still open: what should the next stretch be for the game itself?**
+Carried, and not urgent — the queue is fed, eight jobs ready, the executor won't idle. But **every one of them is plumbing**: build-pipeline fixes, ticket-writing rules, a board audit. Nothing on the list makes the game different to play.
 
-Unchanged from last hour, and still not urgent. The lane is fed, but **everything in it is the machine repairing itself** — build tooling, board hygiene, workflow rules. Nothing queued adds a system, a piece of content, or anything you'd see in the game.
+So the machine is fed, but it is only feeding on itself. That's a legitimate place to be for a day — the tooling genuinely was unreliable and it's being fixed properly. It just shouldn't be the default by accident. The two nearest directions, both half-built rather than speculative:
 
-The two nearest directions remain **war, deepened** (battles with turning points and last stands, sieges that tighten as they drag, the mark a war leaves on a region) and **the economy, made visible** (banditry, embargoes and tolls surfacing as encounters; the map showing what's actually travelling a road).
+- **War, deepened.** The war system came alive on the 18th. Designed but not built: **battles with real texture** (turning points, commanders in peril, last stands), **sieges that tighten as they drag** instead of resolving flat, and **what a war leaves behind** in a region afterward.
+- **The economy, made visible.** Goods move along the roads now, but the player cannot see any of it. Missing: **things going wrong on trade routes** — banditry, embargoes, tolls surfacing as encounters — and **the map showing what is actually travelling** a road when you look at it.
 
-"Spend today finishing the plumbing" is a perfectly good answer too — say that and this stops being asked.
+A rough word is enough — "war", "economy", or something else. **"Finish the plumbing first" is also a real answer** — say that and this stops being asked.
 
 ## Queue
 
-**Healthy — eight ready, nothing in development, nothing blocked or stale.**
+**Healthy — eight jobs ready to start, nothing in progress.** The executor lane will pull on the hour.
 
-- **One shipped in the last hour:** the honest-gates job (THR-686), which was the single high-priority item and the top of the queue. It retired a pre-commit check that always passed regardless of what it was given — the kind of false green that teaches agents to skip gates.
-- **Eight remain ready**, all medium priority, all self-maintenance: the headless tick bridge, the board-integrity audit, the union merge driver, generated files folded into the build, ticket-authoring rules, the Cowork port, the git surface cleanup, and a one-line cross-link to finish the upstream report.
-- **Nothing in development right now** — expected between hourly pickups, not a stall.
+- **Nothing is stuck and nothing is stale.** No job waits on unfinished work; the oldest was written yesterday.
+- **Nothing is mid-flight.** The lane is free rather than blocked — it finished what it had.
+- **All eight are infrastructure.** Seven are self-maintenance, one is migration cleanup. That's the substance behind item 3 above.
+- **Two planning-column jobs look obsolete now** — the stash triage and worktree disposition tickets were both overtaken by the cleanup that finished at 13:13. An agent can retire them; it doesn't need you.
 
 ## Freshness
 
-**One leftover file, covered in item 2 above. Otherwise fine.**
+**Your working copy is drifting — 14 commits behind, up from 4 an hour ago.** See item 2 above for the one-command fix.
 
-Your copy is on the main line and four commits behind — normal drift, except that the automatic catch-up can't run while that file sits there. Nothing is parked off to the side and nothing is stranded, so there's no risk of losing anything; it just stops getting newer.
+It's on the right branch and nothing is stranded or lost. This is not decay; it's a sync that cannot run while the stray file sits there, so the gap simply widens each hour.
 
-The stale-branch cleanup is healthy — last run 12:40, fourteen minutes ago, tracking 28 work folders, 33 branches and 38 stashes. Six folders are flagged as needing a human decision; that's a known job already written up, not an alarm.
+The automatic stale-branch cleanup is healthy — last run 13:40, fourteen minutes ago, tracking 22 work folders and 27 branches.
 
 ## What's moving
 
-**A steady hour after a busy morning.**
+**A morning of closing things rather than starting them.**
 
-- **The honest-gates fix shipped** about half an hour ago — filed at 09:12 this morning, done by 12:28. That's the fastest turnaround on the board today.
-- **The two-tree editing guard shipped** just before it, closing a trap that had silently misfired in four of the last twelve runs.
-- Everything you unblocked in chat this morning has now landed or is queued: the upstream report is filed publicly, and the Cowork port carries your staged-trial decision as its scope.
+- **The long-running git cleanup finished at 13:13.** The 38-deep pile of shelved work was triaged properly rather than discarded: four sets were genuinely valuable and are now saved to the main copy — including a batch of 21 plan documents from a failed job — with a written record of what was kept and what was let go. The six work folders flagged as needing a decision were settled at the same time. **I checked specifically that nothing was thrown away unexamined**, because the pile vanishing at the same hour could equally have meant loss. It didn't.
+- **The bug report was filed at 09:10** after your yes — the last step of a three-day investigation into why your working copy kept detaching itself.
+- **The gate fixes landed at 12:28.** One of the checks meant to catch broken code had been passing unconditionally — reporting success without ever looking. It, and three related weak spots, are fixed.
 
-**Unchanged:** fourteen older pull requests are still open, oldest from 12 June. Nine are documentation batches from the job demolished yesterday — orphans of a process that no longer exists, needing one cleanup decision that isn't yours. One is a real feature branch from 5 July that needs a call on whether it's still wanted.
+**Unchanged and still worth naming:** fourteen older pull requests remain open and unmerged, oldest from 12 June. Nine of them are orphans of a job that was deleted this morning and will never refresh themselves — worth a single bulk decision, which an agent can make.
 
 ---
 *Standing asks live in [`Design/user-actions.md`](user-actions.md). This file is regenerated hourly by the `keep-work-flowing-cc` scheduled task; if the timestamp at the top looks old, check the task's `lastRunAt` in the scheduled-task list to tell "nothing new to report" from "task stopped running."*
