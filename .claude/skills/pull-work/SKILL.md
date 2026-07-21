@@ -309,6 +309,28 @@ All subsequent steps run from `$WORKTREE_DIR` if isolation engaged, else from
 `$REPO_ROOT`. The closing commit, push, and merge-keyword auto-close all happen
 in the same location.
 
+**Write-path discipline (mandatory whenever the session is in a worktree).** Echo the
+session root once, and treat it as the required prefix for every `Edit`/`Write`
+`file_path` for the rest of the session:
+
+```bash
+echo "[pull-work] Step 4.5: session write-root is $(git rev-parse --show-toplevel)"
+```
+
+A bare repo-root absolute path (`C:\...\TheFantasyWorldSimulator\src\...`) from a
+worktree session lands in the **home** tree and **succeeds** — the two trees are
+byte-identical at branch time, so `old_string` matches, the tool reports success,
+and nothing surfaces until verification runs against unedited code. This fired in
+4 of 12 hourly runs on 2026-07-20/21 (impediments #387, #417, #421). `Read` is
+unaffected and may use either path.
+
+The `worktree-write-guard.sh` PreToolUse hook (registered in `.claude/settings.json`)
+now rejects this mechanically and prints the corrected path, so a slip costs one
+blocked call rather than a wasted verification cycle. The hook gates on **CWD**, not
+on the target alone — home-tree sessions are never blocked. Treat it as a backstop,
+not a licence to stop prefixing paths: it only covers `Edit`/`Write`, so `Bash`
+redirects and `cp` into the home tree remain your responsibility.
+
 **Trace lines** (one of three appears per session, NFP #2):
 
 ```
@@ -443,6 +465,47 @@ If the issue has label `Reopened`, read all comments back to the original handof
 On success: issue is claimed (`In Dev`, assigned to `me`), plan doc loaded, and pickup context is ready for implementation.
 
 On refusal: leave the issue unclaimed when possible, post a concise bounce note, and stop.
+
+## Closeout — home-tree cleanliness gate (run before `git commit`)
+
+**Mandatory whenever the session is in a worktree.** Before the closing commit, prove
+the session left no writes in the home tree:
+
+```bash
+HOME_TREE="$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")"
+if [ "$HOME_TREE" != "$(git rev-parse --show-toplevel)" ]; then
+  git -C "$HOME_TREE" status --porcelain
+fi
+```
+
+Expected output is **empty**, or only pre-existing debris you can name and did not
+author this session. Any session-authored path is the two-tree edit-path trap: the
+edit landed on `main` in a tree that is supposed to be an inert mirror (THR-672), and
+your verification ran against unedited code.
+
+**Recovery — patch-and-relocate** (full form in `Docs/impediments.md` #417/#387):
+
+```bash
+git -C "$HOME_TREE" diff -- <files> > /tmp/relocate.patch
+git -C "$HOME_TREE" checkout -- <files>      # restore main
+git apply /tmp/relocate.patch                # replay into the worktree
+```
+
+Copy any *new* files across and `rm` them from the home tree — `checkout --` does not
+remove untracked additions. Then **re-run the verification gates**, because the
+previous run tested the wrong tree.
+
+**Trace line** (exactly one, NFP #2):
+
+```
+[pull-work] closeout: home tree clean — no session-authored paths.
+[pull-work] closeout: home tree dirty (<N> session-authored paths). Patch-and-relocate before commit.
+[pull-work] closeout: session is in the home tree — check N/A.
+```
+
+**Fail-soft:** if the `git -C` probe errors, log one warning and continue to the commit.
+A broken probe must not block a ship — the PreToolUse guard is the primary defence and
+this gate is the audit.
 
 ## Closeout — ship with auto-merge, don't poll CI
 
