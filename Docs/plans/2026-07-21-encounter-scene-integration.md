@@ -1,5 +1,5 @@
 > **title:** `Encounter Scene Integration — target & cast as first-class prose and aftermath subjects`
-> **linear_issue:** Multi-slice — six execution issues created at handoff (Slices A–F below); issue ids recorded in each slice's handoff comment
+> **linear_issue:** THR-694 (Slice A, lead) — full slice map: THR-694 A · THR-695 B · THR-696 C · THR-697 D · THR-698 E · THR-699 F; companions THR-700 (UL-proposal) · THR-701 (audit-input drift)
 > **author:** `Claude Code (Fable design session)`
 > **created:** 2026-07-21
 > **three_pillars:** Engine `done` · Content `done` · UI `done`
@@ -33,14 +33,14 @@ The 2026-04-03 gate-duty packet (`Docs/plans/2026-04-03-encounter-packet-cg-gate
 
 ## Slice map
 
-| Slice | Title | Surface | Depends on |
-|---|---|---|---|
-| **A** | `{target:*}` enrichment placeholders | `proseEnrichment.ts` + encounter-path context callers | — |
-| **B** | Aftermath scene-targeting: general `$target` / `$cast:` sentinels + `bond_change` effect + `role:` resolution | `encounterAftermath.ts`, `types/unifiedAction.ts` | — (parallel with A) |
-| **C** | `{cast:*}` placeholders + gate-duty pilot rewrite | `proseEnrichment.ts`, `civic-guard-encounter-content.ts` | A (same file surface) |
-| **D** | Seed system v2: family matching + context inheritance | `encounterSeeding.ts`, seed-planting site in `encounterAftermath.ts`, `types/unifiedAction.ts` | B (aftermath file overlap) |
-| **E** | Family default support bundles for the linear tier | new `src/data/default-support-bundles.ts`, registry merge | C (prose payoff), parallel-safe at engine level |
-| **F** | Linear-tier content sweep: social + tavern + borderland | 3 content files + wiring-guide examples | A, B, C |
+| Slice | Issue | Title | Surface | Depends on |
+|---|---|---|---|---|
+| **A** | THR-694 | `{target:*}` enrichment placeholders | `proseEnrichment.ts` + encounter-path context callers | — |
+| **B** | THR-695 | Aftermath scene-targeting: general `$target` / `$cast:` sentinels + `bond_change` effect + `role:` resolution | `encounterAftermath.ts`, `types/unifiedAction.ts` | — (parallel with A) |
+| **C** | THR-696 | `{cast:*}` placeholders + gate-duty pilot rewrite | `proseEnrichment.ts`, `civic-guard-encounter-content.ts` | A (same file surface) |
+| **D** | THR-697 | Seed system v2: family matching + context inheritance | `encounterSeeding.ts`, seed-planting site in `encounterAftermath.ts`, `types/unifiedAction.ts` | B (aftermath file overlap) |
+| **E** | THR-698 | Family default support bundles for the linear tier | new `src/data/default-support-bundles.ts`, registry merge | C (prose payoff), parallel-safe at engine level |
+| **F** | THR-699 | Linear-tier content sweep: social + tavern + borderland | 3 content files + wiring-guide examples | A, B, C |
 
 ---
 
@@ -265,6 +265,7 @@ No other file in scope is on the ≥100-importer list (`proseEnrichment.ts`, `en
 ## Rulebook impact
 
 - [x] This plan does not change a rule of play. Turn structure, action verbs, prerequisites, resources, resolution, clocks, win/loss: unchanged. Family seeds finally *doing what the wiring guide already documents* is an implementation-completion, not a rule change; `bond_change` is a new aftermath effect kind (authoring vocabulary, not a player-facing rule). The full rulebook's encounter section needs no re-verdict; the **systemic wiring guide** (authoring canon) is updated per-slice instead.
+- [x] If it did, `Docs/canon/rulebook.md` would be updated in the same PR — confirmed not applicable here.
 
 > Brainstorm companion: `Docs/plans/2026-07-21-encounter-scene-integration-brainstorm.md` (written alongside, same pass).
 
