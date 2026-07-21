@@ -1,31 +1,36 @@
 # Briefing
 
-**Generated:** 2026-07-21 03:54 local (01:54 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-07-21 04:54 local (02:54 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task — the replacement for the old Cowork "keep-work-flowing" chat brief. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
 ## Needs Christian
 
-**Three things. Two carried and still keeping; one promoted this hour because it has stopped being cosmetic.**
+**Still three. One of them may resolve itself before you read this — see below.**
 
-> **1. Two commands on your machine, next time you sit down. Your working copy has been frozen for seven hours.**
+> **1. Your working copy is still frozen — but something is actively cleaning it right now. You may want to do nothing.**
 
-This is new to this section — it has been sitting under "Freshness" for a few runs, and it has now earned the promotion. Your local copy of the project is stuck at yesterday morning and **thirty-eight commits behind** the shared one. The hourly job that normally keeps it level has refused on **seven consecutive runs**, the gap growing 5 → 9 → 16 → 20 → 24 → 32 → 38.
+Carried from the last several runs, with a real change this hour. Your local copy is on `main`, **forty-four commits behind** (up from 38), and the hourly auto-sync is still refusing.
 
-Nothing you wrote is at risk — I verified this rather than assumed it. The three files holding it up are all leftovers from *this* task's earlier behaviour, and every one of them is already safely in the shared copy. Discarding them loses nothing.
+**The change:** at 04:02 an executor picked up the cleanup ticket that owns exactly this mess, and it has already landed two batches of work — the fifteen loose design drafts on your machine are now safely committed to the shared copy. Its finish line is literally "your working copy reads clean." So the most likely outcome is that **this item disappears on its own within an hour or two**, without you touching anything.
+
+If you'd rather not wait, the commands have grown by one line, and the new line matters:
 
 ```
 cd C:\Users\chris\Dev\Projects\TheFantasyWorldSimulator
 git reset
 git checkout -- Design/briefing.md Design/user-actions.md
+rm Docs/judge-metrics/2026-W29.md Docs/plans/.intent-proposals/*.md Docs/plans/2026-07-0[45]-*.md
 git pull --ff-only
 ```
 
-The `git reset` line is new — earlier briefs omitted it, and without it the pull still refuses. Nothing else on your machine needs touching. **This is safe to run at any time and takes about five seconds.**
+The `rm` line is new and is **not** optional now — those fifteen files exist both on your machine and, as of an hour ago, in the shared copy, so the pull will refuse until the local copies are out of the way. I compared all fifteen byte for byte against what was committed: **they are identical**. Deleting them loses nothing; the pull brings the same bytes back. Same for the two `Design/` files — superseded leftovers of this task's own earlier behaviour.
+
+**Either path is safe.** Waiting costs nothing; running it takes about five seconds.
 
 > **2. Is the notification rework the next stretch, with war deferred until it's done — or do you want both moving in parallel?**
 
-Three war follow-ons sit written and waiting: deeper battles, sieges that tighten as they drag, and what a war *leaves behind*. Two are high priority. Re-verified again this run: their stated blocker closed on Saturday, all three still carry text claiming they're blocked, and they describe building things that partly already exist — the war system turned out to be dormant rather than missing.
+Unchanged, and now carried into a fourth day. Three war follow-ons sit written and waiting: deeper battles, sieges that tighten as they drag, and what a war *leaves behind*. Two are high priority. Re-verified again this run: their stated blocker closed on Saturday, all three still carry text claiming they're blocked, and they describe building things that partly already exist — the war system turned out to be dormant rather than missing.
 
 They sit in the planning column, which the executor never pulls from, so they aren't starving anything. **Answer this when you next think about direction, not because this file asked.** If war is later, they sit safely as-is. If it's both, someone re-scopes them against the real code first, so you're choosing against reality rather than a stale plan.
 
@@ -37,32 +42,40 @@ Nothing else needs you.
 
 ## Queue
 
-**Healthy — six waiting, nothing in development right now.** One item cleared since the last brief. The executor is between turns.
+**Healthy but thinning — five waiting, one in development.** Down from six; the executor took one and is mid-flight on it.
 
-- **Nothing is blocked.** The four git/CI tickets in the queue all point at a spec that is readable from anywhere, so any executor can pick one up cold.
+- **Nothing is blocked.** The three git/CI tickets still queued all point at a spec readable from anywhere.
 - **The two oldest items are properly stale** — a documentation tidy-up and a console warning, both untouched since 2026-07-05, now **sixteen days** old. Both lowest priority. Naming them rather than counting them as real queue depth.
+- **One bookkeeping oddity, not a problem:** the in-flight ticket shows as claimed-by-nobody. That is the known Linear write-drop, not a stalled or abandoned task — it has landed two merges in the last hour, so it is plainly being worked.
+
+If the executor finishes its current ticket and the two stale items are the only thing left worth pulling, the lane will start idling. Not yet, but the trend is one way.
 
 ## Freshness
 
-**Unchanged in kind from the last three runs, worse in degree — and now promoted to "Needs Christian" above, where the fix is.**
+**Same fault, one hour older — and for the first time it now has an owner actively on it.**
 
-The tree is on `main`, **thirty-eight behind** (up from 32), with three tracked files reading as changed. The hourly auto-sync logged its seventh consecutive refusal at 03:50: *uncommitted changes that would be overwritten*.
+Your tree is on `main`, **forty-four behind** (was 38), with three tracked files reading as changed and fifteen untracked. Verified this run rather than assumed:
 
-**Verified this run, not assumed:** both `Design/briefing.md` and `Design/user-actions.md` in your copy hash-match a blob already committed to the shared copy (the 23:54 briefing, committed 22:34 UTC). The third file, the git/CI plan doc, is byte-identical to the shared copy. All three are superseded leftovers. There is no authored work anywhere in that set.
+- The two `Design/` files are the *23:54* copies — five subsequent runs have left them untouched, because since 01:54 this task writes into its own scratch workspace and never touches your tree.
+- The third tracked file is byte-identical to the shared copy.
+- **All fifteen untracked drafts are byte-identical** to the versions committed to the shared copy an hour ago.
 
-**The residue has stopped growing, as predicted.** Since the 01:54 run this task writes its output in its own scratch workspace and never touches your tree. The two files sitting there are still the *23:54* copies — four subsequent runs have left them untouched. Only the behind-count climbs, and that is the auto-sync being blocked rather than new damage accumulating.
+**There is no authored work anywhere in that set.** The behind-count climbing is the auto-sync being blocked, not damage accumulating.
 
-The overnight fix that stops your tree drifting **is installed and working** — it just doesn't cover this case. It deliberately refuses to touch a file that looks edited, which is right in general and unhelpful here. Extending it to recognise its own stale output is a real gap, written up in `user-actions.md` item 5 for a design session rather than filed as a ticket, because this task doesn't create work.
+The overnight fix that stops your tree drifting is installed and working — it just doesn't cover this case, because it deliberately refuses to touch anything that looks edited. Right in general, unhelpful here. That gap is written up in `user-actions.md` item 5.
 
 Per the standing rule, this task doesn't repair your tree itself — a scheduled job touching your working copy is precisely what caused the mess it would be cleaning up.
 
 ## What's moving
 
-**One solid fix landed since the last brief** (PR #652):
+**The git tidy-up went from queued to in-flight, and has already delivered** (PRs #654, #655):
 
-- **Thirty-two pieces of content carried an invalid rarity tier** — a value the game's own rules didn't allow. All thirty-two are corrected, and the hole that let them through was closed at the type level, so the same mistake now fails at build time instead of shipping quietly. The action catalog was regenerated to match. A sandbox limitation found along the way was logged rather than left to be rediscovered.
+- **Fifteen loose design drafts** — brainstorms, exploration notes, and design-proposal records that existed only on your machine — are now committed and backed up. That closes the "one machine, no backup" exposure this file has carried for days.
+- **The cleanup findings were written into the impediment log**, so the pattern stops being rediscovered each run.
 
-**One backlog worth naming, not acting on:** fourteen pull requests remain open, oldest from 2026-06-12 — unchanged in count for four runs. Thirteen are documentation; **one is a real feature**, a milestone-beat change that has sat unmerged since 2026-07-05. The cause is understood: the rule that a change must be level with the shared copy before it can go in means each one falls behind the moment anything else lands, and nothing re-freshens them. The fix ("merge it automatically once checks pass") is queued and correctly aimed.
+Still in that ticket's scope and not yet done: a stash pile that has grown to **38 entries** (it was scoped at 12), and roughly two dozen stale worktrees.
+
+**One backlog worth naming, not acting on:** fourteen pull requests remain open, oldest from 2026-06-12 — unchanged in count for five runs. Thirteen are documentation; **one is a real feature**, a milestone-beat change unmerged since 2026-07-05. The cause is understood: each falls behind the moment anything else lands, and nothing re-freshens them. The fix ("merge it automatically once checks pass") is queued and correctly aimed.
 
 Mildly absurd twist, unchanged: **this briefing lands every hour, and each landing is what pushes the rest further behind.**
 

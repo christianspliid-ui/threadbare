@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-07-21 (item 2 added by the THR-653 Cowork cutover; light refresh at 03:54 local by the hourly `keep-work-flowing-cc` CC task; last full rebuild was the 2026-06-23 retro)
+**Last updated:** 2026-07-21 (item 2 added by the THR-653 Cowork cutover; light refresh at 04:54 local by the hourly `keep-work-flowing-cc` CC task — item 4 resolved and re-scoped this run; last full rebuild was the 2026-06-23 retro)
 **Owner of items below:** Christian. Everyone else's blockers go in Linear or `Docs/impediments.md`.
 **Refresh cadence:** The hourly `keep-work-flowing-cc` scheduled task keeps this current (prunes resolved items, adds newly-surfaced Christian-owned ones); the `retrospective` skill still does the deep periodic rebuild. This is the slow-moving standing-asks list — the fresh-this-hour view is [`Design/briefing.md`](briefing.md).
 
@@ -21,7 +21,7 @@ When an item resolves: delete it from this file, mark the corresponding impedime
 
 ## 1. Turn off the old Cowork automations · WILL NOT SELF-HEAL · ONLY YOU CAN DO THIS
 
-**Status:** Open, new 2026-07-20 · blocks the last step of the move off Cowork · **carried unanswered through the 2026-07-21 03:54 run**
+**Status:** Open, new 2026-07-20 · blocks the last step of the move off Cowork · **carried unanswered through the 2026-07-21 04:54 run**
 **Source:** THR-653 (cutover). Follow-up port work: THR-677.
 
 **What happened.** The move off Cowork is essentially done. The Claude Code side now runs the hourly pickup, the hourly briefing (moved to the :45 slot, taking over the one Cowork used), the Friday retrospective, and the Sunday memory tidy-up. Two of those — the retro and the memory tidy-up — had been *written down* as already running for weeks but had in fact never been switched on. They are on now.
@@ -78,21 +78,19 @@ git checkout rescue/2026-07-17-detached-plans -- Docs/plans/2026-07-05-entity-vi
 
 ---
 
-## 4. Triage 15 untracked design drafts · DE-ESCALATED 2026-07-20 22:54 — no longer blocking
+## 4. PR merge backlog — 14 open, oldest 2026-06-12 · RE-SCOPED 2026-07-21 04:54
 
-**Status:** Open (cosmetic) · **the load-bearing doc landed.** `Docs/plans/2026-07-20-git-cicd-clean-delivery.md` merged to `origin/main` via **PR #638** (verified `git cat-file -e origin/main:<path>`). THR-673, 674, 675 and 676 — four Ready-for-Dev tickets — all open with "**Plan doc:** … read first," and an executor claiming any of them can now read it from a fresh clone or an isolation worktree. **The starvation risk this item existed to name is closed.** (Two of the six have now shipped: **THR-671 at 2026-07-21 00:34 via PR #646**, **THR-672 at 01:22 via PR #648**.)
+**Status:** Open (not blocking) · **the untracked-drafts half of this item is RESOLVED** — all 15 landed on `origin/main` at 2026-07-21 ~02:20 via **PR #654** (THR-674, in flight). Verified this run: each of the 15 files still present untracked in the home tree is **byte-identical** to its committed counterpart, so the local copies are now pure duplicates. What survives here is the merge backlog they were tangled up with.
 
-**What remains is ordinary debris:** 15 untracked drafts on this machine only — `Docs/judge-metrics/2026-W29.md`, nine `Docs/plans/.intent-proposals/*.md`, five `Docs/plans/2026-07-04|05-*` brainstorm / exploration docs. THR-674 is the queued ticket that owns their triage.
-
-**The flush pipeline works; merging is the slow step.** Re-confirmed across the 21:55 → 03:54 runs: `flush-plan-docs` correctly branched and opened #638, and **eight PRs merged overnight** (#638 plan doc, #639/#643/#645/#647/#649 briefings, #644 impediment log, #646/#648 for THR-671/672, plus #650 carrying the THR-616 P2 economy slices) — end-to-end proof the path functions when nudged. But **fourteen PRs remain open and unmerged** (thirteen docs + one feature), unchanged in count since 01:54 and re-verified at 03:54: oldest #327 (2026-06-12), then #488 (2026-07-03), #512/#514/#516/#525/#532/#543/#551 (2026-07-04–05), #553 (feature: Axis-B milestone beat, 2026-07-05), #557 (2026-07-17), #571/#599 (briefings), #641 (impediment log). Branch protection runs in **strict mode** (branches must be up to date with `main`), so every open docs PR is knocked `BEHIND` the moment anything lands — and nothing re-freshens them. `Test · Typecheck · Build` shows `SKIPPED` on docs-only PRs, which is expected and is *not* the blocker. The conflict-rot pattern was written into `Docs/impediments.md` on 2026-07-20 23:21 so it stops being rediscovered each run.
+**The flush pipeline works; merging is the slow step.** Re-confirmed across the 21:55 → 04:54 runs: **ten PRs merged overnight** (#638 plan doc, #639/#643/#645/#647/#649/#651/#653 briefings, #644 impediment log, #646/#648 for THR-671/672, #650 THR-616 economy slices, #654/#655 for THR-674) — end-to-end proof the path functions when nudged. But **fourteen PRs remain open and unmerged** (thirteen docs + one feature), unchanged in count since 01:54 and re-verified at 04:54: oldest #327 (2026-06-12), then #488 (2026-07-03), #512/#514/#516/#525/#532/#543/#551 (2026-07-04–05), #553 (feature: Axis-B milestone beat, 2026-07-05), #557 (2026-07-17), #571/#599 (briefings), #641 (impediment log). Branch protection runs in **strict mode** (branches must be up to date with `main`), so every open docs PR is knocked `BEHIND` the moment anything lands — and nothing re-freshens them. `Test · Typecheck · Build` shows `SKIPPED` on docs-only PRs, which is expected and is *not* the blocker. The conflict-rot pattern was written into `Docs/impediments.md` on 2026-07-20 23:21 so it stops being rediscovered each run.
 
 **Self-inflicted feedback loop, unchanged:** this briefing task merges its own PR every hour, and each of those merges is what pushes the rest `BEHIND` again.
 
 **THR-675 (auto-merge on green) is the correct systemic fix and is already queued** — no re-scoping needed. Interim manual unblock for any single stranded doc: `gh pr update-branch <N> && gh pr merge <N> --merge`.
 
-**Fix — a design session can do this; it is not a Christian-only task.** Triage the 15: `git status --porcelain | grep '^??'`, per file commit if still wanted, delete if superseded. **Do not `git clean -fd`** — that destroys all 15 without review.
+**One of the fourteen deserves separate attention:** #553 is a **feature** PR (Axis-B essence-source milestone beat), not documentation, and has sat since 2026-07-05 in `DIRTY` state — it needs conflict resolution, not just a refresh. Worth a design session confirming whether it is still wanted before it rots further.
 
-**What breaks if not done.** Nothing blocking. The 15 remain unbacked-up drafts on one machine.
+**What breaks if not done.** Nothing blocking. Documentation lands late; one feature branch ages.
 
 ---
 
@@ -100,7 +98,9 @@ git checkout rescue/2026-07-17-detached-plans -- Docs/plans/2026-07-05-entity-vi
 
 **Status:** Cause found (2026-07-20 investigation) · **THR-672 shipped 2026-07-21 01:22 (PR #648)** — the autosync now self-heals the provably loss-free park (detached ∧ 0 unique commits ∧ 0 tracked modifications → `git switch main`), and scheduled sessions are barred from running git state ops with the home tree as CWD · last park event 2026-07-20 ~11:00 (fourth in four days), self-cleared by 11:54 · **no fifth event through the 2026-07-21 01:54 run**
 
-**A second, distinct blocker surfaced at the 01:54 run — different fault, same symptom. PROMOTED TO A CHRISTIAN ACTION AT THE 03:54 RUN.** The tree is on `main` but **38 behind as of the 03:54 run** (5 → 9 → 16 → 20 → 24 → 32 → 38 across the 21:56 → 03:50 autosync attempts — **seven consecutive refusals**), each logging `you have uncommitted changes that would be overwritten`. The blocking files are **`Design/briefing.md` and `Design/user-actions.md`** — written into the home tree by *this task* before the THR-672 rule existed — plus the staged-add `Docs/plans/2026-07-20-git-cicd-clean-delivery.md`, which is byte-identical to `origin/main`.
+**A second, distinct blocker surfaced at the 01:54 run — different fault, same symptom. PROMOTED TO A CHRISTIAN ACTION AT THE 03:54 RUN; MAY SELF-RESOLVE AS OF 04:54.** The tree is on `main` but **44 behind as of the 04:54 run** (5 → 9 → 16 → 20 → 24 → 32 → 38 → 44 across the 21:56 → 04:50 autosync attempts — **eight consecutive refusals**), each logging `you have uncommitted changes that would be overwritten`. The blocking files are **`Design/briefing.md` and `Design/user-actions.md`** — written into the home tree by *this task* before the THR-672 rule existed — plus the staged-add `Docs/plans/2026-07-20-git-cicd-clean-delivery.md`, which is byte-identical to `origin/main`.
+
+**New at 04:54 — the repair sequence gained a required step, and an owner.** THR-674 (one-time git surface cleanup) moved to In Dev at 04:02 and has already landed PRs #654/#655; its Done-when is literally "`git status` clean on the home tree," so this blocker is now inside an in-flight ticket's scope and may clear without manual action. **If repairing by hand, the 15 formerly-untracked drafts must be deleted first** — they now exist on `origin/main` (PR #654), so `git pull` will refuse with *untracked working tree files would be overwritten*. Verified byte-identical this run, so deleting them is provably lossless.
 
 **Nothing authored is at risk, and this was verified rather than assumed.** Re-verified at 03:54: both working copies hash-match blobs already committed on `origin/main` (`git hash-object` → `4a449433` / `60fed5a1`, both present at commit `2c51a9ae`, the 23:54 briefing). They are *superseded briefings*, not edits. Note the nuance: they are **not** byte-identical to current `origin/main` (that holds a newer briefing), so the `git diff origin/main -- <path>` test used on earlier runs reports non-empty here and would **wrongly** suggest authored work. The hash-against-history check is the correct probe for this case.
 
@@ -110,6 +110,7 @@ git checkout rescue/2026-07-17-detached-plans -- Docs/plans/2026-07-05-entity-vi
 cd C:\Users\chris\Dev\Projects\TheFantasyWorldSimulator
 git reset
 git checkout -- Design/briefing.md Design/user-actions.md
+rm Docs/judge-metrics/2026-W29.md Docs/plans/.intent-proposals/*.md Docs/plans/2026-07-0[45]-*.md
 git pull --ff-only
 ```
 
@@ -117,7 +118,7 @@ git pull --ff-only
 
 **Deployment note for whoever picks that up:** the autosync script lives *outside* the repo, at `C:\Users\chris\bin\`. Merging a change to it in the repo does not deploy it; it has to be copied to that path. Worth checking whether the repo even carries a copy — `git ls-tree -r --name-only origin/main | grep -i autosync` returned nothing again at 03:54, so the running script still has no version-controlled source at all.
 
-**Now self-limiting regardless — and re-confirmed at 03:54.** From the 01:54 run onward this task writes both files in its own worktree and never in the home tree. Verified this run: the two dirty files in the home tree are still the *23:54* copies, unchanged by the 00:54, 01:54, 02:54 and 03:54 runs — the residue has stopped regenerating exactly as predicted. Only the behind-count is still climbing, which is the autosync being blocked, not new damage. Clearing it is the one-time three-command sequence above.
+**Now self-limiting regardless — and re-confirmed at 04:54.** From the 01:54 run onward this task writes both files in its own worktree and never in the home tree. Verified this run: the two dirty files in the home tree are still the *23:54* copies, unchanged by the 00:54 → 04:54 runs — the residue has stopped regenerating exactly as predicted. Only the behind-count is still climbing, which is the autosync being blocked, not new damage. Clearing it is the one-time four-command sequence above — or, more likely, THR-674 finishing.
 **Source:** `Docs/plans/2026-07-20-git-cicd-clean-delivery.md` (root cause + tickets THR-671…676; now readable on `origin/main`); forensics in `Docs/audits/2026-07-20-git-cicd-forensics/`
 
 Four times in four days, the harness has moved the home tree off `main` at a scheduled-session spawn:
@@ -151,6 +152,7 @@ First verify nothing unique is stranded: `git rev-list --count origin/main..HEAD
 
 ## Resolved this period
 
+- **2026-07-21 ~02:20 — the 15 untracked design drafts are backed up (PR #654, THR-674).** The "one machine, no backup" exposure this file carried since 2026-07-20 is closed: brainstorms, exploration notes and intent-proposal records that existed only in the home tree are now committed to `origin/main`, with the cleanup findings logged to `Docs/impediments.md` alongside (PR #655). Item 4 has been re-scoped to the surviving concern — the PR merge backlog. Still open inside THR-674: a stash stack that has grown to **38 entries** (scoped at 12) and ~24 stale worktrees. _Prunable at the next full retro._
 - **2026-07-21 01:22 — THR-672 shipped (PR #648): the home tree is now an inert, self-healing mirror of `main`.** Second of the six git/CI tickets to land, hours after the first. The autosync re-attaches the provably loss-free park on its own (detached ∧ 0 unique commits ∧ 0 tracked modifications → `git switch main`), and scheduled sessions are barred from running checkout/commit/merge/rebase/reset with the home tree as CWD — the rule this very task now follows. **Caveat, not a regression:** the self-heal covers the *detached* park, not the *dirty-tracked-file* block; see item 5 for the gap found at the 01:54 run. Four siblings (THR-673…676) remain queued. _Prunable at the next full retro._
 - **2026-07-21 00:34 — THR-671 shipped (PR #646): the freshness signal distinguishes "parked off-branch" from "behind."** First of the six git/CI investigation tickets to land. This closes the specific mis-reporting fault that made `Design/briefing.md` publish an escalating behind-count (58 → 79) for days while local `main` was in fact 0/0 with `origin/main` the whole time. _Prunable at the next full retro._
 - **2026-07-20 22:54 — the load-bearing git/CI plan doc reached `origin/main`** (PR #638 merged). Six Ready-for-Dev tickets that cited a spec existing only on one machine are now readable by any executor. This was the escalation that took item #4 from cosmetic to blocking-adjacent on 2026-07-20 11:05; it is back to cosmetic. _Prunable at the next full retro._
