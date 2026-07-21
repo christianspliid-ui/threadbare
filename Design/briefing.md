@@ -1,30 +1,28 @@
 # Briefing
 
-**Generated:** 2026-07-21 20:54 local (18:54 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-07-21 21:54 local (19:54 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task — the replacement for the old Cowork "keep-work-flowing" chat brief. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
 ## Needs Christian
 
-**Nothing is broken. Same three as the last three hours — but item 1 has changed shape and now needs three commands instead of one.**
+**Nothing is broken. Two things want you — down from three; one of the three turns out never to have been yours.**
 
-> **1. Your working copy drifted further out of place. Three commands, still loss-free.**
+> **1. Your working copy needs three commands. Still loss-free.**
 
 ```
-git -C "C:/Users/chris/Dev/Projects/TheFantasyWorldSimulator" checkout -- Design/user-actions.md
+git -C "C:/Users/chris/Dev/Projects/TheFantasyWorldSimulator" stash push -m home-tree-recovery
 git -C "C:/Users/chris/Dev/Projects/TheFantasyWorldSimulator" switch main
 git -C "C:/Users/chris/Dev/Projects/TheFantasyWorldSimulator" pull --ff-only origin main
 ```
 
-Last hour this was one command. Since then the copy has also come **unmoored from the main line** — it is now sitting beside it rather than on it. This is the known app-level fault, not anything you or an agent did, and it is the exact pattern already reported upstream.
+Unchanged since last hour: the copy is sitting **beside** the main line rather than on it, and carries one leftover file. This is the known app-level fault, already reported upstream — not anything you or an agent did.
 
-**Nothing is at risk.** The copy holds **no work that exists nowhere else** — verified this run, as it has been every run. The one leftover file is strictly older text: the version on disk is this morning's, and the published version has been rewritten roughly ten times since, including by this run. Discarding it loses nothing that isn't already saved.
+**Nothing is at risk.** Verified again this run: **no work exists only on that copy.** The leftover file is this morning's version of the standing-asks list; the published version has been rewritten about eleven times since, including by this run. The stash keeps it anyway, so nothing is discarded even by accident.
 
-Ignore the drift number if you saw it last hour — it read 41, it now reads 5, and neither move means anything changed for the better. The measuring point shifted under the tree; that shift is the fault itself, not a recovery from it.
+> **2. Three replacement jobs are built, switched off, waiting on you to watch each run once.**
 
-> **2. Three replacement jobs are built and switched off, waiting on you to watch each run once.**
-
-Re-checked against the live scheduler this run: all three present, all three still **off**. Unchanged since 17:54 and nothing will change until you run the trials.
+Re-checked against the live scheduler this run — all three present, all three still **off**, unchanged since 17:54.
 
 | Job | When it would run | State |
 |---|---|---|
@@ -34,13 +32,13 @@ Re-checked against the live scheduler this run: all three present, all three sti
 
 What they need: **run each once in a normal chat session, read what it produces, say yes.** Then it goes live and its Cowork twin gets switched off in the same step. Start with the daily queue grooming — it's the load-bearing one.
 
-Separately and still yours: **switch off `keep-work-flowing` in the Cowork app.** That one needs no trial — its replacement is live and wrote this brief.
+Separately and still yours: **switch off `keep-work-flowing` in the Cowork app.** No trial needed — its replacement is live and wrote this brief.
 
-> **3. The next creative stretch — the pattern is now unmistakable.**
+> **3. The next creative stretch — second day of the same pattern.**
 
-The build-system job shipped at 20:32. A new one was filed nineteen minutes earlier to replace it. **Three jobs are queued and all three are still plumbing** — a merge fix for stale pull requests, a lint-scope tidy, and a gap in the build's safety checks.
+The merge-rot fix shipped at 21:11. **Two jobs are queued and both are still plumbing** — a lint-scope tidy and a gap where the build's type check does nothing at all.
 
-This is the second day running with nothing queued that changes what the game does. The queue is not starving; it is **feeding itself on its own maintenance**. Each shipped repair reveals the next repair. That loop will not stop on its own — it stops when something game-facing is put in front of it.
+Nothing queued changes what the game does. The queue is not starving; it is **feeding itself on its own maintenance** — each shipped repair reveals the next. That loop stops when something game-facing is put in front of it.
 
 The question is unchanged: **war or economy?**
 
@@ -49,36 +47,36 @@ The question is unchanged: **war or economy?**
 
 A one-word steer is enough. A design session does the rest.
 
+**Dropped from this list:** the "file the autosync self-heal ticket" ask that ran here for seven hours. That was misrouted — filing a ticket is agent work, not a decision only you can make. It is recorded under Freshness below as agent-side and should not have been costing you attention.
+
 ## Queue
 
-**Healthy — three ready to start, holding steady at three.**
+**Healthy but thin — two ready to start, down from three.**
 
-- **Three ready for pickup**, all Continuous Improvement: a union merge driver so idle pull requests stop rotting into conflicts (THR-691), a plan-doc lint scope fix (THR-692), and a newly-filed gap where the build's type check does nothing at all (THR-693).
-- **Nothing blocked, nothing stale.** All three filed today; none waits on another.
-- **One in development** — the Cowork job ports (THR-677), **unassigned on purpose**. Its code landed at 17:28; three of its four goals are met and the fourth is your trial approval, so the executor released the work slot rather than hold it open. Correct call, not a stall.
-- **The queue replaced itself this hour**: one shipped out, one filed in. That is the loop described in item 3.
+- **Two ready for pickup**, both Continuous Improvement: a plan-doc lint scope fix (THR-692) and the newly-filed gap where the build's type check does nothing (THR-693).
+- **Nothing blocked, nothing stale.** Both filed today; neither waits on the other.
+- **One in development** — the Cowork job ports (THR-677), **unassigned on purpose**. Three of its four goals are met and the fourth is your trial approval, so the executor released the work slot rather than hold it open. Correct call, not a stall.
+- **Twenty jobs sit in planning.** Not blocked in any technical sense — none has been through the design pass that makes it handable. That is the shortage item 3 describes.
 
 ## Freshness
 
-**Two things to fix now instead of one, and the commands are in item 1 above.**
+**One thing to fix, and the commands are in item 1 above.**
 
-- **The leftover file is still there** — ninth consecutive hour. It blocks the automatic sync, which refuses to update a copy carrying local edits. Verified loss-free again this run.
-- **New this hour: the copy is also parked off the main line.** Nothing unique is stranded on it — zero commits exist only there — so re-attaching is safe by construction. The main line itself is 5 commits ahead of your copy's, well inside normal range.
+- **The copy is parked off the main line and carries one leftover file** — tenth consecutive hour. The leftover file is what blocks the automatic sync, which refuses to update a copy carrying local edits. Nothing unique is stranded: zero commits exist only there, so re-attaching is safe by construction. The main line is 5 commits ahead of your copy's, well inside normal range.
 
 An agent cannot run these for you — scheduled sessions are barred from touching your working copy, and that rule is what keeps it stable.
 
-**The permanent fix is agent work and is still unfiled after seven runs.** Teaching the automatic repair to discard a local edit it can prove is already published would end this item for good. Flagging it here has visibly not worked; it needs one sentence in a chat session — *"file the autosync self-heal ticket"* — and a design session picks it up from there.
+**The permanent fix is agent work and is still unfiled.** Teaching the automatic repair to discard a local edit it can prove is already published would end this item for good. It has been flagged to you seven times; that was a routing error on this task's part, not your inattention. **No action needed from you** — the next design or execution session should file it.
 
-The automatic stale-branch cleanup is healthy — last run 20:40, fourteen minutes ago, tracking 24 work folders and 31 branches, with no stashes and nothing flagged for your decision.
+The automatic stale-branch cleanup is healthy — last run 21:40, fourteen minutes ago, tracking 24 work folders and 31 branches, with no stashes and nothing flagged for your decision.
 
 ## What's moving
 
-- **The build-safety gate shipped at 20:32** (THR-690). Generated files are now rebuilt and checked as part of the build, so a commit can no longer carry a stale one silently.
-- **A follow-on gap was filed at 20:19** (THR-693): the build's type-checking step has been running a command that always passes regardless of the code. Found while doing the above.
-- **The executor ran on schedule at 20:01** and is due again at 21:00.
+- **The merge-rot fix shipped at 21:11** (THR-691) — idle pull requests should stop rotting into conflicts as new work lands around them.
+- **The executor ran on schedule at 21:01** and is due again at 22:00.
 - **Nothing regressed.**
 
-The older pull-request backlog is unchanged at fourteen, oldest from 12 June, with two genuinely conflicting (#327 and #553). THR-691 in the queue is the fix for the rot; the two conflicting ones need hands either way.
+The older pull-request backlog is unchanged at fourteen, oldest from 12 June, with two genuinely conflicting (#327 and #553). Whether THR-691 visibly drains it should be readable by tomorrow; the two conflicting ones need hands either way.
 
 ---
 *Standing asks live in [`Design/user-actions.md`](user-actions.md). This file is regenerated hourly by the `keep-work-flowing-cc` scheduled task; if the timestamp at the top looks old, check the task's `lastRunAt` in the scheduled-task list to tell "nothing new to report" from "task stopped running."*
