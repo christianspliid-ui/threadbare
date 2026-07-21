@@ -1,29 +1,24 @@
 # Briefing
 
-**Generated:** 2026-07-21 22:54 local (20:54 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-07-21 23:54 local (21:54 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task — the replacement for the old Cowork "keep-work-flowing" chat brief. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
 ## Needs Christian
 
-**Your working copy is fixed. Two things want you, and one of them has gone from optional to load-bearing.**
+**The pressure described an hour ago has lifted. One thing still wants you, and it is the same operational switch as before.**
 
-> **1. The work queue has run down to a single small job. This is the direction question, and it now has consequences.**
+> **The empty-lane warning is withdrawn — and the work that filled it is game-facing.**
 
-For ten hours this brief has asked "war or economy?" as a matter of good practice — the queue was feeding itself on its own maintenance, which was a legitimate but unchosen state. That has now run out. **One job remains queued**, it is marked low priority, and it tidies a lint warning. The job that shipped tonight (a real gap where the build's type check did nothing at all) was the last substantial one, and nothing was filed behind it.
+At 22:54 this brief said the queue was down to a single low-priority lint tidy with nothing behind it, and that the direction question had acquired a consequence. **That is no longer true.** In the last hour a design session finished a plan for **encounter scene integration** and filed **six jobs** off it. The executor has a full lane again.
 
-The executor runs again at 23:00. It will take the small job, and then there is nothing.
+What the six actually do, in game terms: encounters currently can't name the person or place they're happening *with* — the prose says "the other party" nine separate times in one encounter alone, and the branching encounters paper over the gap by inventing character names that don't correspond to anyone real in your world. When the game does bind a real person to a scene, the prose still names the invented one. These six jobs let an encounter name the actual entity it involves, bind a real supporting cast, and let the "future story" seeds that encounters plant actually spawn — roughly half of those seeds are currently advisory only and never fire.
 
-The question, unchanged:
+**This did not require your steer, and it isn't the war-or-economy choice.** It is a third thing, and it is content rather than plumbing. So the question below stays open but is no longer forced.
 
-- **War, deepened.** The war system came alive on the 18th. Designed but unbuilt: battles with real texture (turning points, commanders in peril, last stands), sieges that tighten as they drag instead of resolving flat, and the mark a war leaves on a region once it ends.
-- **The economy, made visible.** Goods move, but the player can't see it. Missing: things going wrong on trade routes — banditry, embargoes, tolls surfacing as encounters — and the map showing what's actually travelling a road when you look at it.
+> **Still yours, unchanged: three replacement jobs are built, switched off, waiting on you to watch each run once.**
 
-A one-word steer is enough; a design session does the rest. **"Spend tomorrow on plumbing too" is a valid answer** — but there is now very little plumbing left queued to spend it on.
-
-> **2. Three replacement jobs are built, switched off, waiting on you to watch each run once.**
-
-Re-checked against the live scheduler this run — all three present, all three still **off**, unchanged since 17:54.
+Unchanged since 17:54 — all three present, all three still **off**.
 
 | Job | When it would run | State |
 |---|---|---|
@@ -31,37 +26,33 @@ Re-checked against the live scheduler this run — all three present, all three 
 | Wednesday workflow review | 11:13 Wednesdays | built, **off** |
 | Sunday tidy-up | 10:10 Sundays | built, **off** |
 
-What they need: **run each once in a normal chat session, read what it produces, say yes.** Then it goes live and its Cowork twin gets switched off in the same step. **Start with the daily queue grooming** — and note that it is the job whose whole purpose is keeping the queue from reaching the state described in item 1. Its absence is visible tonight.
+What they need: **run each once in a normal chat session, read what it produces, say yes.** Then it goes live and its Cowork twin gets switched off in the same step. Start with the daily queue grooming.
 
 Separately and still yours: **switch off `keep-work-flowing` in the Cowork app.** No trial needed — its replacement is live and wrote this brief.
 
-**Dropped from this list: your working copy needs nothing.** It was parked off the main line with a leftover file for ten consecutive hours; it is now on `main`, clean, and fully caught up. No commands to run. Details under Freshness.
+**Open but unforced: the next big direction.** War deepened (battles with real texture, sieges that tighten as they drag, the mark a war leaves on a region once it ends) or the economy made visible (banditry and tolls surfacing as encounters, the map showing what's actually moving along a road). A one-word steer is enough whenever you have one. There is real work queued in front of it either way.
 
 ## Queue
 
-**Starved — one job ready, and it is a low-priority lint tidy.**
+**Healthy — six ready, up from one an hour ago.**
 
-- **One ready for pickup:** THR-692, scoping a plan-doc lint so it stops emitting false warnings on design handoffs. Continuous Improvement, low priority, filed today. Not blocked, not stale.
-- **Nothing else is ready.** THR-693 — the gap where the build's type check passed unconditionally — shipped tonight and was not replaced.
-- **One in development:** the Cowork job ports (THR-677), **unassigned on purpose**. Three of its four goals are met and the fourth is your trial approval, so the executor released the work slot rather than hold it open. Correct call, not a stall.
-- **Twenty jobs sit in planning.** None is blocked in a technical sense; none has been through the design pass that makes it handable. That gap is item 1 above.
+- **Six ready for pickup**, all filed ~23:10 tonight, all in Content Architecture, all slices of the encounter scene-integration plan: THR-694 (name the entity an encounter is with), THR-695 (let aftermath effects point at that entity), THR-697 (make planted story-seeds actually spawn) — these three marked high priority — then THR-696 (cast placeholders in prose), THR-698 (default supporting casts), THR-699 (the content sweep that cashes the rest in).
+- **The pickup order is sound.** The three foundations are the three marked high, so priority sorting alone takes them before the jobs that depend on them. Nothing is blocked, nothing is stale.
+- **Two in development:** the lint scope fix (THR-692, PR #696 open) and the Cowork job ports (THR-677, unassigned on purpose — it waits on your trial approvals, not on an agent).
 
 ## Freshness
 
-**Home tree current — the ten-hour item is closed.**
+**Home tree current.** On `main`, 0 commits behind, no local modifications, nothing untracked, nothing stranded. Second consecutive clean run since the ten-hour park closed.
 
-- On `main`, **0 commits behind**, **no local modifications**, nothing untracked, nothing stranded. The automatic sync has resumed. Whether it was your three commands or the self-heal guard catching a now-clean tree, the result is the same and it is verified, not assumed.
-- The stale-branch cleanup is healthy — last run 22:40, fourteen minutes ago, tracking 23 work folders and 31 branches, with no stashes and nothing flagged for a human decision.
-
-The known gap behind the ten-hour item still stands and is **agent work, not yours**: the self-heal guard needs a strictly clean tree, so a park landing on an already-dirty tree still needs hands. It cost ten hours of your attention this time. The next design or execution session should file it.
+The stale-branch cleanup is healthy — last run 23:40, fourteen minutes ago, tracking 23 work folders and 30 branches, with **nothing flagged for a human decision**. One stash has appeared since the last run (was zero); that is ordinary working residue, not a return of the pile cleared this afternoon.
 
 ## What's moving
 
-- **The type-check gap shipped** (THR-693) — the build's type step ran a command that passed no matter how broken the code was; it now counts errors against a committed baseline and fails on an increase.
-- **The executor ran on schedule at 22:01** and is due again at 23:00.
+- **A design session shipped the encounter scene-integration plan tonight** (PR #697 merged) and filed the six jobs above off it. That is the queue refilling itself with content work rather than maintenance — the first time today it has done so.
+- **The lint scope fix is in flight** (THR-692 → PR #696), currently needing a refresh against `main` before it can land.
 - **Nothing regressed.**
 
-The older pull-request backlog is unchanged at fourteen, oldest from 12 June. GitHub had not recomputed mergeability for any of them at query time this run, so the conflicting subset could not be re-measured — last known good reading was two (#327 and #553).
+The older pull-request backlog is **15**, up one — the new arrival is #696 above, which is active rather than stale. Oldest is still #327 from 12 June. GitHub again returned "not computed" for mergeability on all fourteen older ones, so the genuinely-conflicting subset could not be re-measured this run; last known good reading was two (#327 and #553).
 
 ---
 *Standing asks live in [`Design/user-actions.md`](user-actions.md). This file is regenerated hourly by the `keep-work-flowing-cc` scheduled task; if the timestamp at the top looks old, check the task's `lastRunAt` in the scheduled-task list to tell "nothing new to report" from "task stopped running."*
