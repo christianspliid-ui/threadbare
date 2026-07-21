@@ -14,10 +14,6 @@ Work autonomously end to end. Do not stop to ask "should I proceed?" — the Def
 - Run the freshness/precheck first: `node --experimental-strip-types scripts/session-precheck.ts`. If it reports the tree is `behind`/`stale-branch`, `git fetch && git pull` (or `git fetch && git rebase origin/main` on a feature branch) before doing anything else.
 - Load the always-on context the project expects: `Docs/ubiquitous-language/README.md` and `Docs/canon/rulebook-quick-reference.md`.
 
-## 1.5. Flush pending plan docs (every run, before pickup)
-
-Cowork writes plan docs into the working tree but cannot run git, so this run is responsible for committing them. Run the **`flush-plan-docs`** skill: find every Linear issue labeled `plan-pending-commit`, commit the referenced doc(s) in `Docs/plans/` and `Docs/audits/` to `origin/main` (direct push, or a small auto-flush PR if branch protection rejects the push), then remove the label. This replaces the former standalone hourly flush task — do it here so freshly committed plan docs are on `main` before you read any plan in step 3. If there are no `plan-pending-commit` issues, no-op and continue.
-
 ## 2. Pick up work — run `/pull-work`
 
 Invoke the **`pull-work`** skill (`.claude/skills/pull-work/SKILL.md`) as the canonical pickup path. It handles the full atomic sequence; the key invariants, which you must honor even if you hand-roll:

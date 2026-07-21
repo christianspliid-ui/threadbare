@@ -1528,7 +1528,7 @@ Process steps that spawn subagents as part of the Cowork design workflow. When a
 | Agent step | Skill | Trigger | Sequencing | Notes |
 |---|---|---|---|---|
 | intent-judge | `.claude/skills/intent-judge/SKILL.md` | Auto at plan-doc finalization; manual `/intent-judge <path>` | After summarize + three-pillar check, before presenting | Gates the handoff: Allow → proceed; Revise/Block/Escalate → fix and re-run |
-| design-audit-pipeline | `.claude/skills/design-audit-pipeline/SKILL.md` | Auto after intent-judge Allow; manual `/design-audit <path>` | After intent-judge Allow, before `plan-pending-commit` | Three parallel subagents (NFP / pillar / vision); verdicts merged into plan-doc tail under `## Forked-audit verdicts` |
+| design-audit-pipeline | `.claude/skills/design-audit-pipeline/SKILL.md` | Auto after intent-judge Allow; manual `/design-audit <path>` | After intent-judge Allow, before opening the plan-doc PR | Three parallel subagents (NFP / pillar / vision); verdicts merged into plan-doc tail under `## Forked-audit verdicts` |
 
 ---
 

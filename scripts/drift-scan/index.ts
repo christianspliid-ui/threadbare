@@ -57,7 +57,7 @@ export {
 };
 
 const UL_SHARD_DIR = path.join("Docs", "ubiquitous-language");
-const SKILL_ROOTS = [path.join(".claude", "skills"), path.join(".agents", "skills")];
+const SKILL_ROOTS = [path.join(".claude", "skills")];
 const TEST_OUTPUT_PATH = ".cache/drift-scan-results.json";
 const DEFAULT_TEST_TIMEOUT_MS = 6 * 60 * 1000;
 
@@ -775,7 +775,7 @@ export function evaluateSkillFreshness(params: {
 
   if (entries.length === 0) {
     return {
-      signal: { status: "skipped", reason: "no skill files found under .claude/skills or .agents/skills" },
+      signal: { status: "skipped", reason: "no skill files found under .claude/skills" },
       nextLastValidatedAt: { ...priorLastValidatedAt },
     };
   }

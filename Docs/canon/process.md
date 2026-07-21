@@ -8,7 +8,7 @@ status: live
 
 # Canon — Process
 
-> The process canon is the meta-canon every Cowork session benefits from. It is the navigation layer over CLAUDE.md, the Process and Coordination UL shards, and the coordination protocol — answering "what governs how we ship?" without forcing every session to re-read 600 lines of CLAUDE.md.
+> The process canon is the meta-canon every design session benefits from. It is the navigation layer over CLAUDE.md, the Process and Coordination UL shards, and the coordination protocol — answering "what governs how we ship?" without forcing every session to re-read 600 lines of CLAUDE.md.
 
 ## How to use this page
 
@@ -29,7 +29,7 @@ Load this page once at session start instead of re-reading the corresponding CLA
 ## Current spec — coordination
 
 - **Coordination protocol (canonical):** [`Docs/plans/2026-04-13-linear-coordination-protocol.md`](../plans/2026-04-13-linear-coordination-protocol.md). The "Coordination Failure Modes — Hard Rules" section (Rules 1–10) explains why each constraint below is non-negotiable.
-- **Two agents, one executor queue:** [CLAUDE.md → Cowork vs Claude Code](../../CLAUDE.md). Cowork designs and plans (no code, no git). Claude Code is the single executor; it implements, commits with `Fixes THR-XX`, and relies on the merge-to-main auto-close. (Codex and the second `Ready for Codex` queue were retired 2026-06-23, THR-486.)
+- **Two session types, one executor queue:** [CLAUDE.md → Session Types: Design vs Execution](../../CLAUDE.md). All work runs in Claude Code; a design session authors plan docs and hands off, an execution session implements, commits with `Fixes THR-XX`, and relies on the merge-to-main auto-close. (Codex and the second `Ready for Codex` queue were retired 2026-06-23, THR-486; Cowork was retired from the Threadbare workflow 2026-07-21, THR-654.)
 - **One executor queue:** CC pulls from Ready for Dev (`assignee:null`, sorted by priority in memory). UL: [`Coordination` → Ready for Dev](../ubiquitous-language/Coordination.md).
 - **Claim-before-read:** [`UL/Coordination` → Claim-before-read](../ubiquitous-language/Coordination.md). First mutating call after selecting an issue is `save_issue(state: "In Dev", assignee: "me")`, then `get_issue(id)` to verify the write stuck (impediment #48 — silent state drops).
 - **WIP limit = 1:** [`UL/Coordination` → WIP Limit](../ubiquitous-language/Coordination.md). Maximum 1 In Dev issue across all sessions and worktrees. Parallel work happens on different issues.
@@ -44,7 +44,7 @@ Load this page once at session start instead of re-reading the corresponding CLA
 Christian's interface to the development system is **chat only, plain language only** (settled 2026-07-04, THR-608). Full rationale: [`Docs/plans/2026-07-04-user-review-interface.md`](../plans/2026-07-04-user-review-interface.md). Three hard rules:
 
 1. **No diff/PR review by Christian.** A Done-when like "diff-reviewed by Christian" is invalid. When human sign-off is genuinely needed, the agent presents a plain-language chat summary (what changed, why, what could be lost, a recommendation) and asks a single yes/no question. Chat approval satisfies the gate; record `human gate satisfied via chat review <date>` as a Linear comment so the executor may merge.
-2. **Christian does not read Linear.** Linear is the agents' coordination surface, not a channel to the user. Anything needing his attention is surfaced in **chat** — primarily via the hourly `keep-work-flowing` Cowork session output. A Linear comment addressed to Christian reaches no one.
+2. **Christian does not read Linear.** Linear is the agents' coordination surface, not a channel to the user. Anything needing his attention is surfaced in `Design/briefing.md` / `Design/user-actions.md` (refreshed hourly by `keep-work-flowing-cc`) and reviewed in an interactive chat session. A Linear comment addressed to Christian reaches no one.
 3. **Technical assessments are agent verdicts.** CI/CD state, git forensics, merge mechanics, not-a-defect determinations, sandbox issues: the agent decides, acts (e.g. Cancel with a closing comment), and records the reasoning on the issue. Only creative/product/design-vision decisions go to Christian, framed in game terms. Codified as coordination-protocol Rule 10.
 
 ## Continuous improvement loop
@@ -57,8 +57,8 @@ Christian's interface to the development system is **chat only, plain language o
 
 ## Plan-doc lifecycle
 
-- **Plan authoring (Cowork):** plan docs land in `Docs/plans/YYYY-MM-DD-<topic>.md` with frontmatter `status: proposal | current | implementation-log | superseded | historical`. Cowork applies `plan-pending-commit` label to the corresponding Linear issue immediately after writing the file. The hourly `flush-plan-docs` scheduled task commits the file and removes the label — typically within 1 hour.
-- **Cowork does not commit plan docs directly.** Move the issue to Ready for Dev as soon as the plan doc is written and the label is applied. Do not delay the handoff waiting for the commit.
+- **Plan authoring (design session):** plan docs land in `Docs/plans/YYYY-MM-DD-<topic>.md` with frontmatter `status: proposal | current | implementation-log | superseded | historical`. The design session commits the file directly via its own `docs/plan-*` PR — CI-gated, merged immediately.
+- **Hand off as soon as the plan doc is written.** Move the issue to Ready for Dev with the coordination block; do not delay the handoff waiting for the plan-doc PR to merge.
 - **Strategy plan:** [`Docs/plans/2026-05-05-canonical-documentation-strategy.md`](../plans/2026-05-05-canonical-documentation-strategy.md) — the three-layer canonicality model (UL → Canon → Plans) this page is part of.
 - **Domain Canon Page convention:** [`Docs/canon/README.md`](README.md). Schema, ownership, when to update.
 
@@ -83,7 +83,8 @@ The `pull-work` skill (CC) is the canonical pickup entrypoint and links back to 
 - ❌ Manual `save_issue(state: "Done")` from an executor — replaced by merge-to-main auto-close on `Fixes THR-XX`. Manual Done caused premature closes of reopened issues and bypassed the merge-gated invariant.
 - ❌ Two-executor / two-queue model (CC + Codex, Ready for Dev + Ready for Codex) — retired 2026-06-23 (THR-486). The coordination tax dominated the friction log; collapsed to a single CC executor pulling one queue.
 - ❌ Reading the plan doc before claiming — replaced by claim-before-read. Reading first lets two sessions claim the same issue when both have it open in different windows.
-- ❌ Cowork running `git add` / `git push` — Cowork is design and Linear only. Plan-doc commits go through the `plan-pending-commit` label and the hourly `flush-plan-docs` task.
+- ❌ The `plan-pending-commit` label + hourly `flush-plan-docs` task for landing plan docs — retired 2026-07-21 (THR-654) with the Cowork lane that needed it. A design session commits its own plan doc via a `docs/plan-*` PR.
+- ❌ A second skill tree at `.agents/skills/` mirrored by `check:skill-sync` — retired 2026-07-21 (THR-654). `.claude/skills/` is the only tree.
 - ❌ Triangulating canonical content across 6–12 files — replaced by Canon pages (this directory). The audit cost was the bottleneck; Canon pages collapse it to a single Step-0 read.
 - ❌ Ad-hoc / out-of-band handoffs — replaced by Linear state transitions plus a Coordination Block in the handoff comment. The state transition is the handoff.
 - ❌ Direct `git push origin main` — replaced by branch → PR → CI → merge since 2026-05-01. Branch protection rejects direct pushes.
@@ -97,4 +98,4 @@ The `pull-work` skill (CC) is the canonical pickup entrypoint and links back to 
 
 ## Last-reviewed
 
-2026-05-06 by Cowork. Review trigger: monthly, or when CLAUDE.md's Process / Coordination / Documentation Strategy / Definition of Done sections change shape, or when any linked plan moves to `superseded`.
+2026-07-21 (THR-654 demolition pass; originally 2026-05-06). Review trigger: monthly, or when CLAUDE.md's Process / Coordination / Documentation Strategy / Definition of Done sections change shape, or when any linked plan moves to `superseded`.
