@@ -292,7 +292,8 @@ Cross-boundary testing rules, contract test patterns, pre-commit verification ch
 **Pre-commit minimum (always do these):**
 1. `npm test` — all tests pass
 2. **Typecheck — do NOT run `npx tsc --noEmit`.** It is a **no-op** in this repo: the root `tsconfig.json` sets `files: []`, so it exits 0 unconditionally no matter how broken the code is. Citing its exit 0 as evidence is gate theater (THR-686). The authoritative type gate is CI's `Test · Typecheck · Build` (which runs `tsc -b`). For *local* evidence, run `npx tsc -b --force` and show **zero net-new** errors — the baseline is heavily red (~3.5k, THR-489), so the only meaningful local check is a diff of the error set with and without your change, not an absolute count.
-3. `npx vite build` — production build succeeds (confirms Vercel will deploy)
+3. `npx vite build` — production build succeeds (confirms Vercel will deploy). **Note this bypasses the npm `prebuild` hook**, so it does *not* refresh generated artifacts — that is what step 3b exists for.
+3b. `npm run check:generated-freshness` — regenerates every committed generated artifact and fails if the commit carries a stale one. **Blocking in CI** (THR-690). Required whenever the change touches action templates, the UL shards, `Docs/impediments.md`, or a design-wiki page. Fix by running `npm run prebuild` and committing the result.
 4. `npm run check:process` — advisory workflow/process lint (non-blocking while it stabilizes)
 5. `npm run lint:plan-doc` — advisory plan-doc structure lint for `Docs/plans/*.md` (non-blocking while it stabilizes)
 6. Verification evidence is mandatory at closeout: paste raw terminal output for steps 1-3 (and step 7 when applicable) in the closing commit body or Linear completion comment, or link to a green CI run for the same commit.

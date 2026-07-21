@@ -28,7 +28,7 @@ import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 
-type ManifestPage = { id: string; file: string; sources?: unknown };
+type ManifestPage = { id: string; file: string; sources?: unknown; payloads?: unknown };
 type Manifest = { pages?: ManifestPage[] };
 
 /** Lint severity. Advisory = warn-only (exit 0). Blocking = exit 1 on any warning. */
@@ -128,7 +128,16 @@ function main(): void {
   const warnings: string[] = [];
   for (const page of pagesWithSources) {
     const pageFileRel = `public/${page.file}`;
-    const pageChanged = changed.has(pageFileRel);
+
+    // Data-driven pages are a shell plus a generated payload: the content lives
+    // in the payload, and editing a source regenerates the payload while leaving
+    // the .html byte-identical. Keying freshness on the shell alone therefore
+    // warns on every payload-only change — impediment #180's root cause. A page
+    // counts as updated when its shell OR any declared payload changed (THR-690).
+    const payloads = Array.isArray(page.payloads)
+      ? (page.payloads as unknown[]).filter((p): p is string => typeof p === "string" && p.trim() !== "")
+      : [];
+    const pageChanged = changed.has(pageFileRel) || payloads.some((payload) => changed.has(payload));
 
     const matchedSources: string[] = [];
     for (const source of page.sources as unknown[]) {

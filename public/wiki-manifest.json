@@ -168,7 +168,8 @@
       "title": "Action Catalog",
       "blurb": "Browsable, code-true catalog of every ascendant-facing action template — spheres, reaches, costs, availability buckets, and authored technical game-effects with a derived wiring badge.",
       "section": "Deep Reference",
-      "sources": ["src/data/action-template-content.ts", "src/data/unified-action-templates.ts", "src/data/action-technical-effects.ts", "scripts/generate-action-catalog.ts"]
+      "sources": ["src/data/action-template-content.ts", "src/data/unified-action-templates.ts", "src/data/action-technical-effects.ts", "scripts/generate-action-catalog.ts"],
+      "payloads": ["public/action-catalog.generated.json"]
     }
   ],
   "backlog": []
