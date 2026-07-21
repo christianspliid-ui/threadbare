@@ -75,5 +75,14 @@ jobs:
       - name: Typecheck
         run: npx tsc --noEmit
 
+      # Generated artifacts (action catalog, UL dashboard, impediment dashboard)
+      # are consumed at runtime but are NOT rebuilt by `vite build` — only by the
+      # npm `prebuild` lifecycle hook, which `npx vite build` below bypasses. A
+      # stale one therefore ships with no test failure and no build error; it
+      # nearly leaked in two consecutive runs (THR-616, THR-663). This step
+      # regenerates and fails if the commit's copies differ. Adds a few seconds.
+      - name: Generated artifact freshness
+        run: npm run check:generated-freshness
+
       - name: Production build
         run: npx vite build

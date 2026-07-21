@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-19T04:05:25.972Z",
+  "generatedAt": "2026-07-21T18:04:42.967Z",
   "shards": [
     {
       "id": "cosmology",
@@ -2686,7 +2686,7 @@
       ],
       "status": "canonical",
       "oneLiner": "Cowork-authored design artifact in Docs/plans/; the executor's input",
-      "body": "The Cowork-authored design artifact in `Docs/plans/YYYY-MM-DD-<topic>.md` that turns a Linear issue into something an executor can implement. Each plan covers all three pillars (Engine, Content, UI), runs the NFP audit, lists constants and traces, marks fail-soft cases, and produces the wiring section that connects new modules to orchestrator phases, UI components, and trace categories. The plan-pending-commit label gates an hourly scheduled task that commits the file to `origin/main`. Distinct from the Linear state **Implementation Planning**, which is the workflow phase where the plan is being written.",
+      "body": "The design artifact in `Docs/plans/YYYY-MM-DD-<topic>.md`, authored in a design session, that turns a Linear issue into something an executor can implement. Each plan covers all three pillars (Engine, Content, UI), runs the NFP audit, lists constants and traces, marks fail-soft cases, and produces the wiring section that connects new modules to orchestrator phases, UI components, and trace categories. The design session commits the file directly via its own `docs/plan-*` PR. Distinct from the Linear state **Implementation Planning**, which is the workflow phase where the plan is being written.",
       "seeAlso": [
         {
           "raw": "Design Governance",
