@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-07-21 (item 2 added by the THR-653 Cowork cutover; light refresh at 07:55 local by the hourly `keep-work-flowing-cc` CC task — items 5 and 6 re-verified and their numbers updated; no new items; last full rebuild was the 2026-06-23 retro)
+**Last updated:** 2026-07-21 (item 2 added by the THR-653 Cowork cutover; light refresh at 08:55 local by the hourly `keep-work-flowing-cc` CC task — items 4, 5 and 6 re-verified and their numbers updated; no new items; last full rebuild was the 2026-06-23 retro)
 **Owner of items below:** Christian. Everyone else's blockers go in Linear or `Docs/impediments.md`.
 **Refresh cadence:** The hourly `keep-work-flowing-cc` scheduled task keeps this current (prunes resolved items, adds newly-surfaced Christian-owned ones); the `retrospective` skill still does the deep periodic rebuild. This is the slow-moving standing-asks list — the fresh-this-hour view is [`Design/briefing.md`](briefing.md).
 
@@ -21,7 +21,7 @@ When an item resolves: delete it from this file, mark the corresponding impedime
 
 ## 1. Turn off the old Cowork automations · WILL NOT SELF-HEAL · ONLY YOU CAN DO THIS
 
-**Status:** Open, new 2026-07-20 · blocks the last step of the move off Cowork · **carried unanswered through the 2026-07-21 07:55 run**
+**Status:** Open, new 2026-07-20 · blocks the last step of the move off Cowork · **carried unanswered through the 2026-07-21 08:55 run**
 **Source:** THR-653 (cutover). Follow-up port work: THR-677.
 
 **What happened.** The move off Cowork is essentially done. The Claude Code side now runs the hourly pickup, the hourly briefing (moved to the :45 slot, taking over the one Cowork used), the Friday retrospective, and the Sunday memory tidy-up. Two of those — the retro and the memory tidy-up — had been *written down* as already running for weeks but had in fact never been switched on. They are on now.
@@ -82,7 +82,7 @@ git checkout rescue/2026-07-17-detached-plans -- Docs/plans/2026-07-05-entity-vi
 
 **Status:** Open (not blocking) · **the untracked-drafts half of this item is RESOLVED** — all 15 landed on `origin/main` at 2026-07-21 ~02:20 via **PR #654** (THR-674, in flight). Verified this run: each of the 15 files still present untracked in the home tree is **byte-identical** to its committed counterpart, so the local copies are now pure duplicates. What survives here is the merge backlog they were tangled up with.
 
-**The flush pipeline works; merging is the slow step.** Re-confirmed across the 21:55 → 04:54 runs: **ten PRs merged overnight** (#638 plan doc, #639/#643/#645/#647/#649/#651/#653 briefings, #644 impediment log, #646/#648 for THR-671/672, #650 THR-616 economy slices, #654/#655 for THR-674) — end-to-end proof the path functions when nudged. But **fourteen PRs remain open and unmerged** (thirteen docs + one feature), unchanged in count since 01:54 and re-verified again at 07:55 — **including across the auto-merge fix landing at 05:22**, which confirms the "does not retroactively rescue" prediction below rather than contradicting it: oldest #327 (2026-06-12), then #488 (2026-07-03), #512/#514/#516/#525/#532/#543/#551 (2026-07-04–05), #553 (feature: Axis-B milestone beat, 2026-07-05), #557 (2026-07-17), #571/#599 (briefings), #641 (impediment log). Branch protection runs in **strict mode** (branches must be up to date with `main`), so every open docs PR is knocked `BEHIND` the moment anything lands — and nothing re-freshens them. `Test · Typecheck · Build` shows `SKIPPED` on docs-only PRs, which is expected and is *not* the blocker. The conflict-rot pattern was written into `Docs/impediments.md` on 2026-07-20 23:21 so it stops being rediscovered each run.
+**The flush pipeline works; merging is the slow step.** Re-confirmed across the 21:55 → 04:54 runs: **ten PRs merged overnight** (#638 plan doc, #639/#643/#645/#647/#649/#651/#653 briefings, #644 impediment log, #646/#648 for THR-671/672, #650 THR-616 economy slices, #654/#655 for THR-674) — end-to-end proof the path functions when nudged. But **fourteen PRs remain open and unmerged** (thirteen docs + one feature), unchanged in count since 01:54 and re-verified again at 08:55 — **including across the auto-merge fix landing at 05:22**, which confirms the "does not retroactively rescue" prediction below rather than contradicting it: oldest #327 (2026-06-12), then #488 (2026-07-03), #512/#514/#516/#525/#532/#543/#551 (2026-07-04–05), #553 (feature: Axis-B milestone beat, 2026-07-05), #557 (2026-07-17), #571/#599 (briefings), #641 (impediment log). Branch protection runs in **strict mode** (branches must be up to date with `main`), so every open docs PR is knocked `BEHIND` the moment anything lands — and nothing re-freshens them. `Test · Typecheck · Build` shows `SKIPPED` on docs-only PRs, which is expected and is *not* the blocker. The conflict-rot pattern was written into `Docs/impediments.md` on 2026-07-20 23:21 so it stops being rediscovered each run.
 
 **Self-inflicted feedback loop, unchanged:** this briefing task merges its own PR every hour, and each of those merges is what pushes the rest `BEHIND` again.
 
@@ -98,7 +98,7 @@ git checkout rescue/2026-07-17-detached-plans -- Docs/plans/2026-07-05-entity-vi
 
 ## 5. Home tree needs a manual repair · CHRISTIAN ACTION · WILL NOT SELF-HEAL
 
-**Status:** **ESCALATED at the 06:55 run and unchanged at 07:55 — the autosync has given up and said so twice.** A **fifth park event** fired at 06:20 (`checkout: moving from main to HEAD`), so the tree is **detached and now 56 behind** (52 an hour ago). After **ten consecutive refusals** (5 → 9 → 16 → 20 → 24 → 32 → 38 → 44 → 48 behind across 21:56 → 05:50, each logging `you have uncommitted changes that would be overwritten`), the 06:50 attempt escalated to `MANUAL REPAIR NEEDED: parked at bad2dc1e with 3 tracked modification(s). Nothing unique is stranded, so this is safe to repair by hand` — and **07:50 logged the identical line**. **This is confirmed not to clear on its own.**
+**Status:** **ESCALATED at the 06:55 run and unchanged at 08:55 — the autosync has given up and said so three times.** A **fifth park event** fired at 06:20 (`checkout: moving from main to HEAD`), so the tree is **detached and now 60 behind** (56 an hour ago, 52 the hour before). After **ten consecutive refusals** (5 → 9 → 16 → 20 → 24 → 32 → 38 → 44 → 48 behind across 21:56 → 05:50, each logging `you have uncommitted changes that would be overwritten`), the 06:50 attempt escalated to `MANUAL REPAIR NEEDED: parked at bad2dc1e with 3 tracked modification(s). Nothing unique is stranded, so this is safe to repair by hand` — and **07:50 and 08:50 logged the identical line**. **This is confirmed not to clear on its own.**
 
 **Cause found 2026-07-20; containment shipped but does not cover this variant.** THR-671 (freshness signal, PR #646) and THR-672 (inert home tree + autosync reattach, PR #648) both landed 2026-07-21. THR-672's self-heal guard fires only on the *clean* park (detached ∧ 0 unique commits ∧ **0 tracked modifications** → `git switch main`). This morning's park has 3 tracked modifications, so the guard correctly stands down. The gap is real and is described below.
 
@@ -130,9 +130,9 @@ If `git pull --ff-only` refuses with *untracked working tree files would be over
 
 **Deployment note for whoever picks that up:** the autosync script lives *outside* the repo, at `C:\Users\chris\bin\`. Merging a change to it in the repo does not deploy it; it has to be copied to that path. Worth checking whether the repo even carries a copy — `git ls-tree -r --name-only origin/main | grep -i autosync` returned nothing again at 03:54, so the running script still has no version-controlled source at all.
 
-**Residue confirmed non-regenerating — re-verified at 07:55.** From the 01:54 run onward this task writes both files in its own worktree and never in the home tree. The two dirty files in the home tree are still the *23:54* copies, unchanged across the 00:54 → 07:55 runs. Only the behind-count climbs, which is the autosync being blocked, not new damage.
+**Residue confirmed non-regenerating — re-verified at 08:55.** From the 01:54 run onward this task writes both files in its own worktree and never in the home tree. The two dirty files in the home tree are still the *23:54* copies, unchanged across the 00:54 → 08:55 runs. Only the behind-count climbs, which is the autosync being blocked, not new damage.
 
-**THR-674 is no longer the likely resolver.** It has been In Dev since 02:02 (nearly five hours) and has landed PRs #654/#655, but its Done-when — "`git status` clean on the home tree" — is further away than when it started, since the 06:20 park added detachment on top of the dirt. Its remaining scope also grew: the stash stack is **38 entries**, not the 12 the ticket scoped. The four manual commands above are now the faster path.
+**THR-674 is no longer the likely resolver.** It has been In Dev since 02:02 (nearly seven hours) and is now **unassigned** — nobody is working it — and while it landed PRs #654/#655, its Done-when — "`git status` clean on the home tree" — is further away than when it started, since the 06:20 park added detachment on top of the dirt. Its remaining scope also grew: the stash stack is **38 entries**, not the 12 the ticket scoped. The four manual commands above are now the faster path.
 **Source:** `Docs/plans/2026-07-20-git-cicd-clean-delivery.md` (root cause + tickets THR-671…676; now readable on `origin/main`); forensics in `Docs/audits/2026-07-20-git-cicd-forensics/`
 
 Five times in five days, the harness has moved the home tree off `main` at a scheduled-session spawn:
@@ -169,7 +169,7 @@ First verify nothing unique is stranded: `git rev-list --count origin/main..HEAD
 
 ## 6. Consent to file the upstream bug report publicly · CHRISTIAN ACTION · ONLY YOU CAN DECIDE
 
-**Status:** Open, new 2026-07-21 06:55 · **the only thing now gating THR-676.** Re-verified 07:55: THR-676 moved to In Dev at 07:08 and its write-up merged to `origin/main` at 07:08 (PR #661), so the agent-side work is finished and the ticket is waiting on this answer alone. Its departure from Ready-for-Dev is also what tipped the queue into starvation — see item 4's neighbours and `Design/briefing.md`.
+**Status:** Open, new 2026-07-21 06:55 · **the only thing now gating THR-676.** Re-verified 08:55: THR-676 is In Dev, **unassigned**, and its write-up is on `origin/main` (PR #661, merged 07:08), so the agent-side work is finished and the ticket is waiting on this answer alone. Its departure from Ready-for-Dev is what tipped the queue toward starvation; the last remaining queued item of substance (THR-643, Motive Receipt wiring docs) then completed at 08:13, leaving a single sixteen-day-old console warning — see `Design/briefing.md`.
 **Source:** THR-676 § Scope step 2 ("File the GitHub issue only after Christian's yes in chat — external posting is gated"). Root cause + evidence: `Docs/plans/2026-07-20-git-cicd-clean-delivery.md`, forensics in `Docs/audits/2026-07-20-git-cicd-forensics/`.
 
 **What it is.** The 2026-07-20 investigation established that the recurring home-tree park (item 5, now five events) is caused by the **Claude Code app/harness layer itself**, not by the game, the repo, or any agent — two behaviours neither of which appears in any session transcript: a bare `git checkout HEAD` that detaches the tree, and a plumbing-level sync of `refs/heads/main` that fires while `main` is checked out (which is what manufactured the phantom "68 staged files" scare on 07-18). THR-676 writes this up as a reproducible report for `anthropics/claude-code`.
@@ -184,7 +184,7 @@ That run also captured a **live reproduction**: an empty-message `refs/heads/mai
 - **Yes** → the report is filed at `anthropics/claude-code` and the issue link recorded on THR-676.
 - **No** → nothing further happens; the report stays internal as a local record. THR-676 closes either way.
 
-**What breaks if not answered.** THR-676 stalls one step from done, and with it now in development the Ready-for-Dev queue holds only the two sixteen-day-old stragglers — so the executor lane has nothing substantial to pull either way. The upstream fault itself stays contained locally regardless (THR-671/672 shipped), so this is about closing the loop, not about risk.
+**What breaks if not answered.** THR-676 stalls one step from done, and with it now in development the Ready-for-Dev queue holds only a single sixteen-day-old straggler — so the executor lane has nothing substantial to pull either way. The upstream fault itself stays contained locally regardless (THR-671/672 shipped), so this is about closing the loop, not about risk.
 
 ---
 
