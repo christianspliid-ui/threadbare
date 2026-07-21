@@ -1,5 +1,7 @@
 # Linear Coordination Protocol
 
+> **lint_plan_doc:** exempt — standing process protocol, not a dated plan doc. It has no Engine/Content/UI pillars, no constants table, and no coordination block because it proposes no work; it defines the process every plan doc is handed off through. See THR-692.
+
 > **Date:** 2026-04-13 (single-executor consolidation 2026-06-23, THR-486; design→session-type reframing 2026-07-18, THR-649)
 > **Type:** Process infrastructure
 > **Status:** Active — single-executor model live
