@@ -51,7 +51,7 @@ export const FATE_CARD_TRIAL_TEMPLATE: UnifiedActionTemplate = {
   targetCategory: 'self',
   essenceCost: 0,
   rarityTier: 1,
-  intrinsicTier: 1,
+  intrinsicTier: 'background',
   flipTables: [
     {
       id: 'fate_card',
@@ -101,7 +101,7 @@ export const RECKLESS_WAGER_TEMPLATE: UnifiedActionTemplate = {
   targetCategory: 'self',
   essenceCost: 0,
   rarityTier: 1,
-  intrinsicTier: 1,
+  intrinsicTier: 'background',
   flipTables: [
     {
       id: 'wager_card',
@@ -154,7 +154,7 @@ export const TIERED_PROVING_TEMPLATE: UnifiedActionTemplate = {
   targetCategory: 'self',
   essenceCost: 0,
   rarityTier: 1,
-  intrinsicTier: 1,
+  intrinsicTier: 'background',
   resultBands: [
     {
       id: 'master',

@@ -28,7 +28,7 @@ type SecretEntry = {
   reachSecondary?: string;
   encounterType: string;
   threatRating?: string;
-  intrinsicTier?: string;
+  intrinsicTier?: UnifiedActionTemplate['intrinsicTier'];
   motivations?: readonly unknown[];
   reputationPolarity?: 'positive' | 'negative';
   secretDiscovery: { onSuccess: boolean; sourceName: SecretDiscoverySource };
@@ -101,6 +101,7 @@ function toSecretTemplate(e: SecretEntry): UnifiedActionTemplate {
       failure: lastStep?.onFailure.narrative ?? `${e.name} fails.`,
     },
     rarityTier: 1,
+    // TODO(THR-679): hardcoded — e.intrinsicTier is authored but never read here.
     intrinsicTier: 'background',
     secretDiscovery: e.secretDiscovery,
   };
@@ -123,7 +124,7 @@ const SECRET_DISCOVERY_ENCOUNTER_TEMPLATES_RAW: SecretEntry[] = [
     reachSecondary: 'eye',
     encounterType: 'assist',
     threatRating: 'easy',
-    intrinsicTier: 'standard',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.assist,
     secretDiscovery: { onSuccess: true, sourceName: 'confession' },
     steps: [
@@ -166,7 +167,7 @@ const SECRET_DISCOVERY_ENCOUNTER_TEMPLATES_RAW: SecretEntry[] = [
     reachSecondary: 'shadow',
     encounterType: 'explore',
     threatRating: 'easy',
-    intrinsicTier: 'standard',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.explore,
     secretDiscovery: { onSuccess: true, sourceName: 'observation' },
     steps: [
@@ -211,7 +212,7 @@ const SECRET_DISCOVERY_ENCOUNTER_TEMPLATES_RAW: SecretEntry[] = [
     reachSecondary: 'heart',
     encounterType: 'explore',
     threatRating: 'easy',
-    intrinsicTier: 'standard',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.explore,
     secretDiscovery: { onSuccess: true, sourceName: 'tavern_gossip' },
     steps: [
@@ -254,7 +255,7 @@ const SECRET_DISCOVERY_ENCOUNTER_TEMPLATES_RAW: SecretEntry[] = [
     reachSecondary: 'eye',
     encounterType: 'explore',
     threatRating: 'easy',
-    intrinsicTier: 'standard',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.explore,
     secretDiscovery: { onSuccess: true, sourceName: 'confession' },
     steps: [
@@ -298,7 +299,7 @@ const SECRET_DISCOVERY_ENCOUNTER_TEMPLATES_RAW: SecretEntry[] = [
     reachSecondary: 'eye',
     encounterType: 'explore',
     threatRating: 'moderate',
-    intrinsicTier: 'standard',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.explore,
     secretDiscovery: { onSuccess: true, sourceName: 'spy_debrief' },
     steps: [
