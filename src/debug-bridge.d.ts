@@ -35,6 +35,25 @@ export interface DebugActionInfo {
   scale: string;
 }
 
+/**
+ * Result of `__DEBUG.tick(n)` (THR-689).
+ * `error` is set — and the tick fields absent — when the call was rejected
+ * (no game loaded, or n was not a finite number >= 1).
+ */
+export interface DebugTickResult {
+  /** Ticks actually advanced (may be < requested when capped or interrupted). */
+  ticksRun?: number;
+  /** Tick counter after the batch. */
+  tick?: number;
+  durationMs?: number;
+  /** What was asked for, before clamping to DEBUG_TICK_MAX. */
+  requested?: number;
+  /** True when `requested` exceeded DEBUG_TICK_MAX (200) and was clamped. */
+  capped?: boolean;
+  stoppedReason?: 'completed' | 'capped' | 'phase_left_playing' | 'error';
+  error?: string;
+}
+
 export interface DebugFireResult {
   success: boolean;
   actionId?: string;
@@ -269,6 +288,14 @@ export interface DebugBridge {
   /** @internal GameView registers its gotoAgent handler here */
   _registerGotoAgent: (fn: (id: string) => boolean) => void;
   /** List action templates available to fire on agents. Pass an agent id/name to filter by that agent's context, or omit to list all actor-targeting templates. */
+  /**
+   * THR-689: advance the sim n ticks synchronously through the real runTick pipeline,
+   * bypassing the `document.hidden`-throttled interval loop. Auto-pauses the run loop.
+   * Clamped to DEBUG_TICK_MAX (200) per call.
+   */
+  tick: (n?: number) => DebugTickResult;
+  /** @internal GameView registers its synchronous tick batch here */
+  _registerTickBridge: (fn: (n: number) => DebugTickResult) => void;
   listActions: (agentId?: string) => DebugActionInfo[];
   /** Fire an action template on a target agent immediately, bypassing UI animations. agentId and templateId both accept partial matches. */
   fireAction: (agentId: string, templateId: string) => DebugFireResult;

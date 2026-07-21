@@ -100,6 +100,8 @@ if (import.meta.env.DEV) {
     grantUnlock: (actionId: string) => import('./debug-bridge.d').DebugGrantUnlockResult;
     resolveBeat: (chosenActionId?: string) => import('./debug-bridge.d').DebugResolveBeatResult;
   }
+  // GameView registers the synchronous tick batch here (THR-689)
+  let _tickBridge: ((n: number) => import('./debug-bridge.d').DebugTickResult) | null = null;
   let _actionBridge: ActionBridge | null = null;
   let _aftermathBridge: AftermathBridge | null = null;
   // GameView registers beat-director mutation callbacks here (THR-507)
@@ -139,6 +141,21 @@ if (import.meta.env.DEV) {
     gotoAgent: (id: string) => _gotoAgent?.(id) ?? false,
     /** @internal GameView registers its gotoAgent handler here */
     _registerGotoAgent: (fn: (id: string) => boolean) => { _gotoAgent = fn; },
+    /**
+     * THR-689: advance the sim n ticks synchronously through the real runTick pipeline.
+     * Bypasses the interval loop, which `document.hidden` throttles to ~1 tick per
+     * interaction in an automated tab — making "run N ticks and observe X" checks
+     * otherwise unreachable. Auto-pauses the run loop. Clamped to DEBUG_TICK_MAX (200).
+     */
+    tick: (n = 1) => {
+      if (!_tickBridge) return { error: 'Game not loaded' };
+      if (typeof n !== 'number' || !Number.isFinite(n) || Math.floor(n) < 1) {
+        return { error: `tick(n): n must be a finite number >= 1, got ${String(n)}` };
+      }
+      return _tickBridge(n);
+    },
+    /** @internal GameView registers its synchronous tick batch here */
+    _registerTickBridge: (fn: (n: number) => import('./debug-bridge.d').DebugTickResult) => { _tickBridge = fn; },
     listActions: (agentId?: string) => _actionBridge?.listActions(agentId) ?? [],
     fireAction: (agentId: string, templateId: string) =>
       _actionBridge?.fireAction(agentId, templateId) ?? { success: false, message: 'Game not loaded' },
