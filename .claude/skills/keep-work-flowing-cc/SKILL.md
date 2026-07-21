@@ -140,7 +140,7 @@ This is the standing Christian-owned list, not the hourly brief. Refresh, don't 
 
 **Write and commit the two files in this session's own worktree, never in the home tree** (Home-tree git rule above). The home tree is read-only to this task — step 2's freshness ping is `git -C` queries only, and the refreshed briefing reaches the home tree the normal way, via autosync fast-forwarding `main` after the PR merges.
 
-Direct `git push origin main` is rejected by branch protection. Mirror the `flush-plan-docs` pattern:
+Direct `git push origin main` is rejected by branch protection. Use the branch → PR → CI → merge pattern:
 
 - **Commit only on substantive change.** If the only diff in `Design/briefing.md` is the generated-at timestamp line (and `user-actions.md` is unchanged), **do not commit** — the scheduled-task `lastRunAt` is the "task fired" heartbeat; a timestamp-only commit every hour is pure noise. Trace `[keep-work-flowing-cc] no substantive change — skipping commit (heartbeat via lastRunAt).`
 - On substantive change: from this worktree, `git fetch origin main`, create/reset a `docs/briefing-<date>` branch off `origin/main`, stage **only** `Design/briefing.md` and `Design/user-actions.md`, commit as `docs(briefing): refresh Design/briefing.md` (NO THR keyword), push the branch and open a PR (docs-only → CI passes fast). Let it merge on green. Do **not** attempt `git push origin main` from a session — branch protection always rejects it (impediment #110), and the retry dance is what tempted earlier runs into home-tree checkouts.

@@ -57,8 +57,8 @@ architectural change that catches these.
 
 All active:
 
-1. **Auto** — Cowork has just finished a plan doc in `Docs/plans/` or
-   `Docs/audits/` and is about to apply the `plan-pending-commit` label
+1. **Auto** — a design session has just finished a plan doc in `Docs/plans/`
+   or `Docs/audits/` and is about to open its `docs/plan-*` PR
    and move the Linear issue to Ready for Dev. Run BEFORE
    the state transition.
 2. **Manual** — `/intent-judge <plan-doc-path>` from any agent or user.
@@ -101,7 +101,7 @@ Binary is too simple — humans learn to bypass yes/no gates. The middle paths
 
 | Verdict   | Meaning                                                                                | What Cowork does next                                                                                                  |
 |-----------|----------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------|
-| Allow     | Plan faithfully serves intent and respects governance.                                 | Apply `plan-pending-commit` label; move Linear to Ready for Dev.                                                        |
+| Allow     | Plan faithfully serves intent and respects governance.                                 | Open the `docs/plan-*` PR; move Linear to Ready for Dev.                                                                |
 | Revise    | Specific gaps; author can fix without re-checking with user.                           | Cowork edits the doc inline, re-runs the judge. No user ping.                                                          |
 | Block     | Plan misses intent, violates a load-bearing decision, or reintroduces rejected approach. | Cowork rewrites materially, re-runs judge. Third Block on the same plan forces Escalate.                                |
 | Escalate  | Judgment requires the user — ambiguous intent, contested premise, or high-risk class.  | Cowork pings user with the judge's finding verbatim before any state transition.                                       |

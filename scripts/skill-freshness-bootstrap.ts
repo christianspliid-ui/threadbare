@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 
-import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
@@ -8,7 +7,7 @@ import { fileURLToPath } from "node:url";
 
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(SCRIPT_DIR, "..");
-const SKILL_ROOTS = [path.join(REPO_ROOT, ".claude", "skills"), path.join(REPO_ROOT, ".agents", "skills")];
+const SKILL_ROOTS = [path.join(REPO_ROOT, ".claude", "skills")];
 const TARGET_FIELD = "last_validated_against";
 
 type FrontmatterKeyRange = {
@@ -104,18 +103,6 @@ function addFreshnessField(content: string, dateStamp: string): { changed: boole
   return { changed: true, next: nextLines.join("\n") };
 }
 
-function runSkillSync(): void {
-  const result = spawnSync("node", [path.join("scripts", "check-skill-sync.js"), "--sync"], {
-    cwd: REPO_ROOT,
-    stdio: "inherit",
-    timeout: 120_000,
-  });
-
-  if (result.status !== 0) {
-    throw new Error("check-skill-sync --sync failed");
-  }
-}
-
 function main(): void {
   const dateStamp = todayDateStamp();
   const skillFiles = collectSkillFiles();
@@ -138,8 +125,6 @@ function main(): void {
     fs.writeFileSync(absPath, patched.next, "utf8");
     changed += 1;
   }
-
-  runSkillSync();
 
   console.log(
     `skill-freshness-bootstrap complete: ${changed} updated, ${unchanged} already stamped, ${skipped.length} skipped`,

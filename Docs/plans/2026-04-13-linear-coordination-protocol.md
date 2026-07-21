@@ -17,9 +17,8 @@ writes `src/` — but it is a session-type discipline, not a runtime one.
 
 **The one mechanical change:** a CC design session **commits its own plan doc directly** via a `docs/plan-*`
 PR (CI-gated, merged immediately) — no `plan-pending-commit` label, no hourly `flush-plan-docs`, no auto-flush
-fallback. The label+flush pipeline still coexists during the migration parallel-run and is retired in Phase 3
-(THR-654); until then, the flush sections below describe the **legacy** path and the direct-PR flow (Design
-Session Handoff, below) is the current one for CC design sessions. See
+fallback. That label+flush pipeline was deleted 2026-07-21 (THR-654); the direct-PR flow (Design Session
+Handoff, below) is the only path. See
 `Docs/plans/2026-07-17-pure-claude-code-migration.md`.
 
 ---
@@ -336,18 +335,15 @@ A single hourly CC automation runs on **Opus** and pulls the top of Ready for De
 ### Design Session Handoff (replaces HANDOVER.md)
 When a design session finishes a design and writes the implementation plan:
 1. **Verify exit criteria** — check all items in "Implementation Planning → Ready for Dev" above. Every pillar must have action items or an explicit N/A.
-1b. **Commit the plan doc directly (CC design sessions).** Open a `docs/plan-<basename>` PR, wait for the
+1b. **Commit the plan doc directly.** Open a `docs/plan-<basename>` PR, wait for the
     `Test · Typecheck · Build` check to go green, and merge before moving the issue to Ready for Dev — the
     executor needs the doc on `main`. **Scrub every closeable reference** (no `Fixes/Closes/Resolves`, no bare
     `THR-XXX`, no linear-issue URL in the commit / branch / PR title / PR body — THR-510). See
-    `.claude/skills/design-session/SKILL.md` § Step 4 for the exact commands. *(Legacy Cowork path, coexisting
-    until THR-654: apply the `plan-pending-commit` label and let the hourly `flush-plan-docs` task commit the
-    doc — do NOT use this path from a CC design session.)*
+    `.claude/skills/design-session/SKILL.md` § Step 4 for the exact commands.
 2. Move issue: Implementation Planning → Ready for Dev
 2b. **Also put the `Plan doc:` path in the issue *description*** (not only the handoff comment) —
-    a line like `**Plan doc:** \`Docs/plans/YYYY-MM-DD-topic.md\``. The executor reads it to locate the plan;
-    the legacy `flush-plan-docs` parser also parses the description first and the handoff comment as a fallback
-    (THR-645). Keeping the path in both places is belt-and-suspenders so neither location is a single point of failure.
+    a line like `**Plan doc:** \`Docs/plans/YYYY-MM-DD-topic.md\``. The executor reads it to locate the plan.
+    Keeping the path in both places is belt-and-suspenders so neither location is a single point of failure.
 3. Add handoff comment using this template:
 
 ```

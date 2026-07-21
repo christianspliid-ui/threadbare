@@ -76,7 +76,7 @@ and (when relevant) `superseded_by: <path>`. A plan with no status is treated as
 
 | Role | Responsibility |
 |------|---------------|
-| Cowork | Drafts and updates Canon pages from current state; applies `plan-pending-commit` label after writing |
+| Design session | Drafts and updates Canon pages from current state; commits them via a `docs/plan-*` PR |
 | User | Verdicts any factual decisions a Canon page must record; `reviewer: user` when a page encodes a user verdict |
 | CC / Codex | Reads Canon pages as Step 0 before authoring work; flips plan frontmatter to `status: current` when a plan lands |
 
