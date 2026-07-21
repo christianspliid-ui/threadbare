@@ -482,7 +482,7 @@ The `weekly-retro` scheduled task is **registered and live** in the CC lane (cre
 
 ### Scheduled Tasks
 
-Current recurring task registry. **Verified against `list_scheduled_tasks` on 2026-07-20 (THR-653 cutover); `flush-plan-docs` removed 2026-07-21 (THR-654 demolition).** The scheduler adds a deterministic per-task jitter of a few minutes to the cron minute, so **the slot name, the cron minute, and the actual fire time are three different things** — the `Fires` column is the one that matters operationally.
+Current recurring task registry. **Verified against `list_scheduled_tasks` on 2026-07-21 (THR-677 port); `flush-plan-docs` removed 2026-07-21 (THR-654 demolition).** The scheduler adds a deterministic per-task jitter of a few minutes to the cron minute, so **the slot name, the cron minute, and the actual fire time are three different things** — the `Fires` column is the one that matters operationally.
 
 **CC automation lane — registered and live:**
 
@@ -492,6 +492,16 @@ Current recurring task registry. **Verified against `list_scheduled_tasks` on 20
 | **:45** | Hourly | `keep-work-flowing-cc` (CC PM brief — refreshes `Design/briefing.md` + `Design/user-actions.md`) | `45 * * * *` | ~:53:13 |
 | **Fri 17:00** | Weekly | `weekly-retro` | `0 17 * * 5` | ~17:09 |
 | **Sun 16:03** | Weekly | `weekly-memory-grooming` | `3 16 * * 0` | ~16:10 |
+
+**CC automation lane — registered but DISABLED, pending trial approval (THR-677).** All three are ported and on disk with correct cron slots; `enabled: false` until each has run once attended and Christian has approved its output in chat. That trial gate is Christian's decision (chat, 2026-07-21), not an oversight — these replace Cowork tasks that are still running, so enabling them before trial would double-run the job. **Flip each to enabled only after its trial passes**, and disable the Cowork counterpart in the same step.
+
+| Slot | Cadence | Task | Cron | Fires | Writes |
+|------|---------|------|------|-------|--------|
+| **09:07** | Daily | `daily-backlog-grooming` | `7 9 * * *` | ~09:16 | `Docs/ops/backlog-grooming-<date>.md` + Linear queue fixes |
+| **Wed 11:09** | Weekly | `weekly-workflow-retro` | `9 11 * * 3` | ~Wed 11:13 | `Design/retros/workflow-retro-<date>.md` |
+| **Sun 10:06** | Weekly | `weekly-project-hygiene` | `6 10 * * 0` | ~Sun 10:10 | `Docs/ops/weekly-hygiene-<date>.md` + filed findings |
+
+**Output-surface rule for all three:** none of them writes `Design/briefing.md` or `Design/user-actions.md` — `keep-work-flowing-cc` owns those two files, and a second writer produces merge conflicts. Christian-facing items go in each task's own report under a `## Needs Christian` heading, and reach him via the hourly briefing picking up the underlying Linear state.
 
 **GitHub Actions:**
 
@@ -515,9 +525,9 @@ The reaper was daily until THR-673 moved it to hourly at the free `:40` offset. 
 | Slot | Cadence | Task | Disposition |
 |------|---------|------|-------------|
 | **:45** | Hourly | `keep-work-flowing` | Superseded by `keep-work-flowing-cc` (THR-650) — **disable** |
-| **09:06** | Daily | `daily-backlog-grooming` | Needs a CC port — THR-677 |
-| **Wed 09:04** | Weekly | `weekly-workflow-retro` | Needs a CC port — THR-677 |
-| **Sun 10:04** | Weekly | `weekly-project-hygiene` | Needs a CC port — THR-677 |
+| **09:06** | Daily | `daily-backlog-grooming` | CC port registered (disabled) — **keep ON until its trial passes**, THR-677 |
+| **Wed 09:04** | Weekly | `weekly-workflow-retro` | CC port registered (disabled) — **keep ON until its trial passes**, THR-677 |
+| **Sun 10:04** | Weekly | `weekly-project-hygiene` | CC port registered (disabled) — **keep ON until its trial passes**, THR-677 |
 | **Sun 10:06** | Weekly | `weekly-invoice-check` | **Out of scope — personal, not Threadbare. Do not touch.** |
 
 **Not created:**
@@ -527,6 +537,10 @@ The reaper was daily until THR-673 moved it to hourly at the free `:40` offset. 
 | **1st 09:00** | Monthly | `monthly-rulebook-review` | Never registered — THR-417 |
 
 **Slot allocation.** Hourly Linear-MCP-using tasks are spaced so their *fire times* don't overlap: `tb-opus-pickup` at ~:00:53, `keep-work-flowing-cc` at ~:53:13 (deliberately late in the hour so the brief reflects post-pickup state; it moved from the :20 slot to :45 in the THR-653 cutover, taking over the slot the Cowork PM task vacates). Daily and weekly tasks pick non-quarter-hour minutes (e.g., :04, :06, :09). When registering a new hourly task, pick a cron minute whose *jittered* fire time leaves a clear gap from the ones above, then record both the cron and the observed fire time here in the same commit.
+
+The THR-677 ports were slotted against that rule: `daily-backlog-grooming` fires ~09:16 (clear of the `:00`/`:40`/`:53` hourly traffic), `weekly-project-hygiene` ~Sun 10:10 (clear of Sunday's 09:16 grooming and 16:10 memory grooming), and `weekly-workflow-retro` ~Wed 11:13 — deliberately moved off its old Cowork slot of Wed 09:04, which would have landed on top of the daily grooming run.
+
+**Prompt sources are mirrored into the repo.** Scheduled-task prompts live at `C:\Users\chris\.claude\scheduled-tasks\<id>\SKILL.md`, which is **outside** version control — merging a repo change does not deploy them, and a disk loss takes them with it. Copies are kept under `Docs/ops/scheduled-task-prompts/` so the prompts are reviewable and recoverable. **When you edit a live prompt, update its mirror in the same PR**; the mirror is a copy, not the source of truth.
 
 ## Skill Tree Layout
 
