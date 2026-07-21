@@ -34,7 +34,9 @@ Per the standing rule, this task doesn't repair your working copy itself. A sche
 
 > **2. NEW — may I file a bug report with Anthropic about this?**
 
-The cause of that recurring fault is understood: it isn't the game, and it isn't any agent — it's Claude Code itself quietly moving things in your repository. The write-up is ready to be prepared, but **posting it publicly on Anthropic's issue tracker is your call, not mine.** It would name your setup and include excerpts from your repository's history.
+The cause of that recurring fault is understood: it isn't the game, and it isn't any agent — it's Claude Code itself quietly moving things in your repository. **The write-up is now finished and saved** at `Docs/audits/2026-07-20-git-cicd-forensics/upstream-report.md` — but **posting it publicly on Anthropic's issue tracker is your call, not mine.** It would name your setup and include excerpts from your repository's history.
+
+Writing it caught the fault happening live, incidentally: at 07:01:30 this morning Claude Code moved the `main` pointer in your repository, two seconds before it created that session's own workspace. That is now the clearest single piece of evidence in the report.
 
 **Yes or no is all that's needed.** A "no" is fine — the local containment already works, and the report can stay internal.
 
