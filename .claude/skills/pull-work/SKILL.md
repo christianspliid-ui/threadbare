@@ -86,7 +86,9 @@ Before any pickup work, sweep for stale `tfws-pickup-*` and `tfws-resume-*` work
 
 **Constant:** `WORKTREE_STALE_DAYS = 14`
 
-**Scope:** only worktrees whose path matches `../tfws-pickup-` or `../tfws-resume-` (created by Step 4.5). Never touch `.claude/worktrees/*` entries — those are CC-managed.
+**Scope:** only worktrees whose path matches `../tfws-pickup-` or `../tfws-resume-` (created by Step 4.5).
+
+**Ownership of `.claude/worktrees/` (settled THR-674).** The hourly reaper — `clean-stale-git.sh`, merge-gated and liveness-guarded per THR-673 — is the **single owner** of `.claude/worktrees/` cleanup. This sweep never touches that path, and neither does any other pull-work step. One folder, one policy: previously three separate policies claimed authority over `.claude/worktrees/` (this sweep's exclusion, the reaper's merge-gated reap, and ad-hoc ticket-driven cleanup), which is what let THR-674's worktree scope item stall — a stray worktree had no unambiguous owner to dispose of it. If a worktree under `.claude/worktrees/` needs disposition, that is a reaper concern; escalate via the reaper's `NEEDS-DISPOSITION` line rather than removing it here.
 
 **Skip if:** the current session is already running inside a `tfws-pickup-*` or `tfws-resume-*` path (self-removal edge case).
 
