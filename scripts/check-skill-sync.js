@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
@@ -18,7 +19,11 @@ function listDirs(dirPath) {
     .sort((a, b) => a.localeCompare(b));
 }
 
-function walkFiles(rootDir) {
+function slash(filePath) {
+  return filePath.replaceAll("\\", "/");
+}
+
+function walkAbsoluteFiles(rootDir) {
   const out = [];
   const queue = [rootDir];
 
@@ -32,13 +37,65 @@ function walkFiles(rootDir) {
         continue;
       }
       if (entry.isFile()) {
-        const rel = path.relative(rootDir, fullPath).replaceAll("\\", "/");
-        out.push(rel);
+        out.push(fullPath);
       }
     }
   }
 
-  return out.sort((a, b) => a.localeCompare(b));
+  return out;
+}
+
+// Git-ignored files are scratch artifacts, not mirror content (THR-675, THR-540).
+// Enumerating them made a gitignored PNG dropped in one tree read as real drift and
+// block every commit until `check:skill-sync:sync` was run first. Batched into a
+// single `git check-ignore` call so the pre-commit hook stays sub-second.
+// Fail-soft (NFP #4): if git is unavailable, the set is empty and every file is
+// compared — the pre-THR-675 behaviour, never a crash.
+function computeIgnoredPaths() {
+  const candidates = [
+    ...walkAbsoluteFiles(claudeSkillsDir),
+    ...walkAbsoluteFiles(agentsSkillsDir),
+  ].map(slash);
+
+  if (candidates.length === 0) {
+    return new Set();
+  }
+
+  const result = spawnSync("git", ["-C", repoRoot, "check-ignore", "--stdin"], {
+    input: candidates.join("\n"),
+    encoding: "utf8",
+    maxBuffer: 32 * 1024 * 1024,
+  });
+
+  // Exit 0 = some paths ignored, 1 = none ignored. Anything else is a real failure.
+  if (result.error || result.status === null || result.status > 1) {
+    console.warn(
+      "check-skill-sync: `git check-ignore` unavailable; comparing all files including ignored ones.",
+    );
+    return new Set();
+  }
+
+  return new Set(
+    result.stdout
+      .split("\n")
+      .map((line) => slash(line.trim()))
+      .filter(Boolean),
+  );
+}
+
+let ignoredPathsCache = null;
+function ignoredPaths() {
+  ignoredPathsCache ??= computeIgnoredPaths();
+  return ignoredPathsCache;
+}
+
+function walkFiles(rootDir) {
+  const ignored = ignoredPaths();
+
+  return walkAbsoluteFiles(rootDir)
+    .filter((fullPath) => !ignored.has(slash(fullPath)))
+    .map((fullPath) => slash(path.relative(rootDir, fullPath)))
+    .sort((a, b) => a.localeCompare(b));
 }
 
 function bytesEqual(aPath, bPath) {
