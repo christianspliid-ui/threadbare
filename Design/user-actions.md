@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-07-21 (item 2 added by the THR-653 Cowork cutover; light refresh at 08:55 local by the hourly `keep-work-flowing-cc` CC task — items 4, 5 and 6 re-verified and their numbers updated; no new items; last full rebuild was the 2026-06-23 retro)
+**Last updated:** 2026-07-21 (item 2 added by the THR-653 Cowork cutover; refresh at 09:57 local by the hourly `keep-work-flowing-cc` CC task — **new item 7** added, items 1, 4, 5 and 6 re-verified and their numbers updated; last full rebuild was the 2026-06-23 retro)
 **Owner of items below:** Christian. Everyone else's blockers go in Linear or `Docs/impediments.md`.
 **Refresh cadence:** The hourly `keep-work-flowing-cc` scheduled task keeps this current (prunes resolved items, adds newly-surfaced Christian-owned ones); the `retrospective` skill still does the deep periodic rebuild. This is the slow-moving standing-asks list — the fresh-this-hour view is [`Design/briefing.md`](briefing.md).
 
@@ -21,8 +21,10 @@ When an item resolves: delete it from this file, mark the corresponding impedime
 
 ## 1. Turn off the old Cowork automations · WILL NOT SELF-HEAL · ONLY YOU CAN DO THIS
 
-**Status:** Open, new 2026-07-20 · blocks the last step of the move off Cowork · **carried unanswered through the 2026-07-21 08:55 run**
+**Status:** Open, new 2026-07-20 · blocks the last step of the move off Cowork · **carried unanswered through the 2026-07-21 09:57 run** · **now coupled to new item 7 — answer both together**
 **Source:** THR-653 (cutover). Follow-up port work: THR-677.
+
+> **Read item 7 before answering this one.** The demolition ticket (THR-654) entered the queue at 09:13 and would remove the scaffolding these three orphaned jobs' instructions would be copied *through*. The "paste vs. rewrite" question below is the same decision as item 7's go/no-go, one step earlier.
 
 **What happened.** The move off Cowork is essentially done. The Claude Code side now runs the hourly pickup, the hourly briefing (moved to the :45 slot, taking over the one Cowork used), the Friday retrospective, and the Sunday memory tidy-up. Two of those — the retro and the memory tidy-up — had been *written down* as already running for weeks but had in fact never been switched on. They are on now.
 
@@ -98,7 +100,7 @@ git checkout rescue/2026-07-17-detached-plans -- Docs/plans/2026-07-05-entity-vi
 
 ## 5. Home tree needs a manual repair · CHRISTIAN ACTION · WILL NOT SELF-HEAL
 
-**Status:** **ESCALATED at the 06:55 run and unchanged at 08:55 — the autosync has given up and said so three times.** A **fifth park event** fired at 06:20 (`checkout: moving from main to HEAD`), so the tree is **detached and now 60 behind** (56 an hour ago, 52 the hour before). After **ten consecutive refusals** (5 → 9 → 16 → 20 → 24 → 32 → 38 → 44 → 48 behind across 21:56 → 05:50, each logging `you have uncommitted changes that would be overwritten`), the 06:50 attempt escalated to `MANUAL REPAIR NEEDED: parked at bad2dc1e with 3 tracked modification(s). Nothing unique is stranded, so this is safe to repair by hand` — and **07:50 and 08:50 logged the identical line**. **This is confirmed not to clear on its own.**
+**Status:** **ESCALATED at the 06:55 run and unchanged at 09:57 — the autosync has now given up and said so four times.** A **fifth park event** fired at 06:20 (`checkout: moving from main to HEAD`), so the tree is **detached and now 64 behind** (60 an hour ago, 56 the hour before). After **ten consecutive refusals** (5 → 9 → 16 → 20 → 24 → 32 → 38 → 44 → 48 behind across 21:56 → 05:50, each logging `you have uncommitted changes that would be overwritten`), the 06:50 attempt escalated to `MANUAL REPAIR NEEDED: parked at bad2dc1e with 3 tracked modification(s). Nothing unique is stranded, so this is safe to repair by hand` — and **07:50, 08:50 and 09:50 logged the identical line** (verified this run against `C:\Users\chris\bin\threadbare-autosync.log`). **This is confirmed not to clear on its own.**
 
 **Cause found 2026-07-20; containment shipped but does not cover this variant.** THR-671 (freshness signal, PR #646) and THR-672 (inert home tree + autosync reattach, PR #648) both landed 2026-07-21. THR-672's self-heal guard fires only on the *clean* park (detached ∧ 0 unique commits ∧ **0 tracked modifications** → `git switch main`). This morning's park has 3 tracked modifications, so the guard correctly stands down. The gap is real and is described below.
 
@@ -126,13 +128,13 @@ git pull --ff-only origin main
 
 If `git pull --ff-only` refuses with *untracked working tree files would be overwritten*, that is the 15 duplicate drafts (each byte-identical to `origin/main` per the table above); delete the named files and re-run the pull rather than reaching for `reset --hard`.
 
-**Coverage gap worth a ticket — now demonstrated end-to-end, not merely predicted.** The THR-672 script *is* installed (`C:\Users\chris\bin\threadbare-autosync.ps1`, written 01:04, reattach guard present) and is behaving exactly as written — including its escalation message, which fired correctly at 06:50. The gap: `REATTACH_MAX_TRACKED_DIRTY` = 0 means *any* tracked modification blocks the self-heal, even when the modification is provably a superseded copy of a committed blob. Extending the guard to "dirty tracked files are permitted when each one hash-matches a blob reachable from `origin/main`" would have healed all ten of this cycle's refusals automatically. The 06:20 park proves the case is recurrent, not a one-off. **Not filed** — the hourly PM task does not create work; surfaced here and in the briefing for a design session to pick up.
+**Coverage gap worth a ticket — now demonstrated end-to-end, not merely predicted.** The THR-672 script *is* installed (`C:\Users\chris\bin\threadbare-autosync.ps1`, written 01:04, reattach guard present) and is behaving exactly as written — including its escalation message, which fired correctly at 06:50. The gap: `REATTACH_MAX_TRACKED_DIRTY` = 0 means *any* tracked modification blocks the self-heal, even when the modification is provably a superseded copy of a committed blob. Extending the guard to "dirty tracked files are permitted when each one hash-matches a blob reachable from `origin/main`" would have healed all ten of this cycle's refusals automatically. The 06:20 park proves the case is recurrent, not a one-off. **Still not filed for the tracked-dirty variant** — the hourly PM task does not create work; surfaced here and in the briefing for a design session to pick up. Note **THR-678** (filed 2026-07-20, Low/Idea) covers the *adjacent* case — an **untracked** home-tree copy left by `flush-plan-docs` blocking the fast-forward — so the two belong together when either is picked up, but neither ticket as written would have healed this cycle.
 
 **Deployment note for whoever picks that up:** the autosync script lives *outside* the repo, at `C:\Users\chris\bin\`. Merging a change to it in the repo does not deploy it; it has to be copied to that path. Worth checking whether the repo even carries a copy — `git ls-tree -r --name-only origin/main | grep -i autosync` returned nothing again at 03:54, so the running script still has no version-controlled source at all.
 
 **Residue confirmed non-regenerating — re-verified at 08:55.** From the 01:54 run onward this task writes both files in its own worktree and never in the home tree. The two dirty files in the home tree are still the *23:54* copies, unchanged across the 00:54 → 08:55 runs. Only the behind-count climbs, which is the autosync being blocked, not new damage.
 
-**THR-674 is no longer the likely resolver.** It has been In Dev since 02:02 (nearly seven hours) and is now **unassigned** — nobody is working it — and while it landed PRs #654/#655, its Done-when — "`git status` clean on the home tree" — is further away than when it started, since the 06:20 park added detachment on top of the dirt. Its remaining scope also grew: the stash stack is **38 entries**, not the 12 the ticket scoped. The four manual commands above are now the faster path.
+**THR-674 closed at 09:13 without clearing this — confirmed, not predicted.** It was marked Done by *splitting out* the two halves it could not finish rather than by reaching its "`git status` clean on the home tree" Done-when: the stash stack turned out to be **38 entries** (scoped at 12) → now **THR-680**, and the leftover work folders turned out to be **26, all under `.claude/worktrees/`** — a path `pull-work` Step 0 explicitly forbids touching → now **THR-681**. That is the correct call rather than a miss, but it settles the question: **no queued ticket will repair this tree.** The four manual commands above are the only path.
 **Source:** `Docs/plans/2026-07-20-git-cicd-clean-delivery.md` (root cause + tickets THR-671…676; now readable on `origin/main`); forensics in `Docs/audits/2026-07-20-git-cicd-forensics/`
 
 Five times in five days, the harness has moved the home tree off `main` at a scheduled-session spawn:
@@ -169,7 +171,7 @@ First verify nothing unique is stranded: `git rev-list --count origin/main..HEAD
 
 ## 6. Consent to file the upstream bug report publicly · CHRISTIAN ACTION · ONLY YOU CAN DECIDE
 
-**Status:** Open, new 2026-07-21 06:55 · **the only thing now gating THR-676.** Re-verified 08:55: THR-676 is In Dev, **unassigned**, and its write-up is on `origin/main` (PR #661, merged 07:08), so the agent-side work is finished and the ticket is waiting on this answer alone. Its departure from Ready-for-Dev is what tipped the queue toward starvation; the last remaining queued item of substance (THR-643, Motive Receipt wiring docs) then completed at 08:13, leaving a single sixteen-day-old console warning — see `Design/briefing.md`.
+**Status:** Open, new 2026-07-21 06:55 · **the only thing now gating THR-676.** Re-verified 09:57: THR-676 is still In Dev, **unassigned**, and its write-up is on `origin/main` (PR #661, merged 07:08), so the agent-side work is finished and the ticket is waiting on this answer alone. It is now the **only** issue in development. The sixteen-day-old console warning that had been the lone queued straggler closed at 09:30, and the queue refilled with exactly one item — the demolition ticket in item 7, which is itself gated on you. See `Design/briefing.md`.
 **Source:** THR-676 § Scope step 2 ("File the GitHub issue only after Christian's yes in chat — external posting is gated"). Root cause + evidence: `Docs/plans/2026-07-20-git-cicd-clean-delivery.md`, forensics in `Docs/audits/2026-07-20-git-cicd-forensics/`.
 
 **What it is.** The 2026-07-20 investigation established that the recurring home-tree park (item 5, now five events) is caused by the **Claude Code app/harness layer itself**, not by the game, the repo, or any agent — two behaviours neither of which appears in any session transcript: a bare `git checkout HEAD` that detaches the tree, and a plumbing-level sync of `refs/heads/main` that fires while `main` is checked out (which is what manufactured the phantom "68 staged files" scare on 07-18). THR-676 writes this up as a reproducible report for `anthropics/claude-code`.
@@ -188,7 +190,34 @@ That run also captured a **live reproduction**: an empty-message `refs/heads/mai
 
 ---
 
+## 7. Sign off on the Cowork demolition · CHRISTIAN ACTION · BLOCKING THE QUEUE
+
+**Status:** Open, new 2026-07-21 09:57 · **THR-654 is the only item in Ready for Dev, and it cannot be picked up without this answer.**
+**Source:** THR-654 § intent-judge condition (2026-07-17 Allow verdict): *"before this lands, surface the demolition list to Christian as a plain-language chat summary (THR-608) and get his yes/no."* Gate THR-653 cleared 2026-07-20 19:58; the ticket was promoted Todo → Ready for Dev at 09:13 today.
+
+**What it is.** Phase 3 of the move off Cowork — deleting the scaffolding the old two-agent workflow needed. Specifically: the `flush-plan-docs` scheduled task and skill, the `plan-pending-commit` label and its CLAUDE.md references, `.github/workflows/flush-close-guard.yml`, the `.agents/skills/` duplicate skill tree, `scripts/check-skill-sync.js` with its THR-192 pre-commit hook and `check:skill-sync*` npm scripts, plus a CLAUDE.md rewrite removing the "Cowork vs Claude Code" section. Closure notes get appended to `Docs/impediments.md` for the structurally-closed classes; THR-540 closes as moot.
+
+**Why it needs you and not an agent.** This is a deletion of shared workflow surface, and the judge flagged it as the kind of change that should not land on an agent's own verdict. The technical case is unambiguous; the call on *whether to lose the option* is yours.
+
+**What could actually be lost.** Six skills exist only in `.agents/skills/` — `content-catalog-manager`, `defuddle`, `json-canvas`, `obsidian-bases`, `obsidian-cli`, `obsidian-markdown`. CC cannot load any of them, does Obsidian work through the filesystem instead (`OBSIDIAN_VAULT_PATH`), and `content-catalog-manager` showed no usage in the trailing 60 days (THR-651 audit). Nothing here is game content or engine code. All deletions land as ordinary revertable commits.
+
+**Recommendation: yes.** The strongest argument is not tidiness — the `.agents/` duplicate is the *cause* of the `check:skill-sync` false-positive blocks (62 mentions in `Docs/impediments.md`), and that class cannot be closed while the duplicate exists.
+
+**Sequencing caveat — this couples to item 1.** THR-677 still needs the three orphaned Cowork task prompts (`daily-backlog-grooming`, `weekly-workflow-retro`, `weekly-project-hygiene`) copied out. Demolition does not delete those Cowork-side jobs, but it removes the migration scaffolding they would be ported *through*. If your answer to item 1 is "paste the prompts out faithfully," that is easier done before this lands than after.
+
+**Fix — answer in chat.**
+- **Yes** → the executor claims THR-654 and the demolition proceeds; record `human gate satisfied via chat review <date>` as a Linear comment so the merge is permitted.
+- **No / not yet** → say so and the item stays queued; the executor lane stays idle unless item 4-style direction refills the queue.
+
+**What breaks if not answered.** The executor has nothing else to pull — this is the entire Ready-for-Dev queue. Every hour without an answer is an idle lane.
+
+---
+
 ## Resolved this period
+
+- **2026-07-21 09:30 — the sixteen-day-old economy console warning closed (THR-644).** The duplicate-key React warning in the economy event feed, flagged during THR-631 browser verification on 2026-07-05 and carried in these briefings as one of two "properly stale" queue items, is fixed. _Prunable at the next full retro._
+- **2026-07-21 09:13 — THR-674 closed by splitting, not by finishing.** The one-time git surface cleanup landed the 15 untracked drafts (PRs #654/#655) but could not reach its "`git status` clean" Done-when: the stash stack was **38 entries** not 12 (→ **THR-680**) and the leftover work folders were **26, all under `.claude/worktrees/`**, a path `pull-work` forbids touching (→ **THR-681**). Recorded here because item 5 had been provisionally relying on this ticket to repair the home tree; it will not. _Prunable at the next full retro._
+- **2026-07-21 06:15 — THR-673 shipped: the stale-branch cleanup job no longer fails silently.** The "Threadbare Git Cleanup" Windows task had been returning `-2147020576` (battery refusal) while logging nothing, so nobody could tell a skipped run from a clean one. Fourth of the six git/CI tickets to land; with THR-676 gated on item 6 and THR-674 split, **the git/CI family is complete apart from the consent question**. _Prunable at the next full retro._
 
 - **2026-07-21 05:22 — THR-675 shipped (PR #657): pull requests now merge themselves on green, and the `check:skill-sync` false-positive block is gone.** Third of the six git/CI tickets to land. Repo settings verified live this run (`allow_auto_merge: true`, `delete_branch_on_merge: true`), so `gh pr merge --auto --merge` is the standard closeout and executor sessions stop burning 3–8 minutes poll-waiting on CI. The hook fix retires the `npm run check:skill-sync:sync`-first workaround (62 impediment mentions). **Does not retroactively clear the 14 already-open PRs** — see item 4. Two siblings (THR-673, THR-676) remain queued; THR-674 is in flight. _Prunable at the next full retro._
 - **2026-07-21 ~02:20 — the 15 untracked design drafts are backed up (PR #654, THR-674).** The "one machine, no backup" exposure this file carried since 2026-07-20 is closed: brainstorms, exploration notes and intent-proposal records that existed only in the home tree are now committed to `origin/main`, with the cleanup findings logged to `Docs/impediments.md` alongside (PR #655). Item 4 has been re-scoped to the surviving concern — the PR merge backlog. Still open inside THR-674: a stash stack that has grown to **38 entries** (scoped at 12) and ~24 stale worktrees. _Prunable at the next full retro._

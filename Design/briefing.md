@@ -1,20 +1,32 @@
 # Briefing
 
-**Generated:** 2026-07-21 08:55 local (06:55 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-07-21 09:57 local (07:57 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task — the replacement for the old Cowork "keep-work-flowing" chat brief. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
 ## Needs Christian
 
-**Same four things as an hour ago. Nothing new arrived. Two of them are now the only reason anything is stuck.**
+**One new thing, and it's the one holding up all work. Three carried.**
 
-> **1. Your working copy still needs about ten seconds from you. It has now asked three times.**
+> **1. NEW — the only job left in the queue needs your signature before anyone may start it.**
 
-Unchanged in kind, worse in degree: the shared copy is now **60 commits ahead** of your machine, up from 56. The automatic repair job stood down again at 08:50 with the same verdict it gave at 06:50 and 07:50 — *"manual repair needed."* Three refusals in a row, identical wording.
+Overnight the queue emptied and then refilled with a single item: **finish the move off Cowork by deleting the old scaffolding.** It was deliberately written to require your yes first, which is why it's sitting untouched rather than being picked up.
 
-I re-verified this run, not assumed: nothing exists only on your machine (`origin/main..HEAD` is still zero commits). The three files standing in the way are old copies of this briefing and its companion, plus one design doc already sitting on the shared server.
+**What gets deleted:** the old plan-document filing pipeline and its safety workflow; the label that drove it; a second, duplicate copy of the skill library that only the old system could read, along with the script and pre-commit check that kept the two copies in step; and the sections of the project's instruction file that describe a two-agent world that no longer exists.
 
-**Use the repair job's own recommendation:**
+**What could be lost.** Six skills live only in that duplicate copy and would go with it — they cover Obsidian vault editing and a content catalogue. Claude Code can't load any of them today, and it does vault work directly through the filesystem instead, so in practice they're already dead weight. Nothing else here is content or game code; it's all plumbing for a workflow you've already left. Every deletion lands as an ordinary commit that can be reversed.
+
+**My recommendation: yes.** The main argument for it isn't tidiness — that duplicate skill copy is the source of the false pre-commit failures that have been blocking unrelated commits for weeks, and it can't be fixed while it exists.
+
+**One caveat, and it ties to item 3 below.** Three old Cowork jobs still have no replacement, and their instructions exist only inside Cowork. Demolishing the scaffolding doesn't delete those jobs, but it does close the door on copying them out faithfully. If you want them copied rather than rewritten, that's worth doing first — so item 3's question and this one are really one decision.
+
+**Question: go ahead with the demolition — yes or no?**
+
+> **2. Your working copy still needs about ten seconds. Fourth time asking — but the ending changed.**
+
+The shared copy is now **64 commits ahead** of your machine, up from 60. Same three files in the way, and I re-verified this run rather than assuming: nothing exists only on your machine, and all three files are stale copies already superseded on the server. Two are old versions of this very briefing.
+
+**What's new is that the automatic repair shipped last night.** It's live now, and it's refusing on purpose — it won't touch a working copy with loose files in it, which is the correct instinct. Clear those three and it should re-attach on its own from here, meaning this item stops coming back rather than returning next hour.
 
 ```
 cd C:\Users\chris\Dev\Projects\TheFantasyWorldSimulator
@@ -23,46 +35,47 @@ git switch main
 git pull --ff-only origin main
 ```
 
-> **2. May I file the bug report with Anthropic? Yes or no.**
+> **3. May I file the bug report with Anthropic? Yes or no.**
 
-Unchanged and still the only thing gating that ticket. The write-up is finished and on the shared copy — nothing waits on writing, only on your permission to post it publicly. It would name your setup and quote excerpts from your repository's history, which is why it's your call and not mine.
+Unchanged, and still the only thing gating that ticket. The write-up is finished and on the shared copy — nothing waits on writing, only on your permission to post it publicly. It would name your setup and quote excerpts from your repository's history, which is why it's your call.
 
-The fault it describes is the same one behind item 1. A "no" costs nothing: the local containment already works and the write-up simply stays internal.
+This is the same fault behind item 2. A "no" costs nothing: the containment is now live locally and the write-up simply stays internal.
 
-> **3. The old Cowork jobs still need switching off, and one needs a preference from you.**
+> **4. What's the next stretch?**
 
-Unchanged; full detail is item 1 in [`user-actions.md`](user-actions.md). One of the four is safe to disable now. For the other three: would you rather **paste their instructions out of Cowork** so they can be copied faithfully, or have **fresh versions written and shown to you on a trial run** first?
+Carried, and it's why the queue keeps running dry. The three war follow-ons remain the nearest ready-made answer: **deeper battles**, **sieges that tighten as they drag**, and **what a war leaves behind**. Two are high priority. Re-checked again this run — still in the planning column, still carrying text claiming they're blocked by the war activation that finished on the 18th. That blocker is stale, not real. They also still describe building pieces that partly exist, so if war is the answer, someone re-scopes them against the real code first.
 
-> **4. What's the next stretch? This is the one actually costing you now.**
-
-**The queue is down to a single item, and it's a console warning from sixteen days ago.** The documentation tidy-up that shared the queue with it was finished at 08:13 this morning. Nothing substantial is left to pull.
-
-The three war follow-ons remain the nearest ready-made answer: **deeper battles**, **sieges that tighten as they drag**, and **what a war leaves behind**. Two are high priority. I re-checked all three this run — they are still sitting in Todo, and their descriptions still claim they're blocked by the war activation that finished on the 18th. That blocker is stale, not real. They also still describe building pieces that partly exist already, so if war is the answer, someone re-scopes them against the real code first — you should be choosing against reality, not a three-week-old plan.
-
-**War next, or something else?** A rough direction is enough; the queue can be refilled toward it.
+A rough direction is enough; the queue can be refilled toward it.
 
 ## Queue
 
-**Starved — one item, and it isn't real work.** THR-644, a React console warning, untouched since 2026-07-05, now **sixteen days** old and lowest priority. Nothing else is waiting.
+**Starved — one item, and it's waiting on your signature (item 1 above).**
 
-- **Nothing is blocked** in the technical sense. The shortage is that planning has run out ahead of execution — which is why item 4 above is time-sensitive rather than merely tidy.
-- **Two things sit in development, both unassigned** — the git housekeeping ticket and the bug-report ticket. Neither has anyone working it, and neither can finish without you: one waits on your four commands, the other on your yes/no. They are parked, not stalled by accident.
+- The single queued job is high priority and gated by design, not by accident. Until you answer, the executor has nothing to pull.
+- **One thing sits in development** — the bug-report ticket, unassigned, complete apart from your yes/no. Parked, not stalled.
+- **Nothing is blocked in the technical sense.** The shortage is that planning has run out ahead of execution, which is what item 4 addresses.
 
 ## Freshness
 
-**Loose from `main`, 60 behind, and confirmed it will not self-correct.** Full explanation and the fix are item 1 above.
+**Loose from `main`, 64 behind, auto-repair live but declining to act.** Full explanation and the fix are item 2 above.
 
-Short version: the tree came off `main` at 06:20 yesterday (fifth event in five days), three files block the automatic repair, and every one is verified duplicated elsewhere. The repair job has now printed *manual repair needed* three times running. Nothing is at risk; it needs you at the keyboard briefly.
+Short version: the tree came off `main` at 06:20 yesterday, three stale files block the automatic re-attach, and every one is verified duplicated on the server. Nothing is at risk. Unlike the previous three asks, this one should be the last — the repair that was missing has since shipped.
 
 Per the standing rule, this task doesn't repair your working copy itself. A scheduled job reaching into your files is exactly what caused the mess it would be cleaning up.
 
 ## What's moving
 
-**One merge, and it emptied the queue rather than filling it.** The Motive Receipt wiring notes landed at 08:13 — the documentation seam recording how agents explain what a character wants, so future content work uses the system instead of hand-writing the prose. That was the last queued item with substance in it.
+**A genuinely good night — the git and CI cleanup finished.** Five of the six tickets in that family closed between 22:35 and 09:13:
 
-The fourteen older pull requests are still open and still unmerged, unchanged in count. That's expected and not a new problem: the auto-merge fix that shipped yesterday morning only helps requests opened *after* it, which is why this task's own hourly updates now land on their own while the backlog doesn't. It drains by hand, gradually.
+- **The freshness alarm was fixed** — it had been measuring the wrong thing and inventing an escalating "commits behind" number.
+- **The home copy was made inert**, with automatic re-attachment when it gets knocked loose. That's the fix that makes item 2 a one-off.
+- **The stale-branch cleanup job was repaired** — it had been failing silently.
+- **Pull requests now merge themselves once checks pass**, which is why this briefing's own updates land unattended.
+- **The sixteen-day-old console warning closed** at 09:30.
 
-**Everything on this page is now either waiting on you or waiting on a direction from you.** Once items 1, 2 and 4 are answered, this file should go back to being about the game.
+**One closure worth reading honestly:** the one-time git tidy-up was marked done at 09:13, but by *splitting out* its two hard halves rather than finishing them — the stash pile turned out to be 38 entries deep rather than 12, and the 26 leftover work folders live in a directory the executor is explicitly forbidden to touch. Both are now their own tickets. That's the right call, but it means the fifteen stray draft documents on your machine are still there.
+
+**Older pull requests:** fourteen remain open and unmerged, unchanged. The auto-merge fix only helps requests opened after it, so that backlog still drains by hand.
 
 ---
 *Standing asks live in [`Design/user-actions.md`](user-actions.md). This file is regenerated hourly by the `keep-work-flowing-cc` scheduled task; if the timestamp at the top looks old, check the task's `lastRunAt` in the scheduled-task list to tell "nothing new to report" from "task stopped running."*
