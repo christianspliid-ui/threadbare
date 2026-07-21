@@ -28,7 +28,7 @@ import {
   SETTLEMENT_PROMOTION_SUSTAIN_TICKS,
   SETTLEMENT_DEMOTION_PROSPERITY,
 } from './phaseProsperity';
-import { resolveEconomicChronicle } from './economicChronicle';
+import { resolveEconomicChronicle, chronicleSeed } from './economicChronicle';
 import type { SimulationRuntime } from './simulationRuntime';
 import { applyEncounterCacheUpdate } from './simulationRuntime';
 import {
@@ -150,7 +150,7 @@ export function phaseSettlementPromotion(state: GameState, runtime?: SimulationR
             : undefined,
         },
         tick,
-        seed + loc.id.charCodeAt(0),
+        chronicleSeed(seed, loc.id),
       );
 
       if (promotionEntry) {
@@ -210,7 +210,7 @@ export function phaseSettlementPromotion(state: GameState, runtime?: SimulationR
             : undefined,
         },
         tick,
-        seed + loc.id.charCodeAt(0),
+        chronicleSeed(seed, loc.id),
       );
 
       if (demotionEntry) {

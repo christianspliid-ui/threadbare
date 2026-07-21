@@ -19,7 +19,7 @@ import {
 } from './tradeRoute';
 import { SHOCK_TRADE_ROUTE_LOST } from './phaseProsperity';
 import { emitTrace } from './traceBuffer';
-import { resolveEconomicChronicle } from './economicChronicle';
+import { resolveEconomicChronicle, chronicleSeed } from './economicChronicle';
 
 // ─── Phase function ───────────────────────────────────────────────────────
 
@@ -121,7 +121,7 @@ export function phaseTradeRouteDecay(state: GameState): Partial<GameState> {
           ticksAgo: Math.max(0, totalTicksActive),
         },
         tick,
-        seed + edge.id.charCodeAt(0),
+        chronicleSeed(seed, edge.id),
       );
 
       if (routeDeathEntry) {
