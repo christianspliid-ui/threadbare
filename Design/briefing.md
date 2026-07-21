@@ -1,84 +1,70 @@
 # Briefing
 
-**Generated:** 2026-07-21 06:55 local (04:55 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-07-21 07:55 local (05:55 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task — the replacement for the old Cowork "keep-work-flowing" chat brief. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
 ## Needs Christian
 
-**Four things. One is new and has a four-line fix; one is a yes/no; two are carried.**
+**Four things, all carried from an hour ago. Nothing new arrived — but two of them got more expensive while you slept.**
 
-> **1. NEW — your working copy needs four commands from you. Nothing is damaged; it just can't heal itself.**
+> **1. Your working copy still needs about ten seconds from you. It has now asked twice.**
 
-The automatic repair job has now refused **ten hours running**, and at 06:50 it stopped trying and printed *"manual repair needed."* That message is correct and it is addressed to you.
+Unchanged since the 06:55 brief except that it drifted further: the shared copy is now **56 commits ahead** of your machine, up from 52. The automatic repair job stood down again at 07:50 with the same verdict as 06:50 — *"manual repair needed."*
 
-What happened: at 06:20 the tree came loose from `main` again — the fifth time in five days, the known fault. The self-healing fix that shipped last night only heals a *clean* loose tree, and this one has three files sitting in the way, so it stands down rather than risk them. Meanwhile the shared copy has moved **52 commits ahead**.
+Nothing is damaged and nothing exists only on your machine; I re-verified that this run. The three files standing in the way are old copies of this briefing and its companion, plus one design doc already sitting on the shared server.
 
-**I checked every file that stands in the way, and all of them are already saved elsewhere:**
-
-- the two "changed" files are `briefing.md` and `user-actions.md` — **old copies of this very file**, from last night's run; both match versions already committed
-- the fifteen "new" design drafts are **byte-for-byte identical** to copies already on the shared server (they were backed up around 02:20 last night)
-
-So there is nothing here that exists only on your machine. Running this loses nothing:
+**Use the repair job's own recommendation — it's the safer of the two recipes:**
 
 ```
 cd C:\Users\chris\Dev\Projects\TheFantasyWorldSimulator
+git stash push -m home-tree-recovery
 git switch main
-git fetch origin main
-git reset --hard origin/main
+git pull --ff-only origin main
 ```
 
-That last command is normally the one to be careful with. It is safe **in this specific case, this morning**, because I verified each file individually rather than assuming — don't treat it as a general-purpose recipe.
+*Correction to last hour's brief:* it offered a `reset --hard` version of this. The commands above do the same job while keeping a recoverable copy of anything it sets aside. Prefer these.
 
-Per the standing rule, this task doesn't repair your working copy itself. A scheduled job reaching into your files is exactly what caused the mess it would be cleaning up.
+> **2. May I file the bug report with Anthropic? Yes or no.**
 
-> **2. NEW — may I file a bug report with Anthropic about this?**
+**The draft is finished and is now on the shared copy** (it merged at 07:08), so nothing is waiting on writing — only on your permission to post it publicly. It would name your setup and quote excerpts from your repository's history, which is why it's your call rather than mine.
 
-The cause of that recurring fault is understood: it isn't the game, and it isn't any agent — it's Claude Code itself quietly moving things in your repository. **The write-up is now finished and saved** at `Docs/audits/2026-07-20-git-cicd-forensics/upstream-report.md` — but **posting it publicly on Anthropic's issue tracker is your call, not mine.** It would name your setup and include excerpts from your repository's history.
+The fault it describes is the same one behind item 1: Claude Code itself quietly moving things inside your repository. A "no" costs nothing — the local containment already works and the write-up simply stays internal.
 
-Writing it caught the fault happening live, incidentally: at 07:01:30 this morning Claude Code moved the `main` pointer in your repository, two seconds before it created that session's own workspace. That is now the clearest single piece of evidence in the report.
+> **3. The old Cowork jobs still need switching off, and one needs a preference from you.**
 
-**Yes or no is all that's needed.** A "no" is fine — the local containment already works, and the report can stay internal.
+Unchanged; full detail is item 1 in [`user-actions.md`](user-actions.md). One of the four is safe to disable now. For the other three: would you rather **paste their instructions out of Cowork** so they can be copied faithfully, or have **fresh versions written and shown to you on a trial run** first?
 
-> **3. Carried — the old Cowork jobs still need switching off, and one needs a preference from you.**
+> **4. What's the next stretch? This is now the one that's actually costing you.**
 
-Unchanged from last night; full detail is item 1 in [`user-actions.md`](user-actions.md). One of the four is safe to switch off now. For the other three, the question is whether you'd rather **paste their instructions out of Cowork** so they can be copied faithfully, or have **fresh versions written and shown to you on a trial run** first.
+**The work queue has run dry** — see below. Everything that was waiting got built overnight; what remains is two forgotten odds-and-ends from two weeks ago. Until you point at something, the executor has nothing substantial to pull.
 
-> **4. Carried, but it got sharper overnight — what's the next stretch?**
+The three war follow-ons are still the nearest ready-made answer: deeper battles, sieges that tighten as they drag, and what a war *leaves behind*. Two are high priority. The notification rework you were weighing them against is finished, so that side no longer competes. Their descriptions still claim they're blocked by something that finished on the 18th, and they still describe building pieces that partly exist already — so if war is the answer, someone re-scopes them against the real code first and you choose against reality rather than a stale plan.
 
-Last night this was a tidy-up question. This morning it's the real one, because **the work queue has almost run dry** (see below). The overnight run cleared nearly everything; what's left is two stale odds-and-ends and the bug report above.
-
-The three war follow-ons — deeper battles, sieges that tighten as they drag, and what a war *leaves behind* — are still sitting in the planning column, two of them high priority. And the notification rework you were weighing them against **landed overnight**, so that side is done. Their descriptions still claim they're blocked by something that finished on the 18th, and they still describe building things that partly already exist.
-
-**So: war next, or something else?** If war, someone re-scopes those three against the real code first so you're choosing against reality rather than a stale plan. If something else, say roughly what and the queue can be refilled toward it.
+**War next, or something else?** If something else, a rough direction is enough — the queue can be refilled toward it.
 
 ## Queue
 
-**Nearly starved — three items waiting, and only one is really actionable.** The executor is working on one thing and will likely run out of queue this morning.
+**Starved — two items waiting, and neither is real work.** Both are the same stale pair as last hour: a documentation tidy-up and a console warning, untouched since 2026-07-05, now **sixteen days** old, both lowest priority. The one genuinely live item moved into development at 07:08, which is what tipped the queue over.
 
-- **The one live item is the bug report above** — and it's gated on your yes/no, so it can't fully finish without you.
-- **The other two are properly stale** — a documentation tidy-up and a console warning, both untouched since 2026-07-05, now **sixteen days** old. Both lowest priority. Naming them rather than counting them as real depth.
-- **Nothing is blocked** in the technical sense; the shortage is that planning has run out ahead of execution, which is what makes item 4 above time-sensitive rather than merely tidy.
-- **One item is in progress:** the git housekeeping ticket, picked up at 02:02. It has shipped two batches of work but its finish line is literally "your working copy is clean" — which is the thing item 1 asks you to do. It has been at it five hours; the manual four commands are now the faster path.
+- **Nothing is blocked** in the technical sense. The shortage is that planning has run out ahead of execution — which is why item 4 above is time-sensitive rather than merely tidy.
+- **Two things are in development at once**, which is one more than the rule allows. That's not carelessness: the git housekeeping ticket, picked up at 02:02, has a finish line of literally "your working copy is clean" — the thing item 1 asks you to do — so it cannot close on its own. The bug-report ticket took the second slot because it had nothing else to wait behind.
 
 ## Freshness
 
-**Loose from `main`, 52 behind, and it will not self-correct.** Full explanation and the fix are item 1 above.
+**Loose from `main`, 56 behind, and it will not self-correct.** Full explanation and the fix are item 1 above.
 
-The short version: the tree came off `main` at 06:20 (fifth event in five days), three files block the automatic repair, and every one of those files is verified duplicated elsewhere. The repair job's own log says manual repair needed. Nothing is at risk; it simply needs you at the keyboard for about ten seconds.
+Short version: the tree came off `main` at 06:20 yesterday morning (fifth event in five days), three files block the automatic repair, and every one is verified duplicated elsewhere. The repair job has now printed *manual repair needed* twice running. Nothing is at risk; it needs you at the keyboard briefly.
+
+Per the standing rule, this task doesn't repair your working copy itself. A scheduled job reaching into your files is exactly what caused the mess it would be cleaning up.
 
 ## What's moving
 
-**A very productive night — 44 commits and eighteen merges since the last brief.** The git and CI work that has been dominating this file for a week is nearly finished:
+**A quiet hour after a very loud night — one merge.** The upstream bug report was drafted and landed, which is the last piece of the git and CI work that has dominated this file for a week. It's now finished apart from your yes/no on item 2 and your four commands on item 1.
 
-- **Pull requests now merge themselves** once their checks go green, so sessions stop waiting around. A pre-commit check that had been falsely blocking commits was fixed in the same change.
-- **The home tree became a self-healing mirror** — it now repairs the simple version of the loose-tree fault on its own. (This morning's is the *complicated* version, which is why it needs you.)
-- **The freshness signal was reworked** so it stops reporting a false "N commits behind" alarm.
-- **The cleanup robot was hardened** — it had been failing silently.
-- **Fifteen design drafts that existed on one machine only are now backed up**, closing an exposure this file has carried since the 20th.
-- **The "pause the world" fix and the notification threading work both landed**, which is what makes the direction question above answerable.
+Everything else of substance happened before the last brief and is recorded there: pull requests now merge themselves once checks pass, the home tree became self-healing for the simple version of this fault, the false "N commits behind" alarm was fixed, the cleanup robot was hardened, and fifteen one-machine-only design drafts got backed up.
 
-**Five of the six git tickets are now done or in flight.** After this morning's four commands, this section should stop being about plumbing and go back to being about the game.
+**After this morning's four commands, this section should stop being about plumbing and go back to being about the game** — which is exactly what item 4 is waiting on.
 
 ---
 *Standing asks live in [`Design/user-actions.md`](user-actions.md). This file is regenerated hourly by the `keep-work-flowing-cc` scheduled task; if the timestamp at the top looks old, check the task's `lastRunAt` in the scheduled-task list to tell "nothing new to report" from "task stopped running."*
