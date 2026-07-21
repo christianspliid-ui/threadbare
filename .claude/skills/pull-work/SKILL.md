@@ -239,6 +239,10 @@ If collision or uncertainty remains, run serially instead of claiming concurrent
 2. Confirm it includes all required lines: `Suggested model`, `Parallel-safe with`, `Mutex with`.
 3. If missing, add a bounce note for Cowork and stop without claiming.
 
+**Mutex reversal (THR-688 Rule B).** A `Mutex with` line should carry its reason — `Mutex with: THR-XXX (both edit <file>)`. You **may** claim past a mutex when the stated reason is *verifiably* inapplicable: the named partner issue has since merged, or the named surface is provably outside this ticket's scope. Verify it (`get_issue` on the partner; confirm `Done` + a merged PR), then record the reversal and its evidence in a Linear comment on the issue you claim. A mutex whose reason is a bare identifier with no stated surface cannot be cleared by inspection — bounce it for re-authoring rather than guessing (THR-673 precedent).
+
+**Done-when reachability (THR-688 Rule C).** Before starting work, check that the ticket's Done-when is satisfiable through the pillar it touches. Browser evidence is required for UI-pillar surfaces only; engine/content acceptance runs through `npm run cli` / `__DEBUG` sweeps. If a Done-when demands N ticks in an automated browser tab, it is unreachable by construction (`document.hidden` throttles the rAF loop to 1 tick/click) until THR-689 lands — substitute a headless CLI sweep and say so in the completion comment.
+
 ### Step 4 - Claim before deep read, then verify
 
 > **Preferred:** use `pullNextReadyForDev` (§ above) — it bundles Steps 1–4 with retry-on-silent-drop. This step-by-step is the documented fallback.
