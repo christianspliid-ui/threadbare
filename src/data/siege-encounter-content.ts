@@ -104,7 +104,7 @@ export const SIEGE_SPOTLIGHT_TEMPLATES: SiegeSpotlightTemplate[] = [
 export interface SiegeRegionalTemplate {
   id: string;
   title: string;
-  triggerType: 'allied_defender' | 'allied_attacker' | 'shadow' | 'heart' | 'sabotage';
+  triggerType: 'allied_defender' | 'allied_attacker' | 'shadow' | 'heart' | 'sabotage' | 'relief_march';
   prose: string;
   intrinsicTier: AttentionTier;
 }
@@ -140,6 +140,13 @@ export const SIEGE_REGIONAL_TEMPLATES: SiegeRegionalTemplate[] = [
     title: 'Seek a Negotiated End',
     triggerType: 'heart',
     prose: 'Blood need not water these fields. A neutral voice, respected by both sides, might broker terms that let both factions walk away intact.',
+    intrinsicTier: 'shaping',
+  },
+  {
+    id: 'siege.regional.relief_march',
+    title: 'The Relief March',
+    triggerType: 'relief_march',
+    prose: 'The banners of the besieged still fly, and you have soldiers within reach. A forced march could break the encirclement — if you arrive before the walls do.',
     intrinsicTier: 'shaping',
   },
   {

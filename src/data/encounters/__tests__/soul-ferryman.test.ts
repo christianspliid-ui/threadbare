@@ -78,7 +78,7 @@ describe('Soul Ferryman — template structure', () => {
     const step0 = template.steps[0];
     if (isActionStepBranch(step0)) throw new Error('step 0 should not be a branch');
     expect(step0.narrativeTemplate).toContain('fog sat on the river');
-    expect(step0.narrativeTemplate).toContain('Vesik');
+    expect(step0.narrativeTemplate).toContain('{cast:vesik}');
   });
 
   it('step 1 branch has break_the_bargain and steady_the_courier variants', () => {

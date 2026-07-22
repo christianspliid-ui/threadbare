@@ -23,6 +23,7 @@ import {
   SIEGE_DEFENDER_MOMENTUM_BONUS,
   SIEGE_STARVATION_TICK,
   SIEGE_REGIONAL_ENCOUNTER_RANGE,
+  SIEGE_REGIONAL_CAPABILITY_MIN,
   SIEGE_COMBAT_ATTRITION_ATTACKER,
   BATTLE_MOMENTUM_PER_SPOTLIGHT_BASE,
   FORTIFICATION_BASIC,
@@ -616,13 +617,19 @@ function selectRegionalEncounterType(
   const actorFaction = graph.getOutgoingEdges(actorId, 'member_of')[0]?.target;
   const properties = actorNode.properties as Record<string, unknown>;
 
-  // Shadow-capable agents near siege can smuggle supplies
-  const isShadowCapable = (properties.shadowCapability as number ?? 0) > 0 ||
-    (properties.domainCapabilities as Record<string, number> | undefined)?.['Shadow'] != null;
+  // Capability gates read live agents' domainCapabilities: lowercase reach
+  // keys on a 0–100 scale (all keys always present, so a threshold is required
+  // — key existence alone would match every actor).
+  const caps = properties.domainCapabilities as Record<string, number> | undefined;
+
+  // Shadow-capable agents near siege can smuggle supplies (or sabotage the lines)
+  const isShadowCapable = (caps?.shadow ?? 0) >= SIEGE_REGIONAL_CAPABILITY_MIN;
 
   // Heart-capable agents can negotiate terms
-  const isHeartCapable = (properties.heartCapability as number ?? 0) > 0 ||
-    (properties.domainCapabilities as Record<string, number> | undefined)?.['Heart'] != null;
+  const isHeartCapable = (caps?.heart ?? 0) >= SIEGE_REGIONAL_CAPABILITY_MIN;
+
+  // Iron-capable agents can march to a besieged ally's relief
+  const isIronCapable = (caps?.iron ?? 0) >= SIEGE_REGIONAL_CAPABILITY_MIN;
 
   // Allied with attacker?
   const isAttackerAllied = attackerFactionId !== undefined && actorFaction === attackerFactionId;
@@ -637,7 +644,13 @@ function selectRegionalEncounterType(
     (actorFaction === defenderFaction || actorFaction === settleFaction);
 
   if (isAttackerAllied) return 'siege.regional.join_attackers';
-  if (isDefenderAllied) return 'siege.regional.call_for_aid';
+  if (isDefenderAllied) {
+    // Defender allies with an edge get a sharper hook than the generic plea:
+    // shadow strikes the siege lines, iron marches to the relief.
+    if (isShadowCapable) return 'siege.regional.sabotage';
+    if (isIronCapable) return 'siege.regional.relief_march';
+    return 'siege.regional.call_for_aid';
+  }
   if (isShadowCapable) return 'siege.regional.smuggle_supplies';
   if (isHeartCapable) return 'siege.regional.negotiate_terms';
 
@@ -670,6 +683,9 @@ export function applyBreachFortificationReduction(state: GameState, siegeNodeId:
     properties: {
       ...settlementNode.properties,
       fortificationMultiplier: reducedFortification,
+      // Distinguishes "walls broken" from "walls were always modest" for the
+      // player-facing Walls line + breach headline beat (THR-628).
+      fortificationBreached: true,
     },
   });
 

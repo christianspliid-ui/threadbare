@@ -76,6 +76,17 @@ export const PREPARED_DEFENSE_MULTIPLIER = 3;
 /** Maximum tactical advantage multiplier */
 export const TACTICAL_MAX_MULTIPLIER = 20;
 
+/** Minimum tactical advantage multiplier when a tactical event fires (THR-628) */
+export const TACTICAL_MIN_MULTIPLIER = 2;
+
+/**
+ * Chance per field battle that one side opens with tactical brilliance (the
+ * other side's read of it: a blunder). Seeded per battle id — deterministic
+ * (THR-628). The clamp in calculateInitialMomentum guarantees spotlights
+ * still matter even at TACTICAL_MAX_MULTIPLIER.
+ */
+export const TACTICAL_EVENT_CHANCE = 0.15;
+
 /** Fortification multiplier after breach (30% of original) */
 export const BREACH_FORTIFICATION_REDUCTION = 0.3;
 
@@ -115,6 +126,13 @@ export const SIEGE_STARVATION_TICK = 15;
 
 /** How far the siege broadcasts regional encounters (hex distance) */
 export const SIEGE_REGIONAL_ENCOUNTER_RANGE = 5;
+
+/**
+ * Minimum domainCapabilities value (0–100 scale, lowercase reach keys) for an
+ * actor to qualify for a capability-gated regional siege encounter
+ * (shadow → smuggle/sabotage, heart → negotiate, iron → relief march).
+ */
+export const SIEGE_REGIONAL_CAPABILITY_MIN = 40;
 
 /** Attacker Cohesion loss per tick during siege (lower than field — waiting) */
 export const SIEGE_COMBAT_ATTRITION_ATTACKER = 1.0;

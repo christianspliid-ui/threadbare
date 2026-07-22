@@ -319,6 +319,7 @@ export const HOLY_ORDER_DAWN_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
                     delayTicks: FACTION_PROSE_SEED_DELAY_QUEST_TICKS,
                     priority: 1.1,
                     seedLabel: 'The corruption at the shrine had a source. That source is still there.',
+                    inheritContext: true, // the SAME source persists
                   },
                 ],
                 closeAfterSelection: true,
@@ -465,6 +466,7 @@ export const HOLY_ORDER_DAWN_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
                     delayTicks: FACTION_PROSE_SEED_DELAY_QUEST_TICKS,
                     priority: 1.1,
                     seedLabel: 'Bandits who attacked pilgrims on the road near {location} have not been cleared.',
+                    inheritContext: true, // the SAME bandits remain
                   },
                 ],
                 closeAfterSelection: true,
@@ -629,6 +631,7 @@ export const HOLY_ORDER_DAWN_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
                     delayTicks: FACTION_PROSE_SEED_DELAY_QUEST_TICKS + 3,
                     priority: 1.3,
                     seedLabel: 'The thing in {location} was not alone. The source is still active.',
+                    inheritContext: true, // the SAME source is active
                   },
                 ],
                 closeAfterSelection: true,
@@ -778,6 +781,7 @@ export const HOLY_ORDER_DAWN_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
                     delayTicks: FACTION_PROSE_SEED_DELAY_QUEST_TICKS * 2,
                     priority: 1.0,
                     seedLabel: 'The judgment at {location} was the symptom. The source of the heresy has not been addressed.',
+                    inheritContext: true, // the SAME heresy source
                   },
                 ],
                 closeAfterSelection: true,
@@ -1171,6 +1175,7 @@ export const HOLY_ORDER_DAWN_SENIOR_TEMPLATES: UnifiedActionTemplate[] = [
                     delayTicks: FACTION_PROSE_SEED_DELAY_QUEST_TICKS * 3,
                     priority: 1.5,
                     seedLabel: 'The crusade at {location} was repelled. The enemy remains. The order will need a larger answer.',
+                    inheritContext: true, // the SAME enemy remains
                   },
                 ],
                 closeAfterSelection: true,
@@ -1339,6 +1344,7 @@ export const HOLY_ORDER_DAWN_SENIOR_TEMPLATES: UnifiedActionTemplate[] = [
                     delayTicks: FACTION_PROSE_SEED_DELAY_QUEST_TICKS * 2,
                     priority: 1.4,
                     seedLabel: 'The cult\'s outer network was not addressed in the {location} inquisition.',
+                    inheritContext: true, // the SAME cult network
                   },
                   { kind: 'reputation_tally' as const, key: 'star.positive', delta: 1 },
                 ],
@@ -1554,6 +1560,7 @@ export const HOLY_ORDER_DAWN_ELITE_TEMPLATES: UnifiedActionTemplate[] = [
                     delayTicks: FACTION_PROSE_SEED_DELAY_QUEST_TICKS,
                     priority: 2,
                     seedLabel: 'The holy war at {location} was repelled. The enemy remains and the order has not forgotten.',
+                    inheritContext: true, // the SAME enemy remains
                   },
                 ],
                 closeAfterSelection: true,

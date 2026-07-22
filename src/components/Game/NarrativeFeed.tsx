@@ -1,6 +1,7 @@
 import { useEffect, useRef, useMemo } from 'react';
 import type { TickEvent } from '../../types/gameState';
 import { TICK_EVENT_COLORS } from '../../data/uiColorPalette';
+import { renderProseWithIPK } from '../ProseKeyword';
 
 interface NarrativeFeedProps {
   events: TickEvent[];
@@ -88,7 +89,9 @@ export function NarrativeFeed({ events }: NarrativeFeedProps) {
             />
             <div className="flex-1 flex items-center justify-between gap-2 leading-relaxed">
               <span className="text-amber-200/80">
-                {evt.message}
+                {/* IPK-aware: identity for plain text; renders **keyword** markers
+                    (sphere/economy/battle) as tooltip'd terms (THR-628). */}
+                {renderProseWithIPK(evt.message)}
               </span>
               {group.count > 1 && (
                 <span className="text-amber-900/60 font-mono whitespace-nowrap flex-shrink-0">

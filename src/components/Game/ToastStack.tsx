@@ -3,6 +3,7 @@ import { AnimateMount } from '../shared/AnimateMount';
 import type { ToastItem } from '../../types/notification';
 import type { NavigationTarget } from '../../types/notification';
 import { getSphereColor } from '../../data/sphereIcons';
+import { renderProseWithIPK } from '../ProseKeyword';
 import { EncounterNotificationCard } from './EncounterNotificationCard';
 // Band → left-border accent colour. Shared with the thread-row encounter badge
 // (THR-664). Fail-soft: unknown band → undefined, falls through to sphere/gold.
@@ -113,8 +114,8 @@ export function ToastStack({ toasts, onDismiss, onSelectAgent, onNavigate }: Toa
                 toast.encounterCard
                   ? `${toast.encounterCard.agentName} — ${toast.encounterCard.encounterName}. ${toast.encounterCard.meta}`
                   : navTarget
-                    ? `${toast.message} — ${NAV_TOOLTIPS[navTarget.kind]}`
-                    : toast.message
+                    ? `${toast.message.replace(/\*\*/g, '')} — ${NAV_TOOLTIPS[navTarget.kind]}`
+                    : toast.message.replace(/\*\*/g, '')
               }
               aria-description="Right-click to dismiss"
             >
@@ -129,7 +130,8 @@ export function ToastStack({ toasts, onDismiss, onSelectAgent, onNavigate }: Toa
                     fontFamily: 'var(--font-body)',
                   }}
                 >
-                  {toast.message}
+                  {/* IPK-aware: identity for plain text (THR-628) */}
+                  {renderProseWithIPK(toast.message)}
                 </span>
               )}
               {toast.count > 1 && (

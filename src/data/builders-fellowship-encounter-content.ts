@@ -81,7 +81,7 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
           '{?no_artifact}Without a probe, {their} reading comes from the sound a knuckle makes on ' +
           'stone that is backed solidly versus stone that is not. {name} tap{s} methodically, listening.{/no_artifact}',
         successAfterimage:
-          'The damage runs two courses deeper than the foreman\'s report said. ' +
+          'The damage runs two courses deeper than {cast:foreman}\'s report said. ' +
           '{name} extends the chalk mark before the light goes.',
         failureAfterimage:
           '{name}\'s assessment matches what the eye can see. ' +
@@ -306,6 +306,7 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
                 templateId: 'bf.quest.craft_commission',
                 delayTicks: 12,
                 seedLabel: 'A foundation without a building draws commissions',
+                inheritContext: true, // the same site draws the commission
               },
             ],
             closeAfterSelection: true,
@@ -608,6 +609,7 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
                 templateId: 'bf.quest.lay_foundation',
                 delayTicks: 10,
                 seedLabel: 'Detailed plans in the patron\'s hands — the construction commission is likely to follow',
+                inheritContext: true, // the SAME patron follows up
               },
             ],
             closeAfterSelection: true,
@@ -1752,6 +1754,7 @@ export const BUILDERS_FELLOWSHIP_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
                 templateId: 'bf.quest.craft_commission',
                 delayTicks: 8,
                 seedLabel: 'A feast conversation may lead to a commission introduction',
+                inheritContext: true, // the same contact follows up
               },
             ],
             closeAfterSelection: true,

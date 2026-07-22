@@ -788,6 +788,34 @@ effects: [
 - **The withdrawn option** is real — it produces a quieter outcome with less seeding, which is the game-mechanical expression of "the god chose not to interfere"
 - **The divine intervention choices are genuinely different** — supporting the festival vs. warning about the spy are different kinds of godly action with different consequences
 
+### The counterpart pattern — `{target}` + `bond_change` + `inheritContext` composing (THR-699)
+
+When an encounter is *with* someone — an alliance overture, a duel, a shakedown — three capabilities compose so the prose, the graph, and the follow-up all agree on who that someone is. The shipped `social.forge_alliance` is the live exemplar:
+
+```
+narrative: "…a gesture of sense, and {target} reads it that way.
+{?target_is_rival}They have crossed each other before. Neither of
+them mentions it, which is its own kind of mention.{/target_is_rival}"
+
+// Aftermath reaction "The alliance takes root — {target} will call on {name}."
+effects: [
+  { kind: 'bond_change',              // the alliance the prose narrates now
+    withAgentId: '$target',           // exists as a relates_to edge
+    sentimentDelta: BOND_PACT_SENTIMENT_DELTA,
+    trustDelta: BOND_PACT_TRUST_DELTA },
+  { kind: 'encounter_seed',
+    templateId: 'social.forge_alliance',
+    delayTicks: 24,
+    seedLabel: 'New ally calls in a favor from {name}',
+    inheritContext: true },           // the SAME ally returns in the follow-up
+]
+```
+
+- **`{target}`** names the person the encounter actually bound (fallback: "the other party" — keep the token mid-sentence, the fallback is lowercase). Relation conditionals (`{?target_is_rival}`) change the read when history exists.
+- **`bond_change` with `'$target'`** makes the narrated relationship real on the graph — proportionality ladder in `effect-constants.ts` (`BOND_PACT_*` / `BOND_SLIGHT_*` / `BOND_BETRAYAL_*` / `BOND_DUEL_*`); never inline magnitudes.
+- **`inheritContext: true`** only where the fiction means *the same person (or place) returns* — a rematch, a called-in favor, a grudge. Not for "someone new arrives."
+- **Judgment call that matters:** only substitute `{target}` where the encounter's real graph target *is* the referent. Borderland's bandits and wolves are scene-generated, not graph entities, and those encounters bind location targets — a `{target}` there would render a place name into a person slot. When in doubt, leave the noun generic.
+
 This is what "content is design" means: the systemic wiring isn't decoration on top of the prose. The wiring IS the design. The prose serves the wiring. Knowing that encounter seeds exist is what made the author write a scene where someone is watching — because that watcher can become a future encounter.
 
 ---
@@ -1601,3 +1629,25 @@ Rivals launch **multi-phase schemes** — a `Composition` of `kind: 'rival-schem
 **Traces:** `rival.scheme_launched`, `rival.scheme_phase_advanced` (carries `move`), `rival.scheme_countered` (`stalled`|`failed`), `rival.scheme_completed` — all in `src/types/trace.ts`.
 
 **Debug:** `window.__DEBUG.getRivalSchemes()` lists active/terminal schemes; `window.__DEBUG.forceRivalScheme(rivalName, family)` launches one for QA.
+
+---
+
+## Capability: Notable agendas (THR-630)
+
+The world's prominent figures pursue **four-phase agendas** — the living-world counterpart to rival schemes, riding the same THR-225 composition runner with the same executor shape. Faction leaders (resolved through the canonical `getFactionLeaderId` seam) are scored for prominence (scope · power · drive · proximity-to-player-threads) and up to `MAX_ACTIVE_NOTABLE_AGENDAS` (7) carry one agenda at a time. This is the layer content authors extend when they want the world to *do things* near the player that aren't the player's doing.
+
+**How it works:** `phaseNotableAgendas` (`src/engine/notableAgendas.ts`, runs after `phaseRivalActions`) scans the roster every `NOTABLE_AGENDA_ROSTER_INTERVAL_TICKS` (12), launches agendas into free budget slots, invests each tick to arm phases via world-flags (`agendaFlags`), and executes each phase's concrete move when the runner activates it. Chronicle beats come from the prose baked into each phase's `rationale` at launch.
+
+**Authoring a new family:** add a `NotableAgendaFamily` in `src/data/notable-agendas/` (see `claim.ts` for the shape, `campaign.ts` for a family with a real-world side effect). Four `beats`, each with a `move` (`rumor` | `materialize` | `escalate` | `crack`) and ≥3 prose variants using `{notable}`/`{faction}`/`{target}` placeholders (baseline register, THR-609). Set `targetKind` (`location` = foreign holding, `own-location` = the notable's own, `notable` = another leader, `none` = anchors on the sponsor) and `sphereLean` (drives the pressure sphere). Register in `index.ts`.
+
+**Real graph footprints (don't write hollow families):** materialize binds `sponsors_scheme` (location targets, `sponsorKind:'notable'`) or `hostile_to` (actor targets — a declared feud IS hostility). Family-specific effects live as keyed hooks in the executor: `succession` anoints a real `will_succeed` heir (consumed by `phaseFactionSuccession` on the next leader exit), `campaign` raises a **real army** via `spawnArmy` (the notable commands in person when iron-capable; objective = conquer the campaign target) and then the shipped war machinery owns it. Campaign is also how **nations** (factionDefId null, outside `scoreEligibleAmbitions`) reach the war system — through their leaders.
+
+**Thread-takeover:** threading a notable removes them from the launch pool, and threading the sponsor of an active agenda freezes it (no invest, no counter churn) — the player's attention displaces autonomy by design.
+
+**Counter-play:** same surface as rival schemes (player controls/holds the target or has a thread to an occupant; for feuds, a thread to the target notable is protection) — stall once, fail at `NOTABLE_AGENDA_COUNTERS_TO_FAIL`.
+
+**Traces:** `notable.agenda_launched` (carries `prominence`), `notable.agenda_phase_advanced`, `notable.agenda_countered`, `notable.agenda_completed`, plus ONE aggregate `notable.roster_scan` per scan tick (never per-notable — ring-buffer budget).
+
+**Surfaces:** NotablesPanel (top bar, ♛) with family-colored phase-chip cards; Chronicle beats via the runner; a crack toast for terminal beats. Constants in `src/data/notable-agenda-config.ts`.
+
+**Debug:** `window.__DEBUG.getNotableAgendas()` lists live agendas; `window.__DEBUG.forceNotableAgenda(notableName, family)` launches one for QA.
