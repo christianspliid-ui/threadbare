@@ -26,6 +26,13 @@ import { mulberry32 } from '../lib/prng';
 import { hexDistance } from '../lib/hexMath';
 import { resolveLocationToHex } from './encounterAwareness';
 import { getFactionLeaderId } from './factionNetwork';
+import { spawnArmy, selectCommander } from './armySpawning';
+import {
+  ARMY_SPAWN_IRON_TIER_MIN,
+  ARMY_SPAWN_GOLD_TIER_MIN,
+  MAX_ARMIES_PER_FACTION,
+} from '../types/army';
+import { computeCapability, computeTier } from './domainCapability';
 import { emitTrace } from './traceBuffer';
 import type {
   NotableAgendaLaunchedTrace,
@@ -446,6 +453,90 @@ function detectAgendaCounter(
   return { countered: false };
 }
 
+// ─── Campaign: the war hand-off ────────────────────────────────────────────
+
+/**
+ * Raise a real army for the notable's campaign: the notable commands it in
+ * person, the objective is `conquer` on the campaign's target, and the
+ * shipped army/battle/siege machinery owns everything from here — the agenda
+ * only narrates. Fail-soft no-op when the faction is spawn-ineligible
+ * (army cap, missing commander position, etc.); the muster beat then stays
+ * narration-only, which is a bluff the world can survive.
+ */
+function raiseCampaignArmy(
+  state: GameState,
+  notableId: string,
+  compositionId: string,
+  targetId: string,
+): void {
+  const graph = state.graph;
+  const factionId =
+    graph.getOutgoingEdges(notableId, 'leads')[0]?.target ??
+    graph.getOutgoingEdges(notableId, 'member_of')[0]?.target;
+  if (!factionId) return;
+
+  // Campaign-specific eligibility: the shipped isEligibleForArmySpawn requires
+  // the faction's CURRENT ambition to be military, but the campaign itself is
+  // the military intent. Army cap and gold gate stay; the ambition-type check
+  // is what the campaign replaces.
+  let existingArmyCount = 0;
+  for (const edge of graph.getIncomingEdges(factionId, 'member_of')) {
+    if (graph.getNode(edge.source)?.properties.armyState) existingArmyCount++;
+  }
+  if (existingArmyCount >= MAX_ARMIES_PER_FACTION) return;
+  const goldTier = computeTier(computeCapability(graph, factionId, 'gold'));
+  if (goldTier < ARMY_SPAWN_GOLD_TIER_MIN) return;
+
+  // The notable commands in person when iron-capable and not already
+  // commanding; otherwise their best marshal leads in their name.
+  let commanderId: string | null = null;
+  const notableIronTier = computeTier(computeCapability(graph, notableId, 'iron'));
+  const alreadyCommanding = graph.getIncomingEdges(notableId, 'commanded_by').length > 0;
+  if (notableIronTier >= ARMY_SPAWN_IRON_TIER_MIN && !alreadyCommanding) {
+    commanderId = notableId;
+  } else {
+    commanderId = selectCommander(state, factionId);
+  }
+  if (!commanderId) return;
+
+  const factionNode = graph.getNode(factionId);
+  const ambitionId = `amb_campaign_${notableId}_${state.tick}`;
+  graph.addNode({
+    id: ambitionId,
+    type: 'ambition',
+    name: `${factionNode?.name ?? factionId} — campaign`,
+    properties: {
+      ambitionType: 'territorial_expansion',
+      priority: 0.7,
+      targetNodeId: targetId,
+      grievanceDecay: 0,
+      createdTick: state.tick,
+      compositionId,
+    },
+  });
+
+  const armyId = spawnArmy(state, factionId, commanderId, ambitionId);
+  if (!armyId) return;
+
+  // Point the army at the campaign's target (spawnArmy defaults to the
+  // nearest hostile settlement; the campaign has a declared object).
+  const armyNode = graph.getNode(armyId);
+  const armyState = armyNode?.properties.armyState as
+    | { objective: unknown }
+    | undefined;
+  if (armyNode && armyState) {
+    graph.updateNode(armyId, {
+      properties: {
+        ...armyNode.properties,
+        armyState: {
+          ...armyState,
+          objective: { type: 'conquer', targetNodeId: targetId, estimatedAttrition: 0 },
+        },
+      },
+    });
+  }
+}
+
 // ─── Succession: heir anointment ───────────────────────────────────────────
 
 /**
@@ -552,6 +643,9 @@ export function phaseNotableAgendas(state: GameState): Partial<GameState> {
             // consumes when the seat next empties.
             if (family.id === 'succession') {
               anointDeterministicHeir(state, notableId, compId);
+            }
+            if (family.id === 'campaign' && targetId) {
+              raiseCampaignArmy(state, notableId, compId, targetId);
             }
             if (targetNode && targetId) {
               // Location targets bind sponsors_scheme (schema: actor→location);

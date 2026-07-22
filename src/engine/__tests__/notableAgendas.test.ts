@@ -432,6 +432,48 @@ describe('notableAgendas (THR-630 seam A)', () => {
     expect(plan.composition.phases![3].rationale).toContain('Hearthstead');
   });
 
+  // ─── Seam C: Campaign — the war hand-off ─────────────────────────────────
+
+  it('campaign muster raises a real army commanded by the notable with a conquer objective', async () => {
+    const graph = claimWorld();
+    // Saturate the gates: faction gold, notable iron (sigmoid saturates by 10).
+    graph.getNode('f_mine')!.properties.domainCapabilities = { gold: 10 };
+    graph.getNode('leader_mine')!.properties.domainCapabilities = { iron: 10 };
+    const { CAMPAIGN_FAMILY } = await import('../../data/notable-agendas/campaign');
+    const plan = buildNotableAgenda(
+      'leader_mine', 'Leader', 'The Home Court', CAMPAIGN_FAMILY, 0, 'their_town', 'Farwatch', () => 0,
+    );
+    plan.composition.activatedPhaseIds = ['banners-called', 'muster'];
+    phaseNotableAgendas(makeState(3, graph, {
+      activeCompositions: [plan.composition],
+      worldFlags: { ...plan.worldFlagUpdates },
+    }));
+
+    const armies = graph.getNodesByType('actor').filter((n) => n.properties.armyState);
+    expect(armies).toHaveLength(1);
+    const commanded = graph.getOutgoingEdges(armies[0].id, 'commanded_by');
+    expect(commanded[0]?.target).toBe('leader_mine');
+    const objective = (armies[0].properties.armyState as { objective: { type: string; targetNodeId: string } }).objective;
+    expect(objective.type).toBe('conquer');
+    expect(objective.targetNodeId).toBe('their_town');
+  });
+
+  it('campaign muster stays narration-only when the gold gate fails (fail-soft)', async () => {
+    const graph = claimWorld(); // no gold capability anywhere → gate fails
+    const { CAMPAIGN_FAMILY } = await import('../../data/notable-agendas/campaign');
+    const plan = buildNotableAgenda(
+      'leader_mine', 'Leader', 'The Home Court', CAMPAIGN_FAMILY, 0, 'their_town', 'Farwatch', () => 0,
+    );
+    plan.composition.activatedPhaseIds = ['banners-called', 'muster'];
+    expect(() =>
+      phaseNotableAgendas(makeState(3, graph, {
+        activeCompositions: [plan.composition],
+        worldFlags: { ...plan.worldFlagUpdates },
+      })),
+    ).not.toThrow();
+    expect(graph.getNodesByType('actor').filter((n) => n.properties.armyState)).toHaveLength(0);
+  });
+
   it('notes completion once when the runner marks the composition completed', () => {
     const { graph, comp, flags } = launchedWorld();
     comp.activatedPhaseIds = ['whisper', 'declaration', 'pressure', 'reckoning'];
