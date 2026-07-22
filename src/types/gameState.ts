@@ -60,6 +60,10 @@ export interface ActiveComposition {
   sponsorRivalId?: string;
   /** Rival-scheme family id (THR-66), e.g. `corruptive` | `territorial`. */
   schemeFamily?: string;
+  /** Notable-agenda attribution (THR-630) — the notable agent carrying this composition. */
+  sponsorNotableId?: string;
+  /** Notable-agenda family id (THR-630), e.g. `claim` | `feud`. */
+  agendaFamily?: string;
 }
 import type { DoomIdentityMatrix } from './doomIdentity';
 import { DEFAULT_DOOM_TICKS as CONFIG_DEFAULT_DOOM_TICKS } from '../data/game-config';

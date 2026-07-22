@@ -1459,6 +1459,87 @@ if (import.meta.env.DEV) {
       };
     },
 
+    // THR-630: notable-agenda inspection — reads agenda compositions off state.
+    getNotableAgendas: () => {
+      const state = _gameStateProvider?.();
+      if (!state) return [];
+      return (state.activeCompositions ?? [])
+        .filter((c) => c.sponsorNotableId && c.agendaFamily)
+        .map((c) => {
+          const notable = state.graph.getNode(c.sponsorNotableId!);
+          const targetId = c.resolvedNodes.target;
+          const target = targetId ? state.graph.getNode(targetId) : null;
+          return {
+            compositionId: c.compositionId,
+            notableId: c.sponsorNotableId!,
+            notableName: notable?.name ?? c.sponsorNotableId!,
+            family: c.agendaFamily!,
+            phase:
+              c.activatedPhaseIds[c.activatedPhaseIds.length - 1] ?? 'pending',
+            phaseIndex: c.activatedPhaseIds.length,
+            status: c.status,
+            targetId,
+            targetName: target?.name,
+            firedAtTick: c.firedAtTick,
+          };
+        });
+    },
+
+    // THR-630: force-launch a notable agenda (dev/QA). Mutates live state in
+    // place; the engine picks it up next tick.
+    forceNotableAgenda: async (notableName: string, family: string) => {
+      const state = _gameStateProvider?.();
+      if (!state) return { success: false, message: 'Game not loaded' };
+      const [agendas, families] = await Promise.all([
+        import('./engine/notableAgendas'),
+        import('./data/notable-agendas'),
+      ]);
+      const fam = families.getNotableAgendaFamily(family);
+      if (!fam) return { success: false, message: `Unknown agenda family "${family}"` };
+      const notables = agendas.listNotables(state.graph);
+      const match = notables.find((n) => {
+        const node = state.graph.getNode(n.notableId);
+        return (
+          n.notableId === notableName ||
+          n.notableId.startsWith(notableName) ||
+          (node?.name ?? '').toLowerCase().includes(notableName.toLowerCase())
+        );
+      });
+      if (!match) return { success: false, message: `Notable "${notableName}" not found (must hold a leads edge)` };
+      let target: { targetId: string; targetName: string } | undefined;
+      if (fam.requiresTargetLocation) {
+        target = agendas.selectClaimTarget(state, match.notableId, match.factionId, new Set());
+        if (!target) return { success: false, message: 'No claimable target location found' };
+      }
+      const notableNode = state.graph.getNode(match.notableId);
+      const factionNode = state.graph.getNode(match.factionId);
+      // Simple LCG rng — dev-only tool, determinism not required here.
+      let seed = (state.tick + 1) | 0;
+      const rng = () => {
+        seed = (seed * 1103515245 + 12345) & 0x7fffffff;
+        return seed / 0x7fffffff;
+      };
+      const plan = agendas.buildNotableAgenda(
+        match.notableId,
+        notableNode?.name ?? match.notableId,
+        factionNode?.name ?? match.factionId,
+        fam,
+        state.tick,
+        target?.targetId,
+        target?.targetName,
+        rng,
+      );
+      state.activeCompositions = [...(state.activeCompositions ?? []), plan.composition];
+      state.worldFlags = { ...(state.worldFlags ?? {}), ...plan.worldFlagUpdates };
+      return {
+        success: true,
+        message: `Launched ${fam.label} for ${notableNode?.name ?? match.notableId}${target ? ` against ${target.targetName}` : ''}`,
+        notableId: match.notableId,
+        family: fam.id,
+        compositionId: plan.composition.compositionId,
+      };
+    },
+
     // THR-614 (war seam 3) — headless army/battle readout for CLI/automated
     // verification. The DebugPanel "Armies" tab renders the same graph state
     // visually; these return plain data so a headless run can assert war fired

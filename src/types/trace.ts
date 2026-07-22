@@ -289,7 +289,13 @@ export type TraceCategory =
   | 'ascendant.progression.tier_up'
   | 'ascendant.progression.deepening_enqueued'
   | 'ascendant.progression.milestone_enqueued'
-  | 'ascendant.progression.control_release';
+  | 'ascendant.progression.control_release'
+  // Notable agendas — living world (THR-630)
+  | 'notable.agenda_launched'
+  | 'notable.agenda_phase_advanced'
+  | 'notable.agenda_countered'
+  | 'notable.agenda_completed'
+  | 'notable.roster_scan';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'action_selection', 'narrative_generation', 'context_harvest',
@@ -550,6 +556,12 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'ascendant.progression.deepening_enqueued',
   'ascendant.progression.milestone_enqueued',
   'ascendant.progression.control_release',
+  // Notable agendas — living world (THR-630)
+  'notable.agenda_launched',
+  'notable.agenda_phase_advanced',
+  'notable.agenda_countered',
+  'notable.agenda_completed',
+  'notable.roster_scan',
 ];
 
 /** Base shape for all trace entries */
@@ -1894,6 +1906,12 @@ export type TraceEntry =
   | RivalSchemePhaseAdvancedTrace
   | RivalSchemeCounteredTrace
   | RivalSchemeCompletedTrace
+  // Notable agenda traces (THR-630)
+  | NotableAgendaLaunchedTrace
+  | NotableAgendaPhaseAdvancedTrace
+  | NotableAgendaCounteredTrace
+  | NotableAgendaCompletedTrace
+  | NotableRosterScanTrace
   // Composition dual-voice story-beat wiring (THR-254)
   | CompositionStoryBeatTemplateMissingTrace
   // Encounter foreshadowing (THR-389)
@@ -2570,6 +2588,58 @@ export interface RivalSchemeCompletedTrace extends TraceBase {
   category: 'rival.scheme_completed';
   rivalId: string;
   compositionId: string;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Notable Agenda Traces (THR-630)
+// ═══════════════════════════════════════════════════════════════════
+
+/** Trace: a notable launched a four-phase agenda on the composition runner. */
+export interface NotableAgendaLaunchedTrace extends TraceBase {
+  category: 'notable.agenda_launched';
+  notableId: string;
+  compositionId: string;
+  family: string;
+  prominence: number;
+  targetNodeId?: string;
+}
+
+/** Trace: an agenda phase activated and its concrete move fired. */
+export interface NotableAgendaPhaseAdvancedTrace extends TraceBase {
+  category: 'notable.agenda_phase_advanced';
+  notableId: string;
+  compositionId: string;
+  phaseId: string;
+  move: string;
+  targetNodeId?: string;
+}
+
+/** Trace: the player countered an agenda (stalled it or failed it). */
+export interface NotableAgendaCounteredTrace extends TraceBase {
+  category: 'notable.agenda_countered';
+  notableId: string;
+  compositionId: string;
+  outcome: 'stalled' | 'failed';
+  byActorId?: string;
+}
+
+/** Trace: an agenda ran all four phases to completion. */
+export interface NotableAgendaCompletedTrace extends TraceBase {
+  category: 'notable.agenda_completed';
+  notableId: string;
+  compositionId: string;
+}
+
+/**
+ * Trace: one aggregate roster-scan record per scan tick (never per-notable —
+ * per-agent bursts flood the ring buffer).
+ */
+export interface NotableRosterScanTrace extends TraceBase {
+  category: 'notable.roster_scan';
+  candidatesScored: number;
+  activeAgendas: number;
+  launched: number;
+  skippedThreaded: number;
 }
 
 // ═══════════════════════════════════════════════════════════════════
