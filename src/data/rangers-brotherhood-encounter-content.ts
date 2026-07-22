@@ -161,6 +161,7 @@ export const RANGERS_BROTHERHOOD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
                 templateId: 'rb.quest.clear_threat',
                 delayTicks: FACTION_PROSE_SEED_DELAY_QUEST_TICKS * 2,
                 seedLabel: 'Patrol fugitive may return to {location} with reinforcements',
+                inheritContext: true, // the SAME fugitive returns
               },
             ],
             closeAfterSelection: true,
@@ -317,6 +318,7 @@ export const RANGERS_BROTHERHOOD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
                 templateId: 'rb.quest.track_beast',
                 delayTicks: FACTION_PROSE_SEED_DELAY_QUEST_TICKS,
                 seedLabel: 'Wounded beast may return to {location} under cover of dark',
+                inheritContext: true, // the SAME beast returns
               },
             ],
             closeAfterSelection: true,
@@ -576,6 +578,7 @@ export const RANGERS_BROTHERHOOD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
                 templateId: 'rb.senior.ambush_raiders',
                 delayTicks: FACTION_PROSE_SEED_DELAY_QUEST_TICKS * 2,
                 seedLabel: 'Escaped operatives may return to {location} with a larger force',
+                inheritContext: true, // the SAME operatives return
               },
             ],
             closeAfterSelection: true,
@@ -1029,6 +1032,7 @@ export const RANGERS_BROTHERHOOD_SENIOR_TEMPLATES: UnifiedActionTemplate[] = [
                 templateId: 'rb.elite.frontier_defense',
                 delayTicks: FACTION_PROSE_SEED_DELAY_QUEST_TICKS * 3,
                 seedLabel: 'Escaped raiders near {location} may return with an organized force',
+                inheritContext: true, // the SAME raiders return
               },
             ],
             closeAfterSelection: true,
@@ -1641,6 +1645,7 @@ export const RANGERS_BROTHERHOOD_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
                 templateId: 'rb.join',
                 delayTicks: FACTION_PROSE_SEED_DELAY_SOCIAL_TICKS * 3,
                 seedLabel: 'A warden at {location} was inspired by the campfire story',
+                inheritContext: true, // the SAME young warden
               },
             ],
             closeAfterSelection: true,

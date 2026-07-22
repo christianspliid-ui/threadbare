@@ -353,6 +353,20 @@ describe('Slice F content — authored bond_change reactions land on the graph',
     expect(seedEffect?.inheritContext).toBe(true);
   });
 
+  it('tg.social.dice_game debt reaction bonds through the duel ladder (THR-712 guild sweep)', () => {
+    const state = buildState();
+    const action = makeAction({ targetId: 'actor-victim' });
+    const reaction = findReaction('tg.social.dice_game', 'dice_game_debt');
+
+    const { state: next } = applyEncounterAftermathReaction(state, action, reaction, 10, runtime);
+
+    const bonds = getAgentBonds(next.graph, 'actor-hero');
+    expect(bonds).toHaveLength(1);
+    expect(bonds[0].agent.id).toBe('actor-victim');
+    // Duel semantics: friction on sentiment, a sliver of earned trust.
+    expect(bonds[0].sentiment).toBeLessThan(0);
+  });
+
   it('a location-targeted action leaves authored bond_change a no-op (kind mismatch fail-soft)', () => {
     const state = buildState();
     const action = makeAction({ targetId: 'loc-town' });
