@@ -625,6 +625,9 @@ export interface DebugBridge {
         targetKind: 'agent' | 'location' | null;
         relation: 'ally' | 'rival' | 'stranger' | null;
         bindings: Array<{ key: string; nodeId: string; name: string | null; reused: boolean }>;
+        /** THR-696 — the cast block `{cast:<key>}` renders: every declared bundle key
+         *  resolved to its bound entity's live name, or the spec's authored fallback. */
+        cast: Record<string, { name: string; role: string; reused: boolean }> | null;
       }
     | { error: string }
   >;

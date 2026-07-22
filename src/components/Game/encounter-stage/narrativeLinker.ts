@@ -247,6 +247,29 @@ export function buildLocationReference(
   };
 }
 
+/**
+ * Build a tooltip reference for the action's scene target (THR-696) — the entity the
+ * encounter is *with*. Same presentation contract as the cast references above; only the
+ * detail line differs, because the target is the encounter's counterpart rather than a
+ * bundle member. Returns null when the target node no longer exists.
+ */
+export function buildTargetReference(
+  graph: WorldGraph,
+  targetId: string,
+): EncounterStageNarrativeReference | null {
+  const node = graph.getNode(targetId);
+  if (!node?.name) return null;
+
+  return {
+    id: `target:${targetId}`,
+    label: node.name,
+    detail: node.type === 'location'
+      ? 'Where this encounter is taking place.'
+      : 'The other party in this encounter.',
+    tone: 'default',
+  };
+}
+
 // ─── Collect Entities from Support Bundle ───────────────────────
 
 export interface CollectedEntities {
@@ -258,11 +281,17 @@ export interface CollectedEntities {
  * Collect all linkable entities from a support bundle's resolved bindings.
  * Returns both the link entries (for prose scanning) and the reference
  * objects (for tooltip rendering).
+ *
+ * `targetId` (THR-696) adds the action's scene target to the same link set, so the
+ * named counterpart is clickable like a cast member (Rule 4 — every primitive is
+ * clickable). A target that is also a bound cast member is skipped, so it keeps its
+ * richer cast tooltip instead of being shadowed by the generic target one.
  */
 export function collectSupportBundleEntities(
   graph: WorldGraph,
   supportBundle: ReadonlyArray<{ readonly kind: string; readonly key: string; readonly supportRole?: string; readonly spawnName?: string; readonly sublocationTypeId?: string; readonly fallbackName?: string }>,
   bindings: ReadonlyArray<EncounterSupportBinding>,
+  targetId?: string,
 ): CollectedEntities {
   const linkEntries: EntityLinkEntry[] = [];
   const references: EncounterStageNarrativeReference[] = [];
@@ -322,6 +351,20 @@ export function collectSupportBundleEntities(
           referenceId: locRef.id,
           emphasis: 'accent',
         });
+      }
+    }
+  }
+
+  // Scene target (THR-696) — appended last so a cast binding on the same node wins.
+  if (targetId && !bindings.some(b => b.nodeId === targetId)) {
+    const targetRef = buildTargetReference(graph, targetId);
+    if (targetRef) {
+      references.push(targetRef);
+      linkEntries.push({ name: targetRef.label, referenceId: targetRef.id, emphasis: 'strong' });
+
+      const firstName = targetRef.label.split(' ')[0];
+      if (firstName && firstName !== targetRef.label && firstName.length >= 3) {
+        linkEntries.push({ name: firstName, referenceId: targetRef.id, emphasis: 'strong' });
       }
     }
   }

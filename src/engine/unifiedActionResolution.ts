@@ -1510,7 +1510,13 @@ export function executeStepResult(
         state.doomIdentityMatrix,
         state,
         tick,
-        { targetId: action.targetId }, // THR-694 — name the scene's other party in prose
+        {
+          targetId: action.targetId, // THR-694 — name the scene's other party in prose
+          // THR-696 — name the scene's cast in the frozen step prose, so the replayed
+          // record shows the same people the player was shown at resolution time.
+          supportBundle: template.supportBundle,
+          supportBindings: action.supportBindings,
+        },
       );
       narrativeProse = enrichProse(step.narrativeTemplate ?? '', proseCtx, { runtime, rng }) || narrativeProse;
       const rawAfterimage = isStepSuccess(outcome) ? step.successAfterimage : step.failureAfterimage;

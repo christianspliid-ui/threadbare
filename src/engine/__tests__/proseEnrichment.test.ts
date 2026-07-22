@@ -2,7 +2,7 @@
  * Tests for Dynamic Prose Enrichment — TB-035 Phase 5.
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import {
   gatherNarrativeContext,
   enrichProse,
@@ -11,8 +11,11 @@ import {
   ENRICHMENT_ALLY_MIN_TRUST,
   ENRICHMENT_MAX_NAMED_ALLIES,
   CALLBACK_PROSE_PROBABILITY,
+  CAST_CONTEXT_MAX_MEMBERS,
+  resolveSceneCastContext,
 } from '../proseEnrichment';
 import type { NarrativeContext } from '../proseEnrichment';
+import type { EncounterSupportBinding, EncounterSupportBundle } from '../../types/encounter';
 import { WorldGraph } from '../graph';
 import type { MeetingChoiceRecord } from '../../types/meetingEncounter';
 import type { BeatOutcome } from '../../types/journeyEngine';
@@ -719,6 +722,156 @@ describe('enrichProse — scene target placeholders (THR-694)', () => {
     expect(enrichProse('{?has_target}at {target}{/has_target}', loc)).toBe('at Ashenmoor');
     expect(enrichProse('{?target_is_stranger}x{/target_is_stranger}', loc)).toBe('');
     expect(enrichProse('{target:faction}', loc)).toBe('their people'); // fallback for location
+  });
+});
+
+// ─── Scene cast (THR-696) ─────────────────────────────────────────
+
+describe('resolveSceneCastContext — scene cast (THR-696)', () => {
+  const bundle: EncounterSupportBundle = [
+    {
+      kind: 'actor', key: 'gate_captain', delivery: 'pre-seeded', persistence: 'must-persist',
+      supportRole: 'checkpoint_captain', spawnNpcRole: 'guard_captain', spawnName: 'Gate Captain',
+    },
+    {
+      kind: 'actor', key: 'suspect_courier', delivery: 'lazy-materialize-on-trigger',
+      persistence: 'must-persist', supportRole: 'checkpoint_courier', spawnNpcRole: 'courier',
+      spawnName: 'Harried Courier',
+    },
+    {
+      kind: 'location', key: 'gatehouse', delivery: 'pre-seeded', persistence: 'must-persist',
+      sublocationTypeId: 'sublocation-type.gatehouse', fallbackName: 'Gatehouse Checkpoint',
+    },
+  ];
+
+  function castGraph(): WorldGraph {
+    const g = createTestGraph();
+    // The reuse-first binding target: a real NPC already standing at the gate.
+    g.addNode({
+      id: 'npc_merrow', name: 'Captain Merrow', type: 'actor',
+      properties: { actorType: 'individual', npcRole: 'guard_captain' },
+    });
+    return g;
+  }
+
+  const binding = (key: string, nodeId: string, reused: boolean): EncounterSupportBinding => ({
+    key, nodeId, kind: 'actor', delivery: 'pre-seeded', persistence: 'must-persist', reused,
+  });
+
+  it('names the *bound* entity, not the authored spawnName, for a reused binding', () => {
+    const cast = resolveSceneCastContext(castGraph(), bundle, [
+      binding('gate_captain', 'npc_merrow', true),
+    ]);
+    expect(cast!.gate_captain).toEqual({
+      name: 'Captain Merrow', role: 'checkpoint_captain', reused: true,
+    });
+  });
+
+  it('falls back to the spec name for a declared-but-unbound key', () => {
+    const cast = resolveSceneCastContext(castGraph(), bundle, []);
+    expect(cast!.suspect_courier.name).toBe('Harried Courier');
+    expect(cast!.suspect_courier.reused).toBe(false);
+    // Location specs fall back to fallbackName and carry the sublocation type as role.
+    expect(cast!.gatehouse).toEqual({
+      name: 'Gatehouse Checkpoint', role: 'sublocation-type.gatehouse', reused: false,
+    });
+  });
+
+  it('falls back to the spec name when the bound node has been deleted', () => {
+    const cast = resolveSceneCastContext(castGraph(), bundle, [
+      binding('gate_captain', 'ghost_id', true),
+    ]);
+    expect(cast!.gate_captain.name).toBe('Gate Captain');
+  });
+
+  it('returns undefined for an absent or empty bundle', () => {
+    expect(resolveSceneCastContext(castGraph(), undefined, [])).toBeUndefined();
+    expect(resolveSceneCastContext(castGraph(), [], [])).toBeUndefined();
+  });
+
+  it('skips blocked-primitive specs (they are never part of the scene)', () => {
+    const blocked: EncounterSupportBundle = [{
+      kind: 'actor', key: 'absent_lord', delivery: 'blocked-primitive', persistence: 'scene-only',
+      supportRole: 'lord', spawnNpcRole: 'noble', spawnName: 'The Absent Lord',
+    }];
+    expect(resolveSceneCastContext(castGraph(), blocked, [])).toBeUndefined();
+  });
+
+  it('caps the cast at CAST_CONTEXT_MAX_MEMBERS', () => {
+    const big: EncounterSupportBundle = Array.from({ length: 10 }, (_, i) => ({
+      kind: 'actor' as const, key: `k${i}`, delivery: 'pre-seeded' as const,
+      persistence: 'must-persist' as const, supportRole: 'r', spawnNpcRole: 'n', spawnName: `N${i}`,
+    }));
+    const cast = resolveSceneCastContext(castGraph(), big, []);
+    expect(Object.keys(cast!)).toHaveLength(CAST_CONTEXT_MAX_MEMBERS);
+  });
+
+  it('is wired through gatherNarrativeContext opts', () => {
+    const ctx = gatherNarrativeContext(
+      castGraph(), 'agent_1', undefined, undefined, undefined, undefined, undefined,
+      { supportBundle: bundle, supportBindings: [binding('gate_captain', 'npc_merrow', true)] },
+    );
+    expect(ctx.cast!.gate_captain.name).toBe('Captain Merrow');
+    // Callers that pass nothing keep today's behavior.
+    expect(gatherNarrativeContext(castGraph(), 'agent_1').cast).toBeUndefined();
+  });
+});
+
+describe('enrichProse — scene cast placeholders (THR-696)', () => {
+  const cast: NarrativeContext['cast'] = {
+    gate_captain: { name: 'Captain Merrow', role: 'checkpoint_captain', reused: true },
+    suspect_courier: { name: 'Harried Courier', role: 'checkpoint_courier', reused: false },
+  };
+
+  it('resolves {cast:<key>} to the member name', () => {
+    const ctx = createMinimalContext({ cast });
+    expect(enrichProse('{cast:gate_captain} reads the report.', ctx))
+      .toBe('Captain Merrow reads the report.');
+  });
+
+  it('resolves several keys in one template', () => {
+    const ctx = createMinimalContext({ cast });
+    expect(enrichProse('{cast:gate_captain} watches {cast:suspect_courier}.', ctx))
+      .toBe('Captain Merrow watches Harried Courier.');
+  });
+
+  it('strips an undeclared key and warns — an authoring error, not a runtime state', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const ctx = createMinimalContext({ cast });
+    expect(enrichProse('the {cast:nobody} waits', ctx)).toBe('the  waits');
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('{cast:nobody}'));
+    warn.mockRestore();
+  });
+
+  it('strips {cast:*} silently when no cast block is present (caller threaded no bundle)', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    expect(enrichProse('the {cast:gate_captain} waits', createMinimalContext())).toBe('the  waits');
+    expect(warn).not.toHaveBeenCalled();
+    warn.mockRestore();
+  });
+
+  it('resolves {?has_cast:<key>} / {?no_cast:<key>} for a declared key', () => {
+    const ctx = createMinimalContext({ cast });
+    expect(enrichProse('{?has_cast:gate_captain}the captain is here{/has_cast:gate_captain}', ctx))
+      .toBe('the captain is here');
+    expect(enrichProse('{?no_cast:gate_captain}nobody{/no_cast:gate_captain}', ctx)).toBe('');
+  });
+
+  it('treats an undeclared key as absent in both conditional directions', () => {
+    const ctx = createMinimalContext({ cast });
+    expect(enrichProse('{?has_cast:nobody}present{/has_cast:nobody}', ctx)).toBe('');
+    expect(enrichProse('{?no_cast:nobody}absent{/no_cast:nobody}', ctx)).toBe('absent');
+  });
+
+  it('treats every key as absent when there is no cast block at all', () => {
+    const ctx = createMinimalContext();
+    expect(enrichProse('{?has_cast:gate_captain}x{/has_cast:gate_captain}', ctx)).toBe('');
+    expect(enrichProse('{?no_cast:gate_captain}alone{/no_cast:gate_captain}', ctx)).toBe('alone');
+  });
+
+  it('leaves the pre-existing {?has_ally} conditionals untouched', () => {
+    const ctx = createMinimalContext({ cast });
+    expect(enrichProse('{?has_ally}{ally:strongest} nods{/has_ally}', ctx)).toBe('Torren nods');
   });
 });
 
