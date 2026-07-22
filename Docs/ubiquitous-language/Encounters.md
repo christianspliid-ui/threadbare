@@ -131,3 +131,43 @@ The compact, self-contained snapshot of a resolved encounter (`ChapterRecord`, `
 **Status:** canonical
 
 The always-readable list (`ChapterLedger` UI, IA surface `game.chapter-ledger`) that merges active encounters (live `unifiedActions`) and resolved chapters (`chapterArchive`) into one newest-first, filterable view. It is the load-management answer to player-authored encounter density: the player can revisit any chapter's full narrative for the whole run instead of losing it to the resolved-action prune (THR-603).
+
+---
+
+### Scene
+
+**Aliases:** Encounter Scene, Scene Context
+**Also see:** `[[Cast]]`, `[[Target]]`, `[[Support Bundle]]`, `[[Encounter]]`, `[[Encounter Seed]]`
+**Status:** canonical
+
+The world context of one action or encounter: its Target, its Cast, and its place. The Scene is what makes an encounter's prose refer to real graph entities rather than invented ones — target enrichment placeholders (THR-694), `{cast:*}` tokens (THR-696), aftermath scene sentinels (THR-695), and seed `inheritContext` (THR-697) are all mechanisms for carrying Scene through the pipeline. A continuation seed that inherits its source's target and cast preserves Scene across encounters, so the same people and places return.
+
+---
+
+### Cast
+
+**Aliases:** Encounter Cast, Cast Bindings
+**Also see:** `[[Scene]]`, `[[Support Bundle]]`, `[[Encounter]]`
+**Status:** canonical
+
+An encounter's support-bundle bindings viewed as characters: the keyed `supportBindings` on a `UnifiedAction` (`EncounterSupportBinding` — key, bound node id, actor/location kind, delivery, persistence, reuse flag). Prose references cast members with `{cast:<key>}` tokens; the declared-key invariant guarantees a declared key always resolves — bound keys render the live graph node's name, unbound keys fall back to the spec's `spawnName`. Aftermath effects may address cast members via `$cast:<key>` / `role:<key>` sentinels.
+
+---
+
+### Target
+
+**Aliases:** Action Target, Encounter Target
+**Also see:** `[[Scene]]`, `[[UnifiedActionTemplate]]`, `[[Aftermath]]`
+**Status:** canonical
+
+The node an action is performed on or with (`action.targetId`) — distinct from the actor performing it. Targets are bound at action creation, enrichable in prose via target placeholders, and addressable in aftermath effects via the `$target` sentinel (kind-checked at fire time, per the reach-signature binding pattern). Seeds created with `inheritContext` copy the source action's target so follow-on encounters stay about the same entity.
+
+---
+
+### Support Bundle
+
+**Aliases:** EncounterSupportBundle, Support Specs
+**Also see:** `[[Cast]]`, `[[Scene]]`, `[[EncounterTemplate]]`
+**Status:** canonical
+
+The authored, template-side declaration of an encounter's supporting entities: `EncounterSupportBundle` is a list of `EncounterSupportSpec`s (in use since 2026-04-03), each describing a keyed supporting actor or location — how it is delivered (reused from the graph or spawned), its `spawnName` fallback, and its persistence after the encounter. At instantiation the bundle resolves into the action's `supportBindings` — the Cast. The bundle is the recipe; the Cast is the dish.
