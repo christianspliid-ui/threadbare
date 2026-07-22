@@ -295,7 +295,10 @@ export type TraceCategory =
   | 'notable.agenda_phase_advanced'
   | 'notable.agenda_countered'
   | 'notable.agenda_completed'
-  | 'notable.roster_scan';
+  | 'notable.roster_scan'
+  // Route events — cargo manifests materialize encounters (THR-669)
+  | 'route_event_scan'
+  | 'route_event_seeded';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'action_selection', 'narrative_generation', 'context_harvest',
@@ -562,6 +565,9 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'notable.agenda_countered',
   'notable.agenda_completed',
   'notable.roster_scan',
+  // Route events (THR-669)
+  'route_event_scan',
+  'route_event_seeded',
 ];
 
 /** Base shape for all trace entries */
@@ -1912,6 +1918,9 @@ export type TraceEntry =
   | NotableAgendaCounteredTrace
   | NotableAgendaCompletedTrace
   | NotableRosterScanTrace
+  // Route event traces (THR-669)
+  | RouteEventScanTrace
+  | RouteEventSeededTrace
   // Composition dual-voice story-beat wiring (THR-254)
   | CompositionStoryBeatTemplateMissingTrace
   // Encounter foreshadowing (THR-389)
@@ -2640,6 +2649,27 @@ export interface NotableRosterScanTrace extends TraceBase {
   activeAgendas: number;
   launched: number;
   skippedThreaded: number;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Route Event Traces (THR-669)
+// ═══════════════════════════════════════════════════════════════════
+
+/** Trace: one aggregate route-event scan record per scan tick. */
+export interface RouteEventScanTrace extends TraceBase {
+  category: 'route_event_scan';
+  routesScanned: number;
+  eligibleRoutes: number;
+  seedsPlanted: number;
+}
+
+/** Trace: a route event materialized into an encounter seed. */
+export interface RouteEventSeededTrace extends TraceBase {
+  category: 'route_event_seeded';
+  routeEdgeId: string;
+  eventKind: 'ambush' | 'toll' | 'embargo';
+  templateId: string;
+  targetAgentId: string;
 }
 
 // ═══════════════════════════════════════════════════════════════════
