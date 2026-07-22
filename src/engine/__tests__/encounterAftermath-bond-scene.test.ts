@@ -23,6 +23,7 @@ import type {
   UnifiedAction,
 } from '../../types/unifiedAction';
 import type { EncounterSupportBinding } from '../../types/encounter';
+import { getUnifiedTemplateById } from '../../data/unified-action-templates';
 
 function buildState(): GameState {
   const graph = new WorldGraph();
@@ -291,5 +292,73 @@ describe('bond_change effect', () => {
       10, runtime,
     );
     expect(mutationSummary.touchedWorld).toBe(true);
+  });
+});
+
+// ─── Slice F content integration (THR-699) ────────────────────────────────────
+// The authored reactions in the swept content files reach applyBondEdge through
+// the real pipeline: template reaction → $target bind pass → relates_to edge.
+
+describe('Slice F content — authored bond_change reactions land on the graph', () => {
+  let runtime: SimulationRuntime;
+  beforeEach(() => { runtime = createSimulationRuntime(); });
+
+  function findReaction(templateId: string, reactionId: string): EncounterAftermathReaction {
+    const template = getUnifiedTemplateById(templateId);
+    expect(template, templateId).toBeDefined();
+    const reaction = template!.aftermathConfig?.fallback?.reactions
+      ?.find((r: EncounterAftermathReaction) => r.id === reactionId);
+    expect(reaction, `${templateId}/${reactionId}`).toBeDefined();
+    return reaction!;
+  }
+
+  it('social.forge_alliance ally reaction creates the alliance relates_to edge it narrates', () => {
+    const state = buildState();
+    const action = makeAction({ targetId: 'actor-victim' });
+    const reaction = findReaction('social.forge_alliance', 'forge_alliance_seed_ally');
+
+    expect(getAgentBonds(state.graph, 'actor-hero')).toHaveLength(0);
+    const { state: next } = applyEncounterAftermathReaction(state, action, reaction, 10, runtime);
+
+    const bonds = getAgentBonds(next.graph, 'actor-hero');
+    expect(bonds).toHaveLength(1);
+    expect(bonds[0].agent.id).toBe('actor-victim');
+    expect(bonds[0].sentiment).toBeGreaterThan(0);
+    // The follow-up seed carries the scene (same ally returns).
+    const seedEffect = reaction.effects.find(e => e.kind === 'encounter_seed') as { inheritContext?: boolean };
+    expect(seedEffect?.inheritContext).toBe(true);
+  });
+
+  it('social.deceive exposed reaction drops sentiment through the betrayal delta', () => {
+    const state = buildState();
+    const action = makeAction({ targetId: 'actor-victim' });
+    const reaction = findReaction('social.deceive', 'deceive_mark_exposed');
+
+    const { state: next } = applyEncounterAftermathReaction(state, action, reaction, 10, runtime);
+
+    const bonds = getAgentBonds(next.graph, 'actor-hero');
+    expect(bonds).toHaveLength(1);
+    expect(bonds[0].sentiment).toBeLessThan(0);
+  });
+
+  it('tavern.brawl rematch reaction bonds and inherits scene context', () => {
+    const state = buildState();
+    const action = makeAction({ targetId: 'actor-victim' });
+    const reaction = findReaction('tavern.brawl', 'brawl_rematch_seed');
+
+    const { state: next } = applyEncounterAftermathReaction(state, action, reaction, 10, runtime);
+
+    expect(getAgentBonds(next.graph, 'actor-hero')).toHaveLength(1);
+    const seedEffect = reaction.effects.find(e => e.kind === 'encounter_seed') as { inheritContext?: boolean };
+    expect(seedEffect?.inheritContext).toBe(true);
+  });
+
+  it('a location-targeted action leaves authored bond_change a no-op (kind mismatch fail-soft)', () => {
+    const state = buildState();
+    const action = makeAction({ targetId: 'loc-town' });
+    const reaction = findReaction('social.forge_alliance', 'forge_alliance_seed_ally');
+
+    const { state: next } = applyEncounterAftermathReaction(state, action, reaction, 10, runtime);
+    expect(getAgentBonds(next.graph, 'actor-hero')).toHaveLength(0);
   });
 });

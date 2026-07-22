@@ -572,13 +572,18 @@ The merge prints `Auto-merging Docs/changelog.md` and exits 0 with both sides' r
 
 ## Closeout — remove the temporary worktree
 
-**Attempt cleanup immediately after push** — do not wait for the merge-to-main auto-close, because that fires on GitHub after the CC session ends and no session will be active to run the cleanup. Run cleanup from the home worktree (`$REPO_ROOT`) right after `git push` succeeds:
+**Attempt cleanup immediately after push** — do not wait for the merge-to-main auto-close, because that fires on GitHub after the CC session ends and no session will be active to run the cleanup. Run cleanup from the home worktree (`$REPO_ROOT`) right after `git push` succeeds.
+
+**⚠️ JUNCTION GUARD (mandatory, before any `git worktree remove`):** if the worktree's `node_modules` is a junction/reparse point to the home install (the standard fresh-worktree pattern), remove the reparse point FIRST. `git worktree remove --force` follows the junction and **empties the home tree's real `node_modules`** — this wiped the entire home install twice on 2026-07-22 (once manually, once via this very closeout step running in the hourly lane). `cmd /c rmdir` removes only the reparse point, never the target's contents:
 
 ```bash
 cd "$REPO_ROOT"
+cmd /c rmdir "$(cygpath -w "$WORKTREE_DIR/node_modules")" 2>/dev/null || true  # junction only; harmless if real dir or absent... see guard note
 git worktree remove --force "$WORKTREE_DIR" 2>/dev/null || true
 git branch -D "$WORKTREE_BRANCH" 2>/dev/null || true
 ```
+
+(`rmdir` on a *real non-empty* directory fails without deleting anything, so the guard is safe to run unconditionally. Verify afterwards: `ls "$REPO_ROOT/node_modules/vitest" >/dev/null` — if that fails, STOP and run `npm install` in the home tree before anything else.)
 
 Both commands are non-fatal: if the worktree directory is still in use (e.g., we can't remove the directory we're running from), the error is swallowed and Step 0 of the next session will collect it via `git worktree prune` or the age-based sweep.
 
