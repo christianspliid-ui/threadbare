@@ -2,6 +2,10 @@ import type { HexCoord, GeoParams } from '../../../types';
 import type { LocationActivitySummary, AgentActivityThread } from '../../../types/locationActivity';
 import { INTERACTION_CONSTANTS } from './HexRaycaster';
 import { LOCATION_ACTIVITY_CONSTANTS } from '../../../engine/deriveLocationActivities';
+import type { RouteTooltipEntry } from '../../../engine/tradeRouteMarkers';
+
+/** Max trade routes listed per tooltip before the "(N more)" overflow line. */
+const TOOLTIP_MAX_ROUTES = 3;
 
 /**
  * Water terrain types and their display labels.
@@ -44,6 +48,11 @@ interface HexTooltipProps {
    * and adds familiarity-gated agent thread list below.
    */
   locationActivity?: LocationActivitySummary;
+  /**
+   * Trade routes touching this hex (THR-670). Each entry renders as one line:
+   * counterpart name + cargo manifest, red-tinted when the route is threatened.
+   */
+  tradeRoutes?: RouteTooltipEntry[];
 }
 
 /** Format a 0-1 float as a percentage string */
@@ -94,6 +103,7 @@ export function HexTooltip({
   geoParams,
   hasRiver,
   locationActivity,
+  tradeRoutes,
 }: HexTooltipProps) {
   const hasLocationData = locationActivity && locationActivity.agentThreads.length > 0 || locationActivity?.murmurs.length;
 
@@ -105,11 +115,15 @@ export function HexTooltip({
   );
   const hasOverflow = (locationActivity?.agentThreads.length ?? 0) > LOCATION_ACTIVITY_CONSTANTS.TOOLTIP_MAX_NAMED_AGENTS;
 
-  const estimatedWidth  = hasLocationData ? 240 : 180;
+  const namedRouteCount = Math.min(tradeRoutes?.length ?? 0, TOOLTIP_MAX_ROUTES);
+  const routeOverflow = Math.max(0, (tradeRoutes?.length ?? 0) - TOOLTIP_MAX_ROUTES);
+  const routeSectionHeight = namedRouteCount > 0 ? 8 + namedRouteCount * 16 + (routeOverflow > 0 ? 14 : 0) : 0;
+
+  const estimatedWidth  = hasLocationData || namedRouteCount > 0 ? 240 : 180;
   const estimatedHeight = geoParams ? 100
     : hasLocationData
-      ? 46 + murmurLineCount * 18 + threadCount * 16 + (hasOverflow ? 14 : 0) + 8
-      : 46;
+      ? 46 + murmurLineCount * 18 + threadCount * 16 + (hasOverflow ? 14 : 0) + 8 + routeSectionHeight
+      : 46 + routeSectionHeight;
   const offsetY = INTERACTION_CONSTANTS.TOOLTIP_OFFSET_Y;
 
   let left = screenX - estimatedWidth / 2;
@@ -243,6 +257,41 @@ export function HexTooltip({
             >
               <span style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)' }}>○</span>
               {' '}({overflowCount} {overflowCount === 1 ? 'other' : 'others'})
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Trade routes touching this hex — cargo manifests (THR-670) */}
+      {namedRouteCount > 0 && tradeRoutes && (
+        <div style={{ marginTop: 6, borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 4 }}>
+          {tradeRoutes.slice(0, TOOLTIP_MAX_ROUTES).map((route, i) => (
+            <div
+              key={i}
+              style={{
+                color:      route.threatened ? 'var(--color-danger, #dc2626)' : 'var(--text-secondary)',
+                fontSize:   'var(--text-xs)',
+                fontFamily: 'var(--font-body)',
+                lineHeight: 1.4,
+                display:    'flex',
+                alignItems: 'center',
+                gap:        4,
+              }}
+            >
+              <span style={{ color: route.threatened ? 'var(--color-danger, #dc2626)' : 'var(--accent-gold-dim, #c9a227)' }}>⇄</span>
+              <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {route.otherName}
+                {route.goods.length > 0
+                  ? ` — ${route.goods.join(', ')}`
+                  : ' — light trade'}
+                {route.carriesStaple ? ' ·staple' : ''}
+                {route.threatened ? ' ·threatened' : ''}
+              </span>
+            </div>
+          ))}
+          {routeOverflow > 0 && (
+            <div style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)', fontFamily: 'var(--font-body)', lineHeight: 1.4 }}>
+              ({routeOverflow} more {routeOverflow === 1 ? 'route' : 'routes'})
             </div>
           )}
         </div>
