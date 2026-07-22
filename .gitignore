@@ -75,6 +75,7 @@ Design/*
 # (Uses `Design/*`, not `Design/`, so git can re-include files below an otherwise-ignored dir.)
 !Design/briefing.md
 !Design/user-actions.md
+!Design/retros/
 
 # Python TTS server
 .venv/
