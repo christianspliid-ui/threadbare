@@ -1189,6 +1189,8 @@ export const BORDERLAND_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
                 delayTicks: 45,
                 priority: 0.7,
                 seedLabel: 'A wolf-pack with a memory of {name} has returned to the {location} woods',
+                // Same hex, same pack: the follow-up returns to the original scene.
+                inheritContext: true,
               },
             ],
             closeAfterSelection: true,

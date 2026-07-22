@@ -180,6 +180,27 @@ export const BOND_CREATE_INITIAL_SENTIMENT = 0;
 /** Starting trust on a relates_to edge created by a `bond_change` effect. */
 export const BOND_CREATE_INITIAL_TRUST = 0;
 
+// ─── Bond Change Content Deltas (THR-699, Slice F) ────────────────
+// Proportionality ladder for relationship-shaped aftermath outcomes.
+// Sentiment ∈ [-1,1]; trust ∈ [0,1]. Reciprocal by default (both parties
+// remember the same moment, if not the same way).
+
+/** A pact formed in good faith — alliance sealed, patronage accepted, member sworn in. */
+export const BOND_PACT_SENTIMENT_DELTA = 0.3;
+export const BOND_PACT_TRUST_DELTA = 0.2;
+
+/** A slight that will be remembered — a turned-down overture, a threat that landed. */
+export const BOND_SLIGHT_SENTIMENT_DELTA = -0.2;
+export const BOND_SLIGHT_TRUST_DELTA = -0.1;
+
+/** A betrayal — robbery, a deception discovered. The heaviest moral weight. */
+export const BOND_BETRAYAL_SENTIMENT_DELTA = -0.45;
+export const BOND_BETRAYAL_TRUST_DELTA = -0.35;
+
+/** A fought duel — sentiment cools, but a blade met squarely breeds a cold respect. */
+export const BOND_DUEL_SENTIMENT_DELTA = -0.15;
+export const BOND_DUEL_TRUST_DELTA = 0.05;
+
 // ─── Encounter Seed Family Matching (THR-697, Slice D) ────────────
 
 /**
