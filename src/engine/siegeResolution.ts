@@ -670,6 +670,9 @@ export function applyBreachFortificationReduction(state: GameState, siegeNodeId:
     properties: {
       ...settlementNode.properties,
       fortificationMultiplier: reducedFortification,
+      // Distinguishes "walls broken" from "walls were always modest" for the
+      // player-facing Walls line + breach headline beat (THR-628).
+      fortificationBreached: true,
     },
   });
 

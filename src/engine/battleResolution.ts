@@ -19,6 +19,10 @@ import {
   BATTLE_COMBAT_ATTRITION,
   SIZE_MOMENTUM_SCALE,
   BATTLE_MOMENTUM_PER_SPOTLIGHT_BASE,
+  PREPARED_DEFENSE_MULTIPLIER,
+  TACTICAL_EVENT_CHANCE,
+  TACTICAL_MIN_MULTIPLIER,
+  TACTICAL_MAX_MULTIPLIER,
 } from '../types/battle';
 import { ARMY_SIZE_HEADCOUNT } from '../types/army';
 import { emitTrace } from './traceBuffer';
@@ -39,6 +43,14 @@ function mulberry32(seed: number): () => number {
   };
 }
 
+function hashString(str: string): number {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = ((hash << 5) - hash + str.charCodeAt(i)) | 0;
+  }
+  return hash;
+}
+
 // ─── Initial Momentum ───────────────────────────────────────────────────
 
 /**
@@ -53,11 +65,12 @@ export function calculateInitialMomentum(
   attackerHeadcount: number,
   defenderHeadcount: number,
   defenderModifier: number = 1,
+  attackerModifier: number = 1,
 ): number {
   if (defenderHeadcount <= 0 || attackerHeadcount <= 0) return 0;
 
   const effectiveDefender = defenderHeadcount * defenderModifier;
-  const sizeRatio = attackerHeadcount / effectiveDefender;
+  const sizeRatio = (attackerHeadcount * attackerModifier) / effectiveDefender;
 
   // log2 compression: 2:1 = +1.5, 4:1 = +3, 1:2 = -1.5
   const rawMomentum = Math.log2(sizeRatio) * SIZE_MOMENTUM_SCALE;
@@ -91,12 +104,38 @@ export function createBattleNode(
 
   if (!attackerState || !defenderState) return null;
 
+  // ── Situational modifiers (THR-628) ──
+  // Prepared defense: an army standing on a `defend` objective fights from a
+  // prepared position — no new stored state, the objective IS the signal.
+  const defenderPrepared = defenderState.objective?.type === 'defend';
+  let defenderModifier = defenderPrepared ? PREPARED_DEFENSE_MULTIPLIER : 1;
+  let attackerModifier = 1;
+
+  // Tactical brilliance/blunder: one seeded roll per battle. When it fires,
+  // one side opens with a decisive read of the field (log-uniform multiplier
+  // in [TACTICAL_MIN, TACTICAL_MAX]); the momentum clamp keeps spotlights alive.
+  const battleId = `battle_${attackerArmyId}_${defenderArmyId}_${state.tick}`;
+  const tacticalRng = mulberry32(hashString(battleId) ^ state.seed);
+  let tacticalNote: string | null = null;
+  if (tacticalRng() < TACTICAL_EVENT_CHANCE) {
+    const logMin = Math.log(TACTICAL_MIN_MULTIPLIER);
+    const logMax = Math.log(TACTICAL_MAX_MULTIPLIER);
+    const multiplier = Math.exp(logMin + tacticalRng() * (logMax - logMin));
+    if (tacticalRng() < 0.5) {
+      attackerModifier *= multiplier;
+      tacticalNote = `tactical brilliance (attacker ×${multiplier.toFixed(1)})`;
+    } else {
+      defenderModifier *= multiplier;
+      tacticalNote = `tactical brilliance (defender ×${multiplier.toFixed(1)})`;
+    }
+  }
+
   const initialMomentum = calculateInitialMomentum(
     attackerState.headcount,
     defenderState.headcount,
+    defenderModifier,
+    attackerModifier,
   );
-
-  const battleId = `battle_${attackerArmyId}_${defenderArmyId}_${state.tick}`;
 
   const battleState: BattleState = {
     battleType: 'field_battle',
@@ -153,7 +192,10 @@ export function createBattleNode(
     emitTrace({
       tick: state.tick,
       category: 'faction_ambition',
-      summary: `Battle started at ${hexNode.name}: ${attackerNode.name} vs ${defenderNode.name} (momentum: ${initialMomentum.toFixed(1)})`,
+      summary: `Battle started at ${hexNode.name}: ${attackerNode.name} vs ${defenderNode.name} (momentum: ${initialMomentum.toFixed(1)}`
+        + (defenderPrepared ? `; prepared defense ×${PREPARED_DEFENSE_MULTIPLIER}` : '')
+        + (tacticalNote ? `; ${tacticalNote}` : '')
+        + ')',
       event: 'started',
       battleId,
       attackerArmyId,

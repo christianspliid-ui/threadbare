@@ -100,7 +100,7 @@ export interface TickEvent {
   // Anomaly discovery events
     | 'anomaly_discovered'
   // Army/battle events (TB-073)
-    | 'army_mobilization' | 'army_disbanded' | 'battle_started' | 'battle_resolved' | 'siege_established' | 'army_attrition'
+    | 'army_mobilization' | 'army_disbanded' | 'battle_started' | 'battle_resolved' | 'siege_established' | 'siege_breach' | 'army_attrition'
   // Quintessence events
     | 'dissolution_event'
   // NPC graduation events
