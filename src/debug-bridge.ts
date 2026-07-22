@@ -1507,10 +1507,11 @@ if (import.meta.env.DEV) {
       });
       if (!match) return { success: false, message: `Notable "${notableName}" not found (must hold a leads edge)` };
       let target: { targetId: string; targetName: string } | undefined;
-      if (fam.requiresTargetLocation) {
-        target = agendas.selectClaimTarget(state, match.notableId, match.factionId, new Set());
-        if (!target) return { success: false, message: 'No claimable target location found' };
-      }
+      const picked = agendas.selectAgendaTarget(
+        state, fam, match.notableId, match.factionId, notables, new Set(),
+      );
+      if (picked === undefined) return { success: false, message: `No valid ${fam.targetKind} target found` };
+      if (picked !== 'none') target = picked;
       const notableNode = state.graph.getNode(match.notableId);
       const factionNode = state.graph.getNode(match.factionId);
       // Simple LCG rng — dev-only tool, determinism not required here.

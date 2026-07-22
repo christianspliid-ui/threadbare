@@ -15,6 +15,10 @@ import {
   isThreadedByPlayer,
 } from '../notableAgendas';
 import { CLAIM_FAMILY } from '../../data/notable-agendas/claim';
+import { FEUD_FAMILY } from '../../data/notable-agendas/feud';
+import { RITE_FAMILY } from '../../data/notable-agendas/rite';
+import { SUCCESSION_FAMILY } from '../../data/notable-agendas/succession';
+import { selectFeudTarget, selectOwnHoldingTarget, selectAgendaTarget } from '../notableAgendas';
 import {
   MAX_ACTIVE_NOTABLE_AGENDAS,
   NOTABLE_AGENDA_ROSTER_INTERVAL_TICKS,
@@ -197,16 +201,21 @@ describe('notableAgendas (THR-630 seam A)', () => {
 
   it('launches an agenda on a roster tick and emits launched + aggregate scan traces', () => {
     const graph = claimWorld();
+    // Ensure every family has a valid target so any rng pick launches:
+    // own holding (rite) + a second notable (feud); claim + succession already valid.
+    addHolding(graph, 'own_town', 'f_mine', 1, 0);
+    addLeader(graph, 'far_leader', 'f_theirs', 'hex_b');
     const state = makeState(NOTABLE_AGENDA_ROSTER_INTERVAL_TICKS, graph);
     const result = phaseNotableAgendas(state);
 
     const comps = (result.activeCompositions ?? []).filter((c) => c.sponsorNotableId);
-    expect(comps).toHaveLength(1);
-    expect(comps[0].agendaFamily).toBe('claim');
-    expect(comps[0].resolvedNodes.target).toBe('their_town');
+    expect(comps).toHaveLength(2); // both notables launch
+    for (const c of comps) {
+      expect(['claim', 'feud', 'rite', 'succession']).toContain(c.agendaFamily);
+    }
 
     const traces = getTraces() as unknown as Array<Record<string, unknown>>;
-    expect(traces.filter((t) => t.category === 'notable.agenda_launched')).toHaveLength(1);
+    expect(traces.filter((t) => t.category === 'notable.agenda_launched')).toHaveLength(2);
     expect(traces.filter((t) => t.category === 'notable.roster_scan')).toHaveLength(1);
   });
 
@@ -328,6 +337,99 @@ describe('notableAgendas (THR-630 seam A)', () => {
     );
     expect(countered.length).toBeGreaterThanOrEqual(2);
     expect(countered[countered.length - 1].outcome).toBe('failed');
+  });
+
+  // ─── Seam B: Feud / Rite / Succession ────────────────────────────────────
+
+  it('selectFeudTarget picks the nearest other-faction notable', () => {
+    const graph = claimWorld();
+    addLeader(graph, 'far_leader', 'f_theirs', 'hex_b');
+    addFaction(graph, 'f_third', 'Third Court');
+    addHex(graph, 'hex_c', 1, 0);
+    addLeader(graph, 'near_leader', 'f_third', 'hex_c');
+    const notables = listNotables(graph);
+    const target = selectFeudTarget(makeState(1, graph), 'leader_mine', 'f_mine', notables, new Set());
+    expect(target?.targetId).toBe('near_leader'); // dist 1 beats dist 3; own faction excluded
+  });
+
+  it('selectOwnHoldingTarget picks the nearest holding of the OWN faction', () => {
+    const graph = claimWorld();
+    addHolding(graph, 'own_near', 'f_mine', 1, 0);
+    addHolding(graph, 'own_far', 'f_mine', 8, 0);
+    const target = selectOwnHoldingTarget(makeState(1, graph), 'leader_mine', 'f_mine', new Set());
+    expect(target?.targetId).toBe('own_near'); // foreign their_town never considered
+  });
+
+  it("selectAgendaTarget returns 'none' for succession and dispatches by kind", () => {
+    const graph = claimWorld();
+    const notables = listNotables(graph);
+    const state = makeState(1, graph);
+    expect(selectAgendaTarget(state, SUCCESSION_FAMILY, 'leader_mine', 'f_mine', notables, new Set())).toBe('none');
+    const claim = selectAgendaTarget(state, CLAIM_FAMILY, 'leader_mine', 'f_mine', notables, new Set());
+    expect(claim).toEqual({ targetId: 'their_town', targetName: 'Farwatch' });
+  });
+
+  it('feud materialize binds hostile_to (actor target), not sponsors_scheme', () => {
+    const graph = claimWorld();
+    addLeader(graph, 'rival_leader', 'f_theirs', 'hex_b');
+    const plan = buildNotableAgenda(
+      'leader_mine', 'Leader', 'The Home Court', FEUD_FAMILY, 0, 'rival_leader', 'Rival', () => 0,
+    );
+    plan.composition.activatedPhaseIds = ['slight', 'grievance'];
+    const state = makeState(3, graph, {
+      activeCompositions: [plan.composition],
+      worldFlags: { ...plan.worldFlagUpdates },
+    });
+    phaseNotableAgendas(state);
+    expect(graph.getOutgoingEdges('leader_mine', 'hostile_to')).toHaveLength(1);
+    expect(graph.getOutgoingEdges('leader_mine', 'hostile_to')[0].target).toBe('rival_leader');
+    expect(graph.getOutgoingEdges('leader_mine', 'sponsors_scheme')).toHaveLength(0);
+  });
+
+  it('succession naming anoints a deterministic heir via will_succeed', () => {
+    const graph = claimWorld();
+    // Two more members: lowest id wins the anointment.
+    for (const id of ['member_b', 'member_a']) {
+      graph.addNode({ id, type: 'actor', name: `M ${id}`, properties: { actorType: 'individual' } });
+      graph.addEdge({ id: `e_m_${id}`, source: id, target: 'f_mine', type: 'member_of', properties: { role: 'member', rank: 'member', joinedTick: 0 } });
+    }
+    const plan = buildNotableAgenda(
+      'leader_mine', 'Leader', 'The Home Court', SUCCESSION_FAMILY, 0, undefined, undefined, () => 0,
+    );
+    plan.composition.activatedPhaseIds = ['counsel', 'naming'];
+    const state = makeState(3, graph, {
+      activeCompositions: [plan.composition],
+      worldFlags: { ...plan.worldFlagUpdates },
+    });
+    phaseNotableAgendas(state);
+    const edges = graph.getIncomingEdges('f_mine', 'will_succeed');
+    expect(edges).toHaveLength(1);
+    expect(edges[0].source).toBe('member_a');
+    expect(edges[0].properties.anointedBy).toBe('leader_mine');
+
+    // Idempotent: a second naming (another agenda) does not stack a second heir.
+    const plan2 = buildNotableAgenda(
+      'leader_mine', 'Leader', 'The Home Court', SUCCESSION_FAMILY, 20, undefined, undefined, () => 0,
+    );
+    plan2.composition.activatedPhaseIds = ['counsel', 'naming'];
+    phaseNotableAgendas(makeState(23, graph, {
+      activeCompositions: [plan2.composition],
+      worldFlags: { ...plan2.worldFlagUpdates },
+    }));
+    expect(graph.getIncomingEdges('f_mine', 'will_succeed')).toHaveLength(1);
+  });
+
+  it('rite family targets own holdings and completes with a positive crack beat', () => {
+    const graph = claimWorld();
+    addHolding(graph, 'own_town', 'f_mine', 1, 0, 'Hearthstead');
+    const target = selectAgendaTarget(
+      makeState(1, graph), RITE_FAMILY, 'leader_mine', 'f_mine', listNotables(graph), new Set(),
+    );
+    expect(target).toEqual({ targetId: 'own_town', targetName: 'Hearthstead' });
+    const plan = buildNotableAgenda(
+      'leader_mine', 'Maren', 'The Home Court', RITE_FAMILY, 0, 'own_town', 'Hearthstead', () => 0,
+    );
+    expect(plan.composition.phases![3].rationale).toContain('Hearthstead');
   });
 
   it('notes completion once when the runner marks the composition completed', () => {

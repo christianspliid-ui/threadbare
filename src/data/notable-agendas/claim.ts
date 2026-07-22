@@ -11,7 +11,7 @@ export const CLAIM_FAMILY: NotableAgendaFamily = {
   id: 'claim',
   label: 'Pressed Claim',
   sphereLean: ['order'],
-  requiresTargetLocation: true,
+  targetKind: 'location',
   beats: [
     {
       phaseId: 'whisper',

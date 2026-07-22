@@ -237,6 +237,101 @@ export function selectClaimTarget(
   return best ? { targetId: best.targetId, targetName: best.targetName } : undefined;
 }
 
+/**
+ * Rite target: the nearest holding the notable's own faction controls.
+ * Rng-free — nearest by hex distance, id tiebreak.
+ */
+export function selectOwnHoldingTarget(
+  state: GameState,
+  notableId: string,
+  factionId: string,
+  alreadyTargeted: ReadonlySet<string>,
+): { targetId: string; targetName: string } | undefined {
+  const graph = state.graph;
+  const myHex = actorHex(graph, notableId);
+  if (!myHex) return undefined;
+
+  let best: { targetId: string; targetName: string; dist: number } | undefined;
+  for (const controls of graph.getOutgoingEdges(factionId, 'controls')) {
+    const locId = controls.target;
+    if (alreadyTargeted.has(locId)) continue;
+    const locNode = graph.getNode(locId);
+    if (!locNode || locNode.type !== 'location') continue;
+    if (locNode.properties.locationSubtype === 'ruins') continue;
+    const hex = resolveLocationToHex(graph, locId);
+    if (!hex) continue;
+    const dist = hexDistance(myHex, hex);
+    if (
+      !best ||
+      dist < best.dist ||
+      (dist === best.dist && locId.localeCompare(best.targetId) < 0)
+    ) {
+      best = { targetId: locId, targetName: locNode.name, dist };
+    }
+  }
+  return best ? { targetId: best.targetId, targetName: best.targetName } : undefined;
+}
+
+/**
+ * Feud target: the nearest other-faction notable. Rng-free — nearest by hex
+ * distance, id tiebreak. `notables` is the roster the caller already built.
+ */
+export function selectFeudTarget(
+  state: GameState,
+  notableId: string,
+  factionId: string,
+  notables: ReadonlyArray<{ notableId: string; factionId: string }>,
+  alreadyTargeted: ReadonlySet<string>,
+): { targetId: string; targetName: string } | undefined {
+  const graph = state.graph;
+  const myHex = actorHex(graph, notableId);
+  if (!myHex) return undefined;
+
+  let best: { targetId: string; targetName: string; dist: number } | undefined;
+  for (const other of notables) {
+    if (other.notableId === notableId || other.factionId === factionId) continue;
+    if (alreadyTargeted.has(other.notableId)) continue;
+    const node = graph.getNode(other.notableId);
+    if (!node) continue;
+    const hex = actorHex(graph, other.notableId);
+    if (!hex) continue;
+    const dist = hexDistance(myHex, hex);
+    if (
+      !best ||
+      dist < best.dist ||
+      (dist === best.dist && other.notableId.localeCompare(best.targetId) < 0)
+    ) {
+      best = { targetId: other.notableId, targetName: node.name, dist };
+    }
+  }
+  return best ? { targetId: best.targetId, targetName: best.targetName } : undefined;
+}
+
+/**
+ * Dispatch target selection by the family's targetKind. Returns undefined for
+ * `none` (agenda anchors on the notable) and for kinds with no valid target
+ * (the notable sits this scan out).
+ */
+export function selectAgendaTarget(
+  state: GameState,
+  family: NotableAgendaFamily,
+  notableId: string,
+  factionId: string,
+  notables: ReadonlyArray<{ notableId: string; factionId: string }>,
+  alreadyTargeted: ReadonlySet<string>,
+): { targetId: string; targetName: string } | undefined | 'none' {
+  switch (family.targetKind) {
+    case 'location':
+      return selectClaimTarget(state, notableId, factionId, alreadyTargeted);
+    case 'own-location':
+      return selectOwnHoldingTarget(state, notableId, factionId, alreadyTargeted);
+    case 'notable':
+      return selectFeudTarget(state, notableId, factionId, notables, alreadyTargeted);
+    case 'none':
+      return 'none';
+  }
+}
+
 // ─── Launch builder ────────────────────────────────────────────────────────
 
 function substituteAgendaProse(
@@ -328,6 +423,14 @@ function detectAgendaCounter(
   if (!targetNode) return { countered: true }; // target destroyed → agenda loses its ground
   const ascendantId = state.ascendantId;
   if (!ascendantId) return { countered: false };
+  // Actor target (feud): a player thread to the target notable is protection.
+  if (targetNode.type === 'actor') {
+    const threads = state.graph.getIncomingEdges(targetId, 'thread');
+    if (threads.some((e) => e.source === ascendantId)) {
+      return { countered: true, byActorId: targetId };
+    }
+    return { countered: false };
+  }
   for (const type of ['controls', 'holds_place_of_power'] as const) {
     const inc = state.graph.getIncomingEdges(targetId, type);
     const hit = inc.find((e) => e.source === ascendantId);
@@ -341,6 +444,56 @@ function detectAgendaCounter(
     }
   }
   return { countered: false };
+}
+
+// ─── Succession: heir anointment ───────────────────────────────────────────
+
+/**
+ * Anoint a deterministic heir for the notable's faction: the lowest-id living
+ * individual member who is not the notable and holds no will_succeed edge yet.
+ * No-op (fail-soft) when the faction already has an anointed successor or has
+ * no eligible member — the naming beat stays narration-only in that case.
+ */
+function anointDeterministicHeir(
+  state: GameState,
+  notableId: string,
+  compositionId: string,
+): void {
+  const graph = state.graph;
+  const factionId = graph.getOutgoingEdges(notableId, 'leads')[0]?.target
+    ?? graph.getOutgoingEdges(notableId, 'member_of')[0]?.target;
+  if (!factionId) return;
+  if (graph.getIncomingEdges(factionId, 'will_succeed').length > 0) return;
+
+  const memberIds = graph
+    .getIncomingEdges(factionId, 'member_of')
+    .map((e) => e.source)
+    .filter((id) => id !== notableId)
+    .filter((id) => {
+      // Death removes the node entirely (phaseFactionSuccession convention),
+      // so node existence = living.
+      const n = graph.getNode(id);
+      return (
+        n?.type === 'actor' &&
+        n.properties.actorType === 'individual' &&
+        n.properties.armyState == null
+      );
+    })
+    .sort((a, b) => a.localeCompare(b));
+  const heirId = memberIds[0];
+  if (!heirId) return;
+
+  graph.addEdge({
+    id: `edge_will_succeed_${heirId}_${factionId}`,
+    source: heirId,
+    target: factionId,
+    type: 'will_succeed',
+    properties: {
+      anointedTick: state.tick,
+      anointedBy: notableId,
+      compositionId,
+    },
+  });
 }
 
 // ─── The tick phase ────────────────────────────────────────────────────────
@@ -394,17 +547,28 @@ export function phaseNotableAgendas(state: GameState): Partial<GameState> {
           case 'rumor':
             break; // narration only — the runner emits the Chronicle beat
           case 'materialize': {
+            // Succession's naming is mechanically real: anoint a deterministic
+            // heir via a will_succeed edge, which phaseFactionSuccession
+            // consumes when the seat next empties.
+            if (family.id === 'succession') {
+              anointDeterministicHeir(state, notableId, compId);
+            }
             if (targetNode && targetId) {
-              const edgeId = `edge_sponsors_scheme_${notableId}_${compId}`;
+              // Location targets bind sponsors_scheme (schema: actor→location);
+              // actor targets (feud) bind hostile_to — the existing inter-actor
+              // hostility edge, which is what a declared feud is.
+              const edgeType =
+                targetNode.type === 'actor' ? ('hostile_to' as const) : ('sponsors_scheme' as const);
+              const edgeId = `edge_${edgeType}_${notableId}_${compId}`;
               const exists = state.graph
-                .getOutgoingEdges(notableId, 'sponsors_scheme')
+                .getOutgoingEdges(notableId, edgeType)
                 .some((e) => e.id === edgeId);
               if (!exists) {
                 state.graph.addEdge({
                   id: edgeId,
                   source: notableId,
                   target: targetId,
-                  type: 'sponsors_scheme',
+                  type: edgeType,
                   properties: {
                     compositionId: compId,
                     family: family.id,
@@ -504,10 +668,15 @@ export function phaseNotableAgendas(state: GameState): Partial<GameState> {
         activeCompositions = activeCompositions.map((c) =>
           c.compositionId === compId ? { ...c, status: 'failed' as const } : c,
         );
-        try {
-          state.graph.removeEdge(`edge_sponsors_scheme_${notableId}_${compId}`);
-        } catch {
-          /* fail-soft: edge may not exist yet */
+        for (const edgeId of [
+          `edge_sponsors_scheme_${notableId}_${compId}`,
+          `edge_hostile_to_${notableId}_${compId}`,
+        ]) {
+          try {
+            state.graph.removeEdge(edgeId);
+          } catch {
+            /* fail-soft: edge may not exist yet */
+          }
         }
         emitNotableTrace({
           category: 'notable.agenda_countered' as const,
@@ -576,7 +745,8 @@ export function phaseNotableAgendas(state: GameState): Partial<GameState> {
     let launched = 0;
     let skippedThreaded = 0;
 
-    const candidates = listNotables(state.graph)
+    const allNotables = listNotables(state.graph);
+    const candidates = allNotables
       .filter((n) => !busyNotables.has(n.notableId))
       .map((n) => ({
         ...n,
@@ -603,14 +773,16 @@ export function phaseNotableAgendas(state: GameState): Partial<GameState> {
       if (!family) break;
       let targetId: string | undefined;
       let targetName: string | undefined;
-      if (family.requiresTargetLocation) {
-        const target = selectClaimTarget(
-          state,
-          cand.notableId,
-          cand.factionId,
-          alreadyTargeted,
-        );
-        if (!target) continue; // no valid target — this notable sits out
+      const target = selectAgendaTarget(
+        state,
+        family,
+        cand.notableId,
+        cand.factionId,
+        allNotables,
+        alreadyTargeted,
+      );
+      if (target === undefined) continue; // no valid target — this notable sits out
+      if (target !== 'none') {
         targetId = target.targetId;
         targetName = target.targetName;
       }

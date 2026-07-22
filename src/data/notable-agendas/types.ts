@@ -46,10 +46,13 @@ export interface NotableAgendaFamily {
   /** Sphere lean (flavor + pressure sphere; not a hard gate). */
   sphereLean: SphereName[];
   /**
-   * Whether this family targets a location node (claim: a neighbor's holding).
-   * Families without a location target anchor pressure on the notable.
+   * What the family targets:
+   * - `location` — a foreign holding (claim) or the notable's own (rite).
+   * - `notable`  — another faction's leader (feud).
+   * - `none`     — anchors on the sponsoring notable (succession).
+   * Families without a resolvable target anchor pressure on the notable.
    */
-  requiresTargetLocation: boolean;
+  targetKind: 'location' | 'own-location' | 'notable' | 'none';
   /** Exactly four beats. */
   beats: [NotableAgendaBeat, NotableAgendaBeat, NotableAgendaBeat, NotableAgendaBeat];
 }
