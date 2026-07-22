@@ -101,8 +101,7 @@ function toSecretTemplate(e: SecretEntry): UnifiedActionTemplate {
       failure: lastStep?.onFailure.narrative ?? `${e.name} fails.`,
     },
     rarityTier: 1,
-    // TODO(THR-679): hardcoded — e.intrinsicTier is authored but never read here.
-    intrinsicTier: 'background',
+    intrinsicTier: e.intrinsicTier ?? 'background',
     secretDiscovery: e.secretDiscovery,
   };
 }
