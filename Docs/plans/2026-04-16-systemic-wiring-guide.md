@@ -1629,3 +1629,25 @@ Rivals launch **multi-phase schemes** — a `Composition` of `kind: 'rival-schem
 **Traces:** `rival.scheme_launched`, `rival.scheme_phase_advanced` (carries `move`), `rival.scheme_countered` (`stalled`|`failed`), `rival.scheme_completed` — all in `src/types/trace.ts`.
 
 **Debug:** `window.__DEBUG.getRivalSchemes()` lists active/terminal schemes; `window.__DEBUG.forceRivalScheme(rivalName, family)` launches one for QA.
+
+---
+
+## Capability: Notable agendas (THR-630)
+
+The world's prominent figures pursue **four-phase agendas** — the living-world counterpart to rival schemes, riding the same THR-225 composition runner with the same executor shape. Faction leaders (resolved through the canonical `getFactionLeaderId` seam) are scored for prominence (scope · power · drive · proximity-to-player-threads) and up to `MAX_ACTIVE_NOTABLE_AGENDAS` (7) carry one agenda at a time. This is the layer content authors extend when they want the world to *do things* near the player that aren't the player's doing.
+
+**How it works:** `phaseNotableAgendas` (`src/engine/notableAgendas.ts`, runs after `phaseRivalActions`) scans the roster every `NOTABLE_AGENDA_ROSTER_INTERVAL_TICKS` (12), launches agendas into free budget slots, invests each tick to arm phases via world-flags (`agendaFlags`), and executes each phase's concrete move when the runner activates it. Chronicle beats come from the prose baked into each phase's `rationale` at launch.
+
+**Authoring a new family:** add a `NotableAgendaFamily` in `src/data/notable-agendas/` (see `claim.ts` for the shape, `campaign.ts` for a family with a real-world side effect). Four `beats`, each with a `move` (`rumor` | `materialize` | `escalate` | `crack`) and ≥3 prose variants using `{notable}`/`{faction}`/`{target}` placeholders (baseline register, THR-609). Set `targetKind` (`location` = foreign holding, `own-location` = the notable's own, `notable` = another leader, `none` = anchors on the sponsor) and `sphereLean` (drives the pressure sphere). Register in `index.ts`.
+
+**Real graph footprints (don't write hollow families):** materialize binds `sponsors_scheme` (location targets, `sponsorKind:'notable'`) or `hostile_to` (actor targets — a declared feud IS hostility). Family-specific effects live as keyed hooks in the executor: `succession` anoints a real `will_succeed` heir (consumed by `phaseFactionSuccession` on the next leader exit), `campaign` raises a **real army** via `spawnArmy` (the notable commands in person when iron-capable; objective = conquer the campaign target) and then the shipped war machinery owns it. Campaign is also how **nations** (factionDefId null, outside `scoreEligibleAmbitions`) reach the war system — through their leaders.
+
+**Thread-takeover:** threading a notable removes them from the launch pool, and threading the sponsor of an active agenda freezes it (no invest, no counter churn) — the player's attention displaces autonomy by design.
+
+**Counter-play:** same surface as rival schemes (player controls/holds the target or has a thread to an occupant; for feuds, a thread to the target notable is protection) — stall once, fail at `NOTABLE_AGENDA_COUNTERS_TO_FAIL`.
+
+**Traces:** `notable.agenda_launched` (carries `prominence`), `notable.agenda_phase_advanced`, `notable.agenda_countered`, `notable.agenda_completed`, plus ONE aggregate `notable.roster_scan` per scan tick (never per-notable — ring-buffer budget).
+
+**Surfaces:** NotablesPanel (top bar, ♛) with family-colored phase-chip cards; Chronicle beats via the runner; a crack toast for terminal beats. Constants in `src/data/notable-agenda-config.ts`.
+
+**Debug:** `window.__DEBUG.getNotableAgendas()` lists live agendas; `window.__DEBUG.forceNotableAgenda(notableName, family)` launches one for QA.

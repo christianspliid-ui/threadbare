@@ -158,6 +158,7 @@ export const TEMPLE_OF_SPHERES_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
                 templateId: 'ts.senior.sphere_communion',
                 delayTicks: FACTION_PROSE_SEED_DELAY_QUEST_TICKS,
                 seedLabel: 'Restored shrine at {location} is ready for sphere communion work',
+                inheritContext: true, // the SAME restored shrine
               },
             ],
             closeAfterSelection: true,

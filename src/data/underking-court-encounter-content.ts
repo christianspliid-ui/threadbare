@@ -132,6 +132,7 @@ export const UNDERKING_COURT_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
                 delayTicks: FACTION_PROSE_SEED_DELAY_SOCIAL_TICKS,
                 priority: 1.1,
                 seedLabel: 'The day\'s take needs a buyer. The fence at the back of the shambles always has a buyer.',
+                inheritContext: true, // the SAME fence takes the haul
               },
             ],
             closeAfterSelection: true,
@@ -219,6 +220,7 @@ export const UNDERKING_COURT_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
                 delayTicks: FACTION_PROSE_SEED_DELAY_SOCIAL_TICKS,
                 priority: 1.0,
                 seedLabel: 'The new district now knows the Court\'s face. It may as well know the Court\'s price.',
+                inheritContext: true, // the same district, now known
               },
             ],
             closeAfterSelection: true,
@@ -307,6 +309,7 @@ export const UNDERKING_COURT_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
                 delayTicks: FACTION_PROSE_SEED_DELAY_SOCIAL_TICKS,
                 priority: 1.0,
                 seedLabel: 'A merchant who paid under pressure has a secret the Court can also hold.',
+                inheritContext: true, // the SAME merchant holds the secret
               },
             ],
             closeAfterSelection: true,
@@ -696,6 +699,7 @@ export const UNDERKING_COURT_SENIOR_TEMPLATES: UnifiedActionTemplate[] = [
                 delayTicks: FACTION_PROSE_SEED_DELAY_SOCIAL_TICKS * 2,
                 priority: 1.2,
                 seedLabel: 'The vacated ground wants a master. The Court considers who to send.',
+                inheritContext: true, // the same vacated ground
               },
             ],
             closeAfterSelection: true,
@@ -799,6 +803,7 @@ export const UNDERKING_COURT_SENIOR_TEMPLATES: UnifiedActionTemplate[] = [
                 delayTicks: FACTION_PROSE_SEED_DELAY_SOCIAL_TICKS * 3,
                 priority: 1.2,
                 seedLabel: 'One corrupted official could be the seed of many. The Court begins thinking about the shape of a quiet takeover.',
+                inheritContext: true, // the SAME official is the seed
               },
             ],
             closeAfterSelection: true,
@@ -911,6 +916,7 @@ export const UNDERKING_COURT_ELITE_TEMPLATES: UnifiedActionTemplate[] = [
                 delayTicks: FACTION_PROSE_SEED_DELAY_SOCIAL_TICKS * 2,
                 priority: 1.1,
                 seedLabel: 'The civic guard, asked pointed questions by its captains, begins a quiet inquiry into the {location} district.',
+                inheritContext: true, // the same district under inquiry
               },
             ],
             closeAfterSelection: true,
@@ -1176,6 +1182,7 @@ export const UNDERKING_COURT_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
                 delayTicks: FACTION_PROSE_SEED_DELAY_SOCIAL_TICKS,
                 priority: 0.9,
                 seedLabel: 'A stallkeeper will need a specific haul before the week is out. The Court knows who can provide it.',
+                inheritContext: true, // the SAME stallkeeper needs it
               },
             ],
             closeAfterSelection: true,

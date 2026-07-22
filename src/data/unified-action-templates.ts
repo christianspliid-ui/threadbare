@@ -35,6 +35,7 @@ import { BORDERLAND_ENCOUNTER_TEMPLATES } from './borderland-encounter-content';
 import { DECAY_CONSTANTS } from '../engine/decayCurve';
 import { INTERVENTION_DEFINITIONS } from './dream-content';
 import { NPC_ACTION_TEMPLATES } from './npc-action-templates';
+import { ROUTE_EVENT_ENCOUNTER_TEMPLATES } from './route-event-encounter-content';
 import {
   THIEVES_GUILD_ENCOUNTER_TEMPLATES,
   THIEVES_GUILD_SOCIAL_TEMPLATES,
@@ -5072,6 +5073,8 @@ const RAW_UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   ...THREAD_CREATION_TEMPLATES,
   ...THREAD_MANAGEMENT_TEMPLATES,
   ...NPC_ACTION_TEMPLATES,
+  // Route events — banditry / toll / embargo from cargo manifests (THR-669)
+  ...ROUTE_EVENT_ENCOUNTER_TEMPLATES,
   // Thieves guild — pre-migrated to UnifiedActionTemplate (THR-89)
   ...THIEVES_GUILD_ENCOUNTER_TEMPLATES,
   ...THIEVES_GUILD_SOCIAL_TEMPLATES,

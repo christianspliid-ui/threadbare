@@ -17,6 +17,8 @@ import type { SphereName } from '../types';
 import { getSphereColor } from '../data/sphereIcons';
 import { SPHERE_TOOLTIPS } from '../data/sphereTooltips';
 import { ECONOMY_KEYWORD_TOOLTIPS, ECONOMY_KEYWORD_SET } from '../data/resource-classes';
+import { BATTLE_KEYWORD_TOOLTIPS, BATTLE_KEYWORD_SET } from '../data/battle-keywords';
+import { DOMAIN_COLORS } from '../data/agent-visual-content';
 import { Tooltip } from './shared/Tooltip';
 
 // ─── Props ────────────────────────────────────────────────────────────────────
@@ -63,6 +65,35 @@ export function ProseKeyword({ sphere, children }: ProseKeywordProps) {
 function EconomyKeyword({ keyword, children }: { keyword: string; children: React.ReactNode }) {
   const color = '#c9a227'; // gold — the economic reach
   const tooltipText = ECONOMY_KEYWORD_TOOLTIPS[keyword] ?? '';
+  return (
+    <Tooltip label={keyword} desc={tooltipText}>
+      <span
+        style={{
+          color,
+          fontWeight: 700,
+          textDecoration: 'underline dotted',
+          textDecorationColor: `${color}88`,
+          cursor: 'help',
+        }}
+        role="term"
+        tabIndex={0}
+      >
+        {children}
+      </span>
+    </Tooltip>
+  );
+}
+
+// ─── Battle keyword (IPK, THR-628) ─────────────────────────────────────────────
+
+/**
+ * Renders a battle In-Prose Keyword (Fortified / Breached / Prepared / Routed)
+ * as bold, dotted-underlined text with a plain-language tooltip. Uses the Iron
+ * reach color so war pressure reads as war.
+ */
+function BattleKeyword({ keyword, children }: { keyword: string; children: React.ReactNode }) {
+  const color = DOMAIN_COLORS.iron; // iron — the war reach (canonical reach color)
+  const tooltipText = BATTLE_KEYWORD_TOOLTIPS[keyword] ?? '';
   return (
     <Tooltip label={keyword} desc={tooltipText}>
       <span
@@ -133,6 +164,13 @@ export function renderProseWithIPK(text: string): React.ReactNode {
         <EconomyKeyword key={`ipk-econ-${keyCounter++}`} keyword={normalized}>
           {inner}
         </EconomyKeyword>,
+      );
+    } else if (BATTLE_KEYWORD_SET.has(normalized)) {
+      // Battle keyword — Fortified / Breached / Prepared / Routed (THR-628)
+      parts.push(
+        <BattleKeyword key={`ipk-battle-${keyCounter++}`} keyword={normalized}>
+          {inner}
+        </BattleKeyword>,
       );
     } else {
       // Not a recognised sphere or economic keyword — emit plain bold text

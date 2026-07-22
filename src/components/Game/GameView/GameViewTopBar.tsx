@@ -4,6 +4,7 @@ import { SimulationControls } from '../SimulationControls';
 import { DoomBar } from '../DoomBar';
 import { OmenIndicator } from '../OmenIndicator';
 import { RivalsButton } from '../RivalsButton';
+import { NotablesButton } from '../NotablesButton';
 import { SettingsPanel } from '../SettingsPanel';
 import { AttentionPoolIndicator } from '../AttentionPoolIndicator';
 import { IconButton } from '../../shared/IconButton';
@@ -212,6 +213,8 @@ export function GameViewTopBar({
             definitions={gameState.rivalDefinitions}
             states={gameState.rivalStates}
           />
+          {/* Notables intent panel (THR-630) */}
+          <NotablesButton gameState={gameState} />
           {/* Read the Threads — divine digest review */}
           <IconButton
             icon={<span>📖</span>}

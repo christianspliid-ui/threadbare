@@ -77,7 +77,7 @@ describe('Road Ambush — template structure', () => {
   it('step 0 has narrative template containing the ambush opening prose', () => {
     const step0 = template.steps[0];
     if (isActionStepBranch(step0)) throw new Error('step 0 should not be a branch');
-    expect(step0.narrativeTemplate).toContain('Soraya Kelk');
+    expect(step0.narrativeTemplate).toContain('{cast:soraya}');
     expect(step0.narrativeTemplate).toContain('waymarker stones');
   });
 
@@ -116,7 +116,7 @@ describe('Road Ambush — template structure', () => {
 
   it('shield variant prose contains Dragan withdrawing', () => {
     const step1 = template.steps[1] as ActionStepBranch;
-    expect(step1.variants['shield_the_road'].narrativeTemplate).toContain('Dragan was the last to go');
+    expect(step1.variants['shield_the_road'].narrativeTemplate).toContain('{cast:dragan} was the last to go');
   });
 
   it('chaos variant prose contains the manufactured pause', () => {
@@ -179,7 +179,7 @@ describe('Road Ambush — aftermath config', () => {
   it('resolves to shield variant for shield_the_road choice', () => {
     const variant = config.variants['shield_the_road'];
     expect(variant).toBeDefined();
-    expect(variant.overview).toContain('Soraya Kelk');
+    expect(variant.overview).toContain('{cast:soraya}');
   });
 
   it('resolves to chaos variant for turn_the_chaos choice', () => {
@@ -219,7 +219,7 @@ describe('Road Ambush — aftermath config', () => {
   });
 
   it('fallback matches the shield_the_road variant structure', () => {
-    expect(config.fallback.overview).toContain('Soraya Kelk');
+    expect(config.fallback.overview).toContain('{cast:soraya}');
   });
 });
 

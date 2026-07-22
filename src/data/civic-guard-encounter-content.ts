@@ -74,7 +74,7 @@ export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         onFailure: [],
         narrativeTemplate:
           'The wall section assigned to {name} runs from the east granary to the third watchtower — ' +
-          'half a mile of dressed stone and older mortar, walked twice a shift by whoever the sergeant ' +
+          'half a mile of dressed stone and older mortar, walked twice a shift by whoever {cast:officer} ' +
           'trusts with the dull work. At first bell the mist has not lifted. The city below sounds like ' +
           'itself, which means there are no particular alarms, which means nothing has happened yet. ' +
           '{name} begins at the granary end and set{s} a pace that will not look like hurrying to anyone ' +
@@ -87,7 +87,7 @@ export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
           'A crumbling section near the second merlon — the kind of thing that announces itself ' +
           'to a careful eye. {name} marks it in the watch log before continuing.',
         failureAfterimage:
-          'The wall looks as it looked yesterday. The sergeant will find what {name} missed, ' +
+          'The wall looks as it looked yesterday. {cast:officer} will find what {name} missed, ' +
           'and the finding will be filed.',
       },
       {
@@ -142,7 +142,7 @@ export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
             id: 'wall_patrol_standing',
             kind: 'reputation',
             title: 'Watch Standing',
-            detail: 'A thorough patrol builds trust with the sergeant. A missed section does the opposite.',
+            detail: 'A thorough patrol builds trust with {cast:officer}. A missed section does the opposite.',
             polarity: 'mixed',
           },
         ],
@@ -439,6 +439,7 @@ export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
                 templateId: 'cg.quest.investigate_disturbance',
                 delayTicks: 10,
                 seedLabel: 'Whoever sent the courier will send someone else',
+                inheritContext: true, // same gate, same scheme — the thread continues
               },
             ],
             closeAfterSelection: true,
@@ -795,7 +796,7 @@ export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
           'stays out of the written report — some findings benefit no one by becoming official record.',
         failureAfterimage:
           '{name} retreats to street level. The threat remains below. ' +
-          'The question now is what to tell the captain and what to keep.',
+          'The question now is what to tell {cast:officer} and what to keep.',
       },
     ],
     narrativeTemplates: {
@@ -989,6 +990,7 @@ export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
                 templateId: 'cg.elite.purge_corruption',
                 delayTicks: 20,
                 seedLabel: 'The leak has a name. Finding it takes time.',
+                inheritContext: true, // the SAME leak is being hunted
               },
             ],
             closeAfterSelection: true,
@@ -1431,6 +1433,7 @@ export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
                 templateId: 'cg.elite.purge_corruption',
                 delayTicks: 30,
                 seedLabel: 'Post-siege command reveals what was compromised under pressure',
+                inheritContext: true, // the SAME command structure is the subject
               },
             ],
             closeAfterSelection: true,

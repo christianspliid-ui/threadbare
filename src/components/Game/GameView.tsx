@@ -49,6 +49,7 @@ import type { BattleState } from '../../types/battle';
 import { extractRoadPaths } from '../../engine/roadNetwork';
 import { buildReachSignatureMarkers } from '../../engine/reachSignatureMarkers';
 import { buildRivalInfluenceMarkers } from '../../engine/rivalInfluenceMarkers';
+import { buildTradeRouteLines, buildRouteTooltipsByHex } from '../../engine/tradeRouteMarkers';
 import { getRetinueAgents, getSustainedControlNodes } from '../../engine/retinue';
 import { TIER_NAMES } from '../../data/influence-content';
 import type { ThreadedNode, ThreadedFaction, SustainedControlNode } from '../../engine/retinue';
@@ -921,6 +922,17 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   const rivalInfluenceMarkers = useMemo(
     () => buildRivalInfluenceMarkers(gameState.graph, gameState.rivalDefinitions),
     [gameState.graph, gameState.rivalDefinitions, runtime.worldVersion],
+  );
+
+  // Trade-route lines + per-endpoint cargo tooltips (THR-670). Recomputed on
+  // graph mutation (route formation/decay, threatened flips).
+  const tradeRouteLines = useMemo(
+    () => buildTradeRouteLines(gameState.graph),
+    [gameState.graph, runtime.worldVersion],
+  );
+  const routeTooltipsByHex = useMemo(
+    () => buildRouteTooltipsByHex(gameState.graph),
+    [gameState.graph, runtime.worldVersion],
   );
 
   // ── Military render data adapters (graph → ArmyRenderData[], BattleRenderData[], SiegeRenderData[]) ──
@@ -3291,6 +3303,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                   armies={armyRenderData}
                   reachSignatureMarkers={reachSignatureMarkers}
                   rivalInfluenceMarkers={rivalInfluenceMarkers}
+                  tradeRouteLines={tradeRouteLines}
+                  routeTooltipsByHex={routeTooltipsByHex}
                   battles={battleRenderData}
                   sieges={siegeRenderData}
                   threadLines={threadLineData}
