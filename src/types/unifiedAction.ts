@@ -215,6 +215,13 @@ export type EncounterAftermathReactionEffect =
     readonly delayTicks: number;
     readonly priority?: number;
     readonly seedLabel: string;
+    /**
+     * THR-697 (Slice D) — opt-in scene-context inheritance. When true, the planting
+     * site copies the source action's `targetId` and `supportBindings` onto the seed so
+     * the follow-up encounter stars the same people (see `PendingEncounterSeed`). Default
+     * false: the follow-up self-targets (today's behavior).
+     */
+    readonly inheritContext?: boolean;
     readonly when?: EffectPredicate;
   }
   | {
@@ -715,6 +722,14 @@ export interface PendingEncounterSeed {
   readonly plantedTick: number;
   /** Event node ID of the source encounter that planted this seed (THR-143). */
   readonly sourceEventNodeId?: string;
+  /**
+   * THR-697 (Slice D) — inherited scene context, set only when the planting effect
+   * carried `inheritContext: true`. At spawn, `evaluateEncounterSeeds` re-validates
+   * both against the live graph: a dead `inheritedTargetId` falls back to self-target,
+   * and dead-node bindings are dropped. Absent on ordinary (self-targeting) seeds.
+   */
+  readonly inheritedTargetId?: string;
+  readonly inheritedBindings?: readonly EncounterSupportBinding[];
 }
 
 export interface EncounterAftermathReaction {

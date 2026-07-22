@@ -1146,6 +1146,16 @@ export function applyEncounterAftermathReaction(
       }
 
       case 'encounter_seed': {
+        // THR-697 (Slice D): when the effect opts into context inheritance, snapshot the
+        // source action's target + cast onto the seed. `evaluateEncounterSeeds` re-validates
+        // both against the live graph at spawn (dead target → self-target fallback, dead
+        // bindings dropped), so it is safe to copy the raw ids here.
+        const inheritedContext = effect.inheritContext && action
+          ? {
+              inheritedTargetId: action.targetId,
+              inheritedBindings: action.supportBindings,
+            }
+          : undefined;
         const seed: PendingEncounterSeed = {
           seedId: `seed_${actionId}_${reaction.id}_${i}`,
           sourceEncounterId: encounterId,
@@ -1158,6 +1168,7 @@ export function applyEncounterAftermathReaction(
           seedLabel: effect.seedLabel,
           plantedTick: tick,
           sourceEventNodeId: action?.eventNodeId,
+          ...inheritedContext,
         };
         nextSeeds = [...nextSeeds, seed];
         const seedEvent: TickEvent = {

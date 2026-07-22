@@ -1564,6 +1564,28 @@ export interface BondChangeAppliedTrace extends TraceBase {
   reciprocal: boolean;
 }
 
+/** Trace: a family-only encounter seed resolved to a concrete template (THR-697, Slice D). */
+export interface SeedFamilyMatchedTrace extends TraceBase {
+  category: 'encounter_seed_family_matched';
+  seedId: string;
+  family: string;
+  /** Number of eligible templates in the draw pool (after affinity + location filters). */
+  candidateCount: number;
+  resolvedTemplateId: string;
+}
+
+/** Trace: inherited scene context attached to a seeded encounter at spawn (THR-697, Slice D). */
+export interface SeedContextInheritedTrace extends TraceBase {
+  category: 'seed_context_inherited';
+  seedId: string;
+  /** Inherited target that survived graph re-validation, or null (fell back to self-target). */
+  inheritedTargetId: string | null;
+  /** Bindings that survived graph re-validation. */
+  bindingCount: number;
+  /** Bindings dropped because their node was gone at spawn. */
+  droppedBindingCount: number;
+}
+
 /** Trace: faction node reputation changed by aftermath effect */
 export interface FactionReputationChangedTrace extends TraceBase {
   category: 'faction_reputation_changed';
@@ -1835,6 +1857,9 @@ export type TraceEntry =
   // Scene-targeting aftermath sentinels + bond_change (THR-695, Slice B)
   | AftermathSentinelBoundTrace
   | BondChangeAppliedTrace
+  // Seed system v2: family matching + context inheritance (THR-697, Slice D)
+  | SeedFamilyMatchedTrace
+  | SeedContextInheritedTrace
   // Initiative traces (THR-51)
   | InitiativeStartedTrace
   | InitiativeCheckpointTrace
