@@ -30,6 +30,7 @@ export type PressureSource =
   | 'encounter'
   | 'doom'
   | 'rival'
+  | 'notable'
   | 'mandate'
   | 'overchannel'
   | 'environmental';

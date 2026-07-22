@@ -179,6 +179,27 @@ export function phaseArmyNotifications(
         break;
       }
 
+      // Siege breach — the modifier-stripping headline beat (THR-628). The wall
+      // that held the arithmetic together is gone, and the prose says so with
+      // the IPK flip: what was **Fortified** is now **Breached**.
+      case 'siege_breach': {
+        const siegeId = traceData['siegeId'] as string | undefined;
+        const settlementId = traceData['settlementId'] as string | undefined;
+        const settlementName = settlementId
+          ? state.graph.getNode(settlementId)?.name ?? 'the settlement'
+          : 'the settlement';
+
+        newEvents.push({
+          id: nextEventIdFn(),
+          tick,
+          type: 'siege_breach',
+          message: `The walls of ${settlementName} come down. What stood **Fortified** this morning is **Breached** by dusk — and everyone on both sides of the rubble knows what that means.`,
+          significance: ARMY_NOTIFICATION_SIGNIFICANCE_THREADED,
+          actorId: siegeId,
+        });
+        break;
+      }
+
       // Siege established (createSiegeNode emits event: 'siege_established')
       case 'siege_established': {
         const siegeId = traceData['siegeId'] as string | undefined;

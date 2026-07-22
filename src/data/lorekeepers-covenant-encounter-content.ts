@@ -92,7 +92,7 @@ export const LOREKEEPERS_COVENANT_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] =
         onSuccess: [],
         onFailure: [],
         narrativeTemplate:
-          '{?has_faction}The Covenant archivist{/has_faction} at the Covenant records what was said at the site and, more carefully, what was not said.',
+          '{?has_faction}{cast:archivist}{/has_faction} at the Covenant records what was said at the site and, more carefully, what was not said.',
         successAfterimage: 'The record is complete. The margin is clean. What is remembered will be remembered correctly.',
         failureAfterimage: 'A gap in the record. The Covenant will reconstruct it from other hands. For one generation, something will be remembered slightly wrong.',
       },
@@ -164,6 +164,7 @@ export const LOREKEEPERS_COVENANT_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] =
                 templateId: 'lk.senior.excavate_archive',
                 delayTicks: FACTION_PROSE_SEED_DELAY_QUEST_TICKS * 2,
                 seedLabel: 'Incomplete ruin entry at {location} warrants a senior excavation survey',
+                inheritContext: true, // the same ruin entry continues
               },
               { kind: 'reputation_tally' as const, key: 'eye.positive', delta: 1 },
             ],
@@ -288,6 +289,7 @@ export const LOREKEEPERS_COVENANT_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] =
                 templateId: 'lk.senior.decipher_prophecy',
                 delayTicks: FACTION_PROSE_SEED_DELAY_QUEST_TICKS,
                 seedLabel: 'Translation at {location} contains implications a senior scholar should assess',
+                inheritContext: true, // the same translation thread
               },
               { kind: 'reputation_tally' as const, key: 'star.positive', delta: 1 },
             ],
@@ -422,6 +424,7 @@ export const LOREKEEPERS_COVENANT_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] =
                 templateId: 'lk.senior.compose_treatise',
                 delayTicks: FACTION_PROSE_SEED_DELAY_QUEST_TICKS,
                 seedLabel: 'Recovered tome at {location} contains material worth a full treatise',
+                inheritContext: true, // the SAME tome
               },
               { kind: 'reputation_tally' as const, key: 'eye.positive', delta: 1 },
             ],
@@ -707,7 +710,7 @@ export const LOREKEEPERS_SENIOR_TEMPLATES: UnifiedActionTemplate[] = [
         onSuccess: [],
         onFailure: [],
         narrativeTemplate:
-          '{?has_faction}The senior archivist of the Covenant{/has_faction} requires the entry to distinguish what was said from what was later remembered to have been said.',
+          '{?has_faction}{cast:archivist}{/has_faction} requires the entry to distinguish what was said from what was later remembered to have been said.',
         successAfterimage: 'Entry made. The distinction holds. The Covenant\'s record is precise on what was known and when.',
         failureAfterimage: 'The layers conflate. The entry is flagged. A future hand will need to unsort it.',
       },
@@ -722,7 +725,7 @@ export const LOREKEEPERS_SENIOR_TEMPLATES: UnifiedActionTemplate[] = [
         narrativeTemplate:
           'The Covenant records the implication in the margin — not as prophecy, but as what the record suggests when the date is correct.',
         successAfterimage: '{name} signs the margin in the Covenant\'s second hand. What is remembered will be remembered correctly.',
-        failureAfterimage: 'The margin note is imprecise. The senior archivist will revise it in the next session.',
+        failureAfterimage: 'The margin note is imprecise. {cast:archivist} will revise it in the next session.',
       },
     ],
     narrativeTemplates: {
@@ -822,6 +825,7 @@ export const LOREKEEPERS_SENIOR_TEMPLATES: UnifiedActionTemplate[] = [
                 templateId: 'lk.elite.cosmic_revelation',
                 delayTicks: FACTION_PROSE_SEED_DELAY_QUEST_TICKS * 2,
                 seedLabel: 'Deciphered prophecy at {location} contains an implication only a cosmic-scale investigation can resolve',
+                inheritContext: true, // the SAME prophecy
               },
             ],
             closeAfterSelection: true,
@@ -960,6 +964,7 @@ export const LOREKEEPERS_SENIOR_TEMPLATES: UnifiedActionTemplate[] = [
                 templateId: 'lk.senior.compose_treatise',
                 delayTicks: FACTION_PROSE_SEED_DELAY_QUEST_TICKS,
                 seedLabel: 'Archive excavated at {location} — contents warrant a full Covenant treatise',
+                inheritContext: true, // the SAME archive contents
               },
             ],
             closeAfterSelection: true,
@@ -1342,6 +1347,7 @@ export const LOREKEEPERS_ELITE_TEMPLATES: UnifiedActionTemplate[] = [
                 templateId: 'lk.elite.cosmic_revelation',
                 delayTicks: FACTION_PROSE_SEED_DELAY_QUEST_TICKS * 5,
                 seedLabel: 'Cosmic observation at {location} implies a second investigation is needed',
+                inheritContext: true, // the same observation thread
                 priority: 1.3,
               },
               { kind: 'reputation_tally' as const, key: 'star.positive', delta: 1 },
@@ -1619,6 +1625,7 @@ export const LOREKEEPERS_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
                 templateId: 'lk.quest.recover_tome',
                 delayTicks: FACTION_PROSE_SEED_DELAY_SOCIAL_TICKS,
                 seedLabel: 'Manuscript exchange at {location} failed — the needed volume must be recovered',
+                inheritContext: true, // the SAME volume must be recovered
               },
             ],
             closeAfterSelection: true,

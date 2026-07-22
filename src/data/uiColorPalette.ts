@@ -129,6 +129,17 @@ export const BEHAVIOR_COLORS: Record<string, string> = {
 
 export const BEHAVIOR_COLOR_DEFAULT = '#78716c';
 
+/** Notable-agenda family accents (THR-630) — NotablesPanel phase-chip cards. */
+export const AGENDA_FAMILY_COLORS: Record<string, string> = {
+  claim: '#c9a227',      // gold — a pressed right
+  feud: '#dc2626',       // red — open enmity
+  rite: '#fbbf24',       // warm light — the good-news family
+  succession: '#7c3aed', // violet — dynastic maneuvering
+  campaign: '#6B7280',   // iron — the war hand-off
+};
+
+export const AGENDA_FAMILY_COLOR_DEFAULT = '#78716c';
+
 export const BEHAVIOR_ICONS: Record<string, string> = {
   aggressive: '⚔',
   subtle: '◇',
@@ -157,6 +168,7 @@ export const TICK_EVENT_COLORS: Record<TickEvent['type'], string> = {
   battle_started: '#ef4444',       // red-500 — combat starting
   battle_resolved: '#dc2626',      // red-600 — combat concluded (slightly darker)
   siege_established: '#fb923c',    // orange-400 — siege (matches SIEGE_COLOR from BattleIndicatorLayer)
+  siege_breach: '#f87171',         // red-400 — walls broken; the modifier-stripping headline beat (THR-628)
   army_attrition: '#a8a29e',       // warm gray — degradation, low emphasis
 };
 

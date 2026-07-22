@@ -17,6 +17,16 @@
 
 import type { UnifiedActionTemplate } from '../types/unifiedAction';
 import { ENCOUNTER_TYPE_MOTIVATIONS } from '../types/encounter';
+import {
+  BOND_PACT_SENTIMENT_DELTA,
+  BOND_PACT_TRUST_DELTA,
+  BOND_SLIGHT_SENTIMENT_DELTA,
+  BOND_SLIGHT_TRUST_DELTA,
+  BOND_BETRAYAL_SENTIMENT_DELTA,
+  BOND_BETRAYAL_TRUST_DELTA,
+  BOND_DUEL_SENTIMENT_DELTA,
+  BOND_DUEL_TRUST_DELTA,
+} from './effect-constants';
 
 // ─── Difficulty Constants (0–1 normalized) ────────────────────
 
@@ -57,17 +67,19 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         failureMetadata: { reputationDelta: -0.02 },
         narrativeTemplate:
           'The first thing {name} does is find a table where neither of them has their back to the room. ' +
-          'Not a gesture of trust — a gesture of sense, and the other party reads it that way. ' +
+          'Not a gesture of trust — a gesture of sense, and {target} reads it that way. ' +
+          '{?target_is_rival}They have crossed each other before. Neither of them mentions it, ' +
+          'which is its own kind of mention.{/target_is_rival}' +
           '{?has_faction}The faction seal on {their} shoulder-clasp says something before {they} speak{s}. ' +
           'In places like {location}, symbols do half the work.{/has_faction}' +
           '{?no_faction}{name} is unaffiliated and both of them know it — which means ' +
           'this conversation stands entirely on what {they} say{s} and how {they} say{s} it.{/no_faction}',
         successAfterimage:
-          'The other party holds {their} cup two-handed — a sitting-down posture, not a standing-up one. ' +
+          'Across the table, {target} holds {target:their} cup two-handed — a sitting-down posture, not a standing-up one. ' +
           'The conversation has found a register that both of them can work with.',
         failureAfterimage:
           '{name}\'s opening read the room wrong — too formal, or not formal enough. ' +
-          'The other party is still here, but the temperature in the conversation has dropped.',
+          'No one leaves — {target} is still here — but the temperature in the conversation has dropped.',
       },
       {
         reach: 'eye',
@@ -112,18 +124,19 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
           'which is the foundation everything else gets built on.',
         successAtCostAfterimage:
           'The alliance holds, but one concession was larger than it should have been. ' +
-          '{name} gave something away in the closing that the other party will not forget they gave. ' +
+          '{name} gave something away in the closing that {target} will not forget they gave. ' +
           'The pact is real. The leverage inside it is not equally distributed.',
         criticalFailureAfterimage:
-          'The terms do not just fail to overlap — they actively contradict. The other party leaves with the clear impression ' +
+          'The terms do not just fail to overlap — they actively contradict. {target} leaves with the clear impression ' +
           'that {name}\'s interests and theirs will eventually require choosing between them. ' +
           'That impression will travel.',
       },
     ],
     narrativeTemplates: {
       initiation:
-        '{name} has arranged to meet a potential ally in {location}. The overture is intentional. ' +
-        'Whether it goes anywhere depends on the next hour.',
+        '{?has_target}{name} has arranged to meet {target} in {location}.{/has_target}' +
+        '{?no_target}{name} has arranged to meet a potential ally in {location}.{/no_target}' +
+        ' The overture is intentional. Whether it goes anywhere depends on the next hour.',
       success:
         'An alliance is formed. Both parties know what they are now obligated to, and what they can ask.',
       failure:
@@ -134,14 +147,14 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
       variants: {},
       fallback: {
         overview:
-          'An alliance meeting in {location}. Whether it held or collapsed, the other party now has a clearer ' +
+          'An alliance meeting in {location}. Whether it held or collapsed, {target} now has a clearer ' +
           'sense of who {name} is and what {they} want{s}.',
         changes: [
           {
             id: 'alliance_standing',
             kind: 'reputation',
             title: 'Alliance Standing',
-            detail: 'The other party has updated their read on {name}. Trust is either forming or was tested and found wanting.',
+            detail: 'By now {target} has updated {target:their} read on {name}. Trust is either forming or was tested and found wanting.',
             polarity: 'mixed',
           },
         ],
@@ -149,16 +162,24 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         reactions: [
           {
             id: 'forge_alliance_seed_ally',
-            label: 'The alliance takes root. The new ally will call on {name}.',
+            label: 'The alliance takes root — {target} will call on {name}.',
             intent:
               'The relationship is real. Obligations follow. At some future point, ' +
               'the ally will need something — and the request will not be optional.',
             effects: [
               {
+                // The alliance the prose narrates now exists on the graph.
+                kind: 'bond_change',
+                withAgentId: '$target',
+                sentimentDelta: BOND_PACT_SENTIMENT_DELTA,
+                trustDelta: BOND_PACT_TRUST_DELTA,
+              },
+              {
                 kind: 'encounter_seed',
                 templateId: 'social.forge_alliance',
                 delayTicks: 24,
                 seedLabel: 'New ally calls in a favor from {name}',
+                inheritContext: true,
               },
               { kind: 'reputation_tally', key: 'heart.positive', delta: 1 },
             ],
@@ -166,16 +187,23 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
           },
           {
             id: 'forge_alliance_seed_grudge',
-            label: 'The overture failed — and the other party remembers it.',
+            label: 'The overture failed — and {target} remembers it.',
             intent:
-              'Being approached and turned away leaves a mark. The other party will encounter {name} again, ' +
+              'Being approached and turned away leaves a mark. {target} will encounter {name} again, ' +
               'with the memory of this conversation intact.',
             effects: [
+              {
+                kind: 'bond_change',
+                withAgentId: '$target',
+                sentimentDelta: BOND_SLIGHT_SENTIMENT_DELTA,
+                trustDelta: BOND_SLIGHT_TRUST_DELTA,
+              },
               {
                 kind: 'encounter_seed',
                 templateId: 'social.investigate_reputation',
                 delayTicks: 18,
                 seedLabel: 'Slighted party studies {name}\'s reputation before the next meeting',
+                inheritContext: true,
               },
               { kind: 'reputation_tally', key: 'heart.negative', delta: 1 },
             ],
@@ -211,7 +239,7 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         successMetadata: { reputationDelta: 0.04 },
         failureMetadata: { reputationDelta: -0.02 },
         narrativeTemplate:
-          '{name} watches the prospect before speaking — the way they carry their frustration, ' +
+          '{name} watches {target} before speaking — the way they carry their frustration, ' +
           'whether it is the restless kind that wants direction or the resolved kind that has already ' +
           'decided to stay exactly where they are. You cannot recruit the second type. ' +
           '{?has_faction}The faction {name} represents has something concrete to offer: ' +
@@ -219,10 +247,10 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
           '{?no_faction}Without institutional weight behind the offer, {name} has to make it ' +
           'personal — what specifically does this person want, and what can {they} deliver{s}.{/no_faction}',
         successAfterimage:
-          'The prospect doesn\'t commit — but {they} lean{s} forward. That\'s enough for the second conversation.',
+          'No commitment yet — but {target} lean{target:s} forward. That\'s enough for the second conversation.',
         failureAfterimage:
-          'The prospect is polite but distant. They\'ve heard this kind of offer before, ' +
-          'and something in {name}\'s approach told them this one was the same.',
+          'The answer is polite but distant. {target} has heard this kind of offer before, ' +
+          'and something in {name}\'s approach said this one was the same.',
       },
       {
         reach: 'shadow',
@@ -239,15 +267,15 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         narrativeTemplate:
           'The induction is not a ceremony. It is a conversation that ends with a commitment, ' +
           'and both parties know what that commitment costs. {name} is careful with the words — ' +
-          'not careful as in gentle, careful as in precise. The prospect needs to know what they are ' +
-          'saying yes to before they say it, because the cost of a half-convinced member is higher ' +
+          'not careful as in gentle, careful as in precise, because {target} needs to know what they are ' +
+          'saying yes to before they say it. The cost of a half-convinced member is higher ' +
           'than the cost of a declined offer.',
         successAfterimage:
           'The oath is spoken quietly. {name} nods once — the new member has been told ' +
           'what they are owed and what is owed from them. The group is larger by one.',
         failureAfterimage:
-          'At the final commitment, something closes in the prospect\'s expression. ' +
-          'Not anger — doubt, which is worse. {They} decline{s} and it is the right call. ' +
+          'At the final commitment, something closes in {target}\'s expression. ' +
+          'Not anger — doubt, which is worse. {target:They} decline{target:s} and it is the right call. ' +
           '{name} can see that now and wish{s} {they} had seen it twenty minutes earlier.',
         criticalSuccessAfterimage:
           'The new member joins with more conviction than the script called for. ' +
@@ -257,7 +285,7 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
           'The oath is spoken, but the new member asked one question at the end that revealed how much they understood ' +
           'about what they were joining. The answer {name} gave was honest. The cost of that honesty will arrive later.',
         criticalFailureAfterimage:
-          'The prospect does not simply decline — they say why, plainly, in a way that captures ' +
+          'And {target} does not simply decline — they say why, plainly, in a way that captures ' +
           'something real about the offer\'s weakness. {name} has heard a critique they will have to carry ' +
           'for a while before they can set it down.',
       },
@@ -276,7 +304,7 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
       variants: {},
       fallback: {
         overview:
-          'A recruitment attempt in {location}. The prospect now has a clearer sense of the faction and of {name}.',
+          'A recruitment attempt in {location}. By the end of it, {target} has a clearer sense of the faction and of {name}.',
         changes: [
           {
             id: 'recruit_standing',
@@ -296,10 +324,18 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
               'and the new member will test both sides of the relationship early.',
             effects: [
               {
+                // The sworn oath is a bond, not just a roster line.
+                kind: 'bond_change',
+                withAgentId: '$target',
+                sentimentDelta: BOND_PACT_SENTIMENT_DELTA,
+                trustDelta: BOND_PACT_TRUST_DELTA,
+              },
+              {
                 kind: 'encounter_seed',
                 templateId: 'social.establish_patronage',
                 delayTicks: 18,
                 seedLabel: 'New member seeks guidance from {name} — the recruiter\'s first obligation',
+                inheritContext: true,
               },
               { kind: 'reputation_tally', key: 'heart.positive', delta: 1 },
             ],
@@ -1127,18 +1163,18 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
           '{name} name{s} what is being asked for — plainly, without euphemism. ' +
           'This is the moment that separates intimidation from a threat: ' +
           'a threat leaves room for bargaining, a direct demand does not. ' +
-          '{name} is not bargaining. The target needs to understand that ' +
-          'before they decide what to do with it.',
+          '{name} is not bargaining, and {target} needs to understand that ' +
+          'before deciding what to do with it.',
         successAfterimage:
-          'The target agrees. Their voice is level but their hands are not quite still. ' +
+          'In the end {target} agrees — voice level, hands not quite still. ' +
           '{name} does not remark on this. The agreement is what matters. ' +
           'The fear can be its own private business.',
         failureAfterimage:
-          'The target finds somewhere in themselves what they came in thinking they didn\'t have. ' +
+          'But {target} finds somewhere in themselves what they came in thinking they didn\'t have. ' +
           'Not bravery exactly — more like a calculus that decided the cost of yielding ' +
           'was higher than the cost of refusing. {name} did not account for that arithmetic.',
         criticalSuccessAfterimage:
-          'The target does not just agree — they volunteer more than {name} asked for, in the way that people do ' +
+          'More than agreement — {target} volunteers more than {name} asked for, in the way that people do ' +
           'when they have decided that the safest path is to become useful. ' +
           '{name} now has more leverage than the encounter was designed to produce.',
         successAtCostAfterimage:
@@ -1146,7 +1182,7 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
           'provisional, conditional, already looking for the clause that voids it. ' +
           '{name} got what {they} asked for. Holding it will require more work.',
         criticalFailureAfterimage:
-          'The target refuses and does not leave quietly. Whatever they found in themselves ' +
+          'Refusal — and {target} does not leave quietly. Whatever they found in themselves ' +
           'in the moment of refusal has named {name} an enemy in terms they were not previously using. ' +
           'The intimidation attempt created a relationship it did not intend to create.',
       },
@@ -1165,7 +1201,7 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
       variants: {},
       fallback: {
         overview:
-          'An intimidation in {location}. The target either yielded or didn\'t — ' +
+          'An intimidation in {location}. Either {target} yielded or didn\'t — ' +
           'either way, they now have a mark that affects how they relate to {name}.',
         changes: [
           {
@@ -1180,11 +1216,18 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         reactions: [
           {
             id: 'intimidate_mark_fear',
-            label: 'The target complied — and is now waiting for a moment to reverse it safely.',
+            label: 'Compliance — and {target} is now waiting for a moment to reverse it safely.',
             intent:
-              'Coerced compliance is temporary. The target accepted the terms but is already looking ' +
+              'Coerced compliance is temporary. {target} accepted the terms but is already looking ' +
               'for a way to reduce {name}\'s leverage.',
             effects: [
+              {
+                // A threat that landed cools the bond on both sides.
+                kind: 'bond_change',
+                withAgentId: '$target',
+                sentimentDelta: BOND_SLIGHT_SENTIMENT_DELTA,
+                trustDelta: BOND_SLIGHT_TRUST_DELTA,
+              },
               {
                 kind: 'hidden_mark',
                 category: 'debt',
@@ -1197,6 +1240,7 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
                 templateId: 'social.challenge_duel',
                 delayTicks: 36,
                 seedLabel: 'Cowed target seeks confrontation with {name} once balance shifts',
+                inheritContext: true,
               },
               { kind: 'reputation_tally', key: 'iron.positive', delta: 1 },
             ],
@@ -1204,11 +1248,17 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
           },
           {
             id: 'intimidate_mark_defiance',
-            label: 'The target refused — and now knows {name} attempted it.',
+            label: 'Refusal — and {target} now knows {name} attempted it.',
             intent:
               'Failed intimidation does not end the relationship. It reshapes it. ' +
-              'The target knows what {name} is willing to do, which is information they will use.',
+              '{target} knows what {name} is willing to do, which is information they will use.',
             effects: [
+              {
+                kind: 'bond_change',
+                withAgentId: '$target',
+                sentimentDelta: BOND_SLIGHT_SENTIMENT_DELTA,
+                trustDelta: BOND_SLIGHT_TRUST_DELTA,
+              },
               {
                 kind: 'hidden_mark',
                 category: 'betrayal',
@@ -1260,11 +1310,11 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
           'each question the target asks has to lead to another question rather than a wall.{/no_faction}',
         successAfterimage:
           'The false narrative sits correctly. {name} can feel when a story takes — ' +
-          'the target stopped auditing and started accepting, ' +
+          '{target} stopped auditing and started accepting, ' +
           'which is a different quality of attention.',
         failureAfterimage:
-          'Something didn\'t land right. The target is still listening, ' +
-          'but their listening has changed register — less reception, more evaluation. ' +
+          'Something didn\'t land right. {target} is still listening, ' +
+          'but the listening has changed register — less reception, more evaluation. ' +
           '{name} adjusts the approach and hopes the adjustment isn\'t visible.',
       },
       {
@@ -1291,14 +1341,14 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         narrativeTemplate:
           '{name} carry{s} the deception to its conclusion the way you carry a full cup — ' +
           'continuously aware, adjusting constantly to the surface. ' +
-          'The target asks one final question. It is either the question {name} prepared for, ' +
+          'Then {target} asks one final question. It is either the question {name} prepared for, ' +
           'or it is the question that finds the gap in everything {they} built.',
         successAfterimage:
-          'The target acts on false belief. {name} watch{s} them go and keeps {their} expression ' +
+          'It takes: {target} acts on false belief. {name} watch{s} them go and keeps {their} expression ' +
           'neutral until they are out of sight. The lie has been consumed. ' +
           'What it produces now is no longer in {name}\'s hands.',
         failureAfterimage:
-          'The target pauses mid-sentence and asks the question in a different way — ' +
+          'Mid-sentence, {target} pauses and asks the question in a different way — ' +
           'the way you ask a question when you already know the answer you\'re going to get ' +
           'doesn\'t match what you\'ve been told. The gap has been found.',
       },
@@ -1335,7 +1385,7 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
             label: 'The deception succeeded — and will eventually surface.',
             intent:
               'All successful deceptions carry a hidden cost: the lie exists, ' +
-              'and the gap between what the target was told and what is true grows wider with time.',
+              'and the gap between what {target} was told and what is true grows wider with time.',
             effects: [
               {
                 kind: 'hidden_mark',
@@ -1349,6 +1399,7 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
                 templateId: 'social.investigate_reputation',
                 delayTicks: 40,
                 seedLabel: 'Target begins to suspect something is wrong — investigates {name}\'s story',
+                inheritContext: true,
               },
               { kind: 'reputation_tally', key: 'shadow.positive', delta: 1 },
             ],
@@ -1356,11 +1407,18 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
           },
           {
             id: 'deceive_mark_exposed',
-            label: 'The deception was exposed — the target knows {name} lied.',
+            label: 'The deception was exposed — {target} knows {name} lied.',
             intent:
               'Being caught in a lie is not just a failed transaction. It is a mark ' +
-              'that {name} attempted it, which tells the target something about who they are.',
+              'that {name} attempted it, which tells {target} something about who they are.',
             effects: [
+              {
+                // A discovered lie is a betrayal; the bond takes the full weight.
+                kind: 'bond_change',
+                withAgentId: '$target',
+                sentimentDelta: BOND_BETRAYAL_SENTIMENT_DELTA,
+                trustDelta: BOND_BETRAYAL_TRUST_DELTA,
+              },
               {
                 kind: 'hidden_mark',
                 category: 'betrayal',
@@ -1408,8 +1466,8 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
           'with witnesses in mind. ' +
           '{?has_rival}This is about {rival:strongest}. The public record of it matters as much as the outcome.{/has_rival}',
         successAfterimage:
-          'The challenge is accepted. The opponent\'s voice is level and {name} respects that — ' +
-          'you can read a great deal from how someone accepts a fight they know they might lose.',
+          'The challenge is accepted, and {target} takes it with a level voice — {name} respects that. ' +
+          'You can read a great deal from how someone accepts a fight they know they might lose.',
         failureAfterimage:
           'The challenge is refused. The refusal is not necessarily cowardice — ' +
           'there are ways to decline a duel that cost the challenger more than the challenged. ' +
@@ -1430,13 +1488,13 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         narrativeTemplate:
           'Steel is out. The geometry of this is simple: two people, a defined space, ' +
           'a problem that has been translated from words into bodies. ' +
-          '{name}\'s first move is not the one the opponent expects, ' +
+          '{name}\'s first move is not the one {target} expects, ' +
           'which is why {they} thought about it carefully before arriving.',
         successAfterimage:
           '{name} finds the opening. The touch is clean — the kind that ends a duel ' +
           'without requiring an explanation. Both parties know what just happened.',
         failureAfterimage:
-          'The opponent found the opening first. {name}\'s defense held it to a graze, ' +
+          'This time {target} found the opening first. {name}\'s defense held it to a graze, ' +
           'but held does not mean resolved — the advantage has shifted.',
       },
       {
@@ -1468,7 +1526,7 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         successAfterimage:
           'The duel is over. The witnesses know who won, and why, ' +
           'and the reasoning will be discussed in {location} for some time. ' +
-          '{name} clean{s} the blade without looking at the opponent.',
+          '{name} clean{s} the blade without looking at {target}.',
         failureAfterimage:
           'The defeat is real and public. {name} has a better understanding of their own limits ' +
           'than they did an hour ago, which is worth something — but the cost of that knowledge was high.',
@@ -1507,6 +1565,13 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
               'has been upgraded by the public nature of the resolution.',
             effects: [
               {
+                // A blade met squarely: sentiment cools, but a cold respect forms.
+                kind: 'bond_change',
+                withAgentId: '$target',
+                sentimentDelta: BOND_DUEL_SENTIMENT_DELTA,
+                trustDelta: BOND_DUEL_TRUST_DELTA,
+              },
+              {
                 kind: 'encounter_seed',
                 templateId: 'social.forge_alliance',
                 delayTicks: 15,
@@ -1524,6 +1589,12 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
               'and the loser carries it until they have a chance to reverse it.',
             effects: [
               {
+                kind: 'bond_change',
+                withAgentId: '$target',
+                sentimentDelta: BOND_DUEL_SENTIMENT_DELTA,
+                trustDelta: BOND_DUEL_TRUST_DELTA,
+              },
+              {
                 kind: 'hidden_mark',
                 category: 'betrayal',
                 severity: 0.5,
@@ -1535,6 +1606,7 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
                 templateId: 'social.challenge_duel',
                 delayTicks: 48,
                 seedLabel: 'Defeated duelist seeks rematch when their position has recovered',
+                inheritContext: true,
               },
               { kind: 'reputation_tally', key: 'iron.negative', delta: 1 },
             ],
@@ -1734,17 +1806,17 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         failureMetadata: { reputationDelta: -0.05 },
         narrativeTemplate:
           '{name} choose{s} the location and the moment and steps out. ' +
-          'Not theatrically — that is the amateur version. The mark needs to understand ' +
+          'Not theatrically — that is the amateur version — because {target} needs to understand ' +
           'what is happening before they need to decide what to do about it. ' +
           '{?has_rival}The mark has history with {rival:strongest}, ' +
           'which tells {name} something about how they are likely to respond under pressure.{/has_rival}' +
           '{?has_faction}Faction backing means there is a known consequence for the mark ' +
           'if they make noise about this — which is itself a kind of leverage.{/has_faction}',
         successAfterimage:
-          'The mark freezes. The moment of decision — fight, flight, comply — ' +
+          'And {target} freezes. The moment of decision — fight, flight, comply — ' +
           'resolves in the direction {name} needed. The gap opens.',
         failureAfterimage:
-          'The mark does not freeze. They react, loudly, in a direction {name} did not model. ' +
+          'But {target} does not freeze — they react, loudly, in a direction {name} did not model. ' +
           'The confrontation has become something else.',
       },
       {
@@ -1770,11 +1842,11 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         },
         narrativeTemplate:
           'The take is fast, which is the only way to do it. {name} work{s} without looking ' +
-          'at the mark\'s face — the face is the thing that slows you down, because faces are ' +
+          'at {target}\'s face — the face is the thing that slows you down, because faces are ' +
           'stories and stories are weight. The transaction is done before either party has time ' +
           'to process what it means.',
         successAfterimage:
-          '{name} is twenty paces away and moving normally before the mark finds their voice. ' +
+          '{name} is twenty paces away and moving normally before {target} finds their voice. ' +
           'The prize is heavy enough to matter. The face, {they} will not remember.',
         failureAfterimage:
           'A guard who was not in the original read steps into the lane at exactly the wrong moment. ' +
@@ -1785,7 +1857,7 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
       initiation:
         '{name} is targeting a mark in {location}. The job is confrontation, extraction, and clean exit.',
       success:
-        'The robbery was quick and precise. {name} is gone before the mark has fully processed it.',
+        'The robbery was quick and precise. {name} is gone before {target} has fully processed it.',
       failure:
         'Something in the location or the mark\'s response went outside the plan.',
     },
@@ -1810,9 +1882,16 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
             id: 'rob_mark_witness',
             label: 'The mark can identify {name} — the robbery was not anonymous.',
             intent:
-              'The mark saw {name}\'s face well enough. ' +
+              'Because {target} saw {name}\'s face well enough. ' +
               'The robbery succeeded but the anonymity did not.',
             effects: [
+              {
+                // Robbed and able to name the robber: the bond takes the full weight.
+                kind: 'bond_change',
+                withAgentId: '$target',
+                sentimentDelta: BOND_BETRAYAL_SENTIMENT_DELTA,
+                trustDelta: BOND_BETRAYAL_TRUST_DELTA,
+              },
               {
                 kind: 'hidden_mark',
                 category: 'concealed_action',
@@ -1867,16 +1946,16 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         narrativeTemplate:
           'The offer of patronage is made quietly, as these things always should be. ' +
           '{name} does not open with numbers — {they} open{s} with a question: ' +
-          'what does the recipient actually need? The answer is always more specific ' +
+          'what does {target} actually need? The answer is always more specific ' +
           'than "money" or "protection," and the specificity is where a real arrangement lives. ' +
           '{?has_ally}The approach through {ally:strongest} gave this conversation a context — ' +
           'the recipient already knows this is a serious offer from a serious person.{/has_ally}',
         successAfterimage:
-          'The recipient is listening in the way people listen when they are ' +
+          'By the end {target} is listening in the way people listen when they are ' +
           'deciding whether to say yes — actively, with the calculation running.',
         failureAfterimage:
           'The offer landed as what it looked like rather than what it was. ' +
-          'The recipient is polite but closed. Something in the approach read as transactional ' +
+          'Now {target} is polite but closed. Something in the approach read as transactional ' +
           'where it needed to read as investment.',
       },
       {
@@ -1893,7 +1972,7 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
           'what is expected, what is provided, what the limits of each are. ' +
           '{name} is careful to make the terms generous enough to be worth accepting ' +
           'and specific enough to be worth honoring. ' +
-          'The risk in patronage is that the recipient accepts without meaning to deliver. ' +
+          'The risk in patronage is that {target} accepts without meaning to deliver. ' +
           '{name} watch{s} for that.',
         successAfterimage:
           'The understanding is reached. Power moving downward, loyalty moving upward — ' +
@@ -1921,11 +2000,11 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
           'a patron who waits to be asked is a patron who has already broken the compact. ' +
           'What was promised arrives at the right scale and at the right time.',
         successAfterimage:
-          'The recipient\'s expression changes when the delivery lands — not surprise, ' +
+          'Something in {target}\'s expression changes when the delivery lands — not surprise, ' +
           'but something adjusting into place. The arrangement is no longer theoretical.',
         failureAfterimage:
           'The delivery is late, or partial, or missing the thing that mattered most. ' +
-          'The recipient is understanding, which is worse than anger — it means they expected it.',
+          'And {target} is understanding, which is worse than anger — it means they expected it.',
       },
     ],
     narrativeTemplates: {
@@ -1955,7 +2034,7 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         reactions: [
           {
             id: 'patronage_seed_obligation',
-            label: 'The recipient owes {name} — and will be called upon.',
+            label: 'Patron-debt — {target} owes {name} and will be called upon.',
             intent:
               'Patronage creates debt. The patron who invests is entitled to expect ' +
               'something in return — and the timing of that expectation is {name}\'s to choose.',
@@ -1968,10 +2047,18 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
                 revealFamilies: ['social.political_leverage', 'social.persuade'],
               },
               {
+                // Patronage is a bond before it is a ledger entry.
+                kind: 'bond_change',
+                withAgentId: '$target',
+                sentimentDelta: BOND_PACT_SENTIMENT_DELTA,
+                trustDelta: BOND_PACT_TRUST_DELTA,
+              },
+              {
                 kind: 'encounter_seed',
                 templateId: 'social.persuade',
                 delayTicks: 24,
                 seedLabel: 'Patron {name} calls on client to repay their debt with an action',
+                inheritContext: true,
               },
               { kind: 'reputation_tally', key: 'gold.positive', delta: 1 },
             ],
@@ -1985,10 +2072,17 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
               'The client will look for ways to demonstrate their value without prompting.',
             effects: [
               {
+                kind: 'bond_change',
+                withAgentId: '$target',
+                sentimentDelta: BOND_PACT_SENTIMENT_DELTA,
+                trustDelta: BOND_PACT_TRUST_DELTA,
+              },
+              {
                 kind: 'encounter_seed',
                 templateId: 'social.forge_alliance',
                 delayTicks: 18,
                 seedLabel: 'Grateful client introduces {name} to their own network — alliance opportunity',
+                inheritContext: true,
               },
               { kind: 'reputation_tally', key: 'gold.positive', delta: 2 },
             ],

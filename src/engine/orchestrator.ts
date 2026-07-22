@@ -26,6 +26,7 @@ import {
   schemeFlags,
 } from './rival';
 import { getRivalSchemeFamily } from '../data/rival-schemes';
+import { phaseNotableAgendas } from './notableAgendas';
 import type { RivalSchemeSummary, RivalDefinition, RivalState } from '../types/rival';
 import {
   RIVAL_SCHEME_PHASE_INVEST_TICKS,
@@ -2856,6 +2857,11 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
 
   s = { ...s, ...phaseRivalActions(s) };
   phaseEventCounts['rival_actions'] = s.tickEvents.length - prevEventCount;
+  prevEventCount = s.tickEvents.length;
+
+  // Phase 3b: Notable Agendas (THR-630) — living-world autonomy on the same runner
+  s = { ...s, ...phaseNotableAgendas(s) };
+  phaseEventCounts['notable_agendas'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
 
   // Phase 4: Stealth

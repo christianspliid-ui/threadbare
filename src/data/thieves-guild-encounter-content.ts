@@ -12,6 +12,7 @@ import type { UnifiedActionTemplate } from '../types/unifiedAction';
 import { ENCOUNTER_TYPE_MOTIVATIONS } from '../types/encounter';
 import type { FactionEncounterMeta } from '../types/faction';
 import { withEncounterContract } from './encounter-contract-builder';
+import { BOND_DUEL_SENTIMENT_DELTA, BOND_DUEL_TRUST_DELTA } from './effect-constants';
 
 // ─── Constants ───────────────────────────────────────────────────────────
 
@@ -204,7 +205,7 @@ export const THIEVES_GUILD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
           '{?no_faction}No guild backing {them} in this room — just {their} own judgment ' +
           'against the fence\'s practiced eye.{/no_faction}',
         successAfterimage: '{name} values the take accurately. Good leverage going in.',
-        failureAfterimage: '{name} misjudges the value. The fence will smell weakness.',
+        failureAfterimage: '{name} misjudges the value. {cast:fence} will smell weakness.',
       },
       {
         reach: 'gold',
@@ -240,7 +241,7 @@ export const THIEVES_GUILD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
       success:
         'Fair price, clean split. The guild is pleased with {their} returns.',
       failure:
-        'The fence won the table. Thin coin for work that carried real risk.',
+        '{cast:fence} won the table. Thin coin for work that carried real risk.',
     },
     aftermathConfig: {
       branchOnStep: 0,
@@ -415,6 +416,7 @@ export const THIEVES_GUILD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
                 templateId: 'tg.quest.warehouse_raid',
                 delayTicks: 8,
                 seedLabel: 'The casing job opens a window for the follow-up',
+                inheritContext: true, // the raid hits the SAME cased mark
               },
             ],
             closeAfterSelection: true,
@@ -554,6 +556,7 @@ export const THIEVES_GUILD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
                 encounterFamily: 'civic_guard',
                 delayTicks: 12,
                 seedLabel: 'The warehouse report reaches the guard post',
+                inheritContext: true, // the guard investigates the SAME warehouse
               },
             ],
             closeAfterSelection: true,
@@ -1131,9 +1134,9 @@ export const THIEVES_GUILD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
     actorAffinities: ['individual'],
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.steal,
     description:
-      'The capital vault. Guards, wards, iron doors, and a fortune that nobody has ' +
-      'ever successfully extracted. Three phases: map the defenses, assemble the crew, ' +
-      'and crack the vault before dawn. Everything rides on this.',
+      'The capital vault at {location}. Guards, wards, iron doors, and a fortune that nobody has ' +
+      'ever successfully extracted. Three phases: {name} maps the defenses, assembles the crew, ' +
+      'and cracks the vault before dawn. Everything rides on this.',
     steps: [
       {
         reach: 'eye',
@@ -1446,6 +1449,7 @@ export const THIEVES_GUILD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
                 delayTicks: 30,
                 priority: 1.2,
                 seedLabel: 'Rival guild remnants resurface with a specific grievance',
+                inheritContext: true, // the SAME survivors return with the grudge
               },
               {
                 kind: 'hidden_mark',
@@ -1555,6 +1559,15 @@ export const THIEVES_GUILD_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
                 label: 'Minor dice debt — owes coin in guild alley game',
                 revealFamilies: ['tg.social', 'tg.quest'],
               },
+              // Contest semantics (duel ladder): losing to a named counterpart
+              // rubs the sentiment, teaches the trust. No-op when the game had
+              // no bound counterpart ($target fail-soft).
+              {
+                kind: 'bond_change',
+                withAgentId: '$target',
+                sentimentDelta: BOND_DUEL_SENTIMENT_DELTA,
+                trustDelta: BOND_DUEL_TRUST_DELTA,
+              },
             ],
             closeAfterSelection: true,
           },
@@ -1594,21 +1607,21 @@ export const THIEVES_GUILD_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
           reputationDelta: -0.01,
         },
         narrativeTemplate:
-          'A fence evaluates {name}\'s latest acquisitions in the back room of a {location} establishment ' +
+          '{cast:fence} evaluates {name}\'s latest acquisitions in the back room of a {location} establishment ' +
           'that officially sells secondhand furniture. The smell of sawdust and old varnish. ' +
-          'The fence picks up each piece, sets it down, says nothing. ' +
+          '{cast:fence} picks up each piece, sets it down, says nothing. ' +
           '{?has_faction}Guild-affiliated fences play fair — not generous, but fair, ' +
           'which is a distinction worth understanding.{/has_faction}' +
           '{?no_faction}An independent fence will move the goods but the margin won\'t be kind.{/no_faction}',
-        successAfterimage: 'Good prices. The fence offers a standing arrangement.',
-        failureAfterimage: 'The fence shakes {their} head. Not worth the risk tonight.',
+        successAfterimage: 'Good prices. {cast:fence} offers a standing arrangement.',
+        failureAfterimage: '{cast:fence} shakes {their} head. Not worth the risk tonight.',
       },
     ],
     narrativeTemplates: {
       initiation:
-        '{name} brings recent acquisitions to a {location} fence for evaluation and sale. Routine commerce.',
-      success: 'Good returns. The fence is interested in future arrangements.',
-      failure: 'The fence passes. Wrong goods, wrong timing, or the wrong night.',
+        '{name} brings recent acquisitions to {cast:fence} in {location} for evaluation and sale. Routine commerce.',
+      success: 'Good returns. {cast:fence} is interested in future arrangements.',
+      failure: '{cast:fence} passes. Wrong goods, wrong timing, or the wrong night.',
     },
     aftermathConfig: {
       branchOnStep: 0,
