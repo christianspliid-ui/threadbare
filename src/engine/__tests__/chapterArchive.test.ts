@@ -150,5 +150,7 @@ describe('orchestrator archive integration', () => {
     expect(state.unifiedActions.some(a => a.actionId === 'chapter-test-action')).toBe(false);
     // …but the chapter stays readable.
     expect((state.chapterArchive ?? []).some(r => r.actionId === 'chapter-test-action')).toBe(true);
-  });
+    // Runs 60+ real ticks — the vitest 5s default flakes under full-suite CPU
+    // contention (THR-689 method note: explicit timeout for >50-tick tests).
+  }, 20_000);
 });

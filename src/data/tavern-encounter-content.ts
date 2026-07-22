@@ -23,6 +23,10 @@
 
 import type { UnifiedActionTemplate } from '../types/unifiedAction';
 import { ENCOUNTER_TYPE_MOTIVATIONS } from '../types/encounter';
+import {
+  BOND_DUEL_SENTIMENT_DELTA,
+  BOND_DUEL_TRUST_DELTA,
+} from './effect-constants';
 
 // ─── Tavern Sublocation Filter ────────────────────────────────
 
@@ -68,17 +72,17 @@ export const TAVERN_UNIFIED_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
           ],
         },
         narrativeTemplate:
-          'The common room at {location} is loud enough that {name} hear{s} the insult before {they} see{s} the man who said it — ' +
-          'a drover two stools down, ale down his beard, looking for somebody to fight. ' +
+          'The common room at {location} is loud enough that {name} hear{s} the insult before {they} see{s} who said it — ' +
+          '{target}, two stools down, ale-loud, looking for somebody to fight. ' +
           'Conversation drops by a half-step; the hiccup-pause before a room commits to a spectacle. ' +
           '{?has_ally}{ally:strongest} is already shifting {their} weight forward — not to join, but to hold ground if {name} needs someone behind {them}.{/has_ally}' +
           '{?no_ally}No one here has {name}\'s back. The room is audience, not ally.{/no_ally}',
         successAfterimage:
-          '{name} plants the first fist before the drover has set his stance. ' +
+          '{name} plants the first fist before {target} has set a stance. ' +
           'The crowd parts backwards in the way taverns do — nobody runs, nobody steps in. ' +
           'The first blow is an answer. What comes next is whether {name} can keep it that way.',
         failureAfterimage:
-          'The drover is faster than he looked. Knuckles across {name}\'s jaw, ale and blood on the floorboards. ' +
+          'But {target} is faster than {target:they} looked. Knuckles across {name}\'s jaw, ale and blood on the floorboards. ' +
           'The room draws its breath all at once. Somewhere behind {name}, a mug breaks.',
       },
       {
@@ -108,14 +112,14 @@ export const TAVERN_UNIFIED_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         },
         narrativeTemplate:
           'Chairs go over. A bottle crosses the air and does not find {name}. ' +
-          'This is where a brawl becomes a story — either someone stays standing or the barkeep fetches the wardens. ' +
-          '{name} press{es} in close, under the reach of a man who has been fighting for the room, not for himself.',
+          'This is where a brawl becomes a story — either someone stays standing or {cast:keeper} fetches the wardens. ' +
+          '{name} press{es} in close, under the reach of someone who has been fighting for the room, not for themselves.',
         successAfterimage:
-          'The drover goes down against a table and stays there. {name} straightens, breathing hard, ' +
-          'and the crowd roars — not for the blood, for the finality. The barkeep is already waving down the wardens at the door. ' +
+          'Then {target} goes down against a table and stays there. {name} straightens, breathing hard, ' +
+          'and the crowd roars — not for the blood, for the finality. Behind the bar, {cast:keeper} is already waving down the wardens at the door. ' +
           'Tonight, at {location}, they will remember which one was left standing.',
         failureAfterimage:
-          '{name} takes a knee too early, and the drover\'s boot does the rest. ' +
+          '{name} takes a knee too early, and {target}\'s boot does the rest. ' +
           'A barmaid drags {name} out to the alley by the collar, swearing the whole way. ' +
           'Behind the door the room goes back to itself — but the story of the fight will outlast the bruises.',
       },
@@ -147,15 +151,23 @@ export const TAVERN_UNIFIED_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         reactions: [
           {
             id: 'brawl_rematch_seed',
-            label: 'The drover swears a rematch. He will come for {name} again.',
+            label: 'A rematch is sworn — {target} will come for {name} again.',
             intent:
-              'A public loss at {location} is carried heavier than the injury. The drover will be back, sober, with friends.',
+              'A public loss at {location} is carried heavier than the injury. {target} will be back, sober, with friends.',
             effects: [
+              {
+                // A fought brawl cools the bond and hardens the read on each other.
+                kind: 'bond_change',
+                withAgentId: '$target',
+                sentimentDelta: BOND_DUEL_SENTIMENT_DELTA,
+                trustDelta: BOND_DUEL_TRUST_DELTA,
+              },
               {
                 kind: 'encounter_seed',
                 templateId: 'tavern.the_challenge',
                 delayTicks: 28,
-                seedLabel: 'Drover returns to {location} seeking rematch with {name}',
+                seedLabel: 'Beaten brawler returns to {location} seeking rematch with {name}',
+                inheritContext: true,
               },
               { kind: 'reputation_tally', key: 'iron.positive', delta: 1 },
             ],
@@ -184,6 +196,12 @@ export const TAVERN_UNIFIED_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
             intent:
               'A public defeat at {location} is the kind of thing the room retells. The story shapes how {name} is read in future rooms.',
             effects: [
+              {
+                kind: 'bond_change',
+                withAgentId: '$target',
+                sentimentDelta: BOND_DUEL_SENTIMENT_DELTA,
+                trustDelta: BOND_DUEL_TRUST_DELTA,
+              },
               {
                 kind: 'hidden_mark',
                 category: 'reputation_note',
@@ -237,7 +255,7 @@ export const TAVERN_UNIFIED_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
           '{?has_faction}Guild-trained ears pick a clean signal out of the crowd — {name} know{s} the cadence of a man who thinks he isn\'t being listened to.{/has_faction}' +
           '{?no_faction}No one has taught {name} this; {they} ha{s} to learn it from the room itself — which voices pause, which don\'t, which know to be careful.{/no_faction}',
         successAfterimage:
-          'A name. A route. A date next week. The two traders at the next bench have been talking for an hour and do not realise ' +
+          'A name. A route. A date next week. At the next bench, {cast:regular} and a trading partner have been talking for an hour and do not realise ' +
           'they gave away the thing they came here to negotiate in private. {name} let{s} the cup rest on the table and does not write anything down.',
         failureAfterimage:
           'The loudest man at the table is drunk enough to be interesting but not useful — opinions, not observations. ' +
@@ -492,7 +510,8 @@ export const TAVERN_UNIFIED_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
           'The final verse is where a tavern-song earns its keep — not the hook, the turn. ' +
           '{name} shift{s} key on the line that matters, and the room holds its breath for the half-beat before the resolution lands.',
         successAfterimage:
-          'Silence for the space of two heartbeats. Then the room comes apart — stamping, cheers, coins pitched into the cap at {name}\'s feet. ' +
+          'Silence for the space of two heartbeats. Then the room comes apart — stamping, cheers, coins pitched into the cap at {name}\'s feet, ' +
+          'and {cast:keeper} sends a mug down the bar on the house. ' +
           'At {location} tonight, {name} has made a friend of the room itself. The story of it will outlast tonight.',
         failureAfterimage:
           '{name} loses the line at the wrong moment — a word mis-placed, the key off by a fraction. ' +
@@ -881,16 +900,16 @@ export const TAVERN_UNIFIED_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         successMetadata: { reputationDelta: 0.02 },
         failureMetadata: { reputationDelta: -0.02 },
         narrativeTemplate:
-          'A voice cuts across the common room at {location} — loud enough that the hearth-side conversations stop mid-sentence. ' +
+          'A voice cuts across the common room at {location} — {target}, loud enough that the hearth-side conversations stop mid-sentence. ' +
           '"I hear you\'re supposed to be good." The room breathes in and does not breathe out. ' +
           '{?has_rival}{rival:strongest} is at the far table, watching — this will be told back to them before dawn.{/has_rival}' +
           '{?has_ally}{ally:strongest} catches {name}\'s eye and does not nod, which is {their} way of saying: handle it.{/has_ally}',
         successAfterimage:
-          '{name} meet{s} the challenger\'s gaze without blinking, and the crowd reads it as readiness, not arrogance. ' +
-          'The challenger nods once. The thing is already half-decided. The tavern makes its ring.',
+          '{name} meet{s} {target}\'s gaze without blinking, and the crowd reads it as readiness, not arrogance. ' +
+          'A single nod from {target}. The thing is already half-decided. The tavern makes its ring.',
         failureAfterimage:
           '{name} hold{s} the pause a beat too long — not fear, not quite, but the crowd reads it that way. ' +
-          'The challenger smirks. Half of what happens in the next minutes is already priced into the room\'s expectations.',
+          'And {target} smirks. Half of what happens in the next minutes is already priced into the room\'s expectations.',
       },
       // ActionStepBranch: first-blood confidence vs the desperate contest
       {
@@ -925,10 +944,10 @@ export const TAVERN_UNIFIED_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
               'Steel is drawn; the crowd makes its ring of three-deep bodies; the lamps at {location} are bright enough that the blades catch. ' +
               'First blood or first yield. {name} move{s} into the measure of it with the confidence the earlier exchange bought.',
             successAfterimage:
-              'Three passes, one clean touch — the challenger\'s cuff parted at the forearm, blood beading, the fight called. ' +
+              'Three passes, one clean touch — {target}\'s cuff parted at the forearm, blood beading, the fight called. ' +
               'Hands extend; {name} takes it. At {location} tonight, a story that will travel all the way to the next town by the post-rider.',
             failureAfterimage:
-              'The challenger is better than the posture suggested. A parry slips, a blade finds {name}\'s shoulder, and the room\'s breath goes out of it. ' +
+              'But {target} is better than the posture suggested. A parry slips, a blade finds {name}\'s shoulder, and the room\'s breath goes out of it. ' +
               '{name} yields, sheathing with a steady hand that does not match the cost.',
           },
         },
@@ -959,13 +978,13 @@ export const TAVERN_UNIFIED_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
           },
           narrativeTemplate:
             'Having started on the back foot, {name} fights the contest {they} was given, not the one {they} wanted. ' +
-            'The challenger presses; the crowd presses closer. Every pass has the stale smell of spilt drink and the coppery weight of blood in the air.',
+            'Now {target} presses; the crowd presses closer. Every pass has the stale smell of spilt drink and the coppery weight of blood in the air.',
           successAfterimage:
-            'Five passes in, {name} catches the challenger\'s second blade-hand with a turn the crowd did not see coming. ' +
+            'Five passes in, {name} catches {target}\'s second blade-hand with a turn the crowd did not see coming. ' +
             'The fight is called. A harder win than the first read promised — and the harder win is the one the room will retell.',
           failureAfterimage:
             'A fight won from the back foot is still a fight lost. {name} takes the cut, yields cleanly, and sheathes. ' +
-            'The challenger is gracious in victory, which is almost worse than arrogance.',
+            'And {target} is gracious in victory, which is almost worse than arrogance.',
         },
       },
     ],
@@ -996,15 +1015,23 @@ export const TAVERN_UNIFIED_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         reactions: [
           {
             id: 'challenge_won_seed_rematch',
-            label: 'The challenger will train and return.',
+            label: 'Beaten but not done — {target} will train and return.',
             intent:
               'A challenger beaten cleanly in a tavern contest at {location} will come back — older, cleverer, with a plan.',
             effects: [
+              {
+                // Steel met squarely: sentiment cools, a cold respect forms.
+                kind: 'bond_change',
+                withAgentId: '$target',
+                sentimentDelta: BOND_DUEL_SENTIMENT_DELTA,
+                trustDelta: BOND_DUEL_TRUST_DELTA,
+              },
               {
                 kind: 'encounter_seed',
                 templateId: 'tavern.the_challenge',
                 delayTicks: 45,
                 seedLabel: 'Beaten challenger returns to {location} to seek a second contest with {name}',
+                inheritContext: true,
               },
               { kind: 'reputation_tally', key: 'iron.positive', delta: 1 },
             ],
@@ -1084,14 +1111,14 @@ export const TAVERN_UNIFIED_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         failureMetadata: { reputationDelta: -0.02 },
         narrativeTemplate:
           'The first words come slowly. A name. A place. A thing done that shouldn\'t have been. ' +
-          '{name} does not ask questions; {they} leave{s} the spaces where the stranger needs to hear {themselves} keep going. ' +
-          'The barkeep refills the stranger\'s cup and retreats, because barkeeps at {location} know when a confession is happening.',
+          '{name} does not ask questions; {they} leave{s} the spaces where {target} needs to hear {themselves} keep going. ' +
+          'Without being asked, {cast:keeper} refills {target}\'s cup and retreats, because keepers at {location} know when a confession is happening.',
         successAfterimage:
-          'The story lands — specific, ugly, real. The stranger looks at {name} with the clear-eyed relief of someone who has been carrying a thing alone for a long time. ' +
+          'The story lands — specific, ugly, real. Then {target} looks at {name} with the clear-eyed relief of someone who has been carrying a thing alone for a long time. ' +
           'When they stand and leave, they do not thank {name}. They don\'t need to. Both of them know who now holds what.',
         failureAfterimage:
-          '{name} ask{s} a question one beat too soon, or {their} face shows something the stranger reads as judgement. ' +
-          'The mouth closes; the cup empties; the stranger stands and leaves without looking back. Whatever was coming out tonight will go home with them.',
+          '{name} ask{s} a question one beat too soon, or {their} face shows something {target} reads as judgement. ' +
+          'The mouth closes; the cup empties; {target} stands and leaves without looking back. Whatever was coming out tonight will go home with them.',
       },
     ],
     narrativeTemplates: {
@@ -1199,12 +1226,12 @@ export const TAVERN_UNIFIED_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         successMetadata: { reputationDelta: 0.01 },
         failureMetadata: { reputationDelta: 0 },
         narrativeTemplate:
-          'A travelling merchant unfolds velvet on the bar at {location} — the small signal that says: this is not for the room, this is for you specifically. ' +
+          'At the bar of {location}, {target} unfolds velvet — the small signal that says: this is not for the room, this is for you specifically. ' +
           'Pipe smoke and the low light; the wares catch just enough lamp to suggest without revealing. ' +
-          '{?has_faction}The faction sigil at {name}\'s collar earns a second, quieter glance from the merchant — a language spoken before words.{/has_faction}' +
-          '{?no_faction}An unaffiliated purse is either a mark or a mystery; {name} can\'t yet tell which the merchant has decided {they} are.{/no_faction}',
+          '{?has_faction}The faction sigil at {name}\'s collar earns a second, quieter glance from {target} — a language spoken before words.{/has_faction}' +
+          '{?no_faction}An unaffiliated purse is either a mark or a mystery; {name} can\'t yet tell which {target} has decided {they} are.{/no_faction}',
         successAfterimage:
-          'The merchant\'s pitch is real enough — the wares are what they seem, the prices negotiable. An honest chance to trade.',
+          'And {target}\'s pitch is real enough — the wares are what they seem, the prices negotiable. An honest chance to trade.',
         failureAfterimage:
           'A bead has been replaced; a seam is too fresh. The wares are not quite what they pretend to be. ' +
           'The merchant watches {name}\'s face for the moment of recognition.',
@@ -1238,7 +1265,7 @@ export const TAVERN_UNIFIED_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
       initiation:
         'A travelling merchant has chosen {name} for a quiet pitch at {location}.',
       success:
-        'A trade is struck — the merchant is pleased and {name} got what {they} came for.',
+        'A trade is struck — {target} is pleased and {name} got what {they} came for.',
       failure:
         'No deal. The merchant takes the next table.',
     },
@@ -1257,7 +1284,7 @@ export const TAVERN_UNIFIED_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
             polarity: 'mixed',
           },
         ],
-        reactionPrompt: 'How does the merchant describe {name} at the next tavern on the road?',
+        reactionPrompt: 'How does {target} describe {name} at the next tavern on the road?',
         reactions: [
           {
             id: 'pitch_repeat_customer',

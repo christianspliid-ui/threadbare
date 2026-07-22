@@ -788,6 +788,34 @@ effects: [
 - **The withdrawn option** is real — it produces a quieter outcome with less seeding, which is the game-mechanical expression of "the god chose not to interfere"
 - **The divine intervention choices are genuinely different** — supporting the festival vs. warning about the spy are different kinds of godly action with different consequences
 
+### The counterpart pattern — `{target}` + `bond_change` + `inheritContext` composing (THR-699)
+
+When an encounter is *with* someone — an alliance overture, a duel, a shakedown — three capabilities compose so the prose, the graph, and the follow-up all agree on who that someone is. The shipped `social.forge_alliance` is the live exemplar:
+
+```
+narrative: "…a gesture of sense, and {target} reads it that way.
+{?target_is_rival}They have crossed each other before. Neither of
+them mentions it, which is its own kind of mention.{/target_is_rival}"
+
+// Aftermath reaction "The alliance takes root — {target} will call on {name}."
+effects: [
+  { kind: 'bond_change',              // the alliance the prose narrates now
+    withAgentId: '$target',           // exists as a relates_to edge
+    sentimentDelta: BOND_PACT_SENTIMENT_DELTA,
+    trustDelta: BOND_PACT_TRUST_DELTA },
+  { kind: 'encounter_seed',
+    templateId: 'social.forge_alliance',
+    delayTicks: 24,
+    seedLabel: 'New ally calls in a favor from {name}',
+    inheritContext: true },           // the SAME ally returns in the follow-up
+]
+```
+
+- **`{target}`** names the person the encounter actually bound (fallback: "the other party" — keep the token mid-sentence, the fallback is lowercase). Relation conditionals (`{?target_is_rival}`) change the read when history exists.
+- **`bond_change` with `'$target'`** makes the narrated relationship real on the graph — proportionality ladder in `effect-constants.ts` (`BOND_PACT_*` / `BOND_SLIGHT_*` / `BOND_BETRAYAL_*` / `BOND_DUEL_*`); never inline magnitudes.
+- **`inheritContext: true`** only where the fiction means *the same person (or place) returns* — a rematch, a called-in favor, a grudge. Not for "someone new arrives."
+- **Judgment call that matters:** only substitute `{target}` where the encounter's real graph target *is* the referent. Borderland's bandits and wolves are scene-generated, not graph entities, and those encounters bind location targets — a `{target}` there would render a place name into a person slot. When in doubt, leave the noun generic.
+
 This is what "content is design" means: the systemic wiring isn't decoration on top of the prose. The wiring IS the design. The prose serves the wiring. Knowing that encounter seeds exist is what made the author write a scene where someone is watching — because that watcher can become a future encounter.
 
 ---
