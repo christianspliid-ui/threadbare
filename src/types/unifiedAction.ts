@@ -673,6 +673,33 @@ export type EncounterAftermathReactionEffect =
     /** Direct the mark at a specific agent (defaults to the encounter actor). */
     readonly targetAgentId?: string;
     readonly when?: EffectPredicate;
+  }
+  | {
+    /**
+     * THR-695 (Slice B) — move a directed relationship bond between two agents.
+     *
+     * Creates or mutates the actor→`withAgentId` `relates_to` edge: applies
+     * `sentimentDelta` (result clamped to [-1, 1]) and, when supplied,
+     * `trustDelta` (result clamped to [0, 1]). A missing edge is created with
+     * `BOND_CREATE_INITIAL_SENTIMENT` / `BOND_CREATE_INITIAL_TRUST` before the
+     * delta lands. `reciprocal` (default true) mirrors the same deltas onto the
+     * reverse edge so a formed alliance is symmetric. No new node or edge type.
+     */
+    readonly kind: 'bond_change';
+    /**
+     * The other agent in the bond. Literal node id, `'$target'` (rebinds to the
+     * action's resolved target), or `'$cast:<key>'` / `'role:<key>'` (rebinds via
+     * the action's support bindings). Resolved by `bindAftermathSceneTargets`
+     * before dispatch; an unresolved sentinel or non-agent node no-ops the effect.
+     */
+    readonly withAgentId: string;
+    /** Signed change to edge sentiment; result clamped to [-1, 1]. */
+    readonly sentimentDelta: number;
+    /** Optional signed change to edge trust; result clamped to [0, 1]. */
+    readonly trustDelta?: number;
+    /** Mirror the deltas onto the reverse (with→actor) edge. Default true. */
+    readonly reciprocal?: boolean;
+    readonly when?: EffectPredicate;
   };
 
 export interface PendingEncounterSeed {
