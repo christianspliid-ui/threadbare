@@ -844,6 +844,47 @@ const LivelihoodLine = memo(function LivelihoodLine({ location }: { location: Gr
   );
 });
 
+// Walls line — fortification state as prose with battle IPK keywords (THR-628).
+// Renders only when the settlement has walls worth mentioning (fortification
+// above baseline) or has been breached; the breach flips **Fortified** →
+// **Breached**, which is the modifier-stripping headline beat made visible.
+const WallsLine = memo(function WallsLine({ location }: { location: GraphNode }) {
+  const props = location.properties ?? {};
+  const fortification = typeof props.fortificationMultiplier === 'number'
+    ? props.fortificationMultiplier
+    : null;
+  const breached = props.fortificationBreached === true;
+  if (!breached && (fortification == null || fortification <= 1)) return null;
+
+  const text = breached
+    ? '**Breached** — the walls are broken, and the advantage they carried went with them.'
+    : '**Fortified** — the walls stand, and anyone who wants this place must take them first.';
+
+  return (
+    <div className="mx-6 mt-3" style={{ maxWidth: '820px' }}>
+      <div
+        className="rounded-lg border px-4 py-3"
+        style={{ backgroundColor: 'var(--bg-raised)', borderColor: 'var(--border-gold)' }}
+      >
+        <p
+          className="uppercase"
+          style={{
+            fontSize: 'var(--text-xs)',
+            color: 'var(--text-tertiary)',
+            letterSpacing: '0.5px',
+            marginBottom: '0.35rem',
+          }}
+        >
+          Walls
+        </p>
+        <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)', lineHeight: '1.6' }}>
+          {renderProseWithIPK(text)}
+        </p>
+      </div>
+    </div>
+  );
+});
+
 export const LocationView = memo(function LocationView({
   location,
   agents,
@@ -1160,6 +1201,9 @@ export const LocationView = memo(function LocationView({
 
       {/* Livelihood line — resource stock tiers as prose (THR-615) */}
       <LivelihoodLine location={location} />
+
+      {/* Walls line — fortification state as prose (THR-628) */}
+      <WallsLine location={location} />
 
       {/* Conditional: Sublocation view or flat layout */}
       {sublocationData.sublocations.length > 0 ? (

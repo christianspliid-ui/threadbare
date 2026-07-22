@@ -348,3 +348,43 @@ describe('resolveBattle', () => {
     expect(graph.getOutgoingEdges('army2', 'participates_in')).toHaveLength(0);
   });
 });
+
+// ─── THR-628: situational modifiers + spotlight-pool coverage ──────────────
+
+describe('situational modifiers (THR-628)', () => {
+  it('prepared defense multiplies the defender side down in momentum terms', () => {
+    // Equal armies: no modifier → 0. Defender ×3 prepared → attacker at 1:3 → negative momentum.
+    const base = calculateInitialMomentum(1000, 1000);
+    const prepared = calculateInitialMomentum(1000, 1000, 3);
+    expect(base).toBe(0);
+    expect(prepared).toBeLessThan(0);
+    expect(prepared).toBeCloseTo(Math.log2(1 / 3) * 1.5, 3);
+  });
+
+  it('attacker tactical modifier pushes momentum positive and stays clamped', async () => {
+    const { BATTLE_RESOLUTION_THRESHOLD } = await import('../../types/battle');
+    const brilliant = calculateInitialMomentum(1000, 1000, 1, 20);
+    expect(brilliant).toBeGreaterThan(0);
+    // Clamp guarantee: spotlights always matter (threshold − 2).
+    expect(Math.abs(brilliant)).toBeLessThanOrEqual(BATTLE_RESOLUTION_THRESHOLD - 2);
+  });
+
+  it('modifiers compose: prepared defender cancels an equal attacker advantage', () => {
+    const both = calculateInitialMomentum(1000, 1000, 3, 3);
+    expect(both).toBeCloseTo(0, 5);
+  });
+});
+
+describe('spotlight template pool coverage (THR-628 residue check)', () => {
+  it('every template carries condition, reaches, and momentum wiring', async () => {
+    const { BATTLE_SPOTLIGHT_TEMPLATES } = await import('../../data/battle-spotlight-content');
+    expect(BATTLE_SPOTLIGHT_TEMPLATES.length).toBeGreaterThanOrEqual(9);
+    for (const t of BATTLE_SPOTLIGHT_TEMPLATES) {
+      expect(typeof t.condition, `${t.id} condition`).toBe('function');
+      expect(t.reaches.length, `${t.id} reaches`).toBeGreaterThan(0);
+      expect(typeof t.momentumOnSuccess, `${t.id} momentumOnSuccess`).toBe('number');
+      expect(typeof t.momentumOnFailure, `${t.id} momentumOnFailure`).toBe('number');
+      expect(t.narrative.length, `${t.id} narrative`).toBeGreaterThan(20);
+    }
+  });
+});
