@@ -1186,6 +1186,17 @@ Intelligence records are **granted** by aftermath reactions (`kind: 'intelligenc
 | `remove_condition` | `agent`, `faction`, `sublocation` | `graph.removeEdge(has_trait)` oldest or all | `touchedStructure` |
 | `recent_event` + `witnessAgentIds` | — (fan-out) | `TickEvent.witnessAgentIds` set | — |
 
+**Scene sentinels + `bond_change` (THR-695, Slice B, 2026-07-22):**
+
+`bindAftermathSceneTargets` runs at the top of the aftermath dispatch loop in `applyEncounterAftermathReaction` (composed *after* `bindReachSignatureTargets`), generalizing the THR-555 `$target` pattern to every effect field. `bond_change` is a new `EncounterAftermathReactionEffect` kind that moves a `relates_to` edge — the first authored effect that can *create* a bond.
+
+| Surface | Module / site | GameState field | Trace category | Debug visibility |
+|---|---|---|---|---|
+| Sentinel bind pass (`$target` / `$cast:<key>` / `role:<key>`) on `targetAgentId`/`targetFactionId`/`targetSublocationId`/`withAgentId` | `bindAftermathSceneTargets` in `src/engine/encounterAftermath.ts` | reads `action.targetId` + `action.supportBindings` | `aftermath_sentinel_bound` (`resolvedNodeId: null` = unresolved) | DebugPanel trace feed |
+| `bond_change` effect | `bond_change` case in `applyEncounterAftermathReaction` → `applyBondEdge`; create/mutate actor→with `relates_to` edge, clamp sentiment [-1,1] / trust [0,1], optional reciprocal mirror; `touchWorld()` | `state.graph` `relates_to` edges (`sentiment`/`trust`); `mutationSummary.touchedWorld` | `bond_change_applied` + `encounter_aftermath_effect` (`effectKind: 'bond_change'`) | DebugPanel trace feed; bonds read by `getAgentBonds`, alone/outnumbered predicates, UI selectors |
+
+Constants: `BOND_CREATE_INITIAL_SENTIMENT` / `BOND_CREATE_INITIAL_TRUST` (`src/data/effect-constants.ts`). Tests: `src/engine/__tests__/encounterAftermath-bond-scene.test.ts` (19 tests). Fail-soft: unresolved sentinel / non-actor node / self-bond → `success:false` trace, no mutation.
+
 **Condition attachment + wound promotion (THR-117, 2026-04-17):**
 
 `condition_attachment` aftermath effect kind — applies any condition trait (wound, disease, curse, blessing, bestowed) by template ID with automatic default-duration lookup. When the template is `trait.condition.wounded` and the target is the action actor, surfaces a `woundApplied` signal that drives mid-encounter tier promotion.

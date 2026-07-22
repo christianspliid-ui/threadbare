@@ -172,6 +172,14 @@ export const ENEMY_SENTIMENT_THRESHOLD = -0.35;
 /** outnumbered requires enemyCount > allyCount + OUTNUMBERED_MARGIN. */
 export const OUTNUMBERED_MARGIN = 1;
 
+// ─── Bond Change Aftermath Effect (THR-695, Slice B) ──────────────
+
+/** Starting sentiment when a `bond_change` effect must create a missing relates_to edge. */
+export const BOND_CREATE_INITIAL_SENTIMENT = 0;
+
+/** Starting trust on a relates_to edge created by a `bond_change` effect. */
+export const BOND_CREATE_INITIAL_TRUST = 0;
+
 // ─── Content Shells (THR-53) ──────────────────────────────────────
 
 /** Authoring sanity cap on flip_table variants per template. Lint flag if exceeded. */

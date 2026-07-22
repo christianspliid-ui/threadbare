@@ -1540,6 +1540,30 @@ export interface AftermathTargetResolvedTrace extends TraceBase {
   effectiveTargetKind: 'agent' | 'faction' | 'sublocation' | 'actor_fallback';
 }
 
+/** Trace: a `$target` / `$cast:` / `role:` aftermath sentinel rebound (THR-695, Slice B). */
+export interface AftermathSentinelBoundTrace extends TraceBase {
+  category: 'aftermath_sentinel_bound';
+  actionId: string;
+  effectKind: string;
+  /** The effect field the sentinel appeared on (e.g. 'targetAgentId', 'withAgentId'). */
+  field: string;
+  /** '$target' | '$cast:<key>' | 'role:<key>' */
+  sentinel: string;
+  /** Resolved node id, or null when the sentinel could not be bound (effect will no-op). */
+  resolvedNodeId: string | null;
+}
+
+/** Trace: a `bond_change` aftermath effect applied a sentiment/trust mutation (THR-695, Slice B). */
+export interface BondChangeAppliedTrace extends TraceBase {
+  category: 'bond_change_applied';
+  actorId: string;
+  withAgentId: string;
+  sentimentBefore: number;
+  sentimentAfter: number;
+  created: boolean;
+  reciprocal: boolean;
+}
+
 /** Trace: faction node reputation changed by aftermath effect */
 export interface FactionReputationChangedTrace extends TraceBase {
   category: 'faction_reputation_changed';
@@ -1808,6 +1832,9 @@ export type TraceEntry =
   | ConditionAppliedTrace
   | ConditionRemovedTrace
   | AftermathTargetInvalidTrace
+  // Scene-targeting aftermath sentinels + bond_change (THR-695, Slice B)
+  | AftermathSentinelBoundTrace
+  | BondChangeAppliedTrace
   // Initiative traces (THR-51)
   | InitiativeStartedTrace
   | InitiativeCheckpointTrace
