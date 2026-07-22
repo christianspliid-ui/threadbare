@@ -20,6 +20,7 @@ import type {
 import type { ActorType } from '../types/graph';
 import { ACTION_TEMPLATES, type ActionTemplateData } from './action-template-content';
 import { ACTION_TECHNICAL_EFFECTS } from './action-technical-effects';
+import { withDefaultSupportBundle } from './default-support-bundles';
 import { ENCOUNTER_TEMPLATES, getAnyEncounterById } from './encounter-content';
 import { ASCENDANT_POOL_BEAT_TEMPLATES } from './ascendant-pool-beat-templates';
 import { ANOMALY_ENCOUNTER_TEMPLATES } from './encounter-anomaly-content';
@@ -5210,12 +5211,20 @@ const RAW_UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
  * idempotent — a template already carrying an inline `technicalEffect` keeps it;
  * an id absent from the map is left untouched (renders "—"/`unauthored` in the
  * catalog). Applied once at module load.
+ *
+ * THR-698: `withDefaultSupportBundle` then attaches the family default cast to
+ * linear templates that declare no `supportBundle` (template-declared bundles
+ * win outright). Applied here so every consumer of the registry — decision
+ * phase, CLI spawn, `__DEBUG.fireAction`, prose cast context — sees the same
+ * merged template object.
  */
 export const UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] =
   RAW_UNIFIED_ACTION_TEMPLATES.map((t) => {
-    if (t.technicalEffect != null) return t;
     const authored = ACTION_TECHNICAL_EFFECTS[t.id];
-    return authored ? { ...t, technicalEffect: authored } : t;
+    const withEffect = t.technicalEffect != null || !authored
+      ? t
+      : { ...t, technicalEffect: authored };
+    return withDefaultSupportBundle(withEffect);
   });
 
 /**
