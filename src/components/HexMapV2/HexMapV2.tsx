@@ -61,6 +61,9 @@ import type { ReachSignatureMarker } from '../../engine/reachSignatureMarkers';
 import { createRivalInfluenceLayer } from './scene/RivalInfluenceMesh';
 import type { RivalInfluenceLayer } from './scene/RivalInfluenceMesh';
 import type { RivalInfluenceMarker } from '../../engine/rivalInfluenceMarkers';
+import { createTradeRouteLayer } from './scene/TradeRouteMesh';
+import type { TradeRouteLayer } from './scene/TradeRouteMesh';
+import type { TradeRouteLine, RouteTooltipEntry } from '../../engine/tradeRouteMarkers';
 import { tickAgentAnimations } from './agents/agentAnimationState';
 import type { AgentAnimState } from './agents/agentAnimationState';
 import { createMovementTrailMesh, updateTrails } from './scene/MovementTrailMesh';
@@ -291,6 +294,9 @@ export interface HexMapV2Props {
   reachSignatureMarkers?: ReachSignatureMarker[];
   /** Rival-scheme influence markers — sphere-tinted outlines on contested hexes (THR-66). */
   rivalInfluenceMarkers?: RivalInfluenceMarker[];
+  /** Trade-route lines + per-endpoint-hex cargo tooltips (THR-670). */
+  tradeRouteLines?: TradeRouteLine[];
+  routeTooltipsByHex?: Map<string, RouteTooltipEntry[]>;
   /** Battle/siege indicator data for combat overlays (Plan 12-07+) */
   battles?: BattleIndicatorData[];
   /** Thread line data — avatar-to-agent relationship lines (Attention UI) */
@@ -509,7 +515,7 @@ function createSelectionOverlayMesh(size: number, color: string): THREE.Mesh {
  */
 const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
   function HexMapV2(
-    { tiles, cols, rows, seed = 42, hoveredHex, selectedHex, onHexClick, onHexHover, onAgentClick, onArmyClick, riverPaths, lakeIds, regionData, locations, anomalies, roadPaths, agents, armies, reachSignatureMarkers, rivalInfluenceMarkers, battles, threadLines, activityIcons, strategicOverlays, attentionRatio = 1.0, visibilityMap, fogEnabled = false, showOrganicShore = true, overlayOpen = false, selectionColor, moveDestinationHex, onCameraCenterHex, locationActivityMap, spotlightedAgentId, spotlightThreadColor, shouldCenterOnAgent },
+    { tiles, cols, rows, seed = 42, hoveredHex, selectedHex, onHexClick, onHexHover, onAgentClick, onArmyClick, riverPaths, lakeIds, regionData, locations, anomalies, roadPaths, agents, armies, reachSignatureMarkers, rivalInfluenceMarkers, battles, threadLines, activityIcons, strategicOverlays, attentionRatio = 1.0, visibilityMap, fogEnabled = false, showOrganicShore = true, overlayOpen = false, selectionColor, moveDestinationHex, onCameraCenterHex, locationActivityMap, tradeRouteLines, routeTooltipsByHex, spotlightedAgentId, spotlightThreadColor, shouldCenterOnAgent },
     ref,
   ) {
     const containerRef = useRef<HTMLDivElement>(null);
@@ -1692,6 +1698,23 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
       rivalInfluenceLayerRef.current = layer;
     }, [rivalInfluenceMarkers]);
 
+    // ── Trade-route lines (THR-670): rebuild on change, roads-band underlay ──
+    const tradeRouteLayerRef = useRef<TradeRouteLayer | null>(null);
+    useEffect(() => {
+      const scene = sceneRef.current;
+      if (!scene) return;
+      if (tradeRouteLayerRef.current) {
+        scene.remove(tradeRouteLayerRef.current.group);
+        tradeRouteLayerRef.current.dispose();
+        tradeRouteLayerRef.current = null;
+      }
+      const lines = tradeRouteLines ?? [];
+      if (lines.length === 0) return;
+      const layer = createTradeRouteLayer(lines);
+      scene.add(layer.group);
+      tradeRouteLayerRef.current = layer;
+    }, [tradeRouteLines]);
+
     // Update selection ring + zoom target when selectedHex prop changes
     useEffect(() => {
       const canvas = canvasRef.current as (HTMLCanvasElement & {
@@ -1935,6 +1958,9 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
           const locationActivity = locationActivityMap?.get(
             `${tooltipHex.col},${tooltipHex.row}`,
           );
+          const tradeRoutes = routeTooltipsByHex?.get(
+            `${tooltipHex.col},${tooltipHex.row}`,
+          );
           // Fall back to tile terrain name
           const hoveredTile = tiles.find(
             t => t.coord.col === tooltipHex.col && t.coord.row === tooltipHex.row,
@@ -1949,6 +1975,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
               canvasWidth={canvasDimensions.w}
               canvasHeight={canvasDimensions.h}
               locationActivity={locationActivity}
+              tradeRoutes={tradeRoutes}
             />
           );
         })()}
