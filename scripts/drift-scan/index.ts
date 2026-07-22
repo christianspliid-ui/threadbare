@@ -18,7 +18,7 @@ import {
   lintRulebookVsCode,
   lintRulebookVsVision,
   lintQuickReferenceVsRulebook,
-} from "../lint-rulebook";
+} from "../lint-rulebook.ts";
 
 import {
   LINEAR_API_KEY,
@@ -26,7 +26,7 @@ import {
   resolveBacklogStateId,
   findIssueByExactTitle,
   createDriftIssue,
-} from "./linear";
+} from "./linear.ts";
 
 // Drift scan thresholds — tune in `./constants.ts` (browser-safe single source).
 import {
@@ -41,7 +41,7 @@ import {
   TOP_IMPORTERS_COUNT,
   UL_UNCANONICAL_MIN_OCCURRENCES,
   SUITE_HISTORY_LIMIT,
-} from "./constants";
+} from "./constants.ts";
 export {
   COUPLING_CREEP_PCT,
   BROKEN_WINDOWS_PCT,
