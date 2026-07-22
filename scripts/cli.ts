@@ -38,6 +38,7 @@ import * as path from 'path';
 import { initializeGameState, MAP_SIZE_PRESETS } from '../src/engine/gameInit';
 import type { MapSizePreset } from '../src/engine/gameInit';
 import { runTick, resetEventCounter } from '../src/engine/orchestrator';
+import { prepareEncounterSupportBundle } from '../src/engine/encounterSupportBundle';
 import { createBalancedCosmology } from '../src/engine/cosmology';
 import { generateArchetypes } from '../src/engine/ascendant';
 import {
@@ -1458,6 +1459,11 @@ function handleSpawnEncounter(agentQuery: string, templateId: string): void {
     return;
   }
 
+  // Prepare the support bundle so spawned encounters bind cast exactly like
+  // the decision-phase and browser debug paths (THR-698 — the CLI previously
+  // skipped this, so spawned actions always had empty supportBindings).
+  const supportBindings = prepareEncounterSupportBundle(state, template, match.id);
+
   // Create the action
   const action = createUnifiedAction({
     actorId: match.id,
@@ -1468,6 +1474,7 @@ function handleSpawnEncounter(agentQuery: string, templateId: string): void {
     tick: state.tick,
     template,
     rng: () => Math.random(),
+    supportBindings,
   });
 
   // Add to state

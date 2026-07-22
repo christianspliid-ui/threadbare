@@ -3,6 +3,12 @@ import type { GameState } from '../../types/gameState';
 import { WorldGraph } from '../graph';
 import { getUnifiedTemplateById } from '../../data/unified-action-templates';
 import { prepareEncounterSupportBundle } from '../encounterSupportBundle';
+import {
+  DEFAULT_BUNDLE_MAX_SPECS,
+  DEFAULT_FAMILY_SUPPORT_BUNDLES,
+  withDefaultSupportBundle,
+} from '../../data/default-support-bundles';
+import { NPC_ROLES } from '../../types/npc';
 
 function makeState(graph: WorldGraph): GameState {
   return {
@@ -220,5 +226,85 @@ describe('prepareEncounterSupportBundle', () => {
     expect(bindings.find(binding => binding.key === 'gate_captain')?.nodeId).toBe('captain_1');
     expect(graph.getNode('enc_support_cg.quest.gate_duty_loc_town_suspect_courier')).toBeDefined();
     expect(graph.getNode('enc_support_cg.quest.gate_duty_faction_cg_suspect_courier')).toBeUndefined();
+  });
+});
+
+describe('default family support bundles (THR-698)', () => {
+  function makeSettlementGraph(): WorldGraph {
+    const graph = new WorldGraph();
+    graph.addNode({
+      id: 'loc_village',
+      type: 'location',
+      name: 'Mock Village',
+      properties: { locationSubtype: 'village' },
+    });
+    return graph;
+  }
+
+  it('every default bundle respects the spec cap, uses real NPC roles, and is bind-only', () => {
+    const validRoles = new Set<string>(NPC_ROLES);
+    for (const [family, bundle] of Object.entries(DEFAULT_FAMILY_SUPPORT_BUNDLES)) {
+      expect(bundle.length, `${family} bundle exceeds cap`).toBeLessThanOrEqual(DEFAULT_BUNDLE_MAX_SPECS);
+      const seenRoles = new Set<string>();
+      for (const spec of bundle) {
+        expect(spec.delivery, `${family}/${spec.key} must be pre-seeded (bind-only)`).toBe('pre-seeded');
+        expect(spec.kind).toBe('actor');
+        if (spec.kind !== 'actor') continue;
+        for (const role of spec.reuseNpcRoles ?? []) {
+          expect(validRoles.has(role), `${family}/${spec.key} reuse role '${role}' is not a real NpcRole`).toBe(true);
+          expect(seenRoles.has(role), `${family} reuses role '${role}' in two specs`).toBe(false);
+          seenRoles.add(role);
+        }
+        expect(validRoles.has(spec.spawnNpcRole), `${family}/${spec.key} spawnNpcRole invalid`).toBe(true);
+        expect(spec.spawnName, `${family}/${spec.key} needs a spawnName prose fallback`).toBeTruthy();
+      }
+    }
+  });
+
+  it('registry templates without an authored bundle carry their family default', () => {
+    const tavern = getUnifiedTemplateById('tavern.brawl');
+    expect(tavern?.supportBundle?.map(s => s.key)).toEqual(['keeper', 'performer', 'regular']);
+
+    const wallPatrol = getUnifiedTemplateById('cg.quest.wall_patrol');
+    expect(wallPatrol?.supportBundle?.map(s => s.key)).toEqual(['officer', 'watch_guard']);
+  });
+
+  it('a template-declared bundle wins outright over the family default', () => {
+    const gateDuty = getUnifiedTemplateById('cg.quest.gate_duty');
+    const keys = gateDuty?.supportBundle?.map(s => s.key) ?? [];
+    expect(keys).toContain('gate_captain');
+    expect(keys).not.toContain('officer');
+  });
+
+  it('withDefaultSupportBundle returns the same object for unknown families', () => {
+    const template = { id: 'zzz.no_such_family', supportBundle: undefined } as never;
+    expect(withDefaultSupportBundle(template)).toBe(template);
+  });
+
+  it('binds an existing settlement NPC to the default cast without materializing', () => {
+    const graph = makeSettlementGraph();
+    addIndividual(graph, 'keeper_1', 'Marla', 'innkeeper', 'loc_village');
+    const state = makeState(graph);
+    const template = getUnifiedTemplateById('tavern.brawl');
+    const nodeCountBefore = graph.getNodesByType('actor').length;
+
+    const bindings = prepareEncounterSupportBundle(state, template!, 'loc_village');
+
+    expect(bindings).toHaveLength(1);
+    expect(bindings[0]).toMatchObject({ key: 'keeper', nodeId: 'keeper_1', reused: true });
+    expect(graph.getNodesByType('actor')).toHaveLength(nodeCountBefore);
+  });
+
+  it('leaves default specs unresolved at a location with no matching NPCs — zero spawns', () => {
+    const graph = makeSettlementGraph();
+    const state = makeState(graph);
+    const template = getUnifiedTemplateById('tavern.brawl');
+    const nodesBefore = graph.getNodesByType('actor').length + graph.getNodesByType('location').length;
+
+    const bindings = prepareEncounterSupportBundle(state, template!, 'loc_village');
+
+    expect(bindings).toHaveLength(0);
+    const nodesAfter = graph.getNodesByType('actor').length + graph.getNodesByType('location').length;
+    expect(nodesAfter).toBe(nodesBefore);
   });
 });
