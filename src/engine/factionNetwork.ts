@@ -634,3 +634,27 @@ export function refreshFactionDerivedFlags(
     },
   });
 }
+
+/**
+ * Derived faction prosperity — the faction's war chest: SUM of settlement
+ * `prosperity` across its holdings (`controls` edges plus guild-hall parent
+ * locations), scaled by /100 so the existing 0–1-scale gate
+ * (EXPANSION_PROSPERITY_THRESHOLD = 0.6 → 60 raw prosperity points across
+ * holdings) compares correctly. Deliberately breadth-weighted (sum, not
+ * mean): an empire of modest towns can fund expansion; a single prosperous
+ * guild hall cannot. Measured on seed 42/99 at t169: the two landed empires
+ * total ~6.5 here, single-seat guilds ≤0.36, monster factions 0 — so the
+ * gate opens only for genuinely landed powers. Derived on read and never
+ * stored on the faction node, so it cannot drift from the values the economy
+ * phases maintain (THR-711). No holdings → 0.
+ */
+export function deriveFactionProsperity(graph: WorldGraph, factionId: string): number {
+  const locations = collectFactionLocations(graph, factionId, false);
+  if (locations.length === 0) return 0;
+  let sum = 0;
+  for (const loc of locations) {
+    const node = graph.getNode(loc.id);
+    sum += (node?.properties?.prosperity as number | undefined) ?? 0;
+  }
+  return Math.max(0, sum / 100);
+}

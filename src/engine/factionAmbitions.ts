@@ -15,6 +15,7 @@ import type { FactionAmbitionType } from '../types/faction';
 import { requiresMilitaryForce } from '../types/faction';
 import { FACTION_DEFINITIONS } from '../data/faction-definitions';
 import { isEligibleForArmySpawn, selectCommander, spawnArmy } from './armySpawning';
+import { deriveFactionProsperity } from './factionNetwork';
 import { emitTrace } from './traceBuffer';
 
 // ─── Constants ───────────────────────────────────────────────────────────
@@ -22,8 +23,17 @@ import { emitTrace } from './traceBuffer';
 /** How often faction ambitions are re-evaluated (ticks) */
 export const FACTION_AMBITION_EVALUATION_INTERVAL = 5;
 
-/** Minimum faction prosperity before territorial expansion is eligible */
-export const EXPANSION_PROSPERITY_THRESHOLD = 0.6;
+/**
+ * Minimum derived faction prosperity (war chest) before territorial expansion
+ * is eligible. Compared against `deriveFactionProsperity` — the SUM of the
+ * faction's settlement prosperity on the /100 scale, so 0.6 = 60 raw
+ * prosperity points across holdings (THR-711). Tuned to the measured world
+ * scale (seeds 42/99, t169): guild seats run 0–0.36, monster lairs 0, and the
+ * big landed nations carry no factionDefId so they never reach this gate at
+ * all — 0.30 makes expansion reachable for a genuinely prospering seat while
+ * keeping it the rarer, earned war flavor (revenge stays the common one).
+ */
+export const EXPANSION_PROSPERITY_THRESHOLD = 0.3;
 
 /** How fast grudges fade per tick */
 export const REVENGE_GRIEVANCE_DECAY = 0.02;
@@ -89,9 +99,10 @@ export function scoreEligibleAmbitions(
 
     // Eligibility checks
     if (type === 'territorial_expansion') {
-      // Need minimum prosperity
-      const factionNode = state.graph.getNode(factionId);
-      const prosperity = (factionNode?.properties?.prosperity as number) ?? 0;
+      // Need minimum prosperity — derived from the faction's held settlements
+      // (a `prosperity` property was never written to faction nodes, which
+      // kept this gate permanently closed; THR-711).
+      const prosperity = deriveFactionProsperity(state.graph, factionId);
       if (prosperity < EXPANSION_PROSPERITY_THRESHOLD) continue;
     }
 
@@ -270,7 +281,10 @@ export function phaseFactionAmbitions(state: GameState): void {
     emitTrace({
       tick: state.tick,
       category: 'faction_ambition',
-      summary: `Faction ${faction.name} adopted ambition: ${ambitionType.replace(/_/g, ' ')}`,
+      summary: `Faction ${faction.name} adopted ambition: ${ambitionType.replace(/_/g, ' ')}`
+        + (ambitionType === 'territorial_expansion'
+          ? ` (derived prosperity ${deriveFactionProsperity(state.graph, faction.id).toFixed(2)} ≥ ${EXPANSION_PROSPERITY_THRESHOLD})`
+          : ''),
       factionId: faction.id,
       ambitionType,
       event: 'created',
