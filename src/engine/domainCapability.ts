@@ -6,6 +6,8 @@
  * and maps to the 10-tier narrative lexicon.
  */
 import type { WorldGraph } from './graph';
+import { deriveFactionProsperity } from './factionNetwork';
+import { ECON_FACTION_POWER_WEIGHT } from '../data/economic-power-config';
 import type { TraitDefinitionProperties, TraitAssignmentProperties, ReachDomain, DomainContributions } from '../types/traits';
 import { REACH_DOMAINS, NARRATIVE_LEXICON } from '../types/traits';
 
@@ -42,6 +44,12 @@ export function computeRawScore(
   const node = graph.getNode(nodeId);
   const caps = node?.properties.domainCapabilities as Record<string, number> | undefined;
   let total = caps?.[domain] ?? 0;
+
+  // Faction economic power term (THR-617): a faction's GOLD capability grows
+  // with the derived prosperity of its holdings — trade wealth is capability.
+  if (domain === 'gold' && node?.properties.actorType === 'faction') {
+    total += deriveFactionProsperity(graph, nodeId) * ECON_FACTION_POWER_WEIGHT;
+  }
 
   // Walk trait edges
   const traitEdges = graph.getOutgoingEdges(nodeId, 'has_trait');

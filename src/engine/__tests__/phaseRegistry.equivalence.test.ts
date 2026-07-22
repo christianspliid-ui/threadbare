@@ -79,6 +79,9 @@ const EXPECTED_PHASE_IDS: readonly string[] = [
   // Core personality foundation phase (THR-542): no ordering constraints, so the
   // alphabetical tie-break places it after ambition_progress, before faction_ambitions.
   'core_personality',
+  // Economic power (THR-617): no ordering constraints; alphabetical tie-break
+  // ('economic_power' > 'core_personality', < 'faction_ambitions').
+  'economic_power',
   'faction_ambitions',
   'faction_actions',
   // Origin-vignette birth-seeding phase (THR-561): `beforePhase: personality_trait_emerge`

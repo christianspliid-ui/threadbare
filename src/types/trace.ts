@@ -298,7 +298,11 @@ export type TraceCategory =
   | 'notable.roster_scan'
   // Route events — cargo manifests materialize encounters (THR-669)
   | 'route_event_scan'
-  | 'route_event_seeded';
+  | 'route_event_seeded'
+  // Economic power — monopoly resolution + sphere drift (THR-617)
+  | 'monopoly_transition'
+  | 'economic_power_scan'
+  | 'scarcity_arc_phase';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'action_selection', 'narrative_generation', 'context_harvest',
@@ -568,6 +572,10 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   // Route events (THR-669)
   'route_event_scan',
   'route_event_seeded',
+  // Economic power (THR-617)
+  'monopoly_transition',
+  'economic_power_scan',
+  'scarcity_arc_phase',
 ];
 
 /** Base shape for all trace entries */
@@ -1921,6 +1929,10 @@ export type TraceEntry =
   // Route event traces (THR-669)
   | RouteEventScanTrace
   | RouteEventSeededTrace
+  // Economic power traces (THR-617)
+  | MonopolyTransitionTrace
+  | EconomicPowerScanTrace
+  | ScarcityArcPhaseTrace
   // Composition dual-voice story-beat wiring (THR-254)
   | CompositionStoryBeatTemplateMissingTrace
   // Encounter foreshadowing (THR-389)
@@ -2670,6 +2682,38 @@ export interface RouteEventSeededTrace extends TraceBase {
   eventKind: 'ambush' | 'toll' | 'embargo';
   templateId: string;
   targetAgentId: string;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Economic Power Traces (THR-617)
+// ═══════════════════════════════════════════════════════════════════
+
+/** Trace: a faction established or lost a resource monopoly. */
+export interface MonopolyTransitionTrace extends TraceBase {
+  category: 'monopoly_transition';
+  factionId: string;
+  resourceId: string;
+  transition: 'established' | 'broken';
+  controlFraction: number;
+}
+
+/** Trace: one aggregate economic-power scan record per scan tick. */
+export interface EconomicPowerScanTrace extends TraceBase {
+  category: 'economic_power_scan';
+  monopoliesHeld: number;
+  established: number;
+  broken: number;
+  flowsDrifted: number;
+  scarcityArcsActive: number;
+  scarcityArcTransitions: number;
+}
+
+/** Trace: a scarcity arc opened, advanced a phase, or dissolved. */
+export interface ScarcityArcPhaseTrace extends TraceBase {
+  category: 'scarcity_arc_phase';
+  locationId: string;
+  resourceId: string;
+  phase: 'shortage' | 'hoarding' | 'unrest' | 'flashpoint' | 'recovered';
 }
 
 // ═══════════════════════════════════════════════════════════════════
