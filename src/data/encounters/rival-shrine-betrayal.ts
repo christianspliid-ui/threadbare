@@ -82,13 +82,13 @@ const step0TheOffer: ActionStep = {
   onFailure: [],
   failBehavior: 'continue_weakened',
   narrativeTemplate:
-    'Tessaly spread the ledger on the table and pressed it flat with both palms. ' +
+    '{cast:tessaly} spread the ledger on the table and pressed it flat with both palms. ' +
     'She spoke at exactly the volume that carried no further than the table. ' +
     '"I know where the Pale Court keeps its shrine in the Vessen uplands. ' +
     'I have not sold this to anyone because I wanted to sell it to you, and because ' +
     'what I want in return is something only your people can give me." ' +
     'She turned the ledger to face the agent. The last debt was circled in red ink. ' +
-    '"Brinewall. The curing technique. The Harken family\'s process — the tidal pools, ' +
+    '"Brinewall. The curing technique. The {cast:carin_harken} family\'s process — the tidal pools, ' +
     'the calcium-ite, the timing. I need a working description." ' +
     'She met the agent\'s eyes with the flat professional regard of someone who has ' +
     'calculated this conversation twelve times before having it.',
@@ -145,10 +145,10 @@ const step1AcceptExtraction: ActionStep = {
   ],
   failBehavior: 'fail_action',
   narrativeTemplate:
-    'Carin Harken walked the agent through the second curing shed as though showing ' +
+    '{cast:carin_harken} walked the agent through the second curing shed as though showing ' +
     'a friend a garden. She pointed out where the calcium-ite deposit surfaced through ' +
     'the floor stones — a pale vein of mineral that the family had chipped at for three ' +
-    'generations. Her daughter Lenne brought tea and dried plums. Carin talked while she ' +
+    'generations. Her daughter Lenne brought tea and dried plums. {cast:carin_harken} talked while she ' +
     'worked, her hands moving through the process the way a musician\'s hands move through ' +
     'a piece they have played ten thousand times. The agent listened. And the agent ' +
     'recorded — not the way a guest remembers a host\'s generosity, but the way a ' +
@@ -189,7 +189,7 @@ const step1RefuseRefusal: ActionStep = {
   failBehavior: 'fail_action',
   narrativeTemplate:
     '"No." The word sat between them on the table like a stone dropped into still ' +
-    'water. Tessaly did not move for a moment. Then she nodded, once, and closed the ' +
+    'water. {cast:tessaly} did not move for a moment. Then she nodded, once, and closed the ' +
     'ledger the way someone closes a book they will not need again. "I understand," ' +
     'she said. "You should know that my asking you was the clean version. I have other ' +
     'approaches." She was not threatening. She was informing, with the weary precision ' +
@@ -220,7 +220,7 @@ const step1Branch: ActionStepBranch = {
 const ACCEPT_AFTERMATH = {
   overview:
     'The map arrived by courier three days after the technique left Brinewall. ' +
-    'Tessaly was true to her word — the shrine\'s location was precise, annotated ' +
+    '{cast:tessaly} was true to her word — the shrine\'s location was precise, annotated ' +
     'with route notes, guardian schedules, and a margin sketch of the approach from ' +
     'the river side. In Brinewall, nothing changed immediately. But in a warehouse ' +
     'in Greywater, a Guild curing master was already reading a description of the ' +
@@ -245,7 +245,7 @@ const ACCEPT_AFTERMATH = {
       id: 'accept_broker_relationship',
       kind: 'reputation' as const,
       title: 'Broker Contact Established',
-      detail: 'Tessaly\'s debt is cleared. She is available as a recurring intelligence contact.',
+      detail: '{cast:tessaly}\'s debt is cleared. She is available as a recurring intelligence contact.',
       polarity: 'gain' as const,
     },
     {
@@ -297,14 +297,14 @@ const ACCEPT_AFTERMATH = {
           kind: 'hidden_mark' as const,
           category: 'betrayal' as const,
           severity: 0.6,
-          label: 'Betrayed Brinewall\'s salt-curing technique to Tessaly for rival shrine intelligence',
+          label: 'Betrayed Brinewall\'s salt-curing technique to {cast:tessaly} for rival shrine intelligence',
           revealFamilies: ['investigation', 'brinewall'],
         },
         {
           kind: 'intelligence' as const,
           category: 'shrine_location' as const,
           label: 'Location of the Pale Court shrine in the Vessen uplands',
-          detail: 'Map fragment, route notes, guardian schedules, and approach path from the river side. Compiled by Tessaly from seventeen years of trade route intelligence.',
+          detail: 'Map fragment, route notes, guardian schedules, and approach path from the river side. Compiled by {cast:tessaly} from seventeen years of trade route intelligence.',
           targetRegion: 'vessen_uplands',
           reliability: 0.9,
         },
@@ -348,14 +348,14 @@ const ACCEPT_AFTERMATH = {
           kind: 'hidden_mark' as const,
           category: 'betrayal' as const,
           severity: 0.6,
-          label: 'Betrayed Brinewall\'s salt-curing technique to Tessaly for rival shrine intelligence',
+          label: 'Betrayed Brinewall\'s salt-curing technique to {cast:tessaly} for rival shrine intelligence',
           revealFamilies: ['investigation', 'brinewall'],
         },
         {
           kind: 'intelligence' as const,
           category: 'shrine_location' as const,
           label: 'Location of the Pale Court shrine in the Vessen uplands',
-          detail: 'Map fragment, route notes, guardian schedules, and approach path from the river side. Compiled by Tessaly from seventeen years of trade route intelligence.',
+          detail: 'Map fragment, route notes, guardian schedules, and approach path from the river side. Compiled by {cast:tessaly} from seventeen years of trade route intelligence.',
           targetRegion: 'vessen_uplands',
           reliability: 0.9,
         },
@@ -368,7 +368,7 @@ const REFUSE_AFTERMATH = {
   overview:
     'The shrine in the Vessen uplands continued to grow in its hidden valley, ' +
     'fed by prayers the player\'s agents could not hear. In Brinewall, the fish ' +
-    'came in and the fish went out. Carin Harken walked the curing sheds with her ' +
+    'came in and the fish went out. {cast:carin_harken} walked the curing sheds with her ' +
     'daughter, and the monopoly held, and the settlement\'s small sovereignty ' +
     'continued for reasons no one in the settlement would ever fully understand. ' +
     'A god had refused to sell them and they would never know it.',
@@ -391,14 +391,14 @@ const REFUSE_AFTERMATH = {
       id: 'refuse_broker_relationship',
       kind: 'reputation' as const,
       title: 'Broker Relationship Neutral',
-      detail: 'Tessaly is neutral to slightly hostile. She may approach again or become an adversary.',
+      detail: '{cast:tessaly} is neutral to slightly hostile. She may approach again or become an adversary.',
       polarity: 'mixed' as const,
     },
     {
       id: 'refuse_threat_seeded',
       kind: 'future_hook' as const,
       title: 'Threat Seeded',
-      detail: 'Tessaly will pursue the technique through other means — messier, less reliable, but driven by desperation.',
+      detail: '{cast:tessaly} will pursue the technique through other means — messier, less reliable, but driven by desperation.',
       polarity: 'loss' as const,
     },
     {
@@ -439,8 +439,8 @@ const REFUSE_AFTERMATH = {
     },
     {
       id: 'refuse_react_watch_tessaly',
-      label: 'Watch Tessaly. She will lead us to trouble.',
-      intent: 'Monitor Tessaly\'s movements. If she pursues the technique, intervene to protect Brinewall.',
+      label: 'Watch {cast:tessaly}. She will lead us to trouble.',
+      intent: 'Monitor {cast:tessaly}\'s movements. If she pursues the technique, intervene to protect Brinewall.',
       effects: [
         {
           kind: 'reputation_tally' as const,
@@ -450,7 +450,7 @@ const REFUSE_AFTERMATH = {
         {
           kind: 'recent_event' as const,
           eventType: 'narrative' as const,
-          message: 'An agent is assigned to shadow Tessaly — if her desperation drives her toward Brinewall through dirtier channels, the player will know.',
+          message: 'An agent is assigned to shadow {cast:tessaly} — if her desperation drives her toward Brinewall through dirtier channels, the player will know.',
           significance: 0.6,
         },
         {
@@ -458,7 +458,7 @@ const REFUSE_AFTERMATH = {
           encounterFamily: 'shadow.quest',
           delayTicks: 12,
           priority: 1.1,
-          seedLabel: 'Tessaly surveillance',
+          seedLabel: '{cast:tessaly} surveillance',
         },
       ],
     },

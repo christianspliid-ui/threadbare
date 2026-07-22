@@ -44,6 +44,7 @@ import { autonomousAftermathPhase } from './phaseAutonomousAftermath';
 import { mandatePhase } from './mandate';
 import { factionSuccessionPhase } from './factionSuccession';
 import { resourceStockTiersPhase } from './resourceStockTiers';
+import { routeEventsPhase } from './routeEvents';
 
 export const ENGINE_PHASES: readonly EnginePhase[] = [
   // pre-doom
@@ -56,6 +57,7 @@ export const ENGINE_PHASES: readonly EnginePhase[] = [
   reputationDecayPhase,
   resourceStockTiersPhase, // THR-615: derive stock tiers before prosperity reads resourceBalance
   // post-economy (chained via afterPhase to preserve inline order)
+  routeEventsPhase, // THR-669: manifests -> route-event encounter seeds
   ambitionProgressPhase,
   factionAmbitionsPhase,
   factionActionsPhase,

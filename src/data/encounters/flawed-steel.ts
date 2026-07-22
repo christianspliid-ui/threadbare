@@ -95,18 +95,18 @@ const step0TheReckoning: ActionStep = {
   failBehavior: 'continue_weakened',
   narrativeTemplate:
     'The first thing the god noticed was the sound — not the ringing of hammer on ' +
-    'steel that a forge should make in the morning hours, but silence. Maren Ironhewn\'s ' +
+    'steel that a forge should make in the morning hours, but silence. {cast:maren_ironhewn}\'s ' +
     'forge had gone cold for the first time in eleven years, and the absence of its rhythm ' +
     'left a gap in the settlement\'s morning like a missing heartbeat. The quenching trough ' +
     'still held water dark with yesterday\'s scale. Racks of finished blades lined the ' +
-    'back wall, each one stamped with Maren\'s mark, each one a promise the settlement ' +
+    'back wall, each one stamped with {cast:maren_ironhewn}\'s mark, each one a promise the settlement ' +
     'had learned to trust without thinking. On the anvil, where hot steel should have been ' +
     'taking shape, there was only a letter — written in a hand steady enough that the ink ' +
     'had not bled once, even on the words that were threats. And through the wall of the ' +
-    'coal shed came the sound of breathing: Dalla, who had been Maren\'s hands and eyes ' +
+    'coal shed came the sound of breathing: {cast:dalla}, who had been {cast:maren_ironhewn}\'s hands and eyes ' +
     'for nine years, sitting in the dark with the knowledge of what she had done settling ' +
     'into her bones like cold iron.\n\n' +
-    'Maren stood with her back to the shed door. She had not turned around since locking ' +
+    '{cast:maren_ironhewn} stood with her back to the shed door. She had not turned around since locking ' +
     'it. Her hands, scarred and calloused from three decades of metalwork, hung at her ' +
     'sides with the stillness of someone who did not trust what they might do ' +
     'if they moved. Outside the eastern gate, the Greycloaks\' cook-fires sent thin smoke ' +
@@ -114,10 +114,10 @@ const step0TheReckoning: ActionStep = {
     'conquest but for the simple, terrible reason that the weapons they had paid for would ' +
     'break when they were needed most.\n\n' +
     'The threads of this place pulled taut against each other, and the god could feel ' +
-    'each one: Maren\'s pride, fraying. Dalla\'s shame, hardening into something that ' +
-    'might become defiance if left long enough. Torve\'s patience, measured in hours. ' +
+    'each one: {cast:maren_ironhewn}\'s pride, fraying. {cast:dalla}\'s shame, hardening into something that ' +
+    'might become defiance if left long enough. {cast:torve_ashgrip}\'s patience, measured in hours. ' +
     'And beneath it all, the question the settlement had not yet asked itself — how many ' +
-    'other blades bearing Maren\'s stamp had already gone into the world carrying the same ' +
+    'other blades bearing {cast:maren_ironhewn}\'s stamp had already gone into the world carrying the same ' +
     'flaw, and how many of those blades had already failed in hands that trusted them.',
   successAfterimage: 'The god perceived the threads of the forge and chose how to pull.',
   failureAfterimage: 'The god perceived the threads of the forge but could not find purchase.',
@@ -153,20 +153,20 @@ const step1ForgeTheTruth: ActionStep = {
   narrativeTemplate:
     'Something shifted in the forge-master\'s bearing — not confidence, not yet, but ' +
     'the resolve of someone who has decided that the worst thing is not the ' +
-    'truth but the silence around it. Maren Ironhewn crossed to the coal shed, drew the ' +
-    'bolt, and told Dalla to stand up. The girl rose with the stiffness of someone who ' +
+    'truth but the silence around it. {cast:maren_ironhewn} crossed to the coal shed, drew the ' +
+    'bolt, and told {cast:dalla} to stand up. The girl rose with the stiffness of someone who ' +
     'had been sitting in the dark for two days, blinking against the morning light as if ' +
-    'it were an accusation. Maren did not speak to her. She walked to the eastern gate, ' +
-    'Dalla behind her, and the militia captain — who had been hoping for instructions ' +
+    'it were an accusation. {cast:maren_ironhewn} did not speak to her. She walked to the eastern gate, ' +
+    '{cast:dalla} behind her, and the militia captain — who had been hoping for instructions ' +
     'that would not come — stepped aside when he saw the look on the forge-master\'s face.\n\n' +
-    'Torve Ashgrip was sitting on a camp stool outside her command tent, sharpening a ' +
+    '{cast:torve_ashgrip} was sitting on a camp stool outside her command tent, sharpening a ' +
     'knife that did not need sharpening. She looked up as the gate opened and saw the ' +
     'forge-master walking toward her with a young woman trailing half a step behind, ' +
     'blinking against the light like someone pulled out of a cellar. The forge-master ' +
     'stopped at the edge of the Greycloak camp and said, in a voice that carried without ' +
     'being raised, that she had come to give a full accounting. That the fault was in her ' +
     'forge, under her name, and that the woman responsible was standing beside her. That ' +
-    'she would hear whatever terms the captain proposed. Torve set the knife down. She did ' +
+    'she would hear whatever terms the captain proposed. {cast:torve_ashgrip} set the knife down. She did ' +
     'not smile, but something in her posture eased — the recognition of someone who had ' +
     'chosen the harder road and could be dealt with accordingly.',
   successMetadata: {
@@ -175,10 +175,10 @@ const step1ForgeTheTruth: ActionStep = {
   failureMetadata: {
     reputationDelta: -0.20,
   },
-  successAfterimage: 'Maren faced the Greycloaks with a full accounting. The truth was painful, but Torve respected the honesty.',
-  failureAfterimage: 'Maren tried to face the Greycloaks openly, but the negotiation collapsed under the weight of the full disclosure.',
-  criticalSuccessAfterimage: 'The accounting is so complete, so unflinching, that Torve stands and offers her own hand first. The Greycloaks leave as something better than satisfied — as people who will speak the forge\'s name with respect in other towns.',
-  criticalFailureAfterimage: 'The whole truth, spoken aloud, is worse than anyone braced for. Torve\'s respect curdles into something colder, and a contract that might have survived a lie does not survive the sum of it. The forge keeps its honesty and loses everything else.',
+  successAfterimage: '{cast:maren_ironhewn} faced the Greycloaks with a full accounting. The truth was painful, but {cast:torve_ashgrip} respected the honesty.',
+  failureAfterimage: '{cast:maren_ironhewn} tried to face the Greycloaks openly, but the negotiation collapsed under the weight of the full disclosure.',
+  criticalSuccessAfterimage: 'The accounting is so complete, so unflinching, that {cast:torve_ashgrip} stands and offers her own hand first. The Greycloaks leave as something better than satisfied — as people who will speak the forge\'s name with respect in other towns.',
+  criticalFailureAfterimage: 'The whole truth, spoken aloud, is worse than anyone braced for. {cast:torve_ashgrip}\'s respect curdles into something colder, and a contract that might have survived a lie does not survive the sum of it. The forge keeps its honesty and loses everything else.',
 };
 
 /**
@@ -210,26 +210,26 @@ const step1TemperTheNarrative: ActionStep = {
   failBehavior: 'fail_action',
   narrativeTemplate:
     'The god\'s touch was lighter than breath — a whisper threaded through the morning ' +
-    'air, settling into the gaps between what Maren Ironhewn knew and what she was ' +
+    'air, settling into the gaps between what {cast:maren_ironhewn} knew and what she was ' +
     'willing to say aloud. The forge-master\'s hands steadied. Her jaw set not with the ' +
     'rigidity of confession but with the practiced calm of a craftswoman presenting ' +
     'finished work: here is what happened, here is what I propose, here is why you should ' +
-    'accept it. She left Dalla in the coal shed. Some truths held the rest of the structure ' +
+    'accept it. She left {cast:dalla} in the coal shed. Some truths held the rest of the structure ' +
     'up the way a tang holds a blade. Pull one and the whole thing comes apart in your hands. ' +
-    'This truth — the full scope of what Dalla had done, the months of it, the number of ' +
+    'This truth — the full scope of what {cast:dalla} had done, the months of it, the number of ' +
     'blades — was one of those.\n\n' +
-    'Maren walked to the eastern gate alone and asked the militia captain to open it. She ' +
+    '{cast:maren_ironhewn} walked to the eastern gate alone and asked the militia captain to open it. She ' +
     'carried a ledger and a sample replacement blade, still warm from a night of solitary ' +
-    'work at the forge. Torve Ashgrip met her at the camp\'s edge with the expression of ' +
+    'work at the forge. {cast:torve_ashgrip} met her at the camp\'s edge with the expression of ' +
     'someone who had expected to wait another day. The forge-master presented the situation ' +
     'as she had been guided to frame it: a materials defect in a single ore shipment, caught ' +
     'during quality review, affecting a known subset of the commissioned weapons. Regrettable. ' +
     'Remediable. Already being addressed. She placed the sample blade on the table between ' +
-    'them. Torve picked it up, tested the edge against her thumb, and studied the tang where ' +
+    'them. {cast:torve_ashgrip} picked it up, tested the edge against her thumb, and studied the tang where ' +
     'the last one had broken. The steel held. The conversation that followed was professional, ' +
     'measured, and efficient — two women who understood that commerce runs on the ability to ' +
-    'absorb mistakes without burning the relationship that produced them. What Torve did not ' +
-    'see, because the god\'s influence made it easy not to see, was the tremor in Maren\'s ' +
+    'absorb mistakes without burning the relationship that produced them. What {cast:torve_ashgrip} did not ' +
+    'see, because the god\'s influence made it easy not to see, was the tremor in {cast:maren_ironhewn}\'s ' +
     'hands when she closed the ledger. The numbers in it were true. They were also incomplete.',
   successMetadata: {
     reputationDelta: 0.05,
@@ -237,10 +237,10 @@ const step1TemperTheNarrative: ActionStep = {
   failureMetadata: {
     reputationDelta: -0.25,
   },
-  successAfterimage: 'The managed truth held. Torve accepted the framing and the forge survived without burning the relationship.',
-  failureAfterimage: 'Torve saw through the managed truth. The attempted deception stung worse than the original fraud.',
-  criticalSuccessAfterimage: 'The managed truth does not merely hold — Torve leaves believing the forge did her a favor by catching the flaw at all. The concealment seals so cleanly that even Maren half-believes the kinder version of events.',
-  criticalFailureAfterimage: 'Torve sees through it at the worst moment — mid-handshake — and understands she has been handled. A single fraud she might have forgiven. Being taken for a fool she will not, and she says so where the whole settlement can hear.',
+  successAfterimage: 'The managed truth held. {cast:torve_ashgrip} accepted the framing and the forge survived without burning the relationship.',
+  failureAfterimage: '{cast:torve_ashgrip} saw through the managed truth. The attempted deception stung worse than the original fraud.',
+  criticalSuccessAfterimage: 'The managed truth does not merely hold — {cast:torve_ashgrip} leaves believing the forge did her a favor by catching the flaw at all. The concealment seals so cleanly that even {cast:maren_ironhewn} half-believes the kinder version of events.',
+  criticalFailureAfterimage: '{cast:torve_ashgrip} sees through it at the worst moment — mid-handshake — and understands she has been handled. A single fraud she might have forgiven. Being taken for a fool she will not, and she says so where the whole settlement can hear.',
 };
 
 /**
@@ -266,16 +266,16 @@ const step1KeepYourHandFolded: ActionStep = {
   ],
   failBehavior: 'fail_action',
   narrativeTemplate:
-    'The god did not move. Maren Ironhewn stood at her anvil for another hour, ' +
+    'The god did not move. {cast:maren_ironhewn} stood at her anvil for another hour, ' +
     'and then she did what forge-masters have always done when the metal will not ' +
     'take the shape they need: she set down her tools and walked to the gate under ' +
     'her own power. What followed was neither the clean reckoning of divine honesty ' +
     'nor the managed efficiency of divine pragmatism. It was the messy, halting, ' +
     'human negotiation of a woman whose pride and whose guilt were fighting for ' +
-    'control of the same pair of hands. Torve listened. Maren stumbled over the ' +
-    'words she had not rehearsed. Dalla was brought from the coal shed by a militia ' +
+    'control of the same pair of hands. {cast:torve_ashgrip} listened. {cast:maren_ironhewn} stumbled over the ' +
+    'words she had not rehearsed. {cast:dalla} was brought from the coal shed by a militia ' +
     'captain who did not understand what he was walking into. The Greycloaks did not ' +
-    'get the accounting they deserved, and Maren did not get the dignity she wanted, ' +
+    'get the accounting they deserved, and {cast:maren_ironhewn} did not get the dignity she wanted, ' +
     'and the settlement watched from the walls with the uneasy awareness that the ' +
     'forge — the thing that made their weapons — had been compromised, and no one ' +
     'was entirely sure how badly.',
@@ -287,7 +287,7 @@ const step1KeepYourHandFolded: ActionStep = {
   },
   successAfterimage: 'The settlement resolved its own crisis — messily, but without divine interference.',
   failureAfterimage: 'Without divine guidance, the negotiation collapsed into recrimination and armed tension.',
-  criticalSuccessAfterimage: 'Left alone, the settlement surprises itself. Maren finds words no god put in her mouth, and the reckoning she builds without help is rougher and truer than any a god could have shaped. It belongs to them entirely.',
+  criticalSuccessAfterimage: 'Left alone, the settlement surprises itself. {cast:maren_ironhewn} finds words no god put in her mouth, and the reckoning she builds without help is rougher and truer than any a god could have shaped. It belongs to them entirely.',
   criticalFailureAfterimage: 'Without a hand on the scales, the worst nerve in the room wins. Old grievances the crisis had nothing to do with come loose, and by nightfall the forge is not the only thing in the settlement that has gone cold.',
 };
 
@@ -306,13 +306,13 @@ const step1Branch: ActionStepBranch = {
 const FORGE_TRUTH_AFTERMATH = {
   overview:
     'By evening the Greycloaks had a schedule and the settlement had a wound that would ' +
-    'scar cleanly. Maren Ironhewn sat on the step outside her forge with a cup of something ' +
+    'scar cleanly. {cast:maren_ironhewn} sat on the step outside her forge with a cup of something ' +
     'she was not drinking, watching the Greycloak camp\'s fires settle into their nighttime ' +
     'rhythm. The replacement work would take three weeks. Her hands ached with the ' +
     'fatigue of someone who had carried a weight with her body that should have been carried ' +
-    'by a structure. Dalla was gone — walked out through the eastern gate under Torve\'s ' +
+    'by a structure. {cast:dalla} was gone — walked out through the eastern gate under {cast:torve_ashgrip}\'s ' +
     'supervision, to begin the season of labor that would become the shape of her debt. The ' +
-    'girl had not looked back. Maren had not expected her to. The guild elders had already ' +
+    'girl had not looked back. {cast:maren_ironhewn} had not expected her to. The guild elders had already ' +
     'begun discussing what they were calling "the audit" — a review of every apprentice\'s ' +
     'output across every forge in the district. It would be expensive, tedious, and necessary. ' +
     'The settlement would remember this as the season the forge went cold, and what came after. ' +
@@ -321,21 +321,21 @@ const FORGE_TRUTH_AFTERMATH = {
     {
       id: 'truth_maren_reputation',
       kind: 'reputation' as const,
-      title: 'Maren Ironhewn',
+      title: '{cast:maren_ironhewn}',
       detail: 'Reputation damaged publicly but recovering. The forge-master faced the crisis honestly.',
       polarity: 'mixed' as const,
     },
     {
       id: 'truth_dalla_exiled',
       kind: 'reputation' as const,
-      title: 'Dalla',
+      title: '{cast:dalla}',
       detail: 'Removed from the settlement. Serving the Greycloaks to clear her debt.',
       polarity: 'loss' as const,
     },
     {
       id: 'truth_torve_positive',
       kind: 'reputation' as const,
-      title: 'Torve Ashgrip',
+      title: '{cast:torve_ashgrip}',
       detail: 'Cautiously positive toward the settlement. Respects the honest accounting.',
       polarity: 'gain' as const,
     },
@@ -378,7 +378,7 @@ const FORGE_TRUTH_AFTERMATH = {
     {
       id: 'truth_react_keep_maren_close',
       label: 'Keep the forge-master close.',
-      intent: 'Maintain a thread of connection to Maren as she rebuilds. The forge becomes a place where divine attention lingers.',
+      intent: 'Maintain a thread of connection to {cast:maren_ironhewn} as she rebuilds. The forge becomes a place where divine attention lingers.',
       effects: [
         {
           kind: 'reputation_score' as const,
@@ -392,7 +392,7 @@ const FORGE_TRUTH_AFTERMATH = {
         {
           kind: 'recent_event' as const,
           eventType: 'narrative' as const,
-          message: 'The god\'s attention lingers at the forge. Maren Ironhewn rebuilds under subtle divine guidance — more capable, but also more dependent.',
+          message: 'The god\'s attention lingers at the forge. {cast:maren_ironhewn} rebuilds under subtle divine guidance — more capable, but also more dependent.',
           significance: 0.6,
         },
         {
@@ -409,42 +409,42 @@ const FORGE_TRUTH_AFTERMATH = {
 
 const TEMPER_NARRATIVE_AFTERMATH = {
   overview:
-    'The Greycloaks broke camp the following morning, satisfied. Torve Ashgrip shook ' +
-    'Maren\'s hand at the gate and said something about reliability being worth more than ' +
-    'perfection, and Maren nodded as if this were a compliment rather than an unwitting ' +
+    'The Greycloaks broke camp the following morning, satisfied. {cast:torve_ashgrip} shook ' +
+    '{cast:maren_ironhewn}\'s hand at the gate and said something about reliability being worth more than ' +
+    'perfection, and {cast:maren_ironhewn} nodded as if this were a compliment rather than an unwitting ' +
     'irony. The replacement schedule was generous; the reduced rates for future contracts ' +
-    'were a concession that would cost the forge, but the forge would survive. Dalla left ' +
+    'were a concession that would cost the forge, but the forge would survive. {cast:dalla} left ' +
     'the settlement two days later, quietly, with a letter of reference that did not mention ' +
-    'the reason for her departure. Maren had written it herself, at the kitchen table, with ' +
+    'the reason for her departure. {cast:maren_ironhewn} had written it herself, at the kitchen table, with ' +
     'the door closed. It was the kindest thing she had done for the girl, and it was also a ' +
     'lie, and she knew that both of those things were true simultaneously.\n\n' +
-    'The settlement returned to its rhythms. The forge relit. Maren\'s hammer rang again ' +
+    'The settlement returned to its rhythms. The forge relit. {cast:maren_ironhewn}\'s hammer rang again ' +
     'in the morning hours. But the god could feel, beneath the surface restoration, the ' +
     'hidden weight of what had been contained rather than released. The concealed truth sat ' +
-    'in the forge like an ember banked in ash — not burning, but not cold. Torve Ashgrip ' +
+    'in the forge like an ember banked in ash — not burning, but not cold. {cast:torve_ashgrip} ' +
     'would eventually learn how many blades had actually been compromised. Or she would not, ' +
-    'and the knowledge would simply live in Maren\'s hands, in the way she inspected every ' +
+    'and the knowledge would simply live in {cast:maren_ironhewn}\'s hands, in the way she inspected every ' +
     'piece of steel that left her forge with a thoroughness that looked like mastery but ' +
     'felt, to her, like penance.',
   changes: [
     {
       id: 'temper_maren_reputation',
       kind: 'reputation' as const,
-      title: 'Maren Ironhewn',
+      title: '{cast:maren_ironhewn}',
       detail: 'Reputation preserved publicly. Carrying a hidden debt — the concealed truth.',
       polarity: 'mixed' as const,
     },
     {
       id: 'temper_dalla_disappeared',
       kind: 'reputation' as const,
-      title: 'Dalla',
+      title: '{cast:dalla}',
       detail: 'Quietly removed from the settlement. No public record of the reason.',
       polarity: 'mixed' as const,
     },
     {
       id: 'temper_torve_neutral',
       kind: 'reputation' as const,
-      title: 'Torve Ashgrip',
+      title: '{cast:torve_ashgrip}',
       detail: 'Professionally neutral toward the settlement. Satisfied but not loyal.',
       polarity: 'mixed' as const,
     },
@@ -452,7 +452,7 @@ const TEMPER_NARRATIVE_AFTERMATH = {
       id: 'temper_hidden_truth',
       kind: 'future_hook' as const,
       title: 'The Concealed Truth',
-      detail: 'The full scope of Dalla\'s fraud is hidden. An ember banked in ash.',
+      detail: 'The full scope of {cast:dalla}\'s fraud is hidden. An ember banked in ash.',
       polarity: 'loss' as const,
     },
   ],
@@ -462,7 +462,7 @@ const TEMPER_NARRATIVE_AFTERMATH = {
     {
       id: 'temper_react_let_silence_hold',
       label: 'Let the silence hold.',
-      intent: 'Allow the managed truth to settle into the community\'s memory unchallenged. Maren bears the weight alone. The concealment becomes permanent — or as permanent as any lie.',
+      intent: 'Allow the managed truth to settle into the community\'s memory unchallenged. {cast:maren_ironhewn} bears the weight alone. The concealment becomes permanent — or as permanent as any lie.',
       effects: [
         {
           kind: 'reputation_tally' as const,
@@ -479,7 +479,7 @@ const TEMPER_NARRATIVE_AFTERMATH = {
           kind: 'hidden_mark' as const,
           category: 'deception' as const,
           severity: 0.5,
-          label: 'Concealed the full scope of Dalla\'s weapons fraud at Maren\'s forge',
+          label: 'Concealed the full scope of {cast:dalla}\'s weapons fraud at {cast:maren_ironhewn}\'s forge',
           revealFamilies: ['investigation', 'mercenary', 'crafting'],
         },
       ],
@@ -487,7 +487,7 @@ const TEMPER_NARRATIVE_AFTERMATH = {
     {
       id: 'temper_react_prepare_reckoning',
       label: 'Prepare for the reckoning.',
-      intent: 'Plant a seed of readiness in Maren — not revealing the truth, but ensuring she is prepared for the day it surfaces. The forge-master begins quietly setting aside resources.',
+      intent: 'Plant a seed of readiness in {cast:maren_ironhewn} — not revealing the truth, but ensuring she is prepared for the day it surfaces. The forge-master begins quietly setting aside resources.',
       effects: [
         {
           kind: 'reputation_tally' as const,
@@ -497,14 +497,14 @@ const TEMPER_NARRATIVE_AFTERMATH = {
         {
           kind: 'recent_event' as const,
           eventType: 'narrative' as const,
-          message: 'The god prepares Maren for the day the concealed truth surfaces — resources set aside, relationships built, a new apprentice trained with more careful oversight.',
+          message: 'The god prepares {cast:maren_ironhewn} for the day the concealed truth surfaces — resources set aside, relationships built, a new apprentice trained with more careful oversight.',
           significance: 0.7,
         },
         {
           kind: 'hidden_mark' as const,
           category: 'deception' as const,
           severity: 0.4,
-          label: 'Concealed the full scope of Dalla\'s weapons fraud — but prepared for eventual discovery',
+          label: 'Concealed the full scope of {cast:dalla}\'s weapons fraud — but prepared for eventual discovery',
           revealFamilies: ['investigation', 'mercenary', 'crafting'],
         },
         {
@@ -512,7 +512,7 @@ const TEMPER_NARRATIVE_AFTERMATH = {
           encounterFamily: 'crafting.quest',
           delayTicks: 25,
           priority: 1.2,
-          seedLabel: 'The truth surfaces at Maren\'s forge',
+          seedLabel: 'The truth surfaces at {cast:maren_ironhewn}\'s forge',
         },
       ],
     },
@@ -522,9 +522,9 @@ const TEMPER_NARRATIVE_AFTERMATH = {
 const WITHDRAWN_AFTERMATH = {
   overview:
     'The settlement handled it the way settlements handle things when no one is steering: ' +
-    'unevenly, with raised voices and lowered expectations. Maren gave Torve a partial ' +
-    'accounting and Torve took what she could get. The Greycloaks left with a replacement ' +
-    'schedule that satisfied no one fully and offended no one enough to fight over. Dalla ' +
+    'unevenly, with raised voices and lowered expectations. {cast:maren_ironhewn} gave {cast:torve_ashgrip} a partial ' +
+    'accounting and {cast:torve_ashgrip} took what she could get. The Greycloaks left with a replacement ' +
+    'schedule that satisfied no one fully and offended no one enough to fight over. {cast:dalla} ' +
     'was expelled by the guild elders in a closed session that leaked within the hour. ' +
     'The forge relit, but the settlement\'s confidence in its own craft infrastructure ' +
     'had taken a wound that no god had shaped and no god could easily mend.',
@@ -532,21 +532,21 @@ const WITHDRAWN_AFTERMATH = {
     {
       id: 'withdrawn_maren_reputation',
       kind: 'reputation' as const,
-      title: 'Maren Ironhewn',
+      title: '{cast:maren_ironhewn}',
       detail: 'Handled the crisis alone. Reputation damaged but not destroyed.',
       polarity: 'mixed' as const,
     },
     {
       id: 'withdrawn_dalla_expelled',
       kind: 'reputation' as const,
-      title: 'Dalla',
+      title: '{cast:dalla}',
       detail: 'Expelled by the guild in a closed session. Left without ceremony.',
       polarity: 'loss' as const,
     },
     {
       id: 'withdrawn_torve_neutral',
       kind: 'reputation' as const,
-      title: 'Torve Ashgrip',
+      title: '{cast:torve_ashgrip}',
       detail: 'Unsatisfied but unwilling to escalate. The Greycloaks will not return to this forge.',
       polarity: 'loss' as const,
     },
@@ -828,12 +828,12 @@ export const FLAWED_STEEL_TEMPLATE: UnifiedActionTemplate = withEncounterContrac
         intent:
           'The god moves with a craftsperson\'s restraint — a light hand on the bellows, ' +
           'not a hammer blow. The intervention arrives as a current of steadiness rather ' +
-          'than a command: Maren\'s voice settles, Dalla\'s chin lifts a fraction, Torve\'s ' +
+          'than a command: {cast:maren_ironhewn}\'s voice settles, {cast:dalla}\'s chin lifts a fraction, {cast:torve_ashgrip}\'s ' +
           'expression reads the room and finds it coherent. The god shapes the conditions ' +
           'of the scene without rewriting it. What the mortal does next remains theirs to own.',
         essenceCost: 1,
         likelyBurden:
-          'A light touch may not hold under scrutiny. Torve is a professional and Maren\'s ' +
+          'A light touch may not hold under scrutiny. {cast:torve_ashgrip} is a professional and {cast:maren_ironhewn}\'s ' +
           'composure is not the same thing as her honesty — the forge-master still has to carry the weight herself.',
         interventionType: 'supportive',
       },
@@ -843,14 +843,14 @@ export const FLAWED_STEEL_TEMPLATE: UnifiedActionTemplate = withEncounterContrac
         intent:
           'The god reaches through the morning air with unmistakable divine force — not a nudge ' +
           'but a strike on hot metal, reshaping the scene while it is still malleable. Whatever ' +
-          'path was chosen at the anvil, the god now makes it land with full authority. Torve ' +
-          'will sense something beyond the mortal. Maren will feel herself carried on a current ' +
+          'path was chosen at the anvil, the god now makes it land with full authority. {cast:torve_ashgrip} ' +
+          'will sense something beyond the mortal. {cast:maren_ironhewn} will feel herself carried on a current ' +
           'that is not entirely her own. The outcome becomes nearly inevitable — and the god\'s ' +
           'fingerprints are left in the cooling steel.',
         essenceCost: 3,
         likelyBurden:
-          'Force at the forge leaves marks. Maren may come to rely on the god\'s hand rather than ' +
-          'her own resolve, and Torve Ashgrip does not forget the feeling of being steered.',
+          'Force at the forge leaves marks. {cast:maren_ironhewn} may come to rely on the god\'s hand rather than ' +
+          'her own resolve, and {cast:torve_ashgrip} does not forget the feeling of being steered.',
         interventionType: 'coercive',
       },
     ],
@@ -860,35 +860,35 @@ export const FLAWED_STEEL_TEMPLATE: UnifiedActionTemplate = withEncounterContrac
         label: 'Forge the truth',
         intent:
           'Steady the forge-master\'s resolve and tilt her toward public honesty. ' +
-          'Let the weight of what Dalla did settle into Maren\'s bearing until the ' +
+          'Let the weight of what {cast:dalla} did settle into {cast:maren_ironhewn}\'s bearing until the ' +
           'only path that feels survivable is the one that begins with opening the ' +
           'gate and saying what happened. This is the heavier pull — not because ' +
           'honesty is hard to find, but because the shame it carries will be public, ' +
           'and public shame changes institutions. The guild will audit. The settlement ' +
-          'will remember. Maren will stand in the open with her failure visible, and ' +
+          'will remember. {cast:maren_ironhewn} will stand in the open with her failure visible, and ' +
           'the god who steadied her hand will feel the cost of every eye that watches.',
-        targetLabel: 'Maren Ironhewn',
+        targetLabel: '{cast:maren_ironhewn}',
         essenceCost: 2,
         likelyBurden:
           'The settlement will remember this as the season the forge went cold. ' +
-          'Maren\'s reputation takes the hit honestly — but honest hits leave cleaner scars.',
+          '{cast:maren_ironhewn}\'s reputation takes the hit honestly — but honest hits leave cleaner scars.',
         interventionType: 'supportive',
       },
       {
         id: 'temper_the_narrative',
         label: 'Temper the narrative',
         intent:
-          'Whisper into the gaps between what Maren knows and what she is willing ' +
-          'to say aloud. Reshape how Torve Ashgrip perceives the scale of the problem — ' +
+          'Whisper into the gaps between what {cast:maren_ironhewn} knows and what she is willing ' +
+          'to say aloud. Reshape how {cast:torve_ashgrip} perceives the scale of the problem — ' +
           'not a lie, but a managed truth. A materials defect caught early, not a sustained ' +
           'fraud. The god\'s touch is lighter here, subtler: a shimmer in perception, a ' +
           'nudge toward the version of events that lets the forge survive without burning ' +
           'the relationship that funds it. But managed truths have weight. They sit in the ' +
           'hands of the person who manages them, and they do not dissolve with time.',
-        targetLabel: 'Torve Ashgrip',
+        targetLabel: '{cast:torve_ashgrip}',
         essenceCost: 2,
         likelyBurden:
-          'The concealed truth becomes a hidden debt. Torve may eventually learn ' +
+          'The concealed truth becomes a hidden debt. {cast:torve_ashgrip} may eventually learn ' +
           'how many blades were actually compromised — and the deception will sting worse than the fraud.',
         interventionType: 'coercive',
       },
@@ -896,9 +896,9 @@ export const FLAWED_STEEL_TEMPLATE: UnifiedActionTemplate = withEncounterContrac
         id: 'keep_your_hand_folded',
         label: 'Keep your hand folded',
         intent:
-          'Hold your essence. Let Maren stand at the anvil with the letter in her hand ' +
-          'and find her own way to the gate — or not. Let Torve\'s patience run to its ' +
-          'natural end. Let Dalla breathe in the coal shed until shame or defiance wins. ' +
+          'Hold your essence. Let {cast:maren_ironhewn} stand at the anvil with the letter in her hand ' +
+          'and find her own way to the gate — or not. Let {cast:torve_ashgrip}\'s patience run to its ' +
+          'natural end. Let {cast:dalla} breathe in the coal shed until shame or defiance wins. ' +
           'The settlement will resolve this the way settlements always resolve things when ' +
           'no god leans on the scales: messily, slowly, with the outcome shaped by whoever ' +
           'has the most nerve at the worst moment.',

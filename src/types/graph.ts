@@ -121,7 +121,7 @@ export type EdgeType =
   | 'will_succeed'         // agent → faction: anointed to inherit faction leadership on next leader exit
   | 'leads'                // agent → faction: the seated leader of this faction (authoritative when present)
   // Rival schemes (THR-66)
-  | 'sponsors_scheme';     // rival actor → materialized target node (location it is scheming against)
+  | 'sponsors_scheme';     // rival/notable actor → materialized target node (location it is scheming against; THR-66 rivals, THR-630 notable agendas — edge properties carry family + sponsorKind)
 
 /**
  * Typed properties for encounter_template nodes (design plan §3.8).

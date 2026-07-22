@@ -191,6 +191,7 @@ export const ARCANE_CIRCLE_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
                 templateId: 'ac.quest.anomaly_report',
                 delayTicks: 10,
                 seedLabel: 'The ley deviation at the third marker requires a dedicated investigation',
+                inheritContext: true, // same site, third marker
               },
               { kind: 'reputation_tally', key: 'ac.guild_work', delta: 1 },
             ],
@@ -449,6 +450,7 @@ export const ARCANE_CIRCLE_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
                 encounterFamily: 'ac.quest',
                 delayTicks: 15,
                 seedLabel: 'The ward probing at {location} suggests someone is preparing an approach',
+                inheritContext: true, // same place is being probed
               },
             ],
             closeAfterSelection: true,
@@ -743,6 +745,7 @@ export const ARCANE_CIRCLE_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
                 templateId: 'ac.senior.planar_probe',
                 delayTicks: 12,
                 seedLabel: 'The anomaly at {location} develops into something the circle can\'t ignore',
+                inheritContext: true, // the SAME anomaly develops
               },
               { kind: 'reputation_tally', key: 'ac.guild_work', delta: 1 },
             ],
@@ -779,7 +782,7 @@ export const ARCANE_CIRCLE_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
     actorAffinities: ['individual'],
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.explore,
     description:
-      'A controlled reach across the planar boundary — observing what lies adjacent ' +
+      'A controlled reach across the planar boundary — {name} observing what lies adjacent ' +
       'to the world without opening anything that needs to stay closed. ' +
       'In theory. The theory has survived most attempts.',
     steps: [
@@ -1224,6 +1227,7 @@ export const ARCANE_CIRCLE_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
                 templateId: 'ac.elite.seal_the_breach',
                 delayTicks: 18,
                 seedLabel: 'The ruin\'s central chamber activates and begins drawing attention',
+                inheritContext: true, // the SAME ruin activates
               },
               { kind: 'reputation_tally', key: 'ac.advanced_research', delta: 2 },
             ],
@@ -1249,7 +1253,7 @@ export const ARCANE_CIRCLE_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
     actorAffinities: ['individual'],
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.create,
     description:
-      'Years of research. A theory that either advances the circle\'s understanding ' +
+      'Years of {name}\'s research. A theory that either advances the circle\'s understanding ' +
       'of arcane mechanics or demonstrates, in front of the full council, why it doesn\'t. ' +
       'The experiment cannot be partially performed.',
     steps: [
