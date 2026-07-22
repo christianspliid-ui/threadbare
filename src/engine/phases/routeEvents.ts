@@ -74,7 +74,7 @@ function factionsHostile(state: GameState, a: string, b: string): boolean {
  * either endpoint. Route events land on whoever is actually there (fail-soft:
  * no one there → the route sits this scan out).
  */
-function pickTargetAgent(state: GameState, endpointIds: readonly string[]): string | undefined {
+export function pickTargetAgent(state: GameState, endpointIds: readonly string[]): string | undefined {
   const graph = state.graph;
   const candidates: string[] = [];
   const visited = new Set<string>();

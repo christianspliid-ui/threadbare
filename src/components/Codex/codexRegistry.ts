@@ -7,6 +7,8 @@
 
 import { UNIFIED_ACTION_TEMPLATES } from '../../data/unified-action-templates';
 import { REWARD_POSSESSIONS, REWARD_CONDITIONS, REWARD_BESTOWED_POWERS } from '../../data/reward-attachment-catalog';
+import { RESOURCE_CLASSES, getResourceTierProse } from '../../data/resource-classes';
+import { RESOURCE_DEFINITIONS } from '../../data/resource-content';
 import { STARTER_POSSESSIONS, STARTER_CONDITIONS } from '../../data/starter-attachments';
 import { AGREEMENT_REWARD_TEMPLATES } from '../../data/agreement-reward-catalog';
 import { SLOT_TAG_DISPLAY_NAMES, SUBCATEGORY_TO_SLOT_TAG } from '../../data/attachment-slot-constants';
@@ -413,6 +415,42 @@ function deduplicateNodes(nodes: GraphNode[]): GraphNode[] {
 
 let _cachedEntries: CodexEntry[] | null = null;
 
+
+/** Resource classes (THR-617) — the economy's raw vocabulary as codex entries. */
+const RESOURCE_CATEGORY_GLYPHS: Record<string, string> = {
+  staple: '☘',    // shamrock — food and field
+  strategic: '⚒', // hammer and pick — war and works
+  luxury: '◈',    // diamond — trade wealth
+  arcane: '✴',    // star burst — the strange trades
+};
+
+function mapResourceClass(resourceId: string): CodexEntry {
+  const cls = RESOURCE_CLASSES[resourceId];
+  const displayName = RESOURCE_DEFINITIONS[resourceId]?.name
+    ?? resourceId.replace(/_/g, ' ').replace(/\w/g, (c) => c.toUpperCase());
+  const tier = (cls.baseValue >= 1.2 ? 2 : 1) as RarityTier;
+  return {
+    id: `resource.${resourceId}`,
+    name: displayName,
+    glyph: RESOURCE_CATEGORY_GLYPHS[cls.category] ?? '◆',
+    tier,
+    tierName: RARITY_TIER_NAMES[tier] ?? 'Unknown',
+    tierColor: RARITY_TIER_COLORS[tier] ?? '#888',
+    category: 'resources',
+    subcategory: cls.category,
+    subtitle: `${cls.category} · ${cls.primarySphere}`,
+    summary: getResourceTierProse(resourceId, 'scarce'),
+    flavorText: getResourceTierProse(resourceId, 'surplus'),
+    tags: [cls.category, cls.primarySphere],
+    details: [
+      { label: 'Class', value: cls.category },
+      { label: 'Sphere affinity', value: cls.primarySphere },
+      { label: 'Trade value', value: cls.baseValue >= 1.2 ? 'high' : cls.baseValue >= 0.9 ? 'solid' : 'modest' },
+      { label: 'Scarcity bite', value: cls.scarcitySensitivity >= 1.0 ? 'sharp' : 'gentle' },
+    ],
+  };
+}
+
 export function getAllCodexEntries(): CodexEntry[] {
   if (_cachedEntries) return _cachedEntries;
 
@@ -464,6 +502,11 @@ export function getAllCodexEntries(): CodexEntry[] {
 
   // Agreements
   for (const a of AGREEMENT_REWARD_TEMPLATES) entries.push(mapAgreement(a));
+
+  // Resource classes (THR-617) — the mortal economy's goods vocabulary
+  for (const resourceId of Object.keys(RESOURCE_CLASSES).sort()) {
+    entries.push(mapResourceClass(resourceId));
+  }
 
   // Attach art asset paths where available
   for (const entry of entries) {
