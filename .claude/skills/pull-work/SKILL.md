@@ -1,7 +1,7 @@
 ---
 name: pull-work
 description: Canonical Claude Code pickup workflow for claiming Linear work safely from Ready for Dev.
-last_validated_against: 2026-07-21
+last_validated_against: 2026-07-22
 ---
 
 # Pull Work
@@ -128,6 +128,20 @@ Before any pickup work, sweep for stale `tfws-pickup-*` and `tfws-resume-*` work
 ### Step 0.5 — Rate-limit guard
 
 If any Linear MCP call in this session returns a rate-limit error (HTTP 429 / MCP rate-limit response), pause 2 minutes, retry once, then if still limited log an impediment via `impediment-reporter` and exit cleanly without claiming. Do not retry in tight loops.
+
+### Step 0.8 — Armed-PR reconciliation sweep (THR-702)
+
+Auto-merge does **not** update a stale branch: under strict branch protection, an armed PR whose base moves sits at `mergeStateStatus: BEHIND` forever, green and silent (THR-702 found 9 such PRs, oldest 19 days). This sweep is the recurring surface that catches them.
+
+**Constant:** `ARMED_SWEEP_MAX_UPDATES = 1` — update at most one PR per run. Updating several at once is a losing race: each merge re-stales the others and re-triggers their CI (O(N²) runs). The hourly cadence drains a queue one per cycle.
+
+1. List armed-but-open PRs: `gh pr list --state open --json number,autoMergeRequest,mergeStateStatus,createdAt --jq '[.[] | select(.autoMergeRequest != null)]'`.
+2. `mergeStateStatus` is computed lazily — a first read of `UNKNOWN` means "not computed yet", not "fine". Re-query that PR up to 3 times a few seconds apart before classifying.
+3. For the **oldest** PR reading `BEHIND`: run `gh pr update-branch <N>` and stop (respect `ARMED_SWEEP_MAX_UPDATES`). CI re-runs on the updated branch and auto-merge fires on green — no polling.
+4. A PR reading `DIRTY`/`CONFLICTING` is the closeout-docs union case — route to "Closeout — resolving a conflicted closeout-docs PR" below, or surface it if it isn't yours.
+5. Log one line: `[pull-work] Step 0.8: <N> armed PRs, updated #<X> (BEHIND) / none BEHIND — continuing.`
+
+**Fail-soft:** any `gh` error → log one warning and continue to Step 1. The sweep must never block pickup.
 
 ### Step 1 — Two state-filtered board scans
 
@@ -531,6 +545,8 @@ gh pr merge --auto --merge
 The gate is unchanged: branch protection stays on, the required check still has to pass, and a red check simply means the PR never merges. Auto-merge removes the *waiting*, not the *gate* — this is the H6 verdict from `Docs/plans/2026-07-20-git-cicd-clean-delivery.md`, which kept the PR gate precisely because it caught a phantom 3,379-line reversal before it reached `main`.
 
 `Fixes THR-XXX` must still appear in **both** the commit body and the PR body — on a non-squash merge the merge commit drops the commit body and Linear's auto-close misses it (impediment #140). `--merge` (not `--squash`) keeps the feature commit's body in history.
+
+**After arming, run one freshness check — `gh pr view <N> --json mergeStateStatus`.** Branch freshness at session start does not imply freshness at arm time: THR-696's PR went `BEHIND` seconds after opening because main had moved during the session. If it reads `BEHIND`, run `gh pr update-branch <N>` once and re-arm if needed; if `UNKNOWN`, re-query 2–3 times a few seconds apart (GitHub computes mergeability lazily — the first read only schedules it). This is one query, not a poll loop; a PR missed here is caught by the Step 0.8 sweep next hour.
 
 **After queuing auto-merge, the session's shipping work is done.** Proceed to the worktree cleanup below and exit; do not block on the merge landing. If the check later fails, the PR stays open and the issue stays In Dev — the next hourly run resumes it via the Step 1.7 upstream-shipped check, which will find no `Fixes` commit on `main` and correctly treat the work as still in flight.
 
