@@ -208,11 +208,13 @@ export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
           'The gate is backed three carts deep when {name} arrives. {They} take{s} a position at ' +
           'the edge of the checkpoint and read{s} faces before {they} read{s} papers — the impatience ' +
           'that is ordinary, and the impatience that means something else. ' +
+          '{cast:suspect_courier} is the fourth cart back, and has been checking the queue ahead ' +
+          'more often than a person waiting their turn needs to. ' +
           '{?has_faction}The guard trains for this distinction. Most never stop needing the training.{/has_faction}' +
           '{?no_faction}Nothing in any manual covers the specific reading {name} is doing now — ' +
           'the manual is written by people who have never worked this gate.{/no_faction}',
         successAfterimage:
-          '{name} feel{s} the wrongness in the papers before the whole line can name it.',
+          '{name} feel{s} the wrongness in {cast:suspect_courier}\'s papers before the whole line can name it.',
         failureAfterimage:
           '{their} eye skims the queue without mastering it. ' +
           'The crowd begins to write the scene for itself.',
@@ -227,12 +229,13 @@ export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         successMetadata: { reputationDelta: 0.015 },
         failureMetadata: { reputationDelta: -0.015 },
         narrativeTemplate:
-          'The seizure begins. The courier has not yet understood what {name}\'s hand on {their} arm ' +
-          'means — that understanding comes in stages, and the first stage is denial. ' +
+          'The seizure begins. {cast:suspect_courier} has not yet understood what {name}\'s hand on ' +
+          'that arm means — the understanding comes in stages, and the first stage is denial. ' +
           'The whole line is watching to see whether this becomes law or theater. ' +
-          '{name} know{s} which version the captain will want to read about in tomorrow\'s report.',
+          '{name} know{s} which version {cast:gate_captain} will want to read about in ' +
+          'tomorrow\'s report.',
         successAfterimage:
-          'The courier is stopped, and the line sees discipline before it sees spectacle.',
+          '{cast:suspect_courier} is stopped, and the line sees discipline before it sees spectacle.',
         failureAfterimage:
           'The stop turns ugly enough that the crowd will remember force before proof.',
       },
@@ -262,6 +265,8 @@ export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
           'The cart is stopped, but the story is still moving. {name} feel{s} the gate\'s next chapter ' +
           'forming in the attention of the line behind — merchants, pilgrims, and carters who will carry ' +
           'this morning\'s events outward and turn them into whatever version the district prefers. ' +
+          '{cast:checkpoint_witness} stood close enough to have seen all of it, and will be telling ' +
+          'someone before the hour is out. ' +
           '{?has_ally}There is a moment where {ally:strongest} catches {their} eye from across the gatehouse. ' +
           'An acknowledgment. It is enough.{/has_ally}' +
           '{?no_ally}The checkpoint settles around {name} alone. Whatever judgment comes will arrive ' +
@@ -388,8 +393,8 @@ export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
       fallback: {
         overview:
           'The gate processed its queue, and most of the world moved through it. ' +
-          'The courier\'s errand is interrupted, but the question of what they were carrying ' +
-          'and who sent them remains open.',
+          '{cast:suspect_courier}\'s errand is interrupted, but the question of what was in ' +
+          'that cart and who sent it remains open.',
         changes: [
           {
             id: 'gate_duty_reputation',
@@ -406,17 +411,18 @@ export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
             title: "Courier's Commission",
             detail:
               'Forged papers suggest deliberate purpose. ' +
-              'Someone sent this courier and needs to know the result.',
+              'Someone sent {cast:suspect_courier} and needs to know the result.',
             polarity: 'info',
           },
         ],
-        reactionPrompt: 'The courier stopped at this gate had a purpose. What thread does the god pull?',
+        reactionPrompt: '{cast:suspect_courier} was stopped at this gate on someone\'s errand. ' +
+          'What thread does the god pull?',
         reactions: [
           {
             id: 'gate_duty_note_cargo',
             label: 'The cargo tells a story.',
             intent:
-              'What was hidden behind the forged papers is in the watch\'s custody. ' +
+              'What was hidden behind {cast:suspect_courier}\'s papers is in the watch\'s custody. ' +
               'Someone will come looking for it — and that someone is a thread worth following.',
             effects: [
               {
