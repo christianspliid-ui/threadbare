@@ -397,7 +397,8 @@ if (import.meta.env.DEV) {
         actions.find(a => a.actorId === actor.id && !a.resolved) ??
         actions.find(a => a.actorId === actor.id);
       if (!action) return { error: `no unified action for ${actor.name ?? actor.id}` };
-      const { resolveSceneTargetContext } = await import('./engine/proseEnrichment');
+      const { resolveSceneTargetContext, resolveSceneCastContext } =
+        await import('./engine/proseEnrichment');
       const target = resolveSceneTargetContext(graph, actor.id, action.targetId);
       const bindings = (action.supportBindings ?? []).map(b => ({
         key: b.key,
@@ -405,6 +406,12 @@ if (import.meta.env.DEV) {
         name: graph.getNode(b.nodeId)?.name ?? null,
         reused: b.reused,
       }));
+      // THR-696 — the cast block prose actually sees: every declared key, resolved to the
+      // bound entity's live name or the spec's authored fallback. `bindings` above is the
+      // raw binding list; `cast` is what `{cast:<key>}` renders.
+      const { getUnifiedTemplateById } = await import('./data/unified-action-templates');
+      const template = getUnifiedTemplateById(action.templateId);
+      const cast = resolveSceneCastContext(graph, template?.supportBundle, action.supportBindings);
       return {
         actionId: action.actionId,
         templateId: action.templateId,
@@ -413,6 +420,7 @@ if (import.meta.env.DEV) {
         targetKind: target?.kind ?? null,
         relation: target?.relation ?? null,
         bindings,
+        cast: cast ?? null,
       };
     },
 

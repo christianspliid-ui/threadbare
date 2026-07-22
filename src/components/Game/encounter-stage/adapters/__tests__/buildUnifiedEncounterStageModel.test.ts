@@ -777,11 +777,36 @@ describe('buildUnifiedEncounterStageModel', () => {
         essence: 10,
       });
 
+      // Segments are contiguous slices of one paragraph — concatenate, don't space-join.
+      // (THR-696 made the scene target a linked segment, so the paragraph now splits.)
       const allText = model.narrative.paragraphs
         .flatMap(p => p.segments)
         .map(s => s.text)
-        .join(' ');
+        .join('');
       expect(allText).toContain(expectedText.trim());
+    });
+
+    it('THR-696: the scene target is a linked, tooltipped segment', () => {
+      const graph = buildRichGraph();
+      const action = buildRichAction();
+      const model = buildUnifiedEncounterStageModel({
+        template: PLACEHOLDER_TEMPLATE,
+        activeAction: action,
+        notification: buildRichNotification(),
+        agentName: 'Serafina',
+        threadTier: 'strong',
+        graph,
+        essence: 10,
+      });
+
+      const targetName = graph.getNode(action.targetId)?.name;
+      const targetRef = model.narrative.references.find(r => r.id === `target:${action.targetId}`);
+      expect(targetRef?.label).toBe(targetName);
+
+      const linked = model.narrative.paragraphs
+        .flatMap(p => p.segments)
+        .find(s => s.text === targetName);
+      expect(linked?.referenceId).toBe(`target:${action.targetId}`);
     });
 
     it('regression: {name} resolves in narrative', () => {
