@@ -226,6 +226,12 @@ export const ACTION_TECHNICAL_EFFECTS: Readonly<Record<string, string>> = {
     "On success, raises the location's `prosperity` and `populationHealth` by named deltas (LOC_BLESS_HARVEST_*) for LOC_BLESS_HARVEST_DURATION_TICKS, and swells every staple resource's stock toward Glut (LOC_BLESS_HARVEST_STOCK_DELTA) — the coarse stock tier re-derives next tick.",
   'loc.blight':
     "On success, lowers the location's `prosperity` and `populationHealth` by named deltas (LOC_BLIGHT_*) and draws every staple resource's stock toward Famine (LOC_BLIGHT_STOCK_DELTA) — the inverse of Bless the Harvest; the coarse stock tier re-derives next tick.",
+  'loc.reveal_vein':
+    "On success, surfaces a terrain-appropriate non-staple resource deposit at the location (quantity LOC_REVEAL_VEIN_QUANTITY), or swells the poorest existing eligible deposit by LOC_REVEAL_VEIN_BOOST — the stock tier re-derives next tick.",
+  'loc.guide_caravan':
+    "On success, every trades_with route touching the location gains LOC_GUIDE_CARAVAN_VOLUME_DELTA volume (clamped at the route max), sheds its `threatened` mark, and counts as freshly traded (lastTraded = now) — protecting it from decay and banditry re-rolls.",
+  'loc.sour_mine':
+    "On success, drains every non-staple resource deposit at the location by LOC_SOUR_MINE_STOCK_DELTA (staples untouched) — the strategic/luxury inverse of Blight; the stock tier re-derives next tick.",
   'loc.open_markets':
     "On success, raises the location's `prosperity` and lowers its `unrest` by named deltas (LOC_OPEN_MARKETS_*).",
   'loc.sanctify_square':

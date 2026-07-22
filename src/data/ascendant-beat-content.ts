@@ -522,6 +522,9 @@ export const ASCENDANT_ACTION_BUCKETS: Readonly<Record<string, ActionBucketEntry
   // surface for every run once unlocked — correct for breadth cards.
   'loc.bless_harvest': { bucket: 'unlockable-generic' },
   'loc.blight': { bucket: 'unlockable-generic' },
+  'loc.reveal_vein': { bucket: 'unlockable-generic' },
+  'loc.guide_caravan': { bucket: 'unlockable-generic' },
+  'loc.sour_mine': { bucket: 'unlockable-generic' },
   // Spine-granted expressive verbs (THR-504): The First Word + the three god-paths.
   'divine.persuade': { bucket: 'unlockable-generic' },
   'divine.dream': { bucket: 'unlockable-generic' },
