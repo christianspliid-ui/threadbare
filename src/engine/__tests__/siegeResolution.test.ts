@@ -295,7 +295,7 @@ describe('siege template intrinsicTier (THR-18)', () => {
     for (const tpl of SIEGE_REGIONAL_TEMPLATES) {
       expect(['background', 'shaping', 'story_beat']).toContain(tpl.intrinsicTier);
     }
-    expect(SIEGE_REGIONAL_TEMPLATES).toHaveLength(5);
+    expect(SIEGE_REGIONAL_TEMPLATES).toHaveLength(6);
   });
 
   it('breach, final_assault, relief_arrives, negotiate_terms (spotlight) are story_beat', () => {
@@ -349,7 +349,7 @@ describe('regional materialization propagates effectiveTier (THR-18)', () => {
       id: 'agent1',
       type: 'actor',
       name: 'Shadow Agent',
-      properties: { actorType: 'individual', shadowCapability: 5 },
+      properties: { actorType: 'individual', domainCapabilities: { shadow: 55 } },
     });
     graph.addEdge({ id: 'e_a1_hex', source: 'agent1', target: 'hex1', type: 'located_at', properties: {} });
 

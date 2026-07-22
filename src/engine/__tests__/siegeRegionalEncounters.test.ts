@@ -166,7 +166,7 @@ describe('generateRegionalEncounters', () => {
 
     // Neutral Shadow-capable agent near siege
     addActor(graph, 'shadow_agent', 'f_neutral', 'hex_near', {
-      domainCapabilities: { Shadow: 3 },
+      domainCapabilities: { shadow: 55 },
     });
 
     generateRegionalEncounters(makeState(1, graph), siegeId);
@@ -190,7 +190,7 @@ describe('generateRegionalEncounters', () => {
 
     // Neutral Heart-capable agent nearby
     addActor(graph, 'heart_agent', 'f_neutral', 'hex_near', {
-      domainCapabilities: { Heart: 4 },
+      domainCapabilities: { heart: 55 },
     });
 
     generateRegionalEncounters(makeState(1, graph), siegeId);
@@ -238,7 +238,7 @@ describe('generateRegionalEncounters', () => {
     const siegeId = createSiegeNode(makeState(0, graph), 'army1', 'settle1', 'hex_siege')!;
 
     // Add agent already in a battle
-    addActor(graph, 'busy_agent', 'f_neutral', 'hex_near', { domainCapabilities: { Heart: 3 } });
+    addActor(graph, 'busy_agent', 'f_neutral', 'hex_near', { domainCapabilities: { heart: 55 } });
     // Give it a participates_in edge to simulate battle participation
     graph.addNode({ id: 'fake_battle', type: 'actor', name: 'Fake Battle', properties: { actorType: 'group', battleState: { battleType: 'field_battle', momentum: 0 } } });
     graph.addEdge({ id: 'e_busy_participates', source: 'busy_agent', target: 'fake_battle', type: 'participates_in', properties: {} });
@@ -265,8 +265,8 @@ describe('generateRegionalEncounters', () => {
     const siegeId = createSiegeNode(makeState(0, graph), 'army1', 'settle1', 'hex_siege')!;
     clearTraces();
 
-    addActor(graph, 'actor_boundary', 'f_neutral', 'hex_boundary', { domainCapabilities: { Heart: 3 } });
-    addActor(graph, 'actor_beyond', 'f_neutral', 'hex_beyond', { domainCapabilities: { Heart: 3 } });
+    addActor(graph, 'actor_boundary', 'f_neutral', 'hex_boundary', { domainCapabilities: { heart: 55 } });
+    addActor(graph, 'actor_beyond', 'f_neutral', 'hex_beyond', { domainCapabilities: { heart: 55 } });
 
     generateRegionalEncounters(makeState(1, graph), siegeId);
     const traces = getSiegeRegionalTraces(1) as Array<Record<string, unknown>>;
@@ -276,5 +276,71 @@ describe('generateRegionalEncounters', () => {
 
     expect(boundaryTrace).toBeDefined(); // At boundary = included
     expect(beyondTrace).toBeUndefined(); // Beyond = excluded
+  });
+
+  // ─── THR-629 gap fixes: sabotage / relief_march / capability threshold ────
+
+  function setupSiege(): string {
+    addHex(graph, 'hex_siege', 0, 0, 'town');
+    addHex(graph, 'hex_near', 1, 0);
+    addFaction(graph, 'f_attacker');
+    addFaction(graph, 'f_defender');
+    addFaction(graph, 'f_neutral');
+    addArmy(graph, 'army1', 'f_attacker', 'hex_siege', 200);
+    addSettlement(graph, 'settle1', 'hex_siege', 'town', 'f_defender');
+    const siegeId = createSiegeNode(makeState(0, graph), 'army1', 'settle1', 'hex_siege')!;
+    clearTraces();
+    return siegeId;
+  }
+
+  it('spawns siege.regional.sabotage for defender-allied Shadow-capable agents', () => {
+    const siegeId = setupSiege();
+    addActor(graph, 'defender_shadow', 'f_defender', 'hex_near', {
+      domainCapabilities: { shadow: 55 },
+    });
+
+    generateRegionalEncounters(makeState(1, graph), siegeId);
+    const traces = getSiegeRegionalTraces(1) as unknown as Array<Record<string, unknown>>;
+    const sabotage = traces.find(t => t.templateId === 'siege.regional.sabotage');
+    expect(sabotage).toBeDefined();
+    expect(sabotage?.actorId).toBe('defender_shadow');
+  });
+
+  it('spawns siege.regional.relief_march for defender-allied Iron-capable agents', () => {
+    const siegeId = setupSiege();
+    addActor(graph, 'defender_iron', 'f_defender', 'hex_near', {
+      domainCapabilities: { iron: 55 },
+    });
+
+    generateRegionalEncounters(makeState(1, graph), siegeId);
+    const traces = getSiegeRegionalTraces(1) as unknown as Array<Record<string, unknown>>;
+    const relief = traces.find(t => t.templateId === 'siege.regional.relief_march');
+    expect(relief).toBeDefined();
+    expect(relief?.actorId).toBe('defender_iron');
+  });
+
+  it('falls back to call_for_aid for defender-allied agents below the capability threshold', () => {
+    const siegeId = setupSiege();
+    // All capabilities present but below SIEGE_REGIONAL_CAPABILITY_MIN —
+    // mirrors live agents, where every reach key always exists.
+    addActor(graph, 'defender_plain', 'f_defender', 'hex_near', {
+      domainCapabilities: { iron: 10, shadow: 10, heart: 10 },
+    });
+
+    generateRegionalEncounters(makeState(1, graph), siegeId);
+    const traces = getSiegeRegionalTraces(1) as unknown as Array<Record<string, unknown>>;
+    const aid = traces.find(t => t.templateId === 'siege.regional.call_for_aid');
+    expect(aid).toBeDefined();
+    expect(aid?.actorId).toBe('defender_plain');
+  });
+
+  it('spawns nothing for neutral agents below the capability threshold', () => {
+    const siegeId = setupSiege();
+    addActor(graph, 'neutral_plain', 'f_neutral', 'hex_near', {
+      domainCapabilities: { iron: 20, shadow: 20, heart: 20 },
+    });
+
+    generateRegionalEncounters(makeState(1, graph), siegeId);
+    expect(getSiegeRegionalTraces(1)).toHaveLength(0);
   });
 });
