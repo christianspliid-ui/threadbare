@@ -270,3 +270,71 @@ describe('mercenary company definition', () => {
     expect(def.ambitionWeights!.resource_acquisition).toBeGreaterThan(0);
   });
 });
+
+// ─── THR-711: derived prosperity gates territorial_expansion ───────────────
+
+describe('deriveFactionProsperity → territorial_expansion gate (THR-711)', () => {
+  function addControlledSettlement(
+    graph: WorldGraph,
+    factionId: string,
+    locId: string,
+    prosperity: number,
+  ): void {
+    graph.addNode({
+      id: locId,
+      type: 'location',
+      name: locId,
+      properties: { locationSubtype: 'town', prosperity },
+    });
+    graph.addEdge({
+      id: `${factionId}_controls_${locId}`,
+      source: factionId,
+      target: locId,
+      type: 'controls',
+      properties: {},
+    });
+  }
+
+  // A definition that actually weights territorial_expansion.
+  function expansionCapableDefinition(): string {
+    for (const [id, def] of FACTION_DEFINITIONS) {
+      if ((def.ambitionWeights?.territorial_expansion ?? 0) > 0) return id;
+    }
+    throw new Error('no expansion-weighted faction definition found');
+  }
+
+  it('derives 0 for a faction with no holdings (cannot fund expansion)', async () => {
+    const { deriveFactionProsperity } = await import('../factionNetwork');
+    const graph = new WorldGraph();
+    addFaction(graph, 'f1', 'thieves_guild');
+    expect(deriveFactionProsperity(graph, 'f1')).toBe(0);
+  });
+
+  it('sums holdings on the /100 scale (breadth-weighted war chest)', async () => {
+    const { deriveFactionProsperity } = await import('../factionNetwork');
+    const graph = new WorldGraph();
+    addFaction(graph, 'f1', 'thieves_guild');
+    addControlledSettlement(graph, 'f1', 'loc_a', 80);
+    addControlledSettlement(graph, 'f1', 'loc_b', 40);
+    expect(deriveFactionProsperity(graph, 'f1')).toBeCloseTo(1.2, 5);
+  });
+
+  it('opens the expansion gate above the threshold and closes it below', async () => {
+    const { scoreEligibleAmbitions, EXPANSION_PROSPERITY_THRESHOLD } = await import('../factionAmbitions');
+    const defId = expansionCapableDefinition();
+
+    const richGraph = new WorldGraph();
+    addFaction(richGraph, 'f_rich', defId);
+    addControlledSettlement(richGraph, 'f_rich', 'loc_rich', EXPANSION_PROSPERITY_THRESHOLD * 100 + 10);
+    const richState = makeMinimalState(0, richGraph);
+    const richTypes = scoreEligibleAmbitions(richState, 'f_rich', defId).map(c => c.type);
+    expect(richTypes).toContain('territorial_expansion');
+
+    const poorGraph = new WorldGraph();
+    addFaction(poorGraph, 'f_poor', defId);
+    addControlledSettlement(poorGraph, 'f_poor', 'loc_poor', 10);
+    const poorState = makeMinimalState(0, poorGraph);
+    const poorTypes = scoreEligibleAmbitions(poorState, 'f_poor', defId).map(c => c.type);
+    expect(poorTypes).not.toContain('territorial_expansion');
+  });
+});
