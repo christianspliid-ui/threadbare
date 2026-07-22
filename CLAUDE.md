@@ -497,24 +497,21 @@ The `weekly-retro` scheduled task is **registered and live** in the CC lane (cre
 
 ### Scheduled Tasks
 
-Current recurring task registry. **Verified against `list_scheduled_tasks` on 2026-07-21 (THR-677 port); `flush-plan-docs` removed 2026-07-21 (THR-654 demolition).** The scheduler adds a deterministic per-task jitter of a few minutes to the cron minute, so **the slot name, the cron minute, and the actual fire time are three different things** — the `Fires` column is the one that matters operationally.
+Current recurring task registry. **Verified against `list_scheduled_tasks` on 2026-07-22 (THR-677 trials); `flush-plan-docs` removed 2026-07-21 (THR-654 demolition).** The scheduler adds a deterministic per-task jitter of a few minutes to the cron minute, so **the slot name, the cron minute, and the actual fire time are three different things** — the `Fires` column is the one that matters operationally.
 
 **CC automation lane — registered and live:**
 
-| Slot | Cadence | Task | Cron | Fires |
-|------|---------|------|------|-------|
-| **:00** | Hourly | CC pickup (`tb-opus-pickup` — single Opus executor lane) | `0 * * * *` | ~:00:53 |
-| **:45** | Hourly | `keep-work-flowing-cc` (CC PM brief — refreshes `Design/briefing.md` + `Design/user-actions.md`) | `45 * * * *` | ~:53:13 |
-| **Fri 17:00** | Weekly | `weekly-retro` | `0 17 * * 5` | ~17:09 |
-| **Sun 16:03** | Weekly | `weekly-memory-grooming` | `3 16 * * 0` | ~16:10 |
-
-**CC automation lane — registered but DISABLED, pending trial approval (THR-677).** All three are ported and on disk with correct cron slots; `enabled: false` until each has run once attended and Christian has approved its output in chat. That trial gate is Christian's decision (chat, 2026-07-21), not an oversight — these replace Cowork tasks that are still running, so enabling them before trial would double-run the job. **Flip each to enabled only after its trial passes**, and disable the Cowork counterpart in the same step.
-
 | Slot | Cadence | Task | Cron | Fires | Writes |
 |------|---------|------|------|-------|--------|
+| **:00** | Hourly | CC pickup (`tb-opus-pickup` — single Opus executor lane) | `0 * * * *` | ~:00:53 | — |
+| **:45** | Hourly | `keep-work-flowing-cc` (CC PM brief — refreshes `Design/briefing.md` + `Design/user-actions.md`) | `45 * * * *` | ~:53:13 | briefing + user-actions |
+| **Fri 17:00** | Weekly | `weekly-retro` | `0 17 * * 5` | ~17:09 | retro via `retrospective` skill |
+| **Sun 16:03** | Weekly | `weekly-memory-grooming` | `3 16 * * 0` | ~16:10 | memory files |
 | **09:07** | Daily | `daily-backlog-grooming` | `7 9 * * *` | ~09:16 | `Docs/ops/backlog-grooming-<date>.md` + Linear queue fixes |
 | **Wed 11:09** | Weekly | `weekly-workflow-retro` | `9 11 * * 3` | ~Wed 11:13 | `Design/retros/workflow-retro-<date>.md` |
 | **Sun 10:06** | Weekly | `weekly-project-hygiene` | `6 10 * * 0` | ~Sun 10:10 | `Docs/ops/weekly-hygiene-<date>.md` + filed findings |
+
+The last three were enabled 2026-07-22 after their attended trials passed with Christian's chat approval (THR-677); their trial reports are `Docs/ops/backlog-grooming-2026-07-22.md`, `Design/retros/workflow-retro-2026-07-22.md`, and `Docs/ops/weekly-hygiene-2026-07-22.md`. The corresponding Cowork counterparts are now cut over — Christian disables them (tracked in `Design/user-actions.md`).
 
 **Output-surface rule for all three:** none of them writes `Design/briefing.md` or `Design/user-actions.md` — `keep-work-flowing-cc` owns those two files, and a second writer produces merge conflicts. Christian-facing items go in each task's own report under a `## Needs Christian` heading, and reach him via the hourly briefing picking up the underlying Linear state.
 
@@ -540,9 +537,9 @@ The reaper was daily until THR-673 moved it to hourly at the free `:40` offset. 
 | Slot | Cadence | Task | Disposition |
 |------|---------|------|-------------|
 | **:45** | Hourly | `keep-work-flowing` | Superseded by `keep-work-flowing-cc` (THR-650) — **disable** |
-| **09:06** | Daily | `daily-backlog-grooming` | CC port registered (disabled) — **keep ON until its trial passes**, THR-677 |
-| **Wed 09:04** | Weekly | `weekly-workflow-retro` | CC port registered (disabled) — **keep ON until its trial passes**, THR-677 |
-| **Sun 10:04** | Weekly | `weekly-project-hygiene` | CC port registered (disabled) — **keep ON until its trial passes**, THR-677 |
+| **09:06** | Daily | `daily-backlog-grooming` | CC port **live** (trial passed 2026-07-22, THR-677) — **disable** |
+| **Wed 09:04** | Weekly | `weekly-workflow-retro` | CC port **live** (trial passed 2026-07-22, THR-677) — **disable** |
+| **Sun 10:04** | Weekly | `weekly-project-hygiene` | CC port **live** (trial passed 2026-07-22, THR-677) — **disable** |
 | **Sun 10:06** | Weekly | `weekly-invoice-check` | **Out of scope — personal, not Threadbare. Do not touch.** |
 
 **Not created:**
