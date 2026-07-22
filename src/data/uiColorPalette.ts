@@ -129,6 +129,17 @@ export const BEHAVIOR_COLORS: Record<string, string> = {
 
 export const BEHAVIOR_COLOR_DEFAULT = '#78716c';
 
+/** Notable-agenda family accents (THR-630) — NotablesPanel phase-chip cards. */
+export const AGENDA_FAMILY_COLORS: Record<string, string> = {
+  claim: '#c9a227',      // gold — a pressed right
+  feud: '#dc2626',       // red — open enmity
+  rite: '#fbbf24',       // warm light — the good-news family
+  succession: '#7c3aed', // violet — dynastic maneuvering
+  campaign: '#6B7280',   // iron — the war hand-off
+};
+
+export const AGENDA_FAMILY_COLOR_DEFAULT = '#78716c';
+
 export const BEHAVIOR_ICONS: Record<string, string> = {
   aggressive: '⚔',
   subtle: '◇',
