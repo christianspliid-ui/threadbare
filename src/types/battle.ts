@@ -127,6 +127,13 @@ export const SIEGE_STARVATION_TICK = 15;
 /** How far the siege broadcasts regional encounters (hex distance) */
 export const SIEGE_REGIONAL_ENCOUNTER_RANGE = 5;
 
+/**
+ * Minimum domainCapabilities value (0–100 scale, lowercase reach keys) for an
+ * actor to qualify for a capability-gated regional siege encounter
+ * (shadow → smuggle/sabotage, heart → negotiate, iron → relief march).
+ */
+export const SIEGE_REGIONAL_CAPABILITY_MIN = 40;
+
 /** Attacker Cohesion loss per tick during siege (lower than field — waiting) */
 export const SIEGE_COMBAT_ATTRITION_ATTACKER = 1.0;
 
