@@ -8,16 +8,25 @@ description: >
   Triggers on "attachment pipeline", "author attachments", "create attachments",
   "new items", "new possessions", "new conditions", "new bestowed powers".
 model: opus
-last_validated_against: 2026-07-05
+last_validated_against: 2026-07-22
 ---
 
 > **Load before authoring:** `Docs/canon/rulebook-quick-reference.md` (always — the synthesis layer for rules of play). Load `Docs/canon/rulebook.md` (full rulebook) when the work touches a specific rule of play and you need depth, status flags, or source citations.
 
 # Attachment Pipeline
 
-This file is the skill. It runs a 4-pass pipeline — draft → editorial → systems audit → implementation merge — with each pass as a subagent briefed from the sections below.
+This file is the orchestrator. It runs a 4-pass pipeline — draft → editorial → systems audit → implementation merge — dispatching each pass as a subagent briefed from its prompt file in `agents/` (written for real in THR-684; the earlier pointer to `.agents/skills/` copies was broken from the start, see THR-654).
 
-> **Note (THR-654):** this file previously pointed at a `.agents/skills/attachment-pipeline/` copy for "the full orchestrator and 4 agent prompts". That copy was a 33-line subset of this file and the four `agents/*-prompt.md` files it named have never existed in the repo — the pointer was already broken before `.agents/` was deleted. Writing the four prompt files out properly is tracked as THR-684; until then, run the passes from the guidance here.
+## Pipeline Passes
+
+| Pass | Prompt | Model | Writes |
+|------|--------|-------|--------|
+| 1. Draft | `agents/draft-prompt.md` | opus | `Docs/plans/attachments/<slug>-draft.md` |
+| 2. Editorial + Revision | `agents/editorial-prompt.md` | opus | `<slug>-editorial.md` + `<slug>-revised.md` |
+| 3. Systems + Final Merge | `agents/systems-prompt.md` | sonnet | `<slug>-systems.md` + `<slug>-final.md` |
+| 4. Implementation | `agents/implementation-prompt.md` | sonnet | data entries + registration + tests |
+
+Dispatch each pass with the prompt file's `{{CATEGORY}}` / `{{PREMISE}}` / `{{CONSTRAINTS}}` / `{{SLUG}}` / `{{TITLE}}` / `{{DATE}}` placeholders filled from the invocation. Stop-points mirror encounter-pipeline: `draft` runs Pass 1 only; `design` runs Passes 1–3; default runs all four. Each pass reads only its declared inputs — the final packet is the implementation contract, so Pass 4 should never need to reopen the draft.
 
 ## Step 0 — Canon-First Pre-Read
 
