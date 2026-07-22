@@ -114,19 +114,22 @@ Aftermath reactions can plant `encounter_seed` effects that spawn new encounters
   kind: 'encounter_seed',
   templateId: 'broker.quest.shrine_confrontation',  // Specific encounter to spawn
   // OR:
-  encounterFamily: 'investigation',                  // Family tag (v1: narrative event)
+  encounterFamily: 'broker.quest',                   // Family prefix — the engine draws + spawns a member (THR-697)
   targetAgentId: '$actor',       // Who gets the follow-up (defaults to current agent)
   delayTicks: 15,                // When it becomes eligible
   priority: 1.2,                 // Higher = spawns sooner when eligible
+  inheritContext: true,          // (opt-in) carry this action's target + cast into the follow-up (THR-697)
   seedLabel: "The shrine map burns in their pocket — someone will come asking"
 }
 ```
 
-**Two modes:**
-- **`templateId`** — spawns a specific encounter template as a unified action for the target agent. This is the reliable path for authored chains.
-- **`encounterFamily`** — emits a narrative event tagged with the family name. Full family-matching (where the engine selects from a pool of family-tagged templates) is future work; for now, use `templateId` for guaranteed spawning.
+**Two modes (both now spawn a real encounter — THR-697 Slice D activated the family stub):**
+- **`templateId`** — spawns that exact template as a unified action for the target agent. The reliable path for authored chains.
+- **`encounterFamily`** — a family *prefix* (the `id`-before-a-dot convention, same as THR-112 `revealFamilies`, e.g. `broker.quest` matches `broker.quest.*`). At eligibility the engine collects the registered templates in that family that are individual-performable and location-eligible for the target agent (scan capped at `FAMILY_SEED_MAX_CANDIDATES` = 12), makes one seeded `rng()` draw, and spawns the winner. If the family resolves to **zero** eligible templates, it falls back to the v1 "the consequences are stirring…" narrative event and the seed is consumed. Emits `encounter_seed_family_matched` on a spawn.
 
-**Seeds are fail-soft:** if the template doesn't exist or the agent is occupied, the seed emits a "withered" narrative event and is removed. No crashes, no stuck states.
+**Scene-context inheritance (`inheritContext: true`, opt-in, THR-697 Slice D):** by default a seeded follow-up self-targets — it forgets who the original story was about. Set `inheritContext: true` and the planting site snapshots the source action's `targetId` and `supportBindings` onto the seed; at spawn the engine re-validates both against the live graph (a dead target falls back to self-target; dead-node bindings are dropped) and threads the survivors into the follow-up's normal `supportBindings` slot. The upshot: **the same people return** — `{target:*}`/`{cast:*}` prose placeholders and `$target`/`$cast:` aftermath sentinels resolve to the original scene in the follow-up. Emits `seed_context_inherited`.
+
+**Seeds are fail-soft:** if the template doesn't exist, the family has no eligible member, or the agent is occupied, the seed either keeps for the next tick (occupied) or emits a "withered" narrative event and is removed. No crashes, no stuck states.
 
 **Why this changes what you write:** When you know an encounter can plant a seed that blooms 15 ticks later, you write *differently*. You write the betrayal scene knowing the revelation scene is coming. You write the merchant's favor knowing the debt-collection encounter is planted. You write the hidden truth knowing the investigation encounter will surface it. **The aftermath isn't the end of the story — it's the planting of the next one.** If your encounter has no seeds, ask why. Some encounters are simple moments (the healer mercy encounter). But if your encounter has consequences that should echo forward, seeds are how you make that happen.
 

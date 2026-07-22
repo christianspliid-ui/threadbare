@@ -6,23 +6,127 @@
  *
  * Evaluation paths:
  * - templateId set + template exists → create a unified action for the target agent
- * - encounterFamily set (no templateId) → emit a narrative event (v1 — full family matching is future work)
+ * - encounterFamily set (no templateId) → THR-697 (Slice D): draw a concrete template from
+ *   the family (id-prefix match) and spawn it; if no eligible template, fall back to the v1
+ *   withered narrative event (byte-identical)
  * - Neither produces a result → fail-soft expired event, seed removed
+ *
+ * THR-697 (Slice D) also threads inherited scene context: seeds planted with
+ * `inheritContext: true` carry the source action's target + cast, re-validated against the
+ * live graph at spawn, so the follow-up encounter stars the same people.
  *
  * Non-eligible seeds remain in the pending array for future ticks.
  *
  * NFP #4 (Fail-soft): Every code path terminates with a narrative event — never throws.
  * NFP #2 (Inspectability): Narrative events trace seed lifecycle (planted, spawned, expired).
- * NFP #3 (Determinism): rng passed explicitly for action duration computation.
+ * NFP #3 (Determinism): rng passed explicitly; the family draw is one seeded rng() call.
  */
 
 import type { GameState, TickEvent } from '../types/gameState';
-import type { PendingEncounterSeed } from '../types/unifiedAction';
+import type { PendingEncounterSeed, UnifiedActionTemplate } from '../types/unifiedAction';
+import type { EncounterSupportBinding } from '../types/encounter';
+import type { WorldGraph } from './graph';
 import type { SimulationRuntime } from './simulationRuntime';
-import { getUnifiedTemplateById } from '../data/unified-action-templates';
+import { getUnifiedTemplateById, UNIFIED_ACTION_TEMPLATES } from '../data/unified-action-templates';
 import { createUnifiedAction } from './unifiedActionLifecycle';
 import { appendRecentEvent } from './encounterAftermath';
 import { emitTrace } from './traceBuffer';
+import { getAgentLocation } from './graphQueries';
+import { FAMILY_SEED_MAX_CANDIDATES } from '../data/effect-constants';
+
+interface FamilyMatchResult {
+  readonly templateId: string;
+  readonly template: UnifiedActionTemplate;
+  readonly candidateCount: number;
+}
+
+/**
+ * THR-697 (Slice D) — resolve a family-only seed to a concrete template.
+ *
+ * Candidates are registered unified templates whose `id` starts with `${family}.` (the same
+ * prefix convention THR-112 `revealFamilies` uses — no separate family registry), filtered to
+ * individual-performable templates whose location-subtype restriction (if any) matches the
+ * target agent's current location. The scan collects up to `FAMILY_SEED_MAX_CANDIDATES`
+ * eligibles, then makes exactly one seeded `rng()` draw over them.
+ *
+ * Returns undefined when the seed has no family or no eligible candidate — the caller then
+ * keeps the v1 withered-narrative fallback byte-identical.
+ */
+function matchFamilyTemplate(
+  graph: WorldGraph,
+  seed: PendingEncounterSeed,
+  rng: () => number,
+): FamilyMatchResult | undefined {
+  const family = seed.encounterFamily;
+  if (!family) return undefined;
+  const prefix = `${family}.`;
+
+  const locationNode = getAgentLocation(graph, seed.targetAgentId);
+  const subtype = locationNode
+    ? ((locationNode.properties.locationSubtype ?? locationNode.properties.locationType) as string | undefined)
+    : undefined;
+
+  const eligible: UnifiedActionTemplate[] = [];
+  for (const template of UNIFIED_ACTION_TEMPLATES) {
+    if (!template.id.startsWith(prefix)) continue;
+    // (a) agent-performable
+    if (!template.actorAffinities?.includes('individual')) continue;
+    // (b) location-subtype eligibility (templates with no restriction always pass)
+    if (template.locationSubtypes && template.locationSubtypes.length > 0) {
+      if (!subtype || !template.locationSubtypes.includes(subtype)) continue;
+    }
+    eligible.push(template);
+    if (eligible.length >= FAMILY_SEED_MAX_CANDIDATES) break;
+  }
+  if (eligible.length === 0) return undefined;
+
+  const pick = eligible[Math.floor(rng() * eligible.length)];
+  return { templateId: pick.id, template: pick, candidateCount: eligible.length };
+}
+
+interface ResolvedInheritance {
+  /** True iff the seed carried inherited scene context (inheritContext was set at plant). */
+  readonly applied: boolean;
+  /** Target for the spawned action: the inherited target if still alive, else self-target. */
+  readonly targetId: string;
+  /** Inherited cast bindings that survived graph re-validation, else undefined. */
+  readonly bindings?: readonly EncounterSupportBinding[];
+  /** Inherited target that survived re-validation, or null (fell back to self-target). */
+  readonly inheritedTargetId: string | null;
+  readonly bindingCount: number;
+  readonly droppedBindingCount: number;
+}
+
+/**
+ * THR-697 (Slice D) — re-validate a seed's inherited scene context against the live graph at
+ * spawn time. A dead inherited target falls back to self-target; bindings whose node is gone
+ * are dropped. Pure; the caller emits the `seed_context_inherited` trace when `applied`.
+ */
+function resolveSeedInheritance(
+  seed: PendingEncounterSeed,
+  graph: WorldGraph,
+): ResolvedInheritance {
+  const applied = seed.inheritedTargetId !== undefined || seed.inheritedBindings !== undefined;
+
+  let targetId = seed.targetAgentId;
+  let inheritedTargetId: string | null = null;
+  if (seed.inheritedTargetId && graph.getNode(seed.inheritedTargetId)) {
+    targetId = seed.inheritedTargetId;
+    inheritedTargetId = seed.inheritedTargetId;
+  }
+
+  let bindings: readonly EncounterSupportBinding[] | undefined;
+  let bindingCount = 0;
+  let droppedBindingCount = 0;
+  if (seed.inheritedBindings && seed.inheritedBindings.length > 0) {
+    const survivors = seed.inheritedBindings.filter(b => graph.getNode(b.nodeId));
+    droppedBindingCount = seed.inheritedBindings.length - survivors.length;
+    bindingCount = survivors.length;
+    bindings = survivors.length > 0 ? survivors : undefined;
+  }
+
+  return { applied, targetId, bindings, inheritedTargetId, bindingCount, droppedBindingCount };
+}
 
 export function evaluateEncounterSeeds(state: GameState, tick: number, rng: () => number, runtime?: SimulationRuntime): GameState {
   const seeds = state.pendingEncounterSeeds ?? [];
@@ -48,68 +152,116 @@ export function evaluateEncounterSeeds(state: GameState, tick: number, rng: () =
   for (const seed of eligible) {
     const ticksSincePlant = tick - (seed.plantedTick ?? tick);
 
-    // Try direct template spawn
-    if (seed.templateId) {
-      const template = getUnifiedTemplateById(seed.templateId);
-      if (template) {
-        // Check if target agent is not already in an active action
-        const agentBusy = nextActions.some(
-          a => a.actorId === seed.targetAgentId && !a.resolved
-        );
-        if (!agentBusy) {
-          // THR-143: set causation fields so executeStepResult can emit the edge once
-          // an event node exists for both endpoints. The edge is emitted in
-          // unifiedActionResolution.ts when the seeded action's first step resolves.
-          const spawnedAction = createUnifiedAction({
-            actorId: seed.targetAgentId,
-            templateId: seed.templateId,
-            targetId: seed.targetAgentId, // self-targeting for seeded encounters
-            scale: template.scale,
-            source: 'system',
-            tick,
-            template,
-            rng,
-          });
-          const action = seed.sourceEventNodeId
-            ? {
-                ...spawnedAction,
-                pendingCausationSourceEventId: seed.sourceEventNodeId,
-                spawnedFromSeedId: seed.seedId,
-                spawnedFromSeedLabel: seed.seedLabel,
-              }
-            : spawnedAction;
-          nextActions = [...nextActions, action];
+    // Resolve the template to spawn: a direct templateId, or (Slice D) a family match.
+    let template: UnifiedActionTemplate | undefined;
+    let resolvedTemplateId: string | undefined;
+    let familyMatch: FamilyMatchResult | undefined;
 
-          const spawnEvent: TickEvent = {
-            id: `${seed.seedId}_spawned`,
-            tick,
-            type: 'narrative',
-            message: `A planted thread bears fruit: ${seed.seedLabel}`,
-            significance: 0.65,
-            actorId: seed.targetAgentId,
-          };
-          nextTickEvents = [...nextTickEvents, spawnEvent];
-          nextRecentEvents = appendRecentEvent(nextRecentEvents, spawnEvent);
-          emitTrace({
-            tick, category: 'encounter_seed_triggered',
-            agentId: seed.targetAgentId,
-            seedId: seed.seedId,
-            targetAgentId: seed.targetAgentId,
-            ticksBetweenPlantAndTrigger: ticksSincePlant,
-            resolvedTemplateId: seed.templateId,
-            outcome: 'fired',
-            summary: `Seed fired: "${seed.seedLabel}" → ${seed.templateId} for ${seed.targetAgentId}`,
-          });
-          continue;
-        }
+    if (seed.templateId) {
+      template = getUnifiedTemplateById(seed.templateId);
+      if (template) resolvedTemplateId = seed.templateId;
+      // templateId set but not found → fall through to family / fail-soft below.
+    }
+    if (!template && seed.encounterFamily) {
+      // THR-697 (Slice D): activate the family stub — draw a concrete template.
+      familyMatch = matchFamilyTemplate(state.graph, seed, rng);
+      if (familyMatch) {
+        template = familyMatch.template;
+        resolvedTemplateId = familyMatch.templateId;
+      }
+    }
+
+    if (template && resolvedTemplateId) {
+      // Check if target agent is not already in an active action
+      const agentBusy = nextActions.some(
+        a => a.actorId === seed.targetAgentId && !a.resolved
+      );
+      if (agentBusy) {
         // Agent busy — keep seed for next tick (not triggered yet, no trace)
         remaining.push(seed);
         continue;
       }
-      // Template not found — fall through to fail-soft
+
+      // Slice D: family-match trace fires before the shared spawn/trigger traces.
+      if (familyMatch) {
+        emitTrace({
+          tick, category: 'encounter_seed_family_matched',
+          agentId: seed.targetAgentId,
+          seedId: seed.seedId,
+          family: seed.encounterFamily ?? '',
+          candidateCount: familyMatch.candidateCount,
+          resolvedTemplateId,
+          summary: `Family seed matched: "${seed.seedLabel}" → ${resolvedTemplateId} (${familyMatch.candidateCount} candidate${familyMatch.candidateCount === 1 ? '' : 's'})`,
+        } as unknown as Parameters<typeof emitTrace>[0]);
+      }
+
+      // Slice D: re-validate inherited scene context against the live graph.
+      const inherit = resolveSeedInheritance(seed, state.graph);
+      if (inherit.applied) {
+        emitTrace({
+          tick, category: 'seed_context_inherited',
+          agentId: seed.targetAgentId,
+          seedId: seed.seedId,
+          inheritedTargetId: inherit.inheritedTargetId,
+          bindingCount: inherit.bindingCount,
+          droppedBindingCount: inherit.droppedBindingCount,
+          summary: `Seed context inherited: "${seed.seedLabel}" target=${inherit.inheritedTargetId ?? 'self'} bindings=${inherit.bindingCount}${inherit.droppedBindingCount > 0 ? ` (dropped ${inherit.droppedBindingCount})` : ''}`,
+        } as unknown as Parameters<typeof emitTrace>[0]);
+      }
+
+      // THR-143: set causation fields so executeStepResult can emit the edge once
+      // an event node exists for both endpoints. The edge is emitted in
+      // unifiedActionResolution.ts when the seeded action's first step resolves.
+      const spawnedAction = createUnifiedAction({
+        actorId: seed.targetAgentId,
+        templateId: resolvedTemplateId,
+        // Slice D: inherited target if it survived re-validation, else self-target (v1 fallback).
+        targetId: inherit.targetId,
+        // Slice D: inherited cast survivors flow into the normal supportBindings slot.
+        supportBindings: inherit.bindings,
+        scale: template.scale,
+        source: 'system',
+        tick,
+        template,
+        rng,
+      });
+      const action = seed.sourceEventNodeId
+        ? {
+            ...spawnedAction,
+            pendingCausationSourceEventId: seed.sourceEventNodeId,
+            spawnedFromSeedId: seed.seedId,
+            spawnedFromSeedLabel: seed.seedLabel,
+          }
+        : spawnedAction;
+      nextActions = [...nextActions, action];
+
+      const spawnEvent: TickEvent = {
+        id: `${seed.seedId}_spawned`,
+        tick,
+        type: 'narrative',
+        message: familyMatch
+          ? `A planted thread bears fruit: ${seed.seedLabel} — ${template.name}`
+          : `A planted thread bears fruit: ${seed.seedLabel}`,
+        significance: 0.65,
+        actorId: seed.targetAgentId,
+      };
+      nextTickEvents = [...nextTickEvents, spawnEvent];
+      nextRecentEvents = appendRecentEvent(nextRecentEvents, spawnEvent);
+      emitTrace({
+        tick, category: 'encounter_seed_triggered',
+        agentId: seed.targetAgentId,
+        seedId: seed.seedId,
+        targetAgentId: seed.targetAgentId,
+        ticksBetweenPlantAndTrigger: ticksSincePlant,
+        resolvedTemplateId,
+        outcome: 'fired',
+        summary: `Seed fired: "${seed.seedLabel}" → ${resolvedTemplateId} for ${seed.targetAgentId}`,
+      });
+      continue;
     }
 
-    // Family matching (v1: emit narrative event, don't auto-spawn)
+    // Family-only seed with no eligible template → v1 withered narrative event, preserved
+    // byte-identical (THR-697 fail-soft: no eligible → existing withered path unchanged).
     if (seed.encounterFamily) {
       // THR-143: family-only fires are advisory — no action is spawned, so no event node
       // will be created and no caused_by edge is possible in v1 scope.
