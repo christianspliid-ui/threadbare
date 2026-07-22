@@ -111,7 +111,7 @@ export const MERCHANT_CONSORTIUM_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
           '{?has_ally}{ally:strongest} has a warehouse two streets over — a conversation before ' +
           'the evening bell could make this quiet move faster than the competition.{/has_ally}',
         successAfterimage:
-          'The report goes to the factor by runner. By morning the consortium will have bought ' +
+          'The report goes to {cast:factor} by runner. By morning the consortium will have bought ' +
           'the salt the market has not yet noticed is cheap.',
         failureAfterimage:
           'Inconclusive notes. What is actually happening at {location} is close to the surface ' +
@@ -139,7 +139,7 @@ export const MERCHANT_CONSORTIUM_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
             id: 'survey_standing',
             kind: 'reputation',
             title: 'Market Record',
-            detail: 'A clean read earns trust with the factors. A thin report is remembered too.',
+            detail: 'A clean read earns trust with {cast:factor}. A thin report is remembered too.',
             polarity: 'mixed',
           },
         ],
@@ -297,6 +297,7 @@ export const MERCHANT_CONSORTIUM_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
                 templateId: 'mct.quest.negotiate_contract',
                 delayTicks: 18,
                 seedLabel: 'Supplier will seek renegotiation before contract term ends',
+                inheritContext: true, // the SAME supplier returns
               },
             ],
             closeAfterSelection: true,
@@ -373,7 +374,7 @@ export const MERCHANT_CONSORTIUM_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
           '{?has_ally}{ally:strongest} ride{s} with the wagons as far as the county line — the ' +
           'consortium is not paying for the escort, but the consortium know{s} who rode.{/has_ally}',
         successAfterimage:
-          'Delivery at the far end: every crate accounted for, the factor sign{s} in ink that ' +
+          'Delivery at the far end: every crate accounted for, {cast:factor} sign{s} in ink that ' +
           'has not been cut with water. The split on this run will be generous.',
         failureAfterimage:
           'Spoilage in two crates and a third that came loose on the switchback and spilled. ' +
@@ -471,7 +472,7 @@ export const MERCHANT_CONSORTIUM_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
           'let{s} them talk for a quarter-hour before {they} ask{s} a question. ' +
           '{?has_faction}The consortium\'s file on the shipment names a third party — a clerk at ' +
           'the harbor office — who would have had both manifests across his desk the same morning. ' +
-          'Neither merchant is lying. Both are wrong, and the clerk is why.{/has_faction}',
+          'Neither merchant is lying. Both are wrong, and {cast:ledger_clerk} is why.{/has_faction}',
         successAfterimage:
           'The shape of it becomes visible around the second cup of tea. Both merchants were ' +
           'handed a document that said what they wanted it to say. The clerk took from both.',
@@ -630,7 +631,7 @@ export const MERCHANT_CONSORTIUM_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
           'The factor accepts the appraisal without argument, which is a kind of compliment. ' +
           'The forgeries will be handled separately and quietly.',
         failureAfterimage:
-          'The numbers are off — not catastrophically, but enough that the factor recalculate{s} ' +
+          'The numbers are off — not catastrophically, but enough that {cast:factor} recalculate{s} ' +
           'at his desk and make{s} a note {name} will not see.',
       },
     ],
@@ -1526,6 +1527,7 @@ export const MERCHANT_CONSORTIUM_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
                 templateId: 'mct.quest.negotiate_contract',
                 delayTicks: 10,
                 seedLabel: 'A tasting contact leads to a contract conversation',
+                inheritContext: true, // the SAME contact follows up
               },
             ],
             closeAfterSelection: true,
@@ -1626,6 +1628,7 @@ export const MERCHANT_CONSORTIUM_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
                 templateId: 'mct.quest.negotiate_contract',
                 delayTicks: 12,
                 seedLabel: 'Factor\'s informal mention may lead to a private commission',
+                inheritContext: true, // the same factor thread continues
               },
             ],
             closeAfterSelection: true,
@@ -1728,6 +1731,7 @@ export const MERCHANT_CONSORTIUM_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
                 templateId: 'mct.senior.foreign_deal',
                 delayTicks: 14,
                 seedLabel: 'Feast introduction may lead to a foreign trade opening',
+                inheritContext: true, // the SAME introduction is pursued
               },
             ],
             closeAfterSelection: true,
