@@ -124,6 +124,9 @@ export interface StrategicActionCandidate {
   readonly behaviorFamily: BehaviorFamily;
   readonly displayName: string;
 
+  /** Origin anchor for completion-time mutations (THR-669) — see StrategicProjectRuntime.originLocationId. */
+  readonly originLocationId?: string;
+
   /** The graph node this action targets (location, actor, faction, etc.) */
   readonly targetNodeId?: string;
   readonly targetHex?: { col: number; row: number };
@@ -174,6 +177,13 @@ export interface StrategicProjectRuntime {
   readonly behaviorFamily: BehaviorFamily;
   readonly targetNodeId?: string;
   readonly targetHex?: { col: number; row: number };
+  /**
+   * Where the project was undertaken (THR-669): the actor's resolved,
+   * non-transient location at project start. Trade routes must anchor here —
+   * the actor's completion-time location is often a transient transit hex
+   * that gets garbage-collected, silently evaporating the route.
+   */
+  readonly originLocationId?: string;
 
   /** Ticks of work accumulated */
   progress: number;

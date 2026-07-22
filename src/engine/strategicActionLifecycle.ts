@@ -86,6 +86,7 @@ export function executeStrategicAction(
 
       const project: StrategicProjectRuntime = {
         projectId: `proj_${candidate.templateId}_${candidate.actorId}_${tick}`,
+        originLocationId: resolveDurableActorLocation(graph, candidate.actorId),
         actorId: candidate.actorId,
         templateId: candidate.templateId,
         ambitionId: candidate.ambitionId,
@@ -238,6 +239,7 @@ export function advanceStrategicProjects(
         executionMode: 'multi_tick_project',
         behaviorFamily: project.behaviorFamily,
         displayName: getStrategicTemplate(project.templateId)?.displayName ?? project.templateId,
+        originLocationId: project.originLocationId,
         targetNodeId: project.targetNodeId,
         targetHex: project.targetHex,
         scoreComponents: {
@@ -340,6 +342,23 @@ export function advanceStrategicProjects(
 
 // ─── Instant Mutation Dispatch ──────────────────────────────────────
 
+/**
+ * The actor's current location resolved to something a durable edge can anchor
+ * on (THR-669): sublocations climb to their parent settlement; transient
+ * transit hexes (`loc.transient.*`, garbage-collected after passage) resolve
+ * to undefined rather than becoming an edge endpoint that will evaporate.
+ */
+function resolveDurableActorLocation(graph: WorldGraph, actorId: string): string | undefined {
+  const rawId = graph.getOutgoingEdges(actorId, 'located_at')[0]?.target;
+  if (!rawId) return undefined;
+  const node = graph.getNode(rawId);
+  if (!node) return undefined;
+  const parentId = node.properties.parentLocationId as string | undefined;
+  const resolvedId = parentId ?? rawId;
+  if (resolvedId.startsWith('loc.transient.')) return undefined;
+  return graph.getNode(resolvedId) ? resolvedId : undefined;
+}
+
 function executeInstantMutation(
   graph: WorldGraph,
   candidate: StrategicActionCandidate,
@@ -375,10 +394,15 @@ function executeInstantMutation(
 
       case 'create_trade_route': {
         if (targetId) {
-          const actorEdges = graph.getOutgoingEdges(candidate.actorId, 'located_at');
-          const actorLocId = actorEdges[0]?.target;
-          if (actorLocId && actorLocId !== targetId) {
-            ops.push(createTradeRoute(graph, actorLocId, targetId, candidate.actorId, tick));
+          // Anchor at the project's origin settlement when we have one — the
+          // actor's completion-time location is often a transient transit hex
+          // whose GC evaporates the route (THR-669).
+          const sourceLocId =
+            candidate.originLocationId ?? resolveDurableActorLocation(graph, candidate.actorId);
+          if (!sourceLocId) {
+            ops.push({ success: false, op: 'create_trade_route', error: 'no_durable_source_location' });
+          } else if (sourceLocId !== targetId) {
+            ops.push(createTradeRoute(graph, sourceLocId, targetId, candidate.actorId, tick));
           }
         }
         break;

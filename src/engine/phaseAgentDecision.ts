@@ -722,8 +722,15 @@ export function phaseAgentDecision(
       // and skip the encounter path entirely.
       if (strategicWinner && decisionFamily === 'strategic_action') {
         try {
+          // Execute against the ACCUMULATED strategic state, not the tick-start
+          // snapshot — reading `state.strategicState` here silently dropped every
+          // project started by an earlier agent in the same tick (last-writer-wins;
+          // the reason no trade route ever survived to completion — THR-669).
           const stratResult = executeStrategicAction(
-            state, graph, strategicWinner, state.tick, rng,
+            accumulatedStrategicState && accumulatedStrategicState !== state.strategicState
+              ? ({ ...state, strategicState: accumulatedStrategicState } as GameState)
+              : state,
+            graph, strategicWinner, state.tick, rng,
           );
 
           // Accumulate strategic state for return + downstream agents

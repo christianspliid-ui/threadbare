@@ -88,6 +88,10 @@ const EXPECTED_PHASE_IDS: readonly string[] = [
   // Emergent personality-trait phase (THR-527): constrained after personality_origin_seed
   // (which declares `beforePhase` it), before schism_resolution by alphabetical tie-break.
   'personality_trait_emerge',
+  // Route events (THR-669): no ordering constraints; the alphabetical tie-break
+  // places it here — any post-economy position is correct (it reads the tick's
+  // fresh manifests/stock tiers and only plants seeds consumed later in the tick).
+  'route_events',
   // Schism resolution runs after faction_actions so it sees same-tick dissent updates (THR-430).
   'schism_resolution',
   'secrets_favors',

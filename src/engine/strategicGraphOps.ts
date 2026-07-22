@@ -63,6 +63,10 @@ export function createTradeRoute(
         volume: 1,
         goodsType,
         manifest,
+        // The founding caravan IS the first trade — without this stamp the
+        // route reads lastTraded=0, is stale at birth, and the decay phase
+        // dissolves it within a tick of creation (THR-669).
+        lastTraded: tick,
       },
     });
 
