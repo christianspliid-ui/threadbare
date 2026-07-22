@@ -29,7 +29,13 @@ import type { ResourceInstance } from '../types/resource';
 import {
   LOC_BLESS_HARVEST_STOCK_DELTA,
   LOC_BLIGHT_STOCK_DELTA,
+  LOC_REVEAL_VEIN_QUANTITY,
+  LOC_REVEAL_VEIN_BOOST,
+  LOC_GUIDE_CARAVAN_VOLUME_DELTA,
+  LOC_SOUR_MINE_STOCK_DELTA,
 } from '../data/location-action-constants';
+import { RESOURCE_DEFINITIONS } from '../data/resource-content';
+import { TRADE_ROUTE_MAX_VOLUME } from './tradeRoute';
 
 interface ExecuteOptions {
   tick?: number;
@@ -204,6 +210,14 @@ function executeSingleOp(
       case 'scry_sublocation':
         return executeScrySublocation(graph, op, ctx);
 
+      case 'reveal_vein':
+        return executeRevealVein(graph, op, ctx);
+
+      case 'guide_caravan':
+        return executeGuideCaravan(graph, op, ctx);
+
+      case 'sour_mine':
+        return executeSourMine(graph, op, ctx);
       case 'bless_harvest':
         return executeBlessHarvest(graph, op, ctx);
 
@@ -1012,6 +1026,116 @@ function executeScrySublocation(
       });
     }
   }
+  return { op, success: true };
+}
+
+
+// ─── THR-618 P4: reveal_vein / guide_caravan / sour_mine ──────────────────────
+//
+// The remaining divine economic verbs, same shape as bless/blight: graph+ctx
+// only, auto-routed via graphOnlyOps, deterministic, fail-soft, no touchWorld
+// (the stock-tier phase touches on derived-tier change; route reads are live).
+
+/**
+ * Reveal the Vein: surface a terrain-appropriate non-staple deposit at the
+ * target. If an eligible deposit already exists there, swell the poorest one
+ * by LOC_REVEAL_VEIN_BOOST instead. Deterministic pick: first terrain-matching
+ * absent resource id in sort order. Fail-soft: no eligible resource → no-op
+ * success (the land holds nothing the god can call up).
+ */
+function executeRevealVein(
+  graph: WorldGraph,
+  op: GraphOp,
+  ctx: GraphOpContext,
+): GraphOpResult {
+  const targetId = resolveRef(op.nodeId ?? op.target ?? '$target', ctx);
+  const location = graph.getNode(targetId);
+  if (!location) return { op, success: false, error: `reveal_vein: location ${targetId} not found` };
+
+  const terrain = location.properties.terrain as string | undefined;
+  const resources = readResources(location.properties);
+  const candidates = Object.values(RESOURCE_DEFINITIONS)
+    .filter((d) => getResourceClass(d.id).category !== 'staple')
+    .filter((d) => !terrain || (d.terrains as readonly string[]).includes(terrain))
+    .map((d) => d.id)
+    .sort();
+
+  const absent = candidates.find((id) => !resources[id]);
+  const next = { ...resources };
+  if (absent) {
+    next[absent] = { resourceId: absent, quantity: LOC_REVEAL_VEIN_QUANTITY } as unknown as ResourceInstance;
+  } else {
+    const present = candidates.filter((id) => resources[id]);
+    if (present.length === 0) return { op, success: true }; // nothing to call up — fail-soft no-op
+    const poorest = present.sort((a, b) => (resources[a].quantity ?? 0) - (resources[b].quantity ?? 0))[0];
+    next[poorest] = {
+      ...resources[poorest],
+      quantity: Math.min(100, (resources[poorest].quantity ?? 0) + LOC_REVEAL_VEIN_BOOST),
+    };
+  }
+  graph.updateNode(location.id, { properties: { resources: next } });
+  return { op, success: true };
+}
+
+/**
+ * Guide the Caravan: every trade route touching the guided settlement gains
+ * volume, sheds its threatened mark, and counts as freshly traded — the god
+ * walks the wagons through. Fail-soft: no routes → no-op success.
+ */
+function executeGuideCaravan(
+  graph: WorldGraph,
+  op: GraphOp,
+  ctx: GraphOpContext,
+): GraphOpResult {
+  const targetId = resolveRef(op.nodeId ?? op.target ?? '$target', ctx);
+  const location = graph.getNode(targetId);
+  if (!location) return { op, success: false, error: `guide_caravan: location ${targetId} not found` };
+
+  const routes = [
+    ...graph.getOutgoingEdges(targetId, 'trades_with'),
+    ...graph.getIncomingEdges(targetId, 'trades_with'),
+  ];
+  for (const route of routes) {
+    const volume = typeof route.properties.volume === 'number' ? route.properties.volume : 1;
+    graph.updateEdge(route.id, {
+      properties: {
+        ...route.properties,
+        volume: Math.min(TRADE_ROUTE_MAX_VOLUME, volume + LOC_GUIDE_CARAVAN_VOLUME_DELTA),
+        threatened: false,
+        threatenedSinceTick: undefined,
+        lastTraded: ctx.tick ?? (route.properties.lastTraded as number | undefined) ?? 0,
+      },
+    });
+  }
+  return { op, success: true };
+}
+
+/**
+ * Sour the Mine: drain every non-staple deposit at the target — the vein
+ * pinches, the lode runs to rubble. The strategic/luxury inverse of blight.
+ * Fail-soft: no non-staple deposits → no-op success.
+ */
+function executeSourMine(
+  graph: WorldGraph,
+  op: GraphOp,
+  ctx: GraphOpContext,
+): GraphOpResult {
+  const targetId = resolveRef(op.nodeId ?? op.target ?? '$target', ctx);
+  const location = graph.getNode(targetId);
+  if (!location) return { op, success: false, error: `sour_mine: location ${targetId} not found` };
+
+  const resources = readResources(location.properties);
+  const next = { ...resources };
+  let changed = false;
+  for (const [resourceId, instance] of Object.entries(resources)) {
+    if (!instance || typeof instance.quantity !== 'number') continue;
+    if (getResourceClass(resourceId).category === 'staple') continue;
+    const adjusted = Math.max(0, instance.quantity - LOC_SOUR_MINE_STOCK_DELTA);
+    if (adjusted === instance.quantity) continue;
+    next[resourceId] = { ...instance, quantity: adjusted };
+    changed = true;
+  }
+  if (changed) graph.updateNode(location.id, { properties: { resources: next } });
   return { op, success: true };
 }
 

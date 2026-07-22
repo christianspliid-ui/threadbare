@@ -66,7 +66,12 @@ export const ASCENDANT_MILESTONE_BEATS: readonly BeatDefinition[] = [
     // livelihood tug (a threaded agent's home crossing into Famine/Glut) — would
     // frame these more precisely than the order-themed source milestone; folding
     // them in here is the additive reachability fix, re-homing is a later refinement.
-    grantsActionIds: ['loc.open_markets', 'loc.bless_harvest', 'loc.blight'],
+    grantsActionIds: [
+      'loc.open_markets', 'loc.bless_harvest', 'loc.blight',
+      // THR-618 P4: the remaining divine economic verbs ride the same
+      // livelihoods-in-hand moment (beat grants, never starter:true).
+      'loc.reveal_vein', 'loc.guide_caravan', 'loc.sour_mine',
+    ],
   },
 ];
 

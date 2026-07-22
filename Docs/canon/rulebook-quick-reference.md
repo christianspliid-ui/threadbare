@@ -65,7 +65,7 @@ Locations hold **resource stocks** in named classes (staple / strategic / luxury
 
 Trade routes carry a **cargo manifest** naming what actually moves, derived from what each endpoint has spare and what it wants. Merchants prefer **complementary** partners — a surplus beside a shortage beats two towns with the same granary.
 
-Two economic verbs are yours: **Bless the Harvest** (Gold / Life) swells a settlement's staples toward glut; **Blight the Fields** (Shadow / Entropy) draws them toward famine. Both are staple-only, both arrive as milestone unlocks rather than starting cards, and both land a beat later — you tilt the season's odds, you do not farm.
+Five economic verbs are yours: **Bless the Harvest** (Gold / Life) swells staples toward glut; **Blight the Fields** (Shadow / Entropy) draws them toward famine; **Reveal the Vein** (Eye / Matter) surfaces a new deposit; **Guide the Caravan** (Eye / Order) boosts and protects every road that feeds a settlement; **Sour the Mine** (Shadow / Entropy) pinches the non-staple wealth shut. All arrive as milestone unlocks, all land a beat later — you tilt the odds, you do not farm.
 
 ## The Clocks and the Ending
 

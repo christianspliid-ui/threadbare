@@ -1,38 +1,38 @@
 {
   "schemaVersion": 2,
   "totals": {
-    "total": 171,
+    "total": 174,
     "byCategory": {
       "action": 67,
       "artifact": 4,
       "divine": 19,
       "hex": 49,
-      "location": 20,
+      "location": 23,
       "threads": 12
     },
     "byReach": {
       "iron": 12,
       "gold": 20,
-      "shadow": 21,
+      "shadow": 22,
       "veil": 22,
       "heart": 25,
-      "eye": 27,
+      "eye": 29,
       "stone": 10,
       "star": 33,
       "life": 1
     },
     "byBucket": {
-      "unlockable-generic": 168,
+      "unlockable-generic": 171,
       "generic": 3
     },
     "byEffectSource": {
-      "template-ops": 104,
+      "template-ops": 107,
       "control-spec": 17,
       "engine-bridge": 44,
       "none": 2,
       "aftermath-only": 4
     },
-    "beatGranted": 20,
+    "beatGranted": 23,
     "starters": 0,
     "unauthoredEffects": 0
   },
@@ -4185,6 +4185,41 @@
       "effectSource": "template-ops"
     },
     {
+      "id": "loc.sour_mine",
+      "name": "Sour the Mine",
+      "spellName": "The Pinched Seam",
+      "category": "location",
+      "reach": "shadow",
+      "sphereAffinity": "entropy",
+      "crudType": "update",
+      "scale": "local",
+      "rarityTier": 2,
+      "rarityName": "Storied",
+      "intrinsicTier": "background",
+      "apCost": 1,
+      "essenceCost": 5,
+      "durationMode": "instant",
+      "hasControlSpec": false,
+      "targetCategories": [
+        "location"
+      ],
+      "targetSubtypes": [
+        "settlement",
+        "hamlet",
+        "town",
+        "city",
+        "capital"
+      ],
+      "requiresReach": null,
+      "starter": false,
+      "beatGranted": true,
+      "bucket": "unlockable-generic",
+      "bucketDeclared": true,
+      "description": "Reaches into the diggings beneath a settlement and closes the hand of the land. Veins pinch to rubble, timber stands rot at the heart, the clay runs thin — the wealth beneath simply stops answering. Mortals will blame the surveyors, then the miners, then each other. The divine name will not come up.",
+      "technicalEffect": "On success, drains every non-staple resource deposit at the location by LOC_SOUR_MINE_STOCK_DELTA (staples untouched) — the strategic/luxury inverse of Blight; the stock tier re-derives next tick.",
+      "effectSource": "template-ops"
+    },
+    {
       "id": "sub.trap",
       "name": "Trap",
       "spellName": "Hidden Snare",
@@ -4432,6 +4467,76 @@
       "bucketDeclared": true,
       "description": "Casts your attention across a stretch of the world and marks where power lies latent in the land — the springs and hollows and old stones that could be made to feed you, if you claimed them.",
       "technicalEffect": "Reveals nearby latent essence sources (hidden until found). Once revealed, a source can be Claimed. Reveals nothing if there is no undiscovered source in range.",
+      "effectSource": "template-ops"
+    },
+    {
+      "id": "loc.guide_caravan",
+      "name": "Guide the Caravan",
+      "spellName": "The Kind Mile",
+      "category": "location",
+      "reach": "eye",
+      "sphereAffinity": "order",
+      "crudType": "update",
+      "scale": "local",
+      "rarityTier": 2,
+      "rarityName": "Storied",
+      "intrinsicTier": "background",
+      "apCost": 1,
+      "essenceCost": 5,
+      "durationMode": "instant",
+      "hasControlSpec": false,
+      "targetCategories": [
+        "location"
+      ],
+      "targetSubtypes": [
+        "settlement",
+        "hamlet",
+        "town",
+        "city",
+        "capital"
+      ],
+      "requiresReach": null,
+      "starter": false,
+      "beatGranted": true,
+      "bucket": "unlockable-generic",
+      "bucketDeclared": true,
+      "description": "Walks unseen alongside the wagons of a settlement. Fords run shallow, axles hold, and the watchers in the rocks find reasons to be elsewhere. Every road that feeds this place runs fuller and safer for a season — and no drover will ever know why the miles were kind.",
+      "technicalEffect": "On success, every trades_with route touching the location gains LOC_GUIDE_CARAVAN_VOLUME_DELTA volume (clamped at the route max), sheds its `threatened` mark, and counts as freshly traded (lastTraded = now) — protecting it from decay and banditry re-rolls.",
+      "effectSource": "template-ops"
+    },
+    {
+      "id": "loc.reveal_vein",
+      "name": "Reveal the Vein",
+      "spellName": "The Buried Gleam",
+      "category": "location",
+      "reach": "eye",
+      "sphereAffinity": "matter",
+      "crudType": "update",
+      "scale": "local",
+      "rarityTier": 2,
+      "rarityName": "Storied",
+      "intrinsicTier": "background",
+      "apCost": 1,
+      "essenceCost": 5,
+      "durationMode": "instant",
+      "hasControlSpec": false,
+      "targetCategories": [
+        "location"
+      ],
+      "targetSubtypes": [
+        "settlement",
+        "hamlet",
+        "town",
+        "city",
+        "capital"
+      ],
+      "requiresReach": null,
+      "starter": false,
+      "beatGranted": true,
+      "bucket": "unlockable-generic",
+      "bucketDeclared": true,
+      "description": "Draws divine sight down through soil and stone until something worth digging answers back. A seam of ore, a bed of clay, a stand of timber the surveyors walked past for years — the land had it all along; it merely needed to be looked at properly.",
+      "technicalEffect": "On success, surfaces a terrain-appropriate non-staple resource deposit at the location (quantity LOC_REVEAL_VEIN_QUANTITY), or swells the poorest existing eligible deposit by LOC_REVEAL_VEIN_BOOST — the stock tier re-derives next tick.",
       "effectSource": "template-ops"
     },
     {

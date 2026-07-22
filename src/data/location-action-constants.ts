@@ -131,3 +131,17 @@ export const LOC_PRESENCE_PROSPERITY_BONUS = 2;
 
 /** divinePresence threshold at or above which the flat prosperity bonus applies. */
 export const LOC_PRESENCE_PROSPERITY_THRESHOLD = 0.5;
+
+// ── THR-618 P4: the remaining divine economic verbs ────────────────────────
+
+/** Quantity a revealed vein starts with on the 0-100 abundance scale. */
+export const LOC_REVEAL_VEIN_QUANTITY = 35;
+
+/** Quantity boost when Reveal the Vein targets a location whose eligible deposit already exists. */
+export const LOC_REVEAL_VEIN_BOOST = 20;
+
+/** Volume added to every trade route touching a guided settlement (clamped at the route max). */
+export const LOC_GUIDE_CARAVAN_VOLUME_DELTA = 1;
+
+/** Quantity drained from every non-staple deposit at a soured location. */
+export const LOC_SOUR_MINE_STOCK_DELTA = 25;
