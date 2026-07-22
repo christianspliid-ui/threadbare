@@ -1174,3 +1174,4 @@ px vite build).
 ✅ THR-669 — route events shipped (banditry/toll/embargo from cargo manifests) and the trade-route pipeline brought to life: three stacked engine bugs fixed (same-tick strategic-project stomp, transient-hex anchoring, stale-at-birth dissolution) — the world's first surviving trade route exists
 ✅ THR-670 — cargo-aware trade-route lines + tooltips on HexMapV2: gold arteries, red threatened routes, hovered-endpoint manifests; P2 of the Mortal Economy complete
 ✅ THR-617 — Mortal Economy P3 shipped: monopolies resolve systemically and finally get narrated, cargo flows drift local spheres, faction gold capability grows with trade wealth, and staple scarcity spirals through hoarding/unrest/flashpoint arcs with intervention encounters at every phase
+✅ THR-700 — Scene, Cast, Target, and Support Bundle are now declared UL terms in the Encounters shard: the scene-integration vocabulary is canonical instead of folklore
