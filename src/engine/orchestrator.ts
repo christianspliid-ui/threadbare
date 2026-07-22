@@ -3118,9 +3118,13 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
     s = { ...s, visibilityMap, hexRevelation: rev };
   }
 
-  // Merge tick events into recent events (ring buffer)
+  // Merge tick events into recent events (ring buffer). Phases that need their
+  // events visible to same-tick readers (omen beats, marks, seeds, encounter
+  // aftermath) already appendRecentEvent at emission — skip those here by id,
+  // or the feed holds the same event twice and React keys collide (THR-682).
   const MAX = 100;
-  const combined = [...s.recentEvents, ...s.tickEvents];
+  const seenRecentIds = new Set(s.recentEvents.map(e => e.id));
+  const combined = [...s.recentEvents, ...s.tickEvents.filter(e => !seenRecentIds.has(e.id))];
   s = { ...s, recentEvents: combined.slice(-MAX) };
 
   // Emit tick summary trace
