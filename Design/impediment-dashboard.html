@@ -2767,6 +2767,19 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "**Workaround:** wrap stdout before printing anything sourced from the repo or Linear — `sys.stdout=io.TextIOWrapper(sys.stdout.buffer,encoding='utf-8',errors='replace')` — and always pass `encoding='utf-8'` to `open()`. Add both to any throwaway analysis script by default rather than after the crash.",
     "session": "THR-687 board-integrity audit, issue-title parsing."
+  },
+  {
+    "num": "197",
+    "id": 197,
+    "count": 1,
+    "date": "2026-07-22",
+    "category": "tooling",
+    "description": "**Volatile timestamp in `ul-dashboard.generated.json` turns queued PRs into silent auto-merge stalls.** The generated UL dashboard carries a per-run timestamp line. `check:generated-freshness` ignores it as volatile, but git does not — so any two open PRs that each ran `npm run prebuild` hold different blobs of the same file. Under strict branch protection, each merge in a queued cascade made the remaining PRs `DIRTY` (a real content conflict, not `BEHIND`); `gh pr update-branch` fails silently on DIRTY, so the armed auto-merges simply never fired and the queue stalled with zero failure signal (the exact silent-stall shape previously seen with BEHIND, but immune to update-branch).",
+    "consequence": "Two PRs (#740, #742) stalled at the end of a 9-PR cascade; ~25 min of manual conflict surgery at the end of a marathon window.",
+    "impact": "M",
+    "workaroundFound": true,
+    "workaround": "Resolve by regeneration, not by hand: `git checkout --theirs src/data/ul-dashboard.generated.json && npm run generate-ul-dashboard && git add && git commit`. When more queued PRs still carry the file, make the blobs byte-identical across branches (`git checkout <sibling-branch> -- <file>`, commit, push) so the rest of the cascade degrades to plain BEHIND, which watchers handle. Durable fix filed as THR-714: strip the timestamp from the generator (deterministic regen, NFP #3); then the freshness checker's volatile carve-out can go too.",
+    "session": "M3 economy marathon, 2026-07-22"
   }
 ];
 // ── End data ──
