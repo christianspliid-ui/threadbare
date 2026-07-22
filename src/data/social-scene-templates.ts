@@ -39,7 +39,7 @@ type SocialEntry = {
   reachSecondary?: string;
   encounterType: string;
   threatRating?: string;
-  intrinsicTier?: string;
+  intrinsicTier?: UnifiedActionTemplate['intrinsicTier'];
   motivations?: readonly unknown[];
   sphereAffinity?: string;
   steps: ReadonlyArray<{
@@ -124,6 +124,7 @@ function toSocialTemplate(e: SocialEntry): UnifiedActionTemplate {
       failure: lastStep?.onFailure.narrative ?? `${e.name} fails.`,
     },
     rarityTier: 1,
+    // TODO(THR-679): hardcoded — e.intrinsicTier is authored but never read here.
     intrinsicTier: 'background',
   };
 }
@@ -263,7 +264,7 @@ const PERSUASION_TEMPLATES: SocialEntry[] = [
     reachSecondary: 'shadow',
     encounterType: 'hire',
     threatRating: 'easy',
-    intrinsicTier: 'present',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.hire,
     steps: [
       {
@@ -365,7 +366,7 @@ const PERSUASION_TEMPLATES: SocialEntry[] = [
     reachSecondary: 'heart',
     encounterType: 'assist',
     threatRating: 'easy',
-    intrinsicTier: 'present',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.assist,
     steps: [
       {
@@ -468,7 +469,7 @@ const PERSUASION_TEMPLATES: SocialEntry[] = [
     reachSecondary: 'eye',
     encounterType: 'assist',
     threatRating: 'moderate',
-    intrinsicTier: 'present',
+    intrinsicTier: 'shaping',
     motivations: ['loyalty_ambition', 'mercy_ruthlessness'],
     steps: [
       {
@@ -572,7 +573,7 @@ const PERSUASION_TEMPLATES: SocialEntry[] = [
     reachSecondary: 'heart',
     encounterType: 'assist',
     threatRating: 'moderate',
-    intrinsicTier: 'present',
+    intrinsicTier: 'shaping',
     motivations: ['sacrifice_survival', 'tradition_novelty'],
     sphereAffinity: 'order',
     steps: [
@@ -683,7 +684,7 @@ const NEGOTIATION_TEMPLATES: SocialEntry[] = [
     reachSecondary: 'heart',
     encounterType: 'trade',
     threatRating: 'easy',
-    intrinsicTier: 'present',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.trade,
     steps: [
       {
@@ -893,7 +894,7 @@ const NEGOTIATION_TEMPLATES: SocialEntry[] = [
     reachSecondary: 'eye',
     encounterType: 'trade',
     threatRating: 'moderate',
-    intrinsicTier: 'present',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.trade,
     steps: [
       {
@@ -997,7 +998,7 @@ const NEGOTIATION_TEMPLATES: SocialEntry[] = [
     reachSecondary: 'heart',
     encounterType: 'trade',
     threatRating: 'easy',
-    intrinsicTier: 'present',
+    intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.trade,
     steps: [
       {
@@ -1318,7 +1319,7 @@ const INTRIGUE_TEMPLATES: SocialEntry[] = [
     reachSecondary: 'iron',
     encounterType: 'steal',
     threatRating: 'moderate',
-    intrinsicTier: 'present',
+    intrinsicTier: 'shaping',
     motivations: ['honesty_cunning', 'mercy_ruthlessness'],
     steps: [
       {
@@ -1424,7 +1425,7 @@ const INTRIGUE_TEMPLATES: SocialEntry[] = [
     reachSecondary: 'eye',
     encounterType: 'steal',
     threatRating: 'moderate',
-    intrinsicTier: 'present',
+    intrinsicTier: 'shaping',
     motivations: ['honesty_cunning', 'revelation_discretion'],
     steps: [
       {
@@ -1525,7 +1526,7 @@ const INTRIGUE_TEMPLATES: SocialEntry[] = [
     reachSecondary: 'eye',
     encounterType: 'steal',
     threatRating: 'moderate',
-    intrinsicTier: 'present',
+    intrinsicTier: 'shaping',
     motivations: ['revelation_discretion', 'honesty_cunning'],
     steps: [
       {
@@ -1736,7 +1737,7 @@ const INTIMIDATION_TEMPLATES: SocialEntry[] = [
     reachSecondary: 'shadow',
     encounterType: 'duel',
     threatRating: 'moderate',
-    intrinsicTier: 'present',
+    intrinsicTier: 'shaping',
     motivations: ['mercy_ruthlessness', 'courage_prudence'],
     steps: [
       {
@@ -1840,7 +1841,7 @@ const INTIMIDATION_TEMPLATES: SocialEntry[] = [
     reachSecondary: 'gold',
     encounterType: 'steal',
     threatRating: 'moderate',
-    intrinsicTier: 'present',
+    intrinsicTier: 'shaping',
     motivations: ['mercy_ruthlessness', 'asceticism_extravagance'],
     steps: [
       {
@@ -2050,7 +2051,7 @@ const INTIMIDATION_TEMPLATES: SocialEntry[] = [
     reachSecondary: 'heart',
     encounterType: 'duel',
     threatRating: 'moderate',
-    intrinsicTier: 'present',
+    intrinsicTier: 'shaping',
     motivations: ['courage_prudence', 'mercy_ruthlessness'],
     steps: [
       {
@@ -2142,7 +2143,7 @@ const CEREMONY_TEMPLATES: SocialEntry[] = [
     reachSecondary: 'heart',
     encounterType: 'assist',
     threatRating: 'easy',
-    intrinsicTier: 'present',
+    intrinsicTier: 'shaping',
     motivations: ['sacrifice_survival', 'loyalty_ambition'],
     sphereAffinity: 'order',
     steps: [
@@ -2387,7 +2388,7 @@ const CEREMONY_TEMPLATES: SocialEntry[] = [
     reachSecondary: 'star',
     encounterType: 'assist',
     threatRating: 'easy',
-    intrinsicTier: 'present',
+    intrinsicTier: 'shaping',
     motivations: ['sacrifice_survival', 'loyalty_ambition'],
     steps: [
       {
@@ -2671,7 +2672,7 @@ const COMMUNITY_TEMPLATES: SocialEntry[] = [
     reachSecondary: 'eye',
     encounterType: 'lead',
     threatRating: 'moderate',
-    intrinsicTier: 'present',
+    intrinsicTier: 'shaping',
     motivations: ['preservation_transformation', 'loyalty_ambition'],
     steps: [
       {
@@ -2764,7 +2765,7 @@ const INVESTIGATION_TEMPLATES: SocialEntry[] = [
     reachSecondary: 'shadow',
     encounterType: 'steal',
     threatRating: 'moderate',
-    intrinsicTier: 'present',
+    intrinsicTier: 'shaping',
     motivations: ['revelation_discretion', 'honesty_cunning'],
     steps: [
       {
@@ -2920,7 +2921,7 @@ const INVESTIGATION_TEMPLATES: SocialEntry[] = [
     reachSecondary: 'iron',
     encounterType: 'duel',
     threatRating: 'moderate',
-    intrinsicTier: 'present',
+    intrinsicTier: 'shaping',
     motivations: ['revelation_discretion', 'honesty_cunning'],
     steps: [
       {

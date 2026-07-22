@@ -1,5 +1,7 @@
 # Systemic Wiring Guide — What the Engine Can Do, and Why It Matters for What You Write
 
+> **lint_plan_doc:** exempt — standing reference for content authors, not a dated plan doc. It has no Engine/Content/UI pillars, no constants table, and no coordination block because it proposes no work; it describes capabilities that already ship. See THR-686.
+
 **Date:** 2026-04-16
 **Purpose:** This document exists because LLMs are good at writing prose but bad at knowing what a bespoke game engine can do with that prose. The result is hardcoded fiction masquerading as game content. This guide fixes that by explaining the engine's dynamic capabilities *before* you start writing — because knowing what the system can do should change what you decide to write.
 
@@ -70,6 +72,16 @@ Every `narrative` field in steps and outcomes supports dynamic text substitution
 | `{doom_verb}` | Doom archetype vocabulary — action verb | "fractures" (breach) / "gathers" (convergence) |
 | `{doom_adj}` | Doom archetype vocabulary — adjective | "fractured" (breach) / "inexorable" (convergence) |
 | `{doom_atmosphere}` | Doom archetype vocabulary — atmospheric phrase | "something presses through" (breach) |
+| `{target}` | Scene target — the entity the encounter is *with* (THR-694). Falls back to "the other party" | "Serafina" |
+| `{target:they\|them\|their\|s}` (+ capitalized) | Target's pronouns; neutral fallback | "she/her/her/s" |
+| `{target:faction}` | Target's faction name; falls back to "their people" | "The Iron Wardens" |
+| `{cast:<key>}` | Scene cast — a `supportBundle` member by spec key (THR-696). Renders the *bound* entity's live name | "Captain Merrow" |
+
+**Scene cast (THR-696):** An encounter's `supportBundle` binds real world objects reuse-first — the "gate captain" is usually an NPC who already stands at that gate. `{cast:<key>}` names whoever the key actually bound to, so prose and world agree even when reuse picked someone the author never met. **A key the template declares always resolves**: bound → the graph node's live name; declared-but-unbound → the spec's own `spawnName` / `fallbackName`. That is the whole point — you never have to guard a reference to your own cast, and you must not invent a name for a role the bundle already owns (the branching tier's hardcoded `Maren`/`Dalla`/`Torve` literals are exactly the anti-pattern this replaces).
+
+Guard only when a key is *conditionally* declared, using `{?has_cast:<key>}` / `{?no_cast:<key>}`. A key the bundle does not declare is an authoring error: the token strips and a dev-mode `console.warn` names it. Populated when the caller threads `opts.supportBundle` + `opts.supportBindings` into `gatherNarrativeContext` — the encounter stage model and action-resolution paths do; every other path leaves the block absent and strips silently. Capped at `CAST_CONTEXT_MAX_MEMBERS` (6). Worked example: `cg.quest.gate_duty` in `src/data/civic-guard-encounter-content.ts`.
+
+**Scene target (THR-694):** On the encounter path, prose can name the entity the action is *with* — the resolved `action.targetId` (another agent or a location) — instead of "the other party." The `{target:*}` family is populated only when the caller passes `opts.targetId` to `gatherNarrativeContext` (the encounter stage model and action-resolution paths do); self-targeted actions, deleted targets, and all non-encounter prose leave it absent, so every token falls back and absence reads as absence. **Never write a `{target}` that assumes a referent** — a scene that only makes sense with a named other party must guard it with `{?has_target}`. Location-kind targets resolve `{target}` (the place name) only; their pronoun/faction/relation tokens use fallbacks.
 
 **How to verify:** Run the DebugPanel Trace tab filtered on `narrative_generation`. Every step and outcome narrative you see in game should render with placeholders resolved — not as literal `{name}` / `{?has_faction}` text. The regression locks live in `src/engine/__tests__/unifiedAdapterProseEnrichment.test.ts`.
 
@@ -86,7 +98,7 @@ no one to answer to but the road.{/no_faction}
 That thought alone steadies {their} hand.{/has_ally}
 ```
 
-Available conditionals: `has_artifact`, `has_ally`, `has_rival`, `has_faction`, `has_title`. Each has an inverse: `no_artifact`, `no_ally`, etc.
+Available conditionals: `has_artifact`, `has_ally`, `has_rival`, `has_faction`, `has_title`. Each has an inverse: `no_artifact`, `no_ally`, etc. **Scene target (THR-694):** `has_target` / `no_target` (presence pair) and `target_is_ally` / `target_is_rival` / `target_is_stranger` (the actor→target relation, classified via the ±0.35 sentiment thresholds). A location-kind target is present (`has_target` true) but carries no relation, so all three `target_is_*` conditionals resolve false for it.
 
 **Why this changes what you write:** When you know prose can branch on whether the agent has allies or artifacts, you write scenes that *use* those relationships. A betrayal scene where the agent has no allies reads differently from one where their strongest ally might hear about it. A discovery scene where the agent carries a storied artifact reads differently from one where they have nothing. These aren't cosmetic — they change the emotional texture of the moment. **Write scenes where the conditionals matter, not scenes where they're decoration.**
 
@@ -95,6 +107,8 @@ Available conditionals: `has_artifact`, `has_ally`, `has_rival`, `has_faction`, 
 **Hex-level prose uses a separate composer — not `enrichProse`:** As of THR-415, the `hex.survey` divine action emits a `survey_completed` TickEvent whose message is built by `composeSurveyPeopleProse` in `src/engine/surveyProseComposer.ts`. This is a hex-scoped prose composer (averaging location unrest, listing controlling factions) that operates on the graph directly and does not go through `proseEnrichment.ts`. If you add other hex-scoped revelation events (e.g. a HexChronicle people-layer), write a new composer in the same pattern rather than routing through `enrichProse`.
 
 **Economic In-Prose Keywords (THR-615):** any prose rendered through `renderProseWithIPK` (`src/components/ProseKeyword.tsx`) now recognises four economic keywords in `**bold**` markers — `**Famine**`, `**Glut**`, `**Monopoly**`, `**Embargo**` — rendering them as gold, tooltip'd terms (tooltips in `ECONOMY_KEYWORD_TOOLTIPS`, `src/data/resource-classes.ts`) alongside the existing sphere keywords. Use them in location/economy prose to give scarcity and surplus mechanical weight. Separately, the mortal-economy phase auto-narrates staple stock crossings into the Great Chronicle via the `resource_scarcity` / `resource_glut` chronicle triggers (`economicChronicle.ts`) — these fire from the engine, not per-encounter; you don't invoke them, but be aware the world already speaks about famines and gluts, so don't hardcode duplicate "the harvest failed" lines in encounter prose.
+
+**Family default support bundles (THR-698):** every linear template in the `tavern`, `social`, and ten guild families (`tg`, `ac`, `bf`, `cg`, `hod`, `uk`, `rb`, `mct`, `lk`, `ts`) automatically carries a small default cast even when it declares no `supportBundle` — merged at registry assembly from `DEFAULT_FAMILY_SUPPORT_BUNDLES` (`src/data/default-support-bundles.ts`, cap `DEFAULT_BUNDLE_MAX_SPECS` = 3). What authors get for free: prose in those families can reference the family's cast keys (e.g. tavern → `{cast:keeper}` / `{cast:performer}` / `{cast:regular}`; cg → `{cast:officer}` / `{cast:watch_guard}` — see the data file for every family's keys) and the scene binds the world's *existing* NPC in that role when one is present at the anchor. Defaults are **bind-only**: every spec is `pre-seeded` with `reuseNpcRoles`, so an unmatched key stays unresolved and falls back to the spec's `spawnName` in prose — they never spawn anyone (zero world population). **To override:** declare a `supportBundle` on the template — a template-declared bundle wins outright (no per-key merge). Borderland has no default cast by design (wilderness has no settlement roster to bind).
 
 ---
 
@@ -107,19 +121,22 @@ Aftermath reactions can plant `encounter_seed` effects that spawn new encounters
   kind: 'encounter_seed',
   templateId: 'broker.quest.shrine_confrontation',  // Specific encounter to spawn
   // OR:
-  encounterFamily: 'investigation',                  // Family tag (v1: narrative event)
+  encounterFamily: 'broker.quest',                   // Family prefix — the engine draws + spawns a member (THR-697)
   targetAgentId: '$actor',       // Who gets the follow-up (defaults to current agent)
   delayTicks: 15,                // When it becomes eligible
   priority: 1.2,                 // Higher = spawns sooner when eligible
+  inheritContext: true,          // (opt-in) carry this action's target + cast into the follow-up (THR-697)
   seedLabel: "The shrine map burns in their pocket — someone will come asking"
 }
 ```
 
-**Two modes:**
-- **`templateId`** — spawns a specific encounter template as a unified action for the target agent. This is the reliable path for authored chains.
-- **`encounterFamily`** — emits a narrative event tagged with the family name. Full family-matching (where the engine selects from a pool of family-tagged templates) is future work; for now, use `templateId` for guaranteed spawning.
+**Two modes (both now spawn a real encounter — THR-697 Slice D activated the family stub):**
+- **`templateId`** — spawns that exact template as a unified action for the target agent. The reliable path for authored chains.
+- **`encounterFamily`** — a family *prefix* (the `id`-before-a-dot convention, same as THR-112 `revealFamilies`, e.g. `broker.quest` matches `broker.quest.*`). At eligibility the engine collects the registered templates in that family that are individual-performable and location-eligible for the target agent (scan capped at `FAMILY_SEED_MAX_CANDIDATES` = 12), makes one seeded `rng()` draw, and spawns the winner. If the family resolves to **zero** eligible templates, it falls back to the v1 "the consequences are stirring…" narrative event and the seed is consumed. Emits `encounter_seed_family_matched` on a spawn.
 
-**Seeds are fail-soft:** if the template doesn't exist or the agent is occupied, the seed emits a "withered" narrative event and is removed. No crashes, no stuck states.
+**Scene-context inheritance (`inheritContext: true`, opt-in, THR-697 Slice D):** by default a seeded follow-up self-targets — it forgets who the original story was about. Set `inheritContext: true` and the planting site snapshots the source action's `targetId` and `supportBindings` onto the seed; at spawn the engine re-validates both against the live graph (a dead target falls back to self-target; dead-node bindings are dropped) and threads the survivors into the follow-up's normal `supportBindings` slot. The upshot: **the same people return** — `{target:*}`/`{cast:*}` prose placeholders and `$target`/`$cast:` aftermath sentinels resolve to the original scene in the follow-up. Emits `seed_context_inherited`.
+
+**Seeds are fail-soft:** if the template doesn't exist, the family has no eligible member, or the agent is occupied, the seed either keeps for the next tick (occupied) or emits a "withered" narrative event and is removed. No crashes, no stuck states.
 
 **Why this changes what you write:** When you know an encounter can plant a seed that blooms 15 ticks later, you write *differently*. You write the betrayal scene knowing the revelation scene is coming. You write the merchant's favor knowing the debt-collection encounter is planted. You write the hidden truth knowing the investigation encounter will surface it. **The aftermath isn't the end of the story — it's the planting of the next one.** If your encounter has no seeds, ask why. Some encounters are simple moments (the healer mercy encounter). But if your encounter has consequences that should echo forward, seeds are how you make that happen.
 
@@ -520,10 +537,8 @@ foreshadowing?: {
   template: string;         // Prose template with {name.first}, {pronoun.subject}, {encounter.heading}
   when: {
     intelligenceTier?: 'unknown' | 'rumor' | 'briefed' | 'expert';
-    topMotive?: 'awareness' | 'threat' | 'opportunity' | 'duty' | 'curiosity';
+    topMotive?: 'awareness' | 'visibility' | 'prereqs' | 'threat' | 'capability' | 'cooldown';
     dominantReach?: string;           // e.g. 'eye', 'heart', 'shadow'
-    hasMark?: string;                 // Phase 3 — deferred
-    hasReputation?: string;           // Phase 3 — deferred
   };
 }
 ```
@@ -539,12 +554,14 @@ foreshadowing?: {
 
 **Variant selection:** The engine picks the most-specific matching variant (most conditions specified in `when`). Ties at the same specificity are broken deterministically with PRNG seeded from `agentId + encounterId`. If no variant matches, falls back to `foreshadowing.fallback`, then to `GENERIC_FORESHADOWING_FALLBACK`.
 
-**Phase 1 signals (current):**
-- `intelligenceTier`: always `'unknown'`
-- `topMotive`: always `'awareness'`
-- `dominantReach`: encounter template's `reach` field (e.g. `'eye'` for plague_outbreak)
+**Signals (live — no longer Phase-1 stubs):**
+- `intelligenceTier`: derived from the candidate's `completionProb` via `resolveIntelligenceTier`
+- `topMotive`: derived from the agent's real decision via `resolveTopMotive`
+- `dominantReach`: the candidate's `reachPrimary`, falling back to the template's `reach`
 
-Phase 3 will derive these from actual agent intelligence records and encounter-pool funnel scores. The variant system is already live — content authored now will automatically use real signals in Phase 3 without changes.
+Only the no-candidate path (foreshadowing an encounter the agent has not actually selected) still returns the `'unknown'` / `'awareness'` defaults. Variants authored against these conditions match on real agent state.
+
+> **Note on tiers:** this path's `intelligenceTier` is a *proxy* derived from `completionProb`. The Motive Receipt path (Capability 11) carries the **real** tier read off the matched `IntelligenceRecord` reliability. Where both exist, the receipt is the truthier signal — that is the whole reason it was built.
 
 **Why this changes what you write:** When authoring `foreshadowing` variants, you're writing inside an agent's head — what they've heard, what they fear, what they hope for. The prose should reflect the agent's epistemic state, not objective facts about the encounter. A variant for `intelligenceTier: 'rumor'` should feel uncertain and second-hand. A variant for `topMotive: 'threat'` should feel defensive. The encounter itself hasn't happened yet — the agent is projecting.
 
@@ -575,7 +592,65 @@ Phase 3 will derive these from actual agent intelligence records and encounter-p
 }
 ```
 
-**Where to find the implementation:** `src/engine/foreshadowing/getEncounterForeshadowing.ts` for the resolver, `src/engine/foreshadowing/constants.ts` for the cache cap, `src/types/unifiedAction.ts` for the `EncounterForeshadowing` + `ForeshadowingVariant` interfaces.
+**Where to find the implementation:** `src/engine/foreshadowing/encounterForeshadowing.ts` for the resolver, `src/engine/foreshadowing/constants.ts` for the cache cap, `src/types/foreshadowing.ts` for the `EncounterForeshadowingDefinition` + `EncounterForeshadowingVariant` interfaces.
+
+---
+
+### Capability 11: The Motive Receipt — Why the Agent Actually Chose It (THR-631)
+
+Capability 10 asks an authored variant to *guess* at an agent's reason. The Motive Receipt stops guessing: the scorer already computes the real decision causality every tick, so the engine now keeps it instead of throwing it away. Foreshadowing prose, the trace, and the DebugPanel all read the same receipt — **"why did this agent choose this encounter" is the same answer everywhere.**
+
+**What it carries** (`MotiveReceipt`, `src/types/foreshadowing.ts`) — stored as the `motiveReceipt` **property** on the agent node, not an edge (no system traverses encounter → "agents who chose me because X"). Overwritten on each new selection; serializes with the graph.
+
+| Field | Meaning |
+|---|---|
+| `templateId` / `locationId` | The selection this receipt explains |
+| `contributions[]` | Top `RECEIPT_TOP_CONTRIBUTIONS` (3) reasons, ranked by `weight` (normalized 0..1 share of positive score mass) |
+| `intelTier` | **Real** tier from the matched `IntelligenceRecord` reliability — *not* `completionProb` |
+| `expectation` | `ForecastTier` from `completionProb` (reuses the vignette outcome-forecast tiers) |
+| `dominantReach` | Reach that dominated the decision |
+| `decidedAtTick` | Seeds prose variety; a new decision yields fresh prose |
+
+**Contribution kinds** (`MotiveContributionKind`) — each maps to a scorer term: `ambition`, `personality`, `intel`, `mark`, `divine`, `bond`, `reputation`, `resonance`, `rarity`, `hunch`, `doom_identity`, `chain`, `exploration`, `proximity`. A contribution below `RECEIPT_MIN_WEIGHT` (0.10) is dropped.
+
+**How prose consumes it** (`composeReceipt.ts`) — four sentences, each keyed to a different part of the receipt:
+
+| Sentence | Keyed on | Table |
+|---|---|---|
+| S1 knowledge | `intelTier` | `KNOWLEDGE_CLAUSES` |
+| S2 pull/motive | **top contribution kind** (+ `dominantReach` flavour) | `MOTIVE_CLAUSES_BY_REACH` → `MOTIVE_CLAUSES` → `personality` |
+| S3 expectation | `expectation` forecast tier, with an em-dash hedge tail below `briefed` | `EXPECTATION_BY_FORECAST` + `LOW_INTEL_HEDGE_TAILS` |
+| S4 stake *(optional)* | **second** contribution kind, only if its weight ≥ `STAKE_CLAUSE_MIN_WEIGHT` (0.20) | `STAKE_CLAUSES` → `DEFAULT_STAKE_CLAUSES` |
+
+Tooltip render = S2 only. Panel render = S1–S3 (+S4). All tables live in `src/data/foreshadowing-content.ts`.
+
+**Determinism:** clause selection is seeded on `(agentId, templateId) XOR decidedAtTick` — the same decision always yields the same prose; a new decision yields fresh variety. No `Math.random()` (NFP #3).
+
+**Fail-soft:** `readMotiveReceipt` (`receiptRead.ts`) rejects a receipt whose `templateId`/`locationId` doesn't match the encounter being foreshadowed (the agent has since chosen something else), and the caller falls back to the composed-generic path. A missing clause key falls back to the `personality` / default pools. The composer never throws (NFP #4).
+
+**Authoring clause variants — use the typed-slot realizer, never raw pronouns.** Clause templates are realized by `realizer.ts`, which exists to make two specific bugs impossible:
+
+| Slot | Fills with |
+|---|---|
+| `{name}` | Agent's first name |
+| `{subject}` / `{Subject}` | `he` / `she` / `they` (subject case) |
+| `{object}` / `{Object}` | `him` / `her` / `them` (**object case**) |
+| `{place}` | Location name — *only ever* a location, never an encounter title |
+| `{matter}` | The thing at stake ("what stirs at Ashmarket") |
+| `{v:lemma}` | Verb conjugated to the subject's number |
+
+Two rules are enforced by tests, not convention:
+
+1. **Every verb after a subject slot must be `{v:lemma}`.** Writing `"{Subject} believes"` breaks for `they`. The *agreement sweep* in `composeReceipt.test.ts` renders every clause in every pool against he/she/they and fails on both `"They believes"` and `"He believe"`. It derives verb forms from the real `conjugate` function, so **adding a clause with a new verb needs no test edit** — but adding a clause with a bare verb will fail the suite.
+2. **A pronoun in object position must use `{object}`/`{Object}`.** Writing `"moves {subject} closer"` renders "moves they closer". The *object-case lint* statically flags a subject slot following a copula, transitive verb, or object preposition.
+
+Both sweeps run over `MOTIVE_CLAUSES`, `MOTIVE_CLAUSES_BY_REACH`, `EXPECTATION_BY_FORECAST`, `STAKE_CLAUSES`, and `DEFAULT_STAKE_CLAUSES`. Add a pool and you must add it to the sweep, or it ships unchecked.
+
+**Authored overrides still win.** An encounter with an authored `foreshadowing` block (Capability 10) uses its variant; the receipt path is what runs when no authored variant matches. Author variants for encounters whose *specific* fiction matters; let the receipt carry the systemic long tail.
+
+**Inspecting it:** `window.__DEBUG.getMotiveReceipt(agentQuery)` returns the live receipt; `__DEBUG.getForeshadowing(agentQuery, templateQuery?)` returns the rendered result. The existing `foreshadowing` trace gained `compositionKeys` (which clause pools fired, e.g. `pull:ambition/iron`) and `receipt` (the consumed receipt, or `null` on the generic path) — **no new trace category**.
+
+**Where to find the implementation:** `motiveReceipt.ts` (build), `receiptRead.ts` (read + validate), `composeReceipt.ts` (compose), `realizer.ts` (surface realization), `constants.ts` (tunables), `src/data/foreshadowing-content.ts` (clause tables).
 
 ---
 
@@ -792,8 +867,14 @@ All encounters use `UnifiedActionTemplate` (migrated as of THR-108). `EncounterT
 | `axiological_mark_apply` (THR-529) | **Permanent** formative mark — shift the actor's moral **baseline** on one reach's virtue↔vice axis. Moves the standing `AxiologicalProfile` value itself (not the decaying drift layer), clamped to ±`FORMATIVE_MARK_MAX_MAGNITUDE` and to [−1,+1]. Emits a "becoming" chronicle beat + `axiological_mark_applied` trace. **Author-gated, rare by design** — defining-moment encounters only. | `reach`, `signedMagnitude` (±, virtue +/vice −), `targetAgentId?` |
 | `sphere_influence_amplify` (THR-551) | Veil / Rend the Gate reach signature. Opens a **sustained rift** at a location → spawns a `ControlEffect` (ticked by `phaseControlEffects`). Each tick amplifies the location's `sphere` via scaled pressure up to a cap (`perTickSphereInfluence`), charges `scaledCost(RIFT_PERTICK_COST, mult)` essence, and rolls a seeded `perTickLeak` chaos pulse (hex corruption + entropy pressure). Magnitude, cost, and leak chance all scale with the actor's primary-sphere power (THR-548) — the downside is the individualization. Relic-buyout of upkeep via `upkeepArtifactId` (THR-509). Traces `ascendant.signature.rift` + `ascendant.signature.rift_leak`. Fail-soft no-op on missing/non-location target or no actor. | `locationId`, `sphere`, `perTick?` (defaults to `RIFT_INFLUENCE_PER_TICK`), `durationMode: 'sustained'` |
 | `spawn_unique_location` (THR-552) | Stone / The Great Work reach signature. Mints a **one-of-a-kind** `location` node flagged `unique` (a `location`, not a new node type) owned via a `controls` **edge** from the actor. **Idempotent** — dedup by `uniqueTag`, a second cast is a no-op. Placement precedence `hex?` > `nearAgentId?`'s hex > actor's hex (fail-soft `no_hex` skip). `artifactForgeTier` optionally forges a relic by reusing the `spawn_artifact` path (`artifact_legendary` + `bonded_to`, else `artifact` + `possesses`) — no new artifact code. Both version counters bump (new location = spatial-structure change). Sphere twist supplied by the THR-549 matrix. Trace `ascendant.signature.unique_location`. Fail-soft no-op on duplicate tag / unresolvable hex. | `subtype` (`LocationSubtype`), `uniqueTag`, `hex?`, `nearAgentId?`, `artifactForgeTier?`, `nameOverride?` |
+| `bond_change` (THR-695) | Move a directed relationship. Creates or mutates the actor→`withAgentId` `relates_to` edge: applies `sentimentDelta` (result clamped [-1,1]) and, when supplied, `trustDelta` (result clamped [0,1]). A missing edge is created at `BOND_CREATE_INITIAL_SENTIMENT`/`_TRUST` first. `reciprocal` (default true) mirrors the same deltas onto the reverse edge, so a formed alliance is symmetric. `withAgentId` accepts a literal id, `$target`, or `$cast:<key>`/`role:<key>` (bound by the scene-sentinel pass, below). No new node/edge type. Fail-soft no-op (`success:false` trace) on unresolved sentinel, non-actor node, or self-bond. Traces `bond_change_applied` + `encounter_aftermath_effect`. This is how a relationship-shaped outcome (`social.forge_alliance` success) **creates the bond it narrates** instead of leaving the graph untouched. | `withAgentId`, `sentimentDelta`, `trustDelta?`, `reciprocal?` |
 
-**Multi-target note (THR-114):** Effects that accept `targetAgentId` / `targetFactionId` / `targetSublocationId` use priority resolution: explicit agent > explicit faction > explicit sublocation > action actor (fallback). Use `role:` prefix for participant substitution (e.g. `targetAgentId: 'role:victim'`). See `src/data/encounters/examples/` for gold-standard patterns: `example.betrayal_multi_target.ts` (hidden_mark + apply_condition on victim), `example.council_disowns.ts` (reputation_set on faction), `example.shrine_consecration.ts` (apply_condition + remove_condition on sublocation).
+**Scene-targeting sentinels (THR-695, supersedes the THR-114 `role:` note):** `bindAftermathSceneTargets` runs at the top of aftermath dispatch (after the THR-555 reach-signature pass) and rebinds sentinel values on `targetAgentId` / `targetFactionId` / `targetSublocationId` / `withAgentId`:
+
+- **`'$target'`** → the action's resolved `targetId`, **only when the target's node kind matches the field** (an agent field pointed at a location is left unbound, and the effect no-ops down its existing invalid-target path).
+- **`'$cast:<key>'`** (and the legacy alias **`'role:<key>'`**) → the node bound to that key in `action.supportBindings`. Author cast placeholders (Slice C) and their aftermath sentinels against the same support-bundle keys, so prose and consequence name the *same* person.
+
+Every processed sentinel emits an `aftermath_sentinel_bound` trace (`resolvedNodeId: null` when it can't resolve — the fail-soft signal). Literal ids and effects with no sentinel are untouched. Below the sentinel pass, the older priority resolution still applies: explicit agent > explicit faction > explicit sublocation > action actor (fallback). See `src/data/encounters/examples/` for the patterns: `example.betrayal_multi_target.ts` (`role:victim` hidden_mark + `role:guild` reputation_score), `example.council_disowns.ts` (`role:lorekeepers` reputation on faction), `example.shrine_consecration.ts` (`role:shrine` on sublocation) — these are now genuinely functional once the action supplies the matching bindings.
 
 **Use `reputation_set` only when the fiction demands "it is now literally X"**, not for ordinary outcome nudges — those belong to `reputation_score` with a delta.
 
@@ -975,6 +1056,14 @@ Tuning constants: `CONSECRATE_ESTABLISH_COST` / `CONSECRATE_PERTICK` (`ascendant
 **Seeding hidden, discoverable graph state at worldgen + a Find→Claim reveal loop (THR-611 Slice 4).** Two more graph-op-only verbs complete the essence-source loop's *front half* — and they demonstrate a reusable pattern for **content that begins hidden and is revealed by a player action**: (1) `find_source` reveals latent sources within `op.discoveryRangeHops ?? SOURCE_DISCOVERY_RANGE_HOPS` hexes of the target — it resolves the target to a hex (`resolveLocationToHex`) and walks candidate hosts via the pure `findLatentSourcesInRange` helper (`essenceSources.ts`), stamping `discoveredBy` on the bag; (2) `claim_source` binds a *discovered* source with an ascendant→host `controls` edge (income then flows through the same `computeSourceIncome` consumer), and **enforces a prerequisite in the op itself** — it fail-soft-errors if `discoveredBy` is unset ("Find it first"). The hidden state itself is planted at **worldgen**: `seedLatentEssenceSources(graph, rng)` (`src/engine/essenceSourceSeeding.ts`, called from `gameInit.ts` after location sphere-affinity seeding with its own PRNG offset) stamps a small deterministic set of latent `placeOfPower` bags (`discoveredBy` undefined = fog-hidden) onto natural wild-interest locations, **typed by the host's own locale sphere** (`getDominantSphere` of the location's `sphereAffinity`). Two authoring lessons content agents will hit: (a) a *found* source pours **its country's** sphere, whereas a *consecrated* shrine pours the **god's** sphere — the two verbs deliberately produce different flavors of income, so a discovery encounter should read the host's locale, not the caster's alignment; (b) do **not** filter seeding hosts on "no incoming `controls` edge" — most wild interest points already sit in some faction's territory, and a *divine* source is orthogonal to *mortal* control (income only ever walks the ascendant's own `controls` edges, so a mortal controller of the host never leaks income to the player). To seed your own hidden discoverable state, mirror the shape: a deterministic `seedXxx(graph, rng)` in a `*Seeding.ts` module wired into `gameInit`, a `find_*` op that reveals via a range walk, and a `claim_*`/consume op that gates on the reveal flag.
 
 **Six ascendant-ward ops — the two wiring paths in one place (THR-605).** THR-605 gave real, consumed effects to six previously no-op ascendant verbs, and together they are the clearest side-by-side of the two ways to wire an ascendant GraphOp. **Four ride the graph-executor-case path** (the essence-source pattern above — a `case` in `graphOpExecutor.ts`, auto-routed via `graphOnlyOps`, `graph` + `ctx` only): `fortify_location` (raises a location's `fortificationMultiplier`, capped at `FORTIFY_MULTIPLIER_MAX`; consumed by `siegeResolution.ts` at siege *setup*, not just breach), `attune_artifact` (appends the ascendant's-sphere positive `AttachmentEffect` + stamps `attunedSphere`), `curse_artifact` (appends a concealed per-tick `CURSE_QUINTESSENCE_DRAIN` + sets `cursed`/`curseConcealed`), and `scry_sublocation` (flips every unrevealed `knows_secret_of` edge on the target sublocation's hex to `revealed`; consumed by `agentDetail.ts` + `phaseSecretsFavors.ts` decay-exemption). The artifact trio all write the same `properties.effects` array the effect walker reads — `nullify_artifact` is the inverse (clears effects + attune/curse flags). **One rides the resolution-intercept path** (the imbue pattern below — a bucket in `unifiedActionResolution.ts` that needs full `GameState`): `plant_trap`, because it mutates `state.pendingEncounterSeeds`. `applyPlantTrap` (`ascendantExpression.ts`) resolves the intended victim present at the trapped sublocation (or its hex, hex-granular) and seeds the authored `encounter.trap.sprung` beat against them — `evaluateEncounterSeeds` then spawns a real, failable negative encounter whose harm lands through its `condition`-weighted reward pools (no bespoke harm op). **The decision rule, restated:** if the op needs only `graph` + `ctx`, use the executor case (cheaper, zero resolution changes); reach for the intercept only when you need `state`, `runtime`, or a seeded `rng` — as `plant_trap` needs the seed queue. **Two substrate corrections worth remembering** (both discovered by grep against real code, both the kind of trap the guide exists to prevent): the encounter-seed substrate has *no hex-arrival gate* (a seed spawns for its `targetAgentId` the moment it is eligible, wherever they stand), so "fires on the next agent to arrive" is unreachable without net-new machinery — target a present victim instead; and `curseConcealed` has no reader, so a scry that flipped it would be write-only theatre (scry flips the reader-backed `knows_secret_of.revealed` instead). Tuning constants live in `ascendant-expression-constants.ts` (`TRAP_SEED_PRIORITY`, `TRAP_SEED_DELAY_TICKS`, `CURSE_QUINTESSENCE_DRAIN`) and `types/battle.ts` (`FORTIFY_MULTIPLIER_BONUS`/`_MAX`).
+
+**Writing content against the economy — stock tiers, cargo manifests, and the harvest verbs (THR-615/THR-616).** The economy is now a substrate content can *read* and *move*, not decoration. Three things are available to you.
+
+(1) **Stock tiers are the vocabulary.** Every location derives a coarse `stockTier` per resource — `scarce | adequate | surplus` — each tick in `phaseResourceStockTiers` (`src/engine/phases/resourceStockTiers.ts`, registered in `src/engine/phases/index.ts` ahead of prosperity). Resource classes and their categories (`staple | strategic | luxury | arcane`), sphere affinities, and tier prose fragments live in `src/data/resource-classes.ts`. **Write against the tier, never a raw quantity** — the tier is what the prose layer, the Livelihood line, and the IPK Famine/Glut keywords all consume, and it is the only stable reading (quantities move every tick). `RESOURCE_TIER_PROSE` / `getResourceTierProse()` already supply per-resource fragments; extend that table rather than hardcoding "the granary is empty" in an encounter.
+
+(2) **Trade routes carry a cargo manifest.** A `trades_with` edge now has an additive `manifest` (`CargoManifest`, `src/engine/tradeRoute.ts`) naming the goods actually moving, derived at formation from both endpoints' tiers. **Always read it through `readCargoManifest()`**, never off the raw property: the helper is fail-soft in both directions (legacy `goodsType` → single-good manifest; neither present → empty manifest), which is what lets pre-P2 routes keep working. This is the hook for route-flavoured content — a caravan carrying grain into a famine reads differently from one carrying luxuries, and the manifest is where you find out which. Note the deliberate gap: route state does **not** yet materialize into encounters (banditry / embargo / toll), which is THR-669 — until it lands, manifest-aware content has to ride existing encounter surfaces rather than expecting a route-event seed.
+
+(3) **Two divine verbs move staples.** `bless_harvest` / `blight_harvest` (graph-executor cases, the essence-source pattern above) shift every **staple** resource's quantity at the target location by `LOC_BLESS_HARVEST_STOCK_DELTA` / `LOC_BLIGHT_STOCK_DELTA` (`src/data/location-action-constants.ts`), clamped to `[0,100]`. **The consequence is deliberately one tick late** — the op writes quantities and does not `touchWorld()`, because the stock-tier phase already touches on a *tier* change (the `locationSubtype` precedent) and touching on the raw write would over-invalidate. Author the prose accordingly: the payoff beat is the world *noticing* a good or bad year, not an immediate stat pop. Two authoring rules learned here: **target staples only** (blessing a luxury stock is a no-op with no player-legible signal), and **surface new economic cards through a beat grant, never `starter: true`** — under the empty THR-501 starter floor an ungranted template is unreachable forever, so `loc.bless_harvest` / `loc.blight` ride the essence-source milestone beat's `grantsActionIds` alongside `loc.open_markets`.
 
 **Authoring an agent-targeting expression card that grants persistent boons (the bestow pattern, THR-512).** `bestow` follows the imbue GraphOp-intercept shape (custom `'bestow_power'` op → `unifiedActionResolution.ts` dispatch → `applyBestowPower` in `ascendantExpression.ts`), but its "no new consumer" trick is different: instead of mutating an existing node, it **mints a "divine gift" artifact and binds it to the agent with a `possesses` edge**, then leans on *two* effect walkers that already ship to read the gift's `properties.effects`:
 
@@ -1197,6 +1286,7 @@ Content authoring often needs to verify "did my effect actually fire?" DebugPane
 | Hidden marks placed, revealed, or decayed | `hidden_mark_placed`, `hidden_mark_revealed` |
 | Intelligence granted, consumed, referenced | `intelligence_granted`, `intelligence_referenced` |
 | Multi-target aftermath (THR-114) | `aftermath_target_resolved`, `aftermath_target_invalid`, `faction_reputation_changed`, `reputation_set_applied`, `condition_applied`, `condition_removed` |
+| Scene sentinels + bond_change (THR-695) | `aftermath_sentinel_bound`, `bond_change_applied` |
 | World-shaping aftermath (THR-115) | `artifact_spawned`, `omen_emitted`, `omen_decayed`, `faction_splintered`, `faction_absorbed`, `faction_dissolved`, `faction_war_declared`, `faction_peace_forced` |
 | Conditional / causation effects (THR-116) | `aftermath_effect_skipped_by_when`, `aftermath_effect_when_passed`, `thread_mutation_applied`, `thread_mutation_skipped` |
 | Secrets & favors (THR-30) | `secret_discovered`, `favor_created` |

@@ -1,7 +1,7 @@
 ---
 name: pull-work
 description: Canonical Claude Code pickup workflow for claiming Linear work safely from Ready for Dev.
-last_validated_against: 2026-07-05
+last_validated_against: 2026-07-22
 ---
 
 # Pull Work
@@ -24,7 +24,7 @@ Run as `/pull-work` (auto-pick top Ready for Dev issue) or `/pull-work THR-123` 
 
 **Constant:** `MAX_CLAIM_RETRIES = 3`
 
-1. **Board scan** — consume the Step 1 board-scan (already built): one `list_issues(team:"Threadbare", limit:250, orderBy:"updatedAt", includeArchived:false)` call, bucket in memory by `status`. Sort Ready-for-Dev candidates by priority (1=Urgent first), then oldest `createdAt` as tie-break. Pick the top unassigned candidate.
+1. **Board scan** — consume the Step 1 board-scan (already built): **two state-filtered `list_issues` calls**, not one unfiltered 250-issue sweep. Sort Ready-for-Dev candidates by priority (1=Urgent first), then oldest `createdAt` as tie-break. Pick the top unassigned candidate.
 1.5. **WIP gate** — if the "In Dev" slice filtered to `assignee:"me"` is empty, continue to step 2. If exactly one entry, route to Step 1.7 (resume-from-In-Dev upstream-shipped check) instead of exiting clean. If more than one entry, this is a Rule 6 violation — output the cross-session-leak trace line and exit 1.
 2. **Claim** — `save_issue(id, assignee:"me", state:"In Dev")`.
 3. **Verify** — `get_issue(id)`. Confirm both `assignee` and `state` match.
@@ -86,7 +86,9 @@ Before any pickup work, sweep for stale `tfws-pickup-*` and `tfws-resume-*` work
 
 **Constant:** `WORKTREE_STALE_DAYS = 14`
 
-**Scope:** only worktrees whose path matches `../tfws-pickup-` or `../tfws-resume-` (created by Step 4.5). Never touch `.claude/worktrees/*` entries — those are CC-managed.
+**Scope:** only worktrees whose path matches `../tfws-pickup-` or `../tfws-resume-` (created by Step 4.5).
+
+**Ownership of `.claude/worktrees/` (settled THR-674).** The hourly reaper — `clean-stale-git.sh`, merge-gated and liveness-guarded per THR-673 — is the **single owner** of `.claude/worktrees/` cleanup. This sweep never touches that path, and neither does any other pull-work step. One folder, one policy: previously three separate policies claimed authority over `.claude/worktrees/` (this sweep's exclusion, the reaper's merge-gated reap, and ad-hoc ticket-driven cleanup), which is what let THR-674's worktree scope item stall — a stray worktree had no unambiguous owner to dispose of it. If a worktree under `.claude/worktrees/` needs disposition, that is a reaper concern; escalate via the reaper's `NEEDS-DISPOSITION` line rather than removing it here.
 
 **Skip if:** the current session is already running inside a `tfws-pickup-*` or `tfws-resume-*` path (self-removal edge case).
 
@@ -127,14 +129,34 @@ Before any pickup work, sweep for stale `tfws-pickup-*` and `tfws-resume-*` work
 
 If any Linear MCP call in this session returns a rate-limit error (HTTP 429 / MCP rate-limit response), pause 2 minutes, retry once, then if still limited log an impediment via `impediment-reporter` and exit cleanly without claiming. Do not retry in tight loops.
 
-### Step 1 — Single board scan
+### Step 0.8 — Armed-PR reconciliation sweep (THR-702)
 
-If no issue id was provided, fire one call: `list_issues(team:"Threadbare", limit:250, orderBy:"updatedAt", includeArchived:false)`. In memory, bucket the response by `status` to produce:
-- The "In Dev" slice filtered to `assignee:"me"` — for WIP check
-- The "Ready for Dev" slice filtered to `assignee:null` — for pickup candidates
-- The "In Dev" slice across all assignees — for the concurrent-session parallel check (Step 2)
+Auto-merge does **not** update a stale branch: under strict branch protection, an armed PR whose base moves sits at `mergeStateStatus: BEHIND` forever, green and silent (THR-702 found 9 such PRs, oldest 19 days). This sweep is the recurring surface that catches them.
 
-Sort the Ready-for-Dev candidates by priority in memory (impediment #49 rejects `orderBy:priority` at runtime); oldest `createdAt` is tie-break. Pick the top.
+**Constant:** `ARMED_SWEEP_MAX_UPDATES = 1` — update at most one PR per run. Updating several at once is a losing race: each merge re-stales the others and re-triggers their CI (O(N²) runs). The hourly cadence drains a queue one per cycle.
+
+1. List armed-but-open PRs: `gh pr list --state open --json number,autoMergeRequest,mergeStateStatus,createdAt --jq '[.[] | select(.autoMergeRequest != null)]'`.
+2. `mergeStateStatus` is computed lazily — a first read of `UNKNOWN` means "not computed yet", not "fine". Re-query that PR up to 3 times a few seconds apart before classifying.
+3. For the **oldest** PR reading `BEHIND`: run `gh pr update-branch <N>` and stop (respect `ARMED_SWEEP_MAX_UPDATES`). CI re-runs on the updated branch and auto-merge fires on green — no polling.
+4. A PR reading `DIRTY`/`CONFLICTING` is the closeout-docs union case — route to "Closeout — resolving a conflicted closeout-docs PR" below, or surface it if it isn't yours.
+5. Log one line: `[pull-work] Step 0.8: <N> armed PRs, updated #<X> (BEHIND) / none BEHIND — continuing.`
+
+**Fail-soft:** any `gh` error → log one warning and continue to Step 1. The sweep must never block pickup.
+
+### Step 1 — Two state-filtered board scans
+
+If no issue id was provided, fire **two** calls:
+
+```
+list_issues(team:"Threadbare", state:"In Dev",        limit:50,  includeArchived:false)
+list_issues(team:"Threadbare", state:"Ready for Dev", assignee:null, limit:100, includeArchived:false)
+```
+
+The first response gives both In-Dev slices you need: filter to `assignee:"me"` for the WIP gate (Step 1.5), and read it across all assignees for the concurrent-session parallel check (Step 2). The second is the pickup-candidate list.
+
+**Do not use a single unfiltered `limit:250` sweep.** That call returns roughly 390k characters and is rejected outright on response size, so the canonical path used to fail at step one and every run improvised its own scan (THR-686). State-filtering is what keeps the response inside budget — this now matches what `keep-work-flowing-cc` § 1 already does, so the two skills no longer contradict each other.
+
+Sort the Ready-for-Dev candidates by priority **in memory** (impediment #49 — `orderBy:"priority"` is accepted by the schema but rejected at runtime; `orderBy` defaults to `updatedAt`, which is fine). Oldest `createdAt` is the tie-break. Pick the top.
 
 If a specific issue id was provided, skip to Step 3.
 
@@ -231,6 +253,10 @@ If collision or uncertainty remains, run serially instead of claiming concurrent
 2. Confirm it includes all required lines: `Suggested model`, `Parallel-safe with`, `Mutex with`.
 3. If missing, add a bounce note for Cowork and stop without claiming.
 
+**Mutex reversal (THR-688 Rule B).** A `Mutex with` line should carry its reason — `Mutex with: THR-XXX (both edit <file>)`. You **may** claim past a mutex when the stated reason is *verifiably* inapplicable: the named partner issue has since merged, or the named surface is provably outside this ticket's scope. Verify it (`get_issue` on the partner; confirm `Done` + a merged PR), then record the reversal and its evidence in a Linear comment on the issue you claim. A mutex whose reason is a bare identifier with no stated surface cannot be cleared by inspection — bounce it for re-authoring rather than guessing (THR-673 precedent).
+
+**Done-when reachability (THR-688 Rule C).** Before starting work, check that the ticket's Done-when is satisfiable through the pillar it touches. Browser evidence is required for UI-pillar surfaces only; engine/content acceptance runs through `npm run cli` / `__DEBUG` sweeps. If a Done-when demands N ticks in an automated browser tab, it is unreachable by construction (`document.hidden` throttles the rAF loop to 1 tick/click) until THR-689 lands — substitute a headless CLI sweep and say so in the completion comment.
+
 ### Step 4 - Claim before deep read, then verify
 
 > **Preferred:** use `pullNextReadyForDev` (§ above) — it bundles Steps 1–4 with retry-on-silent-drop. This step-by-step is the documented fallback.
@@ -308,6 +334,28 @@ fi
 All subsequent steps run from `$WORKTREE_DIR` if isolation engaged, else from
 `$REPO_ROOT`. The closing commit, push, and merge-keyword auto-close all happen
 in the same location.
+
+**Write-path discipline (mandatory whenever the session is in a worktree).** Echo the
+session root once, and treat it as the required prefix for every `Edit`/`Write`
+`file_path` for the rest of the session:
+
+```bash
+echo "[pull-work] Step 4.5: session write-root is $(git rev-parse --show-toplevel)"
+```
+
+A bare repo-root absolute path (`C:\...\TheFantasyWorldSimulator\src\...`) from a
+worktree session lands in the **home** tree and **succeeds** — the two trees are
+byte-identical at branch time, so `old_string` matches, the tool reports success,
+and nothing surfaces until verification runs against unedited code. This fired in
+4 of 12 hourly runs on 2026-07-20/21 (impediments #387, #417, #421). `Read` is
+unaffected and may use either path.
+
+The `worktree-write-guard.sh` PreToolUse hook (registered in `.claude/settings.json`)
+now rejects this mechanically and prints the corrected path, so a slip costs one
+blocked call rather than a wasted verification cycle. The hook gates on **CWD**, not
+on the target alone — home-tree sessions are never blocked. Treat it as a backstop,
+not a licence to stop prefixing paths: it only covers `Edit`/`Write`, so `Bash`
+redirects and `cp` into the home tree remain your responsibility.
 
 **Trace lines** (one of three appears per session, NFP #2):
 
@@ -443,6 +491,84 @@ If the issue has label `Reopened`, read all comments back to the original handof
 On success: issue is claimed (`In Dev`, assigned to `me`), plan doc loaded, and pickup context is ready for implementation.
 
 On refusal: leave the issue unclaimed when possible, post a concise bounce note, and stop.
+
+## Closeout — home-tree cleanliness gate (run before `git commit`)
+
+**Mandatory whenever the session is in a worktree.** Before the closing commit, prove
+the session left no writes in the home tree:
+
+```bash
+HOME_TREE="$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")"
+if [ "$HOME_TREE" != "$(git rev-parse --show-toplevel)" ]; then
+  git -C "$HOME_TREE" status --porcelain
+fi
+```
+
+Expected output is **empty**, or only pre-existing debris you can name and did not
+author this session. Any session-authored path is the two-tree edit-path trap: the
+edit landed on `main` in a tree that is supposed to be an inert mirror (THR-672), and
+your verification ran against unedited code.
+
+**Recovery — patch-and-relocate** (full form in `Docs/impediments.md` #417/#387):
+
+```bash
+git -C "$HOME_TREE" diff -- <files> > /tmp/relocate.patch
+git -C "$HOME_TREE" checkout -- <files>      # restore main
+git apply /tmp/relocate.patch                # replay into the worktree
+```
+
+Copy any *new* files across and `rm` them from the home tree — `checkout --` does not
+remove untracked additions. Then **re-run the verification gates**, because the
+previous run tested the wrong tree.
+
+**Trace line** (exactly one, NFP #2):
+
+```
+[pull-work] closeout: home tree clean — no session-authored paths.
+[pull-work] closeout: home tree dirty (<N> session-authored paths). Patch-and-relocate before commit.
+[pull-work] closeout: session is in the home tree — check N/A.
+```
+
+**Fail-soft:** if the `git -C` probe errors, log one warning and continue to the commit.
+A broken probe must not block a ship — the PreToolUse guard is the primary defence and
+this gate is the audit.
+
+## Closeout — ship with auto-merge, don't poll CI
+
+**Standard closeout is `gh pr merge --auto --merge`.** GitHub holds the merge until the required `Test · Typecheck · Build` check goes green, then merges without a session present. Do not sit in a poll loop waiting on CI — that burned 3–8 minutes of session wall-clock per ship for no added safety (THR-675).
+
+```bash
+gh pr create --title "<type>(thr-XXX): <summary>" --body "...Fixes THR-XXX..."
+gh pr merge --auto --merge
+```
+
+The gate is unchanged: branch protection stays on, the required check still has to pass, and a red check simply means the PR never merges. Auto-merge removes the *waiting*, not the *gate* — this is the H6 verdict from `Docs/plans/2026-07-20-git-cicd-clean-delivery.md`, which kept the PR gate precisely because it caught a phantom 3,379-line reversal before it reached `main`.
+
+`Fixes THR-XXX` must still appear in **both** the commit body and the PR body — on a non-squash merge the merge commit drops the commit body and Linear's auto-close misses it (impediment #140). `--merge` (not `--squash`) keeps the feature commit's body in history.
+
+**After arming, run one freshness check — `gh pr view <N> --json mergeStateStatus`.** Branch freshness at session start does not imply freshness at arm time: THR-696's PR went `BEHIND` seconds after opening because main had moved during the session. If it reads `BEHIND`, run `gh pr update-branch <N>` once and re-arm if needed; if `UNKNOWN`, re-query 2–3 times a few seconds apart (GitHub computes mergeability lazily — the first read only schedules it). This is one query, not a poll loop; a PR missed here is caught by the Step 0.8 sweep next hour.
+
+**After queuing auto-merge, the session's shipping work is done.** Proceed to the worktree cleanup below and exit; do not block on the merge landing. If the check later fails, the PR stays open and the issue stays In Dev — the next hourly run resumes it via the Step 1.7 upstream-shipped check, which will find no `Fixes` commit on `main` and correctly treat the work as still in flight.
+
+## Closeout — resolving a conflicted closeout-docs PR
+
+Every ship appends rows to the same table heads (`Docs/changelog.md`, `Docs/project-history.md`, `Docs/impediments.md`), so a PR that idles — human-gated ones idle **by design** — reliably goes `CONFLICTING` in those files alone, with zero code conflicts. THR-668's PR sat ~31 h and rotted this way; a whole run was burned hand-resolving table rows.
+
+`.gitattributes` marks those three files `merge=union`, which makes **local** merges of that shape resolve automatically, keeping both rows.
+
+**GitHub does not honor it.** Measured 2026-07-21 (THR-691) with the attribute present on the base branch: the merges API returned `409 Merge conflict`, and a PR of the same shape read `mergeable: CONFLICTING` / `mergeStateStatus: DIRTY`. Union is a built-in driver, but GitHub's server-side merge does not consult `.gitattributes`. So the web "Resolve conflicts" button and auto-merge stay unable to settle these — **resolve locally and push**:
+
+```bash
+git fetch origin main
+git merge origin/main        # union auto-resolves the three closeout docs
+git push
+```
+
+The merge prints `Auto-merging Docs/changelog.md` and exits 0 with both sides' rows present and the table header intact. Auto-merge then proceeds normally once the PR is no longer conflicting.
+
+**Check the result before pushing** — union keeps *both* sides of every conflicting hunk, which is right for appended rows and wrong for an edited one. If the same row was modified on both branches you get it twice, so skim `git diff origin/main -- Docs/` for duplicates rather than trusting the clean exit.
+
+`Docs/project-status.md` is deliberately **excluded** from union: it has a 60-line cap and rewrite semantics, so union would duplicate rewritten lines instead of merging them. Conflicts there are still resolved by hand.
 
 ## Closeout — remove the temporary worktree
 

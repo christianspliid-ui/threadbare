@@ -174,11 +174,15 @@ function buildNarrative(
   const rawSource = currentStep.narrativeTemplate ?? template.narrativeTemplates.initiation;
   const proseSource = enrichProse(rawSource, ctx);
 
-  // Collect linkable entities from support bundle
+  // Collect linkable entities from the support bundle plus the scene target (THR-696).
+  // Runs even for a bundle-less template, because the target link does not depend on one.
   const bindings = activeAction.supportBindings ?? [];
-  const { linkEntries, references } = template.supportBundle
-    ? collectSupportBundleEntities(graph, template.supportBundle, bindings)
-    : { linkEntries: [], references: [] };
+  const { linkEntries, references } = collectSupportBundleEntities(
+    graph,
+    template.supportBundle ?? [],
+    bindings,
+    activeAction.targetId,
+  );
 
   // Split prose into paragraphs and auto-link entity names
   const rawParagraphs = proseSource.split('\n\n').filter(Boolean);
@@ -564,6 +568,13 @@ export function buildUnifiedEncounterStageModel(
     args.doomIdentityMatrix,
     args.gameState,
     args.tick,
+    {
+      targetId: activeAction.targetId, // THR-694 — name the scene's other party in prose
+      // THR-696 — name the scene's cast. The bundle supplies the declared keys, the
+      // action's bindings supply who each key actually resolved to.
+      supportBundle: args.template.supportBundle,
+      supportBindings: activeAction.supportBindings,
+    },
   );
 
   // Show illustration at step 0 only (opening scene), not during aftermath

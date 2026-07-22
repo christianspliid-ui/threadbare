@@ -74,13 +74,40 @@ This makes the boundary structural, not aspirational. The drift checks in Phase 
 
 ## 4. Three-pillar coverage
 
-- **Engine:** N/A. This is a documentation architecture change. No runtime code touched in Phase 1. Phase 2 touches the existing drift scan workflow (build infrastructure), not engine code.
-- **Content:** This IS the content change. The canon page is content; it documents and synthesizes the rules of play that other content (encounters, attachments, prose) must obey.
-- **UI:** Deferred. Phase 4 (future project) would render the rulebook as an in-game Codex/Help surface. The canon page's prose is written from the player's perspective specifically so it can render in-app later without a rewrite.
+Per-phase, since each phase has different surface area:
 
-## 5. Phase 1 — The canon page
+**Phase 1 (this ticket):**
+- **Engine:** N/A. Documentation only. No runtime code, no orchestrator phases, no traces.
+- **Content:** Primary pillar. The rulebook canon page and the quick-reference are both content; they synthesize and document the rules of play that other content (encounters, attachments, prose) must obey.
+- **UI:** Deferred. Phase 4 (future project) renders the rulebook as an in-game Codex/Help surface. Phase 1 prose is written from the player's perspective so it can render in-app later without a rewrite.
 
-**Path:** `Docs/canon/rulebook.md`.
+**Phase 2 (drift detection, follow-up):**
+- **Engine:** N/A.
+- **Content:** N/A.
+- **Infrastructure (the actual primary pillar — adjacent to but distinct from Engine):** extends the existing weekly drift scan in `.github/workflows/drift-scan.yml`; new lint script `scripts/lint-rulebook.ts`; emits Linear issues. No runtime engine code, but a CI script that reads engine constants.
+- **UI:** N/A.
+
+**Phase 3 (maintenance cadence, follow-up):**
+- **Engine:** N/A.
+- **Content:** Process documentation — `CLAUDE.md` § Design Governance edit, architecture-assessment template.
+- **Infrastructure:** new `monthly-rulebook-review` scheduled task.
+- **UI:** N/A.
+
+Each follow-up ticket runs its own three-pillar pass at filing time.
+
+## 5. Phase 1 — The canon page (and its always-loaded reference card)
+
+**Two-file structure**, mirroring the board-game pattern of full rulebook + always-at-hand reference card:
+
+| File | Length | Loaded |
+|------|--------|--------|
+| `Docs/canon/rulebook.md` | 400-600 lines | On rules-of-play work (encounter, action, prerequisite, resource, clock, win/loss) |
+| `Docs/canon/rulebook-quick-reference.md` | 50-100 lines | Always — added to `CLAUDE.md` always-load list next to UL index |
+
+The quick-reference exists because a 600-line rulebook is too heavy to auto-load on every session, but agents (and the user) need *some* synthesized rules-of-play context always within reach. The quick reference is the "reference card" — essentials only, one line per rule, pointer to the full rulebook for depth. The full rulebook is the manual.
+
+### `Docs/canon/rulebook.md` — the full manual
+
 **Target length:** 400-600 lines (longer than other canon pages because synthesis is its job).
 
 **Frontmatter:**
@@ -134,7 +161,43 @@ Spec: Docs/canon/encounters.md
 Why: TheFantasyWorldSimulator/Vision/01-core-loop.md
 ```
 
-**Open questions section at the end.** Anything that surfaces during drafting as a rule with no clear answer goes into a final `Open Questions` section. Each entry becomes a `[OPEN]` reference somewhere in the body and a user-verdict request.
+**Open questions section at the end.** Anything that surfaces during drafting as a rule with no clear answer goes into a final `Open Questions` section. Each entry is referenced from the body via an inline `[OPEN]` flag. **Only `[OPEN]` questions that block Phase 1 completion get filed as separate user-verdict Linear issues.** Non-blocking questions stay inside the rulebook's Open Questions section and are surfaced to the user at the first quarterly architecture-assessment pass — this avoids issue-spam if the drafting pass surfaces 10+ questions.
+
+### `Docs/canon/rulebook-quick-reference.md` — the always-loaded reference card
+
+**Target length:** 50-100 lines. Loaded by `CLAUDE.md` always-load list, alongside the UL index.
+
+**Frontmatter:**
+
+```yaml
+---
+domain: rulebook
+subtype: quick-reference
+last_reviewed: 2026-05-11
+reviewer: user
+parent: Docs/canon/rulebook.md
+status: live
+---
+```
+
+**Section structure (~one paragraph each, ~5-10 lines total per section):**
+
+1. **What you are.** One sentence. ("You are an Ascendant — a god making indirect interventions on mortals you find interesting. Not a protagonist.")
+2. **The turn.** Three beats in two-three lines: scan → moment → aftermath.
+3. **The five verbs.** One line each: Create, Find, Change, Destroy, Control. Plus the "you can't Update what you haven't Read" rule.
+4. **Resources.** One line each: Influence Essence, Control slots, Influence Tiers, Stealth.
+5. **Encounters and aftermath.** One paragraph: dilemma → sigmoid→d100 → cool failure.
+6. **The clocks.** One paragraph: Doom vs. Mandate; Unmaking opens the next cycle.
+7. **Win / loss.** Two lines. Both produce content for the next cycle.
+
+**Footer pointer:**
+
+```
+For depth, definitions, status flags, and authority footers, read Docs/canon/rulebook.md.
+For terminology authority, read Docs/ubiquitous-language/README.md.
+```
+
+No status flags inline in the quick reference — it states current rules only. The full rulebook carries the IMPL/DESIGN/OPEN tracking. The quick reference is regenerated from the full rulebook whenever rulebook ships a rule change (per-change trigger in Phase 3).
 
 ## 6. Phase 2 — Drift detection
 
@@ -193,16 +256,19 @@ Two follow-ups not in scope for this plan:
 
 ## 9. Wiring
 
-| Surface | Change |
-|--------|-------|
-| `Docs/canon/rulebook.md` | Created (Phase 1). |
-| `Docs/canon/README.md` | Add `rulebook` to the canon page index table. |
-| `.claude/skills/state-of-game-design/SKILL.md` | Add a header reference pointing at the rulebook as the primary synthesis surface; agents should load rulebook alongside this skill for any rules-of-play work. |
-| `CLAUDE.md` § Design Governance | Add "Rulebook impact?" checkbox. |
-| `CLAUDE.md` § Session Workflow | Add the rulebook to the "for design work" load order: state-of-game-design → rulebook → game-design-direction → relevant canon page. |
-| `.github/workflows/drift-scan.yml` | Extend with four rulebook lint signals (Phase 2). |
-| Scheduled tasks (`mcp__scheduled-tasks__create_scheduled_task`) | Add `monthly-rulebook-review` (Phase 3). |
-| `Docs/audits/_rulebook-architecture-assessment-template.md` | New template file for quarterly assessment output. |
+| Surface | Change | Phase |
+|--------|-------|-------|
+| `Docs/canon/rulebook.md` | Created — full manual. | 1 |
+| `Docs/canon/rulebook-quick-reference.md` | Created — always-loaded reference card. | 1 |
+| `Docs/canon/README.md` | Add both files to the canon page index table. | 1 |
+| `CLAUDE.md` § Session Workflow | Add `rulebook-quick-reference.md` to the **always-load** list (alongside the UL index). Add `rulebook.md` to the **load-when** list, gated on "work touches rules of play (encounter, action, prerequisite, resource, clock, win/loss)" — NOT on all game design. | 1 |
+| `.claude/skills/state-of-game-design/SKILL.md` | Add a header reference: agents loading this skill for rules-of-play work should also load `Docs/canon/rulebook.md`. State-of-game-design itself is not narrowed — it stays loaded for all game design work as today. | 1 |
+| `CLAUDE.md` § Design Governance | Add "Rulebook impact?" checkbox. | 3 |
+| `.github/workflows/drift-scan.yml` | Extend with four rulebook lint signals + new lint enforcing that quick-reference stays in sync with the full rulebook. | 2 |
+| Scheduled tasks (`mcp__scheduled-tasks__create_scheduled_task`) | Add `monthly-rulebook-review`. | 3 |
+| `Docs/audits/_rulebook-architecture-assessment-template.md` | New template file for quarterly assessment output. | 3 |
+
+**Auto-load behaviour (the load-budget refinement).** The quick reference is always loaded because it is small (~50-100 lines) and contains essentials every agent needs. The full rulebook is loaded only when the work touches rules of play — encounter / action / prerequisite / resource / clock / win-or-loss. For all other game design work (worldbuilding, UI, hex-map work, prose authoring not touching rules), agents load state-of-game-design + the quick reference only. This mirrors how a tabletop game group keeps the reference card on the table and pulls out the manual only when a rule question arises.
 
 No engine modules, no tick phases, no traces — this is documentation architecture.
 
@@ -232,19 +298,22 @@ No engine modules, no tick phases, no traces — this is documentation architect
 
 **Phase 1 (this ticket):**
 
-- [ ] `Docs/canon/rulebook.md` written, 8 sections, status flags throughout
-- [ ] `Docs/canon/README.md` updated with index entry and reviewed page count
+- [ ] `Docs/canon/rulebook.md` written, 8 sections, status flags throughout, authority-boundary footers
+- [ ] `Docs/canon/rulebook-quick-reference.md` written, 7 sections, no status flags, footer pointer to full rulebook
+- [ ] `Docs/canon/README.md` updated with both index entries
 - [ ] `.claude/skills/state-of-game-design/SKILL.md` references the rulebook as primary synthesis source
-- [ ] `CLAUDE.md` § Session Workflow updated to include the rulebook in load order
-- [ ] All `[OPEN]` questions surfaced during drafting collected in the rulebook's Open Questions section AND filed as separate user-verdict Linear issues
+- [ ] `CLAUDE.md` § Session Workflow updated: quick-reference added to always-load; full rulebook added to load-when (rules-of-play work only)
+- [ ] **Blocking `[OPEN]` questions only** (questions that prevent Phase 1 from being marked done) get filed as separate user-verdict Linear issues. Non-blocking open questions sit in the rulebook's Open Questions section for the first quarterly architecture-assessment pass to surface
 - [ ] First architecture-assessment pass run at Phase 1 closeout; output written to `Docs/audits/2026-XX-XX-rulebook-architecture-assessment.md`
 
-**Phases 2 and 3 (split to follow-up Linear issues at Phase 1 closeout):**
+**Follow-up issues (filed 2026-05-11 as `Idea` state, `blockedBy THR-403`):**
 
-- Phase 2 issue (`Infrastructure`, `model:sonnet`): extend drift scan with 4 rulebook lint signals; CLAUDE.md § Design Governance updated with "Rulebook impact?" checkbox
-- Phase 3 issue (`Infrastructure`, `model:sonnet`): `monthly-rulebook-review` scheduled task created; `Docs/audits/_rulebook-architecture-assessment-template.md` written
+- **THR-404** — Phase 2: extend drift scan with 5 rulebook lint signals (4 against authoritative sources + 1 quick-reference-vs-rulebook sync check). Labels: `Infrastructure`, `model:sonnet`.
+- **THR-405** — Phase 3: `monthly-rulebook-review` scheduled task; `CLAUDE.md` § Design Governance "Rulebook impact?" checkbox; `Docs/audits/_rulebook-architecture-assessment-template.md`. Labels: `Infrastructure`, `model:sonnet`.
 
-Both follow-ups inherit this project (Content Architecture) and link back to the Phase 1 issue.
+Both follow-ups inherit Content Architecture and unblock automatically when THR-403 closes.
+
+**Adjacent issue resolved 2026-05-11:** **THR-406** — Vision/ files were located in the THR-308 Codex worktree (not in main vault) and promoted via Option A. All 5 Vision files (`README`, `00-north-star`, `01-core-loop`, `02-non-negotiables`, `03-design-tensions`) plus `Brainstorms/2026-04-20-vision-layer.md` are now in the canonical `TheFantasyWorldSimulator` Obsidian vault. The rulebook executor can reference `Vision/*` paths in `Why:` footers normally — no fallback required.
 
 ## 13. Executor handoff
 
@@ -264,15 +333,19 @@ Both follow-ups inherit this project (Content Architecture) and link back to the
 
 **Action items for the executor:**
 
-1. Read `Docs/canon/README.md`, `Docs/canon/cosmology.md` (for the canonical canon-page format and the stale-source warning pattern), `Docs/canon/process.md` (for footer format).
+1. Read `Docs/canon/README.md`, `Docs/canon/cosmology.md` (canonical format + stale-source warning pattern), `Docs/canon/process.md` (footer format).
 2. Read `state-of-game-design` SKILL end-to-end and `game-design-direction` SKILL § Vision/ section.
-3. Read the Vision files via Obsidian MCP: `Vision/00-north-star.md`, `Vision/01-core-loop.md`, `Vision/02-non-negotiables.md`.
-4. Draft the rulebook, section by section, with status flags inline.
-5. Before each section's footer, verify the UL shards, canon page, and Vision file paths exist; if a referenced canon page doesn't exist, mark the rule `[OPEN]` and flag in the Open Questions section.
-6. At end of draft, run the first architecture-assessment pass (answer the three questions from Phase 3) and write the audit doc.
-7. File Phase 2 and Phase 3 Linear issues with the executor handoff blocks per the templates in `Docs/plans/2026-04-13-linear-coordination-protocol.md`.
-8. Commit with `Fixes THR-403` and let the merge-to-main auto-close fire.
+3. **Vision/ available:** the numbered Vision files (`Vision/00-north-star.md`, `01-core-loop.md`, `02-non-negotiables.md`, `03-design-tensions.md`, `README.md`) are present in the canonical TheFantasyWorldSimulator vault as of 2026-05-11 (promoted from THR-308 worktree, see THR-406). Read them via Obsidian MCP. The Vision Layer brainstorm companion (`Brainstorms/2026-04-20-vision-layer.md`) is also available and worth reading for the *why* behind the Vision-layer structure itself.
+4. Draft the full rulebook (`Docs/canon/rulebook.md`), section by section, with status flags (`[IMPL]`/`[DESIGN]`/`[OPEN]`) inline and authority-boundary footers per the template in § 5.
+5. Draft the quick-reference (`Docs/canon/rulebook-quick-reference.md`) by reducing each rulebook section to the single-line essentials per the template in § 5.
+6. Before each section's footer, verify the UL shards, canon page, and Vision (or plan-doc fallback) paths exist; if a referenced canon page doesn't exist, mark the rule `[OPEN]`.
+7. **OPEN-question discipline:** only `[OPEN]` questions that prevent Phase 1 from being marked done get filed as separate Linear issues. The rest stay in the rulebook's Open Questions section for the first quarterly architecture-assessment to surface.
+8. Update wiring per § 9: `Docs/canon/README.md`, `state-of-game-design` SKILL, `CLAUDE.md` § Session Workflow (always-load + load-when split).
+9. At end of draft, run the first architecture-assessment pass (answer the three questions from § 7 Phase 3) and write the audit doc.
+10. **Phase 2 and Phase 3 follow-up Linear issues are already filed** as THR-404 (Phase 2) and THR-405 (Phase 3), both `Idea` blocked by THR-403. Do not re-create. Update their state to `Ready for Dev` only after Phase 1 closes — they unblock automatically. THR-406 tracks the adjacent Vision/ files issue.
+11. Pre-commit verification per CLAUDE.md § Pre-commit minimum (Steps 1, 2, 3 — `npm test`, `npx tsc --noEmit`, `npx vite build`). Step 6 (engine smoke) not required — no engine changes.
+12. Commit with `Fixes THR-403` and let the merge-to-main auto-close fire.
 
 ## 14. Brainstorm companion
 
-To be drafted alongside this plan at `TheFantasyWorldSimulator/Brainstorms/2026-05-11-rulebook-canon-page.md` (Obsidian). The companion records the conversation that produced this plan: the user's verdict on Option B over Options A and C, the synthesis-only authority boundary, the expansion to include drift detection + maintenance + assessment cadence, and the `[IMPL]/[DESIGN]/[OPEN]` status flag idea that emerged from the user's note that "we don't have a fully functioning game yet."
+Drafted alongside this plan at `TheFantasyWorldSimulator/Brainstorms/2026-05-11-rulebook-canon-page.md` (Obsidian — written 2026-05-11 via Obsidian MCP). The companion records: the gap diagnosis ("synthesis layer missing, not a missing skill"); the three options (strengthen state-of-game-design / new canon page / new skill) and the Option B verdict; the synthesis-only authority boundary; the scope expansion to include drift detection + maintenance + assessment cadence; the `[IMPL]/[DESIGN]/[OPEN]` flag idea that emerged from "we don't have a fully functioning game yet"; the quick-reference card pattern from the user's board-game analogy on review; and the Vision/ drift surfaced during planning.

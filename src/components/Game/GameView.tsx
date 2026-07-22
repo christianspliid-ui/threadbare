@@ -135,8 +135,10 @@ import { createMeetingEncounterState, createAgentFromMeeting, isMeetTheFirstAvai
 import { buildStubAscendantLens } from '../../types/hunger';
 import type { AscendantLens } from '../../types/hunger';
 import { useNotifications } from './hooks/useNotifications';
+import { useInterruptAutoPause } from './hooks/useInterruptAutoPause';
 import { selectEncounterBadges, type EncounterBadgeModel } from './encounterBadgeModel';
 import { selectThreadTugBadges } from './threadTugBadgeModel';
+import { selectEntityNoticeBadges, type EntityNoticeBadgeModel } from './entityNoticeBadgeModel';
 import { toggleAttentionMode } from '../../engine/encounterVisibility';
 import { useTopBarHotkeys } from './hooks/useTopBarHotkeys';
 import { computeEssenceIncome } from '../../engine/essenceIncome';
@@ -249,7 +251,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   // ── Use simulation hook ──
   const {
     gameState, setGameState, tiles, riverPaths, lakeIds, regionData,
-    running, speed, harvestResult, doTick, handleBeginNextCycle,
+    running, speed, harvestResult, doTick, runTicksSync, handleBeginNextCycle,
     handleToggleRunning, setRunning, setSpeed, seasonName, year, maxEssence, COLS, ROWS,
     runtime,
   } = useSimulation({ archetype, avatarName, cosmology, seed, scryState, mapSize, ascendantIdentity, preSeeded });
@@ -1045,6 +1047,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     handleDismissAlert,
     handleDismissPopup,
     handlePopupChoice,
+    handleClearEntityNotices,
   } = useNotifications({
     tickEvents: gameState.tickEvents,
     running,
@@ -1052,6 +1055,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     visibilityMap: effectiveVisibilityMap,
     suspendChoicePopups: interruptSuppressedUntilTick !== null && gameState.tick < interruptSuppressedUntilTick,
     preferences: notificationPrefs,
+    // THR-666 threading gate — an unthreaded agent's beat never reaches the player.
+    graph: gameState.graph,
+    ascendantId: gameState.ascendantId,
   });
 
   // ── Divine Premonition modal state ──
@@ -1273,6 +1279,25 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     () => selectThreadTugBadges(gameState.activeThreadTugs, attentionPool),
     [gameState.activeThreadTugs, attentionPool],
   );
+
+  // THR-666: and the same treatment for a threaded agent's own beats — becomings,
+  // complications, ambition milestones. The threading gate has already dropped
+  // every unthreaded agent's notifications, so whatever reaches here is someone
+  // the player is actually watching.
+  const noticeBadges = useMemo(
+    () => selectEntityNoticeBadges(notificationState.entityNotices),
+    [notificationState.entityNotices],
+  );
+
+  /**
+   * Notice-badge click — open the agent's thread, then clear their notices. This
+   * is only news, so reading it is the whole interaction; there is nothing to
+   * resolve and nothing to pay.
+   */
+  const handleOpenNoticeBadge = useCallback((badge: EntityNoticeBadgeModel) => {
+    handleThreadNodeSelect(badge.agentId, 'agent');
+    handleClearEntityNotices(badge.agentId);
+  }, [handleThreadNodeSelect, handleClearEntityNotices]);
 
   /**
    * Badge click — open the encounter modal, then mark that notification read so
@@ -2041,6 +2066,12 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     window.__DEBUG._registerGameStateProvider(() => _gameStateRef.current);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // ── Debug bridge: synchronous tick batch (THR-689) ────────────────────────
+  useEffect(() => {
+    if (!import.meta.env.DEV || !window.__DEBUG) return;
+    window.__DEBUG._registerTickBridge((n: number) => runTicksSync(n));
+  }, [runTicksSync]);
+
   // ── Debug bridge: Ascendant Beat Director controls (THR-507) ──────────────
   useEffect(() => {
     if (!import.meta.env.DEV || !window.__DEBUG) return;
@@ -2262,8 +2293,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
 
     // World view → encounter handoff (THR-340 / Phase F2):
     // emit `spotlight_changed` trace, then write the new spotlightedAgent to GameState.
-    // The world freeze (turn-based contract) is enforced by the existing
-    // `encounterModalOpen` effect which runs `setRunning(false)` when tieredEncounterState mounts.
+    // The world freeze (turn-based contract) is enforced by the central
+    // interrupt auto-pause, which runs `setRunning(false)` when tieredEncounterState mounts.
     const prevSpotlight = gameState.spotlightedAgent ?? null;
     if (prevSpotlight !== agentId) {
       prepareEncounterHandoff({
@@ -2292,21 +2323,25 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     });
   }, [gameState.clearanceGateStates, gameState.encounterNotifications, gameState.encounterProgress, gameState.graph, gameState.spotlightedAgent, gameState.tick, gameState.unifiedActions, setGameState]);
 
-  const resumeAfterEncounterCommit = useRef<boolean>(false);
+  /**
+   * External force-resume flag for the central interrupt auto-pause (THR-668):
+   * set before closing an interrupt surface to resume the sim once ALL
+   * interrupt surfaces are closed, even if the sim was not auto-paused.
+   * Consumed (cleared) by useInterruptAutoPause.
+   */
+  const forceResumeAfterInterruptsRef = useRef<boolean>(false);
   const suppressedEncounterNotificationId = useRef<string | null>(null);
 
   const closeEncounterModalAndResume = useCallback((openedAsInterrupt?: boolean) => {
-    resumeAfterEncounterCommit.current = false;
     setTieredEncounterState(null);
     // Clear the spotlight so AgentPulseOverlay stops pulsing once the encounter screen unmounts (THR-340).
     setGameState(prev => (prev.spotlightedAgent === undefined
       ? prev
       : { ...prev, spotlightedAgent: undefined }));
-    if (wasRunningBeforeEncounterPause.current || openedAsInterrupt) {
-      wasRunningBeforeEncounterPause.current = false;
-      setRunning(true);
-    }
-  }, [setGameState, setRunning]);
+    // Interrupt-opened encounters resume even if the sim was idle when they
+    // fired; either way the resume waits until all interrupt surfaces closed.
+    if (openedAsInterrupt) forceResumeAfterInterruptsRef.current = true;
+  }, [setGameState]);
 
   const handleEncounterDisregard = useCallback(() => {
     if (tieredEncounterState?.notification?.id) {
@@ -2645,10 +2680,11 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     if (!tieredEncounterState) return;
     handleEncounterIntervene(choiceId, essenceSpent);
     suppressedEncounterNotificationId.current = tieredEncounterState.notification.id;
-    resumeAfterEncounterCommit.current = true;
     setInterruptSuppressedUntilTick(gameState.tick + 1);
     setTieredEncounterState(null);
-    wasRunningBeforeEncounterPause.current = false;
+    // Commit-and-continue always resumes — but only once ALL interrupt
+    // surfaces are closed (central auto-pause consumes this flag, THR-668).
+    forceResumeAfterInterruptsRef.current = true;
   }, [gameState.tick, handleEncounterIntervene, tieredEncounterState]);
 
   /** Boost handler — Watched tier essence boost */
@@ -2680,7 +2716,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   }, [setGameState, archetype.sphereAlignment.primary]);
 
   // Auto-interrupt only pause-mode encounter notifications.
-  // Pause is handled by the general encounterModalOpen useEffect below
+  // Pause is handled by the central interrupt auto-pause (useInterruptAutoPause below)
   useEffect(() => {
     if (interruptsSuppressed) return;
     // Don't auto-open tiered encounters while a premonition modal is active —
@@ -2714,24 +2750,6 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     openAgentProfileForId,
     openStubModal: (nodeId, category) => setStubModalState({ nodeId, category }),
   });
-
-  // ── Auto-pause when encounter modal opens, auto-resume on close ──
-  /** Tracks whether the game was running before an encounter modal opened */
-  const wasRunningBeforeEncounterPause = useRef<boolean>(false);
-  const encounterModalOpen = tieredEncounterState !== null || meetingState !== null || activePremonition !== null;
-
-  useEffect(() => {
-    if (encounterModalOpen && running) {
-      wasRunningBeforeEncounterPause.current = true;
-      setRunning(false);
-    }
-  }, [encounterModalOpen, running, setRunning]);
-
-  useEffect(() => {
-    if (encounterModalOpen || !resumeAfterEncounterCommit.current) return;
-    resumeAfterEncounterCommit.current = false;
-    setRunning(true);
-  }, [encounterModalOpen, setRunning]);
 
   useEffect(() => {
     if (interruptSuppressedUntilTick === null) return;
@@ -2775,12 +2793,10 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   }, [gameState.graph, gameState.ascendantId, gameState.tick, setGameState, archetype.sphereAlignment.primary]);
 
   const handleMeetingClose = useCallback(() => {
+    // The central interrupt auto-pause resumes the sim (if it auto-paused)
+    // once all interrupt surfaces are closed.
     setMeetingState(null);
-    if (wasRunningBeforeEncounterPause.current) {
-      wasRunningBeforeEncounterPause.current = false;
-      setRunning(true);
-    }
-  }, [setRunning]);
+  }, []);
 
   // ── Meet The First as action card slot ──
   const MEET_THE_FIRST_SLOT_ID = 'meet_the_first';
@@ -2964,14 +2980,6 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     return pending[0];
   }, [gameState.pendingVignettes]);
 
-  // Auto-pause simulation when a vignette is pending
-  useEffect(() => {
-    if (interruptsSuppressed) return;
-    if (activeVignette && running) {
-      setRunning(false);
-    }
-  }, [activeVignette, interruptsSuppressed, running, setRunning]);
-
   // ── Story beat modal (pacing governor) ──
   const activeStoryBeatId: string | null = useMemo(() => {
     const ascNode = gameState.graph.getNode(gameState.ascendantId);
@@ -3010,13 +3018,28 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     });
   }, [setGameState]);
 
-  // Auto-pause simulation when a story beat fires
-  useEffect(() => {
-    if (interruptsSuppressed) return;
-    if (activeStoryBeatId && running) {
-      setRunning(false);
-    }
-  }, [activeStoryBeatId, interruptsSuppressed, running, setRunning]);
+  // ── Central interrupt auto-pause (THR-668) ──
+  // Any blocking interrupt surface pauses the sim while open; the sim resumes
+  // only when ALL of them are closed and the pause was automatic (a manual
+  // pause stays manual). Each term mirrors the surface's render condition —
+  // pausing for a modal that cannot render would hold the sim behind an
+  // invisible gate. Add new interrupt surfaces here AND to getDebugOpenModals.
+  const interruptModalOpen =
+    tieredEncounterState !== null
+    || (meetingState !== null && !!ascendantIdentity)
+    || (activePremonition !== null && !interruptsSuppressed)
+    || (activeVignette !== null && !interruptsSuppressed)
+    || (!!activeStoryBeatId && !!activeStoryBeatTemplate && !interruptsSuppressed)
+    || (!!pendingBeat && beatEntered)
+    || !!pendingChoice
+    || !!gameState.pendingEmergenceDecision;
+
+  useInterruptAutoPause({
+    interruptOpen: interruptModalOpen,
+    running,
+    setRunning,
+    forceResumeRef: forceResumeAfterInterruptsRef,
+  });
 
   const getDebugOpenModals = useCallback((): string[] => {
     const openModals: string[] = [];
@@ -3039,6 +3062,10 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     if (meetingState && ascendantIdentity) openModals.push('MeetTheFirstFlow');
     if (activeVignette && !interruptsSuppressed) openModals.push('JourneyVignetteModal');
     if (activeStoryBeatId && activeStoryBeatTemplate && !interruptsSuppressed) openModals.push('StoryBeatModal');
+    if (pendingBeat && beatEntered) openModals.push('AscendantBeatModal');
+    else if (pendingBeat && !interruptsSuppressed) openModals.push('AscendantBeatOfferBanner');
+    if (pendingChoice) openModals.push('ChoiceSetModal');
+    if (gameState.pendingEmergenceDecision) openModals.push('EmergenceDilemmaModal');
     if (activePremonition && !interruptsSuppressed) openModals.push('PremonitionModal');
     if (ascendantSheetOpen) openModals.push('AscendantSheet');
     if (doomDetailOpen) openModals.push('DoomClockDetail');
@@ -3075,6 +3102,10 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     settingsPanelOpen,
     stubModalState,
     tieredEncounterState,
+    pendingBeat,
+    beatEntered,
+    pendingChoice,
+    gameState.pendingEmergenceDecision,
   ]);
 
   const getDebugActiveUIState = useCallback(() => {
@@ -3097,6 +3128,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         || (nonAgentDrawerOpen && !!enrichedNonAgentSlots?.length && !selectedAgentId),
       scryActive: scryVisible,
       cameraFocusHex: cameraCenter ?? null,
+      simRunning: running,
     };
   }, [
     cameraCenter,
@@ -3106,6 +3138,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     focusedLocationId,
     getDebugOpenModals,
     nonAgentDrawerOpen,
+    running,
     scryVisible,
     selectedAgentId,
     selectedHex,
@@ -3686,6 +3719,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                   onOpenEncounterBadge={handleOpenEncounterBadge}
                   tugBadges={tugBadges}
                   onAttendTugBadge={attendThreadTug}
+                  noticeBadges={noticeBadges}
+                  onOpenNoticeBadge={handleOpenNoticeBadge}
                   sustainedControls={sustainedControls}
                   onChampionChipClick={openAgentProfileForId}
                 />

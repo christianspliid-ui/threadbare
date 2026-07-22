@@ -15,9 +15,9 @@ last_validated_against: 2026-07-05
 
 # Attachment Pipeline
 
-This skill is defined at `.agents/skills/attachment-pipeline/`. See that directory for the full orchestrator SKILL.md and all 4 agent prompts (`agents/draft-prompt.md`, `agents/editorial-prompt.md`, `agents/systems-prompt.md`, `agents/implementation-prompt.md`).
+This file is the skill. It runs a 4-pass pipeline — draft → editorial → systems audit → implementation merge — with each pass as a subagent briefed from the sections below.
 
-Load the `.agents` version for execution. This file is a pointer for the Claude Code skill registry.
+> **Note (THR-654):** this file previously pointed at a `.agents/skills/attachment-pipeline/` copy for "the full orchestrator and 4 agent prompts". That copy was a 33-line subset of this file and the four `agents/*-prompt.md` files it named have never existed in the repo — the pointer was already broken before `.agents/` was deleted. Writing the four prompt files out properly is tracked as THR-684; until then, run the passes from the guidance here.
 
 ## Step 0 — Canon-First Pre-Read
 

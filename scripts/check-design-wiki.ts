@@ -17,7 +17,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-type ManifestPage = { id: string; file: string; sources?: unknown };
+type ManifestPage = { id: string; file: string; sources?: unknown; payloads?: unknown };
 type BacklogEntry = { id: string; sources?: unknown };
 type Manifest = { home: string; pages: ManifestPage[]; backlog?: BacklogEntry[] };
 
@@ -89,6 +89,25 @@ function main(): void {
   };
   for (const page of manifest.pages) validateSources("page", page.id, page.sources);
   for (const entry of manifest.backlog ?? []) validateSources("backlog", entry.id, entry.sources);
+
+  // `payloads` (THR-690) is optional: repo-relative paths to the generated data a
+  // data-driven page renders. check:wiki-freshness counts a change to any of them
+  // as updating the page, so a payload-only edit no longer reads as staleness.
+  // Validated like `sources` — a malformed entry would silently never match.
+  for (const page of manifest.pages) {
+    if (page.payloads === undefined) continue;
+    if (!Array.isArray(page.payloads)) {
+      errors.push(`page "${page.id}" has a "payloads" field that is not an array`);
+      continue;
+    }
+    page.payloads.forEach((payload, i) => {
+      if (typeof payload !== "string" || payload.trim() === "") {
+        errors.push(`page "${page.id}" payloads[${i}] must be a non-empty repo-relative path`);
+      } else if (!fs.existsSync(path.join(REPO_ROOT, payload))) {
+        errors.push(`page "${page.id}" payloads[${i}] points at a missing file: ${payload}`);
+      }
+    });
+  }
 
   if (errors.length > 0) fail(errors);
 

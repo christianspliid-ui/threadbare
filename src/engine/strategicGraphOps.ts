@@ -8,6 +8,9 @@
 // NFP #2 (Inspectability): Returns descriptions of operations performed.
 
 import type { WorldGraph } from './graph';
+import { buildRouteManifest } from './tradeRoute';
+import { emitTrace } from './traceBuffer';
+import type { RouteCargoAssignedTrace, TraceEntry } from '../types/trace';
 
 export interface GraphOpResult {
   success: boolean;
@@ -40,6 +43,14 @@ export function createTradeRoute(
       return { success: false, op: 'create_trade_route', error: 'route_already_exists' };
     }
 
+    // Derive a cargo manifest from the two endpoints' stock tiers (P2, THR-616).
+    // Fail-soft: resourceless endpoints yield the empty manifest (volume-only route).
+    const manifest = buildRouteManifest(
+      source.properties as Record<string, unknown>,
+      target.properties as Record<string, unknown>,
+    );
+    const goodsType = manifest.goods[0] ?? 'unknown';
+
     const edgeId = `trades_with_${sourceLocationId}_${targetLocationId}_${tick}`;
     graph.addEdge({
       id: edgeId,
@@ -50,8 +61,25 @@ export function createTradeRoute(
         establishedTick: tick,
         establishedBy: actorId,
         volume: 1,
+        goodsType,
+        manifest,
       },
     });
+
+    if (manifest.goods.length > 0) {
+      emitTrace({
+        category: 'route_cargo_assigned',
+        tick,
+        agentId: actorId,
+        summary: `Route ${source.name} ↔ ${target.name}: cargo ${manifest.goods.join(', ')}${manifest.carriesStaple ? ' (staple)' : ''}`,
+        edgeId,
+        sourceId: sourceLocationId,
+        targetId: targetLocationId,
+        goods: manifest.goods,
+        totalValue: manifest.totalValue,
+        carriesStaple: manifest.carriesStaple,
+      } satisfies Omit<RouteCargoAssignedTrace, 'id' | 'timestamp'> as Omit<TraceEntry, 'id' | 'timestamp'>);
+    }
 
     return { success: true, op: 'create_trade_route', createdId: edgeId };
   } catch (e) {

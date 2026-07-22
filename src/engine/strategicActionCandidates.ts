@@ -33,6 +33,7 @@ import {
 import { getAgentLocationId } from './graphQueries';
 import { resolveLocationToHex } from './encounterAwareness';
 import { hexDistance } from '../lib/hexMath';
+import { scoreRoutePairBalance, ROUTE_FORMATION_BALANCE_BIAS } from './tradeRoute';
 import type { ReachDomain } from '../types/traits';
 
 // ─── Template Registry ──────────────────────────────────────────────
@@ -96,6 +97,12 @@ export function generateStrategicCandidates(
   if (!locationId) return { candidates, rejections };
 
   const actorHex = resolveLocationToHex(graph, locationId);
+
+  // Source endpoint for route-formation balance scoring. getAgentLocationId returns
+  // the same `located_at` target that createTradeRoute uses as the route's source,
+  // so the bias reads the exact node the route would form from (fail-soft: undefined
+  // → zero bias). Fetched once per actor since it is constant across candidates.
+  const sourceLocationNode = graph.getNode(locationId);
 
   // Collect active ambitions with strategic profiles
   for (const ambitionTemplateId of activeAmbitionTemplateIds) {
@@ -182,7 +189,8 @@ export function generateStrategicCandidates(
           scoreComponents: {
             ambitionAlignment: computeAmbitionAlignment(template, profile),
             blockerRelief: 0, // Computed in scoring phase with full context
-            worldImpact: computeWorldImpact(template),
+            worldImpact: Math.min(1, computeWorldImpact(template)
+              + computeRouteFormationBias(template, sourceLocationNode, target)),
             catalystValue: template.catalystEncounterIds?.length ? 0.5 : 0,
             roleFit: computeRoleFit(actor, template),
             controlPressure: computeControlPressure(template, strategicState, actorId, target.id),
@@ -282,6 +290,27 @@ function computeAmbitionAlignment(
   const verbIndex = profile.preferredVerbs.indexOf(template.verb);
   if (verbIndex === -1) return 0.2;
   return 1.0 - (verbIndex * 0.15);
+}
+
+/**
+ * Route-formation balance bias ∈ [0, ROUTE_FORMATION_BALANCE_BIAS] (Mortal Economy P2, THR-616).
+ *
+ * Rewards a candidate route between a surplus endpoint and a scarce one — a route
+ * that wants to exist — so merchants prefer complementary partners over arbitrary
+ * ones. Folded into the target-specific `worldImpact` component (a complementary
+ * route reshapes the economy more). Returns 0 for non-route templates
+ * (mutationHint ≠ create_trade_route) and when the source node is missing (fail-soft).
+ * Exported for focused scoring tests (NFP #2 inspectability).
+ */
+export function computeRouteFormationBias(
+  template: StrategicActionTemplate,
+  sourceLocation: GraphNode | undefined,
+  target: GraphNode,
+): number {
+  if (template.mutationHint?.type !== 'create_trade_route') return 0;
+  if (!sourceLocation) return 0;
+  return ROUTE_FORMATION_BALANCE_BIAS
+    * scoreRoutePairBalance(sourceLocation.properties, target.properties);
 }
 
 function computeWorldImpact(template: StrategicActionTemplate): number {

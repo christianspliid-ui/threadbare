@@ -85,6 +85,9 @@ interface SimulationMetrics {
   // Growth
   rawScoreDeltaPerAgent: Map<string, number>;
 
+  // Role affinity
+  roleMatchRate: number;  // % of encounter starts where reach matches agent's role primary
+
   // Traces
   decisionTraceCount: number;
 
@@ -167,6 +170,8 @@ Pattern: run baseline → override constant → run again → assert metric shif
 | 6 | `EXPLORATION_NOVELTY_BONUS` × 3 | ↑ | Distinct hexes visited |
 | 7 | `OUTGROWTH_FILTER_ENABLED` = false | ↑ | Encounter starts for high-cap agents |
 
+| 8 | `ROLE_PRIMARY_AFFINITY_BONUS` × 2 | ↑ | % of encounter starts matching agent's role primary reach |
+
 Each test runs 2× the simulation (baseline + tuned). The override mechanism passes constants into the simulation runner, which applies them before `initializeGameState` and restores after.
 
 ## Phase 4: New Contract Tests
@@ -208,6 +213,7 @@ Ranked by impact on encounter system health:
 
 | Priority | Module | Why | New tests |
 |----------|--------|-----|-----------|
+| P0 | `computeRoleAffinityMultiplier` in `encounterScoring.ts` | Zero tests. Multiplicative modifier on final score — affects every encounter selection. Tests: primary match (1.4), secondary match (1.15), no role (1.0), unmapped role (1.0) | ~5 |
 | P1 | `phaseAgentDecision` (deeper) | Most complex phase, only 10 tests. Edge cases: forced travel trigger, starvation counter, cadence re-evaluation for moving agents | ~8 |
 | P2 | Effects system (`effectExecutors`, `effectScope`) | Effects modify resolution modifiers silently. Untested effects = untested resolution inputs | ~12 |
 | P3 | `encounterAftermath` (deeper) | Only 1 test. Reward pool drawing, trait application, reputation delta, encounter seeding | ~8 |
@@ -215,7 +221,7 @@ Ranked by impact on encounter system health:
 | P5 | `pacingGovernor` / `balanceEvaluator` | Untested output can't be trusted for tuning decisions | ~6 |
 | P6 | `encounterChains` | Broken chains = broken narrative arcs | ~4 |
 
-**Total new tests across all phases: ~80-90**
+**Total new tests across all phases: ~85-95**
 
 ## Implementation Order
 

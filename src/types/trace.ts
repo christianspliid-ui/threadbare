@@ -282,6 +282,8 @@ export type TraceCategory =
   | 'encounter.chapter_archived'
   // Mortal economy — resource stock tiers (THR-615)
   | 'resource_stock_tier_change'
+  // Mortal economy — trade cargo manifests (THR-616)
+  | 'route_cargo_assigned'
   // Player action progression — god-side capability growth (THR-613)
   | 'ascendant.progression.practice'
   | 'ascendant.progression.tier_up'
@@ -340,6 +342,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'omen_beat',
   // Mortal economy — resource stock tiers (THR-615)
   'resource_stock_tier_change',
+  // Mortal economy — trade cargo manifests (THR-616)
+  'route_cargo_assigned',
   // Fix: three TraceEntry members that were defined but missing from this array (THR-111)
   'graph_op_execution',
   'choice_set_player_resolved',
@@ -1111,6 +1115,23 @@ export interface TickCrashTrace extends TraceBase {
   stack?: string;
 }
 
+/**
+ * Trace: a `__DEBUG.tick(n)` batch advanced the sim (THR-689).
+ * Exactly one entry per call — never one per tick, which would evict most of a run's
+ * real traces from the 2000-entry ring buffer.
+ */
+export interface DebugTickBatchTrace extends TraceBase {
+  category: 'debug_tick_batch';
+  /** Ticks asked for, before clamping to DEBUG_TICK_MAX. */
+  requested: number;
+  /** Ticks actually advanced. */
+  ticksRun: number;
+  /** True when `requested` exceeded DEBUG_TICK_MAX. */
+  capped: boolean;
+  stoppedReason: 'completed' | 'capped' | 'phase_left_playing' | 'error';
+  durationMs: number;
+}
+
 /** Trace: hidden sublocation discovered on a hex */
 export interface HiddenSiteRevealedTrace extends TraceBase {
   category: 'revelation';
@@ -1519,6 +1540,52 @@ export interface AftermathTargetResolvedTrace extends TraceBase {
   effectiveTargetKind: 'agent' | 'faction' | 'sublocation' | 'actor_fallback';
 }
 
+/** Trace: a `$target` / `$cast:` / `role:` aftermath sentinel rebound (THR-695, Slice B). */
+export interface AftermathSentinelBoundTrace extends TraceBase {
+  category: 'aftermath_sentinel_bound';
+  actionId: string;
+  effectKind: string;
+  /** The effect field the sentinel appeared on (e.g. 'targetAgentId', 'withAgentId'). */
+  field: string;
+  /** '$target' | '$cast:<key>' | 'role:<key>' */
+  sentinel: string;
+  /** Resolved node id, or null when the sentinel could not be bound (effect will no-op). */
+  resolvedNodeId: string | null;
+}
+
+/** Trace: a `bond_change` aftermath effect applied a sentiment/trust mutation (THR-695, Slice B). */
+export interface BondChangeAppliedTrace extends TraceBase {
+  category: 'bond_change_applied';
+  actorId: string;
+  withAgentId: string;
+  sentimentBefore: number;
+  sentimentAfter: number;
+  created: boolean;
+  reciprocal: boolean;
+}
+
+/** Trace: a family-only encounter seed resolved to a concrete template (THR-697, Slice D). */
+export interface SeedFamilyMatchedTrace extends TraceBase {
+  category: 'encounter_seed_family_matched';
+  seedId: string;
+  family: string;
+  /** Number of eligible templates in the draw pool (after affinity + location filters). */
+  candidateCount: number;
+  resolvedTemplateId: string;
+}
+
+/** Trace: inherited scene context attached to a seeded encounter at spawn (THR-697, Slice D). */
+export interface SeedContextInheritedTrace extends TraceBase {
+  category: 'seed_context_inherited';
+  seedId: string;
+  /** Inherited target that survived graph re-validation, or null (fell back to self-target). */
+  inheritedTargetId: string | null;
+  /** Bindings that survived graph re-validation. */
+  bindingCount: number;
+  /** Bindings dropped because their node was gone at spawn. */
+  droppedBindingCount: number;
+}
+
 /** Trace: faction node reputation changed by aftermath effect */
 export interface FactionReputationChangedTrace extends TraceBase {
   category: 'faction_reputation_changed';
@@ -1730,6 +1797,7 @@ export type TraceEntry =
   | ControlEffectEstablishedTrace
   | LayerRevealedTrace
   | HiddenSiteRevealedTrace
+  | DebugTickBatchTrace
   | RevelationTrace
   | InteractionDepthTrace
   | ReputationTraitTrace
@@ -1786,6 +1854,12 @@ export type TraceEntry =
   | ConditionAppliedTrace
   | ConditionRemovedTrace
   | AftermathTargetInvalidTrace
+  // Scene-targeting aftermath sentinels + bond_change (THR-695, Slice B)
+  | AftermathSentinelBoundTrace
+  | BondChangeAppliedTrace
+  // Seed system v2: family matching + context inheritance (THR-697, Slice D)
+  | SeedFamilyMatchedTrace
+  | SeedContextInheritedTrace
   // Initiative traces (THR-51)
   | InitiativeStartedTrace
   | InitiativeCheckpointTrace
@@ -1872,6 +1946,8 @@ export type TraceEntry =
   | ChapterArchivedTrace
   // Mortal economy — resource stock tiers (THR-615)
   | ResourceStockTierChangeTrace
+  // Mortal economy — trade cargo manifests (THR-616)
+  | RouteCargoAssignedTrace
   // Player action progression — god-side capability growth (THR-613)
   | PlayerPracticeTrace
   | PlayerTierUpTrace
@@ -1891,6 +1967,22 @@ export interface ResourceStockTierChangeTrace extends TraceBase {
   balance: number;
   /** Whether a threaded agent's home location produced a livelihood tug. */
   emittedTug: boolean;
+}
+
+/** Trace: a trade route was assigned (or refreshed) a cargo manifest. THR-616 */
+export interface RouteCargoAssignedTrace extends TraceBase {
+  category: 'route_cargo_assigned';
+  /** The trades_with edge id. */
+  edgeId: string;
+  /** Endpoint node ids. */
+  sourceId: string;
+  targetId: string;
+  /** Resource ids carried, highest value first. */
+  goods: string[];
+  /** Summed base value of the carried goods (route richness). */
+  totalValue: number;
+  /** Whether the manifest carries a staple. */
+  carriesStaple: boolean;
 }
 
 /** Trace: a resolved encounter was distilled into a persistent Chapter Record. THR-603 */

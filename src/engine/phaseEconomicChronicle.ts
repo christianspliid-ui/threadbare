@@ -27,7 +27,7 @@
 
 import type { GameState, TickEvent } from '../types/gameState';
 import type { ChronicleEntry } from '../types/narrative';
-import { resolveEconomicChronicle, resolveNamesFromGraph } from './economicChronicle';
+import { resolveEconomicChronicle, resolveNamesFromGraph, chronicleSeed } from './economicChronicle';
 import { getAgentLocation, getAgentLocationId } from './graphQueries';
 import type { EconomicChronicleContext } from './economicChronicle';
 import type { EconomicChronicleTrigger } from '../data/economic-chronicle-content';
@@ -74,7 +74,7 @@ export function phaseEconomicChronicle(state: GameState): Partial<GameState> {
     // Build context from graph state
     const context = buildContextFromEvent(event, graph, trigger);
 
-    const result = resolveEconomicChronicle(trigger, context, tick, seed + event.id.charCodeAt(0));
+    const result = resolveEconomicChronicle(trigger, context, tick, chronicleSeed(seed, event.id));
     if (result) {
       newEvents.push(result.tickEvent);
       newChronicleEntries.push({
@@ -130,7 +130,7 @@ export function phaseEconomicChronicle(state: GameState): Partial<GameState> {
         locationId,
       },
       tick,
-      seed + agent.id.charCodeAt(0) + 777,
+      chronicleSeed(seed, agent.id) + 777,
     );
 
     if (result) {

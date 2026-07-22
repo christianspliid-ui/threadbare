@@ -223,7 +223,9 @@ export const ACTION_TECHNICAL_EFFECTS: Readonly<Record<string, string>> = {
   'loc.fortify':
     'INTENDED: harden a settlement against attack, raising its defensive standing. NOT YET WIRED — empty step ops, no engine bridge; deducts essence and narrates only (THR-605).',
   'loc.bless_harvest':
-    "On success, raises the location's `prosperity` and `populationHealth` by named deltas (LOC_BLESS_HARVEST_*) for LOC_BLESS_HARVEST_DURATION_TICKS.",
+    "On success, raises the location's `prosperity` and `populationHealth` by named deltas (LOC_BLESS_HARVEST_*) for LOC_BLESS_HARVEST_DURATION_TICKS, and swells every staple resource's stock toward Glut (LOC_BLESS_HARVEST_STOCK_DELTA) — the coarse stock tier re-derives next tick.",
+  'loc.blight':
+    "On success, lowers the location's `prosperity` and `populationHealth` by named deltas (LOC_BLIGHT_*) and draws every staple resource's stock toward Famine (LOC_BLIGHT_STOCK_DELTA) — the inverse of Bless the Harvest; the coarse stock tier re-derives next tick.",
   'loc.open_markets':
     "On success, raises the location's `prosperity` and lowers its `unrest` by named deltas (LOC_OPEN_MARKETS_*).",
   'loc.sanctify_square':

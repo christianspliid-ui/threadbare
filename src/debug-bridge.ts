@@ -35,6 +35,8 @@ if (import.meta.env.DEV) {
     actionDrawerOpen: boolean;
     scryActive: boolean;
     cameraFocusHex: { col: number; row: number } | null;
+    /** Whether the sim run loop is active (THR-668 interrupt auto-pause verification). */
+    simRunning: boolean;
   }
 
   interface ForeshadowingDebugResult {
@@ -76,6 +78,7 @@ if (import.meta.env.DEV) {
     actionDrawerOpen: false,
     scryActive: false,
     cameraFocusHex: null,
+    simRunning: false,
   });
 
   // React components register their debug-panel toggle here
@@ -97,6 +100,8 @@ if (import.meta.env.DEV) {
     grantUnlock: (actionId: string) => import('./debug-bridge.d').DebugGrantUnlockResult;
     resolveBeat: (chosenActionId?: string) => import('./debug-bridge.d').DebugResolveBeatResult;
   }
+  // GameView registers the synchronous tick batch here (THR-689)
+  let _tickBridge: ((n: number) => import('./debug-bridge.d').DebugTickResult) | null = null;
   let _actionBridge: ActionBridge | null = null;
   let _aftermathBridge: AftermathBridge | null = null;
   // GameView registers beat-director mutation callbacks here (THR-507)
@@ -136,6 +141,21 @@ if (import.meta.env.DEV) {
     gotoAgent: (id: string) => _gotoAgent?.(id) ?? false,
     /** @internal GameView registers its gotoAgent handler here */
     _registerGotoAgent: (fn: (id: string) => boolean) => { _gotoAgent = fn; },
+    /**
+     * THR-689: advance the sim n ticks synchronously through the real runTick pipeline.
+     * Bypasses the interval loop, which `document.hidden` throttles to ~1 tick per
+     * interaction in an automated tab — making "run N ticks and observe X" checks
+     * otherwise unreachable. Auto-pauses the run loop. Clamped to DEBUG_TICK_MAX (200).
+     */
+    tick: (n = 1) => {
+      if (!_tickBridge) return { error: 'Game not loaded' };
+      if (typeof n !== 'number' || !Number.isFinite(n) || Math.floor(n) < 1) {
+        return { error: `tick(n): n must be a finite number >= 1, got ${String(n)}` };
+      }
+      return _tickBridge(n);
+    },
+    /** @internal GameView registers its synchronous tick batch here */
+    _registerTickBridge: (fn: (n: number) => import('./debug-bridge.d').DebugTickResult) => { _tickBridge = fn; },
     listActions: (agentId?: string) => _actionBridge?.listActions(agentId) ?? [],
     fireAction: (agentId: string, templateId: string) =>
       _actionBridge?.fireAction(agentId, templateId) ?? { success: false, message: 'Game not loaded' },
@@ -351,6 +371,57 @@ if (import.meta.env.DEV) {
       if (!action) return { error: `no unified action for ${actor.name ?? actor.id}` };
       const records = (action.stepProseHistory ?? []) as import('./types/stepProseRecord').StepProseRecord[];
       return { actionId: action.actionId, actorName: actor.name ?? actor.id, records };
+    },
+
+    /**
+     * THR-694 — scene-context readout for an agent's active (or most-recent) unified
+     * action: the resolved scene target (id / name / kind / actor→target relation) and
+     * the bound support cast. The DoD state-assertion hook for the Scene Integration
+     * slices ("is the scene wired?"). Resolves the agent by exact id, id prefix, then
+     * case-insensitive partial name — same notes as gotoAgent. Read-only.
+     */
+    inspectSceneContext: async (agentRef: string) => {
+      const state = _gameStateProvider?.();
+      if (!state) return { error: 'no live game state' };
+      const graph = state.graph;
+      const ref = agentRef.trim();
+      const lc = ref.toLowerCase();
+      const actors = graph.getNodesByType('actor');
+      const actor =
+        actors.find(n => n.id === ref) ??
+        actors.find(n => n.id.startsWith(ref)) ??
+        actors.find(n => (n.name ?? '').toLowerCase().includes(lc));
+      if (!actor) return { error: `no actor matched "${agentRef}"` };
+      const actions = state.unifiedActions ?? [];
+      const action =
+        actions.find(a => a.actorId === actor.id && !a.resolved) ??
+        actions.find(a => a.actorId === actor.id);
+      if (!action) return { error: `no unified action for ${actor.name ?? actor.id}` };
+      const { resolveSceneTargetContext, resolveSceneCastContext } =
+        await import('./engine/proseEnrichment');
+      const target = resolveSceneTargetContext(graph, actor.id, action.targetId);
+      const bindings = (action.supportBindings ?? []).map(b => ({
+        key: b.key,
+        nodeId: b.nodeId,
+        name: graph.getNode(b.nodeId)?.name ?? null,
+        reused: b.reused,
+      }));
+      // THR-696 — the cast block prose actually sees: every declared key, resolved to the
+      // bound entity's live name or the spec's authored fallback. `bindings` above is the
+      // raw binding list; `cast` is what `{cast:<key>}` renders.
+      const { getUnifiedTemplateById } = await import('./data/unified-action-templates');
+      const template = getUnifiedTemplateById(action.templateId);
+      const cast = resolveSceneCastContext(graph, template?.supportBundle, action.supportBindings);
+      return {
+        actionId: action.actionId,
+        templateId: action.templateId,
+        targetId: action.targetId,
+        targetName: target?.name ?? null,
+        targetKind: target?.kind ?? null,
+        relation: target?.relation ?? null,
+        bindings,
+        cast: cast ?? null,
+      };
     },
 
     // ── Ascendant Beats — Divine Cadence (THR-507) ──────────────────────────

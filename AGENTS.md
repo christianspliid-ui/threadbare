@@ -1,14 +1,12 @@
 This folder contains The Fantasy World Simulator — a systemic god-game/rogue-lite narrative simulation built in React + TypeScript + Vite.
 
-## Cowork vs Codex — Read This First
+## Read CLAUDE.md First
 
-**Three agents, two executor queues.** Cowork designs and plans. **Claude Code** and **Codex** are executor agents — both implement, both commit with `Fixes THR-XX` (lets the merge-to-main auto-close fire), both pull from separate Linear states so neither claims the other's work. Cowork picks which queue an issue lands in: mechanical / pattern-following work goes to **Ready for Codex**; judgment-heavy / prose / novel-system work goes to **Ready for Dev** (CC's queue). See `Docs/plans/2026-04-13-linear-coordination-protocol.md`.
+**`CLAUDE.md` is the single source of truth for how work is coordinated in this repo.** Read it before anything else; this file only carries the prototype/tooling notes below.
 
-**If you are running in Cowork mode:** You must NOT write code or run git commands. Your job is design, research, documentation (via MCP), and implementation plans. Use **Linear** (Threadbare team) for all issue tracking — query and update issue states via the Linear MCP. After writing a plan doc into `Docs/plans/` or `Docs/audits/`, apply the `plan-pending-commit` label to the corresponding Linear issue; the hourly `flush-plan-docs` scheduled task commits the file to `origin/main` and removes the label. Move the issue to **Ready for Dev** (CC handoff) or **Ready for Codex** (Codex handoff) immediately after writing the plan, with a coordination-block comment. The state transition plus the handoff comment IS the handoff — nothing else required. `.planning/BACKLOG.md` and `.planning/HANDOVER.md` are retired (2026-04-13). Only `.planning/ROADMAP.md` remains as a legacy milestone overview.
+Short version: all Threadbare agent work runs in **Claude Code** against one queue, **Ready for Dev** in Linear (Threadbare team). Design and execution are *session types*, not separate runtimes — a design session authors plan docs and hands off via a Linear state transition plus a coordination-block comment; an execution session starts with `/pull-work`, claims before reading, holds WIP=1, and commits with `Fixes THR-XX` so the merge-to-main auto-close fires. Never `save_issue(state:"Done")` by hand.
 
-**If you are running in Codex:** You do the coding, testing, committing, and pushing. Query Linear for issues in **"Ready for Codex"** state with `assignee:null`, never Ready for Dev. Claim before reading, verify-after-write, WIP=1 In Dev issue, never `save_issue(state: "Done")` — commit with `Fixes THR-XX` in the body and let the merge auto-close fire. Check `Docs/plans/` for design docs before starting. See "Codex Session Start" / "Codex Pickup Protocol" in `Docs/plans/2026-04-13-linear-coordination-protocol.md`.
-
-**If you are running in Claude Code:** Start pickup with `/pull-work`. Query Linear "Ready for Dev" with `assignee:null` (never Ready for Codex — that queue belongs to Codex). Same claim discipline as Codex. See "Coordination Failure Modes — Hard Rules" (Rules 1–9) in the protocol doc.
+Retired lanes — do not act on references to them found in older docs: **Codex** and the `Ready for Codex` queue (2026-06-23, THR-486), and **Cowork**'s role in Threadbare along with the `plan-pending-commit` / `flush-plan-docs` machinery (2026-07-21, THR-654). `.planning/BACKLOG.md` and `.planning/HANDOVER.md` are retired (2026-04-13); only `.planning/ROADMAP.md` remains as a legacy milestone overview.
 
 ## Running the Prototype
 
@@ -41,7 +39,7 @@ npm run dev    # start Vite dev server with hot reload
 
 **For all testing, use `?view=game&seeded`** — this skips the remembrance flow, ascendant selection, AND the Meet The First encounter, loading directly into a fully populated game with a bonded First agent. Only use bare `?view=game` when testing identity-less paths, and only test the worldgen/selection/remembrance screens when those screens are the subject of the test.
 
-**Note for Cowork/Codex sessions:** The sandbox VM has isolated networking. Use `npx tsc --noEmit`, `npx vite build`, and `npm test` to verify. The user must run `npm run dev` on their own machine.
+**Note for Cowork/Codex sessions:** The sandbox VM has isolated networking. Use `npm test` and `npx vite build` to verify (for types see the Pre-commit note on `tsc -b`; `tsc --noEmit` is a no-op here). The user must run `npm run dev` on their own machine.
 
 ### Headless CLI (`npm run cli`)
 
@@ -145,7 +143,7 @@ Cross-boundary testing rules, contract test patterns, pre-commit verification ch
 
 **Pre-commit minimum (always do these):**
 1. `npm test` — all tests pass
-2. `npx tsc --noEmit` — type check clean
+2. **Typecheck — do NOT run `npx tsc --noEmit`.** Root `tsconfig.json` sets `files: []`, so it exits 0 unconditionally and proves nothing (THR-686). CI's `Test · Typecheck · Build` is the authoritative gate; for local evidence run `npx tsc -b --force` and show zero *net-new* errors against the (heavily red) baseline.
 3. `npx vite build` — production build succeeds (confirms Vercel will deploy)
 
 ## Viewport Contract (1920×1080)

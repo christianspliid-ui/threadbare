@@ -19,6 +19,27 @@ export const LOC_BLESS_HARVEST_HEALTH_DELTA = 15;
 /** Ticks the migration-pull hook stays active after Bless the Harvest. */
 export const LOC_BLESS_HARVEST_DURATION_TICKS = 8;
 
+// ─── Bless the Harvest / Blight — resource stock-tier deltas (THR-616 P2) ───
+//
+// The economic dimension of the two first divine economic verbs: they now move
+// the P1 resource stock substrate (`resourceEconomy.ts`), not just prosperity.
+// Each verb bumps the `quantity` of every *staple* resource at the target by a
+// named delta; the coarse tier (`scarce | adequate | surplus`) re-derives next
+// tick in `phaseResourceStockTiers`. Bless swells the granaries toward Glut;
+// Blight draws them toward Famine.
+
+/** Quantity (0-100 scale) added to each staple resource when Bless the Harvest succeeds. */
+export const LOC_BLESS_HARVEST_STOCK_DELTA = 25;
+
+/** Quantity (0-100 scale) removed from each staple resource when Blight succeeds. */
+export const LOC_BLIGHT_STOCK_DELTA = 25;
+
+/** Prosperity loss when Blight succeeds (negative — the inverse pole of Bless). */
+export const LOC_BLIGHT_PROSPERITY_DELTA = -10;
+
+/** Population-health loss when Blight succeeds (negative). */
+export const LOC_BLIGHT_HEALTH_DELTA = -12;
+
 // ─── Open the Markets ──────────────────────────────────────────────────────
 
 /** Prosperity gain on a successful Open the Markets. */

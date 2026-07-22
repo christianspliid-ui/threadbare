@@ -18,7 +18,7 @@ import {
   lintRulebookVsCode,
   lintRulebookVsVision,
   lintQuickReferenceVsRulebook,
-} from "../lint-rulebook";
+} from "../lint-rulebook.ts";
 
 import {
   LINEAR_API_KEY,
@@ -26,7 +26,7 @@ import {
   resolveBacklogStateId,
   findIssueByExactTitle,
   createDriftIssue,
-} from "./linear";
+} from "./linear.ts";
 
 // Drift scan thresholds — tune in `./constants.ts` (browser-safe single source).
 import {
@@ -41,7 +41,7 @@ import {
   TOP_IMPORTERS_COUNT,
   UL_UNCANONICAL_MIN_OCCURRENCES,
   SUITE_HISTORY_LIMIT,
-} from "./constants";
+} from "./constants.ts";
 export {
   COUPLING_CREEP_PCT,
   BROKEN_WINDOWS_PCT,
@@ -57,7 +57,7 @@ export {
 };
 
 const UL_SHARD_DIR = path.join("Docs", "ubiquitous-language");
-const SKILL_ROOTS = [path.join(".claude", "skills"), path.join(".agents", "skills")];
+const SKILL_ROOTS = [path.join(".claude", "skills")];
 const TEST_OUTPUT_PATH = ".cache/drift-scan-results.json";
 const DEFAULT_TEST_TIMEOUT_MS = 6 * 60 * 1000;
 
@@ -775,7 +775,7 @@ export function evaluateSkillFreshness(params: {
 
   if (entries.length === 0) {
     return {
-      signal: { status: "skipped", reason: "no skill files found under .claude/skills or .agents/skills" },
+      signal: { status: "skipped", reason: "no skill files found under .claude/skills" },
       nextLastValidatedAt: { ...priorLastValidatedAt },
     };
   }

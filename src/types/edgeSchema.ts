@@ -359,7 +359,7 @@ export const EDGE_SCHEMA: Record<EdgeType, EdgeSchema> = {
     direction: 'bidirectional',
     cardinality: 'many-to-many',
     requiredProperties: [],
-    description: 'Trade route between actors. Edge properties: volume, goodsType, controlledBy, threatened.',
+    description: 'Trade route between actors. Edge properties: volume, goodsType, manifest (cargo — THR-616), controlledBy, threatened.',
   },
   // ── Construction ──────────────────────────────────────────
   constructed_by: {

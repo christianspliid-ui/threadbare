@@ -30,6 +30,8 @@ import {
   getAgentMemberships,
   getAgentLocation,
 } from './graphQueries';
+import type { EncounterSupportBinding, EncounterSupportBundle } from '../types/encounter';
+import { ALLY_SENTIMENT_THRESHOLD, ENEMY_SENTIMENT_THRESHOLD } from '../data/effect-constants';
 import {
   buildIntelligenceView,
   emitIntelligenceReferenced,
@@ -60,7 +62,45 @@ export const ENRICHMENT_MAX_NAMED_ALLIES = 2;
 /** Probability that journey vignette includes meeting callback */
 export const CALLBACK_PROSE_PROBABILITY = 0.7;
 
+/** Maximum cast entries injected into NarrativeContext (THR-696 — enrichment perf) */
+export const CAST_CONTEXT_MAX_MEMBERS = 6;
+
 // ─── Narrative Context ─────────────────────────────────────────────
+
+/**
+ * Scene target context (THR-694) — the entity an encounter action is *with*: the
+ * resolved `action.targetId`, which is another agent or a location. Populated only on
+ * the encounter-prose paths; absent for self-targeted actions, missing/deleted targets,
+ * and all non-encounter prose — so `{target}` reads as "the other party" and never
+ * infers a referent. Enables the `{target}` / `{target:they|them|their|s}` /
+ * `{target:faction}` placeholders and the `{?target_is_ally|rival|stranger}` /
+ * `{?has_target}` / `{?no_target}` conditionals in `enrichProse`.
+ */
+export interface SceneTargetContext {
+  id: string;
+  kind: 'agent' | 'location';
+  name: string;
+  /** Agent-kind targets only; location-kind targets omit this. */
+  pronouns?: { they: string; them: string; their: string; s: string };
+  /** Agent-kind targets only. */
+  factionName?: string;
+  /** Actor→target relation from the outgoing `relates_to` sentiment; agent-kind only. */
+  relation?: 'ally' | 'rival' | 'stranger';
+}
+
+/**
+ * One member of the encounter's support cast (THR-696) — a `supportBundle` spec key
+ * resolved for prose. `name` is the *bound* entity's live graph name when the bundle
+ * bound one (so reuse-first NPCs are named correctly), and the spec's authored
+ * `spawnName`/`fallbackName` when the key is declared but unbound. `reused` mirrors the
+ * binding's own flag (false when the key is unbound).
+ */
+export interface SceneCastMember {
+  name: string;
+  /** `supportRole` for actor specs, `sublocationTypeId` for location specs. */
+  role: string;
+  reused: boolean;
+}
 
 /**
  * Full narrative context for prose enrichment.
@@ -126,10 +166,108 @@ export interface NarrativeContext {
    * `{group}` resolves to a neutral fallback. Distinct from `{culture}`/`{faction}`, which
    * resolve the *anchor agent's* own culture/faction, not an arbitrary bound group. */
   boundGroupName?: string;
+
+  /** Scene target (THR-694) — the entity the encounter is *with*. Absent → the
+   * `{target:*}` placeholders and `{?*_target}` conditionals fall back to "no other
+   * party". See {@link SceneTargetContext}. Populated by encounter-path callers that
+   * pass `opts.targetId`. */
+  target?: SceneTargetContext;
+
+  /** Scene cast (THR-696) — the encounter's support-bundle keys, keyed by spec key.
+   * Every key the template *declares* appears here (bound or not), so `{cast:<key>}`
+   * always resolves for a declared key. Absent → `{cast:*}` tokens strip and
+   * `{?has_cast:<key>}` blocks resolve false. See {@link SceneCastMember}. */
+  cast?: Record<string, SceneCastMember>;
+}
+
+/**
+ * Resolve the scene-cast block (THR-696) from a template's support bundle and the
+ * action's resolved bindings.
+ *
+ * Every declared spec key enters the map — bound keys carry the *bound* node's live
+ * name (so a reuse-first binding names the real NPC rather than the authored
+ * placeholder), unbound keys fall back to the spec's own authored name. That
+ * invariant is what lets `{cast:<key>}` always resolve for a key the template
+ * declares, so authored prose never has to guard a reference to its own cast.
+ * Capped at {@link CAST_CONTEXT_MAX_MEMBERS}. Returns undefined for an empty bundle.
+ */
+export function resolveSceneCastContext(
+  graph: WorldGraph,
+  supportBundle: EncounterSupportBundle | undefined,
+  bindings: readonly EncounterSupportBinding[] | undefined,
+): Record<string, SceneCastMember> | undefined {
+  if (!supportBundle || supportBundle.length === 0) return undefined;
+
+  const cast: Record<string, SceneCastMember> = {};
+  for (const spec of supportBundle) {
+    if (Object.keys(cast).length >= CAST_CONTEXT_MAX_MEMBERS) break;
+    if (spec.delivery === 'blocked-primitive') continue;
+
+    const authoredName = spec.kind === 'actor' ? spec.spawnName : spec.fallbackName;
+    const role = spec.kind === 'actor' ? spec.supportRole : spec.sublocationTypeId;
+
+    const binding = bindings?.find(b => b.key === spec.key);
+    const boundName = binding ? graph.getNode(binding.nodeId)?.name : undefined;
+
+    cast[spec.key] = {
+      name: boundName ?? authoredName ?? spec.key,
+      role,
+      reused: binding?.reused ?? false,
+    };
+  }
+
+  return Object.keys(cast).length > 0 ? cast : undefined;
+}
+
+/**
+ * Resolve the scene-target block (THR-694) for an actor→target pair.
+ *
+ * Returns undefined when there is no distinct other party — a missing or self target
+ * (`targetId === actorId`), or a target whose node has been deleted — so `{target}`
+ * reads as absence and never invents a referent. Agent-kind targets carry pronouns, a
+ * faction name, and an actor→target `relation` classified via the shared
+ * ALLY/ENEMY sentiment thresholds (no edge → 'stranger'); location-kind targets carry
+ * name only.
+ */
+export function resolveSceneTargetContext(
+  graph: WorldGraph,
+  actorId: string,
+  targetId: string | undefined,
+): SceneTargetContext | undefined {
+  if (!targetId || targetId === actorId) return undefined;
+  const node = graph.getNode(targetId);
+  if (!node) return undefined;
+
+  const kind: 'agent' | 'location' = node.type === 'location' ? 'location' : 'agent';
+  if (kind === 'location') {
+    return { id: targetId, kind, name: node.name ?? 'that place' };
+  }
+
+  const pronouns = getPronouns((node.properties?.gender as string) ?? '');
+  const factionName = getAgentMemberships(graph, targetId)[0]?.group.name;
+
+  // Actor→target relation from the outgoing relates_to edge sentiment. Reuses the same
+  // ±0.35 thresholds as the alone/outnumbered co-location classifier (no new tunable).
+  // Absence of an edge is a neutral acquaintance → 'stranger'.
+  const bond = getAgentBonds(graph, actorId).find(b => b.agent.id === targetId);
+  let relation: 'ally' | 'rival' | 'stranger' = 'stranger';
+  if (bond) {
+    if (bond.sentiment >= ALLY_SENTIMENT_THRESHOLD) relation = 'ally';
+    else if (bond.sentiment <= ENEMY_SENTIMENT_THRESHOLD) relation = 'rival';
+  }
+
+  return { id: targetId, kind, name: node.name ?? 'the other party', pronouns, factionName, relation };
 }
 
 /**
  * Gather narrative context from the graph for a given agent.
+ *
+ * `opts.targetId` (THR-694) populates the scene `target` block when it resolves to a
+ * distinct node — omitted for self-targeted actions. `opts.supportBundle` +
+ * `opts.supportBindings` (THR-696) populate the scene `cast` block. Callers on the
+ * encounter path (`buildUnifiedEncounterStageModel`, `unifiedActionResolution`) pass the
+ * active action's `targetId` and its template's bundle plus the action's resolved
+ * bindings; all other callers leave them absent and get today's behavior.
  */
 export function gatherNarrativeContext(
   graph: WorldGraph,
@@ -139,6 +277,11 @@ export function gatherNarrativeContext(
   doomIdentityMatrix?: DoomIdentityMatrix | null,
   state?: GameState,
   tick?: number,
+  opts?: {
+    targetId?: string;
+    supportBundle?: EncounterSupportBundle;
+    supportBindings?: readonly EncounterSupportBinding[];
+  },
 ): NarrativeContext {
   const agentNode = graph.getNode(agentId);
   const props = agentNode?.properties ?? {};
@@ -239,6 +382,8 @@ export function gatherNarrativeContext(
     doomAtmosphere,
     intelligence,
     tick,
+    target: resolveSceneTargetContext(graph, agentId, opts?.targetId),
+    cast: resolveSceneCastContext(graph, opts?.supportBundle, opts?.supportBindings),
   };
 }
 
@@ -343,6 +488,42 @@ export function enrichProse(
   // Faction
   result = result.replace(/{faction}/g,
     ctx.factionRank?.factionName ?? 'their people');
+
+  // Scene target (THR-694) — the entity the encounter is *with*. Every token carries a
+  // fallback so absence reads as absence ("the other party") and no raw token leaks.
+  // Colon-form tokens are resolved (and residually stripped) before the bare `{target}`,
+  // which has no colon and is never matched by the colon patterns.
+  const tgt = ctx.target;
+  const tgtP = tgt?.pronouns;
+  result = result.replace(/\{target:faction\}/g, tgt?.factionName ?? 'their people');
+  result = result.replace(/\{target:They\}/g, capitalize(tgtP?.they ?? 'they'));
+  result = result.replace(/\{target:Them\}/g, capitalize(tgtP?.them ?? 'them'));
+  result = result.replace(/\{target:Their\}/g, capitalize(tgtP?.their ?? 'their'));
+  result = result.replace(/\{target:they\}/g, tgtP?.they ?? 'they');
+  result = result.replace(/\{target:them\}/g, tgtP?.them ?? 'them');
+  result = result.replace(/\{target:their\}/g, tgtP?.their ?? 'their');
+  result = result.replace(/\{target:s\}/g, tgtP?.s ?? '');
+  // Residual strip: unknown {target:*} tokens never leak (matches only the colon form).
+  result = result.replace(/\{target:[^}]+\}/g, '');
+  result = result.replace(/\{target\}/g, tgt?.name ?? 'the other party');
+
+  // Scene cast (THR-696) — `{cast:<key>}` names a support-bundle member. A declared key
+  // always resolves (bound name, else the spec's authored name), so authored prose can
+  // reference its own cast unguarded. An *undeclared* key is an authoring error, not a
+  // runtime state: strip the token and warn in dev only.
+  // A *missing block* is a caller that did not thread a bundle (every non-encounter path)
+  // — strip silently, same as `{intel:*}` without a view. Only a key missing from a block
+  // that exists is the authoring error worth warning about.
+  result = result.replace(/\{cast:([A-Za-z0-9_.-]+)\}/g, (_match, key: string) => {
+    const member = ctx.cast?.[key];
+    if (member) return member.name;
+    if (ctx.cast && import.meta.env?.DEV) {
+      console.warn(`[enrichProse] {cast:${key}} — no such key in this encounter's support bundle.`);
+    }
+    return '';
+  });
+  // Residual strip: malformed {cast:*} tokens (e.g. spaces in the key) never leak.
+  result = result.replace(/\{cast:[^}]*\}/g, '');
 
   // Bound subject group (THR-522) — the specific culture/faction an Ascendant introduction
   // beat surfaces. Resolves to the Director-bound name when present, else a neutral fallback
@@ -456,6 +637,13 @@ function resolveConditionals(prose: string, ctx: NarrativeContext): string {
     no_faction: ctx.factionRank == null,
     has_title: ctx.titles.length > 0,
     no_title: ctx.titles.length === 0,
+    // Scene target (THR-694). A location-kind target is present (has_target true) but
+    // carries no relation, so all three relation conditionals resolve false for it.
+    has_target: ctx.target != null,
+    no_target: ctx.target == null,
+    target_is_ally: ctx.target?.relation === 'ally',
+    target_is_rival: ctx.target?.relation === 'rival',
+    target_is_stranger: ctx.target?.relation === 'stranger',
   };
 
   // Intelligence conditionals (THR-113) — {?knows_<category>} / {?no_<category>}.
@@ -466,13 +654,33 @@ function resolveConditionals(prose: string, ctx: NarrativeContext): string {
     conditions[`no_${category}`] = !has;
   }
 
+  // Scene-cast conditionals (THR-696) — {?has_cast:<key>} / {?no_cast:<key>}. Same
+  // dynamic-key shape as the intel conditionals above: one map entry per declared key,
+  // resolved by the shared block loop below. Keys the bundle does not declare fall
+  // through to the residual pass, which treats them as absent.
+  for (const key of Object.keys(ctx.cast ?? {})) {
+    conditions[`has_cast:${key}`] = true;
+    conditions[`no_cast:${key}`] = false;
+  }
+
   // Resolve {?condition}...{/condition} blocks
   for (const [key, value] of Object.entries(conditions)) {
-    const regex = new RegExp(`\\{\\?${key}\\}([\\s\\S]*?)\\{/${key}\\}`, 'g');
+    const regex = new RegExp(`\\{\\?${escapeRegExp(key)}\\}([\\s\\S]*?)\\{/${escapeRegExp(key)}\\}`, 'g');
     result = result.replace(regex, value ? '$1' : '');
   }
 
+  // Residual pass for cast keys the bundle does not declare: `has_cast` is false (drop
+  // the block), `no_cast` is true (keep the body). Without this, an undeclared key would
+  // leak its raw markers, since the loop above only knows declared keys.
+  result = result.replace(/\{\?has_cast:([A-Za-z0-9_.-]+)\}[\s\S]*?\{\/has_cast:\1\}/g, '');
+  result = result.replace(/\{\?no_cast:([A-Za-z0-9_.-]+)\}([\s\S]*?)\{\/no_cast:\1\}/g, '$2');
+
   return result;
+}
+
+/** Escape a string for literal use inside a RegExp. */
+function escapeRegExp(str: string): string {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 // ─── Meeting Callback Prose ────────────────────────────────────────

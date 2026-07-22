@@ -72,8 +72,23 @@ jobs:
       - name: Lint encounter content
         run: npm run lint:encounter-content
 
-      - name: Typecheck
-        run: npx tsc --noEmit
+      # `npx tsc --noEmit` used to live here and was a no-op: root tsconfig.json
+      # sets `files: []`, so it exited 0 unconditionally no matter how broken the
+      # code was — this required check asserted a type gate in its name while
+      # containing none (THR-693). Bare `tsc -b` is not the fix either: the
+      # baseline is ~3529 errors (THR-489), so it would turn the required check
+      # red on arrival and block every PR. The ratchet fails only on an INCREASE.
+      - name: Typecheck (ratchet)
+        run: npm run check:typecheck
+
+      # Generated artifacts (action catalog, UL dashboard, impediment dashboard)
+      # are consumed at runtime but are NOT rebuilt by `vite build` — only by the
+      # npm `prebuild` lifecycle hook, which `npx vite build` below bypasses. A
+      # stale one therefore ships with no test failure and no build error; it
+      # nearly leaked in two consecutive runs (THR-616, THR-663). This step
+      # regenerates and fails if the commit's copies differ. Adds a few seconds.
+      - name: Generated artifact freshness
+        run: npm run check:generated-freshness
 
       - name: Production build
         run: npx vite build

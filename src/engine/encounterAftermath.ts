@@ -28,6 +28,8 @@ import {
   THREAD_BRANCH_INITIAL_STRENGTH,
   THREAD_STRENGTH_MAX,
   THREAD_STRENGTH_MIN,
+  BOND_CREATE_INITIAL_SENTIMENT,
+  BOND_CREATE_INITIAL_TRUST,
 } from '../data/effect-constants';
 import { CONDITION_DURATIONS } from '../data/condition-trait-content';
 import { CONDITION_ATTACHMENT_DEFAULT_STACK_COUNT } from '../data/attachment-slot-constants';
@@ -458,6 +460,180 @@ export function bindReachSignatureTargets(
   }
 }
 
+// ─── Scene-targeting sentinels (THR-695, Slice B) ───────────────────────────────
+
+/** `$cast:<key>` sentinel prefix — rebinds via `action.supportBindings`. */
+export const AFTERMATH_CAST_SENTINEL_PREFIX = '$cast:';
+/** Legacy alias for the cast sentinel (the `src/data/encounters/examples/` files use `role:`). */
+export const AFTERMATH_CAST_SENTINEL_LEGACY_PREFIX = 'role:';
+
+/**
+ * Effect fields that may carry a scene-targeting sentinel, mapped to the node kind
+ * each field expects. `$target` binds only when the action target's kind matches.
+ */
+const SCENE_SENTINEL_FIELDS = {
+  targetAgentId: 'agent',
+  withAgentId: 'agent',
+  targetFactionId: 'faction',
+  targetSublocationId: 'sublocation',
+} as const;
+
+type SceneSentinelField = keyof typeof SCENE_SENTINEL_FIELDS;
+
+/** Does `nodeId` resolve to a node whose kind matches the sentinel field? Pure, fail-soft. */
+function nodeMatchesSceneField(
+  graph: WorldGraph,
+  nodeId: string,
+  kind: 'agent' | 'faction' | 'sublocation',
+): boolean {
+  const node = graph.getNode(nodeId);
+  if (!node) return false;
+  // `node.type` is the canonical NodeType, but sublocations/factions are sometimes
+  // represented off the canonical union (subtype in properties, or a bare 'sublocation'
+  // type in test fixtures) — widen to string so the membership checks stay honest.
+  const nodeType = node.type as string;
+  const actorType = node.properties?.actorType as string | undefined;
+  switch (kind) {
+    case 'agent':
+      // An agent is an individual-scale actor — an actor node that is not a faction/culture.
+      return nodeType === 'actor' && actorType !== 'faction' && actorType !== 'culture';
+    case 'faction':
+      return nodeType === 'faction' || (nodeType === 'actor' && actorType === 'faction');
+    case 'sublocation':
+      return nodeType === 'sublocation'
+        || (nodeType === 'location' && node.properties?.parentLocationId !== undefined);
+  }
+}
+
+export interface SceneSentinelTraceContext {
+  readonly tick: number;
+  readonly actionId: string;
+  readonly actorAgentId?: string;
+  readonly encounterId: string;
+  readonly reactionId: string;
+  readonly effectIndex: number;
+}
+
+/**
+ * THR-695 (Slice B) — bind the general scene-targeting sentinels on an aftermath
+ * effect before dispatch. Generalizes the THR-555 reach-signature pattern to every
+ * effect kind. Composes *after* `bindReachSignatureTargets` (signature pass first),
+ * so `$primary` and the three signature kinds keep their behavior.
+ *
+ * For each field in { targetAgentId, targetFactionId, targetSublocationId, withAgentId }
+ * whose value is a sentinel string:
+ *   • `'$target'`      → `action.targetId`, iff the resolved node kind matches the field.
+ *   • `'$cast:<key>'`  → `action.supportBindings[key].nodeId` (legacy alias `'role:<key>'`).
+ *
+ * An unresolvable sentinel (missing target/binding, kind mismatch) is left in place —
+ * the effect then no-ops down its existing invalid-target path (fail-soft, NFP #4).
+ * Every processed sentinel field emits one `aftermath_sentinel_bound` trace
+ * (`resolvedNodeId: null` when unbound). Literal ids and non-sentinel values pass
+ * through untouched — a no-op for every effect authored before this slice.
+ */
+export function bindAftermathSceneTargets(
+  effect: EncounterAftermathReactionEffect,
+  action: UnifiedAction | undefined,
+  graph: WorldGraph,
+  traceCtx?: SceneSentinelTraceContext,
+): EncounterAftermathReactionEffect {
+  const source = effect as unknown as Record<string, unknown>;
+  let next: Record<string, unknown> | undefined;
+
+  for (const field of Object.keys(SCENE_SENTINEL_FIELDS) as SceneSentinelField[]) {
+    const value = source[field];
+    if (typeof value !== 'string') continue;
+
+    const isTargetSentinel = value === AFTERMATH_TARGET_SENTINEL;
+    const isCastSentinel =
+      value.startsWith(AFTERMATH_CAST_SENTINEL_PREFIX) ||
+      value.startsWith(AFTERMATH_CAST_SENTINEL_LEGACY_PREFIX);
+    if (!isTargetSentinel && !isCastSentinel) continue;
+
+    let resolvedNodeId: string | null = null;
+    if (isTargetSentinel) {
+      const targetId = action?.targetId;
+      if (targetId && nodeMatchesSceneField(graph, targetId, SCENE_SENTINEL_FIELDS[field])) {
+        resolvedNodeId = targetId;
+      }
+    } else {
+      const key = value.startsWith(AFTERMATH_CAST_SENTINEL_PREFIX)
+        ? value.slice(AFTERMATH_CAST_SENTINEL_PREFIX.length)
+        : value.slice(AFTERMATH_CAST_SENTINEL_LEGACY_PREFIX.length);
+      const binding = action?.supportBindings?.find(b => b.key === key);
+      if (binding) resolvedNodeId = binding.nodeId;
+    }
+
+    if (resolvedNodeId !== null) {
+      next = next ?? { ...source };
+      next[field] = resolvedNodeId;
+    }
+
+    if (traceCtx) {
+      emitTrace({
+        tick: traceCtx.tick,
+        category: 'aftermath_sentinel_bound',
+        agentId: traceCtx.actorAgentId,
+        actionId: traceCtx.actionId,
+        effectKind: effect.kind,
+        field,
+        sentinel: value,
+        resolvedNodeId,
+        summary: `aftermath_sentinel_bound[${traceCtx.effectIndex}] ${effect.kind}.${field}: ${value} → ${resolvedNodeId ?? 'UNRESOLVED'}`,
+      } as unknown as Parameters<typeof emitTrace>[0]);
+    }
+  }
+
+  return (next ?? source) as unknown as EncounterAftermathReactionEffect;
+}
+
+/** Clamp a sentiment value to the relates_to sentiment range [-1, 1]. */
+function clampSentiment(value: number): number {
+  return Math.max(-1, Math.min(1, value));
+}
+
+/**
+ * Create-or-mutate the directed `fromId → toId` `relates_to` edge for a `bond_change`
+ * effect (THR-695, Slice B). A missing edge is created at the `BOND_CREATE_INITIAL_*`
+ * baseline before the delta lands. Sentiment result clamps to [-1, 1]; trust (only when
+ * a delta is supplied) to [0, 1]. In-place property mutation on the stored edge — the
+ * same idiom used for node.properties throughout this file; `touchWorld()` is the
+ * caller's responsibility.
+ */
+function applyBondEdge(
+  graph: WorldGraph,
+  fromId: string,
+  toId: string,
+  sentimentDelta: number,
+  trustDelta: number | undefined,
+): { created: boolean; sentimentBefore: number; sentimentAfter: number } {
+  let edge = graph.getOutgoingEdges(fromId, 'relates_to').find(e => e.target === toId);
+  let created = false;
+  if (!edge) {
+    const edgeId = `relates_to_bond_${fromId}_${toId}`;
+    graph.addEdge({
+      id: edgeId,
+      source: fromId,
+      target: toId,
+      type: 'relates_to',
+      properties: {
+        sentiment: BOND_CREATE_INITIAL_SENTIMENT,
+        trust: BOND_CREATE_INITIAL_TRUST,
+      },
+    });
+    edge = graph.getEdge(edgeId)!;
+    created = true;
+  }
+  const sentimentBefore = (edge.properties.sentiment as number | undefined) ?? BOND_CREATE_INITIAL_SENTIMENT;
+  const sentimentAfter = clampSentiment(sentimentBefore + sentimentDelta);
+  edge.properties.sentiment = sentimentAfter;
+  if (trustDelta !== undefined) {
+    const trustBefore = (edge.properties.trust as number | undefined) ?? BOND_CREATE_INITIAL_TRUST;
+    edge.properties.trust = clamp01(trustBefore + trustDelta);
+  }
+  return { created, sentimentBefore, sentimentAfter };
+}
+
 export function applyEncounterAftermathReaction(
   state: GameState,
   action: UnifiedAction | undefined,
@@ -545,7 +721,15 @@ export function applyEncounterAftermathReaction(
   for (let i = 0; i < reaction.effects.length; i++) {
     // THR-555: bind reach-signature target sentinels ($target / $primary) to the
     // card's resolved target before dispatch. No-op for every other effect kind.
-    const effect = bindReachSignatureTargets(reaction.effects[i], action, state.graph);
+    // THR-695: then bind the general scene sentinels ($target / $cast: / role:) on
+    // targetAgentId/targetFactionId/targetSublocationId/withAgentId. Signature pass
+    // runs first so its $primary + three signature kinds keep their behavior.
+    const effect = bindAftermathSceneTargets(
+      bindReachSignatureTargets(reaction.effects[i], action, state.graph),
+      action,
+      state.graph,
+      { tick, actionId, actorAgentId, encounterId, reactionId: reaction.id, effectIndex: i },
+    );
     const target = resolveAftermathTarget(effect, action);
 
     // Check for ambiguous multi-target specification
@@ -962,6 +1146,16 @@ export function applyEncounterAftermathReaction(
       }
 
       case 'encounter_seed': {
+        // THR-697 (Slice D): when the effect opts into context inheritance, snapshot the
+        // source action's target + cast onto the seed. `evaluateEncounterSeeds` re-validates
+        // both against the live graph at spawn (dead target → self-target fallback, dead
+        // bindings dropped), so it is safe to copy the raw ids here.
+        const inheritedContext = effect.inheritContext && action
+          ? {
+              inheritedTargetId: action.targetId,
+              inheritedBindings: action.supportBindings,
+            }
+          : undefined;
         const seed: PendingEncounterSeed = {
           seedId: `seed_${actionId}_${reaction.id}_${i}`,
           sourceEncounterId: encounterId,
@@ -974,6 +1168,7 @@ export function applyEncounterAftermathReaction(
           seedLabel: effect.seedLabel,
           plantedTick: tick,
           sourceEventNodeId: action?.eventNodeId,
+          ...inheritedContext,
         };
         nextSeeds = [...nextSeeds, seed];
         const seedEvent: TickEvent = {
@@ -3233,6 +3428,68 @@ export function applyEncounterAftermathReaction(
         } catch {
           // fail-soft: clue spawn failure is non-fatal
         }
+        break;
+      }
+
+      case 'bond_change': {
+        const withId = effect.withAgentId;
+        if (!actorAgentId) {
+          emitTrace({
+            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'bond_change', effectDetail: { withAgentId: withId },
+            success: false, failReason: 'no_actor_id',
+            effectiveTargetId: '', effectiveTargetKind: 'actor_fallback',
+            summary: `bond_change[${i}] skipped: no actorId`,
+          } as unknown as Parameters<typeof emitTrace>[0]);
+          break;
+        }
+        // A sentinel the bind pass could not resolve, a missing/non-actor node, or a
+        // self-bond all no-op down the fail-soft path (plan §Fail-soft).
+        const unresolvedSentinel =
+          withId === AFTERMATH_TARGET_SENTINEL ||
+          withId.startsWith(AFTERMATH_CAST_SENTINEL_PREFIX) ||
+          withId.startsWith(AFTERMATH_CAST_SENTINEL_LEGACY_PREFIX);
+        const actorNode = state.graph.getNode(actorAgentId);
+        const withNode = unresolvedSentinel ? undefined : state.graph.getNode(withId);
+        if (!actorNode || actorNode.type !== 'actor' || !withNode || withNode.type !== 'actor' || withId === actorAgentId) {
+          emitTrace({
+            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'bond_change', effectDetail: { withAgentId: withId },
+            success: false,
+            failReason: unresolvedSentinel ? 'unresolved_sentinel' : (withId === actorAgentId ? 'self_bond' : 'non_agent_target'),
+            effectiveTargetId: withId, effectiveTargetKind: 'agent',
+            summary: `bond_change[${i}] skipped: ${unresolvedSentinel ? 'unresolved sentinel' : (withId === actorAgentId ? 'self-bond' : 'non-agent target')} (${withId})`,
+          } as unknown as Parameters<typeof emitTrace>[0]);
+          break;
+        }
+        const reciprocal = effect.reciprocal !== false;
+        const forward = applyBondEdge(state.graph, actorAgentId, withId, effect.sentimentDelta, effect.trustDelta);
+        if (reciprocal) {
+          applyBondEdge(state.graph, withId, actorAgentId, effect.sentimentDelta, effect.trustDelta);
+        }
+        touchWorld(runtime);
+        mutationSummary.touchedWorld = true;
+        emitTrace({
+          tick, category: 'bond_change_applied', agentId: actorAgentId,
+          actorId: actorAgentId, withAgentId: withId,
+          sentimentBefore: forward.sentimentBefore, sentimentAfter: forward.sentimentAfter,
+          created: forward.created, reciprocal,
+          summary: `bond_change_applied[${i}]: ${actorAgentId} → ${withId} sentiment ${forward.sentimentBefore.toFixed(2)}→${forward.sentimentAfter.toFixed(2)}${forward.created ? ' (created)' : ''}${reciprocal ? ' (reciprocal)' : ''}`,
+        } as unknown as Parameters<typeof emitTrace>[0]);
+        emitTrace({
+          tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+          encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+          effectKind: 'bond_change',
+          effectDetail: {
+            withAgentId: withId, sentimentDelta: effect.sentimentDelta, trustDelta: effect.trustDelta,
+            reciprocal, created: forward.created, sentimentAfter: forward.sentimentAfter,
+          },
+          success: true,
+          effectiveTargetId: withId, effectiveTargetKind: 'agent',
+          summary: `bond_change[${i}]: ${actorAgentId} → ${withId} Δsentiment ${effect.sentimentDelta >= 0 ? '+' : ''}${effect.sentimentDelta}`,
+        } as unknown as Parameters<typeof emitTrace>[0]);
         break;
       }
     }

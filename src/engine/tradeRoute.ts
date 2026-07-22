@@ -1,16 +1,26 @@
 /**
  * Trade Route — constants and helpers for the enriched trades_with edge system.
  *
- * Phase 1 adds these properties to trades_with edges (additive — existing volume stays):
+ * Phase 1 (System 2) added these properties to trades_with edges (additive — existing volume stays):
  *   goodsType:    ResourceType   — primary resource being traded
  *   established:  number         — tick when the route was created
  *   lastTraded:   number         — tick of most recent trade action (freshness)
  *   controlledBy: string | null  — nodeId of faction/agent taxing this route
  *   threatened:   boolean        — true when bandits, war, etc. are active
  *
- * Design doc: Docs/plans/2026-03-17-gold-reach-economic-systems-design.md
- * System 2 Constants
+ * Mortal Economy P2 (THR-616) adds a cargo **manifest** — the specific goods a
+ * route carries, derived from the two endpoints' stock tiers. `goodsType` stays
+ * readable for legacy paths (it becomes the manifest's primary good). The manifest
+ * makes routes *about specific scarcities*, which the tooltips read and the
+ * route-event seeds (banditry on rich cargo, embargo on staples) score against.
+ *
+ * Design docs: Docs/plans/2026-03-17-gold-reach-economic-systems-design.md (System 2),
+ * Docs/plans/2026-07-04-mortal-economy-resource-web.md (§Flows, P2).
  */
+
+import type { ResourceInstance } from '../types/resource';
+import { readResources } from './resourceEconomy';
+import { getResourceClass } from '../data/resource-classes';
 
 // ─── Constants (System 2) ─────────────────────────────────────────────────
 
@@ -26,7 +36,59 @@ export const TRADE_ROUTE_DECAY_RATE = 1;
  */
 export const TRADE_ROUTE_FRESHNESS_WINDOW = 5;
 
+// ─── Cargo manifest constants (Mortal Economy P2, THR-616) ────────────────
+
+/**
+ * Bonus added to route-formation scoring when a candidate pair is
+ * complementary (surplus of a good at one end, scarcity of it at the other).
+ * A scarce↔surplus pair is a route that wants to exist. Consumed by the
+ * merchant route-formation candidate scoring.
+ */
+export const ROUTE_FORMATION_BALANCE_BIAS = 0.25;
+
+/** Max distinct goods listed on a route manifest (keeps tooltips + events legible). */
+export const ROUTE_MANIFEST_MAX_GOODS = 4;
+
+/**
+ * Fallback surplus/scarcity quantity boundaries used only when a resource
+ * instance has no derived `stockTier` yet (pre-`phaseResourceStockTiers`, or a
+ * legacy save). Once tiers are derived they take precedence. Mirror the abundance
+ * labels in `types/resource.ts` so pre-derivation reads stay intuitive.
+ */
+export const ROUTE_EXPORT_QUANTITY_FLOOR = 60;
+export const ROUTE_WANT_QUANTITY_CEIL = 30;
+
+/**
+ * Divisor that normalizes the summed base-value of complementary goods into the
+ * ~0..1 `scoreRoutePairBalance` range. Three high-value complementary goods
+ * saturate the bias; one modest good contributes a fraction.
+ */
+export const ROUTE_BALANCE_SCORE_DIVISOR = 3;
+
 // ─── Types ────────────────────────────────────────────────────────────────
+
+/**
+ * Cargo carried by a trade route (Mortal Economy P2, THR-616).
+ *
+ * Derived from the two endpoints' stock tiers at formation and refreshable later.
+ * Compact + self-describing so tooltips and route-event scoring read it directly
+ * without re-walking the endpoints.
+ */
+export interface CargoManifest {
+  /** Resource ids carried, highest base value first. May be empty (legacy / volume-only route). */
+  goods: string[];
+  /** Sum of carried goods' base values — a route's richness (banditry driver). */
+  totalValue: number;
+  /** True if any carried good is a staple — an embargo here reads as famine pressure. */
+  carriesStaple: boolean;
+}
+
+/** An empty manifest — the canonical fail-soft value for a route with no derivable cargo. */
+export const EMPTY_CARGO_MANIFEST: Readonly<CargoManifest> = {
+  goods: [],
+  totalValue: 0,
+  carriesStaple: false,
+};
 
 /**
  * Enriched properties for a trades_with edge.
@@ -37,6 +99,8 @@ export interface TradeRouteProperties {
   volume?: number;
   /** Primary resource type being traded along this route */
   goodsType?: string;
+  /** Cargo manifest — the specific goods this route carries (P2, THR-616). */
+  manifest?: CargoManifest;
   /** Tick when this route was established */
   established?: number;
   /** Tick of the most recent Trade action on this route */
@@ -54,14 +118,121 @@ export interface TradeRouteProperties {
  * Fail-soft: any missing field gets its canonical default.
  */
 export function readTradeRouteProps(raw: Record<string, unknown>): Required<TradeRouteProperties> {
+  const goodsType = typeof raw.goodsType === 'string' ? raw.goodsType : 'unknown';
   return {
     volume: typeof raw.volume === 'number' ? raw.volume : 1,
-    goodsType: typeof raw.goodsType === 'string' ? raw.goodsType : 'unknown',
+    goodsType,
+    manifest: readCargoManifest(raw.manifest, goodsType),
     established: typeof raw.established === 'number' ? raw.established : 0,
     lastTraded: typeof raw.lastTraded === 'number' ? raw.lastTraded : 0,
     controlledBy: raw.controlledBy != null ? (raw.controlledBy as string) : null,
     threatened: typeof raw.threatened === 'boolean' ? raw.threatened : false,
   };
+}
+
+/**
+ * Read a stored cargo manifest fail-soft. A legacy route with no manifest but a
+ * known `goodsType` synthesizes a single-good manifest so downstream readers
+ * (tooltips, route events) still see cargo. A route with neither reads empty.
+ */
+export function readCargoManifest(
+  raw: unknown,
+  goodsType: string,
+): CargoManifest {
+  if (raw && typeof raw === 'object' && Array.isArray((raw as CargoManifest).goods)) {
+    const m = raw as CargoManifest;
+    return {
+      goods: m.goods.filter((g): g is string => typeof g === 'string'),
+      totalValue: typeof m.totalValue === 'number' ? m.totalValue : 0,
+      carriesStaple: typeof m.carriesStaple === 'boolean' ? m.carriesStaple : false,
+    };
+  }
+  // Legacy synthesis from goodsType.
+  if (goodsType && goodsType !== 'unknown') {
+    const cls = getResourceClass(goodsType);
+    return { goods: [goodsType], totalValue: cls.baseValue, carriesStaple: cls.category === 'staple' };
+  }
+  return { goods: [], totalValue: 0, carriesStaple: false };
+}
+
+// ─── Cargo manifest derivation (Mortal Economy P2, THR-616) ───────────────
+
+/** A resource is exportable at an endpoint when it is in surplus there. */
+function isExportable(inst: ResourceInstance | undefined): boolean {
+  if (!inst) return false;
+  if (inst.stockTier) return inst.stockTier === 'surplus';
+  return (inst.quantity ?? 0) >= ROUTE_EXPORT_QUANTITY_FLOOR;
+}
+
+/** A resource is wanted at an endpoint when it is scarce or absent there. */
+function isWanted(inst: ResourceInstance | undefined): boolean {
+  if (!inst) return true; // the endpoint has none of this good — it wants it
+  if (inst.stockTier) return inst.stockTier === 'scarce';
+  return (inst.quantity ?? 0) <= ROUTE_WANT_QUANTITY_CEIL;
+}
+
+/**
+ * Build a route's cargo manifest from its two endpoints' resource bags.
+ *
+ * A good is carried when it is in surplus at *either* endpoint (there is stock to
+ * export). Goods are ranked by base value and capped at `ROUTE_MANIFEST_MAX_GOODS`,
+ * so the manifest highlights the route's most valuable freight.
+ *
+ * Pure + deterministic (ranking is value-desc, then id-asc). Fail-soft: endpoints
+ * with no resources yield the empty manifest — the route reverts to volume-only.
+ */
+export function buildRouteManifest(
+  sourceProps: Record<string, unknown>,
+  targetProps: Record<string, unknown>,
+  maxGoods: number = ROUTE_MANIFEST_MAX_GOODS,
+): CargoManifest {
+  const src = readResources(sourceProps);
+  const dst = readResources(targetProps);
+
+  const carried = new Set<string>();
+  for (const [id, inst] of Object.entries(src)) if (isExportable(inst)) carried.add(id);
+  for (const [id, inst] of Object.entries(dst)) if (isExportable(inst)) carried.add(id);
+  if (carried.size === 0) return { goods: [], totalValue: 0, carriesStaple: false };
+
+  const ranked = [...carried].sort((a, b) => {
+    const va = getResourceClass(a).baseValue;
+    const vb = getResourceClass(b).baseValue;
+    if (vb !== va) return vb - va;
+    return a < b ? -1 : a > b ? 1 : 0;
+  }).slice(0, Math.max(0, maxGoods));
+
+  let totalValue = 0;
+  let carriesStaple = false;
+  for (const id of ranked) {
+    const cls = getResourceClass(id);
+    totalValue += cls.baseValue;
+    if (cls.category === 'staple') carriesStaple = true;
+  }
+  return { goods: ranked, totalValue: Number(totalValue.toFixed(3)), carriesStaple };
+}
+
+/**
+ * Complementarity score ∈ [0, 1] for a candidate route between two endpoints:
+ * high when one end holds a surplus of a good the other lacks (and vice versa).
+ * This is the signal behind `ROUTE_FORMATION_BALANCE_BIAS` — a scarce↔surplus
+ * pair is a route that wants to exist. Pure + deterministic.
+ */
+export function scoreRoutePairBalance(
+  sourceProps: Record<string, unknown>,
+  targetProps: Record<string, unknown>,
+): number {
+  const src = readResources(sourceProps);
+  const dst = readResources(targetProps);
+
+  let score = 0;
+  for (const [id, inst] of Object.entries(src)) {
+    if (isExportable(inst) && isWanted(dst[id])) score += getResourceClass(id).baseValue;
+  }
+  for (const [id, inst] of Object.entries(dst)) {
+    if (isExportable(inst) && isWanted(src[id])) score += getResourceClass(id).baseValue;
+  }
+  const normalized = score / ROUTE_BALANCE_SCORE_DIVISOR;
+  return normalized < 0 ? 0 : normalized > 1 ? 1 : normalized;
 }
 
 /**

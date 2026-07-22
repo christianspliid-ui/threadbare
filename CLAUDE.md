@@ -2,21 +2,23 @@ This folder contains The Fantasy World Simulator — a systemic god-game/rogue-l
 
 [![CI](https://github.com/christianspliid-ui/threadbare/actions/workflows/ci.yml/badge.svg)](https://github.com/christianspliid-ui/threadbare/actions/workflows/ci.yml)
 
-## Cowork vs Claude Code — Read This First
+## Session Types: Design vs Execution — Read This First
 
-**Two agents, one executor queue.** Cowork designs and plans (no code, no git). **Claude Code (CC)** is the single executor — it implements, commits with `Fixes THR-XX`, and lets the merge-to-main auto-close fire. One queue: **Ready for Dev**, which CC pulls from. (Codex and the second `Ready for Codex` queue were retired 2026-06-23, THR-486.)
+**One runtime, one executor queue.** All Threadbare agent work runs in **Claude Code**. The design/execution split is a *session type*, not a runtime: a **design session** (`/design-session`) authors plan docs and hands off; an **execution session** (`/pull-work`) implements, commits with `Fixes THR-XX`, and lets the merge-to-main auto-close fire. One queue: **Ready for Dev**. (Codex and the `Ready for Codex` queue were retired 2026-06-23, THR-486; Cowork was retired from the Threadbare workflow 2026-07-21, THR-654.)
 
 This is the reference card. The full protocol — and why each rule is non-negotiable — lives in three authoritative places; read them, don't re-derive from this card:
 
 - **`Docs/canon/process.md`** — session Step 0; the pointer surface for every rule below.
 - **`Docs/plans/2026-04-13-linear-coordination-protocol.md`** — canonical detail. The "Coordination Failure Modes — Hard Rules" section (Rules 1–10) explains why each rule exists.
-- **`.claude/skills/pull-work/SKILL.md`** — CC's `/pull-work` pickup flow as an executable checklist.
+- **`.claude/skills/pull-work/SKILL.md`** — the `/pull-work` pickup flow as an executable checklist.
 
-**If you are running in Cowork (design only):** No code, no git. Track everything in **Linear** (Threadbare team). Write plan docs into `Docs/plans/` or `Docs/audits/`, apply the `plan-pending-commit` label, and put the `**Plan doc:** \`Docs/plans/…md\`` path in the issue **description** *and* the handoff comment (`flush-plan-docs` parses the description first, the comment as a fallback — THR-645). The hourly `flush-plan-docs` task commits plan docs (direct to `origin/main`, or via an auto-flush PR if branch protection rejects the push) — never commit plan docs by hand. Don't wait for the commit before handing off: move the issue to **Ready for Dev** with a **coordination block** in the handoff comment — `Suggested model` (advisory; the `model:*` label is a work-type signal, not a queue filter — CC always runs Opus), `Parallel-safe with`, `Mutex with`. The Linear state transition *is* the handoff — there is no out-of-band signal.
+**In a design session:** Track everything in **Linear** (Threadbare team). Write plan docs into `Docs/plans/` or `Docs/audits/` and commit them directly via a `docs/plan-*` PR — CI-gated, merged immediately. Put the `**Plan doc:** \`Docs/plans/…md\`` path in the issue **description** *and* the handoff comment. Hand off by moving the issue to **Ready for Dev** with a **coordination block** in the handoff comment — `Suggested model` (advisory; the `model:*` label is a work-type signal, not a queue filter — CC always runs Opus), `Parallel-safe with`, `Mutex with`. The Linear state transition *is* the handoff — there is no out-of-band signal. See `.claude/skills/design-session/SKILL.md`.
 
-**If you are running in Claude Code (execution):** Start with `/pull-work`. Pull the top **Ready for Dev** / `assignee:null` issue (sort by priority in memory — `orderBy:priority` errors, impediment #49). **Claim before you read:** `save_issue(id, assignee:"me", state:"In Dev")`, then `get_issue(id)` to confirm the write stuck (silent drops, impediment #48); only then read the plan doc. **Read the latest comment first** — the `Reopened` label means read all comments back to the original handoff. **WIP = 1** In Dev across all sessions and worktrees — parallel work happens on *different* issues. **Never `save_issue(state:"Done")` from CC** — put `Fixes THR-XX` in the commit body *and* the PR body (impediment #140) and let the merge auto-close fire straight to Done. Check `Docs/plans/` for the design doc before writing code.
+**Ticket-authoring rules (THR-688)** — three rules bind every ticket you write, full text + motivating examples in the protocol doc § *Ticket-authoring rules*: (A) **predicates, not counts** — a sweep ticket states its membership predicate, never a snapshot count that rots before pickup; (B) **mutex lines carry their reason** — `Mutex with: THR-XXX (both edit <file>)`, and an executor may reverse a mutex only when the stated reason is verifiably inapplicable, recorded in a comment; (C) **Done-whens match the pillar** — browser evidence for UI-pillar surfaces only, engine/content accepted via CLI/headless sweeps. A Done-when may require running N ticks in an automated browser tab **only via `window.__DEBUG.tick(n)`** (THR-689, shipped 2026-07-21): `document.hidden` throttles the interval loop to 1 tick/click, so a Done-when that depends on Play-button ticking is still unreachable by construction.
 
-**User review interface — Christian is chat-only, plain-language-only (THR-608).** He does not review code diffs, PRs, or Linear. A Done-when like "diff-reviewed by Christian" is invalid. When a change genuinely needs human sign-off, present a plain-language chat summary (what changed, why, what could be lost, your recommendation) and ask one yes/no question; chat approval satisfies the gate — record `human gate satisfied via chat review <date>` as a Linear comment so the executor may merge. Christian's attention is surfaced in **chat** (via the hourly `keep-work-flowing` session), never a Linear comment addressed to him. Technical verdicts — CI/CD state, git forensics, merge mechanics, not-a-defect calls — are the agent's to make; only creative/design-vision decisions go to Christian, framed in game terms. See `Docs/plans/2026-07-04-user-review-interface.md`.
+**In an execution session:** Start with `/pull-work`. Pull the top **Ready for Dev** / `assignee:null` issue (sort by priority in memory — `orderBy:priority` errors, impediment #49). **Claim before you read:** `save_issue(id, assignee:"me", state:"In Dev")`, then `get_issue(id)` to confirm the write stuck (silent drops, impediment #48); only then read the plan doc. **Read the latest comment first** — the `Reopened` label means read all comments back to the original handoff. **WIP = 1** In Dev across all sessions and worktrees — parallel work happens on *different* issues. **Never `save_issue(state:"Done")` from CC** — put `Fixes THR-XX` in the commit body *and* the PR body (impediment #140) and let the merge auto-close fire straight to Done. Check `Docs/plans/` for the design doc before writing code.
+
+**User review interface — Christian is chat-only, plain-language-only (THR-608).** He does not review code diffs, PRs, or Linear. A Done-when like "diff-reviewed by Christian" is invalid. When a change genuinely needs human sign-off, present a plain-language chat summary (what changed, why, what could be lost, your recommendation) and ask one yes/no question; chat approval satisfies the gate — record `human gate satisfied via chat review <date>` as a Linear comment so the executor may merge. Christian's attention is surfaced in `Design/briefing.md` and `Design/user-actions.md` (refreshed hourly by `keep-work-flowing-cc`) and reviewed in an interactive chat session, never a Linear comment addressed to him. Technical verdicts — CI/CD state, git forensics, merge mechanics, not-a-defect calls — are the agent's to make; only creative/design-vision decisions go to Christian, framed in game terms. See `Docs/plans/2026-07-04-user-review-interface.md`.
 
 ### Prioritization: Finish Before You Start
 
@@ -68,7 +70,7 @@ npm run dev    # start Vite dev server with hot reload
 
 **`?seeded` ≠ `--seed 42` (intentional divergence):** The `?seeded` URL uses the `DEV_ASCENDANT_IDENTITY` (hunger.witness, large map, derived cosmology). The CLI `--seed 42` uses a balanced cosmology and medium map. They generate different worlds with the same numeric seed. For roughly equivalent worlds: use `?view=game&seeded&size=medium` in browser vs `npm run cli -- --seed 42 --map medium`. For large-map CLI testing: `npm run cli -- --seed 42 --map large` (still differs in cosmology).
 
-**Note for Cowork/Claude sessions:** The sandbox VM has isolated networking. Use `npx tsc --noEmit`, `npx vite build`, and `npm test` to verify. The user must run `npm run dev` on their own machine.
+**Note for automated sessions:** The sandbox VM has isolated networking. Use `npm test` and `npx vite build` to verify (for types, see the Pre-commit note on `tsc -b` — `tsc --noEmit` proves nothing here). The user must run `npm run dev` on their own machine.
 
 ### Headless CLI (`npm run cli`)
 
@@ -93,6 +95,18 @@ Key commands at the `fws>` prompt: `tick [N]` (advance ticks), `run [N] [--auto-
 Dev-only API exposed on `window.__DEBUG` (tree-shaken in prod). Use from `preview_eval`, `javascript_tool`, or browser console.
 
 ```javascript
+// Advance the simulation headlessly (THR-689) — the sanctioned way to satisfy any
+// "run N ticks and observe X" browser Done-when. An automated tab reports
+// `document.hidden`, which throttles the interval tick loop to ~1 tick per click;
+// this drives the same runTick pipeline synchronously instead. Auto-pauses the run loop.
+window.__DEBUG.tick()        // 1 tick
+window.__DEBUG.tick(40)      // 40 ticks
+// -> { ticksRun, tick, durationMs, requested, capped, stoppedReason }
+// Clamped to DEBUG_TICK_MAX (200) per call — a larger request returns capped:true
+// rather than an error. stoppedReason is 'completed' | 'capped' | 'phase_left_playing'
+// | 'error'; a mid-batch throw returns partial progress, never propagates (fail-soft).
+// Emits exactly ONE aggregate `debug_tick_batch` trace per call, never one per tick.
+
 // Debug panel control (opens panel + enables tracing automatically):
 // Keyboard shortcuts in-game:
 // - `F1` opens the Debug Panel directly to the CLI tab
@@ -183,7 +197,7 @@ When starting any encounter, prose, attachment, or other content authoring task,
 |--------|-----------|-------------|
 | Encounters | `Docs/canon/encounters.md` | Before running `encounter-pipeline`, `template-encounter-rewrite`, or any encounter content work |
 | Cosmology | `Docs/canon/cosmology.md` | Before any content that references Reaches, Spheres, or Quintessence — includes encounters, agents, and faction content |
-| Process | `Docs/canon/process.md` | At session start, instead of re-reading CLAUDE.md sections on NFPs, three-pillar rule, definition of done, design governance, coordination protocol, drift scan, retrospectives, and UL-proposal flow. Meta-canon for every Cowork session. |
+| Process | `Docs/canon/process.md` | At session start, instead of re-reading CLAUDE.md sections on NFPs, three-pillar rule, definition of done, design governance, coordination protocol, drift scan, retrospectives, and UL-proposal flow. Meta-canon for every design session. |
 | Prose | `Docs/canon/prose.md` | Before any prose, vignette, enrichment, or content-table work — picks the right prose skill (`prose-pipeline`, `prose-content-systems`, `prose-vignettes-and-enrichment`), names the four pipelines, and asserts Threadbare voice + player-as-god framing. |
 | Hex map | `Docs/canon/hex-map.md` | Before any HexMapV2 / Three.js / hex-renderer work — picks the right hex-map skill (`hexmap-core`, `hexmap-layers`, `hexmap-renderer`), names the load-bearing decisions (raw Three.js / no R3F, three-tier position model, Y-flip, stencil clipping, hex-distance awareness), and lists current rejected approaches. |
 | Rulebook (quick-reference) | `Docs/canon/rulebook-quick-reference.md` | **Always-load at session start** — board-game card, ~80 lines, current rules of play only. Companion to the full rulebook. |
@@ -277,8 +291,9 @@ Cross-boundary testing rules, contract test patterns, pre-commit verification ch
 
 **Pre-commit minimum (always do these):**
 1. `npm test` — all tests pass
-2. `npx tsc --noEmit` — type check clean
-3. `npx vite build` — production build succeeds (confirms Vercel will deploy)
+2. **Typecheck — do NOT run `npx tsc --noEmit`.** It is a **no-op** in this repo: the root `tsconfig.json` sets `files: []`, so it exits 0 unconditionally no matter how broken the code is. Citing its exit 0 as evidence is gate theater (THR-686). The authoritative type gate is CI's `Test · Typecheck · Build`, whose Typecheck step runs `npm run check:typecheck` — a **ratchet** (THR-693): it runs `tsc -b --force`, compares the error count against the committed `typecheck-baseline.json`, and fails only on an **increase**. It does not require a green baseline, and the ~3529 pre-existing errors (THR-489) are not yours to fix. Locally, run the same command: `npm run check:typecheck`. It is the identical gate, so a local pass means CI passes. If you legitimately change the count, refresh with `npm run check:typecheck -- --update` and commit the baseline, saying why in the commit body. (Until THR-693 the step ran `npx tsc --noEmit`, which is a no-op here and could not fail — citing its exit 0 was gate theater, THR-686.)
+3. `npx vite build` — production build succeeds (confirms Vercel will deploy). **Note this bypasses the npm `prebuild` hook**, so it does *not* refresh generated artifacts — that is what step 3b exists for.
+3b. `npm run check:generated-freshness` — regenerates every committed generated artifact and fails if the commit carries a stale one. **Blocking in CI** (THR-690). Required whenever the change touches action templates, the UL shards, `Docs/impediments.md`, or a design-wiki page. Fix by running `npm run prebuild` and committing the result.
 4. `npm run check:process` — advisory workflow/process lint (non-blocking while it stabilizes)
 5. `npm run lint:plan-doc` — advisory plan-doc structure lint for `Docs/plans/*.md` (non-blocking while it stabilizes)
 6. Verification evidence is mandatory at closeout: paste raw terminal output for steps 1-3 (and step 7 when applicable) in the closing commit body or Linear completion comment, or link to a green CI run for the same commit.
@@ -288,18 +303,18 @@ Cross-boundary testing rules, contract test patterns, pre-commit verification ch
 
 ## Known Sandbox Limitations
 
-The agent sandboxes (Cowork, and Claude Code automation runs) have several quirks that recur often enough that agents waste time rediscovering them. **Read this before debugging environment failures.** (Carried from 2026-04-11 retro; first-class entry per 2026-04-18 retro.)
+The Claude Code automation sandbox has several quirks that recur often enough that agents waste time rediscovering them. **Read this before debugging environment failures.** (Carried from 2026-04-11 retro; first-class entry per 2026-04-18 retro.)
 
 - **`rg.exe` (ripgrep) is blocked / absent in the agent sandbox** — direct `rg.exe` invocation fails with `Access is denied` or `ENOENT` even on standard repo paths. The `Grep` tool works fine — it does not call `rg.exe` directly. **Workaround for shell use:** use PowerShell `Get-ChildItem -Recurse -Filter <pattern> | Select-String <regex>` instead of `rg`. Repeated occurrences: impediments #15, #28, #33, #37 (≈19 hits).
 - **PowerShell variable scoping leaks across blocks.** Variables assigned inside `foreach`/`if` blocks remain visible at the surrounding scope, which can mask bugs in throwaway scripts. **Workaround:** prefer small checked `.ps1` files over inline one-liners when logic is non-trivial; for complex regex with mixed quoting (impediment #44), write to a script file rather than escaping inline.
-- **`git add` and `git push` are blocked in Cowork.** Cowork's role per CLAUDE.md is design/docs/Linear only — it cannot commit or push. **Workaround:** stage handoff via Linear by moving the issue to "Ready for Dev" with the coordination-block handoff comment; Claude Code polls Linear hourly and performs the actual git operations. Repeated occurrences: impediments #23, #24.
 - **`npm test` may time out at sandbox-default limits** on the full suite. **Workaround:** run scoped subsets via `npx vitest run <path>` for fast feedback; full-suite runs should be kicked off with explicit longer timeouts. The "test suite is red on main" baseline (impediment #22, recurring as #30, #31, #32, #34, #38, #39, #54) is a separate, real engineering problem — see TB-120.
 - **`esbuild` / `npm install` may fail with `spawn EPERM`** in restricted sandboxes (impediment #21). **Workaround:** retry once, then fall back to running the failing step on the user's machine; do not loop indefinitely.
-- **PDF and `yt-dlp` extraction tools are absent** from the Cowork environment (impediments #16, #18). **Workaround:** use `WebFetch` against the canonical URL, or ask the user to extract locally.
-- **`web.open` ref IDs from earlier in a session can expire** mid-conversation (impediment #17). **Workaround:** reopen the page from its canonical URL rather than chaining from a stored ref.
 - **Linear `save_issue` returns 200 but does not always update state** (impediment #48). **Workaround:** always verify-after-write by re-querying the issue; do not trust the success response alone.
 - **Linear `list_issues orderBy: 'priority'` is rejected at runtime** even though the schema accepts it (impediment #49). **Workaround:** omit `orderBy` (or use `createdAt` / `updatedAt`) and sort by priority in memory.
-- **Obsidian MCP unreachable** (~12 occurrences over 8 days, impediments #66, #71, #75, #86) — vault-log appends (`log.md`, retro outputs, ingest results) silently dropped. **Workaround:** vault skills now auto-fall back to filesystem writes when the MCP fails. Requires `OBSIDIAN_VAULT_PATH` set to the vault root (see vault-log skill). If unset, the fallback fails loud rather than silently dropping the entry. Add to `.claude/settings.local.json`: `{ "env": { "OBSIDIAN_VAULT_PATH": "C:\\Users\\chris\\Dev\\Obsidian" } }`.
+- **Obsidian vault writes go through the filesystem, not the MCP** (structurally closed 2026-07-21, THR-654 — was impediments #66, #71, #75, #86, ~12 occurrences over 8 days of silently-dropped `log.md` appends). Vault skills write directly to `OBSIDIAN_VAULT_PATH`; if unset, they fail loud rather than dropping the entry. Add to `.claude/settings.local.json`: `{ "env": { "OBSIDIAN_VAULT_PATH": "C:\\Users\\chris\\Dev\\Obsidian" } }`.
+
+- **The CC harness mutates the home tree's git state at session spawn** (THR-671/672, proven 2026-07-20) — two behaviors, neither attributable to any agent (no transcript across any project directory contains the commands, and agent shell commands always transcript): (a) an hourly empty-reflog-message update of `refs/heads/main` via plumbing, and (b) a bare `git checkout HEAD` that parks the home tree on a detached HEAD — observed three mornings running. Moving `main` under a checked-out tree manufactures phantom "staged" diffs that look like catastrophic damage but are not. **This is harness-level and cannot be fixed from the repo.** **Containment:** `threadbare-autosync.ps1` reattaches the provably loss-free park (detached ∧ 0 unique commits ∧ 0 tracked modifications → `git switch main`) within the hour; any other detached state is left untouched with one loud log line carrying the manual repair. Never read a behind-count off a detached HEAD — `HEAD..origin/main` on a parked HEAD is arithmetically true and semantically meaningless (see the freshness-signal table in § Session Workflow). Upstream bug report: [anthropics/claude-code#79713](https://github.com/anthropics/claude-code/issues/79713) (filed 2026-07-21; report body at `Docs/audits/2026-07-20-git-cicd-forensics/upstream-report.md`).
+- **Scheduled sessions must never run git state ops with the home tree as CWD** (THR-672) — no `checkout`/`switch`/`commit`/`merge`/`rebase`/`reset` against `C:\Users\chris\Dev\Projects\TheFantasyWorldSimulator`. It is a read-only mirror of `main` owned by autosync; the since-retired `flush-plan-docs` (07-17) and `keep-work-flowing` (07-19) tasks each left it parked on a session branch, stalling autosync for days. **Workaround:** home-tree access is read-only `git -C` queries and file reads; all branch/commit/push work happens in the session's own worktree (branches are repo-global, push works from any worktree).
 
 If you discover a new sandbox limitation, log it via `impediment-reporter` and add it here in the next retro.
 
@@ -334,7 +349,7 @@ Every feature touches three pillars: **Engine** (systems, tick loop, graph), **C
 - [ ] **Summarize** — NFP Compliance table at the end (PASS / PASS with note per priority)
 - [ ] **Three-pillar check** — Engine section present? Content section present? UI section present? Wiring section connecting them?
 - [ ] **Step 8.5 - Intent-judge verdict** — after summarize and three-pillar check, before presenting. Spawn `intent-judge` as a Task subagent (`model: "opus"`). Author must first produce an action proposal at `Docs/plans/.intent-proposals/<slug>.md` (template at `.claude/skills/intent-judge/proposal-template.md`). Verdict gates the handoff: Allow → proceed; Revise → fix and re-run; Block → rewrite; Escalate → ping user with verbatim finding.
-- [ ] **Step 8.6 - Forked structural audit (design-audit-pipeline)** — after intent-judge Allow, before applying `plan-pending-commit`. Spawn three subagents in one message (NFP / three-pillar / Vision) via `.claude/skills/design-audit-pipeline/SKILL.md`. Each returns ≤300-word verdict. Orchestrator writes verdicts into the plan-doc tail under `## Forked-audit verdicts`. If any FAIL or REVISE, surface to author before transitioning Linear state. Manual invocation: `/design-audit <plan-doc-path>`.
+- [ ] **Step 8.6 - Forked structural audit (design-audit-pipeline)** — after intent-judge Allow, before opening the plan-doc PR. Spawn three subagents in one message (NFP / three-pillar / Vision) via `.claude/skills/design-audit-pipeline/SKILL.md`. Each returns ≤300-word verdict. Orchestrator writes verdicts into the plan-doc tail under `## Forked-audit verdicts`. If any FAIL or REVISE, surface to author before transitioning Linear state. Manual invocation: `/design-audit <plan-doc-path>`.
 - [ ] **Vision audit** — does this plan contradict or update any Vision premise? If so, the Vision edit is part of this ticket's scope, not a follow-up.
 - [ ] **Rulebook impact?** — does this plan change a rule of play (turn structure, action verb, prerequisite, resource, encounter, clock, win/loss)? If yes, the rulebook update is part of this ticket's scope, not a follow-up. Update `Docs/canon/rulebook.md` in the same PR and re-verdict the affected section.
 - [ ] **Present** the finished, compliant design to the user
@@ -407,12 +422,12 @@ This protocol exists because: a bug where `@hero` resolved to the wrong actor wa
 
 Work is not "done" until it is deployed and documented. Do all of these automatically — do not ask, do not stop at "ready to push?", just do it.
 
-- [ ] **Commit** all changes — the closing commit's message body **must** include `Fixes THR-XX` (or `Closes THR-XX` / `Resolves THR-XX`). This triggers the Linear auto-close workflow on push to `main`. Include verification evidence either in the commit body or closing Linear comment: raw terminal output for `npm test`, `npx tsc --noEmit`, and `npx vite build`, or a link to a green CI run for the same commit. Example: `docs: update project-status for THR-8\n\nFixes THR-8`
+- [ ] **Commit** all changes — the closing commit's message body **must** include `Fixes THR-XX` (or `Closes THR-XX` / `Resolves THR-XX`). This triggers the Linear auto-close workflow on push to `main`. Include verification evidence either in the commit body or closing Linear comment: raw terminal output for `npm test` and `npx vite build` (plus a `tsc -b` net-new diff when the change touches TypeScript — never `tsc --noEmit`, which is a no-op here), or a link to a green CI run for the same commit. Example: `docs: update project-status for THR-8\n\nFixes THR-8`
   - **Put `Fixes THR-XX` in the PR description body too, not only the commit body.** When the merge is a non-squash merge commit (`Merge pull request #N…`), GitHub's merge commit does **not** carry the feature commit's body, so Linear's integration never sees the keyword and the auto-close silently misses (impediment #140, THR-453). The keyword must appear in the PR body so the close fires regardless of merge strategy.
 - [ ] **Push** to GitHub (`git push`, with `-u origin <branch>` if needed)
-- [ ] **Merge** feature branches into main immediately — don't leave branches waiting
+- [ ] **Merge** feature branches into main immediately — don't leave branches waiting. **Queue it with `gh pr merge --auto --merge` and move on; do not poll-wait on CI** (THR-675). GitHub holds the merge until the required `Test · Typecheck · Build` check is green and merges with no session present. Branch protection and the required check are unchanged — auto-merge removes the waiting, not the gate.
 - [ ] **Deploy** — Vercel auto-deploys from GitHub on push to `main`. Just ensure the push succeeded.
-- [ ] **Update docs** — `project-status.md` (≤60 lines, move old entries to `project-history.md`), `project-history.md` (one-line `✅` entry), `changelog.md` (append rows). Add a completion comment to the Linear issue (the `Fixes THR-XX` keyword in the commit auto-closes it, but a human-readable comment is still expected).
+- [ ] **Update docs** — `project-status.md` (≤60 lines, move old entries to `project-history.md`), `project-history.md` (one-line `✅` entry), `changelog.md` (append rows). Add a completion comment to the Linear issue (the `Fixes THR-XX` keyword in the commit auto-closes it, but a human-readable comment is still expected). These three append-only docs are marked `merge=union` in `.gitattributes` (THR-691), so a stale branch's table rows merge cleanly **locally** — GitHub's server-side merge ignores the attribute (measured), so a PR that idles into `CONFLICTING` is fixed with `git merge origin/main && git push`, not the web resolver. See `.claude/skills/pull-work/SKILL.md` § "Closeout — resolving a conflicted closeout-docs PR". `project-status.md` is excluded by design.
 - [ ] **Verify wiring** — Check every new module against `Docs/plans/wiring-checklist.md`. Engine modules called from orchestrator, modals rendered in GameView JSX, GameState fields consumed by UI, traces emitted, player controls connected. Update the checklist if new surfaces added.
 - [ ] **Browser-verify UI changes** — If the change touches the UI pillar (any file under `src/components/`, `src/views/`, `src/hooks/use*UI*`, `src/styles/`, `index.css`, or HexMapV2/Three.js surfaces), the closing commit body or Linear completion comment MUST include:
   1. **At least one screenshot** of the changed surface at 1920×1080 (the contractual viewport — see `## Viewport Contract`). Use Playwright `preview_resize(1920, 1080)` then `preview_screenshot` for DOM surfaces; use Claude-in-Chrome `mcp__Claude_in_Chrome__computer` with `action: "screenshot"` for any HexMapV2 / Three.js / WebGL surface (Playwright cannot see canvas content — see CLAUDE.md viewport contract).
@@ -426,7 +441,7 @@ Work is not "done" until it is deployed and documented. Do all of these automati
 - [ ] **Update systemic wiring guide** — If your change adds or modifies a content-facing engine capability (new effect type, new graph operation, new enrichment placeholder, new aftermath reaction kind, new template field, new scoring signal), update `Docs/plans/2026-04-16-systemic-wiring-guide.md`. This guide is the IKEA manual for content authors — if a capability isn't documented there, content agents won't use it and the game gets hardcoded prose instead of systemically alive content.
 - [ ] **Log deferrals** — Every `// TODO`, `// DEFERRED`, or `// PHASE-X-DEFERRED` comment added in this session MUST have a corresponding Linear issue. Use format `// TODO(THR-XX): description`. No orphan deferrals — if you deferred it, track it. Label the issue `Deferral` and assign it to the same project as the parent work. A deferral without a Linear issue is invisible tech debt.
 - [ ] **Log impediments** — Any blockers or workarounds → `Docs/impediments.md`. Load `impediment-reporter` skill for format. Mandatory — unlogged friction is invisible.
-- [ ] **Close out** — Confirm the Linear issue is in the correct terminal state: Cowork hands off by moving to "Ready for Dev" with the coordination-block handoff comment posted and the `plan-pending-commit` label applied (the `flush-plan-docs` scheduled task handles the actual commit — Cowork does not commit directly); Claude Code lands the work with `Fixes THR-XX` in the merge commit and lets the auto-close fire. The Linear state transition IS the closeout — no out-of-band notification of any kind. Claude Code polls Linear on an hourly cycle and picks up the top Ready-for-Dev item.
+- [ ] **Close out** — Confirm the Linear issue is in the correct terminal state: a design session hands off by moving to "Ready for Dev" with the coordination-block handoff comment posted and the plan doc already committed via its own `docs/plan-*` PR; an execution session lands the work with `Fixes THR-XX` in the merge commit and lets the auto-close fire. The Linear state transition IS the closeout — no out-of-band notification of any kind. The hourly pickup lane polls Linear and picks up the top Ready-for-Dev item.
 
 **Where to find completed work history:** Linear issues in "Done" state (current), `.planning/BACKLOG_HISTORY.md` (pre-Linear history), and `Docs/project-history.md` (one-line entries).
 
@@ -435,11 +450,33 @@ Work is not "done" until it is deployed and documented. Do all of these automati
 - [ ] Read this file for orientation
 - [ ] **Read the Ubiquitous Language index** — `Docs/ubiquitous-language/README.md` (always-load, ~3k tokens). Load individual shard files on demand when the task touches their domain. **UL wins on terminology disagreements** — when this file, Obsidian, plan docs, or code comments conflict with the UL, the UL definition is correct and the conflicting source needs reconciliation (open a `UL-proposal` Linear issue).
 - [ ] **First tool call of any coding session:** run `node --experimental-strip-types scripts/session-precheck.ts` and compare its `fingerprint ...` line against expected sandbox capabilities before starting feature work
-- [ ] **Read the freshness signal.** The precheck output line `fingerprint ... freshness=<value>` reports working-tree staleness vs `origin/main`. If `freshness` is `behind:*`, `stale-branch:*`, or any combination thereof, the agent MUST surface this to the user as the **first thing in the response**, with the exact fix command (`git fetch && git pull` for main; `git fetch && git rebase origin/main` for other branches). Do not begin design work until the user has either resolved the staleness or explicitly acknowledged it. `freshness=unknown` is *not* a free pass — surface it and ask the user to confirm whether the tree is current.
+- [ ] **Read the freshness signal.** The precheck output line `fingerprint ... freshness=<value>` reports working-tree state vs `origin/main`. The value is one of seven keys, each with its own action:
+
+  | `freshness=` | Meaning | Action |
+  |---|---|---|
+  | `current` | On a branch, up to date | Proceed |
+  | `ahead:N` | Local commits not pushed | Proceed; push at closeout |
+  | `behind:N` | Branch genuinely trails `origin/main` | Surface first; `git fetch && git pull` on main, `git fetch && git rebase origin/main` elsewhere |
+  | `stale-branch:Xh` | Old closeout branch still checked out | Surface first; close it out or switch to main |
+  | `parked-at-ancestor` | Detached at an older snapshot, **nothing unique stranded** | **Run the repair yourself, then continue** (see below) |
+  | `parked-with-unique-commits:N` | Detached with commits that exist nowhere else | **Stop.** Do not reset. Run `git log origin/main..HEAD --oneline` and surface the SHAs |
+  | `unknown` | Probe could not determine state | Surface it; ask the user to confirm the tree is current |
+
+  For `behind:*` / `stale-branch:*` / `unknown`, surface it as the **first thing in the response** and do not begin design work until the user has resolved or explicitly acknowledged it.
+
+  **`parked-at-ancestor` is the one case an agent may fix without asking.** The precheck has already proven `git rev-list --count origin/main..HEAD == 0`, so nothing authored can be lost — untracked files survive and the stash is recoverable. Run the repair, note it in one line, and carry on:
+
+  ```bash
+  git stash push -m home-tree-recovery   # harmless no-op if the tree is clean
+  git switch main
+  git pull --ff-only origin main
+  ```
+
+  Never read a behind-count off a detached HEAD. `HEAD..origin/main` on a parked HEAD is arithmetically true and semantically false; treating it as decay is what turned a two-command repair into a multi-day escalation (THR-671).
 - [ ] **Check Linear for work** — query issues by state per the protocol in `Docs/plans/2026-04-13-linear-coordination-protocol.md`:
-  - **Cowork:** Run the board scan from `Docs/plans/2026-04-13-linear-coordination-protocol.md` § Cowork Session Start — a state-filtered fan-out across In Design, Implementation Planning, Ready for Dev, In Dev, and Todo, bucketed in memory by `status` (never an unfiltered `list_issues` — it overflows the response budget; see Limitations §).
-  - **Claude Code:** `list_issues state:"Ready for Dev" assignee:null` (pick up handoffs), `list_issues state:"In Dev" assignee:"me"` (resume active work)
-- [ ] **Cowork — plan doc authoring:** After writing a plan doc to `Docs/plans/` or `Docs/audits/`, immediately apply the `plan-pending-commit` label to the corresponding Linear issue. **Put the `Plan doc:` path in the issue *description* as well as the handoff comment** — a `**Plan doc:** \`Docs/plans/…md\`` line in both. `flush-plan-docs` parses the description first and the handoff comment as a fallback (THR-645); the two-location convention keeps neither a single point of failure. Move the issue to the appropriate state (e.g. Ready for Dev) right away — do NOT wait for the doc to be committed first. The `flush-plan-docs` scheduled task (hourly at :15) commits the file — directly to `origin/main` when possible, or via an auto-flush PR — and removes the label. Do NOT commit plan docs manually.
+  - **Design session:** Run the board scan from `Docs/plans/2026-04-13-linear-coordination-protocol.md` § Design Session Start — a state-filtered fan-out across In Design, Implementation Planning, Ready for Dev, In Dev, and Todo, bucketed in memory by `status` (never an unfiltered `list_issues` — it overflows the response budget; see Limitations §).
+  - **Execution session:** `list_issues state:"Ready for Dev" assignee:null` (pick up handoffs), `list_issues state:"In Dev" assignee:"me"` (resume active work)
+- [ ] **Design session — plan doc authoring:** After writing a plan doc to `Docs/plans/` or `Docs/audits/`, commit it directly via its own `docs/plan-*` PR (CI-gated, merged immediately). **Put the `Plan doc:` path in the issue *description* as well as the handoff comment** — a `**Plan doc:** \`Docs/plans/…md\`` line in both, so neither is a single point of failure. Then move the issue to the appropriate state (e.g. Ready for Dev) with the coordination block.
 - [ ] Read Obsidian `Index.md` via MCP → follow links to the relevant system. Index.md is the comprehensive catalog — use it as the LLM's navigation system.
 - [ ] **For design work**, load the rulebook synthesis first: `Docs/canon/rulebook-quick-reference.md` is always-load; `Docs/canon/rulebook.md` for any work touching rules of play (turn structure, action verbs, prerequisites, resources, encounters, clocks, win/loss). Then load `state-of-game-design` (mechanical foundation) and `game-design-direction` (experiential foundation), then descend into Vision/ via Obsidian MCP and the relevant per-domain canon page.
 - [ ] **Check Linear Projects for milestone context** — `list_projects` to see which milestones are in Now/Discovery/Research. Issues belong to projects; projects show the big picture.
@@ -460,17 +497,23 @@ The `weekly-retro` scheduled task is **registered and live** in the CC lane (cre
 
 ### Scheduled Tasks
 
-Current recurring task registry. **Verified against `list_scheduled_tasks` on 2026-07-20 (THR-653 cutover).** The scheduler adds a deterministic per-task jitter of a few minutes to the cron minute, so **the slot name, the cron minute, and the actual fire time are three different things** — the `Fires` column is the one that matters operationally. The pre-cutover version of this table was drifted (it listed `flush-plan-docs` at `15 * * * *` when the registered cron is `0 * * * *`, and listed `weekly-retro` / `weekly-memory-grooming` as live CC tasks when neither had ever been registered).
+Current recurring task registry. **Verified against `list_scheduled_tasks` on 2026-07-22 (THR-677 trials); `flush-plan-docs` removed 2026-07-21 (THR-654 demolition).** The scheduler adds a deterministic per-task jitter of a few minutes to the cron minute, so **the slot name, the cron minute, and the actual fire time are three different things** — the `Fires` column is the one that matters operationally.
 
 **CC automation lane — registered and live:**
 
-| Slot | Cadence | Task | Cron | Fires |
-|------|---------|------|------|-------|
-| **:00** | Hourly | CC pickup (`tb-opus-pickup` — single Opus executor lane) | `0 * * * *` | ~:00:53 |
-| **:00** | Hourly | `flush-plan-docs` | `0 * * * *` | ~:03:49 |
-| **:45** | Hourly | `keep-work-flowing-cc` (CC PM brief — refreshes `Design/briefing.md` + `Design/user-actions.md`) | `45 * * * *` | ~:53:13 |
-| **Fri 17:00** | Weekly | `weekly-retro` | `0 17 * * 5` | ~17:09 |
-| **Sun 16:03** | Weekly | `weekly-memory-grooming` | `3 16 * * 0` | ~16:10 |
+| Slot | Cadence | Task | Cron | Fires | Writes |
+|------|---------|------|------|-------|--------|
+| **:00** | Hourly | CC pickup (`tb-opus-pickup` — single Opus executor lane) | `0 * * * *` | ~:00:53 | — |
+| **:45** | Hourly | `keep-work-flowing-cc` (CC PM brief — refreshes `Design/briefing.md` + `Design/user-actions.md`) | `45 * * * *` | ~:53:13 | briefing + user-actions |
+| **Fri 17:00** | Weekly | `weekly-retro` | `0 17 * * 5` | ~17:09 | retro via `retrospective` skill |
+| **Sun 16:03** | Weekly | `weekly-memory-grooming` | `3 16 * * 0` | ~16:10 | memory files |
+| **09:07** | Daily | `daily-backlog-grooming` | `7 9 * * *` | ~09:16 | `Docs/ops/backlog-grooming-<date>.md` + Linear queue fixes |
+| **Wed 11:09** | Weekly | `weekly-workflow-retro` | `9 11 * * 3` | ~Wed 11:13 | `Design/retros/workflow-retro-<date>.md` |
+| **Sun 10:06** | Weekly | `weekly-project-hygiene` | `6 10 * * 0` | ~Sun 10:10 | `Docs/ops/weekly-hygiene-<date>.md` + filed findings |
+
+The last three were enabled 2026-07-22 after their attended trials passed with Christian's chat approval (THR-677); their trial reports are `Docs/ops/backlog-grooming-2026-07-22.md`, `Design/retros/workflow-retro-2026-07-22.md`, and `Docs/ops/weekly-hygiene-2026-07-22.md`. The corresponding Cowork counterparts are now cut over — Christian disables them (tracked in `Design/user-actions.md`).
+
+**Output-surface rule for all three:** none of them writes `Design/briefing.md` or `Design/user-actions.md` — `keep-work-flowing-cc` owns those two files, and a second writer produces merge conflicts. Christian-facing items go in each task's own report under a `## Needs Christian` heading, and reach him via the hourly briefing picking up the underlying Linear state.
 
 **GitHub Actions:**
 
@@ -478,14 +521,25 @@ Current recurring task registry. **Verified against `list_scheduled_tasks` on 20
 |------|---------|------|------|
 | **Fri 14:00 UTC** | Weekly | Drift scan — posts `drift-scan` Linear issues to Continuous Improvement | n/a (Actions cron) |
 
+**Windows Task Scheduler lane** (host-machine tasks; invisible to `list_scheduled_tasks`):
+
+| Slot | Cadence | Task | Trigger | Fires |
+|------|---------|------|---------|-------|
+| **:40** | Hourly | `Threadbare Git Cleanup` — runs `C:/Users/chris/Dev/Projects/clean-stale-git.sh` (prunes merged worktrees/branches, escalates stale unmerged ones) | Once at 00:40, repeat every 1h | :40 (no jitter) |
+
+The reaper was daily until THR-673 moved it to hourly at the free `:40` offset. Two things about it are load-bearing:
+
+- **It runs only while Christian is logged on** (`Logon Mode: Interactive only`). Making it run headless requires storing a password, which agents must not do — so a machine that is off or logged out simply misses runs. `StartWhenAvailable` catches up on the next opportunity; that is the intended containment, not a bug.
+- **It never deletes a live session's worktree.** `WORKTREE_MIN_IDLE_MINUTES` (180) skips any worktree whose git admin dir shows recent activity, and the orphan-dir sweep skips directories with recent file activity. Removing this guard re-opens the THR-673 failure: a rebased, uncommitted session worktree looks exactly like merged debris, and reaping it mid-session unregisters it, which lets the *next* run delete that session's branch.
+
 **Cowork lane — still enabled, pending Christian's disable (THR-653).** CC cannot read or disable these: they live in Cowork app state, are invisible to `list_scheduled_tasks`, and have no `SKILL.md` on CC disk. The disable is a Christian-owned switch tracked in `Design/user-actions.md`.
 
 | Slot | Cadence | Task | Disposition |
 |------|---------|------|-------------|
 | **:45** | Hourly | `keep-work-flowing` | Superseded by `keep-work-flowing-cc` (THR-650) — **disable** |
-| **09:06** | Daily | `daily-backlog-grooming` | Needs a CC port — THR-677 |
-| **Wed 09:04** | Weekly | `weekly-workflow-retro` | Needs a CC port — THR-677 |
-| **Sun 10:04** | Weekly | `weekly-project-hygiene` | Needs a CC port *after* THR-654 — THR-677 |
+| **09:06** | Daily | `daily-backlog-grooming` | CC port **live** (trial passed 2026-07-22, THR-677) — **disable** |
+| **Wed 09:04** | Weekly | `weekly-workflow-retro` | CC port **live** (trial passed 2026-07-22, THR-677) — **disable** |
+| **Sun 10:04** | Weekly | `weekly-project-hygiene` | CC port **live** (trial passed 2026-07-22, THR-677) — **disable** |
 | **Sun 10:06** | Weekly | `weekly-invoice-check` | **Out of scope — personal, not Threadbare. Do not touch.** |
 
 **Not created:**
@@ -494,24 +548,21 @@ Current recurring task registry. **Verified against `list_scheduled_tasks` on 20
 |------|---------|------|--------|
 | **1st 09:00** | Monthly | `monthly-rulebook-review` | Never registered — THR-417 |
 
-**Slot allocation.** Hourly Linear-MCP-using tasks are spaced so their *fire times* don't overlap: `tb-opus-pickup` at ~:00:53, `flush-plan-docs` at ~:03:49, `keep-work-flowing-cc` at ~:53:13 (deliberately late in the hour so the brief reflects post-pickup state; it moved from the :20 slot to :45 in the THR-653 cutover, taking over the slot the Cowork PM task vacates). Daily and weekly tasks pick non-quarter-hour minutes (e.g., :04, :06, :09). When registering a new hourly task, pick a cron minute whose *jittered* fire time leaves a clear gap from the ones above, then record both the cron and the observed fire time here in the same commit.
+**Slot allocation.** Hourly Linear-MCP-using tasks are spaced so their *fire times* don't overlap: `tb-opus-pickup` at ~:00:53, `keep-work-flowing-cc` at ~:53:13 (deliberately late in the hour so the brief reflects post-pickup state; it moved from the :20 slot to :45 in the THR-653 cutover, taking over the slot the Cowork PM task vacates). Daily and weekly tasks pick non-quarter-hour minutes (e.g., :04, :06, :09). When registering a new hourly task, pick a cron minute whose *jittered* fire time leaves a clear gap from the ones above, then record both the cron and the observed fire time here in the same commit.
+
+The THR-677 ports were slotted against that rule: `daily-backlog-grooming` fires ~09:16 (clear of the `:00`/`:40`/`:53` hourly traffic), `weekly-project-hygiene` ~Sun 10:10 (clear of Sunday's 09:16 grooming and 16:10 memory grooming), and `weekly-workflow-retro` ~Wed 11:13 — deliberately moved off its old Cowork slot of Wed 09:04, which would have landed on top of the daily grooming run.
+
+**Prompt sources are mirrored into the repo.** Scheduled-task prompts live at `C:\Users\chris\.claude\scheduled-tasks\<id>\SKILL.md`, which is **outside** version control — merging a repo change does not deploy them, and a disk loss takes them with it. Copies are kept under `Docs/ops/scheduled-task-prompts/` so the prompts are reviewable and recoverable. **When you edit a live prompt, update its mirror in the same PR**; the mirror is a copy, not the source of truth.
 
 ## Skill Tree Layout
 
-The repo has two skill directories; they serve different agents and do NOT have precedence between them — they are audience-separated.
+**`.claude/skills/` is the only skill tree.** Claude Code reads it from a hardcoded path in the CC binary; every skill any Threadbare session can invoke lives there.
 
-| Directory | Read by | Canonical for |
-|-----------|---------|---------------|
-| `.claude/skills/` | Claude Code (hardcoded path in the CC binary) | Any skill CC needs to invoke |
-| `.agents/skills/` | Non-CC agents: local Cowork (when running via local CLI), Gemini CLI, future agent runtimes. **Invisible to CC.** | Skills CC does not need |
+The repo used to carry a second tree at `.agents/skills/` for non-CC runtimes, kept in step by the THR-192 pre-commit hook and `npm run check:skill-sync`. Both were deleted 2026-07-21 (THR-654) along with the Cowork lane they existed to serve. The duplicate was the direct cause of the `check:skill-sync` false-positive commit blocks (62 mentions in `Docs/impediments.md`); that class is structurally closed. **Do not reintroduce a second skill tree** — add new skills to `.claude/skills/` only.
 
-**Shared skills (used by both audiences) exist in both trees.** Drift between copies is enforced by the THR-192 pre-commit hook that checks `.claude/skills/` ↔ `.agents/skills/` for any skill name present in both. `.claude/` is canonical for shared skills — edit there, then mirror `.agents/` by running `npm run check:skill-sync:sync`.
+Six skills were retired rather than ported, because CC does Obsidian-vault work through the filesystem (`OBSIDIAN_VAULT_PATH`) instead: `content-catalog-manager`, `defuddle`, `json-canvas`, `obsidian-bases`, `obsidian-cli`, `obsidian-markdown`. `design-council` and `playtest-interface` were ported to `.claude/skills/` (THR-651, browser MCP verified from a CC session). Recover any retired skill from git history if it turns out to be wanted.
 
 **When you edit a skill, bump `last_validated_against` to today's date** if you changed instructions, examples, or referenced systems. Skip bumps for typo-only/format-only edits. This field records an explicit correctness affirmation, not a file-modified timestamp. If you review a skill and confirm it is still accurate without content edits, you may still bump the date in a small one-line commit.
-
-**Skills that only exist in `.agents/skills/`** are currently: `content-catalog-manager`, `defuddle`, `json-canvas`, `obsidian-bases`, `obsidian-cli`, `obsidian-markdown`. CC cannot load these — do not route CC to them. Per the Pure Claude Code Migration skill-tree audit (THR-651), these six are **marked for retirement** — CC does Obsidian-vault work via the filesystem directly (`OBSIDIAN_VAULT_PATH`), and `content-catalog-manager` had no usage in the trailing 60 days. They remain in `.agents/` until the Phase 3 `.agents/skills/` deletion (THR-654); do not port them. (`design-council` and `playtest-interface` were ported to `.claude/skills/` in the same audit — browser MCP verified working from a CC session — and are now shared skills.)
-
-**When adding a new skill:** decide its audience first. CC-needed → `.claude/skills/`. Cowork/Gemini-only → `.agents/skills/`. Both → `.claude/skills/` and let the hook mirror.
 
 ## Domain Skills
 
@@ -555,9 +606,8 @@ Context for specific problem types lives in on-demand skills. **Always load the 
 | **Impediment reporting (always active)** | `impediment-reporter` | **Every session, every agent.** Log blockers and workarounds to `Docs/impediments.md` as they occur. Part of Definition of Done. |
 | Continuous improvement | `retrospective` | Review impediment log, analyze patterns, implement quick-fix improvements, backlog larger ones. Run with `/retrospective`. |
 | Multi-perspective design | `design-council` | Run a sociocratic, consent-based design discussion with multiple perspectives (content, engine, coordination, etc.). Forward-looking counterpart to `retrospective`. Trigger with `/design-council` or "let's get multiple perspectives on this". |
-| Pre-handoff intent check | `intent-judge` | Before applying `plan-pending-commit` to any plan doc. Auto-spawned subagent that scores the plan against the user's verbatim ask. Returns Allow / Revise / Block / Escalate. `/intent-judge <path>` for manual runs. |
+| Pre-handoff intent check | `intent-judge` | Before opening the PR for any plan doc. Auto-spawned subagent that scores the plan against the user's verbatim ask. Returns Allow / Revise / Block / Escalate. `/intent-judge <path>` for manual runs. |
 | Pickup entrypoint (CC) | `pull-work` | Canonical CC pickup flow: safe-claim, verify-after-write, dirty-worktree fallback. Run with `/pull-work`. |
-| Plan-doc flush (Cowork) | `flush-plan-docs` | Hourly scheduled task that commits files referenced by `plan-pending-commit` label to `origin/main` and clears the label. Cowork applies the label after writing a plan doc; do not commit plan docs directly. |
 | Pre-design grilling | `grill-me` | Optional Step 0 of the design workflow when scope is large, multi-pillar, or ambiguous. Synthesizes into `Docs/plans/YYYY-MM-DD-<topic>-grill-me.md`. |
 | Vault log append | `vault-log` | Append a `- **<type>** | <description>` entry to the Obsidian vault `log.md`. Auto-falls-back to filesystem write when Obsidian MCP is unreachable; requires `OBSIDIAN_VAULT_PATH`. |
 

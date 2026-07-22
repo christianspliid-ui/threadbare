@@ -20,6 +20,7 @@ import type {
 import type { ActorType } from '../types/graph';
 import { ACTION_TEMPLATES, type ActionTemplateData } from './action-template-content';
 import { ACTION_TECHNICAL_EFFECTS } from './action-technical-effects';
+import { withDefaultSupportBundle } from './default-support-bundles';
 import { ENCOUNTER_TEMPLATES, getAnyEncounterById } from './encounter-content';
 import { ASCENDANT_POOL_BEAT_TEMPLATES } from './ascendant-pool-beat-templates';
 import { ANOMALY_ENCOUNTER_TEMPLATES } from './encounter-anomaly-content';
@@ -44,6 +45,8 @@ import {
   LOC_BLESS_HARVEST_PROSPERITY_DELTA,
   LOC_BLESS_HARVEST_HEALTH_DELTA,
   LOC_BLESS_HARVEST_DURATION_TICKS,
+  LOC_BLIGHT_PROSPERITY_DELTA,
+  LOC_BLIGHT_HEALTH_DELTA,
   LOC_OPEN_MARKETS_PROSPERITY_DELTA,
   LOC_OPEN_MARKETS_UNREST_DELTA,
   LOC_SANCTIFY_MAGSAT_DELTA,
@@ -658,7 +661,7 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     name: 'Embolden',
     spellName: 'Divine Courage',
     rarityTier: 2,
-    intrinsicTier: 'present',
+    intrinsicTier: 'shaping',
     description: 'A warmth fills the target\'s chest — the certainty that they are not alone. Their voice steadies. Their gaze hardens. In the next confrontation or social challenge, they will not be moved by counter-arguments or intimidation. Use it when a bonded agent needs to hold firm against pressure they might otherwise fold to.',
     reach: 'heart',
     crudType: 'update',
@@ -729,7 +732,7 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     name: 'Call in Favor',
     spellName: 'Burden of Obligation',
     rarityTier: 2,
-    intrinsicTier: 'present',
+    intrinsicTier: 'shaping',
     description: 'You stir the memory of debt in a mortal chest. They remember what they owe — not a threat, but a weight that has been there all along, waiting to be acknowledged. The favor is called in. The debt shifts from owed to paid.',
     reach: 'heart',
     crudType: 'update',
@@ -1703,7 +1706,7 @@ const LOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     spellName: 'Quiet Loam',
     rarityTier: 1,
     intrinsicTier: 'background',
-    description: 'Pours life-essence into a settlement\'s agricultural cycle. The fields swell beyond their season; grain ripens too fast to be reasoned with. Mortals will not say it is the god who did this. They will say it was a good year.',
+    description: 'Pours life-essence into a settlement\'s agricultural cycle. The fields swell beyond their season; grain ripens too fast to be reasoned with, and the granaries fill toward glut. Mortals will not say it is the god who did this. They will say it was a good year.',
     reach: 'gold',
     crudType: 'update',
     scale: 'local',
@@ -1716,6 +1719,9 @@ const LOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
           prosperity: `+${LOC_BLESS_HARVEST_PROSPERITY_DELTA}`,
           populationHealth: `+${LOC_BLESS_HARVEST_HEALTH_DELTA}`,
         } },
+        // THR-616 P2: also swell the staple resource stock toward Glut — the
+        // economic leg over the P1 stock-tier substrate (tier re-derives next tick).
+        { op: 'bless_harvest', nodeId: '$target' },
       ],
       onFailure: [],
       failBehavior: 'fail_action',
@@ -1731,6 +1737,46 @@ const LOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
       initiation: 'kneels into the loam at the field\'s edge, pressing palms to soil that has fed these people for generations',
       success: 'grain swells in the husk before harvest is due — the miller\'s wife will say a prayer was answered; the miller will say it does not matter why',
       failure: 'the wind shifts wrong; whatever was reached for slips between divine hands, and the field is only a field',
+    },
+  },
+
+  {
+    id: 'loc.blight',
+    name: 'Blight the Fields',
+    spellName: 'The Slow Rot',
+    rarityTier: 1,
+    intrinsicTier: 'background',
+    description: 'Turns a settlement\'s harvest against itself. The grain blackens in the ear, the herds sicken, the stores draw down toward famine. Mortals will not name the god who did this. They will say it was a bad year, and pray it does not come again.',
+    reach: 'shadow',
+    crudType: 'update',
+    scale: 'local',
+    steps: [{
+      reach: 'shadow',
+      duration: { min: 2, max: 3 },
+      difficulty: 0.25,
+      onSuccess: [
+        { op: 'update_node', nodeId: '$target', changes: {
+          prosperity: `${LOC_BLIGHT_PROSPERITY_DELTA}`,
+          populationHealth: `${LOC_BLIGHT_HEALTH_DELTA}`,
+        } },
+        // THR-616 P2: draw the staple resource stock toward Famine — the
+        // economic inverse of Bless the Harvest (tier re-derives next tick).
+        { op: 'blight_harvest', nodeId: '$target' },
+      ],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: 4,
+    actorAffinities: ['ascendant'],
+    sphereAffinity: 'entropy',
+    targetCategories: ['location'],
+    targetSubtypes: ['settlement', 'hamlet', 'town', 'city', 'capital'],
+    motivations: ['mercy_ruthlessness', 'preservation_transformation'],
+    narrativeTemplates: {
+      initiation: 'lets a breath fall over the ripening fields, and the breath carries something that does not belong to the season',
+      success: 'the grain darkens in the ear before it can be cut — the reeve will call it a bad year; the hungry will call it worse',
+      failure: 'the rot fails to catch; the fields shrug off the touch and ripen as they always have',
     },
   },
 
@@ -4409,7 +4455,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     name: 'Inspire Initiative',
     spellName: 'Divine Inspiration',
     rarityTier: 2,
-    intrinsicTier: 'present',
+    intrinsicTier: 'shaping',
     description: 'Breathe divine ambition into a mortal. Their next initiative scores 0.5 higher, almost guaranteeing they will pursue it over any encounter. Consume on use.',
     reach: 'heart',
     crudType: 'update',
@@ -4444,7 +4490,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     name: 'Sabotage Initiative',
     spellName: 'Divine Interference',
     rarityTier: 2,
-    intrinsicTier: 'present',
+    intrinsicTier: 'shaping',
     description: 'Whisper doubt into an ongoing initiative. At the next checkpoint it may fail outright. Even if it survives, the setback costs extra ticks.',
     reach: 'shadow',
     crudType: 'update',
@@ -5165,12 +5211,20 @@ const RAW_UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
  * idempotent — a template already carrying an inline `technicalEffect` keeps it;
  * an id absent from the map is left untouched (renders "—"/`unauthored` in the
  * catalog). Applied once at module load.
+ *
+ * THR-698: `withDefaultSupportBundle` then attaches the family default cast to
+ * linear templates that declare no `supportBundle` (template-declared bundles
+ * win outright). Applied here so every consumer of the registry — decision
+ * phase, CLI spawn, `__DEBUG.fireAction`, prose cast context — sees the same
+ * merged template object.
  */
 export const UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] =
   RAW_UNIFIED_ACTION_TEMPLATES.map((t) => {
-    if (t.technicalEffect != null) return t;
     const authored = ACTION_TECHNICAL_EFFECTS[t.id];
-    return authored ? { ...t, technicalEffect: authored } : t;
+    const withEffect = t.technicalEffect != null || !authored
+      ? t
+      : { ...t, technicalEffect: authored };
+    return withDefaultSupportBundle(withEffect);
   });
 
 /**

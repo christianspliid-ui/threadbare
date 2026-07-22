@@ -1,5 +1,7 @@
 # Linear Coordination Protocol
 
+> **lint_plan_doc:** exempt — standing process protocol, not a dated plan doc. It has no Engine/Content/UI pillars, no constants table, and no coordination block because it proposes no work; it defines the process every plan doc is handed off through. See THR-692.
+
 > **Date:** 2026-04-13 (single-executor consolidation 2026-06-23, THR-486; design→session-type reframing 2026-07-18, THR-649)
 > **Type:** Process infrastructure
 > **Status:** Active — single-executor model live
@@ -17,9 +19,8 @@ writes `src/` — but it is a session-type discipline, not a runtime one.
 
 **The one mechanical change:** a CC design session **commits its own plan doc directly** via a `docs/plan-*`
 PR (CI-gated, merged immediately) — no `plan-pending-commit` label, no hourly `flush-plan-docs`, no auto-flush
-fallback. The label+flush pipeline still coexists during the migration parallel-run and is retired in Phase 3
-(THR-654); until then, the flush sections below describe the **legacy** path and the direct-PR flow (Design
-Session Handoff, below) is the current one for CC design sessions. See
+fallback. That label+flush pipeline was deleted 2026-07-21 (THR-654); the direct-PR flow (Design Session
+Handoff, below) is the only path. See
 `Docs/plans/2026-07-17-pure-claude-code-migration.md`.
 
 ---
@@ -336,18 +337,15 @@ A single hourly CC automation runs on **Opus** and pulls the top of Ready for De
 ### Design Session Handoff (replaces HANDOVER.md)
 When a design session finishes a design and writes the implementation plan:
 1. **Verify exit criteria** — check all items in "Implementation Planning → Ready for Dev" above. Every pillar must have action items or an explicit N/A.
-1b. **Commit the plan doc directly (CC design sessions).** Open a `docs/plan-<basename>` PR, wait for the
+1b. **Commit the plan doc directly.** Open a `docs/plan-<basename>` PR, wait for the
     `Test · Typecheck · Build` check to go green, and merge before moving the issue to Ready for Dev — the
     executor needs the doc on `main`. **Scrub every closeable reference** (no `Fixes/Closes/Resolves`, no bare
     `THR-XXX`, no linear-issue URL in the commit / branch / PR title / PR body — THR-510). See
-    `.claude/skills/design-session/SKILL.md` § Step 4 for the exact commands. *(Legacy Cowork path, coexisting
-    until THR-654: apply the `plan-pending-commit` label and let the hourly `flush-plan-docs` task commit the
-    doc — do NOT use this path from a CC design session.)*
+    `.claude/skills/design-session/SKILL.md` § Step 4 for the exact commands.
 2. Move issue: Implementation Planning → Ready for Dev
 2b. **Also put the `Plan doc:` path in the issue *description*** (not only the handoff comment) —
-    a line like `**Plan doc:** \`Docs/plans/YYYY-MM-DD-topic.md\``. The executor reads it to locate the plan;
-    the legacy `flush-plan-docs` parser also parses the description first and the handoff comment as a fallback
-    (THR-645). Keeping the path in both places is belt-and-suspenders so neither location is a single point of failure.
+    a line like `**Plan doc:** \`Docs/plans/YYYY-MM-DD-topic.md\``. The executor reads it to locate the plan.
+    Keeping the path in both places is belt-and-suspenders so neither location is a single point of failure.
 3. Add handoff comment using this template:
 
 ```
@@ -392,6 +390,24 @@ When a design session finishes a design and writes the implementation plan:
 - **Mutex with** — the files or surfaces this issue will make concurrent work collide on. Free-text (e.g., "any issue touching `src/types/trace.ts`" or "the legacy/unified enrichment boundary"). Used by Cowork when sizing up *future* handoffs — if an issue's Mutex description matches the new issue's surface, they can't parallelize.
 
 **Why a convention, not a label.** File-surface collisions can't be expressed as structured metadata in Linear (there's no `touchesFiles` field, and `blockedBy` means hard sequencing, not "shares-surface-with"). A handover-comment convention keeps the signal present without abusing the schema. Promote to `area:*` labels only if querying parallel-safe slices by area becomes a frequent need.
+
+#### Ticket-authoring rules (THR-688)
+
+A ticket is read hours-to-days after it is written, by an executor with no memory of the authoring session. These three rules exist because each one has already cost the lane real runs. Each rule carries its motivating example — the example is what makes the rule stick.
+
+**Rule A — Predicates, not counts.** A cleanup or sweep ticket must state the *membership predicate* of the set it operates on, never a snapshot count or an index range. Write "every stash whose diff is fully present on `origin/main`", not "the 12 stale stashes" or "stashes 3–14". A predicate stays correct as the set grows; a count rots the moment anything else changes.
+
+> *Motivating example:* THR-674's survey said 12 stashes / 7 worktrees. By pickup the real numbers were 38 and 26 — the set had grown underneath the ticket. The executor could not tell which members were in scope, stopped, and recommended a re-scope. A predicate would have survived the drift and the run would have shipped.
+
+**Rule B — Mutex lines carry their reason.** Write `Mutex with: THR-XXX (both edit <file/surface>)`, never a bare identifier. The reason is what lets a later executor decide whether the mutex still applies. An executor **may** reverse a mutex, but only when the stated reason is *verifiably* inapplicable — e.g. the named partner has since merged, or the named surface is provably untouched by this ticket's scope — and must record the reversal and its evidence in a Linear comment.
+
+> *Motivating example:* THR-673 sat blocked behind a bare "Mutex with THR-674" until a run re-derived *why* the mutex existed and correctly reversed it. The reversal was only safe because the reason happened to be reconstructable. A bare identifier whose reason is *not* reconstructable is an indefinite queue deadlock — nobody can ever prove it safe to clear.
+
+**Rule C — Done-whens match the pillar.** Acceptance evidence must be reachable through the pillar the work actually touches. Browser evidence (screenshot, console, `__DEBUG` assertion at 1920×1080) is required for UI-pillar surfaces and **only** for UI-pillar surfaces. Engine and content work is accepted via CLI or headless sweeps — `npm run cli`, `__DEBUG` state assertions, the 30-tick engine smoke. Never gate an engine slice behind a browser pass it does not need.
+
+> *Motivating examples:* THR-616's engine slices sat hostage for 3 runs behind a WebGL browser gate that had nothing to do with the change. Worse, THR-644's "40-tick browser pass" was unreachable *by construction* — automated tabs report `document.hidden`, which throttles the rAF tick loop to one tick per click (memory `reference_browser_mcp_from_cc_debug`). A Done-when that cannot be satisfied by any executor is a permanently parked ticket.
+
+**Standing constraint on Rule C:** until the headless tick bridge (THR-689) ships, *no* Done-when may require running N ticks in an automated browser tab. Use a headless CLI sweep for any "advance the sim and observe X" acceptance criterion.
 
 ### Claude Code Pickup Protocol
 When CC picks up a Ready for Dev issue, the order is **claim → verify → read → decide**:

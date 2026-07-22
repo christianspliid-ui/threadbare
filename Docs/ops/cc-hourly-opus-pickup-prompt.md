@@ -14,15 +14,11 @@ Work autonomously end to end. Do not stop to ask "should I proceed?" — the Def
 - Run the freshness/precheck first: `node --experimental-strip-types scripts/session-precheck.ts`. If it reports the tree is `behind`/`stale-branch`, `git fetch && git pull` (or `git fetch && git rebase origin/main` on a feature branch) before doing anything else.
 - Load the always-on context the project expects: `Docs/ubiquitous-language/README.md` and `Docs/canon/rulebook-quick-reference.md`.
 
-## 1.5. Flush pending plan docs (every run, before pickup)
-
-Cowork writes plan docs into the working tree but cannot run git, so this run is responsible for committing them. Run the **`flush-plan-docs`** skill: find every Linear issue labeled `plan-pending-commit`, commit the referenced doc(s) in `Docs/plans/` and `Docs/audits/` to `origin/main` (direct push, or a small auto-flush PR if branch protection rejects the push), then remove the label. This replaces the former standalone hourly flush task — do it here so freshly committed plan docs are on `main` before you read any plan in step 3. If there are no `plan-pending-commit` issues, no-op and continue.
-
 ## 2. Pick up work — run `/pull-work`
 
 Invoke the **`pull-work`** skill (`.claude/skills/pull-work/SKILL.md`) as the canonical pickup path. It handles the full atomic sequence; the key invariants, which you must honor even if you hand-roll:
 
-- **Single board scan:** `list_issues(team:"Threadbare", limit:250, orderBy:"updatedAt", includeArchived:false)`, bucket by status in memory. (Do not pass `orderBy:"priority"` — it errors at runtime; sort by priority in memory, oldest `createdAt` as tie-break.)
+- **Two state-filtered board scans** — *not* one unfiltered 250-issue sweep: `list_issues(team:"Threadbare", state:"In Dev", limit:50, includeArchived:false)` and `list_issues(team:"Threadbare", state:"Ready for Dev", assignee:null, limit:100, includeArchived:false)`. The unfiltered `limit:250` call returns ~390k characters and is rejected outright on response size (THR-686). (Do not pass `orderBy:"priority"` — it errors at runtime; sort by priority in memory, oldest `createdAt` as tie-break.)
 - **WIP = 1:** if you already have an issue `In Dev` assigned to you, resume it (run the upstream-shipped check first) instead of claiming new. If more than one is `In Dev` for you, that's a leak — surface and stop.
 - **Queue = `Ready for Dev`, `assignee:null` only.** Pick the top by priority.
 - **Claim before deep read:** first mutating call is `save_issue(id, assignee:"me", state:"In Dev")`, then immediately `get_issue(id)` to verify both `assignee` and `state` stuck (Linear silently drops writes — retry up to 3 candidates).
@@ -42,7 +38,7 @@ If `/pull-work` refuses (missing handoff coordination, unverifiable claim, etc.)
 ## 4. Verify before commit (mandatory — paste evidence)
 
 1. `npm test` — all pass
-2. `npx tsc --noEmit` — clean
+2. **Typecheck — do NOT run `npx tsc --noEmit`** (no-op: root `tsconfig.json` has `files: []`, always exits 0 — THR-686). CI's `Test · Typecheck · Build` is the gate. Local evidence when the change touches TypeScript: `npx tsc -b --force`, showing zero *net-new* errors vs the red baseline.
 3. `npx vite build` — succeeds
 4. **Engine smoke** (only if the change touches `src/engine/`, `src/types/gameState.ts`, `src/types/graph.ts`, or any tick/orchestrator/phase/agent-decision file): `printf "tick 30\nstatus\nexit\n" | npm run cli -- --seed 42 --map medium` — reaches tick 30, non-zero agents, at least one trace line.
 5. **Browser-verify** (only if the change touches the UI pillar — `src/components/`, `src/views/`, `index.css`, or any HexMapV2/Three.js surface): screenshot at 1920×1080, console output, and one `window.__DEBUG.*` state assertion. Use Claude-in-Chrome for any WebGL/canvas surface (Playwright can't see it).

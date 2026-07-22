@@ -74,6 +74,7 @@ Plus the **pre-commit minimum:**
 | changelog.md updated | `git diff @{push}..HEAD -- Docs/changelog.md` has additions | "changelog.md has no new entries" |
 | project-status.md updated | Same diff check | "project-status.md not updated" |
 | project-history.md updated | Same diff check | "project-history.md not updated" |
+| No orphan deferrals | `git diff` for new `TODO`/`DEFERRED` comments without `THR-XX` | "Orphan deferrals found — create Linear issues" |
 | Build succeeds | `npx vite build` exits 0 | "Production build failed" |
 
 **What it does NOT check (and why):**
@@ -488,6 +489,12 @@ check_doc_updated "Docs/project-status.md" "project-status.md"
 check_doc_updated "Docs/project-history.md" "project-history.md"
 # Note: BACKLOG.md check removed — Linear is the issue tracker now
 
+# Orphan deferral check — new TODO/DEFERRED comments must reference a Linear issue
+ORPHAN_DEFERRALS=$(git diff "$PUSH_BASE"..HEAD -- 'src/**/*.ts' 'src/**/*.tsx' | grep '^+' | grep -E '// (TODO|DEFERRED|PHASE-[A-Z]-DEFERRED)' | grep -v 'THR-[0-9]' | head -10)
+if [[ -n "$ORPHAN_DEFERRALS" ]]; then
+  ERRORS="${ERRORS}\n❌ Orphan deferrals found (missing Linear issue reference THR-XX):\n${ORPHAN_DEFERRALS}\n  Every deferral must have a Linear issue. Use format: // TODO(THR-XX): description"
+fi
+
 # Production build check
 if ! npx vite build > /dev/null 2>/tmp/build-errors.txt; then
   ERRORS="${ERRORS}\n❌ Production build failed:\n$(tail -10 /tmp/build-errors.txt)"
@@ -643,6 +650,7 @@ The existing `.claude/settings.json` currently contains only:
 | changelog.md updated | Pre-push | `git diff` for additions |
 | project-status.md updated | Pre-push | `git diff` for additions |
 | project-history.md updated | Pre-push | `git diff` for additions |
+| No orphan deferrals | Pre-push | `git diff` for TODO/DEFERRED without THR-XX |
 | Uncommitted changes | Stop | `git status --porcelain` |
 | Unpushed commits | Stop | `git log @{push}..HEAD` |
 | Cowork can't write to src/ | Cowork role | Path check on Write/Edit |

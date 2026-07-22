@@ -22,6 +22,7 @@ type MockGitConfig = {
   behind?: number;
   behindFails?: boolean;
   ahead?: number;
+  aheadFails?: boolean;
   branchDateISO?: string;
 };
 
@@ -63,6 +64,9 @@ function makeMockRunner(config: MockGitConfig) {
     }
 
     if (args[0] === "rev-list" && argsStr.includes("origin/main..HEAD")) {
+      if (config.aheadFails) {
+        return { ok: false, timedOut: false, durationMs: 5, stdout: "", stderr: "no origin/main" };
+      }
       return { ok: true, timedOut: false, durationMs: 5, stdout: String(config.ahead ?? 0), stderr: "" };
     }
 
@@ -158,9 +162,40 @@ describe("probeBranchStaleness — freshness=behind:N+stale-branch:Xh", () => {
   });
 });
 
-describe("probeBranchStaleness — freshness=detached", () => {
-  it("returns detached when HEAD is detached", () => {
-    const r = probe({ branch: "HEAD" });
+describe("probeBranchStaleness — detached HEAD (THR-671)", () => {
+  it("returns parked-at-ancestor when nothing unique is stranded", () => {
+    const r = probe({ branch: "HEAD", behind: 79, ahead: 0 });
+    expect(r.freshnessKey).toBe("parked-at-ancestor");
+    expect(r.status).toBe("no");
+  });
+
+  it("advertises the safe two-command repair on parked-at-ancestor", () => {
+    const r = probe({ branch: "HEAD", ahead: 0 });
+    expect(r.detail).toContain("git switch main");
+    expect(r.detail).toContain("git stash push");
+  });
+
+  it("never reports a behind-count for a detached HEAD", () => {
+    // The 79-commit "behind and climbing" alarm that caused the THR-671 escalation
+    const r = probe({ branch: "HEAD", behind: 79, ahead: 0 });
+    expect(r.freshnessKey).not.toContain("behind");
+    expect(r.detail).not.toContain("79");
+  });
+
+  it("returns parked-with-unique-commits:N when commits are stranded off-branch", () => {
+    const r = probe({ branch: "HEAD", behind: 79, ahead: 3 });
+    expect(r.freshnessKey).toBe("parked-with-unique-commits:3");
+    expect(r.status).toBe("no");
+  });
+
+  it("refuses to advertise a reset when unique commits exist", () => {
+    const r = probe({ branch: "HEAD", ahead: 3 });
+    expect(r.detail).toContain("do NOT reset");
+    expect(r.detail).not.toContain("git switch main");
+  });
+
+  it("falls back to detached (unknown) when the unique-commit count cannot be read", () => {
+    const r = probe({ branch: "HEAD", aheadFails: true });
     expect(r.freshnessKey).toBe("detached");
     expect(r.status).toBe("unknown");
   });

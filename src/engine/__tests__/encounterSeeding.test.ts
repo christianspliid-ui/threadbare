@@ -198,7 +198,9 @@ describe('evaluateEncounterSeeds', () => {
     expect(expiredEvent!.significance).toBe(0.3);
   });
 
-  it('emits narrative event when seed has encounterFamily only', () => {
+  // THR-697 (Slice D): family-only seeds now draw a concrete template and spawn a real
+  // encounter (was: emit an advisory "stirring" narrative event in v1).
+  it('spawns a family-matched encounter when seed has encounterFamily only (Slice D)', () => {
     const seed = makeSeed({
       templateId: undefined,
       encounterFamily: 'broker.quest',
@@ -210,13 +212,55 @@ describe('evaluateEncounterSeeds', () => {
     // Seed should be consumed
     expect(result.pendingEncounterSeeds).toHaveLength(0);
 
-    // Should emit a family-ready event
+    // A real action spawned from a matched broker.quest.* template
+    expect(result.unifiedActions.length).toBeGreaterThan(0);
+    const spawned = result.unifiedActions[result.unifiedActions.length - 1];
+    expect(spawned.templateId.startsWith('broker.quest.')).toBe(true);
+    expect(spawned.actorId).toBe('actor-1');
+    expect(spawned.source).toBe('system');
+
+    // Spawn event names the matched template (v2 message shape)
+    const spawnEvent = result.tickEvents.find(e => e.id.includes('_spawned'));
+    expect(spawnEvent).toBeDefined();
+    expect(spawnEvent!.message).toContain('bears fruit');
+  });
+
+  // THR-697 (Slice D): the v1 withered narrative fallback is preserved byte-identical when
+  // the family resolves to zero eligible templates.
+  it('falls back to the withered narrative event when the family has no eligible template', () => {
+    const seed = makeSeed({
+      templateId: undefined,
+      encounterFamily: 'zzz.no_such_family',
+      eligibleAfterTick: 20,
+    });
+    const state = createMinimalGameState({ pendingEncounterSeeds: [seed] });
+    const result = evaluateEncounterSeeds(state, 25, testRng());
+
+    // Seed consumed, no action spawned
+    expect(result.pendingEncounterSeeds).toHaveLength(0);
+    expect(result.unifiedActions).toHaveLength(0);
+
+    // v1 "stirring" family-ready event, unchanged
     const familyEvent = result.tickEvents.find(e => e.id.includes('_family_ready'));
     expect(familyEvent).toBeDefined();
-    expect(familyEvent!.message).toContain('broker.quest');
+    expect(familyEvent!.message).toContain('zzz.no_such_family');
     expect(familyEvent!.message).toContain('stirring');
     expect(familyEvent!.significance).toBe(0.55);
     expect(familyEvent!.actorId).toBe('actor-1');
+  });
+
+  it('family match is deterministic for a fixed seed (same rng ⇒ same pick)', () => {
+    const seedA = makeSeed({ seedId: 'seed_det_a', templateId: undefined, encounterFamily: 'broker.quest', eligibleAfterTick: 20 });
+    const seedB = makeSeed({ seedId: 'seed_det_b', templateId: undefined, encounterFamily: 'broker.quest', eligibleAfterTick: 20 });
+    const stateA = createMinimalGameState({ pendingEncounterSeeds: [seedA] });
+    const stateB = createMinimalGameState({ pendingEncounterSeeds: [seedB] });
+
+    const resultA = evaluateEncounterSeeds(stateA, 25, testRng());
+    const resultB = evaluateEncounterSeeds(stateB, 25, testRng());
+
+    const pickA = resultA.unifiedActions[resultA.unifiedActions.length - 1].templateId;
+    const pickB = resultB.unifiedActions[resultB.unifiedActions.length - 1].templateId;
+    expect(pickA).toBe(pickB);
   });
 
   it('emits fail-soft expired event when seed has neither templateId nor family', () => {
@@ -274,9 +318,10 @@ describe('evaluateEncounterSeeds', () => {
   });
 
   it('populates recentEvents alongside tickEvents', () => {
+    // Withered family (no eligible template) still records the narrative beat in recentEvents.
     const seed = makeSeed({
       templateId: undefined,
-      encounterFamily: 'broker.quest',
+      encounterFamily: 'zzz.no_such_family',
       eligibleAfterTick: 20,
     });
     const state = createMinimalGameState({ pendingEncounterSeeds: [seed] });
@@ -284,6 +329,163 @@ describe('evaluateEncounterSeeds', () => {
 
     expect(result.recentEvents).toHaveLength(1);
     expect(result.recentEvents[0].id).toContain('family_ready');
+  });
+});
+
+// ─── THR-697 (Slice D): context inheritance ──────────────────────
+
+describe('evaluateEncounterSeeds — context inheritance (THR-697 Slice D)', () => {
+  beforeEach(() => { resetUnifiedActionCounter(); clearTraces(); enableTracing(); });
+  afterEach(() => { clearTraces(); disableTracing(); });
+
+  function stateWithOther(seed: PendingEncounterSeed): GameState {
+    const state = createMinimalGameState({ pendingEncounterSeeds: [seed] });
+    // A living "other" node the inherited target/binding can point at.
+    state.graph.addNode({ id: 'actor-other', type: 'actor', name: 'Doran', properties: { actorType: 'individual' } });
+    return state;
+  }
+
+  it('spawned follow-up carries the inherited target instead of self-targeting', () => {
+    const seed = makeSeed({
+      seedId: 'seed_inherit_target',
+      templateId: 'broker.quest.rival_shrine_betrayal',
+      encounterFamily: undefined,
+      eligibleAfterTick: 20,
+      inheritedTargetId: 'actor-other',
+    });
+    const state = stateWithOther(seed);
+    const result = evaluateEncounterSeeds(state, 25, testRng());
+
+    const spawned = result.unifiedActions[result.unifiedActions.length - 1];
+    expect(spawned.targetId).toBe('actor-other'); // not self ('actor-1')
+
+    const trace = getTraces().find(t => t.category === 'seed_context_inherited') as
+      | { inheritedTargetId: string | null; bindingCount: number; droppedBindingCount: number } | undefined;
+    expect(trace).toBeDefined();
+    expect(trace!.inheritedTargetId).toBe('actor-other');
+  });
+
+  it('carries surviving inherited bindings and drops dead-node bindings', () => {
+    const seed = makeSeed({
+      seedId: 'seed_inherit_bindings',
+      templateId: 'broker.quest.rival_shrine_betrayal',
+      encounterFamily: undefined,
+      eligibleAfterTick: 20,
+      inheritedBindings: [
+        { key: 'ally', nodeId: 'actor-other', kind: 'actor', delivery: 'pre-seeded', persistence: 'scene-only', reused: true },
+        { key: 'ghost', nodeId: 'actor-dead', kind: 'actor', delivery: 'pre-seeded', persistence: 'scene-only', reused: true },
+      ],
+    });
+    const state = stateWithOther(seed);
+    const result = evaluateEncounterSeeds(state, 25, testRng());
+
+    const spawned = result.unifiedActions[result.unifiedActions.length - 1];
+    expect(spawned.supportBindings).toHaveLength(1);
+    expect(spawned.supportBindings![0].key).toBe('ally');
+
+    const trace = getTraces().find(t => t.category === 'seed_context_inherited') as
+      | { bindingCount: number; droppedBindingCount: number } | undefined;
+    expect(trace).toBeDefined();
+    expect(trace!.bindingCount).toBe(1);
+    expect(trace!.droppedBindingCount).toBe(1);
+  });
+
+  it('falls back to self-target when the inherited target is dead at spawn', () => {
+    const seed = makeSeed({
+      seedId: 'seed_inherit_dead_target',
+      templateId: 'broker.quest.rival_shrine_betrayal',
+      encounterFamily: undefined,
+      eligibleAfterTick: 20,
+      inheritedTargetId: 'actor-vanished',
+    });
+    const state = createMinimalGameState({ pendingEncounterSeeds: [seed] });
+    const result = evaluateEncounterSeeds(state, 25, testRng());
+
+    const spawned = result.unifiedActions[result.unifiedActions.length - 1];
+    expect(spawned.targetId).toBe('actor-1'); // self-target fallback
+
+    const trace = getTraces().find(t => t.category === 'seed_context_inherited') as
+      | { inheritedTargetId: string | null } | undefined;
+    expect(trace!.inheritedTargetId).toBeNull();
+  });
+
+  it('does not emit seed_context_inherited for a seed without inherited context', () => {
+    const seed = makeSeed({
+      seedId: 'seed_no_inherit',
+      templateId: 'broker.quest.rival_shrine_betrayal',
+      encounterFamily: undefined,
+      eligibleAfterTick: 20,
+    });
+    const state = createMinimalGameState({ pendingEncounterSeeds: [seed] });
+    evaluateEncounterSeeds(state, 25, testRng());
+
+    expect(getTraces().some(t => t.category === 'seed_context_inherited')).toBe(false);
+  });
+
+  it('planting site copies target + bindings only when inheritContext is set', () => {
+    const runtime = createSimulationRuntime();
+    const state = createMinimalGameState({ pendingEncounterSeeds: [] });
+    const action: UnifiedAction = {
+      actionId: 'ua_inherit_plant',
+      actorId: 'actor-1',
+      templateId: 'broker.quest.rival_shrine_betrayal',
+      targetId: 'actor-other',
+      scale: 'personal',
+      source: 'agent',
+      startTick: 10,
+      currentStep: 0,
+      stepProgress: 1,
+      stepDuration: 1,
+      resolved: true,
+      outcome: 'success',
+      stepOutcomes: ['success'],
+      supportBindings: [
+        { key: 'ally', nodeId: 'actor-other', kind: 'actor', delivery: 'pre-seeded', persistence: 'scene-only', reused: true },
+      ],
+    };
+    const reaction: EncounterAftermathReaction = {
+      id: 'reaction_inherit',
+      label: 'Inheriting reaction',
+      effects: [
+        { kind: 'encounter_seed', encounterFamily: 'broker.quest', delayTicks: 5, seedLabel: 'A favor is called in', inheritContext: true },
+      ],
+    };
+    const { state: updated } = applyEncounterAftermathReaction(state, action, reaction, 20, runtime);
+    const seed = updated.pendingEncounterSeeds![0];
+    expect(seed.inheritedTargetId).toBe('actor-other');
+    expect(seed.inheritedBindings).toHaveLength(1);
+    expect(seed.inheritedBindings![0].key).toBe('ally');
+  });
+
+  it('planting site omits inherited context when inheritContext is unset', () => {
+    const runtime = createSimulationRuntime();
+    const state = createMinimalGameState({ pendingEncounterSeeds: [] });
+    const action: UnifiedAction = {
+      actionId: 'ua_no_inherit_plant',
+      actorId: 'actor-1',
+      templateId: 'broker.quest.rival_shrine_betrayal',
+      targetId: 'actor-other',
+      scale: 'personal',
+      source: 'agent',
+      startTick: 10,
+      currentStep: 0,
+      stepProgress: 1,
+      stepDuration: 1,
+      resolved: true,
+      outcome: 'success',
+      stepOutcomes: ['success'],
+    };
+    const reaction: EncounterAftermathReaction = {
+      id: 'reaction_no_inherit',
+      label: 'Non-inheriting reaction',
+      effects: [
+        { kind: 'encounter_seed', encounterFamily: 'broker.quest', delayTicks: 5, seedLabel: 'No inheritance' },
+      ],
+    };
+    const { state: updated } = applyEncounterAftermathReaction(state, action, reaction, 20, runtime);
+    const seed = updated.pendingEncounterSeeds![0];
+    expect(seed.inheritedTargetId).toBeUndefined();
+    expect(seed.inheritedBindings).toBeUndefined();
   });
 });
 
