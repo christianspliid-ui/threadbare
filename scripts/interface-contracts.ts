@@ -345,6 +345,114 @@ export const CONTRACTS: readonly Contract[] = [
     readSites: ['src/components/Game/tabs/ChronicleTab.tsx'],
     deferralTicket: 'THR-721',
   },
+
+  // ── Coupling assessment 2026-07-23 — pre-seeded by the Fable design session ──
+  // (Docs/audits/2026-07-23-simulation-coupling-assessment.md). Each row is a
+  // documented break; the executor's ticket is literally "turn these rows green".
+
+  {
+    id: 'secrets-generation',
+    producerSystem: 'Encounters & Dilemmas',
+    consumerSystem: 'Secrets & Favors',
+    intent: 'Secrets are born from scenes — mortals learn things about each other worth holding.',
+    ulTerms: ['Encounter', 'Aftermath'],
+    mechanism: { kind: 'function', symbols: ['generateSecret', 'createSecretEdge'] },
+    writeSites: ['src/engine/orchestrator.ts', 'src/engine/encounterAftermath.ts'],
+    readSites: ['src/engine/phaseSecretsFavors.ts'],
+    badgeOverride: {
+      badge: 'LEAKED',
+      reason:
+        'Symbols grep green, but generation is content-starved: the only triggers are `completedEncounter.secretDiscovery` and the `secret_discovery` aftermath effect, and zero templates in the live pool author either (only secret-encounter-content.ts, whose path produces nothing). Runtime proof: 120-tick standard run births 0 knows_secret_of and 0 owes_favor edges. Diagnosis: Docs/plans/2026-07-23-secrets-favors-activation.md.',
+      deferralTicket: 'THR-724',
+    },
+    deferralTicket: 'THR-724',
+  },
+  {
+    id: 'secrets-consequences',
+    producerSystem: 'Secrets & Favors',
+    consumerSystem: 'Encounters & Dilemmas',
+    intent: 'A revealed secret or broken favor has consequences — feuds ignite, sentiment shifts, leverage bites.',
+    mechanism: {
+      kind: 'function',
+      symbols: ['applySecretRevelationConsequences', 'applyFavorBreakingConsequences'],
+      module: 'src/engine/secretsConsequences.ts',
+    },
+    writeSites: ['src/engine/secretsConsequences.ts', 'src/engine/secretsFavorsConsequences.ts'],
+    readSites: ['src/engine/encounterAftermath.ts'],
+    badgeOverride: {
+      badge: 'LEAKED',
+      reason:
+        'Zero production callers for any consequence function; both duplicate modules (secretsConsequences.ts / secretsFavorsConsequences.ts — an unresolved fork) are orphaned. Even if a secret existed and were revealed, nothing would happen.',
+      deferralTicket: 'THR-724',
+    },
+    deferralTicket: 'THR-724',
+  },
+  {
+    id: 'secrets-player-verbs-reachable',
+    producerSystem: 'Ascendant Beats & Progression',
+    consumerSystem: 'Secrets & Favors',
+    intent:
+      'The god can plant and reveal secrets — the Eye identity’s signature verbs enter the hand via a beat grant (player-loop links 2–4).',
+    mechanism: { kind: 'function', symbols: ['action.secrets.plant_secret', 'action.secrets.reveal_secret'] },
+    writeSites: ['src/data/ascendant-beat-content.ts'],
+    readSites: ['src/data/unified-action-templates.ts'],
+    badgeOverride: {
+      badge: 'LEAKED',
+      reason:
+        'Both cards are authored but appear in no beat’s grantsActionIds → unreachable by construction (THR-613/THR-501; confirmed via listUnreachableActions). Their template blocks show no graphOps/technicalEffect markers — after granting, link 3 (effects fire) must be verified too.',
+      deferralTicket: 'THR-724',
+    },
+    deferralTicket: 'THR-724',
+  },
+  {
+    id: 'economy-context-scene-scoring',
+    producerSystem: 'Mortal Economy & Prosperity',
+    consumerSystem: 'Encounters & Dilemmas',
+    intent: 'Boom and bust color which scenes fire — a blighted province tells desperate stories, a boom throws festivals.',
+    ulTerms: ['Encounter'],
+    mechanism: { kind: 'function', symbols: ['economicContextBonus'] },
+    writeSites: ['src/engine/phaseProsperity.ts'],
+    readSites: ['src/engine/encounterScoring.ts'],
+    deferralTicket: 'THR-725',
+  },
+  {
+    id: 'economy-verbs-answered',
+    producerSystem: 'Mortal Economy & Prosperity',
+    consumerSystem: 'Encounters & Dilemmas',
+    intent:
+      'The four granted economic verbs (bless_harvest, blight, open_markets, reveal_vein) get a visible story response — player-loop link 4.',
+    mechanism: { kind: 'function', symbols: ['loc.blight', 'loc.bless_harvest'] },
+    writeSites: ['src/data/unified-action-templates.ts', 'src/engine/graphOpExecutor.ts'],
+    readSites: ['src/engine/encounterScoring.ts'],
+    badgeOverride: {
+      badge: 'LEAKED',
+      reason:
+        'The verbs are granted, playable, and verifiably move prosperity/stocks — but encounterScoring.ts contains zero prosperity/economic terms, so the world never answers in scenes. The player’s cards work and the story stays silent.',
+      deferralTicket: 'THR-725',
+    },
+    deferralTicket: 'THR-725',
+  },
+  {
+    id: 'world-events-mint-ambitions',
+    producerSystem: 'Encounters & Dilemmas',
+    consumerSystem: AMBITIONS,
+    intent: 'World events write themselves into mortal desire — a sacked town mints avengers and refugees.',
+    ulTerms: ['AxiologicalProfile'],
+    mechanism: { kind: 'function', symbols: ['AMBITION_MINTING_RULES', 'mintAmbitionsFromEvents'] },
+    writeSites: ['src/engine/ambitionTick.ts'],
+    readSites: ['src/engine/ambitionSelection.ts'],
+    deferralTicket: 'THR-726',
+  },
+  {
+    id: 'minted-ambition-provenance',
+    producerSystem: AMBITIONS,
+    consumerSystem: 'Omens & Atmospheric Pressure',
+    intent: 'Motive receipts name the origin of a minted want — "she seeks vengeance for the blighted fields."',
+    mechanism: { kind: 'edge-prop', symbols: ['mintedByEventId'] },
+    writeSites: ['src/engine/ambitionTick.ts'],
+    readSites: ['src/engine/foreshadowing/motiveReceipt.ts'],
+    deferralTicket: 'THR-726',
+  },
 ];
 
 /** A malformed row — surfaced in the generated output rather than thrown (NFP #4). */

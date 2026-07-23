@@ -17,10 +17,10 @@ remediation ticket or the build fails.
 |---|---|
 | 🟢 LIVE | 12 |
 | 🟠 PARTIAL | 1 |
-| 🔴 LEAKED | 7 |
-| ⚫ UNWIRED | 0 |
+| 🔴 LEAKED | 11 |
+| ⚫ UNWIRED | 3 |
 | 🔵 UNVERIFIED-OK | 0 |
-| **Total** | **20** |
+| **Total** | **27** |
 
 ## Contracts by producing subsystem
 
@@ -41,6 +41,13 @@ remediation ticket or the build fails.
 | `ambition-player-visibility` | The player can see what a mortal is striving for. | function: `getAmbitionsStrand` | Intelligence, Knowledge & Familiarity | 🟠 PARTIAL | THR-721 |
 | `ambition-progress-milestones` | Ambitions progress and complete, firing milestone events the player sees. | function: `phaseAmbitionProgress` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
 | `faction-ambitions-drive-action` | Faction ambitions drive faction action and render on the faction sheet. | function: `factionAmbitions` | Factions & Succession | 🟢 LIVE | — |
+| `minted-ambition-provenance` | Motive receipts name the origin of a minted want — "she seeks vengeance for the blighted fields." | edge-prop: `mintedByEventId` | Omens & Atmospheric Pressure | ⚫ UNWIRED | THR-726 |
+
+### Ascendant Beats & Progression
+
+| Contract | Intent | Mechanism | Consumer | Status | Ticket |
+|---|---|---|---|---|---|
+| `secrets-player-verbs-reachable` | The god can plant and reveal secrets — the Eye identity’s signature verbs enter the hand via a beat grant (player-loop links 2–4). | function: `action.secrets.plant_secret`, `action.secrets.reveal_secret` | Secrets & Favors | 🔴 LEAKED | THR-724 |
 
 ### Attachments, Items & Possessions
 
@@ -63,6 +70,21 @@ remediation ticket or the build fails.
 | Contract | Intent | Mechanism | Consumer | Status | Ticket |
 |---|---|---|---|---|---|
 | `attachment-encounter-rewards` | Encounters grant rewards, which become possessions. | function: `assembleRewardPool` | Attachments, Items & Possessions | 🟢 LIVE | — |
+| `secrets-generation` | Secrets are born from scenes — mortals learn things about each other worth holding. | function: `generateSecret`, `createSecretEdge` | Secrets & Favors | 🔴 LEAKED | THR-724 |
+| `world-events-mint-ambitions` | World events write themselves into mortal desire — a sacked town mints avengers and refugees. | function: `AMBITION_MINTING_RULES`, `mintAmbitionsFromEvents` | Ambitions & Initiatives | ⚫ UNWIRED | THR-726 |
+
+### Mortal Economy & Prosperity
+
+| Contract | Intent | Mechanism | Consumer | Status | Ticket |
+|---|---|---|---|---|---|
+| `economy-context-scene-scoring` | Boom and bust color which scenes fire — a blighted province tells desperate stories, a boom throws festivals. | function: `economicContextBonus` | Encounters & Dilemmas | ⚫ UNWIRED | THR-725 |
+| `economy-verbs-answered` | The four granted economic verbs (bless_harvest, blight, open_markets, reveal_vein) get a visible story response — player-loop link 4. | function: `loc.blight`, `loc.bless_harvest` | Encounters & Dilemmas | 🔴 LEAKED | THR-725 |
+
+### Secrets & Favors
+
+| Contract | Intent | Mechanism | Consumer | Status | Ticket |
+|---|---|---|---|---|---|
+| `secrets-consequences` | A revealed secret or broken favor has consequences — feuds ignite, sentiment shifts, leverage bites. | function: `applySecretRevelationConsequences`, `applyFavorBreakingConsequences` | Encounters & Dilemmas | 🔴 LEAKED | THR-724 |
 
 ## Evidence
 
@@ -254,6 +276,26 @@ remediation ticket or the build fails.
 - **Read sites:** `src/engine/worldSeed.ts`
 - **Verdict:** Verified 2026-07-23: 7 possesses edges present at tick 0. Docs/plans/2026-07-23-system-interface-map.md § Audit findings (manual audit + independent cold-context review, both grep-verified)
 
+### `economy-context-scene-scoring` — ⚫ UNWIRED
+
+- **Intent:** Boom and bust color which scenes fire — a blighted province tells desperate stories, a boom throws festivals.
+- **Producer → Consumer:** Mortal Economy & Prosperity → Encounters & Dilemmas
+- **UL terms:** *Encounter*
+- **Production hits:** 0 total — 0 write, 0 read, 0 unclassified
+- **Write sites:** —
+- **Read sites:** —
+- **Verdict:** Tier 2: no production hits for any declared symbol on either side.
+
+### `economy-verbs-answered` — 🔴 LEAKED
+
+- **Intent:** The four granted economic verbs (bless_harvest, blight, open_markets, reveal_vein) get a visible story response — player-loop link 4.
+- **Producer → Consumer:** Mortal Economy & Prosperity → Encounters & Dilemmas
+- **Production hits:** 7 total — 1 write, 0 read, 6 unclassified
+- **Write sites:** `src/data/unified-action-templates.ts`
+- **Read sites:** —
+- **Other hits:** `src/data/action-technical-effects.ts`, `src/data/actionEffectsProse.ts`, `src/data/ascendant-beat-content.ts`, `src/data/ascendant-milestone-beats.ts`, `src/engine/content-eval/unreachableActions.ts` +1 more
+- **Verdict:** Pinned by badgeOverride: The verbs are granted, playable, and verifiably move prosperity/stocks — but encounterScoring.ts contains zero prosperity/economic terms, so the world never answers in scenes. The player’s cards work and the story stays silent.
+
 ### `faction-ambitions-drive-action` — 🟢 LIVE
 
 - **Intent:** Faction ambitions drive faction action and render on the faction sheet.
@@ -264,4 +306,54 @@ remediation ticket or the build fails.
 - **Read sites:** `src/engine/factionGovernanceVerbs.ts`, `src/engine/phaseControlEffects.ts`, `src/engine/phases/index.ts`
 - **Other hits:** `src/data/faction-action-constants.ts`
 - **Verdict:** Verified 2026-07-23: FactionSheet.activeAmbition renders; faction phases consume. Docs/plans/2026-07-23-system-interface-map.md § Audit findings (manual audit + independent cold-context review, both grep-verified)
+
+### `minted-ambition-provenance` — ⚫ UNWIRED
+
+- **Intent:** Motive receipts name the origin of a minted want — "she seeks vengeance for the blighted fields."
+- **Producer → Consumer:** Ambitions & Initiatives → Omens & Atmospheric Pressure
+- **Production hits:** 0 total — 0 write, 0 read, 0 unclassified
+- **Write sites:** —
+- **Read sites:** —
+- **Verdict:** Tier 2: no production hits for any declared symbol on either side.
+
+### `secrets-consequences` — 🔴 LEAKED
+
+- **Intent:** A revealed secret or broken favor has consequences — feuds ignite, sentiment shifts, leverage bites.
+- **Producer → Consumer:** Secrets & Favors → Encounters & Dilemmas
+- **Module:** `src/engine/secretsConsequences.ts` — **no production importers**
+- **Production hits:** 2 total — 2 write, 0 read, 0 unclassified
+- **Write sites:** `src/engine/secretsConsequences.ts`, `src/engine/secretsFavorsConsequences.ts`
+- **Read sites:** —
+- **Verdict:** Pinned by badgeOverride: Zero production callers for any consequence function; both duplicate modules (secretsConsequences.ts / secretsFavorsConsequences.ts — an unresolved fork) are orphaned. Even if a secret existed and were revealed, nothing would happen.
+
+### `secrets-generation` — 🔴 LEAKED
+
+- **Intent:** Secrets are born from scenes — mortals learn things about each other worth holding.
+- **Producer → Consumer:** Encounters & Dilemmas → Secrets & Favors
+- **UL terms:** *Encounter*, *Aftermath*
+- **Production hits:** 3 total — 2 write, 0 read, 1 unclassified
+- **Write sites:** `src/engine/encounterAftermath.ts`, `src/engine/orchestrator.ts`
+- **Read sites:** —
+- **Other hits:** `src/engine/secretGeneration.ts`
+- **Verdict:** Pinned by badgeOverride: Symbols grep green, but generation is content-starved: the only triggers are `completedEncounter.secretDiscovery` and the `secret_discovery` aftermath effect, and zero templates in the live pool author either (only secret-encounter-content.ts, whose path produces nothing). Runtime proof: 120-tick standard run births 0 knows_secret_of and 0 owes_favor edges. Diagnosis: Docs/plans/2026-07-23-secrets-favors-activation.md.
+
+### `secrets-player-verbs-reachable` — 🔴 LEAKED
+
+- **Intent:** The god can plant and reveal secrets — the Eye identity’s signature verbs enter the hand via a beat grant (player-loop links 2–4).
+- **Producer → Consumer:** Ascendant Beats & Progression → Secrets & Favors
+- **Production hits:** 2 total — 0 write, 1 read, 1 unclassified
+- **Write sites:** —
+- **Read sites:** `src/data/unified-action-templates.ts`
+- **Other hits:** `src/data/action-technical-effects.ts`
+- **Verdict:** Pinned by badgeOverride: Both cards are authored but appear in no beat’s grantsActionIds → unreachable by construction (THR-613/THR-501; confirmed via listUnreachableActions). Their template blocks show no graphOps/technicalEffect markers — after granting, link 3 (effects fire) must be verified too.
+
+### `world-events-mint-ambitions` — ⚫ UNWIRED
+
+- **Intent:** World events write themselves into mortal desire — a sacked town mints avengers and refugees.
+- **Producer → Consumer:** Encounters & Dilemmas → Ambitions & Initiatives
+- **UL terms:** *AxiologicalProfile*
+- **Production hits:** 0 total — 0 write, 0 read, 0 unclassified
+- **Write sites:** —
+- **Read sites:** —
+- **Verdict:** Tier 2: no production hits for any declared symbol on either side.
 
