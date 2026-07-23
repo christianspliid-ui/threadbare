@@ -203,11 +203,13 @@ Subsystems touched — Encounters & Dilemmas (core), Attention & Chronicle — a
 
 ## Vision audit
 
-- [x] No Vision premise contradicted. The receipt strengthens the North-Star loop (visible consequence → next decision) and surfaces mortals by name inside the change list. The technical footer respects the taste-profile line on data-in-prose (no key:value chips).
+- [x] This plan does not contradict any Vision premise — the receipt strengthens the North-Star loop (visible consequence → next decision) and surfaces mortals by name inside the change list; the technical footer respects the taste-profile line on data-in-prose (no key:value chips).
+- [x] No Vision edit required — no premise is changed, so none is in scope.
 
 ## Rulebook impact
 
-- [x] No rule of play changes. Auto-success, essence costs, action verbs, and prerequisites are untouched; the receipt is a feedback surface over existing resolution. (The rules-of-play question — variance — is deliberately split to THR-728, which carries its own rulebook-update obligation.)
+- [x] This plan does not change a rule of play — auto-success, essence costs, action verbs, and prerequisites are untouched; the receipt is a feedback surface over existing resolution.
+- [x] No `Docs/canon/rulebook.md` update required in this PR. (The rules-of-play question — variance — is deliberately split to THR-728, which carries its own rulebook-update obligation.)
 
 > Brainstorm companion: `Docs/plans/2026-07-23-thr-727-divine-receipt-brainstorm.md` (written alongside).
 
