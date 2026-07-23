@@ -292,7 +292,8 @@ Executor note: adding these to the trace union will hit the `emitTrace` Omit-col
 
 ## Rulebook impact
 
-- [x] This plan **does** change rules of play: adds group-scale encounter resolution (best-member + assist on the sigmoid → d100 ladder), two ascendant action verbs, and the company formation/dissolution loop. **`Docs/canon/rulebook.md` update is in the executor's scope for this ticket** (new subsection under encounters/resolution, `[IMPL]`-flagged once shipped), per the rulebook-impact rule.
+- [x] This plan **does** change rules of play: adds group-scale encounter resolution (best-member + assist on the sigmoid → d100 ladder), two ascendant action verbs, and the company formation/dissolution loop.
+- [x] `Docs/canon/rulebook.md` update is in scope for this ticket — executor adds the group/company subsection (encounters/resolution area, `[IMPL]`-flagged once shipped) in the implementation PR, per the rulebook-impact rule.
 
 > Brainstorm companion: `Docs/plans/2026-07-23-party-formation-group-mechanics-brainstorm.md` (written alongside).
 
