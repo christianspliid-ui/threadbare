@@ -1,47 +1,47 @@
 # Briefing
 
-**Generated:** 2026-07-22 10:25 local (08:25 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-07-23 20:29 local (18:29 UTC) · by `keep-work-flowing-cc`
 
-This is your inbox. It's rewritten every hour by a Claude Code task — the replacement for the old Cowork "keep-work-flowing" chat brief. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
+This is your inbox. It's rewritten every hour by a Claude Code task. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view. **First run since 2026-07-22 10:25** — everything below catches up on that ~34-hour window.
 
 ## Needs Christian
 
-**Nothing new landed on your desk. Two more encounter slices shipped overnight, and the same single operational switch is still yours — unchanged since yesterday afternoon.**
+**Two things, both operational switches. No design decisions are waiting on you — both of your directives from this morning are already in motion (one in development, one top of the queue).**
 
-> **Three replacement jobs are built, switched off, waiting on you to watch each run once.**
+**1. All four old Cowork automations can be switched off now.** The three replacements you trialled and approved yesterday are live and have produced real runs, and the hourly-brief replacement wrote this file. In the Cowork app, disable: `keep-work-flowing`, `daily-backlog-grooming`, `weekly-workflow-retro`, `weekly-project-hygiene`. Leave `weekly-invoice-check` alone — it's personal, not Threadbare. Until you flip them, four jobs run twice; nothing breaks. Details: [`user-actions.md`](user-actions.md) item 1.
 
-| Job | When it would run | State |
-|---|---|---|
-| Daily queue grooming | 09:16 daily | built, **off** |
-| Wednesday workflow review | 11:13 Wednesdays | built, **off** |
-| Sunday tidy-up | 10:10 Sundays | built, **off** |
+**2. Your main project folder is parked on an old work branch and needs two commands.** Nothing is lost — the branch was fully merged yesterday — but the auto-updater won't reattach it (it only self-heals a different kind of park, and a local settings edit sits in the tree), so the folder falls further behind until someone runs, from a terminal in `C:\Users\chris\Dev\Projects\TheFantasyWorldSimulator`:
 
-What they need: **run each once in a normal chat session, read what it produces, say yes.** Then it goes live and its Cowork twin gets switched off in the same step. Start with the daily queue grooming — and note today is Wednesday, so the workflow review would have fired at 11:13 this morning had it been on.
+```
+git switch main
+git pull --ff-only origin main
+```
 
-Separately and still yours: **switch off `keep-work-flowing` in the Cowork app.** No trial needed — its replacement is live and wrote this brief.
-
-**Open but unforced: the next big direction.** War deepened (battles with real texture, sieges that tighten as they drag, the mark a war leaves on a region once it ends) or the economy made visible (banditry and tolls surfacing as encounters, the map showing what's actually moving along a road). A one-word steer is enough whenever you have one. The lane still has four jobs in front of it, so nothing waits on this.
+If the first command complains about `.claude/settings.local.json`, run `git stash push -m home-tree-recovery` first, then the two commands, then `git stash pop`.
 
 ## Queue
 
-**Healthy — four ready, down from six because two shipped overnight.**
+**Healthy — 3 ready, executor mid-flight, nothing blocked, nothing stale (all three filed today).**
 
-- **What's left of the encounter chain:** THR-696 (name the real supporting cast in prose, instead of the invented character names the branching encounters currently hardcode), THR-698 (give the ~235 simpler encounters a default supporting cast, so those names have someone real to resolve to), THR-699 (sweep the existing tavern, social and borderland content onto the new footing). Plus **THR-702**, maintenance: a fix so pull requests armed to merge stop stalling silently.
-- **Nothing is blocked and nothing is stale.** All four were touched yesterday; the oldest is a day old against a seven-day line.
-- **One thing in development:** the Cowork job ports (THR-677), unassigned on purpose — it waits on your trial approvals above, not on an agent.
-- **The lane has been quiet since 03:37 this morning** — four jobs ready, none claimed in roughly six hours. That lines up with the machine being asleep (see Freshness), and it should resume on its own now that it's awake. Worth a glance in tonight's brief if the queue is still sitting at four.
+- **Top of queue:** the wiki freshness enforcement gate (THR-730, High) — your directive from this morning, planned and handed off same-day.
+- Behind it: the world minting ambitions into mortals (THR-726) and a small dead-contract cleanup (THR-722).
+- **In development: Divine Receipt (THR-727)** — your other directive from today: the outcome dialogue that tells you what actually happened, in story and game terms, when an action card you played resolves. Actively moving as of ~18:00.
 
 ## Freshness
 
-**Home tree is parked on this task's own scheduled-session branch — the known harmless state, not the ten-hour park from Monday.** Nothing unique is stranded there, local `main` is exactly level with the server, and the tree is completely clean: no modified files, no untracked ones. It clears itself when the session ends. **No action needed from you.**
+**Home tree: parked on a merged branch — see the two-command fix above.** Nothing unique is stranded there; local `main` is 5 behind the server (below the alarm line, but it grows while parked). Separate note, not yours: **ten retro write-ups exist only as loose files on this machine** (`Design/retros/`, April–July), same one-machine exposure class as the drafts backed up on 07-21 — flagged in user-actions as agent work.
 
-**The stale-branch cleanup job has been silent since 06:40 — three hourly runs missed.** It only runs while you're logged in, so a sleeping or logged-out machine simply skips runs and catches up afterwards; that is designed behaviour, not a fault. Its last report was healthy: 19 work folders, 26 branches, **nothing flagged for a human decision**. If it's still silent in tonight's brief with the machine awake, that's the point to look at it.
+**Cleanup reaper: alive and healthy** — last run 19:40, tracking 23 worktrees / 31 branches / 1 stash, nothing flagged for a human decision.
 
 ## What's moving
 
-- **Two more encounter slices shipped overnight, both unattended.** Slice B (THR-695, 02:32) lets an encounter's *aftermath* point at the real person or place the scene happened with — so consequences land on the actual entity instead of a generic one — and it adds the first authored effect that can forge a real bond between two characters. Slice D (THR-697, 03:37) makes planted story-seeds actually spawn: an encounter that promises a follow-up now grows one matching its family, carrying the original scene's cast and target forward rather than quietly fizzling.
-- **Three of the six scene-integration slices are done** (A, B, D). The three remaining are all content-side and build directly on what has landed.
-- **The old pull-request backlog is holding at 14**, unchanged this hour. Nine of them are orphans of a job that no longer exists; clearing them is an agent decision, not yours.
+The 34-hour window was the busiest yet — roughly 200 commits, all merged clean, PR board now at **zero open**:
+
+- **Both halves of the direction question this file carried for days got built.** War got its depth pass: battles with turning points and real texture, sieges that tighten the longer they drag, and notable characters who pursue agendas — feuds, succession claims, and taking command of wars. And the economy became visible in play: cargo moving on trade routes now surfaces as encounters, faction prosperity feeds war triggers, and encounter scoring listens to economic context.
+- **The encounter scene chain finished** (slices C, E, F): scenes name the real people and places they happen with, carry a supporting cast, and keep continuity into follow-ups.
+- **Secrets and favors woke up** — leverage, blackmail material, and favors owed are now an active social dark economy in the simulation.
+- **The systems interface map landed** — a live registry of every cross-system contract with a CI gate that catches contracts going dead. It immediately paid for itself: the coupling audit it enabled produced the three tickets now feeding the queue.
+- **The stale-PR backlog is gone.** All 14 old pull requests were triaged to zero; new ones self-merge on green.
 
 ---
-*Standing asks live in [`Design/user-actions.md`](user-actions.md). This file is regenerated hourly by the `keep-work-flowing-cc` scheduled task; staleness is visible from the Generated timestamp above and the task's `lastRunAt`.*
+*Standing asks live in [`Design/user-actions.md`](user-actions.md). This file is regenerated hourly by the `keep-work-flowing-cc` scheduled task; staleness is visible from the Generated timestamp above and the task's `lastRunAt` in `list_scheduled_tasks`.*
