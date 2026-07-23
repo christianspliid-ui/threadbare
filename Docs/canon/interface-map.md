@@ -119,7 +119,11 @@ Personality & Traits · Economy & Prosperity · Ruins & Delves · Stealth & Dete
 Attention & Chronicle · Omens & Foreshadowing · Strategic Projects · Ascendant Beats ·
 Movement & Colocation · Reputation & Influence · Secrets & Favors (DORMANT) ·
 Effects & Conditions (partially covered above) · Agent Lifecycle · Intelligence & Knowledge ·
-Spheres & Quintessence. ⚪ First design session to touch one writes its table (protocol §4).
+Spheres & Quintessence — plus the **init-time systems the tick-phase inventory cannot see**:
+Worldgen (map + history generation) and Encounter Seeding (seeds/hidden marks, THR-697), both
+confirmed real by the 2026-07-23 archive sweep. ⚪ First design session to touch one writes
+its table (protocol §4). The wiki projection (`public/system-interface-map-reference.html`)
+draws one box per subsystem listed here — a row without a box there is a wiki bug.
 
 ## Current spec
 - **Subsystem existence + tick wiring:** `Docs/canon/systems-inventory.md` (generated)
