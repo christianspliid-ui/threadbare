@@ -264,7 +264,9 @@ THR-718 carries the StepDots magnitude indicator on the character sheet.
 
 Build-time wiring, not tick wiring: generator → `prebuild` + `check:generated-freshness`
 (non-zero-exit ratchet); protocol → CLAUDE.md Step 0.7 + DoD, design-session SKILL.md,
-`Docs/canon/process.md`, `lint:plan-doc`, canon README index. Nothing runs in the game.
+`Docs/canon/process.md`, `lint:plan-doc`, canon README index. Nothing runs in the game, so
+the runtime surfaces in `Docs/plans/wiring-checklist.md` are N/A; the checklist gains no new
+rows from this ticket.
 
 | Module | Orchestrator phase | UI component | GameState field | Trace emitted | Debug visibility |
 |--------|-------------------|-------------|-----------------|---------------|-----------------|
@@ -283,12 +285,13 @@ Build-time wiring, not tick wiring: generator → `prebuild` + `check:generated-
 - [x] This plan does not contradict any Vision premise — it is process/tooling; the
   remediation verdicts *restore* Vision-aligned couplings (items that matter, mortals with
   visible inner lives).
+- [x] No Vision edit needed in this ticket's scope.
 
 ## Rulebook impact
 
-- [x] This plan does not change a rule of play. (THR-718's tier influence and THR-721's
-  visibility change player-facing behavior; their own plans re-verdict the affected
-  rulebook sections.)
+- [x] This plan does not change a rule of play — process/tooling only.
+- [x] THR-718's tier influence and THR-721's visibility do change player-facing behavior;
+  their own plans update and re-verdict the affected rulebook sections in their PRs.
 
 ## Constants table
 
@@ -313,15 +316,15 @@ it *is* an inspectability artifact.)
 
 ## NFP-compliance table
 
-| NFP | Verdict |
-|---|---|
-| 1 Tunability | PASS — excludes/caps named constants |
-| 2 Inspectability | PASS — the deliverable is an inspectability surface; badges carry evidence |
-| 3 Determinism | PASS — pure static analysis of the working tree |
-| 4 Fail-soft | PASS — table above; generator never blocks a build except via the explicit ratchet |
-| 5 Narrative > mechanics | PASS w/ note — remediation recommendations favor restoring narrative-rich couplings (item breakage, visible ambitions) |
-| 6 Additive | PASS — new files + checklist lines; no refactors |
-| 7 Perf budget | PASS — build-time only |
+| NFP | Verdict | Note |
+|-----|---------|------|
+| 1. Tunability | PASS | excludes/caps are named constants |
+| 2. Inspectability | PASS | the deliverable is an inspectability surface; badges carry evidence |
+| 3. Determinism | PASS | pure static analysis of the working tree; codesight excluded as input |
+| 4. Fail-soft | PASS | table above; generator never blocks a build except via the explicit ratchet |
+| 5. Narrative over mechanical perfection | PASS with note | remediation verdicts restore narrative-rich couplings (item breakage, visible ambitions) |
+| 6. Additive over destructive | PASS | new files + checklist lines; no refactors |
+| 7. Performance budget | PASS | build-time only, never on the tick path |
 
 ## Done when
 
