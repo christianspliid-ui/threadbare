@@ -7,6 +7,15 @@
  * `warnings[]` array (rendered in the dashboard footer) and printed to stderr.
  *
  * Mirrors the esbuild bundling + CLI pattern of `scripts/mirror-ul.ts`.
+ *
+ * Output is deterministic: same shard sources in, byte-identical JSON out. This
+ * artifact carried a wall-clock `generatedAt` until THR-714. `check:generated-
+ * freshness` ignored it as volatile, but git does not — so two PRs that each ran
+ * `npm run prebuild` produced different blobs and conflicted on every cascade
+ * merge, which under strict branch protection stalls armed auto-merges with no
+ * failure signal (`gh pr update-branch` no-ops on DIRTY). Do not reintroduce a
+ * per-run field here; a generated artifact that changes without its inputs
+ * changing is a merge hazard, not a freshness signal.
  */
 
 import fs from 'node:fs';
@@ -70,7 +79,6 @@ export interface ULGenerationWarning {
 
 export interface ULDashboardData {
   schemaVersion: typeof SCHEMA_VERSION;
-  generatedAt: string;
   shards: ULShard[];
   terms: ULTerm[];
   warnings: ULGenerationWarning[];
@@ -425,7 +433,6 @@ export function buildDashboardData(opts: { sourceRoot: string }): ULDashboardDat
 
   return {
     schemaVersion: SCHEMA_VERSION,
-    generatedAt: new Date().toISOString(),
     shards,
     terms,
     warnings,

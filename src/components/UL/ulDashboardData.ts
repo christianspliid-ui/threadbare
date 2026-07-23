@@ -59,7 +59,6 @@ export interface ULGenerationWarning {
 
 export interface ULDashboardData {
   schemaVersion: number;
-  generatedAt: string;
   shards: ULShard[];
   terms: ULTerm[];
   warnings: ULGenerationWarning[];
