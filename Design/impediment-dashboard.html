@@ -2819,6 +2819,19 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "**Workaround:** claimed it anyway, on the grounds that the block's *purpose* — collision avoidance — was verifiably satisfied by inspection: the In-Dev board was empty (nothing to collide with), and the THR-573 handoff had independently named THR-714 as `Parallel-safe with` in its own coordination block. Recorded the reasoning in the completion comment. **Durable fix:** either have the grooming/queue-hygiene path emit a minimal coordination block when it files straight to Ready for Dev, or amend Step 3 so a missing block is a refusal only when the In-Dev board is non-empty — with an empty board there is nothing for a mutex to protect against.",
     "session": "THR-714 hourly pickup, 2026-07-23"
+  },
+  {
+    "num": "201",
+    "id": 201,
+    "count": 1,
+    "date": "2026-07-23",
+    "category": "tooling",
+    "description": "**`check:generated-freshness` runs *before* the closeout step that edits `Docs/impediments.md` — so the gate passes locally and CI fails on the same commit.** The THR-714 pass ran the freshness check as gate 3b and recorded a genuine `OK — 25 generated artifact(s) match HEAD` in its evidence block. It then performed closeout: marked impediment #197 RESOLVED and appended #199/#200 to `Docs/impediments.md`. That file is a **source** for the generated `Design/impediment-dashboard.html`, which was never regenerated, so the pushed commit carried a stale artifact and CI's blocking `Generated artifact freshness` step failed. Auto-merge was armed and could never fire; the PR sat green-except-one for ~3h with an accurate-at-the-time \"all gates green\" completion comment on the Linear issue. The ordering is structural, not a slip: the Definition of Done lists impediment logging *after* the verification gates, and impediment logging is mandatory on every run, so **every run that logs an impediment and does not re-run the check ships a stale dashboard.**",
+    "consequence": "~15 min of the next hourly run: diagnosing a red required check on work reported as shipped, then regenerate + re-merge + re-arm. Unbounded if unnoticed — the issue stays In Dev and each subsequent run re-resumes completed work.",
+    "impact": "M",
+    "workaroundFound": true,
+    "workaround": "**Workaround:** re-run `npm run prebuild && npm run check:generated-freshness` as the *last* action before the closing commit, after all doc/impediment edits — not at gate-3b position. Same applies to any closeout edit of a generated-artifact source (`Docs/impediments.md`, the UL shards, action templates, design-wiki pages). **Method note:** a green `check:generated-freshness` is only valid for the tree state at the moment it ran; it is not a property of the branch. Quoting an early-run OK in a completion comment implies a guarantee the check never made. **Durable fix:** either move gate 3b after closeout in the DoD ordering, or have the pre-commit hook regenerate-and-stage rather than only verify — the check already knows how to regenerate, it just refuses to write.",
+    "session": "THR-714 resume, hourly `tb-opus-pickup` run, 2026-07-23"
   }
 ];
 // ── End data ──
