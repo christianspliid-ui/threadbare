@@ -145,7 +145,7 @@
 
   <div class="section">
     <h2>The world at a glance
-      <span class="lead">Every box is a living subsystem. Arrows are what one system does to another, at design level.</span>
+      <span class="lead">Every box is a living subsystem — one box for every row of the generated systems inventory, plus the run-start generators. Arrows are what one system does to another, at design level.</span>
     </h2>
 
     <div class="legend">
@@ -156,18 +156,20 @@
     </div>
 
     <div class="diagram-frame">
-      <svg viewBox="0 0 880 660" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Overview diagram of Threadbearer's subsystems and their interfaces">
+      <svg viewBox="0 0 880 760" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Overview diagram of every Threadbearer subsystem and their interfaces">
         <defs>
           <marker id="ah-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8a7060"/></marker>
           <marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2d5a27"/></marker>
           <marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b2500"/></marker>
         </defs>
-
         <style>
-          .node { fill: #fff8e7; stroke: #b8860b; stroke-width: 1.2; rx: 8; }
+          .band { font-family: 'Cinzel', Georgia, serif; font-size: 10px; font-weight: 600; letter-spacing: 0.18em; fill: #b8860b; }
+          .node { fill: #fff8e7; stroke: #b8860b; stroke-width: 1.2; }
           .node-core { fill: #f9efd4; stroke: #b8860b; stroke-width: 2; }
-          .nlabel { font-family: 'Cinzel', Georgia, serif; font-size: 13px; font-weight: 600; fill: #2c1810; text-anchor: middle; }
-          .nsub { font-family: 'Crimson Text', Georgia, serif; font-size: 10.5px; font-style: italic; fill: #8a7060; text-anchor: middle; }
+          .node-dormant { fill: #f4edd8; stroke: #8a7060; stroke-width: 1.2; stroke-dasharray: 4 3; }
+          .node-substrate { fill: #f9efd4; stroke: #b8860b; stroke-width: 1; stroke-dasharray: 3 3; }
+          .nlabel { font-family: 'Cinzel', Georgia, serif; font-size: 12px; font-weight: 600; fill: #2c1810; text-anchor: middle; }
+          .nsub { font-family: 'Crimson Text', Georgia, serif; font-size: 10px; font-style: italic; fill: #8a7060; text-anchor: middle; }
           .elabel { font-family: 'Crimson Text', Georgia, serif; font-size: 10.5px; font-style: italic; fill: #5a3d2b; text-anchor: middle; }
           .elabel-green { fill: #2d5a27; }
           .elabel-red { fill: #8b2500; }
@@ -176,131 +178,163 @@
           .e-red { stroke: #8b2500; stroke-width: 2; stroke-dasharray: 6 4; fill: none; }
         </style>
 
-        <!-- ══ edges (drawn first, under nodes) ══ -->
-        <!-- Ascendant -> Encounters -->
-        <path class="e-gray" d="M440,78 L440,252" marker-end="url(#ah-gray)"/>
-        <text class="elabel" x="474" y="170">divine action</text>
-        <!-- Doom -> Ascendant -->
-        <path class="e-gray" d="M660,46 L556,46" marker-end="url(#ah-gray)"/>
-        <text class="elabel" x="608" y="38">pressure &amp; beats</text>
-        <!-- Rivals -> Encounters -->
-        <path class="e-gray" d="M150,72 C190,150 280,220 350,258" marker-end="url(#ah-gray)"/>
-        <text class="elabel" x="272" y="200">schemes seed trouble</text>
-        <!-- Agents -> Ambitions -->
-        <path class="e-gray" d="M140,246 L158,196" marker-end="url(#ah-gray)"/>
-        <text class="elabel" x="112" y="222">born with drives</text>
-        <!-- Ambitions -> Encounters (LIVE) -->
-        <path class="e-green" d="M222,178 C270,210 310,240 352,264" marker-end="url(#ah-green)"/>
-        <text class="elabel elabel-green" x="257" y="243">biases what they choose</text>
-        <!-- Encounters -> Attachments (LIVE) -->
-        <path class="e-green" d="M540,268 C580,240 610,215 638,192" marker-end="url(#ah-green)"/>
-        <text class="elabel elabel-green" x="631" y="238">rewards</text>
-        <!-- Attachments -> Encounters (LIVE, offset) -->
-        <path class="e-green" d="M618,178 C570,205 535,228 505,252" marker-end="url(#ah-green)"/>
-        <text class="elabel elabel-green" x="536" y="212">shapes the dice</text>
-        <!-- Attachments -> Capability (LEAKED) -->
-        <path class="e-red" d="M706,182 L712,246" marker-end="url(#ah-red)"/>
-        <text class="elabel elabel-red" x="785" y="214">should raise tiers</text>
-        <text class="elabel elabel-red" x="785" y="230">(repairing · THR-718)</text>
-        <!-- Capability -> Encounters -->
-        <path class="e-gray" d="M628,282 L556,292" marker-end="url(#ah-gray)"/>
-        <text class="elabel" x="592" y="274">eligibility &amp; odds</text>
-        <!-- Agents -> Encounters -->
-        <path class="e-gray" d="M224,278 L326,290" marker-end="url(#ah-gray)"/>
-        <text class="elabel" x="272" y="272">decide &amp; act</text>
-        <!-- Movement -> Encounters -->
-        <path class="e-gray" d="M320,398 C355,370 385,348 410,336" marker-end="url(#ah-gray)"/>
-        <text class="elabel" x="322" y="372">shared ground makes scenes</text>
-        <!-- Encounters -> Knowledge -->
-        <path class="e-gray" d="M478,336 C498,370 515,400 528,428" marker-end="url(#ah-gray)"/>
-        <text class="elabel" x="546" y="386">what witnesses learn</text>
-        <!-- Knowledge -> Chronicle -->
-        <path class="e-gray" d="M614,452 L646,442" marker-end="url(#ah-gray)"/>
-        <text class="elabel" x="622" y="492">gates your sight</text>
-        <!-- Encounters -> Chronicle -->
-        <path class="e-gray" d="M548,318 C630,350 690,382 726,404" marker-end="url(#ah-gray)"/>
-        <text class="elabel" x="676" y="366">becomes story</text>
-        <!-- Factions -> War -->
-        <path class="e-gray" d="M142,458 L176,500" marker-end="url(#ah-gray)"/>
-        <text class="elabel" x="122" y="486">armies march</text>
-        <!-- War -> Economy -->
-        <path class="e-gray" d="M284,528 L344,528" marker-end="url(#ah-gray)"/>
-        <text class="elabel" x="314" y="519">ruin &amp; spoils</text>
-        <!-- Economy -> Factions -->
-        <path class="e-gray" d="M372,502 C320,480 260,465 208,456" marker-end="url(#ah-gray)"/>
-        <text class="elabel" x="300" y="497">prosperity is power</text>
-        <!-- Ambitions (faction) -> Factions: skip for clarity -->
+        <path class="e-gray" d="M560,28 C530,10 500,10 470,26" marker-end="url(#ah-gray)"/>
+        <text class="elabel" x="515" y="12">pressure &amp; beats</text>
+        <path class="e-gray" d="M300,88 C315,100 330,100 346,90" marker-end="url(#ah-gray)"/>
+        <text class="elabel" x="322" y="110">fuels intervention</text>
+        <path class="e-gray" d="M150,88 C172,140 168,200 122,262" marker-end="url(#ah-gray)"/>
+        <text class="elabel" x="152" y="248">schemes plant trouble</text>
+        <path class="e-gray" d="M436,88 C490,120 499,150 499,182 C499,202 480,212 464,220" marker-end="url(#ah-gray)"/>
+        <text class="elabel" x="482" y="200">divine action</text>
+        <path class="e-green" d="M650,124 C680,110 704,98 734,88" marker-end="url(#ah-green)"/>
+        <text class="elabel elabel-green" x="762" y="108">motives explain deeds</text>
+        <path class="e-gray" d="M200,184 C180,196 150,196 128,186" marker-end="url(#ah-gray)"/>
+        <text class="elabel" x="168" y="207">names, mores, temperament</text>
+        <path class="e-gray" d="M100,184 C160,230 240,258 326,272" marker-end="url(#ah-gray)"/>
+        <text class="elabel" x="268" y="250">decide &amp; act</text>
+        <path class="e-gray" d="M400,184 C392,200 382,210 374,220" marker-end="url(#ah-gray)"/>
+        <text class="elabel" x="392" y="214">colors every choice</text>
+        <path class="e-green" d="M560,184 C550,200 536,212 526,220" marker-end="url(#ah-green)"/>
+        <text class="elabel elabel-green" x="640" y="206">biases what they choose</text>
+        <path class="e-gray" d="M570,252 C650,238 716,214 754,186" marker-end="url(#ah-gray)"/>
+        <text class="elabel" x="730" y="214">deeds echo</text>
+        <path class="e-gray" d="M200,286 L324,286" marker-end="url(#ah-gray)"/>
+        <text class="elabel" x="262" y="278">seeds ripen into scenes</text>
+        <path class="e-gray" d="M324,304 L200,304" marker-end="url(#ah-gray)"/>
+        <text class="elabel" x="262" y="320">aftermath plants new seeds</text>
+        <path class="e-green" d="M570,238 C598,232 616,238 634,246" marker-end="url(#ah-green)"/>
+        <text class="elabel elabel-green" x="602" y="226">rewards</text>
+        <path class="e-green" d="M636,264 C610,270 592,276 576,282" marker-end="url(#ah-green)"/>
+        <text class="elabel elabel-green" x="606" y="296">shapes the dice</text>
+        <path class="e-red" d="M700,284 L700,306" marker-end="url(#ah-red)"/>
+        <text class="elabel elabel-red" x="788" y="299">should raise tiers (THR-718)</text>
+        <path class="e-gray" d="M636,336 L576,330" marker-end="url(#ah-gray)"/>
+        <text class="elabel" x="606" y="352">eligibility &amp; odds</text>
+        <path class="e-gray" d="M120,400 C140,388 180,388 216,398" marker-end="url(#ah-gray)"/>
+        <text class="elabel" x="168" y="386">armies march</text>
+        <path class="e-gray" d="M300,400 C315,390 332,390 350,398" marker-end="url(#ah-gray)"/>
+        <text class="elabel" x="325" y="384">ruin &amp; spoils</text>
+        <path class="e-gray" d="M580,400 C560,388 520,380 492,372" marker-end="url(#ah-gray)"/>
+        <text class="elabel" x="548" y="394">clues invite delves</text>
+        <path class="e-gray" d="M700,400 C650,390 600,382 556,372" marker-end="url(#ah-gray)"/>
+        <text class="elabel" x="716" y="390">shared ground makes scenes</text>
+        <path class="e-gray" d="M380,462 C300,556 160,548 92,462" marker-end="url(#ah-gray)"/>
+        <text class="elabel" x="240" y="546">prosperity is power</text>
+        <path class="e-gray" d="M120,462 C140,470 160,478 178,488" marker-end="url(#ah-gray)"/>
+        <text class="elabel" x="102" y="484">long works</text>
+        <path class="e-gray" d="M400,372 C380,460 350,520 322,574" marker-end="url(#ah-gray)"/>
+        <text class="elabel" x="430" y="542">what witnesses learn</text>
+        <path class="e-gray" d="M480,372 C505,480 525,530 542,574" marker-end="url(#ah-gray)"/>
+        <text class="elabel" x="592" y="548">bids for the spotlight</text>
+        <path class="e-gray" d="M200,606 L220,606" marker-end="url(#ah-gray)"/>
+        <text class="elabel" x="208" y="572">what stays hidden</text>
+        <path class="e-gray" d="M646,606 L666,606" marker-end="url(#ah-gray)"/>
+        <text class="elabel" x="656" y="572">picks what is told</text>
+        <path class="e-gray" d="M424,624 C510,652 600,652 668,628" marker-end="url(#ah-gray)"/>
+        <text class="elabel" x="546" y="656">gates your sight</text>
 
-        <!-- ══ nodes ══ -->
-        <!-- top row -->
-        <rect class="node" x="46" y="22" width="170" height="50" rx="8"/>
-        <text class="nlabel" x="131" y="43">Rivals &amp; Schemes</text>
-        <text class="nsub" x="131" y="59">other gods move too</text>
+        <text class="band" x="8" y="16">THE DIVINE GAME</text>
+        <rect class="node" x="6" y="30" width="150" height="54" rx="8"/>
+        <text class="nlabel" x="81" y="52">Rivals &amp; Schemes</text>
+        <text class="nsub" x="81" y="68">other gods move too</text>
+        <rect class="node" x="164" y="30" width="150" height="54" rx="8"/>
+        <text class="nlabel" x="239" y="52">Essence &amp; Economy</text>
+        <text class="nsub" x="239" y="68">worship, sources, income</text>
+        <rect class="node" x="322" y="30" width="162" height="54" rx="8"/>
+        <text class="nlabel" x="403" y="52">The Ascendant</text>
+        <text class="nsub" x="403" y="68">you — threads, beats, progression</text>
+        <rect class="node" x="536" y="30" width="176" height="54" rx="8"/>
+        <text class="nlabel" x="624" y="52">Doom, Mandate &amp; Journey</text>
+        <text class="nsub" x="624" y="68">the run's clocks &amp; goals</text>
+        <rect class="node" x="716" y="30" width="160" height="54" rx="8"/>
+        <text class="nlabel" x="796" y="52">Omens &amp; Foreshadowing</text>
+        <text class="nsub" x="796" y="68">pressure made visible</text>
 
-        <rect class="node" x="330" y="22" width="220" height="56" rx="8"/>
-        <text class="nlabel" x="440" y="45">The Ascendant</text>
-        <text class="nsub" x="440" y="62">you — threads, essence, beats</text>
+        <text class="band" x="8" y="120">PEOPLE &amp; THEIR DRIVES</text>
+        <rect class="node" x="6" y="126" width="160" height="54" rx="8"/>
+        <text class="nlabel" x="86" y="148">Agents &amp; Lifecycle</text>
+        <text class="nsub" x="86" y="164">birth, death, becoming</text>
+        <rect class="node" x="174" y="126" width="140" height="54" rx="8"/>
+        <text class="nlabel" x="244" y="148">Culture</text>
+        <text class="nsub" x="244" y="164">mores, names, tradition</text>
+        <rect class="node" x="322" y="126" width="170" height="54" rx="8"/>
+        <text class="nlabel" x="407" y="148">Personality &amp; Traits</text>
+        <text class="nsub" x="407" y="164">virtue, vice, drift</text>
+        <rect class="node" x="506" y="126" width="168" height="54" rx="8"/>
+        <text class="nlabel" x="590" y="148">Ambitions &amp; Initiatives</text>
+        <text class="nsub" x="590" y="164">what mortals want</text>
+        <rect class="node" x="682" y="126" width="192" height="54" rx="8"/>
+        <text class="nlabel" x="778" y="148">Reputation &amp; Influence</text>
+        <text class="nsub" x="778" y="164">how the world sees them</text>
 
-        <rect class="node" x="660" y="22" width="186" height="50" rx="8"/>
-        <text class="nlabel" x="753" y="43">Doom, Mandate &amp; Omens</text>
-        <text class="nsub" x="753" y="59">the run's clocks</text>
+        <text class="band" x="8" y="220">THE SCENE ENGINE</text>
+        <rect class="node" x="6" y="266" width="194" height="58" rx="8"/>
+        <text class="nlabel" x="103" y="288">Encounter Seeding</text>
+        <text class="nsub" x="103" y="302">the scene generator —</text>
+        <text class="nsub" x="103" y="314">seeds &amp; hidden marks</text>
+        <rect class="node node-core" x="330" y="224" width="240" height="144" rx="10"/>
+        <text class="nlabel" x="450" y="284">Encounters &amp; Resolution</text>
+        <text class="nsub" x="450" y="302">the narrative heart —</text>
+        <text class="nsub" x="450" y="315">scenes, dice, dilemmas,</text>
+        <text class="nsub" x="450" y="328">complications, aftermath</text>
+        <rect class="node" x="640" y="224" width="234" height="56" rx="8"/>
+        <text class="nlabel" x="757" y="245">Attachments · Effects</text>
+        <text class="nsub" x="757" y="261">items, blessings, scars, pacts, conditions</text>
+        <rect class="node" x="640" y="312" width="234" height="56" rx="8"/>
+        <text class="nlabel" x="757" y="333">Capability</text>
+        <text class="nsub" x="757" y="349">the Nine Reaches, tiered</text>
 
-        <!-- second row -->
-        <rect class="node" x="96" y="140" width="130" height="52" rx="8"/>
-        <text class="nlabel" x="161" y="161">Ambitions</text>
-        <text class="nsub" x="161" y="177">what mortals want</text>
+        <text class="band" x="8" y="392">THE LIVING WORLD</text>
+        <rect class="node" x="6" y="404" width="168" height="54" rx="8"/>
+        <text class="nlabel" x="90" y="426">Factions &amp; Succession</text>
+        <text class="nsub" x="90" y="442">guilds, orders, thrones</text>
+        <rect class="node" x="182" y="404" width="150" height="54" rx="8"/>
+        <text class="nlabel" x="257" y="426">War &amp; Armies</text>
+        <text class="nsub" x="257" y="442">battles &amp; sieges</text>
+        <rect class="node" x="340" y="404" width="186" height="54" rx="8"/>
+        <text class="nlabel" x="433" y="426">Economy &amp; Prosperity</text>
+        <text class="nsub" x="433" y="442">trade, settlements, gold</text>
+        <rect class="node" x="534" y="404" width="152" height="54" rx="8"/>
+        <text class="nlabel" x="610" y="426">Ruins, Clues &amp; Delves</text>
+        <text class="nsub" x="610" y="442">lost places &amp; lairs</text>
+        <rect class="node" x="694" y="404" width="180" height="54" rx="8"/>
+        <text class="nlabel" x="784" y="426">Movement &amp; Colocation</text>
+        <text class="nsub" x="784" y="442">travel, sublocations, taverns</text>
+        <rect class="node" x="182" y="470" width="220" height="54" rx="8"/>
+        <text class="nlabel" x="292" y="492">Strategic Projects &amp; Control</text>
+        <text class="nsub" x="292" y="508">long works &amp; held ground</text>
+        <rect class="node-dormant" x="430" y="470" width="200" height="54" rx="8"/>
+        <text class="nlabel" x="530" y="492">Secrets &amp; Favors</text>
+        <text class="nsub" x="530" y="508">DORMANT — built, not yet firing</text>
 
-        <rect class="node" x="612" y="128" width="176" height="54" rx="8"/>
-        <text class="nlabel" x="700" y="150">Attachments &amp; Effects</text>
-        <text class="nsub" x="700" y="166">items · blessings · scars · pacts</text>
+        <text class="band" x="8" y="566">PERCEPTION &amp; STORY</text>
+        <rect class="node" x="6" y="578" width="190" height="54" rx="8"/>
+        <text class="nlabel" x="101" y="600">Stealth &amp; Detection</text>
+        <text class="nsub" x="101" y="616">what hides from mortals &amp; rivals</text>
+        <rect class="node" x="224" y="578" width="200" height="54" rx="8"/>
+        <text class="nlabel" x="324" y="600">Knowledge &amp; Intelligence</text>
+        <text class="nsub" x="324" y="616">what anyone truly knows</text>
+        <rect class="node" x="452" y="578" width="190" height="54" rx="8"/>
+        <text class="nlabel" x="547" y="600">Attention &amp; Spotlight</text>
+        <text class="nsub" x="547" y="616">what earns the telling</text>
+        <rect class="node" x="670" y="578" width="204" height="54" rx="8"/>
+        <text class="nlabel" x="772" y="600">Prose &amp; Chronicle</text>
+        <text class="nsub" x="772" y="616">how the story reaches you</text>
 
-        <!-- middle -->
-        <rect class="node" x="56" y="248" width="168" height="52" rx="8"/>
-        <text class="nlabel" x="140" y="269">Agents &amp; Lifecycle</text>
-        <text class="nsub" x="140" y="285">birth, death, becoming</text>
-
-        <rect class="node node-core" x="330" y="252" width="226" height="70" rx="10"/>
-        <text class="nlabel" x="443" y="282">Encounters &amp; Resolution</text>
-        <text class="nsub" x="443" y="300">the narrative heart — scenes,</text>
-        <text class="nsub" x="443" y="313">dice, aftermath</text>
-
-        <rect class="node" x="630" y="250" width="170" height="52" rx="8"/>
-        <text class="nlabel" x="715" y="271">Capability</text>
-        <text class="nsub" x="715" y="287">the Nine Reaches, tiered</text>
-
-        <!-- fourth row -->
-        <rect class="node" x="42" y="408" width="166" height="50" rx="8"/>
-        <text class="nlabel" x="125" y="429">Factions &amp; Succession</text>
-        <text class="nsub" x="125" y="444">guilds, orders, thrones</text>
-
-        <rect class="node" x="238" y="398" width="164" height="50" rx="8"/>
-        <text class="nlabel" x="320" y="419">Movement</text>
-        <text class="nsub" x="320" y="434">travel &amp; colocation</text>
-
-        <rect class="node" x="452" y="428" width="164" height="50" rx="8"/>
-        <text class="nlabel" x="534" y="449">Knowledge</text>
-        <text class="nsub" x="534" y="464">what anyone truly knows</text>
-
-        <rect class="node" x="648" y="404" width="188" height="52" rx="8"/>
-        <text class="nlabel" x="742" y="425">Chronicle &amp; Attention</text>
-        <text class="nsub" x="742" y="441">the story you get to read</text>
-
-        <!-- bottom row -->
-        <rect class="node" x="118" y="502" width="166" height="50" rx="8"/>
-        <text class="nlabel" x="201" y="523">War &amp; Armies</text>
-        <text class="nsub" x="201" y="538">battles, sieges, cohesion</text>
-
-        <rect class="node" x="348" y="502" width="188" height="50" rx="8"/>
-        <text class="nlabel" x="442" y="523">Economy &amp; Prosperity</text>
-        <text class="nsub" x="442" y="538">trade, settlements, gold</text>
-
-        <!-- substrate bar -->
-        <rect x="46" y="592" width="800" height="46" rx="8" fill="#f9efd4" stroke="#b8860b" stroke-width="1" stroke-dasharray="3 3"/>
-        <text class="nlabel" x="446" y="612">Spheres &amp; Quintessence · The World Graph</text>
-        <text class="nsub" x="446" y="628">the substrate — every system above draws on cosmic fuel and writes into one shared graph</text>
+        <text class="band" x="8" y="672">THE SUBSTRATE</text>
+        <rect class="node" x="6" y="682" width="280" height="60" rx="8"/>
+        <text class="nlabel" x="146" y="704">Worldgen — Map &amp; History</text>
+        <text class="nsub" x="146" y="719">births map, cultures, factions, agents,</text>
+        <text class="nsub" x="146" y="731">ruins at run start, then hands off the world</text>
+        <rect class="node-substrate" x="300" y="682" width="270" height="60" rx="8"/>
+        <text class="nlabel" x="435" y="704">The World Graph</text>
+        <text class="nsub" x="435" y="722">one shared graph of everything above</text>
+        <rect class="node-substrate" x="584" y="682" width="290" height="60" rx="8"/>
+        <text class="nlabel" x="729" y="704">Spheres &amp; Quintessence</text>
+        <text class="nsub" x="729" y="722">the cosmic fuel beneath it all</text>
       </svg>
     </div>
-    <p class="diagram-caption">Thin gray arrows are orientation, not verified contracts — each gets promoted (or corrected) as its subsystem is audited. The two audited systems are drawn in color.</p>
+    <p class="diagram-caption">Thin gray arrows are orientation, not verified contracts — each gets promoted (or corrected) as its subsystem is audited. The two audited systems are drawn in color. Far fewer arrows exist than in the real game: only the strongest couplings are drawn, and unlisted ones are absence of audit, not absence of connection.</p>
 
     <div class="callout">
       <strong>Why this map exists</strong>
@@ -350,6 +384,7 @@
       <span class="lead">A hand-drawn diagram is a lie waiting to happen. This one is designed to become a projection.</span>
     </h2>
     <p><span class="term">Source-of-truth chain.</span> The contract registry (<code>scripts/interface-contracts.ts</code>, arriving with the interface-map framework ticket) is the single source of truth. The canon page <code>Docs/canon/interface-map.md</code> holds the audited tables and the binding design protocol. This page is the human-readable projection — when the registry lands, its generator takes over the badges here, and a severed contract turns the build red before it can quietly rot this picture.</p>
+    <p><span class="term">Box membership is a rule, not a judgment call.</span> The first version of this diagram silently dropped nine systems — Culture, Ruins, Stealth, Reputation, Personality, Strategic Projects, Secrets &amp; Favors, Essence, Omens — proving the drift pattern on the drift-prevention page itself. The rule now: <em>one box per row of the generated systems inventory</em> (<code>Docs/canon/systems-inventory.md</code>, regenerated from the engine), plus the run-start generators (worldgen, encounter seeding) and the cross-cutting capability math. If an inventory row has no box here, that is a bug in this page. Membership was swept against the inventory, the pre-Linear backlog history, and the full Linear archive (ARC team, ~240 done issues) on 2026-07-23.</p>
     <p><span class="term">Audited vs. orientation.</span> Only Attachments and Ambitions have been contract-audited so far. Everything drawn in thin gray is orientation — a reasonable sketch of the coupling, not a verified claim. Each future design session that touches a gray system writes its real contract table (audit-on-touch), and a weekly sweep works through the cold ones.</p>
     <p><span class="term">What your feedback looks like.</span> This map is a design instrument, not just a debugging aid. "That arrow should exist and doesn't" is a feature directive. "That system is an island" is a richness gap — the game's depth lives in coupling, so a box with few arrows is usually the next place to invest. And "I remember this working" pointed at a green arrow is exactly the drift report that catches what automation can't.</p>
   </div>
