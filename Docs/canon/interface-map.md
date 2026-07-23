@@ -82,6 +82,19 @@ and `modifiers` has a real production reader that only ever asks for `los_range`
 5. **The ratchet.** A 🔴 LEAKED contract must carry a `deferralTicket`. The generator exits
    non-zero otherwise, failing `prebuild` and therefore CI — the freshness diff alone would
    pass an executor who kills a read site and commits the regenerated, now-LEAKED map.
+6. **Player-loop chain (mandatory when the subsystem has player verbs).** A player-facing
+   contract is a four-link chain, and each link is its own contract row in the registry:
+   **verb authored** (template exists) → **verb reachable** (starter or beat grant — an
+   ungranted card is unreachable *by construction* under THR-613/THR-501; check
+   `__DEBUG.listUnreachableActions()`) → **effect wired** (resolution/GraphOps actually
+   fire) → **world visibly responds** (a scene, chronicle entry, or map change the player
+   can see). A break at any link is a leak with a ticket. A design that strengthens
+   simulation without closing this chain ships background richness the player never
+   touches; a verb without a world response ships a button that lies. Found 2026-07-23:
+   `action.secrets.plant_secret` / `reveal_secret` / `hex.incite_exodus` break at link 2;
+   the four granted economic verbs (`loc.bless_harvest`, `loc.blight`, `loc.open_markets`,
+   `loc.reveal_vein`) break at link 4 — no economic term in encounter scoring.
+   Method + evidence: `Docs/audits/2026-07-23-simulation-coupling-assessment.md`.
 
 ## Audited subsystems
 
