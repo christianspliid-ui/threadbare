@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Threadbearer — Systems &amp; Interfaces Map</title>
+<!--
+  Systems & Interfaces Map (Deep Reference) — visual projection of the system
+  interface map. Source of truth chain: scripts/interface-contracts.ts (registry,
+  once THR-717 lands) -> Docs/canon/interface-map.md (audited contract tables) ->
+  this page (human-readable projection for the creative director). Until the
+  registry exists, this page mirrors the canon tables by hand; the manifest
+  `sources` globs tie it to the canon page + registry so the wiki-freshness lint
+  nags when the truth moves. Overview edges marked "unaudited" are orientation
+  only — never cite them as verified. The shared wiki nav between the WIKI-NAV
+  markers is injected by scripts/generate-design-wiki.ts — do not hand-write it.
+-->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --parchment: #f4edd8;
+    --parchment-dark: #e8dfc8;
+    --ink: #2c1810;
+    --ink-light: #5a3d2b;
+    --ink-faint: #8a7060;
+    --gold: #b8860b;
+    --gold-light: #daa520;
+    --card-bg: #fff8e7;
+    --red: #8b2500;
+    --blue: #1a3a5c;
+    --purple: #4a2d6a;
+    --green: #2d5a27;
+    --orange: #8a4a00;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--parchment);
+    color: var(--ink);
+    font-family: 'Crimson Text', Georgia, serif;
+    font-size: 16px;
+    line-height: 1.6;
+    min-height: 100vh;
+    background-image:
+      radial-gradient(ellipse at 20% 50%, rgba(26,58,92,0.05) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 30%, rgba(184,134,11,0.04) 0%, transparent 50%);
+  }
+
+  .page-wrapper { max-width: 960px; margin: 0 auto; padding: 40px 32px 72px; }
+
+  .header { text-align: center; margin-bottom: 40px; padding-bottom: 28px; border-bottom: 2px solid var(--gold); position: relative; }
+  .header::after { content: ''; position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); width: 55%; height: 1px; background: var(--gold-light); }
+  .header .eyebrow { font-family: 'Cinzel', Georgia, serif; font-size: 0.72rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold); margin-bottom: 10px; }
+  .header h1 { font-family: 'Cinzel', Georgia, serif; font-weight: 700; font-size: 2.3rem; color: var(--ink); letter-spacing: 0.05em; margin-bottom: 12px; }
+  .header .tagline { font-size: 1.12rem; color: var(--ink-light); max-width: 66ch; margin: 0 auto; font-style: italic; }
+
+  .section { margin-bottom: 40px; }
+  .section > h2 { font-family: 'Cinzel', Georgia, serif; font-size: 1.25rem; color: var(--ink); letter-spacing: 0.03em; margin-bottom: 6px; padding-bottom: 6px; border-bottom: 1px solid var(--parchment-dark); }
+  .section > h2 .lead { display: block; font-family: 'Crimson Text', Georgia, serif; font-size: 0.95rem; font-style: italic; font-weight: 400; color: var(--ink-faint); letter-spacing: 0; margin-top: 4px; }
+  .section h3 { font-family: 'Cinzel', Georgia, serif; font-size: 1rem; color: var(--ink-light); letter-spacing: 0.02em; margin: 20px 0 6px; }
+  .section p { margin-bottom: 12px; }
+  .section p .term { font-weight: 600; color: var(--ink); }
+  .section code { font-family: 'JetBrains Mono', monospace; font-size: 0.82em; background: var(--parchment-dark); padding: 1px 5px; border-radius: 3px; }
+
+  /* ── Diagram frame ── */
+  .diagram-frame { background: var(--card-bg); border: 1px solid var(--parchment-dark); border-radius: 8px; padding: 18px 12px 10px; margin: 14px 0 8px; box-shadow: 0 1px 4px rgba(44,24,16,0.08); }
+  .diagram-frame svg { width: 100%; height: auto; display: block; }
+  .diagram-caption { font-size: 0.9rem; font-style: italic; color: var(--ink-faint); text-align: center; margin-bottom: 14px; }
+
+  /* ── Legend ── */
+  .legend { display: flex; flex-wrap: wrap; gap: 14px 22px; justify-content: center; margin: 10px 0 4px; font-size: 0.85rem; color: var(--ink-light); }
+  .legend .item { display: flex; align-items: center; gap: 7px; }
+  .legend .swatch { width: 28px; height: 0; border-top-width: 3px; border-top-style: solid; }
+  .legend .swatch.live { border-color: var(--green); }
+  .legend .swatch.leaked { border-color: var(--red); border-top-style: dashed; }
+  .legend .swatch.partial { border-color: var(--orange); border-top-style: dashed; }
+  .legend .swatch.unaudited { border-color: var(--ink-faint); border-top-width: 1.5px; }
+
+  /* ── Contract strips (spotlights) ── */
+  .contracts { list-style: none; margin: 12px 0 6px; }
+  .contracts li { display: grid; grid-template-columns: 1fr auto; gap: 4px 14px; align-items: baseline; background: var(--card-bg); border: 1px solid var(--parchment-dark); border-left-width: 4px; border-radius: 5px; padding: 9px 14px; margin-bottom: 7px; }
+  .contracts li.live { border-left-color: var(--green); }
+  .contracts li.leaked { border-left-color: var(--red); }
+  .contracts li.partial { border-left-color: var(--orange); }
+  .contracts .flow { font-size: 0.98rem; }
+  .contracts .flow .arrow { color: var(--gold); font-weight: 600; padding: 0 2px; }
+  .contracts .note { grid-column: 1 / -1; font-size: 0.86rem; color: var(--ink-faint); font-style: italic; }
+  .chip { font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; letter-spacing: 0.04em; padding: 2px 8px; border-radius: 10px; white-space: nowrap; align-self: center; }
+  .chip.live { background: rgba(45,90,39,0.13); color: var(--green); }
+  .chip.leaked { background: rgba(139,37,0,0.12); color: var(--red); }
+  .chip.partial { background: rgba(138,74,0,0.13); color: var(--orange); }
+  .chip.parked { background: rgba(74,45,106,0.12); color: var(--purple); }
+
+  .callout { background: var(--card-bg); border-left: 4px solid var(--gold); border-radius: 0 6px 6px 0; padding: 12px 16px; margin: 16px 0; font-size: 0.95rem; }
+  .callout strong { font-family: 'Cinzel', Georgia, serif; font-size: 0.85rem; letter-spacing: 0.06em; color: var(--gold); display: block; margin-bottom: 4px; }
+
+  .footer-note { margin-top: 44px; padding-top: 16px; border-top: 1px solid var(--parchment-dark); font-size: 0.85rem; color: var(--ink-faint); font-style: italic; text-align: center; }
+</style>
+</head>
+<body>
+<!--WIKI-NAV-->
+<style>
+  .wiki-nav { font-family: 'Cinzel', Georgia, serif; background: #2c1810; border-bottom: 2px solid #b8860b; padding: 0.6rem 1.2rem; display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.4rem 1.1rem; }
+  .wiki-nav__brand { color: #daa520; font-weight: 700; letter-spacing: 0.04em; margin-right: 0.6rem; font-size: 0.95rem; }
+  .wiki-nav__link { color: #f4edd8; text-decoration: none; font-size: 0.85rem; letter-spacing: 0.02em; padding: 0.15rem 0.1rem; border-bottom: 2px solid transparent; transition: color 0.15s, border-color 0.15s; }
+  .wiki-nav__link:hover { color: #daa520; }
+  .wiki-nav__link.is-active { color: #daa520; border-bottom-color: #b8860b; font-weight: 700; }
+</style>
+<nav class="wiki-nav" aria-label="Design Reference Wiki">
+  <span class="wiki-nav__brand">⌖ Design Reference Wiki</span>
+  <a class="wiki-nav__link" href="design-wiki.html">Design Wiki</a>
+  <a class="wiki-nav__link" href="run-lifecycle-reference.html">A Run, Start to Finish</a>
+      <a class="wiki-nav__link" href="cosmology-reference.html">Reaches, Spheres &amp; Quintessence</a>
+      <a class="wiki-nav__link" href="turn-structure-reference.html">The Three-Beat Turn</a>
+      <a class="wiki-nav__link" href="divine-actions-reference.html">Divine Actions &amp; Prerequisites</a>
+      <a class="wiki-nav__link" href="threads-court-reference.html">Threads, the Court &amp; The First</a>
+      <a class="wiki-nav__link" href="essence-control-reference.html">Essence, Control &amp; Sustained Power</a>
+      <a class="wiki-nav__link" href="encounters-manual-reference.html">Encounters &amp; Aftermath</a>
+      <a class="wiki-nav__link" href="clocks-reference.html">Doom, the Mandate &amp; Omens</a>
+      <a class="wiki-nav__link" href="interface-reference.html">Reading the Interface</a>
+      <a class="wiki-nav__link" href="agents-reference.html">The Mortals</a>
+      <a class="wiki-nav__link" href="factions-cultures-reference.html">Factions, Cultures &amp; Secrets</a>
+      <a class="wiki-nav__link" href="world-map-reference.html">The World: Hexes, Terrain &amp; Sight</a>
+      <a class="wiki-nav__link" href="settlements-economy-reference.html">Settlements, Prosperity &amp; Trade</a>
+      <a class="wiki-nav__link" href="livelihoods-reference.html">Livelihoods &amp; the Resource Web</a>
+      <a class="wiki-nav__link" href="armies-battles-reference.html">Armies, Battles &amp; Lairs</a>
+      <a class="wiki-nav__link" href="stealth-rivals-reference.html">Stealth, Detection &amp; Rival Gods</a>
+      <a class="wiki-nav__link" href="attention-story-reference.html">Attention, the Digest &amp; the Chronicle</a>
+      <a class="wiki-nav__link" href="twilight-worldsoul-reference.html">Twilight, Echoes &amp; the World-Soul</a>
+      <a class="wiki-nav__link" href="encounters-agents-reference.html">Encounters, Agents &amp; Resolution</a>
+      <a class="wiki-nav__link" href="tick-cycle-reference.html">Tick Cycle Reference</a>
+      <a class="wiki-nav__link" href="action-catalog.html">Action Catalog</a>
+      <a class="wiki-nav__link is-active" href="system-interface-map-reference.html" aria-current="page">Systems &amp; Interfaces Map</a>
+</nav>
+<!--/WIKI-NAV-->
+<div class="page-wrapper">
+
+  <div class="header">
+    <div class="eyebrow">Deep Reference</div>
+    <h1>Systems &amp; Interfaces</h1>
+    <p class="tagline">The world is a web of systems feeding systems. The richness of a run lives in these arrows — and when one is quietly severed, a feature leaks out of the game without any test noticing.</p>
+  </div>
+
+  <div class="section">
+    <h2>The world at a glance
+      <span class="lead">Every box is a living subsystem. Arrows are what one system does to another, at design level.</span>
+    </h2>
+
+    <div class="legend">
+      <span class="item"><span class="swatch live"></span> verified live</span>
+      <span class="item"><span class="swatch leaked"></span> leaked — broken, repair ticketed</span>
+      <span class="item"><span class="swatch partial"></span> partial — works, but a stated gap</span>
+      <span class="item"><span class="swatch unaudited"></span> orientation only — not yet audited</span>
+    </div>
+
+    <div class="diagram-frame">
+      <svg viewBox="0 0 880 660" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Overview diagram of Threadbearer's subsystems and their interfaces">
+        <defs>
+          <marker id="ah-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8a7060"/></marker>
+          <marker id="ah-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2d5a27"/></marker>
+          <marker id="ah-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b2500"/></marker>
+        </defs>
+
+        <style>
+          .node { fill: #fff8e7; stroke: #b8860b; stroke-width: 1.2; rx: 8; }
+          .node-core { fill: #f9efd4; stroke: #b8860b; stroke-width: 2; }
+          .nlabel { font-family: 'Cinzel', Georgia, serif; font-size: 13px; font-weight: 600; fill: #2c1810; text-anchor: middle; }
+          .nsub { font-family: 'Crimson Text', Georgia, serif; font-size: 10.5px; font-style: italic; fill: #8a7060; text-anchor: middle; }
+          .elabel { font-family: 'Crimson Text', Georgia, serif; font-size: 10.5px; font-style: italic; fill: #5a3d2b; text-anchor: middle; }
+          .elabel-green { fill: #2d5a27; }
+          .elabel-red { fill: #8b2500; }
+          .e-gray { stroke: #8a7060; stroke-width: 1.3; fill: none; }
+          .e-green { stroke: #2d5a27; stroke-width: 2.2; fill: none; }
+          .e-red { stroke: #8b2500; stroke-width: 2; stroke-dasharray: 6 4; fill: none; }
+        </style>
+
+        <!-- ══ edges (drawn first, under nodes) ══ -->
+        <!-- Ascendant -> Encounters -->
+        <path class="e-gray" d="M440,78 L440,252" marker-end="url(#ah-gray)"/>
+        <text class="elabel" x="474" y="170">divine action</text>
+        <!-- Doom -> Ascendant -->
+        <path class="e-gray" d="M660,46 L556,46" marker-end="url(#ah-gray)"/>
+        <text class="elabel" x="608" y="38">pressure &amp; beats</text>
+        <!-- Rivals -> Encounters -->
+        <path class="e-gray" d="M150,72 C190,150 280,220 350,258" marker-end="url(#ah-gray)"/>
+        <text class="elabel" x="272" y="200">schemes seed trouble</text>
+        <!-- Agents -> Ambitions -->
+        <path class="e-gray" d="M140,246 L158,196" marker-end="url(#ah-gray)"/>
+        <text class="elabel" x="112" y="222">born with drives</text>
+        <!-- Ambitions -> Encounters (LIVE) -->
+        <path class="e-green" d="M222,178 C270,210 310,240 352,264" marker-end="url(#ah-green)"/>
+        <text class="elabel elabel-green" x="257" y="243">biases what they choose</text>
+        <!-- Encounters -> Attachments (LIVE) -->
+        <path class="e-green" d="M540,268 C580,240 610,215 638,192" marker-end="url(#ah-green)"/>
+        <text class="elabel elabel-green" x="631" y="238">rewards</text>
+        <!-- Attachments -> Encounters (LIVE, offset) -->
+        <path class="e-green" d="M618,178 C570,205 535,228 505,252" marker-end="url(#ah-green)"/>
+        <text class="elabel elabel-green" x="536" y="212">shapes the dice</text>
+        <!-- Attachments -> Capability (LEAKED) -->
+        <path class="e-red" d="M706,182 L712,246" marker-end="url(#ah-red)"/>
+        <text class="elabel elabel-red" x="785" y="214">should raise tiers</text>
+        <text class="elabel elabel-red" x="785" y="230">(repairing · THR-718)</text>
+        <!-- Capability -> Encounters -->
+        <path class="e-gray" d="M628,282 L556,292" marker-end="url(#ah-gray)"/>
+        <text class="elabel" x="592" y="274">eligibility &amp; odds</text>
+        <!-- Agents -> Encounters -->
+        <path class="e-gray" d="M224,278 L326,290" marker-end="url(#ah-gray)"/>
+        <text class="elabel" x="272" y="272">decide &amp; act</text>
+        <!-- Movement -> Encounters -->
+        <path class="e-gray" d="M320,398 C355,370 385,348 410,336" marker-end="url(#ah-gray)"/>
+        <text class="elabel" x="322" y="372">shared ground makes scenes</text>
+        <!-- Encounters -> Knowledge -->
+        <path class="e-gray" d="M478,336 C498,370 515,400 528,428" marker-end="url(#ah-gray)"/>
+        <text class="elabel" x="546" y="386">what witnesses learn</text>
+        <!-- Knowledge -> Chronicle -->
+        <path class="e-gray" d="M614,452 L646,442" marker-end="url(#ah-gray)"/>
+        <text class="elabel" x="622" y="492">gates your sight</text>
+        <!-- Encounters -> Chronicle -->
+        <path class="e-gray" d="M548,318 C630,350 690,382 726,404" marker-end="url(#ah-gray)"/>
+        <text class="elabel" x="676" y="366">becomes story</text>
+        <!-- Factions -> War -->
+        <path class="e-gray" d="M142,458 L176,500" marker-end="url(#ah-gray)"/>
+        <text class="elabel" x="122" y="486">armies march</text>
+        <!-- War -> Economy -->
+        <path class="e-gray" d="M284,528 L344,528" marker-end="url(#ah-gray)"/>
+        <text class="elabel" x="314" y="519">ruin &amp; spoils</text>
+        <!-- Economy -> Factions -->
+        <path class="e-gray" d="M372,502 C320,480 260,465 208,456" marker-end="url(#ah-gray)"/>
+        <text class="elabel" x="300" y="497">prosperity is power</text>
+        <!-- Ambitions (faction) -> Factions: skip for clarity -->
+
+        <!-- ══ nodes ══ -->
+        <!-- top row -->
+        <rect class="node" x="46" y="22" width="170" height="50" rx="8"/>
+        <text class="nlabel" x="131" y="43">Rivals &amp; Schemes</text>
+        <text class="nsub" x="131" y="59">other gods move too</text>
+
+        <rect class="node" x="330" y="22" width="220" height="56" rx="8"/>
+        <text class="nlabel" x="440" y="45">The Ascendant</text>
+        <text class="nsub" x="440" y="62">you — threads, essence, beats</text>
+
+        <rect class="node" x="660" y="22" width="186" height="50" rx="8"/>
+        <text class="nlabel" x="753" y="43">Doom, Mandate &amp; Omens</text>
+        <text class="nsub" x="753" y="59">the run's clocks</text>
+
+        <!-- second row -->
+        <rect class="node" x="96" y="140" width="130" height="52" rx="8"/>
+        <text class="nlabel" x="161" y="161">Ambitions</text>
+        <text class="nsub" x="161" y="177">what mortals want</text>
+
+        <rect class="node" x="612" y="128" width="176" height="54" rx="8"/>
+        <text class="nlabel" x="700" y="150">Attachments &amp; Effects</text>
+        <text class="nsub" x="700" y="166">items · blessings · scars · pacts</text>
+
+        <!-- middle -->
+        <rect class="node" x="56" y="248" width="168" height="52" rx="8"/>
+        <text class="nlabel" x="140" y="269">Agents &amp; Lifecycle</text>
+        <text class="nsub" x="140" y="285">birth, death, becoming</text>
+
+        <rect class="node node-core" x="330" y="252" width="226" height="70" rx="10"/>
+        <text class="nlabel" x="443" y="282">Encounters &amp; Resolution</text>
+        <text class="nsub" x="443" y="300">the narrative heart — scenes,</text>
+        <text class="nsub" x="443" y="313">dice, aftermath</text>
+
+        <rect class="node" x="630" y="250" width="170" height="52" rx="8"/>
+        <text class="nlabel" x="715" y="271">Capability</text>
+        <text class="nsub" x="715" y="287">the Nine Reaches, tiered</text>
+
+        <!-- fourth row -->
+        <rect class="node" x="42" y="408" width="166" height="50" rx="8"/>
+        <text class="nlabel" x="125" y="429">Factions &amp; Succession</text>
+        <text class="nsub" x="125" y="444">guilds, orders, thrones</text>
+
+        <rect class="node" x="238" y="398" width="164" height="50" rx="8"/>
+        <text class="nlabel" x="320" y="419">Movement</text>
+        <text class="nsub" x="320" y="434">travel &amp; colocation</text>
+
+        <rect class="node" x="452" y="428" width="164" height="50" rx="8"/>
+        <text class="nlabel" x="534" y="449">Knowledge</text>
+        <text class="nsub" x="534" y="464">what anyone truly knows</text>
+
+        <rect class="node" x="648" y="404" width="188" height="52" rx="8"/>
+        <text class="nlabel" x="742" y="425">Chronicle &amp; Attention</text>
+        <text class="nsub" x="742" y="441">the story you get to read</text>
+
+        <!-- bottom row -->
+        <rect class="node" x="118" y="502" width="166" height="50" rx="8"/>
+        <text class="nlabel" x="201" y="523">War &amp; Armies</text>
+        <text class="nsub" x="201" y="538">battles, sieges, cohesion</text>
+
+        <rect class="node" x="348" y="502" width="188" height="50" rx="8"/>
+        <text class="nlabel" x="442" y="523">Economy &amp; Prosperity</text>
+        <text class="nsub" x="442" y="538">trade, settlements, gold</text>
+
+        <!-- substrate bar -->
+        <rect x="46" y="592" width="800" height="46" rx="8" fill="#f9efd4" stroke="#b8860b" stroke-width="1" stroke-dasharray="3 3"/>
+        <text class="nlabel" x="446" y="612">Spheres &amp; Quintessence · The World Graph</text>
+        <text class="nsub" x="446" y="628">the substrate — every system above draws on cosmic fuel and writes into one shared graph</text>
+      </svg>
+    </div>
+    <p class="diagram-caption">Thin gray arrows are orientation, not verified contracts — each gets promoted (or corrected) as its subsystem is audited. The two audited systems are drawn in color.</p>
+
+    <div class="callout">
+      <strong>Why this map exists</strong>
+      Tests assert that a system <em>writes</em> its data; almost nothing asserts that another system still <em>reads</em> it. That gap is where five attachment contracts quietly died while every test stayed green. The audited truth lives in <code>Docs/canon/interface-map.md</code>; this page is its picture.
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Spotlight — Attachments
+      <span class="lead">Audited 2026-07-23. The engine is alive (items are granted, held, displayed) — but half its outbound promises were severed.</span>
+    </h2>
+
+    <ul class="contracts">
+      <li class="live"><span class="flow">Encounters <span class="arrow">⟶</span> Attachments — victories and disasters grant items, blessings, wounds, debts</span><span class="chip live">LIVE</span></li>
+      <li class="live"><span class="flow">Attachment <span class="arrow">⟶</span> Action resolution — what you carry shapes the dice when you act</span><span class="chip live">LIVE</span></li>
+      <li class="live"><span class="flow">Attachment <span class="arrow">⟶</span> Traits while held — a treasure map makes you a ruin-seeker</span><span class="chip live">LIVE</span></li>
+      <li class="live"><span class="flow">Attachment <span class="arrow">⟶</span> Character sheet — the Attachments tab shows what an agent carries</span><span class="chip live">LIVE</span></li>
+      <li class="leaked"><span class="flow">Attachment <span class="arrow">⟶</span> Capability tiers — a legendary blade should make its bearer visibly mightier</span><span class="chip leaked">REPAIRING · THR-718</span>
+        <span class="note">Verdict: restore via the effect system, plus a dot-scale magnitude indicator beside the capability prose on the character sheet.</span></li>
+      <li class="leaked"><span class="flow">Attachment <span class="arrow">⟶</span> On-use consequences — swords that shatter, curses that bite on a critical failure</span><span class="chip leaked">REPAIRING · THR-719</span>
+        <span class="note">The resolver exists and is tested; nothing calls it. Verdict: re-express as effect primitives, port the authored content.</span></li>
+      <li class="leaked"><span class="flow">Attachment <span class="arrow">⟶</span> Granted abilities — "this item grants cavalry_charge", written since worldgen, read by nothing</span><span class="chip leaked">RETIRING · THR-722</span></li>
+      <li class="leaked"><span class="flow">Attachment <span class="arrow">⟶</span> Activated powers — deliberately invoking an artifact's ability</span><span class="chip parked">PARKED · THR-720</span>
+        <span class="note">A real future feature, explicitly parked rather than quietly lost.</span></li>
+      <li class="partial"><span class="flow">Tier advancement <span class="arrow">⟶</span> item strength — items grow with their bearers, but currently pump a stat nothing reads</span><span class="chip partial">PARTIAL · THR-723</span></li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h2>Spotlight — Ambitions
+      <span class="lead">Audited 2026-07-23. Deeply alive in the engine — mortals want things and act on it — but the player can barely see it.</span>
+    </h2>
+
+    <ul class="contracts">
+      <li class="live"><span class="flow">Worldgen &amp; births <span class="arrow">⟶</span> Ambitions — mortals arrive wanting things (hundreds pursued by mid-run)</span><span class="chip live">LIVE</span></li>
+      <li class="live"><span class="flow">Ambitions <span class="arrow">⟶</span> Encounter choice — a mortal chasing mastery seeks different scenes than one chasing revenge</span><span class="chip live">LIVE</span></li>
+      <li class="live"><span class="flow">Ambitions <span class="arrow">⟶</span> Milestones &amp; completion — drives progress, complete, or get abandoned, with story beats</span><span class="chip live">LIVE</span></li>
+      <li class="live"><span class="flow">Ambitions <span class="arrow">⟶</span> Foreshadowing — motive receipts explain <em>why</em> someone acted</span><span class="chip live">LIVE</span></li>
+      <li class="live"><span class="flow">Faction ambitions <span class="arrow">⟶</span> Faction action — guilds and orders pursue agendas of their own</span><span class="chip live">LIVE</span></li>
+      <li class="partial"><span class="flow">Ambitions <span class="arrow">⟶</span> The player's eye — the character sheet shows ambitions only after knowing an agent unusually well</span><span class="chip partial">REPAIRING · THR-721</span>
+        <span class="note">Verdict: a mortal's primary ambition becomes visible at first meaningful knowledge; the Chronicle gains the never-built Completed Ambitions history.</span></li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h2>How this map stays true
+      <span class="lead">A hand-drawn diagram is a lie waiting to happen. This one is designed to become a projection.</span>
+    </h2>
+    <p><span class="term">Source-of-truth chain.</span> The contract registry (<code>scripts/interface-contracts.ts</code>, arriving with the interface-map framework ticket) is the single source of truth. The canon page <code>Docs/canon/interface-map.md</code> holds the audited tables and the binding design protocol. This page is the human-readable projection — when the registry lands, its generator takes over the badges here, and a severed contract turns the build red before it can quietly rot this picture.</p>
+    <p><span class="term">Audited vs. orientation.</span> Only Attachments and Ambitions have been contract-audited so far. Everything drawn in thin gray is orientation — a reasonable sketch of the coupling, not a verified claim. Each future design session that touches a gray system writes its real contract table (audit-on-touch), and a weekly sweep works through the cold ones.</p>
+    <p><span class="term">What your feedback looks like.</span> This map is a design instrument, not just a debugging aid. "That arrow should exist and doesn't" is a feature directive. "That system is an island" is a richness gap — the game's depth lives in coupling, so a box with few arrows is usually the next place to invest. And "I remember this working" pointed at a green arrow is exactly the drift report that catches what automation can't.</p>
+  </div>
+
+  <div class="footer-note">
+    Deep Reference · projection of <code>Docs/canon/interface-map.md</code> · audited 2026-07-23 · badges become generator-owned when the contract registry lands
+  </div>
+
+</div>
+</body>
+</html>
