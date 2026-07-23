@@ -15,11 +15,14 @@ import type { KnowsSecretOfEdgeProperties, OwesFavorEdgeProperties } from '../ty
 import {
   SECRET_REVELATION_TRUST_PENALTY,
   SECRET_CONFESSION_BETRAYAL_PENALTY,
+  SECRET_EXPOSURE_SENTIMENT_PENALTY,
   FAVOR_BREAKING_TRUST_PENALTY,
   FAVOR_BREAKING_SENTIMENT_PENALTY,
   secretTypeProse,
 } from '../types/secretsFavors';
 import { emitTrace } from './traceBuffer';
+import { pickSecretSubject } from './secretGeneration';
+import { mulberry32 } from '../lib/prng';
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
 
@@ -90,11 +93,21 @@ export function applySecretRevelationConsequences(
     });
   }
 
-  // Trust penalty: subject → revealer (betrayal if secret was confessed)
-  const trustPenalty = secret.source === 'confession'
-    ? SECRET_CONFESSION_BETRAYAL_PENALTY
+  // Trust penalty: subject → revealer. A confessed secret betrayed is the worse
+  // wound — the betrayal penalty *stacks on* the base revelation penalty rather
+  // than replacing it (migrated from the retired secretsConsequences.ts fork,
+  // THR-724; the replacement form made confession the *milder* case at the
+  // shipped constants, which inverts the intent).
+  const isConfessionBetrayal = secret.source === 'confession';
+  const trustPenalty = isConfessionBetrayal
+    ? SECRET_REVELATION_TRUST_PENALTY + SECRET_CONFESSION_BETRAYAL_PENALTY
     : SECRET_REVELATION_TRUST_PENALTY;
   applyRelatesEdgeDelta(graph, subjectId, revealerId, trustPenalty, 0);
+
+  // Subject → revealed-to: the subject resents the person who now knows.
+  // (Also migrated from the retired fork — the surviving module only moved
+  // sentiment in the revealed-to → subject direction.)
+  applyRelatesEdgeDelta(graph, subjectId, revealedToId, 0, SECRET_EXPOSURE_SENTIMENT_PENALTY);
 
   // Sentiment: revealed-to → subject (varies by secret type)
   const revealedToSentimentDelta = secret.magnitude * -0.2;
@@ -104,7 +117,7 @@ export function applySecretRevelationConsequences(
     tick,
     category: 'secret_revealed',
     agentId: revealerId,
-    summary: `Secret revealed: ${secret.secretType} about ${subjectId} → revealed to ${revealedToId} by ${revealerId} (trust penalty ${trustPenalty.toFixed(2)})`,
+    summary: `Secret revealed: ${secret.secretType} (mag ${secret.magnitude.toFixed(2)}, source ${secret.source}) about ${subjectId} → revealed to ${revealedToId} by ${revealerId}${isConfessionBetrayal ? ' [confession betrayed]' : ''} (trust penalty ${trustPenalty.toFixed(2)})`,
   });
 
   // Chronicle event
@@ -125,6 +138,49 @@ export function applySecretRevelationConsequences(
   const nextRecent = [...state.recentEvents, event].slice(-MAX_RECENT_EVENTS);
 
   return { tickEvents: nextEvents, recentEvents: nextRecent };
+}
+
+/**
+ * Reveal the heaviest unrevealed secret `revealerId` holds about `subjectId`, and
+ * apply its consequences (THR-724).
+ *
+ * The `reveal_secret` graph op flipped the edge's `revealed` flag and stopped there,
+ * so the player's Divine Whisper marked a truth as told without anyone reacting to
+ * it. This is the state-aware wrapper the resolution path calls instead: same edge
+ * selection, then the real social fallout.
+ *
+ * @param revealedToId  Explicit audience; defaults to a co-located third party, and
+ *                      when the revealer stands alone the subject hears it directly.
+ * @returns the chronicle patch, or `{}` when there is no secret to tell (fail-soft)
+ */
+export function revealBestSecret(
+  state: GameState,
+  revealerId: string,
+  subjectId: string,
+  revealedToId?: string,
+): Partial<GameState> {
+  const { graph } = state;
+  const candidates = graph.getOutgoingEdges(revealerId, 'knows_secret_of')
+    .filter(e => e.target === subjectId && !(e.properties.revealed as boolean));
+  if (candidates.length === 0) return {};
+
+  const best = candidates.reduce((a, b) =>
+    ((b.properties.magnitude as number) ?? 0) > ((a.properties.magnitude as number) ?? 0) ? b : a,
+  );
+
+  const audienceRng = mulberry32((state.seed ^ state.tick * 101) >>> 0);
+  const audienceId = revealedToId
+    ?? pickSecretSubject(revealerId, graph, audienceRng)
+    ?? subjectId;
+
+  return applySecretRevelationConsequences(
+    best.properties as unknown as KnowsSecretOfEdgeProperties,
+    best.id,
+    revealerId,
+    subjectId,
+    audienceId,
+    state,
+  );
 }
 
 // ─── Favor Breaking Consequences ──────────────────────────────────────────

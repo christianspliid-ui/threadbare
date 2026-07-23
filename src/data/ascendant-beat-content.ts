@@ -407,6 +407,26 @@ export const ASCENDANT_BEAT_POOL: readonly BeatDefinition[] = [
     ],
   },
 
+  // — The social dark economy (THR-724): the two secrets verbs. Both cards shipped with
+  //   THR-30 and were granted by nothing — unreachable by construction under the empty
+  //   THR-501 starter floor, exactly the orphan case the milestone grant note describes.
+  //   Granted together because they are one loop's two halves (let a real truth fall /
+  //   set a false one), and both are `unlockable-generic`: `reach: 'eye'` and
+  //   `reach: 'shadow'` are the cards' cosmic-energy axes, not `requiresReach` gates —
+  //   splitting them across the two-domain lock would hand a run half a loop.
+  //   `identity` biases the draw toward Eye/mind gods without gating it. No
+  //   `eligibility`: the verbs read the world's `knows_secret_of` edges at fire time and
+  //   fail soft when there are none, and secrets are now born from ordinary social play
+  //   (`secretsFromResolution.ts`), so there is nothing to wait for. —
+  {
+    beatId: 'beat.pool.invest.the_unveiled_eye',
+    kind: 'investment',
+    trigger: { kind: 'cadence' },
+    templateId: 'beat.pool.invest.the_unveiled_eye',
+    identity: { reach: 'eye', sphere: 'mind' },
+    grantsActionIds: ['action.secrets.reveal_secret', 'action.secrets.plant_secret'],
+  },
+
   // — Selection beats (BEAT_KIND_WEIGHTS.selection): choose 1-of-N within-run. The
   //   picker offers the listed cards; resolution unlocks the chosen one. —
   {
@@ -525,6 +545,11 @@ export const ASCENDANT_ACTION_BUCKETS: Readonly<Record<string, ActionBucketEntry
   'loc.reveal_vein': { bucket: 'unlockable-generic' },
   'loc.guide_caravan': { bucket: 'unlockable-generic' },
   'loc.sour_mine': { bucket: 'unlockable-generic' },
+  // THR-724: the two secrets verbs, granted together by `beat.pool.invest.the_unveiled_eye`.
+  // `reach: 'eye'` / `reach: 'shadow'` are their cosmic-energy axes, not `requiresReach`
+  // gates — see the grant note on the beat for why splitting them would be wrong.
+  'action.secrets.reveal_secret': { bucket: 'unlockable-generic' },
+  'action.secrets.plant_secret': { bucket: 'unlockable-generic' },
   // Spine-granted expressive verbs (THR-504): The First Word + the three god-paths.
   'divine.persuade': { bucket: 'unlockable-generic' },
   'divine.dream': { bucket: 'unlockable-generic' },

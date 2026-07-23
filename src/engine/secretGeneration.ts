@@ -208,6 +208,41 @@ function clampMagnitude(v: number): number {
   return Math.max(0.05, Math.min(1.0, v));
 }
 
+// ─── Subject selection (THR-724) ───────────────────────────────────────────
+
+/**
+ * Pick the agent a secret is *about* when the encounter did not name one.
+ *
+ * Most live encounters target a location, not an agent (`targetId` resolves to a
+ * location node), so a `secretDiscovery` template that required an explicit agent
+ * target could never fire in an ordinary run — that was break 1 of THR-724. Social
+ * play is still where secrets come from: an agent listening for rumors in a town
+ * learns something about *someone who is there*.
+ *
+ * Co-location is read off the shared `located_at` target, so this works at every
+ * tier of the three-tier position model (hex / location / sublocation) without
+ * resolving upward — two agents on the same sublocation are co-located, two on the
+ * same hex but different locations are not.
+ *
+ * @returns the subject's node id, or undefined when the discoverer stands alone
+ */
+export function pickSecretSubject(
+  discovererId: string,
+  graph: WorldGraph,
+  rng: () => number,
+): string | undefined {
+  const placement = graph.getOutgoingEdges(discovererId, 'located_at')[0];
+  if (!placement) return undefined;
+
+  const candidates = graph.getIncomingEdges(placement.target, 'located_at')
+    .map(e => e.source)
+    .filter(id => id !== discovererId)
+    .filter(id => graph.getNode(id)?.type === 'actor');
+
+  if (candidates.length === 0) return undefined;
+  return candidates[Math.min(candidates.length - 1, Math.floor(rng() * candidates.length))];
+}
+
 // ─── Graph Edge Creation ───────────────────────────────────────────────────
 
 /**

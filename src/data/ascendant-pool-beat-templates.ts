@@ -260,6 +260,20 @@ const INVESTMENT_TEMPLATES: UnifiedActionTemplate[] = [
     failure: 'the moment passes; the ground keeps its gathered strength to itself a while longer',
   }),
 
+  // — The social dark economy (THR-724): grants the two secrets verbs. Frames the
+  //   moment the god stops merely *seeing* what mortals hide and starts *moving* it —
+  //   telling one truth, seeding another. Anchors on The First ({name}); plain
+  //   register (THR-609); names no mechanic and counts nothing. —
+  poolBeatTemplate({
+    id: 'beat.pool.invest.the_unveiled_eye',
+    name: 'The Unveiled Eye',
+    description:
+      'You have watched long enough to notice what mortals do not say. {name} keeps something back from you even now — everyone does; it is how they stay themselves. But a thing kept back is a thing that can be moved. A truth carried to the wrong ear rearranges a room. A truth that was never true does the same work, and costs its subject more, because there is nothing to confess. You can learn to do both: to let a held thing fall where it will do the most, and to set a held thing that no one ever held.',
+    initiation: 'what mortals keep back begins to look less like a wall and more like a lever',
+    success: 'you learn to move what is hidden — to let one truth fall, and to plant another',
+    failure: 'the hidden stays hidden; you go on merely seeing it',
+  }),
+
   // — Reach-signature acquisition (THR-523): the *secondary* signature. The specific
   //   power depends on the ascendant's second domain, so the prose names no reach — it
   //   frames the moment a second face of the god's nature deepens from habit into a

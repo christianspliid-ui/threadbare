@@ -1051,6 +1051,18 @@ export interface UnifiedActionTemplate {
   };
 
   /**
+   * When present, creates an `owes_favor` edge on success — the encounter's
+   * subject becomes indebted to the actor. Read at the newly-resolved transition
+   * by `secretsFromResolution.ts` (THR-724). `context` is the prose reason the
+   * debt exists, surfaced in the chronicle when the favor is broken.
+   */
+  readonly favorGeneration?: {
+    readonly onSuccess: boolean;
+    readonly magnitudeRange: readonly [number, number];
+    readonly context: string;
+  };
+
+  /**
    * Explicit reputation polarity override. When set, overrides the heuristic
    * in phaseReputationTraits.ts for templates where the default crudType mapping
    * would produce the wrong sign (e.g. 'threaten' templates that are read/explore).

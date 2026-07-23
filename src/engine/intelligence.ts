@@ -26,6 +26,7 @@ import type {
 } from '../types/unifiedAction';
 import type { WorldGraph } from './graph';
 import { emitTrace } from './traceBuffer';
+import { secretTypeProse } from '../types/secretsFavors';
 
 // ─── Constants ────────────────────────────────────────────────────
 
@@ -285,7 +286,13 @@ export function buildIntelligenceDisplay(
 ): readonly IntelligenceDisplayEntry[] {
   try {
     const records = (allRecords ?? []).filter(r => r.agentId === agentId);
-    if (records.length === 0) return [];
+    // THR-724: secrets are intelligence too, so an agent holding only secrets must
+    // still render a populated panel — this guard is not an early exit any more.
+    if (records.length === 0) {
+      return [...buildSecretDisplayEntries(agentId, graph, currentTick)].sort(
+        (a, b) => a.reliabilityRank - b.reliabilityRank || b.acquiredTick - a.acquiredTick,
+      );
+    }
 
     const entries: IntelligenceDisplayEntry[] = records.map(record => {
       const desc = reliabilityDescriptor(record.reliability);
@@ -331,6 +338,8 @@ export function buildIntelligenceDisplay(
       };
     });
 
+    entries.push(...buildSecretDisplayEntries(agentId, graph, currentTick));
+
     // Primary sort: reliability rank asc; secondary: acquiredTick desc; tertiary: recordId for stability
     entries.sort((a, b) => {
       if (a.reliabilityRank !== b.reliabilityRank) return a.reliabilityRank - b.reliabilityRank;
@@ -339,6 +348,71 @@ export function buildIntelligenceDisplay(
     });
 
     return entries;
+  } catch {
+    return [];
+  }
+}
+
+// ─── Secrets as intelligence (THR-724) ────────────────────────────
+
+/**
+ * Reliability of a secret, by how it was learned. A confession heard first-hand is
+ * worth more than something overheard in a tavern.
+ */
+const SECRET_SOURCE_RELIABILITY: Record<string, 'reliable' | 'uncertain' | 'dubious'> = {
+  confession: 'reliable',
+  spy_debrief: 'reliable',
+  divine_revelation: 'reliable',
+  observation: 'uncertain',
+  encounter_outcome: 'uncertain',
+  tavern_gossip: 'dubious',
+};
+
+/**
+ * Project an agent's `knows_secret_of` edges into intelligence display entries.
+ *
+ * Secrets and intelligence records are separate substrates, so a secret learned in
+ * play was invisible everywhere in the UI (THR-724). Rather than add a second panel,
+ * secrets render as `political_secret` records in the existing one — which is also
+ * what makes them legible as targeting fuel for Divine Whisper.
+ *
+ * Revealed secrets are omitted: once told, the secret is no longer leverage.
+ *
+ * Pure + fail-soft: any graph error yields an empty list.
+ */
+function buildSecretDisplayEntries(
+  agentId: string,
+  graph: WorldGraph | undefined,
+  currentTick: number | undefined,
+): readonly IntelligenceDisplayEntry[] {
+  try {
+    const edges = graph?.getOutgoingEdges(agentId, 'knows_secret_of') ?? [];
+    return edges
+      .filter(e => !(e.properties.revealed as boolean))
+      .map(e => {
+        const secretType = (e.properties.secretType as string) ?? 'hidden_weakness';
+        const source = (e.properties.source as string) ?? 'observation';
+        const acquiredTick = (e.properties.discoveredTick as number) ?? 0;
+        const desc = SECRET_SOURCE_RELIABILITY[source] ?? 'uncertain';
+        const subject = graph?.getNode(e.target);
+        const daysAgo = Math.max(0, (currentTick ?? acquiredTick) - acquiredTick);
+        return {
+          recordId: e.id,
+          category: 'political_secret' as IntelligenceCategory,
+          categoryLabel: INTEL_CATEGORY_LABELS.political_secret,
+          label: `Something ${subject?.name ?? 'someone'} keeps quiet`,
+          detail: (e.properties.detail as string) ?? secretTypeProse(secretType as never),
+          targetDisplayName: subject?.name ?? null,
+          targetKind: 'agent' as const,
+          reliabilityDescriptor: desc,
+          reliabilityRank: (desc === 'reliable' ? RELIABILITY_RANK_RELIABLE
+            : desc === 'uncertain' ? RELIABILITY_RANK_UNCERTAIN
+            : RELIABILITY_RANK_DUBIOUS) as 0 | 1 | 2,
+          acquiredTick,
+          acquiredDaysAgo: daysAgo,
+          acquiredLabel: formatAcquiredLabel(daysAgo),
+        };
+      });
   } catch {
     return [];
   }
