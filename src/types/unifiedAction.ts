@@ -836,6 +836,25 @@ export interface AftermathVariant {
   readonly reactions?: readonly EncounterAftermathReaction[];
 }
 
+/**
+ * One slot's authored prose variants along one identity axis (THR-573).
+ *
+ * `variants` maps an axis value (a `sublocationTypeId` for the `place` axis, an
+ * `npcRole` for `counterpartRole`) to the authored fragment for that value, and MUST
+ * carry the `'*'` default key. That declared-default invariant — transplanted from the
+ * `{cast:*}` system — is what lets authored prose reference its own slots unguarded:
+ * a declared slot always resolves, so an unmapped context degrades to the default
+ * rather than leaking a raw token. Resolution is a pure lookup, no PRNG.
+ */
+export interface ContextFragmentSet {
+  /** Slot name referenced from prose as `{frag:<slot>}`, e.g. 'opening'. */
+  readonly slot: string;
+  /** Identity axis this slot varies on — see `SURFACE_FRAGMENT_AXES`. */
+  readonly axis: 'place' | 'counterpartRole';
+  /** axisValue -> authored prose. MUST contain the `'*'` default key. */
+  readonly variants: Readonly<Record<string, string>>;
+}
+
 export interface UnifiedActionTemplate {
   // Identity
   readonly id: string;
@@ -982,6 +1001,15 @@ export interface UnifiedActionTemplate {
     readonly success: string;
     readonly failure: string;
   };
+
+  /**
+   * Context-multiplication fragments (THR-573) — authored prose variants that bind to
+   * the same identity axes the surface key is computed from, so the same template reads
+   * as a different scene at a tavern versus a shrine. Referenced from prose fields with
+   * the `{frag:<slot>}` token. Omit → the template renders exactly as it does today;
+   * the whole layer is opt-in per template. See `src/engine/fragmentResolution.ts`.
+   */
+  readonly contextFragments?: readonly ContextFragmentSet[];
 
   /** Encounter-network support that should be resolved at action start. */
   readonly supportBundle?: EncounterSupportBundle;

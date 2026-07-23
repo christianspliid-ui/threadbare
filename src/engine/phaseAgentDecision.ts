@@ -73,6 +73,7 @@ import { ENABLE_INITIATIVES } from '../data/initiative-constants';
 import { generateInitiativeCandidates } from './initiativeCandidates';
 import { startInitiative } from './initiativeLifecycle';
 import { computeSurfaceKey } from './encounterSurface';
+import { resolveTemplateFragments } from './fragmentResolution';
 
 /**
  * Compute effective cooldown scaled by available template pool size.
@@ -1023,6 +1024,37 @@ export function phaseAgentDecision(
                 effectiveTier,
               };
               newEncounterProgress.push(progress);
+
+              // THR-573 — one aggregate fragment-binding trace per encounter
+              // instantiation (never per step render, never per agent-tick). Skipped
+              // entirely for templates that declare no fragments, so the trace volume
+              // scales with authored Tier-2 content rather than with tick count.
+              if (template.contextFragments && template.contextFragments.length > 0) {
+                const bindings = resolveTemplateFragments(
+                  template.contextFragments,
+                  {
+                    place: sel.entry.sublocationTypeId,
+                    counterpartRole: sel.entry.targetAgentRole,
+                  },
+                  template.id,
+                );
+                if (bindings.length > 0) {
+                  emitTrace({
+                    category: 'surface_fragments_bound',
+                    tick: state.tick,
+                    agentId,
+                    templateId: template.id,
+                    surfaceKey: computeSurfaceKey(sel.entry),
+                    bindings: bindings.map(b => ({
+                      slot: b.slot,
+                      axis: b.axis,
+                      value: b.value,
+                      usedDefault: b.usedDefault,
+                    })),
+                    summary: `surface_fragments_bound: ${template.id} ${bindings.map(b => `${b.slot}=${b.value}`).join(' ')}`,
+                  } as any);
+                }
+              }
             }
 
             // B.1: Track familiarity — direct property write, not spread.

@@ -21,6 +21,7 @@ import {
   LOCATION_BRANCHING_ENCOUNTER_TEMPLATES,
 } from '../../data/unified-action-templates';
 import type { UnifiedActionTemplate } from '../../types/unifiedAction';
+import { SOCIAL_SCENE_TEMPLATES } from '../../data/social-scene-templates';
 import { SPELL_TEMPLATES } from '../../data/spell-templates';
 import { OMEN_TEMPLATES } from '../../data/omenTemplates';
 import { STARTER_POSSESSIONS, STARTER_CONDITIONS } from '../../data/starter-attachments';
@@ -118,6 +119,16 @@ function collectEncounters(): EvalInput[] {
       }
     }
 
+    // Context fragments (THR-573) — every authored variant is swept individually so
+    // multiplied surfaces clear the same register bar as inline prose. Fragment tables
+    // are statically enumerable, which is what makes this sweep possible at all;
+    // without it the multiplied library would be invisible to Prose QA.
+    for (const set of t.contextFragments ?? []) {
+      for (const [axisValue, text] of Object.entries(set.variants ?? {})) {
+        addField(fields, `frag.${set.slot}.${axisValue}`, text);
+      }
+    }
+
     // Branch-aware aftermath overviews (chronicler voice).
     if (t.aftermathConfig) {
       for (const [choiceId, variant] of Object.entries(t.aftermathConfig.variants ?? {})) {
@@ -136,6 +147,36 @@ function collectEncounters(): EvalInput[] {
     });
   }
 
+  return entries;
+}
+
+/**
+ * Context fragments on the social-scene pool (THR-573).
+ *
+ * Social scenes are generated per-agent rather than registered in
+ * `UNIFIED_ACTION_TEMPLATES`, so `collectEncounters` never reaches them. This collector
+ * emits **only** their fragment variants — deliberately not their step/outcome prose,
+ * which has never been in the QA corpus and is not this ticket's scope to add. Every
+ * multiplied surface therefore clears the same register bar as inline prose, while the
+ * corpus grows by exactly the authored fragments.
+ */
+function collectSocialSceneFragments(): EvalInput[] {
+  const entries: EvalInput[] = [];
+  for (const t of SOCIAL_SCENE_TEMPLATES) {
+    if (!t.contextFragments || t.contextFragments.length === 0) continue;
+    const fields: Record<string, string> = {};
+    for (const set of t.contextFragments) {
+      for (const [axisValue, text] of Object.entries(set.variants ?? {})) {
+        addField(fields, `frag.${set.slot}.${axisValue}`, text);
+      }
+    }
+    if (Object.keys(fields).length === 0) continue;
+    entries.push({
+      entryId: `${t.id}#fragments`,
+      contentType: 'encounter',
+      fields,
+    });
+  }
   return entries;
 }
 
@@ -200,6 +241,7 @@ function collectGraphNodes(nodes: readonly GraphNode[], contentType: string): Ev
 /** One collector per authored table; each is fail-soft-isolated below. */
 const TABLE_COLLECTORS: ReadonlyArray<{ table: string; run: () => EvalInput[] }> = [
   { table: 'encounters', run: collectEncounters },
+  { table: 'socialSceneFragments', run: collectSocialSceneFragments },
   { table: 'spells', run: collectSpells },
   { table: 'omens', run: collectOmens },
   { table: 'possessions', run: () => collectGraphNodes([...STARTER_POSSESSIONS, ...REWARD_POSSESSIONS, ...REWARD_BESTOWED_POWERS], 'attachment') },

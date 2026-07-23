@@ -243,6 +243,26 @@ Same-hex same-tick `agent_encounter` colocation aggregation; phonetic name const
 
 ---
 
+## Encounter Context Multiplication — Tier-2 Surface Generators (THR-573)
+
+Authored prose responds to the same identity axes the surface key is computed from, so one skeleton reads as many distinct scenes. Opt-in per template; a template without `contextFragments` renders exactly as before.
+
+| Surface | Path | Notes |
+|---|---|---|
+| Resolution module | `src/engine/fragmentResolution.ts` | `resolveFragment` (bound value → `'*'` default → strip + warn-once), `resolveTemplateFragments`, `enumerateTemplateSurfaces`. Constants: `SURFACE_FRAGMENT_AXES`, `FRAGMENT_DEFAULT_KEY`, `MAX_FRAGMENT_SLOTS_PER_TEMPLATE`, `MAX_VARIANTS_PER_SLOT`, `MAX_SURFACES_PER_TEMPLATE`, `FRAGMENT_SEED_OFFSET` (reserved, unused v1). Pure lookup — no PRNG. |
+| Template field | `src/types/unifiedAction.ts` | `ContextFragmentSet` interface + additive optional `contextFragments?` on `UnifiedActionTemplate` (278 importers — additive only, no signature changes). |
+| Prose token | `src/engine/proseEnrichment.ts` | `{frag:<slot>}` resolved **first**, before all other tokens, so tokens inside a fragment resolve normally. `NarrativeContext` gains optional `contextFragments`, `contextFragmentTemplateId`, `sublocationTypeId`, `targetRole`; the two axes are derived inside `gatherNarrativeContext` (no caller threads a new required param). |
+| Render call site | `src/engine/unifiedActionResolution.ts` | Step-prose `gatherNarrativeContext` call passes `template.contextFragments` + `template.id`. |
+| Trace | `src/types/trace.ts`, `src/engine/phaseAgentDecision.ts` | `surface_fragments_bound` registered in `TraceCategory` + `TRACE_CATEGORIES`; `SurfaceFragmentsBoundTrace` carries `templateId`, `surfaceKey`, and slot/axis/value/`usedDefault` bindings. Emitted **once per encounter instantiation**, never per step render or per agent-tick. |
+| Converter pass-through | `src/data/social-scene-templates.ts` | `toSocialTemplate` is an explicit field whitelist — `contextFragments` added to both `SocialEntry` and the converter, or the layer silently no-ops. `staticProse()` expands a bare `{frag:*}` to its `'*'` default for `narrativeTemplates.initiation`, which Codex/preview surfaces read raw. |
+| Content (proof unit) | `src/data/social-scene-templates.ts` — `social_scene.recruitment_pitch` | 9 fragments across 2 slots → 20 authored surfaces (5 places × 4 counterpart roles). |
+| Prose QA | `src/engine/content-eval/collectAuthoredProse.ts` | Fragment variants swept per template (`frag.<slot>.<axisValue>` fields); `collectSocialSceneFragments` reaches the per-agent social pool, which `collectEncounters` does not. |
+| Inventory report | `src/engine/content-eval/surfaceFragmentReport.ts` | Pure, deterministic sweep across all fragment-carrying pools; shared by the debug tab, the bridge, and the volume model. |
+| Debug visibility | `src/components/Game/debug/FragmentsDebugTab.tsx`, `DebugTabContent.tsx`, `src/debug-bridge.ts`, `src/debug-bridge.d.ts` | "Fragments" tab: static inventory + live bindings from `surface_fragments_bound`. `window.__DEBUG.resolveSurfaceFragments('<agent>')` for the bound scene; no-arg form returns the static inventory. |
+| Measured volume mode | `scripts/encounter-volume-model.ts` | `npm run volume-model` reports authored surface counts per template alongside the arithmetic targets; two runs byte-identical. |
+| Authoring pipeline | `.claude/skills/template-context-rewrite/SKILL.md` | Four-pass skill: axis election → scene-first drafting → QA → merge. `encounter-pipeline` (Tier-1 bespoke) deliberately unchanged. |
+| Tests | `src/engine/__tests__/fragmentResolution.test.ts`, `src/engine/__tests__/recruitmentPitchFragments.test.ts` | Full fallback chain, `'*'`-required rule, enumeration caps/determinism; worked-example guards for converter pass-through, 20-surface count, scorer band, and end-to-end `enrichProse` render. |
+
 ## Encounter Surface Foundation (THR-475)
 
 Surface identity layer for encounter novelty: recency now tracks a template bound to context, not the template ID alone.

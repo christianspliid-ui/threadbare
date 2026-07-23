@@ -2780,6 +2780,19 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "Resolve by regeneration, not by hand: `git checkout --theirs src/data/ul-dashboard.generated.json && npm run generate-ul-dashboard && git add && git commit`. When more queued PRs still carry the file, make the blobs byte-identical across branches (`git checkout <sibling-branch> -- <file>`, commit, push) so the rest of the cascade degrades to plain BEHIND, which watchers handle. Durable fix filed as THR-714: strip the timestamp from the generator (deterministic regen, NFP #3); then the freshness checker's volatile carve-out can go too.",
     "session": "M3 economy marathon, 2026-07-22"
+  },
+  {
+    "num": "198",
+    "id": 198,
+    "count": 1,
+    "date": "2026-07-23",
+    "category": "content",
+    "description": "**`{actor}` is a widespread authored convention that is NOT resolved on the encounter step-prose path — it renders literally to the player.** `enrichProse()` has no `{actor}` token (its name source is `{name}`); only `orchestrator.ts` (dilemma prose) and `strategicActionLifecycle.ts` substitute `{actor}`, each with a local `.replace()`. But ~25 data files author `{actor}`, including every step narrative in `social-scene-templates.ts`. Confirmed live: a 7-tick CLI run of `social_scene.recruitment_pitch` rendered step 2 as `\"{actor} listens more than talks, watching for what the target wants but hasn't said.\"` — raw token visible in `stepProseHistory`. Found while landing THR-573's fragments, whose plan-doc text used `{actor}`; the same plan's authoring rule says `{name}`/`{cast:*}`/`{target}` are the only name sources, so the rule and its worked example contradicted each other.",
+    "consequence": "~10 min to detect and decide; THR-573's 9 fragments were landed with `{name}` instead (verified rendering as \"The Unchained finds the target…\"). Pre-existing content is unaffected by that change and still leaks.",
+    "impact": "M",
+    "workaroundFound": false,
+    "workaround": "**For new prose: use `{name}`, never `{actor}`.** The pre-existing leak is a separate content sweep (either add an `{actor}` alias in `enrichProse` or migrate the data files) — filed as a Deferral, not folded into THR-573. Verify any new prose end-to-end with `printf \"spawn encounter @hero <id>\\ntick 2\\neval ...stepProseHistory...\"` rather than trusting the token convention of surrounding code.",
+    "session": "THR-573 hourly pickup, 2026-07-23"
   }
 ];
 // ── End data ──

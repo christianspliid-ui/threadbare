@@ -42,6 +42,7 @@ export type TraceCategory =
   | 'action_selection' | 'narrative_generation' | 'context_harvest'
   | 'dilemma_resolution' | 'tick_summary' | 'encounter_resolution'
   | 'encounter_step_prose_recorded'
+  | 'surface_fragments_bound'
   | 'familiarity_change' | 'movement' | 'intervention_effect'
   | 'action_execution' | 'modifier_resolution'
   | 'prosperity_tick' | 'wealth_delta'
@@ -308,6 +309,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'action_selection', 'narrative_generation', 'context_harvest',
   'dilemma_resolution', 'tick_summary', 'encounter_resolution',
   'encounter_step_prose_recorded',
+  'surface_fragments_bound',
   'familiarity_change', 'movement', 'intervention_effect',
   'action_execution', 'modifier_resolution',
   'prosperity_tick', 'wealth_delta',
@@ -1780,7 +1782,28 @@ export interface AxiologicalMarkAppliedTrace extends TraceBase {
   reactionId?: string;
 }
 
+/**
+ * Context-fragment bindings for one encounter instantiation (THR-573).
+ *
+ * Emitted **once per encounter instantiation** that resolves ≥1 fragment slot — never
+ * per step render and never per agent-tick, which would flood the ring buffer.
+ * `surfaceKey` ties the prose identity back to the selection identity, so a trace reader
+ * can confirm the scene the player read matches the surface the scorer picked.
+ */
+export interface SurfaceFragmentsBoundTrace extends TraceBase {
+  category: 'surface_fragments_bound';
+  templateId: string;
+  surfaceKey: string;
+  bindings: ReadonlyArray<{
+    slot: string;
+    axis: string;
+    value: string;
+    usedDefault: boolean;
+  }>;
+}
+
 export type TraceEntry =
+  | SurfaceFragmentsBoundTrace
   | PersonalityTraitEmergedTrace
   | PersonalityOriginSeededTrace
   | CorePersonalityTrace
