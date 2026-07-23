@@ -244,6 +244,20 @@ Christian verdicted all four calls in chat (plain-language review per THR-608):
   (mechanism exists, tuned invisible); implement the ChronicleTab Completed Ambitions list;
   keep secondary ambitions gated deeper.
 
+## Interface impact
+
+Step 0.7's own format, dogfooded. This plan **reads** contracts to seed the registry; it
+adds, retires, or reroutes none of them — the remediation tickets do that.
+
+| Contract | Action | Note |
+|---|---|---|
+| All 20 seeded Attachments + Ambitions rows | `preserve` | Registered verbatim from the audit; liveness is *reported*, never changed here. |
+| `attachment-tier-advancement` | `preserve` (badge corrected) | Implementation found the module has **zero production importers** — worse than the canon page's 🟠 PARTIAL. Row now carries the mechanical 🔴 LEAKED verdict; remediation stays THR-723. |
+| Every ⚪ UNAUDITED subsystem | `preserve` | Untouched by this ticket; the weekly drift-scan cadence seeds their audits. |
+
+New contracts introduced: **none**. This plan's own outputs (the generated map, the
+registry) are build-time artifacts, not cross-system runtime contracts.
+
 ## Engine pillar
 
 Engine: N/A — the generator + registry live in `scripts/` (build-time static analysis,

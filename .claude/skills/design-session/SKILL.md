@@ -69,6 +69,10 @@ the spine:
   `Docs/plans/YYYY-MM-DD-<topic>-grill-me.md`.
 - **Step 0.5 Codesight pre-flight** (if the change touches `src/`) — blast radius + dependency chain. Any file
   with **≥100 importers** (see CLAUDE.md high-impact list) forces a **Blast Radius** section up front.
+- **Step 0.7 Interface impact check** (any subsystem in `Docs/canon/interface-map.md`, audited **or** ⚪ UNAUDITED)
+  — enumerate the cross-system contracts the plan touches and carry an `## Interface impact` table
+  (preserve / extend / add / retire). UNAUDITED means audit-on-touch, never an exemption. A plan adding a
+  cross-system write must name its production read site or cite a `Deferral` issue. `lint:plan-doc` nags.
 - **Draft** the plan doc — all three pillars — plus its **Brainstorm companion** in the same pass.
 - **Audit** against the 7 NFPs, load-bearing decisions, and rejected approaches; **Revise** inline.
 - **Summarize** with an NFP-compliance table; **three-pillar check** (Engine / Content / UI / Wiring).

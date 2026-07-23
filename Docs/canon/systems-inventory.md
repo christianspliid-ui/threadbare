@@ -43,6 +43,7 @@ names like `TB-073`) a premise might use.
 | **Personality & Emergent Traits** | 🟢 ACTIVE | personality, trait, traits, becoming, axiological, temperament | `personality`, `core` | `6.626` |
 | **Mortal Economy & Prosperity** | 🟢 ACTIVE | economy, trade, resource, resources, prosperity, gold, market, settlement, cargo | `resource`, `settlement`, `economic`, `trade`, `gold`, `prosperity` | `6.62`, `6.63`, `6.632`, `6.635`, `6.636`, `6.65`, `6.66` |
 | **Ambitions & Initiatives** | 🟢 ACTIVE | ambition, initiative, goal, mentorship, apprentice | `ambition`, `initiative`, `mentorship` | `2.32`, `2.33` |
+| **Attachments, Items & Possessions** | 🟢 ACTIVE | attachment, attachments, item, items, possession, possessions, artifact, equipment, blessing, retainer, agreement | `attachment`, `seed` | `2a.85` |
 | **Ruins, Clues & Delves** | 🟢 ACTIVE | ruins, delve, dungeon, clue, lair, anomaly, quest | `ruins`, `delve`, `lair`, `anomaly` | `2.3575` |
 | **Stealth, Detection & Hidden Marks** | 🟢 ACTIVE | stealth, detection, hidden, mark, disbelief, faith, signature | `stealth`, `detection`, `hidden` | `1.7`, `2a.605`, `2.356`, `2.36`, `2.5`, `4`, `6.7` |
 | **Attention, Chronicle & Narrative** | 🟢 ACTIVE | attention, chronicle, digest, narrative, story, feed | `attention`, `chronicle`, `narrative` | `2a.65`, `6.66`, `5` |
@@ -68,6 +69,7 @@ names like `TB-073`) a premise might use.
 - **Personality & Emergent Traits** — Layered: worldgen baseline → core → emergent traits (THR-527/542/561).
 - **Mortal Economy & Prosperity** — Resource web, stock tiers, prosperity pulse, settlement tiers, trade routes. M3: Dynamic Economy.
 - **Ambitions & Initiatives** — Agent-level drives and multi-tick initiatives; mentorship couples train-apprentice to mentors edges.
+- **Attachments, Items & Possessions** — Items, conditions, blessings, agreements, retainers on `possesses` edges. Effects flow via `effects[]` → `collectTestShapers` (2026-03-31 generic effect system). Contract liveness audited 2026-07-23 (THR-717) — five leaked contracts, see `Docs/canon/interface-map.md`.
 - **Ruins, Clues & Delves** — Ruin density seeding, clue discovery/decay, delve admission→progression→emergence, lair escalation.
 - **Stealth, Detection & Hidden Marks** — Two audiences watch the god: mortals (disbelief→faith) and rivals (signature scans). Hidden-mark decay.
 - **Attention, Chronicle & Narrative** — The attention pool (can't watch everything), the digest, and the run's chronicle/narrative feed.
@@ -92,6 +94,7 @@ complete. (These phases still appear in the full wiring table below; they just l
 |---|---|---|
 | `2a` | Progress + resolve existing unified actions | — |
 | `2a.61` | Choice Resolution — process pending player choice commits | `THR-323` |
+| `3b` | Notable Agendas | `THR-630` |
 | `6.637` | Unrest | — |
 | `end` | Drift Decay — passive per-tick decay toward zero | `THR-323` |
 
@@ -144,6 +147,7 @@ registry. The wiring ground truth: if it is on the tick path, it is here.
 | `2.75` | Familiarity Gain | — | orchestrator |
 | `2.76` | Interaction Depth | — | orchestrator |
 | `3` | Rival Actions | — | orchestrator |
+| `3b` | Notable Agendas | `THR-630` | orchestrator |
 | `4` | Stealth | — | orchestrator |
 | `5.9` | Essence Sources | `THR-611` | orchestrator |
 | `6` | Essence | — | orchestrator |
@@ -179,6 +183,8 @@ registry. The wiring ground truth: if it is on the tick path, it is here.
 | `emitted_omen_decay` | emitted_omen_decay | — | registry |
 | `reputation_decay` | reputation_decay | — | registry |
 | `resource_stock_tiers` | resource_stock_tiers | — | registry |
+| `route_events` | route_events | — | registry |
+| `economic_power` | economic_power | — | registry |
 | `ambition_progress` | ambition_progress | — | registry |
 | `faction_ambitions` | faction_ambitions | — | registry |
 | `faction_actions` | faction_actions | — | registry |
@@ -230,7 +236,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `color` (1) | `color.ts` | — |
 | `complication` (2) | `complicationEffects.ts`, `complicationSelection.ts` | `THR-20` |
 | `condition` (2) | `conditionDecay.ts`, `conditionOverflow.ts` | — |
-| `content-eval` (4) | `content-eval/collectAuthoredProse.ts`, `content-eval/detectors.ts`, `content-eval/proseQualityScore.ts`, `content-eval/registerCompliance.ts` | `THR-490`, `THR-472`, `THR-609` |
+| `content-eval` (6) | `content-eval/collectAuthoredProse.ts`, `content-eval/detectors.ts`, `content-eval/proseQualityScore.ts`, `content-eval/registerCompliance.ts`, `content-eval/surfaceFragmentReport.ts`, `content-eval/unreachableActions.ts` | `THR-490`, `THR-472`, `THR-609`, `THR-573`, `THR-659`, `THR-501`, `THR-523` |
 | `contentcensus` (5) | `contentCensus/adapters.ts`, `contentCensus/constants.ts`, `contentCensus/index.ts`, `contentCensus/matrix.ts`, `contentCensus/types.ts` | — |
 | `contestation` (1) | `contestation.ts` | `Phase 3` |
 | `context` (1) | `contextBuilder.ts` | — |
@@ -241,7 +247,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `culture` (5) | `cultureDetail.ts`, `cultureFlag.ts`, `cultureGenerator.ts`, `cultureMores.ts`, `culturePhonetics.ts` | `M50`, `M30`, `M70`, `M20`, `THR-15` |
 | `curator` (1) | `curator.ts` | — |
 | `cycle` (1) | `cycleEnd.ts` | — |
-| `debug` (3) | `debugCommands.ts`, `debugEncounterTools.ts`, `debugWorldSpawnTools.ts` | — |
+| `debug` (4) | `debugCommands.ts`, `debugEncounterTools.ts`, `debugTickBatch.ts`, `debugWorldSpawnTools.ts` | `THR-689` |
 | `decay` (1) | `decayCurve.ts` | — |
 | `delivery` (2) | `delivery.ts`, `deliveryBeatAdapter.ts` | `THR-506`, `THR-452`, `THR-514` |
 | `depression` (2) | `depressionFilling.ts`, `depressionLakes.ts` | — |
@@ -260,16 +266,17 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `effect` (6) | `effectAura.ts`, `effectExecutors.ts`, `effectResolver.ts`, `effectScope.ts`, `effectShellRuntime.ts`, `effectTick.ts` | `Phase 2`, `THR-53` |
 | `effects` (8) | `effects/actionTrigger.ts`, `effects/actorClassification.ts`, `effects/effectEvents.ts`, `effects/effectPredicates.ts`, `effects/effectQueries.ts`, `effects/effectWalker.ts`, `effects/index.ts`, `effects/resourceDelta.ts` | `TB-104`, `Phase 3`, `Phase 5` |
 | `elder` (1) | `elderEssenceReward.ts` | `TB-043`, `THR-153` |
-| `encounter` (19) | `encounter-contract-adapter.ts`, `encounter.ts`, `encounter/branchingConstants.ts`, `encounter/branchingCurator.ts`, `encounterAftermath.ts`, `encounterAwareness.ts`, `encounterCache.ts`, `encounterChains.ts`, `encounterChoiceMemory.ts`, `encounterEventNode.ts`, `encounterFilterPipeline.ts`, `encounterLogExporter.ts`, `encounterRuntime.ts`, `encounterScoring.ts`, `encounterSeeding.ts`, `encounterSupportBundle.ts`, `encounterSurface.ts`, `encounterTimeline.ts`, `encounterVisibility.ts` | `THR-452`, `THR-465`, `TB-077`, `THR-475`, `TB-035`, `Phase 4` |
+| `encounter` (19) | `encounter-contract-adapter.ts`, `encounter.ts`, `encounter/branchingConstants.ts`, `encounter/branchingCurator.ts`, `encounterAftermath.ts`, `encounterAwareness.ts`, `encounterCache.ts`, `encounterChains.ts`, `encounterChoiceMemory.ts`, `encounterEventNode.ts`, `encounterFilterPipeline.ts`, `encounterLogExporter.ts`, `encounterRuntime.ts`, `encounterScoring.ts`, `encounterSeeding.ts`, `encounterSupportBundle.ts`, `encounterSurface.ts`, `encounterTimeline.ts`, `encounterVisibility.ts` | `THR-452`, `THR-465`, `TB-077`, `THR-697`, `THR-475`, `TB-035`, `Phase 4` |
 | `encounters` (11) | `encounters/choiceResolution.ts`, `encounters/detectionPressure.ts`, `encounters/driftAccumulator.ts`, `encounters/encounterTemplateGraph.ts`, `encounters/generateEncounterCandidates.ts`, `encounters/handFilter.ts`, `encounters/itemConsumption.ts`, `encounters/outcomeForecast.ts`, `encounters/placeGating.ts`, `encounters/reactionChooser.ts`, `encounters/relationshipResolver.ts` | `THR-327`, `THR-530`, `THR-528` |
 | `engine` (1) | `engineEffectRegistry.ts` | `THR-604` |
 | `essence` (3) | `essenceIncome.ts`, `essenceSourceSeeding.ts`, `essenceSources.ts` | `THR-611` |
 | `event` (1) | `eventAggregation.ts` | `THR-456` |
-| `faction` (10) | `factionAmbitions.ts`, `factionAwareness.ts`, `factionGovernanceVerbs.ts`, `factionNetwork.ts`, `factionOutcome.ts`, `factionQuestGeneration.ts`, `factionRankBonus.ts`, `factionReputation.ts`, `factionSeeding.ts`, `factionTopology.ts` | `TB-073`, `Phase 0`, `THR-400`, `Phase 3`, `TB-061`, `Phase 4`, `Phase 2`, `Phase 1`, `THR-430` |
+| `faction` (10) | `factionAmbitions.ts`, `factionAwareness.ts`, `factionGovernanceVerbs.ts`, `factionNetwork.ts`, `factionOutcome.ts`, `factionQuestGeneration.ts`, `factionRankBonus.ts`, `factionReputation.ts`, `factionSeeding.ts`, `factionTopology.ts` | `TB-073`, `Phase 0`, `THR-711`, `THR-400`, `Phase 3`, `TB-061`, `Phase 4`, `Phase 2`, `Phase 1`, `THR-430` |
 | `failure` (1) | `failureStoryArtifact.ts` | `THR-571`, `THR-470` |
 | `familiarity` (1) | `familiarity.ts` | — |
 | `force` (1) | `forceField.ts` | — |
-| `foreshadowing` (11) | `foreshadowing/attributeRecentInterventions.ts`, `foreshadowing/composeGeneric.ts`, `foreshadowing/composeReceipt.ts`, `foreshadowing/constants.ts`, `foreshadowing/encounterForeshadowing.ts`, `foreshadowing/genericFallback.ts`, `foreshadowing/getEncounterForeshadowing.ts`, `foreshadowing/motiveReceipt.ts`, `foreshadowing/realizer.ts`, `foreshadowing/receiptRead.ts`, `foreshadowing/types.ts` | `THR-389`, `Phase 1`, `Phase 3`, `THR-631`, `THR-640` |
+| `foreshadowing` (10) | `foreshadowing/attributeRecentInterventions.ts`, `foreshadowing/composeGeneric.ts`, `foreshadowing/composeReceipt.ts`, `foreshadowing/constants.ts`, `foreshadowing/encounterForeshadowing.ts`, `foreshadowing/genericFallback.ts`, `foreshadowing/motiveReceipt.ts`, `foreshadowing/realizer.ts`, `foreshadowing/receiptRead.ts`, `foreshadowing/types.ts` | `THR-389`, `Phase 1`, `Phase 3`, `THR-631`, `THR-642`, `THR-640` |
+| `fragment` (1) | `fragmentResolution.ts` | `THR-573`, `THR-475` |
 | `game` (1) | `gameInit.ts` | — |
 | `ghost` (1) | `ghostDots.ts` | — |
 | `graph` (5) | `graph.ts`, `graphConditions.ts`, `graphOpExecutor.ts`, `graphQueries.ts`, `graphUtils.ts` | — |
@@ -295,7 +302,8 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `monster` (1) | `monsterFactionSeed.ts` | — |
 | `movement` (3) | `movementCandidates.ts`, `movementCost.ts`, `movementExecution.ts` | — |
 | `narrative` (2) | `narrative-constants.ts`, `narrative.ts` | — |
-| `notification` (2) | `notificationRouter.ts`, `notificationVisibilityFilter.ts` | — |
+| `notable` (1) | `notableAgendas.ts` | `THR-630`, `THR-225`, `THR-66` |
+| `notification` (3) | `notificationRouter.ts`, `notificationThreadingGate.ts`, `notificationVisibilityFilter.ts` | `THR-666` |
 | `npc` (2) | `npcGraduation.ts`, `npcSeeding.ts` | — |
 | `orchestrator` (5) | `orchestrator.ts`, `orchestrator/phaseAscendantHandFilter.ts`, `orchestrator/phaseChoiceResolution.ts`, `orchestrator/phaseDetectionPressure.ts`, `orchestrator/phaseDriftDecay.ts` | `THR-528` |
 | `outcome` (1) | `outcomeConsequences.ts` | `Phase 6` |
@@ -303,7 +311,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `pathfinding` (1) | `pathfinding.ts` | — |
 | `personality` (2) | `personality/originBaseline.ts`, `personality/originConstants.ts` | `THR-561`, `THR-539` |
 | `phase` (41) | `phaseAgentDecision.ts`, `phaseAscendantProgression.ts`, `phaseAttention.ts`, `phaseColocationDetection.ts`, `phaseComposition.ts`, `phaseControlEffects.ts`, `phaseDivinePremonition.ts`, `phaseDoom.ts`, `phaseEconomicChronicle.ts`, `phaseEconomicTraits.ts`, `phaseEffectShells.ts`, `phaseEncounterTraits.ts`, `phaseEssenceSources.ts`, `phaseFactionActions.ts`, `phaseFactionSuccession.ts`, `phaseHexState.ts`, `phaseHiddenMarkDecay.ts`, `phaseInitiativeProgress.ts`, `phaseIntelligenceDecay.ts`, `phaseInteractionDepth.ts`, `phaseMagicalSaturation.ts`, `phaseMandate.ts`, `phaseMentorship.ts`, `phaseMovement.ts`, `phaseOmenAgenda.ts`, `phaseProsperity.ts`, `phaseQuintessence.ts`, `phaseRegistry.ts`, `phaseReputationDecay.ts`, `phaseReputationTraits.ts`, `phaseSchismResolution.ts`, `phaseSecretsFavors.ts`, `phaseSettlementPromotion.ts`, `phaseSettlementReassessment.ts`, `phaseSlotCaps.ts`, `phaseSphereAggregation.ts`, `phaseSpherePressure.ts`, `phaseStrategicProjects.ts`, `phaseSublocations.ts`, `phaseTradeRouteDecay.ts`, `phaseUnrest.ts` | `THR-613`, `THR-611`, `TB-045`, `THR-53`, `Phase 6`, `THR-432`, `Phase 7`, `THR-132`, `THR-51`, `THR-137`, `Phase 2`, `THR-75`, `THR-19`, `Phase 1`, `TB-075`, `Phase 12`, `THR-238`, `THR-430`, `THR-30`, `Phase 4`, `THR-469`, `THR-481` |
-| `phases` (22) | `phases/ambitionProgress.ts`, `phases/clueDecay.ts`, `phases/corePersonality.ts`, `phases/delveAdmission.ts`, `phases/delveEmergence.ts`, `phases/delveProgression.ts`, `phases/doom.ts`, `phases/emittedOmenDecay.ts`, `phases/factionActions.ts`, `phases/factionAmbitions.ts`, `phases/factionSuccession.ts`, `phases/index.ts`, `phases/mandate.ts`, `phases/personalityOriginSeed.ts`, `phases/personalityTraitEmerge.ts`, `phases/phaseAutonomousAftermath.ts`, `phases/popStreams.ts`, `phases/reputationDecay.ts`, `phases/resourceStockTiers.ts`, `phases/ruinQuestHooks.ts`, `phases/schismResolution.ts`, `phases/secretsFavors.ts` | `THR-238`, `THR-542`, `THR-544`, `THR-432`, `THR-561`, `THR-539`, `THR-527`, `THR-559`, `THR-530`, `THR-615`, `THR-430` |
+| `phases` (24) | `phases/ambitionProgress.ts`, `phases/clueDecay.ts`, `phases/corePersonality.ts`, `phases/delveAdmission.ts`, `phases/delveEmergence.ts`, `phases/delveProgression.ts`, `phases/doom.ts`, `phases/economicPower.ts`, `phases/emittedOmenDecay.ts`, `phases/factionActions.ts`, `phases/factionAmbitions.ts`, `phases/factionSuccession.ts`, `phases/index.ts`, `phases/mandate.ts`, `phases/personalityOriginSeed.ts`, `phases/personalityTraitEmerge.ts`, `phases/phaseAutonomousAftermath.ts`, `phases/popStreams.ts`, `phases/reputationDecay.ts`, `phases/resourceStockTiers.ts`, `phases/routeEvents.ts`, `phases/ruinQuestHooks.ts`, `phases/schismResolution.ts`, `phases/secretsFavors.ts` | `THR-238`, `THR-542`, `THR-544`, `THR-617`, `THR-432`, `THR-561`, `THR-539`, `THR-527`, `THR-559`, `THR-530`, `THR-615`, `THR-669`, `THR-430` |
 | `planner` (1) | `plannerForecast.ts` | `Phase 4` |
 | `portfolio` (1) | `portfolioManager.ts` | — |
 | `premonition` (2) | `premonitionActions.ts`, `premonitionCompulsion.ts` | — |
@@ -353,7 +361,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `tier` (1) | `tierPromotion.ts` | — |
 | `tooltip` (1) | `tooltipResolver.ts` | — |
 | `trace` (1) | `traceBuffer.ts` | — |
-| `trade` (1) | `tradeRoute.ts` | `Phase 1` |
+| `trade` (2) | `tradeRoute.ts`, `tradeRouteMarkers.ts` | `Phase 1`, `THR-616`, `THR-670` |
 | `traits` (1) | `traits.ts` | — |
 | `treasure` (1) | `treasureMapConsumption.ts` | — |
 | `trust` (1) | `trustMechanics.ts` | — |
@@ -368,4 +376,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 24 registered subsystems (1 dormant) · 93 tick phases · 162 engine domains · 440 modules._
+_Counts: 25 registered subsystems (1 dormant) · 96 tick phases · 164 engine domains · 448 modules._
