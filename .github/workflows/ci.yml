@@ -51,7 +51,12 @@ jobs:
     timeout-minutes: 20
 
     steps:
+      # fetch-depth: 0 gives the wiki-freshness gate (below) the history it needs
+      # to diff against origin/main and to scan commit bodies for the exemption
+      # token. The detect job stays shallow — it reads changed files via the API.
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:
@@ -89,6 +94,17 @@ jobs:
       # regenerates and fails if the commit's copies differ. Adds a few seconds.
       - name: Generated artifact freshness
         run: npm run check:generated-freshness
+
+      # Blocking wiki-freshness gate (THR-730, user verdict 2026-07-23). Fails the
+      # required check if a PR changes a file matched by a wiki page's `sources`
+      # without updating that page/payload — unless a commit body carries
+      # `Wiki-freshness-exempt: <reason>`. On a push-to-main event the diff base
+      # equals HEAD, so the diff is empty and the step is inert. `git fetch` is a
+      # cheap idempotent guard on top of the checkout's fetch-depth: 0.
+      - name: Wiki freshness (blocking)
+        run: |
+          git fetch origin main
+          npm run check:wiki-freshness:blocking
 
       - name: Production build
         run: npx vite build
