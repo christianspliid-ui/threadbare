@@ -176,6 +176,7 @@ import { phaseChosenFactionPowers } from './chosenFactionPowers';
 import { phaseHiddenMarkDecay } from './phaseHiddenMarkDecay';
 import { phaseIntelligenceDecay } from './phaseIntelligenceDecay';
 import { generateSecret, createSecretEdge, createFavorEdge } from './secretGeneration';
+import { applySecretsFavorsFromResolvedAction } from './secretsFromResolution';
 import { processFactionOutcome, resetFactionEventSeq } from './factionOutcome';
 import type { DistanceMatrix } from './distanceMatrix';
 import { clearTimelines, appendEvent } from './encounterTimeline';
@@ -3202,6 +3203,14 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
     // so the lifetime counters are honest and each fallback mark is placed exactly once.
     for (const a of newlyResolved) {
       s = guaranteeFailureStoryArtifact(s, a, s.tick, runtime);
+      // THR-724: births knows_secret_of / owes_favor edges from template metadata.
+      // This is the *live* read site — the legacy one in phaseEncounterProgressionV2
+      // walks `encounterProgress`, which is empty for the whole of a standard run.
+      try {
+        applySecretsFavorsFromResolvedAction(s, a, runtime);
+      } catch {
+        // fail-soft: a secret that cannot be born must not stop the tick
+      }
     }
     s = {
       ...s,

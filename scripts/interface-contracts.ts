@@ -358,14 +358,12 @@ export const CONTRACTS: readonly Contract[] = [
     ulTerms: ['Encounter', 'Aftermath'],
     mechanism: { kind: 'function', symbols: ['generateSecret', 'createSecretEdge'] },
     writeSites: ['src/engine/orchestrator.ts', 'src/engine/encounterAftermath.ts'],
-    readSites: ['src/engine/phaseSecretsFavors.ts'],
-    badgeOverride: {
-      badge: 'LEAKED',
-      reason:
-        'Symbols grep green, but generation is content-starved: the only triggers are `completedEncounter.secretDiscovery` and the `secret_discovery` aftermath effect, and zero templates in the live pool author either (only secret-encounter-content.ts, whose path produces nothing). Runtime proof: 120-tick standard run births 0 knows_secret_of and 0 owes_favor edges. Diagnosis: Docs/plans/2026-07-23-secrets-favors-activation.md.',
-      deferralTicket: 'THR-724',
+    readSites: ['src/engine/secretsFromResolution.ts', 'src/engine/secretGeneration.ts'],
+    verifiedLive: {
+      date: '2026-07-23',
+      evidence:
+        'THR-724: `secretsFromResolution.ts` reads `secretDiscovery`/`favorGeneration` template metadata at the newly-resolved transition in orchestrator.ts — the live seam (the legacy read site walks `encounterProgress`, empty all run). 120-tick CLI run, seed 42 / medium: 18 `knows_secret_of` + 2 `owes_favor` edges born, across 4 distinct sources (confession, observation, spy_debrief, tavern_gossip); baseline on the same seed was 0/0.',
     },
-    deferralTicket: 'THR-724',
   },
   {
     id: 'secrets-consequences',
@@ -374,18 +372,16 @@ export const CONTRACTS: readonly Contract[] = [
     intent: 'A revealed secret or broken favor has consequences — feuds ignite, sentiment shifts, leverage bites.',
     mechanism: {
       kind: 'function',
-      symbols: ['applySecretRevelationConsequences', 'applyFavorBreakingConsequences'],
-      module: 'src/engine/secretsConsequences.ts',
+      symbols: ['applySecretRevelationConsequences', 'applyFavorBreakingConsequences', 'revealBestSecret'],
+      module: 'src/engine/secretsFavorsConsequences.ts',
     },
-    writeSites: ['src/engine/secretsConsequences.ts', 'src/engine/secretsFavorsConsequences.ts'],
-    readSites: ['src/engine/encounterAftermath.ts'],
-    badgeOverride: {
-      badge: 'LEAKED',
-      reason:
-        'Zero production callers for any consequence function; both duplicate modules (secretsConsequences.ts / secretsFavorsConsequences.ts — an unresolved fork) are orphaned. Even if a secret existed and were revealed, nothing would happen.',
-      deferralTicket: 'THR-724',
+    writeSites: ['src/engine/secretsFavorsConsequences.ts'],
+    readSites: ['src/engine/phaseSecretsFavors.ts', 'src/engine/unifiedActionResolution.ts'],
+    verifiedLive: {
+      date: '2026-07-23',
+      evidence:
+        'THR-724: the duplicate fork is resolved — `secretsConsequences.ts` deleted, its additive confession penalty and subject-to-audience sentiment migrated into the survivor. Two production callers now exist: the autonomous revelation pass in `phaseSecretsFavors.ts`, and `revealBestSecret` from the `reveal_secret` resolution intercept. 120-tick CLI run, seed 42 / medium: 4 of 18 secrets revealed with trust/sentiment deltas and a chronicle line naming the subject.',
     },
-    deferralTicket: 'THR-724',
   },
   {
     id: 'secrets-player-verbs-reachable',
@@ -394,15 +390,13 @@ export const CONTRACTS: readonly Contract[] = [
     intent:
       'The god can plant and reveal secrets — the Eye identity’s signature verbs enter the hand via a beat grant (player-loop links 2–4).',
     mechanism: { kind: 'function', symbols: ['action.secrets.plant_secret', 'action.secrets.reveal_secret'] },
-    writeSites: ['src/data/ascendant-beat-content.ts'],
-    readSites: ['src/data/unified-action-templates.ts'],
-    badgeOverride: {
-      badge: 'LEAKED',
-      reason:
-        'Both cards are authored but appear in no beat’s grantsActionIds → unreachable by construction (THR-613/THR-501; confirmed via listUnreachableActions). Their template blocks show no graphOps/technicalEffect markers — after granting, link 3 (effects fire) must be verified too.',
-      deferralTicket: 'THR-724',
+    writeSites: ['src/data/ascendant-beat-content.ts', 'src/data/ascendant-pool-beat-templates.ts'],
+    readSites: ['src/data/unified-action-templates.ts', 'src/engine/unifiedActionResolution.ts'],
+    verifiedLive: {
+      date: '2026-07-23',
+      evidence:
+        'THR-724: `beat.pool.invest.the_unveiled_eye` grants both ids; `__DEBUG.listUnreachableActions()` no longer lists them. Link 3 verified rather than assumed — `plant_secret` writes a `knows_secret_of` edge via the existing graph-executor case, and `reveal_secret` now routes through the resolution intercept so it applies real consequences instead of only flipping the `revealed` flag.',
     },
-    deferralTicket: 'THR-724',
   },
   {
     id: 'economy-context-scene-scoring',

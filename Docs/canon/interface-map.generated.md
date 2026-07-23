@@ -15,9 +15,9 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 12 |
+| 🟢 LIVE | 15 |
 | 🟠 PARTIAL | 1 |
-| 🔴 LEAKED | 11 |
+| 🔴 LEAKED | 8 |
 | ⚫ UNWIRED | 3 |
 | 🔵 UNVERIFIED-OK | 0 |
 | **Total** | **27** |
@@ -47,7 +47,7 @@ remediation ticket or the build fails.
 
 | Contract | Intent | Mechanism | Consumer | Status | Ticket |
 |---|---|---|---|---|---|
-| `secrets-player-verbs-reachable` | The god can plant and reveal secrets — the Eye identity’s signature verbs enter the hand via a beat grant (player-loop links 2–4). | function: `action.secrets.plant_secret`, `action.secrets.reveal_secret` | Secrets & Favors | 🔴 LEAKED | THR-724 |
+| `secrets-player-verbs-reachable` | The god can plant and reveal secrets — the Eye identity’s signature verbs enter the hand via a beat grant (player-loop links 2–4). | function: `action.secrets.plant_secret`, `action.secrets.reveal_secret` | Secrets & Favors | 🟢 LIVE | — |
 
 ### Attachments, Items & Possessions
 
@@ -70,7 +70,7 @@ remediation ticket or the build fails.
 | Contract | Intent | Mechanism | Consumer | Status | Ticket |
 |---|---|---|---|---|---|
 | `attachment-encounter-rewards` | Encounters grant rewards, which become possessions. | function: `assembleRewardPool` | Attachments, Items & Possessions | 🟢 LIVE | — |
-| `secrets-generation` | Secrets are born from scenes — mortals learn things about each other worth holding. | function: `generateSecret`, `createSecretEdge` | Secrets & Favors | 🔴 LEAKED | THR-724 |
+| `secrets-generation` | Secrets are born from scenes — mortals learn things about each other worth holding. | function: `generateSecret`, `createSecretEdge` | Secrets & Favors | 🟢 LIVE | — |
 | `world-events-mint-ambitions` | World events write themselves into mortal desire — a sacked town mints avengers and refugees. | function: `AMBITION_MINTING_RULES`, `mintAmbitionsFromEvents` | Ambitions & Initiatives | ⚫ UNWIRED | THR-726 |
 
 ### Mortal Economy & Prosperity
@@ -84,7 +84,7 @@ remediation ticket or the build fails.
 
 | Contract | Intent | Mechanism | Consumer | Status | Ticket |
 |---|---|---|---|---|---|
-| `secrets-consequences` | A revealed secret or broken favor has consequences — feuds ignite, sentiment shifts, leverage bites. | function: `applySecretRevelationConsequences`, `applyFavorBreakingConsequences` | Encounters & Dilemmas | 🔴 LEAKED | THR-724 |
+| `secrets-consequences` | A revealed secret or broken favor has consequences — feuds ignite, sentiment shifts, leverage bites. | function: `applySecretRevelationConsequences`, `applyFavorBreakingConsequences`, `revealBestSecret` | Encounters & Dilemmas | 🟢 LIVE | — |
 
 ## Evidence
 
@@ -316,36 +316,35 @@ remediation ticket or the build fails.
 - **Read sites:** —
 - **Verdict:** Tier 2: no production hits for any declared symbol on either side.
 
-### `secrets-consequences` — 🔴 LEAKED
+### `secrets-consequences` — 🟢 LIVE
 
 - **Intent:** A revealed secret or broken favor has consequences — feuds ignite, sentiment shifts, leverage bites.
 - **Producer → Consumer:** Secrets & Favors → Encounters & Dilemmas
-- **Module:** `src/engine/secretsConsequences.ts` — **no production importers**
-- **Production hits:** 2 total — 2 write, 0 read, 0 unclassified
-- **Write sites:** `src/engine/secretsConsequences.ts`, `src/engine/secretsFavorsConsequences.ts`
-- **Read sites:** —
-- **Verdict:** Pinned by badgeOverride: Zero production callers for any consequence function; both duplicate modules (secretsConsequences.ts / secretsFavorsConsequences.ts — an unresolved fork) are orphaned. Even if a secret existed and were revealed, nothing would happen.
+- **Module:** `src/engine/secretsFavorsConsequences.ts`
+- **Production hits:** 3 total — 1 write, 2 read, 0 unclassified
+- **Write sites:** `src/engine/secretsFavorsConsequences.ts`
+- **Read sites:** `src/engine/phaseSecretsFavors.ts`, `src/engine/unifiedActionResolution.ts`
+- **Verdict:** Verified 2026-07-23: THR-724: the duplicate fork is resolved — `secretsConsequences.ts` deleted, its additive confession penalty and subject-to-audience sentiment migrated into the survivor. Two production callers now exist: the autonomous revelation pass in `phaseSecretsFavors.ts`, and `revealBestSecret` from the `reveal_secret` resolution intercept. 120-tick CLI run, seed 42 / medium: 4 of 18 secrets revealed with trust/sentiment deltas and a chronicle line naming the subject.
 
-### `secrets-generation` — 🔴 LEAKED
+### `secrets-generation` — 🟢 LIVE
 
 - **Intent:** Secrets are born from scenes — mortals learn things about each other worth holding.
 - **Producer → Consumer:** Encounters & Dilemmas → Secrets & Favors
 - **UL terms:** *Encounter*, *Aftermath*
-- **Production hits:** 3 total — 2 write, 0 read, 1 unclassified
+- **Production hits:** 4 total — 2 write, 2 read, 0 unclassified
 - **Write sites:** `src/engine/encounterAftermath.ts`, `src/engine/orchestrator.ts`
-- **Read sites:** —
-- **Other hits:** `src/engine/secretGeneration.ts`
-- **Verdict:** Pinned by badgeOverride: Symbols grep green, but generation is content-starved: the only triggers are `completedEncounter.secretDiscovery` and the `secret_discovery` aftermath effect, and zero templates in the live pool author either (only secret-encounter-content.ts, whose path produces nothing). Runtime proof: 120-tick standard run births 0 knows_secret_of and 0 owes_favor edges. Diagnosis: Docs/plans/2026-07-23-secrets-favors-activation.md.
+- **Read sites:** `src/engine/secretGeneration.ts`, `src/engine/secretsFromResolution.ts`
+- **Verdict:** Verified 2026-07-23: THR-724: `secretsFromResolution.ts` reads `secretDiscovery`/`favorGeneration` template metadata at the newly-resolved transition in orchestrator.ts — the live seam (the legacy read site walks `encounterProgress`, empty all run). 120-tick CLI run, seed 42 / medium: 18 `knows_secret_of` + 2 `owes_favor` edges born, across 4 distinct sources (confession, observation, spy_debrief, tavern_gossip); baseline on the same seed was 0/0.
 
-### `secrets-player-verbs-reachable` — 🔴 LEAKED
+### `secrets-player-verbs-reachable` — 🟢 LIVE
 
 - **Intent:** The god can plant and reveal secrets — the Eye identity’s signature verbs enter the hand via a beat grant (player-loop links 2–4).
 - **Producer → Consumer:** Ascendant Beats & Progression → Secrets & Favors
-- **Production hits:** 2 total — 0 write, 1 read, 1 unclassified
-- **Write sites:** —
+- **Production hits:** 3 total — 1 write, 1 read, 1 unclassified
+- **Write sites:** `src/data/ascendant-beat-content.ts`
 - **Read sites:** `src/data/unified-action-templates.ts`
 - **Other hits:** `src/data/action-technical-effects.ts`
-- **Verdict:** Pinned by badgeOverride: Both cards are authored but appear in no beat’s grantsActionIds → unreachable by construction (THR-613/THR-501; confirmed via listUnreachableActions). Their template blocks show no graphOps/technicalEffect markers — after granting, link 3 (effects fire) must be verified too.
+- **Verdict:** Verified 2026-07-23: THR-724: `beat.pool.invest.the_unveiled_eye` grants both ids; `__DEBUG.listUnreachableActions()` no longer lists them. Link 3 verified rather than assumed — `plant_secret` writes a `knows_secret_of` edge via the existing graph-executor case, and `reveal_secret` now routes through the resolution intercept so it applies real consequences instead of only flipping the `revealed` flag.
 
 ### `world-events-mint-ambitions` — ⚫ UNWIRED
 
