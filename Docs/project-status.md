@@ -1,12 +1,14 @@
 # Project Status
 
-> Updated 2026-07-22 (marathon session wrap). Detailed per-ticket narratives that used to live here are archived: shipped-work one-liners in `Docs/project-history.md`, full rationale rows in `Docs/changelog.md`, and the wiring detail in `Docs/plans/wiring-checklist.md`. This file stays ≤60 lines by contract.
+> Updated 2026-07-23. Detailed per-ticket narratives that used to live here are archived: shipped-work one-liners in `Docs/project-history.md`, full rationale rows in `Docs/changelog.md`, and the wiring detail in `Docs/plans/wiring-checklist.md`. This file stays ≤60 lines by contract.
 
 ## Current Focus
 
 **Encounter volume — Tier 2 is live.** THR-573 shipped the context-multiplication grammar (2026-07-23): authored `contextFragments` let one template read as many scenes along the same axes the surface key already uses. Proof unit `social_scene.recruitment_pitch` = 20 surfaces from 9 fragments; `npm run volume-model` now reports **measured** counts against the ~1,584 library target, so the gap is an observable. Phase-2 scale-out (retrofitting more families via the new `template-context-rewrite` skill) gates on the KPI read — deliberately not started.
 
-Otherwise the Ready-for-Dev queue is near-empty. The hourly `tb-opus-pickup` lane and `keep-work-flowing-cc` briefing are live; new work flows through Linear (Threadbare team).
+**Merge-queue friction closed.** THR-714 (2026-07-23) made `ul-dashboard.generated.json` regenerate deterministically — the wall-clock field it carried made any two PRs that ran `prebuild` conflict on every cascade merge, which silently stalled armed auto-merges (impediment #197). A sweep of `prebuild` confirmed it was the last non-deterministic artifact of the 25.
+
+The Ready-for-Dev queue is now empty. The hourly `tb-opus-pickup` lane and `keep-work-flowing-cc` briefing are live; new work flows through Linear (Threadbare team).
 
 **Recently completed (2026-07-22, marathon):**
 - **M3 Dynamic Economy nearly complete** — THR-669 (route events + the trade-route pipeline revived: three stacked engine bugs meant no route had ever survived), THR-670 (cargo route lines + tooltips on HexMapV2), THR-617 (P3 power couplings: systemic monopolies with live chronicle prose, sphere drift from cargo flows, faction gold term, scarcity arcs with intervention encounters). THR-618 partial: all five divine economic verbs now `[IMPL]` (reveal vein / guide caravan / sour mine shipped, bless/blight were live) and the Flow Web extraction checkpoint is decided (**defer** — `Docs/plans/2026-07-22-flow-web-extraction-checkpoint.md`); only the THR-611-coordinated essence bridge remains.
