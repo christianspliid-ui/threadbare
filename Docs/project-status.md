@@ -8,7 +8,9 @@
 
 **Merge-queue friction closed.** THR-714 (2026-07-23) made `ul-dashboard.generated.json` regenerate deterministically — the wall-clock field it carried made any two PRs that ran `prebuild` conflict on every cascade merge, which silently stalled armed auto-merges (impediment #197). A sweep of `prebuild` confirmed it was the last non-deterministic artifact of the 25.
 
-The Ready-for-Dev queue is now empty. The hourly `tb-opus-pickup` lane and `keep-work-flowing-cc` briefing are live; new work flows through Linear (Threadbare team).
+**Interface drift is now a checkable class.** THR-717 (2026-07-23) shipped the contract registry + downgrade-only liveness generator: 20 cross-system contracts carry design intent, grep-verifiable symbols, and a badge that can only be *downgraded* mechanically — 🟢 LIVE requires dated human verification, because a naive write+read symbol match would have re-badged both known leaks green. `prebuild` fails if any contract reads LEAKED without a remediation ticket. Design Step 0.7 + a `lint:plan-doc` nag make it binding on new plans; drift-scan S11 seeds one audit ticket/week against the 15 still-unaudited subsystems. Remediation backlog: THR-718…THR-723.
+
+The Ready-for-Dev queue holds THR-722 (retire dead `grants[]`). The hourly `tb-opus-pickup` lane and `keep-work-flowing-cc` briefing are live; new work flows through Linear (Threadbare team).
 
 **Recently completed (2026-07-22, marathon):**
 - **M3 Dynamic Economy nearly complete** — THR-669 (route events + the trade-route pipeline revived: three stacked engine bugs meant no route had ever survived), THR-670 (cargo route lines + tooltips on HexMapV2), THR-617 (P3 power couplings: systemic monopolies with live chronicle prose, sphere drift from cargo flows, faction gold term, scarcity arcs with intervention encounters). THR-618 partial: all five divine economic verbs now `[IMPL]` (reveal vein / guide caravan / sour mine shipped, bless/blight were live) and the Flow Web extraction checkpoint is decided (**defer** — `Docs/plans/2026-07-22-flow-web-extraction-checkpoint.md`); only the THR-611-coordinated essence bridge remains.

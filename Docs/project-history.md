@@ -1179,3 +1179,4 @@ px vite build).
 ✅ THR-670 — cargo-aware trade-route lines + tooltips on HexMapV2: gold arteries, red threatened routes, hovered-endpoint manifests; P2 of the Mortal Economy complete
 ✅ THR-617 — Mortal Economy P3 shipped: monopolies resolve systemically and finally get narrated, cargo flows drift local spheres, faction gold capability grows with trade wealth, and staple scarcity spirals through hoarding/unrest/flashpoint arcs with intervention encounters at every phase
 ✅ THR-700 — Scene, Cast, Target, and Support Bundle are now declared UL terms in the Encounters shard: the scene-integration vocabulary is canonical instead of folklore
+✅ THR-717 — cross-system contracts are now enumerable and mechanically checkable: a 20-row contract registry, a downgrade-only liveness generator that reproduces (and corrects) the hand audit, a CI ratchet that fails on a leaked contract with no remediation ticket, and Step 0.7 bound into the design checklist
