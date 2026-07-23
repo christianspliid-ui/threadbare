@@ -17,6 +17,7 @@ The Ready-for-Dev queue holds THR-722 (retire dead `grants[]`). The hourly `tb-o
 - **War project complete** — THR-628 (battle depth: prepared defense, tactical events, breach surfacing, battle IPK), THR-629 (siege gravity-well repair: dead capability gates fixed, relief_march + sabotage live), THR-630 (Phase D: notable-agenda roster + five families incl. the Campaign war hand-off that opens war to the nations, NotablesPanel, power-vacuum verification).
 - **Scene Integration complete incl. follow-ups** — chain A–F shipped earlier; THR-712 (guild-tier sweep: cast figures, one genuine bond, 44 continuity seeds, permanent guild prose-QA gate) and THR-713 (381 invented-name literals across seven branching encounters retired to `{cast:*}`).
 - **Cowork migration complete** — THR-677 ports live (daily grooming, workflow retro, project hygiene), THR-684 attachment-pipeline prompts written, THR-704 scheduler hygiene, monthly-rulebook-review registered.
+- **Social Systems: secrets & favors activated** — THR-724 turned a fully-built, entirely silent subsystem on. Generation had a *dead read site* (not merely thin content), consequences had zero callers, the consequence module was a two-way fork, and both player verbs were unreachable. All four fixed; 0 → 18 secrets and 0 → 4 revelations per 120-tick run, and the three pre-seeded interface-registry rows are LIVE with run evidence.
 
 ## Milestone Status
 

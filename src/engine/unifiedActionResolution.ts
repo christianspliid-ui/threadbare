@@ -45,6 +45,7 @@ import { applyFactionGovernanceVerb } from './factionGovernanceVerbs';
 import { applyPlantSchism } from './schismPlant';
 import { applyAnointSuccessor } from './anointSuccessor';
 import { applyImbueItem, applyBestowPower, applyAnointFaction, applyPlantTrap } from './ascendantExpression';
+import { revealBestSecret } from './secretsFavorsConsequences';
 import { SCHISM_PENDING_DURATION_TICKS } from '../data/game-config';
 import { emitTrace } from './traceBuffer';
 import { enrichProse, gatherNarrativeContext } from './proseEnrichment';
@@ -1114,9 +1115,14 @@ export function executeStepResult(
     const bestowPowerOps: GraphOp[] = [];
     const anointFactionOps: GraphOp[] = [];
     const plantTrapOps: GraphOp[] = [];
+    // THR-724: `reveal_secret` needs full GameState (chronicle events + tick), not just
+    // the graph, so it routes here instead of through executeGraphOps — which flipped
+    // the edge's `revealed` flag and applied no social consequence at all.
+    const revealSecretOps: GraphOp[] = [];
     const graphOnlyOps: GraphOp[] = [];
     for (const op of ops) {
-      if (op.op === 'faction_verb') factionVerbOps.push(op);
+      if (op.op === 'reveal_secret') revealSecretOps.push(op);
+      else if (op.op === 'faction_verb') factionVerbOps.push(op);
       else if (op.op === 'plant_schism') plantSchismOps.push(op);
       else if (op.op === 'anoint_successor') anointSuccessorOps.push(op);
       else if (op.op === 'imbue_item') imbueItemOps.push(op);
@@ -1243,6 +1249,28 @@ export function executeStepResult(
           applyPlantTrap(state, action.actorId, resolvedSublocationId, tick);
         } catch {
           // Fail-soft per NFP #4: log nothing, never crash the tick.
+        }
+      }
+    }
+
+    if (revealSecretOps.length > 0) {
+      // THR-724 — Divine Whisper. `revealBestSecret` picks the same edge the graph op
+      // did (heaviest unrevealed secret about the target) and then applies the fallout
+      // the op never had access to: trust and sentiment deltas plus a chronicle line.
+      // The patch's event arrays are copies of state's, so the delta is spliced back in
+      // place rather than reassigned — this intercept mutates like `applyPlantTrap`.
+      for (const _op of revealSecretOps) {
+        try {
+          const patch = revealBestSecret(state, action.actorId, action.targetId);
+          if (patch.tickEvents) {
+            state.tickEvents.push(...patch.tickEvents.slice(state.tickEvents.length));
+          }
+          if (patch.recentEvents) {
+            const added = patch.recentEvents.filter(e => !state.recentEvents.includes(e));
+            state.recentEvents.push(...added);
+          }
+        } catch {
+          // Fail-soft per NFP #4: a reveal with no secret behind it is a no-op.
         }
       }
     }

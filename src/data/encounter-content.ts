@@ -127,6 +127,8 @@ type EncounterEntry = {
   foreshadowing?: import('../types/foreshadowing').EncounterForeshadowingDefinition;
   reputationPolarity?: 'positive' | 'negative';
   favorGeneration?: { onSuccess: boolean; magnitudeRange: [number, number]; context: string };
+  /** THR-724: births a `knows_secret_of` edge on success (see secretsFromResolution.ts). */
+  secretDiscovery?: { onSuccess: boolean; sourceName: import('../types/encounter').SecretDiscoverySource };
   steps: ReadonlyArray<{
     id?: string;
     name?: string;
@@ -227,6 +229,11 @@ function toUnifiedTemplate(e: EncounterEntry): UnifiedActionTemplate {
       failure: lastStep?.onFailure.narrative ?? `${e.name} fails.`,
     },
     foreshadowing: e.foreshadowing,
+    // THR-724: both fields were declared on the raw entry type but dropped here, so
+    // the authored `favorGeneration` data was inert and no encounter in this file
+    // could ever seed a secret. Pass them through to the resolution read site.
+    secretDiscovery: e.secretDiscovery,
+    favorGeneration: e.favorGeneration,
     rarityTier: 1,
     intrinsicTier: 'background',
   };
@@ -464,6 +471,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     threatRating: 'moderate',
     intrinsicTier: 'shaping',
     motivations: ['courage_prudence', 'loyalty_ambition'],
+    secretDiscovery: { onSuccess: true, sourceName: 'observation' },
     steps: [
       {
         id: 'merchants_gambit.negotiation',
@@ -2255,6 +2263,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     threatRating: 'easy',
     intrinsicTier: 'background',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.duel,
+    secretDiscovery: { onSuccess: true, sourceName: 'observation' },
     steps: [
       {
         id: 'tavern_brawl.provocation',
@@ -3097,6 +3106,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     threatRating: 'moderate',
     intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.trade,
+    secretDiscovery: { onSuccess: true, sourceName: 'observation' },
     steps: [
       {
         id: 'guild_negotiation.audience',
@@ -3166,6 +3176,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     threatRating: 'moderate',
     intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.trade,
+    secretDiscovery: { onSuccess: true, sourceName: 'spy_debrief' },
     steps: [
       {
         id: 'smuggler_pact.contact',
@@ -3377,6 +3388,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     threatRating: 'moderate',
     intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.trade,
+    secretDiscovery: { onSuccess: true, sourceName: 'observation' },
     steps: [
       {
         id: 'mystic_trade.offering',
@@ -7045,6 +7057,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     threatRating: 'easy',
     intrinsicTier: 'background',
     motivations: ['tradition_progress', 'justice_mercy'],
+    secretDiscovery: { onSuccess: true, sourceName: 'spy_debrief' },
     steps: [
       {
         id: 'listen_for_rumors.loiter',
@@ -7202,6 +7215,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     threatRating: 'easy',
     intrinsicTier: 'background',
     motivations: ['tradition_progress', 'loyalty_ambition'],
+    secretDiscovery: { onSuccess: true, sourceName: 'tavern_gossip' },
     steps: [
       {
         id: 'local_tales.listen',
@@ -7827,6 +7841,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     threatRating: 'trivial',
     intrinsicTier: 'background',
     motivations: ['loyalty_ambition', 'honesty_cunning'],
+    secretDiscovery: { onSuccess: true, sourceName: 'tavern_gossip' },
     steps: [
       {
         id: 'local_gossip.listen',
@@ -8143,6 +8158,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     threatRating: 'moderate',
     intrinsicTier: 'shaping',
     motivations: ['sacrifice_survival', 'loyalty_ambition'],
+    secretDiscovery: { onSuccess: true, sourceName: 'confession' },
     steps: [
       {
         id: 'rally_locals.assess_mood',
@@ -8410,6 +8426,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     threatRating: 'hard',
     intrinsicTier: 'shaping',
     motivations: ['loyalty_ambition', 'honesty_cunning'],
+    secretDiscovery: { onSuccess: true, sourceName: 'confession' },
     steps: [
       {
         id: 'political_alliance.identify',

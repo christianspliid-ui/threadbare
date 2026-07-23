@@ -535,9 +535,15 @@ function AgentDetailBody({
     runtime ?? null,
   );
 
+  // THR-724: the entries now include graph-derived secrets, and `graph` is mutated in
+  // place — its identity never changes, so it is not a usable dep (load-bearing rule:
+  // never key a memo on graph identity). `runtime.worldVersion` is the explicit
+  // invalidation signal; without it a secret learned mid-run leaves the panel reading
+  // "Knows nothing of consequence" until some unrelated dep happens to change.
+  const worldVersion = runtime?.worldVersion;
   const intelligenceEntries = useMemo(
     () => buildIntelligenceDisplay(intelligenceRecords, node.id, graph, currentTick),
-    [intelligenceRecords, node.id, graph, currentTick],
+    [intelligenceRecords, node.id, graph, currentTick, worldVersion],
   );
 
   const isStranger = node.tier < INTEL_PANEL_FOG_MIN_TIER;

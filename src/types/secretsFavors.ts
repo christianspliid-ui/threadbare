@@ -118,6 +118,36 @@ export const SECRET_REVELATION_TRUST_PENALTY = -0.20;
 /** Extra trust penalty when the revealed secret came from a confession (betrayal). */
 export const SECRET_CONFESSION_BETRAYAL_PENALTY = -0.40;
 
+/** Sentiment the subject turns on whoever now knows their secret (THR-724). */
+export const SECRET_EXPOSURE_SENTIMENT_PENALTY = -0.25;
+
+// ─── Autonomous revelation (THR-724) ──────────────────────────────────────
+// A held secret is only a story once someone tells it. These govern the
+// mortals-tell-on-each-other pass in phaseSecretsFavors.
+
+/**
+ * Only secrets at or above this magnitude are worth telling.
+ *
+ * Tuned to `SECRET_DECAY_THRESHOLD` on purpose: a secret heavy enough to survive
+ * decay is exactly the one heavy enough to be told. Measured magnitudes in a
+ * standard run span ~0.08–0.30 (generation multiplies a 0.30–0.65 base by a
+ * source-quality factor of 0.35–0.80), so a higher bar is unreachable in play —
+ * raise generation magnitudes, not this, if revelations feel too common.
+ */
+export const SECRET_REVEAL_MIN_MAGNITUDE = 0.20;
+
+/** A secret must be held this many ticks before its holder acts on it. */
+export const SECRET_REVEAL_MIN_AGE_TICKS = 12;
+
+/** Per-check chance a qualifying secret gets told (evaluated every SECRET_FAVOR_CHECK_INTERVAL). */
+export const SECRET_REVEAL_CHANCE = 0.25;
+
+/** Sentiment floor: holders only betray subjects they do not like. */
+export const SECRET_REVEAL_MAX_SENTIMENT = 0.25;
+
+/** Cap on autonomous revelations per check, so one pass cannot flood the chronicle. */
+export const MAX_AUTONOMOUS_REVELATIONS_PER_CHECK = 3;
+
 /** Trust damage when a favor is broken. */
 export const FAVOR_BREAKING_TRUST_PENALTY = -0.30;
 
