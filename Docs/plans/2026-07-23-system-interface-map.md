@@ -1,13 +1,19 @@
----
-status: proposal
----
+> **title:** `System Interface Map — contract registry, liveness generator, stewardship protocol — THR-717`
+> **linear_issue:** THR-717
+> **author:** `Claude Code (Fable design session, interactive)`
+> **created:** 2026-07-23
+> **three_pillars:** Engine `N/A — build-time tooling, never on the tick path` · Content `N/A — no templates/prose` · UI `N/A — docs + CI tooling; remediation tickets carry their own UI pillars`
 
-# System Interface Map — contract registry, liveness generator, and stewardship protocol
+# System Interface Map — contract registry, liveness generator, and stewardship protocol — THR-717
 
-**Date:** 2026-07-23 · **Session:** Fable design session (interactive, user-directed)
-**Companion:** `Docs/canon/interface-map.md` (the artifact itself, seeded in the same PR)
+*Cross-system contracts are where features silently leak; this makes them enumerable, checkable, and binding on every future design.*
 
-## Problem
+**Companion:** `Docs/canon/interface-map.md` (the artifact itself, seeded in the same PR).
+**Remediation tickets:** THR-718 (items→tiers + StepDots), THR-719 (on-use triggers as effect
+primitives), THR-720 (activatedEffects parked), THR-721 (ambition visibility), THR-722
+(retire `grants[]`), THR-723 (tier-advancement dead stat path, blocked by THR-718).
+
+## Why this is load-bearing
 
 We can answer "does subsystem X exist?" (`systems-inventory.md`, generated) and "who imports
 file Y?" (codesight), but not **"which cross-system contracts does X participate in, and do
@@ -238,16 +244,53 @@ Christian verdicted all four calls in chat (plain-language review per THR-608):
   (mechanism exists, tuned invisible); implement the ChronicleTab Completed Ambitions list;
   keep secondary ambitions gated deeper.
 
+## Engine pillar
+
+Engine: N/A — the generator + registry live in `scripts/` (build-time static analysis,
+never on the tick path). Remediation tickets THR-718 / THR-719 / THR-722 / THR-723 carry
+their own Engine pillars when designed.
+
+## Content pillar
+
+Content: N/A — no encounter templates, prose, or data tables. Remediation THR-718 / THR-719
+touch attachment catalogs under their own plans.
+
+## UI pillar
+
+UI: N/A — docs + CI tooling only. THR-721 carries the ambition-visibility UI pillar;
+THR-718 carries the StepDots magnitude indicator on the character sheet.
+
+## Wiring
+
+Build-time wiring, not tick wiring: generator → `prebuild` + `check:generated-freshness`
+(non-zero-exit ratchet); protocol → CLAUDE.md Step 0.7 + DoD, design-session SKILL.md,
+`Docs/canon/process.md`, `lint:plan-doc`, canon README index. Nothing runs in the game.
+
+| Module | Orchestrator phase | UI component | GameState field | Trace emitted | Debug visibility |
+|--------|-------------------|-------------|-----------------|---------------|-----------------|
+| `scripts/generate-interface-map.ts` | n/a — prebuild | n/a | n/a | n/a | generated file + CI exit code |
+| `scripts/interface-contracts.ts` | n/a — data | n/a | n/a | n/a | registry is the source of truth |
+
 ## Three-pillar check
 
-- **Engine:** N/A — generator + registry live in `scripts/` (build-time, not tick loop).
-  Remediation tickets (a),(b),(e),(f) carry their own Engine pillars when designed.
-- **Content:** N/A — no templates/prose. Remediation (a),(b) will touch catalogs.
-- **UI:** N/A — docs + build tooling. Remediation (d) carries the UI pillar.
-- **Wiring:** the generator wires into `prebuild` + `check:generated-freshness`; the
-  protocol wires into CLAUDE.md, design-session skill, process canon (§3 above).
+- [x] Engine pillar present (N/A with rationale)
+- [x] Content pillar present (N/A with rationale)
+- [x] UI pillar present (N/A with rationale)
+- [x] Wiring section connects them (build-time wiring table above)
 
-## Constants
+## Vision audit
+
+- [x] This plan does not contradict any Vision premise — it is process/tooling; the
+  remediation verdicts *restore* Vision-aligned couplings (items that matter, mortals with
+  visible inner lives).
+
+## Rulebook impact
+
+- [x] This plan does not change a rule of play. (THR-718's tier influence and THR-721's
+  visibility change player-facing behavior; their own plans re-verdict the affected
+  rulebook sections.)
+
+## Constants table
 
 | Name | Default | Purpose |
 |---|---|---|
@@ -268,7 +311,7 @@ it *is* an inspectability artifact.)
 | Registry entry malformed | Skip row, emit it under a `## Registry errors` heading in output |
 | Known-LEAKED row without `deferralTicket` | Freshness check fails (this is the ratchet working) |
 
-## NFP compliance
+## NFP-compliance table
 
 | NFP | Verdict |
 |---|---|
@@ -280,21 +323,56 @@ it *is* an inspectability artifact.)
 | 6 Additive | PASS — new files + checklist lines; no refactors |
 | 7 Perf budget | PASS — build-time only |
 
-## Executor action items
+## Done when
 
-1. Land `scripts/interface-contracts.ts` seeded from the canon page's audited rows —
-   known-LEAKED rows carry `deferralTicket`; hand-verified LIVE rows carry `verifiedLive`
-   citing this plan's audit; extract the shared SUBSYSTEMS module (non-entry, §2).
-2. Land `scripts/generate-interface-map.ts` + npm script; register output in
-   `STATIC_GENERATED_PATHS`; wire `prebuild` + `check:generated-freshness`; verify the
-   non-zero-exit ratchet (LEAKED without ticket) actually fails CI; commit first generated
-   output and shrink the curated page per the growth path (§1).
-3. Apply protocol edits (§3) to CLAUDE.md, design-session SKILL.md, process canon,
-   `lint:plan-doc`; add the interface-map row to `Docs/canon/README.md`'s index.
-4. File the six remediation tickets (§ backlog), tagging (a)–(d) as needing a user verdict
-   surfaced via briefing, (e)–(f) as technical.
-5. File the weekly coverage-cadence hook into the Friday drift scan (one audit ticket/week
-   while ⚪ subsystems remain).
+- [ ] `scripts/interface-contracts.ts` landed, seeded from the canon page's audited rows —
+  known-LEAKED rows carry their `deferralTicket` (THR-718/719/720/721/722/723 as mapped in
+  the canon tables); hand-verified LIVE rows carry `verifiedLive` citing this plan's audit;
+  shared SUBSYSTEMS module extracted (non-entry, §2).
+- [ ] `scripts/generate-interface-map.ts` + npm script landed; output registered in
+  `STATIC_GENERATED_PATHS`; wired into `prebuild` + `check:generated-freshness`; the
+  non-zero-exit ratchet (LEAKED without ticket) demonstrated to fail CI; first generated
+  output committed and the curated canon page shrunk per the growth path (§1).
+- [ ] Protocol edits (§3) applied to CLAUDE.md, design-session SKILL.md, process canon,
+  `lint:plan-doc`; interface-map row added to `Docs/canon/README.md`'s index.
+- [ ] Weekly coverage-cadence hook filed into the Friday drift scan (one audit ticket/week
+  while ⚪ subsystems remain).
+- [ ] `npm test` and `npx vite build` pass; types via `tsc -b --force` net-new diff (not
+  `tsc --noEmit` — no-op here, THR-686).
+- [ ] Closing commit body and PR body include `Fixes THR-717`.
+- [ ] Browser-verify exempt: docs + build tooling, no runtime UI — state in commit body.
+
+## Coordination block
+
+**Suggested model:** sonnet — well-specified static-analysis tooling with an explicit spec
+(advisory only; the CC automation runs Opus regardless).
+
+**Parallel-safe with:** THR-722 (attachment catalog surface, disjoint from `scripts/` +
+governance docs).
+
+**Mutex with:** any issue editing CLAUDE.md § Design Governance / § Definition of Done, the
+design-session skill, or `scripts/generate-systems-inventory.ts` (SUBSYSTEMS extraction
+touches it).
+
+**Files to touch:**
+- Create: `scripts/interface-contracts.ts`, `scripts/generate-interface-map.ts`,
+  `Docs/canon/interface-map.generated.md` (generated)
+- Edit: `package.json` (scripts), `scripts/check-generated-freshness.ts`
+  (`STATIC_GENERATED_PATHS`), `scripts/generate-systems-inventory.ts` (extract SUBSYSTEMS),
+  `CLAUDE.md`, `.claude/skills/design-session/SKILL.md`, `Docs/canon/process.md`,
+  `Docs/canon/README.md`, `Docs/canon/interface-map.md` (shrink per growth path),
+  `scripts/lint-plan-doc.ts`
+
+## Notes for the executor
+
+- **Downgrade-only is the invariant to protect.** Do not "simplify" Tier 2 into
+  write+read→LIVE — that exact simplification would have re-badged both headline leaks
+  green (§2). LIVE comes only from `verifiedLive` or a future runtime probe.
+- Never import the systems-inventory generator's entry file (esbuild rewrites
+  `import.meta.url`; a read-only import silently runs a 120-tick sim — THR-686 class).
+- `.codesight/` is gitignored and absent in CI — the generator does its own import grep.
+- The six remediation tickets are already filed (THR-718…THR-723) with user verdicts
+  recorded — do not re-litigate them here; this ticket is the framework only.
 
 ## Forked-audit verdicts
 

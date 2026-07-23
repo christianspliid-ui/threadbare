@@ -78,12 +78,12 @@ Design docs: `2026-03-10-attachment-system-design.md`, `2026-03-31-generic-effec
 | Effects tick, decay, stack, expire | `effectTick` (phase 2a.4), `effectShellRuntime` | orchestrator | 🟢 LIVE |
 | Slot caps suppress overflow | `attachmentSlotResolver`, edge `active:false` | `effectWalker` (single suppression seam) | 🟢 LIVE |
 | Character sheet shows items | `agentAttachments.ts` → `AttachmentsTab` | `AgentProfileModal` | 🟢 LIVE |
-| Items raise capability tiers | node `domainContributions` → `computeRawScore` | `domainCapability.ts` → Prowess tab, eligibility | 🔴 LEAKED for **possession items** — catalogs write `{}` empty (trait-type bestowals like Patron's Backing DO carry contributions via `has_trait`). Note: `anomaly-reward-catalog.ts` deliberately migrated off this field onto `effects[]` (2026-04-06) — the empties read as a half-finished migration, not accidental loss |
-| Items modify attributes | possesses-edge `modifiers {iron:…}` → `collectModifiers` | `modifiers.ts` — production reads **only `los_range`** (`visibility.ts`) | 🔴 LEAKED — written by `seedAttachments`, `rewardPool`, `attachmentTierAdvancement`; capability attributes never queried |
-| Items grant abilities | possesses-edge `grants[]` | — | 🔴 LEAKED — written at seeding, zero production read sites |
-| Items break/trigger on use | node `onUseTriggers` → `attachmentTriggers.ts` | — (tooltip display only) | 🔴 LEAKED — resolver has no production caller; breakage/consumption authored but never fires |
-| Player-activated item powers | node `activatedEffects` (`ActivatedAbility`) | — | 🔴 LEAKED — typed + authored in `artifact-templates.ts`, no engine consumer |
-| Tier advancement strengthens items | `attachmentTierAdvancement.ts` → edge `modifiers` | → the dead modifiers path above | 🟠 PARTIAL — advancement boosts a stat nothing reads |
+| Items raise capability tiers | node `domainContributions` → `computeRawScore` | `domainCapability.ts` → Prowess tab, eligibility | 🔴 LEAKED for **possession items** — catalogs write `{}` empty (trait-type bestowals like Patron's Backing DO carry contributions via `has_trait`). Note: `anomaly-reward-catalog.ts` deliberately migrated off this field onto `effects[]` (2026-04-06) — the empties read as a half-finished migration, not accidental loss. **→ THR-718** |
+| Items modify attributes | possesses-edge `modifiers {iron:…}` → `collectModifiers` | `modifiers.ts` — production reads **only `los_range`** (`visibility.ts`) | 🔴 LEAKED — written by `seedAttachments`, `rewardPool`, `attachmentTierAdvancement`; capability attributes never queried. **→ THR-723** (substrate via THR-718) |
+| Items grant abilities | possesses-edge `grants[]` | — | 🔴 LEAKED — written at seeding, zero production read sites. **→ THR-722** |
+| Items break/trigger on use | node `onUseTriggers` → `attachmentTriggers.ts` | — (tooltip display only) | 🔴 LEAKED — resolver has no production caller; breakage/consumption authored but never fires. **→ THR-719** |
+| Player-activated item powers | node `activatedEffects` (`ActivatedAbility`) | — | 🔴 LEAKED — typed + authored in `artifact-templates.ts`, no engine consumer. **→ THR-720 (parked)** |
+| Tier advancement strengthens items | `attachmentTierAdvancement.ts` → edge `modifiers` | → the dead modifiers path above | 🟠 PARTIAL — advancement boosts a stat nothing reads. **→ THR-723** |
 
 **Inbound (what feeds attachments):**
 
@@ -104,9 +104,9 @@ Runtime health (seed 42, medium, 120t): pursues edges 32→225, 182 active; mile
 | Ambitions bias encounter choice | `applyAmbitionBoost` → `encounterScoring` | agent decision pipeline | 🟢 LIVE |
 | Ambitions explain motives | `ambitionBoost` term → `motiveReceipt` provenance | foreshadowing receipts | 🟢 LIVE |
 | Faction ambitions drive faction action | `factionAmbitions.ts` → `FactionSheet.activeAmbition` | faction phases + UI | 🟢 LIVE |
-| Player sees an agent's ambitions | `JourneyTab` — gated `interactionDepth ≥ 2` **OR** knowledge ≥ `'known'` (`JourneyTab.tsx:33–35`) | `AgentProfileModal` | 🟠 PARTIAL — both gate paths exist, but thresholds/accrual rates keep ambitions hidden in normal play; reads as "the feature disappeared" |
+| Player sees an agent's ambitions | `JourneyTab` — gated `interactionDepth ≥ 2` **OR** knowledge ≥ `'known'` (`JourneyTab.tsx:33–35`) | `AgentProfileModal` | 🟠 PARTIAL — both gate paths exist, but thresholds/accrual rates keep ambitions hidden in normal play; reads as "the feature disappeared". **→ THR-721** |
 | Ambitions strand | `getAmbitionsStrand` → `StrandView` | `useAgentInteraction` | 🟢 LIVE (wired; verify visually on next UI pass) |
-| Completed-ambitions history | `ChronicleTab` § Completed Ambitions | — | 🔴 LEAKED — placeholder text, never implemented |
+| Completed-ambitions history | `ChronicleTab` § Completed Ambitions | — | 🔴 LEAKED — placeholder text, never implemented. **→ THR-721** |
 
 Known dead code: `AgentDetailPanel.tsx` is an orphaned pre-`AgentProfileModal` sheet — do
 not "fix" ambition display there.
