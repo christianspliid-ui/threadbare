@@ -654,6 +654,47 @@ Both sweeps run over `MOTIVE_CLAUSES`, `MOTIVE_CLAUSES_BY_REACH`, `EXPECTATION_B
 
 ---
 
+### Capability 12: Context Fragments — One Skeleton, Many Scenes (THR-573)
+
+The engine already treats the same template at a tavern versus a shrine as **different surfaces** for novelty and recency (`computeSurfaceKey`, THR-475). Until now the prose didn't follow: those "different" surfaces read identically, so the multiplication was an accounting trick the player could see through. Context fragments are the reading half — authored prose that binds to the same axes the selection engine already keys identity on.
+
+**The shape.** An optional field on any `UnifiedActionTemplate`:
+
+```ts
+contextFragments: [
+  {
+    slot: 'opening',
+    axis: 'place',                      // 'place' | 'counterpartRole'
+    variants: {
+      '*': 'The default scene — REQUIRED.',
+      'sublocation-type.tavern': '{name} pays for the second round before sitting down…',
+      'sublocation-type.harbor': '{name} finds the target checking cargo against a tide table…',
+    },
+  },
+]
+```
+
+Reference the slot from any prose field with `{frag:opening}`. That's the whole authoring surface.
+
+**Two kinds of axes.** *Identity* axes create surfaces and count toward the library: `place` (the location's `sublocationTypeId`) and `counterpartRole` (the target's `npcRole`). *Coloration* — sphere/omen vocabulary, `{cast:*}` continuity, `{intel:*}`, `{?target_is_ally}` — varies the reading for free but never creates a surface. Compose both: coloration on top of a multiplied surface is what keeps 20 surfaces from feeling like 20 templates.
+
+**The declared-default invariant.** Every `variants` map MUST contain `'*'`. This is the same guarantee `{cast:*}` gives you: **a declared slot always resolves**, so you can reference your own fragments unguarded and never write a conditional around them. An unmapped context falls back to the default; a template with no fragments renders exactly as it does today. The `'*'` entry is real authored prose, not a stub — it is what the scene reads like when nothing is bound.
+
+**No PRNG.** Resolution is a pure lookup: same surface, same words, every run. If a scene feels repetitive, the answer is another axis value or novelty tuning — not randomness.
+
+**Two traps that make the layer silently do nothing:**
+
+1. **Whitelist converters.** Families that convert raw entries into `UnifiedActionTemplate` (e.g. `toSocialTemplate` in `social-scene-templates.ts`) copy named fields only. An unlisted `contextFragments` is dropped without an error and your fragments never reach the runtime.
+2. **Static display surfaces.** `narrativeTemplates.initiation` is read raw by Codex cards and previews that never run `enrichProse` — a bare `{frag:*}` token leaks to the player there. Expand it to the `'*'` default at conversion time.
+
+**Inspecting it:** the DebugPanel **Fragments** tab shows the static inventory (which templates multiply, on which axes, how many surfaces) and the live bindings; `window.__DEBUG.resolveSurfaceFragments('<agent>')` returns the bound scene headlessly, and the no-arg form returns the inventory. `npm run volume-model` reports **measured** surface counts, so the ~1,000 target is an observable, not an assertion. The `surface_fragments_bound` trace fires once per encounter instantiation. Watch `usedDefault`: a surface that always defaults means the axis election missed.
+
+**Authoring pipeline:** `.claude/skills/template-context-rewrite/SKILL.md` (four passes: axis election → scene-first drafting → QA → merge). Every fragment is swept by the prose-QA scorer, so multiplied surfaces clear the same register bar as inline prose.
+
+**Where to find the implementation:** `src/engine/fragmentResolution.ts` (resolution + enumeration), `src/engine/content-eval/surfaceFragmentReport.ts` (inventory), `{frag:*}` handling in `src/engine/proseEnrichment.ts`. Worked example: `social_scene.recruitment_pitch` — 9 fragments → 20 surfaces.
+
+---
+
 ## Part 3: The Wiring Checklist — Ask These Before You Write
 
 Before writing any encounter, answer these questions. If the answer to most of them is "not applicable," you may be writing a book page, not game content.

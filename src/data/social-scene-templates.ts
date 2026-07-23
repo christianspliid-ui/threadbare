@@ -42,6 +42,8 @@ type SocialEntry = {
   intrinsicTier?: UnifiedActionTemplate['intrinsicTier'];
   motivations?: readonly unknown[];
   sphereAffinity?: string;
+  /** Context-multiplication fragments (THR-573) — passed through to the template. */
+  contextFragments?: readonly import('../types/unifiedAction').ContextFragmentSet[];
   steps: ReadonlyArray<{
     id?: string;
     name?: string;
@@ -88,6 +90,26 @@ function toOutcomeMeta(
   return { rewardPool: outcome.rewardPool, tierPromotionEligible: outcome.tierPromotionEligible, reputationDelta: outcome.reputationDelta };
 }
 
+/**
+ * Expand `{frag:<slot>}` tokens to their `'*'` default (THR-573).
+ *
+ * `narrativeTemplates.initiation` is read *statically* by catalog surfaces (Codex cards,
+ * story-beat previews) that never run `enrichProse`, so a step whose narrative is a bare
+ * fragment token would leak the raw token there. The default variant is the right
+ * substitute: it is exactly what this scene reads like when no axis is bound. The live
+ * encounter path still resolves the bound variant at render time.
+ */
+function staticProse(
+  narrative: string | undefined,
+  fragments: SocialEntry['contextFragments'],
+): string | undefined {
+  if (!narrative || !fragments || !narrative.includes('{frag:')) return narrative;
+  return narrative.replace(/\{frag:([A-Za-z0-9_.-]+)\}/g, (match, slot: string) => {
+    const set = fragments.find(f => f.slot === slot);
+    return set?.variants['*'] ?? match;
+  });
+}
+
 function toSocialTemplate(e: SocialEntry): UnifiedActionTemplate {
   const motivations = (ENCOUNTER_TYPE_MOTIVATIONS as Record<string, readonly import('../types/agent').ValuePair[]>)[e.encounterType]
     ?? (e.motivations as readonly import('../types/agent').ValuePair[] ?? []);
@@ -117,9 +139,12 @@ function toSocialTemplate(e: SocialEntry): UnifiedActionTemplate {
     actorAffinities: ['individual'],
     locationSubtypes: e.locationTypes as UnifiedActionTemplate['locationSubtypes'],
     sphereAffinity: e.sphereAffinity as UnifiedActionTemplate['sphereAffinity'],
+    // THR-573 — this converter is an explicit whitelist, so context fragments only
+    // reach the runtime template if they are named here.
+    contextFragments: e.contextFragments,
     motivations,
     narrativeTemplates: {
-      initiation: firstStep?.narrative ?? `${e.name} begins.`,
+      initiation: staticProse(firstStep?.narrative, e.contextFragments) ?? `${e.name} begins.`,
       success: lastStep?.onSuccess.narrative ?? `${e.name} succeeds.`,
       failure: lastStep?.onFailure.narrative ?? `${e.name} fails.`,
     },
@@ -265,6 +290,36 @@ const PERSUASION_TEMPLATES: SocialEntry[] = [
     threatRating: 'easy',
     intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.hire,
+    // ── Context multiplication (THR-573) ───────────────────────────────────
+    // The Tier-2 proof unit: 5 places × 4 counterpart roles = 20 authored surfaces
+    // from 9 fragments plus the skeleton below. The `'*'` default in each map is the
+    // required fallback — it is what this scene already read like, so it is not
+    // counted as one of the 20. Referenced from the opening and counter steps.
+    contextFragments: [
+      {
+        slot: 'opening',
+        axis: 'place',
+        variants: {
+          '*': '{name} finds the target where the day has put them, and opens with a warm word and a well-chosen compliment.',
+          'sublocation-type.tavern': '{name} pays for the second round before sitting down. The pitch starts as tavern talk — work, weather, who owes whom — and stays that way until the target relaxes.',
+          'sublocation-type.guild-hall': '{name} waits through the queue at the counter like anyone else. When their turn comes, the ledger stays open between them — this is a business call, and both of them know it.',
+          'sublocation-type.market-district': '{name} falls in beside the target between stalls, matching their pace. Half the pitch is lost to a fishmonger\'s shouting, which suits {name} fine — nothing said here sounds rehearsed.',
+          'sublocation-type.shrine': '{name} waits until the target finishes at the altar. Voices stay low here, and the pitch comes out quieter and more honest-sounding than {name} intended.',
+          'sublocation-type.harbor': '{name} finds the target checking cargo against a tide table. The pitch has until the water turns, and both of them know exactly how long that is.',
+        },
+      },
+      {
+        slot: 'counterpart',
+        axis: 'counterpartRole',
+        variants: {
+          '*': 'The target raises a concern — something that holds them back. {name} must address it directly.',
+          fence: 'The target\'s concern is simple arithmetic: they already sell to everyone, and joining one side means the other sides stop buying. {name} will have to beat the margin, not the argument.',
+          priest: 'The target hears the offer out, then observes that they already serve a patron — one with a longer memory than most. {name} is being asked, politely, what happens to them when the two loyalties disagree.',
+          scout: 'The target wants the terms plain: pay, routes, and who covers them if it goes wrong. They have watched employers from a distance for years. They know exactly how expendable the far end of a line is.',
+          noble: 'The target does not say no. They say that people like them are not recruited, they are allied with — and allies expect a title on the arrangement. The work is agreeable; the wording is not.',
+        },
+      },
+    ],
     steps: [
       {
         id: 'recruitment_pitch.opening',
@@ -272,7 +327,7 @@ const PERSUASION_TEMPLATES: SocialEntry[] = [
         reach: 'heart',
         difficulty: D_EASY,
         duration: 1,
-        narrative: '{actor} opens with a warm word and a well-chosen compliment, establishing common ground.',
+        narrative: '{frag:opening}',
         leverageOnSuccess: 0.10,
         leverageOnFailure: -0.05,
         onSuccess: {
@@ -325,7 +380,7 @@ const PERSUASION_TEMPLATES: SocialEntry[] = [
         leverageOnSuccess: 0.10,
         leverageOnFailure: -0.08,
         conditional: { type: 'leverage_range', leverageMax: 0.69 },
-        narrative: 'The target raises a concern — something that holds them back. {actor} must address it directly.',
+        narrative: '{frag:counterpart}',
         onSuccess: {
           narrative: 'The concern is met and dissolved. The path to yes is clear.',
         },

@@ -461,6 +461,23 @@ export interface DebugBridge {
       }
     | { error: string }
   >;
+  /**
+   * Context-fragment bindings for an agent's current scene (THR-573). Read-only.
+   * With no `ref`, returns the static authored inventory instead (no session needed).
+   */
+  resolveSurfaceFragments: (ref?: string) => Promise<
+    | import('./engine/content-eval/surfaceFragmentReport').SurfaceFragmentReport
+    | {
+        matchedId: string;
+        matchedName: string;
+        templateId: string;
+        axes: { place: string | null; counterpartRole: string | null };
+        declaresFragments: boolean;
+        bindings: readonly import('./engine/fragmentResolution').FragmentBinding[];
+      }
+    | { matchedId: string; matchedName: string; error: string }
+    | { error: string }
+  >;
   /** List the god's active sustained controls ("covenants", THR-613 §5.A). Read-only. */
   listControlEffects: () =>
     | {

@@ -1516,6 +1516,10 @@ export function executeStepResult(
           // record shows the same people the player was shown at resolution time.
           supportBundle: template.supportBundle,
           supportBindings: action.supportBindings,
+          // THR-573 — the template's context fragments, so `{frag:*}` in this step's
+          // prose binds to the scene's place/counterpart axes at render time.
+          contextFragments: template.contextFragments,
+          contextFragmentTemplateId: template.id,
         },
       );
       narrativeProse = enrichProse(step.narrativeTemplate ?? '', proseCtx, { runtime, rng }) || narrativeProse;

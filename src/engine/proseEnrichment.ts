@@ -31,6 +31,8 @@ import {
   getAgentLocation,
 } from './graphQueries';
 import type { EncounterSupportBinding, EncounterSupportBundle } from '../types/encounter';
+import type { ContextFragmentSet } from '../types/unifiedAction';
+import { resolveFragment, type BoundFragmentAxes } from './fragmentResolution';
 import { ALLY_SENTIMENT_THRESHOLD, ENEMY_SENTIMENT_THRESHOLD } from '../data/effect-constants';
 import {
   buildIntelligenceView,
@@ -178,6 +180,22 @@ export interface NarrativeContext {
    * always resolves for a declared key. Absent → `{cast:*}` tokens strip and
    * `{?has_cast:<key>}` blocks resolve false. See {@link SceneCastMember}. */
   cast?: Record<string, SceneCastMember>;
+
+  /** Context-fragment tables of the template being rendered (THR-573). Absent →
+   * `{frag:*}` tokens strip silently, exactly as `{intel:*}` does without a view.
+   * Threaded by encounter-path callers via `opts.contextFragments`. */
+  contextFragments?: readonly ContextFragmentSet[];
+
+  /** Template id for fragment warn-once attribution (THR-573). Diagnostics only. */
+  contextFragmentTemplateId?: string;
+
+  /** `place` identity axis (THR-573) — the `sublocationTypeId` the scene plays out in.
+   * Derived at context build from the agent's location resolution. Absent → `'*'` path. */
+  sublocationTypeId?: string;
+
+  /** `counterpartRole` identity axis (THR-573) — the scene target's `npcRole`.
+   * Derived at context build from the target node. Absent → `'*'` path. */
+  targetRole?: string;
 }
 
 /**
@@ -281,6 +299,9 @@ export function gatherNarrativeContext(
     targetId?: string;
     supportBundle?: EncounterSupportBundle;
     supportBindings?: readonly EncounterSupportBinding[];
+    /** THR-573 — the rendering template's fragment tables and id, for `{frag:*}`. */
+    contextFragments?: readonly ContextFragmentSet[];
+    contextFragmentTemplateId?: string;
   },
 ): NarrativeContext {
   const agentNode = graph.getNode(agentId);
@@ -384,6 +405,14 @@ export function gatherNarrativeContext(
     tick,
     target: resolveSceneTargetContext(graph, agentId, opts?.targetId),
     cast: resolveSceneCastContext(graph, opts?.supportBundle, opts?.supportBindings),
+    contextFragments: opts?.contextFragments,
+    contextFragmentTemplateId: opts?.contextFragmentTemplateId,
+    // Identity axes (THR-573). Both are read from state the context builder already
+    // resolved, so no caller threads a new required parameter; absent → the '*' path.
+    sublocationTypeId: (location?.properties?.sublocationTypeId as string | undefined) ?? undefined,
+    targetRole: opts?.targetId
+      ? ((graph.getNode(opts.targetId)?.properties?.npcRole as string | undefined) ?? undefined)
+      : undefined,
   };
 }
 
@@ -460,6 +489,32 @@ export function enrichProse(
   opts?: { runtime?: SimulationRuntime; rng?: () => number },
 ): string {
   let result = template;
+
+  // Context fragments (THR-573) — `{frag:<slot>}` splices an authored variant chosen by
+  // the scene's identity axes (place / counterpart role). This runs FIRST, before every
+  // other token, so tokens *inside* a fragment ({name}, {target}, {cast:*}) are resolved
+  // by the rest of this pipeline exactly as if they had been written inline.
+  // A declared slot always resolves (bound variant, else the '*' default), so authored
+  // prose can reference its own slots unguarded. An undeclared slot or a table missing
+  // its default is an authoring error: strip the token, warn once per template — never
+  // per render — and let the rest of the paragraph stand.
+  if (/\{frag:/.test(result)) {
+    const boundAxes: BoundFragmentAxes = {
+      place: ctx.sublocationTypeId ?? null,
+      counterpartRole: ctx.targetRole ?? null,
+    };
+    result = result.replace(/\{frag:([A-Za-z0-9_.-]+)\}/g, (_match, slot: string) => {
+      const binding = resolveFragment(
+        ctx.contextFragments,
+        slot,
+        boundAxes,
+        ctx.contextFragmentTemplateId,
+      );
+      return binding?.text ?? '';
+    });
+    // Residual strip: malformed {frag:*} tokens (e.g. spaces in the slot) never leak.
+    result = result.replace(/\{frag:[^}]*\}/g, '');
+  }
 
   // Simple replacements
   result = result.replace(/{name}/g, ctx.agentName);

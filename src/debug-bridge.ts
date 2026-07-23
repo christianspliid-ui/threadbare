@@ -312,6 +312,69 @@ if (import.meta.env.DEV) {
     },
 
     /**
+     * Resolve the context-fragment bindings for an agent's current scene (THR-573).
+     *
+     * Answers "why did this scene read the way it did?" headlessly: which slot bound
+     * which authored variant, on which axis, and whether it fell back to the `'*'`
+     * default. `ref` matches an agent by exact id, id prefix, or partial name.
+     *
+     * With no argument, returns the static inventory instead — every template that
+     * declares fragments, with its measured surface count. Pure in that form: no live
+     * session needed.
+     */
+    resolveSurfaceFragments: async (ref?: string) => {
+      const { reportSurfaceFragments } = await import('./engine/content-eval/surfaceFragmentReport');
+      if (!ref) return reportSurfaceFragments();
+
+      const state = _gameStateProvider?.();
+      if (!state) return { error: 'no live game state' };
+      const graph = state.graph;
+      const actors = graph.getNodesByType('actor');
+      const lower = ref.toLowerCase();
+      const agent =
+        graph.getNode(ref) ??
+        actors.find((n) => n.id.startsWith(ref)) ??
+        actors.find((n) => n.name?.toLowerCase().includes(lower));
+      if (!agent) return { error: `no agent matching "${ref}"` };
+
+      const progress = (state.encounterProgress ?? []).find(
+        (p) => p.actorId === agent.id && p.status === 'active',
+      );
+      if (!progress) return { matchedId: agent.id, matchedName: agent.name, error: 'no active encounter' };
+
+      const { UNIFIED_ACTION_TEMPLATES } = await import('./data/unified-action-templates');
+      const { SOCIAL_SCENE_TEMPLATES } = await import('./data/social-scene-templates');
+      const template =
+        [...UNIFIED_ACTION_TEMPLATES, ...SOCIAL_SCENE_TEMPLATES].find(
+          (t) => t.id === progress.encounterId,
+        );
+      if (!template) {
+        return { matchedId: agent.id, matchedName: agent.name, error: `no template "${progress.encounterId}"` };
+      }
+
+      const { resolveTemplateFragments } = await import('./engine/fragmentResolution');
+      const { getAgentLocation } = await import('./engine/graphQueries');
+      const location = getAgentLocation(graph, agent.id);
+      const place = (location?.properties?.sublocationTypeId as string | undefined) ?? null;
+      const counterpartRole = progress.targetAgentId
+        ? ((graph.getNode(progress.targetAgentId)?.properties?.npcRole as string | undefined) ?? null)
+        : null;
+
+      return {
+        matchedId: agent.id,
+        matchedName: agent.name,
+        templateId: template.id,
+        axes: { place, counterpartRole },
+        declaresFragments: (template.contextFragments?.length ?? 0) > 0,
+        bindings: resolveTemplateFragments(
+          template.contextFragments,
+          { place, counterpartRole },
+          template.id,
+        ),
+      };
+    },
+
+    /**
      * List the god's active sustained controls ("covenants", THR-613 §5.A): the
      * effectIds, target, and per-tick cost/income the Covenants panel renders. Includes
      * any ids already queued for release this tick (`pendingReleases`). Read-only.
