@@ -1,6 +1,6 @@
 # Project Status
 
-> Updated 2026-07-23. Detailed per-ticket narratives that used to live here are archived: shipped-work one-liners in `Docs/project-history.md`, full rationale rows in `Docs/changelog.md`, and the wiring detail in `Docs/plans/wiring-checklist.md`. This file stays ≤60 lines by contract.
+> Updated 2026-07-24. Detailed per-ticket narratives that used to live here are archived: shipped-work one-liners in `Docs/project-history.md`, full rationale rows in `Docs/changelog.md`, and the wiring detail in `Docs/plans/wiring-checklist.md`. This file stays ≤60 lines by contract.
 
 ## Current Focus
 
@@ -15,6 +15,8 @@
 **Player casts now have a consequence surface (THR-727, 2026-07-23).** A resolved player action finally shows the aftermath the engine already computed: a new `post-resolution` phase (`phasePlayerReceipts`) builds a Divine Receipt and tiers it — a band-accented completion toast for minor casts, a story+technical receipt dialogue (`DivineReceiptModal`) for multi-step / rare / world-shifting ones. Dispatch toasts switched from optimistic-success to initiation phrasing. Closes canon rule 6's missing link (player action → visible consequence → next decision). Outcome variance for player casts is deferred to THR-728.
 
 **Wiki freshness is now a merge gate (THR-730, 2026-07-23).** The Design Reference Wiki freshness contract (THR-585) flipped from an advisory warning to a blocking step inside the required `Test · Typecheck · Build` check: a PR that changes a file matched by a wiki page's `sources` glob without updating the page (or its `payloads`) now fails, unless a commit body carries `Wiki-freshness-exempt: <reason>` (auditable escape hatch, mirrors `Browser-verify exempt:`). `weekly-project-hygiene` audits exemptions and sweeps for uncovered code (8-day lookback). Core-system docs can no longer silently drift.
+
+**Companies are travelling (THR-74, engine core, 2026-07-24).** The collective layer between lone agents and faction-scale armies now exists: `src/engine/groups/` + `phaseGroups` (Phase 2.34, between agent decision and movement) forms named companies from colocated compatible agents, agrees one shared heading, accrues and loses cohesion on named events, and disbands into persistent history. Zero new node types, edge types or GameState fields - a company is an `actor` node reusing `member_of`/`commanded_by`/`pursues`, with **no `located_at` of its own** (position derives from the leader). 72-tick smoke, seed 42 medium: three companies travelling, members colocated. Content and UI pillars ship as PRs 2 and 3 of the same ticket; `Fixes THR-74` rides the last one.
 
 The Ready-for-Dev queue holds THR-722 (retire dead `grants[]`) and THR-726 (world-minted ambitions). The hourly `tb-opus-pickup` lane and `keep-work-flowing-cc` briefing are live; new work flows through Linear (Threadbare team).
 

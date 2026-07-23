@@ -2858,6 +2858,45 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "**Workaround (no `--no-verify`):** copy `node_modules/@esbuild/win32-x64/esbuild.exe` into a scratch dir and prepend it to PATH in **MSYS form** — `export PATH=\"/c/.../toolbin:$PATH\"`. A Windows-form entry (`C:/...`) silently breaks Git-Bash PATH parsing (the drive colon splits the entry), which made the first two attempts look like the export was not propagating. Permanent fix: rerun `npm install` in the home tree.",
     "session": "Hourly `keep-work-flowing-cc` briefing run 2026-07-24 01:09."
+  },
+  {
+    "num": "204",
+    "id": 204,
+    "count": 1,
+    "date": "2026-07-24",
+    "category": "tooling",
+    "description": "**Writing a repo text file from Python on Windows silently converts it LF -> CRLF, which makes `check:generated-freshness` fail on a file whose *content* is correct.** Patching `public/tick-cycle-reference.html` with `io.open(p,'w',encoding='utf-8')` rewrote every line ending, because Python's default text mode translates `\\n` to `os.linesep` on write while reading had already normalised to `\\n`. Git hid it (autocrlf normalises the committed blob to LF, and `git diff` showed nothing), but the freshness gate compares regenerated output against the **committed blob** and saw all 422 lines differ. The reported failure names the file, not the cause, so it reads as a stale generated artifact and invites a `npm run prebuild` loop that can never fix it.",
+    "consequence": "~20 min chasing a phantom stale-artifact failure, plus a far more dangerous second-order incident: the obvious remedy (\"normalise CRLF -> LF across tracked files\") corrupted 473 files including PNGs, a zip, woff2 fonts and a `.pyc`, because a blanket byte-level `\\r\\n` -> `\\n` replace does not distinguish binary from text.",
+    "impact": "M",
+    "workaroundFound": true,
+    "workaround": "**Workaround:** pass `newline=''` to `io.open` on **both** read and write so line endings round-trip untouched. Verify with `git show HEAD:<file>",
+    "session": "diff - <file>` — an all-lines-differ diff on a file you edited in one place is a line-ending mismatch, not a content problem. **If you have already mass-converted: do not try to repair it selectively.** `git checkout -- .` restores everything from HEAD in one step, and is safe precisely because the real change was already committed. Never run a repo-wide byte replace without a text/binary filter. | THR-74 engine-core closeout, wiki-page edit"
+  },
+  {
+    "num": "205",
+    "id": 205,
+    "count": 1,
+    "date": "2026-07-24",
+    "category": "process-friction",
+    "description": "**`check:wiki-freshness:blocking` prints a full `FAIL` block and then exits 0 when an exemption is present — the human-readable output contradicts the exit code.** With `Wiki-freshness-exempt:` in a commit body, the script lists every stale page under a `check-wiki-freshness: FAIL (mode=blocking)` header, then prints one `EXEMPT — <reason>` line and `return`s before `process.exit(1)`. Reading the output top-down, the gate looks red; only the trailing line (easily lost when the warning list is long) and the actual exit status say otherwise.",
+    "consequence": "Wasted a verification cycle re-running the gate and re-editing pages that were already validly exempt; the opposite error is worse — an agent could truncate the output, see `FAIL`, and start \"fixing\" pages that need no change, or conversely paste `FAIL` into a closeout as evidence of a broken gate.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "**Workaround:** never judge this gate by its stdout. Run it as `npm run check:wiki-freshness:blocking > /dev/null 2>&1; echo $?` and trust the exit code. **Durable fix:** when an exemption applies, print the header as `PASS (exempt)` rather than `FAIL`, and move the page list under it — the exemption is known before the warnings are printed, so the ordering is a free change.",
+    "session": "THR-74 engine-core closeout"
+  },
+  {
+    "num": "206",
+    "id": 206,
+    "count": 1,
+    "date": "2026-07-24",
+    "category": "tooling",
+    "description": "**The interface-map generator rejects a contract whose `mechanism.symbols` do not literally appear at the declared write/read sites — which is correct, but the failure text (`nothing produces this contract` / `the consumer is starving`) reads as a real architectural leak rather than a mis-specified row.** Two new THR-74 rows were rejected: one declared `getFactionMembershipEdges` produced by `groupFormation.ts` (the guard actually lives in `graphQueries.ts`), the other declared `groupDestinationId`/`runGroupMovement` consumed by `phaseMovement.ts` (which reads the `movementState` carrier, not those helper names). Both contracts were genuinely live; only the greppable symbols were wrong.",
+    "consequence": "~10 min re-reading engine code to confirm a leak that did not exist. The risk is the inverse reading: an author who trusts the wording may \"fix\" working code, or paper over it with a `deferralTicket` and ship a row that documents nothing.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "**Workaround:** when the generator reports a starved side, first check whether the declared **symbol** actually appears at the declared **file** (`grep -n '<symbol>' <site>`) before touching any engine code. Pick the symbol that crosses the boundary — the carrier the consumer really reads — not the producer's internal helper names.",
+    "session": "THR-74 engine-core closeout, `scripts/interface-contracts.ts`"
   }
 ];
 // ── End data ──
