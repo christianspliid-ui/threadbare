@@ -69,6 +69,7 @@ import type { EligibilityFunnelCounters } from './kpi/gameplayKpi';
 import type { TraceBuffer } from './traceBuffer';
 import { computeBranchingCuratorMultiplier } from './encounter/branchingCurator';
 import { computeSurfaceKey, getSurfaceAxisValues } from './encounterSurface';
+import { computeEconomicContextBonus, resolveGoverningProsperity } from './economicContext';
 
 // ─── Constants (re-exported from central tuning file) ───────────
 export {
@@ -519,6 +520,8 @@ export interface ScoredCandidate {
   bondBonus: number;
   /** Additive reputation/personality scoring term for the encounter's reach (THR-641; = computeReputationScoringBonus). Already folded into finalScore's baseScore. */
   reputationBonus: number;
+  /** Signed additive term from the settlement's boom/bust state and the template family's economic affinity (THR-725). 0 inside the neutral prosperity band or for families with no authored row. Already folded into finalScore's baseScore. */
+  economicContextBonus: number;
   /** Hex distance from the agent to the encounter location (THR-641); Infinity when unreachable. Receipt derives the `proximity` pull from it. */
   hexDistanceToEntry: number;
   /** Flat additive boost from actionable intelligence held by the agent (THR-113). 0 or INTEL_SCORING_BONUS. */
@@ -1187,8 +1190,17 @@ export function scoreAndSelect(
     // 20. Role-reach affinity — professional identity shapes encounter preference
     const roleAffinityMultiplier = computeRoleAffinityMultiplier(agentNode, entry.reachPrimary);
 
+    // 20b. Economic context (THR-725) — a blighted province wants desperate stories, a boom
+    // throws festivals. Reuses the `locationNode` already resolved above rather than walking
+    // the graph again per candidate (NFP #7); only a sublocation costs the one parent hop.
+    const candidateProsperity =
+      typeof locationNode?.properties?.prosperity === 'number'
+        ? (locationNode.properties.prosperity as number)
+        : resolveGoverningProsperity(graph, entry.locationId);
+    const economicContextBonus = computeEconomicContextBonus(candidateProsperity, entry.templateId);
+
     // 21. Final score — rarity + role affinity multipliers on baseScore (exploration/ruins/chain bonuses are fixed)
-    const baseScore = valuePerTick * desireMultiplier + factionScoringBoost + reputationBonus + resonance + globalResonance;
+    const baseScore = valuePerTick * desireMultiplier + factionScoringBoost + reputationBonus + economicContextBonus + resonance + globalResonance;
     // 22. Doom identity + omen bias — additive, applied after all multipliers (already capped at source)
     const identityBiasBonus = encounterTypeBias?.[entry.encounterType] ?? 0;
     // 23. Hidden mark reveal bonus — encounters matching an agent's marks score higher (THR-112)
@@ -1285,6 +1297,7 @@ export function scoreAndSelect(
       divineOverlayBonus,
       bondBonus,
       reputationBonus,
+      economicContextBonus,
       hexDistanceToEntry: distance,
       intelBonus,
       identityBiasBonus,
@@ -1369,6 +1382,8 @@ function buildTrace(
       pushBenefit: c.pushBenefit,
       resistBenefit: c.resistBenefit,
       identityBiasBonus: c.identityBiasBonus,
+      // THR-725 — the economy's contribution, so "why did a famine town pick this?" is answerable.
+      economicContextBonus: c.economicContextBonus,
     })),
     selectedTemplateId: selected?.entry.templateId ?? null,
     selectedLocationId: selected?.entry.locationId ?? null,

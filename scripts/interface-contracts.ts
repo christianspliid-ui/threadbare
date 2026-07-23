@@ -404,9 +404,28 @@ export const CONTRACTS: readonly Contract[] = [
     consumerSystem: 'Encounters & Dilemmas',
     intent: 'Boom and bust color which scenes fire — a blighted province tells desperate stories, a boom throws festivals.',
     ulTerms: ['Encounter'],
-    mechanism: { kind: 'function', symbols: ['economicContextBonus'] },
-    writeSites: ['src/engine/phaseProsperity.ts'],
+    // Site correction on implementation (THR-725, audit-on-touch): the design session
+    // predicted `phaseProsperity.ts` as the producer of this symbol. It is not — the term is
+    // implemented in `economicContext.ts` and consumed by the scorer; `phaseProsperity.ts`
+    // carries the *seeding* half of the feature, which is the row below plus the
+    // `econ_shock_seeded` trace. Recording where the code actually lives, not where it was
+    // expected to.
+    // Both symbols on purpose: the producer exports `computeEconomicContextBonus`, the
+    // consumer binds the result as `economicContextBonus` and carries it onto the scoring
+    // trace and the debug breakdown. Greping only the latter finds the consumer and misses
+    // the producer, which is what pinned this row LEAKED on the first regeneration.
+    mechanism: {
+      kind: 'function',
+      symbols: ['computeEconomicContextBonus', 'economicContextBonus'],
+      module: 'src/engine/economicContext.ts',
+    },
+    writeSites: ['src/engine/economicContext.ts'],
     readSites: ['src/engine/encounterScoring.ts'],
+    verifiedLive: {
+      date: '2026-07-23',
+      evidence:
+        'THR-725: 120-tick standard run (seed 42, medium, unforced) produced 184 nonzero `economicContextBonus` contributions on `encounter_scoring` traces — e.g. `encounter.bandit_ambush econ=+0.0700 final=0.950` at a bust settlement and `encounter.grand_tournament econ=-0.0006` penalised for the same reason. Values, not just symbols: the term moves finalScore.',
+    },
     deferralTicket: 'THR-725',
   },
   {
@@ -415,14 +434,19 @@ export const CONTRACTS: readonly Contract[] = [
     consumerSystem: 'Encounters & Dilemmas',
     intent:
       'The four granted economic verbs (bless_harvest, blight, open_markets, reveal_vein) get a visible story response — player-loop link 4.',
-    mechanism: { kind: 'function', symbols: ['loc.blight', 'loc.bless_harvest'] },
-    writeSites: ['src/data/unified-action-templates.ts', 'src/engine/graphOpExecutor.ts'],
-    readSites: ['src/engine/encounterScoring.ts'],
-    badgeOverride: {
-      badge: 'LEAKED',
-      reason:
-        'The verbs are granted, playable, and verifiably move prosperity/stocks — but encounterScoring.ts contains zero prosperity/economic terms, so the world never answers in scenes. The player’s cards work and the story stays silent.',
-      deferralTicket: 'THR-725',
+    // Mechanism correction on implementation (THR-725): the row was seeded greping the verb
+    // *ids*, on the assumption the scorer would name them. It deliberately does not — shock
+    // detection and scene scoring are cause-agnostic, so battle aftermath and any future
+    // cause get the same story response the player's cards do. What actually crosses the
+    // boundary is the `prosperity` property: the verbs write it, `economicContext.ts` reads
+    // it. Greping the verb ids here would have manufactured a permanent phantom leak.
+    mechanism: { kind: 'node-prop', symbols: ['prosperity'] },
+    writeSites: ['src/data/unified-action-templates.ts'],
+    readSites: ['src/engine/economicContext.ts'],
+    verifiedLive: {
+      date: '2026-07-23',
+      evidence:
+        'THR-725: end-to-end in the CLI (seed 42, medium) — applied `loc.blight`\'s -10 prosperity write to Thornhaven at tick 20; tick 21 emitted `econ_shock_seeded` (bust, -10.0) planting `encounter.debt_collection` and `encounter.aid_refugees`; by tick 27 both had matured into live scenes on the seeded agents. The verb now produces story, not just a number.',
     },
     deferralTicket: 'THR-725',
   },
