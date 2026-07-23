@@ -87,6 +87,8 @@ UI: N/A — no player-facing surface changes; the wiki HTML is served unchanged.
 
 ## Wiring
 
+> See checklist: Docs/plans/wiring-checklist.md — no orchestrator phase, modal, GameState field, trace category, or player control is added, so no checklist row applies.
+
 No orchestrator/GameState/trace surface exists for this change. The structural chain that replaces the wiring table:
 
 | Piece | Hooks into | Consumed by |
@@ -108,7 +110,7 @@ No orchestrator/GameState/trace surface exists for this change. The structural c
 
 ## Tracing
 
-No engine traces — this never runs inside the game, so no `TraceBuffer` interface applies. Observability surfaces: the named CI step's log (stale page + matched globs + any `EXEMPT — reason` line), git history for exemption tokens, and the weekly hygiene report. That is the appropriate inspectability layer for repo tooling (NFP #2 satisfied at the right altitude).
+N/A — no engine traces: this never runs inside the game, so no `TraceBuffer` interface applies. Observability surfaces: the named CI step's log (stale page + matched globs + any `EXEMPT — reason` line), git history for exemption tokens, and the weekly hygiene report. That is the appropriate inspectability layer for repo tooling (NFP #2 satisfied at the right altitude).
 
 ## Fail-soft table
 
@@ -137,10 +139,12 @@ N/A — no cross-system engine contract from `Docs/canon/interface-map.md` is to
 ## Vision audit
 
 - [x] This plan does not contradict any Vision premise — no player-facing or rules-of-play surface; governing texts are process canon (`Docs/design-reference-wiki.md`, CLAUDE.md DoD).
+- [x] No Vision edit is in scope (nothing to update).
 
 ## Rulebook impact
 
 - [x] This plan does not change a rule of play (turn structure, action verb, prerequisite, resource, encounter, clock, win/loss).
+- [x] No `Docs/canon/rulebook.md` update required.
 
 > Brainstorm companion: `Docs/plans/2026-07-23-wiki-freshness-blocking-gate-brainstorm.md` (written alongside, same pass).
 
