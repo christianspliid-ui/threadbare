@@ -41,6 +41,7 @@ import { personalityOriginSeedPhase } from './personalityOriginSeed';
 import { personalityTraitEmergePhase } from './personalityTraitEmerge';
 import { corePersonalityPhase } from './corePersonality';
 import { autonomousAftermathPhase } from './phaseAutonomousAftermath';
+import { playerReceiptsPhase } from '../playerReceipts';
 import { mandatePhase } from './mandate';
 import { factionSuccessionPhase } from './factionSuccession';
 import { resourceStockTiersPhase } from './resourceStockTiers';
@@ -52,6 +53,8 @@ export const ENGINE_PHASES: readonly EnginePhase[] = [
   doomPhase,
   // post-resolution
   autonomousAftermathPhase,
+  playerReceiptsPhase, // THR-727: Divine Receipt — player action resolution feedback
+
   // post-doom
   emittedOmenDecayPhase,
   // pre-economy

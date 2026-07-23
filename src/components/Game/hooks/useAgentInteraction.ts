@@ -319,9 +319,11 @@ export function useAgentInteraction({
             source: 'player',
           });
 
-          // Build consequence message (optimistic on dispatch)
-          const consequenceBody = template.consequenceMessage?.success
-            ?? template.narrativeTemplates?.success
+          // Dispatch-time phrasing — initiation (present tense; the outcome lands later
+          // as a Divine Receipt, THR-727). Was consequenceMessage.success, which claimed a
+          // future success before the action had begun resolving.
+          const consequenceBody = template.narrativeTemplates?.initiation
+            ?? template.consequenceMessage?.success
             ?? 'The action ripples outward.';
 
           const sphereName = capturedSphere

@@ -471,6 +471,37 @@ export const CONTRACTS: readonly Contract[] = [
     readSites: ['src/engine/foreshadowing/motiveReceipt.ts'],
     deferralTicket: 'THR-726',
   },
+
+  // ── Divine Receipt — player action resolution feedback (THR-727) ───────────
+  {
+    id: 'player-action-aftermath-read',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: 'Attention, Chronicle & Narrative',
+    intent:
+      'The aftermath a player action already produces finally reaches the player — the receipt phase reads the summary that was built and discarded for player casts.',
+    ulTerms: ['Aftermath'],
+    mechanism: { kind: 'function', symbols: ['processPlayerReceipts', 'aftermathSummary'], module: 'src/engine/playerReceipts.ts' },
+    writeSites: ['src/engine/unifiedActionResolution.ts'],
+    readSites: ['src/engine/playerReceipts.ts'],
+  },
+  {
+    id: 'player-action-receipts-queue',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: 'Attention, Chronicle & Narrative',
+    intent: 'A resolved player cast queues a Divine Receipt the UI surfaces as a toast or a receipt dialogue.',
+    mechanism: { kind: 'node-prop', symbols: ['playerActionReceipts'] },
+    writeSites: ['src/engine/playerReceipts.ts'],
+    readSites: ['src/components/Game/GameView.tsx', 'src/debug-bridge.ts'],
+  },
+  {
+    id: 'receipt-event-band-toast',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: 'Attention, Chronicle & Narrative',
+    intent: 'A receipt toast carries its outcome band so the toast accent matches how the cast landed.',
+    mechanism: { kind: 'event', symbols: ['band'] },
+    writeSites: ['src/engine/playerReceipts.ts'],
+    readSites: ['src/engine/notificationRouter.ts'],
+  },
 ];
 
 /** A malformed row — surfaced in the generated output rather than thrown (NFP #4). */

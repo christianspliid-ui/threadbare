@@ -17,6 +17,7 @@ const NAV_GLYPHS: Record<NavigationTarget['kind'], string> = {
   location:  '🏘',
   faction:   '⚑',
   journey:   '↝',
+  receipt:   '✦',
 };
 
 /** Tooltip text for each navigation kind */
@@ -27,6 +28,7 @@ const NAV_TOOLTIPS: Record<NavigationTarget['kind'], string> = {
   location:  'Click to view location',
   faction:   'Click to view faction',
   journey:   'Click to view journey',
+  receipt:   'Click to view the receipt',
 };
 
 /** Opacity for navigation glyph */

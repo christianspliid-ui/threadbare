@@ -19,8 +19,8 @@ remediation ticket or the build fails.
 | 🟠 PARTIAL | 1 |
 | 🔴 LEAKED | 7 |
 | ⚫ UNWIRED | 2 |
-| 🔵 UNVERIFIED-OK | 0 |
-| **Total** | **27** |
+| 🔵 UNVERIFIED-OK | 3 |
+| **Total** | **30** |
 
 ## Contracts by producing subsystem
 
@@ -70,6 +70,9 @@ remediation ticket or the build fails.
 | Contract | Intent | Mechanism | Consumer | Status | Ticket |
 |---|---|---|---|---|---|
 | `attachment-encounter-rewards` | Encounters grant rewards, which become possessions. | function: `assembleRewardPool` | Attachments, Items & Possessions | 🟢 LIVE | — |
+| `player-action-aftermath-read` | The aftermath a player action already produces finally reaches the player — the receipt phase reads the summary that was built and discarded for player casts. | function: `processPlayerReceipts`, `aftermathSummary` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
+| `player-action-receipts-queue` | A resolved player cast queues a Divine Receipt the UI surfaces as a toast or a receipt dialogue. | node-prop: `playerActionReceipts` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
+| `receipt-event-band-toast` | A receipt toast carries its outcome band so the toast accent matches how the cast landed. | event: `band` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
 | `secrets-generation` | Secrets are born from scenes — mortals learn things about each other worth holding. | function: `generateSecret`, `createSecretEdge` | Secrets & Favors | 🟢 LIVE | — |
 | `world-events-mint-ambitions` | World events write themselves into mortal desire — a sacked town mints avengers and refugees. | function: `AMBITION_MINTING_RULES`, `mintAmbitionsFromEvents` | Ambitions & Initiatives | ⚫ UNWIRED | THR-726 |
 
@@ -317,6 +320,38 @@ remediation ticket or the build fails.
 - **Write sites:** —
 - **Read sites:** —
 - **Verdict:** Tier 2: no production hits for any declared symbol on either side.
+
+### `player-action-aftermath-read` — 🔵 UNVERIFIED-OK
+
+- **Intent:** The aftermath a player action already produces finally reaches the player — the receipt phase reads the summary that was built and discarded for player casts.
+- **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
+- **UL terms:** *Aftermath*
+- **Module:** `src/engine/playerReceipts.ts`
+- **Production hits:** 14 total — 1 write, 1 read, 12 unclassified
+- **Write sites:** `src/engine/unifiedActionResolution.ts`
+- **Read sites:** `src/engine/playerReceipts.ts`
+- **Other hits:** `src/components/Game/ChapterView.tsx`, `src/components/Game/encounter-stage/adapters/buildGateDutyEncounterStageModel.ts`, `src/components/Game/encounter-stage/adapters/buildUnifiedEncounterStageModel.ts`, `src/components/Game/encounterNotificationRuntime.ts`, `src/components/Game/GameView.tsx` +7 more
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
+
+### `player-action-receipts-queue` — 🔵 UNVERIFIED-OK
+
+- **Intent:** A resolved player cast queues a Divine Receipt the UI surfaces as a toast or a receipt dialogue.
+- **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
+- **Production hits:** 4 total — 1 write, 2 read, 1 unclassified
+- **Write sites:** `src/engine/playerReceipts.ts`
+- **Read sites:** `src/components/Game/GameView.tsx`, `src/debug-bridge.ts`
+- **Other hits:** `src/types/gameState.ts`
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
+
+### `receipt-event-band-toast` — 🔵 UNVERIFIED-OK
+
+- **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
+- **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
+- **Production hits:** 118 total — 1 write, 1 read, 116 unclassified
+- **Write sites:** `src/engine/playerReceipts.ts`
+- **Read sites:** `src/engine/notificationRouter.ts`
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/Game/ActionCard.tsx`, `src/components/Game/ascendant-bar/IdentityStrip.tsx`, `src/components/Game/ascendant-bar/selectors.ts`, `src/components/Game/ChapterView.tsx` +111 more
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `secrets-consequences` — 🟢 LIVE
 

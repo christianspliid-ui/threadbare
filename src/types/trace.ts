@@ -62,6 +62,7 @@ export type TraceCategory =
   | 'personality_origin_seeded'
   | 'core_personality'
   | 'reaction_selected'
+  | 'player_receipt'
   | 'rarity_graduation'
   | 'rarity_importance'
   | 'divine_proximity_phase'
@@ -550,6 +551,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'core_personality',
   // Autonomous in-encounter choice (THR-530)
   'reaction_selected',
+  // Divine Receipt — player action resolution feedback (THR-727)
+  'player_receipt',
   // Reach signature: Iron / Warhost (THR-550)
   'ascendant.signature.warhost',
   // Reach signature: Veil / Rend the Gate (THR-551)
@@ -2041,7 +2044,26 @@ export type TraceEntry =
   | PlayerTierUpTrace
   | DeepeningEnqueueTrace
   | MilestoneEnqueueTrace
-  | ControlReleaseTrace;
+  | ControlReleaseTrace
+  // Divine Receipt — player action resolution feedback (THR-727)
+  | PlayerReceiptTrace;
+
+/**
+ * Trace: a Divine Receipt was enqueued, acknowledged, a reaction applied, the queue
+ * capped, or a fallback receipt built (THR-727). Player-scale (a handful per session),
+ * so one trace per event — no aggregate batching (that rule is for all-agents phases).
+ */
+export interface PlayerReceiptTrace extends TraceBase {
+  category: 'player_receipt';
+  event: 'enqueued' | 'acknowledged' | 'reaction_applied' | 'queue_capped' | 'fallback_receipt';
+  actionId: string;
+  templateId: string;
+  presentation: 'modal' | 'toast';
+  band?: string;
+  changeCount: number;
+  /** Only present on `reaction_applied`. */
+  reactionId?: string;
+}
 
 /** Trace: a location's resource crossed a stock tier boundary. THR-615 */
 export interface ResourceStockTierChangeTrace extends TraceBase {

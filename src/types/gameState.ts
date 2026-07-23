@@ -14,6 +14,7 @@ import type { DoomClockState, DoomClockDefinition, DoomClockArchetype } from './
 import type { NarrativeEvent, ChronicleEntry } from './narrative';
 import type { EncounterProgress } from './encounter';
 import type { UnifiedAction, PendingEncounterSeed, HiddenMark, IntelligenceRecord } from './unifiedAction';
+import type { PlayerActionReceipt } from '../engine/playerReceipts';
 import type { ChapterRecord } from './chapterRecord';
 import type { ActiveDelve, DelveQueueEntry, PendingEmergenceDecision } from '../engine/ruins/delveTypes';
 import type { HexMutation } from './hexMutation';
@@ -124,10 +125,14 @@ export interface TickEvent {
   // Ruins quest hook events (THR-156)
     | 'quest_hook_issued'
   // Emergent personality trait events (THR-527)
-    | 'personality_trait_emerged';
+    | 'personality_trait_emerged'
+  // Divine Receipt — player action resolution feedback (THR-727)
+    | 'player_action_receipt';
   message: string;
   /** Optional sphere coloring for UI */
   sphere?: SphereName;
+  /** Optional outcome band (e.g. 'fortunate', 'setback') for band-keyed toast accent (THR-727). */
+  band?: string;
   /** Significance 0-1 for UI prominence */
   significance: number;
   /** Marks this event as the result of a divine intervention */
@@ -258,6 +263,16 @@ export interface GameState {
   /** Ascendant Beat Director state — scheduling for encounters addressed to the
    *  player-god. Optional/additive (THR-500); the Director no-ops when absent. */
   ascendantBeats?: AscendantBeatState;
+
+  /**
+   * Divine Receipts — resolution-time outcome feedback for player-sourced actions
+   * (THR-727). Enqueued by `phasePlayerReceipts` when a player action resolves;
+   * consumed by `DivineReceiptModal` (modal tier) and the ToastStack click-through
+   * (toast tier). Capped at RECEIPT_QUEUE_MAX (drop-oldest) so headless/CLI runs
+   * where nothing acknowledges never grow unbounded. Optional/additive — old saves
+   * load as an empty queue.
+   */
+  playerActionReceipts?: readonly PlayerActionReceipt[];
 
   // Pending hex mutations — accumulated by hex action resolution, consumed by phaseHexState
   pendingHexMutations?: HexMutation[];

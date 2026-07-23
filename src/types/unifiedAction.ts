@@ -1219,6 +1219,14 @@ export interface UnifiedAction {
    */
   readonly autonomousAftermathApplied?: boolean;
   /**
+   * THR-727: set once `phasePlayerReceipts` has emitted the Divine Receipt for this
+   * resolved, player-sourced action. Idempotency guard mirroring
+   * `autonomousAftermathApplied` — the scan skips flagged actions on later ticks so a
+   * receipt is enqueued exactly once. Additive/optional; old saves and non-player
+   * actions simply omit it.
+   */
+  readonly playerReceiptEmitted?: boolean;
+  /**
    * Per-step complication results (parallel to stepOutcomes).
    * Null entries indicate the step had no complication or was a success tier.
    * Used by the UI to display complication prose alongside step narratives. (THR-20)
