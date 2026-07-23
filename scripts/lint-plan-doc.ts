@@ -6,6 +6,8 @@ import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 
+import { SUBSYSTEMS } from './subsystems-registry.ts';
+
 type Severity = 'error' | 'warn';
 
 type Finding = {
@@ -44,6 +46,27 @@ const HIGH_IMPACT_FILES = [
   'src/types/traits.ts',
   'src/engine/traceBuffer.ts',
 ] as const;
+/**
+ * Subsystem aliases too generic to be evidence that a plan *touches* that
+ * subsystem (THR-717). These are ordinary English words that appear incidentally
+ * in almost any design doc — matching on them flagged 15 of 25 subsystems on a
+ * single plan, and a lint that fires on everything is one the repo learns to
+ * ignore (the decay THR-686 named). Distinctive aliases (`quintessence`,
+ * `apotheosis`, `schism`, `attachment`) still match.
+ *
+ * Tunable (NFP #1): removing an entry makes the lint stricter, adding one makes
+ * it quieter. Neither can produce a false *negative* that matters — Step 0.7 is
+ * a checklist item the designer owns; this lint is the nag, not the gate.
+ */
+const GENERIC_SUBSYSTEM_ALIASES = new Set<string>([
+  'beat', 'clock', 'condition', 'control', 'effect', 'facet', 'faith', 'feed', 'goal', 'gold',
+  'hidden', 'influence', 'interaction', 'item', 'items', 'knowledge', 'mark', 'market', 'milestone',
+  'npc', 'objective', 'order', 'personality', 'pressure', 'project', 'quest', 'rank', 'resource',
+  'resources', 'secret', 'secrets', 'signature', 'slot', 'standing', 'status', 'story', 'trait',
+  'traits', 'travel', 'war', 'conflict', 'birth', 'death', 'clue', 'favor', 'attention', 'movement',
+  'narrative', 'culture', 'economy', 'trade', 'reaction', 'initiative',
+]);
+
 const STRICT_FLAG = '--strict';
 const HEADING_PATTERN = /^## /u;
 const TABLE_ROW_PATTERN = /^\|.*\|$/u;
@@ -540,6 +563,46 @@ function checkBlastRadiusConditional(
   });
 }
 
+/**
+ * Step 0.7 (THR-717): a plan touching a mapped subsystem must carry an
+ * `## Interface impact` table. Honor-system gates decay in this repo (THR-686
+ * gate theater), so the lint makes the checklist step nag mechanically.
+ *
+ * Matched on subsystem *aliases* rather than the formal names — a plan says
+ * "war" or "armies", never "War, Armies & Battles". Word-boundary-anchored so
+ * short aliases (`clock`, `mark`, `goal`) cannot match inside longer words.
+ * Advisory, matching this lint's current overall status.
+ */
+function checkInterfaceImpactConditional(
+  file: string,
+  text: string,
+  sections: Map<string, SectionRange>,
+  findings: Finding[],
+): void {
+  if (sections.has('## Interface impact')) {
+    return;
+  }
+  const haystack = text.toLowerCase();
+  const matched = SUBSYSTEMS.filter((subsystem) =>
+    subsystem.aliases
+      .filter((alias) => !GENERIC_SUBSYSTEM_ALIASES.has(alias))
+      .some((alias) => new RegExp(`\\b${alias.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&')}\\b`, 'u').test(haystack)),
+  ).map((subsystem) => subsystem.name);
+
+  if (matched.length === 0) {
+    return;
+  }
+  addFinding(findings, {
+    check: 'interface-impact-conditional',
+    severity: 'warn',
+    file,
+    line: 1,
+    message:
+      `Plan touches mapped subsystem(s) [${matched.slice(0, 3).join('; ')}${matched.length > 3 ? `; +${matched.length - 3} more` : ''}] ` +
+      'but has no `## Interface impact` section. See Docs/canon/interface-map.md (design workflow Step 0.7).',
+  });
+}
+
 function lintFile(repoPath: string, templateHeadings: Set<string>, findings: Finding[]): void {
   const absPath = toAbsolutePath(repoPath);
   let text: string;
@@ -582,6 +645,7 @@ function lintFile(repoPath: string, templateHeadings: Set<string>, findings: Fin
   checkCheckboxSection(repoPath, sections, '## Done when', 'done-when', 1, findings);
   checkCoordinationBlock(repoPath, sections, findings);
   checkBlastRadiusConditional(repoPath, text, sections, findings);
+  checkInterfaceImpactConditional(repoPath, text, sections, findings);
 }
 
 function parseCli(argv: readonly string[]): { strict: boolean; mode: CandidateMode; paths: string[] } {

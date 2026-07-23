@@ -42,6 +42,8 @@ import {
   UL_UNCANONICAL_MIN_OCCURRENCES,
   SUITE_HISTORY_LIMIT,
 } from "./constants.ts";
+
+import { runInterfaceCoverage } from "./interface-coverage.ts";
 export {
   COUPLING_CREEP_PCT,
   BROKEN_WINDOWS_PCT,
@@ -114,7 +116,7 @@ export type SignalResult =
   | { status: "red"; summary: string; body: string };
 
 export type SignalStep = {
-  id: "S1" | "S2" | "S3" | "S4" | "S5" | "S6" | "S7" | "S8" | "S9" | "S10";
+  id: "S1" | "S2" | "S3" | "S4" | "S5" | "S6" | "S7" | "S8" | "S9" | "S10" | "S11";
   name: string;
   run: () => Promise<SignalResult>;
 };
@@ -1277,6 +1279,11 @@ async function main(): Promise<void> {
           return { status: "skipped", reason: "Docs/canon/rulebook-quick-reference.md not found" };
         return lintQuickReferenceVsRulebook(quickRefText, rulebookText);
       },
+    },
+    {
+      id: "S11",
+      name: "interface-map coverage",
+      run: async () => runInterfaceCoverage(REPO_ROOT),
     },
   ];
 
