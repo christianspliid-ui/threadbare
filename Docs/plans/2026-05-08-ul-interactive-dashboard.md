@@ -90,7 +90,9 @@ Versioned for forward-compatibility:
 ```ts
 interface ULDashboardData {
   schemaVersion: 1;
-  generatedAt: string; // ISO date — for "last updated" footer
+  // No `generatedAt` — removed 2026-07-23 (THR-714). The wall-clock field made
+  // this artifact differ between any two branches that ran `prebuild`, which
+  // conflicts on every cascade merge. The footer shows schema + term count.
   shards: ULShard[];
   terms: ULTerm[];
   warnings: ULGenerationWarning[]; // build-step issues (malformed link, missing Status, etc.)

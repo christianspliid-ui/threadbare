@@ -31,11 +31,14 @@
  * never compared to HEAD) — a false pass in exactly the local workflow the
  * gate is meant to protect. Hence the explicit set below.
  *
- * Volatile fields: `ul-dashboard.generated.json` embeds a wall-clock
- * `generatedAt` that the UL dashboard renders ("Generated <date>"). It changes
- * on every run, so a naive `git diff --exit-code` would be permanently red.
- * VOLATILE_JSON_KEYS strips those per-path before comparison — this asserts
- * *content* freshness, not byte equality.
+ * Volatile fields: VOLATILE_JSON_KEYS strips per-run values (timestamps, run
+ * ids) before comparison, so the gate asserts *content* freshness rather than
+ * byte equality. It is currently empty and should stay that way — THR-714
+ * removed the last entry (`ul-dashboard.generated.json`'s wall-clock
+ * `generatedAt`) at the source instead, because this carve-out only ever hid
+ * the problem from *this* gate: git still saw two different blobs, so any two
+ * PRs that both ran `prebuild` conflicted on every cascade merge. Prefer making
+ * a generator deterministic over registering its volatility here.
  *
  * This gate is deliberately NOT fail-soft. NFP #4 (fail-soft) governs the tick
  * loop, where a thrown exception costs the player their run; a build gate that
@@ -63,10 +66,7 @@ const STATIC_GENERATED_PATHS: readonly string[] = [
  * Only for values a generator legitimately rewrites every run (timestamps, run
  * ids). Anything not listed here is compared verbatim.
  */
-const VOLATILE_JSON_KEYS: Readonly<Record<string, readonly string[]>> = {
-  // Rendered as "Generated <date>" by UbiquitousLanguageDashboard.tsx.
-  "src/data/ul-dashboard.generated.json": ["generatedAt"],
-};
+const VOLATILE_JSON_KEYS: Readonly<Record<string, readonly string[]>> = {};
 
 /** The command that refreshes every committed generated artifact. */
 const GENERATOR_COMMAND = "npm run prebuild";

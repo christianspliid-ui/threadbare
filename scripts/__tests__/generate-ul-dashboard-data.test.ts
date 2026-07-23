@@ -144,13 +144,17 @@ describe('buildDashboardData', () => {
     expect(node?.status).toBe('unknown');
   });
 
-  it('produces a deterministic shape across runs (modulo generatedAt)', () => {
+  // THR-714: byte-identical, not merely equal-modulo-a-timestamp. A per-run
+  // field made two PRs that both ran `prebuild` carry different blobs, which
+  // conflicts on every cascade merge and silently stalls armed auto-merges.
+  it('serializes byte-identically across runs with unchanged sources', () => {
     const a = buildDashboardData({ sourceRoot: tmpDir });
     const b = buildDashboardData({ sourceRoot: tmpDir });
-    const stripTs = (data: ReturnType<typeof buildDashboardData>) => {
-      const { generatedAt: _ts, ...rest } = data;
-      return rest;
-    };
-    expect(stripTs(a)).toEqual(stripTs(b));
+    expect(JSON.stringify(a, null, 2)).toBe(JSON.stringify(b, null, 2));
+  });
+
+  it('emits no wall-clock field', () => {
+    const data = buildDashboardData({ sourceRoot: tmpDir });
+    expect(Object.keys(data)).not.toContain('generatedAt');
   });
 });
