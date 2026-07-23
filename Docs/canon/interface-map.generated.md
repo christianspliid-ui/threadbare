@@ -15,10 +15,10 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 15 |
+| 🟢 LIVE | 17 |
 | 🟠 PARTIAL | 1 |
-| 🔴 LEAKED | 8 |
-| ⚫ UNWIRED | 3 |
+| 🔴 LEAKED | 7 |
+| ⚫ UNWIRED | 2 |
 | 🔵 UNVERIFIED-OK | 0 |
 | **Total** | **27** |
 
@@ -77,8 +77,8 @@ remediation ticket or the build fails.
 
 | Contract | Intent | Mechanism | Consumer | Status | Ticket |
 |---|---|---|---|---|---|
-| `economy-context-scene-scoring` | Boom and bust color which scenes fire — a blighted province tells desperate stories, a boom throws festivals. | function: `economicContextBonus` | Encounters & Dilemmas | ⚫ UNWIRED | THR-725 |
-| `economy-verbs-answered` | The four granted economic verbs (bless_harvest, blight, open_markets, reveal_vein) get a visible story response — player-loop link 4. | function: `loc.blight`, `loc.bless_harvest` | Encounters & Dilemmas | 🔴 LEAKED | THR-725 |
+| `economy-context-scene-scoring` | Boom and bust color which scenes fire — a blighted province tells desperate stories, a boom throws festivals. | function: `computeEconomicContextBonus`, `economicContextBonus` | Encounters & Dilemmas | 🟢 LIVE | THR-725 |
+| `economy-verbs-answered` | The four granted economic verbs (bless_harvest, blight, open_markets, reveal_vein) get a visible story response — player-loop link 4. | node-prop: `prosperity` | Encounters & Dilemmas | 🟢 LIVE | THR-725 |
 
 ### Secrets & Favors
 
@@ -276,25 +276,27 @@ remediation ticket or the build fails.
 - **Read sites:** `src/engine/worldSeed.ts`
 - **Verdict:** Verified 2026-07-23: 7 possesses edges present at tick 0. Docs/plans/2026-07-23-system-interface-map.md § Audit findings (manual audit + independent cold-context review, both grep-verified)
 
-### `economy-context-scene-scoring` — ⚫ UNWIRED
+### `economy-context-scene-scoring` — 🟢 LIVE
 
 - **Intent:** Boom and bust color which scenes fire — a blighted province tells desperate stories, a boom throws festivals.
 - **Producer → Consumer:** Mortal Economy & Prosperity → Encounters & Dilemmas
 - **UL terms:** *Encounter*
-- **Production hits:** 0 total — 0 write, 0 read, 0 unclassified
-- **Write sites:** —
-- **Read sites:** —
-- **Verdict:** Tier 2: no production hits for any declared symbol on either side.
+- **Module:** `src/engine/economicContext.ts`
+- **Production hits:** 4 total — 1 write, 1 read, 2 unclassified
+- **Write sites:** `src/engine/economicContext.ts`
+- **Read sites:** `src/engine/encounterScoring.ts`
+- **Other hits:** `src/components/Game/debug/DecisionBreakdown.tsx`, `src/types/trace.ts`
+- **Verdict:** Verified 2026-07-23: THR-725: 120-tick standard run (seed 42, medium, unforced) produced 184 nonzero `economicContextBonus` contributions on `encounter_scoring` traces — e.g. `encounter.bandit_ambush econ=+0.0700 final=0.950` at a bust settlement and `encounter.grand_tournament econ=-0.0006` penalised for the same reason. Values, not just symbols: the term moves finalScore.
 
-### `economy-verbs-answered` — 🔴 LEAKED
+### `economy-verbs-answered` — 🟢 LIVE
 
 - **Intent:** The four granted economic verbs (bless_harvest, blight, open_markets, reveal_vein) get a visible story response — player-loop link 4.
 - **Producer → Consumer:** Mortal Economy & Prosperity → Encounters & Dilemmas
-- **Production hits:** 7 total — 1 write, 0 read, 6 unclassified
+- **Production hits:** 62 total — 1 write, 1 read, 60 unclassified
 - **Write sites:** `src/data/unified-action-templates.ts`
-- **Read sites:** —
-- **Other hits:** `src/data/action-technical-effects.ts`, `src/data/actionEffectsProse.ts`, `src/data/ascendant-beat-content.ts`, `src/data/ascendant-milestone-beats.ts`, `src/engine/content-eval/unreachableActions.ts` +1 more
-- **Verdict:** Pinned by badgeOverride: The verbs are granted, playable, and verifiably move prosperity/stocks — but encounterScoring.ts contains zero prosperity/economic terms, so the world never answers in scenes. The player’s cards work and the story stays silent.
+- **Read sites:** `src/engine/economicContext.ts`
+- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/DecisionBreakdown.tsx`, `src/data/action-technical-effects.ts` +55 more
+- **Verdict:** Verified 2026-07-23: THR-725: end-to-end in the CLI (seed 42, medium) — applied `loc.blight`'s -10 prosperity write to Thornhaven at tick 20; tick 21 emitted `econ_shock_seeded` (bust, -10.0) planting `encounter.debt_collection` and `encounter.aid_refugees`; by tick 27 both had matured into live scenes on the seeded agents. The verb now produces story, not just a number.
 
 ### `faction-ambitions-drive-action` — 🟢 LIVE
 

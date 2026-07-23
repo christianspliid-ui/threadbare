@@ -24,7 +24,15 @@ import type { WorldGraph } from './graph';
 import type { HexTile } from '../types/index';
 import type { ResourceInstance } from '../types/resource';
 import type { SphereAffinity, SpherePressureEvent } from '../types/sphereAffinity';
+import type { PendingEncounterSeed } from '../types/unifiedAction';
 import { emitTrace } from './traceBuffer';
+import { mulberry32 } from '../lib/prng';
+import {
+  ECON_BOOM_SEED_TEMPLATES,
+  ECON_BUST_SEED_TEMPLATES,
+  ECON_SHOCK_DELTA,
+  ECON_SHOCK_SEED_COUNT,
+} from '../data/economic-scene-affinity';
 import { getNodeSphereAffinity } from './sphereAffinity';
 import { readLocationResourceBalance } from './resourceEconomy';
 import { RESOURCE_BALANCE_PROSPERITY_WEIGHT } from '../data/resource-classes';
@@ -493,6 +501,123 @@ interface EquilibriumBreakdown {
   resourceBalanceBonus: number;
 }
 
+// ─── Economic Shock Seeding (THR-725) ────────────────────────────────────────
+
+/**
+ * PRNG seed offset for shock-seed family/agent draws. Distinct from every other
+ * phase offset so two phases on the same tick never share a stream (NFP #3).
+ */
+const ECON_SHOCK_RNG_OFFSET = 7717;
+
+/**
+ * Property holding the prosperity value this phase last wrote for a settlement.
+ *
+ * This is the whole trick behind cause-agnostic shock detection. Divine verbs
+ * (`loc.blight`, `loc.bless_harvest`, `loc.open_markets`) write `prosperity` *directly*
+ * through `update_node`, bypassing the `prosperityShocks` queue entirely — so comparing
+ * against the queue alone would miss the player's own cards. Comparing the value found at
+ * the top of this phase against the value this phase last wrote isolates exactly the
+ * writes that came from somewhere else, whoever made them.
+ */
+const ECON_LAST_PROSPERITY_PROP = 'econLastProsperity';
+
+/** One settlement's shock, if it had one this tick. */
+interface EconShock {
+  readonly delta: number;
+  readonly polarity: 'boom' | 'bust';
+  readonly cause: 'direct_write' | 'prosperity_shock' | 'mixed';
+}
+
+/**
+ * Classify this tick's prosperity movement at a settlement as a shock or as ordinary life.
+ *
+ * `externalDelta` is everything written since this phase last ran; `shockTotal` is the
+ * queued-shock contribution about to be applied. Their sum is the swing a mortal would
+ * actually notice. Equilibrium drift is excluded by construction (it is applied *by* this
+ * phase, and is clamped to `PROSPERITY_DELTA_CLAMP` anyway).
+ *
+ * Fail-soft: a settlement seen for the first time has no baseline, so `externalDelta` is 0
+ * and world-generation never reads as a shock.
+ */
+function classifyEconShock(externalDelta: number, shockTotal: number): EconShock | null {
+  const delta = externalDelta + shockTotal;
+  if (!Number.isFinite(delta) || Math.abs(delta) < ECON_SHOCK_DELTA) return null;
+
+  const cause = externalDelta !== 0 && shockTotal !== 0
+    ? 'mixed'
+    : shockTotal !== 0
+      ? 'prosperity_shock'
+      : 'direct_write';
+
+  return { delta, polarity: delta > 0 ? 'boom' : 'bust', cause };
+}
+
+/**
+ * Collect mortals standing at a settlement — the people a shock happens *to*.
+ * Seeds target agents (that is the shape of `PendingEncounterSeed`), so a shock with
+ * nobody present plants nothing rather than queueing orphan seeds.
+ */
+function collectPresentMortals(graph: WorldGraph, locationId: string): string[] {
+  const present: string[] = [];
+  for (const edge of graph.getIncomingEdges(locationId, 'located_at')) {
+    const node = graph.getNode(edge.source);
+    if (node?.type === 'actor' && node.properties?.actorType === 'individual') {
+      present.push(node.id);
+    }
+  }
+  return present;
+}
+
+/**
+ * Plant themed scene seeds for one economic shock.
+ *
+ * Seeds name a concrete `templateId` rather than a family stub. The family-stub path
+ * (`matchFamilyTemplate`) resolves by first-segment prefix, and the one family holding every
+ * economically-flavoured scene is `encounter` — 171 templates of every possible mood — so a
+ * stub would have planted `encounter.offer_small_prayer` as readily as `encounter.pickpocket`.
+ * Naming the template is what makes the world's answer actually about the economy. See
+ * `ECON_BOOM_SEED_TEMPLATES` for the full rationale.
+ *
+ * Returns the planted seeds; the caller emits one aggregate trace per shock.
+ */
+function plantShockSeeds(
+  shock: EconShock,
+  locationId: string,
+  locationName: string,
+  presentMortals: readonly string[],
+  tick: number,
+  rng: () => number,
+): PendingEncounterSeed[] {
+  const templates = shock.polarity === 'boom' ? ECON_BOOM_SEED_TEMPLATES : ECON_BUST_SEED_TEMPLATES;
+  if (templates.length === 0 || presentMortals.length === 0) return [];
+
+  const count = Math.min(ECON_SHOCK_SEED_COUNT, presentMortals.length);
+  const pool = [...presentMortals];
+  const seeds: PendingEncounterSeed[] = [];
+
+  for (let i = 0; i < count; i++) {
+    const agentIdx = Math.floor(rng() * pool.length);
+    const targetAgentId = pool.splice(agentIdx, 1)[0];
+    const templateId = templates[Math.floor(rng() * templates.length)];
+
+    seeds.push({
+      seedId: `econ-shock-${locationId}-${tick}-${i}`,
+      sourceEncounterId: `econ_shock:${locationId}`,
+      sourceReactionId: `econ_shock_${shock.polarity}`,
+      templateId,
+      targetAgentId,
+      eligibleAfterTick: tick + 1,
+      priority: 1,
+      seedLabel: shock.polarity === 'boom'
+        ? `the sudden good fortune of ${locationName}`
+        : `the sudden hard turn at ${locationName}`,
+      plantedTick: tick,
+    });
+  }
+
+  return seeds;
+}
+
 // ─── Phase Function ──────────────────────────────────────────────────────────
 
 /**
@@ -514,6 +639,9 @@ export function phaseProsperity(state: GameState): Partial<GameState> {
   const shocks = state.prosperityShocks ?? [];
   const locations = graph.getNodesByType('location');
   const deathSiteSphereEvents: SpherePressureEvent[] = [];
+  // THR-725 — scene seeds planted by economic shocks this tick, appended to state at return.
+  const econShockSeeds: PendingEncounterSeed[] = [];
+  const econRng = mulberry32(state.seed + tick * ECON_SHOCK_RNG_OFFSET);
 
   // Derive map bounds for frontier/center classification (identity location pressure)
   const identityPressure = state.doomIdentityMatrix?.locationPressure;
@@ -657,6 +785,42 @@ export function phaseProsperity(state: GameState): Partial<GameState> {
     const locationShocks = shocksByLocation.get(loc.id) ?? [];
     const shockTotal = locationShocks.reduce((sum, s) => sum + s.delta, 0);
 
+    // 3b. THR-725 — economic shock detection. `externalDelta` is everything that wrote
+    // prosperity between this phase's last pass and now: the four divine economic verbs
+    // (which write the property directly, never through the shock queue), battle aftermath,
+    // and anything added later. Adding the queued shocks gives the full swing. Deliberately
+    // cause-agnostic — the four cards are never special-cased.
+    const econBaseline = loc.properties?.[ECON_LAST_PROSPERITY_PROP];
+    const externalDelta = typeof econBaseline === 'number' && Number.isFinite(econBaseline)
+      ? prevProsperity - econBaseline
+      : 0;
+    const econShock = classifyEconShock(externalDelta, shockTotal);
+    if (econShock) {
+      const presentMortals = collectPresentMortals(graph, loc.id);
+      const planted = plantShockSeeds(
+        econShock, loc.id, loc.name, presentMortals, tick, econRng,
+      );
+      if (planted.length > 0) {
+        econShockSeeds.push(...planted);
+        // One aggregate trace per shock, never one per seed (trace-volume rule).
+        emitTrace({
+          category: 'econ_shock_seeded',
+          tick,
+          locationId: loc.id,
+          delta: econShock.delta,
+          polarity: econShock.polarity,
+          templateIds: planted.map(s => s.templateId ?? ''),
+          seedIds: planted.map(s => s.seedId),
+          targetAgentIds: planted.map(s => s.targetAgentId),
+          cause: econShock.cause,
+          summary: `${loc.name}: ${econShock.polarity} shock ${econShock.delta > 0 ? '+' : ''}${econShock.delta.toFixed(1)} prosperity → ${planted.length} scene seed(s) [${planted.map(s => s.templateId).join(', ')}]`,
+          // `emitTrace`'s `Omit<TraceEntry, …>` parameter collapses the discriminated union,
+          // so category-specific fields are rejected at the call site even when the member
+          // interface declares them. Same cast the neighbouring emits in this file use.
+        } as unknown as Parameters<typeof emitTrace>[0]);
+      }
+    }
+
     // 4. Doom identity location pressure (additive, capped, applied before clamp)
     let identityDelta = 0;
     if (identityPressure) {
@@ -694,6 +858,9 @@ export function phaseProsperity(state: GameState): Partial<GameState> {
     // 9. Write updated properties back to node
     loc.properties.prosperity = newProsperity;
     loc.properties.populationTrend = populationTrend;
+    // THR-725 — record what *this* phase wrote, so next tick's `externalDelta` sees only
+    // writes that came from elsewhere.
+    loc.properties[ECON_LAST_PROSPERITY_PROP] = newProsperity;
 
     // 9.5 Death-site haunting — locations where agents died gain unrest and Spirit pressure each tick.
     // deathCount is incremented by phaseAgentLifecycle when an agent dies here.
@@ -760,6 +927,11 @@ export function phaseProsperity(state: GameState): Partial<GameState> {
     prosperityShocks: [],
     ...(deathSiteSphereEvents.length > 0
       ? { pendingSpherePressures: [...(state.pendingSpherePressures ?? []), ...deathSiteSphereEvents] }
+      : {}),
+    // THR-725 — economic-shock scene seeds join the existing seed queue; the seed substrate
+    // matures them into concrete encounters via the family-match path.
+    ...(econShockSeeds.length > 0
+      ? { pendingEncounterSeeds: [...(state.pendingEncounterSeeds ?? []), ...econShockSeeds] }
       : {}),
   };
 }

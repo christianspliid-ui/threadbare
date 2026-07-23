@@ -195,6 +195,13 @@ export const DecisionBreakdown = React.memo(function DecisionBreakdown({
                 {' | '}val/t: {c.valuePerTick.toFixed(2)}
                 {' | '}desire: {c.desireMultiplier.toFixed(1)}
                 {' | '}prob: {c.completionProb.toFixed(2)}
+                {/* THR-725 — only rendered when the economy actually spoke, so a
+                    neutral-prosperity settlement's breakdown reads exactly as before. */}
+                {c.economicContextBonus != null && c.economicContextBonus !== 0 && (
+                  <span data-testid="econ-context-bonus">
+                    {' | '}econ: {c.economicContextBonus > 0 ? '+' : ''}{c.economicContextBonus.toFixed(3)}
+                  </span>
+                )}
               </div>
             </div>
           ))}

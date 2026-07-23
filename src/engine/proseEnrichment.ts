@@ -49,6 +49,7 @@ import {
 } from '../data/outcome-band-content';
 import { pickWithRepetitionGuard } from './proseSelection';
 import { emitTrace } from './traceBuffer';
+import { resolveEconomicMood } from './economicContext';
 
 // ─── Constants ─────────────────────────────────────────────────────
 
@@ -196,6 +197,17 @@ export interface NarrativeContext {
   /** `counterpartRole` identity axis (THR-573) — the scene target's `npcRole`.
    * Derived at context build from the target node. Absent → `'*'` path. */
   targetRole?: string;
+
+  /** Economic mood vocabulary (THR-725) — boom/bust coloration for the settlement the scene
+   * plays out in, enabling `{econ_adj}` / `{econ_noun}` / `{econ_atmosphere}`. Derived at
+   * context build from the location this builder already resolved, so no caller threads a
+   * new parameter. Absent inside the neutral prosperity band → the tokens strip silently,
+   * exactly as `{intel:*}` does without a view. Coloration, not an identity axis: it varies
+   * how a scene reads without making it a different surface, so it stays out of
+   * `computeSurfaceKey`. */
+  econAdj?: string;
+  econNoun?: string;
+  econAtmosphere?: string;
 }
 
 /**
@@ -382,6 +394,9 @@ export function gatherNarrativeContext(
   // Intelligence view (THR-113) — only populated when caller passes GameState
   const intelligence = state ? buildIntelligenceView(state, agentId) : undefined;
 
+  // Economic mood (THR-725) — null inside the neutral prosperity band.
+  const economicMood = resolveEconomicMood(graph, location?.id);
+
   return {
     agentName: agentNode?.name ?? 'the mortal',
     agentId,
@@ -413,6 +428,15 @@ export function gatherNarrativeContext(
     targetRole: opts?.targetId
       ? ((graph.getNode(opts.targetId)?.properties?.npcRole as string | undefined) ?? undefined)
       : undefined,
+    // Economic mood (THR-725) — read off the location already resolved above, walking one
+    // tier up when the agent stands in a sublocation. Neutral band → all three stay absent.
+    ...(economicMood
+      ? {
+          econAdj: economicMood.adj,
+          econNoun: economicMood.noun,
+          econAtmosphere: economicMood.atmosphere,
+        }
+      : {}),
   };
 }
 
@@ -597,6 +621,12 @@ export function enrichProse(
   result = result.replace(/{omen_atmosphere}/g, ctx.omenAtmosphere ?? '');
 
   // Doom identity vocabulary (THR-21) — resolve silently to empty string when no matrix loaded
+  // Economic mood (THR-725) — boom/bust coloration. Absent inside the neutral band, so the
+  // tokens strip and the sentence stands as authored.
+  result = result.replace(/{econ_adj}/g, ctx.econAdj ?? '');
+  result = result.replace(/{econ_noun}/g, ctx.econNoun ?? '');
+  result = result.replace(/{econ_atmosphere}/g, ctx.econAtmosphere ?? '');
+
   result = result.replace(/{doom_verb}/g, ctx.doomVerb ?? '');
   result = result.replace(/{doom_adj}/g, ctx.doomAdj ?? '');
   result = result.replace(/{doom_atmosphere}/g, ctx.doomAtmosphere ?? '');
