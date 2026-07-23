@@ -45,7 +45,7 @@ export type TraceCategory =
   | 'surface_fragments_bound'
   | 'familiarity_change' | 'movement' | 'intervention_effect'
   | 'action_execution' | 'modifier_resolution'
-  | 'prosperity_tick' | 'wealth_delta'
+  | 'prosperity_tick' | 'wealth_delta' | 'econ_shock_seeded'
   | 'trade_route_volume_change' | 'trade_route_dissolved'
   | 'settlement_tier_change' | 'target_action_filter'
   | 'hex_state' | 'unrest_tick' | 'saturation_tick'
@@ -312,7 +312,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'surface_fragments_bound',
   'familiarity_change', 'movement', 'intervention_effect',
   'action_execution', 'modifier_resolution',
-  'prosperity_tick', 'wealth_delta',
+  'prosperity_tick', 'wealth_delta', 'econ_shock_seeded',
   'trade_route_volume_change', 'trade_route_dissolved',
   'settlement_tier_change', 'target_action_filter',
   'hex_state', 'unrest_tick', 'saturation_tick',
@@ -738,6 +738,29 @@ export interface ProsperityTickTrace extends TraceBase {
   tierChanged: boolean;
 }
 
+/**
+ * Trace: a prosperity swing large enough to be a shock planted themed scene seeds (THR-725).
+ *
+ * Emitted once per shock event — never once per planted seed — so trace volume scales with
+ * how often the economy lurches, not with settlement count. Cause-agnostic: divine verbs,
+ * battle aftermath, and any future cause all arrive through the same prosperity-delta test,
+ * which is why `cause` is a coarse label rather than an action id.
+ */
+export interface EconShockSeededTrace extends TraceBase {
+  category: 'econ_shock_seeded';
+  locationId: string;
+  /** Signed prosperity swing that tripped ECON_SHOCK_DELTA, on the 0–100 scale. */
+  delta: number;
+  polarity: 'boom' | 'bust';
+  /** Templates the seeds will spawn, one per planted seed. */
+  templateIds: string[];
+  seedIds: string[];
+  /** Agents the seeds were planted on. */
+  targetAgentIds: string[];
+  /** Coarse origin of the swing: a direct property write vs. a queued ProsperityShock. */
+  cause: 'direct_write' | 'prosperity_shock' | 'mixed';
+}
+
 /** Trace: wealth delta applied to an actor */
 export interface WealthDeltaTrace extends TraceBase {
   category: 'wealth_delta';
@@ -985,6 +1008,8 @@ export interface ScoringTrace extends TraceBase {
     noveltyMultiplier?: number;
     /** Surface key used for novelty/recency tracking (templateId + sorted context axes). THR-475 */
     surfaceKey?: string;
+    /** Signed economic-context term from settlement boom/bust × template-family affinity (THR-725). 0 in the neutral band. */
+    economicContextBonus?: number;
   }>;
   selectedTemplateId: string | null;
   selectedLocationId: string | null;
@@ -1819,6 +1844,7 @@ export type TraceEntry =
   | ActionExecutionTrace
   | ModifierResolutionTrace
   | ProsperityTickTrace
+  | EconShockSeededTrace
   | WealthDeltaTrace
   | TradeRouteVolumeChangeTrace
   | TradeRouteDissolvedTrace

@@ -76,6 +76,9 @@ Every `narrative` field in steps and outcomes supports dynamic text substitution
 | `{target:they\|them\|their\|s}` (+ capitalized) | Target's pronouns; neutral fallback | "she/her/her/s" |
 | `{target:faction}` | Target's faction name; falls back to "their people" | "The Iron Wardens" |
 | `{cast:<key>}` | Scene cast — a `supportBundle` member by spec key (THR-696). Renders the *bound* entity's live name | "Captain Merrow" |
+| `{econ_adj}` | Economic mood adjective (THR-725) — boom/bust coloration of the settlement the scene plays out in. Strips silently in the neutral prosperity band | "grain-heavy" (boom) / "shuttered" (bust) |
+| `{econ_noun}` | Economic mood noun phrase | "wagons queued past the gate" / "shuttered stalls" |
+| `{econ_atmosphere}` | Economic mood atmospheric phrase | "nobody is counting carefully" / "people watch each other's hands" |
 
 **Scene cast (THR-696):** An encounter's `supportBundle` binds real world objects reuse-first — the "gate captain" is usually an NPC who already stands at that gate. `{cast:<key>}` names whoever the key actually bound to, so prose and world agree even when reuse picked someone the author never met. **A key the template declares always resolves**: bound → the graph node's live name; declared-but-unbound → the spec's own `spawnName` / `fallbackName`. That is the whole point — you never have to guard a reference to your own cast, and you must not invent a name for a role the bundle already owns (the branching tier's hardcoded `Maren`/`Dalla`/`Torve` literals are exactly the anti-pattern this replaces).
 

@@ -139,6 +139,51 @@ describe('DecisionBreakdown', () => {
     expect(breakdown.textContent).toContain('45 visible');
   });
 
+  // THR-725 — the econ term renders only when the economy actually spoke.
+  it('renders the economic-context bonus when a candidate carries one', () => {
+    const traces: TraceEntry[] = [
+      makeScoringTrace('agent-1', 5, {
+        topCandidates: [
+          {
+            templateId: 'encounter.pickpocket',
+            locationId: 'ashford',
+            isLocal: true,
+            valuePerTick: 0.6,
+            desireMultiplier: 1.1,
+            finalScore: 0.7,
+            travelCost: 0,
+            completionProb: 0.6,
+            economicContextBonus: 0.075,
+          },
+        ],
+      }),
+    ];
+    render(<DecisionBreakdown agentId="agent-1" traces={traces} />);
+    expect(screen.getByTestId('econ-context-bonus').textContent).toContain('econ: +0.075');
+  });
+
+  it('omits the economic-context line for a neutral-economy candidate', () => {
+    const traces: TraceEntry[] = [
+      makeScoringTrace('agent-1', 5, {
+        topCandidates: [
+          {
+            templateId: 'encounter.offer_small_prayer',
+            locationId: 'shrine',
+            isLocal: true,
+            valuePerTick: 0.6,
+            desireMultiplier: 1.1,
+            finalScore: 0.7,
+            travelCost: 0,
+            completionProb: 0.6,
+            economicContextBonus: 0,
+          },
+        ],
+      }),
+    ];
+    render(<DecisionBreakdown agentId="agent-1" traces={traces} />);
+    expect(screen.queryByTestId('econ-context-bonus')).toBeNull();
+  });
+
   it('ignores traces for other agents', () => {
     const traces: TraceEntry[] = [
       makeScoringTrace('agent-2', 5),
