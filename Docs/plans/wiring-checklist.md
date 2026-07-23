@@ -6,6 +6,24 @@
 
 ---
 
+## Companies — Group Layer, engine core (THR-74)
+
+| Surface | Wiring |
+|---|---|
+| Orchestrator phase | `phaseGroups` (`src/engine/groups/phaseGroups.ts`), inline call in `orchestrator.ts` as Phase 2.34 — **between** `phaseAgentDecision` and `phaseMovement`, so a company's shared heading overwrites members' personal destinations before any of them execute; `phaseEventCounts['groups']` |
+| Sub-steps | 1 dissolution/leave → 2 cohesion reconciliation → 3 shared movement decision → 4 formation scan. Each caught independently; a throwing sub-step is skipped for that tick |
+| Graph footprint | **No new node or edge types.** Company = `actor` node, `actorType:'group'` + `groupType` (armies share `actorType:'group'` and are discriminated by `armyState` — see `isCompanyNode`). Edges reused: `member_of` (agent → company, `role`/`rank`/`joinedTick`/`leftAtTick`), `commanded_by` (company → leader), `pursues` (shared goal) |
+| Position | **The company node has no `located_at` edge** — position derives from the leader via `getGroupPosition`. Members' own `located_at` edges stay the single spatial truth |
+| Movement | `groupMovement.ts` writes members' existing `MovementState`; `phaseMovement` executes it unchanged. Re-decision gated on `DECISION_REEVALUATION_TICKS` via `lastGroupDecisionTick` — deciding costs a pathfinding sweep per member (NFP #7). Travel anchor resolves sublocation → `parentLocationId` so companies formed in a tavern can path out |
+| GameState | **Zero new fields** — companies live entirely in the graph, read via `worldVersion` (`touchWorld` on mutation) |
+| Constants | `src/data/group-constants.ts` (26 named constants). `GROUP_FORMATION_MIN_COLOCATED` retuned 3 → 2 against the CLI smoke — see the constant's comment |
+| Traces | `group_phase` (**one aggregate per tick**, never per company), `group_formed`, `group_dissolved` — all in `TraceCategory` + `TRACE_CATEGORIES` + the `TraceEntry` union |
+| Tick events | `group_formed` / `group_dissolved` / `group_member_left` added to `TickEvent['type']`; counter reset registered in `resetEventCounters()` (an unreset module counter breaks seed determinism) |
+| `member_of` sweep | 14 sites reading an agent's outgoing `member_of` as "their faction" now route through `getFactionMembershipEdges` (`graphQueries.ts`), which excludes company targets. Remaining sites gate on `factionDefId` / `reachPreferences` / `guildType` and fail soft |
+| Interface contracts | 4 rows in `scripts/interface-contracts.ts`; new subsystem `Companies & Group Travel` in `scripts/subsystems-registry.ts` |
+| Debug | `await __DEBUG.getGroups()` (async — dynamic import), CLI `groups` / `companies` command |
+| Deferred to later PRs of THR-74 | Content pillar (encounters, group-eligible `actorAffinities`, 2 UATs) and UI pillar (HexMapV2 cluster, AgentProfileModal Company section, DebugPanel Companies tab); `groupResolution.ts` producer ships here, its `unifiedActionResolution` call site ships with content |
+
 ## Central Interrupt Auto-Pause (THR-668)
 
 One registry decides when the sim pauses for a modal. Any **blocking interrupt surface** (a modal the player must act on) pauses the tick loop while open; the sim resumes only when ALL such surfaces are closed and the pause was taken automatically — a manual pause survives modal churn.

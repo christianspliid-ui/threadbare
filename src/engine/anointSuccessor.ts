@@ -15,6 +15,7 @@ import type { GameState } from '../types/gameState';
 import type { GraphEdge } from '../types/graph';
 import type { FactionAnointSuccessorTrace } from '../types/factionAction';
 import { emitTrace } from './traceBuffer';
+import { getFactionMembershipEdges } from './graphQueries';
 
 /**
  * Resolve the target agent's faction.
@@ -28,7 +29,8 @@ function resolveTargetFaction(
   state: GameState,
   targetAgentId: string,
 ): { factionId: string; multiResolved: boolean } | null {
-  const edges = state.graph.getOutgoingEdges(targetAgentId, 'member_of');
+  // THR-74: faction targets only — a company membership must never be anointed as a faction.
+  const edges = getFactionMembershipEdges(state.graph, targetAgentId);
   if (edges.length === 0) return null;
 
   if (edges.length === 1) {

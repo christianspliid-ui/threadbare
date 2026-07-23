@@ -15,12 +15,12 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 17 |
-| 🟠 PARTIAL | 1 |
+| 🟢 LIVE | 20 |
+| 🟠 PARTIAL | 2 |
 | 🔴 LEAKED | 7 |
 | ⚫ UNWIRED | 2 |
 | 🔵 UNVERIFIED-OK | 3 |
-| **Total** | **30** |
+| **Total** | **34** |
 
 ## Contracts by producing subsystem
 
@@ -64,6 +64,15 @@ remediation ticket or the build fails.
 | `attachment-on-use-triggers` | Items break, deplete, or curse their bearer on use — authored consequence for carrying power. | node-prop: `onUseTriggers`, `resolveOnUseTriggers` | Encounters & Dilemmas | 🔴 LEAKED | THR-719 |
 | `attachment-slot-caps-suppress` | Slot caps suppress overflow attachments via a single suppression seam. | edge-prop: `attachmentSlotResolver` | Effects & Conditions | 🟢 LIVE | — |
 | `attachment-tier-advancement` | Tier advancement strengthens an item over time. | function: `advanceAttachmentTier`, `canAdvanceTier` | Attachments, Items & Possessions | 🔴 LEAKED | THR-723 |
+
+### Companies & Group Travel
+
+| Contract | Intent | Mechanism | Consumer | Status | Ticket |
+|---|---|---|---|---|---|
+| `company-assist-shapes-resolution` | Companions make each other better at what they attempt — the best-suited member acts and the others assist, capped so a crowd is not an auto-win. | function: `resolveGroupStep` | Encounters & Dilemmas | 🟠 PARTIAL | THR-74 |
+| `company-drives-member-movement` | A company travels as one — members share a destination instead of wandering off separately. | node-prop: `movementState` | Movement & Colocation | 🟢 LIVE | — |
+| `company-membership-excludes-faction-reads` | A companion of a company is not a member of a faction by that name — faction rank, allegiance display and heraldry must keep reading the faction. | edge-prop: `getFactionMembershipEdges` | Factions & Succession | 🟢 LIVE | — |
+| `company-position-derives-from-leader` | A company has no position of its own — asking where it is means asking where its leader is, so there is never a second spatial truth to drift. | function: `getGroupPosition` | Movement & Colocation | 🟢 LIVE | — |
 
 ### Encounters & Dilemmas
 
@@ -279,6 +288,50 @@ remediation ticket or the build fails.
 - **Read sites:** `src/engine/worldSeed.ts`
 - **Verdict:** Verified 2026-07-23: 7 possesses edges present at tick 0. Docs/plans/2026-07-23-system-interface-map.md § Audit findings (manual audit + independent cold-context review, both grep-verified)
 
+### `company-assist-shapes-resolution` — 🟠 PARTIAL
+
+- **Intent:** Companions make each other better at what they attempt — the best-suited member acts and the others assist, capped so a crowd is not an auto-win.
+- **Producer → Consumer:** Companies & Group Travel → Encounters & Dilemmas
+- **UL terms:** *Company*, *Group Cohesion*
+- **Module:** `src/engine/groups/groupResolution.ts` — **no production importers**
+- **Production hits:** 1 total — 1 write, 0 read, 0 unclassified
+- **Write sites:** `src/engine/groups/groupResolution.ts`
+- **Read sites:** —
+- **Verdict:** Pinned by badgeOverride: Engine-core PR lands the producer and its tests; the unifiedActionResolution call site plus the group-eligible actorAffinities content ship in the content PR of the same ticket.
+
+### `company-drives-member-movement` — 🟢 LIVE
+
+- **Intent:** A company travels as one — members share a destination instead of wandering off separately.
+- **Producer → Consumer:** Companies & Group Travel → Movement & Colocation
+- **UL terms:** *Company*
+- **Production hits:** 15 total — 1 write, 1 read, 13 unclassified
+- **Write sites:** `src/engine/groups/groupMovement.ts`
+- **Read sites:** `src/engine/phaseMovement.ts`
+- **Other hits:** `src/components/AgentInfoCard/AgentInfoCard.tsx`, `src/components/Game/GameView.tsx`, `src/components/HexMap/MovementTrails.tsx`, `src/data/action-technical-effects.ts`, `src/engine/agentActivity.ts` +8 more
+- **Verdict:** Verified 2026-07-24: phaseGroups writes members' MovementState and phaseMovement (next phase in runTick) executes it. 72-tick CLI smoke, seed 42 medium: "The Watch of the Nameless Road" members Nareth and Hestia both at Wolfton; "The Steadfast Sparrows" both at Shadow-shade.
+
+### `company-membership-excludes-faction-reads` — 🟢 LIVE
+
+- **Intent:** A companion of a company is not a member of a faction by that name — faction rank, allegiance display and heraldry must keep reading the faction.
+- **Producer → Consumer:** Companies & Group Travel → Factions & Succession
+- **UL terms:** *Company*, *Faction*
+- **Production hits:** 14 total — 1 write, 4 read, 9 unclassified
+- **Write sites:** `src/engine/graphQueries.ts`
+- **Read sites:** `src/engine/anointSuccessor.ts`, `src/engine/contextBuilder.ts`, `src/engine/detailPageResolvers.ts`, `src/engine/notableAgendas.ts`
+- **Other hits:** `src/components/AgentInfoCard/AgentInfoCard.tsx`, `src/components/Game/debug/RelationshipGraph.tsx`, `src/components/Game/GameView.tsx`, `src/engine/armyNotifications.ts`, `src/engine/callbackEligibility.ts` +4 more
+- **Verdict:** Verified 2026-07-24: member_of consumer sweep (THR-74): 14 sites reading an agent's outgoing member_of as "their faction" now route through getFactionMembershipEdges; the remainder gate on factionDefId/reachPreferences/guildType and fail soft on a company target. Locked by src/engine/groups/__tests__/groupQueries.test.ts § "faction lookups are not confused by company membership".
+
+### `company-position-derives-from-leader` — 🟢 LIVE
+
+- **Intent:** A company has no position of its own — asking where it is means asking where its leader is, so there is never a second spatial truth to drift.
+- **Producer → Consumer:** Companies & Group Travel → Movement & Colocation
+- **UL terms:** *Company*
+- **Production hits:** 3 total — 1 write, 1 read, 1 unclassified
+- **Write sites:** `src/engine/groups/groupQueries.ts`
+- **Read sites:** `src/debug-bridge.ts`
+- **Other hits:** `src/engine/groups/groupFormation.ts`
+- **Verdict:** Verified 2026-07-24: Company nodes carry no located_at edge; locked by src/engine/groups/__tests__/groupLifecycle.test.ts § "never attaches a located_at edge to the company node".
+
 ### `economy-context-scene-scoring` — 🟢 LIVE
 
 - **Intent:** Boom and bust color which scenes fire — a blighted province tells desperate stories, a boom throws festivals.
@@ -347,10 +400,10 @@ remediation ticket or the build fails.
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 118 total — 1 write, 1 read, 116 unclassified
+- **Production hits:** 120 total — 1 write, 1 read, 118 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/Game/ActionCard.tsx`, `src/components/Game/ascendant-bar/IdentityStrip.tsx`, `src/components/Game/ascendant-bar/selectors.ts`, `src/components/Game/ChapterView.tsx` +111 more
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/Game/ActionCard.tsx`, `src/components/Game/ascendant-bar/IdentityStrip.tsx`, `src/components/Game/ascendant-bar/selectors.ts`, `src/components/Game/ChapterView.tsx` +113 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `secrets-consequences` — 🟢 LIVE

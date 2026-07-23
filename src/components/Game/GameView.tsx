@@ -131,7 +131,7 @@ import {
 import type { MeetingEncounterState, MeetingEncounterResult } from '../../types/meetingEncounter';
 import type { JourneyVignetteData, PendingVignette } from '../../types/journeyEngine';
 import { applyBeatChoice } from '../../engine/journeyEngine';
-import { getThreadsFrom } from '../../engine/graphQueries';
+import { getThreadsFrom, getFactionMembershipEdges } from '../../engine/graphQueries';
 import type { ThreadEdgeProperties } from '../../types/influence';
 import { createMeetingEncounterState, createAgentFromMeeting, isMeetTheFirstAvailable } from '../../engine/meetingEncounter';
 import { buildStubAscendantLens } from '../../types/hunger';
@@ -970,7 +970,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
           }
         }
         if (hexCol != null && hexRow != null) {
-          const memberEdges = gameState.graph.getOutgoingEdges(node.id, 'member_of');
+          // THR-74: faction targets only — heraldic color keys off the faction, and a
+          // company membership would otherwise hijack the lookup.
+          const memberEdges = getFactionMembershipEdges(gameState.graph, node.id);
           const factionId = memberEdges.length > 0 ? memberEdges[0].target : undefined;
           const factionIdx = factionId ? (factionIdxMap.get(factionId) ?? 0) : 0;
           const factionColor = FACTION_HERALDIC_COLORS[Math.max(0, factionIdx) % FACTION_HERALDIC_COLORS.length];

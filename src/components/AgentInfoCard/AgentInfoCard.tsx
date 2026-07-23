@@ -7,6 +7,7 @@
 
 import React from 'react';
 import type { WorldGraph } from '../../engine/graph';
+import { getFactionMembershipEdges } from '../../engine/graphQueries';
 import type { MovementState } from '../../types/movement';
 import { AGENT_INFO_SECTION_LABELS } from '../../data/agent-info-content';
 import { DOMAIN_COLORS, DEFAULT_AGENT_COLOR } from '../../data/agent-visual-content';
@@ -26,8 +27,9 @@ export const AgentInfoCard: React.FC<AgentInfoCardProps> = ({ graph, agentId, on
   const movementState = props.movementState as MovementState | undefined;
   const archetype = props.narrativeArchetype as string | undefined;
 
-  // Get faction membership
-  const factionEdges = graph.getOutgoingEdges(agentId, 'member_of');
+  // Get faction membership. THR-74: faction targets only — an agent's company also
+  // rides on `member_of` and must not render as a faction here.
+  const factionEdges = getFactionMembershipEdges(graph, agentId);
   const factions = factionEdges.map(e => graph.getNode(e.target)).filter(Boolean);
 
   // Get current location

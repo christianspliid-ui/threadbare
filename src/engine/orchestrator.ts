@@ -86,6 +86,7 @@ import type { DivineInfluenceEntry } from '../types/dream';
 import { getCurrentStrength } from './decayCurve';
 import { checkDissolutions } from './sublocation';
 import { phaseMovement, resetMovementEventCounter } from './phaseMovement';
+import { phaseGroups, resetGroupEventCounter } from './groups/phaseGroups';
 import { checkAndFireActionTriggers, type ActionTriggerContext } from './effects/actionTrigger';
 import { collectAttachmentEffects } from './effects/effectWalker';
 import { phaseColocationDetection, resetColocationEventCounter } from './phaseColocationDetection';
@@ -330,6 +331,7 @@ function resetEventCounters(): void {
   resetAmbitionEventCounter();
   resetRevEventCounter();
   resetFactionEventSeq();
+  resetGroupEventCounter();
 }
 
 // ─── Phase 1: Advance Doom Clock ──────────────────────────────────
@@ -2727,6 +2729,17 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   const mentorshipRng = mulberry32(state.seed + state.tick * 59);
   s = { ...s, ...phaseMentorship(s, mentorshipRng, runtime) };
   phaseEventCounts['mentorship'] = s.tickEvents.length - prevEventCount;
+  prevEventCount = s.tickEvents.length;
+
+  // Phase 2.34: Companies (THR-74) — dissolution/leave, cohesion, shared movement,
+  // formation. Must sit between agent decision and movement execution: it overwrites
+  // members' movementState so a company's shared heading supersedes the personal
+  // destinations picked above, and phaseMovement below then executes those queues.
+  {
+    const r = runInlinePhase('groups', s, () => phaseGroups(s, runtime));
+    s = r.next;
+    phaseEventCounts['groups'] = r.eventDelta;
+  }
   prevEventCount = s.tickEvents.length;
 
   // Phase 2.35: Agent Movement (goal-directed pathfinding)

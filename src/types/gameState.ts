@@ -127,7 +127,9 @@ export interface TickEvent {
   // Emergent personality trait events (THR-527)
     | 'personality_trait_emerged'
   // Divine Receipt — player action resolution feedback (THR-727)
-    | 'player_action_receipt';
+    | 'player_action_receipt'
+  // Company (group layer) events (THR-74)
+    | 'group_formed' | 'group_dissolved' | 'group_member_left';
   message: string;
   /** Optional sphere coloring for UI */
   sphere?: SphereName;

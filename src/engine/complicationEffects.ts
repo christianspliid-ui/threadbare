@@ -18,6 +18,7 @@
 import type { ComplicationEffect, ComplicationContext } from '../types/complication';
 import type { GameState, TickEvent } from '../types/gameState';
 import { IDENTITY_TRUST_DECAY_MODIFIER } from '../types/doomIdentity';
+import { getFactionMembershipEdges } from './graphQueries';
 
 // ─── Effect application ───────────────────────────────────────────────────────
 
@@ -98,7 +99,8 @@ function applyEffect(
         targetId = ctx.presentAgentIds[idx];
       } else if (effect.target === 'faction_leader' && ctx.factionIds.length > 0) {
         // Find the highest-ranked faction node
-        const factionEdges = state.graph.getOutgoingEdges(ctx.action.actorId, 'member_of');
+        // THR-74: faction targets only — a company has no faction leader to find.
+        const factionEdges = getFactionMembershipEdges(state.graph, ctx.action.actorId);
         if (factionEdges.length > 0) {
           const memberEdges = state.graph.getIncomingEdges(factionEdges[0].target, 'member_of');
           // Pick edge with highest rank
@@ -174,7 +176,8 @@ function applyEffect(
         targetId = ctx.presentAgentIds[idx];
       } else if (effect.targetSelection === 'faction' && ctx.factionIds.length > 0) {
         // Link to faction leader (first member with highest rank)
-        const factionEdges = state.graph.getOutgoingEdges(ctx.action.actorId, 'member_of');
+        // THR-74: faction targets only.
+        const factionEdges = getFactionMembershipEdges(state.graph, ctx.action.actorId);
         if (factionEdges.length > 0) {
           const memberEdges = state.graph.getIncomingEdges(factionEdges[0].target, 'member_of');
           let bestRank = -1;

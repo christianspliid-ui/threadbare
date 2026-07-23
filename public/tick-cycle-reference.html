@@ -629,9 +629,10 @@ const ACTS = [
     num: 'III',
     title: 'Decisions & Movement',
     color: 'var(--act-agents)',
-    summary: 'Agents choose what to do, then everyone moves — including armies',
+    summary: 'Agents choose what to do, companies agree on one heading, then everyone moves — including armies',
     phases: [
       { id: '2b', name: 'Agent Decision', fn: 'phaseAgentDecision()', desc: 'Maslow-based decision pipeline for each idle agent. Filter encounters, score candidates, choose: start encounter, queue movement, attempt remote action, or drift/stay.', reads: ['idle agents', 'encounterCache', 'distanceMatrix', 'cooldowns', 'familiarity'], writes: ['tickEvents', 'movementStates', 'encounterProgress'], tags: ['rng: seed+tick*37', 'Maslow pipeline', 'pathfinding'] },
+      { id: '2.34', name: 'Companies', fn: 'phaseGroups()', desc: 'The company layer (THR-74): dissolve or thin fraying companies, apply cohesion events, decide one shared destination and write it into every member's movementState, then scan colocated agents for new companies. Runs before movement so a company's heading supersedes the personal destinations picked in 2b.', reads: ['company nodes', 'member_of edges', 'movement candidates'], writes: ['graph (company nodes/edges)', 'movementStates', 'tickEvents'], tags: ['rng: seed+tick*61 (leave)', 'rng: seed+tick*67 (formation)', 'pathfinding'] },
       { id: '2.35', name: 'Agent Movement', fn: 'phaseMovement()', desc: 'Execute goal-directed pathfinding. Advance each moving agent one hex along their queued path toward their destination.', reads: ['movementStates', 'graph (locations)'], writes: ['graph (location edges)', 'tickEvents'], tags: ['pathfinding'] },
       { id: '2.352', name: 'Army Movement', fn: 'phaseArmyMovement()', desc: 'Armies advance toward their military objectives along planned march routes.', reads: ['army definitions', 'objectives'], writes: ['army locations'], tags: ['military'] },
       { id: '2.355', name: 'Army Attrition', fn: 'phaseArmyAttrition()', desc: 'Quintessence degradation during march. Armies lose morale and power over time while traveling.', reads: ['army quintessence', 'march duration'], writes: ['army quintessence pools'], tags: ['military', 'quintessence'] },

@@ -20,6 +20,7 @@
  *   essence        — print essence pool
  *   encounters     — list active encounters / unified actions
  *   factions       — list factions
+ *   groups         — list companies (the group layer): members, cohesion, destination
  *   genome <name>  — inspect settlement genome result (sublocations, NPCs, archetype)
  *   traces [N]     — show last N trace entries (default 10)
  *   seed           — print the current seed
@@ -81,6 +82,14 @@ import { getUnifiedTemplateById, UNIFIED_ACTION_TEMPLATES } from '../src/data/un
 import { createUnifiedAction } from '../src/engine/unifiedActionLifecycle';
 import { REWARD_POSSESSIONS, REWARD_CONDITIONS, REWARD_BESTOWED_POWERS } from '../src/data/reward-attachment-catalog';
 import { STARTER_POSSESSIONS, STARTER_CONDITIONS } from '../src/data/starter-attachments';
+import {
+  getAllGroups,
+  getGroupCohesion,
+  getCohesionState,
+  getGroupLeader,
+  getGroupMembers,
+  getGroupPosition,
+} from '../src/engine/groups/groupQueries';
 
 // ─── CLI Argument Parsing ─────────────────────────────────────────
 
@@ -431,6 +440,42 @@ function printFactions(): void {
   for (const f of factions) {
     const members = state.graph.getIncomingEdges(f.id, 'belongs_to').length;
     console.log(`  ${dim(f.id.slice(0, 8))}  ${BOLD}${f.properties.name ?? 'unnamed'}${RESET}  members:${members}`);
+  }
+}
+
+/**
+ * List companies — the THR-74 group layer.
+ *
+ * Shows disbanded companies too (dimmed): a company's afterlife is part of the
+ * record, and hiding them would make dissolution invisible in a headless run.
+ * Cohesion prints as both the number and the prose state, since the CLI is a
+ * debug surface.
+ */
+function printGroups(): void {
+  const groups = getAllGroups(state.graph);
+  const active = groups.filter(g => g.properties.groupStatus !== 'disbanded');
+  console.log(header(`Companies (${active.length} active, ${groups.length} total)`));
+  if (groups.length === 0) {
+    console.log('  No companies have formed yet.');
+    return;
+  }
+  for (const g of groups) {
+    const props = g.properties as Record<string, unknown>;
+    const disbanded = props.groupStatus === 'disbanded';
+    const cohesion = getGroupCohesion(g);
+    const leader = getGroupLeader(state.graph, g.id);
+    const members = getGroupMembers(state.graph, g.id);
+    const posId = getGroupPosition(state.graph, g.id);
+    const posName = posId ? (state.graph.getNode(posId)?.name ?? posId) : '—';
+
+    const title = disbanded ? dim(`${g.name} (disbanded: ${props.dissolutionReason ?? '?'})`) : `${BOLD}${g.name}${RESET}`;
+    console.log(`  ${dim(g.id.slice(0, 12))}  ${title}`);
+    console.log(
+      `      ${props.groupType}  cohesion:${cohesion.toFixed(2)} (${getCohesionState(cohesion)})  at:${posName}` +
+      (props.groupDestinationId ? `  →${state.graph.getNode(props.groupDestinationId as string)?.name ?? props.groupDestinationId}` : ''),
+    );
+    const roster = members.map(m => (m.id === leader?.id ? `${m.name}*` : m.name)).join(', ');
+    console.log(`      members(${members.length}): ${roster || '—'}`);
   }
 }
 
@@ -1067,6 +1112,7 @@ function printHelp(): void {
   console.log(`  ${BOLD}encounters${RESET}       Active unified actions`);
   console.log(`  ${BOLD}chapters${RESET} [agent]  Archived + active encounter chapters (THR-603), optionally by agent|@hero`);
   console.log(`  ${BOLD}factions${RESET}         List factions`);
+  console.log(`  ${BOLD}groups${RESET}           List companies (members, cohesion, destination)`);
   console.log(`  ${BOLD}genome${RESET} <name>    Inspect settlement genome result (sublocations, NPCs, archetype)`);
   console.log(`  ${BOLD}traces${RESET} [N]       Show last N traces (default 10)`);
   console.log(`  ${BOLD}attention${RESET}        Ascendant attention pool state (alias: attn)`);
@@ -1710,6 +1756,10 @@ function handleCommand(line: string): boolean {
       break;
     case 'factions':
       printFactions();
+      break;
+    case 'groups':
+    case 'companies':
+      printGroups();
       break;
     case 'traces':
     case 'tr': {

@@ -54,6 +54,7 @@ import {
 } from '../data/faction-action-constants';
 import { refreshFactionDerivedFlags, getFactionLeaderId, getAnointedLeaderId } from './factionNetwork';
 import type { FactionStirDissentTrace } from '../types/factionAction';
+import { getFactionMembershipEdges } from './graphQueries';
 
 // ─── PRNG (mulberry32 — same as all engine modules) ──────────────────────────
 
@@ -523,7 +524,9 @@ function executeExcommunicate(
 
   // Apply reputation splash to ex-member's other faction memberships
   if (EXCOMMUNICATION_REPUTATION_SPLASH > 0) {
-    const otherMemberships = state.graph.getOutgoingEdges(targetMember.id, 'member_of');
+    // THR-74: faction targets only. This loop replaces edge properties wholesale, so an
+    // unfiltered pass would wipe a company edge's role/joinedAtTick as a side effect.
+    const otherMemberships = getFactionMembershipEdges(state.graph, targetMember.id);
     for (const me of otherMemberships) {
       const curRep = (me.properties.reputation as number) ?? 0;
       state.graph.updateEdge(me.id, {

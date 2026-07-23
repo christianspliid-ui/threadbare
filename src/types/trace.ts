@@ -304,7 +304,11 @@ export type TraceCategory =
   // Economic power — monopoly resolution + sphere drift (THR-617)
   | 'monopoly_transition'
   | 'economic_power_scan'
-  | 'scarcity_arc_phase';
+  | 'scarcity_arc_phase'
+  // Companies — the group layer (THR-74)
+  | 'group_phase'
+  | 'group_formed'
+  | 'group_dissolved';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'action_selection', 'narrative_generation', 'context_harvest',
@@ -581,6 +585,10 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'monopoly_transition',
   'economic_power_scan',
   'scarcity_arc_phase',
+  // Companies — the group layer (THR-74)
+  'group_phase',
+  'group_formed',
+  'group_dissolved',
 ];
 
 /** Base shape for all trace entries */
@@ -1985,6 +1993,10 @@ export type TraceEntry =
   | MonopolyTransitionTrace
   | EconomicPowerScanTrace
   | ScarcityArcPhaseTrace
+  // Company traces (THR-74)
+  | GroupPhaseTrace
+  | GroupFormedTrace
+  | GroupDissolvedTrace
   // Composition dual-voice story-beat wiring (THR-254)
   | CompositionStoryBeatTemplateMissingTrace
   // Encounter foreshadowing (THR-389)
@@ -2998,4 +3010,48 @@ export interface CameraCenterTrace extends TraceBase {
   hexRow: number;
   centered: boolean;
   reason: 'pending_encounter' | 'populated_arrival' | 'suppressed';
+}
+
+// ─── Companies — the group layer (THR-74) ────────────────────────────
+
+/**
+ * Trace: aggregate summary of `phaseGroups`, emitted **once per tick**.
+ *
+ * `phaseGroups` walks every active company, so per-company traces would flood the
+ * ring buffer and evict semantic traces (the all-agents-phase rule). Per-company
+ * detail belongs in `getGroups()` / the Companies tab, not here.
+ */
+export interface GroupPhaseTrace extends TraceBase {
+  category: 'group_phase';
+  /** Active companies at the start of the phase. */
+  activeGroups: number;
+  /** Companies that chose and applied a destination this tick. */
+  movesExecuted: number;
+  /** Dissent registrations across all companies this tick. */
+  dissents: number;
+  cohesionDeltasApplied: number;
+  /** Members who evaluated leaving (whether or not they left). */
+  leaveDecisions: number;
+  /** Colocated candidate sets examined by the formation scan. */
+  formationCandidateSets: number;
+}
+
+/** Trace: a company came into being. Event-scale — rare, one per formation. */
+export interface GroupFormedTrace extends TraceBase {
+  category: 'group_formed';
+  groupId: string;
+  groupType: 'party' | 'squad' | 'faction_band';
+  name: string;
+  memberIds: string[];
+  cause: 'systemic' | 'seeking_companions' | 'draw_together';
+  startingCohesion: number;
+}
+
+/** Trace: a company ended. The node persists as `disbanded` history. */
+export interface GroupDissolvedTrace extends TraceBase {
+  category: 'group_dissolved';
+  groupId: string;
+  reason: 'cohesion_floor' | 'goal_complete' | 'leader_death' | 'betrayal' | 'undersize';
+  finalCohesion: number;
+  ticksActive: number;
 }

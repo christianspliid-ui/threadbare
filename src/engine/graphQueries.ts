@@ -67,6 +67,51 @@ export function getLocationsInRegion(graph: WorldGraph, regionId: string): Graph
 
 // ─── Social ──────────────────────────────────────────────────────
 
+/**
+ * True when a `member_of` edge represents faction membership rather than
+ * membership of a company.
+ *
+ * The `member_of` edge is shared by three kinds: agent → faction, army → faction
+ * (`armySpawning.ts`), and — since THR-74 — agent → company. Any consumer that
+ * reads an agent's *outgoing* `member_of` edges and treats the target as the
+ * agent's faction must filter with this first, or a companion of the Quiet Wardens
+ * is read as belonging to a faction called "The Quiet Wardens".
+ *
+ * The predicate deliberately **excludes companies** rather than requiring
+ * `actorType === 'faction'`: faction nodes are not uniformly tagged across worldgen
+ * and fixtures, so a positive requirement would silently drop real faction
+ * memberships. Companies are the only non-faction `member_of` target that exists,
+ * so excluding them is both sufficient and safe.
+ *
+ * Incoming edges queried *from* a known faction id need no guard — a company is
+ * never the target of a faction lookup.
+ */
+export function isFactionMembershipEdge(graph: WorldGraph, edge: GraphEdge): boolean {
+  return !isCompanyMembershipTarget(graph, edge.target);
+}
+
+/**
+ * Company discriminator, kept local to avoid a graphQueries → groups import cycle.
+ * Mirrors `isCompanyNode` in `engine/groups/groupQueries.ts`: companies carry
+ * `groupType`; armies share `actorType: 'group'` but carry `armyState` instead.
+ */
+function isCompanyMembershipTarget(graph: WorldGraph, targetId: string): boolean {
+  const props = graph.getNode(targetId)?.properties as Record<string, unknown> | undefined;
+  if (!props) return false;
+  if (props.actorType !== 'group') return false;
+  if (props.armyState != null) return false;
+  return typeof props.groupType === 'string';
+}
+
+/**
+ * An agent's `member_of` edges that point at factions, with company (and any other
+ * non-faction) memberships filtered out. This is the safe replacement for a raw
+ * `getOutgoingEdges(agentId, 'member_of')` in faction-reading code.
+ */
+export function getFactionMembershipEdges(graph: WorldGraph, agentId: string): GraphEdge[] {
+  return graph.getOutgoingEdges(agentId, 'member_of').filter(e => isFactionMembershipEdge(graph, e));
+}
+
 /** Get all members of a faction/group */
 export function getFactionMembers(graph: WorldGraph, factionId: string): GraphNode[] {
   return graph.getIncomingEdges(factionId, 'member_of')
@@ -79,7 +124,9 @@ export function getAgentFaction(
   graph: WorldGraph,
   agentId: string,
 ): { faction: GraphNode; rank: number; role: string } | undefined {
-  const edges = [...graph.getOutgoingEdges(agentId, 'member_of')].sort((a, b) => {
+  // THR-74: filter to faction targets — an agent's `member_of` set can also contain
+  // their company, which must never be mistaken for a faction here.
+  const edges = [...getFactionMembershipEdges(graph, agentId)].sort((a, b) => {
     const aFaction = graph.getNode(a.target);
     const bFaction = graph.getNode(b.target);
     const aDef = (a.properties.factionDefId as string | undefined) != null;
@@ -109,12 +156,21 @@ export function getAgentFaction(
   };
 }
 
-/** Get all faction/group memberships for an agent */
+/**
+ * All *faction* memberships for an agent, with their edges.
+ *
+ * THR-74: filtered to faction targets. Every caller (prose enrichment's faction
+ * name and rank, journey influence, return-target selection) reads the target as
+ * the agent's faction, and a company membership edge carries the same `role:
+ * 'leader'` / `rank` shape — so an unfiltered result would report a company leader
+ * as a faction leader. For company membership use `getGroupOf` in
+ * `engine/groups/groupQueries.ts`.
+ */
 export function getAgentMemberships(
   graph: WorldGraph,
   agentId: string,
 ): Array<{ group: GraphNode; edge: GraphEdge }> {
-  return graph.getOutgoingEdges(agentId, 'member_of')
+  return getFactionMembershipEdges(graph, agentId)
     .map(e => ({ group: graph.getNode(e.target), edge: e }))
     .filter((m): m is { group: GraphNode; edge: GraphEdge } => m.group != null);
 }

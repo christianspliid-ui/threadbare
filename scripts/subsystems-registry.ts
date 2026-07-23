@@ -190,6 +190,14 @@ export const SUBSYSTEMS: readonly Subsystem[] = [
     note: 'Ascendant beat director offers beats at doom/tier thresholds (THR-613). Deepening vs milestone beats.',
   },
   {
+    name: 'Companies & Group Travel',
+    aliases: ['company', 'companies', 'group', 'party', 'band', 'fellowship', 'companion', 'cohesion'],
+    activityKeywords: ['group_phase', 'group_formed', 'group_dissolved'],
+    domains: ['groups'],
+    phaseMatch: /\bgroups?\b/i,
+    note: 'Small named companies of unique agents (THR-74): formation from colocated compatible agents, shared movement with dissent, event-driven cohesion, dissolution that persists as history. Distinct from War & Armies — armies are faction-scale with an abstract headcount, companies are <=10 named individuals who keep their own decision loops.',
+  },
+  {
     name: 'Movement & Colocation',
     aliases: ['movement', 'travel', 'pathfinding', 'colocation', 'sublocation'],
     activityKeywords: ['movement', 'reroute', 'colocation'],
