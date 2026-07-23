@@ -20,6 +20,7 @@
     "check:generated-freshness": "node --experimental-strip-types scripts/check-generated-freshness.ts",
     "check:typecheck": "node --experimental-strip-types scripts/check-typecheck-ratchet.ts",
     "check:wiki-freshness": "esbuild scripts/check-wiki-freshness.ts --bundle --platform=node --format=esm --outfile=.cache/check-wiki-freshness.mjs --external:child_process --external:fs --external:path --external:process --external:url && node .cache/check-wiki-freshness.mjs",
+    "check:wiki-freshness:blocking": "esbuild scripts/check-wiki-freshness.ts --bundle --platform=node --format=esm --outfile=.cache/check-wiki-freshness.mjs --external:child_process --external:fs --external:path --external:process --external:url && node .cache/check-wiki-freshness.mjs --blocking",
     "typecheck": "tsc -b",
     "lint": "eslint .",
     "preview": "vite preview",

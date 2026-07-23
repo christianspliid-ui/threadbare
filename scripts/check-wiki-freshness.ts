@@ -1,25 +1,36 @@
 #!/usr/bin/env node
 
 /**
- * check-wiki-freshness — advisory guardrail for the Design Reference Wiki
- * freshness contract (THR-585 / Game Manual Wiki plan §4).
+ * check-wiki-freshness — guardrail for the Design Reference Wiki freshness
+ * contract (THR-585 / Game Manual Wiki plan §4; blocking flip THR-730).
  *
  * Working agreement (user directive, 2026-07-03): when the code of a core game
  * system is changed, the relevant wiki page must be updated in the same PR.
  * Made mechanical here: each page in public/wiki-manifest.json may declare a
  * `sources: string[]` of repo globs. For the current branch vs a base ref, if a
- * changed file matches a page's `sources` and that page's HTML file is NOT also
- * changed, we warn — the page is probably stale relative to the code it documents.
+ * changed file matches a page's `sources` and that page's HTML file (or a
+ * declared `payloads` entry) is NOT also changed, we warn — the page is probably
+ * stale relative to the code it documents.
  *
- * ADVISORY by default (WIKI_FRESHNESS_MODE=advisory): warnings never fail the
- * build, mirroring `check:design-wiki`'s place in `check:process`. Flip to
- * `blocking` only on an explicit user verdict.
+ * Two modes:
+ *   - ADVISORY (default): warnings never fail the build, and any inability to
+ *     resolve the git diff or manifest prints a skip line and exits 0. This is
+ *     the local pre-commit / `check:process` ergonomics path — unchanged.
+ *   - BLOCKING (`--blocking` flag or WIKI_FRESHNESS_MODE=blocking): the CI gate.
+ *     A stale page fails the run (exit 1). A gate that silently disarms when its
+ *     inputs vanish is gate theater (the `tsc --noEmit` lesson, THR-686/693), so
+ *     blocking mode also fails LOUD where advisory skips soft: an unresolvable
+ *     base ref or a missing/corrupt manifest exits 1 rather than 0.
  *
- * Fail-soft (NFP #4): any inability to resolve the git diff, a malformed glob, or
- * a missing manifest prints a skip/warn line and exits 0 — this lint must never
- * block a build or commit while advisory.
+ * Exemption token (blocking only): a commit in the PR range may carry, in its
+ * body, `Wiki-freshness-exempt: <non-empty reason>`. When present, staleness
+ * warnings are reported but do not fail the run (the step prints `EXEMPT —
+ * <reason>`). This mirrors the `Browser-verify exempt:` DoD pattern: opt-in,
+ * stated in the commit body, auditable forever in git history. If `git log` for
+ * the range is unavailable, we treat it as "no exemption" — the gate still fires.
  *
- * Run via `npm run check:wiki-freshness` (also chained into `npm run check:process`).
+ * Run via `npm run check:wiki-freshness` (advisory, chained into `check:process`)
+ * or `npm run check:wiki-freshness:blocking` (blocking, the CI gate).
  */
 
 import { execFileSync } from "node:child_process";
@@ -28,12 +39,22 @@ import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 
-type ManifestPage = { id: string; file: string; sources?: unknown; payloads?: unknown };
-type Manifest = { pages?: ManifestPage[] };
+export type ManifestPage = { id: string; file: string; sources?: unknown; payloads?: unknown };
+export type Manifest = { pages?: ManifestPage[] };
+export type FreshnessMode = "advisory" | "blocking";
 
-/** Lint severity. Advisory = warn-only (exit 0). Blocking = exit 1 on any warning. */
-const WIKI_FRESHNESS_MODE: "advisory" | "blocking" =
-  process.env.WIKI_FRESHNESS_MODE === "blocking" ? "blocking" : "advisory";
+/** Commit-body token that opts a PR out of the blocking gate for behavior-neutral changes. */
+export const EXEMPTION_TOKEN = "Wiki-freshness-exempt:";
+
+/**
+ * Lint severity. Advisory = warn-only (exit 0). Blocking = exit 1 on any warning
+ * (or on a missing input). Selected by env OR the `--blocking` CLI flag — the
+ * flag avoids cross-platform env-prefix problems in npm scripts.
+ */
+const WIKI_FRESHNESS_MODE: FreshnessMode =
+  process.env.WIKI_FRESHNESS_MODE === "blocking" || process.argv.includes("--blocking")
+    ? "blocking"
+    : "advisory";
 /** Diff base for changed-file detection. */
 const WIKI_FRESHNESS_BASE = process.env.WIKI_FRESHNESS_BASE ?? "origin/main";
 
@@ -42,10 +63,28 @@ const REPO_ROOT = path.resolve(SCRIPT_DIR, "..");
 const PUBLIC_DIR = path.join(REPO_ROOT, "public");
 const MANIFEST_PATH = path.join(PUBLIC_DIR, "wiki-manifest.json");
 
-/** Print a skip line and exit 0 — the advisory lint is best-effort. */
-function skip(reason: string): never {
-  console.log(`check-wiki-freshness: skipped — ${reason}`);
-  process.exit(0);
+/**
+ * Exit code for a missing/unresolvable input, by mode. Advisory skips soft (0) —
+ * best-effort lint. Blocking fails loud (1) — a disarmed gate must not pass.
+ */
+export function missingInputExitCode(mode: FreshnessMode): 0 | 1 {
+  return mode === "blocking" ? 1 : 0;
+}
+
+/**
+ * Handle a missing/unresolvable input. Advisory: print the skip line and exit 0
+ * (byte-identical to the pre-THR-730 behavior). Blocking: print a loud FAIL line
+ * (plus an optional fix hint) and exit 1.
+ */
+function bailMissingInput(reason: string, hint?: string): never {
+  const exit = missingInputExitCode(WIKI_FRESHNESS_MODE);
+  if (exit === 1) {
+    console.log(`check-wiki-freshness: FAIL — ${reason}`);
+    if (hint) console.log(`  ${hint}`);
+  } else {
+    console.log(`check-wiki-freshness: skipped — ${reason}`);
+  }
+  process.exit(exit);
 }
 
 function git(args: string[]): string | null {
@@ -61,7 +100,7 @@ function git(args: string[]): string | null {
  * (`.*`), a single `*` matches within one segment (`[^/]*`), and `?` matches one
  * non-separator char. All other regex-special chars are escaped literally.
  */
-function globToRegExp(glob: string): RegExp {
+export function globToRegExp(glob: string): RegExp {
   let out = "";
   for (let i = 0; i < glob.length; i++) {
     const ch = glob[i];
@@ -83,6 +122,21 @@ function globToRegExp(glob: string): RegExp {
   return new RegExp(`^${out}$`);
 }
 
+/**
+ * Parse the first non-empty exemption reason from concatenated commit bodies
+ * (the output of `git log --format=%B <base>..HEAD`). An empty reason after the
+ * token is treated as no exemption. Pure — the token scan is decoupled from git.
+ */
+export function parseExemptionReason(commitBodies: string): string | null {
+  for (const line of commitBodies.split("\n")) {
+    const idx = line.toLowerCase().indexOf(EXEMPTION_TOKEN.toLowerCase());
+    if (idx === -1) continue;
+    const reason = line.slice(idx + EXEMPTION_TOKEN.length).trim();
+    if (reason) return reason;
+  }
+  return null;
+}
+
 /** Collect files that differ from the base ref (committed + uncommitted + untracked). */
 function collectChangedFiles(): Set<string> | null {
   // Base ref must resolve, or we cannot compute a diff (shallow CI, unfetched remote, etc.).
@@ -100,31 +154,13 @@ function collectChangedFiles(): Set<string> | null {
   return files;
 }
 
-function main(): void {
-  if (!fs.existsSync(MANIFEST_PATH)) {
-    // check:design-wiki owns the hard manifest-existence failure; stay soft here.
-    skip("no manifest at public/wiki-manifest.json (deferring to check:design-wiki)");
-  }
-
-  let manifest: Manifest;
-  try {
-    manifest = JSON.parse(fs.readFileSync(MANIFEST_PATH, "utf8")) as Manifest;
-  } catch (err) {
-    skip(`manifest is not valid JSON (deferring to check:design-wiki): ${(err as Error).message}`);
-  }
-
-  const pages = Array.isArray(manifest.pages) ? manifest.pages : [];
-  const pagesWithSources = pages.filter((p) => Array.isArray(p.sources) && p.sources.length > 0);
-  if (pagesWithSources.length === 0) {
-    console.log("check-wiki-freshness: OK — no pages declare `sources` yet (freshness contract inert).");
-    return;
-  }
-
-  const changed = collectChangedFiles();
-  if (changed === null) {
-    skip(`no diff available against ${WIKI_FRESHNESS_BASE}`);
-  }
-
+/**
+ * Pure stale-page detector. For each page with `sources`, warn if any changed
+ * file matches a source glob but neither the page shell nor a declared payload
+ * changed. No git/fs — the caller supplies the pages-with-sources and the
+ * changed-file set, so this is deterministic and unit-testable.
+ */
+export function computeStaleWarnings(pagesWithSources: ManifestPage[], changed: Set<string>): string[] {
   const warnings: string[] = [];
   for (const page of pagesWithSources) {
     const pageFileRel = `public/${page.file}`;
@@ -168,6 +204,39 @@ function main(): void {
       );
     }
   }
+  return warnings;
+}
+
+function main(): void {
+  if (!fs.existsSync(MANIFEST_PATH)) {
+    // Advisory: check:design-wiki owns the hard manifest-existence failure; stay
+    // soft here. Blocking: gutting the manifest must not disarm the gate.
+    bailMissingInput("no manifest at public/wiki-manifest.json (deferring to check:design-wiki)");
+  }
+
+  let manifest: Manifest;
+  try {
+    manifest = JSON.parse(fs.readFileSync(MANIFEST_PATH, "utf8")) as Manifest;
+  } catch (err) {
+    bailMissingInput(`manifest is not valid JSON (deferring to check:design-wiki): ${(err as Error).message}`);
+  }
+
+  const pages = Array.isArray(manifest.pages) ? manifest.pages : [];
+  const pagesWithSources = pages.filter((p) => Array.isArray(p.sources) && p.sources.length > 0);
+  if (pagesWithSources.length === 0) {
+    console.log("check-wiki-freshness: OK — no pages declare `sources` yet (freshness contract inert).");
+    return;
+  }
+
+  const changed = collectChangedFiles();
+  if (changed === null) {
+    bailMissingInput(
+      `no diff available against ${WIKI_FRESHNESS_BASE}`,
+      "hint: fetch the base ref and give the checkout history — `git fetch origin main` and `fetch-depth: 0`.",
+    );
+  }
+
+  const warnings = computeStaleWarnings(pagesWithSources, changed);
 
   if (warnings.length === 0) {
     console.log(
@@ -180,8 +249,33 @@ function main(): void {
   console.log(`check-wiki-freshness: ${label} (mode=${WIKI_FRESHNESS_MODE})`);
   for (const warning of warnings) console.log(`  - ${warning}`);
 
-  if (WIKI_FRESHNESS_MODE === "blocking") process.exit(1);
   // Advisory: surface the warnings but never fail the build.
+  if (WIKI_FRESHNESS_MODE !== "blocking") return;
+
+  // Blocking: a `Wiki-freshness-exempt: <reason>` token in any commit in the PR
+  // range downgrades the failure to an audited pass. git-log failure ⇒ no
+  // exemption ⇒ the gate still fires (fails closed).
+  const bodies = git(["log", "--format=%B", `${WIKI_FRESHNESS_BASE}..HEAD`]);
+  const exemptReason = bodies === null ? null : parseExemptionReason(bodies);
+  if (exemptReason) {
+    console.log(`check-wiki-freshness: EXEMPT — ${exemptReason}`);
+    return;
+  }
+
+  process.exit(1);
 }
 
-main();
+/**
+ * Entry guard by basename, not `import.meta.url === process.argv[1]`: esbuild's
+ * `--bundle` rewrites `import.meta.url` to the bundle's URL, which can make a
+ * raw-equality guard fire for an inlined import. Gating on the process entry's
+ * basename runs main() when this script is the entry (as `.ts` directly or as
+ * the bundled `.cache/check-wiki-freshness.mjs`) but not when a test imports it.
+ */
+function isDirectEntry(): boolean {
+  const entry = process.argv[1];
+  if (!entry) return false;
+  return path.basename(entry).replace(/\.(mjs|cjs|js|ts)$/, "") === "check-wiki-freshness";
+}
+
+if (isDirectEntry()) main();

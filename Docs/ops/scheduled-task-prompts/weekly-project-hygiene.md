@@ -124,6 +124,15 @@ Spot-check 3–5 recently Done issues:
 - Is the work reflected in `Docs/project-status.md` / `Docs/project-history.md` / `Docs/changelog.md`?
 - Documentation debt? (E.g. a new content-facing engine capability shipped without updating `Docs/plans/2026-04-16-systemic-wiring-guide.md`, or a core-system change without its `public/wiki-manifest.json` manual page.)
 
+### 10. Wiki freshness escape-net (THR-730)
+
+The blocking wiki-freshness gate (`check:wiki-freshness:blocking` in CI) catches stale pages at PR time, but it has exactly two blind spots — both judgment calls, which is why they live here rather than in the script. Lookback window: **8 days** (the weekly cadence plus one day of slack).
+
+1. **Exemption audit.** `git log origin/main --since='8 days ago' --grep='Wiki-freshness-exempt'`. For each hit, read the stated reason against the commit's actual diff. An exemption is legitimate only for a behavior-neutral change (pure refactor, rename, type-only move) that matched a `sources` glob without altering documented behavior. An exemption on a change that plainly altered documented behavior is misuse → file a Continuous Improvement issue (`Infrastructure`) to update the page the exemption skipped. If zero exemptions in the window, record "PASS — no exemptions used."
+2. **Coverage sweep.** Files changed on `main` in the last 8 days under `src/engine/`, `src/data/`, `src/components/` that match **no** page's `sources` glob (cross-check against `public/wiki-manifest.json`). For a file that belongs to an already-documented system, file a ticket to extend that page's globs; for a genuinely undocumented system, add a `backlog` entry to `wiki-manifest.json` (or file a ticket to author the page). A gate that never fires because its globs miss the code is silent drift.
+
+Glob extensions and page-update tickets are agent-owned technical verdicts (THR-608); surface to Christian under `## Needs Christian` only when a genuinely undocumented system needs a creative call on whether/how to document it.
+
 ## Filing findings
 
 Every actionable finding becomes a Linear issue in the **Continuous Improvement** project:

@@ -14,6 +14,8 @@
 
 **Player casts now have a consequence surface (THR-727, 2026-07-23).** A resolved player action finally shows the aftermath the engine already computed: a new `post-resolution` phase (`phasePlayerReceipts`) builds a Divine Receipt and tiers it — a band-accented completion toast for minor casts, a story+technical receipt dialogue (`DivineReceiptModal`) for multi-step / rare / world-shifting ones. Dispatch toasts switched from optimistic-success to initiation phrasing. Closes canon rule 6's missing link (player action → visible consequence → next decision). Outcome variance for player casts is deferred to THR-728.
 
+**Wiki freshness is now a merge gate (THR-730, 2026-07-23).** The Design Reference Wiki freshness contract (THR-585) flipped from an advisory warning to a blocking step inside the required `Test · Typecheck · Build` check: a PR that changes a file matched by a wiki page's `sources` glob without updating the page (or its `payloads`) now fails, unless a commit body carries `Wiki-freshness-exempt: <reason>` (auditable escape hatch, mirrors `Browser-verify exempt:`). `weekly-project-hygiene` audits exemptions and sweeps for uncovered code (8-day lookback). Core-system docs can no longer silently drift.
+
 The Ready-for-Dev queue holds THR-722 (retire dead `grants[]`) and THR-726 (world-minted ambitions). The hourly `tb-opus-pickup` lane and `keep-work-flowing-cc` briefing are live; new work flows through Linear (Threadbare team).
 
 **Recently completed (2026-07-22, marathon):**
