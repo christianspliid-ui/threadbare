@@ -8,7 +8,13 @@
       "title": "A Run, Start to Finish",
       "blurb": "The shape of a whole run — remembrance and your two domains, the opening spine and The First, the middle game, how either clock ends the run, and what the World-Soul carries into the next.",
       "section": "Manual",
-      "sources": ["src/engine/ascendantBeat*.ts", "src/engine/worldGeneration*.ts", "src/types/remembrance.ts", "src/data/archetype-content.ts", "src/data/backstory-content.ts"]
+      "sources": [
+        "src/engine/ascendantBeat*.ts",
+        "src/engine/worldGeneration*.ts",
+        "src/types/remembrance.ts",
+        "src/data/archetype-content.ts",
+        "src/data/backstory-content.ts"
+      ]
     },
     {
       "id": "cosmology-reference",
@@ -16,7 +22,14 @@
       "title": "Reaches, Spheres & Quintessence",
       "blurb": "The two axes of every divine act — Eight Reaches (what you do) and Twelve Spheres (what fuels it), orthogonal by design — plus each Reach's virtue/vice moral axis, the Domain Capability word-ladder, and Quintessence as narrative centrality (not a ninth Reach).",
       "section": "Manual",
-      "sources": ["src/engine/phaseSphereAggregation*.ts", "src/engine/phaseQuintessence*.ts", "src/engine/capability*.ts", "src/engine/cosmology.ts", "src/types/traits.ts", "src/types/quintessence.ts"]
+      "sources": [
+        "src/engine/phaseSphereAggregation*.ts",
+        "src/engine/phaseQuintessence*.ts",
+        "src/engine/capability*.ts",
+        "src/engine/cosmology.ts",
+        "src/types/traits.ts",
+        "src/types/quintessence.ts"
+      ]
     },
     {
       "id": "turn-structure-reference",
@@ -24,7 +37,9 @@
       "title": "The Three-Beat Turn",
       "blurb": "How a turn works — the world waits until you advance it; each turn runs scan → curated moment → aftermath in a load-bearing order; time in ticks (two hours, twelve per day); and encounters as rationed chapters, not per-tick rolls.",
       "section": "Manual",
-      "sources": ["src/engine/orchestrator.ts"]
+      "sources": [
+        "src/engine/orchestrator.ts"
+      ]
     },
     {
       "id": "divine-actions-reference",
@@ -32,7 +47,13 @@
       "title": "Divine Actions & Prerequisites",
       "blurb": "The five verbs every divine act reduces to (Create/Find/Change/Destroy/Control), why some action cards never appear (Reach outside your two domains — permanent; sphere misalignment; too little capability), the Generalized Action Targeting cascade, and the two reach signatures you acquire as story moments.",
       "section": "Manual",
-      "sources": ["src/engine/targetActions*.ts", "src/engine/sphereScaling*.ts", "src/data/reach-signature-content.ts", "src/data/action-template-content.ts", "src/types/unifiedAction.ts"]
+      "sources": [
+        "src/engine/targetActions*.ts",
+        "src/engine/sphereScaling*.ts",
+        "src/data/reach-signature-content.ts",
+        "src/data/action-template-content.ts",
+        "src/types/unifiedAction.ts"
+      ]
     },
     {
       "id": "threads-court-reference",
@@ -40,7 +61,17 @@
       "title": "Threads, the Court & The First",
       "blurb": "The thread as a two-way bond — your investment depth (the five influence tiers) versus the mortal's awareness (unaware → intuition → faith → communion); the four court positions; The First's doom-clock-scheduled hero's journey; familiarity as player-side progressive disclosure; and why holding a thread deeply costs upkeep and makes you louder to rivals.",
       "section": "Manual",
-      "sources": ["src/engine/influence.ts", "src/engine/familiarity.ts", "src/engine/journeyEngine.ts", "src/engine/returnEngine.ts", "src/types/influence.ts", "src/types/familiarity.ts", "src/types/journeyEngine.ts", "src/data/influence-content.ts", "src/data/journey-content.ts"]
+      "sources": [
+        "src/engine/influence.ts",
+        "src/engine/familiarity.ts",
+        "src/engine/journeyEngine.ts",
+        "src/engine/returnEngine.ts",
+        "src/types/influence.ts",
+        "src/types/familiarity.ts",
+        "src/types/journeyEngine.ts",
+        "src/data/influence-content.ts",
+        "src/data/journey-content.ts"
+      ]
     },
     {
       "id": "essence-control-reference",
@@ -48,7 +79,17 @@
       "title": "Essence, Control & Sustained Power",
       "blurb": "Divine fuel is per-Sphere and tight on purpose — where essence comes from (a baseline flow, worshippers, places of power, an Aspect's conduit) and how it splits along your alignment (0.35/0.25/0.40); Control as sustained commitment (upkeep, the slot cap, the three ways a working lapses); the usurp/destroy contestation trade where age is the defence; and the long strategic works that erode when neglected.",
       "section": "Manual",
-      "sources": ["src/engine/essenceIncome.ts", "src/engine/phaseControlEffects.ts", "src/engine/controlContestationResolver.ts", "src/engine/phaseStrategicProjects.ts", "src/engine/strategicActionLifecycle.ts", "src/types/influence.ts", "src/data/influence-content.ts", "src/data/strategic-action-constants.ts", "src/data/aspect-content.ts"]
+      "sources": [
+        "src/engine/essenceIncome.ts",
+        "src/engine/phaseControlEffects.ts",
+        "src/engine/controlContestationResolver.ts",
+        "src/engine/phaseStrategicProjects.ts",
+        "src/engine/strategicActionLifecycle.ts",
+        "src/types/influence.ts",
+        "src/data/influence-content.ts",
+        "src/data/strategic-action-constants.ts",
+        "src/data/aspect-content.ts"
+      ]
     },
     {
       "id": "encounters-manual-reference",
@@ -56,7 +97,14 @@
       "title": "Encounters & Aftermath",
       "blurb": "The encounter as a framed chapter, not a die roll — the two shapes (branching and recurring) that share one UnifiedActionTemplate format; hex-granular awareness (see the hex, see everything on it); the single sigmoid→d100 resolution curve for peasants and gods, with doubles-based crits; aftermath as the mortal's trajectory shift; failure as plot; and the four encounter design rules. Player-voice layer over the deep encounters-agents-reference page.",
       "section": "Manual",
-      "sources": ["src/engine/encounter*.ts", "src/engine/resolution*.ts", "src/engine/domainCapability.ts", "src/engine/hiddenMark*.ts", "src/data/*-encounter-content.ts", "src/types/unifiedAction.ts"]
+      "sources": [
+        "src/engine/encounter*.ts",
+        "src/engine/resolution*.ts",
+        "src/engine/domainCapability.ts",
+        "src/engine/hiddenMark*.ts",
+        "src/data/*-encounter-content.ts",
+        "src/types/unifiedAction.ts"
+      ]
     },
     {
       "id": "clocks-reference",
@@ -64,7 +112,21 @@
       "title": "Doom, the Mandate & Omens",
       "blurb": "The two clocks that pressure every run from opposite directions — the Doom Clock (seven archetypes, five Whispers→Culmination stages, escalations as world events) counting down to an Unmaking that always lands, and the Victory Mandate (three stages, your declared win-state) counting up; the one-pool-two-clocks tension made concrete by mandate checkpoints that bank counter-omens or owe doom severity; and omens as the pressure made visible.",
       "section": "Manual",
-      "sources": ["src/engine/phaseDoom*.ts", "src/engine/doomClock*.ts", "src/engine/doomIdentityMilestones.ts", "src/engine/phaseMandate*.ts", "src/engine/mandate.ts", "src/engine/mandateGenerator.ts", "src/engine/phaseOmenAgenda*.ts", "src/types/doomClock.ts", "src/types/mandate.ts", "src/types/omen.ts", "src/data/doom-content.ts", "src/data/mandate-content.ts", "src/data/omenTemplates.ts"]
+      "sources": [
+        "src/engine/phaseDoom*.ts",
+        "src/engine/doomClock*.ts",
+        "src/engine/doomIdentityMilestones.ts",
+        "src/engine/phaseMandate*.ts",
+        "src/engine/mandate.ts",
+        "src/engine/mandateGenerator.ts",
+        "src/engine/phaseOmenAgenda*.ts",
+        "src/types/doomClock.ts",
+        "src/types/mandate.ts",
+        "src/types/omen.ts",
+        "src/data/doom-content.ts",
+        "src/data/mandate-content.ts",
+        "src/data/omenTemplates.ts"
+      ]
     },
     {
       "id": "interface-reference",
@@ -72,7 +134,9 @@
       "title": "Reading the Interface",
       "blurb": "A guided tour of the game screen — the one-viewport, no-scroll contract; the always-on frame (essence, the two clocks, omens, attention, identity, rivals); the drill-in from hex to location to sublocation; the panels (threads, retinue, chronicle, narrative feed); the Action Drawer; the encounter surfaces and the deeper sheets; and a cross-reference from every other Manual page to the surface where its system shows its face. Source spine is the IA manifest (62 surfaces).",
       "section": "Manual",
-      "sources": ["src/data/ia-manifest.ts"]
+      "sources": [
+        "src/data/ia-manifest.ts"
+      ]
     },
     {
       "id": "agents-reference",
@@ -80,7 +144,26 @@
       "title": "The Mortals",
       "blurb": "The mortals who fill the world and pursue their own goals — how a free mortal chooses (a Maslow-inspired, survival-first, values-driven seeded selection, not a literal six-tier ladder); the nine virtue↔flaw value pairs (eight Reach-bound plus courage/prudence) and the slow moral drift a god can bend; ambitions in seven shapes; growth through doing and the five ways a mentorship ends; and the lifecycle from birth to death and the ambient→notable→spotlight graduation that turns a background face into a named individual.",
       "section": "Manual",
-      "sources": ["src/engine/phaseAgentDecision*.ts", "src/engine/agentSelection.ts", "src/engine/encounterScoring.ts", "src/engine/idleBehavior.ts", "src/engine/ambition*.ts", "src/engine/agentLifecycle.ts", "src/engine/npcGraduation.ts", "src/engine/capabilityGrowth.ts", "src/engine/mentorshipOutcomes.ts", "src/engine/phaseMentorship.ts", "src/engine/phases/personality*.ts", "src/engine/phases/corePersonality.ts", "src/engine/phases/ambitionProgress.ts", "src/data/agent-behavior-constants.ts", "src/data/mentorship-constants.ts", "src/types/agent.ts", "src/types/ambition.ts", "src/types/npc.ts"]
+      "sources": [
+        "src/engine/phaseAgentDecision*.ts",
+        "src/engine/agentSelection.ts",
+        "src/engine/encounterScoring.ts",
+        "src/engine/idleBehavior.ts",
+        "src/engine/ambition*.ts",
+        "src/engine/agentLifecycle.ts",
+        "src/engine/npcGraduation.ts",
+        "src/engine/capabilityGrowth.ts",
+        "src/engine/mentorshipOutcomes.ts",
+        "src/engine/phaseMentorship.ts",
+        "src/engine/phases/personality*.ts",
+        "src/engine/phases/corePersonality.ts",
+        "src/engine/phases/ambitionProgress.ts",
+        "src/data/agent-behavior-constants.ts",
+        "src/data/mentorship-constants.ts",
+        "src/types/agent.ts",
+        "src/types/ambition.ts",
+        "src/types/npc.ts"
+      ]
     },
     {
       "id": "factions-cultures-reference",
@@ -88,7 +171,26 @@
       "title": "Factions, Cultures & Secrets",
       "blurb": "The social fabric over the mortals — factions as bodies with their own designs (per-faction reputation ladders, autonomous ambitions and actions, mortal succession, schism, and the chosen-faction anointing); cultures as gravity wells you are born inside of (venerated Spheres, generated names and mores, cultural gravity and the four tensions); and the unseen currency of secrets and favors that tilt a social encounter before a word is spoken.",
       "section": "Manual",
-      "sources": ["src/engine/factionReputation.ts", "src/engine/factionAmbitions.ts", "src/engine/factionTopology.ts", "src/engine/chosenFactionPowers.ts", "src/engine/phaseFactionActions.ts", "src/engine/phaseFactionSuccession.ts", "src/engine/phaseSchismResolution.ts", "src/engine/phaseSecretsFavors.ts", "src/engine/secretGeneration.ts", "src/engine/socialLeverage.ts", "src/engine/phases/faction*.ts", "src/engine/phases/schism*.ts", "src/engine/cultur*.ts", "src/data/faction-constants.ts", "src/data/faction-definitions.ts", "src/data/*-definition.ts", "src/types/faction.ts", "src/types/secretsFavors.ts"]
+      "sources": [
+        "src/engine/factionReputation.ts",
+        "src/engine/factionAmbitions.ts",
+        "src/engine/factionTopology.ts",
+        "src/engine/chosenFactionPowers.ts",
+        "src/engine/phaseFactionActions.ts",
+        "src/engine/phaseFactionSuccession.ts",
+        "src/engine/phaseSchismResolution.ts",
+        "src/engine/phaseSecretsFavors.ts",
+        "src/engine/secretGeneration.ts",
+        "src/engine/socialLeverage.ts",
+        "src/engine/phases/faction*.ts",
+        "src/engine/phases/schism*.ts",
+        "src/engine/cultur*.ts",
+        "src/data/faction-constants.ts",
+        "src/data/faction-definitions.ts",
+        "src/data/*-definition.ts",
+        "src/types/faction.ts",
+        "src/types/secretsFavors.ts"
+      ]
     },
     {
       "id": "world-map-reference",
@@ -96,7 +198,17 @@
       "title": "The World: Hexes, Terrain & Sight",
       "blurb": "The world as a grid of hexes you can shape — the three nested tiers of place (hex → location → sublocation, one rung at a time); terrain and how divine influence, corruption, and per-location magical saturation remake it; and the two hex-distance sight systems, the god's fog of war (unexplored → visible → remembered) and each mortal's own encounter awareness. Load-bearing: hexes are flat array state, not graph nodes.",
       "section": "Manual",
-      "sources": ["src/engine/visibility.ts", "src/engine/phaseHexState.ts", "src/engine/phaseMagicalSaturation.ts", "src/engine/hexActorIndex.ts", "src/engine/encounterAwareness.ts", "src/types/visibility.ts", "src/types/hexMutation.ts", "src/data/terrain-transformation-content.ts", "src/lib/hexMath.ts"]
+      "sources": [
+        "src/engine/visibility.ts",
+        "src/engine/phaseHexState.ts",
+        "src/engine/phaseMagicalSaturation.ts",
+        "src/engine/hexActorIndex.ts",
+        "src/engine/encounterAwareness.ts",
+        "src/types/visibility.ts",
+        "src/types/hexMutation.ts",
+        "src/data/terrain-transformation-content.ts",
+        "src/lib/hexMath.ts"
+      ]
     },
     {
       "id": "settlements-economy-reference",
@@ -104,7 +216,19 @@
       "title": "Settlements, Prosperity & Trade",
       "blurb": "How settlements rise and fall on their own — the four tiers (hamlet → town → city, with capital fixed) and the sustained-prosperity thresholds that promote or demote them; prosperity as an equilibrium value drifting toward conditions and unrest as a settlement's instability; trade routes that decay when un-travelled; and terrain-seeded resources plus rare anomalies that set a place's ceiling. Honest scope: the economy is texture serving story, not a trading sim.",
       "section": "Manual",
-      "sources": ["src/engine/phaseSublocations.ts", "src/engine/phaseSettlementPromotion.ts", "src/engine/phaseSettlementReassessment.ts", "src/engine/phaseProsperity.ts", "src/engine/phaseUnrest.ts", "src/engine/phaseTradeRouteDecay.ts", "src/engine/tradeRoute.ts", "src/engine/phaseEconomicTraits.ts", "src/engine/phaseEconomicChronicle.ts", "src/engine/economicChronicle.ts", "src/engine/resourceSeeding.ts"]
+      "sources": [
+        "src/engine/phaseSublocations.ts",
+        "src/engine/phaseSettlementPromotion.ts",
+        "src/engine/phaseSettlementReassessment.ts",
+        "src/engine/phaseProsperity.ts",
+        "src/engine/phaseUnrest.ts",
+        "src/engine/phaseTradeRouteDecay.ts",
+        "src/engine/tradeRoute.ts",
+        "src/engine/phaseEconomicTraits.ts",
+        "src/engine/phaseEconomicChronicle.ts",
+        "src/engine/economicChronicle.ts",
+        "src/engine/resourceSeeding.ts"
+      ]
     },
     {
       "id": "livelihoods-reference",
@@ -112,7 +236,18 @@
       "title": "Livelihoods & the Resource Web",
       "blurb": "The activated resource economy (Phase 1) — how every place's Livelihood reads in prose from its resource stock tiers (scarce/adequate/surplus), when a staple crosses into Famine or Glut, how supply-vs-demand balance nudges prosperity, how a bonded mortal's home turning hungry pulls a livelihood thread tug, and the resource-class table that leans each good toward a Sphere. Companion to the settlements page; honest scope: P1 activates the layer, trade cargo and divine verbs come later.",
       "section": "Manual",
-      "sources": ["src/engine/phases/resourceStockTiers.ts", "src/engine/resourceEconomy.ts", "src/data/resource-classes.ts", "src/engine/phaseProsperity.ts", "src/engine/economicChronicle.ts", "src/data/economic-chronicle-content.ts", "src/components/Game/LocationView.tsx", "src/components/Game/debug/EconomyDebugTab.tsx", "src/components/ProseKeyword.tsx", "src/types/resource.ts"]
+      "sources": [
+        "src/engine/phases/resourceStockTiers.ts",
+        "src/engine/resourceEconomy.ts",
+        "src/data/resource-classes.ts",
+        "src/engine/phaseProsperity.ts",
+        "src/engine/economicChronicle.ts",
+        "src/data/economic-chronicle-content.ts",
+        "src/components/Game/LocationView.tsx",
+        "src/components/Game/debug/EconomyDebugTab.tsx",
+        "src/components/ProseKeyword.tsx",
+        "src/types/resource.ts"
+      ]
     },
     {
       "id": "armies-battles-reference",
@@ -120,7 +255,23 @@
       "title": "Armies, Battles & Lairs",
       "blurb": "War as a story generator, not a wargame — armies that factions raise for conquest or revenge (three sizes, terrain-punished marches, Quintessence-cohesion attrition and its four threshold encounters); field battles that resolve as a momentum struggle over several turns, tilted by thread-gated spotlights and leaving destruction, captured commanders, and refugees in their wake; sieges as an accelerating battle subtype where walls favour the defender and starvation the attacker; and monster lairs that escalate minor → major (named elite) → legendary (monster faction), poison the land, and reinfest if cleared ground is left untended.",
       "section": "Manual",
-      "sources": ["src/engine/armyMovement.ts", "src/engine/armyAttrition.ts", "src/engine/armySpawning.ts", "src/engine/armyNotifications.ts", "src/engine/battleResolution.ts", "src/engine/battleAftermath.ts", "src/engine/battleSpotlights.ts", "src/engine/siegeResolution.ts", "src/engine/lairEscalation.ts", "src/engine/lairSeeding.ts", "src/types/army.ts", "src/types/battle.ts", "src/data/army-encounter-content.ts", "src/data/siege-encounter-content.ts", "src/data/battle-spotlight-content.ts"]
+      "sources": [
+        "src/engine/armyMovement.ts",
+        "src/engine/armyAttrition.ts",
+        "src/engine/armySpawning.ts",
+        "src/engine/armyNotifications.ts",
+        "src/engine/battleResolution.ts",
+        "src/engine/battleAftermath.ts",
+        "src/engine/battleSpotlights.ts",
+        "src/engine/siegeResolution.ts",
+        "src/engine/lairEscalation.ts",
+        "src/engine/lairSeeding.ts",
+        "src/types/army.ts",
+        "src/types/battle.ts",
+        "src/data/army-encounter-content.ts",
+        "src/data/siege-encounter-content.ts",
+        "src/data/battle-spotlight-content.ts"
+      ]
     },
     {
       "id": "stealth-rivals-reference",
@@ -128,7 +279,13 @@
       "title": "Stealth, Detection & Rival Gods",
       "blurb": "The two audiences that watch every divine act — mortals whose awareness of you slowly grows, and rival gods who scan the regions for a rising power. How region-level detection pressure climbs with your louder acts and fades when you go quiet (crossing the top seeds a rival strike); the generated rivals (never a fixed pantheon) with their four temperaments and four-phase schemes you can counter; and the hidden marks and ageing intelligence that wait beneath the surface. Honest scope: the finer per-mortal suspicion ladder is designed but dormant; region pressure is what ships.",
       "section": "Manual",
-      "sources": ["src/engine/stealth*.ts", "src/engine/rival*.ts", "src/engine/phaseHiddenMarkDecay*.ts", "src/engine/phaseIntelligenceDecay*.ts", "src/data/rival-content.ts"]
+      "sources": [
+        "src/engine/stealth*.ts",
+        "src/engine/rival*.ts",
+        "src/engine/phaseHiddenMarkDecay*.ts",
+        "src/engine/phaseIntelligenceDecay*.ts",
+        "src/data/rival-content.ts"
+      ]
     },
     {
       "id": "attention-story-reference",
@@ -136,7 +293,13 @@
       "title": "Attention, the Digest & the Chronicle",
       "blurb": "How one god watches a whole world without keeping up with all of it — the renewing attention pool (scarce by design, cheaper to attend the mortals closest to you); the curator that sifts the threads and surfaces the few that matter as tugs, promoting genuine turning points to spotlighted story beats on a cooldown; the digest that keeps everything you looked away from, read back through Read the Threads or composed per thread as a story-so-far; and the three-tier prose engine (Routine/Notable/Chronicle) that turns every event into a moment, taught through interactive prose keywords rather than numbers. Honest scope: the digest is appended every tick but its per-tick prune is dormant, so reads self-limit by lookback window.",
       "section": "Manual",
-      "sources": ["src/engine/phaseAttention*.ts", "src/engine/attentionTier*.ts", "src/engine/digestBuffer*.ts", "src/engine/narrative*.ts", "src/engine/prose*.ts"]
+      "sources": [
+        "src/engine/phaseAttention*.ts",
+        "src/engine/attentionTier*.ts",
+        "src/engine/digestBuffer*.ts",
+        "src/engine/narrative*.ts",
+        "src/engine/prose*.ts"
+      ]
     },
     {
       "id": "twilight-worldsoul-reference",
@@ -144,7 +307,16 @@
       "title": "Twilight, Echoes & the World-Soul",
       "blurb": "How a run ends and becomes an ingredient of the next — the Unmaking that begins when the Doom clock expires (a twilight you witness, not fight); the harvest that preserves the age's most significant Legacy (mortals), Monument (places), and Relic (artifacts) echoes, scaled by whether the age closed triumphant, somber, or bittersweet; the World-Soul that carries those echoes across cycles as they degrade and binds each run into a chronicle volume; and the next world as a response, not a sequel. Highest-DESIGN-density page: weakened twilight play, divine-echo selection, echoes seeding the next world, a re-drawn cosmos, and the whole Fundament/Resonance ledger are designed but not yet wired — flagged throughout.",
       "section": "Manual",
-      "sources": ["src/types/worldSoul.ts", "src/engine/worldSoul.ts", "src/engine/phaseSphereAggregation*.ts", "src/engine/cycleEnd.ts", "src/engine/echo.ts", "src/types/echo.ts", "src/engine/chronicle.ts", "src/components/Game/HarvestScreen.tsx"]
+      "sources": [
+        "src/types/worldSoul.ts",
+        "src/engine/worldSoul.ts",
+        "src/engine/phaseSphereAggregation*.ts",
+        "src/engine/cycleEnd.ts",
+        "src/engine/echo.ts",
+        "src/types/echo.ts",
+        "src/engine/chronicle.ts",
+        "src/components/Game/HarvestScreen.tsx"
+      ]
     },
     {
       "id": "encounters-agents-reference",
@@ -152,7 +324,11 @@
       "title": "Encounters, Agents & Resolution",
       "blurb": "Eight Reaches, Domain Capability, species, traits, attachments, the encounter types, the resolution pipeline, divine intervention, and the agent decision pipeline.",
       "section": "Deep Reference",
-      "sources": ["src/engine/encounter.ts", "src/engine/resolution.ts", "src/engine/phaseAgentDecision.ts"]
+      "sources": [
+        "src/engine/encounter.ts",
+        "src/engine/resolution.ts",
+        "src/engine/phaseAgentDecision.ts"
+      ]
     },
     {
       "id": "tick-cycle-reference",
@@ -160,7 +336,9 @@
       "title": "Tick Cycle Reference",
       "blurb": "All 12 orchestrator acts and 40+ phases in tick order, each with its reads, writes, and RNG tags.",
       "section": "Deep Reference",
-      "sources": ["src/engine/orchestrator.ts"]
+      "sources": [
+        "src/engine/orchestrator.ts"
+      ]
     },
     {
       "id": "action-catalog",
@@ -168,8 +346,27 @@
       "title": "Action Catalog",
       "blurb": "Browsable, code-true catalog of every ascendant-facing action template — spheres, reaches, costs, availability buckets, and authored technical game-effects with a derived wiring badge.",
       "section": "Deep Reference",
-      "sources": ["src/data/action-template-content.ts", "src/data/unified-action-templates.ts", "src/data/action-technical-effects.ts", "scripts/generate-action-catalog.ts"],
-      "payloads": ["public/action-catalog.generated.json"]
+      "sources": [
+        "src/data/action-template-content.ts",
+        "src/data/unified-action-templates.ts",
+        "src/data/action-technical-effects.ts",
+        "scripts/generate-action-catalog.ts"
+      ],
+      "payloads": [
+        "public/action-catalog.generated.json"
+      ]
+    },
+    {
+      "id": "system-interface-map",
+      "file": "system-interface-map-reference.html",
+      "title": "Systems & Interfaces Map",
+      "blurb": "Visual map of every subsystem and the cross-system contracts between them — which couplings are verified live, which leaked, and which repairs are ticketed. Projection of the canon interface map.",
+      "section": "Deep Reference",
+      "sources": [
+        "Docs/canon/interface-map.md",
+        "scripts/interface-contracts.ts",
+        "scripts/generate-interface-map.ts"
+      ]
     }
   ],
   "backlog": []
