@@ -187,6 +187,20 @@ if (import.meta.env.DEV) {
     pickAftermathReaction: (agentId: string, reactionId?: string) =>
       _aftermathBridge?.pickAftermathReaction(agentId, reactionId) ?? { success: false, message: 'Game not loaded' },
     _registerAftermathBridge: (cb) => { _aftermathBridge = cb as AftermathBridge; },
+    listPlayerReceipts: () => {
+      const state = _gameStateProvider?.();
+      const receipts = state?.playerActionReceipts ?? [];
+      return {
+        receipts: receipts.map((r) => ({
+          id: r.id,
+          templateId: r.templateId,
+          presentation: r.presentation,
+          band: r.outcomeBand,
+          acknowledged: r.acknowledged,
+          changeCount: r.changes.length,
+        })),
+      };
+    },
     /** @internal GameView registers its graph provider here */
     _registerGraphProvider: (fn: () => import('./engine/graph').WorldGraph | null) => { _graphProvider = fn; },
     /** @internal GameView registers a provider for the live GameState here */

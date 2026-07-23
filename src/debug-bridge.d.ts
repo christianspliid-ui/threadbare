@@ -91,6 +91,19 @@ export interface DebugAftermathPickResult {
   message: string;
 }
 
+export interface DebugPlayerReceiptInfo {
+  id: string;
+  templateId: string;
+  presentation: 'modal' | 'toast';
+  band: string;
+  acknowledged: boolean;
+  changeCount: number;
+}
+
+export interface DebugPlayerReceiptsResult {
+  receipts: DebugPlayerReceiptInfo[];
+}
+
 export interface DebugRarityInfo {
   tier: number;
   tierName: string;
@@ -320,6 +333,8 @@ export interface DebugBridge {
     listAftermathReactions: (agentId: string) => DebugAftermathListResult;
     pickAftermathReaction: (agentId: string, reactionId?: string) => DebugAftermathPickResult;
   }) => void;
+  /** List queued Divine Receipts for player actions (THR-727). Reads live GameState. */
+  listPlayerReceipts: () => DebugPlayerReceiptsResult;
   /** @internal GameView registers a provider for the live WorldGraph here */
   _registerGraphProvider: (fn: () => import('./engine/graph').WorldGraph | null) => void;
   /** @internal GameView registers a provider for the live GameState here */

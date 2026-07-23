@@ -17,7 +17,8 @@ export type NavigationTarget =
   | { kind: 'hex';        col: number; row: number }
   | { kind: 'location';   locationNodeId: string }
   | { kind: 'faction';    factionId: string }
-  | { kind: 'journey';    journeyId: string; agentId: string };
+  | { kind: 'journey';    journeyId: string; agentId: string }
+  | { kind: 'receipt';    receiptId: string };
 
 // ─── Notification Preferences ──────────────────────────────────
 

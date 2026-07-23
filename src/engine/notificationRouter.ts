@@ -15,6 +15,11 @@ import { ENTITY_DIVERTED_CHANNELS } from './notificationThreadingGate';
 
 /** Derive a navigation target from a TickEvent's entity references */
 export function deriveNavigationTarget(event: TickEvent): NavigationTarget | undefined {
+  // Divine Receipt toast → open the receipt dialogue (THR-727). The receipt id equals
+  // the event id by construction (see phasePlayerReceipts).
+  if (event.type === 'player_action_receipt') {
+    return { kind: 'receipt', receiptId: event.id };
+  }
   // Encounter events → encounter navigation
   if (event.type.startsWith('encounter_') || event.type === 'agent_encounter') {
     return event.encounterId
@@ -60,6 +65,7 @@ export function eventTypeToCategory(type: TickEvent['type']): NotificationCatego
   if (type.startsWith('journey_')) return 'journeys';
   if (type.startsWith('ambition_')) return 'ambitions';
   if (type === 'intervention_effect' || type.startsWith('control_effect_')) return 'divine';
+  if (type === 'player_action_receipt') return 'divine'; // THR-727 — sits with divine intervention feedback
   if (type === 'complication') return 'encounters'; // THR-20: complications route with encounters
   if (type === 'settlement_tier_change' || type === 'economic_chronicle') return 'economy';
   if (type === 'tier_promotion') return 'actions';
@@ -161,6 +167,8 @@ export function routeNotifications(
             expiresAt: isPermanent ? PERMANENT_TOAST_EXPIRY : now + TOAST_DURATION_MS,
             actorId: event.actorId,
             navigationTarget: navTarget,
+            // THR-727: band-keyed accent passthrough (e.g. divine receipt toasts).
+            ...(event.band ? { band: event.band } : {}),
           };
           newToasts.push(toast);
           toastByMessage.set(event.message, toast);

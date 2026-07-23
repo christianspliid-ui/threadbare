@@ -9,6 +9,8 @@ interface NotificationNavigationDeps {
   onOpenFaction?: (factionId: string) => void;
   onOpenJourney?: (journeyId: string, agentId: string) => void;
   onOpenLocation?: (nodeId: string) => void;
+  /** Divine Receipt toast click-through → open the receipt dialogue (THR-727). */
+  onOpenReceipt?: (receiptId: string) => void;
 }
 
 /**
@@ -44,6 +46,11 @@ export function useNotificationNavigation(deps: NotificationNavigationDeps) {
           deps.onOpenJourney(target.journeyId, target.agentId);
         }
         break;
+      case 'receipt':
+        if (deps.onOpenReceipt) {
+          deps.onOpenReceipt(target.receiptId);
+        }
+        break;
     }
-  }, [deps.onSelectAgent, deps.onFocusHex, deps.onOpenEncounter, deps.onOpenFaction, deps.onOpenJourney, deps.onOpenLocation]);
+  }, [deps.onSelectAgent, deps.onFocusHex, deps.onOpenEncounter, deps.onOpenFaction, deps.onOpenJourney, deps.onOpenLocation, deps.onOpenReceipt]);
 }

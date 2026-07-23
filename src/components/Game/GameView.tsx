@@ -119,6 +119,7 @@ import { buildGateDutyEncounterStageModel } from './encounter-stage/adapters/bui
 import { buildUnifiedEncounterStageModel } from './encounter-stage/adapters/buildUnifiedEncounterStageModel';
 import { buildSimpleEncounterStageModel } from './encounter-stage/adapters/buildSimpleEncounterStageModel';
 import { EncounterVeil } from './EncounterVeil';
+import { DivineReceiptModal } from './DivineReceiptModal';
 import {
   buildActiveEncounterDisplayFromLegacyProgress,
   buildActiveEncounterDisplayFromUnifiedAction,
@@ -351,6 +352,10 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   // Toasts pushed here are merged with notificationState.toasts in ToastStack.
   // Must be defined before useAgentInteraction since onPushToast is passed to that hook.
   const [actionToasts, setActionToasts] = useState<import('../../types/notification').ToastItem[]>([]);
+  // ── Divine Receipt (THR-727): id of a toast-tier receipt the player clicked through. ──
+  // Modal-tier receipts auto-open (oldest unacknowledged); this only holds an explicitly
+  // opened toast-tier receipt. Cleared on acknowledge.
+  const [openedReceiptId, setOpenedReceiptId] = useState<string | null>(null);
   const handlePushToast = useCallback((toast: import('../../types/notification').ToastItem) => {
     setActionToasts(prev => {
       const now = Date.now();
@@ -1049,6 +1054,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       }
     },
     onOpenLocation: handleLocationClick,
+    // THR-727: clicking a divine-receipt toast opens the receipt dialogue.
+    onOpenReceipt: (receiptId: string) => setOpenedReceiptId(receiptId),
   });
 
   // ── Notification system hook ──
@@ -2432,7 +2439,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   const applyAftermathReactionForAgent = useCallback((
     agentId: string,
     reactionId?: string,
-    source: 'modal' | 'debug-bridge' = 'modal',
+    source: 'modal' | 'debug-bridge' | 'receipt-modal' = 'modal',
   ): {
     success: boolean;
     message: string;
@@ -2559,6 +2566,61 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       closeEncounterModalAndResume(tieredEncounterState.openedAsInterrupt);
     }
   }, [applyAftermathReactionForAgent, closeEncounterModalAndResume, gameState.tick, tieredEncounterState]);
+
+  // ── Divine Receipt (THR-727) ──
+  // The active receipt: an explicitly opened toast-tier receipt, else the oldest
+  // unacknowledged modal-tier receipt. Only this one renders (queue is the buffer).
+  const activeReceipt = useMemo(() => {
+    const receipts = gameState.playerActionReceipts ?? [];
+    if (openedReceiptId) {
+      const opened = receipts.find(r => r.id === openedReceiptId && !r.acknowledged);
+      if (opened) return opened;
+    }
+    return receipts.find(r => !r.acknowledged && r.presentation === 'modal') ?? null;
+  }, [gameState.playerActionReceipts, openedReceiptId]);
+
+  const handleAcknowledgeReceipt = useCallback(() => {
+    if (!activeReceipt) return;
+    const id = activeReceipt.id;
+    setGameState(prev => ({
+      ...prev,
+      playerActionReceipts: (prev.playerActionReceipts ?? []).map(r =>
+        r.id === id ? { ...r, acknowledged: true } : r,
+      ),
+    }));
+    setOpenedReceiptId(null);
+    emitTrace({
+      tick: _gameStateRef.current.tick,
+      category: 'player_receipt',
+      event: 'acknowledged',
+      actionId: activeReceipt.actionId,
+      templateId: activeReceipt.templateId,
+      presentation: activeReceipt.presentation,
+      band: activeReceipt.outcomeBand,
+      changeCount: activeReceipt.changes.length,
+      summary: `player_receipt: acknowledged ${activeReceipt.templateName}`,
+    } as unknown as Parameters<typeof emitTrace>[0]);
+  }, [activeReceipt, setGameState]);
+
+  const handleReceiptReaction = useCallback((reactionId: string) => {
+    if (!activeReceipt) return;
+    const result = applyAftermathReactionForAgent(gameState.ascendantId, reactionId, 'receipt-modal');
+    if (result.success) {
+      emitTrace({
+        tick: _gameStateRef.current.tick,
+        category: 'player_receipt',
+        event: 'reaction_applied',
+        actionId: activeReceipt.actionId,
+        templateId: activeReceipt.templateId,
+        presentation: activeReceipt.presentation,
+        band: activeReceipt.outcomeBand,
+        changeCount: activeReceipt.changes.length,
+        reactionId,
+        summary: `player_receipt: reaction '${reactionId}' applied on ${activeReceipt.templateName}`,
+      } as unknown as Parameters<typeof emitTrace>[0]);
+    }
+    handleAcknowledgeReceipt();
+  }, [activeReceipt, applyAftermathReactionForAgent, gameState.ascendantId, handleAcknowledgeReceipt]);
 
   useEffect(() => {
     if (!import.meta.env.DEV || !window.__DEBUG) return;
@@ -2911,6 +2973,19 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         ? ` (${[buffResult.discountApplied ? 'after Recede' : '', buffResult.tierBoostApplied ? 'with Focus' : ''].filter(Boolean).join(', ')})`
         : '';
 
+      // Dispatch-time toast — initiation phrasing (present tense; the outcome arrives
+      // later as a Divine Receipt, THR-727). Mirrors the agent-action dispatch path,
+      // which previously toasted while this non-agent path did not.
+      const dispatchMessage = `The Ascendant ${template.narrativeTemplates.initiation}.${buffParenthetical}`;
+      handlePushToast({
+        id: `toast_target_action_${Date.now()}`,
+        message: dispatchMessage,
+        sphere,
+        count: 1,
+        createdTick: gameState.tick,
+        expiresAt: Date.now() + 4000,
+      });
+
       setGameState(prev => {
         const newPool = { ...prev.essencePool };
         if (essenceCost > 0) {
@@ -2926,7 +3001,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
               id: `evt_target_action_${prev.tick}_${Date.now()}`,
               tick: prev.tick,
               type: 'narrative' as const,
-              message: `The Ascendant ${template.narrativeTemplates.initiation}.${buffParenthetical}`,
+              message: dispatchMessage,
               significance: 0.5,
               sphere,
               isInterventionBeat: false,
@@ -2942,7 +3017,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     } catch (err) {
       console.warn('[targetAction] failed to create action:', err);
     }
-  }, [nonAgentTargetContext, gameState.ascendantId, gameState.graph, gameState.seed, gameState.tick, archetype, setGameState, focusedLocation, handleStartMeeting, runtime]);
+  }, [nonAgentTargetContext, gameState.ascendantId, gameState.graph, gameState.seed, gameState.tick, archetype, setGameState, focusedLocation, handleStartMeeting, runtime, handlePushToast]);
 
   const handleOpenFactionActions = useCallback((factionId: string) => {
     const context = buildActorTargetContext(factionId, gameState.graph);
@@ -3044,7 +3119,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     || (!!activeStoryBeatId && !!activeStoryBeatTemplate && !interruptsSuppressed)
     || (!!pendingBeat && beatEntered)
     || !!pendingChoice
-    || !!gameState.pendingEmergenceDecision;
+    || !!gameState.pendingEmergenceDecision
+    || activeReceipt !== null;
 
   useInterruptAutoPause({
     interruptOpen: interruptModalOpen,
@@ -3078,6 +3154,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     else if (pendingBeat && !interruptsSuppressed) openModals.push('AscendantBeatOfferBanner');
     if (pendingChoice) openModals.push('ChoiceSetModal');
     if (gameState.pendingEmergenceDecision) openModals.push('EmergenceDilemmaModal');
+    if (activeReceipt) openModals.push('DivineReceiptModal');
     if (activePremonition && !interruptsSuppressed) openModals.push('PremonitionModal');
     if (ascendantSheetOpen) openModals.push('AscendantSheet');
     if (doomDetailOpen) openModals.push('DoomClockDetail');
@@ -3118,6 +3195,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     beatEntered,
     pendingChoice,
     gameState.pendingEmergenceDecision,
+    activeReceipt,
   ]);
 
   const getDebugActiveUIState = useCallback(() => {
@@ -3967,6 +4045,16 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
             }}
           />
         </div>
+      )}
+
+      {/* Divine Receipt — resolution-time outcome feedback for player action cards (THR-727) */}
+      {activeReceipt && (
+        <DivineReceiptModal
+          open={true}
+          receipt={activeReceipt}
+          onAcknowledge={handleAcknowledgeReceipt}
+          onReaction={handleReceiptReaction}
+        />
       )}
 
       {/* Meeting encounter — full-screen narrative flow */}

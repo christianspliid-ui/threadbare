@@ -66,8 +66,12 @@ const EXPECTED_PHASE_IDS: readonly string[] = [
   'doom',
   // post-doom slot
   'emitted_omen_decay',
-  // post-resolution slot — autonomous in-encounter aftermath chooser (THR-530)
+  // post-resolution slot — autonomous in-encounter aftermath chooser (THR-530),
+  // then Divine Receipt (THR-727). Both post-resolution with no ordering
+  // constraint, so the alphabetical tie-break orders them
+  // 'autonomous_aftermath' < 'player_receipts'.
   'autonomous_aftermath',
+  'player_receipts',
   // pre-economy slot
   'reputation_decay',
   // Mortal economy stock-tier derivation (THR-615): no ordering constraints, so
