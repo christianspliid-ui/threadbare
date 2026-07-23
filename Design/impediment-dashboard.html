@@ -2845,6 +2845,19 @@ const DATA = [
     "workaroundFound": false,
     "workaround": "**Workaround:** run `gh pr update-branch <N>` on the oldest `BEHIND` armed PR each run (pull-work Step 0.8), and — when the lane has no other claimable work because of WIP=1 — stay for one bounded watch of the ~12-min CI rather than exiting into another silent stall. What finally worked was **timing, not technique**: the 00:03 run started ~50 min after the last briefing merge with the next not due for another 50, the first genuinely clear window the PR had had. **Method note:** treat \"armed + green + not merged\" as a staleness suspect before a CI suspect, and never read a green `gh pr checks` as evidence the PR will merge — the check and the merge gate are independent. **Durable fix tracked in THR-735** with four candidates; note that raising `ARMED_SWEEP_MAX_UPDATES` is the weakest of them precisely because of finding (a) — a merge queue or dropping strict up-to-date are the only two that don't depend on a session showing up.",
     "session": "Hourly `tb-opus-pickup` runs 19:17→00:19, THR-730 ship / THR-735 root cause"
+  },
+  {
+    "num": "203",
+    "id": 203,
+    "count": 1,
+    "date": "2026-07-24",
+    "category": "environment",
+    "description": "**Home-tree `node_modules/.bin` vanished again — packages intact (276 top-level dirs) but every shim gone — breaking pre-commit hooks, `npm run dev`, and `npm test` for the home tree and every junctioned worktree.** Discovered by the hourly `keep-work-flowing-cc` run when the briefing worktree's pre-commit `lint:plan-doc` failed with `'esbuild' is not recognized`; the documented junction workaround could not help because the junction target itself lacked `.bin`. Same class as the 2026-07-22 junction-wipe pair (partial variant — only `.bin` is gone); the reaper-side rmdir-junction-first guard that entry flagged as \"still open (belt-and-braces)\" remains unshipped.",
+    "consequence": "Briefing commit blocked until worked around; home-tree dev server, tests, and hooks broken until an `npm install` reruns there.",
+    "impact": "M",
+    "workaroundFound": true,
+    "workaround": "**Workaround (no `--no-verify`):** copy `node_modules/@esbuild/win32-x64/esbuild.exe` into a scratch dir and prepend it to PATH in **MSYS form** — `export PATH=\"/c/.../toolbin:$PATH\"`. A Windows-form entry (`C:/...`) silently breaks Git-Bash PATH parsing (the drive colon splits the entry), which made the first two attempts look like the export was not propagating. Permanent fix: rerun `npm install` in the home tree.",
+    "session": "Hourly `keep-work-flowing-cc` briefing run 2026-07-24 01:09."
   }
 ];
 // ── End data ──
