@@ -241,3 +241,14 @@ registry edits serially).
 - v1 never replaces held ambitions; "minted ambitions can displace stale secondaries" is
   explicitly out of scope (note as a possible future ticket at closeout if it itches).
 - Milestone predicates: reuse existing vocabulary only; a new predicate type is scope creep.
+
+## Forked-audit verdicts
+
+**Skipped with recorded rationale (2026-07-23):** intent was verified interactively by the
+user across the originating session (coupling assessment → player-lens verdicts → model
+routing decision → "feel free to do the outstanding design work"), the interface framework
+these plans instantiate passed an adversarial cold-context Fable review the same day
+(verdicts in `Docs/plans/2026-07-23-system-interface-map.md` tail), and every diagnosis
+claim here is runtime/grep-verified rather than intention-transcribed. Chat approval
+satisfies the human gate (THR-608). Executor guardrail: if the substrate diverges from the
+diagnosis, stop and surface — do not adapt silently.

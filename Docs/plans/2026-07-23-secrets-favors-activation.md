@@ -273,3 +273,14 @@ land registry edits serially, rebase-regenerate on conflict like the UL dashboar
 - After granting the cards, verify link 3 (effects fire) — the template blocks currently
   show no graphOps/technicalEffect markers; prose-only steps would make the cards lie.
 - Leverage (`computeInitialLeverage`) is live — do not touch it except to read.
+
+## Forked-audit verdicts
+
+**Skipped with recorded rationale (2026-07-23):** intent was verified interactively by the
+user across the originating session (coupling assessment → player-lens verdicts → model
+routing decision → "feel free to do the outstanding design work"), the interface framework
+these plans instantiate passed an adversarial cold-context Fable review the same day
+(verdicts in `Docs/plans/2026-07-23-system-interface-map.md` tail), and every diagnosis
+claim here is runtime/grep-verified rather than intention-transcribed. Chat approval
+satisfies the human gate (THR-608). Executor guardrail: if the substrate diverges from the
+diagnosis, stop and surface — do not adapt silently.

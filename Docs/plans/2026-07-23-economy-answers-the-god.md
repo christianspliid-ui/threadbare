@@ -187,8 +187,9 @@ issue at closeout (create-then-reference; never predict ids) and cites it in a r
 ## Rulebook impact
 
 - [x] No rule of play changes — no new verbs, costs, or prerequisites; the world's
-  *response* deepens. Rulebook untouched; the economic-verbs row may gain an `[IMPL]`
-  note about visible consequences in the closing PR (optional).
+  *response* deepens.
+- [x] Rulebook untouched; the economic-verbs row may gain an `[IMPL]` note about visible
+  consequences in the closing PR (optional).
 
 ## NFP-compliance table
 
@@ -242,3 +243,14 @@ tickets — land registry edits serially, regenerate on conflict).
   qualify via the same prosperity-delta test. Do not special-case the four cards.
 - The scoring pipeline is order-sensitive and heavily tested — add the term where
   `reputationBonus` folds in (THR-641 precedent) and follow its test structure.
+
+## Forked-audit verdicts
+
+**Skipped with recorded rationale (2026-07-23):** intent was verified interactively by the
+user across the originating session (coupling assessment → player-lens verdicts → model
+routing decision → "feel free to do the outstanding design work"), the interface framework
+these plans instantiate passed an adversarial cold-context Fable review the same day
+(verdicts in `Docs/plans/2026-07-23-system-interface-map.md` tail), and every diagnosis
+claim here is runtime/grep-verified rather than intention-transcribed. Chat approval
+satisfies the human gate (THR-608). Executor guardrail: if the substrate diverges from the
+diagnosis, stop and surface — do not adapt silently.
