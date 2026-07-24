@@ -70,7 +70,6 @@ export function seedAttachments(graph: WorldGraph): void {
       type: 'possesses',
       properties: {
         modifiers: { iron: 0.10 },
-        grants: [],
         tags: ['#iron', '#weapon', '#melee'],
       },
     });
@@ -81,7 +80,6 @@ export function seedAttachments(graph: WorldGraph): void {
       type: 'possesses',
       properties: {
         modifiers: { star: 0.05 },
-        grants: [],
         tags: ['#cloth', '#travel', '#weather'],
       },
     });
@@ -110,7 +108,6 @@ export function seedAttachments(graph: WorldGraph): void {
       type: 'possesses',
       properties: {
         modifiers: { iron: 0.10 },
-        grants: ['cavalry_charge', 'rapid_retreat'],
         tags: ['#beast', '#mount', '#cavalry'],
       },
     });
@@ -139,7 +136,6 @@ export function seedAttachments(graph: WorldGraph): void {
       type: 'possesses',
       properties: {
         modifiers: { eye: 0.10, veil: 0.05 },
-        grants: [],
         tags: ['#star', '#tome', '#knowledge'],
       },
     });
@@ -150,7 +146,6 @@ export function seedAttachments(graph: WorldGraph): void {
       type: 'possesses',
       properties: {
         modifiers: { veil: 0.15, eye: 0.10 },
-        grants: [],
         tags: ['#eye', '#cursed', '#supernatural'],
       },
     });
@@ -179,7 +174,6 @@ export function seedAttachments(graph: WorldGraph): void {
       type: 'possesses',
       properties: {
         modifiers: { iron: 0.03 },
-        grants: [],
         tags: ['#beast', '#mount', '#travel'],
       },
     });
@@ -190,7 +184,6 @@ export function seedAttachments(graph: WorldGraph): void {
       type: 'possesses',
       properties: {
         modifiers: { flesh: 0.05 },
-        grants: [],
         tags: ['#food', '#consumable', '#travel'],
       },
     });
@@ -219,7 +212,6 @@ export function seedAttachments(graph: WorldGraph): void {
       type: 'bonded_to',
       properties: {
         modifiers: { iron: 0.15 },
-        grants: ['intimidate'],
         tags: ['#iron', '#weapon', '#legendary_beast'],
       },
     });

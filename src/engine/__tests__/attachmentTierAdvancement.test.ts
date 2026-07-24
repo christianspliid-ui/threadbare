@@ -49,7 +49,6 @@ function makeGraphWithArtifact(
       type: 'possesses',
       properties: {
         modifiers: modifiers ?? { iron: 0.10 },
-        grants: ['melee_attack'],
         tags: ['#weapon'],
       },
     });

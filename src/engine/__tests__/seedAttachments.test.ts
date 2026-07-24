@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { seedWorld } from '../worldSeed';
+import type { WorldGraph } from '../graph';
+import type { PossessionNodeProperties } from '../../types/attachments';
 import { STARTER_POSSESSIONS, STARTER_CONDITIONS } from '../../data/starter-attachments';
 import type { CosmologyProfile, HexTile } from '../../types/index';
 import { SPHERE_NAMES } from '../../types/index';
@@ -8,6 +10,16 @@ function balancedCosmology(): CosmologyProfile {
   const c = {} as CosmologyProfile;
   for (const s of SPHERE_NAMES) c[s] = 0.125;
   return c;
+}
+
+/**
+ * Trait tags an item grants while held, read off its `effects[]` — the live
+ * mechanism (`trait_grant` → `hasGrantedTrait`). THR-722 retired the parallel
+ * `possesses`-edge `grants[]` property, which had zero production readers.
+ */
+function grantedTraits(graph: WorldGraph, itemId: string): string[] {
+  const effects = (graph.getNode(itemId)?.properties as PossessionNodeProperties | undefined)?.effects ?? [];
+  return effects.flatMap(e => (e.type === 'trait_grant' ? [e.grantedTrait] : []));
 }
 
 function mockTiles(): HexTile[] {
@@ -68,12 +80,13 @@ describe('seedAttachments', () => {
   });
 
   describe('ind_1 — mounted scout', () => {
-    it('possesses starter_ashenmane_horse with cavalry grants', () => {
+    it('possesses starter_ashenmane_horse, which grants the cavalry traits', () => {
       const { graph } = seedWorld(balancedCosmology(), mockTiles(), 42);
       const edge = graph.getEdge('seed.ind_1.possesses.starter_ashenmane_horse');
       expect(edge).toBeTruthy();
-      expect(edge?.properties.grants).toContain('cavalry_charge');
-      expect(edge?.properties.grants).toContain('rapid_retreat');
+      // THR-722: the abilities live on the item's effects[], not the dead edge `grants[]`.
+      expect(grantedTraits(graph, 'starter_ashenmane_horse')).toContain('cavalry_charge');
+      expect(grantedTraits(graph, 'starter_ashenmane_horse')).toContain('rapid_retreat');
     });
 
     it('has_trait starter_sun_touched with correct ticksRemaining', () => {
@@ -133,13 +146,14 @@ describe('seedAttachments', () => {
   });
 
   describe('ind_4 — elite with named weapon', () => {
-    it('is bonded_to starter_ashenmane_fang with intimidate grant', () => {
+    it('is bonded_to starter_ashenmane_fang, which grants intimidate', () => {
       const { graph } = seedWorld(balancedCosmology(), mockTiles(), 42);
       const edge = graph.getEdge('seed.ind_4.bonded_to.starter_ashenmane_fang');
       expect(edge).toBeTruthy();
       expect(edge?.type).toBe('bonded_to');
       expect(edge?.properties.modifiers).toEqual({ iron: 0.15 });
-      expect(edge?.properties.grants).toContain('intimidate');
+      // THR-722: the ability lives on the item's effects[], not the dead edge `grants[]`.
+      expect(grantedTraits(graph, 'starter_ashenmane_fang')).toContain('intimidate');
     });
   });
 

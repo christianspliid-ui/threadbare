@@ -359,7 +359,6 @@ function instantiateRewardInternal(
       type: 'possesses',
       properties: {
         modifiers: reachBonus ?? {},
-        grants: [],
         tags: (template.properties.tags as string[]) ?? [],
       },
     });

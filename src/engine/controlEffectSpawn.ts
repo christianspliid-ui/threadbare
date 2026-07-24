@@ -225,7 +225,7 @@ function mintUpkeepRelicArtifact(
     source: ownerId,
     target: relicId,
     type: 'possesses',
-    properties: { modifiers: {}, grants: [], tags: spec.tags ?? ['consecration_relic'] },
+    properties: { modifiers: {}, tags: spec.tags ?? ['consecration_relic'] },
   });
 
   emitTrace({

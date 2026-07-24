@@ -56,7 +56,6 @@ remediation ticket or the build fails.
 | `attachment-activated-effects` | Player-activated item powers (ActivatedAbility). | node-prop: `activatedEffects` | Encounters & Dilemmas | 🔴 LEAKED | THR-720 |
 | `attachment-character-sheet-display` | The character sheet shows what an agent carries. | function: `getAgentAttachments` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
 | `attachment-domain-contributions` | Items raise Domain Capability tiers — a legendary blade makes its bearer mightier on the Prowess tab and in encounter eligibility. | node-prop: `domainContributions` | Personality & Emergent Traits | 🔴 LEAKED | THR-718 |
-| `attachment-edge-grants` | Items grant abilities to their bearer (e.g. cavalry_charge). | edge-prop: `grants` | Encounters & Dilemmas | 🔴 LEAKED | THR-722 |
 | `attachment-edge-modifiers` | Items modify agent attributes ("+0.15 star" on the Starweave Cloak). | edge-prop: `collectModifiers`, `getModifiedValue` | Personality & Emergent Traits | 🔴 LEAKED | THR-723 |
 | `attachment-effects-shape-resolution` | Items shape action resolution rolls — a blade makes its bearer likelier to succeed. | node-prop: `collectAttachmentEffects`, `collectTestShapers` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `attachment-effects-tick` | Effects tick, decay, stack and expire on their host agent. | function: `effectTick`, `effectShellRuntime` | Effects & Conditions | 🟢 LIVE | — |
@@ -64,6 +63,7 @@ remediation ticket or the build fails.
 | `attachment-on-use-triggers` | Items break, deplete, or curse their bearer on use — authored consequence for carrying power. | node-prop: `onUseTriggers`, `resolveOnUseTriggers` | Encounters & Dilemmas | 🔴 LEAKED | THR-719 |
 | `attachment-slot-caps-suppress` | Slot caps suppress overflow attachments via a single suppression seam. | edge-prop: `attachmentSlotResolver` | Effects & Conditions | 🟢 LIVE | — |
 | `attachment-tier-advancement` | Tier advancement strengthens an item over time. | function: `advanceAttachmentTier`, `canAdvanceTier` | Attachments, Items & Possessions | 🔴 LEAKED | THR-723 |
+| `attachment-trait-grant-effects` | Items grant abilities to their bearer (e.g. cavalry_charge). | node-prop: `trait_grant`, `hasGrantedTrait` | Encounters & Dilemmas | 🔴 LEAKED | THR-737 |
 
 ### Companies & Group Travel
 
@@ -187,16 +187,6 @@ remediation ticket or the build fails.
 - **Other hits:** `src/components/CMS/registry.ts`, `src/components/Codex/codexRegistry.ts`, `src/components/Game/AgentDetailPanel.tsx`, `src/data/anomaly-reward-catalog.ts`, `src/data/condition-trait-content.ts` +18 more
 - **Verdict:** Pinned by badgeOverride: Symbol greps green (26 production files) but every possession-item catalog writes `domainContributions: {}` — the deadness is value-level, invisible to symbol matching. Trait-type bestowals (Patron's Backing, Ruin Seeker) DO carry contributions via the has_trait walk; possession items specifically are the gap. `anomaly-reward-catalog.ts` was deliberately migrated onto effects[] on 2026-04-06, so the empties read as a half-finished migration, not accidental loss.
 
-### `attachment-edge-grants` — 🔴 LEAKED
-
-- **Intent:** Items grant abilities to their bearer (e.g. cavalry_charge).
-- **Producer → Consumer:** Attachments, Items & Possessions → Encounters & Dilemmas
-- **Production hits:** 56 total — 3 write, 0 read, 53 unclassified
-- **Write sites:** `src/engine/gameInit.ts`, `src/engine/rewardPool.ts`, `src/engine/seedAttachments.ts`
-- **Read sites:** —
-- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/Codex/codexRunState.ts`, `src/components/Game/AscendantBeatModal.tsx`, `src/components/Game/GameView.tsx`, `src/data/action-technical-effects.ts` +48 more
-- **Verdict:** Tier 2: the registry declares no read sites and none were found — producer writes into nothing.
-
 ### `attachment-edge-modifiers` — 🔴 LEAKED
 
 - **Intent:** Items modify agent attributes ("+0.15 star" on the Starweave Cloak).
@@ -277,6 +267,17 @@ remediation ticket or the build fails.
 - **Write sites:** `src/engine/attachmentTierAdvancement.ts`
 - **Read sites:** —
 - **Verdict:** Tier 1: `src/engine/attachmentTierAdvancement.ts` has zero production importers — the module is an orphan.
+
+### `attachment-trait-grant-effects` — 🔴 LEAKED
+
+- **Intent:** Items grant abilities to their bearer (e.g. cavalry_charge).
+- **Producer → Consumer:** Attachments, Items & Possessions → Encounters & Dilemmas
+- **UL terms:** *Attachment*, *Trait*
+- **Production hits:** 13 total — 4 write, 0 read, 9 unclassified
+- **Write sites:** `src/data/anomaly-reward-catalog.ts`, `src/data/reward-attachment-catalog.ts`, `src/data/starter-attachments.ts`, `src/engine/gameInit.ts`
+- **Read sites:** —
+- **Other hits:** `src/components/Game/attachmentGlyphs.ts`, `src/data/artifact-templates.ts`, `src/data/choice-set-catalog.ts`, `src/engine/effectExecutors.ts`, `src/engine/effectResolver.ts` +4 more
+- **Verdict:** Pinned by badgeOverride: Symbol greps find `trait_grant` in ~20 authored payloads and a correct resolver (`effectResolver.ts` collects `grantedTraits`), but `hasGrantedTrait` has zero production callers and `resolveEffects().grantedTraits` is asserted only in tests — an item that says it grants `intimidate` grants nothing any decision reads. Consumer-level deadness, invisible to a producer-side symbol check.
 
 ### `attachment-worldgen-starters` — 🟢 LIVE
 

@@ -37,7 +37,7 @@ describe('getAgentAttachments', () => {
     graph.addEdge({
       id: 'e-possess-1',
       source: 'agent.1', target: 'item.1', type: 'possesses',
-      properties: { modifiers: { iron: 2 }, grants: ['cavalry_charge'], tags: [] },
+      properties: { modifiers: { iron: 2 }, tags: [] },
     });
 
     const result = getAgentAttachments(graph, 'agent.1');

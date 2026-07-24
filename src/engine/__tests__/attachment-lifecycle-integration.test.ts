@@ -79,7 +79,6 @@ describe('Attachment Lifecycle Integration', () => {
         type: 'possesses',
         properties: {
           modifiers: { iron: 0.10 },
-          grants: [],
           tags: ['iron', 'weapon'],
         },
       });

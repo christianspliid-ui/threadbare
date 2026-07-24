@@ -124,7 +124,6 @@ export interface PossessionNodeProperties {
 
 export interface PossessionEdgeProperties {
   modifiers: Record<string, number>;
-  grants: string[];
   tags: string[];
 }
 

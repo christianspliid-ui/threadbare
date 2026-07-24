@@ -57,7 +57,7 @@ export const STARTER_POSSESSIONS: GraphNode[] = [
       subcategory: 'arms',
       tier: 2,
       tags: ['#iron', '#weapon', '#legendary_beast'],
-      mechanicalSummary: '+0.08 Iron, +0.04 Iron in combat (beast fury)',
+      mechanicalSummary: '+0.08 Iron, +0.04 Iron in combat (beast fury), grants intimidate trait',
       censusTag: { scale: 'local' },
       lossCondition: 'permanent',
       flavorText:
@@ -65,6 +65,8 @@ export const STARTER_POSSESSIONS: GraphNode[] = [
       effects: [
         { type: 'passive', reach: 'iron', value: 0.08 },
         { type: 'conditional', condition: 'in_combat', reach: 'iron', value: 0.04 },
+        // THR-722: migrated off the dead `possesses`-edge `grants[]` property.
+        { type: 'trait_grant', grantedTrait: 'intimidate' },
       ],
     } as PossessionNodeProperties,
   },
@@ -96,7 +98,8 @@ export const STARTER_POSSESSIONS: GraphNode[] = [
       subcategory: 'mounts_beasts',
       tier: 2,
       tags: ['#beast', '#mount', '#cavalry'],
-      mechanicalSummary: '20% reduced movement cost, grants cavalry_charge trait',
+      mechanicalSummary:
+        '20% reduced movement cost, grants cavalry_charge and rapid_retreat traits',
       censusTag: { reach: 'star', scale: 'local' },
       lossCondition: 'breakable',
       flavorText:
@@ -104,6 +107,8 @@ export const STARTER_POSSESSIONS: GraphNode[] = [
       effects: [
         { type: 'range_modifier', movementCostMultiplier: 0.8 },
         { type: 'trait_grant', grantedTrait: 'cavalry_charge' },
+        // THR-722: migrated off the dead `possesses`-edge `grants[]` property.
+        { type: 'trait_grant', grantedTrait: 'rapid_retreat' },
       ],
     } as PossessionNodeProperties,
   },
