@@ -82,6 +82,8 @@ N/A — no map surface in this ticket.
 
 ## Wiring
 
+> See checklist: Docs/plans/wiring-checklist.md — no new orchestrator phases, modals, GameState fields, trace categories, or player controls are added, so no checklist rows change.
+
 | Module | Orchestrator phase | UI component | GameState field | Trace emitted | Debug visibility |
 |--------|-------------------|-------------|-----------------|---------------|-----------------|
 | `agentDetail.ts` (`getCompletedAmbitions` + card field) | none (read-side) | `ChronicleTab` §Completed Ambitions | — (graph read) | none (display) | existing `eval`/strand paths |
@@ -100,7 +102,7 @@ No new GameState fields, no prose-pipeline changes, no player controls added.
 
 ## Tracing
 
-No new trace types — this is a read-side visibility change; the write side (`phaseAmbitionProgress`, milestone events) already traces. NFP #2 is served by the display itself plus existing strands.
+N/A — no new trace types: this is a read-side visibility change; the write side (`phaseAmbitionProgress`, milestone events) already traces. NFP #2 is served by the display itself plus existing strands.
 
 ## Fail-soft table
 
