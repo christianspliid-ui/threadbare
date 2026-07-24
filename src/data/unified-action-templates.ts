@@ -21,6 +21,7 @@ import type { ActorType } from '../types/graph';
 import { ACTION_TEMPLATES, type ActionTemplateData } from './action-template-content';
 import { ACTION_TECHNICAL_EFFECTS } from './action-technical-effects';
 import { withDefaultSupportBundle } from './default-support-bundles';
+import { withGroupAffinity } from '../engine/groups/groupEligibility';
 import { ENCOUNTER_TEMPLATES, getAnyEncounterById } from './encounter-content';
 import { ASCENDANT_POOL_BEAT_TEMPLATES } from './ascendant-pool-beat-templates';
 import { ANOMALY_ENCOUNTER_TEMPLATES } from './encounter-anomaly-content';
@@ -5325,6 +5326,13 @@ const RAW_UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
  * win outright). Applied here so every consumer of the registry — decision
  * phase, CLI spawn, `__DEBUG.fireAction`, prose cast context — sees the same
  * merged template object.
+ *
+ * THR-74: `withGroupAffinity` then sweeps the ruins/delve, borderland-threat and
+ * monster-combat families, adding `'group'` to `actorAffinities` on every
+ * physical-challenge-shaped template. The spec is the predicate in
+ * `groupEligibility.ts`, not a list — content later authored into those families
+ * is picked up without touching this file. Additive: authored affinities are
+ * extended, never replaced, so solo agents keep every encounter they had.
  */
 export const UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] =
   RAW_UNIFIED_ACTION_TEMPLATES.map((t) => {
@@ -5332,7 +5340,7 @@ export const UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] =
     const withEffect = t.technicalEffect != null || !authored
       ? t
       : { ...t, technicalEffect: authored };
-    return withDefaultSupportBundle(withEffect);
+    return withGroupAffinity(withDefaultSupportBundle(withEffect));
   });
 
 /**

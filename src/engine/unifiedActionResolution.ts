@@ -36,6 +36,8 @@ import {
 } from './unifiedActionLifecycle';
 import { isStepSuccess, isStepFailure, isActionStepBranch } from '../types/unifiedAction';
 import { computeCapability } from './domainCapability';
+import { getGroupOf } from './groups/groupQueries';
+import { resolveGroupStep } from './groups/groupResolution';
 import { resolveAction as resolveActionLegacy } from './resolution';
 import { resolveAction as resolveActionShared, isSuccessOutcome } from './resolutionService';
 import type { OutcomeType } from '../types/resolution';
@@ -284,8 +286,28 @@ export function resolveUncontestedStep(
     }
   }
 
-  // Compute actor's domain capability for this step's reach
-  const capability = computeCapability(state.graph, action.actorId, step.reach);
+  // THR-74: Company substitution. When the actor belongs to an active company
+  // and the template is group-eligible, the companion best suited to *this
+  // step's* reach steps forward, and the rest of the company contributes a
+  // capped assist. The nominal actor stays the action's owner throughout —
+  // encounter/awareness systems never meet a positionless group node, and every
+  // downstream consumer of `action.actorId` is unaffected.
+  //
+  // Fail-soft: `resolveGroupStep` returns undefined for a disbanded or emptied
+  // company, and the whole lookup is skipped for a template without the 'group'
+  // affinity, so the individual path below is the default in every other case.
+  const groupNode = getGroupOf(state.graph, action.actorId);
+  const groupStep = groupNode && (template.actorAffinities ?? []).includes('group')
+    ? resolveGroupStep(state.graph, groupNode.id, step.reach, action.actorId)
+    : undefined;
+
+  // Compute domain capability for this step's reach — the acting member's when a
+  // company answered, the actor's own otherwise.
+  const capability = computeCapability(
+    state.graph,
+    groupStep?.actingMemberId ?? action.actorId,
+    step.reach,
+  );
 
   // Sphere factor: small bonus if actor's location has sphere influence
   // (simplified — full implementation would check location sphere influence)
@@ -320,6 +342,11 @@ export function resolveUncontestedStep(
   // Phase 2: Use shared resolution service.
   // Unified action difficulty is already normalized (0..1) — pass through directly.
 
+  // THR-74: the company's assist + cohesion bonus rides the same additive
+  // channel as push and intervention, so scale adjustment, the probability
+  // floor, and the trace all see one consistent modifier total.
+  const totalActionModifiers = pushModifier + interventionBoost + (groupStep?.totalBonus ?? 0);
+
   // THR-451: Apply scale-based difficulty adjustments at the caller boundary.
   // The resolver stays scale-agnostic; all scale tuning happens here.
   const rawDifficulty = effectiveDifficulty;
@@ -327,7 +354,7 @@ export function resolveUncontestedStep(
     effectiveDifficulty,
     capability,
     sphereFactor,
-    pushModifier + interventionBoost,
+    totalActionModifiers,
     template.scale,
   );
   effectiveDifficulty = adjustedDifficulty;
@@ -338,7 +365,7 @@ export function resolveUncontestedStep(
     capability,
     difficulty: effectiveDifficulty,
     sphereFactor,
-    actionModifiers: pushModifier + interventionBoost,
+    actionModifiers: totalActionModifiers,
     testShapers,
   };
 
@@ -398,7 +425,7 @@ export function resolveUncontestedStep(
     rawDifficulty,
     scaleOffsetApplied,
     sphereFactor,
-    actionModifiers: pushModifier + interventionBoost,
+    actionModifiers: totalActionModifiers,
     influenceNudge: 0,
     probability: flooredResult.probability,
     scaleFloorApplied,
@@ -408,7 +435,12 @@ export function resolveUncontestedStep(
     rawOutcome,
     critClassification,
     floorUpgradeApplied,
-    summary: `resolution.input: ${action.templateId} scale=${template.scale ?? 'regional'} cap=${capability.toFixed(2)} diff=${effectiveDifficulty.toFixed(2)} P=${flooredResult.probability.toFixed(2)} roll=${rawResult.roll} raw=${rawOutcome}${floorUpgradeApplied ? ' [floor↑]' : ''} → ${result.outcome}`,
+    // THR-74: present only when a company answered this step.
+    groupId: groupNode?.id,
+    actingMemberId: groupStep?.actingMemberId,
+    groupAssistCount: groupStep?.assistCount,
+    groupBonus: groupStep?.totalBonus,
+    summary: `resolution.input: ${action.templateId} scale=${template.scale ?? 'regional'} cap=${capability.toFixed(2)} diff=${effectiveDifficulty.toFixed(2)} P=${flooredResult.probability.toFixed(2)} roll=${rawResult.roll} raw=${rawOutcome}${floorUpgradeApplied ? ' [floor↑]' : ''} → ${result.outcome}${groupStep ? ` [company ${groupStep.actingMemberName} +${groupStep.totalBonus.toFixed(2)} assists=${groupStep.assistCount}]` : ''}`,
   } as ResolutionInputTrace);
 
   // Phase 3: If push was attempted, queue the spend event

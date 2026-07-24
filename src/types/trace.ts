@@ -2940,6 +2940,20 @@ export interface ResolutionInputTrace extends TraceBase {
    * probabilityFloorApplied, which only reports that P itself was raised to the floor.
    */
   floorUpgradeApplied?: boolean;
+  /**
+   * THR-74: the company this step was resolved for, when the actor belongs to
+   * one and the template is group-eligible. Present → `capability` above is the
+   * *acting member's* capability, not the nominal actor's, and `actionModifiers`
+   * includes the company's assist + cohesion bonus. Absent → an ordinary
+   * individual resolution, unchanged.
+   */
+  groupId?: string;
+  /** THR-74: the member substituted in for this step's reach. */
+  actingMemberId?: string;
+  /** THR-74: how many companions cleared the assist tier gate. */
+  groupAssistCount?: number;
+  /** THR-74: assist + cohesion bonus folded into `actionModifiers`. */
+  groupBonus?: number;
 }
 
 // ─── THR-456: Event Feed Hygiene trace types ──────────────────────────────────
