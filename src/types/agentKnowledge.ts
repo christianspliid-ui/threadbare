@@ -9,6 +9,8 @@
  * Existing familiarityMap is untouched.
  */
 
+import type { KnowledgeLevel } from './familiarity';
+
 // ─── Bond Revelation Source ───────────────────────────────────────
 
 /** How a bond between two agents was discovered */
@@ -96,11 +98,27 @@ export const OVERVIEW_QUOTE_PER_INTERACTION = 1;
 /** Interaction count before backstory fragment unlocks */
 export const OVERVIEW_BACKSTORY_INTERACTIONS = 5;
 
-/** Interactions needed to reveal primary ambition */
-export const AMBITION_PRIMARY_INTERACTIONS = 2;
+/**
+ * Interactions needed to reveal a mortal's primary ambition (THR-721).
+ * Lowered 2 → 1 so a single meaningful exposure (one dilemma, one observed
+ * encounter, one social encounter, one divine action, or ~20 colocated ticks)
+ * surfaces the primary drive — ambitions steer behaviour everywhere but were
+ * tuned invisible in normal play.
+ */
+export const AMBITION_PRIMARY_INTERACTIONS = 1;
+
+/**
+ * Knowledge level that alternatively reveals the primary ambition (THR-721).
+ * Replaces a previously-hardcoded `'known'` string in JourneyTab; mere
+ * recognition from afar now suffices to read a mortal's primary drive.
+ */
+export const AMBITION_PRIMARY_KNOWLEDGE: KnowledgeLevel = 'recognised';
 
 /** Interactions needed to reveal secondary ambition */
 export const AMBITION_SECONDARY_INTERACTIONS = 4;
+
+/** Cap on Completed Ambitions entries rendered in the ChronicleTab (THR-721) */
+export const COMPLETED_AMBITIONS_MAX_DISPLAY = 10;
 
 /** Ticks since last activity before an activity note becomes stale */
 export const STALE_ACTIVITY_TICKS = 15;

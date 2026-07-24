@@ -15,9 +15,9 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 25 |
-| 🟠 PARTIAL | 1 |
-| 🔴 LEAKED | 6 |
+| 🟢 LIVE | 27 |
+| 🟠 PARTIAL | 0 |
+| 🔴 LEAKED | 5 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 3 |
 | **Total** | **35** |
@@ -36,9 +36,9 @@ remediation ticket or the build fails.
 | Contract | Intent | Mechanism | Consumer | Status | Ticket |
 |---|---|---|---|---|---|
 | `ambition-biases-encounter-choice` | An agent's ambitions bias which encounters they choose — motive drives action. | function: `applyAmbitionBoost` | Encounters & Dilemmas | 🟢 LIVE | — |
-| `ambition-completed-history` | Completed ambitions accumulate into a readable history of who an agent became. | function: `completedAmbitions` | Attention, Chronicle & Narrative | 🔴 LEAKED | THR-721 |
+| `ambition-completed-history` | Completed ambitions accumulate into a readable history of who an agent became. | function: `completedAmbitions`, `getCompletedAmbitions` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
 | `ambition-motive-receipts` | Ambitions explain motives — receipts carry ambition provenance into foreshadowing. | trace: `ambitionBoost` | Omens & Atmospheric Pressure | 🟢 LIVE | — |
-| `ambition-player-visibility` | The player can see what a mortal is striving for. | function: `getAmbitionsStrand` | Intelligence, Knowledge & Familiarity | 🟠 PARTIAL | THR-721 |
+| `ambition-player-visibility` | The player can see what a mortal is striving for. | function: `getAmbitionsStrand` | Intelligence, Knowledge & Familiarity | 🟢 LIVE | — |
 | `ambition-progress-milestones` | Ambitions progress and complete, firing milestone events the player sees. | function: `phaseAmbitionProgress` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
 | `faction-ambitions-drive-action` | Faction ambitions drive faction action and render on the faction sheet. | function: `factionAmbitions` | Factions & Succession | 🟢 LIVE | — |
 | `minted-ambition-provenance` | Motive receipts name the origin of a minted want — "she seeks vengeance for the blighted fields." | edge-prop: `mintedByEventId` | Omens & Atmospheric Pressure | 🟢 LIVE | — |
@@ -120,14 +120,15 @@ remediation ticket or the build fails.
 - **Read sites:** `src/engine/agentSelection.ts`
 - **Verdict:** Verified 2026-07-23: applyAmbitionBoost feeds encounterScoring in the decision pipeline. Docs/plans/2026-07-23-system-interface-map.md § Audit findings (manual audit + independent cold-context review, both grep-verified)
 
-### `ambition-completed-history` — 🔴 LEAKED
+### `ambition-completed-history` — 🟢 LIVE
 
 - **Intent:** Completed ambitions accumulate into a readable history of who an agent became.
 - **Producer → Consumer:** Ambitions & Initiatives → Attention, Chronicle & Narrative
-- **Production hits:** 1 total — 1 write, 0 read, 0 unclassified
-- **Write sites:** `src/engine/journeyEngine.ts`
-- **Read sites:** —
-- **Verdict:** Tier 2: write sites present, declared read sites empty — the consumer is starving.
+- **Production hits:** 3 total — 1 write, 1 read, 1 unclassified
+- **Write sites:** `src/engine/agentDetail.ts`
+- **Read sites:** `src/components/Game/tabs/ChronicleTab.tsx`
+- **Other hits:** `src/engine/journeyEngine.ts`
+- **Verdict:** Verified 2026-07-24: THR-721: getCompletedAmbitions (agentDetail.ts) walks completed `pursues` edges and populates AgentInfoCardData.completedAmbitions; ChronicleTab §Completed Ambitions renders it (replacing the "will appear here" placeholder). The missing consumer this row named now exists; browser-verified at 1920×1080.
 
 ### `ambition-motive-receipts` — 🟢 LIVE
 
@@ -139,7 +140,7 @@ remediation ticket or the build fails.
 - **Other hits:** `src/components/CMS/tunableConstants.ts`
 - **Verdict:** Verified 2026-07-23: ambitionBoost term appears in motiveReceipt provenance. Docs/plans/2026-07-23-system-interface-map.md § Audit findings (manual audit + independent cold-context review, both grep-verified)
 
-### `ambition-player-visibility` — 🟠 PARTIAL
+### `ambition-player-visibility` — 🟢 LIVE
 
 - **Intent:** The player can see what a mortal is striving for.
 - **Producer → Consumer:** Ambitions & Initiatives → Intelligence, Knowledge & Familiarity
@@ -147,7 +148,7 @@ remediation ticket or the build fails.
 - **Production hits:** 2 total — 1 write, 1 read, 0 unclassified
 - **Write sites:** `src/engine/strands.ts`
 - **Read sites:** `src/components/Game/hooks/useAgentInteraction.ts`
-- **Verdict:** Pinned by badgeOverride: Both gate paths exist (JourneyTab.tsx gates on interactionDepth ≥ 2 OR knowledge ≥ `known`), but the thresholds and accrual rates keep ambitions hidden for nearly every agent in normal play — the player experiences this as "ambitions disappeared from the UI".
+- **Verdict:** Verified 2026-07-24: THR-721: JourneyTab gate retuned — AMBITION_PRIMARY_INTERACTIONS 2→1 and hardcoded `known` promoted to AMBITION_PRIMARY_KNOWLEDGE = `recognised`, so a single meaningful exposure surfaces the primary ambition. getAmbitionsStrand read by useAgentInteraction.ts feeds the AgentProfileModal tabs; browser-verified at 1920×1080.
 
 ### `ambition-progress-milestones` — 🟢 LIVE
 
