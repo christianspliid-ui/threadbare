@@ -2655,6 +2655,53 @@ const ATTACHMENT_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
 ];
 
+// ─── Company Action Templates (THR-74) ────────────────────────────
+//
+// Player soft-power verbs targeting a company (party) node. A company is an
+// `actor` node with `actorType: 'group'` — so `targetContextBuilders` surfaces it
+// with `subtype: 'group'`. Armies share `actorType: 'group'`, so the graph-op
+// executor (`isCompanyNode`) is the real gate; `targetSubtypes: ['group']` narrows
+// the drawer to group actors and the op fails soft on an army. Company nodes carry
+// no `located_at` edge, so they only become drawer-selectable once the HexMapV2
+// cluster (PR 3) makes them clickable — until then these are reachable-and-wired
+// (beat-granted, effect fires when invoked) but not yet cast-in-browser.
+const COMPANY_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
+  {
+    id: 'company.bless',
+    name: 'Bless this Company',
+    spellName: 'Blessing of the Bound Road',
+    rarityTier: 2,
+    intrinsicTier: 'shaping',
+    description: 'Lays a quiet grace over a company of travelling mortals, drawing their frayed loyalties back toward one another. For a while the small resentments that pull a band apart lose their teeth — a hard road that would have scattered them is one they walk together instead.',
+    technicalEffect: 'Applies an immediate +BLESS_COMPANY_COHESION_DELTA cohesion boost to the target company and opens a dispute-suppression window (blessedUntilTick = tick + BLESS_COMPANY_DURATION_TICKS). While the window is open, isGroupBlessed suppresses negative dissent (groupCohesion), fray-driven dissolution (groupDissolution), and movement dissent (groupMovement). Fires the bless_company graph-op; fail-soft on a non-company target (armies share actorType:group).',
+    reach: 'heart',
+    crudType: 'update',
+    scale: 'local',
+    steps: [{
+      reach: 'heart',
+      duration: { min: 1, max: 2 },
+      difficulty: 0.3,
+      onSuccess: [
+        { op: 'bless_company', nodeId: '$target' },
+      ],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: 4,
+    actorAffinities: ['ascendant'],
+    sphereAffinity: 'spirit',
+    targetCategories: ['actor'],
+    targetSubtypes: ['group'],
+    motivations: ['loyalty_ambition', 'preservation_transformation'],
+    narrativeTemplates: {
+      initiation: 'lays a blessing of fellowship over this company',
+      success: 'the company draws close; old grievances quiet, and the road ahead is one they will walk together',
+      failure: 'the blessing does not take; the company\'s frayed bonds hold their own course',
+    },
+  },
+];
+
 // ─── Sublocation Action Templates ─────────────────────────────────
 //
 // Divine actions targeting sublocation nodes (shrines, ruins, etc.).
@@ -5173,6 +5220,7 @@ const RAW_UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   ...REACH_SIGNATURE_CONTENT_TEMPLATES,
   ...LOCATION_ACTION_TEMPLATES,
   ...ATTACHMENT_ACTION_TEMPLATES,
+  ...COMPANY_ACTION_TEMPLATES,
   ...SUBLOCATION_ACTION_TEMPLATES,
   ...HEX_ACTION_TEMPLATES,
   ...REVELATION_ACTION_TEMPLATES,

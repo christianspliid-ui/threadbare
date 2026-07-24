@@ -36,6 +36,9 @@ import {
 } from '../data/location-action-constants';
 import { RESOURCE_DEFINITIONS } from '../data/resource-content';
 import { TRADE_ROUTE_MAX_VOLUME } from './tradeRoute';
+import { applyCohesionDelta } from './groups/groupCohesion';
+import { isCompanyNode } from './groups/groupQueries';
+import { BLESS_COMPANY_COHESION_DELTA, BLESS_COMPANY_DURATION_TICKS } from '../data/group-constants';
 
 interface ExecuteOptions {
   tick?: number;
@@ -223,6 +226,9 @@ function executeSingleOp(
 
       case 'blight_harvest':
         return executeBlightHarvest(graph, op, ctx);
+
+      case 'bless_company':
+        return executeBlessCompany(graph, op, ctx);
 
       default:
         return {
@@ -974,6 +980,37 @@ function executeNullifyArtifact(
   // updateNode merges properties, so overwrite (don't delete) the keys to inert.
   graph.updateNode(artifact.id, {
     properties: { effects: [], attunedSphere: undefined, cursed: false, curseConcealed: false },
+  });
+  return { op, success: true };
+}
+
+/**
+ * Bless this Company (THR-74) — the player's soft-power boon on a bonded company.
+ * Applies an immediate cohesion boost (`BLESS_COMPANY_COHESION_DELTA`) and opens a
+ * dispute-suppression window (`blessedUntilTick = tick + BLESS_COMPANY_DURATION_TICKS`).
+ * The window is *read*, not re-applied: `isGroupBlessed` gates negative dissent
+ * (`groupCohesion`), fray→dissolution (`groupDissolution`), and movement dissent
+ * (`groupMovement`) for its duration. This op is the missing *writer* — the consumers
+ * shipped in PR 1.
+ *
+ * Discriminates on `isCompanyNode` so an army (also `actorType:'group'`, but carrying
+ * `armyState` not `groupType`) can never be blessed. Fail-soft: a missing or non-company
+ * target returns an error result rather than throwing, and the tick loop never sees it.
+ */
+function executeBlessCompany(
+  graph: WorldGraph,
+  op: GraphOp,
+  ctx: GraphOpContext,
+): GraphOpResult {
+  const targetId = resolveRef(op.nodeId ?? op.target ?? '$target', ctx);
+  const company = graph.getNode(targetId);
+  if (!company) return { op, success: false, error: `bless_company: company ${targetId} not found` };
+  if (!isCompanyNode(company)) return { op, success: false, error: `bless_company: ${targetId} is not a company` };
+
+  applyCohesionDelta(graph, targetId, BLESS_COMPANY_COHESION_DELTA);
+  // updateNode merges properties, so this sets the window without disturbing cohesion/roster.
+  graph.updateNode(targetId, {
+    properties: { blessedUntilTick: (ctx.tick ?? 0) + BLESS_COMPANY_DURATION_TICKS },
   });
   return { op, success: true };
 }

@@ -55,6 +55,7 @@ export type CatalogCategory =
   | 'hex'
   | 'location'
   | 'artifact'
+  | 'company'
   | 'threads';
 
 /** Thread/insight verbs the Codex groups under "Thread & Insight". */
@@ -125,6 +126,7 @@ function categoryFor(id: string): CatalogCategory | null {
   if (id.startsWith('hex.')) return 'hex';
   if (id.startsWith('loc.') || id.startsWith('sub.')) return 'location';
   if (id.startsWith('artifact.')) return 'artifact';
+  if (id.startsWith('company.')) return 'company';
   if (id.startsWith('bind_thread_') || id.startsWith('thread.') || THREAD_INSIGHT_IDS.has(id)) {
     return 'threads';
   }

@@ -7,7 +7,7 @@ import {
 } from '../phaseAscendantProgression';
 import { computeCapability, computeTier } from '../domainCapability';
 import { createInitialAscendantBeatState } from '../ascendantBeat';
-import { deepeningBeatIdForReach } from '../../data/player-progression';
+import { deepeningBeatIdForReach, MILESTONE_COMPANY_BEAT_ID } from '../../data/player-progression';
 import type { GameState } from '../../types/gameState';
 import type { AscendantBeatState, PendingBeat } from '../../types/ascendantBeat';
 import type { ReachDomain } from '../../types/traits';
@@ -119,6 +119,57 @@ describe('phaseAscendantProgression — tier crossing enqueues exactly one Deepe
     const snap = ascProps(state).reachTierSnapshot!;
     expect(snap.iron).toBe(2);
     expect(snap.gold).toBe(1);
+  });
+});
+
+// ─── Company milestone (THR-74) ──────────────────────────────────────────────
+
+describe('phaseAscendantProgression — company milestone', () => {
+  /** Attach a company to the state's graph; thread one member when `threaded`. */
+  function addCompany(state: GameState, threaded: boolean): void {
+    const g = state.graph;
+    g.addNode({
+      id: 'grp-1',
+      type: 'actor',
+      name: 'The Watch of the Nameless Road',
+      properties: { actorType: 'group', groupType: 'party', cohesion: 0.55 },
+    });
+    g.addNode({ id: 'm-1', type: 'actor', name: 'Nareth', properties: { actorType: 'individual' } });
+    g.addEdge({ id: 'e.m1', source: 'm-1', target: 'grp-1', type: 'member_of', properties: { role: 'member', rank: 0, joinedTick: 0 } });
+    if (threaded) {
+      g.addEdge({ id: 'e.thread', source: 'asc-1', target: 'm-1', type: 'thread', properties: {} });
+    }
+  }
+
+  it('enqueues the company milestone once a threaded company exists', () => {
+    const state = progressionState(10, { domainCapabilities: { iron: 8, gold: 3 } });
+    // First run seeds the reach snapshot and fires nothing (the seeding tick).
+    phaseAscendantProgression(state);
+    addCompany(state, true);
+
+    const result = phaseAscendantProgression(state);
+    expect(result.ascendantBeats?.pending?.beatId).toBe(MILESTONE_COMPANY_BEAT_ID);
+    expect(result.ascendantBeats?.pending?.kind).toBe('milestone');
+    expect(result.ascendantBeats?.pending?.boundNodeIds).toEqual(['asc-1']);
+  });
+
+  it('does not enqueue when the only company is unthreaded', () => {
+    const state = progressionState(10, { domainCapabilities: { iron: 8, gold: 3 } });
+    phaseAscendantProgression(state);
+    addCompany(state, false);
+
+    const result = phaseAscendantProgression(state);
+    expect(result.ascendantBeats).toBeUndefined();
+  });
+
+  it('fires at most once — a second run does not re-enqueue', () => {
+    const state = progressionState(10, { domainCapabilities: { iron: 8, gold: 3 } });
+    phaseAscendantProgression(state);
+    addCompany(state, true);
+    phaseAscendantProgression(state); // fires + records in milestoneBeatsFired
+
+    const again = phaseAscendantProgression(state);
+    expect(again.ascendantBeats).toBeUndefined();
   });
 });
 
