@@ -15,8 +15,8 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 20 |
-| 🟠 PARTIAL | 2 |
+| 🟢 LIVE | 21 |
+| 🟠 PARTIAL | 1 |
 | 🔴 LEAKED | 7 |
 | ⚫ UNWIRED | 2 |
 | 🔵 UNVERIFIED-OK | 3 |
@@ -69,7 +69,7 @@ remediation ticket or the build fails.
 
 | Contract | Intent | Mechanism | Consumer | Status | Ticket |
 |---|---|---|---|---|---|
-| `company-assist-shapes-resolution` | Companions make each other better at what they attempt — the best-suited member acts and the others assist, capped so a crowd is not an auto-win. | function: `resolveGroupStep` | Encounters & Dilemmas | 🟠 PARTIAL | THR-74 |
+| `company-assist-shapes-resolution` | Companions make each other better at what they attempt — the best-suited member acts and the others assist, capped so a crowd is not an auto-win. | function: `resolveGroupStep` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `company-drives-member-movement` | A company travels as one — members share a destination instead of wandering off separately. | node-prop: `movementState` | Movement & Colocation | 🟢 LIVE | — |
 | `company-membership-excludes-faction-reads` | A companion of a company is not a member of a faction by that name — faction rank, allegiance display and heraldry must keep reading the faction. | edge-prop: `getFactionMembershipEdges` | Factions & Succession | 🟢 LIVE | — |
 | `company-position-derives-from-leader` | A company has no position of its own — asking where it is means asking where its leader is, so there is never a second spatial truth to drift. | function: `getGroupPosition` | Movement & Colocation | 🟢 LIVE | — |
@@ -288,16 +288,16 @@ remediation ticket or the build fails.
 - **Read sites:** `src/engine/worldSeed.ts`
 - **Verdict:** Verified 2026-07-23: 7 possesses edges present at tick 0. Docs/plans/2026-07-23-system-interface-map.md § Audit findings (manual audit + independent cold-context review, both grep-verified)
 
-### `company-assist-shapes-resolution` — 🟠 PARTIAL
+### `company-assist-shapes-resolution` — 🟢 LIVE
 
 - **Intent:** Companions make each other better at what they attempt — the best-suited member acts and the others assist, capped so a crowd is not an auto-win.
 - **Producer → Consumer:** Companies & Group Travel → Encounters & Dilemmas
 - **UL terms:** *Company*, *Group Cohesion*
-- **Module:** `src/engine/groups/groupResolution.ts` — **no production importers**
-- **Production hits:** 1 total — 1 write, 0 read, 0 unclassified
+- **Module:** `src/engine/groups/groupResolution.ts`
+- **Production hits:** 2 total — 1 write, 1 read, 0 unclassified
 - **Write sites:** `src/engine/groups/groupResolution.ts`
-- **Read sites:** —
-- **Verdict:** Pinned by badgeOverride: Engine-core PR lands the producer and its tests; the unifiedActionResolution call site plus the group-eligible actorAffinities content ship in the content PR of the same ticket.
+- **Read sites:** `src/engine/unifiedActionResolution.ts`
+- **Verdict:** Verified 2026-07-24: src/engine/groups/__tests__/groupResolutionWiring.test.ts drives resolveUncontestedStep end-to-end and asserts the payload, not just the call: a weak leader in a company resolves above his own solo capability (best-member substitution), a solo agent and a company holding a non-group-affinity template both resolve at exactly the solo capability, and the resolution.input trace carries groupId/actingMemberId/groupAssistCount/groupBonus. An emptied company falls back to the individual path without throwing.
 
 ### `company-drives-member-movement` — 🟢 LIVE
 

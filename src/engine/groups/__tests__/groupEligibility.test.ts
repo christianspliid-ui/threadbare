@@ -18,8 +18,14 @@ import {
   countGroupEligible,
 } from '../groupEligibility';
 
-/** Minimal template stub — only the fields the predicate reads. */
-function stub(over: Partial<UnifiedActionTemplate> = {}): UnifiedActionTemplate {
+/**
+ * Minimal template stub — only the fields the predicate reads.
+ *
+ * `over` is deliberately loose: these cases feed deformed shapes (a missing
+ * `steps`, an absent `actorAffinities`) that the predicate must survive, and
+ * which by construction do not satisfy `Partial<UnifiedActionTemplate>`.
+ */
+function stub(over: Record<string, unknown> = {}): UnifiedActionTemplate {
   return {
     id: 'encounter.test_delve',
     name: 'Test Delve',
@@ -35,7 +41,7 @@ function stub(over: Partial<UnifiedActionTemplate> = {}): UnifiedActionTemplate 
       { reach: 'stone', duration: { min: 1, max: 1 }, difficulty: 0.4, onSuccess: [], onFailure: [] },
     ],
     ...over,
-  } as UnifiedActionTemplate;
+  } as unknown as UnifiedActionTemplate;
 }
 
 describe('group-eligibility predicate', () => {
@@ -54,7 +60,7 @@ describe('group-eligibility predicate', () => {
         { reach: 'iron', duration: { min: 1, max: 1 }, difficulty: 0.3, onSuccess: [], onFailure: [] },
         { reach: 'heart', duration: { min: 1, max: 1 }, difficulty: 0.4, onSuccess: [], onFailure: [] },
       ],
-    } as Partial<UnifiedActionTemplate>);
+    });
     expect(isGroupEligibleTemplate(intimate)).toBe(false);
   });
 
@@ -63,7 +69,7 @@ describe('group-eligibility predicate', () => {
       steps: [
         { reach: 'iron', duration: { min: 1, max: 1 }, difficulty: 0.3, onSuccess: [], onFailure: [] },
       ],
-    } as Partial<UnifiedActionTemplate>);
+    });
     expect(isGroupEligibleTemplate(oneStep)).toBe(false);
   });
 
@@ -73,7 +79,7 @@ describe('group-eligibility predicate', () => {
         { reach: 'veil', duration: { min: 1, max: 1 }, difficulty: 0.3, onSuccess: [], onFailure: [] },
         { reach: 'star', duration: { min: 1, max: 1 }, difficulty: 0.4, onSuccess: [], onFailure: [] },
       ],
-    } as Partial<UnifiedActionTemplate>);
+    });
     expect(isGroupEligibleTemplate(cerebral)).toBe(false);
   });
 
@@ -89,7 +95,7 @@ describe('group-eligibility predicate', () => {
           fallback: { reach: 'stone', duration: { min: 1, max: 1 }, difficulty: 0.4, onSuccess: [], onFailure: [] },
         },
       ],
-    } as Partial<UnifiedActionTemplate>);
+    });
     expect(isGroupEligibleTemplate(branched)).toBe(false);
   });
 
@@ -107,9 +113,9 @@ describe('group-eligibility predicate', () => {
 
   it('is fail-soft on malformed templates', () => {
     expect(isGroupEligibleTemplate(undefined as unknown as UnifiedActionTemplate)).toBe(false);
-    expect(isGroupEligibleTemplate(stub({ steps: undefined } as Partial<UnifiedActionTemplate>))).toBe(false);
+    expect(isGroupEligibleTemplate(stub({ steps: undefined }))).toBe(false);
     expect(
-      isGroupEligibleTemplate(stub({ actorAffinities: undefined } as Partial<UnifiedActionTemplate>)),
+      isGroupEligibleTemplate(stub({ actorAffinities: undefined })),
     ).toBe(false);
   });
 });

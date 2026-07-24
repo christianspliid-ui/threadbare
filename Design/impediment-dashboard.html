@@ -2897,6 +2897,32 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "**Workaround:** when the generator reports a starved side, first check whether the declared **symbol** actually appears at the declared **file** (`grep -n '<symbol>' <site>`) before touching any engine code. Pick the symbol that crosses the boundary — the carrier the consumer really reads — not the producer's internal helper names.",
     "session": "THR-74 engine-core closeout, `scripts/interface-contracts.ts`"
+  },
+  {
+    "num": "207",
+    "id": 207,
+    "count": 1,
+    "date": "2026-07-24",
+    "category": "tooling",
+    "description": "**The `node_modules/.bin` regression (#203) is worse than \"`.bin` is empty\" — the home tree's `node_modules` is itself *incomplete*, so the documented junction workaround produces a tree that resolves packages but fails at runtime.** A fresh worktree had an empty `node_modules`; junctioning it to the home tree (per `reference_fresh_worktree_node_modules_junction`) made 276 package dirs visible but `.bin` still held 0 entries, and invoking vitest through its real entry (`node node_modules/vitest/vitest.mjs`) then died on `Cannot find package '@adobe/css-tools'` — a transitive dep of `@testing-library/jest-dom` that is simply absent from the home tree. The junction faithfully mirrors a broken install.",
+    "consequence": "~8 min, and one misleading intermediate state: the junction \"works\" (packages resolve, `ls` looks healthy) right up until a test actually imports the missing package, so the first failure looks like a code bug rather than an environment one.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "**Workaround:** do not junction into a suspect home tree. Delete the junction (`(Get-Item node_modules).Delete()` — `rm -rf` on a junction is not what you want) and run a real `npm install` in the worktree; it took ~90s and produced a working 99-entry `.bin`. **Diagnostic that separates the two failure modes in one command:** `ls node_modules/.bin \\| wc -l` distinguishes \"no `.bin`\" from \"no packages\", but only an actual test run catches a *partial* install — so treat a green `ls` as insufficient evidence.",
+    "session": "THR-74 PR 2 (`tb-opus-pickup`), fresh worktree `jolly-swartz-21dc24`."
+  },
+  {
+    "num": "208",
+    "id": 208,
+    "count": 1,
+    "date": "2026-07-24",
+    "category": "tooling",
+    "description": "**`vite-node` cannot load `src/data/unified-action-templates.ts` at all — a pre-existing duplicate `import type { UnifiedActionTemplate }` in `social-encounter-content.ts` (lines 18 and 2462) is a hard PARSE_ERROR for Vite's oxc transformer, though `tsc`/esbuild strip it silently.** This makes the obvious way to measure anything about the template registry (`npx vite-node scratch.ts`) unavailable, and the error surfaces as a wall of pre-transform noise naming a file you did not touch. Verified pre-existing: `git show origin/main:src/data/social-encounter-content.ts \\| grep -n` shows both imports on `main`.",
+    "consequence": "~6 min, mostly spent confirming the error was not caused by the module I had just added to that import graph — which was the plausible reading, since I had edited the file two lines earlier.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "**Workaround:** measure registry-wide facts from a throwaway **vitest** test (`npx vitest run tmp/probe.test.ts`) rather than `vite-node`; vitest's transform pipeline accepts the file. **Suggested fix (one line):** delete the duplicate import at `social-encounter-content.ts:2462`. **Method note:** the `git show origin/main:<file> \\| grep` pre-existence check from #206's note applied cleanly again — worth promoting from \"note\" to reflex.",
+    "session": "THR-74 PR 2 (`tb-opus-pickup`), measuring the group-eligibility sweep count."
   }
 ];
 // ── End data ──

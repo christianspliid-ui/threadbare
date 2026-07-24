@@ -577,12 +577,18 @@ export const CONTRACTS: readonly Contract[] = [
     ulTerms: ['Company', 'Group Cohesion'],
     mechanism: { kind: 'function', symbols: ['resolveGroupStep'], module: 'src/engine/groups/groupResolution.ts' },
     writeSites: ['src/engine/groups/groupResolution.ts'],
-    readSites: ['src/engine/unifiedActionResolution.ts', 'src/engine/resolutionModifiers.ts'],
-    badgeOverride: {
-      badge: 'PARTIAL',
-      reason:
-        'Engine-core PR lands the producer and its tests; the unifiedActionResolution call site plus the group-eligible actorAffinities content ship in the content PR of the same ticket.',
-      deferralTicket: 'THR-74',
+    // PR 2a un-pinned this row: the call site now exists inside
+    // resolveUncontestedStep, and the eligibility sweep opens 63 shipped
+    // templates to companies so the path is actually reachable in play.
+    // `resolutionModifiers.ts` was dropped from the read sites — the plan named
+    // it as a candidate, but the hook went in at the capability/modifier
+    // computation instead, and the symbol does not appear there (impediment #206:
+    // declare the symbol that really crosses the boundary, not the intended one).
+    readSites: ['src/engine/unifiedActionResolution.ts'],
+    verifiedLive: {
+      date: '2026-07-24',
+      evidence:
+        'src/engine/groups/__tests__/groupResolutionWiring.test.ts drives resolveUncontestedStep end-to-end and asserts the payload, not just the call: a weak leader in a company resolves above his own solo capability (best-member substitution), a solo agent and a company holding a non-group-affinity template both resolve at exactly the solo capability, and the resolution.input trace carries groupId/actingMemberId/groupAssistCount/groupBonus. An emptied company falls back to the individual path without throwing.',
     },
   },
 ];
