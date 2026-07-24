@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-07-24 (refresh at 07:09 local by the hourly `keep-work-flowing-cc` CC task — **one standing ask left: item 1, the four Cowork disable-clicks.** Home tree current and clean (on `main`, 0/0 with the server, no tracked edits). Queue **empty — 0 ready, 0 in dev**: **THR-726 (world-minted ambitions) shipped Done at 06:57 local** (PR #782), the last item on the board. The executor lane idles until a design session promotes new work; the nearest candidates are THR-718 (items move capability tiers, High, user verdict already recorded) and THR-719 (item on-use triggers), both in Todo. Reaper healthy (06:40 run: 23 worktrees / 31 branches / 1 stash / 0 needs-disposition). Last full rebuild was the 2026-06-23 retro)
+**Last updated:** 2026-07-24 (refresh at 09:39 local, prompted by Christian in chat — **zero Christian-only standing asks: the four Cowork disable-clicks are done, closing the Pure Claude Code Migration.** The one remaining open item below is agent-doable, low stakes. Home tree current and clean (on `main`, 0/0 with the server, no tracked edits). Queue **empty — 0 ready, 0 in dev**: **THR-726 (world-minted ambitions) shipped Done at 06:57 local** (PR #782), the last item on the board. The executor lane idles until a design session promotes new work; the nearest candidates are THR-718 (items move capability tiers, High, user verdict already recorded) and THR-719 (item on-use triggers), both in Todo. Reaper healthy (08:40 run: 22 worktrees / 31 branches / 1 stash / 0 needs-disposition). Last full rebuild was the 2026-06-23 retro)
 **Owner of items below:** Christian. Everyone else's blockers go in Linear or `Docs/impediments.md`.
 **Refresh cadence:** The hourly `keep-work-flowing-cc` scheduled task keeps this current (prunes resolved items, adds newly-surfaced Christian-owned ones); the `retrospective` skill still does the deep periodic rebuild. This is the slow-moving standing-asks list — the fresh-this-hour view is [`Design/briefing.md`](briefing.md).
 
@@ -19,27 +19,7 @@ When an item resolves: delete it from this file, mark the corresponding impedime
 
 ---
 
-## 1. Turn off the four old Cowork automations · WILL NOT SELF-HEAL · ONLY YOU CAN DO THIS
-
-**Status:** DECIDED 2026-07-21 in chat · **trials complete — the ask has collapsed to four clicks.** The three replacement trials ran attended on 2026-07-22 and passed with your chat approval (THR-677 closed); all three CC tasks are **registered and live** (daily grooming fires ~09:16, workflow retro ~Wed 11:13, project hygiene ~Sun 10:10 — trial reports at `Docs/ops/backlog-grooming-2026-07-22.md`, `Design/retros/workflow-retro-2026-07-22.md`, `Docs/ops/weekly-hygiene-2026-07-22.md`). The hourly-brief replacement wrote this file. Nothing is waiting on any agent.
-**Source:** THR-653 (cutover) · THR-677 (ports + trials, closed 2026-07-22).
-
-**Fix — in the Cowork app, disable all four:**
-
-```
-keep-work-flowing        (hourly)       — replaced by keep-work-flowing-cc
-daily-backlog-grooming   (daily 09:06)  — CC replacement live, fires ~09:16
-weekly-workflow-retro    (Wed 09:04)    — CC replacement live, fires ~Wed 11:13
-weekly-project-hygiene   (Sun 10:04)    — CC replacement live, fires ~Sun 10:10
-```
-
-**Leave `weekly-invoice-check` alone.** It is yours, not Threadbare's, and is deliberately out of scope.
-
-**What breaks if not done.** Nothing breaks. Four jobs run twice (double grooming passes may produce duplicate queue-hygiene comments), and the Pure Claude Code Migration cannot be declared finished. No data is at risk either way.
-
----
-
-## 2. Land the last rescued plan doc onto `main` — near-resolved · WILL NOT SELF-HEAL
+## 1. Land the last rescued plan doc onto `main` — near-resolved · WILL NOT SELF-HEAL
 
 **Status:** Open (minor) · **largely resolved 2026-07-18 13:29.** The spec that actually mattered is now on `origin/main`: `Docs/plans/2026-07-17-pure-claude-code-migration.md` **and** its brainstorm companion are both landed, so the six migration tickets that reference it can read it from `main`. Only **one** rescued doc is still stranded on the `rescue/2026-07-17-detached-plans` branch — `Docs/plans/2026-07-05-entity-visual-header.md` — and its feature (THR-637, Entity Visual Header) already **shipped** (PR #564), so the doc is now a historical artifact, not a live dependency. Re-verified still stranded at the 2026-07-24 07:09 run (`git cat-file -e origin/main:Docs/plans/2026-07-05-entity-visual-header.md` → not present); note the rescue branch exists **only as a local branch on this machine** — it was never pushed to origin, so the doc is one-machine-only (low stakes: the feature it specified already shipped). This item is a candidate to prune at the next full retro.
 **Source:** 2026-06-23 retro + 2026-07-18 `keep-work-flowing-cc` freshness pings (retro E1); rescue verified complete 2026-07-18 11:25; migration spec confirmed on `origin/main` 2026-07-18 13:29
@@ -57,6 +37,7 @@ git checkout rescue/2026-07-17-detached-plans -- Docs/plans/2026-07-05-entity-vi
 
 ## Resolved this period
 
+- **2026-07-24 ~09:35 — Christian switched off all four old Cowork automations; the Pure Claude Code Migration is complete.** Was item 1, the last Christian-only standing ask, carried since the 2026-07-21 cutover decision (THR-653). `keep-work-flowing`, `daily-backlog-grooming`, `weekly-workflow-retro`, and `weekly-project-hygiene` are disabled in the Cowork app; their CC replacements have been live since the 2026-07-22 attended trials (THR-677). `weekly-invoice-check` remains enabled by design — personal, not Threadbare. The double-run overlap is gone, and every Threadbare automation now runs in the single Claude Code lane. Confirmed by Christian in chat 2026-07-24 morning. _Prunable at the next full retro._
 - **2026-07-23 ~22:00 — the home tree is reattached and the ten stranded retros are backed up.** Was item 2, carried since the 20:29 run. Measured this run rather than assumed: on `main`, `main..origin/main` = 0, `origin/main..HEAD` = 0, zero tracked modifications, zero untracked. The backup PR #768 (`docs/home-tree-backup-2026-07-23`) landed both halves of the exposure in one pass — the ten retro write-ups (`Design/retros/`, April–July) that existed only on this machine, **and** the tracked `.claude/settings.local.json` grants edit that was blocking the self-heal. One inert leftover: a `home-tree-recovery` stash whose entire content is a 3-line edit to a since-superseded `Design/user-actions.md` — verified against `origin/main` before calling it safe; the reaper tracks it (1 stash, 0 needs-disposition) and any cleanup pass may drop it. **The structural gap this class keeps exposing is unchanged and still unfiled:** THR-672's self-heal covers only detached-and-clean parks, so a *branch* park or a park on a dirty tree still needs hands — third occurrence (07-21 twice, 07-23 once); THR-678 covers only the untracked-file variant and sits in Idea. Friday's retro should file the general ticket. _Prunable at the next full retro._
 - **2026-07-23 — the "name the next game-facing stretch" question answered itself: both candidate directions got built.** Was item 2, carried since 07-21. War got its depth pass — battle texture with turning points and commander peril (THR-628, PR #722), sieges that tighten as they drag with relief marches and regional gravity (THR-629, PR #724), and notable agendas including the Campaign war hand-off (THR-630, war phase D, PRs #726 et al.). The economy became visible — faction prosperity derived and feeding the territorial-expansion war trigger (PR #711 chain), cargo route events materializing as encounters (P2b), and economic context wired into encounter scoring/seeding (THR-725, PR #761). The queue now feeds from Christian's two 2026-07-23 chat directives: wiki freshness enforcement (THR-730) and Divine Receipt outcome feedback (THR-727). The direction call is back to being a per-directive conversation, not a standing ask. _Prunable at the next full retro._
 - **2026-07-23 — the stale-PR backlog is gone: 14 → 0 open.** Was item 3, carried since 07-20. THR-702 (PR #708) triaged the armed-BEHIND set, and the board now shows **zero open PRs** (measured live this run via `gh pr list`). The auto-merge fix (THR-675) keeps new PRs self-merging on green, so the accumulation pattern is closed at both ends: old set cleared, inflow self-draining. The nine orphans of the retired `flush-plan-docs` job and the aged feature PR #553 are all settled. _Prunable at the next full retro._
