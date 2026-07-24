@@ -16,11 +16,11 @@ remediation ticket or the build fails.
 | Badge | Count |
 |---|---|
 | 🟢 LIVE | 23 |
-| 🟠 PARTIAL | 1 |
+| 🟠 PARTIAL | 2 |
 | 🔴 LEAKED | 7 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 3 |
-| **Total** | **34** |
+| **Total** | **35** |
 
 ## Contracts by producing subsystem
 
@@ -71,6 +71,7 @@ remediation ticket or the build fails.
 |---|---|---|---|---|---|
 | `company-assist-shapes-resolution` | Companions make each other better at what they attempt — the best-suited member acts and the others assist, capped so a crowd is not an auto-win. | function: `resolveGroupStep` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `company-drives-member-movement` | A company travels as one — members share a destination instead of wandering off separately. | node-prop: `movementState` | Movement & Colocation | 🟢 LIVE | — |
+| `company-gates-exclusive-content-reachability` | Some expeditions can only be attempted by a company — a grouped agent may draw a party-exclusive template, but only when their company can field enough living members for it. | function: `livingGroupMemberCount` | Encounters & Dilemmas | 🟠 PARTIAL | THR-74 |
 | `company-membership-excludes-faction-reads` | A companion of a company is not a member of a faction by that name — faction rank, allegiance display and heraldry must keep reading the faction. | edge-prop: `getFactionMembershipEdges` | Factions & Succession | 🟢 LIVE | — |
 | `company-position-derives-from-leader` | A company has no position of its own — asking where it is means asking where its leader is, so there is never a second spatial truth to drift. | function: `getGroupPosition` | Movement & Colocation | 🟢 LIVE | — |
 
@@ -310,6 +311,16 @@ remediation ticket or the build fails.
 - **Read sites:** `src/engine/phaseMovement.ts`
 - **Other hits:** `src/components/AgentInfoCard/AgentInfoCard.tsx`, `src/components/Game/GameView.tsx`, `src/components/HexMap/MovementTrails.tsx`, `src/data/action-technical-effects.ts`, `src/engine/agentActivity.ts` +8 more
 - **Verdict:** Verified 2026-07-24: phaseGroups writes members' MovementState and phaseMovement (next phase in runTick) executes it. 72-tick CLI smoke, seed 42 medium: "The Watch of the Nameless Road" members Nareth and Hestia both at Wolfton; "The Steadfast Sparrows" both at Shadow-shade.
+
+### `company-gates-exclusive-content-reachability` — 🟠 PARTIAL
+
+- **Intent:** Some expeditions can only be attempted by a company — a grouped agent may draw a party-exclusive template, but only when their company can field enough living members for it.
+- **Producer → Consumer:** Companies & Group Travel → Encounters & Dilemmas
+- **UL terms:** *Company*
+- **Production hits:** 2 total — 1 write, 1 read, 0 unclassified
+- **Write sites:** `src/engine/groups/groupQueries.ts`
+- **Read sites:** `src/engine/unifiedCandidates.ts`
+- **Verdict:** Pinned by badgeOverride: Reachability gate wired + unit-tested, but no live group-exclusive template exists to exercise it until the PR-2b delve content lands.
 
 ### `company-membership-excludes-faction-reads` — 🟢 LIVE
 

@@ -20,6 +20,8 @@ import type { ActionCandidate } from '../types/agent';
 import type { UnifiedAction, UnifiedActionTemplate } from '../types/unifiedAction';
 import type { EffectRuntimeState } from '../types/effects';
 import { getActionGates } from './effects/effectQueries';
+import { livingGroupMemberCount } from './groups/groupQueries';
+import { GROUP_MIN_MEMBERS } from '../data/group-constants';
 
 // ─── Constants ──────────────────────────────────────────────────
 
@@ -77,6 +79,17 @@ export function generateUnifiedCandidates(
 
   const candidates: ActionCandidate[] = [];
 
+  // Living-member count of the actor's company, resolved at most once per call
+  // and only when a group-exclusive template is actually encountered. Most
+  // actors are ungrouped, so the lookup is skipped entirely for them.
+  let cachedGroupMemberCount: number | undefined;
+  const groupMemberCount = (): number => {
+    if (cachedGroupMemberCount === undefined) {
+      cachedGroupMemberCount = livingGroupMemberCount(graph, actorId);
+    }
+    return cachedGroupMemberCount;
+  };
+
   for (const template of templates) {
     // Action gate: skip templates whose reach domain is blocked by an effect
     if (blockedReaches.has(template.reach)) {
@@ -94,8 +107,23 @@ export function generateUnifiedCandidates(
 
     // Filter by actor affinity
     if (template.actorAffinities && template.actorAffinities.length > 0) {
-      if (!actorType || !template.actorAffinities.includes(actorType as any)) {
-        continue;
+      const affinities = template.actorAffinities;
+      const actorTypeMatches = actorType != null && affinities.includes(actorType as any);
+      if (!actorTypeMatches) {
+        // Group-exclusive reachability (THR-74): a grouped agent is still
+        // `actorType: 'individual'`, so a `['group']`-only template never matches
+        // their own type through the ordinary path. Allow the draw when the actor
+        // belongs to a company that can field enough living members to attempt it
+        // — `minGroupMembers` on the template, defaulting to the minimum company
+        // size. This is the sole path by which party-exclusive content becomes
+        // reachable; swept templates carrying both `'individual'` and `'group'`
+        // already pass on the `'individual'` match above, unaffected.
+        const groupEligible =
+          affinities.includes('group') &&
+          groupMemberCount() >= (template.minGroupMembers ?? GROUP_MIN_MEMBERS);
+        if (!groupEligible) {
+          continue;
+        }
       }
     }
 

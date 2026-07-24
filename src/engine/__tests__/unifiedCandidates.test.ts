@@ -204,6 +204,115 @@ describe('generateUnifiedCandidates', () => {
     const result = generateUnifiedCandidates(graph, 'actor-1', 'loc-1', templates);
     expect(result).toHaveLength(1);
   });
+
+  // ─── Group-exclusive reachability (THR-74) ────────────────────
+  // A `['group']`-only template never matches a grouped agent's own
+  // `actorType: 'individual'`. It becomes reachable only when the actor's
+  // company can field `minGroupMembers` living members.
+
+  /**
+   * Put `actor-1` in an active company alongside `livingCompanions` other living
+   * members (and optionally one dead member, retained as a graph node the way a
+   * hard death does not — {@link isAgentGone} still excludes it from the count).
+   */
+  function joinActiveCompany(
+    graph: WorldGraph,
+    livingCompanions: number,
+    deadCompanions = 0,
+  ): void {
+    graph.addNode({
+      id: 'company-1', type: 'actor', name: 'The Test Company',
+      properties: { actorType: 'group', groupType: 'party', groupStatus: 'active' },
+    });
+    graph.addEdge({
+      id: 'mem-actor-1', source: 'actor-1', target: 'company-1',
+      type: 'member_of', properties: { role: 'member', rank: 0, joinedTick: 0 },
+    });
+    for (let i = 0; i < livingCompanions; i++) {
+      graph.addNode({
+        id: `companion-${i}`, type: 'actor', name: `Companion ${i}`,
+        properties: { actorType: 'individual' },
+      });
+      graph.addEdge({
+        id: `mem-companion-${i}`, source: `companion-${i}`, target: 'company-1',
+        type: 'member_of', properties: { role: 'member', rank: 1 + i, joinedTick: 1 + i },
+      });
+    }
+    for (let i = 0; i < deadCompanions; i++) {
+      graph.addNode({
+        id: `dead-${i}`, type: 'actor', name: `Fallen ${i}`,
+        properties: { actorType: 'individual', deceased: true },
+      });
+      graph.addEdge({
+        id: `mem-dead-${i}`, source: `dead-${i}`, target: 'company-1',
+        type: 'member_of', properties: { role: 'member', rank: 50 + i, joinedTick: 50 + i },
+      });
+    }
+  }
+
+  it('a grouped agent draws a group-exclusive template when the company is large enough', () => {
+    const graph = makeGraph();
+    joinActiveCompany(graph, 1); // actor-1 + 1 companion = 2 living members
+    const templates = [
+      makeTemplate({ id: 'party.delve', actorAffinities: ['group'], minGroupMembers: 2 }),
+    ];
+
+    const result = generateUnifiedCandidates(graph, 'actor-1', 'loc-1', templates);
+    expect(result.map(c => c.templateId)).toEqual(['party.delve']);
+  });
+
+  it('an ungrouped agent never draws a group-exclusive template', () => {
+    const graph = makeGraph();
+    const templates = [
+      makeTemplate({ id: 'party.delve', actorAffinities: ['group'], minGroupMembers: 2 }),
+    ];
+
+    const result = generateUnifiedCandidates(graph, 'actor-1', 'loc-1', templates);
+    expect(result).toHaveLength(0);
+  });
+
+  it('a grouped agent below minGroupMembers does not draw the template', () => {
+    const graph = makeGraph();
+    joinActiveCompany(graph, 0); // actor-1 alone — 1 living member
+    const templates = [
+      makeTemplate({ id: 'party.delve', actorAffinities: ['group'], minGroupMembers: 2 }),
+    ];
+
+    const result = generateUnifiedCandidates(graph, 'actor-1', 'loc-1', templates);
+    expect(result).toHaveLength(0);
+  });
+
+  it('dead members do not count toward the minGroupMembers threshold', () => {
+    const graph = makeGraph();
+    joinActiveCompany(graph, 0, 1); // actor-1 living + 1 deceased echo = 1 living
+    const templates = [
+      makeTemplate({ id: 'party.delve', actorAffinities: ['group'], minGroupMembers: 2 }),
+    ];
+
+    const result = generateUnifiedCandidates(graph, 'actor-1', 'loc-1', templates);
+    expect(result).toHaveLength(0);
+  });
+
+  it('defaults the threshold to the minimum company size when minGroupMembers is absent', () => {
+    const graph = makeGraph();
+    joinActiveCompany(graph, 1); // 2 living members, GROUP_MIN_MEMBERS is 2
+    const templates = [
+      makeTemplate({ id: 'party.open', actorAffinities: ['group'] }), // no minGroupMembers
+    ];
+
+    const result = generateUnifiedCandidates(graph, 'actor-1', 'loc-1', templates);
+    expect(result.map(c => c.templateId)).toEqual(['party.open']);
+  });
+
+  it('a swept individual+group template is still drawn by a solo agent (regression)', () => {
+    const graph = makeGraph(); // actor-1 is ungrouped
+    const templates = [
+      makeTemplate({ id: 'swept.delve', actorAffinities: ['individual', 'group'] }),
+    ];
+
+    const result = generateUnifiedCandidates(graph, 'actor-1', 'loc-1', templates);
+    expect(result.map(c => c.templateId)).toEqual(['swept.delve']);
+  });
 });
 
 // ─── Threat-Reactive Scoring Tests ──────────────────────────────

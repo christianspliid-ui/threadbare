@@ -624,6 +624,30 @@ export const CONTRACTS: readonly Contract[] = [
         'src/engine/groups/__tests__/groupResolutionWiring.test.ts drives resolveUncontestedStep end-to-end and asserts the payload, not just the call: a weak leader in a company resolves above his own solo capability (best-member substitution), a solo agent and a company holding a non-group-affinity template both resolve at exactly the solo capability, and the resolution.input trace carries groupId/actingMemberId/groupAssistCount/groupBonus. An emptied company falls back to the individual path without throwing.',
     },
   },
+  {
+    id: 'company-gates-exclusive-content-reachability',
+    producerSystem: COMPANIES,
+    consumerSystem: ENCOUNTERS,
+    intent:
+      'Some expeditions can only be attempted by a company — a grouped agent may draw a party-exclusive template, but only when their company can field enough living members for it.',
+    ulTerms: ['Company'],
+    mechanism: { kind: 'function', symbols: ['livingGroupMemberCount'] },
+    writeSites: ['src/engine/groups/groupQueries.ts'],
+    readSites: ['src/engine/unifiedCandidates.ts'],
+    // PARTIAL, not LIVE: the gate is wired and unit-tested (both-side symbol
+    // hits, src/engine/__tests__/unifiedCandidates.test.ts § "Group-exclusive
+    // reachability"), but no `['group']`-only template ships in the registry
+    // yet — the party-exclusive delve content is the remaining PR-2b scope of
+    // THR-74. The reachability gate lands one PR ahead of its live consumer so
+    // that content, when authored, is not orphaned (the checkpoint's
+    // "do this first"). Un-pins to verifiedLive when the delves land.
+    badgeOverride: {
+      badge: 'PARTIAL',
+      reason:
+        'Reachability gate wired + unit-tested, but no live group-exclusive template exists to exercise it until the PR-2b delve content lands.',
+      deferralTicket: 'THR-74',
+    },
+  },
 ];
 
 /** A malformed row — surfaced in the generated output rather than thrown (NFP #4). */
