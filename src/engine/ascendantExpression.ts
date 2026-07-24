@@ -302,7 +302,7 @@ export function applyBestowPower(
     source: agentId,
     target: artifactId,
     type: 'possesses',
-    properties: { modifiers: {}, grants: [], tags: ['divine_gift'] },
+    properties: { modifiers: {}, tags: ['divine_gift'] },
   });
 
   emitTrace({

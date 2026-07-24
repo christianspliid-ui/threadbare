@@ -196,14 +196,32 @@ export const CONTRACTS: readonly Contract[] = [
     deferralTicket: 'THR-723',
   },
   {
-    id: 'attachment-edge-grants',
+    // THR-722 retired the `possesses`-edge `grants[]` property that used to carry this
+    // intent (zero readers, field deleted from PossessionEdgeProperties). The authored
+    // payload — cavalry_charge, rapid_retreat, intimidate, dark_ferocity — moved onto the
+    // `effects[]` substrate as `trait_grant`, joining the ~20 catalog entries already there.
+    // The row stays LEAKED because the *consumer* is still missing one layer up: the leak
+    // moved, it did not close. Do not badge LIVE until THR-737 lands a real read site.
+    id: 'attachment-trait-grant-effects',
     producerSystem: ATTACHMENTS,
     consumerSystem: ENCOUNTERS,
     intent: 'Items grant abilities to their bearer (e.g. cavalry_charge).',
-    mechanism: { kind: 'edge-prop', symbols: ['grants'] },
-    writeSites: ['src/engine/seedAttachments.ts', 'src/engine/gameInit.ts', 'src/engine/rewardPool.ts'],
+    ulTerms: ['Attachment', 'Trait'],
+    mechanism: { kind: 'node-prop', symbols: ['trait_grant', 'hasGrantedTrait'] },
+    writeSites: [
+      'src/data/starter-attachments.ts',
+      'src/data/reward-attachment-catalog.ts',
+      'src/data/anomaly-reward-catalog.ts',
+      'src/engine/gameInit.ts',
+    ],
     readSites: [],
-    deferralTicket: 'THR-722',
+    badgeOverride: {
+      badge: 'LEAKED',
+      reason:
+        'Symbol greps find `trait_grant` in ~20 authored payloads and a correct resolver (`effectResolver.ts` collects `grantedTraits`), but `hasGrantedTrait` has zero production callers and `resolveEffects().grantedTraits` is asserted only in tests — an item that says it grants `intimidate` grants nothing any decision reads. Consumer-level deadness, invisible to a producer-side symbol check.',
+      deferralTicket: 'THR-737',
+    },
+    deferralTicket: 'THR-737',
   },
   {
     id: 'attachment-on-use-triggers',

@@ -599,11 +599,12 @@ export function devSeedTheFirst(state: GameState): string {
           effects: [
             { type: 'passive', reach: 'iron', value: 0.12 },
             { type: 'passive', reach: 'heart', value: -0.05 },
+            // THR-722: migrated off the dead `possesses`-edge `grants[]` property.
+            { type: 'trait_grant', grantedTrait: 'dark_ferocity' },
           ],
         },
       },
       modifiers: { iron: 0.12, heart: -0.05 },
-      grants: ['dark_ferocity'],
     },
     {
       node: {
@@ -621,7 +622,6 @@ export function devSeedTheFirst(state: GameState): string {
         },
       },
       modifiers: { shadow: 0.12, heart: -0.06 },
-      grants: [],
     },
     {
       node: {
@@ -639,7 +639,6 @@ export function devSeedTheFirst(state: GameState): string {
         },
       },
       modifiers: { stone: 0.12, shadow: -0.04 },
-      grants: [],
     },
     {
       node: {
@@ -657,7 +656,6 @@ export function devSeedTheFirst(state: GameState): string {
         },
       },
       modifiers: { shadow: 0.07, iron: 0.03 },
-      grants: [],
     },
   ];
 
@@ -666,7 +664,7 @@ export function devSeedTheFirst(state: GameState): string {
     graph.addEdge({
       id: `seed.${agentId}.possesses.${p.node.id}`,
       source: agentId, target: p.node.id, type: 'possesses',
-      properties: { modifiers: p.modifiers, grants: p.grants, tags: p.node.properties.tags },
+      properties: { modifiers: p.modifiers, tags: p.node.properties.tags },
     });
   }
 

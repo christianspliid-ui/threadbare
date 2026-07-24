@@ -106,7 +106,10 @@ Standing remediation backlog (user-verdicted 2026-07-23, see
 `Docs/plans/2026-07-23-system-interface-map.md` § User verdicts): **THR-718** items→tiers via
 an `effects[]` primitive + StepDots magnitude indicator · **THR-719** on-use triggers as
 effect primitives · **THR-720** `activatedEffects` parked · **THR-721** ambition visibility +
-ChronicleTab completed list · **THR-722** retire edge `grants[]` · **THR-723** dead stat path.
+ChronicleTab completed list · ~~**THR-722** retire edge `grants[]`~~ (done 2026-07-24 — the
+edge property is deleted and its authored payload re-expressed as `effects[]` `trait_grant`;
+the intent's row is now `attachment-trait-grant-effects`, still LEAKED because the *consumer*
+is missing, tracked by **THR-737**) · **THR-723** dead stat path.
 
 Known dead code: `AgentDetailPanel.tsx` is an orphaned pre-`AgentProfileModal` sheet — do
 not "fix" ambition display there.

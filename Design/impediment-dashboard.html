@@ -2901,15 +2901,15 @@ const DATA = [
   {
     "num": "207",
     "id": 207,
-    "count": 1,
+    "count": 2,
     "date": "2026-07-24",
     "category": "tooling",
     "description": "**The `node_modules/.bin` regression (#203) is worse than \"`.bin` is empty\" — the home tree's `node_modules` is itself *incomplete*, so the documented junction workaround produces a tree that resolves packages but fails at runtime.** A fresh worktree had an empty `node_modules`; junctioning it to the home tree (per `reference_fresh_worktree_node_modules_junction`) made 276 package dirs visible but `.bin` still held 0 entries, and invoking vitest through its real entry (`node node_modules/vitest/vitest.mjs`) then died on `Cannot find package '@adobe/css-tools'` — a transitive dep of `@testing-library/jest-dom` that is simply absent from the home tree. The junction faithfully mirrors a broken install.",
     "consequence": "~8 min, and one misleading intermediate state: the junction \"works\" (packages resolve, `ls` looks healthy) right up until a test actually imports the missing package, so the first failure looks like a code bug rather than an environment one.",
     "impact": "S",
     "workaroundFound": true,
-    "workaround": "**Workaround:** do not junction into a suspect home tree. Delete the junction (`(Get-Item node_modules).Delete()` — `rm -rf` on a junction is not what you want) and run a real `npm install` in the worktree; it took ~90s and produced a working 99-entry `.bin`. **Diagnostic that separates the two failure modes in one command:** `ls node_modules/.bin \\| wc -l` distinguishes \"no `.bin`\" from \"no packages\", but only an actual test run catches a *partial* install — so treat a green `ls` as insufficient evidence.",
-    "session": "THR-74 PR 2 (`tb-opus-pickup`), fresh worktree `jolly-swartz-21dc24`."
+    "workaround": "**Workaround:** do not junction into a suspect home tree. Delete the junction (`(Get-Item node_modules).Delete()` — `rm -rf` on a junction is not what you want) and run a real `npm install` in the worktree; it took ~90s and produced a working 99-entry `.bin`. **Diagnostic that separates the two failure modes in one command:** `ls node_modules/.bin \\| wc -l` distinguishes \"no `.bin`\" from \"no packages\", but only an actual test run catches a *partial* install — so treat a green `ls` as insufficient evidence. **Occurrence 2 (2026-07-24, `tb-opus-pickup` resuming THR-722) found a strictly better remedy: repair the home tree instead of routing around it.** The junction is not the problem — the home install is — so `npm install` *in the home tree* (`C:\\Users\\chris\\Dev\\Projects\\TheFantasyWorldSimulator`) took **3s**, added 36 missing packages, restored `.bin`, and fixed every junctioned worktree at once. Occurrence 1's per-worktree `npm install` costs ~90s and re-pays that cost in every future worktree, because the broken home tree is left broken. Prefer the home-tree repair; it is not a git state op, so the THR-672 read-only-home rule does not forbid it.",
+    "session": "Occurrence 1: THR-74 PR 2, worktree `jolly-swartz-21dc24`. Occurrence 2: THR-722 resume, worktree `quirky-raman-5a4f75`."
   },
   {
     "num": "208",

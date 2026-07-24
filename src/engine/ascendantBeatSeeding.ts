@@ -175,7 +175,7 @@ function seedThreadedArtifact(state: GameState, ascendantId: string, turn: numbe
       source: firstId,
       target: artifactId,
       type: 'possesses',
-      properties: { modifiers: {}, grants: [], tags: ['divine_artifact'] },
+      properties: { modifiers: {}, tags: ['divine_artifact'] },
     });
     seededEdgeIds.push(possessEdgeId);
   }
