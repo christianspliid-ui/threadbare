@@ -129,7 +129,7 @@ export interface TickEvent {
   // Divine Receipt — player action resolution feedback (THR-727)
     | 'player_action_receipt'
   // Company (group layer) events (THR-74)
-    | 'group_formed' | 'group_dissolved' | 'group_member_left';
+    | 'group_formed' | 'group_dissolved' | 'group_member_left' | 'group_frayed';
   message: string;
   /** Optional sphere coloring for UI */
   sphere?: SphereName;

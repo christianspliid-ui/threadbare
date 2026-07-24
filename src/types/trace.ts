@@ -3069,6 +3069,8 @@ export interface GroupPhaseTrace extends TraceBase {
   leaveDecisions: number;
   /** Colocated candidate sets examined by the formation scan. */
   formationCandidateSets: number;
+  /** Threaded companies that crossed below the fray line and fired an authored moment this tick. */
+  frayMomentsFired: number;
 }
 
 /** Trace: a company came into being. Event-scale — rare, one per formation. */

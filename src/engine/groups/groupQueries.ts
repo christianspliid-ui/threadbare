@@ -79,6 +79,13 @@ export interface GroupNodeProperties {
   dissolutionReason?: DissolutionReason;
   /** Ticks below which Bless this Company suppresses dispute/dissent effects. */
   blessedUntilTick?: number;
+  /**
+   * Last observed cohesion band (bookkeeping, not truth: {@link getCohesionState}
+   * of the live cohesion is authoritative). Persisted so `phaseGroups` can fire the
+   * fray moment on the *transition* below the fray line rather than every tick the
+   * company sits in `frayed`. Seeded silently on first observation.
+   */
+  lastCohesionState?: CohesionState;
 }
 
 /**
