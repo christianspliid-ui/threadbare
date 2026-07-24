@@ -353,23 +353,25 @@ export const CONTRACTS: readonly Contract[] = [
     mechanism: { kind: 'function', symbols: ['getAmbitionsStrand'] },
     writeSites: ['src/engine/strands.ts'],
     readSites: ['src/components/**'],
-    badgeOverride: {
-      badge: 'PARTIAL',
-      reason:
-        'Both gate paths exist (JourneyTab.tsx gates on interactionDepth ≥ 2 OR knowledge ≥ `known`), but the thresholds and accrual rates keep ambitions hidden for nearly every agent in normal play — the player experiences this as "ambitions disappeared from the UI".',
-      deferralTicket: 'THR-721',
+    verifiedLive: {
+      date: '2026-07-24',
+      evidence:
+        'THR-721: JourneyTab gate retuned — AMBITION_PRIMARY_INTERACTIONS 2→1 and hardcoded `known` promoted to AMBITION_PRIMARY_KNOWLEDGE = `recognised`, so a single meaningful exposure surfaces the primary ambition. getAmbitionsStrand read by useAgentInteraction.ts feeds the AgentProfileModal tabs; browser-verified at 1920×1080.',
     },
-    deferralTicket: 'THR-721',
   },
   {
     id: 'ambition-completed-history',
     producerSystem: AMBITIONS,
     consumerSystem: 'Attention, Chronicle & Narrative',
     intent: 'Completed ambitions accumulate into a readable history of who an agent became.',
-    mechanism: { kind: 'function', symbols: ['completedAmbitions'] },
-    writeSites: ['src/engine/journeyEngine.ts'],
+    mechanism: { kind: 'function', symbols: ['completedAmbitions', 'getCompletedAmbitions'] },
+    writeSites: ['src/engine/agentDetail.ts'],
     readSites: ['src/components/Game/tabs/ChronicleTab.tsx'],
-    deferralTicket: 'THR-721',
+    verifiedLive: {
+      date: '2026-07-24',
+      evidence:
+        'THR-721: getCompletedAmbitions (agentDetail.ts) walks completed `pursues` edges and populates AgentInfoCardData.completedAmbitions; ChronicleTab §Completed Ambitions renders it (replacing the "will appear here" placeholder). The missing consumer this row named now exists; browser-verified at 1920×1080.',
+    },
   },
 
   // ── Coupling assessment 2026-07-23 — pre-seeded by the Fable design session ──

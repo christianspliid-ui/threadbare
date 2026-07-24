@@ -25,6 +25,7 @@ import type { AmbitionCategory, ReactiveAmbitionTemplate } from '../types/ambiti
 import { generateTieredBackstory } from './backstoryGenerator';
 import type { BackstoryResult } from '../types/prose';
 import { findAmbitionTemplateById } from '../data/ambition-templates';
+import { COMPLETED_AMBITIONS_MAX_DISPLAY } from '../types/agentKnowledge';
 import { getAgentPortraitUrlFromProperties } from '../data/portrait-assets';
 import { getOriginVignetteById } from '../data/origin-vignettes';
 import { getAxisByReach, getAxisById } from '../types/axisRegistry';
@@ -89,6 +90,20 @@ export interface ActiveIntent {
   milestoneDescriptions?: string[];
   reachAffinity: Partial<Record<ReachDomain, number>>;
   reactiveTrigger?: string;
+}
+
+/**
+ * A fulfilled ambition, shaped for the ChronicleTab §Completed Ambitions list
+ * (THR-721). Sourced only from `pursues` edges carrying `status: 'completed'` and
+ * their `resolvedTick` — biography ("who they became"), not a failure ledger, so
+ * abandoned/failed ambitions are excluded (those narrate through chronicle events).
+ */
+export interface CompletedAmbition {
+  ambitionId: string;
+  name: string;
+  description?: string;
+  /** Tick the ambition resolved; undefined when the edge lacks `resolvedTick`. */
+  resolvedTick?: number;
 }
 
 export interface TopValue {
@@ -260,6 +275,8 @@ export interface AgentInfoCardData {
   giftsAndBurdens?: AttachmentFullEntry[];
   /** Full intent list for the character sheet modal (prototype: always visible) */
   intents?: ActiveIntent[];
+  /** Fulfilled ambitions for the ChronicleTab §Completed Ambitions list (THR-721). */
+  completedAmbitions?: CompletedAmbition[];
   /** Primary intent summary for compact AgentInfoCard (prototype: always visible) */
   primaryIntentSummary?: { displayName: string; category: AmbitionCategory };
   /** Portrait URL — only present if knowledge >= recognised */
@@ -799,6 +816,39 @@ function getAgentIntents(graph: WorldGraph, agentId: string): ActiveIntent[] {
 }
 
 /**
+ * Fulfilled ambitions for an agent, newest-first, for the ChronicleTab §Completed
+ * Ambitions list (THR-721). Reads only `pursues` edges with `status: 'completed'`
+ * and their `resolvedTick` (written by `ambitionTick.ts`). Abandoned/failed
+ * ambitions are excluded — this is "who they became," not a failure ledger.
+ * Capped at COMPLETED_AMBITIONS_MAX_DISPLAY (newest kept). Pure + fail-soft.
+ */
+export function getCompletedAmbitions(graph: WorldGraph, agentId: string): CompletedAmbition[] {
+  const completed = getAgentAmbitions(graph, agentId)
+    .filter(a => a.status === 'completed');
+
+  const results: CompletedAmbition[] = [];
+  for (const entry of completed) {
+    const templateId = entry.ambition.properties.templateId as string | undefined;
+    const template = templateId ? findAmbitionTemplateById(templateId) : undefined;
+    // Fail-soft: fall back to the ambition node name, then the id, so a missing
+    // template never drops the entry (the completion still happened).
+    const name = template?.displayName
+      ?? (entry.ambition.properties.name as string | undefined)
+      ?? entry.ambition.id;
+    const resolvedTick = typeof entry.edge.properties.resolvedTick === 'number'
+      ? (entry.edge.properties.resolvedTick as number)
+      : undefined;
+
+    results.push({ ambitionId: entry.ambition.id, name, resolvedTick });
+  }
+
+  // Newest first; entries missing a resolvedTick sort last (never throw).
+  results.sort((a, b) => (b.resolvedTick ?? -Infinity) - (a.resolvedTick ?? -Infinity));
+
+  return results.slice(0, COMPLETED_AMBITIONS_MAX_DISPLAY);
+}
+
+/**
  * Get info card data for an agent, filtered by knowledge level.
  * Returns null if agent not found or has no thread edge from ascendant.
  */
@@ -847,6 +897,13 @@ export function getAgentInfoCard(
         category: primary.category,
       };
     }
+  }
+
+  // Completed ambitions — biography for the ChronicleTab (THR-721). Populated in
+  // the same read pass; the tab gates display on the primary-ambition gate.
+  const completedAmbitions = getCompletedAmbitions(graph, agentId);
+  if (completedAmbitions.length > 0) {
+    card.completedAmbitions = completedAmbitions;
   }
 
   // Recognised+: expose influence tier; gate backstory on tier >= 1
