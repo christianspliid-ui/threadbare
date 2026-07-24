@@ -1,6 +1,6 @@
 # Briefing
 
-**Generated:** 2026-07-24 18:11 local (2026-07-24 16:11 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-07-24 19:09 local (2026-07-24 17:09 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
@@ -8,7 +8,7 @@ This is your inbox. It's rewritten every hour by a Claude Code task. Standing sw
 
 **Still the one thing — same two commands as the last brief.**
 
-**1. Your local game folder is still frozen at this morning's state.** Now **43 commits behind** the server (was 41 an hour ago); the blocker is unchanged — a leftover one-line permission edit to `.claude/settings.local.json`, which the hourly sync deliberately refuses to overwrite. Nothing is at risk: the edit is a minor convenience grant, and the one stray untracked file is byte-identical to the server copy. Run:
+**1. Your local game folder is still frozen at this morning's state.** Now **45 commits behind** the server (was 43 an hour ago); the blocker is unchanged — a leftover one-line permission edit to `.claude/settings.local.json`, which the hourly sync deliberately refuses to overwrite. Worth knowing: the copy of this very briefing in your local folder is the 07:09 edition — until you unfreeze the tree, your on-disk inbox is twelve hours stale (the Discord doorbell and the server copy are current). Nothing is at risk: the edit is a minor convenience grant, and the one stray untracked file is byte-identical to the server copy. Run:
 
 ```
 cd C:\Users\chris\Dev\Projects\TheFantasyWorldSimulator
@@ -24,13 +24,13 @@ Alternatively, say the word in any chat session and it can land the grant via a 
 
 ## Freshness
 
-**Home tree: on `main` but 43 behind the server, one tracked edit blocking the self-heal** — see Needs Christian item 1. Last local update was 07:13.
+**Home tree: on `main` but 45 behind the server, one tracked edit blocking the self-heal** — see Needs Christian item 1. Last local update was 07:13.
 
-**Cleanup reaper: alive** — last run 17:40 (within the hour), tracking 26 worktrees / 35 branches / 1 stash, nothing awaiting a human decision.
+**Cleanup reaper: alive** — last run 18:40 (within the hour), tracking 26 worktrees / 35 branches / 1 stash, nothing awaiting a human decision.
 
 ## What's moving
 
-- **The items-give-real-power work (THR-718) is still one green light from landing** — its pull request has auto-merge armed and checks were running again at brief time (the branch picked up fresh commits since the last brief). Once it lands, a hero carrying a storied blade is actually stronger for it on the character sheet.
+- **The items-give-real-power work (THR-718) is still one green light from landing** — its pull request picked up fresh commits again this hour and the main check restarted at 19:05; auto-merge stays armed, so it lands itself on green. Once it does, a hero carrying a storied blade is actually stronger for it on the character sheet.
 - **THR-74 (Party Formation) remains In Dev** with the remaining scope: the four authored party moments, the two player actions, the rulebook group/company section, and the map/profile UI.
 
 ---
