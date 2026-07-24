@@ -37,8 +37,10 @@
 
 import type { EncounterCacheEntry } from './encounterCache';
 import type { WorldGraph } from './graph';
+import type { GraphNode } from '../types/graph';
 import { resolveLocationToHex } from './encounterAwareness';
 import { hexDistance } from '../lib/hexMath';
+import { DRAW_TOGETHER_PULL_WEIGHT } from '../data/group-constants';
 import type { ScoringTrace } from '../types/trace';
 import type { ValuePair, AxiologicalProfile } from '../types/agent';
 import { VALUE_PAIRS } from '../types/agent';
@@ -457,6 +459,40 @@ export function computeExplorationAttractionBonus(
 }
 
 /**
+ * Compute the Draw Together convergence bonus (THR-74) — the encounter-scoring
+ * read-site that makes the divine action's "convergence pressure" a live pull.
+ *
+ * When the ascendant has drawn a scattered mortal toward a company, `draw_together`
+ * stamps the mortal's node with a convergence hex and an expiry (`convergePullHexCol`
+ * / `convergePullHexRow` / `convergePullUntilTick`). While that window is open, every
+ * candidate encounter is nudged up in proportion to how close its location sits to the
+ * convergence hex — so the mortal's *own* choices bend toward gathering, and none of it
+ * is a command (the agent still picks, the odds are only tilted — Vision non-negotiable).
+ *
+ * This mirrors the `hex.mark_ground` attraction term above (a hex-proximity score
+ * boost), but keyed per-agent rather than per-tile. A candidate at the convergence hex
+ * earns the full {@link DRAW_TOGETHER_PULL_WEIGHT}; the bonus decays with hex distance
+ * so nearer-to-convergence stories win. Fail-soft: no window, expired, or a missing
+ * hex on either side returns 0.
+ */
+export function computeConvergenceBonus(
+  agentNode: GraphNode | undefined,
+  entryCol: number | undefined,
+  entryRow: number | undefined,
+  tick: number,
+): number {
+  if (!agentNode || entryCol === undefined || entryRow === undefined) return 0;
+  const props = agentNode.properties as Record<string, unknown>;
+  const until = props.convergePullUntilTick;
+  if (typeof until !== 'number' || tick >= until) return 0;
+  const col = props.convergePullHexCol;
+  const row = props.convergePullHexRow;
+  if (typeof col !== 'number' || typeof row !== 'number') return 0;
+  const dist = hexDistance({ col, row }, { col: entryCol, row: entryRow });
+  return DRAW_TOGETHER_PULL_WEIGHT / (1 + dist);
+}
+
+/**
  * Compute divine hunch bonus for Find-type encounters.
  * Written by hex.whisper_intuition to the thread edge.
  * Applies regardless of trait — direct divine override.
@@ -510,6 +546,8 @@ export interface ScoredCandidate {
   globalResonance: number;
   ruinsBonus: number;
   attractionBonus: number;
+  /** Draw Together convergence pull toward the anchor hex (THR-74); 0 when no window. */
+  convergenceBonus: number;
   hunchBonus: number;
   rarityMultiplier: number;
   roleAffinityMultiplier: number;
@@ -1176,6 +1214,10 @@ export function scoreAndSelect(
     // 17. Exploration attraction bonus (divine action: hex.mark_ground)
     const attractionBonus = computeExplorationAttractionBonus(tiles, entryHex?.col, entryHex?.row);
 
+    // 17a. Draw Together convergence bonus (divine action: company.draw_together, THR-74) —
+    // a per-agent, hex-proximity pull toward the convergence point while the window is open.
+    const convergenceBonus = computeConvergenceBonus(agentNode, entryHex?.col, entryHex?.row, tick);
+
     // 18. Divine hunch bonus (divine action: hex.whisper_intuition)
     const hunchBonus = computeDivineHunchBonus(graph, agentId, entry.reachPrimary, tick);
 
@@ -1239,7 +1281,7 @@ export function scoreAndSelect(
       }
     }
     const rawFinalScore = baseScore * rarityMultiplier * roleAffinityMultiplier * (1 - familiarityPenalty) + explorationBonus + chainBonus
-      + ruinsBonus + anomalyBonus + attractionBonus + hunchBonus + identityBiasBonus + markRevealBonus + intelBonus;
+      + ruinsBonus + anomalyBonus + attractionBonus + convergenceBonus + hunchBonus + identityBiasBonus + markRevealBonus + intelBonus;
 
     // 17b. Branching curator bias (THR-452) — boost under-selected branching templates
     const curatorMultiplier = computeBranchingCuratorMultiplier(entry, agentId, tick, runtime ?? null);
@@ -1290,6 +1332,7 @@ export function scoreAndSelect(
       globalResonance,
       ruinsBonus,
       attractionBonus,
+      convergenceBonus,
       hunchBonus,
       rarityMultiplier,
       roleAffinityMultiplier,

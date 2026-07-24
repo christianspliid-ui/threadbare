@@ -40,6 +40,7 @@ import type { BeatDefinition } from '../types/ascendantBeat';
 import {
   MILESTONE_SOURCE_BEAT_ID,
   MILESTONE_COMPANY_BEAT_ID,
+  MILESTONE_GATHERING_BEAT_ID,
 } from './player-progression';
 import type { SpineBeatPresentation } from './ascendant-beat-content';
 
@@ -86,6 +87,20 @@ export const ASCENDANT_MILESTONE_BEATS: readonly BeatDefinition[] = [
     identity: { reach: 'heart', sphere: 'spirit' },
     grantsActionIds: ['company.bless'],
   },
+  {
+    // THR-74: the gathering-bonds milestone. Enqueued by `phaseAscendantProgression` the
+    // first time the ascendant threads DRAW_TOGETHER_MIN_THREADED_FOR_UNLOCK living mortals
+    // — the moment "draw them together" first has raw material. Unlocks the formation tool
+    // *before* any company exists, so the player can gather their first band deliberately.
+    // `identity.sphere: 'spirit'` matches `company.draw_together`'s sphereAffinity, so the
+    // beat and its granted card share a register. `trigger: { kind: 'turn' }` keeps a
+    // `__DEBUG.fireBeat` force-offer unconditional, like the other milestones.
+    beatId: MILESTONE_GATHERING_BEAT_ID,
+    kind: 'milestone',
+    trigger: { kind: 'turn' },
+    identity: { reach: 'heart', sphere: 'spirit' },
+    grantsActionIds: ['company.draw_together'],
+  },
 ];
 
 /** Look a milestone beat up by id. Null when the id is not a milestone beat. */
@@ -114,6 +129,13 @@ export const MILESTONE_BEAT_PRESENTATION: Readonly<Record<string, SpineBeatPrese
       'Somewhere on the road below, mortals you have watched found each other and chose to travel as one. They share a fire now, and a name, and the small quarrels of people who have thrown their lots together. A band is a fragile thing — one bitter league can scatter it — but it is also a thing a god can bless, and a blessing on a company is a blessing on every road they will walk while it holds.',
     cta: 'Receive',
   },
+  [MILESTONE_GATHERING_BEAT_ID]: {
+    eyebrow: 'Scattered Threads',
+    title: 'The Bonds You Hold Are More Than One',
+    prose:
+      'You have reached into more than a single life now. Threads run from you to mortals scattered across the world, each walking their own road, none yet knowing the others exist. A god cannot march them into ranks — but a god can pull, gently, on the threads themselves, and let those you have touched feel the tug toward one another. Draw them together, and where their roads cross a company may yet be born.',
+    cta: 'Receive',
+  },
 };
 
 /**
@@ -127,6 +149,9 @@ export function milestoneChronicleProse(beatId: string): string {
   }
   if (beatId === MILESTONE_COMPANY_BEAT_ID) {
     return 'The mortals you followed gathered into a company and took to the road as one. What binds them is yours to steady now, for as long as the band holds together.';
+  }
+  if (beatId === MILESTONE_GATHERING_BEAT_ID) {
+    return 'Your threads reached into more than one life at last, and you learned to pull them gently toward each other — scattered souls drawn to gather where their roads cross.';
   }
   // Fail-soft (NFP #4): an un-authored milestone still writes an honest line rather
   // than crashing the phase or printing an id at the player.

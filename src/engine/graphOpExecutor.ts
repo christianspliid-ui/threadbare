@@ -37,8 +37,15 @@ import {
 import { RESOURCE_DEFINITIONS } from '../data/resource-content';
 import { TRADE_ROUTE_MAX_VOLUME } from './tradeRoute';
 import { applyCohesionDelta } from './groups/groupCohesion';
-import { isCompanyNode } from './groups/groupQueries';
-import { BLESS_COMPANY_COHESION_DELTA, BLESS_COMPANY_DURATION_TICKS } from '../data/group-constants';
+import { isCompanyNode, isGrouped, isAgentGone } from './groups/groupQueries';
+import { getAgentLocationId } from './graphQueries';
+import { hexDistance } from '../lib/hexMath';
+import {
+  BLESS_COMPANY_COHESION_DELTA,
+  BLESS_COMPANY_DURATION_TICKS,
+  DRAW_TOGETHER_DURATION_TICKS,
+  DRAW_TOGETHER_RADIUS_HEXES,
+} from '../data/group-constants';
 
 interface ExecuteOptions {
   tick?: number;
@@ -229,6 +236,9 @@ function executeSingleOp(
 
       case 'bless_company':
         return executeBlessCompany(graph, op, ctx);
+
+      case 'draw_together':
+        return executeDrawTogether(graph, op, ctx);
 
       default:
         return {
@@ -1012,6 +1022,78 @@ function executeBlessCompany(
   graph.updateNode(targetId, {
     properties: { blessedUntilTick: (ctx.tick ?? 0) + BLESS_COMPANY_DURATION_TICKS },
   });
+  return { op, success: true };
+}
+
+/**
+ * Draw Together (THR-74) — the player's soft-power *formation nudge*. The player reaches
+ * through a bond (a threaded mortal, the anchor) and every scattered threaded mortal near
+ * them feels a pull to gather. It is the missing *writer* for the convergence read-site
+ * that shipped with this slice: `encounterScoring.computeConvergenceBonus` boosts each
+ * mortal's candidate encounters in proportion to how close they sit to the convergence hex
+ * while the window is open, so the mortals' *own* choices bend toward one another — a tilt,
+ * never a command (Vision non-negotiable: the player shifts odds, does not issue orders).
+ * When enough of them colocate, the existing formation scan binds them and records the
+ * company's `cause` as `draw_together` (groupFormation).
+ *
+ * The convergence point is the anchor's current hex. The anchor is stamped too, so they
+ * tend to hold the ground rather than wander off before the others arrive. Only mortals
+ * threaded to THIS ascendant, living, ungrouped (the anchor excepted), and within
+ * `DRAW_TOGETHER_RADIUS_HEXES` are pulled — a pull beyond a mortal's awareness horizon
+ * would bias nothing they can perceive (see the constant's note).
+ *
+ * Fail-soft (NFP #4): a missing / non-mortal / unthreaded anchor, or an anchor whose hex
+ * cannot be resolved, returns an error result rather than throwing. An action that finds
+ * no scattered companions still succeeds — the god spent the essence; nothing is refunded
+ * (plan fail-soft row).
+ */
+function executeDrawTogether(
+  graph: WorldGraph,
+  op: GraphOp,
+  ctx: GraphOpContext,
+): GraphOpResult {
+  const ascId = ctx.actorId;
+  const anchorId = resolveRef(op.nodeId ?? op.target ?? '$target', ctx);
+  const anchor = graph.getNode(anchorId);
+  if (!anchor) return { op, success: false, error: `draw_together: anchor ${anchorId} not found` };
+  if (anchor.properties.actorType !== 'individual' || isAgentGone(anchor)) {
+    return { op, success: false, error: `draw_together: ${anchorId} is not a living mortal` };
+  }
+  const isThreaded = (id: string): boolean =>
+    graph.getIncomingEdges(id, 'thread').some(e => e.source === ascId);
+  if (!isThreaded(anchorId)) {
+    return { op, success: false, error: `draw_together: ${anchorId} is not threaded to the ascendant` };
+  }
+
+  const anchorLocId = getAgentLocationId(graph, anchorId);
+  const convergeHex = anchorLocId ? resolveLocationToHex(graph, anchorLocId) : null;
+  if (!convergeHex) {
+    return { op, success: false, error: `draw_together: cannot resolve anchor ${anchorId} hex` };
+  }
+
+  const until = (ctx.tick ?? 0) + DRAW_TOGETHER_DURATION_TICKS;
+
+  for (const node of graph.getNodesByType('actor')) {
+    if (node.properties.actorType !== 'individual') continue;
+    if (isAgentGone(node)) continue;
+    // Already-grouped mortals are left alone — a new company gathers among the ungathered.
+    // The anchor is excepted so a grouped anchor can still serve as the beacon point.
+    if (node.id !== anchorId && isGrouped(graph, node.id)) continue;
+    if (!isThreaded(node.id)) continue;
+    const locId = getAgentLocationId(graph, node.id);
+    const hex = locId ? resolveLocationToHex(graph, locId) : null;
+    if (!hex) continue;
+    if (hexDistance(hex, convergeHex) > DRAW_TOGETHER_RADIUS_HEXES) continue;
+    // updateNode merges properties — sets the pull window without disturbing anything else.
+    graph.updateNode(node.id, {
+      properties: {
+        convergePullHexCol: convergeHex.col,
+        convergePullHexRow: convergeHex.row,
+        convergePullUntilTick: until,
+      },
+    });
+  }
+
   return { op, success: true };
 }
 

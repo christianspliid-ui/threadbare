@@ -1,11 +1,11 @@
 {
   "schemaVersion": 2,
   "totals": {
-    "total": 175,
+    "total": 176,
     "byCategory": {
       "action": 67,
       "artifact": 4,
-      "company": 1,
+      "company": 2,
       "divine": 19,
       "hex": 49,
       "location": 23,
@@ -16,24 +16,24 @@
       "gold": 20,
       "shadow": 22,
       "veil": 22,
-      "heart": 26,
+      "heart": 27,
       "eye": 29,
       "stone": 10,
       "star": 33,
       "life": 1
     },
     "byBucket": {
-      "unlockable-generic": 172,
+      "unlockable-generic": 173,
       "generic": 3
     },
     "byEffectSource": {
-      "template-ops": 108,
+      "template-ops": 109,
       "control-spec": 17,
       "engine-bridge": 44,
       "none": 2,
       "aftermath-only": 4
     },
-    "beatGranted": 26,
+    "beatGranted": 27,
     "starters": 0,
     "unauthoredEffects": 0
   },
@@ -2047,6 +2047,37 @@
       "bucketDeclared": true,
       "description": "Lays a quiet grace over a company of travelling mortals, drawing their frayed loyalties back toward one another. For a while the small resentments that pull a band apart lose their teeth — a hard road that would have scattered them is one they walk together instead.",
       "technicalEffect": "Applies an immediate +BLESS_COMPANY_COHESION_DELTA cohesion boost to the target company and opens a dispute-suppression window (blessedUntilTick = tick + BLESS_COMPANY_DURATION_TICKS). While the window is open, isGroupBlessed suppresses negative dissent (groupCohesion), fray-driven dissolution (groupDissolution), and movement dissent (groupMovement). Fires the bless_company graph-op; fail-soft on a non-company target (armies share actorType:group).",
+      "effectSource": "template-ops"
+    },
+    {
+      "id": "company.draw_together",
+      "name": "Draw Together",
+      "spellName": "The Gathering Thread",
+      "category": "company",
+      "reach": "heart",
+      "sphereAffinity": "spirit",
+      "crudType": "update",
+      "scale": "local",
+      "rarityTier": 2,
+      "rarityName": "Storied",
+      "intrinsicTier": "shaping",
+      "apCost": 1,
+      "essenceCost": 4,
+      "durationMode": "instant",
+      "hasControlSpec": false,
+      "targetCategories": [
+        "actor"
+      ],
+      "targetSubtypes": [
+        "individual"
+      ],
+      "requiresReach": null,
+      "starter": false,
+      "beatGranted": true,
+      "bucket": "unlockable-generic",
+      "bucketDeclared": true,
+      "description": "Reaches through the bond you hold with one wandering soul and lets every kindred spirit nearby feel the tug of it. Scattered travellers you have touched begin, without quite knowing why, to bend their roads toward one another — and where enough of them meet, a company is born.",
+      "technicalEffect": "Fires the draw_together graph-op on the target (a threaded mortal, the convergence anchor). Stamps convergePullHex/convergePullUntilTick (= tick + DRAW_TOGETHER_DURATION_TICKS) on the anchor and every living, ungrouped, threaded mortal within DRAW_TOGETHER_RADIUS_HEXES. While the window holds, encounterScoring.computeConvergenceBonus boosts each mortal's candidate encounters by up to DRAW_TOGETHER_PULL_WEIGHT in inverse proportion to hex distance from the anchor, so they gravitate together; a company that then forms among them is attributed cause: draw_together. Fail-soft on a missing/non-mortal/unthreaded anchor; fires (no refund) even if no companions are in range.",
       "effectSource": "template-ops"
     },
     {

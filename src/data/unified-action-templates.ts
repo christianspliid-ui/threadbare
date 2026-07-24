@@ -2700,6 +2700,48 @@ const COMPANY_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
       failure: 'the blessing does not take; the company\'s frayed bonds hold their own course',
     },
   },
+  {
+    // THR-74 — the formation-nudge verb. Targets a threaded mortal (the anchor); the
+    // `draw_together` graph-op then stamps a convergence pull on the anchor and every
+    // scattered threaded, ungrouped mortal within DRAW_TOGETHER_RADIUS_HEXES. Each pulled
+    // mortal's *own* encounter choices bend toward the anchor's hex (encounterScoring's
+    // computeConvergenceBonus) — a tilt, never a command — and when enough colocate the
+    // formation scan binds them, recording the company's cause as `draw_together`.
+    // Individual agents are already drawer-selectable today (unlike company nodes), so this
+    // verb is castable in-browser now; PR 3 still owns the map/cluster verification.
+    id: 'company.draw_together',
+    name: 'Draw Together',
+    spellName: 'The Gathering Thread',
+    rarityTier: 2,
+    intrinsicTier: 'shaping',
+    description: 'Reaches through the bond you hold with one wandering soul and lets every kindred spirit nearby feel the tug of it. Scattered travellers you have touched begin, without quite knowing why, to bend their roads toward one another — and where enough of them meet, a company is born.',
+    technicalEffect: 'Fires the draw_together graph-op on the target (a threaded mortal, the convergence anchor). Stamps convergePullHex/convergePullUntilTick (= tick + DRAW_TOGETHER_DURATION_TICKS) on the anchor and every living, ungrouped, threaded mortal within DRAW_TOGETHER_RADIUS_HEXES. While the window holds, encounterScoring.computeConvergenceBonus boosts each mortal\'s candidate encounters by up to DRAW_TOGETHER_PULL_WEIGHT in inverse proportion to hex distance from the anchor, so they gravitate together; a company that then forms among them is attributed cause: draw_together. Fail-soft on a missing/non-mortal/unthreaded anchor; fires (no refund) even if no companions are in range.',
+    reach: 'heart',
+    crudType: 'update',
+    scale: 'local',
+    steps: [{
+      reach: 'heart',
+      duration: { min: 1, max: 2 },
+      difficulty: 0.3,
+      onSuccess: [
+        { op: 'draw_together', nodeId: '$target' },
+      ],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: 4,
+    actorAffinities: ['ascendant'],
+    sphereAffinity: 'spirit',
+    targetCategories: ['actor'],
+    targetSubtypes: ['individual'],
+    motivations: ['loyalty_ambition', 'preservation_transformation'],
+    narrativeTemplates: {
+      initiation: 'pulls at the threads binding these wanderers, drawing their paths toward one another',
+      success: 'the scattered souls turn, each toward the others, and the road begins to gather them into one company',
+      failure: 'the pull finds no purchase; the wanderers keep their own separate roads',
+    },
+  },
 ];
 
 // ─── Sublocation Action Templates ─────────────────────────────────

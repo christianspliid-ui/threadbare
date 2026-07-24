@@ -44,6 +44,16 @@ export interface FormationScanResult {
  *  - shared ambition category
  *  - axiological complementarity — similar risk appetite travels well together
  */
+/**
+ * True while an agent sits under an open Draw Together convergence pull (THR-74) — the
+ * same `convergePullUntilTick` window `encounterScoring.computeConvergenceBonus` reads.
+ * Used to attribute a company's formation `cause` to the divine nudge that gathered it.
+ */
+export function isUnderConvergencePull(node: GraphNode | undefined, tick: number): boolean {
+  const until = (node?.properties as Record<string, unknown> | undefined)?.convergePullUntilTick;
+  return typeof until === 'number' && tick < until;
+}
+
 export function computeCompatibility(graph: WorldGraph, aId: string, bId: string): number {
   let score = 0.3; // strangers-in-a-tavern baseline
 
@@ -152,11 +162,22 @@ export function runFormationScan(
       : GROUP_FORMATION_COMPAT_MIN;
     const startingCohesion = clamp01(GROUP_COHESION_START_BASE + (meanCompat - 0.5) * 0.2);
 
+    // THR-74: attribute the company to Draw Together when any admitted member gathered
+    // here under an active convergence pull. This is the writer for the `draw_together`
+    // cause the trace/name generator already accept — the divine nudge (graphOpExecutor
+    // `draw_together`) stamped `convergePullUntilTick`, and the pulled mortals colocating
+    // here is the outcome that closes the loop.
+    const cause: CreateGroupInput['cause'] = admitted.some(
+      m => isUnderConvergencePull(m, state.tick),
+    )
+      ? 'draw_together'
+      : 'systemic';
+
     const created = createGroup(state, {
       members: admitted,
       leaderId: anchor.id,
       locationId: locId,
-      cause: 'systemic',
+      cause,
       groupType: 'party',
       startingCohesion,
     });

@@ -69,6 +69,17 @@ export const MILESTONE_SOURCE_BEAT_ID = 'beat.milestone.the_wellspring_flows';
 export const MILESTONE_COMPANY_BEAT_ID = 'beat.milestone.the_first_company';
 
 /**
+ * The gathering-bonds milestone beat id (THR-74). Fires once, the first time the
+ * ascendant threads at least {@link DRAW_TOGETHER_MIN_THREADED_FOR_UNLOCK} living
+ * mortals — the moment the player has raw material for a company and "draw them
+ * together" first has meaning. Grants `company.draw_together`. Distinct from the
+ * first-company milestone: this unlocks the *formation tool* before any company
+ * exists, so a player can gather their first band deliberately rather than waiting
+ * on the systemic roll. Deduped through `AscendantProperties.milestoneBeatsFired`.
+ */
+export const MILESTONE_GATHERING_BEAT_ID = 'beat.milestone.the_gathering_bonds';
+
+/**
  * Deterministic Deepening beat id for a reach. Slice 2 authors the matching
  * `UnifiedActionTemplate` content per reach (plan §4.1); Slice 1 enqueues by this id.
  */

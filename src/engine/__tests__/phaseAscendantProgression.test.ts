@@ -7,7 +7,7 @@ import {
 } from '../phaseAscendantProgression';
 import { computeCapability, computeTier } from '../domainCapability';
 import { createInitialAscendantBeatState } from '../ascendantBeat';
-import { deepeningBeatIdForReach, MILESTONE_COMPANY_BEAT_ID } from '../../data/player-progression';
+import { deepeningBeatIdForReach, MILESTONE_COMPANY_BEAT_ID, MILESTONE_GATHERING_BEAT_ID } from '../../data/player-progression';
 import type { GameState } from '../../types/gameState';
 import type { AscendantBeatState, PendingBeat } from '../../types/ascendantBeat';
 import type { ReachDomain } from '../../types/traits';
@@ -166,6 +166,47 @@ describe('phaseAscendantProgression — company milestone', () => {
     const state = progressionState(10, { domainCapabilities: { iron: 8, gold: 3 } });
     phaseAscendantProgression(state);
     addCompany(state, true);
+    phaseAscendantProgression(state); // fires + records in milestoneBeatsFired
+
+    const again = phaseAscendantProgression(state);
+    expect(again.ascendantBeats).toBeUndefined();
+  });
+});
+
+describe('phaseAscendantProgression — gathering-bonds milestone (Draw Together, THR-74)', () => {
+  /** Thread `count` living individuals to the ascendant (no company). */
+  function addThreadedMortals(state: GameState, count: number): void {
+    const g = state.graph;
+    for (let i = 0; i < count; i++) {
+      g.addNode({ id: `tm-${i}`, type: 'actor', name: `Mortal ${i}`, properties: { actorType: 'individual' } });
+      g.addEdge({ id: `e.t${i}`, source: 'asc-1', target: `tm-${i}`, type: 'thread', properties: {} });
+    }
+  }
+
+  it('enqueues the gathering milestone once two living mortals are threaded', () => {
+    const state = progressionState(10, { domainCapabilities: { iron: 8, gold: 3 } });
+    phaseAscendantProgression(state); // seeding tick
+    addThreadedMortals(state, 2);
+
+    const result = phaseAscendantProgression(state);
+    expect(result.ascendantBeats?.pending?.beatId).toBe(MILESTONE_GATHERING_BEAT_ID);
+    expect(result.ascendantBeats?.pending?.kind).toBe('milestone');
+    expect(result.ascendantBeats?.pending?.boundNodeIds).toEqual(['asc-1']);
+  });
+
+  it('does not enqueue with only one threaded mortal', () => {
+    const state = progressionState(10, { domainCapabilities: { iron: 8, gold: 3 } });
+    phaseAscendantProgression(state);
+    addThreadedMortals(state, 1);
+
+    const result = phaseAscendantProgression(state);
+    expect(result.ascendantBeats).toBeUndefined();
+  });
+
+  it('fires at most once — a second run does not re-enqueue', () => {
+    const state = progressionState(10, { domainCapabilities: { iron: 8, gold: 3 } });
+    phaseAscendantProgression(state);
+    addThreadedMortals(state, 2);
     phaseAscendantProgression(state); // fires + records in milestoneBeatsFired
 
     const again = phaseAscendantProgression(state);

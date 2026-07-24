@@ -51,6 +51,18 @@ describe('reportUnreachableActions', () => {
     expect(entries.some((e) => e.id === 'company.bless')).toBe(false);
   });
 
+  it('Draw Together (company.draw_together) is beat-granted, not orphaned (THR-74)', () => {
+    // company.draw_together ships with actorAffinities: ['ascendant']; it is reachable only
+    // via the gathering-bonds milestone beat (beat.milestone.the_gathering_bonds). Confirm
+    // both the grant and that the orphan report therefore excludes it.
+    const template = UNIFIED_ACTION_TEMPLATES.find((t) => t.id === 'company.draw_together');
+    expect(template).toBeDefined();
+    expect(template?.actorAffinities).toContain('ascendant');
+    expect(collectGrantedActionIds()).toContain('company.draw_together');
+    const { entries } = reportUnreachableActions();
+    expect(entries.some((e) => e.id === 'company.draw_together')).toBe(false);
+  });
+
   it('includes an ungranted, non-starter player-castable template', () => {
     // loc.fortify ships with actorAffinities: ['ascendant'], is not a starter, and is
     // not granted by any beat — the canonical residual orphan (THR-659 problem statement).

@@ -99,7 +99,8 @@ export type GraphOpType =
   | 'reveal_vein'    // THR-618 P4: surface/boost a terrain-appropriate non-staple deposit at the target location
   | 'guide_caravan'  // THR-618 P4: boost + protect every trade route touching the target settlement
   | 'sour_mine'      // THR-618 P4: drain every non-staple deposit at the target location (inverse of reveal_vein)
-  | 'bless_company'; // THR-74 (Bless this Company): boost a company's cohesion and open a dispute-suppression window (consumed by groupCohesion/groupDissolution/groupMovement via isGroupBlessed)
+  | 'bless_company'  // THR-74 (Bless this Company): boost a company's cohesion and open a dispute-suppression window (consumed by groupCohesion/groupDissolution/groupMovement via isGroupBlessed)
+  | 'draw_together'; // THR-74 (Draw Together): stamp a convergence pull on the anchor + nearby scattered threaded mortals so their own movement bends toward gathering (consumed by encounterScoring.computeConvergenceBonus + groupFormation cause detection)
 
 /**
  * Payload for the apply_influence GraphOp.
