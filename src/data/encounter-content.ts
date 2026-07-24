@@ -129,6 +129,16 @@ type EncounterEntry = {
   favorGeneration?: { onSuccess: boolean; magnitudeRange: [number, number]; context: string };
   /** THR-724: births a `knows_secret_of` edge on success (see secretsFromResolution.ts). */
   secretDiscovery?: { onSuccess: boolean; sourceName: import('../types/encounter').SecretDiscoverySource };
+  /**
+   * THR-74: overrides the converter's default `actorAffinities: ['individual']`.
+   * `['group']` (no `'individual'`) makes the template party-EXCLUSIVE — only a
+   * company draws it, gated on `minGroupMembers` living members in
+   * `generateUnifiedCandidates`. Absent for the ~76 individual-actor archetypes,
+   * which keep the default.
+   */
+  actorAffinities?: readonly import('../types/graph').ActorType[];
+  /** THR-74: minimum living company members required to draw a group-exclusive template. */
+  minGroupMembers?: number;
   steps: ReadonlyArray<{
     id?: string;
     name?: string;
@@ -216,7 +226,12 @@ function toUnifiedTemplate(e: EncounterEntry): UnifiedActionTemplate {
       };
     }),
     apCost: 1,
-    actorAffinities: ['individual'],
+    // THR-74: party-exclusive delves author `['group']` explicitly; every other
+    // archetype keeps the individual-actor default. Group-swept templates (those
+    // carrying both `'individual'` and `'group'`) are produced downstream by
+    // `withGroupAffinity` in unified-action-templates.ts, not here.
+    actorAffinities: e.actorAffinities ?? ['individual'],
+    minGroupMembers: e.minGroupMembers,
     locationSubtypes: [
       ...e.locationTypes,
       ...(e.sublocationTypes ?? []),
@@ -10247,6 +10262,225 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         onFailure: {
           narrative: 'The fisher finds a flaw {actor} missed. Payment is {adj} docked. Fair enough.',
           reputationDelta: -0.08,
+        },
+      },
+    ],
+  },
+
+  // ─── Party-exclusive delves (THR-74 PR 2b) ──────────────────────
+  // Group-EXCLUSIVE content: `actorAffinities: ['group']` (no 'individual') +
+  // `minGroupMembers: 2`. Unreachable to solo agents by construction — only a
+  // company fielding ≥2 living members draws them (generateUnifiedCandidates
+  // group gate, THR-74 reachability seam). Physical-challenge shaped (iron/stone
+  // qualifying, shadow supporting; no heart/gold/star step), so best-member
+  // substitution spotlights a different companion on each step: {actor} is the
+  // acting member for that step while the others back them.
+  {
+    id: 'encounter.sunken_vault',
+    name: 'The Sunken Vault',
+    locationTypes: ['ruins', 'ruined_tower', 'ruined_city', 'mining', 'unexplored_poi'],
+    sublocationTypes: ['sublocation-type.dungeon'],
+    reachPrimary: 'iron',
+    reachSecondary: 'stone',
+    encounterType: 'explore',
+    threatRating: 'moderate',
+    intrinsicTier: 'shaping',
+    actorAffinities: ['group'],
+    minGroupMembers: 2,
+    motivations: ['courage_prudence', 'loyalty_ambition'],
+    steps: [
+      {
+        id: 'sunken_vault.door',
+        name: 'The Sealed Door',
+        reach: 'iron',
+        difficulty: MODERATE_DIFFICULTY_BASE,
+        duration: 1,
+        narrative: 'A slab of black stone bars the vault, swollen shut by centuries of flood. It will not yield to one pair of hands. {actor} sets their shoulder to it while the others find their grip.',
+        onSuccess: {
+          narrative: '{actor} braces and the company heaves as one; the slab grinds inward on a gasp of stale air.',
+          reputationDelta: 0.05,
+        },
+        onFailure: {
+          narrative: 'The slab holds. {actor} slips on the wet floor and the company loses the grip they had won, breath spent for nothing.',
+          reputationDelta: -0.02,
+        },
+      },
+      {
+        id: 'sunken_vault.channels',
+        name: 'The Drowned Channels',
+        reach: 'shadow',
+        difficulty: MODERATE_DIFFICULTY_BASE + MODERATE_DIFFICULTY_STEP,
+        duration: 2,
+        narrative: 'Beyond the door the passages fork and flood, half-submerged and lightless. {actor} reads the current where the others see only black water, calling the turnings back over their shoulder.',
+        onSuccess: {
+          narrative: '{actor} finds the dry line through the maze, and the company wades after their voice into the vault\'s heart.',
+          reputationDelta: 0.08,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: '{actor} misreads a fork and the company backs out of a dead flooded gallery, colder and turned around.',
+          reputationDelta: -0.03,
+        },
+      },
+      {
+        id: 'sunken_vault.haul',
+        name: 'The Rising Water',
+        reach: 'stone',
+        difficulty: MODERATE_DIFFICULTY_BASE + MODERATE_DIFFICULTY_STEP * 2,
+        duration: 3,
+        narrative: 'The prize sits on a plinth as the water climbs their knees, then their waists. {actor} takes the weight and the company forms a chain to pass it back toward the light before the vault drowns them with it.',
+        onSuccess: {
+          narrative: '{actor} bears the load hand to hand up the chain, and the company breaks the surface soaked and laughing, the vault\'s treasure between them.',
+          reputationDelta: 0.15,
+          tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 0.5, condition: 0.3, bestowed_power: 0.2 },
+            tagFilters: ['#ancient'],
+          },
+        },
+        onFailure: {
+          narrative: 'The water wins. {actor} loses their footing and the company hauls each other out empty-handed, the prize left to the dark below.',
+          reputationDelta: -0.08,
+        },
+      },
+    ],
+  },
+  {
+    id: 'encounter.broken_span',
+    name: 'The Broken Span',
+    locationTypes: ['ruins', 'ruined_tower', 'mining', 'unexplored_poi', 'cavern'],
+    sublocationTypes: ['sublocation-type.dungeon'],
+    reachPrimary: 'stone',
+    reachSecondary: 'iron',
+    encounterType: 'explore',
+    threatRating: 'moderate',
+    intrinsicTier: 'shaping',
+    actorAffinities: ['group'],
+    minGroupMembers: 2,
+    motivations: ['courage_prudence', 'loyalty_ambition'],
+    steps: [
+      {
+        id: 'broken_span.anchor',
+        name: 'The Anchor',
+        reach: 'stone',
+        difficulty: MODERATE_DIFFICULTY_BASE,
+        duration: 1,
+        narrative: 'The bridge has fallen into a chasm with no bottom the light can find. {actor} drives a line into the living rock while the company tests every span of it with their weight.',
+        onSuccess: {
+          narrative: '{actor} sets the anchor true; it takes the strain of them all without a groan.',
+          reputationDelta: 0.05,
+        },
+        onFailure: {
+          narrative: 'The rock crumbles around {actor}\'s spike. The company draws back from the edge, the crossing still ahead and no purchase won.',
+          reputationDelta: -0.02,
+        },
+      },
+      {
+        id: 'broken_span.crossing',
+        name: 'The Crossing',
+        reach: 'iron',
+        difficulty: MODERATE_DIFFICULTY_BASE + MODERATE_DIFFICULTY_STEP,
+        duration: 2,
+        narrative: '{actor} goes first across the swaying line, hand over hand above the dark, the others feeding the rope and watching the anchor hold.',
+        onSuccess: {
+          narrative: '{actor} reaches the far ledge and turns to belay the rest; one by one the company crosses into the deep on their strength.',
+          reputationDelta: 0.08,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: '{actor} swings hard into the far wall and the company hauls them back bruised; the span is not crossed this way.',
+          reputationDelta: -0.03,
+        },
+      },
+      {
+        id: 'broken_span.rearguard',
+        name: 'The Rearguard',
+        reach: 'iron',
+        difficulty: MODERATE_DIFFICULTY_BASE + MODERATE_DIFFICULTY_STEP * 2,
+        duration: 3,
+        narrative: 'Something in the dark has smelled them cross. {actor} holds the choke at the ledge\'s mouth while the company drags their prize clear behind.',
+        onSuccess: {
+          narrative: '{actor} breaks the pursuit at the narrow place, and the company withdraws intact into open air, the deep sealed behind them.',
+          reputationDelta: 0.15,
+          tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { condition: 0.4, possession: 0.4, bestowed_power: 0.2 },
+            tagFilters: ['#ancient'],
+          },
+        },
+        onFailure: {
+          narrative: 'The choke gives. {actor} is overrun and the company scatters for the light, leaving more behind than they carried out.',
+          reputationDelta: -0.08,
+        },
+      },
+    ],
+  },
+  {
+    id: 'encounter.hollow_watch',
+    name: 'The Hollow Watch',
+    locationTypes: ['ruins', 'ruined_city', 'mining', 'fort', 'unexplored_poi'],
+    sublocationTypes: ['sublocation-type.dungeon', 'sublocation-type.barracks'],
+    reachPrimary: 'iron',
+    reachSecondary: 'stone',
+    encounterType: 'explore',
+    threatRating: 'hard',
+    intrinsicTier: 'shaping',
+    actorAffinities: ['group'],
+    minGroupMembers: 2,
+    motivations: ['courage_prudence', 'loyalty_ambition'],
+    steps: [
+      {
+        id: 'hollow_watch.breach',
+        name: 'The Breach',
+        reach: 'iron',
+        difficulty: HARD_DIFFICULTY_BASE,
+        duration: 2,
+        narrative: 'The warren has grown up into the ruin\'s bones, and what nests there must be cleared before it spreads. {actor} takes the first dark mouth of it while the company packs in close behind their back.',
+        onSuccess: {
+          narrative: '{actor} carries the threshold and the company floods the breach behind them, driving the nesting things back off their own ground.',
+          reputationDelta: 0.05,
+        },
+        onFailure: {
+          narrative: 'The breach turns into a killing box. {actor} is forced back onto the company and they give up the mouth of it, bloodied.',
+          reputationDelta: -0.03,
+        },
+      },
+      {
+        id: 'hollow_watch.line',
+        name: 'The Line',
+        reach: 'stone',
+        difficulty: HARD_DIFFICULTY_BASE + HARD_DIFFICULTY_STEP,
+        duration: 3,
+        narrative: 'Deeper in, the warren comes for them from every gallery at once. {actor} anchors the line in a chamber they can hold while the others fight shoulder to shoulder around them.',
+        onSuccess: {
+          narrative: '{actor} will not be moved, and the company holds the chamber until the tide of them breaks and thins.',
+          reputationDelta: 0.08,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: 'The line bends. {actor} is cut from the others for a heartbeat too long, and the company gives ground it will have to win twice.',
+          reputationDelta: -0.04,
+        },
+      },
+      {
+        id: 'hollow_watch.collapse',
+        name: 'The Collapse',
+        reach: 'iron',
+        difficulty: HARD_DIFFICULTY_BASE + HARD_DIFFICULTY_STEP * 2,
+        duration: 3,
+        narrative: 'One deep gallery holds the heart of the warren. {actor} sets the last props to fall while the company buys the moments it takes, everyone counting the same breaths.',
+        onSuccess: {
+          narrative: '{actor} brings the gallery down on the nest and the company runs out ahead of the dust, the hollow watch finally silent behind them.',
+          reputationDelta: 0.15,
+          tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { condition: 0.4, bestowed_power: 0.35, possession: 0.25 },
+            tagFilters: ['#ancient'],
+          },
+        },
+        onFailure: {
+          narrative: 'The collapse comes early. {actor} barely clears the fall and the company counts heads in the dark outside, not liking the number.',
+          reputationDelta: -0.1,
         },
       },
     ],
