@@ -39,6 +39,7 @@
 import type { BeatDefinition } from '../types/ascendantBeat';
 import {
   MILESTONE_SOURCE_BEAT_ID,
+  MILESTONE_COMPANY_BEAT_ID,
 } from './player-progression';
 import type { SpineBeatPresentation } from './ascendant-beat-content';
 
@@ -73,6 +74,18 @@ export const ASCENDANT_MILESTONE_BEATS: readonly BeatDefinition[] = [
       'loc.reveal_vein', 'loc.guide_caravan', 'loc.sour_mine',
     ],
   },
+  {
+    // THR-74: the company milestone. Enqueued by `phaseAscendantProgression` the first
+    // time a threaded company exists — the moment loose bonded mortals gather into a
+    // band. `identity.sphere: 'spirit'` matches `company.bless`'s sphereAffinity, so the
+    // beat and its granted card share a register. `trigger` is `{ kind: 'turn' }` so a
+    // `__DEBUG.fireBeat` force-offer is unconditional, like the source milestone.
+    beatId: MILESTONE_COMPANY_BEAT_ID,
+    kind: 'milestone',
+    trigger: { kind: 'turn' },
+    identity: { reach: 'heart', sphere: 'spirit' },
+    grantsActionIds: ['company.bless'],
+  },
 ];
 
 /** Look a milestone beat up by id. Null when the id is not a milestone beat. */
@@ -94,6 +107,13 @@ export const MILESTONE_BEAT_PRESENTATION: Readonly<Record<string, SpineBeatPrese
       'The places you took have stopped merely belonging to you and started paying you back. Pilgrims wear a path to them; keepers argue over who tends them; the roads between them are busier than the roads around them. A god who holds ground can lean on the ground. A god whose ground is wanted can lean on everyone who wants it — and there is a square, in some town below, that has been waiting for you to notice what it could be.',
     cta: 'Receive',
   },
+  [MILESTONE_COMPANY_BEAT_ID]: {
+    eyebrow: 'A Company',
+    title: 'The Bonds You Followed Have Gathered',
+    prose:
+      'Somewhere on the road below, mortals you have watched found each other and chose to travel as one. They share a fire now, and a name, and the small quarrels of people who have thrown their lots together. A band is a fragile thing — one bitter league can scatter it — but it is also a thing a god can bless, and a blessing on a company is a blessing on every road they will walk while it holds.',
+    cta: 'Receive',
+  },
 };
 
 /**
@@ -104,6 +124,9 @@ export const MILESTONE_BEAT_PRESENTATION: Readonly<Record<string, SpineBeatPrese
 export function milestoneChronicleProse(beatId: string): string {
   if (beatId === MILESTONE_SOURCE_BEAT_ID) {
     return 'Your wellsprings came into their own. What you had only held, you now draw upon — and the world began to trade on the strength of it.';
+  }
+  if (beatId === MILESTONE_COMPANY_BEAT_ID) {
+    return 'The mortals you followed gathered into a company and took to the road as one. What binds them is yours to steady now, for as long as the band holds together.';
   }
   // Fail-soft (NFP #4): an un-authored milestone still writes an honest line rather
   // than crashing the phase or printing an id at the player.

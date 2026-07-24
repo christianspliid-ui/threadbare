@@ -40,11 +40,13 @@ import {
   MILESTONE_SOURCES_FOR_BEAT,
   MILESTONE_FLOWERING_FOR_BEAT,
   MILESTONE_SOURCE_BEAT_ID,
+  MILESTONE_COMPANY_BEAT_ID,
   deepeningBeatIdForReach,
 } from '../data/player-progression';
 import { deepeningChronicleProse } from '../data/ascendant-deepening-beats';
 import { milestoneChronicleProse } from '../data/ascendant-milestone-beats';
 import { countControlledSources } from './essenceSources';
+import { getAllGroups, isGroupThreaded } from './groups/groupQueries';
 
 type EmitInput = Parameters<typeof emitTrace>[0];
 
@@ -236,6 +238,51 @@ export function phaseAscendantProgression(state: GameState): Partial<GameState> 
         tier: 'chronicle',
         title: 'A Wellspring',
         prose: milestoneChronicleProse(MILESTONE_SOURCE_BEAT_ID),
+        promptContext: {
+          actors: [ascId],
+          location: '',
+          sphere: primarySphere,
+          mood: 'reverent',
+        },
+        tick: turn,
+      });
+    }
+  }
+
+  // THR-74: the company milestone — the first threaded company gathers on the road.
+  // Same one-per-tick discipline as the source milestone above: gated on `!pending`, so a
+  // Deepening or the source milestone wins the slot and this re-detects next tick (the
+  // condition is a standing state, not an edge, so waiting loses nothing). The scan is
+  // cheap — a handful of company nodes — and stops entirely once the beat has fired
+  // (dedup via `milestoneBeatsFired`), so it costs nothing for the rest of the run.
+  if (canEnqueue && !pending && !firedMilestones.includes(MILESTONE_COMPANY_BEAT_ID)) {
+    const hasThreadedCompany = getAllGroups(graph).some(
+      g =>
+        (g.properties as Record<string, unknown>).groupStatus !== 'disbanded' &&
+        isGroupThreaded(graph, g.id, ascId),
+    );
+    if (hasThreadedCompany) {
+      pending = {
+        beatId: MILESTONE_COMPANY_BEAT_ID,
+        kind: 'milestone',
+        offeredTurn: turn,
+        boundNodeIds: [ascId],
+        trigger: { kind: 'turn', minTurn: turn },
+      };
+      firedMilestones.push(MILESTONE_COMPANY_BEAT_ID);
+      node.properties.milestoneBeatsFired = firedMilestones;
+      emitTrace({
+        category: 'ascendant.progression.milestone_enqueued',
+        tick: turn,
+        turn,
+        beatId: MILESTONE_COMPANY_BEAT_ID,
+        summary: `Milestone beat enqueued: ${MILESTONE_COMPANY_BEAT_ID} (first threaded company)`,
+      } as unknown as EmitInput);
+      newChronicle.push({
+        id: `milestone-${MILESTONE_COMPANY_BEAT_ID}-${turn}`,
+        tier: 'chronicle',
+        title: 'A Company',
+        prose: milestoneChronicleProse(MILESTONE_COMPANY_BEAT_ID),
         promptContext: {
           actors: [ascId],
           location: '',

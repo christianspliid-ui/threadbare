@@ -98,7 +98,8 @@ export type GraphOpType =
   | 'blight_harvest' // THR-616 P2: lower every staple resource's quantity at the target location (inverse of bless_harvest)
   | 'reveal_vein'    // THR-618 P4: surface/boost a terrain-appropriate non-staple deposit at the target location
   | 'guide_caravan'  // THR-618 P4: boost + protect every trade route touching the target settlement
-  | 'sour_mine';     // THR-618 P4: drain every non-staple deposit at the target location (inverse of reveal_vein)
+  | 'sour_mine'      // THR-618 P4: drain every non-staple deposit at the target location (inverse of reveal_vein)
+  | 'bless_company'; // THR-74 (Bless this Company): boost a company's cohesion and open a dispute-suppression window (consumed by groupCohesion/groupDissolution/groupMovement via isGroupBlessed)
 
 /**
  * Payload for the apply_influence GraphOp.

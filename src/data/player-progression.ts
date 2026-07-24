@@ -61,6 +61,14 @@ export const MILESTONE_FLOWERING_FOR_BEAT = 1;
 export const MILESTONE_SOURCE_BEAT_ID = 'beat.milestone.the_wellspring_flows';
 
 /**
+ * The company milestone beat id (THR-74). Fires once, the first time a company that
+ * carries at least one threaded mortal exists in the world — the moment the bonds the
+ * player has been following gather into a band worth naming. Grants `company.bless`.
+ * Deduped through `AscendantProperties.milestoneBeatsFired`, like the source milestone.
+ */
+export const MILESTONE_COMPANY_BEAT_ID = 'beat.milestone.the_first_company';
+
+/**
  * Deterministic Deepening beat id for a reach. Slice 2 authors the matching
  * `UnifiedActionTemplate` content per reach (plan §4.1); Slice 1 enqueues by this id.
  */

@@ -1,10 +1,11 @@
 {
   "schemaVersion": 2,
   "totals": {
-    "total": 174,
+    "total": 175,
     "byCategory": {
       "action": 67,
       "artifact": 4,
+      "company": 1,
       "divine": 19,
       "hex": 49,
       "location": 23,
@@ -15,24 +16,24 @@
       "gold": 20,
       "shadow": 22,
       "veil": 22,
-      "heart": 25,
+      "heart": 26,
       "eye": 29,
       "stone": 10,
       "star": 33,
       "life": 1
     },
     "byBucket": {
-      "unlockable-generic": 171,
+      "unlockable-generic": 172,
       "generic": 3
     },
     "byEffectSource": {
-      "template-ops": 107,
+      "template-ops": 108,
       "control-spec": 17,
       "engine-bridge": 44,
       "none": 2,
       "aftermath-only": 4
     },
-    "beatGranted": 25,
+    "beatGranted": 26,
     "starters": 0,
     "unauthoredEffects": 0
   },
@@ -2015,6 +2016,37 @@
       "bucketDeclared": false,
       "description": "Harmonizes an artifact's magical signature with a specific divine sphere, aligning its latent power to a chosen domain. The attuned artifact responds more readily to sphere-aligned practitioners and enhances relevant capabilities. Misalignment causes the artifact to resist use by those of opposing spheres.",
       "technicalEffect": "Appends the ascendant's primary-sphere positive passive (the canonical SPHERE_EFFECT_TABLE effect — RNG-free) to the artifact's effects[] and stamps attunedSphere. Persistent; consumed by the effect walker, so whoever holds the artifact gains the sphere-aligned reach bonus.",
+      "effectSource": "template-ops"
+    },
+    {
+      "id": "company.bless",
+      "name": "Bless this Company",
+      "spellName": "Blessing of the Bound Road",
+      "category": "company",
+      "reach": "heart",
+      "sphereAffinity": "spirit",
+      "crudType": "update",
+      "scale": "local",
+      "rarityTier": 2,
+      "rarityName": "Storied",
+      "intrinsicTier": "shaping",
+      "apCost": 1,
+      "essenceCost": 4,
+      "durationMode": "instant",
+      "hasControlSpec": false,
+      "targetCategories": [
+        "actor"
+      ],
+      "targetSubtypes": [
+        "group"
+      ],
+      "requiresReach": null,
+      "starter": false,
+      "beatGranted": true,
+      "bucket": "unlockable-generic",
+      "bucketDeclared": true,
+      "description": "Lays a quiet grace over a company of travelling mortals, drawing their frayed loyalties back toward one another. For a while the small resentments that pull a band apart lose their teeth — a hard road that would have scattered them is one they walk together instead.",
+      "technicalEffect": "Applies an immediate +BLESS_COMPANY_COHESION_DELTA cohesion boost to the target company and opens a dispute-suppression window (blessedUntilTick = tick + BLESS_COMPANY_DURATION_TICKS). While the window is open, isGroupBlessed suppresses negative dissent (groupCohesion), fray-driven dissolution (groupDissolution), and movement dissent (groupMovement). Fires the bless_company graph-op; fail-soft on a non-company target (armies share actorType:group).",
       "effectSource": "template-ops"
     },
     {

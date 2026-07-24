@@ -545,6 +545,11 @@ export const ASCENDANT_ACTION_BUCKETS: Readonly<Record<string, ActionBucketEntry
   'loc.reveal_vein': { bucket: 'unlockable-generic' },
   'loc.guide_caravan': { bucket: 'unlockable-generic' },
   'loc.sour_mine': { bucket: 'unlockable-generic' },
+  // THR-74: Bless this Company, granted by the company milestone beat
+  // (`beat.milestone.the_first_company`) the first time a threaded company exists.
+  // A breadth card — `reach: 'heart'` is its cosmic-energy axis, not a `requiresReach`
+  // gate — so it surfaces for every run once unlocked, like the economic verbs above.
+  'company.bless': { bucket: 'unlockable-generic' },
   // THR-724: the two secrets verbs, granted together by `beat.pool.invest.the_unveiled_eye`.
   // `reach: 'eye'` / `reach: 'shadow'` are their cosmic-energy axes, not `requiresReach`
   // gates — see the grant note on the beat for why splitting them would be wrong.
