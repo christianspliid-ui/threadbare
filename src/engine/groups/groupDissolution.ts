@@ -19,6 +19,7 @@ import {
   getGroupCohesion,
   isAgentGone,
   isGroupBlessed,
+  isGroupThreaded,
   type DissolutionReason,
 } from './groupQueries';
 import { reconcileLostMembers, refreshRoster } from './groupCohesion';
@@ -33,6 +34,12 @@ export interface DissolutionOutcome {
   reason: DissolutionReason;
   finalCohesion: number;
   ticksActive: number;
+  /**
+   * Whether the ascendant threaded a member — captured here, before the
+   * membership edges are closed, so `phaseGroups` can decide whether to tell the
+   * authored Parting moment (threaded) or the silent systemic line.
+   */
+  threaded: boolean;
 }
 
 /** What sub-step 1 did for one company. */
@@ -84,8 +91,10 @@ export function runGroupUpkeep(
   }
 
   if (reason) {
+    // Read threading before dissolveGroup closes the membership edges.
+    const threaded = isGroupThreaded(graph, group.id, state.ascendantId);
     dissolveGroup(state, group, reason);
-    return { ...result, dissolved: { groupId: group.id, reason, finalCohesion: cohesion, ticksActive } };
+    return { ...result, dissolved: { groupId: group.id, reason, finalCohesion: cohesion, ticksActive, threaded } };
   }
 
   // 3. Individual leave decisions — only evaluated once the company is fraying,

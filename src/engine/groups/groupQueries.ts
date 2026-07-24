@@ -223,6 +223,30 @@ export function getCohesionState(cohesion: number): CohesionState {
   return 'breaking';
 }
 
+/**
+ * True when the ascendant threads at least one live member (or the leader) of a
+ * company — i.e. the company is "yours" in the player's eyes.
+ *
+ * This is the gate for **The Parting** (THR-74): a threaded company's dissolution
+ * is told as an authored moment, an untethered one's end stays a silent systemic
+ * line. Must be read *before* dissolution closes the `member_of` edges, since it
+ * relies on live membership. Fail-soft: no ascendant → not threaded.
+ */
+export function isGroupThreaded(
+  graph: WorldGraph,
+  groupId: string,
+  ascendantId: string | undefined,
+): boolean {
+  if (!ascendantId) return false;
+  const candidates = getGroupMembers(graph, groupId).map(m => m.id);
+  const leader = getGroupLeader(graph, groupId);
+  if (leader) candidates.push(leader.id);
+  for (const id of candidates) {
+    if (graph.getIncomingEdges(id, 'thread').some(e => e.source === ascendantId)) return true;
+  }
+  return false;
+}
+
 /** True while a Bless this Company suppression window is open. */
 export function isGroupBlessed(node: GraphNode | undefined, tick: number): boolean {
   const until = (node?.properties as Record<string, unknown> | undefined)?.blessedUntilTick;
