@@ -97,5 +97,5 @@ describe('evaluateIdentityMilestones', () => {
     // Triggered flags did not change (already-triggered stay true, non-triggered stay false)
     const finalTriggered = state.doomIdentityMatrix!.identityMilestones.map((m) => m.triggered);
     expect(finalTriggered).toEqual(triggeredSnapshot);
-  });
+  }, MILESTONE_SMOKE_TIMEOUT_MS);
 });
