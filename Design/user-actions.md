@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-07-24 (refresh at 09:39 local, prompted by Christian in chat — **zero Christian-only standing asks: the four Cowork disable-clicks are done, closing the Pure Claude Code Migration.** The one remaining open item below is agent-doable, low stakes. Home tree current and clean (on `main`, 0/0 with the server, no tracked edits). Queue **empty — 0 ready, 0 in dev**: **THR-726 (world-minted ambitions) shipped Done at 06:57 local** (PR #782), the last item on the board. The executor lane idles until a design session promotes new work; the nearest candidates are THR-718 (items move capability tiers, High, user verdict already recorded) and THR-719 (item on-use triggers), both in Todo. Reaper healthy (08:40 run: 22 worktrees / 31 branches / 1 stash / 0 needs-disposition). Last full rebuild was the 2026-06-23 retro)
+**Last updated:** 2026-07-24 (refresh at 11:16 local by the hourly `keep-work-flowing-cc` CC task — **one standing ask: item 1, the home tree is frozen** at its ~07:15 state on `main`, 17 behind the server, because a tracked one-line permissions edit to `.claude/settings.local.json` blocks the auto-sync; two commands fix it, or any interactive session can. Queue **healthy — 10 ready, 1 in dev**: the morning design lane refilled yesterday's empty board (top by priority: THR-721 ambition visibility, THR-718 items-move-capability-tiers, both High, both carrying recorded user verdicts), and the executor is mid-flight on THR-74 (Party Formation & Group Mechanics), reopened after an overnight phantom auto-close (hardening ticket THR-738 queued). Reaper healthy (10:40 run: 25 worktrees / 35 branches / 1 stash / 0 needs-disposition). Last full rebuild was the 2026-06-23 retro)
 **Owner of items below:** Christian. Everyone else's blockers go in Linear or `Docs/impediments.md`.
 **Refresh cadence:** The hourly `keep-work-flowing-cc` scheduled task keeps this current (prunes resolved items, adds newly-surfaced Christian-owned ones); the `retrospective` skill still does the deep periodic rebuild. This is the slow-moving standing-asks list — the fresh-this-hour view is [`Design/briefing.md`](briefing.md).
 
@@ -19,9 +19,25 @@ When an item resolves: delete it from this file, mark the corresponding impedime
 
 ---
 
-## 1. Land the last rescued plan doc onto `main` — near-resolved · WILL NOT SELF-HEAL
+## 1. Unfreeze the home tree — two commands · WILL NOT SELF-HEAL · fourth occurrence of this class
 
-**Status:** Open (minor) · **largely resolved 2026-07-18 13:29.** The spec that actually mattered is now on `origin/main`: `Docs/plans/2026-07-17-pure-claude-code-migration.md` **and** its brainstorm companion are both landed, so the six migration tickets that reference it can read it from `main`. Only **one** rescued doc is still stranded on the `rescue/2026-07-17-detached-plans` branch — `Docs/plans/2026-07-05-entity-visual-header.md` — and its feature (THR-637, Entity Visual Header) already **shipped** (PR #564), so the doc is now a historical artifact, not a live dependency. Re-verified still stranded at the 2026-07-24 07:09 run (`git cat-file -e origin/main:Docs/plans/2026-07-05-entity-visual-header.md` → not present); note the rescue branch exists **only as a local branch on this machine** — it was never pushed to origin, so the doc is one-machine-only (low stakes: the feature it specified already shipped). This item is a candidate to prune at the next full retro.
+**Status:** Open (new at the 2026-07-24 11:16 run). The home tree sits on `main` but **17 commits behind the server and climbing**, because a tracked one-line edit to `.claude/settings.local.json` (a `save_issue` tool-permission grant, added by a session ~07:45) makes `threadbare-autosync.ps1` refuse to fast-forward a dirty tree. Everything merged after ~07:15 — the morning's six plan docs, the refilled queue's specs, two briefing refreshes — is on the server but not in this folder, so an interactive session started here begins on stale state (the exact condition the THR-391 freshness guard exists to catch). **Nothing is at risk:** zero unique commits stranded (`origin/main..HEAD` = 0), the edit is a permissions grant, and the one untracked file (`Docs/ops/backlog-grooming-2026-07-24.md`) was verified byte-identical to the copy already on `origin/main`.
+**Source:** THR-672 containment gap — the self-heal only covers a *strictly clean* detached tree, so tracked dirt always needs hands. Prior occurrences: 07-21 (×2), 07-23; the "file the general ticket" note from the 07-23 close is still standing for Friday's retro (nearest ticket THR-678 covers only the untracked-file variant, in Idea).
+
+**Fix** (terminal in the project folder) — or ask any interactive chat session to land the grant via a small PR instead:
+```
+git stash push -m settings-grant-backup .claude/settings.local.json
+git pull --ff-only origin main
+```
+If the pull complains about the untracked `Docs/ops/backlog-grooming-2026-07-24.md`, delete that file first — it is already on the server, verified identical.
+
+**What breaks if not done.** Christian's interactive sessions and any home-tree browser verification run against a tree frozen at ~07:15; the gap widens with every merge.
+
+---
+
+## 2. Land the last rescued plan doc onto `main` — near-resolved · WILL NOT SELF-HEAL
+
+**Status:** Open (minor) · **largely resolved 2026-07-18 13:29.** The spec that actually mattered is now on `origin/main`: `Docs/plans/2026-07-17-pure-claude-code-migration.md` **and** its brainstorm companion are both landed, so the six migration tickets that reference it can read it from `main`. Only **one** rescued doc is still stranded on the `rescue/2026-07-17-detached-plans` branch — `Docs/plans/2026-07-05-entity-visual-header.md` — and its feature (THR-637, Entity Visual Header) already **shipped** (PR #564), so the doc is now a historical artifact, not a live dependency. Re-verified still stranded at the 2026-07-24 11:16 run (`git cat-file -e origin/main:Docs/plans/2026-07-05-entity-visual-header.md` → not present); note the rescue branch exists **only as a local branch on this machine** — it was never pushed to origin, so the doc is one-machine-only (low stakes: the feature it specified already shipped). This item is a candidate to prune at the next full retro.
 **Source:** 2026-06-23 retro + 2026-07-18 `keep-work-flowing-cc` freshness pings (retro E1); rescue verified complete 2026-07-18 11:25; migration spec confirmed on `origin/main` 2026-07-18 13:29
 
 **Fix — a design session can do this; it is not a Christian-only task.**
