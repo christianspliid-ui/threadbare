@@ -98,6 +98,8 @@ const AUDIT_EVIDENCE =
 const ATTACHMENTS = 'Attachments, Items & Possessions';
 const AMBITIONS = 'Ambitions & Initiatives';
 const ENCOUNTERS = 'Encounters & Dilemmas';
+const COMPANIES = 'Companies & Group Travel';
+const FACTIONS = 'Factions & Succession';
 
 export const CONTRACTS: readonly Contract[] = [
   // ── Attachments → outbound ────────────────────────────────────────────────
@@ -501,6 +503,93 @@ export const CONTRACTS: readonly Contract[] = [
     mechanism: { kind: 'event', symbols: ['band'] },
     writeSites: ['src/engine/playerReceipts.ts'],
     readSites: ['src/engine/notificationRouter.ts'],
+  },
+
+  // ── Companies & Group Travel (THR-74) ─────────────────────────────────────
+  // Movement & Colocation and Encounters were both ⚪ UNAUDITED; these rows are
+  // their first contract entries for the surfaces this ticket touches
+  // (audit-on-touch, verified by grep at implementation time, not transcribed
+  // from the plan's intentions).
+  {
+    id: 'company-membership-excludes-faction-reads',
+    producerSystem: COMPANIES,
+    consumerSystem: FACTIONS,
+    intent:
+      'A companion of a company is not a member of a faction by that name — faction rank, allegiance display and heraldry must keep reading the faction.',
+    ulTerms: ['Company', 'Faction'],
+    mechanism: { kind: 'edge-prop', symbols: ['getFactionMembershipEdges'] },
+    // The guard itself is the producer: groupFormation mints the colliding
+    // `member_of` edge, but what every faction reader consumes is this filter.
+    writeSites: ['src/engine/graphQueries.ts'],
+    readSites: [
+      'src/engine/graphQueries.ts',
+      'src/engine/anointSuccessor.ts',
+      'src/engine/contextBuilder.ts',
+      'src/engine/notableAgendas.ts',
+      'src/engine/detailPageResolvers.ts',
+    ],
+    verifiedLive: {
+      date: '2026-07-24',
+      evidence:
+        'member_of consumer sweep (THR-74): 14 sites reading an agent\'s outgoing member_of as "their faction" now route through getFactionMembershipEdges; the remainder gate on factionDefId/reachPreferences/guildType and fail soft on a company target. Locked by src/engine/groups/__tests__/groupQueries.test.ts § "faction lookups are not confused by company membership".',
+    },
+  },
+  {
+    id: 'company-drives-member-movement',
+    producerSystem: COMPANIES,
+    consumerSystem: 'Movement & Colocation',
+    intent: 'A company travels as one — members share a destination instead of wandering off separately.',
+    ulTerms: ['Company'],
+    // `movementState` is the carrier: groupMovement writes it, phaseMovement
+    // executes it on the very next phase. Greping the carrier (not the internal
+    // helper names) is what proves the two ends are actually connected.
+    mechanism: { kind: 'node-prop', symbols: ['movementState'] },
+    writeSites: ['src/engine/groups/groupMovement.ts'],
+    readSites: ['src/engine/phaseMovement.ts', 'src/engine/movementExecution.ts'],
+    verifiedLive: {
+      date: '2026-07-24',
+      evidence:
+        'phaseGroups writes members\' MovementState and phaseMovement (next phase in runTick) executes it. 72-tick CLI smoke, seed 42 medium: "The Watch of the Nameless Road" members Nareth and Hestia both at Wolfton; "The Steadfast Sparrows" both at Shadow-shade.',
+    },
+  },
+  {
+    id: 'company-position-derives-from-leader',
+    producerSystem: COMPANIES,
+    consumerSystem: 'Movement & Colocation',
+    intent:
+      'A company has no position of its own — asking where it is means asking where its leader is, so there is never a second spatial truth to drift.',
+    ulTerms: ['Company'],
+    mechanism: { kind: 'function', symbols: ['getGroupPosition'] },
+    writeSites: ['src/engine/groups/groupQueries.ts'],
+    readSites: ['src/debug-bridge.ts', 'scripts/cli.ts'],
+    verifiedLive: {
+      date: '2026-07-24',
+      evidence:
+        'Company nodes carry no located_at edge; locked by src/engine/groups/__tests__/groupLifecycle.test.ts § "never attaches a located_at edge to the company node".',
+    },
+  },
+  {
+    id: 'company-assist-shapes-resolution',
+    producerSystem: COMPANIES,
+    consumerSystem: ENCOUNTERS,
+    intent:
+      'Companions make each other better at what they attempt — the best-suited member acts and the others assist, capped so a crowd is not an auto-win.',
+    ulTerms: ['Company', 'Group Cohesion'],
+    mechanism: { kind: 'function', symbols: ['resolveGroupStep'], module: 'src/engine/groups/groupResolution.ts' },
+    writeSites: ['src/engine/groups/groupResolution.ts'],
+    // PR 2a un-pinned this row: the call site now exists inside
+    // resolveUncontestedStep, and the eligibility sweep opens 63 shipped
+    // templates to companies so the path is actually reachable in play.
+    // `resolutionModifiers.ts` was dropped from the read sites — the plan named
+    // it as a candidate, but the hook went in at the capability/modifier
+    // computation instead, and the symbol does not appear there (impediment #206:
+    // declare the symbol that really crosses the boundary, not the intended one).
+    readSites: ['src/engine/unifiedActionResolution.ts'],
+    verifiedLive: {
+      date: '2026-07-24',
+      evidence:
+        'src/engine/groups/__tests__/groupResolutionWiring.test.ts drives resolveUncontestedStep end-to-end and asserts the payload, not just the call: a weak leader in a company resolves above his own solo capability (best-member substitution), a solo agent and a company holding a non-group-affinity template both resolve at exactly the solo capability, and the resolution.input trace carries groupId/actingMemberId/groupAssistCount/groupBonus. An emptied company falls back to the individual path without throwing.',
+    },
   },
 ];
 

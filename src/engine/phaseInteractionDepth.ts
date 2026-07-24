@@ -25,6 +25,7 @@ import { getOrCreateKnowledge } from './revelationHooks';
 import { emitTrace } from './traceBuffer';
 import type { InteractionDepthTrace } from '../types/trace';
 import { getAvatarHexPosition } from './visibility';
+import { getFactionMembershipEdges } from './graphQueries';
 
 // ─── Avatar Lookup ────────────────────────────────────────────────
 
@@ -41,7 +42,8 @@ function getAvatarId(graph: WorldGraph, ascendantId: string): string | undefined
  * Get all faction IDs the given agent belongs to (via member_of edges).
  */
 function getAgentFactionIds(graph: WorldGraph, agentId: string): Set<string> {
-  const memberEdges = graph.getOutgoingEdges(agentId, 'member_of');
+  // THR-74: faction targets only — shared company membership is not shared faction.
+  const memberEdges = getFactionMembershipEdges(graph, agentId);
   const factionIds = new Set<string>();
   for (const edge of memberEdges) {
     factionIds.add(edge.target);

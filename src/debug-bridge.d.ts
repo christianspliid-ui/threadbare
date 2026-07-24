@@ -760,6 +760,35 @@ export interface DebugBridge {
     maintenanceCost: number;
   }>;
 
+  /**
+   * THR-74 — Headless readout of companies (the group layer). Ground-truth graph
+   * read, mirroring `getArmies()`. Includes **disbanded** companies so dissolution
+   * is inspectable; filter on `groupStatus` for the live set.
+   *
+   * `cohesion` is the raw number (debug is where numbers belong); `cohesionState`
+   * is the ladder player-facing surfaces render instead.
+   */
+  getGroups: () => Promise<Array<{
+    id: string;
+    name: string;
+    groupType: string;
+    groupStatus: string;
+    cohesion: number;
+    cohesionState: 'bound' | 'holding' | 'frayed' | 'breaking';
+    leader: string | null;
+    leaderId: string | null;
+    members: Array<{ id: string; name: string; role: string }>;
+    /** Derived from the leader — companies carry no `located_at` edge of their own. */
+    position: string | null;
+    positionId: string | null;
+    destinationId: string | null;
+    blessedUntilTick: number | null;
+    formedAtTick: number | null;
+    ticksActive: number;
+    disbandedAtTick: number | null;
+    dissolutionReason: string | null;
+  }>>;
+
   /** THR-614 (war seam 3) — Headless readout of active battles/sieges. */
   getBattles: () => Array<{
     id: string;

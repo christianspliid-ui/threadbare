@@ -41,6 +41,7 @@ import type {
   NotableAgendaCompletedTrace,
   NotableRosterScanTrace,
 } from '../types/trace';
+import { getFactionMembershipEdges } from './graphQueries';
 import {
   NOTABLE_AGENDA_FAMILIES,
   getNotableAgendaFamily,
@@ -470,9 +471,10 @@ function raiseCampaignArmy(
   targetId: string,
 ): void {
   const graph = state.graph;
+  // THR-74: faction targets only — a notable's company is not a faction to campaign for.
   const factionId =
     graph.getOutgoingEdges(notableId, 'leads')[0]?.target ??
-    graph.getOutgoingEdges(notableId, 'member_of')[0]?.target;
+    getFactionMembershipEdges(graph, notableId)[0]?.target;
   if (!factionId) return;
 
   // Campaign-specific eligibility: the shipped isEligibleForArmySpawn requires
@@ -551,8 +553,9 @@ function anointDeterministicHeir(
   compositionId: string,
 ): void {
   const graph = state.graph;
+  // THR-74: faction targets only (see above).
   const factionId = graph.getOutgoingEdges(notableId, 'leads')[0]?.target
-    ?? graph.getOutgoingEdges(notableId, 'member_of')[0]?.target;
+    ?? getFactionMembershipEdges(graph, notableId)[0]?.target;
   if (!factionId) return;
   if (graph.getIncomingEdges(factionId, 'will_succeed').length > 0) return;
 

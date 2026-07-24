@@ -23,7 +23,7 @@
 
 import type { GameState, TickEvent } from '../types/gameState';
 import { getTraces } from './traceBuffer';
-import { getThreadedAgents } from './graphQueries';
+import { getThreadedAgents, getFactionMembershipEdges } from './graphQueries';
 
 // ── Significance constants ───────────────────────────────────────────────────
 
@@ -51,7 +51,8 @@ function buildThreadedAgentSet(state: GameState): Set<string> {
   for (const agent of threaded) {
     set.add(agent.id);
     // Also include the agent's faction members as "indirectly threaded"
-    const memEdges = state.graph.getOutgoingEdges(agent.id, 'member_of');
+    // THR-74: faction targets only — companions reach the set through their own thread.
+    const memEdges = getFactionMembershipEdges(state.graph, agent.id);
     for (const edge of memEdges) {
       // Check all members of the same faction
       const factionMembers = state.graph.getIncomingEdges(edge.target, 'member_of');

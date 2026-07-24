@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import type { WorldGraph } from '../../../engine/graph';
+import { getFactionMembershipEdges } from '../../../engine/graphQueries';
 import type { GraphEdge } from '../../../types/graph';
 import { SENTIMENT_POSITIVE, SENTIMENT_NEUTRAL, SENTIMENT_NEGATIVE } from '../../../data/uiColorPalette';
 
@@ -176,7 +177,8 @@ export const RelationshipGraph = React.memo(function RelationshipGraph({
   // Collect faction memberships
   const factions = useMemo(() => {
     const memberships: FactionMembership[] = [];
-    const memberEdges = graph.getOutgoingEdges(agentId, 'member_of');
+    // THR-74: faction targets only — companies are not faction memberships.
+    const memberEdges = getFactionMembershipEdges(graph, agentId);
     for (const edge of memberEdges) {
       const factionNode = graph.getNode(edge.target);
       const rank = (edge.properties?.rank as number) ?? 0;

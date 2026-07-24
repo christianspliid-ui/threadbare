@@ -1670,6 +1670,52 @@ if (import.meta.env.DEV) {
         });
     },
 
+    /**
+     * THR-74 — headless company readout. Ground-truth graph read, mirroring
+     * `getArmies()`. Includes disbanded companies: a company's afterlife is part of
+     * the record, and filtering them out here would hide the dissolution evidence.
+     *
+     * Cohesion is exposed numerically because debug is the one place numbers belong;
+     * player-facing surfaces render `cohesionState` instead.
+     */
+    getGroups: async () => {
+      const state = _gameStateProvider?.();
+      if (!state) return [];
+      const { getAllGroups, getGroupLeader, getGroupMembers, getGroupPosition, getGroupCohesion, getCohesionState } =
+        await import('./engine/groups/groupQueries');
+      const graph = state.graph;
+      const tick = state.tick ?? 0;
+      return getAllGroups(graph).map((group) => {
+        const props = group.properties as Record<string, unknown>;
+        const leader = getGroupLeader(graph, group.id);
+        const positionId = getGroupPosition(graph, group.id);
+        const cohesion = getGroupCohesion(group);
+        return {
+          id: group.id,
+          name: group.name,
+          groupType: props.groupType as string,
+          groupStatus: (props.groupStatus as string) ?? 'active',
+          cohesion,
+          cohesionState: getCohesionState(cohesion),
+          leader: leader?.name ?? null,
+          leaderId: leader?.id ?? null,
+          members: getGroupMembers(graph, group.id).map((m) => ({
+            id: m.id,
+            name: m.name,
+            role: m.id === leader?.id ? 'leader' : 'member',
+          })),
+          position: positionId ? (graph.getNode(positionId)?.name ?? positionId) : null,
+          positionId: positionId ?? null,
+          destinationId: (props.groupDestinationId as string | undefined) ?? null,
+          blessedUntilTick: (props.blessedUntilTick as number | undefined) ?? null,
+          formedAtTick: (props.formedAtTick as number | undefined) ?? null,
+          ticksActive: tick - ((props.formedAtTick as number | undefined) ?? tick),
+          disbandedAtTick: (props.disbandedAtTick as number | undefined) ?? null,
+          dissolutionReason: (props.dissolutionReason as string | undefined) ?? null,
+        };
+      });
+    },
+
     // THR-614 (war seam 3) — headless battle readout. Companion to getArmies.
     getBattles: () => {
       const state = _gameStateProvider?.();

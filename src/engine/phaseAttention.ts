@@ -40,6 +40,7 @@ import { emitTrace } from './traceBuffer';
 import type { TraceEntry } from '../types/trace';
 import { classifyChainStage, getChainProgress } from './encounterChains';
 import { agentPursuesReach } from './encounterScoring';
+import { getFactionMembershipEdges } from './graphQueries';
 
 // ─── Threat rating helpers ──────────────────────────────────────────────────
 
@@ -196,7 +197,8 @@ export function phaseAttention(
 
     // Faction thread relevance: count fellow faction members who have an ascendant thread
     let factionThreadCount = 0;
-    const memberOfEdges = state.graph.getOutgoingEdges(ua.actorId, 'member_of');
+    // THR-74: faction targets only — companions are not fellow faction members.
+    const memberOfEdges = getFactionMembershipEdges(state.graph, ua.actorId);
     if (memberOfEdges.length > 0) {
       const fellows = new Set<string>();
       for (const memberEdge of memberOfEdges) {
@@ -250,7 +252,8 @@ export function phaseAttention(
 
     // Faction thread relevance (same walk as unified path)
     let legacyFactionThreadCount = 0;
-    const legacyMemberEdges = state.graph.getOutgoingEdges(ep.actorId, 'member_of');
+    // THR-74: faction targets only (see above).
+    const legacyMemberEdges = getFactionMembershipEdges(state.graph, ep.actorId);
     if (legacyMemberEdges.length > 0) {
       const legacyFellows = new Set<string>();
       for (const memberEdge of legacyMemberEdges) {

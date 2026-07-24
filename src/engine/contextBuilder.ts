@@ -25,6 +25,7 @@ import { emitTrace } from './traceBuffer';
 import { computeCulturalTensionScore } from './culturalTension';
 import { getActorCulturalStrength } from './culturalTraits';
 import { getAvailableInsiderBeats } from './insiderBeatDetection';
+import { getFactionMembershipEdges } from './graphQueries';
 
 // ─── Internal Types ─────────────────────────────────────────────────────
 
@@ -101,7 +102,8 @@ export function harvestContext(event: NarrativeEvent, graph: WorldGraph): Harves
 
   // ─── 2. Factions via member_of (no distance limit) ──────────────────
 
-  const memberOfEdges = graph.getOutgoingEdges(event.actorId, 'member_of');
+  // THR-74: faction targets only — harvesting a company here would label it `category: 'faction'`.
+  const memberOfEdges = getFactionMembershipEdges(graph, event.actorId);
   for (const edge of memberOfEdges) {
     const node = graph.getNode(edge.target);
     if (node && node.id !== event.actorId && node.id !== event.targetId && !visited.has(node.id)) {

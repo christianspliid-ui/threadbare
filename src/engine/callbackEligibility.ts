@@ -1,5 +1,6 @@
 import type { GraphNode } from '../types/graph';
 import { WorldGraph } from './graph';
+import { getFactionMembershipEdges } from './graphQueries';
 
 const MAX_CALLBACK_CANDIDATES = 3;
 const MIN_CALLBACK_CANDIDATES = 1;
@@ -108,7 +109,8 @@ function collectEventTags(graph: WorldGraph, eventNode: GraphNode): Set<string> 
 
   for (const edge of graph.getIncomingEdges(eventNode.id, 'participated_in')) {
     tags.add(`actor:${edge.source}`);
-    for (const factionEdge of graph.getOutgoingEdges(edge.source, 'member_of')) {
+    // THR-74: faction targets only — the tag namespace is `faction:`.
+    for (const factionEdge of getFactionMembershipEdges(graph, edge.source)) {
       tags.add(`faction:${factionEdge.target}`);
     }
   }

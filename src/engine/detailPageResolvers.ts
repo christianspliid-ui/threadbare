@@ -27,6 +27,7 @@ import type {
 } from '../types/detailPage';
 import type { GraphNode } from '../types/graph';
 import type { WorldGraph } from './graph';
+import { getFactionMembershipEdges } from './graphQueries';
 import {
   getAgentEncounterHistory,
   getLocationEncounterHistory,
@@ -293,7 +294,9 @@ const recentEncountersResolver: SectionResolver = (ctx) => {
 const factionAllegiancesResolver: SectionResolver = (ctx) => {
   const actor = ctx.graph.getNode(ctx.nodeId);
   if (!actor) return null;
-  const edges = ctx.graph.getOutgoingEdges(actor.id, 'member_of');
+  // THR-74: faction targets only — the company belongs in its own Company section,
+  // not in Faction Allegiances.
+  const edges = getFactionMembershipEdges(ctx.graph, actor.id);
   if (edges.length === 0) return null;
 
   const chips: ChipDescriptor[] = [];

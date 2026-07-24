@@ -878,6 +878,14 @@ export interface UnifiedActionTemplate {
 
   // Filtering
   readonly actorAffinities: readonly ActorType[];
+  /**
+   * Minimum living company members required for this template to be eligible
+   * (THR-74). Only meaningful on templates whose `actorAffinities` include
+   * `'group'`; party-exclusive content sets it to 2+, so a lone agent — or a
+   * company whittled down below the floor — never draws it. Omit → no floor,
+   * which is the correct default for a template a solo agent may also take.
+   */
+  readonly minGroupMembers?: number;
   readonly locationSubtypes?: readonly string[];
   readonly sphereAffinity?: SphereName;
 
