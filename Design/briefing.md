@@ -1,6 +1,6 @@
 # Briefing
 
-**Generated:** 2026-07-25 00:09 local (2026-07-24 22:09 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-07-25 01:09 local (2026-07-24 23:09 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
@@ -8,7 +8,7 @@ This is your inbox. It's rewritten every hour by a Claude Code task. Standing sw
 
 **Still the one thing — same two commands as the last brief.**
 
-**1. Your local game folder is still frozen at yesterday morning's state.** The blocker is unchanged: a leftover one-line permission edit to `.claude/settings.local.json`, which the hourly sync deliberately refuses to overwrite. The gap is now 89 commits (was 84 an hour ago). The wrinkle from the last brief still stands: the weekly-retro write-up exists **only** as a draft file in your local folder (`Design/retros/retro-2026-07-24-draft.md`), so the stash step below will carry the only copy — still safe, a stash is fully recoverable, and an agent session should land that report on the server via a small PR regardless (flagged under Freshness). Run:
+**1. Your local game folder is still frozen at yesterday morning's state.** The blocker is unchanged: a leftover permission edit to `.claude/settings.local.json`, which the hourly sync deliberately refuses to overwrite (the edit has grown to three lines — two more tool grants were added by yesterday's sessions — but it's still just permissions, nothing at risk). The gap is now 94 commits (was 89 an hour ago). The wrinkle still stands: the weekly-retro write-up exists **only** as a draft file in your local folder (`Design/retros/retro-2026-07-24-draft.md`), so the stash step below carries the only copy — safe, a stash is fully recoverable, and an agent session should land that report on the server via a small PR regardless (flagged under Freshness). Run:
 
 ```
 cd C:\Users\chris\Dev\Projects\TheFantasyWorldSimulator
@@ -16,24 +16,26 @@ git stash push -u -m home-tree-recovery
 git pull --ff-only origin main
 ```
 
-Alternatively, say the word in any chat session and it can land the permission grant and the retro draft via a small PR instead.
+Alternatively, say the word in any chat session and it can land the permission grants and the retro draft via a small PR instead.
+
+*(No new doorbell sent for this — it's the same ask as the last ping, only the commit count moved.)*
 
 ## Queue
 
 **Backed up — 17 ready items, 1 in dev (both unchanged from the last brief).** Nothing is blocked, nothing is stale. Two ride at High priority: hardening the auto-close that keeps sweeping live tickets to Done (THR-738, three phantom-closes on the party ticket in one day) and making the hourly cleanup job junction-safe so it can never again empty the real `node_modules` through a link (THR-753, fresh from the retro). Sequencing note for agents, not you: the missing-field sweep (THR-736) shares files with the in-flight party work and correctly waits its turn.
 
-**The party-formation ticket (THR-74) is moving again after its reopen** — the third of the authored company-lifecycle moments merged just before midnight (see What's moving). Remaining scope: the two player actions, the rulebook group/company subsection, and the map/profile UI.
+**The party-formation ticket (THR-74) is holding steady in dev after its reopen** — no new phantom-close since the 23:03 fix, and its fourth authored piece merged just before this brief (see What's moving). Remaining scope: the rulebook group/company subsection and the map/profile UI.
 
 ## Freshness
 
-**Home tree: on `main` but 89 commits behind the server**, one tracked edit blocking the self-heal — see Needs Christian item 1. Two untracked local files: yesterday's grooming report (verified byte-identical to the server copy at earlier runs) and the weekly-retro draft (the only copy anywhere — the three retro tickets THR-753/754/755 cite a report filename that exists nowhere on the server yet; **agent work, not yours** — the next design or grooming session should commit it via a docs PR, same move as the 07-23 retro backup, PR #768).
+**Home tree: on `main` but 94 commits behind the server**, one tracked edit blocking the self-heal — see Needs Christian item 1. Two untracked local files: yesterday's grooming report (verified byte-identical to the server copy at earlier runs) and the weekly-retro draft (still the only copy anywhere — **agent work, not yours**: the next design or grooming session should commit it via a docs PR, same move as the 07-23 retro backup, PR #768).
 
-**Cleanup reaper: alive** — last run 23:40 (within the hour), tracking 24 worktrees / 32 branches / 1 stash, nothing awaiting a human decision.
+**Cleanup reaper: alive** — last run 00:40 (within the hour), tracking 24 worktrees / 32 branches / 1 stash, nothing awaiting a human decision.
 
 ## What's moving
 
-- **A company's shared history now cuts both ways (PR #813, just before midnight).** *The Shared Spoils / Old Wounds* is the third authored company-lifecycle moment — when a threaded company frays, the scene now draws on what its members actually lived through together, spoils or scars. It joins *The Parting* (dissolution) from earlier in the evening; the party ticket's engine work is landing beat by beat.
-- **Earlier tonight:** mortal ambitions became visible in the journey panel (THR-721, PR #809), and two group-mechanics designs finished grooming into the queue — *Reunite & Sunder* (THR-732) and company-vs-band conflict encounters (THR-731).
+- **You can now bless a company (PR #815, just before this brief).** *Bless this Company* is the ascendant action that touches a threaded company directly, and it arrives with a company milestone beat — the fourth authored group-lifecycle piece to land in one evening, after the fray moment (*The Shared Spoils / Old Wounds*), the dissolution moment (*The Parting*), and the reachability work that let party-exclusive encounters actually fire.
+- **THR-74 (party formation) survived the night without another phantom-close** — the 23:03 reopen is holding, and the ticket is visibly in dev with its remaining scope intact.
 - **Zero open PRs** — everything merged on green.
 
 ---
