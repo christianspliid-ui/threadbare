@@ -24,13 +24,15 @@ import { emitTrace } from '../traceBuffer';
 import { touchWorld } from '../simulationRuntime';
 import { mulberry32 } from '../../lib/prng';
 import type { GroupPhaseTrace, GroupFormedTrace, GroupDissolvedTrace } from '../../types/trace';
-import { getActiveGroups, getGroupCohesion, getCohesionState } from './groupQueries';
+import { getActiveGroups, getGroupCohesion, getCohesionState, isGroupThreaded } from './groupQueries';
+import type { CohesionState } from './groupQueries';
 import { runGroupUpkeep } from './groupDissolution';
 import { runGroupMovement } from './groupMovement';
 import { runFormationScan } from './groupFormation';
 import { applyCohesionEvent } from './groupCohesion';
 import { composePartingMoment } from './groupParting';
-import { GROUP_PARTING_EVENT_SIGNIFICANCE } from '../../data/group-constants';
+import { composeFrayMoment, crossedIntoFray } from './groupFray';
+import { GROUP_PARTING_EVENT_SIGNIFICANCE, GROUP_FRAY_EVENT_SIGNIFICANCE } from '../../data/group-constants';
 
 /** Significance of company chronicle events in the event feed. */
 const GROUP_EVENT_SIGNIFICANCE = 0.55;
@@ -60,12 +62,14 @@ export function phaseGroups(state: GameState, runtime?: SimulationRuntime): Part
   const leaveRng = mulberry32(state.seed + state.tick * 61);
   const formationRng = mulberry32(state.seed + state.tick * 67);
   const partingRng = mulberry32(state.seed + state.tick * 71);
+  const frayRng = mulberry32(state.seed + state.tick * 73);
 
   let dissents = 0;
   let cohesionDeltasApplied = 0;
   let leaveDecisions = 0;
   let movesExecuted = 0;
   let formationCandidateSets = 0;
+  let frayMomentsFired = 0;
   let mutated = false;
 
   const active = getActiveGroups(state.graph);
@@ -148,6 +152,45 @@ export function phaseGroups(state: GameState, runtime?: SimulationRuntime): Part
     }
   }
 
+  // ── Sub-step 3.5: fray moment ──
+  // A threaded company that crosses below the fray line this tick earns an authored
+  // moment — The Shared Spoils or Old Wounds — the sibling of The Parting. An
+  // untethered company's fray stays silent. Runs after movement so a dissent that
+  // pushed the company over the edge is already counted. The stored band is seeded
+  // silently on first sight, so the trigger is the transition, never the state.
+  for (const group of survivors) {
+    try {
+      const current = state.graph.getNode(group.id);
+      if (!current) continue;
+      const nowState = getCohesionState(getGroupCohesion(current));
+      const prevState = (current.properties as Record<string, unknown>).lastCohesionState as
+        | CohesionState
+        | undefined;
+
+      if (crossedIntoFray(prevState, nowState) && isGroupThreaded(state.graph, group.id, state.ascendantId)) {
+        const moment = composeFrayMoment(group.name ?? 'the company', frayRng);
+        events.push({
+          id: nextGroupEventId(state.tick),
+          tick: state.tick,
+          type: 'group_frayed',
+          message: moment.message,
+          band: moment.kind,
+          significance: GROUP_FRAY_EVENT_SIGNIFICANCE,
+        });
+        frayMomentsFired++;
+      }
+
+      if (prevState !== nowState) {
+        state.graph.updateNode(group.id, {
+          properties: { ...current.properties, lastCohesionState: nowState },
+        });
+        mutated = true;
+      }
+    } catch {
+      // A bad company must not stop the fray scan for the rest.
+    }
+  }
+
   // ── Sub-step 4: formation ──
   try {
     const scan = runFormationScan(state, formationRng);
@@ -190,7 +233,8 @@ export function phaseGroups(state: GameState, runtime?: SimulationRuntime): Part
     cohesionDeltasApplied,
     leaveDecisions,
     formationCandidateSets,
-    summary: `companies: ${activeGroups} active, ${movesExecuted} moved, ${dissents} dissents, ${formationCandidateSets} sets scanned`,
+    frayMomentsFired,
+    summary: `companies: ${activeGroups} active, ${movesExecuted} moved, ${dissents} dissents, ${frayMomentsFired} frayed, ${formationCandidateSets} sets scanned`,
   } as GroupPhaseTrace);
 
   return { tickEvents: [...state.tickEvents, ...events] };

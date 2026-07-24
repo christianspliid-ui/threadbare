@@ -108,6 +108,16 @@ export const GROUP_ASSIST_MIN_TIER = 2;
  */
 export const GROUP_PARTING_EVENT_SIGNIFICANCE = 0.72;
 
+// ─── The Shared Spoils / Old Wounds (threaded-company fray moment) ─────
+
+/**
+ * Event-feed significance of an authored fray moment. Above the generic 0.55
+ * company-event weight — a threaded company's turn toward breaking is a story beat
+ * — but below The Parting's 0.72, because a fraying can still be mended (Bless this
+ * Company, a shared success) where a Parting is final.
+ */
+export const GROUP_FRAY_EVENT_SIGNIFICANCE = 0.6;
+
 // ─── Divine actions (THR-74 UATs) ────────────────────────────────────
 
 /** Bless this Company — immediate cohesion boost. */
