@@ -725,7 +725,29 @@ export interface SlotBonusEffect {
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// Discriminated Union — all 39 effect types
+// CAPABILITY Effect (type 41)
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Type 41: StatContributionEffect — passive Domain Capability contribution while
+ * the item is possessed or bonded. Feeds `computeRawScore` (the sigmoid raw-score
+ * term that moves capability *tiers*), NOT the resolution-roll modifier channel
+ * that `passive`/`permanent`/`conditional` feed via `getEffectModifierValue`.
+ *
+ * This is the ONE stat substrate for item→tier influence (THR-718 user verdict:
+ * finish the effects[] migration, do NOT resurrect bare `domainContributions`
+ * fills on possession entries). Passive-while-possessed semantics: active for as
+ * long as the possesses/bonded_to edge exists — no charges, no duration in v1.
+ * Composition with `conditional`/`duration` wrappers is deliberately out of scope.
+ */
+export interface StatContributionEffect {
+  readonly type: 'stat_contribution';
+  /** Additive raw-score terms per Reach domain (see ITEM_STAT_BAND_* in item-stat-bands.ts). */
+  readonly contributions: Readonly<Partial<Record<ReachDomain, number>>>;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Discriminated Union — all effect types
 // ═══════════════════════════════════════════════════════════════════
 
 export type AttachmentEffect =
@@ -786,7 +808,9 @@ export type AttachmentEffect =
   // Slot system (39)
   | SlotBonusEffect
   // Interactive (40)
-  | ChoiceSetEffect;
+  | ChoiceSetEffect
+  // Capability (41)
+  | StatContributionEffect;
 
 // ═══════════════════════════════════════════════════════════════════
 // Spell Framework

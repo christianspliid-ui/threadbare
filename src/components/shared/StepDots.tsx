@@ -5,16 +5,25 @@ interface StepDotsProps {
   currentStepIndex: number;
   /** Dot diameter in px */
   size?: number;
+  /**
+   * 'progress' (default): completed dots + a glowing current dot + pending — the
+   *   sequence semantics used by RetinuePanel, EncounterVignetteModal, LocationView.
+   * 'magnitude' (THR-718): a level, not progress — the first `currentStepIndex`
+   *   dots are filled, the rest dim, with NO current-dot glow. Used by DomainCard.
+   */
+  variant?: 'progress' | 'magnitude';
 }
 
 /**
  * Shared step-progress dots — filled dots for completed/current, dim for upcoming.
- * Reused by RetinuePanel, EncounterVignetteModal, and LocationView.
+ * Reused by RetinuePanel, EncounterVignetteModal, and LocationView. The optional
+ * `magnitude` variant renders a filled/dim level meter (no glow) for DomainCard.
  */
 export const StepDots = memo(function StepDots({
   totalSteps,
   currentStepIndex,
   size = 5,
+  variant = 'progress',
 }: StepDotsProps) {
   return (
     <div
@@ -25,7 +34,12 @@ export const StepDots = memo(function StepDots({
         let dotColor = 'var(--step-pending)';
         let glow = 'none';
 
-        if (idx < currentStepIndex) {
+        if (variant === 'magnitude') {
+          // Level meter: filled up to currentStepIndex, dim beyond. No current glow.
+          if (idx < currentStepIndex) {
+            dotColor = 'var(--step-completed)';
+          }
+        } else if (idx < currentStepIndex) {
           dotColor = 'var(--step-completed)';
         } else if (idx === currentStepIndex) {
           dotColor = 'var(--step-current)';

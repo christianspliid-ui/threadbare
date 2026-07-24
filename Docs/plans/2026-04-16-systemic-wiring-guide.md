@@ -231,6 +231,7 @@ The attachment and spell systems compose effects from a category pool of ~40 pri
 | `DestroyStructureEffect` | Razes structures |
 | `FactionManipulateEffect` | Shift relationships, transfer control, splinter, absorb, declare war, force peace |
 | `SpawnEffect` | Brings entities into existence (agents, encounters, attachments, locations) |
+| `StatContributionEffect` | **(THR-718)** Raises the bearer's **Domain Capability tier** while possessed/bonded: `{ type: 'stat_contribution', contributions: { iron: 1.5 } }`. Summed by `collectStatContributions` into `computeRawScore` — the one item→tier substrate (do NOT write bare `domainContributions` bags on possession entries). Distinct from `passive`/`permanent`/`conditional` (which shape resolution *rolls*, not tiers). Magnitudes are capped by the `ITEM_STAT_BAND_*` bands in `src/data/item-stat-bands.ts` (a content test fails the build past the legendary ceiling); magnitude renders as dots on the Prowess-tab DomainCard. |
 
 **For encounter aftermath authoring, use the typed aftermath effect kinds in Part 5 § "Aftermath Reaction Effect Types" (23 kinds).** Raw graph-mutation primitives are not exposed to authored aftermath — propose a new typed kind if you need one.
 

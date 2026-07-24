@@ -1,6 +1,8 @@
 import type { ReachDomain } from '../../types/traits';
 import { DOMAIN_WORD_SCALES } from '../../data/domain-words';
 import { getDomainProse } from '../../data/domain-prose';
+import { MAGNITUDE_DOTS_TOTAL } from '../../data/item-stat-bands';
+import { StepDots } from './StepDots';
 import { Tooltip } from './Tooltip';
 
 const DOMAIN_NAMES: Record<ReachDomain, string> = {
@@ -82,6 +84,22 @@ export function DomainCard({ reach, tier, agentName, gender, revealed }: DomainC
             &middot; {tierWord}
           </span>
         </div>
+        {/* Magnitude dots — a level, not progress. Tier 0–4 → 1–5 filled.
+            Reveal-gated: unrevealed domains show no dots (same as the ??? word). */}
+        {revealed && (
+          <div
+            className="mt-1"
+            role="img"
+            aria-label={`${DOMAIN_NAMES[reach]} magnitude ${clampedTier + 1} of ${MAGNITUDE_DOTS_TOTAL}`}
+          >
+            <StepDots
+              variant="magnitude"
+              totalSteps={MAGNITUDE_DOTS_TOTAL}
+              currentStepIndex={clampedTier + 1}
+              size={6}
+            />
+          </div>
+        )}
         <p
           className="text-xs mt-0.5"
           style={{
