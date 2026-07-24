@@ -99,6 +99,15 @@ export const GROUP_ASSIST_CAP = 0.15;
 /** Member tier in the step's Reach required to qualify as an assist. */
 export const GROUP_ASSIST_MIN_TIER = 2;
 
+// ─── The Parting (threaded-company dissolution moment) ────────────────
+
+/**
+ * Event-feed significance of an authored Parting moment. Higher than the generic
+ * 0.55 company-event weight because a threaded company's end is a story beat the
+ * player should not miss.
+ */
+export const GROUP_PARTING_EVENT_SIGNIFICANCE = 0.72;
+
 // ─── Divine actions (THR-74 UATs) ────────────────────────────────────
 
 /** Bless this Company — immediate cohesion boost. */

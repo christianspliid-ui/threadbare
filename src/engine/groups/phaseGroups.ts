@@ -29,6 +29,8 @@ import { runGroupUpkeep } from './groupDissolution';
 import { runGroupMovement } from './groupMovement';
 import { runFormationScan } from './groupFormation';
 import { applyCohesionEvent } from './groupCohesion';
+import { composePartingMoment } from './groupParting';
+import { GROUP_PARTING_EVENT_SIGNIFICANCE } from '../../data/group-constants';
 
 /** Significance of company chronicle events in the event feed. */
 const GROUP_EVENT_SIGNIFICANCE = 0.55;
@@ -57,6 +59,7 @@ export function phaseGroups(state: GameState, runtime?: SimulationRuntime): Part
   // the same state produces the same companies (NFP #3).
   const leaveRng = mulberry32(state.seed + state.tick * 61);
   const formationRng = mulberry32(state.seed + state.tick * 67);
+  const partingRng = mulberry32(state.seed + state.tick * 71);
 
   let dissents = 0;
   let cohesionDeltasApplied = 0;
@@ -79,7 +82,7 @@ export function phaseGroups(state: GameState, runtime?: SimulationRuntime): Part
 
       if (upkeep.dissolved) {
         mutated = true;
-        const { groupId, reason, finalCohesion, ticksActive } = upkeep.dissolved;
+        const { groupId, reason, finalCohesion, ticksActive, threaded } = upkeep.dissolved;
         emitTrace({
           category: 'group_dissolved',
           tick: state.tick,
@@ -89,12 +92,31 @@ export function phaseGroups(state: GameState, runtime?: SimulationRuntime): Part
           ticksActive,
           summary: `${group.name} disbands (${reason})`,
         } as GroupDissolvedTrace);
+
+        // The Parting (THR-74): a threaded company's end is an authored moment —
+        // bittersweet or bitter, chosen by reason + cohesion. An untethered
+        // company's end stays the silent systemic line.
+        let message = `${group.name} goes its separate ways.`;
+        let significance = GROUP_EVENT_SIGNIFICANCE;
+        let band: string | undefined;
+        if (threaded) {
+          const moment = composePartingMoment(
+            group.name ?? 'the company',
+            reason,
+            finalCohesion,
+            partingRng,
+          );
+          message = moment.message;
+          band = moment.variant;
+          significance = GROUP_PARTING_EVENT_SIGNIFICANCE;
+        }
         events.push({
           id: nextGroupEventId(state.tick),
           tick: state.tick,
           type: 'group_dissolved',
-          message: `${group.name} goes its separate ways.`,
-          significance: GROUP_EVENT_SIGNIFICANCE,
+          message,
+          band,
+          significance,
         });
         continue;
       }
