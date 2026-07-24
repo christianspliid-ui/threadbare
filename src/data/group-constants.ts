@@ -131,3 +131,19 @@ export const DRAW_TOGETHER_DURATION_TICKS = 36;
 
 /** Draw Together — injected candidate-score weight toward the convergence point. */
 export const DRAW_TOGETHER_PULL_WEIGHT = 2.0;
+
+/**
+ * Draw Together — radius (in hexes) around the anchor within which scattered
+ * threaded mortals are pulled. Set one hex past the agent decision spatial-query
+ * range (MAX_AWARENESS_HOPS 5 + edge bonus 1 + margin 1 = 7) so a pulled mortal
+ * can still perceive candidate encounters toward the convergence hex as they close
+ * in — a pull beyond an agent's awareness horizon would bias nothing it can see.
+ */
+export const DRAW_TOGETHER_RADIUS_HEXES = 8;
+
+/**
+ * Draw Together — the ascendant needs at least this many living threaded mortals
+ * before the gathering-bonds milestone unlocks the verb. Two is the floor for a
+ * company, so this is the first moment "draw them together" has raw material.
+ */
+export const DRAW_TOGETHER_MIN_THREADED_FOR_UNLOCK = 2;

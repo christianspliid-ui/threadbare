@@ -41,12 +41,14 @@ import {
   MILESTONE_FLOWERING_FOR_BEAT,
   MILESTONE_SOURCE_BEAT_ID,
   MILESTONE_COMPANY_BEAT_ID,
+  MILESTONE_GATHERING_BEAT_ID,
   deepeningBeatIdForReach,
 } from '../data/player-progression';
 import { deepeningChronicleProse } from '../data/ascendant-deepening-beats';
 import { milestoneChronicleProse } from '../data/ascendant-milestone-beats';
 import { countControlledSources } from './essenceSources';
-import { getAllGroups, isGroupThreaded } from './groups/groupQueries';
+import { getAllGroups, isGroupThreaded, isAgentGone } from './groups/groupQueries';
+import { DRAW_TOGETHER_MIN_THREADED_FOR_UNLOCK } from '../data/group-constants';
 
 type EmitInput = Parameters<typeof emitTrace>[0];
 
@@ -283,6 +285,54 @@ export function phaseAscendantProgression(state: GameState): Partial<GameState> 
         tier: 'chronicle',
         title: 'A Company',
         prose: milestoneChronicleProse(MILESTONE_COMPANY_BEAT_ID),
+        promptContext: {
+          actors: [ascId],
+          location: '',
+          sphere: primarySphere,
+          mood: 'reverent',
+        },
+        tick: turn,
+      });
+    }
+  }
+
+  // THR-74: the gathering-bonds milestone — the first time the ascendant threads
+  // DRAW_TOGETHER_MIN_THREADED_FOR_UNLOCK living mortals, unlocking Draw Together. Same
+  // one-per-tick discipline (`!pending`, so the company milestone above wins the slot when
+  // both fire the same tick and this re-detects next tick). The scan counts outgoing
+  // `thread` edges to living individuals and stops once the beat has fired (dedup via
+  // `milestoneBeatsFired`), so it costs nothing for the rest of the run.
+  if (canEnqueue && !pending && !firedMilestones.includes(MILESTONE_GATHERING_BEAT_ID)) {
+    let threadedLiving = 0;
+    for (const edge of graph.getOutgoingEdges(ascId, 'thread')) {
+      const target = graph.getNode(edge.target);
+      if (!target || target.properties.actorType !== 'individual') continue;
+      if (isAgentGone(target)) continue;
+      threadedLiving++;
+      if (threadedLiving >= DRAW_TOGETHER_MIN_THREADED_FOR_UNLOCK) break;
+    }
+    if (threadedLiving >= DRAW_TOGETHER_MIN_THREADED_FOR_UNLOCK) {
+      pending = {
+        beatId: MILESTONE_GATHERING_BEAT_ID,
+        kind: 'milestone',
+        offeredTurn: turn,
+        boundNodeIds: [ascId],
+        trigger: { kind: 'turn', minTurn: turn },
+      };
+      firedMilestones.push(MILESTONE_GATHERING_BEAT_ID);
+      node.properties.milestoneBeatsFired = firedMilestones;
+      emitTrace({
+        category: 'ascendant.progression.milestone_enqueued',
+        tick: turn,
+        turn,
+        beatId: MILESTONE_GATHERING_BEAT_ID,
+        summary: `Milestone beat enqueued: ${MILESTONE_GATHERING_BEAT_ID} (${DRAW_TOGETHER_MIN_THREADED_FOR_UNLOCK}+ threaded mortals)`,
+      } as unknown as EmitInput);
+      newChronicle.push({
+        id: `milestone-${MILESTONE_GATHERING_BEAT_ID}-${turn}`,
+        tier: 'chronicle',
+        title: 'Scattered Threads',
+        prose: milestoneChronicleProse(MILESTONE_GATHERING_BEAT_ID),
         promptContext: {
           actors: [ascId],
           location: '',
