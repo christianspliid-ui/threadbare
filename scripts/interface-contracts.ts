@@ -634,18 +634,14 @@ export const CONTRACTS: readonly Contract[] = [
     mechanism: { kind: 'function', symbols: ['livingGroupMemberCount'] },
     writeSites: ['src/engine/groups/groupQueries.ts'],
     readSites: ['src/engine/unifiedCandidates.ts'],
-    // PARTIAL, not LIVE: the gate is wired and unit-tested (both-side symbol
-    // hits, src/engine/__tests__/unifiedCandidates.test.ts § "Group-exclusive
-    // reachability"), but no `['group']`-only template ships in the registry
-    // yet — the party-exclusive delve content is the remaining PR-2b scope of
-    // THR-74. The reachability gate lands one PR ahead of its live consumer so
-    // that content, when authored, is not orphaned (the checkpoint's
-    // "do this first"). Un-pins to verifiedLive when the delves land.
-    badgeOverride: {
-      badge: 'PARTIAL',
-      reason:
-        'Reachability gate wired + unit-tested, but no live group-exclusive template exists to exercise it until the PR-2b delve content lands.',
-      deferralTicket: 'THR-74',
+    // Un-pinned by PR 2b: three `['group']`-only delve templates now ship in the
+    // registry (encounter.sunken_vault / broken_span / hollow_watch), so the gate
+    // has a live consumer. The row is exercised end-to-end against real content,
+    // not just synthetic fixtures.
+    verifiedLive: {
+      date: '2026-07-24',
+      evidence:
+        'src/data/__tests__/partyExclusiveDelves.test.ts drives generateUnifiedCandidates against the actual authored delves: a company of 2 at a dungeon draws encounter.sunken_vault, while a solo agent at the same place draws nothing. Content-integrity tests assert all three delves carry actorAffinities exactly ["group"] (never swept to include "individual") and minGroupMembers: 2, in both ENCOUNTER_TEMPLATES and the assembled UNIFIED_ACTION_TEMPLATES. The synthetic-fixture unit tests (src/engine/__tests__/unifiedCandidates.test.ts § "Group-exclusive reachability") still lock the gate mechanics.',
     },
   },
 ];

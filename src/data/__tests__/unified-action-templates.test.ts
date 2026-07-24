@@ -95,9 +95,16 @@ describe('ENCOUNTER_TEMPLATES (UnifiedActionTemplate[])', () => {
     }
   });
 
-  it('actorAffinities includes individual', () => {
+  it('actorAffinities targets an actor: individual, or group-exclusive with minGroupMembers', () => {
     for (const enc of ENCOUNTER_TEMPLATES) {
-      expect(enc.actorAffinities).toContain('individual');
+      const affinities = enc.actorAffinities ?? [];
+      if (affinities.includes('individual')) continue;
+      // THR-74: party-exclusive delves are deliberately ['group']-only — no
+      // 'individual', so only a company can draw them. They are the sole
+      // exception to the individual-actor default, and must carry the gate's
+      // consumer field so they are reachable rather than orphaned.
+      expect(affinities, `${enc.id} has no 'individual' affinity, so must be group-exclusive`).toContain('group');
+      expect(enc.minGroupMembers, `${enc.id} is group-exclusive and must set minGroupMembers`).toBeGreaterThanOrEqual(2);
     }
   });
 });
