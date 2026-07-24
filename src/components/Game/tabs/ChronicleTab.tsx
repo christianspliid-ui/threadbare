@@ -1,6 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import type { AgentInfoCardData, AgentFullProfileData } from '../../../engine/agentDetail';
 import type { AgentKnowledge } from '../../../types/agentKnowledge';
+import {
+  AMBITION_PRIMARY_INTERACTIONS,
+  AMBITION_PRIMARY_KNOWLEDGE,
+} from '../../../types/agentKnowledge';
+import { KNOWLEDGE_LEVELS } from '../../../types/familiarity';
 import { BACKSTORY_CONSTANTS } from '../../../types/prose';
 import { SectionHeading } from '../../shared/SectionHeading';
 import { getSphereColor } from '../../../data/sphereIcons';
@@ -56,6 +61,13 @@ export function ChronicleTab({ card, profile, knowledge, scrollToNewStrata }: Ch
   const showBackstory = card.backstory && card.backstory.strata.length > 0;
   const showTier0Placeholder =
     (!card.backstory || card.backstory.strata.length === 0) && card.influenceTier === 0;
+
+  // Completed Ambitions use the same gate as primary ambitions (THR-721): a single
+  // meaningful exposure, or recognition-level knowledge, reveals "who they became."
+  const showCompletedAmbitions =
+    (knowledge != null && knowledge.interactionDepth >= AMBITION_PRIMARY_INTERACTIONS)
+    || KNOWLEDGE_LEVELS.indexOf(card.knowledgeLevel) >= KNOWLEDGE_LEVELS.indexOf(AMBITION_PRIMARY_KNOWLEDGE);
+  const completedAmbitions = card.completedAmbitions ?? [];
 
   return (
     <div className="space-y-4">
@@ -194,12 +206,30 @@ export function ChronicleTab({ card, profile, knowledge, scrollToNewStrata }: Ch
         </section>
       )}
 
-      {/* Completed Ambitions — placeholder */}
+      {/* Completed Ambitions */}
       <section>
         <SectionHeading as="h2">Completed Ambitions</SectionHeading>
-        <p className="text-stone-400 italic text-sm">
-          Completed ambitions will appear here.
-        </p>
+        {showCompletedAmbitions && completedAmbitions.length > 0 ? (
+          <div className="space-y-2">
+            {completedAmbitions.map((ambition) => (
+              <div key={ambition.ambitionId} className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+                {ambition.resolvedTick != null && (
+                  <>
+                    <span style={{ color: 'var(--accent-gold)' }}>t{ambition.resolvedTick}</span>
+                    {' — '}
+                  </>
+                )}
+                <span>{ambition.name}</span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-stone-400 italic text-sm">
+            {showCompletedAmbitions
+              ? `${card.name} has yet to fulfill an ambition.`
+              : `You don't yet know what ${card.name} has accomplished.`}
+          </p>
+        )}
       </section>
     </div>
   );
