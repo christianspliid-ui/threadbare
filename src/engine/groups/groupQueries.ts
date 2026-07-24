@@ -150,6 +150,29 @@ export function isGrouped(graph: WorldGraph, agentId: string): boolean {
   return getGroupOf(graph, agentId) !== undefined;
 }
 
+/**
+ * Living-member count of the company an agent currently belongs to, or 0 when
+ * the agent is in no active company.
+ *
+ * This is the gate for **group-exclusive content** (THR-74): templates authored
+ * with `actorAffinities: ['group']` are unreachable through the ordinary
+ * decision path — a grouped agent is still `actorType: 'individual'`, so a
+ * `['group']`-only affinity never matches their own type. `generateUnifiedCandidates`
+ * lets a grouped individual draw such a template only when this count meets the
+ * template's `minGroupMembers`. A positionless company node never self-initiates;
+ * its members do, on its behalf.
+ *
+ * "Living" excludes members retained only as a deceased mythic echo
+ * ({@link isAgentGone}), mirroring how {@link getGroupMembers} feeds resolution's
+ * best-member pick — a party of two whose second member just died can no longer
+ * attempt what needed two hands.
+ */
+export function livingGroupMemberCount(graph: WorldGraph, agentId: string): number {
+  const group = getGroupOf(graph, agentId);
+  if (!group) return 0;
+  return getGroupMembers(graph, group.id).filter(m => !isAgentGone(m)).length;
+}
+
 /** The company's leader agent (via `commanded_by`), or undefined if missing/dead. */
 export function getGroupLeader(graph: WorldGraph, groupId: string): GraphNode | undefined {
   const edge = graph.getOutgoingEdges(groupId, 'commanded_by')[0];
