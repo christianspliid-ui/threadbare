@@ -7,6 +7,7 @@
  */
 import type { WorldGraph } from './graph';
 import { deriveFactionProsperity } from './factionNetwork';
+import { collectStatContributions } from './effects/effectQueries';
 import { ECON_FACTION_POWER_WEIGHT } from '../data/economic-power-config';
 import type { TraitDefinitionProperties, TraitAssignmentProperties, ReachDomain, DomainContributions } from '../types/traits';
 import { REACH_DOMAINS, NARRATIVE_LEXICON } from '../types/traits';
@@ -74,10 +75,15 @@ export function computeRawScore(
     for (const edge of edges) {
       const artifactNode = graph.getNode(edge.target);
       if (!artifactNode) continue;
+      // Legacy node-prop read stays (NFP #6): modded/old artifacts and any entry
+      // still carrying a real domainContributions bag keep working.
       const contributions = artifactNode.properties.domainContributions as DomainContributions | undefined;
       if (contributions) {
         total += contributions[domain] ?? 0;
       }
+      // THR-718: the one stat substrate for item→tier influence — the finished
+      // effects[] migration. Additive raw-score term feeding the same sigmoid.
+      total += collectStatContributions(artifactNode)[domain] ?? 0;
     }
   }
 

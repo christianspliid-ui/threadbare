@@ -69,6 +69,61 @@ describe('Domain Capability', () => {
       expect(raw).toBe(4); // 3 origin + 1 artifact
     });
 
+    it('includes stat_contribution effect from a possessed artifact (THR-718)', () => {
+      graph.addNode({
+        id: 'artifact.iron_blade', type: 'artifact', name: 'Ironbite Blade',
+        properties: { effects: [{ type: 'stat_contribution', contributions: { iron: 2 } }] },
+      });
+      graph.addEdge({
+        id: 'e.possesses.blade', source: 'actor.thorin', target: 'artifact.iron_blade',
+        type: 'possesses', properties: {},
+      });
+      // 3 origin + 2 stat_contribution
+      expect(computeRawScore(graph, 'actor.thorin', 'iron')).toBe(5);
+    });
+
+    it('reads stat_contribution across bonded_to edges too', () => {
+      graph.addNode({
+        id: 'artifact.star_relic', type: 'artifact_legendary', name: 'Star Relic',
+        properties: { effects: [{ type: 'stat_contribution', contributions: { star: 1.5 } }] },
+      });
+      graph.addEdge({
+        id: 'e.bonded.relic', source: 'actor.thorin', target: 'artifact.star_relic',
+        type: 'bonded_to', properties: {},
+      });
+      // 2 origin star + 1.5 stat_contribution
+      expect(computeRawScore(graph, 'actor.thorin', 'star')).toBeCloseTo(3.5, 5);
+    });
+
+    it('sums legacy domainContributions AND stat_contribution additively on one artifact', () => {
+      graph.addNode({
+        id: 'artifact.hybrid', type: 'artifact', name: 'Hybrid Relic',
+        properties: {
+          domainContributions: { iron: 1 },
+          effects: [{ type: 'stat_contribution', contributions: { iron: 2 } }],
+        },
+      });
+      graph.addEdge({
+        id: 'e.possesses.hybrid', source: 'actor.thorin', target: 'artifact.hybrid',
+        type: 'possesses', properties: {},
+      });
+      // 3 origin + 1 legacy + 2 effect = 6
+      expect(computeRawScore(graph, 'actor.thorin', 'iron')).toBe(6);
+    });
+
+    it('a possessed artifact with no stat_contribution is a no-op (fail-soft)', () => {
+      graph.addNode({
+        id: 'artifact.torch', type: 'artifact', name: 'Torch',
+        properties: { effects: [{ type: 'passive', reach: 'iron', value: 0.03 }] },
+      });
+      graph.addEdge({
+        id: 'e.possesses.torch', source: 'actor.thorin', target: 'artifact.torch',
+        type: 'possesses', properties: {},
+      });
+      // passive is a roll shaper, not a tier contribution — raw score unchanged
+      expect(computeRawScore(graph, 'actor.thorin', 'iron')).toBe(3);
+    });
+
     it('ignores traits that do not define domain contributions', () => {
       graph.addNode({
         id: 'trait.condition.deep_stab_wound',

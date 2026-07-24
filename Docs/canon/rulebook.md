@@ -107,7 +107,7 @@ Every node you focus on in a detail view — actor, location, sublocation, hex, 
 
 Most templates require two orthogonal checks before they appear:
 
-- **Reach prerequisite** — your **Domain Capability** in the relevant Reach must meet a tier ("can you do this kind of thing?") [IMPL — Domain Capability tiers in `src/engine/capability*`; 10-tier narrative lexicon in `NARRATIVE_LEXICON`].
+- **Reach prerequisite** — your **Domain Capability** in the relevant Reach must meet a tier ("can you do this kind of thing?") [IMPL — Domain Capability tiers in `src/engine/capability*`; 10-tier narrative lexicon in `NARRATIVE_LEXICON`]. Capability is not innate alone: **possessed and bonded items contribute to it** — a legendary blade makes its bearer mightier — via a `stat_contribution` effect summed into `computeRawScore` alongside traits and reach practice [IMPL — THR-718, `collectStatContributions` in [src/engine/effects/effectQueries.ts](../../src/engine/effects/effectQueries.ts); magnitude shown as dots on the Prowess tab's DomainCard].
 - **Sphere prerequisite** — your sphere alignment must match the template's required sphere ("does your cosmic energy resonate?") [IMPL — sphere alignment checks in template prerequisites].
 
 Both are optional per template. Some actions require only competence; some only alignment; the interesting ones require both. Prerequisites also gate **visibility** — you do not see what you cannot attempt [IMPL — filter cascade in `getTargetActionSlots()`].

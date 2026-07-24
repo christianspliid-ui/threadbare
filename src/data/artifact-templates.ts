@@ -37,6 +37,10 @@ export const ARTIFACT_TEMPLATES: ArtifactTemplate[] = [
     effects: [
       { type: 'trait_grant', grantedTrait: 'master_smith' },
       { type: 'permanent', reach: 'shadow', value: -0.04 },
+      // THR-718: the anvil makes its bearer a legendary smith — forging (Iron) and
+      // earthcraft (Stone) capability. Legendary band; near-max Iron because
+      // master-smithing is its whole identity, Stone a step lower.
+      { type: 'stat_contribution', contributions: { iron: 1.5, stone: 1.0 } },
     ],
     activatedEffects: [
       {
@@ -83,6 +87,10 @@ export const ARTIFACT_TEMPLATES: ArtifactTemplate[] = [
     effects: [
       { type: 'aura', radius: 1, target: 'all', reach: 'heart', value: 0.03 },
       { type: 'aura', radius: 1, target: 'all', reach: 'stone', value: 0.03 },
+      // THR-718: the Heartseed makes its bearer a wellspring of life (Heart) and
+      // rooted growth (Stone). Legendary band; blessed relic, so it sits high with
+      // no offsetting curse.
+      { type: 'stat_contribution', contributions: { heart: 1.5, stone: 1.0 } },
     ],
     activatedEffects: [
       {
@@ -140,6 +148,10 @@ export const ARTIFACT_TEMPLATES: ArtifactTemplate[] = [
     effects: [
       { type: 'decay', reach: 'heart', startValue: 0, changePerTick: -0.005,
         limitValue: -0.20, destroyAtLimit: false },
+      // THR-718: the Shard grants mastery of unmaking (Shadow) and the void between
+      // (Veil). Legendary band; the existing heart-decay is its curse, so Shadow
+      // sits high while Veil trails.
+      { type: 'stat_contribution', contributions: { shadow: 1.5, veil: 1.0 } },
     ],
     activatedEffects: [
       {

@@ -29,13 +29,16 @@ export const STARTER_POSSESSIONS: GraphNode[] = [
       subcategory: 'arms',
       tier: 1,
       tags: ['#iron', '#weapon', '#melee'],
-      mechanicalSummary: '+0.05 Iron, rescues near-miss combat rolls (+1 step, within 1 margin)',
+      mechanicalSummary: '+0.05 Iron roll · Iron capability +0.3 while borne, rescues near-miss combat rolls (+1 step, within 1 margin)',
       censusTag: { scale: 'local' },
       lossCondition: 'breakable',
       flavorText: 'A well-worn blade of folded steel, simple and reliable.',
       effects: [
         { type: 'passive', reach: 'iron', value: 0.05 },
         { type: 'test_shaper', reach: 'iron', trigger: 'near_miss', steps: 1, maxMargin: 1 },
+        // THR-718: a reliable blade lifts Iron capability a little. Minor band, low
+        // end — it already shapes rolls via the passive + test_shaper above.
+        { type: 'stat_contribution', contributions: { iron: 0.3 } },
       ],
       onUseTriggers: [
         {
@@ -57,7 +60,7 @@ export const STARTER_POSSESSIONS: GraphNode[] = [
       subcategory: 'arms',
       tier: 2,
       tags: ['#iron', '#weapon', '#legendary_beast'],
-      mechanicalSummary: '+0.08 Iron, +0.04 Iron in combat (beast fury), grants intimidate trait',
+      mechanicalSummary: '+0.08 Iron roll · Iron capability +0.6 while borne, +0.04 Iron in combat (beast fury), grants intimidate trait',
       censusTag: { scale: 'local' },
       lossCondition: 'permanent',
       flavorText:
@@ -67,6 +70,9 @@ export const STARTER_POSSESSIONS: GraphNode[] = [
         { type: 'conditional', condition: 'in_combat', reach: 'iron', value: 0.04 },
         // THR-722: migrated off the dead `possesses`-edge `grants[]` property.
         { type: 'trait_grant', grantedTrait: 'intimidate' },
+        // THR-718: a named legendary fang is a real step up in martial might.
+        // Notable band (tier 2 legendary), low-mid — it already shapes rolls hard.
+        { type: 'stat_contribution', contributions: { iron: 0.6 } },
       ],
     } as PossessionNodeProperties,
   },
@@ -161,7 +167,7 @@ export const STARTER_POSSESSIONS: GraphNode[] = [
       subcategory: 'relics_talismans',
       tier: 3,
       tags: ['#eye', '#cursed', '#supernatural'],
-      mechanicalSummary: '+0.08 Eye, -0.04 Heart, reveals attachments within 2 hexes, when cursed: -0.03 Heart for 6 ticks (12-tick cd)',
+      mechanicalSummary: '+0.08 Eye roll · Eye capability +0.7 / Heart −0.3 while borne, reveals attachments within 2 hexes, when cursed: -0.03 Heart for 6 ticks (12-tick cd)',
       censusTag: { scale: 'regional' },
       lossCondition: 'cursed',
       flavorText: 'It sees what you cannot. It shows what you must not know.',
@@ -169,6 +175,10 @@ export const STARTER_POSSESSIONS: GraphNode[] = [
         { type: 'passive', reach: 'eye', value: 0.08 },
         { type: 'passive', reach: 'heart', value: -0.04 },
         { type: 'reveal', target: 'attachments', range: 2 },
+        // THR-718: the Eye sharpens perception (Eye) at the cost of the bearer's
+        // warmth (Heart). Notable band (tier 3 relic); the Heart penalty is the
+        // curse made mechanical.
+        { type: 'stat_contribution', contributions: { eye: 0.7, heart: -0.3 } },
         { type: 'reactive', trigger: 'cursed', effect: {
           type: 'duration', ticks: 6, reach: 'heart', value: -0.03, destroyOnExpiry: true
         }, cooldown: 12 },
@@ -198,13 +208,16 @@ export const STARTER_POSSESSIONS: GraphNode[] = [
       subcategory: 'tomes_scrolls',
       tier: 2,
       tags: ['#star', '#tome', '#knowledge'],
-      mechanicalSummary: '+0.06 Star, +0.03 Eye in exploration (fragment research), on first use: revelation condition',
+      mechanicalSummary: '+0.06 Star roll · Star capability +0.6 while borne, +0.03 Eye in exploration (fragment research), on first use: revelation condition',
       censusTag: { scale: 'local' },
       lossCondition: 'permanent',
       flavorText: 'Half the pages are ash. The rest are worse.',
       effects: [
         { type: 'passive', reach: 'star', value: 0.06 },
         { type: 'conditional', condition: 'in_exploration', reach: 'eye', value: 0.03 },
+        // THR-718: a surviving codex of arcane lore raises Star capability. Notable
+        // band (tier 2 tome), mid — knowledge is its whole purpose.
+        { type: 'stat_contribution', contributions: { star: 0.6 } },
       ],
       onUseTriggers: [
         {

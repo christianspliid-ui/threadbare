@@ -15,9 +15,9 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 23 |
+| 🟢 LIVE | 24 |
 | 🟠 PARTIAL | 2 |
-| 🔴 LEAKED | 7 |
+| 🔴 LEAKED | 6 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 3 |
 | **Total** | **35** |
@@ -55,7 +55,7 @@ remediation ticket or the build fails.
 |---|---|---|---|---|---|
 | `attachment-activated-effects` | Player-activated item powers (ActivatedAbility). | node-prop: `activatedEffects` | Encounters & Dilemmas | 🔴 LEAKED | THR-720 |
 | `attachment-character-sheet-display` | The character sheet shows what an agent carries. | function: `getAgentAttachments` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
-| `attachment-domain-contributions` | Items raise Domain Capability tiers — a legendary blade makes its bearer mightier on the Prowess tab and in encounter eligibility. | node-prop: `domainContributions` | Personality & Emergent Traits | 🔴 LEAKED | THR-718 |
+| `attachment-domain-contributions` | Items raise Domain Capability tiers — a legendary blade makes its bearer mightier on the Prowess tab and in encounter eligibility. | node-prop: `stat_contribution`, `collectStatContributions`, `domainContributions` | Personality & Emergent Traits | 🟢 LIVE | — |
 | `attachment-edge-modifiers` | Items modify agent attributes ("+0.15 star" on the Starweave Cloak). | edge-prop: `collectModifiers`, `getModifiedValue` | Personality & Emergent Traits | 🔴 LEAKED | THR-723 |
 | `attachment-effects-shape-resolution` | Items shape action resolution rolls — a blade makes its bearer likelier to succeed. | node-prop: `collectAttachmentEffects`, `collectTestShapers` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `attachment-effects-tick` | Effects tick, decay, stack and expire on their host agent. | function: `effectTick`, `effectShellRuntime` | Effects & Conditions | 🟢 LIVE | — |
@@ -177,16 +177,16 @@ remediation ticket or the build fails.
 - **Read sites:** `src/debug-bridge.ts`
 - **Verdict:** Verified 2026-07-23: AttachmentsTab renders inside AgentProfileModal. Docs/plans/2026-07-23-system-interface-map.md § Audit findings (manual audit + independent cold-context review, both grep-verified)
 
-### `attachment-domain-contributions` — 🔴 LEAKED
+### `attachment-domain-contributions` — 🟢 LIVE
 
 - **Intent:** Items raise Domain Capability tiers — a legendary blade makes its bearer mightier on the Prowess tab and in encounter eligibility.
 - **Producer → Consumer:** Attachments, Items & Possessions → Personality & Emergent Traits
 - **UL terms:** *Domain Capability*, *Attachment*
-- **Production hits:** 26 total — 2 write, 1 read, 23 unclassified
-- **Write sites:** `src/data/reward-attachment-catalog.ts`, `src/data/starter-attachments.ts`
-- **Read sites:** `src/engine/domainCapability.ts`
-- **Other hits:** `src/components/CMS/registry.ts`, `src/components/Codex/codexRegistry.ts`, `src/components/Game/AgentDetailPanel.tsx`, `src/data/anomaly-reward-catalog.ts`, `src/data/condition-trait-content.ts` +18 more
-- **Verdict:** Pinned by badgeOverride: Symbol greps green (26 production files) but every possession-item catalog writes `domainContributions: {}` — the deadness is value-level, invisible to symbol matching. Trait-type bestowals (Patron's Backing, Ruin Seeker) DO carry contributions via the has_trait walk; possession items specifically are the gap. `anomaly-reward-catalog.ts` was deliberately migrated onto effects[] on 2026-04-06, so the empties read as a half-finished migration, not accidental loss.
+- **Production hits:** 30 total — 4 write, 2 read, 24 unclassified
+- **Write sites:** `src/data/anomaly-reward-catalog.ts`, `src/data/artifact-templates.ts`, `src/data/reward-attachment-catalog.ts`, `src/data/starter-attachments.ts`
+- **Read sites:** `src/engine/domainCapability.ts`, `src/engine/effects/effectQueries.ts`
+- **Other hits:** `src/components/CMS/registry.ts`, `src/components/Codex/codexRegistry.ts`, `src/components/Game/AgentDetailPanel.tsx`, `src/data/condition-trait-content.ts`, `src/data/core-trait-content.ts` +19 more
+- **Verdict:** Verified 2026-07-24: THR-718 finished the effects[] migration: a `stat_contribution` primitive (effects.ts) is summed by `collectStatContributions` (effectQueries.ts) and added inside `computeRawScore`'s possesses/bonded_to artifact walk (domainCapability.ts). 9 catalog entries across all bands carry real contributions (artifact-templates ×3 legendary, starter ×4, anomaly ×2) — both-side symbol hits: `stat_contribution` on write (catalogs) + read (effectQueries), `collectStatContributions` on read (domainCapability + effectQueries). Legacy `domainContributions` node-prop read preserved for traits/resources. Unit + hook + content-band tests green.
 
 ### `attachment-edge-modifiers` — 🔴 LEAKED
 
@@ -413,10 +413,10 @@ remediation ticket or the build fails.
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 120 total — 1 write, 1 read, 118 unclassified
+- **Production hits:** 124 total — 1 write, 1 read, 122 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/Game/ActionCard.tsx`, `src/components/Game/ascendant-bar/IdentityStrip.tsx`, `src/components/Game/ascendant-bar/selectors.ts`, `src/components/Game/ChapterView.tsx` +113 more
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/Game/ActionCard.tsx`, `src/components/Game/ascendant-bar/IdentityStrip.tsx`, `src/components/Game/ascendant-bar/selectors.ts`, `src/components/Game/ChapterView.tsx` +117 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `secrets-consequences` — 🟢 LIVE

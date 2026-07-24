@@ -34,13 +34,16 @@ export const ANOMALY_SIGNATURE_ARTIFACTS: GraphNode[] = [
       subcategory: 'relics_talismans',
       tier: 2,
       tags: ['#gem', '#wealth', '#anomaly'],
-      mechanicalSummary: '+0.10 Gold, +0.05 Gold while trading, 1.3x desire for Gold encounters',
+      mechanicalSummary: '+0.10 Gold roll · Gold capability +0.6 while borne, +0.05 Gold while trading, 1.3x desire for Gold encounters',
       lossCondition: 'stealable',
       flavorText: 'A stone the size of a fist, still warm from the earth. Its facets catch light that isn\'t there.',
       effects: [
         { type: 'passive', reach: 'gold', value: 0.10 },
         { type: 'conditional', condition: 'in_social', reach: 'gold', value: 0.05 },
         { type: 'behavior_weight', reach: 'gold', multiplier: 1.3 },
+        // THR-718: raw wealth in the hand raises Gold capability. Notable band
+        // (tier 2 gem), mid — it already shapes rolls and desire.
+        { type: 'stat_contribution', contributions: { gold: 0.6 } },
       ],
     } as PossessionNodeProperties,
   },
@@ -53,7 +56,7 @@ export const ANOMALY_SIGNATURE_ARTIFACTS: GraphNode[] = [
       subcategory: 'relics_talismans',
       tier: 3,
       tags: ['#crystal', '#arcane', '#anomaly'],
-      mechanicalSummary: '+0.10 Veil, +0.05 Eye, +0.05 Veil in mystical contexts, shifts near-miss to success on Veil tests',
+      mechanicalSummary: '+0.10 Veil roll · Veil capability +0.6 / Eye +0.3 while borne, +0.05 Eye, +0.05 Veil in mystical contexts, shifts near-miss to success on Veil tests',
       lossCondition: 'breakable',
       flavorText: 'A finger-length crystal that hums when magic is near. Hold it too long and your teeth ache.',
       onUseTriggers: [
@@ -73,6 +76,9 @@ export const ANOMALY_SIGNATURE_ARTIFACTS: GraphNode[] = [
         { type: 'passive', reach: 'eye', value: 0.05 },
         { type: 'conditional', condition: 'in_mystical', reach: 'veil', value: 0.05 },
         { type: 'test_shaper', reach: 'veil', trigger: 'near_miss', steps: 1 },
+        // THR-718: an attuned arcane crystal raises Veil capability, with a lesser
+        // Eye lift (it hums at magic and sharpens perception). Notable band (tier 3).
+        { type: 'stat_contribution', contributions: { veil: 0.6, eye: 0.3 } },
       ],
     } as PossessionNodeProperties,
   },

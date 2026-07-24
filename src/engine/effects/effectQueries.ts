@@ -30,8 +30,10 @@
  */
 
 import type { WorldGraph } from '../graph';
+import type { GraphNode } from '../../types/graph';
 import type { ReachDomain } from '../../types/traits';
 import type {
+  AttachmentEffect,
   EffectRuntimeState,
   PredicateContext,
 } from '../../types/effects';
@@ -79,6 +81,43 @@ function isActive(runtimeState?: EffectRuntimeState): boolean {
   if (runtimeState?.ticksRemaining !== undefined && runtimeState.ticksRemaining <= 0) return false;
   if (runtimeState?.cooldownActive === false) return false;
   return true;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Stat Contributions (Domain Capability)
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Sum the `stat_contribution` effects declared on a single node's `effects[]`.
+ *
+ * Pure, node-level read (no graph walk, no edges) — the caller decides which
+ * nodes to sum (THR-718 feeds this from `computeRawScore`'s possesses/bonded_to
+ * artifact walk). Returns the additive raw-score terms per Reach domain; `{}`
+ * when the node carries no effects, a malformed `effects` value, or no
+ * `stat_contribution` entries.
+ *
+ * Fail-soft (NFP #4): a non-array `effects`, a non-object `contributions`, or a
+ * non-numeric/NaN value is skipped without throwing — other entries still sum.
+ */
+export function collectStatContributions(
+  node: GraphNode | undefined,
+): Partial<Record<ReachDomain, number>> {
+  const totals: Partial<Record<ReachDomain, number>> = {};
+  const effects = node?.properties.effects as AttachmentEffect[] | undefined;
+  if (!effects || !Array.isArray(effects)) return totals;
+
+  for (const effect of effects) {
+    if (!effect || effect.type !== 'stat_contribution') continue;
+    const contributions = effect.contributions;
+    if (!contributions || typeof contributions !== 'object') continue;
+    for (const [domain, value] of Object.entries(contributions)) {
+      if (typeof value !== 'number' || Number.isNaN(value)) continue;
+      const key = domain as ReachDomain;
+      totals[key] = (totals[key] ?? 0) + value;
+    }
+  }
+
+  return totals;
 }
 
 // ═══════════════════════════════════════════════════════════════════
