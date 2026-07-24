@@ -2,6 +2,7 @@ import type { AgentInfoCardData } from '../../../engine/agentDetail';
 import type { AgentKnowledge } from '../../../types/agentKnowledge';
 import {
   AMBITION_PRIMARY_INTERACTIONS,
+  AMBITION_PRIMARY_KNOWLEDGE,
   AMBITION_SECONDARY_INTERACTIONS,
 } from '../../../types/agentKnowledge';
 import { SectionHeading } from '../../shared/SectionHeading';
@@ -32,7 +33,7 @@ export function JourneyTab({ card, knowledge }: JourneyTabProps) {
   // Whether to show ambitions — either via interaction depth OR knowledge level
   const showAmbitions =
     (knowledge != null && knowledge.interactionDepth >= AMBITION_PRIMARY_INTERACTIONS)
-    || hasKnowledge(card.knowledgeLevel, 'known');
+    || hasKnowledge(card.knowledgeLevel, AMBITION_PRIMARY_KNOWLEDGE);
 
   // Whether to show secondary ambitions
   const showSecondaryAmbitions =
