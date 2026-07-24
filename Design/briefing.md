@@ -1,30 +1,31 @@
 # Briefing
 
-**Generated:** 2026-07-24 09:39 local (07:39 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-07-24 10:11 local (2026-07-24 08:11 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
 ## Needs Christian
 
-**Nothing needs you right now.** You flipped the four Cowork switches this morning — that was the last standing ask, and with it the Pure Claude Code Migration is complete end to end. Every automation now runs in one lane.
-
-One optional lever, same as the last brief: the queue is empty, and the nearest candidates (THR-718 items-move-capability-tiers, THR-719 item on-use triggers) already carry your yes from Tuesday — a design session can promote them without you. If you'd rather point the next design pass somewhere else, saying so in a chat session is what feeds the queue.
+**Nothing needs you right now.** The four Cowork switches are flipped (done this morning — the migration is closed end to end), and the "queue is empty, point the next design pass" lever from the last brief resolved itself: a design session refilled the board an hour later. The lane is feeding itself.
 
 ## Queue
 
-**Empty — 0 ready, 0 in dev. The board is fully drained.** World-minted ambitions (THR-726) landed at 06:57 this morning and nothing was behind it. The executor lane idles until a design session packages the next work; THR-718 (High) and THR-719 sit in Todo with your verdicts already recorded.
+**Healthy — 7 ready, 1 in dev.** The board refilled this morning after yesterday's full drain, and the executor is mid-flight on **Party Formation & Group Mechanics** (THR-74, the highest-priority item on the board). Nothing in the ready queue is blocked or stale — the oldest item is three days old.
 
 ## Freshness
 
-**Home tree: current and clean.** On `main`, level with the server, no local edits.
+**Home tree: on `main`, nothing stranded, but 7 commits behind the server and not self-healing.** One tracked file is edited in place — `.claude/settings.local.json`, a two-line permission-grant addition — and autosync refuses to fast-forward a tree with tracked edits. This is the same benign class as 2026-07-23, which an agent session resolved by landing the edit via a docs PR (PR #768); fourth occurrence of the dirty-tree-blocks-self-heal class, and today's 17:09 weekly retro is the standing place to finally file the general ticket. Practical effect for you: until it clears, the home tree serves slightly stale files (this morning's briefings included) — your next interactive session's precheck will surface it as `behind:7`, and the repair is agent work, not yours.
 
-**Cleanup reaper: alive and healthy** — last run 08:40 (within the hour), tracking 22 worktrees / 31 branches / 1 stash, nothing flagged for a human decision.
+Also sitting untracked in the home tree: this morning's backlog-grooming report (`Docs/ops/backlog-grooming-2026-07-24.md`). Untracked files are inert, but the grooming task should have committed its own report via PR — noted as a process miss for the retro.
+
+**Cleanup reaper: alive and healthy** — last run 09:40 (within the hour), tracking 25 worktrees / 33 branches / 1 stash, nothing flagged for a human decision.
 
 ## What's moving
 
-- **The Cowork era is over.** All four legacy automations (`keep-work-flowing`, `daily-backlog-grooming`, `weekly-workflow-retro`, `weekly-project-hygiene`) are switched off as of this morning; their Claude Code replacements have been live and producing real runs since the 2026-07-22 trials. `weekly-invoice-check` stays with you, untouched, as agreed. The migration that started with THR-650 is finished.
-- **World-minted ambitions shipped (THR-726, Done at 06:57, PR #782).** Wars, disasters, and windfalls now plant new wants in mortals — ambitions no longer grow only from within. That completes the three-ticket coupling chain from last week's interface audit (Secrets & Favors, economy-answers-the-god, and this).
-- **Tidy follow-ups from the overnight shift sit in backlog, not blocking:** wiring trait-granting effects to a real consumer (THR-737) and 18 action templates missing a required field (THR-736).
+- **Party formation is being built (THR-74).** The first slice — letting groups of mortals qualify for actions together — merged overnight; the executor continues on the remaining slices.
+- **Overnight incident, already contained:** THR-74 was wrongly marked Done at 00:41 because a merged PR's *title* happened to contain "THR-74" — the auto-close read it as a completion claim. It was reopened, and a hardening ticket (THR-738) is on the queue so bare ticket numbers in titles stop triggering closes. Third known instance of this failure class; no work was lost.
+- **Your Tuesday "yes" on player-cast variance is packaged (THR-728):** paid miracles roll the same outcome ladder mortals use, floored at "the miracle lands crooked" — never outright failure. Plan doc landed this morning; it's Ready for Dev.
+- The rest of the morning's refill: two vocabulary proposals (group-layer terms, encounter-surface terms), a sweep for 18 action templates missing a required field, wiring trait-granting item effects to a real consumer, and a fix for drifted design-audit inputs.
 
 ---
 *Standing asks live in [`Design/user-actions.md`](user-actions.md). This file is regenerated hourly by the `keep-work-flowing-cc` scheduled task; staleness is visible from the Generated timestamp above and the task's `lastRunAt` in `list_scheduled_tasks`.*
