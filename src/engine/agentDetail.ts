@@ -24,7 +24,7 @@ import { generateQuotes, generateBackstory } from './profileGenerator';
 import type { AmbitionCategory, ReactiveAmbitionTemplate } from '../types/ambition';
 import { generateTieredBackstory } from './backstoryGenerator';
 import type { BackstoryResult } from '../types/prose';
-import { AMBITION_TEMPLATES } from '../data/ambition-templates';
+import { findAmbitionTemplateById } from '../data/ambition-templates';
 import { getAgentPortraitUrlFromProperties } from '../data/portrait-assets';
 import { getOriginVignetteById } from '../data/origin-vignettes';
 import { getAxisByReach, getAxisById } from '../types/axisRegistry';
@@ -765,7 +765,7 @@ function getAgentIntents(graph: WorldGraph, agentId: string): ActiveIntent[] {
     const templateId = entry.ambition.properties.templateId as string;
     if (!templateId) continue; // fail-soft
 
-    const template = AMBITION_TEMPLATES.find(t => t.id === templateId);
+    const template = findAmbitionTemplateById(templateId);
     if (!template) continue; // fail-soft
 
     const completedMilestoneIds = (entry.edge.properties.completedMilestones as string[]) ?? [];

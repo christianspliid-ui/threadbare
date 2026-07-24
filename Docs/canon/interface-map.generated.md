@@ -15,10 +15,10 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 21 |
+| 🟢 LIVE | 23 |
 | 🟠 PARTIAL | 1 |
 | 🔴 LEAKED | 7 |
-| ⚫ UNWIRED | 2 |
+| ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 3 |
 | **Total** | **34** |
 
@@ -41,7 +41,7 @@ remediation ticket or the build fails.
 | `ambition-player-visibility` | The player can see what a mortal is striving for. | function: `getAmbitionsStrand` | Intelligence, Knowledge & Familiarity | 🟠 PARTIAL | THR-721 |
 | `ambition-progress-milestones` | Ambitions progress and complete, firing milestone events the player sees. | function: `phaseAmbitionProgress` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
 | `faction-ambitions-drive-action` | Faction ambitions drive faction action and render on the faction sheet. | function: `factionAmbitions` | Factions & Succession | 🟢 LIVE | — |
-| `minted-ambition-provenance` | Motive receipts name the origin of a minted want — "she seeks vengeance for the blighted fields." | edge-prop: `mintedByEventId` | Omens & Atmospheric Pressure | ⚫ UNWIRED | THR-726 |
+| `minted-ambition-provenance` | Motive receipts name the origin of a minted want — "she seeks vengeance for the blighted fields." | edge-prop: `mintedByEventId` | Omens & Atmospheric Pressure | 🟢 LIVE | — |
 
 ### Ascendant Beats & Progression
 
@@ -83,7 +83,7 @@ remediation ticket or the build fails.
 | `player-action-receipts-queue` | A resolved player cast queues a Divine Receipt the UI surfaces as a toast or a receipt dialogue. | node-prop: `playerActionReceipts` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
 | `receipt-event-band-toast` | A receipt toast carries its outcome band so the toast accent matches how the cast landed. | event: `band` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
 | `secrets-generation` | Secrets are born from scenes — mortals learn things about each other worth holding. | function: `generateSecret`, `createSecretEdge` | Secrets & Favors | 🟢 LIVE | — |
-| `world-events-mint-ambitions` | World events write themselves into mortal desire — a sacked town mints avengers and refugees. | function: `AMBITION_MINTING_RULES`, `mintAmbitionsFromEvents` | Ambitions & Initiatives | ⚫ UNWIRED | THR-726 |
+| `world-events-mint-ambitions` | World events write themselves into mortal desire — a sacked town mints avengers and refugees. | function: `AMBITION_MINTING_RULES`, `mintAmbitionsFromEvents` | Ambitions & Initiatives | 🟢 LIVE | — |
 
 ### Mortal Economy & Prosperity
 
@@ -366,14 +366,15 @@ remediation ticket or the build fails.
 - **Other hits:** `src/data/faction-action-constants.ts`
 - **Verdict:** Verified 2026-07-23: FactionSheet.activeAmbition renders; faction phases consume. Docs/plans/2026-07-23-system-interface-map.md § Audit findings (manual audit + independent cold-context review, both grep-verified)
 
-### `minted-ambition-provenance` — ⚫ UNWIRED
+### `minted-ambition-provenance` — 🟢 LIVE
 
 - **Intent:** Motive receipts name the origin of a minted want — "she seeks vengeance for the blighted fields."
 - **Producer → Consumer:** Ambitions & Initiatives → Omens & Atmospheric Pressure
-- **Production hits:** 0 total — 0 write, 0 read, 0 unclassified
-- **Write sites:** —
-- **Read sites:** —
-- **Verdict:** Tier 2: no production hits for any declared symbol on either side.
+- **Production hits:** 3 total — 1 write, 1 read, 1 unclassified
+- **Write sites:** `src/engine/ambitionTick.ts`
+- **Read sites:** `src/engine/foreshadowing/motiveReceipt.ts`
+- **Other hits:** `src/types/ambition.ts`
+- **Verdict:** Verified 2026-07-24: THR-726: `ambitionTick.ts` writes `mintedByEventId`/`mintedByLabel` on the minted `pursues` edge; `motiveReceipt.ts` `resolveMintedAmbitionProvenance` reads them and overrides the ambition contribution's provenance detail so the receipt names the origin event.
 
 ### `player-action-aftermath-read` — 🔵 UNVERIFIED-OK
 
@@ -437,13 +438,14 @@ remediation ticket or the build fails.
 - **Other hits:** `src/data/action-technical-effects.ts`
 - **Verdict:** Verified 2026-07-23: THR-724: `beat.pool.invest.the_unveiled_eye` grants both ids; `__DEBUG.listUnreachableActions()` no longer lists them. Link 3 verified rather than assumed — `plant_secret` writes a `knows_secret_of` edge via the existing graph-executor case, and `reveal_secret` now routes through the resolution intercept so it applies real consequences instead of only flipping the `revealed` flag.
 
-### `world-events-mint-ambitions` — ⚫ UNWIRED
+### `world-events-mint-ambitions` — 🟢 LIVE
 
 - **Intent:** World events write themselves into mortal desire — a sacked town mints avengers and refugees.
 - **Producer → Consumer:** Encounters & Dilemmas → Ambitions & Initiatives
 - **UL terms:** *AxiologicalProfile*
-- **Production hits:** 0 total — 0 write, 0 read, 0 unclassified
-- **Write sites:** —
-- **Read sites:** —
-- **Verdict:** Tier 2: no production hits for any declared symbol on either side.
+- **Production hits:** 3 total — 1 write, 1 read, 1 unclassified
+- **Write sites:** `src/engine/ambitionTick.ts`
+- **Read sites:** `src/data/ambition-minting-rules.ts`
+- **Other hits:** `src/data/ambition-templates.ts`
+- **Verdict:** Verified 2026-07-24: THR-726: CLI (seed 42, medium) — advanced to tick 75; `ambition_minted` aggregate trace fired (mintedCount>0, byEventClass populated), and inspected minted `pursues` edges carry `mintedByEventId` + a themed template drawn through `selectAmbitions`. Events write desire, capped at MINT_MAX_PER_EVENT per event.
 

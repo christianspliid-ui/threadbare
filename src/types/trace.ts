@@ -308,7 +308,9 @@ export type TraceCategory =
   // Companies — the group layer (THR-74)
   | 'group_phase'
   | 'group_formed'
-  | 'group_dissolved';
+  | 'group_dissolved'
+  // World-minted ambitions — events write mortal desire (THR-726)
+  | 'ambition_minted';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'action_selection', 'narrative_generation', 'context_harvest',
@@ -589,6 +591,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'group_phase',
   'group_formed',
   'group_dissolved',
+  // World-minted ambitions (THR-726)
+  'ambition_minted',
 ];
 
 /** Base shape for all trace entries */
@@ -2058,7 +2062,24 @@ export type TraceEntry =
   | MilestoneEnqueueTrace
   | ControlReleaseTrace
   // Divine Receipt — player action resolution feedback (THR-727)
-  | PlayerReceiptTrace;
+  | PlayerReceiptTrace
+  // World-minted ambitions (THR-726)
+  | AmbitionMintedTrace;
+
+/**
+ * Trace: the world minted ambitions from events this re-eval tick (THR-726).
+ * ONE aggregate entry per tick — never per-agent (trace-volume rule) — so an
+ * all-agents scan never floods the buffer.
+ */
+export interface AmbitionMintedTrace extends TraceBase {
+  category: 'ambition_minted';
+  /** Total ambitions minted across all agents this tick. */
+  mintedCount: number;
+  /** Count of mints by the originating event class. */
+  byEventClass: Record<string, number>;
+  /** Capped sample of agent ids that received a minted ambition. */
+  sampleAgentIds: string[];
+}
 
 /**
  * Trace: a Divine Receipt was enqueued, acknowledged, a reaction applied, the queue

@@ -477,9 +477,20 @@ export const CONTRACTS: readonly Contract[] = [
     intent: 'World events write themselves into mortal desire — a sacked town mints avengers and refugees.',
     ulTerms: ['AxiologicalProfile'],
     mechanism: { kind: 'function', symbols: ['AMBITION_MINTING_RULES', 'mintAmbitionsFromEvents'] },
+    // Read-site correction on implementation (THR-726): the row was seeded pointing at
+    // `ambitionSelection.ts` on the assumption the funnel would name the minting symbols.
+    // It does not — the pass calls the generic `selectAmbitions`; the symbols that cross
+    // the boundary are the rules TABLE (`AMBITION_MINTING_RULES`, defined in the data
+    // module and read by the tick) and the minting function (`mintAmbitionsFromEvents`,
+    // defined + run in `ambitionTick.ts`). Greping ambitionSelection.ts would have
+    // manufactured a permanent phantom leak.
     writeSites: ['src/engine/ambitionTick.ts'],
-    readSites: ['src/engine/ambitionSelection.ts'],
-    deferralTicket: 'THR-726',
+    readSites: ['src/data/ambition-minting-rules.ts'],
+    verifiedLive: {
+      date: '2026-07-24',
+      evidence:
+        'THR-726: CLI (seed 42, medium) — advanced to tick 75; `ambition_minted` aggregate trace fired (mintedCount>0, byEventClass populated), and inspected minted `pursues` edges carry `mintedByEventId` + a themed template drawn through `selectAmbitions`. Events write desire, capped at MINT_MAX_PER_EVENT per event.',
+    },
   },
   {
     id: 'minted-ambition-provenance',
@@ -489,7 +500,11 @@ export const CONTRACTS: readonly Contract[] = [
     mechanism: { kind: 'edge-prop', symbols: ['mintedByEventId'] },
     writeSites: ['src/engine/ambitionTick.ts'],
     readSites: ['src/engine/foreshadowing/motiveReceipt.ts'],
-    deferralTicket: 'THR-726',
+    verifiedLive: {
+      date: '2026-07-24',
+      evidence:
+        'THR-726: `ambitionTick.ts` writes `mintedByEventId`/`mintedByLabel` on the minted `pursues` edge; `motiveReceipt.ts` `resolveMintedAmbitionProvenance` reads them and overrides the ambition contribution\'s provenance detail so the receipt names the origin event.',
+    },
   },
 
   // ── Divine Receipt — player action resolution feedback (THR-727) ───────────
