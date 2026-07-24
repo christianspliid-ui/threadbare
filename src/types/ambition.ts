@@ -117,4 +117,8 @@ export interface PursuesEdgeProperties {
   readonly assignedTick: number;
   readonly completedMilestones: string[];
   readonly resolvedTick?: number;
+  /** Present when the world minted this ambition from an event node (THR-726). */
+  readonly mintedByEventId?: string;
+  /** Prose stem naming the minting event, for motive-receipt provenance (THR-726). */
+  readonly mintedByLabel?: string;
 }

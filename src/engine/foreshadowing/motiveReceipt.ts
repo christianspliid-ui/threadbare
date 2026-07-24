@@ -12,6 +12,7 @@
  */
 
 import type { ScoredCandidate } from '../encounterScoring';
+import type { WorldGraph } from '../graph';
 import type {
   ForeshadowingIntelligenceTier,
   MotiveContribution,
@@ -68,7 +69,11 @@ interface RawTerm {
  * over `1 + hexDistance` (0 when unreachable). Still unmapped by the fixed kind
  * vocabulary: ruins/attraction/anomaly bonuses (a follow-up if the vocabulary grows).
  */
-function extractRawTerms(candidate: ScoredCandidate, intelRecordId: string | null): RawTerm[] {
+function extractRawTerms(
+  candidate: ScoredCandidate,
+  intelRecordId: string | null,
+  ambitionProvenanceDetail?: string,
+): RawTerm[] {
   const rarityDelta = (candidate.rarityMultiplier - 1) * MULTIPLIER_DELTA_SCALE;
   const bondDelta = candidate.bondBonus * MULTIPLIER_DELTA_SCALE;
   const resonanceTotal = candidate.resonance + candidate.globalResonance;
@@ -76,8 +81,12 @@ function extractRawTerms(candidate: ScoredCandidate, intelRecordId: string | nul
     ? PROXIMITY_RECEIPT_SCALE / (1 + candidate.hexDistanceToEntry)
     : 0;
 
+  // A minted want names its origin ("the bloodshed at Thornhaven"); otherwise the
+  // ambition term is attributed to its dominant reach as before (THR-726).
+  const ambitionDetail = ambitionProvenanceDetail ?? candidate.entry.reachPrimary;
+
   const terms: RawTerm[] = [
-    { kind: 'ambition', term: candidate.ambitionBoost, provenance: { detail: candidate.entry.reachPrimary } },
+    { kind: 'ambition', term: candidate.ambitionBoost, provenance: { detail: ambitionDetail } },
     { kind: 'personality', term: candidate.personalityBias },
     { kind: 'intel', term: candidate.intelBonus, provenance: intelRecordId ? { detail: intelRecordId } : undefined },
     { kind: 'mark', term: candidate.markRevealBonus },
@@ -109,8 +118,9 @@ export function buildMotiveReceipt(
   intelReliability: number | null,
   intelRecordId: string | null,
   decidedAtTick: number,
+  ambitionProvenanceDetail?: string,
 ): MotiveReceipt {
-  const raw = extractRawTerms(candidate, intelRecordId);
+  const raw = extractRawTerms(candidate, intelRecordId, ambitionProvenanceDetail);
 
   // Positive score mass only (NFP #2 — receipt describes what pulled the agent in).
   const positive = raw
@@ -147,4 +157,30 @@ export function buildMotiveReceipt(
     dominantReach: candidate.entry.reachPrimary,
     decidedAtTick,
   };
+}
+
+/**
+ * Provenance label for a minted want, if this agent holds one relevant to the
+ * chosen scene (THR-726). Prefers a minted ambition whose reach affinity includes
+ * the scene's dominant reach — the want most plausibly pulling the choice — and
+ * falls back to any minted ambition the agent carries. Read-only + fail-soft;
+ * returns undefined when the agent has no minted ambition.
+ */
+export function resolveMintedAmbitionProvenance(
+  graph: WorldGraph,
+  actorId: string,
+  dominantReach: string,
+): string | undefined {
+  let fallback: string | undefined;
+  for (const edge of graph.getOutgoingEdges(actorId, 'pursues')) {
+    if (edge.properties?.status !== 'active') continue;
+    const mintedByEventId = edge.properties?.mintedByEventId as string | undefined;
+    const mintedByLabel = edge.properties?.mintedByLabel as string | undefined;
+    if (!mintedByEventId || !mintedByLabel) continue;
+    fallback ??= mintedByLabel;
+    const node = graph.getNode(edge.target);
+    const affinity = node?.properties?.reachAffinity as Record<string, number> | undefined;
+    if (affinity && (affinity[dominantReach] ?? 0) > 0) return mintedByLabel;
+  }
+  return fallback;
 }

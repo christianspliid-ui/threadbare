@@ -858,3 +858,348 @@ export const REACTIVE_AMBITION_TEMPLATES: readonly ReactiveAmbitionTemplate[] = 
     ],
   },
 ] as const;
+
+// ─── Event-Minted Ambition Templates (THR-726) ───────────────────────────────
+//
+// The world mints these into mortals in response to events they suffered or saw —
+// see `AMBITION_MINTING_RULES` (ambition-minting-rules.ts) for which event mints
+// which. They are ordinary funnel-gated `AmbitionTemplate`s (NOT reactive/skip-
+// filters): the minting pass supplies them as candidates, `selectAmbitions` still
+// decides. They are a SEPARATE pool so the spontaneous re-eval loop, which draws
+// only from `AMBITION_TEMPLATES`, never assigns them without a triggering event.
+//
+// Milestones use agent-self predicates only (reach / bonds / controls / trait).
+// `target_agent_eliminated` is deliberately avoided — with no per-instance target
+// binding it would auto-complete against a missing `$`-ref node (graphConditions).
+
+export const EVENT_MINTED_AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
+  // 1. Avenge the Wrong (vengeance) — the victim of bloodshed or a torn bond
+  {
+    id: 'ambition_avenge_the_wrong',
+    displayName: 'Avenge the Wrong',
+    category: 'vengeance',
+    reachFloors: { iron: 0.1 },
+    requiredTraits: [],
+    blockingTraits: ['forgiving'],
+    sphereAffinities: ['force', 'entropy'],
+    bondModifiers: [{ bondType: 'enemy', modifier: 0.4 }],
+    boostingTraits: ['grudge_bearer', 'ruthless', 'proud'],
+    reachAffinity: { iron: 0.7, shadow: 0.6, eye: 0.3 },
+    milestones: [
+      {
+        id: 'avenge_resolve',
+        condition: { type: 'agent_reach_above', reach: 'shadow', threshold: 0.45 },
+        prose: ['The grief hardened into something with an edge.'],
+      },
+      {
+        id: 'avenge_strength',
+        condition: { type: 'agent_reach_above', reach: 'iron', threshold: 0.55 },
+        prose: ['Strong enough now to answer what was done.'],
+      },
+      {
+        id: 'avenge_allies',
+        condition: { type: 'agent_has_bonds', minCount: 2, basis: 'loyalty' },
+        prose: ['Others who remember the wrong stand at their shoulder.'],
+      },
+    ],
+    completion: { requires: 2, of: 3 },
+    abandonmentTriggers: [
+      {
+        condition: { type: 'agent_has_trait', trait: 'grief_resolved' },
+        prose: ['The rage cooled. The debt was let go, or simply outlived.'],
+      },
+    ],
+    abandonmentCooldown: 40,
+    selectionProse: [
+      'What was taken would be answered. That much they promised the dark.',
+      'The wound closed over a purpose harder than the flesh around it.',
+    ],
+    milestoneProse: {
+      avenge_resolve: ['No more weeping. Only the long, cold arithmetic of it.'],
+      avenge_strength: ['The arm that could not save has learned to strike.'],
+      avenge_allies: ['Grief shared is grief armed.'],
+    },
+    completionProse: [
+      'The wrong was answered. Whether it healed anything is another matter.',
+    ],
+    abandonmentProse: [
+      'The vengeance went unspent. Some nights that is its own kind of mercy.',
+    ],
+  },
+
+  // 2. Protect the Home (survival) — the one who saw violence reach their door
+  {
+    id: 'ambition_protect_the_home',
+    displayName: 'Protect the Home',
+    category: 'survival',
+    reachFloors: { heart: 0.1 },
+    requiredTraits: [],
+    blockingTraits: [],
+    sphereAffinities: ['spirit', 'force'],
+    bondModifiers: [{ bondType: 'kin', modifier: 0.4 }],
+    boostingTraits: ['protector', 'loyal', 'steadfast'],
+    reachAffinity: { heart: 0.6, iron: 0.6, stone: 0.4 },
+    milestones: [
+      {
+        id: 'protect_kin',
+        condition: { type: 'agent_has_bonds', minCount: 3, basis: 'loyalty' },
+        prose: ['Enough hands willing to stand the wall beside them.'],
+      },
+      {
+        id: 'protect_ward',
+        condition: { type: 'agent_controls_location', locationType: 'fortress' },
+        prose: ['Somewhere with walls now. Somewhere that can be held.'],
+      },
+      {
+        id: 'protect_iron',
+        condition: { type: 'agent_reach_above', reach: 'iron', threshold: 0.5 },
+        prose: ['They will not be caught unarmed a second time.'],
+      },
+    ],
+    completion: { requires: 2, of: 3 },
+    abandonmentTriggers: [
+      {
+        condition: { type: 'agent_has_trait', trait: 'homeless_wanderer' },
+        prose: ['There was nothing left to guard. The vigil ended.'],
+      },
+    ],
+    abandonmentCooldown: 40,
+    selectionProse: [
+      'Never again — they swore it to the smoke still hanging over the roofs.',
+      'What the raiders left standing, they would make unbreakable.',
+    ],
+    milestoneProse: {
+      protect_kin: ['A watch assembles. The frightened learn to be fierce.'],
+      protect_ward: ['Walls. A gate. A place that answers back.'],
+      protect_iron: ['The hand that trembled has steadied on the haft.'],
+    },
+    completionProse: [
+      'The home stands warded. Let the next storm come and break on it.',
+    ],
+    abandonmentProse: [
+      'The watch could not hold forever. What was lost stayed lost.',
+    ],
+  },
+
+  // 3. Flee the Ravaged Land (survival) — get out before the ground claims them
+  {
+    id: 'ambition_flee_the_ravaged_land',
+    displayName: 'Flee the Ravaged Land',
+    category: 'survival',
+    reachFloors: { star: 0.1 },
+    requiredTraits: [],
+    blockingTraits: ['rooted'],
+    sphereAffinities: ['entropy', 'time'],
+    bondModifiers: [{ bondType: 'fellow_refugee', modifier: 0.3 }],
+    boostingTraits: ['survivor', 'desperate', 'craven'],
+    reachAffinity: { star: 0.6, stone: 0.5, shadow: 0.4 },
+    milestones: [
+      {
+        id: 'flee_endurance',
+        condition: { type: 'agent_reach_above', reach: 'star', threshold: 0.45 },
+        prose: ['The body has learned to keep going past where it wanted to stop.'],
+      },
+      {
+        id: 'flee_company',
+        condition: { type: 'agent_has_bonds', minCount: 1, basis: 'fellow_refugee' },
+        prose: ['Not alone on the road, at least. That is something.'],
+      },
+    ],
+    completion: { requires: 2, of: 2 },
+    abandonmentTriggers: [
+      {
+        condition: { type: 'agent_has_trait', trait: 'made_peace_with_the_land' },
+        prose: ['The road unspooled and then, quietly, ended. They stayed.'],
+      },
+    ],
+    abandonmentCooldown: 30,
+    selectionProse: [
+      'Staying meant the same slow ending as everyone else. They chose the road.',
+      'The land had turned against its people. There was nothing to do but leave it.',
+    ],
+    milestoneProse: {
+      flee_endurance: ['Still walking. Somehow, still walking.'],
+      flee_company: ['Strangers become kin when they share the same flight.'],
+    },
+    completionProse: [
+      'Clean wind, unfamiliar country. Behind them, the poison keeps its own.',
+    ],
+    abandonmentProse: [
+      'The land kept what it was owed. The flight ended where it began.',
+    ],
+  },
+
+  // 4. Rebuild from Ashes (legacy) — stay, and raise it up again
+  {
+    id: 'ambition_rebuild_from_ashes',
+    displayName: 'Rebuild from Ashes',
+    category: 'legacy',
+    reachFloors: { stone: 0.1 },
+    requiredTraits: [],
+    blockingTraits: [],
+    sphereAffinities: ['matter', 'life'],
+    bondModifiers: [{ bondType: 'labor', modifier: 0.3 }],
+    boostingTraits: ['builder', 'stubborn', 'visionary'],
+    reachAffinity: { stone: 0.6, gold: 0.5, iron: 0.4 },
+    milestones: [
+      {
+        id: 'rebuild_hands',
+        condition: { type: 'agent_has_bonds', minCount: 3, basis: 'labor' },
+        prose: ['Hands enough now. Grief turned to the work of clearing rubble.'],
+      },
+      {
+        id: 'rebuild_ground',
+        condition: { type: 'agent_controls_location', locationType: 'construction_site' },
+        prose: ['The ground is staked again. Foundations where ash had settled.'],
+      },
+      {
+        id: 'rebuild_craft',
+        condition: { type: 'agent_reach_above', reach: 'stone', threshold: 0.5 },
+        prose: ['They read the ruined stone and know how it wants to stand.'],
+      },
+    ],
+    completion: { requires: 2, of: 3 },
+    abandonmentTriggers: [
+      {
+        condition: { type: 'agent_reach_below', reach: 'stone', threshold: 0.05 },
+        prose: ['The strength for it drained away. The ashes stayed ashes.'],
+      },
+    ],
+    abandonmentCooldown: 45,
+    selectionProse: [
+      'Others fled. They stayed, and started stacking the fallen stones.',
+      'What was broken could be built again — smaller, maybe, but theirs.',
+    ],
+    milestoneProse: {
+      rebuild_hands: ['A workforce of the bereaved. Purpose in calloused grief.'],
+      rebuild_ground: ['Stakes and string over the burned footprint. A beginning.'],
+      rebuild_craft: ['The old skill returns to the hands, surer for the loss.'],
+    },
+    completionProse: [
+      'It stands again where it fell. Not the same. Standing all the same.',
+    ],
+    abandonmentProse: [
+      'The rebuilding faltered. The ruin kept the shape of what it lost.',
+    ],
+  },
+
+  // 5. Found Something New (legacy) — carry the spark somewhere untouched
+  {
+    id: 'ambition_found_anew',
+    displayName: 'Found Something New',
+    category: 'legacy',
+    reachFloors: { heart: 0.1 },
+    requiredTraits: [],
+    blockingTraits: [],
+    sphereAffinities: ['life', 'time'],
+    bondModifiers: [{ bondType: 'alliance', modifier: 0.3 }],
+    boostingTraits: ['visionary', 'charismatic', 'pioneer'],
+    reachAffinity: { heart: 0.6, gold: 0.5, star: 0.4 },
+    milestones: [
+      {
+        id: 'found_followers',
+        condition: { type: 'agent_has_bonds', minCount: 3, basis: 'alliance' },
+        prose: ['Others bind their hope to the same unmarked horizon.'],
+      },
+      {
+        id: 'found_seat',
+        condition: { type: 'agent_controls_location', locationType: 'estate' },
+        prose: ['A first hearth in new country. A place to gather around.'],
+      },
+    ],
+    completion: { requires: 2, of: 2 },
+    abandonmentTriggers: [
+      {
+        condition: { type: 'agent_has_trait', trait: 'disillusioned' },
+        prose: ['The vision thinned to nothing. The new country stayed empty.'],
+      },
+    ],
+    abandonmentCooldown: 45,
+    selectionProse: [
+      'What they had witnessed could not be unmade. So they set out to make it anew.',
+      'The old place was finished. They would plant a name where none had grown.',
+    ],
+    milestoneProse: {
+      found_followers: ['A handful of believers. Every founding starts so.'],
+      found_seat: ['One roof, then. From one roof, everything begins.'],
+    },
+    completionProse: [
+      'A new thing stands where nothing did. Its founder can rest, a little.',
+    ],
+    abandonmentProse: [
+      'The founding never took root. The horizon stayed a horizon.',
+    ],
+  },
+
+  // 6. Chase the Wonder (discovery) — the numinous seen, and never let go
+  {
+    id: 'ambition_chase_the_wonder',
+    displayName: 'Chase the Wonder',
+    category: 'discovery',
+    reachFloors: { eye: 0.1 },
+    requiredTraits: [],
+    blockingTraits: ['incurious'],
+    sphereAffinities: ['mind', 'spirit'],
+    bondModifiers: [{ bondType: 'fellow_seeker', modifier: 0.3 }],
+    boostingTraits: ['scholar', 'obsessive', 'veil_touched'],
+    reachAffinity: { eye: 0.7, veil: 0.6, star: 0.4 },
+    milestones: [
+      {
+        id: 'wonder_sight',
+        condition: { type: 'agent_reach_above', reach: 'eye', threshold: 0.5 },
+        prose: ['They have learned to look until the world gives up its seams.'],
+      },
+      {
+        id: 'wonder_veil',
+        condition: { type: 'agent_reach_above', reach: 'veil', threshold: 0.45 },
+        prose: ['The thing they saw has taught their hands its grammar.'],
+      },
+      {
+        id: 'wonder_keeper',
+        condition: { type: 'agent_has_trait', trait: 'keeper_of_secrets' },
+        prose: ['What was glimpsed once, they now carry, heavy and quiet.'],
+      },
+    ],
+    completion: { requires: 2, of: 3 },
+    abandonmentTriggers: [
+      {
+        condition: { type: 'agent_reach_below', reach: 'eye', threshold: 0.05 },
+        prose: ['The vision dimmed to an old story they no longer believed.'],
+      },
+    ],
+    abandonmentCooldown: 45,
+    selectionProse: [
+      'They had seen something the world was not supposed to show. They wanted it again.',
+      'The wonder passed in an instant and left a hunger that would not.',
+    ],
+    milestoneProse: {
+      wonder_sight: ['Seeing clearly now — perhaps too clearly for comfort.'],
+      wonder_veil: ['The mystery answers, syllable by careful syllable.'],
+      wonder_keeper: ['The wonder lives in them now, a second and stranger pulse.'],
+    },
+    completionProse: [
+      'They caught the edge of it at last. Whether it was worth the chase, only they can say.',
+    ],
+    abandonmentProse: [
+      'The wonder receded past reach. The world went ordinary again.',
+    ],
+  },
+] as const;
+
+/** Count of event-minted templates authored in v1 (THR-726). */
+export const MINT_TEMPLATE_COUNT = EVENT_MINTED_AMBITION_TEMPLATES.length;
+
+/**
+ * Resolve an ambition template id across all three pools — standard, reactive, and
+ * event-minted. Consumers that only searched `AMBITION_TEMPLATES` miss minted
+ * ambitions (milestone eval, agent-detail display); use this instead. (THR-726)
+ */
+export function findAmbitionTemplateById(
+  templateId: string,
+): AmbitionTemplate | undefined {
+  return (
+    AMBITION_TEMPLATES.find((t) => t.id === templateId) ??
+    EVENT_MINTED_AMBITION_TEMPLATES.find((t) => t.id === templateId) ??
+    REACTIVE_AMBITION_TEMPLATES.find((t) => t.id === templateId)
+  );
+}
