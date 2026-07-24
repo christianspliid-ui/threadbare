@@ -1,6 +1,6 @@
 # Briefing
 
-**Generated:** 2026-07-24 01:09 local (2026-07-23 23:09 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-07-24 02:10 local (2026-07-24 00:10 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
@@ -14,22 +14,21 @@ This is your inbox. It's rewritten every hour by a Claude Code task. Standing sw
 
 **Healthy — 2 ready, executor mid-flight, nothing blocked, nothing stale.**
 
-- **In development: party formation & group mechanics (THR-74, High)** — adventurers band together, travel as a group, and resolve encounters together. Picked up this evening; the session was still touching it about two hours before this run.
+- **In development: party formation & group mechanics (THR-74, High)** — adventurers band together, travel as a group, and resolve encounters together. Its first slice is already up as a pull request (see below).
 - **Ready, top first:** the world minting ambitions into mortals (THR-726 — world events write themselves into what people want, instead of ambitions only coming from within), and a small dead-contract cleanup (THR-722). Both fresh from yesterday's design passes.
 
 ## Freshness
 
 **Home tree: current and clean.** On `main`, level with the server, no local edits.
 
-**One tooling regression, agent-fixable:** the home tree's installed dependencies lost their command shims again (`node_modules/.bin` is gone — same class as the 2026-07-19 incident), so `npm run dev` and `npm test` will fail on the home tree until someone reruns `npm install` there. Nothing you need to do unless you want the dev server tonight; the next session that needs it can fix it in one command.
+**The dev-tooling regression from last hour is still present, now on the books:** the home tree's installed dependencies are missing their command shims (`node_modules/.bin` gone again — logged as impediment #203 overnight), so `npm run dev` and `npm test` fail on the home tree until someone reruns `npm install` there. Agent-fixable; nothing you need to do unless you want the dev server before a session gets to it.
 
-**Cleanup reaper: alive and healthy** — last run 00:40 (within the hour), tracking 24 worktrees / 31 branches / 1 stash, nothing flagged for a human decision.
+**Cleanup reaper: alive and healthy** — last run 01:40 (within the hour), tracking 23 worktrees / 31 branches / 1 stash, nothing flagged for a human decision.
 
 ## What's moving
 
-- **The wiki freshness gate landed (THR-730, High, PR #766).** Your directive from yesterday morning is now enforced: a change to a core game system that skips its wiki page update fails the merge gate. Directive to shipped in under a day.
-- **The pull-request board is at zero open** — everything armed has merged, nothing is stuck.
-- **Party formation (THR-74, High) moved from top-of-queue into the executor's hands** — the biggest design on the board is now being built.
+- **Party formation's first slice is up as a pull request (THR-74, part 1 of 3: the group-layer engine core), but its test gate came back red.** It's armed to merge itself the moment the checks go green; until the executor session fixes the failure it waits. Agent work, nothing for you — noted so the next brief can confirm it landed.
+- **Two pieces of overnight bookkeeping landed:** the armed-pull-request starvation pattern and the missing-shims regression above were both written into the impediment log (#202, #203), so Friday's retro sees them.
 
 ---
 *Standing asks live in [`Design/user-actions.md`](user-actions.md). This file is regenerated hourly by the `keep-work-flowing-cc` scheduled task; staleness is visible from the Generated timestamp above and the task's `lastRunAt` in `list_scheduled_tasks`.*
