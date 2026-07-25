@@ -41,6 +41,7 @@ import {
   MILESTONE_SOURCE_BEAT_ID,
   MILESTONE_COMPANY_BEAT_ID,
   MILESTONE_GATHERING_BEAT_ID,
+  MILESTONE_EMPTY_ROAD_BEAT_ID,
 } from './player-progression';
 import type { SpineBeatPresentation } from './ascendant-beat-content';
 
@@ -101,6 +102,21 @@ export const ASCENDANT_MILESTONE_BEATS: readonly BeatDefinition[] = [
     identity: { reach: 'heart', sphere: 'spirit' },
     grantsActionIds: ['company.draw_together'],
   },
+  {
+    // THR-732: the empty-road milestone. Enqueued by `phaseAscendantProgression` the
+    // first time a company the ascendant was bound to has disbanded — which is also
+    // Reunite's own precondition, so the card arrives with something to target.
+    // Grants both remaining company verbs at once; see MILESTONE_EMPTY_ROAD_BEAT_ID.
+    // `identity.sphere: 'spirit'` matches Reunite's sphereAffinity (Sunder's is
+    // 'dusk' — the beat takes the register of the verb it is actually *about*, since
+    // the beat's subject is the loss, not the breaking). `trigger: { kind: 'turn' }`
+    // keeps a `__DEBUG.fireBeat` force-offer unconditional, like the other milestones.
+    beatId: MILESTONE_EMPTY_ROAD_BEAT_ID,
+    kind: 'milestone',
+    trigger: { kind: 'turn' },
+    identity: { reach: 'heart', sphere: 'spirit' },
+    grantsActionIds: ['company.reunite', 'company.sunder'],
+  },
 ];
 
 /** Look a milestone beat up by id. Null when the id is not a milestone beat. */
@@ -136,6 +152,13 @@ export const MILESTONE_BEAT_PRESENTATION: Readonly<Record<string, SpineBeatPrese
       'You have reached into more than a single life now. Threads run from you to mortals scattered across the world, each walking their own road, none yet knowing the others exist. A god cannot march them into ranks — but a god can pull, gently, on the threads themselves, and let those you have touched feel the tug toward one another. Draw them together, and where their roads cross a company may yet be born.',
     cta: 'Receive',
   },
+  [MILESTONE_EMPTY_ROAD_BEAT_ID]: {
+    eyebrow: 'An Empty Road',
+    title: 'One of Yours Has Come Apart',
+    prose:
+      'A company you had a hand in is finished. They divided what there was to divide, and made the promises people make when they know they will not keep them, and walked out in different directions. None of them are dead. That is the part worth sitting with: every one of those roads still leads somewhere, and they all still remember the fire. A god who can see all of them at once can put a name back into their dreams — or, knowing now exactly how a band comes apart, do it deliberately to somebody else\'s.',
+    cta: 'Receive',
+  },
 };
 
 /**
@@ -152,6 +175,9 @@ export function milestoneChronicleProse(beatId: string): string {
   }
   if (beatId === MILESTONE_GATHERING_BEAT_ID) {
     return 'Your threads reached into more than one life at last, and you learned to pull them gently toward each other — scattered souls drawn to gather where their roads cross.';
+  }
+  if (beatId === MILESTONE_EMPTY_ROAD_BEAT_ID) {
+    return 'A company of yours came apart on the road, and its people scattered without dying. You learned that an ending is not always final — and that you now know precisely where the seams of a fellowship lie.';
   }
   // Fail-soft (NFP #4): an un-authored milestone still writes an honest line rather
   // than crashing the phase or printing an id at the player.

@@ -2742,6 +2742,88 @@ const COMPANY_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
       failure: 'the pull finds no purchase; the wanderers keep their own separate roads',
     },
   },
+  {
+    // THR-732 — the memory verb. The only card in the game cast on something that has
+    // already ended: `requiredNodeProperties: { groupStatus: 'disbanded' }` means the
+    // drawer offers it on history surfaces and nowhere else, and Sunder's mirrored
+    // gate below means the two are never offered on the same company at the same time.
+    id: 'company.reunite',
+    name: 'Reunite',
+    spellName: 'The Unfinished Road',
+    rarityTier: 2,
+    intrinsicTier: 'shaping',
+    description: 'Reaches back to a fellowship the world has already finished with, and reminds each of the survivors — in a dream, a turn of a familiar street, a face half-glimpsed in a crowd — that it was not supposed to end that way. Whether they answer is theirs to decide.',
+    technicalEffect: 'Fires the reunite_company graph-op on a disbanded company. Opens reuniteUntilTick (= tick + REUNITE_DURATION_TICKS) on the dead company node and stamps Draw Together\'s own convergence pull (convergePullHexCol/_HexRow/_UntilTick) on every living, ungrouped former member, anchored on the old leader\'s hex where they still live. While the window holds, encounterScoring.computeConvergenceBonus bends those mortals\' encounter choices homeward and groupFormation adds REUNITE_COMPAT_BONUS to any pair who rode together, so the formation scan can bind them; the re-formed company is attributed cause: reunite and takes a variant of the old name. Requires GROUP_MIN_MEMBERS gatherable former members; fail-soft on a missing/non-company/still-active target. Unanswered windows close as a chronicle beat.',
+    reach: 'heart',
+    crudType: 'update',
+    scale: 'local',
+    steps: [{
+      reach: 'heart',
+      duration: { min: 1, max: 2 },
+      difficulty: 0.3,
+      onSuccess: [
+        { op: 'reunite_company', nodeId: '$target' },
+      ],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: 4,
+    actorAffinities: ['ascendant'],
+    sphereAffinity: 'spirit',
+    targetCategories: ['actor'],
+    targetSubtypes: ['group'],
+    requiredNodeProperties: { groupStatus: 'disbanded' },
+    motivations: ['loyalty_ambition', 'preservation_transformation'],
+    narrativeTemplates: {
+      initiation: 'calls after a company the world has already finished with',
+      success: 'the scattered survivors each feel it — a name they had stopped saying, and a road that was never walked to its end',
+      failure: 'the call goes out and finds no one; whatever that company was, it stays finished',
+    },
+  },
+  {
+    // THR-732 — the breaking verb, and Bless's exact mirror: same target class, same
+    // window shape, every read amplifying where Bless suppresses. The two windows may
+    // be open at once and neither cancels the other (plan: "no Bless/Sunder
+    // cancellation logic — the tug-of-war is the story").
+    id: 'company.sunder',
+    name: 'Sunder',
+    spellName: 'The Widening Silence',
+    rarityTier: 2,
+    intrinsicTier: 'shaping',
+    description: 'Works a patient wedge into the small spaces between companions — the joke that lands wrong, the watch that runs long, the share that looks uneven in a certain light. Nothing is said that could not be taken back. Very little of it is.',
+    technicalEffect: 'Applies an immediate SUNDER_COHESION_DELTA cohesion hit to the target company and opens an amplification window (sunderedUntilTick = tick + SUNDER_DURATION_TICKS). While the window is open, isGroupSundered multiplies each dissent\'s cohesion hit by SUNDER_DISSENT_MULT (groupCohesion), multiplies leave probability by SUNDER_LEAVE_MULT for a fraying company (groupDissolution), and makes the fray drama pool treat the company as frayed regardless of its true band (phaseGroups). Fires the sunder_company graph-op; fail-soft on a non-company or already-disbanded target. Does not cancel, and is not cancelled by, an open Bless window.',
+    reach: 'shadow',
+    crudType: 'update',
+    scale: 'local',
+    steps: [{
+      reach: 'shadow',
+      duration: { min: 1, max: 2 },
+      difficulty: 0.3,
+      onSuccess: [
+        { op: 'sunder_company', nodeId: '$target' },
+      ],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: 4,
+    actorAffinities: ['ascendant'],
+    // `entropy` is the Creation sphere `reach: 'shadow'` maps to (REACH_TO_SPHERE) —
+    // the unmaking of what held. Sunder is the only company verb not aligned to
+    // spirit, which is the point: the other three work on bonds, this one works on
+    // their decay.
+    sphereAffinity: 'entropy',
+    targetCategories: ['actor'],
+    targetSubtypes: ['group'],
+    requiredNodeProperties: { groupStatus: 'active' },
+    motivations: ['loyalty_ambition', 'mercy_ruthlessness'],
+    narrativeTemplates: {
+      initiation: 'works a quiet wedge into the seams of this company',
+      success: 'the small resentments find their teeth; what held them together holds a little less',
+      failure: 'the wedge finds no seam — whatever binds this company is not so easily worked',
+    },
+  },
 ];
 
 // ─── Sublocation Action Templates ─────────────────────────────────

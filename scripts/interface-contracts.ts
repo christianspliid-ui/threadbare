@@ -662,6 +662,76 @@ export const CONTRACTS: readonly Contract[] = [
     },
   },
   {
+    id: 'reunite-rides-draw-together-convergence',
+    producerSystem: COMPANIES,
+    consumerSystem: ENCOUNTERS,
+    intent:
+      'A god calling a dead company back does not invent a new kind of pull — the scattered feel exactly the tug Draw Together uses, so their own encounter choices bend homeward.',
+    ulTerms: ['Company', 'Draw Together'],
+    // The contract is the *property triple*, not a function: reunite_company writes
+    // the same convergePullHexCol/_HexRow/_UntilTick keys that computeConvergenceBonus
+    // reads. Writing them under any other name would leave Reunite inert while every
+    // test that only checked "a window opened" still passed — which is why the
+    // property names, not the op, are the mechanism named here.
+    mechanism: {
+      kind: 'property',
+      symbols: ['convergePullHexCol', 'convergePullHexRow', 'convergePullUntilTick'],
+    },
+    writeSites: ['src/engine/graphOpExecutor.ts'],
+    readSites: ['src/engine/encounterScoring.ts', 'src/engine/groups/groupFormation.ts'],
+    verifiedLive: {
+      date: '2026-07-25',
+      evidence:
+        'src/engine/groups/__tests__/reuniteSunder.test.ts § "opens the window and stamps Draw Together\'s convergence pull on former members" asserts all three property names on every gatherable former member after the op. Falsified during authoring: renaming the written key to convergePullUntilTickBROKEN fails that test, so the guard is not vacuous.',
+    },
+  },
+  {
+    id: 'reunion-reads-the-edges-not-the-roster',
+    producerSystem: COMPANIES,
+    consumerSystem: COMPANIES,
+    intent:
+      'Who once rode with a company survives its ending — the record is the membership edges dissolution stamped, never the roster it emptied.',
+    ulTerms: ['Company'],
+    // The carrier is the *edge property*, not the accessor function. `dissolveGroup`
+    // stamps `leftAtTick` on every `member_of` edge instead of removing it (while
+    // clearing the node's `roster` to `[]`), and `getFormerGroupMembers` walks those
+    // stamped edges. Naming the accessor as the mechanism was the first draft and it
+    // classified LEAKED — the functions live in groupQueries.ts, so the declared
+    // producer had none of the symbols. Impediment #206's rule applies: declare the
+    // symbol that really crosses the boundary, not the one you had in mind.
+    mechanism: { kind: 'property', symbols: ['leftAtTick'] },
+    writeSites: ['src/engine/groups/groupDissolution.ts'],
+    readSites: [
+      'src/engine/groups/groupQueries.ts',
+      'src/engine/groups/groupFormation.ts',
+    ],
+    verifiedLive: {
+      date: '2026-07-25',
+      evidence:
+        'src/engine/groups/__tests__/reuniteSunder.test.ts § "the cleared-roster trap" asserts roster === [] after dissolveGroup *and* that getFormerGroupMembers still returns all three riders — so a roster-based implementation fails the same test that documents why.',
+    },
+  },
+  {
+    id: 'sunder-window-amplifies-company-decay',
+    producerSystem: COMPANIES,
+    consumerSystem: COMPANIES,
+    intent:
+      'A sundered company comes apart faster and more visibly — quarrels bite harder, people leave sooner, and the drama pool starts telling the story before the numbers justify it.',
+    ulTerms: ['Company', 'Group Cohesion'],
+    mechanism: { kind: 'function', symbols: ['isGroupSundered'], module: 'src/engine/groups/groupQueries.ts' },
+    writeSites: ['src/engine/graphOpExecutor.ts'],
+    readSites: [
+      'src/engine/groups/groupCohesion.ts',
+      'src/engine/groups/groupDissolution.ts',
+      'src/engine/groups/phaseGroups.ts',
+    ],
+    verifiedLive: {
+      date: '2026-07-25',
+      evidence:
+        'src/engine/groups/__tests__/reuniteSunder.test.ts § "Sunder read sites" measures the doubled dissent delta against the plain constant, confirms non-dissent events are untouched, and confirms an open Bless window still suppresses first (the two windows are read independently and neither cancels the other).',
+    },
+  },
+  {
     id: 'company-assist-shapes-resolution',
     producerSystem: COMPANIES,
     consumerSystem: ENCOUNTERS,

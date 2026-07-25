@@ -15,12 +15,12 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 35 |
+| 🟢 LIVE | 38 |
 | 🟠 PARTIAL | 0 |
 | 🔴 LEAKED | 4 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 3 |
-| **Total** | **42** |
+| **Total** | **45** |
 
 ## Contracts by producing subsystem
 
@@ -78,6 +78,9 @@ remediation ticket or the build fails.
 | `confrontation-content-gated-on-a-live-opponent` | An encounter about fighting a particular band is only offered while that band is standing there — a confrontation never surfaces against nobody. | function: `requiresOpposingBand`, `hasOpposingBand` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `contested-outcome-band-reaches-the-player` | Losing a fight reads differently from merely failing — a contested loss says so in the chronicle and the receipt. | function: `contestedOutcomeFor`, `contested_won` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `group-grudge-reaches-the-mortal-sheet` | A company that has fought someone carries it visibly — the mortal sheet names the rival in prose, so blood between companies is legible without a trace viewer. | edge-prop: `hostile_to`, `rivals` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
+| `reunion-reads-the-edges-not-the-roster` | Who once rode with a company survives its ending — the record is the membership edges dissolution stamped, never the roster it emptied. | property: `leftAtTick` | Companies & Group Travel | 🟢 LIVE | — |
+| `reunite-rides-draw-together-convergence` | A god calling a dead company back does not invent a new kind of pull — the scattered feel exactly the tug Draw Together uses, so their own encounter choices bend homeward. | property: `convergePullHexCol`, `convergePullHexRow`, `convergePullUntilTick` | Encounters & Dilemmas | 🟢 LIVE | — |
+| `sunder-window-amplifies-company-decay` | A sundered company comes apart faster and more visibly — quarrels bite harder, people leave sooner, and the drama pool starts telling the story before the numbers justify it. | function: `isGroupSundered` | Companies & Group Travel | 🟢 LIVE | — |
 
 ### Encounters & Dilemmas
 
@@ -499,6 +502,28 @@ remediation ticket or the build fails.
 - **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/Game/ActionCard.tsx`, `src/components/Game/ascendant-bar/IdentityStrip.tsx`, `src/components/Game/ascendant-bar/selectors.ts`, `src/components/Game/ChapterView.tsx` +140 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
+### `reunion-reads-the-edges-not-the-roster` — 🟢 LIVE
+
+- **Intent:** Who once rode with a company survives its ending — the record is the membership edges dissolution stamped, never the roster it emptied.
+- **Producer → Consumer:** Companies & Group Travel → Companies & Group Travel
+- **UL terms:** *Company*
+- **Production hits:** 5 total — 1 write, 2 read, 2 unclassified
+- **Write sites:** `src/engine/groups/groupDissolution.ts`
+- **Read sites:** `src/engine/groups/groupFormation.ts`, `src/engine/groups/groupQueries.ts`
+- **Other hits:** `src/engine/graphOpExecutor.ts`, `src/engine/groups/groupCohesion.ts`
+- **Verdict:** Verified 2026-07-25: src/engine/groups/__tests__/reuniteSunder.test.ts § "the cleared-roster trap" asserts roster === [] after dissolveGroup *and* that getFormerGroupMembers still returns all three riders — so a roster-based implementation fails the same test that documents why.
+
+### `reunite-rides-draw-together-convergence` — 🟢 LIVE
+
+- **Intent:** A god calling a dead company back does not invent a new kind of pull — the scattered feel exactly the tug Draw Together uses, so their own encounter choices bend homeward.
+- **Producer → Consumer:** Companies & Group Travel → Encounters & Dilemmas
+- **UL terms:** *Company*, *Draw Together*
+- **Production hits:** 5 total — 1 write, 2 read, 2 unclassified
+- **Write sites:** `src/engine/graphOpExecutor.ts`
+- **Read sites:** `src/engine/encounterScoring.ts`, `src/engine/groups/groupFormation.ts`
+- **Other hits:** `src/data/group-constants.ts`, `src/data/unified-action-templates.ts`
+- **Verdict:** Verified 2026-07-25: src/engine/groups/__tests__/reuniteSunder.test.ts § "opens the window and stamps Draw Together's convergence pull on former members" asserts all three property names on every gatherable former member after the op. Falsified during authoring: renaming the written key to convergePullUntilTickBROKEN fails that test, so the guard is not vacuous.
+
 ### `secrets-consequences` — 🟢 LIVE
 
 - **Intent:** A revealed secret or broken favor has consequences — feuds ignite, sentiment shifts, leverage bites.
@@ -540,6 +565,18 @@ remediation ticket or the build fails.
 - **Read sites:** `src/engine/groups/bandOpposition.ts`
 - **Other hits:** `src/types/unifiedAction.ts`
 - **Verdict:** Verified 2026-07-25: PR 2 declared PendingEncounterSeed.opposingGroupId and wired findOpposingBand to honour UnifiedAction.opposingGroupId, but nothing carried the value across the seed → action boundary — grep at implementation time found the seed field with zero readers, so a seed naming its enemy dropped it in silence. evaluateEncounterSeeds now re-validates (node exists ∧ isBandNode ∧ groupStatus active ∧ ≥1 living member) and stamps the action. Locked by confrontationContent.test.ts § "evaluateEncounterSeeds — opposingGroupId carry": the live case carries, and dissolved / emptied-out / not-a-band all spawn uncontested rather than blocking the encounter.
+
+### `sunder-window-amplifies-company-decay` — 🟢 LIVE
+
+- **Intent:** A sundered company comes apart faster and more visibly — quarrels bite harder, people leave sooner, and the drama pool starts telling the story before the numbers justify it.
+- **Producer → Consumer:** Companies & Group Travel → Companies & Group Travel
+- **UL terms:** *Company*, *Group Cohesion*
+- **Module:** `src/engine/groups/groupQueries.ts`
+- **Production hits:** 8 total — 1 write, 3 read, 4 unclassified
+- **Write sites:** `src/engine/graphOpExecutor.ts`
+- **Read sites:** `src/engine/groups/groupCohesion.ts`, `src/engine/groups/groupDissolution.ts`, `src/engine/groups/phaseGroups.ts`
+- **Other hits:** `src/components/Game/debug/CompaniesTabContent.tsx`, `src/data/unified-action-templates.ts`, `src/engine/groups/groupQueries.ts`, `src/types/graphOp.ts`
+- **Verdict:** Verified 2026-07-25: src/engine/groups/__tests__/reuniteSunder.test.ts § "Sunder read sites" measures the doubled dissent delta against the plain constant, confirms non-dissent events are untouched, and confirms an open Bless window still suppresses first (the two windows are read independently and neither cancels the other).
 
 ### `world-events-mint-ambitions` — 🟢 LIVE
 

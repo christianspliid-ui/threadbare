@@ -555,6 +555,12 @@ export const ASCENDANT_ACTION_BUCKETS: Readonly<Record<string, ActionBucketEntry
   // living mortals. A breadth card — `reach: 'heart'` is its cosmic-energy axis, not a
   // `requiresReach` gate — so it surfaces for every run once unlocked, like Bless above.
   'company.draw_together': { bucket: 'unlockable-generic' },
+  // THR-732: Reunite + Sunder, granted together by `beat.milestone.the_empty_road`
+  // the first time a company the ascendant was bound to has ended. Breadth cards like
+  // their two siblings above — `reach: 'heart'` / `'shadow'` are cosmic-energy axes,
+  // not `requiresReach` gates — so both surface for every run once unlocked.
+  'company.reunite': { bucket: 'unlockable-generic' },
+  'company.sunder': { bucket: 'unlockable-generic' },
   // THR-724: the two secrets verbs, granted together by `beat.pool.invest.the_unveiled_eye`.
   // `reach: 'eye'` / `reach: 'shadow'` are their cosmic-energy axes, not `requiresReach`
   // gates — see the grant note on the beat for why splitting them would be wrong.

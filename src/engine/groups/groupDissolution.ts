@@ -19,6 +19,7 @@ import {
   getGroupCohesion,
   isAgentGone,
   isGroupBlessed,
+  isGroupSundered,
   isGroupThreaded,
   type DissolutionReason,
 } from './groupQueries';
@@ -27,6 +28,7 @@ import {
   GROUP_MIN_MEMBERS,
   GROUP_DISSOLUTION_THRESHOLD,
   GROUP_FRAY_THRESHOLD,
+  SUNDER_LEAVE_MULT,
 } from '../../data/group-constants';
 
 export interface DissolutionOutcome {
@@ -100,10 +102,16 @@ export function runGroupUpkeep(
   // 3. Individual leave decisions — only evaluated once the company is fraying,
   //    so a healthy company never spends cycles asking its members to reconsider.
   if (cohesion < GROUP_FRAY_THRESHOLD && !isGroupBlessed(group, state.tick)) {
+    // Sunder (THR-732) doubles the pull toward the door for as long as its window
+    // holds. It multiplies the *rate*, not the gate: a company still above the fray
+    // line has a shortfall of zero, and doubling zero is zero, so Sunder works by
+    // first cracking cohesion with its cast-time hit and then accelerating the fall
+    // — never by teleporting a bound company into mutiny.
+    const leaveMult = isGroupSundered(group, state.tick) ? SUNDER_LEAVE_MULT : 1;
     for (const member of members) {
       if (member.id === leader?.id) continue; // the leader leaving is a dissolution, not a departure
       result.leaveDecisions++;
-      if (shouldMemberLeave(member, cohesion, rng)) {
+      if (shouldMemberLeave(member, cohesion, rng, leaveMult)) {
         removeMember(state, group, member, 'chose_to_leave');
         result.cohesionDeltas++;
       }
@@ -124,6 +132,8 @@ function shouldMemberLeave(
   member: GraphNode,
   cohesion: number,
   rng: () => number,
+  /** Divine amplification of the departure rate (Sunder, THR-732). 1 = untouched. */
+  rateMultiplier = 1,
 ): boolean {
   const shortfall = Math.max(0, GROUP_FRAY_THRESHOLD - cohesion) / GROUP_FRAY_THRESHOLD; // 0–1
   const profile = (member.properties as Record<string, unknown>).axiologicalProfile as
@@ -135,7 +145,11 @@ function shouldMemberLeave(
   // courage_prudence: negative = prudent (leaves a sinking company sooner).
   const prudence = -(profile?.courage_prudence ?? 0);
 
-  const rate = shortfall * 0.25 * (1 + ambition * 0.5 + prudence * 0.3);
+  // The multiplier lands *inside* the 0.5 clamp on purpose: a sundering reaches the
+  // per-tick ceiling sooner, it does not raise it. Even a god cannot make every
+  // member walk out on the same tick — the company leaves in ones and twos, which is
+  // the shape the departures need for the drama to land.
+  const rate = shortfall * 0.25 * (1 + ambition * 0.5 + prudence * 0.3) * rateMultiplier;
   return rng() < Math.max(0, Math.min(0.5, rate));
 }
 

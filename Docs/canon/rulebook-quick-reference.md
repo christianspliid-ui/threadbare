@@ -73,7 +73,7 @@ Mortals **band into companies** (never "parties" in player-facing prose) that tr
 
 Factions field **bands** of their own named people — a band is a company in every respect, and known by whose it is ("The Temple of the Spheres' Sparrows"). A company and a foreign band on the same hex resolve as **one contested pair**: both priced by full company strength, the loser shedding cohesion, a decisive loss risking a named member's life, and both sides leaving with a **grudge** that the mortal sheet reports in prose ("There is blood between them and …"). Four authored confrontations — **The Ambush**, **Den Assault**, **The Guild Falls**, **The Standoff** — surface only while a live opponent is standing there; The Standoff is the rung where it can end with nobody carried away.
 
-Your seat stays the intervention seat: **Bless this Company** (Heart / Spirit) steadies a band's bonds; **Draw Together** (Heart / Spirit) tilts scattered threaded mortals toward one hex until a company gathers on its own. You never command a company.
+Your seat stays the intervention seat: **Bless this Company** (Heart / Spirit) steadies a band's bonds; **Draw Together** (Heart / Spirit) tilts scattered threaded mortals toward one hex until a company gathers on its own; **Reunite** (Heart / Spirit) calls a company that has *already disbanded* back toward one another, re-forming under a variant of its old name — or lapsing unanswered; **Sunder** (Shadow / Entropy) is Bless's mirror, doubling dissent and desertion and forcing the fray drama pool open. Bless and Sunder may both be open at once and neither cancels the other. You never command a company.
 
 ## The Clocks and the Ending
 

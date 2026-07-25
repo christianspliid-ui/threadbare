@@ -16,7 +16,7 @@ import type { AxiologicalProfile } from '../../types/agent';
 import { getAgentBonds } from '../graphQueries';
 import { generateGroupName } from './groupNames';
 import {
-  getGroupCohesion, isCompanyNode, isGroupEligibleAgent,
+  getGroupCohesion, isCompanyNode, isGroupEligibleAgent, isGroupReuniting,
   type GroupType, type BandRole, type GroupFormationCause,
 } from './groupQueries';
 import {
@@ -27,6 +27,7 @@ import {
   GROUP_MAX_MEMBERS,
   GROUP_MIN_MEMBERS,
   GROUP_COHESION_START_BASE,
+  REUNITE_COMPAT_BONUS,
 } from '../../data/group-constants';
 
 /** What the formation scan did this tick — folded into the aggregate trace. */
@@ -77,6 +78,68 @@ export function isAgentThreaded(
 export function isUnderConvergencePull(node: GraphNode | undefined, tick: number): boolean {
   const until = (node?.properties as Record<string, unknown> | undefined)?.convergePullUntilTick;
   return typeof until === 'number' && tick < until;
+}
+
+/**
+ * Every disbanded company an agent once rode with that currently has an open
+ * Reunite window (THR-732).
+ *
+ * Reads *all* `member_of` edges, closed ones included — a former member's edge
+ * survives dissolution carrying `leftAtTick`, and that edge is the only surviving
+ * record of the ride (`dissolveGroup` clears the node's `roster`).
+ */
+function reunitingGroupIdsFor(graph: WorldGraph, agentId: string, tick: number): Set<string> {
+  const ids = new Set<string>();
+  for (const edge of graph.getOutgoingEdges(agentId, 'member_of')) {
+    const target = graph.getNode(edge.target);
+    if (!isCompanyNode(target)) continue;
+    if (!isGroupReuniting(target, tick)) continue;
+    ids.add(edge.target);
+  }
+  return ids;
+}
+
+/**
+ * The disbanded company, if any, that a forming set is actually a reunion *of*.
+ *
+ * Requires at least {@link GROUP_MIN_MEMBERS} of the admitted set to share it, so a
+ * single old comrade drifting into an unrelated company does not get that company
+ * mis-told as a reunion. Deterministic on ties (lowest id wins) — NFP #3.
+ */
+export function findReunionTarget(
+  graph: WorldGraph,
+  admitted: readonly GraphNode[],
+  tick: number,
+): GraphNode | undefined {
+  const counts = new Map<string, number>();
+  for (const member of admitted) {
+    for (const groupId of reunitingGroupIdsFor(graph, member.id, tick)) {
+      counts.set(groupId, (counts.get(groupId) ?? 0) + 1);
+    }
+  }
+  const qualifying = [...counts.entries()]
+    .filter(([, n]) => n >= GROUP_MIN_MEMBERS)
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+  return qualifying.length > 0 ? graph.getNode(qualifying[0][0]) : undefined;
+}
+
+/**
+ * Compatibility bonus for two agents who both rode with a company that is currently
+ * being Reunited (THR-732). Shared history is the strongest argument two people have
+ * for trying again — see {@link REUNITE_COMPAT_BONUS}.
+ */
+export function reuniteCompatBonus(
+  graph: WorldGraph,
+  aId: string,
+  bId: string,
+  tick: number,
+): number {
+  const aGroups = reunitingGroupIdsFor(graph, aId, tick);
+  if (aGroups.size === 0) return 0;
+  for (const groupId of reunitingGroupIdsFor(graph, bId, tick)) {
+    if (aGroups.has(groupId)) return REUNITE_COMPAT_BONUS;
+  }
+  return 0;
 }
 
 export function computeCompatibility(graph: WorldGraph, aId: string, bId: string): number {
@@ -169,7 +232,18 @@ export function runFormationScan(
     const admitted: GraphNode[] = [anchor];
     const scored = sorted
       .filter(n => n.id !== anchor.id)
-      .map(n => ({ node: n, compat: computeCompatibility(graph, anchor.id, n.id) }))
+      .map(n => ({
+        node: n,
+        // Reunite (THR-732) tilts old comrades toward each other. Added outside
+        // computeCompatibility (which is tick-free and reused elsewhere) and
+        // re-clamped, so a reunion pair can clear GROUP_FORMATION_COMPAT_MIN on
+        // shared history alone without the base score ever exceeding 1.
+        compat: Math.min(
+          1,
+          computeCompatibility(graph, anchor.id, n.id)
+            + reuniteCompatBonus(graph, anchor.id, n.id, state.tick),
+        ),
+      }))
       .filter(x => x.compat >= GROUP_FORMATION_COMPAT_MIN)
       .sort((a, b) => b.compat - a.compat || a.node.id.localeCompare(b.node.id));
 
@@ -187,7 +261,12 @@ export function runFormationScan(
       : GROUP_FORMATION_COMPAT_MIN;
     const startingCohesion = clamp01(GROUP_COHESION_START_BASE + (meanCompat - 0.5) * 0.2);
 
-    // THR-74: attribute the company's founding by cause, most-specific first.
+    // THR-74/THR-732: attribute the company's founding by cause, most-specific first.
+    //  - `reunite` — enough of the set once rode with the same disbanded company and
+    //    the god has an open Reunite window on it. Must be tested *before*
+    //    `draw_together`, because Reunite stamps that verb's convergence pull: judged
+    //    on the pull alone every reunion would read as an ordinary divine gathering
+    //    and lose the one fact that makes it a reunion.
     //  - `draw_together` — any admitted member gathered here under an active
     //    convergence pull. The divine nudge (graphOpExecutor `draw_together`)
     //    stamped `convergePullUntilTick`; the pulled mortals colocating is the
@@ -196,13 +275,14 @@ export function runFormationScan(
     //    threaded to the ascendant: an organic threaded founding the player should
     //    witness (Seeking Companions moment, fired in phaseGroups).
     //  - `systemic` — an untethered founding, told as the silent ledger line.
-    const cause: CreateGroupInput['cause'] = admitted.some(
-      m => isUnderConvergencePull(m, state.tick),
-    )
-      ? 'draw_together'
-      : admitted.some(m => isAgentThreaded(graph, m.id, state.ascendantId))
-        ? 'seeking_companions'
-        : 'systemic';
+    const reunionOf = findReunionTarget(graph, admitted, state.tick);
+    const cause: CreateGroupInput['cause'] = reunionOf
+      ? 'reunite'
+      : admitted.some(m => isUnderConvergencePull(m, state.tick))
+        ? 'draw_together'
+        : admitted.some(m => isAgentThreaded(graph, m.id, state.ascendantId))
+          ? 'seeking_companions'
+          : 'systemic';
 
     const created = createGroup(state, {
       members: admitted,
@@ -211,8 +291,21 @@ export function runFormationScan(
       cause,
       groupType: 'party',
       startingCohesion,
+      // The re-formed company inherits the old one's name and the caster's sphere
+      // flavor, so it reads as *that* company come back rather than a new one.
+      sphereId: reunionOf
+        ? ((reunionOf.properties as Record<string, unknown>).reuniteSphereFlavor as string | undefined)
+        : undefined,
+      predecessorName: reunionOf?.name,
     });
-    if (created) result.formed.push({ ...created, cause });
+    if (created) {
+      result.formed.push({ ...created, cause });
+      // Close the window on the old company: it has been answered, and leaving it
+      // open would let a second set re-form the same company again next tick.
+      if (reunionOf) {
+        graph.updateNode(reunionOf.id, { properties: { reuniteUntilTick: undefined } });
+      }
+    }
   }
 
   return result;
@@ -225,8 +318,14 @@ export interface CreateGroupInput {
   cause: GroupFormationCause;
   groupType: GroupType;
   startingCohesion?: number;
-  /** Sphere flavor for the name generator, when Draw Together caused this. */
+  /** Sphere flavor for the name generator, when Draw Together or Reunite caused this. */
   sphereId?: string;
+  /**
+   * The disbanded company's name, when this formation is a Reunite re-formation
+   * (THR-732). Turns the generated name into a variant of the old one so the
+   * player recognises the company that came back.
+   */
+  predecessorName?: string;
   /**
    * Marks this company an NPC band (THR-731). Both fields travel together — the
    * band spawner is the only caller that sets either.
@@ -264,6 +363,7 @@ export function createGroup(
     locationName: locationNode?.name,
     sphereId: input.sphereId,
     factionName: input.bandFactionId ? graph.getNode(input.bandFactionId)?.name : undefined,
+    predecessorName: input.predecessorName,
   });
 
   try {

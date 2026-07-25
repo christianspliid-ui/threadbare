@@ -3090,6 +3090,10 @@ export interface GroupPhaseTrace extends TraceBase {
   frayMomentsFired: number;
   /** Threaded companies whose founding fired a Seeking Companions moment this tick. */
   seekingMomentsFired: number;
+  /** Companies re-formed under an open Reunite window this tick (THR-732). */
+  reunionMomentsFired: number;
+  /** Reunite windows that closed unanswered this tick (THR-732). */
+  reunionLapsesFired: number;
 }
 
 /** Trace: a company came into being. Event-scale — rare, one per formation. */
@@ -3099,7 +3103,8 @@ export interface GroupFormedTrace extends TraceBase {
   groupType: 'party' | 'squad' | 'faction_band';
   name: string;
   memberIds: string[];
-  cause: 'systemic' | 'seeking_companions' | 'draw_together' | 'band_spawn';
+  /** Mirrors `GroupFormationCause` (groupQueries.ts) — kept inline to avoid a types→engine import. */
+  cause: 'systemic' | 'seeking_companions' | 'draw_together' | 'band_spawn' | 'reunite';
   startingCohesion: number;
 }
 

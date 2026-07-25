@@ -129,7 +129,11 @@ export interface TickEvent {
   // Divine Receipt — player action resolution feedback (THR-727)
     | 'player_action_receipt'
   // Company (group layer) events (THR-74)
-    | 'group_formed' | 'group_dissolved' | 'group_member_left' | 'group_frayed';
+    | 'group_formed' | 'group_dissolved' | 'group_member_left' | 'group_frayed'
+  // Reunite window closing unanswered (THR-732). The *successful* reunion rides
+  // 'group_formed', because a reunion is a formation — only the failure needs a type
+  // of its own, since nothing else is created for it to ride on.
+    | 'group_reunion_lapsed';
   message: string;
   /** Optional sphere coloring for UI */
   sphere?: SphereName;

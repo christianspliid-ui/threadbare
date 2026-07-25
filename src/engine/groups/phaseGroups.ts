@@ -24,7 +24,9 @@ import { emitTrace } from '../traceBuffer';
 import { touchWorld } from '../simulationRuntime';
 import { mulberry32 } from '../../lib/prng';
 import type { GroupPhaseTrace, GroupFormedTrace, GroupDissolvedTrace } from '../../types/trace';
-import { getActiveGroups, getGroupCohesion, getCohesionState, isGroupThreaded } from './groupQueries';
+import {
+  getAllGroups, getGroupCohesion, getCohesionState, isGroupThreaded, isGroupSundered,
+} from './groupQueries';
 import type { CohesionState } from './groupQueries';
 import { runGroupUpkeep } from './groupDissolution';
 import { runGroupMovement } from './groupMovement';
@@ -33,10 +35,13 @@ import { applyCohesionEvent } from './groupCohesion';
 import { composePartingMoment } from './groupParting';
 import { composeFrayMoment, crossedIntoFray } from './groupFray';
 import { composeSeekingMoment } from './groupSeeking';
+import { composeReunionMoment, reuniteWindowLapsed } from './groupReunion';
 import {
   GROUP_PARTING_EVENT_SIGNIFICANCE,
   GROUP_FRAY_EVENT_SIGNIFICANCE,
   GROUP_SEEKING_EVENT_SIGNIFICANCE,
+  GROUP_REUNION_EVENT_SIGNIFICANCE,
+  GROUP_REUNION_LAPSE_EVENT_SIGNIFICANCE,
 } from '../../data/group-constants';
 
 /** Significance of company chronicle events in the event feed. */
@@ -69,6 +74,7 @@ export function phaseGroups(state: GameState, runtime?: SimulationRuntime): Part
   const partingRng = mulberry32(state.seed + state.tick * 71);
   const frayRng = mulberry32(state.seed + state.tick * 73);
   const seekingRng = mulberry32(state.seed + state.tick * 79);
+  const reunionRng = mulberry32(state.seed + state.tick * 83);
 
   let dissents = 0;
   let cohesionDeltasApplied = 0;
@@ -77,9 +83,17 @@ export function phaseGroups(state: GameState, runtime?: SimulationRuntime): Part
   let formationCandidateSets = 0;
   let frayMomentsFired = 0;
   let seekingMomentsFired = 0;
+  let reunionMomentsFired = 0;
+  let reunionLapsesFired = 0;
   let mutated = false;
 
-  const active = getActiveGroups(state.graph);
+  // One full scan, two slices: the active working set, and the disbanded companies a
+  // Reunite window may still be open on (sub-step 4.5). Deriving both from a single
+  // pass keeps this phase at one O(actors) walk rather than two.
+  const allGroups = getAllGroups(state.graph);
+  const active = allGroups.filter(
+    n => (n.properties as Record<string, unknown>).groupStatus !== 'disbanded',
+  );
   const activeGroups = active.length;
 
   // ── Sub-steps 1 & 2: upkeep (dissolution, leaves, cohesion reconciliation) ──
@@ -169,7 +183,17 @@ export function phaseGroups(state: GameState, runtime?: SimulationRuntime): Part
     try {
       const current = state.graph.getNode(group.id);
       if (!current) continue;
-      const nowState = getCohesionState(getGroupCohesion(current));
+      const trueState = getCohesionState(getGroupCohesion(current));
+      // Sunder (THR-732) makes the drama pool treat the company as frayed regardless
+      // of where cohesion actually sits — the god has cracked something the numbers
+      // have not caught up with yet. Folding it into the *state* rather than adding a
+      // parallel trigger means it rides the shipped transition discipline: the moment
+      // fires once, on the tick the sundering lands, and the stored band below records
+      // the effective state so it cannot re-fire every tick the window stays open.
+      const nowState: CohesionState =
+        isGroupSundered(current, state.tick) && (trueState === 'bound' || trueState === 'holding')
+          ? 'frayed'
+          : trueState;
       const prevState = (current.properties as Record<string, unknown>).lastCohesionState as
         | CohesionState
         | undefined;
@@ -229,6 +253,16 @@ export function phaseGroups(state: GameState, runtime?: SimulationRuntime): Part
         band = moment.variant;
         significance = GROUP_SEEKING_EVENT_SIGNIFICANCE;
         seekingMomentsFired++;
+      } else if (formed.cause === 'reunite') {
+        // The Reunion (THR-732) — a company the player deliberately called back.
+        // Unlike Seeking Companions this needs no threading check: the god cast
+        // Reunite on this specific company, so the interest is established by the
+        // cast itself rather than inferred from a thread.
+        const moment = composeReunionMoment(formed.name, 'reunion', reunionRng);
+        message = moment.message;
+        band = moment.kind;
+        significance = GROUP_REUNION_EVENT_SIGNIFICANCE;
+        reunionMomentsFired++;
       }
       events.push({
         id: nextGroupEventId(state.tick),
@@ -241,6 +275,39 @@ export function phaseGroups(state: GameState, runtime?: SimulationRuntime): Part
     }
   } catch {
     // A failed scan simply forms no companies this tick.
+  }
+
+  // ── Sub-step 4.5: Reunite window lapse (THR-732) ──
+  // A reunion window that closed without the scan binding anyone gets its ending
+  // told once — The Road Not Taken. Runs *after* formation so a reunion that landed
+  // on the window's final tick is read as a reunion, not a lapse. Clearing the
+  // timestamp is what makes this fire exactly once; the successful path clears it in
+  // the formation scan for the same reason.
+  for (const group of allGroups) {
+    try {
+      const current = state.graph.getNode(group.id);
+      if (!current) continue;
+      const props = current.properties as Record<string, unknown>;
+      if (!reuniteWindowLapsed(props.reuniteUntilTick, state.tick)) continue;
+
+      const moment = composeReunionMoment(group.name ?? 'the company', 'lapse', reunionRng);
+      events.push({
+        id: nextGroupEventId(state.tick),
+        tick: state.tick,
+        type: 'group_reunion_lapsed',
+        message: moment.message,
+        band: moment.kind,
+        significance: GROUP_REUNION_LAPSE_EVENT_SIGNIFICANCE,
+      });
+      reunionLapsesFired++;
+
+      state.graph.updateNode(group.id, {
+        properties: { ...props, reuniteUntilTick: undefined, reuniteSphereFlavor: undefined },
+      });
+      mutated = true;
+    } catch {
+      // One bad node must not stop the lapse sweep for the rest.
+    }
   }
 
   // The graph mutates in place, so UI selectors keyed on graph identity would
@@ -258,7 +325,9 @@ export function phaseGroups(state: GameState, runtime?: SimulationRuntime): Part
     formationCandidateSets,
     frayMomentsFired,
     seekingMomentsFired,
-    summary: `companies: ${activeGroups} active, ${movesExecuted} moved, ${dissents} dissents, ${frayMomentsFired} frayed, ${seekingMomentsFired} sought, ${formationCandidateSets} sets scanned`,
+    reunionMomentsFired,
+    reunionLapsesFired,
+    summary: `companies: ${activeGroups} active, ${movesExecuted} moved, ${dissents} dissents, ${frayMomentsFired} frayed, ${seekingMomentsFired} sought, ${reunionMomentsFired} reunited, ${reunionLapsesFired} lapsed, ${formationCandidateSets} sets scanned`,
   } as GroupPhaseTrace);
 
   return { tickEvents: [...state.tickEvents, ...events] };

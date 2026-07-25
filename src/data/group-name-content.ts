@@ -51,7 +51,35 @@ export const GROUP_NAME_CAUSE_ADJECTIVES: Record<string, readonly string[]> = {
   // NPC bands (THR-731) — a faction's own people, sent out with a purpose.
   // Harder-edged than the company pools: these are the names mortals mutter.
   band_spawn: ['Sworn', 'Sharp', 'Blooded', 'Owed', 'Marked'],
+  // Reunite (THR-732) — a company that ended and came back. Only reached when the
+  // predecessor's name is unavailable; a reunion that knows what it used to be
+  // called takes a REFORMED_NAME_PATTERNS variant of that instead.
+  reunite: ['Returned', 'Remembered', 'Second', 'Rekindled', 'Unfinished'],
 };
+
+/**
+ * Grammars for a Reunite re-formation (THR-732), applied to the *old* company's
+ * name.
+ *
+ * A reunion must read as the same company come back, not a new one with a similar
+ * mood — which is why these wrap the predecessor's name rather than drawing fresh
+ * words from the pools above. The register is deliberately unromantic: these people
+ * failed to hold together once, and the name should carry that.
+ *
+ * Three tokens, because English articles do not survive naive substitution — a
+ * pattern built on `{old}` alone yields "The Second The Quiet Wardens":
+ *
+ *  - `{old}`      the predecessor's name verbatim  — "The Quiet Wardens"
+ *  - `{bare}`     with any leading article dropped — "Quiet Wardens"
+ *  - `{oldLower}` with the article lowercased      — "the Quiet Wardens"
+ */
+export const GROUP_REFORMED_NAME_PATTERNS: readonly string[] = [
+  '{old}, Re-formed',
+  '{old} Reborn',
+  'The Second {bare}',
+  '{old}, Again',
+  'The Remnant of {oldLower}',
+];
 
 /**
  * Sphere-flavored adjectives, used when Draw Together caused the formation and

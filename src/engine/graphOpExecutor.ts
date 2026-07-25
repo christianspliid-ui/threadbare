@@ -37,7 +37,9 @@ import {
 import { RESOURCE_DEFINITIONS } from '../data/resource-content';
 import { TRADE_ROUTE_MAX_VOLUME } from './tradeRoute';
 import { applyCohesionDelta } from './groups/groupCohesion';
-import { isCompanyNode, isGrouped, isAgentGone } from './groups/groupQueries';
+import {
+  isCompanyNode, isGrouped, isAgentGone, getReunitableMembers, getGroupLeader,
+} from './groups/groupQueries';
 import { getAgentLocationId } from './graphQueries';
 import { hexDistance } from '../lib/hexMath';
 import {
@@ -45,6 +47,10 @@ import {
   BLESS_COMPANY_DURATION_TICKS,
   DRAW_TOGETHER_DURATION_TICKS,
   DRAW_TOGETHER_RADIUS_HEXES,
+  GROUP_MIN_MEMBERS,
+  REUNITE_DURATION_TICKS,
+  SUNDER_COHESION_DELTA,
+  SUNDER_DURATION_TICKS,
 } from '../data/group-constants';
 
 interface ExecuteOptions {
@@ -239,6 +245,12 @@ function executeSingleOp(
 
       case 'draw_together':
         return executeDrawTogether(graph, op, ctx);
+
+      case 'reunite_company':
+        return executeReuniteCompany(graph, op, ctx);
+
+      case 'sunder_company':
+        return executeSunderCompany(graph, op, ctx);
 
       default:
         return {
@@ -1094,6 +1106,138 @@ function executeDrawTogether(
     });
   }
 
+  return { op, success: true };
+}
+
+/**
+ * Reunite (THR-732) — the god's memory verb, cast on a *disbanded* company.
+ *
+ * Opens a reunion window on the dead company node and stamps **Draw Together's own**
+ * convergence pull (`convergePullHexCol` / `_HexRow` / `_UntilTick`) on every former
+ * member who could still answer it. Reusing those exact property names is the whole
+ * design: `encounterScoring.computeConvergenceBonus` is already the read-site, so the
+ * scattered bend their own roads homeward through machinery that shipped with THR-74
+ * and nothing here invents a second convergence mechanism (plan: "do not build a
+ * separate convergence mechanism").
+ *
+ * Three deliberate differences from Draw Together:
+ *
+ *  - **No thread requirement.** Draw Together reaches through the god's bond, so it
+ *    pulls only threaded mortals. Reunite reaches through the *company's* history —
+ *    the bond being pulled on is the one these people already have with each other.
+ *  - **No radius gate.** A reunion is defined by *who*, not by who happens to be
+ *    nearby; scattering is the premise. `computeConvergenceBonus` decays as
+ *    `weight / (1 + dist)`, so a distant member is pulled proportionately weakly
+ *    rather than needing to be excluded.
+ *  - **Former members come from the edges, not the roster.** `dissolveGroup` clears
+ *    `roster` to `[]`, so the surviving record is the `member_of` edges it stamped
+ *    with `leftAtTick` — see `getFormerGroupMembers`.
+ *
+ * Fail-soft (NFP #4): a missing / non-company / still-active target, or too few
+ * gatherable former members, returns an error result rather than throwing.
+ */
+function executeReuniteCompany(
+  graph: WorldGraph,
+  op: GraphOp,
+  ctx: GraphOpContext,
+): GraphOpResult {
+  const targetId = resolveRef(op.nodeId ?? op.target ?? '$target', ctx);
+  const company = graph.getNode(targetId);
+  if (!company) return { op, success: false, error: `reunite_company: company ${targetId} not found` };
+  if (!isCompanyNode(company)) {
+    return { op, success: false, error: `reunite_company: ${targetId} is not a company` };
+  }
+  if ((company.properties as Record<string, unknown>).groupStatus !== 'disbanded') {
+    return { op, success: false, error: `reunite_company: ${targetId} is not disbanded` };
+  }
+
+  const gatherable = getReunitableMembers(graph, targetId);
+  if (gatherable.length < GROUP_MIN_MEMBERS) {
+    return {
+      op,
+      success: false,
+      error: `reunite_company: ${targetId} has ${gatherable.length} gatherable former member(s), needs ${GROUP_MIN_MEMBERS}`,
+    };
+  }
+
+  // The reunion point is the old leader's ground when they still walk it — the
+  // company re-forms around whoever it followed — else the first member who can
+  // still be found. Anchoring on a *person* rather than the disbandment site is
+  // what makes the reunion feel chosen instead of archaeological.
+  const oldLeader = getGroupLeader(graph, targetId);
+  const anchor = (oldLeader && gatherable.some(m => m.id === oldLeader.id))
+    ? oldLeader
+    : gatherable[0];
+
+  const anchorLocId = getAgentLocationId(graph, anchor.id);
+  const convergeHex = anchorLocId ? resolveLocationToHex(graph, anchorLocId) : null;
+  if (!convergeHex) {
+    return { op, success: false, error: `reunite_company: cannot resolve anchor ${anchor.id} hex` };
+  }
+
+  const until = (ctx.tick ?? 0) + REUNITE_DURATION_TICKS;
+  for (const member of gatherable) {
+    graph.updateNode(member.id, {
+      properties: {
+        convergePullHexCol: convergeHex.col,
+        convergePullHexRow: convergeHex.row,
+        convergePullUntilTick: until,
+      },
+    });
+  }
+
+  // Sphere flavor is the caster's own alignment, read the same way the essence ops
+  // read it. Absent on an unaligned ascendant — the name generator simply skips the
+  // sphere adjective pool rather than the whole reunion failing.
+  const casterSphere = readActorPrimarySphere(graph, ctx.actorId);
+  graph.updateNode(targetId, {
+    properties: {
+      reuniteUntilTick: until,
+      ...(casterSphere ? { reuniteSphereFlavor: casterSphere } : {}),
+    },
+  });
+
+  return { op, success: true };
+}
+
+/**
+ * Sunder (THR-732) — the god's breaking verb, cast on an *active* company.
+ *
+ * The mirror of Bless: an immediate cohesion hit plus a window, except every read
+ * amplifies instead of suppressing. `isGroupSundered` doubles each dissent's bite
+ * (`groupCohesion`), doubles leave probability for a fraying company
+ * (`groupDissolution`), and makes the fray drama pool treat the company as frayed
+ * (`phaseGroups`) so the player *sees* scenes rather than a falling number.
+ *
+ * Bless and Sunder do not cancel. A company under both has its dissent suppressed
+ * by one read and doubled by another, and the tug-of-war between two gods pulling
+ * opposite ways is the story the plan deliberately declines to resolve mechanically.
+ *
+ * Fail-soft: a missing / non-company / already-disbanded target returns an error
+ * result. Re-casting inside an open window refreshes the expiry and re-applies the
+ * cast-time hit — the god spent the essence again, and the company feels it again.
+ */
+function executeSunderCompany(
+  graph: WorldGraph,
+  op: GraphOp,
+  ctx: GraphOpContext,
+): GraphOpResult {
+  const targetId = resolveRef(op.nodeId ?? op.target ?? '$target', ctx);
+  const company = graph.getNode(targetId);
+  if (!company) return { op, success: false, error: `sunder_company: company ${targetId} not found` };
+  if (!isCompanyNode(company)) {
+    return { op, success: false, error: `sunder_company: ${targetId} is not a company` };
+  }
+  if ((company.properties as Record<string, unknown>).groupStatus === 'disbanded') {
+    return { op, success: false, error: `sunder_company: ${targetId} is already disbanded` };
+  }
+
+  applyCohesionDelta(graph, targetId, SUNDER_COHESION_DELTA);
+  // updateNode merges properties, so this sets the window without disturbing the
+  // cohesion the line above just wrote.
+  graph.updateNode(targetId, {
+    properties: { sunderedUntilTick: (ctx.tick ?? 0) + SUNDER_DURATION_TICKS },
+  });
   return { op, success: true };
 }
 

@@ -791,6 +791,11 @@ export interface DebugBridge {
     positionId: string | null;
     destinationId: string | null;
     blessedUntilTick: number | null;
+    /** THR-732 — Reunite window; set only on disbanded companies. */
+    reuniteUntilTick: number | null;
+    reuniteSphereFlavor: string | null;
+    /** THR-732 — Sunder window; set only on active companies. Independent of blessed. */
+    sunderedUntilTick: number | null;
     formedAtTick: number | null;
     ticksActive: number;
     disbandedAtTick: number | null;

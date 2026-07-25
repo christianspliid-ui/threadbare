@@ -12,13 +12,14 @@
 
 import type { WorldGraph } from '../graph';
 import type { GraphNode } from '../../types/graph';
-import { getGroupCohesion, isGroupBlessed } from './groupQueries';
+import { getGroupCohesion, isGroupBlessed, isGroupSundered } from './groupQueries';
 import {
   GROUP_COHESION_SUCCESS_DELTA,
   GROUP_COHESION_FAILURE_DELTA,
   GROUP_COHESION_SOCIAL_DELTA,
   GROUP_COHESION_DEATH_DELTA,
   GROUP_DISSENT_COHESION_HIT,
+  SUNDER_DISSENT_MULT,
 } from '../../data/group-constants';
 
 /** The named events that move cohesion. Each maps to one constant. */
@@ -58,7 +59,16 @@ export function applyCohesionEvent(
 
   if (event === 'dissent' && isGroupBlessed(node, tick)) return 0;
 
-  const delta = EVENT_DELTAS[event];
+  // Sunder (THR-732) amplifies the bite of a disagreement — the same argument that
+  // would have blown over now festers. Applied only to `dissent`, mirroring the
+  // Bless suppression directly above it: breaking a company means making its own
+  // quarrels cost more, not making its dead hurt worse.
+  //
+  // The two windows are read independently and do not cancel. A blessed *and*
+  // sundered company returns 0 above and never reaches this line — blessing wins
+  // for as long as it lasts, and the sundering is still there when it lapses.
+  const delta = EVENT_DELTAS[event]
+    * (event === 'dissent' && isGroupSundered(node, tick) ? SUNDER_DISSENT_MULT : 1);
   const before = getGroupCohesion(node);
   const after = Math.max(0, Math.min(1, before + delta));
   if (after === before) return 0;
