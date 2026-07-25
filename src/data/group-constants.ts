@@ -118,6 +118,26 @@ export const GROUP_PARTING_EVENT_SIGNIFICANCE = 0.72;
  */
 export const GROUP_FRAY_EVENT_SIGNIFICANCE = 0.6;
 
+// ─── Seeking Companions (threaded-company formation moment) ───────────
+
+/**
+ * Event-feed significance of an authored Seeking Companions moment — a *threaded*
+ * company's first setting-out. Above the generic 0.55 company-event weight (a
+ * threaded company's founding is a story beat) and above the fray's 0.6 (a
+ * beginning outweighs a wobble), but below The Parting's 0.72, because a founding
+ * is a promise where a Parting is a reckoning.
+ */
+export const GROUP_SEEKING_EVENT_SIGNIFICANCE = 0.65;
+
+/**
+ * Starting-cohesion split that decides whether a Seeking Companions moment is told
+ * in the **eager** register (kindred spirits, a quick clasp of hands) or the
+ * **wary** one (strangers sizing each other up, a handshake more contract than
+ * kinship). Set at the neutral start base so a company that formed above baseline
+ * compatibility gathered eagerly, one at or below it warily.
+ */
+export const GROUP_SEEKING_EAGER_MIN_COHESION = GROUP_COHESION_START_BASE;
+
 // ─── Divine actions (THR-74 UATs) ────────────────────────────────────
 
 /** Bless this Company — immediate cohesion boost. */

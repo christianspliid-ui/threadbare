@@ -32,7 +32,12 @@ import { runFormationScan } from './groupFormation';
 import { applyCohesionEvent } from './groupCohesion';
 import { composePartingMoment } from './groupParting';
 import { composeFrayMoment, crossedIntoFray } from './groupFray';
-import { GROUP_PARTING_EVENT_SIGNIFICANCE, GROUP_FRAY_EVENT_SIGNIFICANCE } from '../../data/group-constants';
+import { composeSeekingMoment } from './groupSeeking';
+import {
+  GROUP_PARTING_EVENT_SIGNIFICANCE,
+  GROUP_FRAY_EVENT_SIGNIFICANCE,
+  GROUP_SEEKING_EVENT_SIGNIFICANCE,
+} from '../../data/group-constants';
 
 /** Significance of company chronicle events in the event feed. */
 const GROUP_EVENT_SIGNIFICANCE = 0.55;
@@ -63,6 +68,7 @@ export function phaseGroups(state: GameState, runtime?: SimulationRuntime): Part
   const formationRng = mulberry32(state.seed + state.tick * 67);
   const partingRng = mulberry32(state.seed + state.tick * 71);
   const frayRng = mulberry32(state.seed + state.tick * 73);
+  const seekingRng = mulberry32(state.seed + state.tick * 79);
 
   let dissents = 0;
   let cohesionDeltasApplied = 0;
@@ -70,6 +76,7 @@ export function phaseGroups(state: GameState, runtime?: SimulationRuntime): Part
   let movesExecuted = 0;
   let formationCandidateSets = 0;
   let frayMomentsFired = 0;
+  let seekingMomentsFired = 0;
   let mutated = false;
 
   const active = getActiveGroups(state.graph);
@@ -204,16 +211,32 @@ export function phaseGroups(state: GameState, runtime?: SimulationRuntime): Part
         groupType: formed.groupType,
         name: formed.name,
         memberIds: formed.memberIds,
-        cause: 'systemic',
+        cause: formed.cause,
         startingCohesion: formed.cohesion,
         summary: `${formed.name} forms (${formed.memberIds.length} companions)`,
       } as GroupFormedTrace);
+
+      // Seeking Companions (THR-74): a threaded company's founding is an authored
+      // moment — eager or wary, chosen by its starting cohesion. An untethered
+      // founding, or a divine-nudged one (Draw Together tells its own story at the
+      // cast), keeps the silent systemic line.
+      let message = `${formed.name} sets out together.`;
+      let significance = GROUP_EVENT_SIGNIFICANCE;
+      let band: string | undefined;
+      if (formed.cause === 'seeking_companions') {
+        const moment = composeSeekingMoment(formed.name, formed.cohesion, seekingRng);
+        message = moment.message;
+        band = moment.variant;
+        significance = GROUP_SEEKING_EVENT_SIGNIFICANCE;
+        seekingMomentsFired++;
+      }
       events.push({
         id: nextGroupEventId(state.tick),
         tick: state.tick,
         type: 'group_formed',
-        message: `${formed.name} sets out together.`,
-        significance: GROUP_EVENT_SIGNIFICANCE,
+        message,
+        band,
+        significance,
       });
     }
   } catch {
@@ -234,7 +257,8 @@ export function phaseGroups(state: GameState, runtime?: SimulationRuntime): Part
     leaveDecisions,
     formationCandidateSets,
     frayMomentsFired,
-    summary: `companies: ${activeGroups} active, ${movesExecuted} moved, ${dissents} dissents, ${frayMomentsFired} frayed, ${formationCandidateSets} sets scanned`,
+    seekingMomentsFired,
+    summary: `companies: ${activeGroups} active, ${movesExecuted} moved, ${dissents} dissents, ${frayMomentsFired} frayed, ${seekingMomentsFired} sought, ${formationCandidateSets} sets scanned`,
   } as GroupPhaseTrace);
 
   return { tickEvents: [...state.tickEvents, ...events] };

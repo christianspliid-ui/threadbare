@@ -3071,6 +3071,8 @@ export interface GroupPhaseTrace extends TraceBase {
   formationCandidateSets: number;
   /** Threaded companies that crossed below the fray line and fired an authored moment this tick. */
   frayMomentsFired: number;
+  /** Threaded companies whose founding fired a Seeking Companions moment this tick. */
+  seekingMomentsFired: number;
 }
 
 /** Trace: a company came into being. Event-scale — rare, one per formation. */
