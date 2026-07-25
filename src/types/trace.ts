@@ -309,6 +309,8 @@ export type TraceCategory =
   | 'group_phase'
   | 'group_formed'
   | 'group_dissolved'
+  // NPC bands — companies get opposition their own size (THR-731)
+  | 'band_spawned'
   // World-minted ambitions — events write mortal desire (THR-726)
   | 'ambition_minted';
 
@@ -591,6 +593,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'group_phase',
   'group_formed',
   'group_dissolved',
+  // NPC bands (THR-731)
+  'band_spawned',
   // World-minted ambitions (THR-726)
   'ambition_minted',
 ];
@@ -2001,6 +2005,8 @@ export type TraceEntry =
   | GroupPhaseTrace
   | GroupFormedTrace
   | GroupDissolvedTrace
+  // NPC bands (THR-731)
+  | BandSpawnedTrace
   // Composition dual-voice story-beat wiring (THR-254)
   | CompositionStoryBeatTemplateMissingTrace
   // Encounter foreshadowing (THR-389)
@@ -3090,8 +3096,25 @@ export interface GroupFormedTrace extends TraceBase {
   groupType: 'party' | 'squad' | 'faction_band';
   name: string;
   memberIds: string[];
-  cause: 'systemic' | 'seeking_companions' | 'draw_together';
+  cause: 'systemic' | 'seeking_companions' | 'draw_together' | 'band_spawn';
   startingCohesion: number;
+}
+
+/**
+ * Trace: a faction fielded an NPC band (THR-731). Event-scale — rare, one per
+ * spawn, same class as `group_formed` (which also fires for the band's node).
+ * This carries the *why*: which faction, in which role, answering what.
+ */
+export interface BandSpawnedTrace extends TraceBase {
+  category: 'band_spawned';
+  groupId: string;
+  groupName: string;
+  factionId: string;
+  factionName: string;
+  bandRole: 'raider' | 'defender';
+  memberIds: string[];
+  /** Members the faction still holds in reserve after fielding this band. */
+  membersRemaining: number;
 }
 
 /** Trace: a company ended. The node persists as `disbanded` history. */

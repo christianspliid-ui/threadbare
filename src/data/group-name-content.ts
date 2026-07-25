@@ -48,6 +48,9 @@ export const GROUP_NAME_CAUSE_ADJECTIVES: Record<string, readonly string[]> = {
   systemic: ['Chance', 'Roadworn', 'Common'],
   seeking_companions: ['Sworn', 'Spoken', 'Promised'],
   draw_together: ['Called', 'Drawn', 'Fated', 'Threaded'],
+  // NPC bands (THR-731) — a faction's own people, sent out with a purpose.
+  // Harder-edged than the company pools: these are the names mortals mutter.
+  band_spawn: ['Sworn', 'Sharp', 'Blooded', 'Owed', 'Marked'],
 };
 
 /**

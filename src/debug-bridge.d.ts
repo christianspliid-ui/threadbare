@@ -789,6 +789,9 @@ export interface DebugBridge {
     ticksActive: number;
     disbandedAtTick: number | null;
     dissolutionReason: string | null;
+    /** THR-731 — set only on NPC bands; null on player-facing companies. */
+    bandRole: 'raider' | 'defender' | null;
+    bandFactionId: string | null;
   }>>;
 
   /** THR-614 (war seam 3) — Headless readout of active battles/sieges. */

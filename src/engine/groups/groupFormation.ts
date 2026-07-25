@@ -15,7 +15,10 @@ import type { GraphNode } from '../../types/graph';
 import type { AxiologicalProfile } from '../../types/agent';
 import { getAgentBonds } from '../graphQueries';
 import { generateGroupName } from './groupNames';
-import { getGroupCohesion, isCompanyNode, isGroupEligibleAgent, type GroupType } from './groupQueries';
+import {
+  getGroupCohesion, isCompanyNode, isGroupEligibleAgent,
+  type GroupType, type BandRole, type GroupFormationCause,
+} from './groupQueries';
 import {
   GROUP_FORMATION_BASE_CHANCE,
   GROUP_FORMATION_TAVERN_MULT,
@@ -219,11 +222,17 @@ export interface CreateGroupInput {
   members: GraphNode[];
   leaderId: string;
   locationId: string;
-  cause: 'systemic' | 'seeking_companions' | 'draw_together';
+  cause: GroupFormationCause;
   groupType: GroupType;
   startingCohesion?: number;
   /** Sphere flavor for the name generator, when Draw Together caused this. */
   sphereId?: string;
+  /**
+   * Marks this company an NPC band (THR-731). Both fields travel together — the
+   * band spawner is the only caller that sets either.
+   */
+  bandRole?: BandRole;
+  bandFactionId?: string;
 }
 
 /**
@@ -254,6 +263,7 @@ export function createGroup(
     leaderName: leader?.name,
     locationName: locationNode?.name,
     sphereId: input.sphereId,
+    factionName: input.bandFactionId ? graph.getNode(input.bandFactionId)?.name : undefined,
   });
 
   try {
@@ -272,6 +282,10 @@ export function createGroup(
         // authority; this exists only so a cascade-deleted edge (hard death)
         // remains detectable — see reconcileLostMembers.
         roster: members.map(m => m.id),
+        // Band marking (THR-731) — omitted entirely on ordinary companies so
+        // `isBandNode` stays a presence check rather than a value comparison.
+        ...(input.bandRole ? { bandRole: input.bandRole } : {}),
+        ...(input.bandFactionId ? { bandFactionId: input.bandFactionId } : {}),
       },
     });
 

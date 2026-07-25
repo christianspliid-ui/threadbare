@@ -10,6 +10,7 @@
  */
 
 import { mulberry32 } from '../../lib/prng';
+import type { GroupFormationCause } from './groupQueries';
 import {
   GROUP_NAME_ADJECTIVES,
   GROUP_NAME_NOUNS,
@@ -25,7 +26,13 @@ export interface GroupNameContext {
   /** Seeds the PRNG — same id always produces the same name. */
   groupId: string;
   /** Why the company formed; weights in extra adjectives. */
-  cause?: 'systemic' | 'seeking_companions' | 'draw_together';
+  cause?: GroupFormationCause;
+  /**
+   * The faction that fielded this band (THR-731). Present only for `band_spawn`,
+   * and it unlocks the possessive pattern — a band is known by whose it is
+   * ("The Arcane Circle's Knives"), which is how mortals would speak of it.
+   */
+  factionName?: string;
   /** Leader's name — required by two of the four patterns. */
   leaderName?: string;
   /** Name of the location the company formed at ("Company of the Ashford Bridge"). */
@@ -80,12 +87,21 @@ export function generateGroupName(ctx: GroupNameContext): string {
   const singular = pick(rng, GROUP_NAME_SINGULAR_NOUNS);
   const adj2 = pick(rng, adjectives);
 
-  const rendered: Array<string | undefined> = [
-    adj1 && noun1 ? `The ${adj1} ${noun1}` : undefined,
-    ctx.locationName ? `Company of the ${ctx.locationName}` : undefined,
-    ctx.leaderName && band ? `${possessive(ctx.leaderName)} ${band}` : undefined,
-    singular && adj2 ? `The ${singular} of the ${adj2} Road` : undefined,
-  ];
+  const rendered: Array<string | undefined> = ctx.factionName
+    // A band is named for whose it is, not where it met. Offering only the two
+    // faction-possessive patterns keeps bands from picking up the wandering-
+    // company idiom ("Company of the Ashford Bridge") that belongs to mortals
+    // who chose each other.
+    ? [
+        noun1 ? `${possessive(ctx.factionName)} ${noun1}` : undefined,
+        adj1 && noun1 ? `The ${adj1} ${noun1} of ${ctx.factionName}` : undefined,
+      ]
+    : [
+        adj1 && noun1 ? `The ${adj1} ${noun1}` : undefined,
+        ctx.locationName ? `Company of the ${ctx.locationName}` : undefined,
+        ctx.leaderName && band ? `${possessive(ctx.leaderName)} ${band}` : undefined,
+        singular && adj2 ? `The ${singular} of the ${adj2} Road` : undefined,
+      ];
 
   const available = rendered.filter((n): n is string => n !== undefined);
   if (available.length > 0) {

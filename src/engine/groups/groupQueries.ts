@@ -86,6 +86,48 @@ export interface GroupNodeProperties {
    * company sits in `frayed`. Seeded silently on first observation.
    */
   lastCohesionState?: CohesionState;
+  /**
+   * Set only on NPC bands (THR-731) — a faction's own people fielded as a company.
+   * `defender` bands form in answer to a threat against the faction; `raider` is
+   * reserved for the outbound monster-lair path, which awaits a monster population
+   * to muster from — TODO(THR-767).
+   * Absent on player-facing companies, which is what {@link isBandNode} keys on.
+   */
+  bandRole?: BandRole;
+  /** The faction that fielded this band. Bookkeeping mirror of the `member_of` edge. */
+  bandFactionId?: string;
+}
+
+/** Why a band exists. See {@link GroupNodeProperties.bandRole}. */
+export type BandRole = 'raider' | 'defender';
+
+/**
+ * Why a company came into being. Recorded on `formationContext.cause` and read by
+ * the name generator (flavor adjectives) and `phaseGroups` (which founding moment,
+ * if any, to fire). `band_spawn` is the NPC-band path (THR-731) — it fires no
+ * founding moment, because no one in the world witnesses a guild muster.
+ *
+ * Lives here rather than in `groupFormation` so the name generator can accept it
+ * without importing its own caller.
+ */
+export type GroupFormationCause =
+  | 'systemic'
+  | 'seeking_companions'
+  | 'draw_together'
+  | 'band_spawn';
+
+/**
+ * True when a group node is an NPC band rather than a mortal company.
+ *
+ * Keys on `bandRole` rather than `groupType`, because `faction_band` is a
+ * *decision mode* (movement follows the faction objective) that an ordinary
+ * company could in principle adopt — whereas `bandRole` is only ever written by
+ * the band spawner.
+ */
+export function isBandNode(node: GraphNode | undefined): boolean {
+  if (!isCompanyNode(node)) return false;
+  const role = (node!.properties as Record<string, unknown>).bandRole;
+  return role === 'raider' || role === 'defender';
 }
 
 /**
