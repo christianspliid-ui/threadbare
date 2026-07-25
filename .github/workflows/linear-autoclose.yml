@@ -16,6 +16,15 @@ name: Linear Auto-Close
 # are exempted via isDocsFlushContext — committing a design doc never resolves its issue, so
 # such PRs must never auto-close anything. Keyword extraction + guard live in the shared,
 # unit-tested helper scripts/linearAutoclose.mjs.
+#
+# THR-738: the close decision is LINE-ANCHORED. extractCloseableIssueIds transitions an issue
+# only when a full line reads exactly `Fixes|Closes|Resolves THR-NNN` (trailing whitespace ok).
+# The keyword buried in a prose sentence, a markdown bullet, a branch name, or a bare `THR-XX`
+# title token does NOT close — those phantom-Done vectors (THR-74 ×2 on 2026-07-24) are killed
+# here for THIS workflow. Vectors 2/3 (branch name, bare title token) come from GitHub/Linear's
+# NATIVE integration, which this repo cannot configure — see Design/user-actions.md for the
+# Christian-owned settings change that disables native auto-close so this deterministic workflow
+# is the sole closer.
 
 on:
   push:

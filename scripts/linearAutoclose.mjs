@@ -10,29 +10,51 @@
 // belt-and-suspenders: a docs-flush PR must NEVER auto-close any issue, even if a closing
 // keyword ever leaks back into its title or body.
 
-// Magic-word close pattern. A bare `THR-123` token or a `linear.app/.../issue/THR-123` URL
-// must NOT match — only an explicit `Fixes|Closes|Resolves THR-123` reference counts as a
-// deliberate close request. The `\b` after `Resolves` etc. is implicit in `\s+`.
-export const CLOSE_KEYWORD_PATTERN = /(?:Fixes|Closes|Resolves)\s+(THR-\d+)/gi;
+// LINE-ANCHORED close pattern (THR-738). Our custom auto-close action transitions an issue ONLY
+// when a full line reads exactly `Fixes|Closes|Resolves THR-NNN` (trailing spaces/tabs allowed).
+// A bare `THR-123` token, a `linear.app/.../issue/THR-123` URL, AND — the vector this ticket kills
+// — the keyword *inside a prose sentence* (`Fixes THR-74 still rides the final PR`, or a markdown
+// bullet `- Fixes THR-74 …`) all fail to match, because the line carries content beyond the id.
+// This is the "deliberate close request, not a mention" contract: the keyword must stand alone on
+// its own line, which is exactly how the Definition of Done tells executors to write it.
+//
+// `m` flag: `^`/`$` anchor at each line boundary; JS treats `\n` and `\r` as line terminators, so
+// `[ \t]*$` matches a deliberate line under both `\n` and Windows `\r\n` endings without spilling
+// across lines. Multiple issues → one deliberate line each (`Fixes THR-1\nCloses THR-2`), never a
+// comma-joined prose list.
+export const CLOSE_KEYWORD_PATTERN = /^(?:Fixes|Closes|Resolves) (THR-\d+)[ \t]*$/gim;
+
+// BROAD substring close pattern — models GitHub/Linear's NATIVE integration, which fires on the
+// keyword anywhere in the text (including prose and negations). NOT used by our action's close
+// decision (that uses the line-anchored pattern above); retained only for the native-behaviour
+// detector `extractNativeCloseableIssueIds` below, so a guard that must reason about what the
+// native integration *would* do stays deliberately permissive.
+export const NATIVE_CLOSE_KEYWORD_PATTERN = /(?:Fixes|Closes|Resolves)\s+(THR-\d+)/gi;
+
+// Collect every `(THR-NNN)` capture a global pattern yields across the given texts, upper-cased.
+function extractIdsByPattern(texts, pattern) {
+  const ids = new Set();
+  for (const text of texts) {
+    if (!text) continue;
+    // matchAll with a /g regex is stateless per-call on a fresh string; reset lastIndex defensively.
+    pattern.lastIndex = 0;
+    for (const [, id] of text.matchAll(pattern)) {
+      ids.add(id.toUpperCase());
+    }
+  }
+  return ids;
+}
 
 /**
  * Extract the set of Linear issue identifiers that the given texts explicitly request to close.
- * Only `Fixes|Closes|Resolves THR-NNN` forms count; bare identifiers and issue URLs are ignored.
+ * Only a full line reading exactly `Fixes|Closes|Resolves THR-NNN` counts (THR-738); bare
+ * identifiers, issue URLs, and the keyword buried in a prose sentence are all ignored.
  *
  * @param {Array<string | null | undefined>} texts — commit messages, PR title, PR body, etc.
  * @returns {string[]} de-duplicated, upper-cased issue identifiers (e.g. ["THR-12", "THR-34"]).
  */
 export function extractCloseableIssueIds(texts) {
-  const ids = new Set();
-  for (const text of texts) {
-    if (!text) continue;
-    // matchAll with a /g regex is stateless per-call on a fresh string; reset lastIndex defensively.
-    CLOSE_KEYWORD_PATTERN.lastIndex = 0;
-    for (const [, id] of text.matchAll(CLOSE_KEYWORD_PATTERN)) {
-      ids.add(id.toUpperCase());
-    }
-  }
-  return [...ids];
+  return [...extractIdsByPattern(texts, CLOSE_KEYWORD_PATTERN)];
 }
 
 // Branch / title shapes produced ONLY by the flush-plan-docs skill (THR-510). These contexts
@@ -72,14 +94,12 @@ export const CLOSE_KEYWORD_URL_PATTERN =
  * @returns {string[]} de-duplicated, upper-cased issue identifiers (e.g. ["THR-12", "THR-34"]).
  */
 export function extractNativeCloseableIssueIds(texts) {
-  const ids = new Set(extractCloseableIssueIds(texts));
-  for (const text of texts) {
-    if (!text) continue;
-    // matchAll with a /g regex is stateless per-call on a fresh string; reset lastIndex defensively.
-    CLOSE_KEYWORD_URL_PATTERN.lastIndex = 0;
-    for (const [, id] of text.matchAll(CLOSE_KEYWORD_URL_PATTERN)) {
-      ids.add(id.toUpperCase());
-    }
+  // Deliberately BROAD — the native integration is not line-anchored, so this detector must not be
+  // either. Uses the substring keyword pattern (NOT the narrowed extractCloseableIssueIds, THR-738)
+  // plus the issue-URL form.
+  const ids = extractIdsByPattern(texts, NATIVE_CLOSE_KEYWORD_PATTERN);
+  for (const id of extractIdsByPattern(texts, CLOSE_KEYWORD_URL_PATTERN)) {
+    ids.add(id);
   }
   return [...ids];
 }

@@ -7,7 +7,7 @@ import {
 } from "../linearAutoclose.mjs";
 
 describe("extractCloseableIssueIds", () => {
-  it("extracts a single keyword reference", () => {
+  it("extracts a single keyword reference on its own line", () => {
     expect(extractCloseableIssueIds(["Fixes THR-12"])).toEqual(["THR-12"]);
   });
 
@@ -21,21 +21,59 @@ describe("extractCloseableIssueIds", () => {
   });
 
   it("de-duplicates and upper-cases identifiers across texts", () => {
-    const ids = extractCloseableIssueIds([
-      "fixes thr-7",
-      "Closes THR-7",
-      "title: Resolves THR-7",
-    ]);
+    const ids = extractCloseableIssueIds(["fixes thr-7", "Closes THR-7"]);
     expect(ids).toEqual(["THR-7"]);
   });
 
+  it("matches a deliberate close line inside a multi-line PR body", () => {
+    // The Definition of Done shape: a summary line, a blank line, then the standalone keyword line.
+    const body = "docs: update project-status for THR-8\n\nFixes THR-8";
+    expect(extractCloseableIssueIds([body])).toEqual(["THR-8"]);
+  });
+
+  it("tolerates trailing whitespace and Windows CRLF line endings", () => {
+    expect(extractCloseableIssueIds(["intro\r\nFixes THR-8  \r\nmore"])).toEqual([
+      "THR-8",
+    ]);
+  });
+
+  // --- THR-738 regression: the keyword buried in prose must NOT close ---
+
+  it("ignores the keyword inside a prose sentence (the THR-74 recurrence)", () => {
+    // PR #807 body: "`Fixes THR-74` still rides the final UI PR" — a negation that documents the
+    // discipline. Line-anchoring makes it inert whether or not the backtick is stripped.
+    expect(
+      extractCloseableIssueIds(["Fixes THR-74 still rides the final UI PR"]),
+    ).toEqual([]);
+    expect(
+      extractCloseableIssueIds(["`Fixes THR-74` still rides the final UI PR"]),
+    ).toEqual([]);
+  });
+
+  it("ignores the keyword in a markdown bullet or indented line", () => {
+    expect(extractCloseableIssueIds(["- Fixes THR-74 in a follow-up"])).toEqual([]);
+    expect(extractCloseableIssueIds(["  Fixes THR-74"])).toEqual([]);
+  });
+
+  it("ignores a comma-joined inline list (must be one deliberate line each)", () => {
+    // The old permissive behaviour matched both ids here; line-anchoring now rejects the prose list.
+    expect(extractCloseableIssueIds(["Fixes THR-1 and also Closes THR-2"])).toEqual(
+      [],
+    );
+  });
+
+  it("extracts multiple distinct ids when each is its own deliberate line", () => {
+    const ids = extractCloseableIssueIds(["Fixes THR-1\nCloses THR-2"]);
+    expect(ids.sort()).toEqual(["THR-1", "THR-2"]);
+  });
+
   it("ignores bare identifiers with no closing keyword", () => {
-    // The flush commit subject `docs(plan): THR-499 ...` must NOT trigger a close.
+    // The commit subject `docs(plan): THR-499 ...` must NOT trigger a close.
     expect(extractCloseableIssueIds(["docs(plan): THR-499 kickoff"])).toEqual([]);
   });
 
-  it("ignores Linear issue URLs (the old flush PR body form)", () => {
-    // `Closes https://linear.app/threadbare/issue/THR-499/...` is a URL, not `Closes THR-499`.
+  it("ignores Linear issue URLs", () => {
+    // `Closes https://linear.app/threadbare/issue/THR-499/...` is a URL, not a `Closes THR-499` line.
     expect(
       extractCloseableIssueIds([
         "Auto-flush. Closes https://linear.app/threadbare/issue/THR-499/ascendant-beats",
@@ -47,13 +85,6 @@ describe("extractCloseableIssueIds", () => {
     expect(extractCloseableIssueIds([null, undefined, "", "Fixes THR-9"])).toEqual([
       "THR-9",
     ]);
-  });
-
-  it("extracts multiple distinct ids from one body", () => {
-    const ids = extractCloseableIssueIds([
-      "Fixes THR-1 and also Closes THR-2",
-    ]);
-    expect(ids.sort()).toEqual(["THR-1", "THR-2"]);
   });
 });
 
