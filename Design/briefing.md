@@ -1,35 +1,34 @@
 # Briefing
 
-**Generated:** 2026-07-25 09:09 local (2026-07-25 07:09 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-07-25 10:10 local (2026-07-25 08:10 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
 ## Needs Christian
 
-**Nothing needs you right now — and this is the first clean hour in four days.** Both items carried since yesterday closed between the 08:09 brief and this one:
+**One optional preference — nothing is blocked on it, and the safe default is already in place.**
 
-- **You flipped the Linear setting.** The ticket that kept closing itself mid-work can no longer be closed by anything but a deliberate instruction. Worth recording: the click path we'd written for you was wrong — the toggle isn't under Settings → Integrations → GitHub, it's per-team under Settings → Team Threadbare → Workflows & automations → "when PRs are merged". You found it anyway. The remaining step is a two-minute live test that an agent runs, not you.
-- **Your local game folder caught up.** It is now exactly level with the server — no gap at all, where the last brief measured 122 commits. Nothing to run.
+- **Five roadmap projects are marked "in progress" but have no work left in them.** "Agent Coordination Protocol", "Repo Health", "Marketing Site", "Small manual tweaks" and "Procedural Hex Vignettes" have all had their last item finished. The tidy-up rule says close them; each one's own description, though, says it's meant to be a *permanent home* for a kind of work ("where small manual tweaks directly driven by the human goes"), and Hex Vignettes is a paused experiment whose later phases were never written up. **This morning's grooming pass closed none of them** and recommends leaving them open as standing intake buckets — so "in progress with nothing in it" reads as "no current work", not "stalled". That stands unless you'd rather the roadmap only ever show projects with live work. **Yes/no, no rush** — ignoring it changes nothing.
 
-The queue is draining on its own and the executor is mid-flight. Enjoy the quiet.
+Nothing else needs you. The queue is draining on its own and the executor is mid-flight.
 
 ## Queue
 
-**Backed up, just barely — 16 ready items against a soft ceiling of 15.** Planning is running slightly ahead of execution, which is a good problem: nothing is blocked and nothing is stale. THR-738 (the self-closing-tickets fix) is the only high-priority item and it is now *unblocked* by your flip — its last step is the scratch-issue verification, docs-only, safe to run alongside anything else. Everything else is Medium or Low: two hygiene sweeps from Friday's retro, the player-cast variance spec that already carries your "yes, with a safety floor", the group-conflict and Reunite/Sunder company designs, and a tail of small deferrals.
+**Backed up, just barely — 16 ready items against a soft ceiling of 15**, unchanged from the last two briefs. Nothing is blocked and nothing has gone stale (every item was touched within the last two days). THR-738, the self-closing-tickets fix, is still the only High, and its last step is a two-pull-request live test proving the new rule works — docs-only, safe to run alongside anything. Everything else is Medium or Low: two hygiene sweeps from Friday's retro, the player-cast variance spec that already carries your "yes, with a safety floor", the group-conflict and Reunite/Sunder company designs, and a tail of small deferrals.
 
-The executor is working on item on-use triggers — the change that makes a cursed or breakable item actually *do* something when used, rather than just describing itself in a tooltip. Its pull request is queued to merge itself the moment the tests go green.
+One pattern worth naming because it keeps recurring: **this briefing's own pull request keeps knocking the executor's out of date.** The repo requires a branch to be level with `main` before it may merge, and hourly automation merging into `main` is enough to unseat whatever else is queued behind it. The grooming pass caught and repaired exactly that at 09:23; the same collision is likely again this hour. It self-corrects on the next pass and is already ticketed — agent work, not yours.
 
 ## Freshness
 
-**Home tree: current.** On `main`, exactly level with the server (0 behind, 0 stranded) — the four-day freeze is over. One leftover tracked edit remains (`.claude/settings.local.json`, three permission grants) but it is no longer blocking anything; the sync went through around it. Untracked: Friday's weekly-retro write-up (`Design/retros/retro-2026-07-24-draft.md`), still the only copy anywhere and still **agent work, not yours** — the next design or grooming session should land it via a docs PR.
+**Home tree: current.** On `main`, exactly level with the server (0 behind, 0 stranded). One leftover tracked edit (`.claude/settings.local.json`) and one untracked file — Friday's weekly-retro write-up, `Design/retros/retro-2026-07-24-draft.md` — remain; neither blocks the sync, and landing the retro is agent work for the next docs pass, still the only copy anywhere. Local dependencies are healthy (284 packages, 99 tool shims present).
 
-**Cleanup reaper: alive** — last run 08:40 (29 minutes ago), tracking 23 worktrees / 33 branches / 1 stash, nothing awaiting a human decision.
+**Cleanup reaper: alive** — last run 09:40 (30 minutes ago), tracking 25 worktrees / 34 branches / 1 stash, nothing awaiting a human decision. Its new safety guard is visibly working: this morning's log shows it severing a work folder's shared-dependency link before deleting the folder, which is precisely the step whose absence twice wiped the shared install.
 
 ## What's moving
 
-- **Tickets can no longer close themselves (THR-738 — your half done, unblocked at 06:39).** The repo half merged overnight: our own workflow now only reacts to a deliberate, standalone closing line, so the keyword buried in a sentence is inert. With your team-settings flip, Linear's own integration can no longer sweep an issue to Done off a branch name or a title. Three days of a ticket being declared finished while work was still in it — closed at the cause.
-- **A pass at trimming the always-loaded instructions is specced (THR-760, plan doc merged 08:41).** The file every session reads before doing anything has grown to the point where it repeats itself; the plan dedupes it against the three docs that actually own each rule, relocating rather than deleting.
-- **Item on-use triggers are in flight (THR-719).** Consumables, breakage and curses stop being tooltip text and start firing as real effects.
+- **Item on-use triggers are one green test run from landing (THR-719).** All nine triggers are ported — consumables, breakage and curses stop being tooltip text and start firing as real effects. The pull request is armed to merge itself the moment tests pass.
+- **This morning's backlog tidy-up landed (09:24).** It closed five duplicate scan reports that had been filed twice over, and confirmed every one of the 96 open items belongs to a project.
+- **The design-audit pipeline was repaired (07:11).** Three of its inputs had drifted out of step with what they audit against.
 
 ---
 *Standing asks live in [`Design/user-actions.md`](user-actions.md). This file is regenerated hourly by the `keep-work-flowing-cc` scheduled task; staleness is visible from the Generated timestamp above and the task's `lastRunAt` in `list_scheduled_tasks`.*
