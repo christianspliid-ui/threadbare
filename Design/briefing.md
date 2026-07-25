@@ -1,6 +1,6 @@
 # Briefing
 
-**Generated:** 2026-07-25 17:12 local (2026-07-25 15:12 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-07-25 17:21 local (2026-07-25 15:21 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
@@ -24,7 +24,9 @@ This is your inbox. It's rewritten every hour by a Claude Code task. Standing sw
 
 **Cleanup reaper: alive** — last run 16:40, tracking 24 work folders / 32 branches / 1 stash, nothing awaiting a human decision.
 
-**Automated checks: a fresh stumble at 17:05, and it is the same shape as this afternoon's.** Three runs started and died within five seconds having executed **no work at all** — the startup signature, not a test failure. The code is independently proven: the very same branch ran a full green suite seventeen minutes earlier (885 files, 13,200 tests, clean build). Publishing is untouched — the live site rebuilt from the exact version now on the server at 17:06 and reports success, so what's online is current. **Deliberately not calling this a spending cap:** that conclusion was drawn from this identical signature at 15:12 today and retracted as wrong four minutes later; the honest read is a transient outage at the automation provider. This briefing's own pull request is the probe — if its checks execute, the blip is already over.
+**Automated checks: broken since 17:05, and the safety net is currently open.** Runs start and die within five seconds having executed **no work at all** — the startup signature, not a test failure. The code itself is fine, independently: the group-conflict branch ran a full green suite seventeen minutes before it landed (885 files, 13,200 tests, clean build), and publishing is untouched — the live site rebuilt from the exact version now on the server at 17:06 and reports success. **Deliberately not calling this a spending cap:** that conclusion was drawn from this identical signature at 15:12 today and retracted as wrong four minutes later. This is a stumble at the automation provider, unacknowledged on their own status page, which currently reports everything healthy.
+
+**The part worth knowing, and it is the reason this brief was rewritten twice:** this briefing's own pull request was the probe, and it came back worse than expected. Its checks also died in four seconds — *and it merged anyway, two seconds later.* The reason is a gap in how the gate is wired: when the little job that decides *whether* to run the tests dies, the test job itself is recorded as **skipped**, and a skipped check counts as a passed one. So for as long as this lasts, **anything can land on the main line without a single test having run.** Nothing bad got in — the only thing that took that path is this text file, and it says what I meant it to say — but the next agent to merge actual game code needs to know the net is open and check the tests by hand. **Nothing here is yours to fix**; it is written down so it cannot be discovered the hard way.
 
 ## What's moving
 
