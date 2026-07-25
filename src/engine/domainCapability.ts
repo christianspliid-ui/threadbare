@@ -121,6 +121,27 @@ export function computeCapability(
 }
 
 /**
+ * Capability for a node whose raw score carries an additional term supplied by the
+ * caller (THR-728).
+ *
+ * The ascendant is the only current caller: its innate divine aptitude is not on
+ * the raw scale `computeRawScore` walks (mortals carry `domainCapabilities` of
+ * 10–40; the ascendant carries `domainAffinities` of 2–5, a *ranking* weight used
+ * to pick its two permanent reaches). Passing that bonus in here — rather than
+ * teaching `computeRawScore` to read it — keeps the ascendant's displayed tier and
+ * THR-613's Deepening tier-crossings on exactly the score they were tuned against.
+ */
+export function computeCapabilityWithRawBonus(
+  graph: WorldGraph,
+  nodeId: string,
+  domain: ReachDomain,
+  rawBonus: number,
+): number {
+  const bonus = Number.isFinite(rawBonus) ? rawBonus : 0;
+  return sigmoid(computeRawScore(graph, nodeId, domain) + bonus);
+}
+
+/**
  * Map a capability (0-1) to a tier (1-10).
  */
 export function computeTier(capability: number): number {

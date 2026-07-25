@@ -5,6 +5,7 @@ import { Tooltip } from '../shared/Tooltip';
 import { Button } from '../shared/Button';
 import { renderProseWithIPK } from '../ProseKeyword';
 import { effectLabel, EFFECT_SOURCE_BADGE_COLORS } from '../../data/actionEffectSource';
+import { riskHintLine } from '../../data/player-cast-constants';
 
 // ─── Layer Filter Types ───────────────────────────────────────────────────
 
@@ -306,6 +307,23 @@ export const ActionDrawer: React.FC<ActionDrawerProps> = React.memo(
                   >
                     {focusedSlot.technicalEffect}
                   </p>
+                  {/* Risk line (THR-728) — a positive-difficulty casting rolls the
+                      outcome ladder, so say so before the cast, in prose. Guaranteed
+                      castings show nothing and keep their unchanged face. */}
+                  {riskHintLine(focusedSlot.maxStepDifficulty) && (
+                    <p
+                      data-testid="action-risk-hint"
+                      style={{
+                        fontFamily: 'var(--font-body, sans-serif)',
+                        fontSize: 'var(--text-xs, 0.75rem)',
+                        color: 'var(--text-tertiary, #a09880)',
+                        lineHeight: 1.5,
+                        margin: '0.35rem 0 0',
+                      }}
+                    >
+                      {riskHintLine(focusedSlot.maxStepDifficulty)}
+                    </p>
+                  )}
                 </div>
               )}
               {/* Sphere prose below focused card */}

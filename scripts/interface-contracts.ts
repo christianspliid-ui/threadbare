@@ -563,6 +563,40 @@ export const CONTRACTS: readonly Contract[] = [
     readSites: ['src/engine/notificationRouter.ts'],
   },
 
+  // ── Player-cast outcome variance (THR-728) ────────────────────────────────
+  {
+    id: 'authored-step-difficulty-player-resolution',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: ENCOUNTERS,
+    intent:
+      'Authored step difficulty finally prices a player cast. 82 of 136 ascendant-castable templates carried difficulties 0.1–0.6 that the player branch discarded before this contract existed; the same value now feeds the shared capability-vs-difficulty roll, floored at success-at-cost.',
+    ulTerms: ['Domain Capability', 'UnifiedActionTemplate'],
+    mechanism: { kind: 'function', symbols: ['resolveUncontestedStep', 'difficulty'], module: 'src/engine/unifiedActionResolution.ts' },
+    writeSites: ['src/data/unified-action-templates.ts'],
+    readSites: ['src/engine/unifiedActionResolution.ts', 'src/engine/targetActions.ts'],
+    verifiedLive: {
+      date: '2026-07-25',
+      evidence:
+        'THR-728: `unified-action-templates.ts` authors `steps[].difficulty`; `resolveUncontestedStep` reads it for `source === \'player\'` (the auto-success early-return is now gated behind `PLAYER_CAST_VARIANCE_ENABLED`), and `targetActions.ts` reads the same field via `maxStepDifficulty` to render the focused card\'s risk line. Measured over 400 seeds: the outcome set for a positive-difficulty cast is >1 band.',
+    },
+  },
+  {
+    id: 'ascendant-affinity-cast-capability',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: ENCOUNTERS,
+    intent:
+      "The ascendant's persisted reach affinities become its capability for a cast — the god's innate aptitude is not on the raw scale `computeRawScore` walks, so a literal read left every cast at capability 0.02 and one reachable outcome band.",
+    ulTerms: ['Domain Capability', 'Reach'],
+    mechanism: { kind: 'node-prop', symbols: ['domainAffinities', 'computeCapabilityWithRawBonus'] },
+    writeSites: ['src/engine/ascendant.ts'],
+    readSites: ['src/engine/unifiedActionResolution.ts'],
+    verifiedLive: {
+      date: '2026-07-25',
+      evidence:
+        "THR-728: `createAscendant` writes `domainAffinities` (2–5 per reach); `resolveUncontestedStep` reads it via `getAscendantDomainAffinities` and maps it onto the raw scale with `ascendantCastRawBonus` before `computeCapabilityWithRawBonus`. Deliberately NOT wired into `computeRawScore`, so THR-613's Deepening tier-crossings keep reading the score they were tuned against (pinned by a test).",
+    },
+  },
+
   // ── Companies & Group Travel (THR-74) ─────────────────────────────────────
   // Movement & Colocation and Encounters were both ⚪ UNAUDITED; these rows are
   // their first contract entries for the surfaces this ticket touches

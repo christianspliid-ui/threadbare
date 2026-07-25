@@ -35,7 +35,8 @@ import {
   resolveStepDefinition,
 } from './unifiedActionLifecycle';
 import { isStepSuccess, isStepFailure, isActionStepBranch } from '../types/unifiedAction';
-import { computeCapability } from './domainCapability';
+import { computeCapability, computeCapabilityWithRawBonus } from './domainCapability';
+import { getAscendantDomainAffinities } from './ascendant';
 import { getGroupOf } from './groups/groupQueries';
 import { resolveGroupStep } from './groups/groupResolution';
 import { resolveAction as resolveActionLegacy } from './resolution';
@@ -151,6 +152,12 @@ import {
 import { applyActionTriggerPayloads } from './effects/actionTriggerPayloads';
 import type { ActionTriggerEvent, EffectRuntimeState } from '../types/effects';
 import { collectAttachmentEffects } from './effects/effectWalker';
+import {
+  PLAYER_CAST_VARIANCE_ENABLED,
+  PLAYER_CAST_OUTCOME_FLOOR,
+  PLAYER_CAST_PUSH_ENABLED,
+  ascendantCastRawBonus,
+} from '../data/player-cast-constants';
 
 // ─── THR-571: Outcome-ladder constants ──────────────────────────
 /**
@@ -256,9 +263,10 @@ export function resolveUncontestedStep(
     return { outcome: 'success', rawOutcome: 'success', opsToExecute: step.onSuccess, capability: 1, probability: 1, roll: 0, ...noPushResist };
   }
 
-  // Ascendant (player) actions always succeed — their only gate is essence cost,
-  // which is already paid at dispatch time. Capability rolls apply to NPC agents only.
-  if (action.source === 'player') {
+  // THR-728: player casts roll the same ladder mortals do — but never below the
+  // floor applied at the tail of this function. With the master switch off, the
+  // pre-THR-728 auto-success early-return is restored verbatim (one-flag revert).
+  if (!PLAYER_CAST_VARIANCE_ENABLED && action.source === 'player') {
     return { outcome: 'success', rawOutcome: 'success', opsToExecute: step.onSuccess, capability: 1, probability: 1, roll: 0, ...noPushResist };
   }
 
@@ -310,11 +318,21 @@ export function resolveUncontestedStep(
 
   // Compute domain capability for this step's reach — the acting member's when a
   // company answered, the actor's own otherwise.
-  const capability = computeCapability(
-    state.graph,
-    groupStep?.actingMemberId ?? action.actorId,
-    step.reach,
-  );
+  //
+  // THR-728: a player cast adds the ascendant's innate divine aptitude, which is
+  // not a term the shared raw score walks (see `ascendantCastRawBonus` for the
+  // measured why). Player-path only — the mortal branch is untouched.
+  const capabilityNodeId = groupStep?.actingMemberId ?? action.actorId;
+  const capability = action.source === 'player'
+    ? computeCapabilityWithRawBonus(
+      state.graph,
+      capabilityNodeId,
+      step.reach,
+      ascendantCastRawBonus(
+        getAscendantDomainAffinities(state.graph, capabilityNodeId)?.[step.reach],
+      ),
+    )
+    : computeCapability(state.graph, capabilityNodeId, step.reach);
 
   // Sphere factor: small bonus if actor's location has sphere influence
   // (simplified — full implementation would check location sphere influence)
@@ -338,7 +356,10 @@ export function resolveUncontestedStep(
   );
   const interventionBoost = rememberedChoice?.probabilityBoost ?? 0;
   let pushEvent: import('../types/quintessence').QuintessenceEvent | null = null;
-  if (isPushEligible(action.templateId) && step.difficulty >= 0.3) {
+  // THR-728: push is mortal-only. It spends the actor's quintessence pre-roll, and
+  // the ascendant has no place in that economy.
+  const pushAllowed = PLAYER_CAST_PUSH_ENABLED || action.source !== 'player';
+  if (pushAllowed && isPushEligible(action.templateId) && step.difficulty >= 0.3) {
     const actorNode = state.graph.getNode(action.actorId);
     if (actorNode && canSpendQuintessence(actorNode, 'push')) {
       pushModifier = getPushModifier(actorNode);
@@ -418,7 +439,22 @@ export function resolveUncontestedStep(
   // downstream complication *severity* scales (resolveCritFailureSeverity →
   // ComplicationContext.critFailureSeverity). The floor upgrade above still
   // guarantees progress for sub-floor incapable actors.
-  const result = flooredResult;
+  // THR-728: the player safety floor. A paid cast never outright fails — a
+  // failing roll is upgraded to success-at-cost, so `step.onSuccess` still runs
+  // (`isStepSuccess('success_at_cost')` is true) and the essence always bought
+  // something. `critical_success` and `near_miss` pass through untouched: the
+  // full upside of the ladder is live, only the bottom is closed off.
+  //
+  // Deliberately a SECOND, separate floor stacked after the THR-571 scale floor
+  // above — the two markers (`[floor↑]`, `[player-floor↑]`) stay distinguishable
+  // in traces, so "the incapable scraped through" and "the god cannot fail" are
+  // never confused for one another.
+  const playerFloorApplied = PLAYER_CAST_VARIANCE_ENABLED &&
+    action.source === 'player' &&
+    (flooredResult.outcome === 'failure' || flooredResult.outcome === 'critical_failure');
+  const result = playerFloorApplied
+    ? { ...flooredResult, outcome: PLAYER_CAST_OUTCOME_FLOOR }
+    : flooredResult;
 
   // THR-451 Phase A: Emit full resolution input telemetry.
   emitTrace({
@@ -442,12 +478,13 @@ export function resolveUncontestedStep(
     rawOutcome,
     critClassification,
     floorUpgradeApplied,
+    playerFloorApplied,
     // THR-74: present only when a company answered this step.
     groupId: groupNode?.id,
     actingMemberId: groupStep?.actingMemberId,
     groupAssistCount: groupStep?.assistCount,
     groupBonus: groupStep?.totalBonus,
-    summary: `resolution.input: ${action.templateId} scale=${template.scale ?? 'regional'} cap=${capability.toFixed(2)} diff=${effectiveDifficulty.toFixed(2)} P=${flooredResult.probability.toFixed(2)} roll=${rawResult.roll} raw=${rawOutcome}${floorUpgradeApplied ? ' [floor↑]' : ''} → ${result.outcome}${groupStep ? ` [company ${groupStep.actingMemberName} +${groupStep.totalBonus.toFixed(2)} assists=${groupStep.assistCount}]` : ''}`,
+    summary: `resolution.input: ${action.templateId} scale=${template.scale ?? 'regional'} cap=${capability.toFixed(2)} diff=${effectiveDifficulty.toFixed(2)} P=${flooredResult.probability.toFixed(2)} roll=${rawResult.roll} raw=${rawOutcome}${floorUpgradeApplied ? ' [floor↑]' : ''}${playerFloorApplied ? ' [player-floor↑]' : ''} → ${result.outcome}${groupStep ? ` [company ${groupStep.actingMemberName} +${groupStep.totalBonus.toFixed(2)} assists=${groupStep.assistCount}]` : ''}`,
   } as ResolutionInputTrace);
 
   // Phase 3: If push was attempted, queue the spend event
@@ -462,7 +499,12 @@ export function resolveUncontestedStep(
   // Phase 3: Resist — social/influence actions attempt to downgrade negative outcomes.
   // After a failure or critical_failure, the actor can spend Q for a chance to soften it.
   let resistEvent: import('../types/quintessence').QuintessenceEvent | null = null;
-  if (isStepFailure(outcome) && isResistEligible(action.templateId)) {
+  // THR-728: resist is mortal-only, for the same reason as push — and with the
+  // player floor above it is unreachable for a player cast anyway (the outcome is
+  // never a failure by the time control arrives here). The explicit guard states
+  // the rule rather than leaving it as an emergent consequence.
+  const resistAllowed = PLAYER_CAST_PUSH_ENABLED || action.source !== 'player';
+  if (resistAllowed && isStepFailure(outcome) && isResistEligible(action.templateId)) {
     const actorNode = state.graph.getNode(action.actorId);
     if (actorNode && canResistOutcome(actorNode)) {
       resistEvent = applyResistOutcome(actorNode, `action_resist_${action.templateId}`, state.tick);

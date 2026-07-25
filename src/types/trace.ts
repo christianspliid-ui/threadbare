@@ -2962,6 +2962,14 @@ export interface ResolutionInputTrace extends TraceBase {
    */
   floorUpgradeApplied?: boolean;
   /**
+   * THR-728: True when the player safety floor rewrote a player cast's
+   * failure/critical_failure into success_at_cost. Stacked after, and kept
+   * distinct from, `floorUpgradeApplied` — that one reports an incapable actor
+   * scraping through the scale floor, this one reports that a paid divine cast
+   * cannot outright fail. Absent/false for every NPC resolution.
+   */
+  playerFloorApplied?: boolean;
+  /**
    * THR-74: the company this step was resolved for, when the actor belongs to
    * one and the template is group-eligible. Present → `capability` above is the
    * *acting member's* capability, not the nominal actor's, and `actionModifiers`

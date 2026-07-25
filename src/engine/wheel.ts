@@ -80,6 +80,9 @@ export interface WheelSlot {
    * NOTE: Slots built via getAgentWheelSlots (legacy radial wheel) do not populate rarityTier.
    * If that path is still active, add rarityTier pass-through matching targetActions.ts:263. */
   rarityTier?: RarityTier;
+  /** Highest step difficulty in the template (THR-728). Drives the focused card's
+   * qualitative risk line. 0 or absent → a guaranteed casting, no hint shown. */
+  maxStepDifficulty?: number;
 }
 
 // ─── Wheel Layout ─────────────────────────────────────────────────────────

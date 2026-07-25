@@ -1261,7 +1261,12 @@ describe('unifiedActionResolution', () => {
       // Confirm action resolved with success
       const resolved = result.unifiedActions!.find(a => a.templateId === 'bind_thread_location');
       expect(resolved?.resolved).toBe(true);
-      expect(resolved?.outcome).toBe('success');
+      // THR-728: a player cast no longer auto-succeeds — it rolls, floored at
+      // success_at_cost. This template is cosmic-scale difficulty 0.2, so a god
+      // with no affinity for the reach scrapes through the scale floor rather than
+      // landing cleanly. The subject of this test is the thread edge below; assert
+      // the success *band* so it stops re-encoding the removed auto-success rule.
+      expect(['success', 'success_at_cost', 'critical_success']).toContain(resolved?.outcome);
 
       // Confirm thread edge was created
       const threadEdges = state.graph.getOutgoingEdges('asc-1', 'thread');

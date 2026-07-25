@@ -385,6 +385,21 @@
   </div>
 
   <div class="section">
+    <h2>Spotlight — Player casts
+      <span class="lead">Audited 2026-07-25 (audit-on-touch, THR-728). The god's own actions finally run on the world's resolution machinery instead of beside it.</span>
+    </h2>
+
+    <ul class="contracts">
+      <li class="live"><span class="flow">Authored step difficulty <span class="arrow">⟶</span> Player resolution — the price a content author wrote into a card is finally charged</span><span class="chip live">LIVE</span>
+        <span class="note">Restored 2026-07-25 (THR-728). 84 of 138 ascendant-castable templates carry authored difficulties (0.1–0.65); the player branch of <code>resolveUncontestedStep</code> discarded every one of them behind an unconditional auto-success early-return. That return is now gated behind <code>PLAYER_CAST_VARIANCE_ENABLED</code> and casts fall through to the shared capability-vs-difficulty path. <code>targetActions.ts</code> reads the same field to render the card's risk line, so the number the author wrote is what the player is warned about.</span></li>
+      <li class="live"><span class="flow">Player resolution <span class="arrow">⟶</span> Divine Receipt — the receipt reports how a cast landed, not merely that it did</span><span class="chip live">LIVE</span>
+        <span class="note">THR-727 built the six-band receipt; until THR-728 only two bands were reachable for a player, because no roll happened. All six frame lines were pre-authored and needed no change — the bands simply began to vary. A player cast is floored at <em>success-at-cost</em>, so <code>setback</code> and <code>catastrophe</code> stay unreachable by construction.</span></li>
+      <li class="live"><span class="flow">Ascendant affinities <span class="arrow">⟶</span> Cast capability — the god's innate aptitude reaches the roll</span><span class="chip live">LIVE</span>
+        <span class="note">Found and closed in the same pass (THR-728). The ascendant node carries <code>domainAffinities</code> (2–5, a reach <em>ranking</em> weight); mortals carry <code>domainCapabilities</code> (10–40) on the raw scale the capability sigmoid consumes. Read literally, every god rolled at capability 0.02 and 94% of casts landed on one band — measured over 400 seeds. The player path now maps affinity onto the raw scale via <code>ascendantCastRawBonus</code> + <code>computeCapabilityWithRawBonus</code>. Deliberately <em>not</em> folded into <code>computeRawScore</code>, so THR-613's Deepening tier-crossings keep reading the score they were tuned against; a test pins that separation.</span></li>
+    </ul>
+  </div>
+
+  <div class="section">
     <h2>How this map stays true
       <span class="lead">A hand-drawn diagram is a lie waiting to happen. This one is designed to become a projection.</span>
     </h2>
