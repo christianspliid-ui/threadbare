@@ -33,6 +33,7 @@ import { TraceEntryItem } from './TraceFeed';
 import { SocialTabContent } from './SocialTabContent';
 import { JourneyDebugContent } from './JourneyDebugContent';
 import { ArmiesTabContent } from './ArmiesTabContent';
+import { CompaniesTabContent } from './CompaniesTabContent';
 import { FactionDebugContent } from './FactionDebugContent';
 import { SphereStateTabContent } from './SphereStateTabContent';
 import { CommandTab } from './CommandTab';
@@ -60,7 +61,7 @@ import { EMPTY_STATE_STYLE } from './debugPanelStyles';
 import type { KnowsClueOfEdgeProperties } from '../../../types/knowledge';
 import type { FlipTableRuntimeState } from '../../../types/contentShells';
 
-export type ViewMode = 'feed' | 'agent-follow' | 'tick-inspector' | 'social' | 'encounters' | 'encounter-seeds' | 'hidden-marks' | 'journey' | 'webgl' | 'factions' | 'spheres' | 'revelation-log' | 'knowledge-gaps' | 'armies' | 'cli' | 'strategic' | 'omens' | 'cultures' | 'secrets-favors' | 'clues' | 'ruins' | 'recent-events' | 'shells' | 'compositions' | 'phases' | 'choices' | 'drift' | 'hand' | 'detection' | 'forecast' | 'foreshadowing' | 'action-unlocks' | 'beats' | 'sustained-controls' | 'kpi' | 'prose-quality' | 'economy' | 'essence-sources' | 'orphaned-cards' | 'fragments';
+export type ViewMode = 'feed' | 'agent-follow' | 'tick-inspector' | 'social' | 'encounters' | 'encounter-seeds' | 'hidden-marks' | 'journey' | 'webgl' | 'factions' | 'spheres' | 'revelation-log' | 'knowledge-gaps' | 'armies' | 'companies' | 'cli' | 'strategic' | 'omens' | 'cultures' | 'secrets-favors' | 'clues' | 'ruins' | 'recent-events' | 'shells' | 'compositions' | 'phases' | 'choices' | 'drift' | 'hand' | 'detection' | 'forecast' | 'foreshadowing' | 'action-unlocks' | 'beats' | 'sustained-controls' | 'kpi' | 'prose-quality' | 'economy' | 'essence-sources' | 'orphaned-cards' | 'fragments';
 
 export const TABS: { id: ViewMode; label: string }[] = [
   { id: 'feed', label: 'Feed' }, { id: 'agent-follow', label: 'Agent' },
@@ -69,7 +70,7 @@ export const TABS: { id: ViewMode; label: string }[] = [
   { id: 'journey', label: 'Journey' },
   { id: 'webgl', label: 'WebGL' }, { id: 'factions', label: 'Factions' },
   { id: 'spheres', label: 'Sphere State' }, { id: 'revelation-log', label: 'Revelations' },
-  { id: 'knowledge-gaps', label: 'Knowledge' }, { id: 'armies', label: 'Armies' },
+  { id: 'knowledge-gaps', label: 'Knowledge' }, { id: 'armies', label: 'Armies' }, { id: 'companies', label: 'Companies' },
   { id: 'strategic', label: 'Strategic' }, { id: 'omens', label: 'Omens' },
   { id: 'cultures', label: 'Cultures' }, { id: 'secrets-favors', label: 'Secrets' }, { id: 'clues', label: 'Clues' }, { id: 'ruins', label: 'Ruins' }, { id: 'cli', label: 'CLI' },
   { id: 'recent-events', label: 'Recent Events' },
@@ -198,6 +199,7 @@ export function DebugTabContent({
   if (viewMode === 'revelation-log') return <RevelationLogTab traces={allTraces as TraceEntry[]} agentKnowledge={agentKnowledge ?? new Map()} />;
   if (viewMode === 'knowledge-gaps') return <KnowledgeComparisonTab agentKnowledge={agentKnowledge ?? new Map()} graph={graph} />;
   if (viewMode === 'armies') return <ArmiesTabContent graph={graph} currentTick={currentTick} onZoomToLocation={onZoomToLocation} />;
+  if (viewMode === 'companies') return <CompaniesTabContent graph={graph} currentTick={currentTick} onZoomToLocation={onZoomToLocation} />;
   if (viewMode === 'cultures') return <CulturePhoneticsInspector graph={graph} />;
   if (viewMode === 'secrets-favors') return <SecretsFavorsDebugTab graph={graph} focusedAgentId={effectiveAgentId} />;
   if (viewMode === 'clues') return <CluesDebugTab graph={graph} focusedAgentId={effectiveAgentId} currentTick={currentTick} />;

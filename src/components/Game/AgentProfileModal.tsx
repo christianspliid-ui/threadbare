@@ -202,7 +202,7 @@ export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata, k
         <TabBar activeTab={activeTab} onTabChange={setActiveTab} />
 
         {activeTab === 'overview' && (
-          <OverviewTab card={card} profile={profile} knowledge={knowledge} />
+          <OverviewTab card={card} profile={profile} knowledge={knowledge} onOpenEntity={onOpenEntity} />
         )}
         {activeTab === 'prowess' && (
           <ProwessTab card={card} knowledge={knowledge} onAttachmentClick={handleAttachmentClick} />

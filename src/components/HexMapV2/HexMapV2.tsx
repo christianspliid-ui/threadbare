@@ -39,6 +39,8 @@ import type { BattleIndicatorLayerGroup } from './scene/BattleIndicatorLayer';
 import type { BattleIndicatorData } from './scene/BattleIndicatorLayer';
 import { createThreadLineMesh } from './scene/ThreadLineMesh';
 import type { ThreadLineData, ThreadLineLayer } from './scene/ThreadLineMesh';
+import { createCompanyClusterMesh } from './scene/CompanyClusterMesh';
+import type { CompanyRenderData, CompanyClusterLayer } from './scene/CompanyClusterMesh';
 import { createActivityIconLayer } from './scene/ActivityIconMesh';
 import type { ActivityIconData, ActivityIconLayer } from './scene/ActivityIconMesh';
 import { createStrategicMarkerLayer } from './scene/StrategicMarkerMesh';
@@ -301,6 +303,8 @@ export interface HexMapV2Props {
   battles?: BattleIndicatorData[];
   /** Thread line data — avatar-to-agent relationship lines (Attention UI) */
   threadLines?: ThreadLineData[];
+  /** Company cluster data — enclosing ring + bond glyph per active company (THR-74) */
+  companies?: CompanyRenderData[];
   /** Activity icon data — reach micro-icons for active encounters (Attention UI) */
   activityIcons?: ActivityIconData[];
   /** Strategic hex overlays — project dots and control pips per hex. */
@@ -372,6 +376,7 @@ export interface HexMapV2Handle {
     battlesVisible: number;
     siegesVisible: number;
     threadLines: number;
+    companyClusters: number;
     activityIcons: number;
     fogEnabled: boolean;
     layersActive: string[];
@@ -515,7 +520,7 @@ function createSelectionOverlayMesh(size: number, color: string): THREE.Mesh {
  */
 const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
   function HexMapV2(
-    { tiles, cols, rows, seed = 42, hoveredHex, selectedHex, onHexClick, onHexHover, onAgentClick, onArmyClick, riverPaths, lakeIds, regionData, locations, anomalies, roadPaths, agents, armies, reachSignatureMarkers, rivalInfluenceMarkers, battles, threadLines, activityIcons, strategicOverlays, attentionRatio = 1.0, visibilityMap, fogEnabled = false, showOrganicShore = true, overlayOpen = false, selectionColor, moveDestinationHex, onCameraCenterHex, locationActivityMap, tradeRouteLines, routeTooltipsByHex, spotlightedAgentId, spotlightThreadColor, shouldCenterOnAgent },
+    { tiles, cols, rows, seed = 42, hoveredHex, selectedHex, onHexClick, onHexHover, onAgentClick, onArmyClick, riverPaths, lakeIds, regionData, locations, anomalies, roadPaths, agents, armies, reachSignatureMarkers, rivalInfluenceMarkers, battles, threadLines, companies, activityIcons, strategicOverlays, attentionRatio = 1.0, visibilityMap, fogEnabled = false, showOrganicShore = true, overlayOpen = false, selectionColor, moveDestinationHex, onCameraCenterHex, locationActivityMap, tradeRouteLines, routeTooltipsByHex, spotlightedAgentId, spotlightThreadColor, shouldCenterOnAgent },
     ref,
   ) {
     const containerRef = useRef<HTMLDivElement>(null);
@@ -546,6 +551,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
 
     // Thread line and activity icon layer refs (Attention UI)
     const threadLineLayerRef = useRef<ThreadLineLayer | null>(null);
+    const companyClusterLayerRef = useRef<CompanyClusterLayer | null>(null);
     const activityIconLayerRef = useRef<ActivityIconLayer | null>(null);
     // Strategic marker layer ref — project dots and control pips
     const strategicMarkerLayerRef = useRef<StrategicMarkerLayer | null>(null);
@@ -746,6 +752,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         if (armyLayerRef.current?.group.visible) layersActive.push('armies');
         if (battleIndicatorLayerRef.current?.group.visible) layersActive.push('battles');
         if (threadLineLayerRef.current?.group.visible) layersActive.push('threads');
+        if (companyClusterLayerRef.current?.group.visible) layersActive.push('companyClusters');
         if (activityIconLayerRef.current?.group.visible) layersActive.push('activityIcons');
         if (fogEnabledRef.current) layersActive.push('fog');
 
@@ -757,6 +764,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
           battlesVisible: battleCount,
           siegesVisible: siegeCount,
           threadLines: visibleChildrenCount(threadLineLayerRef.current?.group ?? null),
+          companyClusters: visibleChildrenCount(companyClusterLayerRef.current?.group ?? null),
           activityIcons: visibleChildrenCount(activityIconLayerRef.current?.group ?? null),
           fogEnabled: fogEnabledRef.current,
           layersActive,
@@ -1066,6 +1074,13 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         const threadLineLayer = createThreadLineMesh();
         scene.add(threadLineLayer.group);
         threadLineLayerRef.current = threadLineLayer;
+
+        // Build company cluster layer — enclosing ring + bond glyph per active company (THR-74).
+        // Renders at RENDER_ORDER.COMPANY_CLUSTER (9.6), below agent dots.
+        const companyClusterLayer = createCompanyClusterMesh();
+        scene.add(companyClusterLayer.group);
+        companyClusterLayerRef.current = companyClusterLayer;
+        companyClusterLayer.rebuild(companies ?? []);
 
         // Build activity icon layer — reach micro-icons for active encounters (Attention UI)
         // Renders at RENDER_ORDER.ACTIVITY_ICONS (10.9), above battle indicators, below events.
@@ -1492,6 +1507,10 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
             threadLineLayerRef.current.dispose();
             threadLineLayerRef.current = null;
           }
+          if (companyClusterLayerRef.current) {
+            companyClusterLayerRef.current.dispose();
+            companyClusterLayerRef.current = null;
+          }
           if (activityIconLayerRef.current) {
             activityIconLayerRef.current.dispose();
             activityIconLayerRef.current = null;
@@ -1767,6 +1786,11 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
     useEffect(() => {
       threadLineLayerRef.current?.rebuild(threadLines ?? []);
     }, [threadLines]);
+
+    // ── Company cluster layer rebuild when companies prop changes (THR-74) ──
+    useEffect(() => {
+      companyClusterLayerRef.current?.rebuild(companies ?? []);
+    }, [companies]);
 
     // ── Activity icon layer rebuild when activityIcons prop changes ──
     useEffect(() => {
