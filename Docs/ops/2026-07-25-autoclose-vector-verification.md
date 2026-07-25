@@ -39,16 +39,46 @@ Fires all three vectors simultaneously:
 **Pass criterion:** after this PR merges to `main`, THR-765 is still open
 (`status != Done`, `completedAt == null`).
 
-**Result:** _(recorded below once merged)_
+**Result: PASS.** PR [#836](https://github.com/christianspliid-ui/threadbare/pull/836) merged
+2026-07-25 09:05 UTC as `d1820ef4`. THR-765 was **untouched**:
 
-## PR B — positive control
+```
+status:       Idea          (unchanged)
+completedAt:  null
+stateHistory: [{ state: Idea, startedAt: 09:04:13, endedAt: null }]   ← single entry, never transitioned
+attachments:  PR #836 + commit f742a53a   ← linked, but not moved
+```
 
-A follow-up PR whose body carries the closing keyword **alone on its own line**, which is the
-deliberate form the Definition of Done requires.
+Both auto-close workflow runs went green and declined to act. From the **push**-triggered run
+(30152249074), which scanned the merged commit body carrying the prose keyword:
+
+```
+No Linear issues referenced — nothing to close
+```
+
+Pre-merge, the same texts were checked against the shipped helper directly:
+
+```
+branch is flush-context?  false
+OUR workflow would close:  []            ← line-anchored pattern: inert
+NATIVE-shaped detector:    ["THR-765"]   ← the pre-fix native behaviour WOULD have closed it
+```
+
+That contrast is the point of the test. Our workflow was provably incapable of closing THR-765,
+so the issue staying open isolates the **native** integration as genuinely disabled — vectors 2
+and 3 are dead, not merely unexercised. The attachments confirm PR linking still works, which is
+the intended end state: **links without auto-move.**
+
+## PR B — positive control (this PR)
+
+A PR whose body carries the closing keyword **alone on its own line** — the deliberate form the
+Definition of Done requires. Its branch is named `autoclose-verification-positive-control`, with
+**no** `thr-` prefix, and its title carries no bare id, so the line-anchored keyword is the only
+possible closing signal.
 
 **Pass criterion:** after PR B merges, THR-765 transitions to **Done**.
 
-**Result:** _(recorded below once merged)_
+**Result:** _(recorded by the follow-up closeout PR)_
 
 ## Outcome
 
