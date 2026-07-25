@@ -229,3 +229,77 @@ Code anchor: `src/engine/mentorshipOutcomes.ts:92, 218`.
 Terminal mentorship arc reached when the backing `train-apprentice` initiative status is `failed`. Bond dissolved by external cause — death, exile, or separation beyond `MENTORSHIP_MAX_SEPARATION_HEXES` tolerance — rather than a natural completion. Unlike Falling Out, Dissolution carries no hostility; both parties were willing but circumstance intervened.
 
 Code anchor: `src/engine/mentorshipOutcomes.ts:79–80, 241`.
+
+---
+
+### Group
+
+**Aliases:** Group Node, Company (player-facing)
+**Also see:** `[[Company]]`, `[[Group Cohesion]]`, `[[Actor]]`, `[[ActorType]]`, `[[Faction]]`
+**Status:** canonical
+
+The engine-layer collective of `GROUP_MIN_MEMBERS`–`GROUP_MAX_MEMBERS` (currently 2–10) uniquely-named agents who travel and act together. Stored as an actor node with `actorType: 'group'` carrying a `groupType` property. It reuses existing edges only — no new node or edge types: members attach via `member_of`, the leader via `commanded_by`, a shared goal via `pursues`.
+
+`groupType` selects the decision mode: `party` (consensus vote), `squad` (leader decides), `faction_band` (faction objective directs). A group carries **no `located_at` edge** — its position is derived from its leader via `getGroupPosition`, so members' own `located_at` edges remain the sole spatial authority. Do not add `located_at` to a group node; it would create a second, silently-diverging position authority.
+
+Armies also occupy `actorType: 'group'`, so a group is discriminated by `groupType` being present *and* `armyState` being absent (`isCompanyNode`). Never widen a group query to "all `actorType: 'group'` nodes". Distinct from a `[[Faction]]` — a structured, persistent organization — and from an army, which is faction-scale war machinery with an abstract headcount rather than named members.
+
+Code anchors: `src/engine/groups/groupQueries.ts` (`GroupNodeProperties`, `GroupType`, `isCompanyNode`), `src/data/group-constants.ts`.
+
+---
+
+### Company
+
+**Aliases:** the company, Party (internal `groupType` value only)
+**Also see:** `[[Group]]`, `[[Group Cohesion]]`, `[[Bless this Company]]`, `[[Draw Together]]`
+**Status:** canonical
+
+The player-facing word for a `[[Group]]`. Prose and UI say **company** — or the group's generated proper name — and never "party" (user default, 2026-07-23). "Party" survives only as the internal `groupType: 'party'` value and must not reach player-visible text.
+
+"Group" is the engine term and "company" the narrative one, the same relationship `[[Actor]]` has to `[[Agent]]`.
+
+Code anchors: `src/data/group-constants.ts` (header note), `src/engine/groups/groupNames.ts` (`generateGroupName`).
+
+---
+
+### Group Cohesion
+
+**Aliases:** Cohesion (group-scoped)
+**Also see:** `[[Group]]`, `[[Company]]`, `[[Bless this Company]]`
+**Status:** canonical
+
+The event-driven 0–1 aggregate on a group node measuring how well a company holds together — its health bar. Starts at `GROUP_COHESION_START_BASE` (currently 0.55, adjusted by formation quality) and moves on events rather than per-tick drift: shared encounter success `+0.06`, failure `−0.08`, a positive member-to-member social `+0.03`, a member's death `−0.15`, each registered dissent `−0.04`.
+
+UI renders a **prose state**, never the number (`getCohesionState`): `bound` at or above `GROUP_COHESION_BOUND_THRESHOLD` (0.75), which also earns the resolution bonus; `holding` at or above `GROUP_FRAY_THRESHOLD` (0.4); `frayed` at or above `GROUP_DISSOLUTION_THRESHOLD` (0.15), where the fray drama pool activates; and `breaking` below that, where dissolution triggers. The DebugPanel is the one surface that shows the raw value.
+
+This is the group-scoped sense only. Army cohesion is a separate quantity on the sibling army system — do not conflate the two.
+
+Code anchors: `src/engine/groups/groupQueries.ts` (`getCohesionState`, `CohesionState`), `src/data/group-constants.ts`.
+
+---
+
+### Draw Together
+
+**Aliases:** company.draw_together, The Gathering Thread
+**Also see:** `[[Group]]`, `[[Company]]`, `[[Thread]]`, `[[Bless this Company]]`, `[[Ascendant]]`
+**Status:** canonical
+
+The Ascendant action (`company.draw_together`, Heart reach, 4 essence) that spends essence to make scattered threaded mortals converge until a company forms among them. It targets one threaded mortal — the convergence *anchor* — and stamps a convergence pull on the anchor plus every living, ungrouped, threaded mortal within `DRAW_TOGETHER_RADIUS_HEXES` (currently 8).
+
+While the window holds (`DRAW_TOGETHER_DURATION_TICKS`, currently 36), each pulled mortal's own encounter candidates are boosted by up to `DRAW_TOGETHER_PULL_WEIGHT` in inverse proportion to hex distance from the anchor. It is a **tilt on their own choices, never a command**: the mortals bend their roads without quite knowing why, and a company that then forms among them records `cause: 'draw_together'`. Fail-soft on a missing, non-mortal, or unthreaded anchor; it fires without refund even when no companions are in range.
+
+Code anchors: `src/data/unified-action-templates.ts` (`company.draw_together`), `src/engine/graphOpExecutor.ts` (`draw_together` op), `src/engine/encounterScoring.ts` (`computeConvergenceBonus`).
+
+---
+
+### Bless this Company
+
+**Aliases:** company.bless, Blessing of the Bound Road
+**Also see:** `[[Group Cohesion]]`, `[[Company]]`, `[[Group]]`, `[[Ascendant]]`
+**Status:** canonical
+
+The Ascendant action (`company.bless`, Heart reach, 4 essence) that spends essence to steady a company: an immediate `BLESS_COMPANY_COHESION_DELTA` (currently +0.2) cohesion boost plus a dispute-suppression window of `BLESS_COMPANY_DURATION_TICKS` (currently 24 ticks, two in-game days), stamped as `blessedUntilTick` on the group node.
+
+While the window is open, `isGroupBlessed` suppresses negative dissent, fray-driven dissolution, and movement dissent — the small resentments that pull a band apart lose their teeth. It targets a group actor; because armies share `actorType: 'group'`, the graph-op gates on `isCompanyNode` and fails soft on an army.
+
+Code anchors: `src/data/unified-action-templates.ts` (`company.bless`), `src/engine/graphOpExecutor.ts` (`bless_company` op), `src/data/group-constants.ts`.

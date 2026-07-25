@@ -50,6 +50,11 @@ Load this file at session start (referenced from CLAUDE.md). Load specific shard
 - **[Avatar](./Agents.md#avatar)** — a physical Ascendant manifestation connected via `avatar_of` edge
 - **[AxiologicalProfile](./Agents.md#axiologicalprofile)** — signed score across every ValuePair; drives epithet, social response, ambition selection
 - **[ValuePair](./Agents.md#valuepair)** — a single virtue/flaw axis (e.g. mercy_ruthlessness); nine pairs total, eight Reach-bound plus one meta
+- **[Group](./Agents.md#group)** — engine-layer collective of 2–10 named agents; `actorType: 'group'` + `groupType`, no `located_at` edge
+- **[Company](./Agents.md#company)** — the player-facing word for a Group; prose and UI never say "party"
+- **[Group Cohesion](./Agents.md#group-cohesion)** — event-driven 0–1 aggregate on a group node; UI renders bound/holding/frayed/breaking, never the number
+- **[Draw Together](./Agents.md#draw-together)** — Ascendant action; pulls scattered threaded mortals toward an anchor until a company forms
+- **[Bless this Company](./Agents.md#bless-this-company)** — Ascendant action; boosts group cohesion and suppresses disputes for a window
 
 ### Encounters
 
