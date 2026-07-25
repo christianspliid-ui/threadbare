@@ -10,12 +10,25 @@
 import type { WorldGraph } from './graph';
 import type {
   AttachmentTier,
-  OnUseTrigger,
   PossessionNodeProperties,
   PossessionEdgeProperties,
   AgreementProperties,
 } from '../types/attachments';
+import type { ActionTriggerEffect, AttachmentEffect } from '../types/effects';
 import { resolveSlotTag } from './attachmentSlotResolver';
+
+/**
+ * Pull an attachment's on-use behavior out of its `effects[]`.
+ *
+ * THR-719: replaces the retired `onUseTriggers` property. These are the entries the
+ * engine actually fires, so what the sheet shows is what happens.
+ */
+function collectActionTriggers(effects: unknown): ActionTriggerEffect[] | undefined {
+  if (!Array.isArray(effects)) return undefined;
+  const triggers = (effects as AttachmentEffect[])
+    .filter((e): e is ActionTriggerEffect => e?.type === 'action_trigger');
+  return triggers.length > 0 ? triggers : undefined;
+}
 
 // ─── Summary Types ────────────────────────────────────────────────
 
@@ -39,7 +52,8 @@ export interface AttachmentFullEntry extends AttachmentSummary {
   lossCondition?: string;
   grantedBy?: string;
   agreementType?: string;
-  onUseTriggers?: OnUseTrigger[];
+  /** On-use behavior read from `action_trigger` effects (THR-719, was `onUseTriggers`). */
+  actionTriggers?: ActionTriggerEffect[];
   image?: string;
   /** Resolved slot tag for grouping (e.g. 'weapon', 'ring', 'wound'). */
   slotTag?: string;
@@ -112,7 +126,7 @@ export function getAgentAttachments(
       image: props.image,
       source: props.source,
       lossCondition: props.lossCondition,
-      onUseTriggers: props.onUseTriggers,
+      actionTriggers: collectActionTriggers((props as { effects?: unknown }).effects),
       slotTag,
       active: isActive,
       inactiveReason: edge.properties.inactiveReason as string | undefined,
@@ -173,7 +187,7 @@ export function getAgentAttachments(
         flavorText: traitProps.flavorText as string | undefined,
         source: traitProps.source as string | undefined,
         grantedBy: traitProps.grantedBy as string | undefined,
-        onUseTriggers: traitProps.onUseTriggers as OnUseTrigger[] | undefined,
+        actionTriggers: collectActionTriggers(traitProps.effects),
       });
     }
   }

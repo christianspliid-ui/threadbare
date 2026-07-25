@@ -63,7 +63,7 @@ export function AttachmentsTab({ card, onAttachmentClick }: AttachmentsTabProps)
       tier: entry.tier as AttachmentTier,
       mechanicalSummary: entry.mechanicalSummary,
       lossCondition: entry.lossCondition,
-      onUseTriggers: entry.onUseTriggers,
+      actionTriggers: entry.actionTriggers,
       ticksRemaining: entry.ticksRemaining,
       totalTicks: entry.totalTicks,
     });

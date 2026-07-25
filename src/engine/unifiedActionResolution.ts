@@ -91,7 +91,7 @@ import type { AscendantProperties } from '../types/influence';
 import { accumulateImportance, getImportanceDelta, getRarityTier } from './rarity';
 import type { TraceEntry } from '../types/trace';
 import type { SimulationRuntime } from './simulationRuntime';
-import { touchWorld } from './simulationRuntime';
+import { touchWorld, touchStructure } from './simulationRuntime';
 import { createUnifiedActionEventNode } from './encounterEventNode';
 import type { BalanceEvent } from '../types/balanceEval';
 import { DEFAULT_REPUTATION } from '../types/disposition';
@@ -142,7 +142,14 @@ import { getUnifiedTemplateById } from '../data/unified-action-templates';
 import { appendDigestEntry } from './digestBuffer';
 import { isNotableEntry } from './attentionTier';
 import type { DigestEntry } from '../types/attention';
-import { checkAndFireActionTriggers, type ActionTriggerContext } from './effects/actionTrigger';
+import {
+  checkAndFireActionTriggers,
+  ladderEventsFor,
+  type ActionTriggerContext,
+  type ActionTriggerResult,
+} from './effects/actionTrigger';
+import { applyActionTriggerPayloads } from './effects/actionTriggerPayloads';
+import type { ActionTriggerEvent, EffectRuntimeState } from '../types/effects';
 import { collectAttachmentEffects } from './effects/effectWalker';
 
 // ─── THR-571: Outcome-ladder constants ──────────────────────────
@@ -1804,37 +1811,79 @@ export function executeStepResult(
       const effectStates = state.effectStates ?? new Map();
       const attachedEffects = collectAttachmentEffects(state.graph, action.actorId, effectStates);
 
-      // Fire action_complete for any completed action
-      const acResult = checkAndFireActionTriggers(attachedEffects, 'action_complete', triggerCtx, effectStates);
+      // THR-719: on-use item behavior rides this path. Narrative substitution needs
+      // the actor's name, and probability guards need the seeded resolution stream —
+      // never Math.random (NFP #3).
+      triggerCtx.nextRoll = rng;
+      triggerCtx.actorName = triggerActorNode.name;
 
-      // Also fire encounter_success/encounter_failure for multi-step (encounter-like) templates
+      // Fire action_complete for any completed action, then the outcome bands.
+      // `ladderEventsFor` widens rather than partitions, so a trigger authored on
+      // `encounter_success` still fires on every outcome `isStepSuccess` accepted
+      // before the bands existed — shipped content keeps its exact behavior.
       const isEncounterTemplate = template.steps.length > 1;
-      let finalTriggerResult = acResult;
-      if (isEncounterTemplate) {
-        const encEvent = isStepSuccess(outcome) ? 'encounter_success' : 'encounter_failure';
-        finalTriggerResult = checkAndFireActionTriggers(
+      const triggerEvents: ActionTriggerEvent[] = [
+        'action_complete',
+        ...(isEncounterTemplate ? ladderEventsFor(outcome) : []),
+      ];
+
+      const allResults: ActionTriggerResult[] = [];
+      let runningStates: ReadonlyMap<string, EffectRuntimeState> = effectStates;
+      for (const evt of triggerEvents) {
+        const res = checkAndFireActionTriggers(
           attachedEffects,
-          encEvent,
+          evt,
           { ...triggerCtx, agentResources: { ...triggerCtx.agentResources } },
-          acResult.updatedStates,
+          runningStates,
         );
+        allResults.push(res);
+        runningStates = res.updatedStates;
       }
 
-      if (finalTriggerResult.firedCount > 0 || acResult.firedCount > 0) {
-        const allDeltas = [...acResult.resourceDeltas, ...finalTriggerResult.resourceDeltas];
+      const totalFired = allResults.reduce((n, r) => n + r.firedCount, 0);
+      if (totalFired > 0) {
+        const allDeltas = allResults.flatMap(r => r.resourceDeltas);
         for (const delta of allDeltas) {
           (tProps as Record<string, number>)[delta.resource] = delta.after;
         }
         if (allDeltas.length > 0) {
           state.graph.updateNode(action.actorId, { properties: tProps });
         }
-        const allTraces = [...acResult.traces, ...finalTriggerResult.traces];
-        for (const trace of allTraces) {
+        for (const trace of allResults.flatMap(r => r.traces)) {
           emitTrace({ category: 'effect_reaction', tick: state.tick, event: 'action_trigger_fired', ...trace } as unknown as TraceEntry);
         }
         if (!state.effectStates) state.effectStates = new Map();
-        for (const [k, v] of finalTriggerResult.updatedStates) {
+        for (const [k, v] of runningStates) {
           state.effectStates.set(k, v);
+        }
+
+        // Apply the graph-affecting payloads (condition grant/remove, breakage).
+        const intents = allResults.flatMap(r => r.payloadIntents);
+        if (intents.length > 0) {
+          const applied = applyActionTriggerPayloads(state.graph, action.actorId, intents, state.tick);
+          if (applied.touchedStructure && runtime) touchStructure(runtime);
+
+          // Surface the authored prose as player-visible aftermath — the whole point
+          // of the ticket is that item drama stops being invisible.
+          for (let ti = 0; ti < intents.length; ti++) {
+            const intent = intents[ti];
+            if (!intent.narrative) continue;
+            const isLoss = intent.payload.kind === 'self_remove'
+              || intent.payload.kind === 'condition_grant';
+            aftermathChanges.push({
+              id: `${action.actionId}:step:${action.currentStep}:trigger:${intent.attachmentId}:${ti}`,
+              kind: intent.payload.kind === 'self_remove' ? 'item' : 'trait',
+              title: intent.payload.kind === 'self_remove'
+                ? 'Something broke'
+                : intent.payload.kind === 'condition_remove'
+                  ? 'Something mended'
+                  : 'The item exacted its price',
+              detail: intent.narrative,
+              polarity: intent.payload.kind === 'condition_remove' ? 'gain' : isLoss ? 'loss' : 'mixed',
+              actorId: action.actorId,
+              actorName: triggerActorNode.name,
+            });
+          }
         }
       }
     }

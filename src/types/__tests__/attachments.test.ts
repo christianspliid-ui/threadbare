@@ -4,7 +4,6 @@ import {
   ATTACHMENT_TIER_NAMES,
   ATTACHMENT_TIER_COLORS,
   type PossessionNodeProperties,
-  type OnUseTrigger,
   type AgreementProperties,
   type RewardPoolRecipe,
   type ResolvedRewardRecipe,
@@ -91,7 +90,6 @@ describe('Attachment Types', () => {
         image: 'sword.png',
         source: 'Vendor of Memories',
         sphereAffinity: 'War',
-        onUseTriggers: [],
       };
 
       expect(possession.subcategory).toBe('arms');
@@ -111,100 +109,6 @@ describe('Attachment Types', () => {
 
       expect(possession.flavorText).toBeUndefined();
       expect(possession.image).toBeUndefined();
-      expect(possession.onUseTriggers).toBeUndefined();
-    });
-
-    it('should allow onUseTriggers array', () => {
-      const possession: PossessionNodeProperties = {
-        subcategory: 'relics_talismans',
-        tier: 4,
-        tags: ['cursed'],
-        mechanicalSummary: 'Dark power, transforms bearer',
-        lossCondition: 'cursed',
-        onUseTriggers: [
-          {
-            triggerCondition: 'critical_failure',
-            probability: 0.5,
-            effect: {
-              type: 'add_condition',
-              targetId: 'bearer',
-              ticksRemaining: 10,
-            },
-            narrativeTemplate: '{actor} feels the curse take hold.',
-          },
-        ],
-      };
-
-      expect(possession.onUseTriggers).toHaveLength(1);
-      expect(possession.onUseTriggers[0].triggerCondition).toBe('critical_failure');
-    });
-  });
-
-  describe('OnUseTrigger', () => {
-    it('should create a valid trigger', () => {
-      const trigger: OnUseTrigger = {
-        triggerCondition: 'success',
-        probability: 0.75,
-        effect: {
-          type: 'add_possession',
-          tags: ['reward'],
-        },
-        narrativeTemplate: '{actor} successfully used {item_name}.',
-      };
-
-      expect(trigger.triggerCondition).toBe('success');
-      expect(trigger.probability).toBe(0.75);
-      expect(trigger.effect.type).toBe('add_possession');
-    });
-
-    it('should support all trigger conditions', () => {
-      const conditions = ['critical_failure', 'failure', 'success', 'critical_success', 'any_use', 'first_use'] as const;
-
-      conditions.forEach((condition) => {
-        const trigger: OnUseTrigger = {
-          triggerCondition: condition,
-          probability: 1.0,
-          effect: { type: 'remove_condition' },
-          narrativeTemplate: 'Test narrative',
-        };
-        expect(trigger.triggerCondition).toBe(condition);
-      });
-    });
-
-    it('should support all effect types', () => {
-      const effectTypes = [
-        'add_condition',
-        'remove_condition',
-        'remove_possession',
-        'spawn_actor',
-        'add_possession',
-        'modify_relationship',
-      ] as const;
-
-      effectTypes.forEach((effectType) => {
-        const trigger: OnUseTrigger = {
-          triggerCondition: 'any_use',
-          probability: 1.0,
-          effect: { type: effectType },
-          narrativeTemplate: 'Test narrative',
-        };
-        expect(trigger.effect.type).toBe(effectType);
-      });
-    });
-
-    it('should allow optional tags', () => {
-      const trigger: OnUseTrigger = {
-        triggerCondition: 'success',
-        probability: 0.5,
-        effect: {
-          type: 'add_condition',
-          tags: ['fire', 'beneficial'],
-        },
-        narrativeTemplate: 'Fire spreads.',
-      };
-
-      expect(trigger.tags).toBeUndefined();
-      expect(trigger.effect.tags).toContain('fire');
     });
   });
 

@@ -34,10 +34,11 @@ const triggeredItem: AttachmentDetailData = {
   tier: 3,
   mechanicalSummary: '+Iron, +Shadow',
   tags: ['weapon', 'cursed'],
-  onUseTriggers: [{
-    triggerCondition: 'critical_failure',
+  actionTriggers: [{
+    type: 'action_trigger',
+    on: 'encounter_critical_failure',
     probability: 0.10,
-    effect: { type: 'remove_possession' },
+    payload: { kind: 'self_remove' },
     narrativeTemplate: 'The blade shatters against the shield...',
   }],
 };

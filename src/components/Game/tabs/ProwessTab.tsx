@@ -95,7 +95,7 @@ export function ProwessTab({ card, knowledge, onAttachmentClick }: ProwessTabPro
       tier: entry.tier as AttachmentTier,
       mechanicalSummary: entry.mechanicalSummary,
       lossCondition: entry.lossCondition,
-      onUseTriggers: entry.onUseTriggers,
+      actionTriggers: entry.actionTriggers,
       ticksRemaining: entry.ticksRemaining,
       totalTicks: entry.totalTicks,
     });

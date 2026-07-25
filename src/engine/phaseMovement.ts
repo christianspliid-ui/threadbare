@@ -20,7 +20,10 @@ import { getAvatarAscendant, getAgentLocationId } from './graphQueries';
 import { appendEvent } from './encounterTimeline';
 import type { ExplorationRecord } from './encounterScoring';
 import { checkAndFireActionTriggers, type ActionTriggerContext } from './effects/actionTrigger';
+import { applyActionTriggerPayloads } from './effects/actionTriggerPayloads';
 import { collectAttachmentEffects } from './effects/effectWalker';
+import { mulberry32 } from '../lib/prng';
+import { hashString } from './factionAmbitions';
 import type { EffectRuntimeState } from '../types/effects';
 
 // ─── ID Generator (local) ─────────────────────────────────────────
@@ -187,6 +190,11 @@ export function phaseMovement(state: GameState): Partial<GameState> {
             };
             const effectStates = state.effectStates ?? new Map<string, EffectRuntimeState>();
             const attachedEffects = collectAttachmentEffects(state.graph, actorId, effectStates);
+            // THR-719: seeded roll for probability guards + name for narrative tokens.
+            triggerCtx.nextRoll = mulberry32(
+              state.seed + state.tick * 47 + hashString(actorId),
+            );
+            triggerCtx.actorName = state.graph.getNode(actorId)?.name;
             const triggerResult = checkAndFireActionTriggers(
               attachedEffects,
               'movement_complete',
@@ -202,6 +210,14 @@ export function phaseMovement(state: GameState): Partial<GameState> {
               }
               for (const trace of triggerResult.traces) {
                 emitTrace({ category: 'effect_reaction', tick: state.tick, event: 'action_trigger_fired', ...trace } as unknown as TraceEntry);
+              }
+              if (triggerResult.payloadIntents.length > 0) {
+                applyActionTriggerPayloads(
+                  state.graph,
+                  actorId,
+                  triggerResult.payloadIntents,
+                  state.tick,
+                );
               }
               if (!state.effectStates) state.effectStates = new Map();
               for (const [k, v] of triggerResult.updatedStates) {

@@ -13,7 +13,16 @@
 import { describe, it, expect } from 'vitest';
 import { STARTER_POSSESSIONS, STARTER_CONDITIONS } from '../starter-attachments';
 import type { PossessionNodeProperties } from '../../types/attachments';
+import type { ActionTriggerEffect, AttachmentEffect } from '../../types/effects';
+import type { GraphNode } from '../../types/graph';
 import type { TraitDefinitionProperties } from '../../types/traits';
+
+/** On-use triggers now live in effects[] as `action_trigger` entries (THR-719). */
+function actionTriggersOf(node: GraphNode): ActionTriggerEffect[] {
+  const effects = (node.properties as { effects?: AttachmentEffect[] }).effects;
+  if (!Array.isArray(effects)) return [];
+  return effects.filter((e): e is ActionTriggerEffect => e?.type === 'action_trigger');
+}
 
 describe('starter-attachments', () => {
   // ───────────────────────────────────────────────────────────────────
@@ -150,27 +159,24 @@ describe('starter-attachments', () => {
 
     // ─── On-Use Triggers ───────────────────────────────────────────────
 
-    it('at least one possession has onUseTriggers', () => {
+    it('at least one possession has an on-use action_trigger', () => {
       const withTriggers = STARTER_POSSESSIONS.some(
-        (p) =>
-          (p.properties as PossessionNodeProperties).onUseTriggers &&
-          (p.properties as PossessionNodeProperties).onUseTriggers!.length > 0
+        (p) => actionTriggersOf(p).length > 0
       );
       expect(withTriggers).toBe(true);
     });
 
-    it('all onUseTriggers have required fields', () => {
+    it('all on-use action_triggers have required fields', () => {
       for (const possession of STARTER_POSSESSIONS) {
-        const props = possession.properties as PossessionNodeProperties;
-        if (props.onUseTriggers) {
-          for (const trigger of props.onUseTriggers) {
-            expect(trigger.triggerCondition).toBeTruthy();
+        for (const trigger of actionTriggersOf(possession)) {
+          expect(trigger.on).toBeTruthy();
+          expect(trigger.payload?.kind).toBeTruthy();
+          if (trigger.probability !== undefined) {
             expect(typeof trigger.probability).toBe('number');
             expect(trigger.probability).toBeGreaterThanOrEqual(0);
             expect(trigger.probability).toBeLessThanOrEqual(1);
-            expect(trigger.effect).toBeTruthy();
-            expect(trigger.narrativeTemplate).toBeTruthy();
           }
+          expect(trigger.narrativeTemplate).toBeTruthy();
         }
       }
     });
@@ -199,15 +205,15 @@ describe('starter-attachments', () => {
       expect(props.lossCondition).toBe('cursed');
     });
 
-    it('includes Burned Codex with first_use trigger', () => {
+    it('includes Burned Codex with a once-only on-use trigger', () => {
       const burnedCodex = STARTER_POSSESSIONS.find(
         (p) => p.id === 'starter_burned_codex'
       );
       expect(burnedCodex).toBeDefined();
-      const props = burnedCodex!.properties as PossessionNodeProperties;
-      const hasTrigger =
-        props.onUseTriggers &&
-        props.onUseTriggers.some((t) => t.triggerCondition === 'first_use');
+      // `first_use` is expressed as action_complete + maxFires: 1 (THR-719)
+      const hasTrigger = actionTriggersOf(burnedCodex!).some(
+        (t) => t.on === 'action_complete' && t.maxFires === 1
+      );
       expect(hasTrigger).toBe(true);
     });
   });
@@ -394,19 +400,20 @@ describe('starter-attachments', () => {
       expect(permanent).toBe(true);
     });
 
-    it('exercises all trigger conditions', () => {
-      const triggerConditions = new Set<string>();
+    it('exercises the on-use trigger events', () => {
+      const events = new Set<string>();
+      let onceOnly = false;
       for (const possession of STARTER_POSSESSIONS) {
-        const props = possession.properties as PossessionNodeProperties;
-        if (props.onUseTriggers) {
-          for (const trigger of props.onUseTriggers) {
-            triggerConditions.add(trigger.triggerCondition);
-          }
+        for (const trigger of actionTriggersOf(possession)) {
+          events.add(trigger.on);
+          if (trigger.maxFires === 1) onceOnly = true;
         }
       }
-      expect(triggerConditions.has('critical_failure')).toBe(true);
-      expect(triggerConditions.has('first_use')).toBe(true);
-      expect(triggerConditions.has('any_use')).toBe(true);
+      // critical_failure band (Iron Blade breakage) + any-use (action_complete)
+      expect(events.has('encounter_critical_failure')).toBe(true);
+      expect(events.has('action_complete')).toBe(true);
+      // former `first_use` semantics
+      expect(onceOnly).toBe(true);
     });
   });
 });

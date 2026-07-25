@@ -86,7 +86,7 @@ export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata, k
     image: entry.image,
     ticksRemaining: entry.ticksRemaining,
     totalTicks: entry.totalTicks,
-    onUseTriggers: entry.onUseTriggers,
+    actionTriggers: entry.actionTriggers,
   });
 
   const handleAttachmentClick = (entry: AttachmentFullEntry) => {
