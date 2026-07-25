@@ -1,14 +1,16 @@
 # Briefing
 
-**Generated:** 2026-07-25 04:09 local (2026-07-25 02:09 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-07-25 05:16 local (2026-07-25 03:16 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
 ## Needs Christian
 
-**Still the one thing — same two commands as the last brief.**
+**Two things this hour — one carried over, one newly ripe.**
 
-**1. Your local game folder is still frozen at yesterday morning's state.** The blocker is unchanged: a leftover permission edit to `.claude/settings.local.json`, which the hourly sync deliberately refuses to overwrite (three added lines, all tool-permission grants — nothing at risk). The gap is now 111 commits (was 106 an hour ago). The wrinkle still stands: the weekly-retro write-up exists **only** as a draft file in your local folder (`Design/retros/retro-2026-07-24-draft.md`), so the stash step below carries the only copy — safe, a stash is fully recoverable, and an agent session should land that report on the server via a small PR regardless (flagged under Freshness). Run:
+**1. New: flip one Linear setting so tickets stop closing themselves mid-work.** The phantom-Done fix shipped its repo half overnight (merged ~05:03) — our own close workflow now only fires on a deliberate, standalone `Fixes THR-XX` line. But two of the three ways the party ticket kept getting swept to Done come from **Linear's own GitHub integration**, which no agent can touch. In Linear: **Settings → Integrations → GitHub → turn off "move linked issue to Done when its PR merges."** Leave PR *linking* on — it's only the auto-move that must go. Two-minute verification steps and full context: [`user-actions.md`](user-actions.md) item 3. Until flipped, any PR whose auto-generated branch name carries a ticket id can still close that ticket prematurely.
+
+**2. Carried: your local game folder is still frozen at yesterday morning's state — same two commands.** The blocker is unchanged: a leftover permission edit to `.claude/settings.local.json` that the hourly sync refuses to overwrite (three added lines, all tool-permission grants — nothing at risk). The gap is now 116 commits (was 111 at the last brief). The weekly-retro write-up still exists **only** as a draft in your local folder — the stash keeps it recoverable, and landing it on the server stays agent work (flagged under Freshness). Run:
 
 ```
 cd C:\Users\chris\Dev\Projects\TheFantasyWorldSimulator
@@ -16,23 +18,21 @@ git stash push -u -m home-tree-recovery
 git pull --ff-only origin main
 ```
 
-Alternatively, say the word in any chat session and it can land the permission grants and the retro draft via a small PR instead.
-
-*(No new doorbell sent for this — it's the same ask as the last ping, only the commit count moved.)*
+Or say the word in any chat session and it can land the grants and the retro draft via a small PR instead.
 
 ## Queue
 
-**Backed up — 16 ready items, 1 in dev.** Nothing is blocked, nothing is stale. The executor picked up **THR-738 at ~04:02** — hardening the auto-close that kept sweeping the party ticket to Done prematurely; fitting, since that ticket just closed *for real* (see What's moving). The other High item, junction-safe cleanup (THR-753), is now top of the ready queue. Sequencing note resolved: the missing-field sweep (THR-736) was waiting on the party work's files — that mutex released when THR-74 closed.
+**Backed up — 16 ready items, and the executor slot is effectively free.** THR-738 (auto-close hardening) shows In Dev but is deliberately parked: its buildable half is merged, it's unassigned, and the only thing left is your settings flip above — so the hourly pickup can take new work. Top of the ready queue is the other High item: junction-safe worktree cleanup (THR-753). Nothing is blocked, nothing is stale.
 
 ## Freshness
 
-**Home tree: on `main` but 111 commits behind the server**, one tracked edit blocking the self-heal — see Needs Christian item 1. Two untracked local files: yesterday's grooming report (verified byte-identical to the server copy at earlier runs) and the weekly-retro draft (still the only copy anywhere — **agent work, not yours**: the next design or grooming session should commit it via a docs PR, same move as the 07-23 retro backup, PR #768).
+**Home tree: on `main` but 116 commits behind the server**, one tracked edit blocking the self-heal — see Needs Christian item 2. Two untracked local files: yesterday's grooming report (verified byte-identical to the server copy at earlier runs) and the weekly-retro draft (`Design/retros/retro-2026-07-24-draft.md`, still the only copy anywhere — **agent work, not yours**: the next design or grooming session should land it via a docs PR, same move as the 07-23 retro backup, PR #768).
 
-**Cleanup reaper: alive** — last run 03:40 (within the hour), tracking 23 worktrees / 30 branches / 1 stash, nothing awaiting a human decision.
+**Cleanup reaper: alive** — last run 04:40 (within the hour), tracking 23 worktrees / 31 branches / 1 stash, nothing awaiting a human decision.
 
 ## What's moving
 
-- **Party formation is finished — THR-74 closed for real at 01:57 (PR #821), and this close is verified, not another phantom.** The final PR deliberately carried the closing keyword and shipped the last pillar: companies are now *visible* — a ring on the map around each active company (gold when their fates are threaded together), a Company section on character profiles that speaks in prose ("holding", "fraying") instead of numbers, and a debug tab with the full roster. The whole arc landed across the week: authored founding/blessing/gathering/fraying/parting moments, the Bless this Company and Draw Together actions, and now the three player-facing surfaces. One piece was deferred with a ticket (THR-759): the interactive multi-step "Seeking Companions" encounter — the founding *moment* ships now, the playable *scene* is future work.
+- **The auto-close is now deterministic on the repo side (THR-738, PR #823, merged ~05:03).** Only a standalone `Fixes THR-XX` line closes a ticket from our workflow — the keyword buried in a sentence, a branch name, or a bare title token are all inert now, regression-tested against the exact strings that caused this week's three phantom-closes. The remaining two vectors die when you flip the Linear setting (item 1 above).
 - **Zero open PRs** — everything merged on green.
 
 ---
