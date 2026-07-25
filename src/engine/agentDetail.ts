@@ -47,6 +47,14 @@ import type { SphereName } from '../types';
 import type { MemberOfEdgeProperties } from '../types/disposition';
 import { FACTION_DEFINITIONS } from '../data/faction-definitions';
 import { computeRankFromReputation } from '../types/faction';
+import {
+  getGroupOf,
+  getGroupLeader,
+  getGroupMembers,
+  getGroupCohesion,
+  getCohesionState,
+  type CohesionState,
+} from './groups/groupQueries';
 
 // ─── Seeded PRNG ─────────────────────────────────────────────────
 
@@ -312,6 +320,21 @@ export interface AgentInfoCardData {
   personalityContributors?: PersonalityContributorDisplay[];
   /** Rarity tier for this agent (1–4). Populated from node.properties.rarityTier. */
   rarityTier?: number;
+  /**
+   * Current company membership (THR-74), or undefined when the agent travels alone.
+   * A company is a visible band on the map, so this is public — not knowledge-gated.
+   * Cohesion is exposed only as the prose-state ladder; the raw number never reaches
+   * a player-facing surface (that lives in the DebugPanel Companies tab).
+   */
+  company?: {
+    id: string;
+    name: string;
+    cohesionState: CohesionState;
+    /** This agent's own standing in the company. */
+    role: 'leader' | 'member';
+    /** Fellow members in join order, for the click-through roster. */
+    members: { id: string; name: string; role: 'leader' | 'member' }[];
+  };
 }
 
 /**
@@ -897,6 +920,26 @@ export function getAgentInfoCard(
         category: primary.category,
       };
     }
+  }
+
+  // Company membership (THR-74) — public: a company is a visible band travelling
+  // together, so it is not knowledge-gated. Cohesion is carried only as the prose
+  // state; the number stays in debug.
+  const group = getGroupOf(graph, agentId);
+  if (group) {
+    const leader = getGroupLeader(graph, group.id);
+    const members = getGroupMembers(graph, group.id);
+    card.company = {
+      id: group.id,
+      name: group.name,
+      cohesionState: getCohesionState(getGroupCohesion(group)),
+      role: leader?.id === agentId ? 'leader' : 'member',
+      members: members.map(m => ({
+        id: m.id,
+        name: m.name,
+        role: m.id === leader?.id ? 'leader' : 'member',
+      })),
+    };
   }
 
   // Completed ambitions — biography for the ChronicleTab (THR-721). Populated in

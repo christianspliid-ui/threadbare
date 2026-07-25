@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import type { AgentInfoCardData, AgentFullProfileData, PersonalityContributorDisplay } from '../../../engine/agentDetail';
+import type { CohesionState } from '../../../engine/groups/groupQueries';
 import type { AgentKnowledge } from '../../../types/agentKnowledge';
 import {
   OVERVIEW_GOSSIP_THRESHOLD,
@@ -36,6 +37,20 @@ const PERSONALITY_VICE_COLOR = '#c77b7b';
  * isn't padded with eight flat tracks — only the axes their story actually touched.
  */
 const AXIS_SIGNAL_EPSILON = 0.1;
+
+// ─── Company cohesion prose (THR-74) ──────────────────────────────
+
+/**
+ * Cohesion is shown to the player only as a sentence — never `Cohesion: 0.62`
+ * (the raw number lives in the DebugPanel Companies tab). The ladder word is
+ * woven into a phrase about the company as a whole.
+ */
+const COHESION_SENTENCE: Record<CohesionState, string> = {
+  bound: 'Their bond holds fast — they move as one.',
+  holding: 'They hold together, for now.',
+  frayed: 'The bonds between them are beginning to fray.',
+  breaking: 'They are on the verge of parting ways.',
+};
 
 // ─── Knowledge level helpers ──────────────────────────────────────
 
@@ -161,9 +176,11 @@ interface OverviewTabProps {
   card: AgentInfoCardData;
   profile?: AgentFullProfileData;
   knowledge?: AgentKnowledge;
+  /** Open a fellow company member's profile (THR-74 roster click-through). */
+  onOpenEntity?: (id: string) => void;
 }
 
-export function OverviewTab({ card, profile: _profile, knowledge }: OverviewTabProps) {
+export function OverviewTab({ card, profile: _profile, knowledge, onOpenEntity }: OverviewTabProps) {
   // How many quotes to show: one per interaction depth point (max 5), or all if no knowledge
   const quoteCount = knowledge != null
     ? Math.max(
@@ -287,6 +304,55 @@ export function OverviewTab({ card, profile: _profile, knowledge }: OverviewTabP
                 <span className="text-xs tabular-nums" style={{ color: 'var(--text-tertiary)' }}>
                   {Math.round(card.factionReputation * 100)}%
                 </span>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* Company (THR-74) — the band this agent travels with. Public (a company
+          is visible on the map), so not knowledge-gated. Cohesion is prose only. */}
+      {card.company && (
+        <section>
+          <SectionHeading as="h2">Company</SectionHeading>
+          <div className="space-y-2">
+            <p className="text-sm" style={{ color: 'var(--accent-gold)', fontFamily: 'var(--font-display)' }}>
+              {card.company.name}
+              {card.company.role === 'leader' && (
+                <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}> — they lead it</span>
+              )}
+            </p>
+            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+              {COHESION_SENTENCE[card.company.cohesionState]}
+            </p>
+            {card.company.members.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 pt-1">
+                {card.company.members.map((m) => {
+                  const isSelf = m.id === card.id;
+                  const label = m.role === 'leader' ? `${m.name} · leads` : m.name;
+                  return isSelf || !onOpenEntity ? (
+                    <span
+                      key={m.id}
+                      className="text-xs px-2 py-0.5 rounded"
+                      style={{
+                        backgroundColor: 'var(--border-subtle)',
+                        color: isSelf ? 'var(--accent-gold)' : 'var(--text-secondary)',
+                      }}
+                    >
+                      {label}
+                    </span>
+                  ) : (
+                    <button
+                      key={m.id}
+                      onClick={() => onOpenEntity(m.id)}
+                      title={`Open ${m.name}`}
+                      className="text-xs px-2 py-0.5 rounded underline decoration-dotted cursor-pointer"
+                      style={{ backgroundColor: 'var(--border-subtle)', color: 'var(--text-secondary)', border: 'none' }}
+                    >
+                      {label}
+                    </button>
+                  );
+                })}
               </div>
             )}
           </div>

@@ -37,6 +37,8 @@ import { ARMY_SIZE_SMALL_MAX } from '../HexMapV2/scene/ArmySpriteMesh';
 import type { BattleRenderData } from '../HexMapV2/scene/BattleIndicatorMesh';
 import type { SiegeRenderData } from '../HexMapV2/scene/SiegeIndicatorMesh';
 import type { ThreadLineData } from '../HexMapV2/scene/ThreadLineMesh';
+import type { CompanyRenderData } from '../HexMapV2/scene/CompanyClusterMesh';
+import { getActiveGroups, getGroupPosition, getGroupMembers, isGroupThreaded, isAgentGone } from '../../engine/groups/groupQueries';
 import type { ActivityIconData } from '../HexMapV2/scene/ActivityIconMesh';
 import {
   ACTIVITY_ICON_OPACITY_BACKGROUND,
@@ -704,6 +706,44 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     }
     return result;
   }, [gameState.graph, gameState.ascendantId, avatarNodeId, runtime.worldVersion]);
+
+  // ── Company cluster render data (active companies → CompanyRenderData[]) ──
+  // Rebuilds on worldVersion so the ring + bond glyph track companies as they
+  // form, travel, and dissolve. Position derives from the leader (companies carry
+  // no located_at edge); a positionless company is skipped (fail-soft).
+  const companyRenderData = useMemo<CompanyRenderData[]>(() => {
+    const graph = gameState.graph;
+    const result: CompanyRenderData[] = [];
+    for (const group of getActiveGroups(graph)) {
+      const positionId = getGroupPosition(graph, group.id);
+      if (!positionId) continue;
+      // Resolve the position node up to hex granularity (sublocation → location → hex).
+      let node = graph.getNode(positionId) ?? null;
+      let hexCol: number | undefined;
+      let hexRow: number | undefined;
+      for (let depth = 0; depth < 3 && node; depth++) {
+        const p = node.properties as Record<string, unknown>;
+        if (typeof p.hexCol === 'number' && typeof p.hexRow === 'number') {
+          hexCol = p.hexCol;
+          hexRow = p.hexRow;
+          break;
+        }
+        const parentId = p.parentLocationId as string | undefined;
+        node = parentId ? (graph.getNode(parentId) ?? null) : null;
+      }
+      if (hexCol == null || hexRow == null) continue;
+      const world = hexToWorld({ col: hexCol, row: hexRow }, HEX_CONSTANTS.HEX_SIZE);
+      const memberCount = getGroupMembers(graph, group.id).filter(m => !isAgentGone(m)).length;
+      result.push({
+        id: group.id,
+        worldX: world.x,
+        worldY: world.y,
+        threaded: isGroupThreaded(graph, group.id, gameState.ascendantId),
+        memberCount,
+      });
+    }
+    return result;
+  }, [gameState.graph, gameState.ascendantId, runtime.worldVersion]);
 
   // ── Attention pool/capacity — component-level so they're in scope everywhere ──
   const { attentionPool, attentionCapacity } = useMemo(() => {
@@ -1737,6 +1777,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         battlesVisible: 0,
         siegesVisible: 0,
         threadLines: 0,
+        companyClusters: 0,
         activityIcons: 0,
         fogEnabled: !fogDisabled,
         layersActive: [],
@@ -3388,6 +3429,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                   battles={battleRenderData}
                   sieges={siegeRenderData}
                   threadLines={threadLineData}
+                  companies={companyRenderData}
                   activityIcons={activityIconData}
                   attentionRatio={attentionRatio}
                   visibilityMap={fogDisabled ? undefined : effectiveVisibilityMap}

@@ -126,6 +126,8 @@ export interface DebugSceneSnapshot {
   battlesVisible: number;
   siegesVisible: number;
   threadLines: number;
+  /** Company (party) cluster marks currently rendered — ring + bond glyph (THR-74). */
+  companyClusters: number;
   activityIcons: number;
   fogEnabled: boolean;
   layersActive: string[];

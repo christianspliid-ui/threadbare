@@ -24,6 +24,7 @@ export const RENDER_ORDER = {
   REACH_SIGNATURE_SIGNIFIER: 8.8, // Ascendant reach-signature footprints (warhost/rift/wonder) — above rarity ring, below locations
   LOCATIONS:      9,
   THREADS:           9.5,   // Relationship thread lines — below agent sprites
+  COMPANY_CLUSTER:   9.6,   // Company enclosing ring + bond glyph — below agent dots (THR-74)
   AGENTS:            10,
   ARMIES:            10.5,  // Above agents (10), below events (11)
   BATTLE_INDICATORS: 10.8,  // Above armies, below events
@@ -55,6 +56,7 @@ export const LAYER_Z = {
   LOCATIONS:       0.080,
   TRAILS:          0.085,
   THREADS:           5.500,  // Relationship thread lines — below agent sprites
+  COMPANY_CLUSTER:   5.550,  // Company ring + bond glyph — below agent dots (THR-74)
   AGENTS:            6.000,  // Above 3D model geometry (city towers extend ~5 units above base)
   ARMIES:            6.050,  // Above agents but below events
   BATTLE_INDICATORS: 6.080,  // Above armies, below events

@@ -14,6 +14,7 @@ if (import.meta.env.DEV) {
     battlesVisible: number;
     siegesVisible: number;
     threadLines: number;
+    companyClusters: number;
     activityIcons: number;
     fogEnabled: boolean;
     layersActive: string[];
@@ -63,6 +64,7 @@ if (import.meta.env.DEV) {
     battlesVisible: 0,
     siegesVisible: 0,
     threadLines: 0,
+    companyClusters: 0,
     activityIcons: 0,
     fogEnabled: false,
     layersActive: [],
