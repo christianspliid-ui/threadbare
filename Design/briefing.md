@@ -1,42 +1,40 @@
 # Briefing
 
-**Generated:** 2026-07-25 16:14 local (2026-07-25 14:14 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-07-25 17:12 local (2026-07-25 15:12 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
 ## Needs Christian
 
-**Nothing is blocked on you. One optional preference, carried unchanged — and last hour's one FYI has cleared itself.**
+**Nothing is blocked on you. One optional preference, carried unchanged.**
 
 - **Carried, unchanged, optional — five roadmap projects marked "in progress" with no work left in them.** "Agent Coordination Protocol", "Repo Health", "Marketing Site", "Small manual tweaks" and "Procedural Hex Vignettes" have each had their last item finished — re-checked live this run, all five still sit in an active status. The tidy-up rule says close them; each one's own description, though, says it's meant to be a *permanent home* for a kind of work ("where small manual tweaks directly driven by the human goes"), and Hex Vignettes is a paused experiment whose later phases were never written up. This morning's grooming pass closed none of them and recommends leaving them open as standing intake buckets — so "in progress with nothing in it" reads as "no current work", not "stalled". **That recommendation holds by default**; it only needs you if you'd rather the roadmap only ever show projects with live work. **Yes/no, no rush** — ignoring it changes nothing.
 
-- *Cleared since last hour: the site-host publishing cap.* The 15:16 briefing noted that the service putting the game online had started refusing builds for the day. It has resumed — measured, not assumed: the live site was rebuilt at 15:49 from the exact version now on the server, so what's online is current. No action was needed and none is now.
-
 ## Queue
 
-**Healthy — 13 ready items, and nothing urgent on the board.** Everything waiting is Medium or Low. Nothing has gone stale — every item was touched within the last two days.
+**Healthy — 13 ready items, and nothing urgent on the board.** Everything waiting is Medium or Low, and nothing has gone stale — every item was touched within the last two days.
 
-What's waiting: two hygiene sweeps from Friday's retro, the Reunite/Sunder company designs, the instruction-file slimming pass, two vocabulary proposals, and a tail of small deferrals. One item is being worked right now — the group-versus-group fighting, on its fourth and final stretch.
+**One thing needs an agent's hands this hour, not yours: the group-versus-group work is finished, and the board doesn't know it.** Its fourth and final piece landed at 17:05, carrying the correctly-written instruction that marks the ticket finished. The small automation that reads that instruction and moves the ticket **failed to start** in the same second (see Freshness below), so the ticket still reads "being worked on" while every part of it is merged. The cost is real but contained: the hourly worker allows itself one job at a time, so it may look at a slot held by *finished* work and stand down instead of starting the next thing. It needs a re-run and a status correction — squarely agent work, and the next session or pickup run can do it.
 
-**One ordering note, no action needed:** the Reunite/Sunder designs deliberately must not run at the same time as the group-fighting work now in flight — they touch the same company code. That item waits by design, not by accident, and frees up the moment the current one finishes.
+**One ordering note, no action needed:** the Reunite/Sunder company designs deliberately must not run at the same time as that group-conflict work — they touch the same company code. They free up as soon as the ticket above is marked finished.
 
 ## Freshness
 
-**Home tree: on `main` and level with the server** — zero commits behind, nothing parked, nothing stranded. The same two leftovers persist and neither blocks anything: one tracked settings edit (`.claude/settings.local.json`) and one untracked file, Friday's weekly-retro write-up, still the only copy anywhere and still agent work to land.
+**Home tree: on `main`, four commits behind the server.** Those four *are* the group-conflict work that landed in the last half hour; the sync job collects them within the hour, and this is well under the level worth flagging. The same two leftovers persist and neither blocks anything: one tracked settings edit (`.claude/settings.local.json`) and one untracked file, Friday's weekly-retro write-up, still the only copy anywhere and still agent work to land.
 
-**Cleanup reaper: alive** — last run 15:40, tracking 24 work folders / 32 branches / 1 stash, nothing awaiting a human decision.
+**Cleanup reaper: alive** — last run 16:40, tracking 24 work folders / 32 branches / 1 stash, nothing awaiting a human decision.
 
-**Automated checks and publishing: both fully recovered.** This afternoon's forty-minute check outage is over and every run since has passed, this briefing's own included. Publishing to the live site is working again too, and the version online matches the latest landed work exactly.
+**Automated checks: a fresh stumble at 17:05, and it is the same shape as this afternoon's.** Three runs started and died within five seconds having executed **no work at all** — the startup signature, not a test failure. The code is independently proven: the very same branch ran a full green suite seventeen minutes earlier (885 files, 13,200 tests, clean build). Publishing is untouched — the live site rebuilt from the exact version now on the server at 17:06 and reports success, so what's online is current. **Deliberately not calling this a spending cap:** that conclusion was drawn from this identical signature at 15:12 today and retracted as wrong four minutes later; the honest read is a transient outage at the automation provider. This briefing's own pull request is the probe — if its checks execute, the blip is already over.
 
 ## What's moving
 
-Three pieces of the group-versus-group fighting landed this afternoon, in order:
+**The founding image is finished.** The last piece of company-versus-band conflict landed at 17:05, closing the four-part run that started this morning:
 
-- **Factions field their own people (13:41).** Bands of NPCs who belong to a faction and travel as a unit — the guild's own muscle, a raiding party, a warband — rather than a world containing only lone strangers.
-- **Two groups now fight as one clash (15:48).** A company and a band resolve their conflict as a single contested pair, with the loss landing on the group: shaken cohesion, injuries, deaths among named people when it goes badly, and a lasting grudge between the two sides.
-- **The confrontations themselves are written (15:29).** The scenes that use all of the above — an ambush, an assault on a den, a standoff that can end without blood, and the capstone where a guild actually falls. Each only fires when there is a real opponent on the other side.
+- **A way to summon the opposition (`spawn band`).** You can now make a chosen faction field its muscle on demand instead of waiting for one to appear — and when it refuses, it says *which* condition stopped it, because "why is this guild not mustering?" is the question anyone actually asks.
+- **Rivals, in the company's own panel.** A company that has fought someone now says so in a sentence — *"There is blood between them and The Errant Keys of The Arcane Circle"* — never a tally, and absent entirely for a company that has never come to blows.
+- **The bug worth knowing about: one missing hyphen hid the headline scene.** The capstone — *The Guild Falls* — and the band's answering encounter were both waiting for a place called `guildhall`. The world only ever builds `guild-hall`. Thirty-four of those exist on a test world; none of the unhyphenated spelling exists anywhere, on any seed. So the ticket's own centrepiece was unreachable by construction, while the test suite stayed green throughout. It is fixed, and locked by a check that *derives* the list of real places rather than trusting a hand-written one.
 
-**Remaining: the seeing-it half.** Bands visible on the map as their own clusters, a rivals line in the company panel, and the tools to conjure a band on demand for testing. That is in progress right now — the founding image you asked for, a company of yours toppling a local assassins' guild by tangling with the guild's own band, is one stretch from being something you can watch happen.
+**So the thing you asked for is now watchable:** a company of yours toppling a local assassins' guild by tangling with the guild's own band — run headlessly end to end this afternoon, with the guild's cohesion collapsing, yours rising, and a lasting grudge written between the two sides.
 
 ---
 *Standing asks live in [`Design/user-actions.md`](user-actions.md). This file is regenerated hourly by the `keep-work-flowing-cc` scheduled task; staleness is visible from the Generated timestamp above and the task's `lastRunAt` in `list_scheduled_tasks`.*
