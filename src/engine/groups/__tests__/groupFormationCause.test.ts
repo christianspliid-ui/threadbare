@@ -12,11 +12,19 @@ import { describe, it, expect } from 'vitest';
 import { WorldGraph } from '../../graph';
 import type { GameState } from '../../../types/gameState';
 import type { GraphNode } from '../../../types/graph';
-import { runFormationScan, isUnderConvergencePull } from '../groupFormation';
+import { runFormationScan, isUnderConvergencePull, isAgentThreaded } from '../groupFormation';
 import { getAllGroups } from '../groupQueries';
 
-function makeState(graph: WorldGraph, tick = 10): GameState {
-  return { graph, tick, seed: 42, tickEvents: [] } as unknown as GameState;
+function makeState(graph: WorldGraph, tick = 10, ascendantId?: string): GameState {
+  return { graph, tick, seed: 42, tickEvents: [], ascendantId } as unknown as GameState;
+}
+
+/** Thread the ascendant to `agentId` (creating the ascendant node on first use). */
+function thread(graph: WorldGraph, agentId: string, ascendantId = 'asc'): void {
+  if (!graph.getNode(ascendantId)) {
+    graph.addNode({ id: ascendantId, type: 'actor', name: 'The Witness', properties: { actorType: 'ascendant' } });
+  }
+  graph.addEdge({ id: `e.thread.${agentId}`, source: ascendantId, target: agentId, type: 'thread', properties: {} });
 }
 
 /** Two colocated, compatible, spotlight individuals — a formable set. */
@@ -67,14 +75,57 @@ describe('runFormationScan cause attribution', () => {
     expect((group.properties.formationContext as { cause: string }).cause).toBe('draw_together');
   });
 
-  it("attributes a company to 'systemic' when no member is under a pull", () => {
+  it("attributes a company to 'systemic' when no member is threaded or pulled", () => {
     const graph = new WorldGraph();
-    twoColocatedMortals(graph); // no pull
+    twoColocatedMortals(graph); // no pull, no ascendant/thread
     const state = makeState(graph, 10);
     const result = runFormationScan(state, () => 0);
 
     expect(result.formed.length).toBe(1);
+    expect(result.formed[0].cause).toBe('systemic');
     const group = getAllGroups(graph)[0];
     expect((group.properties.formationContext as { cause: string }).cause).toBe('systemic');
+  });
+
+  it("attributes a threaded founding to 'seeking_companions' when no pull is active", () => {
+    const graph = new WorldGraph();
+    twoColocatedMortals(graph);
+    thread(graph, 'a.one'); // one member is the ascendant's
+    const state = makeState(graph, 10, 'asc');
+    const result = runFormationScan(state, () => 0);
+
+    expect(result.formed.length).toBe(1);
+    expect(result.formed[0].cause).toBe('seeking_companions');
+    const group = getAllGroups(graph)[0];
+    expect((group.properties.formationContext as { cause: string }).cause).toBe('seeking_companions');
+  });
+
+  it("prefers 'draw_together' over 'seeking_companions' when a threaded member is also under a pull", () => {
+    const graph = new WorldGraph();
+    twoColocatedMortals(graph, { pullA: 100 });
+    thread(graph, 'a.one'); // both threaded AND pulled → divine nudge wins
+    const state = makeState(graph, 10, 'asc');
+    const result = runFormationScan(state, () => 0);
+
+    expect(result.formed.length).toBe(1);
+    expect(result.formed[0].cause).toBe('draw_together');
+  });
+});
+
+describe('isAgentThreaded', () => {
+  it('is true only for an agent carrying a thread edge from the given ascendant', () => {
+    const graph = new WorldGraph();
+    graph.addNode({ id: 'm', type: 'actor', name: 'm', properties: { actorType: 'individual' } });
+    expect(isAgentThreaded(graph, 'm', 'asc')).toBe(false);
+    thread(graph, 'm');
+    expect(isAgentThreaded(graph, 'm', 'asc')).toBe(true);
+  });
+
+  it('is false with no ascendant, or a different ascendant', () => {
+    const graph = new WorldGraph();
+    graph.addNode({ id: 'm', type: 'actor', name: 'm', properties: { actorType: 'individual' } });
+    thread(graph, 'm', 'asc');
+    expect(isAgentThreaded(graph, 'm', undefined)).toBe(false);
+    expect(isAgentThreaded(graph, 'm', 'other')).toBe(false);
   });
 });

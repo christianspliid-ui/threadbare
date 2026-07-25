@@ -30,8 +30,30 @@ import {
 export interface FormationScanResult {
   /** Colocated candidate sets that passed the size gate and were rolled for. */
   candidateSets: number;
-  /** Companies actually created. */
-  formed: Array<{ groupId: string; name: string; memberIds: string[]; cohesion: number; groupType: GroupType }>;
+  /** Companies actually created, each carrying the cause the scan attributed. */
+  formed: Array<{
+    groupId: string;
+    name: string;
+    memberIds: string[];
+    cohesion: number;
+    groupType: GroupType;
+    cause: CreateGroupInput['cause'];
+  }>;
+}
+
+/**
+ * True when an agent carries a live `thread` edge from the ascendant — the same
+ * relation `isGroupThreaded` walks, read one agent at a time so the formation scan
+ * can attribute a *threaded* founding to Seeking Companions before the company node
+ * (and its `member_of` edges) exists. Fail-soft: no ascendant → not threaded.
+ */
+export function isAgentThreaded(
+  graph: WorldGraph,
+  agentId: string,
+  ascendantId: string | undefined,
+): boolean {
+  if (!ascendantId) return false;
+  return graph.getIncomingEdges(agentId, 'thread').some(e => e.source === ascendantId);
 }
 
 /**
@@ -162,16 +184,22 @@ export function runFormationScan(
       : GROUP_FORMATION_COMPAT_MIN;
     const startingCohesion = clamp01(GROUP_COHESION_START_BASE + (meanCompat - 0.5) * 0.2);
 
-    // THR-74: attribute the company to Draw Together when any admitted member gathered
-    // here under an active convergence pull. This is the writer for the `draw_together`
-    // cause the trace/name generator already accept — the divine nudge (graphOpExecutor
-    // `draw_together`) stamped `convergePullUntilTick`, and the pulled mortals colocating
-    // here is the outcome that closes the loop.
+    // THR-74: attribute the company's founding by cause, most-specific first.
+    //  - `draw_together` — any admitted member gathered here under an active
+    //    convergence pull. The divine nudge (graphOpExecutor `draw_together`)
+    //    stamped `convergePullUntilTick`; the pulled mortals colocating is the
+    //    outcome that closes that loop, so it outranks the organic reading.
+    //  - `seeking_companions` — no divine pull, but at least one admitted member is
+    //    threaded to the ascendant: an organic threaded founding the player should
+    //    witness (Seeking Companions moment, fired in phaseGroups).
+    //  - `systemic` — an untethered founding, told as the silent ledger line.
     const cause: CreateGroupInput['cause'] = admitted.some(
       m => isUnderConvergencePull(m, state.tick),
     )
       ? 'draw_together'
-      : 'systemic';
+      : admitted.some(m => isAgentThreaded(graph, m.id, state.ascendantId))
+        ? 'seeking_companions'
+        : 'systemic';
 
     const created = createGroup(state, {
       members: admitted,
@@ -181,7 +209,7 @@ export function runFormationScan(
       groupType: 'party',
       startingCohesion,
     });
-    if (created) result.formed.push(created);
+    if (created) result.formed.push({ ...created, cause });
   }
 
   return result;
