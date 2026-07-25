@@ -208,3 +208,28 @@ export const BAND_FACTION_MEMBER_RESERVE = 2;
  * strangers converging on a tavern — but not so high that bands never fray.
  */
 export const BAND_COHESION_START = 0.7;
+
+// ─── Opposed engagements (THR-731 PR 2) ──────────────────────────────
+//
+// A band and a company that meet resolve as one contested pair on the shipped
+// TB-044 machinery — two sides of one encounter, not a battle. Only the numbers
+// below are new; the ladder, the rolls, and the outcome bands are all existing.
+
+/**
+ * Cohesion the winning side gains from a contested engagement.
+ *
+ * Smaller in magnitude than {@link GROUP_COHESION_CONTEST_LOST_DELTA} on purpose: coming
+ * through together binds a company, but not as fast as a beating pulls it apart.
+ */
+export const GROUP_COHESION_CONTEST_WON_DELTA = 0.08;
+
+/** Cohesion the losing side sheds from a contested engagement. */
+export const GROUP_COHESION_CONTEST_LOST_DELTA = -0.12;
+
+/**
+ * Chance a *decisive* loss (critical band only) kills one of the losing side's
+ * members. Gated on decisiveness rather than applied to every loss so that most
+ * engagements leave people alive to carry a grudge — the standing rivalry is the
+ * point, and a system that empties both rosters on contact never gets to tell it.
+ */
+export const BAND_CASUALTY_CHANCE = 0.35;

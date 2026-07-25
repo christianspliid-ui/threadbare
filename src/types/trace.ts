@@ -311,6 +311,7 @@ export type TraceCategory =
   | 'group_dissolved'
   // NPC bands — companies get opposition their own size (THR-731)
   | 'band_spawned'
+  | 'group_contested'
   // World-minted ambitions — events write mortal desire (THR-726)
   | 'ambition_minted';
 
@@ -595,6 +596,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'group_dissolved',
   // NPC bands (THR-731)
   'band_spawned',
+  'group_contested',
   // World-minted ambitions (THR-726)
   'ambition_minted',
 ];
@@ -2007,6 +2009,7 @@ export type TraceEntry =
   | GroupDissolvedTrace
   // NPC bands (THR-731)
   | BandSpawnedTrace
+  | GroupContestedTrace
   // Composition dual-voice story-beat wiring (THR-254)
   | CompositionStoryBeatTemplateMissingTrace
   // Encounter foreshadowing (THR-389)
@@ -3115,6 +3118,32 @@ export interface BandSpawnedTrace extends TraceBase {
   memberIds: string[];
   /** Members the faction still holds in reserve after fielding this band. */
   membersRemaining: number;
+}
+
+/**
+ * Trace: a company and a band resolved as one contested pair (THR-731).
+ *
+ * Event-scale — one per engagement, not per tick. Carries both group ids and every
+ * consequence applied, so "why did that company lose someone?" is answerable from
+ * the trace alone without replaying the resolution.
+ */
+export interface GroupContestedTrace extends TraceBase {
+  category: 'group_contested';
+  initiatorActionId: string;
+  /** Synthetic — the band's counter never enters `state.unifiedActions`. */
+  counterActionId: string;
+  initiatorGroupId: string;
+  bandGroupId: string;
+  verdict: 'initiator_won' | 'band_won' | 'mutual_failure';
+  /** Absent on `mutual_failure`: nobody won, so nobody is the winner. */
+  winnerGroupId?: string;
+  loserGroupId?: string;
+  winnerCohesionDelta: number;
+  loserCohesionDelta: number;
+  /** Set only when a decisive loss killed a member. */
+  casualtyId?: string;
+  /** False when the two groups already carried a standing rivalry. */
+  grudgeWritten: boolean;
 }
 
 /** Trace: a company ended. The node persists as `disbanded` history. */

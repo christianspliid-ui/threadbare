@@ -17,10 +17,13 @@ import type {
   UnifiedAction,
   UnifiedActionTemplate,
   StepOutcome,
+  ActionStep,
 } from '../types/unifiedAction';
 import type { GameState } from '../types/gameState';
 import { computeCapability } from './domainCapability';
 import { resolveContestedAction } from './resolution';
+import { getGroupOf } from './groups/groupQueries';
+import { resolveGroupStep } from './groups/groupResolution';
 
 // ─── Types ──────────────────────────────────────────────────────
 
@@ -28,6 +31,30 @@ export interface ContestationPair {
   readonly attackerActionId: string;
   readonly defenderActionId: string;
   readonly targetId: string;
+  /**
+   * THR-731 — set when this pair came from the group-opposition pass rather than
+   * from template `contestsWith`. The caller uses it to apply the group-scale
+   * consequences (cohesion, casualty, grudge) that a template contest has no
+   * business firing.
+   */
+  readonly groupOpposition?: {
+    readonly initiatorGroupId: string;
+    readonly bandGroupId: string;
+  };
+}
+
+/**
+ * A pre-built group opposition handed to the detector (THR-731).
+ *
+ * Structurally minimal on purpose — the detector stays a pure function over ids and
+ * never reaches into the graph, so the group pass is as testable as the original.
+ */
+export interface GroupOppositionInput {
+  readonly initiatorActionId: string;
+  readonly counterActionId: string;
+  readonly targetId: string;
+  readonly initiatorGroupId: string;
+  readonly bandGroupId: string;
 }
 
 export interface ContestationResult {
@@ -52,13 +79,44 @@ export interface ContestationResult {
  *
  * Each action appears in at most one pair per tick. If multiple
  * possible pairs exist, the highest-priority pair is chosen.
+ *
+ * THR-731 adds a **group-opposition pass** that runs first. A company action met by
+ * a band's synthesized counter is paired on identity (the counter names the action
+ * it answers), not on `contestsWith` — a band answers whatever it walked into, and
+ * enumerating every confrontation template in every counter's `contestsWith` list
+ * would be the same pairing expressed as content that rots. The initiator always
+ * attacks: bands answer, they never open the pair, so no scale/FIFO tiebreak is
+ * needed and the pairing is deterministic by construction.
+ *
+ * Running it first is what gives a template-declared contest the *lower* claim: any
+ * action already spoken for by a group opposition is skipped below, so a band that
+ * happens to be standing nearby can never displace an authored contest.
  */
 export function detectContestations(
   completing: readonly UnifiedAction[],
   templates: readonly UnifiedActionTemplate[],
+  groupOppositions: readonly GroupOppositionInput[] = [],
 ): ContestationPair[] {
   const pairs: ContestationPair[] = [];
   const claimed = new Set<string>(); // actionIds already in a pair
+
+  // ── Group-opposition pass (THR-731) ──
+  for (const opposition of groupOppositions) {
+    if (claimed.has(opposition.initiatorActionId)) continue;
+    if (claimed.has(opposition.counterActionId)) continue;
+
+    pairs.push({
+      attackerActionId: opposition.initiatorActionId,
+      defenderActionId: opposition.counterActionId,
+      targetId: opposition.targetId,
+      groupOpposition: {
+        initiatorGroupId: opposition.initiatorGroupId,
+        bandGroupId: opposition.bandGroupId,
+      },
+    });
+    claimed.add(opposition.initiatorActionId);
+    claimed.add(opposition.counterActionId);
+  }
 
   const templateMap = new Map<string, UnifiedActionTemplate>();
   for (const t of templates) {
@@ -162,16 +220,31 @@ export function resolveContestationPair(
     return { attackerOutcome: 'failure', defenderOutcome: 'success' };
   }
 
-  // Compute capabilities
-  const attackerCap = computeCapability(state.graph, attacker.actorId, attackerStep.reach);
-  const defenderCap = computeCapability(state.graph, defender.actorId, defenderStep.reach);
+  // Compute capabilities. THR-731: when a side is a company (or a band — a band is
+  // a company), it prices the step the way it prices every other step: the member
+  // best suited to this Reach acts, and the rest contribute a capped assist. Using
+  // the nominal actor's own capability here would have made a six-strong band fight
+  // exactly as hard as its leader alone, and a contest between two groups the one
+  // place in the engine where company strength silently did not apply.
+  const attackerReach = attackerStep.reach;
+  const defenderReach = defenderStep.reach;
+
+  const attackerGroup = groupStrength(state, attacker, attackerTemplate, attackerReach);
+  const defenderGroup = groupStrength(state, defender, defenderTemplate, defenderReach);
+
+  const attackerCap = computeCapability(
+    state.graph, attackerGroup?.actingMemberId ?? attacker.actorId, attackerReach,
+  );
+  const defenderCap = computeCapability(
+    state.graph, defenderGroup?.actingMemberId ?? defender.actorId, defenderReach,
+  );
 
   // Compute probabilities (clamped 0.05-0.95)
   const attackerProb = Math.min(0.95, Math.max(0.05,
-    attackerCap - attackerStep.difficulty,
+    attackerCap + (attackerGroup?.totalBonus ?? 0) - attackerStep.difficulty,
   ));
   const defenderProb = Math.min(0.95, Math.max(0.05,
-    defenderCap - defenderStep.difficulty,
+    defenderCap + (defenderGroup?.totalBonus ?? 0) - defenderStep.difficulty,
   ));
 
   // Dual independent rolls
@@ -196,5 +269,28 @@ export function resolveContestationPair(
       return { attackerOutcome: 'failure', defenderOutcome: 'failure' };
     default:
       return { attackerOutcome: 'failure', defenderOutcome: 'success' };
+  }
+}
+
+/**
+ * One side's company contribution to a contested step, or undefined when that side
+ * is acting alone (or its template is not group-eligible).
+ *
+ * Fail-soft: any throw from the graph read degrades this side to the individual
+ * path rather than dropping the contest (NFP #4).
+ */
+function groupStrength(
+  state: GameState,
+  action: UnifiedAction,
+  template: UnifiedActionTemplate,
+  reach: ActionStep['reach'],
+): { actingMemberId: string; totalBonus: number } | undefined {
+  try {
+    if (!(template.actorAffinities ?? []).includes('group')) return undefined;
+    const group = getGroupOf(state.graph, action.actorId);
+    if (!group) return undefined;
+    return resolveGroupStep(state.graph, group.id, reach, action.actorId);
+  } catch {
+    return undefined;
   }
 }

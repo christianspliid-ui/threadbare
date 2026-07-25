@@ -703,6 +703,50 @@ export const CONTRACTS: readonly Contract[] = [
         'src/data/__tests__/partyExclusiveDelves.test.ts drives generateUnifiedCandidates against the actual authored delves: a company of 2 at a dungeon draws encounter.sunken_vault, while a solo agent at the same place draws nothing. Content-integrity tests assert all three delves carry actorAffinities exactly ["group"] (never swept to include "individual") and minGroupMembers: 2, in both ENCOUNTER_TEMPLATES and the assembled UNIFIED_ACTION_TEMPLATES. The synthetic-fixture unit tests (src/engine/__tests__/unifiedCandidates.test.ts § "Group-exclusive reachability") still lock the gate mechanics.',
     },
   },
+
+  // ── Band opposition (THR-731 PR 2) ────────────────────────────────────────
+  // Contested-pair resolution was ⚪ UNAUDITED; this is its first contract row,
+  // written audit-on-touch and grep-verified at implementation time.
+  {
+    id: 'band-opposition-pairs-contested-resolution',
+    producerSystem: COMPANIES,
+    consumerSystem: ENCOUNTERS,
+    intent:
+      'A company that walks into a band fights it — the two resolve as one contested encounter rather than each rolling alone against the scenery.',
+    ulTerms: ['Company', 'Group Cohesion'],
+    // `opposingGroupId` is the carrier the two ends agree on. THR-74's plan named
+    // this field but never shipped it (zero hits across src/ at plan time); PR 2
+    // adds it, so this row lands LIVE with symbols on both sides rather than as a
+    // deferred intention.
+    mechanism: {
+      kind: 'node-prop',
+      symbols: ['opposingGroupId', 'collectBandOppositions'],
+      module: 'src/engine/groups/bandOpposition.ts',
+    },
+    writeSites: ['src/engine/groups/bandOpposition.ts', 'src/types/unifiedAction.ts'],
+    readSites: ['src/engine/contestation.ts', 'src/engine/unifiedActionResolution.ts'],
+    verifiedLive: {
+      date: '2026-07-25',
+      evidence:
+        'Organic 150-tick CLI run, seed 42 medium (no forcing, no debug spawns): the Temple of the Spheres fielded a defender band, "The Temple of the Spheres\' Sparrows", which was met by Company of the Inn at t81 and by Flintlock\'s Band at t84. Trace at t81: [group_contested] "Company of the Inn came off best against The Temple of the Spheres\' Sparrows. Bagaabraa did not walk away." Both companies carry hostile_to edges with cause group_engagement; the band fell 0.70 → 0.19 cohesion and disbanded through the shipped phaseGroups cascade. Unit-locked by src/engine/groups/__tests__/bandOpposition.test.ts (22 tests) incl. the fail-soft degradation rows.',
+    },
+  },
+  {
+    id: 'contested-outcome-band-reaches-the-player',
+    producerSystem: COMPANIES,
+    consumerSystem: ENCOUNTERS,
+    intent:
+      'Losing a fight reads differently from merely failing — a contested loss says so in the chronicle and the receipt.',
+    ulTerms: ['Company'],
+    mechanism: { kind: 'function', symbols: ['contestedOutcomeFor', 'contested_won'] },
+    writeSites: ['src/engine/groups/bandOpposition.ts', 'src/engine/unifiedActionResolution.ts'],
+    readSites: ['src/components/Game/ChapterView.tsx', 'src/engine/playerReceipts.ts'],
+    verifiedLive: {
+      date: '2026-07-25',
+      evidence:
+        'contested_won/contested_lost shipped with TB-044 and had display strings in ChapterView, a playerReceipts severity mapping, and an isActionSuccess branch — with ZERO producers until this PR (grep at implementation time: the only non-declaration hits were the consumer-side switch arms). phaseUnifiedActionProgress now stamps the band on both sides of a resolved group contest, so the vocabulary the UI was already built to speak finally gets spoken. Locked by bandOpposition.test.ts § "gives the contested outcome band its first production producer".',
+    },
+  },
 ];
 
 /** A malformed row — surfaced in the generated output rather than thrown (NFP #4). */

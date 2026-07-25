@@ -15,12 +15,12 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 30 |
+| 🟢 LIVE | 32 |
 | 🟠 PARTIAL | 0 |
 | 🔴 LEAKED | 4 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 3 |
-| **Total** | **37** |
+| **Total** | **39** |
 
 ## Contracts by producing subsystem
 
@@ -69,11 +69,13 @@ remediation ticket or the build fails.
 
 | Contract | Intent | Mechanism | Consumer | Status | Ticket |
 |---|---|---|---|---|---|
+| `band-opposition-pairs-contested-resolution` | A company that walks into a band fights it — the two resolve as one contested encounter rather than each rolling alone against the scenery. | node-prop: `opposingGroupId`, `collectBandOppositions` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `company-assist-shapes-resolution` | Companions make each other better at what they attempt — the best-suited member acts and the others assist, capped so a crowd is not an auto-win. | function: `resolveGroupStep` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `company-drives-member-movement` | A company travels as one — members share a destination instead of wandering off separately. | node-prop: `movementState` | Movement & Colocation | 🟢 LIVE | — |
 | `company-gates-exclusive-content-reachability` | Some expeditions can only be attempted by a company — a grouped agent may draw a party-exclusive template, but only when their company can field enough living members for it. | function: `livingGroupMemberCount` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `company-membership-excludes-faction-reads` | A companion of a company is not a member of a faction by that name — faction rank, allegiance display and heraldry must keep reading the faction. | edge-prop: `getFactionMembershipEdges` | Factions & Succession | 🟢 LIVE | — |
 | `company-position-derives-from-leader` | A company has no position of its own — asking where it is means asking where its leader is, so there is never a second spatial truth to drift. | function: `getGroupPosition` | Movement & Colocation | 🟢 LIVE | — |
+| `contested-outcome-band-reaches-the-player` | Losing a fight reads differently from merely failing — a contested loss says so in the chronicle and the receipt. | function: `contestedOutcomeFor`, `contested_won` | Encounters & Dilemmas | 🟢 LIVE | — |
 
 ### Encounters & Dilemmas
 
@@ -316,15 +318,27 @@ remediation ticket or the build fails.
 - **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/ActionDrawer.tsx`, `src/components/Game/debug/TraceFeed.tsx`, `src/components/Game/encounter-stage/adapters/buildSimpleEncounterStageModel.ts` +111 more
 - **Verdict:** Verified 2026-07-25: THR-728: `unified-action-templates.ts` authors `steps[].difficulty`; `resolveUncontestedStep` reads it for `source === 'player'` (the auto-success early-return is now gated behind `PLAYER_CAST_VARIANCE_ENABLED`), and `targetActions.ts` reads the same field via `maxStepDifficulty` to render the focused card's risk line. Measured over 400 seeds: the outcome set for a positive-difficulty cast is >1 band.
 
+### `band-opposition-pairs-contested-resolution` — 🟢 LIVE
+
+- **Intent:** A company that walks into a band fights it — the two resolve as one contested encounter rather than each rolling alone against the scenery.
+- **Producer → Consumer:** Companies & Group Travel → Encounters & Dilemmas
+- **UL terms:** *Company*, *Group Cohesion*
+- **Module:** `src/engine/groups/bandOpposition.ts`
+- **Production hits:** 3 total — 2 write, 1 read, 0 unclassified
+- **Write sites:** `src/engine/groups/bandOpposition.ts`, `src/types/unifiedAction.ts`
+- **Read sites:** `src/engine/unifiedActionResolution.ts`
+- **Verdict:** Verified 2026-07-25: Organic 150-tick CLI run, seed 42 medium (no forcing, no debug spawns): the Temple of the Spheres fielded a defender band, "The Temple of the Spheres' Sparrows", which was met by Company of the Inn at t81 and by Flintlock's Band at t84. Trace at t81: [group_contested] "Company of the Inn came off best against The Temple of the Spheres' Sparrows. Bagaabraa did not walk away." Both companies carry hostile_to edges with cause group_engagement; the band fell 0.70 → 0.19 cohesion and disbanded through the shipped phaseGroups cascade. Unit-locked by src/engine/groups/__tests__/bandOpposition.test.ts (22 tests) incl. the fail-soft degradation rows.
+
 ### `company-assist-shapes-resolution` — 🟢 LIVE
 
 - **Intent:** Companions make each other better at what they attempt — the best-suited member acts and the others assist, capped so a crowd is not an auto-win.
 - **Producer → Consumer:** Companies & Group Travel → Encounters & Dilemmas
 - **UL terms:** *Company*, *Group Cohesion*
 - **Module:** `src/engine/groups/groupResolution.ts`
-- **Production hits:** 2 total — 1 write, 1 read, 0 unclassified
+- **Production hits:** 4 total — 1 write, 1 read, 2 unclassified
 - **Write sites:** `src/engine/groups/groupResolution.ts`
 - **Read sites:** `src/engine/unifiedActionResolution.ts`
+- **Other hits:** `src/engine/contestation.ts`, `src/engine/groups/bandOpposition.ts`
 - **Verdict:** Verified 2026-07-24: src/engine/groups/__tests__/groupResolutionWiring.test.ts drives resolveUncontestedStep end-to-end and asserts the payload, not just the call: a weak leader in a company resolves above his own solo capability (best-member substitution), a solo agent and a company holding a non-group-affinity template both resolve at exactly the solo capability, and the resolution.input trace carries groupId/actingMemberId/groupAssistCount/groupBonus. An emptied company falls back to the individual path without throwing.
 
 ### `company-drives-member-movement` — 🟢 LIVE
@@ -364,11 +378,22 @@ remediation ticket or the build fails.
 - **Intent:** A company has no position of its own — asking where it is means asking where its leader is, so there is never a second spatial truth to drift.
 - **Producer → Consumer:** Companies & Group Travel → Movement & Colocation
 - **UL terms:** *Company*
-- **Production hits:** 5 total — 1 write, 1 read, 3 unclassified
+- **Production hits:** 6 total — 1 write, 1 read, 4 unclassified
 - **Write sites:** `src/engine/groups/groupQueries.ts`
 - **Read sites:** `src/debug-bridge.ts`
-- **Other hits:** `src/components/Game/debug/CompaniesTabContent.tsx`, `src/components/Game/GameView.tsx`, `src/engine/groups/groupFormation.ts`
+- **Other hits:** `src/components/Game/debug/CompaniesTabContent.tsx`, `src/components/Game/GameView.tsx`, `src/engine/groups/bandOpposition.ts`, `src/engine/groups/groupFormation.ts`
 - **Verdict:** Verified 2026-07-24: Company nodes carry no located_at edge; locked by src/engine/groups/__tests__/groupLifecycle.test.ts § "never attaches a located_at edge to the company node".
+
+### `contested-outcome-band-reaches-the-player` — 🟢 LIVE
+
+- **Intent:** Losing a fight reads differently from merely failing — a contested loss says so in the chronicle and the receipt.
+- **Producer → Consumer:** Companies & Group Travel → Encounters & Dilemmas
+- **UL terms:** *Company*
+- **Production hits:** 5 total — 2 write, 2 read, 1 unclassified
+- **Write sites:** `src/engine/groups/bandOpposition.ts`, `src/engine/unifiedActionResolution.ts`
+- **Read sites:** `src/components/Game/ChapterView.tsx`, `src/engine/playerReceipts.ts`
+- **Other hits:** `src/types/unifiedAction.ts`
+- **Verdict:** Verified 2026-07-25: contested_won/contested_lost shipped with TB-044 and had display strings in ChapterView, a playerReceipts severity mapping, and an isActionSuccess branch — with ZERO producers until this PR (grep at implementation time: the only non-declaration hits were the consumer-side switch arms). phaseUnifiedActionProgress now stamps the band on both sides of a resolved group contest, so the vocabulary the UI was already built to speak finally gets spoken. Locked by bandOpposition.test.ts § "gives the contested outcome band its first production producer".
 
 ### `economy-context-scene-scoring` — 🟢 LIVE
 
@@ -439,10 +464,10 @@ remediation ticket or the build fails.
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 140 total — 1 write, 1 read, 138 unclassified
+- **Production hits:** 142 total — 1 write, 1 read, 140 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/Game/ActionCard.tsx`, `src/components/Game/ascendant-bar/IdentityStrip.tsx`, `src/components/Game/ascendant-bar/selectors.ts`, `src/components/Game/ChapterView.tsx` +133 more
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/Game/ActionCard.tsx`, `src/components/Game/ascendant-bar/IdentityStrip.tsx`, `src/components/Game/ascendant-bar/selectors.ts`, `src/components/Game/ChapterView.tsx` +135 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `secrets-consequences` — 🟢 LIVE

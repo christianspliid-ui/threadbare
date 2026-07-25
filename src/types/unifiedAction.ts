@@ -730,6 +730,13 @@ export interface PendingEncounterSeed {
    */
   readonly inheritedTargetId?: string;
   readonly inheritedBindings?: readonly EncounterSupportBinding[];
+  /**
+   * THR-731 — the band this seeded encounter is *against*. Set when a confrontation
+   * is seeded while a hostile band shares the hex; carried onto the spawned action
+   * as {@link UnifiedAction.opposingGroupId}, which is what the contestation
+   * detector pairs on. Absent on every ordinary (uncontested) seed.
+   */
+  readonly opposingGroupId?: string;
 }
 
 export interface EncounterAftermathReaction {
@@ -1188,6 +1195,22 @@ export interface UnifiedAction {
 
   // Contestation
   readonly contestedWith?: string; // actionId of opposing action
+  /**
+   * THR-731 — the opposing *group* this action is set against (a band, or the
+   * company a band's counter answers). The contestation detector's group pass
+   * pairs on this plus {@link counterToActionId}; `contestsWith` template lists
+   * are untouched and still drive every non-group contest.
+   *
+   * Additive/optional: an action without it takes the ordinary uncontested path.
+   */
+  readonly opposingGroupId?: string;
+  /**
+   * THR-731 — set only on a *synthesized* band counter-action, naming the action
+   * it answers. Its presence is what marks a side as the defender of a group
+   * contest (bands answer; they never initiate the pair), so the detector needs
+   * no scale/FIFO tiebreak and the pairing is deterministic by construction.
+   */
+  readonly counterToActionId?: string;
 
   // Resolution
   readonly resolved: boolean;

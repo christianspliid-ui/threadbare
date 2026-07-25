@@ -10486,6 +10486,116 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     ],
   },
 
+  // ─── Band counter-encounters (THR-731 PR 2) ─────────────────────
+  // The band's side of a contested engagement. `bandOpposition.synthesizeBandCounter`
+  // picks one of these by `bandRole` when a band is walked into, and the pair resolves
+  // through the shipped TB-044 contested path.
+  //
+  // They are ordinary group-exclusive templates, deliberately: a band is a company,
+  // and a defender band standing its watch or a raider band working a road is a
+  // perfectly good encounter for it to draw on its own. Fencing them off into a
+  // synth-only pool would have been the special-casing this ticket is under orders to
+  // resist — and would have left them unreachable and unverifiable in a live run.
+  //
+  // Two steps, not three: the answering side is reacting, not mounting an expedition.
+  {
+    id: 'encounter.band_defend',
+    name: 'Hold the Ground',
+    locationTypes: ['hamlet', 'town', 'city', 'capital', 'castle', 'fort', 'tower', 'temple', 'shrine'],
+    sublocationTypes: ['sublocation-type.barracks', 'sublocation-type.guildhall'],
+    reachPrimary: 'iron',
+    reachSecondary: 'eye',
+    encounterType: 'duel',
+    threatRating: 'moderate',
+    intrinsicTier: 'shaping',
+    actorAffinities: ['group'],
+    minGroupMembers: 2,
+    motivations: ['courage_prudence', 'loyalty_ambition'],
+    steps: [
+      {
+        id: 'band_defend.mark',
+        name: 'The Mark',
+        reach: 'eye',
+        difficulty: MODERATE_DIFFICULTY_BASE,
+        duration: 1,
+        narrative: 'Strangers with purpose in their walk, and the hall behind them to lose. {actor} counts the approach and passes the number down the line without turning their head.',
+        onSuccess: {
+          narrative: '{actor} reads them before they are close enough to matter, and the band is standing where it means to stand when they arrive.',
+          reputationDelta: 0.04,
+        },
+        onFailure: {
+          narrative: '{actor} misjudges the approach, and the band is still finding its ground when the strangers reach it.',
+          reputationDelta: -0.03,
+        },
+      },
+      {
+        id: 'band_defend.ground',
+        name: 'The Ground',
+        reach: 'iron',
+        difficulty: MODERATE_DIFFICULTY_BASE + MODERATE_DIFFICULTY_STEP,
+        duration: 1,
+        narrative: 'No speeches. {actor} sets themselves in the doorway and the others close up either side, and what the faction pays them for comes due.',
+        onSuccess: {
+          narrative: '{actor} holds the doorway and the band holds behind them; whatever the strangers came for, they do not leave with it.',
+          reputationDelta: 0.1,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: 'The line bends and then it is not a line. {actor} gives ground they were sent to keep, and the hall is open behind them.',
+          reputationDelta: -0.08,
+        },
+      },
+    ],
+  },
+  {
+    id: 'encounter.band_raid',
+    name: 'Take the Road',
+    locationTypes: ['camp', 'farmland', 'ruins', 'ruined_village', 'ancient_road', 'oasis', 'unexplored_poi'],
+    reachPrimary: 'shadow',
+    reachSecondary: 'iron',
+    encounterType: 'duel',
+    threatRating: 'moderate',
+    intrinsicTier: 'shaping',
+    actorAffinities: ['group'],
+    minGroupMembers: 2,
+    motivations: ['courage_prudence', 'loyalty_ambition'],
+    steps: [
+      {
+        id: 'band_raid.wait',
+        name: 'The Wait',
+        reach: 'shadow',
+        difficulty: MODERATE_DIFFICULTY_BASE,
+        duration: 1,
+        narrative: 'The road runs where it has always run, and the band has been in the grass beside it since before light. {actor} holds the others still with one flat hand.',
+        onSuccess: {
+          narrative: '{actor} keeps the band silent past the point where silence is comfortable, and nothing on the road knows they are there.',
+          reputationDelta: 0.04,
+        },
+        onFailure: {
+          narrative: 'Someone shifts, a bird goes up, and {actor} watches the road ahead of them learn exactly where they are lying.',
+          reputationDelta: -0.03,
+        },
+      },
+      {
+        id: 'band_raid.spring',
+        name: 'The Spring',
+        reach: 'iron',
+        difficulty: MODERATE_DIFFICULTY_BASE + MODERATE_DIFFICULTY_STEP,
+        duration: 1,
+        narrative: '{actor} comes out of the grass first because that is what going first means, and the rest of the band comes out behind them.',
+        onSuccess: {
+          narrative: '{actor} takes the road out from under them, and the band closes it before anyone on it decides to fight for it.',
+          reputationDelta: 0.1,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: 'They were ready. {actor} is met on the way in, and the band goes back into the grass with less than it brought.',
+          reputationDelta: -0.08,
+        },
+      },
+    ],
+  },
+
   // Borderland encounters migrated to UnifiedActionTemplate (THR-107) —
   // now spread into UNIFIED_ACTION_TEMPLATES via unified-action-templates.ts.
 
