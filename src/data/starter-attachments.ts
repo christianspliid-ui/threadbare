@@ -12,7 +12,7 @@
  */
 
 import type { GraphNode } from '../types/graph';
-import type { PossessionNodeProperties, OnUseTrigger } from '../types/attachments';
+import type { PossessionNodeProperties } from '../types/attachments';
 import type { TraitDefinitionProperties } from '../types/traits';
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -39,16 +39,16 @@ export const STARTER_POSSESSIONS: GraphNode[] = [
         // THR-718: a reliable blade lifts Iron capability a little. Minor band, low
         // end — it already shapes rolls via the passive + test_shaper above.
         { type: 'stat_contribution', contributions: { iron: 0.3 } },
-      ],
-      onUseTriggers: [
+        // THR-719: ported from the retired `onUseTriggers` block. `critical_failure`
+        // → the critical-failure band; `remove_possession` → `self_remove`.
         {
-          triggerCondition: 'critical_failure',
+          type: 'action_trigger',
+          on: 'encounter_critical_failure',
+          payload: { kind: 'self_remove' },
           probability: 0.25,
-          effect: {
-            type: 'remove_possession',
-          },
+          cooldownTicks: 0,
           narrativeTemplate: '{item_name} snaps against the blow.',
-        } as OnUseTrigger,
+        },
       ],
     } as PossessionNodeProperties,
   },
@@ -182,19 +182,19 @@ export const STARTER_POSSESSIONS: GraphNode[] = [
         { type: 'reactive', trigger: 'cursed', effect: {
           type: 'duration', ticks: 6, reach: 'heart', value: -0.03, destroyOnExpiry: true
         }, cooldown: 12 },
-      ],
-      onUseTriggers: [
+        // THR-719: ported from the retired `onUseTriggers` block. `any_use` →
+        // `action_complete`; the inline `modifiers: { heart: -0.05 }` became a real
+        // condition node (`starter_drained_resolve`) — conditions are graph nodes
+        // here, not property bags. cooldownTicks:0 preserves the legacy semantic
+        // that every use rolls independently.
         {
-          triggerCondition: 'any_use',
+          type: 'action_trigger',
+          on: 'action_complete',
+          payload: { kind: 'condition_grant', conditionTraitId: 'starter_drained_resolve', durationTicks: 10 },
           probability: 0.15,
-          effect: {
-            type: 'add_condition',
-            modifiers: { heart: -0.05 },
-            ticksRemaining: 10,
-          },
-          narrativeTemplate:
-            "The Eye drinks deep of {actor}'s resolve.",
-        } as OnUseTrigger,
+          cooldownTicks: 0,
+          narrativeTemplate: "The Eye drinks deep of {actor}'s resolve.",
+        },
       ],
     } as PossessionNodeProperties,
   },
@@ -218,20 +218,18 @@ export const STARTER_POSSESSIONS: GraphNode[] = [
         // THR-718: a surviving codex of arcane lore raises Star capability. Notable
         // band (tier 2 tome), mid — knowledge is its whole purpose.
         { type: 'stat_contribution', contributions: { star: 0.6 } },
-      ],
-      onUseTriggers: [
+        // THR-719: ported from the retired `onUseTriggers` block. `first_use` →
+        // `action_complete` + `maxFires: 1`. The inline `{ star: 0.15 }` modifier is
+        // exactly the shipped `starter_revelation` condition node, so it binds there
+        // rather than minting a duplicate.
         {
-          triggerCondition: 'first_use',
-          probability: 1.0,
-          effect: {
-            type: 'add_condition',
-            tags: ['#revelation'],
-            modifiers: { star: 0.15 },
-            ticksRemaining: 20,
-          },
+          type: 'action_trigger',
+          on: 'action_complete',
+          payload: { kind: 'condition_grant', conditionTraitId: 'starter_revelation', durationTicks: 20 },
+          maxFires: 1,
           narrativeTemplate:
             "The pages of the Burned Codex whisper truths that burn behind {actor}'s eyes.",
-        } as OnUseTrigger,
+        },
       ],
     } as PossessionNodeProperties,
   },
@@ -306,6 +304,31 @@ export const STARTER_CONDITIONS: GraphNode[] = [
       effects: [
         { type: 'decay', reach: 'star', startValue: 0.10, changePerTick: -0.0025, limitValue: 0, destroyAtLimit: true },
         { type: 'conditional', condition: 'in_mystical', reach: 'star', value: 0.03 },
+      ],
+    } as TraitDefinitionProperties,
+  },
+
+  // ─── Curses ─────────────────────────────────────────────────────────
+  {
+    // THR-719: minted for the Whispering Eye's on-use drain, whose legacy trigger
+    // carried an inline `{ heart: -0.05 }` modifier bag. Conditions are graph nodes
+    // in this engine, so the drain gets a real node instead of an ad-hoc property.
+    id: 'starter_drained_resolve',
+    type: 'trait',
+    name: 'Drained Resolve',
+    properties: {
+      subcategory: 'condition',
+      tier: 1,
+      tags: ['#curse', '#heart', '#supernatural'],
+      description: 'Something took a swallow of your nerve and did not give it back.',
+      importance: 0,
+      maxLevel: 1,
+      visibility: 'discoverable',
+      domainContributions: {},
+      mechanicalSummary: '-0.05 Heart while it lasts (~10 ticks)',
+      flavorText: 'The warmth goes out of your voice before the words do.',
+      effects: [
+        { type: 'passive', reach: 'heart', value: -0.05 },
       ],
     } as TraitDefinitionProperties,
   },

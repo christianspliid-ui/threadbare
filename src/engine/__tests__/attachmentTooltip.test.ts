@@ -43,17 +43,19 @@ describe('resolveAttachmentTooltip', () => {
       subcategory: 'arms',
       tier: 3,
       mechanicalSummary: '+Iron',
-      onUseTriggers: [
+      actionTriggers: [
         {
-          triggerCondition: 'critical_failure',
+          type: 'action_trigger',
+          on: 'encounter_critical_failure',
           probability: 0.10,
-          effect: { type: 'remove_possession' },
+          payload: { kind: 'self_remove' },
           narrativeTemplate: 'The blade shatters...',
         },
         {
-          triggerCondition: 'success',
+          type: 'action_trigger',
+          on: 'encounter_success',
           probability: 0.25,
-          effect: { type: 'add_condition' },
+          payload: { kind: 'condition_grant', conditionTraitId: 'trait.power' },
           narrativeTemplate: 'Power surges...',
         },
       ],

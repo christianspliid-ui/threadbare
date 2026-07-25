@@ -88,6 +88,7 @@ import { checkDissolutions } from './sublocation';
 import { phaseMovement, resetMovementEventCounter } from './phaseMovement';
 import { phaseGroups, resetGroupEventCounter } from './groups/phaseGroups';
 import { checkAndFireActionTriggers, type ActionTriggerContext } from './effects/actionTrigger';
+import { applyActionTriggerPayloads } from './effects/actionTriggerPayloads';
 import { collectAttachmentEffects } from './effects/effectWalker';
 import { phaseColocationDetection, resetColocationEventCounter } from './phaseColocationDetection';
 import { aggregateColocationEvents } from './eventAggregation';
@@ -851,6 +852,11 @@ export function phaseEncounterProgressionV2(state: GameState, runtime?: Simulati
           progress.actorId,
           runningEffectStates,
         );
+        // THR-719: seeded roll for probability guards + name for narrative tokens.
+        triggerCtx.nextRoll = mulberry32(
+          state.seed + state.tick * 47 + hashString(progress.actorId),
+        );
+        triggerCtx.actorName = agentNode.name;
         const triggerResult = checkAndFireActionTriggers(
           attachedEffects,
           triggerEvent as import('../types/effects').ActionTriggerEvent,
@@ -866,6 +872,14 @@ export function phaseEncounterProgressionV2(state: GameState, runtime?: Simulati
           }
           for (const trace of triggerResult.traces) {
             emitTrace({ category: 'effect_reaction', tick: state.tick, event: 'action_trigger_fired', ...trace } as unknown as TraceEntry);
+          }
+          if (triggerResult.payloadIntents.length > 0) {
+            applyActionTriggerPayloads(
+              state.graph,
+              progress.actorId,
+              triggerResult.payloadIntents,
+              state.tick,
+            );
           }
           runningEffectStates = triggerResult.updatedStates;
         }

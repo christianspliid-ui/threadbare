@@ -436,18 +436,50 @@ export interface ResourceDeltaEffect {
 
 // ─── Content Primitive: action_trigger (TB-104 Phase 1B) ──────────
 
+/**
+ * Events an `action_trigger` can fire on.
+ *
+ * The four `encounter_*` bands are produced by mapping the six-band `StepOutcome`
+ * ladder at the resolution call site (`unifiedActionResolution.ts`). The mapping is
+ * *widening*, not partitioning: a critical success fires BOTH
+ * `encounter_critical_success` and `encounter_success`, so triggers authored against
+ * the coarse bands keep firing exactly as they did before the bands were added
+ * (THR-719). See `ladderEventsFor` in `src/engine/effects/actionTrigger.ts`.
+ */
 export type ActionTriggerEvent =
   | 'encounter_success'
+  | 'encounter_critical_success'
+  | 'encounter_at_cost'
   | 'encounter_failure'
+  | 'encounter_critical_failure'
   | 'movement_complete'
   | 'rest'
   | 'spell_cast'
   | 'action_complete';
 
+/**
+ * Payload kinds are derived from what authored content actually uses — unused
+ * vocabulary is the drift disease, not the cure (THR-719). The three item-behavior
+ * kinds below were enumerated from the nine shipped `onUseTriggers` blocks during
+ * the port; `spawn_actor` / `add_possession` / `modify_relationship` existed in the
+ * retired legacy union but had zero authored uses, so they are deliberately absent.
+ */
 export type ActionTriggerPayload =
   | { readonly kind: 'resource_delta'; readonly resource: 'essence' | 'quintessence' | 'doom'; readonly amount: number }
   | { readonly kind: 'content_grant'; readonly templateIds: readonly string[]; readonly selection?: 'first' | 'random' }
-  | { readonly kind: 'trace_only'; readonly message: string };
+  | { readonly kind: 'trace_only'; readonly message: string }
+  /** Attach an existing condition trait node to the owner (`has_trait` edge). */
+  | {
+      readonly kind: 'condition_grant';
+      readonly conditionTraitId: string;
+      /** `null`/omitted = indefinite (no auto-expiry), matching `apply_condition`. */
+      readonly durationTicks?: number | null;
+      readonly intensity?: number;
+    }
+  /** Strip the owner's conditions matching any of these tags (e.g. healing a `#wound`). */
+  | { readonly kind: 'condition_remove'; readonly tags?: readonly string[]; readonly conditionTraitId?: string }
+  /** Remove the possession carrying this effect — breakage and consumption. */
+  | { readonly kind: 'self_remove' };
 
 /** Type 19i: Fire a payload when the owner performs a specific action */
 export interface ActionTriggerEffect {
@@ -457,6 +489,14 @@ export interface ActionTriggerEffect {
   readonly condition?: EffectPredicate;
   readonly maxFires?: number;
   readonly cooldownTicks?: number;
+  /**
+   * Fire chance 0.0–1.0 when the event and condition match. Omitted =
+   * `ACTION_TRIGGER_DEFAULT_PROBABILITY` (always fires). Rolled against a seeded
+   * roll passed in via context, never `Math.random()` — the resolver stays pure.
+   */
+  readonly probability?: number;
+  /** Prose emitted as a narrative event on fire. Tokens: {actor} {item_name} {target} {location}. */
+  readonly narrativeTemplate?: string;
 }
 
 // ─── Content Primitive: choice_set (TB-128) ──────────────────────
@@ -1032,6 +1072,10 @@ export interface ActionTriggerFiredTraceDetails {
   readonly payloadKind: ActionTriggerPayload['kind'];
   readonly firesRemaining: number | undefined;
   readonly cooldownUntilTick: number;
+  /** Fire chance this trigger was rolled against (THR-719). Absent = always-fires. */
+  readonly probability?: number;
+  /** Substituted narrative prose emitted with the firing, if the entry authored one. */
+  readonly narrative?: string;
 }
 
 // ─── Content Primitive Trace Details (TB-128 choice_set) ─────────

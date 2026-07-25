@@ -128,6 +128,9 @@ export const ACTION_TRIGGER_MAX_PER_ATTACHMENT = 2;
 /** Default ticks between action_trigger fires when cooldownTicks not specified. */
 export const ACTION_TRIGGER_DEFAULT_COOLDOWN = 6;
 
+/** Fire chance when an action_trigger entry omits `probability` (THR-719). */
+export const ACTION_TRIGGER_DEFAULT_PROBABILITY = 1.0;
+
 // ─── Content Primitive: choice_set (TB-128) ──────────────────────
 
 // ─── Thread mutation constants (THR-116) ──────────────────────────

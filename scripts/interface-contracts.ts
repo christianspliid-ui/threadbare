@@ -234,10 +234,27 @@ export const CONTRACTS: readonly Contract[] = [
     producerSystem: ATTACHMENTS,
     consumerSystem: ENCOUNTERS,
     intent: 'Items break, deplete, or curse their bearer on use — authored consequence for carrying power.',
-    mechanism: { kind: 'node-prop', symbols: ['onUseTriggers', 'resolveOnUseTriggers'], module: 'src/engine/attachmentTriggers.ts' },
-    writeSites: ['src/data/starter-attachments.ts', 'src/data/anomaly-reward-catalog.ts', 'src/types/attachments.ts'],
-    readSites: [],
-    deferralTicket: 'THR-719',
+    // THR-719 re-pointed this contract off the retired `onUseTriggers`/
+    // `attachmentTriggers.ts` pair (deleted) onto the production-wired
+    // `action_trigger` primitive. The dead symbols are gone from the row by
+    // design — leaving them would keep the evidence key pointing at a corpse.
+    mechanism: {
+      kind: 'node-prop',
+      symbols: ['action_trigger', 'checkAndFireActionTriggers', 'applyActionTriggerPayloads'],
+      module: 'src/engine/effects/actionTriggerPayloads.ts',
+    },
+    writeSites: ['src/data/starter-attachments.ts', 'src/data/anomaly-reward-catalog.ts'],
+    readSites: [
+      'src/engine/unifiedActionResolution.ts',
+      'src/engine/orchestrator.ts',
+      'src/engine/phaseMovement.ts',
+      'src/engine/effects/actionTrigger.ts',
+    ],
+    verifiedLive: {
+      date: '2026-07-25',
+      evidence:
+        'Both sides carry live symbol hits. Producer: 9 authored `action_trigger` entries across starter-attachments.ts + anomaly-reward-catalog.ts (port-completeness test asserts the count and that every condition_grant names an existing node). Consumer: `checkAndFireActionTriggers` is called from unifiedActionResolution.ts (ladder-mapped outcome bands), orchestrator.ts, and phaseMovement.ts; the graph-affecting payloads are executed by `applyActionTriggerPayloads` at all three sites. Value-level check: the granted has_trait edge carries `ticksRemaining`, the field `decayConditions` actually counts down (asserted in actionTriggerOnUse.test.ts + the ported lifecycle integration test), not the inert `durationTicks` that `apply_condition` writes.',
+    },
   },
   {
     id: 'attachment-activated-effects',

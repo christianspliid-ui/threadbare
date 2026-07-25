@@ -17,7 +17,7 @@
  */
 
 import type { GraphNode } from '../types/graph';
-import type { PossessionNodeProperties, OnUseTrigger } from '../types/attachments';
+import type { PossessionNodeProperties } from '../types/attachments';
 import type { TraitDefinitionProperties } from '../types/traits';
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -59,18 +59,6 @@ export const ANOMALY_SIGNATURE_ARTIFACTS: GraphNode[] = [
       mechanicalSummary: '+0.10 Veil roll · Veil capability +0.6 / Eye +0.3 while borne, +0.05 Eye, +0.05 Veil in mystical contexts, shifts near-miss to success on Veil tests',
       lossCondition: 'breakable',
       flavorText: 'A finger-length crystal that hums when magic is near. Hold it too long and your teeth ache.',
-      onUseTriggers: [
-        {
-          triggerCondition: 'any_use',
-          probability: 0.10,
-          effect: {
-            type: 'add_condition',
-            targetId: 'anomaly_crystal_headache',
-            ticksRemaining: 15,
-          },
-          narrativeTemplate: 'The {item_name} pulses with dissonant harmonics. {actor}\'s vision blurs.',
-        } as OnUseTrigger,
-      ],
       effects: [
         { type: 'passive', reach: 'veil', value: 0.10 },
         { type: 'passive', reach: 'eye', value: 0.05 },
@@ -79,6 +67,15 @@ export const ANOMALY_SIGNATURE_ARTIFACTS: GraphNode[] = [
         // THR-718: an attuned arcane crystal raises Veil capability, with a lesser
         // Eye lift (it hums at magic and sharpens perception). Notable band (tier 3).
         { type: 'stat_contribution', contributions: { veil: 0.6, eye: 0.3 } },
+        // THR-719: ported from the retired `onUseTriggers` block (any_use → action_complete).
+        {
+          type: 'action_trigger',
+          on: 'action_complete',
+          payload: { kind: 'condition_grant', conditionTraitId: 'anomaly_crystal_headache', durationTicks: 15 },
+          probability: 0.10,
+          cooldownTicks: 0,
+          narrativeTemplate: 'The {item_name} pulses with dissonant harmonics. {actor}\'s vision blurs.',
+        },
       ],
     } as PossessionNodeProperties,
   },
@@ -94,20 +91,18 @@ export const ANOMALY_SIGNATURE_ARTIFACTS: GraphNode[] = [
       mechanicalSummary: '+0.05 Heart, 3 charges of +0.06 Heart burst (golden sap doses)',
       lossCondition: 'consumable',
       flavorText: 'Thick golden sap in a sealed clay vessel. One dose — warm, sweet, and potent enough to mend what should not mend.',
-      onUseTriggers: [
-        {
-          triggerCondition: 'first_use',
-          probability: 1.0,
-          effect: {
-            type: 'remove_condition',
-            tags: ['#wound'],
-          },
-          narrativeTemplate: 'The golden sap burns going down, but the {actor}\'s wounds close like flowers at dusk.',
-        } as OnUseTrigger,
-      ],
       effects: [
         { type: 'passive', reach: 'heart', value: 0.05 },
         { type: 'consumable_charge', charges: 3, onUse: { reach: 'heart', value: 0.06 }, destroyOnEmpty: true },
+        // THR-719: ported from the retired `onUseTriggers` block (first_use →
+        // action_complete + maxFires:1; remove_condition → condition_remove).
+        {
+          type: 'action_trigger',
+          on: 'action_complete',
+          payload: { kind: 'condition_remove', tags: ['#wound'] },
+          maxFires: 1,
+          narrativeTemplate: 'The golden sap burns going down, but the {actor}\'s wounds close like flowers at dusk.',
+        },
       ],
     } as PossessionNodeProperties,
   },
@@ -123,20 +118,17 @@ export const ANOMALY_SIGNATURE_ARTIFACTS: GraphNode[] = [
       mechanicalSummary: '+0.02 Heart in wilderness, 2 charges of +0.04 Heart burst',
       lossCondition: 'consumable',
       flavorText: 'Carefully dried rare medicinal plants, bound with twine. The scent alone eases pain.',
-      onUseTriggers: [
-        {
-          triggerCondition: 'first_use',
-          probability: 1.0,
-          effect: {
-            type: 'remove_condition',
-            tags: ['#wound'],
-          },
-          narrativeTemplate: 'The herbs dissolve into a bitter tea. {actor}\'s breathing eases, and the wound fades to scar.',
-        } as OnUseTrigger,
-      ],
       effects: [
         { type: 'conditional', condition: 'in_wilderness', reach: 'heart', value: 0.02 },
         { type: 'consumable_charge', charges: 2, onUse: { reach: 'heart', value: 0.04 }, destroyOnEmpty: true },
+        // THR-719: ported from the retired `onUseTriggers` block.
+        {
+          type: 'action_trigger',
+          on: 'action_complete',
+          payload: { kind: 'condition_remove', tags: ['#wound'] },
+          maxFires: 1,
+          narrativeTemplate: 'The herbs dissolve into a bitter tea. {actor}\'s breathing eases, and the wound fades to scar.',
+        },
       ],
     } as PossessionNodeProperties,
   },
@@ -152,22 +144,19 @@ export const ANOMALY_SIGNATURE_ARTIFACTS: GraphNode[] = [
       mechanicalSummary: '+0.10 Eye, +0.05 Star, +0.01 Eye per social success (max +0.05)',
       lossCondition: 'permanent',
       flavorText: 'Warded pages from before the fall — knowledge sealed in metal bindings that took centuries to corrode. The script is alien, but comprehensible.',
-      onUseTriggers: [
-        {
-          triggerCondition: 'first_use',
-          probability: 1.0,
-          effect: {
-            type: 'add_condition',
-            targetId: 'anomaly_vault_scholar',
-            ticksRemaining: null, // permanent bestowed power
-          },
-          narrativeTemplate: 'The Codex opens and {actor}\'s mind fills with knowledge from a world that fell. Not all of it is comfortable.',
-        } as OnUseTrigger,
-      ],
       effects: [
         { type: 'passive', reach: 'eye', value: 0.10 },
         { type: 'passive', reach: 'star', value: 0.05 },
         { type: 'stacking', reach: 'eye', valuePerStack: 0.01, maxStacks: 5, stackOn: 'social_success' },
+        // THR-719: ported from the retired `onUseTriggers` block. `ticksRemaining: null`
+        // (permanent bestowed power) → `durationTicks: null` = indefinite, no auto-expiry.
+        {
+          type: 'action_trigger',
+          on: 'action_complete',
+          payload: { kind: 'condition_grant', conditionTraitId: 'anomaly_vault_scholar', durationTicks: null },
+          maxFires: 1,
+          narrativeTemplate: 'The Codex opens and {actor}\'s mind fills with knowledge from a world that fell. Not all of it is comfortable.',
+        },
       ],
     } as PossessionNodeProperties,
   },
@@ -183,19 +172,16 @@ export const ANOMALY_SIGNATURE_ARTIFACTS: GraphNode[] = [
       mechanicalSummary: '+0.10 Gold, +0.05 Gold / -0.03 Heart (drowned king\'s price)',
       lossCondition: 'cursed',
       flavorText: 'A barnacled circlet from a drowned treasury. The dead king it belonged to is not entirely gone.',
-      onUseTriggers: [
-        {
-          triggerCondition: 'any_use',
-          probability: 0.15,
-          effect: {
-            type: 'add_condition',
-            targetId: 'anomaly_vault_curse',
-            ticksRemaining: 25,
-          },
-          narrativeTemplate: 'The {item_name} grows cold against {actor}\'s brow. Something in the water remembers its owner.',
-        } as OnUseTrigger,
-      ],
       effects: [
+        // THR-719: ported from the retired `onUseTriggers` block (any_use → action_complete).
+        {
+          type: 'action_trigger',
+          on: 'action_complete',
+          payload: { kind: 'condition_grant', conditionTraitId: 'anomaly_vault_curse', durationTicks: 25 },
+          probability: 0.15,
+          cooldownTicks: 0,
+          narrativeTemplate: 'The {item_name} grows cold against {actor}\'s brow. Something in the water remembers its owner.',
+        },
         { type: 'passive', reach: 'gold', value: 0.10 },
         { type: 'tradeoff', bonus: { reach: 'gold', value: 0.05 }, penalty: { reach: 'heart', value: 0.03 } },
       ],
@@ -270,22 +256,19 @@ export const ANOMALY_SIGNATURE_ARTIFACTS: GraphNode[] = [
       mechanicalSummary: '+0.05 Eye, +0.05 Eye in exploration, +0.02 Veil / -0.02 Heart (spore haze)',
       lossCondition: 'permanent',
       flavorText: 'Glowcap spores sealed in a glass jar. It illuminates and hallucinates in equal measure. Handle with care.',
-      onUseTriggers: [
-        {
-          triggerCondition: 'any_use',
-          probability: 0.20,
-          effect: {
-            type: 'add_condition',
-            targetId: 'anomaly_spore_visions',
-            ticksRemaining: 20,
-          },
-          narrativeTemplate: 'The {item_name}\'s glow brightens. {actor}\'s vision fractures into colours that have no name.',
-        } as OnUseTrigger,
-      ],
       effects: [
         { type: 'passive', reach: 'eye', value: 0.05 },
         { type: 'conditional', condition: 'in_exploration', reach: 'eye', value: 0.05 },
         { type: 'tradeoff', bonus: { reach: 'veil', value: 0.02 }, penalty: { reach: 'heart', value: 0.02 } },
+        // THR-719: ported from the retired `onUseTriggers` block (any_use → action_complete).
+        {
+          type: 'action_trigger',
+          on: 'action_complete',
+          payload: { kind: 'condition_grant', conditionTraitId: 'anomaly_spore_visions', durationTicks: 20 },
+          probability: 0.20,
+          cooldownTicks: 0,
+          narrativeTemplate: 'The {item_name}\'s glow brightens. {actor}\'s vision fractures into colours that have no name.',
+        },
       ],
     } as PossessionNodeProperties,
   },

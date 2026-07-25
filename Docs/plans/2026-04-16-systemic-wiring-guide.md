@@ -699,6 +699,53 @@ Reference the slot from any prose field with `{frag:opening}`. That's the whole 
 
 ---
 
+### Capability 13: Item On-Use Consequences — What the Blade Costs to Swing (THR-719)
+
+**What it is:** an item in an agent's hands can answer back when it is used. On a resolution outcome, an `action_trigger` effect in the item's `effects[]` can break the item, spend it, heal its bearer, or curse them — carrying its own authored prose into the aftermath feed.
+
+**Why you care:** this is how "power has a price" stops being flavor text. A cursed crown that *says* it remembers its drowned king can now actually lay the curse. Before THR-719 the authored field for this (`onUseTriggers`) was read by nothing — every promise in a tooltip was a lie. Write these and they fire.
+
+**How to author one** — put it in the item's `effects[]` array:
+
+```ts
+{
+  type: 'action_trigger',
+  on: 'encounter_critical_failure',   // which outcome band
+  payload: { kind: 'self_remove' },   // what happens
+  probability: 0.25,                  // chance when the band hits (omit = always)
+  cooldownTicks: 0,                   // 0 = every use rolls; omit = 6-tick default
+  narrativeTemplate: '{item_name} snaps against the blow.',
+}
+```
+
+**The events (`on`)** — the six-band outcome ladder maps onto these, and the mapping *widens*: a critical success raises both `encounter_critical_success` and `encounter_success`, so a coarse-band trigger fires on everything it always did.
+
+| `on` | Fires when |
+|---|---|
+| `action_complete` | any completed action — the old `any_use` |
+| `encounter_critical_success` / `encounter_success` | the success side of the ladder |
+| `encounter_at_cost` | `success_at_cost` or `near_miss` — scraped through |
+| `encounter_failure` / `encounter_critical_failure` | the failure side |
+| `movement_complete` / `rest` / `spell_cast` | non-encounter moments |
+
+**The payloads (`payload.kind`)** — only kinds authored content actually uses exist; do not invent speculative ones:
+
+| Kind | Effect |
+|---|---|
+| `condition_grant` | attach an existing condition trait node — `{ conditionTraitId, durationTicks?, intensity? }`. `durationTicks: null` = permanent. **The node must already exist in a catalog** — a grant naming a missing node fails soft and does nothing. |
+| `condition_remove` | strip the bearer's conditions by `tags` (e.g. `['#wound']`) or by `conditionTraitId` |
+| `self_remove` | destroy the item — breakage, consumption |
+| `resource_delta` | essence / quintessence / doom change |
+| `content_grant` / `trace_only` | grant templates / trace only |
+
+**`maxFires: 1`** reproduces the old `first_use` semantics.
+
+**Prose tokens:** `{actor}`, `{item_name}`, `{target}`, `{location}` — unknown tokens render empty. Fired prose surfaces as an aftermath change on the encounter, so write it as a beat the player should see, not a debug string.
+
+**Where to find the implementation:** `src/engine/effects/actionTrigger.ts` (fire check, probability guard, ladder mapping), `src/engine/effects/actionTriggerPayloads.ts` (graph application), call sites in `unifiedActionResolution.ts` / `orchestrator.ts` / `phaseMovement.ts`. Worked examples: the Iron Blade (breakage), the Whispering Eye (drain), the Amber Phial (heal).
+
+---
+
 ## Part 3: The Wiring Checklist — Ask These Before You Write
 
 Before writing any encounter, answer these questions. If the answer to most of them is "not applicable," you may be writing a book page, not game content.

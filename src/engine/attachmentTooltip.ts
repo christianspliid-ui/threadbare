@@ -5,8 +5,10 @@
  * Used by AttachmentRow (sidebar) and prose vignettes (modal).
  */
 
-import type { AttachmentTier, OnUseTrigger } from '../types/attachments';
+import type { AttachmentTier } from '../types/attachments';
 import { ATTACHMENT_TIER_NAMES } from '../types/attachments';
+import type { ActionTriggerEffect, ActionTriggerEvent } from '../types/effects';
+import { ACTION_TRIGGER_DEFAULT_PROBABILITY } from '../data/effect-constants';
 import { getAttachmentGlyph } from '../components/Game/attachmentGlyphs';
 
 export interface AttachmentTooltipData {
@@ -17,12 +19,32 @@ export interface AttachmentTooltipData {
   ticksRemaining?: number | null;
   totalTicks?: number;
   lossCondition?: string;
-  onUseTriggers?: OnUseTrigger[];
+  /**
+   * On-use behavior, read from the item's `action_trigger` effects (THR-719).
+   * Was `onUseTriggers`, a field the engine never fired — the tooltip promised
+   * behavior that did not exist. These entries are the ones that actually run.
+   */
+  actionTriggers?: readonly ActionTriggerEffect[];
 }
 
-/** Format a trigger condition for display (critical_failure → Critical failure) */
-function formatTriggerCondition(condition: string): string {
-  return condition.replace(/_/g, ' ').replace(/^\w/, c => c.toUpperCase());
+/** Player-facing names for the events a trigger can fire on. */
+const TRIGGER_EVENT_LABELS: Record<ActionTriggerEvent, string> = {
+  encounter_critical_success: 'Critical success',
+  encounter_success: 'Success',
+  encounter_at_cost: 'Success at cost',
+  encounter_failure: 'Failure',
+  encounter_critical_failure: 'Critical failure',
+  action_complete: 'Any use',
+  movement_complete: 'Arrival',
+  rest: 'Rest',
+  spell_cast: 'Spell cast',
+};
+
+/** Format a trigger event for display (encounter_critical_failure → Critical failure) */
+function formatTriggerEvent(event: ActionTriggerEvent): string {
+  return TRIGGER_EVENT_LABELS[event]
+    // Fail-soft for an event added to the union without a label here.
+    ?? String(event).replace(/_/g, ' ').replace(/^\w/, c => c.toUpperCase());
 }
 
 /**
@@ -48,12 +70,16 @@ export function resolveAttachmentTooltip(
   }
 
   // Show the most dramatic trigger (highest probability)
-  if (attachment.onUseTriggers && attachment.onUseTriggers.length > 0) {
-    const topTrigger = [...attachment.onUseTriggers]
-      .sort((a, b) => b.probability - a.probability)[0];
-    const pct = Math.round(topTrigger.probability * 100);
-    const condition = formatTriggerCondition(topTrigger.triggerCondition);
-    lines.push(`\u26A1 ${pct}% chance: ${condition}`);
+  if (attachment.actionTriggers && attachment.actionTriggers.length > 0) {
+    const probabilityOf = (t: ActionTriggerEffect): number =>
+      typeof t.probability === 'number' && Number.isFinite(t.probability)
+        ? t.probability
+        : ACTION_TRIGGER_DEFAULT_PROBABILITY;
+    const topTrigger = [...attachment.actionTriggers]
+      .sort((a, b) => probabilityOf(b) - probabilityOf(a))[0];
+    const pct = Math.round(probabilityOf(topTrigger) * 100);
+    const condition = formatTriggerEvent(topTrigger.on);
+    lines.push(`⚡ ${pct}% chance: ${condition}`);
   }
 
   return {

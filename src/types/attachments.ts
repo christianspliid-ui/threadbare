@@ -47,33 +47,13 @@ export type LossCondition =
   | 'permanent';   // never lost
 
 // ─── On-Use Triggers ────────────────────────────────────────────
-
-export type TriggerCondition =
-  | 'critical_failure'
-  | 'failure'
-  | 'success'
-  | 'critical_success'
-  | 'any_use'
-  | 'first_use';
-
-export interface OnUseTriggerEffect {
-  type: 'add_condition' | 'remove_condition' | 'remove_possession'
-      | 'spawn_actor' | 'add_possession' | 'modify_relationship';
-  targetId?: string;
-  modifiers?: Record<string, number>;
-  ticksRemaining?: number | null;
-  tags?: string[];
-}
-
-export interface OnUseTrigger {
-  triggerCondition: TriggerCondition;
-  /** Chance of firing when condition is met (0.0–1.0) */
-  probability: number;
-  effect: OnUseTriggerEffect;
-  /** Prose template: {actor}, {target}, {item_name}, {location} */
-  narrativeTemplate: string;
-  tags?: string[];
-}
+//
+// RETIRED 2026-07-25 (THR-719). `OnUseTrigger` / `OnUseTriggerEffect` /
+// `TriggerCondition` and the `onUseTriggers` property described item behavior that
+// no production code ever fired — `attachmentTriggers.ts` had zero importers, so a
+// sword that said it snapped never snapped. On-use behavior is now expressed with
+// the production-wired `action_trigger` effect primitive in `effects[]`; see
+// `src/engine/effects/actionTrigger.ts` and `actionTriggerPayloads.ts`.
 
 // ─── Possession Node Properties ─────────────────────────────────
 
@@ -95,7 +75,6 @@ export interface PossessionNodeProperties {
   image?: string;
   source?: string;
   sphereAffinity?: string;
-  onUseTriggers?: OnUseTrigger[];
   /** Trait tag granted while agent possesses this item (e.g. 'ruin_seeker' for treasure maps). */
   grantsTraitWhileHeld?: string;
   /** Effective trait level granted by this possession (default: 1). */

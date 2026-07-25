@@ -1,6 +1,8 @@
 import React from 'react';
-import type { AttachmentTier, OnUseTrigger } from '../../types/attachments';
+import type { AttachmentTier } from '../../types/attachments';
 import { ATTACHMENT_TIER_COLORS, ATTACHMENT_TIER_NAMES } from '../../types/attachments';
+import type { ActionTriggerEffect } from '../../types/effects';
+import { ACTION_TRIGGER_DEFAULT_PROBABILITY } from '../../data/effect-constants';
 import type { EntityHeader, EntitySection, TriggerEntry } from '../../types/entityDetail';
 import { EntityCard } from '../shared/EntityCard';
 import { getAttachmentGlyph } from './attachmentGlyphs';
@@ -20,7 +22,8 @@ export interface AttachmentDetailData {
   image?: string;
   ticksRemaining?: number | null;
   totalTicks?: number;
-  onUseTriggers?: OnUseTrigger[];
+  /** On-use behavior read from `action_trigger` effects (THR-719, was `onUseTriggers`). */
+  actionTriggers?: readonly ActionTriggerEffect[];
 }
 
 interface AttachmentDetailViewProps {
@@ -29,19 +32,35 @@ interface AttachmentDetailViewProps {
   onViewCodex?: () => void;
 }
 
-/** Format a trigger condition for display (critical_failure → Critical failure) */
-function formatTriggerCondition(condition: string): string {
-  return condition.replace(/_/g, ' ').replace(/^\w/, c => c.toUpperCase());
+/** Player-facing names for the events a trigger fires on (THR-719). */
+const TRIGGER_EVENT_LABELS: Record<string, string> = {
+  encounter_critical_success: 'Critical success',
+  encounter_success: 'Success',
+  encounter_at_cost: 'Success at cost',
+  encounter_failure: 'Failure',
+  encounter_critical_failure: 'Critical failure',
+  action_complete: 'Any use',
+  movement_complete: 'Arrival',
+  rest: 'Rest',
+  spell_cast: 'Spell cast',
+};
+
+/** Format a trigger event for display (encounter_critical_failure → Critical failure) */
+function formatTriggerEvent(event: string): string {
+  return TRIGGER_EVENT_LABELS[event]
+    ?? event.replace(/_/g, ' ').replace(/^\w/, c => c.toUpperCase());
 }
 
-/** Format trigger effect type into a human-readable summary */
-function formatEffectSummary(trigger: OnUseTrigger): string {
+/** Format a trigger payload into a human-readable summary */
+function formatEffectSummary(trigger: ActionTriggerEffect): string {
   const parts: string[] = [];
-  const eff = trigger.effect;
-  const typeLabel = eff.type.replace(/_/g, ' ');
-  parts.push(typeLabel);
-  if (eff.ticksRemaining != null) {
-    parts.push(`(${eff.ticksRemaining} ticks)`);
+  const payload = trigger.payload;
+  parts.push(payload.kind.replace(/_/g, ' '));
+  if (payload.kind === 'condition_grant' && payload.durationTicks != null) {
+    parts.push(`(${payload.durationTicks} ticks)`);
+  }
+  if (trigger.maxFires !== undefined) {
+    parts.push(trigger.maxFires === 1 ? '(once)' : `(${trigger.maxFires}x)`);
   }
   return parts.join(' ');
 }
@@ -130,10 +149,12 @@ export const AttachmentDetailView = React.memo(function AttachmentDetailView({
   }
 
   // Triggers (conditional)
-  if (attachment.onUseTriggers && attachment.onUseTriggers.length > 0) {
-    const triggerEntries: TriggerEntry[] = attachment.onUseTriggers.map(t => ({
-      condition: formatTriggerCondition(t.triggerCondition),
-      probability: t.probability,
+  if (attachment.actionTriggers && attachment.actionTriggers.length > 0) {
+    const triggerEntries: TriggerEntry[] = attachment.actionTriggers.map(t => ({
+      condition: formatTriggerEvent(t.on),
+      probability: typeof t.probability === 'number' && Number.isFinite(t.probability)
+        ? t.probability
+        : ACTION_TRIGGER_DEFAULT_PROBABILITY,
       narrativeTemplate: t.narrativeTemplate || undefined,
       effectSummary: formatEffectSummary(t),
     }));

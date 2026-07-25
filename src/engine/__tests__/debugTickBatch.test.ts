@@ -54,6 +54,10 @@ describe('runTickBatch', () => {
   });
 
   // Runs real ticks up to the cap, so it needs headroom over vitest's 5s default.
+  // The budget is sized for CI, not for an idle machine: this takes ~18s standalone,
+  // but on a shared runner executing 880 test files in parallel it once blew a 60s
+  // budget outright (PR #830). 180s keeps the guard rail meaningful — a genuinely
+  // unbounded loop still fails — without making the required check flaky under load.
   it('clamps a request above DEBUG_TICK_MAX instead of rejecting it', () => {
     const state = freshState();
     const startTick = state.tick;
@@ -74,7 +78,7 @@ describe('runTickBatch', () => {
     expect(result.ticksRun).toBeLessThanOrEqual(DEBUG_TICK_MAX);
     expect(result.tick).toBe(startTick + result.ticksRun);
     expect(['capped', 'phase_left_playing']).toContain(result.stoppedReason);
-  }, 60_000);
+  }, 180_000);
 
   it('has a cap that is a named constant, not a literal', () => {
     expect(DEBUG_TICK_MAX).toBe(200);

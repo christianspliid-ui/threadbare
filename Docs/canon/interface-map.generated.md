@@ -15,9 +15,9 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 27 |
+| 🟢 LIVE | 28 |
 | 🟠 PARTIAL | 0 |
-| 🔴 LEAKED | 5 |
+| 🔴 LEAKED | 4 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 3 |
 | **Total** | **35** |
@@ -60,7 +60,7 @@ remediation ticket or the build fails.
 | `attachment-effects-shape-resolution` | Items shape action resolution rolls — a blade makes its bearer likelier to succeed. | node-prop: `collectAttachmentEffects`, `collectTestShapers` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `attachment-effects-tick` | Effects tick, decay, stack and expire on their host agent. | function: `effectTick`, `effectShellRuntime` | Effects & Conditions | 🟢 LIVE | — |
 | `attachment-grants-trait-while-held` | Items grant traits while held, gating encounter eligibility (treasure-map, ruin_seeker). | node-prop: `grantsTraitWhileHeld` | Encounters & Dilemmas | 🟢 LIVE | — |
-| `attachment-on-use-triggers` | Items break, deplete, or curse their bearer on use — authored consequence for carrying power. | node-prop: `onUseTriggers`, `resolveOnUseTriggers` | Encounters & Dilemmas | 🔴 LEAKED | THR-719 |
+| `attachment-on-use-triggers` | Items break, deplete, or curse their bearer on use — authored consequence for carrying power. | node-prop: `action_trigger`, `checkAndFireActionTriggers`, `applyActionTriggerPayloads` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `attachment-slot-caps-suppress` | Slot caps suppress overflow attachments via a single suppression seam. | edge-prop: `attachmentSlotResolver` | Effects & Conditions | 🟢 LIVE | — |
 | `attachment-tier-advancement` | Tier advancement strengthens an item over time. | function: `advanceAttachmentTier`, `canAdvanceTier` | Attachments, Items & Possessions | 🔴 LEAKED | THR-723 |
 | `attachment-trait-grant-effects` | Items grant abilities to their bearer (e.g. cavalry_charge). | node-prop: `trait_grant`, `hasGrantedTrait` | Encounters & Dilemmas | 🔴 LEAKED | THR-737 |
@@ -240,16 +240,16 @@ remediation ticket or the build fails.
 - **Read sites:** `src/engine/encounterScoring.ts`
 - **Verdict:** Verified 2026-07-23: 3 production files reference grantsTraitWhileHeld incl. the encounterScoring gate. Docs/plans/2026-07-23-system-interface-map.md § Audit findings (manual audit + independent cold-context review, both grep-verified)
 
-### `attachment-on-use-triggers` — 🔴 LEAKED
+### `attachment-on-use-triggers` — 🟢 LIVE
 
 - **Intent:** Items break, deplete, or curse their bearer on use — authored consequence for carrying power.
 - **Producer → Consumer:** Attachments, Items & Possessions → Encounters & Dilemmas
-- **Module:** `src/engine/attachmentTriggers.ts` — **no production importers**
-- **Production hits:** 10 total — 3 write, 0 read, 7 unclassified
-- **Write sites:** `src/data/anomaly-reward-catalog.ts`, `src/data/starter-attachments.ts`, `src/types/attachments.ts`
-- **Read sites:** —
-- **Other hits:** `src/components/Game/AgentProfileModal.tsx`, `src/components/Game/AttachmentDetailView.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx`, `src/components/Game/tabs/ProwessTab.tsx`, `src/engine/agentAttachments.ts` +2 more
-- **Verdict:** Tier 1: `src/engine/attachmentTriggers.ts` has zero production importers — the module is an orphan.
+- **Module:** `src/engine/effects/actionTriggerPayloads.ts`
+- **Production hits:** 16 total — 2 write, 4 read, 10 unclassified
+- **Write sites:** `src/data/anomaly-reward-catalog.ts`, `src/data/starter-attachments.ts`
+- **Read sites:** `src/engine/effects/actionTrigger.ts`, `src/engine/orchestrator.ts`, `src/engine/phaseMovement.ts`, `src/engine/unifiedActionResolution.ts`
+- **Other hits:** `src/components/Game/AttachmentDetailView.tsx`, `src/data/effect-constants.ts`, `src/data/reward-attachment-catalog.ts`, `src/engine/agentAttachments.ts`, `src/engine/attachmentTooltip.ts` +5 more
+- **Verdict:** Verified 2026-07-25: Both sides carry live symbol hits. Producer: 9 authored `action_trigger` entries across starter-attachments.ts + anomaly-reward-catalog.ts (port-completeness test asserts the count and that every condition_grant names an existing node). Consumer: `checkAndFireActionTriggers` is called from unifiedActionResolution.ts (ladder-mapped outcome bands), orchestrator.ts, and phaseMovement.ts; the graph-affecting payloads are executed by `applyActionTriggerPayloads` at all three sites. Value-level check: the granted has_trait edge carries `ticksRemaining`, the field `decayConditions` actually counts down (asserted in actionTriggerOnUse.test.ts + the ported lifecycle integration test), not the inert `durationTicks` that `apply_condition` writes.
 
 ### `attachment-slot-caps-suppress` — 🟢 LIVE
 
@@ -372,10 +372,10 @@ remediation ticket or the build fails.
 - **Intent:** Faction ambitions drive faction action and render on the faction sheet.
 - **Producer → Consumer:** Ambitions & Initiatives → Factions & Succession
 - **Module:** `src/engine/factionAmbitions.ts`
-- **Production hits:** 5 total — 1 write, 3 read, 1 unclassified
+- **Production hits:** 6 total — 1 write, 3 read, 2 unclassified
 - **Write sites:** `src/engine/phases/factionAmbitions.ts`
 - **Read sites:** `src/engine/factionGovernanceVerbs.ts`, `src/engine/phaseControlEffects.ts`, `src/engine/phases/index.ts`
-- **Other hits:** `src/data/faction-action-constants.ts`
+- **Other hits:** `src/data/faction-action-constants.ts`, `src/engine/phaseMovement.ts`
 - **Verdict:** Verified 2026-07-23: FactionSheet.activeAmbition renders; faction phases consume. Docs/plans/2026-07-23-system-interface-map.md § Audit findings (manual audit + independent cold-context review, both grep-verified)
 
 ### `minted-ambition-provenance` — 🟢 LIVE
@@ -414,10 +414,10 @@ remediation ticket or the build fails.
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 133 total — 1 write, 1 read, 131 unclassified
+- **Production hits:** 135 total — 1 write, 1 read, 133 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/Game/ActionCard.tsx`, `src/components/Game/ascendant-bar/IdentityStrip.tsx`, `src/components/Game/ascendant-bar/selectors.ts`, `src/components/Game/ChapterView.tsx` +126 more
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/Game/ActionCard.tsx`, `src/components/Game/ascendant-bar/IdentityStrip.tsx`, `src/components/Game/ascendant-bar/selectors.ts`, `src/components/Game/ChapterView.tsx` +128 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `secrets-consequences` — 🟢 LIVE

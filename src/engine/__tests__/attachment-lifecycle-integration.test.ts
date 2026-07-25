@@ -9,10 +9,15 @@
 
 import { describe, it, expect } from 'vitest';
 import { WorldGraph } from '../graph';
-import { resolveOnUseTriggers, type TriggerContext } from '../attachmentTriggers';
+import {
+  checkAndFireActionTriggers,
+  type ActionTriggerContext,
+} from '../effects/actionTrigger';
+import { applyActionTriggerPayloads } from '../effects/actionTriggerPayloads';
 import { decayConditions } from '../conditionDecay';
 import { collectModifiers, getModifiedValue } from '../modifiers';
-import type { OnUseTrigger } from '../../types/attachments';
+import type { ActionTriggerEffect, EffectRuntimeState } from '../../types/effects';
+import type { AttachedEffect } from '../effects/effectWalker';
 
 describe('Attachment Lifecycle Integration', () => {
   describe('Test 1: possession → trigger → condition → decay → removed', () => {
@@ -30,20 +35,14 @@ describe('Attachment Lifecycle Integration', () => {
         properties: { iron: 0.5 },
       });
 
-      // 2. Create possession node with onUseTriggers
-      const triggers: OnUseTrigger[] = [
-        {
-          triggerCondition: 'critical_failure',
-          probability: 1.0,
-          effect: {
-            type: 'add_condition',
-            targetId: conditionId,
-            modifiers: { iron: -0.20 },
-            ticksRemaining: 5,
-          },
-          narrativeTemplate: '{actor} is cursed by {item_name}.',
-        },
-      ];
+      // 2. Create possession node with an on-use action_trigger (THR-719)
+      const trigger: ActionTriggerEffect = {
+        type: 'action_trigger',
+        on: 'encounter_critical_failure',
+        payload: { kind: 'condition_grant', conditionTraitId: conditionId, durationTicks: 5 },
+        probability: 1.0,
+        narrativeTemplate: '{actor} is cursed by {item_name}.',
+      };
 
       graph.addNode({
         id: artifactId,
@@ -55,11 +54,13 @@ describe('Attachment Lifecycle Integration', () => {
           tags: ['iron', 'weapon'],
           mechanicalSummary: '+Iron, grants slash, cursed',
           lossCondition: 'cursed',
-          onUseTriggers: triggers,
+          effects: [trigger],
         },
       });
 
-      // 3. Create condition trait node
+      // 3. Create condition trait node. Its mechanical bite lives in effects[] —
+      // the shape the real catalogs use — which collectAttachmentEffects picks up
+      // by walking the has_trait edge the trigger is about to create.
       graph.addNode({
         id: conditionId,
         type: 'trait',
@@ -67,6 +68,7 @@ describe('Attachment Lifecycle Integration', () => {
         properties: {
           category: 'curse',
           tags: ['curse', 'iron'],
+          effects: [{ type: 'passive', reach: 'iron', value: -0.20 }],
         },
       });
 
@@ -97,49 +99,53 @@ describe('Attachment Lifecycle Integration', () => {
       const modified1 = getModifiedValue(graph, agentId, 'iron', 0.5);
       expect(modified1).toBe(0.6);
 
-      // 7. Resolve trigger with critical_failure outcome
-      const triggerContext: TriggerContext = {
-        actor: 'Hero',
-        itemName: 'Cursed Sword',
-        roll: 0.05, // roll 0.05 < probability 1.0 → fire
+      // 7. Fire the trigger on a critical failure through the LIVE resolver
+      const attachedEffects: AttachedEffect[] = [{
+        attachmentId: artifactId,
+        attachmentName: 'Cursed Sword',
+        effect: trigger,
+        sourceEdgeType: 'possesses',
+      } as AttachedEffect];
+
+      const triggerCtx: ActionTriggerContext = {
+        agentId,
+        tick: 0,
+        agentResources: { essence: 0, quintessence: 0, doom: 0 },
+        actorName: 'Hero',
+        nextRoll: () => 0.05, // 0.05 < probability 1.0 → fire
       };
+      const effectStates = new Map<string, EffectRuntimeState>();
 
-      const firedTriggers = resolveOnUseTriggers(
-        triggers,
-        'critical_failure',
-        triggerContext,
+      const fired = checkAndFireActionTriggers(
+        attachedEffects,
+        'encounter_critical_failure',
+        triggerCtx,
+        effectStates,
       );
-      expect(firedTriggers).toHaveLength(1);
-      expect(firedTriggers[0].effect.type).toBe('add_condition');
+      expect(fired.firedCount).toBe(1);
+      expect(fired.payloadIntents).toHaveLength(1);
+      expect(fired.payloadIntents[0].payload.kind).toBe('condition_grant');
+      // Prose is substituted, not left as a raw template
+      expect(fired.narratives).toEqual(['Hero is cursed by Cursed Sword.']);
 
-      // 8. Apply effect: add has_trait edge with modifiers and ticksRemaining
-      const hasTraitEdgeId = 'edge.hero.has.cursed';
-      const effect = firedTriggers[0].effect;
-      graph.addEdge({
-        id: hasTraitEdgeId,
-        source: agentId,
-        target: conditionId,
-        type: 'has_trait',
-        properties: {
-          modifiers: effect.modifiers || {},
-          ticksRemaining: effect.ticksRemaining ?? null,
-        },
-      });
+      // 8. Apply the payload — this is what never happened before THR-719
+      const applied = applyActionTriggerPayloads(graph, agentId, fired.payloadIntents, 0);
+      expect(applied.conditionsGranted).toBe(1);
+      expect(applied.touchedStructure).toBe(true);
 
-      // 9. Verify condition modifiers active: collectModifiers should include -0.20
+      const hasTraitEdge0 = graph.getOutgoingEdges(agentId, 'has_trait')[0];
+      expect(hasTraitEdge0).toBeDefined();
+      expect(hasTraitEdge0.target).toBe(conditionId);
+      const hasTraitEdgeId = hasTraitEdge0.id;
+
+      // 9. The possession's own edge modifier is untouched by the condition grant
       const modifiers2 = collectModifiers(graph, agentId, 'iron');
-      expect(modifiers2).toHaveLength(2); // possession + condition
-      const conditionMod = modifiers2.find(m => m.edgeId === hasTraitEdgeId);
-      expect(conditionMod).toEqual({
-        edgeId: hasTraitEdgeId,
-        edgeType: 'has_trait',
-        sourceName: 'Curse of Weakness',
-        delta: -0.20,
-      });
+      expect(modifiers2).toHaveLength(1);
+      expect(modifiers2[0].edgeId).toBe(possessesEdgeId);
 
-      // 10. Verify combined modifier value
-      const modified2 = getModifiedValue(graph, agentId, 'iron', 0.5);
-      expect(modified2).toBe(0.4); // 0.5 + 0.10 - 0.20 = 0.4
+      // 10. The granted condition must carry the decay clock the tick loop reads.
+      // `ticksRemaining` — not `durationTicks` — is what decayConditions counts down.
+      expect(hasTraitEdge0.properties.ticksRemaining).toBe(5);
 
       // 11. Run decayConditions 5 times (ticksRemaining = 5)
       let removedCount = 0;
