@@ -1,6 +1,6 @@
 # Briefing
 
-**Generated:** 2026-07-25 10:10 local (2026-07-25 08:10 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-07-25 11:09 local (2026-07-25 09:09 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
@@ -14,21 +14,20 @@ Nothing else needs you. The queue is draining on its own and the executor is mid
 
 ## Queue
 
-**Backed up, just barely — 16 ready items against a soft ceiling of 15**, unchanged from the last two briefs. Nothing is blocked and nothing has gone stale (every item was touched within the last two days). THR-738, the self-closing-tickets fix, is still the only High, and its last step is a two-pull-request live test proving the new rule works — docs-only, safe to run alongside anything. Everything else is Medium or Low: two hygiene sweeps from Friday's retro, the player-cast variance spec that already carries your "yes, with a safety floor", the group-conflict and Reunite/Sunder company designs, and a tail of small deferrals.
+**Healthy again — 15 ready items, back under the soft ceiling of 15**, down from 16 at the last two briefs. Nothing is blocked and nothing has gone stale; every item was touched within the last two days. The self-closing-tickets fix is still the only High and is now in its final stretch — see below. Everything else is Medium or Low: two hygiene sweeps from Friday's retro, the player-cast variance spec that already carries your "yes, with a safety floor", the group-conflict and Reunite/Sunder company designs, the instruction-file slimming pass, and a tail of small deferrals.
 
-One pattern worth naming because it keeps recurring: **this briefing's own pull request keeps knocking the executor's out of date.** The repo requires a branch to be level with `main` before it may merge, and hourly automation merging into `main` is enough to unseat whatever else is queued behind it. The grooming pass caught and repaired exactly that at 09:23; the same collision is likely again this hour. It self-corrects on the next pass and is already ticketed — agent work, not yours.
+The collision pattern named in the last two briefs — this briefing's own pull request knocking the executor's out of date — is now written up as a known impediment and ticketed, so it stops being rediscovered each hour. It self-corrects on the next pass; agent work, not yours.
 
 ## Freshness
 
-**Home tree: current.** On `main`, exactly level with the server (0 behind, 0 stranded). One leftover tracked edit (`.claude/settings.local.json`) and one untracked file — Friday's weekly-retro write-up, `Design/retros/retro-2026-07-24-draft.md` — remain; neither blocks the sync, and landing the retro is agent work for the next docs pass, still the only copy anywhere. Local dependencies are healthy (284 packages, 99 tool shims present).
+**Home tree: on `main`, effectively current.** Four commits behind the server as of this run — well under the level that would mean the sync had stopped, and it reads as the ordinary lag of a busy morning rather than a stall; nothing is parked and nothing is stranded. The same two leftovers persist and neither blocks anything: one tracked settings edit (`.claude/settings.local.json`) and one untracked file, Friday's weekly-retro write-up, which is still the only copy anywhere and still agent work to land via a docs pass.
 
-**Cleanup reaper: alive** — last run 09:40 (30 minutes ago), tracking 25 worktrees / 34 branches / 1 stash, nothing awaiting a human decision. Its new safety guard is visibly working: this morning's log shows it severing a work folder's shared-dependency link before deleting the folder, which is precisely the step whose absence twice wiped the shared install.
+**Cleanup reaper: alive** — last run 10:40 (29 minutes ago), tracking 27 work folders / 35 branches / 1 stash, nothing awaiting a human decision. The folder count crept up from 25 because several sessions opened new ones this morning; that is normal churn, and the reaper clears them once their work merges.
 
 ## What's moving
 
-- **Item on-use triggers are one green test run from landing (THR-719).** All nine triggers are ported — consumables, breakage and curses stop being tooltip text and start firing as real effects. The pull request is armed to merge itself the moment tests pass.
-- **This morning's backlog tidy-up landed (09:24).** It closed five duplicate scan reports that had been filed twice over, and confirmed every one of the 96 open items belongs to a project.
-- **The design-audit pipeline was repaired (07:11).** Three of its inputs had drifted out of step with what they audit against.
+- **The self-closing-tickets problem is now provably fixed — including your half of it.** This was the fault where a ticket marked itself finished because some unrelated pull request happened to mention its number — three times in two days on the same ticket. The repo-side fix shipped Thursday; the other half was the setting you switched off yesterday morning. Two fixes by two different parties with no test in between is exactly the shape of a fix that looks done and isn't, so the executor ran a live proof this hour: a throwaway ticket, plus two pull requests deliberately shaped to trip the fault. **The one designed to trip it left the ticket untouched; the one designed to close it properly closed it.** Both controls passed between 11:04 and 11:08. Tickets still link to their pull requests — they just stop moving themselves, which is the end state you asked for.
+- **Item effects landed (10:27).** Consumables, breakage and curses stop being tooltip text and start firing as real effects — all nine triggers ported. This was the item flagged as "one green test run away" in the last brief.
 
 ---
 *Standing asks live in [`Design/user-actions.md`](user-actions.md). This file is regenerated hourly by the `keep-work-flowing-cc` scheduled task; staleness is visible from the Generated timestamp above and the task's `lastRunAt` in `list_scheduled_tasks`.*
