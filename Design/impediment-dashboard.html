@@ -2936,6 +2936,19 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "**Workaround that worked:** pull-work Step 0.8's armed-PR reconciliation sweep is the right instrument and caught it on the first read — `gh pr update-branch 830`, confirm auto-merge survived the update (`autoMergeRequest != null`), then exit without polling. Two cautions the sweep's wording under-weights: (1) the post-arm freshness check is **not** one-and-done — #830 passed it at 06:38 and still staled twice, so an open PR needs re-checking every run, which is what makes the hourly sweep load-bearing rather than a nicety; (2) `ARMED_SWEEP_MAX_UPDATES = 1` is now *exactly* matched to the hourly staling rate, so with two or more open armed PRs the queue cannot drain — each hour re-stales what the previous hour updated. **Suggested durable fix:** adopt a GitHub merge queue, or gate the hourly doc-writing tasks so they do not merge to `main` while an armed feature PR is mid-check. **Format note:** this entry is deliberately a numbered table row rather than the trailing-paragraph form the last 65 entries drifted into — both consumers of this log (`generate-impediment-dashboard.ts`, `retro-draft.ts`) gate on `startsWith(\"",
     "session": "\")`, so paragraph entries are parsed by neither. Filed as THR-764. | Hourly `tb-opus-pickup` run, THR-719 resume (PR #830 second unstick)."
+  },
+  {
+    "num": "210",
+    "id": 210,
+    "count": 1,
+    "date": "2026-07-25",
+    "category": "process-friction",
+    "description": "**The `keep-work-flowing-cc` Discord ping change-gate compares a SHA-256 of the \"Needs Christian\" items against a stored hash, but the skill never specifies the normalization — so each run invents its own pipeline and the hashes disagree even when the ask is byte-identical.** This run's stored hash was `e9d68463…`; recomputing over an unchanged, verbatim-carried ask gave `c8d7dc35…` (and `38a21b73…` under a trailing-newline variant of the same pipeline — `printf '%s' \\| sha256sum` vs `… \\| sha256sum` alone differ). The gate therefore reported CHANGED for an item whose text had not moved a character since the 10:10 brief. Proven rather than assumed: normalizing *both* briefings (10:10 and 11:09) through one identical pipeline produced the same digest, isolating the drift to the method, not the content.",
+    "consequence": "The gate exists precisely to stop unchanged standing asks re-pinging hourly. Left alone it inverts into its own failure mode: a Discord DM to Christian **every hour** for an ask he has already seen — the exact notification fatigue THR-608's chat-only interface is meant to avoid — and the false pings are indistinguishable from real ones.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "**Workaround this run:** do not trust the stored hash alone. Recompute the digest over the *previous* briefing's Needs-Christian section with the *same* pipeline used for the current one; if those two agree, the ask is genuinely unchanged and the ping is suppressed regardless of what the state file says. Then write the freshly-computed hash so the next run has a same-method baseline. **Durable fix:** pin the normalization in the skill (or a tiny committed script) so it is reproducible across runs — e.g. `awk` the section, keep only lines matching `^\\s*[-*]\\|^\\*\\*`, collapse whitespace, trim, then `sha256sum` with the trailing newline retained — and store the pipeline's identity alongside the digest so a future change of method is visibly a method change rather than a content change.",
+    "session": "Hourly `keep-work-flowing-cc` run, 2026-07-25 11:09 brief."
   }
 ];
 // ── End data ──
