@@ -121,15 +121,8 @@ describe('group-eligibility predicate', () => {
 });
 
 describe('group-eligibility sweep over the live registry', () => {
-  // NOTE: `Array.isArray` is load-bearing, not defensive habit. 18 shipped
-  // templates carry **no `actorAffinities` at all** — 15 `mc.*` (mercenary
-  // company) plus 3 `encounter.shell_proof.*` — despite the field being required
-  // on `UnifiedActionTemplate`. A type violation that only survives because the
-  // typecheck baseline is red (THR-489). Tracked separately; the sweep already
-  // fails soft on them (no `'individual'` affinity → predicate returns false),
-  // which the last test in this block locks.
   const promoted = UNIFIED_ACTION_TEMPLATES.filter(
-    t => Array.isArray(t?.actorAffinities) && t.actorAffinities.includes('group'),
+    t => t?.actorAffinities?.includes('group'),
   );
 
   it('promotes a non-trivial slice of shipped content', () => {
@@ -141,15 +134,19 @@ describe('group-eligibility sweep over the live registry', () => {
     expect(promoted.length).toBeGreaterThanOrEqual(40);
   });
 
-  it('leaves the affinity-less templates untouched rather than throwing', () => {
-    const malformed = UNIFIED_ACTION_TEMPLATES.filter(t => !Array.isArray(t?.actorAffinities));
-    // If this ever reaches 0 the underlying data bug was fixed — good, but then
-    // the Array.isArray guards above can be simplified. Locking the shape so the
-    // change is deliberate either way.
-    expect(malformed.every(t => /^(mc\.|encounter\.shell_proof\.)/.test(t.id))).toBe(true);
-    // The point of the guard: the sweep must skip them silently, never promote
-    // them and never throw at module load.
-    expect(malformed.every(t => !isGroupEligibleTemplate(t))).toBe(true);
+  it('every shipped template declares actorAffinities (THR-736)', () => {
+    // `actorAffinities` is required on `UnifiedActionTemplate`, but the typecheck
+    // baseline is red (THR-489), so a missing field is not caught by the ratchet —
+    // 18 templates shipped without one until THR-736. This is the gate that keeps
+    // the field honest at runtime instead.
+    //
+    // Asserted as the *list of offending ids*, not `.every(...)`: `.every()` on an
+    // empty array is vacuously true, so the predecessor of this test would have
+    // passed no matter what once the set emptied.
+    const missing = UNIFIED_ACTION_TEMPLATES
+      .filter(t => !Array.isArray(t?.actorAffinities))
+      .map(t => t?.id);
+    expect(missing).toEqual([]);
   });
 
   it('only promotes templates from the swept families', () => {
