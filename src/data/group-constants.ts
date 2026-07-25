@@ -167,3 +167,44 @@ export const DRAW_TOGETHER_RADIUS_HEXES = 8;
  * company, so this is the first moment "draw them together" has raw material.
  */
 export const DRAW_TOGETHER_MIN_THREADED_FOR_UNLOCK = 2;
+
+// ─── NPC bands (THR-731) ─────────────────────────────────────────────
+//
+// A band is an ordinary `faction_band` company whose members are a faction's own
+// people — the opposition companies fight at their own scale. Bands fray, travel,
+// and dissolve through the same `phaseGroups` machinery as any other company;
+// the only additions here are *who* forms one and *why*.
+
+/**
+ * Ticks between band-formation sweeps — two in-game days (12 ticks/day).
+ *
+ * Must stay a multiple of `FACTION_ACTION_INTERVAL` (8): the sweep runs inside
+ * `phaseFactionActions` *after* that phase's own interval gate, so a band forms
+ * alongside the faction's other deliberate acts rather than between them. A value
+ * coprime with 8 would silently alias to their LCM instead.
+ */
+export const BAND_SPAWN_INTERVAL = 24;
+
+/** Per-sweep formation roll for an eligible faction. */
+export const BAND_SPAWN_CHANCE = 0.15;
+
+/** Concurrent live bands one faction may field. */
+export const MAX_ACTIVE_BANDS_PER_FACTION = 2;
+
+/** Members drawn into a spawned band, before {@link GROUP_MAX_MEMBERS} clamping. */
+export const BAND_SIZE_MIN = 3;
+export const BAND_SIZE_MAX = 6;
+
+/**
+ * Members a faction must have *left over* after fielding a band. A guild that
+ * sends every last member out as a war party stops being a guild — this reserve
+ * is what keeps the hall staffed and the faction's own loops alive.
+ */
+export const BAND_FACTION_MEMBER_RESERVE = 2;
+
+/**
+ * Starting cohesion for a band. Above {@link GROUP_COHESION_START_BASE} because a
+ * band is assembled by a faction that already commands its members, not by
+ * strangers converging on a tavern — but not so high that bands never fray.
+ */
+export const BAND_COHESION_START = 0.7;

@@ -469,7 +469,11 @@ function printGroups(): void {
     const posName = posId ? (state.graph.getNode(posId)?.name ?? posId) : '—';
 
     const title = disbanded ? dim(`${g.name} (disbanded: ${props.dissolutionReason ?? '?'})`) : `${BOLD}${g.name}${RESET}`;
-    console.log(`  ${dim(g.id.slice(0, 12))}  ${title}`);
+    // THR-731 — bands read as opposition, so name the faction that fielded them.
+    const bandTag = props.bandRole
+      ? `  ${props.bandRole} band of ${state.graph.getNode(props.bandFactionId as string)?.name ?? props.bandFactionId}`
+      : '';
+    console.log(`  ${dim(g.id.slice(0, 12))}  ${title}${dim(bandTag)}`);
     console.log(
       `      ${props.groupType}  cohesion:${cohesion.toFixed(2)} (${getCohesionState(cohesion)})  at:${posName}` +
       (props.groupDestinationId ? `  →${state.graph.getNode(props.groupDestinationId as string)?.name ?? props.groupDestinationId}` : ''),

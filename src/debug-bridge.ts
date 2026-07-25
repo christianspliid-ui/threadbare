@@ -1714,6 +1714,9 @@ if (import.meta.env.DEV) {
           ticksActive: tick - ((props.formedAtTick as number | undefined) ?? tick),
           disbandedAtTick: (props.disbandedAtTick as number | undefined) ?? null,
           dissolutionReason: (props.dissolutionReason as string | undefined) ?? null,
+          // THR-731 — null on ordinary companies, set on NPC bands.
+          bandRole: (props.bandRole as 'raider' | 'defender' | undefined) ?? null,
+          bandFactionId: (props.bandFactionId as string | undefined) ?? null,
         };
       });
     },

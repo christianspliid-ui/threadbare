@@ -46,6 +46,7 @@ import {
 } from '../types/factionAction';
 import { readWealth, applyWealthDelta } from './wealth';
 import { emitTrace } from './traceBuffer';
+import { spawnFactionBands } from './groups/bandSpawner';
 import {
   DISSENT_DECAY_PER_TICK,
   DISSENT_ENCOUNTER_THRESHOLD,
@@ -839,6 +840,11 @@ export function phaseFactionActions(state: GameState): void {
       // Fail-soft: skip this faction, don't crash the tick loop
     }
   }
+
+  // THR-731 — factions field NPC bands: their own people, sent out as a company.
+  // Its own seeded stream (multiplier 97) so band luck never shifts the faction
+  // action rolls above, and its own interval gate inside the sweep.
+  spawnFactionBands(state, mulberry32(state.seed + state.tick * 97));
 }
 
 /**
