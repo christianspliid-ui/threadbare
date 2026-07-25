@@ -12,11 +12,11 @@ Before auditing:
 
 1. Read `{{PLAN_DOC_PATH}}` — the plan doc you are auditing.
 2. Run `npm run vision-audit -- {{PLAN_DOC_PATH}}` and read the output. If the script is missing or fails, fall back to reading the six Vision files directly:
-   - `Design/Vision/00-north-star.md`
-   - `Design/Vision/01-core-loop.md`
-   - `Design/Vision/02-non-negotiables.md`
-   - `Design/Vision/03-design-tensions.md`
-   - `Design/Vision/taste-profile.md`
+   - `TheFantasyWorldSimulator/Vision/00-north-star.md`
+   - `TheFantasyWorldSimulator/Vision/01-core-loop.md`
+   - `TheFantasyWorldSimulator/Vision/02-non-negotiables.md`
+   - `TheFantasyWorldSimulator/Vision/03-design-tensions.md`
+   - `TheFantasyWorldSimulator/Vision/taste-profile.md`
    - `Docs/design-brief.md` § Vision summary (if present)
 
    If `Docs/design-brief.md` is missing or stale, skip it and read the Vision files directly. Append `[design-brief-stale]` to your verdict tail.
