@@ -802,6 +802,15 @@ if (import.meta.env.DEV) {
       (_encounterBridge?.spawnNpc as ((...a: unknown[]) => unknown) | undefined)?.(role, target, options)
       ?? { success: false, message: 'Encounter bridge not registered' },
 
+    // THR-731 — force one faction band into the world, skipping the interval + roll
+    // but keeping every structural precondition. `options` is typed loosely here to
+    // match the declared `DebugSpawnBandOptions` without importing it into the
+    // runtime bundle; the `.d.ts` is what callers type against.
+    spawnBand: (factionQuery: string, options?: { role?: 'raider' | 'defender' }) =>
+      ((_encounterBridge?.spawnBand as ((...a: unknown[]) => unknown) | undefined)?.(factionQuery, options)
+        ?? { success: false, message: 'Encounter bridge not registered' }
+      ) as import('./engine/debugWorldSpawnTools').DebugWorldSpawnResult,
+
     moveAgent: (agentQuery: string, target: Record<string, unknown>, options?: Record<string, unknown>) =>
       (_encounterBridge?.moveAgent as ((...a: unknown[]) => unknown) | undefined)?.(agentQuery, target, options)
       ?? { success: false, message: 'Encounter bridge not registered' },

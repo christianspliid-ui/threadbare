@@ -1,5 +1,6 @@
 import type { CourtPosition } from '../types/influence';
 import type { SpotlightTier } from '../types/npc';
+import type { BandRole } from './groups/groupQueries';
 
 export type ParsedDebugCommand =
   | { kind: 'spawn-encounter'; agentQuery: string; templateId: string; courtPosition?: CourtPosition }
@@ -8,6 +9,7 @@ export type ParsedDebugCommand =
   | { kind: 'spawn-location'; subtype: string; col: number; row: number; name?: string }
   | { kind: 'spawn-sublocation'; sublocationTypeId: string; locationQuery?: string; col?: number; row?: number; name?: string }
   | { kind: 'spawn-npc'; role: string; locationQuery?: string; col?: number; row?: number; name?: string; factionDefId?: string; spotlightTier?: SpotlightTier }
+  | { kind: 'spawn-band'; factionQuery: string; role?: BandRole }
   | { kind: 'move-agent'; agentQuery: string; locationQuery?: string; col?: number; row?: number }
   | { kind: 'inspect-encounters'; agentFilter?: string }
   | { kind: 'fog'; mode: 'toggle' | 'on' | 'off' }
@@ -275,6 +277,37 @@ export function parseDebugCommand(input: string): ParsedDebugCommand | { error: 
     }
 
     return { kind: 'spawn-npc', role, locationQuery, col, row, name, factionDefId, spotlightTier };
+  }
+
+  if (head === 'spawn' && second === 'band') {
+    if (rest.length < 1) {
+      return { error: 'Usage: spawn band <faction|factionDefId> [--role <raider|defender>]' };
+    }
+
+    // Deliberately NO --hex, unlike its `spawn npc` sibling. A band musters out of
+    // the faction's own colocated members, so a hex would either be ignored or mean
+    // "teleport a muster into being" — the one thing the shipped spawner refuses.
+    // To stage a confrontation at a chosen place, use `move agent` to bring the
+    // company to the band.
+    const [factionQuery, ...flags] = rest;
+    let role: BandRole | undefined;
+
+    for (let i = 0; i < flags.length; i += 1) {
+      const flag = flags[i];
+      if (flag === '--role') {
+        const value = flags[i + 1];
+        if (value === 'raider' || value === 'defender') {
+          role = value;
+          i += 1;
+        } else {
+          return { error: 'role must be raider or defender.' };
+        }
+      } else {
+        return { error: `Unknown flag '${flag}'.` };
+      }
+    }
+
+    return { kind: 'spawn-band', factionQuery, role };
   }
 
   if (head === 'move' && second === 'agent') {

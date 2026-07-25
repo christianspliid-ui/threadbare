@@ -15,12 +15,12 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 34 |
+| 🟢 LIVE | 35 |
 | 🟠 PARTIAL | 0 |
 | 🔴 LEAKED | 4 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 3 |
-| **Total** | **41** |
+| **Total** | **42** |
 
 ## Contracts by producing subsystem
 
@@ -77,6 +77,7 @@ remediation ticket or the build fails.
 | `company-position-derives-from-leader` | A company has no position of its own — asking where it is means asking where its leader is, so there is never a second spatial truth to drift. | function: `getGroupPosition` | Movement & Colocation | 🟢 LIVE | — |
 | `confrontation-content-gated-on-a-live-opponent` | An encounter about fighting a particular band is only offered while that band is standing there — a confrontation never surfaces against nobody. | function: `requiresOpposingBand`, `hasOpposingBand` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `contested-outcome-band-reaches-the-player` | Losing a fight reads differently from merely failing — a contested loss says so in the chronicle and the receipt. | function: `contestedOutcomeFor`, `contested_won` | Encounters & Dilemmas | 🟢 LIVE | — |
+| `group-grudge-reaches-the-mortal-sheet` | A company that has fought someone carries it visibly — the mortal sheet names the rival in prose, so blood between companies is legible without a trace viewer. | edge-prop: `hostile_to`, `rivals` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
 
 ### Encounters & Dilemmas
 
@@ -444,6 +445,18 @@ remediation ticket or the build fails.
 - **Other hits:** `src/data/faction-action-constants.ts`, `src/engine/phaseMovement.ts`
 - **Verdict:** Verified 2026-07-23: FactionSheet.activeAmbition renders; faction phases consume. Docs/plans/2026-07-23-system-interface-map.md § Audit findings (manual audit + independent cold-context review, both grep-verified)
 
+### `group-grudge-reaches-the-mortal-sheet` — 🟢 LIVE
+
+- **Intent:** A company that has fought someone carries it visibly — the mortal sheet names the rival in prose, so blood between companies is legible without a trace viewer.
+- **Producer → Consumer:** Companies & Group Travel → Attention, Chronicle & Narrative
+- **UL terms:** *Company*
+- **Module:** `src/engine/agentDetail.ts`
+- **Production hits:** 47 total — 1 write, 2 read, 44 unclassified
+- **Write sites:** `src/engine/groups/bandOpposition.ts`
+- **Read sites:** `src/components/Game/tabs/OverviewTab.tsx`, `src/engine/agentDetail.ts`
+- **Other hits:** `src/components/Game/Encounter/DetectionThread.tsx`, `src/components/Game/GameView/GameViewTopBar.tsx`, `src/components/HexMapV2/HexMapV2.tsx`, `src/data/action-template-content.ts`, `src/data/agenda-consequence-templates.ts` +39 more
+- **Verdict:** Verified 2026-07-25: Live CLI run, seed 42 medium: a company relocated into a Great Silverhold guild hall resolved encounter.confront_guild_falls against a colocated Arcane Circle defender band at t61 — company cohesion 0.54 → 0.70, band 0.70 → 0.46 — and the contest wrote mutual grudges, read straight off the graph: "The Watch of the Nameless Road -> The Errant Keys of The Arcane Circle since t61 (group_engagement)" and the reverse. agentDetail reads both edge directions off the group node and dedupes the mutual pair; OverviewTab renders it as one sentence with no numbers and no `since` tick. Locked by src/engine/groups/__tests__/bandDebugSurfaces.test.ts § "Company panel — Rivals" (7 tests: absent when no grudge, outgoing, incoming-only, mutual-dedupe, dangling-target drop, deterministic multi-rival order).
+
 ### `minted-ambition-provenance` — 🟢 LIVE
 
 - **Intent:** Motive receipts name the origin of a minted want — "she seeks vengeance for the blighted fields."
@@ -480,10 +493,10 @@ remediation ticket or the build fails.
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 144 total — 1 write, 1 read, 142 unclassified
+- **Production hits:** 147 total — 1 write, 1 read, 145 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/Game/ActionCard.tsx`, `src/components/Game/ascendant-bar/IdentityStrip.tsx`, `src/components/Game/ascendant-bar/selectors.ts`, `src/components/Game/ChapterView.tsx` +137 more
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/Game/ActionCard.tsx`, `src/components/Game/ascendant-bar/IdentityStrip.tsx`, `src/components/Game/ascendant-bar/selectors.ts`, `src/components/Game/ChapterView.tsx` +140 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `secrets-consequences` — 🟢 LIVE

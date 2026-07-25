@@ -67,6 +67,14 @@ Trade routes carry a **cargo manifest** naming what actually moves, derived from
 
 Five economic verbs are yours: **Bless the Harvest** (Gold / Life) swells staples toward glut; **Blight the Fields** (Shadow / Entropy) draws them toward famine; **Reveal the Vein** (Eye / Matter) surfaces a new deposit; **Guide the Caravan** (Eye / Order) boosts and protects every road that feeds a settlement; **Sour the Mine** (Shadow / Entropy) pinches the non-staple wealth shut. All arrive as milestone unlocks, all land a beat later — you tilt the odds, you do not farm.
 
+## The World in Company
+
+Mortals **band into companies** (never "parties" in player-facing prose) that travel and fall apart together. A company holds a single scalar, **cohesion**, read only as prose: **bound · holding · frayed · breaking**. Companies form from colocated mortals, take encounters a lone agent cannot, and resolve each step through whichever companion best suits that step's Reach.
+
+Factions field **bands** of their own named people — a band is a company in every respect, and known by whose it is ("The Temple of the Spheres' Sparrows"). A company and a foreign band on the same hex resolve as **one contested pair**: both priced by full company strength, the loser shedding cohesion, a decisive loss risking a named member's life, and both sides leaving with a **grudge** that the mortal sheet reports in prose ("There is blood between them and …"). Four authored confrontations — **The Ambush**, **Den Assault**, **The Guild Falls**, **The Standoff** — surface only while a live opponent is standing there; The Standoff is the rung where it can end with nobody carried away.
+
+Your seat stays the intervention seat: **Bless this Company** (Heart / Spirit) steadies a band's bonds; **Draw Together** (Heart / Spirit) tilts scattered threaded mortals toward one hex until a company gathers on its own. You never command a company.
+
 ## The Clocks and the Ending
 
 Two clocks pressure the run. **Doom** (7 archetypes × 5 stages: Whispers, Signs, Tremors, Crisis, Culmination) ticks toward an Unmaking. **Victory Mandate** (3 stages, graph-state win) runs in parallel. They pressure each other — essence spent on one is essence not spent on the other.

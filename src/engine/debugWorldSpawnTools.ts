@@ -5,6 +5,9 @@ import type { NpcRole, SpotlightTier } from '../types/npc';
 import { NPC_ROLE_SUBLOCATION_MAP } from '../types/npc';
 import { DEFAULT_REPUTATION } from '../types/disposition';
 import { getAgentLocationId, getAllActorsAtLocation, getSublocationsAt, getAvatarsOf } from './graphQueries';
+import { mulberry32 } from '../lib/prng';
+import { spawnBandForFaction, canFieldBand } from './groups/bandSpawner';
+import type { BandRole } from './groups/groupQueries';
 import { selectDefaultTrackedHero } from './balanceTelemetry';
 import { instantiateReward, REWARD_INSTANTIATE_PREFIX } from './rewardPool';
 
@@ -17,7 +20,7 @@ function resolutionNote(query: string, resolvedId: string, resolvedName: string)
 
 export interface DebugWorldSpawnResult {
   success: boolean;
-  kind?: 'location' | 'sublocation' | 'npc' | 'agent' | 'attachment';
+  kind?: 'location' | 'sublocation' | 'npc' | 'agent' | 'attachment' | 'band';
   nodeId?: string;
   nodeName?: string;
   locationId?: string;
@@ -46,6 +49,11 @@ export interface DebugMoveAgentOptions {
 
 export interface DebugSpawnAttachmentOptions {
   tick?: number;
+}
+
+export interface DebugSpawnBandOptions {
+  /** Why the band is out. Defaults to `defender` — the guild path that actually ships members. */
+  role?: BandRole;
 }
 
 function normalize(text: string): string {
@@ -485,6 +493,98 @@ export function spawnDebugNpc(
     locationName: placement.name,
     reused: false,
     message: `Spawned NPC '${desiredName}' at '${placement.name}'.`,
+  };
+}
+
+/**
+ * Resolve a faction actor from a debug query: exact node id, `factionDefId`, exact
+ * name, then partial name. Broader than `findFactionNodeId` (defId only) because a
+ * debug operator reads faction names off the `factions` readout, not defIds.
+ */
+function findFactionNode(state: GameState, query: string): GraphNode | undefined {
+  const q = normalize(query);
+  const factions = state.graph.getNodesByType('actor')
+    .filter(n => n.properties.actorType === 'faction')
+    // Deterministic order, so a partial query that matches several always resolves
+    // to the same faction across runs (NFP #3).
+    .sort((a, b) => a.id.localeCompare(b.id));
+
+  return factions.find(n => normalize(n.id) === q)
+    ?? factions.find(n => normalize((n.properties.factionDefId as string | undefined) ?? '') === q)
+    ?? factions.find(n => normalize(n.name) === q)
+    ?? factions.find(n => normalize(n.name).includes(q));
+}
+
+/**
+ * Force one band into the world for a named faction — THR-731 PR 4.
+ *
+ * This is the deterministic counterpart to the `phaseFactionActions` sweep: it skips
+ * the interval gate and the spawn roll, and keeps **every structural precondition**
+ * (`spawnBandForFaction` still checks the per-faction cap, the member reserve, and
+ * the colocated cluster). A forced spawn cannot conjure members a faction does not
+ * have, which is deliberate — a `spawn band` that teleported a muster into being
+ * would be a test of nothing, since colocation is exactly the precondition that
+ * makes bands rare enough to be hard to observe organically.
+ *
+ * When it declines, the message says which precondition failed rather than a bare
+ * "failed", because "why is this guild not mustering?" is the actual question an
+ * operator is asking.
+ */
+export function spawnDebugBand(
+  state: GameState,
+  factionQuery: string,
+  options: DebugSpawnBandOptions = {},
+): DebugWorldSpawnResult {
+  const faction = findFactionNode(state, factionQuery);
+  if (!faction) {
+    return { success: false, message: `No faction matching '${factionQuery}'.` };
+  }
+
+  const factionNote = resolutionNote(factionQuery, faction.id, faction.name);
+
+  if (faction.properties.isMonsterFaction) {
+    // The sweep skips these for a reason worth repeating at the manual door: a
+    // monster faction is an abstract lair-owner with no `member_of` roster to
+    // muster from. TODO(THR-767) gives them a population.
+    return {
+      success: false,
+      message: `'${faction.name}' is a monster faction — no member roster to muster from (THR-767).${factionNote}`,
+    };
+  }
+
+  const role: BandRole = options.role ?? 'defender';
+
+  // Seeded per faction + tick so a forced spawn is reproducible, and offset off the
+  // sweep's own stream (multiplier 97) so forcing one band never shifts the organic
+  // rolls of the same tick.
+  const rng = mulberry32(state.seed + state.tick * 97 + faction.id.length * 7919 + 1);
+
+  const structurallyReady = canFieldBand(state.graph, faction.id);
+  const spawned = spawnBandForFaction(state, faction, rng, role);
+
+  if (!spawned) {
+    return {
+      success: false,
+      message: structurallyReady
+        // canFieldBand passed but the muster still declined — the draw floor after
+        // the reserve is the only remaining gate.
+        ? `'${faction.name}' passed eligibility but could not fill a band (drawable members below the size floor).${factionNote}`
+        : `'${faction.name}' cannot field a band: needs an unbanded, colocated cluster of members above the reserve, and to be under its active-band cap.${factionNote}`,
+    };
+  }
+
+  const locationId = state.graph.getOutgoingEdges(spawned.groupId, 'located_at')[0]?.target;
+  const location = locationId ? state.graph.getNode(locationId) : undefined;
+
+  return {
+    success: true,
+    kind: 'band',
+    nodeId: spawned.groupId,
+    nodeName: spawned.name,
+    locationId: location?.id,
+    locationName: location?.name,
+    reused: false,
+    message: `${faction.name} fielded '${spawned.name}' — ${spawned.memberIds.length} ${role}s.${factionNote}`,
   };
 }
 

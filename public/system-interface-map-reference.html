@@ -401,7 +401,7 @@
 
   <div class="section">
     <h2>Spotlight — Companies &amp; bands
-      <span class="lead">Audited 2026-07-24/25 (audit-on-touch, THR-74 / THR-731). Companies were built to act together; the last two contracts make them act <em>against</em> something.</span>
+      <span class="lead">Audited 2026-07-24/25 (audit-on-touch, THR-74 / THR-731). Companies were built to act together; the later contracts make them act <em>against</em> something — and make that legible.</span>
     </h2>
 
     <ul class="contracts">
@@ -411,6 +411,8 @@
         <span class="note">THR-731 PR 2. Pairing is hex-granular and rides <code>opposingGroupId</code> — a field THR-74's plan named and never shipped (zero hits across <code>src/</code> at implementation time), so this row lands with symbols on both sides rather than as a deferred intention. The band's counter-action is synthesized and transient; both sides then price their step through the same company math above, which is what stops a six-strong band from fighting exactly as hard as its leader alone. Proven organically on a 150-tick run (seed 42): a Temple defender band met two separate companies, lost a named member, and disbanded.</span></li>
       <li class="live"><span class="flow">Contested resolution <span class="arrow">⟶</span> Chronicle &amp; receipt — losing a fight reads differently from merely failing</span><span class="chip live">LIVE</span>
         <span class="note">Found and closed in the same pass. <code>contested_won</code>/<code>contested_lost</code> shipped with the contested-pair system (TB-044) and carried display strings in <code>ChapterView</code>, a receipt severity mapping, and an <code>isActionSuccess</code> branch — with <strong>zero producers</strong>. The contested branch resolved through plain success/failure, so the vocabulary the UI was already built to speak was never spoken. Group contests are its first producer.</span></li>
+      <li class="live"><span class="flow">Group grudge <span class="arrow">⟶</span> The mortal sheet — blood between companies is legible without a trace viewer</span><span class="chip live">LIVE</span>
+        <span class="note">THR-731 PR 4. The <code>hostile_to</code> edge already had faction-scale readers; this is its first <em>group</em>-scale player-facing consumer, so the row extends a contract rather than adding one. <code>agentDetail</code> reads both edge directions off the company node and dedupes the mutual pair the contest writes, and the Company section renders it as one sentence — <em>"There is blood between them and The Errant Keys of The Arcane Circle"</em> — never a count and never the <code>since</code> tick. Also fixed in this pass: <code>The Guild Falls</code> and <code>encounter.band_defend</code> both gated on <code>sublocation-type.guildhall</code>, an id worldgen never mints (it mints <code>guild-hall</code>), so the capstone confrontation and the band's own counter-encounter were <strong>unreachable by construction on every seed</strong> while the suite stayed green. A derived content-integrity test now fails on any template gating on an unmintable sublocation.</span></li>
     </ul>
   </div>
 

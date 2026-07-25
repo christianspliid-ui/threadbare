@@ -52,6 +52,18 @@ const COHESION_SENTENCE: Record<CohesionState, string> = {
   breaking: 'They are on the verge of parting ways.',
 };
 
+/**
+ * Standing rivalries as one sentence (THR-731). Never "Rivals: 2" and never the
+ * `since` tick — a grudge is a thing the company carries, so it reads as prose.
+ * Beyond two names the list stops naming and starts counting *in words*, because a
+ * company that has fought half the world should sound notorious, not tabulated.
+ */
+function rivalsSentence(rivals: readonly string[]): string {
+  if (rivals.length === 1) return `There is blood between them and ${rivals[0]}.`;
+  if (rivals.length === 2) return `There is blood between them and both ${rivals[0]} and ${rivals[1]}.`;
+  return `There is blood between them and ${rivals[0]}, ${rivals[1]}, and others besides.`;
+}
+
 // ─── Knowledge level helpers ──────────────────────────────────────
 
 const KNOWLEDGE_RANK: Record<string, number> = {
@@ -325,6 +337,12 @@ export function OverviewTab({ card, profile: _profile, knowledge, onOpenEntity }
             <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
               {COHESION_SENTENCE[card.company.cohesionState]}
             </p>
+            {/* Rivals (THR-731) — only when blood has actually been spilt. */}
+            {card.company.rivals && card.company.rivals.length > 0 && (
+              <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                {rivalsSentence(card.company.rivals)}
+              </p>
+            )}
             {card.company.members.length > 0 && (
               <div className="flex flex-wrap gap-1.5 pt-1">
                 {card.company.members.map((m) => {

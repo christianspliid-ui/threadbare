@@ -86,6 +86,7 @@ export function CommandTab({ retinueAgents = [], followAgentId }: CommandTabProp
       'spawn location town --hex 10 10 --name "Debug Town"',
       'spawn sublocation sublocation-type.gatehouse --hex 10 10 --name "South Gatehouse"',
       'spawn npc guard_captain --hex 10 10 --name "Captain Merrow" --faction civic_guard --spotlight notable',
+      'spawn band "The Arcane Circle" --role defender',
       `move agent "${defaultAgent}" --hex 10 10`,
       `spawn encounter "${defaultAgent}" cg.quest.gate_duty --courtPosition retinue`,
       `inspect encounters "${defaultAgent}"`,
@@ -196,6 +197,16 @@ export function CommandTab({ retinueAgents = [], followAgentId }: CommandTabProp
       ].filter(Boolean).join('\n');
     }
 
+    if (parsed.kind === 'spawn-band') {
+      const result = window.__DEBUG.spawnBand(parsed.factionQuery, { role: parsed.role });
+      return [
+        result.success ? 'Band fielded.' : 'Spawn failed.',
+        result.message,
+        result.nodeName ? `band: ${result.nodeName}` : null,
+        result.locationName ? `mustered at: ${result.locationName}` : null,
+      ].filter(Boolean).join('\n');
+    }
+
     if (parsed.kind === 'move-agent') {
       const result = window.__DEBUG.moveAgent(parsed.agentQuery, {
         locationQuery: parsed.locationQuery,
@@ -288,7 +299,7 @@ export function CommandTab({ retinueAgents = [], followAgentId }: CommandTabProp
           />
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
             <div style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)' }}>
-              Supported: <code>spawn encounter-context</code>, <code>spawn encounter</code>, <code>spawn attachment</code>, <code>spawn location</code>, <code>spawn sublocation</code>, <code>spawn npc</code>, <code>move agent</code>, <code>inspect encounters</code>. Run one command per line, or press <code>Ctrl+Enter</code> to execute the whole batch.
+              Supported: <code>spawn encounter-context</code>, <code>spawn encounter</code>, <code>spawn attachment</code>, <code>spawn location</code>, <code>spawn sublocation</code>, <code>spawn npc</code>, <code>spawn band</code>, <code>move agent</code>, <code>inspect encounters</code>. Run one command per line, or press <code>Ctrl+Enter</code> to execute the whole batch.
             </div>
             <button type="submit" style={RUN_BUTTON}>Run</button>
           </div>

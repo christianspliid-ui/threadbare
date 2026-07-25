@@ -4,7 +4,7 @@ import type { RewardHistoryEntry } from './engine/rewardHistory';
 import type { BalanceRunSummary, BalanceTargets, BalanceEvaluationResult } from './types/balanceEval';
 import type { TickEvent } from './types/gameState';
 import type { DebugSpawnEncounterResult, DebugSpawnEncounterContextResult, DebugSpawnEncounterOptions, DebugSpawnEncounterContextOptions } from './engine/debugEncounterTools';
-import type { DebugWorldSpawnResult, DebugSpawnLocationOptions, DebugSpawnSublocationOptions, DebugSpawnNpcOptions, DebugMoveAgentOptions, DebugSpawnAttachmentOptions } from './engine/debugWorldSpawnTools';
+import type { DebugWorldSpawnResult, DebugSpawnLocationOptions, DebugSpawnSublocationOptions, DebugSpawnNpcOptions, DebugMoveAgentOptions, DebugSpawnAttachmentOptions, DebugSpawnBandOptions } from './engine/debugWorldSpawnTools';
 import type { PortfolioPinResult } from './engine/portfolioManager';
 import type { SetHomeSeatResult } from './engine/influence';
 
@@ -573,6 +573,12 @@ export interface DebugBridge {
   spawnSublocation: (typeId: string, target: { locationQuery?: string; col?: number; row?: number }, options?: DebugSpawnSublocationOptions) => DebugWorldSpawnResult;
   /** Spawn an NPC at the specified target location. */
   spawnNpc: (role: string, target: { locationQuery?: string; col?: number; row?: number }, options?: DebugSpawnNpcOptions) => DebugWorldSpawnResult;
+  /**
+   * Force a faction to field one NPC band (THR-731). Skips the interval gate and the
+   * spawn roll; every structural precondition still applies, so a faction without an
+   * unbanded colocated cluster is refused with the reason.
+   */
+  spawnBand: (factionQuery: string, options?: DebugSpawnBandOptions) => DebugWorldSpawnResult;
   /** Move an agent to a target location or hex. */
   moveAgent: (agentQuery: string, target: { locationQuery?: string; col?: number; row?: number }, options?: DebugMoveAgentOptions) => DebugWorldSpawnResult;
   /** Add an agent to the player's protagonist portfolio. */
