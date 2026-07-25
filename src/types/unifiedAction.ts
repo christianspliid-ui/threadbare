@@ -893,6 +893,26 @@ export interface UnifiedActionTemplate {
    * which is the correct default for a template a solo agent may also take.
    */
   readonly minGroupMembers?: number;
+  /**
+   * Only eligible when an opposing band shares the drawer's hex (THR-731).
+   *
+   * Set by the confrontation family, whose whole subject is a specific enemy: a
+   * Den Assault with no den to assault, or a Guild Falls with no guild standing
+   * in the way, is an encounter about nobody. The gate is a template flag rather
+   * than an id list in the engine so the predicate stays authorable — a later
+   * confrontation opts in by declaring it, not by being added to a set that rots.
+   */
+  readonly requiresOpposingBand?: boolean;
+  /**
+   * A decisive loss in a group contest on this template never kills (THR-731).
+   *
+   * The casualty roll is otherwise unconditional on a decisive loss, which would
+   * make every rung of band conflict the same rung. The Standoff exists precisely
+   * so conflict at company scale is not only ever slaughter: losing it costs
+   * cohesion, standing, and the ground — not a life. Omit for the ordinary lethal
+   * default.
+   */
+  readonly contestNonLethal?: boolean;
   readonly locationSubtypes?: readonly string[];
   readonly sphereAffinity?: SphereName;
 

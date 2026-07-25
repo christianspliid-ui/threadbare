@@ -15,12 +15,12 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 32 |
+| 🟢 LIVE | 34 |
 | 🟠 PARTIAL | 0 |
 | 🔴 LEAKED | 4 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 3 |
-| **Total** | **39** |
+| **Total** | **41** |
 
 ## Contracts by producing subsystem
 
@@ -75,6 +75,7 @@ remediation ticket or the build fails.
 | `company-gates-exclusive-content-reachability` | Some expeditions can only be attempted by a company — a grouped agent may draw a party-exclusive template, but only when their company can field enough living members for it. | function: `livingGroupMemberCount` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `company-membership-excludes-faction-reads` | A companion of a company is not a member of a faction by that name — faction rank, allegiance display and heraldry must keep reading the faction. | edge-prop: `getFactionMembershipEdges` | Factions & Succession | 🟢 LIVE | — |
 | `company-position-derives-from-leader` | A company has no position of its own — asking where it is means asking where its leader is, so there is never a second spatial truth to drift. | function: `getGroupPosition` | Movement & Colocation | 🟢 LIVE | — |
+| `confrontation-content-gated-on-a-live-opponent` | An encounter about fighting a particular band is only offered while that band is standing there — a confrontation never surfaces against nobody. | function: `requiresOpposingBand`, `hasOpposingBand` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `contested-outcome-band-reaches-the-player` | Losing a fight reads differently from merely failing — a contested loss says so in the chronicle and the receipt. | function: `contestedOutcomeFor`, `contested_won` | Encounters & Dilemmas | 🟢 LIVE | — |
 
 ### Encounters & Dilemmas
@@ -88,6 +89,7 @@ remediation ticket or the build fails.
 | `player-action-receipts-queue` | A resolved player cast queues a Divine Receipt the UI surfaces as a toast or a receipt dialogue. | node-prop: `playerActionReceipts` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
 | `receipt-event-band-toast` | A receipt toast carries its outcome band so the toast accent matches how the cast landed. | event: `band` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
 | `secrets-generation` | Secrets are born from scenes — mortals learn things about each other worth holding. | function: `generateSecret`, `createSecretEdge` | Secrets & Favors | 🟢 LIVE | — |
+| `seeded-opponent-survives-to-spawn` | A grudge planted against a named band is collected against that same band — or, if it died in the meantime, quietly becomes an ordinary encounter instead of pointing at a corpse. | node-prop: `opposingGroupId`, `resolveSeedOpposition` | Companies & Group Travel | 🟢 LIVE | — |
 | `world-events-mint-ambitions` | World events write themselves into mortal desire — a sacked town mints avengers and refugees. | function: `AMBITION_MINTING_RULES`, `mintAmbitionsFromEvents` | Ambitions & Initiatives | 🟢 LIVE | — |
 
 ### Mortal Economy & Prosperity
@@ -324,9 +326,10 @@ remediation ticket or the build fails.
 - **Producer → Consumer:** Companies & Group Travel → Encounters & Dilemmas
 - **UL terms:** *Company*, *Group Cohesion*
 - **Module:** `src/engine/groups/bandOpposition.ts`
-- **Production hits:** 3 total — 2 write, 1 read, 0 unclassified
+- **Production hits:** 4 total — 2 write, 1 read, 1 unclassified
 - **Write sites:** `src/engine/groups/bandOpposition.ts`, `src/types/unifiedAction.ts`
 - **Read sites:** `src/engine/unifiedActionResolution.ts`
+- **Other hits:** `src/engine/encounterSeeding.ts`
 - **Verdict:** Verified 2026-07-25: Organic 150-tick CLI run, seed 42 medium (no forcing, no debug spawns): the Temple of the Spheres fielded a defender band, "The Temple of the Spheres' Sparrows", which was met by Company of the Inn at t81 and by Flintlock's Band at t84. Trace at t81: [group_contested] "Company of the Inn came off best against The Temple of the Spheres' Sparrows. Bagaabraa did not walk away." Both companies carry hostile_to edges with cause group_engagement; the band fell 0.70 → 0.19 cohesion and disbanded through the shipped phaseGroups cascade. Unit-locked by src/engine/groups/__tests__/bandOpposition.test.ts (22 tests) incl. the fail-soft degradation rows.
 
 ### `company-assist-shapes-resolution` — 🟢 LIVE
@@ -357,9 +360,10 @@ remediation ticket or the build fails.
 - **Intent:** Some expeditions can only be attempted by a company — a grouped agent may draw a party-exclusive template, but only when their company can field enough living members for it.
 - **Producer → Consumer:** Companies & Group Travel → Encounters & Dilemmas
 - **UL terms:** *Company*
-- **Production hits:** 2 total — 1 write, 1 read, 0 unclassified
+- **Production hits:** 3 total — 1 write, 1 read, 1 unclassified
 - **Write sites:** `src/engine/groups/groupQueries.ts`
 - **Read sites:** `src/engine/unifiedCandidates.ts`
+- **Other hits:** `src/engine/encounterFilterPipeline.ts`
 - **Verdict:** Verified 2026-07-24: src/data/__tests__/partyExclusiveDelves.test.ts drives generateUnifiedCandidates against the actual authored delves: a company of 2 at a dungeon draws encounter.sunken_vault, while a solo agent at the same place draws nothing. Content-integrity tests assert all three delves carry actorAffinities exactly ["group"] (never swept to include "individual") and minGroupMembers: 2, in both ENCOUNTER_TEMPLATES and the assembled UNIFIED_ACTION_TEMPLATES. The synthetic-fixture unit tests (src/engine/__tests__/unifiedCandidates.test.ts § "Group-exclusive reachability") still lock the gate mechanics.
 
 ### `company-membership-excludes-faction-reads` — 🟢 LIVE
@@ -383,6 +387,18 @@ remediation ticket or the build fails.
 - **Read sites:** `src/debug-bridge.ts`
 - **Other hits:** `src/components/Game/debug/CompaniesTabContent.tsx`, `src/components/Game/GameView.tsx`, `src/engine/groups/bandOpposition.ts`, `src/engine/groups/groupFormation.ts`
 - **Verdict:** Verified 2026-07-24: Company nodes carry no located_at edge; locked by src/engine/groups/__tests__/groupLifecycle.test.ts § "never attaches a located_at edge to the company node".
+
+### `confrontation-content-gated-on-a-live-opponent` — 🟢 LIVE
+
+- **Intent:** An encounter about fighting a particular band is only offered while that band is standing there — a confrontation never surfaces against nobody.
+- **Producer → Consumer:** Companies & Group Travel → Encounters & Dilemmas
+- **UL terms:** *Company*, *Encounter*
+- **Module:** `src/engine/groups/bandOpposition.ts`
+- **Production hits:** 5 total — 2 write, 2 read, 1 unclassified
+- **Write sites:** `src/data/encounter-content.ts`, `src/types/unifiedAction.ts`
+- **Read sites:** `src/engine/encounterFilterPipeline.ts`, `src/engine/unifiedCandidates.ts`
+- **Other hits:** `src/engine/groups/bandOpposition.ts`
+- **Verdict:** Verified 2026-07-25: The gate is enforced on BOTH paths a template reaches an agent by. generateUnifiedCandidates already gated group-exclusive content on minGroupMembers (THR-74); the location-cache path (getEncountersByLocationType → encounterCache → encounterFilterPipeline) had NO actor-affinity stage at all, measured at implementation time: getEncountersByLocationType("ruins") returned 7 group-exclusive templates — including THR-74's shipped sunken_vault/broken_span/hollow_watch — with nothing downstream reading actorAffinities, so party-exclusive delves were reachable by solo agents in contradiction of their authoring contract. filterByPrerequisites (stage 3, the pipeline's documented prerequisites stage) now enforces both minGroupMembers and requiresOpposingBand. Locked by src/engine/groups/__tests__/confrontationContent.test.ts (27 tests), which asserts both gates on both paths and pins the solo-agent case that was previously open.
 
 ### `contested-outcome-band-reaches-the-player` — 🟢 LIVE
 
@@ -464,10 +480,10 @@ remediation ticket or the build fails.
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 142 total — 1 write, 1 read, 140 unclassified
+- **Production hits:** 144 total — 1 write, 1 read, 142 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/Game/ActionCard.tsx`, `src/components/Game/ascendant-bar/IdentityStrip.tsx`, `src/components/Game/ascendant-bar/selectors.ts`, `src/components/Game/ChapterView.tsx` +135 more
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/Game/ActionCard.tsx`, `src/components/Game/ascendant-bar/IdentityStrip.tsx`, `src/components/Game/ascendant-bar/selectors.ts`, `src/components/Game/ChapterView.tsx` +137 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `secrets-consequences` — 🟢 LIVE
@@ -499,6 +515,18 @@ remediation ticket or the build fails.
 - **Read sites:** `src/data/unified-action-templates.ts`
 - **Other hits:** `src/data/action-technical-effects.ts`
 - **Verdict:** Verified 2026-07-23: THR-724: `beat.pool.invest.the_unveiled_eye` grants both ids; `__DEBUG.listUnreachableActions()` no longer lists them. Link 3 verified rather than assumed — `plant_secret` writes a `knows_secret_of` edge via the existing graph-executor case, and `reveal_secret` now routes through the resolution intercept so it applies real consequences instead of only flipping the `revealed` flag.
+
+### `seeded-opponent-survives-to-spawn` — 🟢 LIVE
+
+- **Intent:** A grudge planted against a named band is collected against that same band — or, if it died in the meantime, quietly becomes an ordinary encounter instead of pointing at a corpse.
+- **Producer → Consumer:** Encounters & Dilemmas → Companies & Group Travel
+- **UL terms:** *Company*, *Encounter*
+- **Module:** `src/engine/encounterSeeding.ts`
+- **Production hits:** 3 total — 1 write, 1 read, 1 unclassified
+- **Write sites:** `src/engine/encounterSeeding.ts`
+- **Read sites:** `src/engine/groups/bandOpposition.ts`
+- **Other hits:** `src/types/unifiedAction.ts`
+- **Verdict:** Verified 2026-07-25: PR 2 declared PendingEncounterSeed.opposingGroupId and wired findOpposingBand to honour UnifiedAction.opposingGroupId, but nothing carried the value across the seed → action boundary — grep at implementation time found the seed field with zero readers, so a seed naming its enemy dropped it in silence. evaluateEncounterSeeds now re-validates (node exists ∧ isBandNode ∧ groupStatus active ∧ ≥1 living member) and stamps the action. Locked by confrontationContent.test.ts § "evaluateEncounterSeeds — opposingGroupId carry": the live case carries, and dissolved / emptied-out / not-a-band all spawn uncontested rather than blocking the encounter.
 
 ### `world-events-mint-ambitions` — 🟢 LIVE
 

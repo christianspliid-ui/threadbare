@@ -33,6 +33,7 @@ import type { UnifiedAction, UnifiedActionOutcome } from '../../types/unifiedAct
 import type { WorldGraph } from '../graph';
 import type { GroupContestedTrace } from '../../types/trace';
 import { emitTrace } from '../traceBuffer';
+import { getUnifiedTemplateById } from '../../data/unified-action-templates';
 import { resolveLocationToHex } from '../encounterAwareness';
 import { applyCohesionDelta } from './groupCohesion';
 import {
@@ -114,6 +115,22 @@ export function findOpposingBand(
     return livingMembers(graph, node.id).length > 0 ? node : undefined;
   }
 
+  return findColocatedOpposingBand(graph, companyGroupId);
+}
+
+/**
+ * The foreign, active, still-manned band standing on this company's hex, if any.
+ *
+ * Split out of {@link findOpposingBand} in PR 3 so the confrontation family can ask
+ * the same question *before* the fight — a Den Assault is only drawable when there
+ * is a den band to assault. Resolution re-asks it rather than trusting the draw:
+ * a band that walked off the hex in between is simply not there any more, and the
+ * company's action resolves uncontested (NFP #4).
+ */
+export function findColocatedOpposingBand(
+  graph: WorldGraph,
+  companyGroupId: string,
+): GraphNode | undefined {
   const companyHex = hexOfGroup(graph, companyGroupId);
   if (!companyHex) return undefined;
 
@@ -137,6 +154,30 @@ export function findOpposingBand(
   }
 
   return undefined;
+}
+
+/**
+ * Does the agent's company have a band to fight right here? (THR-731 PR 3.)
+ *
+ * The eligibility side of the confrontation gate — asked once per candidate sweep
+ * that encounters a `requiresOpposingBand` template, keyed on the *agent* because
+ * that is what the candidate generator holds.
+ *
+ * Fail-soft: any graph read that throws answers "no band", which closes the
+ * confrontation family rather than opening it on a broken read. A confrontation
+ * that fails to appear costs one encounter; one that appears against nobody is a
+ * scene with an empty chair in it.
+ */
+export function hasOpposingBand(graph: WorldGraph, actorId: string): boolean {
+  try {
+    const company = getGroupOf(graph, actorId);
+    // A band is a company: it does not draw confrontations against itself, and a
+    // band-vs-band fight is not this ticket's scale.
+    if (!company || isBandNode(company)) return false;
+    return findColocatedOpposingBand(graph, company.id) !== undefined;
+  } catch {
+    return false;
+  }
 }
 
 // ─── Synthesis ──────────────────────────────────────────────────
@@ -323,6 +364,21 @@ function writeGrudge(graph: WorldGraph, a: string, b: string, tick: number): boo
   return wrote;
 }
 
+/**
+ * Whether the template that opened this contest forbids a casualty (THR-731 PR 3).
+ *
+ * Fail-soft: an unknown template id answers "lethal", which is the ordinary
+ * behaviour every contest had before the flag existed — a missing template must
+ * not silently make band conflict bloodless.
+ */
+function isNonLethalContest(templateId: string): boolean {
+  try {
+    return getUnifiedTemplateById(templateId)?.contestNonLethal === true;
+  } catch {
+    return false;
+  }
+}
+
 export interface ContestConsequences {
   readonly winnerGroupId: string;
   readonly loserGroupId: string;
@@ -370,8 +426,12 @@ export function applyContestConsequences(
   // "Decisive" is one side winning outright. The mutual-failure branch above has
   // already returned, so reaching here *is* the decisive case — both sides broke off
   // bloodied only when nobody won, and that path never rolls for a death.
+  //
+  // THR-731 PR 3: unless the initiating template opted out. A Standoff that goes
+  // badly costs the ground and the company's standing and takes nobody with it —
+  // the non-lethal rung is a design commitment, not a low roll.
   let casualty: GraphNode | undefined;
-  if (rng() < BAND_CASUALTY_CHANCE) {
+  if (!isNonLethalContest(opposition.initiator.templateId) && rng() < BAND_CASUALTY_CHANCE) {
     casualty = applyCasualty(graph, loserGroupId, rng, state.tick);
   }
 
