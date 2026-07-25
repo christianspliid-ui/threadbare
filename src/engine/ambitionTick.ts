@@ -27,6 +27,7 @@ import {
 import { emitTrace } from './traceBuffer';
 import type { AmbitionMintedTrace } from '../types/trace';
 import { selectAmbitions, type AmbitionAgentSnapshot } from './ambitionSelection';
+import { collectGrantedTraits } from './effects/effectQueries';
 
 // ─── Tunable Constants ───────────────────────────────────────────
 
@@ -90,6 +91,9 @@ export function buildAmbitionAgentSnapshot(
       if (tags) traits.push(...tags);
     }
   }
+  // Item-granted traits (THR-737): an artifact granting `master_smith` makes its
+  // bearer eligible for the master_smith-gated ambition, the same as owning the trait.
+  traits.push(...collectGrantedTraits(graph, actorId));
 
   const culturalSpheres: SphereName[] = [];
   for (const ce of graph.getOutgoingEdges(actorId, 'belongs_to')) {

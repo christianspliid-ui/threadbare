@@ -125,6 +125,47 @@ export function collectStatContributions(
 // ═══════════════════════════════════════════════════════════════════
 
 /**
+ * Effective level credited to a trait that an effect grants.
+ *
+ * `trait_grant` carries no level of its own, so a granted trait satisfies a
+ * level-bearing requirement at this tier and no higher. Mirrors the
+ * `grantedTraitLevel ?? 1` default the sibling `grantsTraitWhileHeld` path
+ * already uses in `computeRuinsBonus` (encounterScoring.ts).
+ */
+export const GRANTED_TRAIT_EFFECTIVE_LEVEL = 1;
+
+/**
+ * Collect every trait id granted to this agent by an active `trait_grant` effect.
+ *
+ * This is the aggregate the production gates consume — an agent "has" a trait
+ * when a `has_trait` edge says so **or** when a possession/bond grants it. Call
+ * sites union this set with their edge-derived trait keys rather than replacing
+ * them; the two sources are additive.
+ *
+ * Fail-soft (NFP #4): a throwing graph walk yields whatever was collected before
+ * the failure rather than propagating — a malformed attachment must never take
+ * down encounter filtering, ambition selection, or spell activation.
+ */
+export function collectGrantedTraits(
+  graph: WorldGraph,
+  agentId: string,
+  effectStates?: ReadonlyMap<string, EffectRuntimeState>,
+): Set<string> {
+  const granted = new Set<string>();
+  try {
+    for (const entry of collectAttachmentEffects(graph, agentId, effectStates)) {
+      if (!isActive(entry.runtimeState)) continue;
+      if (entry.effect.type !== 'trait_grant') continue;
+      const traitId = entry.effect.grantedTrait;
+      if (typeof traitId === 'string' && traitId.length > 0) granted.add(traitId);
+    }
+  } catch {
+    // Fall through with the partial set — see fail-soft note above.
+  }
+  return granted;
+}
+
+/**
  * Check whether any active effect on this agent grants the named trait.
  */
 export function hasGrantedTrait(
@@ -133,13 +174,7 @@ export function hasGrantedTrait(
   traitId: string,
   effectStates?: ReadonlyMap<string, EffectRuntimeState>,
 ): boolean {
-  for (const entry of collectAttachmentEffects(graph, agentId, effectStates)) {
-    if (!isActive(entry.runtimeState)) continue;
-    if (entry.effect.type === 'trait_grant' && entry.effect.grantedTrait === traitId) {
-      return true;
-    }
-  }
-  return false;
+  return collectGrantedTraits(graph, agentId, effectStates).has(traitId);
 }
 
 // ═══════════════════════════════════════════════════════════════════

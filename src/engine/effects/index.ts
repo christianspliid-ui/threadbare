@@ -38,6 +38,8 @@ export {
 // Query handler — read-only capability queries for game systems
 export {
   hasGrantedTrait,
+  collectGrantedTraits,
+  GRANTED_TRAIT_EFFECTIVE_LEVEL,
   getActionGates,
   getBehaviorWeights,
   computeBehaviorWeightMultiplier,

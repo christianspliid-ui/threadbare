@@ -207,8 +207,9 @@ export const CONTRACTS: readonly Contract[] = [
     // intent (zero readers, field deleted from PossessionEdgeProperties). The authored
     // payload — cavalry_charge, rapid_retreat, intimidate, dark_ferocity — moved onto the
     // `effects[]` substrate as `trait_grant`, joining the ~20 catalog entries already there.
-    // The row stays LEAKED because the *consumer* is still missing one layer up: the leak
-    // moved, it did not close. Do not badge LIVE until THR-737 lands a real read site.
+    // THR-737 closed the consumer gap: `collectGrantedTraits` is the aggregate wrapping
+    // `hasGrantedTrait`, and the three production trait gates now union it with their
+    // has_trait-edge keys, so a granted trait gates content exactly like an owned one.
     id: 'attachment-trait-grant-effects',
     producerSystem: ATTACHMENTS,
     consumerSystem: ENCOUNTERS,
@@ -221,14 +222,17 @@ export const CONTRACTS: readonly Contract[] = [
       'src/data/anomaly-reward-catalog.ts',
       'src/engine/gameInit.ts',
     ],
-    readSites: [],
-    badgeOverride: {
-      badge: 'LEAKED',
-      reason:
-        'Symbol greps find `trait_grant` in ~20 authored payloads and a correct resolver (`effectResolver.ts` collects `grantedTraits`), but `hasGrantedTrait` has zero production callers and `resolveEffects().grantedTraits` is asserted only in tests — an item that says it grants `intimidate` grants nothing any decision reads. Consumer-level deadness, invisible to a producer-side symbol check.',
-      deferralTicket: 'THR-737',
+    readSites: [
+      'src/engine/encounterFilterPipeline.ts',
+      'src/engine/spellActivation.ts',
+      'src/engine/ambitionTick.ts',
+      'src/engine/worldSeed.ts',
+    ],
+    verifiedLive: {
+      date: '2026-07-26',
+      evidence:
+        'THR-737. `collectGrantedTraits` (effectQueries.ts) wraps `hasGrantedTrait` and is consumed by all three production trait gates: encounter eligibility (encounterFilterPipeline `requiredTraits` + `blockedByTraits`), spell prerequisites (spellActivation `traitKeys`), and ambition eligibility (ambitionTick `buildAmbitionAgentSnapshot` + worldSeed initial assignment). Non-vacuous by live payload intersection: `artifact-templates.ts` grants `master_smith` via `trait_grant`, and `ambition-templates.ts` gates an ambition on `requiredTraits: [\'master_smith\']`. Headless sweep on seed 42 confirms a granted trait flipping eligibility — see `trait_grant` consumer tests in effectQueries.test.ts and ambitionTick.test.ts.',
     },
-    deferralTicket: 'THR-737',
   },
   {
     id: 'attachment-on-use-triggers',

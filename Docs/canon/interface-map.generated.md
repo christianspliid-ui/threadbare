@@ -15,9 +15,9 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 38 |
+| 🟢 LIVE | 39 |
 | 🟠 PARTIAL | 0 |
-| 🔴 LEAKED | 4 |
+| 🔴 LEAKED | 3 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 3 |
 | **Total** | **45** |
@@ -63,7 +63,7 @@ remediation ticket or the build fails.
 | `attachment-on-use-triggers` | Items break, deplete, or curse their bearer on use — authored consequence for carrying power. | node-prop: `action_trigger`, `checkAndFireActionTriggers`, `applyActionTriggerPayloads` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `attachment-slot-caps-suppress` | Slot caps suppress overflow attachments via a single suppression seam. | edge-prop: `attachmentSlotResolver` | Effects & Conditions | 🟢 LIVE | — |
 | `attachment-tier-advancement` | Tier advancement strengthens an item over time. | function: `advanceAttachmentTier`, `canAdvanceTier` | Attachments, Items & Possessions | 🔴 LEAKED | THR-723 |
-| `attachment-trait-grant-effects` | Items grant abilities to their bearer (e.g. cavalry_charge). | node-prop: `trait_grant`, `hasGrantedTrait` | Encounters & Dilemmas | 🔴 LEAKED | THR-737 |
+| `attachment-trait-grant-effects` | Items grant abilities to their bearer (e.g. cavalry_charge). | node-prop: `trait_grant`, `hasGrantedTrait` | Encounters & Dilemmas | 🟢 LIVE | — |
 
 ### Companies & Group Travel
 
@@ -256,9 +256,10 @@ remediation ticket or the build fails.
 - **Intent:** Items grant traits while held, gating encounter eligibility (treasure-map, ruin_seeker).
 - **Producer → Consumer:** Attachments, Items & Possessions → Encounters & Dilemmas
 - **UL terms:** *Attachment*, *Trait*
-- **Production hits:** 3 total — 2 write, 1 read, 0 unclassified
+- **Production hits:** 4 total — 2 write, 1 read, 1 unclassified
 - **Write sites:** `src/data/reward-attachment-catalog.ts`, `src/types/attachments.ts`
 - **Read sites:** `src/engine/encounterScoring.ts`
+- **Other hits:** `src/engine/effects/effectQueries.ts`
 - **Verdict:** Verified 2026-07-23: 3 production files reference grantsTraitWhileHeld incl. the encounterScoring gate. Docs/plans/2026-07-23-system-interface-map.md § Audit findings (manual audit + independent cold-context review, both grep-verified)
 
 ### `attachment-on-use-triggers` — 🟢 LIVE
@@ -291,16 +292,16 @@ remediation ticket or the build fails.
 - **Read sites:** —
 - **Verdict:** Tier 1: `src/engine/attachmentTierAdvancement.ts` has zero production importers — the module is an orphan.
 
-### `attachment-trait-grant-effects` — 🔴 LEAKED
+### `attachment-trait-grant-effects` — 🟢 LIVE
 
 - **Intent:** Items grant abilities to their bearer (e.g. cavalry_charge).
 - **Producer → Consumer:** Attachments, Items & Possessions → Encounters & Dilemmas
 - **UL terms:** *Attachment*, *Trait*
-- **Production hits:** 13 total — 4 write, 0 read, 9 unclassified
+- **Production hits:** 15 total — 4 write, 2 read, 9 unclassified
 - **Write sites:** `src/data/anomaly-reward-catalog.ts`, `src/data/reward-attachment-catalog.ts`, `src/data/starter-attachments.ts`, `src/engine/gameInit.ts`
-- **Read sites:** —
+- **Read sites:** `src/engine/encounterFilterPipeline.ts`, `src/engine/spellActivation.ts`
 - **Other hits:** `src/components/Game/attachmentGlyphs.ts`, `src/data/artifact-templates.ts`, `src/data/choice-set-catalog.ts`, `src/engine/effectExecutors.ts`, `src/engine/effectResolver.ts` +4 more
-- **Verdict:** Pinned by badgeOverride: Symbol greps find `trait_grant` in ~20 authored payloads and a correct resolver (`effectResolver.ts` collects `grantedTraits`), but `hasGrantedTrait` has zero production callers and `resolveEffects().grantedTraits` is asserted only in tests — an item that says it grants `intimidate` grants nothing any decision reads. Consumer-level deadness, invisible to a producer-side symbol check.
+- **Verdict:** Verified 2026-07-26: THR-737. `collectGrantedTraits` (effectQueries.ts) wraps `hasGrantedTrait` and is consumed by all three production trait gates: encounter eligibility (encounterFilterPipeline `requiredTraits` + `blockedByTraits`), spell prerequisites (spellActivation `traitKeys`), and ambition eligibility (ambitionTick `buildAmbitionAgentSnapshot` + worldSeed initial assignment). Non-vacuous by live payload intersection: `artifact-templates.ts` grants `master_smith` via `trait_grant`, and `ambition-templates.ts` gates an ambition on `requiredTraits: ['master_smith']`. Headless sweep on seed 42 confirms a granted trait flipping eligibility — see `trait_grant` consumer tests in effectQueries.test.ts and ambitionTick.test.ts.
 
 ### `attachment-worldgen-starters` — 🟢 LIVE
 
