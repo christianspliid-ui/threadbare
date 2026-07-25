@@ -25,6 +25,7 @@ export const FATE_CARD_TRIAL_TEMPLATE: UnifiedActionTemplate = {
   reach: 'resolve',
   scale: 'personal',
   source: 'agent',
+  actorAffinities: ['individual'],
   steps: [
     {
       reach: 'resolve',
@@ -83,6 +84,7 @@ export const RECKLESS_WAGER_TEMPLATE: UnifiedActionTemplate = {
   reach: 'resolve',
   scale: 'personal',
   source: 'agent',
+  actorAffinities: ['individual'],
   steps: [
     {
       reach: 'resolve',
@@ -136,6 +138,7 @@ export const TIERED_PROVING_TEMPLATE: UnifiedActionTemplate = {
   reach: 'combat',
   scale: 'personal',
   source: 'agent',
+  actorAffinities: ['individual'],
   steps: [
     {
       reach: 'combat',

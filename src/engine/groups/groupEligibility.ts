@@ -106,16 +106,18 @@ export function isGroupEligibleFamily(templateId: string): boolean {
 /**
  * The predicate itself. True → this template should carry `'group'`.
  *
- * Fail-soft: any malformed template (missing steps, non-array affinities) simply
+ * Fail-soft: any malformed template (missing steps, absent affinities) simply
  * returns false and keeps its authored affinities. A content bug must never
  * throw inside a module-load `.map()` — that would take down the whole registry.
+ * Every *shipped* template now declares `actorAffinities` (THR-736, locked by a
+ * registry invariant test), so this guard defends against future content only.
  */
 export function isGroupEligibleTemplate(template: UnifiedActionTemplate): boolean {
   if (!template || typeof template.id !== 'string') return false;
   if (!isGroupEligibleFamily(template.id)) return false;
 
   // Already authored as group-capable (party-exclusive content) — nothing to add.
-  const affinities = Array.isArray(template.actorAffinities) ? template.actorAffinities : [];
+  const affinities = template.actorAffinities ?? [];
   if (affinities.includes('group')) return false;
 
   // Only individual-actor content is swept; faction/location/army templates keep

@@ -50,6 +50,7 @@ export const MERCENARY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'mc.quest.patrol',
+    actorAffinities: ['individual'],
     name: 'Road Patrol',
     locationSubtypes: ['town', 'city', 'capital'],
     rarityTier: 1,
@@ -92,6 +93,7 @@ export const MERCENARY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'mc.quest.guard_caravan',
+    actorAffinities: ['individual'],
     name: 'Guard the Caravan',
     locationSubtypes: ['town', 'city', 'capital', 'border_crossing'],
     rarityTier: 1,
@@ -135,6 +137,7 @@ export const MERCENARY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'mc.quest.collect_bounty',
+    actorAffinities: ['individual'],
     name: 'Collect a Bounty',
     locationSubtypes: ['town', 'city', 'capital', 'crossroads'],
     rarityTier: 1,
@@ -178,6 +181,7 @@ export const MERCENARY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'mc.quest.siege_work',
+    actorAffinities: ['individual'],
     name: 'Siege Work',
     locationSubtypes: ['town', 'city', 'capital', 'fortress'],
     rarityTier: 1,
@@ -220,6 +224,7 @@ export const MERCENARY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'mc.quest.escort_prisoner',
+    actorAffinities: ['individual'],
     name: 'Escort a Prisoner',
     locationSubtypes: ['town', 'city', 'capital'],
     rarityTier: 1,
@@ -267,6 +272,7 @@ export const MERCENARY_SENIOR_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'mc.senior.field_command',
+    actorAffinities: ['individual'],
     name: 'Field Command',
     locationSubtypes: ['fortress', 'battlefield', 'city'],
     rarityTier: 1,
@@ -322,6 +328,7 @@ export const MERCENARY_SENIOR_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'mc.senior.hostile_negotiation',
+    actorAffinities: ['individual'],
     name: 'Hostile Negotiation',
     locationSubtypes: ['city', 'capital', 'fortress'],
     rarityTier: 1,
@@ -365,6 +372,7 @@ export const MERCENARY_SENIOR_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'mc.senior.extraction_op',
+    actorAffinities: ['individual'],
     name: 'Extraction Operation',
     locationSubtypes: ['city', 'capital', 'fortress', 'dungeon'],
     rarityTier: 1,
@@ -413,6 +421,7 @@ export const MERCENARY_ELITE_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'mc.elite.war_council',
+    actorAffinities: ['individual'],
     name: 'War Council',
     locationSubtypes: ['capital', 'fortress', 'city'],
     rarityTier: 1,
@@ -469,6 +478,7 @@ export const MERCENARY_ELITE_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'mc.elite.siege_contract',
+    actorAffinities: ['individual'],
     name: 'Major Siege Contract',
     locationSubtypes: ['fortress', 'city', 'capital'],
     rarityTier: 1,
@@ -530,6 +540,7 @@ export const MERCENARY_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'mc.social.sparring_ring',
+    actorAffinities: ['individual'],
     name: 'The Sparring Ring',
     locationSubtypes: ['town', 'city', 'capital', 'fortress', 'barracks'],
     rarityTier: 1,
@@ -559,6 +570,7 @@ export const MERCENARY_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'mc.social.war_stories',
+    actorAffinities: ['individual'],
     name: 'War Stories by the Fire',
     locationSubtypes: ['town', 'city', 'capital', 'tavern', 'barracks'],
     rarityTier: 1,
@@ -588,6 +600,7 @@ export const MERCENARY_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
 
   withEncounterContract({
     id: 'mc.social.contract_negotiation',
+    actorAffinities: ['individual'],
     name: 'Contract Negotiation Practice',
     locationSubtypes: ['town', 'city', 'capital'],
     rarityTier: 1,
@@ -634,6 +647,7 @@ export const MERCENARY_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
 
 export const MC_JOIN_TEMPLATE: UnifiedActionTemplate = {
   id: 'mc.join',
+  actorAffinities: ['individual'],
   name: 'Join the Mercenary Company',
   locationSubtypes: ['town', 'city', 'capital', 'fortress', 'barracks'],
   rarityTier: 1,
@@ -676,6 +690,7 @@ export const MC_JOIN_TEMPLATE: UnifiedActionTemplate = {
 
 export const MC_PROMOTION_TEMPLATE: UnifiedActionTemplate = {
   id: 'mc.promotion',
+  actorAffinities: ['individual'],
   name: 'Promotion in the Mercenary Company',
   locationSubtypes: ['city', 'capital', 'fortress', 'barracks'],
   rarityTier: 1,
