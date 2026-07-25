@@ -5,7 +5,8 @@
  * Stages:
  *   1. Awareness + Faction — distance-limited visibility + faction network intel
  *   2. Visibility — visibleTo filter (faction/agent/archetype/culture gating)
- *   3. Prerequisites — placeholder for future trait prerequisites on templates
+ *   3. Prerequisites — chains, traits, faction joins, and actor eligibility
+ *      (group-exclusive `minGroupMembers`, confrontation `requiresOpposingBand`)
  *   4. Threat — courage/capability vs threat-rating tolerance check
  *   5. Performance Cap — cap at MAX_SCORED_CANDIDATES with diversity floor
  *
@@ -45,6 +46,9 @@ import {
 } from '../types/encounter';
 import type { ReachDomain, TraitDefinitionProperties } from '../types/traits';
 import { getChainProgress, isChainStageUnlocked } from './encounterChains';
+import { livingGroupMemberCount } from './groups/groupQueries';
+import { hasOpposingBand } from './groups/bandOpposition';
+import { GROUP_MIN_MEMBERS } from '../data/group-constants';
 import { getAnyEncounterById } from '../data/encounter-content';
 import { FACTION_ENCOUNTER_META } from '../data/faction-encounter-content';
 import { FACTION_DEFINITIONS } from '../data/faction-definitions';
@@ -212,6 +216,29 @@ export function filterByPrerequisites(
   // Cache agent trait edges for trait prerequisite checks
   const agentTraitEdges = graph.getOutgoingEdges(agentId, 'has_trait');
 
+  // Company-scale gates (THR-731 PR 3). Both are resolved lazily and at most once
+  // per agent, because most agents belong to no company and this pipeline runs for
+  // every agent every tick.
+  //
+  // These live here because this is the *second* path group-exclusive content
+  // travels. `generateUnifiedCandidates` has gated on `minGroupMembers` since
+  // THR-74, but the location-cache path (getEncountersByLocationType → cache →
+  // this pipeline) had no actor-affinity stage at all, so party-exclusive delves
+  // were reachable by solo agents in contradiction of their own authoring
+  // contract, and a band-gated confrontation would have surfaced with nobody to
+  // confront. Stage 3 is where the pipeline documents prerequisites, so it is
+  // where the eligibility the content already declares gets enforced.
+  let cachedMemberCount: number | undefined;
+  const memberCount = (): number => {
+    if (cachedMemberCount === undefined) cachedMemberCount = livingGroupMemberCount(graph, agentId);
+    return cachedMemberCount;
+  };
+  let cachedBandPresent: boolean | undefined;
+  const bandPresent = (): boolean => {
+    if (cachedBandPresent === undefined) cachedBandPresent = hasOpposingBand(graph, agentId);
+    return cachedBandPresent;
+  };
+
   const result: EncounterCacheEntry[] = [];
   for (const entry of entries) {
     // Chain gate
@@ -219,6 +246,18 @@ export function filterByPrerequisites(
 
     // Trait gate — look up template for requiredTraits field
     const template = getAnyEncounterById(entry.templateId);
+
+    // Group-exclusive gate: `['group']` with no `'individual'` is an authored
+    // claim that only a company may take this. Templates carrying both affinities
+    // (the swept ones) are unaffected.
+    const affinities = template?.actorAffinities;
+    if (affinities && affinities.includes('group') && !affinities.includes('individual')) {
+      if (memberCount() < (template!.minGroupMembers ?? GROUP_MIN_MEMBERS)) continue;
+    }
+
+    // Confrontation gate: an encounter about fighting a specific band is not
+    // offered when no band is standing here.
+    if (template?.requiresOpposingBand && !bandPresent()) continue;
     if (template?.requiredTraits && template.requiredTraits.length > 0) {
       const hasTrait = template.requiredTraits.every(req => {
         return agentTraitEdges.some(e => {
