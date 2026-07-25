@@ -1,7 +1,7 @@
 ---
 name: pull-work
 description: Canonical Claude Code pickup workflow for claiming Linear work safely from Ready for Dev.
-last_validated_against: 2026-07-22
+last_validated_against: 2026-07-25
 ---
 
 # Pull Work
@@ -216,6 +216,8 @@ git log origin/main --grep="Fixes <resumed-issue-id>" --grep="Closes <resumed-is
 ### Step 1.8 — Checkpoint-resume — read prior-run checkpoints before re-reading the plan doc
 
 Reached only on the Step 1.7 upstream-clean path (work still in flight). Before re-reading the plan doc or writing any code, read the latest comments (`list_comments(id, orderBy:"createdAt", limit:5)`) for a **checkpoint comment** left by a prior unfinished run. The `tb-opus-pickup` prompt requires an unfinished pass to post one: what's done, what remains, branch/worktree name, next step.
+
+> **Never quote the close keyword in a checkpoint comment (THR-738).** A checkpoint is explicitly *not* a handoff and must not close the issue — yet a comment saying "`Fixes THR-XX` still rides the final PR" once did exactly that (the merge that later carried the comment's prose swept the issue to Done). Since the workflow is now line-anchored, an in-prose keyword is inert on its own; but the safe habit is unconditional: reference the in-flight issue as a bare `THR-XX` token, with no `Fixes/Closes/Resolves` in front of it, in any checkpoint or non-closing comment.
 
 - **If a checkpoint exists:** continue from it — do not re-implement from scratch. Resume on the named branch/worktree and pick up at the recorded next step, then proceed to Step 5.
 - **If `MAX_CHECKPOINTS_BEFORE_SPLIT` (3) or more checkpoint comments exist without a ship:** the issue is churning and needs re-scoping. Post a recommend-split comment, unassign (`save_issue(id, assignee: null)` — keep state In Dev, verify-after-write per impediment #48), and exit clean. Cowork re-scopes.
@@ -538,13 +540,15 @@ this gate is the audit.
 **Standard closeout is `gh pr merge --auto --merge`.** GitHub holds the merge until the required `Test · Typecheck · Build` check goes green, then merges without a session present. Do not sit in a poll loop waiting on CI — that burned 3–8 minutes of session wall-clock per ship for no added safety (THR-675).
 
 ```bash
-gh pr create --title "<type>(thr-XXX): <summary>" --body "...Fixes THR-XXX..."
+gh pr create --title "<type>(thr-XXX): <summary>" --body "$(printf 'Summary line.\n\nFixes THR-XXX\n')"
 gh pr merge --auto --merge
 ```
 
 The gate is unchanged: branch protection stays on, the required check still has to pass, and a red check simply means the PR never merges. Auto-merge removes the *waiting*, not the *gate* — this is the H6 verdict from `Docs/plans/2026-07-20-git-cicd-clean-delivery.md`, which kept the PR gate precisely because it caught a phantom 3,379-line reversal before it reached `main`.
 
 `Fixes THR-XXX` must still appear in **both** the commit body and the PR body — on a non-squash merge the merge commit drops the commit body and Linear's auto-close misses it (impediment #140). `--merge` (not `--squash`) keeps the feature commit's body in history.
+
+**The keyword must stand ALONE on its own line (THR-738).** `linear-autoclose.yml` is line-anchored: it closes only when a full line reads exactly `Fixes|Closes|Resolves THR-XXX`. The keyword inside a prose sentence (`Fixes THR-74 still rides the final PR`), a markdown bullet, or the PR *title* does **not** close. **Corollary for checkpoint and any non-closing comment:** never write `Fixes/Closes/Resolves` in front of an issue id you are *not* closing — reference it as a bare `THR-XXX` token. The phantom-Done recurrences (THR-74 ×2 on 2026-07-24) were prose that quoted the keyword to *document* the discipline. Vectors 2/3 (branch name, bare title token) come from Linear's native integration and are killed by the Christian-owned settings change in `Design/user-actions.md`, not by this workflow.
 
 **After arming, run one freshness check — `gh pr view <N> --json mergeStateStatus`.** Branch freshness at session start does not imply freshness at arm time: THR-696's PR went `BEHIND` seconds after opening because main had moved during the session. If it reads `BEHIND`, run `gh pr update-branch <N>` once and re-arm if needed; if `UNKNOWN`, re-query 2–3 times a few seconds apart (GitHub computes mergeability lazily — the first read only schedules it). This is one query, not a poll loop; a PR missed here is caught by the Step 0.8 sweep next hour.
 

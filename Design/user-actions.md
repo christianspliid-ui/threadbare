@@ -51,6 +51,22 @@ git checkout rescue/2026-07-17-detached-plans -- Docs/plans/2026-07-05-entity-vi
 
 ---
 
+## 3. Disable Linear's native GitHub auto-close so the line-anchored workflow is the sole closer (THR-738)
+
+**Status:** Open · **repo half shipped** (THR-738). The custom `linear-autoclose.yml` workflow is now **line-anchored** — it closes an issue only when a full line reads exactly `Fixes|Closes|Resolves THR-NNN`, so the keyword buried in prose no longer triggers it (unit-tested). That kills **vector 1** (in-prose keyword) as far as *our* workflow goes. But the two phantom-closes of THR-74 on 2026-07-24 also fired via **vector 2** (`thr-74` in the branch name) and **vector 3** (bare `THR-74` in a PR/commit title) — forms our workflow provably never matches (it requires the keyword prefix). Those come from **Linear's own native GitHub integration**, which links a PR to an issue by branch name / title and can auto-move it on merge. This repo cannot configure that; it is a Linear workspace setting.
+
+**Fix (Linear web settings — Christian-owned):**
+1. Linear → **Settings → Integrations → GitHub**.
+2. Turn **off** the automation that moves a linked issue to a Done/completed state when its PR merges (labelled something like *"When a linked pull request is merged, move issue to …"*). Leave PR *linking* on if you like the cross-links — it's the auto-**move** that must be off.
+3. With that off, the deterministic line-anchored `linear-autoclose.yml` becomes the **sole** closer: only a deliberate standalone `Fixes THR-XX` line in a merged PR/commit body transitions an issue.
+
+**Verify (2 min, once disabled):** open a throwaway scratch issue; merge a PR whose title/branch carry the bare id and whose body has `Fixes THR-XX` *inside a sentence* → the scratch issue must stay open. Then merge a PR with `Fixes THR-XX` on its own line → it must close. (This is THR-738's live Done-when, which needs the native setting flipped first — the executor can't do it.)
+
+**What breaks if not done.** The phantom-Done class recurs: any PR whose Linear-generated branch name (`christianspliid/thr-XX-…`) or title carries the id sweeps the issue to Done on merge even mid-work, exactly as THR-74 was closed ×2–3 on 2026-07-24 (precedent: THR-417 → THR-704). Executor discipline cannot prevent it — the branch names are auto-generated and the keyword-in-prose vector fires even inside sentences that *document* the discipline.
+**Source:** THR-738 (High, Continuous Improvement); THR-74 phantom-closes 2026-07-24 ×2–3; prior THR-417/THR-704.
+
+---
+
 ## Resolved this period
 
 - **2026-07-24 ~15:59 — THR-74 (Party Formation) reopened to In Dev; the second phantom-close is undone.** Was item 2, carried since the 13:09 run. The ticket had been swept to Done at 12:47 by the merge of its prerequisite reachability PR (#790) — the second phantom-close in twelve hours — while the executor's 13:13 checkpoint explicitly reserved `Fixes THR-74` for the final UI PR. Verified live this run: status In Dev, assigned, completedAt null. The remaining scope (four authored party moments + engine hooks, the two player actions, the rulebook group/company subsection, the map/profile UI) is visible to the hourly pickup again, and the THR-736 mutex ("shares files with THR-74's player-action work") can sequence correctly. The hardening ticket for the auto-close vector itself (**THR-738**) remains in Ready for Dev. _Prunable at the next full retro. Postscript 2026-07-24 ~23:03: a **third** phantom-close hit the same ticket at 21:33 (merge of PR #807, clean titles — the known vectors don't obviously explain it) and was reopened to In Dev at 23:03 the same evening; THR-738's urgency stands._
