@@ -75,6 +75,7 @@ Enforce `CLAUDE.md § Skill Tree Layout`. **`.claude/skills/` is the only skill 
 
 - Call `list_scheduled_tasks` and compare against CLAUDE.md's `### Scheduled Tasks` table. **Both directions matter:** a task in the table but not in the registry (documented-but-never-registered — the THR-653 failure), and a directory under `C:\Users\chris\.claude\scheduled-tasks\` with no registry entry (orphan — the `flush-plan-docs` pattern).
 - Verify the recorded fire times still match observed `nextRunAt`, and that no two Linear-MCP-using hourly tasks collide.
+- **On a mismatch, decide which side is wrong before "fixing" either.** The table records *deliberate* slot design — kwf-cc sits late in the hour so the brief reflects post-pickup state, not merely wherever it happens to fire. So when the registry disagrees with a documented slot whose rationale is stated, the **registry** is the drift: repair it with `update_scheduled_task`, do not edit the table to match. Only when the table has no stated rationale (or the change is clearly intentional and undocumented elsewhere) is amending the doc the right move. Precedent 2026-07-25: `keep-work-flowing-cc` was found on `0 * * * *` firing ~:08:13 — colliding to within ~7 min of `tb-opus-pickup` at :00:53, so the brief could run mid-pickup and report a half-finished picture. The cron was restored to `45 * * * *` (fires ~:53:13, as documented); the table was left untouched because it was right.
 
 ### 4. Documentation staleness scan
 
