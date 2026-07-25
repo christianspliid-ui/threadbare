@@ -1,14 +1,14 @@
 # Briefing
 
-**Generated:** 2026-07-25 21:10 local (2026-07-25 19:10 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-07-25 21:53 local (2026-07-25 19:53 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
 ## Needs Christian
 
-**Nothing needs you right now.** Second hour running with nothing blocking, and the queue is moving without you.
+**Nothing needs you right now — and the list is genuinely empty for the first time in a while.** The one question that had been carried here for days is now answered, not deferred.
 
-- **Carried, unchanged, optional — five roadmap projects marked "in progress" with nothing left in them.** "Agent Coordination Protocol", "Repo Health", "Marketing Site", "Small manual tweaks" and "Procedural Hex Vignettes" have each had their last item finished. The tidy-up rule says close them; each one's own description says it is meant to be a *permanent home* for a kind of work. The standing recommendation is to leave them open as intake buckets, so "in progress with nothing in it" reads as "no current work". **That holds by default** — it only needs you if you would rather the roadmap only ever show projects with live work. Yes/no, no rush; ignoring it changes nothing.
+**You answered the empty-projects question (2026-07-25 21:53, in chat): leave them.** The five roadmap projects sitting "in progress" with nothing left in them — Agent Coordination Protocol, Repo Health, Marketing Site, Small manual tweaks, Procedural Hex Vignettes — stay open, because they're intake buckets that will refill on their own as the game iterates. Recorded in [`Design/user-actions.md`](user-actions.md) so no future grooming pass re-asks it. Nothing further from you.
 
 ## Queue
 
