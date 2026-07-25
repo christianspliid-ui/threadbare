@@ -10512,7 +10512,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     id: 'encounter.band_defend',
     name: 'Hold the Ground',
     locationTypes: ['hamlet', 'town', 'city', 'capital', 'castle', 'fort', 'tower', 'temple', 'shrine'],
-    sublocationTypes: ['sublocation-type.barracks', 'sublocation-type.guildhall'],
+    sublocationTypes: ['sublocation-type.barracks', 'sublocation-type.guild-hall'],
     reachPrimary: 'iron',
     reachSecondary: 'eye',
     encounterType: 'duel',
@@ -10760,7 +10760,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     id: 'encounter.confront_guild_falls',
     name: 'The Guild Falls',
     locationTypes: ['hamlet', 'town', 'city', 'capital', 'castle', 'fort', 'tower', 'temple', 'shrine'],
-    sublocationTypes: ['sublocation-type.guildhall'],
+    // `guild-hall`, hyphenated — the id worldgen actually mints (34 on seed 42
+    // medium). Shipped as `guildhall` in PR 3 (and in `band_defend` above), which
+    // matched nothing in any world and was the sole reason this capstone and the
+    // band's own counter-encounter could never draw.
+    sublocationTypes: ['sublocation-type.guild-hall'],
     reachPrimary: 'iron',
     reachSecondary: 'eye',
     encounterType: 'duel',

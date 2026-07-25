@@ -100,6 +100,7 @@ const AMBITIONS = 'Ambitions & Initiatives';
 const ENCOUNTERS = 'Encounters & Dilemmas';
 const COMPANIES = 'Companies & Group Travel';
 const FACTIONS = 'Factions & Succession';
+const NARRATIVE = 'Attention, Chronicle & Narrative';
 
 export const CONTRACTS: readonly Contract[] = [
   // ── Attachments → outbound ────────────────────────────────────────────────
@@ -789,6 +790,30 @@ export const CONTRACTS: readonly Contract[] = [
       date: '2026-07-25',
       evidence:
         'PR 2 declared PendingEncounterSeed.opposingGroupId and wired findOpposingBand to honour UnifiedAction.opposingGroupId, but nothing carried the value across the seed → action boundary — grep at implementation time found the seed field with zero readers, so a seed naming its enemy dropped it in silence. evaluateEncounterSeeds now re-validates (node exists ∧ isBandNode ∧ groupStatus active ∧ ≥1 living member) and stamps the action. Locked by confrontationContent.test.ts § "evaluateEncounterSeeds — opposingGroupId carry": the live case carries, and dissolved / emptied-out / not-a-band all spawn uncontested rather than blocking the encounter.',
+    },
+  },
+
+  // ── Rivals line (THR-731 PR 4) ─────────────────────────────────────────────
+  {
+    id: 'group-grudge-reaches-the-mortal-sheet',
+    producerSystem: COMPANIES,
+    consumerSystem: NARRATIVE,
+    intent:
+      'A company that has fought someone carries it visibly — the mortal sheet names the rival in prose, so blood between companies is legible without a trace viewer.',
+    ulTerms: ['Company'],
+    // The `hostile_to` edge existed and had faction-scale readers; this is its first
+    // *group*-scale player-facing consumer. Extend, not add.
+    mechanism: {
+      kind: 'edge-prop',
+      symbols: ['hostile_to', 'rivals'],
+      module: 'src/engine/agentDetail.ts',
+    },
+    writeSites: ['src/engine/groups/bandOpposition.ts'],
+    readSites: ['src/engine/agentDetail.ts', 'src/components/Game/tabs/OverviewTab.tsx'],
+    verifiedLive: {
+      date: '2026-07-25',
+      evidence:
+        'Live CLI run, seed 42 medium: a company relocated into a Great Silverhold guild hall resolved encounter.confront_guild_falls against a colocated Arcane Circle defender band at t61 — company cohesion 0.54 → 0.70, band 0.70 → 0.46 — and the contest wrote mutual grudges, read straight off the graph: "The Watch of the Nameless Road -> The Errant Keys of The Arcane Circle since t61 (group_engagement)" and the reverse. agentDetail reads both edge directions off the group node and dedupes the mutual pair; OverviewTab renders it as one sentence with no numbers and no `since` tick. Locked by src/engine/groups/__tests__/bandDebugSurfaces.test.ts § "Company panel — Rivals" (7 tests: absent when no grudge, outgoing, incoming-only, mutual-dedupe, dangling-target drop, deterministic multi-rival order).',
     },
   },
 ];

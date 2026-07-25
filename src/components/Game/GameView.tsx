@@ -167,6 +167,7 @@ import {
   spawnDebugAttachment,
   spawnDebugLocationAtHex,
   spawnDebugNpc,
+  spawnDebugBand,
   spawnDebugSublocation,
 } from '../../engine/debugWorldSpawnTools';
 import { pinAgent as pinAgentDebug, unpinAgent as unpinAgentDebug } from '../../engine/portfolioManager';
@@ -2062,6 +2063,19 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       },
       spawnNpc: (role, anchor, options) => {
         const result = spawnDebugNpc(_gameStateRef.current, role, anchor, options);
+        if (result.success) {
+          touchStructure(runtime);
+          setGameState(prev => ({ ...prev, graph: prev.graph }));
+        }
+        return result;
+      },
+      // Unannotated params, matching every sibling spawn* above: the bridge is
+      // registered against a loose `Record<string, (...args: unknown[]) => unknown>`,
+      // which cannot accept a precisely-typed function (contravariance), so each of
+      // these carries one `unknown`-param error. Annotating trades that for a worse
+      // whole-signature mismatch — the baseline absorbs it, as it does for the others.
+      spawnBand: (factionQuery, options) => {
+        const result = spawnDebugBand(_gameStateRef.current, factionQuery as string, options as { role?: 'raider' | 'defender' } | undefined);
         if (result.success) {
           touchStructure(runtime);
           setGameState(prev => ({ ...prev, graph: prev.graph }));

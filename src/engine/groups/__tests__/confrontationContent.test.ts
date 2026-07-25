@@ -219,6 +219,32 @@ describe('generateUnifiedCandidates — confrontation gate', () => {
     expect(ids).toEqual([]);
   });
 
+  /**
+   * Every shipped confrontation, not just the one this suite happened to sample.
+   *
+   * THR-731 PR 4: the gate mechanics were proven here against `confront_standoff`
+   * alone, and `The Guild Falls` shipped gating on a sublocation id worldgen never
+   * mints (`guildhall` for `guild-hall`) — unreachable by construction, with a green
+   * suite. Asserting the whole family at a location every member accepts is what
+   * turns "the gate works" into "each authored confrontation can actually be drawn".
+   */
+  it('offers every authored confrontation whose location set accepts a town', () => {
+    const graph = world();
+    for (const id of CONFRONTATION_IDS) {
+      const template = getUnifiedTemplateById(id);
+      expect(template, `${id} is missing from the template registry`).toBeDefined();
+
+      const accepts = (template!.locationSubtypes ?? []).includes('town');
+      // Den Assault and Ambush are wilderness/ruins encounters by design; they are
+      // not expected at a town, and asserting otherwise would encode a content lie.
+      if (!accepts) continue;
+
+      const ids = generateUnifiedCandidates(graph, 'co.m0', 'loc.hall', [template!])
+        .map(c => c.templateId);
+      expect(ids, `${id} accepts a town and a band is standing there, so it must be offered`).toContain(id);
+    }
+  });
+
   it('leaves ungated group content alone', () => {
     // The gate must not become a general company filter: the delves THR-74 shipped
     // stay reachable on a hex with no band on it.

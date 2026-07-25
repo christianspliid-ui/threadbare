@@ -9,6 +9,11 @@ import { ENCOUNTER_TEMPLATES } from '../encounter-content';
 import type { UnifiedActionTemplate, ActionStep } from '../../types/unifiedAction';
 import { isActionStepBranch } from '../../types/unifiedAction';
 import { STARTER_ACTION_COUNT, STARTER_ACTION_IDS } from '../../engine/actionUnlock';
+import { REACH_SUBLOCATION_MENU } from '../../engine/settlementGenome/reachMenu';
+import { SPHERE_SUBLOCATION_MENU } from '../../engine/settlementGenome/sphereMenu';
+import { SETTLEMENT_INFRASTRUCTURE } from '../../engine/settlementGenome/infrastructure';
+import { SUBTYPE_SUBLOCATION_MAP } from '../../engine/sublocation';
+import { GOLD_SUBLOCATION_SPECS } from '../../engine/phaseSublocations';
 
 // ─── Migration helpers ────────────────────────────────────────────
 
@@ -106,6 +111,77 @@ describe('ENCOUNTER_TEMPLATES (UnifiedActionTemplate[])', () => {
       expect(affinities, `${enc.id} has no 'individual' affinity, so must be group-exclusive`).toContain('group');
       expect(enc.minGroupMembers, `${enc.id} is group-exclusive and must set minGroupMembers`).toBeGreaterThanOrEqual(2);
     }
+  });
+});
+
+// ─── Sublocation gating (THR-731 PR 4) ────────────────────────────
+
+/**
+ * Every sublocation a template gates on must be one worldgen can actually mint. A
+ * template naming a sublocation type that does not exist is not a soft mismatch — it
+ * is silently **unreachable**, and nothing else in the suite notices: the template
+ * validates, ships, scores, and simply never draws.
+ *
+ * This exists because THR-731 PR 3 shipped `The Guild Falls` — the capstone
+ * confrontation of the whole ticket — gating on `sublocation-type.guildhall` while
+ * worldgen mints `sublocation-type.guild-hall`. One missing hyphen, zero matches on
+ * every seed, and the encounter could not be drawn by construction. It took a live
+ * run to notice; this test catches it at authoring time.
+ *
+ * Two deliberate choices about *where* it reads:
+ *
+ * 1. It asserts over `locationSubtypes` on the assembled templates, not the authored
+ *    `sublocationTypes` field. `toUnifiedTemplate` folds `locationTypes` and
+ *    `sublocationTypes` into that one array, so the authored field does not survive
+ *    onto `UnifiedActionTemplate` at all — a check reading `template.sublocationTypes`
+ *    matches nothing and passes vacuously (which is exactly how the first draft of
+ *    this test "passed" with the bug reintroduced). Reading the merged array also
+ *    covers every content file feeding the registry, not just encounter-content.ts.
+ * 2. The `sublocation-type.` prefix is what distinguishes a sublocation entry from a
+ *    location subtype (`town`, `ruins`) sharing the same array.
+ *
+ * The mintable set is *derived* from the five sources that mint sublocations — the
+ * four worldgen menus plus the runtime `phaseSublocations` specs — never hand-listed,
+ * so it cannot drift from the generators.
+ */
+describe('template sublocation gating', () => {
+  it('every gated sublocation-type id is one worldgen can mint', () => {
+    const mintable = new Set<string>();
+    for (const def of Object.values(REACH_SUBLOCATION_MENU) as { sublocations?: { id: string }[] }[]) {
+      for (const s of def?.sublocations ?? []) mintable.add(s.id);
+    }
+    for (const def of Object.values(SPHERE_SUBLOCATION_MENU) as ({ sublocations?: { id: string }[] } | undefined)[]) {
+      for (const s of def?.sublocations ?? []) mintable.add(s.id);
+    }
+    for (const s of SETTLEMENT_INFRASTRUCTURE) mintable.add(s.id);
+    for (const defs of Object.values(SUBTYPE_SUBLOCATION_MAP)) {
+      for (const d of defs) mintable.add(d.id);
+    }
+    // Emergent, minted at runtime by `phaseSublocations` rather than at worldgen —
+    // mines, smugglers' dens, caravan rests. Omitting this source is what made the
+    // first version of this test flag four legitimately-reachable templates.
+    for (const spec of GOLD_SUBLOCATION_SPECS) mintable.add(spec.sublocationTypeId);
+    // Sanity-check the derivation itself: an empty or tiny set would make the
+    // assertion below vacuous rather than strict.
+    expect(mintable.size).toBeGreaterThan(50);
+
+    const gated: string[] = [];
+    const unreachable: string[] = [];
+    for (const template of UNIFIED_ACTION_TEMPLATES) {
+      for (const entry of template.locationSubtypes ?? []) {
+        if (!entry.startsWith('sublocation-type.')) continue;
+        gated.push(entry);
+        if (!mintable.has(entry)) unreachable.push(`${template.id} gates on '${entry}'`);
+      }
+    }
+
+    // Guard against the vacuity that hid this bug the first time: if the merge shape
+    // changes again and no sublocation entries reach this assertion, fail loudly
+    // rather than reporting a green zero.
+    expect(gated.length, 'no sublocation-gated templates found — the assertion below would be vacuous').toBeGreaterThan(0);
+
+    expect(unreachable, `templates gating on sublocation types worldgen never mints:\n${unreachable.join('\n')}`)
+      .toEqual([]);
   });
 });
 

@@ -334,6 +334,13 @@ export interface AgentInfoCardData {
     role: 'leader' | 'member';
     /** Fellow members in join order, for the click-through roster. */
     members: { id: string; name: string; role: 'leader' | 'member' }[];
+    /**
+     * Groups this company has standing blood with — THR-731. Names only: the
+     * `hostile_to` edge carries a `since` tick and a cause, and neither belongs on a
+     * player surface. Present only when at least one grudge exists, so a company
+     * that has never fought anyone renders no Rivals line at all.
+     */
+    rivals?: string[];
   };
 }
 
@@ -940,6 +947,20 @@ export function getAgentInfoCard(
         role: m.id === leader?.id ? 'leader' : 'member',
       })),
     };
+
+    // Standing rivalries (THR-731). The grudge writer stamps `hostile_to` both ways
+    // on a resolved group contest, but read both directions anyway: a one-sided edge
+    // from any other writer still means blood, and reading only outgoing would make
+    // the line depend on which half of a pair happened to be written first.
+    const rivalIds = new Set<string>();
+    for (const edge of graph.getOutgoingEdges(group.id, 'hostile_to')) rivalIds.add(edge.target);
+    for (const edge of graph.getIncomingEdges(group.id, 'hostile_to')) rivalIds.add(edge.source);
+    const rivals = [...rivalIds]
+      // Deterministic order (NFP #3) — the prose must not reshuffle between reads.
+      .sort((a, b) => a.localeCompare(b))
+      .map(id => graph.getNode(id)?.name)
+      .filter((name): name is string => !!name);
+    if (rivals.length > 0) card.company.rivals = rivals;
   }
 
   // Completed ambitions — biography for the ChronicleTab (THR-721). Populated in

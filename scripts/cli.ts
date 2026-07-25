@@ -21,6 +21,7 @@
  *   encounters     — list active encounters / unified actions
  *   factions       — list factions
  *   groups         — list companies (the group layer): members, cohesion, destination
+ *   spawn band <faction> [--role raider|defender] — force a faction to field an NPC band
  *   genome <name>  — inspect settlement genome result (sublocations, NPCs, archetype)
  *   traces [N]     — show last N trace entries (default 10)
  *   seed           — print the current seed
@@ -54,6 +55,7 @@ import {
 } from '../src/engine/traceBuffer';
 import type { TickProfileTrace } from '../src/types/trace';
 import { createSimulationRuntime, ensureEncounterCache, touchStructure, touchWorld } from '../src/engine/simulationRuntime';
+import { spawnDebugBand } from '../src/engine/debugWorldSpawnTools';
 import type { SimulationRuntime } from '../src/engine/simulationRuntime';
 import { setTrackedAgents, getBalanceEvents, selectDefaultTrackedHero } from '../src/engine/balanceTelemetry';
 import { buildBalanceRunSummary, buildBalanceAgentJourneySummary } from '../src/engine/balanceSummary';
@@ -1140,6 +1142,7 @@ function printHelp(): void {
   console.log(`  ${BOLD}kpi branching-audit${RESET}  Phase A diagnostic: run ${BRANCHING_AUDIT_SEEDS.length} seeds × ${BRANCHING_AUDIT_TICKS} ticks, write Docs/audits/ report`);
   console.log(`  ${BOLD}spawn encounter${RESET} <agent|@hero> <templateId>  Spawn an encounter on an agent`);
   console.log(`  ${BOLD}spawn attachment${RESET} <agent|@hero> <templateId> Attach an item/trait to an agent`);
+  console.log(`  ${BOLD}spawn band${RESET} <faction> [--role raider|defender]  Force a faction to field an NPC band`);
   console.log(`  ${BOLD}aftermath list${RESET} <agent|@hero>   List pending aftermath reactions for an agent`);
   console.log(`  ${BOLD}aftermath pick${RESET} <agent|@hero> [reactionId]  Apply an aftermath reaction`);
   console.log(`  ${BOLD}strategic${RESET} [agent] Strategic action summary (global or per-agent)`);
@@ -1431,6 +1434,32 @@ function applyAutoAftermathForTick(): number {
   }
 
   return appliedCount;
+}
+
+/**
+ * THR-731 — force a faction to field a band, skipping the interval + roll.
+ *
+ * Deterministic counterpart to the organic sweep, and the CLI half of the plan's
+ * "or via `spawn band` if base rates make it flaky" escape hatch: bands need a
+ * colocated, unbanded cluster, which on most seeds is rare enough that waiting for
+ * one is not a test. Every structural precondition still applies — see
+ * `spawnDebugBand`.
+ */
+function handleSpawnBand(factionQuery: string, roleArg?: string): void {
+  if (roleArg && roleArg !== 'raider' && roleArg !== 'defender') {
+    console.log(`${RED}role must be raider or defender${RESET}`);
+    return;
+  }
+  const result = spawnDebugBand(state, factionQuery, {
+    role: roleArg as 'raider' | 'defender' | undefined,
+  });
+  console.log(result.success ? `${GREEN}${result.message}${RESET}` : `${RED}${result.message}${RESET}`);
+  if (result.success) {
+    if (result.locationName) console.log(`  ${dim(`mustered at: ${result.locationName}`)}`);
+    // A band is a graph structure change: encounter caches and the distance matrix
+    // must see it, or the confrontation content it exists to unlock stays invisible.
+    touchStructure(runtime);
+  }
 }
 
 function handleSpawnAttachment(agentQuery: string, templateQuery: string): void {
@@ -1836,8 +1865,14 @@ function handleCommand(line: string): boolean {
         handleSpawnEncounter(subParts[1], subParts.slice(2).join(' '));
       } else if (subParts[0] === 'attachment' && subParts.length >= 3) {
         handleSpawnAttachment(subParts[1], subParts.slice(2).join(' '));
+      } else if (subParts[0] === 'band' && subParts.length >= 2) {
+        // `spawn band <faction...> [--role r]` — the faction query may be several
+        // words ("The Arcane Circle"), so take everything up to the flag.
+        const roleIndex = subParts.indexOf('--role');
+        const factionQuery = (roleIndex === -1 ? subParts.slice(1) : subParts.slice(1, roleIndex)).join(' ');
+        handleSpawnBand(factionQuery, roleIndex === -1 ? undefined : subParts[roleIndex + 1]);
       } else {
-        console.log(`${RED}Usage: spawn encounter|attachment <agent|@hero> <templateId>${RESET}`);
+        console.log(`${RED}Usage: spawn encounter|attachment <agent|@hero> <templateId>  |  spawn band <faction> [--role raider|defender]${RESET}`);
       }
       break;
     }
