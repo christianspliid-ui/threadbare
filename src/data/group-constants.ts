@@ -168,6 +168,77 @@ export const DRAW_TOGETHER_RADIUS_HEXES = 8;
  */
 export const DRAW_TOGETHER_MIN_THREADED_FOR_UNLOCK = 2;
 
+// ─── Reunite / Sunder (THR-732) ──────────────────────────────────────
+//
+// The god's two remaining company verbs, completing the triangle around companies:
+// Draw Together *causes*, Bless *nurtures*, Reunite *remembers*, Sunder *breaks*.
+// Both are timed windows on the company node in the `blessedUntilTick` mould — a
+// timestamp written at cast and read by phase code already running, never a new
+// system. Bless and Sunder windows may coexist: they pull opposite directions
+// through independent reads, and that tug-of-war is deliberately left unresolved.
+
+/**
+ * Reunite — convergence + compatibility window on a disbanded company.
+ *
+ * Matches {@link DRAW_TOGETHER_DURATION_TICKS} because Reunite *consumes* that
+ * verb's convergence machinery: the same `convergePullUntilTick` stamp, read by
+ * the same `encounterScoring.computeConvergenceBonus`. A window shorter than the
+ * pull it rides would leave mortals still walking toward a reunion the company
+ * node had already stopped waiting for.
+ */
+export const REUNITE_DURATION_TICKS = 36;
+
+/**
+ * Reunite — compatibility bonus for a pair who both rode with the reuniting
+ * company. Large relative to the 0.3 strangers-in-a-tavern baseline: shared
+ * history is the strongest argument two people have for trying again, and it must
+ * be able to carry a pair over {@link GROUP_FORMATION_COMPAT_MIN} on its own.
+ */
+export const REUNITE_COMPAT_BONUS = 0.3;
+
+/** Sunder — amplification window. Matches Bless's duration; it is the counterpart. */
+export const SUNDER_DURATION_TICKS = 24;
+
+/**
+ * Sunder — immediate cohesion hit at cast.
+ *
+ * Deliberately gentler than Bless's +0.2 boost: breaking should cost the god more
+ * effort than mending, and a single cast must not by itself drop a healthy company
+ * through the dissolution floor. The window, not the hit, is where Sunder does its
+ * work.
+ */
+export const SUNDER_COHESION_DELTA = -0.15;
+
+/**
+ * Event-feed significance of a Reunite reunion — a company the player deliberately
+ * called back into being. Above Seeking Companions' 0.65 (a return the god paid for
+ * outweighs an organic founding) but below The Parting's 0.72, which stays the
+ * loudest company beat because it is the only irreversible one.
+ */
+export const GROUP_REUNION_EVENT_SIGNIFICANCE = 0.7;
+
+/**
+ * Event-feed significance of a Reunite window closing unanswered. Set just above the
+ * generic 0.55 company-event weight: the player spent essence on this and must learn
+ * it did not take, but an absence should not shout as loudly as a return.
+ */
+export const GROUP_REUNION_LAPSE_EVENT_SIGNIFICANCE = 0.58;
+
+/** Sunder — multiplier on each dissent's cohesion hit while the window is open. */
+export const SUNDER_DISSENT_MULT = 2.0;
+
+/**
+ * Sunder — multiplier on a member's leave probability while the window is open.
+ *
+ * Note this bites only once the company is already below {@link GROUP_FRAY_THRESHOLD},
+ * because that is the gate on which leave decisions are evaluated at all, and the
+ * underlying rate is proportional to the shortfall *below* that line (a company at
+ * or above it has a shortfall of zero, and doubling zero is zero). That is the
+ * intended shape: Sunder cracks cohesion with its cast-time hit and then accelerates
+ * the fall, rather than teleporting a bound company into mutiny.
+ */
+export const SUNDER_LEAVE_MULT = 2.0;
+
 // ─── NPC bands (THR-731) ─────────────────────────────────────────────
 //
 // A band is an ordinary `faction_band` company whose members are a faction's own

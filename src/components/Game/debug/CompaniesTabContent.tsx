@@ -8,6 +8,8 @@ import {
   getGroupCohesion,
   getCohesionState,
   isGroupBlessed,
+  isGroupSundered,
+  isGroupReuniting,
   type CohesionState,
 } from '../../../engine/groups/groupQueries';
 
@@ -93,6 +95,8 @@ export function CompaniesTabContent({ graph, currentTick, onZoomToLocation }: Co
             const destId = props.groupDestinationId as string | undefined;
             const destination = destId ? (graph.getNode(destId)?.name ?? destId) : null;
             const blessed = isGroupBlessed(group, currentTick);
+            const sundered = isGroupSundered(group, currentTick);
+            const reuniting = isGroupReuniting(group, currentTick);
             const ticksActive = currentTick - ((props.formedAtTick as number | undefined) ?? currentTick);
 
             return (
@@ -144,6 +148,26 @@ export function CompaniesTabContent({ graph, currentTick, onZoomToLocation }: Co
                     <span style={DETAIL_LABEL_STYLE}>Blessed until:</span>
                     <span style={{ ...DETAIL_VALUE_STYLE, color: '#a78bfa' }}>
                       tick {String(props.blessedUntilTick)}
+                    </span>
+                  </div>
+                )}
+                {/* THR-732 — rendered independently of Blessed above, never as an
+                    either/or: a company under both windows must show both, because
+                    "blessed and sundered at once" is a real state the two verbs are
+                    designed to produce and the panel is where an operator checks it. */}
+                {sundered && (
+                  <div style={DETAIL_ROW_STYLE}>
+                    <span style={DETAIL_LABEL_STYLE}>Sundered until:</span>
+                    <span style={{ ...DETAIL_VALUE_STYLE, color: '#f87171' }}>
+                      tick {String(props.sunderedUntilTick)}
+                    </span>
+                  </div>
+                )}
+                {reuniting && (
+                  <div style={DETAIL_ROW_STYLE}>
+                    <span style={DETAIL_LABEL_STYLE}>Reunion called until:</span>
+                    <span style={{ ...DETAIL_VALUE_STYLE, color: '#fbbf24' }}>
+                      tick {String(props.reuniteUntilTick)}
                     </span>
                   </div>
                 )}

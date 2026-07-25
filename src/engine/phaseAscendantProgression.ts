@@ -42,12 +42,15 @@ import {
   MILESTONE_SOURCE_BEAT_ID,
   MILESTONE_COMPANY_BEAT_ID,
   MILESTONE_GATHERING_BEAT_ID,
+  MILESTONE_EMPTY_ROAD_BEAT_ID,
   deepeningBeatIdForReach,
 } from '../data/player-progression';
 import { deepeningChronicleProse } from '../data/ascendant-deepening-beats';
 import { milestoneChronicleProse } from '../data/ascendant-milestone-beats';
 import { countControlledSources } from './essenceSources';
-import { getAllGroups, isGroupThreaded, isAgentGone } from './groups/groupQueries';
+import {
+  getAllGroups, isGroupThreaded, isAgentGone, getFormerGroupMembers,
+} from './groups/groupQueries';
 import { DRAW_TOGETHER_MIN_THREADED_FOR_UNLOCK } from '../data/group-constants';
 
 type EmitInput = Parameters<typeof emitTrace>[0];
@@ -333,6 +336,51 @@ export function phaseAscendantProgression(state: GameState): Partial<GameState> 
         tier: 'chronicle',
         title: 'Scattered Threads',
         prose: milestoneChronicleProse(MILESTONE_GATHERING_BEAT_ID),
+        promptContext: {
+          actors: [ascId],
+          location: '',
+          sphere: primarySphere,
+          mood: 'reverent',
+        },
+        tick: turn,
+      });
+    }
+  }
+
+  // THR-732: the empty-road milestone — the first time a company the ascendant was
+  // bound to has ended, unlocking Reunite + Sunder. Same one-per-tick discipline as
+  // the two above. Threading is read through the company's *former* members, because
+  // dissolution closes every `member_of` edge: `isGroupThreaded` walks live membership
+  // and would see an empty roster on exactly the nodes this milestone is about.
+  if (canEnqueue && !pending && !firedMilestones.includes(MILESTONE_EMPTY_ROAD_BEAT_ID)) {
+    const hasEndedThreadedCompany = getAllGroups(graph).some(g => {
+      if ((g.properties as Record<string, unknown>).groupStatus !== 'disbanded') return false;
+      return getFormerGroupMembers(graph, g.id).some(m =>
+        graph.getIncomingEdges(m.id, 'thread').some(e => e.source === ascId),
+      );
+    });
+    if (hasEndedThreadedCompany) {
+      pending = {
+        beatId: MILESTONE_EMPTY_ROAD_BEAT_ID,
+        kind: 'milestone',
+        offeredTurn: turn,
+        boundNodeIds: [ascId],
+        trigger: { kind: 'turn', minTurn: turn },
+      };
+      firedMilestones.push(MILESTONE_EMPTY_ROAD_BEAT_ID);
+      node.properties.milestoneBeatsFired = firedMilestones;
+      emitTrace({
+        category: 'ascendant.progression.milestone_enqueued',
+        tick: turn,
+        turn,
+        beatId: MILESTONE_EMPTY_ROAD_BEAT_ID,
+        summary: `Milestone beat enqueued: ${MILESTONE_EMPTY_ROAD_BEAT_ID} (first threaded company disbanded)`,
+      } as unknown as EmitInput);
+      newChronicle.push({
+        id: `milestone-${MILESTONE_EMPTY_ROAD_BEAT_ID}-${turn}`,
+        tier: 'chronicle',
+        title: 'An Empty Road',
+        prose: milestoneChronicleProse(MILESTONE_EMPTY_ROAD_BEAT_ID),
         promptContext: {
           actors: [ascId],
           location: '',

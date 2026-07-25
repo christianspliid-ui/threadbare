@@ -1719,6 +1719,12 @@ if (import.meta.env.DEV) {
           positionId: positionId ?? null,
           destinationId: (props.groupDestinationId as string | undefined) ?? null,
           blessedUntilTick: (props.blessedUntilTick as number | undefined) ?? null,
+          // THR-732 — the two divine windows. `reunite*` appear only on disbanded
+          // companies, `sunderedUntilTick` only on active ones; a company may carry
+          // blessed and sundered at once, which is why they are separate readouts.
+          reuniteUntilTick: (props.reuniteUntilTick as number | undefined) ?? null,
+          reuniteSphereFlavor: (props.reuniteSphereFlavor as string | undefined) ?? null,
+          sunderedUntilTick: (props.sunderedUntilTick as number | undefined) ?? null,
           formedAtTick: (props.formedAtTick as number | undefined) ?? null,
           ticksActive: tick - ((props.formedAtTick as number | undefined) ?? tick),
           disbandedAtTick: (props.disbandedAtTick as number | undefined) ?? null,

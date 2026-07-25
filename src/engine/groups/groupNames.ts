@@ -19,6 +19,7 @@ import {
   GROUP_NAME_CAUSE_ADJECTIVES,
   GROUP_NAME_SPHERE_ADJECTIVES,
   GROUP_NAME_FALLBACK,
+  GROUP_REFORMED_NAME_PATTERNS,
 } from '../../data/group-name-content';
 
 /** Everything the generator may key off. All fields optional but `groupId`. */
@@ -39,6 +40,12 @@ export interface GroupNameContext {
   locationName?: string;
   /** Sphere id, when Draw Together caused the formation. */
   sphereId?: string;
+  /**
+   * The disbanded company's name, when this is a Reunite re-formation (THR-732).
+   * Present → the name is a variant of *that* name rather than a fresh draw, so
+   * the player recognises the company that came back.
+   */
+  predecessorName?: string;
 }
 
 /**
@@ -68,6 +75,16 @@ function pick<T>(rng: () => number, pool: readonly T[]): T | undefined {
  */
 export function generateGroupName(ctx: GroupNameContext): string {
   const rng = mulberry32(hashSeed(ctx.groupId));
+
+  // Reunite (THR-732): a company that came back keeps its old name, worn. Returns
+  // before the general pools are drawn — a reunion whose name were freshly generated
+  // would be unrecognisable as the same company, which is the entire point of the verb.
+  // Falls through to the ordinary path when the predecessor's name is unknown, where
+  // the `reunite` cause adjectives ("Returned", "Unfinished") carry the flavor instead.
+  if (ctx.predecessorName) {
+    const reformed = renderReformedName(rng, ctx.predecessorName);
+    if (reformed) return reformed;
+  }
 
   // Cause- and sphere-flavored adjectives join the general pool rather than
   // replacing it, so flavor tilts the name without making it formulaic.
@@ -115,4 +132,28 @@ export function generateGroupName(ctx: GroupNameContext): string {
 /** English possessive that doesn't produce "Thomas's" for names already ending in s. */
 function possessive(name: string): string {
   return name.endsWith('s') ? `${name}'` : `${name}'s`;
+}
+
+/**
+ * Render a Reunite re-formation name from the predecessor's (THR-732).
+ *
+ * Substitutes the three article-aware tokens documented on
+ * {@link GROUP_REFORMED_NAME_PATTERNS}. Returns undefined when the pattern pool is
+ * empty or the predecessor name is blank, so the caller falls back to the ordinary
+ * generator rather than producing a name with an unresolved `{old}` in it.
+ */
+function renderReformedName(rng: () => number, predecessorName: string): string | undefined {
+  const old = predecessorName.trim();
+  if (old.length === 0 || GROUP_REFORMED_NAME_PATTERNS.length === 0) return undefined;
+
+  const bare = old.replace(/^(the|a|an)\s+/i, '');
+  const oldLower = /^the\s+/i.test(old) ? `the ${bare}` : old;
+
+  const pattern = GROUP_REFORMED_NAME_PATTERNS[
+    Math.floor(rng() * GROUP_REFORMED_NAME_PATTERNS.length) % GROUP_REFORMED_NAME_PATTERNS.length
+  ];
+  return pattern
+    .replace(/\{oldLower\}/g, oldLower)
+    .replace(/\{bare\}/g, bare)
+    .replace(/\{old\}/g, old);
 }

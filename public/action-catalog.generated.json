@@ -1,11 +1,11 @@
 {
   "schemaVersion": 2,
   "totals": {
-    "total": 176,
+    "total": 178,
     "byCategory": {
       "action": 67,
       "artifact": 4,
-      "company": 2,
+      "company": 4,
       "divine": 19,
       "hex": 49,
       "location": 23,
@@ -14,26 +14,26 @@
     "byReach": {
       "iron": 12,
       "gold": 20,
-      "shadow": 22,
+      "shadow": 23,
       "veil": 22,
-      "heart": 27,
+      "heart": 28,
       "eye": 29,
       "stone": 10,
       "star": 33,
       "life": 1
     },
     "byBucket": {
-      "unlockable-generic": 173,
+      "unlockable-generic": 175,
       "generic": 3
     },
     "byEffectSource": {
-      "template-ops": 109,
+      "template-ops": 111,
       "control-spec": 17,
       "engine-bridge": 44,
       "none": 2,
       "aftermath-only": 4
     },
-    "beatGranted": 27,
+    "beatGranted": 29,
     "starters": 0,
     "unauthoredEffects": 0
   },
@@ -2019,6 +2019,37 @@
       "effectSource": "template-ops"
     },
     {
+      "id": "company.sunder",
+      "name": "Sunder",
+      "spellName": "The Widening Silence",
+      "category": "company",
+      "reach": "shadow",
+      "sphereAffinity": "entropy",
+      "crudType": "update",
+      "scale": "local",
+      "rarityTier": 2,
+      "rarityName": "Storied",
+      "intrinsicTier": "shaping",
+      "apCost": 1,
+      "essenceCost": 4,
+      "durationMode": "instant",
+      "hasControlSpec": false,
+      "targetCategories": [
+        "actor"
+      ],
+      "targetSubtypes": [
+        "group"
+      ],
+      "requiresReach": null,
+      "starter": false,
+      "beatGranted": true,
+      "bucket": "unlockable-generic",
+      "bucketDeclared": true,
+      "description": "Works a patient wedge into the small spaces between companions — the joke that lands wrong, the watch that runs long, the share that looks uneven in a certain light. Nothing is said that could not be taken back. Very little of it is.",
+      "technicalEffect": "Applies an immediate SUNDER_COHESION_DELTA cohesion hit to the target company and opens an amplification window (sunderedUntilTick = tick + SUNDER_DURATION_TICKS). While the window is open, isGroupSundered multiplies each dissent's cohesion hit by SUNDER_DISSENT_MULT (groupCohesion), multiplies leave probability by SUNDER_LEAVE_MULT for a fraying company (groupDissolution), and makes the fray drama pool treat the company as frayed regardless of its true band (phaseGroups). Fires the sunder_company graph-op; fail-soft on a non-company or already-disbanded target. Does not cancel, and is not cancelled by, an open Bless window.",
+      "effectSource": "template-ops"
+    },
+    {
       "id": "company.bless",
       "name": "Bless this Company",
       "spellName": "Blessing of the Bound Road",
@@ -2078,6 +2109,37 @@
       "bucketDeclared": true,
       "description": "Reaches through the bond you hold with one wandering soul and lets every kindred spirit nearby feel the tug of it. Scattered travellers you have touched begin, without quite knowing why, to bend their roads toward one another — and where enough of them meet, a company is born.",
       "technicalEffect": "Fires the draw_together graph-op on the target (a threaded mortal, the convergence anchor). Stamps convergePullHex/convergePullUntilTick (= tick + DRAW_TOGETHER_DURATION_TICKS) on the anchor and every living, ungrouped, threaded mortal within DRAW_TOGETHER_RADIUS_HEXES. While the window holds, encounterScoring.computeConvergenceBonus boosts each mortal's candidate encounters by up to DRAW_TOGETHER_PULL_WEIGHT in inverse proportion to hex distance from the anchor, so they gravitate together; a company that then forms among them is attributed cause: draw_together. Fail-soft on a missing/non-mortal/unthreaded anchor; fires (no refund) even if no companions are in range.",
+      "effectSource": "template-ops"
+    },
+    {
+      "id": "company.reunite",
+      "name": "Reunite",
+      "spellName": "The Unfinished Road",
+      "category": "company",
+      "reach": "heart",
+      "sphereAffinity": "spirit",
+      "crudType": "update",
+      "scale": "local",
+      "rarityTier": 2,
+      "rarityName": "Storied",
+      "intrinsicTier": "shaping",
+      "apCost": 1,
+      "essenceCost": 4,
+      "durationMode": "instant",
+      "hasControlSpec": false,
+      "targetCategories": [
+        "actor"
+      ],
+      "targetSubtypes": [
+        "group"
+      ],
+      "requiresReach": null,
+      "starter": false,
+      "beatGranted": true,
+      "bucket": "unlockable-generic",
+      "bucketDeclared": true,
+      "description": "Reaches back to a fellowship the world has already finished with, and reminds each of the survivors — in a dream, a turn of a familiar street, a face half-glimpsed in a crowd — that it was not supposed to end that way. Whether they answer is theirs to decide.",
+      "technicalEffect": "Fires the reunite_company graph-op on a disbanded company. Opens reuniteUntilTick (= tick + REUNITE_DURATION_TICKS) on the dead company node and stamps Draw Together's own convergence pull (convergePullHexCol/_HexRow/_UntilTick) on every living, ungrouped former member, anchored on the old leader's hex where they still live. While the window holds, encounterScoring.computeConvergenceBonus bends those mortals' encounter choices homeward and groupFormation adds REUNITE_COMPAT_BONUS to any pair who rode together, so the formation scan can bind them; the re-formed company is attributed cause: reunite and takes a variant of the old name. Requires GROUP_MIN_MEMBERS gatherable former members; fail-soft on a missing/non-company/still-active target. Unanswered windows close as a chronicle beat.",
       "effectSource": "template-ops"
     },
     {

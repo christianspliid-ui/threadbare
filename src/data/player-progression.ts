@@ -80,6 +80,21 @@ export const MILESTONE_COMPANY_BEAT_ID = 'beat.milestone.the_first_company';
 export const MILESTONE_GATHERING_BEAT_ID = 'beat.milestone.the_gathering_bonds';
 
 /**
+ * The empty-road milestone beat id (THR-732). Fires once, the first time a company
+ * the ascendant was bound to has *ended* — and grants both remaining company verbs,
+ * `company.reunite` and `company.sunder`, together.
+ *
+ * The trigger is the unlock's own precondition: Reunite can only be cast on a
+ * disbanded company, so granting it before one exists would hand the player a card
+ * with nothing in the world to target. Sunder rides the same beat rather than one of
+ * its own because it is the same lesson learned from the other side — the first time
+ * the player sees that a company can come apart is the moment both *undoing* it and
+ * *causing* it become live verbs. (Granting a pair from one beat follows THR-724's
+ * two secrets verbs.) Deduped through `AscendantProperties.milestoneBeatsFired`.
+ */
+export const MILESTONE_EMPTY_ROAD_BEAT_ID = 'beat.milestone.the_empty_road';
+
+/**
  * Deterministic Deepening beat id for a reach. Slice 2 authors the matching
  * `UnifiedActionTemplate` content per reach (plan §4.1); Slice 1 enqueues by this id.
  */

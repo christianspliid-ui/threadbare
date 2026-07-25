@@ -64,7 +64,7 @@ export interface GroupNodeProperties {
   formedAtTick: number;
   /** Formation cause + location — the name generator's input. */
   formationContext: {
-    cause: 'systemic' | 'seeking_companions' | 'draw_together';
+    cause: GroupFormationCause;
     locationId: string;
   };
   /** Shared destination while travelling; undefined when the company is settled. */
@@ -79,6 +79,22 @@ export interface GroupNodeProperties {
   dissolutionReason?: DissolutionReason;
   /** Ticks below which Bless this Company suppresses dispute/dissent effects. */
   blessedUntilTick?: number;
+  /**
+   * Ticks below which a Reunite window is open on this *disbanded* company
+   * (THR-732) — former members are under a convergence pull toward the reunion
+   * anchor and score a `REUNITE_COMPAT_BONUS` with one another in the
+   * formation scan. Only ever written to a node with `groupStatus: 'disbanded'`.
+   */
+  reuniteUntilTick?: number;
+  /** Casting ascendant's sphere, for the re-formed company's name flavor. */
+  reuniteSphereFlavor?: string;
+  /**
+   * Ticks below which a Sunder window is open on this *active* company (THR-732):
+   * dissent hits are multiplied, leave decisions are likelier, and the fray drama
+   * pool treats the company as frayed. Independent of `blessedUntilTick` — both may
+   * be open at once, and neither cancels the other.
+   */
+  sunderedUntilTick?: number;
   /**
    * Last observed cohesion band (bookkeeping, not truth: {@link getCohesionState}
    * of the live cohesion is authoritative). Persisted so `phaseGroups` can fire the
@@ -114,7 +130,14 @@ export type GroupFormationCause =
   | 'systemic'
   | 'seeking_companions'
   | 'draw_together'
-  | 'band_spawn';
+  | 'band_spawn'
+  /**
+   * THR-732 — a disbanded company re-formed under an open Reunite window. Strictly
+   * more specific than `draw_together`: Reunite stamps the *same* convergence pull,
+   * so a reunion would otherwise read as an ordinary divine gathering and lose the
+   * fact that these people had ridden together before.
+   */
+  | 'reunite';
 
 /**
  * True when a group node is an NPC band rather than a mortal company.
@@ -300,6 +323,62 @@ export function isGroupThreaded(
 export function isGroupBlessed(node: GraphNode | undefined, tick: number): boolean {
   const until = (node?.properties as Record<string, unknown> | undefined)?.blessedUntilTick;
   return typeof until === 'number' && tick < until;
+}
+
+/**
+ * True while a Sunder amplification window is open (THR-732).
+ *
+ * Deliberately *not* the inverse of {@link isGroupBlessed} — both windows can be
+ * open at once and each is read independently, so a blessed-and-sundered company
+ * has its dissent suppressed by one and doubled by the other, in that order.
+ */
+export function isGroupSundered(node: GraphNode | undefined, tick: number): boolean {
+  const until = (node?.properties as Record<string, unknown> | undefined)?.sunderedUntilTick;
+  return typeof until === 'number' && tick < until;
+}
+
+/** True while a Reunite window is open on a disbanded company (THR-732). */
+export function isGroupReuniting(node: GraphNode | undefined, tick: number): boolean {
+  const until = (node?.properties as Record<string, unknown> | undefined)?.reuniteUntilTick;
+  return typeof until === 'number' && tick < until;
+}
+
+/**
+ * Everyone who ever rode with a company, live members included — the historical
+ * roster, read from `member_of` edges rather than the node's `roster` property.
+ *
+ * **The `roster` property cannot serve this.** `dissolveGroup` sets `roster: []` on
+ * the way out, so a disbanded company — precisely the input Reunite takes — reports
+ * an empty roster forever. What survives is the edges: dissolution stamps each
+ * `member_of` with `leftAtTick` rather than removing it, which is the historical
+ * record this codebase documents prose as reading from ("they rode with the Quiet
+ * Wardens, once"). Anyone whose node was hard-deleted has no edge left and is
+ * therefore correctly absent — they are dead, not merely scattered.
+ *
+ * Returns nodes in join order, callers filter for living/ungrouped as they need.
+ */
+export function getFormerGroupMembers(graph: WorldGraph, groupId: string): GraphNode[] {
+  return graph
+    .getIncomingEdges(groupId, 'member_of')
+    .sort(
+      (a, b) =>
+        ((a.properties?.joinedTick as number) ?? 0) -
+        ((b.properties?.joinedTick as number) ?? 0),
+    )
+    .map(e => graph.getNode(e.source))
+    .filter((n): n is GraphNode => n != null);
+}
+
+/**
+ * Former members a Reunite could actually gather: alive, and not already riding
+ * with someone else. The predicate behind both the action's eligibility and the
+ * graph-op's anchor pick, so the card is never offered for a reunion that could
+ * not happen.
+ */
+export function getReunitableMembers(graph: WorldGraph, groupId: string): GraphNode[] {
+  return getFormerGroupMembers(graph, groupId).filter(
+    m => !isAgentGone(m) && !isGrouped(graph, m.id),
+  );
 }
 
 /**
