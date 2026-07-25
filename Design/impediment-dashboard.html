@@ -2923,6 +2923,19 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "**Workaround:** measure registry-wide facts from a throwaway **vitest** test (`npx vitest run tmp/probe.test.ts`) rather than `vite-node`; vitest's transform pipeline accepts the file. **Suggested fix (one line):** delete the duplicate import at `social-encounter-content.ts:2462`. **Method note:** the `git show origin/main:<file> \\| grep` pre-existence check from #206's note applied cleanly again — worth promoting from \"note\" to reflex.",
     "session": "THR-74 PR 2 (`tb-opus-pickup`), measuring the group-eligibility sweep count."
+  },
+  {
+    "num": "209",
+    "id": 209,
+    "count": 1,
+    "date": "2026-07-25",
+    "category": "process",
+    "description": "**An armed PR can go `BEHIND` twice inside one hour, because the automation lane's own hourly commits to `main` outpace the required check.** PR #830 was armed at 06:38, went `BEHIND` when #831 merged at 06:41, was un-stuck by the 07:09 run, and was `BEHIND` **again** by 07:53 — #832 (hourly briefing refresh) and #833 (daily grooming report) had both merged in the interval. The staling cadence is not incidental traffic: `keep-work-flowing-cc` merges a briefing PR every hour at ~:53, `daily-backlog-grooming` merges a report at ~09:16, and plan-doc PRs land continuously. Meanwhile `Test · Typecheck · Build` needs ~15 min (the suite's own wall-clock is ~987s), so any armed PR that must run a fresh CI cycle is racing the next automated merge, and loses more often than not.",
+    "consequence": "The stuck state is the most deceptive one available: `mergeable: MERGEABLE`, required check `SUCCESS`, auto-merge still armed — every summary view reads \"about to merge\". #830 sat green and motionless for 33 min looking healthy, and would have sat indefinitely; armed auto-merge never updates a stale branch under strict protection (THR-702). Only an explicit `mergeStateStatus` read distinguishes it from success.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "**Workaround that worked:** pull-work Step 0.8's armed-PR reconciliation sweep is the right instrument and caught it on the first read — `gh pr update-branch 830`, confirm auto-merge survived the update (`autoMergeRequest != null`), then exit without polling. Two cautions the sweep's wording under-weights: (1) the post-arm freshness check is **not** one-and-done — #830 passed it at 06:38 and still staled twice, so an open PR needs re-checking every run, which is what makes the hourly sweep load-bearing rather than a nicety; (2) `ARMED_SWEEP_MAX_UPDATES = 1` is now *exactly* matched to the hourly staling rate, so with two or more open armed PRs the queue cannot drain — each hour re-stales what the previous hour updated. **Suggested durable fix:** adopt a GitHub merge queue, or gate the hourly doc-writing tasks so they do not merge to `main` while an armed feature PR is mid-check. **Format note:** this entry is deliberately a numbered table row rather than the trailing-paragraph form the last 65 entries drifted into — both consumers of this log (`generate-impediment-dashboard.ts`, `retro-draft.ts`) gate on `startsWith(\"",
+    "session": "\")`, so paragraph entries are parsed by neither. Filed as THR-764. | Hourly `tb-opus-pickup` run, THR-719 resume (PR #830 second unstick)."
   }
 ];
 // ── End data ──
