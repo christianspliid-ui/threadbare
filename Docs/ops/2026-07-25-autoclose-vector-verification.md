@@ -69,7 +69,7 @@ so the issue staying open isolates the **native** integration as genuinely disab
 and 3 are dead, not merely unexercised. The attachments confirm PR linking still works, which is
 the intended end state: **links without auto-move.**
 
-## PR B — positive control (this PR)
+## PR B — positive control
 
 A PR whose body carries the closing keyword **alone on its own line** — the deliberate form the
 Definition of Done requires. Its branch is named `autoclose-verification-positive-control`, with
@@ -78,8 +78,47 @@ possible closing signal.
 
 **Pass criterion:** after PR B merges, THR-765 transitions to **Done**.
 
-**Result:** _(recorded by the follow-up closeout PR)_
+**Result: PASS.** PR [#837](https://github.com/christianspliid-ui/threadbare/pull/837) merged
+2026-07-25 09:08 UTC as `639efcf4`. Auto-close run 30152314043:
+
+```
+Issues to close (→ Done): THR-765
+✅ THR-765 → Done
+```
+
+The paired run (30152313886, the other trigger path) logged
+`ℹ️  THR-765 already closed (Done) — skipping`, confirming the two trigger paths stay idempotent.
+Linear agrees, and the timestamps attribute the transition to PR B alone:
+
+```
+status:       Done
+completedAt:  2026-07-25T09:08:49.318Z    ← matches the run's ✅ line to the second
+stateHistory: [{ Idea, 09:04:13 → 09:08:49 },   ← survived PR A's merge at 09:05
+               { Done, 09:08:49 → null    }]
+```
 
 ## Outcome
 
-_(filled in by the follow-up PR that records both results)_
+**Both criteria pass. THR-738's live verification is complete.**
+
+| Vector | Fired by | Result |
+|---|---|---|
+| 1 — keyword inside prose | PR A body + commit body | inert — `No Linear issues referenced` |
+| 2 — `thr-NNN` branch name | PR A branch | inert — issue untouched |
+| 3 — bare id in PR title | PR A title | inert — issue untouched |
+| deliberate — keyword alone on its line | PR B body + commit body | **closes**, as designed |
+
+Three findings worth carrying forward:
+
+1. **The negative control is only meaningful because our workflow was provably inert against it.**
+   Had the line-anchored pattern matched, PR A staying open would have proved nothing about the
+   native integration. Checking `extractCloseableIssueIds` → `[]` against
+   `extractNativeCloseableIssueIds` → `["THR-765"]` *before* merging is what makes the result
+   attributable to the settings flip.
+2. **Linking survives; only auto-move died.** Both PRs and both commits attached themselves to
+   THR-765. That is the intended end state — the convenience of linked PRs without the board
+   silently marking work finished that never happened.
+3. **The remaining exposure is human, not mechanical.** A line-anchored keyword still closes
+   whatever id it names, so the failure mode is now a *typo'd or copy-pasted* id standing alone on
+   its own line — not an incidental mention. The Definition of Done's "one deliberate line per
+   issue, never the keyword in prose" rule is what holds that line.
