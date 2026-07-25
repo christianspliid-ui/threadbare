@@ -30,6 +30,25 @@ import { REACH_GATE_MIN_AFFINITY } from '../data/influence-content';
 import { effectSourceFor } from '../data/actionEffectSource';
 import { actionEffectsProse } from '../data/actionEffectsProse';
 import { emitTrace } from './traceBuffer';
+import { isActionStepBranch } from '../types/unifiedAction';
+
+/**
+ * The hardest step difficulty a template can present (THR-728).
+ *
+ * Player casts now roll against these, so the focused card states the risk before
+ * the cast rather than leaving it to be discovered in the receipt. Branch steps
+ * are skipped: only branching encounters use them, and none is player-castable —
+ * fail-soft, a template made entirely of branches simply reads as guaranteed.
+ */
+function maxStepDifficulty(template: UnifiedActionTemplate): number {
+  let max = 0;
+  for (const step of template.steps) {
+    if (isActionStepBranch(step)) continue;
+    const difficulty = step.difficulty ?? 0;
+    if (Number.isFinite(difficulty) && difficulty > max) max = difficulty;
+  }
+  return max;
+}
 
 // ─── Constants ──────────────────────────────────────────────────────────────
 
@@ -328,6 +347,7 @@ export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
       effectSource: effectSourceFor(template),
       narrativeLayer: template.narrativeLayer as WheelSlot['narrativeLayer'],
       rarityTier: template.rarityTier,
+      maxStepDifficulty: maxStepDifficulty(template),
     });
   }
 
