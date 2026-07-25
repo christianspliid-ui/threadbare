@@ -1,36 +1,38 @@
 # Briefing
 
-**Generated:** 2026-07-25 21:53 local (2026-07-25 19:53 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-07-25 22:09 local (2026-07-25 20:09 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
 ## Needs Christian
 
-**Nothing needs you right now — and the list is genuinely empty for the first time in a while.** The one question that had been carried here for days is now answered, not deferred.
+**Nothing needs you right now.** Second hour running with a genuinely empty list — the empty-projects question you answered at 21:53 is recorded and closed, and the billing block from this afternoon stays closed. No decision, no switch, no click path is waiting on you.
 
-**You answered the empty-projects question (2026-07-25 21:53, in chat): leave them.** The five roadmap projects sitting "in progress" with nothing left in them — Agent Coordination Protocol, Repo Health, Marketing Site, Small manual tweaks, Procedural Hex Vignettes — stay open, because they're intake buckets that will refill on their own as the game iterates. Recorded in [`Design/user-actions.md`](user-actions.md) so no future grooming pass re-asks it. Nothing further from you.
+*One thing worth knowing rather than doing, carried over from an hour ago: **replies you send on Discord are not read by anything.** The hourly ping is one-way by design, so the two answers you gave there today only registered once you repeated them in chat. Until that's fixed, a verdict lands reliably when you give it in a chat session. It's on the list as agent work; nothing for you to action.*
 
 ## Queue
 
-**Healthy — 14 ready items, nothing urgent, nothing stale, nothing blocked.** Everything waiting is Medium or Low, and every item was touched within the last two days.
+**Healthy — 14 ready items, one in flight, nothing urgent, nothing stale, nothing blocked.** Everything waiting is Medium or Low priority and every item was touched within the last two days.
 
-**One thing is actively being worked right now.** The shared glossary is getting the new group vocabulary written into it — what a *Company* is, what holds one together, and what your two group verbs actually mean — so the words mean one thing everywhere instead of drifting between the code, the docs and the rulebook. It's mid-flight as of a minute ago.
+**The group vocabulary work is mid-flight and finishing itself.** Writing *Company*, *Group Cohesion* and your two group verbs into the shared glossary is done and submitted; it's sitting in the automated checks now and will merge on its own when they come back green. No one needs to babysit it. It threw off one tiny follow-up on the way — a tuning constant whose comment describes the opposite of what the code does — already filed and queued.
 
-**Three small follow-ups have been filed off this evening's work**, all cosmetic or internal, all low priority, all agent work already in the queue: the four company action cards still render without artwork; the adjective pool used to name re-formed companies is mostly keyed to sphere names that don't exist, so most of it never gets used; and one tuning constant's comment describes the opposite of what the code does.
+**Three small follow-ups from this evening's Reunite/Sunder work remain queued**, all cosmetic or internal: the four company action cards still render without artwork; the adjective pool used to name re-formed companies is mostly keyed to sphere names that don't exist, so most of it never gets used; and the constant-comment fix above.
 
 ## Freshness
 
-**Home tree: level with the server, nothing stranded.** Last hour it was six commits behind; the hourly sync pulled them down on its own, exactly as designed. Two leftovers persist and neither blocks anything: one tracked settings edit, and Friday's weekly-retro write-up — still untracked, still the only copy anywhere, still agent work to land via a docs PR.
+**Home tree: on `main`, level enough — two commits behind, both from merges in the last few minutes.** The hourly sync will pull them; nothing is stranded, nothing is decaying. Two leftovers persist and neither blocks anything: one tracked settings edit of yours, and Friday's weekly-retro write-up — still untracked, still the only copy anywhere, still agent work to land via a docs PR. Local dependencies verified intact this run, so building and testing from the home tree work.
 
-**Cleanup reaper: alive** — last run 20:40, tracking 26 work folders / 36 branches / 1 stash, nothing awaiting a human decision. It did log one warning: a work folder it tried to remove was in use, and may now be half-deregistered. Agent work to verify, not yours.
+**Cleanup reaper: alive and healthy** — last run 21:40, tracking 24 work folders / 35 branches / 1 stash, nothing awaiting a human decision. It cleared two finished work folders and three dead branches this pass.
 
-**Automated checks: healthy, and verified rather than assumed** — the last eight runs all executed their jobs and passed. Zero open pull requests.
+**Last hour's reaper warning is resolved and was harmless.** The folder it couldn't remove is now deregistered but still on disk and still in active use by a session; the repository itself has zero stale entries to clean up, so nothing is broken. Agent-side, not yours.
+
+**Automated checks: healthy** — every run in the recent window executed its jobs and passed. One pull request open, mid-check, auto-merge armed.
 
 ## What's moving
 
-**Reunite and Sunder shipped earlier this evening** — the god's last two company verbs. You can now reach into a company that has broken apart and pull it back together, or lean on a strained one and push it the rest of the way apart. The re-formed company takes its new name partly from the sphere you cast it with.
+**The Discord read-back gap got written down properly** — the diagnosis of why your two answers sat unread, plus the shape of a safe fix that reads replies without ever letting their contents give the automation orders. It's recorded so the next design session can file it as real work rather than rediscovering it.
 
-**The billing scare from this afternoon is fully closed and written down** — cleared, verified by re-run rather than by absence of failures, and the whole episode recorded so nobody rediagnoses it from scratch. Including the cheap one-run test that tells "GitHub is having a bad minute" apart from "the account is blocked".
+**Reunite and Sunder shipped earlier this evening** — the god's last two company verbs. You can now reach into a company that has broken apart and pull it back together, or lean on a strained one and push it the rest of the way apart. The re-formed company takes its new name partly from the sphere you cast it with.
 
 **Still the headline, and still true:** the thing you asked for — a company of yours toppling a local assassins' guild by tangling with the guild's own band — is built, merged, and was watched running end to end, with the guild's cohesion collapsing, yours rising, and a lasting grudge written between the two sides.
 
