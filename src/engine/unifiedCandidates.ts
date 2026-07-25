@@ -21,6 +21,7 @@ import type { UnifiedAction, UnifiedActionTemplate } from '../types/unifiedActio
 import type { EffectRuntimeState } from '../types/effects';
 import { getActionGates } from './effects/effectQueries';
 import { livingGroupMemberCount } from './groups/groupQueries';
+import { hasOpposingBand } from './groups/bandOpposition';
 import { GROUP_MIN_MEMBERS } from '../data/group-constants';
 
 // ─── Constants ──────────────────────────────────────────────────
@@ -90,6 +91,18 @@ export function generateUnifiedCandidates(
     return cachedGroupMemberCount;
   };
 
+  // Whether a band stands on this actor's hex, resolved at most once per call and
+  // only when a confrontation template is actually encountered (THR-731). Bands are
+  // rare, confrontations are four templates, and the scan walks every active group —
+  // so it is worth not paying for it on the overwhelming majority of sweeps.
+  let cachedOpposingBand: boolean | undefined;
+  const opposingBandPresent = (): boolean => {
+    if (cachedOpposingBand === undefined) {
+      cachedOpposingBand = hasOpposingBand(graph, actorId);
+    }
+    return cachedOpposingBand;
+  };
+
   for (const template of templates) {
     // Action gate: skip templates whose reach domain is blocked by an effect
     if (blockedReaches.has(template.reach)) {
@@ -132,6 +145,13 @@ export function generateUnifiedCandidates(
       if (!subtype || !template.locationSubtypes.includes(subtype)) {
         continue;
       }
+    }
+
+    // Confrontation gate (THR-731): the family is *about* a specific enemy, so it
+    // is only reachable while that enemy is standing here. Checked after the cheap
+    // string filters above so the group scan runs on the fewest templates possible.
+    if (template.requiresOpposingBand && !opposingBandPresent()) {
+      continue;
     }
 
     // Threat-reactive bonus: if this template contestsWith any active threat

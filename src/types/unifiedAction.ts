@@ -730,6 +730,13 @@ export interface PendingEncounterSeed {
    */
   readonly inheritedTargetId?: string;
   readonly inheritedBindings?: readonly EncounterSupportBinding[];
+  /**
+   * THR-731 — the band this seeded encounter is *against*. Set when a confrontation
+   * is seeded while a hostile band shares the hex; carried onto the spawned action
+   * as {@link UnifiedAction.opposingGroupId}, which is what the contestation
+   * detector pairs on. Absent on every ordinary (uncontested) seed.
+   */
+  readonly opposingGroupId?: string;
 }
 
 export interface EncounterAftermathReaction {
@@ -886,6 +893,26 @@ export interface UnifiedActionTemplate {
    * which is the correct default for a template a solo agent may also take.
    */
   readonly minGroupMembers?: number;
+  /**
+   * Only eligible when an opposing band shares the drawer's hex (THR-731).
+   *
+   * Set by the confrontation family, whose whole subject is a specific enemy: a
+   * Den Assault with no den to assault, or a Guild Falls with no guild standing
+   * in the way, is an encounter about nobody. The gate is a template flag rather
+   * than an id list in the engine so the predicate stays authorable — a later
+   * confrontation opts in by declaring it, not by being added to a set that rots.
+   */
+  readonly requiresOpposingBand?: boolean;
+  /**
+   * A decisive loss in a group contest on this template never kills (THR-731).
+   *
+   * The casualty roll is otherwise unconditional on a decisive loss, which would
+   * make every rung of band conflict the same rung. The Standoff exists precisely
+   * so conflict at company scale is not only ever slaughter: losing it costs
+   * cohesion, standing, and the ground — not a life. Omit for the ordinary lethal
+   * default.
+   */
+  readonly contestNonLethal?: boolean;
   readonly locationSubtypes?: readonly string[];
   readonly sphereAffinity?: SphereName;
 
@@ -1188,6 +1215,22 @@ export interface UnifiedAction {
 
   // Contestation
   readonly contestedWith?: string; // actionId of opposing action
+  /**
+   * THR-731 — the opposing *group* this action is set against (a band, or the
+   * company a band's counter answers). The contestation detector's group pass
+   * pairs on this plus {@link counterToActionId}; `contestsWith` template lists
+   * are untouched and still drive every non-group contest.
+   *
+   * Additive/optional: an action without it takes the ordinary uncontested path.
+   */
+  readonly opposingGroupId?: string;
+  /**
+   * THR-731 — set only on a *synthesized* band counter-action, naming the action
+   * it answers. Its presence is what marks a side as the defender of a group
+   * contest (bands answer; they never initiate the pair), so the detector needs
+   * no scale/FIFO tiebreak and the pairing is deterministic by construction.
+   */
+  readonly counterToActionId?: string;
 
   // Resolution
   readonly resolved: boolean;

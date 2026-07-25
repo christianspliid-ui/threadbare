@@ -39,6 +39,11 @@ import { computeCapability, computeCapabilityWithRawBonus } from './domainCapabi
 import { getAscendantDomainAffinities } from './ascendant';
 import { getGroupOf } from './groups/groupQueries';
 import { resolveGroupStep } from './groups/groupResolution';
+import {
+  collectBandOppositions,
+  applyContestConsequences,
+  contestedOutcomeFor,
+} from './groups/bandOpposition';
 import { resolveAction as resolveActionLegacy } from './resolution';
 import { resolveAction as resolveActionShared, isSuccessOutcome } from './resolutionService';
 import type { OutcomeType } from '../types/resolution';
@@ -2444,12 +2449,37 @@ export function phaseUnifiedActionProgress(
   const completing = collectCompletions(actions);
 
   // Phase 3: Contestation detection and resolution
-  const contestPairs = detectContestations(completing, templates);
+  //
+  // THR-731: before detection, give any band standing against a completing company
+  // action its side of the fight. The synthesized counters are transient — they are
+  // resolved in this loop and never enter `state.unifiedActions` — so they are held
+  // in a local pool rather than pushed onto `actions`.
+  const bandOppositions = collectBandOppositions(completing, state);
+  const counterPool = new Map<string, UnifiedAction>(
+    bandOppositions.map((o) => [o.counter.actionId, o.counter]),
+  );
+  const oppositionByInitiator = new Map(
+    bandOppositions.map((o) => [o.initiator.actionId, o]),
+  );
+
+  const contestPairs = detectContestations(
+    completing,
+    templates,
+    bandOppositions.map((o) => ({
+      initiatorActionId: o.initiator.actionId,
+      counterActionId: o.counter.actionId,
+      targetId: o.initiator.targetId,
+      initiatorGroupId: o.initiatorGroupId,
+      bandGroupId: o.bandGroupId,
+    })),
+  );
   const contestedIds = new Set<string>();
 
   for (const pair of contestPairs) {
-    const attacker = actions.find((a) => a.actionId === pair.attackerActionId);
-    const defender = actions.find((a) => a.actionId === pair.defenderActionId);
+    const attacker = actions.find((a) => a.actionId === pair.attackerActionId)
+      ?? counterPool.get(pair.attackerActionId);
+    const defender = actions.find((a) => a.actionId === pair.defenderActionId)
+      ?? counterPool.get(pair.defenderActionId);
     if (!attacker || !defender) continue;
 
     const atkTemplate = resolveUnifiedTemplate(templates, attacker.templateId);
@@ -2478,23 +2508,58 @@ export function phaseUnifiedActionProgress(
       undefined, runtime,
     );
 
-    // Replace in actions array
+    // THR-731: a group contest is the one contested shape that carries consequences
+    // beyond the step's own ops — cohesion swings on both sides, a possible casualty
+    // on the losing one, and a standing `hostile_to` grudge between the two groups.
+    // Applied before the outcome is stamped so the trace records the cohesion the
+    // engagement actually produced.
+    let atkResolved = updAtk;
+    let defResolved = updDef;
+    const opposition = pair.groupOpposition
+      ? oppositionByInitiator.get(pair.attackerActionId)
+      : undefined;
+    if (opposition) {
+      applyContestConsequences(
+        state, opposition,
+        contestResult.attackerOutcome === 'success' ? 'success' : 'failure',
+        contestResult.defenderOutcome === 'success' ? 'success' : 'failure',
+        rng,
+      );
+      // Stamp the contested outcome band on any side that resolved. Until now
+      // `contested_won`/`contested_lost` had display strings and a receipt mapping
+      // but no producer — a company that lost a fight read as one that merely failed.
+      if (atkResolved.resolved) {
+        atkResolved = {
+          ...atkResolved,
+          outcome: contestedOutcomeFor(contestResult.attackerOutcome === 'success' ? 'success' : 'failure'),
+        };
+      }
+      if (defResolved.resolved) {
+        defResolved = {
+          ...defResolved,
+          outcome: contestedOutcomeFor(contestResult.defenderOutcome === 'success' ? 'success' : 'failure'),
+        };
+      }
+    }
+
+    // Replace in actions array. A synthesized band counter is not in `actions` —
+    // it is transient by design, so the map simply never matches it.
     actions = actions.map((a) => {
-      if (a.actionId === updAtk.actionId) return updAtk;
-      if (a.actionId === updDef.actionId) return updDef;
+      if (a.actionId === atkResolved.actionId) return atkResolved;
+      if (a.actionId === defResolved.actionId) return defResolved;
       return a;
     });
 
     // Spawn ControlEffect for contested winners (TB-044)
-    if (updAtk.resolved && isActionSuccess(updAtk.outcome) && atkTemplate.durationMode === 'sustained') {
-      const spawnResult = spawnControlEffect(updAtk, atkTemplate, state.tick, state.graph);
+    if (atkResolved.resolved && isActionSuccess(atkResolved.outcome) && atkTemplate.durationMode === 'sustained') {
+      const spawnResult = spawnControlEffect(atkResolved, atkTemplate, state.tick, state.graph);
       if (spawnResult) {
         spawnedEffects.push(spawnResult.effect);
         events.push(spawnResult.event);
       }
     }
-    if (updDef.resolved && isActionSuccess(updDef.outcome) && defTemplate.durationMode === 'sustained') {
-      const spawnResult = spawnControlEffect(updDef, defTemplate, state.tick, state.graph);
+    if (defResolved.resolved && isActionSuccess(defResolved.outcome) && defTemplate.durationMode === 'sustained') {
+      const spawnResult = spawnControlEffect(defResolved, defTemplate, state.tick, state.graph);
       if (spawnResult) {
         spawnedEffects.push(spawnResult.effect);
         events.push(spawnResult.event);
@@ -2502,20 +2567,20 @@ export function phaseUnifiedActionProgress(
     }
 
     // Sphere pressure: contested action resolutions also push pressure
-    if (updAtk.resolved && atkTemplate.sphereAffinity && attacker.targetId) {
+    if (atkResolved.resolved && atkTemplate.sphereAffinity && attacker.targetId) {
       spherePressures.push({
         targetEntityId: attacker.targetId,
         sphere: atkTemplate.sphereAffinity,
-        magnitude: isActionSuccess(updAtk.outcome) ? ACTION_PRESSURE_SUCCESS : ACTION_PRESSURE_FAILURE,
+        magnitude: isActionSuccess(atkResolved.outcome) ? ACTION_PRESSURE_SUCCESS : ACTION_PRESSURE_FAILURE,
         source: 'divine_action',
         sourceId: attacker.actionId,
       });
     }
-    if (updDef.resolved && defTemplate.sphereAffinity && defender.targetId) {
+    if (defResolved.resolved && defTemplate.sphereAffinity && defender.targetId) {
       spherePressures.push({
         targetEntityId: defender.targetId,
         sphere: defTemplate.sphereAffinity,
-        magnitude: isActionSuccess(updDef.outcome) ? ACTION_PRESSURE_SUCCESS : ACTION_PRESSURE_FAILURE,
+        magnitude: isActionSuccess(defResolved.outcome) ? ACTION_PRESSURE_SUCCESS : ACTION_PRESSURE_FAILURE,
         source: 'divine_action',
         sourceId: defender.actionId,
       });

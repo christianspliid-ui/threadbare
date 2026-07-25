@@ -139,6 +139,14 @@ type EncounterEntry = {
   actorAffinities?: readonly import('../types/graph').ActorType[];
   /** THR-74: minimum living company members required to draw a group-exclusive template. */
   minGroupMembers?: number;
+  /**
+   * THR-731: only drawable while an opposing band shares the company's hex.
+   * Set by the confrontation family — an encounter about fighting a specific
+   * enemy must not surface when that enemy is not there.
+   */
+  requiresOpposingBand?: boolean;
+  /** THR-731: a decisive loss in this contest never kills. See the template field. */
+  contestNonLethal?: boolean;
   steps: ReadonlyArray<{
     id?: string;
     name?: string;
@@ -232,6 +240,8 @@ function toUnifiedTemplate(e: EncounterEntry): UnifiedActionTemplate {
     // `withGroupAffinity` in unified-action-templates.ts, not here.
     actorAffinities: e.actorAffinities ?? ['individual'],
     minGroupMembers: e.minGroupMembers,
+    requiresOpposingBand: e.requiresOpposingBand,
+    contestNonLethal: e.contestNonLethal,
     locationSubtypes: [
       ...e.locationTypes,
       ...(e.sublocationTypes ?? []),
@@ -10481,6 +10491,390 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         onFailure: {
           narrative: 'The collapse comes early. {actor} barely clears the fall and the company counts heads in the dark outside, not liking the number.',
           reputationDelta: -0.1,
+        },
+      },
+    ],
+  },
+
+  // ─── Band counter-encounters (THR-731 PR 2) ─────────────────────
+  // The band's side of a contested engagement. `bandOpposition.synthesizeBandCounter`
+  // picks one of these by `bandRole` when a band is walked into, and the pair resolves
+  // through the shipped TB-044 contested path.
+  //
+  // They are ordinary group-exclusive templates, deliberately: a band is a company,
+  // and a defender band standing its watch or a raider band working a road is a
+  // perfectly good encounter for it to draw on its own. Fencing them off into a
+  // synth-only pool would have been the special-casing this ticket is under orders to
+  // resist — and would have left them unreachable and unverifiable in a live run.
+  //
+  // Two steps, not three: the answering side is reacting, not mounting an expedition.
+  {
+    id: 'encounter.band_defend',
+    name: 'Hold the Ground',
+    locationTypes: ['hamlet', 'town', 'city', 'capital', 'castle', 'fort', 'tower', 'temple', 'shrine'],
+    sublocationTypes: ['sublocation-type.barracks', 'sublocation-type.guildhall'],
+    reachPrimary: 'iron',
+    reachSecondary: 'eye',
+    encounterType: 'duel',
+    threatRating: 'moderate',
+    intrinsicTier: 'shaping',
+    actorAffinities: ['group'],
+    minGroupMembers: 2,
+    motivations: ['courage_prudence', 'loyalty_ambition'],
+    steps: [
+      {
+        id: 'band_defend.mark',
+        name: 'The Mark',
+        reach: 'eye',
+        difficulty: MODERATE_DIFFICULTY_BASE,
+        duration: 1,
+        narrative: 'Strangers with purpose in their walk, and the hall behind them to lose. {actor} counts the approach and passes the number down the line without turning their head.',
+        onSuccess: {
+          narrative: '{actor} reads them before they are close enough to matter, and the band is standing where it means to stand when they arrive.',
+          reputationDelta: 0.04,
+        },
+        onFailure: {
+          narrative: '{actor} misjudges the approach, and the band is still finding its ground when the strangers reach it.',
+          reputationDelta: -0.03,
+        },
+      },
+      {
+        id: 'band_defend.ground',
+        name: 'The Ground',
+        reach: 'iron',
+        difficulty: MODERATE_DIFFICULTY_BASE + MODERATE_DIFFICULTY_STEP,
+        duration: 1,
+        narrative: 'No speeches. {actor} sets themselves in the doorway and the others close up either side, and what the faction pays them for comes due.',
+        onSuccess: {
+          narrative: '{actor} holds the doorway and the band holds behind them; whatever the strangers came for, they do not leave with it.',
+          reputationDelta: 0.1,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: 'The line bends and then it is not a line. {actor} gives ground they were sent to keep, and the hall is open behind them.',
+          reputationDelta: -0.08,
+        },
+      },
+    ],
+  },
+  {
+    id: 'encounter.band_raid',
+    name: 'Take the Road',
+    locationTypes: ['camp', 'farmland', 'ruins', 'ruined_village', 'ancient_road', 'oasis', 'unexplored_poi'],
+    reachPrimary: 'shadow',
+    reachSecondary: 'iron',
+    encounterType: 'duel',
+    threatRating: 'moderate',
+    intrinsicTier: 'shaping',
+    actorAffinities: ['group'],
+    minGroupMembers: 2,
+    motivations: ['courage_prudence', 'loyalty_ambition'],
+    steps: [
+      {
+        id: 'band_raid.wait',
+        name: 'The Wait',
+        reach: 'shadow',
+        difficulty: MODERATE_DIFFICULTY_BASE,
+        duration: 1,
+        narrative: 'The road runs where it has always run, and the band has been in the grass beside it since before light. {actor} holds the others still with one flat hand.',
+        onSuccess: {
+          narrative: '{actor} keeps the band silent past the point where silence is comfortable, and nothing on the road knows they are there.',
+          reputationDelta: 0.04,
+        },
+        onFailure: {
+          narrative: 'Someone shifts, a bird goes up, and {actor} watches the road ahead of them learn exactly where they are lying.',
+          reputationDelta: -0.03,
+        },
+      },
+      {
+        id: 'band_raid.spring',
+        name: 'The Spring',
+        reach: 'iron',
+        difficulty: MODERATE_DIFFICULTY_BASE + MODERATE_DIFFICULTY_STEP,
+        duration: 1,
+        narrative: '{actor} comes out of the grass first because that is what going first means, and the rest of the band comes out behind them.',
+        onSuccess: {
+          narrative: '{actor} takes the road out from under them, and the band closes it before anyone on it decides to fight for it.',
+          reputationDelta: 0.1,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: 'They were ready. {actor} is met on the way in, and the band goes back into the grass with less than it brought.',
+          reputationDelta: -0.08,
+        },
+      },
+    ],
+  },
+
+  // ─── Confrontation family (THR-731 PR 3) ────────────────────────
+  // The company's side of a band engagement, and the reason a fight reads as a
+  // confrontation rather than as whatever errand the company happened to be on
+  // when it walked into one.
+  //
+  // All four carry `requiresOpposingBand: true`, so they are unreachable unless a
+  // band is standing on the hex — these are encounters *about* a specific enemy,
+  // and one that surfaces with nobody on the other side is a scene with an empty
+  // chair in it. The band answers with `encounter.band_defend` / `band_raid`
+  // (PR 2) and the pair resolves on the shipped TB-044 contested ladder.
+  //
+  // Reaches rotate across steps on purpose: best-member substitution puts a
+  // different companion in {actor} for each one, so a confrontation spotlights
+  // the whole company rather than its strongest fighter three times.
+  {
+    id: 'encounter.confront_ambush',
+    name: 'The Ambush',
+    locationTypes: ['camp', 'farmland', 'ruins', 'ruined_village', 'ancient_road', 'oasis', 'unexplored_poi'],
+    reachPrimary: 'eye',
+    reachSecondary: 'iron',
+    encounterType: 'duel',
+    threatRating: 'moderate',
+    intrinsicTier: 'shaping',
+    actorAffinities: ['group'],
+    minGroupMembers: 2,
+    requiresOpposingBand: true,
+    motivations: ['courage_prudence', 'loyalty_ambition'],
+    steps: [
+      {
+        id: 'confront_ambush.quiet',
+        name: 'The Wrong Quiet',
+        reach: 'eye',
+        difficulty: MODERATE_DIFFICULTY_BASE,
+        duration: 1,
+        narrative: 'The birds went up a while back and have not come down. {actor} keeps walking at the same pace and looks at the treeline without turning their head.',
+        onSuccess: {
+          narrative: '{actor} names the shapes in the grass before the grass moves, and the company is already turning to face them when it does.',
+          reputationDelta: 0.05,
+        },
+        onFailure: {
+          narrative: '{actor} reads the quiet as quiet. The company is strung out along the road when the road stops being empty.',
+          reputationDelta: -0.03,
+        },
+      },
+      {
+        id: 'confront_ambush.rush',
+        name: 'The First Rush',
+        reach: 'iron',
+        difficulty: MODERATE_DIFFICULTY_BASE + MODERATE_DIFFICULTY_STEP,
+        duration: 1,
+        narrative: 'They come out of the ground on both sides at once. {actor} meets the nearest of them before the company has finished understanding what is happening.',
+        onSuccess: {
+          narrative: '{actor} breaks the rush where it is thinnest, and the company comes through the gap they made instead of dying strung out along the road.',
+          reputationDelta: 0.1,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: 'The rush goes through. {actor} is turned around by it and the company is fighting in three places that cannot see each other.',
+          reputationDelta: -0.06,
+        },
+      },
+      {
+        id: 'confront_ambush.break',
+        name: 'The Break',
+        reach: 'heart',
+        difficulty: MODERATE_DIFFICULTY_BASE + MODERATE_DIFFICULTY_STEP * 2,
+        duration: 1,
+        narrative: 'Ambushes end when one side decides they have had enough of it. {actor} sets about making that decision for the other side.',
+        onSuccess: {
+          narrative: '{actor} holds the company together past the point the road expected them to run, and it is the other side that goes back into the grass.',
+          reputationDelta: 0.14,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: '{actor} cannot make the line hold. The company leaves the road to whoever wanted it, carrying what they can.',
+          reputationDelta: -0.1,
+        },
+      },
+    ],
+  },
+  {
+    id: 'encounter.confront_den_assault',
+    name: 'Den Assault',
+    locationTypes: ['ruins', 'ruined_tower', 'ruined_city', 'mining', 'unexplored_poi', 'cavern'],
+    sublocationTypes: ['sublocation-type.dungeon'],
+    reachPrimary: 'iron',
+    reachSecondary: 'shadow',
+    encounterType: 'duel',
+    threatRating: 'hard',
+    intrinsicTier: 'shaping',
+    actorAffinities: ['group'],
+    minGroupMembers: 2,
+    requiresOpposingBand: true,
+    motivations: ['courage_prudence', 'loyalty_ambition'],
+    steps: [
+      {
+        id: 'confront_den_assault.approach',
+        name: 'The Approach',
+        reach: 'shadow',
+        difficulty: HARD_DIFFICULTY_BASE,
+        duration: 1,
+        narrative: 'Going in after them means giving up the ground they know for the ground they chose. {actor} takes the company the last stretch on the side where the wind runs the wrong way for sentries.',
+        onSuccess: {
+          narrative: '{actor} brings the company to the mouth of it unannounced, and whoever was supposed to be watching is still watching the road.',
+          reputationDelta: 0.06,
+        },
+        onFailure: {
+          narrative: 'Something goes over in the dark and the noise carries. {actor} arrives at a den that has had time to arrange itself.',
+          reputationDelta: -0.04,
+        },
+      },
+      {
+        id: 'confront_den_assault.mouth',
+        name: 'The Mouth',
+        reach: 'iron',
+        difficulty: HARD_DIFFICULTY_BASE + HARD_DIFFICULTY_STEP,
+        duration: 1,
+        narrative: 'The entrance is narrow, which cuts both ways. {actor} goes in first because the company cannot go in abreast and someone has to be the one who does not.',
+        onSuccess: {
+          narrative: '{actor} takes the narrow part and holds it open long enough for the company to come through behind them.',
+          reputationDelta: 0.12,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: 'The narrow part holds against them instead. {actor} is pushed back into the company, and the den keeps its door.',
+          reputationDelta: -0.08,
+        },
+      },
+      {
+        id: 'confront_den_assault.deep',
+        name: 'The Deep End',
+        reach: 'stone',
+        difficulty: HARD_DIFFICULTY_BASE + HARD_DIFFICULTY_STEP * 2,
+        duration: 2,
+        narrative: 'Past the entrance it opens out, and every turning belongs to them. {actor} keeps the company moving toward the part of it worth taking.',
+        onSuccess: {
+          narrative: '{actor} carries the company all the way in, and the den stops being anybody\'s. What was kept here is theirs to carry out.',
+          reputationDelta: 0.18,
+          tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 0.5, condition: 0.3, bestowed_power: 0.2 },
+          },
+        },
+        onFailure: {
+          narrative: '{actor} takes the company as deep as it will go and no further. They come back out through their own way in, with less than they brought.',
+          reputationDelta: -0.12,
+        },
+      },
+    ],
+  },
+  {
+    id: 'encounter.confront_guild_falls',
+    name: 'The Guild Falls',
+    locationTypes: ['hamlet', 'town', 'city', 'capital', 'castle', 'fort', 'tower', 'temple', 'shrine'],
+    sublocationTypes: ['sublocation-type.guildhall'],
+    reachPrimary: 'iron',
+    reachSecondary: 'eye',
+    encounterType: 'duel',
+    threatRating: 'hard',
+    intrinsicTier: 'shaping',
+    actorAffinities: ['group'],
+    minGroupMembers: 2,
+    requiresOpposingBand: true,
+    motivations: ['courage_prudence', 'loyalty_ambition'],
+    steps: [
+      {
+        id: 'confront_guild_falls.names',
+        name: 'The Names',
+        reach: 'eye',
+        difficulty: HARD_DIFFICULTY_BASE,
+        duration: 1,
+        narrative: 'A guild is not a building. {actor} spends the last of the waiting working out which of the people inside it the rest of them will not stand without.',
+        onSuccess: {
+          narrative: '{actor} comes back with the names that matter, and the company walks in knowing who they are walking in for.',
+          reputationDelta: 0.07,
+        },
+        onFailure: {
+          narrative: '{actor} gets the shape of it and not the substance. The company goes in against a hall full of strangers.',
+          reputationDelta: -0.05,
+        },
+      },
+      {
+        id: 'confront_guild_falls.door',
+        name: 'The Door',
+        reach: 'shadow',
+        difficulty: HARD_DIFFICULTY_BASE + HARD_DIFFICULTY_STEP,
+        duration: 1,
+        narrative: 'They keep people on the door for exactly this. {actor} finds the way past them that does not begin with shouting.',
+        onSuccess: {
+          narrative: '{actor} has the company inside before the hall knows the door has been used, and the watch is behind them now instead of in front.',
+          reputationDelta: 0.1,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: 'The door does what a door is for. {actor} is seen, and the hall has as long as it takes to cross the yard.',
+          reputationDelta: -0.07,
+        },
+      },
+      {
+        id: 'confront_guild_falls.hall',
+        name: 'The Hall',
+        reach: 'iron',
+        difficulty: HARD_DIFFICULTY_BASE + HARD_DIFFICULTY_STEP * 2,
+        duration: 2,
+        narrative: 'The whole thing comes down to a room and the people standing in it. {actor} goes at the ones whose names they came for.',
+        onSuccess: {
+          narrative: '{actor} takes the hall, and what the guild was is now a building and some furniture. The people who made it what it was are not standing in it.',
+          reputationDelta: 0.2,
+          tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 0.4, condition: 0.3, bestowed_power: 0.3 },
+          },
+        },
+        onFailure: {
+          narrative: 'The hall holds. {actor} gets the company back out through the door they came in by, and the guild will know exactly whose company it was.',
+          reputationDelta: -0.14,
+        },
+      },
+    ],
+  },
+  {
+    id: 'encounter.confront_standoff',
+    name: 'The Standoff',
+    locationTypes: ['hamlet', 'town', 'city', 'camp', 'farmland', 'ruins', 'ruined_village', 'ancient_road', 'oasis', 'unexplored_poi'],
+    reachPrimary: 'gold',
+    reachSecondary: 'iron',
+    encounterType: 'duel',
+    threatRating: 'moderate',
+    intrinsicTier: 'shaping',
+    actorAffinities: ['group'],
+    minGroupMembers: 2,
+    requiresOpposingBand: true,
+    // The non-lethal rung. Conflict at this scale should not only ever be
+    // slaughter, so a decisive loss here costs cohesion and standing and takes
+    // nobody's life — see `contestNonLethal` on the template type.
+    contestNonLethal: true,
+    motivations: ['courage_prudence', 'loyalty_ambition'],
+    steps: [
+      {
+        id: 'confront_standoff.line',
+        name: 'The Line',
+        reach: 'iron',
+        difficulty: MODERATE_DIFFICULTY_BASE,
+        duration: 1,
+        narrative: 'Nobody has drawn anything yet. {actor} steps out where the other side can count the company properly, and lets them.',
+        onSuccess: {
+          narrative: '{actor} stands where they can be counted and does not shift, and the arithmetic on the other side starts going the wrong way for them.',
+          reputationDelta: 0.05,
+        },
+        onFailure: {
+          narrative: '{actor} steps out and the company does not come with them cleanly. What the other side counts is a company that is not sure.',
+          reputationDelta: -0.04,
+        },
+      },
+      {
+        id: 'confront_standoff.word',
+        name: 'The Word',
+        reach: 'gold',
+        difficulty: MODERATE_DIFFICULTY_BASE + MODERATE_DIFFICULTY_STEP,
+        duration: 1,
+        narrative: 'Somebody has to say the thing that lets the other side leave. {actor} finds a way to say it that does not sound like mercy.',
+        onSuccess: {
+          narrative: '{actor} gives them the road and they take it, and the whole thing is over without anyone having to be carried away from it.',
+          reputationDelta: 0.12,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: '{actor} says it wrong, or says it to the wrong one. The other side holds the ground and the company is the one that gives way.',
+          reputationDelta: -0.08,
         },
       },
     ],

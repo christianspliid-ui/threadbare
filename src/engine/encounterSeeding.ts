@@ -32,6 +32,7 @@ import { createUnifiedAction } from './unifiedActionLifecycle';
 import { appendRecentEvent } from './encounterAftermath';
 import { emitTrace } from './traceBuffer';
 import { getAgentLocation } from './graphQueries';
+import { getGroupMembers, isAgentGone, isBandNode } from './groups/groupQueries';
 import { FAMILY_SEED_MAX_CANDIDATES } from '../data/effect-constants';
 
 interface FamilyMatchResult {
@@ -126,6 +127,35 @@ function resolveSeedInheritance(
   }
 
   return { applied, targetId, bindings, inheritedTargetId, bindingCount, droppedBindingCount };
+}
+
+/**
+ * THR-731 (PR 3) — re-validate a seed's named opponent at spawn time.
+ *
+ * PR 2 declared `PendingEncounterSeed.opposingGroupId` and wired the *resolution*
+ * side to honour `UnifiedAction.opposingGroupId`, but nothing carried the value
+ * across the seed → action boundary, so a seed that named its enemy dropped it in
+ * silence. This is that carry, and it re-checks rather than copies: a band can
+ * dissolve, empty out, or be disbanded in the delay between planting a grudge and
+ * collecting on it.
+ *
+ * Returns undefined for every case that should spawn an ordinary uncontested
+ * encounter — no named opponent, opponent gone, opponent no longer a live band.
+ * The company still gets its encounter; it just does not get a fight (NFP #4).
+ */
+function resolveSeedOpposition(
+  seed: PendingEncounterSeed,
+  graph: WorldGraph,
+): string | undefined {
+  const opposingGroupId = seed.opposingGroupId;
+  if (!opposingGroupId) return undefined;
+
+  const band = graph.getNode(opposingGroupId);
+  if (!band || !isBandNode(band)) return undefined;
+  if ((band.properties as Record<string, unknown>).groupStatus !== 'active') return undefined;
+  if (getGroupMembers(graph, opposingGroupId).every(isAgentGone)) return undefined;
+
+  return opposingGroupId;
 }
 
 export function evaluateEncounterSeeds(state: GameState, tick: number, rng: () => number, runtime?: SimulationRuntime): GameState {
@@ -225,7 +255,7 @@ export function evaluateEncounterSeeds(state: GameState, tick: number, rng: () =
         template,
         rng,
       });
-      const action = seed.sourceEventNodeId
+      const withCausation = seed.sourceEventNodeId
         ? {
             ...spawnedAction,
             pendingCausationSourceEventId: seed.sourceEventNodeId,
@@ -233,6 +263,13 @@ export function evaluateEncounterSeeds(state: GameState, tick: number, rng: () =
             spawnedFromSeedLabel: seed.seedLabel,
           }
         : spawnedAction;
+      // THR-731 (PR 3): carry the seed's named opponent onto the action, which is
+      // what `findOpposingBand` reads to pair the contest deliberately instead of
+      // rediscovering an opponent by colocation.
+      const opposingGroupId = resolveSeedOpposition(seed, state.graph);
+      const action = opposingGroupId
+        ? { ...withCausation, opposingGroupId }
+        : withCausation;
       nextActions = [...nextActions, action];
 
       const spawnEvent: TickEvent = {
