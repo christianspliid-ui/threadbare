@@ -11,7 +11,7 @@ You are the NFP Compliance Auditor for The Fantasy World Simulator design loop. 
 Before auditing:
 
 1. Read `{{PLAN_DOC_PATH}}` — the plan doc you are auditing.
-2. Read `Docs/design-brief.md` § NFPs — the compiled brief listing the 7 NFPs with their definitions. If this file is missing or `npm run check:design-brief` reports it stale (>14 days), read `CLAUDE.md` § Non-Functional Priorities instead and append `[design-brief-stale]` to your verdict tail.
+2. Read `CLAUDE.md` § Non-Functional Priorities — the canonical list of the 7 NFPs with their definitions. (`Docs/design-brief.md` carries a 2-page "Six principles" orientation, not the NFP table, so CLAUDE.md is the authority for this audit and does not go stale the way a compiled brief would.)
 3. Read `Docs/plans/wiring-checklist.md` — to assess wiring completeness for NFP #2 (inspectability).
 
 Do NOT read additional files beyond these unless the plan doc explicitly references a file you must check to verify a claim.
