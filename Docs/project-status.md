@@ -28,6 +28,8 @@
 
 **Auto-close is line-anchored (THR-738, 2026-07-25).** After THR-74 was swept to Done ×2–3 on 2026-07-24 by bare/prose references — including a sentence documenting the discipline — the custom `linear-autoclose.yml` close-decision now closes only when a full line reads exactly `Fixes|Closes|Resolves THR-NNN`. Keyword-in-prose, bullets, branch names, and bare title tokens are inert (7 new regression tests). CLAUDE.md + pull-work skill now forbid quoting the keyword in non-closing prose. Vectors 2/3 (branch/title) are Linear's native integration, disabled via a Christian-owned settings change in `Design/user-actions.md` item 3 (carries THR-738's remaining live-verification Done-when).
 
+**The reaper stopped eating node_modules (THR-753, 2026-07-25).** The hourly host git reaper's `git worktree remove --force` (and orphan `rm -rf`) followed a worktree's `node_modules` junction into the home tree's one real install and emptied it — the 2026-07-22 ×2 wipes and #203/#207. It now severs the reparse point (`cmd rmdir`) before every removal and loudly names the `npm install` repair if the home `.bin` ever vanishes; the non-tracked script is mirrored at `Docs/ops/clean-stale-git.sh.md`. Verified: guarded removal left a junction target intact (20→20) where the unguarded path wiped it (20→0).
+
 The hourly `tb-opus-pickup` lane and `keep-work-flowing-cc` briefing are live; new work flows through Linear (Threadbare team).
 
 **Recently completed (2026-07-22, marathon):**
