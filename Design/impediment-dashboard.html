@@ -3170,6 +3170,32 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "**Workaround:** treat \"does the ref resolve?\" and \"can any bearer satisfy it?\" as two different questions, and check the second before minting. Concretely: `grep -rn \"assignTrait\" src/engine/ --include=*.ts \\| grep -v __tests__` enumerates every producer in one call — all mint from fixed maps, so no content-file edit can add a minted trait. Then ship the reachable subset and pin the remainder with a **set-equality** assertion (`toEqual` on the exact remaining refs), never a count cap: equality fails in both directions, so the deferred items cannot silently grow *or* be quietly deleted to reach zero. Remainder filed as THR-808 with a per-class decision rather than a per-ref backlog.",
     "session": "THR-800 hourly `tb-opus-pickup`, Opus: repointing 62 dead trait refs."
+  },
+  {
+    "num": "228",
+    "id": 228,
+    "count": 2,
+    "date": "2026-07-26",
+    "category": "tooling",
+    "description": "**The Playwright MCP's allowed write roots are pinned to a *stale, already-reaped* worktree, so the DoD's own sanctioned unattended-capture path — `browser_take_screenshot` with an absolute filename inside the session worktree — is rejected outright.** THR-784's browser-verify pass hit `File access denied: … is outside allowed roots. Allowed roots: …\\worktrees\\nostalgic-mahavira-0c1c90\\.playwright-mcp, …\\worktrees\\nostalgic-mahavira-0c1c90`. That worktree is not this session's and no longer exists on disk. THR-754 added the absolute-path rule precisely to stop captures landing outside the repo (impediment #199c), and this makes the rule unsatisfiable as written. Second occurrence — THR-788 hit the identical wall the same day.",
+    "consequence": "The DoD's requirement-1 screenshot cannot be written where the rule says to write it, and the naive fix (a bare relative filename) is the exact failure #199c exists to prevent, since it lands in a directory the session does not own and cannot recover from.",
+    "impact": "Medium — costs one failed call plus a copy step per unattended UI ticket; the evidence itself is unaffected.",
+    "workaroundFound": true,
+    "workaround": "Screenshot into the MCP's *reported* allowed root (the error message names it), then `cp` into the session worktree. `.playwright-mcp/` is already gitignored, so the relocated capture never enters the commit and only the pasted evidence text does. Read the copied PNG back to confirm it is the intended frame before citing it.",
+    "session": "THR-784, hourly `tb-opus-pickup` run, 2026-07-26 ~20:10 UTC."
+  },
+  {
+    "num": "229",
+    "id": 229,
+    "count": 1,
+    "date": "2026-07-26",
+    "category": "tooling",
+    "description": "**A field can be read by production UI and written by nobody, and neither the typecheck ratchet nor the test suite can notice, because `undefined` is a legal value of its declared optional type.** `AttachmentSummary.totalTicks?: number` is consumed by `AttachmentRow`, `ProwessTab`, `AttachmentDetailView` and `attachmentTooltip` as a progress-bar denominator, and a repo-wide sweep for a production writer — on the trait node or the `has_trait` edge — returns **zero**. The bars are guarded (`ticksRemaining != null && totalTicks != null`), so the never-satisfied branch renders nothing and looks like \"this agent has no timed conditions\" rather than like a defect. Same family as THR-786's phantom-API and THR-803's two-vocabularies findings, but with a different tell: there is no error to grep for, only an absence.",
+    "consequence": "A UI affordance shipped and was never once exercised in play. No gate can catch it: the type is honest, the guard is correct, the tests passed because they asserted the *read*, and the only symptom is a control that silently declines to render.",
+    "impact": "Medium",
+    "workaroundFound": true,
+    "workaround": "When a ticket names a display field, grep for its **production writer** before its readers — an optional field with readers and no writers is dead by construction. The generalisable check: for any `x?: T` that gates rendering, `grep` the assignment side; if the only hits are type declarations, tests and the read sites, the feature has never run.",
+    "session": "THR-784, hourly `tb-opus-pickup` run, 2026-07-26."
   }
 ];
 // ── End data ──
