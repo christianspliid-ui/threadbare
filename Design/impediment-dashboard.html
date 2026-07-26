@@ -3157,6 +3157,19 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "**Workaround:** verify by *rendering*, not by building. `npm run generate-ul-dashboard` prints \"N terms across M shards\" — check M went up. Then load `?view=ul` and assert the shard appears with the expected term count and that See-Also chips **resolve** (an unresolved wikilink renders as plain text, which is the visible tell for the slug trap). Both defects in this ticket were caught that way, before commit. **Durable rules:** (a) prefer plain ASCII hyphens in UL headings — the slugifier's strip set is the contract, not typographic taste; (b) when a generator's miss path is a silent skip, the post-condition to assert is the *count*, since a skip is indistinguishable from success in the artifact; (c) a warning behind a near-always-successful fallback is not a gate — the check THR-806 proposes must test index membership directly, because `missing_one_liner` provably cannot.",
     "session": "THR-788 hourly `tb-opus-pickup`, Opus: adding the `Traits` UL shard + Manual wiki page."
+  },
+  {
+    "num": "227",
+    "id": 227,
+    "count": 1,
+    "date": "2026-07-26",
+    "category": "process",
+    "description": "**A ticket's Done-when can be unreachable because one of its two sanctioned routes is inert, and nothing surfaces that until an executor is mid-implementation.** THR-800 asked for `validateTraitRefs().dead.length === 0` and offered two routes: repoint the refs, or \"**mint the missing traits** — many dead refs name traits the design clearly wants\". Route 2 does not work. Every trait producer mints from a **closed, hardcoded set** (`phaseEconomicTraits` by named constant, `phaseEncounterTraits` by reach→mastery map, `phaseReputationTraits` by reach, `phases/corePersonality` by continuum, `phases/personalityTraitEmerge` by axis) — so adding a definition to a content file gives a ref something to resolve *to* while leaving it satisfied by no bearer. The gate stays permanently false **and the sweep goes quiet**, which is strictly worse than a visible dead ref. Route 1 could only reach 40 of 62, because 22 name concepts no shipped definition carries.",
+    "consequence": "The Done-when was reachable only by the route that would have *hidden* the remaining defect while appearing to close it. An executor optimising for a green Done-when — rather than for the ref actually gating — would have minted 22 inert definitions, taken `dead` to 0, and destroyed the only signal that the gates are dead. The ticket would have read as fully shipped.",
+    "impact": "M",
+    "workaroundFound": true,
+    "workaround": "**Workaround:** treat \"does the ref resolve?\" and \"can any bearer satisfy it?\" as two different questions, and check the second before minting. Concretely: `grep -rn \"assignTrait\" src/engine/ --include=*.ts \\| grep -v __tests__` enumerates every producer in one call — all mint from fixed maps, so no content-file edit can add a minted trait. Then ship the reachable subset and pin the remainder with a **set-equality** assertion (`toEqual` on the exact remaining refs), never a count cap: equality fails in both directions, so the deferred items cannot silently grow *or* be quietly deleted to reach zero. Remainder filed as THR-808 with a per-class decision rather than a per-ref backlog.",
+    "session": "THR-800 hourly `tb-opus-pickup`, Opus: repointing 62 dead trait refs."
   }
 ];
 // ── End data ──

@@ -218,10 +218,10 @@ remediation ticket or the build fails.
 - **Intent:** Items raise Domain Capability tiers — a legendary blade makes its bearer mightier on the Prowess tab and in encounter eligibility.
 - **Producer → Consumer:** Attachments, Items & Possessions → Personality & Emergent Traits
 - **UL terms:** *Domain Capability*, *Attachment*
-- **Production hits:** 32 total — 4 write, 2 read, 26 unclassified
+- **Production hits:** 33 total — 4 write, 2 read, 27 unclassified
 - **Write sites:** `src/data/anomaly-reward-catalog.ts`, `src/data/artifact-templates.ts`, `src/data/reward-attachment-catalog.ts`, `src/data/starter-attachments.ts`
 - **Read sites:** `src/engine/domainCapability.ts`, `src/engine/effects/effectQueries.ts`
-- **Other hits:** `src/components/CMS/registry.ts`, `src/components/Codex/codexRegistry.ts`, `src/components/Game/AgentDetailPanel.tsx`, `src/data/condition-trait-content.ts`, `src/data/core-trait-content.ts` +21 more
+- **Other hits:** `src/components/CMS/registry.ts`, `src/components/Codex/codexRegistry.ts`, `src/components/Game/AgentDetailPanel.tsx`, `src/data/choice-set-catalog.ts`, `src/data/condition-trait-content.ts` +22 more
 - **Verdict:** Verified 2026-07-24: THR-718 finished the effects[] migration: a `stat_contribution` primitive (effects.ts) is summed by `collectStatContributions` (effectQueries.ts) and added inside `computeRawScore`'s possesses/bonded_to artifact walk (domainCapability.ts). 9 catalog entries across all bands carry real contributions (artifact-templates ×3 legendary, starter ×4, anomaly ×2) — both-side symbol hits: `stat_contribution` on write (catalogs) + read (effectQueries), `collectStatContributions` on read (domainCapability + effectQueries). Legacy `domainContributions` node-prop read preserved for traits/resources. Unit + hook + content-band tests green.
 
 ### `attachment-edge-modifiers` — 🔴 LEAKED
@@ -635,10 +635,10 @@ remediation ticket or the build fails.
 - **Producer → Consumer:** Personality & Emergent Traits → Ambitions & Initiatives
 - **UL terms:** *Trait*
 - **Module:** `src/engine/traitRefValidation.ts` — **no production importers**
-- **Production hits:** 4 total — 0 write, 2 read, 2 unclassified
-- **Write sites:** —
+- **Production hits:** 9 total — 3 write, 2 read, 4 unclassified
+- **Write sites:** `src/data/artifact-templates.ts`, `src/data/choice-set-catalog.ts`, `src/data/reward-attachment-catalog.ts`
 - **Read sites:** `src/debug-bridge.ts`, `src/engine/traitRefValidation.ts`
-- **Other hits:** `src/engine/simulationRuntime.ts`, `src/engine/traitRefIndex.ts`
+- **Other hits:** `src/data/anomaly-reward-catalog.ts`, `src/data/starter-attachments.ts`, `src/engine/simulationRuntime.ts`, `src/engine/traitRefIndex.ts`
 - **Verdict:** Pinned by badgeOverride: Detector shipped and measured (THR-786): 62 of the authored trait refs resolve to no trait definition, so those gates can never pass. Reconciling the authoring vocabulary against the minted definitions is content work outside the predicate floor.
 
 ### `world-events-mint-ambitions` — 🟢 LIVE

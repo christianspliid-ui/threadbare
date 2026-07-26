@@ -15,10 +15,10 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     category: 'dominion',
     reachFloors: { gold: 0.4, eye: 0.3 },
     requiredTraits: [],
-    blockingTraits: ['hermit'],
+    blockingTraits: ['trait.core.core_warmth.vice'],
     sphereAffinities: ['matter', 'mind'],
     bondModifiers: [{ bondType: 'trade_partner', modifier: 0.3 }],
-    boostingTraits: ['merchant', 'networker'],
+    boostingTraits: ['trait.mastery.trade-baron', '#social'],
     reachAffinity: { gold: 0.8, eye: 0.5, shadow: 0.2, heart: 0.2 },
     strategicProfile: {
       behaviorFamily: 'merchant-expansion',
@@ -85,7 +85,7 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     blockingTraits: ['pacifist'],
     sphereAffinities: ['force', 'mind'],
     bondModifiers: [{ bondType: 'vassal', modifier: 0.4 }],
-    boostingTraits: ['commander', 'ruthless'],
+    boostingTraits: ['trait.mastery.battle-hardened', 'trait.personality.iron.vice'],
     reachAffinity: { iron: 0.8, heart: 0.6, eye: 0.3 },
     strategicProfile: {
       behaviorFamily: 'warlord-expansion',
@@ -152,7 +152,7 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     blockingTraits: [],
     sphereAffinities: ['matter', 'energy'],
     bondModifiers: [],
-    boostingTraits: ['perfectionist', 'rune_touched'],
+    boostingTraits: ['perfectionist', 'trait.mastery.spell-weaver'],
     reachAffinity: { iron: 0.7, veil: 0.6, stone: 0.3 },
     milestones: [
       {
@@ -206,7 +206,7 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     blockingTraits: ['veil_blind'],
     sphereAffinities: ['mind', 'spirit'],
     bondModifiers: [{ bondType: 'mentor', modifier: 0.2 }],
-    boostingTraits: ['scholar', 'veil_touched'],
+    boostingTraits: ['#eye', '#veil'],
     reachAffinity: { veil: 0.9, eye: 0.5, star: 0.3 },
     strategicProfile: {
       behaviorFamily: 'scholar-seeker',
@@ -234,7 +234,7 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
       },
       {
         id: 'arcane_trait',
-        condition: { type: 'agent_has_trait', trait: 'enlightened' },
+        condition: { type: 'agent_has_trait', trait: 'trait.mastery.spell-weaver' },
         prose: ['Understanding arrived not as a thought but as a silence.'],
       },
     ],
@@ -276,7 +276,7 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
       { bondType: 'heir', modifier: 0.5 },
       { bondType: 'spouse', modifier: 0.3 },
     ],
-    boostingTraits: ['noble_blood', 'charismatic'],
+    boostingTraits: ['noble_blood', 'trait.mastery.silver-tongue'],
     reachAffinity: { gold: 0.6, heart: 0.7, star: 0.4 },
     strategicProfile: {
       behaviorFamily: 'court-political',
@@ -343,7 +343,7 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     blockingTraits: [],
     sphereAffinities: ['entropy', 'life'],
     bondModifiers: [{ bondType: 'fellow_refugee', modifier: 0.3 }],
-    boostingTraits: ['survivor', 'desperate'],
+    boostingTraits: ['trait.mastery.steadfast', 'trait.condition.exhausted'],
     reachAffinity: { stone: 0.6, star: 0.7, shadow: 0.4 },
     milestones: [
       {
@@ -391,7 +391,7 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     blockingTraits: ['incurious'],
     sphereAffinities: ['time', 'mind'],
     bondModifiers: [{ bondType: 'informant', modifier: 0.2 }],
-    boostingTraits: ['scholar', 'ruin_delver'],
+    boostingTraits: ['#eye', 'ruin_delver'],
     reachAffinity: { eye: 0.8, veil: 0.5, stone: 0.4 },
     strategicProfile: {
       behaviorFamily: 'scholar-seeker',
@@ -419,7 +419,7 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
       },
       {
         id: 'secrets_trait',
-        condition: { type: 'agent_has_trait', trait: 'keeper_of_secrets' },
+        condition: { type: 'agent_has_trait', trait: 'trait.reputation.shadow.positive' },
         prose: ['The knowledge settled in, heavy and quiet as silt.'],
       },
     ],
@@ -458,7 +458,7 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     blockingTraits: ['apostate'],
     sphereAffinities: ['spirit', 'mind'],
     bondModifiers: [{ bondType: 'convert', modifier: 0.3 }],
-    boostingTraits: ['zealot', 'orator'],
+    boostingTraits: ['trait.reputation.star.negative', 'trait.mastery.silver-tongue'],
     reachAffinity: { star: 0.8, heart: 0.6, eye: 0.2 },
     strategicProfile: {
       behaviorFamily: 'zealot-mission',
@@ -493,7 +493,7 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     completion: { requires: 2, of: 3 },
     abandonmentTriggers: [
       {
-        condition: { type: 'agent_has_trait', trait: 'faith_broken' },
+        condition: { type: 'agent_has_trait', trait: 'trait.core.core_hope.vice' },
         prose: ['The prayers stopped. The silence that followed was answer enough.'],
       },
     ],
@@ -525,7 +525,7 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     blockingTraits: [],
     sphereAffinities: ['matter', 'time'],
     bondModifiers: [{ bondType: 'laborer', modifier: 0.2 }],
-    boostingTraits: ['architect', 'visionary'],
+    boostingTraits: ['trait.reputation.stone.positive', 'trait.personality.star.virtue'],
     reachAffinity: { gold: 0.5, iron: 0.4, stone: 0.7 },
     strategicProfile: {
       behaviorFamily: 'builder-civic',
@@ -592,7 +592,7 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     blockingTraits: ['plague_bearer'],
     sphereAffinities: ['life', 'spirit'],
     bondModifiers: [{ bondType: 'patient', modifier: 0.2 }],
-    boostingTraits: ['healer', 'empathic'],
+    boostingTraits: ['trait.mastery.anointed', 'trait.core.core_warmth.virtue'],
     reachAffinity: { heart: 0.6, gold: 0.7, star: 0.4 },
     milestones: [
       {
@@ -607,7 +607,7 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
       },
       {
         id: 'healer_trait',
-        condition: { type: 'agent_has_trait', trait: 'miracle_worker' },
+        condition: { type: 'agent_has_trait', trait: 'trait.mastery.anointed' },
         prose: ['They brought the dying child. She brought it back.'],
       },
     ],
@@ -649,10 +649,10 @@ export const REACTIVE_AMBITION_TEMPLATES: readonly ReactiveAmbitionTemplate[] = 
     skipFilters: false,
     reachFloors: { iron: 0.3, shadow: 0.3 },
     requiredTraits: [],
-    blockingTraits: ['forgiving'],
+    blockingTraits: ['trait.core.core_forgiveness.virtue'],
     sphereAffinities: ['force', 'entropy'],
     bondModifiers: [{ bondType: 'enemy', modifier: 0.5 }],
-    boostingTraits: ['grudge_bearer', 'ruthless'],
+    boostingTraits: ['trait.core.core_forgiveness.vice', 'trait.personality.iron.vice'],
     reachAffinity: { iron: 0.6, shadow: 0.8, eye: 0.3 },
     milestones: [
       {
@@ -674,7 +674,7 @@ export const REACTIVE_AMBITION_TEMPLATES: readonly ReactiveAmbitionTemplate[] = 
     completion: { requires: 2, of: 3 },
     abandonmentTriggers: [
       {
-        condition: { type: 'agent_has_trait', trait: 'forgiven' },
+        condition: { type: 'agent_has_trait', trait: 'trait.core.core_forgiveness.virtue' },
         prose: ['The rage cooled. The hand unclenched. Something like peace.'],
       },
     ],
@@ -708,7 +708,7 @@ export const REACTIVE_AMBITION_TEMPLATES: readonly ReactiveAmbitionTemplate[] = 
     blockingTraits: [],
     sphereAffinities: ['force', 'spirit'],
     bondModifiers: [{ bondType: 'exile_kin', modifier: 0.4 }],
-    boostingTraits: ['exile', 'determined'],
+    boostingTraits: ['exile', 'trait.mastery.steadfast'],
     reachAffinity: { iron: 0.7, heart: 0.6, stone: 0.3 },
     milestones: [
       {
@@ -764,7 +764,7 @@ export const REACTIVE_AMBITION_TEMPLATES: readonly ReactiveAmbitionTemplate[] = 
     blockingTraits: [],
     sphereAffinities: ['force', 'entropy'],
     bondModifiers: [],
-    boostingTraits: ['grief_stricken', 'loyal'],
+    boostingTraits: ['trait.core.core_hope.vice', 'trait.personality.heart.virtue'],
     reachAffinity: { iron: 0.7, shadow: 0.5, heart: 0.3 },
     milestones: [
       {
@@ -781,7 +781,7 @@ export const REACTIVE_AMBITION_TEMPLATES: readonly ReactiveAmbitionTemplate[] = 
     completion: { requires: 2, of: 2 },
     abandonmentTriggers: [
       {
-        condition: { type: 'agent_has_trait', trait: 'grief_resolved' },
+        condition: { type: 'agent_has_trait', trait: 'trait.core.core_hope.virtue' },
         prose: ['The dead do not ask for blood. Only the living insist on it.'],
       },
     ],
@@ -814,7 +814,7 @@ export const REACTIVE_AMBITION_TEMPLATES: readonly ReactiveAmbitionTemplate[] = 
     blockingTraits: [],
     sphereAffinities: ['spirit', 'time'],
     bondModifiers: [{ bondType: 'fated_companion', modifier: 0.3 }],
-    boostingTraits: ['destiny_marked', 'resolute'],
+    boostingTraits: ['destiny_marked', 'trait.mastery.steadfast'],
     reachAffinity: { star: 0.8, heart: 0.4, veil: 0.3 },
     milestones: [
       {
@@ -880,10 +880,10 @@ export const EVENT_MINTED_AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     category: 'vengeance',
     reachFloors: { iron: 0.1 },
     requiredTraits: [],
-    blockingTraits: ['forgiving'],
+    blockingTraits: ['trait.core.core_forgiveness.virtue'],
     sphereAffinities: ['force', 'entropy'],
     bondModifiers: [{ bondType: 'enemy', modifier: 0.4 }],
-    boostingTraits: ['grudge_bearer', 'ruthless', 'proud'],
+    boostingTraits: ['trait.core.core_forgiveness.vice', 'trait.personality.iron.vice', 'trait.core.core_humility.vice'],
     reachAffinity: { iron: 0.7, shadow: 0.6, eye: 0.3 },
     milestones: [
       {
@@ -905,7 +905,7 @@ export const EVENT_MINTED_AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     completion: { requires: 2, of: 3 },
     abandonmentTriggers: [
       {
-        condition: { type: 'agent_has_trait', trait: 'grief_resolved' },
+        condition: { type: 'agent_has_trait', trait: 'trait.core.core_hope.virtue' },
         prose: ['The rage cooled. The debt was let go, or simply outlived.'],
       },
     ],
@@ -937,7 +937,7 @@ export const EVENT_MINTED_AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     blockingTraits: [],
     sphereAffinities: ['spirit', 'force'],
     bondModifiers: [{ bondType: 'kin', modifier: 0.4 }],
-    boostingTraits: ['protector', 'loyal', 'steadfast'],
+    boostingTraits: ['trait.core.core_warmth.virtue', 'trait.personality.heart.virtue', 'trait.mastery.steadfast'],
     reachAffinity: { heart: 0.6, iron: 0.6, stone: 0.4 },
     milestones: [
       {
@@ -991,7 +991,7 @@ export const EVENT_MINTED_AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     blockingTraits: ['rooted'],
     sphereAffinities: ['entropy', 'time'],
     bondModifiers: [{ bondType: 'fellow_refugee', modifier: 0.3 }],
-    boostingTraits: ['survivor', 'desperate', 'craven'],
+    boostingTraits: ['trait.mastery.steadfast', 'trait.condition.exhausted', 'trait.condition.terrified'],
     reachAffinity: { star: 0.6, stone: 0.5, shadow: 0.4 },
     milestones: [
       {
@@ -1039,7 +1039,7 @@ export const EVENT_MINTED_AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     blockingTraits: [],
     sphereAffinities: ['matter', 'life'],
     bondModifiers: [{ bondType: 'labor', modifier: 0.3 }],
-    boostingTraits: ['builder', 'stubborn', 'visionary'],
+    boostingTraits: ['trait.reputation.stone.positive', 'trait.mastery.steadfast', 'trait.personality.star.virtue'],
     reachAffinity: { stone: 0.6, gold: 0.5, iron: 0.4 },
     milestones: [
       {
@@ -1093,7 +1093,7 @@ export const EVENT_MINTED_AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     blockingTraits: [],
     sphereAffinities: ['life', 'time'],
     bondModifiers: [{ bondType: 'alliance', modifier: 0.3 }],
-    boostingTraits: ['visionary', 'charismatic', 'pioneer'],
+    boostingTraits: ['trait.personality.star.virtue', 'trait.mastery.silver-tongue', 'pioneer'],
     reachAffinity: { heart: 0.6, gold: 0.5, star: 0.4 },
     milestones: [
       {
@@ -1110,7 +1110,7 @@ export const EVENT_MINTED_AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     completion: { requires: 2, of: 2 },
     abandonmentTriggers: [
       {
-        condition: { type: 'agent_has_trait', trait: 'disillusioned' },
+        condition: { type: 'agent_has_trait', trait: 'trait.core.core_hope.vice' },
         prose: ['The vision thinned to nothing. The new country stayed empty.'],
       },
     ],
@@ -1141,7 +1141,7 @@ export const EVENT_MINTED_AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     blockingTraits: ['incurious'],
     sphereAffinities: ['mind', 'spirit'],
     bondModifiers: [{ bondType: 'fellow_seeker', modifier: 0.3 }],
-    boostingTraits: ['scholar', 'obsessive', 'veil_touched'],
+    boostingTraits: ['#eye', 'obsessive', '#veil'],
     reachAffinity: { eye: 0.7, veil: 0.6, star: 0.4 },
     milestones: [
       {
@@ -1156,7 +1156,7 @@ export const EVENT_MINTED_AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
       },
       {
         id: 'wonder_keeper',
-        condition: { type: 'agent_has_trait', trait: 'keeper_of_secrets' },
+        condition: { type: 'agent_has_trait', trait: 'trait.reputation.shadow.positive' },
         prose: ['What was glimpsed once, they now carry, heavy and quiet.'],
       },
     ],

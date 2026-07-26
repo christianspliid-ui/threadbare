@@ -7,6 +7,23 @@
  *
  * Design doc: Docs/plans/2026-03-26-encounter-reward-wiring-design.md
  */
+/**
+ * THR-800 — phantom grant keys (5 in this file).
+ *
+ * The `trait_grant` effects below name bare snake_case keys with no trait definition
+ * behind them. This is deliberate and it *works*: `collectGrantedTraits` returns the
+ * bare key, every consumer unions it into the bearer's ref set, and a gate naming the
+ * same key passes (the THR-737 loop). What a phantom lacks is a definition — so it has
+ * no display name, no visibility, and no `domainContributions`, and it cannot appear on
+ * the bearer's sheet. That collides with the trait canon's "always visible once known"
+ * rule, which is why `validateTraitRefs` reports them separately from dead refs rather
+ * than treating them as satisfied.
+ *
+ * Kept as-is here: each backs a live gate today, and giving them definitions is only
+ * half the job — see THR-808 for why minting without a producer is worse than the
+ * current state. The count is pinned by `traitRefReconciliation.test.ts`, so a new
+ * bare-key grant is a deliberate act rather than a drift.
+ */
 
 import type { GraphNode } from '../types/graph';
 import type { PossessionNodeProperties } from '../types/attachments';
