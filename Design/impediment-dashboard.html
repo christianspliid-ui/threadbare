@@ -3196,6 +3196,58 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "When a ticket names a display field, grep for its **production writer** before its readers — an optional field with readers and no writers is dead by construction. The generalisable check: for any `x?: T` that gates rendering, `grep` the assignment side; if the only hits are type declarations, tests and the read sites, the feature has never run.",
     "session": "THR-784, hourly `tb-opus-pickup` run, 2026-07-26."
+  },
+  {
+    "num": "230",
+    "id": 230,
+    "count": 1,
+    "date": "2026-07-26",
+    "category": "tooling",
+    "description": "**A gate placed in a loop full of sibling gates inherits their guard idiom, and if that guard is a lookup the gate's own targets fail, the new gate silently does nothing while its unit tests pass.** THR-805 added a faction-rank gate to `filterByPrerequisites` and, matching the five gates surrounding it, guarded it on `if (template && ...)` where `template = getAnyEncounterById(entry.templateId)`. Every unit test passed; the live sweep drew the gated template anyway. Cause: `getAnyEncounterById` returns `undefined` for **every** cache-registered regional template (verified on `rb.senior.deep_scout`, `ts.elite.found_cathedral`, `mct.senior.foreign_deal`, `bf.elite.grand_monument`) because those reach the cache through `UNIFIED_ACTION_TEMPLATES`, not the encounter pools — so the guard was false for exactly the content the gate existed to gate. **Cost:** one implement-test-sweep cycle. **What caught it:** only the live sweep — the fixture-based tests construct their own cache entries and never consult the resolver, so they could not see it. **Workaround:** the gate needs only the template id and its meta, so it now asks for neither the template object nor the guard. **Generalisable lesson:** copying a neighbouring gate's guard copies its *blind spots*. Before reusing a `template &&` idiom, check that the resolver actually resolves your ids — and prove a new gate on live data, never on hand-built fixtures alone, because a fixture cannot falsify a lookup it does not call. The underlying gap disables five shipped gates for this id set and is filed as THR-811.",
+    "consequence": "A newly-added gate passed its own unit tests and did nothing in a live run, because the guard idiom it inherited from its neighbours is false for exactly the ids the gate targets.",
+    "impact": "High",
+    "workaroundFound": true,
+    "workaround": "Depend only on what the gate actually reads. THR-805's rank gate needs the template id and its meta, so it asks for neither a resolved template nor the guard; the underlying lookup gap was filed as THR-811 and fixed 2026-07-27 by repointing the loop to `getUnifiedTemplateById`.",
+    "session": "THR-805, hourly `tb-opus-pickup` run, 2026-07-26. Reformatted from 5 to 10 cells during THR-811 (2026-07-27) after `generate-impediment-dashboard` was found skipping it."
+  },
+  {
+    "num": "231",
+    "id": 231,
+    "count": 1,
+    "date": "2026-07-27",
+    "category": "tooling",
+    "description": "**The headless CLI's `eval` exposes only `state`, so nothing owned by `SimulationRuntime` — including the encounter cache — is reachable from the REPL.** `scripts/cli.ts` builds the closure as `new Function('state', ...)` and passes only `state`, while the cache, telemetry and version counters live on the runtime the same file already holds in a module-level `let runtime`. Its own `debug` command reads `savedRuntime.encounterCache?.getAllEntries()`, so the data is one identifier away from the REPL and simply not bound.",
+    "consequence": "THR-811's membership predicate required walking the live cache's distinct template ids — exactly the shape of question the CLI exists to answer — and had to be re-bootstrapped as a bundled throwaway script instead. ~15 minutes of boot-sequence copying, plus two wrong import-path guesses (`generateArchetypes` is in `src/engine/ascendant`, `createBalancedCosmology` in `src/engine/cosmology`; neither is under `worldgen/`).",
+    "impact": "Low",
+    "workaroundFound": true,
+    "workaround": "Write the probe into gitignored `.cache/` (not the scratchpad — that is what makes the relative `../src/...` imports resolve) and bundle it with `npx esbuild --bundle --platform=node --format=esm`, exactly as the `cli` npm script does. Real fix is ~1 line: bind the runtime into the eval closure, `new Function('state', 'runtime', ...)`. Will recur for any future cache/telemetry question.",
+    "session": "THR-811, hourly `tb-opus-pickup` run, 2026-07-27."
+  },
+  {
+    "num": "232",
+    "id": 232,
+    "count": 1,
+    "date": "2026-07-27",
+    "category": "tooling",
+    "description": "**`WorldGraph.addEdge` throws on a missing target node while the trait read path deliberately tolerates dangling targets, so a fixture written to the documented read-side contract fails at construction.** `collectBearerTraitRefs` carries an explicit comment that a dangling `has_trait` target still contributes its id — \"an id-form gate must not stop matching just because the definition node was removed\" — but `addEdge` rejects authoring one (`Target node not found: trait.scar.haunted`).",
+    "consequence": "One red cycle on two tests whose failure looked like a gate bug rather than a fixture bug. Both contracts are individually defensible (the graph refuses to author dangling edges; the reader survives them arriving by deletion), but the read-side comment reads as licence to build such an edge and no test legitimately can.",
+    "impact": "Low",
+    "workaroundFound": true,
+    "workaround": "Add the trait definition node before the edge — ~12 lines of `properties` boilerplate mirroring `traitPredicate.contract.test.ts`'s `HAUNTED_TRAIT`. A shared `grantTrait(graph, traitId)` test helper would remove both the boilerplate and the trap for every future trait-gate fixture; failing that, the `collectBearerTraitRefs` comment should say the dangling case arises from deletion, not authoring.",
+    "session": "THR-811, hourly `tb-opus-pickup` run, 2026-07-27."
+  },
+  {
+    "num": "233",
+    "id": 233,
+    "count": 1,
+    "date": "2026-07-27",
+    "category": "tooling",
+    "description": "**A malformed impediment row is dropped by `generate-impediment-dashboard` with a warning nobody reads, and `check:generated-freshness` structurally cannot catch it — because a skipped row produces *unchanged* output, which is exactly what the gate asserts.** The generator requires 10+ pipe-cells and prints `skipping line N (expected 10+ cells, got 5)` to stdout, then writes the dashboard without that row. The freshness gate regenerates and diffs against `HEAD`: identical, so it reports OK. Found during THR-811 while verifying the gate had actually seen two rows appended that run — it had not, and neither had row **230**, appended by the previous run (THR-805) and silently absent from the dashboard for a day.",
+    "consequence": "The impediment log is the input to `retrospective`, and the dashboard is how it is read. A row that logs friction but never reaches the dashboard is invisible to the continuous-improvement loop it exists to feed — the failure mode the log was created to prevent. Worse, the row *looks* logged: it is present in `Docs/impediments.md`, so a grep finds it and nothing signals the drop. Two rows across two consecutive hourly runs suggests the malformed 5-cell shape propagates by copying the most recent row as a template, which is the natural thing to do.",
+    "impact": "Medium",
+    "workaroundFound": true,
+    "workaround": "Count the cells: the schema is the ten columns declared in this table's own header (number, count, date, category, description, consequence, impact, workaround-found, workaround-description, session-context). Sample rows **226–229** as the template, not 230. After appending, run `npm run generate-impediment-dashboard` and read its output for `skipping` — the row count in `wrote Design\\impediment-dashboard.html (N rows...)` must have risen by the number appended. Rows 230–232 were reformatted from 5 to 10 cells during THR-811 (241 → 244 rows). Real fix: make the generator **fail** on a malformed row rather than warn-and-skip, since the freshness gate cannot see the difference.",
+    "session": "THR-811, hourly `tb-opus-pickup` run, 2026-07-27."
   }
 ];
 // ── End data ──

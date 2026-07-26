@@ -53,7 +53,7 @@ import { collectGrantedTraits, GRANTED_TRAIT_EFFECTIVE_LEVEL } from './effects/e
 import { collectBearerTraitRefs, bearerMatchesPredicate } from './traitRefIndex';
 import type { BearerTraitRefs } from './traitRefIndex';
 import { GROUP_MIN_MEMBERS } from '../data/group-constants';
-import { getAnyEncounterById } from '../data/encounter-content';
+import { getUnifiedTemplateById } from '../data/unified-action-templates';
 import { FACTION_ENCOUNTER_META } from '../data/faction-encounter-content';
 import { FACTION_DEFINITIONS } from '../data/faction-definitions';
 import type { FactionEncounterMeta } from '../types/faction';
@@ -296,8 +296,25 @@ export function filterByPrerequisites(
     // Chain gate
     if (!isChainStageUnlocked(entry.templateId, progress)) continue;
 
-    // Trait gate — look up template for requiredTraits field
-    const template = getAnyEncounterById(entry.templateId);
+    // Resolve the template every gate below reads its authoring off.
+    //
+    // THR-811: this was `getAnyEncounterById`, which covers only the encounter pools
+    // and returned `undefined` for 39 of the 204 template ids the live cache actually
+    // holds (measured at tick 150, seed 42 / medium) — every guild template reaching
+    // the cache via `CACHE_REGISTERED_REGIONAL_TEMPLATES`, plus the `enc.*`,
+    // `reputation.*`, `fa.*` and sphere-themed families, all of which resolve through
+    // `UNIFIED_ACTION_TEMPLATES` instead. Each `template?.` gate below silently passed
+    // those ids unchecked, so a `requiredTraits` or `minGroupMembers` declaration on
+    // any of them was dead on arrival.
+    //
+    // `getUnifiedTemplateById` is a superset — its own last fallback *is*
+    // `getAnyEncounterById` — so nothing that resolved before stops resolving. For 39
+    // ids present in both it now returns the `withGroupAffinity`-swept copy rather
+    // than the pre-sweep original from the raw pool; that is the canonical object and
+    // the copies differ only by an appended `'group'` affinity, which cannot make a
+    // template group-exclusive (the gate below needs `'group'` *without*
+    // `'individual'`). Both properties are pinned by test.
+    const template = getUnifiedTemplateById(entry.templateId);
 
     // Broken gate (THR-773): only opt-in rebuild content reaches a broken mortal.
     if (gateBroken && !template?.drawableWhileBroken) continue;
@@ -335,8 +352,13 @@ export function filterByPrerequisites(
       if (isBlocked) continue;
     }
 
-    // Faction join prerequisites gate — check domain capability minimums
-    if (template && entry.templateId.endsWith('.join')) {
+    // Faction join prerequisites gate — check domain capability minimums.
+    //
+    // No longer guarded on `template` (THR-811): this gate reads only the id and its
+    // meta, so requiring a resolvable template was a dependency it never had — and
+    // while the lookup above was pool-only, that guard was the difference between
+    // gating a guild `.join` and skipping it. Now consistent with the rank gate below.
+    if (entry.templateId.endsWith('.join')) {
       const meta = FACTION_ENCOUNTER_META.get(entry.templateId);
       if (meta) {
         const def = FACTION_DEFINITIONS.get(meta.factionDefId);
@@ -378,13 +400,13 @@ export function filterByPrerequisites(
     // `.join` templates are exempt — joining is how you *acquire* standing, and the
     // gate above already enforces their own `joinPrerequisites`.
     //
-    // Deliberately NOT guarded on `template` being resolvable: `getAnyEncounterById`
-    // returns undefined for every one of these guild templates (they reach the cache
-    // via `CACHE_REGISTERED_REGIONAL_TEMPLATES`, which resolves through
-    // `UNIFIED_ACTION_TEMPLATES`), so a `template &&` guard would silently skip the
-    // gate on exactly the content it exists to gate. The gate needs only the id and
-    // its meta, so it asks for neither. That lookup gap disables five *other* gates
-    // in this same loop for the same ids — tracked as THR-811, not worked around here.
+    // Deliberately NOT guarded on `template` being resolvable — the gate needs only
+    // the id and its meta, so it asks for neither. When this shipped, that was also
+    // load-bearing: `getAnyEncounterById` returned undefined for every one of these
+    // guild templates, so a `template &&` guard would have silently skipped the gate
+    // on exactly the content it exists to gate. THR-811 has since closed that lookup
+    // gap at the top of the loop, so the guard would now be harmless here — but
+    // depending on a template this gate never reads would still be wrong.
     if (!entry.templateId.endsWith('.join')) {
       const rankMeta = FACTION_ENCOUNTER_META.get(entry.templateId);
       if (rankMeta && RANK_GATED_QUEST_TYPES.has(rankMeta.questType)) {
