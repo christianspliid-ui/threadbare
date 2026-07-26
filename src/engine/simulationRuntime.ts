@@ -26,6 +26,8 @@
 
 import { EncounterCacheManager, buildDangerMap } from './encounterCache';
 import { buildDistanceMatrix } from './distanceMatrix';
+import { buildTraitRefIndex } from './traitRefIndex';
+import type { TraitRefIndex } from './traitRefIndex';
 import type { DistanceMatrix } from './distanceMatrix';
 import type { WorldGraph } from './graph';
 import type { HexTile } from '../types';
@@ -178,6 +180,21 @@ export interface SimulationRuntime {
   /** Tick at which proseCache was last evicted. Starts at -1. */
   proseCacheTick: number;
 
+  // ── Trait ref index (THR-786) ──
+  /**
+   * Ref → trait-definition-ids index, used by the dev-only `validateTraitRefs()`
+   * content sweep. Owned here rather than at `traitRefIndex` module scope per the
+   * engine-caches-per-session rule — a module singleton would carry one playthrough's
+   * culture traits into the next.
+   *
+   * Not on the predicate hot path: `resolveTraitPredicate` answers bearer-scoped gates
+   * from the bearer's own edges, which is equivalent to ref→id expansion for a
+   * membership test. See the header note in `traitRefIndex.ts`.
+   */
+  traitRefIndex: TraitRefIndex | null;
+  /** structuralCacheVersion at which traitRefIndex was last built. */
+  traitRefIndexBuiltAt: number;
+
   // ── Doom-phase curation generosity (THR-603) ──
   /**
    * Doom-phase generosity multiplier applied to the branching curator's bias,
@@ -218,6 +235,8 @@ export function createSimulationRuntime(): SimulationRuntime {
     detailPageCacheTick: -Infinity,
     proseCache: new Map(),
     proseCacheTick: -1,
+    traitRefIndex: null,
+    traitRefIndexBuiltAt: -1,
     curationPhaseMultiplier: 1.0,
   };
 }
@@ -375,6 +394,24 @@ export function ensureDistanceMatrix(
 }
 
 /**
+ * Ensure the trait ref index is up-to-date. Rebuilds when structuralCacheVersion has
+ * advanced, since minting a culture trait or granting a new definition adds nodes.
+ *
+ * Untraced by design: the floor adds no runtime tracing (the index is dev-sweep-only
+ * and rebuilds are not on any per-tick path), and the trace ring is a scarce resource.
+ */
+export function ensureTraitRefIndex(
+  runtime: SimulationRuntime,
+  graph: WorldGraph,
+): TraitRefIndex {
+  if (!runtime.traitRefIndex || runtime.traitRefIndexBuiltAt < runtime.structuralCacheVersion) {
+    runtime.traitRefIndex = buildTraitRefIndex(graph);
+    runtime.traitRefIndexBuiltAt = runtime.structuralCacheVersion;
+  }
+  return runtime.traitRefIndex;
+}
+
+/**
  * Reset all runtime caches and timelines (e.g. for cycle transitions).
  * Does NOT reset version counters — those monotonically increase within a session.
  * Does NOT reset balance telemetry — telemetry spans the full session by design.
@@ -389,6 +426,8 @@ export function resetRuntimeCaches(runtime: SimulationRuntime): void {
   runtime.detailPageCacheTick = -Infinity;
   runtime.proseCache.clear();
   runtime.proseCacheTick = -1;
+  runtime.traitRefIndex = null;
+  runtime.traitRefIndexBuiltAt = -1;
   clearTimelines();
   clearRewardHistory();
 }

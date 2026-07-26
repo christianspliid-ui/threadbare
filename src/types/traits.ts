@@ -109,6 +109,29 @@ export interface TraitDefinitionProperties {
   censusTag?: ContentCensusTag;
 }
 
+/**
+ * The canonical trait gate (THR-786). One shape for every trait predicate in the
+ * engine, resolved by `resolveTraitPredicate` in `src/engine/traits.ts`.
+ *
+ * `traitId` is a **ref**, not necessarily a node id: it may name a trait by node id
+ * (`trait.mastery.smithing`), by the short id form (`mastery.smithing`), by display
+ * name (`Master Smith`), or by tag (`#craft`). Refs resolve on ANY-match — a ref
+ * shared by several trait definitions is satisfied by a bearer holding any one of
+ * them, which is what preserved the pre-unification union semantics by construction.
+ *
+ * NAME COLLISION (Done-when #3, flagged to THR-788 for UL wording): ambition
+ * templates carry a `requiredTraits: string[]` of bare ref strings
+ * (`types/ambition.ts`), while `UnifiedActionTemplate.requiredTraits` is a
+ * `TraitPredicate[]`. Same field name, two shapes. Both route through the same
+ * resolver, so behavior agrees; only the declaration differs.
+ */
+export interface TraitPredicate {
+  /** Trait ref — node id, short id, display name, or tag. */
+  traitId: string;
+  /** Minimum assignment level. Absent ⇒ any level satisfies. */
+  minLevel?: number;
+}
+
 /** Properties stored on a has_trait edge (edge.properties) */
 export interface TraitAssignmentProperties {
   level: number;

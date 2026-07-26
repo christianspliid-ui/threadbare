@@ -111,6 +111,18 @@ edge property is deleted and its authored payload re-expressed as `effects[]` `t
 the intent's row is now `attachment-trait-grant-effects`, still LEAKED because the *consumer*
 is missing, tracked by **THR-737**) · **THR-723** dead stat path.
 
+**Personality & Emergent Traits** — first slice, 2 contracts, audited 2026-07-26 (THR-786),
+audit-on-touch triggered by the trait-predicate unification. `trait-predicate-resolution` is
+🟢 LIVE: all six trait-predicate read sites (encounter filter pipeline, effect-predicate
+context builder, `graphConditions`, ambition snapshot eligibility, spell prerequisites,
+item-granted keys) route through one `resolveTraitPredicate` / `collectBearerTraitRefs`, held
+by an unchanged-behavior contract suite. `trait-ref-authoring-vocabulary` is 🔴 LEAKED and
+**measured, not assumed**: `__DEBUG.validateTraitRefs()` reports 62 authored trait refs that
+resolve to no trait definition, because authored refs are bare snake_case keys while every
+definition uses `trait.<category>.<kebab>` ids / Title Case names / `#tags` — two
+vocabularies that have never intersected. Remediation: **THR-800**. Trait *minting*, decay,
+and display rows are still unwritten (waves 2–3, THR-790/THR-791).
+
 Known dead code: `AgentDetailPanel.tsx` is an orphaned pre-`AgentProfileModal` sheet — do
 not "fix" ambition display there.
 
@@ -118,7 +130,7 @@ not "fix" ambition display there.
 
 Contract rows not yet written for: War & Armies · Factions & Succession · Rival Schemes ·
 Doom/Journey · Mandate · Essence & Divine Economy · Encounters & Dilemmas (core) · Culture ·
-Personality & Traits · Economy & Prosperity · Ruins & Delves · Stealth & Detection ·
+Economy & Prosperity · Ruins & Delves · Stealth & Detection ·
 Attention & Chronicle · Omens & Foreshadowing · Strategic Projects · Ascendant Beats ·
 Movement & Colocation · Reputation & Influence · Secrets & Favors (DORMANT) ·
 Effects & Conditions (partially covered) · Agent Lifecycle · Intelligence & Knowledge ·

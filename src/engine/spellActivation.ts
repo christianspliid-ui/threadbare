@@ -25,7 +25,8 @@
  */
 
 import type { WorldGraph } from './graph';
-import { collectGrantedTraits } from './effects/effectQueries';
+import { collectGrantedTraits, GRANTED_TRAIT_EFFECTIVE_LEVEL } from './effects/effectQueries';
+import { collectBearerTraitRefs, bearerMatchesPredicate } from './traitRefIndex';
 import type { ReachDomain } from '../types/traits';
 import type {
   SpellTemplate,
@@ -100,26 +101,20 @@ export function checkPrerequisites(
     }
   }
 
-  // Check required traits
+  // Check required traits (THR-786: shared ref walk — node id, short id, display
+  // name, tags, plus item-granted keys per THR-737).
+  //
+  // The display-name form now actually resolves: this site read
+  // `traitNode.properties.name`, but authored traits carry `name` at the node level
+  // with no `properties.name`, so name-form prerequisites have never been satisfiable.
+  // Same dead-read family as THR-787.
   if (prereqs.requiredTraits) {
-    const traitEdges = graph.getOutgoingEdges(agentId, 'has_trait');
-    // traitKeys includes node IDs, names, and tags for backward-compatible matching
-    const traitKeys = new Set<string>();
-    for (const edge of traitEdges) {
-      traitKeys.add(edge.target); // canonical: trait node ID (e.g. trait.culture.culture_0)
-      const traitNode = graph.getNode(edge.target);
-      if (traitNode) {
-        const name = traitNode.properties.name as string | undefined;
-        if (name) traitKeys.add(name);
-        const tags = traitNode.properties.tags as string[] | undefined;
-        if (tags) tags.forEach(t => traitKeys.add(t));
-      }
-    }
-    // Item-granted traits (THR-737): a possession or bond carrying a `trait_grant`
-    // effect satisfies a spell's trait prerequisite the same as an owned trait.
-    for (const granted of collectGrantedTraits(graph, agentId)) traitKeys.add(granted);
+    const traitRefs = collectBearerTraitRefs(graph, agentId, {
+      grantedTraits: collectGrantedTraits(graph, agentId),
+      grantedLevel: GRANTED_TRAIT_EFFECTIVE_LEVEL,
+    });
     for (const req of prereqs.requiredTraits) {
-      if (!traitKeys.has(req)) {
+      if (!bearerMatchesPredicate(traitRefs, { traitId: req })) {
         return { met: false, reason: `Missing required trait: ${req}` };
       }
     }

@@ -15,12 +15,12 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 39 |
+| 🟢 LIVE | 40 |
 | 🟠 PARTIAL | 1 |
-| 🔴 LEAKED | 4 |
+| 🔴 LEAKED | 5 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 3 |
-| **Total** | **47** |
+| **Total** | **49** |
 
 ## Contracts by producing subsystem
 
@@ -63,7 +63,7 @@ remediation ticket or the build fails.
 | `attachment-on-use-triggers` | Items break, deplete, or curse their bearer on use — authored consequence for carrying power. | node-prop: `action_trigger`, `checkAndFireActionTriggers`, `applyActionTriggerPayloads` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `attachment-slot-caps-suppress` | Slot caps suppress overflow attachments via a single suppression seam. | edge-prop: `attachmentSlotResolver` | Effects & Conditions | 🟢 LIVE | — |
 | `attachment-tier-advancement` | Tier advancement strengthens an item over time. | function: `advanceAttachmentTier`, `canAdvanceTier` | Attachments, Items & Possessions | 🔴 LEAKED | THR-723 |
-| `attachment-trait-grant-effects` | Items grant abilities to their bearer (e.g. cavalry_charge). | node-prop: `trait_grant`, `hasGrantedTrait` | Encounters & Dilemmas | 🟢 LIVE | — |
+| `attachment-trait-grant-effects` | Items grant abilities to their bearer (e.g. cavalry_charge). | node-prop: `trait_grant`, `collectGrantedTraits` | Encounters & Dilemmas | 🟢 LIVE | — |
 
 ### Companies & Group Travel
 
@@ -103,6 +103,13 @@ remediation ticket or the build fails.
 |---|---|---|---|---|---|
 | `economy-context-scene-scoring` | Boom and bust color which scenes fire — a blighted province tells desperate stories, a boom throws festivals. | function: `computeEconomicContextBonus`, `economicContextBonus` | Encounters & Dilemmas | 🟢 LIVE | THR-725 |
 | `economy-verbs-answered` | The four granted economic verbs (bless_harvest, blight, open_markets, reveal_vein) get a visible story response — player-loop link 4. | node-prop: `prosperity` | Encounters & Dilemmas | 🟢 LIVE | THR-725 |
+
+### Personality & Emergent Traits
+
+| Contract | Intent | Mechanism | Consumer | Status | Ticket |
+|---|---|---|---|---|---|
+| `trait-predicate-resolution` | A trait gate anywhere in the engine means the same thing: the world reacts to who someone is, by the same rules whichever system is asking. | function: `resolveTraitPredicate`, `collectBearerTraitRefs`, `bearerMatchesPredicate` | Encounters & Dilemmas | 🟢 LIVE | — |
+| `trait-ref-authoring-vocabulary` | An authored trait hook names a trait the world can actually mint, so a gate the content promises is a gate the player can meet. | function: `validateTraitRefs`, `buildTraitRefIndex`, `resolveTraitRefs` | Ambitions & Initiatives | 🔴 LEAKED | THR-800 |
 
 ### Secrets & Favors
 
@@ -211,10 +218,10 @@ remediation ticket or the build fails.
 - **Intent:** Items raise Domain Capability tiers — a legendary blade makes its bearer mightier on the Prowess tab and in encounter eligibility.
 - **Producer → Consumer:** Attachments, Items & Possessions → Personality & Emergent Traits
 - **UL terms:** *Domain Capability*, *Attachment*
-- **Production hits:** 30 total — 4 write, 2 read, 24 unclassified
+- **Production hits:** 31 total — 4 write, 2 read, 25 unclassified
 - **Write sites:** `src/data/anomaly-reward-catalog.ts`, `src/data/artifact-templates.ts`, `src/data/reward-attachment-catalog.ts`, `src/data/starter-attachments.ts`
 - **Read sites:** `src/engine/domainCapability.ts`, `src/engine/effects/effectQueries.ts`
-- **Other hits:** `src/components/CMS/registry.ts`, `src/components/Codex/codexRegistry.ts`, `src/components/Game/AgentDetailPanel.tsx`, `src/data/condition-trait-content.ts`, `src/data/core-trait-content.ts` +19 more
+- **Other hits:** `src/components/CMS/registry.ts`, `src/components/Codex/codexRegistry.ts`, `src/components/Game/AgentDetailPanel.tsx`, `src/data/condition-trait-content.ts`, `src/data/core-trait-content.ts` +20 more
 - **Verdict:** Verified 2026-07-24: THR-718 finished the effects[] migration: a `stat_contribution` primitive (effects.ts) is summed by `collectStatContributions` (effectQueries.ts) and added inside `computeRawScore`'s possesses/bonded_to artifact walk (domainCapability.ts). 9 catalog entries across all bands carry real contributions (artifact-templates ×3 legendary, starter ×4, anomaly ×2) — both-side symbol hits: `stat_contribution` on write (catalogs) + read (effectQueries), `collectStatContributions` on read (domainCapability + effectQueries). Legacy `domainContributions` node-prop read preserved for traits/resources. Unit + hook + content-band tests green.
 
 ### `attachment-edge-modifiers` — 🔴 LEAKED
@@ -304,11 +311,11 @@ remediation ticket or the build fails.
 - **Intent:** Items grant abilities to their bearer (e.g. cavalry_charge).
 - **Producer → Consumer:** Attachments, Items & Possessions → Encounters & Dilemmas
 - **UL terms:** *Attachment*, *Trait*
-- **Production hits:** 15 total — 4 write, 2 read, 9 unclassified
+- **Production hits:** 20 total — 4 write, 4 read, 12 unclassified
 - **Write sites:** `src/data/anomaly-reward-catalog.ts`, `src/data/reward-attachment-catalog.ts`, `src/data/starter-attachments.ts`, `src/engine/gameInit.ts`
-- **Read sites:** `src/engine/encounterFilterPipeline.ts`, `src/engine/spellActivation.ts`
-- **Other hits:** `src/components/Game/attachmentGlyphs.ts`, `src/data/artifact-templates.ts`, `src/data/choice-set-catalog.ts`, `src/engine/effectExecutors.ts`, `src/engine/effectResolver.ts` +4 more
-- **Verdict:** Verified 2026-07-26: THR-737. `collectGrantedTraits` (effectQueries.ts) wraps `hasGrantedTrait` and is consumed by all three production trait gates: encounter eligibility (encounterFilterPipeline `requiredTraits` + `blockedByTraits`), spell prerequisites (spellActivation `traitKeys`), and ambition eligibility (ambitionTick `buildAmbitionAgentSnapshot` + worldSeed initial assignment). Non-vacuous by live payload intersection: `artifact-templates.ts` grants `master_smith` via `trait_grant`, and `ambition-templates.ts` gates an ambition on `requiredTraits: ['master_smith']`. Headless sweep on seed 42 confirms a granted trait flipping eligibility — see `trait_grant` consumer tests in effectQueries.test.ts and ambitionTick.test.ts.
+- **Read sites:** `src/engine/ambitionTick.ts`, `src/engine/encounterFilterPipeline.ts`, `src/engine/spellActivation.ts`, `src/engine/worldSeed.ts`
+- **Other hits:** `src/components/Game/attachmentGlyphs.ts`, `src/data/artifact-templates.ts`, `src/data/choice-set-catalog.ts`, `src/engine/effectExecutors.ts`, `src/engine/effectResolver.ts` +7 more
+- **Verdict:** Verified 2026-07-26: THR-737. `collectGrantedTraits` (effectQueries.ts) wraps `hasGrantedTrait` and is consumed by all three production trait gates: encounter eligibility (encounterFilterPipeline `requiredTraits` + `blockedByTraits`), spell prerequisites (spellActivation `traitKeys`), and ambition eligibility (ambitionTick `buildAmbitionAgentSnapshot` + worldSeed initial assignment). Non-vacuous by live payload intersection: `artifact-templates.ts` grants `master_smith` via `trait_grant`, and `ambition-templates.ts` gates an ambition on `requiredTraits: ['master_smith']`. Headless sweep on seed 42 confirms a granted trait flipping eligibility — see `trait_grant` consumer tests in effectQueries.test.ts and ambitionTick.test.ts. Re-verified 2026-07-26 under THR-786: all four consumers now reach the granted set through `collectBearerTraitRefs({ grantedTraits })`, covered by the site-1/4/5/6 granted-trait cases in `__tests__/contracts/traitPredicate.contract.test.ts`.
 
 ### `attachment-worldgen-starters` — 🟢 LIVE
 
@@ -609,6 +616,30 @@ remediation ticket or the build fails.
 - **Read sites:** `src/engine/groups/groupCohesion.ts`, `src/engine/groups/groupDissolution.ts`, `src/engine/groups/phaseGroups.ts`
 - **Other hits:** `src/components/Game/debug/CompaniesTabContent.tsx`, `src/data/unified-action-templates.ts`, `src/engine/groups/groupQueries.ts`, `src/types/graphOp.ts`
 - **Verdict:** Verified 2026-07-25: src/engine/groups/__tests__/reuniteSunder.test.ts § "Sunder read sites" measures the doubled dissent delta against the plain constant, confirms non-dissent events are untouched, and confirms an open Bless window still suppresses first (the two windows are read independently and neither cancels the other).
+
+### `trait-predicate-resolution` — 🟢 LIVE
+
+- **Intent:** A trait gate anywhere in the engine means the same thing: the world reacts to who someone is, by the same rules whichever system is asking.
+- **Producer → Consumer:** Personality & Emergent Traits → Encounters & Dilemmas
+- **UL terms:** *Trait*
+- **Module:** `src/engine/traitRefIndex.ts`
+- **Production hits:** 9 total — 2 write, 5 read, 2 unclassified
+- **Write sites:** `src/engine/traitRefIndex.ts`, `src/engine/traits.ts`
+- **Read sites:** `src/engine/ambitionTick.ts`, `src/engine/effects/effectPredicates.ts`, `src/engine/encounterFilterPipeline.ts`, `src/engine/graphConditions.ts`, `src/engine/spellActivation.ts`
+- **Other hits:** `src/engine/simulationRuntime.ts`, `src/types/traits.ts`
+- **Verdict:** Verified 2026-07-26: THR-786. All six pre-existing trait vocabularies now route through `collectBearerTraitRefs` + `bearerMatchesPredicate`: encounter filter pipeline (`requiredTraits`/`blockedByTraits`), effect-predicate context builder (`has_trait:`/`lacks_trait:` sugar), graphConditions (`agent_has_trait`/`agent_lacks_trait`), ambition snapshot eligibility (`buildAmbitionAgentSnapshot`), spell prerequisites (`checkPrerequisites`), and item-granted keys. Non-vacuous by the unchanged-behavior contract suite `src/engine/__tests__/contracts/traitPredicate.contract.test.ts`, which pins each site's pre-migration vocabulary (31 PRESERVED assertions, all green pre- and post-migration) and separately asserts the 4 deliberate widenings + 2 dead-read repairs, each of which was verified failing before the migration.
+
+### `trait-ref-authoring-vocabulary` — 🔴 LEAKED
+
+- **Intent:** An authored trait hook names a trait the world can actually mint, so a gate the content promises is a gate the player can meet.
+- **Producer → Consumer:** Personality & Emergent Traits → Ambitions & Initiatives
+- **UL terms:** *Trait*
+- **Module:** `src/engine/traitRefValidation.ts` — **no production importers**
+- **Production hits:** 4 total — 0 write, 2 read, 2 unclassified
+- **Write sites:** —
+- **Read sites:** `src/debug-bridge.ts`, `src/engine/traitRefValidation.ts`
+- **Other hits:** `src/engine/simulationRuntime.ts`, `src/engine/traitRefIndex.ts`
+- **Verdict:** Pinned by badgeOverride: Detector shipped and measured (THR-786): 62 of the authored trait refs resolve to no trait definition, so those gates can never pass. Reconciling the authoring vocabulary against the minted definitions is content work outside the predicate floor.
 
 ### `world-events-mint-ambitions` — 🟢 LIVE
 

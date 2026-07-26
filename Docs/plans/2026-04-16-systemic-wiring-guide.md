@@ -1794,3 +1794,41 @@ The world's prominent figures pursue **four-phase agendas** — the living-world
 **Surfaces:** NotablesPanel (top bar, ♛) with family-colored phase-chip cards; Chronicle beats via the runner; a crack toast for terminal beats. Constants in `src/data/notable-agenda-config.ts`.
 
 **Debug:** `window.__DEBUG.getNotableAgendas()` lists live agendas; `window.__DEBUG.forceNotableAgenda(notableName, family)` launches one for QA.
+
+## Capability: Trait hooks — one gate vocabulary across every system (THR-786)
+
+A **trait hook** is content reacting to *who someone is*. Traits are inert on their bearer — all their power is in being referenced — so the hook lives in your content, not on the trait. As of THR-786 every trait gate in the engine resolves through one predicate, so a ref you write means the same thing wherever you write it.
+
+**The ref forms — all four are equivalent.** Name a trait by any of:
+
+| Form | Example | Notes |
+|---|---|---|
+| trait node id | `trait.mastery.smithing` | fully explicit |
+| short id | `mastery.smithing` | the node id minus the `trait.` prefix |
+| display name | `Master Smith` | the trait node's `name` |
+| tag | `#craft` | any entry in the definition's `tags[]` |
+
+Resolution is **ANY-match**: a tag shared by several definitions is satisfied by a bearer holding any one of them. So `#craft` is a deliberate way to write "any crafting trait" — use it when the hook is about a *kind* of person, and a node id when it is about one specific trait.
+
+**Where you can author a hook today:**
+
+- **Effect predicates** — `has_trait:<ref>` / `lacks_trait:<ref>` in any `predicate` field (choice-set options, conditional effects). The most common hook.
+- **Ambition steering** — `requiredTraits` / `blockingTraits` / `boostingTraits` (bare ref strings) plus `agent_has_trait` / `agent_lacks_trait` graph conditions in milestones and abandonment triggers.
+- **Spell prerequisites** — `prerequisites.requiredTraits` (bare ref strings).
+- **Encounter template variants** — `traitVariants[]` and `StepNudge.requiredTrait` (WS0, THR-773): a variant fires when the acting agent holds `traitId`, contributing a named forecast factor.
+- **Item grants** — a `trait_grant` effect makes its bearer satisfy a gate naming the granted key, for as long as the item is held and active.
+- Template-level `requiredTraits` / `blockedByTraits` are implemented in the filter pipeline but **not yet declarable** — the fields are still missing from `UnifiedActionTemplate` (THR-801).
+
+**`minLevel` where the shape allows it.** Only `TraitPredicate` (`{ traitId, minLevel? }`) carries a level floor; the bare-string forms match at any level. An item-granted trait counts as level 1 exactly, so it can never satisfy `minLevel: 2`.
+
+**⚠️ Check your ref before you ship it.** A ref matching no trait definition is silently and permanently false — a hook that reads like content but is dead on arrival. Run:
+
+```javascript
+window.__DEBUG.validateTraitRefs()
+```
+
+`dead[]` lists every authored ref nothing can satisfy, with the authoring path. `phantomGrants[]` lists grant keys with no definition behind them (the gate works, but the trait has no name or visibility to display). **This is not hypothetical**: the 2026-07-26 baseline sweep found 62 dead gates across shipped ambition and choice-set content, because authored refs are bare snake_case (`master_smith`) while every definition uses `trait.<category>.<kebab>` ids, Title Case names and `#tags` — two vocabularies that had never intersected (THR-800). Until that lands, **write refs that match a real definition** and verify with the sweep rather than copying the surrounding snake_case style.
+
+**Two canon rules bind every hook you write:** (1) a trait hook always *names* its trait to the player — no invisible modifiers; (2) trait levels never surface as numerals, words only. And a trait reaction colors the curated moment; it never raises its own notification.
+
+**Where it lives:** `resolveTraitPredicate` / `collectBearerTraitRefs` / `bearerMatchesPredicate` in `src/engine/traits.ts` + `src/engine/traitRefIndex.ts`; the sweep in `src/engine/traitRefValidation.ts`. Bearer-agnostic by construction — the same resolver serves mortals, companies, factions, cultures, and (schema-legal today) locations, which is what waves 2–3 build on.
