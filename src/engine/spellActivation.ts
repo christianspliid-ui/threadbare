@@ -25,6 +25,7 @@
  */
 
 import type { WorldGraph } from './graph';
+import { collectGrantedTraits } from './effects/effectQueries';
 import type { ReachDomain } from '../types/traits';
 import type {
   SpellTemplate,
@@ -114,6 +115,9 @@ export function checkPrerequisites(
         if (tags) tags.forEach(t => traitKeys.add(t));
       }
     }
+    // Item-granted traits (THR-737): a possession or bond carrying a `trait_grant`
+    // effect satisfies a spell's trait prerequisite the same as an owned trait.
+    for (const granted of collectGrantedTraits(graph, agentId)) traitKeys.add(granted);
     for (const req of prereqs.requiredTraits) {
       if (!traitKeys.has(req)) {
         return { met: false, reason: `Missing required trait: ${req}` };

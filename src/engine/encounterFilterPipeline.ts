@@ -48,6 +48,7 @@ import type { ReachDomain, TraitDefinitionProperties } from '../types/traits';
 import { getChainProgress, isChainStageUnlocked } from './encounterChains';
 import { livingGroupMemberCount } from './groups/groupQueries';
 import { hasOpposingBand } from './groups/bandOpposition';
+import { collectGrantedTraits, GRANTED_TRAIT_EFFECTIVE_LEVEL } from './effects/effectQueries';
 import { GROUP_MIN_MEMBERS } from '../data/group-constants';
 import { getAnyEncounterById } from '../data/encounter-content';
 import { FACTION_ENCOUNTER_META } from '../data/faction-encounter-content';
@@ -238,6 +239,14 @@ export function filterByPrerequisites(
     if (cachedBandPresent === undefined) cachedBandPresent = hasOpposingBand(graph, agentId);
     return cachedBandPresent;
   };
+  // Item-granted traits (THR-737), resolved lazily and at most once per agent for
+  // the same reason: most templates declare no trait gate, so the attachment walk
+  // must not run unconditionally every tick.
+  let cachedGrantedTraits: Set<string> | undefined;
+  const grantedTraits = (): Set<string> => {
+    if (cachedGrantedTraits === undefined) cachedGrantedTraits = collectGrantedTraits(graph, agentId);
+    return cachedGrantedTraits;
+  };
 
   const result: EncounterCacheEntry[] = [];
   for (const entry of entries) {
@@ -260,6 +269,11 @@ export function filterByPrerequisites(
     if (template?.requiresOpposingBand && !bandPresent()) continue;
     if (template?.requiredTraits && template.requiredTraits.length > 0) {
       const hasTrait = template.requiredTraits.every(req => {
+        // Granted traits (THR-737): a possession/bond carrying a `trait_grant`
+        // effect satisfies the requirement at GRANTED_TRAIT_EFFECTIVE_LEVEL.
+        if (grantedTraits().has(req.traitId)) {
+          return req.minLevel == null || GRANTED_TRAIT_EFFECTIVE_LEVEL >= req.minLevel;
+        }
         return agentTraitEdges.some(e => {
           if (e.target !== req.traitId) return false;
           if (req.minLevel != null) {
@@ -272,10 +286,12 @@ export function filterByPrerequisites(
       if (!hasTrait) continue;
     }
 
-    // Blocked-by-traits gate — agent must NOT have any of these traits
+    // Blocked-by-traits gate — agent must NOT have any of these traits.
+    // Granted traits block symmetrically: an item that confers `scarred` must
+    // not unlock scarred-gated content while leaving scarred-blocked content open.
     if (template?.blockedByTraits && template.blockedByTraits.length > 0) {
       const isBlocked = template.blockedByTraits.some(blockedId =>
-        agentTraitEdges.some(e => e.target === blockedId),
+        grantedTraits().has(blockedId) || agentTraitEdges.some(e => e.target === blockedId),
       );
       if (isBlocked) continue;
     }

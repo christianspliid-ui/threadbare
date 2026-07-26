@@ -59,6 +59,7 @@ import { getTerrainSphereScores } from '../types/sphereAffinity';
 import type { SphereName as SphereNameType } from '../types/index';
 import { AMBITION_TEMPLATES } from '../data/ambition-templates';
 import type { AmbitionAgentSnapshot } from './ambitionSelection';
+import { collectGrantedTraits } from './effects/effectQueries';
 
 // ─── Seeded PRNG ──────────────────────────────────────────────────
 
@@ -1479,6 +1480,9 @@ export function seedWorld(
         if (tags) traits.push(...tags);
       }
     }
+    // Item-granted traits (THR-737) count toward initial ambition eligibility too,
+    // so a seeded starter attachment reads the same as an owned trait.
+    traits.push(...collectGrantedTraits(graph, indId));
 
     const snapshot: AmbitionAgentSnapshot = {
       domainCapabilities: caps,
