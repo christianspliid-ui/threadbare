@@ -17,6 +17,7 @@ import {
 import type { NarrativeContext } from '../proseEnrichment';
 import type { EncounterSupportBinding, EncounterSupportBundle } from '../../types/encounter';
 import { WorldGraph } from '../graph';
+import { REPUTATION_TRAIT_DEFINITIONS } from '../../data/reputation-trait-content';
 import type { MeetingChoiceRecord } from '../../types/meetingEncounter';
 import type { BeatOutcome } from '../../types/journeyEngine';
 import { clearTraces, enableTracing, disableTracing, getTraces } from '../traceBuffer';
@@ -114,10 +115,12 @@ function createTestGraph(): WorldGraph {
     properties: { role: 'member', rank: 1 },
   });
 
-  // Reputation trait
+  // Reputation trait. `subcategory` is the canonical field on TraitDefinitionProperties —
+  // this fixture previously wrote `category`, matching a dead read in gatherNarrativeContext
+  // and keeping the title assertions green while no shipped trait ever resolved (THR-787).
   g.addNode({
     id: 'trait_1', name: 'The Unyielding', type: 'trait', category: 'trait',
-    properties: { category: 'reputation' },
+    properties: { subcategory: 'reputation' },
   });
   g.addEdge({
     id: 'edge_trait', source: 'agent_1', target: 'trait_1', type: 'has_trait',
@@ -894,5 +897,82 @@ describe('{group} placeholder — bound introduction subject (THR-522)', () => {
     const ctx = createMinimalContext({ boundGroupName: 'the Salt Choir' });
     const out = enrichProse('{culture} hears that {group} now stirs', ctx);
     expect(out).toBe('The Aurelians hears that the Salt Choir now stirs');
+  });
+});
+
+// ─── Reputation titles against SHIPPED definitions (THR-787) ──────
+//
+// The pre-existing title tests used a hand-written trait node whose properties
+// carried `category: 'reputation'` — the same wrong field the production filter
+// read. Test and code agreed, so the suite stayed green while no *shipped*
+// reputation trait ever produced a title. These tests anchor on real entries from
+// REPUTATION_TRAIT_DEFINITIONS instead, so the assertion cannot go vacuous through
+// fixture drift: renaming the canonical field breaks them.
+
+describe('reputation titles resolve from shipped trait definitions (THR-787)', () => {
+  /** A real shipped reputation definition — not a hand-made fixture. */
+  const shippedReputation = REPUTATION_TRAIT_DEFINITIONS[0];
+
+  function graphWithTraitNode(traitNode: { id: string; type: string; name: string; properties: object }): WorldGraph {
+    const g = new WorldGraph();
+    g.addNode({
+      id: 'agent_r', name: 'Sera', type: 'actor',
+      properties: { actorType: 'individual' },
+    });
+    g.addNode(traitNode as Parameters<WorldGraph['addNode']>[0]);
+    g.addEdge({
+      id: 'edge_trait_r', source: 'agent_r', target: traitNode.id, type: 'has_trait',
+      properties: { level: 1 },
+    });
+    return g;
+  }
+
+  it('every shipped reputation definition stores its category under `subcategory`', () => {
+    // Guards the drift this ticket fixed: a definition that reverts to `category`
+    // would silently drop out of the title filter again.
+    expect(REPUTATION_TRAIT_DEFINITIONS.length).toBeGreaterThan(0);
+    for (const def of REPUTATION_TRAIT_DEFINITIONS) {
+      expect(def.properties.subcategory).toBe('reputation');
+      expect((def.properties as unknown as Record<string, unknown>).category).toBeUndefined();
+    }
+  });
+
+  it('gatherNarrativeContext collects the title from a shipped reputation trait', () => {
+    const g = graphWithTraitNode(shippedReputation);
+    const ctx = gatherNarrativeContext(g, 'agent_r');
+
+    expect(ctx.titles).toContain(shippedReputation.name);
+  });
+
+  it('{title} renders the shipped reputation name, not the agent-name fallback', () => {
+    const g = graphWithTraitNode(shippedReputation);
+    const ctx = gatherNarrativeContext(g, 'agent_r');
+
+    const out = enrichProse('They call {them} {title}.', ctx);
+    expect(out).toBe(`They call them ${shippedReputation.name}.`);
+    expect(out).not.toContain('Sera');
+  });
+
+  it('{?has_title} fires for a bearer of a shipped reputation trait', () => {
+    const g = graphWithTraitNode(shippedReputation);
+    const ctx = gatherNarrativeContext(g, 'agent_r');
+
+    expect(enrichProse('{?has_title}known{/has_title}', ctx)).toBe('known');
+    expect(enrichProse('{?no_title}nameless{/no_title}', ctx)).toBe('');
+  });
+
+  it('a non-reputation shipped trait yields no title (filter is not a pass-through)', () => {
+    const mastery = {
+      id: 'trait.mastery.test-smithing',
+      type: 'trait',
+      name: 'Master Smith',
+      properties: { subcategory: 'mastery' },
+    };
+    const g = graphWithTraitNode(mastery);
+    const ctx = gatherNarrativeContext(g, 'agent_r');
+
+    expect(ctx.titles).toHaveLength(0);
+    expect(enrichProse('{title}', ctx)).toBe('Sera');
+    expect(enrichProse('{?no_title}nameless{/no_title}', ctx)).toBe('nameless');
   });
 });
