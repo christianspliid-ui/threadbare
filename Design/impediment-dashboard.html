@@ -2949,6 +2949,19 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "**Workaround this run:** do not trust the stored hash alone. Recompute the digest over the *previous* briefing's Needs-Christian section with the *same* pipeline used for the current one; if those two agree, the ask is genuinely unchanged and the ping is suppressed regardless of what the state file says. Then write the freshly-computed hash so the next run has a same-method baseline. **Durable fix:** pin the normalization in the skill (or a tiny committed script) so it is reproducible across runs — e.g. `awk` the section, keep only lines matching `^\\s*[-*]\\|^\\*\\*`, collapse whitespace, trim, then `sha256sum` with the trailing newline retained — and store the pipeline's identity alongside the digest so a future change of method is visibly a method change rather than a content change.",
     "session": "Hourly `keep-work-flowing-cc` run, 2026-07-25 11:09 brief."
+  },
+  {
+    "num": "211",
+    "id": 211,
+    "count": 2,
+    "date": "2026-07-26",
+    "category": "tooling",
+    "description": "**Writing file content through `node -e` / `python - <<PY` inside a double-quoted shell string silently corrupts it two ways: backticks trigger command substitution, and a lone `\\b` becomes a literal BACKSPACE (0x08) instead of the two characters `\\` + `b`.** Both hit in one session. (a) Inserting a markdown paragraph containing inline code spans via `node -e \"…\"` ran every backtick span as a subshell — `Docs/project-status.md` was written with the code spans replaced by empty strings and a pile of `command not found` noise; the file had to be restored with `git checkout --`. (b) Patching a regex into a scratch harness produced `/<BACKSPACE>(?:you\\|your)<BACKSPACE>/giu`, a regex that silently matches nothing. It cost four rounds to find, because every diagnostic lies: `grep` prints the backspace and the terminal *erases the preceding character*, so the line renders as the correct `\\b` form; and `JSON.stringify` escapes a real backspace as `\\b`, which is indistinguishable from a printed backslash-b. The detector it broke reported `0` hits — a plausible-looking answer, not an error.",
+    "consequence": "Silent, and plausible in both directions. (a) mutated a tracked doc with no failure signal beyond stderr noise that is easy to skim past — the write \"succeeded\". (b) is worse: a broken detector in an audit harness returns a *believable* zero, so the finding it exists to surface (40 templates written in the wrong voice) would simply have been absent from the deliverable with nothing anywhere indicating a bug. Any audit, lint, or codemod built this way can under-report and read as a clean result.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "**Workaround that worked:** never pass literary or regex content through a shell string. Write the content to a file with the `Write` tool (no shell layer at all), then have a tiny script read that file and splice it — `fs.readFileSync(scratch + \"/entry.md\", \"utf8\")`. For a single backslash inside a script that must be generated, build it as `String.fromCharCode(92) + \"b\"` rather than escaping through the shell→interpreter→string-literal stack. **Verify, do not eyeball:** confirm a written backslash with `line.charCodeAt(idx) === 92`; `grep`, `cat` and `JSON.stringify` all render 0x08 as if it were correct. Prefer `node --input-type=module -e '…'` with *single* quotes and `process.argv` for paths, which removes interpolation entirely. **Also noted:** `python3` is not on PATH in this sandbox (only `python`), and a `python3 - <<PY` heredoc fails with the Microsoft Store alias message rather than a missing-interpreter error — a `&&` chain after it still runs, so a patch step can appear to succeed while having done nothing.",
+    "session": "THR-776 (Nudge Model WS3 migration audit) — audit harness authoring + closeout doc edits."
   }
 ];
 // ── End data ──
