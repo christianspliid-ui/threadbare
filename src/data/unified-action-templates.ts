@@ -5616,6 +5616,73 @@ export const LOCATION_BRANCHING_ENCOUNTER_TEMPLATES: readonly UnifiedActionTempl
 ];
 
 /**
+ * Regional-scale templates registered into the encounter-cache path (THR-779).
+ *
+ * `generateUnifiedCandidates` — the array-scored path agents actually draw from —
+ * skips `regional` and `cosmic` scale outright. These templates also sit in no
+ * encounter-cache array and under no planted `encounterFamily` prefix, so all three
+ * agent-facing draw paths rejected them and the content was unreachable in every run
+ * (`Docs/audits/2026-07-26-nudge-migration-audit.md` § finding 3).
+ *
+ * The encounter-cache path is scale-agnostic, so registering them here restores
+ * reachability without touching their authored `scale` — which stays load-bearing for
+ * action priority ordering (`SCALE_PRIORITY` in `unifiedActionLifecycle.ts`).
+ *
+ * Consumed by `encounterCache.buildEntriesForLocationAndSublocations`, matched on
+ * `locationSubtypes` exactly as `LOCATION_BRANCHING_ENCOUNTER_TEMPLATES` is. A template
+ * listed here without `locationSubtypes` would register at no location at all, so the
+ * membership test in `__tests__/regionalCacheRegistration.test.ts` pins that invariant.
+ *
+ * **Membership predicate** (not a count): every template carrying the THR-779 design
+ * verdict **WIRE** — the regional-scale tail of guild rank progression (`*.senior.*` /
+ * `*.elite.*`), the three regional `fa.*` faction set-pieces, and the two regional
+ * `monster.encounter.*` templates. The other 44 orphans carry the **DELETE** verdict and
+ * are removed in WS5's kill batch (THR-778), not here.
+ *
+ * Guild-rank gating is deliberately *not* applied here — see THR-803. The plan's route
+ * was to gate the guild tier behind `encounterChains`, but `recordChainStageCompletion`
+ * has no production caller, so `chainProgress` is never written and any template at chain
+ * stage ≥ 1 is permanently undrawable. Gating these before that write path exists would
+ * re-orphan the very content this registration rescues.
+ */
+export const CACHE_REGISTERED_REGIONAL_TEMPLATE_IDS: readonly string[] = [
+  // Builders' Fellowship — elite tier
+  'bf.elite.engineer_wonder',
+  'bf.elite.grand_monument',
+  // Merchant Consortium — senior + elite tier
+  'mct.senior.foreign_deal',
+  'mct.elite.market_domination',
+  'mct.elite.trade_summit',
+  // Rangers' Brotherhood — senior + elite tier
+  'rb.senior.ambush_raiders',
+  'rb.senior.deep_scout',
+  'rb.senior.map_unknown',
+  'rb.elite.frontier_defense',
+  'rb.elite.monster_hunt',
+  // Temple of Spheres — elite tier
+  'ts.elite.found_cathedral',
+  'ts.elite.sphere_convergence',
+  // Faction set-pieces
+  'fa.alliance_ceremony',
+  'fa.bounty_hunt',
+  'fa.conclave_debate',
+  // Monster set-pieces
+  'monster.encounter.horde_raid',
+  'monster.encounter.lair_defense',
+];
+
+/**
+ * Resolved template objects for {@link CACHE_REGISTERED_REGIONAL_TEMPLATE_IDS}.
+ * Fail-soft: an id that resolves to no template is dropped rather than thrown (NFP #4);
+ * the regression test asserts the resolved count matches the id list so a silent drop
+ * cannot pass unnoticed.
+ */
+export const CACHE_REGISTERED_REGIONAL_TEMPLATES: readonly UnifiedActionTemplate[] =
+  CACHE_REGISTERED_REGIONAL_TEMPLATE_IDS
+    .map(id => UNIFIED_ACTION_TEMPLATES.find(t => t.id === id))
+    .filter((t): t is UnifiedActionTemplate => t !== undefined);
+
+/**
  * Look up a template by its ID. Returns undefined if not found.
  * Checks UNIFIED_ACTION_TEMPLATES first, then the ascendant pool-beat templates
  * (THR-514 — intentionally not in UNIFIED_ACTION_TEMPLATES so beats never surface as

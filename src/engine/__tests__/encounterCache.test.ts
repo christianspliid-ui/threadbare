@@ -12,7 +12,10 @@ import { getEncountersByLocationType } from '../../data/encounter-content';
 import type { UnifiedActionTemplate } from '../../types/unifiedAction';
 import { isActionStepBranch } from '../../types/unifiedAction';
 import { DIFFICULTY_TIER_MULTIPLIERS } from '../../data/agent-behavior-constants';
-import { LOCATION_BRANCHING_ENCOUNTER_TEMPLATES } from '../../data/unified-action-templates';
+import {
+  LOCATION_BRANCHING_ENCOUNTER_TEMPLATES,
+  CACHE_REGISTERED_REGIONAL_TEMPLATES,
+} from '../../data/unified-action-templates';
 import { hexDistance } from '../../lib/hexMath';
 
 /** Count of branching encounter templates whose locationSubtypes include the given type. */
@@ -22,11 +25,19 @@ function branchingCountForType(locationType: string): number {
   ).length;
 }
 
-/** All templates (standard + branching) for a given location type. */
+/**
+ * All templates the cache attaches to a given location type: standard (encounter-content),
+ * branching (THR-452), and regional-scale registrations (THR-779). Mirrors the three
+ * sources `buildEntriesForLocationAndSublocations` appends, so entry-count assertions stay
+ * exact rather than drifting when a new supplement array is registered.
+ */
 function allTemplatesForType(locationType: string): UnifiedActionTemplate[] {
   return [
     ...getEncountersByLocationType(locationType),
     ...LOCATION_BRANCHING_ENCOUNTER_TEMPLATES.filter(
+      t => t.locationSubtypes?.includes(locationType as never),
+    ),
+    ...CACHE_REGISTERED_REGIONAL_TEMPLATES.filter(
       t => t.locationSubtypes?.includes(locationType as never),
     ),
   ];
