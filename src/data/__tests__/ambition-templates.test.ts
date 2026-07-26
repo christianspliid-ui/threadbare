@@ -7,6 +7,53 @@ import {
   findAmbitionTemplateById,
 } from '../ambition-templates';
 import { REACH_DOMAINS } from '../../types/traits';
+import { checkAbandonment } from '../../engine/ambitionLifecycle';
+
+/**
+ * THR-808 — the dynasty founder's death actually abandons the dynasty.
+ *
+ * This asserts the *wiring*, not the evaluator: the shipped template, the real
+ * `checkAbandonment`, and the engine's real death flag, end to end. The unit coverage
+ * for `agent_deceased` lives in `engine/__tests__/graphConditions.test.ts`; what could
+ * still rot here is the template edit — someone reverting the condition to the dead
+ * `agent_lacks_trait: 'living'` ref would leave every evaluator test green.
+ */
+describe('THR-808 — ambition_found_dynasty abandons on the founder\'s death', () => {
+  const template = findAmbitionTemplateById('ambition_found_dynasty');
+
+  function graphWith(properties: Record<string, unknown>) {
+    return {
+      getNode: (id: string) => (id === 'founder' ? { id, properties } : undefined),
+      getOutgoingEdges: () => [],
+      getIncomingEdges: () => [],
+    };
+  }
+
+  it('the template still exists and still declares an abandonment trigger', () => {
+    expect(template).toBeDefined();
+    expect(template!.abandonmentTriggers.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('abandons once the founder is deceased', () => {
+    expect(checkAbandonment(template!, graphWith({ deceased: true }), 'founder')).toBe(true);
+  });
+
+  it('does not abandon while the founder lives', () => {
+    expect(checkAbandonment(template!, graphWith({}), 'founder')).toBe(false);
+  });
+
+  it('has no abandonment trigger left that gates on a trait named `living`', () => {
+    // The specific dead ref this ticket removed. Named explicitly so a revert fails
+    // loudly rather than silently restoring an ambition that can never be abandoned.
+    for (const trigger of template!.abandonmentTriggers) {
+      const gatesOnLiving =
+        (trigger.condition.type === 'agent_has_trait'
+          || trigger.condition.type === 'agent_lacks_trait')
+        && trigger.condition.trait === 'living';
+      expect(gatesOnLiving).toBe(false);
+    }
+  });
+});
 
 describe('AMBITION_TEMPLATES', () => {
   it('has at least 8 templates', () => {
