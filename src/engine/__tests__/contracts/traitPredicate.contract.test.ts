@@ -28,6 +28,7 @@
  */
 import { describe, it, expect, vi } from 'vitest';
 import { WorldGraph } from '../../graph';
+import type { UnifiedActionTemplate } from '../../../types/unifiedAction';
 import type { GraphNode } from '../../../types/graph';
 import type { ReachDomain } from '../../../types/traits';
 import type { AttachmentEffect } from '../../../types/effects';
@@ -448,8 +449,10 @@ describe('site 6 — collectGrantedTraits', () => {
  *     `properties.name`.
  *
  * No shipped content changes behavior. Site 1's `requiredTraits`/`blockedByTraits`
- * are still undeclared on `UnifiedActionTemplate` (the WS0 PR did not carry them),
- * so zero production templates author a trait gate; every shipped `agent_has_trait`
+ * are declared on `UnifiedActionTemplate` as of THR-801 (the WS0 PR did not carry
+ * them; see the type-level guard below), but zero production templates author a
+ * trait gate yet — authoring is deferred to THR-778 (WS5 content migration), so
+ * this suite remains the only exercise of the path; every shipped `agent_has_trait`
  * names the `trait.<key>` id form that already worked; and the four shipped
  * `has_trait:` refs match no trait by *any* ref form, so they were dead before and
  * remain dead after (filed as a defect — see the completion comment).
@@ -491,5 +494,47 @@ describe('THR-786 widening — one ANY-match resolver across all six sites', () 
         prerequisites: { requiredTraits: ['Master Smith'] },
       } as never).met,
     ).toBe(true);
+  });
+});
+
+/**
+ * THR-801 — the template gate is *declarable*, not just readable.
+ *
+ * `filterByPrerequisites` has read `template.requiredTraits`/`blockedByTraits` since
+ * THR-773, but neither field was declared on `UnifiedActionTemplate` until THR-801:
+ * a phantom API, evaluated every tick and authorable by nobody. Site 1's cases above
+ * cannot catch a regression here — they mock `getAnyEncounterById` with untyped
+ * object literals, which keep passing whether the interface declares the fields or
+ * not. That is precisely how the gap survived two shipping tickets.
+ *
+ * The guard is therefore type-level, and its teeth are the `tsc -b` ratchet rather
+ * than vitest (which does not typecheck): this file carries **zero** baseline errors,
+ * so if either field is dropped from the interface again, the indexed accesses below
+ * fail to resolve and the ratchet reports it as a net-new error.
+ */
+describe('THR-801 — template trait-gate fields are declared on UnifiedActionTemplate', () => {
+  it('declares requiredTraits as TraitPredicate[] (carries minLevel)', () => {
+    const required: UnifiedActionTemplate['requiredTraits'] = [
+      { traitId: 'trait.mastery.smithing', minLevel: 2 },
+      { traitId: '#craft' },
+    ];
+    expect(required?.[0]?.minLevel).toBe(2);
+  });
+
+  it('declares blockedByTraits as bare refs (deliberately level-free)', () => {
+    // The asymmetry is the contract, not an oversight: holding a blocking trait at
+    // ANY level blocks, so there is no `minLevel` to declare here.
+    const blocked: UnifiedActionTemplate['blockedByTraits'] = ['trait.scar.haunted'];
+    expect(blocked).toEqual(['trait.scar.haunted']);
+  });
+
+  it('a template typed as the interface still drives the gate', async () => {
+    // Ties the declaration to the behavior: the same shape the interface now permits
+    // is the shape site 1 filters on, so neither can drift without the other failing.
+    const gate: Pick<UnifiedActionTemplate, 'requiredTraits'> = {
+      requiredTraits: [{ traitId: 'trait.mastery.smithing' }],
+    };
+    expect(gate.requiredTraits).toHaveLength(1);
+    expect(await filterOne('tmpl-requires-id', withTrait(baseGraph(), 'trait.mastery.smithing'))).toBe(1);
   });
 });

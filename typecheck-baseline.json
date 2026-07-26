@@ -1,5 +1,5 @@
 {
-  "total": 3517,
+  "total": 3504,
   "command": "npx tsc -b --force --pretty false",
   "perFile": {
     "scripts/lint-encounter-content.ts": 2,
@@ -586,7 +586,6 @@
     "src/engine/encounterChains.ts": 1,
     "src/engine/encounterChoiceMemory.ts": 11,
     "src/engine/encounterEventNode.ts": 2,
-    "src/engine/encounterFilterPipeline.ts": 8,
     "src/engine/encounters/__tests__/itemConsumption.test.ts": 2,
     "src/engine/encounterScoring.ts": 14,
     "src/engine/encounterSeeding.ts": 5,
@@ -618,7 +617,7 @@
     "src/engine/intelligence.ts": 1,
     "src/engine/interventionEffects.ts": 9,
     "src/engine/journeyEngine.ts": 7,
-    "src/engine/kpi/branchingDistance.ts": 6,
+    "src/engine/kpi/branchingDistance.ts": 1,
     "src/engine/kpi/gameplayKpi.ts": 1,
     "src/engine/lairEscalation.ts": 4,
     "src/engine/mandateGenerator.ts": 7,
