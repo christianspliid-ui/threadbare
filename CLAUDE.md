@@ -107,78 +107,9 @@ window.__DEBUG.tick(40)      // 40 ticks
 // | 'error'; a mid-batch throw returns partial progress, never propagates (fail-soft).
 // Emits exactly ONE aggregate `debug_tick_batch` trace per call, never one per tick.
 
-// Debug panel control (opens panel + enables tracing automatically):
-// Keyboard shortcuts in-game:
-// - `F1` opens the Debug Panel directly to the CLI tab
-// - backtick (`) toggles the Debug Panel normally
-// The in-game CLI also supports pasted multi-line batches (one command per line).
-window.__DEBUG.openDebugPanel()
-window.__DEBUG.closeDebugPanel()
-window.__DEBUG.toggleDebugPanel()
-
-// Direct trace access:
-await window.__DEBUG.enableTracing()
-const traces = await window.__DEBUG.getTraces()
-await window.__DEBUG.clearTraces()
-
-// Health & diagnostics:
-await window.__DEBUG.getHealthReport()
-await window.__DEBUG.exportDiagnostics()
-await window.__DEBUG.getCrashLog()
-
-// Navigate to an agent — zoom camera to their hex and open their detail panel:
-window.__DEBUG.gotoAgent('agent-id')        // exact id
-window.__DEBUG.gotoAgent('abc123')          // partial id prefix
-window.__DEBUG.gotoAgent('Serafina')        // partial name match (case-insensitive)
-// Returns true if found, false if no match
-
-// List action templates that can be fired on agents:
-window.__DEBUG.listActions()               // all actor-targeting templates → [{id, name, sphere, reach, essenceCost, steps, scale}]
-window.__DEBUG.listActions('Serafina')     // same list, but returns [] if agent not found (existence check)
-
-// Fire an action on an agent immediately (bypasses UI animations, deducts essence):
-window.__DEBUG.fireAction('Serafina', 'action.charm.heart')   // exact template id
-window.__DEBUG.fireAction('abc123', 'charm')                   // partial template id/name match
-// Returns {success, actionId, templateName, message}
-
-// List/apply pending encounter aftermath reactions headlessly:
-window.__DEBUG.listAftermathReactions('Serafina')              // -> { reactions: [{id, label}] } or { error }
-window.__DEBUG.pickAftermathReaction('Serafina', 'reaction-id') // reactionId optional; defaults to first reaction
-// Returns {success, reactionId, touchedWorld, touchedStructure, message}
-
-// Fog of war control:
-window.__DEBUG.toggleFog()                // toggle fog on/off, returns new enabled state
-window.__DEBUG.setFog(true)               // explicitly enable fog
-window.__DEBUG.setFog(false)              // explicitly disable fog
-
-// Encounter log export (returns TSV strings):
-const summary = await window.__DEBUG.getEncounterLogAll()   // { trackedAgentCount, totalEvents, agentIds }
-const logs = await window.__DEBUG.exportEncounterLogAll()    // { allAgentsTsv, perAgent: [{ tsv, filename }] }
-
-// Prose-quality audit over the static authored-content library (THR-490).
-// Pure + deterministic; independent of any live session. Mirrors the DebugPanel "Prose QA" tab.
-const report = await window.__DEBUG.proseQualityReport()     // { entries, summary{total,pass,warn,fail,error}, bottomTail, marqueeEntries }
-const one = await window.__DEBUG.scoreProseEntry('divine.coincidence')  // ProseQualityResult, or { error } if no id match (exact or partial)
-
-// Orphaned action-card inspector (THR-659) — player-castable templates no run can surface.
-// Pure + deterministic over static registries; mirrors the DebugPanel "Orphaned Cards" tab.
-const orphans = await window.__DEBUG.listUnreachableActions()  // { entries:[{id,name,reach,crudType,reason}], summary{playerReachableTemplates,granted,starter,dynamicSignature,unreachable}, warning? }
-
-// Outcome-ladder distribution + KPI threshold verdicts (THR-571 U1):
-const dist = await window.__DEBUG.getOutcomeDistribution()   // { tick, seed, outcomes, thresholds } — live resolution split + green/amber/red bands
-const windowed = await window.__DEBUG.getOutcomeDistribution(30)  // histogram restricted to actions completed in the last 30 ticks
-
-// Entity Visual resolver readout (THR-637) — "why is this showing a fallback?":
-const ev = await window.__DEBUG.resolveEntityVisual('Serafina')  // node id/name (exact→partial-id→partial-name)
-// -> { matchedId, matchedName, descriptor: { tier:'art'|'fallback', src?, glyph, gradientIndex, alt, kind } } or { error }
-
-// War readout (THR-614 seam 3) — headless "did war actually fire?" check, no browser needed:
-const armies = window.__DEBUG.getArmies()    // [{ name, faction, commander, location, size, cohesion, objective:{type,targetName}, ticksActive, ... }]
-const battles = window.__DEBUG.getBattles()  // [{ name, battleType, momentum, resolutionThreshold, leader, ticksElapsed, spotlightCount, ... }]
-// Ground-truth graph read (no monster-faction filter). The DebugPanel "Armies" tab renders the same state visually.
 ```
 
-See `src/debug-bridge.ts` for the full API and `src/debug-bridge.d.ts` for types.
+**`src/debug-bridge.d.ts` is the API reference** — every method carries JSDoc with its match semantics and return shape; `src/debug-bridge.ts` is the implementation. Read the `.d.ts` rather than asking for a list. Capability areas available there: debug-panel control (`F1` opens straight to the CLI tab; backtick toggles; the in-game CLI accepts pasted multi-line batches), tracing, profiling, health/crash diagnostics, agent navigation, action listing + firing, aftermath reactions, reach signatures, fog of war, encounter-log TSV export, prose-quality audit, orphaned action cards, outcome-ladder distribution + KPI verdicts, ascendant progression, entity-visual resolution, and the war readout (armies/battles).
 
 ## Documentation Strategy
 
@@ -208,55 +139,9 @@ When starting any encounter, prose, attachment, or other content authoring task,
 
 *Notion content migrated to Obsidian 2026-04-04. Dilemma templates remain in Notion pending TypeScript import.*
 
-### Obsidian Vault as LLM Knowledge Base
+### Obsidian vault
 
-The vault follows the Karpathy LLM Knowledge Base pattern — a persistent, compounding artifact where the LLM maintains the wiki and humans provide direction and raw sources.
-
-**Three layers:**
-- **`raw/`** — Immutable source materials (design docs, research, web clips). LLM reads but never modifies.
-- **Wiki** (Systems/, Cosmology/, etc.) — LLM-compiled and maintained pages. The LLM owns this content.
-- **`output/`** — Generated reports, query results, audit outputs filed back into the vault.
-- **`Ubiquitous-Language/`** — Auto-mirrored glossary shard pages generated from `Docs/ubiquitous-language/` via `npm run mirror-ul`.
-
-**Infrastructure files:**
-- **`Index.md`** — Comprehensive catalog of ALL vault pages with one-line summaries. LLM-maintained. Read this first to navigate.
-- **`log.md`** — Append-only chronological record of ingests, queries, lints, and updates.
-
-**Core workflows** (via skills):
-| Workflow | Skill | What it does |
-|----------|-------|-------------|
-| Ingest | `vault-ingest` | Compile raw sources into wiki pages, update index, log |
-| Query | `vault-query` | Ask questions against the vault (3 depth tiers) |
-| Lint | `vault-lint` | Audit vault health: orphans, broken links, stale content |
-| Enrich | `vault-enrich` | Improve pages: add cross-refs, expand content, fix issues |
-
-**Vault maintenance scripts:**
-| Script | What it does |
-|--------|-------------|
-| `npm run generate-vault` | Regenerate graph-node pages from world-model.json (does NOT touch Index.md or Systems/) |
-| `npm run mirror-ul` | Mirror UL shard docs into `Ubiquitous-Language/` in the Obsidian vault and append a vault log entry |
-| `npm run mirror-ul:dry` | Print planned UL mirror writes without touching the vault |
-| `npm run sync-vault` | Run `generate-vault` then `mirror-ul` in sequence |
-| `npm run rebuild-index` | One-time rebuild of Index.md from all vault files |
-| `npm run enhance-frontmatter` | One-time bulk update of frontmatter on hand-curated files |
-
-**Frontmatter conventions:**
-```yaml
-# Auto-generated files (from world-model.json):
-tags: [<category>, generated]
-aliases: [<node name>]
-id: <node-id>
-category: <category>
-status: complete
-last-generated: YYYY-MM-DD
-
-# Hand-curated files (Systems/, Brainstorms/, etc.):
-tags: [<category>, <subcategory>]
-aliases: [<alternative names>]
-status: stub | draft | complete | deprecated
-created: YYYY-MM-DD
-updated: YYYY-MM-DD
-```
+Vault work goes through the **filesystem**, not the Obsidian MCP — set `OBSIDIAN_VAULT_PATH` (see § Known Sandbox Limitations). The vault's structure, maintenance scripts, and frontmatter conventions live in **`Docs/documentation-ownership.md` § Obsidian Vault as LLM Knowledge Base**; each `vault-*` skill documents its own workflow.
 
 ## Key Links
 
@@ -332,46 +217,17 @@ The game fills exactly one viewport. **Nothing scrolls. Nothing renders below th
 
 ## Design Governance
 
-Every design proposal **must be architecturally compliant before the user ever sees it.** Steps 1–4 happen in a single internal pass — never present a non-compliant design. If an NFP conflict is structural (not just a missing constant), flag it as a trade-off for the user.
+**Authoritative home: [`Docs/canon/design-governance.md`](Docs/canon/design-governance.md).** Load it before any design pass — it carries the full workflow checklist (Steps 0–8.6), the Per-system required sections, and the maintenance rules. Two things stay here because they gate whether a design is allowed to exist at all:
 
-### Three-Pillar Rule
+- **Never present a non-compliant design.** Draft → audit → revise → summarize happen in a single internal pass, before the user sees anything. If an NFP conflict is structural (not just a missing constant), surface it as a trade-off rather than hiding it.
+- **Three-Pillar Rule.** Every feature touches **Engine** (systems, tick loop, graph), **Content** (encounters, prose, templates, data), and **UI** (components, modals, HexMap, player controls). **Do not move an issue forward unless all three pillars are addressed or explicitly marked N/A with rationale** — one- and two-pillar plans produce incomplete features that the executor rightfully defers. Exit criteria: `Docs/plans/2026-04-13-linear-coordination-protocol.md`.
 
-Every feature touches three pillars: **Engine** (systems, tick loop, graph), **Content** (encounters, prose, templates, data), and **UI** (components, modals, HexMap, player controls). Designs and plans that cover only one or two pillars produce incomplete features that CC rightfully defers. **Do not move an issue forward unless all three pillars are addressed or explicitly marked N/A with rationale.** See exit criteria in `Docs/plans/2026-04-13-linear-coordination-protocol.md`.
+<details>
+<summary>Relocated 2026-07-26 (THR-760) — what moved</summary>
 
-### Design workflow checklist
+The design-workflow checklist, Per-system required sections, and Maintenance-and-review bullets moved verbatim to `Docs/canon/design-governance.md`; no rule changed. `Docs/canon/process.md` points there.
 
-- [ ] **Step 0 - grill-me pre-pass (if non-trivial)** — run `grill-me` before drafting when scope is large, multi-pillar, ambiguous, or explicitly requested. Auto-trigger asks permission first; synthesis lands in `Docs/plans/YYYY-MM-DD-<topic>-grill-me.md`.
-- [ ] **Step 0.5 - Codesight pre-flight (if change touches `src/`)** — before drafting, query Codesight for blast radius (who imports the affected files?) and dependency chain (what do they import?). Use `.codesight/graph.md` for the dependency graph and the codesight MCP for live queries when available. If any file in scope has **≥100 importers**, the plan doc must include a **Blast Radius** section up front (see Per-system required sections below). Skip this step entirely for process / doc-only / skill-only changes that don't touch `src/`. If `npx codesight` / `.codesight/` is unavailable in the sandbox, fall back to manual `grep -rn "from.*<path>" src/` to count importers and log the missing-tool case as an impediment.
-- [ ] **Step 0.6 - Substrate-existence check (mandatory for any Engine-pillar plan)** — Step 0.5 asks "who imports the files I'm changing"; a green-field plan names no files, so it answers nothing. This step asks the opposite question: **does what I'm designing already exist?** Before drafting, (a) load `Docs/canon/systems-inventory.md` and grep it for your premise's domain nouns *and their synonyms* (e.g. war → army, battle, siege, cohesion, TB-073), and (b) `grep -ri` those nouns across `src/engine/`. The plan doc **must open with a `## Substrate inventory` section** stating what already exists and whether the plan **extends / activates / replaces** it. A green-field claim ("this is new") is only valid with the grep evidence in that section — literally "0 hits for X / Y / Z across the inventory and `src/engine/`". A DORMANT badge in the inventory means the system is *built but silent* — you activate or tune it, you do not rebuild it. This exists because THR-614 planned a green-field war system while ~3,300 lines of it sat wired and dormant in `orchestrator.ts`.
-- [ ] **Step 0.7 - Interface impact check (mandatory for any subsystem listed in `Docs/canon/interface-map.md` — audited or ⚪ UNAUDITED)** — Step 0.6 asks "does this substrate exist?"; this asks **"which cross-system contracts flow through it, and are they still alive?"** File-import tools cannot see property-bag contracts, which is where 3 of the 5 attachment leaks lived. For an audited subsystem, enumerate its contracts from `Docs/canon/interface-map.generated.md`; for an UNAUDITED one, this plan writes its contract table (audit-on-touch: verify with greps, don't transcribe intentions) — **UNAUDITED is a to-do marker, never an exemption**. The plan doc must include an `## Interface impact` table: contract → preserve / extend (name the new producer or consumer) / add (register the row in `scripts/interface-contracts.ts` in the same change) / retire (explicit, user verdict if player-facing). A plan that adds a cross-system write without naming its production read site is incomplete — a "later" consumer requires a `Deferral`-labeled issue cited in the row. `npm run lint:plan-doc` flags a plan that names a mapped subsystem with no such section (advisory).
-- [ ] **Draft** the system design — covering all three pillars (Engine, Content, UI)
-- [ ] **Draft the Brainstorm companion** alongside the plan — same pass, not retrofit. Capture considered alternatives, tensions surfaced, Vision premises invoked.
-- [ ] **Audit** against all 7 NFPs, load-bearing decisions, and rejected approaches
-- [ ] **Revise** — integrate remediations inline (not in a separate appendix)
-- [ ] **Summarize** — NFP Compliance table at the end (PASS / PASS with note per priority)
-- [ ] **Three-pillar check** — Engine section present? Content section present? UI section present? Wiring section connecting them?
-- [ ] **Step 8.5 - Intent-judge verdict** — after summarize and three-pillar check, before presenting. Spawn `intent-judge` as a Task subagent (`model: "opus"`). Author must first produce an action proposal at `Docs/plans/.intent-proposals/<slug>.md` (template at `.claude/skills/intent-judge/proposal-template.md`). Verdict gates the handoff: Allow → proceed; Revise → fix and re-run; Block → rewrite; Escalate → ping user with verbatim finding.
-- [ ] **Step 8.6 - Forked structural audit (design-audit-pipeline)** — after intent-judge Allow, before opening the plan-doc PR. Spawn three subagents in one message (NFP / three-pillar / Vision) via `.claude/skills/design-audit-pipeline/SKILL.md`. Each returns ≤300-word verdict. Orchestrator writes verdicts into the plan-doc tail under `## Forked-audit verdicts`. If any FAIL or REVISE, surface to author before transitioning Linear state. Manual invocation: `/design-audit <plan-doc-path>`.
-- [ ] **Vision audit** — does this plan contradict or update any Vision premise? If so, the Vision edit is part of this ticket's scope, not a follow-up.
-- [ ] **Rulebook impact?** — does this plan change a rule of play (turn structure, action verb, prerequisite, resource, encounter, clock, win/loss)? If yes, the rulebook update is part of this ticket's scope, not a follow-up. Update `Docs/canon/rulebook.md` in the same PR and re-verdict the affected section.
-- [ ] **Present** the finished, compliant design to the user
-
-### Per-system required sections (inline, not appendix)
-
-- [ ] **Engine pillar** — systems design, graph nodes/edges, tick phases, resolution logic, PRNG callouts
-- [ ] **Content pillar** — encounter templates, prose tables, attachment content, data tables
-- [ ] **UI pillar** — player-facing display, event notifications (alerts/toasts/chronicle), debug inspection (DebugPanel), visual presence (HexMapV2 signifiers/overlays). No UI pillar = incomplete design. **Closeout produces a screenshot + console artifact at 1920×1080 (Definition of Done §Browser-verify UI changes).** Design plans for new UI surfaces must name *which tool* will produce that artifact: Playwright (DOM), Claude-in-Chrome (Three.js / WebGL), or both.
-- [ ] **Wiring section** — for each module: orchestrator phase, UI component, GameState flow, traces, debug visibility, prose pipeline (`enrichProse()`?), player controls. Reference `Docs/plans/wiring-checklist.md`. Module only in test files = not integrated.
-- [ ] **Constants table** — every tunable number named, with default and purpose (NFP #1)
-- [ ] **Tracing** — trace types emitted, with TypeScript interface definitions (NFP #2)
-- [ ] **Fail-soft table** — failure cases and fallback behavior (NFP #4)
-- [ ] **Interface impact** — one row per cross-system contract the plan touches, with an action (preserve / extend / add / retire). Required whenever the plan names a subsystem in `Docs/canon/interface-map.md`. See Step 0.7.
-- [ ] **Blast Radius (only when high-impact files touched)** — required when the change touches any file with ≥100 importers (see the named list under `# Codesight — Codebase Intelligence` near the bottom of this file). For each high-impact file, list the importer count and a one-line cascade-risk note (e.g., "graph.ts — 531 importers; schema additions ripple through every node-creation site"). Surface up front in the plan doc, not in an appendix. Omit this section entirely when no high-impact file is touched.
-
-### Maintenance and review
-
-- [ ] **Update `Docs/plans/wiring-checklist.md`** when adding orchestrator phases, modals, GameState fields, trace categories, or player controls
-- [ ] **Backfill older plans** — if a plan in `Docs/plans/` lacks NFP compliance or wiring, add them before implementing from it
+</details>
 
 ## Load-Bearing Architectural Decisions
 
@@ -502,68 +358,14 @@ Work is not "done" until it is deployed and documented. Do all of these automati
 - [ ] **Update Linear** — move issue to appropriate state, add completion comment
 - [ ] **Update vault log** — Append to `log.md` via Obsidian MCP what was changed in this session
 
-**Weekly continuous-improvement cycle (Fridays):**
-1. 14:00 UTC — GitHub Action drift scan runs and posts per-signal Linear issues (label: `drift-scan`) in Continuous Improvement.
-2. ~15:00 UTC — Weekly retrospective (via `retrospective` skill) reads that week's `drift-scan`-labeled issues as its **first input** before the impediment log. Run via the `weekly-retro` scheduled task or manually with `/retrospective`.
-
-The `weekly-retro` scheduled task is **registered and live** in the CC lane (created 2026-07-20, THR-653) — `0 17 * * 5`, fires ~17:09 local. It had been documented here as a task-to-create since the cycle was written, but had never actually been registered with the scheduler. Prompt: `C:\Users\chris\.claude\scheduled-tasks\weekly-retro\SKILL.md`.
-
 ### Scheduled Tasks
 
-Current recurring task registry. **Verified against `list_scheduled_tasks` on 2026-07-22 (THR-677 trials); `flush-plan-docs` removed 2026-07-21 (THR-654 demolition).** The scheduler adds a deterministic per-task jitter of a few minutes to the cron minute, so **the slot name, the cron minute, and the actual fire time are three different things** — the `Fires` column is the one that matters operationally.
+**Registry: [`Docs/ops/scheduled-tasks-registry.md`](Docs/ops/scheduled-tasks-registry.md)** — all four lanes (CC automation, GitHub Actions, Windows Task Scheduler, the Cowork lane pending disable), their cron *and observed fire time*, the reaper's guardrails, and the weekly continuous-improvement cycle. Slot name ≠ cron minute ≠ fire time; the registry's `Fires` column is the operational one.
 
-**CC automation lane — registered and live:**
+Two rules stay here because they gate live session behavior:
 
-| Slot | Cadence | Task | Cron | Fires | Writes |
-|------|---------|------|------|-------|--------|
-| **:00** | Hourly | CC pickup (`tb-opus-pickup` — single Opus executor lane) | `0 * * * *` | ~:00:53 | — |
-| **:45** | Hourly | `keep-work-flowing-cc` (CC PM brief — refreshes `Design/briefing.md` + `Design/user-actions.md`) | `45 * * * *` | ~:53:13 | briefing + user-actions |
-| **Fri 17:00** | Weekly | `weekly-retro` | `0 17 * * 5` | ~17:09 | retro via `retrospective` skill |
-| **Sun 16:03** | Weekly | `weekly-memory-grooming` | `3 16 * * 0` | ~16:10 | memory files |
-| **09:07** | Daily | `daily-backlog-grooming` | `7 9 * * *` | ~09:16 | `Docs/ops/backlog-grooming-<date>.md` + Linear queue fixes |
-| **Wed 11:09** | Weekly | `weekly-workflow-retro` | `9 11 * * 3` | ~Wed 11:13 | `Design/retros/workflow-retro-<date>.md` |
-| **Sun 10:06** | Weekly | `weekly-project-hygiene` | `6 10 * * 0` | ~Sun 10:10 | `Docs/ops/weekly-hygiene-<date>.md` + filed findings |
-| **1st 09:00** | Monthly | `monthly-rulebook-review` | `0 9 1 * *` | ~1st 09:00 | one Linear findings issue (or nothing) — registered 2026-07-22 by THR-704 after the THR-417 phantom-Done |
-
-The last three were enabled 2026-07-22 after their attended trials passed with Christian's chat approval (THR-677); their trial reports are `Docs/ops/backlog-grooming-2026-07-22.md`, `Design/retros/workflow-retro-2026-07-22.md`, and `Docs/ops/weekly-hygiene-2026-07-22.md`. The corresponding Cowork counterparts are now cut over — Christian disables them (tracked in `Design/user-actions.md`).
-
-**Output-surface rule for all three:** none of them writes `Design/briefing.md` or `Design/user-actions.md` — `keep-work-flowing-cc` owns those two files, and a second writer produces merge conflicts. Christian-facing items go in each task's own report under a `## Needs Christian` heading, and reach him via the hourly briefing picking up the underlying Linear state.
-
-**GitHub Actions:**
-
-| Slot | Cadence | Task | Cron |
-|------|---------|------|------|
-| **Fri 14:00 UTC** | Weekly | Drift scan — posts `drift-scan` Linear issues to Continuous Improvement | n/a (Actions cron) |
-
-**Windows Task Scheduler lane** (host-machine tasks; invisible to `list_scheduled_tasks`):
-
-| Slot | Cadence | Task | Trigger | Fires |
-|------|---------|------|---------|-------|
-| **:40** | Hourly | `Threadbare Git Cleanup` — runs `C:/Users/chris/Dev/Projects/clean-stale-git.sh` (prunes merged worktrees/branches, escalates stale unmerged ones) | Once at 00:40, repeat every 1h | :40 (no jitter) |
-
-The reaper was daily until THR-673 moved it to hourly at the free `:40` offset. Three things about it are load-bearing:
-
-- **It runs only while Christian is logged on** (`Logon Mode: Interactive only`). Making it run headless requires storing a password, which agents must not do — so a machine that is off or logged out simply misses runs. `StartWhenAvailable` catches up on the next opportunity; that is the intended containment, not a bug.
-- **It never deletes a live session's worktree.** `WORKTREE_MIN_IDLE_MINUTES` (180) skips any worktree whose git admin dir shows recent activity, and the orphan-dir sweep skips directories with recent file activity. Removing this guard re-opens the THR-673 failure: a rebased, uncommitted session worktree looks exactly like merged debris, and reaping it mid-session unregisters it, which lets the *next* run delete that session's branch.
-- **It severs a worktree's `node_modules` reparse point before removing anything** (THR-753). A worktree's `node_modules` is normally a junction/symlink into the home tree's one real install; `git worktree remove --force` — and `rm -rf` — follow that reparse point and empty the home tree's real `node_modules`, breaking hooks/dev/tests for every tree at once (the 2026-07-22 ×2 wipes, impediments #203/#207). `sever_node_modules_reparse` runs `cmd rmdir` (no `/s`, harmless on a real dir) on the reparse point before every `git worktree remove` and every orphan-dir `rm -rf`; a failed sever *refuses* that removal. After each removal pass `check_home_node_modules` verifies `node_modules/.bin/esbuild.exe` still exists and logs one loud `HOME-TREE node_modules DAMAGED … REPAIR: npm install` line if not — the reaper never auto-installs. The script body is not version-controlled; the current copy is preserved at `Docs/ops/clean-stale-git.sh.md` for recoverability.
-
-**Cowork lane — still enabled, pending Christian's disable (THR-653).** CC cannot read or disable these: they live in Cowork app state, are invisible to `list_scheduled_tasks`, and have no `SKILL.md` on CC disk. The disable is a Christian-owned switch tracked in `Design/user-actions.md`.
-
-| Slot | Cadence | Task | Disposition |
-|------|---------|------|-------------|
-| **:45** | Hourly | `keep-work-flowing` | Superseded by `keep-work-flowing-cc` (THR-650) — **disable** |
-| **09:06** | Daily | `daily-backlog-grooming` | CC port **live** (trial passed 2026-07-22, THR-677) — **disable** |
-| **Wed 09:04** | Weekly | `weekly-workflow-retro` | CC port **live** (trial passed 2026-07-22, THR-677) — **disable** |
-| **Sun 10:04** | Weekly | `weekly-project-hygiene` | CC port **live** (trial passed 2026-07-22, THR-677) — **disable** |
-| **Sun 10:06** | Weekly | `weekly-invoice-check` | **Out of scope — personal, not Threadbare. Do not touch.** |
-
-
-
-**Slot allocation.** Hourly Linear-MCP-using tasks are spaced so their *fire times* don't overlap: `tb-opus-pickup` at ~:00:53, `keep-work-flowing-cc` at ~:53:13 (deliberately late in the hour so the brief reflects post-pickup state; it moved from the :20 slot to :45 in the THR-653 cutover, taking over the slot the Cowork PM task vacates). Daily and weekly tasks pick non-quarter-hour minutes (e.g., :04, :06, :09). When registering a new hourly task, pick a cron minute whose *jittered* fire time leaves a clear gap from the ones above, then record both the cron and the observed fire time here in the same commit.
-
-The THR-677 ports were slotted against that rule: `daily-backlog-grooming` fires ~09:16 (clear of the `:00`/`:40`/`:53` hourly traffic), `weekly-project-hygiene` ~Sun 10:10 (clear of Sunday's 09:16 grooming and 16:10 memory grooming), and `weekly-workflow-retro` ~Wed 11:13 — deliberately moved off its old Cowork slot of Wed 09:04, which would have landed on top of the daily grooming run.
-
-**Prompt sources are mirrored into the repo.** Scheduled-task prompts live at `C:\Users\chris\.claude\scheduled-tasks\<id>\SKILL.md`, which is **outside** version control — merging a repo change does not deploy them, and a disk loss takes them with it. Copies are kept under `Docs/ops/scheduled-task-prompts/` so the prompts are reviewable and recoverable. **When you edit a live prompt, update its mirror in the same PR**; the mirror is a copy, not the source of truth.
+- **`keep-work-flowing-cc` owns `Design/briefing.md` and `Design/user-actions.md`.** No other scheduled task writes either file — a second writer produces merge conflicts. Christian-facing items from any other task go in that task's own report under a `## Needs Christian` heading and reach him via the hourly briefing.
+- **Registering a new task means recording it.** Pick a cron minute whose *jittered* fire time is clear of the existing ones, then record both the cron and the observed fire time in the registry file **in the same commit**. A live prompt lives outside version control at `C:\Users\chris\.claude\scheduled-tasks\<id>\SKILL.md` — when you edit one, update its mirror under `Docs/ops/scheduled-task-prompts/` in the same PR.
 
 ## Skill Tree Layout
 
@@ -577,50 +379,14 @@ Six skills were retired rather than ported, because CC does Obsidian-vault work 
 
 ## Domain Skills
 
-Context for specific problem types lives in on-demand skills. **Always load the `state-of-game-design` router first** — it is a thin orientation file (~3 KB) that routes you to the reference shard your task needs (`reference/cosmology.md` for content/cosmology, `reference/verbs-resolution.md` for engine, `reference/architectural-decisions.md` for plan/audit, `reference/deprecated.md` when proposing a pattern that might be rejected). Load only the shard(s) you need, not all four.
+Every skill's own `description:` frontmatter carries its triggers, and the harness lists all of them each session — so there is no table here. Ask "which skill covers this?" and read that listing. What the listing cannot tell you is **load order**, which is what this section owns:
 
-**For any prose, narrative, or content work** — first read the **systemic wiring guide** (`Docs/plans/2026-04-16-systemic-wiring-guide.md`), then choose the right prose skill: `prose-pipeline` for resolver architecture, `prose-content-systems` for encounter templates and day-to-day content, `prose-vignettes-and-enrichment` for enrichment placeholders and vignettes. The wiring guide ensures content uses the engine's dynamic capabilities instead of producing hardcoded fiction.
-
-| Domain | Skill | When to load |
-|--------|-------|-------------|
-| **Terminology (always active)** | `ubiquitous-language` | Session start — load `Docs/ubiquitous-language/README.md` as orientation. Load specific shards on demand. Propose new terms via Linear `UL-proposal` when encountering undeclared concepts. UL wins on all terminology disagreements. |
-| **Rulebook (synthesis, always active)** | `Docs/canon/rulebook-quick-reference.md` (always) + `Docs/canon/rulebook.md` (rules-of-play work) | Quick-reference is always-load — board-game card, ~80 lines. Full rulebook for any work touching rules of play (turn structure, action verbs, prerequisites, resources, encounters, clocks, win/loss). Each rule carries `[IMPL] / [DESIGN] / [OPEN]`. The single synthesis surface for how the systems combine into a game. |
-| **Foundational (load first — router)** | `state-of-game-design` | Always — before any other domain skill. Thin router (~3 KB); follow routing table to load the specific shard(s) you need. |
-| **Game design direction** | `game-design-direction` | During In Design phase for player-facing features. Loads Vision/ + taste profile, runs pre-design debate when direction is contested, runs Vision audit at finalization. Load alongside `state-of-game-design` router + `reference/cosmology.md` + `reference/architectural-decisions.md`. |
-| **Systemic wiring guide** | `Docs/plans/2026-04-16-systemic-wiring-guide.md` | **Before any content authoring.** The 7 engine capabilities content authors must know: enrichment placeholders, encounter seeding, hidden marks, reputation flow, graph ops, intelligence, divine intervention. Read this before encounter-pipeline, attachment-pipeline, or prose-content-systems. If you don't know what the engine can do, you'll write hardcoded fiction. |
-| Engine & code architecture | `engine-architecture` | Writing engine modules, tick loop work, tracing, resolution, PRNG |
-| Encounter & actor systems | `encounter-actor-systems` | Analysing, debugging, tuning encounter pipeline, actor capability, resolution, awareness, scoring. Also maintains `encounters-agents-reference.html` and `tick-cycle-reference.html`. |
-| Frontend & UI | `frontend-ui` | Building components, styling, accessibility, layout at 1920–3440px. Loads `Docs/design-system/` |
-| Prose — resolver architecture | `prose-pipeline` | Implementing new resolvers, modifying the prose pipeline, understanding graph-walking prose generation. Includes Threadbare aesthetic and authoring checklist. |
-| Prose — content authoring | `prose-content-systems` | Adding encounter templates, narrative event prose, faction content, spell flavor, content tables. High-volume daily work. |
-| Prose — dynamic systems | `prose-vignettes-and-enrichment` | Enrichment placeholders `{name}/{artifact}/{ally}`, vignette authoring, backstory strata, encounter history → prose. |
-| Encounter authoring pipeline | `encounter-pipeline` | Automated 4-pass encounter authoring: draft → editorial → systems audit → final merge. Run with `/encounter-pipeline <scale> <premise>`. |
-| Template encounter rewrite | `template-encounter-rewrite` | Rewriting guild/social/tavern/combat `EncounterTemplate`-format files to meet prose quality bar + systemic wiring. NOT for branching encounters — those use `encounter-pipeline`. |
-| Attachment authoring pipeline | `attachment-pipeline` | Automated 4-pass attachment authoring: draft composable attachments using primitive vocabulary → editorial → systems audit → final merge. Run with `/attachment-pipeline <category> <premise>`. |
-| Content systems & worldbuilding | `content-worldbuilding` | Content packages, graph data, constraint layers, world-model.json |
-| Hex map — architecture | `hexmap-core` | Always before any HexMapV2 work. Coordinates, zoom, render layers, camera, Three.js color, performance, lessons learned. |
-| Hex map — features | `hexmap-layers` | Building/modifying/testing/debugging signifiers, agents, fog, labels, click handlers, trails. Load alongside `hexmap-core`. |
-| Hex map — quick reference | `hexmap-renderer` | Quick reference for settled renderer decisions and patterns. Lighter than `hexmap-core`. |
-| Art direction & visual style | `art-direction` | Hex tiles, prompt construction, STYLE.md, Threadbare aesthetic |
-| Blender → HexMap pipeline | `blender-to-hexmap` | Building 3D models in Blender MCP and importing GLB into HexMapV2. Palette, merge, bake rotation, export, Three.js wiring. |
-| Creative fiction writing | `anthropic-skills:cw-*` *(platform — not in `.claude/skills/`)* | `anthropic-skills:cw-brainstorming` for story ideas, `anthropic-skills:cw-prose-writing` for narrative fiction drafts, `anthropic-skills:cw-official-docs` for lore wikis, `anthropic-skills:cw-story-critique` for review. Use *instead of* prose skills only for pure narrative fiction unrelated to the game engine. |
-| Post-implementation docs | `gamedocumenter` | Obsidian/changelog/backlog updates after completing work |
-| Vault — ingest sources | `vault-ingest` | Compile raw sources into wiki pages. `/kb-ingest` |
-| Vault — query knowledge | `vault-query` | Ask questions against the vault. `/kb-query <question>` |
-| Vault — health audit | `vault-lint` | Audit vault for orphans, broken links, stale content. `/kb-lint` |
-| Vault — enrich pages | `vault-enrich` | Add cross-refs, expand content, fix issues. `/kb-enrich [page]` |
-| Image manipulation | `image-manipulation` | Geometric clipping, alpha masks, hex tile pipeline |
-| QA sweeps | `qa-orchestrator` | Systematic UI/UX/frontend QA |
-| Interface regression sweep | `playtest-interface` | Interface playtest — drives a browser MCP session through the game, asserts every IA manifest surface via `__DEBUG`, produces structured PASS/FAIL/SURPRISE report. `/playtest-interface [url]` |
-| Testing & contracts | `testing-patterns` | Writing tests for engine or HexMapV2 changes. Contract test patterns, dependency maps, anti-patterns, coverage gap reference. |
-| Encounter tuning & analysis | `agent-analyser` | Analysing encounter log TSV exports for agent behavior, balance, variety, movement, capability growth, idle rates. Upload logs and ask for analysis. |
-| **Impediment reporting (always active)** | `impediment-reporter` | **Every session, every agent.** Log blockers and workarounds to `Docs/impediments.md` as they occur. Part of Definition of Done. |
-| Continuous improvement | `retrospective` | Review impediment log, analyze patterns, implement quick-fix improvements, backlog larger ones. Run with `/retrospective`. |
-| Multi-perspective design | `design-council` | Run a sociocratic, consent-based design discussion with multiple perspectives (content, engine, coordination, etc.). Forward-looking counterpart to `retrospective`. Trigger with `/design-council` or "let's get multiple perspectives on this". |
-| Pre-handoff intent check | `intent-judge` | Before opening the PR for any plan doc. Auto-spawned subagent that scores the plan against the user's verbatim ask. Returns Allow / Revise / Block / Escalate. `/intent-judge <path>` for manual runs. |
-| Pickup entrypoint (CC) | `pull-work` | Canonical CC pickup flow: safe-claim, verify-after-write, dirty-worktree fallback. Run with `/pull-work`. |
-| Pre-design grilling | `grill-me` | Optional Step 0 of the design workflow when scope is large, multi-pillar, or ambiguous. Synthesizes into `Docs/plans/YYYY-MM-DD-<topic>-grill-me.md`. |
-| Vault log append | `vault-log` | Append a `- **<type>** | <description>` entry to the Obsidian vault `log.md`. Auto-falls-back to filesystem write when Obsidian MCP is unreachable; requires `OBSIDIAN_VAULT_PATH`. |
+- **`state-of-game-design` router first**, before any other domain skill. It is a thin (~3 KB) orientation file that routes you to the one or two reference shards your task needs (`reference/cosmology.md` for content/cosmology, `reference/verbs-resolution.md` for engine, `reference/architectural-decisions.md` for plan/audit, `reference/deprecated.md` when proposing a pattern that might be rejected). Load the shards you need, not all four.
+- **Prose/content work:** read the **systemic wiring guide** (`Docs/plans/2026-04-16-systemic-wiring-guide.md`) *before* picking a prose skill — it names the 7 engine capabilities (enrichment placeholders, encounter seeding, hidden marks, reputation flow, graph ops, intelligence, divine intervention). Skip it and you will write hardcoded fiction instead of systemic content. Then choose: `prose-pipeline` (resolver architecture), `prose-content-systems` (encounter templates, day-to-day content), `prose-vignettes-and-enrichment` (placeholders, vignettes).
+- **Hex-map work:** `hexmap-core` before any layer work; `hexmap-layers` alongside it for signifiers/agents/fog/labels/trails.
+- **Content authoring:** the relevant `Docs/canon/<domain>.md` is Step 0 — before any other reference material.
+- **Always active:** `ubiquitous-language` (UL wins on every terminology disagreement; propose new terms via a Linear `UL-proposal`) and `impediment-reporter` (log friction as it happens — part of the Definition of Done). `Docs/canon/rulebook-quick-reference.md` is always-load; `Docs/canon/rulebook.md` for anything touching rules of play.
+- **Pure narrative fiction unrelated to the game engine** uses the platform skills `anthropic-skills:cw-brainstorming` / `cw-prose-writing` / `cw-official-docs` / `cw-story-critique` *instead of* the prose skills above. These live on the platform, not in `.claude/skills/`, so they carry no repo-side description.
 
 ## Continuous Improvement
 

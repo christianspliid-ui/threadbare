@@ -302,7 +302,6 @@ export interface DebugBridge {
   gotoAgent: (id: string) => boolean;
   /** @internal GameView registers its gotoAgent handler here */
   _registerGotoAgent: (fn: (id: string) => boolean) => void;
-  /** List action templates available to fire on agents. Pass an agent id/name to filter by that agent's context, or omit to list all actor-targeting templates. */
   /**
    * THR-689: advance the sim n ticks synchronously through the real runTick pipeline,
    * bypassing the `document.hidden`-throttled interval loop. Auto-pauses the run loop.
@@ -311,6 +310,11 @@ export interface DebugBridge {
   tick: (n?: number) => DebugTickResult;
   /** @internal GameView registers its synchronous tick batch here */
   _registerTickBridge: (fn: (n: number) => DebugTickResult) => void;
+  /**
+   * List action templates available to fire on agents. Omit `agentId` to list every
+   * actor-targeting template; pass an agent id/name to filter by that agent's context.
+   * Doubles as an existence check — returns `[]` when the agent query matches nothing.
+   */
   listActions: (agentId?: string) => DebugActionInfo[];
   /** Fire an action template on a target agent immediately, bypassing UI animations. agentId and templateId both accept partial matches. */
   fireAction: (agentId: string, templateId: string) => DebugFireResult;
@@ -422,10 +426,13 @@ export interface DebugBridge {
   getMotiveReceipt: (agentQuery: string) => import('./types/foreshadowing').MotiveReceipt | null;
   /** Returns the current encounter novelty record (surface-keyed since THR-475). Keys are surfaceKeys; values are last-selected tick. Null if no game state. */
   getEncounterNoveltyRecord: () => Record<string, number> | null;
+  /** Snapshot of the trace ring buffer. Empty unless tracing was enabled first. */
   getTraces: () => Promise<ReadonlyArray<TraceEntry>>;
+  /** Start recording traces into the ring buffer. `openDebugPanel()` enables this implicitly. */
   enableTracing: () => Promise<void>;
   disableTracing: () => Promise<void>;
   isTracingEnabled: () => Promise<boolean>;
+  /** Drop every buffered trace. Use before a measured run so the buffer holds only that run. */
   clearTraces: () => Promise<void>;
   /** Enable the tick-loop profiling/timing stream (THR-580). Independent of tracing. */
   enableProfiling: () => Promise<void>;
@@ -433,9 +440,12 @@ export interface DebugBridge {
   disableProfiling: () => Promise<void>;
   /** Per-phase avg/max/p95 timing aggregate over the last `windowTicks` (default 30) of profiling (THR-580). */
   getPhaseTimings: (windowTicks?: number) => Promise<import('./engine/traceBuffer').PhaseTimingAggregate[]>;
+  /** Captured tick-loop exceptions (NFP #4 swallows them at runtime; they surface here). */
   getCrashLog: () => Promise<unknown>;
   clearCrashLog: () => Promise<void>;
+  /** Aggregate session-health readout — the first stop when the sim "looks wrong" but does not throw. */
   getHealthReport: () => Promise<unknown>;
+  /** Full diagnostic bundle (health + crash log + counters) as one JSON-serializable blob for attaching to an issue. */
   exportDiagnostics: () => Promise<unknown>;
   /** Returns a BalanceRunSummary for the current session. Pass endTick to override the current tick. */
   getBalanceSummary: (endTick?: number) => Promise<BalanceRunSummary | null>;
@@ -602,7 +612,9 @@ export interface DebugBridge {
     records: ReadonlyArray<import('./types/chapterRecord').ChapterRecord>;
   };
 
+  /** Counts only — how many agents are tracked and how many encounter events exist. Cheap pre-check before exporting. */
   getEncounterLogAll: () => Promise<EncounterLogSummary>;
+  /** Encounter log as TSV strings (one combined sheet plus one per agent), ready to feed the `agent-analyser` skill. */
   exportEncounterLogAll: (agentNames?: Record<string, string>, seed?: string) => Promise<EncounterLogExportResult>;
   /** Returns total encounter cache full-rebuild count for this session (THR-187). */
   getEncounterCacheRebuildCount: () => number;

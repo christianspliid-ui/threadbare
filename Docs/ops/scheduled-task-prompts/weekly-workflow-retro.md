@@ -35,7 +35,7 @@ Christian does not read Linear. The hourly `keep-work-flowing-cc` task owns `Des
 
 ## Context to load
 
-- **CLAUDE.md** — the operating manual (Session Types, Definition of Done, Scheduled Tasks table).
+- **CLAUDE.md** — the operating manual (Session Types, Definition of Done). Scheduled-task registry: `Docs/ops/scheduled-tasks-registry.md`.
 - **`Docs/plans/2026-04-13-linear-coordination-protocol.md`** — the protocol this retro audits, especially "Coordination Failure Modes — Hard Rules" (Rules 1–10).
 - **`.claude/skills/pull-work/SKILL.md`** — the pickup flow as an executable checklist.
 - The previous workflow retro in `Design/retros/` (most recent `workflow-retro-*.md`), so you can compare against last week rather than starting cold.

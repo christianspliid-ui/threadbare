@@ -37,4 +37,4 @@ Three reasons, all learned the hard way:
 
 The hourly executor prompt (`tb-opus-pickup`) is mirrored separately, and predates this directory, at [`../cc-hourly-opus-pickup-prompt.md`](../cc-hourly-opus-pickup-prompt.md).
 
-Canonical registry — cron, fire times, and slot-allocation rules — is the `### Scheduled Tasks` table in `CLAUDE.md`.
+Canonical registry — cron, fire times, and slot-allocation rules — is `Docs/ops/scheduled-tasks-registry.md`.
