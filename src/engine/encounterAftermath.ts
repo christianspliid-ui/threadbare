@@ -1538,6 +1538,13 @@ export function applyEncounterAftermathReaction(
           properties: {
             appliedAt: tick,
             durationTicks,
+            // THR-761: `decayConditions` is the only tick-driven expiry path and it
+            // counts down `ticksRemaining`, not `durationTicks`. Writing only the
+            // latter made every aftermath condition permanent. `durationTicks` stays
+            // as the authored total (provenance + UI progress denominator); this is
+            // the live counter. 0 = indefinite, so omit the field and the decay loop
+            // skips the edge entirely.
+            ...(durationTicks > 0 ? { ticksRemaining: durationTicks } : {}),
             intensity,
             sourceEncounterId: encounterId,
             sourceReactionId: reaction.id,
@@ -1712,6 +1719,9 @@ export function applyEncounterAftermathReaction(
             properties: {
               appliedAt: tick,
               durationTicks: caDuration,
+              // THR-761: see the apply_condition case above — `ticksRemaining` is the
+              // field `decayConditions` counts down. 0 = indefinite (omit the field).
+              ...(caDuration > 0 ? { ticksRemaining: caDuration } : {}),
               intensity: CONDITION_DEFAULT_INTENSITY,
               sourceEncounterId: encounterId,
               sourceReactionId: reaction.id,
