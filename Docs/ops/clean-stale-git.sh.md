@@ -7,7 +7,7 @@ Because it is not tracked, a disk loss takes it with it. This file is a **copy f
 recoverability and review**, not the source of truth. When you change the script, update
 this mirror in the same PR (as THR-753 does).
 
-Last synced: 2026-07-25 (THR-753 — junction-safe worktree reaping).
+Last synced: 2026-07-26 (THR-797 — live-session-safe worktree reaping).
 
 ## Full script body
 
@@ -50,6 +50,14 @@ is_checked_out() { grep -qxF "$1" <<< "$CHECKED_OUT"; }
 OPEN_PRS=$(gh pr list --state open --limit 400 --json headRefName -q '.[].headRefName' 2>/dev/null | sort -u)
 has_open_pr() { [ -n "$OPEN_PRS" ] && grep -qxF "$1" <<< "$OPEN_PRS"; }
 
+# Branch belongs to an unregistered-but-still-active worktree corpse (THR-797)?
+# Matched on basename: worktree dir `<name>` ↔ branch `claude/<name>` (also pickup/,
+# resume/). Populated by the orphan-dir sweep, which runs before the branch pass.
+# No match → behaviour is exactly as before, so this can only ever keep MORE branches.
+has_live_orphan_dir() {
+  [ -n "${LIVE_ORPHAN_BASENAMES:-}" ] && grep -qxF "${1##*/}" <<< "$LIVE_ORPHAN_BASENAMES"
+}
+
 noise='^(\.codesight/|dist/|node_modules/|\.codex-edge-profile/|coverage/|\.vite/)'
 
 # Liveness guard (THR-673). A live session's worktree is indistinguishable from
@@ -60,16 +68,58 @@ noise='^(\.codesight/|dist/|node_modules/|\.codex-edge-profile/|coverage/|\.vite
 # because an unregistered worktree no longer protects it via is_checked_out.
 # So: never touch a worktree whose git admin dir shows recent activity.
 WORKTREE_MIN_IDLE_MINUTES=${WORKTREE_MIN_IDLE_MINUTES:-180}
+
+# Working-tree activity probe (THR-797). The git-admin-dir signal below only moves
+# on git operations, but a session's CLOSEOUT — Linear updates, doc edits, impediment
+# logging — writes files for hours without touching git. On 2026-07-26 that blind spot
+# fired: PR #880 merged 03:38, is_live correctly skipped the worktree at 03:40/04:40/
+# 05:40/06:40/07:40, then at 08:40 the admin mtimes aged past 180m and removal ran
+# against a session that was still very much alive. The tell is in that one run's own
+# log: the removal WARN and a "skipped orphan dir (recent activity)" line name the SAME
+# path two lines apart — the orphan sweep's filesystem probe knew, and the worktree
+# pass did not ask it. So ask the same question here. Same threshold, same semantics.
+worktree_recently_touched() {
+  local wt="$1"
+  find "$wt" -maxdepth 3 \
+       \( -name node_modules -o -name .git -o -name dist -o -name coverage \
+          -o -name .codesight -o -name .vite \) -prune -o \
+       -newermt "-$WORKTREE_MIN_IDLE_MINUTES minutes" -print -quit 2>/dev/null | grep -q .
+}
+
 is_live() {
   local wt="$1" admin newest=0 f
+  # (a) git-admin-dir mtime — moves on commit/checkout/index refresh.
   admin=$(git -C "$wt" rev-parse --git-dir 2>/dev/null) || return 0   # unreadable → assume live
   for f in "$admin/index" "$admin/HEAD" "$admin/logs/HEAD"; do
     [ -f "$f" ] || continue
     local m; m=$(date -r "$f" +%s 2>/dev/null) || continue
     [ "$m" -gt "$newest" ] && newest=$m
   done
-  [ "$newest" -eq 0 ] && return 1                                     # no signal → not live
-  [ $(( ($(date +%s) - newest) / 60 )) -lt "$WORKTREE_MIN_IDLE_MINUTES" ]
+  if [ "$newest" -gt 0 ] \
+     && [ $(( ($(date +%s) - newest) / 60 )) -lt "$WORKTREE_MIN_IDLE_MINUTES" ]; then
+    return 0
+  fi
+  # (b) working-tree filesystem activity — the signal a git-idle closeout still emits.
+  # Reached when (a) is stale OR absent, so a missing admin signal no longer means
+  # "not live" on its own; it now means "ask the filesystem".
+  worktree_recently_touched "$wt"
+}
+
+# Merge-recency grace (THR-797). Defence in depth for the narrower case the impediment
+# originally hypothesised: a session doing closeout in the minutes right after its PR
+# merges. A merge is NOT proof the session ended — the closeout continues well past it.
+# This did not cause the 2026-07-26 incident (that was the is_live blind spot above,
+# 5h after the merge), so it is a second gate, not the fix. Never weaken the merge gate
+# itself — this only DELAYS reaping, it never authorises it.
+WORKTREE_MERGE_GRACE_MINUTES=${WORKTREE_MERGE_GRACE_MINUTES:-90}
+merged_recently() {
+  local head="$1" mc t
+  # Oldest commit on the ancestry path head..MAIN is the merge that first took it in.
+  mc=$(git rev-list --ancestry-path "$head..$MAIN" 2>/dev/null | tail -1)
+  [ -z "$mc" ] && return 1                                            # can't date it → don't block
+  t=$(git log -1 --format=%ct "$mc" 2>/dev/null) || return 1
+  [ -z "$t" ] && return 1
+  [ $(( ($(date +%s) - t) / 60 )) -lt "$WORKTREE_MERGE_GRACE_MINUTES" ]
 }
 
 # Junction guard (THR-753). A worktree's node_modules is normally a Windows
@@ -123,6 +173,11 @@ git worktree list --porcelain \
       [ -n "$real" ] && continue                                    # keep — real WIP
       is_live "$wt" && { echo "skipped worktree (live session): $wt"; continue; }
       if git merge-base --is-ancestor "$head" "$MAIN" 2>/dev/null; then
+        # THR-797: merged is not "session finished" — hold off for the grace window.
+        merged_recently "$head" && {
+          echo "skipped worktree (merged <${WORKTREE_MERGE_GRACE_MINUTES}m ago, closeout may still run): $wt"
+          continue
+        }
         # Junction guard (THR-753): sever node_modules reparse point first, or
         # `git worktree remove --force` follows it into the home tree's real
         # node_modules and empties it. A failed sever refuses the removal.
@@ -143,6 +198,13 @@ git worktree prune
 # Sweep directories under the worktree roots that git no longer tracks
 # (left behind when a worktree dir was locked at removal time).
 TRACKED=$(git worktree list --porcelain | awk '/^worktree /{print $2}')
+# THR-797: basenames of unregistered-but-still-active worktree corpses. A partially
+# failed removal unregisters the worktree, so is_checked_out stops protecting its
+# branch and the NEXT run deletes it out from under a session that is still running
+# (2026-07-26: worktree removal WARN at 08:40, "deleted branch: claude/happy-swartz-
+# 826e7d" at 09:40, while the dir was still being skipped for recent activity).
+# Collected here, consumed by the branch pass below.
+LIVE_ORPHAN_BASENAMES=""
 for root in "$REPO/.claude/worktrees" "C:/Users/chris/Dev/Projects/_codex_worktrees" "C:/Users/chris/Dev/Projects/_pickup_worktrees"; do
   [ -d "$root" ] || continue
   for dir in "$root"/*/; do
@@ -153,6 +215,7 @@ for root in "$REPO/.claude/worktrees" "C:/Users/chris/Dev/Projects/_codex_worktr
     # (see is_live). Recent file activity means a session is still working in it.
     if find "$d" -maxdepth 2 -newermt "-$WORKTREE_MIN_IDLE_MINUTES minutes" -print -quit 2>/dev/null | grep -q .; then
       echo "skipped orphan dir (recent activity): $d"
+      LIVE_ORPHAN_BASENAMES="${LIVE_ORPHAN_BASENAMES}${d##*/}"$'\n'
       continue
     fi
     sever_node_modules_reparse "$d" || continue   # THR-753: don't let rm -rf follow a node_modules junction
@@ -198,6 +261,8 @@ git for-each-ref --format='%(refname:short)|%(upstream:track)' refs/heads/ \
       [ "$b" = "main" ] && continue
       is_checked_out "$b" && continue
       has_open_pr "$b" && continue
+      has_live_orphan_dir "$b" && {                                   # THR-797
+        echo "kept branch (worktree corpse still active): $b"; continue; }
       tip=$(git rev-parse "$b" 2>/dev/null)
       del=0
       [ "$track" = "[gone]" ] && del=1
