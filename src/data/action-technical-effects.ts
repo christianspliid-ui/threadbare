@@ -132,6 +132,8 @@ export const ACTION_TECHNICAL_EFFECTS: Readonly<Record<string, string>> = {
     'Applies a divine influence (interventionType `omen`, Spirit sphere) to the target agent, biasing their decision-making until the influence decays.',
   'divine.afflict_bless':
     'Applies a divine influence (interventionType `afflict_bless`, Life sphere) to the target agent, biasing their decision-making until the influence decays.',
+  'divine.rekindle_thread':
+    "Fires the `quintessence_restore` graph-op on the target mortal (THR-773). Raises their `quintessence` to REKINDLE_RESTORE_TO_RATIO × `quintessenceMax`, deletes the `brokenSince` stamp so `isBrokenMortal` releases immediately rather than waiting a tick for the quintessence phase to reconcile, and writes `rekindledBy`/`rekindledAtTick` plus a `recent_event` naming the restoration. Unlike the influence verbs above it does not decay — the restore is permanent, and the mortal can be worn back down normally afterwards. Routes through the resolution-intercept path (not the graph executor) because the receipt needs full GameState. Fail-soft: a missing target, a non-actor target, or a mortal already at or above the restore ratio is a no-op.",
 
   // ─── divine.self.* — self-directed post-processors ────────────────────────
   'divine.self.stillness':

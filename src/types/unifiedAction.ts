@@ -762,6 +762,82 @@ export interface EncounterAftermathSummary {
   readonly reactions?: readonly EncounterAftermathReaction[];
 }
 
+// ─── Nudge Model (THR-773 / WS0) ───────────────────────────────────
+//
+// A nudge is an authored, essence-priced card the god may play into an
+// *attended* encounter step. It shifts the odds; it never picks the outcome.
+// The whole feature is opt-in: a step without `nudges` resolves exactly as it
+// did before this schema landed (NFP #4, NFP #6).
+
+/**
+ * Band rider attached to a nudge — a deterministic remap of the resolved
+ * `StepOutcome`, applied after the d100 has already been drawn.
+ *
+ * `reroll_once` was considered and REJECTED at design audit: any extra draw from
+ * the resolution rng stream shifts every downstream consumer for that action.
+ * Riders are pure band-mapping and take **zero** draws from any stream, so the
+ * same seed plus the same nudges yields the same roll and the same outcome.
+ */
+export type NudgeRider =
+  /** `critical_failure` → `failure`. Every other outcome passes through. */
+  | 'no_crit_fail'
+  /** `failure` → `success_at_cost` **and** `near_miss` → `success_at_cost`. */
+  | 'floor_at_cost';
+
+/**
+ * Authored per-encounter nudge option (THR-772 ruling 3).
+ *
+ * Lives on `ActionStep.nudges`. `bandProse` keys on the six-value `StepOutcome`
+ * (including `near_miss`) — NOT the five-band `EncounterOutcomeBand`, and NOT
+ * `OutcomeBand` from `outcomeConsequences.ts`, either of which would type-check
+ * while being the wrong domain.
+ */
+export interface StepNudge {
+  /** Unique within the owning template. */
+  readonly id: string;
+  /** ≤6 words, plain language (interactivePlainness applies). */
+  readonly name: string;
+  /** Sphere gate; absent ⇒ common pool. */
+  readonly sphere?: SphereName;
+  /** God-power template id that must be unlocked before this card is playable. */
+  readonly requiredUnlock?: string;
+  /** Trait-only option; pairs with `UnifiedActionTemplate.traitVariants`. */
+  readonly requiredTrait?: string;
+  /** Essence price at commit. 0 is allowed (trait options). */
+  readonly essenceCost: number;
+  /** Named forecast modifier contributed as `{ source: 'nudge:<id>', delta }`. */
+  readonly forecastDelta: number;
+  /** Optional band rider applied at step-outcome selection. */
+  readonly rider?: NudgeRider;
+  /** WS4 image-library tag; absent ⇒ category generic. */
+  readonly imageTag?: string;
+  /** Card body — a concrete, witnessed effect. */
+  readonly fiction: string;
+  /** Player guidance, words only (never a number). */
+  readonly effectLine: string;
+  /** Appended to the step's prose when this nudge was active for that outcome. */
+  readonly bandProse?: Partial<Record<StepOutcome, string>>;
+}
+
+/**
+ * Template-level variant applied when the acting agent holds `traitId`
+ * (resolved through the same `has_trait` walk as `requiredTraits`).
+ *
+ * Fail-soft: a variant naming an absent trait — or an `addNudgeIds` entry with
+ * no matching `StepNudge` — is inert and warns once.
+ */
+export interface TraitVariant {
+  readonly traitId: string;
+  /** Added to the forecast as `{ source: 'trait:<traitId>', delta }`. */
+  readonly forecastDelta?: number;
+  /** Added to the step's effective difficulty (negative eases the step). */
+  readonly difficultyDelta?: number;
+  /** Player-facing factor line surfaced alongside the forecast. */
+  readonly factorLine: string;
+  /** Nudge ids unlocked into the hand by holding this trait. */
+  readonly addNudgeIds?: readonly string[];
+}
+
 export interface ActionStep {
   readonly reach: ReachDomain;
   readonly duration: { readonly min: number; readonly max: number };
@@ -785,6 +861,8 @@ export interface ActionStep {
   readonly successAtCostAfterimage?: string;
   readonly criticalSuccessAfterimage?: string;
   readonly criticalFailureAfterimage?: string;
+  /** THR-773: authored nudge hand for this step. Absent ⇒ no hand, no nudge path. */
+  readonly nudges?: readonly StepNudge[];
 }
 
 // ─── Branching step support ────────────────────────────────────
@@ -913,6 +991,22 @@ export interface UnifiedActionTemplate {
    * default.
    */
   readonly contestNonLethal?: boolean;
+  /**
+   * Drawable by a **broken** mortal (THR-773). Broken agents are excluded from
+   * all candidacy except templates that opt in here — the WS5 rebuild encounters
+   * that form the road back out. Omit for the ordinary default: a broken mortal
+   * is out of the story until they mend.
+   *
+   * Inert until `BROKEN_GATE_ENABLED` flips (a WS5 Done-when, gated on those
+   * rebuild encounters actually existing).
+   */
+  readonly drawableWhileBroken?: boolean;
+  /**
+   * Trait-conditional variants (THR-773). Applied when the acting agent holds
+   * the named trait: contributes a forecast modifier, a difficulty delta, a
+   * player-facing factor line, and/or extra nudge cards into the hand.
+   */
+  readonly traitVariants?: readonly TraitVariant[];
   readonly locationSubtypes?: readonly string[];
   readonly sphereAffinity?: SphereName;
 
@@ -1251,6 +1345,13 @@ export interface UnifiedAction {
   readonly disregardRemaining?: boolean;
   /** Effective attention tier — computed at action creation, may be promoted mid-encounter. */
   readonly effectiveTier?: AttentionTier | 'invisible';
+  /**
+   * THR-773: ids of the `StepNudge` cards the player committed to the current
+   * step. Essence is already spent by the time these are present — a commit that
+   * loses the race for an empty pool never lands here. Absent/empty ⇒ the
+   * pre-nudge resolution path, byte for byte.
+   */
+  readonly activeNudges?: readonly string[];
   /** Rarity tier after Focus buff was applied at action creation (THR-416). Prefer this over template.rarityTier at read sites. */
   readonly effectiveRarityTier?: RarityTier;
   /** Reuse-first binding of encounter support cast/places resolved at action start. */

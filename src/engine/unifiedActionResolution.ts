@@ -53,6 +53,7 @@ import { applyFactionGovernanceVerb } from './factionGovernanceVerbs';
 import { applyPlantSchism } from './schismPlant';
 import { applyAnointSuccessor } from './anointSuccessor';
 import { applyImbueItem, applyBestowPower, applyAnointFaction, applyPlantTrap } from './ascendantExpression';
+import { applyQuintessenceRestore } from './rekindleThread';
 import { revealBestSecret } from './secretsFavorsConsequences';
 import { SCHISM_PENDING_DURATION_TICKS } from '../data/game-config';
 import { emitTrace } from './traceBuffer';
@@ -142,6 +143,16 @@ import { buildPredicateContext, collectTestShapers } from './effectResolver';
 import { applyClearanceGateStepOutcome, summarizeClearanceGateUpdates } from './clearanceGate';
 import { applyFlipTableTriggerWithConfig, matchesStepOutcomeTrigger } from './effectShellRuntime';
 import { getEffectiveUnifiedActionChoiceMemory } from './encounterChoiceMemory';
+// THR-773 (Nudge Model WS0): named forecast modifiers + pure band riders.
+import {
+  applyRider,
+  collectHeldTraitIds,
+  collectNudgeModifiers,
+  resolveTraitVariants,
+  selectActiveRider,
+  sumModifiers,
+  sumVariantDifficultyDelta,
+} from './encounters/nudges';
 import type { EncounterChoiceMemory } from '../types/encounter';
 import type { ClearanceGateRuntimeState, ClearanceGateState } from '../types/contentShells';
 import { getUnifiedTemplateById } from '../data/unified-action-templates';
@@ -375,10 +386,29 @@ export function resolveUncontestedStep(
   // Phase 2: Use shared resolution service.
   // Unified action difficulty is already normalized (0..1) — pass through directly.
 
+  // THR-773: nudges the player committed to this step, plus any trait variants
+  // the acting agent's traits switch on, contribute *named* forecast modifiers
+  // (`nudge:<id>` / `trait:<id>`). They ride the same additive channel as push
+  // and the company assist, so one modifier total feeds scale adjustment, the
+  // probability floor, and the trace. Absent `activeNudges` and absent
+  // `traitVariants` both sum to 0, leaving the pre-nudge path byte-equivalent.
+  const nudgeTraitVariants = template.traitVariants?.length
+    ? resolveTraitVariants(template, collectHeldTraitIds(state.graph, action.actorId))
+    : [];
+  const nudgeModifiers = collectNudgeModifiers(step, action.activeNudges, nudgeTraitVariants);
+  const nudgeModifierTotal = sumModifiers(nudgeModifiers);
+  // A trait variant may also ease (or steepen) the step itself, before the
+  // scale adjustment below reads the difficulty.
+  const variantDifficultyDelta = sumVariantDifficultyDelta(nudgeTraitVariants);
+  if (variantDifficultyDelta !== 0) {
+    effectiveDifficulty = Math.max(0, Math.min(1, effectiveDifficulty + variantDifficultyDelta));
+  }
+
   // THR-74: the company's assist + cohesion bonus rides the same additive
   // channel as push and intervention, so scale adjustment, the probability
   // floor, and the trace all see one consistent modifier total.
-  const totalActionModifiers = pushModifier + interventionBoost + (groupStep?.totalBonus ?? 0);
+  const totalActionModifiers = pushModifier + interventionBoost + (groupStep?.totalBonus ?? 0)
+    + nudgeModifierTotal;
 
   // THR-451: Apply scale-based difficulty adjustments at the caller boundary.
   // The resolver stays scale-agnostic; all scale tuning happens here.
@@ -531,6 +561,24 @@ export function resolveUncontestedStep(
     }
   }
 
+  // THR-773: nudge band riders. Applied LAST, after push/resist/floors, so the
+  // rider is the final word on the band the player paid to change — and applied
+  // to the *outcome*, never to the roll: `applyRider` is a pure lookup over the
+  // six-value StepOutcome domain and takes zero draws from any rng stream. Same
+  // seed + same nudges ⇒ same d100 ⇒ same downstream stream consumers.
+  //
+  // Strongest single rider wins (NUDGE_RIDER_PRIORITY); riders never stack.
+  //
+  // `postResistOutcome` is captured before the remap so `resistSucceeded` below
+  // still measures what the *resist* did. Without it, a rider that changed the
+  // band would be reported as a successful resist on an action that never
+  // resisted at all.
+  const postResistOutcome = outcome;
+  const activeRider = selectActiveRider(step, action.activeNudges, action.templateId);
+  if (activeRider) {
+    outcome = applyRider(outcome, activeRider);
+  }
+
   const ops = isStepSuccess(outcome) ? step.onSuccess : step.onFailure;
 
   return {
@@ -543,7 +591,7 @@ export function resolveUncontestedStep(
     pushAttempted: pushEvent !== null,
     pushCost: pushEvent ? Math.abs(pushEvent.delta) : 0,
     resistAttempted: resistEvent !== null,
-    resistSucceeded: resistEvent !== null && outcome !== mapResolverOutcomeToStep(result.outcome, nearMiss),
+    resistSucceeded: resistEvent !== null && postResistOutcome !== mapResolverOutcomeToStep(result.outcome, nearMiss),
     resistCost: resistEvent ? Math.abs(resistEvent.delta) : 0,
     preResistOutcome: resistEvent ? mapResolverOutcomeToStep(result.outcome, nearMiss) : undefined,
   };
@@ -1205,6 +1253,10 @@ export function executeStepResult(
     // the graph, so it routes here instead of through executeGraphOps — which flipped
     // the edge's `revealed` flag and applied no social consequence at all.
     const revealSecretOps: GraphOp[] = [];
+    // THR-773: `quintessence_restore` routes here for the same reason — the
+    // restore must leave the mortal a `recent_event` receipt naming the god who
+    // mended them, and the graph executor has no GameState to append it to.
+    const quintessenceRestoreOps: GraphOp[] = [];
     const graphOnlyOps: GraphOp[] = [];
     for (const op of ops) {
       if (op.op === 'reveal_secret') revealSecretOps.push(op);
@@ -1215,7 +1267,26 @@ export function executeStepResult(
       else if (op.op === 'bestow_power') bestowPowerOps.push(op);
       else if (op.op === 'anoint_faction') anointFactionOps.push(op);
       else if (op.op === 'plant_trap') plantTrapOps.push(op);
+      else if (op.op === 'quintessence_restore') quintessenceRestoreOps.push(op);
       else graphOnlyOps.push(op);
+    }
+
+    if (quintessenceRestoreOps.length > 0) {
+      // THR-773 — Rekindle the Thread. Raises the target mortal back to
+      // REKINDLE_RESTORE_TO_RATIO, clears the broken stamp so the predicate
+      // releases immediately, and appends the receipt. The acting ascendant is
+      // action.actorId; the mortal is action.targetId unless the op names one.
+      for (const op of quintessenceRestoreOps) {
+        const ref = op.nodeId ?? op.target ?? '$target';
+        const resolvedTargetId = ref === '$target' ? action.targetId
+          : ref === '$actor' ? action.actorId
+            : ref;
+        try {
+          applyQuintessenceRestore(state, action.actorId, resolvedTargetId, tick, runtime);
+        } catch {
+          // Fail-soft per NFP #4: never crash the tick.
+        }
+      }
     }
 
     if (factionVerbOps.length > 0) {

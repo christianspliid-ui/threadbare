@@ -42,6 +42,7 @@ import {
   MILESTONE_COMPANY_BEAT_ID,
   MILESTONE_GATHERING_BEAT_ID,
   MILESTONE_EMPTY_ROAD_BEAT_ID,
+  MILESTONE_GUTTERING_THREAD_BEAT_ID,
 } from './player-progression';
 import type { SpineBeatPresentation } from './ascendant-beat-content';
 
@@ -117,6 +118,21 @@ export const ASCENDANT_MILESTONE_BEATS: readonly BeatDefinition[] = [
     identity: { reach: 'heart', sphere: 'spirit' },
     grantsActionIds: ['company.reunite', 'company.sunder'],
   },
+  {
+    // THR-773: the guttering-thread milestone. Enqueued by `phaseAscendantProgression`
+    // the first time a mortal the ascendant is threaded to falls into the broken
+    // state — which is also Rekindle's own precondition, so the card arrives with
+    // someone to point it at. See MILESTONE_GUTTERING_THREAD_BEAT_ID for why the
+    // consequence must land before the answer to it.
+    // `identity.sphere: 'spirit'` matches `divine.rekindle_thread`'s sphereAffinity,
+    // so the beat and its granted card share a register. `trigger: { kind: 'turn' }`
+    // keeps a `__DEBUG.fireBeat` force-offer unconditional, like the other milestones.
+    beatId: MILESTONE_GUTTERING_THREAD_BEAT_ID,
+    kind: 'milestone',
+    trigger: { kind: 'turn' },
+    identity: { reach: 'heart', sphere: 'spirit' },
+    grantsActionIds: ['divine.rekindle_thread'],
+  },
 ];
 
 /** Look a milestone beat up by id. Null when the id is not a milestone beat. */
@@ -159,6 +175,13 @@ export const MILESTONE_BEAT_PRESENTATION: Readonly<Record<string, SpineBeatPrese
       'A company you had a hand in is finished. They divided what there was to divide, and made the promises people make when they know they will not keep them, and walked out in different directions. None of them are dead. That is the part worth sitting with: every one of those roads still leads somewhere, and they all still remember the fire. A god who can see all of them at once can put a name back into their dreams — or, knowing now exactly how a band comes apart, do it deliberately to somebody else\'s.',
     cta: 'Receive',
   },
+  [MILESTONE_GUTTERING_THREAD_BEAT_ID]: {
+    eyebrow: 'A Guttering Thread',
+    title: 'One of Yours Has Nothing Left',
+    prose:
+      'Someone you are bound to has been worn down past the point where they answer anything. They are not dead. They are not even injured, exactly — they have simply stopped, the way a fire stops without ever deciding to, and the road they were walking goes on without them. You could wait. People do come back from this, slowly, if the world is kind and nothing else asks anything of them. Or you could spend something of yourself — not a blessing, not a nudge, the real thing — and put your own fire in them where theirs went out. They will know it is yours. That is not a side effect.',
+    cta: 'Receive',
+  },
 };
 
 /**
@@ -178,6 +201,9 @@ export function milestoneChronicleProse(beatId: string): string {
   }
   if (beatId === MILESTONE_EMPTY_ROAD_BEAT_ID) {
     return 'A company of yours came apart on the road, and its people scattered without dying. You learned that an ending is not always final — and that you now know precisely where the seams of a fellowship lie.';
+  }
+  if (beatId === MILESTONE_GUTTERING_THREAD_BEAT_ID) {
+    return 'One of the mortals you hold was worn down until nothing in the world could move them. You learned that a life can stop without ending — and that yours is a fire that can be lent.';
   }
   // Fail-soft (NFP #4): an un-authored milestone still writes an honest line rather
   // than crashing the phase or printing an id at the player.

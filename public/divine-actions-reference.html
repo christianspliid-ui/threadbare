@@ -353,6 +353,20 @@
         <li>Acquisition is story-driven, not menu-driven: <code>BeatDefinition.grantsReachSignature</code> resolves per-run from ranked domain affinities in <code>resolvePendingBeat</code>. Primary lands at Beat 4 ("A Path Opens"); secondary via the <code>beat.pool.invest.reach_signature</code> pool beat (<strong>THR-523</strong>).</li>
       </ul>
 
+      <h3>Rekindle the Thread — the restore verb <span class="flag design">DESIGN</span></h3>
+      <ul>
+        <li><code>divine.rekindle_thread</code> (THR-773), Spirit, <code>reach: 'heart'</code>, <code>scale: 'personal'</code>, <code>essenceCost: REKINDLE_ESSENCE_COST</code> (6). Raises a <strong>Broken</strong> mortal's quintessence to <code>REKINDLE_RESTORE_TO_RATIO</code> (0.6), clears their <code>brokenSince</code> stamp so the state releases immediately, and writes <code>rekindledBy</code>/<code>rekindledAtTick</code> plus a <code>recent_event</code> receipt — the mortal knows whose fire is in them.</li>
+        <li><strong>Unlock-gated, never a starter.</strong> Granted by <code>beat.milestone.the_guttering_thread</code>, which fires the first time a mortal the ascendant is <em>threaded to</em> goes Broken. The trigger is the card's own precondition (the same discipline as <code>the_empty_road</code> granting Reunite): the god meets the consequence before being handed the answer to it. Bucket <code>unlockable-generic</code>.</li>
+        <li><strong>It is not an <code>apply_influence</code> verb.</strong> Its op is <code>quintessence_restore</code>, which does not decay — the restore is permanent and the mortal can be worn back down normally afterwards. Because it must append the receipt (which needs full <code>GameState</code>), it routes through the <em>resolution-intercept</em> path in <code>unifiedActionResolution</code> alongside <code>plant_trap</code>/<code>reveal_secret</code>, <strong>not</strong> the graph executor. Implementation: <code>src/engine/rekindleThread.ts</code>.</li>
+        <li>Priced as the exception, not the routine answer — the WS5 rebuild encounters remain the primary road out of Broken. Fail-soft: a missing target, a non-actor target, or a mortal already at/above the restore ratio is a no-op with a reason.</li>
+      </ul>
+
+      <h3>Nudges — the god's other lever inside a scene <span class="flag design">DESIGN</span></h3>
+      <ul>
+        <li>Distinct from the action cards this page documents: a <span class="term">nudge</span> is authored on an encounter <em>step</em> (<code>ActionStep.nudges</code>), not cast from the drawer, and exists only in an <strong>attended</strong> encounter (<code>AttentionTier === 'story_beat'</code>). It costs essence and shifts the step's named odds; a card may carry a rider that remaps the outcome band after the roll, taking no extra die. Full detail on the encounters manual page; engine in <code>src/engine/encounters/nudges.ts</code>.</li>
+        <li>The <code>no_crit_fail</code> rider is the one sanctioned exception to "critical failure survives at every scale" — per-step, essence-priced, authored, never a global gate.</li>
+      </ul>
+
       <h3>The Find-gates-Change/Control chain <span class="flag design">DESIGN</span></h3>
       <ul>
         <li>"You can't Update what you haven't Read" is kept deliberately <strong>soft</strong>: per-template prerequisites plus layer-revelation gating (the revelation gate, step 7 above), <em>not</em> a hard runtime invariant (verdict 2026-06-23, THR-414). An advisory content-lint to flag Change/Control templates that aren't Find-gated is tracked as THR-476.</li>

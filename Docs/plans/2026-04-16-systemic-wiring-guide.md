@@ -746,6 +746,54 @@ Reference the slot from any prose field with `{frag:opening}`. That's the whole 
 
 ---
 
+### Capability 14: The Nudge Hand — What the God May Do to This Step (THR-773)
+
+**What it is:** a step can carry an authored hand of **nudge cards**. In an *attended* encounter the player is offered them, pays essence, and each one bends the named odds of that step. Some cards also carry a **rider** that remaps the outcome band after the roll lands.
+
+**Why you care:** this is the seam where "you nudge the physics, fate picks the outcome" stops being a slogan. Without an authored hand, an attended encounter offers the player nothing to do but watch. Cards are per-encounter and concrete — they name a thing that visibly happens in *this* scene — so this is a content surface, not a settings screen.
+
+**Scope rule you cannot author around:** nudges exist **only** in the attended encounter (`AttentionTier === 'story_beat'`). A hand authored on a template that resolves in the background is inert. That is by design, not a bug to route around.
+
+**How to author one** — put it in the step's `nudges[]` array:
+
+```ts
+{
+  id: 'steady_her_hand',            // unique within the template
+  name: 'Steady Her Hand',           // ≤6 words, plain
+  sphere: 'spirit',                  // optional gate; omit = common pool
+  requiredUnlock: 'divine.inspire',  // optional god-power gate
+  requiredTrait: 'oathbound',        // optional trait-only card
+  essenceCost: 2,                    // 0 allowed (trait options)
+  forecastDelta: 0.10,               // named modifier, source `nudge:steady_her_hand`
+  rider: 'no_crit_fail',             // optional band rider
+  imageTag: 'hand_on_shoulder',      // optional WS4 library tag
+  fiction: 'The tremor goes out of her wrist and does not come back.',
+  effectLine: 'Makes the worst outcome impossible.',   // words only, never a number
+  bandProse: { failure: 'She still misses — but she misses cleanly.' },
+}
+```
+
+**The riders** — exactly two, and both are *band remaps*, never re-rolls:
+
+| Rider | Effect |
+|---|---|
+| `no_crit_fail` | `critical_failure` → `failure`. Everything else passes through. |
+| `floor_at_cost` | `failure` → `success_at_cost` **and** `near_miss` → `success_at_cost`. A near miss is a failure texture and floors with it. |
+
+At most one rider applies per step — the strongest wins (`NUDGE_RIDER_PRIORITY`), they never stack, and **they take zero extra dice**. A rider that re-rolled was considered and rejected: any extra draw from the resolution stream shifts every downstream consumer for that action.
+
+**`bandProse` keys on `StepOutcome`** — the **six**-value step enum (`critical_success | success | success_at_cost | near_miss | failure | critical_failure`). Not `OutcomeBand`, not the five-band `EncounterOutcomeBand`; either would type-check while being the wrong domain.
+
+**Trait variants** are the template-level sibling — `traitVariants[]` on the template fires when the acting mortal holds a trait, and can add a forecast modifier (`trait:<id>`), shift the step's difficulty, contribute a player-facing factor line, and unlock extra nudge cards into the hand via `addNudgeIds`.
+
+**Fail-soft:** a step with no `nudges` runs exactly as it did before this capability existed — the whole feature is opt-in. An unknown rider value, a `traitVariants.addNudgeIds` naming no card, or a committed id with no authored card are all inert with one warning.
+
+**Where to find the implementation:** `src/engine/encounters/nudges.ts` (hand partitioning, modifiers, riders, band prose), applied in `unifiedActionResolution.resolveUncontestedStep`. Constants in `src/data/nudge-constants.ts`. Inspect a live hand with `window.__DEBUG.getEncounterNudges(agentRef)`.
+
+**Related — the `quintessence_restore` effect primitive.** `divine.rekindle_thread` raises a broken mortal back to `REKINDLE_RESTORE_TO_RATIO`, clears their broken stamp, and appends a `recent_event` receipt naming the god who mended them. Because it needs full `GameState` for that receipt, it routes through the resolution-intercept path in `unifiedActionResolution` (like `plant_trap` / `reveal_secret`), **not** the graph executor. Implementation: `src/engine/rekindleThread.ts`.
+
+---
+
 ## Part 3: The Wiring Checklist — Ask These Before You Write
 
 Before writing any encounter, answer these questions. If the answer to most of them is "not applicable," you may be writing a book page, not game content.
@@ -950,6 +998,7 @@ All encounters use `UnifiedActionTemplate` (migrated as of THR-108). `EncounterT
 | `failureAfterimage` | `string` | Brief outcome shown in Scene So Far on failure (1-2 sentences) |
 | `successMetadata` | `ActionStepOutcomeMetadata` | Mechanical consequence of success: rewardPool, reputationDelta, tierPromotionEligible |
 | `failureMetadata` | `ActionStepOutcomeMetadata` | Mechanical consequence of failure: reputationDelta |
+| `nudges` | `StepNudge[]` | THR-773 — authored nudge hand offered to the god in an **attended** encounter. Omit = no hand (feature is opt-in). See Capability 14. |
 
 ### Outcome Metadata Fields (ActionStepOutcomeMetadata)
 

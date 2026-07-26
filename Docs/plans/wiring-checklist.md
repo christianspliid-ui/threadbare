@@ -6,6 +6,27 @@
 
 ---
 
+## Nudge Model — WS0 engine substrate (THR-773)
+
+| Surface | Wiring |
+|---|---|
+| Schema | `src/types/unifiedAction.ts` — **additive optional only** (278 importers; zero signature changes). `StepNudge` / `NudgeRider` / `TraitVariant` types; `ActionStep.nudges?`, `UnifiedActionTemplate.traitVariants?` + `.drawableWhileBroken?`, `UnifiedAction.activeNudges?`. `bandProse` keys on the six-value `StepOutcome`, **not** `OutcomeBand` (`outcomeConsequences.ts`) nor the five-band `EncounterOutcomeBand` — either type-checks while being the wrong domain |
+| Nudge engine | `src/engine/encounters/nudges.ts` — pure. Hand partitioning (playable/dimmed/hidden), `nudge:<id>` + `trait:<id>` named forecast modifiers, rider selection + application, band prose, difficulty word. **Zero PRNG draws**: riders remap an already-resolved outcome, so same seed + same nudges = same d100 |
+| Resolution | `resolveUncontestedStep` (`unifiedActionResolution.ts`) — nudge/trait modifiers join `totalActionModifiers` (same additive channel as push/intervention/company assist); trait `difficultyDelta` applied before the scale adjustment; riders applied **last**, after push/resist/both floors. `postResistOutcome` captured pre-rider so `resistSucceeded` is not misattributed |
+| Broken state | `src/engine/brokenState.ts` — `isBrokenMortal` (derived + `brokenSince` hysteresis), `brokenGateActive` (folds in `BROKEN_GATE_ENABLED`), `computeBrokenDriftBonus`, `reconcileBrokenState`, `listBrokenAgents`. **No new node/edge types**; one property (`brokenSince`) |
+| Broken gate — candidacy | `filterByPrerequisites` (`encounterFilterPipeline.ts`) — resolved **once per agent**, not per entry; excludes everything except `drawableWhileBroken` templates. Inert while `BROKEN_GATE_ENABLED = false` |
+| Broken gate — movement | `scoreAndSelect` (`encounterScoring.ts`) additive block, cause `broken_drift`. Reuses the already-resolved `locationNode` — no extra graph walk per candidate (NFP #7) |
+| Broken reconcile | `phaseQuintessence.ts` — folded into the actor walk the phase already does (no second pass). Transition-fired traces only, never per-tick-per-agent |
+| Erosion scaling | `computeScaledErosion` (`quintessenceActions.ts`), called from `encounter.ts`. `base × bandMult × attendedMult × (1 + difficulty × scale)`, clamped so the *resulting ratio* ≥ `QUINTESSENCE_RATIO_FLOOR`. Attended predicate = `progress.effectiveTier === 'story_beat'` (the existing tier, not a second definition). Pre-WS0 behavior = multipliers 1/1/0 |
+| Restore action | `divine.rekindle_thread` (`unified-action-templates.ts`) + `quintessence_restore` in `GraphOpType`. **Not a graph-executor case** — it needs `GameState` for the mortal's `recent_event` receipt, so it routes through the resolution-intercept path (`quintessenceRestoreOps`) alongside `plant_trap`/`reveal_secret`. Implementation `src/engine/rekindleThread.ts`; `touchWorld(runtime)` at the mutation site |
+| Unlock | `beat.milestone.the_guttering_thread` — fires the first time a *threaded* mortal breaks (the card's own precondition, mirroring `the_empty_road`). `MILESTONE_GUTTERING_THREAD_BEAT_ID` (`player-progression.ts`), beat + presentation + chronicle prose (`ascendant-milestone-beats.ts`), enqueue in `phaseAscendantProgression.ts`, bucket `unlockable-generic` in `ASCENDANT_ACTION_BUCKETS` |
+| Motive read | `src/engine/encounters/motiveClassifier.ts` — pure read over the THR-631 receipt. Adds no scoring term, mutates nothing |
+| Constants | `src/data/nudge-constants.ts` (17 named constants). `BROKEN_GATE_ENABLED` ships **false** — flipping it is a WS5 Done-when, gated on the rebuild encounters existing |
+| Traces | `nudge_played` (player-scale, per-play), `agent_broken` / `agent_mended` (**transition-fired only**, never per-tick) — all three in `TraceCategory` + `TRACE_CATEGORIES` + the `TraceEntry` union, emitted with the `as <Trace>` cast past `emitTrace`'s `Omit` union-collapse |
+| GameState | **Zero new fields** — the whole feature lives on templates, the action, and one graph property |
+| Debug | `__DEBUG.getEncounterNudges(agentRef)`, `__DEBUG.getBrokenAgents()` — both in `debug-bridge.ts` + `.d.ts` |
+| Deferred | UI pillar is WS2 (THR-775) — this ships engine + debug surfaces only, browser-verify exempt per plan. Rebuild encounters + the gate flip are WS5. UL entries land via THR-782 |
+
 ## Companies — Group Layer, engine core (THR-74)
 
 | Surface | Wiring |

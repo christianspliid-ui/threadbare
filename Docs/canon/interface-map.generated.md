@@ -16,11 +16,11 @@ remediation ticket or the build fails.
 | Badge | Count |
 |---|---|
 | 🟢 LIVE | 39 |
-| 🟠 PARTIAL | 0 |
-| 🔴 LEAKED | 3 |
+| 🟠 PARTIAL | 1 |
+| 🔴 LEAKED | 4 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 3 |
-| **Total** | **45** |
+| **Total** | **47** |
 
 ## Contracts by producing subsystem
 
@@ -88,6 +88,7 @@ remediation ticket or the build fails.
 |---|---|---|---|---|---|
 | `ascendant-affinity-cast-capability` | The ascendant's persisted reach affinities become its capability for a cast — the god's innate aptitude is not on the raw scale `computeRawScore` walks, so a literal read left every cast at capability 0.02 and one reachable outcome band. | node-prop: `domainAffinities`, `computeCapabilityWithRawBonus` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `attachment-encounter-rewards` | Encounters grant rewards, which become possessions. | function: `assembleRewardPool` | Attachments, Items & Possessions | 🟢 LIVE | — |
+| `authored-nudge-hand-reaches-resolution` | A god may bend the odds of an attended encounter step with authored, essence-priced cards — the mechanical form of "the intervention shifted the odds, not the outcome". Without this read, an attended encounter offers the player nothing to do but watch. | function: `collectNudgeModifiers`, `selectActiveRider`, `applyRider`, `buildNudgeHand` | Encounters & Dilemmas | 🔴 LEAKED | THR-774 |
 | `authored-step-difficulty-player-resolution` | Authored step difficulty finally prices a player cast. 82 of 136 ascendant-castable templates carried difficulties 0.1–0.6 that the player branch discarded before this contract existed; the same value now feeds the shared capability-vs-difficulty roll, floored at success-at-cost. | function: `resolveUncontestedStep`, `difficulty` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `player-action-aftermath-read` | The aftermath a player action already produces finally reaches the player — the receipt phase reads the summary that was built and discarded for player casts. | function: `processPlayerReceipts`, `aftermathSummary` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
 | `player-action-receipts-queue` | A resolved player cast queues a Divine Receipt the UI surfaces as a toast or a receipt dialogue. | node-prop: `playerActionReceipts` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
@@ -108,6 +109,12 @@ remediation ticket or the build fails.
 | Contract | Intent | Mechanism | Consumer | Status | Ticket |
 |---|---|---|---|---|---|
 | `secrets-consequences` | A revealed secret or broken favor has consequences — feuds ignite, sentiment shifts, leverage bites. | function: `applySecretRevelationConsequences`, `applyFavorBreakingConsequences`, `revealBestSecret` | Encounters & Dilemmas | 🟢 LIVE | — |
+
+### Spheres & Quintessence
+
+| Contract | Intent | Mechanism | Consumer | Status | Ticket |
+|---|---|---|---|---|---|
+| `quintessence-threshold-gates-candidacy-and-movement` | A mortal worn to nothing goes out of the story rather than grinding on unchanged — the previously missing consumer of the weakened/critical threshold states. Without it, quintessence loss has no behavioural consequence at all. | node-prop: `isBrokenMortal`, `brokenGateActive`, `computeBrokenDriftBonus`, `brokenSince` | Encounters & Dilemmas | 🟠 PARTIAL | THR-778 |
 
 ## Evidence
 
@@ -313,16 +320,28 @@ remediation ticket or the build fails.
 - **Read sites:** `src/engine/worldSeed.ts`
 - **Verdict:** Verified 2026-07-23: 7 possesses edges present at tick 0. Docs/plans/2026-07-23-system-interface-map.md § Audit findings (manual audit + independent cold-context review, both grep-verified)
 
+### `authored-nudge-hand-reaches-resolution` — 🔴 LEAKED
+
+- **Intent:** A god may bend the odds of an attended encounter step with authored, essence-priced cards — the mechanical form of "the intervention shifted the odds, not the outcome". Without this read, an attended encounter offers the player nothing to do but watch.
+- **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
+- **UL terms:** *Nudge*, *Encounter*, *UnifiedActionTemplate*
+- **Module:** `src/engine/encounters/nudges.ts`
+- **Production hits:** 3 total — 0 write, 2 read, 1 unclassified
+- **Write sites:** —
+- **Read sites:** `src/debug-bridge.ts`, `src/engine/unifiedActionResolution.ts`
+- **Other hits:** `src/engine/encounters/nudges.ts`
+- **Verdict:** Tier 2: read sites present, declared write sites empty — nothing produces this contract. — or the declared symbol does not appear at the declared site: grep 'collectNudgeModifiers' src/types/unifiedAction.ts before treating this as a leak.
+
 ### `authored-step-difficulty-player-resolution` — 🟢 LIVE
 
 - **Intent:** Authored step difficulty finally prices a player cast. 82 of 136 ascendant-castable templates carried difficulties 0.1–0.6 that the player branch discarded before this contract existed; the same value now feeds the shared capability-vs-difficulty roll, floored at success-at-cost.
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Domain Capability*, *UnifiedActionTemplate*
 - **Module:** `src/engine/unifiedActionResolution.ts`
-- **Production hits:** 119 total — 1 write, 2 read, 116 unclassified
+- **Production hits:** 122 total — 1 write, 2 read, 119 unclassified
 - **Write sites:** `src/data/unified-action-templates.ts`
 - **Read sites:** `src/engine/targetActions.ts`, `src/engine/unifiedActionResolution.ts`
-- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/ActionDrawer.tsx`, `src/components/Game/debug/TraceFeed.tsx`, `src/components/Game/encounter-stage/adapters/buildSimpleEncounterStageModel.ts` +111 more
+- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/ActionDrawer.tsx`, `src/components/Game/debug/TraceFeed.tsx`, `src/components/Game/encounter-stage/adapters/buildSimpleEncounterStageModel.ts` +114 more
 - **Verdict:** Verified 2026-07-25: THR-728: `unified-action-templates.ts` authors `steps[].difficulty`; `resolveUncontestedStep` reads it for `source === 'player'` (the auto-success early-return is now gated behind `PLAYER_CAST_VARIANCE_ENABLED`), and `targetActions.ts` reads the same field via `maxStepDifficulty` to render the focused card's risk line. Measured over 400 seeds: the outcome set for a positive-difficulty cast is >1 band.
 
 ### `band-opposition-pairs-contested-resolution` — 🟢 LIVE
@@ -493,14 +512,26 @@ remediation ticket or the build fails.
 - **Other hits:** `src/types/gameState.ts`
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
+### `quintessence-threshold-gates-candidacy-and-movement` — 🟠 PARTIAL
+
+- **Intent:** A mortal worn to nothing goes out of the story rather than grinding on unchanged — the previously missing consumer of the weakened/critical threshold states. Without it, quintessence loss has no behavioural consequence at all.
+- **Producer → Consumer:** Spheres & Quintessence → Encounters & Dilemmas
+- **UL terms:** *Quintessence*, *Broken (mortal state)*
+- **Module:** `src/engine/brokenState.ts`
+- **Production hits:** 8 total — 1 write, 3 read, 4 unclassified
+- **Write sites:** `src/engine/rekindleThread.ts`
+- **Read sites:** `src/engine/encounterFilterPipeline.ts`, `src/engine/encounterScoring.ts`, `src/engine/phaseAscendantProgression.ts`
+- **Other hits:** `src/data/action-technical-effects.ts`, `src/data/nudge-constants.ts`, `src/engine/brokenState.ts`, `src/types/graphOp.ts`
+- **Verdict:** Pinned by badgeOverride: Read sites are wired and tested, but gated behind BROKEN_GATE_ENABLED = false until WS5 authors the rebuild encounters. Erosion scaling + brokenSince bookkeeping are live; candidacy exclusion + broken_drift are not.
+
 ### `receipt-event-band-toast` — 🔵 UNVERIFIED-OK
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 147 total — 1 write, 1 read, 145 unclassified
+- **Production hits:** 151 total — 1 write, 1 read, 149 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/Game/ActionCard.tsx`, `src/components/Game/ascendant-bar/IdentityStrip.tsx`, `src/components/Game/ascendant-bar/selectors.ts`, `src/components/Game/ChapterView.tsx` +140 more
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/Game/ActionCard.tsx`, `src/components/Game/ascendant-bar/IdentityStrip.tsx`, `src/components/Game/ascendant-bar/selectors.ts`, `src/components/Game/ChapterView.tsx` +144 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `reunion-reads-the-edges-not-the-roster` — 🟢 LIVE

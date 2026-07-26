@@ -571,6 +571,11 @@ export const ASCENDANT_ACTION_BUCKETS: Readonly<Record<string, ActionBucketEntry
   'divine.dream': { bucket: 'unlockable-generic' },
   'divine.omen': { bucket: 'unlockable-generic' },
   'divine.inspire': { bucket: 'unlockable-generic' },
+  // THR-773: Rekindle the Thread, granted by `beat.milestone.the_guttering_thread`
+  // the first time a threaded mortal is worn into the broken state. A breadth card —
+  // `reach: 'heart'` is its cosmic-energy axis, not a `requiresReach` gate — so it
+  // surfaces for every run once unlocked, like the company verbs above.
+  'divine.rekindle_thread': { bucket: 'unlockable-generic' },
   // ─── Reach signatures (THR-523) — one per Reach, `reach-gated` on `requiresReach`.
   //     Acquired via the acquisition beats (Beat 4 = primary, the reach-signature
   //     pool beat = secondary); hidden entirely for out-of-domain reaches. Ids +

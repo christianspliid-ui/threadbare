@@ -39,6 +39,7 @@ import type { EncounterCacheEntry } from './encounterCache';
 import type { WorldGraph } from './graph';
 import type { GraphNode } from '../types/graph';
 import { resolveLocationToHex } from './encounterAwareness';
+import { computeBrokenDriftBonus } from './brokenState';
 import { hexDistance } from '../lib/hexMath';
 import { DRAW_TOGETHER_PULL_WEIGHT } from '../data/group-constants';
 import type { ScoringTrace } from '../types/trace';
@@ -1280,8 +1281,17 @@ export function scoreAndSelect(
         }
       }
     }
+    // 24b. Broken drift (THR-773) — a mortal worn past the broken threshold stops
+    // ranging: near candidates and tended settlements outscore far, wild ones.
+    // Additive on the same channel as the Draw Together pull, and 0 whenever the
+    // gate is off (the shipped default) or the agent is not broken, so the
+    // pre-WS0 score is recovered term for term. `locationNode` is already
+    // resolved above — no extra graph walk per candidate (NFP #7).
+    const brokenDriftBonus = computeBrokenDriftBonus(agentNode, distance, locationNode ?? undefined);
+
     const rawFinalScore = baseScore * rarityMultiplier * roleAffinityMultiplier * (1 - familiarityPenalty) + explorationBonus + chainBonus
-      + ruinsBonus + anomalyBonus + attractionBonus + convergenceBonus + hunchBonus + identityBiasBonus + markRevealBonus + intelBonus;
+      + ruinsBonus + anomalyBonus + attractionBonus + convergenceBonus + hunchBonus + identityBiasBonus + markRevealBonus + intelBonus
+      + brokenDriftBonus;
 
     // 17b. Branching curator bias (THR-452) — boost under-selected branching templates
     const curatorMultiplier = computeBranchingCuratorMultiplier(entry, agentId, tick, runtime ?? null);

@@ -26,8 +26,9 @@ import { computeCapability } from './domainCapability';
 import { resolveAction as resolveActionShared, isSuccessOutcome, isFailureOutcome } from './resolutionService';
 import type { ResolutionInput, OutcomeType, ResolutionResult } from '../types/resolution';
 import { computeResolutionModifiers } from './resolutionModifiers';
-import { createEncounterFailureErosion } from './quintessenceActions';
-import { QUINTESSENCE_ENCOUNTER_FAILURE_EROSION } from '../types/quintessence';
+import { computeScaledErosion, createEncounterFailureErosion } from './quintessenceActions';
+import { getQuintessenceRatio } from '../types/quintessence';
+import { mapResolverOutcomeToStep } from './unifiedActionResolution';
 import { emitTrace } from './traceBuffer';
 import { applyEncounterGrowth } from './capabilityGrowth';
 import { handleTierPromotion } from './tierPromotion';
@@ -565,17 +566,38 @@ export function resolveEncounter(
 
   // Phase 2: Emit quintessence erosion on encounter failure.
   // This is the live non-player quintessence pressure seam.
+  //
+  // THR-773: the amount is now scaled by outcome band, whether the player was
+  // watching, and step difficulty — a catastrophe in an attended encounter costs
+  // far more than a quiet background stumble, which is what makes the broken
+  // state reachable at all. The result is clamped so erosion alone never reaches
+  // zero (`QUINTESSENCE_RATIO_FLOOR`); death stays zero-state-owned.
   if (isFailureOutcome(resolution.outcome)) {
-    const erosionEvent = createEncounterFailureErosion(
-      progress.actorId,
-      QUINTESSENCE_ENCOUNTER_FAILURE_EROSION,
-      state.tick,
-    );
-    // Append to pending events — phaseQuintessence will process them
-    if (!state.pendingQuintessenceEvents) {
-      state.pendingQuintessenceEvents = [];
+    const actorNode = state.graph.getNode(progress.actorId);
+    const erosionAmount = computeScaledErosion({
+      outcome: mapResolverOutcomeToStep(
+        resolution.outcome,
+        resolution.rollBreakdown?.nearMiss ?? false,
+      ),
+      // The attended predicate is the existing attention tier — one signal, no
+      // second definition of "the player was watching".
+      attended: progress.effectiveTier === 'story_beat',
+      difficulty: step.difficulty,
+      currentRatio: actorNode ? getQuintessenceRatio(actorNode) : undefined,
+    });
+
+    if (erosionAmount > 0) {
+      const erosionEvent = createEncounterFailureErosion(
+        progress.actorId,
+        erosionAmount,
+        state.tick,
+      );
+      // Append to pending events — phaseQuintessence will process them
+      if (!state.pendingQuintessenceEvents) {
+        state.pendingQuintessenceEvents = [];
+      }
+      state.pendingQuintessenceEvents.push(erosionEvent);
     }
-    state.pendingQuintessenceEvents.push(erosionEvent);
   }
 
   // Apply capability growth from encounter step resolution

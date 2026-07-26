@@ -199,7 +199,10 @@ describe('UNIFIED_ACTION_TEMPLATES', () => {
       if (
         t.scale !== 'cosmic' &&
         !t.id.startsWith('npc_') &&
-        !t.id.startsWith('divine.self.') // self-actions are ascendant-only; motivations N/A
+        !t.id.startsWith('divine.self.') && // self-actions are ascendant-only; motivations N/A
+        // THR-773: same rationale — Rekindle the Thread is `actorAffinities:
+        // ['ascendant']`, so no mortal ever scores it and motivations are N/A.
+        t.id !== 'divine.rekindle_thread'
       ) {
         // motivations may be undefined for some templates (e.g. migrated encounters
         // where motivations are optional); skip those
@@ -437,6 +440,11 @@ describe('divine templates', () => {
   it('all have scale cosmic (except self-actions which use personal)', () => {
     for (const t of divineTemplates) {
       if (t.id.startsWith('divine.self.')) continue; // personal scale by design
+      // THR-773: Rekindle the Thread acts on exactly one named mortal the god is
+      // bound to — `scale: 'personal'` is the design-settled scale (plan §3b), not
+      // an oversight. Scale here drives the probability floor and the consequence
+      // tier, and both should read this as the intimate act it is.
+      if (t.id === 'divine.rekindle_thread') continue;
       expect(t.scale).toBe('cosmic');
     }
   });
@@ -458,10 +466,14 @@ describe('divine templates', () => {
   it('each step onSuccess contains exactly 1 apply_influence GraphOp (original 8 interventions)', () => {
     // Perceive/Relay templates use the perceiveRelay resolver (empty onSuccess arrays).
     // Self-action templates use post-processor or update_node ops — exclude both.
+    // THR-773: Rekindle the Thread carries the `quintessence_restore` op, a custom
+    // graph op like the perceive/relay families above rather than a decaying
+    // influence application — it writes quintessence directly and leaves a receipt.
     const interventionTemplates = divineTemplates.filter(
       t => !t.id.startsWith('divine.perceive.') &&
            !t.id.startsWith('divine.relay.') &&
-           !t.id.startsWith('divine.self.')
+           !t.id.startsWith('divine.self.') &&
+           t.id !== 'divine.rekindle_thread'
     );
     for (const t of interventionTemplates) {
       for (const step of t.steps) {

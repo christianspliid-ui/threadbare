@@ -423,6 +423,19 @@
   </div>
 
   <div class="section">
+    <h2>Spotlight — The nudge &amp; the broken mortal
+      <span class="lead">Audited 2026-07-26 (audit-on-touch, THR-773). The first contract slice for two ⚪ UNAUDITED subsystems — <em>Encounters &amp; Dilemmas</em> and <em>Spheres &amp; Quintessence</em>. Their full-subsystem audits remain open; these two rows are what this ticket touched, not a clean bill of health.</span>
+    </h2>
+
+    <ul class="contracts">
+      <li class="leaked"><span class="flow">Authored nudge hand <span class="arrow">⟶</span> Step resolution — the god bends named odds with essence-priced cards</span><span class="chip leaked">LEAKED</span>
+        <span class="note">THR-773 (WS0). The read side is <strong>live and tested</strong>: <code>collectNudgeModifiers</code> contributes named <code>nudge:&lt;id&gt;</code> modifiers into <code>resolveUncontestedStep</code>'s existing additive channel, and <code>selectActiveRider</code>/<code>applyRider</code> remap the band afterwards taking zero rng draws. It is badged LEAKED anyway, deliberately: <strong>no shipped template authors a <code>nudges[]</code> hand</strong>, so nothing travels the path yet. Badging it LIVE today would claim behaviour no run can produce — the THR-614 error class this map exists to catch. Authoring is WS1; the row promotes when the first hand ships. Remediation: THR-774.</span></li>
+      <li class="partial"><span class="flow">Quintessence threshold <span class="arrow">⟶</span> Candidacy &amp; movement — a mortal worn to nothing goes out of the story</span><span class="chip partial">PARTIAL</span>
+        <span class="note">THR-773 (WS0), and the contract's real subject is an <em>absence</em>: the <code>weakened</code>/<code>critical</code> threshold states had shipped since Phase 2 with <strong>no behavioural consumer at all</strong>, so grinding a mortal down changed a number and nothing else. This adds the first one — <code>isBrokenMortal</code> gates encounter candidacy (all templates except <code>drawableWhileBroken</code>) and adds a <code>broken_drift</code> pull to <code>scoreAndSelect</code>. PARTIAL, not LIVE, and the reason is on purpose: <code>BROKEN_GATE_ENABLED</code> ships <code>false</code>, so both consumers are wired, tested, and <em>inert</em> until WS5 authors the rebuild encounters that let a mortal climb back out. A gate that locks an agent out of every draw with nothing to draw is stun-lock, not story — failure is plot, not punishment. What <em>is</em> live is the erosion scaling and the <code>brokenSince</code> bookkeeping, so telemetry accrues before the gate ever opens. Remediation: THR-778.</span></li>
+    </ul>
+  </div>
+
+  <div class="section">
     <h2>How this map stays true
       <span class="lead">A hand-drawn diagram is a lie waiting to happen. This one is designed to become a projection.</span>
     </h2>

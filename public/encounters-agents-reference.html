@@ -1290,6 +1290,11 @@ const CHAPTERS = [
         name: 'Quintessence & Actor Vitality',
         desc: 'Every actor has a quintessence pool (current/max) representing their life force. It regenerates passively, erodes from failure and hardship, and at zero triggers dissolution (death or dispersal). Five threshold states govern behavior as quintessence depletes.',
         tags: ['quintessence', 'dissolution at zero']
+      },
+      {
+        name: 'Scaled Erosion & the Broken State (THR-773)',
+        desc: 'Encounter-failure erosion is no longer flat. computeScaledErosion (quintessenceActions.ts, called from encounter.ts) multiplies the base QUINTESSENCE_ENCOUNTER_FAILURE_EROSION by an outcome-band multiplier (critical failure x5), an attended multiplier (x2 when the step resolved at story_beat tier), and a difficulty term — so a catastrophe in a watched scene costs far more than a background stumble. The result is clamped so the resulting RATIO never falls below QUINTESSENCE_RATIO_FLOOR: erosion alone can never reach zero, and death stays owned by the existing zero-state paths. Worn past BROKEN_ENTER_STATE an actor enters the behavioural Broken state (isBrokenMortal, brokenState.ts) — derived each read, with brokenSince carrying the hysteresis. Note the terminology collision: the QuintessenceThresholdState literal "broken" means ratio 0 (dissolution) and is a different thing entirely. Consequences (candidacy exclusion, broken_drift movement pull) are wired but inert behind BROKEN_GATE_ENABLED = false until the WS5 rebuild encounters exist.',
+        tags: ['quintessence', 'band-scaled erosion', 'attended multiplier', 'ratio floor', 'broken state', 'gated off']
       }
     ]
   }
