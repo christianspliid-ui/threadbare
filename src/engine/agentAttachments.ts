@@ -67,6 +67,36 @@ export interface AttachmentFullEntry extends AttachmentSummary {
   counterpartyName?: string;
 }
 
+/**
+ * Read a `has_trait` edge's live duration pair (THR-784).
+ *
+ * Duration is per-*agent* state and therefore lives on the edge, never on the
+ * shared trait node — the node is a catalog template, so a value read from it
+ * is identical for every carrier and never moves. Two halves, both edge-side:
+ *
+ * - `ticksRemaining` — the live counter `decayConditions` decrements each tick.
+ *   Absent means the trait never auto-expires (the `0 = indefinite` contract is
+ *   expressed by omitting the field; see THR-761).
+ * - `durationTicks` — the authored total kept as provenance, and exactly the
+ *   denominator the duration progress bars want.
+ *
+ * Deliberately does NOT fall back to the node. Before THR-784 these reads hit
+ * `node.properties`, where nothing writes `totalTicks` at all and `gameInit`
+ * seeded `ticksRemaining: null` — so every ticking condition rendered as
+ * 'until dispelled' with a dead progress bar.
+ */
+function readEdgeDuration(edgeProperties: Record<string, unknown>): {
+  ticksRemaining: number | null;
+  totalTicks: number | undefined;
+} {
+  const remaining = edgeProperties.ticksRemaining;
+  const total = edgeProperties.durationTicks;
+  return {
+    ticksRemaining: typeof remaining === 'number' ? remaining : null,
+    totalTicks: typeof total === 'number' && total > 0 ? total : undefined,
+  };
+}
+
 // ─── Sort: tier descending, name ascending ────────────────────────
 
 function sortAttachments<T extends { tier: AttachmentTier; name: string }>(items: T[]): T[] {
@@ -145,8 +175,7 @@ export function getAgentAttachments(
 
     if (category === 'condition' || category === 'blessing' || category === 'curse') {
       const tier = (traitProps.tier as AttachmentTier) ?? 1;
-      const ticksRemaining = traitProps.ticksRemaining as number | null | undefined;
-      const totalTicks = traitProps.totalTicks as number | undefined;
+      const { ticksRemaining, totalTicks } = readEdgeDuration(edge.properties);
 
       const nodeTags = (traitProps.tags as string[]) ?? [];
       let subcategory = 'wound';
@@ -160,7 +189,7 @@ export function getAgentAttachments(
         subcategory,
         tier,
         mechanicalSummary: (traitProps.mechanicalSummary as string) ?? node.name,
-        ticksRemaining: ticksRemaining ?? null,
+        ticksRemaining,
         totalTicks,
         durationLabel: ticksRemaining == null ? 'until dispelled' : undefined,
         tags: (traitProps.tags as string[]) ?? [],
@@ -176,6 +205,12 @@ export function getAgentAttachments(
     // ─── Bestowed Powers: has_trait edges where category is 'bestowed'
     if (category === 'bestowed') {
       const tier = (traitProps.tier as AttachmentTier) ?? 1;
+      // THR-784: most bestowed powers are permanent (no edge ticksRemaining), but
+      // some are not — `hex.plant_dream` grants one that decayConditions expires
+      // after PLANT_DREAM_TRAIT_DURATION_TICKS. Reading the same edge pair as
+      // conditions means a temporary power shows its countdown instead of passing
+      // for permanent; permanent grants are unaffected (both fields stay absent).
+      const { ticksRemaining, totalTicks } = readEdgeDuration(edge.properties);
 
       powers.push({
         id: node.id,
@@ -183,6 +218,9 @@ export function getAgentAttachments(
         subcategory: 'bestowed_power',
         tier,
         mechanicalSummary: (traitProps.mechanicalSummary as string) ?? node.name,
+        ticksRemaining,
+        totalTicks,
+        durationLabel: ticksRemaining == null ? 'until dispelled' : undefined,
         tags: (traitProps.tags as string[]) ?? [],
         flavorText: traitProps.flavorText as string | undefined,
         source: traitProps.source as string | undefined,

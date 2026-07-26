@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { WorldGraph } from '../graph';
 import { getAgentAttachments } from '../agentAttachments';
+import { decayConditions } from '../conditionDecay';
+import { PLANT_DREAM_TRAIT_DURATION_TICKS } from '../hexActionBridge';
 
 function setupBaseGraph(): WorldGraph {
   const graph = new WorldGraph();
@@ -80,14 +82,15 @@ describe('getAgentAttachments', () => {
         tier: 1,
         mechanicalSummary: '-Iron (minor)',
         tags: ['wound'],
-        ticksRemaining: 8,
-        totalTicks: 20,
       },
     });
     graph.addEdge({
       id: 'e-trait-wound-1',
       source: 'agent.1', target: 'trait.wound.1', type: 'has_trait',
-      properties: {},
+      // THR-784: duration is EDGE state. These assertions used to read the same
+      // pair off the node, which is the shared catalog template — repointed to
+      // the side decayConditions actually writes (dead-side test rule).
+      properties: { ticksRemaining: 8, durationTicks: 20 },
     });
 
     const result = getAgentAttachments(graph, 'agent.1');
@@ -95,6 +98,31 @@ describe('getAgentAttachments', () => {
     expect(result.conditions[0].name).toBe('Bruised Ribs');
     expect(result.conditions[0].ticksRemaining).toBe(8);
     expect(result.conditions[0].totalTicks).toBe(20);
+  });
+
+  it('ignores node-level duration fields — only the edge is live state (THR-784)', () => {
+    const graph = setupBaseGraph();
+    graph.addNode({
+      id: 'trait.wound.stale', type: 'trait', name: 'Stale Template',
+      properties: {
+        subcategory: 'condition',
+        tier: 1,
+        mechanicalSummary: '-Iron (minor)',
+        tags: ['wound'],
+        // The pre-THR-784 shape: template-level values that never move.
+        ticksRemaining: 99,
+        totalTicks: 99,
+      },
+    });
+    graph.addEdge({
+      id: 'e-trait-wound-stale',
+      source: 'agent.1', target: 'trait.wound.stale', type: 'has_trait',
+      properties: { ticksRemaining: 3, durationTicks: 12 },
+    });
+
+    const result = getAgentAttachments(graph, 'agent.1');
+    expect(result.conditions[0].ticksRemaining).toBe(3);
+    expect(result.conditions[0].totalTicks).toBe(12);
   });
 
   it('gathers blessings and curses as conditions', () => {
@@ -106,14 +134,12 @@ describe('getAgentAttachments', () => {
         tier: 1,
         mechanicalSummary: '+Star (minor)',
         tags: ['#blessing'],
-        ticksRemaining: 6,
-        totalTicks: 10,
       },
     });
     graph.addEdge({
       id: 'e-trait-bless-1',
       source: 'agent.1', target: 'trait.bless.1', type: 'has_trait',
-      properties: {},
+      properties: { ticksRemaining: 6, durationTicks: 10 },
     });
 
     const result = getAgentAttachments(graph, 'agent.1');
@@ -213,5 +239,124 @@ describe('getAgentAttachments', () => {
     const result = getAgentAttachments(graph, 'agent.1');
     expect(result.conditions).toHaveLength(0);
     expect(result.powers).toHaveLength(0);
+  });
+});
+
+/**
+ * THR-784 — the displayed countdown must track the live edge counter.
+ *
+ * These drive the real `decayConditions` rather than hand-editing the edge, so
+ * they bind the display to the same authority the tick loop uses. Against the
+ * pre-THR-784 build every assertion here is red: the reads hit the shared trait
+ * node, so the number was frozen and identical for every carrier.
+ */
+describe('condition duration is per-carrier live state (THR-784)', () => {
+  /** Two agents, one shared condition template — the shape the node read collapsed. */
+  function setupTwoCarriers(): WorldGraph {
+    const graph = new WorldGraph();
+    for (const id of ['agent.1', 'agent.2']) {
+      graph.addNode({ id, type: 'actor', name: id, properties: { actorType: 'individual' } });
+    }
+    graph.addNode({
+      id: 'trait.fever', type: 'trait', name: 'Marsh Fever',
+      properties: { subcategory: 'condition', tier: 1, mechanicalSummary: '-Iron', tags: ['#disease'] },
+    });
+    return graph;
+  }
+
+  const conditionOf = (graph: WorldGraph, agentId: string) =>
+    getAgentAttachments(graph, agentId).conditions[0];
+
+  it('counts the displayed remaining time down as ticks pass', () => {
+    const graph = setupTwoCarriers();
+    graph.addEdge({
+      id: 'e.fever.1', source: 'agent.1', target: 'trait.fever', type: 'has_trait',
+      properties: { ticksRemaining: 10, durationTicks: 10 },
+    });
+
+    expect(conditionOf(graph, 'agent.1').ticksRemaining).toBe(10);
+
+    decayConditions(graph, 1);
+    expect(conditionOf(graph, 'agent.1').ticksRemaining).toBe(9);
+
+    for (let tick = 2; tick <= 5; tick++) decayConditions(graph, tick);
+    expect(conditionOf(graph, 'agent.1').ticksRemaining).toBe(5);
+
+    // The denominator is authored provenance and must NOT move with the counter.
+    expect(conditionOf(graph, 'agent.1').totalTicks).toBe(10);
+  });
+
+  it('shows different remaining times for two agents who caught it at different ticks', () => {
+    const graph = setupTwoCarriers();
+    // agent.1 caught it 6 ticks ago; agent.2 caught it this tick.
+    graph.addEdge({
+      id: 'e.fever.1', source: 'agent.1', target: 'trait.fever', type: 'has_trait',
+      properties: { ticksRemaining: 4, durationTicks: 10 },
+    });
+    graph.addEdge({
+      id: 'e.fever.2', source: 'agent.2', target: 'trait.fever', type: 'has_trait',
+      properties: { ticksRemaining: 10, durationTicks: 10 },
+    });
+
+    expect(conditionOf(graph, 'agent.1').ticksRemaining).toBe(4);
+    expect(conditionOf(graph, 'agent.2').ticksRemaining).toBe(10);
+
+    decayConditions(graph, 1);
+    expect(conditionOf(graph, 'agent.1').ticksRemaining).toBe(3);
+    expect(conditionOf(graph, 'agent.2').ticksRemaining).toBe(9);
+    // Same template, same denominator, different live numerators.
+    expect(conditionOf(graph, 'agent.1').name).toBe(conditionOf(graph, 'agent.2').name);
+  });
+
+  it("labels 'until dispelled' only when the edge carries no countdown", () => {
+    const graph = setupTwoCarriers();
+    graph.addEdge({
+      id: 'e.fever.1', source: 'agent.1', target: 'trait.fever', type: 'has_trait',
+      properties: { ticksRemaining: 3, durationTicks: 3 },
+    });
+    graph.addEdge({
+      // Indefinite: the `0 = indefinite` contract omits both fields (THR-761).
+      id: 'e.fever.2', source: 'agent.2', target: 'trait.fever', type: 'has_trait',
+      properties: {},
+    });
+
+    expect(conditionOf(graph, 'agent.1').durationLabel).toBeUndefined();
+    expect(conditionOf(graph, 'agent.2').durationLabel).toBe('until dispelled');
+
+    // Run past the expiry: the ticking one is gone, the indefinite one survives.
+    for (let tick = 1; tick <= 4; tick++) decayConditions(graph, tick);
+    expect(getAgentAttachments(graph, 'agent.1').conditions).toHaveLength(0);
+    expect(conditionOf(graph, 'agent.2').durationLabel).toBe('until dispelled');
+  });
+
+  it('surfaces the countdown on a temporary bestowed power too', () => {
+    const graph = setupTwoCarriers();
+    graph.addNode({
+      id: 'trait.dream', type: 'trait', name: 'Dream of Buried Places',
+      properties: { subcategory: 'bestowed', tier: 1, mechanicalSummary: '+Eye', tags: [] },
+    });
+    graph.addNode({
+      id: 'trait.permanent', type: 'trait', name: 'Turn Undead',
+      properties: { subcategory: 'bestowed', tier: 2, mechanicalSummary: '+Star', tags: [] },
+    });
+    graph.addEdge({
+      id: 'e.dream', source: 'agent.1', target: 'trait.dream', type: 'has_trait',
+      properties: { ticksRemaining: PLANT_DREAM_TRAIT_DURATION_TICKS, durationTicks: PLANT_DREAM_TRAIT_DURATION_TICKS },
+    });
+    graph.addEdge({
+      id: 'e.perm', source: 'agent.1', target: 'trait.permanent', type: 'has_trait',
+      properties: {},
+    });
+
+    decayConditions(graph, 1);
+    const powers = getAgentAttachments(graph, 'agent.1').powers;
+    const dream = powers.find(p => p.name === 'Dream of Buried Places')!;
+    const permanent = powers.find(p => p.name === 'Turn Undead')!;
+
+    expect(dream.ticksRemaining).toBe(PLANT_DREAM_TRAIT_DURATION_TICKS - 1);
+    expect(dream.totalTicks).toBe(PLANT_DREAM_TRAIT_DURATION_TICKS);
+    // Permanent grants are untouched by the new read.
+    expect(permanent.ticksRemaining).toBeNull();
+    expect(permanent.totalTicks).toBeUndefined();
   });
 });
