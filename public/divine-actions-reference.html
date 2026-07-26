@@ -366,6 +366,7 @@
       <ul>
         <li>Distinct from the action cards this page documents: a <span class="term">nudge</span> is authored on an encounter <em>step</em> (<code>ActionStep.nudges</code>), not cast from the drawer, and exists only in an <strong>attended</strong> encounter (<code>AttentionTier === 'story_beat'</code>). It costs essence and shifts the step's named odds; a card may carry a rider that remaps the outcome band after the roll, taking no extra die. Full detail on the encounters manual page; engine in <code>src/engine/encounters/nudges.ts</code>.</li>
         <li>The <code>no_crit_fail</code> rider is the one sanctioned exception to "critical failure survives at every scale" — per-step, essence-priced, authored, never a global gate.</li>
+        <li>A third per-step lever, authored rather than cast: <code>successMetadata.effects</code> / <code>failureMetadata.effects</code> (THR-783) hang the full aftermath effect vocabulary on one outcome side of a step, applied through the same dispatcher an aftermath reaction uses. It is content, not a player choice — no essence, no drawer, no pick — and it applies to any <code>UnifiedActionTemplate</code> step, divine cards included. The side split is <code>isStepSuccess</code>, which counts <code>near_miss</code> as a success.</li>
       </ul>
 
       <h3>The Find-gates-Change/Control chain <span class="flag design">DESIGN</span></h3>

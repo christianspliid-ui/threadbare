@@ -67,7 +67,7 @@ export const TAVERN_UNIFIED_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         successMetadata: { reputationDelta: 0.03 },
         failureMetadata: {
           reputationDelta: -0.02,
-          onFailureEffects: [
+          effects: [
             { kind: 'condition_attachment', templateId: 'trait.condition.wounded' },
           ],
         },
@@ -106,7 +106,7 @@ export const TAVERN_UNIFIED_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
             categoryWeights: { condition: 0.90, possession: 0.10 },
             tagFilters: ['#iron'],
           },
-          onFailureEffects: [
+          effects: [
             { kind: 'condition_attachment', templateId: 'trait.condition.wounded' },
           ],
         },
@@ -393,7 +393,7 @@ export const TAVERN_UNIFIED_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
             categoryWeights: { condition: 0.80, possession: 0.20 },
             tagFilters: ['#flesh'],
           },
-          onFailureEffects: [
+          effects: [
             { kind: 'condition_attachment', templateId: 'trait.condition.wounded' },
           ],
         },
@@ -936,7 +936,7 @@ export const TAVERN_UNIFIED_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
                 categoryWeights: { condition: 0.60, mastery: 0.40 },
                 tagFilters: ['#iron'],
               },
-              onFailureEffects: [
+              effects: [
                 { kind: 'condition_attachment', templateId: 'trait.condition.wounded' },
               ],
             },
@@ -972,7 +972,7 @@ export const TAVERN_UNIFIED_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
               categoryWeights: { condition: 0.60, mastery: 0.40 },
               tagFilters: ['#iron'],
             },
-            onFailureEffects: [
+            effects: [
               { kind: 'condition_attachment', templateId: 'trait.condition.wounded' },
             ],
           },

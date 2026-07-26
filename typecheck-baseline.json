@@ -1,5 +1,5 @@
 {
-  "total": 3503,
+  "total": 3500,
   "command": "npx tsc -b --force --pretty false",
   "perFile": {
     "scripts/lint-encounter-content.ts": 2,
@@ -265,7 +265,7 @@
     "src/data/social-scene-templates.ts": 24,
     "src/data/sphereIcons.ts": 1,
     "src/data/starter-attachments.ts": 14,
-    "src/data/tavern-encounter-content.ts": 10,
+    "src/data/tavern-encounter-content.ts": 7,
     "src/data/uiColorPalette.ts": 1,
     "src/data/unified-action-templates.ts": 8,
     "src/debug-bridge.ts": 16,
