@@ -15,6 +15,7 @@ export type ULShardId =
   | 'cosmology'
   | 'agents'
   | 'encounters'
+  | 'traits'
   | 'prose'
   | 'graph'
   | 'coordination'

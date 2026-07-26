@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Threadbearer — Traits &amp; Marks</title>
+<!--
+  Traits & Marks (Game Manual Wiki / THR-788) — dual-layer manual page.
+  Player-manual prose first ("How it plays"), Designer Notes second.
+  Spec: Docs/plans/2026-07-26-traits-trigger-architecture.md § Content pillar.
+  Designer-layer sources: src/types/traits.ts (TraitCategory, TraitVisibility,
+  TraitPredicate, TraitDefinitionProperties, TraitAssignmentProperties),
+  src/engine/traits.ts (resolveTraitPredicate, assign/reinforce/decay,
+  getEffectiveDomainContributions), src/engine/traitRefIndex.ts (ref→id-set
+  ANY-match), src/engine/traitRefValidation.ts (validateTraitRefs sweep),
+  src/types/edgeSchema.ts (has_trait bearer legality), the six
+  src/data/*-trait-content.ts definition files, src/data/trait-modifiers.ts
+  (LOS registry), and the minting phases phaseEncounterTraits.ts /
+  phaseReputationTraits.ts / phaseEconomicTraits.ts / culturalTraits.ts /
+  phases/corePersonality.ts / phases/personalityTraitEmerge.ts.
+  Terminology authority: Docs/ubiquitous-language/Traits.md.
+  The shared wiki nav between the WIKI-NAV markers is injected by
+  scripts/generate-design-wiki.ts — do not hand-write it.
+-->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --parchment: #f4edd8;
+    --parchment-dark: #e8dfc8;
+    --ink: #2c1810;
+    --ink-light: #5a3d2b;
+    --ink-faint: #8a7060;
+    --gold: #b8860b;
+    --gold-light: #daa520;
+    --card-bg: #fff8e7;
+    --red: #8b2500;
+    --blue: #1a3a5c;
+    --blue-light: #2d5f8a;
+    --purple: #4a2d6a;
+    --green: #2d5a27;
+
+    --flag-impl: #2d5a27;
+    --flag-design: #8a4a00;
+    --flag-open: #4a2d6a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--parchment);
+    color: var(--ink);
+    font-family: 'Crimson Text', Georgia, serif;
+    font-size: 16px;
+    line-height: 1.6;
+    min-height: 100vh;
+    background-image:
+      radial-gradient(ellipse at 20% 50%, rgba(74,45,106,0.05) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 30%, rgba(184,134,11,0.04) 0%, transparent 50%);
+  }
+
+  .page-wrapper { max-width: 900px; margin: 0 auto; padding: 40px 32px 72px; }
+
+  /* ── Header ── */
+  .header { text-align: center; margin-bottom: 40px; padding-bottom: 28px; border-bottom: 2px solid var(--gold); position: relative; }
+  .header::after { content: ''; position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); width: 55%; height: 1px; background: var(--gold-light); }
+  .header .eyebrow { font-family: 'Cinzel', Georgia, serif; font-size: 0.72rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold); margin-bottom: 10px; }
+  .header h1 { font-family: 'Cinzel', Georgia, serif; font-weight: 700; font-size: 2.4rem; color: var(--ink); letter-spacing: 0.05em; margin-bottom: 12px; }
+  .header .tagline { font-size: 1.12rem; color: var(--ink-light); max-width: 64ch; margin: 0 auto; font-style: italic; }
+
+  /* ── Sections ── */
+  .section { margin-bottom: 34px; }
+  .section > h2 { font-family: 'Cinzel', Georgia, serif; font-size: 1.25rem; color: var(--ink); letter-spacing: 0.03em; margin-bottom: 6px; padding-bottom: 6px; border-bottom: 1px solid var(--parchment-dark); }
+  .section > h2 .lead { display: block; font-family: 'Crimson Text', Georgia, serif; font-size: 0.95rem; font-style: italic; font-weight: 400; color: var(--ink-faint); letter-spacing: 0; margin-top: 4px; }
+  .section h3 { font-family: 'Cinzel', Georgia, serif; font-size: 1rem; color: var(--ink-light); letter-spacing: 0.02em; margin: 20px 0 6px; }
+  .section p { margin-bottom: 12px; }
+  .section p .term { font-weight: 600; color: var(--ink); }
+  .section ul { margin: 0 0 14px 0; padding-left: 0; list-style: none; }
+  .section ul li { position: relative; padding-left: 1.3rem; margin-bottom: 8px; }
+  .section ul li::before { content: '◆'; position: absolute; left: 0; top: 0.05rem; color: var(--gold); font-size: 0.7rem; }
+
+  /* ── Ten categories ── */
+  .cats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 10px 0 18px; }
+  .cat { background: var(--card-bg); border: 1px solid var(--parchment-dark); border-radius: 4px; padding: 11px 14px; border-left: 3px solid var(--purple); }
+  .cat.earned { border-left-color: var(--gold-light); }
+  .cat.inflicted { border-left-color: var(--red); }
+  .cat.reserved { border-left-color: var(--ink-faint); background: rgba(232,223,200,0.5); }
+  .cat h4 { font-family: 'Cinzel', Georgia, serif; font-size: 0.84rem; color: var(--ink); margin: 0 0 2px; }
+  .cat p { font-size: 0.8rem; color: var(--ink-light); margin: 0; }
+  .cat .end { display: block; font-size: 0.74rem; color: var(--ink-faint); font-style: italic; margin-top: 3px; }
+  @media (max-width: 620px) { .cats { grid-template-columns: 1fr; } }
+
+  /* ── Four hook shapes ── */
+  .hooks { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin: 10px 0 18px; }
+  .hook { background: var(--card-bg); border: 1px solid var(--parchment-dark); border-radius: 4px; padding: 13px 15px; border-top: 3px solid var(--blue-light); }
+  .hook h4 { font-family: 'Cinzel', Georgia, serif; font-size: 0.82rem; color: var(--ink); margin: 0 0 4px; }
+  .hook p { font-size: 0.82rem; color: var(--ink-light); margin: 0; }
+  @media (max-width: 620px) { .hooks { grid-template-columns: 1fr; } }
+
+  /* ── Lifecycle chain ── */
+  .chain { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 14px; align-items: center; }
+  .chain .step { font-family: 'Cinzel', Georgia, serif; font-size: 0.74rem; color: var(--ink-light); background: var(--card-bg); border: 1px solid var(--parchment-dark); border-radius: 3px; padding: 3px 9px; white-space: nowrap; }
+  .chain .arrow { color: var(--gold); font-size: 0.8rem; }
+
+  /* ── Callouts ── */
+  .callout { background: var(--card-bg); border: 1px solid var(--parchment-dark); border-left: 4px solid var(--gold); border-radius: 4px; padding: 14px 18px; margin: 4px 0 18px; }
+  .callout.blue { border-left-color: var(--blue-light); }
+  .callout.purple { border-left-color: var(--purple); }
+  .callout.red { border-left-color: var(--red); }
+  .callout.green { border-left-color: var(--green); }
+  .callout .callout-title { font-family: 'Cinzel', Georgia, serif; font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 6px; }
+  .callout p:last-child { margin-bottom: 0; }
+
+  /* ── Designer notes ── */
+  .designer { margin-top: 48px; border-top: 2px solid var(--gold); padding-top: 8px; }
+  .designer > summary { list-style: none; cursor: pointer; padding: 16px 4px; display: flex; align-items: baseline; gap: 12px; }
+  .designer > summary::-webkit-details-marker { display: none; }
+  .designer > summary .chev { font-size: 0.8rem; color: var(--gold); transition: transform 0.15s; }
+  .designer[open] > summary .chev { transform: rotate(90deg); }
+  .designer > summary h2 { font-family: 'Cinzel', Georgia, serif; font-size: 1.3rem; color: var(--ink); letter-spacing: 0.03em; }
+  .designer > summary .sub { font-size: 0.9rem; color: var(--ink-faint); font-style: italic; }
+  .designer-body { padding: 4px 4px 8px; }
+  .designer-body h3 { font-family: 'Cinzel', Georgia, serif; font-size: 0.98rem; color: var(--ink-light); margin: 22px 0 8px; }
+  .designer-body p { margin-bottom: 12px; font-size: 0.97rem; }
+  .designer-body ul { margin: 0 0 14px 0; padding-left: 0; list-style: none; }
+  .designer-body ul li { position: relative; padding-left: 1.2rem; margin-bottom: 7px; font-size: 0.97rem; }
+  .designer-body ul li::before { content: '›'; position: absolute; left: 0.15rem; top: 0; color: var(--ink-faint); }
+  code, .mono { font-family: 'JetBrains Mono', monospace; font-size: 0.84em; color: var(--ink); background: rgba(184,134,11,0.10); padding: 0.05rem 0.32rem; border-radius: 3px; word-break: break-word; }
+
+  .flag { font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; letter-spacing: 0.04em; font-weight: 500; padding: 0.08rem 0.4rem; border-radius: 3px; color: #fff; white-space: nowrap; }
+  .flag.impl { background: var(--flag-impl); }
+  .flag.design { background: var(--flag-design); }
+  .flag.open { background: var(--flag-open); }
+
+  table.tunables { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin: 4px 0 18px; }
+  table.tunables th { text-align: left; font-family: 'Cinzel', Georgia, serif; font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-faint); padding: 6px 10px 6px 0; border-bottom: 1px solid var(--parchment-dark); }
+  table.tunables td { padding: 7px 10px 7px 0; border-bottom: 1px solid var(--parchment-dark); vertical-align: top; color: var(--ink-light); }
+  table.tunables td:first-child { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--ink); white-space: nowrap; }
+
+  .foot { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--parchment-dark); font-size: 0.85rem; color: var(--ink-faint); font-style: italic; }
+  a { color: var(--blue-light); text-decoration: none; border-bottom: 1px solid rgba(45,95,138,0.35); }
+  a:hover { color: var(--blue); border-bottom-color: var(--blue); }
+</style>
+</head>
+<body>
+<!--WIKI-NAV-->
+<style>
+  .wiki-nav { font-family: 'Cinzel', Georgia, serif; background: #2c1810; border-bottom: 2px solid #b8860b; padding: 0.6rem 1.2rem; display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.4rem 1.1rem; }
+  .wiki-nav__brand { color: #daa520; font-weight: 700; letter-spacing: 0.04em; margin-right: 0.6rem; font-size: 0.95rem; }
+  .wiki-nav__link { color: #f4edd8; text-decoration: none; font-size: 0.85rem; letter-spacing: 0.02em; padding: 0.15rem 0.1rem; border-bottom: 2px solid transparent; transition: color 0.15s, border-color 0.15s; }
+  .wiki-nav__link:hover { color: #daa520; }
+  .wiki-nav__link.is-active { color: #daa520; border-bottom-color: #b8860b; font-weight: 700; }
+</style>
+<nav class="wiki-nav" aria-label="Design Reference Wiki">
+  <span class="wiki-nav__brand">⌖ Design Reference Wiki</span>
+  <a class="wiki-nav__link" href="design-wiki.html">Design Wiki</a>
+  <a class="wiki-nav__link" href="run-lifecycle-reference.html">A Run, Start to Finish</a>
+      <a class="wiki-nav__link" href="cosmology-reference.html">Reaches, Spheres &amp; Quintessence</a>
+      <a class="wiki-nav__link" href="turn-structure-reference.html">The Three-Beat Turn</a>
+      <a class="wiki-nav__link" href="divine-actions-reference.html">Divine Actions &amp; Prerequisites</a>
+      <a class="wiki-nav__link" href="threads-court-reference.html">Threads, the Court &amp; The First</a>
+      <a class="wiki-nav__link" href="essence-control-reference.html">Essence, Control &amp; Sustained Power</a>
+      <a class="wiki-nav__link" href="encounters-manual-reference.html">Encounters &amp; Aftermath</a>
+      <a class="wiki-nav__link" href="clocks-reference.html">Doom, the Mandate &amp; Omens</a>
+      <a class="wiki-nav__link" href="interface-reference.html">Reading the Interface</a>
+      <a class="wiki-nav__link" href="agents-reference.html">The Mortals</a>
+      <a class="wiki-nav__link is-active" href="traits-marks-reference.html" aria-current="page">Traits &amp; Marks</a>
+      <a class="wiki-nav__link" href="factions-cultures-reference.html">Factions, Cultures &amp; Secrets</a>
+      <a class="wiki-nav__link" href="world-map-reference.html">The World: Hexes, Terrain &amp; Sight</a>
+      <a class="wiki-nav__link" href="settlements-economy-reference.html">Settlements, Prosperity &amp; Trade</a>
+      <a class="wiki-nav__link" href="livelihoods-reference.html">Livelihoods &amp; the Resource Web</a>
+      <a class="wiki-nav__link" href="armies-battles-reference.html">Armies, Battles &amp; Lairs</a>
+      <a class="wiki-nav__link" href="stealth-rivals-reference.html">Stealth, Detection &amp; Rival Gods</a>
+      <a class="wiki-nav__link" href="attention-story-reference.html">Attention, the Digest &amp; the Chronicle</a>
+      <a class="wiki-nav__link" href="twilight-worldsoul-reference.html">Twilight, Echoes &amp; the World-Soul</a>
+      <a class="wiki-nav__link" href="encounters-agents-reference.html">Encounters, Agents &amp; Resolution</a>
+      <a class="wiki-nav__link" href="tick-cycle-reference.html">Tick Cycle Reference</a>
+      <a class="wiki-nav__link" href="action-catalog.html">Action Catalog</a>
+      <a class="wiki-nav__link" href="system-interface-map-reference.html">Systems &amp; Interfaces Map</a>
+</nav>
+<!--/WIKI-NAV-->
+<div class="page-wrapper">
+
+  <header class="header">
+    <div class="eyebrow">Game Manual · Who They Are</div>
+    <h1>Traits &amp; Marks</h1>
+    <p class="tagline">A trait is a name the world can recognise. It does nothing on its own — its whole power is that other things read it, and react. This is how the world comes to treat a mortal as somebody in particular rather than as anybody at all.</p>
+  </header>
+
+  <!-- ══════════════════ HOW IT PLAYS ══════════════════ -->
+
+  <section class="section">
+    <h2>A trait is a name, not a bonus<span class="lead">Nothing happens because a mortal <em>has</em> a trait. Things happen because something else <em>reads</em> it.</span></h2>
+    <p>When a smith survives three battles and comes out the other side <span class="term">Battle-Hardened</span>, nothing changes in that instant. No number moves. What has changed is that the world now has a word for them — and every system that cares about that word can now find them by it.</p>
+    <p>A recruiter looking for veterans reads it. A tavern brawl offers a line only a hardened fighter would take. A rival god's scheme picks its mark by it. The trait is inert; the reaction is everything. That separation is deliberate: it means any part of the game can start caring about a trait without the trait itself having to know about that part of the game.</p>
+    <div class="callout purple">
+      <div class="callout-title">The rule that makes traits legible</div>
+      <p>Whenever a trait changes what happens, <strong>the game says which trait did it</strong>. A hidden modifier that quietly tilts an outcome is not a trait reaction — it is noise. If a mortal's <span class="term">Silver Tongue</span> opened a door, the door says so.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Ten kinds of mark<span class="lead">The kind of a trait is a contract about its life: how it is earned, how it is lost, and when it speaks.</span></h2>
+    <p>Traits are not a flat list. Each belongs to one of ten kinds, and the kind decides the trait's whole lifecycle — every <span class="term">condition</span> is temporary in the same way, every <span class="term">scar</span> is permanent in the same way. An individual trait only supplies the flavour.</p>
+    <div class="cats">
+      <div class="cat">
+        <h4>Innate</h4>
+        <p>Born with it.</p>
+        <span class="end">Worldgen · permanent</span>
+      </div>
+      <div class="cat">
+        <h4>Cultural</h4>
+        <p>Inherited from the people who raised them.</p>
+        <span class="end">Culture · permanent</span>
+      </div>
+      <div class="cat">
+        <h4>Personality</h4>
+        <p>Who they turned out to be, once a moral axis leaned far enough.</p>
+        <span class="end">Threshold-minted · drifts</span>
+      </div>
+      <div class="cat earned">
+        <h4>Mastery</h4>
+        <p>What they have become good at.</p>
+        <span class="end">Earned · decays if unused</span>
+      </div>
+      <div class="cat earned">
+        <h4>Reputation</h4>
+        <p>What the world says about them.</p>
+        <span class="end">Standing · fades</span>
+      </div>
+      <div class="cat inflicted">
+        <h4>Condition</h4>
+        <p>Something currently true of them — wounded, inspired, terrified.</p>
+        <span class="end">Inflicted · expires or is mended</span>
+      </div>
+      <div class="cat inflicted">
+        <h4>Scar</h4>
+        <p>Something that happened and did not heal.</p>
+        <span class="end">Aftermath · permanent</span>
+      </div>
+      <div class="cat">
+        <h4>Bestowed</h4>
+        <p>Given by a god or carried by an object.</p>
+        <span class="end">Granted · revocable</span>
+      </div>
+      <div class="cat reserved">
+        <h4>Destiny</h4>
+        <p>A promise the world has made about them, not yet kept.</p>
+        <span class="end">Reserved — nothing carries this yet</span>
+      </div>
+      <div class="cat">
+        <h4>Core</h4>
+        <p>Run-defining identity, such as the bond with The First.</p>
+        <span class="end">Permanent</span>
+      </div>
+    </div>
+    <p>Most kinds record something that has already happened. <span class="term">Destiny</span> is the one that points forward — a promise, waiting to be kept. It is declared and reserved, but nothing in the game mints or reads a destiny yet; it is named here so the word is settled before the content that will fill it is written.</p>
+  </section>
+
+  <section class="section">
+    <h2>How a trait is earned<span class="lead">A trait is a discrete identity minted when something continuous crosses a line — and held there, so it does not flicker.</span></h2>
+    <p>Beneath the traits are the sliding scales the simulation actually tracks: a mortal's moral axes, their standing with a faction, their skill in a Reach, their wealth. Those move constantly. A trait is what happens when one of them travels far enough to deserve a <em>name</em>.</p>
+    <div class="chain">
+      <span class="step">a scale drifts</span><span class="arrow">→</span>
+      <span class="step">crosses a threshold</span><span class="arrow">→</span>
+      <span class="step">a trait is minted</span><span class="arrow">→</span>
+      <span class="step">systems can now read it</span><span class="arrow">→</span>
+      <span class="step">it deepens, fades, or is lost</span>
+    </div>
+    <p>The scale stays underneath and keeps moving; the trait is the part the world can talk about. This is why a trait is worth more than the number that produced it — <em>Feared</em> is a thing a village can act on, where a hostility score is not.</p>
+    <p>A trait can also deepen. Reinforce a mastery often enough and it grows; leave it alone and it slips back down and eventually falls away. The game never shows you the level as a number — it shows you a stronger word.</p>
+  </section>
+
+  <section class="section">
+    <h2>Four ways the world reacts<span class="lead">Every place a trait matters is one of four shapes — and each one names the trait out loud.</span></h2>
+    <div class="hooks">
+      <div class="hook">
+        <h4>It opens or closes a door</h4>
+        <p>An option, an encounter, or an action that only exists for someone carrying the trait — or that is barred to someone carrying the wrong one.</p>
+      </div>
+      <div class="hook">
+        <h4>It shifts the odds</h4>
+        <p>The trait tilts a step's forecast or difficulty, and says so on the forecast line: the player sees <em>which</em> mark is doing the work.</p>
+      </div>
+      <div class="hook">
+        <h4>It deals a card only they could play</h4>
+        <p>A nudge that enters the hand for this mortal and no other, because of what they are.</p>
+      </div>
+      <div class="hook">
+        <h4>It colours the telling</h4>
+        <p>Prose that only appears because the trait is present — the world describing them as what they have become.</p>
+      </div>
+    </div>
+    <p>A trait reaction always belongs to the moment it is part of. It shades the scene in front of you; it never interrupts with a notification of its own. One story at a time.</p>
+  </section>
+
+  <section class="section">
+    <h2>What you are allowed to know<span class="lead">Some marks are plain on sight. Some must be discovered. None that you know are ever hidden from you.</span></h2>
+    <p>A trait can be <span class="term">public</span> (obvious to anyone), <span class="term">discoverable</span> (learnable through play), or <span class="term">divine only</span> (visible to you, and not to the mortals). The same trait can be plain on one bearer and secret on another.</p>
+    <div class="callout blue">
+      <div class="callout-title">Visible once known</div>
+      <p>Visibility decides <em>whether you have found out yet</em> — never whether a mark you have already found gets shown to you. Once a trait is known, it is listed in that mortal's own panel, always. There is no state where the game knows you know and still hides it.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>What a trait never does<span class="lead">Being interesting and being capable are different things, and traits are not allowed to blur them.</span></h2>
+    <p>A trait may steer what a mortal <em>reaches for</em> — which encounters attract them, which ambitions they take up. That is selection, and personality traits do exactly that and nothing more: a cruel mortal seeks out cruel opportunities, but is not thereby better at cruelty.</p>
+    <p>Competence is separate and deliberately small. Where a trait does contribute to how well someone performs — a mastery, or a hard-won reputation — it does so through a narrow, capped channel, never as an open-ended bonus. The ceiling is the point: a mortal with a shelf of impressive marks is a mortal with a rich story, not a mortal who cannot fail.</p>
+    <div class="callout green">
+      <div class="callout-title">Words, never numbers</div>
+      <p>Trait strength is never shown as a numeral. The game says <em>Tempered</em>, not <em>level 3</em>. If you can read a number off a trait anywhere in the interface, that is a bug on this page's contract.</p>
+    </div>
+  </section>
+
+  <!-- ══════════════════ DESIGNER NOTES ══════════════════ -->
+
+  <details class="designer" open>
+    <summary>
+      <span class="chev">▶</span>
+      <span>
+        <h2>Designer Notes</h2>
+        <span class="sub">The graph substrate and bearer legality, the ten categories as lifecycle contracts with shipped definition counts, the unified ref/predicate resolution across six read sites, which producers mint what, and the honest state of authored hook content — including the dead-ref defect that has kept most trait gates permanently false.</span>
+      </span>
+    </summary>
+    <div class="designer-body">
+
+      <p>Status flags follow the rulebook convention: <span class="flag impl">IMPL</span> shipped and wired, <span class="flag design">DESIGN</span> specified but partially or not yet wired, <span class="flag open">OPEN</span> an unresolved question. <strong>Architecture authority for this page is <code>Docs/plans/2026-07-26-traits-trigger-architecture.md</code>; terminology authority is the UL <code>Traits</code> shard.</strong> Where any surface disagrees, the UL wins on terms.</p>
+
+      <h3>Substrate <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li><strong>Definitions are nodes, assignments are edges.</strong> A trait definition is a <code>type: 'trait'</code> graph node whose properties are typed <code>TraitDefinitionProperties</code> (<code>src/types/traits.ts</code>); a bearer holds one through a <code>has_trait</code> edge. Relationships are edges, never property fields — the property-vs-edge rule applies here as everywhere.</li>
+        <li><strong>The assignment carries the per-bearer state</strong> (<code>TraitAssignmentProperties</code>): <code>level</code>, <code>acquiredTick</code>, <code>lastReinforcedTick</code>, <code>source</code>, <code>visibility</code>, optional <code>ticksRemaining</code>, optional <code>modifiers</code>. The definition is shared across every bearer; only the edge is per-bearer. <code>ticksRemaining</code> is the live countdown the condition decay path decrements — distinct from the authored <code>durationTicks</code> provenance value, which is never decremented (THR-761).</li>
+        <li><strong>Bearer legality is fixed by the edge schema</strong> — <code>has_trait.sourceNodeType = ['actor', 'location', 'sublocation']</code> (<code>src/types/edgeSchema.ts:67</code>). That covers every <code>ActorType</code> (individual, group, faction, culture, god, ascendant) plus places. Artifacts and reified relationships are named as bearers by the architecture but are <em>not</em> schema-legal yet — each is a one-line additive <code>sourceNodeType</code> extension landing with its own wave. <span class="flag design">DESIGN</span></li>
+        <li><strong>The field is <code>subcategory</code>, not <code>category</code>.</strong> Code reading <code>properties.category</code> reads <code>undefined</code>; that exact dead read kept reputation titles from ever rendering until THR-787 repaired it. Worth stating because the name reads wrong.</li>
+      </ul>
+
+      <h3>The ten categories &amp; shipped coverage <span class="flag impl">IMPL</span> · <span class="flag design">DESIGN</span> (destiny)</h3>
+      <p><code>TraitCategory</code> (<code>src/types/traits.ts:12</code>) declares ten. A category is an acquisition/removal/trigger contract, not a label. Static definition coverage is uneven by design — measured across the six <code>src/data/*-trait-content.ts</code> files, <strong>64 definitions</strong> ship statically:</p>
+      <table class="tunables">
+        <thead><tr><th>Category</th><th>Static defs</th><th>Contract · producer</th></tr></thead>
+        <tbody>
+          <tr><td>reputation</td><td>19</td><td>Minted by standing, fades · <code>phaseReputationTraits.ts</code>, <code>phaseEconomicTraits.ts</code></td></tr>
+          <tr><td>personality</td><td>16</td><td>Threshold-minted from axes, drifts · <code>phases/personalityTraitEmerge.ts</code></td></tr>
+          <tr><td>core</td><td>10</td><td>Run-defining, permanent · <code>phases/corePersonality.ts</code></td></tr>
+          <tr><td>mastery</td><td>9</td><td>Earned, decays on <code>decayPeriod</code> · <code>phaseEncounterTraits.ts</code></td></tr>
+          <tr><td>condition</td><td>7</td><td>Inflicted, expires on <code>ticksRemaining</code> · <code>phaseEncounterTraits.ts</code></td></tr>
+          <tr><td>scar</td><td>2</td><td>Aftermath/overflow, permanent · <code>influence.ts</code>, <code>phaseEconomicTraits.ts</code></td></tr>
+          <tr><td>cultural</td><td>1</td><td>Culture-inherited, permanent · <code>culturalTraits.ts</code></td></tr>
+          <tr><td>innate</td><td>0 static</td><td>Minted at runtime as <code>trait_formative_*</code> nodes · <code>culturalTraits.ts</code></td></tr>
+          <tr><td>bestowed</td><td>0 static</td><td>Minted at grant time · <code>tierPromotion.ts</code>, <code>rewardPool.ts</code>, <code>hexActionBridge.ts</code></td></tr>
+          <tr><td>destiny</td><td>0</td><td><strong>Reserved.</strong> No definition, no producer, no reader</td></tr>
+        </tbody>
+      </table>
+      <ul>
+        <li><strong><code>destiny</code> is declared and otherwise inert.</strong> It appears in the <code>TraitCategory</code> union and in the agent sheet's display ordering (<code>src/engine/agentDetail.ts:781</code>) and nowhere else. The UL <code>Destiny</code> entry is its first definition anywhere — deliberately written ahead of the content so the wave that fills the category inherits settled wording instead of minting a rival term. <span class="flag design">DESIGN</span></li>
+        <li><strong>Decay is mastery-only.</strong> <code>processTraitDecay</code> (<code>src/engine/traits.ts:161</code>) skips every non-<code>mastery</code> subcategory and every definition without a <code>decayPeriod</code>; it drops one level per elapsed period and removes the edge at zero. Condition expiry is a separate path keyed on <code>ticksRemaining</code>.</li>
+      </ul>
+
+      <h3>Refs, the index, and the one predicate <span class="flag impl">IMPL</span> (THR-786)</h3>
+      <ul>
+        <li><strong>Four ref forms, all legal:</strong> full node id (<code>trait.mastery.smithing</code>), short id (<code>mastery.smithing</code>), display name (<code>Master Smith</code>), or tag (<code>#craft</code>). <code>TraitRefIndex</code> (<code>src/engine/traitRefIndex.ts</code>) maps one ref to the <em>set</em> of definitions carrying it and predicates pass on <strong>ANY-match</strong>. A ref resolving to several definitions is legal, not a conflict — that is exactly what reproduces the pre-unification union semantics by construction.</li>
+        <li><strong>One resolver, six read sites.</strong> <code>resolveTraitPredicate(graph, bearerId, pred, opts?)</code> (<code>src/engine/traits.ts:43</code>) is the single gate for: the encounter filter pipeline, the <code>has_trait:</code>/<code>lacks_trait:</code> effect predicates, ambition <code>graphConditions</code>, ambition eligibility snapshots, spell prerequisites, and item-granted traits. For several predicates against one bearer, <code>collectBearerTraitRefs</code> + <code>bearerMatchesPredicate</code> walks the graph once.</li>
+        <li><strong>The index is owned by <code>SimulationRuntime</code></strong>, not module scope — the engine-caches-per-session rule. A module-level singleton would survive across playthroughs on a soft reload.</li>
+        <li><strong>Name collision, settled in the UL.</strong> Ambition templates carry <code>requiredTraits: string[]</code> (bare refs, <code>src/types/ambition.ts</code>); <code>UnifiedActionTemplate.requiredTraits</code> is <code>readonly TraitPredicate[]</code>. Same name, two shapes, one resolver — so behaviour agrees and only the declaration differs. Say <em>ambition trait keys</em> and <em>template trait predicates</em> when the difference matters. <code>blockedByTraits</code> is deliberately asymmetric (<code>readonly string[]</code>, no <code>minLevel</code>): a requirement can demand a depth, a prohibition cannot.</li>
+      </ul>
+
+      <h3>The hook surfaces <span class="flag impl">IMPL</span> engine · <span class="flag design">DESIGN</span> content</h3>
+      <ul>
+        <li><strong>Gate</strong> — <code>requiredTraits</code>/<code>blockedByTraits</code> on <code>UnifiedActionTemplate</code> (declared THR-801), read by <code>encounterFilterPipeline.ts:309</code>. Wired.</li>
+        <li><strong>Variant</strong> — <code>TraitVariant { traitId, forecastDelta?, difficultyDelta?, factorLine, addNudgeIds? }</code>, read by <code>src/engine/encounters/nudges.ts:77</code> (reached from <code>unifiedActionResolution.ts</code>). The mandatory <code>factorLine</code> is the name-always canon rule enforced by the type: a variant cannot shift a forecast without supplying player-facing text.</li>
+        <li><strong>Trait-only nudge</strong> — <code>StepNudge.requiredTrait</code>, filtered against <code>context.heldTraits</code> at <code>nudges.ts:151</code>. Wired.</li>
+        <li><strong>The honest content call:</strong> the engine surfaces are wired but almost nothing authors against them. Grepping <code>src/data/</code>: <strong>zero</strong> authored <code>traitVariants</code>, and exactly <strong>one</strong> authored template trait gate — <code>blockedByTraits: ['trait.reputation.shadow.negative']</code> in <code>src/data/encounters/shadow-court-audience.ts</code>, which does resolve. Everything else in this row is capability without content. Authoring the hooks per bearer family is its own wave. <span class="flag design">DESIGN</span></li>
+      </ul>
+
+      <h3>The dead-ref defect — most trait gates have always been false <span class="flag design">DESIGN</span></h3>
+      <div class="callout red">
+        <div class="callout-title">Read this before authoring a trait hook</div>
+        <p>Authored refs and shipped trait definitions have <strong>never intersected</strong>. Authored refs are bare snake_case keys (<code>master_smith</code>, <code>negotiator</code>, <code>pacifist</code>); every definition uses <code>trait.&lt;category&gt;.&lt;kebab-case&gt;</code> ids, Title Case display names, and <code>#</code>-prefixed tags. No form matches, so the predicate is permanently false.</p>
+      </div>
+      <ul>
+        <li>Measured by <code>__DEBUG.validateTraitRefs()</code> against the 64 shipped definitions: <strong>62 dead refs</strong> — 43 in ambition <code>boostingTraits</code>/<code>blockingTraits</code>/<code>requiredTraits</code>, 15 in ambition <code>graphConditions</code>, 4 in <code>has_trait:</code> choice-set predicates (<code>negotiator</code>, <code>dauntless</code>, <code>leader</code>, <code>interrogator</code> — all four in <code>src/data/choice-set-catalog.ts</code>) — plus <strong>21 phantom grant keys</strong> naming traits with no definition behind them.</li>
+        <li><strong>Why it survived:</strong> the one path that works is self-closing. A <code>trait_grant</code> effect returns its bare key, consumers union it into the bearer's ref set, and a gate naming the same bare key passes — grant key to gate key, never touching a trait definition. Every gate depending on an <em>actually minted</em> trait has always evaluated false, so the boosting/blocking contribution in ambition scoring is 0 in every real run.</li>
+        <li><strong>Consequence for content authors:</strong> a hook must name a trait some producer actually mints. A ref that names nothing is not a missing engine feature — it is an authoring defect, and it fails silently. Run the sweep before shipping hooks. Reconciliation is tracked as <strong>THR-800</strong>; this page describes the substrate, not a fixed state.</li>
+      </ul>
+
+      <h3>Selection vs competence — stated accurately <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li><strong>Selection</strong> flows through <code>scoringModifiers</code> (per-Reach additive bias in encounter scoring). Verified: every <code>personality</code> definition carries <code>domainContributions: {}</code> and a <code>scoringModifiers</code> entry (e.g. <code>trait.personality.iron.virtue</code> → <code>{ iron: 0.15 }</code>). Personality steers what an agent reaches for and never what they are good at.</li>
+        <li><strong>Competence</strong> flows only through capped channels: <code>domainContributions</code> multiplied by assignment level in <code>getEffectiveDomainContributions</code> (<code>traits.ts:205</code>), plus the resolution-bonus cap. <strong>The shorthand "never crossed" is wrong</strong> and worth correcting wherever it appears: <code>reputation</code> definitions <em>do</em> carry <code>domainContributions</code> (e.g. <code>trait.reputation.iron.positive</code> → <code>{ iron: 0.10, heart: 0.05 }</code>). The law is not that reputation never touches competence — it is that competence only ever moves through the capped channels, never as a bespoke uncapped bonus.</li>
+        <li><strong>A third field is neither.</strong> <code>axisContributions</code> is a signed per-axis delta on the 0–1 personality scale, summed once by the origin-baseline computation at birth (<code>personality/originBaseline.ts</code>, THR-561). It steers moral flavour, and nothing reads it for prerequisites or resolution.</li>
+        <li><strong>A separate registry worth knowing about:</strong> <code>LOS_TRAIT_DEFINITIONS</code> (<code>src/data/trait-modifiers.ts</code>) maps 5 trait ids to line-of-sight <code>los_range</code> modifiers. It is keyed by trait id but is <em>not</em> a trait-definition source — it does not participate in the 64, and an id present there is not thereby a defined trait.</li>
+      </ul>
+
+      <h3>Inspection <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li><code>window.__DEBUG.validateTraitRefs()</code> (<code>src/engine/traitRefValidation.ts</code>) sweeps all six authored surfaces and returns <code>{ resolved, dead[], phantomGrants[], … }</code>, each dead entry carrying its authoring path. The sweep is <strong>shape-driven</strong>, not an aggregate list — it recognises refs by their authored shape while walking the content namespaces, so a new content file is swept the moment it is imported, with no registration step to forget.</li>
+        <li>Runtime tracing is deliberately absent for the read path (pure predicates, ring-buffer discipline). Unresolvable refs warn once and evaluate false rather than throwing — the tick loop never crashes on a bad ref.</li>
+      </ul>
+
+      <h3>Constants</h3>
+      <table class="tunables">
+        <thead><tr><th>Constant</th><th>Value</th><th>Purpose · file</th></tr></thead>
+        <tbody>
+          <tr><td>TraitCategory</td><td>10</td><td>innate·cultural·personality·mastery·reputation·condition·scar·bestowed·destiny·core · <code>types/traits.ts:12</code></td></tr>
+          <tr><td>TraitVisibility</td><td>3</td><td>public · discoverable · divine_only · <code>types/traits.ts:57</code></td></tr>
+          <tr><td>static trait definitions</td><td>64</td><td>Across the six <code>src/data/*-trait-content.ts</code> files</td></tr>
+          <tr><td>has_trait sourceNodeType</td><td>3</td><td>actor · location · sublocation · <code>types/edgeSchema.ts:67</code></td></tr>
+          <tr><td>maxLevel</td><td>1 or 3</td><td>Binary vs scaled trait · <code>TraitDefinitionProperties</code></td></tr>
+          <tr><td>decayPeriod</td><td>per-definition</td><td>Ticks between mastery decay steps; absent ⇒ no decay · <code>traits.ts:176</code></td></tr>
+          <tr><td>ticksRemaining</td><td>per-assignment</td><td>Live condition countdown; absent ⇒ permanent · edge property</td></tr>
+          <tr><td>domainContributions</td><td>≤ 0.10 scale</td><td>Capped competence channel, multiplied by level · <code>traits.ts:205</code></td></tr>
+          <tr><td>scoringModifiers</td><td>e.g. 0.15</td><td>Per-Reach selection bias; competence-free · <code>types/traits.ts:91</code></td></tr>
+          <tr><td>TRAIT_REF_WARN_ONCE</td><td>true</td><td>Unresolvable ref warns once per ref id</td></tr>
+          <tr><td>dead refs (measured)</td><td>62</td><td>Authored refs no definition satisfies · THR-800</td></tr>
+          <tr><td>phantom grant keys</td><td>21</td><td>Grants naming an undefined trait · THR-800</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Canon &amp; terminology</h3>
+      <ul>
+        <li>Architecture authority: <code>Docs/plans/2026-07-26-traits-trigger-architecture.md</code> (the six connectivity verbs, the object×trait map, the category contracts, the waves). Systemic capabilities authors must use when a trait reaction should seed content: <code>Docs/plans/2026-04-16-systemic-wiring-guide.md</code>.</li>
+        <li>UL authority (terminology wins on any disagreement): the <strong>Traits</strong> shard — Trait, Trait Assignment, Trait Category, Destiny, Trait Ref, TraitPredicate, Trait Visibility, Trait Hook, Selection-Competence Separation. Adjacent: the Cosmology shard (Domain Capability — the capped channel traits feed) and the Graph shard (Node, Edge, the property-vs-edge rule).</li>
+        <li>Adjacent Manual pages: <a href="agents-reference.html">The Mortals</a> (the axiological axes personality traits are minted from), <a href="encounters-manual-reference.html">Encounters &amp; Aftermath</a> (where gates, variants and trait-only nudges are actually read), <a href="cosmology-reference.html">Reaches, Spheres &amp; Quintessence</a> (the Domain Capability ladder competence contributions feed), <a href="factions-cultures-reference.html">Factions, Cultures &amp; Secrets</a> (cultural and reputation producers).</li>
+      </ul>
+
+      <h3>Open questions <span class="flag open">OPEN</span></h3>
+      <ul>
+        <li><strong>What fills <code>destiny</code>.</strong> The category has a contract and a definition but no content, no producer, and no reader. Which system mints a destiny, and what "the promise is kept" means mechanically, is unanswered.</li>
+        <li><strong>Whether non-mortal bearers earn their reactions.</strong> Location traits are schema-legal today and no production path assigns one — every <code>assignTrait</code> caller targets an actor. The architecture's own kill criterion applies: if place traits ship and headless runs show no measurable shift in encounter-pool composition at a marked location versus an unmarked one, the react-verb integrations need rework, not the substrate.</li>
+      </ul>
+
+    </div>
+  </details>
+
+  <div class="foot">
+    Game Manual Wiki · Traits &amp; Marks (THR-788). Player layer describes current shipped behavior; anything not yet wired is flagged <span class="flag design">DESIGN</span> and introduced as &quot;intended&quot;. Terminology is UL-exact; where this page and the UL disagree, the UL wins and this page is a drift bug.
+  </div>
+
+</div>
+</body>
+</html>

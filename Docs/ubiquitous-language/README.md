@@ -15,6 +15,7 @@ Load this file at session start (referenced from CLAUDE.md). Load specific shard
 | [Cosmology.md](./Cosmology.md) | Reaches, Spheres, Foundation/Creation, domain capability, prerequisites | ✅ |
 | [Agents.md](./Agents.md) | Agent, Actor, Ascendant, The First, Faction, Rival, Thread, Avatar | ✅ |
 | [Encounters.md](./Encounters.md) | Encounter, Template, UAT, Aftermath, Reaction, Seed, Hidden Mark, Awareness | ✅ |
+| [Traits.md](./Traits.md) | Trait, Trait Category, Destiny, Trait Ref, TraitPredicate, Trait Hook, Visibility | ✅ |
 | [Prose.md](./Prose.md) | IPK, Enrichment Placeholder, Resolver, Strata, Narrative Lexicon, Chronicle | ✅ |
 | [Graph.md](./Graph.md) | Node, Edge, WorldGraph, NodeType, EdgeType, versioning, position model | ❌ |
 | [Coordination.md](./Coordination.md) | Cowork/CC/Codex, Linear states, claim discipline, WIP, Coordination Block | ❌ |
@@ -71,6 +72,18 @@ Load this file at session start (referenced from CLAUDE.md). Load specific shard
 - **[Chapter](./Encounters.md#chapter)** — the reading unit of a resolved or in-progress encounter; opening, steps, interventions, aftermath
 - **[Chapter Record](./Encounters.md#chapter-record)** — compact post-`enrichProse()` snapshot of a resolved encounter (`ChapterRecord`) appended to `chapterArchive`
 - **[Chapter Ledger](./Encounters.md#chapter-ledger)** — always-readable list (`game.chapter-ledger`) merging active encounters and resolved chapters
+
+### Traits
+
+- **[Trait](./Traits.md#trait)** — a named piece of identity on a graph object; definitions are nodes, assignments are `has_trait` edges; inert on the bearer, powered by whoever references it
+- **[Trait Assignment](./Traits.md#trait-assignment)** — the `has_trait` edge carrying level, source, visibility, and the `ticksRemaining` countdown; bearers are actor, location, sublocation
+- **[Trait Category](./Traits.md#trait-category)** — one of ten classes stored as `subcategory`; a lifecycle contract (acquisition, removal, trigger), not a label
+- **[Destiny](./Traits.md#destiny)** — the forward-contract category: a world-minted promise, always visible; currently reserved and empty
+- **[Trait Ref](./Traits.md#trait-ref)** — how content names a trait: node id, short id, display name, or tag; resolves to a set, predicates ANY-match
+- **[TraitPredicate](./Traits.md#traitpredicate)** — the canonical gate `{ traitId, minLevel? }`; settles the ambition-key vs template-predicate `requiredTraits` collision
+- **[Trait Visibility](./Traits.md#trait-visibility)** — `public` / `discoverable` / `divine_only`; governs whether a trait is known yet, never whether a known trait is shown
+- **[Trait Hook](./Traits.md#trait-hook)** — any authored reaction to a trait: gate, variant, trait-only nudge, or trait fragment; every hook names its trait
+- **[Selection-Competence Separation](./Traits.md#selection-competence-separation)** — selection steers through `scoringModifiers`; competence only through capped `domainContributions` and the resolution-bonus cap
 
 ### Prose
 
@@ -134,4 +147,6 @@ Load this file at session start (referenced from CLAUDE.md). Load specific shard
 
 ---
 
-*v1.2 — 82 canonical terms (THR-607 added Chapter, Chapter Record, Chapter Ledger). Coverage expands via the propose-new-term flow. UL wins on terminology disagreements.*
+*v1.3 — 8 shards, 110 canonical terms (THR-788 added the Traits shard: Trait, Trait Assignment, Trait Category, Destiny, Trait Ref, TraitPredicate, Trait Visibility, Trait Hook, Selection-Competence Separation). Coverage expands via the propose-new-term flow. UL wins on terminology disagreements.*
+
+*Index coverage: 96 of the 110 shard terms are listed above. 16 pre-existing entries (9 mentorship terms in Agents, 4 scene terms in Encounters, 2 versioning terms in Graph, 1 in Process) are defined in their shards but absent from this index — so a session that loads only this file cannot see they exist. The dashboard is unaffected (it falls back to each term's first body sentence). Backfill tracked as THR-806.*

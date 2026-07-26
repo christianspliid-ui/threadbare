@@ -26,6 +26,14 @@
       "blurb": "Content-adjacent shard. Terms covering the encounter pipeline: templates, resolution, aftermath, awareness, and causation."
     },
     {
+      "id": "traits",
+      "filename": "Traits.md",
+      "title": "Traits",
+      "contentAdjacent": true,
+      "termCount": 9,
+      "blurb": "Content-adjacent shard. Terms covering the trait layer: definitions and assignments, the ten category contracts, how an authored ref resolves to a definition, and the hooks content authors write against."
+    },
+    {
       "id": "prose",
       "filename": "Prose.md",
       "title": "Prose",
@@ -1704,6 +1712,306 @@
         }
       ],
       "sourcePath": "Docs/ubiquitous-language/Encounters.md#support-bundle",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "traits",
+      "slug": "trait",
+      "name": "Trait",
+      "aliases": [
+        "Trait Definition",
+        "Mark"
+      ],
+      "status": "canonical",
+      "oneLiner": "a named piece of identity on a graph object; definitions are nodes, assignments are `has_trait` edges; inert on the bearer, powered by whoever references it",
+      "body": "A named piece of identity carried by an object — who a mortal is, what a company has become, the character of a place. Definitions are graph nodes (`type: 'trait'`, properties typed `TraitDefinitionProperties` in `src/types/traits.ts`); a bearer holds one through a `has_trait` edge, never a property field. Sixty-four definitions ship statically across the trait content files; more are minted at runtime (cultural/innate formative traits at worldgen, bestowed traits at tier promotion and reward grants).\n\nA trait is **inert on its bearer**. It carries no behavior of its own — every effect lives in the system that references it. Reading a trait is the connection; the trait itself is only a name the world can recognize. This is the load-bearing separation that lets any system adopt traits at a seam it already owns, with no central rules engine.\n\nThe player-facing word for a trait is the trait's own display name, never the category or the id. Trait **levels are never surfaced as numerals** — words only, per the game's legibility law.",
+      "seeAlso": [
+        {
+          "raw": "Trait Assignment",
+          "termName": "Trait Assignment",
+          "resolvedSlug": "traits#trait-assignment"
+        },
+        {
+          "raw": "Trait Category",
+          "termName": "Trait Category",
+          "resolvedSlug": "traits#trait-category"
+        },
+        {
+          "raw": "Trait Ref",
+          "termName": "Trait Ref",
+          "resolvedSlug": "traits#trait-ref"
+        },
+        {
+          "raw": "Trait Hook",
+          "termName": "Trait Hook",
+          "resolvedSlug": "traits#trait-hook"
+        },
+        {
+          "raw": "Node",
+          "termName": "Node",
+          "resolvedSlug": "graph#node"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Traits.md#trait",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "traits",
+      "slug": "trait-assignment",
+      "name": "Trait Assignment",
+      "aliases": [
+        "has_trait Edge",
+        "Trait Edge"
+      ],
+      "status": "canonical",
+      "oneLiner": "the `has_trait` edge carrying level, source, visibility, and the `ticksRemaining` countdown; bearers are actor, location, sublocation",
+      "body": "The `has_trait` edge binding a bearer to a trait definition. Edge properties (`TraitAssignmentProperties`) carry `level`, `acquiredTick`, `lastReinforcedTick`, `source` (what caused acquisition), `visibility`, an optional `ticksRemaining` countdown, and optional `modifiers`. The definition is shared; the assignment is per-bearer, which is why level, expiry, and provenance live on the edge and not on the node.\n\nLegal bearers are fixed by the edge schema: `actor` (individual, group, faction, culture, god, ascendant), `location`, and `sublocation`. Artifacts and reified relationships are named as bearers by the design but are not yet schema-legal — each arrives with its own wave as an additive `sourceNodeType` extension.\n\n`ticksRemaining` is the live countdown the condition decay phase decrements; absent means the assignment never expires. It is distinct from the authored `durationTicks` provenance value, which is kept but never decremented.",
+      "seeAlso": [
+        {
+          "raw": "Trait",
+          "termName": "Trait",
+          "resolvedSlug": "traits#trait"
+        },
+        {
+          "raw": "Trait Visibility",
+          "termName": "Trait Visibility",
+          "resolvedSlug": "traits#trait-visibility"
+        },
+        {
+          "raw": "Edge",
+          "termName": "Edge",
+          "resolvedSlug": "graph#edge"
+        },
+        {
+          "raw": "Trait Category",
+          "termName": "Trait Category",
+          "resolvedSlug": "traits#trait-category"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Traits.md#trait-assignment",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "traits",
+      "slug": "trait-category",
+      "name": "Trait Category",
+      "aliases": [
+        "Trait Subcategory"
+      ],
+      "status": "canonical",
+      "oneLiner": "one of ten classes stored as `subcategory`; a lifecycle contract (acquisition, removal, trigger), not a label",
+      "body": "One of ten classes on a trait definition, stored as the `subcategory` property (the field is named `subcategory`, not `category` — code reading `properties.category` reads `undefined`). The ten are: `innate`, `cultural`, `personality`, `mastery`, `reputation`, `condition`, `scar`, `bestowed`, `destiny`, `core`.\n\n**A category is a lifecycle contract, not a label.** It defines how traits in it are acquired, how they are removed, and when they trigger — every trait in a category obeys its category's rules, and the individual definition only supplies flavor. In contract terms: `innate` is worldgen-minted and permanent; `cultural` is inherited from a culture and permanent; `personality` is threshold-minted from the axiological axes and drifts as those axes drift; `mastery` is earned through encounters and promotion and decays when not reinforced; `reputation` is minted by the reputation phase and fades with standing; `condition` is inflicted and expires on its countdown or is mended; `scar` is minted by aftermath and overflow and is permanent save rare rites; `bestowed` is granted by a god or an item and is revocable by its grantor; `destiny` is a world-minted promise; and `core` is reserved for run-defining identity such as The First bond.\n\nShipped static coverage is uneven by design and worth knowing before authoring against a category: reputation (19), personality (16), core (10), mastery (9), condition (7), scar (2), cultural (1). `innate` and `bestowed` have no static definitions — they are minted at runtime. `destiny` has none of either.",
+      "seeAlso": [
+        {
+          "raw": "Trait",
+          "termName": "Trait",
+          "resolvedSlug": "traits#trait"
+        },
+        {
+          "raw": "Destiny",
+          "termName": "Destiny",
+          "resolvedSlug": "traits#destiny"
+        },
+        {
+          "raw": "Selection-Competence Separation",
+          "termName": "Selection-Competence Separation",
+          "resolvedSlug": "traits#selection-competence-separation"
+        },
+        {
+          "raw": "Trait Assignment",
+          "termName": "Trait Assignment",
+          "resolvedSlug": "traits#trait-assignment"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Traits.md#trait-category",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "traits",
+      "slug": "destiny",
+      "name": "Destiny",
+      "aliases": [
+        "Destiny Trait",
+        "Destiny Category"
+      ],
+      "status": "canonical",
+      "oneLiner": "the forward-contract category: a world-minted promise, always visible; currently reserved and empty",
+      "body": "The forward-contract trait category: a promise the world has made about a bearer, which fires when the system that minted it keeps the promise. Where every other category records something that has already happened, a destiny records something that has not happened yet.\n\nIts contract: world-minted, removable only by rare rites, and **always visible** — a destiny the bearer cannot see is not a promise, so the category never takes `discoverable` or `divine_only` visibility.\n\nThe category is currently **reserved and empty**: it is declared in `TraitCategory` and honored by the agent sheet's display ordering, but no definition carries it and no producer mints it. Nothing reads a destiny trait today. This is the category's first definition — it establishes the wording ahead of the wave that fills it, so content authored later has a settled term to author against rather than minting a rival one.",
+      "seeAlso": [
+        {
+          "raw": "Trait Category",
+          "termName": "Trait Category",
+          "resolvedSlug": "traits#trait-category"
+        },
+        {
+          "raw": "Trait",
+          "termName": "Trait",
+          "resolvedSlug": "traits#trait"
+        },
+        {
+          "raw": "Trait Visibility",
+          "termName": "Trait Visibility",
+          "resolvedSlug": "traits#trait-visibility"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Traits.md#destiny",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "traits",
+      "slug": "trait-ref",
+      "name": "Trait Ref",
+      "aliases": [
+        "Ref",
+        "Trait Reference"
+      ],
+      "status": "canonical",
+      "oneLiner": "how content names a trait: node id, short id, display name, or tag; resolves to a set, predicates ANY-match",
+      "body": "How authored content **names** a trait. A ref is not necessarily a node id: it may name a trait by full node id (`trait.mastery.smithing`), by short id (`mastery.smithing`), by display name (`Master Smith`), or by tag (`#craft`). All four forms are legal and interchangeable at every trait read site.\n\nRefs resolve through the `TraitRefIndex`, which maps one ref to the **set** of trait definitions carrying it, and predicates pass on **ANY-match** — a ref shared by several definitions is satisfied by a bearer holding any one of them. A ref resolving to more than one definition is therefore legal, not a conflict.\n\nA ref no definition can satisfy is a gate that is silently, permanently false. Because that failure is invisible at runtime, the dev-only `__DEBUG.validateTraitRefs()` sweep exists to name every dead ref across all six authored surfaces. **Authoring rule: a hook must reference a trait some producer actually mints** — a ref that names a trait nothing creates is an authoring defect, not a missing engine feature.",
+      "seeAlso": [
+        {
+          "raw": "TraitPredicate",
+          "termName": "TraitPredicate",
+          "resolvedSlug": "traits#traitpredicate"
+        },
+        {
+          "raw": "Trait",
+          "termName": "Trait",
+          "resolvedSlug": "traits#trait"
+        },
+        {
+          "raw": "Trait Hook",
+          "termName": "Trait Hook",
+          "resolvedSlug": "traits#trait-hook"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Traits.md#trait-ref",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "traits",
+      "slug": "traitpredicate",
+      "name": "TraitPredicate",
+      "aliases": [
+        "Trait Gate"
+      ],
+      "status": "canonical",
+      "oneLiner": "the canonical gate `{ traitId, minLevel? }`; settles the ambition-key vs template-predicate `requiredTraits` collision",
+      "body": "The canonical trait gate shape: `{ traitId: string; minLevel?: number }`, where `traitId` is a `[[Trait Ref]]` and an absent `minLevel` means any level satisfies. Every trait read site in the engine resolves through the single `resolveTraitPredicate` in `src/engine/traits.ts` — the encounter filter pipeline, the `has_trait:` effect predicates, ambition graph conditions, ambition eligibility snapshots, spell prerequisites, and item-granted traits.\n\n**Name collision (settled here).** Two different fields are both spelled `requiredTraits`: ambition templates carry `requiredTraits: string[]` — bare refs — while `UnifiedActionTemplate.requiredTraits` is a `TraitPredicate[]`. Both route through the same resolver, so behavior agrees; only the declaration differs. When the distinction matters, say **ambition trait keys** for the bare-string form and **template trait predicates** for the structured form. Do not \"unify\" them by renaming either field — the shapes are load-bearing, and the resolver already reconciles them.",
+      "seeAlso": [
+        {
+          "raw": "Trait Ref",
+          "termName": "Trait Ref",
+          "resolvedSlug": "traits#trait-ref"
+        },
+        {
+          "raw": "Trait Hook",
+          "termName": "Trait Hook",
+          "resolvedSlug": "traits#trait-hook"
+        },
+        {
+          "raw": "Trait Assignment",
+          "termName": "Trait Assignment",
+          "resolvedSlug": "traits#trait-assignment"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Traits.md#traitpredicate",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "traits",
+      "slug": "trait-visibility",
+      "name": "Trait Visibility",
+      "aliases": [
+        "TraitVisibility"
+      ],
+      "status": "canonical",
+      "oneLiner": "`public` / `discoverable` / `divine_only`; governs whether a trait is known yet, never whether a known trait is shown",
+      "body": "Whether the player knows a bearer carries a trait: `public` (known on sight), `discoverable` (learnable through play), or `divine_only` (visible to the god alone). Declared on the definition and copied onto each assignment, so a single definition can be public on one bearer and discoverable on another.\n\nVisibility governs **whether the trait is known yet — never whether a known trait is shown**. Canon: an object's traits are always visible in its interface *once known*. There is no known-but-hidden state; the mystery layer lives entirely in the discovery gate. The bearer's own modal owns the display, per the everything-clickable ruling.",
+      "seeAlso": [
+        {
+          "raw": "Trait Assignment",
+          "termName": "Trait Assignment",
+          "resolvedSlug": "traits#trait-assignment"
+        },
+        {
+          "raw": "Trait",
+          "termName": "Trait",
+          "resolvedSlug": "traits#trait"
+        },
+        {
+          "raw": "Destiny",
+          "termName": "Destiny",
+          "resolvedSlug": "traits#destiny"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Traits.md#trait-visibility",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "traits",
+      "slug": "trait-hook",
+      "name": "Trait Hook",
+      "aliases": [
+        "Hook"
+      ],
+      "status": "canonical",
+      "oneLiner": "any authored reaction to a trait: gate, variant, trait-only nudge, or trait fragment; every hook names its trait",
+      "body": "The umbrella term for any authored place where content reacts to a trait. Four shapes ship: a **gate** (a `[[TraitPredicate]]` that shows or hides a template, option, or action), a **variant** (`TraitVariant` — a forecast or difficulty shift plus a player-facing factor line, applied when the acting agent holds the trait), a **trait-only nudge** (a `StepNudge` carrying `requiredTrait`, a card that only enters the hand for a bearer), and a **trait fragment** (prose that fires because the trait is present).\n\n**Every hook names its trait to the player.** A hook that changes an outcome without saying which trait did it is not a hook, it is a hidden modifier — the canon rule exists so the world's reaction to who you are is legible as story rather than felt as noise. A trait reaction colors the curated moment it belongs to and never raises an independent notification of its own.",
+      "seeAlso": [
+        {
+          "raw": "TraitPredicate",
+          "termName": "TraitPredicate",
+          "resolvedSlug": "traits#traitpredicate"
+        },
+        {
+          "raw": "Trait Ref",
+          "termName": "Trait Ref",
+          "resolvedSlug": "traits#trait-ref"
+        },
+        {
+          "raw": "Trait",
+          "termName": "Trait",
+          "resolvedSlug": "traits#trait"
+        },
+        {
+          "raw": "Encounter",
+          "termName": "Encounter",
+          "resolvedSlug": "encounters#encounter"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Traits.md#trait-hook",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "traits",
+      "slug": "selection-competence-separation",
+      "name": "Selection-Competence Separation",
+      "aliases": [
+        "Capability-Selection Separation",
+        "Competence Law"
+      ],
+      "status": "canonical",
+      "oneLiner": "selection steers through `scoringModifiers`; competence only through capped `domainContributions` and the resolution-bonus cap",
+      "body": "The law governing what a trait is allowed to change. **Selection steering** — which encounters and ambitions a bearer reaches for — flows through `scoringModifiers` and is competence-free for every category. **Competence** — how well the bearer does the thing — flows only through the existing capped channels: `domainContributions` (≤0.10 scale) and the resolution-bonus cap.\n\nStated precisely, because the shorthand \"never crossed\" is wrong: `personality`-category traits never gain competence effects at all, and `reputation` traits **do** carry capped `domainContributions` today. The rule is not that reputation never touches competence — it is that competence only ever moves through the capped channels. A trait reaction may add a competence modifier only through those channels, never as a bespoke uncapped bonus.\n\nA third field is separate from both: `axisContributions` steers the *moral flavor* of an agent's personality baseline at birth and is read only by the baseline computation. It is neither selection nor competence, and nothing reads it for prerequisites or resolution.",
+      "seeAlso": [
+        {
+          "raw": "Trait Category",
+          "termName": "Trait Category",
+          "resolvedSlug": "traits#trait-category"
+        },
+        {
+          "raw": "Domain Capability",
+          "termName": "Domain Capability",
+          "resolvedSlug": "cosmology#domain-capability"
+        },
+        {
+          "raw": "Trait",
+          "termName": "Trait",
+          "resolvedSlug": "traits#trait"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Traits.md#selection-competence-separation",
       "contentAdjacent": true
     },
     {
