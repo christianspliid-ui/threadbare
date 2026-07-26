@@ -1,40 +1,40 @@
 # Briefing
 
-**Generated:** 2026-07-26 19:54 local (2026-07-26 17:54 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-07-26 20:54 local (2026-07-26 18:54 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
 ## Needs Christian
 
-**Nothing needs you right now — twenty-third hour running with a genuinely empty list.**
+**Nothing needs you right now — twenty-fourth hour running with a genuinely empty list.**
 
 The hosting bill is unchanged and still an FYI rather than a request. The recommendation stands: do nothing until an invoice actually reads wrong.
 
 ## Queue
 
-**Backed up — 23 items ready, and the workbench is empty again.** One item was picked up, built, and shipped inside this hour; nobody has claimed the next one yet.
+**Backed up — 23 items ready, and for the first time in a while none of them is urgent.** The one job that had been marked urgent for seven hours shipped this hour; nothing was promoted to take its place, so the shelf is now eleven ordinary jobs and twelve small ones.
 
-The shelf went **22 → 23**, and the arithmetic is the usual shape: one item left it by shipping, and that same item wrote down two small things it noticed on its way out. Both are tidy-up jobs, neither is a defect in the game.
+The count held at 23. One item left by shipping, and that same item wrote down the one piece of itself it could not finish — so the shelf looks unchanged while the work underneath moved.
 
-**One high-priority item still waiting** — the 62 written labels that point at nothing. It has been the sole High on the board for six hours.
-
-**Nothing is gated and nothing is stale.** The oldest waiting item has been there two days.
+**Nothing is gated and nothing is stale.** The oldest waiting item has been there two days. The workbench is empty again — nobody has claimed the next job in the fifteen minutes since the last one landed.
 
 ## Freshness
 
 **Home tree: level with the server, nothing stranded.** Same two small leftovers as the last several hours — a permissions edit to the tool config, and Friday's retro write-up. Both are the crew's to land, neither blocks anything.
 
-**Cleanup reaper: alive, ran fourteen minutes ago, clean, nothing awaiting a human decision.** Workspaces down one to 23, leftover branches flat at 32.
+**Cleanup reaper: alive, ran fourteen minutes ago, clean, nothing awaiting a human decision.** Workspaces back up one to 24, leftover branches flat at 32.
 
 **Discord: nothing new since your last message.** Genuinely empty rather than unread.
 
 ## What's moving
 
-**The trait system finally has a manual page and an agreed vocabulary.** Traits are the marks a character accumulates — a reputation earned, a curse taken, a skill mastered, a personality that hardened one way rather than another — and they are the hook almost every other system hangs off. Until 19:45 tonight there was no page explaining them and no shared list of what the words mean, so every session that touched traits worked the vocabulary out again from the code, and sometimes got it wrong. That is now written down in both places: a manual page in the in-game wiki, and a glossary entry set.
+**Every rule in the game that asks "does this person carry that mark?" has been answering no since the day those rules were written — and this hour fixed two-thirds of them.**
 
-Forty-two minutes of build. On the way out it noted two housekeeping gaps — a plan index that has not been regenerated in a while, and sixteen glossary terms that exist in the detailed files but never made it into the index sessions actually read. Both are filed and both are small.
+Characters accumulate marks: a reputation earned, a curse taken, a craft mastered, a temperament that hardened one way rather than another. Sixty-two places in the written content named marks that don't exist under those names — the content said `master_smith`, the game's own list said `Master Smith`. Close enough for a person to read past, not close enough for the machine, and nothing had ever compared the two lists. So mortals who genuinely earned a reputation got no steering from it: no ambitions nudged, no encounters varied. Forty of the sixty-two now point at real marks. The remaining twenty-two name marks the design clearly wants but nobody has minted yet — filed as its own job rather than papered over.
 
-**In your terms:** the game now has a written rulebook entry for the marks characters carry, instead of each scribe reconstructing it from the ledgers every time.
+**The part worth telling you is how it got built.** The job carried a note saying *don't start this until the vocabulary work is finished* — rewriting sixty-two labels before agreeing what the labels mean would only mean doing it twice. The crew picked the job up at the top of four separate hours, read that note, and put it back down each time, taking something else instead. On the fifth hour — after the vocabulary work shipped at quarter to eight — it picked the job up and built it in thirty-eight minutes. **The note did exactly what it was written to do, four times, unprompted.**
+
+**In your terms:** the marks your people carry mean something to the world again, and the crew has shown it can be trusted to wait its turn.
 
 ---
 *Standing asks live in [`Design/user-actions.md`](user-actions.md). This file is regenerated hourly by the `keep-work-flowing-cc` scheduled task; staleness is visible from the Generated timestamp above and the task's `lastRunAt` in `list_scheduled_tasks`.*
