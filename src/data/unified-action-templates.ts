@@ -5692,13 +5692,49 @@ export const CACHE_REGISTERED_REGIONAL_TEMPLATES: readonly UnifiedActionTemplate
     .filter((t): t is UnifiedActionTemplate => t !== undefined);
 
 /**
+ * Id → template index over the two registries this lookup owns, built once on first
+ * call (THR-811).
+ *
+ * Derived-constant cache, not session state: both source arrays are built once at
+ * module init (`UNIFIED_ACTION_TEMPLATES` from `RAW_UNIFIED_ACTION_TEMPLATES.map`,
+ * `ASCENDANT_POOL_BEAT_TEMPLATES` as a readonly spread) and nothing mutates either
+ * afterwards, so the index cannot go stale across sessions the way an engine cache
+ * would. That is why it sits at module scope rather than on `SimulationRuntime`,
+ * alongside the same-shaped `FACTION_ENCOUNTER_META`.
+ *
+ * Built lazily rather than eagerly because this module participates in an import
+ * cycle with the engine (`withGroupAffinity`, `DECAY_CONSTANTS`) — a top-level
+ * `new Map(...)` over `UNIFIED_ACTION_TEMPLATES` would read it during module
+ * evaluation and can observe the TDZ hole depending on which side is entered first.
+ */
+let unifiedTemplateIndex: Map<string, UnifiedActionTemplate> | undefined;
+
+function getUnifiedTemplateIndex(): Map<string, UnifiedActionTemplate> {
+  if (unifiedTemplateIndex === undefined) {
+    const index = new Map<string, UnifiedActionTemplate>();
+    // First-wins, preserving the `.find`-chain precedence this replaces: the earliest
+    // entry within an array, and UNIFIED_ACTION_TEMPLATES ahead of the pool beats.
+    for (const t of UNIFIED_ACTION_TEMPLATES) if (!index.has(t.id)) index.set(t.id, t);
+    for (const t of ASCENDANT_POOL_BEAT_TEMPLATES) if (!index.has(t.id)) index.set(t.id, t);
+    unifiedTemplateIndex = index;
+  }
+  return unifiedTemplateIndex;
+}
+
+/**
  * Look up a template by its ID. Returns undefined if not found.
  * Checks UNIFIED_ACTION_TEMPLATES first, then the ascendant pool-beat templates
  * (THR-514 — intentionally not in UNIFIED_ACTION_TEMPLATES so beats never surface as
  * hand/codex cards), then all encounter pools via getAnyEncounterById.
+ *
+ * THR-811 replaced the two leading linear scans with {@link getUnifiedTemplateIndex}.
+ * Same resolution order, same objects returned — but this runs once per cache entry
+ * per agent per tick in `filterByPrerequisites`, where two `.find` passes over
+ * ~1.5k templates measured 4× the cost of the narrower `getAnyEncounterById` it
+ * replaced there. The trailing pool fallback stays a scan; it is only reached on an
+ * index miss and `getAnyEncounterById` owns its own pools.
  */
 export function getUnifiedTemplateById(id: string): UnifiedActionTemplate | undefined {
-  return UNIFIED_ACTION_TEMPLATES.find(t => t.id === id)
-    ?? ASCENDANT_POOL_BEAT_TEMPLATES.find(t => t.id === id)
+  return getUnifiedTemplateIndex().get(id)
     ?? getAnyEncounterById(id);
 }
