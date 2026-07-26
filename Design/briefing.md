@@ -1,34 +1,41 @@
 # Briefing
 
-**Generated:** 2026-07-26 02:56 local (2026-07-26 00:56 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-07-26 03:54 local (2026-07-26 01:54 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
 ## Needs Christian
 
-**Nothing needs you right now — seventh hour running with a genuinely empty list.** The Nudge Model's four decision points are still coming to you and still none of them is ready: the engine design for how a broken world paces itself, the per-Reach picture language for fate before the big image run, the list of encounters proposed for deletion, and the first rewritten batch for you to score. The audit that produces the third of those is top of the queue and hasn't been picked up yet. Each will arrive here — and as a Discord ping — when there is something real to look at.
+**Nothing needs you right now — eighth hour with a genuinely empty list.** But one of the four Nudge Model decisions heading your way moved for the first time: **the encounter audit finished and merged at 03:24.**
 
-Both questions you answered yesterday stay closed: the five empty projects remain open by your instruction, and the billing block on the automated checks is cleared.
+It read all **561 encounters a mortal can walk into** and sorted them: **282 are good** and need only their nudge hand written, **214 need rewriting**, **65 are proposed for deletion.** That last number is the list you were eventually going to be asked to approve — **and it is not ready to show you yet.** 61 of those 65 are marked "kill" for a reason that isn't creative: the game can't reach them at all, by any path. Whether those should be *wired up* rather than *deleted* is a technical question the agents owe an answer to first, and handing you a deletion list where 94% of it is really a plumbing question would be asking you to rubber-stamp, not decide. It comes to you once that's settled and the list is honest.
+
+**Two things the audit found that are worth your knowing, both agent work to fix:**
+
+- **The top of the guild ladder is unreachable.** An agent can climb to senior and elite rank — and then never once see the content that rank unlocks, because nothing draws it. The reward tier of guild progression has been dead the whole time.
+- **Forty encounters are narrated to the wrong person.** They address the reader as *you* — the god's voice — while being scenes a *mortal* walks into. Exactly backwards for the model you blessed, where the god acts through the nudge and the scene stays with the person living it. They get their narrator swapped during the rewrite pass.
+
+The other three decisions — how a broken world paces itself, the picture language for fate before the big image run, and the first rewritten batch for you to score — are still not ready. Each arrives here, and as a Discord ping, when there's something real to look at.
 
 ## Queue
 
-**Healthy — 13 items ready, nothing in flight, no pull requests open.** The board is completely clear of work-in-progress for the first time tonight, and the next hourly pickup has an unambiguous first item: the audit that reads every encounter a mortal can currently draw and sorts it into keep, rewrite, or kill. It is the only High-priority item on the board and it is what generates the kill list you'll eventually be asked to approve. Nothing is stale, nothing is blocked.
+**Healthy — 12 items ready, nothing in flight, no pull requests open.** Nothing is stale, nothing is blocked.
 
-**The five other Nudge Model pieces sitting in Todo are staged, not stuck.** The audit produces the worklist the content pass executes, so it deliberately runs first.
+**But the encounter rebuild has nothing left to pick up.** The audit was its only queued piece and it shipped; the remaining five sit in Todo, and the engine one is explicitly marked "needs design finalization" — it wants a design pass written before anyone builds from it. So the next hourly pickup will reach for a housekeeping item instead of advancing the thing with momentum. **That's an agent scheduling gap, not yours** — a design session staging the next Nudge Model piece is what unblocks it, and it's recorded in the standing list.
 
 ## Freshness
 
 **Home tree: level with the server, nothing stranded.** The same two familiar leftovers persist and neither blocks anything — one tracked settings edit and Friday's weekly-retro write-up, still untracked and still the only copy anywhere. Both are agent work to land via a docs pull request, not yours.
 
-**Cleanup reaper: alive** — ran sixteen minutes ago; nothing awaiting a human decision.
+**Cleanup reaper: alive** — ran fourteen minutes ago; nothing awaiting a human decision. **Automated checks: healthy** — every run in the recent window green.
 
-**One automated job has been dead for six weeks and nobody noticed — found this run.** The twice-daily sweep that is supposed to release abandoned work claims has failed **every single time it has ever run** — 87 runs, 87 failures, going back to 13 June. It is a one-line import bug, not a billing or infrastructure problem, and the fix is trivial. Nothing was harmed by its absence: the queue has been draining fine and the executor lane never actually got stuck, which is precisely why six weeks passed unnoticed. **This is a technical call and it is the agents' to make, not yours** — recorded as agent work in the standing list so the next grooming or retro pass files it properly.
+**The dead twice-daily job reported last hour is unchanged and still unfiled.** The sweep meant to release abandoned work claims has failed all 87 times it has ever run, since 13 June. It remains a one-line import bug with no live consequence — the queue drains fine without it — and it remains **the agents' call, not yours.** It is carried in the standing list until a grooming or retro pass files it properly.
 
 ## What's moving
 
-**The item from last hour landed on its own, exactly as predicted.** The work that teaches granted traits to actually be checked — an item that says it grants a knack now really does grant it, rather than writing the promise somewhere nothing reads — merged at 02:21 and closed itself. It had been sitting one commit behind the server, and its own session refreshed it without anyone reaching in. That is the second time in two days this specific stall has cleared itself unaided, which settles the question of whether it needs intervention: it does not.
+**The encounter audit shipped — the Nudge Model's first real piece of work is on the board.** It is the map for everything that follows: which encounters survive as they are, which get rewritten, which are proposed to go, and what order the rewriting happens in. That order is the interesting part. Measured against an actual run, **91% of everything a player sees comes from a single family of encounters** — 48 of those need rewriting, and fixing just them flips the felt quality of a whole session. The guild content, by contrast, is 166 templates that drew *nothing* across 166 ticks and 368 agents. So the work is now ordered by what you'd actually notice, not by what's biggest.
 
-**The Nudge Model is now the only thing on the board with momentum.** The design landed last night and was broken into six pieces; the first executable one is queued and waiting. In your terms: an encounter stops being a menu of futures someone wrote for you and becomes a test with real odds. You see what the world is about to do, you spend to lean on it — a hand of nudges authored for that specific scene — and then fate picks the outcome. You push on the physics; you don't choose the ending.
+**In your terms:** the pivot you blessed last night now has its inventory. An encounter stops being a menu of futures someone wrote for you and becomes a test with real odds — you see what the world is about to do, you spend to lean on the physics, and fate picks the ending. This audit is the honest accounting of how much of the existing world is ready to be played that way, and it turns out half of it already is.
 
 ---
 *Standing asks live in [`Design/user-actions.md`](user-actions.md). This file is regenerated hourly by the `keep-work-flowing-cc` scheduled task; staleness is visible from the Generated timestamp above and the task's `lastRunAt` in `list_scheduled_tasks`.*
