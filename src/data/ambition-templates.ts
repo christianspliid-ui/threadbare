@@ -311,7 +311,10 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     completion: { requires: 2, of: 3 },
     abandonmentTriggers: [
       {
-        condition: { type: 'agent_lacks_trait', trait: 'living' },
+        // THR-808: was `agent_lacks_trait: 'living'`. No producer has ever minted a
+        // `living` trait, so the gate was permanently false and this ambition had no
+        // reachable abandonment path. Aliveness is engine state, not a trait.
+        condition: { type: 'agent_deceased' },
         prose: ['The founder fell before the foundation set.'],
       },
     ],

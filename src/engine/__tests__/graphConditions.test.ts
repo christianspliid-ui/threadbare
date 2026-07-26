@@ -299,6 +299,42 @@ describe('evaluateGraphCondition', () => {
     });
   });
 
+  // ── agent_deceased (THR-808) ─────────────────────────────────
+  describe('agent_deceased', () => {
+    const cond: GraphCondition = { type: 'agent_deceased' };
+
+    it('returns true when the agent carries the engine death flag', () => {
+      const graph = createMockGraph([{ id: 'a1', properties: { deceased: true } }], []);
+      expect(evaluateGraphCondition(cond, graph, 'a1')).toBe(true);
+    });
+
+    it('returns false for a living agent', () => {
+      const graph = createMockGraph([{ id: 'a1', properties: { deceased: false } }], []);
+      expect(evaluateGraphCondition(cond, graph, 'a1')).toBe(false);
+    });
+
+    it('returns false when the agent has no death flag at all', () => {
+      const graph = createMockGraph([{ id: 'a1', properties: {} }], []);
+      expect(evaluateGraphCondition(cond, graph, 'a1')).toBe(false);
+    });
+
+    it('fails soft to false on a missing node, unlike target_agent_eliminated', () => {
+      // The divergence is deliberate — see the case comment in graphConditions.ts.
+      // `phaseAmbitionProgress` reaches this by walking live `actor` nodes, so absence
+      // is unreachable in production; treating it as death would import the sibling's
+      // auto-complete pathology (THR-812) into a condition that has no need of it.
+      const graph = createMockGraph([], []);
+      expect(evaluateGraphCondition(cond, graph, 'a1')).toBe(false);
+    });
+
+    it('reads `deceased` and not the never-written `eliminated` spelling', () => {
+      // `properties.eliminated` has no writer anywhere in the repo (THR-812). Pinning
+      // this stops a future edit from quietly widening the predicate onto a phantom.
+      const graph = createMockGraph([{ id: 'a1', properties: { eliminated: true } }], []);
+      expect(evaluateGraphCondition(cond, graph, 'a1')).toBe(false);
+    });
+  });
+
   // ── target_agent_eliminated ──────────────────────────────────
   describe('target_agent_eliminated', () => {
     it('returns true when target agent is marked eliminated', () => {

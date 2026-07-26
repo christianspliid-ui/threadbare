@@ -30,6 +30,24 @@ export interface ConditionGraph {
 }
 
 /**
+ * The engine's death flag, in one place (THR-808).
+ *
+ * `properties.deceased === true` is the *only* death signal with real writers —
+ * `aspects.ts` sets it when a mortal is consumed, `groups/bandOpposition.ts` when a
+ * victim falls, and `agentLifecycle` / `groupCohesion` / the three personality phases
+ * all read it. Two neighbouring spellings are deliberately NOT accepted here because
+ * nothing in the repo writes either one, so honouring them would encode a phantom:
+ *
+ * - `properties.status === 'dead'` — read once (`phaseInitiativeProgress`), written
+ *   nowhere.
+ * - `properties.eliminated === true` — read once (`target_agent_eliminated`, below),
+ *   written nowhere. See THR-812.
+ */
+function isDeceased(node: { properties: Record<string, unknown> }): boolean {
+  return node.properties.deceased === true;
+}
+
+/**
  * Evaluate a single GraphCondition against the world graph for a given agent.
  * Pure function — reads graph state, returns boolean, no side effects.
  * Fails soft: returns false for any missing data rather than throwing.
@@ -75,6 +93,17 @@ export function evaluateGraphCondition(
         { traitId: condition.trait },
       );
 
+    // THR-808. Deliberately fails soft to `false` on a missing node, unlike its
+    // `target_agent_eliminated` sibling below: `phaseAmbitionProgress` walks live
+    // `actor` nodes to reach this, so the agent always exists at call time, and
+    // treating absence as death would import the sibling's auto-complete pathology
+    // into a condition that has no need of it.
+    case 'agent_deceased': {
+      const agent = graph.getNode(agentId);
+      if (!agent) return false;
+      return isDeceased(agent);
+    }
+
     case 'agent_has_bonds': {
       const edges = graph.getOutgoingEdges(agentId, 'relates_to');
       const count = edges.filter((e) => e.properties.basis === condition.basis).length;
@@ -111,6 +140,13 @@ export function evaluateGraphCondition(
       return loc.properties.regionId !== condition.region;
     }
 
+    // NOT wired to `isDeceased`, deliberately (THR-808 → THR-812). `properties
+    // .eliminated` has no writer anywhere in the repo, so the property branch is
+    // permanently false and the `!target` fallback is this condition's only true-path
+    // — inverted-risk: a target that genuinely dies keeps its node (with
+    // `deceased: true`) and never satisfies this, while an unresolvable ref satisfies
+    // it immediately. Repointing it at the real flag changes live vengeance-ambition
+    // behaviour, so it is THR-812's change to make and verify, not a drive-by here.
     case 'target_agent_eliminated': {
       const target = graph.getNode(condition.targetRef);
       if (!target) return true; // node gone = eliminated

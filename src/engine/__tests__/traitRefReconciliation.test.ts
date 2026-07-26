@@ -22,6 +22,20 @@
  * a ref cannot silently leave this list without someone updating it deliberately —
  * which is the accounting Done-when #2 asked for ("no ref deleted merely to silence
  * the sweep"). A bare `toBeLessThan(23)` would let content rot back in under the cap.
+ *
+ * ── THR-808 — 22 → 21 ─────────────────────────────────────────────────────────────
+ *
+ * `living` is gone: it was never a trait but an aliveness check, and the engine already
+ * models aliveness as `properties.deceased`. It became the `agent_deceased` graph
+ * condition, restoring the only abandonment path `ambition_found_dynasty` had.
+ *
+ * THR-808 also sharpened the premise above. "Every trait producer mints from a closed
+ * hardcoded set" holds for the five **trait-node** producers, but a `trait_grant`
+ * effect on an **attachment** is an *open* producer — `collectGrantedTraits` returns
+ * the bare key and every gate consumer unions it in, which is how the phantom grants
+ * counted below close their gates today. So minting is available for the remaining 21,
+ * at the stated cost of a key with no definition (no display name, no visibility, no
+ * `domainContributions`). Which of the three routes each concept deserves is THR-813.
  */
 import { describe, it, expect } from 'vitest';
 import { WorldGraph } from '../graph';
@@ -72,14 +86,29 @@ const KNOWN_DEAD = {
    */
   destiny: ['destiny_fulfilled', 'destiny_marked', 'destiny_rejected', 'destiny_tested'],
   /**
-   * Not traits at all — miscoded as `agent_has_trait` because that was the available
-   * condition shape. `living` is an aliveness check; `rare_ore_secured` is resource
-   * state. Both want a new `AmbitionCondition` variant, not a trait definition.
+   * Resource state miscoded as `agent_has_trait` because that was the available
+   * condition shape.
+   *
+   * THR-808 expected this to be a sibling of `living` — one small condition variant
+   * for both. It is not. `living` had a live engine concept behind it (the `deceased`
+   * flag) and became `agent_deceased`; this one has nothing to read. **No `resource`
+   * node is ever created** anywhere in `src/`, despite `'resource'` being declared in
+   * `NodeType`, and every `controls` edge in the repo targets a `location`. A
+   * condition variant here would be gate theater — it needs a resource/possession
+   * model first, which puts it with `noLiveCounterpart` in practice. See THR-813.
+   *
+   * Harmless meanwhile: it is the `forge_materials` milestone on
+   * `ambition_forge_legend`, which is `requires: 2, of: 3` with two live milestones.
    */
-  notATrait: ['living', 'rare_ore_secured'],
+  noResourceModel: ['rare_ore_secured'],
   /**
    * Narrative progress flags an ambition would have to mint about its own bearer.
    * No producer exists and none is implied by the trait layer as it stands.
+   *
+   * Each is the *sole* abandonment trigger on its ambition (`reclaim homeland`,
+   * `protect kin`, `flee the blight`), so all three currently run to completion or
+   * forever — measured while resolving `living`, which was the fourth of that set.
+   * THR-813 carries the producer decision.
    */
   unproducedFlags: ['accepted_exile', 'homeless_wanderer', 'made_peace_with_the_land'],
   /**

@@ -21,6 +21,15 @@ export type GraphCondition =
   | { type: 'agent_controls_location'; locationType: string }
   | { type: 'agent_has_trait'; trait: string }
   | { type: 'agent_lacks_trait'; trait: string }
+  /**
+   * The pursuing agent is dead (THR-808).
+   *
+   * Self-referential twin of `target_agent_eliminated`, and the honest shape for the
+   * "abandon when the agent dies" beat that content previously wrote as
+   * `agent_lacks_trait: 'living'` — aliveness is engine state, not a trait, and no
+   * producer has ever minted a `living` trait, so that gate was permanently false.
+   */
+  | { type: 'agent_deceased' }
   | { type: 'target_agent_eliminated'; targetRef: string }
   | { type: 'agent_in_region'; region: string }
   | { type: 'agent_not_in_region'; region: string };
