@@ -181,6 +181,9 @@ describe('condition_attachment aftermath effect', () => {
         .filter(e => e.target === 'trait.condition.wounded');
       expect(edges).toHaveLength(CONDITION_ATTACHMENT_DEFAULT_STACK_COUNT);
       expect(edges[0].properties.durationTicks).toBe(CONDITION_WOUNDED_DURATION);
+      // THR-761: durationTicks is provenance only — ticksRemaining is what the decay
+      // loop reads, so assert it too. Expiry itself is covered in conditionExpiry.test.ts.
+      expect(edges[0].properties.ticksRemaining).toBe(CONDITION_WOUNDED_DURATION);
       expect(edges[0].properties.intensity).toBe(CONDITION_DEFAULT_INTENSITY);
     });
 
@@ -206,6 +209,7 @@ describe('condition_attachment aftermath effect', () => {
       const edges = next.graph.getOutgoingEdges('actor-hero', 'has_trait')
         .filter(e => e.target === 'trait.condition.wounded');
       expect(edges[0].properties.durationTicks).toBe(6);
+      expect(edges[0].properties.ticksRemaining).toBe(6); // THR-761
     });
 
     it('falls back to template default when durationOverride is invalid (<= 0)', () => {
@@ -218,6 +222,7 @@ describe('condition_attachment aftermath effect', () => {
       const edges = next.graph.getOutgoingEdges('actor-hero', 'has_trait')
         .filter(e => e.target === 'trait.condition.wounded');
       expect(edges[0].properties.durationTicks).toBe(CONDITION_WOUNDED_DURATION);
+      expect(edges[0].properties.ticksRemaining).toBe(CONDITION_WOUNDED_DURATION); // THR-761
     });
   });
 

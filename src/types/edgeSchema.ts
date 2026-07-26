@@ -69,7 +69,7 @@ export const EDGE_SCHEMA: Record<EdgeType, EdgeSchema> = {
     direction: 'directed',
     cardinality: 'many-to-many',
     requiredProperties: [],
-    description: 'Actor, location, or sublocation has a trait. Edge properties: level, tick, decay, appliedAt, durationTicks, intensity, sourceEncounterId.',
+    description: 'Actor, location, or sublocation has a trait. Edge properties: level, tick, decay, appliedAt, ticksRemaining, durationTicks, intensity, sourceEncounterId. ticksRemaining is the live countdown decayConditions decrements (absent = never expires); durationTicks is the authored total kept as provenance (THR-761).',
   },
 
   // ── Possession ─────────────────────────────────────────────

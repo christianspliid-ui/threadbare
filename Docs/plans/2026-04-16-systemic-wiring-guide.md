@@ -1016,7 +1016,9 @@ The executor (a) resolves `templateId` from `condition-trait-content`, (b) looks
 
 **Key constants:** `CONDITION_WOUNDED_DURATION = 24` (2 game days), `WOUND_INCAPACITATION_CHECK_DIFFICULTY = 0.4`, `CONDITION_ATTACHMENT_DEFAULT_STACK_COUNT = 1`.
 
-**Verification:** `src/engine/__tests__/conditionOverflow.test.ts` (overflow pipeline), `src/engine/__tests__/conditionAttachment.test.ts` (aftermath effect).
+**Durations expire on `ticksRemaining`, not `durationTicks` (THR-761, fixed 2026-07-26).** `decayConditions` (`src/engine/conditionDecay.ts`) is the only tick-driven expiry path and it counts down the `has_trait` edge property **`ticksRemaining`**. Both `apply_condition` and `condition_attachment` now write it alongside `durationTicks`; before this they wrote only `durationTicks`, which has no production reader, so every authored duration was decorative and the condition was permanent. As a content author you do not need to do anything — author `durationTicks` (or let `CONDITION_DURATIONS` supply the default) and expiry follows. If you add a **new** site that mints a `has_trait` edge meant to expire, write `ticksRemaining`: the two fields are kept distinct on purpose (`ticksRemaining` = live counter, `durationTicks` = authored total kept as provenance and as the duration-UI denominator), and a duration of `0` means indefinite, expressed by omitting `ticksRemaining` entirely.
+
+**Verification:** `src/engine/__tests__/conditionOverflow.test.ts` (overflow pipeline), `src/engine/__tests__/conditionAttachment.test.ts` (aftermath effect), `src/engine/__tests__/conditionExpiry.test.ts` (expiry through the real decay loop — asserts the condition is *gone*, not merely that the edge was written).
 
 ---
 

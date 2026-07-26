@@ -229,6 +229,9 @@ describe('apply_condition', () => {
     expect(edges[0].target).toBe('trait.condition.grieving');
     expect(edges[0].properties?.intensity).toBe(0.6);
     expect(edges[0].properties?.durationTicks).toBe(200);
+    // THR-761: `ticksRemaining` is the field decayConditions counts down; asserting
+    // `durationTicks` alone passed while the condition was in fact permanent.
+    expect(edges[0].properties?.ticksRemaining).toBe(200);
     expect(edges[0].properties?.appliedAt).toBe(10);
   });
 
