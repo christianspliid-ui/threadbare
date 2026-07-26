@@ -3092,6 +3092,32 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "**Workaround:** read the tool's own log before accepting a ticket's narrative about what the tool did. A scheduled task that writes a timestamped log is a primary source; the ticket is a secondary one written from memory hours later. The decisive evidence was *inside a single run*: the removal `WARN` and a `skipped orphan dir (recent activity)` line name the **same path two lines apart**, proving one guard in that very run knew the session was alive while the other did not ask. **The generalisable rule:** when a ticket asserts a causal window (\"X merged at T, reaper ran at T+2min\"), the window is a claim to verify, not a premise to build on — same class as impediment #220 (a ticket's stated error count is an estimate) and the project's \"verify the noun before the verb\" debugging protocol, one level up: verify the *timeline* before the fix. **Corollary for fix selection:** when forensics contradict the ticket, implement the evidenced fix, keep the ticket's candidate only if it is cheap defence-in-depth, and say plainly in the closeout which one is load-bearing.",
     "session": "THR-797 hourly `tb-opus-pickup`, Opus."
+  },
+  {
+    "num": "222",
+    "id": 222,
+    "count": 1,
+    "date": "2026-07-26",
+    "category": "unclear-requirements",
+    "description": "**A design-settled plan can prescribe a route whose substrate is dead, so executing the ticket verbatim would have failed the ticket's own Done-when.** THR-779's plan gave two clauses: register 17 orphaned templates in the encounter-cache path, and *gate the guild tier behind existing `encounterChains` prerequisites* “so the reward tier unlocks with rank as authored”. The second clause is unexecutable: `recordChainStageCompletion` has **zero production callers**, and `agent.properties.chainProgress` is read by four modules (`encounterFilterPipeline`, `encounterScoring`, `phaseAttention`, `kpi/branchingDistance`) and written by none. Chain progress is therefore permanently `{}`, `isChainStageUnlocked` returns true only for stage 0, and any template placed at chain stage ≥ 1 is undrawable forever.",
+    "consequence": "Applying the gate as written would have moved 12 of the 17 templates from *unreachable by scale* to *unreachable by an unopenable gate* — zero net change to reachability, while the ticket, the audit correction and the changelog all recorded the guild reward tier as fixed. The ticket's Done-when (“the 17 are drawable”) would have been false for 12 of them, and the regression test, had it been written against the gated path, would have encoded the breakage as correct.",
+    "impact": "M",
+    "workaroundFound": true,
+    "workaround": "**Workaround:** executed the reachability clause in full (all 17 wired, verified 17/17 against a live seed-42 world) and split the gate clause out to THR-803, which carries the missing write path, the 6 dead starter-chain stages the same defect hides, and the gate itself. Recorded the omission in the plan's audit doc, the wiki page, the changelog and the PR body rather than dropping it silently. **Durable fix:** when a plan names an existing mechanism as the route for a new behaviour, verify that mechanism's *write* half has a production caller before building on it — a read-only subsystem type-checks, tests green, and looks alive from the call site. This is the same shape as THR-786's phantom trait gate, THR-787's `category` dead read and THR-801's undeclared fields: a consumer aimed at state nothing produces. Grep for callers of the state-mutating function, not just for importers of the module.",
+    "session": "THR-779 hourly pickup (tb-opus-pickup), wiring the 17 orphaned mortal-affinity templates."
+  },
+  {
+    "num": "223",
+    "id": 223,
+    "count": 1,
+    "date": "2026-07-26",
+    "category": "tooling",
+    "description": "**Registering a template into the encounter-cache path is a silent no-op when the template declares no `locationSubtypes`, because the cache matches on exactly that field.** `buildEntriesForLocationAndSublocations` attaches supplemental templates with `tmpl.locationSubtypes?.includes(locationType)`, so `undefined` matches nothing and the template registers at **no location at all**. Three of THR-779's 17 templates (`fa.bounty_hunt`, `fa.alliance_ceremony`, `fa.conclave_debate`) shipped with the field absent entirely. Note the seeded-family path has the *opposite* default — `matchFamilyTemplate` only filters when `locationSubtypes` is present, so “no restriction” means “matches everywhere” there and “matches nowhere” in the cache.",
+    "consequence": "The registration would have appeared complete — array populated, consumer wired, id list correct, tests over the id list green — while 3 of 17 templates stayed exactly as orphaned as before. The failure reproduces the very bug being fixed, and an id-list-only regression test would have certified it.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "**Workaround:** authored `locationSubtypes` on the three `fa.*` templates, and added an explicit suite assertion that every registered template declares a non-empty `locationSubtypes` — separate from the id-list assertion, because the id list cannot detect this. The load-bearing test drives a real `EncounterCacheManager` over worldgen-minted locations and asserts all 17 appear; it was **falsified** by deleting the cache consumer and confirming it goes red naming all 17. **Durable fix:** when two draw paths read the same optional field with opposite absent-value semantics, assert the field's presence at the registration site rather than trusting the type — `locationSubtypes?:` is legally absent, so tsc cannot catch it.",
+    "session": "THR-779 hourly pickup (tb-opus-pickup)."
   }
 ];
 // ── End data ──

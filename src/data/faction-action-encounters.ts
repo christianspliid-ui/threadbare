@@ -212,6 +212,11 @@ export const FA_BOUNTY_HUNT_TEMPLATE: UnifiedActionTemplate = {
   reach: 'shadow',
   crudType: 'delete',
   scale: 'regional',
+  // THR-779: regional scale is skipped by the array-scored draw path, so this template
+  // reaches agents through the scale-agnostic encounter cache instead — which matches on
+  // locationSubtypes. Without this line it registers at no location and stays orphaned.
+  // A bounty is posted where the faction keeps a presence and a hunt can be provisioned.
+  locationSubtypes: ['town', 'city', 'capital', 'fort'],
   apCost: 1,
   actorAffinities: ['individual'],
   motivations: ['honesty_cunning', 'mercy_ruthlessness'],
@@ -281,6 +286,9 @@ export const FA_ALLIANCE_CEREMONY_TEMPLATE: UnifiedActionTemplate = {
   reach: 'heart',
   crudType: 'create',
   scale: 'regional',
+  // THR-779: see fa.bounty_hunt — cache registration requires a locationSubtypes match.
+  // A concordat between factions is formalised at a seat of authority.
+  locationSubtypes: ['city', 'capital'],
   apCost: 1,
   actorAffinities: ['individual'],
   motivations: ['mercy_ruthlessness', 'loyalty_ambition'],
@@ -437,6 +445,9 @@ export const FA_CONCLAVE_DEBATE_TEMPLATE: UnifiedActionTemplate = {
   reach: 'heart',
   crudType: 'update',
   scale: 'regional',
+  // THR-779: see fa.bounty_hunt — cache registration requires a locationSubtypes match.
+  // A conclave convenes where the faction's leadership sits.
+  locationSubtypes: ['city', 'capital'],
   apCost: 1,
   actorAffinities: ['individual'],
   motivations: ['preservation_transformation', 'loyalty_ambition'],

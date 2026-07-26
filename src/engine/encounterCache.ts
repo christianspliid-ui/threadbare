@@ -29,7 +29,10 @@ import type { HexTile, SphereName } from '../types/index';
 import type { GraphNode } from '../types/graph';
 import type { WorldGraph } from './graph';
 import { getEncountersByLocationType, getEncountersBySublocationAndLocation } from '../data/encounter-content';
-import { LOCATION_BRANCHING_ENCOUNTER_TEMPLATES } from '../data/unified-action-templates';
+import {
+  LOCATION_BRANCHING_ENCOUNTER_TEMPLATES,
+  CACHE_REGISTERED_REGIONAL_TEMPLATES,
+} from '../data/unified-action-templates';
 import { hexKey } from '../lib/hexKey';
 import { hexDistance, offsetToCube, cubeToOffset } from '../lib/hexMath';
 import { DANGER_DIFFICULTY_SCALE } from './worldgen/constants';
@@ -250,22 +253,26 @@ function buildEntriesForLocationAndSublocations(
         entries.push(buildEntryUnified(tmpl, locationId, sub.id, subTypeId, difficultyMultiplier));
       }
     }
-    // Also include branching quest templates matched by location type (THR-452)
-    for (const tmpl of LOCATION_BRANCHING_ENCOUNTER_TEMPLATES) {
-      if (tmpl.locationSubtypes?.includes(locationType as never)) {
-        entries.push(buildEntryUnified(tmpl, locationId, null, null, difficultyMultiplier));
-      }
-    }
   } else {
     const templates = getEncountersByLocationType(locationType);
     for (const tmpl of templates) {
       entries.push(buildEntryUnified(tmpl, locationId, null, null, difficultyMultiplier));
     }
-    // Also include branching quest templates matched by location type (THR-452)
-    for (const tmpl of LOCATION_BRANCHING_ENCOUNTER_TEMPLATES) {
-      if (tmpl.locationSubtypes?.includes(locationType as never)) {
-        entries.push(buildEntryUnified(tmpl, locationId, null, null, difficultyMultiplier));
-      }
+  }
+
+  // Location-type-matched supplements, appended in both branches alike:
+  //   - branching quest templates (THR-452)
+  //   - regional-scale templates the array-scored path skips by scale (THR-779)
+  // Both are location-level (sublocationId null), so they attach once per location
+  // regardless of how many sublocations it has.
+  for (const tmpl of LOCATION_BRANCHING_ENCOUNTER_TEMPLATES) {
+    if (tmpl.locationSubtypes?.includes(locationType as never)) {
+      entries.push(buildEntryUnified(tmpl, locationId, null, null, difficultyMultiplier));
+    }
+  }
+  for (const tmpl of CACHE_REGISTERED_REGIONAL_TEMPLATES) {
+    if (tmpl.locationSubtypes?.includes(locationType as never)) {
+      entries.push(buildEntryUnified(tmpl, locationId, null, null, difficultyMultiplier));
     }
   }
 

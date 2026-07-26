@@ -13,8 +13,10 @@ issue: THR-776
 |---|---:|---:|
 | **KEEP** — vignette-shaped, clears the rubric; needs only nudge-hand authoring | 282 | 50% |
 | **REWRITE** — sound premise, prose or structure fails | 214 | 38% |
-| **KILL** — orphaned, redundant, or too thin to carry a hand | 65 | 12% |
+| **KILL** — orphaned, redundant, or too thin to carry a hand | 65 → **48** | 12% → 9% |
 | **Total** | **561** | |
+
+> **Kill-list revision, 2026-07-26 (THR-779).** 17 of the 65 KILL entries were orphaned *only* by rule 1 ("no draw path") and carried the WIRE verdict. They are now registered in the encounter-cache path and marked **WIRED** in the per-template tables below, leaving **48 KILL** for WS5 (THR-778) — of which 44 are the `action.*` regional verbs. The 17 have a draw path but have **not** been re-scored against rules 2–11; WS5 classifies them with the rest of the corpus. Per-family KILL counts below are pre-revision.
 
 ## Six findings that change WS5's shape
 
@@ -25,6 +27,10 @@ issue: THR-776
 **3. 61 templates have no draw path at all — and they are almost entirely the top of the guild ladder.** A `regional`-scale template is skipped by `generateUnifiedCandidates` (the array-scored path agents actually use). Three paths were checked before calling anything orphaned: the array-scored path, the encounter-cache path (`ENCOUNTER_TEMPLATES` + `LOCATION_BRANCHING_ENCOUNTER_TEMPLATES`, scale-agnostic), and the seeded-family path (`encounterSeeding.matchFamily`, also scale-agnostic). 61 templates fail all three. 44 are `action.*` verbs carrying `['individual','faction']` — note these are *not* player cards either (player-castable requires `'ascendant'`, THR-659) and the faction phase dispatches from its own `FACTION_ACTION_TEMPLATES` map, not this array. The remaining 17 are `*.senior.*` / `*.elite.*` guild-tier content plus `fa.*` and `monster.encounter.*`. **The reward tier of guild progression is unreachable.**
 
    *Orphan-KILL means "do not spend nudge-authoring effort here", not "delete on sight".* Several of these read like content whose draw path was never wired rather than content that should not exist. Deleting them blind would destroy authored guild-progression content. **THR-779** carries the wire-or-delete decision and must land before WS5 executes the kill list.
+
+   > **RESOLVED 2026-07-26 (THR-779).** The wire-or-delete verdict has executed the WIRE half. **17 wired, 44 remain KILL.** The 17 are registered in `CACHE_REGISTERED_REGIONAL_TEMPLATES` (`src/data/unified-action-templates.ts`) and consumed by `encounterCache.buildEntriesForLocationAndSublocations`, matched on `locationSubtypes` exactly as `LOCATION_BRANCHING_ENCOUNTER_TEMPLATES` is. Their authored `scale` is unchanged — `SCALE_PRIORITY` still orders them as regional. Verified against a live seed-42 medium world: **17/17 attach** (1–38 locations each). The three `fa.*` templates additionally needed `locationSubtypes` authored, having shipped with none — without it, cache registration matches no location and is a silent no-op. Guard: `src/engine/__tests__/regionalCacheRegistration.test.ts`.
+   >
+   > **The rank gate named in the plan was deliberately not applied — see THR-803.** The plan's route was to gate the guild tier behind `encounterChains`, but `recordChainStageCompletion` has **no production caller**: `chainProgress` is read by four modules and written by none, so it is permanently `{}` and any template at chain stage ≥ 1 is undrawable. Applying the gate before that write path exists would have re-orphaned the same 12 guild templates this change rescues. The 44 KILL entries below are unaffected and remain WS5's (THR-778) batch.
 
 **4. Player exposure is concentrated ~10:1 into one family.** Headless seed-42 medium runs (`tick 120` and `tick 360`, the latter stopping at tick 166 on the twilight phase change) produced 93 resolved actions across **85 `encounter.*`**, 4 `reputation.*`, and 1 each of `stone.*` / `eye.*` / `star.*` / `veil.*` — **91% `encounter.*`**. The guild families (106 templates), `npc_*` (16), `social` (14), `tavern` (10) and `borderland` (20) drew **zero** observed actions across 166 ticks with 368 agents. One seed over 166 ticks is weak evidence of *never* but strong evidence of *low share*: it sets the batch order regardless.
 
@@ -42,9 +48,9 @@ Ordered by player exposure first, then by cost-to-value. Batch 1 alone covers ~9
 | **2** | `encounter.*` KEEP set — nudge hands only | 133 | No prose work; pure hand authoring. Cheapest exposure-per-hour in the corpus. |
 | **3** | Branching encounters | 28 | All convert. Highest per-template cost (L difficulty, authored-choice teardown) but they are the flagship surfaces and already carry hero art. |
 | **4** | Social scenes | 30 | Self-contained 5-step arc; the arc maps onto nudge steps almost 1:1. |
-| **5** | Guild families (reachable subset) | 152 | Large but low observed exposure. Do after the reachability decision in finding 3, or the work lands on content no run draws. |
+| **5** | Guild families (reachable subset) | 152 → **164** | Large but low observed exposure. The finding-3 reachability decision has landed (THR-779): the 12 wired `*.senior.*` / `*.elite.*` templates join this batch. |
 | **6** | Long tail (`borderland`, `social`, `tavern`, `npc_*`, `ag`, `army`, `monster`, misc) | 105 | Low exposure, mostly small hands. |
-| — | Kill list | 65 | Not authored against. 61 need a reachability verdict first. |
+| — | Kill list | 65 → **48** | Not authored against. The reachability verdict has landed (THR-779): 17 wired, 44 `action.*` verbs remain KILL alongside the 4 non-orphan KILLs. |
 
 ## Per-family summary
 
@@ -527,19 +533,19 @@ A template is also orphaned when it declares `locationSubtypes` and **none** of 
 | `uk.social.black_market` | KEEP | Clears the rubric — nudge-hand authoring only | place:city · reach:gold · situation:guild | S |
 | `uk.social.gambling_den` | KEEP | Clears the rubric — nudge-hand authoring only | place:city · reach:gold · situation:guild | S |
 | `uk.social.whisper_network` | KEEP | Clears the rubric — nudge-hand authoring only | place:city · reach:shadow · situation:guild | S |
-| `bf.elite.engineer_wonder` | KILL | Orphaned — no draw path (regional scale, no cache/seed route) | place:capital · reach:stone · situation:guild | M |
-| `bf.elite.grand_monument` | KILL | Orphaned — no draw path (regional scale, no cache/seed route) | place:city · reach:stone · situation:guild | M |
+| `bf.elite.engineer_wonder` | WIRED | Wired THR-779 — registered in the encounter-cache path; WS5 re-classifies | place:capital · reach:stone · situation:guild | M |
+| `bf.elite.grand_monument` | WIRED | Wired THR-779 — registered in the encounter-cache path; WS5 re-classifies | place:city · reach:stone · situation:guild | M |
 | `mc.quest.escort_prisoner` | KILL | Redundant — same premise as `cg.quest.escort_prisoner` in the same family | place:town · reach:undefined · situation:guild | S |
-| `mct.elite.market_domination` | KILL | Orphaned — no draw path (regional scale, no cache/seed route) | place:city · reach:gold · situation:guild | M |
-| `mct.elite.trade_summit` | KILL | Orphaned — no draw path (regional scale, no cache/seed route) | place:capital · reach:gold · situation:guild | M |
-| `mct.senior.foreign_deal` | KILL | Orphaned — no draw path (regional scale, no cache/seed route) | place:city · reach:gold · situation:guild | M |
-| `rb.elite.frontier_defense` | KILL | Orphaned — no draw path (regional scale, no cache/seed route) | place:fort · reach:iron · situation:guild | M |
-| `rb.elite.monster_hunt` | KILL | Orphaned — no draw path (regional scale, no cache/seed route) | place:camp · reach:eye · situation:guild | M |
-| `rb.senior.ambush_raiders` | KILL | Orphaned — no draw path (regional scale, no cache/seed route) | place:camp · reach:iron · situation:guild | M |
-| `rb.senior.deep_scout` | KILL | Orphaned — no draw path (regional scale, no cache/seed route) | place:camp · reach:eye · situation:guild | M |
-| `rb.senior.map_unknown` | KILL | Orphaned — no draw path (regional scale, no cache/seed route) | place:camp · reach:eye · situation:guild | S |
-| `ts.elite.found_cathedral` | KILL | Orphaned — no draw path (regional scale, no cache/seed route) | place:city · reach:heart · situation:guild | M |
-| `ts.elite.sphere_convergence` | KILL | Orphaned — no draw path (regional scale, no cache/seed route) | place:shrine · reach:star · situation:guild | M |
+| `mct.elite.market_domination` | WIRED | Wired THR-779 — registered in the encounter-cache path; WS5 re-classifies | place:city · reach:gold · situation:guild | M |
+| `mct.elite.trade_summit` | WIRED | Wired THR-779 — registered in the encounter-cache path; WS5 re-classifies | place:capital · reach:gold · situation:guild | M |
+| `mct.senior.foreign_deal` | WIRED | Wired THR-779 — registered in the encounter-cache path; WS5 re-classifies | place:city · reach:gold · situation:guild | M |
+| `rb.elite.frontier_defense` | WIRED | Wired THR-779 — registered in the encounter-cache path; WS5 re-classifies | place:fort · reach:iron · situation:guild | M |
+| `rb.elite.monster_hunt` | WIRED | Wired THR-779 — registered in the encounter-cache path; WS5 re-classifies | place:camp · reach:eye · situation:guild | M |
+| `rb.senior.ambush_raiders` | WIRED | Wired THR-779 — registered in the encounter-cache path; WS5 re-classifies | place:camp · reach:iron · situation:guild | M |
+| `rb.senior.deep_scout` | WIRED | Wired THR-779 — registered in the encounter-cache path; WS5 re-classifies | place:camp · reach:eye · situation:guild | M |
+| `rb.senior.map_unknown` | WIRED | Wired THR-779 — registered in the encounter-cache path; WS5 re-classifies | place:camp · reach:eye · situation:guild | S |
+| `ts.elite.found_cathedral` | WIRED | Wired THR-779 — registered in the encounter-cache path; WS5 re-classifies | place:city · reach:heart · situation:guild | M |
+| `ts.elite.sphere_convergence` | WIRED | Wired THR-779 — registered in the encounter-cache path; WS5 re-classifies | place:shrine · reach:star · situation:guild | M |
 | `uk.quest.fence_goods` | KILL | Redundant — same premise as `tg.quest.fence_goods` in the same family | place:city · reach:gold · situation:guild | S |
 
 ### borderland — 20 (KEEP 19 · REWRITE 1 · KILL 0)
@@ -660,9 +666,9 @@ A template is also orphaned when it declares `locationSubtypes` and **none** of 
 | `faction.encounter.doubter_chooses` | REWRITE | Vagueness 2.5/100w | place:wild · reach:eye · situation:faction | S |
 | `faction.encounter.inheritance` | REWRITE | Borderline (prose warn / register warn) | place:wild · reach:iron · situation:faction | S |
 | `faction.encounter.leader_at_a_crossroads` | REWRITE | Borderline (prose warn / register pass) | place:wild · reach:heart · situation:faction | S |
-| `fa.alliance_ceremony` | KILL | Orphaned — no draw path (regional scale, no cache/seed route) | place:wild · reach:heart · situation:faction | S |
-| `fa.bounty_hunt` | KILL | Orphaned — no draw path (regional scale, no cache/seed route) | place:wild · reach:shadow · situation:faction | M |
-| `fa.conclave_debate` | KILL | Orphaned — no draw path (regional scale, no cache/seed route) | place:wild · reach:heart · situation:faction | M |
+| `fa.alliance_ceremony` | WIRED | Wired THR-779 — registered in the encounter-cache path; WS5 re-classifies | place:wild · reach:heart · situation:faction | S |
+| `fa.bounty_hunt` | WIRED | Wired THR-779 — registered in the encounter-cache path; WS5 re-classifies | place:wild · reach:shadow · situation:faction | M |
+| `fa.conclave_debate` | WIRED | Wired THR-779 — registered in the encounter-cache path; WS5 re-classifies | place:wild · reach:heart · situation:faction | M |
 
 ### army — 5 (KEEP 5 · REWRITE 0 · KILL 0)
 
@@ -681,8 +687,8 @@ A template is also orphaned when it declares `locationSubtypes` and **none** of 
 | `monster.encounter.ambush` | KEEP | Clears the rubric — nudge-hand authoring only | place:wilderness · reach:iron · situation:monster | M |
 | `monster.hunt.minor` | KEEP | Clears the rubric — nudge-hand authoring only | place:lair · reach:iron · situation:monster | M |
 | `monster.hunt.named_elite` | KEEP | Clears the rubric — nudge-hand authoring only | place:lair · reach:iron · situation:monster | M |
-| `monster.encounter.horde_raid` | KILL | Orphaned — no draw path (regional scale, no cache/seed route) | place:hamlet · reach:iron · situation:monster | M |
-| `monster.encounter.lair_defense` | KILL | Orphaned — no draw path (regional scale, no cache/seed route) | place:lair · reach:iron · situation:monster | M |
+| `monster.encounter.horde_raid` | WIRED | Wired THR-779 — registered in the encounter-cache path; WS5 re-classifies | place:hamlet · reach:iron · situation:monster | M |
+| `monster.encounter.lair_defense` | WIRED | Wired THR-779 — registered in the encounter-cache path; WS5 re-classifies | place:lair · reach:iron · situation:monster | M |
 
 ### misc (action) — 46 (KEEP 0 · REWRITE 2 · KILL 44)
 
