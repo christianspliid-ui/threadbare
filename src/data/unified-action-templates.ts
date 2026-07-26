@@ -5639,11 +5639,15 @@ export const LOCATION_BRANCHING_ENCOUNTER_TEMPLATES: readonly UnifiedActionTempl
  * `monster.encounter.*` templates. The other 44 orphans carry the **DELETE** verdict and
  * are removed in WS5's kill batch (THR-778), not here.
  *
- * Guild-rank gating is deliberately *not* applied here — see THR-803. The plan's route
- * was to gate the guild tier behind `encounterChains`, but `recordChainStageCompletion`
- * has no production caller, so `chainProgress` is never written and any template at chain
- * stage ≥ 1 is permanently undrawable. Gating these before that write path exists would
- * re-orphan the very content this registration rescues.
+ * Guild-rank gating is still deliberately *not* applied here — now see THR-805.
+ * The original reason is gone: THR-803 supplied the missing `recordChainStageCompletion`
+ * caller (and fixed the id-vocabulary mismatch that had made the whole chain gate inert),
+ * so `chainProgress` is written and a stage ≥ 1 template is reachable. What remains is a
+ * design call, not a wiring one — guild rank is already first-class on the `member_of`
+ * edge and `effects.ts` declares a `faction_rank:` predicate, so chains may be the wrong
+ * mechanism; and a chain stage holds exactly one template id while each guild tier holds
+ * several. Gating these on a mechanism not yet chosen would re-orphan the very content
+ * this registration rescues.
  */
 export const CACHE_REGISTERED_REGIONAL_TEMPLATE_IDS: readonly string[] = [
   // Builders' Fellowship — elite tier

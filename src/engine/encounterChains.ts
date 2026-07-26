@@ -27,7 +27,10 @@
  * None — progression is deterministic (complete stage → next unlocks).
  */
 
-import type { ReachDomain } from '../types/traits';
+import type { DomainContributions, ReachDomain } from '../types/traits';
+import type { WorldGraph } from './graph';
+import { emitTrace } from './traceBuffer';
+import { touchStructure, touchWorld, type SimulationRuntime } from './simulationRuntime';
 import {
   CHAIN_COMPLETION_CAPABILITY_BONUS,
   CHAIN_STAGE_SCORE_BONUS,
@@ -62,23 +65,38 @@ export interface ChainProgress {
 
 // ─── Starter Chains ────────────────────────────────────────────
 
+/**
+ * Stage ids are **live `UnifiedActionTemplate` ids** and must stay that way.
+ *
+ * THR-803: these were authored as bare keys (`knowledge_test`) while every real
+ * template is `encounter.knowledge_test`. `templateToChains` is keyed by stage id
+ * and every consumer looks up `entry.templateId` (the real, prefixed id), so no
+ * lookup ever hit — `isChainStageUnlocked` fell through its "not part of any chain"
+ * branch and returned `true` for all nine stages, `computeChainBonus` returned 0,
+ * and `classifyChainStage` reported false. The whole subsystem was inert rather
+ * than, as first reported, gating stages shut. Two vocabularies that never
+ * intersected — the same shape as the trait-ref defect in THR-800.
+ *
+ * A new chain's stages must therefore name ids that exist in the template pool;
+ * `chainStagesResolveToTemplates` in the test suite is the guard.
+ */
 export const ENCOUNTER_CHAINS: EncounterChain[] = [
   {
     id: 'chain.scholars_path',
     name: "The Scholar's Path",
-    stages: ['knowledge_test', 'forbidden_tome', 'arcane_duel'],
+    stages: ['encounter.knowledge_test', 'encounter.forbidden_tome', 'encounter.arcane_duel'],
     primaryReach: 'eye',
   },
   {
     id: 'chain.rise_through_ranks',
     name: 'Rise Through the Ranks',
-    stages: ['recruit_militia', 'guild_negotiation', 'arena_combat'],
+    stages: ['encounter.recruit_militia', 'encounter.guild_negotiation', 'encounter.arena_combat'],
     primaryReach: 'iron',
   },
   {
     id: 'chain.merchants_gambit',
     name: "The Merchant's Gambit",
-    stages: ['merchants_gambit', 'caravan_deal', 'smuggler_pact'],
+    stages: ['encounter.merchants_gambit', 'encounter.caravan_deal', 'encounter.smuggler_pact'],
     primaryReach: 'gold',
   },
 ];
@@ -262,6 +280,167 @@ export function classifyChainStage(
   }
 
   return { isChainStage: false, isFinalChainStage: false };
+}
+
+// ─── Write path ────────────────────────────────────────────────
+
+/**
+ * Node id for the synthetic trait carrying a completed chain's capability bonus.
+ * One node per (chain, agent) so the bonus is naturally idempotent — a chain can
+ * only be completed once, but a re-entrant call must never stack the boost.
+ */
+function chainMasteryTraitId(chainId: string, agentId: string): string {
+  return `chain_mastery_${chainId}_${agentId}`;
+}
+
+/**
+ * Grant the one-time `CHAIN_COMPLETION_CAPABILITY_BONUS` for a finished chain.
+ *
+ * Mirrors the `applyEncounterGrowth` idiom in `capabilityGrowth.ts`: a synthetic
+ * trait node contributing 1.0 to the chain's `primaryReach`, with the bonus carried
+ * as the `has_trait` edge `level` (capability walks `domainContributions × level`).
+ *
+ * Idempotent: if the mastery edge already exists the grant is skipped, so a double
+ * call cannot stack the boost.
+ *
+ * @returns true when a node/edge was actually added (a structural mutation).
+ */
+function applyChainCompletionBonus(
+  graph: WorldGraph,
+  agentId: string,
+  chainId: string,
+  chainName: string,
+  primaryReach: ReachDomain,
+  tick: number,
+): boolean {
+  const traitNodeId = chainMasteryTraitId(chainId, agentId);
+  const alreadyGranted = graph
+    .getOutgoingEdges(agentId, 'has_trait')
+    .some(e => e.target === traitNodeId);
+  if (alreadyGranted) return false;
+
+  if (!graph.getNode(traitNodeId)) {
+    const domainContributions: DomainContributions = { [primaryReach]: 1.0 };
+    graph.addNode({
+      id: traitNodeId,
+      type: 'trait',
+      name: `Chain Mastery (${chainName})`,
+      properties: {
+        subcategory: 'experience' as string,
+        description: `Completed every stage of ${chainName}.`,
+        importance: 0.4,
+        maxLevel: 1,
+        visibility: 'discoverable',
+        domainContributions,
+        tags: ['experience', 'chain', primaryReach],
+        flavorText: `The whole road walked, end to end.`,
+      },
+    });
+  }
+
+  graph.addEdge({
+    id: `edge_${traitNodeId}`,
+    source: agentId,
+    target: traitNodeId,
+    type: 'has_trait',
+    properties: {
+      level: CHAIN_COMPLETION_CAPABILITY_BONUS,
+      acquiredTick: tick,
+      lastReinforcedTick: tick,
+      source: 'chain_completion',
+      visibility: 'discoverable',
+    },
+  });
+
+  return true;
+}
+
+/**
+ * Record that `templateId` — the encounter an agent just resolved successfully —
+ * completed a stage in one or more chains, and persist the result on the agent.
+ *
+ * **This is the production write half of the subsystem** (THR-803). Before it,
+ * `recordChainStageCompletion` had zero callers, nothing ever wrote
+ * `agent.properties.chainProgress`, and the documented `chain_progress` trace was
+ * never emitted — so `getChainProgress` returned `{ completed: {} }` for every
+ * agent for an entire run and the gate could never open.
+ *
+ * The write lives here rather than in `unifiedActionLifecycle.ts` because
+ * `advanceStep`/`completeUnifiedAction` are pure functions over the action object
+ * with no graph access; the resolution site that owns graph writes is the caller.
+ *
+ * No-ops (no write, no trace) when the template belongs to no chain or advances no
+ * chain, which is the overwhelmingly common case — this runs on every successful
+ * encounter completion.
+ *
+ * Fail-soft: a missing agent node returns an empty result rather than throwing;
+ * the tick loop must never crash on progression bookkeeping.
+ */
+export function applyChainStageCompletion(
+  graph: WorldGraph,
+  agentId: string,
+  templateId: string,
+  tick: number,
+  runtime?: SimulationRuntime,
+): { advanced: boolean; completedChainIds: string[] } {
+  const empty = { advanced: false, completedChainIds: [] as string[] };
+
+  const agentNode = graph.getNode(agentId);
+  if (!agentNode) return empty;
+
+  const progress = getChainProgress(agentNode.properties as Record<string, unknown>);
+  const { updatedProgress, completedChains } = recordChainStageCompletion(templateId, progress);
+
+  // Gate on a real diff, NOT on object identity: recordChainStageCompletion returns a
+  // fresh copy whenever the template belongs to any chain — including the common case
+  // where it advanced nothing (an already-completed stage, or a stage out of order).
+  // Identity would therefore write and trace on every no-op.
+  const advancedChainIds = Object.keys(updatedProgress.completed).filter(
+    id => updatedProgress.completed[id] !== progress.completed[id],
+  );
+  if (advancedChainIds.length === 0) return empty;
+
+  // In-place property write — the node.properties idiom used throughout the engine.
+  // `updateNode` would replace the node object and invalidate handles held elsewhere.
+  agentNode.properties.chainProgress = updatedProgress;
+
+  let structural = false;
+  for (const { chainId, primaryReach } of completedChains) {
+    const chain = ENCOUNTER_CHAINS.find(c => c.id === chainId);
+    structural =
+      applyChainCompletionBonus(
+        graph,
+        agentId,
+        chainId,
+        chain?.name ?? chainId,
+        primaryReach,
+        tick,
+      ) || structural;
+  }
+
+  // Property mutations must participate in `worldVersion` or UI selectors keyed on
+  // it serve stale data; adding the mastery trait is structural, which implies it.
+  if (runtime) {
+    if (structural) touchStructure(runtime);
+    else touchWorld(runtime);
+  }
+
+  // One aggregate trace per advancing completion — transition-fired, never per tick.
+  emitTrace({
+    category: 'chain_progress',
+    tick,
+    agentId,
+    templateId,
+    chainIds: advancedChainIds,
+    stageIndices: advancedChainIds.map(id => updatedProgress.completed[id]),
+    completedChainIds: completedChains.map(c => c.chainId),
+    isChainComplete: completedChains.length > 0,
+    summary: `chain_progress: ${agentId} advanced ${advancedChainIds.join(', ')} via ${templateId}${
+      completedChains.length > 0 ? ` (completed ${completedChains.map(c => c.chainId).join(', ')})` : ''
+    }`,
+  } as any);
+
+  return { advanced: true, completedChainIds: completedChains.map(c => c.chainId) };
 }
 
 /**
