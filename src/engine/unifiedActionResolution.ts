@@ -74,6 +74,7 @@ import type { HexMutation } from '../types/hexMutation';
 import type { RevelationMutation } from './revelationResolver';
 import { applyRevelationMutations } from './revelationResolver';
 import { applyEncounterGrowth } from './capabilityGrowth';
+import { applyChainStageCompletion } from './encounterChains';
 import { handleTierPromotion } from './tierPromotion';
 import { accruePlayerReachPractice } from './phaseAscendantProgression';
 import type { ControlEffect } from '../types/controlEffect';
@@ -1776,6 +1777,22 @@ export function executeStepResult(
       encounterCompleted,
       tick,
     );
+
+    // THR-803: the production write half of encounter chains. This is the site that
+    // owns graph writes for a just-resolved encounter, which is why the call lives
+    // here and not in `unifiedActionLifecycle.ts` (pure, no graph access). Gated on
+    // the *whole encounter* landing successfully — a chain stage is a completed
+    // narrative beat, not a passed step — matching `encounterCompleted` above.
+    // No-ops for the ~all templates that belong to no chain.
+    if (encounterCompleted) {
+      applyChainStageCompletion(
+        state.graph,
+        action.actorId,
+        action.templateId,
+        tick,
+        runtime,
+      );
+    }
   }
 
   const aftermathChanges: EncounterAftermathChange[] = [];
