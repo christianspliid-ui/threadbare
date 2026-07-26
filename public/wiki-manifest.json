@@ -166,6 +166,30 @@
       ]
     },
     {
+      "id": "traits-marks-reference",
+      "file": "traits-marks-reference.html",
+      "title": "Traits & Marks",
+      "blurb": "The trait layer — a named piece of identity that does nothing on its own and everything when something reads it. Definitions as graph nodes and assignments as has_trait edges; the ten categories as lifecycle contracts (acquisition, removal, trigger) rather than labels, with destiny reserved and empty; the four ref forms that all resolve through one predicate; the four hook shapes a trait reacts through, each naming its trait to the player; visible-once-known; and the capped separation between steering what a mortal reaches for and how well they do it.",
+      "section": "Manual",
+      "sources": [
+        "src/types/traits.ts",
+        "src/engine/traits.ts",
+        "src/engine/traitRefIndex.ts",
+        "src/engine/traitRefValidation.ts",
+        "src/engine/culturalTraits.ts",
+        "src/engine/phaseEncounterTraits.ts",
+        "src/engine/phaseReputationTraits.ts",
+        "src/engine/phaseEconomicTraits.ts",
+        "src/data/condition-trait-content.ts",
+        "src/data/core-trait-content.ts",
+        "src/data/economic-trait-content.ts",
+        "src/data/mastery-trait-content.ts",
+        "src/data/personality-trait-content.ts",
+        "src/data/reputation-trait-content.ts",
+        "src/data/trait-modifiers.ts"
+      ]
+    },
+    {
       "id": "factions-cultures-reference",
       "file": "factions-cultures-reference.html",
       "title": "Factions, Cultures & Secrets",

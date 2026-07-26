@@ -28,6 +28,7 @@ export type ULShardId =
   | 'cosmology'
   | 'agents'
   | 'encounters'
+  | 'traits'
   | 'prose'
   | 'graph'
   | 'coordination'
@@ -92,6 +93,7 @@ const SHARD_FILE_TO_ID: Record<string, ULShardId> = {
   'Cosmology.md': 'cosmology',
   'Agents.md': 'agents',
   'Encounters.md': 'encounters',
+  'Traits.md': 'traits',
   'Prose.md': 'prose',
   'Graph.md': 'graph',
   'Coordination.md': 'coordination',
