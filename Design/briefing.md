@@ -1,36 +1,34 @@
 # Briefing
 
-**Generated:** 2026-07-26 01:54 local (2026-07-25 23:54 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-07-26 02:56 local (2026-07-26 00:56 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
 ## Needs Christian
 
-**Nothing needs you right now — sixth hour running with a genuinely empty list.** The Nudge Model does have four decision points coming to you, but **none of them is ready tonight** and none should wake you: the engine design for how a broken world paces itself, the per-Reach picture language for fate before the big image run, the list of encounters proposed for deletion, and the first rewritten batch for you to score. Each will arrive here — and as a Discord ping — when there is actually something to look at. The migration audit has to run first.
+**Nothing needs you right now — seventh hour running with a genuinely empty list.** The Nudge Model's four decision points are still coming to you and still none of them is ready: the engine design for how a broken world paces itself, the per-Reach picture language for fate before the big image run, the list of encounters proposed for deletion, and the first rewritten batch for you to score. The audit that produces the third of those is top of the queue and hasn't been picked up yet. Each will arrive here — and as a Discord ping — when there is something real to look at.
 
-Both questions carried from yesterday stay closed: the five empty projects remain open by your instruction, and the billing block on the automated checks is cleared.
+Both questions you answered yesterday stay closed: the five empty projects remain open by your instruction, and the billing block on the automated checks is cleared.
 
 ## Queue
 
-**Healthy — 13 items ready, one in flight.** The Nudge Model's first executable step is now sitting at the top of the board and it is the only High-priority item there: the audit that reads every encounter a mortal can currently draw and sorts it into keep, rewrite, or kill. Nothing is stale and nothing is blocked — the plan it reads from is on the server, so any session can pick it up.
+**Healthy — 13 items ready, nothing in flight, no pull requests open.** The board is completely clear of work-in-progress for the first time tonight, and the next hourly pickup has an unambiguous first item: the audit that reads every encounter a mortal can currently draw and sorts it into keep, rewrite, or kill. It is the only High-priority item on the board and it is what generates the kill list you'll eventually be asked to approve. Nothing is stale, nothing is blocked.
 
-**One piece of agent work is mid-air and needs no one.** The item that teaches granted traits to actually be checked (rather than written and ignored) is finished, fully green, and waiting to merge — it just fell one commit behind the server when the Nudge Model plan landed ahead of it. Its own session refreshes it; last time this exact stall appeared it cleared itself within the hour. Flagged so it isn't mistaken for a stuck queue.
+**The five other Nudge Model pieces sitting in Todo are staged, not stuck.** The audit produces the worklist the content pass executes, so it deliberately runs first.
 
 ## Freshness
 
-**Home tree: level with the server, nothing stranded.** Two familiar leftovers persist and neither blocks anything — one tracked settings edit and Friday's weekly-retro write-up, still untracked and still the only copy anywhere. Both are agent work to land via a docs pull request, not yours.
+**Home tree: level with the server, nothing stranded.** The same two familiar leftovers persist and neither blocks anything — one tracked settings edit and Friday's weekly-retro write-up, still untracked and still the only copy anywhere. Both are agent work to land via a docs pull request, not yours.
 
-**Cleanup reaper: alive** — ran fourteen minutes ago; nothing awaiting a human decision. **Automated checks: healthy** — the last eight runs all executed their jobs and passed.
+**Cleanup reaper: alive** — ran sixteen minutes ago; nothing awaiting a human decision.
+
+**One automated job has been dead for six weeks and nobody noticed — found this run.** The twice-daily sweep that is supposed to release abandoned work claims has failed **every single time it has ever run** — 87 runs, 87 failures, going back to 13 June. It is a one-line import bug, not a billing or infrastructure problem, and the fix is trivial. Nothing was harmed by its absence: the queue has been draining fine and the executor lane never actually got stuck, which is precisely why six weeks passed unnoticed. **This is a technical call and it is the agents' to make, not yours** — recorded as agent work in the standing list so the next grooming or retro pass files it properly.
 
 ## What's moving
 
-**The Nudge Model is now a real program on the board, not just a blessed idea.** In the last hour the design landed and was broken into six pieces of work: the engine seams underneath it, a rebuilt encounter-writing pipeline, the new encounter screen, a reusable picture library, the audit of everything already written, and the content pass that rewrites it. The plan is merged and readable by any session, so the work can start without another design conversation.
+**The item from last hour landed on its own, exactly as predicted.** The work that teaches granted traits to actually be checked — an item that says it grants a knack now really does grant it, rather than writing the promise somewhere nothing reads — merged at 02:21 and closed itself. It had been sitting one commit behind the server, and its own session refreshed it without anyone reaching in. That is the second time in two days this specific stall has cleared itself unaided, which settles the question of whether it needs intervention: it does not.
 
-**The shape of it, in your terms:** an encounter stops being a menu of futures someone wrote for you and becomes a test with real odds. You see what the world is about to do, you spend to lean on it — a hand of nudges authored for that specific scene — and then fate picks the outcome. You are pushing on the physics, not choosing the ending.
-
-**First up is the unglamorous part, deliberately.** Before anything is rewritten, every encounter a mortal can currently draw gets read and judged: keep it, rewrite it into a nudge point, or kill it. That audit produces the worklist everything else follows, and it is what generates the kill list you'll be asked to approve.
-
-**Earlier tonight**, every action card was made to declare who is allowed to hold it — eighteen had shipped without that declaration, and in this engine a missing declaration means *everybody*, not nobody.
+**The Nudge Model is now the only thing on the board with momentum.** The design landed last night and was broken into six pieces; the first executable one is queued and waiting. In your terms: an encounter stops being a menu of futures someone wrote for you and becomes a test with real odds. You see what the world is about to do, you spend to lean on it — a hand of nudges authored for that specific scene — and then fate picks the outcome. You push on the physics; you don't choose the ending.
 
 ---
 *Standing asks live in [`Design/user-actions.md`](user-actions.md). This file is regenerated hourly by the `keep-work-flowing-cc` scheduled task; staleness is visible from the Generated timestamp above and the task's `lastRunAt` in `list_scheduled_tasks`.*
