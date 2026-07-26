@@ -60,6 +60,21 @@ const TODO_CHECK_EXTENSIONS = new Set([
   ".java",
   ".swift",
 ]);
+// Paths whose source legitimately contains bare deferral markers as *data* rather
+// than as deferrals (THR-755 row 3). The drift scanner counts those markers repo-wide,
+// so its own report template (`scripts/drift-scan/index.ts` renders a table row
+// labelled with the marker it counts) matches the pattern it exists to measure — a
+// permanent false ERROR no author can clear, since adding a THR-XXX to the template
+// would corrupt the rendered report. Scoping by path is deliberate over trying to
+// exclude string/template literals: a regex cannot reliably tell code from literal,
+// and a wrong answer here re-opens the false-positive class it is meant to close.
+// (This comment names no marker literally, for the same reason.)
+const TODO_CHECK_SKIP_PATTERNS = [/^scripts\/drift-scan\//u] as const;
+
+function shouldSkipTodoCheck(repoPath: string): boolean {
+  const normalized = repoPath.replaceAll("\\", "/");
+  return TODO_CHECK_SKIP_PATTERNS.some((pattern) => pattern.test(normalized));
+}
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const findings: Finding[] = [];
@@ -165,6 +180,7 @@ function checkTodoAndDeferredReferences(files: string[]): void {
   for (const relPath of files) {
     const ext = path.extname(relPath).toLowerCase();
     if (!TODO_CHECK_EXTENSIONS.has(ext)) continue;
+    if (shouldSkipTodoCheck(relPath)) continue;
     const absPath = path.join(repoRoot, relPath);
     if (!isReadableTextFile(absPath)) continue;
     const lines = readFileLines(absPath);

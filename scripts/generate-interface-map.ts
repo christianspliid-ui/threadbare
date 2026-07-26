@@ -198,6 +198,29 @@ interface Classification {
   staleVerification: boolean;
 }
 
+/**
+ * Second-cause hint appended to every symbol-asymmetry verdict (THR-755 row 4).
+ *
+ * A LEAKED/UNWIRED badge reads as an architectural finding — "nothing produces this
+ * contract", "the consumer is starving" — but the identical evidence is produced by a
+ * row that merely mis-declares `mechanism.symbols` or its site globs: the wiring is
+ * live, the grep just never matched. Naming the cheaper explanation first, with the
+ * literal grep to run, keeps the badge honest without weakening it (impediment #206).
+ */
+function misdeclarationHint(symbols: readonly string[], sites: readonly string[]): string {
+  const symbol = symbols[0] ?? '<symbol>';
+  if (sites.length === 0) {
+    return (
+      ` — or the row under-declares its sites: confirm \`${symbol}\` is the symbol actually` +
+      ` used at the real site, then register that site before treating this as a leak.`
+    );
+  }
+  return (
+    ` — or the declared symbol does not appear at the declared site:` +
+    ` grep '${symbol}' ${sites[0]} before treating this as a leak.`
+  );
+}
+
 function classify(contract: Contract, sources: readonly SourceFile[]): Classification {
   const patterns = contract.mechanism.symbols.map(symbolPattern);
   const writeHits: string[] = [];
@@ -226,16 +249,21 @@ function classify(contract: Contract, sources: readonly SourceFile[]): Classific
     reason = `Tier 1: \`${contract.mechanism.module}\` has zero production importers — the module is an orphan.`;
   } else if (totalHits === 0) {
     mechanical = 'UNWIRED';
-    reason = 'Tier 2: no production hits for any declared symbol on either side.';
+    reason =
+      'Tier 2: no production hits for any declared symbol on either side.' +
+      misdeclarationHint(contract.mechanism.symbols, [...contract.writeSites, ...contract.readSites]);
   } else if (readHits.length === 0) {
     mechanical = 'LEAKED';
     reason =
-      contract.readSites.length === 0
+      (contract.readSites.length === 0
         ? 'Tier 2: the registry declares no read sites and none were found — producer writes into nothing.'
-        : 'Tier 2: write sites present, declared read sites empty — the consumer is starving.';
+        : 'Tier 2: write sites present, declared read sites empty — the consumer is starving.') +
+      misdeclarationHint(contract.mechanism.symbols, contract.readSites);
   } else if (writeHits.length === 0) {
     mechanical = 'LEAKED';
-    reason = 'Tier 2: read sites present, declared write sites empty — nothing produces this contract.';
+    reason =
+      'Tier 2: read sites present, declared write sites empty — nothing produces this contract.' +
+      misdeclarationHint(contract.mechanism.symbols, contract.writeSites);
   } else {
     mechanical = 'UNVERIFIED-OK';
     reason = 'Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.';

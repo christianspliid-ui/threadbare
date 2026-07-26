@@ -2459,7 +2459,6 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
 // ─── Lookup Functions ───────────────────────────────────────
 
 import { SOCIAL_SCENE_TEMPLATES } from './social-scene-templates';
-import type { UnifiedActionTemplate } from '../types/unifiedAction';
 
 export const ALL_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
   ...SOCIAL_SCENE_TEMPLATES,
