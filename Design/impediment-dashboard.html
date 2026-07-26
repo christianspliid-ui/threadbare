@@ -3027,6 +3027,32 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "**Durable fix:** make the helper take a **node id, not a node**, and re-read from the graph itself so no caller can hand it a stale reference; write additions through `graph.updateNode` (it merges) and `delete` on the freshly-read object for removals (`updateNode` merges, so it cannot remove a key). Pinned by a regression test asserting `staleHandle !== graph.getNode(id)` after an `updateNode`. **Generalisable rule:** a `GraphNode` reference is only valid until the next `updateNode` on that id — be suspicious of any function taking a `GraphNode` parameter that also writes to it. **The detection rule that actually caught it:** unit tests over plain objects cannot see this class of bug and neither can the type system; a feature whose effect is *state accumulating over time* needs one live run whose observed count is compared against the count the math predicts. \"The suite is green\" was true and worthless here.",
     "session": "THR-773 Nudge Model WS0, hourly Opus pickup lane."
+  },
+  {
+    "num": "217",
+    "id": 217,
+    "count": 1,
+    "date": "2026-07-26",
+    "category": "engineering",
+    "description": "**An interface-map contract can be \"passing\" on a *comment* mention of its declared symbol, and rewriting that comment turns the row LEAKED with no behavior change.** `attachment-trait-grant-effects` declared `symbols: ['trait_grant', 'hasGrantedTrait']` with four read sites. None of those files calls either symbol — they all call `collectGrantedTraits`. The only thing matching was the string `trait_grant` inside an explanatory comment in `encounterFilterPipeline.ts`. Rewriting that comment during the THR-786 predicate migration dropped the word, and `generate-interface-map` immediately failed the build with \"declared read sites empty — the consumer is starving\".",
+    "consequence": "A green contract row whose evidence is prose, not code. The generator's grep cannot tell a call site from a comment, so a row can certify a live consumer that does not exist — the exact pathology the interface map exists to catch, one level of indirection down. Conversely a cosmetic comment edit can red the build.",
+    "impact": "M",
+    "workaroundFound": true,
+    "workaround": "Repoint `mechanism.symbols` at the symbol the consumers actually call (`collectGrantedTraits`), keeping the authored-payload symbol (`trait_grant`) for the write side, and record why in a comment on the row so the next reader does not \"restore\" the old symbols. When a leak verdict appears after a refactor that changed no wiring, suspect the symbol declaration before the wiring — THR-755 added exactly this hint to the generator's output, and it paid for itself here.",
+    "session": "THR-786 hourly pickup; row re-verified LIVE with the new symbol."
+  },
+  {
+    "num": "218",
+    "id": 218,
+    "count": 1,
+    "date": "2026-07-26",
+    "category": "tooling",
+    "description": "**A new-module PR can add ~20 net-new type errors while `npm test` is fully green, and only `check:typecheck` catches it — nearly all of them from one variance mistake repeated at every call site.** THR-786 added two modules and migrated six call sites; 893 test files / 13350 tests passed, and the ratchet then reported 3517 → 3537 (+20). The dominant cause was declaring a structural graph interface with function-valued **properties** (`getOutgoingEdges: (id: string, type?: string) => …`) instead of **methods**: under `strictFunctionTypes` properties are checked contravariantly, so `WorldGraph` — whose real signature narrows the second parameter to `EdgeType` — was not assignable, producing one error at every one of the six migrated sites plus the tests. (The pre-existing `ConditionGraph` carries the identical bug, which is why some of its call sites already sit in the THR-489 baseline.)",
+    "consequence": "Vitest transpiles without typechecking, so a whole class of interface defect is invisible to the suite. Had the ratchet not been blocking, the PR would have shipped +20 errors and the next ticket would have inherited them as \"pre-existing\".",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Declare structural graph views with **method syntax** so bivariance applies and both `WorldGraph` and narrow test stubs satisfy them. Run `npm run check:typecheck` **before** the full suite when a change adds a module or an interface — it is ~40s against the suite's ~75s and localizes the fault to a file list. Also: an `interface` without an index signature is not assignable to `Record<string, unknown>`, so `properties: {…} as TraitDefinitionProperties` in a `GraphNode` literal is a net-new error — use a plain object literal in test fixtures.",
+    "session": "THR-786 hourly pickup; ratchet returned to 3517 unchanged after the fix."
   }
 ];
 // ── End data ──

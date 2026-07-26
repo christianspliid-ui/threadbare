@@ -447,6 +447,29 @@ export interface DebugBridge {
   getHealthReport: () => Promise<unknown>;
   /** Full diagnostic bundle (health + crash log + counters) as one JSON-serializable blob for attaching to an issue. */
   exportDiagnostics: () => Promise<unknown>;
+  /**
+   * Sweep every authored trait ref against the trait definitions in the live graph
+   * (THR-786). `null` when no game state is loaded.
+   *
+   * A ref in `dead[]` is an authored trait hook that can never fire — it names no
+   * trait id, short id, display name or tag. `perSurface` counts refs *seen* per
+   * surface, so a surface reading 0 means either nothing authored there yet or a
+   * broken sweep; check it before concluding a surface is clean. `highFanout` is
+   * informational only: ANY-match makes a ref shared by several definitions legal.
+   *
+   * `phantomGrants` is the lesser severity: a `trait_grant` key with no trait
+   * definition still satisfies a gate (the grant returns the bare key), but the trait
+   * has no name, visibility or contributions to display.
+   *
+   * Verified baseline 2026-07-26 (64 static trait definitions): **62 dead gates** — 43
+   * ambition `boostingTraits`/`blockingTraits`/`requiredTraits`, 15 ambition
+   * `agent_has_trait`/`agent_lacks_trait` conditions, 4 `has_trait:` choice-set
+   * predicates (`negotiator`, `dauntless`, `leader`, `interrogator`) — plus 21 phantom
+   * grants. Authored refs are bare snake_case keys; every trait definition uses
+   * `trait.<category>.<kebab>` ids, Title Case names and `#tag` tags, so the two
+   * vocabularies have never intersected. Filed as a defect, not fixed by THR-786.
+   */
+  validateTraitRefs: () => Promise<import('./engine/traitRefValidation').TraitRefValidationReport | null>;
   /** Returns a BalanceRunSummary for the current session. Pass endTick to override the current tick. */
   getBalanceSummary: (endTick?: number) => Promise<BalanceRunSummary | null>;
   /** Returns the encounter-decision funnel summary for the current session. */

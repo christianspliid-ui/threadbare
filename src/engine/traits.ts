@@ -12,8 +12,45 @@ import type {
   TraitAssignmentProperties,
   DomainContributions,
   ReachDomain,
+  TraitPredicate,
 } from '../types/traits';
 import { REACH_DOMAINS } from '../types/traits';
+import { collectBearerTraitRefs, bearerMatchesPredicate } from './traitRefIndex';
+import type { BearerTraitRefs } from './traitRefIndex';
+
+/**
+ * Resolve one trait gate against one bearer — the single predicate every trait read
+ * site in the engine routes through (THR-786).
+ *
+ * Semantics are the encounter filter pipeline's, generalized from node ids to refs:
+ * the bearer satisfies the predicate when some trait they hold can be named by
+ * `pred.traitId` (by node id, short id, display name, or tag) at
+ * `level >= pred.minLevel`. Item-granted traits count, at
+ * `GRANTED_TRAIT_EFFECTIVE_LEVEL`, when the caller supplies them.
+ *
+ * `bearerId` is any legal `has_trait` source — mortal, group, faction, culture,
+ * location, or sublocation per the edge schema. Nothing here is actor-specific, which
+ * is what lets later waves put traits on places and artifacts without touching this
+ * function.
+ *
+ * Pass `grantedTraits` whenever item grants should satisfy the gate. It is a parameter
+ * rather than an internal call to keep this module off the `effects/` import graph —
+ * see the note on `collectBearerTraitRefs`.
+ *
+ * For several predicates against one bearer, prefer
+ * `collectBearerTraitRefs` + `bearerMatchesPredicate` to walk the graph once.
+ */
+export function resolveTraitPredicate(
+  graph: WorldGraph,
+  bearerId: string,
+  pred: TraitPredicate,
+  opts?: { grantedTraits?: ReadonlySet<string> },
+): boolean {
+  return bearerMatchesPredicate(collectBearerTraitRefs(graph, bearerId, opts), pred);
+}
+
+export { collectBearerTraitRefs, bearerMatchesPredicate };
+export type { BearerTraitRefs };
 
 /**
  * Get the has_trait edge between a node and a trait, if it exists.

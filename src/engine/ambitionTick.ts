@@ -27,7 +27,8 @@ import {
 import { emitTrace } from './traceBuffer';
 import type { AmbitionMintedTrace } from '../types/trace';
 import { selectAmbitions, type AmbitionAgentSnapshot } from './ambitionSelection';
-import { collectGrantedTraits } from './effects/effectQueries';
+import { collectGrantedTraits, GRANTED_TRAIT_EFFECTIVE_LEVEL } from './effects/effectQueries';
+import { collectBearerTraitRefs } from './traitRefIndex';
 
 // ─── Tunable Constants ───────────────────────────────────────────
 
@@ -80,20 +81,20 @@ export function buildAmbitionAgentSnapshot(
   const caps = (actor?.properties.domainCapabilities as Record<ReachDomain, number>)
     ?? ({} as Record<ReachDomain, number>);
 
-  // Traits: canonical node id + name + tags, so culture-trait ids match too.
-  const traits: string[] = [];
-  for (const e of graph.getOutgoingEdges(actorId, 'has_trait')) {
-    traits.push(e.target);
-    const traitNode = graph.getNode(e.target);
-    if (traitNode) {
-      traits.push(traitNode.name);
-      const tags = traitNode.properties.tags as string[] | undefined;
-      if (tags) traits.push(...tags);
-    }
-  }
-  // Item-granted traits (THR-737): an artifact granting `master_smith` makes its
-  // bearer eligible for the master_smith-gated ambition, the same as owning the trait.
-  traits.push(...collectGrantedTraits(graph, actorId));
+  // Traits (THR-786): every ref form of every trait held — canonical node id, short
+  // id, display name, tags — so culture-trait ids match too. Item-granted traits
+  // (THR-737) are unioned in: an artifact granting `master_smith` makes its bearer
+  // eligible for the master_smith-gated ambition, the same as owning the trait.
+  //
+  // Stays a `string[]` because `AmbitionAgentSnapshot.traits` is a serializable
+  // membership list that `passesEligibility` tests with `includes()`; only its
+  // contents are now produced by the shared walk rather than an inline copy of it.
+  const traits: string[] = [
+    ...collectBearerTraitRefs(graph, actorId, {
+      grantedTraits: collectGrantedTraits(graph, actorId),
+      grantedLevel: GRANTED_TRAIT_EFFECTIVE_LEVEL,
+    }).keys(),
+  ];
 
   const culturalSpheres: SphereName[] = [];
   for (const ce of graph.getOutgoingEdges(actorId, 'belongs_to')) {

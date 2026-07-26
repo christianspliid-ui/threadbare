@@ -18,6 +18,7 @@ import {
   OUTNUMBERED_MARGIN,
 } from '../../data/effect-constants';
 import { DEFAULT_REPUTATION } from '../../types/disposition';
+import { collectBearerTraitRefs } from '../traitRefIndex';
 import { classifyCoLocatedActor } from './actorClassification';
 
 // ═══════════════════════════════════════════════════════════════════
@@ -223,19 +224,24 @@ export function buildPredicateContext(
   const nearWater = biome === 'coastal' || biome === 'river' || biome === 'lake'
     || biome === 'swamp' || biome === 'archipelago';
 
-  // Agent traits
-  const agentTraits = new Set<string>();
-  const traitEdges = graph.getOutgoingEdges(agentId, 'has_trait');
-  for (const te of traitEdges) {
-    const traitNode = graph.getNode(te.target);
-    if (!traitNode) continue;
-    const tags = traitNode.properties.tags as string[] | undefined;
-    if (tags) {
-      for (const tag of tags) agentTraits.add(tag);
-    }
-    const traitName = traitNode.properties.name as string | undefined;
-    if (traitName) agentTraits.add(traitName);
-  }
+  // Agent traits (THR-786). Built from the shared ref walk so `has_trait:`/
+  // `lacks_trait:` sugar accepts every ref form the rest of the engine accepts —
+  // tag, display name, trait node id, and short id.
+  //
+  // Additive at set-build time by design: the predicate check downstream stays a
+  // plain `Set.has` with no graph access, exactly as before. Two changes in what
+  // lands in the set:
+  //   - trait node ids and short ids are new (widening; no shipped content names them)
+  //   - the display name now resolves. This site read `traitNode.properties.name`,
+  //     but every authored trait carries its name at the *node* level with no
+  //     `properties.name` — so the display-name union this site always intended has
+  //     never fired. Same dead-read family as THR-787's category/subcategory.
+  //
+  // Item-granted keys are deliberately NOT unioned here. This site never consulted
+  // them, the plan asks only for the resolved-id union, and reaching
+  // `collectGrantedTraits` from this module would close an import cycle
+  // (`effectQueries` already imports this file for `evaluateOptionalCondition`).
+  const agentTraits = new Set<string>(collectBearerTraitRefs(graph, agentId).keys());
 
   // Reach values
   const reachValues: Partial<Record<ReachDomain, number>> = {};

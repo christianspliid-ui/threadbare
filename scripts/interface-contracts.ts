@@ -102,8 +102,74 @@ const COMPANIES = 'Companies & Group Travel';
 const FACTIONS = 'Factions & Succession';
 const NARRATIVE = 'Attention, Chronicle & Narrative';
 const QUINTESSENCE = 'Spheres & Quintessence';
+const TRAITS = 'Personality & Emergent Traits';
 
 export const CONTRACTS: readonly Contract[] = [
+  // ── Personality & Emergent Traits → outbound (THR-786 first slice) ─────────
+  // Audit-on-touch: this subsystem was ⚪ UNAUDITED until THR-786 unified the six
+  // trait-predicate read sites. These two rows cover the predicate boundary only;
+  // minting, decay, and display remain unwritten (waves 2–3, THR-790/THR-791).
+  {
+    id: 'trait-predicate-resolution',
+    producerSystem: TRAITS,
+    consumerSystem: ENCOUNTERS,
+    intent:
+      'A trait gate anywhere in the engine means the same thing: the world reacts to who someone is, by the same rules whichever system is asking.',
+    ulTerms: ['Trait'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['resolveTraitPredicate', 'collectBearerTraitRefs', 'bearerMatchesPredicate'],
+      module: 'src/engine/traitRefIndex.ts',
+    },
+    writeSites: ['src/engine/traits.ts', 'src/engine/traitRefIndex.ts'],
+    readSites: [
+      'src/engine/encounterFilterPipeline.ts',
+      'src/engine/effects/effectPredicates.ts',
+      'src/engine/graphConditions.ts',
+      'src/engine/ambitionTick.ts',
+      'src/engine/spellActivation.ts',
+    ],
+    verifiedLive: {
+      date: '2026-07-26',
+      evidence:
+        'THR-786. All six pre-existing trait vocabularies now route through `collectBearerTraitRefs` + `bearerMatchesPredicate`: encounter filter pipeline (`requiredTraits`/`blockedByTraits`), effect-predicate context builder (`has_trait:`/`lacks_trait:` sugar), graphConditions (`agent_has_trait`/`agent_lacks_trait`), ambition snapshot eligibility (`buildAmbitionAgentSnapshot`), spell prerequisites (`checkPrerequisites`), and item-granted keys. Non-vacuous by the unchanged-behavior contract suite `src/engine/__tests__/contracts/traitPredicate.contract.test.ts`, which pins each site\'s pre-migration vocabulary (31 PRESERVED assertions, all green pre- and post-migration) and separately asserts the 4 deliberate widenings + 2 dead-read repairs, each of which was verified failing before the migration.',
+    },
+  },
+  {
+    id: 'trait-ref-authoring-vocabulary',
+    producerSystem: TRAITS,
+    consumerSystem: AMBITIONS,
+    intent:
+      'An authored trait hook names a trait the world can actually mint, so a gate the content promises is a gate the player can meet.',
+    ulTerms: ['Trait'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['validateTraitRefs', 'buildTraitRefIndex', 'resolveTraitRefs'],
+      module: 'src/engine/traitRefValidation.ts',
+    },
+    writeSites: [
+      'src/data/ambition-templates.ts',
+      'src/data/choice-set-catalog.ts',
+      'src/data/artifact-templates.ts',
+      'src/data/reward-attachment-catalog.ts',
+    ],
+    readSites: ['src/engine/traitRefValidation.ts', 'src/debug-bridge.ts'],
+    // LEAKED, and measured rather than assumed: `validateTraitRefs()` reports 62 dead
+    // gates against the 64 shipped trait definitions (43 ambition boosting/blocking/
+    // required, 15 ambition graphConditions, 4 `has_trait:` choice-set predicates),
+    // plus 21 phantom grant keys. Authored refs are bare snake_case (`master_smith`,
+    // `pacifist`); definitions use `trait.<category>.<kebab>` ids, Title Case names and
+    // `#tag` tags — the two vocabularies have never intersected. THR-786 built the
+    // detector; reconciling the content is its own pass.
+    badgeOverride: {
+      badge: 'LEAKED',
+      reason:
+        'Detector shipped and measured (THR-786): 62 of the authored trait refs resolve to no trait definition, so those gates can never pass. Reconciling the authoring vocabulary against the minted definitions is content work outside the predicate floor.',
+      deferralTicket: 'THR-800',
+    },
+    deferralTicket: 'THR-800',
+  },
+
   // ── Attachments → outbound ────────────────────────────────────────────────
   {
     id: 'attachment-effects-shape-resolution',
@@ -216,7 +282,15 @@ export const CONTRACTS: readonly Contract[] = [
     consumerSystem: ENCOUNTERS,
     intent: 'Items grant abilities to their bearer (e.g. cavalry_charge).',
     ulTerms: ['Attachment', 'Trait'],
-    mechanism: { kind: 'node-prop', symbols: ['trait_grant', 'hasGrantedTrait'] },
+    // THR-786 repointed the read symbol. Until then the declared symbols were
+    // `['trait_grant', 'hasGrantedTrait']`, and the only thing matching either of them
+    // at a read site was a *comment* in `encounterFilterPipeline.ts` mentioning
+    // `trait_grant` — rewriting that comment during the predicate migration turned the
+    // row LEAKED and exposed that its evidence had never been code. `collectGrantedTraits`
+    // is the aggregate every consumer actually calls (import + call at all four read
+    // sites), so it is the honest symbol. `trait_grant` stays for the write side, where
+    // the authored payload really does carry `type: 'trait_grant'`.
+    mechanism: { kind: 'node-prop', symbols: ['trait_grant', 'collectGrantedTraits'] },
     writeSites: [
       'src/data/starter-attachments.ts',
       'src/data/reward-attachment-catalog.ts',
@@ -232,7 +306,7 @@ export const CONTRACTS: readonly Contract[] = [
     verifiedLive: {
       date: '2026-07-26',
       evidence:
-        'THR-737. `collectGrantedTraits` (effectQueries.ts) wraps `hasGrantedTrait` and is consumed by all three production trait gates: encounter eligibility (encounterFilterPipeline `requiredTraits` + `blockedByTraits`), spell prerequisites (spellActivation `traitKeys`), and ambition eligibility (ambitionTick `buildAmbitionAgentSnapshot` + worldSeed initial assignment). Non-vacuous by live payload intersection: `artifact-templates.ts` grants `master_smith` via `trait_grant`, and `ambition-templates.ts` gates an ambition on `requiredTraits: [\'master_smith\']`. Headless sweep on seed 42 confirms a granted trait flipping eligibility — see `trait_grant` consumer tests in effectQueries.test.ts and ambitionTick.test.ts.',
+        'THR-737. `collectGrantedTraits` (effectQueries.ts) wraps `hasGrantedTrait` and is consumed by all three production trait gates: encounter eligibility (encounterFilterPipeline `requiredTraits` + `blockedByTraits`), spell prerequisites (spellActivation `traitKeys`), and ambition eligibility (ambitionTick `buildAmbitionAgentSnapshot` + worldSeed initial assignment). Non-vacuous by live payload intersection: `artifact-templates.ts` grants `master_smith` via `trait_grant`, and `ambition-templates.ts` gates an ambition on `requiredTraits: [\'master_smith\']`. Headless sweep on seed 42 confirms a granted trait flipping eligibility — see `trait_grant` consumer tests in effectQueries.test.ts and ambitionTick.test.ts. Re-verified 2026-07-26 under THR-786: all four consumers now reach the granted set through `collectBearerTraitRefs({ grantedTraits })`, covered by the site-1/4/5/6 granted-trait cases in `__tests__/contracts/traitPredicate.contract.test.ts`.',
     },
   },
   {

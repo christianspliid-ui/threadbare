@@ -1183,6 +1183,26 @@ if (import.meta.env.DEV) {
     getHealthReport: () => import('./engine/tickHealthMonitor').then((m) => m.getLatestReport()),
     exportDiagnostics: () => import('./engine/tickHealthMonitor').then((m) => m.exportDiagnostics()),
 
+    /**
+     * THR-786 — sweep all six authored trait-ref surfaces against the trait
+     * definitions in the live graph. Returns `null` when no game state is loaded.
+     *
+     * Uses the `SimulationRuntime`-owned ref index when a runtime is registered, and
+     * builds a throwaway index otherwise, so the sweep works from a bare state too.
+     */
+    validateTraitRefs: async () => {
+      const state = _gameStateProvider?.();
+      if (!state) return null;
+      const runtime = _runtimeProvider?.();
+      const { validateTraitRefs } = await import('./engine/traitRefValidation');
+      let index;
+      if (runtime) {
+        const { ensureTraitRefIndex } = await import('./engine/simulationRuntime');
+        index = ensureTraitRefIndex(runtime, state.graph);
+      }
+      return validateTraitRefs(state.graph, index);
+    },
+
     // Balance telemetry accessors
     /** Returns a BalanceRunSummary for the current session. endTick defaults to the current game tick. */
     getBalanceSummary: async (endTick?: number) => {
