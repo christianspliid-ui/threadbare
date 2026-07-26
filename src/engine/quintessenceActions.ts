@@ -28,8 +28,16 @@ import type { QuintessenceEvent } from '../types/quintessence';
 import {
   QUINTESSENCE_DEFAULT,
   QUINTESSENCE_MAX_DEFAULT,
+  QUINTESSENCE_ENCOUNTER_FAILURE_EROSION,
   getQuintessenceRatio,
 } from '../types/quintessence';
+import type { StepOutcome } from '../types/unifiedAction';
+import {
+  DIFFICULTY_EROSION_SCALE,
+  EROSION_ATTENDED_MULT,
+  EROSION_BAND_MULT,
+  QUINTESSENCE_RATIO_FLOOR,
+} from '../data/nudge-constants';
 
 // ─── Constants (NFP #1: Tunability) ────────────────────────────────
 
@@ -167,4 +175,55 @@ export function createEncounterFailureErosion(
     source: 'encounter_failure',
     tick,
   };
+}
+
+// ─── Band- and Attention-Scaled Erosion (THR-773) ───────────────────
+
+/** Inputs to the scaled-erosion formula. All optional but the outcome. */
+export interface ScaledErosionInput {
+  /** Resolved step outcome — only failing bands erode. */
+  readonly outcome: StepOutcome;
+  /** True when the failing encounter was attended (`story_beat`). */
+  readonly attended?: boolean;
+  /** Step difficulty, 0–1. Harder failures cost more. */
+  readonly difficulty?: number;
+  /** Current quintessence ratio, used to clamp at the floor. */
+  readonly currentRatio?: number;
+}
+
+/**
+ * Erosion amount for a failed encounter step, scaled by outcome band, whether
+ * the player was watching, and how hard the step was (THR-773).
+ *
+ *     erosion = QUINTESSENCE_ENCOUNTER_FAILURE_EROSION
+ *               × bandMult × attendedMult × (1 + difficulty × DIFFICULTY_EROSION_SCALE)
+ *
+ * The result is clamped so the *resulting ratio* never falls below
+ * `QUINTESSENCE_RATIO_FLOOR`. Erosion alone can therefore never reach zero —
+ * death stays owned by the existing zero-state paths, and a catastrophe leaves a
+ * mortal broken rather than dead.
+ *
+ * Pre-WS0 behavior is recovered exactly by setting the three multipliers to
+ * 1 / 1 / 0: the formula collapses to the flat base constant.
+ *
+ * Fail-soft: a non-failing outcome erodes 0; missing difficulty reads as 0;
+ * a missing ratio skips the clamp (nothing is known to clamp against).
+ */
+export function computeScaledErosion(input: ScaledErosionInput): number {
+  const bandMult = EROSION_BAND_MULT[input.outcome] ?? 0;
+  if (bandMult <= 0) return 0;
+
+  const attendedMult = input.attended ? EROSION_ATTENDED_MULT : 1;
+  const difficulty = Math.max(0, Math.min(1, input.difficulty ?? 0));
+  const difficultyMult = 1 + difficulty * DIFFICULTY_EROSION_SCALE;
+
+  const raw = QUINTESSENCE_ENCOUNTER_FAILURE_EROSION * bandMult * attendedMult * difficultyMult;
+
+  if (input.currentRatio === undefined || !Number.isFinite(input.currentRatio)) return raw;
+
+  // Clamp against the *ratio* floor, not the erosion amount: what matters is
+  // where the mortal lands, not how far they fell.
+  const headroom = input.currentRatio - QUINTESSENCE_RATIO_FLOOR;
+  if (headroom <= 0) return 0; // already at or below the floor — erosion is spent
+  return Math.min(raw, headroom);
 }

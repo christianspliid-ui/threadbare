@@ -43,6 +43,7 @@ import {
   MILESTONE_COMPANY_BEAT_ID,
   MILESTONE_GATHERING_BEAT_ID,
   MILESTONE_EMPTY_ROAD_BEAT_ID,
+  MILESTONE_GUTTERING_THREAD_BEAT_ID,
   deepeningBeatIdForReach,
 } from '../data/player-progression';
 import { deepeningChronicleProse } from '../data/ascendant-deepening-beats';
@@ -52,6 +53,7 @@ import {
   getAllGroups, isGroupThreaded, isAgentGone, getFormerGroupMembers,
 } from './groups/groupQueries';
 import { DRAW_TOGETHER_MIN_THREADED_FOR_UNLOCK } from '../data/group-constants';
+import { isBrokenMortal } from './brokenState';
 
 type EmitInput = Parameters<typeof emitTrace>[0];
 
@@ -381,6 +383,52 @@ export function phaseAscendantProgression(state: GameState): Partial<GameState> 
         tier: 'chronicle',
         title: 'An Empty Road',
         prose: milestoneChronicleProse(MILESTONE_EMPTY_ROAD_BEAT_ID),
+        promptContext: {
+          actors: [ascId],
+          location: '',
+          sphere: primarySphere,
+          mood: 'reverent',
+        },
+        tick: turn,
+      });
+    }
+  }
+
+  // THR-773: the guttering-thread milestone — the first time a mortal the ascendant
+  // is threaded to is worn into the broken state, unlocking Rekindle the Thread.
+  // Same one-per-tick discipline as the three above. The predicate reads
+  // `isBrokenMortal` rather than the raw threshold so the beat fires on the same
+  // state the card actually answers — and deliberately *not* on
+  // `BROKEN_GATE_ENABLED`, which gates the state's consequences, not its existence:
+  // the mortal is worn out whether or not the candidacy gate is live, so the god
+  // should be offered the mercy either way.
+  if (canEnqueue && !pending && !firedMilestones.includes(MILESTONE_GUTTERING_THREAD_BEAT_ID)) {
+    const hasBrokenThreadedMortal = graph.getOutgoingEdges(ascId, 'thread').some(e => {
+      const mortal = graph.getNode(e.target);
+      return mortal?.type === 'actor' && isBrokenMortal(mortal);
+    });
+    if (hasBrokenThreadedMortal) {
+      pending = {
+        beatId: MILESTONE_GUTTERING_THREAD_BEAT_ID,
+        kind: 'milestone',
+        offeredTurn: turn,
+        boundNodeIds: [ascId],
+        trigger: { kind: 'turn', minTurn: turn },
+      };
+      firedMilestones.push(MILESTONE_GUTTERING_THREAD_BEAT_ID);
+      node.properties.milestoneBeatsFired = firedMilestones;
+      emitTrace({
+        category: 'ascendant.progression.milestone_enqueued',
+        tick: turn,
+        turn,
+        beatId: MILESTONE_GUTTERING_THREAD_BEAT_ID,
+        summary: `Milestone beat enqueued: ${MILESTONE_GUTTERING_THREAD_BEAT_ID} (first threaded mortal broken)`,
+      } as unknown as EmitInput);
+      newChronicle.push({
+        id: `milestone-${MILESTONE_GUTTERING_THREAD_BEAT_ID}-${turn}`,
+        tier: 'chronicle',
+        title: 'A Guttering Thread',
+        prose: milestoneChronicleProse(MILESTONE_GUTTERING_THREAD_BEAT_ID),
         promptContext: {
           actors: [ascId],
           location: '',

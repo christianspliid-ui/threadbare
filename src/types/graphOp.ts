@@ -102,7 +102,8 @@ export type GraphOpType =
   | 'bless_company'  // THR-74 (Bless this Company): boost a company's cohesion and open a dispute-suppression window (consumed by groupCohesion/groupDissolution/groupMovement via isGroupBlessed)
   | 'draw_together' // THR-74 (Draw Together): stamp a convergence pull on the anchor + nearby scattered threaded mortals so their own movement bends toward gathering (consumed by encounterScoring.computeConvergenceBonus + groupFormation cause detection)
   | 'reunite_company' // THR-732 (Reunite): open a reunion window on a *disbanded* company and stamp Draw Together's convergence pull on its scattered former members (consumed by encounterScoring.computeConvergenceBonus + groupFormation's reunite cause/compat bonus)
-  | 'sunder_company'; // THR-732 (Sunder): crack an *active* company's cohesion and open an amplification window (consumed by groupCohesion/groupDissolution/phaseGroups via isGroupSundered)
+  | 'sunder_company' // THR-732 (Sunder): crack an *active* company's cohesion and open an amplification window (consumed by groupCohesion/groupDissolution/phaseGroups via isGroupSundered)
+  | 'quintessence_restore'; // THR-773 (Rekindle the Thread): raise a worn mortal's quintessence to REKINDLE_RESTORE_TO_RATIO and clear the broken stamp (consumed by brokenState.isBrokenMortal + the candidacy/drift gate)
 
 /**
  * Payload for the apply_influence GraphOp.

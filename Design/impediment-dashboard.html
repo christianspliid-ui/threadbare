@@ -3001,6 +3001,32 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "**Workaround:** none needed — the guard is the fix. Worth recording that the slip still happens under an agent that had read the write-path-discipline rule earlier in the same session, which is the argument for keeping the hook rather than relying on documented discipline. Note the guard covers `Edit`/`Write` only; `Bash` redirects and `cp` into the home tree remain unguarded.",
     "session": "THR-760 CLAUDE.md slimming pass, hourly Opus pickup lane"
+  },
+  {
+    "num": "215",
+    "id": 215,
+    "count": 1,
+    "date": "2026-07-26",
+    "category": "process",
+    "description": "**A `[DESIGN]`-tagged rulebook rule and an interface-map badge can disagree about whether the same feature is live, and only the badge has a mechanical gate.** THR-773 ships an engine seam that is complete and tested but reachable by no content: no template authors a `nudges[]` hand (that is WS1), and the broken-state gate ships behind `BROKEN_GATE_ENABLED = false` pending WS5. Three surfaces had to state that independently and could each have drifted: the rulebook section (`[DESIGN]` vs `[IMPL]`), the interface-map contract badge (LEAKED/PARTIAL vs LIVE), and the wiki page's designer-notes flag. Only the interface map has a generator that fails the build on a LEAKED row without a remediation ticket; the other two are prose an author can get wrong with nothing objecting.",
+    "consequence": "No incident this session — all three were set consistently by hand, and the two contracts carry THR-774/THR-778 as their remediation tickets. The risk is the next ticket in the program: WS1 lands the first authored hand and must remember to promote *three* surfaces, with only one of them enforced.",
+    "impact": "S",
+    "workaroundFound": false,
+    "workaround": "**Workaround:** state the reason inline at each surface rather than just the flag, so a later reader can re-derive whether it still holds — e.g. the contract's comment says \"no shipped template authors a hand yet\", which is a grep-checkable claim, not an opinion. **Durable fix candidate:** teach the interface-map generator to emit the badge into the wiki page it already owns (`system-interface-map-reference.html` is generated), and have the rulebook cite the contract id rather than restating liveness, so `[DESIGN] → [IMPL]` becomes a consequence of the badge flipping rather than a second thing to remember. **The generalisable rule:** when a feature is deliberately shipped inert, the *reason* it is inert must be recorded as a checkable predicate at every surface that claims a liveness state — a bare flag rots silently.",
+    "session": "THR-773 Nudge Model WS0, hourly Opus pickup lane."
+  },
+  {
+    "num": "216",
+    "id": 216,
+    "count": 1,
+    "date": "2026-07-26",
+    "category": "engineering",
+    "description": "**`WorldGraph.updateNode` REPLACES the node object, so a phase that writes through a node handle taken before its own `updateNode` call silently drops the write — and every test still passed.** `updateNode` does `this.nodes.set(id, {...existing, ...updates, properties: {...existing.properties, ...updates.properties}})` — a fresh node object *and* a fresh `properties` object. `phaseQuintessence`'s passive-regen branch calls it, and the new THR-773 broken-state reconcile ran a few lines later in the same loop body, mutating `node.properties[BROKEN_SINCE_PROPERTY]` on the now-stale handle. Every stamp was dropped. The unit tests passed (they construct plain objects and never go through a graph), the 30-tick smoke passed, `tsc` had nothing to say, and the only reason it surfaced was measuring the feature in a live CLI run: **0 broken agents over 160 ticks on seed 42 where the erosion math predicted ~2.** The surrounding code already knew — the dissolution check three lines above re-reads with the comment \"Re-read from graph after potential regen update\" — so the trap was documented locally and still caught a fresh writer.",
+    "consequence": "The feature would have shipped inert: `brokenSince` never written, so the hysteresis never engaged, `agent_broken`/`agent_mended` never fired, and `__DEBUG.getBrokenAgents()` always returned empty — with a green suite and a green smoke throughout.",
+    "impact": "M",
+    "workaroundFound": true,
+    "workaround": "**Durable fix:** make the helper take a **node id, not a node**, and re-read from the graph itself so no caller can hand it a stale reference; write additions through `graph.updateNode` (it merges) and `delete` on the freshly-read object for removals (`updateNode` merges, so it cannot remove a key). Pinned by a regression test asserting `staleHandle !== graph.getNode(id)` after an `updateNode`. **Generalisable rule:** a `GraphNode` reference is only valid until the next `updateNode` on that id — be suspicious of any function taking a `GraphNode` parameter that also writes to it. **The detection rule that actually caught it:** unit tests over plain objects cannot see this class of bug and neither can the type system; a feature whose effect is *state accumulating over time* needs one live run whose observed count is compared against the count the math predicts. \"The suite is green\" was true and worthless here.",
+    "session": "THR-773 Nudge Model WS0, hourly Opus pickup lane."
   }
 ];
 // ── End data ──

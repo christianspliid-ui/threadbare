@@ -95,6 +95,21 @@ export const MILESTONE_GATHERING_BEAT_ID = 'beat.milestone.the_gathering_bonds';
 export const MILESTONE_EMPTY_ROAD_BEAT_ID = 'beat.milestone.the_empty_road';
 
 /**
+ * The guttering-thread milestone beat id (THR-773). Fires once, the first time a
+ * mortal the ascendant is threaded to is worn down into the **broken state** —
+ * and grants `divine.rekindle_thread`.
+ *
+ * The trigger is the card's own precondition, the same discipline the empty-road
+ * milestone follows: Rekindle is only worth casting on someone who has been worn
+ * to nothing, so granting it earlier would hand the player a card with nothing in
+ * the world to point at. It also means the god meets the consequence *before*
+ * they are handed the answer to it — the loss lands first, the mercy second.
+ *
+ * Deduped through `AscendantProperties.milestoneBeatsFired`.
+ */
+export const MILESTONE_GUTTERING_THREAD_BEAT_ID = 'beat.milestone.the_guttering_thread';
+
+/**
  * Deterministic Deepening beat id for a reach. Slice 2 authors the matching
  * `UnifiedActionTemplate` content per reach (plan §4.1); Slice 1 enqueues by this id.
  */

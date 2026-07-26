@@ -252,6 +252,14 @@ function executeSingleOp(
       case 'sunder_company':
         return executeSunderCompany(graph, op, ctx);
 
+      // THR-773 `quintessence_restore` is deliberately NOT a case here. Unlike
+      // fortify/attune/scry (graph+ctx only), it must also append the mortal's
+      // `recent_event` receipt — "whose fire is in them now" — which needs the
+      // full GameState. It therefore rides the resolution-intercept path in
+      // `unifiedActionResolution` alongside `plant_trap` and `reveal_secret`,
+      // and is filtered out of `graphOnlyOps` there. Reaching this default would
+      // mean that filter regressed.
+
       default:
         return {
           op,

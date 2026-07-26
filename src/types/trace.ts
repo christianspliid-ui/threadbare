@@ -313,7 +313,11 @@ export type TraceCategory =
   | 'band_spawned'
   | 'group_contested'
   // World-minted ambitions — events write mortal desire (THR-726)
-  | 'ambition_minted';
+  | 'ambition_minted'
+  // Nudge Model — WS0 engine substrate (THR-773)
+  | 'nudge_played'
+  | 'agent_broken'
+  | 'agent_mended';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'action_selection', 'narrative_generation', 'context_harvest',
@@ -599,6 +603,10 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'group_contested',
   // World-minted ambitions (THR-726)
   'ambition_minted',
+  // Nudge Model — WS0 engine substrate (THR-773)
+  'nudge_played',
+  'agent_broken',
+  'agent_mended',
 ];
 
 /** Base shape for all trace entries */
@@ -2073,7 +2081,52 @@ export type TraceEntry =
   // Divine Receipt — player action resolution feedback (THR-727)
   | PlayerReceiptTrace
   // World-minted ambitions (THR-726)
-  | AmbitionMintedTrace;
+  | AmbitionMintedTrace
+  // Nudge Model — WS0 engine substrate (THR-773)
+  | NudgePlayedTrace
+  | AgentBrokenTrace
+  | AgentMendedTrace;
+
+/**
+ * Trace: the player committed a nudge into an attended encounter step (THR-773).
+ *
+ * Player-action-driven and therefore low volume — a handful per session, one
+ * entry per play. This is *not* an all-agents phase, so the aggregate-batching
+ * rule does not apply.
+ */
+export interface NudgePlayedTrace extends TraceBase {
+  category: 'nudge_played';
+  actionId: string;
+  templateId: string;
+  nudgeId: string;
+  essenceSpent: number;
+  forecastBefore: import('./traces/encounter-traces').ForecastTier;
+  forecastAfter: import('./traces/encounter-traces').ForecastTier;
+  /** Rider carried by this nudge, when it has one. */
+  rider?: string;
+}
+
+/**
+ * Trace: a mortal entered the broken state (THR-773).
+ *
+ * Fires on **transition only** — never per tick, never per agent per tick. The
+ * quintessence phase reconciles every actor each tick; only the ones that
+ * actually crossed emit.
+ */
+export interface AgentBrokenTrace extends TraceBase {
+  category: 'agent_broken';
+  agentId: string;
+  /** Quintessence ratio at the moment of the crossing. */
+  ratio: number;
+  cause: string;
+}
+
+/** Trace: a broken mortal mended back into the story (THR-773). Transition-only. */
+export interface AgentMendedTrace extends TraceBase {
+  category: 'agent_mended';
+  agentId: string;
+  ticksBroken: number;
+}
 
 /**
  * Trace: the world minted ambitions from events this re-eval tick (THR-726).

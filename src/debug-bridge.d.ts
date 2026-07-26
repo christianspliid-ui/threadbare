@@ -722,6 +722,63 @@ export interface DebugBridge {
    *  Pure + deterministic; independent of any live session. */
   listUnreachableActions: () => Promise<import('./engine/content-eval/unreachableActions').UnreachableActionReport>;
 
+  /** THR-773 — The nudge hand for an agent's active (or most-recent) unified action step.
+   *  Returns every authored card partitioned playable / dimmed / hidden, the committed
+   *  ids, the single active rider, the trait variants in force, and the named forecast
+   *  modifiers (`nudge:<id>` / `trait:<id>`) the committed hand contributes.
+   *
+   *  `attended` reports whether the action sits at the `story_beat` tier — the scope rule
+   *  is that nudges exist ONLY in the attended encounter, so an authored hand on a
+   *  background action is inert by design, not by bug.
+   *
+   *  Agent matching: exact id, then id prefix, then case-insensitive partial name.
+   *  Read-only. `{ error }` when no live state / no matching actor / no action / no template. */
+  getEncounterNudges: (agentRef: string) => Promise<
+    | { error: string }
+    | {
+      actionId: string;
+      templateId: string;
+      stepIndex: number;
+      attended: boolean;
+      playable: Array<{ id: string; name: string; cost: number; rider: string | null }>;
+      dimmed: Array<{ id: string; name: string; blocked: string | null }>;
+      hidden: string[];
+      activeNudges: string[];
+      activeRider?: string | null;
+      committedCost?: number;
+      traitVariants?: Array<{ traitId: string; factorLine: string }>;
+      modifiers: Array<{ source: string; delta: number }>;
+      modifierTotal: number;
+    }
+  >;
+
+  /** THR-773 — Every mortal currently in the broken state, with ticks-broken each.
+   *
+   *  The measurement hook for the plan's pacing falsifier (">5% of living mortals
+   *  simultaneously broken, or median ticks-broken outside 84–168"): read `brokenShare`
+   *  and the `ticksBroken` distribution off a long headless run.
+   *
+   *  `gateEnabled` mirrors `BROKEN_GATE_ENABLED`. It ships **false**, and the state
+   *  accrues regardless — so a populated `agents` list does NOT mean the candidacy
+   *  exclusion and drift pull are live. Read the flag, not the list length. */
+  getBrokenAgents: () => Promise<
+    | { error: string }
+    | {
+      tick: number;
+      gateEnabled: boolean;
+      brokenCount: number;
+      livingActorCount: number;
+      brokenShare: number;
+      agents: Array<{
+        id: string;
+        name: string;
+        ratio: number;
+        state: import('./types/resolution').QuintessenceThresholdState;
+        ticksBroken: number;
+      }>;
+    }
+  >;
+
   /** THR-66 — List active/terminal rival schemes across all rivals. */
   getRivalSchemes: () => Array<{
     rivalId: string;

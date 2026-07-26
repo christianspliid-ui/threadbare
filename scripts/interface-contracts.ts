@@ -101,6 +101,7 @@ const ENCOUNTERS = 'Encounters & Dilemmas';
 const COMPANIES = 'Companies & Group Travel';
 const FACTIONS = 'Factions & Succession';
 const NARRATIVE = 'Attention, Chronicle & Narrative';
+const QUINTESSENCE = 'Spheres & Quintessence';
 
 export const CONTRACTS: readonly Contract[] = [
   // ── Attachments → outbound ────────────────────────────────────────────────
@@ -889,6 +890,59 @@ export const CONTRACTS: readonly Contract[] = [
       evidence:
         'Live CLI run, seed 42 medium: a company relocated into a Great Silverhold guild hall resolved encounter.confront_guild_falls against a colocated Arcane Circle defender band at t61 — company cohesion 0.54 → 0.70, band 0.70 → 0.46 — and the contest wrote mutual grudges, read straight off the graph: "The Watch of the Nameless Road -> The Errant Keys of The Arcane Circle since t61 (group_engagement)" and the reverse. agentDetail reads both edge directions off the group node and dedupes the mutual pair; OverviewTab renders it as one sentence with no numbers and no `since` tick. Locked by src/engine/groups/__tests__/bandDebugSurfaces.test.ts § "Company panel — Rivals" (7 tests: absent when no grudge, outgoing, incoming-only, mutual-dedupe, dangling-target drop, deterministic multi-rival order).',
     },
+  },
+
+  // ── Nudge Model WS0 (THR-773) ─────────────────────────────────────────────
+  // First contract slice for two ⚪ UNAUDITED subsystems (Encounters & Dilemmas,
+  // Spheres & Quintessence) — audit-on-touch. The full-subsystem audits stay open.
+  {
+    id: 'authored-nudge-hand-reaches-resolution',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: ENCOUNTERS,
+    intent:
+      'A god may bend the odds of an attended encounter step with authored, essence-priced cards — the mechanical form of "the intervention shifted the odds, not the outcome". Without this read, an attended encounter offers the player nothing to do but watch.',
+    ulTerms: ['Nudge', 'Encounter', 'UnifiedActionTemplate'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['collectNudgeModifiers', 'selectActiveRider', 'applyRider', 'buildNudgeHand'],
+      module: 'src/engine/encounters/nudges.ts',
+    },
+    writeSites: ['src/types/unifiedAction.ts', 'src/data/nudge-constants.ts'],
+    readSites: ['src/engine/unifiedActionResolution.ts', 'src/debug-bridge.ts'],
+    // No `verifiedLive` yet: the read sites exist and are exercised by tests, but no
+    // shipped template authors a `nudges[]` hand — WS1 owns authoring. Verifying LIVE
+    // here would badge a path nothing travels (the THR-614 error class).
+    deferralTicket: 'THR-774',
+  },
+  {
+    id: 'quintessence-threshold-gates-candidacy-and-movement',
+    producerSystem: QUINTESSENCE,
+    consumerSystem: ENCOUNTERS,
+    intent:
+      'A mortal worn to nothing goes out of the story rather than grinding on unchanged — the previously missing consumer of the weakened/critical threshold states. Without it, quintessence loss has no behavioural consequence at all.',
+    ulTerms: ['Quintessence', 'Broken (mortal state)'],
+    mechanism: {
+      kind: 'node-prop',
+      symbols: ['isBrokenMortal', 'brokenGateActive', 'computeBrokenDriftBonus', 'brokenSince'],
+      module: 'src/engine/brokenState.ts',
+    },
+    writeSites: ['src/engine/phaseQuintessence.ts', 'src/engine/rekindleThread.ts'],
+    readSites: [
+      'src/engine/encounterFilterPipeline.ts',
+      'src/engine/encounterScoring.ts',
+      'src/engine/phaseAscendantProgression.ts',
+    ],
+    // Deliberately not LIVE: `BROKEN_GATE_ENABLED` ships false, so the candidacy
+    // exclusion and drift pull are wired but inert until WS5's rebuild encounters
+    // exist. The state derivation and erosion scaling ARE live. Badging this LIVE
+    // today would claim behaviour the shipped flag suppresses.
+    badgeOverride: {
+      badge: 'PARTIAL',
+      reason:
+        'Read sites are wired and tested, but gated behind BROKEN_GATE_ENABLED = false until WS5 authors the rebuild encounters. Erosion scaling + brokenSince bookkeeping are live; candidacy exclusion + broken_drift are not.',
+      deferralTicket: 'THR-778',
+    },
+    deferralTicket: 'THR-778',
   },
 ];
 

@@ -36,6 +36,7 @@ import type { WorldGraph } from './graph';
 import type { FilterPipelineTrace } from '../types/trace';
 import type { ThreatRating } from '../types/encounter';
 import { filterByAwareness } from './encounterAwareness';
+import { brokenGateActive } from './brokenState';
 import { getFactionAwarenessEntries } from './factionAwareness';
 import { isEncounterVisibleToAgent } from './questVisibility';
 import { computeCapability } from './domainCapability';
@@ -248,6 +249,18 @@ export function filterByPrerequisites(
     return cachedGrantedTraits;
   };
 
+  // Broken gate (THR-773). A mortal worn past `BROKEN_ENTER_STATE` is out of the
+  // story: they draw nothing except the templates that opt into
+  // `drawableWhileBroken` — WS5's rebuild encounters, the road back out.
+  //
+  // Resolved once per agent (not per entry) because the predicate is a property
+  // read on the agent, and this pipeline runs for every agent every tick.
+  //
+  // `brokenGateActive` folds in `BROKEN_GATE_ENABLED`, which ships **false**, so
+  // this is inert until WS5 flips it — deliberately: excluding an agent from all
+  // candidacy before the rebuild content exists is stun-lock, not story.
+  const gateBroken = brokenGateActive(agentNode);
+
   const result: EncounterCacheEntry[] = [];
   for (const entry of entries) {
     // Chain gate
@@ -255,6 +268,9 @@ export function filterByPrerequisites(
 
     // Trait gate — look up template for requiredTraits field
     const template = getAnyEncounterById(entry.templateId);
+
+    // Broken gate (THR-773): only opt-in rebuild content reaches a broken mortal.
+    if (gateBroken && !template?.drawableWhileBroken) continue;
 
     // Group-exclusive gate: `['group']` with no `'individual'` is an authored
     // claim that only a company may take this. Templates carrying both affinities

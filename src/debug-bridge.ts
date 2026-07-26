@@ -1462,6 +1462,116 @@ if (import.meta.env.DEV) {
       return reportUnreachableActions();
     },
 
+    /**
+     * THR-773 — the nudge hand for an agent's active (or most-recent) unified
+     * action step: every authored card partitioned playable / dimmed / hidden,
+     * the ids currently committed, and the forecast the committed hand produces
+     * (base, the named modifier list, and the resulting delta).
+     *
+     * WS0's visibility deliverable — WS2 owns the player-facing surface, so this
+     * is the state assertion that proves the substrate is wired before any
+     * interface exists to show it. Read-only; resolves the agent by exact id,
+     * id prefix, then case-insensitive partial name (same as `getStepProse`).
+     */
+    getEncounterNudges: async (agentRef: string) => {
+      const state = _gameStateProvider?.();
+      if (!state) return { error: 'no live game state' };
+      const graph = state.graph;
+      const ref = agentRef.trim();
+      const lc = ref.toLowerCase();
+      const actors = graph.getNodesByType('actor');
+      const actor =
+        actors.find(n => n.id === ref) ??
+        actors.find(n => n.id.startsWith(ref)) ??
+        actors.find(n => (n.name ?? '').toLowerCase().includes(lc));
+      if (!actor) return { error: `no actor matched "${agentRef}"` };
+      const actions = state.unifiedActions ?? [];
+      const action =
+        actions.find(a => a.actorId === actor.id && !a.resolved) ??
+        actions.find(a => a.actorId === actor.id);
+      if (!action) return { error: `no unified action for ${actor.name ?? actor.id}` };
+
+      const { getUnifiedTemplateById } = await import('./data/unified-action-templates');
+      const template = getUnifiedTemplateById(action.templateId);
+      if (!template) return { error: `no template ${action.templateId}` };
+      const step = template.steps?.[action.currentStep];
+      if (!step || !('nudges' in step)) {
+        return {
+          actionId: action.actionId,
+          templateId: action.templateId,
+          stepIndex: action.currentStep,
+          attended: action.effectiveTier === 'story_beat',
+          playable: [], dimmed: [], hidden: [],
+          activeNudges: [...(action.activeNudges ?? [])],
+          modifiers: [], modifierTotal: 0,
+        };
+      }
+
+      const {
+        buildNudgeHand, collectHeldTraitIds, collectNudgeModifiers,
+        resolveTraitVariants, selectActiveRider, sumModifiers, totalNudgeCost,
+      } = await import('./engine/encounters/nudges');
+      const heldTraits = collectHeldTraitIds(graph, actor.id);
+      const pool = state.essencePool ?? {};
+      const hand = buildNudgeHand(step, template, {
+        availableEssence: (sphere) => (sphere
+          ? (pool as Record<string, number>)[sphere] ?? 0
+          : Object.values(pool as Record<string, number>).reduce((s, v) => s + (v ?? 0), 0)),
+        accessibleSpheres: Object.keys(pool) as import('./types/index').SphereName[],
+        unlockedTemplateIds: new Set(state.unlockedActionIds ?? []),
+        heldTraits,
+      });
+      const variants = resolveTraitVariants(template, heldTraits);
+      const modifiers = collectNudgeModifiers(step, action.activeNudges, variants);
+
+      return {
+        actionId: action.actionId,
+        templateId: action.templateId,
+        stepIndex: action.currentStep,
+        // Nudges exist only in the attended encounter — a false here means the
+        // hand is authored but the scope rule says it is not in play.
+        attended: action.effectiveTier === 'story_beat',
+        playable: hand.playable.map(e => ({ id: e.nudge.id, name: e.nudge.name, cost: e.nudge.essenceCost, rider: e.nudge.rider ?? null })),
+        dimmed: hand.dimmed.map(e => ({ id: e.nudge.id, name: e.nudge.name, blocked: e.blocked ?? null })),
+        hidden: [...hand.hidden],
+        activeNudges: [...(action.activeNudges ?? [])],
+        activeRider: selectActiveRider(step, action.activeNudges, template.id) ?? null,
+        committedCost: totalNudgeCost(step, action.activeNudges),
+        traitVariants: variants.map(v => ({ traitId: v.traitId, factorLine: v.factorLine })),
+        modifiers: modifiers.map(m => ({ source: m.source, delta: m.delta })),
+        modifierTotal: sumModifiers(modifiers),
+      };
+    },
+
+    /**
+     * THR-773 — every mortal currently in the **broken state**, with how long
+     * they have been there. The pacing falsifier's measurement hook: the plan's
+     * kill criterion is ">5% of living mortals simultaneously broken, or median
+     * ticks-broken outside 84–168".
+     *
+     * `gateEnabled` reports `BROKEN_GATE_ENABLED` alongside the list, because
+     * the state accrues (and this list populates) whether or not the gate's
+     * consequences are live — reading a populated list as "the gate is on" would
+     * be wrong.
+     */
+    getBrokenAgents: async () => {
+      const state = _gameStateProvider?.();
+      if (!state) return { error: 'no live game state' };
+      const { listBrokenAgents } = await import('./engine/brokenState');
+      const { BROKEN_GATE_ENABLED } = await import('./data/nudge-constants');
+      const agents = listBrokenAgents(state.graph, state.tick);
+      const livingActors = state.graph.getNodesByType('actor')
+        .filter(a => !a.properties.dead && !a.properties.dissolved).length;
+      return {
+        tick: state.tick,
+        gateEnabled: BROKEN_GATE_ENABLED,
+        brokenCount: agents.length,
+        livingActorCount: livingActors,
+        brokenShare: livingActors > 0 ? agents.length / livingActors : 0,
+        agents,
+      };
+    },
+
     // THR-66: rival scheme inspection — reads the denormalized RivalState.schemes summaries.
     getRivalSchemes: () => {
       const state = _gameStateProvider?.();

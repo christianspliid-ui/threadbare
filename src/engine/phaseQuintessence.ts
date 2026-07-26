@@ -21,6 +21,7 @@ import type { QuintessenceThresholdState } from '../types/resolution';
 import type { NodeType } from '../types/graph';
 import type { SimulationRuntime } from './simulationRuntime';
 import { recordBalanceEvent } from './balanceTelemetry';
+import { reconcileBrokenState } from './brokenState';
 import { buildPredicateContext, collectPreventLossEffects } from './effectResolver';
 
 /**
@@ -220,6 +221,23 @@ export function phaseQuintessence(state: GameState, runtime?: SimulationRuntime)
             });
           }
         }
+      }
+
+      // THR-773: reconcile the broken-mortal stamp against the ratio this phase
+      // just settled. Folded into the walk the phase already does — no second
+      // pass over the actor set (NFP #7).
+      //
+      // `reconcileBrokenState` emits only on an actual crossing, so this is
+      // transition-fired, never one trace per agent per tick. It runs whether or
+      // not `BROKEN_GATE_ENABLED` is set: the stamp and the telemetry accrue
+      // from the start, so WS5 flips the gate onto a populated history rather
+      // than a blank one.
+      //
+      // It takes the id, not `node`: the regen branch above may already have
+      // called `updateNode`, which replaces the map entry rather than mutating
+      // it, so `node` can be stale by this line. The helper re-reads.
+      if (nodeType === 'actor') {
+        reconcileBrokenState(graph, node.id, state.tick, runtime);
       }
     }
   }

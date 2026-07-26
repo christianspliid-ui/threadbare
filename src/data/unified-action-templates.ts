@@ -19,6 +19,7 @@ import type {
 } from '../types/unifiedAction';
 import type { ActorType } from '../types/graph';
 import { ACTION_TEMPLATES, type ActionTemplateData } from './action-template-content';
+import { REKINDLE_ESSENCE_COST } from './nudge-constants';
 import { ACTION_TECHNICAL_EFFECTS } from './action-technical-effects';
 import { withDefaultSupportBundle } from './default-support-bundles';
 import {
@@ -625,6 +626,50 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
       initiation: 'reaches into mortal flesh to alter its condition',
       success: 'the divine touch reshapes body and spirit alike',
       failure: 'the mortal constitution repels the divine touch',
+    },
+  },
+
+  {
+    // THR-773 (Nudge Model WS0) — the god's restore action, and the expensive
+    // exception to the rebuild road. Unlock-gated via
+    // `beat.milestone.the_guttering_thread`: it arrives only once a mortal the
+    // player is bound to has actually been worn to nothing, so the consequence
+    // lands before the mercy. Never in a starter pool.
+    //
+    // `difficulty: 0` — like every other divine verb, the god's hand does not
+    // miss; the price is the essence, not a roll. The `quintessence_restore` op
+    // routes through the resolution-intercept path (it needs GameState for the
+    // mortal's receipt), not the graph executor.
+    id: 'divine.rekindle_thread',
+    name: 'Rekindle the Thread',
+    spellName: 'The Lent Fire',
+    rarityTier: 4,
+    intrinsicTier: 'story_beat',
+    description: 'A mortal you are bound to has been worn past the point of answering — not dead, not hurt, simply stopped. This spends something real of yours to put your own fire where theirs went out. They wake able to want things again, and they know whose warmth is carrying them. The debt runs both ways after this; that is the point of it, not a cost you failed to avoid.',
+    reach: 'heart',
+    crudType: 'update',
+    scale: 'personal',
+    steps: [{
+      reach: 'heart',
+      duration: { min: 1, max: 1 },
+      difficulty: 0.0,
+      onSuccess: [{
+        op: 'quintessence_restore',
+        target: '$target',
+      }],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: REKINDLE_ESSENCE_COST,
+    actorAffinities: ['ascendant'],
+    sphereAffinity: 'spirit',
+    targetCategories: ['agent'] as unknown as readonly import('../types/targetContext').TargetCategory[],
+    motivations: [],
+    narrativeTemplates: {
+      initiation: 'reaches for a thread gone slack and pours warmth back down it',
+      success: 'the guttered fire catches again, burning with something borrowed',
+      failure: 'the thread will not take the warmth; whatever is left in them refuses it',
     },
   },
 

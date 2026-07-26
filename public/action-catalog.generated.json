@@ -1,12 +1,12 @@
 {
   "schemaVersion": 3,
   "totals": {
-    "total": 178,
+    "total": 179,
     "byCategory": {
       "action": 67,
       "artifact": 4,
       "company": 4,
-      "divine": 19,
+      "divine": 20,
       "hex": 49,
       "location": 23,
       "threads": 12
@@ -16,24 +16,24 @@
       "gold": 20,
       "shadow": 23,
       "veil": 22,
-      "heart": 28,
+      "heart": 29,
       "eye": 29,
       "stone": 10,
       "star": 33,
       "life": 1
     },
     "byBucket": {
-      "unlockable-generic": 175,
+      "unlockable-generic": 176,
       "generic": 3
     },
     "byEffectSource": {
-      "template-ops": 111,
+      "template-ops": 112,
       "control-spec": 17,
       "engine-bridge": 44,
       "none": 2,
       "aftermath-only": 4
     },
-    "beatGranted": 29,
+    "beatGranted": 30,
     "starters": 0,
     "unauthoredEffects": 0
   },
@@ -2385,6 +2385,36 @@
       "bucketDeclared": true,
       "description": "Whispers an irresistible conviction into a mortal's soul, making the deity's preferred course feel like the only sensible choice. The mortal acts with sudden certainty, unaware of the divine origin of their resolve. The compulsion fades over time as natural doubt reasserts itself.",
       "technicalEffect": "Applies a divine influence (interventionType `persuade`, Spirit sphere) to the target agent, biasing their decision-making until the influence decays.",
+      "effectSource": "template-ops"
+    },
+    {
+      "id": "divine.rekindle_thread",
+      "name": "Rekindle the Thread",
+      "spellName": "The Lent Fire",
+      "category": "divine",
+      "reach": "heart",
+      "sphereAffinity": "spirit",
+      "crudType": "update",
+      "scale": "personal",
+      "rarityTier": 4,
+      "rarityName": "Legendary",
+      "intrinsicTier": "story_beat",
+      "apCost": 1,
+      "essenceCost": 6,
+      "durationMode": "instant",
+      "hasControlSpec": false,
+      "aftermathReactionCount": 0,
+      "targetCategories": [
+        "agent"
+      ],
+      "targetSubtypes": [],
+      "requiresReach": null,
+      "starter": false,
+      "beatGranted": true,
+      "bucket": "unlockable-generic",
+      "bucketDeclared": true,
+      "description": "A mortal you are bound to has been worn past the point of answering — not dead, not hurt, simply stopped. This spends something real of yours to put your own fire where theirs went out. They wake able to want things again, and they know whose warmth is carrying them. The debt runs both ways after this; that is the point of it, not a cost you failed to avoid.",
+      "technicalEffect": "Fires the `quintessence_restore` graph-op on the target mortal (THR-773). Raises their `quintessence` to REKINDLE_RESTORE_TO_RATIO × `quintessenceMax`, deletes the `brokenSince` stamp so `isBrokenMortal` releases immediately rather than waiting a tick for the quintessence phase to reconcile, and writes `rekindledBy`/`rekindledAtTick` plus a `recent_event` naming the restoration. Unlike the influence verbs above it does not decay — the restore is permanent, and the mortal can be worn back down normally afterwards. Routes through the resolution-intercept path (not the graph executor) because the receipt needs full GameState. Fail-soft: a missing target, a non-actor target, or a mortal already at or above the restore ratio is a no-op.",
       "effectSource": "template-ops"
     },
     {
