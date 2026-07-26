@@ -2975,6 +2975,32 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "**Workaround that worked:** substitute two text artifacts that are strictly checkable and that a screenshot would not have proven better. (1) DOM assertion — query the live document for the authored strings and print the containing node's `innerText`, which returned the three reaction labels and the Acknowledge button verbatim, proving the row rendered rather than merely existing in state. (2) `__DEBUG` state assertion — read the live `GameState` via the React fiber walk and confirm `playerActionReceipts[0].presentation === 'modal'` with the authored reaction ids, then apply one and assert the resulting `hiddenMarks` entry and `reputationTallies` delta plus the `encounter_aftermath_effect` traces. Note the fiber walk was also needed just to *get an agent id*: `__DEBUG.fireAction` matches on `node.properties.name`, which is absent on seeded agents (the name lives on `node.name`), so every name lookup returns \"No agent matching 'X'\" and only the node id works. **Durable fix:** THR-754 is the open ticket to codify sanctioned headless evidence paths; this entry is one more instance for it. Worth pairing with a `fireAction` lookup fix so it falls back to `node.name`.",
     "session": "Hourly `tb-opus-pickup` run, THR-741 browser-verify."
+  },
+  {
+    "num": "213",
+    "id": 213,
+    "count": 1,
+    "date": "2026-07-26",
+    "category": "process",
+    "description": "**A plan doc that states an absolute size target goes stale the moment the file it targets keeps growing.** THR-760's Done-when reads \"Project CLAUDE.md ≤ ~58,000 chars. Baseline measured 2026-07-25 post-pull: **87,253 chars**.\" By pickup the next morning the file was **90,292 chars** — +3,039 from unrelated tickets appending to kept sections (Definition of Done, Testing) in the intervening ~24h. Every sanctioned cut in the approved 5-item scope landed and the file reached **63,226 chars**; the like-for-like figure against the plan's own baseline is 60,187, still ~2.2k above a target that was set as an absolute number rather than a delta. The plan simultaneously forbids closing that gap (\"do NOT cut kept sections to go lower\"), so the two Done-when clauses are only jointly satisfiable at the instant the baseline was measured.",
+    "consequence": "The executor must choose between missing a stated numeric Done-when and violating an explicit do-not-touch list. Silent resolution either way is a drift vector: cutting kept sections loses rules, and quietly restating the target hides that the measurement rotted.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "**Workaround:** report the honest absolute number, the drifted baseline, and the delta actually achieved (−27,066 chars / ≈6.8k tokens, 30%), and state plainly that the residual gap is baseline drift plus the do-not-touch floor — not an unfinished cut. **Fix for future plans:** state size targets as a **delta or percentage** against a baseline measured at pickup (\"cut ≥25% / ≥6k tokens\"), not an absolute char count against a baseline measured at authoring time. This is the size-target instance of THR-688 Rule A (predicates, not counts).",
+    "session": "THR-760 CLAUDE.md slimming pass, hourly Opus pickup lane"
+  },
+  {
+    "num": "214",
+    "id": 214,
+    "count": 1,
+    "date": "2026-07-26",
+    "category": "tooling",
+    "description": "**`worktree-write-guard.sh` caught a real two-tree edit-path slip mid-session — logging the catch because the guard firing is the evidence the hazard is still live.** Editing `.claude/skills/design-session/SKILL.md` from a linked-worktree session, the `Edit` call went out with the bare repo-root absolute path instead of the worktree-prefixed one. Pre-THR-685 this would have **succeeded silently** against the home tree — the two trees are byte-identical at branch time, so `old_string` matches and nothing surfaces until verification runs against unedited code (impediments #387/#417/#421, 4 of 12 runs on 2026-07-20/21).",
+    "consequence": "None this session: the PreToolUse hook rejected the call, printed the corrected path, and the retry landed in the right tree. Cost was one blocked tool call.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "**Workaround:** none needed — the guard is the fix. Worth recording that the slip still happens under an agent that had read the write-path-discipline rule earlier in the same session, which is the argument for keeping the hook rather than relying on documented discipline. Note the guard covers `Edit`/`Write` only; `Bash` redirects and `cp` into the home tree remain unguarded.",
+    "session": "THR-760 CLAUDE.md slimming pass, hourly Opus pickup lane"
   }
 ];
 // ── End data ──
