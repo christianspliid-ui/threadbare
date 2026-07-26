@@ -77,6 +77,66 @@
 
 ---
 
+## Obsidian Vault as LLM Knowledge Base
+
+> Moved here from `CLAUDE.md` § Documentation Strategy by THR-760 (2026-07-26). This file is the declared ownership authority for documentation surfaces, so the vault's own structure, scripts, and conventions belong here; CLAUDE.md keeps a two-line pointer.
+
+The vault follows the Karpathy LLM Knowledge Base pattern — a persistent, compounding artifact where the LLM maintains the wiki and humans provide direction and raw sources.
+
+**Three layers:**
+- **`raw/`** — Immutable source materials (design docs, research, web clips). LLM reads but never modifies.
+- **Wiki** (`Systems/`, `Cosmology/`, etc.) — LLM-compiled and maintained pages. The LLM owns this content.
+- **`output/`** — Generated reports, query results, audit outputs filed back into the vault.
+- **`Ubiquitous-Language/`** — Auto-mirrored glossary shard pages generated from `Docs/ubiquitous-language/` via `npm run mirror-ul`. Never hand-edit; edit the shard in `Docs/ubiquitous-language/` and re-mirror.
+
+**Infrastructure files:**
+- **`Index.md`** — Comprehensive catalog of ALL vault pages with one-line summaries. LLM-maintained. Read this first to navigate.
+- **`log.md`** — Append-only chronological record of ingests, queries, lints, and updates.
+
+**Access:** vault writes go through the **filesystem**, not the Obsidian MCP — set `OBSIDIAN_VAULT_PATH` in `.claude/settings.local.json`. See `CLAUDE.md` § Known Sandbox Limitations for why (structurally closed 2026-07-21, THR-654).
+
+**Core workflows** (each skill documents its own procedure; this table is routing only):
+
+| Workflow | Skill | What it does |
+|----------|-------|-------------|
+| Ingest | `vault-ingest` | Compile raw sources into wiki pages, update index, log |
+| Query | `vault-query` | Ask questions against the vault (3 depth tiers) |
+| Lint | `vault-lint` | Audit vault health: orphans, broken links, stale content |
+| Enrich | `vault-enrich` | Improve pages: add cross-refs, expand content, fix issues |
+| Log append | `vault-log` | Append a `- **<type>** \| <description>` entry to `log.md` |
+
+**Vault maintenance scripts:**
+
+| Script | What it does |
+|--------|-------------|
+| `npm run generate-vault` | Regenerate graph-node pages from `world-model.json` (does NOT touch `Index.md` or `Systems/`) |
+| `npm run mirror-ul` | Mirror UL shard docs into `Ubiquitous-Language/` in the Obsidian vault and append a vault log entry |
+| `npm run mirror-ul:dry` | Print planned UL mirror writes without touching the vault |
+| `npm run sync-vault` | Run `generate-vault` then `mirror-ul` in sequence |
+| `npm run rebuild-index` | One-time rebuild of `Index.md` from all vault files |
+| `npm run enhance-frontmatter` | One-time bulk update of frontmatter on hand-curated files |
+
+**Frontmatter conventions:**
+
+```yaml
+# Auto-generated files (from world-model.json):
+tags: [<category>, generated]
+aliases: [<node name>]
+id: <node-id>
+category: <category>
+status: complete
+last-generated: YYYY-MM-DD
+
+# Hand-curated files (Systems/, Brainstorms/, etc.):
+tags: [<category>, <subcategory>]
+aliases: [<alternative names>]
+status: stub | draft | complete | deprecated
+created: YYYY-MM-DD
+updated: YYYY-MM-DD
+```
+
+---
+
 ## Volatile Facts — Special Handling
 
 Some facts change so frequently they must not be documented statically:

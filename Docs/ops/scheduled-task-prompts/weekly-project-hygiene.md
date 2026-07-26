@@ -34,7 +34,7 @@ Christian does not read Linear. The hourly `keep-work-flowing-cc` task owns `Des
    - `## Skill Tree Layout` (`.claude/skills/` is the only skill tree)
    - `## Known Sandbox Limitations`
    - `## Definition of Done`
-   - `### Scheduled Tasks` (the registry this sweep should keep honest)
+   - `Docs/ops/scheduled-tasks-registry.md` (the registry this sweep should keep honest; CLAUDE.md § Scheduled Tasks is now a pointer at it)
 3. Read `Docs/plans/2026-04-13-linear-coordination-protocol.md` — full protocol, especially "Coordination Failure Modes — Hard Rules" (Rules 1–10).
 4. Skim `Docs/impediments.md` and the most recent file in `Design/retros/` so you can distinguish new patterns from known ones.
 
@@ -67,13 +67,13 @@ Enforce `CLAUDE.md § Skill Tree Layout`. **`.claude/skills/` is the only skill 
 
 - **If `.agents/skills/` exists at all, that is a finding** — it was demolished and must not come back.
 - For each folder under `.claude/skills/`: confirm `SKILL.md` exists with `name` and `description` in the frontmatter.
-- Cross-check CLAUDE.md's `## Domain Skills` table: every row must reference a real folder under `.claude/skills/`. Broken references are findings.
+- CLAUDE.md's `## Domain Skills` table was retired in THR-760 — skill triggers now live in each skill's own `description:` frontmatter. Cross-check instead that every skill named in CLAUDE.md's Domain Skills **routing policy** (the load-order bullets) resolves to a real folder under `.claude/skills/`, and that each skill's `description:` is non-empty. Broken references and empty descriptions are findings.
 - Look for orphan skill directories — present in the tree but referenced nowhere in CLAUDE.md or documented routing.
 - Spot-check `last_validated_against` dates: a skill whose referenced systems have since changed but whose date is months stale is worth flagging.
 
 ### 3. Scheduled-task registry audit
 
-- Call `list_scheduled_tasks` and compare against CLAUDE.md's `### Scheduled Tasks` table. **Both directions matter:** a task in the table but not in the registry (documented-but-never-registered — the THR-653 failure), and a directory under `C:\Users\chris\.claude\scheduled-tasks\` with no registry entry (orphan — the `flush-plan-docs` pattern).
+- Call `list_scheduled_tasks` and compare against the lane tables in `Docs/ops/scheduled-tasks-registry.md`. **Both directions matter:** a task in the table but not in the registry (documented-but-never-registered — the THR-653 failure), and a directory under `C:\Users\chris\.claude\scheduled-tasks\` with no registry entry (orphan — the `flush-plan-docs` pattern).
 - Verify the recorded fire times still match observed `nextRunAt`, and that no two Linear-MCP-using hourly tasks collide.
 - **On a mismatch, decide which side is wrong before "fixing" either.** The table records *deliberate* slot design — kwf-cc sits late in the hour so the brief reflects post-pickup state, not merely wherever it happens to fire. So when the registry disagrees with a documented slot whose rationale is stated, the **registry** is the drift: repair it with `update_scheduled_task`, do not edit the table to match. Only when the table has no stated rationale (or the change is clearly intentional and undocumented elsewhere) is amending the doc the right move. Precedent 2026-07-25: `keep-work-flowing-cc` was found on `0 * * * *` firing ~:08:13 — colliding to within ~7 min of `tb-opus-pickup` at :00:53, so the brief could run mid-pickup and report a half-finished picture. The cron was restored to `45 * * * *` (fires ~:53:13, as documented); the table was left untouched because it was right.
 

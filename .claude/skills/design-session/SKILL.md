@@ -1,7 +1,7 @@
 ---
 name: design-session
 description: Use when running a Claude Code session that designs or plans rather than implements — authoring a plan doc, running the design-governance checklist, moving a Linear issue toward Ready for Dev, or writing a handoff for the executor lane. The CC replacement for the Cowork design role.
-last_validated_against: 2026-07-18
+last_validated_against: 2026-07-26
 ---
 
 # design-session
@@ -62,7 +62,8 @@ three-pillar rule, handoff coordination block, Linear state transitions — is u
 
 ### Step 1 — Design-governance checklist (single internal pass)
 
-Follow the design-governance checklist in **CLAUDE.md § Design Governance** — do not re-derive it here; this is
+Follow the design-governance checklist in **`Docs/canon/design-governance.md`** (authoritative since THR-760;
+CLAUDE.md § Design Governance is now a pointer) — do not re-derive it here; this is
 the spine:
 
 - **Step 0 grill-me** (if scope is large / multi-pillar / ambiguous) — `grill-me`, synthesis to
@@ -84,7 +85,7 @@ the spine:
 ### Step 2 — Plan doc
 
 Copy `Docs/plans/_template.md`; name it `Docs/plans/YYYY-MM-DD-<topic>.md`. Required inline sections (not an
-appendix), per CLAUDE.md § Per-system required sections:
+appendix), per `Docs/canon/design-governance.md` § Per-system required sections:
 
 | Section | Content |
 |---|---|
