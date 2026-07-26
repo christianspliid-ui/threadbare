@@ -1,42 +1,42 @@
 # Briefing
 
-**Generated:** 2026-07-26 06:54 local (2026-07-26 04:54 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-07-26 07:54 local (2026-07-26 05:54 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
 ## Needs Christian
 
-**Nothing needs you right now — eleventh hour running with a genuinely empty list.** None of the four Nudge Model decisions moved. The encounter kill list is still the nearest one and still isn't honest enough to show you: 61 of its 65 entries hinge on a plumbing question the agents owe an answer to first, and that question has now sat unclaimed in the idea pile for five straight hours.
+**Nothing needs you right now — twelfth hour running with a genuinely empty list.** None of the four Nudge Model decisions moved. The encounter kill list is still the nearest one and still isn't honest enough to show you: 61 of its 65 entries hinge on a plumbing question the agents owe an answer to first, and that question has now sat unclaimed in the idea pile for six straight hours.
 
 The other three — how a broken world paces itself, the picture language for fate before the big image run, and the first rewritten batch for you to score — remain not-ready. Each arrives here, and as a Discord ping, when there's something real to look at.
 
 ## Queue
 
-**Healthy — 11 items ready, nothing in flight, no pull requests open.** Nothing is stale, nothing is blocked.
+**Healthy — 10 items ready, nothing in flight, no pull requests open.** Nothing is stale; nothing at the top of the queue is blocked.
 
-**The queue genuinely drained this hour, for the first time since midnight.** For three hours running the count had been pinned at 12 while a full swap happened underneath — an item shipped, and its own follow-up defect took the vacated slot. This hour one shipped and nothing replaced it: 12 → 11. Small, but it is the difference between a queue that is working and a queue that is treading water.
+**Second consecutive genuine drain: 12 → 11 → 10.** For the three hours before last, the count sat pinned at 12 while a full swap happened underneath — an item shipped and its own follow-up defect took the vacated slot. That pattern has now broken twice running. This hour's ship generated no follow-up at all, same as last hour's, so the queue is genuinely two items lighter than it was at midnight rather than treading water.
 
-**No high-priority work is anywhere in the ready queue — fourth consecutive hour.** All four high-priority items on the board sit one step back, unclaimed: the Nudge Model epic, its engine foundation, and two housekeeping items.
+**No high-priority work is anywhere in the ready queue — fifth consecutive hour.** All four high-priority items on the board sit one step back, unclaimed: the Nudge Model epic, its engine foundation, and two housekeeping items.
 
-**The encounter rebuild you blessed still has nothing an agent can claim — fourth hour now.** All five remaining pieces wait behind the engine piece, and that piece needs a design pass written before anyone can build from it. So the executor has now spent three consecutive hours on housekeeping while the thing with momentum offers nothing to pick up. **Agent scheduling gap, not yours** — a design session staging that engine piece is what unblocks it, and it is recorded in the standing list.
+**The encounter rebuild you blessed still has nothing an agent can claim — fifth hour now.** All five remaining pieces wait behind the engine piece, and that piece needs a design pass written before anyone can build from it. So the executor has now spent four consecutive hours on housekeeping while the thing with momentum offers nothing to pick up. **Agent scheduling gap, not yours** — a design session staging that engine piece is what unblocks it, and it is recorded in the standing list.
 
 ## Freshness
 
 **Home tree: level with the server, nothing stranded.** The same two familiar leftovers persist and neither blocks anything — one tracked settings edit and Friday's weekly-retro write-up, still untracked and still the only copy anywhere. Both are agent work to land via a docs pull request, not yours.
 
-**Cleanup reaper: alive and productive** — ran fourteen minutes ago and cleared two finished work folders and a merged branch in the process; nothing awaiting a human decision. **Automated checks: healthy** — every run in the recent window green.
+**Cleanup reaper: alive** — ran fourteen minutes ago, nothing awaiting a human decision. The work-folder count ticked up by one as this hour's session opened its own; normal churn, not a leak. **Automated checks: healthy** — every run in the recent window green.
 
-**The dead twice-daily job is unchanged: still 87 runs, still 87 failures, still unfiled.** Re-measured this hour rather than carried forward; its most recent attempt ran just after midnight and failed like all the others. It remains a one-line import bug with no live consequence — the queue drains fine without it — and it remains **the agents' call, not yours.**
+**The dead twice-daily job is unchanged: still 87 runs, still 87 failures, still unfiled.** It is a twice-daily job and has not fired since just after midnight, so the count standing still is expected rather than reassuring. It remains a one-line import bug with no live consequence — the queue drains fine without it — and it remains **the agents' call, not yours.**
 
 ## What's moving
 
-**The project fixed one of its own rules this hour instead of quietly breaking it.** Shipped at 06:10: before an agent may call a visual change done, it has to produce a screenshot of the screen at a specific size. That requirement turned out to be literally unsatisfiable in several common situations — an unattended session has no screen to photograph, and one of the two available cameras silently ignores being told what size to shoot at, so it hands back a picture that looks correct and is quietly the wrong dimensions. Agents had been rediscovering workarounds one at a time for four days, and the honest ones were reporting a number they had not actually measured.
+**The second half of Friday's gate cleanup shipped, and the pair of them is the real story.** Landed 05:35, thirty-three minutes from pickup. Where last hour's fix made an unreachable requirement satisfiable, this one made six separate checks stop lying about their own results.
 
-**What landed is a short ladder of acceptable alternatives** — which camera to use in which situation, and a rule that if the picture is not the promised size you state its real size out loud and prove the layout fits by measuring the page instead. Every substitution must be named in writing when it is used. The requirement stays all-or-nothing; what changed is that it can now be satisfied honestly.
+**The six were all the same shape.** One check printed FAIL in big letters and then reported success. One flagged a permanent error on a file it was never meant to inspect. One's error message blamed a deep architectural problem when the actual cause was a mistyped name — sending whoever read it off in exactly the wrong direction. One ran at the wrong point in the sequence, so every run that logged a problem shipped a stale report of problems. And one duplicated line in a content file broke a loader outright. Each fix was verified against the specific example that motivated it, rather than assumed.
 
-**The sequencing is the good part.** Last hour's brief described this exact problem as a discovery made during unrelated work — the session that hit it wrote it down rather than shrugging. This hour the ticket that had been waiting since Friday's retrospective was picked up and closed in eight minutes, because that write-up had already done the diagnostic work.
+**Why the pair matters more than either half.** Both came out of Friday's retrospective, both landed within ninety minutes of each other, and they close the same failure from opposite ends: last hour's fixed a rule nobody *could* satisfy, this one fixed rules whose *answers* nobody could trust. The shared consequence is what makes it worth your attention — a check that cries wolf trains the crew to walk past checks, and the crew had been doing exactly that.
 
-**In your terms:** nobody shipped a story beat this hour either. What shipped is that the crew can now prove a screen looks right without fudging it, and a rule nobody could follow has stopped being one people quietly stepped around. The pivot you blessed is still waiting on its next staged piece.
+**In your terms:** no story beat shipped this hour either. What shipped is that the crew's instruments now read true — the ones that were unreadable, and the ones that were reachable but wrong. Four hours of housekeeping is a long stretch, and it is not a choice anyone made: the pivot you blessed still has no staged piece to pick up. That remains the thing to fix, and it is ours.
 
 ---
 *Standing asks live in [`Design/user-actions.md`](user-actions.md). This file is regenerated hourly by the `keep-work-flowing-cc` scheduled task; staleness is visible from the Generated timestamp above and the task's `lastRunAt` in `list_scheduled_tasks`.*
