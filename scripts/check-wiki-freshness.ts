@@ -24,10 +24,13 @@
  *
  * Exemption token (blocking only): a commit in the PR range may carry, in its
  * body, `Wiki-freshness-exempt: <non-empty reason>`. When present, staleness
- * warnings are reported but do not fail the run (the step prints `EXEMPT —
- * <reason>`). This mirrors the `Browser-verify exempt:` DoD pattern: opt-in,
- * stated in the commit body, auditable forever in git history. If `git log` for
- * the range is unavailable, we treat it as "no exemption" — the gate still fires.
+ * warnings are reported but do not fail the run: the exemption is resolved before
+ * any verdict prints, so the run opens with `OK (exempt) — N page(s) flagged,
+ * waived by <full reason>` and lists the pages beneath it (THR-755 row 2 — it used
+ * to print `FAIL` first and reveal the exemption afterwards). This mirrors the
+ * `Browser-verify exempt:` DoD pattern: opt-in, stated in the commit body,
+ * auditable forever in git history. If `git log` for the range is unavailable, we
+ * treat it as "no exemption" — the gate still fires.
  *
  * Run via `npm run check:wiki-freshness` (advisory, chained into `check:process`)
  * or `npm run check:wiki-freshness:blocking` (blocking, the CI gate).
@@ -123,16 +126,41 @@ export function globToRegExp(glob: string): RegExp {
 }
 
 /**
+ * Trailers that terminate a wrapped exemption reason. A reason runs to the end of its
+ * paragraph, so continuation capture must stop before the next commit-body trailer —
+ * otherwise `Fixes THR-XXX` gets swallowed into the audited reason.
+ */
+const REASON_TERMINATOR_PATTERN =
+  /^(Fixes|Closes|Resolves|Refs|Co-Authored-By|Signed-off-by|Browser-verify|Wiki-freshness)\b/iu;
+
+/**
  * Parse the first non-empty exemption reason from concatenated commit bodies
  * (the output of `git log --format=%B <base>..HEAD`). An empty reason after the
  * token is treated as no exemption. Pure — the token scan is decoupled from git.
+ *
+ * The reason is captured across continuation lines up to the first blank line, next
+ * exemption token, or trailer (THR-755 row 2). Authors hard-wrap commit bodies, and
+ * capturing only the token's own line printed the reason truncated mid-sentence —
+ * which silently gutted the audit half of the escape hatch, since the recorded reason
+ * is exactly what `weekly-project-hygiene` reviews.
  */
 export function parseExemptionReason(commitBodies: string): string | null {
-  for (const line of commitBodies.split("\n")) {
-    const idx = line.toLowerCase().indexOf(EXEMPTION_TOKEN.toLowerCase());
+  const lines = commitBodies.split("\n");
+  for (let i = 0; i < lines.length; i++) {
+    const idx = lines[i].toLowerCase().indexOf(EXEMPTION_TOKEN.toLowerCase());
     if (idx === -1) continue;
-    const reason = line.slice(idx + EXEMPTION_TOKEN.length).trim();
-    if (reason) return reason;
+    const first = lines[i].slice(idx + EXEMPTION_TOKEN.length).trim();
+    if (!first) continue;
+
+    const parts = [first];
+    for (let j = i + 1; j < lines.length; j++) {
+      const next = lines[j].trim();
+      if (!next) break;
+      if (next.toLowerCase().includes(EXEMPTION_TOKEN.toLowerCase())) break;
+      if (REASON_TERMINATOR_PATTERN.test(next)) break;
+      parts.push(next);
+    }
+    return parts.join(" ");
   }
   return null;
 }
@@ -160,7 +188,14 @@ function collectChangedFiles(): Set<string> | null {
  * changed. No git/fs — the caller supplies the pages-with-sources and the
  * changed-file set, so this is deterministic and unit-testable.
  */
-export function computeStaleWarnings(pagesWithSources: ManifestPage[], changed: Set<string>): string[] {
+export function computeStaleWarnings(
+  pagesWithSources: ManifestPage[],
+  changed: Set<string>,
+  mode: FreshnessMode = "advisory",
+): string[] {
+  // "may be stale" hedges a claim blocking mode is about to exit 1 over (THR-755
+  // row 2). Advisory keeps the hedge — it genuinely only advises; blocking asserts.
+  const staleClaim = mode === "blocking" ? "is stale" : "may be stale";
   const warnings: string[] = [];
   for (const page of pagesWithSources) {
     const pageFileRel = `public/${page.file}`;
@@ -199,7 +234,7 @@ export function computeStaleWarnings(pagesWithSources: ManifestPage[], changed: 
 
     if (matchedSources.length > 0 && !pageChanged) {
       warnings.push(
-        `${pageFileRel} may be stale — changed files match its sources (${matchedSources.join(", ")}) ` +
+        `${pageFileRel} ${staleClaim} — changed files match its sources (${matchedSources.join(", ")}) ` +
           `but the page was not updated in this diff. Update it in the same PR (working agreement 2026-07-03).`,
       );
     }
@@ -236,12 +271,39 @@ function main(): void {
     );
   }
 
-  const warnings = computeStaleWarnings(pagesWithSources, changed);
+  const warnings = computeStaleWarnings(pagesWithSources, changed, WIKI_FRESHNESS_MODE);
 
   if (warnings.length === 0) {
     console.log(
       `check-wiki-freshness: OK — ${pagesWithSources.length} page(s) with sources checked against ${WIKI_FRESHNESS_BASE}, no stale pages.`,
     );
+    return;
+  }
+
+  // Resolve the exemption BEFORE emitting any verdict (THR-755 row 2). The previous
+  // order printed `FAIL` plus the full remediation instruction, *then* discovered the
+  // exemption and exited 0 — so the last thing a reader saw was a failure and a
+  // to-do already satisfied. Both cheap reactions to that were wrong: chase a page
+  // that needs no change, or start disbelieving the gate's real failures. A gate
+  // whose whole job is to be believed cannot open with a banner it does not mean.
+  //
+  // Blocking only: a `Wiki-freshness-exempt: <reason>` token in any commit in the PR
+  // range downgrades the failure to an audited pass. git-log failure ⇒ no exemption
+  // ⇒ the gate still fires (fails closed).
+  const exemptReason =
+    WIKI_FRESHNESS_MODE === "blocking"
+      ? (() => {
+          const bodies = git(["log", "--format=%B", `${WIKI_FRESHNESS_BASE}..HEAD`]);
+          return bodies === null ? null : parseExemptionReason(bodies);
+        })()
+      : null;
+
+  if (exemptReason) {
+    console.log(
+      `check-wiki-freshness: OK (exempt) — ${warnings.length} page(s) flagged, waived by ` +
+        `\`${EXEMPTION_TOKEN} ${exemptReason}\``,
+    );
+    for (const warning of warnings) console.log(`  - ${warning}`);
     return;
   }
 
@@ -251,16 +313,6 @@ function main(): void {
 
   // Advisory: surface the warnings but never fail the build.
   if (WIKI_FRESHNESS_MODE !== "blocking") return;
-
-  // Blocking: a `Wiki-freshness-exempt: <reason>` token in any commit in the PR
-  // range downgrades the failure to an audited pass. git-log failure ⇒ no
-  // exemption ⇒ the gate still fires (fails closed).
-  const bodies = git(["log", "--format=%B", `${WIKI_FRESHNESS_BASE}..HEAD`]);
-  const exemptReason = bodies === null ? null : parseExemptionReason(bodies);
-  if (exemptReason) {
-    console.log(`check-wiki-freshness: EXEMPT — ${exemptReason}`);
-    return;
-  }
 
   process.exit(1);
 }

@@ -187,7 +187,7 @@ remediation ticket or the build fails.
 - **Production hits:** 2 total — 2 write, 0 read, 0 unclassified
 - **Write sites:** `src/data/artifact-templates.ts`, `src/types/attachments.ts`
 - **Read sites:** —
-- **Verdict:** Tier 2: the registry declares no read sites and none were found — producer writes into nothing.
+- **Verdict:** Tier 2: the registry declares no read sites and none were found — producer writes into nothing. — or the row under-declares its sites: confirm `activatedEffects` is the symbol actually used at the real site, then register that site before treating this as a leak.
 
 ### `attachment-character-sheet-display` — 🟢 LIVE
 

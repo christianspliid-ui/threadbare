@@ -46,6 +46,35 @@ describe("parseExemptionReason", () => {
   it("returns null for an empty string (git log unavailable ⇒ no exemption)", () => {
     expect(parseExemptionReason("")).toBeNull();
   });
+
+  // THR-755 row 2 — a hard-wrapped reason used to print truncated mid-sentence,
+  // gutting the audit half of the escape hatch.
+  it("joins a hard-wrapped reason across continuation lines", () => {
+    const body = [
+      "docs: rename a symbol",
+      "",
+      `${EXEMPTION_TOKEN} divine-actions-reference.html matches only on`,
+      "a type-only import path, so no documented behavior changed.",
+    ].join("\n");
+    expect(parseExemptionReason(body)).toBe(
+      "divine-actions-reference.html matches only on a type-only import path, so no documented behavior changed.",
+    );
+  });
+
+  it("stops capturing at a blank line", () => {
+    const body = [`${EXEMPTION_TOKEN} pure rename`, "", "An unrelated later paragraph."].join("\n");
+    expect(parseExemptionReason(body)).toBe("pure rename");
+  });
+
+  it("stops capturing at a commit trailer rather than swallowing it", () => {
+    const body = [`${EXEMPTION_TOKEN} type-only move`, "Fixes THR-999"].join("\n");
+    expect(parseExemptionReason(body)).toBe("type-only move");
+  });
+
+  it("stops capturing at the next exemption token", () => {
+    const body = [`${EXEMPTION_TOKEN} first reason`, `${EXEMPTION_TOKEN} second reason`].join("\n");
+    expect(parseExemptionReason(body)).toBe("first reason");
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -113,6 +142,17 @@ describe("computeStaleWarnings", () => {
 
   it("returns no warnings for an empty page list", () => {
     expect(computeStaleWarnings([], new Set(["src/engine/anything.ts"]))).toEqual([]);
+  });
+
+  // THR-755 row 2 — blocking mode exits 1 over this claim, so it must assert it.
+  it("asserts staleness in blocking mode and hedges in advisory mode", () => {
+    const changed = new Set(["src/engine/exampleThing.ts"]);
+    expect(computeStaleWarnings([page()], changed, "blocking")[0]).toContain(
+      "public/example-reference.html is stale",
+    );
+    expect(computeStaleWarnings([page()], changed, "advisory")[0]).toContain(
+      "public/example-reference.html may be stale",
+    );
   });
 });
 

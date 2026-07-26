@@ -672,7 +672,10 @@ function parseCli(argv: readonly string[]): { strict: boolean; mode: CandidateMo
   return { strict, mode, paths };
 }
 
-function collectTargetFiles(mode: CandidateMode, cliPaths: string[]): string[] {
+function collectTargetFiles(
+  mode: CandidateMode,
+  cliPaths: string[],
+): { targets: string[]; waived: string[] } {
   const sourceFiles =
     mode === 'all'
       ? collectAllPlanFiles()
@@ -686,7 +689,18 @@ function collectTargetFiles(mode: CandidateMode, cliPaths: string[]): string[] {
     .filter((file) => file.startsWith(PLAN_DOC_PREFIX) && file.endsWith('.md'))
     .filter((file) => fs.existsSync(toAbsolutePath(file)));
 
-  return planDocs.filter((file) => !shouldSkipPlanDoc(file) && !isPlanDocExempt(file));
+  // Waived docs are reported separately from "found nothing" (THR-755 row 1): both
+  // used to print `skipped (no candidate files found)`, so a working exemption and a
+  // mistyped path were indistinguishable — and the exemptions this row added could
+  // not be verified from the gate's own output.
+  const targets: string[] = [];
+  const waived: string[] = [];
+  for (const file of planDocs) {
+    if (shouldSkipPlanDoc(file) || isPlanDocExempt(file)) waived.push(file);
+    else targets.push(file);
+  }
+
+  return { targets, waived };
 }
 
 function printFindings(findings: Finding[], strict: boolean): number {
@@ -710,10 +724,20 @@ function printFindings(findings: Finding[], strict: boolean): number {
 
 function main(): number {
   const { strict, mode, paths } = parseCli(process.argv.slice(2));
-  const targetFiles = collectTargetFiles(mode, paths);
+  const { targets: targetFiles, waived } = collectTargetFiles(mode, paths);
+
+  if (waived.length > 0) {
+    console.log(`lint:plan-doc waived ${waived.length} doc(s) (skip pattern or \`lint_plan_doc: exempt\`):`);
+    for (const file of waived) console.log(`  - ${file}`);
+  }
 
   if (targetFiles.length === 0) {
-    const reason = mode === 'all' ? `no files matched ${PLAN_DOC_GLOB}` : 'no candidate files found';
+    const reason =
+      waived.length > 0
+        ? 'every candidate is waived'
+        : mode === 'all'
+          ? `no files matched ${PLAN_DOC_GLOB}`
+          : 'no candidate files found';
     console.log(`lint:plan-doc skipped (${reason}).`);
     return 0;
   }
