@@ -1,44 +1,42 @@
 # Briefing
 
-**Generated:** 2026-07-26 08:54 local (2026-07-26 06:54 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-07-26 09:54 local (2026-07-26 07:54 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
 ## Needs Christian
 
-**Nothing needs you right now — thirteenth hour running with a genuinely empty list.** The reason changed this hour, though, and it is worth thirty seconds.
+**Nothing needs you right now — fourteenth hour running with a genuinely empty list.** You already did this hour's one human thing before anything could ask you for it.
 
-The encounter kill list — the nearest of your four Nudge Model decisions — has been stuck behind a plumbing question for six hours: 61 of its 65 entries hinge on whether a batch of unreachable content should be wired up or thrown away, and that is our call to make before the list is honest enough to put in front of you. **That question was picked up eight minutes ago.** So was the engine foundation the whole rebuild waits on. Both had sat untouched since the pivot was blessed; both are now being worked.
+**One FYI about the money you just spent, and it is not a request.** Publishing to the live site had quietly stopped. Nothing shouted about it: the only signal was a red mark on a check the crew is *correctly* trained to walk past, because it isn't the gate that blocks merges. A session closing an unrelated ticket happened to read the error text and found it. You upgraded the hosting plan; the site published again 45 seconds after the next merge, and I confirmed that independently just now rather than taking the ticket's word for it — the live site is current.
 
-Still nothing for you — a design pass is not a decision, and neither will produce one this hour. But the two things standing between you and your first real Nudge Model call are moving for the first time.
+The FYI is *why* the old allowance ran out. It was not the game — it was the crew. The automated lanes publish a preview build roughly every fourteen minutes, all day. On the old plan that eventually blocked real publishing; on the new plan it bills instead. That is a bill-shaped question, not a broken-thing question, and only you can decide whether it matters. **The recommendation is to do nothing until the invoice actually looks wrong** — trimming it is real engineering time spent on a problem that may never appear. Flagging it now only so the number isn't a surprise later.
 
 ## Queue
 
-**Healthy — 9 items ready, nothing in flight, no pull requests open.** Nothing is stale; nothing at the top of the queue is blocked.
+**Healthy — 13 items ready, nothing in flight, no pull requests open.** Nothing is stale; nothing at the top of the queue is blocked.
 
-**The five-hour staging gap broke.** Since 03:54 this file has reported the same thing every hour: the rebuild you blessed had momentum but offered nothing anyone could pick up, because its engine piece needed a design pass first and nobody had started one. At **08:46 local** a design session claimed that engine piece **and** the orphan-content question, fifteen seconds apart. This was the one item on the board flagged as ours to fix, and it is being fixed.
+**The five-hour drought didn't just break, it finished.** Last hour reported that someone had finally picked up the two pieces the rebuild waits on. They completed in twenty-five minutes. The engine foundation of the Nudge Model now has a finished, reviewed design and sits at the top of the ready queue as the only high-priority item on the board — the first genuinely claimable piece of the rebuild you blessed. The orphan-content question that was holding the encounter kill list hostage is staged right behind it.
 
-**Third consecutive genuine drain: 11 → 10 → 9.** This hour's ship produced no follow-up defect, same as the previous two. Earlier in the night the count sat pinned at 12 while items were swapped one-for-one underneath; that pattern is now three hours dead.
+**Ready count rose 9 → 13, and every one of the four is good news or neutral.** Two are those finished designs arriving as claimable work. Two more are follow-up defects that a shipped ticket found and wrote down instead of shipping over. The fifth arrival is the publishing gap above, filed as a real ticket. One item left by shipping. No item on this board is a regression.
 
-**One medium at the top, eight low-priority items behind it.** No high-priority work sits in the ready queue for the sixth hour — but that now reads as expected rather than concerning, because the high-priority items are precisely the ones a design session just picked up.
+**One high, four mediums, eight low.** High-priority work is back at the top of the queue after six hours without any — and it is the piece everything else in the rebuild depends on.
 
 ## Freshness
 
 **Home tree: level with the server, nothing stranded.** The same two familiar leftovers persist and neither blocks anything — one tracked settings edit and Friday's weekly-retro write-up, still untracked and still the only copy anywhere. Both are agent work to land via a docs pull request, not yours.
 
-**Cleanup reaper: alive** — ran fourteen minutes ago, nothing awaiting a human decision. The work-folder count ticked up by one as this hour's design session opened its own; normal churn, and the same tick-up that corroborates the pickup above. **Automated checks: healthy** — every run in the recent window green.
+**Cleanup reaper: alive** — ran fourteen minutes ago, nothing awaiting a human decision. **Automated checks: healthy.** **Live-site publishing: verified green this run** — I checked the deployed version against the current code directly rather than assuming, which is the check the new ticket wants made permanent.
 
 **The dead twice-daily job is unchanged: still 87 runs, still 87 failures, still unfiled.** It has not fired since just after midnight, so a flat count is expected rather than reassuring. It remains a one-line import bug with no live consequence, and it remains **the agents' call, not yours.**
 
 ## What's moving
 
-**The instruction file every session reads got a third lighter — and then immediately proved the point.** Landed 08:36, thirty-four minutes from pickup.
+**A story fix shipped, and it is one you would notice in play.** When your workings leave a mark on someone — a blessing, a curse, the lingering weight of a scene — that mark is supposed to fade. It wasn't fading. The countdown was being written to one place and read from another, so afflictions that should have worn off in a few days sat on people permanently. Landed 07:38, and the session filed two follow-ups rather than quietly patching around them: the fading counter is still displayed from the wrong place in one panel, and five tavern scenes author consequences for failure that nothing has ever read.
 
-**What changed.** Every Claude Code session — yours and roughly two dozen automated ones a day — loads the same project instruction file before doing anything else. It had grown to where a large slice of it was duplicated from elsewhere in the repo, which is both a cost on every session and a slow-motion accuracy problem: when a rule lives in two places the copies drift, and nobody can tell which one is true. The pass moved each duplicated rule to exactly one authoritative home and left a pointer behind. **Measured, not assumed: 90,292 characters down to 63,743** — a 29% cut with no rule removed. Worth being precise: the ticket aimed at ~58,000 and landed at ~63,700, so it got most of the way rather than all of it.
+**The rebuild's engine design landed and handed itself off.** Twenty-five minutes from pickup to a merged design document, review passed, and both blockers staged for whoever picks up next. Worth naming because this file spent five consecutive hours reporting the opposite — a blessed program with momentum and nothing anyone could actually claim.
 
-**Then the proof, nine minutes later.** Earlier this week a session found a small error in that same file — a health check described as looking for a filename that does not exist on this machine, so following the instructions literally reports catastrophic damage on a perfectly healthy setup. The session that found it **deliberately did not fix it**, because the file was mid-rewrite and parallel edits to an always-loaded file are a known way to lose work. It logged the correction and waited. The rewrite landed at 08:36; the correction landed at 08:45. That is the queue behaving like a queue instead of a scramble.
-
-**In your terms:** no story beat shipped this hour. What shipped is that the crew's standing orders are shorter, no longer contradict themselves in two places, and a correction that had been politely waiting its turn walked in the moment the door opened. And the five-hour drought on the rebuild you blessed ended — not with a ship, but with someone finally picking up the piece everything else waits on.
+**In your terms:** curses now lift when they're supposed to, the crew found and wrote down two more places where a promised consequence goes nowhere, and the foundation of the encounter rebuild is drawn up and waiting for hands. Your four decisions on that rebuild are still not ready — the kill list is the nearest, and it stays dishonest until the orphan-content verdict is actually executed rather than merely designed.
 
 ---
 *Standing asks live in [`Design/user-actions.md`](user-actions.md). This file is regenerated hourly by the `keep-work-flowing-cc` scheduled task; staleness is visible from the Generated timestamp above and the task's `lastRunAt` in `list_scheduled_tasks`.*
