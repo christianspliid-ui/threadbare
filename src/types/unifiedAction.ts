@@ -44,6 +44,21 @@ export interface ActionStepOutcomeMetadata {
   readonly rewardPool?: RewardPoolRecipe;
   readonly tierPromotionEligible?: boolean;
   readonly reputationDelta?: number;
+  /**
+   * THR-783 — aftermath effects applied when *this* outcome side fires, dispatched
+   * through the same {@link applyEncounterAftermathReaction} the reaction path uses,
+   * so the full effect vocabulary is authorable per step rather than only per
+   * encounter. Read symmetrically: declare it on `successMetadata` to mark a win,
+   * on `failureMetadata` to mark a loss.
+   *
+   * Note the outcome-band split is `isStepSuccess`, which counts `near_miss` as
+   * success — a near miss therefore does *not* fire `failureMetadata.effects`.
+   *
+   * Supersedes the never-declared, never-read `onFailureEffects` key that the
+   * THR-101 tavern migration authored in place of the legacy `appliesWound` flag:
+   * five sites named an effect nothing consumed, so a lost brawl marked no one.
+   */
+  readonly effects?: readonly EncounterAftermathReactionEffect[];
 }
 
 // ─── Structured Intelligence ────────────────────────────────────────────────

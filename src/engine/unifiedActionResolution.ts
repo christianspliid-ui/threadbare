@@ -26,6 +26,7 @@ import type {
   StepOutcome,
 } from '../types/unifiedAction';
 import type { ActionStepOutcomeMetadata } from '../types/unifiedAction';
+import { applyEncounterAftermathReaction } from './encounterAftermath';
 import type { GraphOp } from '../types/graphOp';
 import {
   progressUnifiedAction,
@@ -803,6 +804,125 @@ function applyOutcomeReputationDelta(
   return applyReputationScoreDelta(state, actorId, delta);
 }
 
+/**
+ * Reaction-id prefix stamped on the synthetic reaction that carries a step's
+ * `successMetadata.effects` / `failureMetadata.effects` into the aftermath
+ * dispatcher. Every effect trace records `reactionId`, so this prefix is what
+ * distinguishes a step-outcome effect from an author-picked aftermath reaction
+ * when reading a trace dump (NFP #2).
+ */
+const STEP_OUTCOME_EFFECTS_REACTION_PREFIX = 'step_outcome_effects';
+
+/**
+ * THR-783 — apply a step outcome's authored aftermath effects.
+ *
+ * The step-metadata effect list is dispatched through the *same*
+ * {@link applyEncounterAftermathReaction} the reaction path uses, by wrapping it
+ * in a synthetic single-use reaction. That is deliberate: it means the whole
+ * effect vocabulary (conditions, marks, seeds, intel, bonds, reach signatures …)
+ * is authorable per step for free, and no effect kind can be live on one path and
+ * dead on the other — the failure mode this ticket exists to close.
+ *
+ * The dispatcher is state-returning while `executeStepResult` mutates `state` in
+ * place, so the changed fields are copied back onto the caller's object. The
+ * returned `nextState` is a shallow spread of `state`, so assigning its own
+ * enumerable properties back writes exactly the fields the dispatcher replaced
+ * and leaves every untouched field pointing at the identical reference.
+ *
+ * Fail-soft (NFP #4): no effects, no runtime, or a throw from any effect resolver
+ * leaves `state` untouched and the step resolution continues. The tick loop must
+ * never crash on content.
+ */
+function applyStepOutcomeEffects(
+  state: GameState,
+  action: UnifiedAction,
+  metadata: ActionStepOutcomeMetadata | undefined,
+  outcome: StepOutcome,
+  tick: number,
+  runtime: SimulationRuntime | undefined,
+): { woundApplied: boolean } {
+  const effects = metadata?.effects;
+  if (!effects || effects.length === 0) return { woundApplied: false };
+
+  if (!runtime) {
+    // Production always threads a runtime; tests may not. Skipping loudly beats
+    // throwing from the dispatcher's own runtime guard.
+    emitTrace({
+      tick,
+      category: 'encounter_aftermath_effect',
+      agentId: action.actorId,
+      encounterId: action.templateId,
+      actionId: action.actionId,
+      reactionId: STEP_OUTCOME_EFFECTS_REACTION_PREFIX,
+      effectIndex: 0,
+      effectKind: 'step_outcome_effects',
+      success: false,
+      failReason: 'no_runtime',
+      effectiveTargetId: action.actorId,
+      effectiveTargetKind: 'actor_fallback',
+      summary: `step_outcome_effects skipped: no runtime (${action.templateId} step ${action.currentStep} ${outcome})`,
+    } as unknown as Parameters<typeof emitTrace>[0]);
+    return { woundApplied: false };
+  }
+
+  const reaction: EncounterAftermathReaction = {
+    id: `${STEP_OUTCOME_EFFECTS_REACTION_PREFIX}_${action.currentStep}_${outcome}`,
+    label: 'Step outcome',
+    effects,
+  };
+
+  try {
+    const { state: next, mutationSummary } = applyEncounterAftermathReaction(
+      state, action, reaction, tick, runtime,
+    );
+    Object.assign(state, next);
+    // Same invalidation contract phaseAutonomousAftermath honours: the effect
+    // resolvers mutate the graph in place, so nothing downstream re-reads it
+    // without an explicit version bump (CLAUDE.md § Load-Bearing Decisions).
+    // `condition_attachment` sets touchedStructure and does *not* touch itself.
+    if (mutationSummary.touchedStructure) touchStructure(runtime);
+    else if (mutationSummary.touchedWorld) touchWorld(runtime);
+    emitTrace({
+      tick,
+      category: 'encounter_aftermath_effect',
+      agentId: action.actorId,
+      encounterId: action.templateId,
+      actionId: action.actionId,
+      reactionId: reaction.id,
+      effectIndex: 0,
+      effectKind: 'step_outcome_effects',
+      effectDetail: {
+        step: action.currentStep,
+        outcome,
+        effectKinds: effects.map(e => e.kind),
+        woundApplied: mutationSummary.woundApplied,
+      },
+      success: true,
+      effectiveTargetId: action.actorId,
+      effectiveTargetKind: 'actor_fallback',
+      summary: `step_outcome_effects: ${action.templateId} step ${action.currentStep} ${outcome} → ${effects.map(e => e.kind).join(', ')}`,
+    } as unknown as Parameters<typeof emitTrace>[0]);
+    return { woundApplied: mutationSummary.woundApplied };
+  } catch (err) {
+    emitTrace({
+      tick,
+      category: 'encounter_aftermath_effect',
+      agentId: action.actorId,
+      encounterId: action.templateId,
+      actionId: action.actionId,
+      reactionId: reaction.id,
+      effectIndex: 0,
+      effectKind: 'step_outcome_effects',
+      success: false,
+      failReason: err instanceof Error ? err.message : 'unknown_error',
+      effectiveTargetId: action.actorId,
+      effectiveTargetKind: 'actor_fallback',
+      summary: `step_outcome_effects errored: ${err instanceof Error ? err.message : 'unknown'}`,
+    } as unknown as Parameters<typeof emitTrace>[0]);
+    return { woundApplied: false };
+  }
+}
+
 function applyReputationScoreDelta(
   state: GameState,
   actorId: string,
@@ -1562,6 +1682,10 @@ export function executeStepResult(
   const step = resolveStepDefinition(template, action.currentStep, action.choiceHistory);
   const stepMetadata = getStepOutcomeMetadata(step, outcome);
   const metadataReputationDelta = applyOutcomeReputationDelta(state, action.actorId, stepMetadata);
+  // THR-783: authored step-outcome effects (conditions, marks, seeds …). No-ops for
+  // every template that declares none; the helper owns its own tracing and cache
+  // invalidation, so the result is intentionally unbound here.
+  applyStepOutcomeEffects(state, action, stepMetadata, outcome, tick, runtime);
   const branchConsequence = applyGateDutyBranchConsequences(
     state,
     action,

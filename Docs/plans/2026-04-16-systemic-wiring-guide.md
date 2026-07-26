@@ -996,8 +996,8 @@ All encounters use `UnifiedActionTemplate` (migrated as of THR-108). `EncounterT
 | `narrativeTemplate` | `string` | Scene-setting prose; supports all enrichment placeholders |
 | `successAfterimage` | `string` | Brief outcome shown in Scene So Far on success (1-2 sentences) |
 | `failureAfterimage` | `string` | Brief outcome shown in Scene So Far on failure (1-2 sentences) |
-| `successMetadata` | `ActionStepOutcomeMetadata` | Mechanical consequence of success: rewardPool, reputationDelta, tierPromotionEligible |
-| `failureMetadata` | `ActionStepOutcomeMetadata` | Mechanical consequence of failure: reputationDelta |
+| `successMetadata` | `ActionStepOutcomeMetadata` | Mechanical consequence of success: rewardPool, reputationDelta, tierPromotionEligible, effects |
+| `failureMetadata` | `ActionStepOutcomeMetadata` | Mechanical consequence of failure: reputationDelta, rewardPool, effects |
 | `nudges` | `StepNudge[]` | THR-773 — authored nudge hand offered to the god in an **attended** encounter. Omit = no hand (feature is opt-in). See Capability 14. |
 
 ### Outcome Metadata Fields (ActionStepOutcomeMetadata)
@@ -1007,6 +1007,30 @@ All encounters use `UnifiedActionTemplate` (migrated as of THR-108). `EncounterT
 | `reputationDelta` | `number` | Direct reputation score change on this outcome |
 | `tierPromotionEligible` | `boolean` | Allows capability tier promotion if this outcome fires |
 | `rewardPool` | `RewardPoolRecipe` | Attachment pool draw on success |
+| `effects` | `EncounterAftermathReactionEffect[]` | **THR-783** — aftermath effects applied when *this* outcome side fires. Full effect vocabulary, same as an aftermath reaction. See below. |
+
+**Step-outcome effects (THR-783, shipped 2026-07-26).** You can hang the entire aftermath effect vocabulary on a single step outcome, without authoring an aftermath reaction the agent has to pick. Declare `effects` on whichever side should fire it:
+
+```typescript
+failureMetadata: {
+  reputationDelta: -0.04,
+  effects: [
+    { kind: 'condition_attachment', templateId: 'trait.condition.wounded' },
+  ],
+},
+```
+
+The list is dispatched through the *same* `applyEncounterAftermathReaction` the reaction path uses, so every effect kind in the table below is available here — conditions, hidden marks, encounter seeds, intel grants, bonds, reach signatures. There is no separate, smaller vocabulary to learn, and no kind can be live on one path and dead on the other.
+
+Three things to know:
+
+* **The side split is `isStepSuccess`, which counts `near_miss` as a success.** A near miss does *not* fire `failureMetadata.effects`. If you want a near miss to leave a mark, put it on the success side or use an aftermath reaction.
+* **It is per *step*, not per encounter.** A two-step brawl that fails both steps applies the effect twice (two condition stacks). That is usually what you want for a fight; it is usually not what you want for a one-off narrative consequence — use an aftermath reaction for those.
+* **Fail-soft.** A missing target, a missing trait definition, or a throw inside any resolver leaves the step resolution untouched and emits a trace. Content cannot crash the tick loop.
+
+Supersedes `onFailureEffects`, a key the THR-101 tavern migration authored at five sites in place of the legacy `appliesWound` flag. It was never declared on the type and never read by any engine module, so a lost tavern brawl marked nobody from 2026-04-24 until this fix. **If you are reading an old plan doc or changelog row that says `onFailureEffects`, the field is now `effects`.**
+
+> **Caveat (THR-809, open).** The condition *definition* nodes (`trait.condition.wounded` and 5 siblings) are not currently seeded into the world graph — `ensureTraitNodes` hangs off a legacy loop the unified pipeline never runs. Until that lands, a `condition_attachment` naming a definition-file condition fail-softs on `template_missing` in a live game. The wiring above is correct and unit-proven; the effect is simply not yet observable in play.
 
 ### Aftermath Reaction Effect Types
 
