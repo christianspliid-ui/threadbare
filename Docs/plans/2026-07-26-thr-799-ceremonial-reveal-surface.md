@@ -143,7 +143,7 @@ N/A — portaled DOM over the canvas; no map layers touched.
 
 ## Tracing
 
-No new trace types — the surface is pure presentation over already-traced notification events. Inspectability is served by the StyleGuide registration (every primitive variant renderable with sample data) and the unchanged notification traces.
+N/A — no new trace types; the surface is pure presentation over already-traced notification events. Inspectability is served by the StyleGuide registration (every primitive variant renderable with sample data) and the unchanged notification traces.
 
 ## Fail-soft table
 
@@ -170,10 +170,27 @@ No ≥100-importer file is touched. (`src/index.css` and `src/components/shared/
 ## Vision audit
 
 - [x] This plan does not contradict any Vision premise — it strengthens "narrative over mechanical" (quote well, word-scale chips) and the dark-tapestry identity.
+- [x] If it did, the Vision edit would be part of this ticket's scope — not applicable; the one taste-profile tension found (gold budget) was resolved inside this plan (§ UI pillar "Gold budget").
 
 ## Rulebook impact
 
 - [x] This plan does not change a rule of play — presentation tier only.
+- [x] If it did, `Docs/canon/rulebook.md` would be updated in the same PR — not applicable.
+
+## Interface impact
+
+Step 0.7 check against `Docs/canon/interface-map.md`: this plan reads several mapped subsystems' data for display but changes **no cross-system read/write contract** — every touched surface keeps consuming the same fields it consumes today.
+
+| Contract / surface | Subsystem(s) | Disposition |
+|---|---|---|
+| `PopupItem` queue → EventPopup | Notifications | **preserve** — same fields (`title`, `body`, `sphere`, `choices`); presentation-only split on existing `sphere?` |
+| `templateToPreviewSlot` → ActionCard face | Unified actions | **preserve** — AscendantBeatModal keeps the same adapter; ActionCard unmodified |
+| Attachment catalogs → Codex glyph/tier (`getAttachmentGlyph`) | Attachments, Items & Possessions | **preserve** — AttachmentDetailView keeps its existing glyph/prose reads |
+| Agent traits → NpcDetailView trait section | Traits | **preserve** — same trait list read; inline presentation only |
+| `entityVisualResolver` / THR-637 fallback chain | Entity visuals | **preserve** — Medallion consumes the resolver; no second art path |
+| New: `reveal-content.ts` → RevealCard consumers | (new, UI-internal) | **add** — static content table read only by the new primitives; no engine writer, so no production read-site obligation beyond the UI itself |
+
+No contract is extended or retired; no interface-map row changes.
 
 > Brainstorm companion: `Docs/plans/2026-07-26-thr-799-ceremonial-reveal-surface-brainstorm.md` (written alongside).
 
