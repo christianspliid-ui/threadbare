@@ -364,10 +364,15 @@ export function gatherNarrativeContext(
     ? { factionName: leaderMembership.group.name, rank: (leaderMembership.edge.properties.role as string) ?? 'member' }
     : undefined;
 
-  // Titles from traits
+  // Titles from traits.
+  // Reads `subcategory` — the canonical field on `TraitDefinitionProperties`. Every shipped
+  // reputation definition (`reputation-trait-content.ts`, `economic-trait-content.ts`) stores
+  // `subcategory: 'reputation'`; nothing writes `category` on a trait node. Reading `category`
+  // here made this filter always empty, so `{title}` silently fell back to the agent name and
+  // `{?has_title}` was permanently false (THR-787).
   const traits = getActorTraits(graph, agentId);
   const titles = traits
-    .filter(t => t.trait.properties?.category === 'reputation')
+    .filter(t => t.trait.properties?.subcategory === 'reputation')
     .map(t => t.trait.name)
     .slice(0, 3);
 

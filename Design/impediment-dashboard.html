@@ -3053,6 +3053,19 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "Declare structural graph views with **method syntax** so bivariance applies and both `WorldGraph` and narrow test stubs satisfy them. Run `npm run check:typecheck` **before** the full suite when a change adds a module or an interface — it is ~40s against the suite's ~75s and localizes the fault to a file list. Also: an `interface` without an index signature is not assignable to `Record<string, unknown>`, so `properties: {…} as TraitDefinitionProperties` in a `GraphNode` literal is a net-new error — use a plain object literal in test fixtures.",
     "session": "THR-786 hourly pickup; ratchet returned to 3517 unchanged after the fix."
+  },
+  {
+    "num": "219",
+    "id": 219,
+    "count": 1,
+    "date": "2026-07-26",
+    "category": "tooling",
+    "description": "**The Playwright MCP server is rooted at a *stale worktree from a previous session*, so a screenshot written to the live session's worktree is rejected outright.** `browser_take_screenshot` with an absolute path inside the session worktree (`.claude/worktrees/zealous-goldwasser-26173b/.playwright-mcp/…`) failed with `File access denied: … is outside allowed roots. Allowed roots: …\\.claude\\worktrees\\nostalgic-mahavira-0c1c90\\.playwright-mcp, …\\.claude\\worktrees\\nostalgic-mahavira-0c1c90`. That worktree belongs to an earlier pickup run; the MCP server's roots are fixed at server start and do not follow the session. This compounds the already-known headless-capture problem: the Browser pane refused the screenshot first (`Screenshot timed out after 5s: the Browser pane is not displayed, so the page is not compositing frames`, the THR-796 / #199c failure), so Playwright was the *sanctioned fallback* per the THR-754 evidence routes — and the fallback's write path was denied too.",
+    "consequence": "Both sanctioned browser-verify capture routes fail in an unattended run: the Browser pane cannot composite, and Playwright cannot write where the session can commit. A run that treats \"screenshot failed\" as terminal parks a shippable ticket; a run that writes to the bare filename lands the image outside the repo and unrecoverable (#199c).",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Write the screenshot **into the allowed root that the error message names** — it prints the roots verbatim — then relocate it with `cp` into the session worktree and `rm` the original: `cp ../<stale-worktree>/.playwright-mcp/<file>.png .playwright-mcp/ && rm -f ../<stale-worktree>/.playwright-mcp/<file>.png`. `.playwright-mcp/` is gitignored, so the image is evidence for the completion comment rather than a committed artifact. **Read the roots off the error rather than assuming they track the session worktree** — the assumption that an absolute path inside the current worktree is always writable is what the THR-754 route text implies and it does not hold when a prior session's server is still bound.",
+    "session": "THR-787 hourly Opus pickup; browser-verify of the CMS Traits table."
   }
 ];
 // ── End data ──

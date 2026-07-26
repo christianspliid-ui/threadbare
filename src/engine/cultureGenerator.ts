@@ -495,7 +495,6 @@ export function registerPregenCultures(
         domainContributions: {},
         tags: [pc.identity.demonym ?? pc.name],
         flavorText: '',
-        category: 'innate',
       },
     });
 

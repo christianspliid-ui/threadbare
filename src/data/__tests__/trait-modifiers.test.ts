@@ -10,7 +10,7 @@ describe('LOS trait definitions', () => {
     for (const def of LOS_TRAIT_DEFINITIONS) {
       expect(def.traitId).toBeTruthy();
       expect(def.name).toBeTruthy();
-      expect(def.category).toBeTruthy();
+      expect(def.subcategory).toBeTruthy();
       expect(typeof def.modifiers.los_range).toBe('number');
       expect(def.description).toBeTruthy();
     }

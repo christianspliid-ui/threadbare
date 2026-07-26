@@ -1896,7 +1896,7 @@ export const CONTENT_REGISTRY: ContentRegistryEntry[] = [
     columns: [
       { key: 'traitId', label: 'Trait ID' },
       { key: 'name', label: 'Name' },
-      { key: 'category', label: 'Category', render: 'badge', badgeColors: TRAIT_CATEGORY_COLORS },
+      { key: 'subcategory', label: 'Category', render: 'badge', badgeColors: TRAIT_CATEGORY_COLORS },
       { key: 'description', label: 'Description' },
       { key: 'modifiers', label: 'Modifiers', render: 'json' },
     ],
