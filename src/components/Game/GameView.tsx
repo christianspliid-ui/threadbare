@@ -2505,10 +2505,6 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     touchedStructure?: boolean;
     closeAfterSelection?: boolean;
   } => {
-    // THR-114: mutable object written inside updater, read outside (pattern per plan §D7)
-    const pendingAftermathMutations = { touchedWorld: false, touchedStructure: false };
-    // THR-133: traces collected inside updater, emitted outside (StrictMode-safe)
-    let pendingMarkTraces: Parameters<typeof emitTrace>[0][] = [];
     const resolvedContext = resolveAftermathContextForAgent(_gameStateRef.current, agentId, reactionId);
     if ('error' in resolvedContext) {
       return {
@@ -2522,69 +2518,79 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     const selectedEncounterId = resolvedContext.action.templateId;
     const selectedCloseAfterSelection = resolvedContext.reaction.closeAfterSelection ?? true;
 
-    setGameState(prev => {
-      const activeAction = prev.unifiedActions.find(action => action.actionId === selectedActionId) ?? resolvedContext.action;
-      const reaction = activeAction.aftermathSummary?.reactions?.find(entry => entry.id === selectedReactionId) ?? resolvedContext.reaction;
+    // THR-780: `applyEncounterAftermathReaction` mutates the live WorldGraph in place
+    // (e.g. `node.properties.reputationTallies` in encounterAftermath.ts), so it must NOT
+    // run inside a `setGameState` updater — `<StrictMode>` double-invokes updaters in dev,
+    // which applied every accumulating effect twice (a 0.35 tally delta landed as 0.70)
+    // while idempotent ones (hidden_mark, deduped by a deterministic markId) silently
+    // looked correct. Compute against the live ref here and commit the finished state
+    // below, mirroring the `resolveBeat` idiom above. This also retires the THR-114
+    // (mutable write-out object) and THR-133 (deferred trace list) workarounds, which
+    // shielded the reads but not the mutation itself.
+    const baseState = _gameStateRef.current;
+    const activeAction = baseState.unifiedActions.find(action => action.actionId === selectedActionId) ?? resolvedContext.action;
+    const reaction = activeAction.aftermathSummary?.reactions?.find(entry => entry.id === selectedReactionId) ?? resolvedContext.reaction;
 
-      const { state: nextState, mutationSummary: reactionMutations } = applyEncounterAftermathReaction(
-        prev,
-        activeAction,
-        reaction,
-        prev.tick,
-        runtime,
-      );
-      pendingAftermathMutations.touchedWorld = reactionMutations.touchedWorld;
-      pendingAftermathMutations.touchedStructure = reactionMutations.touchedStructure;
+    const { state: nextState, mutationSummary: reactionMutations } = applyEncounterAftermathReaction(
+      baseState,
+      activeAction,
+      reaction,
+      baseState.tick,
+      runtime,
+    );
 
-      // THR-117: condition_attachment aftermath path — wire woundApplied into mid-encounter tier promotion.
-      // Mirrors the legacy resolveEncounter → orchestrator promotion contract.
-      let stateAfterPromotion = nextState;
-      if (reactionMutations.woundApplied && activeAction.effectiveTier && activeAction.effectiveTier !== 'invisible') {
-        const newTier = checkMidEncounterPromotion(activeAction.effectiveTier, { wound: true });
-        if (newTier !== null) {
-          stateAfterPromotion = {
-            ...nextState,
-            unifiedActions: nextState.unifiedActions.map((action: UnifiedAction) =>
-              action.actionId === activeAction.actionId ? { ...action, effectiveTier: newTier } : action
-            ),
-          };
-          emitTrace({
-            type: 'encounter_promotion',
-            tick: prev.tick,
-            encounterId: activeAction.templateId ?? 'unknown',
-            agentId: activeAction.actorId,
-            fromTier: activeAction.effectiveTier,
-            toTier: newTier,
-            reason: 'wound',
-          } as unknown as Parameters<typeof emitTrace>[0]);
-        }
+    // THR-117: condition_attachment aftermath path — wire woundApplied into mid-encounter tier promotion.
+    // Mirrors the legacy resolveEncounter → orchestrator promotion contract.
+    let stateAfterPromotion = nextState;
+    if (reactionMutations.woundApplied && activeAction.effectiveTier && activeAction.effectiveTier !== 'invisible') {
+      const newTier = checkMidEncounterPromotion(activeAction.effectiveTier, { wound: true });
+      if (newTier !== null) {
+        stateAfterPromotion = {
+          ...nextState,
+          unifiedActions: nextState.unifiedActions.map((action: UnifiedAction) =>
+            action.actionId === activeAction.actionId ? { ...action, effectiveTier: newTier } : action
+          ),
+        };
+        emitTrace({
+          type: 'encounter_promotion',
+          tick: baseState.tick,
+          encounterId: activeAction.templateId ?? 'unknown',
+          agentId: activeAction.actorId,
+          fromTier: activeAction.effectiveTier,
+          toTier: newTier,
+          reason: 'wound',
+        } as unknown as Parameters<typeof emitTrace>[0]);
       }
+    }
 
-      const { nextState: stateAfterMarks, tracesToEmit: markTraces } = consumeMatchingMarks(
-        stateAfterPromotion,
-        activeAction.actorId,
-        activeAction.templateId,
-        prev.tick,
-      );
-      pendingMarkTraces = markTraces as Parameters<typeof emitTrace>[0][];
-      // THR-113: passive observation — trace when a resolved encounter's target
-      // matches an existing intelligence record held by the actor. No state mutation.
-      observeResolutionIntelligence(stateAfterMarks, activeAction, reaction, prev.tick);
-      return {
-        ...stateAfterMarks,
-        encounterNotifications: (stateAfterMarks.encounterNotifications ?? []).map(notification => {
-          if (notification.resolved) return notification;
-          const matchesActionId = Boolean(notification.actionId) && notification.actionId === activeAction.actionId;
-          const matchesTemplate = notification.agentId === activeAction.actorId && notification.encounterId === activeAction.templateId;
-          if (!matchesActionId && !matchesTemplate) return notification;
-          return { ...notification, resolved: true };
-        }),
-      };
-    });
+    const { nextState: stateAfterMarks, tracesToEmit: markTraces } = consumeMatchingMarks(
+      stateAfterPromotion,
+      activeAction.actorId,
+      activeAction.templateId,
+      baseState.tick,
+    );
+    // THR-113: passive observation — trace when a resolved encounter's target
+    // matches an existing intelligence record held by the actor. No state mutation.
+    observeResolutionIntelligence(stateAfterMarks, activeAction, reaction, baseState.tick);
 
-    if (pendingAftermathMutations.touchedStructure) touchStructure(runtime);
-    else if (pendingAftermathMutations.touchedWorld) touchWorld(runtime);
-    for (const trace of pendingMarkTraces) emitTrace(trace);
+    const committedState = {
+      ...stateAfterMarks,
+      encounterNotifications: (stateAfterMarks.encounterNotifications ?? []).map(notification => {
+        if (notification.resolved) return notification;
+        const matchesActionId = Boolean(notification.actionId) && notification.actionId === activeAction.actionId;
+        const matchesTemplate = notification.agentId === activeAction.actorId && notification.encounterId === activeAction.templateId;
+        if (!matchesActionId && !matchesTemplate) return notification;
+        return { ...notification, resolved: true };
+      }),
+    };
+
+    // Constant-returning updater: a StrictMode double-invoke returns the same object and
+    // re-runs nothing. Callers never queue a gameState write before this one.
+    setGameState(() => committedState);
+
+    if (reactionMutations.touchedStructure) touchStructure(runtime);
+    else if (reactionMutations.touchedWorld) touchWorld(runtime);
+    for (const trace of markTraces as Parameters<typeof emitTrace>[0][]) emitTrace(trace);
 
     if (source === 'debug-bridge') {
       emitTrace({
@@ -2603,8 +2609,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       success: true,
       message: `Applied aftermath reaction '${selectedReactionId}'.`,
       reactionId: selectedReactionId,
-      touchedWorld: pendingAftermathMutations.touchedWorld,
-      touchedStructure: pendingAftermathMutations.touchedStructure,
+      touchedWorld: reactionMutations.touchedWorld,
+      touchedStructure: reactionMutations.touchedStructure,
       closeAfterSelection: selectedCloseAfterSelection,
     };
   }, [runtime, setGameState]);
