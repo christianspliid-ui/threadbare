@@ -231,14 +231,22 @@ describe('ensureTraitRefIndex (runtime-owned, THR-786)', () => {
 // ─── validateTraitRefs ──────────────────────────────────────────
 
 describe('validateTraitRefs', () => {
-  it('reports the four shipped has_trait: choice-set refs as dead', async () => {
-    // These four are authored in `choice-set-catalog.ts` and match no trait id, name
-    // or tag (verified 2026-07-26). If content later mints them, this expectation
-    // fails loudly rather than the sweep silently going quiet.
+  it('reports the shipped has_trait: choice-set refs as dead against an empty graph', async () => {
+    // `graphWith()` holds no trait definitions at all, so *every* authored ref is
+    // unsatisfiable — that is what makes this a test of the sweep rather than of the
+    // content. THR-800 repointed the four choice-set refs from bare keys onto real
+    // definitions; against an empty graph the new ids are still dead, which is the
+    // property being asserted. The content-side ratchet (do these resolve against the
+    // *shipped* definitions?) lives in `traitRefReconciliation.test.ts`.
     const report = await validateTraitRefs(graphWith());
     const deadRefs = report.dead.map(d => d.ref);
     expect(deadRefs).toEqual(
-      expect.arrayContaining(['negotiator', 'dauntless', 'leader', 'interrogator']),
+      expect.arrayContaining([
+        'trait.mastery.silver-tongue',
+        'trait.personality.iron.virtue',
+        'trait.personality.star.virtue',
+        'trait.mastery.keen-eyed',
+      ]),
     );
     expect(report.perSurface.effect_predicate).toBeGreaterThanOrEqual(4);
   });

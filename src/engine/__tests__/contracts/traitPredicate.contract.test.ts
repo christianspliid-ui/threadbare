@@ -273,11 +273,18 @@ describe('site 2 — effectPredicates has_trait:/lacks_trait: sugar', () => {
     const serialized = JSON.stringify(catalog);
     const refs = [...serialized.matchAll(/(?:has|lacks)_trait:([^"\\]+)/g)].map(m => m[1]);
     expect(refs.length).toBeGreaterThan(0);
-    // All four shipped refs are bare keys that match no trait id, name or tag —
-    // verified 2026-07-26 against the six trait-content files. `validateTraitRefs()`
-    // reports exactly these; they are filed as a defect, not fixed here.
+    // THR-800 repointed all four. They were bare keys (`negotiator`, `dauntless`,
+    // `leader`, `interrogator`) matching no trait id, name or tag — the defect this
+    // test was written to pin. They now name shipped definitions, so the vacuity guard
+    // asserts the *live* ids: the sugar is still exercised by production content, and
+    // the refs it carries resolve.
     expect(refs).toEqual(
-      expect.arrayContaining(['negotiator', 'dauntless', 'leader', 'interrogator']),
+      expect.arrayContaining([
+        'trait.mastery.silver-tongue',
+        'trait.personality.iron.virtue',
+        'trait.personality.star.virtue',
+        'trait.mastery.keen-eyed',
+      ]),
     );
   });
 });

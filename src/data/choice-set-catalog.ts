@@ -15,6 +15,23 @@
  *   - Keep consequences small — 1–3 effects per option keeps tempo fast
  *   - timeoutMs only on 'player' mode effects; omit for AI modes
  */
+/**
+ * THR-800 — phantom grant keys (9 in this file).
+ *
+ * The `trait_grant` effects below name bare snake_case keys with no trait definition
+ * behind them. This is deliberate and it *works*: `collectGrantedTraits` returns the
+ * bare key, every consumer unions it into the bearer's ref set, and a gate naming the
+ * same key passes (the THR-737 loop). What a phantom lacks is a definition — so it has
+ * no display name, no visibility, and no `domainContributions`, and it cannot appear on
+ * the bearer's sheet. That collides with the trait canon's "always visible once known"
+ * rule, which is why `validateTraitRefs` reports them separately from dead refs rather
+ * than treating them as satisfied.
+ *
+ * Kept as-is here: each backs a live gate today, and giving them definitions is only
+ * half the job — see THR-808 for why minting without a producer is worse than the
+ * current state. The count is pinned by `traitRefReconciliation.test.ts`, so a new
+ * bare-key grant is a deliberate act rather than a drift.
+ */
 
 import type { ChoiceSetEffect } from '../types/effects';
 
@@ -85,7 +102,9 @@ export const CHOICE_SET_DIALOGUE_BRANCH: ChoiceSetEffect = {
       id: 'dialogue_counteroffer',
       label: 'Counter with your own terms',
       description: 'You\'ve seen this game before. Your counteroffer is elegant, and they know it.',
-      predicate: 'has_trait:negotiator',
+      // THR-800: was `negotiator`, which no definition carries. Silver Tongue is the
+      // shipped Heart-reach social mastery, minted by `phaseEncounterTraits`.
+      predicate: 'has_trait:trait.mastery.silver-tongue',
       consequences: [
         { type: 'resource_delta', resource: 'essence', amount: 6 },
         { type: 'resource_delta', resource: 'quintessence', amount: 2 },
@@ -126,7 +145,9 @@ export const CHOICE_SET_SACRIFICE_OR_SAVE: ChoiceSetEffect = {
       id: 'save_both',
       label: 'Carry you both',
       description: 'Impossible — but you\'ve done impossible before. The cost is real.',
-      predicate: 'has_trait:dauntless',
+      // THR-800: was `dauntless`, which no definition carries. Brave is the shipped
+      // Iron-axis personality virtue, minted by `personalityTraitEmerge`.
+      predicate: 'has_trait:trait.personality.iron.virtue',
       consequences: [
         { type: 'resource_delta', resource: 'doom', amount: 20 },
         { type: 'trait_grant', grantedTrait: 'unbroken' },
@@ -244,7 +265,9 @@ export const CHOICE_SET_MERCY_TEST: ChoiceSetEffect = {
       id: 'mercy_recruit',
       label: 'Offer them a place',
       description: 'Loyalty is earned in extremity. They\'ve seen what you can do. The question is what you\'ll do next.',
-      predicate: 'has_trait:leader',
+      // THR-800: was `leader`, which no definition carries. Guiding is the shipped
+      // Star-axis personality virtue — the one that means others follow.
+      predicate: 'has_trait:trait.personality.star.virtue',
       consequences: [
         { type: 'trait_grant', grantedTrait: 'sworn_follower' },
       ],
@@ -253,7 +276,9 @@ export const CHOICE_SET_MERCY_TEST: ChoiceSetEffect = {
       id: 'mercy_extract',
       label: 'Extract information first',
       description: 'Pain and fear are useful, briefly. You learn what you need. Then you decide.',
-      predicate: 'has_trait:interrogator',
+      // THR-800: was `interrogator`, which no definition carries. Keen-Eyed is the
+      // shipped Eye-reach perception mastery — reading what a captive will not say.
+      predicate: 'has_trait:trait.mastery.keen-eyed',
       consequences: [
         { type: 'reveal', target: 'agent', range: 6 },
         { type: 'resource_delta', resource: 'doom', amount: 5 },
