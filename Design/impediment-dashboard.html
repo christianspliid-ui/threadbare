@@ -3079,6 +3079,19 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "Diff the **error set**, never the totals: capture `npx tsc -b --force --pretty false` before and after, `sort` both, and `comm -13` / `comm -23` for net-new and resolved. The resolved list *names the files*, which is what surfaced the second reader (filed THR-802) — a count alone would have shown \"13, expected 2\" with nothing to attribute it to. Note the generalizable cause: a missing property on a high-fan-in type produces `TS2339` at each read **plus** `TS7006` on every callback parameter downstream, so the true blast radius is always ≥ the grep count. Readers whose access sits inside the red baseline (THR-489) are additionally invisible to a typed-reader grep, which is the same mechanism that let the phantom API survive two shipping tickets.",
     "session": "THR-801 (hourly `tb-opus-pickup`, Opus): declaring the template trait-gate fields on `UnifiedActionTemplate`."
+  },
+  {
+    "num": "221",
+    "id": 221,
+    "count": 1,
+    "date": "2026-07-26",
+    "category": "unclear-requirements",
+    "description": "**A ticket can name the wrong trigger for an incident it describes accurately, and implementing its Done-when verbatim would have shipped a fix that provably does not fix it.** THR-797's description and the THR-780 impediment both state \"PR #880 merged at 03:38; the `:40` hourly reaper correctly saw a merged branch and ran `git worktree remove`\", concluding that the durable fix is to skip worktrees whose branch merged inside the last N minutes. The reaper's own log (`C:/Users/chris/Dev/Projects/clean-stale-git.log`) says otherwise: the 03:40 run does not mention that worktree at all, and the 05:40/06:40/07:40 runs each logged `skipped worktree (live session)` for it. The removal fired at **08:40**, ~5h after the merge, when the git-admin mtimes finally aged past `WORKTREE_MIN_IDLE_MINUTES=180`. No sane merge-grace window (60/90/180m) covers a 5h gap, so the ticket's primary Done-when addresses a mechanism that did not occur.",
+    "consequence": "Building to the stated Done-when would have produced a green, tested, useless guard, and closed a High-priority hazard ticket while leaving the hazard fully live. The real cause — `is_live` reads git-admin-dir mtime, which stops moving during a Linear/doc closeout that is still writing files — would have survived untouched.",
+    "impact": "M",
+    "workaroundFound": true,
+    "workaround": "**Workaround:** read the tool's own log before accepting a ticket's narrative about what the tool did. A scheduled task that writes a timestamped log is a primary source; the ticket is a secondary one written from memory hours later. The decisive evidence was *inside a single run*: the removal `WARN` and a `skipped orphan dir (recent activity)` line name the **same path two lines apart**, proving one guard in that very run knew the session was alive while the other did not ask. **The generalisable rule:** when a ticket asserts a causal window (\"X merged at T, reaper ran at T+2min\"), the window is a claim to verify, not a premise to build on — same class as impediment #220 (a ticket's stated error count is an estimate) and the project's \"verify the noun before the verb\" debugging protocol, one level up: verify the *timeline* before the fix. **Corollary for fix selection:** when forensics contradict the ticket, implement the evidenced fix, keep the ticket's candidate only if it is cheap defence-in-depth, and say plainly in the closeout which one is load-bearing.",
+    "session": "THR-797 hourly `tb-opus-pickup`, Opus."
   }
 ];
 // ── End data ──
