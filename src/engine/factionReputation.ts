@@ -110,6 +110,54 @@ export function applyFactionReputationGain(
   return { newReputation, rankChanged, newRank: newRank.id };
 }
 
+// ─── Rank Requirement Gate (THR-805) ─────────────────────────────────────
+
+/**
+ * Does `agentId` stand at or above `minRankId` in the faction identified by
+ * `factionDefId`?
+ *
+ * This is the read side of the guild-rank gate on the senior/elite tail of guild
+ * content (`*.senior.*` / `*.elite.*`), whose required tier is authored per template
+ * as `FACTION_ENCOUNTER_META[id].minRank`. Reputation is the single lever — rank is
+ * always derived from it via {@link computeRankFromReputation}, never read from the
+ * edge's cached `rank`/`role`, which only refresh on a tier *change* and so lag a
+ * decay that has not yet crossed a boundary.
+ *
+ * Non-membership closes the gate: a mortal who never joined the Rangers cannot draw
+ * the Rangers' captain-tier work. That is the gate's whole purpose, so it is the one
+ * negative answer that is *not* fail-soft.
+ *
+ * Fail-**open** on unresolvable data (unknown `factionDefId`, or a `minRank` naming
+ * no tier in that definition), because the alternative silently orphans authored
+ * content on a typo — the failure mode THR-803 was filed for. A data defect must
+ * surface as ungated content, never as content nothing can reach (NFP #4).
+ *
+ * @param minRankId Rank tier id, e.g. `'ranger_captain'` — a `FactionRankTier.id`.
+ * @returns true when the gate is open (including the fail-open cases).
+ */
+export function meetsFactionRankRequirement(
+  graph: WorldGraph,
+  agentId: string,
+  factionDefId: string,
+  minRankId: string,
+): boolean {
+  const definition = FACTION_DEFINITIONS.get(factionDefId);
+  if (!definition) return true; // fail-open: unknown faction definition
+
+  const requiredTier = definition.rankTiers.find(t => t.id === minRankId);
+  if (!requiredTier) return true; // fail-open: minRank names no tier here
+
+  // The agent's membership in *this* faction. `member_of` points at a faction node
+  // id, so the definition is matched through the edge's own factionDefId property.
+  for (const edge of graph.getOutgoingEdges(agentId, 'member_of')) {
+    const props = edge.properties as Partial<MemberOfEdgeProperties>;
+    if (props.factionDefId !== factionDefId) continue;
+    return (props.reputation ?? 0) >= requiredTier.minReputation;
+  }
+
+  return false; // not a member — gate closed
+}
+
 // ─── Reputation Decay ────────────────────────────────────────────────────
 
 /**
