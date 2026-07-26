@@ -1,42 +1,50 @@
 # Briefing
 
-**Generated:** 2026-07-26 09:54 local (2026-07-26 07:54 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-07-26 10:54 local (2026-07-26 08:54 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
 ## Needs Christian
 
-**Nothing needs you right now — fourteenth hour running with a genuinely empty list.** You already did this hour's one human thing before anything could ask you for it.
+**Nothing needs you right now — fifteenth hour running with a genuinely empty list.**
 
-**One FYI about the money you just spent, and it is not a request.** Publishing to the live site had quietly stopped. Nothing shouted about it: the only signal was a red mark on a check the crew is *correctly* trained to walk past, because it isn't the gate that blocks merges. A session closing an unrelated ticket happened to read the error text and found it. You upgraded the hosting plan; the site published again 45 seconds after the next merge, and I confirmed that independently just now rather than taking the ticket's word for it — the live site is current.
+Last hour's one FYI — the hosting bill — is unchanged and still not a request. No new information arrived about it, so it is not being restated at length. The recommendation stands: do nothing until an invoice actually reads wrong.
 
-The FYI is *why* the old allowance ran out. It was not the game — it was the crew. The automated lanes publish a preview build roughly every fourteen minutes, all day. On the old plan that eventually blocked real publishing; on the new plan it bills instead. That is a bill-shaped question, not a broken-thing question, and only you can decide whether it matters. **The recommendation is to do nothing until the invoice actually looks wrong** — trimming it is real engineering time spent on a problem that may never appear. Flagging it now only so the number isn't a surprise later.
+Nothing else on the board this hour is yours. The busiest hour in days produced eight new pieces of work and every one of them is a technical call the crew owns.
 
 ## Queue
 
-**Healthy — 13 items ready, nothing in flight, no pull requests open.** Nothing is stale; nothing at the top of the queue is blocked.
+**Backed up — 20 items ready, one in flight.** That is a jump from 13, and the jump is the story of the hour.
 
-**The five-hour drought didn't just break, it finished.** Last hour reported that someone had finally picked up the two pieces the rebuild waits on. They completed in twenty-five minutes. The engine foundation of the Nudge Model now has a finished, reviewed design and sits at the top of the ready queue as the only high-priority item on the board — the first genuinely claimable piece of the rebuild you blessed. The orphan-content question that was holding the encounter kill list hostage is staged right behind it.
+**Nothing was dropped and nothing regressed — two automated reviews simply ran at once.** The weekly tidy-up sweep filed six findings in three minutes, and a design session finished drawing up the traits rework and handed off two pieces. Eight arrivals, one departure into active work. A queue that grows because two review passes did their job is a different animal from a queue that grows because nobody is shipping.
 
-**Ready count rose 9 → 13, and every one of the four is good news or neutral.** Two are those finished designs arriving as claimable work. Two more are follow-up defects that a shipped ticket found and wrote down instead of shipping over. The fifth arrival is the publishing gap above, filed as a real ticket. One item left by shipping. No item on this board is a regression.
+**Three of them are high-priority and one is genuinely uncomfortable.** The hourly cleanup robot that tidies abandoned workspaces can, in a specific timing window, delete a workspace a session is *still using* — and the session then silently starts writing to the main copy of the project instead. Nothing has been damaged; this was found by reading the logs, not by cleaning up after it. It is the same family as the git problem that cost several days last week, and it is filed as high priority for exactly that reason. Agents' problem, not yours.
 
-**One high, four mediums, eight low.** High-priority work is back at the top of the queue after six hours without any — and it is the piece everything else in the rebuild depends on.
+**The other two highs are the traits rework you blessed** — the buildable foundation, plus a defect it uncovered along the way: agents earn reputations, and the *title* that reputation is supposed to give them has never once appeared in the writing. It has been silently dropping on the floor since it was built, because two parts of the code disagree about what the field is called.
+
+**One thing at the top of the queue is gated, and it is being watched rather than escalated.** The traits foundation says plainly: don't start until its design document is on the main branch. That document's pull request is finished and approved but has drifted one merge behind, which parks it in the known stall we have now seen three times. Every previous instance cleared itself within the hour once the owning session refreshed it. If it is still parked next hour, this file will say so and it becomes a real blocker rather than a footnote.
+
+Nothing is stale — the oldest thing waiting has been waiting two days.
 
 ## Freshness
 
-**Home tree: level with the server, nothing stranded.** The same two familiar leftovers persist and neither blocks anything — one tracked settings edit and Friday's weekly-retro write-up, still untracked and still the only copy anywhere. Both are agent work to land via a docs pull request, not yours.
+**Home tree: level with the server, nothing stranded.** The same two familiar leftovers persist and neither blocks anything — one tracked settings edit and Friday's weekly-retro write-up, still untracked and still the only copy anywhere. Both are agent work to land, not yours.
 
-**Cleanup reaper: alive** — ran fourteen minutes ago, nothing awaiting a human decision. **Automated checks: healthy.** **Live-site publishing: verified green this run** — I checked the deployed version against the current code directly rather than assuming, which is the check the new ticket wants made permanent.
+**Cleanup reaper: alive** — ran fourteen minutes ago, nothing awaiting a human decision. Which is worth stating alongside the high-priority finding above: the robot is running correctly *and* has a latent hazard in it. Both are true.
 
-**The dead twice-daily job is unchanged: still 87 runs, still 87 failures, still unfiled.** It has not fired since just after midnight, so a flat count is expected rather than reassuring. It remains a one-line import bug with no live consequence, and it remains **the agents' call, not yours.**
+**Live-site publishing: checked, and the answer is "nothing to publish."** The last few merges were documentation only, so the build was deliberately skipped rather than run and failed. The last code-bearing publish was green. This is the ad-hoc version of the permanent check that got filed yesterday — still ad hoc, still green.
+
+**The dead twice-daily job is unchanged: still 87 runs, still 87 failures, still unfiled.** It has not fired since just after midnight, so a flat count is expected rather than reassuring. One-line import bug, no live consequence, **the agents' call, not yours.**
 
 ## What's moving
 
-**A story fix shipped, and it is one you would notice in play.** When your workings leave a mark on someone — a blessing, a curse, the lingering weight of a scene — that mark is supposed to fade. It wasn't fading. The countdown was being written to one place and read from another, so afflictions that should have worn off in a few days sat on people permanently. Landed 07:38, and the session filed two follow-ups rather than quietly patching around them: the fading counter is still displayed from the wrong place in one panel, and five tavern scenes author consequences for failure that nothing has ever read.
+**The traits rework got drawn up and handed off.** This is the one you blessed this morning — the idea that a trait should be a universal hook that anything in the world can carry and anything in the world can react to, rather than a label only a few systems bother reading. The foundation is designed and waiting for hands, and the design pass found the reputation-titles defect described above while checking whether the existing code actually did what it claimed.
 
-**The rebuild's engine design landed and handed itself off.** Twenty-five minutes from pickup to a merged design document, review passed, and both blockers staged for whoever picks up next. Worth naming because this file spent five consecutive hours reporting the opposite — a blessed program with momentum and nothing anyone could actually claim.
+**The encounter rebuild's engine foundation is being built right now** — picked up two hours ago, code is written, and its pull request is sitting in the test queue as this brief is generated. It is the first piece of the Nudge Model to move past paper.
 
-**In your terms:** curses now lift when they're supposed to, the crew found and wrote down two more places where a promised consequence goes nowhere, and the foundation of the encounter rebuild is drawn up and waiting for hands. Your four decisions on that rebuild are still not ready — the kill list is the nearest, and it stays dishonest until the orphan-content verdict is actually executed rather than merely designed.
+**The weekly tidy-up sweep did what it exists to do.** Six findings, all small, all written down instead of shrugged at: two missing entries in the list of scheduled jobs, a dozen stray files at the top level of the project that have been sitting there since March while the sweep kept reporting "all clear", a wrong claim in one of the automation prompts, a browser-screenshot limitation with no clean workaround, and — the sharpest one — last Friday's retrospective filed real, useful tickets while citing a report file that was never actually saved anywhere. That last one is the sweep catching the same class of problem the crew has been chasing all week: work that looks complete and leaves nothing behind to check.
+
+**In your terms:** the traits idea is now buildable, the encounter rebuild's foundation is in the workshop rather than on paper, and two automated reviews found eight things in one hour and wrote every one of them down. None of it needs you.
 
 ---
 *Standing asks live in [`Design/user-actions.md`](user-actions.md). This file is regenerated hourly by the `keep-work-flowing-cc` scheduled task; staleness is visible from the Generated timestamp above and the task's `lastRunAt` in `list_scheduled_tasks`.*
