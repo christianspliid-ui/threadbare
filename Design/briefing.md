@@ -1,44 +1,44 @@
 # Briefing
 
-**Generated:** 2026-07-26 16:58 local (2026-07-26 14:58 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-07-26 17:54 local (2026-07-26 15:54 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
 ## Needs Christian
 
-**Nothing needs you right now — twentieth hour running with a genuinely empty list.**
+**Nothing needs you right now — twenty-first hour running with a genuinely empty list.**
 
-One thing shipped, one gap it found got written down, and one long-standing loose end finally got filed. All three were the crew's own to handle. Nothing is waiting on a decision of yours.
+Someone picked up the biggest open problem on the board and is working it now. Everything else that moved this hour was the crew's own to handle.
 
 The hosting bill is unchanged and still an FYI rather than a request. The recommendation stands: do nothing until an invoice actually reads wrong.
 
 ## Queue
 
-**Backed up — 21 items ready, nothing in flight.** Up one, and the arithmetic is worth a line because every movement is a *finding* rather than a slip: **20 − 1 shipped + 1 the shipped work found + 1 filed off the standing list = 21.**
+**Backed up — 22 items ready, and for the first time in six hours something is actually in flight.** That second half is the news. The five previous briefs all reported a full shelf and nobody at the workbench; this hour there is a worker on the hardest item.
 
-**Two high-priority items now, up from one.** The new one is the encounter-chain gap described below; the other is the 62 authored labels that point at nothing. Both are agent-owned technical calls.
+The arithmetic, since every movement is worth naming: **21 − 1 claimed + 1 arriving from the planning column + 1 filed by the work in progress = 22.**
+
+**One high-priority item still waiting** — the 62 written labels that point at nothing. The other high-priority item is the one now being worked.
 
 **Nothing is gated and nothing is stale.** The oldest waiting item has been there two days.
 
 ## Freshness
 
-**Home tree: level with the server, nothing stranded.** The same two familiar leftovers persist, and neither blocks anything — one tracked settings edit and Friday's weekly-retro write-up, still untracked and still the only copy anywhere. Both are agent work to land.
+**Home tree: level with the server, nothing stranded.** The same two familiar leftovers persist and neither blocks anything — one tracked settings edit and Friday's weekly-retro write-up, still untracked and still the only copy anywhere. Both are agent work to land.
 
-**Cleanup reaper: alive, ran eighteen minutes ago, clean, nothing awaiting a human decision.** Workspaces flat at 24, leftover branches 31 → 32.
+**Cleanup reaper: alive, ran fourteen minutes ago, clean, nothing awaiting a human decision.** Workspaces flat at 24, leftover branches flat at 32 — the first hour in several where neither number moved at all.
 
-**Live-site publishing: genuinely green this hour, not merely absent.** The merge carried real game code, so the build actually ran — "Deployment has completed", ninety seconds after the merge. Worth distinguishing because a skipped build and a real one report the same single word at the top level, and only the fine print separates them.
-
-**The dead twice-daily job now has a ticket.** See below — this is the one thing that changed about it in thirteen hours.
+**Discord: nothing new since your last message.** Checked with the cheap cursor read; genuinely empty rather than unread.
 
 ## What's moving
 
-**Seventeen encounters that no character could ever have run into are now reachable.** They were written, they were sitting in the content library, and nothing in the game had a route to them — senior and elite guild work, bounty hunts, alliance ceremonies, conclave debates, monster lair defences, horde raids. The fix wires them into the path the world actually draws from, with the guild tiers correctly gated behind rank so a novice does not stumble into elite work. A further 44 orphans were confirmed genuinely dead and are queued for deletion in a later batch; that verdict was settled in the design doc, so it is not a call waiting on you.
+**The serial-instalment bug from last hour is being fixed right now.** An hour ago this brief reported that every multi-part encounter chain in the game shows only its first part — not rarely, but always, because the piece of code that records "this character finished stage one" was never wired to anything that calls it. A session claimed it at 17:20 local and is mid-flight. That is the fastest turn from *discovered* to *being repaired* this board has recorded.
 
-**On its way out it found a bigger one, and wrote it down instead of shipping past it.** Multi-part encounter chains only ever show their first part. Every later stage is unreachable — not rare, not hard to trigger, but *impossible*, because the piece of code that records "you finished stage one" is never called by anything. Filed as high priority. This is the good failure mode: the work that found it stopped to describe it rather than quietly working around it.
+**It filed a genuine design question on its way in rather than guessing at it.** Wiring the chains raises a choice: should the senior and elite guild encounters be gated by *finishing the earlier chapters of that chain*, or by *holding the rank in the guild*? Those produce different feels — one rewards having done the work, the other rewards standing. The session wrote the question down as its own separate item instead of quietly picking one and moving on. **This is worth naming as a possible future question for you, but it is not one yet** — the plumbing has to be settled first, and that part is a technical call. If what remains afterwards is a genuine feel choice rather than a mechanism choice, it will surface here properly.
 
-**One long-running loose end got filed rather than re-reported.** A twice-daily maintenance job has failed every single time it has run for six weeks — 88 runs, 88 failures. It is harmless (it tidies up abandoned work claims, and with one worker there has never been anything to tidy), and the cause is a one-character-class import bug. What made it worth acting on is that this briefing had flagged it as "someone should file this" thirteen hours running and nobody had. It is now a ticket. Noted here for transparency rather than because it needs you.
+**A documentation item moved from planning into the ready queue** — the manual page and vocabulary entries for traits and marks, following on from the trait work that shipped this morning.
 
-**In your terms:** a shelf of written-but-unreachable stories got connected to the world this hour, and the act of connecting them revealed that every *serial* has been stuck on its first instalment. Both are now on the board. None of it needs you.
+**In your terms:** last hour's finding was that every serial was stuck on its first instalment. This hour someone is unsticking it, and stopped on the way to ask which rule should decide who is allowed to read the later chapters at all. Nothing here needs you.
 
 ---
 *Standing asks live in [`Design/user-actions.md`](user-actions.md). This file is regenerated hourly by the `keep-work-flowing-cc` scheduled task; staleness is visible from the Generated timestamp above and the task's `lastRunAt` in `list_scheduled_tasks`.*
