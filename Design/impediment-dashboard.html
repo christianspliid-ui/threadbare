@@ -3248,6 +3248,19 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "Count the cells: the schema is the ten columns declared in this table's own header (number, count, date, category, description, consequence, impact, workaround-found, workaround-description, session-context). Sample rows **226–229** as the template, not 230. After appending, run `npm run generate-impediment-dashboard` and read its output for `skipping` — the row count in `wrote Design\\impediment-dashboard.html (N rows...)` must have risen by the number appended. Rows 230–232 were reformatted from 5 to 10 cells during THR-811 (241 → 244 rows). Real fix: make the generator **fail** on a malformed row rather than warn-and-skip, since the freshness gate cannot see the difference.",
     "session": "THR-811, hourly `tb-opus-pickup` run, 2026-07-27."
+  },
+  {
+    "num": "234",
+    "id": 234,
+    "count": 1,
+    "date": "2026-07-27",
+    "category": "process",
+    "description": "**A ticket's own class taxonomy can be wrong about a member, and the only way to find out is to grep the *assignment* side of the concept each ref names — not the ref.** THR-808 grouped `living` and `rare_ore_secured` as one class (\"miscoded as a trait; both want a new `AmbitionCondition` variant, not a trait definition\") and sized it \"the smallest real fix in this list\". They are not one class. `living` had a live engine concept behind it — `properties.deceased`, three writers (`aspects.ts`, `groups/bandOpposition.ts`) and five readers — so it became `agent_deceased`. `rare_ore_secured` has nothing: `'resource'` is declared in `NodeType` but **no `resource` node is constructed anywhere in `src/`**, and every one of the ~55 `controls` edge sites targets a `location`.",
+    "consequence": "Implementing the class as specified would have shipped one real fix and one condition reading state no producer writes — permanently false, sweep silent, indistinguishable from working. That is precisely the \"minting without producer work is gate theater\" failure the same ticket opens by warning against, reintroduced one paragraph later by its own class list. The same run found two more instances of the shape in neighbouring code: `properties.eliminated` (read by `target_agent_eliminated`, zero writers, THR-812) and `properties.status === 'dead'` (read by `phaseInitiativeProgress`, zero writers).",
+    "impact": "Medium",
+    "workaroundFound": true,
+    "workaround": "Before implementing any ref-repointing or condition-adding ticket, grep the **assignment** side of each concept the ticket names — `<prop>:` / `<prop> =` / `type: '<nodeType>'` — and confirm a writer exists. A declared type, a `NodeType` member, or a reader is not evidence of a producer. Where the ticket asserts N refs share a class, verify each independently; a class is a hypothesis from the design session, not a measurement. Reclassify in the pinned `KNOWN_DEAD` set with the evidence inline so the correction survives. Same family as rows **229** (optional field, no writer) and **230** (gate inherits a guard its own targets fail).",
+    "session": "THR-808, hourly `tb-opus-pickup` run, 2026-07-27."
   }
 ];
 // ── End data ──
