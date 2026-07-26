@@ -3066,6 +3066,19 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "Write the screenshot **into the allowed root that the error message names** — it prints the roots verbatim — then relocate it with `cp` into the session worktree and `rm` the original: `cp ../<stale-worktree>/.playwright-mcp/<file>.png .playwright-mcp/ && rm -f ../<stale-worktree>/.playwright-mcp/<file>.png`. `.playwright-mcp/` is gitignored, so the image is evidence for the completion comment rather than a committed artifact. **Read the roots off the error rather than assuming they track the session worktree** — the assumption that an absolute path inside the current worktree is always writable is what the THR-754 route text implies and it does not hold when a prior session's server is still bound.",
     "session": "THR-787 hourly Opus pickup; browser-verify of the CMS Traits table."
+  },
+  {
+    "num": "220",
+    "id": 220,
+    "count": 1,
+    "date": "2026-07-26",
+    "category": "unclear-requirements",
+    "description": "**A ticket that states how many baseline type errors its fix will clear, and in which file, is an estimate read off a grep — and both halves can be low, because implicit-any cascades and readers hidden inside the red baseline are invisible to grep.** THR-801 specified \"`encounterFilterPipeline.ts`'s **two** `requiredTraits`/`blockedByTraits` baseline type errors are gone\" as Done-when #2. Declaring the two fields actually cleared **13** across **two** files: 8 in `encounterFilterPipeline.ts` (six `TS2339` plus two `TS7006` — the implicit-any cascades on the `.every(req => …)` / `.some(blockedRef => …)` callbacks, which exist only *because* the property was untyped and vanish with it), and 5 in `src/engine/kpi/branchingDistance.ts`, a second production reader the ticket did not know existed. Same shape as THR-736, where the ticket's predicted decrease did not materialize at all.",
+    "consequence": "A Done-when phrased as an absolute count is unverifiable on its own terms: satisfying it literally (\"two errors gone\") would mean reporting a false number, and an executor who trusts the count as the spec has no reason to look for a second reader. The under-count also hid the more valuable finding — that a whole file had been missed by THR-786's six-site unification.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Diff the **error set**, never the totals: capture `npx tsc -b --force --pretty false` before and after, `sort` both, and `comm -13` / `comm -23` for net-new and resolved. The resolved list *names the files*, which is what surfaced the second reader (filed THR-802) — a count alone would have shown \"13, expected 2\" with nothing to attribute it to. Note the generalizable cause: a missing property on a high-fan-in type produces `TS2339` at each read **plus** `TS7006` on every callback parameter downstream, so the true blast radius is always ≥ the grep count. Readers whose access sits inside the red baseline (THR-489) are additionally invisible to a typed-reader grep, which is the same mechanism that let the phantom API survive two shipping tickets.",
+    "session": "THR-801 (hourly `tb-opus-pickup`, Opus): declaring the template trait-gate fields on `UnifiedActionTemplate`."
   }
 ];
 // ── End data ──

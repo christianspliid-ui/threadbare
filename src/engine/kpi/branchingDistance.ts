@@ -81,6 +81,11 @@ function estimatePrerequisitesDistance(
   }
 
   // Check requiredTraits: how many agents meet all trait requirements?
+  // TODO(THR-802): this walk compares `e.target` to `req.traitId` directly, which is
+  // the pre-THR-786 node-id-only vocabulary. Every other trait read site now resolves
+  // refs on ANY-match (id / short id / display name / tag) plus item grants, so this
+  // diagnostic over-reports blockage for a gate authored with a tag or display name.
+  // Latent while zero templates author a gate (authoring is THR-778/WS5).
   let traitBlockedCount = 0;
   const traitGaps: Array<{ agentName: string; missingTrait: string; gap: number }> = [];
 

@@ -1,5 +1,5 @@
 // src/types/unifiedAction.ts
-import type { ReachDomain } from './traits';
+import type { ReachDomain, TraitPredicate } from './traits';
 import type { SphereName, CreationSphereName, HexCoord, LocationSubtype } from './index';
 import type { OmenCategory, EmittedOmenScope } from './omen';
 import type { ActorType } from './graph';
@@ -1001,6 +1001,31 @@ export interface UnifiedActionTemplate {
    * rebuild encounters actually existing).
    */
   readonly drawableWhileBroken?: boolean;
+  /**
+   * Trait gate (THR-801) — every predicate must be satisfied for this template
+   * to be drawable. Evaluated in `filterByPrerequisites` (stage 3 of the encounter
+   * filter pipeline) through the shared THR-786 resolver, so each `traitId` is a
+   * **ref**: node id, short id, display name, or tag, matched on ANY-of.
+   *
+   * The engine side shipped with THR-773/THR-786 while this declaration did not,
+   * which made the field a phantom API — read every tick, declarable by nobody,
+   * and the source of all eight of `encounterFilterPipeline.ts`'s baseline type
+   * errors. Declaring it here is what makes the gate authorable at all.
+   *
+   * Asymmetry with `blockedByTraits` is deliberate: a requirement can demand a
+   * level, an exclusion cannot (see below).
+   */
+  readonly requiredTraits?: readonly TraitPredicate[];
+  /**
+   * Trait gate (THR-801) — holding **any** of these refs excludes this template.
+   *
+   * Bare ref strings, not predicates: there is no `minLevel`, because holding a
+   * blocking trait at any level blocks. Each is lifted to a level-free
+   * `TraitPredicate` at the match site. Item-granted keys (THR-737) block
+   * symmetrically, so an item conferring a trait cannot open that trait's gated
+   * content while leaving its blocked content reachable.
+   */
+  readonly blockedByTraits?: readonly string[];
   /**
    * Trait-conditional variants (THR-773). Applied when the acting agent holds
    * the named trait: contributes a forecast modifier, a difficulty delta, a
