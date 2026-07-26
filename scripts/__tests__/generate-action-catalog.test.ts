@@ -12,9 +12,19 @@ import { getUnifiedTemplateById } from '../../src/data/unified-action-templates'
 describe('action-catalog generator — effect metadata (THR-604)', () => {
   const data = buildCatalogData();
 
-  it('emits schema version 2', () => {
-    expect(SCHEMA_VERSION).toBe(2);
-    expect(data.schemaVersion).toBe(2);
+  it('emits schema version 3', () => {
+    expect(SCHEMA_VERSION).toBe(3);
+    expect(data.schemaVersion).toBe(3);
+  });
+
+  it('reports how many aftermath reactions each card offers the Divine Receipt (THR-741)', () => {
+    for (const e of data.entries) {
+      const template = getUnifiedTemplateById(e.id)!;
+      expect(e.aftermathReactionCount).toBe(template.aftermathConfig?.fallback?.reactions?.length ?? 0);
+    }
+    // The tranche authored in THR-741 is visible in the catalog payload.
+    expect(data.entries.find(e => e.id === 'hex.scorch_earth')!.aftermathReactionCount).toBe(3);
+    expect(data.entries.find(e => e.id === 'hex.rend_earth')!.aftermathReactionCount).toBe(2);
   });
 
   it('every catalog entry carries a derived effectSource', () => {

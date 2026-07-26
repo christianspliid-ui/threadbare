@@ -2962,6 +2962,19 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "**Workaround that worked:** never pass literary or regex content through a shell string. Write the content to a file with the `Write` tool (no shell layer at all), then have a tiny script read that file and splice it — `fs.readFileSync(scratch + \"/entry.md\", \"utf8\")`. For a single backslash inside a script that must be generated, build it as `String.fromCharCode(92) + \"b\"` rather than escaping through the shell→interpreter→string-literal stack. **Verify, do not eyeball:** confirm a written backslash with `line.charCodeAt(idx) === 92`; `grep`, `cat` and `JSON.stringify` all render 0x08 as if it were correct. Prefer `node --input-type=module -e '…'` with *single* quotes and `process.argv` for paths, which removes interpolation entirely. **Also noted:** `python3` is not on PATH in this sandbox (only `python`), and a `python3 - <<PY` heredoc fails with the Microsoft Store alias message rather than a missing-interpreter error — a `&&` chain after it still runs, so a patch step can appear to succeed while having done nothing.",
     "session": "THR-776 (Nudge Model WS3 migration audit) — audit harness authoring + closeout doc edits."
+  },
+  {
+    "num": "212",
+    "id": 212,
+    "count": 1,
+    "date": "2026-07-26",
+    "category": "tooling",
+    "description": "**The Browser pane cannot produce a screenshot in a headless scheduled session — `computer{action:\"screenshot\"}` fails with \"the Browser pane is not displayed, so the page is not compositing frames\", and no retry or resize clears it.** Everything else on the same tab worked: `preview_start` brought up Vite, `navigate` loaded `?view=game&seeded&size=medium`, `javascript_tool` drove `window.__DEBUG` end to end, `read_page` returned the full accessibility tree at 1920×1080, and `read_console_messages` returned clean. Only frame capture is unavailable, because an unattended run has no visible pane to composite into.",
+    "consequence": "The Definition of Done's browser-verify clause names \"at least one screenshot at 1920×1080\" as one of three binary artifacts, so on a UI-pillar change the hourly lane cannot satisfy its own gate by construction — the tool that produces the required evidence is the one thing that does not work unattended. It reads as an agent omission in the closeout rather than an environment limit, which is how the same finding keeps getting re-derived (impediments #199, #203 are the same class).",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "**Workaround that worked:** substitute two text artifacts that are strictly checkable and that a screenshot would not have proven better. (1) DOM assertion — query the live document for the authored strings and print the containing node's `innerText`, which returned the three reaction labels and the Acknowledge button verbatim, proving the row rendered rather than merely existing in state. (2) `__DEBUG` state assertion — read the live `GameState` via the React fiber walk and confirm `playerActionReceipts[0].presentation === 'modal'` with the authored reaction ids, then apply one and assert the resulting `hiddenMarks` entry and `reputationTallies` delta plus the `encounter_aftermath_effect` traces. Note the fiber walk was also needed just to *get an agent id*: `__DEBUG.fireAction` matches on `node.properties.name`, which is absent on seeded agents (the name lives on `node.name`), so every name lookup returns \"No agent matching 'X'\" and only the node id works. **Durable fix:** THR-754 is the open ticket to codify sanctioned headless evidence paths; this entry is one more instance for it. Worth pairing with a `fireAction` lookup fix so it falls back to `node.name`.",
+    "session": "Hourly `tb-opus-pickup` run, THR-741 browser-verify."
   }
 ];
 // ── End data ──

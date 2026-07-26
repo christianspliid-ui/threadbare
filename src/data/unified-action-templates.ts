@@ -21,6 +21,13 @@ import type { ActorType } from '../types/graph';
 import { ACTION_TEMPLATES, type ActionTemplateData } from './action-template-content';
 import { ACTION_TECHNICAL_EFFECTS } from './action-technical-effects';
 import { withDefaultSupportBundle } from './default-support-bundles';
+import {
+  REND_EARTH_AFTERMATH,
+  CORRUPT_LAND_AFTERMATH,
+  SCORCH_EARTH_AFTERMATH,
+  ARTIFACT_CURSE_AFTERMATH,
+  INCITE_UNREST_AFTERMATH,
+} from './divine-working-aftermath';
 import { withGroupAffinity } from '../engine/groups/groupEligibility';
 import { ENCOUNTER_TEMPLATES, getAnyEncounterById } from './encounter-content';
 import { ASCENDANT_POOL_BEAT_TEMPLATES } from './ascendant-pool-beat-templates';
@@ -1660,6 +1667,7 @@ const LOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
       success: 'tensions rise; the people begin to question their rulers',
       failure: 'the whispers are dismissed; order holds',
     },
+    aftermathConfig: INCITE_UNREST_AFTERMATH,
   },
   {
     id: 'loc.fortify',
@@ -2652,6 +2660,7 @@ const ATTACHMENT_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
       success: 'the curse takes hold — ill fate clings to whoever carries it',
       failure: 'the curse fails to bind; the object remains unchanged',
     },
+    aftermathConfig: ARTIFACT_CURSE_AFTERMATH,
   },
 ];
 
@@ -3032,6 +3041,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
       success: 'darkness seeps into the soil — the land begins to wither',
       failure: 'the land holds firm against the corruption',
     },
+    aftermathConfig: CORRUPT_LAND_AFTERMATH,
   },
   {
     id: 'hex.survey',
@@ -3225,6 +3235,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
       success: 'fire and ruin sweep the land — resources are consumed, the terrain scarred and barren',
       failure: 'the land endures the onslaught; the destruction fails to take hold',
     },
+    aftermathConfig: SCORCH_EARTH_AFTERMATH,
   },
   {
     id: 'hex.rend_earth',
@@ -3256,6 +3267,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
       success: 'the ground splits and heaves — a catastrophic sundering that leaves only broken lands behind',
       failure: 'the foundations hold; the earth refuses to break',
     },
+    aftermathConfig: REND_EARTH_AFTERMATH,
   },
 
   // ─── TB-046: Soul One-Shot Templates ──────────────────────────────────────

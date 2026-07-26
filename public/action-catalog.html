@@ -370,6 +370,7 @@
       ['Target subtypes', e.targetSubtypes.length ? e.targetSubtypes.join(', ') : '—'],
       ['Requires reach', e.requiresReach ? cap(e.requiresReach) : '—'],
       ['Availability bucket', e.bucket + (e.bucketDeclared ? ' (declared)' : ' (derived)')],
+      ['Aftermath choices', e.aftermathReactionCount ? `${e.aftermathReactionCount} authored` : 'none (empty receipt choice row)'],
       ['Beat-granted', e.beatGranted ? 'yes' : 'no'],
       ['Starter floor', e.starter ? 'yes' : 'no'],
     ].map(([k, v]) => `<tr><th>${esc(k)}</th><td>${esc(v)}</td></tr>`).join('');

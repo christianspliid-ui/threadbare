@@ -477,10 +477,10 @@ remediation ticket or the build fails.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
 - **UL terms:** *Aftermath*
 - **Module:** `src/engine/playerReceipts.ts`
-- **Production hits:** 14 total — 1 write, 1 read, 12 unclassified
+- **Production hits:** 15 total — 1 write, 1 read, 13 unclassified
 - **Write sites:** `src/engine/unifiedActionResolution.ts`
 - **Read sites:** `src/engine/playerReceipts.ts`
-- **Other hits:** `src/components/Game/ChapterView.tsx`, `src/components/Game/encounter-stage/adapters/buildGateDutyEncounterStageModel.ts`, `src/components/Game/encounter-stage/adapters/buildUnifiedEncounterStageModel.ts`, `src/components/Game/encounterNotificationRuntime.ts`, `src/components/Game/GameView.tsx` +7 more
+- **Other hits:** `src/components/Game/ChapterView.tsx`, `src/components/Game/encounter-stage/adapters/buildGateDutyEncounterStageModel.ts`, `src/components/Game/encounter-stage/adapters/buildUnifiedEncounterStageModel.ts`, `src/components/Game/encounterNotificationRuntime.ts`, `src/components/Game/GameView.tsx` +8 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `player-action-receipts-queue` — 🔵 UNVERIFIED-OK

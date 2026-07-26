@@ -36,7 +36,7 @@ import { RARITY_TIER_NAMES, type RarityTier } from '../src/types/rarity';
 import { REACH_DOMAINS, type ReachDomain } from '../src/types/traits';
 import { type UnifiedActionTemplate } from '../src/types/unifiedAction';
 
-export const SCHEMA_VERSION = 2;
+export const SCHEMA_VERSION = 3;
 
 const OUTPUT_FILE = 'public/action-catalog.generated.json';
 
@@ -82,6 +82,11 @@ export interface ActionCatalogEntry {
   readonly essenceCost: number | null;
   readonly durationMode: 'instant' | 'sustained';
   readonly hasControlSpec: boolean;
+  /**
+   * How many authored aftermath reactions the Divine Receipt offers after this card
+   * resolves (THR-741). Zero means the receipt's choice row is empty for this card.
+   */
+  readonly aftermathReactionCount: number;
   readonly targetCategories: readonly string[];
   readonly targetSubtypes: readonly string[];
   readonly requiresReach: ReachDomain | null;
@@ -180,6 +185,7 @@ function toEntry(template: UnifiedActionTemplate, category: CatalogCategory): Ac
     essenceCost: template.essenceCost ?? null,
     durationMode: template.durationMode ?? 'instant',
     hasControlSpec: template.controlSpec != null,
+    aftermathReactionCount: template.aftermathConfig?.fallback?.reactions?.length ?? 0,
     targetCategories: [...(template.targetCategories ?? [])],
     targetSubtypes: [...(template.targetSubtypes ?? [])],
     requiresReach,

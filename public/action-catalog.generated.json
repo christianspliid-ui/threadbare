@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "totals": {
     "total": 178,
     "byCategory": {
@@ -54,6 +54,7 @@
       "essenceCost": 14,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "agent"
       ],
@@ -83,6 +84,7 @@
       "essenceCost": 12,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "agent"
       ],
@@ -112,6 +114,7 @@
       "essenceCost": null,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [],
       "targetSubtypes": [],
       "requiresReach": null,
@@ -139,6 +142,7 @@
       "essenceCost": null,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [],
       "targetSubtypes": [],
       "requiresReach": null,
@@ -166,6 +170,7 @@
       "essenceCost": null,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [],
       "targetSubtypes": [],
       "requiresReach": null,
@@ -193,6 +198,7 @@
       "essenceCost": null,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [],
       "targetSubtypes": [],
       "requiresReach": null,
@@ -220,6 +226,7 @@
       "essenceCost": null,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [],
       "targetSubtypes": [],
       "requiresReach": null,
@@ -247,6 +254,7 @@
       "essenceCost": null,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [],
       "targetSubtypes": [],
       "requiresReach": null,
@@ -274,6 +282,7 @@
       "essenceCost": null,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [],
       "targetSubtypes": [],
       "requiresReach": null,
@@ -301,6 +310,7 @@
       "essenceCost": null,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [],
       "targetSubtypes": [],
       "requiresReach": null,
@@ -328,6 +338,7 @@
       "essenceCost": null,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [],
       "targetSubtypes": [],
       "requiresReach": null,
@@ -355,6 +366,7 @@
       "essenceCost": null,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [],
       "targetSubtypes": [],
       "requiresReach": null,
@@ -382,6 +394,7 @@
       "essenceCost": null,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [],
       "targetSubtypes": [],
       "requiresReach": null,
@@ -409,6 +422,7 @@
       "essenceCost": null,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [],
       "targetSubtypes": [],
       "requiresReach": null,
@@ -436,6 +450,7 @@
       "essenceCost": null,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [],
       "targetSubtypes": [],
       "requiresReach": null,
@@ -463,6 +478,7 @@
       "essenceCost": null,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [],
       "targetSubtypes": [],
       "requiresReach": null,
@@ -490,6 +506,7 @@
       "essenceCost": null,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [],
       "targetSubtypes": [],
       "requiresReach": null,
@@ -517,6 +534,7 @@
       "essenceCost": null,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [],
       "targetSubtypes": [],
       "requiresReach": null,
@@ -544,6 +562,7 @@
       "essenceCost": null,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [],
       "targetSubtypes": [],
       "requiresReach": null,
@@ -571,6 +590,7 @@
       "essenceCost": null,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [],
       "targetSubtypes": [],
       "requiresReach": null,
@@ -598,6 +618,7 @@
       "essenceCost": 8,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "faction"
       ],
@@ -627,6 +648,7 @@
       "essenceCost": null,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [],
       "targetSubtypes": [],
       "requiresReach": null,
@@ -654,6 +676,7 @@
       "essenceCost": 10,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "actor"
       ],
@@ -683,6 +706,7 @@
       "essenceCost": 6,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "actor"
       ],
@@ -712,6 +736,7 @@
       "essenceCost": 14,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "agent"
       ],
@@ -741,6 +766,7 @@
       "essenceCost": null,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [],
       "targetSubtypes": [],
       "requiresReach": null,
@@ -768,6 +794,7 @@
       "essenceCost": null,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [],
       "targetSubtypes": [],
       "requiresReach": null,
@@ -795,6 +822,7 @@
       "essenceCost": null,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [],
       "targetSubtypes": [],
       "requiresReach": null,
@@ -822,6 +850,7 @@
       "essenceCost": null,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [],
       "targetSubtypes": [],
       "requiresReach": null,
@@ -849,6 +878,7 @@
       "essenceCost": 12,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "agent"
       ],
@@ -878,6 +908,7 @@
       "essenceCost": null,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [],
       "targetSubtypes": [],
       "requiresReach": null,
@@ -905,6 +936,7 @@
       "essenceCost": null,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [],
       "targetSubtypes": [],
       "requiresReach": null,
@@ -932,6 +964,7 @@
       "essenceCost": null,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [],
       "targetSubtypes": [],
       "requiresReach": null,
@@ -959,6 +992,7 @@
       "essenceCost": null,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [],
       "targetSubtypes": [],
       "requiresReach": null,
@@ -986,6 +1020,7 @@
       "essenceCost": 10,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "faction"
       ],
@@ -1015,6 +1050,7 @@
       "essenceCost": 6,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "faction"
       ],
@@ -1044,6 +1080,7 @@
       "essenceCost": null,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [],
       "targetSubtypes": [],
       "requiresReach": null,
@@ -1071,6 +1108,7 @@
       "essenceCost": null,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [],
       "targetSubtypes": [],
       "requiresReach": null,
@@ -1098,6 +1136,7 @@
       "essenceCost": null,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [],
       "targetSubtypes": [],
       "requiresReach": null,
@@ -1125,6 +1164,7 @@
       "essenceCost": null,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [],
       "targetSubtypes": [],
       "requiresReach": null,
@@ -1152,6 +1192,7 @@
       "essenceCost": 12,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "actor"
       ],
@@ -1181,6 +1222,7 @@
       "essenceCost": 2,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "actor"
       ],
@@ -1210,6 +1252,7 @@
       "essenceCost": 8,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "agent"
       ],
@@ -1239,6 +1282,7 @@
       "essenceCost": 8,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "agent"
       ],
@@ -1268,6 +1312,7 @@
       "essenceCost": null,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [],
       "targetSubtypes": [],
       "requiresReach": null,
@@ -1295,6 +1340,7 @@
       "essenceCost": null,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [],
       "targetSubtypes": [],
       "requiresReach": null,
@@ -1322,6 +1368,7 @@
       "essenceCost": null,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [],
       "targetSubtypes": [],
       "requiresReach": null,
@@ -1349,6 +1396,7 @@
       "essenceCost": null,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [],
       "targetSubtypes": [],
       "requiresReach": null,
@@ -1376,6 +1424,7 @@
       "essenceCost": 8,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "faction"
       ],
@@ -1405,6 +1454,7 @@
       "essenceCost": null,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [],
       "targetSubtypes": [],
       "requiresReach": null,
@@ -1432,6 +1482,7 @@
       "essenceCost": 10,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "agent"
       ],
@@ -1461,6 +1512,7 @@
       "essenceCost": null,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [],
       "targetSubtypes": [],
       "requiresReach": null,
@@ -1488,6 +1540,7 @@
       "essenceCost": null,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [],
       "targetSubtypes": [],
       "requiresReach": null,
@@ -1515,6 +1568,7 @@
       "essenceCost": null,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [],
       "targetSubtypes": [],
       "requiresReach": null,
@@ -1542,6 +1596,7 @@
       "essenceCost": null,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [],
       "targetSubtypes": [],
       "requiresReach": null,
@@ -1569,6 +1624,7 @@
       "essenceCost": 6,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "faction"
       ],
@@ -1598,6 +1654,7 @@
       "essenceCost": 5,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "agent"
       ],
@@ -1627,6 +1684,7 @@
       "essenceCost": 4,
       "durationMode": "sustained",
       "hasControlSpec": true,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "location"
       ],
@@ -1659,6 +1717,7 @@
       "essenceCost": 13,
       "durationMode": "sustained",
       "hasControlSpec": true,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "location"
       ],
@@ -1691,6 +1750,7 @@
       "essenceCost": 18,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "faction"
       ],
@@ -1720,6 +1780,7 @@
       "essenceCost": 8,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "faction"
       ],
@@ -1749,6 +1810,7 @@
       "essenceCost": 14,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "faction"
       ],
@@ -1778,6 +1840,7 @@
       "essenceCost": 4,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "artifact",
         "artifact_legendary"
@@ -1808,6 +1871,7 @@
       "essenceCost": null,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [],
       "targetSubtypes": [],
       "requiresReach": null,
@@ -1835,6 +1899,7 @@
       "essenceCost": null,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [],
       "targetSubtypes": [],
       "requiresReach": null,
@@ -1862,6 +1927,7 @@
       "essenceCost": null,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [],
       "targetSubtypes": [],
       "requiresReach": null,
@@ -1889,6 +1955,7 @@
       "essenceCost": null,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [],
       "targetSubtypes": [],
       "requiresReach": null,
@@ -1916,6 +1983,7 @@
       "essenceCost": 4,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "artifact"
       ],
@@ -1945,6 +2013,7 @@
       "essenceCost": 3,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 2,
       "targetCategories": [
         "artifact",
         "artifact_legendary"
@@ -1975,6 +2044,7 @@
       "essenceCost": 3,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "artifact",
         "artifact_legendary"
@@ -2005,6 +2075,7 @@
       "essenceCost": 2,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "artifact"
       ],
@@ -2034,6 +2105,7 @@
       "essenceCost": 4,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "actor"
       ],
@@ -2065,6 +2137,7 @@
       "essenceCost": 4,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "actor"
       ],
@@ -2096,6 +2169,7 @@
       "essenceCost": 4,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "actor"
       ],
@@ -2127,6 +2201,7 @@
       "essenceCost": 4,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "actor"
       ],
@@ -2158,6 +2233,7 @@
       "essenceCost": 2,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [],
       "targetSubtypes": [],
       "requiresReach": null,
@@ -2185,6 +2261,7 @@
       "essenceCost": 2,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [],
       "targetSubtypes": [],
       "requiresReach": null,
@@ -2212,6 +2289,7 @@
       "essenceCost": 0,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "actor"
       ],
@@ -2241,6 +2319,7 @@
       "essenceCost": 1,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [],
       "targetSubtypes": [],
       "requiresReach": null,
@@ -2268,6 +2347,7 @@
       "essenceCost": 2,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [],
       "targetSubtypes": [],
       "requiresReach": null,
@@ -2295,6 +2375,7 @@
       "essenceCost": 2,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [],
       "targetSubtypes": [],
       "requiresReach": null,
@@ -2322,6 +2403,7 @@
       "essenceCost": 1,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [],
       "targetSubtypes": [],
       "requiresReach": null,
@@ -2349,6 +2431,7 @@
       "essenceCost": 1,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [],
       "targetSubtypes": [],
       "requiresReach": null,
@@ -2376,6 +2459,7 @@
       "essenceCost": 0,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "actor"
       ],
@@ -2405,6 +2489,7 @@
       "essenceCost": 1,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "hex"
       ],
@@ -2434,6 +2519,7 @@
       "essenceCost": 1,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "hex"
       ],
@@ -2463,6 +2549,7 @@
       "essenceCost": 1,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "hex"
       ],
@@ -2492,6 +2579,7 @@
       "essenceCost": 2,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "hex"
       ],
@@ -2521,6 +2609,7 @@
       "essenceCost": 2,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "hex"
       ],
@@ -2550,6 +2639,7 @@
       "essenceCost": 2,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [],
       "targetSubtypes": [],
       "requiresReach": null,
@@ -2577,6 +2667,7 @@
       "essenceCost": 4,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [],
       "targetSubtypes": [],
       "requiresReach": null,
@@ -2604,6 +2695,7 @@
       "essenceCost": 5,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "actor"
       ],
@@ -2633,6 +2725,7 @@
       "essenceCost": 15,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "actor"
       ],
@@ -2662,6 +2755,7 @@
       "essenceCost": 3,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [],
       "targetSubtypes": [],
       "requiresReach": null,
@@ -2689,6 +2783,7 @@
       "essenceCost": 5,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "hex"
       ],
@@ -2718,6 +2813,7 @@
       "essenceCost": 7,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 3,
       "targetCategories": [
         "hex"
       ],
@@ -2747,6 +2843,7 @@
       "essenceCost": 15,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "hex"
       ],
@@ -2776,6 +2873,7 @@
       "essenceCost": 3,
       "durationMode": "sustained",
       "hasControlSpec": true,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "hex"
       ],
@@ -2805,6 +2903,7 @@
       "essenceCost": 4,
       "durationMode": "sustained",
       "hasControlSpec": true,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "hex"
       ],
@@ -2834,6 +2933,7 @@
       "essenceCost": 6,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "hex"
       ],
@@ -2872,6 +2972,7 @@
       "essenceCost": 3,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "hex"
       ],
@@ -2901,6 +3002,7 @@
       "essenceCost": 5,
       "durationMode": "sustained",
       "hasControlSpec": true,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "hex"
       ],
@@ -2930,6 +3032,7 @@
       "essenceCost": 4,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "hex"
       ],
@@ -2959,6 +3062,7 @@
       "essenceCost": 7,
       "durationMode": "sustained",
       "hasControlSpec": true,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "hex"
       ],
@@ -2988,6 +3092,7 @@
       "essenceCost": 3,
       "durationMode": "sustained",
       "hasControlSpec": true,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "hex"
       ],
@@ -3017,6 +3122,7 @@
       "essenceCost": 4,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "hex"
       ],
@@ -3046,6 +3152,7 @@
       "essenceCost": 3,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "hex"
       ],
@@ -3075,6 +3182,7 @@
       "essenceCost": 6,
       "durationMode": "sustained",
       "hasControlSpec": true,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "hex"
       ],
@@ -3104,6 +3212,7 @@
       "essenceCost": 5,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "hex"
       ],
@@ -3133,6 +3242,7 @@
       "essenceCost": 5,
       "durationMode": "sustained",
       "hasControlSpec": true,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "hex"
       ],
@@ -3162,6 +3272,7 @@
       "essenceCost": 5,
       "durationMode": "sustained",
       "hasControlSpec": true,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "hex"
       ],
@@ -3191,6 +3302,7 @@
       "essenceCost": 4,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 2,
       "targetCategories": [
         "hex"
       ],
@@ -3220,6 +3332,7 @@
       "essenceCost": 4,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "hex"
       ],
@@ -3249,6 +3362,7 @@
       "essenceCost": 4,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "hex"
       ],
@@ -3278,6 +3392,7 @@
       "essenceCost": 6,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "hex"
       ],
@@ -3307,6 +3422,7 @@
       "essenceCost": 4,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "hex"
       ],
@@ -3336,6 +3452,7 @@
       "essenceCost": 4,
       "durationMode": "sustained",
       "hasControlSpec": true,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "hex"
       ],
@@ -3365,6 +3482,7 @@
       "essenceCost": 4,
       "durationMode": "sustained",
       "hasControlSpec": true,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "hex"
       ],
@@ -3394,6 +3512,7 @@
       "essenceCost": 7,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "hex"
       ],
@@ -3423,6 +3542,7 @@
       "essenceCost": 5,
       "durationMode": "sustained",
       "hasControlSpec": true,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "hex"
       ],
@@ -3452,6 +3572,7 @@
       "essenceCost": 3,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "hex"
       ],
@@ -3481,6 +3602,7 @@
       "essenceCost": 3,
       "durationMode": "sustained",
       "hasControlSpec": true,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "hex"
       ],
@@ -3510,6 +3632,7 @@
       "essenceCost": 5,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "hex"
       ],
@@ -3539,6 +3662,7 @@
       "essenceCost": 2,
       "durationMode": "sustained",
       "hasControlSpec": true,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "hex"
       ],
@@ -3568,6 +3692,7 @@
       "essenceCost": 2,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "hex"
       ],
@@ -3597,6 +3722,7 @@
       "essenceCost": 4,
       "durationMode": "sustained",
       "hasControlSpec": true,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "hex"
       ],
@@ -3626,6 +3752,7 @@
       "essenceCost": 2,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "hex"
       ],
@@ -3655,6 +3782,7 @@
       "essenceCost": 8,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "hex"
       ],
@@ -3684,6 +3812,7 @@
       "essenceCost": 1,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "hex"
       ],
@@ -3713,6 +3842,7 @@
       "essenceCost": 3,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "hex"
       ],
@@ -3742,6 +3872,7 @@
       "essenceCost": 3,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "hex"
       ],
@@ -3771,6 +3902,7 @@
       "essenceCost": 8,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "hex"
       ],
@@ -3800,6 +3932,7 @@
       "essenceCost": 6,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "hex"
       ],
@@ -3829,6 +3962,7 @@
       "essenceCost": 0,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "hex"
       ],
@@ -3858,6 +3992,7 @@
       "essenceCost": 2,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "hex"
       ],
@@ -3887,6 +4022,7 @@
       "essenceCost": 6,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "hex"
       ],
@@ -3916,6 +4052,7 @@
       "essenceCost": 8,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "hex"
       ],
@@ -3945,6 +4082,7 @@
       "essenceCost": 12,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 2,
       "targetCategories": [
         "hex"
       ],
@@ -3974,6 +4112,7 @@
       "essenceCost": 8,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "hex"
       ],
@@ -4003,6 +4142,7 @@
       "essenceCost": 3,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "hex"
       ],
@@ -4032,6 +4172,7 @@
       "essenceCost": 5,
       "durationMode": "sustained",
       "hasControlSpec": true,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "hex"
       ],
@@ -4061,6 +4202,7 @@
       "essenceCost": 5,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "hex"
       ],
@@ -4090,6 +4232,7 @@
       "essenceCost": 10,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "hex"
       ],
@@ -4119,6 +4262,7 @@
       "essenceCost": 4,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "location"
       ],
@@ -4154,6 +4298,7 @@
       "essenceCost": 4,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "location"
       ],
@@ -4189,6 +4334,7 @@
       "essenceCost": 3,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "location"
       ],
@@ -4225,6 +4371,7 @@
       "essenceCost": 4,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "location"
       ],
@@ -4260,6 +4407,7 @@
       "essenceCost": 5,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "location"
       ],
@@ -4296,6 +4444,7 @@
       "essenceCost": 2,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 3,
       "targetCategories": [
         "location"
       ],
@@ -4325,6 +4474,7 @@
       "essenceCost": 5,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "location"
       ],
@@ -4360,6 +4510,7 @@
       "essenceCost": 2,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "sublocation"
       ],
@@ -4389,6 +4540,7 @@
       "essenceCost": 6,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "location"
       ],
@@ -4424,6 +4576,7 @@
       "essenceCost": 3,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "location"
       ],
@@ -4453,6 +4606,7 @@
       "essenceCost": 4,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "sublocation"
       ],
@@ -4487,6 +4641,7 @@
       "essenceCost": 12,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "location"
       ],
@@ -4523,6 +4678,7 @@
       "essenceCost": 15,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "sublocation"
       ],
@@ -4552,6 +4708,7 @@
       "essenceCost": 1,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "sublocation"
       ],
@@ -4581,6 +4738,7 @@
       "essenceCost": 3,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "location"
       ],
@@ -4610,6 +4768,7 @@
       "essenceCost": 5,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "location"
       ],
@@ -4645,6 +4804,7 @@
       "essenceCost": 5,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "location"
       ],
@@ -4680,6 +4840,7 @@
       "essenceCost": 5,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "location"
       ],
@@ -4709,6 +4870,7 @@
       "essenceCost": 5,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "location"
       ],
@@ -4744,6 +4906,7 @@
       "essenceCost": 5,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "location"
       ],
@@ -4780,6 +4943,7 @@
       "essenceCost": 4,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "location"
       ],
@@ -4816,6 +4980,7 @@
       "essenceCost": 3,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "location"
       ],
@@ -4852,6 +5017,7 @@
       "essenceCost": 5,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "location"
       ],
@@ -4888,6 +5054,7 @@
       "essenceCost": 5,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "actor"
       ],
@@ -4917,6 +5084,7 @@
       "essenceCost": 5,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "actor"
       ],
@@ -4946,6 +5114,7 @@
       "essenceCost": 15,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "actor"
       ],
@@ -4975,6 +5144,7 @@
       "essenceCost": 10,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "actor"
       ],
@@ -5006,6 +5176,7 @@
       "essenceCost": 25,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "actor"
       ],
@@ -5037,6 +5208,7 @@
       "essenceCost": 15,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "actor"
       ],
@@ -5068,6 +5240,7 @@
       "essenceCost": 25,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "artifact"
       ],
@@ -5097,6 +5270,7 @@
       "essenceCost": 20,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "actor"
       ],
@@ -5128,6 +5302,7 @@
       "essenceCost": 15,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "location"
       ],
@@ -5157,6 +5332,7 @@
       "essenceCost": 15,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "actor"
       ],
@@ -5186,6 +5362,7 @@
       "essenceCost": 0,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "actor"
       ],
@@ -5217,6 +5394,7 @@
       "essenceCost": 0,
       "durationMode": "instant",
       "hasControlSpec": false,
+      "aftermathReactionCount": 0,
       "targetCategories": [
         "actor"
       ],
