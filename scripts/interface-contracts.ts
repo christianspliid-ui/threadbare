@@ -922,6 +922,28 @@ export const CONTRACTS: readonly Contract[] = [
     },
   },
   {
+    id: 'guild-rank-gates-senior-content',
+    producerSystem: FACTIONS,
+    consumerSystem: ENCOUNTERS,
+    intent:
+      "A guild's senior and elite work reaches only members who have earned standing in that guild — a passer-by cannot take a captain's commission because they happened to be standing in the hall.",
+    ulTerms: ['Faction', 'Encounter'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['minRank', 'meetsFactionRankRequirement', 'RANK_GATED_QUEST_TYPES'],
+      module: 'src/engine/factionReputation.ts',
+    },
+    // The requirement is authored per template on the meta map, not on the template
+    // itself — which is why it survived so long unread.
+    writeSites: ['src/data/faction-encounter-content.ts', 'src/data/faction-definitions.ts'],
+    readSites: ['src/engine/encounterFilterPipeline.ts'],
+    verifiedLive: {
+      date: '2026-07-26',
+      evidence:
+        "THR-805. `FACTION_ENCOUNTER_META.minRank` was authored on ~150 template metas and typed at types/faction.ts:72, with NO production reader — its only non-data references were three tests asserting the data round-trips — so every tier-restricted guild template was drawable by any agent at the right location. filterByPrerequisites now consults it for entries whose questType is senior/elite/leadership (RANK_GATED_QUEST_TYPES); the 123 `standard` quest/social metas stay ungated, since minRank is a REQUIRED field and gating on its presence would have closed the entry tier behind mere membership. Rank is derived from member_of.reputation via computeRankFromReputation on every check, never read from the edge's cached rank/role (those refresh only on a tier change, so a decay in progress reads stale). Non-membership closes the gate; unresolvable data (unknown factionDefId, or a minRank naming no tier) fails OPEN, because a typo that silently orphans content is the worse failure. Two adjacent substrates were rejected and are recorded so they are not revived: the `faction_rank:` predicate in effectPredicates.ts reads agentNode.properties.factionRank, which NOTHING writes (grep the assignment side — every other hit is a local display string), so it is permanently 0 and false for any threshold; and FactionRankTier.encounterAccess prefix allowlists are equally unread AND already drifted (merchant_consortium declares mc_trade.* while its templates are mct.*). Non-vacuous by live payload intersection and measured blast radius: 60 rank-gated metas exist, exactly 12 are present in a live tick-150 seed-42 cache (the guild tail THR-779/THR-803 registered), and a live sweep shows the gate closed for a real low-rank member and open for that same member once promoted past the floor. Locked by src/engine/__tests__/factionRankGate.test.ts (14 tests), falsified at 2-of-14 red with the gate disabled. Note the gate deliberately does NOT depend on getAnyEncounterById resolving the template: it returns undefined for every cache-registered regional template, which is why the sibling trait/broken/group gates in the same loop are inert for these ids (THR-811).",
+    },
+  },
+  {
     id: 'seeded-opponent-survives-to-spawn',
     producerSystem: ENCOUNTERS,
     consumerSystem: COMPANIES,

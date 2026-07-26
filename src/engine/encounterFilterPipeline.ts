@@ -56,6 +56,8 @@ import { GROUP_MIN_MEMBERS } from '../data/group-constants';
 import { getAnyEncounterById } from '../data/encounter-content';
 import { FACTION_ENCOUNTER_META } from '../data/faction-encounter-content';
 import { FACTION_DEFINITIONS } from '../data/faction-definitions';
+import type { FactionEncounterMeta } from '../types/faction';
+import { meetsFactionRankRequirement } from './factionReputation';
 import type { EligibilityFunnelCounters } from './kpi/gameplayKpi';
 import { KPI_FUNNEL_MAX_TEMPLATES } from './kpi/kpiConstants';
 import { BRANCHING_QUEST_SKIP_OUTGROWTH, BRANCHING_CAP_RESERVE } from './encounter/branchingConstants';
@@ -79,6 +81,26 @@ import {
 
 /** Ordered threat tiers for index-based comparison */
 const THREAT_ORDER: ThreatRating[] = ['trivial', 'easy', 'moderate', 'hard', 'deadly'];
+
+/**
+ * Which `FactionEncounterMeta.questType` tiers the THR-805 rank gate applies to.
+ *
+ * `'standard'` is deliberately absent: those 123 templates are the quest/social tier
+ * that must stay reachable to any member and non-member alike. Adding a tier here
+ * closes that tier behind its authored `minRank` — a reachability change, so it is a
+ * tuning decision rather than an implementation detail (NFP #1).
+ *
+ * Of the 60 rank-gated metas, exactly 12 are cache-reachable today (measured tick 150,
+ * seed 42, medium); the other 48 are THR-779 DELETE-verdict orphans awaiting THR-778's
+ * kill batch, so this gate's live blast radius is those 12. Six of them require a
+ * reputation floor of 0.85, which the reputation economy does not currently reach past
+ * ~tick 100 — THR-810.
+ */
+const RANK_GATED_QUEST_TYPES: ReadonlySet<FactionEncounterMeta['questType']> = new Set([
+  'senior',
+  'elite',
+  'leadership',
+]);
 
 // ─── Funnel counter helpers ──────────────────────────────────────
 
@@ -330,6 +352,43 @@ export function filterByPrerequisites(
           }
           if (!meetsAll) continue;
         }
+      }
+    }
+
+    // Faction rank gate (THR-805) — the senior/elite tail of guild progression.
+    //
+    // A template whose meta carries `minRank` is authored as tier-restricted work:
+    // `rb.senior.deep_scout` wants a Ranger Captain, `ts.elite.found_cathedral` a
+    // Pontifex. That requirement was authored on ~150 metas and read by nobody, so
+    // every tier-restricted template was drawable by any passer-by at the right
+    // location. This is the read side.
+    //
+    // Keyed on the per-template `minRank` rather than the tier's `encounterAccess`
+    // prefix list: the prefixes carry a live vocabulary drift (merchant_consortium
+    // declares `mc_trade.*` while its templates are `mct.*`), and a prefix gate is
+    // only as correct as that spelling. `minRank` names the tier directly, so it
+    // cannot drift out of alignment with the id it sits on.
+    //
+    // Scoped by authored `questType`, not by the presence of `minRank`: `minRank` is a
+    // *required* field, so every one of the ~150 metas carries one — including the 123
+    // `standard` quest/social templates, whose entry-tier `minRank` (`apprentice`,
+    // minReputation 0) would still newly gate them on *membership*. The quest/social
+    // tier must stay reachable, so only the tier-restricted `questType`s gate here.
+    //
+    // `.join` templates are exempt — joining is how you *acquire* standing, and the
+    // gate above already enforces their own `joinPrerequisites`.
+    //
+    // Deliberately NOT guarded on `template` being resolvable: `getAnyEncounterById`
+    // returns undefined for every one of these guild templates (they reach the cache
+    // via `CACHE_REGISTERED_REGIONAL_TEMPLATES`, which resolves through
+    // `UNIFIED_ACTION_TEMPLATES`), so a `template &&` guard would silently skip the
+    // gate on exactly the content it exists to gate. The gate needs only the id and
+    // its meta, so it asks for neither. That lookup gap disables five *other* gates
+    // in this same loop for the same ids — tracked as THR-811, not worked around here.
+    if (!entry.templateId.endsWith('.join')) {
+      const rankMeta = FACTION_ENCOUNTER_META.get(entry.templateId);
+      if (rankMeta && RANK_GATED_QUEST_TYPES.has(rankMeta.questType)) {
+        if (!meetsFactionRankRequirement(graph, agentId, rankMeta.factionDefId, rankMeta.minRank)) continue;
       }
     }
 

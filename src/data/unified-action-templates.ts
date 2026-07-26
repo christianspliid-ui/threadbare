@@ -5639,15 +5639,20 @@ export const LOCATION_BRANCHING_ENCOUNTER_TEMPLATES: readonly UnifiedActionTempl
  * `monster.encounter.*` templates. The other 44 orphans carry the **DELETE** verdict and
  * are removed in WS5's kill batch (THR-778), not here.
  *
- * Guild-rank gating is still deliberately *not* applied here — now see THR-805.
- * The original reason is gone: THR-803 supplied the missing `recordChainStageCompletion`
- * caller (and fixed the id-vocabulary mismatch that had made the whole chain gate inert),
- * so `chainProgress` is written and a stage ≥ 1 template is reachable. What remains is a
- * design call, not a wiring one — guild rank is already first-class on the `member_of`
- * edge and `effects.ts` declares a `faction_rank:` predicate, so chains may be the wrong
- * mechanism; and a chain stage holds exactly one template id while each guild tier holds
- * several. Gating these on a mechanism not yet chosen would re-orphan the very content
- * this registration rescues.
+ * Guild-rank gating **is** now applied to the 12 guild ids below (THR-805), but not here
+ * — the gate lives in `filterByPrerequisites` and is keyed on each template's authored
+ * `FACTION_ENCOUNTER_META.minRank`, so this list stays a pure reachability registration.
+ *
+ * Neither of the two mechanisms THR-805 was filed to choose between won:
+ *   - `EncounterChain` was rejected on shape (a stage holds exactly one template id
+ *     while each guild tier holds several) and on balance (`MAX_ACTIVE_CHAINS` is 2, so
+ *     four guild chains would routinely suppress the starter chains' stage bonus).
+ *   - The `faction_rank:` predicate in `effects.ts` was rejected as a dead gate: it
+ *     reads `agentNode.properties.factionRank`, which **nothing writes**, so
+ *     `ctx.factionRank` is permanently 0. Its integer-tier semantics also conflict with
+ *     the `member_of` edge's normalized 0–1 `rank`.
+ * `minRank` was already authored on ~150 metas and read by nobody — the substrate
+ * existed, only its reader was missing.
  */
 export const CACHE_REGISTERED_REGIONAL_TEMPLATE_IDS: readonly string[] = [
   // Builders' Fellowship — elite tier
