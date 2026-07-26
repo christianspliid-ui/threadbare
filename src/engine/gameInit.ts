@@ -788,9 +788,14 @@ export function devSeedAscendantTestPackage(state: GameState): void {
     { id: 'trait.dev.unforgotten', name: 'Unforgotten', tags: ['#blessing'], mechanical: 'What you have witnessed cannot be denied.', flavor: "What you have witnessed cannot be denied. Mortals who hear you speak it are shaken." },
     { id: 'trait.dev.cold_of_eye', name: 'Cold of Eye', tags: [],           mechanical: 'Your Whispers come out sharper than intended.', flavor: "Your Whispers come out sharper than intended. Interventions cut." },
   ];
+  // THR-784: no `ticksRemaining` on the node. Duration is per-carrier state and
+  // lives on the has_trait EDGE (see readEdgeDuration in agentAttachments.ts); a
+  // null here read as live state and rendered every ticking condition as
+  // 'until dispelled'. These dev conditions are indefinite — the edge omits both
+  // duration fields, which IS the indefinite contract.
   for (const c of conditions) {
     if (!graph.getNode(c.id)) {
-      graph.addNode({ id: c.id, type: 'trait', name: c.name, properties: { subcategory: 'condition', tier: 1, tags: c.tags, mechanicalSummary: c.mechanical, flavorText: c.flavor, ticksRemaining: null } });
+      graph.addNode({ id: c.id, type: 'trait', name: c.name, properties: { subcategory: 'condition', tier: 1, tags: c.tags, mechanicalSummary: c.mechanical, flavorText: c.flavor } });
     }
     const eid = `edge.has_trait.${ascendantId}.${c.id}`;
     if (!graph.getEdge(eid)) {
@@ -806,7 +811,8 @@ export function devSeedAscendantTestPackage(state: GameState): void {
   ];
   for (const cl of clues) {
     if (!graph.getNode(cl.id)) {
-      graph.addNode({ id: cl.id, type: 'trait', name: cl.name, properties: { subcategory: 'clue', tier: 1, tags: ['#clue'], mechanicalSummary: cl.note, flavorText: cl.note, ticksRemaining: null } });
+      // THR-784: same as conditions above — duration is edge state, not node state.
+      graph.addNode({ id: cl.id, type: 'trait', name: cl.name, properties: { subcategory: 'clue', tier: 1, tags: ['#clue'], mechanicalSummary: cl.note, flavorText: cl.note } });
     }
     const eid = `edge.has_trait.${ascendantId}.${cl.id}`;
     if (!graph.getEdge(eid)) {

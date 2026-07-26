@@ -46,6 +46,8 @@ export const STIR_PEOPLE_DRIFT_STRENGTH = 0.08;
 export const BESTOW_VISION_STRENGTH = 0.6;
 export const INCITE_EXODUS_STRENGTH = 0.5;
 export const PLANT_DREAM_STRENGTH = 0.5;
+/** Lifespan of the temporary `ruin_seeker` trait `hex.plant_dream` grants, in ticks. */
+export const PLANT_DREAM_TRAIT_DURATION_TICKS = 25;
 export const SUMMON_CONGREGATION_STRENGTH = 0.4;
 
 // Ruins exploration constants (re-exported from central tuning file)
@@ -535,7 +537,11 @@ const HEX_ACTION_GRAPH_OP_GENERATORS: Readonly<Record<string, GraphOpGenerator>>
             lastReinforcedTick: tick ?? 0,
             source: 'divine_dream',
             visibility: 'divine_only',
-            ticksRemaining: 25,
+            ticksRemaining: PLANT_DREAM_TRAIT_DURATION_TICKS,
+            // THR-784: authored total kept as provenance and as the duration
+            // progress-bar denominator (THR-761 contract). `ticksRemaining` is
+            // the live counter decayConditions decrements; this one does not move.
+            durationTicks: PLANT_DREAM_TRAIT_DURATION_TICKS,
           },
         },
       },
