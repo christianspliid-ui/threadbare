@@ -1,6 +1,6 @@
 # Briefing
 
-**Generated:** 2026-07-27 10:53 local (2026-07-27 08:53 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-07-27 11:54 local (2026-07-27 09:54 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
@@ -8,41 +8,35 @@ This is your inbox. It's rewritten every hour by a Claude Code task. Standing sw
 
 **Nothing needs you right now.** No decision is waiting, no switch needs flipping, and nothing arrived for you this hour.
 
-One thing you should simply *know*, with no action attached: **the new encounter experience — the work you named first priority — has been ready to start for two and a half hours and has not started.** That is not a mistake anyone made, and it is not yours to unblock; the reason is spelled out under *Queue* below. I am telling you because you named it first priority, and "ready but not started" is the kind of thing that should never be discovered late.
+**Last hour I promised to name it if your top-priority work — the new encounter experience — was still unstarted at this brief. It is still unstarted, so I am naming it.** What I will not do is dress it up as a fault, because the reason is now specific and about to expire: the job that was blocking the only work slot **finished and merged 26 minutes ago**, and the crew picks up new work once an hour, on the hour. Its first opportunity is **six minutes after this brief**. Nothing needs you; I am reporting it because I said I would, and a promise kept only when the answer is unflattering is not a promise.
 
 ## Queue
 
-**22 jobs ready — two urgent, seven middling, thirteen minor. One job in hand.**
+**23 jobs ready — two urgent, eight middling, thirteen minor. Nothing in hand.**
 
-Exactly the same 22 as an hour ago, in exactly the same mix. Nothing shipped, nothing new was filed, nothing new was picked up. **This is the first completely still hour in days.** Nothing has gone stale — the longest-waiting job has been on the shelf three days, well inside the limit.
+**The stuck job cleared.** Last hour's brief described a small correctness fix jammed for an hour and forty minutes behind a safety check that guards the game's manual pages against drifting away from the game. It was updated and merged at 11:28. The workshop slot is now empty for the first time in nearly five hours, and nothing has gone stale — the longest-waiting job has been on the shelf three days, well inside the limit.
 
-**The one job in hand is stuck, and it is holding up your top-priority work as a side effect.** The crew deliberately works one job at a time, so that single slot is the whole workshop. It is occupied by a small correctness fix that has been unable to finish for an hour and forty minutes.
+**The fix also left behind something better than itself.** In working out why it stayed stuck, the crew found that the manual-drift check *passes on your own machine even when it should fail* — it silently compares against a stale copy of the project, so an author gets a clean bill of health and is then surprised by the real check minutes later. That is exactly what happened here, and it is now written up as its own job. The two hours were not wasted; they bought a detector for the trap that caused them.
 
-What is stopping it is not the fix itself — the fix is done. It is a safety check that refuses to let the change merge: the change edits a game system that has a manual page, and the manual page was not updated to match. That check exists precisely so the game's documentation cannot quietly drift away from the game, and it is doing its job. The remedy is routine and takes minutes — update the page, or record why this change does not affect it.
+**So both halves of the new encounter experience are ready, unblocked, and unclaimed, with an empty slot in front of them.** The design work merged onto the main branch at 09:18 and I have verified it is genuinely there rather than inferring it from a merge notice.
 
-**A crew member was on it forty minutes ago.** They pulled in the latest main branch at 10:02 and let the check re-run; it failed again at 10:16 on the identical complaint, because pulling in main does nothing about an un-updated manual page. It has been quiet since.
-
-**So the two halves of the new encounter experience are unblocked, unclaimed, and waiting for that slot.** Last hour I promised that if the next pickup grabbed some other minor job while both of these sat free, I would call it a routing problem. **It is not a routing problem, and I should say so as plainly as I would have said the opposite.** The pickup at 10:01 did not choose a small job over yours — it found the slot already occupied and correctly carried on with what was in it. Your work starts when that fix lands.
-
-**Both tests I set last hour came back badly worded, and that is worth one paragraph.** I promised to call a routing fault if the crew "claimed a minor job instead" — but no claim happened at all, so the question I actually cared about (*is the top-priority work starting?*) never got asked. And I promised to call a stall if the stuck job was "still red with no new commit" — there *was* a new commit, so by the letter it passes, yet that commit did nothing about the failure. **In both cases I measured activity when I meant to measure progress**: two easy things to see, standing in for the harder thing that mattered. Restated properly for next hour — **if the top-priority work is still unstarted at the 11:53 brief, I will name that, whatever the crew was busy with.**
+**Restating last hour's test properly, with no escape clause:** at the 12:53 brief, one of the two encounter-experience jobs is in hand, or I name that it is not — whatever the crew turns out to have been doing, and regardless of whether anything else was claimed. Last hour both my tests were worded so they could pass while the thing I cared about kept failing; this one cannot. The slot is free, the design is landed, both jobs are top-priority, and nothing blocks them, so the only way they do not start is a real choice about what to work on.
 
 ## Freshness
 
-**Home tree: clean and current.** Right branch, nothing stranded, nothing behind the server. The same two small leftovers as the last twenty hours — a permissions edit to the tool config, and Friday's retro write-up. Both are the crew's to land; neither blocks anything.
+**Home tree: clean and current.** Right branch, nothing stranded, nothing behind the server. The same two small leftovers as the last twenty-one hours — a permissions edit to the tool config, and Friday's retro write-up. Both are the crew's to land; neither blocks anything.
 
 **Cleanup reaper: alive, ran fourteen minutes ago, clean, nothing awaiting a human decision.**
 
-**The live site is current.** Everything that has landed since the last publish was notes and documents, so there was nothing for it to rebuild — the healthy version of "no deployment happened", not a stoppage.
+**The live site is serving the very latest version of the game** — not merely "nothing needed publishing", as the last several hours reported, but the current build actually published and live.
 
 **Discord: nothing new this hour.** Genuinely empty rather than unread.
 
 ## What's moving
 
-**Almost nothing, and this is the honest version of that.** The only things that reached the main branch this hour were housekeeping: this brief, and the daily backlog-grooming report. No game code shipped.
+**One job shipped and one was filed — the ordinary rhythm, resumed.** The shipped job teaches one of the measurement tools to recognise the marks the game puts on people: it previously matched them by exact name only, so four of the five ways a mark can be written were invisible to it, and any readout about who a piece of content excludes was wrong in a direction that would have misled tuning. It affected no live gameplay — no shipped content uses those marks yet — which is precisely why it was worth fixing before the encounter work starts authoring them.
 
-**The one live job** is the small correctness fix described above — it teaches one of the measurement tools to recognise the marks the game puts on people. The tool currently reads them by exact name only, so four of the five ways a mark can be written are invisible to it. The work is finished; only the manual-page check stands between it and merging.
-
-**Nothing has gone wrong.** A still hour after a fast morning — two guild fixes and a full design handoff before 08:30 — is a lull, not a stall. It becomes a stall if the same job is still stuck at the next brief, and I will say so in those words if it is.
+**The still hour is over.** Last hour was the first completely static hour in days; this one closed a job, filed a finding, cleared the blocker, and emptied the bench. That is the lane working, not a lull ending by luck.
 
 ---
 *Standing asks live in [`Design/user-actions.md`](user-actions.md). This file is regenerated hourly by the `keep-work-flowing-cc` scheduled task; staleness is visible from the Generated timestamp above and the task's `lastRunAt` in `list_scheduled_tasks`.*
