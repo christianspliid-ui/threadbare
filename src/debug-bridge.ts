@@ -782,6 +782,37 @@ if (import.meta.env.DEV) {
       (_encounterBridge?.spawnEncounter as ((...a: unknown[]) => unknown) | undefined)?.(agentQuery, templateId, options)
       ?? { success: false, message: 'Encounter bridge not registered' },
 
+    /**
+     * THR-775 — stage the nudge golden exemplar (`The Darkhollow Vault`) on an
+     * agent, at the attended tier so the hand is actually in play.
+     *
+     * The exemplar is a fixture deliberately absent from every pool, so it has to
+     * be registered into the lookup index before `spawnEncounter` can find it.
+     * Registration adds it to the index only — never to `UNIFIED_ACTION_TEMPLATES`
+     * — so no scoring pass can draw it afterwards.
+     *
+     * This is the sanctioned browser-verify path for the nudge stage until WS5
+     * converts shipped templates to the nudge format.
+     */
+    spawnNudgeExemplar: async (agentQuery: string) => {
+      const [{ NUDGE_GOLDEN_EXEMPLAR }, { registerDebugTemplate }] = await Promise.all([
+        import('./data/__fixtures__/nudge-exemplar/darkhollow-vault-exemplar'),
+        import('./data/unified-action-templates'),
+      ]);
+      registerDebugTemplate(NUDGE_GOLDEN_EXEMPLAR);
+      type SpawnResult = import('./engine/debugEncounterTools').DebugSpawnEncounterResult
+        & { notificationId?: string };
+      const spawn = _encounterBridge?.spawnEncounter as
+        ((...a: unknown[]) => SpawnResult) | undefined;
+      if (!spawn) return { success: false, message: 'Encounter bridge not registered' };
+      // `the_first` is the strongest court position, which is what promotes the
+      // encounter to the attended (`story_beat`) tier the nudge scope rule requires.
+      return spawn(agentQuery, NUDGE_GOLDEN_EXEMPLAR.id, {
+        open: true,
+        courtPosition: 'the_first',
+      });
+    },
+
     spawnEncounterContext: (templateId: string, options?: Record<string, unknown>) =>
       (_encounterBridge?.spawnEncounterContext as ((...a: unknown[]) => unknown) | undefined)?.(templateId, options)
       ?? { success: false, message: 'Encounter bridge not registered' },
@@ -1590,6 +1621,23 @@ if (import.meta.env.DEV) {
         brokenShare: livingActors > 0 ? agents.length / livingActors : 0,
         agents,
       };
+    },
+
+    /**
+     * THR-775 — flip the nudge stage's designer view. Writes the same store the
+     * DebugPanel's Nudges tab writes, so an open stage re-renders immediately.
+     * Returns the state in force after the write.
+     */
+    setNudgeDesignerView: async (enabled: boolean) => {
+      const store = await import('./components/Game/encounter-stage/designerView');
+      store.setNudgeDesignerView(!!enabled);
+      return store.isNudgeDesignerViewEnabled();
+    },
+
+    /** THR-775 — read the designer-view state without changing it. */
+    isNudgeDesignerView: async () => {
+      const store = await import('./components/Game/encounter-stage/designerView');
+      return store.isNudgeDesignerViewEnabled();
     },
 
     // THR-66: rival scheme inspection — reads the denormalized RivalState.schemes summaries.

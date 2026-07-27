@@ -16,6 +16,7 @@ import type { NarrativeContext } from '../../../../engine/proseEnrichment';
 import type { SimulationRuntime } from '../../../../engine/simulationRuntime';
 import { stepOutcomeToOutcomeBand, stepOutcomeWord } from '../../../../data/outcome-band-content';
 import { autoLinkNarrative, collectSupportBundleEntities } from '../narrativeLinker';
+import { buildNudgePhaseModel } from './buildNudgePhaseModel';
 import { resolveStepDefinition } from '../../../../engine/unifiedActionLifecycle';
 import { getPortraitUrl } from '../../../../data/portrait-assets';
 import { getAttachmentGlyph } from '../../attachmentGlyphs';
@@ -588,6 +589,22 @@ export function buildUnifiedEncounterStageModel(
       }
     : undefined;
 
+  // THR-775 — the nudge phase is present only when the *current* step carries an
+  // authored hand. A template with `authoredChoices` and no hand gets
+  // `undefined` here and keeps the legacy choice screen untouched, which is what
+  // makes the rollout per-template and reversible (remove the nudges, get the
+  // old screen back). Never built during aftermath: the hand is a pre-roll
+  // surface, and offering it after the roll would be a lie.
+  const nudgePhase = isAftermath
+    ? undefined
+    : buildNudgePhaseModel({
+        template: args.template,
+        activeAction,
+        step: getCurrentStep(args.template, activeAction),
+        graph,
+        gameState: args.gameState,
+      });
+
   return {
     header: buildHeader(args, ctx),
     illustration,
@@ -600,5 +617,6 @@ export function buildUnifiedEncounterStageModel(
     falloutPreview: buildFalloutPreview(args),
     history: buildHistory(args, ctx),
     aftermath: buildAftermath(args, ctx),
+    nudgePhase,
   };
 }

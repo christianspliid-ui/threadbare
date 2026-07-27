@@ -3378,6 +3378,32 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "**Workaround (this run):** authored WS1 from the plan's prose restatement, which is self-sufficient for the checklist — the mockup is load-bearing only for WS2's visual/flow fidelity. **For WS2:** treat the plan's § *Stage flow* seven-step list plus the per-`NudgeBlockedCode` render policy as the contract of record and say so in the completion comment, rather than claiming fidelity to an artifact nobody can open. **Durable fix:** a plan doc may only call an artifact *contractual* if that artifact is in the repo — commit it in the `docs/plan-*` PR alongside the doc, or downgrade the wording to \"informed by (not committed)\". A design session's local workspace is not a reference surface; the executor boots cold in a fresh worktree and sees only what was committed. Same family as row **242** and THR-686: an authoritative-reading reference that resolves to nothing.",
     "session": "THR-774, hourly `tb-opus-pickup` run, 2026-07-27 — found at Step 6 (load plan doc) while looking for the Darkhollow Vault reference before authoring the golden exemplar."
+  },
+  {
+    "num": "244",
+    "id": 244,
+    "count": 1,
+    "date": "2026-07-27",
+    "category": "tooling",
+    "description": "**The Playwright MCP server is rooted at a *different* session worktree than the one the session is working in, so the DoD's \"absolute filename inside the session worktree\" instruction is rejected outright.** THR-775 needed the sanctioned unattended browser-verify capture. `browser_take_screenshot` with an absolute path under the session worktree (`.claude/worktrees/quirky-lumiere-e321a3/...`) failed with `File access denied: ... is outside allowed roots. Allowed roots: ...\\.claude\\worktrees\\nostalgic-mahavira-0c1c90\\.playwright-mcp`. The allowed root is a *stale sibling worktree* with no relationship to this session.",
+    "consequence": "The CLAUDE.md instruction added by THR-754 (\"an **absolute** `filename` inside the session worktree — a bare filename writes outside the repo and is unrecoverable\") cannot be followed as written; an executor who takes the denial at face value concludes browser-verify is impossible and either skips the clause or claims an exemption it is not entitled to.",
+    "impact": "Medium — one failed call plus a copy step per unattended UI ticket, and a standing risk the evidence clause gets waived for the wrong reason.",
+    "workaroundFound": true,
+    "workaround": "Write to the MCP's advertised allowed root (the error message names it), then `cp` into the session worktree and verify the bytes landed. Reading the PNG IHDR (`unpack('>II', png[16:24])`) confirms real pixel dimensions, worth doing regardless since the DoD demands honest dimensions. Evidence committed under `Docs/evidence/thr-775/`.",
+    "session": "THR-775 hourly pickup, unattended run."
+  },
+  {
+    "num": "245",
+    "id": 245,
+    "count": 1,
+    "date": "2026-07-27",
+    "category": "tooling",
+    "description": "**`__DEBUG.getTraces()` returns an empty array for *every* category unless `enableTracing()` was called first, and nothing in the return distinguishes \"tracing off\" from \"this trace never fired\".** THR-775 had to prove the previously-never-emitted `nudge_played` trace now emits. Post-commit, `getTraces()` returned `[]`; so did a re-run after `tick(2)`, and a second full spawn-select-commit cycle. Three cycles went to suspecting the new emit site before checking `traceBuffer.emitTrace`, whose first line is `if (!enabled) return;` — the buffer ships disabled, and `getTraces()` on a disabled buffer is byte-identical to a buffer whose events genuinely did not fire.",
+    "consequence": "An agent verifying any new trace emit reads the silent empty array as \"my emit is broken\" and debugs correct code — the same false-negative shape as impediment #241 (a probe over an empty set reporting a clean result).",
+    "impact": "Medium — three diagnostic cycles here; recurs for every ticket adding a trace type.",
+    "workaroundFound": true,
+    "workaround": "Call `await __DEBUG.enableTracing()` (plus `clearTraces()`) **before** the action under test, then read back. Confirmed: 219 traces captured including both expected `nudge_played` entries with correct `essenceSpent`. A better fix is for `getTraces()` to return a discriminated `{ enabled: false }` instead of `[]` when tracing is off — worth a ticket if it recurs.",
+    "session": "THR-775 hourly pickup."
   }
 ];
 // ── End data ──
