@@ -1,7 +1,7 @@
 ---
 name: keep-work-flowing-cc
 description: Hourly headless Claude Code PM brief — reads Christian's Discord replies, scans the Linear queue, pings home-tree freshness, and rewrites Design/briefing.md + refreshes Design/user-actions.md. The CC replacement for the Cowork keep-work-flowing task (Pure Claude Code Migration, THR-650). The briefing file IS the inbox; the Discord DM is a two-way channel — a change-gated ping out (step 6), an author-verified read in (step 0).
-last_validated_against: 2026-07-25
+last_validated_against: 2026-07-27
 ---
 
 # Keep Work Flowing (CC)
@@ -137,6 +137,27 @@ REAPER_LAST=$(grep -c '^===== clean-stale-git' "$REAPER_LOG" 2>/dev/null)   # ru
 
 Report one line under **Freshness**: the counts from `REAPER_SUMMARY`, plus a flag when the newest `===== clean-stale-git` header is **more than 2 hours old** ("reaper silent > 2h" — it is registered hourly, so a gap means the Task Scheduler refused it again). If `needs-disposition` is non-zero, add it as a note, not an alarm: those are stale *unmerged* worktrees deliberately never auto-deleted, and they need a human call. **Fail-soft:** log file missing or unreadable → one-line note, continue.
 
+### 2.5 Production deploy health (THR-785)
+
+`main` can advance while the deployed site does not, and until this step existed **nothing surfaced it**. The only signal was a red `Vercel` check on PRs — deliberately *not* in the required set, so it is exactly the signal the executor lane is trained to step past. A real stoppage went unnoticed until an unrelated ticket's closeout happened to read the error body.
+
+This lane already runs hourly against `main`, so it is the natural home for the check.
+
+```bash
+npm run check:deploy --silent -- --json
+```
+
+One line of JSON: `{ verdict, summary, needsChristian, deployedSha }`.
+
+- **`needsChristian: true`** (verdicts `failed` and `stale`, plus a build stuck past the grace window) → put the `summary` verbatim into **`## Needs Christian`**. It is already written in plain language (THR-608); do not re-word it into deploy jargon.
+- **`needsChristian: false`** (`deployed`, `skipped`, `pending`, `unknown`) → one line under **Freshness**, or omit entirely when the verdict is `deployed`. A healthy deploy is not news.
+
+**Do not substitute `gh api .../commits/<sha>/status --jq .state` for this.** Measured 2026-07-27: that command returned `success` for `main` tip `a9c33078`, a commit with **no deployment record at all** — `vercel.json`'s `ignoreCommand` had skipped the build, and Vercel reports a skip as a *successful* status. A green Vercel check means "Vercel is not unhappy", never "production serves this commit". The probe reads the deployments API instead, and judges whether a skip was benign using the same path list the ignore command uses.
+
+**Vercel is not a required check and must not become one.** The fix for a silent stoppage is a *notification* path — this step — not a new merge gate. Making a third-party deploy service gate merges would couple every merge to its availability, and it is not a correctness gate: `Test · Typecheck · Build` already proves the build compiles.
+
+**Fail-soft:** the probe never exits non-zero without `--strict`, and degrades to `verdict: "unknown"` on any network/auth/git failure. If it fails to run at all, note one line under Freshness and continue — a broken probe must never abort the brief.
+
 ### 3. Compose `Design/briefing.md`
 
 Overwrite the file. Structure (keep it short — this is a brief, not a report):
@@ -161,7 +182,9 @@ inbox was empty — do not print an empty heading every hour.>
 stale top-of-queue items, one line each.>
 
 ## Freshness
-<Home-tree ping result — one or two lines.>
+<Home-tree ping result — one or two lines. Then the step-2.5 deploy line, unless
+the verdict was `deployed` (a healthy deploy is not news) or the summary already
+went into "Needs Christian".>
 
 ## What's moving
 <What the executor is working on / shipped since the last brief, if visible. Optional.>
@@ -207,6 +230,8 @@ Direct `git push origin main` is rejected by branch protection. Use the branch �
 | `DISCORD_INBOX_STATE_FILE` | `~/.claude/channels/discord/kwf-last-read.id` | Newest Discord message id already processed by step 0 |
 | `DISCORD_INBOX_FETCH_LIMIT` | 25 | Cap for the **degraded** `fetch_messages` path only. The primary REST path uses `after=<cursor>&limit=50` and returns only genuinely new messages, so this constant does not bound normal-case cost. |
 | `DISCORD_ALLOWLIST_FILE` | `~/.claude/channels/discord/access.json` | Source of truth for which authors step 0 will act on (`allowFrom`) |
+| `DEPLOY_STALE_GRACE_MINUTES` | 20 | Step 2.5 — how long an undeployed `main` commit is "probably still building" rather than a stoppage. Lives in `scripts/check-deploy-health.ts`; change it there, not here. |
+| `DEPLOY_LOOKBACK` | 10 | Step 2.5 — Production deployments walked back looking for the newest successful one |
 
 ### 6. Discord ping (change-gated)
 
@@ -222,6 +247,7 @@ Christian asked (2026-07-24) to be pinged on Discord when tickets or impediments
 
 - Linear unreachable → write the briefing with a loud "⚠ Linear was unreachable this run — queue section is stale" banner and still refresh what you can (freshness ping does not need Linear). Log an impediment via `impediment-reporter`.
 - Home tree unreachable → freshness section says so; continue.
+- Deploy probe (step 2.5) fails or returns `unknown` → one line under Freshness saying deploy health could not be read; continue. Never treat an unreadable probe as a healthy deploy.
 - Git push rejected → PR fallback; if that also fails, leave the files uncommitted in the working tree and note it in the run output. Next run reconciles.
 - Nothing to say → still overwrite `briefing.md` with the honest empty-state ("Nothing needs you right now"); the fresh timestamp is itself the signal the task is alive.
 - Discord ping fails (plugin down, token invalid, network) → one-line note in the run output, leave `PING_STATE_FILE` untouched so the next run retries, continue. The briefing file remains the source of truth either way.
