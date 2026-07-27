@@ -3482,6 +3482,19 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "**Never present a Claude-in-Chrome screenshot as a 1920×1080 capture.** Measure `innerWidth`/`innerHeight` in the same pass and report those actual numbers; treat the success string as meaningless. Evidence the viewport contract itself by DOM assertion from the *Browser pane*, which resizes exactly even when it cannot composite. Codified in CLAUDE.md § Definition of Done as its own rung of the sanctioned-routes ladder, stated as a predicate (resize is inert; measure, never request) rather than a snapshot dimension — the snapshot is what went stale in one day here.",
     "session": "THR-796, hourly `tb-opus-pickup` run, 2026-07-27."
+  },
+  {
+    "num": "252",
+    "id": 252,
+    "count": 1,
+    "date": "2026-07-27",
+    "category": "process",
+    "description": "**A skill that produces an auditable artifact had no step that committed it, and its ticket-filing step ran *before* its artifact-writing step — so the two failure modes compounded into five real tickets citing a file that never existed.** THR-798: the 2026-07-24 `weekly-retro` run wrote its deterministic draft at 20:25 UTC, filed THR-753/754/755/756/757 at 20:31–20:32 UTC each citing `Design/retros/retro-2026-07-24.md`, then ended before Step 6 wrote that report. The ordering (Step 5 files tickets, Step 6 writes report) meant any run that ran out of context in that six-minute window shipped dangling citations. The deeper defect: `.claude/skills/retrospective/SKILL.md` had **no commit step at all** — `git log --diff-filter=A -- Design/retros/` shows only three commits ever added a retro file, one of them a bulk rescue titled *\"back up 10 retro write-ups stranded on home machine\"*. Every prior report survived by luck.",
+    "consequence": "Five tickets' reasoning, ROI methodology, and — unrecoverably — *what the retro considered and chose not to file* became unauditable. Three of the five shipped anyway, so the conclusions were sound; only the audit trail was lost, which is precisely the class the retrospective loop exists to catch in others.",
+    "impact": "M",
+    "workaroundFound": true,
+    "workaround": "Reorder so the artifact is committed before anything cites it, and add a terminal gate that re-verifies every citation. Added to the skill: **Step 8** (commit the report via its own `docs/retro-*` PR — `main` is protected — then prove it with `git ls-files --error-unmatch`, blocking), **Step 9** (file the backlog tickets only now, then run `git ls-files --error-unmatch` over every path the run cited anywhere, reporting the count explicitly), and **Rule 8** (*never cite a path you have not committed*). Same note added to the `weekly-retro` scheduled prompt and its repo mirror. Generalizable: any skill whose output is cited elsewhere needs \"commit before cite\" ordering plus a terminal citation gate — writing a file is not the deliverable, committing it is. Related lapse noted but not fixed here: the skill's Step 7 impediment-log footer has not been written since 2026-05-04, across 11 reports.",
+    "session": "THR-798, hourly `tb-opus-pickup`"
   }
 ];
 // ── End data ──
