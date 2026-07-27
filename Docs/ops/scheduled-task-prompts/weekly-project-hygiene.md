@@ -84,7 +84,16 @@ Enforce `CLAUDE.md § Skill Tree Layout`. **`.claude/skills/` is the only skill 
 - `Docs/changelog.md` — spot-check recent rows for completeness (`| date | where | what changed | why |`).
 - `Docs/plans/` — plan docs older than 60 days, not referenced from an open Linear issue, whose topic has shipped: flag as archival candidates. **Do not delete.**
 - `Docs/documentation-ownership.md` — any rule it asserts that has been superseded?
-- Orphan root-level markdown: files at the repo root other than `README.md` and `CLAUDE.md` — flag anything new. (`AGENTS.md` went with the THR-654 demolition; if it has reappeared, that is a finding.)
+- **Orphan root-level markdown — enumerate, do not recall.** Run `ls -1 *.md` at the repo root (PowerShell: `Get-ChildItem -Filter *.md -File`) and diff the actual output against the allowlist below. Asserting "no orphan root-level markdown" without running the command is how this check reported a false PASS on 2026-07-22 while 16 orphans sat there since March (THR-793). Anything present but not on the list is a finding; anything on the list but missing is also a finding.
+
+  **Known-accepted root markdown (the complete allowlist):**
+
+  | File | Why it is allowed to sit at the repo root |
+  |---|---|
+  | `CLAUDE.md` | The project instruction file. Read from the root by every agent runtime. |
+  | `AGENTS.md` | **Intentionally kept.** THR-654 did *not* delete it — commit `0f777823` reduced it to a slim "Read CLAUDE.md First" pointer plus prototype/tooling notes. Flag it only if it balloons back into full duplicated instructions, which is the regression THR-654 actually guarded against (THR-792). |
+  | `STYLE.md` | **Root-anchored by contract.** `Assets/concept-art/skill-files/SKILL.md` resolves it by looking for "a `STYLE.md` file in the project root (same level as `CLAUDE.md`)"; `art-direction`, `frontend-ui`, `qa-orchestrator`, and `state-of-game-design` all cite it as `STYLE.md` (repo root). Moving it silently breaks that lookup. |
+  | `README.md` | Not currently present. Accepted without a finding if added. |
 - Obsidian vault: writes go through the filesystem at `OBSIDIAN_VAULT_PATH`, not the MCP (THR-654). Spot-check that `Index.md` lists recently created pages. If the path is unset or unreachable, skip gracefully and say so in the report.
 
 ### 5. Impediment log review

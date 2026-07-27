@@ -424,7 +424,7 @@ Find this block (the `<div className="flex items-center gap-1">` containing fog-
 **Context:** User wants an end-to-end faction system using a prototype Adventuring Guild. Brainstormed extensively — covers discovery, joining, quests, reputation, decay/expulsion, promotion encounters, hierarchy, faction social encounters, and dynamic quest generation. The system must be data-driven and generalizable for procedural faction generation.
 
 **Design doc:** `Docs/plans/2026-03-27-faction-vertical-slice-design.md`
-**Brainstorm:** `brainstorm-faction-vertical-slice.md`
+**Brainstorm:** `Docs/plans/brainstorm-faction-vertical-slice.md`
 
 **Action items — implement in order:**
 

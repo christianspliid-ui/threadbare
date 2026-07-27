@@ -3430,6 +3430,19 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "The condition was deleted rather than shipped unused, and the reasoning was written into `KNOWN_DEAD.unproducedFlags` and the file header so the next session does not re-derive the same appealing wrong fix. The generalisable check: **an abandonment/failure trigger authored as a bare current-state predicate is safe only if the ambition's own eligibility gate makes that state impossible at assignment.** The file's one safe instance shows the pattern — `ambition_dominate_trade` triggers on `gold < 0.2` and its `reachFloors` demand `gold >= 0.4`. Verify the polarity against the eligibility gate before repointing any trigger.",
     "session": "THR-813, hourly `tb-opus-pickup`"
+  },
+  {
+    "num": "248",
+    "id": 248,
+    "count": 1,
+    "date": "2026-07-27",
+    "category": "process",
+    "description": "**A scheduled-task prompt has three copies in two locations, and CLAUDE.md's \"update its mirror in the same PR\" rule names only one of them.** `weekly-project-hygiene` exists as the live prompt (`C:\\Users\\chris\\.claude\\scheduled-tasks\\weekly-project-hygiene\\SKILL.md`, 221 lines), its sanctioned repo mirror (`Docs/ops/scheduled-task-prompts/weekly-project-hygiene.md`, 221 lines), and a **pre-installation draft** (`Docs/drafts/weekly-project-hygiene-SKILL.md`, 170 lines, last touched 2026-06-11) that predates the task going live and has since diverged — it does not even contain the Check-4 bullet THR-793 was sent to fix. The draft is still cited as an edit target by three plan-doc lines (`2026-04-23-linear-mcp-rate-limits.md` ×2, `2026-05-15-thr-443-purge-slack-from-ways-of-working.md`).",
+    "consequence": "A session told to \"edit the weekly-hygiene skill\" has three candidates and no rule distinguishing them; two plan docs actively instruct editing the stale one. An edit landing in `Docs/drafts/` changes nothing the scheduler runs and reports success — the same silent-no-op shape as the two-tree write trap (#387/#417), but for prompts rather than source. THR-793's own edit could have gone there.",
+    "impact": "L",
+    "workaroundFound": false,
+    "workaround": "Resolved for this pass by editing the live prompt and its `Docs/ops/scheduled-task-prompts/` mirror only, and confirming the target line existed in both before editing (`grep -n \"Orphan root-level\"` returned line 87 in each and **nothing** in the drafts copy — which is what surfaced the divergence). The general fix is to delete `Docs/drafts/weekly-project-hygiene-SKILL.md` now that the task is installed, or give it a header pointing at the live pair; filed as **THR-823** rather than absorbed, because it is outside THR-793's scope and the three referencing plan-doc lines need repointing in the same change. **Check before editing any prompt: confirm the string you are changing actually exists in the file you are changing, and that the file sits under `Docs/ops/scheduled-task-prompts/` or the live `.claude/scheduled-tasks/` path.**",
+    "session": "THR-793, hourly `tb-opus-pickup`"
   }
 ];
 // ── End data ──
