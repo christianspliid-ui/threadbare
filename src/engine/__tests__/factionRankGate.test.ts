@@ -197,6 +197,38 @@ describe('THR-805 authored rank data', () => {
     }
   });
 
+  // THR-810 — Builders' Fellowship sits one tier below its three sibling guilds at
+  // BOTH the senior and elite step, not only at elite as first reported. That uniform
+  // shift is the evidence it is authored, not a slipped copy of one line: a copy error
+  // would misplace one rung, not the whole upper ladder.
+  //
+  // Verdict: left as authored. Aligning `bf` *upward* to match its siblings would make
+  // the only guild whose upper tail sits inside the reachable band unreachable too, and
+  // the reputation economy currently supplies no gain at all (THR-810 sweep: 0 increases
+  // in 200 ticks), so neither placement can be validated against play today. Revisit
+  // once faction content actually reaches members; until then this pins the shape so
+  // the divergence cannot drift further unnoticed.
+  it('records the Builders Fellowship tier placement as a deliberate one-rung-lower ladder', () => {
+    const tierIndexFor = (templateId: string): number => {
+      const meta = FACTION_ENCOUNTER_META.get(templateId)!;
+      const def = FACTION_DEFINITIONS.get(meta.factionDefId)!;
+      return def.rankTiers.findIndex(t => t.id === meta.minRank);
+    };
+
+    // Siblings: senior → tier 2 (0.6), elite → tier 3 (0.85, the apex).
+    for (const id of ['mct.senior.foreign_deal', 'rb.senior.deep_scout', 'ts.senior.craft_relic']) {
+      expect(tierIndexFor(id)).toBe(2);
+    }
+    for (const id of ['mct.elite.trade_summit', 'rb.elite.monster_hunt', 'ts.elite.found_cathedral']) {
+      expect(tierIndexFor(id)).toBe(3);
+    }
+
+    // Builders' Fellowship: each rung one lower, and never the apex.
+    expect(tierIndexFor('bf.senior.raise_bridge')).toBe(1);
+    expect(tierIndexFor('bf.elite.grand_monument')).toBe(2);
+    expect(tierIndexFor('bf.elite.engineer_wonder')).toBe(2);
+  });
+
   it('the 5 non-guild regional templates carry no meta, so the gate never touches them', () => {
     const ungated = CACHE_REGISTERED_REGIONAL_TEMPLATE_IDS
       .filter(id => !FACTION_ENCOUNTER_META.has(id));
