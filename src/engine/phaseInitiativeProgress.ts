@@ -17,6 +17,7 @@ import {
 } from '../data/initiative-constants';
 import { computeCapability } from './domainCapability';
 import { getAgentLocationId } from './graphQueries';
+import { isAgentGone } from './groups/groupQueries';
 import { executeInitiativeOutcomes } from './initiativeOutcomes';
 import { emitTrace } from './traceBuffer';
 import type { ReachDomain } from '../types/traits';
@@ -73,8 +74,12 @@ export function phaseInitiativeProgress(
       for (const condition of template.failureConditions) {
         switch (condition.type) {
           case 'agent_dies': {
-            const isDead = (actorNode.properties.status as string | undefined) === 'dead';
-            if (isDead || !graph.getNode(actorNode.id)) {
+            // THR-812. Was `properties.status === 'dead'` — a spelling with zero
+            // writers anywhere in the repo, so this branch could only ever fire via
+            // the node-missing fallback beside it. `isAgentGone` reads the engine's
+            // real flag (`deceased`), still treats a missing node as gone, and keeps
+            // tolerating the dead spelling for any caller that sets it later.
+            if (isAgentGone(graph.getNode(actorNode.id))) {
               failed = true; failReason = 'agent_dies';
             }
             break;

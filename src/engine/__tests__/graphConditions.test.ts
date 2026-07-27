@@ -318,11 +318,11 @@ describe('evaluateGraphCondition', () => {
       expect(evaluateGraphCondition(cond, graph, 'a1')).toBe(false);
     });
 
-    it('fails soft to false on a missing node, unlike target_agent_eliminated', () => {
-      // The divergence is deliberate — see the case comment in graphConditions.ts.
+    it('fails soft to false on a missing node', () => {
       // `phaseAmbitionProgress` reaches this by walking live `actor` nodes, so absence
-      // is unreachable in production; treating it as death would import the sibling's
-      // auto-complete pathology (THR-812) into a condition that has no need of it.
+      // is unreachable in production; treating it as death would be an auto-complete.
+      // THR-812 brought `target_agent_eliminated` onto the same rule, so the two
+      // siblings now agree — this used to be a documented divergence.
       const graph = createMockGraph([], []);
       expect(evaluateGraphCondition(cond, graph, 'a1')).toBe(false);
     });
@@ -335,38 +335,47 @@ describe('evaluateGraphCondition', () => {
     });
   });
 
-  // ── target_agent_eliminated ──────────────────────────────────
+  // ── target_agent_eliminated (repointed in THR-812) ────────────
   describe('target_agent_eliminated', () => {
-    it('returns true when target agent is marked eliminated', () => {
-      const graph = createMockGraph(
-        [{ id: 'villain1', properties: { eliminated: true } }],
-        [],
-      );
-      const cond: GraphCondition = { type: 'target_agent_eliminated', targetRef: 'villain1' };
+    const cond: GraphCondition = { type: 'target_agent_eliminated', targetRef: 'villain1' };
+
+    it('returns true when the target carries the engine death flag', () => {
+      // The case THR-812 unblocked. Before it, a target that genuinely died kept its
+      // node with `deceased: true` and this stayed false forever — the vengeance
+      // milestone could never complete for the one reason it exists.
+      const graph = createMockGraph([{ id: 'villain1', properties: { deceased: true } }], []);
       expect(evaluateGraphCondition(cond, graph, 'a1')).toBe(true);
     });
 
-    it('returns true when target agent node does not exist', () => {
+    it('returns false when the target ref is unresolvable', () => {
+      // The auto-complete this ticket killed. `!target` used to return `true`, and every
+      // shipped author passed an unbindable `$`-ref, so this was the ONLY true-path any
+      // of them ever took — the milestone completed against a node that never existed.
       const graph = createMockGraph([], []);
-      const cond: GraphCondition = { type: 'target_agent_eliminated', targetRef: 'villain1' };
-      expect(evaluateGraphCondition(cond, graph, 'a1')).toBe(true);
-    });
-
-    it('returns false when target agent exists and is not eliminated', () => {
-      const graph = createMockGraph(
-        [{ id: 'villain1', properties: { eliminated: false } }],
-        [],
-      );
-      const cond: GraphCondition = { type: 'target_agent_eliminated', targetRef: 'villain1' };
       expect(evaluateGraphCondition(cond, graph, 'a1')).toBe(false);
     });
 
-    it('returns false when target agent exists with no eliminated flag', () => {
-      const graph = createMockGraph(
-        [{ id: 'villain1', properties: {} }],
-        [],
-      );
-      const cond: GraphCondition = { type: 'target_agent_eliminated', targetRef: 'villain1' };
+    it('returns false for a $-ref, the exact shape that used to auto-complete', () => {
+      const dollarRef: GraphCondition = { type: 'target_agent_eliminated', targetRef: '$killer' };
+      const graph = createMockGraph([{ id: 'villain1', properties: { deceased: true } }], []);
+      expect(evaluateGraphCondition(dollarRef, graph, 'a1')).toBe(false);
+    });
+
+    it('returns false when the target is alive', () => {
+      const graph = createMockGraph([{ id: 'villain1', properties: { deceased: false } }], []);
+      expect(evaluateGraphCondition(cond, graph, 'a1')).toBe(false);
+    });
+
+    it('returns false when the target has no death flag at all', () => {
+      const graph = createMockGraph([{ id: 'villain1', properties: {} }], []);
+      expect(evaluateGraphCondition(cond, graph, 'a1')).toBe(false);
+    });
+
+    it('reads `deceased` and not the never-written `eliminated` spelling', () => {
+      // `properties.eliminated` had exactly one reference in the repo — this case's own
+      // read — and zero writers. Pinning the negative stops a revert from restoring the
+      // phantom, which would look green under any test that only asserted the positive.
+      const graph = createMockGraph([{ id: 'villain1', properties: { eliminated: true } }], []);
       expect(evaluateGraphCondition(cond, graph, 'a1')).toBe(false);
     });
   });

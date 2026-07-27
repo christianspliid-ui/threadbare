@@ -669,9 +669,14 @@ export const REACTIVE_AMBITION_TEMPLATES: readonly ReactiveAmbitionTemplate[] = 
         prose: ['Patience. The knife sharpens in the dark.'],
       },
       {
+        // THR-812: was `target_agent_eliminated` against `$betrayer`, an unbindable
+        // `$`-ref no code resolves — it auto-completed on the missing node instead of
+        // ever tracking the betrayer. Repointed at the self-predicate the rest of this
+        // pool uses (see the EVENT_MINTED note below): the reach to actually strike.
+        // The prose keeps the beat but no longer asserts a death the engine can't see.
         id: 'revenge_target',
-        condition: { type: 'target_agent_eliminated', targetRef: '$betrayer' },
-        prose: ['Done. The debt paid in the only coin that mattered.'],
+        condition: { type: 'agent_reach_above', reach: 'iron', threshold: 0.6 },
+        prose: ['Strong enough now. The debt comes due in the only coin that matters.'],
       },
     ],
     completion: { requires: 2, of: 3 },
@@ -689,7 +694,7 @@ export const REACTIVE_AMBITION_TEMPLATES: readonly ReactiveAmbitionTemplate[] = 
     milestoneProse: {
       revenge_track: ['Found. Only a matter of time now.'],
       revenge_shadow: ['Silent and sure. The shadow closes.'],
-      revenge_target: ['The betrayer fell. The scales balanced.'],
+      revenge_target: ['The hand is steady enough now. The scales will balance.'],
     },
     completionProse: [
       'Revenge, taken. Whether it brought peace — that was another question.',
@@ -776,9 +781,12 @@ export const REACTIVE_AMBITION_TEMPLATES: readonly ReactiveAmbitionTemplate[] = 
         prose: ['The killer has a name now.'],
       },
       {
+        // THR-812: was `target_agent_eliminated` against `$killer`, an unbindable
+        // `$`-ref. This template is `requires: 2, of: 2`, so the auto-complete was
+        // half its completion bar — the ambition finished the moment it was checked.
         id: 'avenge_strike',
-        condition: { type: 'target_agent_eliminated', targetRef: '$killer' },
-        prose: ['The blow landed. For the one who can no longer strike.'],
+        condition: { type: 'agent_reach_above', reach: 'iron', threshold: 0.55 },
+        prose: ['The arm is ready. For the one who can no longer strike.'],
       },
     ],
     completion: { requires: 2, of: 2 },
@@ -795,7 +803,7 @@ export const REACTIVE_AMBITION_TEMPLATES: readonly ReactiveAmbitionTemplate[] = 
     ],
     milestoneProse: {
       avenge_culprit: ['A name. A face. A direction to walk.'],
-      avenge_strike: ['The fallen are avenged. The living must find new purpose.'],
+      avenge_strike: ['Strong enough to answer it. The living must find new purpose.'],
     },
     completionProse: [
       'Justice, or something shaped like it. The dead are silent on the matter.',
@@ -872,8 +880,15 @@ export const REACTIVE_AMBITION_TEMPLATES: readonly ReactiveAmbitionTemplate[] = 
 // only from `AMBITION_TEMPLATES`, never assigns them without a triggering event.
 //
 // Milestones use agent-self predicates only (reach / bonds / controls / trait).
-// `target_agent_eliminated` is deliberately avoided — with no per-instance target
-// binding it would auto-complete against a missing `$`-ref node (graphConditions).
+// `target_agent_eliminated` is deliberately avoided — no code binds a per-instance
+// target, so a `$`-ref milestone tracks nothing an agent can act on.
+//
+// THR-812 made this rule hold repo-wide rather than pool-locally. The reactive pool
+// above authored two `$`-ref milestones that this note's guard never covered, and on
+// the old condition semantics they *auto-completed* against the unresolvable node.
+// The condition now fails soft to `false` on a missing node (graphConditions), so a
+// stray `$`-ref is inert rather than a free milestone — and `ambition-templates.test`
+// asserts across all three pools that no template reintroduces one.
 
 export const EVENT_MINTED_AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
   // 1. Avenge the Wrong (vengeance) — the victim of bloodshed or a torn bond

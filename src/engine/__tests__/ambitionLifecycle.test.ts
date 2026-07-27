@@ -208,3 +208,93 @@ describe('evaluateAmbitionProgress', () => {
     expect(result.allCompletedMilestones).toEqual(['wealth']);
   });
 });
+
+// ─── THR-812 — vengeance milestone reaches the real death flag ───
+//
+// Done-when 2 at the lifecycle level, not just the evaluator's. `checkMilestones` is
+// the seam that actually decides whether a vengeance ambition advances, and it is what
+// `ambitionTick` calls. Before THR-812 this template's `strike` milestone completed on
+// the FIRST check regardless of world state, because the condition read a property with
+// no writer and returned `true` for the unresolvable ref it was handed.
+//
+// No shipped template authors `target_agent_eliminated` any more (the two that did were
+// repointed at self-predicates), so this uses a synthetic template deliberately: the
+// condition remains a supported capability and this pins its contract for whoever wires
+// per-instance target binding later.
+
+const vengeanceTemplate: AmbitionTemplate = {
+  id: 'ambition.test_vengeance',
+  displayName: 'Test Vengeance',
+  category: 'vengeance',
+  reachFloors: {},
+  requiredTraits: [],
+  blockingTraits: [],
+  sphereAffinities: [],
+  bondModifiers: [],
+  boostingTraits: [],
+  reachAffinity: {},
+  milestones: [
+    {
+      id: 'strike',
+      condition: { type: 'target_agent_eliminated', targetRef: 'killer1' },
+      prose: ['The blow landed.'],
+    },
+  ],
+  completion: { requires: 1, of: 1 },
+  abandonmentTriggers: [],
+  abandonmentCooldown: 10,
+  selectionProse: ['x'],
+  milestoneProse: { strike: ['x'] },
+  completionProse: ['x'],
+  abandonmentProse: ['x'],
+};
+
+describe('vengeance milestone against the engine death flag (THR-812)', () => {
+  it('completes when the target node carries deceased: true', () => {
+    const graph = createMockGraph(
+      [
+        { id: 'agent1', properties: {} },
+        { id: 'killer1', properties: { deceased: true } },
+      ],
+      [],
+    );
+
+    expect(checkMilestones(vengeanceTemplate, graph, 'agent1', [])).toEqual(['strike']);
+
+    const result = evaluateAmbitionProgress(
+      vengeanceTemplate,
+      makeActiveAmbition({ templateId: vengeanceTemplate.id }),
+      graph,
+      'agent1',
+    );
+    expect(result.status).toBe('completed');
+  });
+
+  it('does NOT complete when the target ref is unresolvable', () => {
+    // The auto-complete. `killer1` is absent from the graph — the exact state an
+    // unbound `$killer` ref produced on every single evaluation.
+    const graph = createMockGraph([{ id: 'agent1', properties: {} }], []);
+
+    expect(checkMilestones(vengeanceTemplate, graph, 'agent1', [])).toEqual([]);
+
+    const result = evaluateAmbitionProgress(
+      vengeanceTemplate,
+      makeActiveAmbition({ templateId: vengeanceTemplate.id }),
+      graph,
+      'agent1',
+    );
+    expect(result.status).toBe('active');
+    expect(result.allCompletedMilestones).toEqual([]);
+  });
+
+  it('does NOT complete while the target is alive', () => {
+    const graph = createMockGraph(
+      [
+        { id: 'agent1', properties: {} },
+        { id: 'killer1', properties: { deceased: false } },
+      ],
+      [],
+    );
+    expect(checkMilestones(vengeanceTemplate, graph, 'agent1', [])).toEqual([]);
+  });
+});
