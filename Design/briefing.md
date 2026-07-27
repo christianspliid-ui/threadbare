@@ -1,48 +1,38 @@
 # Briefing
 
-**Generated:** 2026-07-27 21:56 local (2026-07-27 19:56 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-07-27 22:54 local (2026-07-27 20:54 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
 ## Needs Christian
 
-**The crew now has a member who decides what to work on next, and it started tonight. You agreed to this in chat today — what's new is that it is running.**
+**Nothing needs you right now.** The queue is draining on its own and nothing is waiting on a decision only you can make.
 
-*— raised by the new orchestrator lane in its own first report*
-
-Until now every routine was downstream of a decision you had already made. One builds tickets, one writes this brief, a few tidy up. **None of them decided what happens next** — that was you, in sessions you started by hand. It's why the four encounter-experience jobs you released on Discord this afternoon sat untouched for four hours: your message was recorded correctly, and no routine reads it.
-
-The new one fills that gap. Once an hour it checks whether anything that was waiting on something else is now free to start, and releases it to the build queue. It also takes on the standing job you said you don't have the skills for and shouldn't have to: watching for parts of the game's plumbing that have gone redundant or unreachable, and telling you plainly when it finds them.
-
-**What it will never do:** pick a new direction for the game, decide a feature isn't fun, or take a build slot from the crew that ships. Direction and fun stay yours. It only advances things you have already agreed to.
-
-**If you want it stopped, say so and it's one switch.** Nothing it has done needs undoing. **You don't need to reply for anything to proceed** — this is a notice, not a question.
-
-**Its first hour is the argument for it.** In one pass it found three jobs that had been free to start for **22 days, 5 days and 22 days** and that nobody had noticed. It released one of them — a scheme where a rival god sours your mines, corners the grain, breaks the guild and starves the faithful, written up three weeks ago and waiting ever since on groundwork that finished six hours after it was filed. **That backlog never ran dry; nobody was reading which jobs had become free.**
+Last hour's notice — the new crew member that decides what to work on next — **was delivered, and it was a notice, not a question.** It stays available to switch off on one word, and that default needs no reply. It will not be re-rung here every hour; if something genuinely new happens with it, you'll read about it under *What's moving*.
 
 ## Queue
 
-**25 jobs ready — none top-priority, eight middling, seventeen minor. Nothing stale, nothing blocked, bench empty.**
+**24 jobs ready — none top-priority, seven middling, seventeen minor. Nothing stale, nothing blocked. One job in flight.**
 
-**Tonight's top-priority job is done, and it was the lane described above.** Claimed at 21:02, shipped at 21:49 — 47 minutes. **The board has no top-priority job left**, which is a real gap rather than a milestone: the two things that ship fastest here are a High on the shelf and a crew member free to take it, and right now only the second is true.
+The bench is no longer empty. **The 22-day-old rival scheme is being built right now** — the one where a rival god sours your mines, corners the grain, breaks the guild and starves the faithful. It reached the shelf at 21:34 tonight and was picked up 57 minutes later.
 
-Depth went 24 → 25: one shipped, two arrived — the 22-day-old rival scheme the new lane released, and a small loose end the lane found in its own first sweep.
+Depth went 25 → 24: nothing arrived, and one job left the shelf by being started. **The board still has no top-priority job**, and that remains a real gap rather than a milestone — but it is a quieter one this hour, because the crew is no longer idle waiting for one.
 
-**The "backed up" label stays a threshold artefact.** The shelf holds steady at roughly one job shipped and one or two written per hour, and what's being written is what the crew finds while working, not requests piling up.
+**The "backed up" label stays a threshold artefact.** Seventeen of the twenty-four are minor loose ends the crew found while working, not requests piling up.
 
 ## Freshness
 
-**Home tree: right branch, fully current, nothing stranded.** Two small leftovers unchanged from earlier — permission entries added to the tool config by past sessions clicking "allow", harmless and blocking nothing. Friday's retro draft is still untracked and already has an owner.
+**Home tree: right branch, fully current, nothing stranded.** Two small leftovers unchanged — permission entries added to the tool config by past sessions clicking "allow", harmless and blocking nothing. Friday's retro draft is still sitting outside version control and still has an owner.
 
-**Live site: current.** Nothing since the last publish touched the game itself — only notes and docs — so no rebuild was needed. **Cleanup reaper: alive, ran at 21:40, clean, nothing awaiting a human decision.** **Discord: nothing new** since your message this afternoon; nothing owed a reply, so none was sent.
+**Live site: current.** Nothing since the last publish touched the game itself. **Cleanup reaper: alive, ran at 22:40, clean, nothing awaiting a human decision.** **Discord: nothing new from you** — the only message since last hour was our own ping going out, so no reply was owed and none was sent.
 
 ## What's moving
 
-**Two things worth knowing about the lane that just shipped, beyond the notice above.**
+**The new lane's first release turned into actual work inside the hour, which is the result it was built for.**
 
-**It found what it was built to find, on its first pass, without being pointed at anything.** Three jobs unblocked for weeks; one released, one held back because the shelf is already full and the rule is at most one release an hour, one correctly *declined* because its own note says "run about a week after" a job that finished six days ago — the window opens tomorrow morning. It also declined a fourth for a subtler reason: its blockers are cleared, but the job says it still needs designing, so releasing it to the build queue would have been a parsing success and a judgement failure. **The declines are the reassuring part** — a lane that promotes everything it can parse would be worse than none.
+The sequence is the whole argument: a scheme written up three weeks ago had been free to start for 22 days and nobody noticed, because nothing in the crew read the "waiting on" note. The new lane read it and released the job; **the crew that builds things then claimed it, unprompted, 57 minutes later.** Two routines that never speak to each other, connected by a single field that had four months of writers and no reader.
 
-**It also reported one thing it could not check, rather than quietly reporting all-clear.** Its health sweep ran four detectors and passed all four, but a fifth only works inside a browser and cannot run on a schedule — so trait coverage went **unmeasured**, and it said so in those words. It likewise recorded that the harder judgement pass — *two systems doing one job*, which no automatic check can see because both work fine — was not performed this time. **An unmeasured check reported as passing is precisely the failure that lane exists to catch**, and it declined to commit it about itself on day one.
+**That is a better result than the test this file set itself last night.** The standing test — that the lane would release the *next* job in line by tomorrow morning — is still open and still fires on schedule; the lane's first unattended pass hasn't happened yet, so nothing about it is settled. But that test only asks whether the lane *releases* something. **What happened tonight answers the question underneath it: whether a release becomes work.** It did, once, without anyone watching.
 
 ---
 *Standing asks live in [`Design/user-actions.md`](user-actions.md). This file is regenerated hourly by the `keep-work-flowing-cc` scheduled task; staleness is visible from the Generated timestamp above and the task's `lastRunAt` in `list_scheduled_tasks`.*
