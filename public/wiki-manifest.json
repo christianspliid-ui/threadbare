@@ -176,6 +176,7 @@
         "src/engine/traits.ts",
         "src/engine/traitRefIndex.ts",
         "src/engine/traitRefValidation.ts",
+        "src/engine/traitDefinitionSeeding.ts",
         "src/engine/culturalTraits.ts",
         "src/engine/phaseEncounterTraits.ts",
         "src/engine/phaseReputationTraits.ts",

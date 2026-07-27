@@ -30,37 +30,29 @@ import { assignTrait, reinforceTrait, getTraitsForNode } from './traits';
 import { emitTrace } from './traceBuffer';
 import { getAnyEncounterById } from '../data/encounter-content';
 import {
-  MASTERY_TRAIT_DEFINITIONS,
   MASTERY_TRAIT_BY_REACH,
   MASTERY_THRESHOLDS,
 } from '../data/mastery-trait-content';
-import {
-  CONDITION_TRAIT_DEFINITIONS,
-  CONDITION_DURATIONS,
-} from '../data/condition-trait-content';
+import { CONDITION_DURATIONS } from '../data/condition-trait-content';
+import { seedEncounterTraitDefinitions } from './traitDefinitionSeeding';
 
 // ─── Trait Node Initialization ─────────────────────────────────────
 
+/**
+ * Backstop insertion of the mastery + condition definition nodes.
+ *
+ * THR-809: the authoritative insertion is now `seedEncounterTraitDefinitions`,
+ * called from `seedWorld` — every world graph carries these 13 nodes from
+ * construction. This call remains for graphs assembled outside `seedWorld`
+ * (unit tests that hand-build a `WorldGraph`), and is a cheap no-op otherwise.
+ *
+ * The previous guard short-circuited on `allDefs[0]` — a *mastery* id — so once
+ * any other path minted that one node the remaining 12 were skipped permanently.
+ * The shared helper checks every node individually, which completes a partially
+ * seeded graph instead of skipping it.
+ */
 function ensureTraitNodes(graph: WorldGraph): void {
-  // Check if the first trait node exists in this specific graph.
-  // If it does, all others were added together, so skip.
-  // If not, add all trait definition nodes.
-  // This avoids module-level singleton state that persists across test sessions.
-  const allDefs = [...MASTERY_TRAIT_DEFINITIONS, ...CONDITION_TRAIT_DEFINITIONS];
-  if (allDefs.length === 0) return;
-
-  const firstNodeId = allDefs[0].id;
-  if (graph.getNode(firstNodeId)) {
-    // First node already exists, so all trait nodes are already in this graph
-    return;
-  }
-
-  // Add all trait definition nodes
-  for (const node of allDefs) {
-    if (!graph.getNode(node.id)) {
-      graph.addNode(node);
-    }
-  }
+  seedEncounterTraitDefinitions(graph);
 }
 
 /** Reset initialization flag (for tests / new sessions) — now a no-op since we check graph state */
