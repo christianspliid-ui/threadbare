@@ -1,42 +1,40 @@
 # Briefing
 
-**Generated:** 2026-07-27 14:00 local (2026-07-27 12:00 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-07-27 15:00 local (2026-07-27 13:00 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
 ## Needs Christian
 
-**Nothing needs you right now.** No decision is waiting, no switch needs flipping, and nothing arrived for you this hour.
+**Nothing needs you right now.** Seventh hour running.
 
-**Last hour's test, reported whichever way it went: by this brief the second half of the new encounter experience is started, or I name that it isn't. It started — and it finished and went live while this brief was being written.** Both hours running, the test came out favourably, and it's reported at the volume a failure would have got.
+Last hour's brief pointed at the next stage of the encounter experience not starting, so you might reasonably expect a question here. **There isn't one, deliberately.** You already answered it — you said the encounter experience is first priority, and that still stands. Asking whether to carry on with the thing you named as first priority would just be making you repeat yourself. The hold-up is on our side, and it's written down below.
 
 ## Queue
 
-**21 jobs ready — eight middling, thirteen minor, none top-priority. Nothing in hand.**
+**21 jobs ready — eight middling, thirteen minor. Nothing in hand at the moment; the next pass starts within the minute.** Nothing stale, nothing blocked.
 
-**The shelf did not shrink this hour; the workbench emptied.** The only top-priority job was claimed at 13:02 local, finished at 13:58, and is already published — 56 minutes door to door, on the surface you'll actually look at.
+**The hour itself ran exactly as it should.** One job claimed at 14:01, finished at 14:38 — thirty-seven minutes — clearing out a batch of story triggers that pointed at nothing, and turning up one new thing worth doing, which is now on the shelf. Ship one, find one: that is the normal rhythm and it has held all week.
 
-**The thing worth naming is what happens next.** The new encounter experience had five pieces of work; four are now done. The remaining two — the reusable picture library and the big content rewrite — are written up but still sitting in the "not yet released for building" pile, so the crew literally cannot pick them up on its next pass. Nothing on the shelf is top-priority any more, so unless someone releases those two, the next few hours go to middling housekeeping instead of to the thing you named as first priority. **That's a crew job, not yours** — I'm naming it because it is the first time in three days the top-priority lane has had nothing pickable in it.
+**The thing worth your attention is not the pace, it's the sorting.** Four pieces of the encounter experience are written up in full and sitting in a holding pen the crew never looks in — including the single highest-priority job on the whole board. The shelf reads as "nothing top-priority left" only because the top-priority work is filed somewhere the crew can't reach it.
 
-Nothing is stale (longest wait: three days, well inside the limit) and nothing is blocked.
+**Last hour I called this a crew job and predicted it would sort itself out. It didn't, and now I know why.** Nothing is blocking those four — I checked each one, and every prerequisite they declare is already finished. They simply need moving onto the shelf, and **no automatic process in the system does that.** Work only ever lands on the shelf two ways: the crew files something it discovered mid-job, or a person starts a planning session and releases it. That is why the shelf keeps filling with small housekeeping finds while the big authored work sits still — the small stuff arrives on the shelf directly, and the big stuff doesn't.
+
+**Still a crew job, and still not yours** — releasing already-written work on a priority you've already stated is our call to make. **The test I'm setting, worded so it can't pass on activity alone:** by 15:53 local, at least one of those four is on the shelf or being worked — or this stops being a crew job and becomes a one-line ask to you, because at that point the evidence says nothing but a person starting a session will ever move them.
 
 ## Freshness
 
-**Home tree: clean and current at the time I read it**, right branch, nothing stranded. Two shipments have landed since that reading — the encounter interface and this brief — which the hourly sync picks up on its own. The same two small leftovers as the last twenty-three hours: a permissions edit to the tool config, and Friday's retro write-up. Both are the crew's to land; neither blocks anything.
+**Home tree: on the right branch, fully current, nothing stranded.** The same two small leftovers as the last twenty-four hours — a permissions edit to the tool config, and Friday's retro write-up. Both are the crew's to land; neither blocks anything.
 
 **Cleanup reaper: alive, ran twenty minutes ago, clean, nothing awaiting a human decision.**
-
-**The live site is serving the new encounter interface** — checked directly against the published version, not inferred from a green tick.
 
 **Discord: nothing new this hour.** Genuinely empty rather than unread.
 
 ## What's moving
 
-**The new encounter experience is playable on the live site as of a few minutes ago.** Both halves landed inside 68 minutes of each other: the rules and worked example the crew writes encounters against, and now the part you see — the hand of nudges you pick from, fate turning its answer over in words rather than numbers, and the aftermath the world reports back. Old-style encounters still render the old way, so nothing broke on the way in.
+**One honest correction to last hour's good news.** The new encounter interface went live an hour ago and it works — but the crew's own testing found that for ordinary characters, the nudges you play may not currently move anything. The forecast sits pinned at its worst reading no matter which cards are played, because the characters being tested are simply too unskilled for the encounter they are facing. **That is now the top-priority job on the board**, and it is one of the four stuck in the holding pen.
 
-**No action needed on that** — look at it whenever you feel like it. If it doesn't feel right, that's the kind of verdict worth one line back here.
-
-**The test I'm setting for the next brief, worded so it can't pass on activity alone:** by 13:00 UTC either one of the two remaining encounter-experience jobs has been released for building or claimed, or I name what is holding them.
+**No action needed from you** — working out whether that is a too-brutal test encounter or a genuine mismatch between the nudge sizes and the underlying maths is a measurement, and it is ours to take. I am telling you because you would otherwise open the new screen, play two nudges, watch nothing happen, and reasonably conclude the feature is broken. **It is not broken; it is honest.** The forecast is correctly reporting that those particular characters are doomed. Whether a god's nudge *should* be able to rescue someone that outmatched is the design question underneath, and that one may well come back to you once we have measured it.
 
 ---
 *Standing asks live in [`Design/user-actions.md`](user-actions.md). This file is regenerated hourly by the `keep-work-flowing-cc` scheduled task; staleness is visible from the Generated timestamp above and the task's `lastRunAt` in `list_scheduled_tasks`.*
