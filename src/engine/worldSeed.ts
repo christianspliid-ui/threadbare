@@ -7,6 +7,7 @@
  * cosmology profile + seed + echo injections.
  */
 import { WorldGraph } from './graph';
+import { seedEncounterTraitDefinitions } from './traitDefinitionSeeding';
 import { generateRoadEdges } from './roadNetwork';
 import type { CosmologyProfile, SphereName, HexTile, TerrainType, LocationSubtype } from '../types/index';
 import { SPHERE_NAMES } from '../types/index';
@@ -550,6 +551,13 @@ export function seedWorld(
 ): SeedResult {
   const rng = mulberry32(seed + 7919);
   const graph = new WorldGraph();
+
+  // THR-809: encounter-owned trait *definition* nodes (mastery + condition) are an
+  // invariant of every world graph, seeded before anything can reference them.
+  // Their only previous insertion path hung off the legacy `encounterProgress`
+  // loop, which the unified-action pipeline never populates — so a lost tavern
+  // brawl hit `template_missing` and wounded nobody.
+  seedEncounterTraitDefinitions(graph);
 
   const individualIds: string[] = [];
   const factionIds: string[] = [];

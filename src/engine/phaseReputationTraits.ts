@@ -69,19 +69,11 @@ import { computeRankFromReputation } from '../types/faction';
 // ─── Trait Node Initialization ─────────────────────────────────────
 
 function ensureReputationTraitNodes(graph: WorldGraph): void {
-  // Check if the first trait node exists in this specific graph.
-  // If it does, all others were added together, so skip.
-  // If not, add all trait definition nodes.
-  // This avoids module-level singleton state that persists across test sessions.
-  if (REPUTATION_TRAIT_DEFINITIONS.length === 0) return;
-
-  const firstTraitId = REPUTATION_TRAIT_DEFINITIONS[0].id;
-  if (graph.getNode(firstTraitId)) {
-    // First trait already exists, so all trait nodes are already in this graph
-    return;
-  }
-
-  // Add all trait definition nodes
+  // Per-node check, not a first-node short-circuit (THR-809). The old guard
+  // returned early when `REPUTATION_TRAIT_DEFINITIONS[0]` was already present,
+  // which permanently skipped the other 16 if any foreign path (attachment
+  // content, `assignTrait`) minted that one id first. Graph-aware and
+  // idempotent, so no module-level singleton leaks across test sessions.
   for (const node of REPUTATION_TRAIT_DEFINITIONS) {
     if (!graph.getNode(node.id)) {
       graph.addNode(node);

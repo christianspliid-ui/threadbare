@@ -104,9 +104,9 @@ function trace(tick: number, actorId: string, kind: string, summary: string, det
  * `personalityTraitEmerge.ensurePersonalityTraitNodes`.
  */
 function ensureCoreTraitNodes(graph: WorldGraph): void {
-  const first = CORE_TRAIT_DEFINITIONS[0];
-  if (!first) return;
-  if (graph.getNode(first.id)) return;
+  // Per-node check, not a first-node short-circuit (THR-809) — the old
+  // `getNode(first.id)` early return permanently skipped the rest if any
+  // foreign path minted that one id first.
   for (const node of CORE_TRAIT_DEFINITIONS) {
     if (!graph.getNode(node.id)) graph.addNode(node);
   }
