@@ -1,7 +1,7 @@
 ---
 name: design-audit-pipeline
-description: Fork plan-finalization audit into three independent subagents (NFP / three-pillar / Vision). Triggered at Cowork plan-doc finalization after intent-judge Allow. Also invokable manually via /design-audit.
-last_validated_against: 2026-07-25
+description: Fork plan-finalization audit into three independent subagents (NFP / three-pillar / Vision). Triggered at design-session plan-doc finalization after intent-judge Allow. Also invokable manually via /design-audit.
+last_validated_against: 2026-07-27
 ---
 
 # Design Audit Pipeline
@@ -32,14 +32,14 @@ Example:
 /design-audit Docs/plans/2026-06-13-thr-378-forked-plan-audit.md
 ```
 
-The auto-trigger fires when Cowork finishes a plan doc and intent-judge returns Allow. Manual invocation via the slash command is documented in `.claude/commands/design-audit.md`.
+The auto-trigger fires when a design session finishes a plan doc and intent-judge returns Allow. Manual invocation via the slash command is documented in `.claude/commands/design-audit.md`.
 
 ## Orchestrator wiring
 
-**Sequencing in the Cowork design workflow:**
+**Sequencing in the design-session workflow:**
 
 1. Plan doc written to `Docs/plans/`.
-2. Brainstorm companion written to `TheFantasyWorldSimulator/Brainstorms/`.
+2. Brainstorm companion written alongside it as `Docs/plans/<file>-brainstorm.md`.
 3. **intent-judge** runs (THR-411). Returns Allow / Revise / Block / Escalate. Only continue if Allow.
 4. If intent-judge returns Allow → invoke **design-audit-pipeline** (this skill).
 5. Spawn three subagents in a **single message** (all three `Agent` calls in one tool-use block):
@@ -47,8 +47,8 @@ The auto-trigger fires when Cowork finishes a plan doc and intent-judge returns 
    - Pillar auditor — prompt from `agents/pillar-prompt.md`, `{{PLAN_DOC_PATH}}` substituted
    - Vision auditor — prompt from `agents/vision-prompt.md`, `{{PLAN_DOC_PATH}}` substituted
 6. Orchestrator collects the three verdicts and writes them into the plan-doc tail under `## Forked-audit verdicts`.
-7. If any auditor returns FAIL or REVISE → surface finding to the author before transitioning Linear state. Do NOT apply `plan-pending-commit` or move to Ready for Dev until the finding is resolved.
-8. If all three PASS or PASS-with-note → apply `plan-pending-commit` label and transition Linear state as normal.
+7. If any auditor returns FAIL or REVISE → surface finding to the author before transitioning Linear state. Do NOT open the `docs/plan-*` PR or move to Ready for Dev until the finding is resolved.
+8. If all three PASS or PASS-with-note → open the `docs/plan-*` PR and transition Linear state as normal (the `plan-pending-commit` label + flush pipeline was retired with Cowork, THR-654 — design sessions commit directly).
 
 **Subagent spawn template:**
 
