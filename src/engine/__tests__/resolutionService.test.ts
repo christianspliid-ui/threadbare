@@ -363,12 +363,48 @@ describe('edge cases', () => {
     const input = makeInput({
       capability: 0.5,
       difficulty: 0.5,
-      actionModifiers: 0.5, // exceeds ±0.20 but callers should cap
+      actionModifiers: 0.5,
       sphereFactor: 0.3,
     });
-    // Service doesn't re-cap modifiers (caller responsibility)
     const p = computeResolutionThreshold(input);
     expect(p).toBeLessThanOrEqual(PROBABILITY_CEILING);
     expect(p).toBeGreaterThanOrEqual(PROBABILITY_FLOOR);
+  });
+
+  // THR-827 — `actionModifiers` carried a "capped at ±0.20" note that no caller
+  // ever enforced. The verdict was that the note was stale, so these pin the
+  // contract that actually holds: the term passes through untouched at any
+  // magnitude and in both signs, and only the *sum* meets the clamp. Written as
+  // exact equalities so a future clamp cannot be added silently — it would have
+  // to come here and change the number, which is the point.
+  describe('actionModifiers is not clamped (THR-827)', () => {
+    test('a modifier far above the retired ±0.20 passes through in full', () => {
+      const base = { capability: 0.5, difficulty: 0.5, sphereFactor: 0 };
+      // 0.5 + 0 - 0.5 + 0.30 = 0.30. A ±0.20 clamp would have yielded 0.20.
+      expect(computeResolutionThreshold(makeInput({ ...base, actionModifiers: 0.30 }))).toBeCloseTo(0.30, 10);
+      // 0.5 + 0 - 0.5 + 0.80 = 0.80, still inside the ceiling — so the ceiling
+      // is not what is doing the work here.
+      expect(computeResolutionThreshold(makeInput({ ...base, actionModifiers: 0.80 }))).toBeCloseTo(0.80, 10);
+    });
+
+    test('the negative sign is equally unclamped', () => {
+      // 0.9 + 0 - 0.1 - 0.50 = 0.30. A ±0.20 clamp would have yielded 0.60.
+      const p = computeResolutionThreshold(
+        makeInput({ capability: 0.9, difficulty: 0.1, sphereFactor: 0, actionModifiers: -0.50 }),
+      );
+      expect(p).toBeCloseTo(0.30, 10);
+    });
+
+    test('only the summed result meets the clamp', () => {
+      const ceiling = computeResolutionThreshold(
+        makeInput({ capability: 0.5, difficulty: 0.5, sphereFactor: 0, actionModifiers: 5 }),
+      );
+      expect(ceiling).toBe(PROBABILITY_CEILING);
+
+      const floor = computeResolutionThreshold(
+        makeInput({ capability: 0.5, difficulty: 0.5, sphereFactor: 0, actionModifiers: -5 }),
+      );
+      expect(floor).toBe(PROBABILITY_FLOOR);
+    });
   });
 });
