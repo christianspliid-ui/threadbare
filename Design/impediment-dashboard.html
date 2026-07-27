@@ -3469,6 +3469,19 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "`git clone --no-checkout` first, then `git config core.longpaths true` in the clone, then `git checkout` — and `git clean -qfdx` before the retry if a checkout already aborted partway. Scripts under `scripts/` that import only node builtins can then be run with `node --experimental-strip-types <script>.ts` directly, with **no `npm install` in the clone at all**, which is what makes an isolated clone cheap enough to be worth it. Verified end-to-end here: the whole before/after reproduction ran in a throwaway clone and never touched the working repo's refs. **Note the alternative that looks safer and is not:** `git update-ref refs/remotes/origin/main <stale>` in the working repo would be simpler, but `refs/remotes` lives in the *common* git dir and is shared by every worktree, so it perturbs concurrent sessions.",
     "session": "THR-819, hourly `tb-opus-pickup` run, 2026-07-27."
+  },
+  {
+    "num": "251",
+    "id": 251,
+    "count": 1,
+    "date": "2026-07-27",
+    "category": "tooling",
+    "description": "**`resize_window` on Claude-in-Chrome is inert, not capped — it reports success and the viewport never moves, in either direction.** THR-796 inherited the framing that the surface is \"pinned at 1430×989\". Re-measuring from a fresh session falsified both halves of that description. The resting viewport read **1499×1231**, not 1430×989 — so the value is not a constant, it tracks whatever the window/side-panel layout happens to be that session. And the resize is not a ceiling: requesting 1920×1080 returned `Successfully resized window containing tab … to 1920x1080 pixels` with the viewport unchanged, and then requesting **800×600** — well *under* the resting size — also reported success and also left it unchanged. A cap would have shrunk. `outerWidth`/`outerHeight` read `0×0` from the extension context, so the tool has no way to self-check what it just claimed. The complementary surface was confirmed sound in the same pass: the Browser pane's `resize_window` set the viewport to exactly 1920×1080, and its `computer{action:\"screenshot\"}` failed in 5s with `the Browser pane is not displayed, so the page is not compositing frames`.",
+    "consequence": "A screenshot from this route looks like it satisfies the DoD's 1920×1080 viewport contract and is silently off-contract, with the tool's own success string as the false evidence. The \"pinned at NNNN×NNN\" framing also invites the wrong fix (hunt for the setting that unpins it) and would have rotted into a stale snapshot in the docs.",
+    "impact": "Low",
+    "workaroundFound": true,
+    "workaround": "**Never present a Claude-in-Chrome screenshot as a 1920×1080 capture.** Measure `innerWidth`/`innerHeight` in the same pass and report those actual numbers; treat the success string as meaningless. Evidence the viewport contract itself by DOM assertion from the *Browser pane*, which resizes exactly even when it cannot composite. Codified in CLAUDE.md § Definition of Done as its own rung of the sanctioned-routes ladder, stated as a predicate (resize is inert; measure, never request) rather than a snapshot dimension — the snapshot is what went stale in one day here.",
+    "session": "THR-796, hourly `tb-opus-pickup` run, 2026-07-27."
   }
 ];
 // ── End data ──
