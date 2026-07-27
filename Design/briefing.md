@@ -1,48 +1,50 @@
 # Briefing
 
-**Generated:** 2026-07-27 02:54 local (2026-07-27 00:54 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-07-27 03:56 local (2026-07-27 01:56 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
 ## Needs Christian
 
-**One question, unchanged, and no ping was sent.**
+**Same one question as last hour. No ping sent.**
 
-Should the ceremonial reveal screens — the Civ-style "you unlocked this" moment you asked for — be built next, or stay in line? Asked once at 11pm, still open. Silence means "leave it in line", and it has.
+Should the ceremonial reveal screens — the Civ-style "you unlocked this" moment you asked for — be built next, or stay in line? Asked once at 11pm, still open, still safe to ignore. Silence means "leave it in line", and it has.
 
-Nothing about it moved this hour beyond the shelf getting one job shorter. That is not news, so the doorbell stayed quiet. Answer whenever, or never.
+Nothing moved around it this hour. Answer whenever, or never.
 
 ## Queue
 
-**22 jobs ready — ten middling, twelve minor, none urgent. Nothing on the workbench; the next shift starts within the hour.**
+**21 jobs ready — nine middling, twelve minor, none urgent. Nothing on the workbench, nothing waiting to be approved.**
 
-The count went 23 → 22: one job shipped, and for once nothing new was written down in its place.
+The count went 22 → 21: one job shipped, nothing new written down. That is now **two hours running** of one out and none in.
 
-**That is the fourth time this week I could have called that a turning point, and I am not going to.** The three previous times it lasted exactly one hour. The honest description remains a steady state — about one job out per hour, and one or two in, with the incoming ones being things the crew trips over while fixing something else rather than anything you or anyone asked for. Depth holds at roughly twenty by construction, not by neglect.
-
-Nothing is stale, nothing is stuck waiting on anything else. One job on the shelf is something **you** asked for.
+I said last hour I would not call the previous dip a turning point. Same answer, one hour later — two is not a trend either, and the three before it each lasted exactly one hour. What is worth saying plainly is what the shelf is made of: nothing on it is urgent, nothing has gone cold, nothing is stuck waiting on anything else, and the recent arrivals were all things the crew tripped over while fixing something else. One job on the shelf is something **you** asked for.
 
 ## Freshness
 
-**Home tree: level with the server, nothing stranded.** The same two small leftovers as the last twelve hours — a permissions edit to the tool config, and Friday's retro write-up. Both are the crew's to land; neither blocks anything.
+**Home tree: level with the server, nothing stranded.** The same two small leftovers as the last thirteen hours — a permissions edit to the tool config, and Friday's retro write-up. Both are the crew's to land; neither blocks anything.
 
-**Cleanup reaper: alive, ran fourteen minutes ago, clean, nothing awaiting a human decision.** One workspace and one branch added by tonight's job, exactly as expected.
+**Cleanup reaper: alive, ran sixteen minutes ago, clean, nothing awaiting a human decision.** Flat this hour — it tidied away tonight's two finished workspaces and left the two live ones alone, which is exactly the behaviour that was broken a week ago.
 
-**Published to players: working.** Tonight's fix went live 47 seconds after approval — confirmed, not assumed.
+**Published to players: working.** Tonight's fix went live 95 seconds after approval — confirmed, not assumed.
 
 **Discord: nothing new in the channel this hour.** Genuinely empty rather than unread.
 
 ## What's moving
 
-**A lost tavern brawl finally leaves you wounded.**
+**Revenge finally means something.**
 
-This closes a chain three jobs deep, and it is a good illustration of how this week has gone. It started as "a losing brawl was written to wound the loser, and never once did." That was fixed a day ago — the wiring was correct and the tests were green — but when the crew actually ran a world to watch it happen, nobody got hurt. The reason sat further upstream: the *definitions* of every temporary condition and mastery the world can hand out were never planted at world creation. The routine that plants them hung off an old loop nothing calls anymore, so of thirteen definitions, eleven simply did not exist in any world. A wound could be applied to nobody, because "wounded" was not a thing.
+A mortal who swears vengeance carries that vow as a goal the world tracks. The check behind it — *is the one I swore against dead yet?* — was reading a marker nothing in the game has ever written. Not renamed, not misspelled: simply never set, by anything, ever.
 
-They are now planted at world creation, so their presence is a guarantee rather than a race. A second trap went with it: the planting routine used to check whether *one* definition existed and skip all thirteen if it did — so the moment anything minted that one by another route, the other twelve were locked out permanently.
+That broke the vow in both directions at once, and both in favour of nonsense. When the target genuinely died, the world recorded them as *deceased* rather than under the marker the vow was watching, so the vow stayed unfinished forever — the avenger could stand over the corpse and still be waiting. And when the vow couldn't work out who its target even *was*, it treated that as proof of death and quietly marked itself complete.
 
-Filed 9:17pm, on the bench 2:02am, done 2:30am — **28 minutes**, and it shipped without leaving a new problem behind it.
+The second half was not a rare edge. Both revenge vows the game ships point at a target the world has no way to identify, so the free-credit path was the *only* one either of them ever took. For one — a two-part vow to avenge the fallen — that was half the promise fulfilled the instant it was sworn.
 
-**The pattern worth noticing:** the last three jobs each found their real bug only by running the world and looking, never by reading the code. Green tests and a correct-looking change agreed with the bug every time.
+**The part worth calling good judgement rather than good repair:** the obvious fix was to build the missing machinery that hands a vow its actual target. The crew looked and found there is no machinery to extend — that entire shelf of "reactive" vows is never handed out to anyone by anything. Building the binding would have been plumbing for a tap nobody has installed, which is the exact mistake that cost a week back in June. Both vows were instead repointed at a promise the world can genuinely observe, and the safety check meant to catch this class — which had been watching one shelf of three — now watches all three.
+
+Filed 1:09am, on the bench 3:02am, done 3:31am — **28 minutes**, and no new problem left behind it.
+
+**Third night running worth noting:** the last four fixes each found their real bug by asking "who *writes* this?" rather than by reading the code that breaks. Every one of them looked correct on the page.
 
 ---
 *Standing asks live in [`Design/user-actions.md`](user-actions.md). This file is regenerated hourly by the `keep-work-flowing-cc` scheduled task; staleness is visible from the Generated timestamp above and the task's `lastRunAt` in `list_scheduled_tasks`.*
