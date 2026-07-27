@@ -38,10 +38,12 @@ export interface ConditionGraph {
  * all read it. Two neighbouring spellings are deliberately NOT accepted here because
  * nothing in the repo writes either one, so honouring them would encode a phantom:
  *
- * - `properties.status === 'dead'` — read once (`phaseInitiativeProgress`), written
- *   nowhere.
- * - `properties.eliminated === true` — read once (`target_agent_eliminated`, below),
- *   written nowhere. See THR-812.
+ * - `properties.status === 'dead'` — was read once (`phaseInitiativeProgress`), written
+ *   nowhere. That read was repointed at `isAgentGone` in THR-812; the spelling now has
+ *   neither a reader nor a writer outside the permissive `isAgentGone` / `groupCohesion`
+ *   accepts, which tolerate it rather than depend on it.
+ * - `properties.eliminated === true` — was read once (`target_agent_eliminated`, below),
+ *   written nowhere. Repointed here in THR-812; the spelling now has zero readers.
  */
 function isDeceased(node: { properties: Record<string, unknown> }): boolean {
   return node.properties.deceased === true;
@@ -93,11 +95,11 @@ export function evaluateGraphCondition(
         { traitId: condition.trait },
       );
 
-    // THR-808. Deliberately fails soft to `false` on a missing node, unlike its
-    // `target_agent_eliminated` sibling below: `phaseAmbitionProgress` walks live
-    // `actor` nodes to reach this, so the agent always exists at call time, and
-    // treating absence as death would import the sibling's auto-complete pathology
-    // into a condition that has no need of it.
+    // THR-808. Fails soft to `false` on a missing node: `phaseAmbitionProgress` walks
+    // live `actor` nodes to reach this, so the agent always exists at call time, and
+    // treating absence as death would be an auto-complete waiting to happen. THR-812
+    // brought `target_agent_eliminated` below onto the same rule, so the two siblings
+    // now agree on both the flag they read and what absence means.
     case 'agent_deceased': {
       const agent = graph.getNode(agentId);
       if (!agent) return false;
@@ -140,17 +142,25 @@ export function evaluateGraphCondition(
       return loc.properties.regionId !== condition.region;
     }
 
-    // NOT wired to `isDeceased`, deliberately (THR-808 → THR-812). `properties
-    // .eliminated` has no writer anywhere in the repo, so the property branch is
-    // permanently false and the `!target` fallback is this condition's only true-path
-    // — inverted-risk: a target that genuinely dies keeps its node (with
-    // `deceased: true`) and never satisfies this, while an unresolvable ref satisfies
-    // it immediately. Repointing it at the real flag changes live vengeance-ambition
-    // behaviour, so it is THR-812's change to make and verify, not a drive-by here.
+    // THR-812 repointed this at the real death flag and inverted the missing-node
+    // fallback. Both halves were wrong in the same direction:
+    //
+    // - It read `properties.eliminated`, which no producer writes, so the property
+    //   branch was permanently false — a target that genuinely died kept its node
+    //   (with `deceased: true`) and never satisfied the milestone.
+    // - `!target` returned `true`, so an unresolvable ref *auto-completed* the
+    //   milestone. Every shipped author of this condition passed an unbindable
+    //   `$`-ref, making that the only true-path any of them ever took.
+    //
+    // Absence now means `false`, matching this file's stated fail-soft rule and the
+    // `agent_deceased` sibling. A caller that wants "target is gone" to count as
+    // elimination must say so with a condition that means it — the `$`-ref
+    // authorings are gone (`ambition-templates.ts`), and a test pins that no pool
+    // reintroduces one.
     case 'target_agent_eliminated': {
       const target = graph.getNode(condition.targetRef);
-      if (!target) return true; // node gone = eliminated
-      return target.properties.eliminated === true;
+      if (!target) return false; // unresolvable ref is not evidence of death
+      return isDeceased(target);
     }
 
     default: {

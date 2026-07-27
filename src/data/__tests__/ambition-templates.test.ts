@@ -133,7 +133,7 @@ describe('EVENT_MINTED_AMBITION_TEMPLATES', () => {
     }
   });
 
-  it('never use target_agent_eliminated (auto-completes against unbindable $-refs)', () => {
+  it('never use target_agent_eliminated (no code binds a per-instance target)', () => {
     for (const t of EVENT_MINTED_AMBITION_TEMPLATES) {
       for (const m of t.milestones) {
         expect(m.condition.type).not.toBe('target_agent_eliminated');
@@ -155,6 +155,69 @@ describe('EVENT_MINTED_AMBITION_TEMPLATES', () => {
       for (const reach of Object.keys(t.reachAffinity)) expect(REACH_DOMAINS).toContain(reach);
       for (const reach of Object.keys(t.reachFloors)) expect(REACH_DOMAINS).toContain(reach);
     }
+  });
+});
+
+/**
+ * THR-812 — the `$`-ref guard covers every pool that can reach the evaluator.
+ *
+ * `findAmbitionTemplateById` resolves across all three pools, and `ambitionTick` uses
+ * it to look up the template it hands to `evaluateAmbitionProgress`. So *any* pool's
+ * milestones reach `evaluateGraphCondition` — the pre-existing guard above only ever
+ * covered `EVENT_MINTED_AMBITION_TEMPLATES`, which is how the reactive pool shipped two
+ * `target_agent_eliminated` milestones against `$betrayer` / `$killer`.
+ *
+ * The invariant pinned here is the *unbindable ref*, not the condition type. Nothing in
+ * the repo resolves a `$`-prefixed `targetRef`; the condition itself is sound once given
+ * a real node id, so banning the type outright would delete a working capability instead
+ * of the defect. If per-instance target binding is ever built, this test is what tells
+ * you to relax it deliberately rather than by accident.
+ */
+describe('no ambition pool authors an unbindable $-ref target (THR-812)', () => {
+  const POOLS = {
+    AMBITION_TEMPLATES,
+    REACTIVE_AMBITION_TEMPLATES,
+    EVENT_MINTED_AMBITION_TEMPLATES,
+  } as const;
+
+  // Every pool is non-empty, so a rename that empties one fails loudly here instead of
+  // vacuously passing the per-pool loops below.
+  it.each(Object.entries(POOLS))('%s is non-empty', (_name, pool) => {
+    expect(pool.length).toBeGreaterThan(0);
+  });
+
+  it.each(Object.entries(POOLS))('%s authors no $-prefixed targetRef', (_name, pool) => {
+    for (const t of pool) {
+      const conditions = [
+        ...t.milestones.map((m) => m.condition),
+        ...t.abandonmentTriggers.map((a) => a.condition),
+      ];
+      for (const c of conditions) {
+        if (c.type !== 'target_agent_eliminated') continue;
+        expect(
+          c.targetRef.startsWith('$'),
+          `${t.id} authors an unbindable targetRef "${c.targetRef}" — no code resolves $-refs`,
+        ).toBe(false);
+      }
+    }
+  });
+
+  it('the two repointed vengeance milestones no longer carry a target condition', () => {
+    // Named explicitly: a guard over "no $-ref" would also pass if someone deleted the
+    // milestones outright. These two must still exist and still gate on something.
+    const seekRevenge = findAmbitionTemplateById('ambition_seek_revenge');
+    const avengeFallen = findAmbitionTemplateById('ambition_avenge_fallen');
+    expect(seekRevenge).toBeDefined();
+    expect(avengeFallen).toBeDefined();
+
+    const revengeTarget = seekRevenge!.milestones.find((m) => m.id === 'revenge_target');
+    const avengeStrike = avengeFallen!.milestones.find((m) => m.id === 'avenge_strike');
+    expect(revengeTarget?.condition.type).toBe('agent_reach_above');
+    expect(avengeStrike?.condition.type).toBe('agent_reach_above');
+
+    // `avenge_fallen` is requires-2-of-2, so this milestone is half the completion bar —
+    // the reason its auto-complete mattered more than the other one's.
+    expect(avengeFallen!.completion).toEqual({ requires: 2, of: 2 });
   });
 });
 
