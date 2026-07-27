@@ -3300,6 +3300,19 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "**Workaround:** before implementing a Done-when that names a verification command, run the command against a case where the answer is *known to be bad* and confirm it says so. Here that meant asking not \"does the status endpoint return success?\" but \"does a commit with no deployment return anything other than success?\" — one extra `gh api` call. **Durable pattern:** for any health probe, falsify the benign verdict in both directions against real history before trusting it; `check-deploy-health`'s `skipped` verdict was validated this way (`1a9e4cd5..HEAD` docs-only → benign, `a406dc83..HEAD` carrying a `src/engine/` fix → build-relevant), because a predicate that only ever answers \"fine\" makes the whole check vacuous. Treat a ticket-supplied command as a hypothesis from the design session, same as row **234** treats a ticket-supplied class taxonomy.",
     "session": "THR-785, hourly `tb-opus-pickup` run, 2026-07-27."
+  },
+  {
+    "num": "238",
+    "id": 238,
+    "count": 1,
+    "date": "2026-07-27",
+    "category": "tooling",
+    "description": "**The CLI's `tick N` silently stops early on a `twilight`/`harvest` phase change, so a long measurement run under-advances without saying so — and every sample past ~tick 200 describes a post-game world anyway.** `doTick` (`scripts/cli.ts:202`) breaks out of its loop when `state.phase` leaves `playing`, printing a `⚠ Phase changed` line *only for the tick that crossed*; a piped `tick 150` after an earlier `tick 150` advanced **15** ticks, and the trailing `eval` then reported a tick-165 world as if it were tick 300. Distinct from #236 (`run N` async): `tick N` is synchronous and does execute — it just quietly stops short. Compounding it, seed 42 / map medium enters `twilight` between ticks 150 and 225, so *any* sample taken at the tick 300/600/900 marks that long-horizon tuning tickets reach for is measuring a world after the run has ended, whichever command produced it.",
+    "consequence": "A false negative that reads as a stable equilibrium. THR-810 was filed on a table whose 300/600/900 rows showed reputation \"plateauing\" at ≈0.778 with a stable 131 memberships — the plateau was the CLI having stopped, and the stability was post-game inertia. The real curve is unbroken linear decay to near-zero, which inverts the ticket's diagnosis (a tuning problem) into a reachability one (THR-814). A ticket's whole premise can be an artifact of the harness that measured it.",
+    "impact": "M",
+    "workaroundFound": true,
+    "workaround": "**Workaround:** do not drive long measurement runs through the CLI REPL. Write a script that owns its own `runTick` loop (`scripts/rank-reach-sweep.ts` is the worked example — bundle with esbuild exactly as the `cli` npm script does) and **record `state.phase` alongside `state.tick` in every sample**, so a post-game reading is self-identifying rather than something the reader must know to suspect. When a Done-when names a tick horizon, check it against the phase timeline before accepting it: \"at tick ≥ 300\" was unreachable by construction here, the same class as the THR-689 `document.hidden` trap.",
+    "session": "THR-810 hourly pickup, 2026-07-27 — found while re-measuring the guild reputation ceiling the ticket asked to confirm."
   }
 ];
 // ── End data ──
