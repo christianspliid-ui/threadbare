@@ -52,6 +52,32 @@ export const HAND_SPHERE_COVERAGE_MIN = 4;
  */
 export const HAND_COMMON_OPTIONS_MIN = 1;
 
+// ─── Reach reachability (THR-821) ────────────────────────────────────
+
+/**
+ * Difficulty ceiling for a nudge-bearing step whose reach the acting mortal is
+ * **not** expected to hold.
+ *
+ * Measured 2026-07-27 (`npm run measure:nudge-headroom`, seeds 42/99;
+ * `Docs/audits/2026-07-27-thr-821-nudge-headroom.md`): a `notable`-tier mortal —
+ * the tier a newly-threaded NPC lands in — carries capability 0.027..0.119 in a
+ * non-primary/secondary reach. Against a step at 0.45, `computeResolutionThreshold`
+ * floors at `PROBABILITY_FLOOR` and **stays** floored through the whole authored
+ * hand: 0% of that cohort clears the floor unaided, with two cards (+0.22), at the
+ * documented `actionModifiers` cap (+0.20), or with the full hand (+0.37).
+ *
+ * A hand that cannot move the forecast word is decorative — the player spends
+ * essence and watches nothing change. So: an off-reach step stays at `fair` or
+ * below. A step that *wants* to be `steep`/`severe` is fine, but it must be
+ * authored for actors who plausibly hold the reach (role-gated, faction-gated, or
+ * late-run) — which is what the golden exemplar does, drawing a thief into an
+ * `eye`/`shadow` vault.
+ *
+ * Value is the `steep` band floor from `DIFFICULTY_WORD_BANDS`, so the rule reads
+ * in the same vocabulary the author sees: "off-reach steps stay under `steep`".
+ */
+export const NUDGE_OFF_REACH_MAX_DIFFICULTY = 0.45;
+
 // ─── Band-fragment coverage ──────────────────────────────────────────
 
 /**

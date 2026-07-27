@@ -51,10 +51,13 @@ import {
   NUDGE_HAND_MAX,
   NUDGE_HAND_MIN,
   NUDGE_NAME_MAX_WORDS,
+  NUDGE_OFF_REACH_MAX_DIFFICULTY,
   NUDGE_WORD_BUDGETS,
   REACH_PURPOSE_MAX_WORDS,
   VAGUENESS_LEXICON,
 } from '../../data/content-eval/nudgeAuthoringConstants';
+import { computeResolutionThreshold, PROBABILITY_FLOOR } from '../resolutionService';
+import { NPC_CONSTANTS } from '../../types/npc';
 import {
   EXEMPLAR_FACTOR_LINES,
   EXEMPLAR_REACH_PURPOSE_LINES,
@@ -768,5 +771,88 @@ describe('WS1 golden exemplar — authoring checklist', () => {
     ).toEqual([]);
     expect(result.band).not.toBe('fail');
     expect(result.band).not.toBe('skipped');
+  });
+});
+
+// ─── Reach reachability — THR-821 ────────────────────────────────────
+//
+// Pins the measurement that produced NUDGE_OFF_REACH_MAX_DIFFICULTY, so the
+// authoring rule and the rulebook's "there is a floor your nudges cannot lift a
+// mortal off" clause cannot silently rot when a constant elsewhere moves.
+// Measurement: `npm run measure:nudge-headroom` (seeds 42/99);
+// write-up: Docs/audits/2026-07-27-thr-821-nudge-headroom.md.
+
+describe('nudge reachability against the probability floor (THR-821)', () => {
+  const SIGMOID_MIDPOINT = 10;
+  const SIGMOID_K = 0.4;
+  const capabilityOf = (raw: number) => 1 / (1 + Math.exp(-SIGMOID_K * (raw - SIGMOID_MIDPOINT)));
+
+  /** Raw scores a notable-tier mortal can carry in an off (non-primary/secondary) reach. */
+  const offReachRaws = Array.from(
+    { length: NPC_CONSTANTS.NOTABLE_OTHER_RANGE },
+    (_, i) => NPC_CONSTANTS.NOTABLE_OTHER_BASE + i,
+  );
+
+  /** The exemplar's full playable step-0 hand, excluding the trait-gated card. */
+  const FULL_HAND_DELTA = 0.37;
+
+  it('floors an off-reach notable mortal at NUDGE_OFF_REACH_MAX_DIFFICULTY, through the whole hand', () => {
+    expect(offReachRaws.length).toBeGreaterThan(0);
+
+    for (const raw of offReachRaws) {
+      const capability = capabilityOf(raw);
+      for (const modifiers of [0, 0.20, FULL_HAND_DELTA]) {
+        const p = computeResolutionThreshold({
+          capability,
+          difficulty: NUDGE_OFF_REACH_MAX_DIFFICULTY,
+          actionModifiers: modifiers,
+        } as Parameters<typeof computeResolutionThreshold>[0]);
+
+        expect(
+          p,
+          `raw=${raw} capability=${capability.toFixed(3)} mods=${modifiers} → p=${p}`,
+        ).toBe(PROBABILITY_FLOOR);
+      }
+    }
+  });
+
+  it('clears the floor for the same mortal once the step drops below the off-reach ceiling', () => {
+    // The rule is a real boundary, not a blanket "nudges never work": the
+    // strongest off-reach notable mortal, with a hand, clears the floor on a
+    // gentle step. If this stops holding, the ceiling is set wrong.
+    const bestOffReach = capabilityOf(
+      NPC_CONSTANTS.NOTABLE_OTHER_BASE + NPC_CONSTANTS.NOTABLE_OTHER_RANGE - 1,
+    );
+    const p = computeResolutionThreshold({
+      capability: bestOffReach,
+      difficulty: 0.14, // shipped p25
+      actionModifiers: 0.22,
+    } as Parameters<typeof computeResolutionThreshold>[0]);
+
+    expect(p).toBeGreaterThan(PROBABILITY_FLOOR);
+  });
+
+  it('leaves a spotlight-tier mortal above the floor unaided on the exemplar steps', () => {
+    // Finding B: the exemplar is not too brutal for the audience that can
+    // actually be attended. A spotlight mortal's primary reach sits near 1.0.
+    const spotlightPrimary = capabilityOf(
+      NPC_CONSTANTS.NOTABLE_PRIMARY_BASE + NPC_CONSTANTS.SPOTLIGHT_PRIMARY_BOOST,
+    );
+
+    // `steps` is ActionStepOrBranch[]; only plain steps carry a difficulty.
+    const difficulties = NUDGE_GOLDEN_EXEMPLAR.steps
+      .map((s) => (s as Partial<ActionStep>).difficulty)
+      .filter((d): d is number => typeof d === 'number');
+    expect(difficulties).toEqual([0.45, 0.6]);
+
+    for (const difficulty of difficulties) {
+      const p = computeResolutionThreshold({
+        capability: spotlightPrimary,
+        difficulty,
+        actionModifiers: 0,
+      } as Parameters<typeof computeResolutionThreshold>[0]);
+
+      expect(p, `difficulty=${difficulty} → p=${p}`).toBeGreaterThan(PROBABILITY_FLOOR);
+    }
   });
 });
