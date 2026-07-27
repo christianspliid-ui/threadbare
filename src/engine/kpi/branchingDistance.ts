@@ -23,6 +23,8 @@ import { getAnyEncounterById } from '../../data/encounter-content';
 import { computeCapability } from '../domainCapability';
 import { getChainProgress, isChainStageUnlocked } from '../encounterChains';
 import { resolveLocationToHex } from '../encounterAwareness';
+import { collectBearerTraitRefs, bearerMatchesPredicate } from '../traitRefIndex';
+import { collectGrantedTraits, GRANTED_TRAIT_EFFECTIVE_LEVEL } from '../effects/effectQueries';
 import { hexDistance } from '../../lib/hexMath';
 import { THREAT_CAPABILITY_BANDS } from '../../types/encounter';
 import { BRANCHING_NEARLY_ELIGIBLE_SAMPLE_SIZE } from '../encounter/branchingConstants';
@@ -81,33 +83,42 @@ function estimatePrerequisitesDistance(
   }
 
   // Check requiredTraits: how many agents meet all trait requirements?
-  // TODO(THR-802): this walk compares `e.target` to `req.traitId` directly, which is
-  // the pre-THR-786 node-id-only vocabulary. Every other trait read site now resolves
-  // refs on ANY-match (id / short id / display name / tag) plus item grants, so this
-  // diagnostic over-reports blockage for a gate authored with a tag or display name.
-  // Latent while zero templates author a gate (authoring is THR-778/WS5).
+  //
+  // THR-802: resolved through the shared THR-786 resolver, exactly as
+  // `filterByPrerequisites` does. `collectBearerTraitRefs` maps every ref form of every
+  // trait held — node id, short id, display name (`Master Smith`), tag (`#craft`) — to
+  // the highest level backing that ref, and unions in item-granted keys (THR-737) at
+  // `GRANTED_TRAIT_EFFECTIVE_LEVEL`.
+  //
+  // The walk this replaced compared `e.target` to `req.traitId` directly, which is the
+  // pre-unification node-id-only vocabulary. It therefore over-reported blockage for any
+  // gate authored with a tag or display name, and ignored item grants entirely — an agent
+  // who genuinely satisfies a `#craft` gate via a carried item was counted as blocked with
+  // a fabricated `gap`. Since this readout exists to tell content authors whether a gate is
+  // too tight, a wrong answer here actively misleads tuning.
+  //
+  // Cost: this is a `kpi:branching-audit` CLI path, not the tick loop (see the file header),
+  // so the per-agent ref walk runs once per gated template per audit — no steady-state
+  // budget applies. Unlike the filter pipeline, there is nothing to cache across templates
+  // here because each report is computed for a single entry.
   let traitBlockedCount = 0;
   const traitGaps: Array<{ agentName: string; missingTrait: string; gap: number }> = [];
 
   if (template.requiredTraits && template.requiredTraits.length > 0) {
     for (const agent of agents) {
-      const traitEdges = graph.getOutgoingEdges(agent.id, 'has_trait');
-      const missing = template.requiredTraits.filter(req => {
-        return !traitEdges.some(e => {
-          if (e.target !== req.traitId) return false;
-          if (req.minLevel != null) {
-            const level = (e.properties as Record<string, unknown>)?.level;
-            return typeof level === 'number' && level >= req.minLevel;
-          }
-          return true;
-        });
+      const refs = collectBearerTraitRefs(graph, agent.id, {
+        grantedTraits: collectGrantedTraits(graph, agent.id),
+        grantedLevel: GRANTED_TRAIT_EFFECTIVE_LEVEL,
       });
+      const missing = template.requiredTraits.filter(req => !bearerMatchesPredicate(refs, req));
       if (missing.length > 0) {
         traitBlockedCount++;
         const name = String(agent.properties.name ?? agent.id);
         const missingSummary = missing.map(r => {
-          const edge = traitEdges.find(e => e.target === r.traitId);
-          const has = edge ? ((edge.properties as Record<string, unknown>)?.level as number ?? 0) : 0;
+          // The level backing the matched ref, not an edge lookup keyed on the raw id:
+          // a bearer who holds the ref under a different form but below `minLevel`
+          // reports the real shortfall rather than a full-height fabricated gap.
+          const has = refs.get(r.traitId) ?? 0;
           const needs = r.minLevel ?? 1;
           return { agentName: name, missingTrait: r.traitId, gap: needs - has };
         });
