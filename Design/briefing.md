@@ -1,59 +1,50 @@
 # Briefing
 
-**Generated:** 2026-07-27 07:55 local (2026-07-27 05:55 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-07-27 08:54 local (2026-07-27 06:54 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
 ## Needs Christian
 
-**The same single question as the last eight hours — with one thing about it that genuinely changed. Still no ping sent.**
+**Nothing needs you right now — and the one question that has been sitting here for nine hours is now closed, by something you said yourself.**
 
-Should the ceremonial reveal screens — the Civ-style "you unlocked this" moment you asked for — be built next, or stay in line? Asked once at 11pm, unanswered, still safe to ignore. Silence means "leave it in line", and it has.
+The standing question was whether the ceremonial reveal screens — the Civ-style "you unlocked this" moment you asked for — should jump ahead of the crew's own found work. This morning a design session recorded a priority from you, dated today: *"the new encounter experience is still first priority."* That names something else as first, which settles the thing the question was holding open. The reveal screens stay in line, and the shelf now shows exactly that order.
 
-**What changed: nothing outranks it any more.** For the last two hours a more urgent job sat above it, so "build it next" and "leave it in line" pointed at different places in the queue. That job finished twenty minutes ago. Your request is now back at joint-top of the shelf, level with eight others of equal rank, which is where it sat for every hour before that. This is stated once, here, because it is a real change in what your two answers *mean* — it is **not** a reason to ask you again, and no second ping was sent.
+**Worth checking my work, because this is an inference rather than a reply.** That sentence is a quote written into a work ticket by a design session — not something you sent me directly. If it doesn't match what you meant, and the reveal screens should jump the queue after all, say so and they move. Otherwise the question is retired and won't be put to you again.
 
-Nothing else arrived for you this hour. The work below made two real design calls and made both on measurement, so neither is yours to ratify.
+Nothing else arrived for you this hour.
 
 ## Queue
 
-**20 jobs ready — none urgent, eight middling, twelve minor. The workbench is empty of live work.**
+**23 jobs ready — two urgent, seven middling, fourteen minor. One job sitting on the bench.**
 
-The count held at 20 for the third hour running: the urgent job finished, a minor one arrived to replace it. Nothing stale, nothing blocked. For the first time in six hours the shelf holds no urgent job at all — everything remaining is middling or minor.
+Up three from last hour, and every part of that is healthy: one job shipped, two small finds were written down rather than swallowed, and the two urgent jobs are new — the design work for the new encounter experience finished this morning and put them on the shelf. Nothing has gone stale; the oldest job has been waiting under three days.
 
-**Last hour's watch item resolved itself, and in the more reassuring direction.** I flagged that a finished-but-not-closed job might make the next crew think the bench was occupied and stand down. It didn't: the crew picked up the follow-on job forty minutes later, built it, and shipped it. So the stale entry is untidy rather than harmful, and I weighted it too heavily last hour. It is still sitting there — its own work merged two hours ago, and the follow-on carrying the rest of it has now finished too, so there is genuinely nothing left inside it. It wants a one-line tidy-up from a crew member with write access. **Not yours, not urgent, and demonstrably not blocking anyone.**
+**Both urgent jobs are blocked, and it is the one thing on this page worth watching.** They are the two halves of the new encounter experience — the work you just named first priority — and neither can be picked up until their plan document is published. That document has been queued to publish since 06:30 and keeps slipping behind newer work landing ahead of it. **This exact stall has cleared itself within the hour three times out of three**, so the honest reading today is "wait one refresh", not "something is broken". But it is the top of your stated priority sitting idle, so: **if it is still stuck at the next brief, that is a real problem and I will say so in those words.**
+
+The job on the bench is the guild-routing one from last night. Its own work merged hours ago and its follow-on has since finished too, so there is genuinely nothing left inside it — it wants a one-line tidy-up from a crew member with write access. Last hour I predicted it might make the next crew think the bench was occupied; it didn't, and it hasn't again.
 
 ## Freshness
 
-**Home tree: level with the server, nothing stranded.** Three commits landed in the last few minutes and the auto-sync will pick them up on its next pass — that is the system working, not lag. The same two small leftovers as the last seventeen hours: a permissions edit to the tool config, and Friday's retro write-up. Both are the crew's to land; neither blocks anything.
+**Home tree: on the right branch, nothing stranded, four commits behind the server — which is a job merging two minutes ago, not lag.** The same two small leftovers as the last eighteen hours: a permissions edit to the tool config, and Friday's retro write-up. Both are the crew's to land; neither blocks anything.
 
-**Cleanup reaper: alive, ran fifteen minutes ago, clean, nothing awaiting a human decision.**
+**Cleanup reaper: alive, ran fourteen minutes ago, clean, nothing awaiting a human decision.**
 
-**The live site is one change behind, and that is expected** — it merged twenty minutes ago and is still publishing. Nothing to do; if it were genuinely stuck, this section would say so in those words.
+**The live site is serving the newest change** — last hour's "still publishing" resolved on its own, exactly as the twenty-minute grace window is meant to let it.
 
 **Discord: nothing new in the channel this hour.** Genuinely empty rather than unread.
 
 ## What's moving
 
-**Guild members finally have lives the game actually simulates — and guild standing went from a number that could only fall to one that rises 449 times a run.**
+**Guild membership stopped handing every job to the same guild.**
 
-This closes the three-hour thread the last two briefs have been tracking. The story so far: guilds never handed work to their own members, and two rounds of proposed fixes — six in total — were all void for the same reason, because every one adjusted a stage the guild work never reached. The real blocker, measured last hour: **225 of 227 guild members are background people** — the crowd the game populates the world with but does not think for — while the part of the turn where a character decides what to do next runs only for the fourteen in the spotlight. Two members out of two hundred and twenty-seven could reach the moment where guild work is offered.
+Six guilds share a type, and the code that assigns people to guilds took the first match every single time — so one guild always won and the Builders' Fellowship was seeded with **zero members in every run**, its ten stories unreachable by construction. That is now a scored choice: the routing weighs how well a role fits a guild against how loaded that guild already is, built out of two tables that already existed rather than a new one.
 
-**The repair does not promote the crowd into the spotlight. It moves the work to the guild's side of the table.** The guild itself is already something the game thinks for, every turn, all forty-nine of them. So a guild now hands out jobs from its own side and settles them off-screen, for members the game never simulates individually. The world tells you what happened somewhere you were not looking, rather than staging a scene for someone with no inner life to stage it with.
+Two things about the repair are worth naming. It was **composed from existing pieces instead of green-fielding a new scoring system** — the recurring temptation this project has a scar from. And the test that proves it asserts over the *mix* of roles across guilds, not a floor per guild, because a per-guild floor would have quietly re-encoded the same first-match assumption it exists to catch.
 
-The measured before-and-after, on the standard test world:
+**Two finds filed rather than absorbed.** A guild-quest panel turns out to be hardcoded to one guild, so eleven of twelve factions can never surface quests through it — found by discharging this very ticket's instruction to go check whether any screen assumed a single guild. One does. Separately, a piece of the group code numbers things from a counter that survives between runs, so two identical worlds serialise differently; a determinism defect where only the label diverged, not the story.
 
-- Standing gained across a run: **0 → 449 increases**, spread over 185 memberships.
-- Guild jobs actually resolved: **0 → 944**, of which 462 succeeded and 135 earned a promotion.
-- Members reaching the top rank: **0 → 33**. Previously nobody, ever.
-- Rank-locked guild content still unreachable: **21 → 0**.
-
-Two choices inside it are worth naming, because both were made against measurement rather than instinct. **Off-screen work pays half rate** — deliberately, so work you never watch cannot out-earn an encounter you did, which would have quietly inverted the whole reason to pay attention to anyone. And a guild picks *which* members get work through a **rotating window sized to its membership**, not a flat number. The flat version was written first and measured wrong: it left big guilds worse off than small ones — the 45-member merchants' consortium physically could not reach the top rank while the 3-member Underking's Court saturated it — which would have punished exactly the guilds carrying the most authored content.
-
-All of this costs **0.1 milliseconds per turn**, stated because that was the axis on which the "just promote everyone into the spotlight" alternative was rejected, at roughly fourteen times the cost.
-
-**One find, filed rather than absorbed.** The builders' fellowship is seeded with **zero members in every run** — six guilds share a type, and the seeding code takes the first match every time, so the same guild always wins and one always loses. That is the third appearance of this exact first-match shape in a week. It is now filed, and the guild census has learned to tell "this ladder is unreachable" apart from "this guild has nobody in it" — different problems that had been counted as one.
-
-Door to door: on the bench at 5:03am, merged **5:54am — 52 minutes**, for a design change the previous two tickets had both declined to attempt until it was measured.
+**And the design work for the new encounter experience finished** — 06:15 to 06:30, fifteen minutes from opening to handing over two ready jobs.
 
 ---
 *Standing asks live in [`Design/user-actions.md`](user-actions.md). This file is regenerated hourly by the `keep-work-flowing-cc` scheduled task; staleness is visible from the Generated timestamp above and the task's `lastRunAt` in `list_scheduled_tasks`.*
