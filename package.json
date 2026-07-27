@@ -54,6 +54,7 @@
     "playtest": "esbuild scripts/playtest.ts --bundle --platform=node --format=esm --outfile=/tmp/playtest.mjs --external:fs --external:path && node /tmp/playtest.mjs",
     "ingest": "esbuild scripts/ingest-inspiration.ts --bundle --platform=node --format=esm --outfile=.cache/ingest-inspiration.mjs --external:fs --external:path --external:crypto --external:url && node .cache/ingest-inspiration.mjs",
     "cli": "esbuild scripts/cli.ts --bundle --platform=node --format=esm --outfile=.cache/cli.mjs --external:fs --external:path && node .cache/cli.mjs",
+    "sweep:rank-reach": "esbuild scripts/rank-reach-sweep.ts --bundle --platform=node --format=esm --outfile=.cache/rank-reach-sweep.mjs --external:fs --external:path && node .cache/rank-reach-sweep.mjs",
     "balance:smoke": "esbuild scripts/balance-eval.ts --bundle --platform=node --format=esm --outfile=.cache/balance-eval-smoke.mjs --external:fs --external:path && node .cache/balance-eval-smoke.mjs --profile smoke",
     "balance:cadence": "esbuild scripts/balance-eval.ts --bundle --platform=node --format=esm --outfile=.cache/balance-eval-cadence.mjs --external:fs --external:path && node .cache/balance-eval-cadence.mjs --profile cadence",
     "balance:journey": "esbuild scripts/balance-eval.ts --bundle --platform=node --format=esm --outfile=.cache/balance-eval-journey.mjs --external:fs --external:path && node .cache/balance-eval-journey.mjs --profile journey",
