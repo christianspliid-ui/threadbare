@@ -3,6 +3,7 @@ import {
   computeRivalEscalationTier,
   selectRivalScheme,
   buildRivalScheme,
+  worldHasResourceStocks,
 } from '../rival';
 import { phaseRivalActions } from '../orchestrator';
 import { phaseComposition } from '../phaseComposition';
@@ -11,6 +12,7 @@ import {
   getRivalSchemeFamily,
   RIVAL_SCHEME_FAMILIES,
   CORRUPTIVE_FAMILY,
+  ECONOMIC_FAMILY,
 } from '../../data/rival-schemes';
 import { enableTracing, clearTraces, getTraces } from '../traceBuffer';
 import { WorldGraph } from '../graph';
@@ -164,9 +166,15 @@ describe('eligibleSchemeFamilies', () => {
     expect(eligibleSchemeFamilies('aggressive', 1).map((f) => f.id)).toContain('territorial');
   });
 
-  it('only ships corruptive + territorial (economic split to THR-619)', () => {
-    expect(RIVAL_SCHEME_FAMILIES.map((f) => f.id).sort()).toEqual(['corruptive', 'territorial']);
-    expect(getRivalSchemeFamily('economic')).toBeUndefined();
+  // Was "only ships corruptive + territorial (economic split to THR-619)" —
+  // THR-619 landed the economic family, so the registry is now three.
+  it('ships corruptive + territorial + economic', () => {
+    expect(RIVAL_SCHEME_FAMILIES.map((f) => f.id).sort()).toEqual([
+      'corruptive',
+      'economic',
+      'territorial',
+    ]);
+    expect(getRivalSchemeFamily('economic')).toBeDefined();
   });
 });
 
@@ -256,7 +264,7 @@ describe('phaseRivalActions — scheme lifecycle', () => {
     for (let i = 0; i < 100; i++) runTick(state);
 
     const advances = getTraces().filter((t) => t.category === 'rival.scheme_phase_advanced');
-    const moves = new Set(advances.map((t) => (t as Record<string, unknown>).move as string));
+    const moves = new Set(advances.map((t) => (t as unknown as Record<string, unknown>).move as string));
     // rumor, materialize, escalate, crack → ≥3 distinct.
     expect(moves.size).toBeGreaterThanOrEqual(3);
 
@@ -306,8 +314,8 @@ describe('phaseRivalActions — counter-play', () => {
     for (let i = 0; i < 60; i++) runTick(state);
 
     const countered = getTraces().filter((t) => t.category === 'rival.scheme_countered');
-    expect(countered.some((t) => (t as Record<string, unknown>).outcome === 'stalled')).toBe(true);
-    expect(countered.some((t) => (t as Record<string, unknown>).outcome === 'failed')).toBe(true);
+    expect(countered.some((t) => (t as unknown as Record<string, unknown>).outcome === 'stalled')).toBe(true);
+    expect(countered.some((t) => (t as unknown as Record<string, unknown>).outcome === 'failed')).toBe(true);
 
     const comp = state.activeCompositions?.find((c) => c.sponsorRivalId === 'actor_rival_1');
     // Either the failed comp is still retained (pre-GC) as 'failed', or it has been GC'd.
@@ -315,5 +323,279 @@ describe('phaseRivalActions — counter-play', () => {
 
     // A cool-failure chronicle beat was pushed.
     expect(state.chronicleEntries.some((e) => e.title.includes('unravels'))).toBe(true);
+  });
+});
+
+// ─── Economic family (THR-619) ─────────────────────────────────────
+
+/** A location carrying THR-615 resource stocks. */
+function addStockedLocation(
+  graph: WorldGraph,
+  id: string,
+  col: number,
+  row: number,
+  resources: Record<string, { quantity: number }>,
+  region?: string,
+): void {
+  graph.addNode({
+    id,
+    type: 'location',
+    name: id,
+    properties: {
+      hexCol: col,
+      hexRow: row,
+      name: id,
+      ...(region ? { region } : {}),
+      resources: Object.fromEntries(
+        Object.entries(resources).map(([k, v]) => [
+          k,
+          { quantity: v.quantity, renewable: true, renewalRate: 0.1 },
+        ]),
+      ),
+    },
+  } as GraphNode);
+}
+
+describe('economic family — eligibility gates on the stock substrate', () => {
+  it('is absent from eligible families when the world has no stocks', () => {
+    const families = eligibleSchemeFamilies('subtle', 3, false);
+    expect(families.map((f) => f.id)).not.toContain('economic');
+  });
+
+  it('appears once stocks exist', () => {
+    const families = eligibleSchemeFamilies('subtle', 3, true);
+    expect(families.map((f) => f.id)).toContain('economic');
+  });
+
+  it('defaults to ineligible when the caller does not measure the world', () => {
+    // The default parameter must be the safe one — a caller that has not proven
+    // stocks exist must not be able to launch a substrate-dependent family.
+    expect(eligibleSchemeFamilies('aggressive', 3).map((f) => f.id)).not.toContain('economic');
+  });
+
+  it('is eligible for every rival behavior (starvation suits all temperaments)', () => {
+    for (const behavior of ['aggressive', 'subtle', 'territorial', 'expansionist'] as const) {
+      expect(eligibleSchemeFamilies(behavior, 0, true).map((f) => f.id)).toContain('economic');
+    }
+  });
+
+  it('worldHasResourceStocks detects stocks and fail-softs on a bare world', () => {
+    const bare = makeState();
+    expect(worldHasResourceStocks(bare)).toBe(false);
+
+    const stocked = makeState();
+    addStockedLocation(stocked.graph, 'loc-mine', 1, 1, { iron_ore: { quantity: 60 } });
+    expect(worldHasResourceStocks(stocked)).toBe(true);
+  });
+
+  it('selectRivalScheme never picks economic without stocks, and can with them', () => {
+    const rival = makeRival('actor_rival_1', 'aggressive');
+    const rs = makeRivalState('actor_rival_1');
+    // Sweep the rng so every branch of the family pick is exercised.
+    const picksWithout: string[] = [];
+    const picksWith: string[] = [];
+    for (let i = 0; i < 40; i++) {
+      const r = () => (i + 0.5) / 40;
+      const a = selectRivalScheme(rival, rs, 3, 100, r, false);
+      if (a.family) picksWithout.push(a.family.id);
+      const b = selectRivalScheme(rival, rs, 3, 100, r, true);
+      if (b.family) picksWith.push(b.family.id);
+    }
+    expect(picksWithout).not.toContain('economic');
+    expect(picksWith).toContain('economic');
+  });
+});
+
+describe('economic family — content shape', () => {
+  it('has the four named beats in arc order with distinct moves', () => {
+    expect(ECONOMIC_FAMILY.beats.map((b) => b.phaseId)).toEqual([
+      'sour-mines',
+      'corner-grain',
+      'break-guild',
+      'starve-faithful',
+    ]);
+    expect(ECONOMIC_FAMILY.beats.map((b) => b.move)).toEqual([
+      'drain_stock',
+      'materialize',
+      'sever_route',
+      'crack',
+    ]);
+  });
+
+  it('carries >=3 attributed prose variants per beat with placeholders preserved', () => {
+    for (const beat of ECONOMIC_FAMILY.beats) {
+      expect(beat.proseVariants.length).toBeGreaterThanOrEqual(3);
+      for (const variant of beat.proseVariants) {
+        expect(variant).toContain('{rival}');
+        expect(variant).toContain('{location}');
+      }
+      // No duplicate variants — three ways of saying it, not one said thrice.
+      expect(new Set(beat.proseVariants).size).toBe(beat.proseVariants.length);
+    }
+  });
+
+  it('declares its substrate dependency', () => {
+    expect(ECONOMIC_FAMILY.requiresStocks).toBe(true);
+    expect(ECONOMIC_FAMILY.requiresTarget).toBe(true);
+  });
+});
+
+describe('economic family — moves bite the world', () => {
+  /** Launch an economic scheme against a stocked target and drive it to completion. */
+  function runEconomicScheme(opts: {
+    resources?: Record<string, { quantity: number }>;
+    region?: string;
+    routes?: string[];
+    intel?: Array<{ recordId: string; targetRegion?: string; reliability: number }>;
+  }) {
+    const rival = makeRival('actor_rival_1', 'aggressive');
+    const rs = makeRivalState('actor_rival_1');
+    const state = makeState({
+      rivalDefinitions: [rival],
+      rivalStates: [rs],
+      doomClock: makeDoomClock(1),
+      ...(opts.intel
+        ? {
+            intelligenceRecords: opts.intel.map((r) => ({
+              recordId: r.recordId,
+              // Route intel is what a severed conduit blinds; 'threat' is not an
+              // IntelligenceCategory member and never was.
+              category: 'trade_route' as const,
+              label: 'l',
+              detail: 'd',
+              sourceEncounterId: 'enc',
+              agentId: 'hero',
+              acquiredTick: 0,
+              reliability: r.reliability,
+              ...(r.targetRegion ? { targetRegion: r.targetRegion } : {}),
+            })),
+          }
+        : {}),
+    });
+    addActor(state.graph, 'actor_rival_1');
+    addStockedLocation(
+      state.graph,
+      'loc-1',
+      3,
+      3,
+      opts.resources ?? { iron_ore: { quantity: 80 }, grain: { quantity: 40 } },
+      opts.region,
+    );
+    for (const partner of opts.routes ?? []) {
+      addLocation(state.graph, partner, 5, 5);
+      state.graph.addEdge({
+        id: `e-trade-${partner}`,
+        source: 'loc-1',
+        target: partner,
+        type: 'trades_with',
+        properties: { volume: 3 },
+      });
+    }
+
+    const plan = buildRivalScheme(
+      rival, rs, ECONOMIC_FAMILY, 0, state.tick, 'loc-1', 'loc-1', () => 0.5,
+    );
+    state.activeCompositions = [plan.composition];
+    state.worldFlags = { ...state.worldFlags, ...plan.worldFlagUpdates };
+    state.rivalStates = [plan.updatedRivalState];
+
+    for (let i = 0; i < 80; i++) runTick(state);
+    return state;
+  }
+
+  it('drain_stock sours the richest resource without exhausting it', () => {
+    const state = runEconomicScheme({
+      resources: { iron_ore: { quantity: 80 }, grain: { quantity: 40 } },
+    });
+    const props = state.graph.getNode('loc-1')!.properties as Record<string, unknown>;
+    const resources = props.resources as Record<string, { quantity: number }>;
+
+    // The richest (iron_ore) was drained; the lesser stock was left alone.
+    expect(resources.iron_ore.quantity).toBeLessThan(80);
+    expect(resources.iron_ore.quantity).toBeGreaterThan(0);
+    expect(resources.grain.quantity).toBe(40);
+
+    const drained = getTraces().filter((t) => t.category === 'rival.scheme_stock_drained');
+    expect(drained.length).toBeGreaterThan(0);
+    expect((drained[0] as unknown as Record<string, unknown>).resourceId).toBe('iron_ore');
+  });
+
+  it('sever_route cuts trade conduits at the target', () => {
+    const state = runEconomicScheme({ routes: ['loc-partner-a', 'loc-partner-b'] });
+    const remaining = state.graph.getOutgoingEdges('loc-1', 'trades_with');
+    expect(remaining.length).toBe(0);
+
+    const severed = getTraces().filter((t) => t.category === 'rival.scheme_route_severed');
+    expect(severed.length).toBeGreaterThan(0);
+    expect((severed[0] as unknown as Record<string, unknown>).severedPartnerIds).toEqual(
+      expect.arrayContaining(['loc-partner-a', 'loc-partner-b']),
+    );
+  });
+
+  it('a route cut blinds the region — the nervous-system coupling', () => {
+    const state = runEconomicScheme({
+      region: 'the-marches',
+      routes: ['loc-partner-a'],
+      intel: [
+        { recordId: 'r-here', targetRegion: 'the-marches', reliability: 0.9 },
+        { recordId: 'r-elsewhere', targetRegion: 'far-coast', reliability: 0.9 },
+      ],
+    });
+
+    const here = state.intelligenceRecords!.find((r) => r.recordId === 'r-here')!;
+    const elsewhere = state.intelligenceRecords!.find((r) => r.recordId === 'r-elsewhere')!;
+
+    // The severed region went dark; an unrelated region did not.
+    expect(here.reliability).toBeLessThan(0.9);
+    expect(elsewhere.reliability).toBe(0.9);
+
+    const severed = getTraces().filter((t) => t.category === 'rival.scheme_route_severed');
+    expect((severed[0] as unknown as Record<string, unknown>).region).toBe('the-marches');
+    expect((severed[0] as unknown as Record<string, unknown>).intelRecordsDegraded).toBe(1);
+  });
+
+  it('fail-softs on a target with no stocks, no routes, and no region', () => {
+    const rival = makeRival('actor_rival_1', 'aggressive');
+    const rs = makeRivalState('actor_rival_1');
+    const state = makeState({
+      rivalDefinitions: [rival],
+      rivalStates: [rs],
+      doomClock: makeDoomClock(1),
+    });
+    addActor(state.graph, 'actor_rival_1');
+    addLocation(state.graph, 'loc-bare', 3, 3); // no resources, no routes, no region
+
+    const plan = buildRivalScheme(
+      rival, rs, ECONOMIC_FAMILY, 0, state.tick, 'loc-bare', 'loc-bare', () => 0.5,
+    );
+    state.activeCompositions = [plan.composition];
+    state.worldFlags = { ...state.worldFlags, ...plan.worldFlagUpdates };
+    state.rivalStates = [plan.updatedRivalState];
+
+    // The arc still runs to completion — the moves just find nothing to bite.
+    expect(() => {
+      for (let i = 0; i < 80; i++) runTick(state);
+    }).not.toThrow();
+    const advanced = getTraces().filter((t) => t.category === 'rival.scheme_phase_advanced');
+    expect(advanced.length).toBeGreaterThan(0);
+  });
+
+  it('advances all four phases in arc order', () => {
+    const state = runEconomicScheme({ routes: ['loc-partner-a'] });
+    // Scope to the scheme this test launched — over 80 ticks the rival is free to
+    // start a second one once the first completes, and its beats interleave.
+    const firstCompId = `rival-scheme-actor_rival_1-economic-t${10}`;
+    const order = getTraces()
+      .filter(
+        (t) =>
+          t.category === 'rival.scheme_phase_advanced' &&
+          (t as unknown as Record<string, unknown>).compositionId === firstCompId,
+      )
+      .map((t) => (t as unknown as Record<string, unknown>).phaseId as string);
+    expect(order).toEqual(['sour-mines', 'corner-grain', 'break-guild', 'starve-faithful']);
+
+    // And the scheme reached 'completed' rather than stalling out.
+    const comp = state.activeCompositions?.find((c) => c.compositionId === firstCompId);
+    if (comp) expect(comp.status).toBe('completed');
   });
 });

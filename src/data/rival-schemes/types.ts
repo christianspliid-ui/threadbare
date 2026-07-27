@@ -20,8 +20,21 @@ import type { SphereName } from '../../types/index';
  *                  target location, push sphere pressure, emit an attributed toast.
  * - `escalate`   — raise sphere pressure + rival hostility (the "response" beat).
  * - `crack`      — terminal payoff: large sphere push + terminal narration.
+ * - `drain_stock`— (THR-619) sour the target's richest resource: reduce its
+ *                  `quantity`, letting the shipped stock-tier phase re-derive the
+ *                  tier downward. No-op when the location carries no stocks.
+ * - `sever_route`— (THR-619) cut `trades_with` conduits touching the target and
+ *                  degrade the player's intelligence reliability for that region
+ *                  (the Flow Web nervous-system coupling: a severed route makes a
+ *                  region go dark). No-op when the location has no routes.
  */
-export type RivalSchemeMoveKind = 'rumor' | 'materialize' | 'escalate' | 'crack';
+export type RivalSchemeMoveKind =
+  | 'rumor'
+  | 'materialize'
+  | 'escalate'
+  | 'crack'
+  | 'drain_stock'
+  | 'sever_route';
 
 /** One phase beat within a scheme family. */
 export interface RivalSchemeBeat {
@@ -54,6 +67,14 @@ export interface RivalSchemeFamily {
   minTier: number;
   /** Whether this family needs a target location node (materialize/crack need one). */
   requiresTarget: boolean;
+  /**
+   * Whether this family needs the Mortal Economy stock substrate (THR-615) to be
+   * live in the world. Absent/false = no substrate requirement. When true, the
+   * family is filtered out of `eligibleSchemeFamilies` unless the caller proves
+   * stocks exist — the family simply never launches in a stockless world rather
+   * than launching and no-opping (fail-soft, NFP #4).
+   */
+  requiresStocks?: boolean;
   /** Exactly four beats: rumor → materialization → response → crack. */
   beats: [RivalSchemeBeat, RivalSchemeBeat, RivalSchemeBeat, RivalSchemeBeat];
 }

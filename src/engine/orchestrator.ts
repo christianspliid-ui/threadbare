@@ -24,6 +24,7 @@ import {
   selectRivalScheme,
   buildRivalScheme,
   schemeFlags,
+  worldHasResourceStocks,
 } from './rival';
 import { getRivalSchemeFamily } from '../data/rival-schemes';
 import { phaseNotableAgendas } from './notableAgendas';
@@ -35,7 +36,13 @@ import {
   RIVAL_SCHEME_SPHERE_PRESSURE_PER_PHASE,
   RIVAL_SCHEME_CRACK_PRESSURE_MULTIPLIER,
   RIVAL_SCHEME_HOSTILITY_PER_MOVE,
+  RIVAL_SCHEME_STOCK_DRAIN_FRACTION,
+  RIVAL_SCHEME_STOCK_DRAIN_FLOOR,
+  RIVAL_SCHEME_MAX_ROUTES_SEVERED,
+  RIVAL_SCHEME_ROUTE_CUT_INTEL_PENALTY,
 } from '../data/rival-scheme-config';
+import { readResources } from './resourceEconomy';
+import { INTEL_RELIABILITY_FLOOR } from './intelligence';
 import {
   computeStakes,
   resolveDilemma,
@@ -70,6 +77,8 @@ import type {
   RivalSchemePhaseAdvancedTrace,
   RivalSchemeCounteredTrace,
   RivalSchemeCompletedTrace,
+  RivalSchemeStockDrainedTrace,
+  RivalSchemeRouteSeveredTrace,
 } from '../types/trace';
 import {
   resolveEncounter,
@@ -191,7 +200,7 @@ import { createEncounterEventNode } from './encounterEventNode';
 import type { SimulationRuntime } from './simulationRuntime';
 import { isBranchingTemplate, isRichTemplate } from './kpi/gameplayKpi';
 import { guaranteeFailureStoryArtifact } from './failureStoryArtifact';
-import type { UnifiedAction } from '../types/unifiedAction';
+import type { UnifiedAction, IntelligenceRecord } from '../types/unifiedAction';
 import { accumulateImportance, checkGraduationThreshold, graduateRarity, getImportanceDelta, getRarityTier } from './rarity';
 import {
   DIVINE_PROXIMITY_RADIUS_HEXES,
@@ -1676,7 +1685,9 @@ type RivalTraceInput =
   | Omit<RivalSchemeLaunchedTrace, 'id' | 'timestamp'>
   | Omit<RivalSchemePhaseAdvancedTrace, 'id' | 'timestamp'>
   | Omit<RivalSchemeCounteredTrace, 'id' | 'timestamp'>
-  | Omit<RivalSchemeCompletedTrace, 'id' | 'timestamp'>;
+  | Omit<RivalSchemeCompletedTrace, 'id' | 'timestamp'>
+  | Omit<RivalSchemeStockDrainedTrace, 'id' | 'timestamp'>
+  | Omit<RivalSchemeRouteSeveredTrace, 'id' | 'timestamp'>;
 function emitRivalTrace(trace: RivalTraceInput): void {
   emitTrace(trace as unknown as Omit<TraceEntry, 'id' | 'timestamp'>);
 }
@@ -1703,6 +1714,110 @@ function selectSchemeTarget(
   const name =
     (typeof pick.properties.name === 'string' && pick.properties.name) || pick.id;
   return { id: pick.id, name };
+}
+
+/**
+ * `drain_stock` move (THR-619) — sour the target's richest resource.
+ *
+ * Reduces the highest-quantity resource's `quantity` by
+ * `RIVAL_SCHEME_STOCK_DRAIN_FRACTION`, floored at `RIVAL_SCHEME_STOCK_DRAIN_FLOOR`
+ * so the seam is soured, never exhausted. The shipped stock-tier phase
+ * (THR-615) re-derives the tier downward on its next run — this move does not
+ * write `stockTier` itself, keeping tier derivation single-owner.
+ *
+ * Mutates node properties in place (the graph's documented mutation model) and
+ * relies on the caller to `touchWorld()`. Returns the drained resource id and
+ * the before/after quantities for the trace, or `undefined` when the location
+ * carries no stocks (fail-soft no-op).
+ */
+function drainTargetStock(
+  state: GameState,
+  targetId: string,
+): { resourceId: string; before: number; after: number } | undefined {
+  const node = state.graph.getNode(targetId);
+  if (!node) return undefined;
+  const resources = readResources(node.properties);
+
+  let richestId: string | undefined;
+  let richestQty = -1;
+  for (const [resourceId, instance] of Object.entries(resources)) {
+    const qty = instance?.quantity;
+    if (typeof qty !== 'number') continue;
+    if (qty > richestQty) {
+      richestQty = qty;
+      richestId = resourceId;
+    }
+  }
+  if (!richestId || richestQty <= RIVAL_SCHEME_STOCK_DRAIN_FLOOR) return undefined;
+
+  const after = Math.max(
+    RIVAL_SCHEME_STOCK_DRAIN_FLOOR,
+    richestQty * (1 - RIVAL_SCHEME_STOCK_DRAIN_FRACTION),
+  );
+  resources[richestId] = { ...resources[richestId], quantity: after };
+  return { resourceId: richestId, before: richestQty, after };
+}
+
+/**
+ * `sever_route` move (THR-619) — cut the target's trade conduits.
+ *
+ * Removes up to `RIVAL_SCHEME_MAX_ROUTES_SEVERED` `trades_with` edges touching
+ * the target location (either direction). Returns the severed partner ids;
+ * empty when the location has no routes (fail-soft no-op).
+ *
+ * The intelligence half of the coupling is applied by the caller, which owns
+ * `state.intelligenceRecords` — this helper only touches the graph.
+ */
+function severTargetRoutes(state: GameState, targetId: string): string[] {
+  const edges = [
+    ...state.graph.getOutgoingEdges(targetId, 'trades_with'),
+    ...state.graph.getIncomingEdges(targetId, 'trades_with'),
+  ].slice(0, RIVAL_SCHEME_MAX_ROUTES_SEVERED);
+
+  const severed: string[] = [];
+  for (const edge of edges) {
+    try {
+      state.graph.removeEdge(edge.id);
+      severed.push(edge.source === targetId ? edge.target : edge.source);
+    } catch {
+      /* fail-soft: edge already gone */
+    }
+  }
+  return severed;
+}
+
+/**
+ * The Flow Web nervous-system coupling (THR-619): a severed route makes a region
+ * go dark. Degrades the reliability of every intelligence record about the
+ * severed location's region by `RIVAL_SCHEME_ROUTE_CUT_INTEL_PENALTY`.
+ *
+ * Pure — returns the rewritten record array plus how many were degraded, or
+ * `undefined` when nothing matched (so the caller can skip the state write).
+ */
+function degradeRegionIntelligence(
+  state: GameState,
+  targetId: string,
+  records: readonly IntelligenceRecord[] | undefined,
+): { records: IntelligenceRecord[]; degraded: number; region: string } | undefined {
+  if (!records || records.length === 0) return undefined;
+
+  const targetNode = state.graph.getNode(targetId);
+  const region = targetNode?.properties.region;
+  if (typeof region !== 'string' || region.length === 0) return undefined;
+
+  let degraded = 0;
+  const next = records.map((r) => {
+    if (r.targetRegion !== region) return r;
+    const reliability = Math.max(
+      INTEL_RELIABILITY_FLOOR,
+      r.reliability - RIVAL_SCHEME_ROUTE_CUT_INTEL_PENALTY,
+    );
+    if (reliability === r.reliability) return r;
+    degraded++;
+    return { ...r, reliability };
+  });
+
+  return degraded > 0 ? { records: next, degraded, region } : undefined;
 }
 
 /** True when the player has pushed back on a scheme's target (counter-play surface). */
@@ -1845,6 +1960,12 @@ export function phaseRivalActions(state: GameState): Partial<GameState> {
   const worldFlags: Record<string, unknown> = { ...(state.worldFlags ?? {}) };
   let activeCompositions: ActiveComposition[] = [...(state.activeCompositions ?? [])];
   const escalationTier = computeRivalEscalationTier(state);
+  // THR-619: economic family gates on the Mortal Economy stock substrate.
+  // Measured once per tick, not per rival — the world does not change mid-phase.
+  const hasStocks = worldHasResourceStocks(state);
+  // Rewritten by `sever_route` (the intelligence-degradation coupling);
+  // stays undefined when no route cut landed, so the phase returns no intel key.
+  let intelligenceRecords: IntelligenceRecord[] | undefined;
 
   // Locations already under an active scheme — don't stack two on one place.
   const alreadyTargeted = new Set<string>();
@@ -1930,6 +2051,54 @@ export function phaseRivalActions(state: GameState): Partial<GameState> {
                 });
               }
               break;
+            case 'drain_stock': {
+              // THR-619: sour the mine. No-op when the target carries no stocks.
+              if (targetId) {
+                const drained = drainTargetStock(state, targetId);
+                if (drained) {
+                  emitRivalTrace({
+                    category: 'rival.scheme_stock_drained' as const,
+                    tick: state.tick,
+                    summary: `${rival.name} soured ${drained.resourceId} at ${targetName ?? targetId} (${drained.before.toFixed(1)} → ${drained.after.toFixed(1)})`,
+                    rivalId: rival.id,
+                    compositionId: compId,
+                    targetNodeId: targetId,
+                    resourceId: drained.resourceId,
+                    quantityBefore: drained.before,
+                    quantityAfter: drained.after,
+                  });
+                }
+              }
+              break;
+            }
+            case 'sever_route': {
+              // THR-619: cut the conduits, and blind the region as a consequence.
+              if (targetId) {
+                const severed = severTargetRoutes(state, targetId);
+                const blinded = degradeRegionIntelligence(
+                  state,
+                  targetId,
+                  intelligenceRecords ?? state.intelligenceRecords,
+                );
+                if (blinded) {
+                  intelligenceRecords = blinded.records;
+                }
+                if (severed.length > 0 || blinded) {
+                  emitRivalTrace({
+                    category: 'rival.scheme_route_severed' as const,
+                    tick: state.tick,
+                    summary: `${rival.name} severed ${severed.length} route(s) at ${targetName ?? targetId}; ${blinded?.degraded ?? 0} intel record(s) in ${blinded?.region ?? 'no region'} degraded`,
+                    rivalId: rival.id,
+                    compositionId: compId,
+                    targetNodeId: targetId,
+                    severedPartnerIds: severed,
+                    ...(blinded ? { region: blinded.region } : {}),
+                    intelRecordsDegraded: blinded?.degraded ?? 0,
+                  });
+                }
+              }
+              break;
+            }
             case 'crack': {
               if (rival.primarySphere) {
                 spherePressures.push({
@@ -2089,7 +2258,14 @@ export function phaseRivalActions(state: GameState): Partial<GameState> {
     rivalState = { ...rivalState, ticksSinceAction: ticksSince };
     if (ticksSince >= 8 + Math.floor(rng() * 5)) {
       rivalState = { ...rivalState, ticksSinceAction: 0 };
-      const decision = selectRivalScheme(rival, rivalState, escalationTier, state.tick, rng);
+      const decision = selectRivalScheme(
+        rival,
+        rivalState,
+        escalationTier,
+        state.tick,
+        rng,
+        hasStocks,
+      );
       let launched = false;
       if (decision.family) {
         const family = decision.family;
@@ -2148,11 +2324,17 @@ export function phaseRivalActions(state: GameState): Partial<GameState> {
     newRivalStates[i] = rivalState;
   }
 
+  // THR-619 note: the economic moves mutate node properties / edges in place,
+  // which does not change graph object identity. No `touchWorld()` is needed
+  // here — `runTick` bumps `worldVersion` at end of tick (TB-086) precisely to
+  // catch this class of property mutation.
+
   return {
     rivalStates: newRivalStates,
     activeCompositions,
     worldFlags,
     tickEvents: [...state.tickEvents, ...events],
+    ...(intelligenceRecords ? { intelligenceRecords } : {}),
     ...(coolFailures.length > 0
       ? { chronicleEntries: [...(state.chronicleEntries ?? []), ...coolFailures] }
       : {}),
