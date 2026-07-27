@@ -1,5 +1,7 @@
 # Economy Content Enrichment — Claude Code Prompts
 
+> **lint_plan_doc:** exempt — copy-paste executor prompts from 2026-03, not a template plan doc. Relocated from the repo root by THR-793.
+
 Copy-paste in order. Each is independent but builds narrative density cumulatively.
 
 ---

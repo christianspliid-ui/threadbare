@@ -1,5 +1,7 @@
 # Brainstorm: Location Non-Agent Characters (NPCs)
 
+> **lint_plan_doc:** exempt — pre-template design brainstorm from 2026-03. Relocated from the repo root by THR-793.
+
 **Date:** 2026-03-27
 **Context:** Locations currently feel empty — agents pass through but nothing *lives* there permanently. No innkeeper, no market vendor, no town guard. This brainstorm explores what location-bound NPCs could be, how they differ from agents, and where the unique design opportunities are.
 

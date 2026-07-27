@@ -1,5 +1,7 @@
 # Deprecation Notice: Intervention Wheel + Fixed Action Count
 
+> **lint_plan_doc:** exempt — historical deprecation record from 2026-03, retained for reference. Relocated from the repo root by THR-793.
+
 **Date:** 2026-03-17
 **Author:** Cowork session (design pass)
 **Action required:** Claude Code should apply these changes to the repo.

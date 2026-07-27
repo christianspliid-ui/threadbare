@@ -1,5 +1,7 @@
 # Brainstorm: Universal Sphere Affinity System
 
+> **lint_plan_doc:** exempt — pre-template design brainstorm from 2026-03. Relocated from the repo root by THR-793.
+
 > Captured 2026-03-28 from Cowork design session. Rethinks M1 World-Soul from global abstract weights to entity-local sphere scores.
 
 ## The Core Idea

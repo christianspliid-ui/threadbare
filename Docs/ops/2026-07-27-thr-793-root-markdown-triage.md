@@ -49,6 +49,17 @@ Filenames were preserved exactly rather than renamed to the `YYYY-MM-DD-topic.md
 convention: renaming would have broken inbound bare-name references for no gain, and
 `Docs/plans/` already carries undated entries (`_template.md`, `cowork-session-start-prompt.md`).
 
+**All six carry a `lint_plan_doc: exempt` marker.** Landing them in `Docs/plans/` put six
+pre-template documents under `npm run lint:plan-doc`, which produced **186 errors** — noise
+against an advisory gate that CLAUDE.md describes as "non-blocking while it stabilizes", and
+these documents will never grow a `## Vision audit` section. `scripts/lint-plan-doc.ts:108`
+provides the sanctioned opt-out for precisely this case ("standing reference docs that live in
+`Docs/plans/` but are not dated plan docs and never will be"), and its own comment anticipates
+the date-prefixed variant, so it covers the two `2026-03-17-*` prompt docs as well as the
+undated four. The alternative — a `Docs/plans/archive/` subfolder, which the linter's
+non-recursive `readdirSync` would also have escaped — was rejected for hiding the docs from the
+folder people actually browse. Lint returns to zero findings.
+
 ### Relocated to `.planning/` (2) — backlog history
 
 | File | Note |
