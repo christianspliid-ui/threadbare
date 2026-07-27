@@ -3330,7 +3330,7 @@ const DATA = [
   {
     "num": "240",
     "id": 240,
-    "count": 1,
+    "count": 2,
     "date": "2026-07-27",
     "category": "tooling",
     "description": "**A hand-rolled reproduction of a test harness diverged on one argument and returned a confident false negative twice, hiding a real regression the stash-A/B had already proven existed.** THR-815 turned a full-suite green run red on one assertion (`unified action completion rate above 78%`, 0.7688). Attribution by `git stash` was unambiguous — baseline passed, change failed — so the next step was finding the mechanism. Two standalone repro scripts built on `initializeGameState` → `runTick` reported the metric **byte-identical** with the new path on and off, across both map sizes and both tick counts, which reads as \"my change cannot be the cause\" directly contradicting the stash result. The divergence was one call: `simulationHarness.runSimulation` uses `generateArchetypes(4, opts.seed)` while the repro used `generateArchetypes(seed)` — a different overload, a different ascendant, a different world. Pointing a five-line temporary vitest file at `runMultiSeed` itself located the effect immediately and exactly (seed 137 alone, 0.7500 → 0.6364; seeds 42 and 999 identical to the digit).",
@@ -3338,7 +3338,20 @@ const DATA = [
     "impact": "Medium",
     "workaroundFound": true,
     "workaround": "**Workaround:** when a test fails and the mechanism is wanted, **drive the test's own harness** — a temporary spec importing `runMultiSeed`/`runSimulation` and printing per-seed values costs less than a standalone script and cannot drift from it by construction. Delete it once the number is known. If a standalone repro is unavoidable, diff its setup against the harness call-for-call before trusting a null result, and treat \"identical to the digit\" against a proven stash-A/B as evidence the repro is wrong, not the attribution. **Durable note:** a null result that contradicts a stash-A/B is never the finding; it is a bug in the measurement. Prefer the mean-of-ratios/pooled distinction too — the first repro pooled across seeds while the assertion takes `mean(results.map(...))`, which can mask per-seed movement even when the setup is right.",
-    "session": "THR-815, hourly `tb-opus-pickup` run, 2026-07-27 — found while attributing an `encounter-health` regression to a newly-live guild economy."
+    "session": "THR-815, hourly `tb-opus-pickup` run, 2026-07-27 — found while attributing an `encounter-health` regression to a newly-live guild economy. Recurred THR-816, 2026-07-27: a standalone faction census called `runTick(state, runtime)` while the sweep it was copied from calls `runTick(state, [], runtime)` — the runtime landed in the interventions slot and surfaced as `TypeError: scryTargets is not iterable`, a crash that says nothing about the real mistake. Loud rather than a false negative this time, but the same root: rebuilding a harness instead of copying the one call the existing script already makes."
+  },
+  {
+    "num": "241",
+    "id": 241,
+    "count": 1,
+    "date": "2026-07-27",
+    "category": "tooling",
+    "description": "**A verification probe whose query matched nothing printed a clean PASS, because its pass condition was \"no bad rows found\" over an empty set.** THR-816 needed to confirm the Done-when \"no faction definition seeded a node holds zero members\". The census script iterated `graph.getNodesByType('faction')` and reported `CENSUS OK — no starved faction` on all three seeds — while printing **zero per-faction rows**. There is no `'faction'` NodeType: factions are `type: 'actor'` with `actorType: 'faction'` (`src/types/graph.ts:17`, 33). The node loop bound nothing, the starved list stayed empty, and the success branch fired on an empty collection. The only tell was the absent rows, which a `grep` for the verdict line would have discarded.",
+    "consequence": "The probe would have discharged a Done-when it never measured, and the evidence pasted at closeout would have been a literal string with no data behind it — the strongest-looking possible false pass. Same family as rows **239** and **240**: the instrument reports health because it cannot express the thing it was pointed at. Cost ~5 minutes; caught only because the row count was visibly zero.",
+    "impact": "Medium",
+    "workaroundFound": true,
+    "workaround": "**Workaround:** give every census/sweep probe a **non-empty precondition** — assert the population it iterates is greater than zero and fail loudly if not, so \"found no violations\" can never be returned by \"found nothing\". Print the population size next to the verdict and read both. When querying the graph, confirm the node type exists in `NodeType` first: entity kinds that read like types (`faction`, `culture`, `group`, `individual`) are `actorType` **subtypes** on `type: 'actor'`, and `getNodesByType` returns an empty array for an unknown type rather than throwing. **Durable note:** a pass over an empty set is not a pass; falsify a new probe by pointing it at known-bad input before trusting a green verdict.",
+    "session": "THR-816, hourly `tb-opus-pickup` run, 2026-07-27 — found while confirming the full-definition membership census."
   }
 ];
 // ── End data ──

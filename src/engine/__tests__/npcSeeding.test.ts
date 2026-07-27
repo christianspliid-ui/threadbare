@@ -3,8 +3,9 @@
  */
 import { describe, it, expect } from 'vitest';
 import { WorldGraph } from '../graph';
-import { seedNpcsAtLocations } from '../npcSeeding';
-import { NPC_CONSTANTS } from '../../types/npc';
+import { assignFactionsToExistingNpcs, seedNpcsAtLocations } from '../npcSeeding';
+import { NPC_CONSTANTS, NPC_ROLE_REACH_MAP, type NpcRole } from '../../types/npc';
+import { FACTION_DEFINITIONS } from '../../data/faction-definitions';
 
 // ─── PRNG ────────────────────────────────────────────────────────────────────
 
@@ -290,5 +291,182 @@ describe('seedNpcsAtLocations', () => {
     const result = seedNpcsAtLocations(graph, locationIds, mulberry32(42));
     const idSet = new Set(result.npcIds);
     expect(idSet.size).toBe(result.npcIds.length);
+  });
+});
+
+// ─── THR-816: faction routing must distribute, not take the first match ──────
+
+/** The six definitions that declare `factionType: 'guild'` — the starved bracket. */
+const GUILD_DEF_IDS = [
+  'adventuring_guild',
+  'merchant_consortium',
+  'builders_fellowship',
+  'lorekeepers_covenant',
+  'thieves_guild',
+  'arcane_circle',
+] as const;
+
+/**
+ * Guild-affinity roles — every `NpcRole` whose `ROLE_FACTION_AFFINITY` list leads with
+ * `'guild'`. This is the mix a live run actually presents to the bracket, and the set
+ * whose collective outcome Done-when #1 is about.
+ */
+const GUILD_AFFINITY_ROLES: NpcRole[] = [
+  'trader', 'clerk', 'appraiser', 'broker', 'merchant', 'scholar', 'scribe',
+  'librarian', 'researcher', 'smith', 'mason', 'brewer', 'innkeeper', 'wanderer',
+];
+
+/**
+ * One location hosting every guild, plus NPCs standing there.
+ *
+ * Mirrors the shape `assignFactionsToExistingNpcs` sees in a real run: NPC actors
+ * already placed by `seedNpcsAtLocations`, and a locationId → factionIds[] map built
+ * from guild-hall / controls edges. `roles` is cycled to fill `npcCount`, so a
+ * single-element array models one role monopolising a location and the full list
+ * models the realistic mix.
+ */
+function makeGuildBracket(roles: NpcRole | NpcRole[], npcCount: number): {
+  graph: WorldGraph;
+  locationFactionMap: Map<string, string[]>;
+  factionIds: string[];
+} {
+  const roleCycle = Array.isArray(roles) ? roles : [roles];
+  const graph = new WorldGraph();
+  graph.addNode({
+    id: 'loc_0',
+    type: 'location',
+    name: 'Test City',
+    properties: { locationSubtype: 'city', hexCol: 0, hexRow: 0 },
+  });
+
+  const factionIds: string[] = [];
+  for (const defId of GUILD_DEF_IDS) {
+    const id = `faction_${defId}`;
+    graph.addNode({
+      id,
+      type: 'actor',
+      name: defId,
+      properties: { actorType: 'faction', factionType: 'guild', factionDefId: defId },
+    });
+    factionIds.push(id);
+  }
+
+  for (let i = 0; i < npcCount; i++) {
+    const id = `npc_test_${i}`;
+    graph.addNode({
+      id,
+      type: 'actor',
+      name: `NPC ${i}`,
+      properties: {
+        actorType: 'individual',
+        spotlightTier: 'ambient',
+        npcRole: roleCycle[i % roleCycle.length],
+      },
+    });
+    graph.addEdge({
+      id: `${id}_located_at_loc_0`,
+      source: id,
+      target: 'loc_0',
+      type: 'located_at',
+      properties: {},
+    });
+  }
+
+  return { graph, locationFactionMap: new Map([['loc_0', factionIds]]), factionIds };
+}
+
+function memberCounts(graph: WorldGraph, factionIds: string[]): Map<string, number> {
+  const counts = new Map<string, number>();
+  for (const id of factionIds) {
+    counts.set(id, graph.getIncomingEdges(id, 'member_of').length);
+  }
+  return counts;
+}
+
+describe('assignFactionsToExistingNpcs — equal-type faction distribution (THR-816)', () => {
+  it('starves no guild across the role mix a live run presents', () => {
+    // The Done-when this pins. Pre-THR-816 the bracket was resolved by `Array.find`,
+    // so the same guild won every contest regardless of role and the other five were
+    // seeded zero members — `builders_fellowship` measurably so on seeds 42 and 99,
+    // which made all ten `bf.*` templates unreachable with no gate reporting it.
+    //
+    // Deliberately asserted over the *mix* of guild-affinity roles rather than one
+    // role: within a single role, merit is supposed to dominate (a Lorekeepers'
+    // Covenant should not fill up with traders). Starvation is a claim about what a
+    // guild gets across the whole population, which is what the CLI census measures.
+    const { graph, locationFactionMap, factionIds } = makeGuildBracket(
+      GUILD_AFFINITY_ROLES,
+      GUILD_AFFINITY_ROLES.length * 6,
+    );
+    assignFactionsToExistingNpcs(graph, locationFactionMap);
+
+    const counts = memberCounts(graph, factionIds);
+    const starved = [...counts].filter(([, n]) => n === 0).map(([id]) => id);
+
+    expect(starved).toEqual([]);
+    expect([...counts.values()].reduce((a, b) => a + b, 0)).toBe(
+      GUILD_AFFINITY_ROLES.length * 6,
+    );
+  });
+
+  it('spreads a single role across more than one guild rather than one absorbing all', () => {
+    // The narrower, purely positional half of the defect: before THR-816 exactly one
+    // faction received every NPC of a given role, because the pick never looked past
+    // `[0]`. Merit may still concentrate membership — this asserts only that it is no
+    // longer a monopoly by construction.
+    const { graph, locationFactionMap, factionIds } = makeGuildBracket('trader', 60);
+    assignFactionsToExistingNpcs(graph, locationFactionMap);
+
+    const counts = memberCounts(graph, factionIds);
+    const withMembers = [...counts.values()].filter(n => n > 0);
+
+    expect(withMembers.length).toBeGreaterThan(1);
+    expect(Math.max(...counts.values())).toBeLessThan(60);
+  });
+
+  it('routes a role to the guild whose reachWeights actually fit it', () => {
+    // A mason is stone-primary; Builders' Fellowship carries stone 0.9 against the
+    // Arcane Circle's 0.1. Merit, not array position, has to decide the first pick.
+    const affinity = NPC_ROLE_REACH_MAP['mason'];
+    const builders = FACTION_DEFINITIONS.get('builders_fellowship');
+    expect(affinity.primary).toBe('stone');
+    expect(builders?.reachWeights.stone).toBeGreaterThan(0.5);
+
+    const { graph, locationFactionMap } = makeGuildBracket('mason', 1);
+    assignFactionsToExistingNpcs(graph, locationFactionMap);
+
+    const edge = graph.getOutgoingEdges('npc_test_0', 'member_of')[0];
+    expect(edge?.target).toBe('faction_builders_fellowship');
+  });
+
+  it('is deterministic — identical graphs produce identical assignments (NFP #3)', () => {
+    const a = makeGuildBracket('clerk', 24);
+    const b = makeGuildBracket('clerk', 24);
+    assignFactionsToExistingNpcs(a.graph, a.locationFactionMap);
+    assignFactionsToExistingNpcs(b.graph, b.locationFactionMap);
+
+    expect([...memberCounts(a.graph, a.factionIds)]).toEqual(
+      [...memberCounts(b.graph, b.factionIds)],
+    );
+  });
+
+  it('keeps the type bracket — a political-affinity role never lands in a guild', () => {
+    // Stage 1 of the pick is unchanged: the role's preferred type still wins outright.
+    // Only the choice *within* the bracket became a scored one.
+    const { graph, locationFactionMap, factionIds } = makeGuildBracket('noble', 4);
+    graph.addNode({
+      id: 'faction_political',
+      type: 'actor',
+      name: 'Court',
+      properties: { actorType: 'faction', factionType: 'political', factionDefId: 'underking_court' },
+    });
+    locationFactionMap.set('loc_0', [...factionIds, 'faction_political']);
+
+    assignFactionsToExistingNpcs(graph, locationFactionMap);
+
+    expect(graph.getIncomingEdges('faction_political', 'member_of')).toHaveLength(4);
+    for (const id of factionIds) {
+      expect(graph.getIncomingEdges(id, 'member_of')).toHaveLength(0);
+    }
   });
 });

@@ -10,7 +10,7 @@ description: >
   by Cowork after writing any plan doc in Docs/plans/ or Docs/audits/ and
   before the Linear state transitions to Ready for Dev.
   Also callable manually via `/intent-judge <plan-doc-path>`.
-last_validated_against: 2026-07-18
+last_validated_against: 2026-07-27
 ---
 
 # Intent Judge
@@ -46,7 +46,7 @@ architectural change that catches these.
 
 ## Constants
 
-- `INTENT_JUDGE_MODEL = "opus"` — frontier model required (see "Anti-correlation")
+- `INTENT_JUDGE_MODEL = "fable"` — frontier model required (see "Anti-correlation")
 - `INTENT_JUDGE_TARGET_LATENCY_SECONDS = 90` — target wall time per judgment
 - `INTENT_JUDGE_MAX_FINDINGS = 12` — cap on findings; consolidate beyond this
 - `INTENT_JUDGE_ESCALATION_FLOOR = 0.05` — below this, judge may be rubber-stamping
@@ -74,7 +74,7 @@ via the Agent tool:
     Agent({
       description: "Intent judge for <plan-doc-slug>",
       subagent_type: "general-purpose",
-      model: "opus",
+      model: "fable",
       prompt: "Load the intent-judge skill via Read at .claude/skills/intent-judge/SKILL.md and follow it exactly. Action proposal: <path>. Plan doc: <path>. Linear issue: <id>. User's verbatim ask is in the action proposal under `intent_quote`. Do not read any other files unless this skill instructs you to. Return the structured verdict block."
     })
 
@@ -191,10 +191,13 @@ Return one markdown block in exactly this shape:
 ## Anti-correlation
 
 The failure mode that voids the whole pattern is judge and author sharing
-context, model, prompts, or assumptions. Four rules enforce separation:
+context, prompts, or assumptions. Four rules enforce separation:
 
-- **Different model.** Author may run on Sonnet/Haiku. Judge runs on `opus`.
-  Frontier unavailable → judge declines and surfaces Escalate.
+- **Model parity or better.** Judge runs on `fable` — at least as capable as
+  any author session (authors run Opus or Fable). Cold context and separate
+  persona carry the anti-correlation weight, not model diversity; a judge
+  weaker than its author inverts the manager/worker framing. Frontier
+  unavailable → judge declines and surfaces Escalate.
 - **Cold context.** Spawned via Agent tool; sees only what the prompt names.
 - **Different persona.** This skill is the persona. The judge does not draft.
 - **Reversed reading order.** Author writes intent → scope → design. Judge
