@@ -16,8 +16,12 @@ import {
   NPC_NAME_POOL,
   NPC_CONSTANTS,
   NPC_ROLE_SUBLOCATION_MAP,
+  NPC_ROLE_REACH_MAP,
   type NpcRole,
+  type RoleReachAffinity,
 } from '../types/npc';
+import { FACTION_DEFINITIONS } from '../data/faction-definitions';
+import type { GraphNode } from '../types/graph';
 import type { SublocationProperties } from '../types/sublocation';
 import type { CultureIdentity, CulturePhoneticSignature } from '../types/culture';
 import { pickCulturalName } from '../data/culture-name-pools';
@@ -106,6 +110,39 @@ const ROLE_FACTION_AFFINITY: Partial<Record<NpcRole, string[]>> = {
   wanderer: ['guild'],
   elder: ['political', 'guild'],
 };
+
+/**
+ * Faction-routing weights for `pickFactionForNpc` (THR-816).
+ *
+ * Before THR-816 the pick was `factions.find(n => n.factionType === preferredType)` —
+ * the *first* matching faction in graph insertion order absorbed every NPC of that
+ * affinity. Six definitions declare `factionType: 'guild'` and ten NPC roles prefer
+ * `'guild'`, so wherever guilds shared a location the same one won every time and the
+ * rest were seeded zero members. `builders_fellowship` lost every contest on seed 42
+ * and all ten `bf.*` templates were unreachable as a result. Nothing failed; the loser
+ * was simply never picked — the same positional-exclusion shape as THR-814's cap-stage
+ * defect, and invisible for the same reason: no gate reported the absence.
+ *
+ * The replacement scores every equal-type candidate on merit (role reach fit, read from
+ * data that already exists — `NPC_ROLE_REACH_MAP` × `FactionDefinition.reachWeights`)
+ * and subtracts a load term so a faction that has already absorbed a large share stops
+ * out-competing its emptier peers. No RNG: the pick is a pure function of graph state,
+ * so it stays reproducible under a fixed seed (NFP #3).
+ */
+const FACTION_FIT_PRIMARY_REACH_WEIGHT = 1.0;
+const FACTION_FIT_SECONDARY_REACH_WEIGHT = 0.5;
+
+/**
+ * How strongly an already-populous faction is penalised, in fit-score units.
+ *
+ * Applied against the candidate's share of the members already held across the whole
+ * equal-type bracket, so it is scale-free: it does nothing when membership is even and
+ * grows toward this value as one faction approaches a monopoly. Raise it to spread
+ * membership harder, lower it to let reach fit dominate. Tuned so a strong fit
+ * (~1.2 for a primary-reach match) still wins early, while a faction holding most of
+ * the bracket concedes to a comparable peer (NFP #1).
+ */
+const FACTION_FIT_LOAD_PENALTY = 0.6;
 
 const LEADERSHIP_REPUTATION_BY_ROLE: Partial<Record<NpcRole, number>> = {
   noble: 0.88,
@@ -356,20 +393,89 @@ export function assignFactionsToExistingNpcs(
   }
 }
 
+/**
+ * How well a faction suits a role, from the role's reach affinity.
+ *
+ * Reads `FactionDefinition.reachWeights` — the same per-reach weighting the template
+ * pool already uses — so a mason (stone primary) scores high against the Builders'
+ * Fellowship (`stone: 0.9`) and low against the Arcane Circle (`stone: 0.1`).
+ *
+ * Fail-soft (NFP #4): an unmapped role, a faction node with no `factionDefId`, or a
+ * definition that has since been removed all score 0 rather than throwing. A bracket
+ * where every candidate scores 0 degrades to a pure least-populated pick, which is
+ * still strictly better than the positional first-match it replaced.
+ */
+function factionReachFitScore(
+  factionNode: GraphNode,
+  affinity: RoleReachAffinity | undefined,
+): number {
+  if (!affinity) return 0;
+
+  const factionDefId = factionNode.properties.factionDefId as string | undefined;
+  const weights = factionDefId ? FACTION_DEFINITIONS.get(factionDefId)?.reachWeights : undefined;
+  if (!weights) return 0;
+
+  return (weights[affinity.primary] ?? 0) * FACTION_FIT_PRIMARY_REACH_WEIGHT
+    + (weights[affinity.secondary] ?? 0) * FACTION_FIT_SECONDARY_REACH_WEIGHT;
+}
+
+/**
+ * Choose which of a location's factions an NPC joins.
+ *
+ * Two stages. The **type bracket** is unchanged from before THR-816: the role's
+ * `ROLE_FACTION_AFFINITY` list is walked in order and the first preferred type with any
+ * candidate present wins, so a guard still prefers political/military over a guild.
+ * What changed is stage two — within that bracket the pick is now scored rather than
+ * `[0]`, on reach fit minus a load term (see `FACTION_FIT_LOAD_PENALTY`).
+ *
+ * Deterministic by construction: no RNG, and ties break on faction id so the result is
+ * a pure function of graph state (NFP #3). Callers mutate the graph between calls, so
+ * the load term reflects members added earlier in the same seeding pass — that is what
+ * makes the distribution self-balancing rather than merely fairer at the first pick.
+ */
 function pickFactionForNpc(
   graph: WorldGraph,
   role: NpcRole,
   factionIds: string[],
 ): string | null {
-  const preferredTypes = ROLE_FACTION_AFFINITY[role] ?? [];
   const factions = factionIds
     .map(factionId => graph.getNode(factionId))
     .filter((node): node is NonNullable<typeof node> => node != null);
+  if (factions.length === 0) return null;
 
+  // Stage 1 — type bracket. Preserves the pre-THR-816 preference ordering.
+  const preferredTypes = ROLE_FACTION_AFFINITY[role] ?? [];
+  let bracket: typeof factions | null = null;
   for (const preferredType of preferredTypes) {
-    const match = factions.find(node => node.properties.factionType === preferredType);
-    if (match) return match.id;
+    const matches = factions.filter(node => node.properties.factionType === preferredType);
+    if (matches.length > 0) {
+      bracket = matches;
+      break;
+    }
+  }
+  const candidates = bracket ?? factions;
+  if (candidates.length === 1) return candidates[0].id;
+
+  // Stage 2 — score on merit, penalised by the share of the bracket already held.
+  const affinity = NPC_ROLE_REACH_MAP[role] as RoleReachAffinity | undefined;
+  const memberCounts = candidates.map(
+    node => graph.getIncomingEdges(node.id, 'member_of').length,
+  );
+  const bracketMembers = memberCounts.reduce((sum, n) => sum + n, 0);
+
+  let bestId = candidates[0].id;
+  let bestScore = -Infinity;
+  for (let i = 0; i < candidates.length; i++) {
+    const node = candidates[i];
+    // +1 keeps the divisor non-zero when the whole bracket is still empty.
+    const loadShare = memberCounts[i] / (bracketMembers + 1);
+    const score = factionReachFitScore(node, affinity) - FACTION_FIT_LOAD_PENALTY * loadShare;
+
+    if (score > bestScore || (score === bestScore && node.id < bestId)) {
+      bestScore = score;
+      bestId = node.id;
+    }
   }
 
-  return factions[0]?.id ?? null;
+  return bestId;
 }
