@@ -246,6 +246,12 @@ export function phaseFactionReputationDecay(state: GameState): Partial<GameState
  * @param stepSuccess - Whether the step was successful
  * @param encounterCompleted - Whether this was the final step (full completion)
  * @param tick - Current tick
+ * @param rewardScale - Multiplier on the reputation paid, defaulting to 1 (full rate).
+ *   THR-815 passes {@link FACTION_MEMBER_WORK_REWARD_SCALE} for work resolved off-screen
+ *   at the faction tier, so the unattended path cannot out-earn a watched encounter.
+ *   Kept as one optional parameter rather than a second reward function on purpose:
+ *   rank bonus, alignment multiplier, and the completion bonus must stay on a single
+ *   code path, or a future change to any of them silently applies to only one caller.
  */
 export function processFactionEncounterReputation(
   graph: WorldGraph,
@@ -254,6 +260,7 @@ export function processFactionEncounterReputation(
   stepSuccess: boolean,
   encounterCompleted: boolean,
   tick: number,
+  rewardScale = 1,
 ): void {
   const meta = FACTION_ENCOUNTER_META.get(encounterId);
   if (!meta) return; // Not a faction encounter
@@ -287,7 +294,7 @@ export function processFactionEncounterReputation(
 
   // Apply reputation alignment multiplier — aligned traits boost, misaligned penalize
   const alignmentMultiplier = computeAlignmentMultiplier(graph, agentId, meta.factionDefId);
-  const effectiveMultiplier = rewardMultiplier * alignmentMultiplier;
+  const effectiveMultiplier = rewardMultiplier * alignmentMultiplier * rewardScale;
 
   // Apply per-step reputation gain (multiplied by rank + alignment bonuses)
   applyFactionReputationGain(

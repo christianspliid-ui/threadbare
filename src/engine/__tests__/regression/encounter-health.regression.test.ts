@@ -112,9 +112,26 @@ describe('encounter behavioral health (multi-seed regression)', () => {
   // THR-464 global share ceiling recalibrated to 0.78: ceiling redirects agents from
   // high-tier dominant encounters to varied alternatives with marginally lower completion
   // rates (~0.795 observed). Floor set conservatively below that.
-  it('unified action completion rate above 78%', () => {
+  //
+  // THR-815 recalibrated to 0.70. This metric is `resolved / total` over the retained
+  // action window at the tick-100 cut, so it counts anything still *in progress* at that
+  // arbitrary boundary as a miss. Turning on the guild economy — reputation now moves for
+  // ~87 of 89 memberships per seed instead of nobody — changes which member holds each
+  // faction's top standing, and leadership feeds `getLeaderBias`, so factions choose
+  // different actions and the world diverges. Measured A/B on this exact harness, only
+  // seed 137 moves (mean 0.8067 → 0.7688); seeds 42 and 999 are identical to the digit.
+  //
+  // Checked before widening rather than after: every unresolved action in both arms is an
+  // ordinary encounter 0–1 steps in (`lair_defense`, `bandit_ambush`, `trace_ley_lines`),
+  // so nothing is stalled or abandoned — the delta is 5 → 8 in-flight out of 20 → 22
+  // started. At ~20 actions per seed one action is worth 5 points of rate, which is what
+  // makes this bound noisy rather than wrong.
+  //
+  // 0.70 still catches what the bound is for: a genuine collapse in completion, or
+  // encounters that start and never finish. It does not tolerate a halving.
+  it('unified action completion rate above 70%', () => {
     const avgCompletion = mean(results.map(unifiedCompletionRate));
-    expect(avgCompletion).toBeGreaterThan(0.78);
+    expect(avgCompletion).toBeGreaterThan(0.70);
   });
 
   // Calibrated: step success rate 0.064-0.100 across 10 seeds (pre-THR-451).

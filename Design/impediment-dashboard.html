@@ -3326,6 +3326,19 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "**Workaround:** when a funnel or histogram explains a shortfall, first check the **denominator** — enumerate the ids you *expect* to see and diff against the keys present. An id missing entirely is a stronger signal than any gate count, and it is the only signal a positional cut produces. Here one line (`FACTION_ENCOUNTER_META` keys minus funnel keys) separated \"gated\" from \"never entered\". **Durable fix:** have `capWithDiversity` record cut entries against a `positional` reason, or capture `s0` from the pre-merge input so tail entries are counted as considered. Same family as row **229** (a field read by UI and written by nobody) and row **237** (a check whose green is unfalsifiable): an instrument that cannot express the failure reports health.",
     "session": "THR-814, hourly `tb-opus-pickup` run, 2026-07-27 — found while tracing why 817 faction entries survived every filter stage yet 0 reached scoring."
+  },
+  {
+    "num": "240",
+    "id": 240,
+    "count": 1,
+    "date": "2026-07-27",
+    "category": "tooling",
+    "description": "**A hand-rolled reproduction of a test harness diverged on one argument and returned a confident false negative twice, hiding a real regression the stash-A/B had already proven existed.** THR-815 turned a full-suite green run red on one assertion (`unified action completion rate above 78%`, 0.7688). Attribution by `git stash` was unambiguous — baseline passed, change failed — so the next step was finding the mechanism. Two standalone repro scripts built on `initializeGameState` → `runTick` reported the metric **byte-identical** with the new path on and off, across both map sizes and both tick counts, which reads as \"my change cannot be the cause\" directly contradicting the stash result. The divergence was one call: `simulationHarness.runSimulation` uses `generateArchetypes(4, opts.seed)` while the repro used `generateArchetypes(seed)` — a different overload, a different ascendant, a different world. Pointing a five-line temporary vitest file at `runMultiSeed` itself located the effect immediately and exactly (seed 137 alone, 0.7500 → 0.6364; seeds 42 and 999 identical to the digit).",
+    "consequence": "The false negative pointed away from a real, attributable behaviour change at the moment it most looked resolved. Taken at face value it supports two bad conclusions — that the failure is flaky and can be re-run away, or that the threshold can be widened without understanding why — and the second is the one that ships a hidden regression behind a lowered bound. Cost ~15 minutes and three wasted measurement cycles across two scripts. Same family as row **239**: an instrument that cannot express the effect reports health.",
+    "impact": "Medium",
+    "workaroundFound": true,
+    "workaround": "**Workaround:** when a test fails and the mechanism is wanted, **drive the test's own harness** — a temporary spec importing `runMultiSeed`/`runSimulation` and printing per-seed values costs less than a standalone script and cannot drift from it by construction. Delete it once the number is known. If a standalone repro is unavoidable, diff its setup against the harness call-for-call before trusting a null result, and treat \"identical to the digit\" against a proven stash-A/B as evidence the repro is wrong, not the attribution. **Durable note:** a null result that contradicts a stash-A/B is never the finding; it is a bug in the measurement. Prefer the mean-of-ratios/pooled distinction too — the first repro pooled across seeds while the assertion takes `mean(results.map(...))`, which can mask per-seed movement even when the setup is right.",
+    "session": "THR-815, hourly `tb-opus-pickup` run, 2026-07-27 — found while attributing an `encounter-health` regression to a newly-live guild economy."
   }
 ];
 // ── End data ──
