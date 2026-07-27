@@ -15,7 +15,7 @@ description: >
   prose", "movement content", "content table", "write prose", "foreshadowing
   clause", "motive receipt".
 model: opus
-last_validated_against: 2026-07-21
+last_validated_against: 2026-07-27
 ---
 
 > **Load before authoring:** `Docs/canon/rulebook-quick-reference.md` (always — the synthesis layer for rules of play). Load `Docs/canon/rulebook.md` (full rulebook) when the work touches a specific rule of play and you need depth, status flags, or source citations.
@@ -208,10 +208,25 @@ Current catalog ratio is 10 `continue_weakened` : 74 `fail_action` — Phase 5 w
 **Faction-specific:** 10 files in `src/data/` named `{faction-name}-encounter-content.ts`
 **Type-specific:** `social-`, `faction-`, `army-`, `monster-`, `mercenary-`, `borderland-`, `siege-`, `anomaly-`, `battle-spotlight-encounter-content.ts`
 
+> **Encounters are nudge-native as of 2026-07-27 (THR-772/774).** If you are writing or
+> rewriting a whole encounter — not just touching a prose field on an existing one — the
+> authoring contract is
+> [`.claude/skills/encounter-pipeline/reference/nudge-authoring-spec.md`](../encounter-pipeline/reference/nudge-authoring-spec.md),
+> and the pipeline skills (`encounter-pipeline`, `template-encounter-rewrite`) are the
+> right entrypoints. **This skill covers the prose fields; it does not cover the hand.**
+>
+> The two rules most likely to bite a prose-only pass:
+> 1. **Nudge payoffs live in `bandProse` fragments, never in the step's base text.** The
+>    base band text must read correctly with *any* subset of the hand active — including
+>    none. Editing a `narrativeTemplate` to mention a card breaks that.
+> 2. **No percentages, no digits, on any mortal-facing field.** Odds are words: the five
+>    forecast tier words and `severe / steep / fair / gentle`.
+
 ### Template Structure
 
 Each encounter template has:
 - **Steps** (2-4) with escalating difficulty and narrative
+- **A nudge hand** per nudge-bearing step (4–8 cards; see the spec above)
 - **Location specificity** (location-specific: 3 steps, universal: 2 steps, reach-agnostic: 2 steps)
 - **Difficulty tiers**: early (0.8×), mid (1.0×), late (1.3×)
 - **Tone adjectives** per difficulty tier

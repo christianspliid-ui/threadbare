@@ -56,6 +56,8 @@ Load this file at session start (referenced from CLAUDE.md). Load specific shard
 - **[Group Cohesion](./Agents.md#group-cohesion)** — event-driven 0–1 aggregate on a group node; UI renders bound/holding/frayed/breaking, never the number
 - **[Draw Together](./Agents.md#draw-together)** — Ascendant action; pulls scattered threaded mortals toward an anchor until a company forms
 - **[Bless this Company](./Agents.md#bless-this-company)** — Ascendant action; boosts group cohesion and suppresses disputes for a window
+- **[Broken](./Agents.md#broken)** — behavioural state of a worn-out mortal: out of the story, drifting home, mendable; read via `isBrokenMortal()`
+- **[Dissolution Threshold](./Agents.md#dissolution-threshold)** — the `QuintessenceThresholdState` literal `'broken'` (ratio zero); renamed in prose to avoid colliding with Broken
 
 ### Encounters
 
@@ -72,6 +74,10 @@ Load this file at session start (referenced from CLAUDE.md). Load specific shard
 - **[Chapter](./Encounters.md#chapter)** — the reading unit of a resolved or in-progress encounter; opening, steps, interventions, aftermath
 - **[Chapter Record](./Encounters.md#chapter-record)** — compact post-`enrichProse()` snapshot of a resolved encounter (`ChapterRecord`) appended to `chapterArchive`
 - **[Chapter Ledger](./Encounters.md#chapter-ledger)** — always-readable list (`game.chapter-ledger`) merging active encounters and resolved chapters
+- **[Nudge](./Encounters.md#nudge)** — authored, essence-priced micro-intervention played into an attended step; shifts the odds, never picks the outcome
+- **[Rider](./Encounters.md#rider)** — mechanical remap of an already-resolved band (`no_crit_fail`, `floor_at_cost`); zero PRNG draws, never stacks
+- **[Band Fragment](./Encounters.md#band-fragment)** — prose appended when a nudge was active for that band; **not** a Rider
+- **[Rebuild Road](./Encounters.md#rebuild-road)** — quintessence-rebuilding encounter; the only content a Broken mortal may draw
 
 ### Traits
 
@@ -147,6 +153,6 @@ Load this file at session start (referenced from CLAUDE.md). Load specific shard
 
 ---
 
-*v1.3 — 8 shards, 110 canonical terms (THR-788 added the Traits shard: Trait, Trait Assignment, Trait Category, Destiny, Trait Ref, TraitPredicate, Trait Visibility, Trait Hook, Selection-Competence Separation). Coverage expands via the propose-new-term flow. UL wins on terminology disagreements.*
+*v1.4 — 8 shards, 116 canonical terms (THR-782/774 added the nudge-model vocabulary: Nudge, Rider, Band Fragment, Rebuild Road in Encounters; Broken, Dissolution Threshold in Agents. THR-788 added the Traits shard: Trait, Trait Assignment, Trait Category, Destiny, Trait Ref, TraitPredicate, Trait Visibility, Trait Hook, Selection-Competence Separation). Coverage expands via the propose-new-term flow. UL wins on terminology disagreements.*
 
-*Index coverage: 96 of the 110 shard terms are listed above. 16 pre-existing entries (9 mentorship terms in Agents, 4 scene terms in Encounters, 2 versioning terms in Graph, 1 in Process) are defined in their shards but absent from this index — so a session that loads only this file cannot see they exist. The dashboard is unaffected (it falls back to each term's first body sentence). Backfill tracked as THR-806.*
+*Index coverage: 102 of the 116 shard terms are listed above (all six THR-782 terms are indexed). The unindexed remainder — mentorship terms in Agents, scene terms in Encounters, versioning terms in Graph, one in Process — is defined in the shards but absent here, so a session that loads only this file cannot see those terms exist. The dashboard is unaffected (it falls back to each term's first body sentence). Backfill tracked as THR-806, which should also reconcile the tally: the previous revision of this note claimed both "96 of 110" (14 unindexed) and "16 pre-existing entries", which cannot both be right.*

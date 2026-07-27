@@ -171,3 +171,55 @@ The node an action is performed on or with (`action.targetId`) — distinct from
 **Status:** canonical
 
 The authored, template-side declaration of an encounter's supporting entities: `EncounterSupportBundle` is a list of `EncounterSupportSpec`s (in use since 2026-04-03), each describing a keyed supporting actor or location — how it is delivered (reused from the graph or spawned), its `spawnName` fallback, and its persistence after the encounter. At instantiation the bundle resolves into the action's `supportBindings` — the Cast. The bundle is the recipe; the Cast is the dish.
+
+### Nudge
+
+**Aliases:** StepNudge, nudge card
+**Also see:** `[[Rider]]`, `[[Band Fragment]]`, `[[Encounter]]`, `[[Rebuild Road]]`
+**Status:** canonical
+
+An authored, per-encounter, sphere-flavoured micro-intervention the god plays during an **attended** (`story_beat`) encounter step. Each nudge names a concrete physical cause — a tremor leaving a hand, a lamp catching a second time — is essence-priced, and shifts the fate forecast through a named modifier (`nudge:<id>`). It may also carry a `[[Rider]]`.
+
+**A nudge never picks an outcome; fate rolls.** That is the whole distinction from the rejected authored-futures model, in which the player chose the ending directly. The god acts in the physics of the scene, never in the dramaturgy of the story.
+
+Nudges are content, not configuration: options are authored per encounter, and only the six families in `SHARED_GENERIC_NUDGE_FAMILIES` are reused across them. Schema: `StepNudge` on `ActionStep.nudges` (`src/types/unifiedAction.ts`). A step with no `nudges` resolves exactly as it did before the schema landed — the feature is opt-in.
+
+---
+
+### Rider
+
+**Aliases:** NudgeRider, band rider
+**Also see:** `[[Nudge]]`, `[[Band Fragment]]`
+**Status:** canonical
+
+A **mechanical** remap of an already-resolved `StepOutcome`, carried by a `[[Nudge]]`. Exactly two exist: `no_crit_fail` (`critical_failure` → `failure`) and `floor_at_cost` (`failure` **and** `near_miss` → `success_at_cost`).
+
+Riders take **zero draws** from any PRNG stream — they are pure band-mapping applied after the d100 has landed, so the same seed plus the same nudges yields the same roll and every downstream stream consumer is untouched. A rider that re-rolled was considered and rejected for exactly that reason. At most one rider applies per step; the strongest wins (`NUDGE_RIDER_PRIORITY`) and they never stack.
+
+**Not a `[[Band Fragment]]`.** A rider changes what happened.
+
+---
+
+### Band Fragment
+
+**Aliases:** bandProse entry
+**Also see:** `[[Nudge]]`, `[[Rider]]`
+**Status:** canonical
+
+A line of **prose** appended to a step's outcome text when a given `[[Nudge]]` was active for that band. Authored as `StepNudge.bandProse`, keyed on the six-value `StepOutcome` — *not* the five-band `EncounterOutcomeBand` and *not* `OutcomeBand` from `outcomeConsequences.ts`, either of which would type-check while being the wrong domain.
+
+**Not a `[[Rider]]`.** A fragment says the god was there when it happened. The two words are not interchangeable, and the disambiguation is load-bearing because both are authored on the same object.
+
+Every nudge must carry at least one fragment in a failure band (`near_miss`, `failure`, `critical_failure`): the god's hand has to be traceable in failure at any size. Nudge-specific payoffs belong in fragments and never in the step's base text, which must read correctly with any subset of the hand active.
+
+---
+
+### Rebuild Road
+
+**Aliases:** rebuild encounter
+**Also see:** `[[Broken]]`, `[[Nudge]]`, `[[Encounter]]`
+**Status:** proposed
+
+A quintessence-rebuilding encounter — the road back out of the `[[Broken]]` state. A few per Reach (the tavern drunk, absolution, retiring home, old friends, hard labour), each restoring slowly over repeat visits rather than in one beat.
+
+Rebuild Roads are the **only** content a Broken mortal may draw, via `UnifiedActionTemplate.drawableWhileBroken`. This is why `BROKEN_GATE_ENABLED` ships `false`: a mortal locked out of all candidacy with no road back is stun-locked, not broken. Flipping the gate is a WS5 Done-when, gated on these encounters actually existing.

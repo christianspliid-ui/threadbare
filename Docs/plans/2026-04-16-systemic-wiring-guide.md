@@ -41,7 +41,9 @@ The second version uses enrichment placeholders, conditional blocks, and implies
 
 ---
 
-## Part 2: The Seven Capabilities — What You Can Do
+## Part 2: The Capabilities — What You Can Do
+
+> The list has grown past the original seven; it is numbered, not counted, so a new capability appends rather than renumbering. Capabilities 14 (nudge hand) and 15 (trait hooks) are the newest and are **mandatory** checklist steps for any new encounter, not optional flourishes.
 
 Every encounter has access to seven systemic capabilities. These aren't optional extras — they're the tools that make content alive. When you sit down to write, you should be asking: "which of these seven am I using, and why am I not using the others?"
 
@@ -762,7 +764,7 @@ Reference the slot from any prose field with `{frag:opening}`. That's the whole 
   name: 'Steady Her Hand',           // ≤6 words, plain
   sphere: 'spirit',                  // optional gate; omit = common pool
   requiredUnlock: 'divine.inspire',  // optional god-power gate
-  requiredTrait: 'oathbound',        // optional trait-only card
+  requiredTrait: 'trait.core.core_integrity.virtue', // optional trait-only card; full node id, and it must survive validateTraitRefs() — see Capability 15
   essenceCost: 2,                    // 0 allowed (trait options)
   forecastDelta: 0.10,               // named modifier, source `nudge:steady_her_hand`
   rider: 'no_crit_fail',             // optional band rider
@@ -790,7 +792,49 @@ At most one rider applies per step — the strongest wins (`NUDGE_RIDER_PRIORITY
 
 **Where to find the implementation:** `src/engine/encounters/nudges.ts` (hand partitioning, modifiers, riders, band prose), applied in `unifiedActionResolution.resolveUncontestedStep`. Constants in `src/data/nudge-constants.ts`. Inspect a live hand with `window.__DEBUG.getEncounterNudges(agentRef)`.
 
+**Authoring quality rules (THR-774 / WS1) — the schema lets you write a bad hand; these do not.** Full contract in [`.claude/skills/encounter-pipeline/reference/nudge-authoring-spec.md`](../../.claude/skills/encounter-pipeline/reference/nudge-authoring-spec.md); guardrail numbers in `src/data/content-eval/nudgeAuthoringConstants.ts`; worked example in `src/data/__fixtures__/nudge-exemplar/darkhollow-vault-exemplar.ts`.
+
+| Rule | Value | Why |
+|---|---|---|
+| Hand size | 4–8 cards per nudge-bearing step | Below the floor there is no decision; above it the player reads a catalogue. **Authoring** guardrail, warn-level — the renderer stays uncapped, so this is not the rejected capped-action-slots model. |
+| Sphere coverage | ≥4 distinct spheres | The hand is the replayability engine — different gods see different subsets — and that only holds if the spread is wide enough to differ on. |
+| Common options | ≥1 sphere-less card | A god with no matching sphere is never handed an empty step. |
+| Failure payoff | **every** nudge carries ≥1 fragment in `near_miss` / `failure` / `critical_failure` | The god's hand must be traceable in failure at any size. A card that vanishes on a loss makes failure read as punishment. |
+| Big delta | `forecastDelta ≥ 0.15` ⇒ **both** `failure` and `critical_failure` | A nudge that moved the odds that far and still lost owes a distinct reading of *how* it lost at each depth. |
+| Band coverage | the hand's fragments cover all six `StepOutcome`s between them | `near_miss` has no afterimage field on `ActionStep`; fragments are the only place it gets paid off. |
+| Base-text independence | nudge-specific payoffs live in `bandProse`, never in `narrativeTemplate` | The base text must read correctly with **any** subset of the hand active, including none. |
+| `effectLine` | words, zero digits or `%` | Ruling 1: odds are legible in words only. |
+| Riders | rare; justify each in a code comment | A rider on every card turns the outcome ladder into a floor. |
+| Trait options | `essenceCost: 0` | The price was paid by being that person. |
+
+**Reuse is the exception, not the default.** Options are per-encounter authored content. The only cross-encounter families are the six in `SHARED_GENERIC_NUDGE_FAMILIES` — focus, luck, blessing, oath, light, strength — and extending that list is a code change with a reviewer, not a judgement an authoring session makes alone. A candidate generic must read correctly in ≥3 *unrelated* encounters.
+
 **Related — the `quintessence_restore` effect primitive.** `divine.rekindle_thread` raises a broken mortal back to `REKINDLE_RESTORE_TO_RATIO`, clears their broken stamp, and appends a `recent_event` receipt naming the god who mended them. Because it needs full `GameState` for that receipt, it routes through the resolution-intercept path in `unifiedActionResolution` (like `plant_trap` / `reveal_secret`), **not** the graph executor. Implementation: `src/engine/rekindleThread.ts`.
+
+---
+
+### Capability 15: Trait Hooks — Content That Knows Who Walked In (THR-774)
+
+**What it is:** four distinct ways an encounter can react to a trait the acting mortal holds. They are separate mechanisms with separate reach, and the authoring checklist makes answering all four **mandatory** — "no hook" is a valid answer, but it has to be a written one.
+
+**Why you care:** traits are the game's universal trigger layer, and an encounter that ignores them plays identically for a saint and a butcher. The hook is what makes the same template a different scene depending on who arrives.
+
+| Hook | Field | What it does |
+|---|---|---|
+| **Gate** | `requiredTraits` / `blockedByTraits` on the template | Decides whether the encounter is drawable at all. `requiredTraits` takes `TraitPredicate` (`{ traitId, minLevel? }`); `blockedByTraits` takes bare refs (holding it at *any* level blocks). |
+| **Variant** | `traitVariants[]` on the template | Fires when the mortal holds the trait: contributes a named forecast modifier (`trait:<id>`), shifts the step's difficulty, and surfaces a player-facing factor line. |
+| **Trait-only nudge** | `StepNudge.requiredTrait` + `TraitVariant.addNudgeIds` | A card only that mortal can play. **Hidden**, never dimmed, for anyone who cannot hold the trait — a card you can never unlock is noise, not a goal. Cost 0. |
+| **Trait fragment** | `bandProse` on a trait-only card | Prose that only ever reads for the trait-holder. |
+
+**The rule that catches people: hooks may only name traits that `validateTraitRefs()` does not report as dead.** A ref matches ANY-of across node id / short id / display name / tag (THR-786), so the **full node id is the form least likely to rot** — `trait.core.core_integrity.virtue`, not `oathbound`. THR-800 tracks the 62 authored refs that currently fail the sweep; the allowed set is everything that passes, and it grows as those repairs land.
+
+A hook on a dead ref is a gate that never opens. It is invisible to every test that does not enumerate the granted-vs-required *values*, which is exactly how 62 of them accumulated — so check the ref, do not trust that it compiles.
+
+**Canon rule 1 — a trait-derived factor line names its trait.** `TraitVariant.factorLine` is player-facing, and a factor the player cannot trace back to a cause is noise: *"Being True, they read the lock rather than force it."*
+
+**Fail-soft:** a variant naming a trait the agent does not hold is simply absent (no warn — not holding a trait is the ordinary case). An `addNudgeIds` entry naming no existing card is inert with one warning per template.
+
+**Where to find the implementation:** `resolveTraitVariants` / `collectHeldTraitIds` / `buildNudgeHand` in `src/engine/encounters/nudges.ts`; the gate in `filterByPrerequisites` (stage 3 of the encounter filter pipeline); the shared resolver in `src/engine/traitRefValidation.ts`. UL: `Docs/ubiquitous-language/Traits.md`.
 
 ---
 

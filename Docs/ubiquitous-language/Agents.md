@@ -303,3 +303,35 @@ The Ascendant action (`company.bless`, Heart reach, 4 essence) that spends essen
 While the window is open, `isGroupBlessed` suppresses negative dissent, fray-driven dissolution, and movement dissent — the small resentments that pull a band apart lose their teeth. It targets a group actor; because armies share `actorType: 'group'`, the graph-op gates on `isCompanyNode` and fails soft on an army.
 
 Code anchors: `src/data/unified-action-templates.ts` (`company.bless`), `src/engine/graphOpExecutor.ts` (`bless_company` op), `src/data/group-constants.ts`.
+
+---
+
+### Broken
+
+**Aliases:** Broken mortal state, broken agent
+**Also see:** `[[Rebuild Road]]`, `[[Dissolution Threshold]]`, `[[Agent]]`
+**Status:** canonical
+
+The behavioural state of a mortal whose quintessence has fallen into `BROKEN_ENTER_STATE` (`'critical'`). A Broken mortal is **out of the story**: they decline encounter candidacy except for `[[Rebuild Road]]`s, and they drift homeward toward tended ground.
+
+Not dead and not wounded — worn out of the narrative for a while. The state is **mendable and common by design**; death stays rare and stays owned by the existing zero-state paths. Erosion alone can never reach zero (`QUINTESSENCE_RATIO_FLOOR`).
+
+Release has **hysteresis**: a Broken mortal must climb past `BROKEN_EXIT_STATE` (`'strained'`), which is deliberately above the entry threshold, so an agent cannot flicker in and out tick by tick.
+
+**Read it through `isBrokenMortal()`, never by comparing against the threshold enum literal.** The literal `'broken'` is a different concept — see `[[Dissolution Threshold]]`.
+
+The *consequences* ship behind `BROKEN_GATE_ENABLED = false`. Erosion scaling, the `brokenSince` bookkeeping, and every trace stay live regardless, so telemetry accrues before the gate opens. Code: `src/engine/brokenState.ts`, `src/data/nudge-constants.ts`.
+
+---
+
+### Dissolution Threshold
+
+**Aliases:** the `'broken'` QuintessenceThresholdState literal
+**Also see:** `[[Broken]]`
+**Status:** canonical
+
+The existing `QuintessenceThresholdState` literal `'broken'` — quintessence ratio zero, the zero-state.
+
+**This is a naming-collision fix, not a new mechanic.** The code literal predates the `[[Broken]]` mortal state and is untouched; the UL says "Dissolution threshold" in prose so the two never get conflated. They are genuinely different: the Dissolution Threshold is a *ratio band* at zero, while `[[Broken]]` is a *behavioural state* entered at `'critical'` and released at `'strained'`. An agent can be Broken without being anywhere near dissolution.
+
+When you read `'broken'` in a `QuintessenceThresholdState` comparison, that is this term. When you read "broken mortal", that is the other one.

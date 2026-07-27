@@ -2,12 +2,14 @@
 name: encounter-pipeline
 description: Automated encounter pipeline v2. Runs draft → editorial+revision → systems+merge → implementation for complete encounter delivery. Triggers on "encounter pipeline", "draft encounter", "run encounter pipeline", "author encounter", or "/encounter-pipeline".
 model: opus
-last_validated_against: 2026-07-05
+last_validated_against: 2026-07-27
 ---
 
 > **Load before authoring:** `Docs/canon/rulebook-quick-reference.md` (always — the synthesis layer for rules of play). Load `Docs/canon/rulebook.md` (full rulebook) when the work touches a specific rule of play and you need depth, status flags, or source citations.
+>
+> **Load before drafting a single card:** [`reference/nudge-authoring-spec.md`](reference/nudge-authoring-spec.md) — the canonical 8-step authoring contract, the prose rubric, the verbatim detector spec, and the shared generic pool. It is shared verbatim with `template-encounter-rewrite`; where this skill and that spec appear to disagree, **the spec wins**.
 
-# Encounter Pipeline v2
+# Encounter Pipeline v2 — nudge-native
 
 Automated 4-pass encounter pipeline: premise → deployed code. Each agent pass produces its own outputs — no manual orchestrator assembly between passes.
 
@@ -15,9 +17,26 @@ Automated 4-pass encounter pipeline: premise → deployed code. Each agent pass 
 Premise → Draft (Opus) → Editorial+Revised (Opus) → Systems+Final (Sonnet) → Implementation (Sonnet)
 ```
 
+## The model this pipeline authors for (THR-772/774)
+
+> **The god acts in the physics of the scene, never in the dramaturgy of the story.**
+
+Encounters authored here ship **nudge-native**. The player is handed a hand of authored,
+essence-priced **nudges** that shift the named odds; **fate rolls the outcome** on the
+five-band ladder; prose pays the nudge off at *every* band, misfires included.
+
+Choosing between authored futures for a mortal ("Forge the truth" / "Temper the
+narrative") is the **rejected** model this replaced. A draft whose player-facing decision
+is *what the mortal does* is not a revision note — it is the wrong encounter, and Pass 2
+must reject it outright.
+
+`authoredChoices` still renders for un-migrated templates (the stage branches on data
+presence, so the rollout is per-template and reversible), but **new encounters do not
+author it.** Conversion of the existing 28 is WS5.
+
 ## Scope
 
-This pipeline produces **branching encounters** in `UnifiedActionTemplate` format — encounters with authored player-choice branches (`ActionStepBranch`) and full aftermath reaction suites. These go into `src/data/encounters/`.
+This pipeline produces **branching encounters** in `UnifiedActionTemplate` format — encounters with structural branches (`ActionStepBranch`) and full aftermath reaction suites. These go into `src/data/encounters/`. Their player-facing interaction is the nudge hand, not a choice menu.
 
 For **linear template encounters** (guild, social, tavern, combat, borderland — single-step or multi-step without player-choice branches), use the `template-encounter-rewrite` skill instead. The migration to `UnifiedActionTemplate` is complete as of THR-108; `EncounterTemplate` no longer exists. Both encounter types now use the same unified format.
 
@@ -45,22 +64,25 @@ If `Docs/canon/encounters.md` is missing or inaccessible, fall back to the pre-r
 
 **Inject the design direction principles into the draft agent's context.** The principles are compiled into `Docs/authoring-brief.md` (Section C). Prefer the brief; fall back to `Docs/plans/2026-04-16-game-design-direction.md` when the brief is absent.
 
-**Player-as-god framing constraint.** The player is a god who observes through threads and intervenes indirectly. They NEVER make choices for the character. When writing encounter choices, intervention options, or any player-facing decision point: the choices must be what the *god* does (whisper, send vision, steady, strengthen, withdraw), never what the *mortal* does (say this, go there, fight). The mortal acts according to their personality and the god's influence. "Let them handle it" must always be a valid option.
+**Player-as-god framing constraint.** The player is a god who observes through threads and intervenes indirectly. They NEVER make choices for the character. Every player-facing option is a **nudge** — a concrete, sphere-flavoured change to the physics of the scene (a stumble at the right moment, a spark of light in a dark room, a surge of strength on a climb), never an instruction to the mortal (say this, go there, fight) and never a choice between authored endings. The mortal acts according to their personality and the god's influence. Playing nothing must always be viable: a hand is an offer, not a toll gate.
 
-**The editorial agent must check against these principles.** If a draft has structurally correct encounters but emotionally inert prose — if failure is just "you failed" with a number change, if choices have obvious right answers, if the player wouldn't care about the outcome — the editorial agent should REVISE, not PASS. **Additionally, any encounter where the player "chooses how the character responds" must be rejected and reframed as divine intervention.**
+**The editorial agent must check against these principles.** If a draft has structurally correct encounters but emotionally inert prose — if failure is just "you failed" with a number change, if the hand has an obvious dominant card, if the player wouldn't care about the outcome — the editorial agent should REVISE, not PASS. **Additionally, any encounter where the player "chooses how the character responds" must be rejected and reframed as a nudge hand.**
 
-**Register enforcement (plainspoken Malazan, THR-609).** The editorial agent must also check register. **Baseline is the default:** step narration, choice `intent` bodies, and aftermath overviews are plain, concrete, one idea per sentence, dry wit over ornament — no archaic diction, no stacked metaphor, no word that sends a reader to a dictionary. **Choice labels and card names are interactive text — always plain** (no metaphor, no ambiguity about what the click does). The **only** place sustained lyricism is earned is a declared **peak** surface: the final (climax) step of a branching encounter and major aftermath beats — and even there, one figurative image per paragraph. A draft that reaches for lyricism in ordinary narration should REVISE. Declare non-default fields with the additive `register?: 'baseline' | 'character' | 'peak'` field (absent → baseline). Canon: [`Docs/canon/prose.md` § the register model](../../../Docs/canon/prose.md); deterministic floor: `registerCompliance` in `window.__DEBUG.proseQualityReport()`.
+**Register enforcement (plainspoken Malazan, THR-609).** The editorial agent must also check register, per the spec's *Register assignment per authored field* table. **Baseline is the default:** step narration, `fiction` bodies, band base text, and aftermath overviews are plain, concrete, one idea per sentence, dry wit over ornament — no archaic diction, no stacked metaphor, no word that sends a reader to a dictionary. **Card names, `effectLine`s, factor lines and purpose lines are interactive text — always plain** (no metaphor, no ambiguity about what the click does). The **only** place sustained lyricism is earned is a declared **peak** surface: the final step's band prose, the fate-reveal line, and major aftermath beats — and even there, one figurative image per paragraph. A draft that reaches for lyricism in ordinary narration should REVISE. Declare non-default fields with the additive `register?: 'baseline' | 'character' | 'peak'` field (absent → baseline). Canon: [`Docs/canon/prose.md` § the register model](../../../Docs/canon/prose.md); deterministic floor: `registerCompliance` in `window.__DEBUG.proseQualityReport()`.
 
 ## Quality Exemplar
 
-Every encounter must meet the quality standard demonstrated by "Gate Duty" (Clearance Gate):
+**The golden exemplar is `src/data/__fixtures__/nudge-exemplar/darkhollow-vault-exemplar.ts`** — the Darkhollow Vault, authored end-to-end against the 8-step checklist, with every rule visible once. Read it before drafting. It is registered in no pool; it exists to be copied. `nudgeModel.test.ts` § *WS1 golden exemplar* asserts the checklist against it, so the exemplar and the spec cannot drift apart silently.
+
+Every encounter must meet its bar:
 
 - Opening with concept art + literary scene prose — a moment already in motion
 - Threads discovered inside the prose, not in a separate menu
-- Graduated approach cards with prose bodies at EVERY player-facing step
-- Scene-specific choice labels ("Steady the Courier" not "Help them")
+- A **4–8 card hand on every nudge-bearing step**, spanning ≥4 spheres, with ≥1 common option
+- Scene-specific card names ("Steady the hands", not "Help them")
+- **Every card pays off in failure** — at least one failure-band fragment per nudge, both failure bands for a big-delta card
 - Aftermath with reflective prose, actor-centered consequences, and reaction choices (medium+)
-- **Cool failure at every branch** — the failure path must be as narratively interesting as the success path. If the failure outcome reads like punishment, it's not done.
+- **Cool failure at every band** — the failure path must be as narratively interesting as the success path. If the failure outcome reads like punishment, it's not done.
 - **Human conditions, not mechanical labels** — aftermath prose describes what the protagonist *feels* and *becomes*, not what numbers changed
 
 If a draft reads like a functional template with structural bones but no experiential depth, the editorial agent will reject it.
@@ -103,9 +125,11 @@ Before dispatching any agent, the orchestrator reads `Docs/canon/encounters.md` 
 
 Then the orchestrator reads the files the Canon page links to and injects them as context into agent prompts:
 
-0. `Docs/authoring-brief.md` — compiled capability + principle preamble (preferred). If missing or stale, fall back: read `Docs/plans/2026-04-16-systemic-wiring-guide.md` and `Docs/plans/2026-04-16-game-design-direction.md` instead.
-1. `Docs/encounter-building-checklist.md`
-2. `Docs/encounter-branching-templates.md`
+0. [`reference/nudge-authoring-spec.md`](reference/nudge-authoring-spec.md) — **mandatory**, the authoring contract every card is written against.
+0b. `src/data/__fixtures__/nudge-exemplar/darkhollow-vault-exemplar.ts` — the worked example. Read it, do not re-derive it.
+1. `Docs/authoring-brief.md` — compiled capability + principle preamble (preferred). If missing or stale, fall back: read `Docs/plans/2026-04-16-systemic-wiring-guide.md` and `Docs/plans/2026-04-16-game-design-direction.md` instead.
+2. `Docs/encounter-building-checklist.md` — structural packet template. **Its per-step "approach card" sections describe the pre-nudge model**; where it conflicts with the spec above, the spec wins.
+3. `Docs/encounter-branching-templates.md`
 3. Obsidian vault pages via MCP:
    - `TheFantasyWorldSimulator/Systems/Thematic Pillars.md`
    - `TheFantasyWorldSimulator/Systems/Anti-Patterns.md`
@@ -149,7 +173,11 @@ Dispatch sub-agent with `agents/implementation-prompt.md`, model `sonnet`.
 Agent creates: `src/data/encounters/<slug>.ts`, `src/data/encounters/__tests__/<slug>.test.ts`
 Agent modifies: `src/data/unified-action-templates.ts`
 Agent generates: concept art (if design doc has art direction)
-Agent runs: `npx tsc --noEmit`, `npm test`, `npx vite build`
+Agent runs: `npm test`, `npm run check:typecheck`, `npx vite build`
+
+> **Never `npx tsc --noEmit`** — the root `tsconfig.json` sets `files: []`, so it exits 0
+> unconditionally no matter how broken the code is, and citing that exit 0 as evidence is
+> gate theater (THR-686). `npm run check:typecheck` is the identical ratchet CI runs.
 
 **On completion:** commit and push. Report to user.
 
@@ -166,14 +194,23 @@ Tell the user: encounter deployed. Provide the spawn command: `spawn encounter @
 **Model:** `opus` — prose quality is the primary output
 **Writes:** `<slug>-draft.md`
 
-The draft agent produces a complete encounter packet with:
-- All structural sections (inspiration anchors, pressure knot, cast, beat structure, branching profile, outcome ladder, support bundle, self-audit)
-- Sample opening paragraph (continuous prose, fiction-grade)
-- One branch-dependent later paragraph per branch
-- Aftermath paragraph
-- **Approach cards for EVERY player-facing step** — not just the branch-selection step
-- Concept art direction
-- Experience Differentiator Gate (14 YES/NO)
+The draft agent produces a complete encounter packet by walking the **8-step checklist**
+in [`reference/nudge-authoring-spec.md`](reference/nudge-authoring-spec.md) in order:
+
+1. **Vignette** — scene prose; motive hooks, quintessence stakes, and scene tag declared
+2. **Test panel data** — per step: reach(es) + ≤4-word purpose line, difficulty, 2–4 factor lines each naming its source
+3. **The hand** — 4–8 `StepNudge`s per nudge-bearing step, ≥4 spheres, ≥1 common option, trait-only cards at cost 0
+4. **Band prose** — all six `StepOutcome`s covered; every nudge ≥1 failure-band fragment; big-delta cards cover both failure bands
+5. **Trait hooks** — all four questions answered explicitly (gate / variant / trait-only nudge / trait fragment); live refs only
+6. **Aftermath** — prizes, tolls, seeds as object references; tolls in words
+7. **Images** — `imageTag` per nudge + scene tag; genericity test documented
+8. **Evidence** — register scorer + detectors clean
+
+Plus: all structural sections (inspiration anchors, pressure knot, cast, beat structure,
+branching profile, outcome ladder, support bundle, self-audit), a sample opening
+paragraph (continuous prose, fiction-grade), one branch-dependent later paragraph per
+branch, an aftermath paragraph, concept art direction, and the Experience Differentiator
+Gate (14 YES/NO).
 
 ### Pass 2: Editorial + Revision
 
@@ -194,7 +231,15 @@ The editorial agent:
 4. Missing aftermath reaction choices (medium+)
 5. Reporter prose
 6. No concept art recommendation
-7. Missing per-step approach cards
+7. **A hand outside 4–8 cards on a nudge-bearing step**
+8. **Fewer than 4 distinct spheres, or no common (sphere-less) option, in a hand**
+9. **Any nudge with no failure-band fragment** — or a big-delta nudge (`forecastDelta ≥ 0.15`) missing either failure band
+10. **A `StepOutcome` band no fragment in the hand covers**
+11. **A number or `%` in an `effectLine`** — words only
+12. **Trait-hook step skipped**, or a hook naming a ref `validateTraitRefs()` reports dead
+13. **A nudge-specific payoff written into the base band text** — it must read correctly with any subset of the hand active
+14. **A player-facing option that instructs the mortal** rather than changing the physics of the scene — the rejected authored-futures model
+15. **Any detector hit**: a vagueness-lexicon word, or more than one annotation clause across the encounter
 
 ### Pass 3: Systems Audit + Final Merge
 

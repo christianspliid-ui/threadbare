@@ -9,14 +9,50 @@ description: >
   quality", "social encounter rewrite", "tavern encounter rewrite", "template
   encounter", "encounter quality pass", "prose quality pass", "write encounter".
 model: opus
-last_validated_against: 2026-07-05
+last_validated_against: 2026-07-27
 ---
 
 > **Load before authoring:** `Docs/canon/rulebook-quick-reference.md` (always — the synthesis layer for rules of play). Load `Docs/canon/rulebook.md` (full rulebook) when the work touches a specific rule of play and you need depth, status flags, or source citations.
+>
+> **Load before drafting a single card:** [`../encounter-pipeline/reference/nudge-authoring-spec.md`](../encounter-pipeline/reference/nudge-authoring-spec.md) — the canonical 8-step authoring contract, the register table, the prose rubric, the verbatim detector spec, and the shared generic pool. It is shared verbatim with `encounter-pipeline`; where this skill and that spec appear to disagree, **the spec wins**.
 
-# Template Encounter Write/Rewrite — Prose + Systemic Wiring
+# Template Encounter Write/Rewrite — nudge-native prose + systemic wiring
 
-This skill is for writing or improving **linear template encounters** in `UnifiedActionTemplate` format — guild, social, tavern, combat, borderland, and other repeating encounter types. These are single-step or multi-step linear encounters (no player-choice branches). For fully branching encounters with authored approach cards and player choices, use the `encounter-pipeline` skill.
+This skill is for writing or improving **linear template encounters** in `UnifiedActionTemplate` format — guild, social, tavern, combat, borderland, and other repeating encounter types. These are single-step or multi-step linear encounters (no structural branches). For fully branching encounters, use the `encounter-pipeline` skill.
+
+## Templates ship nudge-native (THR-772/774)
+
+> **The god acts in the physics of the scene, never in the dramaturgy of the story.**
+
+A linear template is no longer prose plus an aftermath. Every step that deserves the
+player's hand gets a **hand**: 4–8 authored, essence-priced `StepNudge`s that shift the
+named odds, with **fate rolling the outcome** on the five-band ladder and prose paying the
+nudge off at *every* band, misfires included.
+
+This is the biggest change to this skill since the `EncounterTemplate` migration, and it
+lands on the fields you already author:
+
+| You already write | You now also write |
+|---|---|
+| `narrativeTemplate` per step | The step's **base band text** — what happens when the god did nothing |
+| `successAfterimage` / `failureAfterimage` / band afterimages | Unchanged (five fields; `near_miss` has none — it is paid off through fragments) |
+| — | `steps[].nudges` — the 4–8 card hand |
+| — | `traitVariants` — the trait hook |
+
+**The two rules that catch most first attempts:**
+
+1. **Nudge payoffs go in `bandProse` fragments, never in the base text.** The base band
+   text must read correctly with *any* subset of the hand active — including none.
+2. **Every nudge carries at least one failure-band fragment.** A card that vanishes on a
+   loss is the god's hand vanishing. Failure is plot, not punishment.
+
+**Not every step needs a hand.** The feature is opt-in and a step without `nudges`
+resolves exactly as it did before — that is a supported choice. A *half*-authored hand is
+not: four cards with two fragments between them reads as a bug, not a decision.
+
+Where the older sections below still say "approach cards" or frame the player-facing
+surface as a choice between authored responses, they describe the **pre-nudge model**.
+The spec wins.
 
 All encounters now use `UnifiedActionTemplate`. `EncounterTemplate` was removed in THR-108. If you see a file still exporting `EncounterTemplate[]`, stop — that's a type error that must be fixed before authoring prose.
 
@@ -34,6 +70,8 @@ If the Canon page disagrees with this skill, the Canon page wins until this skil
 
 Read these in order. Skipping any of them produces content that fails the quality bar:
 
+0. **[`../encounter-pipeline/reference/nudge-authoring-spec.md`](../encounter-pipeline/reference/nudge-authoring-spec.md)** — the authoring contract. Mandatory, and mandatory *first* once the Canon page has pointed you here.
+0b. **`src/data/__fixtures__/nudge-exemplar/darkhollow-vault-exemplar.ts`** — the golden exemplar. Every rule in the spec is visible in it once; copy the shape.
 1. **`Docs/canon/encounters.md`** — Canon Step-0 entrypoint for encounter authoring. Read this first.
 2. **`Docs/plans/2026-04-16-systemic-wiring-guide.md`** — The engine capabilities that should shape your creative decisions. If you don't know what encounter seeds, hidden marks, and conditional blocks can do, you'll write hardcoded fiction.
 3. **`Docs/plans/2026-04-16-design-quality-gate.md`** — Section 9 benchmark moments. Your output must meet this standard.
@@ -133,7 +171,12 @@ All linear template encounters use this shape. You are responsible for authoring
 | `narrativeTemplates.failure` | One sentence — shown when the whole encounter fails |
 | `aftermathConfig.fallback.overview` | 1-2 sentences framing what the aftermath is about |
 | `aftermathConfig.fallback.reactions[].intent` | 2-3 sentences of narrative intent for the reaction |
+| `successAtCostAfterimage`, `criticalSuccessAfterimage`, `criticalFailureAfterimage` | Band-specific overrides. Author all three — absent, they fall back with a `[band]` debug prefix |
+| `steps[].nudges` | **Author the hand** — 4–8 `StepNudge`s: `name`, `sphere?`, `essenceCost`, `forecastDelta`, `fiction`, `effectLine`, `bandProse`, `imageTag`, `rider?` |
+| `traitVariants` | **Author the trait hook** — `traitId` (a live ref), `forecastDelta?`, `difficultyDelta?`, `factorLine`, `addNudgeIds?` |
 | `id`, `rarityTier`, `reach`, `difficulty`, `failBehavior`, `onSuccess`, `onFailure`, `successMetadata`, `failureMetadata` | Preserve — do not change the structural skeleton |
+
+**No near-miss afterimage exists.** `ActionStep` carries five band afterimage fields, not six. `near_miss` is paid off through `bandProse` fragments — which is one of the reasons every hand must cover all six bands between its cards.
 
 ---
 
@@ -246,7 +289,22 @@ Each guild has a distinct voice AND a natural affinity for certain systemic capa
 
 ## Editorial Checklist (Run After Writing)
 
-Before submitting rewritten prose, check every field against these seven questions. If any answer is NO, revise.
+Before submitting rewritten prose, check every field against these questions. If any answer is NO, revise.
+
+**Nudge gates (0a–0h) — run these first. They are structural; the prose questions below assume they pass.**
+
+- **0a.** Does every nudge-bearing step carry **4–8** cards?
+- **0b.** Does every hand span **≥4 distinct spheres** and offer **≥1 common (sphere-less) option**?
+- **0c.** Does **every** nudge carry at least one failure-band fragment (`near_miss`, `failure`, or `critical_failure`)?
+- **0d.** Does every nudge with `forecastDelta ≥ 0.15` cover **both** `failure` and `critical_failure`?
+- **0e.** Do the hand's fragments cover **all six** `StepOutcome` bands between them?
+- **0f.** Does the base band text read correctly with **no** nudges active — i.e. is every nudge-specific payoff in a fragment rather than the base?
+- **0g.** Is the **trait-hook step** answered explicitly (gate / variant / trait-only nudge / trait fragment — "none" is a valid written answer), and does every ref survive `validateTraitRefs()`?
+- **0h.** Are all `effectLine`s **words with no digits or `%`**, and is at most one card in the encounter carrying a rider (with its justification in a code comment)?
+
+**Detectors.** Zero vagueness-lexicon hits (`something / anything / nothing / thing / things / way / ways / somehow / whatever / somewhere` — watch the compounds: *all the way*, *either way*, *costs you nothing*). At most one annotation clause across the whole encounter. Verbatim spec in the shared authoring spec.
+
+**Prose questions:**
 
 1. **Does every `narrativeTemplate` field use `{name}` and `{they}/{them}/{their}`?** Static names break immersion when a different agent runs the encounter.
 
@@ -426,8 +484,9 @@ For each encounter file you write or rewrite:
 2. **Read the systemic wiring guide** — know what the capabilities can do
 3. **Identify the guild voice** — use the voice guide above
 4. **For each template, write the scene first** — before touching the TypeScript, write the moment as prose. What is the agent doing? What goes wrong (or right)? What does the player read? Then fit the prose into the template fields.
+4b. **Author the hand** — walk steps 3–5 of the [shared authoring spec](../encounter-pipeline/reference/nudge-authoring-spec.md): the 4–8 cards, the band fragments, the trait hook. Copy the shape from `src/data/__fixtures__/nudge-exemplar/darkhollow-vault-exemplar.ts` rather than re-deriving it.
 5. **Wire the dynamics** — add enrichment placeholders, conditional blocks, and ensure success/failure produce structurally different persistence
-6. **Run the editorial checklist** — all 7 questions must pass
+6. **Run the editorial checklist** — the nudge gates (0a–0h) and all prose questions must pass
 7. **Preserve the TypeScript skeleton** — same IDs, same reaches, same difficulties, same reward pools unless clearly wrong. You're upgrading prose and adding wiring, not restructuring encounters.
 8. **Author `aftermathConfig`** — even simple encounters deserve 1-2 reaction choices. The aftermath is where the player-god touches the world.
 
