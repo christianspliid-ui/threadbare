@@ -287,19 +287,26 @@ export function buildNudgePhaseModel(
 
   // ── Test panel ──────────────────────────────────────────────────
   // Authored factor lines first (the encounter's own account of the odds),
-  // then the live trait-derived lines, which are the only ones whose sign is
-  // knowable. Reuses the same authored pool `phaseAscendantHandFilter` reads,
-  // sliced by the same `computeForecast` factor-count rule, so the stage and
-  // the notification never quote different numbers of factors.
+  // then the live trait-derived lines.
   //
-  // TODO(THR-820): `forecast_factors` is the fallback, not the intended source.
-  // The WS1 checklist asks authors for 2–4 factor lines that each *name their
-  // source*, which `forecast_factors` (a bare string tuple) cannot express — so
-  // authored lines land here as `neutral` polarity.
+  // THR-820 gave the step a `factorLines` field, so a nudge-native encounter
+  // declares its own polarity and the panel colours authored lines the way it
+  // colours a trait line. A step without it falls back to the contract's
+  // `beat.forecast_factors` — the same authored pool `phaseAscendantHandFilter`
+  // reads, sliced by the same `computeForecast` count rule, so the stage and
+  // the notification never quote different numbers of factors. That pool is a
+  // bare string tuple with no sign, hence `neutral`: claiming a polarity there
+  // would invent information the encounter never stated.
   const factors: EncounterStageFactorLineModel[] = [];
-  for (const [index, text] of authoredFactorLines(template, activeAction.currentStep,
-    baseSummary.successProbability).entries()) {
-    factors.push({ id: `authored:${index}`, text, polarity: 'neutral' });
+  if (step.factorLines && step.factorLines.length > 0) {
+    for (const [index, line] of step.factorLines.entries()) {
+      factors.push({ id: `authored:${index}`, text: line.text, polarity: line.polarity });
+    }
+  } else {
+    for (const [index, text] of authoredFactorLines(template, activeAction.currentStep,
+      baseSummary.successProbability).entries()) {
+      factors.push({ id: `authored:${index}`, text, polarity: 'neutral' });
+    }
   }
   for (const variant of variants) {
     // A trait factor names its trait (canon rule 1). Polarity reads off the
@@ -348,6 +355,7 @@ export function buildNudgePhaseModel(
       reach: step.reach,
       reachLabel: step.reach.charAt(0).toUpperCase() + step.reach.slice(1),
       reachIconUrl: `/assets/reaches/${step.reach}-${reachTier + REACH_ICON_TIER_OFFSET}.png`,
+      purposeLine: step.purposeLine,
       difficultyWord: difficultyWord(effectiveDifficulty),
       difficultyValue: effectiveDifficulty,
       factors,

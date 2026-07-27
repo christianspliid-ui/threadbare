@@ -272,14 +272,23 @@ const STEP_1_HAND: readonly StepNudge[] = [
  * Step 0 — Eye. Purpose line: "Read the lock". Difficulty 0.45 → `steep`.
  *
  * Test-panel factor lines (checklist step 2 — two to four, each concrete, each
- * naming its source). They have no schema field of their own; the panel reads
- * authored lines alongside `outcomeForecast.factors`, so they are recorded on
- * the exemplar as `EXEMPLAR_FACTOR_LINES` below.
+ * naming its source *in the sentence*). THR-820 gave them a schema field, so
+ * they sit on the step where the panel reads them; before that they lived as
+ * fixture-local constants no render path could reach.
  */
 const step0ReadTheLock: ActionStep = {
   reach: 'eye',
   duration: { min: 1, max: 2 },
   difficulty: 0.45,
+  purposeLine: 'Read the lock',
+  factorLines: [
+    { text: 'The mason cut his mark beside the third pin.', polarity: 'for' },
+    { text: 'Two centuries of rust have swollen every pin.', polarity: 'against' },
+    {
+      text: "Darkhollow's own records name the vault, and never its key.",
+      polarity: 'against',
+    },
+  ],
   onSuccess: [],
   onFailure: [],
   failBehavior: 'fail_action',
@@ -307,6 +316,21 @@ const step1TakeItUnseen: ActionStep = {
   reach: 'shadow',
   duration: { min: 1, max: 2 },
   difficulty: 0.6,
+  purposeLine: 'Leave no trace',
+  factorLines: [
+    // The one line that cuts for them, and the reason the critical-success
+    // afterimage can say they swept the floor behind them.
+    { text: 'The vault is one room, and one room is quickly swept.', polarity: 'for' },
+    { text: 'The vault floor is dust, and dust keeps every print.', polarity: 'against' },
+    {
+      text: "Darkhollow's night warden walks the third floor twice.",
+      polarity: 'against',
+    },
+    {
+      text: 'The reliquary on the plinth is heavier than it looks.',
+      polarity: 'against',
+    },
+  ],
   onSuccess: [],
   onFailure: [],
   failBehavior: 'continue_weakened',
@@ -324,33 +348,14 @@ const step1TakeItUnseen: ActionStep = {
 };
 
 // ─── Test-panel authored data (checklist step 2) ─────────────────────
-
-/**
- * Reach purpose lines, one per step, ≤4 words each. Plain: this is what the
- * step is testing, not a description of the fiction.
- */
-export const EXEMPLAR_REACH_PURPOSE_LINES: readonly string[] = [
-  'Read the lock',
-  'Leave no trace',
-];
-
-/**
- * For/against factor lines per step index. Each is concrete and names its
- * source; the trait-derived factor is not here because it lives on the trait
- * variant, which is where a trait-derived line must name its trait.
- */
-export const EXEMPLAR_FACTOR_LINES: readonly (readonly string[])[] = [
-  [
-    'The mason cut his mark beside the third pin.',
-    'Two centuries of rust have swollen every pin.',
-    "Darkhollow's own records name the vault, and never its key.",
-  ],
-  [
-    'The vault floor is dust, and dust keeps every print.',
-    "Darkhollow's night warden walks the third floor twice.",
-    'The reliquary on the plinth is heavier than it looks.',
-  ],
-];
+//
+// THR-820: purpose lines and factor lines now live on `ActionStep.purposeLine`
+// and `ActionStep.factorLines` (see the two step definitions above), which is
+// the path `buildNudgePhaseModel` reads. They were previously exported here as
+// `EXEMPLAR_REACH_PURPOSE_LINES` / `EXEMPLAR_FACTOR_LINES` — fixture-local
+// constants that only the test file consumed, so the exemplar looked compliant
+// while no render path could reach either field. Do not reintroduce them:
+// authored panel data belongs on the step.
 
 // ─── The template ────────────────────────────────────────────────────
 

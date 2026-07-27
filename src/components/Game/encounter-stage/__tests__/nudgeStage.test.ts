@@ -18,6 +18,7 @@ import type {
   UnifiedActionTemplate,
 } from '../../../../types/unifiedAction';
 import { buildNudgePhaseModel } from '../adapters/buildNudgePhaseModel';
+import { NUDGE_GOLDEN_EXEMPLAR } from '../../../../data/__fixtures__/nudge-exemplar/darkhollow-vault-exemplar';
 import { spendNudgeEssence, type EssencePool } from '../nudgeCommit';
 import { forecastWithNudges } from '../useNudgeHand';
 
@@ -210,6 +211,66 @@ describe('buildNudgePhaseModel — per-NudgeBlockedCode render policy', () => {
     const phase = buildPhase({ unlockedActionIds: [] } as Partial<GameState> as GameState)!;
     expect(phase).toBeDefined();
     expect(phase.availableEssence).toBe(0);
+  });
+});
+
+// ─── Authored test-panel data (THR-820) ───────────────────────────
+//
+// The point of these: assert against `buildNudgePhaseModel` OUTPUT, driven by
+// the real golden exemplar. The predecessor assertions read the exemplar's
+// fixture constants directly, which is why they stayed green for a field no
+// render path could reach.
+
+describe('buildNudgePhaseModel — authored purpose line and factor lines', () => {
+  /** Build a phase from the real exemplar at `stepIndex`. */
+  function exemplarPhase(stepIndex: number) {
+    const step = NUDGE_GOLDEN_EXEMPLAR.steps[stepIndex] as ActionStep;
+    return buildNudgePhaseModel({
+      template: NUDGE_GOLDEN_EXEMPLAR,
+      activeAction: buildAction({
+        templateId: NUDGE_GOLDEN_EXEMPLAR.id,
+        currentStep: stepIndex,
+      }),
+      step,
+      graph: buildGraph(),
+      gameState: buildState() as GameState,
+    })!;
+  }
+
+  it('surfaces every authored purpose line on the rendered panel', () => {
+    for (const [i, step] of NUDGE_GOLDEN_EXEMPLAR.steps.entries()) {
+      const authored = (step as ActionStep).purposeLine;
+      expect(exemplarPhase(i).testPanel.purposeLine).toBe(authored);
+    }
+  });
+
+  it('surfaces every authored factor line with its authored polarity', () => {
+    for (const [i, step] of NUDGE_GOLDEN_EXEMPLAR.steps.entries()) {
+      const authored = (step as ActionStep).factorLines ?? [];
+      const rendered = exemplarPhase(i).testPanel.factors;
+
+      // Two empty arrays compare equal, so pin the population before comparing
+      // it — otherwise this passes just as happily against an exemplar that
+      // authored nothing and a panel that rendered nothing.
+      expect(authored.length, `step ${i} authors no factor lines`).toBeGreaterThan(0);
+
+      // The agent holds no traits here, so no live `trait:*` line is appended
+      // and the panel is exactly the authored set, in authored order.
+      expect(rendered.map((f) => f.text)).toEqual(authored.map((l) => l.text));
+      expect(rendered.map((f) => f.polarity)).toEqual(authored.map((l) => l.polarity));
+      expect(rendered.some((f) => f.polarity === 'neutral')).toBe(false);
+    }
+  });
+
+  it('falls back to unsigned contract factors when a step authors none', () => {
+    // The un-migrated path every pre-nudge template still takes: no authored
+    // lines, so whatever the contract yields renders `neutral` rather than
+    // claiming a sign the encounter never stated.
+    const phase = buildPhase()!;
+    expect(phase.testPanel.purposeLine).toBeUndefined();
+    for (const factor of phase.testPanel.factors) {
+      expect(factor.polarity).toBe('neutral');
+    }
   });
 });
 

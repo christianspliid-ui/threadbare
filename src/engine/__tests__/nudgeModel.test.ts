@@ -58,11 +58,7 @@ import {
 } from '../../data/content-eval/nudgeAuthoringConstants';
 import { computeResolutionThreshold, PROBABILITY_FLOOR } from '../resolutionService';
 import { NPC_CONSTANTS } from '../../types/npc';
-import {
-  EXEMPLAR_FACTOR_LINES,
-  EXEMPLAR_REACH_PURPOSE_LINES,
-  NUDGE_GOLDEN_EXEMPLAR,
-} from '../../data/__fixtures__/nudge-exemplar/darkhollow-vault-exemplar';
+import { NUDGE_GOLDEN_EXEMPLAR } from '../../data/__fixtures__/nudge-exemplar/darkhollow-vault-exemplar';
 import { CORE_TRAIT_DEFINITIONS } from '../../data/core-trait-content';
 import { scoreRegisterCompliance } from '../content-eval/registerCompliance';
 
@@ -521,6 +517,13 @@ function exemplarProse(): Array<[string, string]> {
     push('afterimage', s.criticalSuccessAfterimage);
     push('afterimage', s.criticalFailureAfterimage);
 
+    // THR-820: authored panel data is step schema, so it is collected here with
+    // the rest of the step's prose rather than from a separate constant.
+    for (const [j, line] of (s.factorLines ?? []).entries()) {
+      out.push([`factor.step${i}.${j}`, line.text]);
+    }
+    push('purpose', s.purposeLine);
+
     for (const nudge of s.nudges ?? []) {
       out.push([`name.${nudge.id}`, nudge.name]);
       out.push([`fiction.${nudge.id}`, nudge.fiction]);
@@ -531,12 +534,6 @@ function exemplarProse(): Array<[string, string]> {
     }
   }
 
-  for (const [i, lines] of EXEMPLAR_FACTOR_LINES.entries()) {
-    for (const [j, line] of lines.entries()) out.push([`factor.step${i}.${j}`, line]);
-  }
-  for (const [i, line] of EXEMPLAR_REACH_PURPOSE_LINES.entries()) {
-    out.push([`purpose.step${i}`, line]);
-  }
   for (const variant of NUDGE_GOLDEN_EXEMPLAR.traitVariants ?? []) {
     out.push([`factor.trait.${variant.traitId}`, variant.factorLine]);
   }
@@ -672,20 +669,31 @@ describe('WS1 golden exemplar — authoring checklist', () => {
   });
 
   it('authors factor lines and reach purpose lines inside the panel budgets', () => {
-    expect(EXEMPLAR_REACH_PURPOSE_LINES.length).toBe(NUDGE_GOLDEN_EXEMPLAR.steps.length);
-    for (const line of EXEMPLAR_REACH_PURPOSE_LINES) {
-      expect(wordCount(line)).toBeLessThanOrEqual(REACH_PURPOSE_MAX_WORDS);
-    }
+    // THR-820: read off the step schema, not a fixture constant. Before the
+    // schema landed these lines lived in two exported arrays that no render
+    // path consumed, so this test could pass while the panel showed nothing.
+    const steps = NUDGE_GOLDEN_EXEMPLAR.steps as readonly ActionStep[];
 
-    expect(EXEMPLAR_FACTOR_LINES.length).toBe(NUDGE_GOLDEN_EXEMPLAR.steps.length);
-    for (const lines of EXEMPLAR_FACTOR_LINES) {
-      expect(lines.length).toBeGreaterThanOrEqual(FACTOR_LINES_MIN);
-      expect(lines.length).toBeLessThanOrEqual(FACTOR_LINES_MAX);
+    for (const [i, step] of steps.entries()) {
+      expect(step.purposeLine, `step ${i} authors no purpose line`).toBeTruthy();
+      expect(wordCount(step.purposeLine!)).toBeLessThanOrEqual(REACH_PURPOSE_MAX_WORDS);
+
+      const lines = step.factorLines ?? [];
+      expect(lines.length, `step ${i} factor-line count`).toBeGreaterThanOrEqual(FACTOR_LINES_MIN);
+      expect(lines.length, `step ${i} factor-line count`).toBeLessThanOrEqual(FACTOR_LINES_MAX);
       for (const line of lines) {
-        expect(wordCount(line), `factor line over budget: "${line}"`).toBeLessThanOrEqual(
+        expect(wordCount(line.text), `factor line over budget: "${line.text}"`).toBeLessThanOrEqual(
           NUDGE_WORD_BUDGETS.factorLine,
         );
       }
+
+      // "For and against" is the point of the panel: a step whose lines all cut
+      // one way is an assertion, not a weighing. The exemplar is the reference
+      // authors copy, so it demonstrates both signs on every step.
+      const polarities = new Set(lines.map((l) => l.polarity));
+      expect(polarities, `step ${i} factor lines are one-sided`).toEqual(
+        new Set(['for', 'against']),
+      );
     }
   });
 

@@ -66,19 +66,27 @@ None of the three has a schema field yet. Record them in the file's doc comment.
 
 Per step:
 
-- **Reach(es)** with a **purpose line** — `REACH_PURPOSE_MAX_WORDS` (4) words, plain.
-  What the step is *testing*, not a description of the fiction. "Read the lock", not
-  "The mason's puzzle awaits".
+- **Reach(es)** with a **purpose line** — `ActionStep.purposeLine`,
+  `REACH_PURPOSE_MAX_WORDS` (4) words, plain. What the step is *testing*, not a
+  description of the fiction. "Read the lock", not "The mason's puzzle awaits".
 - **Difficulty** 0–1. Never write the number into prose: `DIFFICULTY_WORD_BANDS` renders
   it as *severe / steep / fair / gentle*, and the word is the only surface the player
   sees (ruling 1).
-- **`FACTOR_LINES_MIN`–`FACTOR_LINES_MAX` (2–4) factor lines**, for and against. Each
-  one concrete, each one **naming its source**. Two is the floor because one line is an
-  assertion rather than a weighing.
+- **`FACTOR_LINES_MIN`–`FACTOR_LINES_MAX` (2–4) factor lines** — `ActionStep.factorLines`,
+  each a `{ text, polarity }` pair. Author **both** signs: a step whose lines all cut one
+  way is an assertion, not a weighing, and two is the floor for the same reason. Each line
+  concrete, each one **naming its source**.
 
-**Canon rule 1 — a trait-derived factor names its trait.** A factor line the player
-cannot trace back to a cause is noise. Trait-derived lines live on
-`TraitVariant.factorLine`, and the trait's name appears in the sentence.
+**Canon rule 1 — a factor names its source in the sentence.** A factor line the player
+cannot trace back to a cause is noise, and the source belongs *in the prose* rather than
+in a label beside it — "The mason cut his mark beside the third pin", not
+`Source: mason's mark`. Trait-derived lines are the same rule: they live on
+`TraitVariant.factorLine` and the trait's name appears in the sentence.
+
+**Both fields are schema (THR-820).** They sit on the step, and `buildNudgePhaseModel`
+reads them straight onto the rendered test panel. A step that authors no `factorLines`
+falls back to the contract's unsigned `beat.forecast_factors`, which can only render
+`neutral` — that fallback is for un-migrated legacy templates, not a place to author.
 
 ### 3. The hand
 

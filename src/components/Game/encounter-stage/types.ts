@@ -296,10 +296,14 @@ export interface EncounterStageMotiveModel {
 }
 
 /**
- * Which way a factor line cuts. `neutral` is not a hedge — authored factor
- * lines carry no declared sign in the WS0 schema, so claiming one would be
- * inventing information the encounter never stated. Only live modifier-derived
- * lines (`trait:*`, `nudge:*`), whose delta has a sign, resolve to for/against.
+ * Which way a factor line cuts.
+ *
+ * `neutral` is not a hedge — it is the honest reading of a line drawn from the
+ * contract's `beat.forecast_factors`, a bare string tuple with no declared
+ * sign, so claiming a polarity there would invent information the encounter
+ * never stated. Two sources *do* carry a sign and never render neutral:
+ * `ActionStep.factorLines`, where the author declares it (THR-820), and live
+ * modifier-derived lines (`trait:*`, `nudge:*`), whose delta has one.
  */
 export type FactorPolarity = 'for' | 'against' | 'neutral';
 
@@ -317,12 +321,9 @@ export interface EncounterStageTestPanelModel {
   /** Icon for the reach at the acting agent's tier. */
   reachIconUrl?: string;
   /**
-   * ≤4 words, plain — what this step is testing.
-   *
-   * TODO(THR-820): no producer yet. `ActionStep` has no `purposeLine` field —
-   * WS1 authored the exemplar's purpose lines as fixture constants
-   * (`EXEMPLAR_REACH_PURPOSE_LINES`) rather than schema, so nothing can fill
-   * this. Declared because the shell already renders it when present.
+   * ≤`REACH_PURPOSE_MAX_WORDS` (4) words, plain — what this step is testing.
+   * Produced from `ActionStep.purposeLine` (THR-820). Absent on any step that
+   * does not author one, which is every pre-nudge template.
    */
   purposeLine?: string;
   /** Difficulty as a word. The numeral never renders outside the designer view. */
