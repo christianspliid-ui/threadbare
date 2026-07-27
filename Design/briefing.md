@@ -1,44 +1,44 @@
 # Briefing
 
-**Generated:** 2026-07-27 19:54 local (2026-07-27 17:54 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-07-27 20:56 local (2026-07-27 18:56 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
 ## Needs Christian
 
-**Nothing needs you right now.** The one thing that was waiting on you today — releasing the encounter-experience work — you answered on Discord this afternoon, and **as of half an hour ago all four of those jobs are on the shelf the crew actually pulls from.** Nothing new has come up.
+**Nothing needs you right now.** The work you released this afternoon is being picked up and finished on its own. Nothing new has come up.
 
 ## Queue
 
-**23 jobs ready — one top-priority, six middling, sixteen minor. Nothing stale, nothing blocked, bench empty.** The shelf grew 19 → 23, and **for once the growth is the good news rather than the bad**: all four arrivals are the encounter-experience jobs you released, crossing over from a holding column no crew reads.
+**24 jobs ready — one top-priority, seven middling, sixteen minor. Nothing stale, nothing blocked, bench empty.**
 
-**Your release landed at 17:21 — seventeen hours before we said we'd call it broken.** For three runs this file has been saying the same uncomfortable thing: your go-ahead was recorded, but nothing in the system was actually assigned to *act* on it, and the note asking someone to file the work sat on a page no automated crew reads. We committed to a specific check — *if all four are still off the shelf by tomorrow mid-morning, the fault is ours, not yours* — and pre-committed to filing a defect against our own paperwork if it fired.
+**The top-priority job you released this afternoon is done, and its answer is below.** It was pulled 41 minutes after landing on the shelf and finished half an hour later. Depth went 23 → 24 because two new jobs were written while it shipped — one of them the new top-priority item, one a small loose end the finished job found in passing.
 
-**It did not fire.** All four moved, including the top-priority one, so that defect is cancelled rather than postponed. Worth saying plainly: we were braced to be wrong in the expensive direction and turned out wrong in the cheap one. Three runs of escalating worry about a broken hand-off produced no new evidence at any step — only a louder retelling — and the thing it was worried about was working the whole time.
+**The new top-priority job is claimable right now.** It's a piece of crew plumbing rather than game design: giving the automated crew standing permission to carry an agreed design forward on its own, instead of waiting for someone to start a session. The design for it was settled with you in chat earlier today, and the write-up it depends on is already published, so nothing is holding it.
 
-**The top-priority job is now claimable for the first time since it was written.** It's the doomed-forecast question below — filed at top priority this morning, and until this afternoon parked where no crew could reach it.
-
-**The honest counter-reading:** depth went *up*, and by the raw number this is the thirty-third straight hour of "backed up". That number is measuring the wrong thing tonight. Four jobs didn't appear out of new problems — they moved between columns, which is the queue becoming visible, not the queue getting worse.
+**The "backed up" label is a threshold artefact again** — the shelf is stable at roughly one job shipped and one or two written per hour, and the ones being written are things the crew finds while working, not requests piling up.
 
 ## Freshness
 
-**Home tree: right branch, fully current, nothing stranded.** Same two small leftovers as the last twenty-nine hours — a permissions edit to the tool config, and Friday's retro write-up. Both ours to land; neither blocks anything.
+**Home tree: right branch, fully current, nothing stranded.** The two small leftovers were opened and read this run rather than described from memory: both are just permission entries added to the tool config by past sessions clicking "allow". Harmless, ours to land, blocking nothing. Friday's retro write-up is still sitting untracked, and already has an owner.
 
-**Live site: up to date.** Everything published since the last release was notes and documentation, so there was nothing to rebuild.
-
-**Cleanup reaper: alive, ran at 19:40, clean, nothing awaiting a human decision.**
-
-**Discord: nothing new** since your message this afternoon. Nothing was owed a reply, so none was sent.
+**Live site: rebuilt and serving tonight's work.** **Cleanup reaper: alive, ran at 20:40, clean, nothing awaiting a human decision.** **Discord: nothing new** since your message this afternoon; nothing owed a reply, so none was sent.
 
 ## What's moving
 
-**A crew routine that filed tickets citing evidence it never saved is fixed.** Friday's automated review session did good work — it filed two real, well-scoped jobs, both of which have since shipped — but it cited a report file **that was never committed anywhere**. Anyone following the citation would have found nothing at all.
+**The doomed-forecast question came back, as promised — and both of the answers we offered you were wrong.**
 
-That is worse than simply forgetting to write the report: from the outside, **a lost document and an invented one look exactly the same**, and the crew's whole audit trail depends on those citations resolving to something real. Closed at 17:14.
+The worry was that a god's nudge is decorative: every mortal we tested read *Doomed*, and no combination of cards would shift it. We gave you two possible explanations — either the test scenario was unfairly brutal, or ordinary mortals are simply too feeble to be helped. Measuring across two worlds refuted both.
 
-**Underneath it, one smaller thing surfaced.** A step in that same review routine that was meant to run every time has not actually run since early May — eleven reports — and the file it was supposed to update has changed shape underneath it in the meantime. Every one of those eleven reports looked complete. Filed as a minor job rather than patched in passing, because it's a different problem from the one being closed.
+**The mortals we had been testing on were never eligible to be nudged in the first place.** They were background villagers — the crowd, not characters. The game correctly never offers them an encounter you can touch. We had been testing the feature on people it structurally does not apply to, and reading their honest "no" as the feature failing.
 
-**Still the most interesting open question on the board, and now finally reachable:** whether a god's nudge can move the odds for someone already doomed, or whether the game is correctly telling you that some people are past saving. Every seeded mortal we tested read *Doomed*, and no nudge would shift the word. That is either a real dead end in the system or the game being honest about mortality — and which one it is is a genuine design answer, not a bug report. It's the top-priority job on the shelf as of this evening. **You'll hear from us when it comes back.**
+**For the people you actually watch, it works fine.** Prominent figures clear the bar unaided in 98% of cases, and the nudge does what it promises.
+
+**The real gap sits in the middle**, and it is worth your attention as a design fact rather than a decision: **a mortal you have just noticed — newly threaded, not yet prominent — cannot be helped at all outside their own specialty.** Nudge a fresh blacksmith toward matters of the mind and nothing you spend will move the odds, no matter how many cards you play. That is a real dead spot in the moment a player is most likely to be experimenting.
+
+**We fenced it off rather than rewriting the physics.** Changing the floor would have disturbed the whole success-and-cost ladder that everything else is balanced against, so instead the authoring rules now forbid writing a hard nudge step aimed outside a character's specialty, with the constraint enforced by tests so it cannot quietly rot. **No shipped content is affected** — nothing in the game currently carries a nudge; this lands as a rule the big content pass inherits before it writes any. The rulebook gained an honest line saying plainly when your nudges cannot help.
+
+**This was a judgement call the crew made and recorded rather than one we're asking you to ratify** — but it is exactly the kind of thing you'd overturn in one sentence if the dead spot bothers you more than the rebalancing would. Say the word and it reopens.
 
 ---
 *Standing asks live in [`Design/user-actions.md`](user-actions.md). This file is regenerated hourly by the `keep-work-flowing-cc` scheduled task; staleness is visible from the Generated timestamp above and the task's `lastRunAt` in `list_scheduled_tasks`.*
