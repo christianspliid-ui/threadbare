@@ -106,6 +106,22 @@ export interface EncounterCacheEntry {
   /** True when the template contains at least one branching step (ActionStepBranch).
    *  Used by the curator pipeline (THR-452) to boost and preserve branching encounters. */
   isQuestEncounter: boolean;
+  /**
+   * True when this entry was generated *for one specific agent* — their faction
+   * membership, their standing, their rank — rather than read off the location
+   * cache that every agent on the hex shares (THR-814).
+   *
+   * Load-bearing at the cap stage only. `phaseAgentDecision` merges as
+   * `[...nearbyEntries, ...dynamicEntries]`, so per-agent entries sit at the tail
+   * of a list that runs to ~4,650 entries on a medium map; `capWithDiversity`
+   * fills its 40 slots from the head and never reaches them. Measured before the
+   * fix: 0 of 1,263 faction entries survived the pipeline, which is why guild
+   * reputation gain was structurally zero.
+   *
+   * Optional and defaulting to falsy, so cache-built entries are unaffected —
+   * only a generator that opts in claims a reserved slot.
+   */
+  personallyOffered?: boolean;
   // Pre-computed for scoring:
   totalTickCost: number;
   successRewardEstimate: number;

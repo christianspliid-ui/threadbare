@@ -158,6 +158,11 @@ function buildCacheEntry(
   );
 
   return {
+    // Every entry this module builds is addressed to one agent — their membership,
+    // their rank, their promotion gap. That is what earns the cap-stage reserve
+    // (THR-814): these are appended after the location cache and would otherwise
+    // never reach the fill loop. See PERSONAL_OFFER_CAP_RESERVE.
+    personallyOffered: true,
     templateId: template.id,
     locationId,
     sublocationId: null,
