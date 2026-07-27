@@ -49,6 +49,7 @@ import {
   HAND_SPHERE_COVERAGE_MIN,
   NUDGE_BIG_DELTA,
   NUDGE_HAND_MAX,
+  NUDGE_HAND_MAX_TOTAL_DELTA,
   NUDGE_HAND_MIN,
   NUDGE_NAME_MAX_WORDS,
   NUDGE_OFF_REACH_MAX_DIFFICULTY,
@@ -578,6 +579,20 @@ describe('WS1 golden exemplar — authoring checklist', () => {
     }
   });
 
+  it('every hand sits inside the authored total-delta ceiling (THR-827)', () => {
+    // The only bound on how far a god may bend one step: nothing clamps
+    // `actionModifiers` at runtime, so this rubric holds the line at authoring
+    // time. Counted over every authored card, gated or not — what one god can
+    // play is a subset, but the author only ever sees the total.
+    for (const step of nudgeSteps) {
+      const total = step.nudges.reduce((sum, n) => sum + n.forecastDelta, 0);
+      expect(
+        total,
+        `step hand sums to ${total.toFixed(2)}, over NUDGE_HAND_MAX_TOTAL_DELTA`,
+      ).toBeLessThanOrEqual(NUDGE_HAND_MAX_TOTAL_DELTA);
+    }
+  });
+
   it('every hand spans the minimum sphere coverage', () => {
     for (const step of nudgeSteps) {
       const spheres = new Set(step.nudges.map((n) => n.sphere).filter(Boolean));
@@ -801,15 +816,21 @@ describe('nudge reachability against the probability floor (THR-821)', () => {
     (_, i) => NPC_CONSTANTS.NOTABLE_OTHER_BASE + i,
   );
 
-  /** The exemplar's full playable step-0 hand, excluding the trait-gated card. */
-  const FULL_HAND_DELTA = 0.37;
+  /**
+   * The step-0 subset the *measured* ascendant could play — limited by which
+   * spheres their essence pool made accessible. Not the hand's ceiling: the five
+   * non-trait-gated cards sum to 0.55, and at that total this cohort clears the
+   * floor (THR-827 corrected the label; THR-831 owns whether the 0.45 ceiling is
+   * calibrated right against it).
+   */
+  const MEASURED_SUBSET_DELTA = 0.37;
 
-  it('floors an off-reach notable mortal at NUDGE_OFF_REACH_MAX_DIFFICULTY, through the whole hand', () => {
+  it('floors an off-reach notable mortal at NUDGE_OFF_REACH_MAX_DIFFICULTY, across a typical playable subset', () => {
     expect(offReachRaws.length).toBeGreaterThan(0);
 
     for (const raw of offReachRaws) {
       const capability = capabilityOf(raw);
-      for (const modifiers of [0, 0.20, FULL_HAND_DELTA]) {
+      for (const modifiers of [0, 0.20, MEASURED_SUBSET_DELTA]) {
         const p = computeResolutionThreshold({
           capability,
           difficulty: NUDGE_OFF_REACH_MAX_DIFFICULTY,

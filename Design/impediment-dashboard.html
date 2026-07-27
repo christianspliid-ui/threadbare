@@ -3547,6 +3547,32 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "**Two rules, both cheap.** (a) *Navigate explicitly and probe the tree before believing any capture*: start your own dev server on a distinct port, `browser_navigate` to it, and evaluate a symbol that exists **only** in this change (here: `NUDGE_GOLDEN_EXEMPLAR.steps[].purposeLine` present **and** the deleted `EXEMPLAR_FACTOR_LINES` export `undefined`) before screenshotting — the same \"probe a new symbol\" discipline the worktree-preview-server rule already prescribes. (b) *Write the screenshot into whatever root the MCP reports in its error, then relocate it out of the foreign worktree and delete the original* — do not leave session artifacts in another worktree, where the hourly reaper's liveness guard reads working-tree mtimes and may misjudge that tree as active. The allowed root is not configurable from the session; the error message names it, so read it rather than retrying variants.",
     "session": "THR-820 browser-verify, hourly `tb-opus-pickup` run, 2026-07-27."
+  },
+  {
+    "num": "258",
+    "id": 258,
+    "count": 1,
+    "date": "2026-07-28",
+    "category": "verification",
+    "description": "**A measured number was named as a structural ceiling when it was a snapshot of one configuration, and the test built on it passed for exactly that reason.** THR-827 had to re-check the figures behind the retired `±0.20` note and found `nudgeModel.test.ts`'s `FULL_HAND_DELTA = 0.37`, commented *\"the exemplar's full playable step-0 hand, excluding the trait-gated card\"*. The five non-trait-gated cards sum to **0.55**. `0.37` was the subset the *measured ascendant's* accessible spheres allowed — one god's essence pool, not the hand's ceiling — and sphere access is pool-driven (`buildNudgePhaseModel`: any sphere with essence > 0), so 0.55 is reachable. The test asserting \"floors through the whole hand\" therefore passed only because it tested the partial subset; at 0.55 every raw in the cohort clears the floor (0.127..0.219). The same figure had been copied into `NUDGE_OFF_REACH_MAX_DIFFICULTY`'s justification, so a tuning constant was resting on it. **The tell was arithmetic, not tooling** — summing the fixture's own `forecastDelta` values disagreed with the constant that claimed to be their sum.",
+    "consequence": "~20 min. Worse if unnoticed: the justification for an authoring-time difficulty ceiling rests on a floor claim that does not hold for the configuration it was meant to bound.",
+    "impact": "M",
+    "workaroundFound": true,
+    "workaround": "**Rule: a constant derived from a measurement must name the configuration it was measured under, or it will be read as universal.** Renamed to `MEASURED_SUBSET_DELTA` with the gating spelled out, and the ceiling's comment now states both figures and which case it is calibrated to. Tuning question spun out as **THR-831** rather than retuning shipped content on a documentation-verdict ticket. Generalizable companion to \"verify the noun before the verb\": when a fixture and a constant both claim to describe the same quantity, re-derive it from the fixture — the constant is the one that rots.",
+    "session": "THR-827, hourly `tb-opus-pickup` run, 2026-07-28."
+  },
+  {
+    "num": "259",
+    "id": 259,
+    "count": 1,
+    "date": "2026-07-28",
+    "category": "process",
+    "description": "**A new authoring guardrail was anchored on the first instance read rather than the population's maximum, and would have shipped rejecting the reference implementation it exists to describe.** THR-827 added `NUDGE_HAND_MAX_TOTAL_DELTA` to bound hand strength at authoring time. The value was set to 0.65 from the golden exemplar's **step 0** (0.63, six cards) — the hand quoted in the ticket, the audit and every comment on the subject. The exemplar's **step 1** sums to 0.68. The conformance test written in the same change failed immediately (`step hand sums to 0.68, over NUDGE_HAND_MAX_TOTAL_DELTA`), which is the system working, but only because the test iterated `nudgeSteps` rather than checking the one step the prose kept naming.",
+    "consequence": "~5 min, caught pre-commit by the test. Would have been a rubric that fails its own reference exemplar — the shape that trains authors to ignore the guardrail.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "**Rule: derive a population-level guardrail by computing it over the whole population, not from the instance the surrounding documentation happens to quote.** The repeated citation of step 0 across four surfaces is exactly what made step 1 invisible. Cheap mechanical form: write the conformance assertion as a loop over every member *first*, then pick the constant from the observed max — the test then sets the number instead of auditing a guess.",
+    "session": "THR-827, hourly `tb-opus-pickup` run, 2026-07-28."
   }
 ];
 // ── End data ──

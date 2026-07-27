@@ -40,6 +40,30 @@ export const NUDGE_HAND_MIN = 4;
 export const NUDGE_HAND_MAX = 8;
 
 /**
+ * Ceiling on the summed `forecastDelta` of one step's authored hand — the
+ * authoring-time answer to "what bounds hand strength?" (THR-827).
+ *
+ * Nothing bounds it at runtime. `ResolutionInput.actionModifiers` carried a
+ * "capped at ±0.20" note that was never enforced by any caller and was never
+ * true — `resolutionModifiers.ts` bounds each contributor and never their sum.
+ * The verdict recorded on THR-827 was that the note was stale, which leaves this
+ * file holding the only real bound on how far a god may bend one step.
+ *
+ * Counted over **every authored card**, including trait-gated and sphere-gated
+ * ones: what any single god can actually play is a subset (their accessible
+ * spheres and essence decide which), so the authored total is the only figure an
+ * author can see while writing. The golden exemplar's two hands sum to 0.63
+ * (step 0, six cards) and 0.68 (step 1, six cards); 0.70 admits the reference
+ * implementation with a little headroom and still rejects a hand that would carry
+ * a competent actor from any difficulty straight to `PROBABILITY_CEILING`.
+ *
+ * Warn-level, director-tunable, and **not** a runtime clamp: the renderer draws
+ * whatever `NudgeHand.playable` contains and resolution consumes the full sum.
+ * Tightening this is editing this number, never truncating a hand in play.
+ */
+export const NUDGE_HAND_MAX_TOTAL_DELTA = 0.70;
+
+/**
  * Distinct spheres a hand must span. The hand is the replayability engine
  * (program ruling 3/4): a different god sees a different subset, and that only
  * holds if the authored spread is wide enough for gods to differ on it.
@@ -62,9 +86,17 @@ export const HAND_COMMON_OPTIONS_MIN = 1;
  * `Docs/audits/2026-07-27-thr-821-nudge-headroom.md`): a `notable`-tier mortal —
  * the tier a newly-threaded NPC lands in — carries capability 0.027..0.119 in a
  * non-primary/secondary reach. Against a step at 0.45, `computeResolutionThreshold`
- * floors at `PROBABILITY_FLOOR` and **stays** floored through the whole authored
- * hand: 0% of that cohort clears the floor unaided, with two cards (+0.22), at the
- * documented `actionModifiers` cap (+0.20), or with the full hand (+0.37).
+ * floors at `PROBABILITY_FLOOR` and stays floored across the hand a *typical* god
+ * can play: 0% of that cohort clears the floor unaided, with two cards (+0.22), or
+ * with the +0.37 subset the measured ascendant's accessible spheres allowed.
+ *
+ * That +0.37 is one god's playable subset, **not** the hand's ceiling (corrected
+ * THR-827; it previously read here as "the full hand"). The exemplar's five
+ * non-trait-gated cards sum to 0.55, and sphere access is pool-driven
+ * (`buildNudgePhaseModel`: any sphere with essence > 0), so a god holding light,
+ * mind, time and entropy plays all five. At 0.55 the whole cohort clears the floor
+ * (0.127..0.219) — this ceiling is calibrated to the common case, not to the
+ * reachable worst case. Whether that is the intended calibration is THR-831.
  *
  * A hand that cannot move the forecast word is decorative — the player spends
  * essence and watches nothing change. So: an off-reach step stays at `fair` or

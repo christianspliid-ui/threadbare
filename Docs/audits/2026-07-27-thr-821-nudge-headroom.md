@@ -126,11 +126,54 @@ Encounters that *want* to be `steep`/`severe` are fine — they should be author
 actors who plausibly hold the reach (role-gated, faction-gated, or late-run), which is
 what the exemplar does: a vault theft in `eye`/`shadow` drawn by a thief.
 
-## Open question spun out
+## Open question spun out — answered 2026-07-28 (THR-827)
 
-`ResolutionInput.actionModifiers` is documented "capped at ±0.20"
-([src/types/resolution.ts:26](../../src/types/resolution.ts)) but
-`computeResolutionThreshold` never clamps it. The exemplar's step-0 hand sums to 0.37+
-playable — comfortably past the documented cap, with nothing enforcing it. Either the
-comment is stale or the cap wants enforcing; the two answers give the nudge model very
-different ceilings. Filed as THR-827.
+`ResolutionInput.actionModifiers` was documented "capped at ±0.20"
+([src/types/resolution.ts](../../src/types/resolution.ts)) but
+`computeResolutionThreshold` never clamped it. The exemplar's step-0 hand sums past the
+documented cap with nothing enforcing it. Either the comment was stale or the cap wanted
+enforcing; the two answers give the nudge model very different ceilings. Filed as
+THR-827.
+
+**Verdict: the comment was stale — and had never been true.** Not merely overtaken by the
+nudge model. `resolutionModifiers.ts` has always bounded each *contributor* and never
+their sum:
+
+| contributor | cap | constant |
+| -- | -- | -- |
+| sphere alignment | ±0.10 | `SPHERE_ALIGNMENT_BONUS` |
+| equipment | 0.15 | `EQUIPMENT_MODIFIER_CAP` |
+| terrain | ±0.10 | `TERRAIN_MODIFIER_CAP` |
+| traits | 0.10 | `TRAIT_BONUS_CAP` |
+| effects | 0.30 | `EFFECT_MODIFIER_CAP` |
+| divine intervention | — | unbounded |
+| `modify_rules` override | — | unbounded |
+
+The bounded sources alone sum to **0.75**, and `EFFECT_MODIFIER_CAP` on its own exceeds
+the claimed ±0.20 total. A committed nudge hand then adds on top
+(`useNudgeHand.ts`). No caller has ever clamped the term, so enforcing 0.20 now would not
+have restored an old contract — it would have imposed a new one, silently truncating
+equipment/effect stacking that shipped content already relies on and making cards 3–8 of
+an authored hand inert (the player spends essence and the forecast does not move), which
+is precisely the decorative-hand failure mode this audit's finding C exists to prevent.
+
+Actions taken under THR-827:
+
+* The `±0.20` notes on `ResolutionInput.actionModifiers` and `ResolutionModifiers.total`
+  are replaced with the real contract; `resolutionService.ts` documents it at the
+  computation.
+* `NUDGE_HAND_MAX_TOTAL_DELTA` (0.65) added to
+  `data/content-eval/nudgeAuthoringConstants.ts` — the authoring-time bound on hand
+  strength, warn-level and director-tunable, asserted against the golden exemplar. There
+  is deliberately **no** runtime clamp.
+* `resolutionService.test.ts` pins the pass-through in both signs, so a clamp cannot
+  reappear silently.
+
+**Correction to § B above.** The `+full hand` column reads `0.37`, which is the subset the
+*measured ascendant's* accessible spheres allowed — not the hand's ceiling. The exemplar's
+five non-trait-gated cards sum to **0.55**, and sphere access is pool-driven
+(`buildNudgePhaseModel`: any sphere with essence > 0), so a god holding light/mind/time/
+entropy plays all five. At 0.55 the off-reach cohort in § C **clears** the floor
+(0.127..0.219 across raws 1–5) rather than staying pinned to it. `NUDGE_OFF_REACH_MAX_DIFFICULTY`
+is therefore calibrated to the common case, not the reachable worst case; whether that is
+the intended calibration is spun out as THR-831.

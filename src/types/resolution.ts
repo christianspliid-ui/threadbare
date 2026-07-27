@@ -23,7 +23,23 @@ export interface ResolutionInput {
   capability: number;          // 0.0–1.0 (domain capability from sigmoid)
   difficulty: number;          // 0.0–1.0 (canonical normalized range)
   sphereFactor: number;        // 0.0–0.2
-  actionModifiers: number;     // capped at ±0.20
+  /**
+   * Caller-composed additive modifier term. **Not clamped** — not here, not in
+   * `computeResolutionThreshold`, not in any caller (verdict recorded THR-827;
+   * this field previously claimed "capped at ±0.20", which was never enforced
+   * and never true).
+   *
+   * Bounds live at the *source*, per contributor, in `resolutionModifiers.ts`:
+   * sphere ±0.10, equipment ≤0.15, terrain ±0.10, traits ≤0.10, effects ≤0.30
+   * (`EFFECT_MODIFIER_CAP`) — summing to 0.75 on the bounded sources alone,
+   * before the unbounded divine-intervention and `modify_rules` terms. A
+   * committed nudge hand adds on top of that total (`useNudgeHand.ts`).
+   *
+   * Only the *result* is clamped, to [PROBABILITY_FLOOR, PROBABILITY_CEILING].
+   * Authoring-time hand strength is bounded by the rubric in
+   * `data/content-eval/nudgeAuthoringConstants.ts`, not by runtime math.
+   */
+  actionModifiers: number;
   influenceNudge?: number;     // ±0.05 to ±0.20 from player
   testShapers?: ResolutionTestShaper[];
 }
@@ -45,7 +61,8 @@ export interface ResolutionModifiers {
   traitModifier: number;
   effectModifier: number;
   divineInfluence: number;
-  total: number;               // sum, capped at ±0.20
+  /** Plain sum of the fields above — not clamped. See `ResolutionInput.actionModifiers`. */
+  total: number;
 }
 
 // ─── Resolution Results ─────────────────────────────────────────────

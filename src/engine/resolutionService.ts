@@ -24,6 +24,16 @@
  * | PROBABILITY_CEILING            | 0.95    | Maximum success probability          |
  * | NEAR_MISS_MARGIN               | 5       | |margin| <= this = near miss         |
  *
+ * ─── Modifier bounding (THR-827) ────────────────────────────────────
+ * `actionModifiers` is **not** clamped here, and no caller clamps it either.
+ * The old "capped at ±0.20" note on `ResolutionInput` was never enforced and was
+ * never true: `resolutionModifiers.ts` bounds each *contributor* (sphere ±0.10,
+ * equipment ≤0.15, terrain ±0.10, traits ≤0.10, effects ≤0.30) but never their
+ * sum — 0.75 from the bounded sources alone — and a committed nudge hand adds on
+ * top. The only runtime bound is the [FLOOR, CEILING] clamp on the *result*.
+ * Hand strength is governed at authoring time by
+ * `data/content-eval/nudgeAuthoringConstants.ts`.
+ *
  * ─── Tracing ────────────────────────────────────────────────────────
  * The service itself is pure math — callers emit traces with the results.
  *
@@ -70,6 +80,10 @@ export const NEAR_MISS_MARGIN = 5;
  *
  * P = capability + sphereFactor - difficulty + modifiers + influenceNudge
  * Clamped to [PROBABILITY_FLOOR, PROBABILITY_CEILING]
+ *
+ * The clamp applies to the *sum*, never to the individual terms: an
+ * `actionModifiers` of 0.8 is passed through as 0.8 (THR-827). Callers that want
+ * a bounded contribution must bound it before calling.
  *
  * @returns Probability in [0.05, 0.95]
  */
