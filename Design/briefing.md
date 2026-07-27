@@ -1,50 +1,50 @@
 # Briefing
 
-**Generated:** 2026-07-27 04:54 local (2026-07-27 02:54 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-07-27 05:54 local (2026-07-27 03:54 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
 ## Needs Christian
 
-**Same one question as last hour. No ping sent.**
+**Same one question as the last six hours. No ping sent.**
 
 Should the ceremonial reveal screens — the Civ-style "you unlocked this" moment you asked for — be built next, or stay in line? Asked once at 11pm, still open, still safe to ignore. Silence means "leave it in line", and it has.
 
-Nothing moved around it this hour. Answer whenever, or never.
+One thing genuinely changed around it this hour, and it earns a sentence rather than a re-ask: **a job arrived overnight that outranks it.** Until now your request shared the top rank with everything else on the shelf, so "next" and "in line" were nearly the same thing. They are not this morning. The default is unchanged, and nothing stalls either way.
 
 ## Queue
 
-**20 jobs ready — eight middling, twelve minor, none urgent. Nothing on the workbench, nothing waiting to be approved.**
+**20 jobs ready — one urgent, seven middling, twelve minor. Nothing on the workbench, nothing waiting to be approved.**
 
-The count went 21 → 20: one job shipped, nothing new written down. Three hours running of one out and none in.
+The count held at 20: one shipped, one written down. That ends four hours of one-out-none-in, which I decline to read as either a turn or a reversal — the shelf has hovered between 20 and 23 for a day and a half while the most valuable work of the week went out the door.
 
-I have declined to call this a turning point twice now, and I decline a third time — the three earlier dips each lasted exactly one hour, and three is no more a trend than two. The composition is the honest part: nothing on the shelf is urgent, nothing has gone cold, nothing waits on anything else, and every recent arrival was something the crew tripped over while fixing something adjacent. One job on the shelf is something **you** asked for.
+**The new arrival is the first genuinely urgent item on the shelf in days**, and it is not maintenance. It is a hole in the game itself, described below.
 
 ## Freshness
 
-**Home tree: level with the server, nothing stranded.** The same two small leftovers as the last fourteen hours — a permissions edit to the tool config, and Friday's retro write-up. Both are the crew's to land; neither blocks anything.
+**Home tree: level with the server, nothing stranded.** The same two small leftovers as the last fifteen hours — a permissions edit to the tool config, and Friday's retro write-up. Both are the crew's to land; neither blocks anything.
 
-**Cleanup reaper: alive, ran fourteen minutes ago, clean, nothing awaiting a human decision.** Flat — no workspaces finished this hour, and it left the live ones alone.
+**Cleanup reaper: alive, ran fourteen minutes ago, clean, nothing awaiting a human decision.** Flat again — no workspaces finished this hour, and it left the live ones alone.
 
 **Discord: nothing new in the channel this hour.** Genuinely empty rather than unread.
 
 ## What's moving
 
-**The game now has a watchman for whether it actually reached players.**
+**The guilds have been handing out ranks that nobody in the world can climb.**
 
-Every time work is approved, it is supposed to go live within a minute or two. The only signal anyone had that this happened was a green tick from the publishing service — and that tick has two meanings. It means "published". It also means "we looked at this and decided nothing needed publishing". Same tick, same colour, no way to tell them apart from the outside.
+Last night's job asked a narrow tuning question: the top guild rank demands a reputation of 0.85, nobody was reaching it — is the bar set too high? The obvious move was to lower the bar. The crew measured first, and the answer came back that the bar is fine. **Nobody is climbing because guilds never give work to their own members.**
 
-That ambiguity had already produced one false all-clear. Yesterday a commit reported a perfectly green tick while having **no publication behind it at all** — the publisher had skipped the build, and reported the skip as a success. Anyone reading the tick would have concluded the game was live when it was not. Worse, this is precisely the signal nobody is required to look at: it deliberately does not block approvals, so the habit is to walk past it.
+The measurement is unusually stark. A full run holds **227 guild memberships** and around **150 written guild jobs**. Over two hundred turns, guild work was drawn **three times** — and **not once by a member of the guild that owns it**. Reputation with your guild is therefore a number that can only ever fall: it starts near 0.9, drains at a fixed trickle, and reaches the floor partway through a run. Every one of the **60 rank-gated moments** the guilds have to offer — the senior ones as well as the elite ones — is unreachable for the whole game, not just at the top.
 
-Tonight's job replaces the tick with a question asked directly of the publisher: *which version of the game are you actually serving right now?* Then it compares that against the newest approved work and reaches one of four honest answers — live, nothing-to-publish, still-building, or **stopped**. Only the last two can ever reach you, and only after a twenty-minute grace period so a slow build is never mistaken for a failure.
+So a mortal can join a smith's guild, wear the badge for a hundred turns, and never once be sent anything to do.
 
-**The detail worth admiring is how it avoids going stale.** To judge "nothing needed publishing" it has to know what counts as a real change — and rather than keep its own copy of that list, it reads the publisher's list, the same one the publisher uses to make the decision. A copy would drift the moment someone edited one side, and a drifted copy would quietly start rubber-stamping every skip as harmless, which is the exact failure the job exists to catch. There is now no second list to drift.
+**The part worth admiring is what the crew did next: they did not fix it.** The narrow ticket asked about a number, and they had the evidence to change one — that would have shipped a green tick and left the actual hole in place. Instead they wrote the verdict down, shipped a repeatable measurement so the claim can be re-checked rather than trusted, and re-scoped the real work into its own urgent job. Their stated reason: *choosing how guild work reaches members is a design decision, not a tuning change.*
 
-This brief is the first one it has filed. **Its verdict: the live game is serving tonight's newest work.** Previous briefs asserted that from a green tick; this one asked.
+**Nothing in that decision needs you.** Three mechanisms are on the table and they differ in plumbing, not in what a player sees — under all three, guild members start getting guild work. The crew will pick one and record the two they rejected. The single game-feel risk they have already named themselves: however it is wired, members must not end up drawing *only* guild work.
 
-**A note this file has been carrying since yesterday closed itself in the process.** The observation was that publication health must be judged by *what changed*, never by the label on the work — a documentation-titled job had once triggered a real publish because it touched a player-facing file. That note was written into the ticket rather than left in the margin, and it shipped in exactly that shape, then went one better by reading the publisher's list instead of restating it.
+This is the eleventh time in four days that the same shape of defect has surfaced — content that was written, and paid for, and connected to nothing. The crew now goes looking for it on purpose, which is why this one was caught while answering an unrelated question.
 
-On the bench 3:01am, done 3:29am — **28 minutes**, and the third consecutive job to finish within seconds of that same figure. No new problem left behind it; three clean closes in a row.
+Door to door: on the bench 5:01am, done 5:45am — **45 minutes**, longer than the last three, and reasonably so; most of it went into building the measuring tool rather than into the answer.
 
 ---
 *Standing asks live in [`Design/user-actions.md`](user-actions.md). This file is regenerated hourly by the `keep-work-flowing-cc` scheduled task; staleness is visible from the Generated timestamp above and the task's `lastRunAt` in `list_scheduled_tasks`.*
