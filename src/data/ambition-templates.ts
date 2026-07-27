@@ -1,6 +1,69 @@
 // src/data/ambition-templates.ts
 //
 // Starter ambition content library — 10 standard templates and 4 reactive templates.
+//
+// ─── THR-813 — retired selection keys, and why ────────────────────────────────
+//
+// This file was the sole home of all 21 trait refs that survived THR-800/THR-808's
+// repointing. THR-813 took the per-class decision the ratchet had been deferring.
+//
+// The governing rule is the UL's, not this file's (`Docs/ubiquitous-language/Traits.md`
+// § Trait Ref): **a hook must reference a trait some producer actually mints — a ref
+// that names a trait nothing creates is an authoring defect, not a missing engine
+// feature.** Two corollaries decided the classes without needing a per-ref opinion:
+//
+//   1. A trait definition may only be minted inside a category, and *a category is a
+//      lifecycle contract* (UL § Trait Category) — the contract names the producer. So
+//      "just add a definition" is not available: you adopt a producer or you do not
+//      mint. None of the ten contracts covers a biographical selection key.
+//   2. The phantom-grant route (a bare `trait_grant` key with no definition) is canon-
+//      illegal here. A grant key has no display name and no visibility, and THR-789's
+//      canon is that an object's traits are always visible in its interface once known.
+//      A key that can never be displayed cannot be identity.
+//
+// **Retired (13 refs, 14 sites).** `apostate`, `barren_line`, `exile`, `incurious` (×2),
+// `noble_blood`, `obsessive`, `pacifist`, `perfectionist`, `pioneer`, `plague_bearer`,
+// `rooted`, `ruin_delver`, `veil_blind` — removed from `blockingTraits` / `boostingTraits`
+// below. Each was a real authoring intent ("a pacifist should not take the conquest
+// ambition") that the trait vocabulary cannot express, and THR-800 rightly declined to
+// force-fit them onto approximate live traits — a mistaken blocker silently excludes
+// agents who should qualify, which is worse than the dead one it replaces.
+//
+// Removal is **behaviour-identical by construction**, not by measurement luck.
+// `passesEligibility` and `scoreDesirability` (`src/engine/ambitionSelection.ts`) both
+// test `agent.traits.includes(ref)`; a ref no producer mints is never in that array, so
+// a dead blocker never blocked (permissive) and a dead boost never scored (zero weight).
+// Every *boosting* site retained at least one live key, so no ambition lost its trait
+// signal; every *blocking* site emptied, which is what it already evaluated to.
+//
+// The concepts are not lost — they are unbuilt. A later wave that mints, say, an innate
+// `noble_blood` against a real producer re-authors the boost deliberately, which is the
+// direction the UL rule points. What is gone is the claim that the vocabulary exists.
+//
+// **Kept dead, deliberately (8 refs).** The four `destiny.*` refs wait on the wave that
+// fills that reserved category, and `rare_ore_secured` wants a resource model — both
+// unchanged from THR-808. The three class-3 abandonment flags (`accepted_exile`,
+// `homeless_wanderer`, `made_peace_with_the_land`) are the ones THR-813 expected to
+// discharge and could not, for a reason worth recording because it is not obvious:
+//
+//   An abandonment trigger is evaluated every tick from the ambition's first, with no
+//   grace period, and it takes priority over milestones (`ambitionLifecycle.ts`). So a
+//   trigger authored as a bare *current-state* predicate fires immediately unless the
+//   ambition's own eligibility gate makes that state impossible at assignment. The safe
+//   idiom is visible in `ambition_dominate_trade`: its trigger is `gold < 0.2` and its
+//   `reachFloors` demand `gold >= 0.4`, so the floor supplies the guarantee.
+//
+//   All three of these describe a *loss* — home given up, kin gone, the road ended. The
+//   available proxies (zero `loyalty` bonds; outside the homeland; not having moved) are
+//   all true for a typical agent at assignment, and none of the three ambitions gates on
+//   them, so every repoint would abandon on tick one. That is the inverted-risk failure
+//   THR-812 fixed for `target_agent_eliminated`, and re-introducing it in abandonment
+//   form would be strictly worse than the dead refs: today these ambitions merely never
+//   abandon, whereas a misfiring trigger would mean they never *run*.
+//
+//   Discharging them needs state the engine does not have — loss history, or residence
+//   plus dwell time. Tracked as THR-822. See also the `KNOWN_DEAD` block in
+//   `src/engine/__tests__/traitRefReconciliation.test.ts`.
 
 import type { AmbitionTemplate, ReactiveAmbitionTemplate } from '../types/ambition';
 import type { AmbitionStrategicProfile } from '../types/strategicAction';
@@ -82,7 +145,8 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     category: 'dominion',
     reachFloors: { iron: 0.4, heart: 0.3 },
     requiredTraits: [],
-    blockingTraits: ['pacifist'],
+    // THR-813: retired `pacifist` — no producer, no category contract. See file header.
+    blockingTraits: [],
     sphereAffinities: ['force', 'mind'],
     bondModifiers: [{ bondType: 'vassal', modifier: 0.4 }],
     boostingTraits: ['trait.mastery.battle-hardened', 'trait.personality.iron.vice'],
@@ -152,7 +216,8 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     blockingTraits: [],
     sphereAffinities: ['matter', 'energy'],
     bondModifiers: [],
-    boostingTraits: ['perfectionist', 'trait.mastery.spell-weaver'],
+    // THR-813: retired `perfectionist`; the live mastery boost carries this ambition.
+    boostingTraits: ['trait.mastery.spell-weaver'],
     reachAffinity: { iron: 0.7, veil: 0.6, stone: 0.3 },
     milestones: [
       {
@@ -203,7 +268,8 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     category: 'mastery',
     reachFloors: { veil: 0.4, eye: 0.3 },
     requiredTraits: [],
-    blockingTraits: ['veil_blind'],
+    // THR-813: retired `veil_blind` — no producer, no category contract.
+    blockingTraits: [],
     sphereAffinities: ['mind', 'spirit'],
     bondModifiers: [{ bondType: 'mentor', modifier: 0.2 }],
     boostingTraits: ['#eye', '#veil'],
@@ -270,13 +336,15 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     category: 'legacy',
     reachFloors: { gold: 0.3, heart: 0.3 },
     requiredTraits: [],
-    blockingTraits: ['barren_line'],
+    // THR-813: retired `barren_line` — no producer, no category contract.
+    blockingTraits: [],
     sphereAffinities: ['life', 'time'],
     bondModifiers: [
       { bondType: 'heir', modifier: 0.5 },
       { bondType: 'spouse', modifier: 0.3 },
     ],
-    boostingTraits: ['noble_blood', 'trait.mastery.silver-tongue'],
+    // THR-813: retired `noble_blood`; the live mastery boost carries this ambition.
+    boostingTraits: ['trait.mastery.silver-tongue'],
     reachAffinity: { gold: 0.6, heart: 0.7, star: 0.4 },
     strategicProfile: {
       behaviorFamily: 'court-political',
@@ -391,10 +459,12 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     category: 'discovery',
     reachFloors: { eye: 0.4, veil: 0.3 },
     requiredTraits: [],
-    blockingTraits: ['incurious'],
+    // THR-813: retired `incurious` — no producer, no category contract.
+    blockingTraits: [],
     sphereAffinities: ['time', 'mind'],
     bondModifiers: [{ bondType: 'informant', modifier: 0.2 }],
-    boostingTraits: ['#eye', 'ruin_delver'],
+    // THR-813: retired `ruin_delver`; the live `#eye` tag boost carries this ambition.
+    boostingTraits: ['#eye'],
     reachAffinity: { eye: 0.8, veil: 0.5, stone: 0.4 },
     strategicProfile: {
       behaviorFamily: 'scholar-seeker',
@@ -458,7 +528,8 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     category: 'devotion',
     reachFloors: { star: 0.4, heart: 0.3 },
     requiredTraits: [],
-    blockingTraits: ['apostate'],
+    // THR-813: retired `apostate` — no producer, no category contract.
+    blockingTraits: [],
     sphereAffinities: ['spirit', 'mind'],
     bondModifiers: [{ bondType: 'convert', modifier: 0.3 }],
     boostingTraits: ['trait.reputation.star.negative', 'trait.mastery.silver-tongue'],
@@ -592,7 +663,8 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     category: 'mastery',
     reachFloors: { heart: 0.3, gold: 0.3 },
     requiredTraits: [],
-    blockingTraits: ['plague_bearer'],
+    // THR-813: retired `plague_bearer` — no producer, no category contract.
+    blockingTraits: [],
     sphereAffinities: ['life', 'spirit'],
     bondModifiers: [{ bondType: 'patient', modifier: 0.2 }],
     boostingTraits: ['trait.mastery.anointed', 'trait.core.core_warmth.virtue'],
@@ -716,7 +788,9 @@ export const REACTIVE_AMBITION_TEMPLATES: readonly ReactiveAmbitionTemplate[] = 
     blockingTraits: [],
     sphereAffinities: ['force', 'spirit'],
     bondModifiers: [{ bondType: 'exile_kin', modifier: 0.4 }],
-    boostingTraits: ['exile', 'trait.mastery.steadfast'],
+    // THR-813: retired `exile`; the live mastery boost and the `exile_kin` bond
+    // modifier above already steer this ambition toward the dispossessed.
+    boostingTraits: ['trait.mastery.steadfast'],
     reachAffinity: { iron: 0.7, heart: 0.6, stone: 0.3 },
     milestones: [
       {
@@ -977,6 +1051,15 @@ export const EVENT_MINTED_AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     completion: { requires: 2, of: 3 },
     abandonmentTriggers: [
       {
+        // THR-813 left this dead deliberately; see THR-822. `homeless_wanderer` names
+        // no trait any producer mints, so this ambition has no reachable abandonment
+        // path — but the obvious repoint is worse than the dead ref. "Nothing *left* to
+        // guard" is a loss, and the current-state proxy (`loyalty` bonds == 0) is true
+        // for most agents at assignment, so it would abandon on the first tick. This
+        // file's safe idiom is visible in `ambition_dominate_trade`, whose trigger
+        // (`gold < 0.2`) can never hold at assignment because its own `reachFloors`
+        // demand `gold >= 0.4`. Nothing here gates on bonds, so nothing supplies that
+        // guarantee. The honest fix needs loss/settledness state the engine lacks.
         condition: { type: 'agent_has_trait', trait: 'homeless_wanderer' },
         prose: ['There was nothing left to guard. The vigil ended.'],
       },
@@ -1006,7 +1089,8 @@ export const EVENT_MINTED_AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     category: 'survival',
     reachFloors: { star: 0.1 },
     requiredTraits: [],
-    blockingTraits: ['rooted'],
+    // THR-813: retired `rooted` — no producer, no category contract.
+    blockingTraits: [],
     sphereAffinities: ['entropy', 'time'],
     bondModifiers: [{ bondType: 'fellow_refugee', modifier: 0.3 }],
     boostingTraits: ['trait.mastery.steadfast', 'trait.condition.exhausted', 'trait.condition.terrified'],
@@ -1111,7 +1195,8 @@ export const EVENT_MINTED_AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     blockingTraits: [],
     sphereAffinities: ['life', 'time'],
     bondModifiers: [{ bondType: 'alliance', modifier: 0.3 }],
-    boostingTraits: ['trait.personality.star.virtue', 'trait.mastery.silver-tongue', 'pioneer'],
+    // THR-813: retired `pioneer`; two live boosts carry this ambition.
+    boostingTraits: ['trait.personality.star.virtue', 'trait.mastery.silver-tongue'],
     reachAffinity: { heart: 0.6, gold: 0.5, star: 0.4 },
     milestones: [
       {
@@ -1156,10 +1241,12 @@ export const EVENT_MINTED_AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     category: 'discovery',
     reachFloors: { eye: 0.1 },
     requiredTraits: [],
-    blockingTraits: ['incurious'],
+    // THR-813: retired `incurious` — no producer, no category contract.
+    blockingTraits: [],
     sphereAffinities: ['mind', 'spirit'],
     bondModifiers: [{ bondType: 'fellow_seeker', modifier: 0.3 }],
-    boostingTraits: ['#eye', 'obsessive', '#veil'],
+    // THR-813: retired `obsessive`; the live `#eye` / `#veil` tag boosts carry this one.
+    boostingTraits: ['#eye', '#veil'],
     reachAffinity: { eye: 0.7, veil: 0.6, star: 0.4 },
     milestones: [
       {

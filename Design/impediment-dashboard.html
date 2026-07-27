@@ -3404,6 +3404,32 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "Call `await __DEBUG.enableTracing()` (plus `clearTraces()`) **before** the action under test, then read back. Confirmed: 219 traces captured including both expected `nudge_played` entries with correct `essenceSpent`. A better fix is for `getTraces()` to return a discriminated `{ enabled: false }` instead of `[]` when tracing is off — worth a ticket if it recurs.",
     "session": "THR-775 hourly pickup."
+  },
+  {
+    "num": "246",
+    "id": 246,
+    "count": 1,
+    "date": "2026-07-27",
+    "category": "tooling",
+    "description": "**A content sweep written against \"the templates\" read two of three exported pools, and its first version passed clean over content it never opened.** THR-813 retired 13 trait refs from `src/data/ambition-templates.ts` and added a test asserting none is re-authored. The file exports **three** pools — `AMBITION_TEMPLATES`, `REACTIVE_AMBITION_TEMPLATES` and `EVENT_MINTED_AMBITION_TEMPLATES` — and the obvious two-pool import (the two names that appear together everywhere else in the repo) misses the third, which holds two of the retired keys (`obsessive`, one of the two `incurious` sites). The sweep returned PASS.",
+    "consequence": "A guard that reads as complete but silently exempts a third of the content it names. Same shape as impediment #241 (a probe matching nothing prints PASS) but harder to spot, because here the probe *does* match a large non-empty set — the absence is a whole aggregate, not an empty result, so nothing about the output looks thin.",
+    "impact": "M",
+    "workaroundFound": true,
+    "workaround": "Caught only because a *second*, differently-shaped test in the same commit indexed templates by id and failed with `missing ambition ambition_found_anew` — an id that exists but lives in the unread pool. Two defences now in the test: it imports all three pools explicitly with a comment naming why, and asserts `authored.size > 20` plus the presence of one key that is *supposed* to be there (`trait.mastery.steadfast`), so a refactor that renames the fields fails loudly instead of going quiet. General rule: before sweeping a content file, run `grep -n \"^export const\" <file>` and enumerate the aggregates — do not infer the pool set from the import line used elsewhere.",
+    "session": "THR-813, hourly `tb-opus-pickup`"
+  },
+  {
+    "num": "247",
+    "id": 247,
+    "count": 1,
+    "date": "2026-07-27",
+    "category": "process",
+    "description": "**A ticket's own framing named the fix, and the fix was a live regression; only reading the consumer's evaluation order caught it before commit.** THR-813 inherited a clean precedent — THR-808 had discharged the dead ref `living` by adding an `agent_deceased` graph condition — and its sibling `homeless_wanderer` looked identical: \"nothing left to guard\" is bond state, `agent_has_bonds` already existed, so a negation would discharge it. The type and evaluator were written. Reading `ambitionLifecycle.ts` then showed `checkAbandonment` runs from an ambition's first tick, with no grace period, ahead of milestones — and `ambition_protect_the_home` gates on nothing guaranteeing the bearer *has* loyalty bonds at assignment, so `maxCount: 0` would have abandoned it on tick one for most agents.",
+    "consequence": "Would have shipped THR-812's inverted-risk auto-fire in abandonment form, one ticket after THR-812 fixed it in completion form, while appearing to *discharge* a dead ref — i.e. the sweep would have gone quiet and the ambition would have become unrunnable rather than merely unabandonable. Strictly worse than the defect it replaced.",
+    "impact": "L",
+    "workaroundFound": true,
+    "workaround": "The condition was deleted rather than shipped unused, and the reasoning was written into `KNOWN_DEAD.unproducedFlags` and the file header so the next session does not re-derive the same appealing wrong fix. The generalisable check: **an abandonment/failure trigger authored as a bare current-state predicate is safe only if the ambition's own eligibility gate makes that state impossible at assignment.** The file's one safe instance shows the pattern — `ambition_dominate_trade` triggers on `gold < 0.2` and its `reachFloors` demand `gold >= 0.4`. Verify the polarity against the eligibility gate before repointing any trigger.",
+    "session": "THR-813, hourly `tb-opus-pickup`"
   }
 ];
 // ── End data ──
