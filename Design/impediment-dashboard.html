@@ -3287,6 +3287,19 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "**Workaround:** use `tick N` (synchronous) rather than `run N` whenever a later piped command must observe the result. `run` is for interactive watching, not for scripted evidence-gathering; reserve it for sessions where a human reads the stream. `printf 'spawn encounter npc_9 tavern.brawl\\ntick 12\\neval <query>\\nexit\\n'` returns the correct post-tick state. **Durable fix:** have `run` await completion before the REPL reads the next line, or print a one-line warning when stdin is a pipe and further commands remain buffered. Also worth checking the tick number in the output against what was requested before trusting any piped `eval` — the `⏸ Paused at tick 0` line was the tell here and is easy to skim past.",
     "session": "THR-809, hourly `tb-opus-pickup` run, 2026-07-27; first (unnumbered) occurrence THR-761, 2026-07-26."
+  },
+  {
+    "num": "237",
+    "id": 237,
+    "count": 1,
+    "date": "2026-07-27",
+    "category": "process",
+    "description": "**A ticket can specify the verification command as part of its Done-when, and that command can itself be gate theater — the one place an executor is least likely to test it, because it arrived as the acceptance criterion rather than as a claim.** THR-785 exists because a green non-required `Vercel` check was mistaken for deployment proof, and its own Done-when named the replacement: `gh api repos/.../commits/<sha>/status --jq .state`. Measured before wiring it: that command returns `success` for `main` tip `a9c33078`, a commit with **zero** deployment records (`gh api \"repos/.../deployments?sha=a9c33078\"` → empty). `vercel.json` carries an `ignoreCommand`, and Vercel reports a *skipped* build as a **successful** commit status. The specified fix therefore reads healthy during precisely the failure the ticket was filed about.",
+    "consequence": "Shipping it as written would have closed the ticket, satisfied its Done-when, and left the observability gap exactly as wide — while adding a documented command that future agents would cite as deployment evidence, making the blind spot harder to see rather than easier. The same shape as THR-686 (`tsc --noEmit` exits 0 unconditionally and was cited as a type gate) and row **229** (an optional field read by UI and written by nobody): a check whose green is unfalsifiable.",
+    "impact": "Medium",
+    "workaroundFound": true,
+    "workaround": "**Workaround:** before implementing a Done-when that names a verification command, run the command against a case where the answer is *known to be bad* and confirm it says so. Here that meant asking not \"does the status endpoint return success?\" but \"does a commit with no deployment return anything other than success?\" — one extra `gh api` call. **Durable pattern:** for any health probe, falsify the benign verdict in both directions against real history before trusting it; `check-deploy-health`'s `skipped` verdict was validated this way (`1a9e4cd5..HEAD` docs-only → benign, `a406dc83..HEAD` carrying a `src/engine/` fix → build-relevant), because a predicate that only ever answers \"fine\" makes the whole check vacuous. Treat a ticket-supplied command as a hypothesis from the design session, same as row **234** treats a ticket-supplied class taxonomy.",
+    "session": "THR-785, hourly `tb-opus-pickup` run, 2026-07-27."
   }
 ];
 // ── End data ──
