@@ -673,7 +673,7 @@ const ACTS = [
     color: 'var(--act-opposition)',
     summary: 'Rival gods act, stealth fades',
     phases: [
-      { id: '3', name: 'Rival Actions', fn: 'phaseRivalActions()', desc: 'Rival gods act on 8-13 tick cycles. Behaviors: recruit followers, intervene in encounters, expand influence, attack holdings. Pushes sphere pressure.', reads: ['rival definitions', 'rival states'], writes: ['rival states', 'tickEvents', 'pendingSpherePressures'], tags: ['rng: seed+tick*37'] },
+      { id: '3', name: 'Rival Actions', fn: 'phaseRivalActions()', desc: 'Rival gods act on 8-13 tick cycles. Launches and advances multi-phase schemes (corruptive / territorial / economic families) on the composition runner, or makes a cheap probe move: recruit followers, intervene in encounters, expand influence, attack holdings. Executes each activated phase’s concrete move — sphere pressure, and (economic family, THR-619) souring a location’s richest resource stock or severing its trades_with conduits, which also degrades the player’s intelligence reliability for that region.', reads: ['rival definitions', 'rival states', 'activeCompositions', 'worldFlags', 'location resource stocks', 'intelligenceRecords'], writes: ['rival states', 'tickEvents', 'pendingSpherePressures', 'activeCompositions', 'worldFlags', 'chronicleEntries (cool-failure)', 'intelligenceRecords (on route cut)', 'graph: resource quantities + trades_with removal'], tags: ['rng: seed+tick*37'] },
       { id: '4', name: 'Stealth Decay', fn: 'phaseStealth()', desc: 'Linear decay of stealth exposure. Agents gradually become visible again after covert actions.', reads: ['stealthExposure'], writes: ['stealthExposure'], tags: [] }
     ]
   },

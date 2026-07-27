@@ -26,7 +26,9 @@ import {
   RIVAL_SCHEME_PROBE_WEIGHT,
   RIVAL_ESCALATION_DOOM_WEIGHT,
   RIVAL_ESCALATION_ADVANCEMENT_WEIGHT,
+  RIVAL_SCHEME_STOCK_SCAN_CAP,
 } from '../data/rival-scheme-config';
+import { readResources } from './resourceEconomy';
 import {
   eligibleSchemeFamilies,
   type RivalSchemeFamily,
@@ -268,9 +270,38 @@ export function computeRivalEscalationTier(state: GameState): number {
 }
 
 /**
+ * True when the world carries the Mortal Economy stock substrate (THR-615) —
+ * i.e. at least one location has a non-empty `resources` bag. Gates the economic
+ * scheme family (THR-619), which reads and drains those stocks.
+ *
+ * Short-circuits on the first stocked location and scans at most
+ * `RIVAL_SCHEME_STOCK_SCAN_CAP` locations, so the cost is bounded on large maps.
+ * Fail-soft: any graph read failure reports `false` (family stays ineligible)
+ * rather than throwing into the tick loop (NFP #4).
+ */
+export function worldHasResourceStocks(state: GameState): boolean {
+  try {
+    const locations = state.graph.getNodesByType('location');
+    const scanLimit = Math.min(locations.length, RIVAL_SCHEME_STOCK_SCAN_CAP);
+    for (let i = 0; i < scanLimit; i++) {
+      const resources = readResources(locations[i].properties);
+      for (const instance of Object.values(resources)) {
+        if (instance && typeof instance.quantity === 'number') return true;
+      }
+    }
+  } catch {
+    return false;
+  }
+  return false;
+}
+
+/**
  * Decide whether a rival launches a scheme this action tick, and which family.
  * Returns the chosen family, or null (meaning: make a cheap probe move instead).
  * Pure — consumes the seeded rival rng stream.
+ *
+ * `worldHasStocks` (THR-619) gates substrate-dependent families; defaults to
+ * `false` so a caller that has not measured the world never launches one.
  */
 export function selectRivalScheme(
   rival: RivalDefinition,
@@ -278,6 +309,7 @@ export function selectRivalScheme(
   escalationTier: number,
   launchTick: number,
   rng: () => number,
+  worldHasStocks: boolean = false,
 ): { family: RivalSchemeFamily | null; reason: string } {
   // Capacity gate.
   const activeCount = (rivalState.activeSchemeIds ?? []).length;
@@ -299,7 +331,7 @@ export function selectRivalScheme(
   }
 
   // Eligibility.
-  const eligible = eligibleSchemeFamilies(rival.behavior, escalationTier);
+  const eligible = eligibleSchemeFamilies(rival.behavior, escalationTier, worldHasStocks);
   if (eligible.length === 0) {
     return { family: null, reason: 'no-eligible-family' };
   }

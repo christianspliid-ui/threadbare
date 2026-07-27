@@ -57,3 +57,37 @@ export const RIVAL_SCHEME_HOSTILITY_PER_MOVE = 0.03;
 /** Tier index (0-based, 0..RIVAL_MAX_ESCALATION_TIER) at or above which the more
  *  ambitious scheme families (territorial siege beats) unlock. */
 export const RIVAL_SCHEME_AMBITIOUS_FAMILY_MIN_TIER = 1;
+
+// ─── Economic family (THR-619) ─────────────────────────────────────
+// The economic arc moves stocks and cuts conduits instead of spawning combat.
+// These numbers are how hard a soured mine bites and how blind a severed route
+// leaves the player. Raising them makes economic rivals nastier without touching
+// any logic (NFP #1).
+
+/**
+ * Fraction of a resource's `quantity` a `drain_stock` move removes at the target
+ * location. 0.35 is chosen to reliably push a mid-quantity resource down one
+ * stock tier without instantly exhausting it — the mine sours, it does not vanish.
+ */
+export const RIVAL_SCHEME_STOCK_DRAIN_FRACTION = 0.35;
+
+/** Floor a drained resource's quantity cannot fall below (never exhaust to zero). */
+export const RIVAL_SCHEME_STOCK_DRAIN_FLOOR = 5;
+
+/** Max `trades_with` conduits a single `sever_route` move cuts. */
+export const RIVAL_SCHEME_MAX_ROUTES_SEVERED = 2;
+
+/**
+ * Reliability penalty applied to each of the player's intelligence records for
+ * the severed region (the Flow Web nervous-system coupling). Large enough that a
+ * `reliable` record (≥0.7) can be knocked into `uncertain` by a single cut —
+ * economic attack blinds as well as impoverishes.
+ */
+export const RIVAL_SCHEME_ROUTE_CUT_INTEL_PENALTY = 0.25;
+
+/**
+ * Max locations scanned when testing whether the world has any resource stocks
+ * (the economic family's eligibility gate). Bounds the per-launch cost on large
+ * maps; the predicate short-circuits on the first stocked location anyway.
+ */
+export const RIVAL_SCHEME_STOCK_SCAN_CAP = 200;

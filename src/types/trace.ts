@@ -2003,6 +2003,9 @@ export type TraceEntry =
   | RivalSchemePhaseAdvancedTrace
   | RivalSchemeCounteredTrace
   | RivalSchemeCompletedTrace
+  // Economic scheme family traces (THR-619)
+  | RivalSchemeStockDrainedTrace
+  | RivalSchemeRouteSeveredTrace
   // Notable agenda traces (THR-630)
   | NotableAgendaLaunchedTrace
   | NotableAgendaPhaseAdvancedTrace
@@ -2782,6 +2785,37 @@ export interface RivalSchemeCompletedTrace extends TraceBase {
   category: 'rival.scheme_completed';
   rivalId: string;
   compositionId: string;
+}
+
+// ─── Economic scheme family traces (THR-619) ─────────────────────
+
+/** Trace: an economic scheme's `drain_stock` move soured a resource. */
+export interface RivalSchemeStockDrainedTrace extends TraceBase {
+  category: 'rival.scheme_stock_drained';
+  rivalId: string;
+  compositionId: string;
+  targetNodeId: string;
+  /** Which resource class was drained (the target's richest). */
+  resourceId: string;
+  quantityBefore: number;
+  quantityAfter: number;
+}
+
+/**
+ * Trace: an economic scheme's `sever_route` move cut trade conduits and blinded
+ * the region (the Flow Web nervous-system coupling).
+ */
+export interface RivalSchemeRouteSeveredTrace extends TraceBase {
+  category: 'rival.scheme_route_severed';
+  rivalId: string;
+  compositionId: string;
+  targetNodeId: string;
+  /** Trade partners whose `trades_with` conduit was cut. */
+  severedPartnerIds: string[];
+  /** Region whose intelligence went dark; absent when the target has no region. */
+  region?: string;
+  /** How many of the player's intelligence records lost reliability. */
+  intelRecordsDegraded: number;
 }
 
 // ═══════════════════════════════════════════════════════════════════

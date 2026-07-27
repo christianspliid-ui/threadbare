@@ -3495,6 +3495,32 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "Reorder so the artifact is committed before anything cites it, and add a terminal gate that re-verifies every citation. Added to the skill: **Step 8** (commit the report via its own `docs/retro-*` PR — `main` is protected — then prove it with `git ls-files --error-unmatch`, blocking), **Step 9** (file the backlog tickets only now, then run `git ls-files --error-unmatch` over every path the run cited anywhere, reporting the count explicitly), and **Rule 8** (*never cite a path you have not committed*). Same note added to the `weekly-retro` scheduled prompt and its repo mirror. Generalizable: any skill whose output is cited elsewhere needs \"commit before cite\" ordering plus a terminal citation gate — writing a file is not the deliverable, committing it is. Related lapse noted but not fixed here: the skill's Step 7 impediment-log footer has not been written since 2026-05-04, across 11 reports.",
     "session": "THR-798, hourly `tb-opus-pickup`"
+  },
+  {
+    "num": "254",
+    "id": 254,
+    "count": 1,
+    "date": "2026-07-27",
+    "category": "verification",
+    "description": "**A graph edge written from an id that is not a node is dropped silently, so an attribution model can read as wired for months while binding nothing.** THR-619: `phaseRivalActions`' `materialize` move has bound `sponsors_scheme` from `rival.id` to the scheme target since THR-66, and the plan doc, the wiring checklist and the systemic-wiring guide all describe that edge as the graph half of rival attribution. It has never existed in a real world — rival gods live in `state.rivalDefinitions` and are **not** graph nodes (`getNode('actor_rival_1')` → `NO` for all three, seed 42), so every `addEdge` from a rival source is discarded with no throw and no warning. A 200-tick run holds **zero** rival-scheme `sponsors_scheme` edges. The unit tests never caught it because their fixture calls `addActor(graph, 'actor_rival_1')` first — the fixture manufactures the very precondition production lacks, which is the failure mode that makes this worth logging rather than just fixing. **What surfaced it was refusing to accept a passing test as evidence of a real-world behaviour** and running the CLI query anyway; the tell was searching for the feature's own edges and getting `[]` while notable-agenda edges (whose notables *are* real actors) filled the same query.",
+    "consequence": "~15 min of verification that found a defect older than the ticket; the ticket's own exit criteria were unaffected.",
+    "impact": "M",
+    "workaroundFound": true,
+    "workaround": "**Workaround / rule:** when a feature's evidence is \"an edge exists\", assert it with a live `getEdgesByType(...)` count on a seeded CLI run, never with a unit test whose fixture created the endpoints. More generally: `addEdge` is fail-soft on a missing endpoint, so any code binding an edge from an id that did not come out of the graph must prove the node exists. Filed **THR-829** (choose between giving rivals actor nodes, re-sourcing the edge, or dropping it from the model) rather than widening THR-619 to a design decision.",
+    "session": "THR-619 economic scheme family, attribution verification."
+  },
+  {
+    "num": "255",
+    "id": 255,
+    "count": 1,
+    "date": "2026-07-27",
+    "category": "tooling",
+    "description": "**`EDGE_SCHEMA` can disagree with every shipped producer of an edge type, and the resulting warning storm is indistinguishable from ordinary log noise.** THR-619 needed to sever `trades_with` conduits at a *location* and had to establish which endpoints that edge actually uses. The schema declares actor→actor; `createTradeRoute` (`strategicGraphOps.ts`), `battleAftermath.ts:363`, the location-action partner search and the THR-616 cargo manifest all use location→location. So every real trade route logs two `[GraphSchema] Edge \"trades_with\" source should be \"actor\", got \"location\"` lines, visible in a normal `npm test` run on `main` — meaning the validator that exists to flag mis-shaped edges is, for this type, permanently crying wolf. The schema is also read as documentation: an agent checking it before wiring a trade-route feature builds against the wrong endpoints.",
+    "consequence": "~10 min; resolved by reading the producer instead of the schema.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "**Workaround:** treat `EDGE_SCHEMA` as a hint, not an authority — confirm endpoint shape by reading the `type: '<edge>'` producer and counting live edges with `getEdgesByType` on a seeded run (\"verify the noun before the verb\"). Filed **THR-830** to reconcile the declaration (likely the `[\"actor\",\"location\"]` union `belongs_to` already uses) and to get a seeded worldgen run to zero `trades_with` warnings.",
+    "session": "THR-619, sever-route move endpoint verification."
   }
 ];
 // ── End data ──
