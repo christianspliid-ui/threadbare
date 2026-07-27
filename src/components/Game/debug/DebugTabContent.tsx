@@ -57,11 +57,12 @@ import { EconomyDebugTab } from './EconomyDebugTab';
 import { EssenceSourcesDebugTab } from './EssenceSourcesDebugTab';
 import { OrphanedCardsDebugTab } from './OrphanedCardsDebugTab';
 import { FragmentsDebugTab } from './FragmentsDebugTab';
+import { NudgeDesignerTab } from './NudgeDesignerTab';
 import { EMPTY_STATE_STYLE } from './debugPanelStyles';
 import type { KnowsClueOfEdgeProperties } from '../../../types/knowledge';
 import type { FlipTableRuntimeState } from '../../../types/contentShells';
 
-export type ViewMode = 'feed' | 'agent-follow' | 'tick-inspector' | 'social' | 'encounters' | 'encounter-seeds' | 'hidden-marks' | 'journey' | 'webgl' | 'factions' | 'spheres' | 'revelation-log' | 'knowledge-gaps' | 'armies' | 'companies' | 'cli' | 'strategic' | 'omens' | 'cultures' | 'secrets-favors' | 'clues' | 'ruins' | 'recent-events' | 'shells' | 'compositions' | 'phases' | 'choices' | 'drift' | 'hand' | 'detection' | 'forecast' | 'foreshadowing' | 'action-unlocks' | 'beats' | 'sustained-controls' | 'kpi' | 'prose-quality' | 'economy' | 'essence-sources' | 'orphaned-cards' | 'fragments';
+export type ViewMode = 'feed' | 'agent-follow' | 'tick-inspector' | 'social' | 'encounters' | 'encounter-seeds' | 'hidden-marks' | 'journey' | 'webgl' | 'factions' | 'spheres' | 'revelation-log' | 'knowledge-gaps' | 'armies' | 'companies' | 'cli' | 'strategic' | 'omens' | 'cultures' | 'secrets-favors' | 'clues' | 'ruins' | 'recent-events' | 'shells' | 'compositions' | 'phases' | 'choices' | 'drift' | 'hand' | 'detection' | 'forecast' | 'foreshadowing' | 'action-unlocks' | 'beats' | 'sustained-controls' | 'kpi' | 'prose-quality' | 'economy' | 'essence-sources' | 'orphaned-cards' | 'fragments' | 'nudges';
 
 export const TABS: { id: ViewMode; label: string }[] = [
   { id: 'feed', label: 'Feed' }, { id: 'agent-follow', label: 'Agent' },
@@ -92,6 +93,7 @@ export const TABS: { id: ViewMode; label: string }[] = [
   { id: 'essence-sources', label: 'Essence Sources' },
   { id: 'orphaned-cards', label: 'Orphaned Cards' },
   { id: 'fragments', label: 'Fragments' },
+  { id: 'nudges', label: 'Nudges' },
 ];
 
 export interface DebugTabContentProps {
@@ -258,6 +260,7 @@ export function DebugTabContent({
   if (viewMode === 'essence-sources') return <EssenceSourcesDebugTab graph={graph} currentTick={currentTick} />;
   if (viewMode === 'orphaned-cards') return <OrphanedCardsDebugTab />;
   if (viewMode === 'fragments') return <FragmentsDebugTab traces={allTraces as TraceEntry[]} />;
+  if (viewMode === 'nudges') return <NudgeDesignerTab />;
   if (viewMode === 'sustained-controls') {
     return (
       <SustainedControlsDebugTab

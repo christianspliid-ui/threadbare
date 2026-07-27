@@ -119,6 +119,9 @@ import type { WhisperNudge, CompulsionCandidate } from '../../types/premonition'
 import { applyWhisperChoice, applyCompulsionChoice, dismissPremonition } from '../../engine/premonitionActions';
 import { buildGateDutyEncounterStageModel } from './encounter-stage/adapters/buildGateDutyEncounterStageModel';
 import { buildUnifiedEncounterStageModel } from './encounter-stage/adapters/buildUnifiedEncounterStageModel';
+import { spendNudgeEssence } from './encounter-stage/nudgeCommit';
+import { forecastWithNudges } from './encounter-stage/useNudgeHand';
+import { NUDGE_REJECT_TOAST_MS } from '../../data/nudge-stage-content';
 import { buildSimpleEncounterStageModel } from './encounter-stage/adapters/buildSimpleEncounterStageModel';
 import { EncounterVeil } from './EncounterVeil';
 import { DivineReceiptModal } from './DivineReceiptModal';
@@ -1191,11 +1194,21 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     if (tieredEncounterState.threadTier === 'watched') return null;
     const ut = getUnifiedTemplateById(tieredEncounterState.template.id);
     if (!ut) return null;
-    // Qualify if the template has support bundle, branching steps, or aftermath config
+    // Qualify if the template has support bundle, branching steps, aftermath config,
+    // or an authored nudge hand on any step.
+    //
+    // THR-775: the nudge clause is load-bearing, not a nicety. A nudge-bearing
+    // template is typically plain otherwise — the golden exemplar has no bundle,
+    // no branching and no aftermath config — so without this it falls through to
+    // the simple adapter, which builds no nudge phase, and the hand is unreachable
+    // for exactly the templates WS1 authors it onto.
     const hasSupportBundle = !!ut.supportBundle && ut.supportBundle.length > 0;
     const hasBranching = ut.steps.some(step => 'branchOnStep' in step);
     const hasAftermath = !!ut.aftermathConfig;
-    return (hasSupportBundle || hasBranching || hasAftermath) ? ut : null;
+    const hasNudges = ut.steps.some(
+      step => !('branchOnStep' in step) && !!step.nudges && step.nudges.length > 0,
+    );
+    return (hasSupportBundle || hasBranching || hasAftermath || hasNudges) ? ut : null;
   }, [tieredEncounterState, isGateDutyEncounterStage]);
 
   const encounterStageActiveAction = useMemo(() => {
@@ -2813,6 +2826,96 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     });
   }, [tieredEncounterState, setGameState, archetype.sphereAlignment.primary]);
 
+  /**
+   * THR-775 — commit the player's nudge hand for the current step.
+   *
+   * This is the writer WS0 declared and never built: it writes `activeNudges`
+   * onto the in-flight action, spends the essence, and emits the
+   * declared-but-never-emitted `nudge_played` trace. The legacy
+   * `handleEncounterIntervene` is untouched and still owns `authoredChoices`
+   * templates.
+   *
+   * Pre-roll rejection: if the pool cannot cover the hand at commit time (the
+   * player spent elsewhere while the stage was open), nothing is written and a
+   * toast says so. The cards snap back because `activeNudges` never changed —
+   * the failure can never surface after the roll.
+   */
+  const handleCommitNudges = useCallback((nudgeIds: string[], _essenceCost: number) => {
+    if (!tieredEncounterState) return;
+    const phase = encounterVeilModel?.nudgePhase;
+    if (!phase) return;
+
+    const cardsById = new Map(phase.cards.map(c => [c.id, c]));
+    const requests = nudgeIds.map(id => ({
+      sphere: cardsById.get(id)?.sphere,
+      cost: Math.max(0, cardsById.get(id)?.essenceCost ?? 0),
+    }));
+
+    const spend = spendNudgeEssence(
+      gameState.essencePool,
+      requests,
+      archetype.sphereAlignment.primary,
+    );
+
+    if (!spend.ok) {
+      handlePushToast({
+        id: `nudge-reject-${phase.actionId}-${gameState.tick}`,
+        message: spend.shortfallSphere
+          ? `Not enough ${spend.shortfallSphere} essence — the moment passes untouched.`
+          : 'Not enough essence — the moment passes untouched.',
+        count: 1,
+        createdTick: gameState.tick,
+        expiresAt: Date.now() + NUDGE_REJECT_TOAST_MS,
+        sphere: spend.shortfallSphere,
+      });
+      return;
+    }
+
+    setGameState(prev => ({
+      ...prev,
+      essencePool: spend.pool,
+      unifiedActions: (prev.unifiedActions ?? []).map(action =>
+        action.actionId === phase.actionId
+          ? { ...action, activeNudges: [...nudgeIds] }
+          : action,
+      ),
+    }));
+
+    // One trace per played card (player-driven, low volume — not an
+    // all-agents phase, so the aggregate-batching rule does not apply).
+    for (const id of nudgeIds) {
+      const card = cardsById.get(id);
+      if (!card) continue;
+      emitTrace({
+        type: 'nudge_played',
+        tick: gameState.tick,
+        actionId: phase.actionId,
+        templateId: phase.templateId,
+        nudgeId: id,
+        essenceSpent: Math.max(0, card.essenceCost),
+        forecastBefore: phase.baseForecast.tier,
+        forecastAfter: forecastWithNudges(phase, nudgeIds).tier,
+        rider: card.riderLabel,
+        summary: `Nudge played: ${card.name} on ${phase.templateId} step ${phase.stepIndex + 1}`,
+      } as unknown as Parameters<typeof emitTrace>[0]);
+    }
+
+    // The hand is committed; the step now resolves on mortal terms. Closing the
+    // stage releases the THR-668 interrupt the veil registered.
+    suppressedEncounterNotificationId.current = tieredEncounterState.notification.id;
+    setInterruptSuppressedUntilTick(gameState.tick + 1);
+    setTieredEncounterState(null);
+    forceResumeAfterInterruptsRef.current = true;
+  }, [
+    tieredEncounterState,
+    encounterVeilModel,
+    gameState.essencePool,
+    gameState.tick,
+    archetype.sphereAlignment.primary,
+    handlePushToast,
+    setGameState,
+  ]);
+
   const handleEncounterCommitAndContinue = useCallback((choiceId: string, essenceSpent: number) => {
     if (!tieredEncounterState) return;
     handleEncounterIntervene(choiceId, essenceSpent);
@@ -4101,6 +4204,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
             onAcknowledgeAftermath={handleEncounterAcknowledgeAftermath}
             onAftermathReaction={handleEncounterAftermathReaction}
             onSelectAgent={handleAgentSelect}
+            onCommitNudges={handleCommitNudges}
             onShowOnMap={(col, row) => {
               if (hexMapRef.current) {
                 const px = hexToPixel({ col, row }, HEX_CONSTANTS.HEX_SIZE);

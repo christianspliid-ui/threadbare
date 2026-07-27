@@ -596,6 +596,14 @@ export interface DebugBridge {
   // ── Spawn / world-spawn commands ────────────────────────────────────────
   /** Spawn an encounter on an agent. Opens the encounter modal by default. */
   spawnEncounter: (agentQuery: string, templateId: string, options?: DebugSpawnEncounterOptions & { open?: boolean }) => DebugSpawnEncounterResult & { notificationId?: string };
+  /** THR-775 — Stage the nudge golden exemplar (`The Darkhollow Vault`) on an agent at
+   *  the attended tier, so the nudge hand is actually in play.
+   *
+   *  The exemplar is a fixture deliberately absent from every pool, so this registers it
+   *  into the lookup index first (index only — never `UNIFIED_ACTION_TEMPLATES`, so no
+   *  scoring pass can draw it afterwards). The sanctioned browser-verify path for the
+   *  nudge stage until WS5 converts shipped templates. */
+  spawnNudgeExemplar: (agentQuery: string) => Promise<DebugSpawnEncounterResult & { notificationId?: string }>;
   /** Prepare encounter context (support bundle, anchor location) without spawning. */
   spawnEncounterContext: (templateId: string, options?: DebugSpawnEncounterContextOptions) => DebugSpawnEncounterContextResult;
   /** Spawn an attachment (artifact, trait, etc.) on an agent. */
@@ -774,6 +782,20 @@ export interface DebugBridge {
       modifierTotal: number;
     }
   >;
+
+  /** THR-775 — Toggle the nudge stage's **designer view**.
+   *
+   *  Off (the default) the encounter stage is the player surface: words only, and the
+   *  `sphere_locked` / `unlock_missing` / `trait_missing` cards are withheld. On, the
+   *  same stage additionally renders the difficulty value, the forecast probability,
+   *  each card's forecast delta and rider, and the withheld list with its reasons.
+   *
+   *  Same store the DebugPanel's Nudges tab writes — flipping either moves both.
+   *  Returns the state actually in force after the write. */
+  setNudgeDesignerView: (enabled: boolean) => Promise<boolean>;
+
+  /** THR-775 — Current designer-view state, without changing it. */
+  isNudgeDesignerView: () => Promise<boolean>;
 
   /** THR-773 — Every mortal currently in the broken state, with ticks-broken each.
    *
