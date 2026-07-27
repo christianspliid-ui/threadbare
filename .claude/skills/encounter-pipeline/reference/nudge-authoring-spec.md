@@ -110,6 +110,23 @@ Rules:
 - **Costs ≥ 0.** Zero is reserved for trait options.
 - **Riders rare and justified in a code comment.** A rider on every card turns the
   outcome ladder into a floor. Write why *this* card earns one.
+- **Match the step's reach to an actor who plausibly holds it, or keep the difficulty
+  under `NUDGE_OFF_REACH_MAX_DIFFICULTY` (0.45 — the `steep` floor).** This is the one
+  rule that decides whether the hand *does anything*, and it is invisible while
+  authoring: a hand can pass every rule above and still be inert.
+
+  Measured (THR-821, `npm run measure:nudge-headroom`, seeds 42/99;
+  `Docs/audits/2026-07-27-thr-821-nudge-headroom.md`): a `notable`-tier mortal — the
+  tier a newly-threaded NPC lands in — has capability **0.027–0.119** in a reach that
+  is neither its primary nor its secondary. At difficulty 0.45 that floors at
+  `PROBABILITY_FLOOR` and stays floored through the entire hand — 0% of the cohort
+  clears the floor unaided, with two cards, or with all of them. The player spends
+  essence and the forecast word does not move.
+
+  So either **gate the encounter to actors who hold the reach** (role, faction, or
+  late-run capability — what the golden exemplar does, drawing a thief into an
+  `eye`/`shadow` vault), **or** keep an open-draw step at `fair` or below. A `severe`
+  step drawn by anyone is a decorative hand.
 
 ### 4. Band prose
 
