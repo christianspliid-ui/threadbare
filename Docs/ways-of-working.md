@@ -66,6 +66,45 @@ working-agreement facts that had no home in the repo.
 - **Be honest when your own work needs retraction.** He values "this was wrong, here's why, here's
   the smaller version" over "let me expand on what I did."
 
+## Agent initiative — what may begin without being asked
+
+*Settled in chat 2026-07-27 (THR-826). Every rule above this point governs **who decides when a
+question is put**; none of them grants authority to **begin work unprompted**. That absence is why
+Threadbare ran for months with a routine executor and no orchestrator — the lane was never
+forgotten, it was never authorised. Full interrogation record:
+`Docs/plans/2026-07-27-orchestrator-lane-grill-me.md`.*
+
+- **The handoff line is a grilled, agreed design.** Vision, patterns, overarching architecture,
+  prototypes and game systems are created **together** — often via a brainstorm and a prototype.
+  Once that context is clear, **expanding agreed designs and patterns, and fixing bugs, is
+  agent-owned**: *"when that context is clear i am not interested in second guessing."* Agreement
+  means ready for **design and implementation**, so authoring the design sits downstream of it.
+- **There is deliberately no `agreed` flag.** No label, no state gate. A marker Christian must
+  remember to apply is friction at the moment he is most done with the conversation, and it fails
+  silently when forgotten. The weight sits on the agent **asking well when genuinely unsure** —
+  *"i am ready to clarify if the orchestrator is unsure though."*
+- **Never block on him.** Ask, then keep working on something else. An unanswered question parks the
+  one item it concerns, never the lane. He is rarely at the keyboard when automation runs.
+- **When agreed work runs out, stop and ask.** Falling through to un-agreed roadmap items is
+  choosing direction, which is his.
+- **Risk posture: exploration over caution.** *"we are making a game, and so we are exploring and
+  some features will be killed again… we are not building mission critical software. we are building
+  creative games."* He accepts that some deliveries miss. Prefer **cheap reversal to expensive
+  prevention**; do not propose ratification gates or staged rollouts unless a genuinely irreversible
+  cost exists.
+- **Killing splits three ways.** (1) **Redundant, unused or unreachable systems** — the agent's call
+  *and* the agent's to raise. (2) **Direction change** — his. (3) **Works, wired, but not fun** —
+  his, and **he initiates those dialogues himself** from a gameplay point of view. Never nominate a
+  feature as unfun.
+- **Code and architecture quality is fully delegated, as a continuous unprompted duty.** *"I am not
+  responsible for code and architecture quality as I dont have the skills. so the agent must
+  continuosly make sure that is surfaced when relevant."* He is disclaiming capability, not
+  delegating a chore — **there is no fallback reviewer**, so anything left unsurfaced is caught by
+  nobody. Note "redundant" is wider than "unreachable": two implementations doing one job are both
+  reachable, so no reachability sweep will ever flag them. A duty stated only as an intention decays
+  (advisory gates nobody reads are indistinguishable from gates that do not exist) — it needs a
+  scheduled owner and a reporting surface.
+
 ## How design decisions get made
 
 - **Surface grey zones upfront.** After drafting a design but before finalizing, do a grey-zone
