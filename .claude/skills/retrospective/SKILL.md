@@ -1,7 +1,7 @@
 ---
 name: retrospective
 description: Review the impediment log (Docs/impediments.md) and conduct a structured retrospective. Reads this week's drift-scan Linear issues as the first input, then analyzes patterns, proposes concrete improvements to tools, skills, CLAUDE.md, and processes. Trigger with "/retrospective" or "run a retro" or "review impediments" or "continuous improvement review".
-last_validated_against: 2026-06-11
+last_validated_against: 2026-07-27
 ---
 
 # Retrospective
@@ -89,7 +89,7 @@ Score each proposed fix:
 
 Sort by ROI descending. The top items are the most valuable improvements.
 
-### Step 5: Execute Quick Wins
+### Step 5: Execute Quick Wins (implement now, file tickets later)
 
 For any fix with effort=1 (trivial) and ROI > 3, **implement it immediately**:
 
@@ -97,9 +97,12 @@ For any fix with effort=1 (trivial) and ROI > 3, **implement it immediately**:
 - Edit CLAUDE.md
 - Update the relevant process doc
 
-For larger fixes, open a Linear issue in Continuous Improvement under the appropriate section:
+For larger fixes, **draft** the Linear issue now but **do not file it yet** — filing happens in Step 9, after the report is committed. Drafting means writing the title, body, and ROI score into your working notes so Step 9 is a mechanical paste.
+
 - Prefix description with `💡` if it needs design work, `🔲` if ready to build
 - Include the ROI score so they can be prioritized relative to other backlog items
+
+**Why the deferral (THR-798).** The 2026-07-24 run filed five tickets (THR-753/754/755/756/757) whose bodies read *"Filed by the 2026-07-24 weekly retro (report: `Design/retros/retro-2026-07-24.md`)"* six minutes after generating its draft — then ended before Step 6 ever wrote that report. The citations pointed at a file that has never existed in any commit, making five real tickets' reasoning unauditable. Ticket-before-report is the ordering hazard; Step 8 is the fix. See Rule 8.
 
 ### Step 5b: Systemic Wiring Guide Audit
 
@@ -117,6 +120,8 @@ If there are undocumented capabilities, flag them as a quick-win improvement (ed
 ### Step 6: Write the Retrospective Report
 
 Create a dated file: `Design/retros/retro-YYYY-MM-DD.md`
+
+Write **Improvements Backlogged** as the literal placeholder `_Filed in Step 9._` — the ticket IDs do not exist yet, and that is fine. Step 9 backfills them. Every other section is written in full here: the report must stand on its own the moment it is committed, because Step 8 commits it before any ticket is allowed to cite it.
 
 Structure:
 ```markdown
@@ -169,6 +174,47 @@ Add a horizontal rule and note at the bottom of `Docs/impediments.md`:
 ---
 ```
 
+### Step 8: Commit the report — BEFORE anything cites it
+
+**Blocking. The run may not file a ticket, or write the Step 7 footer citation, until this step has succeeded.**
+
+Writing the file is not the deliverable — *committing* it is. `Design/` was gitignored for months, and `git log --diff-filter=A -- Design/retros/` shows only three commits ever added a retro: one path reconciliation, one attended trial, and one bulk rescue literally titled *"back up 10 retro write-ups stranded on home machine"*. Every report before 2026-07-24 survived by luck, not by process.
+
+`main` is branch-protected, so the report ships as its own PR:
+
+```bash
+git switch -c "docs/retro-$(date +%Y-%m-%d)"
+git add Design/retros/retro-YYYY-MM-DD.md Docs/impediments.md
+git commit -m "docs(retro): weekly retrospective YYYY-MM-DD"
+git push -u origin HEAD
+gh pr create --title "docs(retro): weekly retrospective YYYY-MM-DD" --body "Weekly retrospective report + impediment-log footer."
+gh pr merge --auto --merge
+```
+
+Then prove the file is actually tracked — a written-but-unstaged file is the exact failure this step exists to catch:
+
+```bash
+git ls-files --error-unmatch Design/retros/retro-YYYY-MM-DD.md
+```
+
+Exit 0 means the citation is now falsifiable. **A non-zero exit means STOP** — fix the commit before proceeding to Step 9. Do not poll CI for the merge; auto-merge lands it without a session present.
+
+If the run is out of context or otherwise cannot complete the commit, it must **not** file tickets citing the report. File them without the citation line, or leave them unfiled and say so — an unfiled ticket is recoverable, a ticket citing a phantom source is not.
+
+### Step 9: File backlog tickets, then run the citation gate
+
+Now that the report is committed, file the Linear issues drafted in Step 5. Each may cite the report path.
+
+Then backfill the report's **Improvements Backlogged** section with the real issue IDs and push that as a second commit on the same PR branch.
+
+**Terminal citation gate — the last thing the run does.** For every repo path this run named in a Linear ticket body, an impediment entry, or the report itself:
+
+```bash
+git ls-files --error-unmatch <path>
+```
+
+Any path that fails is either committed now or **struck from the text that cites it**. Report the gate's result explicitly in the run's final output — `citation gate: N paths checked, all tracked`, or name the failures. Silence is not a pass.
+
 ## When to Run
 
 - **Scheduled (weekly):** Fridays at ~15:00 UTC, one hour after the drift scan runs at 14:00 UTC. The scan's output is warm when the retro starts.
@@ -185,3 +231,4 @@ Add a horizontal rule and note at the bottom of `Docs/impediments.md`:
 5. **Track improvement over time.** Each retro should reference whether previous retro's backlogged items were completed.
 6. **Scan absence is data, not a failure.** If the scan produced no issues, say so explicitly and assess why. No auto-kill without retro judgment.
 7. **User makes verdicts; retro recommends.** Tuning recommendations go into the report for user review, not auto-applied.
+8. **Never cite a path you have not committed.** A ticket, footer, or report line naming an uncommitted file is an unfalsifiable citation: nobody can check the reasoning, the ROI method, or what the retro considered and rejected. The report is committed (Step 8) before anything points at it, and every cited path is re-verified at the end (Step 9). This rule is why Steps 8 and 9 exist — see THR-798.

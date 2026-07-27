@@ -11,4 +11,6 @@ Invoke the `retrospective` skill via the Skill tool and follow it exactly. It wi
 
 Write output to `Design/retros/retro-YYYY-MM-DD.md`. Implement quick wins. Open Linear issues for larger improvements.
 
+**Commit the report before any ticket cites it (THR-798).** The skill's Step 8 is blocking: the report ships as its own `docs/retro-*` PR (`main` is branch-protected) and `git ls-files --error-unmatch` must confirm it is tracked *before* Step 9 files the backlog tickets. The 2026-07-24 run filed five tickets citing a report it never wrote, because the old ordering filed tickets first and had no commit step at all. If this run cannot complete the commit, it must file tickets **without** the report citation rather than pointing at a phantom path.
+
 Registered as a CC-lane task by THR-653 (Pure Claude Code Migration, Phase 3 cutover) — the CLAUDE.md scheduled-task table had claimed this task existed since the weekly continuous-improvement cycle was written, but it had never actually been created.
