@@ -158,6 +158,27 @@ One line of JSON: `{ verdict, summary, needsChristian, deployedSha }`.
 
 **Fail-soft:** the probe never exits non-zero without `--strict`, and degrades to `verdict: "unknown"` on any network/auth/git failure. If it fails to run at all, note one line under Freshness and continue — a broken probe must never abort the brief.
 
+### 2.6 Sibling-report `## Needs Christian` sections (THR-826)
+
+Several scheduled tasks write a dated report under `Docs/ops/` with a `## Needs Christian` heading, on the documented understanding that *"Christian-facing items go in each task's own report under a `## Needs Christian` heading, and reach him via the hourly briefing"* (`Docs/ops/scheduled-tasks-registry.md` § Output-surface rule).
+
+**Until THR-826 that sentence was false.** No step in this task ever read those files — the sections were written into a channel with no consumer, which is the same defect as `keep-work-flowing-cc` writing *"routed to an executor"* when no lane reads that sentence. This step is the consumer.
+
+```bash
+# Newest report per producing task, only if written today or yesterday.
+ls -1 Docs/ops/orchestrator-*.md Docs/ops/backlog-grooming-*.md Docs/ops/weekly-hygiene-*.md 2>/dev/null | sort | tail -20
+```
+
+- **Read only reports newer than `SIBLING_REPORT_MAX_AGE_HOURS`** (36). An older report's asks are stale by definition — the task that wrote them has run again since without repeating them.
+- **Take one newest file per producing task**, not every file matching the glob. A week of `backlog-grooming-*.md` all carry a `## Needs Christian` section; only the latest is current.
+- **Extract the `## Needs Christian` section verbatim** and fold its items into the briefing's own `## Needs Christian`, **attributed to the task that raised them** (`— from daily-backlog-grooming`). Do not re-word: those items are already written in plain language per THR-608, and re-wording is how a specific ask becomes a vague one.
+- **Skip the empty state.** A section whose only content is "nothing needs you" contributes nothing — do not propagate it as an item.
+- **De-duplicate against your own items.** If a sibling raised something this task also detected (a stale queue item, a deploy failure), keep one line, not two.
+
+Items folded in this way flow into the step-6 change hash like any other, so a genuinely new sibling ask pings Christian and an unchanged standing one does not.
+
+**Fail-soft:** `Docs/ops/` unreadable, a report malformed, or no `## Needs Christian` heading present → one-line note in the run output, continue. A missing sibling report is not an error; those tasks are daily and weekly, so most hours there is nothing new to read.
+
 ### 3. Compose `Design/briefing.md`
 
 Overwrite the file. Structure (keep it short — this is a brief, not a report):
@@ -170,7 +191,8 @@ Overwrite the file. Structure (keep it short — this is a brief, not a report):
 ## Needs Christian
 <Plain-language items only he can decide or do. Design-vision calls in game terms;
 operational switches (home-tree refresh, connector auth) as literal commands.
-If none: "Nothing needs you right now — the queue is draining on its own.">
+Includes items folded in from sibling reports (step 2.6), each attributed to the task
+that raised it. If none: "Nothing needs you right now — the queue is draining on its own.">
 
 ## From Christian
 <Only when step 0 found new Discord messages. What he said, what was done with it,
@@ -232,6 +254,8 @@ Direct `git push origin main` is rejected by branch protection. Use the branch �
 | `DISCORD_ALLOWLIST_FILE` | `~/.claude/channels/discord/access.json` | Source of truth for which authors step 0 will act on (`allowFrom`) |
 | `DEPLOY_STALE_GRACE_MINUTES` | 20 | Step 2.5 — how long an undeployed `main` commit is "probably still building" rather than a stoppage. Lives in `scripts/check-deploy-health.ts`; change it there, not here. |
 | `DEPLOY_LOOKBACK` | 10 | Step 2.5 — Production deployments walked back looking for the newest successful one |
+| `SIBLING_REPORT_MAX_AGE_HOURS` | 36 | Step 2.6 — age past which a sibling task's `## Needs Christian` section is stale and not folded in |
+| `SIBLING_REPORT_GLOBS` | `Docs/ops/orchestrator-*.md`, `Docs/ops/backlog-grooming-*.md`, `Docs/ops/weekly-hygiene-*.md` | Step 2.6 — reports whose Christian-facing sections this task consumes; newest one per producing task |
 
 ### 6. Discord ping (change-gated)
 
