@@ -1,5 +1,7 @@
 # Brainstorm: Faction System Vertical Slice
 
+> **lint_plan_doc:** exempt — pre-template design brainstorm from 2026-03. Relocated from the repo root by THR-793.
+
 **Date:** 2026-03-27
 **Context:** Design brainstorm for a prototype faction ("Adventuring Guild") that connects faction, encounter, character, and reputation systems end-to-end. Built as a generalizable pattern for procedurally generated factions.
 

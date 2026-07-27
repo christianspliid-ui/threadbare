@@ -251,7 +251,7 @@ TieredEncounterModal renders raw `{actor}`, `{adj}`, `{verb}`, `{noun}` placehol
 End-to-end faction system using a prototype Adventuring Guild. Proves the full loop: discover guild halls → join via encounter → do faction quests → build reputation → get promoted via encounter → access rank-gated content. Data-driven and generalizable for procedural faction generation. Four phases decomposed into TB-059–TB-062.
 
 **Design doc:** `Docs/plans/2026-03-27-faction-vertical-slice-design.md`
-**Brainstorm:** `brainstorm-faction-vertical-slice.md`
+**Brainstorm:** `Docs/plans/brainstorm-faction-vertical-slice.md`
 **Depends on:** Encounter system (✅), Social Fabric design (✅), Guild Seeding (✅), Tier Promotion (✅)
 
 ---

@@ -1,5 +1,7 @@
 # Claude Code Prompts — Gold Reach Economic Systems
 
+> **lint_plan_doc:** exempt — copy-paste executor prompts from 2026-03, not a template plan doc. Relocated from the repo root by THR-793.
+
 Copy-paste these in order. Wait for each phase to land before starting the next.
 
 ---
