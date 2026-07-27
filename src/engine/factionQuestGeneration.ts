@@ -190,8 +190,14 @@ function buildCacheEntry(
  * Filter faction quest templates by rank access.
  * Returns templates whose prefix matches the current rank's encounterAccess list.
  * Uses the unified FACTION_ENCOUNTER_META registry (covers ag.* and mc.* templates).
+ *
+ * Exported for THR-815: the off-screen member-work path in `factionMemberWork.ts` must
+ * offer ambient members exactly the content their rank unlocks on the attended path.
+ * Two copies of this predicate would drift — and a drifted `encounterAccess` prefix is
+ * precisely the defect THR-814 found in `merchant_consortium`, where the write site and
+ * the read site disagreed for months without failing.
  */
-function getAccessibleTemplates(
+export function getAccessibleTemplates(
   definition: FactionDefinition,
   currentRank: FactionRankTier,
 ): UnifiedActionTemplate[] {

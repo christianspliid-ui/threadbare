@@ -8,10 +8,15 @@
  * Acceptance evidence for THR-810 — the ticket asks the sweep to *re-measure* the
  * ceiling rather than assume the 0.78 figure recorded at filing time.
  *
- * It currently exits **non-zero**, and that is the correct reading: no mortal holds an
- * apex tier and every rank-gated template is blocked, because faction encounters never
- * reach faction members at all (THR-814). Once that lands this becomes a live gate.
- * Verdict + full evidence: `Docs/audits/2026-07-27-thr-810-guild-rank-reachability.md`.
+ * As of THR-815 this is a **live gate** — it exits 0 on seed 42 / medium / 150 ticks and
+ * a regression in the guild economy will turn it red. It reached that state in three
+ * steps, each of which had to be measured before it could be fixed: THR-810 established
+ * that gain was zero rather than mis-tuned, THR-814 fixed positional starvation at the
+ * encounter cap and a dead `encounterAccess` namespace, and THR-815 gave ambient members
+ * — 225 of 227 memberships — a resolution path at the faction tier.
+ *
+ * Verdicts + full evidence: `Docs/audits/2026-07-27-thr-810-guild-rank-reachability.md`,
+ * `Docs/audits/2026-07-27-thr-814-faction-draw-path.md`.
  *
  * Measure inside the `phase: playing` window only — the run enters `twilight` between
  * ticks 150 and 225, so later samples describe a post-game world. Each sample carries
@@ -32,6 +37,10 @@ import { FACTION_DEFINITIONS } from '../src/data/faction-definitions';
 import { computeRankFromReputation } from '../src/types/faction';
 import { meetsFactionRankRequirement } from '../src/engine/factionReputation';
 import { FACTION_ENCOUNTER_META } from '../src/data/faction-encounter-content';
+import { resolveFactionMemberWork } from '../src/engine/factionMemberWork';
+import { FACTION_MEMBER_WORK_INTERVAL } from '../src/data/faction-member-work-constants';
+import { enableTracing, getTraces, clearTraces } from '../src/engine/traceBuffer';
+import type { FactionMemberWorkTrace } from '../src/types/factionAction';
 import type { GameState } from '../src/types/gameState';
 import type { MemberOfEdgeProperties } from '../src/types/disposition';
 
@@ -141,9 +150,16 @@ function sample(state: GameState): Sample {
  * re-deriving the threshold, so this answers the Done-when in the same terms
  * the engine uses at draw time.
  */
-function reachableGatedTemplates(state: GameState): { reachable: string[]; blocked: string[] } {
+function reachableGatedTemplates(state: GameState): {
+  reachable: string[];
+  blocked: string[];
+  unowned: string[];
+  unownedFactions: string[];
+} {
   const reachable: string[] = [];
   const blocked: string[] = [];
+  const unowned: string[] = [];
+  const unownedFactions = new Set<string>();
 
   const memberIds = new Map<string, string[]>(); // factionDefId -> agent ids
   for (const edge of state.graph.getEdgesByType('member_of')) {
@@ -162,13 +178,31 @@ function reachableGatedTemplates(state: GameState): { reachable: string[]; block
     if (!tier || tier.minReputation <= 0) continue;
 
     const candidates = memberIds.get(meta.factionDefId) ?? [];
+
+    // A guild with no members at all is a *membership* defect, not a rank-reachability
+    // one: there is nobody who could climb, so "can a member reach this tier?" has no
+    // answer to give. Folding it into `blocked` is the same category error impediment
+    // #239 recorded — an instrument reporting the wrong reason for an absence — and it
+    // would make this sweep's verdict unreachable by construction from any ticket that
+    // works on the draw path. Reported separately, loudly, and tracked as THR-816.
+    if (candidates.length === 0) {
+      unowned.push(templateId);
+      unownedFactions.add(meta.factionDefId);
+      continue;
+    }
+
     const anyQualifies = candidates.some(agentId =>
       meetsFactionRankRequirement(state.graph, agentId, meta.factionDefId, meta.minRank),
     );
     (anyQualifies ? reachable : blocked).push(templateId);
   }
 
-  return { reachable: reachable.sort(), blocked: blocked.sort() };
+  return {
+    reachable: reachable.sort(),
+    blocked: blocked.sort(),
+    unowned: unowned.sort(),
+    unownedFactions: [...unownedFactions].sort(),
+  };
 }
 
 // ─── Run ─────────────────────────────────────────────────────────────────
@@ -215,8 +249,29 @@ function main(): void {
   const drawnFactionActions = new Set<string>();
   const drawnByMembers = new Set<string>();
 
+  // Member-work resolution census (THR-815). The draw census above counts
+  // `state.unifiedActions`, which only ever contains work resolved on the *attended*
+  // path — an off-screen resolution never becomes a unified action, so it would score
+  // zero there forever and the Done-when would look unmet while the economy ran.
+  // Read from the aggregate trace the new path emits instead.
+  enableTracing();
+  clearTraces();
+  let memberWorkResolved = 0;
+  let memberWorkSucceeded = 0;
+  let memberWorkPromotions = 0;
+  const memberWorkGainers = new Set<string>();
+
   for (let t = 0; t < TICKS; t++) {
     state = runTick(state, [], runtime);
+
+    for (const entry of getTraces()) {
+      if ((entry as { category?: string }).category !== 'faction_member_work') continue;
+      const trace = entry as unknown as FactionMemberWorkTrace;
+      memberWorkResolved += trace.resolved;
+      memberWorkSucceeded += trace.succeeded;
+      memberWorkPromotions += trace.promotions;
+    }
+    clearTraces();
 
     for (const a of state.unifiedActions) {
       const meta = FACTION_ENCOUNTER_META.get(a.templateId);
@@ -235,6 +290,7 @@ function main(): void {
       if (prev !== undefined && rep > prev + 1e-9) {
         gainEvents++;
         gainTotal += rep - prev;
+        memberWorkGainers.add(key);
         if (state.phase === 'playing') gainEventsWhilePlaying++;
       }
     }
@@ -248,6 +304,11 @@ function main(): void {
   );
   console.log(
     `Faction-template draw census: ${drawnFactionActions.size} action instances, ${drawnByMembers.size} of them drawn by a member of the owning faction`,
+  );
+  console.log(
+    `Member-work resolution census (THR-815): ${memberWorkResolved} jobs resolved faction-side, ` +
+    `${memberWorkSucceeded} succeeded, ${memberWorkPromotions} promotions, ` +
+    `${memberWorkGainers.size} distinct memberships gained`,
   );
 
   const { eligible, total } = decisionEligibleMembers(state);
@@ -270,15 +331,50 @@ function main(): void {
     );
   }
 
-  const { reachable, blocked } = reachableGatedTemplates(state);
-  console.log(`\nRank-gated templates at tick ${state.tick} — ${reachable.length} reachable, ${blocked.length} blocked`);
-  if (blocked.length > 0) console.log(`  BLOCKED: ${blocked.join(', ')}`);
+  const { reachable, blocked, unowned, unownedFactions } = reachableGatedTemplates(state);
+  console.log(
+    `\nRank-gated templates at tick ${state.tick} — ${reachable.length} reachable, ` +
+    `${blocked.length} blocked, ${unowned.length} unowned`,
+  );
+  if (blocked.length > 0) console.log(`  BLOCKED (members exist, none qualify): ${blocked.join(', ')}`);
+  if (unowned.length > 0) {
+    console.log(
+      `  UNOWNED (faction seeded with zero members — see THR-816): ` +
+      `${unownedFactions.join(', ')} → ${unowned.join(', ')}`,
+    );
+  }
   if (reachable.length > 0) console.log(`  reachable: ${reachable.join(', ')}`);
 
+  // ── NFP #7 cost of the new path (THR-815 Done-when 4) ──────────────────────
+  //
+  // The spotlight alternative was rejected on cost, so this path owes a number on the
+  // same axis. Timed against the live end-of-run world rather than a synthetic graph,
+  // and reported amortized per tick, since the pass only fires every
+  // FACTION_MEMBER_WORK_INTERVAL ticks. Run last: it mutates reputation, so it must not
+  // precede any of the censuses above.
+  const COST_PASSES = 40;
+  const costStart = performance.now();
+  for (let i = 1; i <= COST_PASSES; i++) {
+    resolveFactionMemberWork({ ...state, tick: i * FACTION_MEMBER_WORK_INTERVAL } as GameState);
+  }
+  const msPerPass = (performance.now() - costStart) / COST_PASSES;
+  console.log(
+    `\nMember-work cost (NFP #7): ${msPerPass.toFixed(3)} ms per evaluation pass over ` +
+    `${state.graph.getEdgesByType('member_of').length} memberships, ` +
+    `= ${(msPerPass / FACTION_MEMBER_WORK_INTERVAL).toFixed(3)} ms/tick amortized ` +
+    `(fires every ${FACTION_MEMBER_WORK_INTERVAL} ticks)`,
+  );
+
+  // The verdict covers what this sweep is named for: given a member, can they climb far
+  // enough to reach rank-gated content? `unowned` is excluded because it answers a
+  // different question (does the guild have members at all) and is tracked as THR-816 —
+  // it is printed above on every run, so it cannot go quiet.
   const final = samples[samples.length - 1];
   const verdict = final.apexHolders > 0 && blocked.length === 0;
   console.log(
-    `\nVERDICT: ${verdict ? 'PASS' : 'FAIL'} — apex holders at tick ${final.tick}: ${final.apexHolders}; blocked gated templates: ${blocked.length}`,
+    `\nVERDICT: ${verdict ? 'PASS' : 'FAIL'} — apex holders at tick ${final.tick}: ${final.apexHolders}; ` +
+    `blocked gated templates: ${blocked.length}` +
+    (unowned.length > 0 ? ` (plus ${unowned.length} unowned, tracked as THR-816)` : ''),
   );
   process.exit(verdict ? 0 : 1);
 }

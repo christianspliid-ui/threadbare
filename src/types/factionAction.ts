@@ -353,3 +353,34 @@ export interface FactionAnointSuccessorTrace {
   anointedTick: number;
   summary: string;
 }
+
+// ─── THR-815: Off-screen member work ─────────────────────────────────────────
+
+/**
+ * Faction member work — one evaluation pass over a faction's off-decision-loop members.
+ *
+ * Aggregate by design: one trace per faction per pass, never one per member. An
+ * all-members phase that emitted per-entity traces would dominate the ring buffer and
+ * push the surrounding tick's evidence out of it (see the trace-volume note in
+ * `Docs/canon/process.md`). The per-member detail that matters — who gained, how much —
+ * is already carried by the `faction_reputation` traces this pass causes.
+ */
+export interface FactionMemberWorkTrace {
+  tick: number;
+  category: 'faction_member_work';
+  factionId: string;
+  factionName: string;
+  /** Members eligible for this path — the pool the pass drew its window from. */
+  eligibleMembers: number;
+  /** Members actually resolved this pass (≤ FACTION_MEMBER_WORK_MAX_PER_FACTION). */
+  resolved: number;
+  succeeded: number;
+  failed: number;
+  /** Members skipped because their rank unlocked no authored template. */
+  skippedNoTemplate: number;
+  /** Total reputation paid out this pass, after rank/alignment/off-screen scaling. */
+  reputationAwarded: number;
+  /** Members whose rank tier rose as a result of this pass. */
+  promotions: number;
+  summary: string;
+}

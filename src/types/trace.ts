@@ -25,6 +25,7 @@ import type { IntelligenceCategory } from './unifiedAction';
 import type { NarrativeEventType, NarrativeTier } from './narrative';
 import type { ForeshadowingSignals } from './foreshadowing';
 import type {
+  FactionMemberWorkTrace,
   FactionStirDissentTrace,
   FactionSuccessionTrace,
   FactionAnointSuccessorTrace,
@@ -226,6 +227,8 @@ export type TraceCategory =
   | 'faction_whisper_leader'
   | 'faction_recover_doctrine'
   | 'faction_surface_doubter'
+  // Off-screen guild work for ambient members (THR-815)
+  | 'faction_member_work'
   // Schism — deferred faction-split divine action (THR-430)
   | 'schism_planted'
   | 'schism_resolved'
@@ -509,6 +512,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'faction_whisper_leader',
   'faction_recover_doctrine',
   'faction_surface_doubter',
+  // Off-screen guild work for ambient members (THR-815)
+  'faction_member_work',
   // Schism — deferred faction-split divine action (THR-430)
   'schism_planted',
   'schism_resolved',
@@ -2029,6 +2034,8 @@ export type TraceEntry =
   | FactionWhisperLeaderTrace
   | FactionRecoverDoctrineTrace
   | FactionSurfaceDoubterTrace
+  // Off-screen guild work for ambient members (THR-815)
+  | FactionMemberWorkTrace
   // Schism — deferred faction-split divine action (THR-430)
   | SchismPlantedTrace
   | SchismResolvedTrace

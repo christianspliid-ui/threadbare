@@ -54,6 +54,7 @@ import {
   DIVINE_WHISPER_PENDING_CONDITION,
 } from '../data/faction-action-constants';
 import { refreshFactionDerivedFlags, getFactionLeaderId, getAnointedLeaderId } from './factionNetwork';
+import { resolveFactionMemberWork } from './factionMemberWork';
 import type { FactionStirDissentTrace } from '../types/factionAction';
 import { getFactionMembershipEdges } from './graphQueries';
 
@@ -815,7 +816,7 @@ function selectWeighted(candidates: ActionCandidate[], rng: () => number): Facti
 
 // ─── Main Phase ───────────────────────────────────────────────────────────────
 
-export function phaseFactionActions(state: GameState): void {
+export function phaseFactionActions(state: GameState): Partial<GameState> {
   // THR-400 — dissent decay + threshold check + derived-flag refresh run every
   // tick, regardless of FACTION_ACTION_INTERVAL. This is intentional: the
   // player's verbs need responsive UI feedback (the drawer should not show a
@@ -824,10 +825,18 @@ export function phaseFactionActions(state: GameState): void {
   // tick where F is the faction count (~5–20 in a run).
   tickFactionGovernance(state);
 
+  // THR-815 — off-screen guild work for members the decision loop never reaches.
+  // Runs on its own interval (FACTION_MEMBER_WORK_INTERVAL), independent of the
+  // faction-action interval below, so guild work and faction politics do not have
+  // to share a cadence. Returns only the beats worth surfacing: promotions.
+  const memberWorkEvents = resolveFactionMemberWork(state);
+
   if (state.tick % FACTION_ACTION_INTERVAL !== 0) {
     // Still need to advance active conclaves on non-evaluation ticks
     advanceAllConclaves(state);
-    return;
+    return memberWorkEvents.length > 0
+      ? { tickEvents: [...state.tickEvents, ...memberWorkEvents] }
+      : {};
   }
 
   const factionNodes = state.graph.getNodesByType('actor')
@@ -845,6 +854,10 @@ export function phaseFactionActions(state: GameState): void {
   // Its own seeded stream (multiplier 97) so band luck never shifts the faction
   // action rolls above, and its own interval gate inside the sweep.
   spawnFactionBands(state, mulberry32(state.seed + state.tick * 97));
+
+  return memberWorkEvents.length > 0
+    ? { tickEvents: [...state.tickEvents, ...memberWorkEvents] }
+    : {};
 }
 
 /**
