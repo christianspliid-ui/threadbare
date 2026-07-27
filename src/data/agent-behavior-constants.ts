@@ -100,6 +100,20 @@ export const MAX_SCORED_CANDIDATES = 40;
  * @range 1–5 */
 export const MIN_DIVERSITY_SLOTS = 1;
 
+/**
+ * Slots reserved at the cap stage for personally-offered entries — those a
+ * generator produced for one specific agent (faction quests, guild join and
+ * promotion offers) rather than read off the shared location cache (THR-814).
+ *
+ * Without a reserve these are unreachable by construction, not by scoring: they
+ * are appended after the location cache, and the cap fills from the head of a
+ * ~4,650-entry list. Sized to carry a member's entry-tier quest set plus a
+ * promotion offer while leaving the majority of the 40 slots to the world.
+ *
+ * @range 0–12 (0 disables the reserve; higher = guild work crowds out the world)
+ */
+export const PERSONAL_OFFER_CAP_RESERVE = 6;
+
 /** Whether the threat-tolerance stage is active.
  * Set false to disable threat filtering entirely. */
 export const THREAT_FLOOR_FILTER = false;

@@ -69,6 +69,7 @@ export {
   THREAT_FLOOR_FILTER,
   OUTGROWTH_CAP_THRESHOLD,
   OUTGROWTH_FILTER_ENABLED,
+  PERSONAL_OFFER_CAP_RESERVE,
 } from '../data/agent-behavior-constants';
 
 import {
@@ -77,6 +78,7 @@ import {
   THREAT_FLOOR_FILTER,
   OUTGROWTH_CAP_THRESHOLD,
   OUTGROWTH_FILTER_ENABLED,
+  PERSONAL_OFFER_CAP_RESERVE,
 } from '../data/agent-behavior-constants';
 
 /** Ordered threat tiers for index-based comparison */
@@ -386,10 +388,12 @@ export function filterByPrerequisites(
     // location. This is the read side.
     //
     // Keyed on the per-template `minRank` rather than the tier's `encounterAccess`
-    // prefix list: the prefixes carry a live vocabulary drift (merchant_consortium
-    // declares `mc_trade.*` while its templates are `mct.*`), and a prefix gate is
-    // only as correct as that spelling. `minRank` names the tier directly, so it
-    // cannot drift out of alignment with the id it sits on.
+    // prefix list, because a prefix gate is only as correct as its spelling.
+    // merchant_consortium proved the point: it declared `mc_trade.*` while its
+    // templates were `mct.*`, so all 15 matched nothing at any tier — repaired in
+    // THR-814 and pinned by test, but the class of failure is why this gate does not
+    // read prefixes. `minRank` names the tier directly, so it cannot drift out of
+    // alignment with the id it sits on.
     //
     // Scoped by authored `questType`, not by the presence of `minRank`: `minRank` is a
     // *required* field, so every one of the ~150 metas carries one — including the 123
@@ -654,6 +658,35 @@ export function capWithDiversity(
     let added = 0;
     for (const entry of entries) {
       if (!entry.isQuestEncounter) continue;
+      const key = `${entry.templateId}:${entry.locationId}`;
+      if (!reservedKeys.has(key)) {
+        reserved.push(entry);
+        reservedKeys.add(key);
+        added++;
+        if (added >= needed) break;
+      }
+    }
+  }
+
+  // Phase 1c: preserve up to PERSONAL_OFFER_CAP_RESERVE personally-offered entries (THR-814).
+  //
+  // Same shape as Phase 1b and for the same reason, one step more severe. A branching
+  // entry that loses the cap was at least *considered*; a personally-offered entry never
+  // is, because it cannot reach the fill loop at all. `phaseAgentDecision` appends the
+  // per-agent generators after the location cache, and Phase 2 below fills from the head
+  // of a list that runs to ~4,650 entries on a medium map — so the tail is unreachable by
+  // construction. Measured on seed 42 / medium: 0 of 1,263 faction quest and lifecycle
+  // entries survived this stage, which is the whole of why guild reputation gain was zero
+  // (THR-810 read the resulting flat decay as a mis-tuned apex tier; it was an unfed one).
+  //
+  // Ordered after diversity and branching so neither existing guarantee is weakened: this
+  // phase only claims slots that Phase 2 would otherwise have spent on more of the head.
+  const personallyOfferedReserved = reserved.filter(e => e.personallyOffered).length;
+  if (personallyOfferedReserved < PERSONAL_OFFER_CAP_RESERVE) {
+    const needed = PERSONAL_OFFER_CAP_RESERVE - personallyOfferedReserved;
+    let added = 0;
+    for (const entry of entries) {
+      if (!entry.personallyOffered) continue;
       const key = `${entry.templateId}:${entry.locationId}`;
       if (!reservedKeys.has(key)) {
         reserved.push(entry);

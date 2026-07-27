@@ -88,6 +88,35 @@ function apexHolders(state: GameState): number {
   return n;
 }
 
+/**
+ * How many faction members can reach the draw path *at all* (THR-814).
+ *
+ * `phaseAgentDecision` iterates only `actorType: 'individual'` actors at
+ * `spotlightTier: 'spotlight'`, and `generateFactionQuestCandidates` is called from
+ * inside that loop. A member on any other tier therefore never generates a guild
+ * candidate, never draws guild work, and never gains reputation — no scoring or
+ * tuning change can reach them.
+ *
+ * Reported next to the reputation distribution because it is the denominator that
+ * distribution is really over: a run with 227 memberships and 2 eligible members is
+ * not a guild economy that is badly tuned, it is one that is switched off.
+ */
+function decisionEligibleMembers(state: GameState): { eligible: number; total: number } {
+  const members = new Set<string>();
+  for (const edge of state.graph.getEdgesByType('member_of')) {
+    const props = edge.properties as Partial<MemberOfEdgeProperties>;
+    if (props.factionDefId) members.add(edge.source);
+  }
+  let eligible = 0;
+  for (const id of members) {
+    const node = state.graph.getNode(id);
+    if (!node) continue;
+    const tier = (node.properties.spotlightTier as string | undefined) ?? 'spotlight';
+    if (node.properties.actorType === 'individual' && tier === 'spotlight') eligible++;
+  }
+  return { eligible, total: members.size };
+}
+
 function sample(state: GameState): Sample {
   const r = reputations(state);
   const at = (p: number) => (r.length ? r[Math.min(r.length - 1, Math.floor(p * r.length))] : 0);
@@ -218,8 +247,20 @@ function main(): void {
     `Reputation gain census over ${TICKS} ticks: ${gainEvents} increases (${gainEventsWhilePlaying} while phase=playing), total +${gainTotal.toFixed(3)}`,
   );
   console.log(
-    `Faction-template draw census: ${drawnFactionActions.size} action instances, ${drawnByMembers.size} of them drawn by a member of the owning faction\n`,
+    `Faction-template draw census: ${drawnFactionActions.size} action instances, ${drawnByMembers.size} of them drawn by a member of the owning faction`,
   );
+
+  const { eligible, total } = decisionEligibleMembers(state);
+  console.log(
+    `Draw-path eligibility: ${eligible} of ${total} members are individual+spotlight, i.e. can reach phaseAgentDecision at all`,
+  );
+  if (eligible < total) {
+    console.log(
+      `  → ${total - eligible} members are off the decision loop entirely (ambient/notable tier). ` +
+      'No scoring or reward change can reach them — see THR-814.',
+    );
+  }
+  console.log('');
 
   console.log('| tick | phase | memberships | max | p90 | median | >=0.60 | >=0.75 | >=0.85 | apex holders |');
   console.log('| ---: | :-- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |');

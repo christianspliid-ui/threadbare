@@ -3313,6 +3313,19 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "**Workaround:** do not drive long measurement runs through the CLI REPL. Write a script that owns its own `runTick` loop (`scripts/rank-reach-sweep.ts` is the worked example — bundle with esbuild exactly as the `cli` npm script does) and **record `state.phase` alongside `state.tick` in every sample**, so a post-game reading is self-identifying rather than something the reader must know to suspect. When a Done-when names a tick horizon, check it against the phase timeline before accepting it: \"at tick ≥ 300\" was unreachable by construction here, the same class as the THR-689 `document.hidden` trap.",
     "session": "THR-810 hourly pickup, 2026-07-27 — found while re-measuring the guild reputation ceiling the ticket asked to confirm."
+  },
+  {
+    "num": "239",
+    "id": 239,
+    "count": 1,
+    "date": "2026-07-27",
+    "category": "tooling",
+    "description": "**A candidate that is dropped for *positional* reasons is invisible to the eligibility funnel, because the funnel only counts entries that entered the stage — so the instrument built to answer \"why was this filtered out?\" reports the template as though it does not exist.** Chasing THR-814, `runtime.eligibilityFunnel` showed 28 faction templates, every one gated at `prerequisites` — a coherent, plausible story pointing straight at the THR-805 rank gate. It was the wrong 28: those are the cache-registered `senior`/`elite` ids, correctly gated for non-members. The ~150 `*.quest.*` templates the per-agent generator produces appeared **nowhere in the funnel at all**, with `truncated: false`. Absence, not a gate count, was the tell — they were being cut by `capWithDiversity` walking `[...nearbyEntries, ...dynamicEntries]` from the head and never reaching the tail, and `updateFunnelCounters` is keyed off `s0 = templateIdSet(allEntries)` per call, so a stage-5 positional cut is recorded as `cap` only for entries the earlier stages already admitted.",
+    "consequence": "The funnel's failure mode is the confident wrong answer, not silence. Read at face value it would have sent the fix into the rank gate — the second consecutive ticket to be misdirected downstream of the real blocker, after THR-810 proposed three tuning levers on an economy with zero throughput. Two tickets and three proposed fixes each were spent before anyone measured the stage the content actually died at, and a `gatedBy` histogram that looked complete is what made that feel unnecessary.",
+    "impact": "Medium",
+    "workaroundFound": true,
+    "workaround": "**Workaround:** when a funnel or histogram explains a shortfall, first check the **denominator** — enumerate the ids you *expect* to see and diff against the keys present. An id missing entirely is a stronger signal than any gate count, and it is the only signal a positional cut produces. Here one line (`FACTION_ENCOUNTER_META` keys minus funnel keys) separated \"gated\" from \"never entered\". **Durable fix:** have `capWithDiversity` record cut entries against a `positional` reason, or capture `s0` from the pre-merge input so tail entries are counted as considered. Same family as row **229** (a field read by UI and written by nobody) and row **237** (a check whose green is unfalsifiable): an instrument that cannot express the failure reports health.",
+    "session": "THR-814, hourly `tb-opus-pickup` run, 2026-07-27 — found while tracing why 817 faction entries survived every filter stage yet 0 reached scoring."
   }
 ];
 // ── End data ──

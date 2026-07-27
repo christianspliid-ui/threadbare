@@ -287,3 +287,65 @@ describe('filterByPrerequisites — faction rank gate', () => {
     expect(out.length).toBe(standardIds.length);
   });
 });
+
+// ─── encounterAccess prefix alignment (THR-814) ────────────────────────────
+
+/**
+ * `getAccessibleTemplates` in `factionQuestGeneration.ts` selects a member's drawable
+ * quest set by `id.startsWith(prefix)` over each rank tier's `encounterAccess`. That
+ * makes the prefix a load-bearing *string*, and merchant_consortium proved how quietly
+ * it can rot: it declared `mc_trade.*` while every one of its templates is `mct.*`, so
+ * all four tiers matched zero templates and its 49 memberships drew no guild work at
+ * all. Nothing failed — the filter simply returned an empty list.
+ *
+ * Asserted over every faction rather than the one that broke: a prefix that matches
+ * nothing is never intentional, so this holds for any guild added later.
+ */
+describe('encounterAccess prefixes resolve against real template ids', () => {
+  it('every faction addresses its own template namespace', () => {
+    // Compare namespace *roots* (the segment before the first dot) rather than whole
+    // prefixes. That is the axis merchant_consortium drifted on — `mc_trade.` against
+    // `mct.` templates — and it deliberately does not fail the separate, uniform gap
+    // where all 12 guilds declare a `<root>.leadership.` tier that no template family
+    // has been authored for yet. A wrong root is a bug; an unauthored tier is a
+    // content backlog item, and conflating them would make this test noise.
+    const root = (s: string) => s.split('.')[0];
+    const metaIds = [...FACTION_ENCOUNTER_META.keys()];
+    const mismatched: string[] = [];
+
+    for (const [defId, def] of FACTION_DEFINITIONS) {
+      const owned = metaIds.filter(id => FACTION_ENCOUNTER_META.get(id)!.factionDefId === defId);
+      if (owned.length === 0) continue; // faction with no authored content — not this test's subject
+
+      const templateRoots = new Set(owned.map(root));
+      for (const tier of def.rankTiers) {
+        for (const prefix of tier.encounterAccess) {
+          if (!templateRoots.has(root(prefix))) {
+            mismatched.push(
+              `${defId}/${tier.id}: prefix "${prefix}" addresses namespace "${root(prefix)}", ` +
+              `but its templates live under {${[...templateRoots].join(', ')}}`,
+            );
+          }
+        }
+      }
+    }
+
+    expect(mismatched).toEqual([]);
+  });
+
+  it('every faction with authored content leaves its entry tier able to draw something', () => {
+    const metaIds = [...FACTION_ENCOUNTER_META.keys()];
+    const starved: string[] = [];
+
+    for (const [defId, def] of FACTION_DEFINITIONS) {
+      const owned = metaIds.filter(id => FACTION_ENCOUNTER_META.get(id)!.factionDefId === defId);
+      if (owned.length === 0) continue;
+      const entryTier = def.rankTiers[0];
+      const reachable = owned.filter(id =>
+        entryTier.encounterAccess.some(p => id.startsWith(p)));
+      if (reachable.length === 0) starved.push(`${defId}/${entryTier.id}`);
+    }
+
+    expect(starved).toEqual([]);
+  });
+});

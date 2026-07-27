@@ -12,6 +12,7 @@ import {
   capWithDiversity,
   MAX_SCORED_CANDIDATES,
   MIN_DIVERSITY_SLOTS,
+  PERSONAL_OFFER_CAP_RESERVE,
 } from '../encounterFilterPipeline';
 import { MAX_COMPLETIONS_PER_TEMPLATE } from '../../data/agent-behavior-constants';
 
@@ -274,6 +275,64 @@ describe('capWithDiversity', () => {
     for (const t of types) {
       expect(typeCounts.get(t) ?? 0).toBeGreaterThanOrEqual(MIN_DIVERSITY_SLOTS);
     }
+  });
+
+  // ── Personally-offered reserve (THR-814) ──────────────────────
+  //
+  // The regression these pin is positional, not scoring: `phaseAgentDecision`
+  // merges as `[...nearbyEntries, ...dynamicEntries]`, so per-agent faction
+  // entries sit at the tail of a ~4,650-entry list and the fill loop never
+  // reaches them. Measured before the reserve: 0 of 1,263 survived.
+
+  it('reserves slots for personally-offered entries buried at the tail', () => {
+    const graph = new WorldGraph();
+    // Mirror the real merge order: a long head of shared cache entries, then a
+    // handful of per-agent entries last. Single encounterType so the diversity
+    // floor cannot be what rescues them.
+    const entries: EncounterCacheEntry[] = [
+      ...Array.from({ length: 500 }, (_, i) =>
+        makeEntry({ templateId: `cache-${i}`, encounterType: 'explore' })),
+      ...Array.from({ length: 5 }, (_, i) =>
+        makeEntry({ templateId: `faction-${i}`, encounterType: 'explore', personallyOffered: true })),
+    ];
+
+    const result = capWithDiversity(entries, 'agent-1', graph);
+    expect(result).toHaveLength(MAX_SCORED_CANDIDATES);
+
+    const survivors = result.filter(e => e.personallyOffered);
+    expect(survivors).toHaveLength(5);
+    expect(survivors.map(e => e.templateId).sort()).toEqual(
+      ['faction-0', 'faction-1', 'faction-2', 'faction-3', 'faction-4'],
+    );
+  });
+
+  it('reserves no more than PERSONAL_OFFER_CAP_RESERVE, leaving the rest of the board to the world', () => {
+    const graph = new WorldGraph();
+    const entries: EncounterCacheEntry[] = [
+      ...Array.from({ length: 500 }, (_, i) =>
+        makeEntry({ templateId: `cache-${i}`, encounterType: 'explore' })),
+      // Far more personal offers than the reserve, all at the tail.
+      ...Array.from({ length: 50 }, (_, i) =>
+        makeEntry({ templateId: `faction-${i}`, encounterType: 'explore', personallyOffered: true })),
+    ];
+
+    const result = capWithDiversity(entries, 'agent-1', graph);
+    expect(result).toHaveLength(MAX_SCORED_CANDIDATES);
+    expect(result.filter(e => e.personallyOffered)).toHaveLength(PERSONAL_OFFER_CAP_RESERVE);
+    // The reserve is a floor for guild work, not a takeover of the board.
+    expect(result.filter(e => !e.personallyOffered).length).toBe(
+      MAX_SCORED_CANDIDATES - PERSONAL_OFFER_CAP_RESERVE,
+    );
+  });
+
+  it('leaves entries untouched when nothing opts in', () => {
+    const graph = new WorldGraph();
+    const entries = Array.from({ length: 60 }, (_, i) =>
+      makeEntry({ templateId: `tmpl-${i}`, encounterType: 'explore' }),
+    );
+    const result = capWithDiversity(entries, 'agent-1', graph);
+    expect(result).toHaveLength(MAX_SCORED_CANDIDATES);
+    expect(result.some(e => e.personallyOffered)).toBe(false);
   });
 });
 
