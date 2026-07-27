@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { initializeGameState } from '../gameInit';
 import { runTick, resetDecisionCache, resetEventCounter } from '../orchestrator';
+import { resetBandCounterIds } from '../groups/bandOpposition';
 import { ENCOUNTER_TEMPLATES } from '../../data/encounter-content';
 import { ROUTINE_TEMPLATES, LIFECYCLE_TEMPLATES } from '../../data/narrative-content';
 import { DOOM_VOCABULARY } from '../../data/doom-content';
@@ -209,7 +210,15 @@ describe('Layer 1 seed divergence', { timeout: 120_000 }, () => {
 describe('Layer 1 determinism', () => {
   it('same seed produces deterministic results', () => {
     // Run A: 100 ticks from seed 42 (fresh module cache)
+    //
+    // `resetBandCounterIds` belongs with the other two resets (THR-816): synthetic
+    // band-counter action ids come from a module-scope sequence in bandOpposition.ts,
+    // so without it run B continues run A's numbering and two *identical* simulations
+    // serialise differently. The path was simply dormant here until guild membership
+    // started distributing, which is why the omission never showed. The module-scope
+    // counter itself is the deeper defect — tracked separately as THR-817.
     resetDecisionCache();
+    resetBandCounterIds();
     const { state: state42a } = initializeGameState(
       testArchetype,
       'Test Avatar',
@@ -225,6 +234,7 @@ describe('Layer 1 determinism', () => {
 
     // Run B: 100 ticks from seed 42 (fresh module cache — required for test isolation)
     resetDecisionCache();
+    resetBandCounterIds();
     const { state: state42b } = initializeGameState(
       testArchetype,
       'Test Avatar',
