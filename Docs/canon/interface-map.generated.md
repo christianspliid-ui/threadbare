@@ -318,10 +318,10 @@ remediation ticket or the build fails.
 - **Intent:** Items grant abilities to their bearer (e.g. cavalry_charge).
 - **Producer → Consumer:** Attachments, Items & Possessions → Encounters & Dilemmas
 - **UL terms:** *Attachment*, *Trait*
-- **Production hits:** 21 total — 4 write, 4 read, 13 unclassified
+- **Production hits:** 22 total — 4 write, 4 read, 14 unclassified
 - **Write sites:** `src/data/anomaly-reward-catalog.ts`, `src/data/reward-attachment-catalog.ts`, `src/data/starter-attachments.ts`, `src/engine/gameInit.ts`
 - **Read sites:** `src/engine/ambitionTick.ts`, `src/engine/encounterFilterPipeline.ts`, `src/engine/spellActivation.ts`, `src/engine/worldSeed.ts`
-- **Other hits:** `src/components/Game/attachmentGlyphs.ts`, `src/data/artifact-templates.ts`, `src/data/choice-set-catalog.ts`, `src/engine/effectExecutors.ts`, `src/engine/effectResolver.ts` +8 more
+- **Other hits:** `src/components/Game/attachmentGlyphs.ts`, `src/data/ambition-templates.ts`, `src/data/artifact-templates.ts`, `src/data/choice-set-catalog.ts`, `src/engine/effectExecutors.ts` +9 more
 - **Verdict:** Verified 2026-07-26: THR-737. `collectGrantedTraits` (effectQueries.ts) wraps `hasGrantedTrait` and is consumed by all three production trait gates: encounter eligibility (encounterFilterPipeline `requiredTraits` + `blockedByTraits`), spell prerequisites (spellActivation `traitKeys`), and ambition eligibility (ambitionTick `buildAmbitionAgentSnapshot` + worldSeed initial assignment). Non-vacuous by live payload intersection: `artifact-templates.ts` grants `master_smith` via `trait_grant`, and `ambition-templates.ts` gates an ambition on `requiredTraits: ['master_smith']`. Headless sweep on seed 42 confirms a granted trait flipping eligibility — see `trait_grant` consumer tests in effectQueries.test.ts and ambitionTick.test.ts. Re-verified 2026-07-26 under THR-786: all four consumers now reach the granted set through `collectBearerTraitRefs({ grantedTraits })`, covered by the site-1/4/5/6 granted-trait cases in `__tests__/contracts/traitPredicate.contract.test.ts`.
 
 ### `attachment-worldgen-starters` — 🟢 LIVE

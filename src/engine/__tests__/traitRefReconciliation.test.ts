@@ -36,6 +36,30 @@
  * counted below close their gates today. So minting is available for the remaining 21,
  * at the stated cost of a key with no definition (no display name, no visibility, no
  * `domainContributions`). Which of the three routes each concept deserves is THR-813.
+ *
+ * ── THR-813 — 21 → 8 ──────────────────────────────────────────────────────────────
+ *
+ * The per-class decision, taken from the UL rather than ref by ref. `Docs/ubiquitous-
+ * language/Traits.md` § Trait Ref is the authority: **a hook must reference a trait some
+ * producer actually mints — a ref that names a trait nothing creates is an authoring
+ * defect, not a missing engine feature.** Two corollaries closed the open routes:
+ *
+ *   - Minting needs a *category*, and a category is a lifecycle contract that names its
+ *     producer (§ Trait Category). "Just add a definition" is not a route; adopting a
+ *     producer is. None of the ten contracts covers a biographical selection key.
+ *   - The phantom-grant route is canon-illegal for identity. A bare grant key has no
+ *     display name and no visibility, and THR-789's canon is that an object's traits are
+ *     always visible in its interface once known. So the cost noted above is not a
+ *     trade-off to weigh — it disqualifies the route outright for these refs.
+ *
+ * That left retirement for the 13 `noLiveCounterpart` selection concepts, whose authored
+ * sites are gone from `ambition-templates.ts` (see the retirement block in that file's
+ * header for the full list and the per-site reasoning). Removal is behaviour-identical
+ * by construction: `ambitionSelection.ts` tests `agent.traits.includes(ref)`, so a ref no
+ * producer mints never blocked (permissive) and never scored (zero weight).
+ *
+ * The `unproducedFlags` decision is recorded on that key below — it is the one class
+ * where the obvious repoint is actively worse than the dead ref.
  */
 import { describe, it, expect } from 'vitest';
 import { WorldGraph } from '../graph';
@@ -108,20 +132,20 @@ const KNOWN_DEAD = {
    * Each is the *sole* abandonment trigger on its ambition (`reclaim homeland`,
    * `protect kin`, `flee the blight`), so all three currently run to completion or
    * forever — measured while resolving `living`, which was the fourth of that set.
-   * THR-813 carries the producer decision.
+   *
+   * THR-813 took the producer decision and the answer was **not yet, and not by the
+   * obvious route**. Each names a *loss* (home given up, kin gone, the road ended), and
+   * abandonment triggers are evaluated from the ambition's first tick with no grace
+   * period, ahead of milestones (`ambitionLifecycle.ts`). The available current-state
+   * proxies — zero `loyalty` bonds, outside the homeland, not having moved — are all
+   * true for a typical agent *at assignment*, and none of the three ambitions gates on
+   * them the way `ambition_dominate_trade`'s `gold >= 0.4` floor gates its `gold < 0.2`
+   * trigger. So every repoint abandons on tick one: the inverted-risk failure THR-812
+   * fixed for `target_agent_eliminated`, and worse than the dead ref it replaces
+   * (never abandoning beats never running). Blocked on loss history or residence +
+   * dwell time — THR-822.
    */
   unproducedFlags: ['accepted_exile', 'homeless_wanderer', 'made_peace_with_the_land'],
-  /**
-   * Selection concepts with no live definition carrying the meaning. Seven of these
-   * are `blockingTraits`, where a wrong repoint is worse than a dead one — a dead
-   * blocker is permissive (nothing is excluded), while a mistaken blocker silently
-   * excludes agents who should qualify. Left dead deliberately rather than force-fit.
-   */
-  noLiveCounterpart: [
-    'apostate', 'barren_line', 'exile', 'incurious', 'noble_blood', 'obsessive',
-    'pacifist', 'perfectionist', 'pioneer', 'plague_bearer', 'rooted', 'ruin_delver',
-    'veil_blind',
-  ],
 } as const;
 
 const EXPECTED_DEAD = Object.values(KNOWN_DEAD).flat().slice().sort();
@@ -175,6 +199,85 @@ describe('THR-800 — authored trait refs resolve against shipped definitions', 
       'trait.reputation.shadow.positive',
     ]) {
       expect(graph.getNode(id), `missing repoint target ${id}`).toBeDefined();
+    }
+  });
+
+  it('keeps the THR-813 retired selection keys out of the ambition templates', async () => {
+    // The equality assertion above already fails if one of these is re-authored — it
+    // would come back as a *new* dead ref. This asserts the same fact from the content
+    // side so the failure names the authoring mistake ("`pacifist` is back in an
+    // ambition") rather than only the sweep's bookkeeping, and so a future wave that
+    // mints one of these concepts for real is forced to update this list deliberately.
+    // All THREE pools — the file exports `AMBITION_TEMPLATES`,
+    // `REACTIVE_AMBITION_TEMPLATES` and `EVENT_MINTED_AMBITION_TEMPLATES`, and the
+    // retired keys were spread across all three. A sweep that misses a pool reports a
+    // clean PASS over content it never read.
+    const {
+      AMBITION_TEMPLATES,
+      REACTIVE_AMBITION_TEMPLATES,
+      EVENT_MINTED_AMBITION_TEMPLATES,
+    } = await import('../../data/ambition-templates');
+    const authored = new Set<string>();
+    for (const t of [
+      ...AMBITION_TEMPLATES,
+      ...REACTIVE_AMBITION_TEMPLATES,
+      ...EVENT_MINTED_AMBITION_TEMPLATES,
+    ]) {
+      for (const ref of [...(t.blockingTraits ?? []), ...(t.boostingTraits ?? []), ...(t.requiredTraits ?? [])]) {
+        authored.add(ref);
+      }
+    }
+
+    // Anti-vacuity: a sweep that collected nothing would pass every assertion below.
+    // Pin that the walk actually read content, and read a key that is *supposed* to be
+    // there — so a refactor that renames the fields fails loudly instead of going quiet.
+    expect(authored.size).toBeGreaterThan(20);
+    expect(authored.has('trait.mastery.steadfast')).toBe(true);
+
+    for (const retired of [
+      'apostate', 'barren_line', 'exile', 'incurious', 'noble_blood', 'obsessive',
+      'pacifist', 'perfectionist', 'pioneer', 'plague_bearer', 'rooted', 'ruin_delver',
+      'veil_blind',
+    ]) {
+      expect(authored.has(retired), `retired selection key "${retired}" re-authored`).toBe(false);
+    }
+  });
+
+  it('leaves every ambition that lost a boost with at least one live boost', async () => {
+    // The retirement's safety claim was "no ambition lost its trait signal" — every
+    // *boosting* site retained a live key, only *blocking* sites emptied. Pin it, so a
+    // later edit cannot quietly strand an ambition with an empty boost list and leave
+    // this ticket's reasoning stale.
+    const {
+      AMBITION_TEMPLATES,
+      REACTIVE_AMBITION_TEMPLATES,
+      EVENT_MINTED_AMBITION_TEMPLATES,
+    } = await import('../../data/ambition-templates');
+    const report = await validateTraitRefs(graphWithShippedDefinitions());
+    const dead = new Set(report.dead.map(d => d.ref));
+    const byId = new Map(
+      [
+        ...AMBITION_TEMPLATES,
+        ...REACTIVE_AMBITION_TEMPLATES,
+        ...EVENT_MINTED_AMBITION_TEMPLATES,
+      ].map(t => [t.id, t]),
+    );
+
+    // All six ambitions that lost a boosting key, and the key each lost.
+    for (const [id, retired] of [
+      ['ambition_forge_legend', 'perfectionist'],
+      ['ambition_found_dynasty', 'noble_blood'],
+      ['ambition_uncover_secrets', 'ruin_delver'],
+      ['ambition_reclaim_homeland', 'exile'],
+      ['ambition_found_anew', 'pioneer'],
+      ['ambition_chase_the_wonder', 'obsessive'],
+    ] as const) {
+      const template = byId.get(id);
+      expect(template, `missing ambition ${id}`).toBeDefined();
+      const boosts = template!.boostingTraits ?? [];
+      expect(boosts, `${id} still carries retired key "${retired}"`).not.toContain(retired);
+      const live = boosts.filter(r => !dead.has(r));
+      expect(live.length, `${id} has no live boosting trait left`).toBeGreaterThan(0);
     }
   });
 
