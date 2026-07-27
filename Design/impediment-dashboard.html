@@ -3521,6 +3521,19 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "**Workaround:** treat `EDGE_SCHEMA` as a hint, not an authority — confirm endpoint shape by reading the `type: '<edge>'` producer and counting live edges with `getEdgesByType` on a seeded run (\"verify the noun before the verb\"). Filed **THR-830** to reconcile the declaration (likely the `[\"actor\",\"location\"]` union `belongs_to` already uses) and to get a seeded worldgen run to zero `trades_with` warnings.",
     "session": "THR-619, sever-route move endpoint verification."
+  },
+  {
+    "num": "256",
+    "id": 256,
+    "count": 1,
+    "date": "2026-07-27",
+    "category": "verification",
+    "description": "**The typecheck ratchet was run at its numbered position in the checklist rather than after the last edit, so a green local gate shipped a red CI — the same shape as #201, in a different gate.** THR-619's ship comment recorded `npm run check:typecheck OK — 3500 errors, unchanged from baseline`, and the PR's required check then failed with `type errors increased: 3500 → 3507 (+7)`, all seven in `src/engine/__tests__/rivalSchemes.test.ts`. Re-running the ratchet on the *committed* SHA (`fbd9ec42`) reproduces 3507 locally — so the tree that was measured is not the tree that was pushed; the gate ran, passed honestly, and was then invalidated by the test edits that followed it. Auto-merge was armed on top, which converts the miss into indefinite silence: the PR sits green-looking and armed, and nothing merges. Impediment #201 established exactly this rule for `check:generated-freshness` (\"run LAST — after every closeout edit\"); the recurrence in the *type* gate shows the rule was written per-gate instead of as a property of gates in general.",
+    "consequence": "~35 min of the next hourly run: diagnosis, fix, full re-verification, plus a stranded PR that would have idled until someone read the check status. The prior run reported completion in good faith on a measurement that was true when taken.",
+    "impact": "M",
+    "workaroundFound": true,
+    "workaround": "**Rule (generalize #201 to every gate): a gate result is only evidence for the tree that is actually pushed.** Re-run `npm test`, `npm run check:typecheck`, and `check:generated-freshness` after the final edit and before `git commit` — or, cheaper and preferred, run the gate block once immediately before committing rather than at its numbered position. Two supporting habits: (a) the ratchet's own advisory *\"Files whose error count rose\"* line names the culprit file directly, so read the failure body rather than the total; (b) after arming auto-merge, one `gh pr view <N> --json mergeStateStatus,statusCheckRollup` confirms the check actually went green — the pull-work closeout already prescribes a freshness re-check at arm time, and this is the same query. The `BEHIND` state found on the same PR is the sibling case Step 0.8 sweeps for.",
+    "session": "THR-619 CI-red resume, hourly `tb-opus-pickup` run, 2026-07-27."
   }
 ];
 // ── End data ──

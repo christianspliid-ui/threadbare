@@ -264,7 +264,7 @@ describe('phaseRivalActions — scheme lifecycle', () => {
     for (let i = 0; i < 100; i++) runTick(state);
 
     const advances = getTraces().filter((t) => t.category === 'rival.scheme_phase_advanced');
-    const moves = new Set(advances.map((t) => (t as Record<string, unknown>).move as string));
+    const moves = new Set(advances.map((t) => (t as unknown as Record<string, unknown>).move as string));
     // rumor, materialize, escalate, crack → ≥3 distinct.
     expect(moves.size).toBeGreaterThanOrEqual(3);
 
@@ -314,8 +314,8 @@ describe('phaseRivalActions — counter-play', () => {
     for (let i = 0; i < 60; i++) runTick(state);
 
     const countered = getTraces().filter((t) => t.category === 'rival.scheme_countered');
-    expect(countered.some((t) => (t as Record<string, unknown>).outcome === 'stalled')).toBe(true);
-    expect(countered.some((t) => (t as Record<string, unknown>).outcome === 'failed')).toBe(true);
+    expect(countered.some((t) => (t as unknown as Record<string, unknown>).outcome === 'stalled')).toBe(true);
+    expect(countered.some((t) => (t as unknown as Record<string, unknown>).outcome === 'failed')).toBe(true);
 
     const comp = state.activeCompositions?.find((c) => c.sponsorRivalId === 'actor_rival_1');
     // Either the failed comp is still retained (pre-GC) as 'failed', or it has been GC'd.
@@ -458,7 +458,9 @@ describe('economic family — moves bite the world', () => {
         ? {
             intelligenceRecords: opts.intel.map((r) => ({
               recordId: r.recordId,
-              category: 'threat',
+              // Route intel is what a severed conduit blinds; 'threat' is not an
+              // IntelligenceCategory member and never was.
+              category: 'trade_route' as const,
               label: 'l',
               detail: 'd',
               sourceEncounterId: 'enc',
@@ -515,7 +517,7 @@ describe('economic family — moves bite the world', () => {
 
     const drained = getTraces().filter((t) => t.category === 'rival.scheme_stock_drained');
     expect(drained.length).toBeGreaterThan(0);
-    expect((drained[0] as Record<string, unknown>).resourceId).toBe('iron_ore');
+    expect((drained[0] as unknown as Record<string, unknown>).resourceId).toBe('iron_ore');
   });
 
   it('sever_route cuts trade conduits at the target', () => {
@@ -525,7 +527,7 @@ describe('economic family — moves bite the world', () => {
 
     const severed = getTraces().filter((t) => t.category === 'rival.scheme_route_severed');
     expect(severed.length).toBeGreaterThan(0);
-    expect((severed[0] as Record<string, unknown>).severedPartnerIds).toEqual(
+    expect((severed[0] as unknown as Record<string, unknown>).severedPartnerIds).toEqual(
       expect.arrayContaining(['loc-partner-a', 'loc-partner-b']),
     );
   });
@@ -548,8 +550,8 @@ describe('economic family — moves bite the world', () => {
     expect(elsewhere.reliability).toBe(0.9);
 
     const severed = getTraces().filter((t) => t.category === 'rival.scheme_route_severed');
-    expect((severed[0] as Record<string, unknown>).region).toBe('the-marches');
-    expect((severed[0] as Record<string, unknown>).intelRecordsDegraded).toBe(1);
+    expect((severed[0] as unknown as Record<string, unknown>).region).toBe('the-marches');
+    expect((severed[0] as unknown as Record<string, unknown>).intelRecordsDegraded).toBe(1);
   });
 
   it('fail-softs on a target with no stocks, no routes, and no region', () => {
@@ -587,9 +589,9 @@ describe('economic family — moves bite the world', () => {
       .filter(
         (t) =>
           t.category === 'rival.scheme_phase_advanced' &&
-          (t as Record<string, unknown>).compositionId === firstCompId,
+          (t as unknown as Record<string, unknown>).compositionId === firstCompId,
       )
-      .map((t) => (t as Record<string, unknown>).phaseId as string);
+      .map((t) => (t as unknown as Record<string, unknown>).phaseId as string);
     expect(order).toEqual(['sour-mines', 'corner-grain', 'break-guild', 'starve-faithful']);
 
     // And the scheme reached 'completed' rather than stalling out.

@@ -1,5 +1,5 @@
 {
-  "total": 3500,
+  "total": 3497,
   "command": "npx tsc -b --force --pretty false",
   "perFile": {
     "scripts/lint-encounter-content.ts": 2,
@@ -477,7 +477,6 @@
     "src/engine/__tests__/rewardPool.test.ts": 1,
     "src/engine/__tests__/rival-doom-integration.test.ts": 2,
     "src/engine/__tests__/rival.test.ts": 8,
-    "src/engine/__tests__/rivalSchemes.test.ts": 3,
     "src/engine/__tests__/riverGeneration.test.ts": 2,
     "src/engine/__tests__/roadNetwork.test.ts": 1,
     "src/engine/__tests__/schism.test.ts": 2,
