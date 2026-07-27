@@ -3,8 +3,10 @@ import {
   EXEMPTION_TOKEN,
   parseExemptionReason,
   computeStaleWarnings,
+  describeBase,
   globToRegExp,
   missingInputExitCode,
+  splitRemoteTrackingBase,
   type ManifestPage,
 } from "../check-wiki-freshness";
 
@@ -153,6 +155,77 @@ describe("computeStaleWarnings", () => {
     expect(computeStaleWarnings([page()], changed, "advisory")[0]).toContain(
       "public/example-reference.html may be stale",
     );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// splitRemoteTrackingBase — which bases can be refreshed at all (THR-819)
+// ---------------------------------------------------------------------------
+
+describe("splitRemoteTrackingBase", () => {
+  it("splits the standard origin/main base", () => {
+    expect(splitRemoteTrackingBase("origin/main", ["origin"])).toEqual({ remote: "origin", branch: "main" });
+  });
+
+  it("keeps slashes in the branch half", () => {
+    expect(splitRemoteTrackingBase("origin/release/1.x", ["origin"])).toEqual({
+      remote: "origin",
+      branch: "release/1.x",
+    });
+  });
+
+  // The reason the remote list is a parameter instead of "text before the first slash":
+  // a local branch with a slash must not be mistaken for a remote-tracking ref.
+  it("returns null for a local branch that merely contains a slash", () => {
+    expect(splitRemoteTrackingBase("docs/plan-2026-07-27", ["origin"])).toBeNull();
+  });
+
+  it("returns null for a bare SHA or tag", () => {
+    expect(splitRemoteTrackingBase("d7f9127d", ["origin"])).toBeNull();
+    expect(splitRemoteTrackingBase("v1.2.3", ["origin"])).toBeNull();
+  });
+
+  it("returns null when the repo has no remotes", () => {
+    expect(splitRemoteTrackingBase("origin/main", [])).toBeNull();
+  });
+
+  it("prefers the longest matching remote when remote names nest", () => {
+    expect(splitRemoteTrackingBase("origin/mirror/main", ["origin", "origin/mirror"])).toEqual({
+      remote: "origin/mirror",
+      branch: "main",
+    });
+  });
+
+  it("returns null when the base is exactly a remote name with no branch", () => {
+    expect(splitRemoteTrackingBase("origin/", ["origin"])).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// describeBase — verdict lines must disclose whether the base was refreshed
+// ---------------------------------------------------------------------------
+
+describe("describeBase", () => {
+  it("marks a refreshed base", () => {
+    expect(describeBase("origin/main", "refreshed")).toBe("origin/main (refreshed)");
+  });
+
+  // The whole point of THR-819: a bare `OK` could not be distinguished from a false
+  // PASS computed off a stale ref, so every verdict has to carry its provenance.
+  it("marks an unfetchable base as unreliable rather than staying silent", () => {
+    const out = describeBase("origin/main", "unfetchable");
+    expect(out).toContain("could not refresh");
+    expect(out).toContain("may be unreliable");
+  });
+
+  it("marks a deliberately unrefreshed base", () => {
+    expect(describeBase("origin/main", "not-refreshed")).toBe("origin/main (not refreshed)");
+  });
+
+  it("never claims freshness it did not establish", () => {
+    for (const outcome of ["unfetchable", "not-refreshed"] as const) {
+      expect(describeBase("origin/main", outcome)).not.toContain("(refreshed)");
+    }
   });
 });
 
