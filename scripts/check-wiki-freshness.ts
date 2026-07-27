@@ -32,6 +32,33 @@
  * auditable forever in git history. If `git log` for the range is unavailable, we
  * treat it as "no exemption" — the gate still fires.
  *
+ * Base-ref freshness (THR-819): the diff base is refreshed from its remote before any
+ * verdict is computed, because nothing else did. CI fetches `origin/main` on the line
+ * above the gate, so CI was always right; the local command agents run as pre-commit
+ * evidence (CLAUDE.md step 3c) was only as right as the last fetch — and it failed in
+ * the *unsafe* direction, printing OK where CI printed FAIL for the same tree. Two
+ * distinct laundering paths, both measured on the THR-802 incident:
+ *
+ *   1. Page-in-diff. Staleness is (sources changed) AND NOT (page changed). A base
+ *      predating a commit that edited the page puts that commit's edit in the diff, so
+ *      the page reads as "updated here" and the gate credits the PR for someone else's
+ *      work — the genuinely stale page vanishes from the report entirely.
+ *   2. Exemption laundering. The exemption scan reads commit bodies over `BASE..HEAD`,
+ *      so a stale base widens the range until it sweeps in an unrelated older commit's
+ *      `Wiki-freshness-exempt:` token and waives a warning that was never exempted.
+ *
+ * Both have one root cause, so both take one fix: make the base trustworthy, then say
+ * so. Every verdict line names the base and whether it was refreshed — a gate that
+ * cannot be believed is worth nothing, and "OK" alone never distinguished a fresh base
+ * from a stale one. A fetch failure (offline) is fail-soft by NFP #4: the run does not
+ * go red over lost network, it labels the verdict `could not refresh` and says the
+ * result may be unreliable. Set WIKI_FRESHNESS_NO_FETCH=1 to skip the fetch entirely
+ * (hermetic/offline runs); the label reports that too.
+ *
+ * Note the deliberate non-fix: three-dot `origin/main...HEAD` does NOT close this. The
+ * merge base is computed from the same stale ref, so it only changes which commits are
+ * attributed.
+ *
  * Run via `npm run check:wiki-freshness` (advisory, chained into `check:process`)
  * or `npm run check:wiki-freshness:blocking` (blocking, the CI gate).
  */
@@ -45,6 +72,13 @@ import { fileURLToPath } from "node:url";
 export type ManifestPage = { id: string; file: string; sources?: unknown; payloads?: unknown };
 export type Manifest = { pages?: ManifestPage[] };
 export type FreshnessMode = "advisory" | "blocking";
+
+/**
+ * Whether the diff base was refreshed from its remote before the verdict was computed
+ * (THR-819). Every verdict line carries this, because a verdict is only as trustworthy
+ * as its base ref and the reader cannot tell the difference from the verdict alone.
+ */
+export type BaseRefreshOutcome = "refreshed" | "unfetchable" | "not-refreshed";
 
 /** Commit-body token that opts a PR out of the blocking gate for behavior-neutral changes. */
 export const EXEMPTION_TOKEN = "Wiki-freshness-exempt:";
@@ -60,6 +94,14 @@ const WIKI_FRESHNESS_MODE: FreshnessMode =
     : "advisory";
 /** Diff base for changed-file detection. */
 const WIKI_FRESHNESS_BASE = process.env.WIKI_FRESHNESS_BASE ?? "origin/main";
+/** Opt out of the base-ref fetch (hermetic runs, deliberately-offline machines). */
+const WIKI_FRESHNESS_NO_FETCH = process.env.WIKI_FRESHNESS_NO_FETCH === "1";
+/**
+ * Wall-clock ceiling on the base-ref fetch, ms. A gate that can hang forever on a
+ * half-open connection is worse than one that admits it could not refresh, so the
+ * timeout expires into the fail-soft `unfetchable` path rather than blocking a commit.
+ */
+const FETCH_TIMEOUT_MS = 20_000;
 
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(SCRIPT_DIR, "..");
@@ -90,11 +132,75 @@ function bailMissingInput(reason: string, hint?: string): never {
   process.exit(exit);
 }
 
-function git(args: string[]): string | null {
+function git(args: string[], timeoutMs?: number): string | null {
   try {
-    return execFileSync("git", args, { cwd: REPO_ROOT, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] });
+    return execFileSync("git", args, {
+      cwd: REPO_ROOT,
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
+      ...(timeoutMs === undefined ? {} : { timeout: timeoutMs }),
+    });
   } catch {
     return null;
+  }
+}
+
+/**
+ * Split a remote-tracking base like `origin/main` into its remote and branch, given the
+ * repo's actual remotes. Returns null when the base is not remote-tracking — a bare SHA,
+ * a tag, or a local branch that merely contains a slash (`docs/plan-x` must NOT be read
+ * as remote `docs`), which is why the remote list is required rather than guessed from
+ * the first path segment. Longest remote wins, so a repo with both `origin` and
+ * `origin/mirror` resolves unambiguously. Pure — the caller supplies the remotes.
+ */
+export function splitRemoteTrackingBase(
+  base: string,
+  remotes: readonly string[],
+): { remote: string; branch: string } | null {
+  let best: { remote: string; branch: string } | null = null;
+  for (const remote of remotes) {
+    if (!remote || !base.startsWith(`${remote}/`)) continue;
+    const branch = base.slice(remote.length + 1);
+    if (!branch) continue;
+    if (!best || remote.length > best.remote.length) best = { remote, branch };
+  }
+  return best;
+}
+
+/**
+ * Refresh the diff base from its remote so the verdict rests on a current ref (THR-819).
+ * Fail-soft throughout: any failure downgrades the label, never the exit code.
+ */
+function refreshBaseRef(): BaseRefreshOutcome {
+  if (WIKI_FRESHNESS_NO_FETCH) return "not-refreshed";
+
+  const remoteList = git(["remote"]);
+  if (remoteList === null) return "not-refreshed";
+  const remotes = remoteList.split("\n").map((r) => r.trim()).filter(Boolean);
+
+  const parsed = splitRemoteTrackingBase(WIKI_FRESHNESS_BASE, remotes);
+  // A non-remote-tracking base (SHA, tag, local branch) has no remote to refresh from.
+  // That is not a failure — it is a base whose freshness is the caller's business.
+  if (parsed === null) return "not-refreshed";
+
+  return git(["fetch", parsed.remote, parsed.branch, "--quiet"], FETCH_TIMEOUT_MS) === null
+    ? "unfetchable"
+    : "refreshed";
+}
+
+/**
+ * Render the base ref plus its provenance for a verdict line. The provenance is not
+ * decoration: `OK` against an unrefreshed base is the exact string this whole ticket
+ * exists to stop anyone pasting into a closeout comment as proof.
+ */
+export function describeBase(base: string, outcome: BaseRefreshOutcome): string {
+  switch (outcome) {
+    case "refreshed":
+      return `${base} (refreshed)`;
+    case "unfetchable":
+      return `${base} (could not refresh — verdict may be unreliable)`;
+    case "not-refreshed":
+      return `${base} (not refreshed)`;
   }
 }
 
@@ -263,10 +369,21 @@ function main(): void {
     return;
   }
 
+  // Refresh BEFORE the diff and before the exemption scan — both read the base, and
+  // both launder a false PASS when it is stale (see the header note, THR-819).
+  const refresh = refreshBaseRef();
+  const base = describeBase(WIKI_FRESHNESS_BASE, refresh);
+  if (refresh === "unfetchable") {
+    console.log(
+      `check-wiki-freshness: WARNING — could not fetch ${WIKI_FRESHNESS_BASE} (offline?). ` +
+        `The verdict below is computed from a possibly-stale base ref and may disagree with CI.`,
+    );
+  }
+
   const changed = collectChangedFiles();
   if (changed === null) {
     bailMissingInput(
-      `no diff available against ${WIKI_FRESHNESS_BASE}`,
+      `no diff available against ${base}`,
       "hint: fetch the base ref and give the checkout history — `git fetch origin main` and `fetch-depth: 0`.",
     );
   }
@@ -275,7 +392,7 @@ function main(): void {
 
   if (warnings.length === 0) {
     console.log(
-      `check-wiki-freshness: OK — ${pagesWithSources.length} page(s) with sources checked against ${WIKI_FRESHNESS_BASE}, no stale pages.`,
+      `check-wiki-freshness: OK — ${pagesWithSources.length} page(s) with sources checked against ${base}, no stale pages.`,
     );
     return;
   }
@@ -300,7 +417,7 @@ function main(): void {
 
   if (exemptReason) {
     console.log(
-      `check-wiki-freshness: OK (exempt) — ${warnings.length} page(s) flagged, waived by ` +
+      `check-wiki-freshness: OK (exempt) — ${warnings.length} page(s) flagged against ${base}, waived by ` +
         `\`${EXEMPTION_TOKEN} ${exemptReason}\``,
     );
     for (const warning of warnings) console.log(`  - ${warning}`);
@@ -308,7 +425,7 @@ function main(): void {
   }
 
   const label = WIKI_FRESHNESS_MODE === "blocking" ? "FAIL" : "WARN";
-  console.log(`check-wiki-freshness: ${label} (mode=${WIKI_FRESHNESS_MODE})`);
+  console.log(`check-wiki-freshness: ${label} (mode=${WIKI_FRESHNESS_MODE}, base=${base})`);
   for (const warning of warnings) console.log(`  - ${warning}`);
 
   // Advisory: surface the warnings but never fail the build.

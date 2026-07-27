@@ -3443,6 +3443,32 @@ const DATA = [
     "workaroundFound": false,
     "workaround": "Resolved for this pass by editing the live prompt and its `Docs/ops/scheduled-task-prompts/` mirror only, and confirming the target line existed in both before editing (`grep -n \"Orphan root-level\"` returned line 87 in each and **nothing** in the drafts copy — which is what surfaced the divergence). The general fix is to delete `Docs/drafts/weekly-project-hygiene-SKILL.md` now that the task is installed, or give it a header pointing at the live pair; filed as **THR-823** rather than absorbed, because it is outside THR-793's scope and the three referencing plan-doc lines need repointing in the same change. **Check before editing any prompt: confirm the string you are changing actually exists in the file you are changing, and that the file sits under `Docs/ops/scheduled-task-prompts/` or the live `.claude/scheduled-tasks/` path.**",
     "session": "THR-793, hourly `tb-opus-pickup`"
+  },
+  {
+    "num": "249",
+    "id": 249,
+    "count": 1,
+    "date": "2026-07-27",
+    "category": "tooling",
+    "description": "**A stale diff base launders a false PASS through a *second*, undocumented path: it widens the commit range the exemption scan reads, so an unrelated older commit's `Wiki-freshness-exempt:` token waives a warning that was never exempted.** Row **242** and THR-819 both named one mechanism — a base predating a commit that edited the page puts that edit in the diff, so `pageChanged` goes true and the stale page vanishes from the report. Fixing THR-819 surfaced the other. `check-wiki-freshness.ts` resolves the exemption over `git log --format=%B ${WIKI_FRESHNESS_BASE}..HEAD`, so the same staleness that corrupts the *diff* also stretches the *range*. Measured on an isolated clone at `af8f225b` + one commit editing `scripts/interface-contracts.ts` without the page: with a fresh base, `FAIL` — `system-interface-map-reference.html is stale`. With `origin/main` set to `d7f9127d^`, the same tree returned `OK (exempt) — waived by 'Wiki-freshness-exempt: the only unified-action-templates.ts change is a debug-only registerDebugTemplate seam…'` — a reason authored for a completely different PR. Exit 1 → exit 0 on an identical working tree, via two independent routes at once.",
+    "consequence": "The exemption token is the gate's audited escape hatch: opt-in, stated in a commit body, reviewed by `weekly-project-hygiene`. A stale base silently converts it into an *ambient* waiver that any nearby history can supply, so the audit trail records a reason that has nothing to do with the change it excused. Worse than the page-in-diff vector, because that one merely drops a warning while this one manufactures a documented-looking justification for dropping it. Neither was visible from the verdict line, which said only `OK`.",
+    "impact": "High",
+    "workaroundFound": true,
+    "workaround": "Fixed at the root in THR-819: the base is fetched before *both* reads, so one repair closes both vectors. The durable half is the disclosure — every verdict line now carries `base=origin/main (refreshed)` / `(could not refresh — verdict may be unreliable)` / `(not refreshed)`, because a bare `OK` could not distinguish a real pass from either laundering path, and the pasted green line was the whole evidence artifact. **General rule: when a check resolves a ref, enumerate *every* read of that ref — diff base, log range, merge base — before declaring a staleness bug fixed; a single ref feeding two consumers has two failure modes.** Same family as rows **239**/**241**: the instrument could not express the failure, so it reported health.",
+    "session": "THR-819, hourly `tb-opus-pickup` run, 2026-07-27 — found while building the isolated reproduction for row **242**'s ticket."
+  },
+  {
+    "num": "250",
+    "id": 250,
+    "count": 1,
+    "date": "2026-07-27",
+    "category": "tooling",
+    "description": "**The session scratchpad path is ~150 characters deep, so `git clone` of this repo into it dies mid-checkout on Windows `MAX_PATH` — and the failure leaves a half-written tree that makes the retry fail differently.** Building an isolated repro clone for THR-819 under the sanctioned scratchpad (`…\\Temp\\claude\\C--Users-chris-Dev-Projects-TheFantasyWorldSimulator--claude-worktrees-beautiful-spence-f104e0\\<uuid>\\scratchpad\\`) failed with `fatal: cannot create directory at '.claude/projects/C--Users-chris-Dev-Projects-…': Filename too long`. The repo carries its own deeply-nested `.claude/projects/<mangled-abs-path>/` directories, so the combined length blows the limit well before any source file is reached. The retry then failed with a *different* error — `Please move or remove them before you switch branches` — because the aborted checkout had already written part of the tree as untracked files.",
+    "consequence": "Two dead ends before the real constraint is visible, and the second error points at working-tree hygiene rather than path length, which invites the wrong fix. Any session doing an isolated-clone reproduction (the right instinct for verifying a git-dependent build script without touching shared refs) hits this.",
+    "impact": "Low",
+    "workaroundFound": true,
+    "workaround": "`git clone --no-checkout` first, then `git config core.longpaths true` in the clone, then `git checkout` — and `git clean -qfdx` before the retry if a checkout already aborted partway. Scripts under `scripts/` that import only node builtins can then be run with `node --experimental-strip-types <script>.ts` directly, with **no `npm install` in the clone at all**, which is what makes an isolated clone cheap enough to be worth it. Verified end-to-end here: the whole before/after reproduction ran in a throwaway clone and never touched the working repo's refs. **Note the alternative that looks safer and is not:** `git update-ref refs/remotes/origin/main <stale>` in the working repo would be simpler, but `refs/remotes` lives in the *common* git dir and is shared by every worktree, so it perturbs concurrent sessions.",
+    "session": "THR-819, hourly `tb-opus-pickup` run, 2026-07-27."
   }
 ];
 // ── End data ──
