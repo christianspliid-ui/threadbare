@@ -2,7 +2,9 @@
 
 > **Authoritative home for the recurring-task registry** (moved out of `CLAUDE.md` § Scheduled Tasks by THR-760, 2026-07-26). CLAUDE.md keeps a pointer here plus the two rules that gate live session behavior; everything else — the lane tables, slot-allocation policy, reaper guardrails, prompt-mirror rule — lives on this page.
 
-Current recurring task registry. **Verified against `list_scheduled_tasks` on 2026-07-22 (THR-677 trials); `flush-plan-docs` removed 2026-07-21 (THR-654 demolition).** The scheduler adds a deterministic per-task jitter of a few minutes to the cron minute, so **the slot name, the cron minute, and the actual fire time are three different things** — the `Fires` column is the one that matters operationally.
+Current recurring task registry. **Verified against `list_scheduled_tasks` and `Get-ScheduledTask` on 2026-07-27 (THR-794 — both lanes re-checked row by row); `flush-plan-docs` removed 2026-07-21 (THR-654 demolition).** The scheduler adds a deterministic per-task jitter of a few minutes to the cron minute, so **the slot name, the cron minute, and the actual fire time are three different things** — the `Fires` column is the one that matters operationally.
+
+**The audit is two-directional and runs on both lanes.** Every entry `list_scheduled_tasks` returns needs a row here — including disabled and out-of-scope ones, which otherwise read as "not registered" rather than "registered, deliberately dormant" — and every host task `Get-ScheduledTask` returns needs a row in the Windows lane table. THR-794 found one miss in each direction (`website-code-work`, `ThreadbareRepoAutoSync`); both are now carried below.
 
 ## CC automation lane — registered and live
 
@@ -16,6 +18,14 @@ Current recurring task registry. **Verified against `list_scheduled_tasks` on 20
 | **Wed 11:09** | Weekly | `weekly-workflow-retro` | `9 11 * * 3` | ~Wed 11:13 | `Design/retros/workflow-retro-<date>.md` |
 | **Sun 10:06** | Weekly | `weekly-project-hygiene` | `6 10 * * 0` | ~Sun 10:10 | `Docs/ops/weekly-hygiene-<date>.md` + filed findings |
 | **1st 09:00** | Monthly | `monthly-rulebook-review` | `0 9 1 * *` | ~1st 09:00 | one Linear findings issue (or nothing) — registered 2026-07-22 by THR-704 after the THR-417 phantom-Done |
+
+## CC automation lane — registered but not Threadbare work
+
+| Slot | Cadence | Task | Enabled | Disposition |
+|------|---------|------|---------|-------------|
+| — | Manual only | `website-code-work` ("check for work on the website") | **No** (`enabled: false`, last ran 2026-05-26) | **Out of scope — personal site, not Threadbare. Do not touch, do not enable, do not port.** Prompt: `C:\Users\chris\.claude\scheduled-tasks\website-code-work\SKILL.md` |
+
+It carries no cron and fires only when invoked by hand, so it never contends for a slot. The row exists purely so the registered-vs-documented audit has something to match against — mirroring the `weekly-invoice-check` treatment in the Cowork lane table below. A dormant task with no row is indistinguishable from an undocumented one, which is exactly what made this the THR-794 miss.
 
 `daily-backlog-grooming`, `weekly-workflow-retro`, and `weekly-project-hygiene` were enabled 2026-07-22 after their attended trials passed with Christian's chat approval (THR-677); their trial reports are `Docs/ops/backlog-grooming-2026-07-22.md`, `Design/retros/workflow-retro-2026-07-22.md`, and `Docs/ops/weekly-hygiene-2026-07-22.md`. The corresponding Cowork counterparts are now cut over — Christian disables them (tracked in `Design/user-actions.md`).
 
@@ -43,6 +53,16 @@ Host-machine tasks; invisible to `list_scheduled_tasks`.
 | Slot | Cadence | Task | Trigger | Fires |
 |------|---------|------|---------|-------|
 | **:40** | Hourly | `Threadbare Git Cleanup` — runs `C:/Users/chris/Dev/Projects/clean-stale-git.sh` (prunes merged worktrees/branches, escalates stale unmerged ones) | Once at 00:40, repeat every 1h | :40 (no jitter) |
+| **:50** | Hourly | `ThreadbareRepoAutoSync` — runs `C:\Users\chris\bin\threadbare-autosync.ps1`: fast-forwards the home tree to `origin/main`, and reattaches a **provably loss-free** detached park (THR-671/672) | Once at 00:50, repeat every 1h | :50 (no jitter) |
+
+Neither host task carries a `RandomDelay`, so unlike the CC lane their slot minute *is* their fire time. Both run `Interactive`-only at `Limited` run level with `StartWhenAvailable: True`.
+
+**`ThreadbareRepoAutoSync`** (registered 2026-07-18; row added 2026-07-27 by THR-794, which found it live but undocumented here). It is the containment for the harness-level home-tree damage described in CLAUDE.md § Known Sandbox Limitations — **read that section for the behavior, not this row.** The registry owns only the slot facts:
+
+- Execution time limit is **5 minutes** (the reaper's is 30) — a sync that overruns is killed rather than left to overlap the next hour's run.
+- It logs one line per run to `C:\Users\chris\bin\threadbare-autosync.log` (`synced: fast-forwarded N commit(s) -> <sha>` / `ok: already up to date`), which is the fastest way to confirm the home tree is current without touching it.
+- The script body lives **outside version control**, same as the reaper's. Unlike the reaper's, it has no repo mirror yet — tracked as [THR-824](https://linear.app/threadbare/issue/THR-824).
+- Only autosync may move the home tree's git state. Scheduled sessions must never run git state ops with the home tree as CWD (THR-672) — a session that parks it on a branch stalls autosync for days.
 
 The reaper was daily until THR-673 moved it to hourly at the free `:40` offset. Three things about it are load-bearing:
 
@@ -65,6 +85,8 @@ CC cannot read or disable these: they live in Cowork app state, are invisible to
 ## Slot allocation
 
 Hourly Linear-MCP-using tasks are spaced so their *fire times* don't overlap: `tb-opus-pickup` at ~:00:53, `keep-work-flowing-cc` at ~:53:13 (deliberately late in the hour so the brief reflects post-pickup state; it moved from the :20 slot to :45 in the THR-653 cutover, taking over the slot the Cowork PM task vacates). Daily and weekly tasks pick non-quarter-hour minutes (e.g., :04, :06, :09). **When registering a new hourly task, pick a cron minute whose *jittered* fire time leaves a clear gap from the ones above, then record both the cron and the observed fire time in this file in the same commit.**
+
+Collision-check against **both** lanes, not just the CC one: the host lane holds `:40` (reaper) and `:50` (autosync) with no jitter, so the free stretches in an hour are roughly `:02–:39` and `:54–:59`. The `:50` autosync run matters most for anything that reads home-tree git state — a probe landing inside that window can observe the tree mid-fast-forward.
 
 The THR-677 ports were slotted against that rule: `daily-backlog-grooming` fires ~09:16 (clear of the `:00`/`:40`/`:53` hourly traffic), `weekly-project-hygiene` ~Sun 10:10 (clear of Sunday's 09:16 grooming and 16:10 memory grooming), and `weekly-workflow-retro` ~Wed 11:13 — deliberately moved off its old Cowork slot of Wed 09:04, which would have landed on top of the daily grooming run.
 
