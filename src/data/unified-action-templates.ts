@@ -5738,3 +5738,18 @@ export function getUnifiedTemplateById(id: string): UnifiedActionTemplate | unde
   return getUnifiedTemplateIndex().get(id)
     ?? getAnyEncounterById(id);
 }
+
+/**
+ * Make a template resolvable by id **without putting it in any pool** (THR-775).
+ *
+ * Same shape as `ASCENDANT_POOL_BEAT_TEMPLATES`: present in the lookup index, absent
+ * from `UNIFIED_ACTION_TEMPLATES`, so no scoring pass, hand filter, or codex sweep
+ * can ever draw it. That is what lets `__DEBUG.spawnEncounter` stage a fixture — the
+ * nudge golden exemplar — that no mortal will encounter on their own.
+ *
+ * Debug-only by construction: the sole caller is the dev bridge, which Vite drops
+ * from production builds. Last-wins, so re-registering after an edit takes effect.
+ */
+export function registerDebugTemplate(template: UnifiedActionTemplate): void {
+  getUnifiedTemplateIndex().set(template.id, template);
+}

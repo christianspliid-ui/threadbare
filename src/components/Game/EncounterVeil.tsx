@@ -4,10 +4,12 @@ import { EntityVisual } from '../shared/EntityVisual';
 import type {
   EncounterStageModel,
   EncounterStageChoiceModel,
+  EncounterStageNudgePhaseModel,
   EncounterStageResolutionCheckModel,
   EncounterStageHeaderModel,
   EncounterStageHistoryModel,
 } from './encounter-stage/types';
+import { NudgePhaseShell } from './encounter-stage/shells/NudgePhaseShell';
 
 // ── Thread tier types ──────────────────────────────────────────────
 type ThreadTier = 'strong' | 'light' | 'watched';
@@ -30,6 +32,15 @@ export interface EncounterVeilProps {
   onSelectAgent?: (agentId: string) => void;
   /** THR-636 — "Show on map": close the veil and pan the camera to the encounter hex. */
   onShowOnMap?: (col: number, row: number) => void;
+  /**
+   * THR-775 — commit the selected nudge hand and let the step resolve. Called
+   * only from the nudge stage; the legacy choice path still goes through
+   * `onIntervene`. Absent ⇒ the commit button is inert, which is the correct
+   * degradation for a host that has not wired the handler yet.
+   */
+  onCommitNudges?: (nudgeIds: string[], essenceCost: number) => void;
+  /** THR-775 — open the motive explainer from the header's motive chip. */
+  onOpenMotive?: (phase: EncounterStageNudgePhaseModel) => void;
 }
 
 // ── Design tokens ──────────────────────────────────────────────────
@@ -126,6 +137,8 @@ export function EncounterVeil({
   onAftermathReaction,
   onSelectAgent,
   onShowOnMap,
+  onCommitNudges,
+  onOpenMotive,
 }: EncounterVeilProps) {
   const [visible, setVisible] = useState(false);
   const [selectedChoiceId, setSelectedChoiceId] = useState<string | null>(null);
@@ -1365,7 +1378,12 @@ export function EncounterVeil({
           )}
         </div>
 
-        {/* ── Choice blocks (hidden while replaying a resolved step) ── */}
+        {/* ── The player's move (hidden while replaying a resolved step) ──
+            THR-775: a step carrying an authored nudge hand renders the nudge
+            stage; everything else keeps the legacy choice blocks byte for
+            byte. The branch is on data presence alone — remove a template's
+            nudges and the old screen comes back, which is what makes the
+            rollout per-template and reversible. */}
         {!replayEntry && (
         <div
           style={{
@@ -1373,14 +1391,24 @@ export function EncounterVeil({
             ...entranceStyle(ENTRANCE_DELAYS.choices, 1.0, 16),
           }}
         >
-          {model.choices.map((choice) => (
-            <ChoiceBlock
-              key={choice.id}
-              choice={choice}
-              selected={selectedChoiceId === choice.id}
-              onClick={() => handleChoiceClick(choice)}
+          {model.nudgePhase ? (
+            <NudgePhaseShell
+              phase={model.nudgePhase}
+              portraitUrl={model.header.portraitUrl}
+              agentName={model.header.agentName}
+              onCommit={onCommitNudges ?? (() => {})}
+              onOpenMotive={onOpenMotive}
             />
-          ))}
+          ) : (
+            model.choices.map((choice) => (
+              <ChoiceBlock
+                key={choice.id}
+                choice={choice}
+                selected={selectedChoiceId === choice.id}
+                onClick={() => handleChoiceClick(choice)}
+              />
+            ))
+          )}
         </div>
         )}
       </div>

@@ -1,6 +1,11 @@
 import type { CourtPosition } from '../../../types/influence';
 import type { ReachDomain } from '../../../types/traits';
 import type { StepOutcome } from '../../../types/unifiedAction';
+import type { SphereName } from '../../../types/index';
+import type { ResolutionInput } from '../../../types/resolution';
+import type { ForecastTier } from '../../../types/traces/encounter-traces';
+import type { NudgeBlockedCode } from '../../../engine/encounters/nudges';
+import type { MotiveSource } from '../../../engine/encounters/motiveClassifier';
 
 export type ThreadTier = 'strong' | 'light' | 'watched';
 
@@ -230,6 +235,139 @@ export interface EncounterStageAftermathModel {
   reactions?: EncounterStageAftermathReactionModel[];
 }
 
+// ─── Nudge phase (THR-775 / WS2) ──────────────────────────────────
+//
+// The nudge stage is opt-in per template: `nudgePhase` is present only when the
+// action's current step carries an authored `nudges` hand. Templates with
+// `authoredChoices` and no hand keep `choices` and the legacy screen, so the
+// rollout is per-template and reversible (no flag day).
+
+/**
+ * How a nudge card renders, per the WS2 per-`NudgeBlockedCode` policy.
+ *
+ * - `playable` — affordable and unlocked; toggling it moves the forecast.
+ * - `dimmed` — visible with its reason. **Only** `essence_unavailable` lands
+ *   here: the player's budget changes inside one encounter as they toggle
+ *   spends, so hiding unaffordable cards would make them flicker in and out.
+ *
+ * `sphere_locked` / `unlock_missing` are withheld from the player stage
+ * entirely (ruling 4 — the replayability pool) and surface only in the
+ * designer view. `trait_missing` is never rendered anywhere in the stage.
+ */
+export type NudgeCardState = 'playable' | 'dimmed';
+
+export interface EncounterStageNudgeCardModel {
+  id: string;
+  name: string;
+  /** Card body — a concrete, witnessed effect. */
+  fiction: string;
+  /** Player guidance, words only — never a number. */
+  effectLine: string;
+  essenceCost: number;
+  /** Cost rendered in words; absent on a free (trait) option. */
+  costLabel?: string;
+  sphere?: SphereName;
+  /** WS4 image-library tag. Absent ⇒ the fallback chain ends at EntityVisual. */
+  imageTag?: string;
+  state: NudgeCardState;
+  /** Present only on a dimmed card. */
+  blockedCode?: NudgeBlockedCode;
+  /** Plain-language reason shown on a dimmed card. */
+  blockedReason?: string;
+  /** Rider name, when this card carries one — designer view only. */
+  riderLabel?: string;
+  /** Named forecast contribution. Designer view only; never rendered as a numeral. */
+  forecastDelta: number;
+}
+
+/** A card the player stage withholds — designer view only. */
+export interface EncounterStageWithheldNudgeModel {
+  id: string;
+  name: string;
+  blockedCode: NudgeBlockedCode;
+}
+
+export interface EncounterStageMotiveModel {
+  source: MotiveSource;
+  /** Display chip — BY CHOICE / A MISSION / CHANCE / THE GOD'S HAND. */
+  chipLabel: string;
+  /** One authored sentence naming why this mortal is here. */
+  sentence: string;
+}
+
+/**
+ * Which way a factor line cuts. `neutral` is not a hedge — authored factor
+ * lines carry no declared sign in the WS0 schema, so claiming one would be
+ * inventing information the encounter never stated. Only live modifier-derived
+ * lines (`trait:*`, `nudge:*`), whose delta has a sign, resolve to for/against.
+ */
+export type FactorPolarity = 'for' | 'against' | 'neutral';
+
+export interface EncounterStageFactorLineModel {
+  id: string;
+  text: string;
+  polarity: FactorPolarity;
+  /** Named modifier source (`trait:*` / `nudge:*`) when the line is live-derived. */
+  source?: string;
+}
+
+export interface EncounterStageTestPanelModel {
+  reach: ReachDomain;
+  reachLabel: string;
+  /** Icon for the reach at the acting agent's tier. */
+  reachIconUrl?: string;
+  /**
+   * ≤4 words, plain — what this step is testing.
+   *
+   * TODO(THR-820): no producer yet. `ActionStep` has no `purposeLine` field —
+   * WS1 authored the exemplar's purpose lines as fixture constants
+   * (`EXEMPLAR_REACH_PURPOSE_LINES`) rather than schema, so nothing can fill
+   * this. Declared because the shell already renders it when present.
+   */
+  purposeLine?: string;
+  /** Difficulty as a word. The numeral never renders outside the designer view. */
+  difficultyWord: string;
+  /** Raw 0–1 difficulty — designer view only. */
+  difficultyValue: number;
+  factors: EncounterStageFactorLineModel[];
+}
+
+export interface EncounterStageForecastModel {
+  tier: ForecastTier;
+  /** The tier word — the only probability surface the player ever sees. */
+  word: string;
+  /** Raw probability — designer view only. */
+  probability: number;
+}
+
+export interface EncounterStageNudgePhaseModel {
+  actionId: string;
+  templateId: string;
+  stepIndex: number;
+  motive?: EncounterStageMotiveModel;
+  testPanel: EncounterStageTestPanelModel;
+  /** Forecast with no nudges committed — the hand recomputes from here. */
+  baseForecast: EncounterStageForecastModel;
+  /**
+   * Exact `forecastAction` inputs for the current step, with `actionModifiers`
+   * holding everything *except* the nudge contribution. The hand adds the
+   * selected deltas onto this and recomputes — the same pure engine call
+   * resolution makes, so the word the player reads is the word they get.
+   */
+  forecastInput: ResolutionInput;
+  /** Standing trait-variant contribution, already inside `forecastInput`. */
+  traitModifierTotal: number;
+  cards: EncounterStageNudgeCardModel[];
+  /** Withheld by ruling 4 or trait gate — designer view only. */
+  withheld: EncounterStageWithheldNudgeModel[];
+  /** Ids already committed on this step (a re-opened stage restores them). */
+  committedIds: string[];
+  /** Essence the ascendant can spend right now. */
+  availableEssence: number;
+  /** Total essence the committed hand costs. */
+  committedCost: number;
+}
+
 export interface EncounterStageModel {
   header: EncounterStageHeaderModel;
   illustration?: EncounterStageIllustrationModel;
@@ -250,4 +388,10 @@ export interface EncounterStageModel {
   };
   resolutionReadout?: EncounterStageResolutionReadoutModel;
   aftermath?: EncounterStageAftermathModel;
+  /**
+   * THR-775 — present only when the current step carries an authored nudge
+   * hand. The stage branches on its presence: absent ⇒ the legacy
+   * `authoredChoices` screen renders exactly as before.
+   */
+  nudgePhase?: EncounterStageNudgePhaseModel;
 }
