@@ -11,6 +11,7 @@ Current recurring task registry. **Verified against `list_scheduled_tasks` and `
 | Slot | Cadence | Task | Cron | Fires | Writes |
 |------|---------|------|------|-------|--------|
 | **:00** | Hourly | CC pickup (`tb-opus-pickup` — single Opus executor lane) | `0 * * * *` | ~:00:53 | — |
+| **:25** | Hourly | `tb-orchestrator` (decides what happens next — T1 unblock sweep, T2 design authoring, T3 daily architecture health) | `25 * * * *` | ~:26:16 | `Docs/ops/orchestrator-<date>.md` + Linear `Todo`→`Ready for Dev` promotions |
 | **:45** | Hourly | `keep-work-flowing-cc` (CC PM brief — refreshes `Design/briefing.md` + `Design/user-actions.md`) | `45 * * * *` | ~:53:13 | briefing + user-actions |
 | **Fri 17:00** | Weekly | `weekly-retro` | `0 17 * * 5` | ~17:09 | retro via `retrospective` skill |
 | **Sun 16:03** | Weekly | `weekly-memory-grooming` | `3 16 * * 0` | ~16:10 | memory files |
@@ -29,7 +30,9 @@ It carries no cron and fires only when invoked by hand, so it never contends for
 
 `daily-backlog-grooming`, `weekly-workflow-retro`, and `weekly-project-hygiene` were enabled 2026-07-22 after their attended trials passed with Christian's chat approval (THR-677); their trial reports are `Docs/ops/backlog-grooming-2026-07-22.md`, `Design/retros/workflow-retro-2026-07-22.md`, and `Docs/ops/weekly-hygiene-2026-07-22.md`. The corresponding Cowork counterparts are now cut over — Christian disables them (tracked in `Design/user-actions.md`).
 
-**Output-surface rule for all three:** none of them writes `Design/briefing.md` or `Design/user-actions.md` — `keep-work-flowing-cc` owns those two files, and a second writer produces merge conflicts. Christian-facing items go in each task's own report under a `## Needs Christian` heading, and reach him via the hourly briefing picking up the underlying Linear state.
+**Output-surface rule for all three (and for `tb-orchestrator`):** none of them writes `Design/briefing.md` or `Design/user-actions.md` — `keep-work-flowing-cc` owns those two files, and a second writer produces merge conflicts. Christian-facing items go in each task's own report under a `## Needs Christian` heading, and reach him via the hourly briefing.
+
+**That last clause was aspirational until 2026-07-27 (THR-826).** No step in `keep-work-flowing-cc` read those sections — the reports were being written into a channel with no consumer, which is the same defect as recording *"routed to an executor"* when no lane reads that sentence. `keep-work-flowing-cc` **step 2.6** is now the consumer: it takes the newest report per producing task (within `SIBLING_REPORT_MAX_AGE_HOURS`, 36), extracts `## Needs Christian` verbatim, and folds the items into the briefing attributed to the task that raised them. If that step is ever removed, every sibling task's Christian-facing output goes silently nowhere again.
 
 The `weekly-retro` task is **registered and live** in the CC lane (created 2026-07-20, THR-653) — `0 17 * * 5`, fires ~17:09 local. It had been documented as a task-to-create since the continuous-improvement cycle was written, but had never actually been registered with the scheduler. Prompt: `C:\Users\chris\.claude\scheduled-tasks\weekly-retro\SKILL.md`.
 
@@ -84,7 +87,9 @@ CC cannot read or disable these: they live in Cowork app state, are invisible to
 
 ## Slot allocation
 
-Hourly Linear-MCP-using tasks are spaced so their *fire times* don't overlap: `tb-opus-pickup` at ~:00:53, `keep-work-flowing-cc` at ~:53:13 (deliberately late in the hour so the brief reflects post-pickup state; it moved from the :20 slot to :45 in the THR-653 cutover, taking over the slot the Cowork PM task vacates). Daily and weekly tasks pick non-quarter-hour minutes (e.g., :04, :06, :09). **When registering a new hourly task, pick a cron minute whose *jittered* fire time leaves a clear gap from the ones above, then record both the cron and the observed fire time in this file in the same commit.**
+Hourly Linear-MCP-using tasks are spaced so their *fire times* don't overlap: `tb-opus-pickup` at ~:00:53, `tb-orchestrator` at ~:26:16, `keep-work-flowing-cc` at ~:53:13 (deliberately late in the hour so the brief reflects post-pickup state; it moved from the :20 slot to :45 in the THR-653 cutover, taking over the slot the Cowork PM task vacates). Daily and weekly tasks pick non-quarter-hour minutes (e.g., :04, :06, :09).
+
+The three hourly Linear tasks now form an ordered cycle within the hour: **promote (:26) → execute (:00:53 next hour) → report (:53:13)**. `tb-orchestrator` was slotted at `:25` rather than late in the hour on purpose — a promotion landing after the briefing would sit unreported for an hour, and one landing after the executor's pickup would wait a full hour to be claimed. Firing mid-hour means a promoted issue is both claimable by the next pickup and visible to the same hour's brief. **When registering a new hourly task, pick a cron minute whose *jittered* fire time leaves a clear gap from the ones above, then record both the cron and the observed fire time in this file in the same commit.**
 
 Collision-check against **both** lanes, not just the CC one: the host lane holds `:40` (reaper) and `:50` (autosync) with no jitter, so the free stretches in an hour are roughly `:02–:39` and `:54–:59`. The `:50` autosync run matters most for anything that reads home-tree git state — a probe landing inside that window can observe the tree mid-fast-forward.
 

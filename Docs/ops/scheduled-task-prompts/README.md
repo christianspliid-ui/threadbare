@@ -32,6 +32,7 @@ Three reasons, all learned the hard way:
 | `weekly-workflow-retro.md` | `weekly-workflow-retro` | Wed ~11:13 | **Disabled** — pending trial approval (THR-677) |
 | `weekly-project-hygiene.md` | `weekly-project-hygiene` | Sun ~10:10 | **Disabled** — pending trial approval (THR-677) |
 | `keep-work-flowing-cc.md` | `keep-work-flowing-cc` | Hourly ~:53:13 | Live |
+| `tb-orchestrator.md` | `tb-orchestrator` | Hourly ~:26:16 | Live — registered 2026-07-27 (THR-826) |
 | `weekly-retro.md` | `weekly-retro` | Fri ~17:09 | Live |
 | `weekly-memory-grooming.md` | `weekly-memory-grooming` | Sun ~16:10 | Live |
 
