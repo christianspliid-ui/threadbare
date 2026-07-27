@@ -14,7 +14,7 @@
       "filename": "Agents.md",
       "title": "Agents",
       "contentAdjacent": true,
-      "termCount": 26,
+      "termCount": 28,
       "blurb": "Content-adjacent shard. Terms covering entities in the simulation: agents, actors, Ascendant, factions, and their relationships."
     },
     {
@@ -22,7 +22,7 @@
       "filename": "Encounters.md",
       "title": "Encounters",
       "contentAdjacent": true,
-      "termCount": 17,
+      "termCount": 21,
       "blurb": "Content-adjacent shard. Terms covering the encounter pipeline: templates, resolution, aftermath, awareness, and causation."
     },
     {
@@ -1186,6 +1186,57 @@
       "contentAdjacent": true
     },
     {
+      "shardId": "agents",
+      "slug": "broken",
+      "name": "Broken",
+      "aliases": [
+        "Broken mortal state",
+        "broken agent"
+      ],
+      "status": "canonical",
+      "oneLiner": "behavioural state of a worn-out mortal: out of the story, drifting home, mendable; read via `isBrokenMortal()`",
+      "body": "The behavioural state of a mortal whose quintessence has fallen into `BROKEN_ENTER_STATE` (`'critical'`). A Broken mortal is **out of the story**: they decline encounter candidacy except for `[[Rebuild Road]]`s, and they drift homeward toward tended ground.\n\nNot dead and not wounded — worn out of the narrative for a while. The state is **mendable and common by design**; death stays rare and stays owned by the existing zero-state paths. Erosion alone can never reach zero (`QUINTESSENCE_RATIO_FLOOR`).\n\nRelease has **hysteresis**: a Broken mortal must climb past `BROKEN_EXIT_STATE` (`'strained'`), which is deliberately above the entry threshold, so an agent cannot flicker in and out tick by tick.\n\n**Read it through `isBrokenMortal()`, never by comparing against the threshold enum literal.** The literal `'broken'` is a different concept — see `[[Dissolution Threshold]]`.\n\nThe *consequences* ship behind `BROKEN_GATE_ENABLED = false`. Erosion scaling, the `brokenSince` bookkeeping, and every trace stay live regardless, so telemetry accrues before the gate opens. Code: `src/engine/brokenState.ts`, `src/data/nudge-constants.ts`.",
+      "seeAlso": [
+        {
+          "raw": "Rebuild Road",
+          "termName": "Rebuild Road",
+          "resolvedSlug": "encounters#rebuild-road"
+        },
+        {
+          "raw": "Dissolution Threshold",
+          "termName": "Dissolution Threshold",
+          "resolvedSlug": "agents#dissolution-threshold"
+        },
+        {
+          "raw": "Agent",
+          "termName": "Agent",
+          "resolvedSlug": "agents#agent"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Agents.md#broken",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "agents",
+      "slug": "dissolution-threshold",
+      "name": "Dissolution Threshold",
+      "aliases": [
+        "the `'broken'` QuintessenceThresholdState literal"
+      ],
+      "status": "canonical",
+      "oneLiner": "the `QuintessenceThresholdState` literal `'broken'` (ratio zero); renamed in prose to avoid colliding with Broken",
+      "body": "The existing `QuintessenceThresholdState` literal `'broken'` — quintessence ratio zero, the zero-state.\n\n**This is a naming-collision fix, not a new mechanic.** The code literal predates the `[[Broken]]` mortal state and is untouched; the UL says \"Dissolution threshold\" in prose so the two never get conflated. They are genuinely different: the Dissolution Threshold is a *ratio band* at zero, while `[[Broken]]` is a *behavioural state* entered at `'critical'` and released at `'strained'`. An agent can be Broken without being anywhere near dissolution.\n\nWhen you read `'broken'` in a `QuintessenceThresholdState` comparison, that is this term. When you read \"broken mortal\", that is the other one.",
+      "seeAlso": [
+        {
+          "raw": "Broken",
+          "termName": "Broken",
+          "resolvedSlug": "agents#broken"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Agents.md#dissolution-threshold",
+      "contentAdjacent": true
+    },
+    {
       "shardId": "encounters",
       "slug": "encounter",
       "name": "Encounter",
@@ -1712,6 +1763,123 @@
         }
       ],
       "sourcePath": "Docs/ubiquitous-language/Encounters.md#support-bundle",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "encounters",
+      "slug": "nudge",
+      "name": "Nudge",
+      "aliases": [
+        "StepNudge",
+        "nudge card"
+      ],
+      "status": "canonical",
+      "oneLiner": "authored, essence-priced micro-intervention played into an attended step; shifts the odds, never picks the outcome",
+      "body": "An authored, per-encounter, sphere-flavoured micro-intervention the god plays during an **attended** (`story_beat`) encounter step. Each nudge names a concrete physical cause — a tremor leaving a hand, a lamp catching a second time — is essence-priced, and shifts the fate forecast through a named modifier (`nudge:<id>`). It may also carry a `[[Rider]]`.\n\n**A nudge never picks an outcome; fate rolls.** That is the whole distinction from the rejected authored-futures model, in which the player chose the ending directly. The god acts in the physics of the scene, never in the dramaturgy of the story.\n\nNudges are content, not configuration: options are authored per encounter, and only the six families in `SHARED_GENERIC_NUDGE_FAMILIES` are reused across them. Schema: `StepNudge` on `ActionStep.nudges` (`src/types/unifiedAction.ts`). A step with no `nudges` resolves exactly as it did before the schema landed — the feature is opt-in.",
+      "seeAlso": [
+        {
+          "raw": "Rider",
+          "termName": "Rider",
+          "resolvedSlug": "encounters#rider"
+        },
+        {
+          "raw": "Band Fragment",
+          "termName": "Band Fragment",
+          "resolvedSlug": "encounters#band-fragment"
+        },
+        {
+          "raw": "Encounter",
+          "termName": "Encounter",
+          "resolvedSlug": "encounters#encounter"
+        },
+        {
+          "raw": "Rebuild Road",
+          "termName": "Rebuild Road",
+          "resolvedSlug": "encounters#rebuild-road"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Encounters.md#nudge",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "encounters",
+      "slug": "rider",
+      "name": "Rider",
+      "aliases": [
+        "NudgeRider",
+        "band rider"
+      ],
+      "status": "canonical",
+      "oneLiner": "mechanical remap of an already-resolved band (`no_crit_fail`, `floor_at_cost`); zero PRNG draws, never stacks",
+      "body": "A **mechanical** remap of an already-resolved `StepOutcome`, carried by a `[[Nudge]]`. Exactly two exist: `no_crit_fail` (`critical_failure` → `failure`) and `floor_at_cost` (`failure` **and** `near_miss` → `success_at_cost`).\n\nRiders take **zero draws** from any PRNG stream — they are pure band-mapping applied after the d100 has landed, so the same seed plus the same nudges yields the same roll and every downstream stream consumer is untouched. A rider that re-rolled was considered and rejected for exactly that reason. At most one rider applies per step; the strongest wins (`NUDGE_RIDER_PRIORITY`) and they never stack.\n\n**Not a `[[Band Fragment]]`.** A rider changes what happened.",
+      "seeAlso": [
+        {
+          "raw": "Nudge",
+          "termName": "Nudge",
+          "resolvedSlug": "encounters#nudge"
+        },
+        {
+          "raw": "Band Fragment",
+          "termName": "Band Fragment",
+          "resolvedSlug": "encounters#band-fragment"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Encounters.md#rider",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "encounters",
+      "slug": "band-fragment",
+      "name": "Band Fragment",
+      "aliases": [
+        "bandProse entry"
+      ],
+      "status": "canonical",
+      "oneLiner": "prose appended when a nudge was active for that band; **not** a Rider",
+      "body": "A line of **prose** appended to a step's outcome text when a given `[[Nudge]]` was active for that band. Authored as `StepNudge.bandProse`, keyed on the six-value `StepOutcome` — *not* the five-band `EncounterOutcomeBand` and *not* `OutcomeBand` from `outcomeConsequences.ts`, either of which would type-check while being the wrong domain.\n\n**Not a `[[Rider]]`.** A fragment says the god was there when it happened. The two words are not interchangeable, and the disambiguation is load-bearing because both are authored on the same object.\n\nEvery nudge must carry at least one fragment in a failure band (`near_miss`, `failure`, `critical_failure`): the god's hand has to be traceable in failure at any size. Nudge-specific payoffs belong in fragments and never in the step's base text, which must read correctly with any subset of the hand active.",
+      "seeAlso": [
+        {
+          "raw": "Nudge",
+          "termName": "Nudge",
+          "resolvedSlug": "encounters#nudge"
+        },
+        {
+          "raw": "Rider",
+          "termName": "Rider",
+          "resolvedSlug": "encounters#rider"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Encounters.md#band-fragment",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "encounters",
+      "slug": "rebuild-road",
+      "name": "Rebuild Road",
+      "aliases": [
+        "rebuild encounter"
+      ],
+      "status": "proposed",
+      "oneLiner": "quintessence-rebuilding encounter; the only content a Broken mortal may draw",
+      "body": "A quintessence-rebuilding encounter — the road back out of the `[[Broken]]` state. A few per Reach (the tavern drunk, absolution, retiring home, old friends, hard labour), each restoring slowly over repeat visits rather than in one beat.\n\nRebuild Roads are the **only** content a Broken mortal may draw, via `UnifiedActionTemplate.drawableWhileBroken`. This is why `BROKEN_GATE_ENABLED` ships `false`: a mortal locked out of all candidacy with no road back is stun-locked, not broken. Flipping the gate is a WS5 Done-when, gated on these encounters actually existing.",
+      "seeAlso": [
+        {
+          "raw": "Broken",
+          "termName": "Broken",
+          "resolvedSlug": "agents#broken"
+        },
+        {
+          "raw": "Nudge",
+          "termName": "Nudge",
+          "resolvedSlug": "encounters#nudge"
+        },
+        {
+          "raw": "Encounter",
+          "termName": "Encounter",
+          "resolvedSlug": "encounters#encounter"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Encounters.md#rebuild-road",
       "contentAdjacent": true
     },
     {

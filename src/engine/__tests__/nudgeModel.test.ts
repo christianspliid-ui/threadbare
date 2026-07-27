@@ -38,6 +38,30 @@ import {
   QUINTESSENCE_RATIO_FLOOR,
 } from '../../data/nudge-constants';
 import { QUINTESSENCE_ENCOUNTER_FAILURE_EROSION } from '../../types/quintessence';
+import {
+  ALL_BAND_OUTCOMES,
+  ANNOTATION_MAX_PER_ENCOUNTER,
+  ANNOTATION_PATTERNS,
+  FACTOR_LINES_MAX,
+  FACTOR_LINES_MIN,
+  FAILURE_BAND_OUTCOMES,
+  HAND_COMMON_OPTIONS_MIN,
+  HAND_SPHERE_COVERAGE_MIN,
+  NUDGE_BIG_DELTA,
+  NUDGE_HAND_MAX,
+  NUDGE_HAND_MIN,
+  NUDGE_NAME_MAX_WORDS,
+  NUDGE_WORD_BUDGETS,
+  REACH_PURPOSE_MAX_WORDS,
+  VAGUENESS_LEXICON,
+} from '../../data/content-eval/nudgeAuthoringConstants';
+import {
+  EXEMPLAR_FACTOR_LINES,
+  EXEMPLAR_REACH_PURPOSE_LINES,
+  NUDGE_GOLDEN_EXEMPLAR,
+} from '../../data/__fixtures__/nudge-exemplar/darkhollow-vault-exemplar';
+import { CORE_TRAIT_DEFINITIONS } from '../../data/core-trait-content';
+import { scoreRegisterCompliance } from '../content-eval/registerCompliance';
 
 const ALL_OUTCOMES: readonly StepOutcome[] = [
   'critical_success', 'success', 'success_at_cost', 'near_miss', 'failure', 'critical_failure',
@@ -460,5 +484,289 @@ describe('difficultyWord', () => {
     expect(difficultyWord(-1)).toBe('gentle');
     expect(difficultyWord(99)).toBe('severe');
     expect(difficultyWord(NaN)).toBe('gentle');
+  });
+});
+
+// ─── WS1 helpers ───────────────────────────────────────────────────
+
+/** Words in a string, punctuation-insensitive. */
+function wordCount(text: string): number {
+  return text.trim().split(/\s+/).filter(Boolean).length;
+}
+
+/**
+ * Every authored prose surface on the exemplar, as `[fieldKey, text]`.
+ *
+ * The key's first dot-segment is the field kind, which is exactly how
+ * `registerCompliance` classifies label-class fields — so `name.<id>` scores
+ * under the interactive-plainness rule and `fiction.<id>` scores as narrative,
+ * with no second mapping to keep in step.
+ */
+function exemplarProse(): Array<[string, string]> {
+  const out: Array<[string, string]> = [['name.template', NUDGE_GOLDEN_EXEMPLAR.name]];
+
+  for (const [i, step] of NUDGE_GOLDEN_EXEMPLAR.steps.entries()) {
+    if (!('nudges' in step)) continue;
+    const s = step as ActionStep;
+    const push = (kind: string, text: string | undefined): void => {
+      if (text) out.push([`${kind}.step${i}`, text]);
+    };
+    push('narrative', s.narrativeTemplate);
+    push('afterimage', s.successAfterimage);
+    push('afterimage', s.failureAfterimage);
+    push('afterimage', s.successAtCostAfterimage);
+    push('afterimage', s.criticalSuccessAfterimage);
+    push('afterimage', s.criticalFailureAfterimage);
+
+    for (const nudge of s.nudges ?? []) {
+      out.push([`name.${nudge.id}`, nudge.name]);
+      out.push([`fiction.${nudge.id}`, nudge.fiction]);
+      out.push([`effect.${nudge.id}`, nudge.effectLine]);
+      for (const [band, fragment] of Object.entries(nudge.bandProse ?? {})) {
+        out.push([`fragment.${nudge.id}.${band}`, fragment]);
+      }
+    }
+  }
+
+  for (const [i, lines] of EXEMPLAR_FACTOR_LINES.entries()) {
+    for (const [j, line] of lines.entries()) out.push([`factor.step${i}.${j}`, line]);
+  }
+  for (const [i, line] of EXEMPLAR_REACH_PURPOSE_LINES.entries()) {
+    out.push([`purpose.step${i}`, line]);
+  }
+  for (const variant of NUDGE_GOLDEN_EXEMPLAR.traitVariants ?? []) {
+    out.push([`factor.trait.${variant.traitId}`, variant.factorLine]);
+  }
+  const templates = NUDGE_GOLDEN_EXEMPLAR.narrativeTemplates;
+  if (templates) {
+    for (const [kind, text] of Object.entries(templates)) {
+      if (typeof text === 'string') out.push([`narrative.${kind}`, text]);
+    }
+  }
+
+  return out;
+}
+
+// ─── WS1: the golden exemplar against the authoring checklist ──────
+//
+// THR-774. These are the executable half of the authoring rules: every
+// assertion here mirrors a rule the two authoring skills state in prose. A rule
+// that drifts out of a skill and a rule that drifts out of the exemplar both
+// break a test, which is the only reason the exemplar is worth shipping.
+//
+// The checks are written over the *template*, not over hand-listed ids, so
+// re-authoring a card cannot silently drop it from coverage.
+
+describe('WS1 golden exemplar — authoring checklist', () => {
+  /** Steps that actually carry a hand. A step without `nudges` is opt-out, not a violation. */
+  const nudgeSteps = NUDGE_GOLDEN_EXEMPLAR.steps.filter(
+    (s): s is ActionStep & { nudges: readonly StepNudge[] } =>
+      'nudges' in s && Array.isArray((s as ActionStep).nudges) && (s as ActionStep).nudges!.length > 0,
+  );
+
+  const allNudges = nudgeSteps.flatMap((s) => s.nudges);
+
+  it('has at least one nudge-bearing step (otherwise every check below is vacuous)', () => {
+    expect(nudgeSteps.length).toBeGreaterThan(0);
+    expect(allNudges.length).toBeGreaterThan(0);
+  });
+
+  it('every hand sits inside the authored size guardrails', () => {
+    for (const step of nudgeSteps) {
+      expect(step.nudges.length).toBeGreaterThanOrEqual(NUDGE_HAND_MIN);
+      expect(step.nudges.length).toBeLessThanOrEqual(NUDGE_HAND_MAX);
+    }
+  });
+
+  it('every hand spans the minimum sphere coverage', () => {
+    for (const step of nudgeSteps) {
+      const spheres = new Set(step.nudges.map((n) => n.sphere).filter(Boolean));
+      expect(spheres.size).toBeGreaterThanOrEqual(HAND_SPHERE_COVERAGE_MIN);
+    }
+  });
+
+  it('every hand offers a common (sphere-less) option', () => {
+    for (const step of nudgeSteps) {
+      const common = step.nudges.filter((n) => n.sphere === undefined);
+      expect(common.length).toBeGreaterThanOrEqual(HAND_COMMON_OPTIONS_MIN);
+    }
+  });
+
+  it('every nudge carries at least one failure-band fragment', () => {
+    for (const nudge of allNudges) {
+      const bands = Object.keys(nudge.bandProse ?? {}) as StepOutcome[];
+      const failureFragments = bands.filter((b) => FAILURE_BAND_OUTCOMES.includes(b));
+      expect(
+        failureFragments.length,
+        `${nudge.id} has no failure-band fragment — the god's hand must be traceable in failure`,
+      ).toBeGreaterThanOrEqual(1);
+    }
+  });
+
+  it('big-delta nudges cover BOTH failure and critical_failure', () => {
+    const bigDelta = allNudges.filter((n) => n.forecastDelta >= NUDGE_BIG_DELTA);
+    // Guard the population: a checklist rule with no instance is untested.
+    expect(bigDelta.length).toBeGreaterThan(0);
+    for (const nudge of bigDelta) {
+      expect(nudge.bandProse?.failure, `${nudge.id} (big delta) lacks a failure fragment`).toBeTruthy();
+      expect(
+        nudge.bandProse?.critical_failure,
+        `${nudge.id} (big delta) lacks a critical_failure fragment`,
+      ).toBeTruthy();
+    }
+  });
+
+  it("every hand's fragments cover all six StepOutcome bands between them", () => {
+    for (const step of nudgeSteps) {
+      const covered = new Set<StepOutcome>();
+      for (const nudge of step.nudges) {
+        for (const band of Object.keys(nudge.bandProse ?? {}) as StepOutcome[]) covered.add(band);
+      }
+      for (const band of ALL_BAND_OUTCOMES) {
+        expect([...covered], `step ${step.reach} never pays off the ${band} band`).toContain(band);
+      }
+    }
+  });
+
+  it('every step authors the five afterimage bands the schema carries', () => {
+    // `near_miss` has no afterimage field on ActionStep — it is covered through
+    // band fragments (asserted above), which is why this list is five, not six.
+    for (const step of nudgeSteps) {
+      expect(step.narrativeTemplate).toBeTruthy();
+      expect(step.successAfterimage).toBeTruthy();
+      expect(step.failureAfterimage).toBeTruthy();
+      expect(step.successAtCostAfterimage).toBeTruthy();
+      expect(step.criticalSuccessAfterimage).toBeTruthy();
+      expect(step.criticalFailureAfterimage).toBeTruthy();
+    }
+  });
+
+  it('carries a trait hook, and it resolves against a real trait definition', () => {
+    const variants = NUDGE_GOLDEN_EXEMPLAR.traitVariants ?? [];
+    expect(variants.length).toBeGreaterThan(0);
+
+    // The hook must name a trait that actually exists — the rule THR-800 tracks
+    // 62 violations of. Checked against the seeded Core definitions rather than
+    // a hand-copied id list, so retiring the trait breaks this test.
+    const liveTraitIds = new Set(CORE_TRAIT_DEFINITIONS.map((n) => n.id));
+    for (const variant of variants) {
+      expect(liveTraitIds, `traitVariant names a dead trait ref: ${variant.traitId}`).toContain(
+        variant.traitId,
+      );
+      expect(variant.factorLine).toBeTruthy();
+    }
+
+    // A trait-only card exists and is reachable by the variant that unlocks it.
+    const traitOnly = allNudges.filter((n) => n.requiredTrait !== undefined);
+    expect(traitOnly.length).toBeGreaterThan(0);
+    const unlocked = new Set(variants.flatMap((v) => v.addNudgeIds ?? []));
+    for (const card of traitOnly) {
+      expect(liveTraitIds).toContain(card.requiredTrait);
+      expect(unlocked, `trait-only card ${card.id} is unlocked by no variant`).toContain(card.id);
+      // Trait options are free: the price was paid by being that person.
+      expect(card.essenceCost).toBe(0);
+    }
+  });
+
+  it('authors factor lines and reach purpose lines inside the panel budgets', () => {
+    expect(EXEMPLAR_REACH_PURPOSE_LINES.length).toBe(NUDGE_GOLDEN_EXEMPLAR.steps.length);
+    for (const line of EXEMPLAR_REACH_PURPOSE_LINES) {
+      expect(wordCount(line)).toBeLessThanOrEqual(REACH_PURPOSE_MAX_WORDS);
+    }
+
+    expect(EXEMPLAR_FACTOR_LINES.length).toBe(NUDGE_GOLDEN_EXEMPLAR.steps.length);
+    for (const lines of EXEMPLAR_FACTOR_LINES) {
+      expect(lines.length).toBeGreaterThanOrEqual(FACTOR_LINES_MIN);
+      expect(lines.length).toBeLessThanOrEqual(FACTOR_LINES_MAX);
+      for (const line of lines) {
+        expect(wordCount(line), `factor line over budget: "${line}"`).toBeLessThanOrEqual(
+          NUDGE_WORD_BUDGETS.factorLine,
+        );
+      }
+    }
+  });
+
+  it('keeps every card field inside its word budget', () => {
+    for (const nudge of allNudges) {
+      expect(wordCount(nudge.name), `name over budget: ${nudge.id}`).toBeLessThanOrEqual(
+        NUDGE_NAME_MAX_WORDS,
+      );
+      expect(wordCount(nudge.fiction), `fiction over budget: ${nudge.id}`).toBeLessThanOrEqual(
+        NUDGE_WORD_BUDGETS.fiction,
+      );
+      for (const fragment of Object.values(nudge.bandProse ?? {})) {
+        expect(
+          wordCount(fragment),
+          `band fragment over budget: ${nudge.id}`,
+        ).toBeLessThanOrEqual(NUDGE_WORD_BUDGETS.bandFragment);
+      }
+    }
+    for (const step of nudgeSteps) {
+      expect(wordCount(step.narrativeTemplate ?? '')).toBeLessThanOrEqual(
+        NUDGE_WORD_BUDGETS.bandBase,
+      );
+    }
+  });
+
+  it("effect lines are words, never a percentage or a bare number", () => {
+    for (const nudge of allNudges) {
+      expect(nudge.effectLine, `${nudge.id} effectLine shows a number`).not.toMatch(/\d|%/);
+    }
+  });
+
+  it('riders stay rare — at most one card in the encounter carries one', () => {
+    const withRiders = allNudges.filter((n) => n.rider !== undefined);
+    expect(withRiders.length).toBeLessThanOrEqual(1);
+  });
+
+  it('every card declares an image tag for the WS4 fallback chain', () => {
+    for (const nudge of allNudges) {
+      expect(nudge.imageTag, `${nudge.id} has no imageTag`).toBeTruthy();
+    }
+  });
+
+  // ── Detectors (the verbatim spec the skills carry) ──────────────
+
+  it('scores zero on the vagueness lexicon', () => {
+    const offenders: string[] = [];
+    for (const [label, text] of exemplarProse()) {
+      for (const word of VAGUENESS_LEXICON) {
+        if (new RegExp(`\\b${word}\\b`, 'i').test(text)) offenders.push(`${label}: "${word}"`);
+      }
+    }
+    expect(offenders, `vagueness lexicon hits:\n${offenders.join('\n')}`).toEqual([]);
+  });
+
+  it('stays inside the annotation-clause budget for the whole encounter', () => {
+    let hits = 0;
+    const found: string[] = [];
+    for (const [label, text] of exemplarProse()) {
+      for (const [name, pattern] of Object.entries(ANNOTATION_PATTERNS)) {
+        // Per-sentence, so the "not … but" clause rule means one sentence.
+        for (const sentence of text.split(/(?<=[.!?])\s+/)) {
+          if (pattern.test(sentence)) {
+            hits++;
+            found.push(`${label} [${name}]: ${sentence}`);
+          }
+        }
+      }
+    }
+    expect(hits, `annotation clauses:\n${found.join('\n')}`).toBeLessThanOrEqual(
+      ANNOTATION_MAX_PER_ENCOUNTER,
+    );
+  });
+
+  it('passes the register scorer with no failing metric', () => {
+    const fields: Record<string, string> = {};
+    for (const [label, text] of exemplarProse()) fields[label] = text;
+
+    const result = scoreRegisterCompliance({ register: 'baseline', fields });
+    const failing = result.metrics.filter((m) => m.band === 'fail');
+    expect(
+      failing,
+      `failing register metrics:\n${failing.map((m) => `${m.name}: ${m.detail}`).join('\n')}`,
+    ).toEqual([]);
+    expect(result.band).not.toBe('fail');
+    expect(result.band).not.toBe('skipped');
   });
 });

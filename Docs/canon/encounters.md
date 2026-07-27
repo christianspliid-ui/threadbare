@@ -1,8 +1,8 @@
 ---
 domain: encounters
-last_reviewed: 2026-05-07
-reviewer: cowork
-ul_shards: [Encounters, Prose]
+last_reviewed: 2026-07-27
+reviewer: claude-code
+ul_shards: [Encounters, Prose, Traits]
 status: live
 ---
 
@@ -10,12 +10,39 @@ status: live
 
 > The encounter is the authored chapter in Threadbearer's reading: a moment where one threaded mortal's situation crystallises and the player decides what kind of god to be toward it.
 
+## The nudge model is the current authoring spec (THR-772/774)
+
+> **The god acts in the physics of the scene, never in the dramaturgy of the story.**
+
+Every encounter authored from 2026-07-27 ships **nudge-native**. The player is dealt a
+hand of authored, essence-priced **nudges** that shift the named odds; **fate rolls the
+outcome** on the five-band ladder; prose pays the nudge off at *every* band, misfires
+included. Choosing between authored futures for a mortal is the **rejected** model this
+replaced (see Rejected approaches).
+
+- **Authoring contract (load first, both pipelines):** [`.claude/skills/encounter-pipeline/reference/nudge-authoring-spec.md`](../../.claude/skills/encounter-pipeline/reference/nudge-authoring-spec.md) — the 8-step checklist, register table, prose rubric, verbatim detector spec, shared generic pool.
+- **Golden exemplar:** `src/data/__fixtures__/nudge-exemplar/darkhollow-vault-exemplar.ts` — the Darkhollow Vault, authored end-to-end, every rule visible once. In no shipped pool.
+- **Tunable authoring guardrails:** `src/data/content-eval/nudgeAuthoringConstants.ts` (authoring/lint-side; **not** the client bundle). Runtime numbers stay in `src/data/nudge-constants.ts`.
+- **Executable half:** `src/engine/__tests__/nudgeModel.test.ts` § *WS1 golden exemplar* — the checklist as assertions, so spec and exemplar cannot drift apart silently.
+- **Schema:** `StepNudge` / `ActionStep.nudges` / `TraitVariant` / `UnifiedActionTemplate.traitVariants` (`src/types/unifiedAction.ts`); hand resolution in `src/engine/encounters/nudges.ts`.
+- **Program plan:** [2026-07-26-nudge-model-encounter-system.md](../plans/2026-07-26-nudge-model-encounter-system.md) (THR-772) · WS0 substrate [2026-07-26-nudge-model-ws0-engine-substrate.md](../plans/2026-07-26-nudge-model-ws0-engine-substrate.md) · WS1/WS2 [2026-07-27-nudge-encounter-experience-ws1-ws2.md](../plans/2026-07-27-nudge-encounter-experience-ws1-ws2.md).
+
+**Migration state.** `authoredChoices` still *renders* — the stage branches on data
+presence, so the rollout is per-template and reversible, with no flag day. But no new
+encounter authors it. Conversion of the existing 28 branching encounters is WS5.
+
+**Terminology.** A **rider** (`no_crit_fail`, `floor_at_cost`) is a mechanical remap of
+the resolved band. A **band fragment** (`bandProse[outcome]`) is prose appended when a
+nudge was active for that band. A rider changes what happened; a fragment says the god
+was there when it did. Both are UL entries (Encounters shard).
+
 ## Current spec
 
 - **Format:** `UnifiedActionTemplate` — the single format for all encounter types since THR-108 (2026-04-XX). `EncounterTemplate` is removed; it no longer exists anywhere in the codebase.
 - **Two encounter subtypes (same format, different pipeline):**
-  - *Branching encounters* — authored player-choice branches (`ActionStepBranch`), full aftermath suite. Pipeline: `.claude/skills/encounter-pipeline/SKILL.md`.
+  - *Branching encounters* — structural branches (`ActionStepBranch`), full aftermath suite. Pipeline: `.claude/skills/encounter-pipeline/SKILL.md`.
   - *Linear template encounters* — guild, social, tavern, combat, borderland. Pipeline: `.claude/skills/template-encounter-rewrite/SKILL.md`.
+  - Both are nudge-native: the player-facing surface in each is the nudge hand.
 - **Authoring entrypoint (branching):** [.claude/skills/encounter-pipeline/SKILL.md](.claude/skills/encounter-pipeline/SKILL.md)
 - **Authoring entrypoint (linear):** [.claude/skills/template-encounter-rewrite/SKILL.md](.claude/skills/template-encounter-rewrite/SKILL.md)
 - **Engine wiring:** [Docs/plans/2026-04-16-systemic-wiring-guide.md](../plans/2026-04-16-systemic-wiring-guide.md) — the 7 engine capabilities content authors must use
@@ -65,7 +92,10 @@ Source: `Docs/plans/2026-05-04-encounter-experience-design-plan.md` §2.2 and `B
 - ❌ `EncounterTemplate` format — replaced by `UnifiedActionTemplate` (THR-108, 2026-04-XX). Do not author, import, or reference EncounterTemplate. It is removed.
 - ❌ AgentWheel / fixed action-count slots — replaced by `ActionDrawer` with context-filtered cards via Generalized Action Targeting (see CLAUDE.md Rejected Approaches)
 - ❌ Pure LLM-generated encounter prose — replaced by hybrid layered engine with enrichment placeholders
-- ❌ Player-as-character framing ("choose how the character responds") — the player is a god who intervenes indirectly. All choices must be *god actions* (whisper, steady, withdraw, strengthen). "Let them handle it" is always valid. Any choice that makes the mortal the agent must be reframed.
+- ❌ Player-as-character framing ("choose how the character responds") — the player is a god who intervenes indirectly. All player-facing options must be *god actions*. Any choice that makes the mortal the agent must be reframed.
+- ❌ **Choosing between authored futures** ("Forge the truth" / "Temper the narrative") — rejected 2026-07-26 (THR-772, Christian, chat). The player must never pick an ending. The god plays concrete, sphere-flavoured **nudges** that shift the odds; fate rolls the outcome. Superseded the `authoredChoices` layer at design level; code retirement is staged (WS5 conversion, THR-778). Do not author `authoredChoices` on a new encounter.
+- ❌ **A percentage anywhere on the mortal-facing surface** — rejected 2026-07-26 (THR-772 ruling 1). Odds are legible in words only: the five forecast tier words and the four difficulty words (`severe / steep / fair / gentle`). Numbers exist behind the words; the designer/debug view is the sole exception. An `effectLine` carrying a digit is an editorial reject, not a nit.
+- ❌ **A nudge with no failure-band payoff** — the god's hand must be traceable in failure at any size (THR-772 program ruling: payoff at every band). A card that vanishes on a loss makes failure read as punishment, which inverts the design.
 - ❌ Spirit as a Reach — Spirit is a **Sphere** (one of the 12 Creation Spheres), not a Reach. Using "Spirit reach" in encounter authoring is a drift error. Use the correct Reach (Iron, Gold, etc.) for the action domain.
 - ❌ Voice as a Reach — Voice does not exist. The persuasion/communication domain maps to **Gold** (influence, patronage, social capital) depending on the action type.
 - ❌ Intelligence/visibility gating of encounter candidates — rejected 2026-05-07 (project-level direction from Christian, THR-138 closed). All encounter content is fully visible to the player at all times; intel never *hides* candidates. Intel may still *enrich* an encounter when present (prose recognition per THR-139, mechanical bonus per THR-140, cross-agent sharing per THR-142) — additive, never subtractive. Do not propose `requiresIntelligence` template fields, hidden-candidate filters, or "fog of intel" mechanics; the design space is closed.
@@ -79,4 +109,4 @@ Source: `Docs/plans/2026-05-04-encounter-experience-design-plan.md` §2.2 and `B
 
 ## Last-reviewed
 
-2026-05-16 by Cowork (added populated-variants framework reference (THR-447)). Review trigger: monthly, or when any listed plan moves to `superseded`. Previous edit: added Rejected Approaches entry for step-level ActionStepBranch in linear templates (THR-191, 2026-05-15).
+2026-07-27 by Claude Code (THR-774 / WS1: nudge model recorded as the current authoring spec — spec pointer, golden exemplar, authoring guardrails, three new rejected approaches). Review trigger: monthly, or when any listed plan moves to `superseded`. Previous edit: 2026-05-16 by Cowork (populated-variants framework reference, THR-447).
