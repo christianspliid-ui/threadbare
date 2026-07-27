@@ -3534,6 +3534,19 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "**Rule (generalize #201 to every gate): a gate result is only evidence for the tree that is actually pushed.** Re-run `npm test`, `npm run check:typecheck`, and `check:generated-freshness` after the final edit and before `git commit` — or, cheaper and preferred, run the gate block once immediately before committing rather than at its numbered position. Two supporting habits: (a) the ratchet's own advisory *\"Files whose error count rose\"* line names the culprit file directly, so read the failure body rather than the total; (b) after arming auto-merge, one `gh pr view <N> --json mergeStateStatus,statusCheckRollup` confirms the check actually went green — the pull-work closeout already prescribes a freshness re-check at arm time, and this is the same query. The `BEHIND` state found on the same PR is the sibling case Step 0.8 sweeps for.",
     "session": "THR-619 CI-red resume, hourly `tb-opus-pickup` run, 2026-07-27."
+  },
+  {
+    "num": "257",
+    "id": 257,
+    "count": 1,
+    "date": "2026-07-27",
+    "category": "tooling",
+    "description": "**The Playwright MCP server is rooted at whichever worktree it started in, not the session's worktree, so the DoD's \"absolute filename inside the session worktree\" screenshot instruction is rejected outright.** THR-820's browser-verify pass called `browser_take_screenshot` with an absolute path under the session worktree (`.claude/worktrees/loving-benz-e3ee84/.playwright-mcp/…`) exactly as the DoD's unattended-run route prescribes, and got `File access denied: … is outside allowed roots. Allowed roots: …/worktrees/nostalgic-mahavira-0c1c90/.playwright-mcp, …/worktrees/nostalgic-mahavira-0c1c90` — a *different, unrelated* worktree from an earlier session. The same mismatch applies to the browser itself: it opened on `localhost:5174` (another session's dev server) rather than the port this session started, so a screenshot taken without re-navigating would have captured **someone else's build** while reading as this session's evidence. That is the dangerous direction — the capture succeeds and looks like proof.",
+    "consequence": "~10 min. Worse if unnoticed: browser evidence attributed to the wrong tree, which is the same class as impediment #417's two-tree edit-path trap, in the verification half instead of the write half.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "**Two rules, both cheap.** (a) *Navigate explicitly and probe the tree before believing any capture*: start your own dev server on a distinct port, `browser_navigate` to it, and evaluate a symbol that exists **only** in this change (here: `NUDGE_GOLDEN_EXEMPLAR.steps[].purposeLine` present **and** the deleted `EXEMPLAR_FACTOR_LINES` export `undefined`) before screenshotting — the same \"probe a new symbol\" discipline the worktree-preview-server rule already prescribes. (b) *Write the screenshot into whatever root the MCP reports in its error, then relocate it out of the foreign worktree and delete the original* — do not leave session artifacts in another worktree, where the hourly reaper's liveness guard reads working-tree mtimes and may misjudge that tree as active. The allowed root is not configurable from the session; the error message names it, so read it rather than retrying variants.",
+    "session": "THR-820 browser-verify, hourly `tb-opus-pickup` run, 2026-07-27."
   }
 ];
 // ── End data ──

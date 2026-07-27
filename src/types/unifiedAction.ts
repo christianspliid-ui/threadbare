@@ -853,6 +853,32 @@ export interface TraitVariant {
   readonly addNudgeIds?: readonly string[];
 }
 
+/**
+ * An authored for/against line in the step's test panel — the encounter's own
+ * account of why the odds sit where they do (THR-820).
+ *
+ * Distinct from `beat.forecast_factors`, the bare string tuple the contract
+ * adapter exposes: that pool carries no sign, so a line drawn from it can only
+ * render `neutral`. An authored `StepFactorLine` declares its polarity, which
+ * is what lets the panel colour it the way it colours a live `trait:*` line.
+ *
+ * **Naming its source is a prose rule, not a field.** Per the authoring spec's
+ * canon rule 1, the cause lives *in the sentence* ("The mason cut his mark
+ * beside the third pin"), exactly as a trait-derived line names its trait. A
+ * structured `source` on this type would invite a label beside the line, which
+ * is the key:value UX the project rejects.
+ *
+ * Authoring guardrails (`FACTOR_LINES_MIN`/`MAX`, `NUDGE_WORD_BUDGETS.factorLine`)
+ * live in `data/content-eval/nudgeAuthoringConstants.ts` and are warn-level —
+ * the renderer draws whatever is authored.
+ */
+export interface StepFactorLine {
+  /** One concrete sentence, ≤`NUDGE_WORD_BUDGETS.factorLine` words. */
+  readonly text: string;
+  /** Which way this line cuts. Authored, never inferred. */
+  readonly polarity: 'for' | 'against';
+}
+
 export interface ActionStep {
   readonly reach: ReachDomain;
   readonly duration: { readonly min: number; readonly max: number };
@@ -878,6 +904,21 @@ export interface ActionStep {
   readonly criticalFailureAfterimage?: string;
   /** THR-773: authored nudge hand for this step. Absent ⇒ no hand, no nudge path. */
   readonly nudges?: readonly StepNudge[];
+  /**
+   * THR-820: ≤`REACH_PURPOSE_MAX_WORDS` (4) words, plain — what this step is
+   * *testing*, rendered beside the reach in the test panel. "Read the lock",
+   * not "The mason's puzzle awaits". Absent ⇒ the panel renders reach +
+   * difficulty alone, which is what every pre-nudge template does.
+   */
+  readonly purposeLine?: string;
+  /**
+   * THR-820: authored for/against lines for the test panel. When present these
+   * are the panel's factor lines; when absent it falls back to the contract's
+   * unsigned `beat.forecast_factors`, which can only render `neutral`. Live
+   * trait-variant lines are appended in either case — they are derived, not
+   * authored here.
+   */
+  readonly factorLines?: readonly StepFactorLine[];
 }
 
 // ─── Branching step support ────────────────────────────────────
