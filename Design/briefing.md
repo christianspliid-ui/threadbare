@@ -1,46 +1,46 @@
 # Briefing
 
-**Generated:** 2026-07-27 00:54 local (2026-07-26 22:54 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-07-27 01:54 local (2026-07-26 23:54 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
 ## Needs Christian
 
-**Same one question as last hour — and the thing that made it easier to ignore has already gone away.**
+**Same single question, and this hour there is genuinely nothing new to say about it.**
 
-You were asked at 11pm whether the ceremonial reveal screens should jump the queue. Still no reply, which the question said is a fine answer meaning "leave it in line". It stays in line.
+You were asked at 11pm whether the ceremonial reveal screens should jump the queue. Still unanswered, which the question said is a fine answer meaning "leave it in line". It stays in line, sharing a rank with ten other jobs, none of them urgent.
 
-Last hour's brief told you the wait was now behind *one genuine emergency* rather than behind ten equals. **That emergency was fixed within the hour**, so your screens are back to sharing a rank with nine other jobs — exactly the position they were in when the question was first put to you. Nothing about the question changed; the one fact that had changed has changed back.
-
-The question stays open and unescalated. Answer whenever, or never.
+Last hour's brief reported a fact about this ask that had changed and then changed back. This hour it hasn't moved at all. No ping was sent, and the gate that decides that agreed. Answer whenever, or never.
 
 ## Queue
 
-**22 jobs ready — ten middling, twelve minor, none urgent. Nothing on the workbench right now; the next shift starts within the hour.**
+**23 jobs ready — eleven middling, twelve minor, none urgent. Nothing on the workbench right now; the next shift starts within the hour.**
 
-The count went 23 → 22: one job shipped and, for the first hour in a while, **nothing new was written down in its place**. That is a genuinely better hour than the recent average — but it is one hour, and the same dip a few hours ago was gone by the next brief. Not calling it a trend.
+The count went 22 → 23: one job shipped and two were written down in its place. Both new ones were found *while* fixing the old one, which is the pattern that has held all week.
 
-Nothing is stale and nothing is stuck waiting on something else. As always, the raw number reads worse than it is: only one job on the shelf is something **you** asked for. The rest are the crew's own findings.
+Worth saying plainly: **last hour's brief noted a ship with no new filings and called it "one hour, not a trend." It lasted exactly one hour.** That is the second time this week the same hopeful reading has been offered and immediately withdrawn. The honest description is a steady state — roughly one job out and one or two in per hour, with the incoming ones being things the crew found rather than things anyone asked for.
+
+Nothing is stale and nothing is stuck waiting on something else. Only one job on the shelf is something **you** asked for.
 
 ## Freshness
 
-**Home tree: level with the server, nothing stranded.** Same two small leftovers as the last ten hours — a permissions edit to the tool config, and Friday's retro write-up. Both are the crew's to land; neither blocks anything.
+**Home tree: level with the server, nothing stranded.** Same two small leftovers as the last eleven hours — a permissions edit to the tool config, and Friday's retro write-up. Both are the crew's to land; neither blocks anything.
 
-**Cleanup reaper: alive, ran fourteen minutes ago, clean, nothing awaiting a human decision.** Workspaces flat at 23, leftover branches flat at 31 after tidying two.
+**Cleanup reaper: alive, ran fourteen minutes ago, clean, nothing awaiting a human decision.** One workspace and one branch added by tonight's job, as expected.
 
-**Published to players: working.** Tonight's fix went live 49 seconds after approval — confirmed, not assumed.
+**Published to players: working.** Tonight's fix went live 50 seconds after approval — confirmed, not assumed.
 
-**Discord: nothing new in the channel at all this hour.** Genuinely empty rather than unread, and no ping was sent — the one open question hasn't changed, so the doorbell stays quiet.
+**Discord: nothing new in the channel this hour.** Genuinely empty rather than unread.
 
 ## What's moving
 
-**Last hour's emergency is already repaired.** The five guild-type checks that had never once fired now fire.
+**The dynasty bug is fixed: a founder's death now actually ends the dynasty.**
 
-The cause was mundane and the consequence was not: the encounter pipeline looked up each encounter through a lookup that simply cannot see one whole family of them. Every guard that then asked a question about that encounter — is this party-only? does this need a particular mark on the mortal? is this drawable while the world is broken? — got nothing back and waved it through. Not mis-tuned. Inert, silently, since each guard was built. The crew pointed the pipeline at the wider lookup, checked it costs no more per turn, and confirmed each guard now fires without newly excluding anything that used to be drawable.
+The job was the leftover half of a larger cleanup — 22 references in the content to marks and titles that nothing in the world could ever grant. One of them turned out not to be a mark at all: it was a plain "is this person still alive?" question written in the wrong vocabulary, so it silently answered "yes" forever. That one is now a real condition the engine sets when someone dies, and the dynasty ends when its founder does.
 
-Filed 11:19pm, on the bench 12:02am, done 12:45am — **43 minutes from claim to live**, on the most consequential defect of the day.
+The other 21 were left deliberately, with reasons recorded per group rather than force-fitted — several are *blocking* conditions, where a wrong guess is worse than no guess, because it would quietly disqualify people who should have been eligible. Filed 11:19pm, on the bench 12:02am, done 12:37am — **35 minutes.**
 
-**One small extra:** the same change repaired three rows in the crew's own problem log that a dashboard had been quietly dropping. Nobody was looking for that; it turned up because someone regenerated the thing and read the output.
+**The find underneath is the more interesting one.** Grepping the death machinery turned up a second question the world asks — "is my target dead yet?" — that reads a flag **nobody has ever written**. Two revenge ambitions therefore complete themselves the moment they are taken, without the target coming to any harm. Same shape as four other bugs found this week: something reads, nothing writes, and every automated check is satisfied because the empty answer is a legal answer.
 
 ---
 *Standing asks live in [`Design/user-actions.md`](user-actions.md). This file is regenerated hourly by the `keep-work-flowing-cc` scheduled task; staleness is visible from the Generated timestamp above and the task's `lastRunAt` in `list_scheduled_tasks`.*
