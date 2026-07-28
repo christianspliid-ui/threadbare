@@ -19,6 +19,8 @@ import type { WorldGraph } from '../../../engine/graph';
 import type { NodeType } from '../../../types/graph';
 import type { SourceKind, SourceTier } from '../../../types/essenceSource';
 import { readEssenceSource, computeSourceIncome } from '../../../engine/essenceSources';
+import { computeSanctitySustenance } from '../../../engine/essenceEconomyBridge';
+import type { SanctitySustenance } from '../../../engine/essenceEconomyBridge';
 import { EMPTY_STATE_STYLE } from './debugPanelStyles';
 
 interface EssenceSourcesDebugTabProps {
@@ -64,6 +66,29 @@ interface SourceRow {
   status: SourceStatus;
   contestedBy: string | null;
   desecrated: boolean;
+  /** Essence-bridge read (THR-618): what the land under the source is doing to it. */
+  sustenance: SanctitySustenance;
+}
+
+/** Colour by which way the land is pushing sanctity. */
+const POLARITY_COLOR: Record<SanctitySustenance['polarity'], string> = {
+  nurturing: '#7bc96f',
+  withering: '#e06c5a',
+  steady: '#8a8a94',
+};
+
+/**
+ * One-line sustenance readout. A blocked bridge names *why* it is inert rather than
+ * rendering a misleading neutral — the whole point of the debug surface is that a
+ * source drawing nothing is distinguishable from a source drawing zero.
+ */
+function sustenanceLabel(s: SanctitySustenance): string {
+  if (s.reason === 'untyped') return 'land: — (untyped source)';
+  if (s.reason === 'no-host') return 'land: — (no economic host)';
+  if (s.reason === 'no-matching-goods') return 'land: — (no goods of its sphere)';
+  const goods = s.matchedResourceIds.join(', ');
+  const drift = s.reason === 'ceiling' ? 'at nurture ceiling' : `${s.drift >= 0 ? '+' : ''}${s.drift.toFixed(3)}/tick`;
+  return `land: ${s.polarity} (${goods}) ${drift}`;
 }
 
 export function EssenceSourcesDebugTab({ graph, currentTick }: EssenceSourcesDebugTabProps) {
@@ -101,6 +126,7 @@ export function EssenceSourcesDebugTab({ graph, currentTick }: EssenceSourcesDeb
           status,
           contestedBy: src.contestedBy ?? null,
           desecrated: !!src.desecrated,
+          sustenance: computeSanctitySustenance(graph, host.id, src),
         });
       }
     }
@@ -191,6 +217,14 @@ export function EssenceSourcesDebugTab({ graph, currentTick }: EssenceSourcesDeb
                 <span style={{ color: TIER_COLOR.contested }}>contested by {row.contestedBy}</span>
               )}
               {row.desecrated && <span style={{ color: TIER_COLOR.desecrated }}>desecrated</span>}
+            </div>
+            <div
+              style={{
+                marginTop: '3px',
+                color: row.sustenance.reason ? 'var(--text-quaternary, #6a6a72)' : POLARITY_COLOR[row.sustenance.polarity],
+              }}
+            >
+              {sustenanceLabel(row.sustenance)}
             </div>
           </div>
         ))}

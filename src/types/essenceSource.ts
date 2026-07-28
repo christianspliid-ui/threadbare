@@ -84,5 +84,12 @@ export interface EssenceSourcePhaseTrace {
   tierChanges: number;
   /** Sources currently contested. */
   contestedCount: number;
+  /**
+   * Sources the mortal economy pushed *upward* this tick — the land's matching
+   * goods ran to surplus (essence bridge, THR-618).
+   */
+  econNurtured: number;
+  /** Sources the mortal economy pulled *downward* this tick (matching goods scarce). */
+  econWithered: number;
   summary: string;
 }

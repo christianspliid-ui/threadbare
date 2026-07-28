@@ -5042,6 +5042,32 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "**Workaround:** when an `Edit` fails on a line that visibly matches, dump the line as codepoints (`[...line].map(c => c.charCodeAt(0) > 126 ? \"[U+\" + ... : c)`) before assuming the file changed underneath you. To patch past it, write a small node script keyed on a substring that excludes the invisible character. Both occurrences are now the `\"\\u00A0\"` escape.",
     "session": "THR-764, hourly pickup"
+  },
+  {
+    "num": "273",
+    "id": 273,
+    "count": 1,
+    "date": "2026-07-28",
+    "category": "tooling",
+    "description": "**`preview_start` reports a proxy port that is not where Vite actually bound, and `navigate` to that port is refused — so the first browser call of a worktree session fails in a way that reads like a permissions problem.** THR-618's browser pass called `preview_start {name:'dev'}`, which answered *\"port 5173 was in use, so port 53953 was assigned\"* and opened a tab there. `navigate` to `localhost:53953` returned `navigation ... was denied or failed`, as did `localhost:5174`. `preview_logs` on the returned `serverId` showed the truth: Vite itself had printed `Port 5173 is in use, trying another one...` and bound **5174** — the MCP's 53953 proxy pointed at 5173, which belongs to *another session's* dev server (typically the home tree, which is the `worktree_preview_server` trap wearing a new face). **Workaround:** read the real port out of `preview_logs`, then open it with `preview_start {url:'http://localhost:<real>/...'}` — the URL form works where `navigate` to an unopened origin does not. **Always probe that the served bundle is the worktree's** before trusting a browser result: `import('/src/<new-module>.ts')` in the page and assert a symbol that exists only in your change.",
+    "consequence": "",
+    "impact": "",
+    "workaroundFound": false,
+    "workaround": "",
+    "session": ""
+  },
+  {
+    "num": "274",
+    "id": 274,
+    "count": 1,
+    "date": "2026-07-28",
+    "category": "verification",
+    "description": "**A live-graph write is unreachable from any `__DEBUG` session that starts after page load, because `_registerGraphProvider` hands the graph *in* and nothing hands it back — so \"set up a state and screenshot it\" has no direct route.** THR-618 needed a location hosting a discovered, sphere-typed essence source to photograph the new Livelihood clause. `__DEBUG` exposes 131 methods and none returns the `WorldGraph`; the provider is a closure captured in a mount-once `useEffect` in `GameView.tsx`. Three attempts to wrap `_registerGraphProvider` before it fires all lost the race — the registration completes before the first `evaluate` round-trip lands, on both a medium and a large map, and an HMR nudge did **not** re-run the effect (Fast Refresh preserved state). **Workaround, and it is the better evidence anyway:** the `component_mount_overlay_verify` route — `createRoot` over the running app rendering the real exported component with a synthetic node — plus, for the state assertion, constructing a `WorldGraph` **from the served bundle** (`import('/src/engine/graph.ts')`) and driving the shipped phase function over it. That exercises the same code the browser is running and needs no privileged handle. Note React/ReactDOM come out of `/node_modules/.vite/deps/*.js` as `default` exports — `import(...).createRoot` is undefined; destructure from `.default`.",
+    "consequence": "",
+    "impact": "",
+    "workaroundFound": false,
+    "workaround": "",
+    "session": ""
   }
 ];
 // ── End data ──

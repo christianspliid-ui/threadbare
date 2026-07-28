@@ -576,6 +576,32 @@ export const CONTRACTS: readonly Contract[] = [
     deferralTicket: 'THR-725',
   },
   {
+    id: 'economy-sustains-essence-sources',
+    producerSystem: 'Mortal Economy & Prosperity',
+    consumerSystem: 'Essence & Divine Economy',
+    intent:
+      "A god's power is rooted in the land their people work: the goods of a source's own Sphere nurture or wither its sanctity, so an economy the player neglects quietly costs them essence.",
+    ulTerms: ['Stock Tier'],
+    // The boundary is the derived `stockTier` on a location's resources bag — NOT the
+    // aggregate `resourceBalance`, and NOT prosperity. The bridge deliberately reads the
+    // same coarse per-resource tier the Livelihood line reads, so the number the player
+    // is shown and the number the divine economy acts on cannot drift apart. Greping
+    // `prosperity` here would find the wrong coupling (that is `economy-verbs-answered`).
+    // Mechanism is the node-prop, not the bridge's own function names: the boundary is
+    // crossed by the value, and the reader (`essenceEconomyBridge.ts`) is on the far side
+    // of it. Declaring `computeSanctitySustenance` here pins the row LEAKED forever,
+    // because the producing phase has no reason to name the consumer's function — the
+    // same trap `economy-verbs-answered` records one row above.
+    mechanism: { kind: 'node-prop', symbols: ['stockTier'] },
+    writeSites: ['src/engine/phases/resourceStockTiers.ts'],
+    readSites: ['src/engine/essenceEconomyBridge.ts'],
+    verifiedLive: {
+      date: '2026-07-28',
+      evidence:
+        'THR-618: driven through the served browser bundle — two controlled Spirit shrines, one on surplus pearls and one on scarce, 60 ticks of `recomputeControlledSourceTiers`. The rich valley climbed 0.30 → 0.50 and STOPPED at `ECON_SANCTITY_NURTURE_CEILING`, tier still `dormant` (the land readies a source; only a Sanctify cast flowers it); the poor valley fell 0.30 → 0.00. First tick reported `econNurtured: 1, econWithered: 1` on the aggregate phase counters. Values and the bound, not just symbols.',
+    },
+  },
+  {
     id: 'world-events-mint-ambitions',
     producerSystem: 'Encounters & Dilemmas',
     consumerSystem: AMBITIONS,

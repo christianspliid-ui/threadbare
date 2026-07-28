@@ -502,6 +502,49 @@ export interface DebugBridge {
       }
     | { error: string }
   >;
+  /**
+   * Divine-economy source portfolio (THR-611) with its mortal-economy coupling
+   * (THR-618, the essence bridge). Lists every source the ascendant `controls` —
+   * kind, derived tier, sphere typing, private sanctity, contested/desecrated
+   * state — plus, per source, the `sustenance` the land under it provides: the
+   * host location's goods that share the source's sphere, the weighted
+   * `affinityScore` in [-1, 1] those goods' stock tiers produce, and the signed
+   * sanctity `drift` the next tick will apply.
+   *
+   * `sustenance.reason` is non-null exactly when `drift` is 0 for a structural
+   * reason: `untyped` (no sphereAffinity — still on the legacy alignment-distributed
+   * income path), `no-host` (host resolves to no location carrying resources),
+   * `no-matching-goods` (the land grows nothing of that sphere), or `ceiling`
+   * (sanctity already at `ECON_SANCTITY_NURTURE_CEILING` — the land cannot flower a
+   * source, only the god's hand can). A zero drift with a null reason just means a
+   * neutral larder.
+   *
+   * Read-only; does not mutate sanctity. Returns `{ error }` with no live session.
+   */
+  getEssenceSources: () => Promise<
+    | {
+        sources: Array<{
+          hostId: string;
+          hostName: string;
+          kind: import('./types/essenceSource').SourceKind;
+          tier: import('./types/essenceSource').SourceTier;
+          sphereAffinity: import('./types').SphereName | null;
+          sanctity: number;
+          contestedBy: string | null;
+          desecrated: boolean;
+          sustenance: {
+            drift: number;
+            affinityScore: number;
+            polarity: import('./data/essence-sources').SustenancePolarity;
+            economicHostId: string | null;
+            matchedResourceIds: string[];
+            reason: import('./engine/essenceEconomyBridge').SustenanceBlockReason | null;
+          };
+        }>;
+        sourceIncome: Partial<Record<import('./types').SphereName, number>>;
+      }
+    | { error: string }
+  >;
   /** Entity Visual resolver readout (THR-637): tier/source/gradient/kind for a node id or name. Read-only. */
   resolveEntityVisual: (ref: string) => Promise<
     | {
