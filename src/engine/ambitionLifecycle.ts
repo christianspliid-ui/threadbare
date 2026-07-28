@@ -3,7 +3,7 @@
 // and overall progress assessment. No side effects — reads graph state, returns results.
 
 import type { AmbitionTemplate, ActiveAmbition, AmbitionStatus } from '../types/ambition';
-import type { ConditionGraph } from './graphConditions';
+import type { ConditionGraph, ConditionContext } from './graphConditions';
 import { evaluateGraphCondition } from './graphConditions';
 
 // ─── Result type ─────────────────────────────────────────────────
@@ -25,13 +25,14 @@ export function checkMilestones(
   graph: ConditionGraph,
   agentId: string,
   alreadyCompleted: readonly string[],
+  context?: ConditionContext,
 ): string[] {
   const completedSet = new Set(alreadyCompleted);
   const newlyCompleted: string[] = [];
 
   for (const milestone of template.milestones) {
     if (completedSet.has(milestone.id)) continue;
-    if (evaluateGraphCondition(milestone.condition, graph, agentId)) {
+    if (evaluateGraphCondition(milestone.condition, graph, agentId, context)) {
       newlyCompleted.push(milestone.id);
     }
   }
@@ -49,9 +50,10 @@ export function checkAbandonment(
   template: AmbitionTemplate,
   graph: ConditionGraph,
   agentId: string,
+  context?: ConditionContext,
 ): boolean {
   for (const trigger of template.abandonmentTriggers) {
-    if (evaluateGraphCondition(trigger.condition, graph, agentId)) {
+    if (evaluateGraphCondition(trigger.condition, graph, agentId, context)) {
       return true;
     }
   }
@@ -63,15 +65,26 @@ export function checkAbandonment(
 /**
  * Evaluate an active ambition's progress: check abandonment first (takes priority),
  * then milestones, then completion threshold.
+ *
+ * `currentTick` is optional and only durational conditions consult it (THR-822). When
+ * supplied, the ambition's own `assignedTick` becomes the measurement window, so a
+ * settledness trigger measures time *under this ambition* rather than the agent's whole
+ * stationary history — the guarantee that keeps such a trigger from firing on tick one.
+ * Omit it and those conditions fail soft to `false`, leaving pre-THR-822 behaviour.
  */
 export function evaluateAmbitionProgress(
   template: AmbitionTemplate,
   active: ActiveAmbition,
   graph: ConditionGraph,
   agentId: string,
+  currentTick?: number,
 ): AmbitionProgressResult {
+  const context: ConditionContext | undefined = currentTick === undefined
+    ? undefined
+    : { currentTick, windowStartTick: active.assignedTick };
+
   // Abandonment takes priority
-  if (checkAbandonment(template, graph, agentId)) {
+  if (checkAbandonment(template, graph, agentId, context)) {
     return {
       status: 'abandoned',
       newMilestones: [],
@@ -80,7 +93,7 @@ export function evaluateAmbitionProgress(
   }
 
   // Check for new milestones
-  const newMilestones = checkMilestones(template, graph, agentId, active.completedMilestones);
+  const newMilestones = checkMilestones(template, graph, agentId, active.completedMilestones, context);
   const allCompletedMilestones = [...active.completedMilestones, ...newMilestones];
 
   // Check completion threshold

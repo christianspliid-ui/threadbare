@@ -29,6 +29,8 @@ import type { AmbitionMintedTrace } from '../types/trace';
 import { selectAmbitions, type AmbitionAgentSnapshot } from './ambitionSelection';
 import { collectGrantedTraits, GRANTED_TRAIT_EFFECTIVE_LEVEL } from './effects/effectQueries';
 import { collectBearerTraitRefs } from './traitRefIndex';
+import { observeResidence, type ResidenceObservation } from './agentResidence';
+import type { AgentResidenceTrace } from '../types/trace';
 
 // ─── Tunable Constants ───────────────────────────────────────────
 
@@ -297,6 +299,11 @@ export function phaseAmbitionProgress(state: GameState): Partial<GameState> {
   // Cross-agent per-event cap: one razed town mints for a handful, not everyone.
   const perEventMintCount = new Map<string, number>();
 
+  // Residence accumulators — ONE aggregate trace per tick, never per-agent (THR-822).
+  const residenceCounts: Record<ResidenceObservation, number> = {
+    'first-sighting': 0, moved: 0, unchanged: 0, 'no-position': 0,
+  };
+
   // Get all individual actors
   const actors = graph.getNodesByType('actor').filter(
     n => n.properties.actorType === 'individual',
@@ -304,6 +311,15 @@ export function phaseAmbitionProgress(state: GameState): Partial<GameState> {
 
   for (const actor of actors) {
     const actorLabel = actor.name || actor.id;
+
+    // ── Observe residence (THR-822) ──
+    //
+    // Rides this existing all-actor walk rather than adding a phase: one indexed
+    // adjacency lookup per actor per interval, no new traversal (NFP #7). Runs *before*
+    // the ambition evaluation below so a settledness condition reads this tick's
+    // position, not last interval's. `actor` is a stale handle afterwards — the loop
+    // re-reads through `graph`/`actor.id`, never through `actor.properties`.
+    residenceCounts[observeResidence(graph, actor.id, tick)]++;
 
     // Get active pursues edges
     const pursuesEdges = graph.getOutgoingEdges(actor.id, 'pursues');
@@ -332,7 +348,9 @@ export function phaseAmbitionProgress(state: GameState): Partial<GameState> {
         completedMilestones: (edge.properties.completedMilestones as string[]) ?? [],
       };
 
-      const result = evaluateAmbitionProgress(template, active, graph, actor.id);
+      // `tick` supplies the clock durational conditions need; `active.assignedTick`
+      // becomes their measurement window inside `evaluateAmbitionProgress` (THR-822).
+      const result = evaluateAmbitionProgress(template, active, graph, actor.id, tick);
 
       // ── Status changed: completion or abandonment ──
       if (result.status !== 'active') {
@@ -546,6 +564,26 @@ export function phaseAmbitionProgress(state: GameState): Partial<GameState> {
         }
       }
     }
+  }
+
+  // ── Aggregate residence trace — ONE per tick, never per-agent (THR-822) ──
+  // Same typed-const discipline as the mint trace below: an inline literal hits the
+  // emitTrace Omit-collapse trap and silently drops the union-member fields.
+  if (actors.length > 0) {
+    const residenceTrace: Omit<AgentResidenceTrace, 'id' | 'timestamp'> = {
+      tick,
+      category: 'agent_residence',
+      summary:
+        `Residence observed for ${actors.length} agent(s): ` +
+        `${residenceCounts.moved} moved, ${residenceCounts['first-sighting']} first-seen, ` +
+        `${residenceCounts.unchanged} settled, ${residenceCounts['no-position']} unplaced`,
+      observed: actors.length,
+      moved: residenceCounts.moved,
+      firstSightings: residenceCounts['first-sighting'],
+      unchanged: residenceCounts.unchanged,
+      noPosition: residenceCounts['no-position'],
+    };
+    emitTrace(residenceTrace);
   }
 
   // ── Aggregate mint trace — ONE per tick, never per-agent (THR-726) ──

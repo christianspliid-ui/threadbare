@@ -61,12 +61,35 @@
 //   form would be strictly worse than the dead refs: today these ambitions merely never
 //   abandon, whereas a misfiring trigger would mean they never *run*.
 //
-//   Discharging them needs state the engine does not have — loss history, or residence
-//   plus dwell time. Tracked as THR-822. See also the `KNOWN_DEAD` block in
-//   `src/engine/__tests__/traitRefReconciliation.test.ts`.
+// ─── THR-822 — two of those three discharged, and the third's reason sharpened ────
+//
+// The blocker above was real but was stated one level too generally. What made the
+// repoints unsafe was not that the proxies were *current-state* predicates — it was
+// that they were measured over the **agent's** history rather than the **ambition's**.
+// Supply a measurement window and the danger disappears arithmetically:
+//
+//   `agent_settled_since` / `agent_away_from_origin` count dwell from
+//   `max(arrivedTick, assignedTick)`, where `assignedTick` is this ambition's own. Such
+//   a trigger *cannot* hold before `assignedTick + minTicks`, whatever the agent was
+//   doing beforehand. That is a stronger guarantee than the `ambition_dominate_trade`
+//   idiom above, which relies on an eligibility floor happening to exclude the state.
+//
+// So `made_peace_with_the_land` became `agent_settled_since` on `flee the ravaged land`
+// and `accepted_exile` became `agent_away_from_origin` on `reclaim homeland`. Both now
+// read live state: residence is *observed* every interval from `phaseAmbitionProgress`
+// rather than written by the ~24 `located_at` writers, so no mover can drift out of
+// coverage (`src/engine/agentResidence.ts` § "Why an observer").
+//
+// `homeless_wanderer` stays dead, and its reason is now the narrower one: "nothing left
+// to guard" is a **loss of bonds**, not a question about where the bearer is standing.
+// Residence cannot express it, and the bond-count proxy still fires at assignment for
+// the same reason it always did — `ambition_protect_kin` gates on no bond floor. It
+// wants loss *history* (bonds that existed and ended), which nothing records. See the
+// `KNOWN_DEAD` block in `src/engine/__tests__/traitRefReconciliation.test.ts`.
 
 import type { AmbitionTemplate, ReactiveAmbitionTemplate } from '../types/ambition';
 import type { AmbitionStrategicProfile } from '../types/strategicAction';
+import { SETTLED_DWELL_TICKS, EXILE_ACCEPTED_DWELL_TICKS } from '../engine/agentResidence';
 
 // ─── Standard Ambition Templates ─────────────────────────────────────────────
 
@@ -812,7 +835,11 @@ export const REACTIVE_AMBITION_TEMPLATES: readonly ReactiveAmbitionTemplate[] = 
     completion: { requires: 2, of: 3 },
     abandonmentTriggers: [
       {
-        condition: { type: 'agent_has_trait', trait: 'accepted_exile' },
+        // THR-822 discharged `accepted_exile`. The concept was never a trait — it is
+        // residence: rooted somewhere that is not where you started. The window rule
+        // (measured from this ambition's own `assignedTick`) is what makes it safe as
+        // an abandonment trigger; see the header block and `agentResidence.ts`.
+        condition: { type: 'agent_away_from_origin', minTicks: EXILE_ACCEPTED_DWELL_TICKS },
         prose: ['Home became a memory, and the memory became enough.'],
       },
     ],
@@ -1110,7 +1137,11 @@ export const EVENT_MINTED_AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     completion: { requires: 2, of: 2 },
     abandonmentTriggers: [
       {
-        condition: { type: 'agent_has_trait', trait: 'made_peace_with_the_land' },
+        // THR-822 discharged `made_peace_with_the_land`. Fleeing that stops being
+        // fleeing is dwell, not a trait: six days without moving, counted from the tick
+        // this ambition was taken up — so the trigger cannot fire on an agent who was
+        // merely already stationary when the road called.
+        condition: { type: 'agent_settled_since', minTicks: SETTLED_DWELL_TICKS },
         prose: ['The road unspooled and then, quietly, ended. They stayed.'],
       },
     ],
