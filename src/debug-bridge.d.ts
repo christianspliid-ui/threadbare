@@ -362,6 +362,34 @@ export interface DebugBridge {
   getAgentAttachments: (agentIdOrName: string) => Promise<AgentAttachments | null>;
 
   /**
+   * THR-822: where an agent originated and how long it has held its current position.
+   *
+   * Residence is *observed* every `MILESTONE_CHECK_INTERVAL` (15) ticks from
+   * `phaseAmbitionProgress`, not written by movement code — so `positionId` may lag
+   * `livePositionId` by up to one interval right after a move. Both are returned so the
+   * lag is visible rather than confusing.
+   *
+   * `dwellTicks` is total ticks at the current position. An ambition's settledness
+   * trigger measures from `max(arrivedTick, assignedTick)` instead and will therefore
+   * read shorter; that window is what stops such a trigger firing on its first tick.
+   *
+   * Accepts an agent id, id prefix, or partial name (case-insensitive). `null` if no
+   * agent matches or the game is not loaded. Fields are `null` before first observation.
+   */
+  getAgentResidence: (agentIdOrName: string) => Promise<{
+    agentId: string;
+    agentName: string;
+    originLocationId: string | null;
+    originLocationName: string | null;
+    positionId: string | null;
+    positionName: string | null;
+    livePositionId: string | null;
+    arrivedTick: number | null;
+    dwellTicks: number | null;
+    awayFromOrigin: boolean;
+  } | null>;
+
+  /**
    * THR-479: list the ascendant's Aspects (apex milestone beyond the five tiers),
    * including living Aspects and mythic echoes. Empty array if none / not loaded.
    */

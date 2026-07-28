@@ -1828,3 +1828,25 @@ The last open item of P4, and the coupling the extraction checkpoint's own evide
 **The read is the derived tier, not the aggregate.** The bridge reads the same per-resource `stockTier` the Livelihood line renders — deliberately not `resourceBalance` and not `prosperity` — so the number the player is shown and the number the divine economy acts on cannot drift apart. Interface row `economy-sustains-essence-sources` (node-prop `stockTier`) is 🟢 LIVE.
 
 **Regression locks:** 22 tests in `src/engine/__tests__/essenceEconomyBridge.test.ts`, four marked CONTRACT — untyped sources never drift; 500 ticks of surplus leave a source `dormant` at exactly the ceiling; a starving land drains to exactly 0; a migrated untyped place of power is untouched over 100 ticks on a doubly-surplus location.
+
+---
+
+## THR-822 — Agent residence (origin + dwell), 2026-07-28
+
+| Module | Called from | Surface | What it does | Trace | Evidence |
+|---|---|---|---|---|---|
+| `src/engine/agentResidence.ts` (new) | `phaseAmbitionProgress` (`ambitionTick.ts`), per individual actor, every `MILESTONE_CHECK_INTERVAL` (15) ticks | — (engine state) | `observeResidence` compares the live `located_at` target against `residencePositionId` on the actor node; a difference restamps `residenceArrivedTick`, and the first sighting also writes `originLocationId` | `agent_residence` — ONE aggregate per tick (`observed`/`moved`/`firstSightings`/`unchanged`/`noPosition`), never per-agent | Live seed-42/medium at tick 45: **396/396** individuals carry origin + arrival, 16 away from origin, arrival ticks exactly `[15,30,45]` |
+| `graphConditions.ts` — `agent_settled_since`, `agent_away_from_origin` | `checkMilestones` / `checkAbandonment` via `evaluateAmbitionProgress` | Ambition milestones + abandonment triggers | Reads recorded residence + `ConditionContext.currentTick`; dwell counted from `max(arrivedTick, windowStartTick)` | — (pure) | 21 cases incl. every fail-soft absence |
+| `ambitionLifecycle.ts` — `ConditionContext` threading | `phaseAmbitionProgress` passes `tick` | — | Builds `{ currentTick, windowStartTick: active.assignedTick }`; omitted ⇒ durational conditions are `false` | — | Test pins pre-THR-822 callers unaffected |
+| `debug-bridge.ts` — `getAgentResidence` | `window.__DEBUG` | Debug console | Origin, observed position, **live** position, arrival tick, unwindowed dwell, `awayFromOrigin` | — | `.d.ts` documents the observed-vs-live lag |
+| `src/data/ambition-templates.ts` | — (content) | *flee the ravaged land*, *reclaim the homeland* | Both sole abandonment triggers repointed off dead trait refs onto the two conditions | — | 11 reachability cases driving the real templates |
+
+**Player controls:** none new. Residence is world state a mortal accumulates by living; the player's existing lever is the one the wiki names — keep a mortal moving and their oath survives.
+
+**Why an observer and not 24 instrumented writers.** Stamping `arrivedTick` at each `located_at` rewrite means touching 24 sites whose count is not stable; a 25th added later strands its movers at a stale tick, which reads as **more** settled than the agent is. The observer covers every mover including ones that do not exist yet, and no movement code imports this module. Cost is one indexed adjacency lookup per actor per interval on a walk that was already running — **no new phase** (NFP #7).
+
+**Why the measurement window is load-bearing, not a refinement.** Abandonment is evaluated from an ambition's first tick with no grace period and ahead of milestones, so a bare "has been settled for N ticks" predicate fires immediately for any already-stationary agent — the inverted-risk failure THR-812 fixed for `target_agent_eliminated`, and worse than the dead ref it replaces (never abandoning beats never running). Counting from `max(arrivedTick, assignedTick)` makes `assignedTick + minTicks` a floor **by arithmetic**, which is a stronger guarantee than the `ambition_dominate_trade` idiom of relying on an eligibility floor.
+
+**Fail-soft polarity.** No clock, no observed arrival, or no recorded origin each evaluate to `false`. For an abandonment trigger, absent evidence must never end an ambition — the opposite polarity would abandon for the least-observed agents first.
+
+**Regression locks:** 16 cases in `agentResidence.test.ts` (incl. arrival must not creep on re-observation, and an unplaced agent acquires nothing), 21 in `graphConditions.test.ts`, 11 in `ambitionSettledness.test.ts` — each ambition asserted for **both** *reaches abandonment* and *does not abandon at assignment*, since either alone passes against a broken build. `KNOWN_DEAD` shrinks 3 → 1 under a set-equality assertion.

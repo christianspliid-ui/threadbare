@@ -1906,3 +1906,35 @@ window.__DEBUG.validateTraitRefs()
 **Two canon rules bind every hook you write:** (1) a trait hook always *names* its trait to the player — no invisible modifiers; (2) trait levels never surface as numerals, words only. And a trait reaction colors the curated moment; it never raises its own notification.
 
 **Where it lives:** `resolveTraitPredicate` / `collectBearerTraitRefs` / `bearerMatchesPredicate` in `src/engine/traits.ts` + `src/engine/traitRefIndex.ts`; the sweep in `src/engine/traitRefValidation.ts`. Bearer-agnostic by construction — the same resolver serves mortals, companies, factions, cultures, and (schema-legal today) locations, which is what waves 2–3 build on.
+
+---
+
+## Capability: Residence hooks — "where they're from" and "how long they've stayed" (THR-822)
+
+**What you can now author:** an ambition milestone or abandonment trigger that reads a mortal's *residence* — the position they originated at, and how long they have held their current one. Two `GraphCondition`s, alongside the trait/reach/bond vocabulary above:
+
+| Condition | Holds when |
+| -- | -- |
+| `{ type: 'agent_settled_since', minTicks }` | The agent has held one position for `minTicks` — measured *within the asking ambition's lifetime* (see below). |
+| `{ type: 'agent_away_from_origin', minTicks }` | Same, and that position is not the one the agent originated at. |
+
+Position is whatever the agent's single `located_at` edge points at, so this works at any tier of the hex → location → sublocation model; moving between two sublocations of one town is a move.
+
+**The window rule — read this before you author a threshold.** Dwell is counted from `max(arrivedTick, assignedTick)`, where `assignedTick` is the ambition's own. That means a settledness trigger **cannot** hold before `assignedTick + minTicks`, whatever the agent was doing beforehand. Without it, these would be the classic inverted-risk abandonment bug: a long-lived agent who happens to be standing still abandons on the first tick it is evaluated, so the ambition never runs at all — strictly worse than a trigger that never fires. THR-813 declined to ship exactly that; the window is why THR-822 could.
+
+**Author thresholds in tens of ticks, not units.** Residence is *observed* every `MILESTONE_CHECK_INTERVAL` (15) ticks from `phaseAmbitionProgress`, not written by movement code, so arrival ticks are quantized to that interval and an agent that leaves and returns inside one interval is never seen to have moved. A game day is 12 ticks; the two shipped thresholds are `SETTLED_DWELL_TICKS = 72` (six days) and `EXILE_ACCEPTED_DWELL_TICKS = 120` (ten). Import them rather than writing bare numbers.
+
+**Why observed and not stamped on the edge.** There are ~24 `located_at` writers in `src/` and the count is not stable; instrumenting them all means a 25th writer added later silently strands its movers at a stale arrival tick, reading as *more* settled than the agent is. The observer compares against the last recorded position instead, so every mover is covered including ones that do not exist yet, and no movement code needs to know residence exists.
+
+**Check it before you ship it:**
+
+```javascript
+window.__DEBUG.getAgentResidence('Kael')
+// -> { originLocationName, positionName, livePositionId, arrivedTick, dwellTicks, awayFromOrigin, … }
+```
+
+`dwellTicks` there is the *unwindowed* total; a live trigger measures from the ambition's assignment and will read shorter. `positionId` may lag `livePositionId` by up to one interval right after a move — both are returned so the lag is visible rather than confusing.
+
+**Fail-soft, in the safe direction.** No clock in the evaluation context, no arrival ever observed, or (for the origin variant) no origin recorded all evaluate to `false`. Absent evidence must never end an ambition — a trigger that fired on missing data would abandon for the least-observed agents first.
+
+**Where it lives:** `src/engine/agentResidence.ts` (primitive + constants), `graphConditions.ts` (the two cases), `ambitionLifecycle.ts` (builds the window from `assignedTick`), `ambitionTick.ts` (calls the observer on its existing all-actor walk). Shipped consumers: the abandonment triggers on `ambition_flee_the_ravaged_land` and `ambition_reclaim_homeland`.

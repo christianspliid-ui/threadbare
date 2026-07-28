@@ -317,6 +317,8 @@ export type TraceCategory =
   | 'group_contested'
   // World-minted ambitions — events write mortal desire (THR-726)
   | 'ambition_minted'
+  // Agent residence — origin + dwell, observed not written (THR-822)
+  | 'agent_residence'
   // Nudge Model — WS0 engine substrate (THR-773)
   | 'nudge_played'
   | 'agent_broken'
@@ -608,6 +610,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'group_contested',
   // World-minted ambitions (THR-726)
   'ambition_minted',
+  // Agent residence (THR-822)
+  'agent_residence',
   // Nudge Model — WS0 engine substrate (THR-773)
   'nudge_played',
   'agent_broken',
@@ -2092,10 +2096,35 @@ export type TraceEntry =
   | PlayerReceiptTrace
   // World-minted ambitions (THR-726)
   | AmbitionMintedTrace
+  // Agent residence (THR-822)
+  | AgentResidenceTrace
   // Nudge Model — WS0 engine substrate (THR-773)
   | NudgePlayedTrace
   | AgentBrokenTrace
   | AgentMendedTrace;
+
+/**
+ * Trace: residence observed across every individual actor this interval (THR-822).
+ *
+ * Emitted from `phaseAmbitionProgress`, which is an all-agents phase — so this is ONE
+ * aggregate entry per tick, never one per agent. `moved + firstSightings` is the count
+ * of actor nodes written this interval; a run where `moved` is persistently zero means
+ * the world has gone static, and one where `noPosition` is large means agents are
+ * losing their `located_at` edges.
+ */
+export interface AgentResidenceTrace extends TraceBase {
+  category: 'agent_residence';
+  /** Individual actors walked. */
+  observed: number;
+  /** Agents observed at a different position than last interval. */
+  moved: number;
+  /** Agents observed for the first time — origin recorded on this pass. */
+  firstSightings: number;
+  /** Agents still at the position they were last observed at. */
+  unchanged: number;
+  /** Agents with no `located_at` edge; left unrecorded rather than given a false arrival. */
+  noPosition: number;
+}
 
 /**
  * Trace: the player committed a nudge into an attended encounter step (THR-773).
