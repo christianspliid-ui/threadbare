@@ -1,5 +1,44 @@
 # Orchestrator — 2026-07-28
 
+## Sixth run — 12:28Z update
+
+*T3 runs once daily; the first run already completed it (07:42Z), so this run only did T1 (fresh, per-run) and re-checked the T2 trigger. Full detail for T2/T3 retained below under "First run — 07:42Z".*
+
+### Needs Christian
+
+Nothing needs you this run.
+
+### T1 — unblock sweep (12:28Z)
+
+**Promoted (1, at the shelf-backup ceiling):**
+
+- **THR-621** ("Rival source contestation — scheme phases that drain/desecrate player essence sources") — Medium priority. `Blocked by` THR-611 (Divine Economy source interface), confirmed Done 2026-07-05T11:36:44Z. The description's own "deliberately deferred to land with or after" preference names THR-619 (rival economic scheme family), confirmed Done 2026-07-27T21:30:06Z (PR #973). Both conditions clear — fully unblocked, and the most overdue verified candidate: three prior runs (10:29Z, 11:29Z) confirmed it unblocked but the ceiling kept picking other candidates. Promoted → verified via `get_issue` (`stateHistory` shows Todo → Ready for Dev at 12:28:38.700Z, state stuck) → coordination-block comment posted (Suggested model: opus — three-pillar Engine+Content+UI work needing judgment to match the freshly-landed THR-619 scheme-phase shape; Parallel-safe with: anything not touching rival scheme dispatch / `essenceSource` fields / rival-content scheme tables; Mutex with: THR-619 itself, now moot since THR-619 shipped — noted as moot-unless-a-follow-up-exists rather than silently dropped).
+
+**Held back by the shelf-backup ceiling (Ready for Dev held 25 items before this run's promotion, above the 15 threshold — at most one promotion allowed):**
+
+- **THR-667** ("Follow-up: anchor faction notifications to faction UI surfaces") — Medium priority. `Blocked by` THR-666, confirmed Done (checked in prior runs). Coordination block already drafted in the ticket body. Strongest carry-over for next run.
+
+**Declined (unchanged from prior runs today):**
+
+- **THR-790** / **THR-791** (Traits wave 2 / wave 3) — blocker THR-786 Done, but both tickets self-declare a design-finalization gate. T2's input, not T1's; T2 did not trigger this run.
+- **THR-175** ("UI overhaul 08, agent.sphere field") — explicit `Status: DEFERRED` with a named unblock trigger that has not occurred.
+
+**Not re-verified this run:** the remaining Todo candidates with no blocker language found on prior passes (THR-757, THR-756, THR-646, THR-763, THR-762, THR-735, THR-680, THR-681, THR-795, THR-766, THR-574, THR-582, THR-346/347/348, THR-723, THR-626, THR-772/778/789/790/791 program containers). Next run should pick THR-667 (Medium, fully verified, coordination block pre-drafted) first.
+
+### T2 — design authoring (12:28Z)
+
+**Not triggered.** Ready for Dev holds 10 non-`Deferral` items after this run's promotion (THR-638, THR-836, THR-618, THR-655, THR-838, THR-792, THR-807, THR-740, THR-739, THR-715) — well above the floor of 2 (THR-621 itself is labeled `Deferral`, so it doesn't move this count). THR-790 (Traits wave 2) remains the top agreed-but-undesigned candidate for whenever T2 next triggers.
+
+### T3 — architecture health (12:28Z)
+
+**Not re-run** — the full sweep already ran this morning (07:42Z, see "First run" below); nothing in the interim changes those findings.
+
+### Escalations (12:28Z)
+
+None. No item required a question this run; the Discord channel was not used.
+
+---
+
 ## Fifth run — 11:29Z update
 
 *T3 runs once daily; the first run already completed it (07:42Z), so this run only did T1 (fresh, per-run) and re-checked the T2 trigger. Full detail for T2/T3 retained below under "First run — 07:42Z".*
