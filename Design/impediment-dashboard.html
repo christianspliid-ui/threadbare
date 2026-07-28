@@ -5107,6 +5107,19 @@ const DATA = [
     "workaroundFound": false,
     "workaround": "**Pattern: when a ticket hands you a suspicion about dead state, spend one `printf \"tick N\\neval …\\nexit\\n\" \\| npm run cli` before believing its scope.** Ask for the *distinct set* of the property (`[...new Set(...)]`), not whether one expected value is present — the empty-set answer is the one that reclassifies the finding, and it is the same shape as the `vacuous_probe_empty_population` trap read from the other side. Related: the `optional-field-no-writer` class, where a field nobody writes is invisible to every gate.",
     "session": "THR-822, hourly `tb-opus-pickup`, 2026-07-28"
+  },
+  {
+    "num": "278",
+    "id": 278,
+    "count": 1,
+    "date": "2026-07-28",
+    "category": "tooling",
+    "description": "**GitHub Actions went billing-blocked, and the required merge gate failed OPEN rather than closed — a `SKIPPED` required check satisfies branch protection, so PRs auto-merged with no CI at all.** Discovered while checking why THR-822's Linear auto-close had not fired: the workflow job had completed in 3 s with **zero steps**, annotation *\"The job was not started because recent account payments have failed or your spending limit needs to be increased.\"* Every workflow is affected. Onset is sharp — last green `ci.yml` at `ffa58aa7` **15:30:41Z**, first billing failure at `e2fdd925` **16:02:37Z**. The chain that opens the gate: `ci.yml`'s gating job `Detect code changes` fails to start -> the required `Test · Typecheck · Build` resolves **SKIPPED** -> GitHub treats the requirement as met -> armed auto-merge fires. Measured on PR #1022: `Detect code changes FAILURE`, `Test · Typecheck · Build SKIPPED`, `Move referenced Linear issues FAILURE`. Three PRs (#1020, #1021, #1022) merged in that window.",
+    "consequence": "The one control between a bad branch and `main` was silently absent, and **nothing surfaced it** — a merged PR with a skipped check looks identical to a merged PR with a green one in every view an agent consults. Second-order: `linear-autoclose.yml` cannot run either, so merged issues stop transitioning to Done and the WIP=1 slot parks unless the executor unassigns by hand.",
+    "impact": "L",
+    "workaroundFound": false,
+    "workaround": "**Not agent-fixable — the remedy is a Christian-owned billing action** (clear the failed payment / raise the Actions spending limit). Filed **THR-842** (Urgent). **Detection rule for any executor, cheap enough to make routine: after `gh pr merge --auto`, do not read `state: MERGED` as \"gates passed\" — read the rollup.** `gh pr view <N> --json statusCheckRollup --jq '.statusCheckRollup[] \\| {name,conclusion}'`; a required check reading `SKIPPED` means the gate did not run, and a job that \"failed\" in ~3 s with `steps_count: 0` is a startup failure whose real reason is only in `gh api repos/<owner>/<repo>/check-runs/<jobId>/annotations` — `gh run view --log-failed` returns *\"log not found\"* because no log was ever produced, which is itself the tell. Second confirmed instance of the `skipped_required_check_merges` class; the first was a path-filtered skip, this one is infrastructural, so the class is not specific to path filters.",
+    "session": "THR-822 closeout, hourly `tb-opus-pickup`, 2026-07-28 16:30 UTC"
   }
 ];
 // ── End data ──
