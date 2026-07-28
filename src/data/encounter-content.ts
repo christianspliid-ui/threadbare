@@ -6918,6 +6918,35 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     threatRating: 'trivial',
     intrinsicTier: 'background',
     motivations: ['tradition_progress', 'courage_prudence'],
+    /**
+     * THR-838 (WS5 Batch 1) — migrated to the nudge model.
+     *
+     * Vignette record (checklist step 1; no schema field for these yet):
+     *   Motive hooks   — `chance` above all: the sitting-down encounter, drawn
+     *                    because the day stopped and the blade is on the hip.
+     *                    `choice` for one who keeps a schedule about it. Never
+     *                    `mission`; nobody is sent to hone a knife.
+     *   Quintessence   — light. A ruined edge costs the next fight some margin,
+     *   stakes           and costs this evening a whetstone. No wound here.
+     *   Scene tag      — `camp.night.maintenance` (audit tag: place:hamlet ·
+     *                    reach:iron · situation:encounter).
+     *
+     * Both steps sit far under `NUDGE_OFF_REACH_MAX_DIFFICULTY` (0.05 and 0.10
+     * against a 0.45 ceiling) — `background` tier is open draw, so the roster
+     * that meets this mostly holds neither `iron` nor `stone` and the hand has
+     * to move the forecast for them anyway.
+     */
+    traitVariants: [
+      {
+        // `core_humility` virtue pole — a seeded Core definition, so the ref is
+        // live for `validateTraitRefs()` (checklist step 5's hard constraint).
+        traitId: 'trait.core.core_humility.virtue',
+        forecastDelta: 0.04,
+        difficultyDelta: -0.01,
+        factorLine: 'They can be told the edge is bad, including by the edge.',
+        addNudgeIds: ['sharpen.admit_the_nick'],
+      },
+    ],
     steps: [
       {
         id: 'sharpen_blades.assess',
@@ -6925,13 +6954,106 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'iron',
         difficulty: UNIVERSAL_DIFFICULTY_BASE,
         duration: 1,
-        narrative: '{actor} draws blade across thumbnail, testing the edge. Nicks, rolls, and dullness all tell {their} own {adj} story.',
+        purposeLine: 'Read the steel',
+        factorLines: [
+          { text: 'The blade has been in {their} hand for years and has a known feel.', polarity: 'for' },
+          { text: 'Firelight lies about steel, and there is only firelight.', polarity: 'against' },
+        ],
+        narrative: '{actor} draws the blade slowly across a thumbnail and watches where it bites and where it skates. A nick catches. A rolled stretch near the guard does not catch at all, which is worse.',
+        successAtCostAfterimage: 'They found every flaw, and found them by opening the ball of {their} thumb on one.',
+        criticalSuccessAfterimage: 'They read the whole length of it in one pass and could have named the fight that put each mark there.',
+        criticalFailureAfterimage: 'They came away sure the edge was sound. It was sound along the half {they} tested.',
+        nudges: [
+          {
+            // Shared generic pool — the `focus` family.
+            id: 'sharpen.turn_it_to_the_light',
+            name: 'Turn it to the light',
+            essenceCost: 1,
+            forecastDelta: 0.06,
+            imageTag: 'generic.focus',
+            fiction: 'The blade comes round to the fire at the angle where damage shows as a dark line instead of a bright one.',
+            effectLine: 'A small, reliable push toward seeing what is there.',
+            bandProse: {
+              success: 'Held to the fire at that angle, every nick stood out dark, and {actor} counted them.',
+              near_miss: 'The angle showed the nicks. The rolled stretch near the guard threw back clean light and hid.',
+            },
+          },
+          {
+            id: 'sharpen.let_the_flaw_show',
+            name: 'Let the flaw show',
+            sphere: 'matter',
+            essenceCost: 2,
+            forecastDelta: 0.11,
+            imageTag: 'generic.matter',
+            fiction: 'The steel stops flattering itself. Every place the grain went wrong sits up on the surface.',
+            effectLine: 'Strong help. The metal gives an honest account of itself.',
+            bandProse: {
+              success_at_cost: 'The steel told the truth, and the truth was that a hand-span of it was finished.',
+              failure: 'The flaws rose to the surface of a blade {actor} was no longer looking at.',
+            },
+          },
+          {
+            id: 'sharpen.remember_the_last_edge',
+            name: 'Remember the last edge',
+            sphere: 'mind',
+            essenceCost: 2,
+            forecastDelta: 0.10,
+            imageTag: 'generic.mind',
+            fiction: 'How this blade felt the last time it was right comes back exactly, and gives {them} a mark to measure against.',
+            effectLine: 'Good help. There is a before to compare this to.',
+            bandProse: {
+              failure: 'They recalled the old edge perfectly and still could not say what this one had lost.',
+            },
+          },
+          {
+            id: 'sharpen.lend_the_dawn_early',
+            name: 'Lend the dawn early',
+            sphere: 'light',
+            essenceCost: 2,
+            forecastDelta: 0.09,
+            imageTag: 'generic.light',
+            fiction: 'Grey working light arrives over the camp hours before the sun has any business being up.',
+            effectLine: 'Good help. Firelight stops doing the deciding.',
+            bandProse: {
+              critical_success: 'In flat grey light the whole blade read at a glance, guard to tip, with no guessing in it.',
+              near_miss: 'The light came early and went again before {actor} had turned the blade over.',
+            },
+          },
+          {
+            id: 'sharpen.hold_the_hour',
+            name: 'Hold the hour',
+            sphere: 'time',
+            essenceCost: 2,
+            forecastDelta: 0.12,
+            imageTag: 'generic.time-slow',
+            fiction: 'The camp stops needing {them}. The hour before the watch changes stretches out with room in it.',
+            effectLine: 'Strong help. There is time to be thorough.',
+            bandProse: {
+              failure: 'The hour ran long and {actor} spent all of it on the first hand-span of the blade.',
+              critical_failure: 'The hour would not end. They checked the same stretch of steel until it stopped meaning anything.',
+            },
+          },
+          {
+            // Trait-only card: cost 0, the price paid by being this person.
+            id: 'sharpen.admit_the_nick',
+            name: 'Admit the nick',
+            requiredTrait: 'trait.core.core_humility.virtue',
+            essenceCost: 0,
+            forecastDelta: 0.08,
+            imageTag: 'generic.oath',
+            fiction: 'They stop arguing with the thumbnail. The blade is worse than {they} had been telling people, and {they} let that be true.',
+            effectLine: 'A steady help, and it costs no essence.',
+            bandProse: {
+              near_miss: 'They admitted the blade was half gone, and still put off admitting which half.',
+            },
+          },
+        ],
         onSuccess: {
-          narrative: 'The flaws are clear. {actor} knows exactly where steel has failed and where it can be saved.',
+          narrative: 'The flaws are plain. {actor} knows where the steel has gone and where it can still be brought back.',
           reputationDelta: 0.02,
         },
         onFailure: {
-          narrative: 'Hard to tell good steel from bad in this light. {actor} guesses at the damage.',
+          narrative: 'Good steel and bad look the same at this hour. {actor} guesses at the damage and sets to work on the guess.',
           reputationDelta: -0.01,
         },
       },
@@ -6941,13 +7063,93 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'stone',
         difficulty: UNIVERSAL_DIFFICULTY_BASE + UNIVERSAL_DIFFICULTY_STEP,
         duration: 1,
-        narrative: 'The rhythm of stone on steel fills the silence. {actor} works with {adj} patience, stroke after stroke.',
+        purposeLine: 'Put the edge back',
+        factorLines: [
+          { text: 'Stone on steel is a rhythm the hands already know.', polarity: 'for' },
+          { text: 'The whetstone is worn dish-shaped in the middle.', polarity: 'against' },
+          { text: 'There is no water left to wet it with.', polarity: 'against' },
+        ],
+        narrative: 'Stone on steel, over and over, until the sound of the camp goes away behind it. {actor} keeps the angle by feel — the same angle for four hundred strokes, which is easy for thirty and hard after that.',
+        successAtCostAfterimage: 'The edge came back. So much steel went onto the stone that the blade will not take this again.',
+        criticalSuccessAfterimage: 'The edge came up so fine it took hair off {their} forearm without being asked twice.',
+        criticalFailureAfterimage: 'The angle wandered and kept wandering, and what {they} sheathed had two edges arguing along one blade.',
+        nudges: [
+          {
+            // Shared generic pool — the `focus` family.
+            id: 'sharpen.find_the_rhythm',
+            name: 'Find the rhythm',
+            essenceCost: 1,
+            forecastDelta: 0.06,
+            imageTag: 'generic.focus',
+            fiction: 'The stroke settles into a count {they} stop having to keep. The arm does it without {them}.',
+            effectLine: 'A small, reliable push toward keeping at it.',
+            bandProse: {
+              success: 'The count kept itself, and the edge came up under it stroke by stroke.',
+              near_miss: 'The rhythm held for three hundred strokes and slipped on the last of them.',
+            },
+          },
+          {
+            id: 'sharpen.even_the_pressure',
+            name: 'Even the pressure',
+            sphere: 'force',
+            essenceCost: 2,
+            forecastDelta: 0.11,
+            imageTag: 'generic.force',
+            fiction: 'The weight through {their} wrist stops rising at the tip and dropping at the heel. It goes down the same all the way along.',
+            effectLine: 'Strong help. The whole length gets the same treatment.',
+            bandProse: {
+              success_at_cost: 'The pressure stayed even and wore a fresh hollow into the middle of the stone.',
+              failure: 'The wrist held true and the dished stone put the bevel on crooked anyway.',
+            },
+          },
+          {
+            id: 'sharpen.take_the_rust_first',
+            name: 'Take the rust first',
+            sphere: 'entropy',
+            essenceCost: 2,
+            forecastDelta: 0.10,
+            imageTag: 'generic.decay',
+            fiction: 'The orange bloom along the spine lifts off ahead of the stone, leaving grey metal for the edge work.',
+            effectLine: 'Good help. The stone gets clean steel to bite.',
+            bandProse: {
+              failure: 'The rust came away clean off a blade that was already too far gone under it.',
+            },
+          },
+          {
+            id: 'sharpen.keep_the_angle',
+            name: 'Keep the angle',
+            sphere: 'order',
+            essenceCost: 2,
+            forecastDelta: 0.13,
+            imageTag: 'generic.order',
+            fiction: 'The blade sits at one angle to the stone and will not be talked out of it, stroke after stroke.',
+            effectLine: 'Strong help. One bevel instead of four.',
+            bandProse: {
+              critical_success: 'The angle never moved once, and the bevel came off the stone as one clean line from guard to point.',
+              failure: 'The angle held all the way through, on the wrong side of the edge.',
+            },
+          },
+          {
+            id: 'sharpen.warm_the_stone',
+            name: 'Warm the stone',
+            sphere: 'energy',
+            essenceCost: 2,
+            forecastDelta: 0.09,
+            imageTag: 'generic.spark',
+            fiction: 'The whetstone comes up to blood heat under {their} palm and stops dragging at the steel.',
+            effectLine: 'Good help. The stone gives instead of fighting.',
+            bandProse: {
+              near_miss: 'The warm stone cut fast and clean, and ran out of grit before the tip was done.',
+              critical_failure: 'The stone got too hot to hold, cracked along its length, and took a curl of the edge with it.',
+            },
+          },
+        ],
         onSuccess: {
-          narrative: 'The edge catches light like a thread of silver. Sharp enough. {actor} sheathes the blade with satisfaction.',
+          narrative: 'The edge catches the fire like a thread of silver. Sharp enough. {actor} sheathes it and rolls {their} shoulder out.',
           reputationDelta: 0.03,
         },
         onFailure: {
-          narrative: 'The whetstone slips, the angle wrong. {actor} manages a serviceable edge, but nothing more.',
+          narrative: 'The stone slips, the angle goes. {actor} gets an edge that will cut rope and would embarrass {them} against mail.',
           reputationDelta: -0.01,
         },
       },
@@ -7169,6 +7371,35 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     threatRating: 'easy',
     intrinsicTier: 'background',
     motivations: ['tradition_progress', 'courage_prudence'],
+    /**
+     * THR-838 (WS5 Batch 1) — migrated to the nudge model.
+     *
+     * Vignette record (checklist step 1; no schema field for these yet):
+     *   Motive hooks   — `chance` first: the camp is made and the dark is
+     *                    coming, so somebody walks the edge. `choice` for one
+     *                    who does it every night on principle. `mission` only
+     *                    where a caravan master posted the watch.
+     *   Quintessence   — light. A failed ward costs a bad night and a jumpy
+     *   stakes           watch, never a wound. The aftermath owes no more.
+     *   Scene tag      — `camp.night.ward` (audit tag: place:hamlet ·
+     *                    reach:veil · situation:encounter).
+     *
+     * Both steps sit far under `NUDGE_OFF_REACH_MAX_DIFFICULTY` (0.05 and 0.10
+     * against a 0.45 ceiling). This is `background` tier — open-draw content a
+     * mortal meets by having stopped for the night — so the hand has to move
+     * the forecast for a roster that mostly holds neither `veil` nor `star`.
+     */
+    traitVariants: [
+      {
+        // `core_integrity` virtue pole — a seeded Core definition, so the ref is
+        // live for `validateTraitRefs()` (checklist step 5's hard constraint).
+        traitId: 'trait.core.core_integrity.virtue',
+        forecastDelta: 0.04,
+        difficultyDelta: -0.01,
+        factorLine: 'They will not call a circle closed while they can see the gap.',
+        addNudgeIds: ['ward_camp.walk_it_again'],
+      },
+    ],
     steps: [
       {
         id: 'ward_the_camp.trace',
@@ -7176,13 +7407,109 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'veil',
         difficulty: UNIVERSAL_DIFFICULTY_BASE,
         duration: 1,
-        narrative: '{actor} walks the edge of camp, fingers brushing stone and bark. The {adj} work of drawing a circle that means something.',
+        purposeLine: 'Close the circle',
+        factorLines: [
+          { text: 'The ground is soft enough to hold a drawn line.', polarity: 'for' },
+          { text: 'Camp sprawls wider than one walk around it.', polarity: 'against' },
+          { text: 'The picket rope cuts the circle in two places.', polarity: 'against' },
+        ],
+        narrative: '{actor} walks the edge of camp with two fingers out, brushing stone, bark, tent rope, the wheel of a cart. The line has to come back to where it started, and the ground keeps offering reasons it should not.',
+        successAtCostAfterimage: 'The circle closed. It ran wide of the horses, and the horses stayed outside it.',
+        criticalSuccessAfterimage: 'The line came back to its own start clean, and {actor} felt it take like a knot pulling tight.',
+        criticalFailureAfterimage: 'They walked it three times and the ends would not meet, and the fourth walk was worse than the first.',
+        nudges: [
+          {
+            // Shared generic pool — the `focus` family.
+            id: 'ward_camp.steady_the_hand',
+            name: 'Steady the hand',
+            essenceCost: 1,
+            forecastDelta: 0.06,
+            imageTag: 'generic.focus',
+            fiction: 'The tremor goes out of {their} fingers. The line stops wandering where the ground dips.',
+            effectLine: 'A small, reliable push toward closing it at all.',
+            bandProse: {
+              success: 'The hand held steady the whole way round, and the line held with it.',
+              near_miss: 'The hand stayed steady. The ground under the north side did not.',
+            },
+          },
+          {
+            id: 'ward_camp.salt_from_the_pack',
+            name: 'Salt from the pack',
+            sphere: 'matter',
+            essenceCost: 2,
+            forecastDelta: 0.10,
+            imageTag: 'generic.matter',
+            fiction: 'A palmful of travelling salt goes down along the line, coarse and white against wet earth.',
+            effectLine: 'Good help. The circle has a body now, not just an intention.',
+            bandProse: {
+              success_at_cost: 'The salt held the line. It was three days of cooking salt, and they ate flat food after.',
+              failure: 'The salt went down and the wind took most of it off the stones before {actor} finished the turn.',
+            },
+          },
+          {
+            id: 'ward_camp.hold_the_dark_off',
+            name: 'Hold the dark off',
+            sphere: 'darkness',
+            essenceCost: 2,
+            forecastDelta: 0.09,
+            imageTag: 'generic.dark',
+            fiction: 'The dark past the last tent stops pressing inward and sits where it is, patient.',
+            effectLine: 'Good help. There is less leaning on the line while it is drawn.',
+            bandProse: {
+              failure: 'The dark sat back and waited, and the line failed on its own without any help from it.',
+            },
+          },
+          {
+            id: 'ward_camp.true_the_circle',
+            name: 'True the circle',
+            sphere: 'order',
+            essenceCost: 2,
+            forecastDelta: 0.12,
+            imageTag: 'generic.order',
+            fiction: 'The walk straightens itself. Where {actor} would have cut a corner, {their} feet go the long way without being told.',
+            effectLine: 'Strong help. The shape comes out round.',
+            bandProse: {
+              critical_success: 'The circle came out true enough to see from the cart roof, and every tent stood inside it.',
+              failure: 'The shape was perfect and it ended a stride short of its own beginning.',
+            },
+          },
+          {
+            id: 'ward_camp.lend_the_line_heat',
+            name: 'Lend the line heat',
+            sphere: 'energy',
+            essenceCost: 2,
+            forecastDelta: 0.11,
+            imageTag: 'generic.spark',
+            fiction: 'The traced ground gives off the warmth of a stone that sat in sun all day.',
+            effectLine: 'Strong help. The line stays awake behind {them}.',
+            bandProse: {
+              near_miss: 'The warmth ran the whole circle and went cold at the gate before {actor} got back to it.',
+              critical_failure: 'The heat came up too fast, dried the traced earth to dust, and the wind had the line off the ground by moonrise.',
+            },
+          },
+          {
+            // Trait-only card: cost 0, the price paid by being this person.
+            // Unlocked either by holding the trait or through the template's
+            // traitVariant naming it in `addNudgeIds`.
+            id: 'ward_camp.walk_it_again',
+            name: 'Walk it again',
+            requiredTrait: 'trait.core.core_integrity.virtue',
+            essenceCost: 0,
+            forecastDelta: 0.08,
+            imageTag: 'generic.oath',
+            fiction: 'They reach the start, look at the gap by the picket line, and set off round a second time.',
+            effectLine: 'A steady help, and it costs no essence.',
+            bandProse: {
+              near_miss: 'The second walk closed the gap by the picket and opened a smaller one by the fire.',
+            },
+          },
+        ],
         onSuccess: {
-          narrative: 'The ward settles — thin as cobweb, but present. {actor} feels the boundary hold against the dark.',
+          narrative: 'The ward settles, thin as cobweb and holding. {actor} can feel where the boundary runs without looking at it.',
           reputationDelta: 0.02,
         },
         onFailure: {
-          narrative: 'The energy dissipates before the circle closes. {actor} has drawn a line in sand, nothing more.',
+          narrative: 'The line goes slack before the circle closes. {actor} has drawn a mark in wet dirt, and the dirt knows it.',
           reputationDelta: -0.01,
         },
       },
@@ -7192,13 +7519,92 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'star',
         difficulty: UNIVERSAL_DIFFICULTY_BASE + UNIVERSAL_DIFFICULTY_STEP,
         duration: 1,
-        narrative: 'A ward without an anchor fades by dawn. {actor} reaches for something deeper — faith, will, the {adj} pulse of the cosmos.',
+        purposeLine: 'Give it a root',
+        factorLines: [
+          { text: 'The sky is open and the stars are out to be read.', polarity: 'for' },
+          { text: 'A drawn circle wants a weight, and {they} carry little.', polarity: 'against' },
+        ],
+        narrative: 'A traced circle fades by dawn unless it is tied to a heavier thing. {actor} kneels at the north of the line and reaches past the camp for a hold — a star, a vow, the slow turn the sky makes over a sleeping road.',
+        successAtCostAfterimage: 'The ward took root, and {they} gave up the ring off {their} hand to root it.',
+        criticalSuccessAfterimage: 'It anchored so hard the ground inside the line stayed dry when the rain came through at dawn.',
+        criticalFailureAfterimage: 'What the ward caught hold of pulled back, and {actor} knelt there a long while before letting go of it.',
+        nudges: [
+          {
+            // Shared generic pool — the `luck` family.
+            id: 'ward_camp.a_gap_in_the_wind',
+            name: 'A gap in the wind',
+            essenceCost: 1,
+            forecastDelta: 0.06,
+            imageTag: 'generic.luck',
+            fiction: 'The wind drops for as long as the kneeling takes, and picks up again after.',
+            effectLine: 'A small push. The work gets a quiet minute to happen in.',
+            bandProse: {
+              success: 'The wind held off, the anchor went down, and the gust that came after found the ward already set.',
+              near_miss: 'The quiet came and went too quickly, and {actor} was still reaching when the wind returned.',
+            },
+          },
+          {
+            id: 'ward_camp.give_it_a_name',
+            name: 'Give it a name',
+            sphere: 'spirit',
+            essenceCost: 2,
+            forecastDelta: 0.12,
+            imageTag: 'generic.oath',
+            fiction: '{actor} says a name over the line — a dead brother, a home hex, a debt owed. The circle takes it and holds.',
+            effectLine: 'Strong help. A named ward is harder to shift.',
+            bandProse: {
+              success_at_cost: 'The name held the ward down all night and sat in {their} mouth for three days after.',
+              failure: 'The name was spoken and the line did not answer to it.',
+            },
+          },
+          {
+            id: 'ward_camp.set_a_star_over_it',
+            name: 'Set a star over it',
+            sphere: 'light',
+            essenceCost: 2,
+            forecastDelta: 0.10,
+            imageTag: 'generic.light',
+            fiction: 'One star over the north edge stops wheeling with the rest and stands where it was put.',
+            effectLine: 'Good help. The ward has a mark above it to hang from.',
+            bandProse: {
+              failure: 'The star stood over the camp all night and the ward under it came apart regardless.',
+            },
+          },
+          {
+            id: 'ward_camp.let_it_outlast_dawn',
+            name: 'Let it outlast dawn',
+            sphere: 'time',
+            essenceCost: 2,
+            forecastDelta: 0.11,
+            imageTag: 'generic.time-slow',
+            fiction: 'The ward is set to fade on a longer clock than the night — first light comes and the line is still there.',
+            effectLine: 'Strong help. The work outlives the watch that made it.',
+            bandProse: {
+              critical_success: 'The ward stood through dawn, through the striking of the tents, and was still faintly warm underfoot at noon.',
+              failure: 'It was built to last past dawn. It did not last past the second watch.',
+            },
+          },
+          {
+            id: 'ward_camp.let_the_edges_blur',
+            name: 'Let the edges blur',
+            sphere: 'chaos',
+            essenceCost: 2,
+            forecastDelta: 0.09,
+            imageTag: 'generic.chaos',
+            fiction: 'The line stops being exactly where it is. Whatever wants to find its edge has to guess.',
+            effectLine: 'Good help against anything hunting for the seam.',
+            bandProse: {
+              near_miss: 'The edge blurred and held, and by morning nobody in camp could say where it had run.',
+              critical_failure: 'The edges blurred until the ward could not find its own line, and it came undone from the middle outward.',
+            },
+          },
+        ],
         onSuccess: {
-          narrative: 'The ward hums. Not strong, not lasting, but enough to turn away the small evils that creep by night.',
+          narrative: 'The ward takes hold and hums under the grass. Small and low and enough to turn what creeps in at night.',
           reputationDelta: 0.03,
         },
         onFailure: {
-          narrative: 'The anchor does not hold. The ward will fade before midnight, and {actor} knows it.',
+          narrative: 'The anchor slips free. The ward will be gone before midnight, and {actor} kneels there knowing it.',
           reputationDelta: -0.01,
         },
       },

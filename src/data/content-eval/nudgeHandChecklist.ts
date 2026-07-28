@@ -40,6 +40,7 @@ import {
   NUDGE_HAND_MIN,
   NUDGE_NAME_MAX_WORDS,
   NUDGE_OFF_REACH_MAX_DIFFICULTY,
+  OPEN_DRAW_ATTENTION_TIER,
   REACH_PURPOSE_MAX_WORDS,
 } from './nudgeAuthoringConstants';
 
@@ -196,17 +197,26 @@ export function checkNudgeHand(template: UnifiedActionTemplate): string[] {
     }
 
     // ─── Reachability (THR-821) ───────────────────────────────────
-    // The rule that decides whether the hand *does anything*. An off-reach step
-    // above this difficulty floors at PROBABILITY_FLOOR and stays floored
+    // The rule that decides whether the hand *does anything*. A step the drawing
+    // actor has no capability in floors at PROBABILITY_FLOOR and stays floored
     // through the whole hand: the player spends essence and the forecast word
-    // does not move. A step wanting to be steeper must be gated to actors who
-    // hold the reach — which this check cannot see, so it reports and the
-    // author justifies in a comment.
-    const templateReaches = new Set([template.reach, ...(template.steps ?? []).map(s => (s as ActionStep).reach)]);
-    const offReach = !templateReaches.has(step.reach);
-    if (offReach && step.difficulty > NUDGE_OFF_REACH_MAX_DIFFICULTY) {
+    // does not move. A step that wants to be steeper has to be authored for
+    // actors who plausibly hold the reach.
+    //
+    // The population is the open-draw templates. `background` is the attention
+    // tier for ambient content any mortal draws by being where it is — nobody
+    // selected for reach, so *every* step is off-reach for most of the roster
+    // and the ceiling binds across the board. A template above that tier has an
+    // author-chosen audience this function cannot see, so it defers.
+    //
+    // This predicate replaces one that could not fire (THR-838): it compared
+    // `step.reach` against a set built from `template.steps`, which always
+    // contains the step being iterated, so `offReach` was unconditionally false
+    // and the rule passed vacuously over every template ever checked.
+    if (template.intrinsicTier === OPEN_DRAW_ATTENTION_TIER
+      && step.difficulty > NUDGE_OFF_REACH_MAX_DIFFICULTY) {
       violations.push(
-        `${where}: off-reach step at difficulty ${step.difficulty}, over NUDGE_OFF_REACH_MAX_DIFFICULTY ${NUDGE_OFF_REACH_MAX_DIFFICULTY}`,
+        `${where}: open-draw step at difficulty ${step.difficulty}, over NUDGE_OFF_REACH_MAX_DIFFICULTY ${NUDGE_OFF_REACH_MAX_DIFFICULTY}`,
       );
     }
   }

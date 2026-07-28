@@ -18,9 +18,13 @@
 
 import { describe, it, expect } from 'vitest';
 import { UNIFIED_ACTION_TEMPLATES } from '../unified-action-templates';
-import type { UnifiedActionTemplate } from '../../types/unifiedAction';
+import type { ActionStep, UnifiedActionTemplate } from '../../types/unifiedAction';
 import { auditTemplate } from '../content-eval/nudgeAuditDetectors';
 import { checkNudgeHand, nudgeBearingSteps } from '../content-eval/nudgeHandChecklist';
+import {
+  NUDGE_OFF_REACH_MAX_DIFFICULTY,
+  OPEN_DRAW_ATTENTION_TIER,
+} from '../content-eval/nudgeAuthoringConstants';
 import { CORE_TRAIT_DEFINITIONS } from '../core-trait-content';
 
 /**
@@ -37,6 +41,9 @@ export const WS5_MIGRATED: readonly string[] = [
   'encounter.rest_and_reflect',
   'encounter.scout_the_perimeter',
   'encounter.tend_to_wounds',
+  // Batch 1 — camp maintenance, the same night from the other side (THR-838, 2026-07-28)
+  'encounter.ward_the_camp',
+  'encounter.sharpen_blades',
 ];
 
 const byId = new Map<string, UnifiedActionTemplate>(
@@ -118,5 +125,76 @@ describe('WS5 nudge migration — registered templates', () => {
         }
       }
     });
+  });
+});
+
+/**
+ * Falsification of the reachability guard itself (THR-838).
+ *
+ * The guard this pins previously compared `step.reach` against a set built from
+ * `template.steps` — which always contains the step being iterated, so the
+ * off-reach condition was unconditionally false and the rule passed vacuously
+ * over every template ever checked. Every green run above was, for that one
+ * rule, a probe matching nothing.
+ *
+ * Repairing a vacuous check by swapping its predicate earns exactly one thing:
+ * an obligation to show the new predicate can fail. These two cases do that —
+ * the guard fires on an open-draw step above the ceiling, and stays quiet on
+ * the identical step at a tier whose audience the checklist cannot see.
+ */
+describe('WS5 nudge migration — reachability guard is live', () => {
+  const stepAtDifficulty = (difficulty: number): ActionStep => ({
+    reach: 'iron',
+    duration: { min: 1, max: 1 },
+    difficulty,
+    onSuccess: [],
+    onFailure: [],
+    failBehavior: 'fail_action',
+    narrativeTemplate: 'n',
+    successAfterimage: 's',
+    failureAfterimage: 'f',
+    successAtCostAfterimage: 'sac',
+    criticalSuccessAfterimage: 'cs',
+    criticalFailureAfterimage: 'cf',
+    purposeLine: 'do the thing',
+    factorLines: [
+      { text: 'for', polarity: 'for' },
+      { text: 'against', polarity: 'against' },
+    ],
+    nudges: [
+      { id: 'a', name: 'a', essenceCost: 1, forecastDelta: 0.05, fiction: 'a', effectLine: 'a', bandProse: { success: 's', near_miss: 'n' } },
+      { id: 'b', name: 'b', sphere: 'life', essenceCost: 1, forecastDelta: 0.05, fiction: 'b', effectLine: 'b', bandProse: { failure: 'f' } },
+      { id: 'c', name: 'c', sphere: 'time', essenceCost: 1, forecastDelta: 0.05, fiction: 'c', effectLine: 'c', bandProse: { critical_success: 'cs', failure: 'f' } },
+      { id: 'd', name: 'd', sphere: 'mind', essenceCost: 1, forecastDelta: 0.05, fiction: 'd', effectLine: 'd', bandProse: { critical_failure: 'cf' } },
+      { id: 'e', name: 'e', sphere: 'order', essenceCost: 1, forecastDelta: 0.05, fiction: 'e', effectLine: 'e', bandProse: { success_at_cost: 'sac', failure: 'f' } },
+    ],
+  } as unknown as ActionStep);
+
+  const templateAt = (
+    intrinsicTier: string,
+    difficulty: number,
+  ): UnifiedActionTemplate => ({
+    id: 'probe.reachability',
+    reach: 'iron',
+    intrinsicTier,
+    steps: [stepAtDifficulty(difficulty)],
+  } as unknown as UnifiedActionTemplate);
+
+  const OVER = NUDGE_OFF_REACH_MAX_DIFFICULTY + 0.1;
+  const UNDER = NUDGE_OFF_REACH_MAX_DIFFICULTY - 0.1;
+
+  it('fires on an open-draw step above the ceiling', () => {
+    const violations = checkNudgeHand(templateAt(OPEN_DRAW_ATTENTION_TIER, OVER));
+    expect(violations.some(v => v.includes('NUDGE_OFF_REACH_MAX_DIFFICULTY'))).toBe(true);
+  });
+
+  it('stays quiet on the same step below the ceiling', () => {
+    const violations = checkNudgeHand(templateAt(OPEN_DRAW_ATTENTION_TIER, UNDER));
+    expect(violations.some(v => v.includes('NUDGE_OFF_REACH_MAX_DIFFICULTY'))).toBe(false);
+  });
+
+  it('defers above the open-draw tier, where the audience is author-chosen', () => {
+    const violations = checkNudgeHand(templateAt('notable', OVER));
+    expect(violations.some(v => v.includes('NUDGE_OFF_REACH_MAX_DIFFICULTY'))).toBe(false);
   });
 });
