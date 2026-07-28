@@ -3651,6 +3651,19 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "Scope the check to **runtime** specifiers only: skip a match whose `import`/`export` keyword is immediately followed by `type`. And scope the *file* set to the graph reachable from an actual strip-types entrypoint (discovered from `package.json` scripts + `.github/workflows/*.yml` `run:` lines), never all of `scripts/` — esbuild-bundled scripts resolve extensionless specifiers fine and there are dozens, so an unscoped guard is pure noise. Both rules are in `src/testing/__tests__/scriptImportExtensions.lint.test.ts`; falsify any such guard by reverting the fix it was written for and confirming it goes red.",
     "session": "THR-804 stale-claim-sweep resolver fix, hourly `tb-opus-pickup`"
+  },
+  {
+    "num": "267",
+    "id": 267,
+    "count": 1,
+    "date": "2026-07-28",
+    "category": "sandbox",
+    "description": "**`git -C <home-tree> worktree add <relative-path>` resolves the path against the *home tree*, so the \"isolated\" worktree is created INSIDE the read-only mirror the THR-672 rule exists to keep untouched.** Creating this run's session worktree with `git -C TheFantasyWorldSimulator worktree add -b ops/... .tb-groom-20260728 origin/main` — from `Dev/Projects/` as cwd, intending a sibling directory — silently produced `TheFantasyWorldSimulator/.tb-groom-20260728`, a full 4505-file checkout inside the home tree's working copy. `-C` changes the process's directory before the path argument is interpreted, which is obvious in hindsight and invisible in the success output: the command prints only `HEAD is now at <sha>`, naming no path.",
+    "consequence": "A stray checkout inside the read-only mirror is exactly the shape of the THR-671/797 family — it manufactures untracked noise under a tree `threadbare-autosync.ps1` owns and, had it been left, would sit inside the reaper's blast radius. Caught within a minute here only because the follow-up `git -C .tb-groom-20260728` failed with `cannot change to ...: No such file or directory`.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "**Pass an absolute path to `worktree add`, always** — `git -C \"$HOME_TREE\" worktree add -b <branch> /c/Users/chris/Dev/Projects/.tb-groom-<date> origin/main`. Relative paths are only safe when cwd *is* the repo, which `-C` guarantees it is not. **Verify before writing anything:** `git -C <new-path> rev-parse --show-toplevel` must echo the path you intended, not a path under the home tree. Cleanup if it happens: `git -C \"$HOME_TREE\" worktree remove <path> --force && git -C \"$HOME_TREE\" branch -D <branch>`, then re-create with an absolute path — no home-tree state op is involved, so the THR-672 prohibition is not breached by the repair.",
+    "session": "`daily-backlog-grooming`, 2026-07-28 report run"
   }
 ];
 // ── End data ──
