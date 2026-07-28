@@ -28,6 +28,9 @@ import { GuildQuestPanel } from './GuildQuestPanel';
 import type { InitiativeProgress } from '../../types/initiative';
 import type { ResourceInstance, StockTier } from '../../types/resource';
 import { getResourceClass, getResourceTierProse } from '../../data/resource-classes';
+import { getSustenanceProse } from '../../data/essence-sources';
+import { readEssenceSource } from '../../engine/essenceSources';
+import { scoreSphereAffinity, sustenancePolarity } from '../../engine/essenceEconomyBridge';
 import { renderProseWithIPK } from '../ProseKeyword';
 
 interface LocationViewProps {
@@ -791,10 +794,30 @@ const SublocationDetailView = memo(function SublocationDetailView({
 // ──── Sub-component: Livelihood line (THR-615) ────
 // Prose-first read of the location's resource stock tiers. No numbers — a
 // granary described as full or empty, with Famine/Glut as IPK keywords.
+//
+// When the location also hosts a *discovered*, sphere-typed essence source, the
+// line gains a sustenance clause (THR-618, the essence bridge): what the land is
+// doing to the holy thing standing in it. Economy and divinity read in one breath.
+// Undiscovered sources stay silent here — the clause is fog-consistent.
 const LivelihoodLine = memo(function LivelihoodLine({ location }: { location: GraphNode }) {
   const resources = ((location.properties ?? {}).resources ?? {}) as Record<string, ResourceInstance>;
   const entries = Object.entries(resources).filter(([, r]) => r && typeof r.quantity === 'number');
   if (entries.length === 0) return null;
+
+  // Mirrors `computeSanctitySustenance`'s guards: typed, discovered, not desecrated,
+  // and the land must actually grow something of the source's sphere — otherwise
+  // there is no bargain to describe and the clause stays off.
+  const source = readEssenceSource(location.properties);
+  let sustenance: string | null = null;
+  if (source?.discoveredBy && source.sphereAffinity && !source.desecrated) {
+    const { affinityScore, matchedResourceIds } = scoreSphereAffinity(
+      resources,
+      source.sphereAffinity,
+    );
+    if (matchedResourceIds.length > 0) {
+      sustenance = getSustenanceProse(source.sphereAffinity, sustenancePolarity(affinityScore));
+    }
+  }
 
   const rank = (t: StockTier | undefined) => (t === 'scarce' ? 0 : t === 'surplus' ? 1 : 2);
   const notable = entries
@@ -818,6 +841,8 @@ const LivelihoodLine = memo(function LivelihoodLine({ location }: { location: Gr
     const dominant = entries.sort((a, b) => (b[1].quantity ?? 0) - (a[1].quantity ?? 0))[0];
     text = getResourceTierProse(dominant[0], 'adequate');
   }
+
+  if (sustenance) text = `${text} ${sustenance}`;
 
   return (
     <div className="mx-6 mt-3" style={{ maxWidth: '820px' }}>

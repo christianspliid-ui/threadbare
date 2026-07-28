@@ -247,13 +247,17 @@ if (import.meta.env.DEV) {
     // ── Essence Sources — Divine Economy (THR-611) ─────────────────────────
     /**
      * List the ascendant's controlled essence sources with their tier, kind,
-     * sphere typing, and private sanctity — plus the typed per-sphere income
+     * sphere typing, and private sanctity — plus each source's **sustenance** from
+     * the mortal economy (the essence bridge, THR-618: which of the host location's
+     * goods share the source's sphere, the resulting signed affinity score, and the
+     * sanctity drift it will apply next tick) and the typed per-sphere income
      * breakdown. Read-only; returns { sources, sourceIncome } or { error }.
      */
     getEssenceSources: async () => {
       const state = _gameStateProvider?.();
       if (!state) return { error: 'no live game state' };
       const { readEssenceSource, computeSourceIncome } = await import('./engine/essenceSources');
+      const { computeSanctitySustenance } = await import('./engine/essenceEconomyBridge');
       const graph = state.graph;
       const ascId = state.ascendantId;
       const sources = graph
@@ -262,6 +266,7 @@ if (import.meta.env.DEV) {
           const host = graph.getNode(edge.target);
           const src = readEssenceSource(host?.properties);
           if (!host || !src) return null;
+          const sustenance = computeSanctitySustenance(graph, host.id, src);
           return {
             hostId: host.id,
             hostName: host.name ?? host.id,
@@ -271,6 +276,14 @@ if (import.meta.env.DEV) {
             sanctity: src.sanctity,
             contestedBy: src.contestedBy ?? null,
             desecrated: !!src.desecrated,
+            sustenance: {
+              drift: sustenance.drift,
+              affinityScore: sustenance.affinityScore,
+              polarity: sustenance.polarity,
+              economicHostId: sustenance.economicHostId ?? null,
+              matchedResourceIds: sustenance.matchedResourceIds,
+              reason: sustenance.reason ?? null,
+            },
           };
         })
         .filter((x): x is NonNullable<typeof x> => x !== null);

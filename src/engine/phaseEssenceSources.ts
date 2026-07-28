@@ -4,9 +4,10 @@
  * Runs immediately BEFORE phaseEssence so derived tiers are fresh when income is
  * computed. Per tick it: (1) forward-migrates any newly-controlled legacy place
  * of power into the source model (idempotent, income-neutral), (2) recomputes the
- * derived tier for every controlled source and applies the contested-sanctity
- * drain, and (3) emits ONE aggregate trace (never one-per-source — a per-source
- * burst would flood the 2000-entry ring buffer).
+ * derived tier for every controlled source, applying both the essence bridge's
+ * economic sanctity drift (THR-618 — the land nurtures or withers what stands on
+ * it) and the contested-sanctity drain, and (3) emits ONE aggregate trace (never
+ * one-per-source — a per-source burst would flood the 2000-entry ring buffer).
  *
  * NFP compliance:
  *   #1 Tunability: constants from data/essence-sources.ts
@@ -33,10 +34,8 @@ export function phaseEssenceSources(state: GameState): Partial<GameState> {
     state.ascendantId,
     state.tick,
   );
-  const { sourceCount, tierChanges, contestedCount } = recomputeControlledSourceTiers(
-    state.graph,
-    state.ascendantId,
-  );
+  const { sourceCount, tierChanges, contestedCount, econNurtured, econWithered } =
+    recomputeControlledSourceTiers(state.graph, state.ascendantId);
 
   // Only emit when there is something to say — keeps the buffer lean on the
   // common no-source path (most early-game ticks).
@@ -48,11 +47,15 @@ export function phaseEssenceSources(state: GameState): Partial<GameState> {
       migratedThisTick,
       tierChanges,
       contestedCount,
+      econNurtured,
+      econWithered,
       summary:
         `essence sources: ${sourceCount} held` +
         (migratedThisTick > 0 ? `, +${migratedThisTick} migrated` : '') +
         (tierChanges > 0 ? `, ${tierChanges} tier change(s)` : '') +
-        (contestedCount > 0 ? `, ${contestedCount} contested` : ''),
+        (contestedCount > 0 ? `, ${contestedCount} contested` : '') +
+        (econNurtured > 0 ? `, ${econNurtured} nurtured by the land` : '') +
+        (econWithered > 0 ? `, ${econWithered} withering` : ''),
     };
     emitTrace(trace as unknown as Parameters<typeof emitTrace>[0]);
   }

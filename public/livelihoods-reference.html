@@ -243,8 +243,23 @@
       <div class="card blue"><h4>Arcane · Time / Energy</h4><p>Crystal, star-metal, relics, sunken gold. Rarest and most valuable; barely consumed.</p></div>
     </div>
     <div class="callout green">
-      <div class="callout-title">Honest scope — this is Phase 1</div>
-      <p>Right now, the resource web is <em>activated and felt</em>: livelihoods read as prose, staples swing into Famine and Glut, your threaded mortals tug when their home turns, and the balance feeds prosperity. Trade caravans carrying named cargo, banditry on the iron road, factions seizing a resource by the throat, and divine verbs to bless a harvest or blight a field are coming — but they are not here yet. This page describes what lives today.</p>
+      <div class="callout-title">Honest scope</div>
+      <p>The resource web is <em>activated and felt</em>: livelihoods read as prose, staples swing into Famine and Glut, your threaded mortals tug when their home turns, the balance feeds prosperity, and the goods of a Sphere now sustain the holy ground that shares it. The five divine economic verbs are in your hand. Trade caravans carrying named cargo, banditry on the iron road, and factions seizing a resource by the throat are coming — but they are not here yet. This page describes what lives today.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>The land feeds the holy ground<span class="lead">A shrine is not fed by faith alone. What a place grows of its Sphere sustains the source of power standing in it — and when the land turns thin, the holy ground thins with it.</span></h2>
+    <p>Once you have found and claimed a <span class="term">source of essence</span> and given it a Sphere, it stops being independent of the land around it. Each turn, the source reads the goods of its own Sphere at the place it stands: a shrine to <span class="term">Spirit</span> looks to the pearls of its valley, a nexus of <span class="term">Matter</span> to the ore and stone beneath it, a <span class="term">Life</span> site to the grain and grazing around it. Goods running to surplus nurture the source. Goods gone scarce wither it. Where a place grows nothing of that Sphere, the bargain simply does not exist and nothing moves.</p>
+    <p>You see this in the same Livelihood line you already read — one more sentence, saying what the land is doing to the holy thing standing in it. No numbers, and nothing at all until you have <em>found</em> the source; an undiscovered source keeps its silence like everything else under the fog.</p>
+    <div class="card-grid">
+      <div class="card green"><h4>The land nurtures</h4><p>Goods of the source's Sphere run to surplus. Sanctity climbs, slowly.</p></div>
+      <div class="card"><h4>The land is even</h4><p>The goods hold steady, or the place grows nothing of that Sphere. Nothing moves.</p></div>
+      <div class="card purple"><h4>The land withers</h4><p>Goods of the Sphere have gone scarce. Sanctity falls — as far as zero, if you let it.</p></div>
+    </div>
+    <div class="callout">
+      <div class="callout-title">The land readies; only you can make it flower</div>
+      <p>A generous valley will carry a source part of the way and then stop, short of <span class="term">Flowering</span>. Getting it the rest of the way is your work — the Sanctify verb, cast by your own hand. Ruin runs the other way with no such courtesy: a starving land will empty a source completely, and a rival bleeding it at the same time takes both cuts in the same turn. The world gives less than it can take away, which is exactly why tending and defending a source is worth your attention.</p>
     </div>
   </section>
 
@@ -295,9 +310,18 @@
         <li>When a bonded, non-dormant mortal's home settlement holds a <em>staple</em> in <code>scarce</code> or <code>surplus</code>, the phase pushes a <code>ThreadTug</code> (reach <code>gold</code>; threat <code>hard</code> for Famine, <code>moderate</code> for Glut) onto <code>state.activeThreadTugs</code>, riding the existing attention machinery (<code>phaseAttention</code> preserves it; <code>useAgentInteraction</code> attends it — it resolves by <code>agentId</code>, so no backing encounter is needed). Residents are grouped by their home <em>resourced</em> location, walking sublocation → parent so a mortal in a settlement's inn still counts. State-based and deduped by a <code>${agentId}::${resourceId}</code> key carried on the tug, so a persistent famine tugs once, not every tick.</li>
       </ul>
 
+      <h3>The essence bridge — economy → divine economy <span class="flag impl">IMPL</span></h3>
+      <ul>
+        <li><strong>What it is.</strong> The P4 coupling promised by the mortal-economy plan ("temple economies; bridges to essence") and left open by the divine-economy plan. <code>essenceEconomyBridge.ts</code> derives a signed <em>sanctity drift</em> per controlled source per tick: resolve the host to its economic location (a sublocation walks one <code>parentLocationId</code> hop), take the goods whose <code>primarySphere</code> matches the source's <code>sphereAffinity</code>, score their stock tiers (<code>surplus +1 / adequate 0 / scarce −1</code>) weighted by class <code>baseValue</code>, and multiply by <code>ECON_SANCTITY_DRIFT_PER_TICK</code>. Applied inside the existing <code>recomputeControlledSourceTiers</code> walk — one pass, no new phase, no second income channel.</li>
+        <li><strong>The two asymmetries</strong> are the design, not an implementation detail. Upward drift stops at <code>ECON_SANCTITY_NURTURE_CEILING</code> (0.5), deliberately below <code>SANCTITY_FLOWERING_THRESHOLD</code> (0.6): the land readies a source, only a Build/Sanctify cast flowers it. Downward drift has no floor above zero, and stacks with the contested drain in the same tick. Both are asserted as contract tests in <code>essenceEconomyBridge.test.ts</code>.</li>
+        <li><strong>Untyped sources are excluded by construction</strong> — a migrated, unbuilt place of power has no <code>sphereAffinity</code>, so it draws no drift and stays on the legacy alignment-distributed income term. A save that has done nothing keeps exactly its old income (NFP #6); the contract test pins it over 100 ticks on a doubly-surplus location.</li>
+        <li><strong>Inspection.</strong> The aggregate <code>essence_source_phase</code> trace gains <code>econNurtured</code>/<code>econWithered</code> counts (still one trace per tick, never per source). <code>__DEBUG.getEssenceSources()</code> returns a per-source <code>sustenance</code> block — matched goods, affinity score, next-tick drift, and a <code>reason</code> naming why an inert source is inert (<code>untyped</code> / <code>no-host</code> / <code>no-matching-goods</code> / <code>ceiling</code>), so drawing-nothing is distinguishable from drawing-zero.</li>
+      </ul>
+
       <h3>UI &amp; inspection <span class="flag impl">IMPL</span></h3>
       <ul>
-        <li><strong>Livelihood line</strong> — <code>LocationView.tsx</code> renders a prose-only Livelihood section from the location's resource tiers (scarce/surplus first, else the dominant resource's steady prose), with <strong>Famine</strong>/<strong>Glut</strong> as interactive in-prose keywords (<code>renderProseWithIPK</code> extended with an economic-keyword branch; tooltips in <code>ECONOMY_KEYWORD_TOOLTIPS</code>).</li>
+        <li><strong>Livelihood line</strong> — <code>LocationView.tsx</code> renders a prose-only Livelihood section from the location's resource tiers (scarce/surplus first, else the dominant resource's steady prose), with <strong>Famine</strong>/<strong>Glut</strong> as interactive in-prose keywords (<code>renderProseWithIPK</code> extended with an economic-keyword branch; tooltips in <code>ECONOMY_KEYWORD_TOOLTIPS</code>). When the location hosts a <em>discovered</em>, sphere-typed, non-desecrated source <em>and</em> actually grows goods of that Sphere, one sustenance sentence is appended from <code>SUSTENANCE_PROSE</code> (per-Sphere × nurturing/steady/withering). The guards mirror the engine's exactly, so the sentence never claims a bargain the drift is not making.</li>
+        <li><strong>DebugPanel Essence Sources tab</strong> — <code>EssenceSourcesDebugTab.tsx</code> gains a per-source <code>land:</code> line: polarity, the matched goods, and the drift (or the naming of why it is inert), colour-coded by polarity.</li>
         <li><strong>DebugPanel Economy tab</strong> — <code>EconomyDebugTab.tsx</code> lists the tier distribution and every resourced location's per-resource tiers, aggregate balance, and monopoly state, sorted most-scarce first (numbers shown here, debug-only).</li>
         <li><strong>Traces</strong> — <code>resource_stock_tier_change</code> per crossing (with the driving balance and whether a tug fired); <code>prosperity_tick</code> now carries <code>resourceBalance</code>/<code>resourceBalanceBonus</code>. Inspect headlessly via the CLI <code>eval</code> command.</li>
       </ul>
@@ -314,12 +338,16 @@
           <tr><td>DEMAND_PROSPERITY_WEIGHT</td><td>0.35</td><td>Demand contribution from prosperity/100 · <code>resource-classes.ts</code></td></tr>
           <tr><td>DEMAND_SUBLOCATION_WEIGHT</td><td>0.30</td><td>Demand contribution from sublocation density · <code>resource-classes.ts</code></td></tr>
           <tr><td>CHRONICLE_MIN_BASE_VALUE</td><td>0.6</td><td>Min base value for a Famine/Glut chronicle entry · <code>resource-classes.ts</code></td></tr>
+          <tr><td>ECON_SANCTITY_DRIFT_PER_TICK</td><td>0.01</td><td>Sanctity drift at a full surplus/scarcity match · <code>essence-sources.ts</code></td></tr>
+          <tr><td>ECON_SANCTITY_NURTURE_CEILING</td><td>0.5</td><td>Sanctity the land alone cannot exceed (below Flowering 0.6) · <code>essence-sources.ts</code></td></tr>
+          <tr><td>ECON_STOCK_TIER_SCORE</td><td>−1 / 0 / +1</td><td>Signed tier contribution (scarce/adequate/surplus) · <code>essence-sources.ts</code></td></tr>
         </tbody>
       </table>
 
       <h3>Canon &amp; terminology</h3>
       <ul>
         <li>Systems spec: <code>Docs/plans/2026-07-04-mortal-economy-resource-web.md</code>. Phase/source: <code>phases/resourceStockTiers.ts</code>, <code>resourceEconomy.ts</code>, <code>resource-classes.ts</code>, <code>phaseProsperity.ts</code> (balance term), <code>economicChronicle.ts</code> + <code>economic-chronicle-content.ts</code> (Famine/Glut), <code>LocationView.tsx</code> (Livelihood line), <code>EconomyDebugTab.tsx</code>, <code>ProseKeyword.tsx</code> (economic IPK).</li>
+        <li>Essence bridge (P4): <code>Docs/plans/2026-07-28-essence-bridge-mortal-to-divine.md</code>; source <code>essenceEconomyBridge.ts</code>, <code>essenceSources.ts</code> + <code>phaseEssenceSources.ts</code> (application point), <code>data/essence-sources.ts</code> (constants + sustenance prose). The divine side lives on <a href="essence-control-reference.html">Essence, Control &amp; the Divine Economy</a>; its systems spec is <code>Docs/plans/2026-07-05-divine-economy-essence-sources.md</code>.</li>
         <li>UL: no economic shard yet — <em>Livelihood</em>, <em>Stock Tier</em>, <em>Famine</em>, <em>Glut</em> are code-authoritative (surface a <code>UL-proposal</code> to close the gap). Related terms live in <code>Docs/ubiquitous-language/Graph.md</code>.</li>
         <li>Adjacent Manual pages: <a href="settlements-economy-reference.html">Settlements, Prosperity &amp; Trade</a> (prosperity, trade routes, carrying capacity), <a href="world-map-reference.html">The World: Hexes, Terrain &amp; Sight</a> (terrain that seeds resources), <a href="threads-court-reference.html">Threads, the Court &amp; The First</a> (the thread the livelihood tug pulls on), <a href="cosmology-reference.html">Reaches, Spheres &amp; Quintessence</a> (the Spheres resources lean toward). Game title in player copy: <strong>Threadbearer</strong>.</li>
       </ul>
