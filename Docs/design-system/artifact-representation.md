@@ -45,3 +45,19 @@ THR-639 (Action Unlock Reveal) is the first surface built to this pattern end-to
 
 - **Visual + identity:** `AscendantBeatModal` renders the real focused `ActionCard` face (art via `ACTION_ART`, spell name, type line) for every granted action — via the display-only `templateToPreviewSlot` adapter, so `ActionCard` is reused unmodified.
 - **Information:** each focused card carries a plain-prose **effects line** (`src/data/actionEffectsProse.ts`) — one player-facing sentence saying what the action does, what it touches, and what it costs. The Action Drawer's focused card shares the same line (one component, both surfaces).
+
+THR-799 (Ceremonial reveal surface) is the second, and generalises the pattern into
+reusable primitives. **No registry row changed** — traits in particular stay
+inline-only, with no independent card. One row per subject the surface can carry:
+
+| Subject | Canonical visual (registry / resolver) | Info source |
+|---|---|---|
+| Action (beat-unlock reveal) | the real focused `ActionCard` face — `ACTION_ART` via `templateToPreviewSlot`, `ActionCard` reused unmodified | effects line, `src/data/actionEffectsProse.ts` |
+| Smaller event (EventPopup ceremonial path) | `SphereIcon` from `PopupItem.sphere` inside `Medallion` — the sphere *is* the event's canonical visual identity; no per-event art registry exists | `PopupItem.body` prose |
+| Attachment (`AttachmentDetailView`) | attachment art when present, else the codex glyph (registry row "Possession / Condition") inside `Medallion` | existing attachment prose fields; `reveal-content.ts` fallback only when absent |
+| Trait (inline, `NpcDetailView`) | inline `Medallion sm` chip — **inline only**, per the "Trait / Ambition / Relationship" row | existing profile-section trait prose; `reveal-content.ts` fallback |
+
+**`Medallion` adds no second art-resolution path.** Where a subject resolves through
+`entityVisualResolver` / `EntityVisual` (THR-637), Medallion's child *is* that resolved
+visual, clipped to a disc. Its `✦` default is the tail of the existing THR-637 fallback
+chain, not a parallel one.

@@ -6,6 +6,28 @@
 
 ---
 
+## Ceremonial reveal surface (THR-799)
+
+Pure-UI feature — **no engine module, no orchestrator phase, no `GameState` field, no new trace.** Recorded here anyway because the checklist's job is to prove a surface is reachable, and three of these are new shared primitives that a later plan will want to find.
+
+| Module | Orchestrator phase | UI component | GameState field | Trace emitted | Debug visibility |
+|--------|-------------------|-------------|-----------------|---------------|-----------------|
+| `shared/Medallion` | N/A (pure UI) | self + StyleGuide `?view=styleguide#section-medallion` | none | none | StyleGuide section |
+| `shared/FlavorQuote` | N/A (pure UI) | self + StyleGuide `#section-flavorquote` | none | none | StyleGuide section |
+| `shared/RevealCard` | N/A (pure UI) | self + StyleGuide `#section-revealcard` | none | none | StyleGuide section |
+| `data/reveal-content.ts` | N/A (static content) | RevealCard consumers | none | none | StyleGuide sample data + category-title list |
+| EventPopup ceremonial path | N/A | `EventPopup` | existing `PopupItem` queue (unchanged) | existing notification traces | `isCeremonialPopup` exported for assertion |
+
+**Reachability verified in-browser, not asserted:** every primitive renders at `?view=styleguide` (registered in `SECTIONS`, so the left nav links to it), and all four adopted surfaces were driven at 1920×1080 — the beat surface through the *real* GameView via `__DEBUG.fireBeat('beat.spine.opening')`, not an overlay.
+
+**Interrupt registration is unchanged and re-proved.** `GameView.tsx` is untouched by this ticket (`git diff --stat origin/main -- GameView.tsx` is empty), so `interruptModalOpen` and `getDebugOpenModals` still gate on `pendingBeat && beatEntered`. Confirmed live: `await window.__DEBUG.getOpenModals()` → `["JourneyVignetteModal","AscendantBeatModal"]` with the ceremonial layout on screen. **Note `getOpenModals()` returns a Promise** — reading it without `await` yields `{}`, which looks exactly like "no modals open" and is a vacuous pass.
+
+**No second art-resolution path.** `Medallion` frames whatever the existing resolver produced (`SphereIcon`, THR-637 `EntityVisual`, codex glyph, `<img>`); its `✦` default is the tail of the THR-637 fallback chain. No interface-map row changed — every touched surface reads the same fields it read before.
+
+**Deliberate non-wiring, and the dead shape it leaves:** no reveal *triggers* were added (plan instruction). Two of the four kinds the tier was designed for — `trait` and `attachment` — have authored ceremony lines and fallback prose in `reveal-content.ts` but **no emitting event**, so they cannot present ceremonially at all. Tracked as THR-833; do not treat those two `REVEAL_CATEGORY_TITLES` rows as reachable content until it lands.
+
+---
+
 ## Faction member work — off-screen guild work for ambient members (THR-815)
 
 | Surface | Wiring |

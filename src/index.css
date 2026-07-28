@@ -161,6 +161,11 @@
     --space-5: 20px;
     --space-6: 24px;
     --space-8: 32px;
+
+    /* Ceremonial rhythm (THR-799) — vertical gap between RevealCard zones.
+       Deliberately its own token, not --space-5: ceremonial surfaces are
+       retuned as a group, independent of the general spacing grid. */
+    --space-ceremonial: 20px;
   }
 
   /* ── Responsive topbar compacting ─────────────────────────── */
@@ -441,6 +446,29 @@
     font-style: normal;
     letter-spacing: 0.08em;
     text-transform: uppercase;
+  }
+
+  /* ── Ceremonial reveal surface (THR-799) ──────────────────────
+     Presentation tier between toast and full modal. Two utilities:
+     a recessed well and the double frame. Both are additive — no
+     existing rule is modified, and .quote-block stays as it is. */
+
+  /* Recessed panel — the third depth level (frame > card body > well). */
+  .inset-well {
+    background: rgba(10, 10, 14, 0.55);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--panel-radius);
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.4);
+  }
+
+  /* Double frame. The outer border is dim-gold *structure*, not emphasis —
+     the hero medallion ring is the single bright-gold element on a ceremonial
+     surface (gold budget, THR-799 § UI pillar). The inner hairline is drawn
+     with outline + negative offset so it needs no extra element. */
+  .frame-ceremonial {
+    border: 1px solid var(--border-gold);
+    outline: 1px solid var(--border-subtle);
+    outline-offset: -4px;
   }
 
   /* Card with gold top-edge accent (LoL character card style) */

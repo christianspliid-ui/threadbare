@@ -24,6 +24,7 @@
 
 import { memo, useMemo } from 'react';
 import { Modal } from '../shared/Modal';
+import { RevealCard } from '../shared/RevealCard';
 import { ActionCard } from './ActionCard';
 import type { WheelSlot } from '../../engine/wheel';
 import type { PendingBeat, BeatKind } from '../../types/ascendantBeat';
@@ -264,13 +265,8 @@ function UnlockCardRow({
 
 // ─── Styles ─────────────────────────────────────────────────────────
 
-const EYEBROW_STYLE: React.CSSProperties = {
-  fontFamily: 'var(--font-display)',
-  fontSize: 'var(--text-xs)',
-  letterSpacing: '0.12em',
-  textTransform: 'uppercase',
-  color: 'var(--accent-gold)',
-};
+// EYEBROW_STYLE was retired in THR-799 — `RevealCard.Title` now carries the
+// category line, including its letterspaced display caps and flanking rules.
 
 const PRIMARY_BUTTON_STYLE: React.CSSProperties = {
   background: 'var(--accent-gold)',
@@ -315,67 +311,56 @@ export const AscendantBeatModal = memo(function AscendantBeatModal({
   const maxWidth = grants.length > 0 ? unlockRowMaxWidth(grants.length) : 600;
 
   return (
-    <Modal open={open} onClose={handleClose} maxWidth={maxWidth} aria-label={`Ascendant beat: ${title}`}>
-      <Modal.Header>
+    // THR-799: this surface adopts the ceremonial *zone layout* via RevealCard.Frame,
+    // not a second RevealCard modal — it is already a Modal, and nesting one would
+    // double-portal and stack two backdrops. `.frame-ceremonial` rides on the panel
+    // through Modal's panelClassName, so the double frame comes from the same place
+    // a standalone RevealCard gets it.
+    <Modal
+      open={open}
+      onClose={handleClose}
+      maxWidth={maxWidth}
+      aria-label={`Ascendant beat: ${title}`}
+      panelClassName="frame-ceremonial"
+    >
+      {/* Zones scroll; the resolve button is pinned below so a tall card row can
+          never push it past the panel edge. */}
+      <div style={{ overflowY: 'auto', flex: 1, minHeight: 0 }}>
+        <RevealCard.Frame>
+          <RevealCard.Title>{presentation.eyebrow}</RevealCard.Title>
+          <RevealCard.Banner>{title}</RevealCard.Banner>
+
+          {/* Narrative before mechanics — the beat's prose leads, the cards follow. */}
+          <RevealCard.Quote>{prose}</RevealCard.Quote>
+
+          {isSelection ? (
+            // Selection beat: real focused cards, clickable — choosing a card resolves it.
+            <UnlockCardRow actionIds={grants} interactive onPick={onResolve} />
+          ) : (
+            // Non-selection beat: real focused cards as a pure reveal; the button resolves.
+            grants.length > 0 && <UnlockCardRow actionIds={grants} interactive={false} />
+          )}
+        </RevealCard.Frame>
+      </div>
+      {!isSelection && (
         <div
           style={{
+            flexShrink: 0,
             display: 'flex',
-            flexDirection: 'column',
-            gap: 'var(--space-1)',
-            alignItems: 'center',
-            textAlign: 'center',
-            padding: 'var(--space-2) 0',
-            width: '100%',
+            justifyContent: 'center',
+            padding: 'var(--space-ceremonial)',
+            paddingTop: 0,
           }}
         >
-          <span style={EYEBROW_STYLE}>{presentation.eyebrow}</span>
-          <h2
-            style={{
-              fontFamily: 'var(--font-display)',
-              fontSize: 'var(--text-lg)',
-              color: 'var(--text-primary)',
-              margin: 0,
-            }}
+          <button
+            type="button"
+            onClick={() => onResolve()}
+            style={PRIMARY_BUTTON_STYLE}
+            data-testid="beat-resolve-button"
           >
-            {title}
-          </h2>
+            {presentation.cta}
+          </button>
         </div>
-      </Modal.Header>
-      <Modal.Body>
-        <p
-          style={{
-            fontSize: 'var(--text-sm)',
-            color: 'var(--text-secondary)',
-            lineHeight: 1.6,
-            fontStyle: 'italic',
-            textAlign: 'center',
-            margin: '0 0 var(--space-4)',
-          }}
-        >
-          {prose}
-        </p>
-
-        {isSelection ? (
-          // Selection beat: real focused cards, clickable — choosing a card resolves it.
-          <UnlockCardRow actionIds={grants} interactive onPick={onResolve} />
-        ) : (
-          // Non-selection beat: real focused cards as a pure reveal; the footer button resolves.
-          grants.length > 0 && <UnlockCardRow actionIds={grants} interactive={false} />
-        )}
-      </Modal.Body>
-      {!isSelection && (
-        <Modal.Footer>
-          <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-            <button
-              type="button"
-              onClick={() => onResolve()}
-              style={PRIMARY_BUTTON_STYLE}
-              data-testid="beat-resolve-button"
-            >
-              {presentation.cta}
-            </button>
-          </div>
-        </Modal.Footer>
       )}
     </Modal>
   );
