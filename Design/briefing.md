@@ -1,40 +1,52 @@
 # Briefing
 
-**Generated:** 2026-07-28 17:54 local (2026-07-28 15:54 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-07-28 18:57 local (2026-07-28 16:57 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
 ## Needs Christian
 
-**Nothing needs you right now.** No decision is waiting, your folder is healthy, the live site is current, and every routine is running on time.
+**GitHub is refusing to run our safety checks because of a payment problem, and work is merging anyway.** This is the one thing today that only you can fix.
+
+**Fix:** open GitHub → **Settings → Billing & plans** for the `christianspliid-ui` account, and either clear the failed payment or raise the spending limit.
+
+GitHub's own message, word for word:
+
+> The job was not started because recent account payments have failed or your spending limit needs to be increased. Please check the 'Billing & plans' section in your settings
+
+**Why it matters, plainly.** Every change to the game is supposed to pass an automatic check — tests, type-check, build — before it is allowed in. Since about 18:00 local that check has not run **at all**: three separate attempts, each dying in four seconds without executing a single step. But the merges are still going through. So today's work is landing on the main line **unverified**. Nothing is known to be broken; the point is that nothing is being checked, and a real breakage would land just as quietly.
+
+**There is a visible symptom already.** The agent-residence work finished and merged an hour ago, and its ticket is *still* showing as in-progress — the robot that ticks tickets off runs on the same blocked machinery, so it never fired. Anything that merges while this lasts will look unfinished on the board even when it is done.
+
+**This is the third time.** It happened on 25 April, on 12 May, and you cleared the same block three days ago on 25 July. It has come back, which suggests the underlying card or limit is still not settled rather than a one-off. Worth a look at *why* while you are on the page.
+
+**Not urgent to the minute** — the crew keeps working and nothing is lost. But every hour it stays broken is another hour of changes going in unchecked.
 
 ## Queue
 
-**29 jobs ready, bench empty, nothing stale, nothing blocked.** The divine-economy work finished twenty minutes ago and is already live on the site — the crew is between jobs, and the next one starts within the hour.
+**32 jobs ready, one on the bench, nothing stale.** Busy but healthy: two urgent, one high, six medium, twenty-three small. The depth is the usual steady state — roughly one job shipped and one or two new findings filed each hour — not a backlog piling up.
 
-**The invisible-jobs problem got the check that four earlier runs never ran, and it came back clean.** Seven jobs are invisible to the crew because they carry a name in the "who is working on this" field, and the crew only looks at jobs where that field is empty. Last hour proved the cost was real — the crew took a lesser job while the top one sat untouched. What was *not* proven was that clearing the name would fix it, because nothing ever gets far enough past the filter to find out whether that top job is otherwise workable.
+**Both urgent jobs are about the payment problem above**, from opposite ends: one is the alarm that should have warned us automatically, the other is today's incident. Neither can finish while the machinery they need is switched off, so they are waiting on your billing page rather than on the crew.
 
-**This hour it was looked at directly. It is ready** — full instructions attached, written five hours ago, complete on every point the crew checks before starting. The only thing between it and being worked is a name in a field that should be empty. One line for any session with write access.
+**The one job on the bench is finished and merged** — it only looks open because the tick-off robot is down. Not a real occupancy; the crew is free to take the next thing.
 
-**The job in question is, still, the one that audits whether this briefing is actually reaching you.**
+**Nine ready jobs still carry a name in the "who is working on this" field, and the crew only looks at jobs where that field is empty** — so they are invisible to the automatic pickup, including the single high-priority one. Up from seven yesterday. Mechanical, one line for any session with write access, and still not yours to fix.
 
-**The encounter rewrite's first batch — 48 encounters, about nine in ten a player actually meets — remains the top *visible* job** and is the likely next pickup.
+**The encounter rewrite's first batch — 48 encounters, about nine in ten a player actually meets — remains the top visible job.**
 
 ## Freshness
 
-**Everything healthy.** Your folder is on the right branch, fully current, nothing stranded. The cleanup reaper ran fourteen minutes ago, clean, nothing awaiting a human decision. All eight active routines are on schedule — the ninth fires for the first time on 1 August, which is expected.
+**Your folder is healthy.** On the right branch, fully current, nothing stranded, nothing of yours sitting uncommitted. The cleanup reaper ran seventeen minutes ago: 32 worktrees, 44 branches, nothing awaiting a human decision. All eight active routines are on schedule — the ninth first fires on 1 August, which is expected.
 
-**The live site now serves the divine-economy work.** This is the first real code deploy in several hours; everything before it was notes and reports.
+**The live site is current.** Everything merged since the last publish was notes and docs, so no rebuild was needed. The site itself is fine and unaffected by the payment problem — that only blocks the checking machinery, not the published game.
 
-**Discord: nothing new from you**, so no reply was owed and none was sent. No doorbell either — nothing to ring it about.
+**Discord: nothing new from you**, so no reply was owed and none was sent. A doorbell *was* rung this hour, for the billing item above.
 
 ## What's moving
 
-**The essence bridge is finished and live.** Your divine income is now fed by the mortal economy: bless a harvest or sour a mine, and the change travels through to whether your sources can sustain themselves. It was promoted this morning after sitting unnoticed for about six days, claimed at 16:02, and shipped at 17:30 — under ninety minutes.
+**Agents now have a sense of home.** The residence work shipped this afternoon: a character can settle somewhere, and the world notices how long they have stayed. That unlocks two ways an ambition can finally be abandoned — the wanderer who stops wandering, the exile who never goes back — which previously could never trigger because nothing recorded where anyone lived.
 
-**It filed one follow-up on its way out** — a gap where the sustenance rule cannot see sources tucked *inside* a location rather than sitting on it. That is the ship-one-find-one rhythm the crew has held all week.
-
-**A seventh job picked up the invisible-name flag half an hour ago**, from the same promotion step as the other six. Still mechanical, still not yours to fix.
+**One thing worth knowing about how it was built:** residence is *observed*, not stamped on. Nobody declares a character a resident; the world watches where they keep ending up and draws the conclusion. That is the same grain as the rest of the simulation, and it means the state can be wrong in interesting ways rather than merely absent.
 
 ---
 *Standing asks live in [`Design/user-actions.md`](user-actions.md). This file is regenerated hourly by the `keep-work-flowing-cc` scheduled task; staleness is visible from the Generated timestamp above and the task's `lastRunAt` in `list_scheduled_tasks`.*
