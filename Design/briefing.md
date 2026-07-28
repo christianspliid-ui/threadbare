@@ -1,6 +1,6 @@
 # Briefing
 
-**Generated:** 2026-07-28 04:54 local (2026-07-28 02:54 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-07-28 05:56 local (2026-07-28 03:56 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
@@ -10,31 +10,39 @@ This is your inbox. It's rewritten every hour by a Claude Code task. Standing sw
 
 ## Queue
 
-**21 jobs ready — none top-priority, four middling, seventeen minor. One job in flight. Nothing stale, nothing blocked.**
+**21 jobs ready — none top-priority, four middling, seventeen minor. One job in flight. Nothing stale, and nothing blocked.**
 
-Depth went 22 → 21, and this time it is a clean drain rather than the usual wash: **a job was picked up and nothing new was written underneath it.** The picture work claimed at 04:02 came off the shelf and no fresh note-to-self replaced it.
+Depth did not move at all: nothing came off the shelf and nothing was written onto it. The hour's work happened entirely inside the job already in flight.
 
-**Still no top-priority job on the board** — eighth hour running. Seventeen of the twenty-one are minor loose ends the crew found while doing other things, so "backed up" stays a threshold artefact rather than an alarm.
+**"Nothing blocked" was checked this hour rather than repeated.** Earlier runs asserted it; this one opened the top job — the big encounter rewrite — and read what it is waiting on. All three things it named are finished. **It is genuinely free to start, and has been for ten and a half hours.**
+
+That is worth one plain observation, and it is the crew's call rather than yours: the rewrite is the payoff of the whole encounter programme, and the job currently holding the single work slot is the last batch of artwork — **fifteen character portraits, the one batch whose stand-in already looks right.** The rewrite's own notes say the artwork is allowed to run late, because an encounter without its picture falls back gracefully. **The finishing work is being done before the work it finishes.** Recorded as a thing that is true and was not visible before, not as a problem handed to you.
+
+**Still no top-priority job on the board** — ninth hour running. Seventeen of twenty-one are minor loose ends the crew found while doing other things, so "backed up" stays a threshold artefact rather than an alarm.
 
 ## Freshness
 
-**Home tree: right branch, nothing stranded, four minutes behind the newest merge** — that is autosync working, not lag worth acting on. The same two harmless leftovers (permission entries a past session added to the tool config) and Friday's retro draft still outside version control, with an owner.
+**Home tree: fully current.** Right branch, nothing stranded, and last hour's two-commit lag has closed to zero — that is autosync doing its job. The same two harmless leftovers (permission entries a past session added to the tool config) and Friday's retro draft still outside version control, with an owner.
 
-**Cleanup reaper: alive, ran at 04:40, clean, nothing awaiting a human decision.** **Discord: nothing new from you**, so no reply was owed and none was sent.
+**Cleanup reaper: alive, ran at 05:40, clean, nothing awaiting a human decision.** **Discord: nothing new from you**, so no reply was owed and none was sent.
 
 ## What's moving
 
-**The encounter pictures now cover the nudge cards — the small illustrated choices you hand a mortal at a turning point.**
+**The encounter pictures now cover the places encounters happen in — and the set turned out to be a quarter of the size it was estimated at.**
 
-Batch two landed at 04:50: **sixteen concept pictures**, one per kind of nudge a god can offer — *focus* (a hand holding a needle still, the tremor going out of it), *light* (a guttering lamp waking in a black passage), *oath* (clasped forearms and a plain wax seal), *strength* (a roof-beam bowing under fallen stone and holding). Until this merged, every nudge card fell back to a coloured gradient. **They now show real art.**
+Batch three landed at 05:22: **fourteen scene plates**, one per kind of built or social place a mortal can be standing in — the *guild hall* (benches, a peg-and-cord tally board, one trade's tools, a single lamp), the *tavern* (hearth going, chairs pushed back, tankards left), the *court* (a long flagged approach to a small distant dais), the *ford* (a roped-off ferry raft, water breaking white over the crossing), the *siege* (engines under canvas, the wall still unbreached).
 
-**Twenty-nine pictures remain** — fourteen scene backdrops and fifteen character portraits — and the job stays open on the board while they are made. That is correct rather than a stall: it was written as one job delivered in batches, and it finishes when the last picture exists. Batch two took forty-seven minutes from pickup to merged.
+**Every one of them is deliberately empty of people.** A scene plate gets reused across many unrelated encounters, so any figure painted into it would assert a cast the encounter might contradict. The place is evidenced by its objects instead — the market by its scales and stacked goods, the court by its dais and long approach. Three of them (*a settlement, the same settlement rebuilding, the same settlement after something went through it*) were made as one unit against a shared vocabulary of roofs, timber and palisade, so they read as one place in three states rather than three unrelated villages.
 
-**The crew member that decides what to work on next has now missed six check-ins, and this hour adds nothing new to the picture.**
+**The estimate fell from about sixty to fourteen, and the reason is reuse rather than cutting.** The outdoor half of that list was already covered by terrain artwork that shipped earlier, and was promoted into the library instead of being drawn a second time.
 
-Its last recorded run is still 22:27 last night; six slots have come and gone since. Every other hourly routine clocked in normally throughout, including the one writing this. **This is the sixth identical reading, and a reading repeated is not a reading strengthened** — it is recorded flat, and nothing is concluded from the repetition that wasn't concluded from the first one.
+**Fifteen pictures remain** — the character portraits — and the job stays open on the board until they exist, which is how it was written. The stand-in for all fifteen is the plain hooded traveller from batch one: **already correct, just unspecific.** Batch three took roughly forty minutes.
 
-**The deadline this file set itself is not moved forward, for the sixth time and on the same ground.** It falls at this morning's 10:56 run and stands unchanged. If the lane still hasn't fired by then, that is a scheduling fault to repair — not a judgement to revisit.
+**The crew member that decides what to work on next has now missed seven check-ins, and this hour adds nothing new to the picture.**
+
+Its last recorded run is still 22:27 the night before last; seven slots have come and gone since. Every other hourly routine clocked in normally throughout, including the one writing this. **This is the seventh identical reading, and a reading repeated is not a reading strengthened** — it is recorded flat, and nothing is concluded from the repetition that wasn't concluded from the first one.
+
+**The deadline this file set itself is not moved forward, for the seventh time and on the same ground.** It falls at this morning's 10:56 run and stands unchanged. If the lane still hasn't fired by then, that is a scheduling fault to repair — not a judgement to revisit.
 
 ---
 *Standing asks live in [`Design/user-actions.md`](user-actions.md). This file is regenerated hourly by the `keep-work-flowing-cc` scheduled task; staleness is visible from the Generated timestamp above and the task's `lastRunAt` in `list_scheduled_tasks`.*
