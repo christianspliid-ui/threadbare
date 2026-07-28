@@ -78,7 +78,7 @@ Batches ship in ascending order, one PR each. All generation via the mcp-image M
 | Batch | Slots | Contents | Why this order | Status |
 |---|---|---|---|---|
 | 1 | 49 | 48 fate (8 Reaches × 6 bands) + the baseline traveler portrait | Fate art is what every encounter ends on — highest reuse per image in the whole library | **Shipped 2026-07-28** |
-| 2 | 16 | Nudge concept generics | Unblocks the hand, the surface the player reads most often | Planned |
+| 2 | 16 | Nudge concept generics | Unblocks the hand, the surface the player reads most often | **Shipped 2026-07-28** (THR-832) |
 | 3 | 14 | Built/social scene generics | Terrain already covers outdoors; these finish the place vocabulary | Planned |
 | 4 | 15 | Remaining archetype portraits | Lowest reuse; the traveler baseline is now their category generic, so they degrade to a real image rather than a gradient | Planned |
 
@@ -101,6 +101,38 @@ Two decisions worth recording:
 - **`portrait.traveler` is now the `portrait` category generic.** The 15 planned
   archetypes therefore resolve to a real, deliberately unspecific image instead of
   the gradient tile. That is what demotes batch 4 to genuinely last.
+
+### Batch 2 — what shipped (2026-07-28, THR-832)
+
+16 nudge concept generics at `public/concept-art/nudge/<concept>.jpg`, all
+1376×768, re-encoded JPEG q92 progressive: **11.6 MB → 3.6 MB**. Library goes
+80 → **96 rows**, plan 45 → **29 slots**.
+
+Three things worth recording:
+
+- **`nudge` gets a category generic: `generic.blessing`.** Of the sixteen it is
+  the only one whose subject is divine help *as such* — something settling over
+  an object, unmistakably given — rather than a particular kind of it. An unknown
+  tag therefore lands on "a god helped here", the one thing every nudge card has
+  in common. `generic.strength` or `generic.luck` would assert a specific
+  intervention the step may not have made.
+- **The contact sheet caught the one defect the checker cannot** (impediment
+  #261, carried from batch 1). `generic.vigor` returned a *nude anatomical
+  figure* with glowing veins, against the settled doctrine of agents absent or
+  silhouetted. The file existed, decoded, and was correctly named, so
+  `check:image-library` passed it — exactly the batch-1 failure shape.
+  Regenerated stating the silhouette positively and excluding every skin and
+  anatomy term. The **palette** failure mode did not recur: naming the
+  *forbidden* colours rather than only the wanted hex held across all 16, and
+  `time-slow` came back amber rather than the green a comet gave batch 1.
+- **One contract test was repointed, not deleted.** It pinned the terminal
+  `null` rung using `nudge` as its example of "a kind with no category generic",
+  which batch 2 falsified. It now uses `fate`, which is documented below as never
+  getting one — a durable example rather than an incidental one. Two tests were
+  added alongside it for the rungs batch 2 created.
+
+Open question 1 was re-checked before generating, as this plan required: still no
+`lib-*.png` and no `Design/mockups/`, so all 16 were generated fresh.
 
 **`fate` deliberately has no category generic and never will.** The set is
 complete and keyed on `ReachDomain × StepOutcome`, so the exact-tag rung always
@@ -209,7 +241,8 @@ None. This changes no rule of play — no turn structure, action verb, prerequis
 - [x] `npm run check:image-library` passes, and **fails** when a path is broken or an id appears in both tables (falsified, not assumed).
 - [x] Contract tests pin each rung by `source`, not merely by "a path came back".
 - [x] **Batch 1 generated** (2026-07-28) — 48 fate + traveler baseline registered; `check:image-library` reports 80 rows, 45 slots, no batch-1 remainder.
-- [ ] Batches 2–4 generated — subsequent runs; the checker's per-batch counts are the progress readout.
+- [x] **Batch 2 generated** (2026-07-28, THR-832) — 16 nudge concept generics registered and `generic.blessing` installed as the `nudge` category generic; `check:image-library` reports 96 rows, 29 slots, no batch-2 remainder.
+- [ ] Batches 3–4 generated — subsequent runs; the checker's per-batch counts are the progress readout.
 
 ## Coordination block
 

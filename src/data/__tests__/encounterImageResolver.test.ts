@@ -178,16 +178,43 @@ describe('resolveEncounterImage — the resolve chain', () => {
     expect(result.entry?.id).toBe(ENCOUNTER_IMAGE_CATEGORY_GENERIC.scene);
   });
 
-  it('returns null — never a guess — for a kind with no generic yet', () => {
-    // Nudge art is entirely un-generated (batch 2). The contract is that the
-    // caller gets null and renders EntityVisual, not a stand-in image.
+  it('returns null — never a guess — for a kind with no category generic', () => {
+    // `fate` has no category generic by design and never will: the set is
+    // complete on ReachDomain x StepOutcome, so a fallback could only ever serve
+    // the *wrong band* — a shattered blade for a success. The contract is that
+    // the caller gets null and renders EntityVisual, not a stand-in image.
+    //
+    // This test used to use `nudge`, which was un-generated until batch 2
+    // (THR-832) gave it both art and a generic. `fate` is the durable example.
+    const result = resolveEncounterImage({
+      tag: 'fate.iron.no-such-band',
+      kind: 'fate',
+      concepts: ['no-such-concept-anywhere'],
+    });
+    expect(result.path).toBeNull();
+    expect(result.source).toBe('none');
+  });
+
+  it('a shipped nudge concept resolves by exact tag (batch 2)', () => {
     const result = resolveEncounterImage({
       tag: 'generic.focus',
       kind: 'nudge',
       sphere: 'mind',
     });
-    expect(result.path).toBeNull();
-    expect(result.source).toBe('none');
+    expect(result.source).toBe('exact_tag');
+    expect(result.path).toBe('/concept-art/nudge/focus.jpg');
+  });
+
+  it('an unmatched nudge tag falls to the blessing generic, not to null', () => {
+    // Batch 2 replaced the honest `null` with a generic that asserts only what
+    // every nudge card has in common — that a god helped here.
+    const result = resolveEncounterImage({
+      concepts: ['no-such-concept-anywhere'],
+      kind: 'nudge',
+    });
+    expect(result.source).toBe('category_generic');
+    expect(result.entry?.id).toBe(ENCOUNTER_IMAGE_CATEGORY_GENERIC.nudge);
+    expect(result.entry?.id).toBe('generic.blessing');
   });
 
   it('an unknown tag degrades instead of throwing', () => {

@@ -77,7 +77,8 @@ function NudgeCard({
 }) {
   const dimmed = card.state === 'dimmed' && !card.selected;
   // THR-777: manifest lookup on the authored tag, sphere as a refinement.
-  // Null until the tag's art is generated — see ENCOUNTER_IMAGE_PLAN.
+  // THR-832 batch 2 generated the 16 nudge concept generics and gave the kind a
+  // category generic, so this now resolves for every card in practice.
   const artPath = resolveEncounterImagePath({
     tag: card.imageTag,
     kind: 'nudge',
@@ -111,11 +112,13 @@ function NudgeCard({
         transition: 'opacity 0.2s ease, border-color 0.2s ease, background 0.2s ease',
       }}
     >
-      {/* Art — the fallback chain (THR-777/WS4). The manifest lookup runs on
-          `imageTag`; an unresolved tag returns null and the chain ends at the
-          EntityVisual gradient+glyph, which never blocks the render (plan
-          fail-soft row). Most nudge tags are still un-generated plan slots, so
-          the fallback is the common path today and must stay correct. */}
+      {/* Art — the fallback chain (THR-777/WS4, generated THR-832 batch 2). The
+          manifest lookup runs on `imageTag`; an unresolved tag falls to the
+          `nudge` category generic and, failing even that, returns null and ends
+          at the EntityVisual gradient+glyph, which never blocks the render (plan
+          fail-soft row). Art is the common path now that batch 2 has shipped,
+          but the fallback branch stays load-bearing: it is what a 404 on a
+          registered path degrades into, via the glyph `onError` swap below. */}
       <EntityVisual
         size="chip"
         shape="rounded"
