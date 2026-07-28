@@ -3651,6 +3651,19 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "Scope the check to **runtime** specifiers only: skip a match whose `import`/`export` keyword is immediately followed by `type`. And scope the *file* set to the graph reachable from an actual strip-types entrypoint (discovered from `package.json` scripts + `.github/workflows/*.yml` `run:` lines), never all of `scripts/` — esbuild-bundled scripts resolve extensionless specifiers fine and there are dozens, so an unscoped guard is pure noise. Both rules are in `src/testing/__tests__/scriptImportExtensions.lint.test.ts`; falsify any such guard by reverting the fix it was written for and confirming it goes red.",
     "session": "THR-804 stale-claim-sweep resolver fix, hourly `tb-opus-pickup`"
+  },
+  {
+    "num": "267",
+    "id": 267,
+    "count": 1,
+    "date": "2026-07-28",
+    "category": "tooling",
+    "description": "**The required `Test · Typecheck · Build` check now runs at 80–90% of its own `timeout-minutes: 20`, so ordinary runner variance turns a correct PR red — and the cap that misfires was itself the fix for the opposite failure.** THR-804's PR #992 died at **20m13s** mid-typecheck-ratchet with tests already green. Blaming the diff was the obvious move and would have been wrong: the newly-added lint test measures **213 ms** in isolation (`npx vitest run` on the file), while `actions/checkout` on the failing runner took **3m38s** against 39s on the green run 40 minutes earlier — a 5.6× slowdown no `scripts/` import fix can cause. Every full run of that job in the preceding 6 h: 16m34s, 17m32s, 17m07s, 16m09s, 17m44s, 17m22s, 17m08s, 13m42s — roughly **two minutes of margin** on the sole required check gating every merge in the repo. THR-557 (Done, 2026-06-30) recorded the suite at 737 test files / ~12 min; it is now **909**. The cap never moved; the suite grew into it. Note impediment **#94** (2026-04-27): this same check once **hung indefinitely** because it had *no* timeout guard, which is precisely why the cap exists — it was sized against a suite that stalled, not one that legitimately takes 17 minutes.",
+    "consequence": "A correct, fully-verified ship sat un-mergeable and consumed a second hourly run to diagnose. Because the symptom is \"required check red\", it is indistinguishable at a glance from a real defect, so the first instinct is to suspect the diff — which spends the diagnosis budget before anyone looks at the runner data. Left unaddressed it recurs on arbitrary unrelated PRs at whatever rate runners happen to be slow.",
+    "impact": "M",
+    "workaroundFound": true,
+    "workaround": "**Workaround:** before touching the diff, pull per-step timings for the failed job *and* a recent green one and compare step by step — `gh api repos/<owner>/<repo>/actions/runs/<id>/jobs --jq '.jobs[]\\|select(.name==\"Test · Typecheck · Build\")\\|.steps[]\\|\"\\(.name)\\t\\(.started_at)\\t\\(.completed_at)\"'`. A slowdown in `checkout`/`npm ci` exonerates the change immediately, since no source diff can affect them. Then measure any newly-added test in isolation rather than inferring its cost from the suite total. Recovery is `gh pr update-branch <N>` — it re-triggers CI on a fresh head *and* clears the `BEHIND` state that silently prevents armed auto-merge from ever firing — **not** `gh run rerun --failed`, which re-runs against the stale head and leaves the PR behind. **Durable fix:** THR-835 — keep a tight per-job bound but stop one job carrying the entire budget (split tests from typecheck/build), and watch the median-vs-cap ratio so the next closure surfaces before it lands as a red check on unrelated work. Simply raising the number is the weakest option: it loosens the #94 anti-hang guard, and the next 20% of suite growth eats the new margin the same way.",
+    "session": "THR-804 resume pass, hourly Opus pickup lane, 2026-07-28 07:05 UTC."
   }
 ];
 // ── End data ──
