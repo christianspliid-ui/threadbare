@@ -1,5 +1,50 @@
 # Orchestrator — 2026-07-28
 
+## Fourteenth run — 21:31Z update
+
+*T3 runs once daily; already completed this morning (07:42Z) — not re-run. This run did T1 (fresh, per-run) and re-checked the T2 trigger.*
+
+### Needs Christian
+
+Nothing needs you this run.
+
+### T1 — unblock sweep (21:31Z)
+
+**Promoted (1, at the shelf-backup ceiling):**
+
+- **THR-756** ("Drift scan: update open signal issues instead of filing weekly duplicates") — Low priority, docs/tooling-only. No blocker was ever declared. Named the strongest next-run candidate by the prior 20:30Z sweep (which promoted THR-757 instead and held THR-756 back only by the ceiling — Ready for Dev held 34 items before this promotion, above `QUEUE_BACKED_UP_MIN=15`). Promoted → verified via `get_issue` (`stateHistory` shows Todo → Ready for Dev at 21:30:52.810Z, state stuck) → coordination-block comment posted (Suggested model: sonnet, mechanical script edit to `scripts/drift-scan/index.ts`; Parallel-safe with: anything not touching that file or the five named 07-22 duplicate issues; Mutex with: none identified).
+
+**Declined (unchanged from prior runs today):**
+
+- **THR-735** ("Armed-PR staleness sweep") — no blocker, self-declares "design pass needed — do not pick one from this ticket alone." T2's input, not T1's.
+- **THR-790** / **THR-791** (Traits wave 2 / wave 3) — blocker THR-786 confirmed Done, but both self-declare their own design-finalization gate ("Needs its own design finalization before Ready for Dev" / "Needs a full design pass... before any Ready for Dev"). T2's input; T2 did not trigger this run.
+- **THR-175** ("UI overhaul 08, agent.sphere field") — explicit `Status: DEFERRED`, unmet unblock trigger (no evidence Creation-sphere content has started shipping or that a template/encounter needs `sphere` as an independent axis).
+- **THR-778** (Nudge Model WS5 container) — all three named blockers (THR-773, THR-776, THR-774) are Done, but the ticket's own text says "this issue is the container… Batches become their own child issues once the audit lands" — promoting the container itself repeats the pattern visible in its `stateHistory` (one Ready for Dev → In Dev → Ready for Dev → Todo bounce on 2026-07-28). Declined as wrong-destination; the batch children (e.g. THR-838) are the correct promotion targets, not the container.
+
+**Held back by the shelf-backup ceiling (Ready for Dev held 34 items before this run's promotion — at most one allowed), no blocker, unchanged from prior sweeps:**
+
+- **THR-646** ("THR-636 follow-up: capture live browser screenshots") — feature complete and merged per its own text; pure verification-artifact task, no blocker.
+- **THR-582** ("Migrate remaining ~46 inline phases to runInlinePhase") — mechanical tail of THR-580, no blocker line.
+- **THR-766** ("Tune the god's cast power curve") — parent THR-728 confirmed Done; bounded tuning pass, no blocker line.
+- **THR-680** / **THR-681** (stash triage / worktree disposition) — both instruct running from the home tree, predating the THR-671/672/797 home-tree containment hardening; flagged again for whichever run next promotes these.
+- **THR-346** / **THR-347** / **THR-348** (Encounter UI post-v1 H1/H2/H3) — each has its blockers confirmed Done (THR-335+THR-334 / THR-326+ARC-98 / THR-338+ARC-105) and already carries a full coordination block in its own description. Strong next-run candidates once the shelf allows more than one promotion.
+
+**Not re-verified this run:** THR-772/789 (Nudge Model / Traits program-epic containers — intentionally Todo, not promotion candidates; explicit "do not implement from this issue").
+
+### T2 — design authoring (21:31Z)
+
+**Not triggered.** Ready for Dev holds 17 non-`Deferral` items after this run's promotion — well above the floor of 2. THR-790 (Traits wave 2) remains the top agreed-but-undesigned candidate for whenever T2 next triggers.
+
+### T3 — architecture health (21:31Z)
+
+**Not re-run** — the full sweep already ran this morning (07:42Z, see "First run" below); nothing in the interim changes those findings.
+
+### Escalations (21:31Z)
+
+None. No item required a question this run; the Discord channel was not used.
+
+---
+
 ## Thirteenth run — 20:30Z update
 
 *T3 runs once daily; the first run already completed it (07:42Z), so this run only did T1 (fresh, per-run) and re-checked the T2 trigger. Full detail for T2/T3 retained below under "First run — 07:42Z".*
