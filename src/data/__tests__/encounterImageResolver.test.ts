@@ -15,6 +15,7 @@ import {
   ENCOUNTER_IMAGE_PLAN,
   ENCOUNTER_IMAGE_CATEGORY_GENERIC,
   FATE_REACH_METAPHORS,
+  FATE_BAND_DIRECTION,
   IMAGE_MATCH_MIN_SCORE,
 } from '../encounter-image-library';
 import {
@@ -76,13 +77,36 @@ describe('encounter image library — manifest integrity', () => {
     );
   });
 
-  it('plans one fate slot per Reach × outcome band', () => {
-    const fate = ENCOUNTER_IMAGE_PLAN.filter((s) => s.kind === 'fate');
-    // Six bands, not the ticket's five: the five-valued axis is the forecast,
-    // and fate art keys off the resolved outcome ladder.
-    expect(fate).toHaveLength(REACH_DOMAINS.length * 6);
-    for (const reach of REACH_DOMAINS) {
-      expect(fate.filter((s) => s.reach === reach)).toHaveLength(6);
+  it('ships one fate image per Reach × outcome band, with none left planned', () => {
+    // Batch 1 shipped the whole fate set, so the contract moved from the plan to
+    // the library. Six bands, not the ticket's five: the five-valued axis is the
+    // forecast, and fate art keys off the resolved outcome ladder.
+    const bands = Object.keys(FATE_BAND_DIRECTION).sort();
+    expect(bands).toHaveLength(6);
+
+    // Pinned as an exact set rather than a count — a renamed Reach or band must
+    // fail here rather than sliding through on arity.
+    const expected = REACH_DOMAINS.flatMap((reach) =>
+      bands.map((band) => `fate.${reach}.${band}`),
+    ).sort();
+    // Non-vacuity floor: without this, an empty REACH_DOMAINS would make both
+    // sides [] and the set comparison would pass while asserting nothing.
+    expect(expected).toHaveLength(48);
+    const shipped = ENCOUNTER_IMAGE_LIBRARY.filter((e) => e.kind === 'fate')
+      .map((e) => e.id)
+      .sort();
+    expect(shipped).toEqual(expected);
+
+    // No fate slot may linger in the worklist, or the next batch regenerates it.
+    expect(ENCOUNTER_IMAGE_PLAN.filter((s) => s.kind === 'fate')).toEqual([]);
+  });
+
+  it('every fate row declares the single band it serves', () => {
+    for (const entry of ENCOUNTER_IMAGE_LIBRARY.filter((e) => e.kind === 'fate')) {
+      // `bands` is a list so a taste pass can collapse bands without a schema
+      // change; today each image serves exactly the band its id names.
+      expect(entry.bands, entry.id).toBeDefined();
+      expect(entry.bands, entry.id).toEqual([entry.id.split('.')[2]]);
     }
   });
 

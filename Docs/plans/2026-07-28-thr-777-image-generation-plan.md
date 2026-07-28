@@ -75,12 +75,37 @@ The ticket's asset paths were stale: `Design/mockups/assets/` does not exist in 
 
 Batches ship in ascending order, one PR each. All generation via the mcp-image MCP per `STYLE.md` (Simonetti oil, chiaroscuro, deep twilight). **Image doctrine (settled): agents mostly absent; when present, generic or silhouetted. Fate images contain no agent at all.**
 
-| Batch | Slots | Contents | Why this order |
-|---|---|---|---|
-| 1 | 49 | 48 fate (8 Reaches × 6 bands) + the baseline traveler portrait | Fate art is what every encounter ends on — highest reuse per image in the whole library |
-| 2 | 16 | Nudge concept generics | Unblocks the hand, the surface the player reads most often |
-| 3 | 14 | Built/social scene generics | Terrain already covers outdoors; these finish the place vocabulary |
-| 4 | 15 | Remaining archetype portraits | Lowest reuse; `EntityVisual` already degrades gracefully here |
+| Batch | Slots | Contents | Why this order | Status |
+|---|---|---|---|---|
+| 1 | 49 | 48 fate (8 Reaches × 6 bands) + the baseline traveler portrait | Fate art is what every encounter ends on — highest reuse per image in the whole library | **Shipped 2026-07-28** |
+| 2 | 16 | Nudge concept generics | Unblocks the hand, the surface the player reads most often | Planned |
+| 3 | 14 | Built/social scene generics | Terrain already covers outdoors; these finish the place vocabulary | Planned |
+| 4 | 15 | Remaining archetype portraits | Lowest reuse; the traveler baseline is now their category generic, so they degrade to a real image rather than a gradient | Planned |
+
+### Batch 1 — what shipped (2026-07-28)
+
+48 fate images at `public/concept-art/fate/<reach>-<band>.jpg` and the traveler
+baseline at `public/concept-art/portraits/traveler.jpg`. All 1376×768 (16:9)
+except the portrait at 896×1200 (3:4), matching the shipped hero art. Re-encoded
+at JPEG q92 progressive: **33.0 MB → 9.6 MB** with no visible loss, which matters
+because these are browser-delivered.
+
+Two decisions worth recording:
+
+- **Generated Reach-by-Reach, not band-by-band.** A partial batch is structurally
+  safe (an un-generated slot carries no path and cannot break a render), but a
+  Reach with only some bands filled would resolve art for `success` and a gradient
+  tile for `failure` *within the same encounter* — internally inconsistent in the
+  one place the set exists to be consistent. Completing whole Reaches keeps every
+  partial state coherent.
+- **`portrait.traveler` is now the `portrait` category generic.** The 15 planned
+  archetypes therefore resolve to a real, deliberately unspecific image instead of
+  the gradient tile. That is what demotes batch 4 to genuinely last.
+
+**`fate` deliberately has no category generic and never will.** The set is
+complete and keyed on `ReachDomain × StepOutcome`, so the exact-tag rung always
+hits; a fallback there could only ever serve the *wrong band* — a shattered blade
+for a success — which is worse than the honest gradient tile.
 
 Each batch: generate → drop files under `public/` → move the slots from `ENCOUNTER_IMAGE_PLAN` into `ENCOUNTER_IMAGE_LIBRARY` with real paths → `npm run check:image-library` → commit. The checker prints per-batch remaining counts, so a resumed run sees its position without reading the diff.
 
@@ -106,8 +131,20 @@ Each batch: generate → drop files under `public/` → move the slots from `ENC
 
 ## Open questions
 
-1. **Do the mockup assets exist somewhere?** The ticket says 5 thread-weave fate images and 7 `lib-*.png` nudge cards are already made. They are not in the repo. If Christian has them locally, promoting them removes ~12 slots from batches 1–2.
-2. **Band collapsing.** 48 fate images is the un-collapsed count. A taste pass may decide `success_at_cost` and `near_miss` can share art within a Reach, which would drop batch 1 to 40 — matching the ticket's original number by a different route. Deferred to the first generation run, where the images can actually be compared.
+1. ~~**Do the mockup assets exist somewhere?**~~ **Resolved 2026-07-28 — no.** Searched
+   the repo before generating: no `lib-*.png` anywhere, no `Design/mockups/`, and the
+   only `thread-of-fate` hit is an unrelated *action card* (`public/assets/actions/thread-of-fate.jpg`).
+   The 5 thread-weave fate and 7 `lib-*.png` nudge images the ticket calls "already
+   made" are not in the repo, so batch 1 generated all 48 fate slots fresh. If the
+   originals surface they can still replace generated rows — a file copy and a
+   manifest path edit, no schema change. **Batch 2 should re-run this check** before
+   generating the 16 nudge concepts, since 7 of them are the ones claimed to exist.
+2. **Band collapsing.** 48 fate images is the un-collapsed count, and batch 1 shipped
+   all 48 un-collapsed. Now that the images exist they can finally be compared, which
+   is what this question was waiting on: the candidates are `success_at_cost` vs
+   `near_miss` within a Reach. Collapsing is a manifest edit (`bands: ['success_at_cost',
+   'near_miss']` on one row, delete the other file) — still no schema change. Left open
+   as a taste call, not an executor call.
 
 ## Constants table
 
@@ -171,7 +208,8 @@ None. This changes no rule of play — no turn structure, action verb, prerequis
 - [x] `NudgePhaseShell` consumes the resolver; an unresolved tag still renders the EntityVisual fallback.
 - [x] `npm run check:image-library` passes, and **fails** when a path is broken or an id appears in both tables (falsified, not assumed).
 - [x] Contract tests pin each rung by `source`, not merely by "a path came back".
-- [ ] Batches 1–4 generated — subsequent runs; the checker's per-batch counts are the progress readout.
+- [x] **Batch 1 generated** (2026-07-28) — 48 fate + traveler baseline registered; `check:image-library` reports 80 rows, 45 slots, no batch-1 remainder.
+- [ ] Batches 2–4 generated — subsequent runs; the checker's per-batch counts are the progress readout.
 
 ## Coordination block
 
