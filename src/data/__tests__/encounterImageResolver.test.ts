@@ -157,6 +157,49 @@ describe('resolveEncounterImage — the resolve chain', () => {
     expect(result.entry?.id).toBe('scene.wilderness.swamp');
   });
 
+  it('a built place resolves to its own art, not to a wilderness plate', () => {
+    // What batch 3 bought. Before it, the only registered scene rows were the 12
+    // outdoor terrain plates, so every built/social place missed the query bar
+    // and fell to the `scene` category generic — serving a hillside for a guild
+    // hall interior. Pinned per place so deleting a row is a test failure rather
+    // than a silent downgrade to scenery.
+    // Every batch-3 row whose concept names its own place. `scene.rebuild` and
+    // `scene.aftermath` are the two that do not (both sit at `settlement`) and
+    // are covered by the trio test below.
+    const builtPlaces = [
+      'guild_hall',
+      'tavern',
+      'market',
+      'court',
+      'shrine',
+      'ruin',
+      'siege',
+      'road',
+      'river',
+      'settlement',
+      'underground',
+      'wilds_camp',
+    ] as const;
+
+    for (const place of builtPlaces) {
+      const result = resolveEncounterImage({ concepts: [place], kind: 'scene' });
+      expect(result.source).toBe('tag_query');
+      expect(result.entry?.id).toBe(`scene.${place}`);
+      expect(result.entry?.places).toContain(place);
+    }
+  });
+
+  it('the settlement trio is three states of one place, not three places', () => {
+    // `settlement` / `rebuild` / `aftermath` were generated as a coherent unit
+    // against a shared architecture vocabulary, and all three carry the same
+    // `settlement` place so a query on the place can reach any of them.
+    for (const id of ['scene.settlement', 'scene.rebuild', 'scene.aftermath']) {
+      const result = resolveEncounterImage({ tag: id });
+      expect(result.source).toBe('exact_tag');
+      expect(result.entry?.places).toEqual(['settlement']);
+    }
+  });
+
   it('a bare sphere/place coincidence does NOT clear the query bar', () => {
     // place(2) alone scores below IMAGE_MATCH_MIN_SCORE(10) — one concept
     // agreement is the entry price. This is the "an image about this" vs "an

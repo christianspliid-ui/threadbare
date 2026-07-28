@@ -653,34 +653,49 @@ const NUDGE_CONCEPT_ART: readonly EncounterImageEntry[] = [
 
 /**
  * Scene generics the terrain plates do not already cover — the built and social
- * places. The outdoor half is served by `TERRAIN_SCENE_GENERICS` above, which is
- * why this list is ~14 rather than the ticket's ~60: promoting shipped terrain
- * art removed most of the wilderness half of that estimate.
+ * places, generated in batch 3 (2026-07-28). The outdoor half is served by
+ * `TERRAIN_SCENE_GENERICS` above, which is why this list is 14 rather than the
+ * ticket's ~60: promoting shipped terrain art removed most of the wilderness
+ * half of that estimate.
+ *
+ * Every plate is an **unoccupied** place. That is stronger than the library's
+ * usual "agents absent or silhouetted" doctrine and it is deliberate: a scene
+ * generic is reused across 3+ unrelated encounters, so any figure in it asserts
+ * a cast the encounter may contradict. The trade is evidenced by its objects —
+ * the market by its scales and stacked goods, the court by its dais and long
+ * approach — never by the people who would be using them.
+ *
+ * The three `settlement`-placed rows (`settlement` / `rebuild` / `aftermath`)
+ * were generated as one unit against a shared architecture vocabulary — steep
+ * shingled roofs, timber-and-daub, a palisade gate — so they read as the same
+ * kind of place in three states rather than three unrelated villages.
+ *
+ * The trailing comment on each row is the subject that was generated, kept for a
+ * later regeneration or taste pass; the resolver never reads it.
  */
-const SCENE_SLOTS: readonly EncounterImagePlanSlot[] = [
-  ['scene.guild_hall', 'guild_hall', 'a guild hall interior — benches, a ledger board, the tools of one trade', 'solemn'],
-  ['scene.tavern', 'tavern', 'a tavern common room after dark — fire, spilled light, empty chairs', 'warm'],
-  ['scene.market', 'market', 'a market at trade — stalls, scales, goods stacked', 'neutral'],
-  ['scene.court', 'court', 'a hall of audience — a dais, a long approach, hard light', 'tense'],
-  ['scene.shrine', 'shrine', 'a shrine interior — offering shelf, smoke, worn stone', 'solemn'],
-  ['scene.ruin', 'ruin', 'a ruin half-reclaimed — fallen courses, growth in the joints', 'desolate'],
-  ['scene.siege', 'siege', 'siege works before a wall — engines, earth, waiting', 'ominous'],
-  ['scene.road', 'road', 'a road running out of frame — milestone, ruts, weather coming', 'neutral'],
-  ['scene.river', 'river', 'a river crossing — ford or ferry-post, current reading fast', 'tense'],
-  ['scene.settlement', 'settlement', 'a settlement seen from its edge — roofs, smoke, a gate', 'neutral'],
-  ['scene.underground', 'underground', 'a worked underground space — cut stone, a held lamp\'s reach', 'ominous'],
-  ['scene.wilds_camp', 'wilds_camp', 'a camp in open country — banked fire, packs, dark beyond', 'tense'],
-  ['scene.rebuild', 'settlement', 'rebuilding after loss — scaffold, fresh timber against burnt', 'warm'],
-  ['scene.aftermath', 'settlement', 'the ground after an event — trampled, emptied, still lit', 'desolate'],
-].map(([id, place, brief, mood]) => ({
+const BUILT_SCENE_GENERICS: readonly EncounterImageEntry[] = [
+  ['scene.guild_hall', 'guild_hall', 'solemn'], // benches, a peg-and-cord tally board, one trade's tools, a single lamp
+  ['scene.tavern', 'tavern', 'warm'], // hearth fire, chairs pushed back, tankards left, barrels along the wall
+  ['scene.market', 'market', 'neutral'], // stalls under sagging awnings, brass balance, goods stacked, two lanterns
+  ['scene.court', 'court', 'tense'], // a long flagged approach to a small distant dais, one hard clerestory shaft
+  ['scene.shrine', 'shrine', 'solemn'], // a hollowed offering shelf, votive flames, incense column, dulled coins
+  ['scene.ruin', 'ruin', 'desolate'], // fallen courses, ivy split through the joints, one arch still standing
+  ['scene.siege', 'siege', 'ominous'], // engines under canvas, approach trench, watch-fires, the wall unbreached
+  ['scene.road', 'road', 'neutral'], // water standing in the ruts, an uninscribed marker stone, weather coming
+  ['scene.river', 'river', 'tense'], // a roped-off ferry raft, guide rope sagging, water breaking white over the ford
+  ['scene.settlement', 'settlement', 'neutral'], // palisade gate open, smoke straight from the chimneys, two lit windows
+  ['scene.underground', 'underground', 'ominous'], // hand-cut passage, square-set props, one lamp, the dark closing past it
+  ['scene.wilds_camp', 'wilds_camp', 'tense'], // banked embers, packs and bedroll, open country going black around it
+  ['scene.rebuild', 'settlement', 'warm'], // fresh pale scaffold raised against a burnt shell, a work-fire still going
+  ['scene.aftermath', 'settlement', 'desolate'], // trampled square, a tipped basket, open dark doors, torches left guttering
+].map(([id, place, mood]) => ({
   id: id as string,
+  path: `/concept-art/scene/${(id as string).slice('scene.'.length)}.jpg`,
   kind: 'scene' as const,
   concepts: [(id as string).split('.')[1], 'place'],
   places: [place as EncounterImagePlace],
   mood: mood as EncounterImageMood,
   genericity: `Any encounter staged at a ${(place as string).replace('_', ' ')}; the linear template families reuse it across ${GENERIC_POOL_UNRELATED_ENCOUNTERS_MIN}+ unrelated situations.`,
-  brief: `${brief}. No named entity; agents absent or silhouetted.`,
-  batch: 3,
 }));
 
 /**
@@ -723,7 +738,6 @@ const PORTRAIT_SLOTS: readonly EncounterImagePlanSlot[] = [
  * and the plan entry has been deleted. `check:image-library` reports progress.
  */
 export const ENCOUNTER_IMAGE_PLAN: readonly EncounterImagePlanSlot[] = [
-  ...SCENE_SLOTS,
   ...PORTRAIT_SLOTS,
 ];
 
@@ -736,6 +750,7 @@ export const ENCOUNTER_IMAGE_PLAN: readonly EncounterImagePlanSlot[] = [
 export const ENCOUNTER_IMAGE_LIBRARY: readonly EncounterImageEntry[] = [
   ...BRANCHING_HERO_ART,
   ...TERRAIN_SCENE_GENERICS,
+  ...BUILT_SCENE_GENERICS,
   ...FATE_ART,
   ...NUDGE_CONCEPT_ART,
   PORTRAIT_TRAVELER,
