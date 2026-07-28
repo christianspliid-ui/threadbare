@@ -379,4 +379,106 @@ describe('evaluateGraphCondition', () => {
       expect(evaluateGraphCondition(cond, graph, 'a1')).toBe(false);
     });
   });
+
+  // ── agent_settled_since / agent_away_from_origin (THR-822) ───
+  //
+  // Both are durational: they read recorded residence plus a clock from the evaluation
+  // context. The negative cases matter more than the positive ones here — these are
+  // abandonment triggers, so a false positive ends an ambition that should still be
+  // running, and the whole reason the concept was blocked was tick-one firing.
+
+  /** An agent settled at `far` since tick 100, having started at `home`. */
+  function settledGraph(position = 'far') {
+    return createMockGraph(
+      [{
+        id: 'a1',
+        properties: {
+          originLocationId: 'home',
+          residencePositionId: position,
+          residenceArrivedTick: 100,
+        },
+      }],
+      [],
+    );
+  }
+
+  describe('agent_settled_since', () => {
+    const cond: GraphCondition = { type: 'agent_settled_since', minTicks: 50 };
+
+    it('returns true once dwell reaches the threshold', () => {
+      expect(evaluateGraphCondition(cond, settledGraph(), 'a1', { currentTick: 150 })).toBe(true);
+    });
+
+    it('returns false below the threshold', () => {
+      expect(evaluateGraphCondition(cond, settledGraph(), 'a1', { currentTick: 149 })).toBe(false);
+    });
+
+    it('measures from the window start, not from arrival', () => {
+      // The agent has been stationary for 100 ticks, but the asking ambition is 10 ticks
+      // old. This is the case that made the concept unsafe before THR-822: without the
+      // window it reads 100 >= 50 and abandons on the first evaluation.
+      expect(evaluateGraphCondition(cond, settledGraph(), 'a1', { currentTick: 200, windowStartTick: 190 })).toBe(false);
+      expect(evaluateGraphCondition(cond, settledGraph(), 'a1', { currentTick: 240, windowStartTick: 190 })).toBe(true);
+    });
+
+    it('cannot hold at the window start, whatever the agent was doing before', () => {
+      for (const start of [0, 100, 500, 5000]) {
+        expect(
+          evaluateGraphCondition(cond, settledGraph(), 'a1', { currentTick: start, windowStartTick: start }),
+        ).toBe(false);
+      }
+    });
+
+    it('returns false with no clock in the context', () => {
+      expect(evaluateGraphCondition(cond, settledGraph(), 'a1')).toBe(false);
+      expect(evaluateGraphCondition(cond, settledGraph(), 'a1', {})).toBe(false);
+      expect(evaluateGraphCondition(cond, settledGraph(), 'a1', { windowStartTick: 0 })).toBe(false);
+    });
+
+    it('returns false when residence was never observed', () => {
+      const graph = createMockGraph([{ id: 'a1', properties: {} }], []);
+      expect(evaluateGraphCondition(cond, graph, 'a1', { currentTick: 9999 })).toBe(false);
+    });
+
+    it('returns false when the agent node is missing', () => {
+      expect(evaluateGraphCondition(cond, createMockGraph([], []), 'a1', { currentTick: 9999 })).toBe(false);
+    });
+  });
+
+  describe('agent_away_from_origin', () => {
+    const cond: GraphCondition = { type: 'agent_away_from_origin', minTicks: 50 };
+
+    it('returns true when settled long enough somewhere that is not the origin', () => {
+      expect(evaluateGraphCondition(cond, settledGraph('far'), 'a1', { currentTick: 150 })).toBe(true);
+    });
+
+    it('returns false when the agent is settled at its origin', () => {
+      // Long enough, but home — the distinguishing half of this condition versus
+      // `agent_settled_since`.
+      expect(evaluateGraphCondition(cond, settledGraph('home'), 'a1', { currentTick: 9999 })).toBe(false);
+    });
+
+    it('returns false when away but not yet settled', () => {
+      expect(evaluateGraphCondition(cond, settledGraph('far'), 'a1', { currentTick: 149 })).toBe(false);
+    });
+
+    it('obeys the same window rule', () => {
+      expect(evaluateGraphCondition(cond, settledGraph('far'), 'a1', { currentTick: 200, windowStartTick: 190 })).toBe(false);
+      expect(evaluateGraphCondition(cond, settledGraph('far'), 'a1', { currentTick: 240, windowStartTick: 190 })).toBe(true);
+    });
+
+    it('returns false when no origin was ever recorded', () => {
+      // Unmeasured is not the same as away. An agent whose origin was never observed
+      // must not be treated as an exile.
+      const graph = createMockGraph(
+        [{ id: 'a1', properties: { residencePositionId: 'far', residenceArrivedTick: 100 } }],
+        [],
+      );
+      expect(evaluateGraphCondition(cond, graph, 'a1', { currentTick: 9999 })).toBe(false);
+    });
+
+    it('returns false with no clock in the context', () => {
+      expect(evaluateGraphCondition(cond, settledGraph('far'), 'a1')).toBe(false);
+    });
+  });
 });

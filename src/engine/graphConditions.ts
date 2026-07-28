@@ -4,6 +4,7 @@
 
 import type { GraphCondition } from '../types/ambition';
 import { collectBearerTraitRefs, bearerMatchesPredicate } from './traitRefIndex';
+import { readResidence, dwellTicks, isAwayFromOrigin } from './agentResidence';
 
 /**
  * Minimal graph interface — keeps this module testable without the full WorldGraph.
@@ -12,16 +13,24 @@ import { collectBearerTraitRefs, bearerMatchesPredicate } from './traitRefIndex'
  * trait by display name as well as by id/tag, and a node's display name lives at the
  * node level. Existing implementors that omit it keep working — a missing name simply
  * contributes no name ref.
+ *
+ * **Method syntax, not arrow properties** (THR-822). Under `strictFunctionTypes` a
+ * function-valued *property* is checked contravariantly in its parameters, so
+ * `getOutgoingEdges(id, type?: string)` written as a property rejects `WorldGraph`'s
+ * narrower `(id, edgeType?: EdgeType)` — meaning the real graph could not be passed to
+ * anything typed against this view, and every such call site was a type error. Method
+ * syntax is bivariant, which is the correct and intended behaviour for a structural
+ * view whose only use is calling these three.
  */
 export interface ConditionGraph {
-  getNode: (id: string) => { id: string; name?: string; properties: Record<string, unknown> } | undefined;
-  getOutgoingEdges: (id: string, type?: string) => ReadonlyArray<{
+  getNode(id: string): { id: string; name?: string; properties: Record<string, unknown> } | undefined;
+  getOutgoingEdges(id: string, type?: string): ReadonlyArray<{
     source: string;
     target: string;
     type: string;
     properties: Record<string, unknown>;
   }>;
-  getIncomingEdges: (id: string, type?: string) => ReadonlyArray<{
+  getIncomingEdges(id: string, type?: string): ReadonlyArray<{
     source: string;
     target: string;
     type: string;
@@ -50,14 +59,42 @@ function isDeceased(node: { properties: Record<string, unknown> }): boolean {
 }
 
 /**
+ * Optional evaluation context (THR-822).
+ *
+ * Most conditions read only current graph state and need nothing here. The two
+ * settledness conditions are *durational* — they need a clock, and they need to know
+ * when the asking thing began, so that "has stayed put for N ticks" is measured over
+ * the asker's own lifetime rather than the agent's.
+ *
+ * Both fields are optional and both are load-bearing when present; a durational
+ * condition evaluated without a clock fails soft to `false`. That polarity is
+ * deliberate: for an abandonment trigger, absent evidence must never end an ambition.
+ */
+export interface ConditionContext {
+  /** The tick being evaluated. */
+  readonly currentTick?: number;
+  /**
+   * Start of the measurement window — for an ambition, its `assignedTick`. Dwell is
+   * counted from `max(arrivedTick, windowStartTick)`, which is what stops a durational
+   * trigger from firing on its first tick against an already-stationary agent. See the
+   * header of `agentResidence.ts` for the full argument.
+   */
+  readonly windowStartTick?: number;
+}
+
+/**
  * Evaluate a single GraphCondition against the world graph for a given agent.
  * Pure function — reads graph state, returns boolean, no side effects.
  * Fails soft: returns false for any missing data rather than throwing.
+ *
+ * `context` is optional and only consulted by durational conditions (THR-822); every
+ * caller that predates it keeps working unchanged.
  */
 export function evaluateGraphCondition(
   condition: GraphCondition,
   graph: ConditionGraph,
   agentId: string,
+  context?: ConditionContext,
 ): boolean {
   switch (condition.type) {
     case 'agent_reach_above': {
@@ -104,6 +141,30 @@ export function evaluateGraphCondition(
       const agent = graph.getNode(agentId);
       if (!agent) return false;
       return isDeceased(agent);
+    }
+
+    // ── Durational residence conditions (THR-822) ──
+    //
+    // Both read observed residence (`agentResidence.ts`), never the `located_at` edge
+    // directly: the edge says where the agent is, not how long it has been there.
+    //
+    // Three separate absences each mean `false`, and each is a real "we do not know"
+    // rather than a measured negative: no clock in the context, no arrival ever
+    // observed, or (for the origin variant) no origin recorded. An abandonment trigger
+    // that fired on missing data would end ambitions for the least-observed agents
+    // first, which is exactly backwards.
+    case 'agent_settled_since': {
+      if (typeof context?.currentTick !== 'number') return false;
+      const dwell = dwellTicks(readResidence(graph, agentId), context.currentTick, context.windowStartTick);
+      return dwell !== undefined && dwell >= condition.minTicks;
+    }
+
+    case 'agent_away_from_origin': {
+      if (typeof context?.currentTick !== 'number') return false;
+      const residence = readResidence(graph, agentId);
+      if (!isAwayFromOrigin(residence)) return false;
+      const dwell = dwellTicks(residence, context.currentTick, context.windowStartTick);
+      return dwell !== undefined && dwell >= condition.minTicks;
     }
 
     case 'agent_has_bonds': {

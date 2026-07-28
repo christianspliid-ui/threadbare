@@ -30,6 +30,28 @@ export type GraphCondition =
    * producer has ever minted a `living` trait, so that gate was permanently false.
    */
   | { type: 'agent_deceased' }
+  /**
+   * The agent has held one position for `minTicks`, counted from the later of its
+   * arrival and the evaluation window's start (THR-822).
+   *
+   * The window is what makes this safe as an abandonment trigger. Passed the pursuing
+   * ambition's `assignedTick`, the condition cannot hold before `assignedTick +
+   * minTicks` however long the agent had already been sitting still — so "they set out,
+   * and then they stopped" is measured rather than assumed. Without a window (or
+   * without a clock in the evaluation context) it fails soft to `false`.
+   *
+   * Residence is *observed*, not written by movement code — see `agentResidence.ts`.
+   */
+  | { type: 'agent_settled_since'; minTicks: number }
+  /**
+   * The agent is settled somewhere that is not where it originated, for `minTicks`
+   * under the same window rule as `agent_settled_since` (THR-822).
+   *
+   * "Rooted, and not at home." Distinct from `agent_not_in_region`, which reads a
+   * region literal an author has to know in advance; this reads the agent's own
+   * first-observed position, so it works for any agent in any world.
+   */
+  | { type: 'agent_away_from_origin'; minTicks: number }
   | { type: 'target_agent_eliminated'; targetRef: string }
   | { type: 'agent_in_region'; region: string }
   | { type: 'agent_not_in_region'; region: string };

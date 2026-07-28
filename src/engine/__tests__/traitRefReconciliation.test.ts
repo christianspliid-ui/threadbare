@@ -126,26 +126,38 @@ const KNOWN_DEAD = {
    */
   noResourceModel: ['rare_ore_secured'],
   /**
-   * Narrative progress flags an ambition would have to mint about its own bearer.
+   * A narrative progress flag an ambition would have to mint about its own bearer.
    * No producer exists and none is implied by the trait layer as it stands.
    *
-   * Each is the *sole* abandonment trigger on its ambition (`reclaim homeland`,
-   * `protect kin`, `flee the blight`), so all three currently run to completion or
-   * forever — measured while resolving `living`, which was the fourth of that set.
+   * ── THR-813: three refs, deferred as one class ────────────────────────────────
    *
-   * THR-813 took the producer decision and the answer was **not yet, and not by the
-   * obvious route**. Each names a *loss* (home given up, kin gone, the road ended), and
-   * abandonment triggers are evaluated from the ambition's first tick with no grace
-   * period, ahead of milestones (`ambitionLifecycle.ts`). The available current-state
-   * proxies — zero `loyalty` bonds, outside the homeland, not having moved — are all
-   * true for a typical agent *at assignment*, and none of the three ambitions gates on
-   * them the way `ambition_dominate_trade`'s `gold >= 0.4` floor gates its `gold < 0.2`
-   * trigger. So every repoint abandons on tick one: the inverted-risk failure THR-812
-   * fixed for `target_agent_eliminated`, and worse than the dead ref it replaces
-   * (never abandoning beats never running). Blocked on loss history or residence +
-   * dwell time — THR-822.
+   * `accepted_exile`, `homeless_wanderer` and `made_peace_with_the_land` were each the
+   * *sole* abandonment trigger on its ambition (`reclaim homeland`, `protect kin`,
+   * `flee the blight`), so all three ran to completion or forever. THR-813 took the
+   * producer decision and the answer was **not yet, and not by the obvious route**:
+   * each names a *loss*, abandonment is evaluated from the ambition's first tick with
+   * no grace period, and every available proxy was already true for a typical agent at
+   * assignment — so each repoint would have abandoned on tick one. Blocked on loss
+   * history or residence + dwell time, tracked as THR-822.
+   *
+   * ── THR-822: two discharged, one narrowed — 3 → 1 ─────────────────────────────
+   *
+   * THR-822 supplied residence (origin + dwell, observed rather than written) and, more
+   * importantly, a **measurement window**: `agent_settled_since` and
+   * `agent_away_from_origin` count dwell from `max(arrivedTick, assignedTick)`, so
+   * neither can hold before `assignedTick + minTicks`. That removes the tick-one danger
+   * arithmetically rather than by proxy, which is what unblocked the two spatial refs —
+   * `made_peace_with_the_land` (the road ended: settled) and `accepted_exile` (home
+   * given up: settled somewhere that is not home).
+   *
+   * `homeless_wanderer` survives because it is not spatial. "Nothing left to guard" is
+   * a loss of *bonds*, and residence has nothing to say about it; the bond-count proxy
+   * still fires at assignment because `ambition_protect_kin` carries no bond floor. It
+   * needs bonds-that-ended — history nothing records today. Discharging it by repointing
+   * at a spatial condition would misname the concept, which is the failure mode this
+   * whole list exists to prevent.
    */
-  unproducedFlags: ['accepted_exile', 'homeless_wanderer', 'made_peace_with_the_land'],
+  unproducedFlags: ['homeless_wanderer'],
 } as const;
 
 const EXPECTED_DEAD = Object.values(KNOWN_DEAD).flat().slice().sort();

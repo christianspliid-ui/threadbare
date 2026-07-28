@@ -1653,6 +1653,56 @@ if (import.meta.env.DEV) {
       return store.isNudgeDesignerViewEnabled();
     },
 
+    /**
+     * THR-822 — where an agent originated, and how long it has held its current
+     * position. This is the inspection surface for the residence primitive: the
+     * settledness abandonment triggers are otherwise invisible until they fire.
+     *
+     * Accepts an agent id, id prefix, or partial name (case-insensitive), matching
+     * `getAgentAttachments`. Returns `null` if no agent matches.
+     *
+     * `dwellTicks` here is the *unwindowed* dwell — total ticks at the current
+     * position. An ambition's trigger measures from `max(arrivedTick, assignedTick)`
+     * instead, so a live trigger will read shorter than this; that difference is the
+     * point, not a discrepancy (see `agentResidence.ts` § "The window rule").
+     */
+    getAgentResidence: async (agentIdOrName: string) => {
+      const graph = _graphProvider?.();
+      const state = _gameStateProvider?.();
+      if (!graph) return null;
+
+      const actors = graph.getNodesByType('actor');
+      const match =
+        actors.find(n => n.id === agentIdOrName) ??
+        actors.find(n => n.id.startsWith(agentIdOrName)) ??
+        actors.find(n =>
+          typeof n.name === 'string' && n.name.toLowerCase().includes(agentIdOrName.toLowerCase()),
+        );
+      if (!match) return null;
+
+      const { readResidence, dwellTicks, isAwayFromOrigin, currentPositionId } =
+        await import('./engine/agentResidence');
+      const residence = readResidence(graph, match.id);
+      const tick = state?.tick;
+
+      const nameOf = (id?: string) => (id ? graph.getNode(id)?.name ?? id : null);
+
+      return {
+        agentId: match.id,
+        agentName: match.name ?? match.id,
+        originLocationId: residence.originLocationId ?? null,
+        originLocationName: nameOf(residence.originLocationId),
+        /** Position as last *observed*; may lag the live edge by up to one interval. */
+        positionId: residence.positionId ?? null,
+        positionName: nameOf(residence.positionId),
+        /** Position on the live `located_at` edge, for comparison against the above. */
+        livePositionId: currentPositionId(graph, match.id) ?? null,
+        arrivedTick: residence.arrivedTick ?? null,
+        dwellTicks: tick === undefined ? null : dwellTicks(residence, tick) ?? null,
+        awayFromOrigin: isAwayFromOrigin(residence),
+      };
+    },
+
     // THR-66: rival scheme inspection — reads the denormalized RivalState.schemes summaries.
     getRivalSchemes: () => {
       const state = _gameStateProvider?.();

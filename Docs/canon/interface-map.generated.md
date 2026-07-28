@@ -185,10 +185,10 @@ remediation ticket or the build fails.
 
 - **Intent:** Ambitions progress and complete, firing milestone events the player sees.
 - **Producer → Consumer:** Ambitions & Initiatives → Attention, Chronicle & Narrative
-- **Production hits:** 3 total — 1 write, 1 read, 1 unclassified
+- **Production hits:** 6 total — 1 write, 1 read, 4 unclassified
 - **Write sites:** `src/engine/phases/ambitionProgress.ts`
 - **Read sites:** `src/engine/ambitionTick.ts`
-- **Other hits:** `src/engine/graphConditions.ts`
+- **Other hits:** `src/data/ambition-templates.ts`, `src/engine/agentResidence.ts`, `src/engine/graphConditions.ts`, `src/types/trace.ts`
 - **Verdict:** Verified 2026-07-23: 15-tick cadence; milestone events observed firing. Docs/plans/2026-07-23-system-interface-map.md § Audit findings (manual audit + independent cold-context review, both grep-verified)
 
 ### `ascendant-affinity-cast-capability` — 🟢 LIVE

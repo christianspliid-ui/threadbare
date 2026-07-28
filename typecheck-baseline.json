@@ -1,5 +1,5 @@
 {
-  "total": 3497,
+  "total": 3496,
   "command": "npx tsc -b --force --pretty false",
   "perFile": {
     "scripts/lint-encounter-content.ts": 2,
@@ -531,7 +531,7 @@
     "src/engine/agentAttachments.ts": 1,
     "src/engine/agentDetail.ts": 7,
     "src/engine/agentSelection.ts": 4,
-    "src/engine/ambitionTick.ts": 4,
+    "src/engine/ambitionTick.ts": 3,
     "src/engine/armyAttrition.ts": 3,
     "src/engine/armyMovement.ts": 4,
     "src/engine/armyNotifications.ts": 7,
