@@ -1,5 +1,47 @@
 # Orchestrator — 2026-07-28
 
+## Tenth run — 16:29Z update
+
+*T3 runs once daily; the first run already completed it (07:42Z), so this run only did T1 (fresh, per-run) and re-checked the T2 trigger. Full detail for T2/T3 retained below under "First run — 07:42Z".*
+
+### Needs Christian
+
+Nothing needs you this run.
+
+### T1 — unblock sweep (16:29Z)
+
+**Promoted (1, at the shelf-backup ceiling):**
+
+- **THR-763** ("ROADMAP.md Future Work lists shipped content primitives as 'still pending' — a Step 0.6 substrate-check trap") — Medium priority. No blocker was ever declared; the ticket self-scopes as doc-only (`.planning/ROADMAP.md`) with an explicit re-derive-at-pickup instruction (THR-688 rule A) rather than a snapshot count, so there was nothing to wait on. Filed 2026-07-25, sitting unpromoted for 3 days. Promoted → verified via `get_issue` (`stateHistory` shows Todo → Ready for Dev at 16:29:15.083Z, state stuck) → coordination-block comment posted (Suggested model: sonnet; Parallel-safe with: anything not touching `.planning/ROADMAP.md`; Mutex with: none identified).
+
+**Declined (unchanged from prior runs today):**
+
+- **THR-735** ("Armed-PR staleness sweep loses the race to main's merge rate") — no blocker, but self-declares "design pass needed — do not pick one from this ticket alone." T2's input, not T1's.
+- **THR-790** / **THR-791** (Traits wave 2 / wave 3) — blocker THR-786 Done, but both self-declare a design-finalization gate. T2's input; T2 did not trigger this run.
+- **THR-175** ("UI overhaul 08, agent.sphere field") — explicit `Status: DEFERRED` with a named unblock trigger that has not occurred.
+
+**Newly individually checked this run, held back (no blocker, but ceiling already spent on THR-763):**
+
+- **THR-574** ("Backlog triage sweep — 34 stale Idea issues") — Medium priority, oldest untouched Todo item (created 2026-07-03). No blocker, but its own deliverable calls for "an explicit verdict from Christian" on one named item (THR-66) mid-sweep — an executor can handle the rest and flag that one sub-item, so this is not a T2-routing case, just a held-back candidate.
+- **THR-680** ("Stash triage — 38-deep home-tree stash stack") / **THR-681** ("Worktree disposition") — both Medium priority, Infrastructure, no blocker. Both ticket bodies instruct running from the **home tree**, which was written 2026-07-21 before the THR-671/672/797 home-tree containment hardening tightened what scheduled/automated sessions may do there. Flagging for whichever run next promotes these: the executor will need to reconcile the ticket's literal instruction against the now-current home-tree read-only policy, not follow it verbatim.
+- **THR-795** ("19 skills last validated 2026-05-08") — Medium priority, no blocker, bounded scope (up to 19 skill files, coordination block already drafted in the ticket body). Clean next-run candidate.
+
+**Not re-verified this run:** the remaining Todo candidates with no blocker language found on prior passes (THR-757, THR-756, THR-646, THR-762, THR-766, THR-582, THR-346/347/348, THR-772/778/789 program containers). Ready for Dev now holds 30 items post-promotion — next run should expect the ceiling to stay active; strongest next picks are THR-795, THR-574, THR-757 (all fully checked, no blocker, no home-tree caveat).
+
+### T2 — design authoring (16:29Z)
+
+**Not triggered.** Ready for Dev holds 12 non-`Deferral` items after this run's promotion (THR-667, THR-638, THR-836, THR-655, THR-838, THR-792, THR-807, THR-740, THR-739, THR-715, THR-723, THR-763) — well above the floor of 2. THR-790 (Traits wave 2) remains the top agreed-but-undesigned candidate for whenever T2 next triggers.
+
+### T3 — architecture health (16:29Z)
+
+**Not re-run** — the full sweep already ran this morning (07:42Z, see "First run" below); nothing in the interim changes those findings.
+
+### Escalations (16:29Z)
+
+None. No item required a question this run; the Discord channel was not used.
+
+---
+
 ## Ninth run — 15:29Z update
 
 *T3 runs once daily; the first run already completed it (07:42Z), so this run only did T1 (fresh, per-run) and re-checked the T2 trigger. Full detail for T2/T3 retained below under "First run — 07:42Z".*
