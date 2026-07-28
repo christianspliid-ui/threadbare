@@ -9,6 +9,12 @@ interface ModalProps {
   animation?: 'anim-fade' | 'anim-fade-up';
   /** Accessible label for the dialog (aria-label). */
   'aria-label'?: string;
+  /**
+   * Extra classes on the panel element. Added for `RevealCard` to apply
+   * `.frame-ceremonial` without forking Modal (THR-799); the panel's own gold
+   * border becomes that frame's outer edge.
+   */
+  panelClassName?: string;
   children: React.ReactNode;
 }
 
@@ -20,7 +26,7 @@ interface ModalProps {
  * a new containing block). Instead, the backdrop div handles its own
  * mount/unmount lifecycle and applies animation classes directly.
  */
-function ModalRoot({ open, onClose, maxWidth = 600, animation = 'anim-fade-up', 'aria-label': ariaLabel, children }: ModalProps) {
+function ModalRoot({ open, onClose, maxWidth = 600, animation = 'anim-fade-up', 'aria-label': ariaLabel, panelClassName, children }: ModalProps) {
   const [shouldRender, setShouldRender] = useState(open);
   const [animClass, setAnimClass] = useState('');
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -93,7 +99,7 @@ function ModalRoot({ open, onClose, maxWidth = 600, animation = 'anim-fade-up', 
       aria-modal="true"
       aria-label={ariaLabel}
     >
-      <div style={panel} onClick={(e) => e.stopPropagation()}>
+      <div className={panelClassName} style={panel} onClick={(e) => e.stopPropagation()}>
         {children}
       </div>
     </div>,

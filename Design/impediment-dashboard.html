@@ -3599,6 +3599,45 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "**For any prompt whose subject is a face-shaped or figure-shaped object (mask, effigy, statue, armour, helm), state the hollowness positively and exclude the interior explicitly**: *\"the mask is a hollow empty shell — NO person, NO face, NO skin behind or inside it\"* fixed it first try. **For palette, name the forbidden colours, not only the wanted hex** — *\"AMBER, COPPER and WARM ORANGE ONLY … absolutely no green, no emerald, no teal, no blue anywhere\"* fixed the comet where `#ff9933` alone had not. **Always contact-sheet a generated batch before registering it**; both defects were caught in a 4×6 grid review and neither would have failed `check:image-library`. **Third occurrence, batch 3 (2026-07-28):** `scene.market` — briefed as a `neutral` place generic, prompt already excluding people — returned a distinct **blood-red pool on the cobbles running into the gutter**, converting the most-reused kind in the library into a crime scene. Nothing in the prompt asked for violence; the generator supplied narrative incident on its own. Fixed by stating the *absence of event* positively — *\"the lane is orderly and undisturbed — a market simply closed up, nothing has happened here\"* — on top of explicit `no blood, no red stain, no crime scene` exclusions. **The generalisation after three batches: exclusions bind the cast, not the story. If a plate must read as uneventful, say so as a fact about the scene rather than as a list of things to leave out** — and contact-sheet regardless, because all three defects passed the checker. **Fourth occurrence, batch 4 (2026-07-28), and the failure mode inverted exactly as the batch-3 checkpoint predicted:** batches 1-3 risked an *unwanted* figure, batch 4 (15 archetype portraits) risked an *over-specific* one. `portrait.guard` returned a fully rendered bearded face under an open-faced kettle helm, and `portrait.healer` returned **as a framed painting hanging on a wall**, wooden frame included. Both passed `check:image-library` — files existed, decoded, correctly named. Guard was fixed structurally rather than by more exclusions: an open-faced helm *offers* the generator a face to fill, so the head was wrapped in a coif and hood, leaving only a dark opening. Healer was fixed by deleting the phrase *\"standing to be painted\"* from the prompt — the generator literalised it into a painted object — and excluding the frame explicitly (\"the artwork fills the entire image edge to edge; no picture frame, no canvas, no wall, no painting within a painting\"). **The new generalisation: when the failure mode is known in advance, crop for it.** A second contact sheet of *head crops only* (top 42% of each plate, tiled) made the rendered face unmissable where the full-body sheet showed it faintly — a targeted sheet costs one extra PIL call and is worth building whenever a batch has a predicted defect class. Related, and worth stating as its own rule: **anonymity needs a motivated occluder.** Stating \"no face\" for a bare-headed figure yields either a face or an uncanny void; giving every subject a period-plausible head covering (hood, coif, brimmed hat, cowl) made the void read as ordinary and held across all 15 plates.",
     "session": "THR-777 batch 1 and THR-832 batches 2–4, hourly `tb-opus-pickup` runs, 2026-07-28."
+  },
+  {
+    "num": "263",
+    "id": 263,
+    "count": 1,
+    "date": "2026-07-28",
+    "category": "tooling",
+    "description": "**`window.__DEBUG.getOpenModals()` returns a Promise, and reading it unawaited yields `{}` — which is indistinguishable from the healthy \"no modals are open\" answer.** THR-799 needed the open-modal set to prove the adopted `AscendantBeatModal` still registers in GameView `interruptModalOpen` (THR-668). A direct `JSON.parse(JSON.stringify(D.getOpenModals()))` returned `{}` twice, with the modal demonstrably rendered on screen — the reading looked like a *finding* (\"the adoption broke interrupt registration\") rather than a broken probe. `Object.prototype.toString.call()` on the value returned `[object Promise]`. Most `__DEBUG` surfaces are synchronous, so async is the exception and there is no signal at the call site.",
+    "consequence": "~10 min chasing a registration regression that did not exist, and a near-miss on filing a false defect against my own change",
+    "impact": "Medium",
+    "workaroundFound": true,
+    "workaround": "`await` it: `const open = await window.__DEBUG.getOpenModals()` → `[\"JourneyVignetteModal\",\"AscendantBeatModal\"]`. **General rule, per the vacuous-probe class: a probe whose \"empty\" answer and whose \"broken\" answer are the same value is not evidence.** Before reporting an absence, assert the probe can produce a *non*-empty result — here, checking the value's type would have taken one line. `src/debug-bridge.d.ts` does not flag which methods are async; grep the implementation's signature when a `__DEBUG` read returns an unexpectedly empty container.",
+    "session": "THR-799 ceremonial reveal surface, browser-verify pass, hourly `tb-opus-pickup`"
+  },
+  {
+    "num": "264",
+    "id": 264,
+    "count": 1,
+    "date": "2026-07-28",
+    "category": "sandbox",
+    "description": "**The Playwright MCP's allowed filesystem roots point at a *different, stale* session worktree, so screenshots cannot be written into the worktree actually being verified.** THR-799's browser pass ran from `.claude/worktrees/beautiful-spence-f104e0`, but `browser_take_screenshot` with an absolute path inside that worktree failed with `File access denied … Allowed roots: …/nostalgic-mahavira-0c1c90/.playwright-mcp`. The roots are fixed at MCP-server start and evidently outlived the session that set them. This interacts badly with impediment #199c (a *bare* filename writes outside the repo and is unrecoverable): the obvious fix for #199c — always pass an absolute in-worktree path — is exactly what this rejects.",
+    "consequence": "Blocked the DoD screenshot requirement until worked around; risk of an agent silently falling back to a bare filename and losing the evidence",
+    "impact": "Low",
+    "workaroundFound": true,
+    "workaround": "Write to the allowed root, then copy into the session worktree: `cp \"<allowed-root>/.playwright-mcp/<name>.png\" Docs/evidence/thr-NNN/`. Read the `Allowed roots:` list out of the error message rather than assuming — it names the permitted directory exactly. Commit the copies under `Docs/evidence/thr-NNN/` (existing convention, cf. `Docs/evidence/thr-775`).",
+    "session": "THR-799 ceremonial reveal surface, browser-verify pass, hourly `tb-opus-pickup`"
+  },
+  {
+    "num": "265",
+    "id": 265,
+    "count": 1,
+    "date": "2026-07-28",
+    "category": "sandbox",
+    "description": "**A prior session's Vite dev server was still holding port 5199, and the Playwright MCP's live page was pointed at yet another orphaned server (5231) serving a different tree.** Starting the verification server with `--strictPort` failed outright (`Port 5199 is already in use`); separately, the first `browser_resize` reported the current page as `localhost:5231/?view=game&seeded&size=medium` — a server this session never started, serving code this session never wrote. Verifying against it would have produced a clean pass on unedited code, the exact failure mode the worktree write-path discipline exists to prevent.",
+    "consequence": "Would have invalidated the entire browser pass silently",
+    "impact": "Medium",
+    "workaroundFound": true,
+    "workaround": "Pick an unused port, keep `--strictPort` so a collision fails loudly instead of silently sliding to the next port, and **prove the served tree is yours before trusting any screenshot**: `curl -s http://localhost:<port>/src/<file-you-just-created>.tsx \\| grep -c <symbol-you-just-added>`. A non-zero count is the only acceptable evidence that the server in front of Playwright is serving this worktree. Then navigate explicitly to your own port — never verify against whatever page the MCP happened to be on.",
+    "session": "THR-799 ceremonial reveal surface, browser-verify pass, hourly `tb-opus-pickup`"
   }
 ];
 // ── End data ──

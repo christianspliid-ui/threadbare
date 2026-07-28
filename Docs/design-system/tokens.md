@@ -115,6 +115,27 @@ Each sphere has a base color and a bright variant. Used for sphere-specific UI e
 | `--space-5` | 20px | Comfortable spacing |
 | `--space-6` | 24px | Section separation |
 | `--space-8` | 32px | Large separation, between panels |
+| `--space-ceremonial` | 20px | Vertical rhythm between `RevealCard` zones (THR-799) |
+
+`--space-ceremonial` shares 20px with `--space-5` today but is deliberately its own
+token: ceremonial surfaces get retuned as a group, independently of the general
+spacing grid. Use it only inside ceremonial surfaces; use `--space-5` everywhere else.
+
+---
+
+## Ceremonial Utilities (THR-799)
+
+Two classes carrying the ceremonial presentation tier. Both are additive — no
+existing rule was modified and `.quote-block` is untouched.
+
+| Class | Declaration | Use |
+|-------|-------------|-----|
+| `.inset-well` | `background: rgba(10,10,14,0.55)`; `1px solid var(--border-subtle)`; `var(--panel-radius)`; `box-shadow: inset 0 1px 3px rgba(0,0,0,0.4)` | The third depth level (frame > card body > well). Banner bands and quote wells. |
+| `.frame-ceremonial` | `border: 1px solid var(--border-gold)` + `outline: 1px solid var(--border-subtle); outline-offset: -4px` | The double frame on a ceremonial panel. The inner hairline is drawn with a negative outline offset, so it needs no extra element. |
+
+**Gold budget.** `.frame-ceremonial`'s border is dim-gold *structure*, not emphasis.
+On any ceremonial surface exactly one element carries bright `--accent-gold`: the
+hero `Medallion` ring. Titles stay `--text-primary`.
 
 ---
 

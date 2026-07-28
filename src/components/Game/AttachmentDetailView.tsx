@@ -5,6 +5,9 @@ import type { ActionTriggerEffect } from '../../types/effects';
 import { ACTION_TRIGGER_DEFAULT_PROBABILITY } from '../../data/effect-constants';
 import type { EntityHeader, EntitySection, TriggerEntry } from '../../types/entityDetail';
 import { EntityCard } from '../shared/EntityCard';
+import { Medallion } from '../shared/Medallion';
+import { FlavorQuote } from '../shared/FlavorQuote';
+import { pickFallbackFlavor } from '../../data/reveal-content';
 import { getAttachmentGlyph } from './attachmentGlyphs';
 
 export interface AttachmentDetailData {
@@ -74,9 +77,13 @@ export const AttachmentDetailView = React.memo(function AttachmentDetailView({
   const tierName = ATTACHMENT_TIER_NAMES[attachment.tier];
   const glyph = getAttachmentGlyph(attachment.subcategory);
 
+  const kindLine = `${tierName} \u00B7 ${attachment.subcategory.replace(/_/g, ' ')}`;
+
+  // The tier/kind line moved into the ceremonial banner below (THR-799), so the
+  // EntityCard header no longer repeats it as a subtitle \u2014 the name lives in the
+  // header, the kind in the banner, each said once.
   const header: EntityHeader = {
     name: attachment.name,
-    subtitle: `${tierName} \u00B7 ${attachment.subcategory.replace(/_/g, ' ')}`,
     accentColor: tierColor,
   };
 
@@ -94,16 +101,11 @@ export const AttachmentDetailView = React.memo(function AttachmentDetailView({
     });
   }
 
-  // Flavor text
-  if (attachment.flavorText) {
-    sections.push({
-      id: 'flavor',
-      title: '',
-      insightTier: 'stranger',
-      proseVoice: 'oral',
-      prose: attachment.flavorText,
-    });
-  }
+  // Flavor text is no longer an EntityCard section — THR-799 promotes it into the
+  // ceremonial header's FlavorQuote well, above the mechanical effect line
+  // (narrative before mechanics). Falls back to the generic per-kind line only
+  // when the attachment carries no prose of its own.
+  const flavorLine = attachment.flavorText || pickFallbackFlavor('attachment', attachment.id);
 
   // Effect (always)
   const effectProse = [
@@ -185,12 +187,15 @@ export const AttachmentDetailView = React.memo(function AttachmentDetailView({
 
   return (
     <div data-testid="attachment-detail-view">
-      {/* Art slot: image or glyph fallback (rendered above EntityCard sections) */}
-      {attachment.image ? (
-        <div
-          className="flex justify-center py-4"
-          style={{ backgroundColor: 'var(--bg-deep)', borderBottom: '1px solid var(--border-subtle)' }}
-        >
+      {/* Ceremonial header (THR-799): art or glyph medallion → name/tier banner →
+          flavor well. Layout only — every value shown is one the view already read.
+          When real art exists it keeps its full art slot rather than being clipped
+          down to a 64px disc; the medallion is the glyph fallback's treatment. */}
+      <div
+        className="flex flex-col items-center gap-3 px-4 py-4"
+        style={{ backgroundColor: 'var(--bg-deep)', borderBottom: '1px solid var(--border-subtle)' }}
+      >
+        {attachment.image ? (
           <img
             src={attachment.image}
             alt={attachment.name}
@@ -202,20 +207,29 @@ export const AttachmentDetailView = React.memo(function AttachmentDetailView({
               borderRadius: '4px',
             }}
           />
-        </div>
-      ) : (
+        ) : (
+          <Medallion size="md" accentColor={tierColor} title={`${tierName} ${attachment.subcategory.replace(/_/g, ' ')}`}>
+            <span style={{ color: tierColor, lineHeight: 1 }}>{glyph}</span>
+          </Medallion>
+        )}
+
         <div
-          className="flex justify-center items-center py-4"
+          className="inset-well w-full"
           style={{
-            backgroundColor: 'var(--bg-deep)',
-            borderBottom: '1px solid var(--border-subtle)',
+            padding: 'var(--space-2) var(--space-4)',
+            textAlign: 'center',
+            fontFamily: 'var(--font-display)',
+            fontSize: 'var(--text-sm)',
+            letterSpacing: '0.1em',
+            textTransform: 'uppercase',
+            color: 'var(--text-primary)',
           }}
         >
-          <span style={{ fontSize: '3rem', color: `${tierColor}66`, lineHeight: 1 }}>
-            {glyph}
-          </span>
+          {kindLine}
         </div>
-      )}
+
+        <FlavorQuote style={{ width: '100%' }}>{flavorLine}</FlavorQuote>
+      </div>
       <EntityCard
         header={header}
         sections={sections}

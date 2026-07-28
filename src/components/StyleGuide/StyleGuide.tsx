@@ -13,6 +13,10 @@ import { IconButton } from '../shared/IconButton';
 import { Card } from '../shared/Card';
 import { ListRow } from '../shared/ListRow';
 import { Modal } from '../shared/Modal';
+import { Medallion } from '../shared/Medallion';
+import { FlavorQuote } from '../shared/FlavorQuote';
+import { RevealCard } from '../shared/RevealCard';
+import { REVEAL_CATEGORY_TITLES, REVEAL_KINDS, pickFallbackFlavor } from '../../data/reveal-content';
 import { Tooltip } from '../shared/Tooltip';
 import { Dropdown } from '../shared/Dropdown';
 import { ProgressBar } from '../shared/ProgressBar';
@@ -104,6 +108,9 @@ const SECTIONS = [
   { id: 'card', label: 'Card' },
   { id: 'listrow', label: 'ListRow' },
   { id: 'modal', label: 'Modal' },
+  { id: 'medallion', label: 'Medallion (THR-799)' },
+  { id: 'flavorquote', label: 'FlavorQuote (THR-799)' },
+  { id: 'revealcard', label: 'RevealCard (THR-799)' },
   { id: 'tooltip', label: 'Tooltip' },
   { id: 'dropdown', label: 'Dropdown' },
   { id: 'progressbar', label: 'ProgressBar' },
@@ -277,6 +284,7 @@ function Swatch({ token, hex }: { token: string; hex: string }) {
 
 export default function StyleGuide() {
   const [modalOpen, setModalOpen] = useState(false);
+  const [revealOpen, setRevealOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [animShown, setAnimShown] = useState(true);
   const [activeSection, setActiveSection] = useState('tokens');
@@ -516,6 +524,123 @@ export default function StyleGuide() {
                     <Button variant="primary" size="sm" onClick={() => setModalOpen(false)}>Acknowledge</Button>
                   </Modal.Footer>
                 </Modal>
+              </GameErrorBoundary>
+            </div>
+          </section>
+
+          {/* ── Medallion (THR-799) ────────────────────────────── */}
+          <section id="section-medallion" style={{ marginBottom: SECTION_GAP }}>
+            <SectionHeading ornamental>Medallion (THR-799)</SectionHeading>
+            <div style={{ marginTop: '1.25rem' }}>
+              <GameErrorBoundary>
+                <Label>
+                  Circular icon frame — outer ring, dark gap, clipping content disc. sm 40 / md 64 / lg 96.
+                  lg defaults to full --accent-gold (the single bright-gold element on a ceremonial surface);
+                  sm/md default to dim gold. Frames an already-resolved visual — it is not a second art path.
+                </Label>
+                <Row gap={20}>
+                  <Medallion size="sm" title="sm — sphere">
+                    <SphereIcon sphere="force" size={20} />
+                  </Medallion>
+                  <Medallion size="md" title="md — sphere">
+                    <SphereIcon sphere="mind" size={30} />
+                  </Medallion>
+                  <Medallion size="lg" title="lg — sphere (hero)">
+                    <SphereIcon sphere="chaos" size={44} />
+                  </Medallion>
+                  <Medallion size="md" title="md — glyph child">
+                    <span style={{ color: 'var(--accent-gold)' }}>{'⚔'}</span>
+                  </Medallion>
+                  <Medallion size="md" accentColor="#c87533" title="md — custom accentColor" />
+                </Row>
+                <Label>No children → the fallback glyph, never an empty disc (fail-soft).</Label>
+              </GameErrorBoundary>
+            </div>
+          </section>
+
+          {/* ── FlavorQuote (THR-799) ──────────────────────────── */}
+          <section id="section-flavorquote" style={{ marginBottom: SECTION_GAP }}>
+            <SectionHeading ornamental>FlavorQuote (THR-799)</SectionHeading>
+            <div style={{ marginTop: '1.25rem', maxWidth: '520px' }}>
+              <GameErrorBoundary>
+                <Label>Inset quote well — ornamental divider, --type-flavor body, right-aligned attribution.</Label>
+                <FlavorQuote attribution="Kael Thornweaver">
+                  The thread was spun this way from the first. The weave simply reached it.
+                </FlavorQuote>
+                <Label>divider={'{false}'} — no ornament, for inline section use.</Label>
+                <FlavorQuote divider={false}>What is held changes the hand that holds it.</FlavorQuote>
+                <Label>
+                  No children → renders nothing at all (zone omission, not an empty well). The bordered
+                  box below is the StyleGuide's own marker, and is intentionally empty:
+                </Label>
+                <div style={{ border: '1px dashed var(--border-subtle)', padding: '8px', minHeight: '32px' }}>
+                  <FlavorQuote>{null}</FlavorQuote>
+                </div>
+              </GameErrorBoundary>
+            </div>
+          </section>
+
+          {/* ── RevealCard (THR-799) ───────────────────────────── */}
+          <section id="section-revealcard" style={{ marginBottom: SECTION_GAP }}>
+            <SectionHeading ornamental>RevealCard (THR-799)</SectionHeading>
+            <div style={{ marginTop: '1.25rem' }}>
+              <GameErrorBoundary>
+                <Label>
+                  Ceremonial presentation tier, composed on Modal (z-60, Escape/backdrop close inherited).
+                  Zones: Title → Medallion → Banner → Body → Consequences → Quote → Dismiss, separated by
+                  --space-ceremonial. A zone with no data is omitted entirely.
+                </Label>
+                <Button variant="secondary" size="md" onClick={() => setRevealOpen(true)}>
+                  Open Sample RevealCard
+                </Button>
+                <RevealCard
+                  open={revealOpen}
+                  onClose={() => setRevealOpen(false)}
+                  aria-label="Sample reveal card"
+                >
+                  <RevealCard.Title>{REVEAL_CATEGORY_TITLES.attachment}</RevealCard.Title>
+                  <RevealCard.Medallion title="Old Steel">
+                    <SphereIcon sphere="force" size={44} />
+                  </RevealCard.Medallion>
+                  <RevealCard.Banner>Old Steel</RevealCard.Banner>
+                  <RevealCard.Body>
+                    A blade carried through three winters and one betrayal. It has learned the shape of the hand.
+                  </RevealCard.Body>
+                  <RevealCard.Consequences
+                    label="What follows"
+                    items={[
+                      { id: 'c1', title: 'Steadier in a press', desc: 'Force reads one step kinder.', icon: <SphereIcon sphere="force" size={18} /> },
+                      { id: 'c2', title: 'Known blade', desc: 'Some will recognise it, and act on that.', icon: <SphereIcon sphere="mind" size={18} /> },
+                      { id: 'c3', title: 'A debt of keeping', desc: 'What is held asks to be maintained.', icon: <SphereIcon sphere="matter" size={18} /> },
+                    ]}
+                  />
+                  <RevealCard.Quote attribution="A smith of Darkhollow">
+                    {pickFallbackFlavor('attachment', 'styleguide.sample')}
+                  </RevealCard.Quote>
+                  <RevealCard.Dismiss onClick={() => setRevealOpen(false)} />
+                </RevealCard>
+
+                <Label>RevealCard.Frame — the same zone stack with no Modal wrapper, for embedding inside a surface that is already a modal (no nested modals):</Label>
+                <div className="frame-ceremonial" style={{ maxWidth: '520px', borderRadius: '12px', background: 'linear-gradient(180deg, var(--bg-deep), var(--bg-abyss))' }}>
+                  <RevealCard.Frame>
+                    <RevealCard.Title>{REVEAL_CATEGORY_TITLES.action_card}</RevealCard.Title>
+                    <RevealCard.Medallion title="Kindle">
+                      <SphereIcon sphere="energy" size={44} />
+                    </RevealCard.Medallion>
+                    <RevealCard.Banner>Kindle the Long Road</RevealCard.Banner>
+                    <RevealCard.Quote>{pickFallbackFlavor('action_card', 'styleguide.sample')}</RevealCard.Quote>
+                    <RevealCard.Dismiss label="Receive" onClick={() => {}} />
+                  </RevealCard.Frame>
+                </div>
+
+                <Label>Category titles per reveal kind (REVEAL_CATEGORY_TITLES):</Label>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  {REVEAL_KINDS.map((kind) => (
+                    <div key={kind} style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>
+                      <code>{kind}</code> → {REVEAL_CATEGORY_TITLES[kind]}
+                    </div>
+                  ))}
+                </div>
               </GameErrorBoundary>
             </div>
           </section>

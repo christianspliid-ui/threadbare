@@ -425,6 +425,85 @@ Dropdown.Item  // { children: ReactNode; onClick?: () => void }
 
 ---
 
+## 8. Medallion (THR-799)
+
+**Replaces:** Ad-hoc circular icon treatments in sidebars and reveal surfaces.
+
+### API
+
+```tsx
+interface MedallionProps {
+  size?: 'sm' | 'md' | 'lg';   // 40 / 64 / 96 px — MEDALLION_SIZE_SM/_MD/_LG
+  accentColor?: string;        // ring color; default dim gold, `lg` defaults to --accent-gold
+  title?: string;              // accessible label + hover title
+  children?: React.ReactNode;  // the already-resolved visual
+}
+```
+
+### Render
+Three layers: outer ring (`MEDALLION_RING_WIDTH` 2px) → `MEDALLION_RING_GAP` (3px) of `--bg-abyss` → content disc (`--bg-deep`) that clips its child with `overflow: hidden; border-radius: 50%`.
+
+### Rules
+- **Medallion frames, it does not resolve.** The child is whatever the existing path already produced — `SphereIcon`, a THR-637 `EntityVisual`, a codex glyph, an `<img>`. Never add a second art-resolution path inside it.
+- No child → `MEDALLION_FALLBACK_GLYPH` (`✦`), never an empty disc.
+- `lg` is the hero size and carries the surface's **single** bright-gold element (gold budget). Use `sm`/`md` for chips and headers.
+
+---
+
+## 9. FlavorQuote (THR-799)
+
+**Replaces:** Ad-hoc uses of the `.quote-block` class. The class stays for its existing callers — adoption is additive.
+
+### API
+
+```tsx
+interface FlavorQuoteProps {
+  children?: React.ReactNode;
+  attribution?: string;   // right-aligned source line
+  divider?: boolean;      // ornamental ✦ divider, default true
+}
+```
+
+### Render
+`.inset-well` panel → optional centered `✦` divider flanked by gold hairlines → quote in `--type-flavor` → right-aligned attribution in `--text-xs` / `--text-tertiary`.
+
+### Rules
+- **Renders `null` when it has no children.** A missing prose field removes the zone; it never leaves an empty well.
+- Narrative before mechanics — place the quote above effect/mechanical text, not below it.
+
+---
+
+## 10. RevealCard (THR-799)
+
+The ceremonial presentation tier — between a toast and a full modal — for the moment a minor element enters a life (a trait revealed, a bond formed, a working learned).
+
+**Composed on `Modal`.** It does not fork it: z-60, Escape/backdrop close, and the mount animation are all inherited. `.frame-ceremonial` rides on the panel via Modal's `panelClassName`.
+
+### API
+
+```tsx
+<RevealCard open onClose maxWidth={REVEAL_CARD_MAX_WIDTH} aria-label>   // standalone modal
+<RevealCard.Frame>                                                      // zone stack, NO modal wrapper
+
+RevealCard.Title         // { children }            — category line, letterspaced display caps
+RevealCard.Medallion     // { accentColor, title, children } — hero slot, Medallion size="lg"
+RevealCard.Banner        // { children }            — item name in a full-width .inset-well band
+RevealCard.Body          // { children }            — free prose
+RevealCard.Consequences  // { label, items: ConsequenceItem[] } — Medallion sm chips + Tooltip
+RevealCard.Quote         // { children, attribution } — thin wrapper over FlavorQuote
+RevealCard.Dismiss       // { label?, onClick }     — full-width Button variant="secondary"
+```
+
+### Rules
+- **No nested modals.** A surface that is already a `Modal` embeds `RevealCard.Frame`, never `<RevealCard>` — two portals means two backdrops. `AscendantBeatModal` is the worked example.
+- **Zone omission, not empty zones.** Every zone returns `null` on absent data. The reference card's quality comes from every *visible* zone being full; an empty `(0)` row reads worse than no row.
+- **Gold budget — one bright gold per surface.** The hero medallion ring is it. `Title` is `--text-primary`; `.frame-ceremonial` and the rules are dim-gold *structure*.
+- **`Dismiss` is `secondary`, deliberately.** A reveal has no competing action, so the quiet button reads calm. If a surface needs the player to *choose*, it is not a reveal — use `Modal`.
+- Consequence chips cap at `REVEAL_CONSEQUENCE_CHIP_MAX` (4) and collapse the remainder into a `+N` chip. The label still shows the true total.
+- Chip labels are words, never numeric stats.
+
+---
+
 ## Usage Decision Tree
 
 ```
@@ -442,8 +521,14 @@ Need to display content?
 
 Need to show/hide content?
 ├── Is it a dialog requiring a decision? → Modal
+├── Is it presenting a minor element the player just gained? → RevealCard
+│   └── ...inside a surface that is already a Modal? → RevealCard.Frame
 ├── Is it a menu appearing below a trigger? → Dropdown
 └── Is it a slide-in panel? → AnimateMount (existing)
+
+Need to frame an icon or a quote?
+├── Circular icon with ring treatment? → Medallion
+└── Flavor prose in a recessed well? → FlavorQuote
 ```
 
 ---

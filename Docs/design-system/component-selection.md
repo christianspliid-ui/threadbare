@@ -58,6 +58,21 @@
 
 **Rule:** For new modal features, use `Modal` (shared) and compose content inside it. Only create a custom modal component if the interaction pattern is fundamentally different from standard dialog behavior.
 
+#### RevealCard vs Modal vs EventPopup (THR-799)
+
+These three are the same family at three fidelities. Pick by *what the player has to do*, not by how important the content feels:
+
+| The moment is… | Component | Why |
+|---|---|---|
+| The player must **decide** something (confirm, choose, spend) | `Modal` | Competing actions need a footer with real buttons. RevealCard's single quiet dismiss would bury the choice. |
+| The player has **gained** a minor element and needs only to see it | `RevealCard` | Ceremonial zones, hero medallion, flavor well. One dismiss, no decision. |
+| A plain informational notification with nothing to look at | `EventPopup` compact path | Flat accent strip + title + body. Cheap, fast, unceremonious. |
+| A sphere-carrying informational event | `EventPopup` ceremonial path | Routes into RevealCard automatically — see `isCeremonialPopup`. |
+
+`EventPopup` decides its own tier: **sphere present AND no choices** → ceremonial; anything else → compact. The sphere requirement is not decoration — it is the event's only canonical visual identity (there is no per-event art registry), so without it the medallion has nothing to hold. The no-choices requirement is the decision rule above.
+
+Inside a surface that is **already** a `Modal`, embed `RevealCard.Frame` (the zone stack) rather than `<RevealCard>` (which portals its own Modal). Nesting produces two backdrops.
+
 ### Show a notification or indicator
 
 | Need | Component | Notes |
@@ -102,6 +117,9 @@ These live in `src/components/shared/` and are the building blocks. **Always che
 | `IconButton` | Icon-only compact button | Toolbar actions, close buttons, toggle controls. Has badge slot. |
 | `Card` | Content wrapper | Any bounded content area. Use Header/Body/Footer compounds. |
 | `Modal` | Dialog overlay | Any centered overlay dialog. Escape to close, backdrop click. |
+| `RevealCard` | Ceremonial reveal surface | A minor element the player just gained, with nothing to decide. Composed on Modal. Use `RevealCard.Frame` inside an existing modal. |
+| `Medallion` | Circular icon frame | Ringed, clipping icon disc. sm 40 / md 64 / lg 96. Frames an already-resolved visual — never a second art path. |
+| `FlavorQuote` | Inset quote well | Flavor prose above mechanical text. Renders nothing when empty. |
 | `Tooltip` | Hover information | Progressive disclosure Tier 1. Smart-positioned, viewport-aware, supports nested hover. |
 | `Dropdown` | Menu picker | Portal-based, escape/outside-click to close. Compound: Dropdown.Item. |
 | `ListRow` | Interactive list item | Any selectable row. Compound: Title, Subtitle, Leading. |
