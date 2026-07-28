@@ -699,14 +699,24 @@ const BUILT_SCENE_GENERICS: readonly EncounterImageEntry[] = [
 }));
 
 /**
- * Generic archetype portraits still to generate. The plain-hooded-traveler
- * baseline shipped in batch 1 (`PORTRAIT_TRAVELER` above) and is therefore absent
- * from this list — these extend it across the role vocabulary the cast lists draw
- * on. Until they land, every one of these roles resolves to the traveler baseline
- * via the `portrait` category generic, which is why this batch is last: the
- * fallback is already correct, just unspecific.
+ * Generic archetype portraits, generated in batch 4 (2026-07-28). These extend
+ * the plain-hooded-traveler baseline (`PORTRAIT_TRAVELER` above) across the role
+ * vocabulary the cast lists draw on; the baseline remains the `portrait` category
+ * generic, so an unlisted role still resolves to a real image.
+ *
+ * **Every archetype's face is a void, and that is the design, not a limitation.**
+ * A portrait row is reused for *any* unportrayed agent reading as that role, so a
+ * legible face would sooner or later contradict a named agent it is shown beside
+ * — the wrong age, the wrong build, a beard the prose says is absent. Each figure
+ * is therefore identified entirely by garment and gear, with the head covered
+ * (hood, coif, brimmed hat, cowl, shawl) so the shadow is motivated rather than
+ * uncanny. This matches the shipped traveler baseline exactly.
+ *
+ * Deliberately carrying no sphere-coloured thread, though STYLE.md's actor
+ * default allows a signature one: a thread would assert a sphere the depicted
+ * agent may not hold, which is the same genericity failure as a legible face.
  */
-const PORTRAIT_SLOTS: readonly EncounterImagePlanSlot[] = [
+const PORTRAIT_ARCHETYPE_ROLES = [
   'soldier',
   'merchant',
   'priest',
@@ -722,24 +732,30 @@ const PORTRAIT_SLOTS: readonly EncounterImagePlanSlot[] = [
   'beggar',
   'elder',
   'child',
-].map((role) => ({
-  id: `portrait.${role}`,
-  kind: 'portrait' as const,
-  concepts: [role, 'portrait', 'archetype'],
-  mood: 'neutral' as const,
-  genericity: `Any unportrayed agent reading as a ${role}; deliberately unspecific so it never contradicts a named identity.`,
-  brief: `A generic ${role}, three-quarter view, face shadowed enough to stay unspecific. Match the shipped plain-hooded-traveler baseline at /concept-art/portraits/traveler.jpg.`,
-  batch: 4,
-}));
+] as const;
+
+const PORTRAIT_ARCHETYPES: readonly EncounterImageEntry[] =
+  PORTRAIT_ARCHETYPE_ROLES.map((role) => ({
+    id: `portrait.${role}`,
+    path: `/concept-art/portraits/${role}.jpg`,
+    kind: 'portrait' as const,
+    concepts: [role, 'portrait', 'archetype'],
+    mood: 'neutral' as const,
+    genericity: `Any unportrayed agent reading as a ${role}; deliberately unspecific so it never contradicts a named identity.`,
+  }));
 
 /**
- * The full generation worklist. Batches ship in ascending order; a batch is
- * complete when every slot in it has a matching `ENCOUNTER_IMAGE_LIBRARY` row
- * and the plan entry has been deleted. `check:image-library` reports progress.
+ * The full generation worklist — **empty as of batch 4 (2026-07-28)**: every
+ * planned slot has graduated into `ENCOUNTER_IMAGE_LIBRARY`.
+ *
+ * It stays declared rather than being deleted, because the two-table split is the
+ * mechanism that makes future art batches safe: a new slot added here cannot
+ * resolve to a broken `<img>` (it carries no path at all), and
+ * `check:image-library` sweeps both directions so an unregistered image cannot
+ * sit orphaned either. Add slots here to open a new batch; move them across when
+ * the art lands.
  */
-export const ENCOUNTER_IMAGE_PLAN: readonly EncounterImagePlanSlot[] = [
-  ...PORTRAIT_SLOTS,
-];
+export const ENCOUNTER_IMAGE_PLAN: readonly EncounterImagePlanSlot[] = [];
 
 // ── The library (declared last; see the note above `FATE_BANDS`) ─────
 
@@ -754,6 +770,7 @@ export const ENCOUNTER_IMAGE_LIBRARY: readonly EncounterImageEntry[] = [
   ...FATE_ART,
   ...NUDGE_CONCEPT_ART,
   PORTRAIT_TRAVELER,
+  ...PORTRAIT_ARCHETYPES,
 ];
 
 /**

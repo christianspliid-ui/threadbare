@@ -185,6 +185,55 @@ Four things worth recording:
   batch 1's Reach-by-Reach rule; the coherent unit for a scene is a finished
   place, not a filled slot.
 
+### Batch 4 — what shipped (2026-07-28, THR-832)
+
+15 archetype portraits at `public/concept-art/portraits/<role>.jpg`, all
+**896×1200 (3:4)** to match the shipped traveler baseline — the first and only
+batch that is not 16:9 — re-encoded JPEG q92 progressive: **9.0 MB → 2.4 MB**.
+Library goes 110 → **125 rows**, plan 15 → **0 slots**. `ENCOUNTER_IMAGE_PLAN` is
+now **empty**, which closes the generation worklist THR-777 opened.
+
+Four things worth recording:
+
+- **Every archetype's face is a void, and that is the design rather than a
+  limitation.** The checkpoint predicted this batch would invert the failure
+  mode: batches 1–3 risked an *unwanted* figure, batch 4 risks an *over-specific*
+  one — a face distinct enough to contradict a named agent shown beside it. The
+  shipped traveler baseline had already solved it (the hood contains pure
+  darkness), so batch 4 matched it literally: each figure is identified entirely
+  by garment and gear. **The design decision that made this hold across all 15
+  was giving every archetype a period-plausible head covering** — hood, coif,
+  brimmed hat, cowl, blanket-shawl — so the shadow is *motivated*. A bare-headed
+  figure with a void face reads as horror; a hooded one reads as anonymous.
+- **They deliberately carry no sphere-coloured thread**, though STYLE.md's actor
+  default permits a signature one. A thread would assert a sphere the depicted
+  agent may not hold — the same genericity failure as a legible face, in a row
+  reused for *any* agent of that role.
+- **The contact sheet caught defects for the fourth batch in four** (impediment
+  #261), and this time a *second* sheet of head crops was what made one of them
+  unmissable. `portrait.guard` returned a fully rendered bearded face under an
+  open-faced kettle helm — precisely the predicted failure — and `portrait.healer`
+  returned **as a framed painting hanging on a wall**, wooden frame included.
+  Both passed `check:image-library`: the files existed, decoded, and were
+  correctly named. Guard was fixed by wrapping the head in a coif and hood so the
+  helm no longer offers an open face to fill; healer by dropping the phrase
+  *"standing to be painted"* (which the generator literalised into a painted
+  object) and excluding the frame explicitly. **A new generalisation for #261:
+  when the failure mode is known in advance, crop for it** — a grid of head crops
+  found in one look what the full sheet showed only faintly.
+- **Emptying the plan turned an existing test vacuous, and it was repaired rather
+  than left green.** `every plan slot carries a non-empty generation brief`
+  filters an array that is now empty, so it passes by matching nothing. It is
+  kept as a guard for future batches, with a new test above it pinning
+  `ENCOUNTER_IMAGE_PLAN` as empty — so the population is asserted rather than
+  assumed, and a future batch that adds slots makes the guard live again.
+
+**`ENCOUNTER_IMAGE_PLAN` stays declared though empty.** The two-table split is the
+mechanism, not the bookkeeping: a slot added there cannot resolve to a broken
+`<img>` because it carries no path, and the checker sweeps both directions so an
+unregistered image cannot sit orphaned. Deleting the table would remove the
+property that made this ticket batched and resumable.
+
 **The `scene` category generic was left at `scene.wilderness.hills`.** Batch 3
 makes a built-place generic (`scene.settlement`) available for the first time,
 and there is a real argument that an unmatched *scene* query is likelier to want
@@ -304,7 +353,7 @@ None. This changes no rule of play — no turn structure, action verb, prerequis
 - [x] **Batch 1 generated** (2026-07-28) — 48 fate + traveler baseline registered; `check:image-library` reports 80 rows, 45 slots, no batch-1 remainder.
 - [x] **Batch 2 generated** (2026-07-28, THR-832) — 16 nudge concept generics registered and `generic.blessing` installed as the `nudge` category generic; `check:image-library` reports 96 rows, 29 slots, no batch-2 remainder.
 - [x] **Batch 3 generated** (2026-07-28, THR-832) — 14 built/social scene generics registered; `check:image-library` reports 110 rows, 15 slots, no batch-3 remainder. Two contract tests added pinning that a built place resolves to its own row rather than falling through to a wilderness plate.
-- [ ] Batch 4 generated — subsequent run; the checker's per-batch counts are the progress readout.
+- [x] **Batch 4 generated** (2026-07-28, THR-832) — 15 archetype portraits registered at 896×1200; `check:image-library` reports **125 rows, 0 slots**. `ENCOUNTER_IMAGE_PLAN` is empty, closing the worklist. Three contract tests added: every archetype resolves to its own row via `tag_query`, an unlisted role falls to the traveler generic, and the plan is pinned empty so the brief guard's new vacuity is explicit.
 
 ## Coordination block
 

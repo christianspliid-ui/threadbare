@@ -110,7 +110,17 @@ describe('encounter image library — manifest integrity', () => {
     }
   });
 
+  it('the generation plan is empty — every planned slot has shipped', () => {
+    // Batch 4 (2026-07-28) emptied the worklist. This is asserted explicitly
+    // because it is what makes the *next* test vacuous: a filter over an empty
+    // array passes by matching nothing. Pinning the population here means that
+    // if a future batch adds slots, the brief guard below starts doing real work
+    // again and this test is the one that announces the change.
+    expect(ENCOUNTER_IMAGE_PLAN.map((s) => s.id)).toEqual([]);
+  });
+
   it('every plan slot carries a non-empty generation brief', () => {
+    // Guards future batches. Currently vacuous by construction — see above.
     const briefless = ENCOUNTER_IMAGE_PLAN.filter(
       (s) => !s.brief || s.brief.trim().length === 0,
     ).map((s) => s.id);
@@ -246,6 +256,50 @@ describe('resolveEncounterImage — the resolve chain', () => {
     });
     expect(result.source).toBe('exact_tag');
     expect(result.path).toBe('/concept-art/nudge/focus.jpg');
+  });
+
+  it('every archetype portrait resolves to its own row, not the traveler generic', () => {
+    // What batch 4 bought. Before it, `portrait.traveler` was the only portrait
+    // row, so every role query missed the bar and fell to the category generic —
+    // serving one hooded traveler for a soldier, a child and a noble alike.
+    // The list is the measured resolution set, probed before the assertion was
+    // written, rather than the role list copied from the manifest.
+    const roles = [
+      'soldier',
+      'merchant',
+      'priest',
+      'scholar',
+      'labourer',
+      'noble',
+      'outlaw',
+      'healer',
+      'crafter',
+      'sailor',
+      'farmer',
+      'guard',
+      'beggar',
+      'elder',
+      'child',
+    ];
+    const resolved = roles.map((role) => {
+      const r = resolveEncounterImage({ concepts: [role], kind: 'portrait' });
+      return `${role}: ${r.source} -> ${r.entry?.id}`;
+    });
+    expect(resolved).toEqual(
+      roles.map((role) => `${role}: tag_query -> portrait.${role}`),
+    );
+  });
+
+  it('an unlisted role falls to the traveler generic, not to a wrong archetype', () => {
+    // The genericity guarantee runs both ways: an archetype must win its own
+    // query (above) and must NOT be served for a role nobody generated. A
+    // near-miss here would put a beggar's rags on a tinker.
+    const result = resolveEncounterImage({
+      concepts: ['tinker', 'wanderer'],
+      kind: 'portrait',
+    });
+    expect(result.source).toBe('category_generic');
+    expect(result.entry?.id).toBe('portrait.traveler');
   });
 
   it('an unmatched nudge tag falls to the blessing generic, not to null', () => {
