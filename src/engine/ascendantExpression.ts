@@ -28,7 +28,7 @@
 import type { WorldGraph } from './graph';
 import type { GameState } from '../types/gameState';
 import type { GraphNode } from '../types/graph';
-import type { PendingEncounterSeed } from '../types/unifiedAction';
+import type { PendingEncounterSeed, HiddenMark } from '../types/unifiedAction';
 import type { SphereName } from '../types/index';
 import type { ReachDomain } from '../types/traits';
 import type { AttachmentEffect } from '../types/effects';
@@ -44,6 +44,8 @@ import {
   TRAP_SPRUNG_TEMPLATE_ID,
   TRAP_SEED_PRIORITY,
   TRAP_SEED_DELAY_TICKS,
+  CURSE_MARK_SEVERITY,
+  CURSE_MARK_REVEAL_FAMILIES,
 } from '../data/ascendant-expression-constants';
 import { emitTrace } from './traceBuffer';
 
@@ -560,6 +562,124 @@ function emitPlantTrapNoOp(
     summary: `plant_trap no-op: ${reason} (sublocation ${sublocationId})`,
     ascendantId,
     sublocationId,
+    failSoft: reason,
+  } as never);
+}
+
+// ─── THR-661: curse_artifact — the bearer's hidden mark ───────────────────────
+
+export interface CurseMarkResult {
+  readonly success: boolean;
+  readonly markId: string | null;
+  readonly holderId: string | null;
+  readonly failSoft?: 'missing_artifact' | 'not_an_artifact' | 'unpossessed';
+}
+
+/**
+ * Resolve the mortal currently carrying an artifact: the source of an incoming
+ * `possesses` or `bonded_to` edge. `possesses` wins when both exist (a bonded
+ * artifact that is also carried is still *carried* by the same agent; the pair is
+ * checked in that order everywhere else in the engine — see `domainCapability.ts`).
+ * Returns null for an artifact sitting in the world with no bearer.
+ */
+function resolveArtifactHolderId(graph: WorldGraph, artifactId: string): string | null {
+  for (const edgeType of ['possesses', 'bonded_to'] as const) {
+    const edge = graph.getIncomingEdges(artifactId, edgeType)[0];
+    if (edge) return edge.source;
+  }
+  return null;
+}
+
+/**
+ * THR-661 — the deferred half of THR-605 Slice 2's `curse_artifact`.
+ *
+ * The graph-executor op (`executeCurseArtifact`) binds the concealed per-tick
+ * quintessence drain into the artifact and is untouched by this function. What it
+ * could not do is leave a trace on the *person*: hidden marks live on
+ * `GameState.hiddenMarks`, not on graph nodes, so placing one needs the resolution-
+ * intercept path's GameState. This adds exactly that — if the cursed object is in
+ * someone's hands, the curse leaves a findable residue on its bearer, surfaced later
+ * through the shipped reveal loop (`evaluateMarkReveals` at scoring time,
+ * `consumeMatchingMarks` at resolution).
+ *
+ * Fail-soft in every direction (NFP #4): a missing artifact, a non-artifact target,
+ * or an unpossessed object all no-op and leave the drain — which the executor has
+ * already applied — entirely intact. Cursing an object nobody carries is still a
+ * successful curse; it simply has no one to mark yet.
+ *
+ * Deterministic (NFP #3): the mark id is derived from (artifact, holder, tick), so
+ * the same cast in the same world produces the same id. No PRNG draw.
+ */
+export function applyCurseMark(
+  state: GameState,
+  ascendantId: string,
+  artifactId: string,
+  tick: number,
+): CurseMarkResult {
+  const artifact = state.graph.getNode(artifactId);
+  if (!artifact) {
+    emitCurseMarkNoOp(ascendantId, artifactId, 'missing_artifact', tick);
+    return { success: false, markId: null, holderId: null, failSoft: 'missing_artifact' };
+  }
+  if (artifact.type !== 'artifact') {
+    emitCurseMarkNoOp(ascendantId, artifactId, 'not_an_artifact', tick);
+    return { success: false, markId: null, holderId: null, failSoft: 'not_an_artifact' };
+  }
+
+  const holderId = resolveArtifactHolderId(state.graph, artifactId);
+  if (!holderId) {
+    // The curse still stands — it is bound to the object, and will drain whoever
+    // picks it up. There is simply nobody to mark yet.
+    emitCurseMarkNoOp(ascendantId, artifactId, 'unpossessed', tick);
+    return { success: true, markId: null, holderId: null, failSoft: 'unpossessed' };
+  }
+
+  const markId = `curse_mark_${artifactId}_${holderId}_${tick}`;
+  // GraphNode carries the display name on `name`; `properties.name` is a fallback
+  // for nodes minted by content paths that only fill the property bag.
+  const artifactName = artifact.name
+    ?? (artifact.properties?.name as string | undefined)
+    ?? 'an object';
+  const mark: HiddenMark = {
+    markId,
+    category: 'concealed_action',
+    severity: CURSE_MARK_SEVERITY,
+    label: `A malediction bound into ${artifactName}, carried without knowing`,
+    sourceEncounterId: `curse_artifact_${artifactId}_${tick}`,
+    placedTick: tick,
+    targetAgentId: holderId,
+    revealFamilies: CURSE_MARK_REVEAL_FAMILIES,
+  };
+  state.hiddenMarks = [...(state.hiddenMarks ?? []), mark];
+
+  emitTrace({
+    tick,
+    category: ASCENDANT_EXPRESSION_TRACE_CATEGORY,
+    type: 'curse_mark',
+    summary: `curse_artifact marked bearer ${holderId} (artifact ${artifactId}, severity ${CURSE_MARK_SEVERITY})`,
+    ascendantId,
+    artifactId,
+    holderId,
+    markId,
+    severity: CURSE_MARK_SEVERITY,
+  } as never);
+
+  return { success: true, markId, holderId };
+}
+
+function emitCurseMarkNoOp(
+  ascendantId: string,
+  artifactId: string,
+  reason: NonNullable<CurseMarkResult['failSoft']>,
+  tick: number,
+): void {
+  emitTrace({
+    tick,
+    category: ASCENDANT_EXPRESSION_TRACE_CATEGORY,
+    type: 'curse_mark',
+    summary: `curse_mark no-op: ${reason} (artifact ${artifactId})`,
+    ascendantId,
+    artifactId,
     failSoft: reason,
   } as never);
 }

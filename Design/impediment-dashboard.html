@@ -5172,6 +5172,32 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "**Rule: a boolean guard whose subject is drawn from the same collection it is being tested against is vacuous by construction — check the derivation before trusting the green.** This is `vacuous_probe_empty_population` narrowed from a population to a single predicate: the failure is identical (a check that cannot fail reads exactly like a check that passes), but there is no empty list to notice, so the usual \"pin the population first\" reflex does not reach it. Repaired by binding the ceiling to `OPEN_DRAW_ATTENTION_TIER` (`background`) — a property of the template rather than a restatement of the step — and pinned with three liveness cases, the first of which is red against the old predicate. **Generalizable companion rule: repairing a vacuous check earns an obligation to demonstrate the new predicate can fail, in the same commit.** Without it the repair is unfalsifiable and the next reader inherits the same untrustworthy green.",
     "session": "THR-838 pass 2, hourly `tb-opus-pickup` run, 2026-07-28"
+  },
+  {
+    "num": "283",
+    "id": 283,
+    "count": 1,
+    "date": "2026-07-29",
+    "category": "verification",
+    "description": "**The idiomatic constant to copy was the one that would have made the feature dead, and every test would still have been green.** THR-661 places a hidden mark on a cursed artifact's bearer. The neighbouring, freshly-shipped THR-741 marks in `divine-working-aftermath.ts` set `revealFamilies: DIVINE_WORKING_REVEAL_FAMILIES` — an exported, well-commented constant sitting in the file you read to learn the pattern, and the obvious thing to reuse. It is `['hex.', 'loc.', 'artifact.']`. Those are the **ascendant's** own casting families, correct there because THR-741's mark sits on the ascendant. THR-661's mark sits on a **mortal**, and `evaluateMarkReveals` matches `templateId.startsWith(family)`, so measured against the live 672-template pool those three prefixes match **zero** mortal-drawable templates. The mark would have been placed, decayed on schedule, and been unrevealable by construction — while unit tests asserting placement, severity, category and even `revealFamilies` equality all passed.",
+    "consequence": "Would have shipped a feature that is 100% dead at the only point that matters, with full green evidence and a plausible provenance story (\"reused the shipped constant\"). Caught only by asking what the *bearer* can draw before choosing the families — a question the ticket's own spec did not force, since it said \"set to the investigation/veil encounter family prefix\" and `investigation` is itself dead.",
+    "impact": "L",
+    "workaroundFound": true,
+    "workaround": "**Rule: a mark, seed, or hook that names a target audience by string prefix must have its prefix measured against the population that audience can actually draw — and the audience is whoever *carries* the consequence, not whoever caused it.** The generalisable trap is that a constant's correctness is relative to its *bearer*, so copying it across a bearer change silently inverts it. Concretely: enumerate the pool, filter to the bearer's `actorAffinities`, and assert `startsWith` matches ≥1 — with the population pinned first so an empty filter cannot pass vacuously (`vacuous_probe_empty_population`). `src/engine/__tests__/curseMark.test.ts` carries this as a reusable block. **The same check applied corpus-wide found the general case: `investigation` (the single most-used family), `mercenary` and `brinewall` all match zero templates — 66 of 138 entries across 19 content files — and `Docs/plans/2026-04-16-systemic-wiring-guide.md` teaches the dead literal as its worked example.** Filed THR-844; guide corrected in place.",
+    "session": "THR-661, hourly `tb-opus-pickup`, 2026-07-29"
+  },
+  {
+    "num": "284",
+    "id": 284,
+    "count": 1,
+    "date": "2026-07-29",
+    "category": "tooling",
+    "description": "**`save_issue` silently dropped `project` on issue creation — the field is simply absent from the 200 response, not rejected.** Filing THR-843 with `project: \"Action System & Unlocks\"` (the name, as the schema's `Project name, ID, or slug` invites) returned a fully-populated issue object with **no `project` key at all** and no error. Every other field on the same call — title, description, labels, priority, state — stuck. Re-issuing `save_issue` with the project **UUID** worked first time. Same shape as impediment #48 (state writes) but on a different field and only on the create path.",
+    "consequence": "Two orphan issues would have shipped in violation of the standing \"every Linear issue belongs to a project — no orphans\" rule, invisible in every project-scoped board view and therefore never picked up. Cheap to fix once noticed; the cost is entirely in *not* noticing, since the create call looks successful.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "**Pass project as a UUID, and verify-after-write on the create path exactly as claim discipline already requires on the state path.** Reading the returned object for the field you just set is the whole check — it is already in hand, no extra call needed, and it distinguishes \"dropped\" from \"accepted\" for free. Generalises the existing `linear_save_issue_field_drops` note from update to **create**, and from `state` to any name-resolved reference field: prefer the UUID whenever the schema offers `name, ID, or slug`, since name resolution is where the silent drop lives.",
+    "session": "THR-661 closeout (filing THR-843 / THR-844), 2026-07-29"
   }
 ];
 // ── End data ──
