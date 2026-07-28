@@ -1,6 +1,6 @@
 # Briefing
 
-**Generated:** 2026-07-28 05:56 local (2026-07-28 03:56 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-07-28 06:54 local (2026-07-28 04:54 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
@@ -10,39 +10,33 @@ This is your inbox. It's rewritten every hour by a Claude Code task. Standing sw
 
 ## Queue
 
-**21 jobs ready — none top-priority, four middling, seventeen minor. One job in flight. Nothing stale, and nothing blocked.**
+**21 jobs ready — none top-priority, four middling, seventeen minor. Nothing in flight. Nothing stale, nothing blocked.**
 
-Depth did not move at all: nothing came off the shelf and nothing was written onto it. The hour's work happened entirely inside the job already in flight.
+**The bench emptied.** The artwork job finished and closed at 06:40, and nothing has been picked up since — so the shelf reads 21 for the third hour running, and the single work slot is free. The next pickup falls about six minutes after this brief was written.
 
-**"Nothing blocked" was checked this hour rather than repeated.** Earlier runs asserted it; this one opened the top job — the big encounter rewrite — and read what it is waiting on. All three things it named are finished. **It is genuinely free to start, and has been for ten and a half hours.**
+**That matters because of what is now first in line.** The big encounter rewrite — the job that spends the whole encounter programme, turning a hundred-odd existing encounters into the new nudge shape — has been free to start for **eleven and a half hours**, and now has an empty slot in front of it as well. Its three prerequisites were re-checked this hour rather than carried forward on memory: all three are finished.
 
-That is worth one plain observation, and it is the crew's call rather than yours: the rewrite is the payoff of the whole encounter programme, and the job currently holding the single work slot is the last batch of artwork — **fifteen character portraits, the one batch whose stand-in already looks right.** The rewrite's own notes say the artwork is allowed to run late, because an encounter without its picture falls back gracefully. **The finishing work is being done before the work it finishes.** Recorded as a thing that is true and was not visible before, not as a problem handed to you.
+**Last hour this file recorded a worry; this hour it resolved, and against itself — which is worth reporting rather than quietly dropping.** The worry was that the finishing work (artwork) was being done ahead of the work it finishes (the rewrite), while the rewrite sat waiting. **It cost nothing.** The artwork ran to completion in about two and a half hours and released the slot; the rewrite lost only wall-clock it could not have used anyway, because the crew deliberately works one job at a time. The ordering was a side-effect of that one-job rule rather than a misjudgement — which is exactly what the test set last hour said would settle it.
 
-**Still no top-priority job on the board** — ninth hour running. Seventeen of twenty-one are minor loose ends the crew found while doing other things, so "backed up" stays a threshold artefact rather than an alarm.
+**Still no top-priority job on the board** — tenth hour running. Seventeen of the twenty-one are minor loose ends the crew found while doing other things, so "backed up" stays a threshold artefact rather than an alarm.
 
 ## Freshness
 
-**Home tree: fully current.** Right branch, nothing stranded, and last hour's two-commit lag has closed to zero — that is autosync doing its job. The same two harmless leftovers (permission entries a past session added to the tool config) and Friday's retro draft still outside version control, with an owner.
+**Home tree: fully current.** Right branch, nothing stranded, nothing behind. The same two harmless leftovers (permission entries a past session added to the tool config) and Friday's retro draft still sit outside version control, with an owner.
 
-**Cleanup reaper: alive, ran at 05:40, clean, nothing awaiting a human decision.** **Discord: nothing new from you**, so no reply was owed and none was sent.
+**Cleanup reaper: alive, ran at 06:40, clean, nothing awaiting a human decision.** **Discord: nothing new from you**, so no reply was owed and none was sent.
+
+**The crew member that decides what to work on next has now missed eight check-ins.** Its last recorded run is still 22:27 the night before last. One thing was re-checked rather than restated: the scheduler *is* still handing it its next slot every hour, on time — so what fails is the run itself, before it records anything, not the scheduling of it. Every other hourly routine clocked in normally, including the one writing this. **The deadline this file set itself is not moved, for the eighth time and on the same ground.** It falls at this morning's 10:53 run. If the lane still hasn't fired by then, that is a scheduling fault to repair — not a judgement to revisit.
 
 ## What's moving
 
-**The encounter pictures now cover the places encounters happen in — and the set turned out to be a quarter of the size it was estimated at.**
+**The encounter picture library is finished.** The last batch landed at 06:40: **fifteen character portraits**, one for each kind of person an encounter can put in front of you — *farmer, crafter, merchant, guard, soldier, sailor, labourer, healer, priest, scholar, noble, outlaw, beggar, elder, child.*
 
-Batch three landed at 05:22: **fourteen scene plates**, one per kind of built or social place a mortal can be standing in — the *guild hall* (benches, a peg-and-cord tally board, one trade's tools, a single lamp), the *tavern* (hearth going, chairs pushed back, tankards left), the *court* (a long flagged approach to a small distant dais), the *ford* (a roped-off ferry raft, water breaking white over the crossing), the *siege* (engines under canvas, the wall still unbreached).
+**They follow the same reuse discipline as the scene plates that shipped an hour before them.** A portrait is not one named person; it is reused for *any* unportrayed figure reading as that role, so it has to look like a farmer without looking like a *particular* farmer some encounter might contradict. The plain hooded traveller from the first batch stays on as the catch-all for anything outside the fifteen.
 
-**Every one of them is deliberately empty of people.** A scene plate gets reused across many unrelated encounters, so any figure painted into it would assert a cast the encounter might contradict. The place is evidenced by its objects instead — the market by its scales and stacked goods, the court by its dais and long approach. Three of them (*a settlement, the same settlement rebuilding, the same settlement after something went through it*) were made as one unit against a shared vocabulary of roofs, timber and palisade, so they read as one place in three states rather than three unrelated villages.
+**The library now stands at 125 pictures with nothing left to draw**, closing a worklist opened four batches ago: the fate images and the traveller baseline, then the sixteen nudge cards, then the fourteen places, and now the fifteen faces. **Every encounter in the game can now show something real** instead of falling back to a coloured gradient.
 
-**The estimate fell from about sixty to fourteen, and the reason is reuse rather than cutting.** The outdoor half of that list was already covered by terrain artwork that shipped earlier, and was promoted into the library instead of being drawn a second time.
-
-**Fifteen pictures remain** — the character portraits — and the job stays open on the board until they exist, which is how it was written. The stand-in for all fifteen is the plain hooded traveller from batch one: **already correct, just unspecific.** Batch three took roughly forty minutes.
-
-**The crew member that decides what to work on next has now missed seven check-ins, and this hour adds nothing new to the picture.**
-
-Its last recorded run is still 22:27 the night before last; seven slots have come and gone since. Every other hourly routine clocked in normally throughout, including the one writing this. **This is the seventh identical reading, and a reading repeated is not a reading strengthened** — it is recorded flat, and nothing is concluded from the repetition that wasn't concluded from the first one.
-
-**The deadline this file set itself is not moved forward, for the seventh time and on the same ground.** It falls at this morning's 10:56 run and stands unchanged. If the lane still hasn't fired by then, that is a scheduling fault to repair — not a judgement to revisit.
+One note on how it was built, because it decides whether a library like this stays alive or quietly rots: the fifteen portraits are not fifteen hand-written entries but a single list of roles that generates its own rows and file paths. **A sixteenth archetype is a one-word edit**, not a copy-paste.
 
 ---
 *Standing asks live in [`Design/user-actions.md`](user-actions.md). This file is regenerated hourly by the `keep-work-flowing-cc` scheduled task; staleness is visible from the Generated timestamp above and the task's `lastRunAt` in `list_scheduled_tasks`.*
