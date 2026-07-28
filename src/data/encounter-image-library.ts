@@ -520,33 +520,15 @@ const TERRAIN_SCENE_GENERICS: readonly EncounterImageEntry[] = [
   },
 ];
 
-/**
- * The full library. Ordered by category for readability; the resolver sorts by
- * score and then by `id`, so declaration order is never load-bearing (NFP #3).
- */
-export const ENCOUNTER_IMAGE_LIBRARY: readonly EncounterImageEntry[] = [
-  ...BRANCHING_HERO_ART,
-  ...TERRAIN_SCENE_GENERICS,
-];
+// ── Fate art (batch 1, shipped) ─────────────────────────────────────
+//
+// `ENCOUNTER_IMAGE_LIBRARY` and `ENCOUNTER_IMAGE_CATEGORY_GENERIC` are declared
+// below the fate and portrait rows rather than here, because their initializers
+// spread `FATE_ART`, which cannot be referenced before `FATE_BANDS` leaves its
+// temporal dead zone. Declaration order is never load-bearing for resolution
+// (the resolver sorts by score then `id`, NFP #3) — only for module evaluation.
 
-/**
- * Category fallbacks — the "category generic" rung of the resolve chain. When a
- * tag query finds nothing above `IMAGE_MATCH_MIN_SCORE`, the resolver serves the
- * kind's generic rather than dropping straight to the gradient tile.
- *
- * `nudge`, `fate` and `portrait` have no category generic yet; their entries are
- * absent rather than pointed at a stand-in, so those kinds degrade honestly to
- * EntityVisual until batch 1 lands.
- */
-export const ENCOUNTER_IMAGE_CATEGORY_GENERIC: Partial<
-  Record<EncounterImageKind, string>
-> = {
-  scene: 'scene.wilderness.hills',
-};
-
-// ── The generation worklist (art that does not exist yet) ───────────
-
-/** Outcome bands, in ladder order, for fate-slot generation. */
+/** Outcome bands, in ladder order. Keys the fate set and generation alike. */
 const FATE_BANDS: readonly StepOutcome[] = [
   'critical_success',
   'success',
@@ -556,8 +538,14 @@ const FATE_BANDS: readonly StepOutcome[] = [
   'critical_failure',
 ];
 
-/** Short per-band direction, composed with the Reach metaphor into a brief. */
-const FATE_BAND_DIRECTION: Record<StepOutcome, string> = {
+/**
+ * Short per-band direction, composed with the Reach metaphor into the brief each
+ * shipped fate image was generated from. Retained (and exported) after batch 1
+ * because it is the record of *why* each image looks as it does — a taste pass or
+ * a regeneration needs the original direction, not a guess at it. The resolver
+ * never reads this table.
+ */
+export const FATE_BAND_DIRECTION: Record<StepOutcome, string> = {
   critical_success: 'the metaphor at its fullest — whole, lit, decisive',
   success: 'the metaphor holding true, unspectacular and sound',
   success_at_cost: 'the metaphor intact but visibly paid for — chipped, scorched, short',
@@ -566,24 +554,57 @@ const FATE_BAND_DIRECTION: Record<StepOutcome, string> = {
   critical_failure: 'the metaphor broken past repair — shattered, extinguished, scattered',
 };
 
-function fateSlots(): readonly EncounterImagePlanSlot[] {
-  const slots: EncounterImagePlanSlot[] = [];
+/**
+ * The full fate set — 8 Reaches × 6 outcome bands, all generated in batch 1.
+ *
+ * Keyed on `ReachDomain × StepOutcome` (the resolved ladder), not on the
+ * five-valued pre-roll forecast: the verdict this set serves — *a failed Iron
+ * encounter must not look like a failed Gold one* — is about what the player sees
+ * **after** fate picks.
+ *
+ * `bands` is a list rather than a single value, so a later taste pass can point
+ * one image at several bands (collapsing, say, `success_at_cost` and `near_miss`
+ * within a Reach) by editing this table and deleting files — no schema change.
+ *
+ * Every row is generic by construction: a fate image names no entity and shows no
+ * agent at all, so it reads correctly in any encounter that resolves that band in
+ * that Reach.
+ */
+function fateArt(): readonly EncounterImageEntry[] {
+  const rows: EncounterImageEntry[] = [];
   for (const reach of Object.keys(FATE_REACH_METAPHORS) as ReachDomain[]) {
     for (const band of FATE_BANDS) {
-      slots.push({
+      rows.push({
         id: `fate.${reach}.${band}`,
+        path: `/concept-art/fate/${reach}-${band.replace(/_/g, '-')}.jpg`,
         kind: 'fate',
         concepts: ['fate', 'outcome', reach],
         reach,
         bands: [band],
         genericity: `Every ${reach}-Reach step that resolves ${band}, across all encounters.`,
-        brief: `${FATE_REACH_METAPHORS[reach]}; ${FATE_BAND_DIRECTION[band]}. No agent present at all.`,
-        batch: 1,
       });
     }
   }
-  return slots;
+  return rows;
 }
+
+const FATE_ART: readonly EncounterImageEntry[] = fateArt();
+
+/**
+ * The approved plain-hooded-traveler baseline (batch 1). Deliberately unspecific
+ * — the face is fully shadowed — so it can stand in for any unportrayed agent
+ * without ever contradicting a named identity. That is also what makes it the
+ * right `portrait` category generic below.
+ */
+const PORTRAIT_TRAVELER: EncounterImageEntry = {
+  id: 'portrait.traveler',
+  path: '/concept-art/portraits/traveler.jpg',
+  kind: 'portrait',
+  concepts: ['traveler', 'portrait', 'archetype'],
+  mood: 'neutral',
+  genericity:
+    'Any unportrayed agent reading as a traveler; deliberately unspecific so it never contradicts a named identity.',
+};
 
 /**
  * Nudge-card concept generics. These are the tags the exemplar fixture already
@@ -653,12 +674,14 @@ const SCENE_SLOTS: readonly EncounterImagePlanSlot[] = [
 }));
 
 /**
- * Generic archetype portraits. The approved plain-hooded-traveler baseline is
- * the first row; the rest extend it across the role vocabulary the cast lists
- * actually draw on.
+ * Generic archetype portraits still to generate. The plain-hooded-traveler
+ * baseline shipped in batch 1 (`PORTRAIT_TRAVELER` above) and is therefore absent
+ * from this list — these extend it across the role vocabulary the cast lists draw
+ * on. Until they land, every one of these roles resolves to the traveler baseline
+ * via the `portrait` category generic, which is why this batch is last: the
+ * fallback is already correct, just unspecific.
  */
 const PORTRAIT_SLOTS: readonly EncounterImagePlanSlot[] = [
-  'traveler',
   'soldier',
   'merchant',
   'priest',
@@ -674,14 +697,14 @@ const PORTRAIT_SLOTS: readonly EncounterImagePlanSlot[] = [
   'beggar',
   'elder',
   'child',
-].map((role, index) => ({
+].map((role) => ({
   id: `portrait.${role}`,
   kind: 'portrait' as const,
   concepts: [role, 'portrait', 'archetype'],
   mood: 'neutral' as const,
   genericity: `Any unportrayed agent reading as a ${role}; deliberately unspecific so it never contradicts a named identity.`,
-  brief: `A generic ${role}, three-quarter view, face shadowed enough to stay unspecific. Plain hooded traveler is the approved baseline (#1).`,
-  batch: index === 0 ? 1 : 4,
+  brief: `A generic ${role}, three-quarter view, face shadowed enough to stay unspecific. Match the shipped plain-hooded-traveler baseline at /concept-art/portraits/traveler.jpg.`,
+  batch: 4,
 }));
 
 /**
@@ -690,8 +713,41 @@ const PORTRAIT_SLOTS: readonly EncounterImagePlanSlot[] = [
  * and the plan entry has been deleted. `check:image-library` reports progress.
  */
 export const ENCOUNTER_IMAGE_PLAN: readonly EncounterImagePlanSlot[] = [
-  ...fateSlots(),
   ...NUDGE_CONCEPT_SLOTS,
   ...SCENE_SLOTS,
   ...PORTRAIT_SLOTS,
 ];
+
+// ── The library (declared last; see the note above `FATE_BANDS`) ─────
+
+/**
+ * The full library. Ordered by category for readability; the resolver sorts by
+ * score and then by `id`, so declaration order is never load-bearing (NFP #3).
+ */
+export const ENCOUNTER_IMAGE_LIBRARY: readonly EncounterImageEntry[] = [
+  ...BRANCHING_HERO_ART,
+  ...TERRAIN_SCENE_GENERICS,
+  ...FATE_ART,
+  PORTRAIT_TRAVELER,
+];
+
+/**
+ * Category fallbacks — the "category generic" rung of the resolve chain. When a
+ * tag query finds nothing above `IMAGE_MATCH_MIN_SCORE`, the resolver serves the
+ * kind's generic rather than dropping straight to the gradient tile.
+ *
+ * `fate` has none by design and never will: fate art is keyed on
+ * `ReachDomain × StepOutcome` and the set is complete, so the exact-tag rung
+ * always hits. A category generic there could only ever serve the *wrong* band —
+ * showing a player a shattered blade for a success — which is worse than the
+ * honest gradient tile.
+ *
+ * `nudge` remains absent until batch 2 lands; those cards degrade honestly to
+ * EntityVisual rather than borrowing a stand-in from another concept.
+ */
+export const ENCOUNTER_IMAGE_CATEGORY_GENERIC: Partial<
+  Record<EncounterImageKind, string>
+> = {
+  scene: 'scene.wilderness.hills',
+  portrait: 'portrait.traveler',
+};

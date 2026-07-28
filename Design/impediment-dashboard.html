@@ -3573,6 +3573,32 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "**Rule: derive a population-level guardrail by computing it over the whole population, not from the instance the surrounding documentation happens to quote.** The repeated citation of step 0 across four surfaces is exactly what made step 1 invisible. Cheap mechanical form: write the conformance assertion as a loop over every member *first*, then pick the constant from the observed max — the test then sets the number instead of auditing a guess.",
     "session": "THR-827, hourly `tb-opus-pickup` run, 2026-07-28."
+  },
+  {
+    "num": "260",
+    "id": 260,
+    "count": 1,
+    "date": "2026-07-28",
+    "category": "tooling",
+    "description": "**`mcp-image`'s `purpose` parameter is composited into the rendered image as visible text, not used as out-of-band metadata.** Generating the first THR-777 fate image with `purpose: \"Encounter image library fate art — Iron Reach, critical success band\"` produced an otherwise on-style painting with a small parchment scrap in the lower right reading *\"Iron Reach, critical success band.\"* in serif type. Re-running the identical prompt with `purpose` omitted and the exclusion list hardened produced a clean plate. The field reads like a tracking/telemetry annotation and is documented nowhere in the `image-generation` skill, which never mentions it.",
+    "consequence": "STYLE.md's text rule is absolute (\"The ONLY text ever allowed is the game title\"), so every image generated with `purpose` set is unshippable. One wasted generation here; at batch scale it would have silently poisoned all 49 and been caught only at contact-sheet review — or not at all, since a caption reads as plausible concept-art furniture at thumbnail size.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "**Never pass `purpose` to `mcp__mcp-image__generate_image` for shipped game art.** Carry the intent in the session/commit instead. Pair that with an explicit exclusion block rather than the skill's one-line \"No text\": the wording that held across all 49 plates was *\"ABSOLUTELY NO TEXT ANYWHERE IN THE IMAGE. No letters, no words, no writing, no labels, no captions, no signs, no parchment, no scrolls, no plaques, no inscriptions.\"* Enumerating the *carriers* (parchment, plaque, scroll, banner) matters — the model reached for a parchment scrap, not for floating text. Review a contact sheet before registering a batch; a single caption is invisible at full size in a 49-image run.",
+    "session": "THR-777 batch 1, hourly `tb-opus-pickup` run, 2026-07-28."
+  },
+  {
+    "num": "261",
+    "id": 261,
+    "count": 1,
+    "date": "2026-07-28",
+    "category": "tooling",
+    "description": "**Negative constraints in an image prompt are honoured for the *named* subject but not for its implied context, and off-palette colour overrides an explicit hex.** Two of 49 THR-777 plates failed review for reasons the prompt had already excluded. (a) `fate.veil.success_at_cost` asked for a cracked ceramic mask with *\"no people, no figures, no hands, no faces\"* and rendered a mask through whose crack a photorealistic living face is visible — the exclusion bound the scene's cast but not the interior of the named object. (b) `fate.star.critical_success` specified *\"amber-copper Time threads (#ff9933)\"* and rendered a **green** comet with amber ripples, and drew constellation lines between stars despite *\"no diagrams\"*.",
+    "consequence": "Both violate settled doctrine — fate images must contain no agent at all, and Star's tint is amber-copper — and both are invisible in a filename-only or checker-only review, since the file exists, decodes and is correctly named.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "**For any prompt whose subject is a face-shaped or figure-shaped object (mask, effigy, statue, armour, helm), state the hollowness positively and exclude the interior explicitly**: *\"the mask is a hollow empty shell — NO person, NO face, NO skin behind or inside it\"* fixed it first try. **For palette, name the forbidden colours, not only the wanted hex** — *\"AMBER, COPPER and WARM ORANGE ONLY … absolutely no green, no emerald, no teal, no blue anywhere\"* fixed the comet where `#ff9933` alone had not. **Always contact-sheet a generated batch before registering it**; both defects were caught in a 4×6 grid review and neither would have failed `check:image-library`.",
+    "session": "THR-777 batch 1, hourly `tb-opus-pickup` run, 2026-07-28."
   }
 ];
 // ── End data ──
