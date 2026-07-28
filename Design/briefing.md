@@ -1,6 +1,6 @@
 # Briefing
 
-**Generated:** 2026-07-28 06:54 local (2026-07-28 04:54 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-07-28 07:54 local (2026-07-28 05:54 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
@@ -8,35 +8,39 @@ This is your inbox. It's rewritten every hour by a Claude Code task. Standing sw
 
 **Nothing needs you right now.** Nothing is waiting on a decision only you can make. The one open switch — turning off the crew member that decides what to work on next — is still yours to flip on one word, and doesn't need a reply.
 
+There *is* a problem this hour, described below, but it is a technical one with an owner and a deadline already attached. It is not a call for you to make.
+
 ## Queue
 
-**21 jobs ready — none top-priority, four middling, seventeen minor. Nothing in flight. Nothing stale, nothing blocked.**
+**20 jobs ready — none top-priority, three middling, seventeen minor. Nothing in flight. Nothing stale, nothing blocked.**
 
-**The bench emptied.** The artwork job finished and closed at 06:40, and nothing has been picked up since — so the shelf reads 21 for the third hour running, and the single work slot is free. The next pickup falls about six minutes after this brief was written.
+**The big encounter rewrite was picked up this hour and put back down after forty-seven seconds.** This is the job you named first priority — the one that takes the hundred-odd existing encounters and rebuilds them into the new nudge shape. The crew member that takes jobs claimed it at 07:02, released it at 07:03, and wrote down exactly why.
 
-**That matters because of what is now first in line.** The big encounter rewrite — the job that spends the whole encounter programme, turning a hundred-odd existing encounters into the new nudge shape — has been free to start for **eleven and a half hours**, and now has an empty slot in front of it as well. Its three prerequisites were re-checked this hour rather than carried forward on memory: all three are finished.
+**It isn't a job. It's a folder.** The ticket's own last line says the work *"becomes its own child jobs once the survey lands."* The survey landed on Sunday. The child jobs were never written up. So what is sitting on the shelf is an instruction to rebuild every encounter in the game at once — no scope, no finish line, and no handover note of the kind the pickup rules require before anyone may start. There is nothing there a single run can finish.
 
-**Last hour this file recorded a worry; this hour it resolved, and against itself — which is worth reporting rather than quietly dropping.** The worry was that the finishing work (artwork) was being done ahead of the work it finishes (the rewrite), while the rewrite sat waiting. **It cost nothing.** The artwork ran to completion in about two and a half hours and released the slot; the rewrite lost only wall-clock it could not have used anyway, because the crew deliberately works one job at a time. The ordering was a side-effect of that one-job rule rather than a misjudgement — which is exactly what the test set last hour said would settle it.
+**This is the crew working correctly, not failing.** It read the ticket, established that all three things it was waiting for really are finished, said in writing why it still couldn't start, touched no code, and moved to something it *could* finish — which it then shipped in forty-three minutes. Nothing was lost this hour.
 
-**Still no top-priority job on the board** — tenth hour running. Seventeen of the twenty-one are minor loose ends the crew found while doing other things, so "backed up" stays a threshold artefact rather than an alarm.
+**What it now needs is someone to break the folder into actual jobs** — one per family of encounters, each with its own finish line. That is a writing task, not a building task, and it belongs to the crew member that decides what to work on next. **Which is the one that has now missed nine check-ins in a row.** So the two problems are the same problem: the thing that would unstick your priority work is the thing that isn't running.
+
+**Worth being straight about one thing:** for the last eleven hours this file reported that job as "free to start and waiting." That was true of the board and false of the work — nobody had tried it until this morning, and trying it is what revealed it was never startable. The report was accurate and the impression it gave was wrong.
+
+**Still no top-priority job on the board** — eleventh hour running. Seventeen of the twenty are minor loose ends the crew found while doing other things.
 
 ## Freshness
 
 **Home tree: fully current.** Right branch, nothing stranded, nothing behind. The same two harmless leftovers (permission entries a past session added to the tool config) and Friday's retro draft still sit outside version control, with an owner.
 
-**Cleanup reaper: alive, ran at 06:40, clean, nothing awaiting a human decision.** **Discord: nothing new from you**, so no reply was owed and none was sent.
+**Cleanup reaper: alive, ran at 07:40, clean, nothing awaiting a human decision.** **Discord: nothing new from you**, so no reply was owed and none was sent.
 
-**The crew member that decides what to work on next has now missed eight check-ins.** Its last recorded run is still 22:27 the night before last. One thing was re-checked rather than restated: the scheduler *is* still handing it its next slot every hour, on time — so what fails is the run itself, before it records anything, not the scheduling of it. Every other hourly routine clocked in normally, including the one writing this. **The deadline this file set itself is not moved, for the eighth time and on the same ground.** It falls at this morning's 10:53 run. If the lane still hasn't fired by then, that is a scheduling fault to repair — not a judgement to revisit.
+**The crew member that decides what to work on next has now missed nine check-ins.** Its last recorded run is still 22:27 the night before last. The scheduler is still handing it a slot every hour, on time — so what fails is the run itself, before it records anything. Every other hourly routine clocked in normally, including the one writing this. **The deadline this file set itself is not moved, for the ninth time and on the same ground.** It falls at this morning's 10:53 run; if the lane still hasn't fired by then, that is a scheduling fault to repair, not a judgement to revisit.
 
 ## What's moving
 
-**The encounter picture library is finished.** The last batch landed at 06:40: **fifteen character portraits**, one for each kind of person an encounter can put in front of you — *farmer, crafter, merchant, guard, soldier, sailor, labourer, healer, priest, scholar, noble, outlaw, beggar, elder, child.*
+**Reveals now have a ceremony.** Shipped at 07:45: the moment a small thing enters a life — a trait surfacing, a bond forming, a working learned — no longer flashes past as a toast or interrupts as a full modal. It gets a card of its own: a framed medallion for the thing revealed, a line of ceremony, the consequences, and a quiet closing quote.
 
-**They follow the same reuse discipline as the scene plates that shipped an hour before them.** A portrait is not one named person; it is reused for *any* unportrayed figure reading as that role, so it has to look like a farmer without looking like a *particular* farmer some encounter might contradict. The plain hooded traveller from the first batch stays on as the catch-all for anything outside the fifteen.
+**The point is pacing rather than decoration.** These moments were previously indistinguishable from routine notifications, so the game's small permanent changes read as noise. Giving them a middle tier — more than a toast, less than a modal — is what lets a mortal gaining a scar feel different from a mortal walking to market, without stopping the world to say so.
 
-**The library now stands at 125 pictures with nothing left to draw**, closing a worklist opened four batches ago: the fate images and the traveller baseline, then the sixteen nudge cards, then the fourteen places, and now the fifteen faces. **Every encounter in the game can now show something real** instead of falling back to a coloured gradient.
-
-One note on how it was built, because it decides whether a library like this stays alive or quietly rots: the fifteen portraits are not fifteen hand-written entries but a single list of roles that generates its own rows and file paths. **A sixteenth archetype is a one-word edit**, not a copy-paste.
+**It went into four surfaces at once** (event popups, the ascendant beat, attachment details, the trait section of a person's page), so the treatment is consistent from the first day rather than one screen at a time. Where an encounter has no written flavour line, the quote zone disappears entirely instead of showing an empty frame.
 
 ---
 *Standing asks live in [`Design/user-actions.md`](user-actions.md). This file is regenerated hourly by the `keep-work-flowing-cc` scheduled task; staleness is visible from the Generated timestamp above and the task's `lastRunAt` in `list_scheduled_tasks`.*
