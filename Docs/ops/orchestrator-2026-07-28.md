@@ -1,5 +1,53 @@
 # Orchestrator — 2026-07-28
 
+## Eleventh run — 17:29Z update
+
+*T3 runs once daily; the first run already completed it (07:42Z), so this run only did T1 (fresh, per-run) and re-checked the T2 trigger. Full detail for T2/T3 retained below under "First run — 07:42Z".*
+
+### Needs Christian
+
+Nothing needs you this run.
+
+### T1 — unblock sweep (17:29Z)
+
+**Promoted (1, at the shelf-backup ceiling):**
+
+- **THR-795** ("19 skills last validated 2026-05-08 while their systems shipped substantial changes since") — Medium priority. No blocker was ever declared. Held back across ten prior sweeps today purely by the shelf-backup ceiling (Ready for Dev held 30 items before this promotion, above the `QUEUE_BACKED_UP_MIN=15` threshold). Bounded, self-scoped (up to 19 `.claude/skills/*/SKILL.md` files), no design-finalization self-declaration, coordination block already drafted in the ticket body. Named "clean next-run candidate" by the 16:29Z sweep. Promoted → verified via `get_issue` (`stateHistory` shows Todo → Ready for Dev at 17:29:44.367Z, state stuck) → coordination-block comment posted (Suggested model: sonnet for content-review skills, haiku for confirm-and-bump-only; Parallel-safe with: everything, skill-doc-only; Mutex with: none identified).
+
+**Declined (unchanged from prior runs today):**
+
+- **THR-735** ("Armed-PR staleness sweep loses the race to main's merge rate") — no blocker, but self-declares "design pass needed — do not pick one from this ticket alone." T2's input, not T1's.
+- **THR-790** / **THR-791** (Traits wave 2 / wave 3) — blocker THR-786 confirmed Done (completed 2026-07-26T10:55:17Z), but both self-declare a design-finalization gate. T2's input; T2 did not trigger this run.
+- **THR-175** ("UI overhaul 08, agent.sphere field") — explicit `Status: DEFERRED` with a named unblock trigger (creation-sphere content shipping, or a template needing `sphere` as an axis independent of `reach`) that has not occurred.
+
+**Newly individually checked this run, held back (no blocker, but ceiling already spent on THR-795):**
+
+- **THR-574** ("Backlog triage sweep — 34 stale Idea issues") — oldest untouched Todo item (created 2026-07-03). No blocker, but calls for "an explicit verdict from Christian" on one named sub-item (THR-66) mid-sweep. Strongest next-run candidate.
+- **THR-757** ("Wiring guide: document world-minted ambitions and Divine Receipt") — docs-only, self-scoped, no blocker. Clean next-run candidate.
+- **THR-756** ("Drift scan: update open signal issues instead of filing weekly duplicates") — self-scoped script change, no blocker.
+- **THR-762** ("intent-judge skill: Procedure step 8 contradicts hard rule") — single-file skill fix, no blocker, explicitly "no plan doc needed."
+- **THR-766** ("Tune the god's cast power curve") — parent THR-728 confirmed Done; no explicit `Blocked by` line but reads as a bounded tuning pass with its own Done-when. Candidate, not yet promoted.
+- **THR-582** ("Migrate remaining ~46 inline phases to runInlinePhase") — parent THR-580 confirmed Done; mechanical, no blocker line.
+- **THR-646** ("THR-636 follow-up: capture live browser screenshots") — feature complete and merged per its own text; pure verification-artifact task, no blocker.
+- **THR-346/347/348** (Encounter UI post-v1 H1/H2/H3 — sound, constants tuning, TTS) — all reference `ARC-102` as parent and gate on "once v1 has shipped" / consuming already-Done discovery spec (THR-336, confirmed Done). No formal `Blocked by` line; candidates for a future run once the shelf allows more than one promotion.
+- **THR-680** / **THR-681** (stash triage / worktree disposition) — both instruct running from the home tree, which predates the THR-671/672/797 home-tree containment hardening. Flagged again for whichever run next promotes these: reconcile the ticket's literal home-tree instruction against current policy before an executor follows it verbatim.
+
+**Not re-verified this run:** THR-772/778/789 (Nudge Model / Traits program-epic containers — intentionally Todo, not promotion candidates).
+
+### T2 — design authoring (17:29Z)
+
+**Not triggered.** Ready for Dev holds 14 non-`Deferral` items after this run's promotion (THR-842, THR-763, THR-723, THR-667, THR-638, THR-836, THR-655, THR-838, THR-792, THR-807, THR-740, THR-739, THR-715, THR-795) — well above the floor of 2. THR-790 (Traits wave 2) remains the top agreed-but-undesigned candidate for whenever T2 next triggers.
+
+### T3 — architecture health (17:29Z)
+
+**Not re-run** — the full sweep already ran this morning (07:42Z, see "First run" below); nothing in the interim changes those findings.
+
+### Escalations (17:29Z)
+
+None. No item required a question this run; the Discord channel was not used.
+
+---
+
 ## Tenth run — 16:29Z update
 
 *T3 runs once daily; the first run already completed it (07:42Z), so this run only did T1 (fresh, per-run) and re-checked the T2 trigger. Full detail for T2/T3 retained below under "First run — 07:42Z".*
