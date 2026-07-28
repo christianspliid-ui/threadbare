@@ -1,5 +1,39 @@
 # Orchestrator — 2026-07-28
 
+## Third run — 09:29Z update
+
+*T3 runs once daily; the first run already completed it (07:42Z), so this run only did T1 (fresh, per-run) and re-checked the T2 trigger. Full detail for T2/T3 retained below under "First run — 07:42Z".*
+
+### Needs Christian
+
+Nothing needs you this run.
+
+### T1 — unblock sweep (09:29Z)
+
+**Promoted (1):**
+
+- **THR-655** ("Post-migration retro: confirm impediment classes stay closed, 1 week after cutover") — time gate cleared this run. Blocked by THR-654, completed 2026-07-21T08:48:37Z; the 1-week window opened 2026-07-28T08:48:37Z. This run fired at 09:29Z, ~40 minutes past the window — both earlier runs today (07:42Z, 08:29Z) declined it as still short. No other blockers on the ticket. Promoted → verified via `get_issue` (state stuck, `Ready for Dev`) → coordination-block comment posted (Suggested model: sonnet; Parallel-safe with: any src/ ticket; Mutex with: none — docs/process verification pass only, touches `Design/retros/`).
+
+**Declined:**
+
+- **THR-790** ("Traits wave 2") — blocker THR-786 is Done, but the ticket's own text still requires design finalization first. Met blocker ≠ dev-ready; T2's input, T2 did not trigger this run (see below), stays in Todo.
+
+**Not individually re-verified this run (ceiling already spent on THR-655's cleared time gate, and the shelf-backup ceiling below would cap further promotion to zero regardless):** the ~24 remaining Todo candidates, including the three carried over from the last two runs as next-run picks — **THR-757** (wiring-guide docs, ready to build, no blocker), **THR-756** (drift-scan dedupe, no blocker), **THR-646** (screenshot-verification deferral, no blocker) — plus one newly-noticed candidate, **THR-836** (Medium priority, filed this morning by `daily-backlog-grooming`, no stated blocker, describes itself as already scoped with candidate directions for the executor to pick from). Ready for Dev held 22 items before this run's promotion (above the 15 shelf-backup threshold), so at most one promotion was allowed this run regardless of how many more candidates cleared — THR-655's cleared time gate took the slot on priority (High vs. Medium/Low for the others). Next run should pick from the four named above.
+
+### T2 — design authoring (09:29Z)
+
+**Not triggered.** Ready for Dev holds 9 non-`Deferral` items after this run's promotion (THR-764, THR-838, THR-618, THR-792, THR-807, THR-740, THR-739, THR-715, THR-655) — well above the floor of 2. THR-790 (Traits wave 2) remains the top agreed-but-undesigned candidate for whenever T2 next triggers.
+
+### T3 — architecture health (09:29Z)
+
+**Not re-run** — the full sweep already ran this morning (07:42Z, see "First run" below); nothing in the interim changes those findings.
+
+### Escalations (09:29Z)
+
+None. No item required a question this run; the Discord channel was not used.
+
+---
+
 ## Second run — 08:29Z update
 
 *T3 runs once daily; the first run below already completed it, so this run only did T1 (fresh, per-run) and re-checked the T2 trigger. Full detail retained below under "First run — 07:42Z".*
