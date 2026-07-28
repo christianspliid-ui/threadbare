@@ -1,44 +1,38 @@
 # Briefing
 
-**Generated:** 2026-07-28 08:57 local (2026-07-28 06:57 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-07-28 09:57 local (2026-07-28 07:57 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
 ## Needs Christian
 
-**Nothing needs you right now.** Nothing is waiting on a decision only you can make. The one open switch — turning off the crew member that decides what to work on next — is still yours to flip on one word, and doesn't need a reply.
+**Nothing needs you right now.** Nothing is waiting on a decision only you can make.
 
-Two things went wrong this hour. Both are described below, both are mechanical, and both have someone to fix them. Neither is a call for you to make.
+**Both of the things that were stuck yesterday came unstuck this hour, without anyone asking you for anything.** The details are below. The one open switch — turning off the crew member that decides what to work on next — is still yours on one word, and needs no reply.
 
 ## Queue
 
-**20 jobs ready — none top-priority, two middling, eighteen minor. One in flight. Nothing stale, nothing blocked.**
+**22 jobs ready — one top-priority, three middling, eighteen minor. None in flight; the next crew member clocks in at 09:00.** Nothing stale, nothing blocked.
 
-**The job that had never once worked got fixed this hour.** There is a small automatic tidy-up routine that is supposed to run every day and release jobs a crew member claimed and then abandoned. It has failed **every single time it has run since the 13th of June** — eighty-eight attempts, zero successes — because of two typos in how it loads its own code. It was claimed at 08:11 and fixed by 08:13.
+**The big encounter rewrite is finally a job someone can start.** For twelve hours this file has reported the same thing: the work you named first priority — taking the hundred-odd existing encounters and rebuilding them into the new nudge shape — existed only as a folder, not as a startable job, and the crew member whose job it was to break it up had stopped showing up. **Both halves resolved this hour.** That crew member came back at 09:19 and its first act was to do exactly the missing work: it cut the first batch out of the folder — **forty-eight encounters, about nine in every ten a player actually meets** — and wrote it up with everything an executor needs to pick it up cold. **The folder itself was moved off the ready shelf** so it stops being offered and refused once an hour.
 
-**The fix is better than the bug deserved.** This was the *third* time this exact typo has broken something, and each previous time the lesson was written into a notes file that nothing reads. So rather than fix the two lines and write a fourth note, the crew member added an automatic check that now runs on every change and refuses anything carrying the same mistake. **For a fault whose whole nature is "nobody was looking", another note would have been the joke told twice.**
+**It also freed a second job that had been quietly ready for six days** — the divine economy work, where your godly verbs finally touch the mortal trade web. Both things it was waiting on had been finished for weeks; nobody had looked at the dependency field.
 
-**But the finished work is stuck at the gate, and won't get in on its own.** Every change has to pass a safety check before it can go in. That check started, ran for twenty minutes, and was cut off partway through — not failed, *cut off*. So the work now sits in front of a gate that is neither open nor shut, set to go in automatically the moment the check passes, which it never will. **It needs someone to press start on the check again.** The next crew run is at 09:00, three minutes from now, and is the one positioned to do it — it picks up whatever it left in flight. If it is still stuck at the next brief, that stops being bad luck and becomes a fault to fix.
-
-**Meanwhile the big encounter rewrite is still a folder, not a job** — unchanged from last hour. It is the work you named first priority: take the hundred-odd existing encounters and rebuild them into the new nudge shape. Nobody can start it because it was never broken into startable pieces, and the crew member whose job that is **has now missed ten check-ins in a row**. The two problems remain the same problem.
-
-**Still no top-priority job on the board** — twelfth hour running.
+**The new top-priority job on the board is about the outage itself** — why that crew member missed eleven check-ins overnight. Worth keeping: eleven missed hours is real, and nothing yet explains them. **But its headline is already out of date, and the way it went out of date is the interesting part.** It was written at 09:23 saying the lane "has not fired", four minutes *after* that lane had visibly posted its first piece of work. The routine that filed it checked the lane's clock-in record — which still read yesterday evening — instead of looking at what the lane had actually done. **The lane's own output was sitting there, timestamped, and was the better signal.** No action needed from you; noting it because it is the third time this week a status field has been trusted over the work itself.
 
 ## Freshness
 
-**Home tree: fully current.** Right branch, nothing stranded, nothing behind. The same two harmless leftovers (permission entries a past session added to the tool config) and Friday's retro draft still sit outside version control, with an owner.
+**Home tree: current.** Right branch, nothing stranded, two commits behind and closing on its own. The same two harmless leftovers (permission entries a past session added to the tool config) and Friday's retro draft still sit outside version control, with an owner.
 
-**Cleanup reaper: alive, ran at 08:40, clean, nothing awaiting a human decision.** **The live site is up to date** — everything published since it last built was notes and docs, so nothing needed rebuilding. **Discord: nothing new from you**, so no reply was owed and none was sent.
-
-**The crew member that decides what to work on next has now missed ten check-ins.** Its last recorded run is still 22:27 two nights ago. The scheduler is still handing it a slot every hour, on time — so what fails is the run itself, before it records anything. Every other hourly routine clocked in normally, including the one writing this. **The deadline this file set itself is not moved, for the tenth time and on the same ground.** It falls at this morning's 10:53 run, two briefs from now. If the lane still hasn't fired by then, that is a scheduling fault to repair, not a judgement to revisit.
+**Cleanup reaper: alive, ran at 09:40, clean, nothing awaiting a human decision.** **The live site is up to date** — everything published since it last built was notes, docs and scripts, none of which the game itself is built from. **Discord: nothing new from you**, so no reply was owed and none was sent.
 
 ## What's moving
 
-**A routine that had never worked now works — and cannot silently break the same way again.** The tidy-up job above is the repair; the guard shipped alongside it is the point. It walks every script the project runs directly and refuses any that loads its own code the broken way, so the fault that hid for six weeks here, and four weeks earlier in a different job, cannot hide a third time.
+**The safety routine that had never once worked is now working, and it went in on its own.** Last hour this file reported it finished but stuck at a gate that was neither open nor shut — a required check cut off partway through, with nothing set to restart it. **It restarted at 09:06, passed at 09:20, and merged twelve seconds later.** The thing that rescued it was the crew member resuming its own unfinished business at the top of the hour, which is exactly the recovery path this file predicted last hour and named in advance. **The prediction was written so that it could fail, and it passed for the right reason** rather than by a technicality.
 
-**Writing the guard immediately corrected its own rule.** The obvious version — *flag every import missing its file extension* — would have condemned a file that works perfectly well today, because those particular imports are type-only and get stripped out before anything runs. The rule was narrowed to the real condition on its first outing, against a live counter-example rather than in theory.
+**What shipped with it is better than the bug deserved.** The fault was two typos of a kind that has now broken three separate things. Rather than fix the lines and write a third note nobody reads, the crew member added an automatic check that refuses any future change carrying the same mistake. **For a fault whose whole nature is "nobody was looking", another note would have been the joke told twice.**
 
-**One loose end was filed underneath it:** nothing anywhere watches whether these scheduled routines succeed or fail. That is exactly why eighty-eight failures stayed invisible — the only person a failure notifies is whoever started the run, and a scheduled run has nobody to notify. It is now written up as its own job.
+**Twelve hours of "nobody can start the priority work" ended in twenty-five minutes.** Two crew members did it between them at 09:19 and 09:44 — one freeing the six-day-old job, the other cutting the first encounter batch. Neither needed you, and neither needed the other.
 
 ---
 *Standing asks live in [`Design/user-actions.md`](user-actions.md). This file is regenerated hourly by the `keep-work-flowing-cc` scheduled task; staleness is visible from the Generated timestamp above and the task's `lastRunAt` in `list_scheduled_tasks`.*
