@@ -79,7 +79,7 @@ Batches ship in ascending order, one PR each. All generation via the mcp-image M
 |---|---|---|---|---|
 | 1 | 49 | 48 fate (8 Reaches × 6 bands) + the baseline traveler portrait | Fate art is what every encounter ends on — highest reuse per image in the whole library | **Shipped 2026-07-28** |
 | 2 | 16 | Nudge concept generics | Unblocks the hand, the surface the player reads most often | **Shipped 2026-07-28** (THR-832) |
-| 3 | 14 | Built/social scene generics | Terrain already covers outdoors; these finish the place vocabulary | Planned |
+| 3 | 14 | Built/social scene generics | Terrain already covers outdoors; these finish the place vocabulary | **Shipped 2026-07-28** (THR-832) |
 | 4 | 15 | Remaining archetype portraits | Lowest reuse; the traveler baseline is now their category generic, so they degrade to a real image rather than a gradient | Planned |
 
 ### Batch 1 — what shipped (2026-07-28)
@@ -139,6 +139,58 @@ complete and keyed on `ReachDomain × StepOutcome`, so the exact-tag rung always
 hits; a fallback there could only ever serve the *wrong band* — a shattered blade
 for a success — which is worse than the honest gradient tile.
 
+### Batch 3 — what shipped (2026-07-28, THR-832)
+
+14 built/social scene generics at `public/concept-art/scene/<place>.jpg`, all
+1376×768, re-encoded JPEG q92 progressive: **10.9 MB → 3.4 MB**. Library goes
+96 → **110 rows**, plan 29 → **15 slots**. `ENCOUNTER_IMAGE_PLAN` is now batch 4
+only.
+
+Four things worth recording:
+
+- **The 15 shipped `public/concept-art/locations/` plates were considered and
+  rejected for promotion.** This is the same move that absorbed the wilderness
+  half of the scene estimate, so it was checked before generating: there are
+  existing plates named `town`, `camp`, `shrine`, `ruins`, `castle` and so on
+  that appear to cover several batch-3 slots. They cannot be promoted. They are
+  a different and older register — bright overcast daylight, crowds of
+  fully-rendered faces, and **legible shop signage** ("The Golden Boar Inn") —
+  which violates the STYLE.md text rule, the no-bright-daylight rule, and the
+  settled agents-absent doctrine all at once. They are also framed as exterior
+  establishing shots of *structures*, where most batch-3 briefs want interiors.
+  Recorded here so a later batch does not re-litigate it.
+- **Scene generics are unoccupied, which is stronger than the library doctrine.**
+  "Agents absent or silhouetted" permits a silhouette; these permit none. A scene
+  generic is reused across 3+ unrelated encounters, so any figure asserts a cast
+  the encounter may contradict. Each place is evidenced by its objects instead —
+  the market by its scales and stacked goods, the court by its dais and long
+  approach.
+- **The contact sheet caught the one defect the checker cannot**, for the third
+  batch running (impediment #261). `scene.market` came back with a distinct
+  blood-red pool on the cobbles running into the gutter — turning a `neutral`
+  place generic into a crime scene, in the single most-reused kind in the
+  library. The file existed, decoded, and was correctly named, so
+  `check:image-library` passed it. Regenerated with the absence stated
+  positively ("the lane is orderly and undisturbed — a market simply closed up,
+  nothing has happened here") on top of the explicit red/blood exclusions, which
+  is the same positive-statement fix batch 1 found for its living-face mask and
+  batch 2 for its nude figure. **Three batches, three defects, all in the same
+  class**: the generator supplies unrequested narrative incident, and only a
+  human look catches it.
+- **The `settlement` trio was generated as one unit.** `scene.settlement`,
+  `scene.rebuild` and `scene.aftermath` all carry `places: ['settlement']`, so
+  they were prompted against a shared architecture vocabulary — steep shingled
+  roofs, timber-and-daub, a palisade gate — and read as one place in three
+  states rather than three unrelated villages. This is the batch-3 analogue of
+  batch 1's Reach-by-Reach rule; the coherent unit for a scene is a finished
+  place, not a filled slot.
+
+**The `scene` category generic was left at `scene.wilderness.hills`.** Batch 3
+makes a built-place generic (`scene.settlement`) available for the first time,
+and there is a real argument that an unmatched *scene* query is likelier to want
+an inhabited place than a hillside. It is a taste call rather than an executor
+call, so it is recorded as open question 3 below rather than changed here.
+
 Each batch: generate → drop files under `public/` → move the slots from `ENCOUNTER_IMAGE_PLAN` into `ENCOUNTER_IMAGE_LIBRARY` with real paths → `npm run check:image-library` → commit. The checker prints per-batch remaining counts, so a resumed run sees its position without reading the diff.
 
 `FATE_REACH_METAPHORS` holds the per-Reach metaphor language (Iron: steel/shield; Gold: coin/scales; …) and `FATE_BAND_DIRECTION` the per-band direction; a slot's `brief` is composed from the two. The resolver never reads either table — they exist for generation.
@@ -177,6 +229,15 @@ Each batch: generate → drop files under `public/` → move the slots from `ENC
    `near_miss` within a Reach. Collapsing is a manifest edit (`bands: ['success_at_cost',
    'near_miss']` on one row, delete the other file) — still no schema change. Left open
    as a taste call, not an executor call.
+3. **Should the `scene` category generic move off the wilderness plate?** Opened
+   by batch 3 (2026-07-28). It is `scene.wilderness.hills` — chosen when the only
+   registered scene rows were the 12 outdoor terrain plates. Batch 3 registers 14
+   built/social places, so an unmatched `scene` query now has an inhabited
+   candidate (`scene.settlement`) for the first time. Which one an unknown scene
+   tag *should* land on is a taste call: the hillside asserts "outdoors, in
+   country", the settlement asserts "somewhere people live", and neither is
+   obviously right for a tag nobody anticipated. Changing it is a one-line
+   manifest edit and a test update.
 
 ## Constants table
 
@@ -242,7 +303,8 @@ None. This changes no rule of play — no turn structure, action verb, prerequis
 - [x] Contract tests pin each rung by `source`, not merely by "a path came back".
 - [x] **Batch 1 generated** (2026-07-28) — 48 fate + traveler baseline registered; `check:image-library` reports 80 rows, 45 slots, no batch-1 remainder.
 - [x] **Batch 2 generated** (2026-07-28, THR-832) — 16 nudge concept generics registered and `generic.blessing` installed as the `nudge` category generic; `check:image-library` reports 96 rows, 29 slots, no batch-2 remainder.
-- [ ] Batches 3–4 generated — subsequent runs; the checker's per-batch counts are the progress readout.
+- [x] **Batch 3 generated** (2026-07-28, THR-832) — 14 built/social scene generics registered; `check:image-library` reports 110 rows, 15 slots, no batch-3 remainder. Two contract tests added pinning that a built place resolves to its own row rather than falling through to a wilderness plate.
+- [ ] Batch 4 generated — subsequent run; the checker's per-batch counts are the progress readout.
 
 ## Coordination block
 

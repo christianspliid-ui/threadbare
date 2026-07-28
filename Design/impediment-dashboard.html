@@ -3590,15 +3590,15 @@ const DATA = [
   {
     "num": "261",
     "id": 261,
-    "count": 2,
+    "count": 3,
     "date": "2026-07-28",
     "category": "tooling",
     "description": "**Negative constraints in an image prompt are honoured for the *named* subject but not for its implied context, and off-palette colour overrides an explicit hex.** Two of 49 THR-777 plates failed review for reasons the prompt had already excluded. (a) `fate.veil.success_at_cost` asked for a cracked ceramic mask with *\"no people, no figures, no hands, no faces\"* and rendered a mask through whose crack a photorealistic living face is visible — the exclusion bound the scene's cast but not the interior of the named object. (b) `fate.star.critical_success` specified *\"amber-copper Time threads (#ff9933)\"* and rendered a **green** comet with amber ripples, and drew constellation lines between stars despite *\"no diagrams\"*.",
     "consequence": "Both violate settled doctrine — fate images must contain no agent at all, and Star's tint is amber-copper — and both are invisible in a filename-only or checker-only review, since the file exists, decodes and is correctly named.",
     "impact": "S",
     "workaroundFound": true,
-    "workaround": "**For any prompt whose subject is a face-shaped or figure-shaped object (mask, effigy, statue, armour, helm), state the hollowness positively and exclude the interior explicitly**: *\"the mask is a hollow empty shell — NO person, NO face, NO skin behind or inside it\"* fixed it first try. **For palette, name the forbidden colours, not only the wanted hex** — *\"AMBER, COPPER and WARM ORANGE ONLY … absolutely no green, no emerald, no teal, no blue anywhere\"* fixed the comet where `#ff9933` alone had not. **Always contact-sheet a generated batch before registering it**; both defects were caught in a 4×6 grid review and neither would have failed `check:image-library`.",
-    "session": "THR-777 batch 1, hourly `tb-opus-pickup` run, 2026-07-28."
+    "workaround": "**For any prompt whose subject is a face-shaped or figure-shaped object (mask, effigy, statue, armour, helm), state the hollowness positively and exclude the interior explicitly**: *\"the mask is a hollow empty shell — NO person, NO face, NO skin behind or inside it\"* fixed it first try. **For palette, name the forbidden colours, not only the wanted hex** — *\"AMBER, COPPER and WARM ORANGE ONLY … absolutely no green, no emerald, no teal, no blue anywhere\"* fixed the comet where `#ff9933` alone had not. **Always contact-sheet a generated batch before registering it**; both defects were caught in a 4×6 grid review and neither would have failed `check:image-library`. **Third occurrence, batch 3 (2026-07-28):** `scene.market` — briefed as a `neutral` place generic, prompt already excluding people — returned a distinct **blood-red pool on the cobbles running into the gutter**, converting the most-reused kind in the library into a crime scene. Nothing in the prompt asked for violence; the generator supplied narrative incident on its own. Fixed by stating the *absence of event* positively — *\"the lane is orderly and undisturbed — a market simply closed up, nothing has happened here\"* — on top of explicit `no blood, no red stain, no crime scene` exclusions. **The generalisation after three batches: exclusions bind the cast, not the story. If a plate must read as uneventful, say so as a fact about the scene rather than as a list of things to leave out** — and contact-sheet regardless, because all three defects passed the checker.",
+    "session": "THR-777 batch 1 and THR-832 batches 2–3, hourly `tb-opus-pickup` runs, 2026-07-28."
   }
 ];
 // ── End data ──
