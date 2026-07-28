@@ -1,5 +1,51 @@
 # Orchestrator — 2026-07-28
 
+## Twelfth run — 19:29Z update
+
+*T3 runs once daily; the first run already completed it (07:42Z), so this run only did T1 (fresh, per-run) and re-checked the T2 trigger. Full detail for T2/T3 retained below under "First run — 07:42Z". Note: a prior 18:29Z run (PR #1029, promoting THR-574) had not merged as of this run's start — it is armed for auto-merge but `mergeStateStatus: BEHIND`, stalled on the known THR-735 armed-PR-staleness gap (one drain/hour vs. the current merge rate). This run reads Linear directly, which already reflected THR-574 in `Ready for Dev`, so it is not re-promoted here. This report section may land as a separate commit/PR from #1029's; not a conflict to resolve mid-run.*
+
+### Needs Christian
+
+Nothing needs you this run.
+
+### T1 — unblock sweep (19:29Z)
+
+**Promoted (1, at the shelf-backup ceiling):**
+
+- **THR-762** ("intent-judge skill: Procedure step 8 contradicts hard rule 'Never edits any file'") — Low priority. No blocker was ever declared. Single-file fix (`.claude/skills/intent-judge/SKILL.md`), self-declares "No plan doc needed." Held back across prior sweeps today purely by the shelf-backup ceiling (Ready for Dev held 33 items before this promotion, above `QUEUE_BACKED_UP_MIN=15`). Named a "clean next-run candidate" by the 17:29Z sweep. Promoted → verified via `get_issue` (`stateHistory` shows Todo → Ready for Dev at 19:29:30.870Z, state stuck) → coordination-block comment posted (Suggested model: sonnet; Parallel-safe with: everything outside `.claude/skills/intent-judge/`; Mutex with: none identified).
+
+**Declined (unchanged from prior runs today):**
+
+- **THR-735** ("Armed-PR staleness sweep...") — no blocker, but self-declares "design pass needed — do not pick one from this ticket alone." T2's input, not T1's. (Its own subject matter is visibly live this run: PR #1029 sitting BEHIND since 18:30Z.)
+- **THR-790** / **THR-791** (Traits wave 2 / wave 3) — blocker THR-786 confirmed Done, but both self-declare a design-finalization gate. T2's input; T2 did not trigger this run.
+- **THR-175** ("UI overhaul 08, agent.sphere field") — explicit `Status: DEFERRED`, unblock trigger not met.
+
+**Individually checked this run, held back (no blocker, but ceiling already spent on THR-762):**
+
+- **THR-757** ("Wiring guide: document world-minted ambitions and Divine Receipt") — docs-only, self-scoped, no blocker (`blockedBy: []` confirmed via `get_issue`). Its Done-when asks the executor to check THR-727's merge state inline, which is executable judgment, not an external gate. Strongest next-run candidate.
+- **THR-756** ("Drift scan: update open signal issues instead of filing weekly duplicates") — self-scoped script change, no blocker.
+- **THR-582** ("Migrate remaining ~46 inline phases to runInlinePhase") — parent THR-580 confirmed Done; mechanical, no blocker line.
+- **THR-646** ("THR-636 follow-up: capture live browser screenshots") — feature complete and merged per its own text; pure verification-artifact task, no blocker.
+- **THR-766** ("Tune the god's cast power curve") — parent THR-728 confirmed Done; bounded tuning pass with its own Done-when.
+- **THR-346/347/348** (Encounter UI post-v1 H1/H2/H3) — gate on "once v1 has shipped" (ARC-102), no formal `Blocked by` line.
+- **THR-680** / **THR-681** (stash triage / worktree disposition) — both instruct running from the home tree, predating THR-671/672/797 containment hardening. Flag for whichever run next promotes these: reconcile the home-tree instruction against current policy first.
+
+**Not re-verified this run:** THR-772/778/789 (Nudge Model / Traits program-epic containers — intentionally Todo, not promotion candidates).
+
+### T2 — design authoring (19:29Z)
+
+**Not triggered.** Ready for Dev holds 16 non-`Deferral` items after this run's promotion (well above the floor of 2). THR-790 (Traits wave 2) remains the top agreed-but-undesigned candidate for whenever T2 next triggers.
+
+### T3 — architecture health (19:29Z)
+
+**Not re-run** — the full sweep already ran this morning (07:42Z, see "First run" below); nothing in the interim changes those findings.
+
+### Escalations (19:29Z)
+
+None. No item required a question this run; the Discord channel was not used.
+
+---
+
 ## Eleventh run — 17:29Z update
 
 *T3 runs once daily; the first run already completed it (07:42Z), so this run only did T1 (fresh, per-run) and re-checked the T2 trigger. Full detail for T2/T3 retained below under "First run — 07:42Z".*
