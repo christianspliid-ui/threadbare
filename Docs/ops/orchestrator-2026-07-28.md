@@ -1,5 +1,48 @@
 # Orchestrator — 2026-07-28
 
+## Second run — 08:29Z update
+
+*T3 runs once daily; the first run below already completed it, so this run only did T1 (fresh, per-run) and re-checked the T2 trigger. Full detail retained below under "First run — 07:42Z".*
+
+### Needs Christian
+
+Nothing needs you this run.
+
+### T1 — unblock sweep (08:29Z)
+
+**Promoted (1, at the shelf-backup ceiling):**
+
+- **THR-764** ("Impediment log's two consumers are blind to 65 paragraph-form entries") — no blocker was ever declared; it sat unpromoted in Todo since 2026-07-25. It was one of four candidates the 07:42Z run held back behind the shelf-backup ceiling (Ready for Dev held 21 items, above the 15 threshold). This run the shelf still held 21 items, so the ceiling again capped promotion to one. Picked over the other three held-back candidates (THR-757, THR-756, THR-646 — all Low priority) because THR-764 is Priority **High** and blocker-free, with its own coordination block already drafted in the ticket body. Promoted → verified via `get_issue` (state stuck) → coordination-block comment posted (Suggested model: sonnet; Parallel-safe with: any src/ ticket; Mutex with: none, `Docs/impediments.md` merges via `merge=union`).
+
+**Declined:**
+
+- **THR-655** ("Post-migration retro, 1 week after THR-654") — unmet time gate, still. THR-654 completed 2026-07-21T08:48:37Z; window opens 2026-07-28T08:48:37Z. Current time 2026-07-28T08:27:40Z — ~21 minutes short. Next run should clear it.
+- **THR-790** ("Traits wave 2") — blocker THR-786 is Done, but the ticket's own text says it needs its own design finalization first. Met blocker ≠ dev-ready; T2's input, not T1's. T2 did not trigger this run (see below), so it stays in Todo.
+
+**Held back by the shelf-backup ceiling (Ready for Dev held 21 items before this run's promotion, above the 15 threshold — at most one promotion allowed):**
+
+- **THR-757** ("Wiring guide: document world-minted ambitions + Divine Receipt") — docs-only, no blocker, next candidate.
+- **THR-756** ("Drift scan: update open signal issues instead of filing duplicates") — no blocker visible.
+- **THR-646** ("capture live browser screenshots of encounter card") — pure verification artifact, feature already shipped, no blocker.
+
+The remaining ~20 Todo candidates (THR-836, THR-723, THR-791, THR-763, THR-762, THR-735, THR-680, THR-681, THR-667, THR-638, THR-626, THR-621, THR-574, THR-582, THR-175, THR-346/347/348, THR-795, THR-772/778/789 program containers) were not individually deep-verified this run — the ceiling already capped promotion at one, so deep-verifying more wouldn't change this run's outcome. Next run continues from the three held-back items above.
+
+### T2 — design authoring (08:29Z)
+
+**Not triggered.** Ready for Dev holds 8 non-`Deferral` items after this run's promotion (THR-838, THR-618, THR-792, THR-807, THR-740, THR-739, THR-715, THR-764) — well above the floor of 2. THR-790 (Traits wave 2) remains the top agreed-but-undesigned candidate for whenever T2 next triggers.
+
+### T3 — architecture health (08:29Z)
+
+**Not re-run** — a full sweep already ran this morning (07:42Z, see below); nothing in the interim window changes those findings.
+
+### Escalations (08:29Z)
+
+None. No item required a question this run; the Discord channel was not used.
+
+---
+
+## First run — 07:42Z
+
 ## Needs Christian
 
 Nothing needs you this run. One note for awareness, not a question: the Nudge Model content pass (WS5) had stalled behind an unsplit container — it's now split and its first batch is back in the queue (see T1 below).
