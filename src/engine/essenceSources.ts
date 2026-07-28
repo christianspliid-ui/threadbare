@@ -16,6 +16,7 @@ import type { EssenceSource } from '../types/essenceSource';
 import type { WorldGraph } from './graph';
 import { hexDistance } from './delivery';
 import { resolveLocationToHex } from './encounterAwareness';
+import { computeSanctitySustenance } from './essenceEconomyBridge';
 import {
   BASE_SOURCE_INCOME,
   deriveSourceTier,
@@ -195,24 +196,39 @@ export interface SourceTierRecompute {
   sourceCount: number;
   tierChanges: number;
   contestedCount: number;
+  /** Sources the land pushed upward this tick (essence bridge, THR-618). */
+  econNurtured: number;
+  /** Sources the land pulled downward this tick. */
+  econWithered: number;
 }
 
 /**
- * Recompute the derived tier for every controlled source and apply the
- * contested-sanctity drain (in-place). Returns aggregate counts for the phase
- * trace. Fail-soft: a host with no source bag is skipped; a malformed sanctity
- * resolves to `dormant` via `deriveSourceTier`.
+ * Recompute the derived tier for every controlled source, apply the essence
+ * bridge's economic sanctity drift (THR-618) and the contested-sanctity drain
+ * (in-place). Returns aggregate counts for the phase trace.
+ *
+ * Order matters: the land's drift lands first, then the rival's drain — so a
+ * contested source standing in a starving valley loses on both counts in the same
+ * tick, which is the intended worst case.
+ *
+ * Fail-soft: a host with no source bag is skipped; a malformed sanctity resolves
+ * to `dormant` via `deriveSourceTier`; the bridge returns zero drift for every
+ * structural miss rather than throwing.
  */
 export function recomputeControlledSourceTiers(
   graph: WorldGraph,
   ascendantId: string,
 ): SourceTierRecompute {
   const node = graph.getNode(ascendantId);
-  if (!node) return { sourceCount: 0, tierChanges: 0, contestedCount: 0 };
+  if (!node) {
+    return { sourceCount: 0, tierChanges: 0, contestedCount: 0, econNurtured: 0, econWithered: 0 };
+  }
 
   let sourceCount = 0;
   let tierChanges = 0;
   let contestedCount = 0;
+  let econNurtured = 0;
+  let econWithered = 0;
 
   for (const edge of graph.getOutgoingEdges(ascendantId, 'controls')) {
     const host = graph.getNode(edge.target);
@@ -224,8 +240,18 @@ export function recomputeControlledSourceTiers(
     const desecrated = !!src.desecrated;
     if (contested) contestedCount++;
 
+    let sanctity = Number.isFinite(src.sanctity) ? src.sanctity : 0;
+
+    // The essence bridge: the land the source stands on nurtures or withers it.
+    // A desecrated source is inert — the land's gift redirects with the income.
+    if (!desecrated) {
+      const { drift } = computeSanctitySustenance(graph, host.id, src);
+      if (drift > 0) econNurtured++;
+      else if (drift < 0) econWithered++;
+      sanctity = Math.min(1, Math.max(0, sanctity + drift));
+    }
+
     // Contested + undefended sources bleed sanctity toward desecration.
-    let sanctity = src.sanctity;
     if (contested && !desecrated) {
       sanctity = Math.max(0, sanctity - SANCTITY_DRAIN_PER_TICK_CONTESTED);
     }
@@ -239,5 +265,5 @@ export function recomputeControlledSourceTiers(
     }
   }
 
-  return { sourceCount, tierChanges, contestedCount };
+  return { sourceCount, tierChanges, contestedCount, econNurtured, econWithered };
 }

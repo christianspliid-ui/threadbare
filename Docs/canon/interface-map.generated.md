@@ -15,12 +15,12 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 41 |
+| 🟢 LIVE | 42 |
 | 🟠 PARTIAL | 1 |
 | 🔴 LEAKED | 5 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 3 |
-| **Total** | **50** |
+| **Total** | **51** |
 
 ## Contracts by producing subsystem
 
@@ -108,6 +108,7 @@ remediation ticket or the build fails.
 | Contract | Intent | Mechanism | Consumer | Status | Ticket |
 |---|---|---|---|---|---|
 | `economy-context-scene-scoring` | Boom and bust color which scenes fire — a blighted province tells desperate stories, a boom throws festivals. | function: `computeEconomicContextBonus`, `economicContextBonus` | Encounters & Dilemmas | 🟢 LIVE | THR-725 |
+| `economy-sustains-essence-sources` | A god's power is rooted in the land their people work: the goods of a source's own Sphere nurture or wither its sanctity, so an economy the player neglects quietly costs them essence. | node-prop: `stockTier` | Essence & Divine Economy | 🟢 LIVE | — |
 | `economy-verbs-answered` | The four granted economic verbs (bless_harvest, blight, open_markets, reveal_vein) get a visible story response — player-loop link 4. | node-prop: `prosperity` | Encounters & Dilemmas | 🟢 LIVE | THR-725 |
 
 ### Personality & Emergent Traits
@@ -461,6 +462,17 @@ remediation ticket or the build fails.
 - **Other hits:** `src/components/Game/debug/DecisionBreakdown.tsx`, `src/types/trace.ts`
 - **Verdict:** Verified 2026-07-23: THR-725: 120-tick standard run (seed 42, medium, unforced) produced 184 nonzero `economicContextBonus` contributions on `encounter_scoring` traces — e.g. `encounter.bandit_ambush econ=+0.0700 final=0.950` at a bust settlement and `encounter.grand_tournament econ=-0.0006` penalised for the same reason. Values, not just symbols: the term moves finalScore.
 
+### `economy-sustains-essence-sources` — 🟢 LIVE
+
+- **Intent:** A god's power is rooted in the land their people work: the goods of a source's own Sphere nurture or wither its sanctity, so an economy the player neglects quietly costs them essence.
+- **Producer → Consumer:** Mortal Economy & Prosperity → Essence & Divine Economy
+- **UL terms:** *Stock Tier*
+- **Production hits:** 8 total — 1 write, 1 read, 6 unclassified
+- **Write sites:** `src/engine/phases/resourceStockTiers.ts`
+- **Read sites:** `src/engine/essenceEconomyBridge.ts`
+- **Other hits:** `src/components/Game/debug/EconomyDebugTab.tsx`, `src/components/Game/LocationView.tsx`, `src/engine/orchestrator.ts`, `src/engine/phases/economicPower.ts`, `src/engine/tradeRoute.ts` +1 more
+- **Verdict:** Verified 2026-07-28: THR-618: driven through the served browser bundle — two controlled Spirit shrines, one on surplus pearls and one on scarce, 60 ticks of `recomputeControlledSourceTiers`. The rich valley climbed 0.30 → 0.50 and STOPPED at `ECON_SANCTITY_NURTURE_CEILING`, tier still `dormant` (the land readies a source; only a Sanctify cast flowers it); the poor valley fell 0.30 → 0.00. First tick reported `econNurtured: 1, econWithered: 1` on the aggregate phase counters. Values and the bound, not just symbols.
+
 ### `economy-verbs-answered` — 🟢 LIVE
 
 - **Intent:** The four granted economic verbs (bless_harvest, blight, open_markets, reveal_vein) get a visible story response — player-loop link 4.
@@ -554,10 +566,10 @@ remediation ticket or the build fails.
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 157 total — 1 write, 1 read, 155 unclassified
+- **Production hits:** 158 total — 1 write, 1 read, 156 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/Game/ActionCard.tsx`, `src/components/Game/ascendant-bar/IdentityStrip.tsx`, `src/components/Game/ascendant-bar/selectors.ts`, `src/components/Game/ChapterView.tsx` +150 more
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/Game/ActionCard.tsx`, `src/components/Game/ascendant-bar/IdentityStrip.tsx`, `src/components/Game/ascendant-bar/selectors.ts`, `src/components/Game/ChapterView.tsx` +151 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `reunion-reads-the-edges-not-the-roster` — 🟢 LIVE

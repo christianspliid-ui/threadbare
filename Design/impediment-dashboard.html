@@ -5042,6 +5042,45 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "**Workaround:** when an `Edit` fails on a line that visibly matches, dump the line as codepoints (`[...line].map(c => c.charCodeAt(0) > 126 ? \"[U+\" + ... : c)`) before assuming the file changed underneath you. To patch past it, write a small node script keyed on a substring that excludes the invisible character. Both occurrences are now the `\"\\u00A0\"` escape.",
     "session": "THR-764, hourly pickup"
+  },
+  {
+    "num": "273",
+    "id": 273,
+    "count": 1,
+    "date": "2026-07-28",
+    "category": "tooling",
+    "description": "**`preview_start` reports a proxy port that is not where Vite actually bound, and `navigate` to that port is refused — so the first browser call of a worktree session fails in a way that reads like a permissions problem.** THR-618's browser pass called `preview_start {name:'dev'}`, which answered *\"port 5173 was in use, so port 53953 was assigned\"* and opened a tab there. `navigate` to `localhost:53953` returned `navigation ... was denied or failed`, as did `localhost:5174`. `preview_logs` on the returned `serverId` showed the truth: Vite itself had printed `Port 5173 is in use, trying another one...` and bound **5174** — the MCP's 53953 proxy pointed at 5173, which belongs to *another session's* dev server (typically the home tree, which is the `worktree_preview_server` trap wearing a new face). **Workaround:** read the real port out of `preview_logs`, then open it with `preview_start {url:'http://localhost:<real>/...'}` — the URL form works where `navigate` to an unopened origin does not. **Always probe that the served bundle is the worktree's** before trusting a browser result: `import('/src/<new-module>.ts')` in the page and assert a symbol that exists only in your change.",
+    "consequence": "",
+    "impact": "",
+    "workaroundFound": false,
+    "workaround": "",
+    "session": ""
+  },
+  {
+    "num": "274",
+    "id": 274,
+    "count": 1,
+    "date": "2026-07-28",
+    "category": "verification",
+    "description": "**A live-graph write is unreachable from any `__DEBUG` session that starts after page load, because `_registerGraphProvider` hands the graph *in* and nothing hands it back — so \"set up a state and screenshot it\" has no direct route.** THR-618 needed a location hosting a discovered, sphere-typed essence source to photograph the new Livelihood clause. `__DEBUG` exposes 131 methods and none returns the `WorldGraph`; the provider is a closure captured in a mount-once `useEffect` in `GameView.tsx`. Three attempts to wrap `_registerGraphProvider` before it fires all lost the race — the registration completes before the first `evaluate` round-trip lands, on both a medium and a large map, and an HMR nudge did **not** re-run the effect (Fast Refresh preserved state). **Workaround, and it is the better evidence anyway:** the `component_mount_overlay_verify` route — `createRoot` over the running app rendering the real exported component with a synthetic node — plus, for the state assertion, constructing a `WorldGraph` **from the served bundle** (`import('/src/engine/graph.ts')`) and driving the shipped phase function over it. That exercises the same code the browser is running and needs no privileged handle. Note React/ReactDOM come out of `/node_modules/.vite/deps/*.js` as `default` exports — `import(...).createRoot` is undefined; destructure from `.default`.",
+    "consequence": "",
+    "impact": "",
+    "workaroundFound": false,
+    "workaround": "",
+    "session": ""
+  },
+  {
+    "num": "275",
+    "id": 275,
+    "count": 2,
+    "date": "2026-07-28",
+    "category": "process",
+    "description": "**Adding a row to `scripts/interface-contracts.ts` silently obligates a *hand-authored* row on `public/system-interface-map-reference.html`, and the naming of the surrounding tooling actively argues that it does not.** Everything about the setup reads \"generated\": the file sits beside `scripts/generate-interface-map.ts`, the npm script is `generate-interface-map`, and the canon artifact it writes is literally named `Docs/canon/interface-map.generated.md`. So an executor who adds a contract row runs the generator, sees the `.generated.md` update, watches `check:generated-freshness` pass on all 28 artifacts, and reasonably concludes the projection is done. It is not: the generator writes *only* the canon markdown, while the wiki page is a hand-written narrative projection whose `sources` glob in `public/wiki-manifest.json` includes `scripts/interface-contracts.ts` — so the blocking wiki-freshness gate demands the page be touched in the same diff, and only says so from CI. Second occurrence: THR-802 (2026-07-27, PR #943) and THR-618 (2026-07-28, PR #1018) failed the identical gate on the identical file, each after a ship comment that recorded the interface-map row as delivered.",
+    "consequence": "~40 min of the next hourly run each time — the PR sits armed, green-looking to a glance, and never merges; the issue stays In Dev and the lane spends a full pickup cycle on diagnosis + re-verification rather than new work. Compounding factor: because auto-merge is armed, nothing *surfaces* the failure — it is silence, not an alarm.",
+    "impact": "M",
+    "workaroundFound": true,
+    "workaround": "**Rule: `scripts/interface-contracts.ts` and `public/system-interface-map-reference.html` are a two-file edit, always — the generator does not close the loop.** When adding or re-badging a contract, author the wiki row in the same commit; follow the THR-802 precedent (`4c04fe09`) for shape — a `Spotlight — <topic>` section with `<h2>`, a dated `class=\"lead\"` line naming the audit-on-touch ticket, and one `<li class=\"live\\|leaked\\|partial\">` carrying flow, chip and a `class=\"note\"` narrative. Do **not** run `generate-interface-map` and assume it wrote the page. Cheap pre-commit confirmation, and the one that would have caught both occurrences: run `npm run check:wiki-freshness:blocking` (not the advisory twin) as the last gate before commit — it now self-fetches its base since THR-819, so a local OK is a true CI prediction.",
+    "session": "THR-618 resume, hourly `tb-opus-pickup`, 2026-07-28. Found by triaging PR #1018's failed required check."
   }
 ];
 // ── End data ──
