@@ -1,44 +1,55 @@
 # Briefing
 
-**Generated:** 2026-07-28 11:00 local (2026-07-28 09:00 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-07-28 11:56 local (2026-07-28 09:56 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
+## From Christian
+
+**You wrote at 11:05: *"I did not manually change anything anywhere. Feel free to investigate and do the stuff you need to do."*** You were right, and the last brief was wrong to tell you otherwise. Investigated and corrected below.
+
+**Nobody edited anything by hand.** All three leftover files in your project folder were written by the crew, not by you:
+
+- Two are tool-permission files, updated automatically each time a crew member is granted a new permission.
+- The third is yesterday's *decides-what-to-work-on-next* report — and **that one is the whole problem.** The crew member that writes it is supposed to work in its own scratch copy of the project and deliver through the normal review route. At 10:29 this morning it did deliver properly *and* accidentally wrote a second copy straight into your folder. That stray copy is the file the update routine keeps colliding with.
+
+**The one command still needs you, but it is now a smaller and safer command** — see below. **The underlying crew bug is not yours** and is written up for the next crew member; it is a known trap that already has a note against it (a scratch-copy command quietly resolving file paths against your folder instead of its own).
+
 ## Needs Christian
 
-**Your own copy of the project has stopped updating itself, and only you can restart it.** One command, in a terminal:
+**One command, in a terminal, about a second.** It restarts your folder's self-updating:
 
 ```
 cd C:\Users\chris\Dev\Projects\TheFantasyWorldSimulator
-git stash push -m home-tree-recovery
+git stash push -m home-tree-recovery -- Docs/ops/orchestrator-2026-07-28.md
 git pull --ff-only origin main
 ```
 
-**Why it needs you and not a crew member:** the routine that keeps that folder current refuses to touch it while any tracked file in it has been edited by hand — deliberately, so it can never overwrite your work. One file in there is in exactly that state, and it is *also* one of the files arriving in the updates, so the routine now aborts every hour without doing anything. The crew members are all forbidden from running repair commands in that folder, for a reason that has bitten hard before: a session that starts moving branches around in there is what stalled this same routine for days in July.
+**What changed since last hour's version of this ask.** The old one parked *all three* leftover files. This one touches only the single file that actually blocks anything — your tool-permission tweaks stay exactly where they are. I checked which files the incoming updates and your folder both write, and it is exactly one.
 
-**What it costs if left:** the gap was two updates behind an hour ago and is six now, and it grows every hour. When you next open a session there, you'll be reading yesterday's version of files that have since changed — including this briefing. Nothing is lost or at risk; the command above parks your edits safely (`git stash pop` brings them back) and takes about a second.
+**Nothing can be lost.** That stray report's contents were *already* delivered properly through the review route this morning and are safely in the shared copy — I compared them line by line. The command parks the duplicate rather than deleting it, so `git stash pop` brings it back regardless.
+
+**Why it still can't be a crew member.** Every crew member is barred from running repair commands in your folder — a rule earned the hard way in July, when a session that started moving things around in there stalled this same routine for days. The routine that would normally self-heal is the one that's blocked. So it's you or nothing, and it's ten updates behind now.
 
 ## Queue
 
-**22 jobs ready — one top-priority, three middling, eighteen minor. One in flight.** Nothing stale, nothing blocked.
+**23 jobs ready — two top-priority, three middling, eighteen minor. One in flight.** Nothing stale, nothing blocked.
 
-**The first batch of the encounter rewrite is on the shelf and startable** — forty-eight encounters, about nine in every ten a player actually meets, rebuilt into the new nudge shape. This is the work you named first priority, and as of last hour it is finally a job rather than a folder. Nobody has claimed it yet; the next crew member clocks in shortly.
+**The first batch of the encounter rewrite is still on the shelf, and that is currently correct rather than concerning.** Forty-eight encounters, about nine in every ten a player actually meets. The single work slot is occupied by the overnight-outage investigation, which outranks it, so the encounter batch is waiting its turn for the reason the queue is meant to make things wait.
 
-**The top-priority slot refilled within the hour, which is the healthy version of this.** The overnight-outage job was claimed at 10:21 and is being worked now; twenty minutes earlier a different crew member had promoted a replacement top-priority job into the gap — a fix for the project's own friction log, whose two automatic readers between them cannot see two-thirds of what has been written into it this month.
+**One thing for the crew, not for you:** the retro job promoted at 11:29 went onto the shelf with someone's name already on it, and the crew member that picks up work only looks at *unassigned* jobs. It will be stepped over silently until that's cleared. Noted for the next crew session.
 
 ## Freshness
 
-**Home tree: stalled, six updates behind — see above.** This is the same "two harmless leftovers in the tool config" that this file has reported as inert for days, plus a third file that is *not* inert, because the incoming updates touch it too. That combination is what turns a cosmetic leftover into a stopped process, and it is the first time it has actually bitten.
+**Your folder: still stalled, now ten updates behind — see above.** Everything else is healthy: **the cleanup routine ran at 11:40, clean, nothing awaiting a decision.** **The live site is current** — everything published since it last built was notes and reports, so the game itself didn't need rebuilding.
 
-**Cleanup reaper: alive, ran at 10:40, clean, nothing awaiting a human decision.** **The live site is up to date** — everything published since it last built was notes and docs, so the game itself did not need rebuilding. **Discord: nothing new from you**, so no reply was owed and none was sent.
+**All ten scheduled crew jobs checked in on time**, including the two that were missing overnight. (The automatic version of this check is still being built — it's the job currently in flight — so I ran it by hand and am saying so rather than reporting silence as good news.)
 
 ## What's moving
 
-**The crew member that decides what to work on next is properly back.** It missed eleven check-ins overnight; it has now made two in a row on time, at 09:19 and 10:27. One missed slot returning could have been luck — two consecutive on-time slots is the outage being over. In those two slots it did the work the outage had been holding up: it cut the first encounter batch out of the folder, and it freed a six-day-old job whose stated blockers had both been finished for weeks.
+**The crew member that decides what to work on next is fully back** — three on-time check-ins in a row now (09:19, 10:27, 11:27). In those slots it cut the encounter work into a startable first batch and freed two older jobs whose blockers had long since finished.
 
-**A hazard worth knowing about, because it will make correct work look broken.** Every change has to pass one safety check before it can go in, and that check now takes 16–18 minutes against its own 20-minute limit. It is not that anything is wrong — the test suite has simply grown from 737 files to 909 since the limit was set, and nobody was watching the ratio. When a machine happens to run slow, a perfectly good change goes red and looks like a defect; that is exactly what happened yesterday and cost an extra hour to diagnose. **It is written up with the measurements and four candidate fixes.** No action from you — flagging it so that when you see a red check on something obviously fine, the first suspicion is the clock rather than the work.
-
-**A small bookkeeping collision, noted rather than fixed:** two different crew members wrote up two entirely different problems yesterday and both numbered them 267. Harmless today, folded at the next review — the same disposition as a duplicate pair already waiting there.
+**The overnight-outage investigation is being worked right now.** It's building the missing alarm — the thing that should have noticed that crew member going quiet for eleven hours, instead of a human spotting it the next morning.
 
 ---
 *Standing asks live in [`Design/user-actions.md`](user-actions.md). This file is regenerated hourly by the `keep-work-flowing-cc` scheduled task; staleness is visible from the Generated timestamp above and the task's `lastRunAt` in `list_scheduled_tasks`.*
