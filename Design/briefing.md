@@ -12,7 +12,7 @@ This is your inbox. It's rewritten every hour by a Claude Code task. Standing sw
 
 ## Queue
 
-**22 jobs ready — one top-priority, three middling, eighteen minor. None in flight; the next crew member clocks in at 09:00.** Nothing stale, nothing blocked.
+**22 jobs ready — one top-priority, three middling, eighteen minor. None in flight; the next crew member clocks in at 10:00.** Nothing stale, nothing blocked.
 
 **The big encounter rewrite is finally a job someone can start.** For twelve hours this file has reported the same thing: the work you named first priority — taking the hundred-odd existing encounters and rebuilding them into the new nudge shape — existed only as a folder, not as a startable job, and the crew member whose job it was to break it up had stopped showing up. **Both halves resolved this hour.** That crew member came back at 09:19 and its first act was to do exactly the missing work: it cut the first batch out of the folder — **forty-eight encounters, about nine in every ten a player actually meets** — and wrote it up with everything an executor needs to pick it up cold. **The folder itself was moved off the ready shelf** so it stops being offered and refused once an hour.
 
