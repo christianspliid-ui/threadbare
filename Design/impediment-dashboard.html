@@ -5120,6 +5120,32 @@ const DATA = [
     "workaroundFound": false,
     "workaround": "**Not agent-fixable — the remedy is a Christian-owned billing action** (clear the failed payment / raise the Actions spending limit). Filed **THR-842** (Urgent). **Detection rule for any executor, cheap enough to make routine: after `gh pr merge --auto`, do not read `state: MERGED` as \"gates passed\" — read the rollup.** `gh pr view <N> --json statusCheckRollup --jq '.statusCheckRollup[] \\| {name,conclusion}'`; a required check reading `SKIPPED` means the gate did not run, and a job that \"failed\" in ~3 s with `steps_count: 0` is a startup failure whose real reason is only in `gh api repos/<owner>/<repo>/check-runs/<jobId>/annotations` — `gh run view --log-failed` returns *\"log not found\"* because no log was ever produced, which is itself the tell. Second confirmed instance of the `skipped_required_check_merges` class; the first was a path-filtered skip, this one is infrastructural, so the class is not specific to path filters.",
     "session": "THR-822 closeout, hourly `tb-opus-pickup`, 2026-07-28 16:30 UTC"
+  },
+  {
+    "num": "279",
+    "id": 279,
+    "count": 1,
+    "date": "2026-07-28",
+    "category": "tooling",
+    "description": "**A recovery sweep that filters the *general* `gh run list` silently under-reports, because that list is interleaved across every workflow — it found 3 stranded runs and missed the one the whole exercise existed to un-strand.** THR-768's `--recover` initially reused the same `gh run list --limit 20` the verdict path uses, filtering to `workflowName == \"Linear Auto-Close\"`. Twenty *global* runs reached back only ~35 minutes on this repo's traffic, and the `ANNOTATION_INSPECT_LIMIT` (6) cap truncated it further, so the sweep recovered 3 auto-close runs and left 7 — including `30378438176`, THR-822's own merge-commit close, 7 auto-close runs deep. The failure is invisible from the output: \"3 stranded run(s) — re-running / re-run queued\" reads like complete success, and every one of the 3 genuinely was stranded. Only checking whether the *target* issue actually left In Dev exposed it.",
+    "consequence": "~15 min, and it would have been a permanently wrong ship: the detector would have shipped claiming scope item 5 discharged while leaving the motivating ticket stranded, with a passing test suite and a plausible transcript.",
+    "impact": "M",
+    "workaroundFound": true,
+    "workaround": "**Rule: a sweep whose job is *completeness* must query its own workflow (`gh run list --workflow <file> --limit N`), never filter a general list.** Under-reporting is harmless for a *verdict* — which is decided by the newest completed run and cannot be changed by missing older ones — and is the entire ball game for *recovery*. Give the recovery path its own wider constant (`RECOVERY_LOOKBACK`, 40) and do not apply the verdict path's annotation cap to it. Generalises past `gh`: any \"clean up everything matching X\" built on a feed shared with other producers has this bug, and the tell is that the count looks plausible. **Verify a recovery sweep by its effect on the target, never by its own success lines.**",
+    "session": "THR-768, hourly `tb-opus-pickup`, 2026-07-28"
+  },
+  {
+    "num": "280",
+    "id": 280,
+    "count": 4,
+    "date": "2026-07-28",
+    "category": "process",
+    "description": "**`tb-orchestrator` promoted an Urgent ticket to Ready for Dev with no coordination block, which `/pull-work` Step 3 is written to bounce — the exact silent-starvation mode THR-826 shipped a rule to prevent.** THR-768 was promoted at 16:35:21Z with a substantial, well-argued comment carrying none of `Suggested model` / `Parallel-safe with` / `Mutex with`. Step 3 refuses such a candidate without claiming it, and the `tb-opus-pickup` prompt turns that refusal into \"post a bounce note and exit cleanly\" — so the highest-priority item on the board would have been declined once an hour, indefinitely, while *looking* available in every view. This is the failure the `orchestrator_lane_thr826` note calls \"worse than no promotion\", and it is the 4th occurrence of the missing-block class (the prior 3 were directly-filed `Deferral` tickets, impediment class `pull_work_deferral_no_coordination_block`).",
+    "consequence": "Would have cost one full pickup cycle per hour with zero throughput. Caught only because the standing memory note prescribes the reversal; a session without it would have bounced correctly-per-the-letter and starved the board.",
+    "impact": "M",
+    "workaroundFound": true,
+    "workaround": "**Applied the sanctioned reversal (THR-688 Rule B shape): treat Step 3's *purpose* as the test, not its literal text.** The block exists to stop a claim whose scope or coordination is unknown — THR-768's description names 5 numbered scope items, the failure signature, and the disambiguation protocol, so scope is known; and with WIP=1 and no other In Dev issue, parallel-safety and mutex are vacuous. Claimed it and recorded the reversal in a Linear comment. **The durable fix remains unticketed and is now 4 occurrences old:** Step 3 should branch on provenance — require the full block for design-session handoffs, require only scope + Done-whens for a directly-filed `Deferral` *or an orchestrator promotion*. Note the rule lives in two places (`.claude/skills/pull-work/SKILL.md` and the live `tb-opus-pickup` prompt), so it must be edited in both or they drift.",
+    "session": "THR-768 pickup, hourly `tb-opus-pickup`, 2026-07-28"
   }
 ];
 // ── End data ──

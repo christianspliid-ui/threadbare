@@ -129,6 +129,23 @@ Before any pickup work, sweep for stale `tfws-pickup-*` and `tfws-resume-*` work
 
 If any Linear MCP call in this session returns a rate-limit error (HTTP 429 / MCP rate-limit response), pause 2 minutes, retry once, then if still limited log an impediment via `impediment-reporter` and exit cleanly without claiming. Do not retry in tight loops.
 
+### Step 0.6 — Merge-gate health gate (THR-768)
+
+**Do not claim new implementation work while the merge gate is vacuous.** This is a rule, not a judgment call each time — it has been re-litigated in four separate sessions and got it wrong at least once.
+
+```bash
+npm run check:actions --silent -- --json
+```
+
+- **`standDown: true`** (verdict `billing-block`) → **do not claim.** Post nothing to Linear (the outage is not a ticket's fault and a comment on an arbitrary issue is noise), log one line, and exit clean. `keep-work-flowing-cc` step 2.5b surfaces the `summary` to Christian within the hour; only he can clear it. A healthy queue loses nothing by waiting one hour — an unguarded `main` is not worth one hour of throughput.
+- **any other verdict** (`healthy`, `recovered`, `transient`, `unknown`) → continue to Step 0.8.
+
+**Why the gate can be vacuous while reading as enforced:** when Actions cannot start jobs, the required `Test · Typecheck · Build` check records as `skipped`, and **a skipped required check satisfies branch protection** (see the standing `reference_skipped_required_check_merges` finding). Reproduced end to end on PR #853 and again on PR #1022, which carried engine + content changes. The `Guard — change detection health` step in `ci.yml` now closes this at source for every cause *except* a full Actions outage — during which nothing runs at all, including the guard. This step covers that residue.
+
+**Do not rely on `gh pr merge --auto` refusing to arm during an outage.** A 2026-07-25 note recorded that it returns *"Pull request is in unstable status"*, making armed auto-merge accidentally safer than a manual merge. On 2026-07-28 it armed without complaint and fired. That property is **not** dependable and must not be treated as mitigation.
+
+**Fail-soft:** the probe degrades to `verdict: "unknown"` on any network/auth failure and never exits non-zero without `--strict`. An unreadable probe is not a reason to refuse work — `unknown` continues.
+
 ### Step 0.8 — Armed-PR reconciliation sweep (THR-702)
 
 Auto-merge does **not** update a stale branch: under strict branch protection, an armed PR whose base moves sits at `mergeStateStatus: BEHIND` forever, green and silent (THR-702 found 9 such PRs, oldest 19 days). This sweep is the recurring surface that catches them.
@@ -551,6 +568,14 @@ The gate is unchanged: branch protection stays on, the required check still has 
 **The keyword must stand ALONE on its own line (THR-738).** `linear-autoclose.yml` is line-anchored: it closes only when a full line reads exactly `Fixes|Closes|Resolves THR-XXX`. The keyword inside a prose sentence (`Fixes THR-74 still rides the final PR`), a markdown bullet, or the PR *title* does **not** close. **Corollary for checkpoint and any non-closing comment:** never write `Fixes/Closes/Resolves` in front of an issue id you are *not* closing — reference it as a bare `THR-XXX` token. The phantom-Done recurrences (THR-74 ×2 on 2026-07-24) were prose that quoted the keyword to *document* the discipline. Vectors 2/3 (branch name, bare title token) come from Linear's native integration and are killed by the Christian-owned settings change in `Design/user-actions.md`, not by this workflow.
 
 **After arming, run one freshness check — `gh pr view <N> --json mergeStateStatus`.** Branch freshness at session start does not imply freshness at arm time: THR-696's PR went `BEHIND` seconds after opening because main had moved during the session. If it reads `BEHIND`, run `gh pr update-branch <N>` once and re-arm if needed; if `UNKNOWN`, re-query 2–3 times a few seconds apart (GitHub computes mergeability lazily — the first read only schedules it). This is one query, not a poll loop; a PR missed here is caught by the Step 0.8 sweep next hour.
+
+**Read the check rollup once after arming, and never accept `SKIPPED` on the required check (THR-768).** This is the single step that sits between finished work and an unguarded `main`, and it is one `gh` call:
+
+```bash
+gh pr view <N> --json statusCheckRollup --jq '[.statusCheckRollup[] | select(.name == "Test · Typecheck · Build")] | .[0].conclusion'
+```
+
+`SUCCESS` is the only acceptable answer. `SKIPPED` means the required check never inspected the change — during an Actions outage that is *exactly* what a vacuous gate looks like, and it satisfies branch protection anyway. On `SKIPPED`, do not merge: leave the PR open, post a checkpoint comment, and exit clean; the next hourly run resumes it once the gate is real again. (A genuinely docs-only PR also reports `SKIPPED` by design — that case is legitimate, so confirm the diff really is docs-only before treating a skip as benign.)
 
 **After queuing auto-merge, the session's shipping work is done.** Proceed to the worktree cleanup below and exit; do not block on the merge landing. If the check later fails, the PR stays open and the issue stays In Dev — the next hourly run resumes it via the Step 1.7 upstream-shipped check, which will find no `Fixes` commit on `main` and correctly treat the work as still in flight.
 
