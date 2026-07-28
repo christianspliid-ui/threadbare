@@ -18,7 +18,11 @@ import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
 
-import { linearGql, LINEAR_API_KEY, LINEAR_TEAM_ID } from "../drift-scan/linear";
+// Explicit `.ts` extensions are mandatory: this script runs under Node's ESM
+// resolver via `--experimental-strip-types`, which does not do extension
+// resolution. An extensionless specifier throws ERR_MODULE_NOT_FOUND at import
+// time — it cost this workflow 88 consecutive red runs (THR-804).
+import { linearGql, LINEAR_API_KEY, LINEAR_TEAM_ID } from "../drift-scan/linear.ts";
 
 import {
   STALE_THRESHOLD_HOURS,
@@ -30,7 +34,7 @@ import {
   LINEAR_TEAM_KEY,
   DEFAULT_TRACKED_LIST_PATH,
   buildWarningComment,
-} from "./constants";
+} from "./constants.ts";
 
 // ---------------------------------------------------------------------------
 // Types
