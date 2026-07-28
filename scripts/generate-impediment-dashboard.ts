@@ -4,19 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-type DashboardEntry = {
-  num: string;
-  id: number;
-  count: number;
-  date: string;
-  category: string;
-  description: string;
-  consequence: string;
-  impact: string;
-  workaroundFound: boolean;
-  workaround: string;
-  session: string;
-};
+import { parseImpedimentLog, type ImpedimentEntry } from "./impediment-log.ts";
 
 type RetroInfo = {
   date: string;
@@ -36,116 +24,6 @@ const DATA_START = "// ── Impediment data ──";
 const DATA_END = "// ── End data ──";
 const RETRO_START = "// ── Last retro ──";
 const RETRO_END = "// ── End last retro ──";
-
-function splitMarkdownRow(line: string): string[] {
-  const trimmed = line.trim();
-  if (!trimmed.startsWith("|") || !trimmed.endsWith("|")) return [];
-  const body = trimmed.slice(1, -1);
-  const cells: string[] = [];
-  let current = "";
-
-  for (let i = 0; i < body.length; i += 1) {
-    const char = body[i];
-    const prev = i > 0 ? body[i - 1] : "";
-    if (char === "|" && prev !== "\\") {
-      cells.push(current.trim());
-      current = "";
-      continue;
-    }
-    current += char;
-  }
-
-  cells.push(current.trim());
-  return cells;
-}
-
-function normalizeText(value: string): string {
-  return value
-    .replaceAll("\u00A0", " ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-function parseNumber(raw: string): number | null {
-  const parsed = Number.parseInt(raw, 10);
-  return Number.isFinite(parsed) ? parsed : null;
-}
-
-function parseWorkaroundFound(raw: string): boolean {
-  const value = normalizeText(raw).toLowerCase();
-  return value === "yes" || value === "true";
-}
-
-function parseRow(cells: string[], lineNumber: number): DashboardEntry | null {
-  if (cells.length < 10) {
-    console.warn(`generate-impediment-dashboard: skipping line ${lineNumber} (expected 10+ cells, got ${cells.length})`);
-    return null;
-  }
-
-  const numRaw = normalizeText(cells[0]);
-  const countRaw = normalizeText(cells[1]);
-  const date = normalizeText(cells[2]);
-  const category = normalizeText(cells[3]);
-  const description = normalizeText(cells[4]);
-  const consequence = normalizeText(cells[5]);
-  const impact = normalizeText(cells[6]);
-  const workaroundFoundRaw = normalizeText(cells[7]);
-  const workaround = normalizeText(cells[8]);
-  const session = normalizeText(cells.slice(9).join(" | "));
-
-  if (!numRaw || !countRaw || !date || !category || !description) {
-    console.warn(`generate-impediment-dashboard: skipping line ${lineNumber} (missing required cells)`);
-    return null;
-  }
-
-  const count = parseNumber(countRaw);
-  if (count === null) {
-    console.warn(`generate-impediment-dashboard: skipping line ${lineNumber} (invalid count "${countRaw}")`);
-    return null;
-  }
-
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
-    console.warn(`generate-impediment-dashboard: skipping line ${lineNumber} (invalid date "${date}")`);
-    return null;
-  }
-
-  const fallbackId = parseNumber(numRaw);
-  const id = fallbackId ?? lineNumber;
-
-  return {
-    num: numRaw,
-    id,
-    count,
-    date,
-    category,
-    description,
-    consequence,
-    impact,
-    workaroundFound: parseWorkaroundFound(workaroundFoundRaw),
-    workaround,
-    session,
-  };
-}
-
-function parseImpediments(markdown: string): DashboardEntry[] {
-  const lines = markdown.split(/\r?\n/);
-  const parsed: DashboardEntry[] = [];
-
-  for (let index = 0; index < lines.length; index += 1) {
-    const line = lines[index];
-    const lineNumber = index + 1;
-    const trimmed = line.trim();
-
-    if (!trimmed.startsWith("|")) continue;
-    if (trimmed.startsWith("| # |") || trimmed.startsWith("|---")) continue;
-
-    const cells = splitMarkdownRow(trimmed);
-    const entry = parseRow(cells, lineNumber);
-    if (entry) parsed.push(entry);
-  }
-
-  return parsed.sort((a, b) => a.date.localeCompare(b.date) || a.id - b.id || a.num.localeCompare(b.num));
-}
 
 function findRetroFiles(): RetroInfo[] {
   const retros: RetroInfo[] = [];
@@ -172,7 +50,7 @@ function toLiteral(value: unknown): string {
   return JSON.stringify(value, null, 2);
 }
 
-function makeGeneratedDataBlock(entries: DashboardEntry[]): string {
+function makeGeneratedDataBlock(entries: ImpedimentEntry[]): string {
   const payload = entries.map((entry) => ({
     num: entry.num,
     id: entry.id,
@@ -181,7 +59,8 @@ function makeGeneratedDataBlock(entries: DashboardEntry[]): string {
     category: entry.category,
     description: entry.description,
     consequence: entry.consequence,
-    impact: entry.impact,
+    // Verbatim, not the normalised bucket — see ImpedimentEntry.impactRaw.
+    impact: entry.impactRaw,
     workaroundFound: entry.workaroundFound,
     workaround: entry.workaround,
     session: entry.session,
@@ -246,8 +125,12 @@ function main(): void {
   }
 
   const impedimentsMarkdown = fs.readFileSync(IMPEDIMENTS_PATH, "utf8");
-  const entries = parseImpediments(impedimentsMarkdown);
+  const { entries, tableCount, paragraphCount, warnings } = parseImpedimentLog(impedimentsMarkdown);
   const latestRetro = findRetroFiles().at(-1) ?? null;
+
+  for (const warning of warnings) {
+    console.warn(`generate-impediment-dashboard: ${warning}`);
+  }
 
   let dashboardSource = fs.readFileSync(DASHBOARD_PATH, "utf8");
   dashboardSource = ensureLegacyMarkers(dashboardSource);
@@ -266,8 +149,17 @@ function main(): void {
 
   fs.writeFileSync(DASHBOARD_PATH, dashboardSource, "utf8");
   console.log(
-    `generate-impediment-dashboard: wrote ${path.relative(REPO_ROOT, DASHBOARD_PATH)} (${entries.length} rows, latest retro ${latestRetro?.date ?? "none"})`,
+    `generate-impediment-dashboard: wrote ${path.relative(REPO_ROOT, DASHBOARD_PATH)} (${entries.length} entries: ${tableCount} table + ${paragraphCount} paragraph, latest retro ${latestRetro?.date ?? "none"})`,
   );
+
+  // Table form is what the log's own header documents as canonical. Paragraph
+  // entries now parse, but they still cost a synthetic id and a heuristic field
+  // split, so surface the count rather than letting the second format normalise.
+  if (paragraphCount > 0) {
+    console.warn(
+      `generate-impediment-dashboard: NOTE — ${paragraphCount} entries use the paragraph form. Table rows are canonical; prefer "| # | Count | Date | ... |" for new entries.`,
+    );
+  }
 }
 
 main();

@@ -6,9 +6,17 @@ import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 
-type Impact = "S" | "M" | "L" | "Blocked" | "Unknown";
+import {
+  normalizeText,
+  parseImpedimentLog,
+  type ImpedimentImpact,
+} from "./impediment-log.ts";
+
+type Impact = ImpedimentImpact;
 
 type Entry = {
+  /** Display reference — `184` for a table row, `P12` for a paragraph entry. */
+  ref: string;
   id: number;
   count: number;
   date: string;
@@ -83,43 +91,6 @@ function toIsoDateLocal(now: Date): string {
   return `${year}-${month}-${day}`;
 }
 
-function splitMarkdownRow(line: string): string[] {
-  const trimmed = line.trim();
-  if (!trimmed.startsWith("|") || !trimmed.endsWith("|")) return [];
-  const body = trimmed.slice(1, -1);
-  const cells: string[] = [];
-  let current = "";
-
-  for (let i = 0; i < body.length; i += 1) {
-    const char = body[i];
-    const prev = i > 0 ? body[i - 1] : "";
-    if (char === "|" && prev !== "\\") {
-      cells.push(current.trim());
-      current = "";
-      continue;
-    }
-    current += char;
-  }
-  cells.push(current.trim());
-  return cells;
-}
-
-function normalizeText(value: string): string {
-  return value
-    .replaceAll("\u00A0", " ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-function normalizeImpact(raw: string): Impact {
-  const value = normalizeText(raw).toLowerCase();
-  if (value === "s") return "S";
-  if (value === "m") return "M";
-  if (value === "l") return "L";
-  if (value === "blocked") return "Blocked";
-  return "Unknown";
-}
-
 function truncate(value: string, maxLen: number): string {
   const clean = normalizeText(value);
   if (clean.length <= maxLen) return clean;
@@ -150,45 +121,36 @@ function inferCluster(entry: Omit<Entry, "cluster">): string {
   return `Other (${entry.category})`;
 }
 
+/**
+ * Adapts the shared log parser to the draft's own entry shape.
+ *
+ * Both of the log's formats arrive here (THR-764) — before that, the retro draft
+ * gated on a leading `|` and so ran on table rows alone, silently excluding every
+ * paragraph-form entry from the recurrence analysis it exists to produce.
+ */
 function parseEntries(markdown: string): Entry[] {
-  const lines = markdown.split(/\r?\n/);
-  const entries: Entry[] = [];
+  const { entries: parsed } = parseImpedimentLog(markdown);
 
-  for (const line of lines) {
-    const raw = line.trim();
-    if (!raw.startsWith("|")) continue;
-    if (raw.startsWith("| # |") || raw.startsWith("|---")) continue;
-    const cells = splitMarkdownRow(raw);
-    if (cells.length < 10) continue;
-
-    const id = Number.parseInt(cells[0], 10);
-    const count = Number.parseInt(cells[1], 10);
-    const date = normalizeText(cells[2]);
-    if (!Number.isFinite(id) || !Number.isFinite(count) || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
-      continue;
-    }
-
+  const entries = parsed.map((source) => {
     const partial: Omit<Entry, "cluster"> = {
-      id,
-      count,
-      date,
-      category: normalizeText(cells[3]),
-      description: normalizeText(cells[4]),
-      consequence: normalizeText(cells[5]),
-      impact: normalizeImpact(cells[6]),
-      workaroundFound: normalizeText(cells[7]),
-      workaroundDescription: normalizeText(cells[8]),
-      sessionContext: normalizeText(cells.slice(9).join(" | ")),
-      descriptionHash: hashDescription(cells[4]),
+      ref: source.num,
+      id: source.id,
+      count: source.count,
+      date: source.date,
+      category: source.category,
+      description: source.description,
+      consequence: source.consequence,
+      impact: source.impact,
+      workaroundFound: source.workaroundFoundRaw,
+      workaroundDescription: source.workaround,
+      sessionContext: source.session,
+      descriptionHash: hashDescription(source.description),
     };
 
-    entries.push({
-      ...partial,
-      cluster: inferCluster(partial),
-    });
-  }
+    return { ...partial, cluster: inferCluster(partial) };
+  });
 
-  return entries.sort((a, b) => a.id - b.id || a.date.localeCompare(b.date));
+  return entries.sort((a, b) => a.date.localeCompare(b.date) || a.id - b.id);
 }
 
 function findLastRetroDate(markdown: string): string | null {
@@ -337,7 +299,7 @@ function buildDraftMarkdown(
     lines.push("| Hash | Entry IDs | Occurrences | Example description |");
     lines.push("|---|---|---:|---|");
     for (const duplicate of duplicates) {
-      const ids = duplicate.entries.map((entry) => `#${entry.id}`).join(", ");
+      const ids = duplicate.entries.map((entry) => `#${entry.ref}`).join(", ");
       const occurrences = duplicate.entries.reduce((sum, entry) => sum + entry.count, 0);
       const example = truncate(duplicate.entries[0]?.description ?? "", 90);
       lines.push(`| \`${duplicate.hash}\` | ${ids} | ${occurrences} | ${example} |`);
@@ -355,7 +317,7 @@ function buildDraftMarkdown(
       lines.push("|---:|---:|---|---|---|---|");
       for (const entry of cluster.entries) {
         lines.push(
-          `| ${entry.id} | ${entry.count} | ${entry.date} | ${entry.category} | ${entry.impact} | ${truncate(entry.description, 120)} |`,
+          `| ${entry.ref} | ${entry.count} | ${entry.date} | ${entry.category} | ${entry.impact} | ${truncate(entry.description, 120)} |`,
         );
       }
     }
