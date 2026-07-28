@@ -44,6 +44,10 @@ export const WS5_MIGRATED: readonly string[] = [
   // Batch 1 — camp maintenance, the same night from the other side (THR-838, 2026-07-28)
   'encounter.ward_the_camp',
   'encounter.sharpen_blades',
+  // Batch 1 — the devotion pair: the same rite with and without a shrine to do
+  // it at (THR-838, 2026-07-29)
+  'encounter.offer_small_prayer',
+  'encounter.shrine_offering',
 ];
 
 const byId = new Map<string, UnifiedActionTemplate>(
