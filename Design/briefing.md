@@ -1,42 +1,40 @@
 # Briefing
 
-**Generated:** 2026-07-28 13:55 local (2026-07-28 11:55 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-07-28 14:54 local (2026-07-28 12:54 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
 ## Needs Christian
 
-**Nothing needs you right now. You cleared the one open ask and it worked.**
-
-Your folder is updating itself again — right branch, fully current, nothing stranded, nothing at risk. The parked duplicate is sitting safely in a stash where you left it; you can drop it whenever you like or ignore it forever, since its contents are already in the shared copy. **No action, now or later.**
-
-**One note on how that was confirmed, because it changes what the last few hours were worth.** The check did not simply notice the number had gone to zero and assume the best — it looked for your fingerprints and found them: your stash is on the shelf, and the exact `pull --ff-only` you were given is recorded in the folder's own history, immediately before the automatic updates resumed. **That distinction matters.** Had it healed on its own, the ask should never have gone to you and the escalation would have been a mistake worth learning from. It did not heal on its own; it waited for a human, you were the only human who could, and the moment you acted it cleared. **This was the first thing sent to you in over a day, and it was the right thing to send.**
+**Nothing needs you right now.** The queue is draining on its own, your folder is healthy, and the live site is current. No decision is waiting on you, and nothing is degrading while you're away.
 
 ## Queue
 
-**25 jobs ready, none in flight. Nothing stale, nothing blocked.** Two top-priority, five middling, eighteen minor.
+**26 jobs ready, one in flight, nothing stale, nothing blocked.** The crew picked up the impediment-log job at the top of the hour — the one that makes a month of recorded friction visible to the two tools that are supposed to read it — and it has already found and written up a second defect underneath itself.
 
-**The work slot is empty for the first time today, and the next crew shift starts within minutes.** The overnight-outage job finished and shipped this hour, which is what freed it.
+**The invisible-jobs problem has grown to four, and this is the hour it starts actually costing something.** Four jobs on the shelf have a name attached to them, and the routine that picks up work only looks at jobs with *no* name. It steps over all four silently. It was one two days ago, three last hour, four now — and each new one is the most recently promoted job, so whatever is attaching the name is still doing it.
 
-**One growing problem for the crew, not for you — it has now tripled.** Three jobs on the shelf have a name attached to them, and the routine that picks up work only looks at jobs with *no* name. It will step over all three silently. It was one yesterday, two last hour, three now — **and the three are the three most recently promoted**, while the one promoted before them is clean. Something in the promotion step started attaching a name about three hours ago and nothing checks for it.
+**Last hour's brief said this would cost priority. It was right about the outcome and wrong about the reason — worth correcting rather than quietly claiming the win.** It said the crew would take the "second-best" job while the best sat unseen. In fact the two were the *same* grade, so the choice was between equals and nothing was lost that hour. **What is true now is sharper: the job the crew took was the shelf's other top-priority item, so the only top-priority job left is the invisible one.** When the current work finishes, the crew will reach past it for a middling job and will not know it did.
 
-**This now costs real priority, which it did not before.** One of the two top-priority jobs is among the three invisible ones, so the crew's next shift will reach for the second-best job while the best one sits unseen. Still mechanical — one field on three tickets, fixable by any session that can write — and still not yours.
+Still mechanical, still fixable in one line by any session that can write, and still not yours.
 
-**The encounter rewrite's first batch is ready and waiting its turn, correctly.** Forty-eight encounters, about nine in ten that a player actually meets. It sits below a top-priority job, which is the queue working as intended.
+**The encounter rewrite's first batch — 48 encounters, about nine in ten a player actually meets — is still waiting its turn, correctly.** One job holds the work slot at a time, and it sits below the one that has it.
 
 ## Freshness
 
-**Everything healthy, and the check that says so is finally real.** Your folder is current. The cleanup reaper ran fifteen minutes ago, clean, nothing awaiting a human decision. The live site is up to date — everything published since it last built was notes and docs.
+**Everything healthy.** Your folder is on the right branch, fully current, nothing stranded. The cleanup reaper ran fourteen minutes ago, clean, nothing awaiting a human decision. The live site is up to date — everything published since it last built was notes and docs. All eight active routines are on schedule.
 
-**Last hour's honest gap is closed.** For three briefs running, the "has a routine gone silent?" check did not exist and was done by hand with the substitution named each time. **It shipped this hour and ran for real: all eight active routines are on schedule.** The check that would have caught last night's eleven-hour outage now exists and runs hourly.
+**Two files in your folder still show as edited** — the tool-permission settings. They have been there for days, and this run watched your folder update itself past them again without complaint, which is the third confirmation that they are not blocking anything. Not an ask, now or later.
 
-**Discord: nothing new from you**, so no reply was owed and none was sent. No doorbell was rung either — there is nothing to ring it about.
+**Discord: nothing new from you**, so no reply was owed and none was sent. No doorbell either — nothing to ring it about.
 
 ## What's moving
 
-**The overnight-outage job shipped**, and its deliverable is the thing that makes the outage un-repeatable rather than merely over. Last night a routine hung for eleven hours and nothing noticed, because a stopped routine and a quiet one look identical from outside. There is now a probe that tells them apart — and its cleverness is a small one worth knowing: it only cries foul when *other* routines on a similar schedule kept firing during the gap. Without that, every night you shut the machine down would read as a broken fleet, the alarm would be ignored, and the next real outage would hide in the noise.
+**The impediment-log job was claimed at the top of the hour and is live now.** The problem it fixes: roughly two-thirds of this month's recorded friction was written in a format neither of the tools reading that log can parse, so a month of real problems has been invisible to the things whose whole job is to notice them. Eighteen minutes into the work it filed a second one — about thirty older rows have their columns shifted by a stray character, so the dashboard has been printing prose where it should print impact.
 
-**That is the third repair of the same shape in three days** — a check that fails quietly. Yesterday: a routine that had failed eighty-eight times unseen. This morning: a handover rule silently rejecting self-filed work. Tonight: nothing noticing a routine that stops. **All three were found by something going and looking, never by anything raising a flag** — which is precisely the gap each repair closes.
+**That is the fourth repair of the same shape in four days**: something that was supposed to be watching, silently not watching. A routine that failed eighty-eight times unseen, a handover rule silently rejecting self-filed work, nothing noticing a stopped routine — and now a log that recorded everything faithfully into a format nothing could read. **All four were found by something going and looking, never by anything raising a flag.**
+
+**The orchestrator also promoted a piece of real game work this hour** — rival gods getting scheme phases that drain and desecrate your essence sources, so the divine economy has an opponent rather than just a supply.
 
 ---
 *Standing asks live in [`Design/user-actions.md`](user-actions.md). This file is regenerated hourly by the `keep-work-flowing-cc` scheduled task; staleness is visible from the Generated timestamp above and the task's `lastRunAt` in `list_scheduled_tasks`.*
