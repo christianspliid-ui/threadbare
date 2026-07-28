@@ -110,6 +110,17 @@ export const HAND_COMMON_OPTIONS_MIN = 1;
  */
 export const NUDGE_OFF_REACH_MAX_DIFFICULTY = 0.45;
 
+/**
+ * The attention tier that means "open draw": ambient content a mortal draws by
+ * being where it is, with no selection on reach, role, or faction.
+ *
+ * This is the population `NUDGE_OFF_REACH_MAX_DIFFICULTY` binds over. Above this
+ * tier a template has an author-chosen audience, and whether its steps are
+ * reachable is a question about that audience — not one the checklist can answer
+ * from the template alone.
+ */
+export const OPEN_DRAW_ATTENTION_TIER = 'background';
+
 // ─── Band-fragment coverage ──────────────────────────────────────────
 
 /**
