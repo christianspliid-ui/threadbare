@@ -1,5 +1,47 @@
 # Orchestrator — 2026-07-28
 
+## Twelfth run — 18:28Z update
+
+*T3 runs once daily; the first run already completed it (07:42Z), so this run only did T1 (fresh, per-run) and re-checked the T2 trigger. Full detail for T2/T3 retained below under "First run — 07:42Z".*
+
+### Needs Christian
+
+Nothing needs you this run.
+
+### T1 — unblock sweep (18:28Z)
+
+**Promoted (1, at the shelf-backup ceiling):**
+
+- **THR-574** ("Backlog triage sweep — 34 stale Idea issues") — Medium priority. No blocker was ever declared. Oldest untouched Todo item (created 2026-07-03), named a clean candidate across ten prior sweeps today, held back purely by the shelf-backup ceiling (Ready for Dev held 31 items before this promotion, well above the `QUEUE_BACKED_UP_MIN=15` threshold). Its one escalation point — "THR-66 gets an explicit verdict from Christian" — was read as a chat-review item (THR-608), not a design-finalization gate, matching how the 16:29Z/17:29Z runs already characterized it. Promoted → verified via `get_issue` (`stateHistory` shows Todo → Ready for Dev at 18:28:47.706Z, state stuck) → coordination-block comment posted (Suggested model: sonnet; Parallel-safe with: anything not touching Linear state/priority/labels in bulk; Mutex with: none, Linear-only pass; note added flagging the ticket's own dated snapshot counts per THR-688 rule A).
+
+**Declined (unchanged from prior runs today):**
+
+- **THR-735** ("Armed-PR staleness sweep") — no blocker, self-declares "design pass needed." T2's input, not T1's.
+- **THR-790** / **THR-791** (Traits wave 2 / wave 3) — blocker THR-786 Done, but both self-declare a design-finalization gate. T2's input; T2 did not trigger this run.
+- **THR-175** ("UI overhaul 08, agent.sphere field") — explicit `Status: DEFERRED`, unmet unblock trigger.
+
+**Independently reverified this run, held back (no blocker, but ceiling already spent on THR-574):**
+
+- **THR-680** / **THR-681** (stash triage / worktree disposition) — both Medium priority, no blocker, but both ticket bodies literally instruct running from the **home tree**, which conflicts with the current THR-671/672/797 containment policy (no git state ops there in automated sessions). Flagging again for whichever run next promotes these: reconcile the instruction before an executor follows it verbatim. Read in full this run; this caveat is the reason THR-574 was picked over them despite equal priority.
+- **THR-757, THR-756, THR-762, THR-766, THR-582, THR-646** — all Low priority, no blocker, unchanged from prior sweeps.
+- **THR-346/347/348** (Encounter UI post-v1 H1/H2/H3) — no formal `Blocked by` line; discovery spec THR-336 confirmed Done. Low priority, unchanged.
+
+**Not re-verified this run:** THR-772/778/789 (Nudge Model / Traits program-epic containers — intentionally Todo, not promotion candidates).
+
+### T2 — design authoring (18:28Z)
+
+**Not triggered.** Ready for Dev holds 15 non-`Deferral` items after this run's promotion (THR-795, THR-842, THR-763, THR-723, THR-667, THR-638, THR-836, THR-655, THR-838, THR-792, THR-807, THR-740, THR-739, THR-715, THR-574) — well above the floor of 2. THR-790 (Traits wave 2) remains the top agreed-but-undesigned candidate for whenever T2 next triggers.
+
+### T3 — architecture health (18:28Z)
+
+**Not re-run** — the full sweep already ran this morning (07:42Z, see "First run" below); nothing in the interim changes those findings.
+
+### Escalations (18:28Z)
+
+None. No item required a question this run; the Discord channel was not used.
+
+---
+
 ## Eleventh run — 17:29Z update
 
 *T3 runs once daily; the first run already completed it (07:42Z), so this run only did T1 (fresh, per-run) and re-checked the T2 trigger. Full detail for T2/T3 retained below under "First run — 07:42Z".*
