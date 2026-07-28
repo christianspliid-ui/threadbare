@@ -1,5 +1,47 @@
 # Orchestrator — 2026-07-28
 
+## Fourth run — 10:29Z update
+
+*T3 runs once daily; the first run already completed it (07:42Z), so this run only did T1 (fresh, per-run) and re-checked the T2 trigger. Full detail for T2/T3 retained below under "First run — 07:42Z".*
+
+### Needs Christian
+
+Nothing needs you this run.
+
+### T1 — unblock sweep (10:29Z)
+
+**Promoted (1, at the shelf-backup ceiling):**
+
+- **THR-836** ("Nothing authors a coordination block for directly-filed Ready-for-Dev issues, so pull-work Step 3 refuses most of the queue") — no blocker was ever declared (`blockedBy` empty); Pillars self-declared N/A (process/skill-doc only). Filed today 07:21 by `daily-backlog-grooming`, first seen as a candidate by the 09:29Z run. Promoted → verified via `get_issue` (`stateHistory` shows Todo → Ready for Dev at 10:29:41Z, state stuck) → coordination-block comment posted (Suggested model: sonnet; Parallel-safe with: any `src/` ticket; Mutex with: none currently known, touches only `pull-work/SKILL.md` + whatever filing-time mechanism the chosen direction adds). Picked over three other verified-unblocked candidates below because it is the highest-leverage: it fixes the gate that is currently causing every self-filed deferral (THR-834, THR-817, and future ones) to fail `pull-work` Step 3.
+
+**Newly verified unblocked this run, held back by the shelf-backup ceiling (Ready for Dev held 23 items before this run's promotion, above the 15 threshold — at most one promotion allowed):**
+
+- **THR-621** ("Rival source contestation — scheme phases that drain/desecrate player essence sources") — Medium priority. `blockedBy` THR-611, confirmed Done 2026-07-05T11:36Z. The description's own "deliberately deferred to land with or after" preference names THR-619 (rival economic scheme family), confirmed Done 2026-07-27T21:30Z. Both conditions now clear — fully unblocked. Three-pillar work (Engine + Content + UI), strong next-run candidate.
+- **THR-723** ("Stop attachmentTierAdvancement strengthening a dead stat path") — Low priority. `blockedBy` THR-718, confirmed Done 2026-07-24T18:32Z. Clean, scoped, no design caveat.
+- **THR-626** ("Army supply coupling — starving-army anomalies ride trade conduits") — Low priority, Deferral. `blockedBy` THR-616 (Done 2026-07-21T00:27Z) AND THR-614 (Done 2026-07-18T14:38Z). Both hard dependencies clear. Ticket itself notes "three-pillar plan required at design time" — worth flagging to T2 rather than assuming straight-to-dev, though the blockers themselves are met.
+
+**Declined (unchanged from prior runs today):**
+
+- **THR-790** ("Traits wave 2") — blocker THR-786 Done, but ticket self-declares design finalization needed first. T2's input, not promoted; T2 did not trigger this run.
+- **THR-791** ("Traits wave 3") — same pattern as THR-790, same parent (THR-789), same reasoning.
+- **THR-175** ("UI overhaul 08, agent.sphere field") — explicit `Status: DEFERRED` with a named unblock trigger (creation-sphere content shipping, or a template needing `sphere` as an independent axis) that has not occurred. Unmet gate.
+
+**Not re-verified this run (ceiling already spent, deep-verifying more wouldn't change this run's outcome):** the remaining ~17 Todo candidates, including the three carried over as low-priority next-run picks — **THR-757, THR-756, THR-646** (all no blocker, all Low priority) — plus **THR-763, THR-762, THR-735, THR-680, THR-681, THR-667, THR-638, THR-795, THR-766, THR-574, THR-582, THR-346/347/348**. Next run should pick from THR-621 (Medium, fully verified, strongest candidate) first.
+
+### T2 — design authoring (10:29Z)
+
+**Not triggered.** Ready for Dev holds 10 non-`Deferral` items after this run's promotion (THR-764, THR-838, THR-618, THR-792, THR-807, THR-740, THR-739, THR-715, THR-655, THR-836) — well above the floor of 2. THR-790 (Traits wave 2) remains the top agreed-but-undesigned candidate for whenever T2 next triggers.
+
+### T3 — architecture health (10:29Z)
+
+**Not re-run** — the full sweep already ran this morning (07:42Z, see "First run" below); nothing in the interim changes those findings.
+
+### Escalations (10:29Z)
+
+None. No item required a question this run; the Discord channel was not used.
+
+---
+
 ## Third run — 09:29Z update
 
 *T3 runs once daily; the first run already completed it (07:42Z), so this run only did T1 (fresh, per-run) and re-checked the T2 trigger. Full detail for T2/T3 retained below under "First run — 07:42Z".*
