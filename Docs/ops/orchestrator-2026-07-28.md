@@ -1,5 +1,49 @@
 # Orchestrator — 2026-07-28
 
+## Fifth run — 11:29Z update
+
+*T3 runs once daily; the first run already completed it (07:42Z), so this run only did T1 (fresh, per-run) and re-checked the T2 trigger. Full detail for T2/T3 retained below under "First run — 07:42Z".*
+
+### Needs Christian
+
+Nothing needs you this run.
+
+### T1 — unblock sweep (11:29Z)
+
+**Promoted (1, at the shelf-backup ceiling):**
+
+- **THR-638** ("Art batch — encounter illustrations, faction sigils, artifact-category art, sublocation-type art, NPC-role portraits") — Medium priority. `Blocked by` THR-637 (Entity Visual Header pattern + registry seam), confirmed Done 2026-07-17T21:51:34Z — cleared **11 days** ago with nothing promoting it since. Promoted → verified via `get_issue` (`stateHistory` shows Todo → Ready for Dev at 11:29:52Z, state stuck) → coordination-block comment posted (Suggested model: opus — five sequential art batches each needing art-direction judgment, not mechanical wiring; Parallel-safe with: anything not touching `resolveEntityVisual` or new art-registry files; Mutex with: none identified, new registry files only).
+
+**Independently reverified this run (unchanged from the Fourth run's findings, still held back by the ceiling):**
+
+- **THR-621** — `Blocked by` THR-611 (Done 2026-07-05T11:36Z) + the description's own "land with or after" preference on THR-619 (Done 2026-07-27T21:30Z). Both clear. Medium priority.
+- **THR-723** — `Blocked by` THR-718 (Done 2026-07-24T18:32Z). Low priority, clean scoped fix.
+- **THR-626** — `Blocked by` THR-616 (Done 2026-07-21T00:27Z) + ideally-also THR-617 (Done 2026-07-22T22:37Z). Both clear. Low priority, Deferral; ticket flags its own need for a three-pillar plan at design time.
+- **THR-667** ("Follow-up: anchor faction notifications to faction UI surfaces") — newly checked this run. `Blocked by` THR-666 (Done 2026-07-20T20:39Z). Medium priority, clean coordination block already drafted in the ticket body.
+
+**Note on this run's pick vs. the Fourth run's stated preference:** the 10:29Z run named THR-621 as "strongest next-run candidate." This run independently verified THR-621 (still valid, still held back) but promoted THR-638 instead — THR-638's blocker cleared furthest in the past (11 days vs. THR-621's blocker-chain closing yesterday), making it the most overdue unblock among the verified set. Both picks are individually defensible; THR-621 remains the top carry-over for the next run.
+
+**Declined (unchanged from prior runs today):**
+
+- **THR-790** / **THR-791** (Traits wave 2 / wave 3) — blocker THR-786 Done, but both tickets self-declare a design-finalization gate. T2's input, not T1's; T2 did not trigger this run.
+- **THR-175** ("UI overhaul 08, agent.sphere field") — explicit `Status: DEFERRED` with a named unblock trigger (creation-sphere content shipping, or a template needing `sphere` as an independent axis) that has not occurred.
+
+**Not re-verified this run:** the remaining Todo candidates with no blocker language found on prior passes (THR-757, THR-756, THR-646, THR-763, THR-762, THR-735, THR-680, THR-681, THR-795, THR-766, THR-574, THR-582, THR-346/347/348, THR-772/778/789/790/791 program containers). Next run should pick from THR-621 (Medium, fully verified) or THR-667 (Medium, fully verified, coordination block pre-drafted) first.
+
+### T2 — design authoring (11:29Z)
+
+**Not triggered.** Ready for Dev holds 11 non-`Deferral` items after this run's promotion (THR-764, THR-838, THR-618, THR-792, THR-807, THR-740, THR-739, THR-715, THR-655, THR-836, THR-638) — well above the floor of 2. THR-790 (Traits wave 2) remains the top agreed-but-undesigned candidate for whenever T2 next triggers.
+
+### T3 — architecture health (11:29Z)
+
+**Not re-run** — the full sweep already ran this morning (07:42Z, see "First run" below); nothing in the interim changes those findings.
+
+### Escalations (11:29Z)
+
+None. No item required a question this run; the Discord channel was not used.
+
+---
+
 ## Fourth run — 10:29Z update
 
 *T3 runs once daily; the first run already completed it (07:42Z), so this run only did T1 (fresh, per-run) and re-checked the T2 trigger. Full detail for T2/T3 retained below under "First run — 07:42Z".*
