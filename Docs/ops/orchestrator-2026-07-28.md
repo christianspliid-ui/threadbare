@@ -1,5 +1,49 @@
 # Orchestrator — 2026-07-28
 
+## Seventh run — 13:29Z update
+
+*T3 runs once daily; the first run already completed it (07:42Z), so this run only did T1 (fresh, per-run) and re-checked the T2 trigger. Full detail for T2/T3 retained below under "First run — 07:42Z".*
+
+### Needs Christian
+
+Nothing needs you this run.
+
+### T1 — unblock sweep (13:29Z)
+
+**Promoted (1, at the shelf-backup ceiling):**
+
+- **THR-667** ("Follow-up: anchor faction notifications to faction UI surfaces") — Medium priority. `Blocked by` THR-666 (threading gate for entity toasts), confirmed Done 2026-07-20T20:39:52Z. Verified unblocked across three prior sweeps today (10:29Z, 11:29Z, 12:28Z) but held back each time by the shelf-backup ceiling — this run it was the strongest carry-over candidate named explicitly by the Sixth run. Promoted → verified via `get_issue` (`stateHistory` shows Todo → Ready for Dev at 13:28:44.285Z, state stuck) → coordination-block comment posted (Suggested model: sonnet, per the ticket's own drafted block; Parallel-safe with: anything not touching faction UI or the notification router; Mutex with: THR-666 only if picked up concurrently — moot since THR-666 is Done, noted rather than silently dropped per THR-688 rule B).
+
+**Newly seen this run, declined — wrong destination (design pass needed, not T1's call):**
+
+- **THR-735** ("Armed-PR staleness sweep loses the race to main's merge rate") — no blocker line, but its own Done-when reads "A remedy is chosen with its trade-off stated in writing" and its "Candidate remedies" section explicitly says "design pass needed — do not pick one from this ticket alone." Met-blocker logic doesn't apply (no blocker to meet); this is T2's input once the shelf runs thin, not a T1 promotion. First time this candidate has appeared in an orchestrator sweep today.
+
+**Held back by the shelf-backup ceiling (Ready for Dev held 26 items before this run's promotion, above the 15 threshold — at most one promotion allowed):**
+
+- **THR-723** ("Stop attachmentTierAdvancement strengthening a dead stat path") — `Blocked by` THR-718, confirmed Done 2026-07-24T18:32Z. Clean, scoped, no design caveat. Low priority.
+- **THR-626** ("Army supply coupling") — `Blocked by` THR-616 (Done 2026-07-21T00:27Z) + THR-614 (Done 2026-07-18T14:38Z). Both clear. Low priority, Deferral, self-flags need for a three-pillar plan at design time.
+
+**Declined (unchanged from prior runs today):**
+
+- **THR-790** / **THR-791** (Traits wave 2 / wave 3) — blocker THR-786 Done, but both self-declare a design-finalization gate. T2's input, not T1's; T2 did not trigger this run.
+- **THR-175** ("UI overhaul 08, agent.sphere field") — explicit `Status: DEFERRED` with a named unblock trigger that has not occurred.
+
+**Not re-verified this run:** the remaining Todo candidates with no blocker language found on prior passes (THR-757, THR-756, THR-646, THR-763, THR-762, THR-680, THR-681, THR-795, THR-766, THR-574, THR-582, THR-346/347/348, THR-772/778/789 program containers). Next run should pick THR-723 or THR-626 (both fully verified, Low priority, no design caveat) first.
+
+### T2 — design authoring (13:29Z)
+
+**Not triggered.** Ready for Dev holds 11 non-`Deferral` items after this run's promotion (THR-638, THR-836, THR-618, THR-655, THR-838, THR-792, THR-807, THR-740, THR-739, THR-715, THR-667) — well above the floor of 2. THR-790 (Traits wave 2) remains the top agreed-but-undesigned candidate for whenever T2 next triggers.
+
+### T3 — architecture health (13:29Z)
+
+**Not re-run** — the full sweep already ran this morning (07:42Z, see "First run" below); nothing in the interim changes those findings.
+
+### Escalations (13:29Z)
+
+None. No item required a question this run; the Discord channel was not used.
+
+---
+
 ## Sixth run — 12:28Z update
 
 *T3 runs once daily; the first run already completed it (07:42Z), so this run only did T1 (fresh, per-run) and re-checked the T2 trigger. Full detail for T2/T3 retained below under "First run — 07:42Z".*
