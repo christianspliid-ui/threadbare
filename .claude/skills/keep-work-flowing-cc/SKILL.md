@@ -158,6 +158,27 @@ One line of JSON: `{ verdict, summary, needsChristian, deployedSha }`.
 
 **Fail-soft:** the probe never exits non-zero without `--strict`, and degrades to `verdict: "unknown"` on any network/auth/git failure. If it fails to run at all, note one line under Freshness and continue — a broken probe must never abort the brief.
 
+### 2.5b Merge-gate health — Actions billing block (THR-768)
+
+When the account's Actions budget runs out, every run concludes `failure` in 3–5 seconds having executed nothing. Two things break, and the second is much worse: `Linear Auto-Close` never fires (finished tickets strand In Dev holding the WIP=1 slot), and the required `Test · Typecheck · Build` check records as **`skipped`** — which *satisfies* branch protection. The rule reads as enforced and is void at the same time.
+
+This has now happened four times (impediments #91, #136, plus 2026-07-25 and 2026-07-28). Every time it cost a session the same manual rediagnosis, because the signature is indistinguishable from a transient Actions incident until something is re-run. Only Christian can clear it, so this lane is the right place to surface it.
+
+```bash
+npm run check:actions --silent -- --json
+```
+
+One line of JSON: `{ verdict, summary, needsChristian, standDown, startupFailureCount }`.
+
+- **`needsChristian: true`** (verdict `billing-block`) → put the `summary` verbatim into **`## Needs Christian`**. It already names the account setting to fix; do not re-word it into Actions jargon.
+- **`needsChristian: false`** (`healthy`, `recovered`, `transient`, `unknown`) → one line under **Freshness**, or omit entirely when `healthy`. A working merge gate is not news.
+
+**The probe re-runs a workflow to disambiguate, and that is the point.** A transient resumes; a billing block reproduces in ~3 seconds with the same annotation. Judging by eye instead produced one wrong call on 2026-07-25, retracted four minutes later (`Design/user-actions.md`, 15:16). The re-run fires only when the newest *completed* run died at startup, so a window that has already recovered costs nothing.
+
+**`gh run view --log-failed` is a dead end here** — it returns `log not found`, because no log is ever produced when no step ran, and that emptiness reads like a tooling error. The reason lives only on `repos/<owner>/<repo>/check-runs/<jobId>/annotations`.
+
+**Fail-soft:** the probe never exits non-zero without `--strict`, and degrades to `verdict: "unknown"` on any network/auth failure. If it fails to run at all, note one line under Freshness and continue.
+
 ### 2.6 Sibling-report `## Needs Christian` sections (THR-826)
 
 Several scheduled tasks write a dated report under `Docs/ops/` with a `## Needs Christian` heading, on the documented understanding that *"Christian-facing items go in each task's own report under a `## Needs Christian` heading, and reach him via the hourly briefing"* (`Docs/ops/scheduled-tasks-registry.md` § Output-surface rule).

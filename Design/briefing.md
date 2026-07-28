@@ -1,52 +1,30 @@
 # Briefing
 
-**Generated:** 2026-07-28 18:57 local (2026-07-28 16:57 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-07-28 20:58 local (2026-07-28 18:58 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
 ## Needs Christian
 
-**GitHub is refusing to run our safety checks because of a payment problem, and work is merging anyway.** This is the one thing today that only you can fix.
-
-**Fix:** open GitHub → **Settings → Billing & plans** for the `christianspliid-ui` account, and either clear the failed payment or raise the spending limit.
-
-GitHub's own message, word for word:
-
-> The job was not started because recent account payments have failed or your spending limit needs to be increased. Please check the 'Billing & plans' section in your settings
-
-**Why it matters, plainly.** Every change to the game is supposed to pass an automatic check — tests, type-check, build — before it is allowed in. Since about 18:00 local that check has not run **at all**: three separate attempts, each dying in four seconds without executing a single step. But the merges are still going through. So today's work is landing on the main line **unverified**. Nothing is known to be broken; the point is that nothing is being checked, and a real breakage would land just as quietly.
-
-**There is a visible symptom already.** The agent-residence work finished and merged an hour ago, and its ticket is *still* showing as in-progress — the robot that ticks tickets off runs on the same blocked machinery, so it never fired. Anything that merges while this lasts will look unfinished on the board even when it is done.
-
-**This is the third time.** It happened on 25 April, on 12 May, and you cleared the same block three days ago on 25 July. It has come back, which suggests the underlying card or limit is still not settled rather than a one-off. Worth a look at *why* while you are on the page.
-
-**Not urgent to the minute** — the crew keeps working and nothing is lost. But every hour it stays broken is another hour of changes going in unchecked.
+**Nothing needs you right now.** The thing you cleared two hours ago is still holding — the safety checks have stayed green since, unbroken. Everything else on the board is crew business.
 
 ## Queue
 
-**32 jobs ready, one on the bench, nothing stale.** Busy but healthy: two urgent, one high, six medium, twenty-three small. The depth is the usual steady state — roughly one job shipped and one or two new findings filed each hour — not a backlog piling up.
+**33 jobs ready, one in progress, nothing gone cold.** One urgent, one high, eight medium, twenty-three small. The oldest thing waiting has been there four days, comfortably inside the week we allow before calling something stale.
 
-**Both urgent jobs are about the payment problem above**, from opposite ends: one is the alarm that should have warned us automatically, the other is today's incident. Neither can finish while the machinery they need is switched off, so they are waiting on your billing page rather than on the crew.
-
-**The one job on the bench is finished and merged** — it only looks open because the tick-off robot is down. Not a real occupancy; the crew is free to take the next thing.
-
-**Nine ready jobs still carry a name in the "who is working on this" field, and the crew only looks at jobs where that field is empty** — so they are invisible to the automatic pickup, including the single high-priority one. Up from seven yesterday. Mechanical, one line for any session with write access, and still not yours to fix.
-
-**The encounter rewrite's first batch — 48 encounters, about nine in ten a player actually meets — remains the top visible job.**
+**The queue grew by one this hour and it grew in the right direction.** The encounter-writing work you named first priority — the batch that had been stuck behind a piece of paperwork all day — is now on the shelf, properly split and ready to be picked up. Three small findings were filed underneath it. Nothing shipped this hour; the one crew member on shift is still building the alarm from last night's outage, which is a couple of hours' work and on track.
 
 ## Freshness
 
-**Your folder is healthy.** On the right branch, fully current, nothing stranded, nothing of yours sitting uncommitted. The cleanup reaper ran seventeen minutes ago: 32 worktrees, 44 branches, nothing awaiting a human decision. All eight active routines are on schedule — the ninth first fires on 1 August, which is expected.
+**Home tree current** — on `main`, nothing behind, nothing stranded. The tidy-up robot ran eighteen minutes ago and reports everything in order.
 
-**The live site is current.** Everything merged since the last publish was notes and docs, so no rebuild was needed. The site itself is fine and unaffected by the payment problem — that only blocks the checking machinery, not the published game.
+**The live site is fine.** Nothing has changed in the game itself since the last publish — only notes and documentation — so there has been nothing to rebuild.
 
-**Discord: nothing new from you**, so no reply was owed and none was sent. A doorbell *was* rung this hour, for the billing item above.
+**All eight background robots are running on time.** No repeat of last night's stall.
 
 ## What's moving
 
-**Agents now have a sense of home.** The residence work shipped this afternoon: a character can settle somewhere, and the world notices how long they have stayed. That unlocks two ways an ambition can finally be abandoned — the wanderer who stops wandering, the exile who never goes back — which previously could never trigger because nothing recorded where anyone lived.
-
-**One thing worth knowing about how it was built:** residence is *observed*, not stamped on. Nobody declares a character a resident; the world watches where they keep ending up and draws the conclusion. That is the same grain as the rest of the simulation, and it means the state can be wrong in interesting ways rather than merely absent.
+The alarm for last night's outage — an automatic warning when the checking machinery gets switched off, so nobody has to spot it by hand next time — has been under construction since late afternoon. That is the only job in progress; the one-job-at-a-time rule is working as intended, not a sign of a jam.
 
 ---
-*Standing asks live in [`Design/user-actions.md`](user-actions.md). This file is regenerated hourly by the `keep-work-flowing-cc` scheduled task; staleness is visible from the Generated timestamp above and the task's `lastRunAt` in `list_scheduled_tasks`.*
+*Standing asks live in `Design/user-actions.md`. This file is regenerated hourly by the `keep-work-flowing-cc` scheduled task; staleness is visible from the Generated timestamp above and the task's `lastRunAt` in `list_scheduled_tasks`.*
