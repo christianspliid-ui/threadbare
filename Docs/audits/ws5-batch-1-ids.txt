@@ -1,0 +1,58 @@
+# WS5 Batch 1 — the `encounter.*` (core exploration) REWRITE set. THR-838.
+#
+# Membership predicate (THR-688 rule A): every entry in
+# `Docs/audits/2026-07-26-nudge-migration-audit.md` § "encounter.* (core
+# exploration)" classified REWRITE. This file is a materialisation of that
+# predicate for `npm run audit:nudge-batch -- --file`, not a second source of
+# truth — if it and the audit table disagree, the audit table wins.
+#
+# 48 ids at audit time (2026-07-26).
+
+encounter.anomaly.dreaming_light
+encounter.anomaly.fallen_star
+encounter.anomaly.wild_apothecary
+encounter.apotheosis.ascension
+encounter.arcane_resonance_study
+encounter.assess_holdings
+encounter.barter_supplies
+encounter.barter_survival
+encounter.black_market_deal
+encounter.caravan_deal
+encounter.confront_the_unknown
+encounter.council_mediation
+encounter.court_noble
+encounter.debt_collection
+encounter.decipher_ancient_inscriptions
+encounter.expedition_leadership
+encounter.faction_unification
+encounter.fortification_engineering
+encounter.frontier_settlement
+encounter.guild_initiation_trial
+encounter.investigate_anomaly
+encounter.library_expansion
+encounter.market_day_festival
+encounter.master_local_craft
+encounter.minor_cantrip
+encounter.offer_small_prayer
+encounter.pilgrimage_trial
+encounter.plague_outbreak
+encounter.raise_monument
+encounter.rally_the_locals
+encounter.read_the_stars
+encounter.read_the_wards
+encounter.rest_and_reflect
+encounter.scout_the_perimeter
+encounter.seal_the_breach
+encounter.sharpen_blades
+encounter.shell_proof.fate_card_trial
+encounter.shrine_offering
+encounter.smuggler_pact
+encounter.spirit_walk
+encounter.temple_expansion
+encounter.tend_the_dead
+encounter.tend_to_wounds
+encounter.the_loan
+encounter.tower_restoration
+encounter.trap.sprung
+encounter.ward_the_camp
+encounter.weave_political_alliance

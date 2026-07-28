@@ -5146,6 +5146,19 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "**Applied the sanctioned reversal (THR-688 Rule B shape): treat Step 3's *purpose* as the test, not its literal text.** The block exists to stop a claim whose scope or coordination is unknown — THR-768's description names 5 numbered scope items, the failure signature, and the disambiguation protocol, so scope is known; and with WIP=1 and no other In Dev issue, parallel-safety and mutex are vacuous. Claimed it and recorded the reversal in a Linear comment. **The durable fix remains unticketed and is now 4 occurrences old:** Step 3 should branch on provenance — require the full block for design-session handoffs, require only scope + Done-whens for a directly-filed `Deferral` *or an orchestrator promotion*. Note the rule lives in two places (`.claude/skills/pull-work/SKILL.md` and the live `tb-opus-pickup` prompt), so it must be edited in both or they drift.",
     "session": "THR-768 pickup, hourly `tb-opus-pickup`, 2026-07-28"
+  },
+  {
+    "num": "281",
+    "id": 281,
+    "count": 1,
+    "date": "2026-07-28",
+    "category": "tooling",
+    "description": "**A content workstream shipped its schema, its authoring skill and its audit, and the transport between the authored literal and the shipped template was never wired — so the batch it all existed for could not begin.** THR-838 (WS5 Batch 1) asks for a nudge hand on 48 `encounter.*` templates. `ActionStep` has carried `nudges` / `purposeLine` / `factorLines` / `successAtCostAfterimage` since WS0 and THR-820; the WS1 checklist instructs authors to fill them; the WS3 audit named the 48. But ~41 of those templates live in `src/data/encounter-content.ts`, whose raw `EncounterEntry` type declared none of the four and whose `toUnifiedTemplate` constructs each `ActionStep` **field by field** — so a hand authored on an entry there is dropped on the floor between the literal and `UNIFIED_ACTION_TEMPLATES`. Silently: the raw entry is a structural literal, the converter output is `UnifiedActionTemplate`, and neither position makes an unlisted field a type error.",
+    "consequence": "Three workstreams' worth of green tests, a shipped schema and a published checklist all pointed at content that was structurally unauthorable. Any session taking the ticket at face value would have authored a hand, watched the tests pass, and shipped a template whose hand no player could ever be dealt — the field-with-no-writer failure with the writer and the reader both present and the *pipe* missing. Undetectable from either end in isolation: the exemplar (which bypasses the converter entirely, being a hand-authored `UnifiedActionTemplate`) proved the schema worked, and the audit measured prose on shipped templates without ever asking whether a hand could reach one.",
+    "impact": "M",
+    "workaroundFound": true,
+    "workaround": "**Before authoring content into a converted table, write one field end to end and assert on the *shipped* object, not the literal.** Here: `nudgeBearingSteps(UNIFIED_ACTION_TEMPLATES.find(...))` — the check that would have failed on day one and now runs as `ws5-nudge-migration.test.ts`'s first per-template case. **Generalised: any `src/data/*-content.ts` with a `toUnifiedTemplate` (this file and `faction-encounter-content.ts` both have one) is a field-by-field allowlist, so a schema addition on `ActionStep`/`UnifiedActionTemplate` reaches it only if someone edits the converter too.** Grep for `toUnifiedTemplate` when adding any template-level or step-level field and treat each hit as a required edit site. The batch harness makes the gap visible in one command: `npm run audit:nudge-batch -- --file <ids>` prints a `hand` column, and a column of `—` across a migrated batch is this bug.",
+    "session": "THR-838, hourly `tb-opus-pickup`, 2026-07-28 22:00 UTC"
   }
 ];
 // ── End data ──

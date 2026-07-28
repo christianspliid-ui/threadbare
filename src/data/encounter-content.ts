@@ -147,6 +147,11 @@ type EncounterEntry = {
   requiresOpposingBand?: boolean;
   /** THR-731: a decisive loss in this contest never kills. See the template field. */
   contestNonLethal?: boolean;
+  /**
+   * THR-838 (WS5): template-level trait variants, passed through to
+   * `UnifiedActionTemplate.traitVariants`. Absent for every un-migrated entry.
+   */
+  traitVariants?: readonly import('../types/unifiedAction').TraitVariant[];
   steps: ReadonlyArray<{
     id?: string;
     name?: string;
@@ -162,6 +167,23 @@ type EncounterEntry = {
      *  failure — the rare, ruinous outcome. Falls through to the base
      *  onFailure.narrative afterimage when absent (THR-584). */
     criticalFailureAfterimage?: string;
+    /**
+     * THR-838 (WS5): the nudge-model authoring fields.
+     *
+     * `ActionStep` has carried all five since WS0/THR-820, but this file's raw
+     * entry type declared none of them and the converter below built its steps
+     * field-by-field — so a nudge hand authored on an entry here was dropped on
+     * the floor, silently, with no type error. That made the ~41 Batch-1
+     * templates living in this file unauthorable: the WS1 checklist asks for a
+     * hand the pipeline could not carry. These five fields are the passthrough.
+     *
+     * All optional, all absent from every un-migrated entry, so the conversion
+     * is byte-identical for templates that do not author them (NFP #6).
+     */
+    successAtCostAfterimage?: string;
+    purposeLine?: string;
+    factorLines?: readonly import('../types/unifiedAction').StepFactorLine[];
+    nudges?: readonly import('../types/unifiedAction').StepNudge[];
     onSuccess: {
       narrative: string;
       rewardPool?: import('../types/attachments').RewardPoolRecipe;
@@ -231,6 +253,12 @@ function toUnifiedTemplate(e: EncounterEntry): UnifiedActionTemplate {
         criticalFailureAfterimage: step.criticalFailureAfterimage,
         successMetadata: toOutcomeMeta(step.onSuccess),
         failureMetadata: toOutcomeMeta(step.onFailure),
+        // THR-838 (WS5): nudge-model passthrough. Undefined for every
+        // un-migrated entry, which is exactly how `ActionStep` reads "no hand".
+        successAtCostAfterimage: step.successAtCostAfterimage,
+        purposeLine: step.purposeLine,
+        factorLines: step.factorLines,
+        nudges: step.nudges,
       };
     }),
     apCost: 1,
@@ -259,6 +287,8 @@ function toUnifiedTemplate(e: EncounterEntry): UnifiedActionTemplate {
     // could ever seed a secret. Pass them through to the resolution read site.
     secretDiscovery: e.secretDiscovery,
     favorGeneration: e.favorGeneration,
+    // THR-838 (WS5): trait hooks, the template-level half of the nudge model.
+    traitVariants: e.traitVariants,
     rarityTier: 1,
     intrinsicTier: 'background',
   };
@@ -7816,6 +7846,36 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     threatRating: 'trivial',
     intrinsicTier: 'background',
     motivations: ['loyalty_ambition', 'courage_prudence'],
+    /**
+     * THR-838 (WS5 Batch 1) — migrated to the nudge model.
+     *
+     * Vignette record (checklist step 1; no schema field for these yet):
+     *   Motive hooks   — `chance` above all: this is the encounter a mortal
+     *                    draws because the day ended, not because anyone sent
+     *                    them. `choice` for one who stops on purpose. Never
+     *                    `mission`; nobody is dispatched to sit down.
+     *   Quintessence   — light. Two gentle steps and no trap. Failing here
+     *   stakes           costs a night's recovery, not a limb, and the
+     *                    aftermath owes no more than that.
+     *   Scene tag      — `camp.night.rest` (audit tag: place:hamlet ·
+     *                    reach:heart · situation:encounter).
+     *
+     * Both steps sit far under `NUDGE_OFF_REACH_MAX_DIFFICULTY` (0.03 and 0.06
+     * against a 0.45 ceiling), which is what makes an open-draw hand do
+     * anything here — this is background content any mortal can draw, so it
+     * cannot be gated to actors who hold `heart`.
+     */
+    traitVariants: [
+      {
+        // `core_hope` virtue pole — a seeded Core definition, so the ref is
+        // live for `validateTraitRefs()` (checklist step 5's hard constraint).
+        traitId: 'trait.core.core_hope.virtue',
+        forecastDelta: 0.04,
+        difficultyDelta: -0.01,
+        factorLine: 'Hopeful, they lie down expecting the morning to be better.',
+        addNudgeIds: ['rest_reflect.trust_the_morning'],
+      },
+    ],
     steps: [
       {
         id: 'rest_reflect.rest',
@@ -7823,13 +7883,109 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'heart',
         difficulty: AGNOSTIC_DIFFICULTY_BASE,
         duration: 1,
-        narrative: '{actor} has been moving too long. The {adj} need to stop is itself a kind of knowledge. {they} find a place to simply be.',
+        purposeLine: 'Put the road down',
+        factorLines: [
+          { text: 'The fire is already lit and someone else built it.', polarity: 'for' },
+          { text: 'Their boots have not come off in three days.', polarity: 'against' },
+          { text: 'Every noise past the firelight sounds like a horse.', polarity: 'against' },
+        ],
+        narrative: '{actor} has walked since before light. The road is still in {their} legs when {they} sit down against the wall, and the fire is close enough to dry one boot at a time.',
+        successAtCostAfterimage: 'They slept, and woke with the wall\'s cold worked into one shoulder.',
+        criticalSuccessAfterimage: 'They went down at dusk and did not move again until birds.',
+        criticalFailureAfterimage: 'They sat up all night with {their} back to the wall, watching the dark past the fire.',
+        nudges: [
+          {
+            // Shared generic pool — the `focus` family.
+            id: 'rest_reflect.steady_the_breath',
+            name: 'Steady the breath',
+            essenceCost: 1,
+            forecastDelta: 0.06,
+            imageTag: 'generic.focus',
+            fiction: 'Their breathing lengthens without them deciding it. The count between one breath and the next doubles.',
+            effectLine: 'A small, reliable push toward sleeping at all.',
+            bandProse: {
+              success: 'They breathed slow, and slow breathing turned into sleep somewhere they did not notice.',
+              near_miss: 'The breathing steadied. Their jaw stayed clamped shut until dawn.',
+            },
+          },
+          {
+            id: 'rest_reflect.let_the_ache_out',
+            name: 'Let the ache out',
+            sphere: 'life',
+            essenceCost: 2,
+            forecastDelta: 0.10,
+            imageTag: 'generic.warmth',
+            fiction: 'The stiffness goes out of one calf, then the other, the way heat leaves a stone.',
+            effectLine: 'Good help. The body stops arguing with the ground.',
+            bandProse: {
+              success_at_cost: 'The ache left {their} legs and settled in {their} lower back instead.',
+              failure: 'The legs let go. The blistered heel kept them awake on its own.',
+            },
+          },
+          {
+            id: 'rest_reflect.stretch_the_night',
+            name: 'Stretch the night',
+            sphere: 'time',
+            essenceCost: 2,
+            forecastDelta: 0.12,
+            imageTag: 'generic.time-slow',
+            fiction: 'Dawn holds off. The fire burns down to coals twice over before the sky greys.',
+            effectLine: 'Strong help. There is more night to sleep in.',
+            bandProse: {
+              critical_success: 'The night ran long and they used all of it, and stood up in the morning without a sound in {their} knees.',
+              failure: 'The night ran long. They spent every extra hour of it staring at the roof beam.',
+            },
+          },
+          {
+            id: 'rest_reflect.quiet_the_road_behind',
+            name: 'Quiet the road behind',
+            sphere: 'spirit',
+            essenceCost: 2,
+            forecastDelta: 0.11,
+            imageTag: 'generic.stillness',
+            fiction: 'The faces {actor} left on the road stop arriving at the edge of sleep. The fire is just a fire.',
+            effectLine: 'Strong help against what follows them to bed.',
+            bandProse: {
+              near_miss: 'The road went quiet. One face waited until {they} had almost gone under, then arrived.',
+              critical_failure: 'Nothing came to {them} from the road. What came was closer, and had {their} own voice.',
+            },
+          },
+          {
+            id: 'rest_reflect.bank_the_dark',
+            name: 'Bank the dark',
+            sphere: 'darkness',
+            essenceCost: 2,
+            forecastDelta: 0.09,
+            imageTag: 'generic.dark',
+            fiction: 'The dark past the firelight closes up and stops showing shapes in it.',
+            effectLine: 'Good help. There is less out there to watch.',
+            bandProse: {
+              failure: 'The dark stayed shut. They watched it anyway, all night, to be sure.',
+            },
+          },
+          {
+            // Trait-only card: cost 0, the price paid by being this person.
+            // Unlocked either by holding the trait or through the template's
+            // traitVariant naming it in `addNudgeIds`.
+            id: 'rest_reflect.trust_the_morning',
+            name: 'Trust the morning',
+            requiredTrait: 'trait.core.core_hope.virtue',
+            essenceCost: 0,
+            forecastDelta: 0.08,
+            imageTag: 'generic.oath',
+            fiction: 'They stop counting what could go wrong before light. The list was going to keep either way.',
+            effectLine: 'A steady help, and it costs no essence.',
+            bandProse: {
+              near_miss: 'They put the list down and slept badly and woke up glad of the light anyway.',
+            },
+          },
+        ],
         onSuccess: {
-          narrative: 'The rest comes {adj} easily. {actor} wakes lighter, the accumulation of distance processed overnight.',
+          narrative: '{actor} sleeps through, and wakes with the road out of {their} legs.',
           reputationDelta: 0.02,
         },
         onFailure: {
-          narrative: '{actor} cannot let {themselves} stop. The {adj} rest is restless; they rise less recovered than before.',
+          narrative: '{actor} cannot stay down. {they} are up twice before midnight and rise stiffer than {they} lay down.',
           reputationDelta: -0.01,
         },
       },
@@ -7839,9 +7995,88 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'eye',
         difficulty: AGNOSTIC_DIFFICULTY_BASE + AGNOSTIC_DIFFICULTY_STEP,
         duration: 1,
-        narrative: 'What has {actor} actually been through? The {adj} pattern of events {verb}s into meaning when approached without urgency.',
+        purposeLine: 'Count the road back',
+        factorLines: [
+          { text: 'A whole night of firelight and no one asking for {them}.', polarity: 'for' },
+          { text: 'Most of the last month happened while {they} were tired.', polarity: 'against' },
+        ],
+        narrative: 'Where has {actor} actually been? {they} walk the last month back in {their} head, one stop at a time, starting from the fire and going backward.',
+        successAtCostAfterimage: 'They found the turn where it went wrong, and knew whose turn it was.',
+        criticalSuccessAfterimage: 'The whole month laid itself out end to end, and the pattern in it was plain.',
+        criticalFailureAfterimage: 'They went back over it until the order came apart and the days would not stay in sequence.',
+        nudges: [
+          {
+            // Shared generic pool — the `luck` family.
+            id: 'rest_reflect.a_stray_recollection',
+            name: 'A stray recollection',
+            essenceCost: 1,
+            forecastDelta: 0.06,
+            imageTag: 'generic.luck',
+            fiction: 'A smell off the fire — wet wool — puts {them} back on a specific afternoon {they} had lost.',
+            effectLine: 'A small push. One day comes back whole.',
+            bandProse: {
+              success: 'The wet-wool afternoon came back, and the rest of that week came back behind it.',
+              near_miss: 'The afternoon came back clear. What happened after it stayed gone.',
+            },
+          },
+          {
+            id: 'rest_reflect.hold_the_order',
+            name: 'Hold the order',
+            sphere: 'mind',
+            essenceCost: 2,
+            forecastDelta: 0.13,
+            imageTag: 'generic.recall',
+            fiction: 'The stops stay in the order {they} walked them. Nothing slides forward to sit beside a day it did not happen near.',
+            effectLine: 'Strong help. The month keeps its sequence.',
+            bandProse: {
+              success_at_cost: 'The order held all the way back, and {they} could not stop at the part {they} wanted to skip.',
+              failure: 'The order held. There was nothing in it {they} had not already counted twice.',
+            },
+          },
+          {
+            id: 'rest_reflect.turn_the_coal',
+            name: 'Turn the coal',
+            sphere: 'light',
+            essenceCost: 2,
+            forecastDelta: 0.10,
+            imageTag: 'generic.light',
+            fiction: 'A coal turns over on its own and the fire comes up, and {they} can see {their} own hands again.',
+            effectLine: 'Good help. Enough light to keep thinking by.',
+            bandProse: {
+              critical_success: 'The fire came up and stayed up, and by the time it died {they} had the whole shape of it.',
+              failure: 'The fire came up well. It showed {them} the same three faces {they} had been avoiding.',
+            },
+          },
+          {
+            id: 'rest_reflect.let_the_weight_settle',
+            name: 'Let the weight settle',
+            sphere: 'entropy',
+            essenceCost: 2,
+            forecastDelta: 0.11,
+            imageTag: 'generic.settling',
+            fiction: 'The parts {they} keep turning over stop turning. What is heavy goes to the bottom and stays there.',
+            effectLine: 'Strong help. The small grievances sink out of the way.',
+            bandProse: {
+              near_miss: 'The small grievances sank. The big one sat on top where it always had.',
+              critical_failure: 'Everything settled, and what settled out at the bottom was {their} own part in it.',
+            },
+          },
+          {
+            id: 'rest_reflect.name_the_dead',
+            name: 'Name the dead',
+            sphere: 'spirit',
+            essenceCost: 2,
+            forecastDelta: 0.09,
+            imageTag: 'generic.remembrance',
+            fiction: '{actor} says the names of whoever did not finish the month out loud, once each, to the fire.',
+            effectLine: 'Good help, and the count comes out honest.',
+            bandProse: {
+              failure: 'They said every name {they} had. Two more came to {them} at dawn.',
+            },
+          },
+        ],
         onSuccess: {
-          narrative: '{actor} finds the {adj} thread running through what has happened. Something important becomes clear.',
+          narrative: '{actor} walks the month back to its start and finds the one turn the rest of it hangs on.',
           reputationDelta: 0.03,
           rewardPool: {
             categoryWeights: { possession: 1.0 },
@@ -7849,7 +8084,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: 'The {adj} reflection yields confusion, not clarity. Some things need more time.',
+          narrative: 'The month will not hold its order. {actor} gives it up at the fourth attempt and watches the fire instead.',
           reputationDelta: -0.01,
         },
       },
@@ -7917,6 +8152,28 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     threatRating: 'trivial',
     intrinsicTier: 'background',
     motivations: ['mercy_ruthlessness', 'revelation_discretion'],
+    /**
+     * THR-838 (WS5 Batch 1) — migrated to the nudge model.
+     *
+     * Vignette record (checklist step 1):
+     *   Motive hooks   — `chance` (the hurt arrive where {actor} happens to be)
+     *                    and `choice` (a mortal who goes toward them). `mission`
+     *                    where a guild or a lord sends a hand after a bad day.
+     *   Quintessence   — moderate on step two and asymmetric: the erosion here
+     *   stakes           is watching someone lose a limb {they} could have kept,
+     *                    which the failure prose owes plainly.
+     *   Scene tag      — `sickroom.table.wounded` (audit tag: place:hamlet ·
+     *                    reach:eye · situation:encounter).
+     */
+    traitVariants: [
+      {
+        traitId: 'trait.core.core_warmth.virtue',
+        forecastDelta: 0.05,
+        difficultyDelta: -0.02,
+        factorLine: 'Warm, they get a hand on the man before {they} ask him anything.',
+        addNudgeIds: ['tend_wounds.hold_them_still'],
+      },
+    ],
     steps: [
       {
         id: 'tend_wounds.assess',
@@ -7924,13 +8181,106 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'eye',
         difficulty: AGNOSTIC_DIFFICULTY_BASE,
         duration: 1,
-        narrative: 'The injured arrive or {actor} finds them. Before anything else: how bad is it? The {adj} first assessment determines everything that follows.',
+        purposeLine: 'Find the worst wound',
+        factorLines: [
+          { text: 'The bleeding has slowed enough to see where it starts.', polarity: 'for' },
+          { text: 'He will not lie flat and will not say which arm.', polarity: 'against' },
+        ],
+        narrative: 'They get him onto the table with his coat still on. {actor} cuts the sleeve away first, because the blood on the outside of a coat says one and the blood inside it says another.',
+        successAtCostAfterimage: 'They found the break, and found it by moving the arm he screamed about.',
+        criticalSuccessAfterimage: 'Sleeve off, hands on, and {actor} had the whole of it before he stopped shouting.',
+        criticalFailureAfterimage: 'They worked on the arm for an hour. The wound that killed him was under his belt.',
+        nudges: [
+          {
+            // Shared generic pool — the `focus` family.
+            id: 'tend_wounds.steady_the_hands',
+            name: 'Steady the hands',
+            essenceCost: 1,
+            forecastDelta: 0.06,
+            imageTag: 'generic.focus',
+            fiction: 'The shake goes out of {their} fingers. The cut down the sleeve seam runs straight.',
+            effectLine: 'A small, reliable push toward reading him right.',
+            bandProse: {
+              success: 'Steady hands got the coat off him without opening anything further.',
+              near_miss: 'The hands were steady. The light over the table was not.',
+            },
+          },
+          {
+            id: 'tend_wounds.lamp_over_the_table',
+            name: 'Lamp over the table',
+            sphere: 'light',
+            essenceCost: 2,
+            forecastDelta: 0.11,
+            imageTag: 'generic.light',
+            fiction: 'The lamp flares and holds, and the dark blood and the bright blood stop looking the same colour.',
+            effectLine: 'Strong help. The wound shows what it is.',
+            bandProse: {
+              critical_success: 'Under the raised lamp {actor} saw the second wound as well as the loud one.',
+              failure: 'The light was good. What it showed was a man who had been bleeding inside since noon.',
+            },
+          },
+          {
+            id: 'tend_wounds.slow_the_bleeding',
+            name: 'Slow the bleeding',
+            sphere: 'life',
+            essenceCost: 3,
+            forecastDelta: 0.14,
+            imageTag: 'generic.warmth',
+            fiction: 'The flow out of the arm drops to a seep. The cloth under it stops darkening while {they} look at it.',
+            effectLine: 'A large help. There is time to look properly.',
+            bandProse: {
+              success_at_cost: 'The bleeding held off long enough to work. It came back the moment {they} moved him.',
+              failure: 'The arm stopped bleeding. His colour kept going anyway.',
+            },
+          },
+          {
+            id: 'tend_wounds.quiet_the_room',
+            name: 'Quiet the room',
+            sphere: 'order',
+            essenceCost: 2,
+            forecastDelta: 0.10,
+            imageTag: 'generic.stillness',
+            fiction: 'The three at the door stop talking at once. His wife sits down without being asked to.',
+            effectLine: 'Good help. Nobody is shouting over him.',
+            bandProse: {
+              near_miss: 'The room went quiet, and in the quiet {they} could hear how he was breathing.',
+              critical_failure: 'The room was silent for all of it, and every one of them watched {actor} get it wrong.',
+            },
+          },
+          {
+            id: 'tend_wounds.stop_the_clock',
+            name: 'Stop the clock',
+            sphere: 'time',
+            essenceCost: 2,
+            forecastDelta: 0.09,
+            imageTag: 'generic.time-slow',
+            fiction: 'The blood coming off the table hangs a moment before it falls. There is longer between one of his breaths and the next.',
+            effectLine: 'Good help. There is more of the hour to look in.',
+            bandProse: {
+              failure: 'They had all the time {they} wanted with the arm. The arm was never the problem.',
+            },
+          },
+          {
+            // Trait-only card: cost 0.
+            id: 'tend_wounds.hold_them_still',
+            name: 'Hold him still',
+            requiredTrait: 'trait.core.core_warmth.virtue',
+            essenceCost: 0,
+            forecastDelta: 0.08,
+            imageTag: 'generic.oath',
+            fiction: 'A hand on his good shoulder, and he stops fighting the table long enough to be looked at.',
+            effectLine: 'A steady help, and it costs no essence.',
+            bandProse: {
+              near_miss: 'He lay still for {them}, and {they} still had to guess at the shoulder.',
+            },
+          },
+        ],
         onSuccess: {
-          narrative: '{actor} reads the injury {adj} accurately. Triage is clear, and the path to treatment is known.',
+          narrative: '{actor} finds the break under the swelling and knows what it will take.',
           reputationDelta: 0.02,
         },
         onFailure: {
-          narrative: '{actor} misjudges the severity. The {adj} subsequent treatment is less effective for it.',
+          narrative: '{actor} reads the arm and misses the ribs. Everything after this is aimed at the wrong wound.',
           reputationDelta: -0.01,
         },
       },
@@ -7940,9 +8290,89 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'heart',
         difficulty: AGNOSTIC_DIFFICULTY_BASE + AGNOSTIC_DIFFICULTY_STEP,
         duration: 1,
-        narrative: 'The treatment requires more than technique — it requires {adj} patience with pain, with fear, with the {adj} slow work of healing.',
+        purposeLine: 'Set it and hold',
+        factorLines: [
+          { text: 'There is clean linen and a fire to boil water on.', polarity: 'for' },
+          { text: 'Setting the arm means holding him down while he fights.', polarity: 'against' },
+          { text: 'The only spirits in the house are what he has already drunk.', polarity: 'against' },
+        ],
+        narrative: 'The bone has to go back before the swelling closes over it. {actor} has two people to hold him, a strip of boiled linen, and the length of time he can stand it.',
+        successAtCostAfterimage: 'The arm went back. He will not use the hand the same way again.',
+        criticalSuccessAfterimage: 'One pull, clean, and he was asleep before the splint was tied.',
+        criticalFailureAfterimage: 'The arm came back out of true under the linen, and by morning it had set that way.',
+        nudges: [
+          {
+            // Shared generic pool — the `strength` family.
+            id: 'tend_wounds.one_clean_pull',
+            name: 'One clean pull',
+            essenceCost: 1,
+            forecastDelta: 0.07,
+            imageTag: 'generic.strength',
+            fiction: 'The pull comes from {their} back and not {their} arms, and the bone goes where it is sent on the first try.',
+            effectLine: 'A small push, and it only has to happen once.',
+            bandProse: {
+              success: 'One pull, and the ends met, and he stopped screaming a breath later.',
+              near_miss: 'The pull was clean. It was half a finger short of true.',
+            },
+          },
+          {
+            id: 'tend_wounds.dull_the_pain',
+            name: 'Dull the pain',
+            sphere: 'spirit',
+            essenceCost: 3,
+            forecastDelta: 0.15,
+            imageTag: 'generic.mercy',
+            fiction: 'He goes somewhere behind his own eyes for a while. His arm stays on the table without him in it.',
+            effectLine: 'A large help. He stops fighting the hands holding him.',
+            bandProse: {
+              failure: 'He felt none of it and the arm still would not seat.',
+              critical_failure: 'He was somewhere else for the setting, and came back to an arm bent where no arm bends.',
+            },
+          },
+          {
+            id: 'tend_wounds.clean_water',
+            name: 'Clean water',
+            sphere: 'matter',
+            essenceCost: 2,
+            forecastDelta: 0.11,
+            imageTag: 'generic.water',
+            fiction: 'The water in the pot goes clear as it comes to the boil, and stays clear when the linen comes out of it.',
+            effectLine: 'Strong help against what comes after the setting.',
+            bandProse: {
+              success_at_cost: 'The linen was clean and the wound stayed clean. The fever came from the ribs instead.',
+              failure: 'Clean linen, clean water, and the wound went bad on the third day regardless.',
+            },
+          },
+          {
+            id: 'tend_wounds.steady_the_lamp_arm',
+            name: 'Steady the lamp',
+            sphere: 'light',
+            essenceCost: 2,
+            forecastDelta: 0.09,
+            imageTag: 'generic.light',
+            fiction: 'The boy holding the lamp stops swaying with it. The shadow of {their} own hand quits crossing the wound.',
+            effectLine: 'Good help. The work stays lit while it is done.',
+            bandProse: {
+              failure: 'The lamp never wavered, and every bit of what went wrong was plainly visible.',
+            },
+          },
+          {
+            id: 'tend_wounds.hold_the_flesh_closed',
+            name: 'Hold the flesh closed',
+            sphere: 'life',
+            essenceCost: 2,
+            forecastDelta: 0.12,
+            imageTag: 'generic.knit',
+            fiction: 'The lips of the cut sit together instead of gaping, and stay together while the linen goes round.',
+            effectLine: 'Strong help. The wound closes as it is bound.',
+            bandProse: {
+              critical_success: 'The cut closed under the linen and was pink at the edges by the second day.',
+              failure: 'It held closed while {they} bound it. It opened under the binding by dark.',
+            },
+          },
+        ],
         onSuccess: {
-          narrative: '{actor} tends the wounds well. The injured will recover. The {adj} gratitude is genuine.',
+          narrative: '{actor} sets the arm and splints it, and he sleeps before the second knot is tied.',
           reputationDelta: 0.03,
           rewardPool: {
             categoryWeights: { possession: 1.0 },
@@ -7950,7 +8380,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: '{actor}\'s treatment is {adj} adequate but not enough. Recovery will be {adj} longer than it should.',
+          narrative: 'The bone will not seat. {actor} binds it as it lies and tells his wife what that means.',
           reputationDelta: -0.01,
         },
       },
@@ -7967,6 +8397,33 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     threatRating: 'easy',
     intrinsicTier: 'background',
     motivations: ['revelation_discretion', 'courage_prudence'],
+    /**
+     * THR-838 (WS5 Batch 1) — migrated to the nudge model.
+     *
+     * Vignette record (checklist step 1):
+     *   Motive hooks   — `mission` (posted to walk the line) and `choice` (a
+     *                    cautious mortal who wants the ground in {their} head
+     *                    before dark). `chance` is thin here and `divine` is
+     *                    the god's own hand, which the motive line already says.
+     *   Quintessence   — moderate. Step two puts them on the weak approach
+     *   stakes           with a billhook in the dark; a critical failure is a
+     *                    real injury, and the failure reward pool is weighted
+     *                    to conditions to match.
+     *   Scene tag      — `perimeter.dusk.watch` (audit tag: place:hamlet ·
+     *                    reach:eye · situation:encounter).
+     *
+     * Difficulties 0.10 and 0.15 — well under `NUDGE_OFF_REACH_MAX_DIFFICULTY`,
+     * which an open-draw background template must be.
+     */
+    traitVariants: [
+      {
+        traitId: 'trait.core.core_humility.virtue',
+        forecastDelta: 0.04,
+        difficultyDelta: -0.01,
+        factorLine: 'Humble, they walk the line again rather than trust the first pass.',
+        addNudgeIds: ['scout_perimeter.walk_it_twice'],
+      },
+    ],
     steps: [
       {
         id: 'scout_perimeter.map',
@@ -7974,13 +8431,107 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'eye',
         difficulty: UNIVERSAL_DIFFICULTY_BASE + 5,
         duration: 1,
-        narrative: '{actor} moves around the {adj} outer edge of the location, tracking every approach, every covered position, every line of sight.',
+        purposeLine: 'Walk the ground',
+        factorLines: [
+          { text: 'The ditch on the north side has been dry for a month.', polarity: 'for' },
+          { text: 'Thorn scrub covers the whole eastern slope to head height.', polarity: 'against' },
+          { text: 'Light goes off the western wall an hour before dusk.', polarity: 'against' },
+        ],
+        narrative: '{actor} walks the outside edge of the place, hand on the wall where there is wall. Where a man could come up unseen, {they} stop and look back at the roofs to see what he would see.',
+        successAtCostAfterimage: 'They finished the circuit, and finished it limping off the thorn slope.',
+        criticalSuccessAfterimage: 'One pass, every approach, and the two nobody had ever marked.',
+        criticalFailureAfterimage: 'They lost the wall in the scrub and came out on the wrong side of the ditch after dark.',
+        nudges: [
+          {
+            // Shared generic pool — the `light` family.
+            id: 'scout_perimeter.hold_the_last_light',
+            name: 'Hold the last light',
+            essenceCost: 1,
+            forecastDelta: 0.07,
+            imageTag: 'generic.light',
+            fiction: 'The sun sits on the western wall a while longer than it should, and the ditch keeps its shadow.',
+            effectLine: 'A small, reliable push. More of the ground stays visible.',
+            bandProse: {
+              success: 'They had light on the ditch the whole way round, and used all of it.',
+              near_miss: 'The light held. It held on the side they had already walked.',
+            },
+          },
+          {
+            id: 'scout_perimeter.still_the_scrub',
+            name: 'Still the scrub',
+            sphere: 'life',
+            essenceCost: 2,
+            forecastDelta: 0.11,
+            imageTag: 'generic.thicket',
+            fiction: 'The thorn on the east slope lies over, all one way, as if a cart had gone through it.',
+            effectLine: 'Strong help on the slope that fights hardest.',
+            bandProse: {
+              success_at_cost: 'The thorn lay down for {them}. It came back up across the path out.',
+              failure: 'The slope opened. What it opened onto was more slope.',
+            },
+          },
+          {
+            id: 'scout_perimeter.read_the_prints',
+            name: 'Read the prints',
+            sphere: 'mind',
+            essenceCost: 2,
+            forecastDelta: 0.13,
+            imageTag: 'generic.tracks',
+            fiction: 'The scuffs in the ditch sort themselves: sheep, sheep, sheep, and one boot with a worn outside heel.',
+            effectLine: 'Strong help. The ground says who has been on it.',
+            bandProse: {
+              critical_success: 'They read every print in the ditch and knew the man by his heel before {they} ever saw him.',
+              failure: 'The prints read clean. All of them were three weeks old.',
+            },
+          },
+          {
+            id: 'scout_perimeter.carry_the_sound',
+            name: 'Carry the sound',
+            sphere: 'energy',
+            essenceCost: 2,
+            forecastDelta: 0.10,
+            imageTag: 'generic.listening',
+            fiction: 'Noise from the far side of the wall arrives as if it were made at {their} shoulder — a bucket, a latch, a cough.',
+            effectLine: 'Good help. The far side of the wall stops being quiet.',
+            bandProse: {
+              near_miss: 'They heard the latch on the far gate. They heard it as {they} were already past it.',
+              critical_failure: 'Every sound came to {them} at once, from every side, and {they} stopped being able to place any of it.',
+            },
+          },
+          {
+            id: 'scout_perimeter.settle_the_dust',
+            name: 'Settle the dust',
+            sphere: 'matter',
+            essenceCost: 2,
+            forecastDelta: 0.09,
+            imageTag: 'generic.stillness',
+            fiction: 'The dry ditch stops smoking under {their} boots. What {they} kick up drops straight back down.',
+            effectLine: 'Good help. Nothing announces where they are walking.',
+            bandProse: {
+              failure: 'No dust went up behind {them} at all. The dogs had them by the second corner regardless.',
+            },
+          },
+          {
+            // Trait-only card: cost 0.
+            id: 'scout_perimeter.walk_it_twice',
+            name: 'Walk it twice',
+            requiredTrait: 'trait.core.core_humility.virtue',
+            essenceCost: 0,
+            forecastDelta: 0.08,
+            imageTag: 'generic.oath',
+            fiction: 'They do not trust the first pass. They go round again, the other direction, and the wall looks different from it.',
+            effectLine: 'A steady help, and it costs no essence.',
+            bandProse: {
+              near_miss: 'The second pass caught the gap. The second pass also cost {them} the light.',
+            },
+          },
+        ],
         onSuccess: {
-          narrative: '{actor} completes the circuit with a {adj} clear picture of the ground. No surprises now.',
+          narrative: '{actor} closes the circuit with every approach counted, and the two nobody had marked.',
           reputationDelta: 0.03,
         },
         onFailure: {
-          narrative: 'The terrain {verb}s against a clean circuit. {actor} covers most of it, but the {adj} gaps remain.',
+          narrative: 'The scrub and the ditch beat the circuit. {actor} covers three sides and guesses at the fourth.',
           reputationDelta: -0.01,
         },
       },
@@ -7990,9 +8541,88 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'iron',
         difficulty: UNIVERSAL_DIFFICULTY_BASE + UNIVERSAL_DIFFICULTY_STEP + 5,
         duration: 1,
-        narrative: 'Scouting without action is {adj} incomplete. {actor} must do something with what {they} found.',
+        purposeLine: 'Close the weak side',
+        factorLines: [
+          { text: 'The smith has cut thorn stakes before and knows the length.', polarity: 'for' },
+          { text: 'Everyone who could swing a billhook is already asleep.', polarity: 'against' },
+        ],
+        narrative: 'Knowing where the wall is thin does nothing by itself. {actor} has one night, whoever will get up, and whatever is stacked behind the smithy.',
+        successAtCostAfterimage: 'The gap is stopped. It is stopped with the timber meant for the byre roof.',
+        criticalSuccessAfterimage: 'Stakes in the ditch, thorn on the slope, and a boy on the roof by midnight.',
+        criticalFailureAfterimage: 'They worked the gap till dawn and left it worse — the ditch bank cut through and open.',
+        nudges: [
+          {
+            // Shared generic pool — the `strength` family.
+            id: 'scout_perimeter.one_more_pull',
+            name: 'One more pull',
+            essenceCost: 1,
+            forecastDelta: 0.07,
+            imageTag: 'generic.strength',
+            fiction: 'The stake that will not seat goes in on the next swing, and the one after that goes in easier.',
+            effectLine: 'A small push. The arms last past the point they would.',
+            bandProse: {
+              success: 'The stakes went in, all of them, and {their} arms gave out afterward instead of during.',
+              near_miss: 'The arms held. The daylight did not.',
+            },
+          },
+          {
+            id: 'scout_perimeter.wake_the_willing',
+            name: 'Wake the willing',
+            sphere: 'order',
+            essenceCost: 2,
+            forecastDelta: 0.12,
+            imageTag: 'generic.muster',
+            fiction: 'Three doors open on the lane without anyone knocking twice. The smith brings his own billhook.',
+            effectLine: 'Strong help. There are hands enough for the work.',
+            bandProse: {
+              success_at_cost: 'Enough of them came out. Two will not be fit for the fields tomorrow.',
+              failure: 'The lane turned out to a man. Nobody among them had ever cut a stake.',
+            },
+          },
+          {
+            id: 'scout_perimeter.set_the_timber_true',
+            name: 'Set the timber true',
+            sphere: 'matter',
+            essenceCost: 2,
+            forecastDelta: 0.13,
+            imageTag: 'generic.stakes',
+            fiction: 'Each stake finds the one line of clay under the ditch gravel and stands where it is put.',
+            effectLine: 'Strong help. What goes in stays in.',
+            bandProse: {
+              critical_success: 'Every stake found clay, and the ditch bristled by midnight like it had been planted years back.',
+              failure: 'The stakes stood true. The bank they stood in slid a foot before morning.',
+            },
+          },
+          {
+            id: 'scout_perimeter.keep_the_arms_warm',
+            name: 'Keep the arms warm',
+            sphere: 'energy',
+            essenceCost: 2,
+            forecastDelta: 0.10,
+            imageTag: 'generic.strength',
+            fiction: 'Nobody on the ditch stiffens up in the cold. The billhooks keep swinging at the pace they started.',
+            effectLine: 'Good help. The work does not slow down toward dawn.',
+            bandProse: {
+              failure: 'They swung at the same pace all night and the same pace was never going to be enough.',
+            },
+          },
+          {
+            id: 'scout_perimeter.stretch_the_hours',
+            name: 'Stretch the hours',
+            sphere: 'time',
+            essenceCost: 2,
+            forecastDelta: 0.11,
+            imageTag: 'generic.time-slow',
+            fiction: 'The night takes longer to use up. The work goes on past when it should have been too dark to see the line.',
+            effectLine: 'Strong help. There is more dark to work in.',
+            bandProse: {
+              near_miss: 'The night ran long enough for the stakes. Not for the thorn.',
+              critical_failure: 'They had all the night {they} wanted, and spent every hour of it cutting the bank open wider.',
+            },
+          },
+        ],
         onSuccess: {
-          narrative: '{actor} acts on the {adj} intelligence — covers the approach, prepares the position, removes the risk.',
+          narrative: '{actor} stops the gap before light — stakes in the ditch, thorn dragged across the slope.',
           reputationDelta: 0.04,
           rewardPool: {
             categoryWeights: { possession: 0.70, condition: 0.20, bestowed_power: 0.10 },
@@ -8000,7 +8630,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: 'The {adj} discovery is noted but not acted on in time. The opportunity passes.',
+          narrative: 'The gap is still a gap at dawn. {actor} knows exactly where it is and has done none of the work.',
           reputationDelta: -0.02,
           rewardPool: {
             categoryWeights: { condition: 0.80, possession: 0.20 },
