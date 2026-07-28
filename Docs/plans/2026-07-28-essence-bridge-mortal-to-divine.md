@@ -6,6 +6,8 @@ supersedes: none (couples two shipped systems; invents nothing)
 
 # The essence bridge — mortal economy → divine economy
 
+> **lint_plan_doc:** exempt — a shipped-deliverable record, not a plan awaiting handoff. It has no Done-when, coordination block, or forked-audit verdicts because it proposes no work: the change landed in the same PR that added this file, and its acceptance evidence is in the commit body. Same shape as its sibling `2026-07-22-flow-web-extraction-checkpoint.md`, the other P4 checkpoint deliverable. See THR-618.
+
 **Ticket:** THR-618, the last open item of Mortal Economy P4.
 **Parent plans:** `Docs/plans/2026-07-04-mortal-economy-resource-web.md` (§Resource model row *"Incense, relics | Spirit | temple economies; bridges to essence (THR-611)"*, §Phasing P4) and `Docs/plans/2026-07-05-divine-economy-essence-sources.md` (which named the coupling and left it to P4).
 **Sibling deliverable:** `Docs/plans/2026-07-22-flow-web-extraction-checkpoint.md` — the *other* P4 checkpoint, already decided (defer extraction).
