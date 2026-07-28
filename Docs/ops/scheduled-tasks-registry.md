@@ -95,6 +95,20 @@ Collision-check against **both** lanes, not just the CC one: the host lane holds
 
 The THR-677 ports were slotted against that rule: `daily-backlog-grooming` fires ~09:16 (clear of the `:00`/`:40`/`:53` hourly traffic), `weekly-project-hygiene` ~Sun 10:10 (clear of Sunday's 09:16 grooming and 16:10 memory grooming), and `weekly-workflow-retro` ~Wed 11:13 — deliberately moved off its old Cowork slot of Wed 09:04, which would have landed on top of the daily grooming run.
 
+## A hung run silently eats every later slot (THR-837)
+
+**The scheduler will not start a run of a task whose previous run is still alive.** A run that *hangs* therefore costs far more than the slot it occupies — it costs every slot until it ends, and reports nothing while doing so.
+
+Measured 2026-07-27/28: `tb-orchestrator` was dispatched at 20:27:07Z in `permissionMode: "default"` and issued a `Bash` call matching no allow rule. With no user present to answer the permission prompt, the call blocked. The run did not crash — its transcript shows a single **649.5-minute gap** between one tool result and the next, ending 07:40:19Z. Eleven consecutive `:26` slots were skipped, `lastRunAt` stayed frozen at 20:27:02Z, and no report file was written. The next run fired at 07:40:55Z, **36 seconds after the hung one finally ended** — an off-slot fire is the signature of a blocker clearing, not of cron.
+
+Three consequences worth internalising:
+
+- **`lastRunAt` is written at dispatch, not completion.** A frozen `lastRunAt` means "no new run started", which is ambiguous between *never dispatched* and *previous run still alive*. Distinguish them by the transcript's end timestamp, not by inference.
+- **Siblings are unaffected**, so the fleet looks healthy. Only the stalled lane goes quiet, and a lane that decides nothing is indistinguishable from a lane with nothing to decide.
+- **The mitigation lives outside this repo.** All lanes now run `permissionMode: "bypassPermissions"`, set at the desktop-app level — neither `.claude/settings.json` nor `~/.claude/settings.json` carries a `defaultMode`, so **nothing versioned here would notice it reverting**. Adding allow-list entries is not a substitute: these lanes compose ad-hoc shell commands, and the command that actually hung was an `ls` with Windows backslash paths that no allow-list would have anticipated.
+
+Because the fix is unversioned, the detector is the durable part: `keep-work-flowing-cc` step 2.7 runs `npm run check:task-heartbeat` hourly and puts any stalled lane in front of Christian within the hour. Its predicate requires a **sibling witness** (another enabled task with an equal-or-tighter cadence fired in the same window) precisely so a powered-off machine does not read as a fleet of broken lanes.
+
 ## Prompt sources are mirrored into the repo
 
 Scheduled-task prompts live at `C:\Users\chris\.claude\scheduled-tasks\<id>\SKILL.md`, which is **outside** version control — merging a repo change does not deploy them, and a disk loss takes them with it. Copies are kept under `Docs/ops/scheduled-task-prompts/` so the prompts are reviewable and recoverable. **When you edit a live prompt, update its mirror in the same PR**; the mirror is a copy, not the source of truth.
