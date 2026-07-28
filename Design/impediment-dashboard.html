@@ -3638,6 +3638,19 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "Pick an unused port, keep `--strictPort` so a collision fails loudly instead of silently sliding to the next port, and **prove the served tree is yours before trusting any screenshot**: `curl -s http://localhost:<port>/src/<file-you-just-created>.tsx \\| grep -c <symbol-you-just-added>`. A non-zero count is the only acceptable evidence that the server in front of Playwright is serving this worktree. Then navigate explicitly to your own port — never verify against whatever page the MCP happened to be on.",
     "session": "THR-799 ceremonial reveal surface, browser-verify pass, hourly `tb-opus-pickup`"
+  },
+  {
+    "num": "266",
+    "id": 266,
+    "count": 1,
+    "date": "2026-07-28",
+    "category": "tooling",
+    "description": "**An extensionless relative import inside a `--experimental-strip-types` module graph is not by itself a defect — `import type` is erased before the resolver sees it, so a script can carry three of them and be green.** Building the regression guard for THR-804 (the fix's own class has now recurred three times: THR-683, THR-717, THR-804), the obvious predicate — *any relative specifier without an extension, in any file reachable from a strip-types entrypoint* — flagged `src/data/encounter-image-library.ts` for `'../types'`, `'../types/traits'`, `'../types/unifiedAction'`, reachable from `npm run check:image-library`. That script **passes today** (`125 rows on disk, 0 slots still to generate. OK`), because all three are `import type` and the type-stripper deletes them before Node resolves anything. The inverse trap is equally live: `import { type X, foo } from './y'` under `verbatimModuleSyntax` **does** emit a runtime import, so \"mentions `type`\" is not the test either — the test is whether `type` immediately follows `import`/`export`.",
+    "consequence": "A guard written on the obvious predicate is either wrong-red on day one (and gets deleted or exempted, which is how the class recurred three times) or, if silenced by widening the scope, wrong-green. Also invites a well-meant \"fix\" that adds `.ts` to type-only imports across `src/`, a no-op diff touching browser-shared files.",
+    "impact": "Low",
+    "workaroundFound": true,
+    "workaround": "Scope the check to **runtime** specifiers only: skip a match whose `import`/`export` keyword is immediately followed by `type`. And scope the *file* set to the graph reachable from an actual strip-types entrypoint (discovered from `package.json` scripts + `.github/workflows/*.yml` `run:` lines), never all of `scripts/` — esbuild-bundled scripts resolve extensionless specifiers fine and there are dozens, so an unscoped guard is pure noise. Both rules are in `src/testing/__tests__/scriptImportExtensions.lint.test.ts`; falsify any such guard by reverting the fix it was written for and confirming it goes red.",
+    "session": "THR-804 stale-claim-sweep resolver fix, hourly `tb-opus-pickup`"
   }
 ];
 // ── End data ──
