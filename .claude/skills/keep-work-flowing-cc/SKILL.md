@@ -1,7 +1,7 @@
 ---
 name: keep-work-flowing-cc
 description: Hourly headless Claude Code PM brief — reads Christian's Discord replies, scans the Linear queue, pings home-tree freshness, and rewrites Design/briefing.md + refreshes Design/user-actions.md. The CC replacement for the Cowork keep-work-flowing task (Pure Claude Code Migration, THR-650). The briefing file IS the inbox; the Discord DM is a two-way channel — a change-gated ping out (step 6), an author-verified read in (step 0).
-last_validated_against: 2026-07-27
+last_validated_against: 2026-07-28
 ---
 
 # Keep Work Flowing (CC)
@@ -179,6 +179,27 @@ Items folded in this way flow into the step-6 change hash like any other, so a g
 
 **Fail-soft:** `Docs/ops/` unreadable, a report malformed, or no `## Needs Christian` heading present → one-line note in the run output, continue. A missing sibling report is not an error; those tasks are daily and weekly, so most hours there is nothing new to read.
 
+### 2.7 Scheduled-task heartbeat (THR-837)
+
+Step 2.6 reads what sibling lanes *wrote*. This step notices when a lane wrote **nothing at all**, which is the failure no report-reading step can catch: a stalled lane and an idle one produce identical silence.
+
+**What happened.** On 2026-07-27T20:27Z the `tb-orchestrator` run was dispatched in `permissionMode: "default"` and issued a `Bash` call matching no allow rule. With nobody present to answer the prompt it blocked — the run stayed **alive and idle for 10h49m**, and the scheduler will not start a second run of a task whose previous run is still alive. Eleven consecutive `:26` slots were skipped, `lastRunAt` froze, and nothing said a word. It surfaced only because `daily-backlog-grooming` happened to notice by hand the next morning. The permission-mode hang is fixed (lanes now run `bypassPermissions`), but **that setting lives in the desktop app, outside this repo** — nothing versioned would notice it reverting. This step is the detector, not the fix.
+
+`list_scheduled_tasks` is an MCP tool, so hand its JSON to the probe rather than having the probe fetch it:
+
+```bash
+npm run check:task-heartbeat --silent -- --input <tasks.json> --json
+```
+
+One line of JSON: `{ verdict, needsChristian, checked, stalled[], neverRun[], summary }`.
+
+- **`needsChristian: true`** (verdict `stalled`) → put the `summary` verbatim into **`## Needs Christian`**. It already names the task, how far behind it is, and which sibling kept firing; do not compress it to "a task is behind", which loses the evidence that makes it actionable.
+- **`needsChristian: false`** (`ok`, `unknown`) → say nothing. A lane running on time is not news, and `neverRun` entries are context (a freshly registered monthly task), not a defect.
+
+**The predicate is a membership rule, not a threshold on one task** (THR-688 rule A): *enabled, recurring, more than `STALL_SLOT_THRESHOLD` slots behind, **and** a sibling with an equal-or-tighter cadence fired inside that same window.* The sibling clause is load-bearing — without it every overnight shutdown reads as a fleet of broken lanes, the alarm gets ignored, and the next real stall hides in the noise. Do not "simplify" this to "last run older than N hours."
+
+**Fail-soft:** the probe exits 0 without `--strict` and degrades to `verdict: "unknown"` on missing or unparseable input. If it cannot run, note one line and continue — never treat an unreadable probe as a healthy fleet.
+
 ### 3. Compose `Design/briefing.md`
 
 Overwrite the file. Structure (keep it short — this is a brief, not a report):
@@ -255,6 +276,7 @@ Direct `git push origin main` is rejected by branch protection. Use the branch �
 | `DEPLOY_STALE_GRACE_MINUTES` | 20 | Step 2.5 — how long an undeployed `main` commit is "probably still building" rather than a stoppage. Lives in `scripts/check-deploy-health.ts`; change it there, not here. |
 | `DEPLOY_LOOKBACK` | 10 | Step 2.5 — Production deployments walked back looking for the newest successful one |
 | `SIBLING_REPORT_MAX_AGE_HOURS` | 36 | Step 2.6 — age past which a sibling task's `## Needs Christian` section is stale and not folded in |
+| `STALL_SLOT_THRESHOLD` | 2 | Step 2.7 — cron slots a task may fall behind before it counts as stalled. Lives in `scripts/check-scheduled-task-heartbeat.ts`; change it there, not here. |
 | `SIBLING_REPORT_GLOBS` | `Docs/ops/orchestrator-*.md`, `Docs/ops/backlog-grooming-*.md`, `Docs/ops/weekly-hygiene-*.md` | Step 2.6 — reports whose Christian-facing sections this task consumes; newest one per producing task |
 
 ### 6. Discord ping (change-gated)
@@ -272,6 +294,7 @@ Christian asked (2026-07-24) to be pinged on Discord when tickets or impediments
 - Linear unreachable → write the briefing with a loud "⚠ Linear was unreachable this run — queue section is stale" banner and still refresh what you can (freshness ping does not need Linear). Log an impediment via `impediment-reporter`.
 - Home tree unreachable → freshness section says so; continue.
 - Deploy probe (step 2.5) fails or returns `unknown` → one line under Freshness saying deploy health could not be read; continue. Never treat an unreadable probe as a healthy deploy.
+- Heartbeat probe (step 2.7) fails or returns `unknown` → one line saying scheduled-task health could not be read; continue. Never treat an unreadable probe as a fleet running on time.
 - Git push rejected → PR fallback; if that also fails, leave the files uncommitted in the working tree and note it in the run output. Next run reconciles.
 - Nothing to say → still overwrite `briefing.md` with the honest empty-state ("Nothing needs you right now"); the fresh timestamp is itself the signal the task is alive.
 - Discord ping fails (plugin down, token invalid, network) → one-line note in the run output, leave `PING_STATE_FILE` untouched so the next run retries, continue. The briefing file remains the source of truth either way.
