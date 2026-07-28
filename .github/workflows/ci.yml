@@ -46,11 +46,41 @@ jobs:
   check:
     name: Test · Typecheck · Build
     needs: detect
-    if: needs.detect.outputs.code == 'true'
+    # Three-way gate, not two (THR-768). The old condition was
+    # `needs.detect.outputs.code == 'true'`, which conflated "nothing to check"
+    # with "could not tell" — when `detect` died at startup the output was empty,
+    # this job recorded as `skipped`, and **a skipped required check satisfies
+    # branch protection**. The rule read as enforced and was void simultaneously;
+    # measured end to end on PR #853 (2026-07-25) and PR #1022 (2026-07-28, which
+    # carried engine + content changes).
+    #
+    #   detect succeeded, code == 'true'  → run the suite      (unchanged)
+    #   detect succeeded, code == 'false' → skip               (unchanged: docs-only PRs stay fast)
+    #   detect did NOT succeed            → run, and FAIL loudly via the guard step below
+    #
+    # `!cancelled()` rather than `always()` deliberately: a run superseded by
+    # `cancel-in-progress` must stay cancelled, not be reported as a failure.
+    if: ${{ !cancelled() && (needs.detect.result != 'success' || needs.detect.outputs.code == 'true') }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
     steps:
+      # The vacuous-gate guard. If change detection did not succeed, this required
+      # check has no idea whether the change is safe — and must say so in the only
+      # way branch protection understands, which is a failing conclusion. Costs
+      # ~10s on the (rare) path where it fires, and nothing at all otherwise.
+      #
+      # Note this guard is belt-and-braces during an Actions outage: when the
+      # account budget is exhausted, THIS job also fails to start, which already
+      # produces a `failure` conclusion. The guard is what covers every *other*
+      # way `detect` can die — a paths-filter API error, a runner fault, a bad
+      # token — none of which should ever be able to wave a change through.
+      - name: Guard — change detection health
+        if: needs.detect.result != 'success'
+        run: |
+          echo "::error::Change detection did not succeed (result='${{ needs.detect.result }}'). Refusing to report a pass — this required check cannot vouch for a change it never inspected. See THR-768."
+          exit 1
+
       # fetch-depth: 0 gives the wiki-freshness gate (below) the history it needs
       # to diff against origin/main and to scan commit bodies for the exemption
       # token. The detect job stays shallow — it reads changed files via the API.
