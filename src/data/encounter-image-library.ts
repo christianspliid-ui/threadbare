@@ -607,38 +607,48 @@ const PORTRAIT_TRAVELER: EncounterImageEntry = {
 };
 
 /**
- * Nudge-card concept generics. These are the tags the exemplar fixture already
- * writes (`generic.focus`, `generic.light`, …) plus the rest of the concept set
- * the WS1 spec's hand-authoring guidance leans on. Every one clears the
- * genericity bar by construction — they name a *kind of divine help*, which is
+ * Nudge-card concept generics — the full set, generated in batch 2 (2026-07-28).
+ *
+ * These are the tags the exemplar fixture already writes (`generic.focus`,
+ * `generic.light`, …) plus the rest of the concept set the WS1 spec's
+ * hand-authoring guidance leans on. Every one clears the genericity bar by
+ * construction — they name a *kind of divine help*, which is
  * encounter-independent.
+ *
+ * Every plate is object- or effect-centred per the settled image doctrine. The
+ * only figures anywhere in the set are two flat silhouettes — `oath`'s clasped
+ * forearms and `vigor`'s hooded traveller — and no face appears in any of them,
+ * which is what keeps a nudge card from ever contradicting the agent it is
+ * shown beside.
+ *
+ * The trailing comment on each row is the subject that was generated, kept for
+ * a later regeneration or taste pass; the resolver never reads it.
  */
-const NUDGE_CONCEPT_SLOTS: readonly EncounterImagePlanSlot[] = [
-  ['generic.focus', 'mind', 'steadiness arriving in a hand or an eye — a tremor going out of things', 'focus'],
-  ['generic.light', 'light', 'a light waking where there was not enough of it', 'illumination'],
-  ['generic.dark', 'darkness', 'dark closing helpfully over something that needed hiding', 'concealment'],
-  ['generic.luck', 'chaos', 'a coin, a die, a hinge — the moment before it falls the right way', 'luck'],
-  ['generic.oath', 'order', 'a binding made visible — a knot, a seal, a clasped grip', 'oath'],
-  ['generic.strength', 'force', 'a surge of strength in something inanimate — a beam holding, a rope going taut', 'strength'],
-  ['generic.blessing', 'spirit', 'a warmth settling over an object, unmistakably given', 'blessing'],
-  ['generic.time-slow', 'time', 'a moment stretched — dust hanging, a drop not yet fallen', 'time'],
-  ['generic.memory', 'mind', 'something remembered surfacing — an old mark read again, a habit returning', 'memory'],
-  ['generic.ward', 'order', 'a ward holding — a drawn line that something does not cross', 'ward'],
-  ['generic.rumor', 'mind', 'word travelling — a whisper passing between unseen mouths', 'rumor'],
-  ['generic.warmth', 'life', 'a hearth-warmth reaching someone cold', 'warmth'],
-  ['generic.vigor', 'life', 'exhaustion lifting from a body — breath coming back', 'vigor'],
-  ['generic.decay', 'entropy', 'something giving way exactly where it was needed to', 'decay'],
-  ['generic.matter', 'matter', 'material answering — stone or iron becoming briefly obliging', 'substance'],
-  ['generic.energy', 'energy', 'a charge gathering in air or metal', 'energy'],
-].map(([id, sphere, brief, concept]) => ({
+const NUDGE_CONCEPT_ART: readonly EncounterImageEntry[] = [
+  ['generic.focus', 'mind', 'focus'], // a hand holding a needle still, the tremor going out of it
+  ['generic.light', 'light', 'illumination'], // a guttering lamp waking in a black passage
+  ['generic.dark', 'darkness', 'concealment'], // dark closing over an abandoned satchel like water
+  ['generic.luck', 'chaos', 'luck'], // a coin on edge, caught before it tips
+  ['generic.oath', 'order', 'oath'], // clasped forearms, a tightening knot, a plain wax seal
+  ['generic.strength', 'force', 'strength'], // a roof-beam bowing under fallen stone and holding
+  ['generic.blessing', 'spirit', 'blessing'], // wisps settling over a plain clay bowl
+  ['generic.time-slow', 'time', 'time'], // a water drop hanging, not yet fallen
+  ['generic.memory', 'mind', 'memory'], // an old worn notch in a doorpost, surfacing again
+  ['generic.ward', 'order', 'ward'], // a poured salt line the dark presses against and does not cross
+  ['generic.rumor', 'mind', 'rumor'], // word passing shutter to shutter down an empty street
+  ['generic.warmth', 'life', 'warmth'], // hearth-warmth creeping across cold flagstones
+  ['generic.vigor', 'life', 'vigor'], // a hooded silhouette straightening, breath rising
+  ['generic.decay', 'entropy', 'decay'], // an iron lock corroding through exactly at the shackle
+  ['generic.matter', 'matter', 'substance'], // quarried stone opening cleanly under a chisel
+  ['generic.energy', 'energy', 'energy'], // a charge gathering at a weathervane's spike
+].map(([id, sphere, concept]) => ({
   id: id as string,
+  path: `/concept-art/nudge/${(id as string).slice('generic.'.length)}.jpg`,
   kind: 'nudge' as const,
   concepts: [concept as string, 'nudge', 'divine_help'],
   sphere: sphere as SphereName,
   mood: 'wondrous' as const,
   genericity: `Any encounter whose step turns on ${concept}; ${GENERIC_POOL_UNRELATED_ENCOUNTERS_MIN}+ unrelated families use it.`,
-  brief: `${brief}. Object- or effect-centred; agents absent or silhouetted only.`,
-  batch: 2,
 }));
 
 /**
@@ -713,7 +723,6 @@ const PORTRAIT_SLOTS: readonly EncounterImagePlanSlot[] = [
  * and the plan entry has been deleted. `check:image-library` reports progress.
  */
 export const ENCOUNTER_IMAGE_PLAN: readonly EncounterImagePlanSlot[] = [
-  ...NUDGE_CONCEPT_SLOTS,
   ...SCENE_SLOTS,
   ...PORTRAIT_SLOTS,
 ];
@@ -728,6 +737,7 @@ export const ENCOUNTER_IMAGE_LIBRARY: readonly EncounterImageEntry[] = [
   ...BRANCHING_HERO_ART,
   ...TERRAIN_SCENE_GENERICS,
   ...FATE_ART,
+  ...NUDGE_CONCEPT_ART,
   PORTRAIT_TRAVELER,
 ];
 
@@ -742,12 +752,17 @@ export const ENCOUNTER_IMAGE_LIBRARY: readonly EncounterImageEntry[] = [
  * showing a player a shattered blade for a success — which is worse than the
  * honest gradient tile.
  *
- * `nudge` remains absent until batch 2 lands; those cards degrade honestly to
- * EntityVisual rather than borrowing a stand-in from another concept.
+ * `nudge` is `generic.blessing` as of batch 2. Of the sixteen concepts it is the
+ * only one whose subject is divine help *as such* — something settling over an
+ * object, unmistakably given — rather than a particular kind of it. An unknown
+ * nudge tag therefore lands on "a god helped here", which is the one thing every
+ * nudge card has in common; pointing it at `generic.strength` or `generic.luck`
+ * would assert a specific intervention the step may not have made.
  */
 export const ENCOUNTER_IMAGE_CATEGORY_GENERIC: Partial<
   Record<EncounterImageKind, string>
 > = {
   scene: 'scene.wilderness.hills',
+  nudge: 'generic.blessing',
   portrait: 'portrait.traveler',
 };

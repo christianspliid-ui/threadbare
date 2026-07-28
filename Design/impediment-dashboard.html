@@ -3538,7 +3538,7 @@ const DATA = [
   {
     "num": "257",
     "id": 257,
-    "count": 2,
+    "count": 3,
     "date": "2026-07-27",
     "category": "tooling",
     "description": "**The Playwright MCP server is rooted at whichever worktree it started in, not the session's worktree, so the DoD's \"absolute filename inside the session worktree\" screenshot instruction is rejected outright.** THR-820's browser-verify pass called `browser_take_screenshot` with an absolute path under the session worktree (`.claude/worktrees/loving-benz-e3ee84/.playwright-mcp/…`) exactly as the DoD's unattended-run route prescribes, and got `File access denied: … is outside allowed roots. Allowed roots: …/worktrees/nostalgic-mahavira-0c1c90/.playwright-mcp, …/worktrees/nostalgic-mahavira-0c1c90` — a *different, unrelated* worktree from an earlier session. The same mismatch applies to the browser itself: it opened on `localhost:5174` (another session's dev server) rather than the port this session started, so a screenshot taken without re-navigating would have captured **someone else's build** while reading as this session's evidence. That is the dangerous direction — the capture succeeds and looks like proof.",
@@ -3590,7 +3590,7 @@ const DATA = [
   {
     "num": "261",
     "id": 261,
-    "count": 1,
+    "count": 2,
     "date": "2026-07-28",
     "category": "tooling",
     "description": "**Negative constraints in an image prompt are honoured for the *named* subject but not for its implied context, and off-palette colour overrides an explicit hex.** Two of 49 THR-777 plates failed review for reasons the prompt had already excluded. (a) `fate.veil.success_at_cost` asked for a cracked ceramic mask with *\"no people, no figures, no hands, no faces\"* and rendered a mask through whose crack a photorealistic living face is visible — the exclusion bound the scene's cast but not the interior of the named object. (b) `fate.star.critical_success` specified *\"amber-copper Time threads (#ff9933)\"* and rendered a **green** comet with amber ripples, and drew constellation lines between stars despite *\"no diagrams\"*.",
