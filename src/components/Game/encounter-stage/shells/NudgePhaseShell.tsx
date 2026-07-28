@@ -17,6 +17,7 @@ import { useSyncExternalStore } from 'react';
 import { EntityVisual } from '../../../shared/EntityVisual';
 import { SphereIcon } from '../../../shared/SphereIcon';
 import { gradientIndexForId } from '../../../../data/entity-visual-fallbacks';
+import { resolveEncounterImagePath } from '../../../../data/encounterImageResolver';
 import {
   NUDGE_BLOCKED_REASONS,
   NUDGE_COMMIT_LABEL,
@@ -75,6 +76,13 @@ function NudgeCard({
   onToggle: () => void;
 }) {
   const dimmed = card.state === 'dimmed' && !card.selected;
+  // THR-777: manifest lookup on the authored tag, sphere as a refinement.
+  // Null until the tag's art is generated — see ENCOUNTER_IMAGE_PLAN.
+  const artPath = resolveEncounterImagePath({
+    tag: card.imageTag,
+    kind: 'nudge',
+    sphere: card.sphere,
+  });
 
   return (
     <button
@@ -103,14 +111,19 @@ function NudgeCard({
         transition: 'opacity 0.2s ease, border-color 0.2s ease, background 0.2s ease',
       }}
     >
-      {/* Art — the fallback chain. Specific art and the `imageTag` manifest
-          lookup are WS4; until that lands the chain ends at the EntityVisual
-          gradient+glyph, which never blocks the render (plan fail-soft row). */}
+      {/* Art — the fallback chain (THR-777/WS4). The manifest lookup runs on
+          `imageTag`; an unresolved tag returns null and the chain ends at the
+          EntityVisual gradient+glyph, which never blocks the render (plan
+          fail-soft row). Most nudge tags are still un-generated plan slots, so
+          the fallback is the common path today and must stay correct. */}
       <EntityVisual
         size="chip"
         shape="rounded"
         descriptor={{
-          tier: 'fallback',
+          tier: artPath ? 'art' : 'fallback',
+          // `src` present ⇒ art tier; the glyph below stays populated either way
+          // because EntityVisual uses it as the <img> onError swap target.
+          ...(artPath ? { src: artPath } : {}),
           glyph: card.sphere ? '◈' : '◇',
           gradientIndex: gradientIndexForId(card.id),
           alt: card.name,

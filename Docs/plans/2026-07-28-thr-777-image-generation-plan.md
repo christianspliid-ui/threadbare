@@ -1,0 +1,110 @@
+> **title:** `Encounter image library — manifest, resolver, generation worklist — THR-777`
+> **linear_issue:** THR-777
+> **author:** Claude Code
+> **created:** 2026-07-28
+> **three_pillars:** Engine `done — manifest + resolver as static data modules` · Content `done — tag vocabulary + 31 registered rows + 94-slot worklist` · UI `done — NudgePhaseShell art lookup`
+
+# Encounter image library — THR-777 (Nudge Model WS4)
+
+The nudge encounters have had an `imageTag` field since WS0 and a UI that reads it since WS2, but nothing in between: this builds the manifest that turns a tag into a picture, and the worklist that says which pictures still have to be made.
+
+## Why this is load-bearing
+
+WS0 put `imageTag` on every `StepNudge`. WS1's authoring spec tells encounter authors to pick tags "from the manifest vocabulary". WS2's `NudgePhaseShell` carries a comment saying the manifest lookup "is WS4; until that lands the chain ends at the EntityVisual gradient+glyph". Three workstreams shipped against a vocabulary that did not exist — authors had no list to pick from, and every tag they wrote resolved to nothing.
+
+WS5 (THR-778) is the content migration that rewrites the encounter corpus to the nudge model. It cannot start writing `imageTag` values until there is a vocabulary to write, and it must not start generating art ad hoc per encounter — that is precisely how you end up with 531 bespoke images instead of ~125 reusable ones. This slice is the thing standing between WS5 and either of those failure modes.
+
+## What shipped in this slice
+
+Per the ticket's own coordination block — *"Suggested model: sonnet (generation runs) **after an opus manifest-design slice**"* — this run is the manifest-design slice. Image generation is batched work for subsequent runs, driven by the worklist below.
+
+| Piece | File |
+|---|---|
+| Manifest + tag vocabulary + generation worklist | `src/data/encounter-image-library.ts` |
+| Resolve chain | `src/data/encounterImageResolver.ts` |
+| UI wiring (nudge card art) | `src/components/Game/encounter-stage/shells/NudgePhaseShell.tsx` |
+| Integrity gate | `scripts/check-image-library.ts` (`npm run check:image-library`) |
+| Contract tests | `src/data/__tests__/encounterImageResolver.test.ts` |
+
+## Engine pillar
+
+No tick-loop participation — this is static data plus a pure lookup. `resolveEncounterImage` is synchronous, allocation-light, and called at modal-open frequency.
+
+### Two tables, deliberately
+
+`ENCOUNTER_IMAGE_LIBRARY` holds only rows whose art exists on disk; `ENCOUNTER_IMAGE_PLAN` holds slots that do not have art yet. The split is what makes the ticket's *"batched and resumable, no orphan files"* requirement mechanical instead of a promise:
+
+- A planned slot **cannot** resolve to a broken `<img>`, because it carries no path.
+- A shipped image **cannot** sit unregistered, because `check:image-library` sweeps both directions and fails if an id appears in both tables (art shipped, worklist entry not deleted — the next batch would redo it).
+
+### The resolve chain
+
+```
+specific art → exact tag → tag query → category generic → null
+```
+
+`null` is the success case for "no art": the caller renders `EntityVisual`'s gradient+glyph tile. Missing art can never block a render (NFP #4).
+
+Encounter-specific rows (`genericity: null`) are excluded from the tag query and reachable only by exact tag. Without that exclusion, art made for *The Silent Chamber* would get dealt out to any unrelated encounter that happened to share the concept word "secret" — the single most likely way for a shared library to start looking wrong.
+
+The query bar (`IMAGE_MATCH_MIN_SCORE = 10`) is set so that one concept agreement clears it and a bare sphere+place coincidence (6) does not. That is the line between "an image about this" and "an image that shares a label".
+
+## Content pillar
+
+### Fate art keys off the outcome ladder, not the forecast
+
+**The ticket said "8 Reaches × 5 bands = 40 images". It is 6 bands, so 48 slots.** The five-valued axis in this system is the *forecast* (`doomed` / `perilous` / `uncertain` / `favorable` / `fated`), shown **before** the roll. The resolved outcome ladder `StepOutcome` has six bands. The user verdict this set exists to serve — *"a failed Iron encounter must not look like a failed Gold one"* — is about what the player sees **after** fate picks, so the key is `ReachDomain × StepOutcome`.
+
+`bands` is a list rather than a single value, so a taste pass can point one image at several bands (collapsing, say, `success_at_cost` and `near_miss`) without a schema change. The final count stays a tuning decision rather than a structural one.
+
+### Target count is ~125, not the ticket's ~156
+
+Promoting art that already ships absorbed a large part of the estimate:
+
+| Category | Ticket estimate | Actual | Why |
+|---|---|---|---|
+| Fate | 40 | 48 planned | Six outcome bands, not five (above) |
+| Scene | ~60 | 12 registered + 14 planned | The 12 terrain plates in `public/concept-art/` already read as place-not-event and cover the outdoor half; only the built/social places need generating |
+| Nudge | ~40 | 16 planned | 12 spheres × 2 variants over-counts — the concept axis is what authors actually write (`generic.focus`, `generic.oath`), and sphere is a refinement on it |
+| Portrait | ~16 | 16 planned | Unchanged |
+| Hero (branching) | 19 exist | 19 registered | Registered by tag, unchanged on disk |
+
+The ticket's asset paths were stale: `Design/mockups/assets/` does not exist in the repo, and the 19 hero images live at `public/concept-art/encounters/`, not `public/assets/encounters`. The 5 thread-weave fate images and 7 `lib-*.png` nudge images the ticket describes as "already made" are **not in the repo** — they are presumably local mockup files. They are therefore planned as slots rather than registered as rows; if the originals surface, promoting them is a manifest edit and a file copy, and the batch-1 count drops accordingly.
+
+### Generation worklist
+
+Batches ship in ascending order, one PR each. All generation via the mcp-image MCP per `STYLE.md` (Simonetti oil, chiaroscuro, deep twilight). **Image doctrine (settled): agents mostly absent; when present, generic or silhouetted. Fate images contain no agent at all.**
+
+| Batch | Slots | Contents | Why this order |
+|---|---|---|---|
+| 1 | 49 | 48 fate (8 Reaches × 6 bands) + the baseline traveler portrait | Fate art is what every encounter ends on — highest reuse per image in the whole library |
+| 2 | 16 | Nudge concept generics | Unblocks the hand, the surface the player reads most often |
+| 3 | 14 | Built/social scene generics | Terrain already covers outdoors; these finish the place vocabulary |
+| 4 | 15 | Remaining archetype portraits | Lowest reuse; `EntityVisual` already degrades gracefully here |
+
+Each batch: generate → drop files under `public/` → move the slots from `ENCOUNTER_IMAGE_PLAN` into `ENCOUNTER_IMAGE_LIBRARY` with real paths → `npm run check:image-library` → commit. The checker prints per-batch remaining counts, so a resumed run sees its position without reading the diff.
+
+`FATE_REACH_METAPHORS` holds the per-Reach metaphor language (Iron: steel/shield; Gold: coin/scales; …) and `FATE_BAND_DIRECTION` the per-band direction; a slot's `brief` is composed from the two. The resolver never reads either table — they exist for generation.
+
+## UI pillar
+
+`NudgePhaseShell`'s nudge card now runs the manifest lookup on `card.imageTag`, with `sphere` as a refinement, and passes the result to `EntityVisual` as the `art` tier when it resolves. The descriptor keeps its `glyph` and `gradientIndex` populated in both branches because `EntityVisual` uses the glyph as the `<img>` `onError` swap target — so a path that 404s degrades in place rather than showing a broken image.
+
+**Today the fallback is the common path**: nudge art is entirely batch 2, so every card still renders the gradient tile. That is the correct and intended state, and it is why the fallback branch had to stay exactly as it was rather than being replaced.
+
+## NFP compliance
+
+| NFP | Verdict |
+|---|---|
+| 1 Tunability | PASS — match weights, `IMAGE_MATCH_MIN_SCORE`, and the genericity bar are all named constants; retuning which image wins is editing a number |
+| 2 Inspectability | PASS — `resolveEncounterImage` returns the `source` rung and the matched `entry`, so "why this picture" is answerable without instrumenting the call |
+| 3 Determinism | PASS — no randomness; ties break on `id` ascending, so declaration order in the manifest is never load-bearing |
+| 4 Fail-soft | PASS — every rung either yields a checker-proven path or falls through; terminal value is `null`, never a guess. An unknown tag degrades silently rather than throwing |
+| 5 Narrative over mechanical | PASS — the per-Reach metaphor sets exist purely so failure reads differently in different domains, at a real cost in image count |
+| 6 Additive | PASS — two new modules, one new npm script, one changed JSX branch. No existing field changed meaning |
+| 7 Performance budget | PASS — static data, `Map`-backed exact lookup, linear scan over tens of rows at modal-open frequency |
+
+## Open questions
+
+1. **Do the mockup assets exist somewhere?** The ticket says 5 thread-weave fate images and 7 `lib-*.png` nudge cards are already made. They are not in the repo. If Christian has them locally, promoting them removes ~12 slots from batches 1–2.
+2. **Band collapsing.** 48 fate images is the un-collapsed count. A taste pass may decide `success_at_cost` and `near_miss` can share art within a Reach, which would drop batch 1 to 40 — matching the ticket's original number by a different route. Deferred to the first generation run, where the images can actually be compared.

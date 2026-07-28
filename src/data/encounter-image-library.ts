@@ -1,0 +1,697 @@
+/**
+ * Encounter image library — THR-777 (Nudge Model WS4).
+ *
+ * The manifest the nudge encounters draw their art from. WS0 put `imageTag` on
+ * every `StepNudge`; WS1's authoring spec tells authors to pick tags from "the
+ * manifest vocabulary"; WS2's shell left the lookup as a TODO and fell straight
+ * through to the EntityVisual gradient+glyph. This module is that vocabulary and
+ * that lookup's data.
+ *
+ * ## Two tables, on purpose
+ *
+ * `ENCOUNTER_IMAGE_LIBRARY` holds only rows whose art **exists on disk**. A row
+ * here is a promise that `path` renders. `scripts/check-image-library.ts` fails
+ * the build if one lies.
+ *
+ * `ENCOUNTER_IMAGE_PLAN` holds the slots that art has **not** been generated for
+ * yet. Plan slots are the generation worklist — a batch is finished when its
+ * slots have graduated into the library. Keeping them apart is what makes the
+ * ticket's "batched and resumable, no orphan files" property mechanical rather
+ * than a promise: a planned slot cannot resolve to a broken `<img>`, because it
+ * carries no path at all, and an unplanned image cannot sit unregistered,
+ * because the checker sweeps both directions.
+ *
+ * ## The genericity bar (WS1 spec § 7)
+ *
+ * An image is generic iff it reads correctly in at least
+ * `GENERIC_POOL_UNRELATED_ENCOUNTERS_MIN` (3) *unrelated* encounters, names no
+ * entity, and shows no agent-identifying detail. Every generic row states where
+ * it clears that bar in `genericity`. Encounter-specific art declares
+ * `genericity: null` and is only ever reachable by its exact tag.
+ *
+ * ## Fate art is keyed by the outcome ladder, not the forecast
+ *
+ * The ticket said "8 Reaches × 5 bands". The engine's resolved outcome ladder
+ * (`StepOutcome`) has **six** bands; the five-valued axis is the *forecast*
+ * (doomed…fated), which is shown before the roll. The user verdict this set
+ * exists to serve — "a failed Iron encounter must not look like a failed Gold
+ * one" — is about what the player sees *after* fate picks, so the key is
+ * `ReachDomain × StepOutcome`. `bands` is a list rather than a single value, so
+ * a taste pass may point one image at several bands (collapsing, say,
+ * `success_at_cost` and `near_miss`) without a schema change. That keeps the
+ * final count a tuning decision instead of a structural one.
+ *
+ * Plan: `Docs/plans/2026-07-26-nudge-model-encounter-system.md` § WS4
+ * Generation worklist: `Docs/plans/2026-07-28-thr-777-image-generation-plan.md`
+ */
+
+import type { SphereName } from '../types';
+import type { ReachDomain } from '../types/traits';
+import type { StepOutcome } from '../types/unifiedAction';
+
+// ── Tunable constants (NFP #1) ──────────────────────────────────────
+
+/**
+ * Genericity bar from the WS1 authoring spec: an image earns a `generic.*` tag
+ * only if it reads correctly in at least this many *unrelated* encounters.
+ */
+export const GENERIC_POOL_UNRELATED_ENCOUNTERS_MIN = 3;
+
+/**
+ * Tag-query scoring weights. A query names concepts and optionally a
+ * sphere/reach/place; the resolver sums these per candidate row and takes the
+ * best. Concept agreement dominates deliberately — sphere and place are
+ * *refinements* on an already-apt image, never the reason to pick one.
+ */
+export const IMAGE_MATCH_WEIGHT_CONCEPT = 10;
+export const IMAGE_MATCH_WEIGHT_SPHERE = 4;
+export const IMAGE_MATCH_WEIGHT_REACH = 3;
+export const IMAGE_MATCH_WEIGHT_PLACE = 2;
+export const IMAGE_MATCH_WEIGHT_MOOD = 1;
+
+/**
+ * A tag query must clear this score to beat the category generic. One concept
+ * agreement (10) clears it; a bare sphere+place coincidence (6) does not — that
+ * is the difference between "an image about this" and "an image that happens to
+ * share a label".
+ */
+export const IMAGE_MATCH_MIN_SCORE = 10;
+
+// ── Types ───────────────────────────────────────────────────────────
+
+/**
+ * What surface an image is cut for. Aspect ratio follows from the kind:
+ * `portrait` is 3:4, everything else is 16:9 (see `EntityVisual`).
+ */
+export type EncounterImageKind =
+  | 'scene'
+  | 'nudge'
+  | 'fate'
+  | 'portrait'
+  | 'object';
+
+/** Place archetypes the scene library is organised by. */
+export type EncounterImagePlace =
+  | 'guild_hall'
+  | 'tavern'
+  | 'road'
+  | 'wilderness'
+  | 'siege'
+  | 'court'
+  | 'market'
+  | 'shrine'
+  | 'ruin'
+  | 'river'
+  | 'settlement'
+  | 'underground'
+  | 'wilds_camp'
+  | 'sea';
+
+/** Emotional register, used as a weak refinement signal in tag queries. */
+export type EncounterImageMood =
+  | 'ominous'
+  | 'tense'
+  | 'solemn'
+  | 'warm'
+  | 'triumphal'
+  | 'desolate'
+  | 'wondrous'
+  | 'neutral';
+
+export interface EncounterImageEntry {
+  /**
+   * The tag. This is the string authors write into `StepNudge.imageTag`, so it
+   * is the row's identity — namespaced `generic.*`, `scene.*`, `fate.*`,
+   * `portrait.*`, or `<encounter>.*` for specific art.
+   */
+  readonly id: string;
+  /** Public path. Must exist on disk — `check:image-library` enforces it. */
+  readonly path: string;
+  readonly kind: EncounterImageKind;
+  /** Concept vocabulary — the primary match axis. */
+  readonly concepts: readonly string[];
+  readonly sphere?: SphereName;
+  readonly reach?: ReachDomain;
+  readonly places?: readonly EncounterImagePlace[];
+  readonly mood?: EncounterImageMood;
+  /** Outcome bands this image serves. Fate rows only. */
+  readonly bands?: readonly StepOutcome[];
+  /**
+   * Where this image clears the genericity bar, in prose. `null` marks
+   * encounter-specific art, which the tag query never returns — only an exact
+   * `id` hit reaches it.
+   */
+  readonly genericity: string | null;
+}
+
+/**
+ * An un-generated slot. Carries everything the manifest row will carry except
+ * `path`, plus the art brief the generation run works from.
+ */
+export interface EncounterImagePlanSlot {
+  readonly id: string;
+  readonly kind: EncounterImageKind;
+  readonly concepts: readonly string[];
+  readonly sphere?: SphereName;
+  readonly reach?: ReachDomain;
+  readonly places?: readonly EncounterImagePlace[];
+  readonly mood?: EncounterImageMood;
+  readonly bands?: readonly StepOutcome[];
+  readonly genericity: string | null;
+  /**
+   * The subject, in one line. Fed to the generator on top of the STYLE.md
+   * formula (Simonetti oil, chiaroscuro, deep twilight). Image doctrine
+   * (settled): agents mostly absent; when present, generic or silhouetted.
+   */
+  readonly brief: string;
+  /** Generation batch. Batches ship in ascending order, one PR each. */
+  readonly batch: number;
+}
+
+// ── Per-Reach fate metaphor language ────────────────────────────────
+
+/**
+ * The metaphor set each Reach's fate images are built from — the thing that
+ * makes a failed Iron encounter not look like a failed Gold one. Taste pass
+ * pending; the resolver does not read this table, the generation briefs do.
+ */
+export const FATE_REACH_METAPHORS: Record<ReachDomain, string> = {
+  iron: 'steel and shield — an edge, a guard, a braced stance',
+  gold: 'coin and scales — weight, balance, the ledger',
+  shadow: 'candle and dark — what the light does and does not reach',
+  veil: 'mist and mask — a face half-shown, a shape resolving or dissolving',
+  heart: 'hearth and hands — warmth held, offered, or withdrawn',
+  eye: 'lens and light — focus gathering or scattering',
+  stone: 'wall and foundation — courses laid true, or a crack running',
+  star: 'sky and omen — a sign read off the dark',
+};
+
+// ── The library (art that exists) ───────────────────────────────────
+
+/**
+ * Encounter hero art, `public/concept-art/encounters/`. These 19 shipped with
+ * the branching encounters and are registered here so the resolver can serve
+ * them by tag as well as by each encounter's literal `illustrationUrl`.
+ *
+ * All are encounter-specific (`genericity: null`) — they name a situation the
+ * player recognises, which is exactly what disqualifies them from the generic
+ * pool. They are reachable only by exact tag.
+ */
+const BRANCHING_HERO_ART: readonly EncounterImageEntry[] = [
+  {
+    id: 'encounter.flawed-steel',
+    path: '/concept-art/encounters/flawed-steel.jpg',
+    kind: 'scene',
+    concepts: ['forge', 'flaw', 'craft', 'blade'],
+    reach: 'iron',
+    places: ['settlement'],
+    mood: 'tense',
+    genericity: null,
+  },
+  {
+    id: 'encounter.gate-duty',
+    path: '/concept-art/encounters/gate-duty.jpg',
+    kind: 'scene',
+    concepts: ['gate', 'watch', 'duty', 'threshold'],
+    reach: 'iron',
+    places: ['settlement'],
+    mood: 'tense',
+    genericity: null,
+  },
+  {
+    id: 'encounter.pilgrims-offering',
+    path: '/concept-art/encounters/pilgrims-offering.jpg',
+    kind: 'scene',
+    concepts: ['offering', 'pilgrim', 'devotion', 'altar'],
+    reach: 'heart',
+    places: ['shrine'],
+    mood: 'solemn',
+    genericity: null,
+  },
+  {
+    id: 'encounter.road-ambush',
+    path: '/concept-art/encounters/road-ambush.jpg',
+    kind: 'scene',
+    concepts: ['ambush', 'road', 'violence', 'surprise'],
+    reach: 'iron',
+    places: ['road', 'wilderness'],
+    mood: 'ominous',
+    genericity: null,
+  },
+  {
+    id: 'encounter.shadow-court-audience',
+    path: '/concept-art/encounters/shadow-court-audience.jpg',
+    kind: 'scene',
+    concepts: ['court', 'audience', 'intrigue', 'petition'],
+    reach: 'shadow',
+    places: ['court'],
+    mood: 'ominous',
+    genericity: null,
+  },
+  {
+    id: 'encounter.soul-ferryman',
+    path: '/concept-art/encounters/soul-ferryman.jpg',
+    kind: 'scene',
+    concepts: ['crossing', 'death', 'ferry', 'passage'],
+    reach: 'veil',
+    places: ['river'],
+    mood: 'solemn',
+    genericity: null,
+  },
+  {
+    id: 'encounter.the-blinded-oracle',
+    path: '/concept-art/encounters/the-blinded-oracle.png',
+    kind: 'scene',
+    concepts: ['oracle', 'prophecy', 'blindness', 'sight'],
+    reach: 'star',
+    places: ['shrine'],
+    mood: 'wondrous',
+    genericity: null,
+  },
+  {
+    id: 'encounter.the-executioners-commission',
+    path: '/concept-art/encounters/the-executioners-commission.png',
+    kind: 'scene',
+    concepts: ['execution', 'commission', 'judgement', 'sentence'],
+    reach: 'iron',
+    places: ['settlement'],
+    mood: 'ominous',
+    genericity: null,
+  },
+  {
+    id: 'encounter.the-infiltrators-approach',
+    path: '/concept-art/encounters/the-infiltrators-approach.webp',
+    kind: 'scene',
+    concepts: ['infiltration', 'stealth', 'approach', 'trespass'],
+    reach: 'shadow',
+    places: ['settlement'],
+    mood: 'tense',
+    genericity: null,
+  },
+  {
+    id: 'encounter.the-jury-of-the-ruined',
+    path: '/concept-art/encounters/the-jury-of-the-ruined.png',
+    kind: 'scene',
+    concepts: ['judgement', 'ruin', 'jury', 'reckoning'],
+    reach: 'stone',
+    places: ['ruin'],
+    mood: 'desolate',
+    genericity: null,
+  },
+  {
+    id: 'encounter.the-merchants-favor',
+    path: '/concept-art/encounters/the-merchants-favor.webp',
+    kind: 'scene',
+    concepts: ['bargain', 'favor', 'trade', 'debt'],
+    reach: 'gold',
+    places: ['market'],
+    mood: 'neutral',
+    genericity: null,
+  },
+  {
+    id: 'encounter.the-oracle-consulted',
+    path: '/concept-art/encounters/the-oracle-consulted.webp',
+    kind: 'scene',
+    concepts: ['oracle', 'consultation', 'prophecy', 'question'],
+    reach: 'star',
+    places: ['shrine'],
+    mood: 'wondrous',
+    genericity: null,
+  },
+  {
+    id: 'encounter.the-renowned-duel',
+    path: '/concept-art/encounters/the-renowned-duel.webp',
+    kind: 'scene',
+    concepts: ['duel', 'renown', 'combat', 'audience'],
+    reach: 'iron',
+    places: ['settlement'],
+    mood: 'tense',
+    genericity: null,
+  },
+  {
+    id: 'encounter.the-silent-chamber',
+    path: '/concept-art/encounters/the-silent-chamber.png',
+    kind: 'scene',
+    concepts: ['silence', 'chamber', 'secret', 'vault'],
+    reach: 'shadow',
+    places: ['underground'],
+    mood: 'ominous',
+    genericity: null,
+  },
+  {
+    id: 'encounter.the-star-pilgrim',
+    path: '/concept-art/encounters/the-star-pilgrim.webp',
+    kind: 'scene',
+    concepts: ['pilgrimage', 'star', 'omen', 'journey'],
+    reach: 'star',
+    places: ['wilderness'],
+    mood: 'wondrous',
+    genericity: null,
+  },
+  {
+    id: 'encounter.the-stones-judgement',
+    path: '/concept-art/encounters/the-stones-judgement.jpg',
+    kind: 'scene',
+    concepts: ['judgement', 'stone', 'endurance', 'verdict'],
+    reach: 'stone',
+    places: ['ruin'],
+    mood: 'solemn',
+    genericity: null,
+  },
+  {
+    id: 'encounter.the-unmarked-crossing',
+    path: '/concept-art/encounters/the-unmarked-crossing.png',
+    kind: 'scene',
+    concepts: ['crossing', 'border', 'unmarked', 'passage'],
+    reach: 'veil',
+    places: ['road', 'river'],
+    mood: 'tense',
+    genericity: null,
+  },
+  {
+    id: 'encounter.the-veiled-consultation',
+    path: '/concept-art/encounters/the-veiled-consultation.jpg',
+    kind: 'scene',
+    concepts: ['consultation', 'veil', 'secrecy', 'counsel'],
+    reach: 'veil',
+    places: ['court'],
+    mood: 'ominous',
+    genericity: null,
+  },
+  {
+    id: 'encounter.warlords-tribute',
+    path: '/concept-art/encounters/warlords-tribute.jpg',
+    kind: 'scene',
+    concepts: ['tribute', 'warlord', 'submission', 'levy'],
+    reach: 'iron',
+    places: ['court', 'siege'],
+    mood: 'ominous',
+    genericity: null,
+  },
+];
+
+/**
+ * Terrain plates from `public/concept-art/`, promoted into the library as the
+ * wilderness scene generics. These already ship, already read as place-not-event
+ * (no agent, no named entity), and cover the outdoor half of the scene library
+ * that WS5's road/wilderness families need — so the generation plan does not
+ * need to re-make them.
+ */
+const TERRAIN_SCENE_GENERICS: readonly EncounterImageEntry[] = [
+  {
+    id: 'scene.wilderness.forest',
+    path: '/concept-art/temperate-forest.png',
+    kind: 'scene',
+    concepts: ['forest', 'wilderness', 'travel', 'cover'],
+    places: ['wilderness', 'road'],
+    mood: 'neutral',
+    genericity:
+      'Any wooded-country encounter: a road-side halt, a forage, a tracking scene.',
+  },
+  {
+    id: 'scene.wilderness.deep-forest',
+    path: '/concept-art/dense-forest.png',
+    kind: 'scene',
+    concepts: ['forest', 'depth', 'wilderness', 'lost'],
+    places: ['wilderness'],
+    mood: 'ominous',
+    genericity:
+      'Any encounter where the woods themselves are the pressure: losing a trail, a hunt, an ambush.',
+  },
+  {
+    id: 'scene.wilderness.mountains',
+    path: '/concept-art/mountains.png',
+    kind: 'scene',
+    concepts: ['mountain', 'height', 'passage', 'hardship'],
+    places: ['wilderness', 'road'],
+    mood: 'desolate',
+    genericity:
+      'Any high-country encounter: a pass crossing, a mine approach, a hermitage.',
+  },
+  {
+    id: 'scene.wilderness.hills',
+    path: '/concept-art/hills.png',
+    kind: 'scene',
+    concepts: ['hills', 'open_country', 'travel', 'vantage'],
+    places: ['wilderness', 'road'],
+    mood: 'neutral',
+    genericity:
+      'Any open-country encounter: a herding scene, a march, a watch from a rise.',
+  },
+  {
+    id: 'scene.wilderness.grassland',
+    path: '/concept-art/grassland.png',
+    kind: 'scene',
+    concepts: ['plain', 'open_country', 'travel', 'exposure'],
+    places: ['wilderness', 'road'],
+    mood: 'neutral',
+    genericity:
+      'Any lowland-open encounter: a caravan, a muster ground, a chase with nowhere to hide.',
+  },
+  {
+    id: 'scene.wilderness.swamp',
+    path: '/concept-art/swamp.png',
+    kind: 'scene',
+    concepts: ['swamp', 'mire', 'decay', 'concealment'],
+    places: ['wilderness', 'river'],
+    mood: 'ominous',
+    genericity:
+      'Any wetland encounter: a bog crossing, a smuggler hide, a plague source.',
+  },
+  {
+    id: 'scene.wilderness.desert',
+    path: '/concept-art/desert.png',
+    kind: 'scene',
+    concepts: ['desert', 'thirst', 'exposure', 'emptiness'],
+    places: ['wilderness', 'road'],
+    mood: 'desolate',
+    genericity:
+      'Any arid encounter: a water dispute, a long crossing, a ruin half-buried.',
+  },
+  {
+    id: 'scene.wilderness.tundra',
+    path: '/concept-art/tundra.png',
+    kind: 'scene',
+    concepts: ['cold', 'exposure', 'endurance', 'emptiness'],
+    places: ['wilderness', 'road'],
+    mood: 'desolate',
+    genericity:
+      'Any cold-country encounter: a winter march, a shelter sought, a frozen crossing.',
+  },
+  {
+    id: 'scene.wilderness.badlands',
+    path: '/concept-art/badlands.png',
+    kind: 'scene',
+    concepts: ['badlands', 'broken_ground', 'hardship', 'refuge'],
+    places: ['wilderness', 'ruin'],
+    mood: 'desolate',
+    genericity:
+      'Any broken-country encounter: a bandit hold, a hard passage, an outcast camp.',
+  },
+  {
+    id: 'scene.wilderness.jungle',
+    path: '/concept-art/jungle.png',
+    kind: 'scene',
+    concepts: ['jungle', 'overgrowth', 'concealment', 'fever'],
+    places: ['wilderness'],
+    mood: 'ominous',
+    genericity:
+      'Any deep-growth encounter: an overgrown ruin, a fever camp, a path cut by hand.',
+  },
+  {
+    id: 'scene.wilderness.boreal',
+    path: '/concept-art/boreal-forest.png',
+    kind: 'scene',
+    concepts: ['forest', 'cold', 'timber', 'isolation'],
+    places: ['wilderness'],
+    mood: 'solemn',
+    genericity:
+      'Any northern-wood encounter: a logging camp, a trapper line, a shrine in the pines.',
+  },
+  {
+    id: 'scene.sea.open',
+    path: '/concept-art/ocean.png',
+    kind: 'scene',
+    concepts: ['sea', 'voyage', 'storm', 'horizon'],
+    places: ['sea'],
+    mood: 'wondrous',
+    genericity:
+      'Any water-voyage encounter: a crossing, a wreck, a sighting from a deck.',
+  },
+];
+
+/**
+ * The full library. Ordered by category for readability; the resolver sorts by
+ * score and then by `id`, so declaration order is never load-bearing (NFP #3).
+ */
+export const ENCOUNTER_IMAGE_LIBRARY: readonly EncounterImageEntry[] = [
+  ...BRANCHING_HERO_ART,
+  ...TERRAIN_SCENE_GENERICS,
+];
+
+/**
+ * Category fallbacks — the "category generic" rung of the resolve chain. When a
+ * tag query finds nothing above `IMAGE_MATCH_MIN_SCORE`, the resolver serves the
+ * kind's generic rather than dropping straight to the gradient tile.
+ *
+ * `nudge`, `fate` and `portrait` have no category generic yet; their entries are
+ * absent rather than pointed at a stand-in, so those kinds degrade honestly to
+ * EntityVisual until batch 1 lands.
+ */
+export const ENCOUNTER_IMAGE_CATEGORY_GENERIC: Partial<
+  Record<EncounterImageKind, string>
+> = {
+  scene: 'scene.wilderness.hills',
+};
+
+// ── The generation worklist (art that does not exist yet) ───────────
+
+/** Outcome bands, in ladder order, for fate-slot generation. */
+const FATE_BANDS: readonly StepOutcome[] = [
+  'critical_success',
+  'success',
+  'success_at_cost',
+  'near_miss',
+  'failure',
+  'critical_failure',
+];
+
+/** Short per-band direction, composed with the Reach metaphor into a brief. */
+const FATE_BAND_DIRECTION: Record<StepOutcome, string> = {
+  critical_success: 'the metaphor at its fullest — whole, lit, decisive',
+  success: 'the metaphor holding true, unspectacular and sound',
+  success_at_cost: 'the metaphor intact but visibly paid for — chipped, scorched, short',
+  near_miss: 'the metaphor a hair from true — the gap is the subject',
+  failure: 'the metaphor failed plainly — dropped, guttered, unbalanced',
+  critical_failure: 'the metaphor broken past repair — shattered, extinguished, scattered',
+};
+
+function fateSlots(): readonly EncounterImagePlanSlot[] {
+  const slots: EncounterImagePlanSlot[] = [];
+  for (const reach of Object.keys(FATE_REACH_METAPHORS) as ReachDomain[]) {
+    for (const band of FATE_BANDS) {
+      slots.push({
+        id: `fate.${reach}.${band}`,
+        kind: 'fate',
+        concepts: ['fate', 'outcome', reach],
+        reach,
+        bands: [band],
+        genericity: `Every ${reach}-Reach step that resolves ${band}, across all encounters.`,
+        brief: `${FATE_REACH_METAPHORS[reach]}; ${FATE_BAND_DIRECTION[band]}. No agent present at all.`,
+        batch: 1,
+      });
+    }
+  }
+  return slots;
+}
+
+/**
+ * Nudge-card concept generics. These are the tags the exemplar fixture already
+ * writes (`generic.focus`, `generic.light`, …) plus the rest of the concept set
+ * the WS1 spec's hand-authoring guidance leans on. Every one clears the
+ * genericity bar by construction — they name a *kind of divine help*, which is
+ * encounter-independent.
+ */
+const NUDGE_CONCEPT_SLOTS: readonly EncounterImagePlanSlot[] = [
+  ['generic.focus', 'mind', 'steadiness arriving in a hand or an eye — a tremor going out of things', 'focus'],
+  ['generic.light', 'light', 'a light waking where there was not enough of it', 'illumination'],
+  ['generic.dark', 'darkness', 'dark closing helpfully over something that needed hiding', 'concealment'],
+  ['generic.luck', 'chaos', 'a coin, a die, a hinge — the moment before it falls the right way', 'luck'],
+  ['generic.oath', 'order', 'a binding made visible — a knot, a seal, a clasped grip', 'oath'],
+  ['generic.strength', 'force', 'a surge of strength in something inanimate — a beam holding, a rope going taut', 'strength'],
+  ['generic.blessing', 'spirit', 'a warmth settling over an object, unmistakably given', 'blessing'],
+  ['generic.time-slow', 'time', 'a moment stretched — dust hanging, a drop not yet fallen', 'time'],
+  ['generic.memory', 'mind', 'something remembered surfacing — an old mark read again, a habit returning', 'memory'],
+  ['generic.ward', 'order', 'a ward holding — a drawn line that something does not cross', 'ward'],
+  ['generic.rumor', 'mind', 'word travelling — a whisper passing between unseen mouths', 'rumor'],
+  ['generic.warmth', 'life', 'a hearth-warmth reaching someone cold', 'warmth'],
+  ['generic.vigor', 'life', 'exhaustion lifting from a body — breath coming back', 'vigor'],
+  ['generic.decay', 'entropy', 'something giving way exactly where it was needed to', 'decay'],
+  ['generic.matter', 'matter', 'material answering — stone or iron becoming briefly obliging', 'substance'],
+  ['generic.energy', 'energy', 'a charge gathering in air or metal', 'energy'],
+].map(([id, sphere, brief, concept]) => ({
+  id: id as string,
+  kind: 'nudge' as const,
+  concepts: [concept as string, 'nudge', 'divine_help'],
+  sphere: sphere as SphereName,
+  mood: 'wondrous' as const,
+  genericity: `Any encounter whose step turns on ${concept}; ${GENERIC_POOL_UNRELATED_ENCOUNTERS_MIN}+ unrelated families use it.`,
+  brief: `${brief}. Object- or effect-centred; agents absent or silhouetted only.`,
+  batch: 2,
+}));
+
+/**
+ * Scene generics the terrain plates do not already cover — the built and social
+ * places. The outdoor half is served by `TERRAIN_SCENE_GENERICS` above, which is
+ * why this list is ~14 rather than the ticket's ~60: promoting shipped terrain
+ * art removed most of the wilderness half of that estimate.
+ */
+const SCENE_SLOTS: readonly EncounterImagePlanSlot[] = [
+  ['scene.guild_hall', 'guild_hall', 'a guild hall interior — benches, a ledger board, the tools of one trade', 'solemn'],
+  ['scene.tavern', 'tavern', 'a tavern common room after dark — fire, spilled light, empty chairs', 'warm'],
+  ['scene.market', 'market', 'a market at trade — stalls, scales, goods stacked', 'neutral'],
+  ['scene.court', 'court', 'a hall of audience — a dais, a long approach, hard light', 'tense'],
+  ['scene.shrine', 'shrine', 'a shrine interior — offering shelf, smoke, worn stone', 'solemn'],
+  ['scene.ruin', 'ruin', 'a ruin half-reclaimed — fallen courses, growth in the joints', 'desolate'],
+  ['scene.siege', 'siege', 'siege works before a wall — engines, earth, waiting', 'ominous'],
+  ['scene.road', 'road', 'a road running out of frame — milestone, ruts, weather coming', 'neutral'],
+  ['scene.river', 'river', 'a river crossing — ford or ferry-post, current reading fast', 'tense'],
+  ['scene.settlement', 'settlement', 'a settlement seen from its edge — roofs, smoke, a gate', 'neutral'],
+  ['scene.underground', 'underground', 'a worked underground space — cut stone, a held lamp\'s reach', 'ominous'],
+  ['scene.wilds_camp', 'wilds_camp', 'a camp in open country — banked fire, packs, dark beyond', 'tense'],
+  ['scene.rebuild', 'settlement', 'rebuilding after loss — scaffold, fresh timber against burnt', 'warm'],
+  ['scene.aftermath', 'settlement', 'the ground after an event — trampled, emptied, still lit', 'desolate'],
+].map(([id, place, brief, mood]) => ({
+  id: id as string,
+  kind: 'scene' as const,
+  concepts: [(id as string).split('.')[1], 'place'],
+  places: [place as EncounterImagePlace],
+  mood: mood as EncounterImageMood,
+  genericity: `Any encounter staged at a ${(place as string).replace('_', ' ')}; the linear template families reuse it across ${GENERIC_POOL_UNRELATED_ENCOUNTERS_MIN}+ unrelated situations.`,
+  brief: `${brief}. No named entity; agents absent or silhouetted.`,
+  batch: 3,
+}));
+
+/**
+ * Generic archetype portraits. The approved plain-hooded-traveler baseline is
+ * the first row; the rest extend it across the role vocabulary the cast lists
+ * actually draw on.
+ */
+const PORTRAIT_SLOTS: readonly EncounterImagePlanSlot[] = [
+  'traveler',
+  'soldier',
+  'merchant',
+  'priest',
+  'scholar',
+  'labourer',
+  'noble',
+  'outlaw',
+  'healer',
+  'crafter',
+  'sailor',
+  'farmer',
+  'guard',
+  'beggar',
+  'elder',
+  'child',
+].map((role, index) => ({
+  id: `portrait.${role}`,
+  kind: 'portrait' as const,
+  concepts: [role, 'portrait', 'archetype'],
+  mood: 'neutral' as const,
+  genericity: `Any unportrayed agent reading as a ${role}; deliberately unspecific so it never contradicts a named identity.`,
+  brief: `A generic ${role}, three-quarter view, face shadowed enough to stay unspecific. Plain hooded traveler is the approved baseline (#1).`,
+  batch: index === 0 ? 1 : 4,
+}));
+
+/**
+ * The full generation worklist. Batches ship in ascending order; a batch is
+ * complete when every slot in it has a matching `ENCOUNTER_IMAGE_LIBRARY` row
+ * and the plan entry has been deleted. `check:image-library` reports progress.
+ */
+export const ENCOUNTER_IMAGE_PLAN: readonly EncounterImagePlanSlot[] = [
+  ...fateSlots(),
+  ...NUDGE_CONCEPT_SLOTS,
+  ...SCENE_SLOTS,
+  ...PORTRAIT_SLOTS,
+];
