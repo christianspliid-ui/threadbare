@@ -1,6 +1,6 @@
 # Briefing
 
-**Generated:** 2026-07-28 03:54 local (2026-07-28 01:54 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-07-28 04:54 local (2026-07-28 02:54 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
@@ -10,35 +10,31 @@ This is your inbox. It's rewritten every hour by a Claude Code task. Standing sw
 
 ## Queue
 
-**22 jobs ready — none top-priority, five middling, seventeen minor. Nothing in flight right now. Nothing stale, nothing blocked.**
+**21 jobs ready — none top-priority, four middling, seventeen minor. One job in flight. Nothing stale, nothing blocked.**
 
-Depth went 21 → 22, and the composition is the honest reading: **one job finished and one new note-to-self was written under it.** That is the same wash this file has described for most of the week — the crew ships a thing, notices the next thing while shipping it, and writes it down. The number stays flat because arrivals are the crew's own findings, not requests piling up.
+Depth went 22 → 21, and this time it is a clean drain rather than the usual wash: **a job was picked up and nothing new was written underneath it.** The picture work claimed at 04:02 came off the shelf and no fresh note-to-self replaced it.
 
-**Nothing is being worked right now**, and that is a gap between jobs rather than a stall: the picture library finished at 03:21 and the next pickup is at 04:00. The crew correctly stood down at 03:00 because the bench was still occupied.
-
-**Still no top-priority job on the board** — seventh hour running. Seventeen of the twenty-two are minor loose ends found in passing, so "backed up" remains a threshold artefact rather than an alarm.
+**Still no top-priority job on the board** — eighth hour running. Seventeen of the twenty-one are minor loose ends the crew found while doing other things, so "backed up" stays a threshold artefact rather than an alarm.
 
 ## Freshness
 
-**Home tree: right branch, fully current, nothing stranded.** The same two harmless leftovers — permission entries a past session added to the tool config — and Friday's retro draft still outside version control with an owner.
+**Home tree: right branch, nothing stranded, four minutes behind the newest merge** — that is autosync working, not lag worth acting on. The same two harmless leftovers (permission entries a past session added to the tool config) and Friday's retro draft still outside version control, with an owner.
 
-**Cleanup reaper: alive, ran at 03:40, clean, nothing awaiting a human decision.** **Discord: nothing new from you**, so no reply was owed and none was sent.
+**Cleanup reaper: alive, ran at 04:40, clean, nothing awaiting a human decision.** **Discord: nothing new from you**, so no reply was owed and none was sent.
 
 ## What's moving
 
-**The picture library for the encounter screens is built, and the first real batch of pictures is landing right now.**
+**The encounter pictures now cover the nudge cards — the small illustrated choices you hand a mortal at a turning point.**
 
-The catalogue itself — the list of images and the rule for which one a moment gets — merged at 03:21 after about an hour and twenty minutes of work. **The pictures followed in a second delivery at 03:58**: the forty-eight fate images (how a moment *turned out*, drawn differently for each of the eight Reaches, so a failed Iron scene doesn't look like a failed Gold one) plus the plain hooded-traveler portrait that everything else will be styled against. Fifty-seven files, all landed.
+Batch two landed at 04:50: **sixteen concept pictures**, one per kind of nudge a god can offer — *focus* (a hand holding a needle still, the tremor going out of it), *light* (a guttering lamp waking in a black passage), *oath* (clasped forearms and a plain wax seal), *strength* (a roof-beam bowing under fallen stone and holding). Until this merged, every nudge card fell back to a coloured gradient. **They now show real art.**
 
-*(That second delivery was still mid-test at 03:54 when this brief was assembled, and merged four minutes later. Corrected here rather than left for the next hour, because "landing" and "landed" are not the same thing to read over coffee.)*
+**Twenty-nine pictures remain** — fourteen scene backdrops and fifteen character portraits — and the job stays open on the board while they are made. That is correct rather than a stall: it was written as one job delivered in batches, and it finishes when the last picture exists. Batch two took forty-seven minutes from pickup to merged.
 
-**The remaining forty-five picture slots were written down as their own follow-on job**, so nothing is being forgotten. **One board quirk worth knowing:** the job has read as finished since 03:21, because the catalogue delivery carried the closing marker while the artwork was still in the air. Nothing was wrong — one job, two deliveries — but "done" on the board and "landed" in the game can be half an hour apart.
+**The crew member that decides what to work on next has now missed six check-ins, and this hour adds nothing new to the picture.**
 
-**The crew member that decides what to work on next has now missed five check-ins, and this hour adds nothing new to the picture.**
+Its last recorded run is still 22:27 last night; six slots have come and gone since. Every other hourly routine clocked in normally throughout, including the one writing this. **This is the sixth identical reading, and a reading repeated is not a reading strengthened** — it is recorded flat, and nothing is concluded from the repetition that wasn't concluded from the first one.
 
-Its last recorded run is still 22:27 last night; five slots since have come and gone. Every other hourly routine clocked in normally throughout. **This is the fifth identical reading, and a reading repeated is not a reading strengthened** — it is recorded flat, and nothing is concluded from the repetition that wasn't concluded from the first one.
-
-**The deadline this file set itself is not moved forward, for the fifth time and on the same ground.** It falls at this morning's 10:56 run and stands unchanged. If the lane still hasn't fired by then, that is a scheduling fault to repair — not a judgement to revisit.
+**The deadline this file set itself is not moved forward, for the sixth time and on the same ground.** It falls at this morning's 10:56 run and stands unchanged. If the lane still hasn't fired by then, that is a scheduling fault to repair — not a judgement to revisit.
 
 ---
 *Standing asks live in [`Design/user-actions.md`](user-actions.md). This file is regenerated hourly by the `keep-work-flowing-cc` scheduled task; staleness is visible from the Generated timestamp above and the task's `lastRunAt` in `list_scheduled_tasks`.*
