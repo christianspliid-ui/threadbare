@@ -57,7 +57,12 @@ export const FAILURE_ARTIFACT_CATEGORY: Record<'failure' | 'critical_failure', H
 };
 
 /** Default encounter families that can surface a fallback failure mark. The failing template's
- * own family is appended at placement so a similar future encounter can reveal it. */
+ * own family is appended at placement so a similar future encounter can reveal it.
+ *
+ * THR-844: `investigation` matched zero templates until the alias layer landed — for a year
+ * this fallback was a third narrower than it reads. It now resolves through
+ * `REVEAL_FAMILY_ALIASES` to the ask-around/dig-it-up surface, which is what it always meant.
+ * `revealFamilyLiveness.test.ts` pins all three against the live pool. */
 export const FAILURE_ARTIFACT_REVEAL_FAMILIES: readonly string[] = ['social', 'investigation', 'faction'];
 
 /** Human-readable label for the fallback mark, by outcome band. */
