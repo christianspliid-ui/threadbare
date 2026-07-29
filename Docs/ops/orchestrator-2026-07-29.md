@@ -1,5 +1,55 @@
 # Orchestrator — 2026-07-29
 
+## Eighth run — 15:29Z update
+
+### Needs Christian
+
+Nothing needs you this run.
+
+### T1 — unblock sweep (15:29Z)
+
+**Scan:** `list_issues(state:"Todo", limit:50)` → 13 candidates. `list_issues(state:"Ready for Dev", limit:100)` → 44 items (21 `Deferral`, 23 non-`Deferral`) — above `QUEUE_BACKED_UP_MIN=15`, so the shelf-backup ceiling capped this run to **at most one promotion**.
+
+**Promoted (1, at the shelf-backup ceiling):**
+
+- **THR-850** ("tb-opus-pickup — the sole executor lane — has no repo prompt mirror") — no `Blocked by` line ever declared; a standalone ops/docs gap found by the THR-655 retro, filed today at 15:08Z (too new to have appeared in any prior sweep this run-day). Promoted → verified via `get_issue` (`stateHistory` shows Todo → Ready for Dev at 15:29:30.931Z, state stuck, no `assignee`/`assigneeId` field present — THR-845's update-path auto-assign bug did not fire on this write) → coordination-block comment posted (Suggested model: sonnet; Parallel-safe with: everything; Mutex with: none, flagged coordination with sibling THR-851 only if both picked up concurrently). Picked over its Low-priority, no-blocker siblings held back all day (THR-582, THR-766) on priority (Medium vs. Low) and blast radius — docs-only, no `src/` surface, Browser-verify exempt per its own text.
+
+**Declined — needs design finalization first (T2's input, not T1's):**
+
+- **THR-735** ("Armed-PR staleness sweep") — no blocker, still self-declares "design pass needed — do not pick one from this ticket alone."
+- **THR-790** / **THR-791** (Traits wave 2 / wave 3) — blocker THR-786 confirmed `Done` (completed 2026-07-26T10:55:17Z), but both self-declare their own design-finalization gate.
+
+**Declined — staging/tracking containers, not implementable units:**
+
+- **THR-772** (Nudge Model program epic), **THR-778** (WS5 content-migration container), **THR-789** (Traits program epic) — all three explicitly self-declare as containers.
+- **THR-838** (Nudge Model WS5 Batch 1 tracker) — unchanged from the 14:30Z read: stays in Todo as the burndown tracker per the 13:42Z run's explicit note; not re-promotable as-is.
+
+**Declined — other:**
+
+- **THR-680** ("Stash triage") — unchanged structural conflict (home-tree-only approach vs. THR-672's bar on scheduled sessions running git state ops against the home tree). See Escalations.
+- **THR-175** ("UI overhaul 08, agent.sphere field") — explicit `Status: DEFERRED`, unmet unblock trigger.
+- **THR-851** ("Scheduled-task registry audit — third direction, orphan prompt directories") — no blocker, filed today at 15:09Z alongside THR-850; held back by the ceiling this run (THR-850 taken as the single slot on Medium > Low priority — both are siblings from the same THR-655 retro).
+
+**Held back by the shelf-backup ceiling (no blocker, unchanged from prior sweeps today):**
+
+- **THR-582** ("Migrate remaining ~46 inline phases to runInlinePhase") — mechanical tail of THR-580, no blockers. Held back every run today; strongest next-run candidate along with THR-766.
+- **THR-766** ("Tune the god's cast power curve") — parent THR-728 confirmed Done; bounded tuning pass, no blockers. Held back every run today.
+- The WS5 partition's remaining unfiled cells (1a hamlet/12, 1b civic seats/8, 1c wayside & wild/7, 1d sacred & arcane sites/8) plus two structural one-offs (`encounter.apotheosis.ascension`, `encounter.shell_proof.fate_card_trial`) — recorded in the THR-838 comment thread from the 13:42Z run, unchanged this run.
+
+### T2 — design authoring (15:29Z)
+
+**Not triggered.** Ready for Dev holds 23 non-`Deferral` items after this run's promotion — well above the floor of 2.
+
+### T3 — architecture health (15:29Z)
+
+**Skipped — already ran today.** First daily sweep completed at 13:42Z (this file, "Sixth run" section below). Not re-run.
+
+### Escalations (15:29Z)
+
+- **THR-680 execution-model conflict** (unchanged from 14:30Z run): the ticket's only stated approach requires home-tree git state ops, which THR-672 prohibits for every scheduled session. Parked, not blocking the rest of this run.
+
+---
+
 ## Seventh run — 14:30Z update
 
 ### Needs Christian
