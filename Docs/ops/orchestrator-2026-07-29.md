@@ -1,5 +1,54 @@
 # Orchestrator — 2026-07-29
 
+## Ninth run — 16:28Z update
+
+### Needs Christian
+
+Nothing needs you this run.
+
+### T1 — unblock sweep (16:28Z)
+
+**Scan:** `list_issues(state:"Todo", limit:50)` → 12 candidates. `list_issues(state:"Ready for Dev", limit:100)` → 44 items (21 `Deferral`, 23 non-`Deferral`) — above `QUEUE_BACKED_UP_MIN=15`, so the shelf-backup ceiling capped this run to **at most one promotion**.
+
+**Promoted (1, at the shelf-backup ceiling):**
+
+- **THR-851** ("scheduled-task registry audit third direction — orphan prompt directories") — no `Blocked by` line ever declared; filed 2026-07-29 15:09Z alongside sibling THR-850, held back by the ceiling every run since (THR-850 took the 15:29Z slot). Re-checked the two other eligible no-blocker Low-priority Todo candidates (THR-582, THR-766) against this one on blast radius: THR-582 and THR-766 both edit central engine surfaces (`orchestrator.ts` inline phases; `player-cast-constants.ts` tuning), THR-851 is docs/ops-only with an explicit Browser-verify exemption in its own text. Promoted → verified via `get_issue` (`stateHistory` shows Todo → Ready for Dev at 16:28:32.010Z, state stuck, no `assignee`/`assigneeId` field present — THR-845's auto-assign bug did not fire) → coordination-block comment posted (Suggested model: sonnet; Parallel-safe with: everything currently queued; Mutex with: THR-850, both touch `Docs/ops/scheduled-tasks-registry.md`).
+
+**Declined — needs design finalization first (T2's input, not T1's):**
+
+- **THR-735** ("Armed-PR staleness sweep") — no blocker, still self-declares "design pass needed — do not pick one from this ticket alone."
+- **THR-790** / **THR-791** (Traits wave 2 / wave 3) — blocker THR-786 confirmed `Done`, but both self-declare their own design-finalization gate.
+
+**Declined — staging/tracking containers, not implementable units:**
+
+- **THR-772** (Nudge Model program epic), **THR-778** (WS5 content-migration container), **THR-789** (Traits program epic) — all three explicitly self-declare as containers.
+- **THR-838** (Nudge Model WS5 Batch 1 tracker) — unchanged; stays in Todo as the burndown tracker per the 13:42Z run's note.
+
+**Declined — other:**
+
+- **THR-680** ("Stash triage") — re-confirmed live: `git stash list` from this worktree still shows only **2** entries. Unchanged structural conflict with THR-672 (home-tree-only approach). See Escalations.
+- **THR-175** ("UI overhaul 08, agent.sphere field") — explicit `Status: DEFERRED`, unmet unblock trigger.
+
+**Held back by the shelf-backup ceiling (no blocker, unchanged from prior sweeps today):**
+
+- **THR-582** ("Migrate remaining ~46 inline phases to runInlinePhase") — mechanical tail of THR-580, no blockers. Held back every run today.
+- **THR-766** ("Tune the god's cast power curve") — parent THR-728 confirmed Done; bounded tuning pass, no blockers. Held back every run today.
+- The WS5 partition's remaining unfiled cells and two structural one-offs — unchanged from the THR-838 comment thread, recorded in prior runs.
+
+### T2 — design authoring (16:28Z)
+
+**Not triggered.** Ready for Dev holds 23 non-`Deferral` items after this run's promotion (THR-851 carries the `Deferral` label, so it doesn't add to this count) — well above the floor of 2.
+
+### T3 — architecture health (16:28Z)
+
+**Skipped — already ran today.** First daily sweep completed at 13:42Z (this file, "Sixth run" section below). Not re-run.
+
+### Escalations (16:28Z)
+
+- **THR-680 execution-model conflict** (unchanged): the ticket's only stated approach requires home-tree git state ops, which THR-672 prohibits for every scheduled session. Parked, not blocking the rest of this run.
+
+---
+
 ## Eighth run — 15:29Z update
 
 ### Needs Christian
