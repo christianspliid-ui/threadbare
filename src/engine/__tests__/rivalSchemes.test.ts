@@ -13,6 +13,7 @@ import {
   RIVAL_SCHEME_FAMILIES,
   CORRUPTIVE_FAMILY,
   ECONOMIC_FAMILY,
+  PROFANE_FAMILY,
 } from '../../data/rival-schemes';
 import { enableTracing, clearTraces, getTraces } from '../traceBuffer';
 import { WorldGraph } from '../graph';
@@ -167,14 +168,17 @@ describe('eligibleSchemeFamilies', () => {
   });
 
   // Was "only ships corruptive + territorial (economic split to THR-619)" —
-  // THR-619 landed the economic family, so the registry is now three.
-  it('ships corruptive + territorial + economic', () => {
+  // THR-619 landed the economic family and THR-621 the profane one, so the
+  // registry is now four.
+  it('ships corruptive + territorial + economic + profane', () => {
     expect(RIVAL_SCHEME_FAMILIES.map((f) => f.id).sort()).toEqual([
       'corruptive',
       'economic',
+      'profane',
       'territorial',
     ]);
     expect(getRivalSchemeFamily('economic')).toBeDefined();
+    expect(getRivalSchemeFamily('profane')).toBeDefined();
   });
 });
 
@@ -355,6 +359,236 @@ function addStockedLocation(
     },
   } as GraphNode);
 }
+
+// ─── Profane family (THR-621) ──────────────────────────────────────
+
+/** Give the ascendant a controlled essence source on its own hex. */
+function addControlledSource(
+  graph: WorldGraph,
+  id: string,
+  col: number,
+  row: number,
+  src: Partial<import('../../types/essenceSource').EssenceSource> = {},
+): void {
+  graph.addNode({
+    id,
+    type: 'location',
+    name: id,
+    properties: {
+      hexCol: col,
+      hexRow: row,
+      name: id,
+      essenceSource: {
+        kind: 'shrine',
+        sphereAffinity: 'force',
+        sanctity: 0.8,
+        tier: 'flowering',
+        discoveredBy: 'asc-1',
+        ...src,
+      },
+    },
+  } as GraphNode);
+  graph.addEdge({
+    id: `edge_controls_${id}`,
+    source: 'asc-1',
+    target: id,
+    type: 'controls',
+    properties: {},
+  });
+}
+
+describe('profane family — eligibility gates on the player holding a source', () => {
+  it('is absent when the player holds no contestable source', () => {
+    expect(eligibleSchemeFamilies('subtle', 3, true, false).map((f) => f.id)).not.toContain(
+      'profane',
+    );
+  });
+
+  it('appears once the player holds one', () => {
+    expect(eligibleSchemeFamilies('subtle', 3, true, true).map((f) => f.id)).toContain('profane');
+  });
+
+  it('defaults to ineligible when the caller does not measure the world', () => {
+    expect(eligibleSchemeFamilies('aggressive', 3).map((f) => f.id)).not.toContain('profane');
+  });
+
+  it('stays behind its escalation tier — a tier-0 rival does not reach for sources', () => {
+    expect(eligibleSchemeFamilies('aggressive', 0, true, true).map((f) => f.id)).not.toContain(
+      'profane',
+    );
+    expect(eligibleSchemeFamilies('aggressive', 1, true, true).map((f) => f.id)).toContain(
+      'profane',
+    );
+  });
+});
+
+describe('profane family — the arc actually moves a source', () => {
+  it('drives dormant/flowering → contested → desecrated across the scheme arc', () => {
+    const rival = makeRival('actor_rival_1', 'aggressive');
+    const state = makeState({
+      doomClock: makeDoomClock(5), // high tier so profane is eligible + phases arm fast
+      rivalDefinitions: [rival],
+      rivalStates: [makeRivalState('actor_rival_1')],
+    });
+    addActor(state.graph, 'actor_rival_1');
+    addControlledSource(state.graph, 'shrine-1', 3, 3);
+
+    const readSrc = () =>
+      state.graph.getNode('shrine-1')!.properties.essenceSource as {
+        tier: string;
+        contestedBy?: string;
+        desecrated?: boolean;
+      };
+
+    expect(readSrc().tier).toBe('flowering');
+    expect(readSrc().contestedBy).toBeUndefined();
+
+    // Force the profane arc rather than waiting on the family lottery.
+    const plan = buildRivalScheme(
+      rival,
+      state.rivalStates[0],
+      PROFANE_FAMILY,
+      3,
+      state.tick,
+      'shrine-1',
+      'shrine-1',
+      () => 0.5,
+    );
+    state.activeCompositions = [plan.composition];
+    state.worldFlags = { ...state.worldFlags, ...plan.worldFlagUpdates };
+    state.rivalStates = [plan.updatedRivalState];
+
+    // Run the arc out. 4 beats, each gated behind an invest window.
+    for (let i = 0; i < 90; i++) runTick(state);
+
+    const src = readSrc();
+    expect(src.contestedBy).toBe('actor_rival_1');
+    expect(src.desecrated).toBe(true);
+    expect(src.tier).toBe('desecrated');
+
+    // The redirect is credited to the rival, not merely subtracted from the player.
+    expect(state.rivalStates[0].drainedEssence ?? 0).toBeGreaterThan(0);
+    expect(state.rivalStates[0].drainedSourceIds).toContain('shrine-1');
+  });
+
+  it('does not treat the player controlling the source as a counter (it is the premise)', () => {
+    // Regression guard: the generic counter check reads a `controls` edge from the
+    // ascendant to the target. A profane scheme's target is player-controlled BY
+    // DEFINITION, so an unguarded check would counter the scheme on tick one and
+    // it could never advance past its first beat.
+    const rival = makeRival('actor_rival_1', 'aggressive');
+    const state = makeState({
+      doomClock: makeDoomClock(5),
+      rivalDefinitions: [rival],
+      rivalStates: [makeRivalState('actor_rival_1')],
+    });
+    addActor(state.graph, 'actor_rival_1');
+    addControlledSource(state.graph, 'shrine-1', 3, 3);
+
+    const plan = buildRivalScheme(
+      rival,
+      state.rivalStates[0],
+      PROFANE_FAMILY,
+      3,
+      state.tick,
+      'shrine-1',
+      'shrine-1',
+      () => 0.5,
+    );
+    state.activeCompositions = [plan.composition];
+    state.worldFlags = { ...state.worldFlags, ...plan.worldFlagUpdates };
+    state.rivalStates = [plan.updatedRivalState];
+
+    for (let i = 0; i < 40; i++) runTick(state);
+
+    const comp = state.activeCompositions.find(
+      (c) => c.compositionId === plan.composition.compositionId,
+    );
+    expect(comp?.status).not.toBe('failed');
+    expect(comp!.activatedPhaseIds.length).toBeGreaterThan(1);
+  });
+
+  it('the Defend leg breaks the arc — warding before the crack leaves nothing to desecrate', () => {
+    const rival = makeRival('actor_rival_1', 'aggressive');
+    const state = makeState({
+      doomClock: makeDoomClock(5),
+      rivalDefinitions: [rival],
+      rivalStates: [makeRivalState('actor_rival_1')],
+    });
+    addActor(state.graph, 'actor_rival_1');
+    addControlledSource(state.graph, 'shrine-1', 3, 3);
+
+    const plan = buildRivalScheme(
+      rival,
+      state.rivalStates[0],
+      PROFANE_FAMILY,
+      3,
+      state.tick,
+      'shrine-1',
+      'shrine-1',
+      () => 0.5,
+    );
+    state.activeCompositions = [plan.composition];
+    state.worldFlags = { ...state.worldFlags, ...plan.worldFlagUpdates };
+    state.rivalStates = [plan.updatedRivalState];
+
+    const readSrc = () =>
+      state.graph.getNode('shrine-1')!.properties.essenceSource as {
+        contestedBy?: string;
+        desecrated?: boolean;
+      };
+
+    // Run until the drain opens, then ward it the way the Defend op does.
+    let opened = false;
+    for (let i = 0; i < 90 && !opened; i++) {
+      runTick(state);
+      opened = readSrc().contestedBy === 'actor_rival_1';
+    }
+    expect(opened).toBe(true);
+
+    const host = state.graph.getNode('shrine-1')!;
+    state.graph.updateNode('shrine-1', {
+      properties: {
+        ...host.properties,
+        essenceSource: {
+          ...(host.properties.essenceSource as object),
+          contestedBy: undefined,
+          desecrated: false,
+          tier: 'flowering',
+        },
+      },
+    });
+
+    // Two counters fail the scheme (RIVAL_SCHEME_COUNTERS_TO_FAIL), with a stall
+    // window between them. Bounded deliberately: a rival whose scheme fails is
+    // free to launch a *fresh* profane arc at the same source later, and it will —
+    // warding buys the source back, it does not make it permanently immune. This
+    // window covers the warded arc only.
+    for (let i = 0; i < 30; i++) runTick(state);
+
+    // The ward registered as a counter — this is the family-aware counter path
+    // doing its job. (Asserted on traces rather than `activeCompositions`, which
+    // GCs terminal compositions out of the list.)
+    const countered = getTraces().filter(
+      (t) =>
+        t.category === 'rival.scheme_countered' &&
+        (t as unknown as Record<string, unknown>).compositionId ===
+          plan.composition.compositionId,
+    );
+    expect(countered.length).toBeGreaterThan(0);
+
+    // The crack beat of this arc found the source warded — nothing to desecrate.
+    // (A rival whose arc fails may launch a *fresh* one at the same source later;
+    // warding buys the source back, it does not make it permanently immune.)
+    expect(readSrc().desecrated).toBeFalsy();
+    const desecrations = getTraces().filter(
+      (t) =>
+        t.category === 'rival.scheme_source_desecrated' &&
+        (t as unknown as Record<string, unknown>).desecrated === true,
+    );
+    expect(desecrations).toHaveLength(0);
+  });
+});
 
 describe('economic family — eligibility gates on the stock substrate', () => {
   it('is absent from eligible families when the world has no stocks', () => {

@@ -21,6 +21,7 @@ import { StepDots } from '../shared/StepDots';
 import { getSublocationConceptArt } from '../../data/sublocation-concept-art';
 import { EntityVisual } from '../shared/EntityVisual';
 import type { TerrainType } from '../../types';
+import type { RivalDefinition } from '../../types/rival';
 import { useNarration } from '../../services/narration/useNarration';
 import { Play, Square, Loader2 } from 'lucide-react';
 import { INITIATIVE_TEMPLATE_MAP } from '../../data/initiative-templates';
@@ -57,6 +58,12 @@ interface LocationViewProps {
   runtime?: SimulationRuntime | null;
   /** Navigate to a ruin location on the map (reuses handleZoomToLocation from GameView) */
   onNavigateToRuin?: (locationId: string) => void;
+  /**
+   * Rival roster (THR-621) — used only to name the rival draining an essence
+   * source here. Optional/additive: absent ⇒ the drain line still renders, it
+   * just says "something" instead of naming the god.
+   */
+  rivalDefinitions?: RivalDefinition[];
 }
 
 // ──── Sub-component: Sublocation Card ────
@@ -791,6 +798,60 @@ const SublocationDetailView = memo(function SublocationDetailView({
   );
 });
 
+// ──── Sub-component: Source drain line (THR-621) ────
+// Names the rival bleeding this location's essence source, and what that costs.
+// This is the surface that satisfies "the player can identify *which rival* is
+// draining *which source* without reading code" — the map marker says a hex is
+// under attack, this says who and how far along.
+//
+// Prose-first (THR-609): no tier keyword, no numbers, no key:value label. Fog-
+// consistent — an undiscovered source stays silent, matching LivelihoodLine.
+const SourceDrainLine = memo(function SourceDrainLine({
+  location,
+  rivalDefinitions,
+}: {
+  location: GraphNode;
+  rivalDefinitions?: RivalDefinition[];
+}) {
+  const source = readEssenceSource(location.properties);
+  if (!source?.discoveredBy || !source.contestedBy) return null;
+
+  const rivalName =
+    rivalDefinitions?.find((r) => r.id === source.contestedBy)?.name ?? null;
+  const who = rivalName ?? 'Something you cannot yet name';
+
+  const text = source.desecrated
+    ? `${who} has profaned this source. Nothing here reaches you now — it will answer again only when you take it back and cleanse it.`
+    : `${who} has opened a drain on this source. What it gives you, it gives less of, and less again for every season the wound stays unwarded.`;
+
+  return (
+    <div className="mx-6 mt-3" style={{ maxWidth: '820px' }}>
+      <div
+        className="rounded-lg border px-4 py-3"
+        style={{
+          backgroundColor: 'var(--bg-raised)',
+          borderColor: source.desecrated ? 'var(--negative)' : 'var(--border-gold)',
+        }}
+      >
+        <p
+          className="uppercase"
+          style={{
+            fontSize: 'var(--text-xs)',
+            color: 'var(--text-tertiary)',
+            letterSpacing: '0.5px',
+            marginBottom: '0.35rem',
+          }}
+        >
+          {source.desecrated ? 'Desecrated' : 'Contested'}
+        </p>
+        <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)', lineHeight: '1.6' }}>
+          {text}
+        </p>
+      </div>
+    </div>
+  );
+});
+
 // ──── Sub-component: Livelihood line (THR-615) ────
 // Prose-first read of the location's resource stock tiers. No numbers — a
 // granary described as full or empty, with Famine/Glut as IPK keywords.
@@ -928,6 +989,7 @@ export const LocationView = memo(function LocationView({
   tick,
   runtime,
   onNavigateToRuin,
+  rivalDefinitions,
 }: LocationViewProps) {
   const terrainLabel = hexTerrain.charAt(0).toUpperCase() + hexTerrain.slice(1).replace(/_/g, ' ');
   // RC-041: Safe property access with type guard
@@ -1226,6 +1288,7 @@ export const LocationView = memo(function LocationView({
 
       {/* Livelihood line — resource stock tiers as prose (THR-615) */}
       <LivelihoodLine location={location} />
+      <SourceDrainLine location={location} rivalDefinitions={rivalDefinitions} />
 
       {/* Walls line — fortification state as prose (THR-628) */}
       <WallsLine location={location} />

@@ -91,3 +91,17 @@ export const RIVAL_SCHEME_ROUTE_CUT_INTEL_PENALTY = 0.25;
  * maps; the predicate short-circuits on the first stocked location anyway.
  */
 export const RIVAL_SCHEME_STOCK_SCAN_CAP = 200;
+
+// ─── Profane family (THR-621) ──────────────────────────────────────
+// The profane arc goes after the player's essence sources directly: it opens a
+// drain on a keystone holding and, if left unwarded, desecrates it outright.
+// These numbers are how long the player has to notice and ward before the
+// source is lost.
+
+/**
+ * Minimum escalation tier before a rival will reach for the player's essence
+ * sources. Set above 0 deliberately: a tier-0 rival gnawing on the player's
+ * economy from the first scheme launch reads as noise, not as escalation. The
+ * profane arc is what a rival does once it has taken the player seriously.
+ */
+export const RIVAL_SCHEME_PROFANE_MIN_TIER = 1;

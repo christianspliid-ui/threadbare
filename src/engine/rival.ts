@@ -300,8 +300,9 @@ export function worldHasResourceStocks(state: GameState): boolean {
  * Returns the chosen family, or null (meaning: make a cheap probe move instead).
  * Pure — consumes the seeded rival rng stream.
  *
- * `worldHasStocks` (THR-619) gates substrate-dependent families; defaults to
- * `false` so a caller that has not measured the world never launches one.
+ * `worldHasStocks` (THR-619) and `worldHasPlayerSource` (THR-621) gate
+ * substrate-dependent families; both default to `false` so a caller that has not
+ * measured the world never launches one.
  */
 export function selectRivalScheme(
   rival: RivalDefinition,
@@ -310,6 +311,7 @@ export function selectRivalScheme(
   launchTick: number,
   rng: () => number,
   worldHasStocks: boolean = false,
+  worldHasPlayerSource: boolean = false,
 ): { family: RivalSchemeFamily | null; reason: string } {
   // Capacity gate.
   const activeCount = (rivalState.activeSchemeIds ?? []).length;
@@ -331,7 +333,12 @@ export function selectRivalScheme(
   }
 
   // Eligibility.
-  const eligible = eligibleSchemeFamilies(rival.behavior, escalationTier, worldHasStocks);
+  const eligible = eligibleSchemeFamilies(
+    rival.behavior,
+    escalationTier,
+    worldHasStocks,
+    worldHasPlayerSource,
+  );
   if (eligible.length === 0) {
     return { family: null, reason: 'no-eligible-family' };
   }

@@ -27,6 +27,13 @@ import type { SphereName } from '../../types/index';
  *                  degrade the player's intelligence reliability for that region
  *                  (the Flow Web nervous-system coupling: a severed route makes a
  *                  region go dark). No-op when the location has no routes.
+ * - `contest_source`  — (THR-621) open a drain on the player's essence source at
+ *                  the target: sets `contestedBy`, flipping the source to the
+ *                  `contested` tier (income leaks, sanctity bleeds per tick). The
+ *                  counter-play surface: the shipped Defend leg clears it.
+ * - `desecrate_source`— (THR-621) terminal beat: profane a source this rival has
+ *                  held to the end of the arc. Sets `desecrated` (yield ×0, income
+ *                  redirects to the rival). No-op if the player warded it first.
  */
 export type RivalSchemeMoveKind =
   | 'rumor'
@@ -34,7 +41,9 @@ export type RivalSchemeMoveKind =
   | 'escalate'
   | 'crack'
   | 'drain_stock'
-  | 'sever_route';
+  | 'sever_route'
+  | 'contest_source'
+  | 'desecrate_source';
 
 /** One phase beat within a scheme family. */
 export interface RivalSchemeBeat {
@@ -75,6 +84,15 @@ export interface RivalSchemeFamily {
    * than launching and no-opping (fail-soft, NFP #4).
    */
   requiresStocks?: boolean;
+  /**
+   * Whether this family needs the player to hold a contestable essence source
+   * (THR-621). Absent/false = no such requirement. When true, the family is
+   * filtered out of `eligibleSchemeFamilies` unless the caller proves one exists,
+   * and its target is chosen from the player's source portfolio rather than from
+   * top-level locations at large — the arc acts *on a specific holding*, so a
+   * random location would leave every beat a no-op (fail-soft, NFP #4).
+   */
+  requiresPlayerSource?: boolean;
   /** Exactly four beats: rumor → materialization → response → crack. */
   beats: [RivalSchemeBeat, RivalSchemeBeat, RivalSchemeBeat, RivalSchemeBeat];
 }

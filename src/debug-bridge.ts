@@ -1730,6 +1730,40 @@ if (import.meta.env.DEV) {
       return out;
     },
 
+    // THR-621: what each rival is bleeding out of the player's essence sources.
+    // Deliberately synchronous — this file has no static imports (the bridge must
+    // not pull engine modules into the bundle eagerly), so rather than making the
+    // accessor async for one dynamic import, it reads the `essenceSource` bag off
+    // node properties directly. A sync accessor is also harder to misuse: an
+    // unawaited async one returns a Promise that prints as `{}`.
+    getRivalSourceDrains: () => {
+      const state = _gameStateProvider?.();
+      if (!state) return [];
+      const byId = new Map((state.rivalDefinitions ?? []).map((r) => [r.id, r]));
+      return (state.rivalStates ?? []).map((rs) => {
+        const sources = (rs.drainedSourceIds ?? []).map((hostId) => {
+          const host = state.graph.getNode(hostId);
+          const raw = host?.properties?.essenceSource;
+          const src = (raw && typeof raw === 'object' ? raw : undefined) as
+            | { kind?: string; tier?: string; desecrated?: boolean }
+            | undefined;
+          return {
+            hostId,
+            hostName: (host?.properties.name as string | undefined) ?? hostId,
+            kind: src?.kind ?? 'unknown',
+            tier: src?.tier ?? 'unknown',
+            desecrated: !!src?.desecrated,
+          };
+        });
+        return {
+          rivalId: rs.rivalId,
+          rivalName: byId.get(rs.rivalId)?.name ?? rs.rivalId,
+          drainedEssence: rs.drainedEssence ?? 0,
+          sources,
+        };
+      });
+    },
+
     // THR-66: force-launch a rival scheme (dev/QA). Mutates live state in place;
     // the engine picks it up next tick.
     forceRivalScheme: async (rivalName: string, family: string) => {
@@ -1742,15 +1776,40 @@ if (import.meta.env.DEV) {
           r.name.toLowerCase().includes(rivalName.toLowerCase()),
       );
       if (!rival) return { success: false, message: `Rival "${rivalName}" not found` };
-      const [{ buildRivalScheme, computeRivalEscalationTier }, { getRivalSchemeFamily }] =
-        await Promise.all([import('./engine/rival'), import('./data/rival-schemes')]);
+      const [
+        { buildRivalScheme, computeRivalEscalationTier },
+        { getRivalSchemeFamily },
+        { findContestableSources },
+      ] = await Promise.all([
+        import('./engine/rival'),
+        import('./data/rival-schemes'),
+        import('./engine/rivalSourceContestation'),
+      ]);
       const fam = getRivalSchemeFamily(family);
       if (!fam) return { success: false, message: `Unknown scheme family "${family}"` };
       const rsIdx = state.rivalStates.findIndex((s) => s.rivalId === rival.id);
       if (rsIdx < 0) return { success: false, message: 'Rival has no runtime state' };
       const tier = computeRivalEscalationTier(state);
       let target: { id: string; name: string } | undefined;
-      if (fam.requiresTarget) {
+      if (fam.requiresPlayerSource) {
+        // THR-621: a source-contesting arc needs a host that actually carries one
+        // of the player's sources. Targeting the first top-level location (the
+        // generic path below) would leave every beat a silent no-op. Richest
+        // first, so the forced scheme goes after a keystone the way a real one
+        // would.
+        const contestable = state.ascendantId
+          ? findContestableSources(state.graph, state.ascendantId)
+          : [];
+        if (contestable.length === 0) {
+          return {
+            success: false,
+            message:
+              'No contestable essence source — the player controls none that is undrained and non-desecrated',
+          };
+        }
+        const pick = [...contestable].sort((a, b) => b.weight - a.weight)[0];
+        target = { id: pick.hostId, name: pick.name };
+      } else if (fam.requiresTarget) {
         const loc = state.graph
           .getNodesByType('location')
           .find(

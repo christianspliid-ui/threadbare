@@ -46,6 +46,17 @@ export const SANCTITY_DEFEND_RESTORE = 0.25;
 /** Sanctity lost per tick while contested and undefended. */
 export const SANCTITY_DRAIN_PER_TICK_CONTESTED = 0.02;
 
+/**
+ * Fraction of the player's lost source income a draining rival actually pockets
+ * (THR-621). 1.0 = the ledger balances exactly: every essence unit the player
+ * stops receiving is credited to the rival that took it, which is what makes the
+ * drain readable as theft rather than as decay.
+ *
+ * Lower it to model a rival that *spoils* more than it *steals* — the player
+ * still loses the income, but the rival banks less of it.
+ */
+export const RIVAL_SOURCE_DRAIN_CAPTURE = 1.0;
+
 // ─── The essence bridge: mortal economy → divine economy (THR-618 P4) ────────
 //
 // A typed source is sustained by the land it stands on. The mortal resource web
