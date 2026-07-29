@@ -5176,7 +5176,7 @@ const DATA = [
   {
     "num": "283",
     "id": 283,
-    "count": 1,
+    "count": 2,
     "date": "2026-07-29",
     "category": "tooling",
     "description": "**A reused pool worktree had a `node_modules` that was an empty *real* directory holding only build caches, so the standard junction relink failed and every `npm`/`vitest` command in the session was unrunnable.** `ls node_modules` reported **0 entries** while `rmdir` refused with *\"Directory not empty\"* — the contents were three dotfile caches (`.tmp/` with two `.tsbuildinfo`, `.vite/`, `.vite-temp/`) left by an earlier session, invisible without `ls -a`. The known `fresh_worktree_node_modules_junction` recipe assumes either a live junction or nothing at all, and neither branch applies to this third state. Compounding it: `cmd /c \"mklink /J …\"` invoked from the Bash tool printed only the interpreter banner and **silently no-opped** — no junction, no error, exit 0 — including inside an `&&` chain where its failure was indistinguishable from success.",
@@ -5211,6 +5211,19 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "**Pass project as a UUID, and verify-after-write on the create path exactly as claim discipline already requires on the state path.** Reading the returned object for the field you just set is the whole check — it is already in hand, no extra call needed, and it distinguishes \"dropped\" from \"accepted\" for free. Generalises the existing `linear_save_issue_field_drops` note from update to **create**, and from `state` to any name-resolved reference field: prefer the UUID whenever the schema offers `name, ID, or slug`, since name resolution is where the silent drop lives.",
     "session": "THR-661 closeout (filing THR-843 / THR-844), 2026-07-29"
+  },
+  {
+    "num": "286",
+    "id": 286,
+    "count": 1,
+    "date": "2026-07-29",
+    "category": "tooling",
+    "description": "**`merge=union` on `Docs/impediments.md` resolves two branches cleanly into a table with two rows sharing one impediment number — and it has already corrupted 14 of the log’s 300 IDs.** The union driver exists so appended closeout rows from both sides survive, which is right for `changelog.md` and `project-history.md` whose rows carry no key. Impediments are a **numbered** table: two branches cut from the same base each allocate “the next free number” independently, union keeps both, exits 0, prints `Auto-merging Docs/impediments.md`, and leaves no marker to notice. Hit while unsticking THR-661 / PR #1042 — the branch carried #283–#284 while `main` had landed its own #283 (THR-838 pass 3). **Checking the predicate found it is not a one-off:** IDs `9 67 68 82 90 117 122 141 180 184 185 186 187 267` are each shared by two unrelated entries — #267 is simultaneously a worktree-path bug and a CI-timeout bug, both dated 2026-07-28, i.e. two parallel closeouts on the same day. Nothing in the pipeline asserts the column is unique, so `generate-impediment-dashboard` emits every collision without complaint.",
+    "consequence": "The collision is invisible exactly where you are most primed to trust the result: union’s whole promise is “no conflict”, and the pull-work closeout recipe teaches a clean `git merge` exit as the signal to push. Every cross-reference by number then becomes ambiguous — this session’s own PR comment said “impediments #283–#284”, which after the merge named THR-838’s entry instead of the one it meant. Because the log feeds both the retro cycle and the generated dashboard, a duplicated key silently splits one recurring problem into two under-counted ones, or merges two unrelated ones into a false pattern.",
+    "impact": "M",
+    "workaroundFound": true,
+    "workaround": "**After any union merge of a numbered table, do not read the clean exit as “resolved” — diff the key column.** One command names every collision: `grep -o` the leading id pattern, then `sort` and `uniq -d`. Resolve by treating the **already-landed** side’s number as immovable (whatever shipped it may already cite it) and renumbering the local side upward from the true maximum; then regenerate the dashboard and run `check:generated-freshness` **last**, since `impediments.md` is a generated-artifact source. The existing union impediments do not cover this — #691 is GitHub ignoring `.gitattributes` server-side and #703 is branches predating the attribute, both about union *not applying*; this is union applying and being wrong. The durable fix is a uniqueness assertion in `generate-impediment-dashboard`, which already parses every row and warns on short ones, so it is the natural home. Generalises to any union-merged file with a monotonic key.",
+    "session": "THR-661 unstick, hourly `tb-opus-pickup`, 2026-07-29"
   }
 ];
 // ── End data ──
