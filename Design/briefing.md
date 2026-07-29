@@ -1,32 +1,32 @@
 # Briefing
 
-**Generated:** 2026-07-30 00:00 local (2026-07-29 22:00 UTC) · by `keep-work-flowing-cc` · measurements taken 23:54 local (21:54 UTC)
+**Generated:** 2026-07-30 00:58 local (2026-07-29 22:58 UTC) · by `keep-work-flowing-cc` · measurements taken 00:54 local (22:54 UTC)
 
 This is your inbox. It's rewritten every hour by a Claude Code task. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
 ## Needs Christian
 
-**Nothing needs you right now.** No open questions, no switch waiting on you, nothing stuck. The queue is deep but draining, and every health check came back clean.
+**Nothing needs you right now.** No open questions, no switch waiting on you, nothing stuck. Every health check came back clean, and the two other planning robots that report to you this hour both had nothing for you either.
 
 ## Queue
 
-**Forty-seven jobs ready, one in progress, nothing gone cold.** One important, eleven medium, thirty-five small. The longest wait is just over five days — inside the week we allow.
+**Forty-eight jobs ready, one in progress, nothing gone cold.** One important, twelve medium, thirty-five small. The longest wait is five days — inside the week we allow.
 
-**The hidden-queue problem you diagnosed last night is mostly cleaned up.** Your name had been landing on filed jobs, and the robot that picks up work was skipping anything with a name on it. Acting on what you said — that your name never means a person took something — the filing robot went back at 22:31 local and stripped the names off the whole backlog by hand. **The picker can now see forty-five of forty-seven jobs, up from thirty-seven of forty-six an hour ago.** The important one is visible again for the first time in four hours.
+**The naming problem came back again, and this hour it ate the whole gain.** The picker skips any job with a name on it; the robot that files work keeps stamping your name on what it files. Last night's by-hand sweep cleared nine of them, and three have since come back — the newest filed at 00:31 tonight. **So the shelf grew from forty-seven jobs to forty-eight while the number the picker can actually see stayed flat at forty-five.** The queue got longer and the visible queue did not move at all.
 
-The catch: **two jobs filed since then picked up names again.** The by-hand sweep cleaned the backlog, it didn't stop the cause — so this will re-accrue a couple of rows an hour until the picker is taught to ignore the field. That change is ticketed and waiting in the queue; nothing here is for you.
+Nothing here is for you. The real fix is to teach the picker that your name never means a person took something — which is what you told us on Sunday — and that change is ticketed as the one important job in the queue.
 
 ## Freshness
 
 **Home tree healthy** — on the main line, nothing stranded, fully up to date. The only local edits are your own tool-permission settings, which block nothing.
 
-**The live site rebuilt this hour** — the faction sigils work went out, so what's published is genuinely current rather than merely unchanged. **The merge safety net is healthy**, zero failed starts. **The tidy-up robot ran at 23:40** with nothing awaiting a human call, and **all eight scheduled robots are on time.**
+**The merge safety net is healthy**, zero failed starts — the ninth clean check since you sorted the billing page. **The tidy-up robot ran at 00:40** with nothing awaiting a human call, and **all eight scheduled robots are on time.** The live site is current: only notes and docs have landed since the last publish, so there was correctly nothing to rebuild.
 
 ## What's moving
 
-**Faction sigils shipped at 23:51 local.** Every faction now draws its own coat of arms from the heraldry generator that had been sitting unused — so factions arrive with a visual identity instead of a name and a blank space, wherever the entity headers appear.
+**Artifact card art is finished and waiting at the door.** Seven new plates went up, with a single shared lookup replacing a hand-copied list, and it passed every check at 00:31 — but the main line moved underneath it, so it cannot go in until its branch is refreshed. That has sorted itself out unaided before (about two hours last time), so it is a watch item, not a problem. It is one part of the larger art job, which stays open: encounter illustrations, sublocation art and character portraits are still to come.
 
-That's the second game-content job in a row rather than plumbing. It's part of the larger art batch, which stays open — encounter illustrations, artifact art, sublocation art and NPC portraits are still to come under the same job.
+**The encounter-nudge content migration is being fed to the executor one batch an hour.** Tonight's is the hamlet set — six templates across the trade and watching-eye clusters.
 
 ---
 *Standing asks live in `Design/user-actions.md`. This file is regenerated hourly by the `keep-work-flowing-cc` scheduled task; staleness is visible from the Generated timestamp above and the task's `lastRunAt` in `list_scheduled_tasks`.*
