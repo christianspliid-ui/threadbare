@@ -5276,6 +5276,19 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "**Rule: never audit a skipped required check by its own conclusion — read the *gating* job.** `Detect code changes: success` means the filter made a decision (benign); anything else means the check never inspected the change, and THR-768's `Guard — change detection health` step is what turns that into a hard failure. One command gives both: `gh run view <id> --json jobs --jq '.jobs[]",
     "session": "\"\\(.name): \\(.conclusion)\"'`. **Second half of the fix is making the verification reachable at all:** `ci.yml` now carries `workflow_dispatch` (paths-filter step skipped on that event, since a dispatch payload has no diff base; the check job runs unconditionally), so a post-incident full run on `main` is one command instead of a fabricated commit. Generalises to any conditional required check — a gate whose skip is load-bearing needs a documented discriminator and an on-demand override, or its green is unreadable. | THR-842, hourly `tb-opus-pickup`, 2026-07-29"
+  },
+  {
+    "num": "291",
+    "id": 291,
+    "count": 1,
+    "date": "2026-07-29",
+    "category": "process-friction",
+    "description": "**A ticket can sit in Ready for Dev advertising a human gate that resolved weeks earlier, and nothing distinguishes it from one still genuinely waiting.** THR-574's deliverable named one escalation — \"oldest High-priority open item THR-66 (Rival activation) gets an explicit verdict from Christian\" — plus two reconciliation anchors (THR-499, THR-558) whose outcomes the sweep was to reconcile against. All three had reached **Done on 2026-07-05**, 24 days before pickup. The ticket text still read as blocked on a person.",
+    "consequence": "An executor following the ticket literally would post a summary comment, unassign, and exit clean under the human-gated protocol — burning a run and parking the WIP=1 slot for a verdict nobody needed. The promoting orchestrator comment did flag the ticket as dated and told the executor to re-derive at pickup, which is what prevented the stall here; absent that note the default reading is \"park it\".",
+    "impact": "medium — one wasted hourly run per occurrence, plus the ticket stays parked until a human notices, which is the same 24-day silence the sweep itself uncovered",
+    "workaroundFound": true,
+    "workaround": "Resolve every issue id named in a ticket's Done-when/deliverable with `get_issue` **before** honouring any gate it describes — three calls, run in parallel, ahead of reading the plan doc. Treat a named escalation as a *claim about the past*, not a current state. Filed the general case as THR-852: triggers and gates written as prose in Linear comments have no watcher, whereas the structurally identical `Blocked by:` relation already drives the orchestrator's T1 unblock sweep.",
+    "session": "tb-opus-pickup hourly run, THR-574 stale-backlog triage sweep, worktree lucid-babbage-a1328c"
   }
 ];
 // ── End data ──
