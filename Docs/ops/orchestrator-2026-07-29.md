@@ -1,5 +1,52 @@
 # Orchestrator — 2026-07-29
 
+## Third run — 00:31Z update (post-merge)
+
+*T3 daily architecture-health sweep is gated on the first run after 06:00 local; this run fired at 02:31 local (before the gate), so only T1 ran and T2's trigger was re-checked. This run also found and fixed a stuck auto-merge from the prior run — see below.*
+
+### Needs Christian
+
+Nothing needs you this run.
+
+### Housekeeping
+
+PR #1043 (prior run's report, promoting THR-346) was armed for auto-merge but stuck at `mergeStateStatus: BEHIND` — several docs/briefing PRs had merged to `main` since it was opened, and nothing was re-updating its branch. Merged `origin/main` into the branch and pushed; auto-merge should now clear on the next green CI run. (Known failure mode — THR-735 tracks the general "armed PR loses the race to main's merge rate" problem; this was one instance of it.)
+
+### T1 — unblock sweep (00:31Z)
+
+**Scan:** `list_issues(state:"Todo", limit:50)` → 13 candidates. `list_issues(state:"Ready for Dev", limit:100)` → 38 items — above `QUEUE_BACKED_UP_MIN=15`, so the shelf-backup ceiling capped this run to **at most one promotion**.
+
+**Promoted (1, at the shelf-backup ceiling):**
+
+- **THR-347** ("Encounter UI post-v1 H2 — Constants tuning playtest") — both named blockers confirmed `Done`: THR-326 (Phase B4, Detection escalation, completed 2026-05-07T11:30Z) and ARC-98 (Phase B1, Choice resolution + drift accumulator, completed 2026-05-06T17:55Z). This is the sibling ticket the prior two runs (00:31Z, 23:28Z) both flagged as "strongest next-run candidate" once the ceiling allowed another promotion — continuing the H1→H2→H3 sequence (H1/THR-346 promoted 23:28Z). Promoted → verified via `get_issue` (`stateHistory` shows Todo → Ready for Dev at 00:30:54.035Z, state stuck) → coordination-block comment posted (Suggested model: opus-4-6; Parallel-safe with: THR-346, THR-348; Mutex with: none).
+
+**Declined:**
+
+- **THR-680** ("Stash triage — bulk-classify the 38-deep home-tree stash stack") — **stale predicate, re-confirmed live again.** `git stash list` from this session's worktree still shows only **2** entries (`home-tree-recovery` no-ops). Unchanged across three consecutive sweeps now; recommend a groomer close this as resolved-by-other-means or re-scope against the current stash state rather than the 2026-07-21 count.
+- **THR-735** ("Armed-PR staleness sweep") — no blocker; self-declares "design pass needed — do not pick one from this ticket alone" among 4 candidate remedies. T2's input, not T1's. (This run hit a live instance of exactly the problem this ticket describes — see Housekeeping above.)
+- **THR-790** / **THR-791** (Traits wave 2 / wave 3) — blocker THR-786 confirmed Done, but both self-declare their own design-finalization gate ("Needs its own design finalization before Ready for Dev" / "Needs a full design pass... before any Ready for Dev"). T2's input; T2 did not trigger this run.
+- **THR-772** / **THR-778** / **THR-789** (Nudge Model epic, WS5 content-migration container, Traits program epic) — all three explicitly self-declare as staging/tracking containers ("do not implement from this issue" / "this issue is the container and tracks the batch burndown" / "each wave runs design finalization before Ready for Dev"). THR-778's actual blockers (THR-773, THR-776, THR-774) are all Done, but the ticket itself is not the implementable unit — its batch children (e.g. THR-838, already in Ready for Dev) are.
+- **THR-175** ("UI overhaul 08, agent.sphere field") — explicit `Status: DEFERRED`, unmet unblock trigger.
+
+**Held back by the shelf-backup ceiling (no blocker, unchanged from prior sweeps):**
+
+- **THR-582** ("Migrate remaining ~46 inline phases to runInlinePhase") — mechanical tail of THR-580, no blockers.
+- **THR-646** ("THR-636 follow-up: capture live browser screenshots") — feature complete and merged per its own text; pure verification-artifact task, no blockers.
+- **THR-766** ("Tune the god's cast power curve") — parent THR-728 confirmed Done; bounded tuning pass, no blockers.
+- **THR-348** (Encounter UI post-v1 H3) — blockers confirmed Done (THR-338, ARC-105); already carries a coordination block. Strongest next-run candidate to close out the H1→H2→H3 batch.
+
+### T2 — design authoring (00:31Z)
+
+**Not triggered.** Ready for Dev holds well above 2 non-`Deferral` items after this run (18+ before this promotion).
+
+### T3 — architecture health (00:31Z)
+
+**Not run.** Gated on the first run after 06:00 local; this run fired at 02:31 local. Last sweep: 2026-07-28 07:42Z (see `orchestrator-2026-07-28.md`).
+
+### Escalations (00:31Z)
+
+None this run.
+
 ## Second run — 23:28Z update
 
 *T3 daily architecture-health sweep is gated on the first run after 06:00 local; this run fired at 23:28 local (before the gate), so only T1 ran and T2's trigger was re-checked.*
