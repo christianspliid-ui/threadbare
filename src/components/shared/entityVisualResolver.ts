@@ -5,9 +5,10 @@
  * One resolver, a per-kind source list, one fallback chain. Surfaces call this
  * instead of re-inventing portrait / concept-art / illustration plumbing. Each
  * THR-638 art batch lands as one added branch in `resolveSource` — zero
- * component changes. Landed so far: NPC-role portraits, encounter
+ * component changes. All five batches have landed: NPC-role portraits, encounter
  * illustrations (via `ref.knownSrc` from the stage model), faction sigils,
- * artifact category art. Still falling through to the glyph tile: `sublocation`.
+ * artifact category art, sublocation category art. Every `EntityVisualKind` now
+ * has a source; the glyph tier is reached only when a kind's own lookup misses.
  *
  * Pure + synchronous. Reads graph nodes; never mutates, never runs in a tick
  * phase, emits no traces (inspectability is served by `__DEBUG.resolveEntityVisual`
@@ -30,6 +31,7 @@ import { getOriginPortraitUrl } from '../../data/avatar-portrait-assets';
 import { getFactionSigilUrlFromProperties } from '../../data/faction-sigil-assets';
 import { getAttachmentArtUrl } from '../../data/artifact-category-art';
 import { pickConceptArt } from '../../data/concept-art-assets';
+import { getSublocationArtUrl } from '../../data/sublocation-category-art';
 import {
   type EntityVisualKind,
   fallbackGlyphFor,
@@ -169,9 +171,19 @@ function resolveSource(
       // (THR-638). Only ~7 of ~143 artifacts in a live world have bespoke art,
       // so the category tier is what actually renders most of the time.
       return getAttachmentArtUrl(node?.id, node?.properties?.subcategory as string | undefined);
-    // sublocation / encounter: no curated registry yet (THR-638).
-    // Encounter illustrations arrive via ref.knownSrc from the stage model.
-    // Everything else falls to the designed glyph tile.
+    case 'sublocation': {
+      // Category plate keyed by `sublocationTypeId` (THR-638). Every sublocation
+      // node in a live world carries that property, which is why it is the key;
+      // `genomeTags` rides along as a forward-compatible fallback only — it is
+      // populated on 44% of them, so keying off it would blank the rest.
+      const props = node?.properties ?? {};
+      return getSublocationArtUrl(
+        typeof props.sublocationTypeId === 'string' ? props.sublocationTypeId : undefined,
+        Array.isArray(props.genomeTags) ? (props.genomeTags as string[]) : undefined,
+      );
+    }
+    // encounter: illustrations arrive via ref.knownSrc from the stage model.
+    // Anything else falls to the designed glyph tile.
     default:
       return null;
   }

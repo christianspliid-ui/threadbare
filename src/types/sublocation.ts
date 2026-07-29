@@ -42,6 +42,21 @@ export interface SublocationProperties {
   divineOrigin?: DivineOrigin;
   /** When true, sublocation is invisible until discovered by a Find action or agent encounter. */
   hidden?: boolean;
+  /**
+   * Which settlement-genome pass created this node, when the genome created it.
+   * Absent on sublocations from the non-genome producers (`guildSeeding`,
+   * `factionSeeding`, `phaseSublocations`, `ensureSublocations`).
+   * Written by `settlementGenome/materialize.ts`.
+   */
+  genomeSourcePass?: 'infrastructure' | 'culture' | 'sphere' | 'reach' | 'archetype';
+  /**
+   * `SublocationTag`s the genome entry declared for this type. Written by
+   * `settlementGenome/materialize.ts` — and frequently `[]`, since many genome
+   * entries declare no tag. Only 44% of the sublocations in a seeded world carry
+   * a non-empty value, so this is usable as a hint but never as a primary key
+   * (see `data/sublocation-category-art.ts`).
+   */
+  genomeTags?: string[];
 }
 
 // ── Constants ───────────────────────────────────────────────

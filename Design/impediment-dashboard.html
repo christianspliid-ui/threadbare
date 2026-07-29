@@ -5419,6 +5419,45 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "Do not copy fixtures out of files inside the red baseline; build the world through the same constructors production uses. `generateArchetypes(4, seed)[0]` + `createBalancedCosmology()` (what `scripts/cli.ts` does) are correctly typed and returned the ratchet to 3496 unchanged.",
     "session": "THR-638 artifact batch; world-population coverage test."
+  },
+  {
+    "num": "302",
+    "id": 302,
+    "count": 1,
+    "date": "2026-07-30",
+    "category": "verification",
+    "description": "**`SublocationDetailView` in `LocationView.tsx` referenced `onEncounterClick` while its props interface omitted it and its parent never passed it, so entering any sublocation with an active encounter threw `ReferenceError: onEncounterClick is not defined` and blanked the whole detail view.** Present on `origin/main`. It survives because the identifier only evaluates inside the active-encounter `.map`, so an empty encounter list renders fine — and because the resulting type errors sit inside the ~3496-error red baseline, where a genuine \"not defined\" reads as more baseline noise.",
+    "consequence": "The primary sublocation surface crashes for exactly the sublocations that have something happening in them, and the crash was invisible to both the type gate and the test suite.",
+    "impact": "Medium — a whole detail view blanks; found only by driving the surface in a browser.",
+    "workaroundFound": true,
+    "workaround": "Declare the prop on `SublocationDetailViewProps`, destructure it, and thread it from the `<SublocationDetailView>` call site. Fixing it *lowered* the typecheck baseline 3496 → 3493, which is the tell that the errors were real rather than stylistic — grep a red-baseline file for identifiers used but never bound before assuming its errors are cosmetic.",
+    "session": "THR-638 sublocation batch; browser-verifying the 16:9 category plate."
+  },
+  {
+    "num": "303",
+    "id": 303,
+    "count": 1,
+    "date": "2026-07-30",
+    "category": "verification",
+    "description": "**A genome data table read with the wrong field name yields `[]` and silently narrows a drift-guard test to a subset of its intended population.** The culture pass of `settlementGenome` exposes its contributions as `additions` + `substitutions[].replacement`, not the `sublocations` array the sphere and reach menus use. A helper written as `baseline.sublocations ?? []` compiled against `Record<string, CultureBaseline>` only because of the `?? []`, returned nothing, and left the \"never contradicts the genome\" assertion covering three of four passes while reading as exhaustive.",
+    "consequence": "A guard that appears to pin the whole vocabulary pins part of it, and the gap is invisible because the assertion still passes.",
+    "impact": "Low once the shape is read — but the `?? []` is what hides it.",
+    "workaroundFound": true,
+    "workaround": "Never `?? []` a field you have not confirmed exists on the type; the fallback converts a wrong field name into a silent empty set. Here `tsc` did flag it (`Property 'sublocations' does not exist on type 'CultureBaseline'`) — the ratchet caught it, not the green test. After repair the guard pins 49 single-tag ids across 87 distinct genome ids.",
+    "session": "THR-638 sublocation batch; genome-agreement test."
+  },
+  {
+    "num": "304",
+    "id": 304,
+    "count": 1,
+    "date": "2026-07-30",
+    "category": "tooling",
+    "description": "**`window.__DEBUG` exposes no accessor for the live `WorldGraph`** — `_registerGraphProvider` / `_registerGameStateProvider` are write-only setters closing over module-local variables, so an automated session can resolve a single entity by ref but cannot enumerate a population to prove coverage. `resolveEntityVisual(ref)` also returns `{matchedId, matchedName, descriptor}`, so reading `.tier` / `.src` off the top level yields `undefined` with no error — a probe that looks like it ran and asserted nothing.",
+    "consequence": "Population-level browser evidence (\"all N nodes resolve\") is unreachable through the sanctioned bridge, and the per-entity readout silently returns the wrong shape.",
+    "impact": "Medium — pushes verification toward per-name spot checks that miss exactly the procedurally-generated majority these batches keep tripping on.",
+    "workaroundFound": true,
+    "workaround": "Recover the graph from the React fiber: walk `#root`'s `__reactContainer$*` following `child`/`sibling`/`alternate`, scanning each `memoizedProps` value for one with `getNodesByType` **or** a `.graph` holding it — it arrives as `gameState.graph` within ~19 nodes. Then `import('/src/components/shared/entityVisualResolver.ts')` and call the real resolver over the whole population (438/438 here). Note the graph only appears in props once a panel consuming it has mounted. Read `descriptor.tier`, never `.tier`.",
+    "session": "THR-638 sublocation batch; 100%-coverage browser evidence."
   }
 ];
 // ── End data ──
