@@ -6,8 +6,8 @@ description: Run the intent-judge subagent against a plan doc.
 
 Manually invoke the intent-judge skill against a plan doc. Use when:
 
-- You want to dry-run the judge before applying `plan-pending-commit`.
-- A plan doc was authored outside the auto-trigger window (e.g. drafted in CC).
+- You want to dry-run the judge before opening the `docs/plan-*` PR.
+- A plan doc was authored outside the auto-trigger window.
 - A Reopened issue's revised plan doc needs re-judging.
 
 ## Usage
@@ -36,6 +36,7 @@ Example:
 - Move the Linear issue.
 - Apply or remove labels.
 
-Acting on the verdict is the invoker's job. Cowork's plan-doc workflow handles
-the standard Allow → Ready for Dev transition; for manual `/intent-judge`
-runs, the human invoker decides what to do with Revise/Block/Escalate verdicts.
+Acting on the verdict is the invoker's job. The `design-session` skill's plan-doc
+workflow handles the standard Allow → Ready for Dev transition; for manual
+`/intent-judge` runs, the human invoker decides what to do with
+Revise/Block/Escalate verdicts.

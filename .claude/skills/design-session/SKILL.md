@@ -1,7 +1,7 @@
 ---
 name: design-session
 description: Use when running a Claude Code session that designs or plans rather than implements — authoring a plan doc, running the design-governance checklist, moving a Linear issue toward Ready for Dev, or writing a handoff for the executor lane. The CC replacement for the Cowork design role.
-last_validated_against: 2026-07-27
+last_validated_against: 2026-07-29
 ---
 
 # design-session
@@ -40,8 +40,8 @@ Cowork could not commit, so plan docs rode the `plan-pending-commit` label + hou
 **A CC design session commits its own plan doc directly** via a `docs/plan-*` PR (CI-gated, merged immediately).
 
 - **No `plan-pending-commit` label. No hourly flush. No auto-flush fallback.**
-- The legacy label+flush path still exists during the migration parallel-run (retires in Phase 3, THR-654) —
-  do not use it from a CC design session. Commit directly.
+- The legacy label+flush path no longer exists — it was deleted 2026-07-21 (THR-654) along with the Cowork
+  lane it served. Commit directly; there is nothing else to fall back to.
 
 Everything else — design-governance checklist, canon Step 0, intent-judge, design-audit-pipeline, the
 three-pillar rule, handoff coordination block, Linear state transitions — is unchanged.
