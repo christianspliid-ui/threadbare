@@ -5289,6 +5289,45 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "Resolve every issue id named in a ticket's Done-when/deliverable with `get_issue` **before** honouring any gate it describes — three calls, run in parallel, ahead of reading the plan doc. Treat a named escalation as a *claim about the past*, not a current state. Filed the general case as THR-852: triggers and gates written as prose in Linear comments have no watcher, whereas the structurally identical `Blocked by:` relation already drives the orchestrator's T1 unblock sweep.",
     "session": "tb-opus-pickup hourly run, THR-574 stale-backlog triage sweep, worktree lucid-babbage-a1328c"
+  },
+  {
+    "num": "292",
+    "id": 292,
+    "count": 1,
+    "date": "2026-07-29",
+    "category": "verification",
+    "description": "**A UI layer can be fully wired end to end and fed by an input that is impossible to produce — and nothing anywhere reports a defect.** `buildRivalInfluenceMarkers` reads `sponsors_scheme` edges whose `source` is a rival id. Rivals are **not graph nodes** — they live in `state.rivalDefinitions` / `state.rivalStates` and are never added to the graph — so `graph.addEdge` throws `Source node not found: <rivalId>` every single time the scheme `materialize` move tries to bind one. That throw lands inside the move dispatcher's `try { ... } catch { emitTrace('rival.scheme_move_failed') }` fail-soft, so it is downgraded to a trace nobody reads. The adapter, its `useMemo` in GameView, the `rivalInfluenceMarkers` prop, and `RivalInfluenceMesh` are all correct and all connected; the layer has rendered nothing for its entire existence. Found while adding a second input to it for THR-621, not by anything looking for it.",
+    "consequence": "Every individual link in the chain inspects as healthy, which is exactly why code review and typechecking cannot see it: the failure is *between* two subsystems, in a fail-soft catch, about an entity-model assumption (`rivals are nodes`) that is false and written down nowhere near the code that assumes it. The same wrong assumption independently shaped a second surface in the same ticket — the drained-income ledger had to go on `RivalState` rather than a rival essence pool. A feature that renders nothing is indistinguishable from a feature whose trigger conditions are merely rare.",
+    "impact": "M",
+    "workaroundFound": true,
+    "workaround": "**When a producer's output feeds a consumer through a fail-soft boundary, assert the producer actually produces — a trace on the failure path is not a signal, it is a place for the failure to go and be quiet.** The cheap check is to run the producer once against real state and assert the output is non-empty (`buildRivalInfluenceMarkers(graph, rivals).length > 0`); the cheaper one is to grep whether the entity on the *source* side of an edge write is ever `addNode`d at all. Generalises to every `graph.addEdge` whose endpoints come from different subsystems — `addEdge` throws on unknown endpoints, so any such write inside a fail-soft catch is a silent-drop candidate. The dead path is now pinned by a test asserting the `addEdge` throw, so if rivals ever become graph nodes it fails loudly instead of quietly starting to work. Related: `optional_field_no_writer` (a field nobody writes) — this is its edge-shaped twin, an *edge* nobody can write.",
+    "session": "THR-621, hourly `tb-opus-pickup`, worktree lucid-babbage-a1328c"
+  },
+  {
+    "num": "293",
+    "id": 293,
+    "count": 1,
+    "date": "2026-07-29",
+    "category": "verification",
+    "description": "**The debug lever built to exercise a feature silently exercised nothing, because it picked its target before the feature existed.** `__DEBUG.forceRivalScheme(rival, family)` is the sanctioned QA path for launching a rival scheme on demand. For any family needing a target it selects `.find(l => l.properties.parentLocationId === undefined && l.properties.hexCol !== undefined)` — the first top-level location on the map. THR-621's profane family acts on a host carrying one of the *player's* essence sources, of which a fresh world has at most a handful; the first top-level location is essentially never one. So a forced profane scheme would run all four beats against a source-less host, every move would no-op through its own fail-soft guard, and the tool would report `success: true` with a cheerful `Launched Profanation for <rival> against <loc>`.",
+    "consequence": "The failure mode is the worst-shaped one available: the verification tool reports success while verifying nothing, so the natural conclusion is \"the feature is broken\" and the next hours go into the feature rather than the lever. Caught only because the returned `message` named a location that was checked against the claimed source id.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "**When adding a family/variant with a narrower target predicate than its siblings, update every *selector* that can launch it, not just the production one.** There were two here — `phaseRivalActions`'s launch path and `forceRivalScheme` — and only the first is exercised by tests, so the second drifted the moment the predicate narrowed. `forceRivalScheme` now routes `requiresPlayerSource` families through `findContestableSources` and returns an explicit `success: false` with a stated reason when the player controls no contestable source, so an unusable precondition reads as a refusal rather than as a hollow success. **General rule: a debug lever that cannot fail is not evidence.** Prefer a loud refusal over a `success: true` that quietly did nothing.",
+    "session": "THR-621, hourly `tb-opus-pickup`, worktree lucid-babbage-a1328c"
+  },
+  {
+    "num": "294",
+    "id": 294,
+    "count": 3,
+    "date": "2026-07-29",
+    "category": "tooling",
+    "description": "**Both the home tree's and the worktree's `node_modules` were empty directories — not missing, not junctioned, present and containing zero packages — so `npx vitest` failed with `Cannot find package 'vitest'` while `npm run check:typecheck` still passed.** The passing typecheck is the confusing part and the reason this is not obviously an install problem: that script runs through `node --experimental-strip-types` and `npx`, which fetches `typescript` on demand, so it produced a real 3,498-error count against the ratchet baseline while the tree had no dependencies at all. `ls node_modules \\| wc -l` returned `0` in both trees. This is the **wholesale** variant of impediment #287 (which is the `.bin` shim layer missing while packages are present) and is the predicted aftermath of the junction-wipe failure mode the `pull-work` closeout guard exists to prevent — `git worktree remove --force` following a `node_modules` junction and emptying the home tree's real install.",
+    "consequence": "Silently splits the verification gates in two: the gates that shell out through `npx` keep working and reporting real numbers, while every gate that needs an installed binary fails with an error naming a *package* (`vitest`) rather than the install. Following the error name leads to the test runner, which is fine; the tree is not. A session that ran only the typecheck ratchet would have reported a green gate against an uninstalled tree.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "**Probe `ls node_modules \\| wc -l` (count, not existence) before trusting any gate result, and treat a passing `npx`-mediated script as no evidence that the tree is installed.** Repair is a plain `npm install` in the affected tree — 9s here, 423 packages, and it does not hit the `spawn EPERM` path from impediment #21 because it mostly relinks from cache. **Repair each tree explicitly:** per #287, running `npm install` from a worktree whose `node_modules` is a junction replaces the junction with a real directory rather than writing through it, so a worktree-side install leaves the home tree still empty. This session hit exactly that and repaired the home tree explicitly afterwards (`npm install` there: 284 packages, 99 `.bin` shims restored) — do the same rather than assuming the worktree install covered both. Escalation to the durable fix is the junction guard in the `pull-work` closeout (`cmd /c rmdir` the reparse point *before* `git worktree remove --force`), which is written down but only protects trees whose worktree removal goes through that recipe.",
+    "session": "THR-621, hourly `tb-opus-pickup`, worktree lucid-babbage-a1328c"
   }
 ];
 // ── End data ──

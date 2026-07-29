@@ -70,6 +70,21 @@ export interface RivalState {
   lastSchemeLaunchTick?: number;
   /** UI-facing scheme summaries (active + recently terminal), maintained by phaseRivalActions. */
   schemes?: RivalSchemeSummary[];
+  // ── Source contestation (THR-621) — additive/optional ──
+  /**
+   * Cumulative essence this rival has drained out of the player's essence sources
+   * (THR-621). Rivals are not graph nodes and hold no essence pool, so the
+   * redirected income accrues here — the ledger that makes "income redirects to
+   * the rival" an inspectable number rather than a claim in prose (NFP #2).
+   */
+  drainedEssence?: number;
+  /**
+   * Host node ids of the player's essence sources this rival currently contests
+   * or has desecrated. Denormalized each tick from the source bags so the UI can
+   * name the drain without re-walking the portfolio; the source bag's
+   * `contestedBy` remains canonical.
+   */
+  drainedSourceIds?: string[];
 }
 
 /** Rival archetype generation templates */

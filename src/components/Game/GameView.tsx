@@ -966,8 +966,11 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     [gameState.graph, gameState.controlEffects, runtime.worldVersion],
   );
 
-  // Rival-scheme influence markers → map overlay (THR-66). Recomputed on graph
-  // mutation (materialize adds a sponsors_scheme edge; failure removes it).
+  // Rival-scheme influence markers → map overlay (THR-66, THR-621). Recomputed
+  // on graph mutation: a rival drain sets `contestedBy` on an essence source
+  // (THR-621 — the path that actually fires), and materialize adds a
+  // sponsors_scheme edge. `runtime.worldVersion` is the invalidation signal —
+  // the graph is mutated in place, so its identity never changes.
   const rivalInfluenceMarkers = useMemo(
     () => buildRivalInfluenceMarkers(gameState.graph, gameState.rivalDefinitions),
     [gameState.graph, gameState.rivalDefinitions, runtime.worldVersion],
@@ -3796,6 +3799,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                 tick={gameState.tick}
                 runtime={runtime}
                 onNavigateToRuin={handleZoomToLocation}
+                rivalDefinitions={gameState.rivalDefinitions}
               />
             )}
           </div>

@@ -2010,6 +2010,8 @@ export type TraceEntry =
   // Economic scheme family traces (THR-619)
   | RivalSchemeStockDrainedTrace
   | RivalSchemeRouteSeveredTrace
+  | RivalSchemeSourceContestedTrace
+  | RivalSchemeSourceDesecratedTrace
   // Notable agenda traces (THR-630)
   | NotableAgendaLaunchedTrace
   | NotableAgendaPhaseAdvancedTrace
@@ -2845,6 +2847,41 @@ export interface RivalSchemeRouteSeveredTrace extends TraceBase {
   region?: string;
   /** How many of the player's intelligence records lost reliability. */
   intelRecordsDegraded: number;
+}
+
+/**
+ * Trace: a profane scheme's `contest_source` move opened a rival drain on one of
+ * the player's essence sources (THR-621). The source flips to the `contested`
+ * tier; the Defend leg is the counter.
+ */
+export interface RivalSchemeSourceContestedTrace extends TraceBase {
+  category: 'rival.scheme_source_contested';
+  rivalId: string;
+  compositionId: string;
+  /** Host node carrying the contested `essenceSource` bag. */
+  targetNodeId: string;
+  /** Source taxonomy row (`shrine`, `placeOfPower`, …). */
+  sourceKind: string;
+  /** Public tier the source held before the drain opened. */
+  tierBefore: string;
+  /** Essence per tick this drain redirects from the player at open. */
+  drainPerTick: number;
+}
+
+/**
+ * Trace: a profane scheme's `desecrate_source` move profaned a source the rival
+ * had held for the whole arc (THR-621) — or found it warded and landed on
+ * nothing, which is the Defend leg working.
+ */
+export interface RivalSchemeSourceDesecratedTrace extends TraceBase {
+  category: 'rival.scheme_source_desecrated';
+  rivalId: string;
+  compositionId: string;
+  targetNodeId: string;
+  /** False when the player warded the source before the crack beat landed. */
+  desecrated: boolean;
+  /** Essence per tick now redirected from the player to this rival. */
+  drainPerTick: number;
 }
 
 // ═══════════════════════════════════════════════════════════════════

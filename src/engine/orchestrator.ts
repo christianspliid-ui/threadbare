@@ -26,7 +26,15 @@ import {
   schemeFlags,
   worldHasResourceStocks,
 } from './rival';
-import { getRivalSchemeFamily } from '../data/rival-schemes';
+import { getRivalSchemeFamily, type RivalSchemeFamily } from '../data/rival-schemes';
+import {
+  worldHasContestableSource,
+  selectContestableSource,
+  contestSource,
+  desecrateSource,
+  computeRivalDrainYield,
+} from './rivalSourceContestation';
+import { readEssenceSource } from './essenceSources';
 import { phaseNotableAgendas } from './notableAgendas';
 import type { RivalSchemeSummary, RivalDefinition, RivalState } from '../types/rival';
 import {
@@ -79,6 +87,8 @@ import type {
   RivalSchemeCompletedTrace,
   RivalSchemeStockDrainedTrace,
   RivalSchemeRouteSeveredTrace,
+  RivalSchemeSourceContestedTrace,
+  RivalSchemeSourceDesecratedTrace,
 } from '../types/trace';
 import {
   resolveEncounter,
@@ -1687,7 +1697,9 @@ type RivalTraceInput =
   | Omit<RivalSchemeCounteredTrace, 'id' | 'timestamp'>
   | Omit<RivalSchemeCompletedTrace, 'id' | 'timestamp'>
   | Omit<RivalSchemeStockDrainedTrace, 'id' | 'timestamp'>
-  | Omit<RivalSchemeRouteSeveredTrace, 'id' | 'timestamp'>;
+  | Omit<RivalSchemeRouteSeveredTrace, 'id' | 'timestamp'>
+  | Omit<RivalSchemeSourceContestedTrace, 'id' | 'timestamp'>
+  | Omit<RivalSchemeSourceDesecratedTrace, 'id' | 'timestamp'>;
 function emitRivalTrace(trace: RivalTraceInput): void {
   emitTrace(trace as unknown as Omit<TraceEntry, 'id' | 'timestamp'>);
 }
@@ -1824,6 +1836,7 @@ function degradeRegionIntelligence(
 function detectSchemeCounter(
   state: GameState,
   active: ActiveComposition,
+  family?: RivalSchemeFamily,
 ): { countered: boolean; byActorId?: string } {
   const targetId = active.resolvedNodes.target;
   if (!targetId) return { countered: false };
@@ -1831,6 +1844,24 @@ function detectSchemeCounter(
   if (!targetNode) return { countered: true }; // target destroyed → scheme loses its ground
   const ascendantId = state.ascendantId;
   if (!ascendantId) return { countered: false };
+
+  // THR-621: a source-contesting scheme targets a host the player controls *by
+  // definition* — that is the premise of the arc, not a counter. Reading the
+  // generic `controls` signal here would fire on tick one and stall the scheme
+  // forever, so the counter for these families is the shipped Defend leg
+  // instead: the drain is countered exactly when the source no longer names this
+  // rival in `contestedBy` after the drain was opened.
+  if (family?.requiresPlayerSource) {
+    const src = readEssenceSource(targetNode.properties);
+    if (!src) return { countered: true }; // source bag gone → nothing left to bleed
+    const drainOpened = active.activatedPhaseIds.some(
+      (id) => family.beats.find((b) => b.phaseId === id)?.move === 'contest_source',
+    );
+    if (!drainOpened) return { countered: false }; // pre-drain beats have no counter surface
+    const warded = src.contestedBy !== active.sponsorRivalId;
+    return warded ? { countered: true, byActorId: ascendantId } : { countered: false };
+  }
+
   // Player directly controls / holds the contested location.
   for (const type of ['controls', 'holds_place_of_power'] as const) {
     const inc = state.graph.getIncomingEdges(targetId, type);
@@ -1963,6 +1994,9 @@ export function phaseRivalActions(state: GameState): Partial<GameState> {
   // THR-619: economic family gates on the Mortal Economy stock substrate.
   // Measured once per tick, not per rival — the world does not change mid-phase.
   const hasStocks = worldHasResourceStocks(state);
+  // THR-621: profane family gates on the player actually holding a source worth
+  // bleeding. Measured once per tick for the same reason as `hasStocks`.
+  const hasPlayerSource = worldHasContestableSource(state.graph, state.ascendantId);
   // Rewritten by `sever_route` (the intelligence-degradation coupling);
   // stays undefined when no route cut landed, so the phase returns no intel key.
   let intelligenceRecords: IntelligenceRecord[] | undefined;
@@ -2099,6 +2133,69 @@ export function phaseRivalActions(state: GameState): Partial<GameState> {
               }
               break;
             }
+            case 'contest_source': {
+              // THR-621: open the drain on the player's source at the target.
+              if (targetId) {
+                const before = readEssenceSource(state.graph.getNode(targetId)?.properties);
+                if (contestSource(state.graph, targetId, rival.id)) {
+                  // No touchWorld() here — see the phase-level note below: this is
+                  // an in-place property mutation, and runTick bumps worldVersion
+                  // at end of tick precisely to catch that class (TB-086).
+                  const yieldNow = computeRivalDrainYield(state.graph, state.ascendantId, rival.id);
+                  emitRivalTrace({
+                    category: 'rival.scheme_source_contested' as const,
+                    tick: state.tick,
+                    summary: `${rival.name} opened a drain on ${targetName ?? targetId} (${before?.tier ?? 'unknown'} → contested)`,
+                    rivalId: rival.id,
+                    compositionId: compId,
+                    targetNodeId: targetId,
+                    sourceKind: before?.kind ?? 'unknown',
+                    tierBefore: before?.tier ?? 'unknown',
+                    drainPerTick: yieldNow.amount,
+                  });
+                  events.push({
+                    id: nextEventId(),
+                    tick: state.tick,
+                    type: 'rival_action',
+                    message: `${rival.name} has opened a drain on ${targetName ?? 'one of your sources'}.`,
+                    significance: 0.8,
+                    notification: { channel: 'toast' },
+                  });
+                }
+              }
+              break;
+            }
+            case 'desecrate_source': {
+              // THR-621: the terminal beat. Lands on nothing if the player warded
+              // the source first — which is the Defend leg doing its job.
+              if (targetId) {
+                const didDesecrate = desecrateSource(state.graph, targetId, rival.id);
+                const yieldNow = computeRivalDrainYield(state.graph, state.ascendantId, rival.id);
+                emitRivalTrace({
+                  category: 'rival.scheme_source_desecrated' as const,
+                  tick: state.tick,
+                  summary: didDesecrate
+                    ? `${rival.name} desecrated ${targetName ?? targetId}; ${yieldNow.amount.toFixed(2)}/tick redirected`
+                    : `${rival.name}'s desecration of ${targetName ?? targetId} found the source warded`,
+                  rivalId: rival.id,
+                  compositionId: compId,
+                  targetNodeId: targetId,
+                  desecrated: didDesecrate,
+                  drainPerTick: yieldNow.amount,
+                });
+                if (didDesecrate) {
+                  events.push({
+                    id: nextEventId(),
+                    tick: state.tick,
+                    type: 'rival_action',
+                    message: `${rival.name} has desecrated ${targetName ?? 'one of your sources'}. Its yield is no longer yours.`,
+                    significance: 0.9,
+                    notification: { channel: 'toast' },
+                  });
+                }
+              }
+              break;
+            }
             case 'crack': {
               if (rival.primarySphere) {
                 spherePressures.push({
@@ -2173,7 +2270,7 @@ export function phaseRivalActions(state: GameState): Partial<GameState> {
       if (stallUntil > state.tick) {
         continue; // still in a stall window — no invest
       }
-      const counter = detectSchemeCounter(state, active);
+      const counter = detectSchemeCounter(state, active, family);
       if (counter.countered) {
         const counters = readSchemeNum(worldFlags, schemeFlags.counters(compId)) + 1;
         worldFlags[schemeFlags.counters(compId)] = counters;
@@ -2265,13 +2362,24 @@ export function phaseRivalActions(state: GameState): Partial<GameState> {
         state.tick,
         rng,
         hasStocks,
+        hasPlayerSource,
       );
       let launched = false;
       if (decision.family) {
         const family = decision.family;
-        const target = family.requiresTarget
-          ? selectSchemeTarget(state, alreadyTargeted, rng)
-          : undefined;
+        // THR-621: a source-contesting arc must target a host that actually
+        // carries one of the player's sources — a random location would leave
+        // every beat a no-op. Keystone-weighted, so rivals go for the richest.
+        // Exactly one selector runs, so exactly one draw leaves the rng stream.
+        let target: { id: string; name: string } | undefined;
+        if (family.requiresPlayerSource) {
+          const pick = state.ascendantId
+            ? selectContestableSource(state.graph, state.ascendantId, alreadyTargeted, rng)
+            : undefined;
+          target = pick ? { id: pick.hostId, name: pick.name } : undefined;
+        } else if (family.requiresTarget) {
+          target = selectSchemeTarget(state, alreadyTargeted, rng);
+        }
         if (!family.requiresTarget || target) {
           const plan = buildRivalScheme(
             rival,
@@ -2316,7 +2424,22 @@ export function phaseRivalActions(state: GameState): Partial<GameState> {
       }
     }
 
-    // ── 3. Rebuild UI scheme summaries + persist ──
+    // ── 3. Accrue the source drain (THR-621) ──
+    // Rivals hold no essence pool of their own (they are not graph nodes), so the
+    // income redirected off the player's contested/desecrated sources accrues on
+    // the rival state. Every unit the player stops receiving is credited here, so
+    // the redirect is an inspectable number rather than a claim in prose (NFP #2).
+    // O(controlled sources) per rival, and sources are few.
+    const drain = computeRivalDrainYield(state.graph, state.ascendantId, rival.id);
+    if (drain.amount > 0 || (rivalState.drainedSourceIds?.length ?? 0) > 0) {
+      rivalState = {
+        ...rivalState,
+        drainedEssence: (rivalState.drainedEssence ?? 0) + drain.amount,
+        drainedSourceIds: [...drain.contestedHostIds, ...drain.desecratedHostIds],
+      };
+    }
+
+    // ── 4. Rebuild UI scheme summaries + persist ──
     rivalState = {
       ...rivalState,
       schemes: buildSchemeSummaries(activeCompositions, rival.id, worldFlags, escalationTier, state.tick),
@@ -2324,10 +2447,12 @@ export function phaseRivalActions(state: GameState): Partial<GameState> {
     newRivalStates[i] = rivalState;
   }
 
-  // THR-619 note: the economic moves mutate node properties / edges in place,
-  // which does not change graph object identity. No `touchWorld()` is needed
-  // here — `runTick` bumps `worldVersion` at end of tick (TB-086) precisely to
-  // catch this class of property mutation.
+  // THR-619 / THR-621 note: the economic and profane moves mutate node properties
+  // / edges in place, which does not change graph object identity. No
+  // `touchWorld()` is needed here — `runTick` bumps `worldVersion` at end of tick
+  // (TB-086) precisely to catch this class of property mutation. (It also could
+  // not be called: `touchWorld` takes the SimulationRuntime, which a phase
+  // function does not receive.)
 
   return {
     rivalStates: newRivalStates,

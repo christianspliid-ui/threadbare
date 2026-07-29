@@ -904,8 +904,32 @@ export interface DebugBridge {
     escalationTier: number;
     status: 'active' | 'completed' | 'failed';
   }>;
+  /**
+   * THR-621 — What each rival is bleeding out of the player's essence sources.
+   *
+   * One row per rival (including rivals draining nothing, so absence is visible).
+   * `drainedEssence` is the cumulative essence redirected off the player's
+   * portfolio to that rival — the ledger behind "income redirects to the rival",
+   * since rivals are not graph nodes and hold no pool of their own. `sources`
+   * lists the host nodes it currently contests or has desecrated; a row with
+   * `desecrated: true` yields the player nothing until reclaimed.
+   *
+   * Synchronous — safe to read directly, no `await`.
+   */
+  getRivalSourceDrains: () => Array<{
+    rivalId: string;
+    rivalName: string;
+    drainedEssence: number;
+    sources: Array<{
+      hostId: string;
+      hostName: string;
+      kind: string;
+      tier: string;
+      desecrated: boolean;
+    }>;
+  }>;
   /** THR-66 — Force-launch a rival scheme for QA. Accepts rival id, id prefix, or partial name,
-   *  and a family id (`corruptive` | `territorial`). Mutates live state; engine picks it up next tick. */
+   *  and a family id (`corruptive` | `territorial` | `economic` | `profane`). Mutates live state; engine picks it up next tick. */
   forceRivalScheme: (rivalName: string, family: string) => Promise<{
     success: boolean;
     message: string;
