@@ -1,5 +1,51 @@
 # Orchestrator — 2026-07-29
 
+## Fourth run — 01:30Z update
+
+*T3 daily architecture-health sweep is gated on the first run after 06:00 local; this run fired at 03:30 local (before the gate), so only T1 ran and T2's trigger was re-checked.*
+
+### Needs Christian
+
+Nothing needs you this run.
+
+### Technical note (not Christian-facing)
+
+THR-842 ("GitHub Actions is billing-blocked, so the required merge gate is SKIPPED") still sits in Ready for Dev, but the underlying condition looks resolved: the latest `main` CI run (30412992892, 01:03:53Z) shows `Detect code changes` executing its full step sequence (checkout, paths-filter, ~22s) rather than the ~3s zero-step billing-block signature the ticket describes, and `Test · Typecheck · Build` reads `skipped` for the legitimate reason (docs-only diff, paths-filter gate), not the failure mode. Leaving this for the executor to re-verify and close out items 2–3 (retro-verify the 3 unverified-by-CI PRs; record the SKIPPED-satisfies-branch-protection decision) rather than promoting or touching it myself — it's already Ready for Dev and not a T1 action.
+
+### T1 — unblock sweep (01:30Z)
+
+**Scan:** `list_issues(state:"Todo", limit:50)` → 12 candidates. `list_issues(state:"Ready for Dev", limit:100)` → 39 items (19 `Deferral`, 20 non-`Deferral`) — above `QUEUE_BACKED_UP_MIN=15`, so the shelf-backup ceiling capped this run to **at most one promotion**.
+
+**Promoted (1, at the shelf-backup ceiling):**
+
+- **THR-348** ("Encounter UI post-v1 H3 — TTS implementation") — both named blockers confirmed `Done`: THR-336/ARC-105 (Phase D3 TTS discovery + spec, completed 2026-05-06T02:19:02Z) and THR-338 (Phase E2 detail pages, completed 2026-05-07T05:58:24Z). This is the ticket the prior run (00:31Z) flagged as the strongest next-run candidate, closing out the H1→H2→H3 sequence (H1/THR-346 promoted prior day 23:28Z; H2/THR-347 promoted 00:31Z this run-day). Promoted → verified via `get_issue` (`stateHistory` shows Todo → Ready for Dev at 01:29:51.011Z, state stuck) → coordination-block comment posted (Suggested model: sonnet; Parallel-safe with: THR-346, THR-347; Mutex with: none).
+
+**Declined:**
+
+- **THR-680** ("Stash triage — bulk-classify the 38-deep home-tree stash stack") — **stale predicate, re-confirmed live again.** `git stash list` from this session's worktree still shows only **2** entries (`home-tree-recovery` no-ops). Unchanged across four consecutive sweeps now.
+- **THR-735** ("Armed-PR staleness sweep") — no blocker; self-declares "design pass needed — do not pick one from this ticket alone." T2's input, not T1's.
+- **THR-790** / **THR-791** (Traits wave 2 / wave 3) — blocker THR-786 re-confirmed `Done` (completed 2026-07-26T10:55:17Z), but both self-declare their own design-finalization gate. T2's input; T2 did not trigger this run.
+- **THR-772** / **THR-778** / **THR-789** (Nudge Model epic, WS5 content-migration container, Traits program epic) — all three explicitly self-declare as staging/tracking containers, not implementable units.
+- **THR-175** ("UI overhaul 08, agent.sphere field") — explicit `Status: DEFERRED`, unmet unblock trigger.
+
+**Held back by the shelf-backup ceiling (no blocker, unchanged from prior sweeps):**
+
+- **THR-582** ("Migrate remaining ~46 inline phases to runInlinePhase") — mechanical tail of THR-580, no blockers.
+- **THR-646** ("THR-636 follow-up: capture live browser screenshots") — feature complete and merged per its own text; pure verification-artifact task, no blockers.
+- **THR-766** ("Tune the god's cast power curve") — parent THR-728 confirmed Done; bounded tuning pass, no blockers.
+
+### T2 — design authoring (01:30Z)
+
+**Not triggered.** Ready for Dev holds 21 non-`Deferral` items after this promotion — well above the floor of 2.
+
+### T3 — architecture health (01:30Z)
+
+**Not run.** Gated on the first run after 06:00 local; this run fired at 03:30 local. Last sweep: 2026-07-28 07:42Z (see `orchestrator-2026-07-28.md`).
+
+### Escalations (01:30Z)
+
+None this run.
+
 ## Third run — 00:31Z update (post-merge)
 
 *T3 daily architecture-health sweep is gated on the first run after 06:00 local; this run fired at 02:31 local (before the gate), so only T1 ran and T2's trigger was re-checked. This run also found and fixed a stuck auto-merge from the prior run — see below.*
