@@ -1,44 +1,42 @@
 # Briefing
 
-**Generated:** 2026-07-29 15:23 local (2026-07-29 13:23 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-07-29 15:52 local (2026-07-29 13:52 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
 ## Needs Christian
 
-**One thing, and it may already be nothing: the machine was asleep from about 04:40 to 15:22 this morning, so no crew worked for roughly eleven hours.** Every background robot stopped within eight minutes of the same moment, and every one of them restarted together a minute before this brief was written. That pattern only happens when the computer itself goes away — not when a robot breaks.
+**Nothing needs you right now.** The crew is back at full speed after this morning's pause, and everything that was broken or unproven an hour ago has now been checked and is working.
 
-If you shut the laptop, that is the whole explanation and there is nothing to do. If you expected work to continue overnight, the switch is yours and not ours: the machine has to stay awake and on mains power, because the tidy-up robot in particular refuses to start on battery.
-
-For scale: the pause cost roughly eleven planning sweeps, eleven pickup attempts, and the overnight encounter-writing time. Nothing was lost or corrupted — the work simply did not happen, and the queue below is exactly where it stood at half past four.
+One thing is still technically open and deliberately not being re-asked: **last hour I asked whether you want the machine kept awake overnight.** That question has a safe answer built in — if the pause was you closing the laptop, silence closes it, and nothing was lost either way. I will not ring that doorbell again. A *second* unexplained pause would be a new question with new evidence, not this one repeated.
 
 ## Queue
 
-**Forty-one jobs ready, one in progress, nothing gone cold.** One urgent, one high, nine medium, thirty small. The longest-waiting job has sat five days and five hours — still inside the week we allow before calling something stale.
+**Forty-four jobs ready, one in progress, nothing gone cold.** Three important, ten medium, thirty-one small. The longest-waiting job has sat five days and six hours — still inside the week we allow before calling something stale.
 
-**The encounter-rewrite job is the one thing in flight, and it is genuinely mid-work rather than parked**: three slices of it have already merged, the most recent last night. It is the flagship — rewriting the forty-eight encounter texts that account for nine out of ten things mortals actually do — and it is the story to watch when the crew picks back up.
+**The queue got its full height back this hour, and that is the real news.** For about a day, roughly nineteen of the ready jobs had a name stamped on them, and the robot that picks up work only looks at jobs with *no* name on them. So the shelf looked full while the picker saw a shorter list — and the jobs it could not see included the most important ones. Someone went through by hand this run and unstamped every one of them: **all forty-four are now visible to the picker, up from twenty-two.**
 
-**The one urgent job is still the written record of Monday's outage.** Your half — the payment — is finished, and proved finished again this hour. What remains is the crew's own write-up plus one decision about how the safety net should behave, both of which are theirs.
+**The cause is now written down rather than just known** — the filing robot was stamping its own name on everything it filed, one per hour. That is now the second-most-important job on the shelf. Until it is fixed the problem re-accrues slowly: the next filing sweep is due at half past the hour, and if the fix has not landed, one job will quietly go invisible again. That is the thing to watch, and it is the crew's to fix, not yours.
 
-**The stamping snag has a seventh sighting, unchanged** — nineteen of the forty-one ready jobs carry a name, which hides them from the crew's pickup query. Same mechanism, same rate of one per promotion, same two-part crew remedy. Recorded as a count; only a change in kind or rate would be news.
+**The job in flight is the dead-end-detector work** — checking which of the game's hidden-clue categories actually point at real content and which name things that were never written. The encounter-rewrite flagship finished its previous slice and handed off cleanly.
 
 ## Freshness
 
-**Home tree current** — on the main line, nothing behind, nothing stranded. The two modified files are your own tool-permission settings, which we long ago established block nothing, plus Friday's untracked retro draft.
+**Home tree healthy** — on the main line, nothing stranded, six commits behind the shared copy and closing on its own (that is just this hour's merges arriving; it self-corrects well before it matters). The two modified files are your own tool-permission settings, which we long ago established block nothing.
 
-**The live site published the cursed-artifact work and is now up to date.** This is the first hour in several where a real rebuild happened rather than a skipped one — which is also the cleanest proof yet that the publish check can tell a code change from a paperwork change.
+**The live site is up to date.** Everything published since the last real build has been notes and paperwork, so no rebuild was needed — and the check correctly said so rather than guessing.
 
-**The merge safety net is healthy, with fresh proof rather than a carried claim** — the cursed-artifact job merged, and its ticket closed itself twenty-five seconds later. That closing is the exact step Monday's billing outage broke, so watching it fire is direct evidence the outage is behind us.
+**The merge safety net is healthy, and this is now proven rather than assumed.** Your billing fix is holding: the automated checks ran normally this hour with zero failed starts. The emergency ticket from Monday is still on the shelf, but only for a leftover design question — the outage itself is over, and your half of it has been done for a day.
 
-**The tidy-up robot has been silent since 04:40** — the same pause as everything else, so it is explained rather than broken. It should run again shortly; if it has not by the next brief, that becomes a real item and I will say so.
+**The tidy-up robot came back exactly when predicted.** Last hour I said that if it had not run by 15:40 local, the sleeping-computer explanation would be wrong for that robot specifically and it would become a real item. It ran at 15:40:01. That closes the last open thread from this morning's pause — it was the machine sleeping, nothing broken, and every robot is now accounted for.
 
-One footnote on the robots' own health-check: it reported the planning lane as "stalled" this hour. I do not believe it, and I checked before saying so — a separate timekeeper on a different system stopped at the same minute, and the three lanes it cites as healthy all restarted at the identical second. That is a sleeping computer, not a broken lane. The check has a blind spot at exactly this boundary; the crew will fix the check.
+**All eight scheduled robots are running on time.** The health-check that wrongly cried "stalled" last hour now reports the fleet clean, which is what we expected once the catch-up finished — it confirms the diagnosis rather than contradicting it. The blind spot in that check is real and the crew has it written down.
 
 ## What's moving
 
-**The cursed-artifact job landed** — the god-verb that marks whoever carries a cursed relic, not just the relic itself. It had been stuck two hours at the merge door beforehand, and went through at 04:19 local. That was the last thing to move before the machine went quiet.
+**The encounter-rewrite slice finished and closed itself properly**, and the next job — the hidden-clue dead-end audit — picked up straight after it. That is the pickup robot working end to end for the first time since Monday.
 
-Since then, nothing, for the reason at the top of this brief. The crew restarted a minute ago and the next planning sweep is due within a few minutes.
+**Three new jobs were filed this hour**, all from the crew auditing its own machinery: the name-stamping bug above, a related problem where a stuck job parks somewhere nobody looks, and one small piece of dead code found by the audit. None of them are game content; all of them are the crew tightening its own plumbing.
 
 ---
 *Standing asks live in `Design/user-actions.md`. This file is regenerated hourly by the `keep-work-flowing-cc` scheduled task; staleness is visible from the Generated timestamp above and the task's `lastRunAt` in `list_scheduled_tasks`.*
