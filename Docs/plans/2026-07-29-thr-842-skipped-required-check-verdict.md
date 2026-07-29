@@ -88,6 +88,14 @@ interface CiGateConclusions {
 | Actions cannot start jobs at all | Jobs record `failure` (or the check stays pending); branch protection blocks either way. |
 | `check:actions` probe unreachable | Degrades to `verdict: "unknown"`, which `pull-work` Step 0.6 treats as "continue" — an unreadable probe is not a reason to refuse work. |
 
+## Interface impact
+
+No cross-system contract in [`Docs/canon/interface-map.md`](../canon/interface-map.md) is added, retired, or rerouted — nothing under `src/` is touched. The subsystem aliases the plan-doc lint matches here (`mark`, `item`, encounter vocabulary) appear only as prose in the incident narrative, not as surfaces this change reads or writes.
+
+| Contract | Direction | Status | Note |
+|---|---|---|---|
+| — | — | N/A | CI workflow + documentation only; no runtime boundary crossed. |
+
 ## Three-pillar check
 
 - [x] Engine pillar present (N/A with rationale)
@@ -143,3 +151,9 @@ interface CiGateConclusions {
 - **Do not "fix" the benign skip.** Path-filtered skips on docs-only diffs are correct and load-bearing; a guard that fails closed on every skip would block the majority of this repo's merges.
 - **Do not make Vercel a required check** as a second gate. That trade is already rejected in CLAUDE.md § Definition of Done — the fix for a silent stoppage is a notification path, not a new merge gate.
 - The discriminator when auditing any future skip is `Detect code changes`, not the required check's own conclusion.
+
+## Forked-audit verdicts
+
+<!-- populated by design-audit-pipeline — /design-audit <plan-doc-path> -->
+
+Not run. This is a recorded verdict on an already-scoped infrastructure ticket, authored in the execution lane rather than a design session, so there is no design-finalization gate for the pipeline to sit in front of.
