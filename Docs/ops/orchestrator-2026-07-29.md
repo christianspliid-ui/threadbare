@@ -1,5 +1,54 @@
 # Orchestrator — 2026-07-29
 
+## Twelfth run — 20:31Z update
+
+### Needs Christian
+
+Nothing needs you this run.
+
+### T1 — unblock sweep (20:31Z)
+
+**Scan:** `list_issues(state:"Todo", limit:50)` → 9 candidates (down from 10 at 18:28Z — that run's promotion of THR-766 left Todo). `list_issues(state:"Ready for Dev", limit:100)` → 45 items (post-THR-848) — above `QUEUE_BACKED_UP_MIN=15`, so the shelf-backup ceiling capped this run to **at most one promotion**.
+
+**Filed (1, at the shelf-backup ceiling):**
+
+- **THR-855** ("Nudge Model WS5 Batch 1c — wayside & wild REWRITE set, 7 templates") — second split of THR-838's five-way partition (after THR-848/1e at 13:42Z), same blocker evidence (WS0/WS1/WS3 all Done 2026-07-26). Membership predicate derived directly from the audit table + `WS5_MIGRATED` (7 place:wilderness/camp/oasis/farmland/battleground REWRITE entries, none already migrated) — verified by grep, not by eye. Chosen over 1a/1b/1d because the grooming comment flagged those as wanting to be re-halved (a sizing judgment this lane defers), while 1c and 1e were called "close to right" as filed. Created with `assignee: null` explicit at creation time (not just on update) — verified via `get_issue`, no `assignee` field present. Coordination-block comment posted.
+
+**Declined — needs design finalization first (T2's input, not T1's):**
+
+- **THR-735** ("Armed-PR staleness sweep") — unchanged, still self-declares "design pass needed — do not pick one from this ticket alone."
+- **THR-790** / **THR-791** (Traits wave 2 / wave 3) — unchanged, blocker THR-786 confirmed `Done`, both self-declare their own design-finalization gate.
+
+**Declined — staging/tracking containers, not implementable units:**
+
+- **THR-772** (Nudge Model program epic), **THR-778** (WS5 content-migration container), **THR-789** (Traits program epic) — unchanged, all three explicitly self-declare as containers.
+- **THR-838** (Nudge Model WS5 Batch 1 tracker) — unchanged: stays in Todo as the burndown tracker.
+
+**Declined — other:**
+
+- **THR-680** ("Stash triage") — unchanged: standing structural conflict with THR-672 (home-tree-only approach). See Escalations.
+- **THR-175** ("UI overhaul 08, agent.sphere field") — unchanged: explicit `Status: DEFERRED`, unmet unblock trigger.
+
+**Held back by the shelf-backup ceiling (no blocker):**
+
+- The WS5 partition's remaining unfiled cells (1a hamlet/12, 1b civic seats/8, 1d sacred & arcane sites/8) plus two structural one-offs (`encounter.apotheosis.ascension`, `encounter.shell_proof.fate_card_trial`) — one cell closer to done now that 1c is filed.
+
+**Data-hygiene mitigation (not a T1 promotion, done in passing):** found 8 other `Ready for Dev` issues besides THR-848 still carrying a non-null assignee from the THR-845 defect, re-accumulated since that ticket's 13:29Z interim flush — THR-766, THR-582, THR-849, THR-850, THR-851, THR-845, THR-846, THR-836 (plus THR-848 itself). Unassigned all 9 via `save_issue(id, assignee: null)`, each verified by re-`get_issue` (no `assignee` field in the response). THR-845 is the tracked structural fix and remains unfixed at the writer — this is a stopgap, not a resolution; the orchestrator will keep re-flushing at roughly one-per-hour until the write path itself stops setting it.
+
+### T2 — design authoring (20:31Z)
+
+**Not triggered.** Ready for Dev holds 20+ non-`Deferral` items — well above the floor of 2.
+
+### T3 — architecture health (20:31Z)
+
+**Skipped — already ran today.** First daily sweep completed at 13:42Z (this file, "Sixth run" section below). Not re-run.
+
+### Escalations (20:31Z)
+
+- **THR-680 execution-model conflict** (unchanged): the ticket's only stated approach requires home-tree git state ops, which THR-672 prohibits for every scheduled session. Parked, not blocking the rest of this run.
+
+---
+
 ## Eleventh run — 18:28Z update
 
 ### Needs Christian

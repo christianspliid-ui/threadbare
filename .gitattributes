@@ -32,3 +32,12 @@
 Docs/changelog.md merge=union
 Docs/project-history.md merge=union
 Docs/impediments.md merge=union
+
+# Orchestrator's per-day report — same append-only shape as above, prepending a
+# new run section at the top of Docs/ops/orchestrator-YYYY-MM-DD.md every run.
+# Two runs racing (this lane fires more than hourly some days) conflict at that
+# same anchor otherwise — see THR-849 for a measured instance (PR #1031 sat
+# OPEN/DIRTY ~18h because its sole change was to this file). Union does not
+# guarantee chronological order among the appended sections on a resolved
+# conflict — acceptable for an audit trace, not for anything read in order.
+Docs/ops/orchestrator-*.md merge=union
