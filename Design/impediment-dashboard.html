@@ -5328,6 +5328,58 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "**Probe `ls node_modules \\| wc -l` (count, not existence) before trusting any gate result, and treat a passing `npx`-mediated script as no evidence that the tree is installed.** Repair is a plain `npm install` in the affected tree — 9s here, 423 packages, and it does not hit the `spawn EPERM` path from impediment #21 because it mostly relinks from cache. **Repair each tree explicitly:** per #287, running `npm install` from a worktree whose `node_modules` is a junction replaces the junction with a real directory rather than writing through it, so a worktree-side install leaves the home tree still empty. This session hit exactly that and repaired the home tree explicitly afterwards (`npm install` there: 284 packages, 99 `.bin` shims restored) — do the same rather than assuming the worktree install covered both. Escalation to the durable fix is the junction guard in the `pull-work` closeout (`cmd /c rmdir` the reparse point *before* `git worktree remove --force`), which is written down but only protects trees whose worktree removal goes through that recipe.",
     "session": "THR-621, hourly `tb-opus-pickup`, worktree lucid-babbage-a1328c"
+  },
+  {
+    "num": "295",
+    "id": 295,
+    "count": 1,
+    "date": "2026-07-29",
+    "category": "verification",
+    "description": "**A registry can pass every one of its own tests and still miss three quarters of the population it exists to serve, because the tests and the registry share the same wrong idea of who the population is.** The THR-638 faction sigil registry keyed off `factionDefId`; its coverage test looped `ALL_FACTION_DEFINITIONS` and asserted a sigil for every entry — 17 assertions, all green, including an explicit \"covers every registered faction definition\". A seeded world holds **49** faction actor nodes and only **13** carry a `factionDefId`; the other ~36 are procedurally generated (`guild_N`, `faction_N`) and carry their reach profile as `domainCapabilities` instead. The test's population was the definition table, not the world.",
+    "consequence": "Ships a feature that demonstrably works on every case anyone thought to check and fails on the majority case a player actually meets. The generated-faction gap was invisible to unit tests, to typecheck, and to the resolver's own `__DEBUG` readout when queried by definition name — the twelve names I happened to pick were exactly the twelve that worked.",
+    "impact": "M",
+    "workaroundFound": true,
+    "workaround": "**Census the live population before believing a coverage test — `npm run cli` + `eval` over the real graph, counting by the discriminating property rather than by the authored table.** One `eval` returned `{total: 49, withDefId: 13, withoutDefId: 36}` and settled it. The tell that prompted the census was a **browser** observation, not a test: the FactionSheet header rendered as an empty shell for \"The Gilded Pact\", a faction whose node id (`faction_0`) matched no definition pattern. Generalises the standing \"pin the population\" rule: a coverage loop is only as honest as its source of truth for *who exists*, and an authored registry is almost never that source in a procedurally generated world.",
+    "session": "THR-638 faction batch, hourly `tb-opus-pickup`, worktree reverent-leakey-009e43"
+  },
+  {
+    "num": "296",
+    "id": 296,
+    "count": 1,
+    "date": "2026-07-29",
+    "category": "verification",
+    "description": "**A test that asserts a palette by identity (`primary === SPHERE_COLORS[sphere]`) cannot fail when the palette is the thing that is wrong.** `tinctures.test.ts` held six assertions pinning the coat-of-arms tinctures to the sphere-colour constants, and passed continuously while the generator rendered bright flat pastels — mint, salmon, sky blue — against a STYLE.md that excludes pastels outright and bands the world at 10–40% brightness. Identity-to-a-constant restates the implementation; it encodes no property of the aesthetic, so it is green in exactly the states it should catch.",
+    "consequence": "The style violation was invisible to the whole automated gate stack and survived into a shared generator already driving hex-map army sprites. Only rendering the batch to a contact sheet and *looking* at it surfaced the defect — the fifth consecutive batch where the contact sheet was the sole detector.",
+    "impact": "M",
+    "workaroundFound": true,
+    "workaround": "**Assert the property, not the value.** Replaced with value-range assertions (every field within the STYLE.md 10–40% band) and charge/field separation. Those fail if the palette drifts bright again, which the identity assertions could not. General rule: when a constant *is* the design decision under test, asserting equality to it is circular — find the invariant the constant is supposed to satisfy and assert that instead. Corollary reaffirmed: **contact-sheet every art batch, including procedurally generated art** — the \"it is generated, so it is consistent\" intuition is what nearly skipped the sheet here.",
+    "session": "THR-638 faction batch, hourly `tb-opus-pickup`, worktree reverent-leakey-009e43"
+  },
+  {
+    "num": "297",
+    "id": 297,
+    "count": 1,
+    "date": "2026-07-29",
+    "category": "tooling",
+    "description": "**`preview_start` on the Browser pane hung for the full 300 s timeout on a `file://` URL, and Playwright MCP refuses the `file:` protocol outright** (`Error: Access to \"file:\" protocol is blocked`). Both are the obvious route for viewing a locally generated artefact — here an art contact sheet written to the scratchpad.",
+    "consequence": "Costs a 5-minute stall plus a failed second attempt before the working route is found; long enough to matter in an hourly lane.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "**Serve local review artefacts through the worktree's own dev server rather than opening them as files.** Write the file into `public/` (e.g. `public/_thr638-sheet.html`), start vite on a distinct port from the worktree — `npx vite --port 5233 --strictPort` — and open `http://localhost:5233/_thr638-sheet.html`; delete the staged file before committing. Note the pre-existing `preview_start`-serves-the-home-tree caveat makes starting vite yourself the right move anyway when the artefact must reflect worktree code.",
+    "session": "THR-638 faction batch, hourly `tb-opus-pickup`, worktree reverent-leakey-009e43"
+  },
+  {
+    "num": "298",
+    "id": 298,
+    "count": 1,
+    "date": "2026-07-29",
+    "category": "tooling",
+    "description": "**A fail-soft `catch` around a generator call turned a missing barrel export into a silent `null` return.** `buildCoatOfArmsConfigFromWeights` was added to `CoatOfArms.tsx` but not re-exported from `src/components/icons/index.ts`; the importing module called it through the barrel, so it was `undefined`, the call threw `TypeError`, and the registry's NFP #4 `catch` converted that into \"this faction has no sigil\" — indistinguishable from the legitimate no-art case.",
+    "consequence": "A wiring error presents as a content gap. Had the new tier not been pinned by a test that asserted a *non-null* result for a generated faction, this would have shipped as \"the property tier does not work\" with no error anywhere.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "**When adding a fail-soft boundary, pair it with at least one test asserting the success path returns something, not merely that the failure path returns null.** The null-return tests all passed; only `expect(url).toMatch(/^data:image\\/svg\\+xml/)` caught it. Also: when a module lives behind a barrel, add the export to the barrel in the same edit as the declaration — TypeScript will not flag a missing re-export at the call site if the call is inside a `try`.",
+    "session": "THR-638 faction batch, hourly `tb-opus-pickup`, worktree reverent-leakey-009e43"
   }
 ];
 // ── End data ──

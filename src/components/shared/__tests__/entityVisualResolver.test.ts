@@ -123,6 +123,63 @@ describe('resolveEntityVisual — knownSrc + graph-free surfaces', () => {
     expect(d.src).toBe('/concept-art/bridge.png');
     expect(d.kind).toBe('encounter');
   });
+
+  it('resolves a faction to its procedural heraldry sigil (THR-638)', () => {
+    const g = graphWith(
+      node({
+        id: 'faction_def_thieves_guild',
+        type: 'actor',
+        name: 'The Thieves Guild',
+        properties: { actorType: 'faction', factionDefId: 'thieves_guild' },
+      }),
+    );
+    const d = resolveEntityVisual({ id: 'faction_def_thieves_guild' }, g);
+    expect(d.kind).toBe('faction');
+    expect(d.tier).toBe('art');
+    expect(d.src).toMatch(/^data:image\/svg\+xml;charset=utf-8,/);
+  });
+
+  it('prefers a bespoke sigilAssetPath over generated heraldry', () => {
+    const g = graphWith(
+      node({
+        id: 'f2',
+        type: 'actor',
+        properties: {
+          actorType: 'faction',
+          factionDefId: 'thieves_guild',
+          sigilAssetPath: '/assets/factions/bespoke-banner.jpg',
+        },
+      }),
+    );
+    const d = resolveEntityVisual({ id: 'f2' }, g);
+    expect(d.src).toBe('/assets/factions/bespoke-banner.jpg');
+  });
+
+  it('falls back to the glyph tile for a faction with an unknown definition id', () => {
+    const g = graphWith(
+      node({
+        id: 'f3',
+        type: 'actor',
+        properties: { actorType: 'faction', factionDefId: 'no_such_faction' },
+      }),
+    );
+    const d = resolveEntityVisual({ id: 'f3' }, g);
+    expect(d.kind).toBe('faction');
+    expect(d.tier).toBe('fallback');
+  });
+
+  it('returns a byte-identical sigil across calls (NFP #3 — stable <img src>)', () => {
+    const g = graphWith(
+      node({
+        id: 'f4',
+        type: 'actor',
+        properties: { actorType: 'faction', factionDefId: 'civic_guard' },
+      }),
+    );
+    const first = resolveEntityVisual({ id: 'f4' }, g).src;
+    const second = resolveEntityVisual({ id: 'f4' }, g).src;
+    expect(first).toBe(second);
+  });
 });
 
 describe('resolveEntityVisual — fallback chain + fail-soft', () => {

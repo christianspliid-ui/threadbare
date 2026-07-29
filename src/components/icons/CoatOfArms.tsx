@@ -34,27 +34,42 @@ export interface CoatOfArmsConfig {
 /** Threshold within which a secondary reach is considered "close enough" */
 const SECONDARY_REACH_THRESHOLD = 0.2;
 
-export function buildCoatOfArmsConfig(
-  def: FactionDefinition,
+/**
+ * Build a config from a raw reach-weight map rather than a `FactionDefinition`.
+ *
+ * Most factions in a live world are **not** definition-backed: a seeded world
+ * carries ~49 faction actors of which only ~13 have a `factionDefId`; the rest
+ * are procedurally generated (`guild_N`, `faction_N`) and carry their reach
+ * profile as `domainCapabilities` instead (THR-638). That map has the same
+ * `reach → number` shape as `reachWeights`, so the same heraldry derives from
+ * it — which is what lets a generated guild get a real sigil rather than a
+ * blank tile.
+ */
+export function buildCoatOfArmsConfigFromWeights(
+  weights: Record<string, number>,
+  factionType: FactionDefinition['factionType'],
   fallbackGlyph?: string,
+  fallbackColor?: string,
   prominenceLevel: ProminenceLevel = 'base',
 ): CoatOfArmsConfig {
-  const weights = def.reachWeights;
   // Filter to valid ReachDomain keys only — some definitions (e.g. monster factions)
   // may include sphere names like 'force' in reachWeights which aren't valid reaches
   const validReaches = new Set<string>(Object.keys(REACH_TO_SPHERE));
-  const entries = (Object.entries(weights) as [string, number][])
-    .filter(([key]) => validReaches.has(key)) as [ReachDomain, number][];
+  const entries = (Object.entries(weights ?? {}) as [string, number][])
+    .filter(([key, value]) => validReaches.has(key) && Number.isFinite(value)) as [
+    ReachDomain,
+    number,
+  ][];
 
   if (entries.length === 0) {
     return {
-      factionType: def.factionType,
+      factionType,
       dominantReach: null,
       dominantSphere: null,
       foundationSphere: null,
       prominenceLevel,
-      fallbackGlyph: fallbackGlyph ?? def.iconGlyph,
-      fallbackColor: def.themeColor,
+      fallbackGlyph,
+      fallbackColor,
     };
   }
 
@@ -74,25 +89,55 @@ export function buildCoatOfArmsConfig(
   }
 
   return {
-    factionType: def.factionType,
+    factionType,
     dominantReach,
     secondaryReach,
     dominantSphere,
     foundationSphere,
     prominenceLevel,
-    fallbackGlyph: fallbackGlyph ?? def.iconGlyph,
-    fallbackColor: def.themeColor,
+    fallbackGlyph,
+    fallbackColor,
   };
+}
+
+/** Build a config from a full `FactionDefinition`. */
+export function buildCoatOfArmsConfig(
+  def: FactionDefinition,
+  fallbackGlyph?: string,
+  prominenceLevel: ProminenceLevel = 'base',
+): CoatOfArmsConfig {
+  return buildCoatOfArmsConfigFromWeights(
+    def.reachWeights as Record<string, number>,
+    def.factionType,
+    fallbackGlyph ?? def.iconGlyph,
+    def.themeColor,
+    prominenceLevel,
+  );
 }
 
 // ─── SVG Generator ────────────────────────────────────────────────────────────
 
 let _clipIdCounter = 0;
 
-export function generateCoatOfArmsSvg(config: CoatOfArmsConfig, size: number): string {
+/**
+ * @param clipIdSeed  Optional stable suffix for the internal clip-path id. Omit
+ *   (the default) when the SVG is inlined into the live document, where each
+ *   instance needs a document-unique id and the counter supplies it. Pass a
+ *   stable seed when the SVG becomes a self-contained document — a
+ *   `data:image/svg+xml` URI, a canvas rasterisation — because there the id
+ *   cannot collide with anything, while a counter makes the output string
+ *   differ on every call. THR-638: the entity-visual resolver returns this
+ *   string as an `<img src>`, so a per-call id would change the URL on every
+ *   render and force the browser to re-decode the image (NFP #3).
+ */
+export function generateCoatOfArmsSvg(
+  config: CoatOfArmsConfig,
+  size: number,
+  clipIdSeed?: string,
+): string {
   const { width: vbW, height: vbH } = SHIELD_VIEWBOX;
   const svgHeight = Math.round((size * vbH) / vbW);
-  const clipId = `coa-clip-${config.factionType}-${_clipIdCounter++}`;
+  const clipId = `coa-clip-${config.factionType}-${clipIdSeed ?? _clipIdCounter++}`;
 
   // Fallback: no dominant reach
   if (!config.dominantReach) {
@@ -122,8 +167,11 @@ export function generateCoatOfArmsSvg(config: CoatOfArmsConfig, size: number): s
       : tinctures.secondary,
   };
 
-  // Border color: use sphere color
-  const borderColor = tinctures.primary;
+  // Border: the luminous charge colour, not the field. Since THR-638 crushed
+  // the field into the world's dark value range, a field-coloured border would
+  // disappear against any dark surface and the shield would lose its silhouette.
+  // Border and charge sharing one colour is also ordinary heraldic livery.
+  const borderColor = tinctures.charge;
 
   // Primary charge: center of shield
   const primaryCharge = renderCharge(config.dominantReach, tinctures.charge, 1, 60, 75);
