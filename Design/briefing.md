@@ -1,48 +1,32 @@
 # Briefing
 
-**Generated:** 2026-07-29 20:54 local (2026-07-29 18:54 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-07-30 00:00 local (2026-07-29 22:00 UTC) · by `keep-work-flowing-cc` · measurements taken 23:54 local (21:54 UTC)
 
 This is your inbox. It's rewritten every hour by a Claude Code task. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
 ## Needs Christian
 
-**Nothing needs you right now.** You answered the one open question this evening, and your answer closed it — see below. The queue is draining on its own, everything is healthy, and there is no switch waiting on you.
-
-## From Christian
-
-**You wrote, at 20:10 local:**
-
-> *"can't find anything like that. I do not use linear or github at all. so any issues in linear or PRs in github with my name on them are yours."*
-
-**What I did with it — the first half closes the ask, the second half is worth more than the ask was.**
-
-The thing I asked you to look for was a setting that stops your name being stamped on jobs. You looked and it isn't there. That's a clean answer, and the note I'd written to myself said that if the switch turned out not to exist I should say so plainly rather than go hunting for a different one. So: **the switch hypothesis is dead, I'm not hunting, and I won't ask you about it again.**
-
-**Your second sentence solves it better than the switch would have.** Everything hinged on an assumption nobody had ever checked with you — that your name on a job means *a person has taken it*, so the robot should leave it alone. You've just told us your name never means that. It's an artefact of the robots pushing under your account, nothing more.
-
-That flips the fix from a setting we can't reach to a line we own. We were trying to stop your name being written. We should instead **stop treating it as a signal** — the picker can simply ignore your name and carry on. That works whether or not the stamping ever stops.
-
-**Routed onward, not for you:** a crew session needs to make that change and correct the ticket, which currently describes the old, wrong plan. That's implementation work, outside what this hourly task is allowed to touch, so it goes to them rather than getting done here. Worth noting the irony — **that ticket is itself one of the hidden ones.**
+**Nothing needs you right now.** No open questions, no switch waiting on you, nothing stuck. The queue is deep but draining, and every health check came back clean.
 
 ## Queue
 
-**Forty-six jobs ready, one in progress, nothing gone cold.** One important, ten medium, thirty-five small. The longest wait is just under five days — inside the week we allow.
+**Forty-seven jobs ready, one in progress, nothing gone cold.** One important, eleven medium, thirty-five small. The longest wait is just over five days — inside the week we allow.
 
-The stamping happened once more this hour, exactly on script: the filing robot promoted a job at 20:28 and your name appeared on it at 20:29. **Third hour running, same two-minute delay.** The shelf held at forty-six and the picker's visible list slipped from thirty-eight to thirty-seven.
+**The hidden-queue problem you diagnosed last night is mostly cleaned up.** Your name had been landing on filed jobs, and the robot that picks up work was skipping anything with a name on it. Acting on what you said — that your name never means a person took something — the filing robot went back at 22:31 local and stripped the names off the whole backlog by hand. **The picker can now see forty-five of forty-seven jobs, up from thirty-seven of forty-six an hour ago.** The important one is visible again for the first time in four hours.
 
-That number stops mattering once the change above lands, which is the point of routing it.
+The catch: **two jobs filed since then picked up names again.** The by-hand sweep cleaned the backlog, it didn't stop the cause — so this will re-accrue a couple of rows an hour until the picker is taught to ignore the field. That change is ticketed and waiting in the queue; nothing here is for you.
 
 ## Freshness
 
 **Home tree healthy** — on the main line, nothing stranded, fully up to date. The only local edits are your own tool-permission settings, which block nothing.
 
-**The live site is current** — everything published since the last real build was notes and paperwork, so no rebuild was needed. **The merge safety net is healthy**, zero failed starts. **The tidy-up robot ran fourteen minutes ago** with nothing awaiting a human call, and **all eight scheduled robots are on time.**
+**The live site rebuilt this hour** — the faction sigils work went out, so what's published is genuinely current rather than merely unchanged. **The merge safety net is healthy**, zero failed starts. **The tidy-up robot ran at 23:40** with nothing awaiting a human call, and **all eight scheduled robots are on time.**
 
 ## What's moving
 
-**The rival-gods contestation work shipped at 20:57, while this brief was being written.** Rival gods can now bleed your essence sources — take one from dormant to contested to desecrated across a scheme arc, with the income redirected to them, and you can see *which* rival is draining *which* source without reading code. It was picked up at 20:01 and done in under an hour.
+**Faction sigils shipped at 23:51 local.** Every faction now draws its own coat of arms from the heraldry generator that had been sitting unused — so factions arrive with a visual identity instead of a name and a blank space, wherever the entity headers appear.
 
-That's a game-content job rather than plumbing, which is a change from the last several hours. It also carried your name the whole time and was picked up and finished regardless — worth saying plainly, because it's the second case showing the name-stamping delays work reaching the picker rather than stopping it.
+That's the second game-content job in a row rather than plumbing. It's part of the larger art batch, which stays open — encounter illustrations, artifact art, sublocation art and NPC portraits are still to come under the same job.
 
 ---
 *Standing asks live in `Design/user-actions.md`. This file is regenerated hourly by the `keep-work-flowing-cc` scheduled task; staleness is visible from the Generated timestamp above and the task's `lastRunAt` in `list_scheduled_tasks`.*
