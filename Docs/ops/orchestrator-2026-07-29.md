@@ -1,5 +1,55 @@
 # Orchestrator — 2026-07-29
 
+## Tenth run — 17:29Z update
+
+### Needs Christian
+
+Nothing needs you this run.
+
+### T1 — unblock sweep (17:29Z)
+
+**Scan:** `list_issues(state:"Todo", limit:50)` → 11 candidates (down from 12 at 16:28Z — that run's promotion of THR-851 left Todo). `list_issues(state:"Ready for Dev", limit:100)` → 45 items — above `QUEUE_BACKED_UP_MIN=15`, so the shelf-backup ceiling capped this run to **at most one promotion**.
+
+**Also checked this run:** THR-845 (High, still open, Ready for Dev) documents orchestrator promotions silently picking up an `assignee`, which hides the issue from `pull-work`'s `assignee:null` pickup query — its evidence table shows the bug firing specifically on **update**-path `save_issue(id, state:...)` calls. Applied the recommended workaround: this run's promotion call passed `assignee: null` explicitly rather than omitting the field. Verified via `get_issue` — no `assignee`/`assigneeId` field present in the response. THR-845 itself remains unfixed at the writer; that's an executor task, not touched here.
+
+**Promoted (1, at the shelf-backup ceiling):**
+
+- **THR-582** ("Migrate remaining ~46 inline phases to runInlinePhase, THR-580 deferrable tail") — no `Blocked by` line ever declared; mechanical refactor tail with an explicit code pattern and Done-when checklist. Held back by the ceiling across every run today (most recently the 16:28Z run, which took THR-851 instead on lower blast radius). Promoted → verified via `get_issue` (`stateHistory` shows Todo → Ready for Dev at 17:28:49.937Z, state stuck, no assignee) → coordination-block comment posted (Suggested model: sonnet; Parallel-safe with: anything not touching `runTick`'s inline-phase call sites in `orchestrator.ts`; Mutex with: none identified). Picked over its equally-eligible Low-priority sibling THR-766 on FIFO (filed 2026-07-03 vs. 2026-07-25) and because it's a mechanical pattern-migration with a fixed Done-when, not a game-balance judgment call.
+
+**Declined — needs design finalization first (T2's input, not T1's):**
+
+- **THR-735** ("Armed-PR staleness sweep") — no blocker, still self-declares "design pass needed — do not pick one from this ticket alone" among 4 candidate remedies.
+- **THR-790** / **THR-791** (Traits wave 2 / wave 3) — blocker THR-786 confirmed `Done` (completed 2026-07-26T10:55:17Z), but both self-declare their own design-finalization gate.
+
+**Declined — staging/tracking containers, not implementable units:**
+
+- **THR-772** (Nudge Model program epic), **THR-778** (WS5 content-migration container), **THR-789** (Traits program epic) — all three explicitly self-declare as containers.
+- **THR-838** (Nudge Model WS5 Batch 1 tracker) — unchanged: stays in Todo as the burndown tracker per the 13:42Z run's explicit note.
+
+**Declined — other:**
+
+- **THR-680** ("Stash triage") — re-verified live: `git stash list` from this session's worktree shows only **2** entries, unchanged across every sweep today. Also carries the standing structural conflict with THR-672 (home-tree-only approach). See Escalations.
+- **THR-175** ("UI overhaul 08, agent.sphere field") — explicit `Status: DEFERRED`, unmet unblock trigger.
+
+**Held back by the shelf-backup ceiling (no blocker):**
+
+- **THR-766** ("Tune the god's cast power curve") — parent THR-728 confirmed Done; bounded tuning pass, no blockers. Strongest next-run candidate now that THR-582 is taken.
+- The WS5 partition's remaining unfiled cells (1a hamlet/12, 1b civic seats/8, 1c wayside & wild/7, 1d sacred & arcane sites/8) plus two structural one-offs — unchanged from the THR-838 comment thread.
+
+### T2 — design authoring (17:29Z)
+
+**Not triggered.** Ready for Dev holds well above the floor of 2 non-`Deferral` items (23+ before this run's promotion; THR-582 carries the `Deferral` label so it doesn't add to that count).
+
+### T3 — architecture health (17:29Z)
+
+**Skipped — already ran today.** First daily sweep completed at 13:42Z (this file, "Sixth run" section below). Not re-run.
+
+### Escalations (17:29Z)
+
+- **THR-680 execution-model conflict** (unchanged from prior runs today): the ticket's only stated approach requires home-tree git state ops, which THR-672 prohibits for every scheduled session. Parked, not blocking the rest of this run.
+
+---
+
 ## Ninth run — 16:28Z update
 
 ### Needs Christian
