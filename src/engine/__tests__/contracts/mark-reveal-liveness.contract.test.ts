@@ -215,8 +215,13 @@ describe('Mark reveal scoring: matching encounters score higher', () => {
     graph.addNode({ id: 'loc-a', type: 'location', name: 'Loc A', properties: { locationType: 'settlement', hexCol: 0, hexRow: 0 } });
     graph.addNode({ id: 'agent-1', type: 'actor', name: 'Agent', properties: { actorType: 'individual', locationId: 'loc-a' } });
 
+    // THR-844: this was `investigation.witness_account`, an id no template carries. The
+    // family `investigation` matched it only because both strings were invented here — the
+    // contract "a marked agent prefers investigation encounters" was never tested against
+    // anything the game can draw. `social.investigate_reputation` is real, and is one of the
+    // prefixes the `investigation` alias resolves to.
     const investigationCandidate: EncounterCacheEntry = {
-      templateId: 'investigation.witness_account',
+      templateId: 'social.investigate_reputation',
       locationId: 'loc-a',
       sublocationId: null,
       sublocationTypeId: null,

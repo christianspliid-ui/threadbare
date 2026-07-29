@@ -16,6 +16,7 @@ import { emitTrace } from './traceBuffer';
 import type { TraceEntry } from '../types/trace';
 import { mulberry32 } from '../lib/prng';
 import { generateMarkRevealMessage } from './hiddenMarkProse';
+import { resolveRevealFamily } from '../data/reveal-family-aliases';
 
 // ─── Decay constants (NFP #1) ─────────────────────────────────────
 
@@ -45,6 +46,23 @@ export const REVEAL_EVENT_SIGNIFICANCE = 0.7;
  * @range 0.1–0.5 */
 export const DECAY_EVENT_SIGNIFICANCE = 0.3;
 
+// ─── Family matching (THR-844) ────────────────────────────────────
+
+/**
+ * Does an authored reveal-family name match this template id?
+ *
+ * A family resolves through `REVEAL_FAMILY_ALIASES` to one or more template-id prefixes and
+ * matches if ANY of them prefixes the id. An unaliased family resolves to itself, so this is
+ * byte-identical to the old raw `templateId.startsWith(family)` for every family that already
+ * worked — the alias table only revives names that previously matched nothing.
+ *
+ * This is the single matching predicate: both the scoring-time query (`evaluateMarkReveals`)
+ * and the family-level query (`checkMarkReveals`) route through it, so they cannot drift.
+ */
+export function familyMatchesTemplate(family: string, templateId: string): boolean {
+  return resolveRevealFamily(family).some(prefix => templateId.startsWith(prefix));
+}
+
 // ─── Query helpers ────────────────────────────────────────────────
 
 /** Get all hidden marks on a specific agent. */
@@ -63,17 +81,20 @@ export function hasHiddenMark(state: GameState, agentId: string, category: Hidde
 }
 
 /**
- * Check if any hidden marks would be revealed by an encounter from a given family.
- * Returns marks whose revealFamilies include the given family prefix.
+ * Check whether any of an agent's hidden marks would be revealed by a given encounter.
+ *
+ * The parameter is a **template id**, not a family name — it was called `encounterFamily` and
+ * matched by raw prefix, which let a caller pass either and get plausible-looking answers for
+ * both. It now routes through `familyMatchesTemplate` like every other match site (THR-844).
  */
 export function checkMarkReveals(
   state: GameState,
   agentId: string,
-  encounterFamily: string,
+  templateId: string,
 ): readonly HiddenMark[] {
   return (state.hiddenMarks ?? []).filter(m =>
     m.targetAgentId === agentId &&
-    m.revealFamilies?.some(f => encounterFamily.startsWith(f)),
+    m.revealFamilies?.some(f => familyMatchesTemplate(f, templateId)),
   );
 }
 
@@ -126,7 +147,8 @@ export interface MarkRevealCandidate {
 
 /**
  * For a given agent and encounter templateId, returns all marks whose revealFamilies
- * match the templateId by prefix. Pure query — does NOT consume the mark.
+ * match the templateId (alias-aware — see `familyMatchesTemplate`). Pure query — does NOT
+ * consume the mark.
  *
  * Accepts either a GameState or a pre-extracted marks array to keep scoring
  * functions dependency-minimal (they don't hold a full GameState).
@@ -145,7 +167,7 @@ export function evaluateMarkReveals(
   return marks
     .filter(m =>
       m.targetAgentId === agentId &&
-      m.revealFamilies?.some(f => templateId.startsWith(f)),
+      m.revealFamilies?.some(f => familyMatchesTemplate(f, templateId)),
     )
     .map(m => ({
       mark: m,
