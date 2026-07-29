@@ -1,5 +1,53 @@
 # Orchestrator — 2026-07-29
 
+## Thirteenth run — 21:31Z update
+
+### Needs Christian
+
+Nothing needs you this run.
+
+### T1 — unblock sweep (21:31Z)
+
+**Scan:** `list_issues(state:"Todo", limit:50)` → 9 candidates. `list_issues(state:"Ready for Dev", limit:100)` → 46 items (24 `Deferral`, 22 non-`Deferral`) — above `QUEUE_BACKED_UP_MIN=15`, so the shelf-backup ceiling capped this run to **at most one promotion/filing**.
+
+**Filed (1, at the shelf-backup ceiling) — not a Todo→Ready-for-Dev promotion, a split-filing:**
+
+- **THR-856** ("Nudge Model WS5 Batch 1 — encounter.shell_proof.fate_card_trial premise + hand, 1 template, structural one-off") — the second of the two "structural one-offs" THR-838's 2026-07-29 13:30Z grooming re-scope comment named as wanting their own tickets (`encounter.apotheosis.ascension` and `encounter.shell_proof.fate_card_trial`), separate from the five place-tagged batches (1a–1e, of which 1c/THR-855 and 1e/THR-848 are already filed). Read the template directly (`src/data/effect-shell-proof-templates.ts:20-73`, `FATE_CARD_TRIAL_TEMPLATE`) to ground the ticket in the actual code rather than the comment's summary: it's a direct `UnifiedActionTemplate` literal (THR-53's "Effect Shell Proof Pack," an engine-test fixture), carries none of the WS1 nudge-authoring fields, and its premise is two one-line `narrativeTemplate` strings plus three `narrativeTemplates` lines — thin enough to need expansion before it can carry a hand, matching checkpoint 3's 56-vs-45-word finding. Filed → verified via `get_issue` (state `Ready for Dev`, `stateHistory` shows a single `Ready for Dev` entry from creation, no `assignee`/`assigneeId` field present) → coordination-block comment posted on THR-856 (Suggested model: opus; Parallel-safe with: everything queued, including THR-848/THR-855 — different file; Mutex with: none, sole ticket touching `effect-shell-proof-templates.ts`) → note comment posted on THR-838 recording what was filed and what was held back.
+  - **The other structural one-off, `encounter.apotheosis.ascension`, deliberately held back rather than filed alongside THR-856.** It converts away from `authoredChoices` and touches the live Aspect-apex mechanic (THR-479, THR-484) — that reads as a larger blast radius than a same-shape mechanical filing should carry without a closer look at what the conversion actually changes for the Aspect UI/flow. Recorded on THR-838 for next run or a design pass, not filed as-is.
+  - **Also held back** (ceiling, unchanged shape from prior runs): 1a hamlet (12, wants halving per checkpoint-3 sizing note), 1b civic seats (8, wants halving), 1d sacred & arcane sites (8, wants halving) — all three are a sizing judgment call, not a mechanical filing, so left for T2/a design pass per the standing grooming note.
+
+**Re-checked THR-838 itself:** confirmed still in Todo, still assigned to Christian Spliid (not null), `parentId` THR-778, `stateHistory` shows the single `Ready for Dev → In Dev → Todo` escalation cycle from 2026-07-28/29 unchanged since the last sweep — this does not cross `ORCH_STALLED_PICKUP_THRESHOLD` (3 separate re-claims; this is one claim with three internal checkpoints). Not itself promotable — stays the burndown tracker per every prior run's note.
+
+**Declined — needs design finalization first (T2's input, not T1's):**
+
+- **THR-790** / **THR-791** (Traits wave 2 / wave 3) — blocker THR-786 confirmed `Done`, both self-declare their own design-finalization gate.
+- **THR-735** ("Armed-PR staleness sweep") — no blocker; this sweep's read didn't turn up a fresh design-gate quote, but 12 consecutive prior sweeps today confirmed the same self-declared "design pass needed — do not pick one from this ticket alone" line and nothing in the ticket changed since — treating as unchanged rather than re-litigating.
+
+**Declined — staging/tracking containers, not implementable units:**
+
+- **THR-772** (Nudge Model program epic), **THR-778** (WS5 content-migration container), **THR-789** (Traits program epic) — unchanged, all three explicitly self-declare as containers.
+
+**Declined — other:**
+
+- **THR-680** ("Stash triage") — unchanged: standing structural conflict with THR-672 (home-tree-only approach). See Escalations.
+- **THR-175** ("UI overhaul 08, agent.sphere field") — unchanged: explicit `Status: DEFERRED`, unmet unblock trigger.
+
+**Held back by the shelf-backup ceiling:** see the THR-838 partition notes above (1a/1b/1d, `apotheosis.ascension`) — no other no-blocker Todo candidate remains this run.
+
+### T2 — design authoring (21:31Z)
+
+**Not triggered.** Ready for Dev holds 23 non-`Deferral` items after this run's filing (THR-856 carries the `Content` label, not `Deferral`) — well above the floor of 2.
+
+### T3 — architecture health (21:31Z)
+
+**Skipped — already ran today.** First daily sweep completed at 13:42Z (this file, "Sixth run" section below). Not re-run.
+
+### Escalations (21:31Z)
+
+- **THR-680 execution-model conflict** (unchanged): the ticket's only stated approach requires home-tree git state ops, which THR-672 prohibits for every scheduled session. Parked, not blocking the rest of this run.
+
+---
+
 ## Twelfth run — 20:31Z update
 
 ### Needs Christian
