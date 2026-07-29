@@ -5,6 +5,16 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  # Manual full-suite run (THR-842). The path filter below is what keeps docs-only
+  # pushes fast, and it is also why `main` can go a long stretch with no execution
+  # of the required check at all — every orchestrator sweep and briefing refresh
+  # is docs-only, so `Test · Typecheck · Build` records as `skipped`. That is
+  # correct per-PR and useless for *retro-verification*: after an incident you
+  # need one full gate run on a `main` commit, and before this trigger existed the
+  # only way to force one was to invent a code change. Dispatching this workflow
+  # on `main` runs the whole suite unconditionally — see the `detect` and `check`
+  # conditions below for how the filter is bypassed.
+  workflow_dispatch:
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -27,6 +37,12 @@ jobs:
       - uses: actions/checkout@v4
       - uses: dorny/paths-filter@v3
         id: filter
+        # Skipped on a manual dispatch (THR-842): paths-filter derives its diff
+        # base from the push/pull_request payload, which a workflow_dispatch event
+        # does not carry. Skipping the step leaves `code` empty and the job still
+        # `success`, so the vacuous-gate guard below stays quiet — the `check`
+        # job's own `workflow_dispatch` clause is what forces the full suite.
+        if: github.event_name != 'workflow_dispatch'
         with:
           # 'code' is true if ANY changed file is not a doc.
           # predicate-quantifier: every is REQUIRED — under the default 'some'
@@ -57,10 +73,11 @@ jobs:
     #   detect succeeded, code == 'true'  → run the suite      (unchanged)
     #   detect succeeded, code == 'false' → skip               (unchanged: docs-only PRs stay fast)
     #   detect did NOT succeed            → run, and FAIL loudly via the guard step below
+    #   event is workflow_dispatch        → run unconditionally (THR-842 retro-verification)
     #
     # `!cancelled()` rather than `always()` deliberately: a run superseded by
     # `cancel-in-progress` must stay cancelled, not be reported as a failure.
-    if: ${{ !cancelled() && (needs.detect.result != 'success' || needs.detect.outputs.code == 'true') }}
+    if: ${{ !cancelled() && (github.event_name == 'workflow_dispatch' || needs.detect.result != 'success' || needs.detect.outputs.code == 'true') }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
