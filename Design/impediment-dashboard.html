@@ -5250,6 +5250,19 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "**Rule: a test that supplies both sides of a match must pin at least one side to the shipped corpus.** This is `vacuous_probe_empty_population` with no empty population to notice — the population is non-empty, it is just fictional, so the usual \"assert the set is non-empty first\" reflex passes. The cheap form is to select the fixture *from* the real data rather than typing it: `UNIFIED_ACTION_TEMPLATES.find(t => t.id.startsWith(FAMILY))!.id`, which is what `curseMark.test.ts` already does and why it was the one file in this area that did not need repairing. Where a literal is clearer to read, import it and assert membership in the same file. Applies to any id-keyed lookup under test — template ids, node ids, action ids, faction ids.",
     "session": "THR-844, hourly `tb-opus-pickup`, 2026-07-29"
+  },
+  {
+    "num": "289",
+    "id": 289,
+    "count": 1,
+    "date": "2026-07-29",
+    "category": "process-friction",
+    "description": "**A retirement sweep scoped by a plan doc's \"Files to touch\" list inherits that list's blind spots — two live slash commands kept instructing agents to use a label deleted eight days earlier.** THR-654 demolished the Cowork flush pipeline and removed `plan-pending-commit` from CLAUDE.md, the skills tree, and the workflows — the three surfaces its plan doc named. It never touched `.claude/commands/`, which the plan's \"Files to touch\" section did not list. So `.claude/commands/design-audit.md` still read *\"Proceed to `plan-pending-commit` and Linear state transition as normal\"* (a **positive** instruction to apply a non-existent label), plus two more label references and two Cowork-role references; `.claude/commands/intent-judge.md` still said *\"Cowork's plan-doc workflow handles the standard Allow → Ready for Dev transition\"*; and `.claude/skills/design-session/SKILL.md` still asserted the legacy path *\"still exists during the migration parallel-run\"*. Every one of the ~40 other repo references to `plan-pending-commit` is either a correct negative instruction (\"do not apply it\") or a dated plan doc, which is why a grep count alone would have read as healthy.",
+    "consequence": "A design session invoking `/design-audit` or `/intent-judge` would be told to apply a label Linear no longer has, and a `design-session` would be told a deleted fallback still exists — inviting a hunt for machinery that was removed. Silent by construction: nothing typechecks a slash-command markdown file, and the demolition's own verification (CLAUDE.md clean, deletions absent, tests green) passes with the residue in place.",
+    "impact": "M",
+    "workaroundFound": true,
+    "workaround": "**Workaround/fix:** corrected all three files in the THR-655 post-migration retro pass — commands now route to the `docs/plan-*` PR flow and name the `design-session` skill instead of Cowork; the skill states the path was deleted 2026-07-21. **Generalisable check:** when retiring a named token, grep the whole repo and triage hits by *polarity* — negative instructions and dated plan docs are correct residue, positive instructions in live surfaces are the defect. Counting hits hides the distinction.",
+    "session": "THR-655 post-migration retro (Pure Claude Code Migration Phase 3 step 8), tb-opus-pickup hourly lane"
   }
 ];
 // ── End data ──

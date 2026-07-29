@@ -6,10 +6,10 @@ description: Run the design-audit-pipeline against a plan doc — spawns three i
 
 Manually invoke the design-audit-pipeline skill against a plan doc. Use when:
 
-- Running the audit before applying `plan-pending-commit` (manual mode).
-- A plan doc was authored outside the auto-trigger window (e.g. drafted in CC).
+- Running the audit by hand before opening the `docs/plan-*` PR (manual mode).
+- A plan doc was authored outside the auto-trigger window.
 - A Reopened issue's revised plan doc needs re-auditing.
-- The Cowork session already ran intent-judge Allow and you want to run the structural audit separately.
+- The design session already ran intent-judge Allow and you want to run the structural audit separately.
 
 ## Usage
 
@@ -32,15 +32,15 @@ Example:
 
 ## Verdict handling
 
-- **All PASS / PASS-with-notes** → audit complete. Proceed to `plan-pending-commit` and Linear state transition as normal.
+- **All PASS / PASS-with-notes** → audit complete. Commit the plan doc via its `docs/plan-*` PR and make the Linear state transition as normal.
 - **Any REVISE** → surface finding to author for inline fix before transitioning.
-- **Any FAIL / BLOCK** → do NOT apply `plan-pending-commit`. Author must resolve the finding and re-run `/design-audit`.
+- **Any FAIL / BLOCK** → do NOT open the `docs/plan-*` PR and do NOT move the issue to Ready for Dev. Author must resolve the finding and re-run `/design-audit`.
 
 ## What this does NOT do
 
 - Edit the plan doc beyond the `## Forked-audit verdicts` tail section.
 - Move the Linear issue.
-- Apply or remove labels (that is the Cowork orchestrator's job after verdict is clear).
+- Apply or remove labels, or open the plan-doc PR (the design session does that itself once the verdict is clear).
 
 ## Load the skill
 
