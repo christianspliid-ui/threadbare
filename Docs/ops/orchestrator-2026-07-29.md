@@ -1,14 +1,58 @@
 # Orchestrator — 2026-07-29
 
+## Second run — 23:28Z update
+
+*T3 daily architecture-health sweep is gated on the first run after 06:00 local; this run fired at 23:28 local (before the gate), so only T1 ran and T2's trigger was re-checked.*
+
+### Needs Christian
+
+Nothing needs you this run.
+
+### T1 — unblock sweep (23:28Z)
+
+**Scan:** `list_issues(state:"Todo", limit:50)` → 14 candidates. `list_issues(state:"Ready for Dev", limit:100)` → 37 items (19 `Deferral`, 18 non-`Deferral`) — above `QUEUE_BACKED_UP_MIN=15`, so the shelf-backup ceiling capped this run to **at most one promotion**.
+
+**Promoted (1, at the shelf-backup ceiling):**
+
+- **THR-346** ("Encounter UI post-v1 H1 — Sound design pass") — both named blockers confirmed `Done`: THR-334 (D1 ThreadOverlay, completed 2026-05-08T06:31:41Z) and THR-335 (D2 EffectRegistration, completed 2026-05-08T08:19:38Z). The ticket's own description states D1/D2 "shipped with `onResolveBeat` and `onEffectLand` callbacks ready" for this ticket to consume — both are live in `main`. Promoted → verified via `get_issue` (`stateHistory` shows Todo → Ready for Dev at 23:28:57.582Z, state stuck) → coordination-block comment posted (Suggested model: opus-4-6; Parallel-safe with: THR-347/THR-348 and anything not touching `src/audio/*`, `ThreadOverlay.tsx`, `EffectRegistration/*`; Mutex with: none identified). Picked over its equally-ready siblings THR-347 (H2) and THR-348 (H3) — all three have Done blockers and their own coordination blocks — as the first phase of the H1→H2→H3 sequence; the other two remain the strongest next-run candidates.
+
+**Declined:**
+
+- **THR-680** ("Stash triage — bulk-classify the 38-deep home-tree stash stack") — **stale predicate, re-confirmed live.** `git stash list` from this session's worktree still shows only **2** entries (`home-tree-recovery` no-ops), not the 38 cited at filing. Unchanged from the prior sweep's finding; still flagged for a groomer to re-scope or close as resolved-by-other-means.
+- **THR-735** ("Armed-PR staleness sweep") — no blocker; self-declares "design pass needed — do not pick one from this ticket alone." T2's input, not T1's.
+- **THR-790** / **THR-791** (Traits wave 2 / wave 3) — blocker THR-786 confirmed Done, but both self-declare their own design-finalization gate. T2's input; T2 did not trigger this run.
+- **THR-175** ("UI overhaul 08, agent.sphere field") — explicit `Status: DEFERRED`, unmet unblock trigger.
+
+**Held back by the shelf-backup ceiling (no blocker, unchanged from prior sweeps):**
+
+- **THR-582** ("Migrate remaining ~46 inline phases to runInlinePhase") — mechanical tail of THR-580.
+- **THR-646** ("THR-636 follow-up: capture live browser screenshots") — feature complete and merged per its own text; pure verification-artifact task.
+- **THR-766** ("Tune the god's cast power curve") — parent THR-728 confirmed Done; bounded tuning pass.
+- **THR-347** / **THR-348** (Encounter UI post-v1 H2/H3) — blockers confirmed Done (THR-326/ARC-98 for H2; THR-338/ARC-105 for H3), each already carries a coordination block in its own description. Strongest next-run candidates once the shelf allows more than one promotion.
+
+**Not re-verified this run:** THR-772/778/789 (Nudge Model / Traits program-epic containers — intentionally Todo, explicit "do not implement from this issue").
+
+### T2 — design authoring (23:28Z)
+
+**Not triggered.** Ready for Dev holds 18 non-`Deferral` items after this run — well above the floor of 2.
+
+### T3 — architecture health (23:28Z)
+
+**Not run.** Gated on the first run after 06:00 local; this run fired at 23:28 local. Last sweep: 2026-07-28 07:42Z (see `orchestrator-2026-07-28.md`).
+
+### Escalations (23:28Z)
+
+None this run.
+
 ## First run — 00:31Z
 
 *T3 daily architecture-health sweep is gated on the first run after 06:00 local; this run fired at 00:31 local (well before the gate), so only T1 ran and T2's trigger was re-checked.*
 
-## Needs Christian
+### Needs Christian
 
 Nothing needs you this run.
 
-## T1 — unblock sweep
+### T1 — unblock sweep
 
 **Scan:** `list_issues(state:"Todo", limit:50)` → 15 candidates. `list_issues(state:"Ready for Dev", limit:100)` → 35 items (18 `Deferral`, 17 non-`Deferral`) — above `QUEUE_BACKED_UP_MIN=15`, so the shelf-backup ceiling capped this run to **at most one promotion**.
 
@@ -32,14 +76,14 @@ Nothing needs you this run.
 
 **Not re-verified this run:** THR-772/778/789 (Nudge Model / Traits program-epic containers — intentionally Todo, explicit "do not implement from this issue").
 
-## T2 — design authoring
+### T2 — design authoring
 
 **Not triggered.** Ready for Dev holds 17 non-`Deferral` items after this run — well above the floor of 2.
 
-## T3 — architecture health
+### T3 — architecture health
 
 **Not run.** Gated on the first run after 06:00 local; this run fired at 00:31 local. Last sweep: 2026-07-28 07:42Z (see `orchestrator-2026-07-28.md`).
 
-## Escalations
+### Escalations
 
 None this run.
