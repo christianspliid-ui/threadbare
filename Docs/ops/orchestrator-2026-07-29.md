@@ -1,5 +1,46 @@
 # Orchestrator — 2026-07-29
 
+## Fifth run — 02:29Z update
+
+*T3 daily architecture-health sweep is gated on the first run after 06:00 local; this run fired well before the gate, so only T1 ran and T2's trigger was re-checked.*
+
+### Needs Christian
+
+Nothing needs you this run.
+
+### T1 — unblock sweep (02:29Z)
+
+**Scan:** `list_issues(state:"Todo", limit:50)` → 11 candidates. `list_issues(state:"Ready for Dev", limit:100)` → 40 items (19 `Deferral`, 21 non-`Deferral`) — above `QUEUE_BACKED_UP_MIN=15`, so the shelf-backup ceiling capped this run to **at most one promotion**.
+
+**Promoted (1, at the shelf-backup ceiling):**
+
+- **THR-646** ("THR-636 follow-up: capture live browser screenshots of encounter card + veil context strip + step replay") — no `Blocked by` line was ever declared; parent feature THR-636 is merged (PR #549) and the ticket's own text states "pure verification-artifact task — no code change expected." Held back by the ceiling across the prior four runs today. Promoted → verified via `get_issue` (`stateHistory` shows Todo → Ready for Dev at 02:29:11.414Z, state stuck) → coordination-block comment posted (Suggested model: sonnet; Parallel-safe with: anything not touching `EncounterVeil*`/toast-rail/step-navigator; Mutex with: none). Picked over its equal-priority (Low) siblings THR-582 and THR-766 for the smallest blast radius — a read-only DOM screenshot pass touches no engine files, where THR-582 (inline-phase migration in `orchestrator.ts`) and THR-766 (cast-constants tuning) both edit central engine surfaces.
+
+**Declined:**
+
+- **THR-680** ("Stash triage") — **stale predicate, re-confirmed live again.** `git stash list` from this session's worktree still shows only **2** entries (`home-tree-recovery` no-ops). Unchanged across five consecutive sweeps now.
+- **THR-735** ("Armed-PR staleness sweep") — new comment landed since the last run (02:05Z, remedy candidate 5 — phase-align the Step 0.8 sweep to the merge cadence) but the ticket still self-declares "design pass needed — do not pick one from this ticket alone." T2's input, not T1's.
+- **THR-790** / **THR-791** (Traits wave 2 / wave 3) — blocker THR-786 remains `Done`, but both self-declare their own design-finalization gate. T2's input; T2 did not trigger this run.
+- **THR-772** / **THR-778** / **THR-789** (Nudge Model epic, WS5 content-migration container, Traits program epic) — all three explicitly self-declare as staging/tracking containers, not implementable units.
+- **THR-175** ("UI overhaul 08, agent.sphere field") — explicit `Status: DEFERRED`, unmet unblock trigger.
+
+**Held back by the shelf-backup ceiling (no blocker, unchanged from prior sweeps):**
+
+- **THR-582** ("Migrate remaining ~46 inline phases to runInlinePhase") — mechanical tail of THR-580, no blockers.
+- **THR-766** ("Tune the god's cast power curve") — parent THR-728 confirmed Done; bounded tuning pass, no blockers.
+
+### T2 — design authoring (02:29Z)
+
+**Not triggered.** Ready for Dev holds 21 non-`Deferral` items after this promotion (THR-646 carries the `Deferral` label, so it doesn't add to this count) — well above the floor of 2.
+
+### T3 — architecture health (02:29Z)
+
+**Not run.** Gated on the first run after 06:00 local; this run fired well before the gate. Last sweep: 2026-07-28 07:42Z (see `orchestrator-2026-07-28.md`).
+
+### Escalations (02:29Z)
+
+None this run.
+
 ## Fourth run — 01:30Z update
 
 *T3 daily architecture-health sweep is gated on the first run after 06:00 local; this run fired at 03:30 local (before the gate), so only T1 ran and T2's trigger was re-checked.*
