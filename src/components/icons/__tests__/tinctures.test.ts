@@ -1,33 +1,17 @@
 import { describe, it, expect } from 'vitest';
 import { deriveTinctures } from '../heraldry/tinctures';
-import { SPHERE_COLORS, REACH_TO_SPHERE, SPHERE_TO_FOUNDATION } from '../constants';
+import { SPHERE_COLORS, REACH_TO_SPHERE } from '../constants';
 import { REACH_DOMAINS } from '../../../types/traits';
 
 const HEX_COLOR_RE = /^#[0-9a-fA-F]{6}$/;
 
-describe('deriveTinctures', () => {
-  it('iron maps to force sphere (red) and chaos foundation', () => {
-    const t = deriveTinctures('iron');
-    expect(t.primary).toBe(SPHERE_COLORS.force);
-    expect(t.foundation).toBe(SPHERE_COLORS.chaos);
-  });
+/** Mean channel brightness in 0..1 — the "% brightness" STYLE.md bands the world by. */
+function brightness(hex: string): number {
+  const n = parseInt(hex.slice(1), 16);
+  return (((n >> 16) & 0xff) + ((n >> 8) & 0xff) + (n & 0xff)) / 3 / 255;
+}
 
-  it('heart maps to spirit sphere (purple) and darkness foundation', () => {
-    const t = deriveTinctures('heart');
-    expect(t.primary).toBe(SPHERE_COLORS.spirit);
-    expect(t.foundation).toBe(SPHERE_COLORS.darkness);
-  });
-
-  it('secondary color is darker than primary', () => {
-    for (const reach of REACH_DOMAINS) {
-      const t = deriveTinctures(reach);
-      // Parse brightness: secondary should be numerically darker (lower average)
-      const primAvg = parseInt(t.primary.slice(1, 3), 16) + parseInt(t.primary.slice(3, 5), 16) + parseInt(t.primary.slice(5, 7), 16);
-      const secAvg = parseInt(t.secondary.slice(1, 3), 16) + parseInt(t.secondary.slice(3, 5), 16) + parseInt(t.secondary.slice(5, 7), 16);
-      expect(secAvg, `secondary for ${reach} should be darker than primary`).toBeLessThan(primAvg);
-    }
-  });
-
+describe('deriveTinctures — structure', () => {
   it('all 8 reaches produce valid hex color strings', () => {
     for (const reach of REACH_DOMAINS) {
       const t = deriveTinctures(reach);
@@ -38,29 +22,63 @@ describe('deriveTinctures', () => {
     }
   });
 
-  it('primary comes from SPHERE_COLORS via REACH_TO_SPHERE', () => {
+  it('secondary (division field) is darker than primary (field)', () => {
     for (const reach of REACH_DOMAINS) {
-      const sphere = REACH_TO_SPHERE[reach];
       const t = deriveTinctures(reach);
-      expect(t.primary).toBe(SPHERE_COLORS[sphere]);
+      expect(brightness(t.secondary), `secondary for ${reach}`).toBeLessThan(
+        brightness(t.primary),
+      );
+    }
+  });
+});
+
+/**
+ * THR-638 — the Threadbare register. These replace the previous
+ * `primary === SPHERE_COLORS[sphere]` identity assertions, which pinned the
+ * palette to a contract the style guide contradicts: they passed while the
+ * generator emitted bright pastel fields (mint, salmon, sky blue), because
+ * "equals the sphere constant" says nothing about whether the result belongs
+ * in this world. These assert the property that actually matters.
+ */
+describe('deriveTinctures — Threadbare register (STYLE.md)', () => {
+  it('keeps every field inside the world value range (10–40% brightness)', () => {
+    for (const reach of REACH_DOMAINS) {
+      const t = deriveTinctures(reach);
+      const b = brightness(t.primary);
+      expect(b, `${reach} field brightness`).toBeGreaterThan(0.02);
+      expect(b, `${reach} field brightness`).toBeLessThanOrEqual(0.4);
     }
   });
 
-  it('foundation comes from SPHERE_COLORS via SPHERE_TO_FOUNDATION', () => {
+  it('keeps the division field and foundation dark too', () => {
     for (const reach of REACH_DOMAINS) {
-      const sphere = REACH_TO_SPHERE[reach];
-      const foundation = SPHERE_TO_FOUNDATION[sphere];
       const t = deriveTinctures(reach);
-      expect(t.foundation).toBe(SPHERE_COLORS[foundation]);
+      expect(brightness(t.secondary), `${reach} division`).toBeLessThanOrEqual(0.4);
+      expect(brightness(t.foundation), `${reach} foundation`).toBeLessThanOrEqual(0.4);
     }
   });
 
-  it('charge color is either dark navy or off-white for contrast', () => {
-    const darkCharge = '#0f0f1e';
-    const lightCharge = '#f0e8d0';
+  it('carries the sphere colour as the luminous charge, undimmed', () => {
+    // The charge is the device that reads at distance — the thread breaking
+    // through. It is the sphere's own colour, not a two-value contrast flip.
     for (const reach of REACH_DOMAINS) {
       const t = deriveTinctures(reach);
-      expect([darkCharge, lightCharge], `${reach} charge should be one of the two contrast values`).toContain(t.charge);
+      expect(t.charge, `${reach} charge`).toBe(SPHERE_COLORS[REACH_TO_SPHERE[reach]]);
     }
+  });
+
+  it('gives the charge clear separation from its field', () => {
+    for (const reach of REACH_DOMAINS) {
+      const t = deriveTinctures(reach);
+      expect(
+        brightness(t.charge) - brightness(t.primary),
+        `${reach} charge/field separation`,
+      ).toBeGreaterThan(0.2);
+    }
+  });
+
+  it('tints the field with its own sphere hue rather than one shared grey', () => {
+    const fields = REACH_DOMAINS.map((r) => deriveTinctures(r).primary);
+    expect(new Set(fields).size).toBe(REACH_DOMAINS.length);
   });
 });

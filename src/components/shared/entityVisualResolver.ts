@@ -3,10 +3,11 @@
  * this entity?" for every detail surface.
  *
  * One resolver, a per-kind source list, one fallback chain. Surfaces call this
- * instead of re-inventing portrait / concept-art / illustration plumbing. When
- * the THR-638 art batches land (faction sigils, artifact art, sublocation art,
- * NPC-role portraits), each becomes one added branch in `resolveSource` — zero
- * component changes.
+ * instead of re-inventing portrait / concept-art / illustration plumbing. Each
+ * THR-638 art batch lands as one added branch in `resolveSource` — zero
+ * component changes. Landed so far: NPC-role portraits, encounter
+ * illustrations (via `ref.knownSrc` from the stage model), faction sigils.
+ * Still falling through to the glyph tile: `artifact`, `sublocation`.
  *
  * Pure + synchronous. Reads graph nodes; never mutates, never runs in a tick
  * phase, emits no traces (inspectability is served by `__DEBUG.resolveEntityVisual`
@@ -26,6 +27,7 @@ import type { TerrainType } from '../../types';
 import type { SphereInfluence } from '../../engine/hexZoom';
 import { getAgentPortraitUrlFromProperties } from '../../data/portrait-assets';
 import { getOriginPortraitUrl } from '../../data/avatar-portrait-assets';
+import { getFactionSigilUrlFromProperties } from '../../data/faction-sigil-assets';
 import { pickConceptArt } from '../../data/concept-art-assets';
 import {
   type EntityVisualKind,
@@ -155,9 +157,15 @@ function resolveSource(
       // it (caller passed no hint) fall through to the location glyph tile.
       if (opts.terrain === undefined) return null;
       return pickConceptArt(opts.terrain, node ? [node] : [], opts.sphereInfluence ?? null);
-    // sublocation / encounter / faction / artifact: no curated registry yet
-    // (THR-638). Encounter illustrations arrive via ref.knownSrc from the stage
-    // model. Everything else falls to the designed glyph tile.
+    case 'faction':
+      // Procedural heraldry (THR-638), derived from the faction's own reach
+      // profile. The node id is required for the property-backed tier — most
+      // factions in a live world have no `factionDefId`, so their heraldry is
+      // per-node and keys off the id.
+      return getFactionSigilUrlFromProperties(node?.properties, node?.id);
+    // sublocation / encounter / artifact: no curated registry yet (THR-638).
+    // Encounter illustrations arrive via ref.knownSrc from the stage model.
+    // Everything else falls to the designed glyph tile.
     default:
       return null;
   }

@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { Modal } from '../shared/Modal';
-import { FACTION_DEFINITIONS } from '../../data/faction-definitions';
+import { getFactionDefinition } from '../../data/faction-definition-lookup';
+import { getFactionSigilUrlFromProperties } from '../../data/faction-sigil-assets';
 import type { FactionDefinition, FactionRankTier } from '../../types/faction';
 import { REACH_DOMAINS } from '../../types/traits';
 import { CoatOfArms, ReachIcon } from '../icons';
@@ -51,10 +52,32 @@ export const FactionSheet = React.memo(function FactionSheet({
 
   const definition = useMemo(() => {
     if (summary?.definition) return summary.definition;
+    // Prefer the node's own `factionDefId` over parsing the node id (THR-638):
+    // the id-regex misses every faction whose id is not `faction_def_*`, and
+    // `getFactionDefinition` also covers monster definitions, which
+    // FACTION_DEFINITIONS alone does not.
+    const propDefId = factionNode?.properties?.factionDefId;
+    if (typeof propDefId === 'string') {
+      const byProp = getFactionDefinition(propDefId);
+      if (byProp) return byProp;
+    }
     const match = factionId.match(/^faction_def_(.+?)(?:_\d+)?$/);
     if (!match) return undefined;
-    return FACTION_DEFINITIONS.get(match[1]);
-  }, [factionId, summary]);
+    return getFactionDefinition(match[1]) ?? undefined;
+  }, [factionId, summary, factionNode]);
+
+  /**
+   * Heraldry for a faction with no registered definition — the procedurally
+   * generated majority (THR-638). Derived from the node's own reach profile,
+   * so the header carries a real sigil instead of an empty shell.
+   */
+  const generatedSigil = useMemo(
+    () =>
+      definition
+        ? null
+        : getFactionSigilUrlFromProperties(factionNode?.properties, factionNode?.id),
+    [definition, factionNode],
+  );
 
   if (!definition && !summary) {
     return (
@@ -117,7 +140,17 @@ export const FactionSheet = React.memo(function FactionSheet({
             transition: 'box-shadow 240ms ease',
           }}
         >
-          {definition && <CoatOfArms definition={definition} size={64} />}
+          {definition ? (
+            <CoatOfArms definition={definition} size={64} />
+          ) : generatedSigil ? (
+            <img
+              src={generatedSigil}
+              alt=""
+              width={64}
+              height={80}
+              style={{ display: 'inline-block', verticalAlign: 'middle' }}
+            />
+          ) : null}
         </span>
         {' '}
         {displayName}

@@ -25,17 +25,8 @@ import { hexToWorld } from '../../../lib/worldPosition';
 import { HEX_CONSTANTS } from './HexFillMesh';
 import { FACTION_HERALDIC_COLORS } from '../agents/agentSpriteTypes';
 import { generateCoatOfArmsSvg, buildCoatOfArmsConfig } from '../../icons';
-import { FACTION_DEFINITIONS } from '../../../data/faction-definitions';
-import { MONSTER_FACTION_DEFINITIONS } from '../../../data/monster-faction-definitions';
-import type { FactionDefinition } from '../../../types/faction';
+import { ALL_FACTION_DEFINITIONS as ALL_FACTION_DEFS } from '../../../data/faction-definition-lookup';
 import type { ArmyRenderData as SpriteArmyRenderData } from './ArmySpriteMesh';
-
-/** Combined lookup of all faction definitions (regular + monster) by ID */
-const ALL_FACTION_DEFS: ReadonlyMap<string, FactionDefinition> = (() => {
-  const map = new Map<string, FactionDefinition>(FACTION_DEFINITIONS);
-  for (const def of MONSTER_FACTION_DEFINITIONS) map.set(def.id, def);
-  return map;
-})();
 
 // ── Constants ────────────────────────────────────────────────────────────────
 

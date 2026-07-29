@@ -1,4 +1,9 @@
-export { CoatOfArms, generateCoatOfArmsSvg, buildCoatOfArmsConfig } from './CoatOfArms';
+export {
+  CoatOfArms,
+  generateCoatOfArmsSvg,
+  buildCoatOfArmsConfig,
+  buildCoatOfArmsConfigFromWeights,
+} from './CoatOfArms';
 export type { CoatOfArmsConfig } from './CoatOfArms';
 export { SphereIcon, generateSphereIconSvg } from './SphereIcon';
 export { ReachIcon, generateReachIconSvg } from './ReachIcon';
