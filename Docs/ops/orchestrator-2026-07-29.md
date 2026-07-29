@@ -1,5 +1,54 @@
 # Orchestrator — 2026-07-29
 
+## Seventh run — 14:30Z update
+
+### Needs Christian
+
+Nothing needs you this run.
+
+### T1 — unblock sweep (14:30Z)
+
+**Scan:** `list_issues(state:"Todo", limit:50)` → 12 candidates. `list_issues(state:"Ready for Dev", limit:100)` → 46 items — above `QUEUE_BACKED_UP_MIN=15`, so the shelf-backup ceiling capped this run to **at most one promotion**.
+
+**Promoted (1, at the shelf-backup ceiling):**
+
+- **THR-849** ("Orchestrator's dated report file is outside the merge=union set, so two same-day runs racing produce a permanently DIRTY armed PR") — self-filed this morning (14:05Z) with `Blocked by: nothing` already stated. Promoted → verified via `get_issue` (`stateHistory` shows Todo → Ready for Dev at 14:29:54.931Z, state stuck, no `assignee` field present) → coordination-block comment posted (Suggested model: sonnet; Parallel-safe with: anything not touching `.gitattributes`/`Docs/ops/`; Mutex with: none identified). Worth noting: this ticket describes exactly the hazard this run's own report PR is about to create (same file, same append-to-top pattern). Checked before writing this report — PR #1031 (the still-open, still-DIRTY instance THR-849 documents) touches **yesterday's** file (`orchestrator-2026-07-28.md`), not today's, and no other PR is currently open against today's file. This run's report PR is therefore safe to open, but the underlying gap remains unfixed until THR-849 is implemented.
+
+**Declined — needs design finalization first (T2's input, not T1's):**
+
+- **THR-735** ("Armed-PR staleness sweep") — no blocker, but self-declares "design pass needed — do not pick one from this ticket alone" among candidate remedies.
+- **THR-790** / **THR-791** (Traits wave 2 / wave 3) — blocker THR-786 confirmed `Done` (completed 2026-07-26T10:55:17Z), but both self-declare their own design-finalization gate.
+
+**Declined — staging/tracking containers, not implementable units:**
+
+- **THR-772** (Nudge Model program epic), **THR-778** (WS5 content-migration container), **THR-789** (Traits program epic) — all three explicitly self-declare as containers.
+- **THR-838** (Nudge Model WS5 Batch 1 tracker) — blockers (WS0/WS1/WS3) all Done, but the prior run (13:42Z today) already re-scoped this: `daily-backlog-grooming` split it into a five-cell partition (1a–1e) after three executor checkpoints delivered 7/48 templates, and the 13:42Z T1 sweep filed cell 1e as THR-848 (already Ready for Dev). THR-838 itself stays in Todo as the burndown tracker per that run's explicit note — not re-promotable as-is; the actionable units are its filed children.
+
+**Declined — other:**
+
+- **THR-680** ("Stash triage") — no blocker, but the ticket explicitly requires running from the **home tree** (`C:\Users\chris\Dev\Projects\TheFantasyWorldSimulator`) to reach the stash stack. That conflicts with the hard rule (THR-672) barring git state ops against the home tree from any scheduled session — every session that would pick this up (`tb-opus-pickup`) is scheduled. This is a standing structural conflict, not a one-run decline; flagging under Escalations rather than re-deciding it every sweep.
+- **THR-175** ("UI overhaul 08, agent.sphere field") — explicit `Status: DEFERRED`, unmet unblock trigger (no Creation-sphere content shipping yet; no template needs `sphere` as an independent axis — unverifiable with confidence either way, so treated as unmet).
+
+**Held back by the shelf-backup ceiling (no blocker, unchanged from prior sweeps today):**
+
+- **THR-582** ("Migrate remaining ~46 inline phases to runInlinePhase") — mechanical tail of THR-580, no blockers.
+- **THR-766** ("Tune the god's cast power curve") — parent THR-728 confirmed Done; bounded tuning pass with a stated measurement methodology, no blockers.
+- The WS5 partition's remaining unfiled cells (1a hamlet/12, 1b civic seats/8, 1c wayside & wild/7, 1d sacred & arcane sites/8) plus two structural one-offs (`encounter.apotheosis.ascension`, `encounter.shell_proof.fate_card_trial`) — recorded in the THR-838 comment thread from the 13:42Z run, unchanged this run.
+
+### T2 — design authoring (14:30Z)
+
+**Not triggered.** Ready for Dev holds well above the floor of 2 non-`Deferral` items (25+ per the 13:42Z sweep, plus this run's +1 promotion).
+
+### T3 — architecture health (14:30Z)
+
+**Skipped — already ran today.** First daily sweep completed at 13:42Z (this file, "Sixth run" section below). Not re-run.
+
+### Escalations (14:30Z)
+
+- **THR-680 execution-model conflict** (see T1 decline above): the ticket's only stated approach requires home-tree git state ops, which the hard rule (THR-672) prohibits for every scheduled session that could claim it. Not answerable by promoting or declining alone — either the ticket needs a revised approach that works from a worktree, or it needs deliberate human-attended (non-scheduled) execution. Parked, not blocking the rest of this run.
+
+---
+
 ## Sixth run — 13:42Z update
 
 *First run today past the 06:00-local T3 gate (system clock read 15:43 local at run time) — T3 ran in full.*
