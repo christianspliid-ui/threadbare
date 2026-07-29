@@ -135,6 +135,36 @@ export const CHOSEN_FACTION_REPUTATION_PER_TICK = 0.003;
  */
 export const CURSE_QUINTESSENCE_DRAIN = 0.02;
 
+/**
+ * Severity of the concealed `hidden_mark` placed on the artifact's *bearer* when a
+ * held artifact is cursed (THR-661). Severity drives both reveal probability
+ * (`severity * REVEAL_PROBABILITY_MULT` — 0.5 here → 0.45 per matching draw) and
+ * decay lifetime, so a curse is a real, findable footprint rather than a permanent
+ * secret. Sits one notch below `DIVINE_WORKING_MARK_SEVERITY` (0.55): the working
+ * itself is the god's act, whereas this mark is only the residue it left on a
+ * mortal — quieter, and correspondingly harder to trace.
+ * @range 0.3–0.7
+ */
+export const CURSE_MARK_SEVERITY = 0.5;
+
+/**
+ * Template-id prefixes whose draws can surface a bearer's curse mark. Matched by
+ * `templateId.startsWith(family)` (`evaluateMarkReveals`), so every entry must be a
+ * prefix of templates the **bearer** — a mortal — can actually draw.
+ *
+ * This is deliberately NOT `DIVINE_WORKING_REVEAL_FAMILIES` (`hex.` / `loc.` /
+ * `artifact.`): those are the *ascendant's* own casting families and match **zero**
+ * mortal-drawable templates (measured, THR-661), so reusing them would have made
+ * this mark unrevealable by construction. The two families below are the shipped
+ * investigation/veil surfaces a mortal genuinely draws:
+ *   • `encounter.anomaly.` — 10 templates, all `actorAffinities: ['individual']`;
+ *     the "something here is wrong, look closer" family.
+ *   • `action.veil.`      — 4 mortal veil actions (detect-magic, dispel,
+ *     modify-enchantment, cast-spell); working the veil is how a bound malediction
+ *     gets noticed.
+ */
+export const CURSE_MARK_REVEAL_FAMILIES: readonly string[] = ['encounter.anomaly.', 'action.veil.'];
+
 // ─── THR-605 Slice 4: Plant Trap (sub.trap) ───────────────────────────────────
 // `[trap] <sublocation>` plants a concealed snare. There is no hex-arrival gate
 // in the encounter-seed substrate (`evaluateEncounterSeeds` spawns a seed's

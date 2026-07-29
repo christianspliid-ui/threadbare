@@ -1850,3 +1850,22 @@ The last open item of P4, and the coupling the extraction checkpoint's own evide
 **Fail-soft polarity.** No clock, no observed arrival, or no recorded origin each evaluate to `false`. For an abandonment trigger, absent evidence must never end an ambition — the opposite polarity would abandon for the least-observed agents first.
 
 **Regression locks:** 16 cases in `agentResidence.test.ts` (incl. arrival must not creep on re-observation, and an unplaced agent acquires nothing), 21 in `graphConditions.test.ts`, 11 in `ambitionSettledness.test.ts` — each ambition asserted for **both** *reaches abandonment* and *does not abandon at assignment*, since either alone passes against a broken build. `KNOWN_DEAD` shrinks 3 → 1 under a set-equality assertion.
+
+---
+
+## THR-661 — curse_artifact places a hidden mark on the bearer (2026-07-29)
+
+The deferred half of THR-605 Slice 2. The graph op binds a concealed drain to the *object*; this adds the residue on the *person* carrying it. Hidden marks live on `GameState.hiddenMarks`, so the graph executor cannot reach them — hence the resolution-intercept path.
+
+| Module | Called from | Surfaces in | Writes | Traces | Regression lock |
+| -- | -- | -- | -- | -- | -- |
+| `src/engine/ascendantExpression.ts` — `applyCurseMark` | `unifiedActionResolution.ts` `curseArtifactOps` bucket (inside `executeStepResult`) | No new UI — the mark is concealed by design and surfaces through the shipped reveal loop | Appends one `HiddenMark` to `state.hiddenMarks` | `ascendant_expression` / `type: 'curse_mark'` (placement + all three no-op reasons) | 14 cases in `curseMark.test.ts` |
+| `src/data/ascendant-expression-constants.ts` | — (tuning) | — | `CURSE_MARK_SEVERITY` (0.5), `CURSE_MARK_REVEAL_FAMILIES` | — | Families asserted live against the real template pool |
+
+**The op routes BOTH ways — this is the part to not "clean up" later.** `curse_artifact` is pushed to `curseArtifactOps` *and* to `graphOnlyOps`. The executor still runs `executeCurseArtifact` and binds the drain exactly as it did before THR-661; the intercept only adds the mark. Moving the op wholesale into the intercept would have put shipped Slice-2 behaviour at risk to gain nothing. The end-to-end test in `curseMark.test.ts` asserts both halves land in one cast, so a future refactor that drops one side turns red.
+
+**Why the reveal families are not `DIVINE_WORKING_REVEAL_FAMILIES`.** That constant (`hex.` / `loc.` / `artifact.`) belongs to THR-741's marks, which sit on the **ascendant** and are surfaced by the ascendant's own later castings. This mark sits on a **mortal**. `evaluateMarkReveals` matches `templateId.startsWith(family)`, and measured against the live 672-template pool those three prefixes match **zero** mortal-drawable templates — reusing them yields a mark that is placed, decays, and is never revealable, with no test failing. `encounter.anomaly.` (10, all `actorAffinities: ['individual']`) and `action.veil.` (4) are the shipped investigation/veil surfaces a mortal actually draws.
+
+**Fail-soft polarity.** Missing artifact and non-artifact target return `success: false`; an **unpossessed** artifact returns `success: true` with `failSoft: 'unpossessed'` — the curse is bound to the object and will drain whoever picks it up, so there is simply nobody to mark yet. A no-op here must never read as a failed curse.
+
+**Known scope edges (filed, not absorbed):** `artifact_legendary` nodes are rejected by the `type === 'artifact'` guard that `applyCurseMark` mirrors from `executeCurseArtifact` (**THR-843**); the corpus-wide dead-`revealFamily` problem this ticket surfaced is **THR-844**.

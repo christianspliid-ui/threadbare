@@ -53,7 +53,7 @@ import { executeGraphOps } from './graphOpExecutor';
 import { applyFactionGovernanceVerb } from './factionGovernanceVerbs';
 import { applyPlantSchism } from './schismPlant';
 import { applyAnointSuccessor } from './anointSuccessor';
-import { applyImbueItem, applyBestowPower, applyAnointFaction, applyPlantTrap } from './ascendantExpression';
+import { applyImbueItem, applyBestowPower, applyAnointFaction, applyPlantTrap, applyCurseMark } from './ascendantExpression';
 import { applyQuintessenceRestore } from './rekindleThread';
 import { revealBestSecret } from './secretsFavorsConsequences';
 import { SCHISM_PENDING_DURATION_TICKS } from '../data/game-config';
@@ -1378,6 +1378,12 @@ export function executeStepResult(
     // restore must leave the mortal a `recent_event` receipt naming the god who
     // mended them, and the graph executor has no GameState to append it to.
     const quintessenceRestoreOps: GraphOp[] = [];
+    // THR-661: `curse_artifact` is the one op that routes BOTH ways. The graph
+    // executor still binds the concealed quintessence drain into the artifact
+    // (THR-605 Slice 2, unchanged) — so the op is forwarded to graphOnlyOps as
+    // well — while this intercept adds the half the executor cannot reach: a
+    // hidden mark on the bearer, which lives on GameState, not the graph.
+    const curseArtifactOps: GraphOp[] = [];
     const graphOnlyOps: GraphOp[] = [];
     for (const op of ops) {
       if (op.op === 'reveal_secret') revealSecretOps.push(op);
@@ -1389,7 +1395,10 @@ export function executeStepResult(
       else if (op.op === 'anoint_faction') anointFactionOps.push(op);
       else if (op.op === 'plant_trap') plantTrapOps.push(op);
       else if (op.op === 'quintessence_restore') quintessenceRestoreOps.push(op);
-      else graphOnlyOps.push(op);
+      else if (op.op === 'curse_artifact') {
+        curseArtifactOps.push(op);
+        graphOnlyOps.push(op); // drain stays on the executor path
+      } else graphOnlyOps.push(op);
     }
 
     if (quintessenceRestoreOps.length > 0) {
@@ -1525,6 +1534,24 @@ export function executeStepResult(
         const resolvedSublocationId = subRef === '$target' ? action.targetId : subRef;
         try {
           applyPlantTrap(state, action.actorId, resolvedSublocationId, tick);
+        } catch {
+          // Fail-soft per NFP #4: log nothing, never crash the tick.
+        }
+      }
+    }
+
+    if (curseArtifactOps.length > 0) {
+      // THR-661 — the deferred half of THR-605 Slice 2. The executor binds the
+      // drain to the object; this leaves the matching residue on whoever is
+      // carrying it, so an investigation/veil draw can surface the curse later.
+      // Fail-soft: an unpossessed artifact marks nobody and the curse still lands.
+      for (const op of curseArtifactOps) {
+        const artifactRef = op.nodeId ?? op.target ?? '$target';
+        const resolvedArtifactId = artifactRef === '$target' ? action.targetId
+          : artifactRef === '$actor' ? action.actorId
+            : artifactRef;
+        try {
+          applyCurseMark(state, action.actorId, resolvedArtifactId, tick);
         } catch {
           // Fail-soft per NFP #4: log nothing, never crash the tick.
         }
