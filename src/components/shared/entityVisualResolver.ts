@@ -6,8 +6,8 @@
  * instead of re-inventing portrait / concept-art / illustration plumbing. Each
  * THR-638 art batch lands as one added branch in `resolveSource` — zero
  * component changes. Landed so far: NPC-role portraits, encounter
- * illustrations (via `ref.knownSrc` from the stage model), faction sigils.
- * Still falling through to the glyph tile: `artifact`, `sublocation`.
+ * illustrations (via `ref.knownSrc` from the stage model), faction sigils,
+ * artifact category art. Still falling through to the glyph tile: `sublocation`.
  *
  * Pure + synchronous. Reads graph nodes; never mutates, never runs in a tick
  * phase, emits no traces (inspectability is served by `__DEBUG.resolveEntityVisual`
@@ -28,6 +28,7 @@ import type { SphereInfluence } from '../../engine/hexZoom';
 import { getAgentPortraitUrlFromProperties } from '../../data/portrait-assets';
 import { getOriginPortraitUrl } from '../../data/avatar-portrait-assets';
 import { getFactionSigilUrlFromProperties } from '../../data/faction-sigil-assets';
+import { getAttachmentArtUrl } from '../../data/artifact-category-art';
 import { pickConceptArt } from '../../data/concept-art-assets';
 import {
   type EntityVisualKind,
@@ -163,7 +164,12 @@ function resolveSource(
       // factions in a live world have no `factionDefId`, so their heraldry is
       // per-node and keys off the id.
       return getFactionSigilUrlFromProperties(node?.properties, node?.id);
-    // sublocation / encounter / artifact: no curated registry yet (THR-638).
+    case 'artifact':
+      // Bespoke plate for this exact item, else the plate for its category
+      // (THR-638). Only ~7 of ~143 artifacts in a live world have bespoke art,
+      // so the category tier is what actually renders most of the time.
+      return getAttachmentArtUrl(node?.id, node?.properties?.subcategory as string | undefined);
+    // sublocation / encounter: no curated registry yet (THR-638).
     // Encounter illustrations arrive via ref.knownSrc from the stage model.
     // Everything else falls to the designed glyph tile.
     default:
