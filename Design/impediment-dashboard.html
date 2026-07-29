@@ -5172,6 +5172,19 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "**Rule: a boolean guard whose subject is drawn from the same collection it is being tested against is vacuous by construction — check the derivation before trusting the green.** This is `vacuous_probe_empty_population` narrowed from a population to a single predicate: the failure is identical (a check that cannot fail reads exactly like a check that passes), but there is no empty list to notice, so the usual \"pin the population first\" reflex does not reach it. Repaired by binding the ceiling to `OPEN_DRAW_ATTENTION_TIER` (`background`) — a property of the template rather than a restatement of the step — and pinned with three liveness cases, the first of which is red against the old predicate. **Generalizable companion rule: repairing a vacuous check earns an obligation to demonstrate the new predicate can fail, in the same commit.** Without it the repair is unfalsifiable and the next reader inherits the same untrustworthy green.",
     "session": "THR-838 pass 2, hourly `tb-opus-pickup` run, 2026-07-28"
+  },
+  {
+    "num": "283",
+    "id": 283,
+    "count": 1,
+    "date": "2026-07-29",
+    "category": "tooling",
+    "description": "**A reused pool worktree had a `node_modules` that was an empty *real* directory holding only build caches, so the standard junction relink failed and every `npm`/`vitest` command in the session was unrunnable.** `ls node_modules` reported **0 entries** while `rmdir` refused with *\"Directory not empty\"* — the contents were three dotfile caches (`.tmp/` with two `.tsbuildinfo`, `.vite/`, `.vite-temp/`) left by an earlier session, invisible without `ls -a`. The known `fresh_worktree_node_modules_junction` recipe assumes either a live junction or nothing at all, and neither branch applies to this third state. Compounding it: `cmd /c \"mklink /J …\"` invoked from the Bash tool printed only the interpreter banner and **silently no-opped** — no junction, no error, exit 0 — including inside an `&&` chain where its failure was indistinguishable from success.",
+    "consequence": "~10 min. The failure mode is worse than the time: with `node_modules` absent, `npx vitest` and `npm run audit:*` fail in ways that look like repo breakage rather than environment setup, and the silent `mklink` no-op invites a retry loop against a command that will never report why it did nothing.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "**Check `ls -a node_modules` before concluding it is absent or a junction — the third state is a real directory holding only regenerable caches.** Clear them explicitly (`rm -rf node_modules/.tmp node_modules/.vite node_modules/.vite-temp && rmdir node_modules`), which is safe because every one is a build artifact by definition. **Then create the junction from PowerShell, not Bash:** `New-Item -ItemType Junction -Path <worktree>\\node_modules -Target <home>\\node_modules` returns the created path and fails loudly, where `cmd /c mklink` through the Bash tool returns nothing either way. Verify with `Test-Path <worktree>\\node_modules\\.bin\\vitest` rather than trusting the create call. The junction-guard rule at closeout is unchanged and still mandatory — `cmd /c rmdir` the reparse point *before* any `git worktree remove`, or the home install is wiped.",
+    "session": "THR-838 pass 3, hourly `tb-opus-pickup`, 2026-07-29"
   }
 ];
 // ── End data ──

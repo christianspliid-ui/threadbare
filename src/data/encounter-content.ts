@@ -8039,6 +8039,40 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     threatRating: 'trivial',
     intrinsicTier: 'background',
     motivations: ['justice_mercy', 'tradition_progress'],
+    /**
+     * THR-838 (WS5 Batch 1) — migrated to the nudge model.
+     *
+     * Vignette record (checklist step 1; no schema field for these yet):
+     *   Motive hooks   — `chance` above all: the roadside encounter, drawn
+     *                    because the walking stopped and the sky is right there.
+     *                    `choice` for one who keeps the hours. Never `mission`;
+     *                    nobody is dispatched to say a private prayer.
+     *   Quintessence   — light. Nothing is lost by asking and going unheard;
+     *   stakes           what is at stake is the hour and the knee.
+     *   Scene tag      — `road.dusk.devotion` (audit tag: place:hamlet ·
+     *                    reach:star · situation:encounter).
+     *
+     * The paired half of `encounter.shrine_offering`: the same act with no
+     * shrine to do it at, so the whole rite has to be carried by the person.
+     * Both steps sit far under `NUDGE_OFF_REACH_MAX_DIFFICULTY` (0.05 and 0.10
+     * against a 0.45 ceiling) — `background` tier is open draw, so most of the
+     * roster that meets this holds neither `star` nor `heart` and the hand has
+     * to move the forecast for them regardless.
+     *
+     * Pre-migration detectors: abstraction 1.27, vagueness 1.27, not-X-but-Y 2
+     * (the "not a voice, not a vision, but a settling" line, twice over).
+     */
+    traitVariants: [
+      {
+        // `core_hope` virtue pole — a seeded Core definition, so the ref is live
+        // for `validateTraitRefs()` (checklist step 5's hard constraint).
+        traitId: 'trait.core.core_hope.virtue',
+        forecastDelta: 0.04,
+        difficultyDelta: -0.01,
+        factorLine: 'They kneel down already believing the road is not empty.',
+        addNudgeIds: ['prayer.expect_an_answer', 'prayer.take_it_on_faith'],
+      },
+    ],
     steps: [
       {
         id: 'offer_small_prayer.kneel',
@@ -8046,13 +8080,106 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'star',
         difficulty: UNIVERSAL_DIFFICULTY_BASE,
         duration: 1,
-        narrative: 'No temple needed. {actor} kneels where {they} stand, letting the noise of the world fall away to {adj} stillness.',
+        purposeLine: 'Quiet the road',
+        factorLines: [
+          { text: 'The words are old, and {they} learned them before {they} could read.', polarity: 'for' },
+          { text: 'The road is loud and has no reason to stop.', polarity: 'against' },
+        ],
+        narrative: '{actor} goes down on one knee in the dirt at the road\'s edge, hands flat on {their} thighs, and lets the cart-noise and the birds and {their} own breathing come apart into separate sounds.',
+        successAtCostAfterimage: 'The road went quiet for {them}, and {they} knelt long enough that the cart {they} had been walking beside went on without {them}.',
+        criticalSuccessAfterimage: 'The noise came apart between one breath and the next, and what was left had room in it for the whole prayer.',
+        criticalFailureAfterimage: 'They knelt in the dirt a long while and got up having said the words out loud to no one, with a carter watching.',
+        nudges: [
+          {
+            // Shared generic pool — the `focus` family.
+            id: 'prayer.steady_the_breath',
+            name: 'Steady the breath',
+            essenceCost: 1,
+            forecastDelta: 0.06,
+            imageTag: 'generic.focus',
+            fiction: 'The breath lengthens on its own until it is slower than the cart-wheels going past.',
+            effectLine: 'A small, reliable push toward settling.',
+            bandProse: {
+              success: 'The breath went long and the road went small, and {actor} found the first line waiting.',
+              near_miss: 'The breath steadied. A dog started up behind the hedge and took it all back.',
+            },
+          },
+          {
+            id: 'prayer.open_the_ear',
+            name: 'Open the ear',
+            sphere: 'spirit',
+            essenceCost: 2,
+            forecastDelta: 0.11,
+            imageTag: 'generic.listening',
+            fiction: 'Whatever sits on the other side of the prayer turns its head, and the empty road feels occupied.',
+            effectLine: 'Strong help. The prayer lands on an ear.',
+            bandProse: {
+              success_at_cost: 'The ear opened, and what leaned in came closer than {they} had wanted it.',
+              failure: 'A weight turned toward the road, then turned away again before {actor} had begun.',
+            },
+          },
+          {
+            id: 'prayer.lend_the_last_light',
+            name: 'Lend the last light',
+            sphere: 'light',
+            essenceCost: 2,
+            forecastDelta: 0.09,
+            imageTag: 'generic.light',
+            fiction: 'The sun that had already gone behind the ridge comes back a hand\'s width and lays gold along the ditch.',
+            effectLine: 'Good help. The hour stops being a rush.',
+            bandProse: {
+              critical_success: 'In that late gold the road held still, and {actor} said all of it without hurrying a word.',
+              near_miss: 'The light came back and went again, and {they} lost the thread reaching after it.',
+            },
+          },
+          {
+            id: 'prayer.stretch_the_pause',
+            name: 'Stretch the pause',
+            sphere: 'time',
+            essenceCost: 2,
+            forecastDelta: 0.10,
+            imageTag: 'generic.time-slow',
+            fiction: 'The gap between two cart-wheels turning opens up wide enough to kneel inside.',
+            effectLine: 'Good help. There is room to finish.',
+            bandProse: {
+              failure: 'The pause ran long and {actor} spent all of it deciding how to begin.',
+              critical_failure: 'The pause would not close. They knelt in it until the words stopped landing and kept going.',
+            },
+          },
+          {
+            id: 'prayer.draw_the_dusk_close',
+            name: 'Draw the dusk close',
+            sphere: 'darkness',
+            essenceCost: 2,
+            forecastDelta: 0.08,
+            imageTag: 'generic.dark',
+            fiction: 'The dark comes in early and near, until the road is two arm-lengths of dirt and no view at all.',
+            effectLine: 'A steady help. Less to be caught by.',
+            bandProse: {
+              near_miss: 'The dark closed in kindly and hid the road, and hid the hour along with it.',
+            },
+          },
+          {
+            // Trait-only card: cost 0, the price paid by being this person.
+            id: 'prayer.expect_an_answer',
+            name: 'Expect an answer',
+            requiredTrait: 'trait.core.core_hope.virtue',
+            essenceCost: 0,
+            forecastDelta: 0.08,
+            imageTag: 'generic.oath',
+            fiction: 'It does not occur to {them} that the road might be empty. {They} kneel the way a caller knocks at a door with a light behind it.',
+            effectLine: 'A steady help, and it costs no essence.',
+            bandProse: {
+              critical_failure: 'They knelt certain of an answer, and built one out of the wind rather than get up without.',
+            },
+          },
+        ],
         onSuccess: {
-          narrative: 'The silence opens. {actor} speaks — to the sky, to the earth, to whatever listens. The words come easily.',
+          narrative: 'The road falls back. {actor} speaks — to the sky, to the dirt, to whoever keeps the ledger — and the words come without being hunted for.',
           reputationDelta: 0.02,
         },
         onFailure: {
-          narrative: 'The world intrudes. {actor} cannot find the quiet, and the prayer dies unspoken.',
+          narrative: 'The road will not fall back. {actor} kneels, waits, and gets up with the prayer still folded in {their} mouth.',
           reputationDelta: -0.01,
         },
       },
@@ -8062,9 +8189,102 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'heart',
         difficulty: UNIVERSAL_DIFFICULTY_BASE + UNIVERSAL_DIFFICULTY_STEP,
         duration: 1,
-        narrative: 'Prayer is half speaking, half listening. {actor} waits in {adj} silence, open to whatever comes.',
+        purposeLine: 'Wait without filling it',
+        factorLines: [
+          { text: '{They} have waited before and know it runs longer than it feels.', polarity: 'for' },
+          { text: 'There is work left undone, and it has an hour on it.', polarity: 'against' },
+        ],
+        narrative: 'Half of praying is shutting up afterward. {actor} stays down, hands still flat, and lets the wait run past the point where it starts to itch.',
+        successAtCostAfterimage: 'An answer came. {They} were still on {their} knee when the rain started, and stayed there through it.',
+        criticalSuccessAfterimage: 'The wait paid. {actor} came up off {their} knee knowing which fork to take, and could not have said who told {them}.',
+        criticalFailureAfterimage: 'They waited long enough to build an answer out of {their} own voice, and walked off certain of it.',
+        nudges: [
+          {
+            // Shared generic pool — the `focus` family.
+            id: 'prayer.hold_the_quiet',
+            name: 'Hold the quiet',
+            essenceCost: 1,
+            forecastDelta: 0.06,
+            imageTag: 'generic.focus',
+            fiction: 'The urge to fill the gap with more words passes, and passes again, and stops coming back.',
+            effectLine: 'A small, reliable push toward staying put.',
+            bandProse: {
+              success: 'They held the gap open and did not talk into it, and it filled from the other side.',
+              near_miss: 'The quiet held until {their} own knee began to ache, and the ache did the talking.',
+            },
+          },
+          {
+            id: 'prayer.set_the_errand_down',
+            name: 'Set the errand down',
+            sphere: 'mind',
+            essenceCost: 2,
+            forecastDelta: 0.10,
+            imageTag: 'generic.mind',
+            fiction: 'The list of what has to be done by dark stops reciting itself behind {their} eyes.',
+            effectLine: 'Good help. Little is pulling at {them}.',
+            bandProse: {
+              failure: 'The errand stayed down, and {actor} waited on an empty road with an empty head.',
+            },
+          },
+          {
+            id: 'prayer.slow_the_pulse',
+            name: 'Slow the pulse',
+            sphere: 'life',
+            essenceCost: 2,
+            forecastDelta: 0.09,
+            imageTag: 'generic.vigor',
+            fiction: 'The heartbeat in {their} ears drops away until it is no louder than the ditch-water.',
+            effectLine: 'Good help. There is less noise inside than out.',
+            bandProse: {
+              near_miss: 'The pulse went quiet and {they} heard the whole road, and the road said none of it back.',
+            },
+          },
+          {
+            id: 'prayer.keep_the_hour',
+            name: 'Keep the hour',
+            sphere: 'order',
+            essenceCost: 2,
+            forecastDelta: 0.11,
+            imageTag: 'generic.order',
+            fiction: 'The wait takes the shape of a rite with a beginning and an end, and {they} know where in it {they} stand.',
+            effectLine: 'Strong help. The waiting has edges.',
+            bandProse: {
+              failure: 'The hour kept itself to the last beat, and the last beat came and went unanswered.',
+              critical_failure: 'They kept the hour so exactly that {they} were counting it instead of listening through it.',
+            },
+          },
+          {
+            id: 'prayer.thin_the_veil',
+            name: 'Thin the veil',
+            sphere: 'spirit',
+            essenceCost: 2,
+            forecastDelta: 0.12,
+            imageTag: 'generic.listening',
+            fiction: 'The gap between the kneeling and the listened-to closes by a step.',
+            effectLine: 'Strong help. Less between {them} and an answer.',
+            bandProse: {
+              success_at_cost: 'The veil thinned, and what came through arrived with more of itself than {they} had asked for.',
+              failure: 'The veil went thin and stayed empty, which is worse than thick.',
+            },
+          },
+          {
+            // Trait-only card: cost 0, the price paid by being this person.
+            id: 'prayer.take_it_on_faith',
+            name: 'Take it on faith',
+            requiredTrait: 'trait.core.core_hope.virtue',
+            essenceCost: 0,
+            forecastDelta: 0.08,
+            imageTag: 'generic.oath',
+            fiction: 'The wait does not curdle. {They} go on holding the gap open past where a harder head would fold it up.',
+            effectLine: 'A steady help, and it costs no essence.',
+            bandProse: {
+              critical_success: 'They waited past the sensible hour, and the hour past sensible was the one that answered.',
+              near_miss: 'They waited past the sensible hour, and got a cold knee and a held opinion for it.',
+            },
+          },
+        ],
         onSuccess: {
-          narrative: 'Something shifts — not a voice, not a vision, but a settling in the chest. {actor} rises with purpose renewed.',
+          narrative: 'The chest loosens. No voice, no light — a settling, the way a cooling house settles. {actor} rises with the next step already chosen.',
           reputationDelta: 0.03,
           rewardPool: {
             categoryWeights: { possession: 1.0 },
@@ -8072,7 +8292,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: 'Only silence answers. {actor} rises no worse for the asking, but no better either.',
+          narrative: 'The road answers with cart-wheels. {actor} rises no worse for the asking and no better, and shoulders {their} pack.',
           reputationDelta: -0.01,
         },
       },
@@ -9895,6 +10115,50 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     threatRating: 'trivial',
     intrinsicTier: 'background',
     motivations: ['tradition_progress', 'justice_mercy'],
+    /**
+     * THR-838 (WS5 Batch 1) — migrated to the nudge model.
+     *
+     * Vignette record (checklist step 1; no schema field for these yet):
+     *   Motive hooks   — `choice` above all: the shrine is a place one goes to,
+     *                    and the gift was picked before the walk. `chance` for
+     *                    one who passes the stones with a bad week behind them.
+     *                    `mission` only where a household sends its youngest.
+     *   Quintessence   — moderate, and the only one in the pair that bites: the
+     *   stakes           gift is really given, and step 0 decides how much it
+     *                    cost to give. No wound, but a real ledger entry.
+     *   Scene tag      — `shrine.dusk.offering` (audit tag: place:hamlet ·
+     *                    reach:star · situation:encounter).
+     *
+     * The paired half of `encounter.offer_small_prayer`: the same rite with
+     * stones to do it at, so the shape is given and what is tested is what the
+     * person brings to it. Three steps sit at 0.10 / 0.18 / 0.26 against the
+     * 0.45 `NUDGE_OFF_REACH_MAX_DIFFICULTY` ceiling — `background` tier is open
+     * draw, so the roster meeting this mostly holds neither `star` nor `heart`.
+     *
+     * Pre-migration detectors: abstraction 0.89, vagueness 2.23 (fail),
+     * not-X-but-Y 2 (fail), second person 2 (fail — "What do you give a god?").
+     */
+    traitVariants: [
+      {
+        // `core_integrity` virtue pole — seeded Core definition, live ref for
+        // `validateTraitRefs()` (checklist step 5's hard constraint).
+        traitId: 'trait.core.core_integrity.virtue',
+        forecastDelta: 0.04,
+        difficultyDelta: -0.01,
+        factorLine: 'What {they} bring to the stones is what {they} would bring unwatched.',
+        addNudgeIds: ['shrine.give_the_good_one', 'shrine.mean_it_going_down'],
+      },
+      {
+        // `core_hope` virtue pole — the same seeded family the paired
+        // `offer_small_prayer` uses, and for the same reason: staying past the
+        // sensible hour is a hope test, not a devotion test.
+        traitId: 'trait.core.core_hope.virtue',
+        forecastDelta: 0.03,
+        difficultyDelta: -0.01,
+        factorLine: 'They stay down past the hour a harder head would call it off.',
+        addNudgeIds: ['shrine.wait_one_hour_more'],
+      },
+    ],
     steps: [
       {
         id: 'shrine_offering.select',
@@ -9902,13 +10166,106 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'star',
         difficulty: DIFFICULTY_BASE,
         duration: 1,
-        narrative: 'What do you give a god? {actor} considers what {they} carry, what {they} value, what {they} can afford to lose.',
+        purposeLine: 'Weigh what to give',
+        factorLines: [
+          { text: '{They} have carried the same coin since spring, keeping it for this.', polarity: 'for' },
+          { text: 'The pack holds three days of food and one knife, both spoken for.', polarity: 'against' },
+        ],
+        narrative: 'A god is owed better than the cheapest item in the pack. {actor} turns out what {they} carry onto a flat stone and looks at it: coin, a comb, dried meat, a ring off a dead man\'s hand.',
+        successAtCostAfterimage: 'They gave the ring. It had been meant to settle a debt, and the debt is still standing.',
+        criticalSuccessAfterimage: 'They set down the coin carried since spring without weighing it against the others, because it had always been the one.',
+        criticalFailureAfterimage: 'They picked out the comb with its teeth gone, told themselves it was humble, and knew better while doing it.',
+        nudges: [
+          {
+            // Shared generic pool — the `focus` family.
+            id: 'shrine.count_it_honestly',
+            name: 'Count it honestly',
+            essenceCost: 1,
+            forecastDelta: 0.06,
+            imageTag: 'generic.focus',
+            fiction: 'The pack empties onto the stone and {they} look at each item for what it would cost to walk on without it.',
+            effectLine: 'A small, reliable push toward an honest count.',
+            bandProse: {
+              success: 'Laid out honestly, one item was plainly worth more to give up than the rest.',
+              near_miss: 'The count was honest until it reached the coin, and there it went crooked.',
+            },
+          },
+          {
+            id: 'shrine.feel_the_weight',
+            name: 'Feel the weight',
+            sphere: 'spirit',
+            essenceCost: 2,
+            forecastDelta: 0.11,
+            imageTag: 'generic.listening',
+            fiction: 'Each item on the stone carries how much it would be missed, and the missing is what the shrine reads.',
+            effectLine: 'Strong help. The gift is judged by loss.',
+            bandProse: {
+              success_at_cost: 'They felt exactly what the ring was worth to keep, and gave it anyway.',
+              failure: 'Every item on the stone weighed the same, which meant {they} were not touching any of them.',
+            },
+          },
+          {
+            id: 'shrine.remember_the_asking',
+            name: 'Remember the asking',
+            sphere: 'mind',
+            essenceCost: 2,
+            forecastDelta: 0.10,
+            imageTag: 'generic.memory',
+            fiction: 'What {they} came here to ask for comes back word for word, and sets the price of the answer.',
+            effectLine: 'Good help. The gift is sized to the ask.',
+            bandProse: {
+              failure: 'They recalled the asking perfectly and still could not price it.',
+              critical_failure: 'They recalled the asking so exactly that {they} priced it above everything in the pack, and left the stone bare.',
+            },
+          },
+          {
+            id: 'shrine.let_the_grain_show',
+            name: 'Let the grain show',
+            sphere: 'matter',
+            essenceCost: 2,
+            forecastDelta: 0.09,
+            imageTag: 'generic.matter',
+            fiction: 'The comb\'s cracked spine and the ring\'s worn shank sit up plain on the stone, past arguing with.',
+            effectLine: 'Good help. The goods stop flattering themselves.',
+            bandProse: {
+              critical_success: 'Grain and wear read at a glance, and the one sound, loved item stood out among them.',
+              near_miss: 'The wear showed on all of it, and {they} learned only that {they} owned rubbish.',
+            },
+          },
+          {
+            id: 'shrine.count_what_is_going',
+            name: 'Count what is going',
+            sphere: 'entropy',
+            essenceCost: 2,
+            forecastDelta: 0.08,
+            imageTag: 'generic.decay',
+            fiction: 'How long each item has left — the meat, the shank, the man who owned the ring — comes clear.',
+            effectLine: 'A steady help. None of it keeps.',
+            bandProse: {
+              failure: 'They saw how little of it would last, and gave the shrine the item that was rotting anyway.',
+            },
+          },
+          {
+            // Trait-only card: cost 0, the price paid by being this person.
+            id: 'shrine.give_the_good_one',
+            name: 'Give the good one',
+            requiredTrait: 'trait.core.core_integrity.virtue',
+            essenceCost: 0,
+            forecastDelta: 0.08,
+            imageTag: 'generic.oath',
+            fiction: 'The cheap option is on the stone with the rest and {they} do not pick it up. It was never going to be picked up.',
+            effectLine: 'A steady help, and it costs no essence.',
+            bandProse: {
+              near_miss: 'They gave the good one and spent the walk out counting what it had cost.',
+            },
+          },
+        ],
         onSuccess: {
-          narrative: '{actor} chooses well — something personal, something meant. The shrine\'s stones seem to lean {adj} closer.',
+          narrative: '{actor} chooses a gift with {their} own use still on it — worn, personal, missed. The stones of the shrine seem to lean in a hand\'s width.',
           reputationDelta: 0.05,
         },
         onFailure: {
-          narrative: '{actor} places something too cheap, too thoughtless. The air around the shrine does not change.',
+          narrative: '{actor} sets down the item {they} would have thrown out by autumn. The air over the stones does not stir.',
           reputationDelta: -0.02,
         },
       },
@@ -9918,14 +10275,107 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'heart',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
         duration: 1,
-        narrative: 'The offering must be placed, not dropped. Intent matters. {actor} kneels before the weathered {adj} stones.',
+        purposeLine: 'Set it down right',
+        factorLines: [
+          { text: '{Their} mother did this at the same stones, and {they} watched it done.', polarity: 'for' },
+          { text: '{Their} knees are wet and the light is going.', polarity: 'against' },
+        ],
+        narrative: 'An offering is placed, never dropped. {actor} kneels at the weathered stones, holds the gift a while on both palms, and sets it in the hollow where rain has worn a dish.',
+        successAtCostAfterimage: 'It went down right. {Their} knees will be stiff for two days, and {they} left the walking-staff leaning at the stones.',
+        criticalSuccessAfterimage: 'The gift went into the hollow as though the hollow had been cut for it, and the whole shrine felt aimed at {them} for a breath.',
+        criticalFailureAfterimage: 'They fumbled it. The ring went off the stone into wet grass, and {they} left it there rather than kneel again.',
+        nudges: [
+          {
+            // Shared generic pool — the `focus` family.
+            id: 'shrine.steady_the_hands',
+            name: 'Steady the hands',
+            essenceCost: 1,
+            forecastDelta: 0.06,
+            imageTag: 'generic.focus',
+            fiction: 'The shake goes out of {their} wrists between one breath and the next.',
+            effectLine: 'A small, reliable push toward a clean placing.',
+            bandProse: {
+              success: 'The hands were steady and the gift went into the hollow without a sound.',
+              near_miss: 'The hands held to the last inch, and gave out on the last inch.',
+            },
+          },
+          {
+            id: 'shrine.keep_the_old_form',
+            name: 'Keep the old form',
+            sphere: 'order',
+            essenceCost: 2,
+            forecastDelta: 0.11,
+            imageTag: 'generic.order',
+            fiction: 'The order of it comes back: right knee down, both palms, the hollow, and no words until after.',
+            effectLine: 'Strong help. The rite has a shape to follow.',
+            bandProse: {
+              failure: 'They kept the form exactly and it stayed a set of motions.',
+              critical_failure: 'They kept the form so hard the stones got a performance where a gift should have been.',
+            },
+          },
+          {
+            id: 'shrine.find_the_hollow',
+            name: 'Find the hollow',
+            sphere: 'matter',
+            essenceCost: 2,
+            forecastDelta: 0.10,
+            imageTag: 'generic.matter',
+            fiction: 'The worn dish in the stone shows itself under the moss, exactly where a hundred hands put it.',
+            effectLine: 'Good help. There is a right place for it.',
+            bandProse: {
+              near_miss: 'The hollow lay under moss where {they} were not looking, and the gift went down beside it.',
+            },
+          },
+          {
+            id: 'shrine.warm_it_first',
+            name: 'Warm it first',
+            sphere: 'life',
+            essenceCost: 2,
+            forecastDelta: 0.08,
+            imageTag: 'generic.warmth',
+            fiction: 'The ring takes {their} heat and holds it, so what goes down on the stone is warm off a body.',
+            effectLine: 'Good help. The gift arrives carrying its owner.',
+            bandProse: {
+              success_at_cost: 'It went down warm, and {they} felt the loss of it the second the warmth left {their} hand.',
+              near_miss: 'It went down warm, and the warmth was off it before the stones had noticed.',
+            },
+          },
+          {
+            id: 'shrine.let_it_fall_true',
+            name: 'Let it fall true',
+            sphere: 'chaos',
+            essenceCost: 2,
+            forecastDelta: 0.09,
+            imageTag: 'generic.luck',
+            fiction: '{They} stop aiming. The gift goes down where the hand was already going.',
+            effectLine: 'A steady help. Aim stops being the trouble.',
+            bandProse: {
+              critical_success: '{They} did not aim, and it went dead centre of the hollow, where no amount of practice puts it.',
+              near_miss: 'They let the hand decide, and the hand put it an inch wide of the dish.',
+            },
+          },
+          {
+            // Trait-only card: cost 0, the price paid by being this person.
+            id: 'shrine.mean_it_going_down',
+            name: 'Mean it going down',
+            requiredTrait: 'trait.core.core_integrity.virtue',
+            essenceCost: 0,
+            forecastDelta: 0.08,
+            imageTag: 'generic.oath',
+            fiction: 'There is no part of {them} standing off to one side and watching {them} do it.',
+            effectLine: 'A steady help, and it costs no essence.',
+            bandProse: {
+              failure: 'They meant every inch of it, and the stones took no notice at all.',
+            },
+          },
+        ],
         onSuccess: {
-          narrative: 'For a moment — just a moment — the air thickens with something old and vast and {adj}. The offering is accepted.',
+          narrative: 'The air over the stones goes thick and old for a breath, and then is ordinary air again. The gift is taken.',
           reputationDelta: 0.08,
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: 'Nothing happens. Perhaps the gods are elsewhere. {actor} rises with {adj} uncertainty.',
+          narrative: 'The gift sits in the hollow looking like an item on a rock. {actor} rises with wet knees and no reply.',
           reputationDelta: -0.03,
         },
       },
@@ -9935,9 +10385,103 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'star',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
         duration: 2,
-        narrative: 'The truly faithful stay after the offering and listen. Most hear nothing. Some hear the {adj} wind. A few hear more.',
+        purposeLine: 'Stay past the rite',
+        factorLines: [
+          { text: '{They} have no one waiting and no bed to reach by dark.', polarity: 'for' },
+          { text: 'Most who wait at these stones hear the wind and go home.', polarity: 'against' },
+        ],
+        narrative: 'The faithful stay on after the gift is down. {actor} keeps the knee on wet stone and listens through the wind for whatever sits behind it.',
+        successAtCostAfterimage: 'An answer came, and by then {they} were too cold to stand without hauling on the stones.',
+        criticalSuccessAfterimage: 'What arrived was a heading — plain as a hand laid on the shoulder, turning {them} to face the right road.',
+        criticalFailureAfterimage: 'The wind did all the talking and {they} took it for an answer, and set off the way it happened to be blowing.',
+        nudges: [
+          {
+            // Shared generic pool — the `focus` family.
+            id: 'shrine.outlast_the_cold',
+            name: 'Outlast the cold',
+            essenceCost: 1,
+            forecastDelta: 0.06,
+            imageTag: 'generic.focus',
+            fiction: 'The cold in {their} knees stops being the loudest fact about the evening.',
+            effectLine: 'A small, reliable push toward staying.',
+            bandProse: {
+              success: 'They outlasted the cold, and it came in the hour after most would have gone.',
+              near_miss: 'They outlasted the cold and not the light, and left at dusk one hour short.',
+            },
+          },
+          {
+            id: 'shrine.listen_past_the_wind',
+            name: 'Listen past the wind',
+            sphere: 'spirit',
+            essenceCost: 2,
+            forecastDelta: 0.12,
+            imageTag: 'generic.listening',
+            fiction: 'The wind comes apart from what stands behind the wind, and only one of the two is worth hearing.',
+            effectLine: 'Strong help. The wind stops counting as an answer.',
+            bandProse: {
+              failure: 'They heard past the wind and found the space behind it empty.',
+              critical_failure: 'They listened past the wind and put a voice into the hush themselves, and believed it.',
+            },
+          },
+          {
+            id: 'shrine.hold_the_last_light',
+            name: 'Hold the last light',
+            sphere: 'time',
+            essenceCost: 2,
+            forecastDelta: 0.10,
+            imageTag: 'generic.time-slow',
+            fiction: 'The dusk stops falling and stands where it is, and the hour {they} needed is simply there.',
+            effectLine: 'Good help. The hour does not run out.',
+            bandProse: {
+              near_miss: 'The light held and held, and {actor} spent all of it waiting for a better hush to listen into.',
+            },
+          },
+          {
+            id: 'shrine.let_the_dark_come',
+            name: 'Let the dark come',
+            sphere: 'darkness',
+            essenceCost: 2,
+            forecastDelta: 0.09,
+            imageTag: 'generic.dark',
+            fiction: 'Full dark closes over the stones and takes the view away, and there is only listening left to do.',
+            effectLine: 'Good help. There is less to look at.',
+            bandProse: {
+              critical_success: 'In full dark the stones stopped being stones, and what {actor} heard came with no wind in it.',
+              near_miss: 'The dark came down whole, and {they} heard {their} own heart and called it a reply.',
+            },
+          },
+          {
+            id: 'shrine.set_down_the_wanting',
+            name: 'Set down the wanting',
+            sphere: 'mind',
+            essenceCost: 2,
+            forecastDelta: 0.11,
+            imageTag: 'generic.mind',
+            fiction: 'What {they} hoped to be told stops sitting in front of what is actually said.',
+            effectLine: 'Strong help. The asking stays honest.',
+            bandProse: {
+              success_at_cost: 'They stopped wanting a particular answer, and got one, and it was not that one.',
+              failure: 'They set the wanting down and found {they} had set the whole asking down with it.',
+            },
+          },
+          {
+            // Trait-only card: cost 0, the price paid by being this person.
+            id: 'shrine.wait_one_hour_more',
+            name: 'Wait one hour more',
+            requiredTrait: 'trait.core.core_hope.virtue',
+            essenceCost: 0,
+            forecastDelta: 0.08,
+            imageTag: 'generic.oath',
+            fiction: 'The hour where a sensible person stands up and goes comes and goes, and {they} are still down on the stone.',
+            effectLine: 'A steady help, and it costs no essence.',
+            bandProse: {
+              near_miss: 'They waited an hour past sense, and got a cold knee and the wind for it.',
+              critical_failure: 'They waited past every sensible hour, and walked home in the dark sure of an answer {they} had built.',
+            },
+          },
+        ],
         onSuccess: {
-          narrative: 'A tremor of certainty passes through {actor} — not a voice, not a vision, but a direction. The path ahead is {adj} clearer.',
+          narrative: 'A certainty goes through {actor} — no voice, no light, a heading. The road ahead has one fork fewer on it.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
           rewardPool: {
@@ -9946,7 +10490,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: 'Silence. {actor} waits until the cold drives {them} away. Faith is sometimes its own {adj} reward.',
+          narrative: 'Wind, and the stones, and the light going. {actor} gets up cold with the gift given and no reply to carry off.',
           reputationDelta: -0.08,
         },
       },
