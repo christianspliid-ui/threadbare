@@ -9,7 +9,7 @@ import {
   DEFAULT_NOTIFICATION_PREFS,
 } from '../types/notification';
 import type { ThreadingGate } from './notificationThreadingGate';
-import { ENTITY_DIVERTED_CHANNELS } from './notificationThreadingGate';
+import { ENTITY_DIVERTED_CHANNELS, ROUTE_GLOBAL } from './notificationThreadingGate';
 
 // ─── Navigation Target Derivation ──────────────────────────────
 
@@ -131,15 +131,18 @@ export function routeNotifications(
     const { channel, icon, popup } = event.notification;
     const navTarget = deriveNavigationTarget(event);
 
-    // THR-666 threading gate. An unthreaded mortal's beat is dropped outright;
-    // a threaded mortal's toast is diverted to their row. The event itself is
-    // untouched either way — it still reaches the tick log and the chronicle.
-    const routing = gate?.resolveEventRouting(event) ?? 'global';
-    if (routing === 'suppress') continue;
-    if (routing === 'entity' && ENTITY_DIVERTED_CHANNELS.has(channel) && event.actorId) {
+    // THR-666/THR-667 threading gate. An unthreaded mortal's beat is dropped
+    // outright; a threaded entity's toast is diverted to its row. The gate names
+    // the row it belongs to — a mortal's or a faction's — so this site never has
+    // to guess from the event's ids. The event itself is untouched either way:
+    // it still reaches the tick log and the chronicle.
+    const routing = gate?.resolveEventRouting(event) ?? ROUTE_GLOBAL;
+    if (routing.kind === 'suppress') continue;
+    if (routing.kind === 'entity' && ENTITY_DIVERTED_CHANNELS.has(channel)) {
       newEntityNotices.push({
         id: event.id,
-        agentId: event.actorId,
+        anchorId: routing.anchorId,
+        anchorKind: routing.anchorKind,
         message: event.message,
         sphere: event.sphere,
         tick: event.tick,

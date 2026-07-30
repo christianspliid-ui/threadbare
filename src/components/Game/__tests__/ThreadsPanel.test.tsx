@@ -6,6 +6,7 @@ import type { ThreadedNode } from '../../../engine/retinue';
 import type { BalanceEvent } from '../../../types/balanceEval';
 import type { EncounterNotification } from '../../../types/encounterVisibility';
 import { selectEncounterBadges } from '../encounterBadgeModel';
+import { selectEntityNoticeBadges } from '../entityNoticeBadgeModel';
 
 function makeNotification(overrides: Partial<EncounterNotification> = {}): EncounterNotification {
   return {
@@ -626,5 +627,100 @@ describe('ThreadsPanel sustained controls (THR-418)', () => {
     );
     expect(screen.queryByText('No Threads')).toBeNull();
     expect(screen.getByText('Hexes (1)')).toBeTruthy();
+  });
+});
+
+/**
+ * THR-667 — the notice badge on a faction row.
+ *
+ * The badge component and the badge model were already shared; the only thing
+ * standing between a faction notice and its row was this panel's per-row lookup,
+ * which was gated on `category === 'agent'`. These tests pin the lookup, because
+ * a regression there is invisible — the notice still exists in state and simply
+ * never renders.
+ */
+describe('ThreadsPanel — faction notice badges (THR-667)', () => {
+  const factionBadge = selectEntityNoticeBadges([{
+    id: 'fn-1',
+    anchorId: 'faction-1',
+    anchorKind: 'faction',
+    message: 'Seraphel has been promoted to Journeyman in the Iron Brotherhood.',
+    tick: 12,
+    category: 'social',
+  }]);
+
+  it('renders the notice badge on a faction row', () => {
+    render(
+      <ThreadsPanel
+        threadedNodes={[makeFaction()]}
+        selectedNodeId={null}
+        onNodeSelect={noop}
+        onCenterOnHex={noop}
+        noticeBadges={factionBadge}
+        onOpenNoticeBadge={noop}
+      />
+    );
+    fireEvent.click(screen.getByText('Factions (1)'));
+    expect(screen.getByTestId('thread-entity-notice-badge')).toBeTruthy();
+  });
+
+  it('hands the faction anchor back on click, so the faction section opens', () => {
+    const onOpenNoticeBadge = vi.fn();
+    render(
+      <ThreadsPanel
+        threadedNodes={[makeFaction()]}
+        selectedNodeId={null}
+        onNodeSelect={noop}
+        onCenterOnHex={noop}
+        noticeBadges={factionBadge}
+        onOpenNoticeBadge={onOpenNoticeBadge}
+      />
+    );
+    fireEvent.click(screen.getByText('Factions (1)'));
+    fireEvent.click(screen.getByTestId('thread-entity-notice-badge'));
+    expect(onOpenNoticeBadge).toHaveBeenCalledTimes(1);
+    expect(onOpenNoticeBadge.mock.calls[0][0]).toMatchObject({
+      anchorId: 'faction-1',
+      anchorKind: 'faction',
+    });
+  });
+
+  it('does not put a faction\'s notice on an agent row with a different id', () => {
+    render(
+      <ThreadsPanel
+        threadedNodes={[makeAgent()]}
+        selectedNodeId={null}
+        onNodeSelect={noop}
+        onCenterOnHex={noop}
+        noticeBadges={factionBadge}
+        onOpenNoticeBadge={noop}
+      />
+    );
+    expect(screen.queryByTestId('thread-entity-notice-badge')).toBeNull();
+  });
+
+  it('leaves other row types (armies, artifacts) without a notice badge', () => {
+    render(
+      <ThreadsPanel
+        threadedNodes={[makeArtifact()]}
+        selectedNodeId={null}
+        onNodeSelect={noop}
+        onCenterOnHex={noop}
+        noticeBadges={selectEntityNoticeBadges([{
+          id: 'an-1',
+          // An artifact id carrying a notice cannot happen today — the gate only
+          // stamps agent and faction anchors — but if a future ticket widens the
+          // anchor kinds, this row must be opted in deliberately.
+          anchorId: 'artifact-1',
+          anchorKind: 'agent',
+          message: 'irrelevant',
+          tick: 4,
+          category: 'actions',
+        }])}
+        onOpenNoticeBadge={noop}
+      />
+    );
+    fireEvent.click(screen.getByText('Artifacts (1)'));
+    expect(screen.queryByTestId('thread-entity-notice-badge')).toBeNull();
   });
 });

@@ -1361,20 +1361,23 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   // THR-666: and the same treatment for a threaded agent's own beats — becomings,
   // complications, ambition milestones. The threading gate has already dropped
   // every unthreaded agent's notifications, so whatever reaches here is someone
-  // the player is actually watching.
+  // the player is actually watching. THR-667: the same map also carries faction
+  // rows, keyed by faction node id.
   const noticeBadges = useMemo(
     () => selectEntityNoticeBadges(notificationState.entityNotices),
     [notificationState.entityNotices],
   );
 
   /**
-   * Notice-badge click — open the agent's thread, then clear their notices. This
+   * Notice-badge click — open the anchor's thread, then clear its notices. This
    * is only news, so reading it is the whole interaction; there is nothing to
-   * resolve and nothing to pay.
+   * resolve and nothing to pay. `anchorKind` is a `ThreadCategory` by
+   * construction, so it selects the right panel section for agents and factions
+   * alike (THR-667).
    */
   const handleOpenNoticeBadge = useCallback((badge: EntityNoticeBadgeModel) => {
-    handleThreadNodeSelect(badge.agentId, 'agent');
-    handleClearEntityNotices(badge.agentId);
+    handleThreadNodeSelect(badge.anchorId, badge.anchorKind);
+    handleClearEntityNotices(badge.anchorId);
   }, [handleThreadNodeSelect, handleClearEntityNotices]);
 
   /**

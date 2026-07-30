@@ -56,6 +56,18 @@ const SECTION_LABELS: Record<ThreadSectionKey, string> = {
   source: 'Sources',
 };
 
+/**
+ * Thread categories whose rows can carry an entity-notice badge.
+ *
+ * Agents came first (THR-666); factions joined when faction-scoped news stopped
+ * toasting globally (THR-667). Kept as a set rather than inlined equality checks
+ * so the next anchor kind is one entry, in one place, matching
+ * `EntityNoticeAnchorKind` on the engine side.
+ */
+const NOTICE_BADGE_CATEGORIES: ReadonlySet<ThreadSectionKey> = new Set<ThreadSectionKey>([
+  'agent', 'faction',
+]);
+
 const SUSTAINED_CATEGORY_ICON: Record<SustainedControlCategory, ActivityKind> = {
   hex: 'hex-claim',
   source: 'source-bound',
@@ -94,9 +106,10 @@ interface ThreadsPanelProps {
    * THR-666: per-agent beats (becomings, complications, milestones) keyed by the
    * row they anchor to. Replaces their global toasts — unthreaded agents never
    * appear here, since the threading gate drops their notifications upstream.
+   * THR-667: also keyed by faction node id, for beats inside a threaded faction.
    */
   noticeBadges?: Map<string, EntityNoticeBadgeModel>;
-  /** Opens the agent's thread and clears their pending notices. */
+  /** Opens the anchor's thread and clears its pending notices. */
   onOpenNoticeBadge?: (badge: EntityNoticeBadgeModel) => void;
   /**
    * Sustained-control rows from `getSustainedControlNodes`. THR-418 — renders Hexes
@@ -140,9 +153,9 @@ interface CompactThreadRowProps {
   tugBadge?: ThreadTugBadgeModel;
   /** Attends the tug badge's primary tug and selects the agent. */
   onAttendTugBadge?: (badge: ThreadTugBadgeModel) => void;
-  /** THR-666: unread per-agent notices anchored to this row, if any. */
+  /** THR-666/THR-667: unread notices anchored to this row (agent or faction), if any. */
   noticeBadge?: EntityNoticeBadgeModel;
-  /** Opens the agent's thread and clears their pending notices. */
+  /** Opens the anchor's thread and clears its pending notices. */
   onOpenNoticeBadge?: (badge: EntityNoticeBadgeModel) => void;
   /**
    * THR-418: optional click handler for the champion chip on agent rows.
@@ -785,7 +798,8 @@ function CompactThreadRow({
 
             {/* THR-666: notice badge — word of this agent. Becomings, complications
                 and milestones land here instead of the global toast queue; agents
-                the player holds no thread to never produce one. */}
+                the player holds no thread to never produce one. THR-667: faction
+                rows carry the same badge, for shifts inside the faction. */}
             {noticeBadge && onOpenNoticeBadge && (
               <EntityNoticeBadge badge={noticeBadge} onOpen={onOpenNoticeBadge} />
             )}
@@ -1312,7 +1326,7 @@ export const ThreadsPanel = React.memo(function ThreadsPanel({
                             onOpenEncounterBadge={onOpenEncounterBadge}
                             tugBadge={node.category === 'agent' ? tugBadges?.get(node.id) : undefined}
                             onAttendTugBadge={onAttendTugBadge}
-                            noticeBadge={node.category === 'agent' ? noticeBadges?.get(node.id) : undefined}
+                            noticeBadge={NOTICE_BADGE_CATEGORIES.has(node.category) ? noticeBadges?.get(node.id) : undefined}
                             onOpenNoticeBadge={onOpenNoticeBadge}
                             onChampionChipClick={onChampionChipClick}
                             locationClaimStatus={claimStatus}

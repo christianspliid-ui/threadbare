@@ -5497,6 +5497,32 @@ const DATA = [
     "workaroundFound": false,
     "workaround": "Nothing recovers the PR: with the head ref gone the branch cannot be updated or merged, so it must be closed and the work re-pushed. Step 0.8 should treat a `Could not resolve head ref` error as \"close this PR\", not as a transient `gh` failure to log and continue past. Not fixed here — outside THR-845's scope; surfaced in that ticket's completion comment.",
     "session": "THR-845 pickup; Step 0.8 armed-PR sweep."
+  },
+  {
+    "num": "308",
+    "id": 308,
+    "count": 1,
+    "date": "2026-07-30",
+    "category": "tooling",
+    "description": "**Playwright MCP `browser_take_screenshot` with a `target` selector times out (5s) on any element containing a CSS-animated child.** The THR-667 notice badge sits in a row whose pip carries `animation: mark-pulse 1.6s infinite`, so Playwright's \"waiting for element to be stable\" precondition never settles and the element screenshot fails — while a full-viewport screenshot of the same page succeeds instantly, because viewport capture has no stability gate.",
+    "consequence": "A close-up crop of an animated UI surface is unobtainable by the documented route, so a DoD screenshot of a badge/pip/pulse component silently costs a failed 5s call and then needs a different approach.",
+    "impact": "Low — the full-viewport capture satisfies the DoD clause on its own; only the legibility crop is lost.",
+    "workaroundFound": true,
+    "workaround": "Take the full-viewport screenshot (no `target`) and pair it with DOM assertions for the detail the crop would have shown — `getBoundingClientRect()` for position/in-viewport, plus the element's `aria-label` and `data-*` attributes read via `browser_evaluate`. Text assertions are stronger evidence than a crop anyway. Do **not** disable the animation to get the shot: that photographs a surface the player never sees.",
+    "session": "THR-667 browser-verify; unattended Playwright MCP route."
+  },
+  {
+    "num": "309",
+    "id": 309,
+    "count": 2,
+    "date": "2026-07-30",
+    "category": "tooling",
+    "description": "**Clicking through stacked modals from one `browser_evaluate` call dismisses nothing — every click in a single JS turn hits the same top dialog before React re-renders.** A loop calling `.click()` on the topmost `[role=\"dialog\"]`'s button six times reported six successful clicks and left all three dialogs standing. Same root cause as the `fireAction` + `tick` race already recorded for `__DEBUG`, but it surfaces here through ordinary DOM clicks, not the debug bridge.",
+    "consequence": "A seeded `?view=game&seeded` session opens 3+ stacked onboarding/beat modals, and they intercept pointer events for the whole right-hand panel — so `browser_click` on any panel element fails with \"intercepts pointer events\" until they are cleared. Looks like a broken selector rather than a modal stack.",
+    "impact": "Low — costs one confused round-trip per browser session that needs the panel.",
+    "workaroundFound": true,
+    "workaround": "`await new Promise(r => setTimeout(r, 120))` between clicks inside a single `async` evaluate, re-querying `[role=\"dialog\"]` each pass and always taking the **last** one (the topmost). Four awaited clicks cleared what six synchronous ones could not. Read the button labels back — the beats are choices (\"Reach Down\", \"Watch and wait\"), not just acknowledgements, so a blind `buttons[last]` click makes a real game decision.",
+    "session": "THR-667 browser-verify; seeded game view."
   }
 ];
 // ── End data ──
