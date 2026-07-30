@@ -1,50 +1,50 @@
 # Briefing
 
-**Generated:** 2026-07-30 19:57 local (2026-07-30 17:57 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-07-30 20:57 local (2026-07-30 18:57 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
 ## Needs Christian
 
-**Both halves of the machinery are now built and live. That is the change this hour.** The card mechanics behind the twenty-one card types — the second and last of the two engine jobs — was picked up, finished, merged, and is being served by the live site as of a few minutes ago. The first half, the flexible-location system, landed an hour earlier. **Neither needed anything from you, and neither needs anything now.**
+**The example encounter has been written. That is the change this hour, and it is the one you have been waiting on.**
 
-**Three things from your Fable session are still open, and they are unchanged:**
+It is called **The Swollen Ford** — a river crossing — and it replaces the Darkhollow Vault draft entirely. It was written end-to-end in the format your session locked: the scene prose does the storytelling, the cards carry only the rules, two six-card hands, costs paid in essence, in doom, and in being noticed. The fourteen questions your format asks a scene-writer are answered in writing alongside it. It sits in a change request that is passing its checks and will land on its own within the hour.
 
-1. **The example encounter itself.** The frameworks describe the shape; nobody has yet written the one encounter that shows what the shape actually reads like. That exemplar is what the rest of the writing gets measured against.
-2. **How the odds reach the player.** Still undecided — the write-up parks it explicitly. This is the bordered strip of colour-coded bullets you objected to: whether the reasoning gets woven into the prose, the strip gets redesigned, or both.
-3. **How much already-written material gets redone.** Unchanged and still **seven or eleven**, depending on whether one finished batch of four capital-city encounters is let in. That batch is still parked in an unmerged request and no lane has touched it. Not urgent — it stays parked either way.
+**Your read of it is the last gate, and it has not happened.** The whole point of the prototype was that you sign off on the exact way an encounter reads before the rest get written. Nothing has been signed off — an encounter now exists in the new shape, and whether it actually reads the way you want is still your call and only yours.
 
-**What changed for you specifically:** when you write that exemplar, it no longer leans on anything described-but-unbuilt. Both systems underneath it are real, running, and on the live site. The wait was never on you — it is now not on anything.
+**Ask for The Swollen Ford in your next chat session and have it read to you there.** Don't go looking for it in the repository — it lives as engine data, not as something readable. This matters more than usual: your standing objection has been that the writing is too lyrical and never states the mechanism plainly. This exemplar is the first thing written to fix that, and the entire remaining corpus gets measured against it.
+
+**One of your three open items is now closed, and you closed it yourself.** How the odds reach the player is decided — the pip vocabulary from your session: five pips per colour band, shapes changing per tier so it reads without relying on colour, penalties as red down-triangles, one odds language across the whole surface. The write-up records it as approved by you in chat, and the job to build that card row is already on the shelf. **If that doesn't match what you remember agreeing to, say so** — it is being treated as settled and work will be built on it.
+
+**Your third item is unchanged: seven or eleven.** How much already-written material gets redone still depends on whether one finished batch of four capital-city encounters is let in. That batch is still stuck in an unmerged request and nobody has touched it. Not urgent, and the exemplar doesn't settle it — the write-up says the retrofit scope is explicitly still open.
 
 ## Queue
 
-**Forty-seven jobs ready, two in progress, nothing gone cold.** The shelf count held flat and the whole change is accounted for by name: the card-mechanics job left the shelf and went into progress; one new small follow-up job arrived out of its own work (a missing hook on one of the twenty-one card types, found while building them). One out, one in.
+**Fifty jobs ready, one in progress, nothing gone cold.** The shelf grew by three, and the whole change is accounted for by name: the card-mechanics job finished and left; four arrived — the card-library job, promoted now that both things blocking it are done; the card-row job from your odds decision; and two small housekeeping notes found while building.
 
-**Nothing on the shelf is high-priority any more** — the last high-priority item was the card-mechanics job that just shipped. What remains is eight medium and thirty-nine low: engine work, tooling, and housekeeping. **No content writing, by design — that is still paused behind your three decisions.**
+**Two high-priority jobs are back on the shelf**, both out of your format session: the card library underneath the twenty-one card types, and the card row that renders your pips. The rest is nine medium and thirty-nine low — engine work, tooling, housekeeping. **Still no content writing, by design.**
 
-The longest-waiting item has now been sitting **five days and twenty-one hours**. It crosses our one-week line **tomorrow evening**, and it is a low-priority tidy-up, so that is a note rather than a problem.
-
-**The second in-progress job is still the finished-but-unmerged batch** from item 3 above. Still stuck, still ours, nothing for you to do.
+The longest-waiting item has been sitting **five days and twenty-two hours**. It crosses our one-week line tomorrow evening and is a low-priority tidy-up, so that is a note rather than a problem.
 
 ## Freshness
 
-**Home tree healthy.** You're on the main line, three commits behind the very newest — that is this hour's merges landing, not drift; the sync robot picks them up on its next pass. Nothing is stranded. The only local edits are your own tool-permission settings, which block nothing.
+**Home tree healthy** — on the main line, nothing behind, nothing stranded. The only local edits are your own tool-permission settings and Friday's retro draft, and neither blocks anything.
 
-**The live site is serving the newest code**, re-checked after the card-system merge rather than assumed — the same check taken fifteen minutes earlier said "nothing new to publish" and was out of date within minutes.
+**The live site is current.** Everything merged since the last publish was notes and documentation, so there was nothing new for the game itself to serve.
 
-**Everything else checked clean.** The merge safety net is healthy with zero failed starts — the twenty-seventh clean check since you sorted the billing page. All eight scheduled robots are on time, the twenty-sixth straight clean sweep. The tidy-up robot ran at 19:40 with nothing awaiting a human call, and the pile it tracks has held at zero for a twelfth straight hour.
+**Everything else checked clean.** The merge safety net is healthy with zero failed starts — the twenty-eighth clean check since you sorted the billing page. All eight scheduled robots are on time, the twenty-seventh straight clean sweep. The tidy-up robot ran at 20:40 with nothing awaiting a human call, and the pile it tracks has held at zero for a thirteenth straight hour.
 
 ## What's moving
 
-**The content pause is holding, and the thing it was waiting on is now finished.** No content job has been picked up — correctly, because the format decisions are yours and still open. But the blockage has moved from "waiting on machinery that is specified" to "waiting only on the three decisions above." There is nothing else in the way.
+**The content pause is still holding, and it should be.** No content job has been picked up, correctly — the format is locked but your read of the exemplar has not happened, and that read is what the rest of the writing gets measured against.
 
-**Your see-the-encounters switch still works on the live site** — the published build changed under it again this hour, so this is a fresh check rather than a carried claim:
+**Your see-the-encounters switch still works on the live site**, re-checked rather than carried:
 
 ```
 https://threadbare.vercel.app/?view=game&seeded&forceencounters
 ```
 
-**Three housekeeping requests of ours are still stuck, and all three still want a session with write access** — unchanged in number and condition for a fifth hour. None of them touches the game, and none needs you.
+**Three housekeeping requests of ours are still stuck, and all three still want a session with write access** — unchanged for a sixth hour. None of them touches the game, and none needs you.
 
 ---
 *Standing asks live in `Design/user-actions.md`. This file is regenerated hourly by the `keep-work-flowing-cc` scheduled task; staleness is visible from the Generated timestamp above and the task's `lastRunAt` in `list_scheduled_tasks`.*
