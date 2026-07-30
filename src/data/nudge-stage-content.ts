@@ -66,6 +66,7 @@ export const NUDGE_BLOCKED_REASONS: Readonly<Record<NudgeBlockedCode, string>> =
 export const NUDGE_RIDER_LABELS: Readonly<Record<NudgeRider, string>> = {
   no_crit_fail: 'No catastrophe',
   floor_at_cost: 'Floors at a cost',
+  all_or_nothing: 'Widens both ends',
 };
 
 /** Cost rendered in words. A free card says so rather than showing a zero. */

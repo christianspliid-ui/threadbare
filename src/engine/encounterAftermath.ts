@@ -21,6 +21,8 @@ import type { SphereName, CreationSphereName } from '../types';
 import { CREATION_SPHERE_NAMES } from '../types';
 import type { SimulationRuntime } from './simulationRuntime';
 import { touchWorld, touchStructure } from './simulationRuntime';
+import { assignAmbitionToActor } from './ambitionAssignment';
+import type { TraceEntry } from '../types/trace';
 import { buildPredicateContext, evaluateOptionalCondition } from './effects/effectPredicates';
 import {
   THREAD_STRENGTHEN_DEFAULT,
@@ -1629,6 +1631,78 @@ export function applyEncounterAftermathReaction(
           effectiveTargetId: resolvedId, effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'actor_fallback',
           summary: `remove_condition[${i}]: removed ${removedCount} edge(s) of ${effect.conditionTraitId} from ${resolvedId}`,
         });
+        break;
+      }
+
+      case 'assign_ambition': {
+        // THR-885 (The Kindled Ambition) — the dispatcher reactive ambition
+        // templates never had (THR-812 / THR-726). Routes through the shared
+        // `assignAmbitionToActor` helper so a card-planted ambition is identical
+        // on the graph to one `ambitionTick` mints from a world event.
+        const resolvedId = target.kind !== 'actor_fallback' ? target.id : actorAgentId;
+        if (!resolvedId) {
+          emitTrace({
+            tick, category: 'aftermath_target_invalid', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'assign_ambition', reason: 'no_actor_id',
+            summary: `assign_ambition[${i}] skipped: no actor id`,
+            // `Omit` over the TraceEntry union collapses it to the shared keys, so
+            // every category-specific field reads as excess. Same cast the rest of
+            // this file and `phaseAutonomousAftermath` already use.
+          } as unknown as Omit<TraceEntry, 'id' | 'timestamp'>);
+          emitTrace({
+            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'assign_ambition', effectDetail: { templateId: effect.templateId },
+            success: false, failReason: 'no_actor_id',
+            effectiveTargetId: '', effectiveTargetKind: 'actor_fallback',
+            summary: `assign_ambition[${i}] skipped: no actorId`,
+          } as unknown as Omit<TraceEntry, 'id' | 'timestamp'>);
+          break;
+        }
+
+        const assignment = assignAmbitionToActor(
+          state.graph, resolvedId, effect.templateId, tick,
+          { priority: effect.priority, mintedByLabel: effect.narrativeHook },
+        );
+
+        if (assignment.assigned) {
+          mutationSummary.touchedStructure = true;
+          mutationSummary.touchedWorld = true;
+          touchWorld(runtime);
+
+          // Desire is interior — the chronicle entry is opt-in, authored per card.
+          if (effect.narrativeHook) {
+            const ambEvent: TickEvent = {
+              id: `${resolvedId}_ambition_${effect.templateId}_${tick}`,
+              tick,
+              type: 'narrative',
+              message: effect.narrativeHook,
+              significance: 0.6,
+              actorId: resolvedId,
+            };
+            nextTickEvents = [...nextTickEvents, ambEvent];
+            nextRecentEvents = appendRecentEvent(nextRecentEvents, ambEvent);
+          }
+        }
+
+        emitTrace({
+          tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+          encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+          effectKind: 'assign_ambition',
+          effectDetail: {
+            targetId: resolvedId,
+            templateId: effect.templateId,
+            priority: assignment.priority,
+          },
+          success: assignment.assigned,
+          ...(assignment.assigned ? {} : { failReason: assignment.reason }),
+          effectiveTargetId: resolvedId,
+          effectiveTargetKind: effectiveTargetKind as 'agent' | 'faction' | 'sublocation' | 'actor_fallback',
+          summary: assignment.assigned
+            ? `assign_ambition[${i}]: ${effect.templateId} → ${resolvedId} (${assignment.priority})`
+            : `assign_ambition[${i}] skipped: ${assignment.reason}`,
+        } as unknown as Omit<TraceEntry, 'id' | 'timestamp'>);
         break;
       }
 

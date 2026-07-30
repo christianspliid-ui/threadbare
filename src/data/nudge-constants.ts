@@ -129,7 +129,30 @@ export const BROKEN_DRIFT_SAFE_SUBTYPES: ReadonlySet<string> = new Set([
  * nudges carrying riders, exactly one applies — the earliest in this list.
  * Riders never stack, and they never touch the d100.
  */
-export const NUDGE_RIDER_PRIORITY: readonly NudgeRider[] = ['no_crit_fail', 'floor_at_cost'];
+export const NUDGE_RIDER_PRIORITY: readonly NudgeRider[] = [
+  'no_crit_fail',
+  'floor_at_cost',
+  // The Gambit sits last on purpose (THR-885). It is the only rider that can
+  // worsen an outcome, so when a player has also committed a protective card the
+  // protection wins — a hand cannot accidentally cancel its own safety net.
+  'all_or_nothing',
+];
+
+// ─── Sphere signature discount ───────────────────────────────────────
+
+/**
+ * The Signature (THR-885) — essence knocked off a card whose sphere matches one
+ * the ascendant is aligned to. A discount, not a gate: full sphere *gating*
+ * stays parked with THR-870.
+ */
+export const SPHERE_DISCOUNT = 1;
+
+/**
+ * Floor the discount can never push a card below. Free is an authored decision
+ * (`essenceCost: 0` on a trait card), never something a discount arrives at —
+ * otherwise a sphere-matched card silently becomes a different kind of card.
+ */
+export const SPHERE_DISCOUNT_MIN_COST = 1;
 
 // ─── Motive classification ───────────────────────────────────────────
 

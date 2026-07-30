@@ -115,6 +115,9 @@ export type TraceCategory =
   | 'condition_applied'
   | 'condition_removed'
   | 'aftermath_target_invalid'
+  // Nudge card dispatch (THR-885)
+  | 'nudge_cost_charged'
+  | 'nudge_dispatch_failed'
   // World-shaping aftermath traces (THR-115)
   | 'artifact_spawned'
   | 'omen_emitted'
@@ -402,6 +405,9 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'condition_applied',
   'condition_removed',
   'aftermath_target_invalid',
+  // Nudge card dispatch (THR-885)
+  'nudge_cost_charged',
+  'nudge_dispatch_failed',
   // World-shaping aftermath traces (THR-115)
   'artifact_spawned',
   'omen_emitted',
@@ -1724,6 +1730,40 @@ export interface ConditionRemovedTrace extends TraceBase {
   reactionId: string;
 }
 
+/**
+ * Trace: a committed nudge card charged a non-essence cost (THR-885).
+ *
+ * One per channel per commit, not one per card — the channels are summed across
+ * the hand before they are charged, so a per-card trace would report deltas that
+ * were never individually applied.
+ */
+export interface NudgeCostChargedTrace extends TraceBase {
+  category: 'nudge_cost_charged';
+  encounterId: string;
+  channel: 'detection' | 'doom';
+  /** Delta actually applied after clamping — not necessarily the one requested. */
+  appliedDelta: number;
+  /** Detection channel only. */
+  regionId?: string;
+  fromPressure?: number;
+  toPressure?: number;
+  /** Doom channel only. */
+  tickModifier?: number;
+}
+
+/**
+ * Trace: a nudge card's grant or cost failed to apply (THR-885).
+ *
+ * Fail-soft evidence. A host API that throws must not take the step's outcome or
+ * the rest of the hand with it, so the throw is caught and recorded here instead.
+ */
+export interface NudgeDispatchFailedTrace extends TraceBase {
+  category: 'nudge_dispatch_failed';
+  encounterId: string;
+  channel: 'grants' | 'detection' | 'doom';
+  failReason: string;
+}
+
 /** Trace: aftermath effect target could not be resolved or effect kind does not support the target kind */
 export interface AftermathTargetInvalidTrace extends TraceBase {
   category: 'aftermath_target_invalid';
@@ -1967,6 +2007,9 @@ export type TraceEntry =
   | ConditionAppliedTrace
   | ConditionRemovedTrace
   | AftermathTargetInvalidTrace
+  // Nudge card dispatch (THR-885)
+  | NudgeCostChargedTrace
+  | NudgeDispatchFailedTrace
   // Scene-targeting aftermath sentinels + bond_change (THR-695, Slice B)
   | AftermathSentinelBoundTrace
   | BondChangeAppliedTrace

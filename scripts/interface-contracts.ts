@@ -1066,6 +1066,82 @@ export const CONTRACTS: readonly Contract[] = [
     },
     deferralTicket: 'THR-778',
   },
+  // ── Nudge card dispatch → host systems (THR-885) ───────────────────────────
+  // The god's hand is the activation surface several idle systems were missing.
+  // Each row is a card→system write; all three are wired and tested but not yet
+  // LIVE, because no shipped card authors a grant — content lands under THR-883.
+  {
+    id: 'nudge-card-grants-dispatch-to-host-systems',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: AMBITIONS,
+    intent:
+      'A card that says it changed the world actually changes it, through the system that owns that change — so the fiction the player is shown and the state the world holds cannot disagree.',
+    ulTerms: ['Nudge', 'Ambition'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['dispatchNudgeCommitments', 'collectNudgeGrants', 'assignAmbitionToActor'],
+      module: 'src/engine/encounters/nudgeDispatch.ts',
+    },
+    writeSites: ['src/engine/phases/phaseAutonomousAftermath.ts'],
+    readSites: ['src/engine/encounterAftermath.ts', 'src/engine/ambitionAssignment.ts'],
+    // Card grants ride the existing `EncounterAftermathReactionEffect` vocabulary and
+    // are applied by the existing applier, so `emit_omen` / `remove_condition` /
+    // `spawn_artifact` / `hidden_mark` / `favor_creation` needed no new path at all.
+    // `assign_ambition` is the one genuinely new kind: reactive ambition templates had
+    // no assignment path outside `ambitionTick` (THR-812 / THR-726), which is why the
+    // shared `assignAmbitionToActor` helper was extracted from the three in-phase copies.
+    //
+    // Not LIVE: no shipped card authors `grants`, so nothing travels this path yet
+    // (badging it LIVE would be the THR-614 error class). The grant-liveness gate
+    // (`validateNudgeGrantRefs`) is what stops the first authored card from naming
+    // content nobody built.
+    deferralTicket: 'THR-883',
+  },
+  {
+    id: 'nudge-card-cost-channels-detection-and-doom',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: QUINTESSENCE,
+    intent:
+      'A card can be cheap in essence and expensive somewhere else — visibility to rivals, or the doom clock — so the price of divine help is not always the same currency.',
+    ulTerms: ['Nudge', 'Detection Pressure', 'Doom Clock'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['collectNudgeCostChannels', 'applyRawDetectionDelta', 'accelerateDoomClock'],
+      module: 'src/engine/encounters/nudgeDispatch.ts',
+    },
+    writeSites: ['src/engine/phases/phaseAutonomousAftermath.ts'],
+    readSites: [
+      'src/engine/encounters/detectionPressure.ts',
+      'src/engine/doomClock.ts',
+    ],
+    // `applyRawDetectionDelta` is a signed entry point added to the detection module
+    // itself, not a parallel writer: every prior writer priced by `EncounterChoiceCost`
+    // band, which can only *raise* pressure, so The Veil (help given unwitnessed) had
+    // no channel to write through. Both entry points share the module's clamp.
+    deferralTicket: 'THR-883',
+  },
+  {
+    id: 'nudge-hand-runtime-filters-and-sphere-discount',
+    producerSystem: QUINTESSENCE,
+    consumerSystem: ENCOUNTERS,
+    intent:
+      'The hand the player is dealt reflects the world as it actually is — group cards only in groups, favor calls only when a favor is owed — and a sphere the god is aligned to makes its own work cheaper.',
+    ulTerms: ['Nudge', 'Sphere', 'Essence'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['buildNudgeHand', 'effectiveNudgeCost', 'totalNudgeCost'],
+      module: 'src/engine/encounters/nudges.ts',
+    },
+    writeSites: ['src/types/unifiedAction.ts', 'src/data/nudge-constants.ts'],
+    readSites: [
+      'src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts',
+      'src/engine/meetingEncounter.ts',
+    ],
+    // `effectiveNudgeCost` is shared by the affordability check and the deduction on
+    // purpose: quoting a discounted card and charging the authored price (or the
+    // reverse) is the one bug a discount feature reliably ships with.
+    deferralTicket: 'THR-883',
+  },
 ];
 
 /** A malformed row — surfaced in the generated output rather than thrown (NFP #4). */
