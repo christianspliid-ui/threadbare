@@ -16,6 +16,8 @@ import type { ReachDomain } from './traits';
 import type { SphereName } from './index';
 import type { ValuePair, AxiologicalProfile } from './agent';
 import type { CooperationStrategy } from './disposition';
+import type { StepFactorLine, StepNudge, StepOutcome } from './unifiedAction';
+import type { BondReception } from '../data/meeting-nudge-constants';
 
 // ─── Constants ────────────────────────────────────────────────────
 
@@ -413,6 +415,16 @@ export interface MeetingChoiceRecord {
   sparkVisionId: string;
   ascendantSphere: SphereName;
   foundingGateTags: string[];
+
+  // ── Nudge conversion (THR-868, additive) ──
+  /**
+   * Resolved formative tests. Absent on records written by the legacy choice
+   * path, which is why this is optional rather than an empty array by default —
+   * "no tests were run" and "tests ran and wrote nothing" are different facts.
+   */
+  formativeOutcomes?: FormativeOutcome[];
+  /** How the mortal received the bond. Absent on legacy-path records. */
+  bondReception?: BondReception;
 }
 
 // ─── Spark Investment Options (Step 3) ────────────────────────────
@@ -470,6 +482,17 @@ export interface MeetingEncounterResult {
   meetingChoiceRecord: MeetingChoiceRecord;
   /** Location ID where the agent was created */
   locationId: string;
+
+  // ── Nudge conversion (THR-868, additive) ──
+  /**
+   * Starting quintessence after formative-test scarring, already floor-clamped.
+   * Absent means "unscarred" — `createAgentFromMeeting` leaves the property off
+   * the node and the existing `QUINTESSENCE_DEFAULT` fallback applies, so the
+   * legacy path is byte-identical to before.
+   */
+  startingQuintessence?: number;
+  /** How the mortal received the bond, for the thread edge. */
+  bondReception?: BondReception;
 }
 
 // ─── Dilemma Resonance & Lens Overlay (Enriched Templates) ──────
@@ -518,4 +541,151 @@ export interface EnrichedDilemmaTemplate extends DilemmaTemplate {
   lensOverlays: readonly LensOverlay[];
   /** Visual/thematic tags for art direction */
   artTags: readonly string[];
+
+  // ── Nudge conversion (THR-868, additive) ──
+  //
+  // Data-presence branching: a template carrying `test` renders as a formative
+  // test; one without it renders the legacy choice scene. Per-template and
+  // reversible — no flag day, mirroring the WS5 migration.
+  /** Present once this template has been converted to a formative test. */
+  test?: FormativeTest;
+}
+
+// ─── Formative & Bond Tests (THR-868, WS6) ───────────────────────────
+
+/**
+ * A nudge card in the meeting, extending the WS0 `StepNudge` **structurally**.
+ *
+ * Deliberately declared here and not as a field on `StepNudge` itself: that type
+ * lives in `src/types/unifiedAction.ts`, which 278 files import. Structural
+ * compatibility means the whole WS2 hand pipeline (`buildNudgeHand`,
+ * `collectNudgeModifiers`, `selectActiveRider`, `useNudgeHand`, `nudgeCommit`)
+ * consumes these unchanged, with no high-impact file edited.
+ */
+export interface MeetingStepNudge extends StepNudge {
+  /**
+   * Which pole of the test's value pair this card pulls toward. `'a'` is the
+   * first-named pole of the `ValuePair` (the positive direction in
+   * `AxiologicalProfile`), `'b'` the second.
+   *
+   * Absent on cards that shift the odds without arguing for an outcome — a hand
+   * of only those gets pure fate, which is a legitimate way to play.
+   */
+  readonly poleLean?: 'a' | 'b';
+}
+
+/**
+ * A formative test — a defining moment happening **now**, while the god's
+ * attention rests on the mortal (Christian, grill verdict 13: present-tense
+ * trials; the "unset weave" framing was rejected and must not be reintroduced).
+ *
+ * The player never picks which way the moment goes. They lean the odds; fate
+ * resolves the band; the band writes the pole.
+ */
+export interface FormativeTest {
+  /** The value pair this moment is about. */
+  readonly valuePair: ValuePair;
+  /** ≤4 words — what is actually at stake. */
+  readonly purposeLine: string;
+  /** Authored 0–1. Rendered only as a difficulty word, never as the number. */
+  readonly difficulty: number;
+  /** 2–4 authored for/against lines. The cause lives in the sentence. */
+  readonly factorLines: readonly StepFactorLine[];
+  /** The hand — 4–8 cards, ≥1 sphere-less common option. */
+  readonly nudges: readonly MeetingStepNudge[];
+  /** Prose per resolved band, keyed by which pole the band wrote. */
+  readonly bandProse: FormativeBandProse;
+}
+
+/**
+ * Band prose for a formative test, in the five slots the plan specifies.
+ *
+ * Keyed by *what happened to the soul* rather than by raw band, because the same
+ * band writes a different pole depending on how the hand leaned — the prose has
+ * to follow the pole, not the roll.
+ */
+export interface FormativeBandProse {
+  /** Clean resolution into pole `a`. */
+  readonly cleanA: string;
+  /** Clean resolution into pole `b`. */
+  readonly cleanB: string;
+  /** The moment lands only partly — tempered shift. */
+  readonly tempered: string;
+  /** The moment broke the other way, into pole `a`. */
+  readonly brokenIntoA: string;
+  /** The moment broke the other way, into pole `b`. */
+  readonly brokenIntoB: string;
+}
+
+/**
+ * The bond test — the climax. The mortal senses the god reaching for them, and
+ * fate decides how that lands.
+ *
+ * One universal template rather than a pool: this beat happens exactly once per
+ * run and closes the flow, so variety comes from the sphere-flavored hand and
+ * the per-hunger god-voice line, not from template selection.
+ */
+export interface BondTest {
+  readonly id: string;
+  /** Register-compliant setup — the moment of reaching, in plain language. */
+  readonly setup: string;
+  /** ≤4 words. */
+  readonly purposeLine: string;
+  /** Authored 0–1. */
+  readonly difficulty: number;
+  readonly factorLines: readonly StepFactorLine[];
+  /** 6–8 sphere-flavored cards, ≥4 spheres covered, ≥1 common. */
+  readonly nudges: readonly MeetingStepNudge[];
+  /** Per-hunger god-voice framing. Keyed by hunger id. */
+  readonly godVoiceByHunger: Readonly<Record<string, string>>;
+  /** Fallback god-voice line for a hunger with no authored variant. */
+  readonly godVoiceFallback: string;
+  /** Prose and trait seed per reception band. */
+  readonly receptions: Readonly<Record<BondReception, BondReceptionContent>>;
+}
+
+/** What a reception band writes. */
+export interface BondReceptionContent {
+  /** Player-facing prose for this reception. */
+  readonly prose: string;
+  /** Trait seed the reception grants. */
+  readonly traitSeed: string;
+}
+
+// ─── Test outcomes ───────────────────────────────────────────────────
+
+/** Net pole lean of a played hand — `'none'` means the god argued for neither. */
+export type MeetingPoleLean = 'a' | 'b' | 'none';
+
+/** The resolved result of one formative test. */
+export interface FormativeOutcome {
+  /** Which test in the sequence (0-indexed). */
+  readonly testIndex: number;
+  /** Converted template this test came from. */
+  readonly templateId: string;
+  readonly valuePair: ValuePair;
+  /** Lean of the played hand, before fate. */
+  readonly netLean: MeetingPoleLean;
+  readonly playedNudgeIds: readonly string[];
+  /** Resolved band from the shared ladder. */
+  readonly band: StepOutcome;
+  /** The pole the band actually wrote. */
+  readonly writtenPole: 'a' | 'b';
+  /** Signed shift applied to `valuePair` (sign is relative to pole `a`). */
+  readonly shift: number;
+  /** Quintessence erosion this band cost, before the floor clamp. */
+  readonly quintessenceErosion: number;
+  readonly essenceSpent: number;
+  /** Prose slot selected for this outcome. */
+  readonly prose: string;
+}
+
+/** The resolved result of the bond test. */
+export interface BondOutcome {
+  readonly band: StepOutcome;
+  readonly reception: BondReception;
+  readonly playedNudgeIds: readonly string[];
+  readonly essenceSpent: number;
+  readonly prose: string;
+  readonly traitSeed: string;
 }
