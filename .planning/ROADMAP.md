@@ -53,7 +53,7 @@
 - [x] **Phase 19: Determinism** — Replace all unseeded Math.random/Date.now with seeded PRNG and verify with integration test (completed 2026-03-30)
 - [x] **Phase 20: Wiring** — Connect three stubbed engine→UI paths (hex focus, avatar position, actor attribution) (completed 2026-03-30)
 - [x] **Phase 21: Performance** — Cache prose resolver output, tune encounter cache threshold, code-split large data files (completed 2026-03-31)
-- [ ] **Phase 22: Code Hygiene** — Extract DebugPanel sub-components, audit lodash, extend targetActions filtering
+- [x] **Phase 22: Code Hygiene** — Closed via the **Code Hygiene** Linear project (status Done, 2026-04-23). Closed by supersession, not by satisfying every original criterion — see the phase detail below before treating any HYGN item as delivered.
 
 ## Phase Details
 
@@ -106,7 +106,8 @@ Plans:
   1. DebugPanel.tsx is under 200 lines and delegates all rendering to named sub-components (EncounterCacheView, DecisionBreakdownView, etc.), each in its own file
   2. No duplicate lodash bundles exist in the production build — npm ls shows a single lodash-es installation and zero bare-lodash references
   3. Action templates can declare required node properties and targetActions.ts filters them out when the target lacks those properties
-**Plans**: TBD
+**Plans**: none authored.
+**Status (reconciled 2026-07-30, THR-763)**: the **Code Hygiene** Linear project is **Done** (completed 2026-04-23) with zero open issues — its two tickets, THR-130 (HYGN-01) and THR-131 (HYGN-02), were both closed as **Duplicate**, i.e. superseded by other work rather than delivered against these criteria. Do not read the closed state as "criteria met": as of 2026-07-30 `src/components/Game/DebugPanel.tsx` is still 244 lines with no sub-component directory, so criterion 1 is **not** satisfied. Criterion 2 is moot — `lodash` is no longer a dependency at all. If DebugPanel decomposition is still wanted, file it fresh rather than reopening this phase.
 
 ---
 
@@ -120,7 +121,7 @@ Plans:
 | 19. Determinism | 2/2 | Complete    | 2026-03-30 | - |
 | 20. Wiring | 2/2 | Complete    | 2026-03-30 | - |
 | 21. Performance | 3/3 | Complete    | 2026-03-31 | - |
-| 22. Code Hygiene | v1.1 | 0/TBD | Not started | - |
+| 22. Code Hygiene | v1.1 | n/a | Closed (superseded) | 2026-04-23 |
 
 ---
 
@@ -128,12 +129,21 @@ Plans:
 
 **Cross-cutting: Procedural Content Component Library** — Expand the generic effect system into a reusable content grammar for encounters, items, spells, conditions, talents, bonds, reputations, achievements, and artifacts. This is a foundation initiative rather than a standalone feature pillar: it feeds v1.2 Social Systems Expansion, M3 Dynamic Economy, and all future content authoring. Design docs: `Docs/plans/2026-04-03-procedural-content-component-library-audit.md` and `Docs/plans/2026-04-03-procedural-content-component-library-foundation-plan.md`.
 
+> **⚠️ The per-phase status prose below is hand-maintained and has drifted before (THR-763).** Before
+> planning work on anything marked pending, verify it against `src/types/effects.ts` (primitive
+> declarations) and `src/engine/effectResolver.ts` / `src/engine/effectExecutors.ts` (dispatch). A
+> green-field plan for an already-shipped primitive is exactly the failure THR-614 produced. Statuses
+> below re-derived by grep against `src/` on 2026-07-30 — treat that date as the freshness bound, not
+> the prose as standing truth. (Note `Docs/canon/systems-inventory.md` is generated and cannot drift,
+> but it registers engine *subsystems and tick phases*, not effect primitives — it does not cover this
+> list.)
+
 Implementation sequence:
-1. **Phase 1 · Core primitives** — `test_shaper`, `prevent_loss`, `content_grant` implemented in the first foundation slice; `resource_delta`, `action_trigger`, `choice_set` still pending
-2. **Phase 2 · Stateful shells** — `flip_table`, `clearance_gate`, duplicate-gain policy, result-band support
-3. **Phase 3 · Progress and service shells** — `task_progress`, richer service shells, support retainers
-4. **Phase 4 · Starter libraries** — combat items, rescue items, unstable talents/spells, bargains, tasks, bond assists, reputation favors, achievement tracks
-5. **Phase 5 · Governance** — stacking caps, shell authoring rules, trace/debug standards, balance ranges
+1. **Phase 1 · Core primitives** — ✅ **shipped.** All six are declared in `src/types/effects.ts`: `test_shaper`, `prevent_loss`, `content_grant`, `resource_delta`, `action_trigger`, `choice_set`. Dispatch lives in `effectResolver.ts` and `effectExecutors.ts`; `action_trigger` was extended by THR-719 (on-use item triggers), and `resource_delta` is applied in `rewardPool.ts`.
+2. **Phase 2 · Stateful shells** — ✅ **shipped** (THR-53). `flip_table` and `clearance_gate` run through `src/engine/clearanceGate.ts`, `src/engine/effectShellRuntime.ts`, and the dedicated tick phase `src/engine/phaseEffectShells.ts`; duplicate-gain policy (`DEFAULT_DUPLICATE_GAIN_POLICY`, `DUPLICATE_WORSEN_DEFAULT_MAX`) and result-band support (`resultBands`, `resultBandHistory`, `RESULT_BAND_FALLBACK_ID`) are in `src/data/effect-constants.ts` and `src/types/gameState.ts`. This phase has no Linear counterpart because it landed, not because it was lost.
+3. **Phase 3 · Progress and service shells** — pending. `task_progress` returns **0 hits** across `src/` (verified 2026-07-30). Tracked by THR-54.
+4. **Phase 4 · Starter libraries** — pending. Combat items, rescue items, unstable talents/spells, bargains, tasks, bond assists, reputation favors, achievement tracks. Tracked by THR-55.
+5. **Phase 5 · Governance** — pending. Stacking caps, shell authoring rules, trace/debug standards, balance ranges. Tracked by THR-56.
 
 **v1.2: Social Systems Expansion** — 5 interlocking expansions transforming social interaction from transactional exchanges into rich, world-shaping narrative scenes. Agents proactively create structures, organizations, and events. Factions act as autonomous entities. Taverns as social hubs with party formation. Information economy (rumors, secrets, favors). Design doc: `Docs/plans/2026-03-31-social-systems-expansion-design.md`.
 
