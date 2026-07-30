@@ -218,21 +218,38 @@
   <li><strong>Supporting content ships with the card</strong> — a card granting an item, trait, ambition, or omen is only legal when that content exists; enforced by the grant-liveness build gate.</li>
 </ul>
 
-<h2>Open design space — where the repertoire grows <span class="flag open">OPEN</span></h2>
+<h2>The Repertoire — progression design <span class="flag design">DESIGN</span></h2>
 
 <div class="callout open-space">
-<p><strong>Christian, 2026-07-30:</strong> "there is a lot of magic in expanding the repertoire and connecting it to the roguelike progression and the ascendant type." Direction agreed, design pending — candidates below are hooks into systems that already exist, listed here so iteration happens on this page.</p>
+<p><strong>Blessed by Christian, 2026-07-30</strong> (all four verdicts, chat session; spec: <span class="mono">Docs/plans/2026-07-30-nudge-card-repertoire.md</span>). The fantasy in one line: <em>your spheres decide what magic you have, your play decides what it becomes, and your past lives haunt your hand.</em></p>
 </div>
 
+<h3>Birth — identity deals the deck</h3>
+<p>Every god holds the <strong>universal core</strong> (Boost, Insurance, Mercy, trait cards). Each of the 12 spheres owns <strong>signature types</strong> — primary sphere at full strength, secondary discounted, off-sphere locked. First-cut mapping, iterated here:</p>
+
+<table>
+  <tr><th>Sphere</th><th>Signature types</th><th>Sphere</th><th>Signature types</th></tr>
+  <tr><td>chaos</td><td>Gambit · Stumble</td><td>life</td><td>Balm</td></tr>
+  <tr><td>order</td><td>Favor · Insurance⁺</td><td>mind</td><td>Compulsion</td></tr>
+  <tr><td>light</td><td>Whisper</td><td>spirit</td><td>Kindled ambition</td></tr>
+  <tr><td>darkness</td><td>Veil · Undertow</td><td>time</td><td>Omen</td></tr>
+  <tr><td>force</td><td>Heavy hand</td><td>entropy</td><td>Bargain</td></tr>
+  <tr><td>matter</td><td>Cache</td><td>energy</td><td>Boost⁺</td></tr>
+</table>
+
+<p><strong>Hunger uniques:</strong> each of the 12 hungers (witness, kindle, sever, bind, consume, gather, haunt, illuminate, preserve, reclaim, reshape, wander) contributes exactly one unique starting card no other god holds — a Witness gets <em>Seen</em> (the mortal briefly knows a god watched); a Sever god holds the game's only mid-encounter bond-cutting card. Twelve cards of content, a run-defining amount of identity.</p>
+
+<h3>The run — broad start, progression as variation</h3>
 <ul>
-  <li><strong>Cards as roguelike unlocks</strong> — the ascendant progression system already grants action cards at milestones; nudge-card unlocks can ride the same machinery. Earning "Gambit" at a milestone teaches the mechanic exactly when the player is ready for it.</li>
-  <li><strong>God-earned traits unlock cards</strong> — Traits wave 3 (THR-791) plans traits minted from <em>how you play</em>; an #oathkeeper god drawing oath-flavored cards is the natural join.</li>
-  <li><strong>Ascendant type as deck identity</strong> — the Sphere-Governed Ascendant direction (THR-870, parked) wants the god's spheres to govern power. Signature cards are that direction's first live surface: per-sphere signature sets, off-sphere cards locked, in-sphere upgraded. When THR-870 wakes, this page holds its card-side design.</li>
-  <li><strong>Card upgrades across a run</strong> — the same library card at deeper pip tiers as alignment strengthens; visible growth with zero new content.</li>
-  <li><strong>Run-to-run persistence</strong> — the World-Soul carries echoes between runs; a card earned in a triumphant age surfacing in the next run's starting repertoire is the roguelite loop stated in one sentence.</li>
+  <li><strong>Broad toolbox from turn one</strong> — every sphere-unlocked type is playable immediately, so hands are interesting from the first encounter.</li>
+  <li><strong>Each type is a family that deepens</strong> — milestones (riding the existing progression card-grant machinery), god-earned traits (THR-791), and alignment add new <em>member cards</em>: same verb, different twist or cost channel. Almost nothing is strictly stronger — late-run hands contain cards an early-run god has never seen, but encounters stay decisions. Variation is the progression fantasy <em>and</em> the anti-boredom engine.</li>
+  <li><strong>Pips as seasoning, not the arc</strong> — sphere alignment still discounts and occasionally sharpens a card, but power growth is deliberately minor.</li>
 </ul>
 
-<p style="margin-top: 28px; font-size: 0.88rem; color: var(--ink-faint);">Maintained under THR-883. When the card library data file lands (THR-885), this page's tables gain their source-of-truth and join the freshness gate against it.</p>
+<h3>Between runs — the echo card</h3>
+<p>At twilight the harvest preserves a fourth thing beside Legacy, Monument, and Relic: <strong>the card that defined the run</strong> — most played, or played at the chronicle's biggest moment — enters the World-Soul and joins the next run's starting repertoire regardless of sphere. A triumphant age returns it at full tier; a somber one returns it scarred — cheaper, carrying a penalty pip. Your dead gods leave you their favorite trick.</p>
+
+<p style="margin-top: 28px; font-size: 0.88rem; color: var(--ink-faint);">Maintained under THR-883. Implementation is queued behind the two framework tickets (THR-884, THR-885); when the card library data file lands, this page's tables gain their source-of-truth and join the freshness gate against it.</p>
 
 </div>
 </body>
