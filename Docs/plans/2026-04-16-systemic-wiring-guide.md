@@ -2007,3 +2007,111 @@ window.__DEBUG.getAgentResidence('Kael')
 **Fail-soft, in the safe direction.** No clock in the evaluation context, no arrival ever observed, or (for the origin variant) no origin recorded all evaluate to `false`. Absent evidence must never end an ambition — a trigger that fired on missing data would abandon for the least-observed agents first.
 
 **Where it lives:** `src/engine/agentResidence.ts` (primitive + constants), `graphConditions.ts` (the two cases), `ambitionLifecycle.ts` (builds the window from `assignedTick`), `ambitionTick.ts` (calls the observer on its existing all-actor walk). Shipped consumers: the abandonment triggers on `ambition_flee_the_ravaged_land` and `ambition_reclaim_homeland`.
+
+## Capability: Nudge cards that cost, grant, and filter (THR-885)
+
+A nudge card used to do exactly one thing — shift the forecast, and optionally remap the
+outcome band through a rider. It can now **charge non-essence costs**, **change the world**,
+and **be dealt conditionally on world state**. This is the god's hand as an activation
+surface: several systems sat idle because nothing dispatched them, and the hand is a natural
+dispatcher for nearly all of them.
+
+### What you can author on a `StepNudge`
+
+```ts
+{
+  id: 'quiet_their_mind',
+  name: 'Send restful dreams',
+  essenceCost: 2,
+  forecastDelta: 0.15,
+  fiction: 'You quiet their mind while they sleep, so the rest actually counts.',
+  effectLine: 'Helps them wake steady.',
+
+  // Cost channels — paid in something other than essence.
+  costs: { detectionDelta: 0.08, doomDelta: 0.05 },
+
+  // Grants — expressed in the ORDINARY aftermath effect vocabulary.
+  grants: [
+    { kind: 'remove_condition', conditionTraitId: 'trait.condition.exhausted' },
+  ],
+
+  // Runtime filters — the hand reflects the world as it is.
+  requiresGroup: true,     // dealt only inside a group
+  requiresFavor: true,     // dealt only when a favor is owed to the mortal
+  requiredTrait: 'trait.…' // (pre-existing) dealt only to a mortal who holds it
+}
+```
+
+### Grants are the aftermath vocabulary — do not invent a card vocabulary
+
+`grants` is `EncounterAftermathReactionEffect[]`, the *same* list an aftermath reaction
+carries, dispatched by the *same* applier. So everything you already know how to author works
+unchanged, and every card reaches the system that owns the change:
+
+| Card type | Effect kind you author | System it reaches |
+|---|---|---|
+| The Omen | `emit_omen` | omens (biases future encounter draws) |
+| The Balm | `remove_condition` | conditions |
+| The Cache | `spawn_artifact` | artifacts / attachments |
+| The Long Game | `hidden_mark` | traits & marks |
+| The Favor / The Bargain | `favor_creation` | secrets & favors |
+| The Kindled Ambition | `assign_ambition` | ambitions |
+
+`assign_ambition` is the only new kind, and it exists because it was genuinely missing:
+reactive ambition templates had **no assignment path at all** outside `ambitionTick`
+(THR-812 / THR-726), so a whole class of authored templates was unreachable. It takes an
+`AMBITION_TEMPLATES[].id`, an optional `priority`, and an optional `narrativeHook` (omit the
+hook and the planting is silent — desire is interior).
+
+### A card that names unbuilt content fails the build
+
+Every id a card grants — ambition, artifact, condition — is checked against the shipped
+catalogs by `validateNudgeGrantRefs` (`src/engine/nudgeGrantLiveness.ts`), pinned by
+`src/engine/__tests__/nudgeCardSystem.test.ts`. This is not optional politeness: a dead
+reference no-ops silently deep inside the applier while the card's fiction still prints, so
+the player is told a thing happened that did not. THR-844 is the standing evidence — 66 of
+138 hidden-mark entries pointed at a reveal family that never existed. **Ship the content
+with the card.**
+
+### Cost channels
+
+`detectionDelta` is signed. Positive is The Heavy Hand (help that is *seen* — rivals notice);
+negative is The Veil (the same help, unwitnessed). It lands on the acting mortal's region and
+clamps to `[0, 1]`, and the trace reports what was *actually* applied after clamping, not what
+you asked for. `doomDelta` pushes the doom clock's tick modifier — positive runs it faster.
+
+Channels **sum across the committed hand** before they are charged, which is what lets a
+player pair The Veil against The Heavy Hand and net off. A net-zero channel is not charged.
+
+### The Signature — sphere discount
+
+A card whose `sphere` the ascendant is aligned to costs `SPHERE_DISCOUNT` (1) less, floored at
+`SPHERE_DISCOUNT_MIN_COST` (1). **An authored-free card stays free** — free is a decision you
+make, never a number a discount arrives at. Author the full price; the discount is applied by
+`effectiveNudgeCost`, which both the affordability check and the deduction share (quoting one
+number and charging another is the bug this feature otherwise ships with).
+
+Full sphere *gating* stays parked with THR-870. This is a discount only.
+
+### The Gambit — `all_or_nothing`
+
+The third rider. It widens **both** ends: `success` → `critical_success`, `success_at_cost` →
+`success`, `near_miss` → `failure`, `failure` → `critical_failure`; crits pass through. It is
+the only rider that can make an outcome *worse*, which is why it sits last in
+`NUDGE_RIDER_PRIORITY` — a hand holding both The Gambit and a protective card keeps the
+protection. Like every rider it takes **zero** rng draws (NFP #3).
+
+### Filters hide, they do not dim
+
+`requiresGroup` and `requiresFavor` *hide* an unmet card, matching `requiredTrait`. The rule:
+dim when the player could pay the price, hide when they could not possibly make it true from
+inside the encounter. A card you cannot ever reach is noise, not a goal.
+
+### Where it lives
+
+`src/engine/encounters/nudgeDispatch.ts` (routing + cost channels),
+`src/engine/encounters/nudges.ts` (hand assembly, filters, discount, rider maps),
+`src/engine/ambitionAssignment.ts` (`assignAmbitionToActor`),
+`src/engine/nudgeGrantLiveness.ts` (the build gate), constants in
+`src/data/nudge-constants.ts`. Dispatch fires from `phaseAutonomousAftermath`, after the
+encounter's own aftermath, so a card's grant lands on the world the encounter left behind.

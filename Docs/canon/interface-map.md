@@ -123,6 +123,23 @@ definition uses `trait.<category>.<kebab>` ids / Title Case names / `#tags` — 
 vocabularies that have never intersected. Remediation: **THR-800**. Trait *minting*, decay,
 and display rows are still unwritten (waves 2–3, THR-790/THR-791).
 
+**Nudge card dispatch** — 3 contracts, written 2026-07-30 (THR-885), audit-on-touch triggered
+by the card-system engine. `nudge-card-grants-dispatch-to-host-systems`,
+`nudge-card-cost-channels-detection-and-doom`, and
+`nudge-hand-runtime-filters-and-sphere-discount` are all wired and test-covered but
+deliberately **not** badged LIVE: no shipped card authors a `grants` block or a cost channel,
+because card content lands under **THR-883**. Badging a path nothing travels is the THR-614
+error class, so the rows carry `deferralTicket: THR-883` until the first authored hand ships.
+
+Two of the three needed a host-side addition rather than a new path, and the distinction is
+the point: card grants reuse the existing `EncounterAftermathReactionEffect` vocabulary
+(`emit_omen`, `remove_condition`, `spawn_artifact`, `hidden_mark`, `favor_creation`) through
+the existing applier, so five of the six dispatch hooks cost no new machinery at all. The
+exceptions — `assign_ambition` and `applyRawDetectionDelta` — exist because the capability
+genuinely was missing: reactive ambition templates had no assignment path outside
+`ambitionTick` (THR-812 / THR-726), and every detection writer priced by choice-cost band,
+which can only *raise* pressure. Both were added to the owning module, not beside it.
+
 Known dead code: `AgentDetailPanel.tsx` is an orphaned pre-`AgentProfileModal` sheet — do
 not "fix" ambition display there.
 

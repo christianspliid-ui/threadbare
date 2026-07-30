@@ -17,10 +17,10 @@ remediation ticket or the build fails.
 |---|---|
 | 🟢 LIVE | 42 |
 | 🟠 PARTIAL | 1 |
-| 🔴 LEAKED | 5 |
+| 🔴 LEAKED | 7 |
 | ⚫ UNWIRED | 0 |
-| 🔵 UNVERIFIED-OK | 3 |
-| **Total** | **51** |
+| 🔵 UNVERIFIED-OK | 4 |
+| **Total** | **54** |
 
 ## Contracts by producing subsystem
 
@@ -90,6 +90,8 @@ remediation ticket or the build fails.
 | `attachment-encounter-rewards` | Encounters grant rewards, which become possessions. | function: `assembleRewardPool` | Attachments, Items & Possessions | 🟢 LIVE | — |
 | `authored-nudge-hand-reaches-resolution` | A god may bend the odds of an attended encounter step with authored, essence-priced cards — the mechanical form of "the intervention shifted the odds, not the outcome". Without this read, an attended encounter offers the player nothing to do but watch. | function: `collectNudgeModifiers`, `selectActiveRider`, `applyRider`, `buildNudgeHand` | Encounters & Dilemmas | 🔴 LEAKED | THR-774 |
 | `authored-step-difficulty-player-resolution` | Authored step difficulty finally prices a player cast. 82 of 136 ascendant-castable templates carried difficulties 0.1–0.6 that the player branch discarded before this contract existed; the same value now feeds the shared capability-vs-difficulty roll, floored at success-at-cost. | function: `resolveUncontestedStep`, `difficulty` | Encounters & Dilemmas | 🟢 LIVE | — |
+| `nudge-card-cost-channels-detection-and-doom` | A card can be cheap in essence and expensive somewhere else — visibility to rivals, or the doom clock — so the price of divine help is not always the same currency. | function: `collectNudgeCostChannels`, `applyRawDetectionDelta`, `accelerateDoomClock` | Spheres & Quintessence | 🔴 LEAKED | THR-883 |
+| `nudge-card-grants-dispatch-to-host-systems` | A card that says it changed the world actually changes it, through the system that owns that change — so the fiction the player is shown and the state the world holds cannot disagree. | function: `dispatchNudgeCommitments`, `collectNudgeGrants`, `assignAmbitionToActor` | Ambitions & Initiatives | 🔵 UNVERIFIED-OK | THR-883 |
 | `player-action-aftermath-read` | The aftermath a player action already produces finally reaches the player — the receipt phase reads the summary that was built and discarded for player casts. | function: `processPlayerReceipts`, `aftermathSummary` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
 | `player-action-receipts-queue` | A resolved player cast queues a Divine Receipt the UI surfaces as a toast or a receipt dialogue. | node-prop: `playerActionReceipts` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
 | `receipt-event-band-toast` | A receipt toast carries its outcome band so the toast accent matches how the cast landed. | event: `band` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
@@ -128,6 +130,7 @@ remediation ticket or the build fails.
 
 | Contract | Intent | Mechanism | Consumer | Status | Ticket |
 |---|---|---|---|---|---|
+| `nudge-hand-runtime-filters-and-sphere-discount` | The hand the player is dealt reflects the world as it actually is — group cards only in groups, favor calls only when a favor is owed — and a sphere the god is aligned to makes its own work cheaper. | function: `buildNudgeHand`, `effectiveNudgeCost`, `totalNudgeCost` | Encounters & Dilemmas | 🔴 LEAKED | THR-883 |
 | `quintessence-threshold-gates-candidacy-and-movement` | A mortal worn to nothing goes out of the story rather than grinding on unchanged — the previously missing consumer of the weakened/critical threshold states. Without it, quintessence loss has no behavioural consequence at all. | node-prop: `isBrokenMortal`, `brokenGateActive`, `computeBrokenDriftBonus`, `brokenSince` | Encounters & Dilemmas | 🟠 PARTIAL | THR-778 |
 
 ## Evidence
@@ -341,10 +344,10 @@ remediation ticket or the build fails.
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Nudge*, *Encounter*, *UnifiedActionTemplate*
 - **Module:** `src/engine/encounters/nudges.ts`
-- **Production hits:** 7 total — 0 write, 2 read, 5 unclassified
+- **Production hits:** 8 total — 0 write, 2 read, 6 unclassified
 - **Write sites:** —
 - **Read sites:** `src/debug-bridge.ts`, `src/engine/unifiedActionResolution.ts`
-- **Other hits:** `src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts`, `src/components/Game/encounter-stage/nudgeCommit.ts`, `src/engine/encounters/nudges.ts`, `src/engine/meetingEncounter.ts`, `src/types/meetingEncounter.ts`
+- **Other hits:** `src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts`, `src/components/Game/encounter-stage/nudgeCommit.ts`, `src/engine/encounters/nudgeDispatch.ts`, `src/engine/encounters/nudges.ts`, `src/engine/meetingEncounter.ts` +1 more
 - **Verdict:** Tier 2: read sites present, declared write sites empty — nothing produces this contract. — or the declared symbol does not appear at the declared site: grep 'collectNudgeModifiers' src/types/unifiedAction.ts before treating this as a leak.
 
 ### `authored-step-difficulty-player-resolution` — 🟢 LIVE
@@ -500,10 +503,10 @@ remediation ticket or the build fails.
 - **Producer → Consumer:** Companies & Group Travel → Attention, Chronicle & Narrative
 - **UL terms:** *Company*
 - **Module:** `src/engine/agentDetail.ts`
-- **Production hits:** 49 total — 1 write, 2 read, 46 unclassified
+- **Production hits:** 50 total — 1 write, 2 read, 47 unclassified
 - **Write sites:** `src/engine/groups/bandOpposition.ts`
 - **Read sites:** `src/components/Game/tabs/OverviewTab.tsx`, `src/engine/agentDetail.ts`
-- **Other hits:** `src/components/Game/Encounter/DetectionThread.tsx`, `src/components/Game/GameView/GameViewTopBar.tsx`, `src/components/HexMapV2/HexMapV2.tsx`, `src/data/action-template-content.ts`, `src/data/agenda-consequence-templates.ts` +41 more
+- **Other hits:** `src/components/Game/Encounter/DetectionThread.tsx`, `src/components/Game/GameView/GameViewTopBar.tsx`, `src/components/HexMapV2/HexMapV2.tsx`, `src/data/action-template-content.ts`, `src/data/agenda-consequence-templates.ts` +42 more
 - **Verdict:** Verified 2026-07-25: Live CLI run, seed 42 medium: a company relocated into a Great Silverhold guild hall resolved encounter.confront_guild_falls against a colocated Arcane Circle defender band at t61 — company cohesion 0.54 → 0.70, band 0.70 → 0.46 — and the contest wrote mutual grudges, read straight off the graph: "The Watch of the Nameless Road -> The Errant Keys of The Arcane Circle since t61 (group_engagement)" and the reverse. agentDetail reads both edge directions off the group node and dedupes the mutual pair; OverviewTab renders it as one sentence with no numbers and no `since` tick. Locked by src/engine/groups/__tests__/bandDebugSurfaces.test.ts § "Company panel — Rivals" (7 tests: absent when no grudge, outgoing, incoming-only, mutual-dedupe, dangling-target drop, deterministic multi-rival order).
 
 ### `guild-rank-gates-senior-content` — 🟢 LIVE
@@ -527,6 +530,42 @@ remediation ticket or the build fails.
 - **Read sites:** `src/engine/foreshadowing/motiveReceipt.ts`
 - **Other hits:** `src/types/ambition.ts`
 - **Verdict:** Verified 2026-07-24: THR-726: `ambitionTick.ts` writes `mintedByEventId`/`mintedByLabel` on the minted `pursues` edge; `motiveReceipt.ts` `resolveMintedAmbitionProvenance` reads them and overrides the ambition contribution's provenance detail so the receipt names the origin event.
+
+### `nudge-card-cost-channels-detection-and-doom` — 🔴 LEAKED
+
+- **Intent:** A card can be cheap in essence and expensive somewhere else — visibility to rivals, or the doom clock — so the price of divine help is not always the same currency.
+- **Producer → Consumer:** Encounters & Dilemmas → Spheres & Quintessence
+- **UL terms:** *Nudge*, *Detection Pressure*, *Doom Clock*
+- **Module:** `src/engine/encounters/nudgeDispatch.ts`
+- **Production hits:** 4 total — 0 write, 2 read, 2 unclassified
+- **Write sites:** —
+- **Read sites:** `src/engine/doomClock.ts`, `src/engine/encounters/detectionPressure.ts`
+- **Other hits:** `src/engine/encounters/nudgeDispatch.ts`, `src/types/unifiedAction.ts`
+- **Verdict:** Tier 2: read sites present, declared write sites empty — nothing produces this contract. — or the declared symbol does not appear at the declared site: grep 'collectNudgeCostChannels' src/engine/phases/phaseAutonomousAftermath.ts before treating this as a leak.
+
+### `nudge-card-grants-dispatch-to-host-systems` — 🔵 UNVERIFIED-OK
+
+- **Intent:** A card that says it changed the world actually changes it, through the system that owns that change — so the fiction the player is shown and the state the world holds cannot disagree.
+- **Producer → Consumer:** Encounters & Dilemmas → Ambitions & Initiatives
+- **UL terms:** *Nudge*, *Ambition*
+- **Module:** `src/engine/encounters/nudgeDispatch.ts`
+- **Production hits:** 5 total — 1 write, 2 read, 2 unclassified
+- **Write sites:** `src/engine/phases/phaseAutonomousAftermath.ts`
+- **Read sites:** `src/engine/ambitionAssignment.ts`, `src/engine/encounterAftermath.ts`
+- **Other hits:** `src/engine/encounters/nudgeDispatch.ts`, `src/types/unifiedAction.ts`
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
+
+### `nudge-hand-runtime-filters-and-sphere-discount` — 🔴 LEAKED
+
+- **Intent:** The hand the player is dealt reflects the world as it actually is — group cards only in groups, favor calls only when a favor is owed — and a sphere the god is aligned to makes its own work cheaper.
+- **Producer → Consumer:** Spheres & Quintessence → Encounters & Dilemmas
+- **UL terms:** *Nudge*, *Sphere*, *Essence*
+- **Module:** `src/engine/encounters/nudges.ts`
+- **Production hits:** 7 total — 0 write, 2 read, 5 unclassified
+- **Write sites:** —
+- **Read sites:** `src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts`, `src/engine/meetingEncounter.ts`
+- **Other hits:** `src/components/Game/encounter-stage/nudgeCommit.ts`, `src/debug-bridge.ts`, `src/engine/encounters/nudgeDispatch.ts`, `src/engine/encounters/nudges.ts`, `src/types/meetingEncounter.ts`
+- **Verdict:** Tier 2: read sites present, declared write sites empty — nothing produces this contract. — or the declared symbol does not appear at the declared site: grep 'buildNudgeHand' src/types/unifiedAction.ts before treating this as a leak.
 
 ### `player-action-aftermath-read` — 🔵 UNVERIFIED-OK
 
@@ -566,10 +605,10 @@ remediation ticket or the build fails.
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 169 total — 1 write, 1 read, 167 unclassified
+- **Production hits:** 171 total — 1 write, 1 read, 169 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/Game/ActionCard.tsx`, `src/components/Game/ascendant-bar/IdentityStrip.tsx`, `src/components/Game/ascendant-bar/selectors.ts`, `src/components/Game/ChapterView.tsx` +162 more
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/Game/ActionCard.tsx`, `src/components/Game/ascendant-bar/IdentityStrip.tsx`, `src/components/Game/ascendant-bar/selectors.ts`, `src/components/Game/ChapterView.tsx` +164 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `reunion-reads-the-edges-not-the-roster` — 🟢 LIVE
@@ -666,10 +705,10 @@ remediation ticket or the build fails.
 - **Producer → Consumer:** Personality & Emergent Traits → Ambitions & Initiatives
 - **UL terms:** *Trait*
 - **Module:** `src/engine/traitRefValidation.ts` — **no production importers**
-- **Production hits:** 11 total — 3 write, 2 read, 6 unclassified
+- **Production hits:** 12 total — 3 write, 2 read, 7 unclassified
 - **Write sites:** `src/data/artifact-templates.ts`, `src/data/choice-set-catalog.ts`, `src/data/reward-attachment-catalog.ts`
 - **Read sites:** `src/debug-bridge.ts`, `src/engine/traitRefValidation.ts`
-- **Other hits:** `src/data/__fixtures__/nudge-exemplar/darkhollow-vault-exemplar.ts`, `src/data/anomaly-reward-catalog.ts`, `src/data/encounter-content.ts`, `src/data/starter-attachments.ts`, `src/engine/simulationRuntime.ts` +1 more
+- **Other hits:** `src/data/__fixtures__/nudge-exemplar/darkhollow-vault-exemplar.ts`, `src/data/anomaly-reward-catalog.ts`, `src/data/encounter-content.ts`, `src/data/starter-attachments.ts`, `src/engine/nudgeGrantLiveness.ts` +2 more
 - **Verdict:** Pinned by badgeOverride: Detector shipped and measured (THR-786): 62 of the authored trait refs resolve to no trait definition, so those gates can never pass. Reconciling the authoring vocabulary against the minted definitions is content work outside the predicate floor.
 
 ### `world-events-mint-ambitions` — 🟢 LIVE
