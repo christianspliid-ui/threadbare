@@ -133,6 +133,7 @@ Each of the 8 Reaches maps to an archetype-pair axis (the moral dimension in the
 
 ## Active design plans
 
+- [2026-07-30-sphere-governed-ascendant-decision-record.md](../plans/2026-07-30-sphere-governed-ascendant-decision-record.md) — **Sphere-Governed Ascendant pivot, parked (Idea).** Verdicted 2026-07-30: the god is sphere-governed; reaches demote to mortal-past echo; mortal magic is Veil-gated, sphere-bestowed ("Mortals reach through the Veil; gods are what's behind it"). **Interim guardrail: before authoring any new reach-keyed ascendant-facing content, read that decision record** — extend nothing the pivot (THR-870) would immediately unwind. Mortal-facing reach content is unaffected.
 - [2026-03-28-cosmological-symmetry-refactor.md](../plans/2026-03-28-cosmological-symmetry-refactor.md) — TB-075 refactor plan; Phase 1 (types/engine) shipped. Phases 4–5 (docs/vault propagation) are the input for Phase 5 of the canonical documentation strategy (THR-307 / the Cosmological Pattern page Cowork session).
 - [2026-05-05-canonical-documentation-strategy.md](../plans/2026-05-05-canonical-documentation-strategy.md) — Phase 5 will create `vault/Cosmology/The Cosmological Pattern.md` as the canonical vault destination for the missing `[[The Cosmological Pattern]]` wikilink.
 
