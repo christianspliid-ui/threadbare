@@ -5694,19 +5694,6 @@ const DATA = [
     "session": "THR-884 pickup (tb-opus-pickup, 2026-07-30). Plan-doc PR #1122 opened 15:14Z, ticket filed 15:14Z, pickup 16:02Z — under an hour, so the race is routine rather than exceptional."
   },
   {
-    "num": "322",
-    "id": 322,
-    "count": 1,
-    "date": "2026-07-30",
-    "category": "tooling",
-    "description": "**A correctly-declared new trace interface is still rejected at every `emitTrace` call, because `emitTrace` takes `Omit<TraceEntry, 'id' \\| 'timestamp'>` and `Omit` over a *discriminated union* collapses it to only the keys every member shares.** Adding `nudge_cost_charged` / `nudge_dispatch_failed` to the category union, declaring both trace interfaces, and joining them to the `TraceEntry` union was all correct — and every category-specific field (`encounterId`, `channel`, `appliedDelta`) still errored as an excess property. The error text names the field, not the collapse, so it reads as \"you declared the interface wrong\" and invites a second (also failing) attempt at the declaration.",
-    "consequence": "Two typecheck cycles spent re-checking a correct declaration; the same pathology is the standing source of ~140 baseline errors in `encounterAftermath.ts`, which is how it stays invisible — the file is already red, so nobody reads the cause.",
-    "impact": "Low per occurrence — but it is a permanent tax on every new trace category, and it silently pushes authors toward the untyped `as unknown as` cast, which is why that baseline keeps growing.",
-    "workaroundFound": true,
-    "workaround": "Declare the payload against the *real* trace union in a small local wrapper and cast only at the `emitTrace` boundary (`emitNudgeTrace` in `src/engine/encounters/nudgeDispatch.ts`). Call sites stay fully checked against the specific interface; the cast crosses the collapsed boundary once, in one commented place, instead of at every call. Cheaper permanent fix (unticketed): give `emitTrace` an overload accepting the union itself rather than an `Omit` of it.",
-    "session": "THR-885 nudge card system — adding two trace categories for card cost channels and dispatch failures."
-  },
-  {
     "num": "323",
     "id": 323,
     "count": 1,
@@ -5796,6 +5783,32 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "Use the `Edit` tool with a unique trailing anchor from the target file instead of shell append — it needs no quoting at all, and it verifies the anchor exists, so a silent append to the wrong file is impossible. Reserve heredocs for short, single-quote-free payloads. This is a specific instance of the general rule already in CLAUDE.md's Bash-tool guidance (prefer dedicated file tools over shell redirection); worth remembering that the failure mode is a *parse* error blaming quotes, not an obvious \"payload too large\".",
     "session": "THR-892 derived-factor-lines test authoring, hourly `tb-opus-pickup`, worktree reverent-haslett-e28ee2."
+  },
+  {
+    "num": "322",
+    "id": 322,
+    "count": 2,
+    "date": "2026-07-31",
+    "category": "tooling",
+    "description": "**A correctly-declared new trace interface is still rejected at every `emitTrace` call, because `emitTrace` takes `Omit<TraceEntry, 'id' \\| 'timestamp'>` and `Omit` over a *discriminated union* collapses it to only the keys every member shares.** Adding `nudge_cost_charged` / `nudge_dispatch_failed` to the category union, declaring both trace interfaces, and joining them to the `TraceEntry` union was all correct — and every category-specific field (`encounterId`, `channel`, `appliedDelta`) still errored as an excess property. The error text names the field, not the collapse, so it reads as \"you declared the interface wrong\" and invites a second (also failing) attempt at the declaration.",
+    "consequence": "Two typecheck cycles spent re-checking a correct declaration; the same pathology is the standing source of ~140 baseline errors in `encounterAftermath.ts`, which is how it stays invisible — the file is already red, so nobody reads the cause.",
+    "impact": "Low per occurrence — but it is a permanent tax on every new trace category, and it silently pushes authors toward the untyped `as unknown as` cast, which is why that baseline keeps growing.",
+    "workaroundFound": true,
+    "workaround": "Declare the payload against the *real* trace union in a small local wrapper and cast only at the `emitTrace` boundary (`emitNudgeTrace` in `src/engine/encounters/nudgeDispatch.ts`). Call sites stay fully checked against the specific interface; the cast crosses the collapsed boundary once, in one commented place, instead of at every call. Cheaper permanent fix (unticketed): give `emitTrace` an overload accepting the union itself rather than an `Omit` of it.",
+    "session": "THR-885 nudge card system — adding two trace categories for card cost channels and dispatch failures."
+  },
+  {
+    "num": "330",
+    "id": 330,
+    "count": 1,
+    "date": "2026-07-31",
+    "category": "codebase",
+    "description": "**`ActionStep` declares no `id` field, but four production sites in the resolution path read `step.id`** — `unifiedActionResolution.ts` (×3, incl. the `getEffectiveUnifiedActionChoiceMemory` call that passes it as the required `stepId`) and the clearance-gate path. Every one is a `Property 'id' does not exist on type 'ActionStep'` error sitting inside the THR-489 red baseline, so they evaluate to `undefined` at runtime and nothing surfaces. `EncounterChoiceMemory.stepId` is a *required* string used for history lookups, so those entries are being written with an undefined key.",
+    "consequence": "Writing a new choice-history entry looked like a one-liner (`step.id`) and would have silently propagated an `undefined` stepId into a lookup key. Cost one typecheck cycle to notice the field does not exist at all rather than being optional.",
+    "impact": "Medium — invisible while the baseline is red. Any future reader that keys choice history on `stepId` (rather than `stepIndex`, which every current reader uses) will find `undefined` for every engine-written entry.",
+    "workaroundFound": true,
+    "workaround": "Derive the id from the index (`step_<index>`) instead of propagating the bug; documented inline in `branchDecision.ts`. The real fix is either declaring `id` on `ActionStep` or repointing the four reads — not attempted here, since both are outside this ticket and the field's intended semantics (authored id vs positional) is a design call.",
+    "session": "THR-894 agent-decided branches — recording the decided pole as an ordinary `EncounterChoiceMemory`."
   }
 ];
 // ── End data ──

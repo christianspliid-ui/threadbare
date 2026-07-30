@@ -17,10 +17,10 @@ remediation ticket or the build fails.
 |---|---|
 | 🟢 LIVE | 42 |
 | 🟠 PARTIAL | 1 |
-| 🔴 LEAKED | 6 |
+| 🔴 LEAKED | 7 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 7 |
-| **Total** | **56** |
+| **Total** | **57** |
 
 ## Contracts by producing subsystem
 
@@ -97,6 +97,7 @@ remediation ticket or the build fails.
 | `attachment-encounter-rewards` | Encounters grant rewards, which become possessions. | function: `assembleRewardPool` | Attachments, Items & Possessions | 🟢 LIVE | — |
 | `authored-nudge-hand-reaches-resolution` | A god may bend the odds of an attended encounter step with authored, essence-priced cards — the mechanical form of "the intervention shifted the odds, not the outcome". Without this read, an attended encounter offers the player nothing to do but watch. | function: `collectNudgeModifiers`, `selectActiveRider`, `applyRider`, `buildNudgeHand` | Encounters & Dilemmas | 🔴 LEAKED | THR-774 |
 | `authored-step-difficulty-player-resolution` | Authored step difficulty finally prices a player cast. 82 of 136 ascendant-castable templates carried difficulties 0.1–0.6 that the player branch discarded before this contract existed; the same value now feeds the shared capability-vs-difficulty roll, floored at success-at-cost. | function: `resolveUncontestedStep`, `difficulty` | Encounters & Dilemmas | 🟢 LIVE | — |
+| `branch-decision-writes-archetype-drift` | A fork the mortal took becomes part of who they are: taking the cunning branch drifts them cunning, so a mortal the player keeps leaning one way visibly becomes that person instead of resetting each encounter. | function: `applyAgentDecidedBranches`, `decideBranchPole`, `driftAxisIdForValuePair` | Personality & Emergent Traits | 🔴 LEAKED | THR-883 |
 | `nudge-card-cost-channels-detection-and-doom` | A card can be cheap in essence and expensive somewhere else — visibility to rivals, or the doom clock — so the price of divine help is not always the same currency. | function: `collectNudgeCostChannels`, `applyRawDetectionDelta`, `accelerateDoomClock` | Spheres & Quintessence | 🔴 LEAKED | THR-883 |
 | `nudge-card-grants-dispatch-to-host-systems` | A card that says it changed the world actually changes it, through the system that owns that change — so the fiction the player is shown and the state the world holds cannot disagree. | function: `dispatchNudgeCommitments`, `collectNudgeGrants`, `assignAmbitionToActor` | Ambitions & Initiatives | 🔵 UNVERIFIED-OK | THR-883 |
 | `player-action-aftermath-read` | The aftermath a player action already produces finally reaches the player — the receipt phase reads the summary that was built and discarded for player casts. | function: `processPlayerReceipts`, `aftermathSummary` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
@@ -381,6 +382,18 @@ remediation ticket or the build fails.
 - **Other hits:** `src/engine/encounterSeeding.ts`
 - **Verdict:** Verified 2026-07-25: Organic 150-tick CLI run, seed 42 medium (no forcing, no debug spawns): the Temple of the Spheres fielded a defender band, "The Temple of the Spheres' Sparrows", which was met by Company of the Inn at t81 and by Flintlock's Band at t84. Trace at t81: [group_contested] "Company of the Inn came off best against The Temple of the Spheres' Sparrows. Bagaabraa did not walk away." Both companies carry hostile_to edges with cause group_engagement; the band fell 0.70 → 0.19 cohesion and disbanded through the shipped phaseGroups cascade. Unit-locked by src/engine/groups/__tests__/bandOpposition.test.ts (22 tests) incl. the fail-soft degradation rows.
 
+### `branch-decision-writes-archetype-drift` — 🔴 LEAKED
+
+- **Intent:** A fork the mortal took becomes part of who they are: taking the cunning branch drifts them cunning, so a mortal the player keeps leaning one way visibly becomes that person instead of resetting each encounter.
+- **Producer → Consumer:** Encounters & Dilemmas → Personality & Emergent Traits
+- **UL terms:** *Archetype Drift*, *Nudge*
+- **Module:** `src/engine/encounters/branchDecision.ts`
+- **Production hits:** 2 total — 1 write, 0 read, 1 unclassified
+- **Write sites:** `src/engine/unifiedActionResolution.ts`
+- **Read sites:** —
+- **Other hits:** `src/engine/encounters/branchDecision.ts`
+- **Verdict:** Tier 2: write sites present, declared read sites empty — the consumer is starving. — or the declared symbol does not appear at the declared site: grep 'applyAgentDecidedBranches' src/engine/encounters/driftAccumulator.ts before treating this as a leak.
+
 ### `company-assist-shapes-resolution` — 🟢 LIVE
 
 - **Intent:** Companions make each other better at what they attempt — the best-suited member acts and the others assist, capped so a crowd is not an auto-win.
@@ -568,10 +581,10 @@ remediation ticket or the build fails.
 - **Producer → Consumer:** Encounters & Dilemmas → Ambitions & Initiatives
 - **UL terms:** *Nudge*, *Ambition*
 - **Module:** `src/engine/encounters/nudgeDispatch.ts`
-- **Production hits:** 5 total — 1 write, 2 read, 2 unclassified
+- **Production hits:** 6 total — 1 write, 2 read, 3 unclassified
 - **Write sites:** `src/engine/phases/phaseAutonomousAftermath.ts`
 - **Read sites:** `src/engine/ambitionAssignment.ts`, `src/engine/encounterAftermath.ts`
-- **Other hits:** `src/engine/encounters/nudgeDispatch.ts`, `src/types/unifiedAction.ts`
+- **Other hits:** `src/engine/encounters/nudgeDispatch.ts`, `src/engine/encounters/poleLean.ts`, `src/types/unifiedAction.ts`
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `nudge-hand-runtime-filters-and-sphere-discount` — 🔵 UNVERIFIED-OK
@@ -624,10 +637,10 @@ remediation ticket or the build fails.
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 175 total — 1 write, 1 read, 173 unclassified
+- **Production hits:** 178 total — 1 write, 1 read, 176 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/Game/ActionCard.tsx`, `src/components/Game/ascendant-bar/IdentityStrip.tsx`, `src/components/Game/ascendant-bar/selectors.ts`, `src/components/Game/ChapterView.tsx` +168 more
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/Game/ActionCard.tsx`, `src/components/Game/ascendant-bar/IdentityStrip.tsx`, `src/components/Game/ascendant-bar/selectors.ts`, `src/components/Game/ChapterView.tsx` +171 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `reunion-reads-the-edges-not-the-roster` — 🟢 LIVE
