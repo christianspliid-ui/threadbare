@@ -5666,6 +5666,19 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "**Read the `Page URL` line that every Playwright MCP call echoes back, and explicitly `browser_navigate` to the port `preview_start` returned before capturing.** Do not assume Playwright shares the session's browser or server. Cheap confirmation that the right tree is being served: assert something only the change introduces (here, `location.href` carrying `?firstunmet` plus a non-null `__DEBUG.getMeetingState()`), in the *same* `browser_evaluate` pass as the screenshot — a passing assertion on the wrong port is impossible when the flag only exists in the new code.",
     "session": "THR-874 Meet-The-First dev-URL gap, hourly `tb-opus-pickup`, worktree priceless-boyd-b07fa4."
+  },
+  {
+    "num": "320",
+    "id": 320,
+    "count": 1,
+    "date": "2026-07-30",
+    "category": "process",
+    "description": "**A ticket's own \"close the class\" remediation can name a generated surface that does not actually cover the content being redirected — a false pointer that looks like the principled fix.** THR-763 asked the executor to consider replacing `.planning/ROADMAP.md`'s hand-maintained per-primitive status list with a pointer to `Docs/canon/systems-inventory.md`, on the sound reasoning that a generated file \"cannot drift the way hand-written canon did\". The reasoning is right and the target is wrong: the inventory registers engine **subsystems and tick phases**, not effect primitives. Grepping the six PCCL primitives against it returns **1 incidental hit across all six** (`flip_table`), and zero for `choice_set`, `action_trigger`, `resource_delta`, `clearance_gate`, `task_progress`. Redirecting there would have replaced a stale-but-answerable list with a pointer to a file that cannot answer the question at all — strictly worse than the drift being fixed, while reading in review as the more principled outcome.",
+    "consequence": "An executor who takes the suggestion on its stated rationale ships a doc that sends the next Step 0.6 substrate check to a surface with no coverage. The failure is silent and self-recommending: \"replaced hand-maintained prose with generated ground truth\" is exactly what a good closeout summary looks like.",
+    "impact": "Medium — no code impact, but it defeats the substrate-existence check this very ticket exists to protect, and the wrong version is the one that sounds better.",
+    "workaroundFound": true,
+    "workaround": "**Before redirecting any doc to a generated surface, grep the generated file for the specific nouns being redirected and require a hit for each.** A generated file is only ground truth for the domain its generator enumerates — read the generator's stated inputs (here `scripts/generate-systems-inventory.ts` + `ENGINE_PHASES` + `src/engine/**`, none of which enumerate `src/types/effects.ts` variants). When coverage fails, the correct fix is to keep the list and add a **dated freshness caveat naming the real ground truth** (`src/types/effects.ts` for declarations, `effectResolver.ts`/`effectExecutors.ts` for dispatch), which is what shipped. Note the ticket framed this as \"a judgement call for the executor, not a requirement\" — that framing is what made verifying it optional, and it is exactly the kind of suggestion that should be verified rather than adopted or declined on taste.",
+    "session": "THR-763 roadmap substrate-check drift, hourly `tb-opus-pickup`, worktree priceless-boyd-b07fa4."
   }
 ];
 // ── End data ──
