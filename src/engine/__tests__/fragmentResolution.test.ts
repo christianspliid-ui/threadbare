@@ -216,8 +216,12 @@ describe('enumerateTemplateSurfaces', () => {
 });
 
 describe('axis registry', () => {
-  it('declares exactly the two v1 identity axes', () => {
-    expect([...SURFACE_FRAGMENT_AXES]).toEqual(['place', 'counterpartRole']);
+  it('declares exactly the registered identity axes', () => {
+    // A pinned closed set: widening it is a deliberate act that must be made here,
+    // not a side effect. `setting` joined the two v1 axes in THR-884 (setting
+    // envelopes) — per-class openings and per-card fiction resolve through this same
+    // machinery rather than a parallel one.
+    expect([...SURFACE_FRAGMENT_AXES]).toEqual(['place', 'counterpartRole', 'setting']);
   });
 });
 

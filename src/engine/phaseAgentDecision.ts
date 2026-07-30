@@ -74,6 +74,8 @@ import { generateInitiativeCandidates } from './initiativeCandidates';
 import { startInitiative } from './initiativeLifecycle';
 import { computeSurfaceKey } from './encounterSurface';
 import { resolveTemplateFragments } from './fragmentResolution';
+import { getLocationType } from './encounterCache';
+import { settingClassForSubtype } from '../data/settingClasses';
 
 /**
  * Compute effective cooldown scaled by available template pool size.
@@ -1040,6 +1042,10 @@ export function phaseAgentDecision(
                   {
                     place: sel.entry.sublocationTypeId,
                     counterpartRole: sel.entry.targetAgentRole,
+                    // THR-884 — same `locationType`-then-`locationSubtype` precedence
+                    // the cache used to register this entry (`getLocationType`), so the
+                    // trace reports the class the prose path will bind.
+                    setting: settingClassForSubtype(getLocationType(state.graph, sel.entry.locationId)) ?? null,
                   },
                   template.id,
                 );

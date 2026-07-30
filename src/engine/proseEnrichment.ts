@@ -33,6 +33,8 @@ import {
 import type { EncounterSupportBinding, EncounterSupportBundle } from '../types/encounter';
 import type { ContextFragmentSet } from '../types/unifiedAction';
 import { resolveFragment, type BoundFragmentAxes } from './fragmentResolution';
+import { settingClassForSubtype } from '../data/settingClasses';
+import { locationTypeFromProperties } from './encounterCache';
 import { ALLY_SENTIMENT_THRESHOLD, ENEMY_SENTIMENT_THRESHOLD } from '../data/effect-constants';
 import {
   buildIntelligenceView,
@@ -197,6 +199,11 @@ export interface NarrativeContext {
   /** `counterpartRole` identity axis (THR-573) — the scene target's `npcRole`.
    * Derived at context build from the target node. Absent → `'*'` path. */
   targetRole?: string;
+
+  /** `setting` identity axis (THR-884) — the `SettingClass` of the location the scene
+   * plays out in. Derived at context build from the same location this builder already
+   * resolved. Absent (a worldgen overlay subtype outside the authorable set) → `'*'` path. */
+  settingClass?: string;
 
   /** Economic mood vocabulary (THR-725) — boom/bust coloration for the settlement the scene
    * plays out in, enabling `{econ_adj}` / `{econ_noun}` / `{econ_atmosphere}`. Derived at
@@ -433,6 +440,12 @@ export function gatherNarrativeContext(
     targetRole: opts?.targetId
       ? ((graph.getNode(opts.targetId)?.properties?.npcRole as string | undefined) ?? undefined)
       : undefined,
+    // THR-884 — resolved through the cache's own precedence helper, so the class the
+    // prose binds to is the class the template was filtered in under. A shared
+    // function rather than a copied rule: two copies would be two things to drift.
+    settingClass: settingClassForSubtype(
+      locationTypeFromProperties(location?.properties as Record<string, unknown> | undefined),
+    ),
     // Economic mood (THR-725) — read off the location already resolved above, walking one
     // tier up when the agent stands in a sublocation. Neutral band → all three stay absent.
     ...(economicMood
@@ -531,6 +544,7 @@ export function enrichProse(
     const boundAxes: BoundFragmentAxes = {
       place: ctx.sublocationTypeId ?? null,
       counterpartRole: ctx.targetRole ?? null,
+      setting: ctx.settingClass ?? null,
     };
     result = result.replace(/\{frag:([A-Za-z0-9_.-]+)\}/g, (_match, slot: string) => {
       const binding = resolveFragment(

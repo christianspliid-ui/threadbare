@@ -41,7 +41,7 @@
     "lint:plan-doc": "esbuild scripts/lint-plan-doc.ts --bundle --platform=node --format=esm --outfile=.cache/lint-plan-doc.mjs --external:child_process --external:fs --external:path --external:process --external:url && node .cache/lint-plan-doc.mjs",
     "lint:intel-prose-category": "esbuild scripts/lint-intel-prose-category.ts --bundle --platform=node --format=esm --outfile=.cache/lint-intel-prose-category.mjs --external:fs --external:path --external:process --external:url && node .cache/lint-intel-prose-category.mjs",
     "lint:find-first": "esbuild scripts/lint-find-first.ts --bundle --platform=node --format=esm --outfile=.cache/lint-find-first.mjs --external:path --external:process --external:url && node .cache/lint-find-first.mjs",
-    "check:process": "esbuild scripts/check-process.ts --bundle --platform=node --format=esm --outfile=.cache/check-process.mjs --external:child_process --external:fs --external:path --external:process --external:url && node .cache/check-process.mjs && npm run check:authoring-brief && npm run check:design-wiki && npm run check:wiki-freshness && npm run generate-systems-inventory:check && npm run rebuild-plans-index:check",
+    "check:process": "esbuild scripts/check-process.ts --bundle --platform=node --format=esm --outfile=.cache/check-process.mjs --external:child_process --external:fs --external:path --external:process --external:url && node .cache/check-process.mjs && npm run check:authoring-brief && npm run check:design-wiki && npm run check:wiki-freshness && npm run generate-systems-inventory:check && npm run generate-setting-coverage:check && npm run rebuild-plans-index:check",
     "generate-vault": "esbuild scripts/generate-vault.ts --bundle --platform=node --format=esm --outfile=.cache/generate-vault.mjs --external:fs --external:path && node .cache/generate-vault.mjs",
     "generate-vault:dry": "esbuild scripts/generate-vault.ts --bundle --platform=node --format=esm --outfile=.cache/generate-vault.mjs --external:fs --external:path && node .cache/generate-vault.mjs --dry-run",
     "mirror-ul": "esbuild scripts/mirror-ul.ts --bundle --platform=node --format=esm --outfile=.cache/mirror-ul.mjs --external:fs --external:path && node .cache/mirror-ul.mjs",
@@ -82,7 +82,9 @@
     "eval:prose": "esbuild scripts/eval-prose-quality.ts --bundle --platform=node --format=esm --outfile=.cache/eval-prose-quality.mjs --external:fs --external:path --external:process --external:url && node .cache/eval-prose-quality.mjs",
     "prepare": "husky",
     "generate-interface-map": "esbuild scripts/generate-interface-map.ts --bundle --platform=node --format=esm --outfile=.cache/generate-interface-map.mjs --external:fs --external:path --external:url && node .cache/generate-interface-map.mjs",
-    "generate-interface-map:dry": "esbuild scripts/generate-interface-map.ts --bundle --platform=node --format=esm --outfile=.cache/generate-interface-map.mjs --external:fs --external:path --external:url && node .cache/generate-interface-map.mjs --dry-run"
+    "generate-interface-map:dry": "esbuild scripts/generate-interface-map.ts --bundle --platform=node --format=esm --outfile=.cache/generate-interface-map.mjs --external:fs --external:path --external:url && node .cache/generate-interface-map.mjs --dry-run",
+    "generate-setting-coverage": "esbuild scripts/generate-setting-coverage.ts --bundle --platform=node --format=esm --outfile=.cache/generate-setting-coverage.mjs --external:fs --external:path --external:url && node .cache/generate-setting-coverage.mjs",
+    "generate-setting-coverage:check": "esbuild scripts/generate-setting-coverage.ts --bundle --platform=node --format=esm --outfile=.cache/generate-setting-coverage.mjs --external:fs --external:path --external:url && node .cache/generate-setting-coverage.mjs --check"
   },
   "dependencies": {
     "@sentry/react": "^10.49.0",
