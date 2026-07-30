@@ -1,16 +1,18 @@
 /**
- * EntityNoticeBadge — THR-666
+ * EntityNoticeBadge — THR-666, THR-667
  *
  * The thread row's "word of them" affordance: a becoming, a complication, an
  * ambition milestone — news about this one person, waiting where the player
- * already looks for them.
+ * already looks for them. THR-667 put the same badge on faction rows, where it
+ * carries shifts inside the faction's ranks; the model supplies wording fit for
+ * an institution, so this component needs no branch of its own.
  *
  * Third sibling of `EncounterBadge` and `ThreadTugBadge`, built from the same
  * primitive (IconButton + Tooltip) in a quieter state. The tug asks for a
  * decision and the encounter badge reports a live beat; this one is only news,
  * so it is the dimmest of the three and clicking it just opens their thread.
  *
- * Unthreaded agents never render one — the threading gate drops their
+ * Unthreaded entities never render one — the threading gate drops their
  * notifications before they reach this surface.
  */
 
@@ -27,7 +29,7 @@ const NOTICE_BADGE_BG_HOVER_OPACITY = 0.24;
 
 interface EntityNoticeBadgeProps {
   badge: EntityNoticeBadgeModel;
-  /** Opens the agent's thread and clears their notices. */
+  /** Opens the anchor's thread and clears its notices. */
   onOpen: (badge: EntityNoticeBadgeModel) => void;
 }
 

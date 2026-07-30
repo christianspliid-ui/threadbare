@@ -25,9 +25,12 @@ function advancePopupQueue(state: NotificationState): NotificationState {
   return { ...state, popupQueue: state.popupQueue.slice(1) };
 }
 
-/** THR-666: reading an agent's row clears the notices that were waiting on it. */
-function clearEntityNotices(state: NotificationState, agentId: string): NotificationState {
-  return { ...state, entityNotices: (state.entityNotices ?? []).filter(n => n.agentId !== agentId) };
+/**
+ * THR-666/THR-667: reading a row clears the notices that were waiting on it.
+ * `anchorId` is the row's node id — an agent's or a faction's.
+ */
+function clearEntityNotices(state: NotificationState, anchorId: string): NotificationState {
+  return { ...state, entityNotices: (state.entityNotices ?? []).filter(n => n.anchorId !== anchorId) };
 }
 
 export const useNotificationsTestHelpers = {
@@ -64,8 +67,8 @@ export interface UseNotificationsReturn {
   handlePopupChoice: (effect: string) => void;
   /** Push a toast directly (bypasses tick event routing — for immediate player feedback). */
   pushToast: (toast: ToastItem) => void;
-  /** THR-666: clear the per-agent notices waiting on one thread row. */
-  handleClearEntityNotices: (agentId: string) => void;
+  /** THR-666/THR-667: clear the notices waiting on one thread row (agent or faction). */
+  handleClearEntityNotices: (anchorId: string) => void;
 }
 
 export function useNotifications({
@@ -145,8 +148,8 @@ export function useNotifications({
     setState(prev => dismissAlert(prev, id));
   }, []);
 
-  const handleClearEntityNotices = useCallback((agentId: string) => {
-    setState(prev => clearEntityNotices(prev, agentId));
+  const handleClearEntityNotices = useCallback((anchorId: string) => {
+    setState(prev => clearEntityNotices(prev, anchorId));
   }, []);
 
   const handleDismissPopup = useCallback(() => {

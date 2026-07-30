@@ -154,24 +154,39 @@ export interface PopupItem {
 }
 
 /**
- * A threaded agent's own beat, waiting on that agent's row (THR-666).
+ * Which kind of thread row a notice anchors to (THR-667).
+ *
+ * A subset of `ThreadCategory` — the Threads panel has a section per category,
+ * and only these two currently receive diverted notices. Widening this is how a
+ * future ticket anchors army or artifact news without touching routing logic.
+ */
+export type EntityNoticeAnchorKind = 'agent' | 'faction';
+
+/**
+ * A threaded entity's own beat, waiting on that entity's row (THR-666, THR-667).
  *
  * Personality becomings, complications, ambition milestones, lifecycle beats and
  * rarity graduations used to toast globally. They are about one person, so they
  * now collect on that person's card in the Threads panel — the same place their
  * encounters and tugs surface — instead of scrolling past in a shared queue.
+ *
+ * THR-667 extends the same treatment to factions: a shift in a faction's ranks
+ * is about that faction, so it waits on the faction's row instead of shouting.
+ * Hence `anchorId` rather than `agentId` — the row, not necessarily a person.
  */
 export interface EntityNotice {
   /** Source TickEvent id. */
   id: string;
-  /** Thread row this notice belongs to. */
-  agentId: string;
+  /** Thread row this notice belongs to — an agent or a faction node id. */
+  anchorId: string;
+  /** Which Threads-panel section that row sits in. */
+  anchorKind: EntityNoticeAnchorKind;
   message: string;
   sphere?: SphereName;
   tick: number;
   /** Category the event routed under — drives the notice's glyph. */
   category: NotificationCategoryKey;
-  /** Where clicking should navigate — normally the agent themselves. */
+  /** Where clicking should navigate — normally the anchor entity itself. */
   navigationTarget?: NavigationTarget;
 }
 
@@ -180,15 +195,15 @@ export interface NotificationState {
   alerts: AlertItem[];
   popupQueue: PopupItem[];
   /**
-   * Per-agent beats diverted to thread rows by the threading gate (THR-666).
-   * Optional so every pre-THR-666 construction site stays valid; the router
-   * always returns it populated.
+   * Per-entity beats diverted to thread rows by the threading gate (THR-666 for
+   * agents, THR-667 for factions). Optional so every pre-THR-666 construction
+   * site stays valid; the router always returns it populated.
    */
   entityNotices?: EntityNotice[];
 }
 
 /**
- * Cap on retained per-agent notices (THR-666). A row badge is a "look here"
+ * Cap on retained per-entity notices (THR-666). A row badge is a "look here"
  * signal, not an archive — the chronicle keeps the full history.
  */
 export const ENTITY_NOTICE_MAX_RETAINED = 60;

@@ -1700,17 +1700,45 @@ Threading is the attention contract: an agent the ascendant holds no thread to i
 
 | Outcome | When | Effect |
 |---|---|---|
-| `global` | No `actorId`; or the event type is in `ALWAYS_GLOBAL_EVENT_TYPES`; or the actor is not a mortal agent | Toasts/alerts/popups exactly as before |
-| `entity` | Actor is a mortal with a live (non-dormant) thread | `toast` channel only diverts to the agent's row; `alert` and `popup` still escalate globally |
+| `global` | The event type is in `ALWAYS_GLOBAL_EVENT_TYPES`; or no `actorId`; or the actor is not a mortal agent | Toasts/alerts/popups exactly as before |
+| `entity` | Actor is a mortal with a live (non-dormant) thread — or, since THR-667, the event is faction-scoped and its faction is threaded | `toast` channel only diverts to the anchor's row; `alert` and `popup` still escalate globally |
 | `suppress` | Actor is a mortal the player holds no live thread to | No player-facing notification at all. **The TickEvent is untouched** — it still reaches the tick event log and the chronicle |
 
-**Constants (NFP #1):** `ALWAYS_GLOBAL_EVENT_TYPES` (doom, omens, settlement/economy, discovery, faction, army, divine feedback), `ENTITY_DIVERTED_CHANNELS` (`toast` only), `ENTITY_NOTICE_MAX_RETAINED` (60), `NOTICE_CATEGORY_ACCENT` / `NOTICE_CATEGORY_LABEL` / `NOTICE_BADGE_COUNT_DISPLAY_MAX`.
+Since THR-667 the outcome is a discriminated union rather than a bare string, and the `entity` case names the row it belongs to. Full ordering in the faction-anchor subsection below.
+
+**Constants (NFP #1):** `ALWAYS_GLOBAL_EVENT_TYPES` (doom, omens, settlement/economy, discovery, faction founding + collapse, army, divine feedback — narrowed by THR-667, see below), `ENTITY_DIVERTED_CHANNELS` (`toast` only), `ENTITY_NOTICE_MAX_RETAINED` (60), `NOTICE_CATEGORY_ACCENT` / `NOTICE_CATEGORY_LABEL` / `NOTICE_BADGE_COUNT_DISPLAY_MAX`.
 
 **Shared threading definition:** `collectThreadedAgents(graph, ascendantId)` was extracted from `phaseEncounterVisibility` (`src/engine/encounterVisibility.ts`) and is now the single source of truth for "who is threaded" — the gate and the encounter-visibility phase read the same map, so the two surfaces cannot disagree.
 
 **Mortal-agent predicate — read this before touching the gate:** a mortal is `node.type === 'actor' && node.properties.actorType === 'individual'`, matching the lifecycle/ambition/expression phases. `GraphNode` has **no `category` field** (that belongs to `ThreadedNode` in the UI layer); an early draft keyed on `node.category === 'agent'`, which would have made the gate silently no-op. Graph-backed tests in `notificationThreadingGate.test.ts` cover this — the injected-predicate unit tests pass either way.
 
 **Badge family:** third sibling of `EncounterBadge` (THR-664) and `ThreadTugBadge` (THR-665), same `IconButton` + `Tooltip` primitives, category-tinted through existing tokens. The row now reads as one vocabulary in three tenses — the tug says "about to happen", the encounter badge "happening", the notice badge "happened to them".
+
+### Faction anchor (THR-667)
+
+THR-666 parked all three faction event types in `ALWAYS_GLOBAL_EVENT_TYPES` behind a source comment naming faction anchoring as a follow-up. This is that follow-up: it splits them and widens the anchor from an agent to any thread row.
+
+| Change | Where | Note |
+|---|---|---|
+| `FACTION_ANCHORED_EVENT_TYPES` (new set) | `src/engine/notificationThreadingGate.ts` | Currently `faction_rank_changed`. `faction_founded` / `faction_dissolved` **stay** in `ALWAYS_GLOBAL_EVENT_TYPES` — world-scale. |
+| `isFactionNode` (new) | same | `node.type === 'actor' && actorType === 'faction'`, mirroring `isMortalAgentNode`. Same no-`category`-field warning applies. |
+| `NotificationRouting` replaces `ActorRouting` | same → `notificationRouter.ts` | Discriminated union; the `entity` case carries `anchorId` + `anchorKind`. |
+| `EntityNotice.anchorId` / `.anchorKind` replace `.agentId` | `src/types/notification.ts` | `EntityNoticeAnchorKind = 'agent' \| 'faction'`, a subset of `ThreadCategory`. |
+| `NOTICE_BADGE_CATEGORIES` gates the per-row lookup | `src/components/Game/ThreadsPanel.tsx` | Was `node.category === 'agent'`. A set, so the next anchor kind is one entry. |
+
+**Routing order is the contract — read this before adding a type to either set.** `faction_rank_changed` carries **both** an `actorId` (the promoted member) and a `factionId`, so "which row" is a genuine choice:
+
+1. `ALWAYS_GLOBAL_EVENT_TYPES` → `global`, unconditionally.
+2. `FACTION_ANCHORED_EVENT_TYPES` **and** the `factionId` resolves to a faction **and** that faction is threaded → `entity` on the faction's row.
+3. Otherwise fall through to the mortal path unchanged.
+
+Step 3 is load-bearing: a faction-scoped beat whose faction is *unthreaded* lands on the **member's** row rather than being suppressed, so a player holding the member's thread but not the faction's still gets the news. An unresolvable `factionId` also falls through (fail-soft, NFP #4).
+
+**The two sets must stay disjoint,** and a test asserts it. `ALWAYS_GLOBAL` is checked first, so a type listed in both would read as anchored in the source while behaving as global forever — a silent dead path of exactly the kind this ticket removed.
+
+**Anchor-aware wording:** `NOTICE_FACTION_CATEGORY_LABEL` overrides the agent tooltip headings for faction rows (falling back to the agent map, then `NOTICE_FACTION_DEFAULT_LABEL`), and `NOTICE_ARIA_OPEN_SUFFIX` keys the aria tail per kind. `EntityNoticeBadge` itself has no anchor branch — the model supplies the wording. Retune voice in those maps without touching logic (NFP #1).
+
+**Known gap (THR-862):** `faction_founded` is emitted for *both* genuine faction founding and "agent joined a faction" (`src/engine/factionOutcome.ts`, with a code comment conceding it), so the join beat cannot be anchored while it shares a type.
 
 ## Scene target enrichment placeholders — `{target:*}` (THR-694, Scene Integration Slice A)
 
