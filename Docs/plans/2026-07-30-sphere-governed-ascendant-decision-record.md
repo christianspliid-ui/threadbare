@@ -94,6 +94,14 @@ No new `__DEBUG` surface. Verification uses the existing ascendant-progression r
 
 N/A — no hex-map surface.
 
+## Interface impact
+
+Part B touches no contract in `Docs/canon/interface-map.md` (verified by grep: no `AscendantProgress`/`ascendant-bar`/`AscendantSheet` rows exist). Part A's subsystem mentions (mandate, essence economy, encounters, omens, signatures) are decision-record prose about *deferred* work — THR-870 carries the full Step-0.7 interface pass when activated.
+
+| Contract | Action |
+|----------|--------|
+| (none mapped for the surfaces THR-869 edits) | preserve — no cross-system read/write added, rerouted, or retired |
+
 ## Wiring
 
 > See checklist: Docs/plans/wiring-checklist.md
@@ -106,11 +114,15 @@ N/A — no hex-map surface.
 
 ## Constants table
 
-No numeric tunables. The register is a named content table (`ASCENDANT_REACH_REGISTER`); tier thresholds remain `computeTier` (unchanged). Changing god-facing feel = editing register words, not logic (NFP #1 honored in content form).
+N/A — no numeric tunables. The register is a named content table (`ASCENDANT_REACH_REGISTER`); tier thresholds remain `computeTier` (unchanged). Changing god-facing feel = editing register words, not logic (NFP #1 honored in content form).
+
+| Constant | Default | Purpose |
+|----------|---------|---------|
+| `ASCENDANT_REACH_REGISTER` | (content table, not a number) | God-register tier words + echo lines; the single source both surfaces read |
 
 ## Tracing
 
-No new traces — presentational change; progression already emits `ascendant.progression.*` traces at the engine layer (NFP #2 satisfied upstream).
+N/A — no new traces; presentational change. Progression already emits `ascendant.progression.*` traces at the engine layer (NFP #2 satisfied upstream).
 
 ## Fail-soft table
 
@@ -129,11 +141,13 @@ No new traces — presentational change; progression already emits `ascendant.pr
 
 ## Vision audit
 
-- [x] This plan does not contradict any Vision premise — Part A *is* the recorded vision change; Part B is presentational and axis-teaching, aligned with it. Canon/CLAUDE.md edits ride THR-870 activation by design (recorded above).
+- [x] This plan does not contradict any Vision premise — Part B is presentational and axis-teaching.
+- [x] Part A *is* a recorded vision change (creative-director verdicted); its Vision/canon edit is in this ticket's scope in pointer form (cosmology canon guardrail, this PR), with the full canon/CLAUDE.md edit riding THR-870 activation by design.
 
 ## Rulebook impact
 
 - [x] This plan does not change a rule of play — labels, data source, and prose register only; gating, tiers, and progression math untouched.
+- [x] No `Docs/canon/rulebook.md` edit needed for Part B; the pivot's rulebook edits ride THR-870 activation.
 
 > Brainstorm companion: `Docs/plans/2026-07-30-sphere-governed-ascendant-decision-record-brainstorm.md` (written alongside).
 
