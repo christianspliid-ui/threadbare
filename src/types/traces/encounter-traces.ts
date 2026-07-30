@@ -1,4 +1,6 @@
 import type { ReachDomain } from '../traits';
+import type { ValuePair } from '../agent';
+import type { BranchPoleKey } from '../unifiedAction';
 
 export type EncounterChoiceCost =
   | 'small_breath'
@@ -78,6 +80,40 @@ export interface DriftThresholdCrossedTrace {
   toPosition: number;
   thresholdCrossed: DriftThresholdBand;
   pole: ArchetypePole;
+}
+
+/**
+ * One agent-decided branch resolution (THR-894).
+ *
+ * Emitted once per decided fork, carrying every input that produced the pole so
+ * an inspector can answer "why did she choose that?" without re-running the
+ * tick: where the mortal already stood, what the god argued for, and whether the
+ * two together were decisive or the coin had to settle it.
+ */
+export interface BranchDecidedTrace {
+  category: 'branch_decided';
+  tick: number;
+  agentId: string;
+  templateId: string;
+  /** Index of the deciding step — the branch's `branchOnStep`. */
+  stepIndex: number;
+  /** The `ValuePair` this fork asked about. */
+  axis: ValuePair;
+  /** Mortal's live position on the axis before the hand (baseline + drift). */
+  profileLean: number;
+  /** Net signed lean of the cards the god committed on the deciding step. */
+  cardLean: number;
+  /** `profileLean + cardLean` — the number the pole was read off. */
+  netLean: number;
+  /** The pole the mortal took. */
+  resolvedPole: BranchPoleKey;
+  /**
+   * How the pole was settled: `conviction` when the net lean cleared the neutral
+   * band, `coin` when it did not and the seeded draw decided.
+   */
+  decidedBy: 'conviction' | 'coin';
+  /** Drift axis key the decision wrote to, or absent when the axis has none. */
+  driftAxisId?: string;
 }
 
 export interface DetectionThresholdCrossedTrace {

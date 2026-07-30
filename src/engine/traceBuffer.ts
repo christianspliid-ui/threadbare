@@ -12,6 +12,7 @@ import type {
   DetectionThresholdCrossedTrace,
   ItemConsumedByChoiceTrace,
   SpotlightChangedTrace,
+  BranchDecidedTrace,
 } from '../types/traces/encounter-traces';
 import type { MentorshipTraceEntry } from '../types/traces/mentorship-traces';
 import { MENTORSHIP_TRACE_CATEGORIES } from '../types/traces/mentorship-traces';
@@ -29,6 +30,7 @@ export const TRACE_CATEGORIES = [
   'item_consumed_by_choice',
   'spotlight_changed',
   'consequence_applied',
+  'branch_decided',
   ...MENTORSHIP_TRACE_CATEGORIES,
 ] as const;
 
@@ -42,6 +44,7 @@ export type EncounterTraceEntry =
   | DetectionThresholdCrossedTrace
   | ItemConsumedByChoiceTrace
   | SpotlightChangedTrace
+  | BranchDecidedTrace
   | MentorshipTraceEntry;
 
 let buffer: TraceEntry[] = [];

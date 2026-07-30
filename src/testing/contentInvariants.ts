@@ -1,14 +1,21 @@
 import { expect } from 'vitest';
 import type {
   ActionStep,
+  ActionStepBranch,
   ActionStepOrBranch,
+  BranchPoleKey,
   EncounterAftermathReactionEffect,
   UnifiedActionTemplate,
 } from '../types/unifiedAction';
 import { isActionStepBranch } from '../types/unifiedAction';
 import { REACH_DOMAINS } from '../types/traits';
+import { VALUE_PAIRS } from '../types/agent';
+import { leansOnAxis } from '../engine/encounters/poleLean';
 
 const VALID_REACHES = new Set<string>(REACH_DOMAINS);
+const VALID_VALUE_PAIRS = new Set<string>(VALUE_PAIRS);
+/** The only two keys a `decidedBy` branch may carry, sorted for comparison. */
+const BRANCH_POLE_KEYS: readonly BranchPoleKey[] = ['negative', 'positive'];
 const VALID_RARITY_TIERS = new Set<number>([1, 2, 3, 4]);
 const LEGACY_ENCOUNTER_REACHES = new Set<string>(['flesh', 'spirit', 'dominance']);
 
@@ -151,10 +158,82 @@ export function assertValidStep(step: ActionStepOrBranch, templateId: string): v
       assertConcreteStep(variantStep, `${templateId} branch variant:${choiceId}`);
     }
     assertConcreteStep(step.fallback, `${templateId} branch fallback`);
+    assertValidBranchDecision(step, templateId);
     return;
   }
 
   assertConcreteStep(step, `${templateId} step`);
+  assertValidPoleLeans(step, templateId);
+}
+
+/**
+ * A `decidedBy` branch must key exactly the two poles (THR-894).
+ *
+ * This is an assert, not a warn, because the failure it catches is silent by
+ * construction: a typo'd variant key does not throw, it makes that variant
+ * permanently unreachable and sends every decision to `fallback` forever — the
+ * THR-844 shape, where 66 of 138 entries were dead and nothing noticed.
+ */
+function assertValidBranchDecision(step: ActionStepBranch, templateId: string): void {
+  if (!step.decidedBy) return;
+
+  expect(
+    VALID_VALUE_PAIRS.has(step.decidedBy.axis),
+    `${templateId} branch decidedBy names an unknown axis: ${step.decidedBy.axis}`,
+  ).toBe(true);
+
+  const keys = Object.keys(step.variants).sort();
+  expect(
+    keys.length === BRANCH_POLE_KEYS.length && keys.every((k, i) => k === BRANCH_POLE_KEYS[i]),
+    `${templateId} decidedBy branch must key exactly ${BRANCH_POLE_KEYS.join(' + ')} (got: ${keys.join(', ') || 'none'})`,
+  ).toBe(true);
+}
+
+/** A card's `poleLean`, where axis-explicit, must name a live `ValuePair`. */
+function assertValidPoleLeans(step: ActionStep, templateId: string): void {
+  for (const nudge of step.nudges ?? []) {
+    const lean = nudge.poleLean;
+    if (lean === undefined || lean === 'a' || lean === 'b') continue;
+    expect(
+      VALID_VALUE_PAIRS.has(lean.axis),
+      `${templateId} nudge '${nudge.id}' poleLean names an unknown axis: ${lean.axis}`,
+    ).toBe(true);
+  }
+}
+
+/**
+ * Steps whose fork the god has no lever on (THR-894 item 6).
+ *
+ * A deciding step carrying no card that argues on the branch's axis is **legal**
+ * — the mortal decides alone, which is a real authorial choice — but it is worth
+ * stating, because the far likelier cause is a card whose `poleLean` names the
+ * wrong axis and therefore abstains silently. A warn, not an assert.
+ *
+ * Returns one line per such branch; empty means every decided fork is leanable.
+ */
+export function collectUnleanableBranchWarnings(
+  template: UnifiedActionTemplate,
+): string[] {
+  const warnings: string[] = [];
+
+  for (const step of template.steps) {
+    if (!isActionStepBranch(step) || !step.decidedBy) continue;
+
+    const decidingStep = template.steps[step.branchOnStep];
+    if (decidingStep === undefined || isActionStepBranch(decidingStep)) continue;
+
+    const leaning = (decidingStep.nudges ?? []).filter(
+      (n) => leansOnAxis(n.poleLean, step.decidedBy!.axis),
+    );
+    if (leaning.length === 0) {
+      warnings.push(
+        `${template.id} step ${step.branchOnStep} decides '${step.decidedBy.axis}' `
+        + 'but deals no card leaning on that axis — the god has no lever on direction.',
+      );
+    }
+  }
+
+  return warnings;
 }
 
 export function assertNoDuplicateIds<T extends { readonly id: string }>(items: readonly T[]): void {
