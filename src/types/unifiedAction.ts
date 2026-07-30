@@ -993,6 +993,25 @@ export interface StepFactorLine {
   readonly polarity: 'for' | 'against';
 }
 
+/**
+ * A carryover line — how the *previous* step's resolution tilts this one (THR-892).
+ *
+ * The variance rule says a test-panel factor line earns its place only if it could
+ * have read differently on another run. A static authored line cannot: it is the
+ * same sentence every time, so it is priced into `difficulty` and belongs in the
+ * prose. A carryover line is the one authored factor surface besides trait lines
+ * that is **variant by construction** — it is keyed on an outcome the run rolled,
+ * so a different roll shows a different line, or none.
+ *
+ * `forecastDelta` is optional and, when declared, rides the existing named-modifier
+ * channel as `carryover:<outcome>` (see {@link CARRYOVER_MODIFIER_SOURCE_PREFIX}).
+ * It takes no rng draw of its own — the draw already happened, on the prior step.
+ */
+export interface StepCarryoverFactorLine extends StepFactorLine {
+  /** Additive forecast contribution, same 0–1 channel as a nudge or trait delta. */
+  readonly forecastDelta?: number;
+}
+
 export interface ActionStep {
   readonly reach: ReachDomain;
   readonly duration: { readonly min: number; readonly max: number };
@@ -1033,6 +1052,16 @@ export interface ActionStep {
    * authored here.
    */
   readonly factorLines?: readonly StepFactorLine[];
+  /**
+   * THR-892: outcome-keyed lines describing how the *previous* step's resolution
+   * tilts this one. Resolved against `UnifiedAction.stepOutcomes[currentStep - 1]`,
+   * so the first step of an encounter never draws one and a step whose predecessor
+   * landed on an unauthored band draws nothing rather than a fallback.
+   *
+   * This is the one authored factor surface besides trait lines that survives the
+   * variance rule — see {@link StepCarryoverFactorLine}.
+   */
+  readonly carryoverFactorLines?: Partial<Record<StepOutcome, StepCarryoverFactorLine>>;
 }
 
 // ─── Branching step support ────────────────────────────────────

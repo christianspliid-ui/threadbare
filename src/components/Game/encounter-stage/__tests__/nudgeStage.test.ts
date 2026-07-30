@@ -280,11 +280,15 @@ describe('buildNudgePhaseModel — authored purpose line and factor lines', () =
       // authored nothing and a panel that rendered nothing.
       expect(authored.length, `step ${i} authors no factor lines`).toBeGreaterThan(0);
 
-      // The agent holds no traits here, so no live `trait:*` line is appended
-      // and the panel is exactly the authored set, in authored order.
-      expect(rendered.map((f) => f.text)).toEqual(authored.map((l) => l.text));
-      expect(rendered.map((f) => f.polarity)).toEqual(authored.map((l) => l.polarity));
-      expect(rendered.some((f) => f.polarity === 'neutral')).toBe(false);
+      // The agent holds no traits here, so no live `trait:*` line is appended.
+      // Derived lines (THR-892) ARE appended and carry their own ids, so the
+      // authored slice is compared on its own — it must still lead the panel,
+      // in authored order, unchanged.
+      const authoredRendered = rendered.filter((f) => f.id.startsWith('authored:'));
+      expect(authoredRendered.map((f) => f.text)).toEqual(authored.map((l) => l.text));
+      expect(authoredRendered.map((f) => f.polarity)).toEqual(authored.map((l) => l.polarity));
+      expect(authoredRendered.some((f) => f.polarity === 'neutral')).toBe(false);
+      expect(rendered.slice(0, authored.length)).toEqual(authoredRendered);
     }
   });
 
@@ -292,10 +296,18 @@ describe('buildNudgePhaseModel — authored purpose line and factor lines', () =
     // The un-migrated path every pre-nudge template still takes: no authored
     // lines, so whatever the contract yields renders `neutral` rather than
     // claiming a sign the encounter never stated.
+    //
+    // Scoped to the authored slice: THR-892's derived lines carry a real
+    // polarity by construction (they are signed numbers), and asserting
+    // `neutral` across the whole panel would forbid the derivation this ticket
+    // exists to add.
     const phase = buildPhase()!;
     expect(phase.testPanel.purposeLine).toBeUndefined();
-    for (const factor of phase.testPanel.factors) {
+    const authored = phase.testPanel.factors.filter((f) => f.id.startsWith('authored:'));
+    expect(authored.length, 'contract fallback yielded no factors').toBeGreaterThan(0);
+    for (const factor of authored) {
       expect(factor.polarity).toBe('neutral');
+      expect(factor.delta).toBeUndefined();
     }
   });
 });
@@ -553,5 +565,197 @@ describe('spendNudgeEssence', () => {
     expect(result.ok).toBe(true);
     expect(result.spent).toBe(0);
     expect(result.pool.force).toBe(1);
+  });
+});
+
+// ─── Derived factor lines (THR-892) ───────────────────────────────
+//
+// The variance rule: a factor line earns its place only if it could have read
+// differently on another run. Each block below asserts one line class against
+// `buildNudgePhaseModel` OUTPUT, and each carries its falsification twin —
+// remove the source, the line must vanish. A test that only proves a line
+// *appears* cannot tell a derived line from a hardcoded one.
+
+/** A graph whose agent carries a named artifact contributing to `iron`. */
+function graphWithArtifact(reachBonus = 0.06): WorldGraph {
+  const graph = buildGraph();
+  graph.addNode({
+    id: 'item.rusted_key',
+    type: 'artifact',
+    name: 'the Rusted Key',
+    properties: { reachBonus: { iron: reachBonus } },
+  });
+  graph.addEdge({
+    id: 'e.carry',
+    source: 'agent.thief',
+    target: 'item.rusted_key',
+    type: 'possesses',
+    properties: {},
+  });
+  return graph;
+}
+
+function phaseWith(graph: WorldGraph, action = buildAction()) {
+  return buildNudgePhaseModel({
+    template: TEMPLATE,
+    activeAction: action,
+    step: STEP,
+    graph,
+    gameState: buildState() as GameState,
+  })!;
+}
+
+const factorIds = (phase: NonNullable<ReturnType<typeof buildNudgePhaseModel>>) =>
+  phase.testPanel.factors.map((f) => f.id);
+
+describe('buildNudgePhaseModel — derived factor lines (THR-892)', () => {
+  it('always derives the agent skill line, naming the actor in the sentence', () => {
+    const phase = phaseWith(buildGraph());
+    const skill = phase.testPanel.factors.find((f) => f.id === 'skill:iron');
+    expect(skill).toBeDefined();
+    // Canon rule 1: the source is IN the sentence, never a label beside it.
+    expect(skill!.text).toContain('Sera Vance');
+    expect(skill!.text).not.toContain(':');
+    expect(skill!.polarity).toBe('for');
+    // The model carries the number so the row can draw pips.
+    expect(typeof skill!.delta).toBe('number');
+  });
+
+  it('derives an equipment line from a carried artifact, and drops it when the artifact is gone', () => {
+    const withItem = phaseWith(graphWithArtifact());
+    const line = withItem.testPanel.factors.find((f) => f.id === 'equipment:item.rusted_key');
+    expect(line).toBeDefined();
+    expect(line!.text).toContain('the Rusted Key');
+    expect(line!.polarity).toBe('for');
+    expect(line!.delta).toBeCloseTo(0.06, 5);
+
+    // Falsification: same build, no artifact — the line must not appear.
+    expect(factorIds(phaseWith(buildGraph()))).not.toContain('equipment:item.rusted_key');
+  });
+
+  it('reads a negative contribution as an against line', () => {
+    const phase = phaseWith(graphWithArtifact(-0.05));
+    const line = phase.testPanel.factors.find((f) => f.id === 'equipment:item.rusted_key');
+    expect(line!.polarity).toBe('against');
+    expect(line!.delta).toBeLessThan(0);
+  });
+
+  it('omits a contribution too small to move a single pip', () => {
+    // Below FACTOR_LINE_EPSILON (0.005): a line here would claim an effect the
+    // player cannot observe on the pip row.
+    expect(factorIds(phaseWith(graphWithArtifact(0.001))))
+      .not.toContain('equipment:item.rusted_key');
+  });
+
+  it('never emits a terrain line for ground that carries no terrain', () => {
+    const bare = buildGraph();
+    bare.addEdge({
+      id: 'e.where',
+      source: 'agent.thief',
+      target: 'loc.vault',
+      type: 'located_at',
+      properties: {},
+    });
+    expect(factorIds(phaseWith(bare)).filter((id) => id.startsWith('terrain:'))).toEqual([]);
+  });
+
+  it('names the terrain in the sentence when the ground does tilt the step', () => {
+    const graph = buildGraph();
+    graph.updateNode('loc.vault', { properties: { terrainType: 'mountains' } });
+    graph.addEdge({
+      id: 'e.where',
+      source: 'agent.thief',
+      target: 'loc.vault',
+      type: 'located_at',
+      properties: {},
+    });
+    const terrain = phaseWith(graph).testPanel.factors.filter((f) => f.id.startsWith('terrain:'));
+    // `mountains` carries a nonzero TERRAIN_RESOLUTION_MODIFIERS entry, so the
+    // line is expected — and it must name the ground rather than label it.
+    expect(terrain).toHaveLength(1);
+    expect(terrain[0].text.toLowerCase()).toContain('mountains');
+    expect(terrain[0].text).not.toContain(':');
+  });
+
+  it('gives every trait line a source matching its id', () => {
+    // Trait lines were already derived; THR-892 adds the number for the pip row.
+    const phase = phaseWith(buildGraph());
+    for (const line of phase.testPanel.factors.filter((f) => f.id.startsWith('trait:'))) {
+      expect(line.source).toBe(line.id);
+    }
+  });
+
+  it('draws a carryover line keyed on the prior step outcome, and nothing at step 0', () => {
+    const stepWithCarryover: ActionStep = {
+      ...STEP,
+      carryoverFactorLines: {
+        success_at_cost: {
+          text: 'The last door cost her a knuckle.',
+          polarity: 'against',
+          forecastDelta: -0.04,
+        },
+      },
+    };
+    const build = (action: UnifiedAction) =>
+      buildNudgePhaseModel({
+        template: { ...TEMPLATE, steps: [STEP, stepWithCarryover] },
+        activeAction: action,
+        step: stepWithCarryover,
+        graph: buildGraph(),
+        gameState: buildState() as GameState,
+      })!;
+
+    const drawn = build(buildAction({ currentStep: 1, stepOutcomes: ['success_at_cost'] }));
+    const line = drawn.testPanel.factors.find((f) => f.id === 'carryover:success_at_cost');
+    expect(line).toBeDefined();
+    expect(line!.text).toBe('The last door cost her a knuckle.');
+    expect(line!.polarity).toBe('against');
+    expect(line!.delta).toBeCloseTo(-0.04, 5);
+
+    // Falsification 1: the prior step landed on a band the author never wrote.
+    const otherBand = build(buildAction({ currentStep: 1, stepOutcomes: ['critical_success'] }));
+    expect(factorIds(otherBand).filter((id) => id.startsWith('carryover:'))).toEqual([]);
+
+    // Falsification 2: step 0 has no predecessor, so nothing can carry over.
+    const head = build(buildAction({ currentStep: 0, stepOutcomes: [] }));
+    expect(factorIds(head).filter((id) => id.startsWith('carryover:'))).toEqual([]);
+  });
+
+  it('feeds a declared carryover delta into the forecast floor, not just the panel', () => {
+    // The line is not decoration: its delta rides the same named channel a nudge
+    // or trait delta rides, so the forecast the player reads already carries it.
+    const stepWithCarryover: ActionStep = {
+      ...STEP,
+      carryoverFactorLines: {
+        success: { text: 'The first door gave easily.', polarity: 'for', forecastDelta: 0.1 },
+      },
+    };
+    const build = (outcomes: UnifiedAction['stepOutcomes']) =>
+      buildNudgePhaseModel({
+        template: { ...TEMPLATE, steps: [STEP, stepWithCarryover] },
+        activeAction: buildAction({ currentStep: 1, stepOutcomes: outcomes }),
+        step: stepWithCarryover,
+        graph: buildGraph(),
+        gameState: buildState() as GameState,
+      })!;
+
+    const withCarry = build(['success']);
+    const without = build(['failure']);
+    expect(withCarry.traitModifierTotal).toBeCloseTo(0.1, 5);
+    expect(without.traitModifierTotal).toBeCloseTo(0, 5);
+    // `forecastInput.actionModifiers` is the additive channel resolution reads —
+    // asserted rather than the resulting probability, because this fixture's
+    // capability-0 agent sits on the probability floor where a +0.1 modifier is
+    // absorbed. The floor is real behaviour; it just cannot witness the wiring.
+    expect(withCarry.forecastInput.actionModifiers - without.forecastInput.actionModifiers)
+      .toBeCloseTo(0.1, 5);
+  });
+
+  it('renders skill alone when nothing in the world tilts the step', () => {
+    // The honest floor: no equipment, no terrain, no carryover. One line, not zero.
+    const ids = factorIds(phaseWith(buildGraph()));
+    expect(ids).toContain('skill:iron');
+    expect(ids.filter((id) => id.startsWith('equipment:'))).toEqual([]);
+    expect(ids.filter((id) => id.startsWith('carryover:'))).toEqual([]);
   });
 });

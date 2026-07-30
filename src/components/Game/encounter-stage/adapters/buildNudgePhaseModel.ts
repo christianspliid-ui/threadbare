@@ -54,12 +54,15 @@ import {
   collectNudgeModifiers,
   difficultyWord,
   effectiveNudgeCost,
+  priorStepOutcome,
+  resolveCarryoverLine,
   resolveTraitVariants,
   sumModifiers,
   sumVariantDifficultyDelta,
   totalNudgeCost,
   type NudgeBlockedCode,
 } from '../../../../engine/encounters/nudges';
+import { deriveStepFactorLines } from '../../../../engine/encounters/stepFactorLines';
 import {
   NUDGE_COST_CHANNEL_DISPLAY,
   nudgeCardKeyword,
@@ -334,7 +337,13 @@ export function buildNudgePhaseModel(
     step.reach,
     template.sphereAffinity,
   );
-  const traitModifierTotal = sumModifiers(collectNudgeModifiers(step, undefined, variants));
+  // THR-892 — the carryover line the prior step's band earned, if the author wrote
+  // one. It contributes to the floor exactly as a trait variant does, so the hand
+  // adds its selected deltas on top of a forecast that already carries it.
+  const carryover = resolveCarryoverLine(step, priorStepOutcome(activeAction));
+  const traitModifierTotal = sumModifiers(
+    collectNudgeModifiers(step, undefined, variants, priorStepOutcome(activeAction)),
+  );
   const variantDifficultyDelta = sumVariantDifficultyDelta(variants);
   const effectiveDifficulty = Math.max(0, Math.min(1, step.difficulty + variantDifficultyDelta));
 
@@ -425,6 +434,34 @@ export function buildNudgePhaseModel(
       text: variant.factorLine,
       polarity: helps ? 'for' : 'against',
       source: `trait:${variant.traitId}`,
+      // THR-892 — the model carries the number beside the text so the row can
+      // draw pips. A variant that declares no delta contributes no pips rather
+      // than a zero row.
+      delta: variant.forecastDelta,
+    });
+  }
+
+  // ── Derived lines (THR-892) ─────────────────────────────────────
+  // The variance rule: a line earns its place only if it could have read
+  // differently on another run. These are projections of the numbers resolution
+  // already computed — `capability` and `standing.contributions` — so the panel
+  // can never quote a factor the roll did not apply.
+  //
+  // Appended after the authored/trait lines so the encounter's own account leads
+  // and the world's contribution follows.
+  for (const line of deriveStepFactorLines({
+    actorName: graph.getNode(actorId)?.name,
+    reach: step.reach,
+    capability,
+    contributions: standing.contributions,
+    carryover,
+  })) {
+    factors.push({
+      id: line.id,
+      text: line.text,
+      polarity: line.polarity,
+      source: line.source,
+      delta: line.delta === 0 ? undefined : line.delta,
     });
   }
 

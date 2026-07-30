@@ -366,6 +366,15 @@ export interface EncounterStageFactorLineModel {
   polarity: FactorPolarity;
   /** Named modifier source (`trait:*` / `nudge:*`) when the line is live-derived. */
   source?: string;
+  /**
+   * THR-892 — the line's raw 0–1 forecast contribution, signed, for the pip row.
+   *
+   * Absent on any line with no measurable contribution: an authored static line,
+   * a contract `forecast_factors` string, or a carryover line the author declared
+   * without a delta. Absent means "draw no pips", never "draw zero pips" — a row
+   * of empty slots would promise a magnitude the line does not have.
+   */
+  delta?: number;
 }
 
 export interface EncounterStageTestPanelModel {

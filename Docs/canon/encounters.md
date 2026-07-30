@@ -36,6 +36,23 @@ the resolved band. A **band fragment** (`bandProse[outcome]`) is prose appended 
 nudge was active for that band. A rider changes what happened; a fragment says the god
 was there when it did. Both are UL entries (Encounters shard).
 
+**The variance rule — do not author static factor lines (THR-892).** A test-panel factor
+line earns its place only if it **could have read differently on another run**. A static
+line reads the same every time the encounter fires, so it informs no decision: price it
+into the step's `difficulty` and put the fact in the prose, where scene facts belong.
+Static `ActionStep.factorLines` are therefore **retired for new content** — the exemplar
+authors none. What fills the panel instead is *derived*: the actor's capability in the
+step's reach, plus one line per named modifier the world contributed (equipment, terrain,
+faction, sphere, conditions/attachment effects, divine attention, rule overrides). Those
+come from `ModifierBreakdown.contributions`, emitted by the **same** `computeResolutionModifiers`
+walk that feeds the roll — never a parallel computation, so a line and the outcome cannot
+disagree. Omens, doom stage, and season derive **nothing**, and that is correct rather than
+missing: no omen/doom/season read exists anywhere in the modifier pipeline `forecastAction`
+consumes. The two authored factor surfaces that survive the rule are **trait lines**
+(`TraitVariant.factorLine`) and **carryover lines** (`ActionStep.carryoverFactorLines`),
+which key on the band the *previous* step rolled — variant by construction. Full authoring
+detail: systemic wiring guide § Capability 17.
+
 **Meet The First is nudge-native (WS6, THR-868).** The game's first interactive surface
 used to *be* the rejected model — two authored formative moments, player picks which one
 is true. It now runs three fate rolls: two **formative tests** and a **bond test** as the
@@ -136,4 +153,7 @@ Source: `Docs/plans/2026-05-04-encounter-experience-design-plan.md` §2.2 and `B
 
 ## Last-reviewed
 
-2026-07-30 by Claude Code (THR-868 / WS6: Meet The First recorded as nudge-native — pole lean, the retuned `MEETING_TEST_CAPABILITY`, the `StepOutcome`-not-`ForecastTier` trap, and two new rejected approaches covering scene-art doctrine and the retired lyrical register). Review trigger: monthly, or when any listed plan moves to `superseded`. Previous edit: 2026-07-27 by Claude Code (THR-774 / WS1: nudge model recorded as the current authoring spec — spec pointer, golden exemplar, authoring guardrails, three new rejected approaches).
+2026-07-30 by Claude Code (THR-892: the variance rule recorded — static `factorLines`
+retired for new content, the derived-line set and its one read path, the omen/doom/season
+N/A with its read path cited, and `carryoverFactorLines` as the surviving authored factor
+surface). Previous edit: 2026-07-30 by Claude Code (THR-868 / WS6: Meet The First recorded as nudge-native — pole lean, the retuned `MEETING_TEST_CAPABILITY`, the `StepOutcome`-not-`ForecastTier` trap, and two new rejected approaches covering scene-art doctrine and the retired lyrical register). Review trigger: monthly, or when any listed plan moves to `superseded`. Previous edit: 2026-07-27 by Claude Code (THR-774 / WS1: nudge model recorded as the current authoring spec — spec pointer, golden exemplar, authoring guardrails, three new rejected approaches).
