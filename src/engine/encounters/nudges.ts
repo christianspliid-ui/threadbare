@@ -24,7 +24,12 @@ import type {
 } from '../../types/unifiedAction';
 import type { SphereName } from '../../types/index';
 import type { ForecastModifier } from './outcomeForecast';
-import { NUDGE_RIDER_PRIORITY, DIFFICULTY_WORD_BANDS } from '../../data/nudge-constants';
+import {
+  NUDGE_RIDER_PRIORITY,
+  DIFFICULTY_WORD_BANDS,
+  SPHERE_DISCOUNT,
+  SPHERE_DISCOUNT_MIN_COST,
+} from '../../data/nudge-constants';
 import { resolveSettingVariant } from '../fragmentResolution';
 
 /** Source prefix for a nudge's named forecast modifier. */
@@ -71,6 +76,38 @@ export interface NudgeHandContext {
    * Absent → cards read exactly as authored (NFP #6).
    */
   readonly settingClass?: string;
+  /**
+   * THR-885 — is the acting mortal in a group right now? Gates `requiresGroup`
+   * cards (The Fellowship). Absent is treated as "not in a group", so a caller
+   * that does not know cannot accidentally deal a group card outside one.
+   */
+  readonly inGroup?: boolean;
+  /**
+   * THR-885 — is the acting mortal owed at least one live favor? Gates
+   * `requiresFavor` cards (The Favor, call variant). Absent ⇒ no favor.
+   */
+  readonly hasCallableFavor?: boolean;
+}
+
+/**
+ * THR-885 — The Signature. A card whose sphere the ascendant is aligned to costs
+ * {@link SPHERE_DISCOUNT} less essence, floored at {@link SPHERE_DISCOUNT_MIN_COST}.
+ *
+ * Exported because the commit path must charge the same number the hand quoted:
+ * `buildNudgeHand` uses it to decide affordability and `totalNudgeCost` uses it to
+ * deduct, so a discounted card cannot be shown cheap and billed full.
+ *
+ * A card with no sphere is common-pool and never discounts.
+ */
+export function effectiveNudgeCost(
+  nudge: Pick<StepNudge, 'sphere' | 'essenceCost'>,
+  accessibleSpheres: readonly SphereName[] | undefined,
+): number {
+  const authored = Math.max(0, nudge.essenceCost);
+  if (!nudge.sphere || !accessibleSpheres?.includes(nudge.sphere)) return authored;
+  // Never discount an authored-free card up or down — free is a decision.
+  if (authored <= 0) return authored;
+  return Math.max(SPHERE_DISCOUNT_MIN_COST, authored - SPHERE_DISCOUNT);
 }
 
 // ─── Trait variants ──────────────────────────────────────────────────
@@ -195,6 +232,19 @@ export function buildNudgeHand(
       continue;
     }
 
+    // THR-885 — world-state gates. These *hide* rather than dim, for the same
+    // reason `requiredTrait` does: the player cannot make themselves in a group,
+    // or owed a favor, from inside the encounter, so showing the price is noise.
+    if (nudge.requiresGroup && !context.inGroup) {
+      hidden.push(nudge.id);
+      continue;
+    }
+
+    if (nudge.requiresFavor && !context.hasCallableFavor) {
+      hidden.push(nudge.id);
+      continue;
+    }
+
     if (nudge.requiredUnlock && !context.unlockedTemplateIds.has(nudge.requiredUnlock)) {
       dimmed.push({ nudge, blocked: 'unlock_missing' });
       continue;
@@ -205,7 +255,10 @@ export function buildNudgeHand(
       continue;
     }
 
-    const cost = Math.max(0, nudge.essenceCost);
+    // THR-885 — the discounted price is the price. Quoting the authored cost here
+    // and charging the discounted one at commit (or the reverse) is the bug this
+    // shared helper exists to make impossible.
+    const cost = effectiveNudgeCost(nudge, context.accessibleSpheres);
     if (context.availableEssence(nudge.sphere) + 1e-9 < cost) {
       dimmed.push({ nudge, blocked: 'essence_unavailable' });
       continue;
@@ -289,6 +342,22 @@ const RIDER_MAPS: Readonly<Record<NudgeRider, Readonly<Record<StepOutcome, StepO
     failure: 'success_at_cost',
     critical_failure: 'critical_failure',
   },
+  /**
+   * The Gambit (THR-885) — widen both ends. Every non-critical band steps one
+   * further from the middle; the crits are already at the ends and pass through.
+   *
+   * `success_at_cost` widens *upward* to `success` (the cost is what falls away)
+   * and `near_miss` widens *downward* to `failure`, which is the pairing that
+   * keeps the map symmetric: the two middle bands move apart, not both up.
+   */
+  all_or_nothing: {
+    critical_success: 'critical_success',
+    success: 'critical_success',
+    success_at_cost: 'success',
+    near_miss: 'failure',
+    failure: 'critical_failure',
+    critical_failure: 'critical_failure',
+  },
 };
 
 /**
@@ -358,12 +427,23 @@ export function difficultyWord(difficulty: number): string {
   return DIFFICULTY_WORD_BANDS[DIFFICULTY_WORD_BANDS.length - 1].word;
 }
 
-/** Total essence a committed hand costs — what the commit path must deduct. */
+/**
+ * Total essence a committed hand costs — what the commit path must deduct.
+ *
+ * `accessibleSpheres` is optional so every pre-THR-885 caller keeps charging the
+ * authored price unchanged (NFP #6). Pass it wherever the hand was *built* with
+ * spheres, or the player is quoted a discount they never receive.
+ */
 export function totalNudgeCost(
   step: Pick<ActionStep, 'nudges'>,
   activeNudgeIds: readonly string[] | undefined,
+  accessibleSpheres?: readonly SphereName[],
 ): number {
   if (!activeNudgeIds || activeNudgeIds.length === 0 || !step.nudges) return 0;
   const byId = new Map(step.nudges.map((n) => [n.id, n]));
-  return activeNudgeIds.reduce((total, id) => total + Math.max(0, byId.get(id)?.essenceCost ?? 0), 0);
+  return activeNudgeIds.reduce((total, id) => {
+    const nudge = byId.get(id);
+    if (!nudge) return total;
+    return total + effectiveNudgeCost(nudge, accessibleSpheres);
+  }, 0);
 }

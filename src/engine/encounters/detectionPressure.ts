@@ -91,6 +91,48 @@ export function applyDetectionDelta(
   };
 }
 
+/**
+ * Apply a **signed** detection delta directly, bypassing the choice-cost band.
+ *
+ * THR-885. Every pre-existing writer prices detection by `EncounterChoiceCost`,
+ * which only ever *raises* pressure — there was no way to express a reduction, so
+ * The Veil (help given unwitnessed) had no channel to write through. This is that
+ * channel, added to the module that owns detection pressure rather than beside it:
+ * it shares this file's clamp and its map round-trip, so a card-driven change and
+ * a choice-driven change land in exactly the same shape.
+ *
+ * Positive raises pressure, negative lowers it, and the result stays clamped to
+ * `[0, MAX_DETECTION_PRESSURE]` — a card cannot drive a region negative any more
+ * than a choice can drive it past 1.
+ */
+export function applyRawDetectionDelta(
+  current: readonly RegionDetectionState[],
+  regionId: string,
+  delta: number,
+  tick: number,
+): DetectionDeltaResult {
+  const pressureByRegion = toPressureMap(current);
+  const before = readPressureEntry(pressureByRegion, regionId);
+  const fromPressure = clampPressure(before.pressure);
+  const safeDelta = Number.isFinite(delta) ? delta : 0;
+  const toPressure = clampPressure(fromPressure + safeDelta);
+
+  pressureByRegion.set(regionId, {
+    regionId,
+    pressure: toPressure,
+    lastUpdatedTick: tick,
+  });
+
+  return {
+    regionalDetectionPressure: fromPressureMap(pressureByRegion),
+    fromPressure,
+    toPressure,
+    // The *effective* delta after clamping, not the requested one — a caller
+    // that asked for -0.5 at pressure 0.1 needs to know it only got -0.1.
+    appliedDelta: toPressure - fromPressure,
+  };
+}
+
 export function decayDetectionPressure(
   current: readonly RegionDetectionState[],
   decayRatePerTick: number,

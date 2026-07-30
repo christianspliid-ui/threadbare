@@ -38,11 +38,13 @@
  * | applyEncounterAftermathReaction throws| Caught by runRegisteredPhases; skipped |
  */
 import type { GameState } from '../../types/gameState';
-import type { UnifiedAction } from '../../types/unifiedAction';
+import type { ActionStep, UnifiedAction } from '../../types/unifiedAction';
+import { isActionStepBranch } from '../../types/unifiedAction';
 import type { ReachDomain } from '../../types/traits';
 import type { EnginePhase, PhaseContext, PhaseResult } from '../phaseRegistry';
 import type { TraceEntry } from '../../types/trace';
 import { applyEncounterAftermathReaction } from '../encounterAftermath';
+import { dispatchNudgeCommitments } from '../encounters/nudgeDispatch';
 import { computeAxisLeans, chooseAlignedReaction } from '../encounters/reactionChooser';
 import { reachToAxisId } from '../../types/axisRegistry';
 import { applyDriftMagnitude } from '../encounters/driftAccumulator';
@@ -55,6 +57,23 @@ import {
   PERSONALITY_AUTONOMOUS_AFTERMATH_MAX_PER_TICK,
 } from '../../data/agent-behavior-constants';
 import { UNIFIED_ACTION_TEMPLATES } from '../../data/unified-action-templates';
+
+/**
+ * The step whose nudge hand the action committed to (THR-885).
+ *
+ * `activeNudges` names cards on the action's *current* step, so the grants must be
+ * read off that same step — reading step 0, or the template's whole nudge pool,
+ * would dispatch cards the player never committed.
+ *
+ * Fail-soft: a retired template, a step index past the end, or a branch node
+ * (which carries no nudges) all yield undefined and dispatch nothing.
+ */
+function templateStep(action: UnifiedAction): Pick<ActionStep, 'nudges'> | undefined {
+  const template = UNIFIED_ACTION_TEMPLATES.find((t) => t.id === action.templateId);
+  const step = template?.steps?.[action.currentStep];
+  if (!step || isActionStepBranch(step)) return undefined;
+  return step;
+}
 
 /** Lazy reach-by-templateId index (templates are static; built once). */
 let _templateReachById: Map<string, ReachDomain> | null = null;
@@ -169,6 +188,21 @@ export function processAutonomousAftermath(state: GameState, ctx: PhaseContext):
 
     if (mutationSummary.touchedStructure) touchStructure(runtime);
     else if (mutationSummary.touchedWorld) touchWorld(runtime);
+
+    // THR-885 — the god's committed cards pay their non-essence costs and make
+    // their world changes here, after the encounter's own aftermath, so a card's
+    // grant lands on the world the encounter left behind rather than the one it
+    // started from. A hand of plain forecast cards (the common case) returns the
+    // state unchanged and costs one Map build.
+    const committedStep = templateStep(action);
+    if (committedStep && action.activeNudges?.length) {
+      const dispatched = dispatchNudgeCommitments(
+        s, action, committedStep, action.activeNudges, s.tick, runtime,
+      );
+      s = dispatched.state;
+      if (dispatched.mutationSummary.touchedStructure) touchStructure(runtime);
+      else if (dispatched.mutationSummary.touchedWorld) touchWorld(runtime);
+    }
 
     applied += 1;
   }

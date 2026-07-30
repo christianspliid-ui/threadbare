@@ -14,6 +14,7 @@ import type { EncounterChoiceMemory, EncounterSupportBinding, EncounterSupportBu
 import type { ClearanceGateConfig } from './contentShells';
 import type { EffectPredicate } from './effects';
 import type { EncounterForeshadowingDefinition } from './foreshadowing';
+import type { AmbitionPriority } from './ambition';
 
 export type ActionScale = 'cosmic' | 'regional' | 'local' | 'personal';
 export type ActionSource = 'agent' | 'player' | 'system';
@@ -340,6 +341,31 @@ export type EncounterAftermathReactionEffect =
     readonly targetAgentId?: string;
     readonly targetFactionId?: string;
     readonly targetSublocationId?: string;
+    readonly when?: EffectPredicate;
+  }
+  | {
+    /**
+     * The Kindled Ambition (THR-885) — plant or wake an ambition on an actor.
+     *
+     * This is the **missing dispatcher**, not a new system. Reactive ambition
+     * templates have had no assignment path at all (THR-812 / THR-726): the world
+     * mints ambitions from events during `ambitionTick`, but nothing outside that
+     * phase could ever assign one, so a whole class of authored templates was
+     * unreachable. This effect calls `assignAmbitionToActor` — the shared helper
+     * extracted from the three in-phase copies of the node+edge write — so a
+     * card-planted ambition is byte-identical to a world-minted one.
+     */
+    readonly kind: 'assign_ambition';
+    /** Ambition template id (`AMBITION_TEMPLATES[].id`). Pinned live by the grant-liveness test. */
+    readonly templateId: string;
+    /**
+     * Priority to assign at. Omitted ⇒ `primary` when the actor pursues nothing
+     * active, `secondary` otherwise — the same slot rule `ambitionTick` uses.
+     */
+    readonly priority?: AmbitionPriority;
+    /** Short prose for the chronicle entry. Falls back to the template's own selection prose. */
+    readonly narrativeHook?: string;
+    readonly targetAgentId?: string;
     readonly when?: EffectPredicate;
   }
   | {
@@ -797,7 +823,16 @@ export type NudgeRider =
   /** `critical_failure` → `failure`. Every other outcome passes through. */
   | 'no_crit_fail'
   /** `failure` → `success_at_cost` **and** `near_miss` → `success_at_cost`. */
-  | 'floor_at_cost';
+  | 'floor_at_cost'
+  /**
+   * The Gambit (THR-885). Widens **both** ends: every non-critical band moves one
+   * step away from the middle, so a good result gets better and a bad one gets
+   * worse. The crits are already at the ends and pass through.
+   *
+   * This is the one rider that can make an outcome *worse*, which is the point —
+   * it is a card the player chooses, not a hazard the world applies.
+   */
+  | 'all_or_nothing';
 
 /**
  * Authored per-encounter nudge option (THR-772 ruling 3).
@@ -818,6 +853,18 @@ export interface StepNudge {
   readonly requiredUnlock?: string;
   /** Trait-only option; pairs with `UnifiedActionTemplate.traitVariants`. */
   readonly requiredTrait?: string;
+  /**
+   * The Fellowship (THR-885) — dealt only when the acting mortal is in a group.
+   * Like `requiredTrait`, an unmet requirement *hides* the card rather than
+   * dimming it: a card the player cannot make true from here is noise, not a goal.
+   */
+  readonly requiresGroup?: boolean;
+  /**
+   * The Favor, call variant (THR-885) — dealt only when the acting mortal is owed
+   * an unredeemed, unbroken favor by someone. Hides when there is none, same
+   * reasoning as {@link requiresGroup}.
+   */
+  readonly requiresFavor?: boolean;
   /** Essence price at commit. 0 is allowed (trait options). */
   readonly essenceCost: number;
   /** Named forecast modifier contributed as `{ source: 'nudge:<id>', delta }`. */
@@ -842,6 +889,49 @@ export interface StepNudge {
   readonly effectLine: string;
   /** Appended to the step's prose when this nudge was active for that outcome. */
   readonly bandProse?: Partial<Record<StepOutcome, string>>;
+  /**
+   * Cost channels beyond essence (THR-885). A card may be cheap or free in
+   * essence and paid for somewhere else entirely — that is the whole design of
+   * The Heavy Hand, The Veil, and The Bargain.
+   *
+   * Applied once, at commit, through each host system's own API. Absent ⇒ the
+   * card costs only its `essenceCost`, exactly as every shipped card does.
+   */
+  readonly costs?: NudgeCostChannels;
+  /**
+   * World changes this card makes when it was committed, expressed in the
+   * **existing aftermath effect vocabulary** and dispatched through the existing
+   * applier (THR-885).
+   *
+   * Sharing the vocabulary is the design, not a shortcut: every grant a card can
+   * make (omen, condition lift, item, mark, favor, ambition) already has exactly
+   * one host system that owns it, and reusing `EncounterAftermathReactionEffect`
+   * routes the card to that owner instead of minting a second path to the same
+   * place — the failure mode the systems inventory exists to prevent.
+   *
+   * Grants fire once per committed card, *after* the step resolves, so a card's
+   * fiction and its world change cannot disagree about whether it happened.
+   */
+  readonly grants?: readonly EncounterAftermathReactionEffect[];
+}
+
+/**
+ * Non-essence prices a nudge card charges (THR-885).
+ *
+ * Both deltas are signed: The Heavy Hand raises detection, The Veil lowers it;
+ * The Bargain pushes doom forward. Zero and absent are the same thing.
+ */
+export interface NudgeCostChannels {
+  /**
+   * Detection-pressure delta in the acting mortal's region, applied through
+   * `applyDetectionDelta`. Positive = more visible to rivals.
+   */
+  readonly detectionDelta?: number;
+  /**
+   * Doom-clock delta, applied through `accelerateDoomClock` / `decelerateDoomClock`.
+   * Positive = the clock runs faster.
+   */
+  readonly doomDelta?: number;
 }
 
 /**

@@ -5692,6 +5692,19 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "Fetch the PR head ref directly rather than the branch name (the head branch may not exist on `origin` under that name): `git fetch origin pull/<N>/head:pr-<N>` then `git checkout pr-<N> -- <path>`. Read it, then `git rm --cached` + `rm` the file so the plan doc ships under its own PR and is not duplicated by the implementation PR. The design session's Step 0.8 armed-PR sweep is the structural fix — it updated #1122 this same run — but the plan PR merging is not sequenced before the ticket it unblocks.",
     "session": "THR-884 pickup (tb-opus-pickup, 2026-07-30). Plan-doc PR #1122 opened 15:14Z, ticket filed 15:14Z, pickup 16:02Z — under an hour, so the race is routine rather than exceptional."
+  },
+  {
+    "num": "322",
+    "id": 322,
+    "count": 1,
+    "date": "2026-07-30",
+    "category": "tooling",
+    "description": "**A correctly-declared new trace interface is still rejected at every `emitTrace` call, because `emitTrace` takes `Omit<TraceEntry, 'id' \\| 'timestamp'>` and `Omit` over a *discriminated union* collapses it to only the keys every member shares.** Adding `nudge_cost_charged` / `nudge_dispatch_failed` to the category union, declaring both trace interfaces, and joining them to the `TraceEntry` union was all correct — and every category-specific field (`encounterId`, `channel`, `appliedDelta`) still errored as an excess property. The error text names the field, not the collapse, so it reads as \"you declared the interface wrong\" and invites a second (also failing) attempt at the declaration.",
+    "consequence": "Two typecheck cycles spent re-checking a correct declaration; the same pathology is the standing source of ~140 baseline errors in `encounterAftermath.ts`, which is how it stays invisible — the file is already red, so nobody reads the cause.",
+    "impact": "Low per occurrence — but it is a permanent tax on every new trace category, and it silently pushes authors toward the untyped `as unknown as` cast, which is why that baseline keeps growing.",
+    "workaroundFound": true,
+    "workaround": "Declare the payload against the *real* trace union in a small local wrapper and cast only at the `emitTrace` boundary (`emitNudgeTrace` in `src/engine/encounters/nudgeDispatch.ts`). Call sites stay fully checked against the specific interface; the cast crosses the collapsed boundary once, in one commented place, instead of at every call. Cheaper permanent fix (unticketed): give `emitTrace` an overload accepting the union itself rather than an `Omit` of it.",
+    "session": "THR-885 nudge card system — adding two trace categories for card cost channels and dispatch failures."
   }
 ];
 // ── End data ──
