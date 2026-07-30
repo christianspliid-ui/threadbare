@@ -1,7 +1,7 @@
 ---
 name: vault-query
 description: Ask questions against the Obsidian vault knowledge base. Three depth tiers (quick/standard/deep). Synthesizes answers with wikilink citations and optionally files results. Run with /kb-query.
-last_validated_against: 2026-05-08
+last_validated_against: 2026-07-30
 ---
 
 # Vault Query — Knowledge Base Q&A
@@ -23,14 +23,14 @@ Ask questions against the compiled knowledge base and get synthesized answers wi
 ### Standard (default for most questions)
 1. Read `TheFantasyWorldSimulator/Index.md`
 2. Identify 5-15 relevant pages from summaries
-3. Read each relevant page via `obsidian_get_file_contents`
+3. Read each relevant page with `Read`
 4. Synthesize answer with `[[wikilink]]` citations
 5. Optionally file answer in `output/queries/`
 
 ### Deep (for research questions)
 1. Read Index.md
 2. Read 15-30+ pages, following wikilink chains
-3. Use `obsidian_simple_search` to find mentions across vault
+3. Use `Grep` to find mentions across vault
 4. Cross-reference between pages, note contradictions
 5. Use `WebSearch` if vault has gaps
 6. File comprehensive answer in `output/queries/`
@@ -57,7 +57,7 @@ Always include:
 
 For Standard and Deep queries, ask the user: "Should I file this answer in the vault?"
 
-If yes, write to `TheFantasyWorldSimulator/output/queries/query-YYYY-MM-DD-<slug>.md` via `obsidian_append_content`. If the MCP call fails, apply the **Filesystem Fallback Protocol** below — construct the full path as `$OBSIDIAN_VAULT_PATH/TheFantasyWorldSimulator/output/queries/query-YYYY-MM-DD-<slug>.md` and use the `Write` tool.
+If yes, write to `TheFantasyWorldSimulator/output/queries/query-YYYY-MM-DD-<slug>.md` with `Write`, per the **Vault Access Protocol** below — construct the full path as `$OBSIDIAN_VAULT_PATH/TheFantasyWorldSimulator/output/queries/query-YYYY-MM-DD-<slug>.md` and use the `Write` tool.
 
 ```yaml
 ---
@@ -68,26 +68,30 @@ created: YYYY-MM-DD
 ---
 ```
 
-Log to `log.md` following the **vault-log** skill procedure (MCP first, filesystem fallback if MCP is unreachable, loud failure if neither path is available):
+Log to `log.md` following the **vault-log** skill procedure (direct filesystem write via `OBSIDIAN_VAULT_PATH`, loud failure if that variable is unset):
 ```
 - **query** | Question: <question> → Filed answer as [[query-YYYY-MM-DD-slug]]
 ```
 
-## Filesystem Fallback Protocol
+## Vault Access Protocol
 
-When any `obsidian_*` MCP call fails (unreachable, connection refused, timeout):
+> **Filesystem only (THR-654, 2026-07-21).** There is no Obsidian MCP server — `.mcp.json`
+> configures `codesight` and nothing else, so `obsidian_get_file_contents`,
+> `obsidian_append_content`, `obsidian_patch_content` and every other `obsidian_*` tool is
+> simply absent. The former MCP-first ordering silently dropped ~12 `log.md` appends over
+> 8 days (impediments #66, #71, #75, #86). Read and write vault files directly.
 
 1. **Resolve vault path** — Run `Bash: echo $OBSIDIAN_VAULT_PATH`. This must be the absolute path to the Obsidian vault root folder (the folder *containing* `TheFantasyWorldSimulator/`).
-2. **Fail loud if missing** — If `OBSIDIAN_VAULT_PATH` is empty and the MCP is also unavailable, stop immediately and report: `"Obsidian MCP is unreachable and OBSIDIAN_VAULT_PATH is not configured. Vault write failed."` Do not silently skip.
-3. **Filesystem write** — If `OBSIDIAN_VAULT_PATH` is set, construct the full path by joining: `$OBSIDIAN_VAULT_PATH/<vault-relative-path>`. Use `Write` to create new files, `Read` then `Edit` to append. Write the exact same content the MCP path would have written.
-4. **Note the fallback** — Mention in your response that the filesystem fallback was used and which files were written.
+2. **Fail loud if missing** — If `OBSIDIAN_VAULT_PATH` is empty, stop immediately and report: `"OBSIDIAN_VAULT_PATH is not configured. Vault write failed."` Do not silently skip.
+3. **Read / write** — Join `$OBSIDIAN_VAULT_PATH/<vault-relative-path>`. Use `Read` to read, `Edit` to append to an existing file, `Write` to create a new one.
+4. **Report what was written** — Name the vault files you touched in your response.
 
 ## Tool Reference
 
 | Tool | Use For |
 |------|---------|
-| `obsidian_get_file_contents` | Read vault pages |
-| `obsidian_simple_search` | Full-text search across vault |
-| `obsidian_list_files_in_dir` | Discover pages in a category |
-| `obsidian_append_content` | File answers, log queries |
+| `Read` | Read vault pages |
+| `Grep` | Full-text search across vault |
+| `Glob` | Discover pages in a category |
+| `Write` / `Edit` | File answers, log queries |
 | `WebSearch` | Fill gaps (Deep tier only) |

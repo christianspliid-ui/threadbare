@@ -5705,6 +5705,32 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "Declare the payload against the *real* trace union in a small local wrapper and cast only at the `emitTrace` boundary (`emitNudgeTrace` in `src/engine/encounters/nudgeDispatch.ts`). Call sites stay fully checked against the specific interface; the cast crosses the collapsed boundary once, in one commented place, instead of at every call. Cheaper permanent fix (unticketed): give `emitTrace` an overload accepting the union itself rather than an `Omit` of it.",
     "session": "THR-885 nudge card system — adding two trace categories for card cost channels and dispatch failures."
+  },
+  {
+    "num": "323",
+    "id": 323,
+    "count": 1,
+    "date": "2026-07-30",
+    "category": "process",
+    "description": "**A skill can pass every freshness signal the repo has and still instruct agents to call a tool that was deleted nine days earlier.** THR-795 framed skill staleness as a *date* problem, and the date was the least informative signal in the sweep. Six skills (`vault-log`, `vault-ingest`, `vault-enrich`, `vault-lint`, `vault-query`, `gamedocumenter`) prescribed `obsidian_*` MCP calls against a server that THR-654 removed on 2026-07-21 — `.mcp.json` configures `codesight` and nothing else. Nothing in the repo detects this class: `check:generated-freshness` covers generated artifacts, `check:wiki-freshness` covers wiki `sources` globs, and neither knows what tools a skill names. The skills type-check nothing, run in no CI job, and are read only by the agent about to act on them.",
+    "consequence": "An agent following `vault-log` would call an absent tool and, on the documented \"MCP unreachable\" branch, fall through to a filesystem path — but `gamedocumenter` explicitly forbade that fallback (\"you CANNOT use `Read`/`Edit`/`Write` on vault files\"), so the documented recovery was a dead end. This is the same ordering that silently dropped ~12 `log.md` appends over 8 days (#66/#71/#75/#86).",
+    "impact": "Medium — silent and self-concealing. The failure surfaces as a missing vault write, which is exactly the outcome nobody notices.",
+    "workaroundFound": true,
+    "workaround": "Grep the skill tree for tool-name vocabulary whenever a server is added or removed: `grep -rn 'obsidian_\\|mcp__' .claude/skills/`. Cheap permanent fix (unticketed): a `check:skill-tool-vocabulary` lint asserting every `mcp__*` / `<server>_*` token named in a SKILL.md resolves against `.mcp.json`, run alongside the other advisory gates.",
+    "session": "THR-795 skill-freshness sweep — 23 skills past the ~8-week predicate."
+  },
+  {
+    "num": "324",
+    "id": 324,
+    "count": 1,
+    "date": "2026-07-30",
+    "category": "tooling",
+    "description": "**A path-existence drift detector over skill docs produces false positives for skill-*local* assets, because it resolves every path relative to the repo root.** Sweeping the 23 in-scope skills for dead file references flagged `scripts/clip_hex.py` and `scripts/validate_hex.py` in `image-manipulation` as MISSING. Both exist — at `.claude/skills/image-manipulation/scripts/`, which the skill's own heading calls \"Bundled Scripts\". The skill was fully accurate: `clip_to_hex()`, `create_hex_mask()`, `validate_hex()` and every documented flag (`--batch`, `--validate`, `--radius`, `--rotation`, `--compare`) verified present. Template placeholders (`Docs/analysis/YYYY-MM-DD-*.md`) are a second false-positive class from the same sweep.",
+    "consequence": "Reporting the raw detector output would have logged a correct skill as stale and, worse, invited a \"fix\" rewriting accurate documentation to match a nonexistent repo-root script.",
+    "impact": "Low — caught by verification, but only because the detector's output was treated as a candidate list rather than a finding.",
+    "workaroundFound": true,
+    "workaround": "Resolve candidate paths against **both** the repo root and the owning skill's directory before reporting, and drop any path containing a `YYYY-MM-DD`-style placeholder. Standing rule: a path-existence sweep produces *candidates*, never findings — confirm each by locating the real file before writing it down.",
+    "session": "THR-795 skill-freshness sweep — mechanical drift detection across `.claude/skills/*/SKILL.md`."
   }
 ];
 // ── End data ──

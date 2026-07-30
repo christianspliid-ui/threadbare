@@ -5,7 +5,7 @@ description: >
   tracing, PRNG usage, or any code that lives in src/engine/. Triggers on "engine",
   "tick loop", "sigmoid", "resolution", "trace", "PRNG", "Maslow", "action pipeline",
   "graph op", "fail-soft", or when implementing systems described in Obsidian vault notes.
-last_validated_against: 2026-05-08
+last_validated_against: 2026-07-30
 ---
 
 # Engine Architecture — Domain Context
@@ -153,8 +153,8 @@ A 5th action verb beyond CRUD: sustained actions requiring ongoing resources/foc
 
 - `src/engine/` — core engine modules
 - `src/engine/traceBuffer.ts` — trace emission system
-- `src/engine/types/` — shared type definitions
-- Obsidian vault for system specs: read `Index.md` first, follow wikilinks
+- `src/types/` — shared type definitions (`gameState.ts`, `graph.ts`, `unifiedAction.ts`, `traits.ts`, `effects.ts`). There is no `src/engine/types/`.
+- Obsidian vault for system specs (filesystem, `$OBSIDIAN_VAULT_PATH` — no MCP, THR-654): read `Index.md` first, follow wikilinks
 
 ## Content-Facing Capability Check
 

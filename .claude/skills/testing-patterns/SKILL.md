@@ -6,7 +6,7 @@ description: >
   "movement test", "hexmap test", "regression test", or when implementing changes that touch
   3+ files across src/engine/ and src/components/. Also load when reviewing test coverage
   or diagnosing why a change broke downstream systems.
-last_validated_against: 2026-05-08
+last_validated_against: 2026-07-30
 ---
 
 # Testing Patterns — Domain Context
@@ -201,7 +201,15 @@ test('hop takes 800ms', () => {
 Run through this before marking a task as done:
 
 - [ ] All unit tests pass (`npm test`)
-- [ ] Type check clean (`npx tsc --noEmit`)
+- [ ] Type check via `npm run check:typecheck` — **never `npx tsc --noEmit`**, which is a
+      no-op here (the root `tsconfig.json` sets `files: []`, so it exits 0 unconditionally
+      no matter how broken the code is; citing that exit 0 is gate theater, THR-686).
+      `check:typecheck` is the same ratchet CI runs (THR-693): it compares the error count
+      against `typecheck-baseline.json` and fails only on an **increase**, so a local pass
+      means CI passes. The ~3529 pre-existing errors (THR-489) are not yours to fix. If you
+      legitimately change the count, refresh with `npm run check:typecheck -- --update` and
+      commit the baseline, saying why.
+- [ ] Production build succeeds (`npx vite build`)
 - [ ] Contract tests pass for affected boundaries (`npm test -- --grep "contract"`)
 - [ ] If phase ordering changed → orchestrator integration test exists and passes
 - [ ] If `MovementState` changed → verified all 15 consumer files handle new shape (see blast radius in road-aware-movement design doc)

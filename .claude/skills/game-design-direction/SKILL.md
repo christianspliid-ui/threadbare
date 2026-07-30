@@ -1,7 +1,7 @@
 ---
 name: game-design-direction
 description: >
-  Experience-direction skill for design-phase work on Threadbearer. Loads the
+  Experience-direction skill for design-phase work on Threadbare. Loads the
   Vision/ notebook (north-star, core-loop, non-negotiables, design-tensions)
   and the taste profile (strong opinions, soft patterns, anti-patterns),
   prompts Brainstorm-companion drafting alongside the plan, runs a pre-design
@@ -9,7 +9,7 @@ description: >
   finalization. Load the state-of-game-design router first, then this skill,
   for any In Design phase work on player-facing features. Skip for pure-infrastructure
   design passes where Vision premises are not in scope.
-last_validated_against: 2026-05-15
+last_validated_against: 2026-07-30
 ---
 
 # Game Design Direction
