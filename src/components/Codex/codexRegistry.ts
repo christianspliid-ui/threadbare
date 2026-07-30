@@ -147,6 +147,7 @@ const ACTION_ART: Record<string, string> = {
   'hex.ward_against_deep': '/assets/actions/delvers-ward.jpg',
 };
 import { ITEM_ART as ITEM_ART_BASE } from '../../data/item-art-registry';
+import { getAttachmentArtUrl } from '../../data/artifact-category-art';
 const ITEM_ART: Record<string, string> = {
   ...ITEM_ART_BASE,
   ...ACTION_ART,
@@ -207,6 +208,10 @@ function mapPossession(node: GraphNode): CodexEntry {
     tierColor: RARITY_TIER_COLORS[tier] ?? '#888',
     category: 'possessions',
     subcategory: slotTag,
+    // Bespoke plate, else this item's category plate (THR-638). Resolved here
+    // rather than in the art loop below because `entry.subcategory` carries the
+    // SLOT TAG, not the possession subcategory \u2014 only `sub` is the right key.
+    imageAssetPath: getAttachmentArtUrl(node.id, sub) ?? undefined,
     subtitle: `${displaySlot} \u00B7 ${RARITY_TIER_NAMES[tier]}`,
     summary: (p.mechanicalSummary as string) ?? '',
     flavorText: p.flavorText as string | undefined,
@@ -510,7 +515,10 @@ export function getAllCodexEntries(): CodexEntry[] {
 
   // Attach art asset paths where available
   for (const entry of entries) {
-    if (entry.id in ITEM_ART) entry.imageAssetPath = ITEM_ART[entry.id];
+    // Does not clobber a plate already resolved by `mapPossession` — for a
+    // bespoke item both paths agree, and for a category plate ITEM_ART has no
+    // row at all.
+    if (!entry.imageAssetPath && entry.id in ITEM_ART) entry.imageAssetPath = ITEM_ART[entry.id];
   }
 
   _cachedEntries = entries;
