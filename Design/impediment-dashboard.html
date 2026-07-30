@@ -5458,6 +5458,45 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "Recover the graph from the React fiber: walk `#root`'s `__reactContainer$*` following `child`/`sibling`/`alternate`, scanning each `memoizedProps` value for one with `getNodesByType` **or** a `.graph` holding it — it arrives as `gameState.graph` within ~19 nodes. Then `import('/src/components/shared/entityVisualResolver.ts')` and call the real resolver over the whole population (438/438 here). Note the graph only appears in props once a panel consuming it has mounted. Read `descriptor.tier`, never `.tier`.",
     "session": "THR-638 sublocation batch; 100%-coverage browser evidence."
+  },
+  {
+    "num": "305",
+    "id": 305,
+    "count": 1,
+    "date": "2026-07-30",
+    "category": "tooling",
+    "description": "**Linear `list_issues(state:\"In Dev\")` returned THR-638 carrying `status:\"In Dev\"` when `get_issue` on the same id reported `Done`, completed 28 minutes earlier.** The list endpoint served a stale index while the single-issue read was current. For the executor lane this is not cosmetic: `pull-work` Step 1.5 routes \"exactly one In Dev assigned to me\" into the Step 1.7 resume path, which found the shipped `Fixes THR-638` commit on `origin/main` and would have posted a comment, unassigned, and exited clean — burning the whole hourly run on a ticket that was already Done and closed.",
+    "consequence": "A false WIP-gate trip consumes a run and leaves the real queue untouched, while every trace line reads like correct protocol execution.",
+    "impact": "Medium — one wasted hourly run per occurrence; invisible unless something re-reads the issue.",
+    "workaroundFound": true,
+    "workaround": "Treat the `status` field inside a `list_issues` response as a hint, not a fact. Before acting on a WIP-gate hit — especially before the Step 1.7 unassign-and-exit branch — confirm with `get_issue(id)` and read `status` + `completedAt` there. The state filter itself is also stale, so the issue should not have been in the result set at all; re-query rather than trusting the filter.",
+    "session": "THR-845 pickup; WIP gate on the 2026-07-30 00:0xZ run."
+  },
+  {
+    "num": "306",
+    "id": 306,
+    "count": 1,
+    "date": "2026-07-30",
+    "category": "tooling",
+    "description": "**Linear's issue *create* path defaults `assignee` to the API actor, and passing `assignee: null` in the create call does not prevent it.** Tried explicitly on THR-859 (orchestrator 2026-07-30 01:30Z run, which recorded \"created with `assignee: null` explicitly, verified via `get_issue`\") — the issue was still born assigned to the API actor. Compounding it: a genuinely null assignee comes back as **no `assignee` key at all**, not `assignee: null`, and the create response also omits the key while the issue *is* assigned. So reading absence off a create response yields a confident, wrong \"verified null\". Only a separate follow-up `save_issue(id, assignee:null)` clears it.",
+    "consequence": "Every issue the orchestrator files is born assigned; under the old `assignee:null` pickup filter that made it invisible to the executor — not bounced, not logged, absent. 19 of 41 queue items on 2026-07-29, including the board's only Urgent and its top High.",
+    "impact": "High — silently hid the top of the work queue for days.",
+    "workaroundFound": true,
+    "workaround": "Create → **separate** `save_issue(id, assignee:null)` → `get_issue(id)` and confirm the `assignee` key is absent. Absence proves null only on a `get_issue` re-query; it proves nothing on a create response. Recorded in the `orchestrator` skill § T1.4 and the `tb-orchestrator` prompt step 5a. Reader side no longer filters on it and `stale-claim-sweep` now repairs it, so a future regression costs a reported number rather than an invisible ticket.",
+    "session": "THR-845; root-causing the invisible-queue defect."
+  },
+  {
+    "num": "307",
+    "id": 307,
+    "count": 1,
+    "date": "2026-07-30",
+    "category": "tooling",
+    "description": "**`gh pr update-branch` fails with `GraphQL: Could not resolve head ref '<branch>'` on an armed PR whose head branch has been deleted, leaving the PR open, auto-merge armed, and permanently unmergeable.** Hit on PR #1079 (briefing refresh) during `pull-work` Step 0.8, which reads `mergeStateStatus: BEHIND` and prescribes exactly this command. The sweep has no branch-existence precondition, so the prescribed remedy is unreachable and the PR is not otherwise surfaced.",
+    "consequence": "An armed PR sits BEHIND forever with no owner and no escalation — the same silent-stall shape THR-702 filed the Step 0.8 sweep to catch, reappearing one layer down.",
+    "impact": "Low — one PR, but it accumulates and each occurrence costs a failed command in every subsequent hourly run.",
+    "workaroundFound": false,
+    "workaround": "Nothing recovers the PR: with the head ref gone the branch cannot be updated or merged, so it must be closed and the work re-pushed. Step 0.8 should treat a `Could not resolve head ref` error as \"close this PR\", not as a transient `gh` failure to log and continue past. Not fixed here — outside THR-845's scope; surfaced in that ticket's completion comment.",
+    "session": "THR-845 pickup; Step 0.8 armed-PR sweep."
   }
 ];
 // ── End data ──

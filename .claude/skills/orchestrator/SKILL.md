@@ -1,7 +1,7 @@
 ---
 name: orchestrator
 description: The lane that decides what happens next — reads the Blocked by half of coordination blocks and promotes unblocked work to Ready for Dev (T1), authors design when the program shelf runs thin (T2), and owns architecture-health surfacing as a standing daily duty (T3). Runs hourly as tb-orchestrator. Never claims an issue, never sets In Dev, never writes Design/briefing.md.
-last_validated_against: 2026-07-27
+last_validated_against: 2026-07-30
 ---
 
 # Orchestrator
@@ -96,6 +96,16 @@ get_issue(id)          # confirm the state actually stuck
 **Do not set priority.** The existing priority field already sequences the executor correctly; a second ordering mechanism would drift from it (settled scope trap — do not re-litigate). Promotion changes state only.
 
 **Do not set assignee.** Promoted issues enter the queue `assignee:null`, which is what the executor's pickup filter requires.
+
+**Filing a new issue needs a second write to get there (THR-845).** Promotion is an *update*, and an update that omits `assignee` leaves it alone — so the rule above is self-enforcing on that path. Filing a T1/T2 child is a *create*, and **Linear's create path defaults the assignee to the API actor**. Passing `assignee: null` to the create call does not prevent it: that was tried on THR-859 (2026-07-30 01:30Z) and the issue was still born assigned. Only a separate follow-up update clears it:
+
+```
+save_issue(team:"Threadbare", title:…, state:"Ready for Dev", …)   # returns new id
+save_issue(id, assignee:null)                                      # separate update — the one that works
+get_issue(id)                                                      # verify: no `assignee` key present
+```
+
+**A null assignee is an absent key, not `assignee: null`** — and absence only proves null on a `get_issue` re-query. The create response also omits the key while the issue *is* assigned, which is exactly how the THR-859 run reported "verified null" and was wrong. Getting this wrong is silent: `pull-work` treats an assigned queue item as a candidate but no longer filters it out, so the cost is now a reported number rather than an invisible ticket — but the ticket still enters the queue mislabelled until `stale-claim-sweep`'s queue-assignee pass repairs it.
 
 ### 4b. Post a coordination block — a promotion without one is a promotion the executor refuses
 

@@ -31,6 +31,19 @@ export const HOUR_MS = 60 * 60 * 1000;
 export const DEFAULT_TRACKED_LIST_PATH = "stale-claim-tracked.json";
 
 /**
+ * Queue state whose assignee field is meaningless and must stay null (THR-845).
+ *
+ * A claim is `In Dev` — that is the only state where an assignee carries meaning.
+ * An assignee on `Ready for Dev` is pure noise, and worse than noise: `pull-work`
+ * Step 1 selects candidates with `assignee:null`, so any assigned queue item is
+ * silently absent from pickup. Not bounced, not logged — absent.
+ */
+export const QUEUE_STATE_NAME = "Ready for Dev";
+
+/** Hard cap on queue-assignee repairs per run. Bounds API usage if something floods. */
+export const MAX_QUEUE_ASSIGNEE_REPAIRS_PER_RUN = 50;
+
+/**
  * Warning comment posted when a stale claim is first detected.
  * @param lastActivity ISO string of the issue's last updatedAt.
  * @param releaseAt   ISO string of when auto-release will fire if no activity.
