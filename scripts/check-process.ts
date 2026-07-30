@@ -6,6 +6,8 @@ import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 
+import { classifyCoordinationBlockGap } from "./coordination-block-predicate.ts";
+
 type Severity = "error" | "warn";
 
 type Finding = {
@@ -28,6 +30,7 @@ type LinearIssueSummary = {
 type ReadyForDevIssue = {
   identifier: string;
   title: string;
+  description?: string | null;
   comments?: { nodes?: Array<{ body?: string | null; createdAt?: string; updatedAt?: string }> } | null;
 };
 
@@ -331,6 +334,7 @@ async function runLinearChecks(planFilesMissingInlineRef: string[]): Promise<voi
         nodes {
           identifier
           title
+          description
           comments(first: 50) {
             nodes {
               body
@@ -410,11 +414,16 @@ async function runLinearChecks(planFilesMissingInlineRef: string[]): Promise<voi
   for (const issue of readyForDevIssueNodes) {
     const comments = issue.comments?.nodes ?? [];
     const latestBody = chooseLatestComment(comments);
+    // THR-836: a missing block only *stops* the lane when the ticket is also unscoped. A
+    // self-scoped one is claimable — the executor derives the three lines from the surfaces the
+    // description already names — so it reports `warn` (the filer should still have posted one).
+    const { severity, consequence } = classifyCoordinationBlockGap(issue.description);
+
     if (!latestBody) {
       addFinding({
         check: "handoff-keywords",
-        severity: "error",
-        message: `${issue.identifier} (${issue.title}) has no comments; latest handoff must include coordination keywords.`,
+        severity,
+        message: `${issue.identifier} (${issue.title}) has no comments — ${consequence}.`,
       });
       continue;
     }
@@ -422,9 +431,9 @@ async function runLinearChecks(planFilesMissingInlineRef: string[]): Promise<voi
     if (missingKeywords.length > 0) {
       addFinding({
         check: "handoff-keywords",
-        severity: "error",
+        severity,
         message:
-          `${issue.identifier} (${issue.title}) latest comment missing required keyword(s): ${missingKeywords.join(", ")}.`,
+          `${issue.identifier} (${issue.title}) latest comment missing required keyword(s): ${missingKeywords.join(", ")} — ${consequence}.`,
       });
     }
   }

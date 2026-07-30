@@ -1,7 +1,7 @@
 ---
 name: orchestrator
 description: The lane that decides what happens next — reads the Blocked by half of coordination blocks and promotes unblocked work to Ready for Dev (T1), authors design when the program shelf runs thin (T2), and owns architecture-health surfacing as a standing daily duty (T3). Runs hourly as tb-orchestrator. Never claims an issue, never sets In Dev, never writes Design/briefing.md.
-last_validated_against: 2026-07-30
+last_validated_against: 2026-07-31
 ---
 
 # Orchestrator
@@ -111,7 +111,9 @@ get_issue(id)                                                      # verify: no 
 
 **This is not optional bookkeeping; it is what makes the promotion usable.** `pull-work` Step 3 validates the *latest comment* on a candidate for three required lines — `Suggested model`, `Parallel-safe with`, `Mutex with` — and **bounces the issue without claiming it** when any is missing. An issue promoted into `Ready for Dev` with no coordination block therefore sits at the top of the queue being refused every hour, which is worse than leaving it in `Todo`: it looks available, blocks nothing, and silently starves the lane.
 
-So every T1 promotion posts a comment carrying:
+**This binds the create path too, not only promotions (THR-836).** Filing a T1/T2 child *straight into* `Ready for Dev` (the two-write create above) produces an issue with zero comments — born failing this same gate, and with no later promotion step that would ever author one. So the create sequence is three writes, not two: create, clear the assignee, **post the block**. `pull-work` Step 3 now derives a block at claim time for a self-scoped ticket rather than bouncing it, so the failure is no longer a stalled lane — but a derived block is a guess reconstructed from the description, where yours is written by the party that actually chose the scope.
+
+So every T1 promotion — and every direct filing into `Ready for Dev` — posts a comment carrying:
 
 - **The promotion evidence** — which blocker, what state, what date it cleared. This is the audit trail that makes a wrong promotion diagnosable.
 - **The three coordination lines.** Derive `Mutex with` from the files the ticket will actually touch and **state the reason inline** (`Mutex with: THR-XXX (both edit <file>)`) — THR-688 rule B, and an executor may only reverse a mutex whose reason is verifiably inapplicable.
