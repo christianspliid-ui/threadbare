@@ -1,7 +1,7 @@
 ---
 name: pull-work
 description: Canonical Claude Code pickup workflow for claiming Linear work safely from Ready for Dev.
-last_validated_against: 2026-07-25
+last_validated_against: 2026-07-30
 ---
 
 # Pull Work
@@ -24,7 +24,7 @@ Run as `/pull-work` (auto-pick top Ready for Dev issue) or `/pull-work THR-123` 
 
 **Constant:** `MAX_CLAIM_RETRIES = 3`
 
-1. **Board scan** — consume the Step 1 board-scan (already built): **two state-filtered `list_issues` calls**, not one unfiltered 250-issue sweep. Sort Ready-for-Dev candidates by priority (1=Urgent first), then oldest `createdAt` as tie-break. Pick the top unassigned candidate.
+1. **Board scan** — consume the Step 1 board-scan (already built): **two state-filtered `list_issues` calls**, not one unfiltered 250-issue sweep. Sort Ready-for-Dev candidates by priority (1=Urgent first), then oldest `createdAt` as tie-break. Pick the top candidate — **every** queue item, not only the unassigned ones (THR-845: an assignee on `Ready for Dev` is noise, not a claim, and filtering on it hid the board's two highest-priority issues).
 1.5. **WIP gate** — if the "In Dev" slice filtered to `assignee:"me"` is empty, continue to step 2. If exactly one entry, route to Step 1.7 (resume-from-In-Dev upstream-shipped check) instead of exiting clean. If more than one entry, this is a Rule 6 violation — output the cross-session-leak trace line and exit 1.
 2. **Claim** — `save_issue(id, assignee:"me", state:"In Dev")`.
 3. **Verify** — `get_issue(id)`. Confirm both `assignee` and `state` match.
@@ -166,12 +166,22 @@ If no issue id was provided, fire **two** calls:
 
 ```
 list_issues(team:"Threadbare", state:"In Dev",        limit:50,  includeArchived:false)
-list_issues(team:"Threadbare", state:"Ready for Dev", assignee:null, limit:100, includeArchived:false)
+list_issues(team:"Threadbare", state:"Ready for Dev", limit:100, includeArchived:false)
 ```
 
 The first response gives both In-Dev slices you need: filter to `assignee:"me"` for the WIP gate (Step 1.5), and read it across all assignees for the concurrent-session parallel check (Step 2). The second is the pickup-candidate list.
 
 **Do not use a single unfiltered `limit:250` sweep.** That call returns roughly 390k characters and is rejected outright on response size, so the canonical path used to fail at step one and every run improvised its own scan (THR-686). State-filtering is what keeps the response inside budget — this now matches what `keep-work-flowing-cc` § 1 already does, so the two skills no longer contradict each other.
+
+**The second call deliberately does *not* filter on `assignee:null` (THR-845).** It used to, and that made every assigned queue item invisible: not bounced, not logged, simply absent from the result — the worst shape a queue bug can take. Measured 2026-07-29: `Ready for Dev` held 41 issues, 19 carried an assignee, and the two highest-priority items on the whole board (one Urgent, one High) were both in the hidden 19. **An assignee on `Ready for Dev` is not a claim** — claims are `In Dev`, which Step 1.5 gates on. On the queue the field is meaningless noise, so it must not gate candidacy.
+
+Instead, **count it and say so.** Partition the queue response and emit one line before sorting:
+
+```
+[pull-work] Step 1: Ready for Dev <total>, unassigned <U>, carrying an assignee <A>.
+```
+
+`A > 0` means the writer-side leak has reopened (the create path in the orchestrator prompt's T1 step 5a, or a new filer that does not know the rule). Treat those issues as **candidates anyway**, and clear the stray assignee with `save_issue(id, assignee:null)` on the one you pick — it is a one-line repair, and `stale-claim-sweep`'s queue-assignee pass will catch the rest within 12 hours. Do not skip them and do not stop; a non-zero `A` is a number to report, not a blocker.
 
 Sort the Ready-for-Dev candidates by priority **in memory** (impediment #49 — `orderBy:"priority"` is accepted by the schema but rejected at runtime; `orderBy` defaults to `updatedAt`, which is fine). Oldest `createdAt` is the tie-break. Pick the top.
 

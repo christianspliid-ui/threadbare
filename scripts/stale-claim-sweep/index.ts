@@ -5,10 +5,14 @@
  *
  * Run via: node --experimental-strip-types scripts/stale-claim-sweep/index.ts
  *
- * Algorithm (two passes per run):
+ * Algorithm (three passes per run):
  * 1. Detection: find In Dev issues stale for > STALE_THRESHOLD_HOURS, post warning.
  * 2. Grace check: for tracked issues past GRACE_PERIOD_HOURS, re-query Linear;
  *    release if no activity arrived; drop if activity found or state changed.
+ * 3. Queue-assignee repair (THR-845): null the assignee on any Ready for Dev
+ *    issue carrying one. No warning, no grace — an assignee on the queue is not
+ *    a claim (claims are In Dev), it is an invisibility bug, because pull-work
+ *    selects candidates with `assignee:null`.
  *
  * Persistence: tracked-list JSON file, cached between GitHub Action runs via
  * actions/cache@v4 (same pattern as drift-scan-baseline.json).
@@ -33,6 +37,8 @@ import {
   MAX_ISSUES_PER_RUN,
   LINEAR_TEAM_KEY,
   DEFAULT_TRACKED_LIST_PATH,
+  QUEUE_STATE_NAME,
+  MAX_QUEUE_ASSIGNEE_REPAIRS_PER_RUN,
   buildWarningComment,
 } from "./constants.ts";
 
@@ -55,8 +61,11 @@ type SweepTrace =
   | { kind: "grace-not-reached"; issueId: string; identifier: string; ageHours: number }
   | { kind: "grace-dropped"; issueId: string; identifier: string; reason: "activity" | "state-change" | "manual-release" }
   | { kind: "released"; issueId: string; identifier: string; previousAssignee: string | null }
-  | { kind: "dry-run-would"; action: "comment" | "release"; issueId: string; identifier: string }
-  | { kind: "scan-end"; warnedCount: number; releasedCount: number; trackedSurvivors: number }
+  | { kind: "dry-run-would"; action: "comment" | "release" | "clear-queue-assignee"; issueId: string; identifier: string }
+  | { kind: "queue-assignee-found"; issueId: string; identifier: string; assignee: string | null }
+  | { kind: "queue-assignee-cleared"; issueId: string; identifier: string; previousAssignee: string | null }
+  | { kind: "queue-assignee-clean"; state: string }
+  | { kind: "scan-end"; warnedCount: number; releasedCount: number; trackedSurvivors: number; queueAssigneesCleared: number }
   | { kind: "error"; message: string };
 
 function trace(t: SweepTrace): void {
@@ -98,6 +107,41 @@ async function listStaleInDevIssues(staleBefore: string): Promise<IssueStub[]> {
       }
     }`,
     { teamKey: LINEAR_TEAM_KEY, before: staleBefore, first: MAX_ISSUES_PER_RUN },
+  );
+
+  return data.issues.nodes;
+}
+
+/**
+ * Every `Ready for Dev` issue carrying a non-null assignee (THR-845).
+ *
+ * This is the membership predicate the ticket states, expressed as a filter
+ * rather than a snapshot count — the writer re-accumulates these one per hour,
+ * so a count would rot before the next run reads it.
+ */
+async function listAssignedQueueIssues(): Promise<IssueStub[]> {
+  const data = await linearGql<{
+    issues: { nodes: IssueStub[] };
+  }>(
+    `query($teamKey: String!, $state: String!, $first: Int!) {
+      issues(
+        first: $first,
+        filter: {
+          state: { name: { eq: $state } },
+          team: { key: { eq: $teamKey } },
+          assignee: { null: false }
+        }
+      ) {
+        nodes {
+          id
+          identifier
+          updatedAt
+          assignee { id displayName }
+          labels { nodes { name } }
+        }
+      }
+    }`,
+    { teamKey: LINEAR_TEAM_KEY, state: QUEUE_STATE_NAME, first: MAX_QUEUE_ASSIGNEE_REPAIRS_PER_RUN },
   );
 
   return data.issues.nodes;
@@ -206,6 +250,26 @@ async function releaseClaim(issueId: string, readyForDevStateId: string): Promis
       }
     }`,
     { id: issueId, stateId: readyForDevStateId },
+  );
+}
+
+/**
+ * Clear the assignee on a queue issue, leaving its state untouched (THR-845).
+ *
+ * Deliberately a *separate* update mutation rather than something folded into a
+ * create: passing `assigneeId: null` inline to `issueCreate` does not stick —
+ * Linear defaults the field to the API actor and the create response simply
+ * omits the key, which reads as "null" and is not. Only a follow-up
+ * `issueUpdate` actually clears it.
+ */
+async function clearQueueAssignee(issueId: string): Promise<void> {
+  await linearGql(
+    `mutation($id: String!) {
+      issueUpdate(id: $id, input: { assigneeId: null }) {
+        success
+      }
+    }`,
+    { id: issueId },
   );
 }
 
@@ -350,8 +414,55 @@ async function sweep(opts: { dryRun: boolean; trackedListPath: string }): Promis
     // Either way, drop from tracking (released or dry-run).
   }
 
+  // Persist before the repair pass below, not after: the tracked list is the only
+  // cross-run state the first two passes produce, and losing it would re-warn every
+  // issue next run. The repair pass must not be able to cost us that.
   writeTrackedList(opts.trackedListPath, survivors);
-  trace({ kind: "scan-end", warnedCount, releasedCount, trackedSurvivors: survivors.length });
+
+  // ---- Queue-assignee repair pass (THR-845) ----
+  //
+  // No warning and no grace period, unlike the two passes above. Those release a
+  // *claim*, which is someone's in-flight work and deserves notice. This clears a
+  // field that carries no meaning in this state and actively hides the issue from
+  // the executor — repairing it immediately costs nothing and restores nothing but
+  // visibility. Runs last so a release from the grace pass (which already nulls the
+  // assignee on its way to Ready for Dev) is never double-handled.
+  //
+  // Wrapped: this pass is strictly additive to a job whose existing passes are the
+  // load-bearing ones. Its filter (`assignee: { null: false }`) could not be
+  // exercised against the live API before merge — LINEAR_API_KEY is an Actions
+  // secret with no local equivalent — so a schema mismatch would surface here first.
+  // Failing soft turns that into one logged line instead of a red run that also
+  // takes the stale-claim release with it (NFP #4).
+  let queueAssigneesCleared = 0;
+  try {
+    const assignedQueueIssues = await listAssignedQueueIssues();
+
+    if (assignedQueueIssues.length === 0) {
+      trace({ kind: "queue-assignee-clean", state: QUEUE_STATE_NAME });
+    }
+
+    for (const issue of assignedQueueIssues) {
+      const previousAssignee = issue.assignee?.displayName ?? null;
+      trace({ kind: "queue-assignee-found", issueId: issue.id, identifier: issue.identifier, assignee: previousAssignee });
+
+      if (opts.dryRun) {
+        trace({ kind: "dry-run-would", action: "clear-queue-assignee", issueId: issue.id, identifier: issue.identifier });
+        continue;
+      }
+
+      await clearQueueAssignee(issue.id);
+      trace({ kind: "queue-assignee-cleared", issueId: issue.id, identifier: issue.identifier, previousAssignee });
+      queueAssigneesCleared++;
+    }
+  } catch (err: unknown) {
+    trace({
+      kind: "error",
+      message: `queue-assignee pass failed (non-fatal, THR-845): ${err instanceof Error ? err.message : String(err)}`,
+    });
+  }
+
+  trace({ kind: "scan-end", warnedCount, releasedCount, trackedSurvivors: survivors.length, queueAssigneesCleared });
 }
 
 // ---------------------------------------------------------------------------
