@@ -38,6 +38,8 @@ import type {
   UnifiedActionTemplate,
 } from '../../../../types/unifiedAction';
 import { computeCapability } from '../../../../engine/domainCapability';
+import { locationTypeFromProperties } from '../../../../engine/encounterCache';
+import { settingClassForSubtype } from '../../../../data/settingClasses';
 import { computeResolutionModifiers } from '../../../../engine/resolutionModifiers';
 import { forecastAction } from '../../../../engine/resolutionService';
 import {
@@ -94,6 +96,30 @@ export interface BuildNudgePhaseModelArgs {
   step: ActionStep;
   graph: WorldGraph;
   gameState?: GameState;
+}
+
+/**
+ * THR-884 — the `SettingClass` an in-flight encounter is playing out in.
+ *
+ * Walks the actor's `located_at` edge one tier at a time: an agent standing in a
+ * sublocation resolves up to its parent location, because the setting envelope is a
+ * property of the *place* (a temple), not of the room inside it. Returns undefined
+ * off the authorable set, which is the `'*'` fallback rather than an error (NFP #4).
+ */
+function settingClassForAction(
+  graph: WorldGraph,
+  action: UnifiedAction,
+): string | undefined {
+  const actorId = action.actorId;
+  if (!actorId) return undefined;
+  const locatedAt = graph.getOutgoingEdges(actorId, 'located_at')[0];
+  if (!locatedAt) return undefined;
+  let node = graph.getNode(locatedAt.target);
+  const parentId = node?.properties?.parentLocationId as string | undefined;
+  if (parentId) node = graph.getNode(parentId) ?? node;
+  return settingClassForSubtype(
+    locationTypeFromProperties(node?.properties as Record<string, unknown> | undefined),
+  );
 }
 
 /** Cost in words — a free (trait) option says so rather than showing a zero. */
@@ -179,6 +205,12 @@ export function buildNudgePhaseModel(
     accessibleSpheres,
     unlockedTemplateIds: new Set(gameState?.unlockedActionIds ?? []),
     heldTraits,
+    // THR-884 — the setting class the scene plays out in, so a card that authored
+    // `fictionBySetting` shows the line written for *this* kind of place. Resolved
+    // through the cache's own precedence helper, so it is the same class the
+    // template was filtered in under. A card without variants is untouched, which
+    // is why threading this changes no rendered output for today's corpus.
+    settingClass: settingClassForAction(graph, activeAction),
   });
 
   const variants = resolveTraitVariants(template, heldTraits);

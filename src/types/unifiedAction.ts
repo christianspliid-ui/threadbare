@@ -828,6 +828,16 @@ export interface StepNudge {
   readonly imageTag?: string;
   /** Card body — a concrete, witnessed effect. */
   readonly fiction: string;
+  /**
+   * Per-setting-class rewrites of {@link fiction} (THR-884). A card whose fiction
+   * names class-specific scenery ("the threshing floor") carries one line per class
+   * its template's envelope declares, so a wide envelope stays honest without
+   * narrowing to one subtype.
+   *
+   * Resolved through `resolveSettingVariant` — the same lookup chain as `{frag:*}`,
+   * with `fiction` as the default. Absent → the card reads exactly as today (NFP #6).
+   */
+  readonly fictionBySetting?: Readonly<Record<string, string>>;
   /** Player guidance, words only (never a number). */
   readonly effectLine: string;
   /** Appended to the step's prose when this nudge was active for that outcome. */
@@ -991,7 +1001,7 @@ export interface ContextFragmentSet {
   /** Slot name referenced from prose as `{frag:<slot>}`, e.g. 'opening'. */
   readonly slot: string;
   /** Identity axis this slot varies on — see `SURFACE_FRAGMENT_AXES`. */
-  readonly axis: 'place' | 'counterpartRole';
+  readonly axis: 'place' | 'counterpartRole' | 'setting';
   /** axisValue -> authored prose. MUST contain the `'*'` default key. */
   readonly variants: Readonly<Record<string, string>>;
 }
@@ -1220,6 +1230,30 @@ export interface UnifiedActionTemplate {
    * the whole layer is opt-in per template. See `src/engine/fragmentResolution.ts`.
    */
   readonly contextFragments?: readonly ContextFragmentSet[];
+
+  /**
+   * Setting envelope (THR-884) — the `SettingClass` list this template was authored
+   * for. Advisory metadata on the converted template: the *enforcing* field is
+   * `locationSubtypes`, which the converter expands this into and which
+   * `encounterCache` filters on unchanged. Kept here so the coverage matrix and the
+   * envelope-completeness test can read an envelope back off a live template
+   * without re-deriving it from 20 subtypes.
+   */
+  readonly settings?: readonly string[];
+
+  /**
+   * Per-setting-class opening paragraphs (THR-884). Checklist questions 1–4 (where
+   * are we, how does it feel, who is here, what must we know) live in the opening;
+   * the complication, stakes, and hand are setting-neutral. So one template is one
+   * shared spine plus one authored opening per declared class.
+   *
+   * The converter compiles this into a `ContextFragmentSet` on the reserved
+   * `opening` slot and points the first step's prose at `{frag:opening}`, so
+   * resolution is the existing THR-573 path with no second mechanism. A template
+   * that declares `openings` must cover every class in its `settings` — enforced
+   * build-time, fail loud (`settingClasses.test.ts`).
+   */
+  readonly openings?: Readonly<Record<string, string>>;
 
   /** Encounter-network support that should be resolved at action start. */
   readonly supportBundle?: EncounterSupportBundle;

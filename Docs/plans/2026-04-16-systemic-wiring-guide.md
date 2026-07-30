@@ -857,6 +857,46 @@ A hook on a dead ref is a gate that never opens. It is invisible to every test t
 
 ---
 
+### Capability 16: Setting Envelopes — Where the Scene Is Allowed to Happen (THR-884)
+
+**What it is:** a closed 8-class vocabulary for placing an encounter, plus per-class opening paragraphs so one template can span several kinds of place without going placeless.
+
+**Why you care:** the engine has always gated templates per location (`locationSubtypes`, enforced by `encounterCache`). What failed was authoring *practice* — placeless prose stamped with all 20 subtypes. Scene-built prose makes that a lie: a hamlet rest scene cannot happen in a capital. Envelopes let you keep the widest **honest** reach.
+
+| Class | Expands to |
+|---|---|
+| `rural` | hamlet, farmland, mining |
+| `urban` | town, city, capital |
+| `stronghold` | castle, fort |
+| `sacred` | shrine, temple |
+| `arcane` | tower |
+| `ruin` | ruins, ruined_tower, ruined_city, ruined_village, unexplored_poi |
+| `wayside` | camp, oasis, wilderness |
+| `battlefield` | battleground |
+
+**How you author it** — three optional fields, all additive (a template that declares none behaves byte-identically):
+
+| Field | Where | What it does |
+|---|---|---|
+| `settings` | raw entry | The envelope. The converter expands it through `SETTING_CLASS_MAP` into `locationSubtypes`; the cache filter is untouched. |
+| `locationTypes` | raw entry | Now the **override** for genuinely specific encounters (a temple rite). Unioned with the envelope when both are present. |
+| `openings` | raw entry | One paragraph per declared class. Compiled into a `{frag:opening}` fragment set on the `setting` axis, with the first step's authored narrative as the `'*'` default. |
+| `fictionBySetting` | `StepNudge` | Per-class rewrite of a card's `fiction`, for a card that names class-specific scenery. Bound at hand assembly, so every downstream reader keeps reading `nudge.fiction`. |
+
+**Write flexibly, then make it honest.** Flexibility is the default (Christian's explicit direction): reach for the widest envelope you can defend, and pay for it with openings rather than by narrowing to one subtype. Checklist questions 1–4 (where are we, how does it feel, who is here, what must we know) live in the opening; the complication, stakes, and hand are setting-neutral.
+
+**The rule that catches people: declare a class, write its opening.** A template that authors `openings` must cover every class in its `settings` — build-time, fail loud (`validateSettingEnvelope`, `src/data/__tests__/settingClasses.test.ts`). The reverse also fails: an opening for a class the envelope never declares is prose that can never render.
+
+**This is the same resolution mechanism as Capability 12, not a second one.** `setting` is a third identity axis on the THR-573 fragment path, so an opening and a card variant share one lookup chain and one fallback rule.
+
+**Where to look before authoring:** `Docs/canon/setting-coverage.generated.md` (regenerate with `npm run generate-setting-coverage`) reports settings × reach drawable counts and per-family hand composition. Thin cells are scenes not yet written — the floors are **advisory and unset** by design.
+
+**Fail-soft:** an unknown class expands to nothing, so a typo'd template registers *nowhere* rather than everywhere (the safe direction), and the validation test names it. An unclassed location — the ~30 worldgen overlay subtypes (wonders, lairs, anomalies) that no class claims — takes the `'*'` default opening, never a blank.
+
+**Where to find the implementation:** `src/data/settingClasses.ts` (vocabulary, expansion, validator); `toUnifiedTemplate` in `src/data/encounter-content.ts` (expansion + opening compilation); `resolveSettingVariant` in `src/engine/fragmentResolution.ts`; the binding in `gatherNarrativeContext` (`proseEnrichment.ts`) and `buildNudgeHand` (`nudges.ts`).
+
+---
+
 ## Part 3: The Wiring Checklist — Ask These Before You Write
 
 Before writing any encounter, answer these questions. If the answer to most of them is "not applicable," you may be writing a book page, not game content.

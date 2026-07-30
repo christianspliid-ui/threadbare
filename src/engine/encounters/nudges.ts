@@ -25,6 +25,7 @@ import type {
 import type { SphereName } from '../../types/index';
 import type { ForecastModifier } from './outcomeForecast';
 import { NUDGE_RIDER_PRIORITY, DIFFICULTY_WORD_BANDS } from '../../data/nudge-constants';
+import { resolveSettingVariant } from '../fragmentResolution';
 
 /** Source prefix for a nudge's named forecast modifier. */
 export const NUDGE_MODIFIER_SOURCE_PREFIX = 'nudge:';
@@ -60,6 +61,16 @@ export interface NudgeHandContext {
   readonly unlockedTemplateIds: ReadonlySet<string>;
   /** Trait ids the acting mortal holds. */
   readonly heldTraits: ReadonlySet<string>;
+  /**
+   * `SettingClass` of the location the encounter plays out in (THR-884). When set,
+   * a card's `fictionBySetting` variant for that class replaces its `fiction` here,
+   * at hand assembly — so every downstream reader (the stage adapter, the audit
+   * detectors, the meeting model) keeps reading `nudge.fiction` and sees the
+   * setting-correct line without threading a new parameter.
+   *
+   * Absent → cards read exactly as authored (NFP #6).
+   */
+  readonly settingClass?: string;
 }
 
 // ─── Trait variants ──────────────────────────────────────────────────
@@ -109,6 +120,31 @@ export function resetNudgeWarnings(): void {
 }
 
 /**
+ * THR-884 — swap in a card's per-setting-class fiction, if it authored one.
+ *
+ * Delegates to `resolveSettingVariant`, the same lookup chain `{frag:*}` uses, so a
+ * card variant and a template opening cannot disagree about what "no entry for this
+ * class" means. Returns the *original object* when nothing applies, which is what
+ * keeps un-migrated cards byte-identical (NFP #6) and keeps `===` comparisons in
+ * downstream code intact.
+ */
+function bindSettingFiction(
+  nudge: StepNudge,
+  settingClass: string | undefined,
+  templateId: string,
+): StepNudge {
+  if (!settingClass || !nudge.fictionBySetting) return nudge;
+  const fiction = resolveSettingVariant(
+    nudge.fictionBySetting,
+    nudge.fiction,
+    { setting: settingClass },
+    templateId,
+    `nudge:${nudge.id}`,
+  );
+  return fiction === nudge.fiction ? nudge : { ...nudge, fiction };
+}
+
+/**
  * Partition a step's authored nudge hand into playable / dimmed / hidden.
  *
  * Trait-gated cards the agent cannot hold are *hidden* rather than dimmed —
@@ -146,7 +182,11 @@ export function buildNudgeHand(
   const dimmed: NudgeHandEntry[] = [];
   const hidden: string[] = [];
 
-  for (const nudge of nudges) {
+  for (const authored of nudges) {
+    // THR-884 — bind the card's per-setting fiction once, before partitioning, so
+    // playable and dimmed cards read identically. Identity is preserved when the
+    // card authored no variants: no spread, no new object, no behavior change.
+    const nudge = bindSettingFiction(authored, context.settingClass, template.id);
     // Trait-only card: held trait or a variant that unlocked it, else hidden.
     if (nudge.requiredTrait
       && !context.heldTraits.has(nudge.requiredTrait)
