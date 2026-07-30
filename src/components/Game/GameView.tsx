@@ -138,7 +138,7 @@ import type { JourneyVignetteData, PendingVignette } from '../../types/journeyEn
 import { applyBeatChoice } from '../../engine/journeyEngine';
 import { getThreadsFrom, getFactionMembershipEdges } from '../../engine/graphQueries';
 import type { ThreadEdgeProperties } from '../../types/influence';
-import { createMeetingEncounterState, createAgentFromMeeting, isMeetTheFirstAvailable } from '../../engine/meetingEncounter';
+import { createMeetingEncounterState, createAgentFromMeeting, isMeetTheFirstAvailable, MEETING_SETTLED_LOCATION_SUBTYPES } from '../../engine/meetingEncounter';
 import { buildStubAscendantLens } from '../../types/hunger';
 import type { AscendantLens } from '../../types/hunger';
 import { useNotifications } from './hooks/useNotifications';
@@ -222,7 +222,12 @@ interface GameViewProps {
   seed: number;
   mapSize?: import('../../engine/gameInit').MapSizePreset;
   ascendantIdentity?: import('../../types/remembrance').AscendantIdentity;
-  preSeeded?: boolean;
+  /** Dev-only: bond The First at init. Split from `preSeeded` by THR-874. */
+  seedFirst?: boolean;
+  /** Dev-only: inject the ascendant test package. Split from `preSeeded` by THR-874. */
+  seedTestPackage?: boolean;
+  /** Dev-only: move the avatar to a settlement so the meeting can auto-trigger (THR-874). */
+  placeAvatarForMeeting?: boolean;
 }
 
 function formatJourneyPhaseLabel(
@@ -239,7 +244,7 @@ function formatJourneyPhaseLabel(
   }
 }
 
-export function GameView({ archetype, avatarName, cosmology, seed, mapSize, ascendantIdentity, preSeeded }: GameViewProps) {
+export function GameView({ archetype, avatarName, cosmology, seed, mapSize, ascendantIdentity, seedFirst, seedTestPackage, placeAvatarForMeeting }: GameViewProps) {
   // ── Resume theme music if it was started on the start screen ──
   useEffect(() => {
     resumeTheme();
@@ -263,7 +268,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     running, speed, harvestResult, doTick, runTicksSync, handleBeginNextCycle,
     handleToggleRunning, setRunning, setSpeed, seasonName, year, maxEssence, COLS, ROWS,
     runtime,
-  } = useSimulation({ archetype, avatarName, cosmology, seed, scryState, mapSize, ascendantIdentity, preSeeded });
+  } = useSimulation({ archetype, avatarName, cosmology, seed, scryState, mapSize, ascendantIdentity, seedFirst, seedTestPackage, placeAvatarForMeeting });
 
   // O(1) tile lookup by hex coordinate (tiles array is stable — created once at init)
   const tileMap = useMemo(() => {
@@ -3081,8 +3086,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     const locNode = gameState.graph.getNode(locationId);
     if (!locNode) return;
     const subtype = locNode.properties.locationSubtype as string | undefined;
-    const settledTypes = ['town', 'city', 'hamlet', 'village', 'capital', 'port', 'outpost', 'fortress', 'monastery', 'trading_post'];
-    if (!subtype || !settledTypes.includes(subtype)) return;
+    if (!subtype || !MEETING_SETTLED_LOCATION_SUBTYPES.includes(subtype)) return;
 
     // All conditions met — auto-trigger once
     gameState.meetTheFirstAutoTriggered = true;

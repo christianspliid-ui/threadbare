@@ -5,7 +5,7 @@ import type { CosmologyProfile } from '../../../types';
 import type { GameState } from '../../../types/gameState';
 import type { RiverPath } from '../../../engine/worldGenData';
 import type { RegionData } from '../../../engine/regionTypes';
-import { initializeGameState, initializeGameStateFromIdentity, devSeedTheFirst, devSeedAscendantTestPackage, MAP_SIZE_PRESETS, DEFAULT_MAP_SIZE } from '../../../engine/gameInit';
+import { initializeGameState, initializeGameStateFromIdentity, devSeedTheFirst, devSeedAscendantTestPackage, devPlaceAvatarAtSettlement, MAP_SIZE_PRESETS, DEFAULT_MAP_SIZE } from '../../../engine/gameInit';
 import type { MapSizePreset } from '../../../engine/gameInit';
 import type { AscendantIdentity } from '../../../types/remembrance';
 import { runTick, resetEventCounter } from '../../../engine/orchestrator';
@@ -32,7 +32,21 @@ interface UseSimulationParams {
   scryState: ScryState;
   mapSize?: MapSizePreset;
   ascendantIdentity?: AscendantIdentity;
-  preSeeded?: boolean;
+  /**
+   * Dev-only: bond The First (Kael Thornweaver) at init. Split out of the former
+   * single `preSeeded` flag by THR-874 — pre-bonding The First makes
+   * `isMeetTheFirstAvailable` false, so no dev URL could reach the Meet-The-First
+   * beat while the two seeding actions shared one switch.
+   */
+  seedFirst?: boolean;
+  /** Dev-only: inject the ascendant test package (actions, essence, test content). */
+  seedTestPackage?: boolean;
+  /**
+   * Dev-only: move the avatar to a settled location so the Meet-The-First
+   * auto-trigger can fire. The start shrine is not a settlement, so without this
+   * the beat stays closed even with The First unbonded (THR-874).
+   */
+  placeAvatarForMeeting?: boolean;
 }
 
 const SEASONS = ['spring', 'summer', 'autumn', 'winter'] as const;
@@ -45,7 +59,9 @@ export function useSimulation({
   scryState,
   mapSize = DEFAULT_MAP_SIZE,
   ascendantIdentity,
-  preSeeded,
+  seedFirst,
+  seedTestPackage,
+  placeAvatarForMeeting,
 }: UseSimulationParams) {
   // ── Resolve map dimensions from preset ──
   const { cols: COLS, rows: ROWS } = MAP_SIZE_PRESETS[mapSize];
@@ -56,14 +72,15 @@ export function useSimulation({
       const result = ascendantIdentity
         ? initializeGameStateFromIdentity(ascendantIdentity, seed, cosmology, mapSize)
         : initializeGameState(archetype, avatarName, cosmology, seed, COLS, ROWS);
-      // Dev pre-seeding: inject The First agent and ascendant test content
-      if (preSeeded) {
-        devSeedTheFirst(result.state);
-        devSeedAscendantTestPackage(result.state);
-      }
+      // Dev pre-seeding: the two actions are independently switchable (THR-874).
+      // `?view=game&firstunmet` seeds the test package but leaves The First unbonded
+      // so the Meet-The-First beat stays reachable.
+      if (seedFirst) devSeedTheFirst(result.state);
+      if (seedTestPackage) devSeedAscendantTestPackage(result.state);
+      if (placeAvatarForMeeting) devPlaceAvatarAtSettlement(result.state);
       return result;
     },
-    [archetype, avatarName, cosmology, seed, COLS, ROWS, ascendantIdentity, mapSize, preSeeded]
+    [archetype, avatarName, cosmology, seed, COLS, ROWS, ascendantIdentity, mapSize, seedFirst, seedTestPackage, placeAvatarForMeeting]
   );
 
   const [gameState, setGameState] = useState<GameState>(initial.state);
