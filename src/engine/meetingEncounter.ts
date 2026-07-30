@@ -31,6 +31,12 @@ import type {
   IntentOption,
   NarrativeCandidate,
   SparkVision,
+  BondOutcome,
+  BondTest,
+  FormativeOutcome,
+  FormativeTest,
+  MeetingPoleLean,
+  MeetingStepNudge,
 } from '../types/meetingEncounter';
 import {
   INTENT_OPTIONS,
@@ -44,6 +50,20 @@ import {
   REACH_VARIANCE,
   ASCENDANT_REACH_BIAS,
 } from '../types/meetingEncounter';
+import type { StepOutcome } from '../types/unifiedAction';
+import type { BondReception } from '../data/meeting-nudge-constants';
+import {
+  BOND_RECEPTION_BY_BAND,
+  BOND_RECEPTION_FALLBACK,
+  MEETING_NEUTRAL_LEAN_COIN,
+  MEETING_POLE_SHIFT_BY_BAND,
+  MEETING_QUINTESSENCE_FLOOR,
+  MEETING_SCAR_EROSION_BY_BAND,
+} from '../data/meeting-nudge-constants';
+import { QUINTESSENCE_DEFAULT } from '../types/quintessence';
+import { applyRider, selectActiveRider, totalNudgeCost } from './encounters/nudges';
+import { mapResolverOutcomeToStep } from './unifiedActionResolution';
+import { resolveAction } from './resolutionService';
 import { CANDIDATE_VIGNETTES, type CandidateVignette } from '../data/candidate-vignettes';
 import { SPARK_VISION_CATALOG } from '../data/spark-vision-catalog';
 import { ARCHETYPE_NAME_MAP } from '../data/meeting-content';
@@ -425,6 +445,254 @@ export function applyReachChanges(
   return result;
 }
 
+// ─── Formative & Bond Tests (THR-868, WS6) ────────────────────────
+//
+// The meeting's converted beats resolve on the **same** attended ladder every
+// WS2 encounter uses: `resolveAction` (sigmoid → d100 → OutcomeType) mapped to
+// `StepOutcome` by the canonical `mapResolverOutcomeToStep`, with the committed
+// hand's named deltas summed into `actionModifiers` and any rider applied after.
+// There is no meeting-local resolver and no second band table — a parallel
+// ladder here would drift from the one the rest of the game teaches.
+
+/** Capability the god brings to a meeting test. */
+const MEETING_TEST_CAPABILITY = 0.5;
+
+/** Sphere factor for meeting tests — the god is acting through raw attention. */
+const MEETING_TEST_SPHERE_FACTOR = 0.1;
+
+/** Pseudo-actor id used for the meeting's resolution inputs (no node exists yet). */
+const MEETING_TEST_ACTOR_ID = 'meeting_candidate';
+
+/**
+ * Net pole lean of a played hand.
+ *
+ * Cards with no `poleLean` abstain — they move the odds without arguing for an
+ * outcome. A tie counts as `'none'`: a god who pulled equally both ways has not
+ * chosen, and gets pure fate rather than a silent tiebreak toward pole `a`.
+ */
+export function computeNetPoleLean(
+  nudges: readonly MeetingStepNudge[],
+  playedNudgeIds: readonly string[],
+): MeetingPoleLean {
+  const byId = new Map(nudges.map((n) => [n.id, n]));
+  let a = 0;
+  let b = 0;
+  for (const id of playedNudgeIds) {
+    const lean = byId.get(id)?.poleLean;
+    if (lean === 'a') a++;
+    else if (lean === 'b') b++;
+  }
+  if (a > b) return 'a';
+  if (b > a) return 'b';
+  return 'none';
+}
+
+/**
+ * Resolve one band on the shared attended ladder, given a hand.
+ *
+ * Returns the post-rider `StepOutcome`. Riders take **zero** rng draws (WS0
+ * semantics), so the d100 a given seed produces is identical with or without
+ * them — only the band mapping changes.
+ */
+function resolveMeetingBand(
+  difficulty: number,
+  nudges: readonly MeetingStepNudge[],
+  playedNudgeIds: readonly string[],
+  rng: () => number,
+): StepOutcome {
+  const byId = new Map(nudges.map((n) => [n.id, n]));
+  const nudgeDelta = playedNudgeIds.reduce(
+    (sum, id) => sum + (byId.get(id)?.forecastDelta ?? 0),
+    0,
+  );
+
+  const result = resolveAction(
+    {
+      actorId: MEETING_TEST_ACTOR_ID,
+      domain: 'heart',
+      capability: MEETING_TEST_CAPABILITY,
+      difficulty: Math.max(0, Math.min(1, Number.isFinite(difficulty) ? difficulty : 0.5)),
+      sphereFactor: MEETING_TEST_SPHERE_FACTOR,
+      actionModifiers: nudgeDelta,
+    },
+    rng,
+    undefined,
+    'encounter',
+  );
+
+  // `rollBreakdown` is optional on `ResolutionResult`; absent means "no
+  // near-miss information", which maps to the ordinary success/failure bands.
+  const band = mapResolverOutcomeToStep(result.outcome, result.rollBreakdown?.nearMiss ?? false);
+  // `selectActiveRider` reads a `{ nudges }` shape — `MeetingStepNudge` is
+  // structurally a `StepNudge`, which is the whole point of the local extension.
+  const rider = selectActiveRider({ nudges }, playedNudgeIds, 'meeting.formative_test');
+  return applyRider(band, rider);
+}
+
+/** Which pole a band writes, given how the hand leaned and a seeded coin. */
+function resolveWrittenPole(
+  netLean: MeetingPoleLean,
+  band: StepOutcome,
+  rng: () => number,
+): 'a' | 'b' {
+  const magnitude = MEETING_POLE_SHIFT_BY_BAND[band] ?? 0;
+  // A zero-lean hand gets pure fate: the coin picks the pole outright, and the
+  // band only decides how hard it lands. Drawing the coin unconditionally would
+  // desynchronise the stream between leaned and unleaned hands, so it is drawn
+  // only on this branch — the one place its value is used.
+  if (netLean === 'none') {
+    return rng() < MEETING_NEUTRAL_LEAN_COIN ? 'a' : 'b';
+  }
+  const leaned = netLean;
+  const opposite = leaned === 'a' ? 'b' : 'a';
+  // Negative magnitude means the moment broke the other way.
+  return magnitude >= 0 ? leaned : opposite;
+}
+
+/** Prose slot for a resolved formative test. */
+function selectFormativeProse(
+  test: FormativeTest,
+  band: StepOutcome,
+  writtenPole: 'a' | 'b',
+): string {
+  const magnitude = MEETING_POLE_SHIFT_BY_BAND[band] ?? 0;
+  const prose = test.bandProse;
+  if (magnitude > 0 && band === 'success_at_cost') return prose.tempered;
+  if (magnitude >= 0) return writtenPole === 'a' ? prose.cleanA : prose.cleanB;
+  if (band === 'near_miss') return prose.tempered;
+  return writtenPole === 'a' ? prose.brokenIntoA : prose.brokenIntoB;
+}
+
+/**
+ * Resolve a formative test — a present-tense trial the god leans and fate settles.
+ *
+ * Pure and seeded: same test + same played hand + same seed → same outcome, every
+ * time (NFP #3). The caller owns the essence spend; `essenceSpent` here is what
+ * the played hand *costs*, computed from the authored cards.
+ */
+export function resolveFormativeTest(
+  test: FormativeTest,
+  testIndex: number,
+  templateId: string,
+  playedNudgeIds: readonly string[],
+  seed: number,
+): FormativeOutcome {
+  const rng = createSeededRng(seed, `meeting_test_${testIndex}`);
+  const netLean = computeNetPoleLean(test.nudges, playedNudgeIds);
+  const band = resolveMeetingBand(test.difficulty, test.nudges, playedNudgeIds, rng);
+  const writtenPole = resolveWrittenPole(netLean, band, rng);
+
+  const magnitude = Math.abs(MEETING_POLE_SHIFT_BY_BAND[band] ?? 0);
+  // Sign is relative to pole `a`, matching `AxiologicalProfile` polarity: the
+  // first-named pole of a `ValuePair` is the positive direction.
+  const shift = writtenPole === 'a' ? magnitude : -magnitude;
+
+  return {
+    testIndex,
+    templateId,
+    valuePair: test.valuePair,
+    netLean,
+    playedNudgeIds: [...playedNudgeIds],
+    band,
+    writtenPole,
+    shift,
+    quintessenceErosion: MEETING_SCAR_EROSION_BY_BAND[band] ?? 0,
+    essenceSpent: totalNudgeCost({ nudges: test.nudges }, playedNudgeIds),
+    prose: selectFormativeProse(test, band, writtenPole),
+  };
+}
+
+/**
+ * Resolve the bond test — the climax.
+ *
+ * The bond **always forms**. Fate decides only how the mortal receives it, and
+ * every band including the worst produces a real relationship: a defiant First
+ * still bonds, and defies you.
+ *
+ * Fail-soft: a malformed template (a reception slot missing its content) falls
+ * back to `bargain` rather than throwing, so the meeting can never dead-end on
+ * its own last beat.
+ */
+export function resolveBondTest(
+  bondTest: BondTest,
+  playedNudgeIds: readonly string[],
+  seed: number,
+): BondOutcome {
+  const rng = createSeededRng(seed, 'meeting_bond');
+  const band = resolveMeetingBand(bondTest.difficulty, bondTest.nudges, playedNudgeIds, rng);
+
+  const mapped = BOND_RECEPTION_BY_BAND[band] ?? BOND_RECEPTION_FALLBACK;
+  let reception: BondReception = mapped;
+  let content = bondTest.receptions[reception];
+  if (!content) {
+    console.warn(
+      `[meetingEncounter] bond test '${bondTest.id}' has no content for reception '${reception}' — falling back to '${BOND_RECEPTION_FALLBACK}'`,
+    );
+    reception = BOND_RECEPTION_FALLBACK;
+    content = bondTest.receptions[BOND_RECEPTION_FALLBACK];
+  }
+
+  return {
+    band,
+    reception,
+    playedNudgeIds: [...playedNudgeIds],
+    essenceSpent: totalNudgeCost({ nudges: bondTest.nudges }, playedNudgeIds),
+    prose: content?.prose ?? '',
+    traitSeed: content?.traitSeed ?? '',
+  };
+}
+
+/**
+ * Fold resolved test outcomes into a `MeetingEncounterResult`.
+ *
+ * Runs *after* `buildNarrativeResult`, which already applied the legacy dilemma
+ * shifts — a converted meeting simply has no legacy records to apply, so the two
+ * paths compose instead of competing. Never mutates its input.
+ *
+ * Scarring accumulates across the formative tests and clamps at
+ * `MEETING_QUINTESSENCE_FLOOR`: a First can be marked by a bad meeting but never
+ * starts `critical` or `broken` (grill verdict 6).
+ */
+export function applyMeetingOutcomes(
+  result: MeetingEncounterResult,
+  formativeOutcomes: readonly FormativeOutcome[],
+  bondOutcome: BondOutcome | undefined,
+): MeetingEncounterResult {
+  const axiologicalProfile = { ...result.axiologicalProfile };
+  let erosion = 0;
+
+  for (const outcome of formativeOutcomes) {
+    const current = axiologicalProfile[outcome.valuePair] ?? 0;
+    axiologicalProfile[outcome.valuePair] = Math.max(-1, Math.min(1, current + outcome.shift));
+    erosion += outcome.quintessenceErosion;
+  }
+
+  // TODO(THR-872): `traitSeeds` has three producers and no consumer —
+  // `createAgentFromMeeting` never lands it on the graph, so the reception seed
+  // appended here is currently discarded along with every dilemma and spark
+  // seed. Appending it anyway keeps the reception's authored seed in one place
+  // for when THR-872 gives the channel a reader; it is not new dead weight.
+  const traitSeeds = [...result.traitSeeds];
+  if (bondOutcome?.traitSeed) traitSeeds.push(bondOutcome.traitSeed);
+
+  const startingQuintessence = erosion > 0
+    ? Math.max(MEETING_QUINTESSENCE_FLOOR, QUINTESSENCE_DEFAULT - erosion)
+    : undefined;
+
+  return {
+    ...result,
+    axiologicalProfile,
+    traitSeeds,
+    startingQuintessence,
+    bondReception: bondOutcome?.reception,
+    meetingChoiceRecord: {
+      ...result.meetingChoiceRecord,
+      formativeOutcomes: formativeOutcomes.map((o) => ({ ...o })),
+      bondReception: bondOutcome?.reception,
+    },
+  };
+}
+
 // ─── Step 4: Create Agent ─────────────────────────────────────────
 
 /**
@@ -463,6 +731,13 @@ export function createAgentFromMeeting(
       portraitAssetPath: result.portraitAssetPath ?? null,
       appearanceSeed: result.appearanceSeed,
       createdByMeeting: true,
+      // Formative-test scarring (THR-868). Spread rather than written
+      // unconditionally so an unscarred First carries no `quintessence`
+      // property at all and the existing `QUINTESSENCE_DEFAULT` fallback
+      // applies — the legacy path's node shape is unchanged.
+      ...(result.startingQuintessence !== undefined
+        ? { quintessence: result.startingQuintessence }
+        : {}),
     },
   });
 
@@ -494,6 +769,11 @@ export function createAgentFromMeeting(
       storyPhase: 'call',
       meetingChoiceRecord: result.meetingChoiceRecord,
       beatHistory: [],
+      // How the mortal received the bond (THR-868). Absent on legacy-path
+      // threads, which is a meaningful distinction — see `MeetingChoiceRecord`.
+      ...(result.bondReception !== undefined
+        ? { bondReception: result.bondReception }
+        : {}),
     },
   });
 
