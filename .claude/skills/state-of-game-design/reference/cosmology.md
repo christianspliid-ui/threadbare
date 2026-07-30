@@ -12,7 +12,7 @@ last_validated_against: 2026-05-16
 
 ## Game Design Direction (Experiential Compass)
 
-**Read `Docs/plans/2026-04-16-game-design-direction.md` before any design or content work.** That document defines what Threadbearer is supposed to *feel like* to play. This shard covers the mechanical foundations — reaches, spheres, actor types. The game design direction covers the experiential foundations — what the player does, how they feel, and what makes moments matter. Both are required context.
+**Read `Docs/plans/2026-04-16-game-design-direction.md` before any design or content work.** That document defines what Threadbare is supposed to *feel like* to play. This shard covers the mechanical foundations — reaches, spheres, actor types. The game design direction covers the experiential foundations — what the player does, how they feel, and what makes moments matter. Both are required context.
 
 **Core principles (summary — read the full doc for depth):**
 

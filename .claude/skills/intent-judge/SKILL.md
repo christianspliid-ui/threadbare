@@ -33,7 +33,7 @@ principal whose intent the manager guards.
 
 ## Why this exists
 
-The plan-doc handoff is the action boundary in Threadbearer's workflow. Once
+The plan-doc handoff is the action boundary in Threadbare's workflow. Once
 a doc moves to Ready for Dev, the executor picks it up on
 an hourly cycle and starts coding. That handoff is irreversible in any
 useful sense — bouncing a plan back wastes executor cycles, pollutes Linear,
