@@ -190,3 +190,41 @@ export const MEETING_POOL_MIN_CONVERTED = 3;
  * silent default to the virtue side.
  */
 export const MEETING_NEUTRAL_LEAN_COIN = 0.5;
+
+// ─── Shared resolution inputs ────────────────────────────────────────
+//
+// These three feed `resolveAction` in `resolveMeetingBand` **and** the stage
+// adapter's forecast. They live here rather than module-private in the engine
+// because the forecast word the player reads must be computed from the exact
+// values resolution will roll against — a second copy in the UI is a silent
+// drift vector, which is the failure this file exists to prevent (NFP #1).
+
+/**
+ * Capability the god brings to a meeting test.
+ *
+ * **Not 0.5.** The attended sigmoid is not centred such that equal capability
+ * and difficulty means even odds: measured against the live resolver, 0.5 vs an
+ * authored difficulty of 0.5 yields p=0.09 — `doomed`. That made every formative
+ * test open as already lost, and forced a hand costing more essence than the
+ * player holds just to reach the middle of the ladder.
+ *
+ * At 0.8, an authored difficulty of 0.5 opens at p=0.40 (`uncertain`) with no
+ * cards played, and a modest two-card lean (~0.22) reaches p=0.62
+ * (`favorable`). That is the intended shape: an unled moment sits mid-ladder
+ * and genuinely could go either way, and leaning moves it without demanding the
+ * whole hand. Authored difficulty stays the per-test dial (NFP #1).
+ */
+export const MEETING_TEST_CAPABILITY = 0.8;
+
+/** Sphere factor for meeting tests — the god is acting through raw attention. */
+export const MEETING_TEST_SPHERE_FACTOR = 0.1;
+
+/**
+ * Pseudo-actor id for the meeting's resolution inputs. The candidate is not a
+ * graph node until `createAgentFromMeeting` runs, so resolution needs a stable
+ * stand-in rather than a lookup that would fail.
+ */
+export const MEETING_TEST_ACTOR_ID = 'meeting_candidate';
+
+/** Reach the meeting's tests resolve under — the god is reaching for a person. */
+export const MEETING_TEST_REACH = 'heart';

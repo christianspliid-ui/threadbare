@@ -28,6 +28,7 @@ import type {
   DilemmaTemplate,
   DilemmaInstance,
   DilemmaChoiceRecord,
+  EnrichedDilemmaTemplate,
   IntentOption,
   NarrativeCandidate,
   SparkVision,
@@ -59,6 +60,10 @@ import {
   MEETING_POLE_SHIFT_BY_BAND,
   MEETING_QUINTESSENCE_FLOOR,
   MEETING_SCAR_EROSION_BY_BAND,
+  MEETING_TEST_ACTOR_ID,
+  MEETING_TEST_CAPABILITY,
+  MEETING_TEST_REACH,
+  MEETING_TEST_SPHERE_FACTOR,
 } from '../data/meeting-nudge-constants';
 import { QUINTESSENCE_DEFAULT } from '../types/quintessence';
 import { applyRider, selectActiveRider, totalNudgeCost } from './encounters/nudges';
@@ -367,14 +372,24 @@ export function selectDilemmas(
     usedIds.add(any.id);
   }
 
-  // Convert to instances
-  return selected.map(t => ({
-    templateId: t.id,
-    category: t.category,
-    setup: t.setup,
-    godVoice: t.godVoice,
-    choices: t.choices,
-  }));
+  // Convert to instances.
+  //
+  // `test` rides along when the source template has been converted (THR-868).
+  // This mapper is an explicit field allowlist, so the field has to be named
+  // here or the converted path is unreachable no matter how many templates
+  // carry a test. `DilemmaTemplate` does not declare it — only the enriched
+  // subtype does — hence the guarded read rather than a plain property access.
+  return selected.map(t => {
+    const test = (t as Partial<EnrichedDilemmaTemplate>).test;
+    return {
+      templateId: t.id,
+      category: t.category,
+      setup: t.setup,
+      godVoice: t.godVoice,
+      choices: t.choices,
+      ...(test ? { test } : {}),
+    };
+  });
 }
 
 // ─── Step 2: Apply Dilemma Choice ─────────────────────────────────
@@ -454,14 +469,13 @@ export function applyReachChanges(
 // There is no meeting-local resolver and no second band table — a parallel
 // ladder here would drift from the one the rest of the game teaches.
 
-/** Capability the god brings to a meeting test. */
-const MEETING_TEST_CAPABILITY = 0.5;
-
-/** Sphere factor for meeting tests — the god is acting through raw attention. */
-const MEETING_TEST_SPHERE_FACTOR = 0.1;
-
-/** Pseudo-actor id used for the meeting's resolution inputs (no node exists yet). */
-const MEETING_TEST_ACTOR_ID = 'meeting_candidate';
+// The three resolution inputs this ladder rolls against —
+// `MEETING_TEST_CAPABILITY`, `MEETING_TEST_SPHERE_FACTOR`, `MEETING_TEST_REACH`
+// (plus the `MEETING_TEST_ACTOR_ID` stand-in) — are imported from
+// `meeting-nudge-constants.ts`. They were module-private here until the stage
+// adapter needed them: the forecast word the player reads is computed from the
+// same three values, so a UI-side copy would let the shown forecast drift from
+// the band this function actually rolls. One definition, both readers.
 
 /**
  * Net pole lean of a played hand.
@@ -509,7 +523,7 @@ function resolveMeetingBand(
   const result = resolveAction(
     {
       actorId: MEETING_TEST_ACTOR_ID,
-      domain: 'heart',
+      domain: MEETING_TEST_REACH,
       capability: MEETING_TEST_CAPABILITY,
       difficulty: Math.max(0, Math.min(1, Number.isFinite(difficulty) ? difficulty : 0.5)),
       sphereFactor: MEETING_TEST_SPHERE_FACTOR,

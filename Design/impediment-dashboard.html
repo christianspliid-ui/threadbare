@@ -5575,6 +5575,71 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "**Immediate:** before doing T1 work, check `gh pr list --search \"orchestrator\" --state open` for a same-day PR already claiming the sweep, and read any candidate's `get_issue` `attachments` for a sibling PR link — either is a stand-down signal, not just evidence for the report. This run stood down on exactly that basis rather than re-promoting or opening a competing PR. **Durable fix:** needs the same class of guard the worktree reaper uses against concurrent claims — either a lock file/marker the first run writes before starting its scan (checked and honoured by a second run within some short window), or tightening the scheduler so `tb-orchestrator` cannot double-dispatch inside one `:25` slot. Worth a ticket against `.claude/skills/orchestrator/SKILL.md` (add a Step 0 pre-check) and the scheduled-tasks registry (record the observed double-fire) together.",
     "session": "`tb-orchestrator` hourly run, 2026-07-30 ~08:3xZ, discovered via THR-873's `get_issue` attachment linking PR #1102."
+  },
+  {
+    "num": "313",
+    "id": 313,
+    "count": 1,
+    "date": "2026-07-30",
+    "category": "design",
+    "description": "**A resolution constant that type-checks, ships, and passes 31 engine tests can still make every instance of the feature open as unwinnable — because no test asserted the *shape* of the forecast, only that one was produced.** THR-868's engine slice set `MEETING_TEST_CAPABILITY = 0.5`, the intuitive \"neutral\" value against an authored difficulty of `0.5`. The attended sigmoid is not centred there: measured through the live resolver, 0.5 vs 0.5 forecasts **p=0.09 — `doomed`**. Every formative test would have opened reading *hopeless*, and reaching even the middle of the ladder needed ~0.22 of nudge delta, while clearing to `fated` needed the entire 0.94-delta hand — far more essence than a player holds at the encounter that fires on turn one. The engine suite covered band mapping, pole writing, determinism, the floor clamp and dead-band absence, and none of it looks at the forecast the player reads, because until this slice nothing rendered it.",
+    "consequence": "Invisible until a UI existed. Had the content batch shipped first, 64 templates would have been authored and difficulty-tuned against a ladder whose zero point was wrong, and the natural fix would have looked like \"lower every authored difficulty\" — compensating in content for an engine constant.",
+    "impact": "Medium — caught in first browser verification; would have been High if the content batch had landed first.",
+    "workaroundFound": true,
+    "workaround": "Retuned to `MEETING_TEST_CAPABILITY = 0.8`: difficulty 0.5 now opens at p=0.40 (`uncertain`) and a modest two-card lean reaches p=0.62 (`favorable`) — an unled moment sits mid-ladder and leaning moves it without demanding the whole hand. Rationale recorded on the constant. **The durable part is the test, not the number:** added assertions pinning the *shape* — an unled mid-difficulty moment must not forecast `doomed` and must sit in 0.25–0.60, and a two-card lean must move it a tier. Those pin playability while leaving retuning free, which a test asserting `capability === 0.8` would not. **Class:** whenever a constant feeds a curve rather than a comparison, probe the curve across its input range before trusting the intuitive value — `0.5 vs 0.5` is only \"even odds\" if the sigmoid is centred, and here it was off by four tiers.",
+    "session": "THR-868 WS6 UI slice, hourly `tb-opus-pickup`."
+  },
+  {
+    "num": "314",
+    "id": 314,
+    "count": 1,
+    "date": "2026-07-30",
+    "category": "tooling",
+    "description": "**Two vagueness lexicons disagree, the authoring spec documents the one the audit does not use, and following the doc still fails the detector.** `VAGUENESS_LEXICON` (`nudgeAuthoringConstants.ts`, 10 terms) is read *only* by `nudgeModel.test.ts`'s golden-exemplar assertions. `AUDIT_VAGUENESS_TERMS` (`nudgeAuditDetectors.ts`, ~35 terms) is what `countVagueness()` matches — i.e. the number an author quotes as evidence. **The overlap is four words** (`somehow`, `something`, `somewhere`, `things`). The spec doc printed the 10-term list under a heading reading *“Detector spec (verbatim) … the wording here is the contract”*, and additionally claimed “all the way”, “either way”, “it costs you nothing” and “in a way” all trip the detector — **three of those four do not** (`way` and `nothing` are not in the audit list; only `in some way` is, not `in a way`).",
+    "consequence": "Cost a full rewrite cycle on the THR-868 register pass: the first rewrite cleaned every term on the documented list and still scored **14** vagueness hits. The words that actually bit were `someone` (12 hits — every per-hunger sensing line opened “You look for someone who…”) and one `someone's` inside an epithet. Neither is a word an author flags by eye, and neither appears on the list the spec calls the contract.",
+    "impact": "Medium — one wasted rewrite pass per author who trusts the doc; recurs on every register-sensitive content ticket.",
+    "workaroundFound": true,
+    "workaround": "**Immediate:** score with the real `countVagueness()` and iterate against *its* output rather than reading the doc's list — the detector is the authority, and it is cheap to run. **Fixed this run:** the spec doc's § *Detector spec* now names both constants, prints both lists in full, states which code path reads each, calls out both traps by name, and says the code is the contract where they disagree. **Deferred (THR-877):** unifying them is a real decision, not a merge — widening the authoring list changes what the WS1 golden-exemplar test asserts, and widening the audit list adds `way`/`thing`/`nothing`, which would light up a large share of shipped content and needs a measured before/after first. **Class:** a doc that says “verbatim” and “the contract” is still prose; when a detector has a constant, read the constant.",
+    "session": "THR-868 WS6 register rewrite, hourly `tb-opus-pickup`."
+  },
+  {
+    "num": "315",
+    "id": 315,
+    "count": 1,
+    "date": "2026-07-30",
+    "category": "process",
+    "description": "**Scene art can encode the game mechanic the code just removed, and no test in the repo can see it — a wrong picture type-checks.** The THR-868 scene-art audit inspected all 32 files in `public/assets/meeting/scenes/` and found three defect classes. Two are hard violations of image doctrine ruling 10 (a scene omits or silhouettes the agent; the Sensing portrait is the only likeness in the flow): **`prison-cell.jpg` has two UI buttons painted into the image — “GRANT MERCY” / “IMPOSE JUDGMENT”** — a rendered picture of the authored-choice mechanic THR-868 exists to delete, sitting on the `axiological` tag that formative test 1 draws from; and **`plague-ward.jpg`** renders a fully individuated emaciated child's face, front-lit and facing the viewer. The third class is baked-in caption text (`healing-tent.jpg` — “A Threadbare Mercy”; `burning-palace.jpg` — “The Fall of Aethelgaard”).",
+    "consequence": "`plague-ward` was **reachable and rendering**, not a theoretical risk: `selectDilemmaScene` scores tag overlap, so any dilemma tagged `sacrifice` or `compassion` scored it top. The prison-cell case is worse in kind — the code stops teaching the rejected model and the art keeps teaching it, in the game's first five minutes, with every test green. Also surfaced: only **8 of 32** assets were registered, so thin-tag draws cycled the same two backdrops.",
+    "impact": "Medium — shipped and player-visible for an unknown period; invisible to the whole test suite.",
+    "workaroundFound": true,
+    "workaround": "**Method, and this is the transferable part: a per-image glance missed all three text defects.** What found them was a **strip sweep** — crop the bottom ~20% of every asset, tile them into one labelled contact sheet, and read the column; then repeat for the top. Baked-in text is small, low-contrast and corner-anchored, which is exactly what the eye skips when looking at a full-frame thumbnail for composition. **Fixed:** 5 quarantined behind `QUARANTINED_SCENE_ASSETS` (each with its stated reason), re-pointed to compliant assets already on disk, pool widened 8 → 16, and pinned by `meetingSceneDoctrine.test.ts` — which asserts both non-registration **and** selector-unreachability across every authored tag × both seeds, so a re-registration fails on behaviour, not just on a list. The guard was falsified by re-injecting the defect: it independently reproduced the original finding (`selector reaches quarantined art: plague-ward`). Replacement art is THR-876. **Class:** art is content, and content that encodes a retired mechanic is a correctness bug, not a style note — audit the asset pool whenever a mechanic is retired, not just the code that drove it.",
+    "session": "THR-868 WS6 closeout, hourly `tb-opus-pickup`."
+  },
+  {
+    "num": "316",
+    "id": 316,
+    "count": 1,
+    "date": "2026-07-30",
+    "category": "tooling",
+    "description": "**The Meet-The-First flow is unreachable from *every* dev URL, so its plan's browser Done-when could not be run as written.** THR-868's plan (and the handoff) specify verifying at bare `?view=game`, noting that `&seeded` \"bypasses the meeting — sanctioned exception\". Both halves are true and together they close the door: `?view=game` takes `quickStartPhase`'s non-seeded branch, which returns `{ phase: 'playing', archetype }` with **no `identity`**, and `GameView` mounts the flow only on `meetingState && ascendantIdentity` — so it can never render. `?view=game&seeded` supplies `DEV_ASCENDANT_IDENTITY` but also sets `preSeeded`, which pre-bonds The First, so `isMeetTheFirstAvailable` is false and the auto-trigger at `GameView.tsx:3058` returns early. Confirmed empirically: `__DEBUG.tick(8)` on each URL, `getMeetingState()` → `null` both times. There is no third URL — `isDevSeeded` is `viewParam === 'game' && has('seeded')`, so identity and no-First cannot be requested together.",
+    "consequence": "The one mandatory UI-pillar evidence route for this ticket is unrunnable, and the failure is silent — the game loads fine and simply never shows the beat, which reads as \"the feature is broken\" rather than \"the entry path does not exist in dev\".",
+    "impact": "Medium — blocks browser Done-whens for the whole meeting surface, i.e. every remaining THR-868 batch.",
+    "workaroundFound": true,
+    "workaround": "**This run:** verified via the mount-overlay route (memory `mount_overlay_verify`) — Vite dynamic-import the beat + the real library + the real `selectDilemmas`, `createRoot` into a fixed overlay, drive it with Playwright. That exercises production code end to end (selector → adapter → WS2 shell → `resolveFormativeTest`) and is what caught two real defects the unit tests had passed over. **Durable fix (filed THR-874):** decouple the two flags — a `?firstunmet` param (or `preSeeded` split into `seedIdentity` / `seedFirst`) giving identity *without* the First, which is the only combination that reaches this encounter. Until then, any meeting Done-when should name the overlay route explicitly rather than a URL that cannot work. **General lesson:** when a plan names a dev URL as the evidence route, load that URL and assert the target actually mounts *before* building against the assumption — a URL documented in CLAUDE.md is not proof the surface is reachable through it.",
+    "session": "THR-868 WS6 UI slice, hourly `tb-opus-pickup`."
+  },
+  {
+    "num": "317",
+    "id": 317,
+    "count": 1,
+    "date": "2026-07-30",
+    "category": "tooling",
+    "description": "**`worktree-write-guard.sh` blocks every legitimate *sibling-worktree* edit, because `.claude/worktrees/` is nested inside the home tree and the guard matches on path prefix.** Editing `…/.claude/worktrees/beautiful-hermann-ec30e6/Docs/impediments.md` from a session rooted in `…/.claude/worktrees/xenodochial-payne-19b699` is a write to a *different linked worktree*, not to the home tree — but the target path begins with the home-tree path, so the prefix test fires and the Edit is rejected as a THR-685 two-tree violation. The remediation the hook prints is not merely unhelpful but wrong: it suggests `…/xenodochial-payne-19b699/.claude/worktrees/beautiful-hermann-ec30e6/Docs/impediments.md`, a nested path that does not exist. This is the same structural cause as THR-797 — the harness owns `.claude/worktrees/` and places it *under* the working copy it is meant to be disjoint from, so prefix-based reasoning about \"which tree is this\" is unsound for any path in that directory.",
+    "consequence": "Any cross-worktree repair is blocked through the sanctioned Edit/Write path, and an agent that trusts the printed remediation writes to a nonexistent nested path or, worse, concludes the edit target was the home tree and starts a spurious patch-and-relocate recovery.",
+    "impact": "Medium — it does not corrupt anything, but it blocks the exact repair shape the hourly lane needs when fixing another lane's red PR, and the wrong remediation invites a bogus recovery.",
+    "workaroundFound": true,
+    "workaround": "**Workaround:** the guard covers `Edit`/`Write` only, so perform the edit with `Bash` (`sed -i` here) after proving the target tree explicitly — `cd` into the sibling worktree and echo `git rev-parse --show-toplevel`, confirming it resolves to the sibling and not to the home tree. That check is what the guard is trying to approximate, and it is exact rather than prefix-based. **Durable fix:** the guard should compare `git rev-parse --show-toplevel` (or `--git-common-dir` plus worktree registration) for the *target* path against the home tree, rather than string-prefixing against the home-tree root; a path under `.claude/worktrees/<name>/` belongs to that worktree, never to the home tree. Worth a ticket against `.claude/hooks/worktree-write-guard.sh`.",
+    "session": "Hourly `tb-opus-pickup`, 2026-07-30, hit while repairing PR #1103's red generated-freshness check from a sibling worktree."
   }
 ];
 // ── End data ──
