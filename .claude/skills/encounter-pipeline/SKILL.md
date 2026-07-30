@@ -254,6 +254,7 @@ The editorial agent:
 19. **Two rider cards in one hand**, or a rider with no justifying comment
 20. **A zero-essence non-trait card with no other cost channel**, or a grant naming content that does not exist (`validateNudgeGrantRefs`)
 21. **Two encounters in the same family with an identical card-type composition**
+22. **A seam echo** — a repeated image, repeated sentence shape, or near-identical phrasing across a paragraph boundary (the class the automated detectors cannot see; check every opening→spine and spine→band seam explicitly)
 
 ### Pass 3: Systems Audit + Final Merge
 

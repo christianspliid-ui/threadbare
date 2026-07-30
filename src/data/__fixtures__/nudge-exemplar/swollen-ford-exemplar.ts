@@ -46,9 +46,9 @@
  *                          same river where no town claims it — leaning posts,
  *                          a dead camp. Both grounded before anyone acts.
  *  A2 How does it feel?    Rain three days running; mud and wet grain on the
- *                          air (rural); cold, loud water and beaten ash
- *                          (wayside); slick rope and thigh-deep current in the
- *                          spine.
+ *                          air (rural); cold camp, beaten ash, grey light
+ *                          thinning (wayside); slick rope and thigh-deep
+ *                          current in the spine.
  *  A3 Who is here?         Rural: a miller's boy with damp sacks, watching the
  *                          water. Wayside: no one — and the cold camp accounts
  *                          for whoever came before. Nothing acts unannounced.
@@ -61,8 +61,10 @@
  *                          appear in prose before any card or factor names them.
  *  B7 Visible causes?      Rising water from three days of rain; the drop at
  *                          midstream from the drowned old bed.
- *  B8 No contradictions?   One river, one rope, one flood; time of day left
- *                          open so both openings stay honest.
+ *  B8 No contradictions?   One river, one rope, one flood. The rural opening
+ *                          leaves the hour open; the wayside opening sets
+ *                          failing light, which the step-0 near-miss fragment
+ *                          ("The daylight did not") leans on either way.
  *  C9 Would a real person? Crossing now is motivated (initiation names the
  *                          cost of balking); the ferocity of the alternative
  *                          route makes the attempt human.
@@ -510,12 +512,12 @@ export const NUDGE_GOLDEN_EXEMPLAR: UnifiedActionTemplate = {
       'Three days of rain have filled the valley’s river to its banks. The crossing ' +
       'serves the village on the far slope: stake line under the water, guide-rope strung ' +
       'post to post. A miller’s boy waits on the near bank beside sacks going damp, ' +
-      'watching the brown water instead of them. The air is all mud and wet grain.',
+      'watching the river climb instead of them. The air is all mud and wet grain.',
     wayside:
       'Three days of rain have put the river over its banks. Out here the crossing belongs ' +
       'to no town: a guide-rope strung between leaning posts, tied off by travelers years ' +
       'gone. A cold camp sits above the waterline, ring of stones, ash beaten flat by the ' +
-      'rain. No roof stands within a day’s walk. The water runs loud and brown.',
+      'rain. No roof stands within a day’s walk, and the grey light is thinning.',
   },
   locationSubtypes: expandSettings(['rural', 'wayside']),
 

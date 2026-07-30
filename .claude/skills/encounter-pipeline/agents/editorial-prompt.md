@@ -47,6 +47,7 @@ You write TWO files:
    2. Prose has own voice — cadence, rhythm, sentence variety?
    3. Scene prose names elements that become player choices?
    4. Reader feels something from prose alone?
+   4b. No seam echoes? Read every paragraph boundary (each opening→spine, spine→band prose) for a repeated image, repeated sentence shape, or near-identical phrasing — the automated detectors cannot see this class, so it is checked by reading, sentence against sentence.
 
    **Choices & Intervention (the nudge hand)**
    5. Every card face is library-generic (2–4 word title, one-line flavor quote) with zero scene-bespoke prose?

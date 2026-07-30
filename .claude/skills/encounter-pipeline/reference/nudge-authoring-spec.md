@@ -95,6 +95,17 @@ numeric in data; the UI renders the approved pip vocabulary (five pips per color
 for penalties; see the wiki page). The pivot changes no part of the no-digits rule for
 `effectLine`.
 
+**Player-facing labels (Christian, chat approval 2026-07-30 — the mockup review):**
+
+- The step panel's likelihood line is labelled **"Outcome"** (e.g. *Outcome: uncertain*),
+  never "Forecast" — "forecast" survives only as engine vocabulary (`ForecastTier`,
+  `forecastDelta`). The five tier words themselves are unchanged.
+- A card's pip row shows the **magnitude of the nudge** — how hard the god is leaning —
+  and is labelled accordingly (**"Nudge"**), never "Odds": a card does not have odds,
+  the step does.
+- The difficulty word is **per step**, and the surface must make that legible ("this
+  step: a fair test"), not imply it describes the whole encounter.
+
 ---
 
 ## The scene-writer's checklist (14 questions + the envelope question)
@@ -216,6 +227,16 @@ in a label beside it — "The mason cut his mark beside the third pin", not
 reads them straight onto the rendered test panel. A step that authors no `factorLines`
 falls back to the contract's unsigned `beat.forecast_factors`, which can only render
 `neutral` — that fallback is for un-migrated legacy templates, not a place to author.
+
+**The panel's factor list is complete, not curated (Christian, chat 2026-07-30).**
+Every large factor that moves the step's outcome appears in the list — including the
+**mortal's own skill in the step's reach**, which is a derived line the panel adds, not
+an authored one. Derived lines (reach skill, trait variants, committed nudges) carry the
+canonical modifier-pip language for their magnitude; authored scene lines carry their
+polarity. The authored `factorLines` are the *scene's* share of that list — do not
+author a line for the mortal's skill, and do not leave a scene factor out because a
+derived line already covers the same ground. Rendering the derived lines is THR-890's
+scope; authoring assumes they will be there.
 
 ### 3. The hand — cut from the 21-type library
 
@@ -348,11 +369,29 @@ correctly in at least `GENERIC_POOL_UNRELATED_ENCOUNTERS_MIN` (3) *unrelated* en
 Post-pivot every card face must pass it — a face that only reads in dungeons is a
 dungeon card, whatever you name it.
 
-### 8. Evidence
+### 8. Evidence + the independent critique pass
 
 Run the register scorer and the detectors below on all new prose — openings included. An
 encounter is not finished until they are clean, and until the scene-writer's checklist is
 answered in writing in the file's doc comment.
+
+**Then a second agent reads it (mandatory — Christian, chat 2026-07-30).** Before any
+encounter prose is delivered — to the corpus, to a review, or to Christian in chat — a
+**fresh-context critique agent** (a dispatched subagent that has not seen the drafting
+session) reads the full prose top to bottom and reports against:
+
+1. the 14-question scene-writer's checklist, answered independently;
+2. the **echo check** — repeated images, repeated sentence shapes, or near-identical
+   phrasing across paragraph seams (the class the detectors cannot see: "The water runs
+   loud and brown." ending one paragraph while "The river runs brown and loud…" opens
+   the next shipped through every automated gate);
+3. read-aloud flow — any sentence the critic stumbles on gets flagged.
+
+The author fixes what the critique surfaces, then delivers. In the `encounter-pipeline`
+this is Pass 2's job (its editorial prompt now carries the echo check); in
+`template-encounter-rewrite` and in direct authoring sessions, dispatch the critique
+subagent explicitly. Self-review does not discharge this step — the drafting context is
+exactly what makes seam echoes invisible to their author.
 
 ---
 

@@ -304,6 +304,7 @@ Before submitting rewritten prose, check every field against these questions. If
 - **0i.** Is every card face **library-generic** (2–4 word title, mechanism-stating effect line, one-line flavor quote — zero scene-bespoke prose), with its 21-type library type named in a comment?
 - **0j.** Does the template declare a **setting envelope** (`settings` from the 8-class vocabulary) with one opening per declared class, and does the spine stay setting-neutral (`validateSettingEnvelope` returns clean)?
 - **0k.** Is every **zero-essence non-trait card** priced on another channel (`costs` / obligation), and does every grant survive `validateNudgeGrantRefs`?
+- **0l.** Has a **fresh-context critique subagent** read the full prose before delivery (spec step 8: independent 14-question pass, seam-echo check, read-aloud flow)? Self-review does not discharge this gate.
 
 **Detectors.** Zero vagueness-lexicon hits (`something / anything / nothing / thing / things / way / ways / somehow / whatever / somewhere` — watch the compounds: *all the way*, *either way*, *costs you nothing*). At most one annotation clause across the whole encounter. Verbatim spec in the shared authoring spec.
 
@@ -489,7 +490,7 @@ For each encounter file you write or rewrite:
 4. **For each template, write the scene first** — before touching the TypeScript, write the moment as prose. What is the agent doing? What goes wrong (or right)? What does the player read? Then fit the prose into the template fields.
 4b. **Author the hand** — walk steps 3–5 of the [shared authoring spec](../encounter-pipeline/reference/nudge-authoring-spec.md): 4–8 cards cut from the 21-type library with generic faces, the band fragments, the trait hook. Copy the shape from `src/data/__fixtures__/nudge-exemplar/swollen-ford-exemplar.ts` rather than re-deriving it.
 5. **Wire the dynamics** — add enrichment placeholders, conditional blocks, and ensure success/failure produce structurally different persistence
-6. **Run the editorial checklist** — the nudge gates (0a–0k) and all prose questions must pass
+6. **Run the editorial checklist** — the nudge gates (0a–0l) and all prose questions must pass
 7. **Preserve the TypeScript skeleton** — same IDs, same reaches, same difficulties, same reward pools unless clearly wrong. You're upgrading prose and adding wiring, not restructuring encounters.
 8. **Author `aftermathConfig`** — even simple encounters deserve 1-2 reaction choices. The aftermath is where the player-god touches the world.
 
