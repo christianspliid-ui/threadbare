@@ -1852,7 +1852,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.raise_monument',
-    name: 'The Raise Monument',
+    name: 'The Raising of the Stone',
     locationTypes: ['capital', 'city', 'battleground'],
     reachPrimary: 'stone',
     reachSecondary: 'star',
@@ -1860,6 +1860,66 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     threatRating: 'hard',
     intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.create,
+    /**
+     * THR-860 (WS5 Batch 1b-i) — migrated to the nudge model.
+     *
+     * Vignette record (checklist step 1; no schema field for these yet):
+     *   Motive hooks   — `choice` above all: nobody has to raise a stone, and
+     *                    the one who does is answering something. `mission`
+     *                    where a house pays for it and wants its banner cut in.
+     *                    `chance` only for one who happens to hold the ford
+     *                    field when the widows come asking.
+     *   Quintessence   — moderate through steps 0–1 and heavy at the last: a
+     *   stakes           roller splits and a man does not walk right again, and
+     *                    what gets said in step 2 is what the stone is called
+     *                    for as long as it stands. None of it can be taken back.
+     *   Scene tag      — `field.ford.stone` (audit tag: place:capital ·
+     *                    reach:stone · situation:encounter).
+     *
+     * This template carried the worst abstraction score in the cluster (11.95)
+     * and the reason was in one word: it was about a "monument to significance"
+     * and never about a rock. The rewrite gives it a quarry three miles off, a
+     * frozen road, eight oak rollers, a pit dug man-deep, a mason named Bern
+     * with a bad hip, and three hundred dead of whom some belong to the side
+     * that lost. Every card acts on one of those.
+     *
+     * Three steps at 0.10 / 0.18 / 0.26 against the 0.45
+     * `NUDGE_OFF_REACH_MAX_DIFFICULTY` ceiling. The converter ships this file at
+     * `background`, which is open draw, so the ceiling binds.
+     *
+     * Pre-migration detectors: abstraction 11.95/100w (fail), vagueness 0,
+     * not-X-but-Y 0, second person 0.
+     */
+    traitVariants: [
+      {
+        // `core_forgiveness` virtue pole — seeded Core definition, live ref for
+        // `validateTraitRefs()` (checklist step 5's hard constraint). The only
+        // trait that can put the losing side's dead on the same face.
+        traitId: 'trait.core.core_forgiveness.virtue',
+        forecastDelta: 0.04,
+        difficultyDelta: -0.01,
+        factorLine: 'They have set a wrong down once it was answered, and this valley watched them do it.',
+        addNudgeIds: ['stone.put_both_sides_on_it'],
+      },
+      {
+        // `core_humility` virtue pole — forty men on a rope line notice where
+        // the one who called them out chooses to stand.
+        traitId: 'trait.core.core_humility.virtue',
+        forecastDelta: 0.04,
+        difficultyDelta: -0.01,
+        factorLine: 'They take the end of the rope nobody can see them pulling.',
+        addNudgeIds: ['stone.take_the_low_end'],
+      },
+      {
+        // `core_integrity` virtue pole — a stone raised over orders one gave is
+        // a different stone if the giver says so out loud.
+        traitId: 'trait.core.core_integrity.virtue',
+        forecastDelta: 0.03,
+        difficultyDelta: -0.01,
+        factorLine: 'The shown self and the real one match, and the field will hear both.',
+        addNudgeIds: ['stone.own_the_orders'],
+      },
+    ],
     steps: [
       {
         id: 'raise_monument.design',
@@ -1867,42 +1927,321 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'star',
         difficulty: DIFFICULTY_BASE,
         duration: 3,
-        narrative: '{actor} must design a {adj} monument to {adj} significance. The design must be {adj} and lasting.',
+        purposeLine: 'Settle what it says',
+        factorLines: [
+          { text: 'Bern has cut stone for this valley since before the fighting, and will cut this cheap.', polarity: 'for' },
+          { text: 'The dead of both sides lie in the same ground, and only one side is paying.', polarity: 'against' },
+        ],
+        narrative: 'The stone will stand where the ford field ends, and it will stand a good deal longer than anyone now arguing over it. {actor} has a wax board, a mason with a bad hip, and the whole question of whose names go on the face.',
+        successAtCostAfterimage: 'The face got settled. Three hundred names would not fit, so it carries the count and no names, and eleven families have already asked why.',
+        criticalSuccessAfterimage: 'Bern took the wax board back a second time and cut the design shorter than {actor} had drawn it, and shorter was right.',
+        criticalFailureAfterimage: '{actor} drew a face with the winning banner across it. The stone is not up yet and the valley is already split over it.',
+        nudges: [
+          {
+            // Shared generic pool — the `focus` family.
+            id: 'stone.hold_the_line_of_it',
+            name: 'Hold the line',
+            essenceCost: 1,
+            forecastDelta: 0.06,
+            imageTag: 'generic.focus',
+            fiction: 'The one thing the stone is for stays in {their} head through the whole argument, and does not get traded away in pieces.',
+            effectLine: 'A small, reliable push toward a single design.',
+            bandProse: {
+              success: 'The design came out of the argument the same shape it went in.',
+              near_miss: 'The design held to the last hour and then took on a second banner nobody had asked for.',
+            },
+          },
+          {
+            id: 'stone.count_the_dead_twice',
+            name: 'Count the dead twice',
+            sphere: 'mind',
+            essenceCost: 2,
+            forecastDelta: 0.11,
+            imageTag: 'generic.mind',
+            fiction: 'The parish rolls, the muster lists and the burial pits agree on a number for the first time, and the number is larger than the songs have it.',
+            effectLine: 'Strong help. The count is honest before it is cut.',
+            bandProse: {
+              failure: 'The count came out honest, and the honest count was more than the face could hold.',
+              critical_failure: 'The count came out honest, and it put a hundred of the other side\'s dead in the same pit as the rest.',
+            },
+          },
+          {
+            id: 'stone.set_it_to_the_morning',
+            name: 'Set it to the morning',
+            sphere: 'light',
+            essenceCost: 2,
+            forecastDelta: 0.10,
+            imageTag: 'generic.light',
+            fiction: 'The face gets turned to catch first light off the ford, so the cut letters fill with shadow at the hour the fighting started.',
+            effectLine: 'Good help. The stone has an hour of its own.',
+            bandProse: {
+              success_at_cost: 'The face got its hour. It also turned the stone away from the road, and travellers will pass its blank back.',
+              failure: 'The face got its hour, and the valley fog took that hour eight mornings in ten.',
+            },
+          },
+          {
+            id: 'stone.ask_the_widows',
+            name: 'Ask the widows',
+            sphere: 'spirit',
+            essenceCost: 2,
+            forecastDelta: 0.09,
+            imageTag: 'generic.listening',
+            fiction: 'The women who buried men in that ground get asked what belongs on it, before a line goes onto the wax.',
+            effectLine: 'Good help. The design is answerable to somebody.',
+            bandProse: {
+              critical_success: 'The widows asked for one word and a count, and one word and a count is what Bern cut.',
+              near_miss: 'The widows were asked, and they wanted eleven different stones.',
+            },
+          },
+          {
+            id: 'stone.measure_the_face',
+            name: 'Measure the face',
+            sphere: 'order',
+            essenceCost: 2,
+            forecastDelta: 0.08,
+            imageTag: 'generic.matter',
+            fiction: 'Bern paces the quarry block and says plainly how many letters will fit at a hand\'s depth, and the design gets drawn to that.',
+            effectLine: 'A steady help. The block sets the limit.',
+            bandProse: {
+              failure: 'The letters were measured to fit, and the design that fit was too small to read from the road.',
+            },
+          },
+          {
+            // Trait-only card: cost 0, the price paid by being this person.
+            id: 'stone.put_both_sides_on_it',
+            name: 'Put both sides on it',
+            requiredTrait: 'trait.core.core_forgiveness.virtue',
+            essenceCost: 0,
+            forecastDelta: 0.08,
+            imageTag: 'generic.mercy',
+            fiction: 'The dead of the other side go onto the face with the rest, in the same hand and at the same depth of cut.',
+            effectLine: 'A steady help, and it costs no essence.',
+            bandProse: {
+              near_miss: 'Both sides went on. Half the valley came out to see it, and the other half will not walk that road.',
+            },
+          },
+        ],
         onSuccess: {
-          narrative: '{actor}\'s vision {verb}s {adj} and eternal. The design is {adj} and inspiring.',
+          narrative: 'Bern cuts a trial letter into the corner of the block and it reads clean from thirty paces. {actor} rolls the wax board up. The face is settled.',
           reputationDelta: 0.05,
         },
         onFailure: {
-          narrative: '{actor}\'s design is {adj}. The vision lacks {adj} and power.',
+          narrative: 'The wax board goes round the valley for a fortnight and comes back with four designs on it. Bern sets down her chisel and waits.',
           reputationDelta: -0.02,
         },
       },
       {
         id: 'raise_monument.construction',
-        name: 'The Construction',
+        name: 'The Raising',
         reach: 'stone',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
         duration: 4,
-        narrative: '{actor} must oversee the construction, gathering {adj} workers and {adj} materials.',
+        purposeLine: 'Get it standing',
+        factorLines: [
+          { text: 'The quarry road runs downhill the whole three miles, and the frost has hardened it.', polarity: 'for' },
+          { text: 'The block outweighs anything a sledge in this valley has carried, and Bern says so.', polarity: 'against' },
+        ],
+        narrative: 'Three miles of frozen road, one sledge, eight oak rollers and a pit dug man-deep at the field edge. Forty men have come out for a day\'s bread, and the block has to be up before the ground softens.',
+        successAtCostAfterimage: 'The stone stands. A roller split under it on the last hundred paces, and the man steering that end will not walk right again.',
+        criticalSuccessAfterimage: 'It went up in one pull with the light still good, and forty men stood in the mud afterwards looking at it and saying nothing.',
+        criticalFailureAfterimage: 'The pit took water overnight and nobody sounded it. The block went in, leaned, and is leaning still.',
+        nudges: [
+          {
+            // Shared generic pool — the `focus` family.
+            id: 'stone.keep_them_at_it',
+            name: 'Keep them at it',
+            essenceCost: 1,
+            forecastDelta: 0.06,
+            imageTag: 'generic.focus',
+            fiction: '{actor} works the length of the rope line all morning, and nobody gets to be the first man to set his end down.',
+            effectLine: 'A small, reliable push toward a steady pull.',
+            bandProse: {
+              success: 'Nobody set his end down, and the sledge came the whole three miles inside the day.',
+              near_miss: 'Nobody set his end down until the last rise, and the last rise took until dark.',
+            },
+          },
+          {
+            id: 'stone.sound_the_pit',
+            name: 'Sound the pit',
+            sphere: 'matter',
+            essenceCost: 2,
+            forecastDelta: 0.11,
+            imageTag: 'generic.matter',
+            fiction: 'A pole goes down the pit before the block comes near it: how deep, how wet, and what the floor of it is standing on.',
+            effectLine: 'Strong help. The hole is known before it is filled.',
+            bandProse: {
+              failure: 'The pole went down and found gravel, which was what everyone had already decided it would find.',
+              critical_failure: 'The pole found water at four feet, and the two days of fresh digging cost the road its frost.',
+            },
+          },
+          {
+            id: 'stone.double_the_rope',
+            name: 'Double the rope',
+            sphere: 'force',
+            essenceCost: 2,
+            forecastDelta: 0.10,
+            imageTag: 'generic.strength',
+            fiction: 'A second line goes on at the shoulder of the block, so the pull comes off two ropes and forty men where it came off one rope and twenty.',
+            effectLine: 'Good help. The load is shared down the line.',
+            bandProse: {
+              success_at_cost: 'Two ropes brought it. The second came off the ferry mooring, and the ferry is out of use until spring.',
+              failure: 'The second rope took up unevenly and slewed the sledge into the ditch at the second mile.',
+            },
+          },
+          {
+            id: 'stone.move_it_on_the_frost',
+            name: 'Move it on the frost',
+            sphere: 'time',
+            essenceCost: 2,
+            forecastDelta: 0.09,
+            imageTag: 'generic.time-slow',
+            fiction: 'The haul is set for the three days the road is hard, and every other job in the valley waits its turn.',
+            effectLine: 'Good help. This road only carries it frozen.',
+            bandProse: {
+              critical_success: 'They took it on the hardest morning of the year, and the sledge barely marked the road behind it.',
+              near_miss: 'The frost held for the haul and broke under the last quarter mile.',
+            },
+          },
+          {
+            id: 'stone.grease_the_rollers',
+            name: 'Grease the rollers',
+            sphere: 'energy',
+            essenceCost: 2,
+            forecastDelta: 0.08,
+            imageTag: 'generic.spark',
+            fiction: 'Mutton fat goes onto every roller and along the sledge bed, and the block starts moving before the men have set themselves.',
+            effectLine: 'A steady help. It comes off the mark easier.',
+            bandProse: {
+              failure: 'It came off the mark easily and kept coming on the downhill, and two men went into the ditch getting clear of it.',
+            },
+          },
+          {
+            // Trait-only card: cost 0, the price paid by being this person.
+            id: 'stone.take_the_low_end',
+            name: 'Take the low end',
+            requiredTrait: 'trait.core.core_humility.virtue',
+            essenceCost: 0,
+            forecastDelta: 0.08,
+            imageTag: 'generic.oath',
+            fiction: '{actor} takes a place on the downhill end of the rope, where the load is worst and nobody can see who is pulling.',
+            effectLine: 'A steady help, and it costs no essence.',
+            bandProse: {
+              near_miss: 'They pulled the low end all day. The men had it by noon, and nobody said it aloud until the stone was up.',
+            },
+          },
+        ],
         onSuccess: {
-          narrative: '{actor}\'s leadership {verb}s {adj} completion. The monument {verb}s {adj} toward the sky.',
+          narrative: 'The block comes upright out of the pit at the third heave and settles a hand\'s width into its own packing. Bern walks round it once and lays her palm flat on the face.',
           reputationDelta: 0.08,
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: '{actor}\'s oversight is {adj}. The construction {verb}s into {adj} and the workers scatter.',
+          narrative: 'The sledge is still a mile short at dark, and the thaw comes in overnight. The block sits in the road until summer, in everyone\'s way.',
           reputationDelta: -0.03,
         },
       },
       {
         id: 'raise_monument.dedication',
-        name: 'The Dedication',
+        name: 'The Naming',
         reach: 'star',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
         duration: 5,
-        narrative: '{actor} must dedicate the {adj} monument before a {adj} crowd, binding it to memory and myth.',
+        purposeLine: 'Give it its name',
+        factorLines: [
+          { text: 'The whole valley has come out, and the stone stands behind {them} while {they} speak.', polarity: 'for' },
+          { text: 'The other side\'s families are at the back of the crowd, and they came anyway.', polarity: 'against' },
+        ],
+        narrative: 'The stone is up and the valley is out in front of it, three hundred deep in a cold field. What {actor} says here is what the stone will be called for as long as it stands, and it gets said once, out of doors, into wind.',
+        successAtCostAfterimage: 'The name took, and the valley has it. {actor} had to leave the winning house out of the speaking to make it take, and that house keeps a long memory.',
+        criticalSuccessAfterimage: 'A boy at the back said the name to his mother before {actor} had stopped speaking, and it was the boy\'s wording the valley kept.',
+        criticalFailureAfterimage: '{actor} spoke long, and by the end the crowd was calling the stone after the man who paid for it.',
+        nudges: [
+          {
+            // Shared generic pool — the `focus` family.
+            id: 'stone.say_it_into_the_wind',
+            name: 'Say it into the wind',
+            essenceCost: 1,
+            forecastDelta: 0.06,
+            imageTag: 'generic.focus',
+            fiction: '{actor} turns to put the wind behind {them} and says the name once, loud enough for the back of the field.',
+            effectLine: 'A small, reliable push toward being heard.',
+            bandProse: {
+              success: 'The back of the field heard it, and the back of the field was where it had to land.',
+              near_miss: 'The front three ranks heard it clean and the rest of them took it secondhand.',
+            },
+          },
+          {
+            id: 'stone.read_the_count_aloud',
+            name: 'Read the count aloud',
+            sphere: 'spirit',
+            essenceCost: 2,
+            forecastDelta: 0.11,
+            imageTag: 'generic.listening',
+            fiction: 'The number cut into the face gets said out loud, slowly, with a breath after it, and the field holds that breath alongside {them}.',
+            effectLine: 'Strong help. The dead are present at their own stone.',
+            bandProse: {
+              failure: 'The count got read out, and the field heard a tally where it had come for a grave.',
+              critical_failure: 'The count got read out, and eleven families heard the number their own man had been folded into.',
+            },
+          },
+          {
+            id: 'stone.wait_for_the_sun',
+            name: 'Wait for the sun',
+            sphere: 'light',
+            essenceCost: 2,
+            forecastDelta: 0.10,
+            imageTag: 'generic.light',
+            fiction: 'The speaking waits until the light comes off the ford and fills the cut letters, and every face in the field turns the same way to watch it happen.',
+            effectLine: 'Good help. The stone speaks first.',
+            bandProse: {
+              success_at_cost: 'The light came, the letters filled, and the field went quiet. It also held three hundred people in a cold wind for an hour.',
+              failure: 'The light was late and the crowd was not, and {actor} began over the sound of people leaving.',
+            },
+          },
+          {
+            id: 'stone.give_it_a_day',
+            name: 'Give it a day',
+            sphere: 'order',
+            essenceCost: 2,
+            forecastDelta: 0.09,
+            imageTag: 'generic.order',
+            fiction: 'The naming comes with a date on it: this morning, every year, at this hour, kept by whoever holds the ford field.',
+            effectLine: 'Good help. A day carries a name where memory will not.',
+            bandProse: {
+              critical_success: 'The date went with the name, and the valley kept both without ever being asked again.',
+              near_miss: 'The date took and the hour drifted, and inside four years it was an afternoon affair with ale.',
+            },
+          },
+          {
+            id: 'stone.leave_the_winning_out',
+            name: 'Leave the winning out',
+            sphere: 'darkness',
+            essenceCost: 2,
+            forecastDelta: 0.08,
+            imageTag: 'generic.dark',
+            fiction: 'Which side held the field at dusk goes unsaid from first word to last, in front of both sides\' families.',
+            effectLine: 'A steady help. The field is not being won again.',
+            bandProse: {
+              failure: 'The winning went unsaid, and the house that had done it said the word themselves from the second rank.',
+            },
+          },
+          {
+            // Trait-only card: cost 0, the price paid by being this person.
+            id: 'stone.own_the_orders',
+            name: 'Own the orders',
+            requiredTrait: 'trait.core.core_integrity.virtue',
+            essenceCost: 0,
+            forecastDelta: 0.08,
+            imageTag: 'generic.oath',
+            fiction: '{actor} names the four men {they} sent across the ford {themselves}, and puts the sending on no one else.',
+            effectLine: 'A steady help, and it costs no essence.',
+            bandProse: {
+              near_miss: 'The orders got owned in front of the whole field. Two of the four families came and took {their} hand afterwards, and two did not.',
+            },
+          },
+        ],
         onSuccess: {
-          narrative: '{actor}\'s dedication {verb}s true. The monument becomes {adj} legend, standing against time itself.',
+          narrative: 'The name goes out over the field once and comes back off three hundred mouths on the road home. The stone has what it will be called.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
           rewardPool: {
@@ -1910,7 +2249,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: '{actor}\'s dedication falls {adj}. The monument {verb}s under its own weight, incomplete.',
+          narrative: 'The speaking ends, the crowd stands a moment, and then it goes to its suppers. The stone stands unnamed, and the valley will find a name for it without {actor}.',
           reputationDelta: -0.08,
           rewardPool: {
             categoryWeights: { possession: 1.0 },
@@ -2061,37 +2400,274 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     threatRating: 'hard',
     intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.hire,
+    /**
+     * THR-860 (WS5 Batch 1b-i) — migrated to the nudge model.
+     *
+     * Vignette record (checklist step 1; no schema field for these yet):
+     *   Motive hooks   — `choice` above all: nobody walks to a hiring hall by
+     *                    accident, and the price at the end is the encounter.
+     *                    `mission` where a village sent {them} for the pay.
+     *                    `chance` only for one already at the ford on other
+     *                    business when the rope goes up.
+     *   Quintessence   — high, and it lands on the name. Step 2 spends
+     *   stakes           something that cannot be earned back in a season: the
+     *                    name {they} came in with goes in the ford book with a
+     *                    line through it, and a village will read that line as
+     *                    a death.
+     *   Scene tag      — `hall.ford.hiring` (audit tag: place:capital ·
+     *                    reach:heart · situation:encounter).
+     *
+     * The old prose named the beats and never the room — "presentation",
+     * "demonstration", "position" — so there was nothing on the table for a card
+     * to touch. The rewrite gives the hire a ford toll house, a rope, a steward
+     * with a wax tablet, and four years of a wine book kept in a dead man's
+     * hand. Every card in the three hands acts on one of those.
+     *
+     * Three steps at 0.10 / 0.18 / 0.26 against the 0.45
+     * `NUDGE_OFF_REACH_MAX_DIFFICULTY` ceiling — the converter ships this file
+     * at `background`, which is open draw, so the ceiling binds.
+     *
+     * Pre-migration detectors: abstraction 5.26/100w (fail), vagueness 0,
+     * not-X-but-Y 0, second person 0.
+     */
+    traitVariants: [
+      {
+        // `core_warmth` virtue pole — seeded Core definition, live ref for
+        // `validateTraitRefs()` (checklist step 5's hard constraint). The
+        // gatekeeper is a man before he is a gate, and this trait notices.
+        traitId: 'trait.core.core_warmth.virtue',
+        forecastDelta: 0.04,
+        difficultyDelta: -0.01,
+        factorLine: 'They ask the man at the rope how long he has been standing, and wait for the answer.',
+        addNudgeIds: ['court.speak_to_the_steward'],
+      },
+      {
+        // `core_integrity` virtue pole — what a hiring hall is actually buying,
+        // and the pole both later trait cards hang off.
+        traitId: 'trait.core.core_integrity.virtue',
+        forecastDelta: 0.04,
+        difficultyDelta: -0.01,
+        factorLine: 'What {they} hand up has the crossings-out left in it.',
+        addNudgeIds: ['court.show_the_bad_column', 'court.name_the_price_aloud'],
+      },
+    ],
     steps: [
       {
         id: 'court_noble.presentation',
-        name: 'The Presentation',
+        name: 'The First Look',
         reach: 'heart',
         difficulty: DIFFICULTY_BASE,
         duration: 1,
-        narrative: '{actor} must present {themselves} to a {adj} noble and make a {adj} first impression.',
+        purposeLine: 'Get past the rope',
+        factorLines: [
+          { text: 'The hall is short two retainers and spring is nearly out.', polarity: 'for' },
+          { text: 'The steward has written down {their} boots, and the boots are the wrong ones.', polarity: 'against' },
+        ],
+        narrative: 'The ford hall takes retainers each spring and turns most of them away at the door. {actor} stands on the cold side of a rope while a thin steward writes down what {they} are wearing, before {they} have said a word.',
+        successAtCostAfterimage: 'The rope came up. {actor} had to give the steward a true name to get past it, and that name now sits on a wax tablet in a room {they} cannot enter.',
+        criticalSuccessAfterimage: 'The Lady looked up from the toll book on {their} second sentence, which the steward said afterwards he had not seen her do since Candlemas.',
+        criticalFailureAfterimage: '{actor} spoke over the steward to reach the Lady. The rope stayed down, and the steward kept the face.',
+        nudges: [
+          {
+            // Shared generic pool — the `focus` family.
+            id: 'court.steady_the_voice',
+            name: 'Steady the voice',
+            essenceCost: 1,
+            forecastDelta: 0.06,
+            imageTag: 'generic.focus',
+            fiction: 'The shake goes out of {their} first line and does not come back for the rest.',
+            effectLine: 'A small, reliable push toward a clean opening.',
+            bandProse: {
+              success: 'The opening came out level, and the steward stopped writing to listen.',
+              near_miss: 'The opening came out level, and the line after it went up at the end like a question.',
+            },
+          },
+          {
+            id: 'court.read_the_room_list',
+            name: 'Read the room list',
+            sphere: 'mind',
+            essenceCost: 2,
+            forecastDelta: 0.11,
+            imageTag: 'generic.mind',
+            fiction: 'The names on the steward\'s tablet come clear upside down: who is hired already, and for what.',
+            effectLine: 'Strong help. The gap in the hall has a shape.',
+            bandProse: {
+              failure: 'The list read plain, and every gap on it wanted a man with a horse.',
+              critical_failure: 'The list read plain, and {actor} asked for the one place the Lady had promised her cousin.',
+            },
+          },
+          {
+            id: 'court.stand_in_the_window',
+            name: 'Stand in the window',
+            sphere: 'light',
+            essenceCost: 2,
+            forecastDelta: 0.10,
+            imageTag: 'generic.light',
+            fiction: 'The morning off the ford comes through the tall glass and lands on {them} instead of on the queue.',
+            effectLine: 'Good help. {They} are the thing being looked at.',
+            bandProse: {
+              success_at_cost: 'The light landed. It also showed the mend at {their} shoulder to every man in the queue.',
+              failure: 'The light landed on {them} and showed a face the hall had turned away last spring.',
+            },
+          },
+          {
+            id: 'court.wait_the_full_turn',
+            name: 'Wait the full turn',
+            sphere: 'order',
+            essenceCost: 2,
+            forecastDelta: 0.09,
+            imageTag: 'generic.order',
+            fiction: '{actor} keeps {their} place through the whole morning and lets three better-dressed men go ahead.',
+            effectLine: 'Good help. The steward keeps a queue for a reason.',
+            bandProse: {
+              critical_success: 'They waited the full turn, and the steward walked them in himself out of plain respect for the queue.',
+              near_miss: 'They waited the full turn and reached the rope at the hour the Lady goes to table.',
+            },
+          },
+          {
+            id: 'court.carry_the_old_token',
+            name: 'Carry the old token',
+            sphere: 'spirit',
+            essenceCost: 2,
+            forecastDelta: 0.08,
+            imageTag: 'generic.listening',
+            fiction: 'The brass ford-token off {their} father\'s belt sits in {their} open hand where the Lady can see the stamp.',
+            effectLine: 'A steady help. The house knows its own brass.',
+            bandProse: {
+              failure: 'The Lady saw the stamp, and it named a debt her house had already paid.',
+            },
+          },
+          {
+            // Trait-only card: cost 0, the price paid by being this person.
+            id: 'court.speak_to_the_steward',
+            name: 'Speak to the steward',
+            requiredTrait: 'trait.core.core_warmth.virtue',
+            essenceCost: 0,
+            forecastDelta: 0.08,
+            imageTag: 'generic.warmth',
+            fiction: '{actor} asks the thin man at the rope how long he has been on his feet, and then waits through the answer.',
+            effectLine: 'A steady help, and it costs no essence.',
+            bandProse: {
+              near_miss: 'The steward answered, and let {them} through, and wrote the boots down regardless.',
+            },
+          },
+        ],
         onSuccess: {
-          narrative: '{actor}\'s presentation is {adj}. The noble\'s eyes glimmer with {adj} interest.',
+          narrative: 'The steward lifts the rope. {actor} crosses the cold flags into the warm end of the hall, and the Lady puts down the toll book to look at {them}.',
           reputationDelta: 0.05,
         },
         onFailure: {
-          narrative: '{actor}\'s presentation is {adj}. The noble\'s gaze turns to {adj} disinterest.',
+          narrative: 'The steward marks his tablet and calls the next name. {actor} spends the morning on the cold side of the rope, and at noon the rope comes down for the day.',
           reputationDelta: -0.02,
         },
       },
       {
         id: 'court_noble.demonstration',
-        name: 'The Demonstration',
+        name: 'The Proving',
         reach: 'gold',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
         duration: 2,
-        narrative: '{actor} must demonstrate {their} worth to the noble, {adj} and without doubt.',
+        purposeLine: 'Find the short pour',
+        factorLines: [
+          { text: 'The cellar tallies are still chalked on the cask heads, and casks do not lie.', polarity: 'for' },
+          { text: 'The book is in a Ferrish hand, and {actor} learned {their} letters in this one.', polarity: 'against' },
+        ],
+        narrative: 'The Lady sets {them} her wine book: four years of it, kept in a Ferrish hand by a steward who died in winter, over a cellar that has poured short since the spring before that. She wants the number by supper.',
+        successAtCostAfterimage: 'The number came out right. Getting it cost the cellarman, who had a wife in the kitchen and now has neither.',
+        criticalSuccessAfterimage: '{actor} found the short pour, the man who took it, and the two summers when he had not — which was what the Lady had actually been asking.',
+        criticalFailureAfterimage: '{actor} named a thief by supper and named the wrong one, and the Lady kept both the number and the name.',
+        nudges: [
+          {
+            // Shared generic pool — the `focus` family.
+            id: 'court.take_it_line_by_line',
+            name: 'Take it line by line',
+            essenceCost: 1,
+            forecastDelta: 0.06,
+            imageTag: 'generic.focus',
+            fiction: 'The book gets read a line at a time, from the first year forward, with a finger held on the page.',
+            effectLine: 'A small, reliable push toward an honest read.',
+            bandProse: {
+              success: 'Line by line, the year the casks stopped matching walked up out of the page.',
+              near_miss: 'Line by line to the third year, and then the light went and {they} read the rest fast.',
+            },
+          },
+          {
+            id: 'court.walk_the_years_back',
+            name: 'Walk the years back',
+            sphere: 'time',
+            essenceCost: 2,
+            forecastDelta: 0.11,
+            imageTag: 'generic.time-slow',
+            fiction: 'The four years lie end to end, and the summer the pouring changed stands up out of them.',
+            effectLine: 'Strong help. The change has a season on it.',
+            bandProse: {
+              failure: 'The years lay flat and every summer in them looked the same.',
+              critical_failure: 'The years lay flat, {actor} picked the wrong summer, and built the whole count on it.',
+            },
+          },
+          {
+            id: 'court.count_the_cask_ends',
+            name: 'Count the cask ends',
+            sphere: 'matter',
+            essenceCost: 2,
+            forecastDelta: 0.10,
+            imageTag: 'generic.matter',
+            fiction: 'Down in the cold, the chalk tallies on the cask heads add up under {their} hand, and they do not add up to the book.',
+            effectLine: 'Good help. The casks keep their own count.',
+            bandProse: {
+              success_at_cost: 'The casks told it plain. {actor} came back up with the number and the cellar damp in {their} chest for a fortnight.',
+              failure: 'The chalk was gone off half the heads, and the heads still marked agreed with the book.',
+            },
+          },
+          {
+            id: 'court.learn_the_dead_hand',
+            name: 'Learn the dead hand',
+            sphere: 'mind',
+            essenceCost: 2,
+            forecastDelta: 0.09,
+            imageTag: 'generic.recall',
+            fiction: 'The dead steward\'s letters stop being marks and start being words, one crooked g at a time.',
+            effectLine: 'Good help. The book can be read as written.',
+            bandProse: {
+              critical_success: 'The hand came clear, and with it a margin note the dead steward had left for whoever came after him.',
+              near_miss: 'The hand came clear on the numbers and stayed shut on the notes beside them.',
+            },
+          },
+          {
+            id: 'court.ask_below_stairs',
+            name: 'Ask below stairs',
+            sphere: 'darkness',
+            essenceCost: 2,
+            forecastDelta: 0.08,
+            imageTag: 'generic.dark',
+            fiction: 'The kitchen knows who carries the cellar keys at night, and the kitchen will say so to a man who is not yet anybody.',
+            effectLine: 'A steady help. Below stairs keeps the other book.',
+            bandProse: {
+              failure: 'The kitchen talked freely and named three men, and meant none of them.',
+            },
+          },
+          {
+            // Trait-only card: cost 0, the price paid by being this person.
+            id: 'court.show_the_bad_column',
+            name: 'Show the bad column',
+            requiredTrait: 'trait.core.core_integrity.virtue',
+            essenceCost: 0,
+            forecastDelta: 0.08,
+            imageTag: 'generic.oath',
+            fiction: 'The column where {their} own count went wrong stays in the sum {they} hand up, with the crossing-out left in.',
+            effectLine: 'A steady help, and it costs no essence.',
+            bandProse: {
+              near_miss: 'The crossing-out stayed in. The Lady read past it to the number and said nothing about either.',
+            },
+          },
+        ],
         onSuccess: {
-          narrative: '{actor}\'s demonstration {verb}s the noble\'s {adj} expectations. {They} nod with {adj} approval.',
+          narrative: '{actor} lays the number in front of the Lady before the soup, with the cask tallies under it. She reads both, and then reads {actor}.',
           reputationDelta: 0.08,
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: '{actor}\'s demonstration is {adj}. The noble finds {them} {adj} and unworthy.',
+          narrative: 'Supper comes and the number does not. The Lady closes the wine book herself and does not ask for it a second time.',
           reputationDelta: -0.03,
         },
       },
@@ -2101,14 +2677,107 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'heart',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
         duration: 1,
-        narrative: 'The noble offers {actor} a {adj} position, but at a {adj} price. Will {actor} accept {their} terms?',
+        purposeLine: 'Answer the offer well',
+        factorLines: [
+          { text: 'The place is real, the pay is quarterly, and the hall has seen {their} number.', polarity: 'for' },
+          { text: 'Five years and a new name is more than {actor} came to the ford to give.', polarity: 'against' },
+        ],
+        narrative: 'The Lady offers the place and names its price: five years, her livery, and the ford name in place of the one {actor} walked in with. The oath is said at the table, in front of the hall, and it is said once.',
+        successAtCostAfterimage: '{actor} took it. The old name went into the ford book with a line through it, and there is a village where that line will be read as a death.',
+        criticalSuccessAfterimage: '{actor} took the oath and kept one clause out of it aloud, and the Lady let the clause stand, which this hall has never seen her do.',
+        criticalFailureAfterimage: '{actor} tried to take the place and keep the name, and the Lady heard a man haggling in front of her own hall.',
+        nudges: [
+          {
+            // Shared generic pool — the `focus` family.
+            id: 'court.say_it_plain',
+            name: 'Say it plain',
+            essenceCost: 1,
+            forecastDelta: 0.06,
+            imageTag: 'generic.focus',
+            fiction: 'The answer comes out in one piece, at table volume, with no hedging on either end.',
+            effectLine: 'A small, reliable push toward a clean answer.',
+            bandProse: {
+              success: 'It came out plain and the hall took it as settled.',
+              near_miss: 'It came out plain, and then {they} explained it, and the explaining is what the hall kept.',
+            },
+          },
+          {
+            id: 'court.read_the_terms_back',
+            name: 'Read the terms back',
+            sphere: 'order',
+            essenceCost: 2,
+            forecastDelta: 0.11,
+            imageTag: 'generic.order',
+            fiction: 'Five years, the livery, the name, the quarterly pay: {actor} says each one back to the Lady before answering any of them.',
+            effectLine: 'Strong help. Both sides hear the same bargain.',
+            bandProse: {
+              failure: 'The terms went back clean, and the Lady added a sixth at the end of them.',
+              critical_failure: 'The terms went back so exactly that the hall heard a man bargaining with his own oath.',
+            },
+          },
+          {
+            id: 'court.weigh_the_name',
+            name: 'Weigh the name',
+            sphere: 'spirit',
+            essenceCost: 2,
+            forecastDelta: 0.10,
+            imageTag: 'generic.listening',
+            fiction: 'What the old name is worth comes clear: who still says it, and how far from this ford they live.',
+            effectLine: 'Good help. The price has a size.',
+            bandProse: {
+              success_at_cost: 'The name weighed heavy and {actor} paid it, and knew the weight while paying.',
+              failure: 'The name weighed out at nothing at all, which was a hard thing to learn at the Lady\'s table.',
+            },
+          },
+          {
+            id: 'court.eat_first',
+            name: 'Eat first',
+            sphere: 'life',
+            essenceCost: 2,
+            forecastDelta: 0.09,
+            imageTag: 'generic.warmth',
+            fiction: '{actor} takes the bread and the salt at the Lady\'s table before {they} take her terms, and the hall watches {them} chew.',
+            effectLine: 'Good help. A guest is answered differently from a hireling.',
+            bandProse: {
+              critical_success: 'They ate first, and by the time the terms came round the hall had stopped calling {them} the new one.',
+              near_miss: 'They ate first, and the bread bought {them} a slower hearing rather than a better one.',
+            },
+          },
+          {
+            id: 'court.leave_the_door_open',
+            name: 'Leave the door open',
+            sphere: 'chaos',
+            essenceCost: 2,
+            forecastDelta: 0.08,
+            imageTag: 'generic.chaos',
+            fiction: 'One clause goes in about the road: if the ford falls, the oath falls with it.',
+            effectLine: 'A steady help. Not every year is promised.',
+            bandProse: {
+              failure: 'The clause went in, and the Lady counted it as a man already packing.',
+            },
+          },
+          {
+            // Trait-only card: cost 0, the price paid by being this person.
+            id: 'court.name_the_price_aloud',
+            name: 'Name the price aloud',
+            requiredTrait: 'trait.core.core_integrity.virtue',
+            essenceCost: 0,
+            forecastDelta: 0.08,
+            imageTag: 'generic.oath',
+            fiction: '{actor} says what the five years will cost — the name, the road, the village — and then says yes to it in the same breath.',
+            effectLine: 'A steady help, and it costs no essence.',
+            bandProse: {
+              near_miss: 'The price got named aloud. Half the hall thought better of {them} for it, and the steward thought worse.',
+            },
+          },
+        ],
         onSuccess: {
-          narrative: '{actor} accepts the position with {adj} grace. The noble binds {them} to service, {adj} and honored.',
+          narrative: '{actor} takes the oath at the table with the bread still in front of {them}. The Lady writes the ford name into the book herself and hands over the livery pin.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: '{actor} cannot accept the {adj} price. The noble {verb}s in rage, and {their} patron is forever lost.',
+          narrative: '{actor} cannot pay the name. The Lady folds the offer back into her own hand, and the hall goes back to its supper.',
           reputationDelta: -0.08,
         },
       },
@@ -4240,7 +4909,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.council_mediation',
-    name: 'The Council Mediation',
+    name: 'The Council Sits',
     locationTypes: ['capital', 'city', 'castle'],
     reachPrimary: 'heart',
     reachSecondary: 'heart',
@@ -4248,6 +4917,56 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     threatRating: 'moderate',
     intrinsicTier: 'shaping',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.lead,
+    /**
+     * THR-860 (WS5 Batch 1b-i) — migrated to the nudge model.
+     *
+     * Vignette record (checklist step 1; no schema field for these yet):
+     *   Motive hooks   — `mission` above all: the hall keys are held, and a
+     *                    sitting is called, not stumbled into. `choice` for one
+     *                    who could let the weir wait another summer and does
+     *                    not. `chance` only where the two masters are already
+     *                    in the same street.
+     *   Quintessence   — moderate. Nobody bleeds; a guild goes home holding
+     *   stakes           less water than it held at dawn, and remembers who
+     *                    took it. The ledger entry is a grudge with a date.
+     *   Scene tag      — `hall.council.weir` (audit tag: place:capital ·
+     *                    reach:heart · situation:encounter).
+     *
+     * The abstraction failure this rewrite answers was structural, not stylistic:
+     * the old prose had no object in it. "Grievances", "resolution", "judgment"
+     * gave a nudge nothing to act on, because a card can only bend a step that
+     * has a thing in it to bend. So the dispute got a weir, two tally-sticks, a
+     * green line on a wet stone, and a boy who drowned under the miller bridge
+     * two summers back — and the hands hang off those.
+     *
+     * Three steps at 0.10 / 0.18 / 0.26 against the 0.45
+     * `NUDGE_OFF_REACH_MAX_DIFFICULTY` ceiling. The converter ships every entry
+     * in this file at `background`, which is open draw, so the ceiling binds and
+     * the ladder stays well under it.
+     *
+     * Pre-migration detectors: abstraction 7.35/100w (fail), vagueness 0,
+     * not-X-but-Y 0, second person 0.
+     */
+    traitVariants: [
+      {
+        // `core_humility` virtue pole — seeded Core definition, live ref for
+        // `validateTraitRefs()` (checklist step 5's hard constraint).
+        traitId: 'trait.core.core_humility.virtue',
+        forecastDelta: 0.04,
+        difficultyDelta: -0.01,
+        factorLine: 'Nobody in this hall has seen {them} take the high seat yet.',
+        addNudgeIds: ['council.take_the_low_seat'],
+      },
+      {
+        // `core_integrity` virtue pole — the trait that makes a mediator's count
+        // worth sitting for, and the one both trait cards below hang off.
+        traitId: 'trait.core.core_integrity.virtue',
+        forecastDelta: 0.04,
+        difficultyDelta: -0.01,
+        factorLine: 'Both guilds have heard {them} read out the half of a count that cost {them}.',
+        addNudgeIds: ['council.say_the_hard_half', 'council.own_the_leaning'],
+      },
+    ],
     steps: [
       {
         id: 'council.assembly',
@@ -4255,13 +4974,106 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'dominance',
         difficulty: DIFFICULTY_BASE,
         duration: 2,
-        narrative: '{actor} must assemble {adj} council members to address {adj} disputes.',
+        purposeLine: 'Get them all seated',
+        factorLines: [
+          { text: '{actor} holds the hall keys, and both guilds answer the hall bell.', polarity: 'for' },
+          { text: 'No tanner has crossed the miller bridge since the boy drowned under it.', polarity: 'against' },
+        ],
+        narrative: 'The tanners will not sit while the millers stand. {actor} has the hall, the bell, and one morning before the barges move: benches to set, and two guilds to walk in under the same roof.',
+        successAtCostAfterimage: 'They both sat. {actor} gave the millers the window side to get it, and the tanners counted that before the first word.',
+        criticalSuccessAfterimage: 'The two masters came in together off the same stair, which nobody in the hall had seen in two summers.',
+        criticalFailureAfterimage: '{actor} rang the bell twice. The second ring emptied the room it should have filled.',
+        nudges: [
+          {
+            // Shared generic pool — the `focus` family.
+            id: 'council.hold_the_room',
+            name: 'Hold the room',
+            essenceCost: 1,
+            forecastDelta: 0.06,
+            imageTag: 'generic.focus',
+            fiction: 'The shake goes out of {their} voice and stays out for the length of the summons.',
+            effectLine: 'A small, reliable push toward a steady summons.',
+            bandProse: {
+              success: 'The voice held, and the benches filled behind it.',
+              near_miss: 'The voice held to the last name on the list and cracked on that one.',
+            },
+          },
+          {
+            id: 'council.set_the_benches',
+            name: 'Set the benches',
+            sphere: 'order',
+            essenceCost: 2,
+            forecastDelta: 0.11,
+            imageTag: 'generic.order',
+            fiction: 'The benches come round into a ring, so each guild sits looking at faces and not at backs.',
+            effectLine: 'Strong help. The room has a shape to sit in.',
+            bandProse: {
+              success_at_cost: 'The ring worked. {actor} gave up the high seat to make it and sat on a bench end like the rest.',
+              failure: 'The benches came round and the men stayed standing in the doorway.',
+            },
+          },
+          {
+            id: 'council.name_the_water',
+            name: 'Name the water',
+            sphere: 'mind',
+            essenceCost: 2,
+            forecastDelta: 0.10,
+            imageTag: 'generic.mind',
+            fiction: 'The weir, the millrace and the drowned boy come up in order, each with a date on it.',
+            effectLine: 'Good help. Everyone hears the same list.',
+            bandProse: {
+              failure: 'The list was clear and nobody in the doorway wanted it read aloud.',
+              critical_failure: 'The drowned boy went on the list third, and the tanners left at the word.',
+            },
+          },
+          {
+            id: 'council.pick_the_hour',
+            name: 'Pick the hour',
+            sphere: 'time',
+            essenceCost: 2,
+            forecastDelta: 0.09,
+            imageTag: 'generic.time-slow',
+            fiction: 'The barges move at noon and the tide will not wait, so the sitting lands in the hour when neither guild has work.',
+            effectLine: 'Good help. The hour costs them nothing to keep.',
+            bandProse: {
+              critical_success: 'The hour fell where both guilds were idle, and they came early out of boredom.',
+              near_miss: 'The hour was right for the millers and one bell early for the tanners.',
+            },
+          },
+          {
+            id: 'council.send_the_old_man',
+            name: 'Send the old man',
+            sphere: 'spirit',
+            essenceCost: 2,
+            forecastDelta: 0.08,
+            imageTag: 'generic.listening',
+            fiction: 'The summons goes by the hand of a man both guilds buried a father beside.',
+            effectLine: 'A steady help. This messenger is hard to turn away.',
+            bandProse: {
+              failure: 'The old man came back with both answers and neither of them was yes.',
+            },
+          },
+          {
+            // Trait-only card: cost 0, the price paid by being this person.
+            id: 'council.take_the_low_seat',
+            name: 'Take the low seat',
+            requiredTrait: 'trait.core.core_humility.virtue',
+            essenceCost: 0,
+            forecastDelta: 0.08,
+            imageTag: 'generic.oath',
+            fiction: 'The high chair stays empty. {actor} sits at the bench end nearest the door, where a latecomer need not walk past {them}.',
+            effectLine: 'A steady help, and it costs no essence.',
+            bandProse: {
+              near_miss: 'The low seat brought the tanners in and left {actor} with a draught and no table.',
+            },
+          },
+        ],
         onSuccess: {
-          narrative: '{actor}\'s {adj} presence {verb}s the council. {They} gather {adj} and attentive.',
+          narrative: '{actor} sets the benches in a ring so no man has a back to look at, and rings the bell once. Both guilds come in, and both sit.',
           reputationDelta: 0.05,
         },
         onFailure: {
-          narrative: '{actor}\'s {adj} call {verb}s {adj}. The council {verb}s {adj} and disinterested.',
+          narrative: 'The millers take the long bench and the tanners will not have it. By noon the hall holds one guild, a cold hearth, and {actor}.',
           reputationDelta: -0.02,
         },
       },
@@ -4271,31 +5083,217 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'heart',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
         duration: 4,
-        narrative: '{actor} must hear {adj} grievances from {adj} factions seeking {adj} resolution.',
+        purposeLine: 'Hear both sides out',
+        factorLines: [
+          { text: 'Both guilds keep tally-sticks, and sticks can be laid side by side.', polarity: 'for' },
+          { text: 'The miller master has told his account so often he has stopped hearing it.', polarity: 'against' },
+        ],
+        narrative: 'The tanners speak first because {actor} said they would. The miller master keeps his hands flat on the table and his eyes on his tally-stick, and the hall gets three hours of two men counting the same river twice.',
+        successAtCostAfterimage: 'Both tallies met. It took until the candles went down, and {actor} missed the harbour muster to hold the room.',
+        criticalSuccessAfterimage: 'The miller master read the tanner tally aloud himself, and corrected his own stick doing it.',
+        criticalFailureAfterimage: '{actor} let the drowning come up unasked. After that no number said in the hall meant water.',
+        nudges: [
+          {
+            // Shared generic pool — the `focus` family.
+            id: 'council.keep_the_floor',
+            name: 'Keep the floor',
+            essenceCost: 1,
+            forecastDelta: 0.06,
+            imageTag: 'generic.focus',
+            fiction: 'Whoever holds the speaking stick holds the room, and {actor} does not let the stick jump the table.',
+            effectLine: 'A small, reliable push toward an orderly hearing.',
+            bandProse: {
+              success: 'The stick went round in turn and every man got his count said.',
+              near_miss: 'The stick went round twice, and then the tanners took it out of turn.',
+            },
+          },
+          {
+            id: 'council.read_the_water_mark',
+            name: 'Read the water mark',
+            sphere: 'light',
+            essenceCost: 2,
+            forecastDelta: 0.11,
+            imageTag: 'generic.light',
+            fiction: 'The green line on the weir stone stands out plain from the doorway: where the water sat before the millers raised the boards, and where it sits now.',
+            effectLine: 'Strong help. The stone says what the sticks argue about.',
+            bandProse: {
+              failure: 'The mark showed clear and the miller master called it moss.',
+              critical_failure: 'The mark showed clear, and {actor} named it in a voice that made it a charge instead of a fact.',
+            },
+          },
+          {
+            id: 'council.count_the_hides',
+            name: 'Count the hides',
+            sphere: 'life',
+            essenceCost: 2,
+            forecastDelta: 0.10,
+            imageTag: 'generic.warmth',
+            fiction: 'How many hides went bad in the slack water comes clear, hide by hide, with the smell still on the count.',
+            effectLine: 'Good help. The loss has a number and a stink.',
+            bandProse: {
+              success_at_cost: 'The count landed. The tanners had to open their own books to land it, and the millers read those books too.',
+              failure: 'The hides counted out to less than the tanners had sworn, and their own men went quiet.',
+            },
+          },
+          {
+            id: 'council.walk_them_to_the_weir',
+            name: 'Walk them to the weir',
+            sphere: 'matter',
+            essenceCost: 2,
+            forecastDelta: 0.09,
+            imageTag: 'generic.matter',
+            fiction: 'The hall empties down to the water, and both masters put a hand on the same wet timber.',
+            effectLine: 'Good help. The timber is hard to argue with.',
+            bandProse: {
+              critical_success: 'Both masters stood in the same mud and agreed on where the water had been.',
+              near_miss: 'They went down and looked, and came back up arguing about one board from opposite banks.',
+            },
+          },
+          {
+            id: 'council.name_what_is_rotting',
+            name: 'Name what is rotting',
+            sphere: 'entropy',
+            essenceCost: 2,
+            forecastDelta: 0.08,
+            imageTag: 'generic.decay',
+            fiction: 'The weir timbers have four winters left in them at most, and both guilds can see the soft wood from where they stand.',
+            effectLine: 'A steady help. What they fight over is going anyway.',
+            bandProse: {
+              failure: 'They saw the soft wood, agreed it was going, and went back to arguing about this summer.',
+            },
+          },
+          {
+            // Trait-only card: cost 0, the price paid by being this person.
+            id: 'council.say_the_hard_half',
+            name: 'Say the hard half',
+            requiredTrait: 'trait.core.core_integrity.virtue',
+            essenceCost: 0,
+            forecastDelta: 0.08,
+            imageTag: 'generic.oath',
+            fiction: 'The half of the count that cuts against the side {actor} walked in favouring gets said first, and gets said plainly.',
+            effectLine: 'A steady help, and it costs no essence.',
+            bandProse: {
+              near_miss: 'The hard half got said. It cost {actor} the tanners for an hour and bought the millers for the rest of it.',
+            },
+          },
+        ],
         onSuccess: {
-          narrative: '{actor}\'s {adj} listening {verb}s the council {adj}. {They} find {adj} common ground.',
+          narrative: '{actor} lets the counting run until both sticks say the same number, and then says so out loud. The hall hears one river instead of two.',
           reputationDelta: 0.08,
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: '{actor}\'s {adj} hearing {verb}s {adj}. The factions {verb} {adj} and {adj} divided.',
+          narrative: 'The tallies never meet. {actor} calls a halt at dusk with the millers still holding a stick nobody else will read.',
           reputationDelta: -0.03,
         },
       },
       {
         id: 'council.judgment',
-        name: 'The Judgment',
+        name: 'The Ruling',
         reach: 'dominance',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
         duration: 5,
-        narrative: '{actor} must render {adj} judgment that {verb}s {adj} and satisfies {adj} all.',
+        purposeLine: 'Rule so it holds',
+        factorLines: [
+          { text: 'The sticks now agree on the water, and both masters watched them agree.', polarity: 'for' },
+          { text: 'Whatever {actor} says, the millers must say it again to men who were not here.', polarity: 'against' },
+        ],
+        narrative: 'A ruling has to be carried home and said again in two guild halls by men who did not like it. {actor} has the water, the sticks and the drowned boy, and one plain line to lay over all three.',
+        successAtCostAfterimage: 'The ruling held. It cost the millers a hand of water they had held two summers, and they will remember who took it.',
+        criticalSuccessAfterimage: 'The line was short enough that bargemen were saying it on the quay before either master got home.',
+        criticalFailureAfterimage: '{actor} split the water down the middle to please both, and handed each guild a fresh reason to come back in spring.',
+        nudges: [
+          {
+            // Shared generic pool — the `focus` family.
+            id: 'council.stand_and_say_it',
+            name: 'Stand and say it',
+            essenceCost: 1,
+            forecastDelta: 0.06,
+            imageTag: 'generic.focus',
+            fiction: '{actor} gets up, waits until the room is done moving, and says the ruling once.',
+            effectLine: 'A small, reliable push toward a clean delivery.',
+            bandProse: {
+              success: 'It came out once, whole, and nobody asked to hear it twice.',
+              near_miss: 'It came out whole, and then {actor} kept talking, and the second half undid the first.',
+            },
+          },
+          {
+            id: 'council.give_it_a_season',
+            name: 'Give it a season',
+            sphere: 'order',
+            essenceCost: 2,
+            forecastDelta: 0.11,
+            imageTag: 'generic.order',
+            fiction: 'The ruling gets a start and an end — first frost to first cut — so it is a rule and not a mood.',
+            effectLine: 'Strong help. A rule with edges can be kept.',
+            bandProse: {
+              failure: 'The dates were clean and neither guild believed they would outlast the winter.',
+              critical_failure: 'The dates were so clean that both guilds began counting the days until they lapsed.',
+            },
+          },
+          {
+            id: 'council.set_the_forfeit',
+            name: 'Set the forfeit',
+            sphere: 'force',
+            essenceCost: 2,
+            forecastDelta: 0.10,
+            imageTag: 'generic.force',
+            fiction: 'What the hall will take off whichever guild breaks the rule gets named in the same breath as the rule.',
+            effectLine: 'Good help. The rule has teeth in the room.',
+            bandProse: {
+              success_at_cost: 'The forfeit landed, and {actor} is now the one who has to go and collect it.',
+              failure: 'The forfeit was named, and both masters heard which of them it was aimed at.',
+            },
+          },
+          {
+            id: 'council.leave_the_boy_out',
+            name: 'Leave the boy out',
+            sphere: 'darkness',
+            essenceCost: 2,
+            forecastDelta: 0.09,
+            imageTag: 'generic.dark',
+            fiction: 'The drowning stays out of the ruling and out of {their} mouth, and every man in the hall knows it was left out on purpose.',
+            effectLine: 'Good help. The grief is not spent on a weir.',
+            bandProse: {
+              critical_success: 'The boy went unnamed, and the tanner master gave {actor} a look on the way out that was close to thanks.',
+              near_miss: 'The boy went unnamed and sat in the room the whole time regardless.',
+            },
+          },
+          {
+            id: 'council.rule_before_dusk',
+            name: 'Rule before dusk',
+            sphere: 'energy',
+            essenceCost: 2,
+            forecastDelta: 0.08,
+            imageTag: 'generic.spark',
+            fiction: 'The ruling lands while the hall is still hot from the hearing, before either guild has a night to sharpen its answer.',
+            effectLine: 'A steady help. Nobody has slept on it yet.',
+            bandProse: {
+              failure: 'It came down fast and hot, and both guilds went home to sharpen it overnight regardless.',
+            },
+          },
+          {
+            // Trait-only card: cost 0, the price paid by being this person.
+            id: 'council.own_the_leaning',
+            name: 'Own the leaning',
+            requiredTrait: 'trait.core.core_integrity.virtue',
+            essenceCost: 0,
+            forecastDelta: 0.08,
+            imageTag: 'generic.oath',
+            fiction: '{actor} says out loud which guild {they} walked in expecting to be right, and then rules the other way where the water says so.',
+            effectLine: 'A steady help, and it costs no essence.',
+            bandProse: {
+              near_miss: 'The leaning got owned. Half the hall trusted the ruling more for it and half trusted {actor} less.',
+            },
+          },
+        ],
         onSuccess: {
-          narrative: '{actor}\'s {adj} judgment {verb}s {adj}. All {verb} in {adj} acceptance.',
+          narrative: '{actor} rules the weir boards down a hand\'s width from first frost to first cut, and says why in words a bargeman could repeat. Both masters carry it home whole.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: '{actor}\'s {adj} judgment {verb}s {adj}. The council {verb}s {adj} and {adj} outraged.',
+          narrative: '{actor} rules, and by the time the words reach the guild halls each side has heard a different ruling. The weir stays where it was.',
           reputationDelta: -0.08,
         },
       },
@@ -4366,7 +5364,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.faction_unification',
-    name: 'The Faction Unification',
+    name: 'Two Banners, One Field',
     locationTypes: ['capital', 'castle', 'ruins'],
     reachPrimary: 'heart',
     reachSecondary: 'gold',
@@ -4374,54 +5372,393 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     threatRating: 'deadly',
     intrinsicTier: 'story_beat',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.lead,
+    /**
+     * THR-860 (WS5 Batch 1b-i) — migrated to the nudge model.
+     *
+     * Vignette record (checklist step 1; no schema field for these yet):
+     *   Motive hooks   — `mission` above all: someone with standing calls a
+     *                    muster, and the fourth day is already counted.
+     *                    `choice` for one who could let two houses die
+     *                    separately and does not. `chance` where {they} are
+     *                    simply the only one both halls will still receive.
+     *   Quintessence   — the highest in this batch, and it is paid in people.
+     *   stakes           Step 2's `success_at_cost` buries eleven Fen men in
+     *                    the place the horse should have stood; the failure
+     *                    hands Coldwater the bridge, the mill and the bank in
+     *                    one afternoon.
+     *   Scene tag      — `field.harrow.bridge` (audit tag: place:capital ·
+     *                    reach:heart · situation:encounter).
+     *
+     * "Coalition", "negotiation", "unification" named three shapes of nothing.
+     * The rewrite gives the alliance two named houses with a real grudge (a
+     * horse debt, a boy held as surety, a granary burnt while the other house
+     * watched the smoke), one bridge worth a toll, and a seam in the line where
+     * both banners meet — which is exactly where the enemy pushes.
+     *
+     * Three steps at 0.10 / 0.18 / 0.26 against the 0.45
+     * `NUDGE_OFF_REACH_MAX_DIFFICULTY` ceiling. The converter ships this file at
+     * `background`, which is open draw, so the ceiling binds.
+     *
+     * Pre-migration detectors: abstraction 5.56/100w (fail), vagueness 0,
+     * not-X-but-Y 0, second person 0.
+     */
+    traitVariants: [
+      {
+        // `core_forgiveness` virtue pole — seeded Core definition, live ref for
+        // `validateTraitRefs()` (checklist step 5's hard constraint). The one
+        // trait that lets a man stand in a gap two houses are shouting across.
+        traitId: 'trait.core.core_forgiveness.virtue',
+        forecastDelta: 0.04,
+        difficultyDelta: -0.01,
+        factorLine: 'They have set down a wrong one of these houses did them, where both houses saw it go down.',
+        addNudgeIds: ['banner.stand_between_them'],
+      },
+      {
+        // `core_humility` virtue pole — a broker who prices his own share last
+        // is a broker both halls will let hold the chalk.
+        traitId: 'trait.core.core_humility.virtue',
+        forecastDelta: 0.04,
+        difficultyDelta: -0.01,
+        factorLine: 'They take their own share off the board before they price anyone else\'s.',
+        addNudgeIds: ['banner.take_the_smaller_share'],
+      },
+      {
+        // `core_hope` virtue pole — the seam holds on the belief that it can,
+        // and somebody has to stand in it holding that.
+        traitId: 'trait.core.core_hope.virtue',
+        forecastDelta: 0.03,
+        difficultyDelta: -0.01,
+        factorLine: 'They look for the door in the wall, and then go and stand in it.',
+        addNudgeIds: ['banner.stand_in_the_front_rank'],
+      },
+    ],
     steps: [
       {
         id: 'faction.coalition',
-        name: 'The Coalition',
+        name: 'The Muster',
         reach: 'dominance',
         difficulty: DIFFICULTY_BASE,
         duration: 2,
-        narrative: '{actor} must bring {adj} factions together against {adj} common threat.',
+        purposeLine: 'Get both banners out',
+        factorLines: [
+          { text: 'Coldwater burned the Fen granary in autumn, and Ashmoor watched the smoke.', polarity: 'for' },
+          { text: 'Ashmoor still holds a Fen boy as surety against a horse debt.', polarity: 'against' },
+        ],
+        narrative: 'Coldwater is through the pass and both houses know it. Ashmoor will ride and the Fen will walk, and neither will do it with the other behind them. {actor} has four days and one bridge to lose.',
+        successAtCostAfterimage: 'Both banners came out. {actor} gave the Fen the van to get them, and the Ashmoor riders have been counting that slight since the road.',
+        criticalSuccessAfterimage: 'The Fen sergeant put his levy under the Ashmoor horn without being asked, and Ashmoor did not make him say it twice.',
+        criticalFailureAfterimage: '{actor} called the muster at the oath-stone. Both houses came, saw the broken stone, and remembered exactly why it was broken.',
+        nudges: [
+          {
+            // Shared generic pool — the `focus` family.
+            id: 'banner.hold_the_summons',
+            name: 'Hold the summons',
+            essenceCost: 1,
+            forecastDelta: 0.06,
+            imageTag: 'generic.focus',
+            fiction: 'The call goes out to both halls in the same words, by the same road, on the same morning.',
+            effectLine: 'A small, reliable push toward an even call.',
+            bandProse: {
+              success: 'The call went out even, and neither hall could claim it was sent to them late.',
+              near_miss: 'The call went out even, and the Fen rider was two hours slower over worse road.',
+            },
+          },
+          {
+            id: 'banner.show_the_burnt_granary',
+            name: 'Show the burnt granary',
+            sphere: 'force',
+            essenceCost: 2,
+            forecastDelta: 0.11,
+            imageTag: 'generic.force',
+            fiction: 'The muster is called on the black ground where the Fen grain went up, with the smell of it still in the soil.',
+            effectLine: 'Strong help. The reason stands in the field.',
+            bandProse: {
+              failure: 'They stood on the black ground, and Ashmoor said the Fen watchmen had slept through it.',
+              critical_failure: 'The black ground reminded the Fen who had not come when the smoke went up, and they said the name aloud.',
+            },
+          },
+          {
+            id: 'banner.count_the_spears',
+            name: 'Count the spears',
+            sphere: 'order',
+            essenceCost: 2,
+            forecastDelta: 0.10,
+            imageTag: 'generic.order',
+            fiction: 'Both tallies get read to both halls: what Ashmoor can horse, what the Fen can walk, what Coldwater brought down the pass.',
+            effectLine: 'Good help. The odds get said out loud.',
+            bandProse: {
+              success_at_cost: 'The numbers landed and both houses rode. The Fen now know exactly how few of them there are.',
+              failure: 'The numbers landed, and each house counted only the column that was not its own.',
+            },
+          },
+          {
+            id: 'banner.name_the_fourth_day',
+            name: 'Name the fourth day',
+            sphere: 'time',
+            essenceCost: 2,
+            forecastDelta: 0.09,
+            imageTag: 'generic.time-slow',
+            fiction: 'Coldwater reaches the bridge on the fourth day at the latest, and {actor} puts that day into both men\'s mouths.',
+            effectLine: 'Good help. There is a date to be late for.',
+            bandProse: {
+              critical_success: 'Both houses set out on the second day, because a date will move men an argument cannot.',
+              near_miss: 'The date moved them. It moved the Fen a day late, and the bridge held on borrowed hours.',
+            },
+          },
+          {
+            id: 'banner.send_back_the_boy',
+            name: 'Send back the boy',
+            sphere: 'spirit',
+            essenceCost: 2,
+            forecastDelta: 0.08,
+            imageTag: 'generic.mercy',
+            fiction: 'The Fen boy Ashmoor holds against the horse debt rides home ahead of the summons, with the debt left standing.',
+            effectLine: 'A steady help. The surety goes home first.',
+            bandProse: {
+              failure: 'The boy went home, and the Fen took it as proof the debt had been a theft all along.',
+            },
+          },
+          {
+            // Trait-only card: cost 0, the price paid by being this person.
+            id: 'banner.stand_between_them',
+            name: 'Stand between them',
+            requiredTrait: 'trait.core.core_forgiveness.virtue',
+            essenceCost: 0,
+            forecastDelta: 0.08,
+            imageTag: 'generic.knit',
+            fiction: '{actor} walks into the gap between the two lines and stays there while both sides say what they have been holding.',
+            effectLine: 'A steady help, and it costs no essence.',
+            bandProse: {
+              near_miss: 'They stood in the gap and took both sides of it, and the shouting stopped well short of the truth.',
+            },
+          },
+        ],
         onSuccess: {
-          narrative: '{actor}\'s {adj} presence {verb}s the factions {adj}. {They} see {adj} unity is {adj}.',
+          narrative: 'Ashmoor horses at dawn and the Fen levy comes up the causeway behind them. Two banners cross the same ground, and neither rides at the other\'s back.',
           reputationDelta: 0.05,
         },
         onFailure: {
-          narrative: '{actor}\'s {adj} call {verb}s {adj}. The factions {verb} {adj} and divided.',
+          narrative: 'Ashmoor rides for its own ground and the Fen sit down at the causeway head. Coldwater will meet them one house at a time.',
           reputationDelta: -0.02,
         },
       },
       {
         id: 'faction.negotiation',
-        name: 'The Negotiation',
+        name: 'The Terms',
         reach: 'gold',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
         duration: 4,
-        narrative: '{actor} must negotiate {adj} terms that satisfy {adj} all factions.',
+        purposeLine: 'Split the field fairly',
+        factorLines: [
+          { text: 'Both houses want the bridge, and only one of them can hold the far bank.', polarity: 'for' },
+          { text: 'Whatever is agreed today is worth what the pass is worth in autumn.', polarity: 'against' },
+        ],
+        narrative: 'The bridge can be held, and afterwards someone owns the toll on it. Ashmoor wants the far bank and the Fen want the mill above the ford, and the two of them sit on a wagon bed with {actor} and a chalked board between them.',
+        successAtCostAfterimage: 'The terms took. {actor} put the mill in Fen hands to close them, and Ashmoor will spend a year remembering who signed that away.',
+        criticalSuccessAfterimage: 'The Ashmoor captain offered the mill before he was asked for it, and took the winter road instead, which cost the Fen nothing at all.',
+        criticalFailureAfterimage: '{actor} put the toll on the board first. After that the bridge was worth more to both houses than Coldwater was dangerous.',
+        nudges: [
+          {
+            // Shared generic pool — the `focus` family.
+            id: 'banner.keep_it_on_the_board',
+            name: 'Keep it on the board',
+            essenceCost: 1,
+            forecastDelta: 0.06,
+            imageTag: 'generic.focus',
+            fiction: 'Every claim goes up in chalk where both men can see it, and nothing gets settled off the board.',
+            effectLine: 'A small, reliable push toward an open bargain.',
+            bandProse: {
+              success: 'It all stayed on the board, and both men set their marks under what they could read.',
+              near_miss: 'It stayed on the board until the last item, and that one got settled behind the wagon.',
+            },
+          },
+          {
+            id: 'banner.split_the_ground',
+            name: 'Split the ground',
+            sphere: 'matter',
+            essenceCost: 2,
+            forecastDelta: 0.11,
+            imageTag: 'generic.matter',
+            fiction: 'The far bank, the mill, the ford and the winter road go up in chalk with their real distances between them.',
+            effectLine: 'Strong help. The land has a shape on the board.',
+            bandProse: {
+              failure: 'The chalk showed the ground plain, and the ground was worth more than either house had said.',
+              critical_failure: 'The chalk showed the mill standing above both fords, and after that the Fen would take nothing else.',
+            },
+          },
+          {
+            id: 'banner.price_the_winter',
+            name: 'Price the winter',
+            sphere: 'mind',
+            essenceCost: 2,
+            forecastDelta: 0.10,
+            imageTag: 'generic.mind',
+            fiction: 'What the pass carries in autumn, what the mill grinds, what a toll on the bridge comes to by candle-time: all of it comes clear.',
+            effectLine: 'Good help. Both sides bargain over one figure.',
+            bandProse: {
+              success_at_cost: 'The figures came clear and the deal closed on them. Both houses now know the bridge is worth fighting each other for.',
+              failure: 'The figures came clear, and neither man would trust a count made by the other side\'s friend.',
+            },
+          },
+          {
+            id: 'banner.feed_them_first',
+            name: 'Feed them first',
+            sphere: 'life',
+            essenceCost: 2,
+            forecastDelta: 0.09,
+            imageTag: 'generic.warmth',
+            fiction: 'The wagon bed gets bread, salt fish and one cask on it before it gets a word of terms.',
+            effectLine: 'Good help. Fed men bargain softer.',
+            bandProse: {
+              critical_success: 'They ate off the same board an hour before they bargained across it, and the bargaining took half the time.',
+              near_miss: 'They ate well and bargained warm, and woke the next morning asking what they had agreed to.',
+            },
+          },
+          {
+            id: 'banner.close_it_before_dark',
+            name: 'Close it before dark',
+            sphere: 'energy',
+            essenceCost: 2,
+            forecastDelta: 0.08,
+            imageTag: 'generic.spark',
+            fiction: 'The terms get shut while the fires are still bright and Coldwater is four hours nearer than it was at noon.',
+            effectLine: 'A steady help. The threat is still in the room.',
+            bandProse: {
+              failure: 'It closed before dark, and both houses spent the night finding what the hurry had cost them.',
+            },
+          },
+          {
+            // Trait-only card: cost 0, the price paid by being this person.
+            id: 'banner.take_the_smaller_share',
+            name: 'Take the smaller share',
+            requiredTrait: 'trait.core.core_humility.virtue',
+            essenceCost: 0,
+            forecastDelta: 0.08,
+            imageTag: 'generic.oath',
+            fiction: 'Whatever {actor} could have claimed off the board for {their} own trouble comes off it first, in front of both men.',
+            effectLine: 'A steady help, and it costs no essence.',
+            bandProse: {
+              near_miss: 'The smaller share got taken openly. Both houses trusted the board more for it, and {actor} rather less to look after {their} own.',
+            },
+          },
+        ],
         onSuccess: {
-          narrative: '{actor}\'s {adj} negotiation {verb}s the factions {adj}. {They} agree to united action.',
+          narrative: 'The board is copied twice and both men put their marks under it. Ashmoor takes the far bank, the Fen take the mill, and the bridge belongs to whoever is standing on it at dusk.',
           reputationDelta: 0.08,
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: '{actor}\'s {adj} negotiation {verb}s {adj}. The factions {verb} {adj} and {adj} opposed.',
+          narrative: 'The chalk gets wiped and neither man will be first to draw again. Both houses camp on their own side of the causeway with the bridge lying between them.',
           reputationDelta: -0.03,
         },
       },
       {
         id: 'faction.victory',
-        name: 'The Victory',
+        name: 'The Field',
         reach: 'heart',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
         duration: 5,
-        narrative: '{actor} must lead {adj} unified factions to {adj} victory against {adj} overwhelming odds.',
+        purposeLine: 'Hold the bridge together',
+        factorLines: [
+          { text: 'Both houses have marks on the same board, and the board is on the wagon.', polarity: 'for' },
+          { text: 'Coldwater will come at the seam, and the seam is where the two banners meet.', polarity: 'against' },
+        ],
+        narrative: 'Coldwater comes down the causeway at first light and puts its weight exactly where the Fen line ends and the Ashmoor horse begins. {actor} has the bridge, two banners, and about an hour before one of them decides it is being spent.',
+        successAtCostAfterimage: 'The bridge held. It held because the Fen third rank stood where the horse should have been, and the Fen buried eleven men for it.',
+        criticalSuccessAfterimage: 'The seam held so hard that Coldwater went round it, and the Ashmoor horse took them in the open where the Fen had left the room for it.',
+        criticalFailureAfterimage: '{actor} sent the horse to plug the seam and opened the Fen flank doing it. Both houses lost the bridge, and each of them knows whose fault it was.',
+        nudges: [
+          {
+            // Shared generic pool — the `focus` family.
+            id: 'banner.hold_the_seam',
+            name: 'Hold the seam',
+            essenceCost: 1,
+            forecastDelta: 0.06,
+            imageTag: 'generic.focus',
+            fiction: '{actor} stands at the joint of the two lines, where both houses can see {them}, for as long as the weight lasts.',
+            effectLine: 'A small, reliable push toward a line that holds.',
+            bandProse: {
+              success: 'The joint held, because the man standing in it did not move.',
+              near_miss: 'The joint held while {actor} was in it, and gave two paces every time {they} were called away.',
+            },
+          },
+          {
+            id: 'banner.spend_the_horse_late',
+            name: 'Spend the horse late',
+            sphere: 'force',
+            essenceCost: 2,
+            forecastDelta: 0.11,
+            imageTag: 'generic.force',
+            fiction: 'The Ashmoor riders wait behind the rise with their girths tight, and go in once Coldwater has committed its second rank.',
+            effectLine: 'Strong help. The charge lands on a spent line.',
+            bandProse: {
+              failure: 'The horse went in late, and late was one rank later than it needed to be.',
+              critical_failure: 'The horse waited so long that the Fen stood and watched them wait, and the Fen will be telling it that way for years.',
+            },
+          },
+          {
+            id: 'banner.one_horn_for_both',
+            name: 'One horn for both',
+            sphere: 'order',
+            essenceCost: 2,
+            forecastDelta: 0.10,
+            imageTag: 'generic.order',
+            fiction: 'Both houses take their calls off the same horn, and the horn stays with {actor} at the bridge head.',
+            effectLine: 'Good help. Two banners move as one line.',
+            bandProse: {
+              success_at_cost: 'One horn moved both houses. It also put every order in {actor}\'s mouth, and left nobody else to lay the dead against.',
+              failure: 'The horn called and the Fen answered a beat behind it, which on a bridge is the width of a man.',
+            },
+          },
+          {
+            id: 'banner.give_up_the_far_bank',
+            name: 'Give up the far bank',
+            sphere: 'darkness',
+            essenceCost: 2,
+            forecastDelta: 0.09,
+            imageTag: 'generic.dark',
+            fiction: 'The far bank — Ashmoor\'s share off the board — gets left to Coldwater on purpose, so the bridge can be held short.',
+            effectLine: 'Good help. Ground can be spent.',
+            bandProse: {
+              critical_success: 'The far bank went, and Coldwater crowded onto it until the causeway did the work the spears could not.',
+              near_miss: 'The far bank went and the bridge held, and Ashmoor spent the evening asking what the board had been for.',
+            },
+          },
+          {
+            id: 'banner.break_the_causeway',
+            name: 'Break the causeway',
+            sphere: 'chaos',
+            essenceCost: 2,
+            forecastDelta: 0.08,
+            imageTag: 'generic.chaos',
+            fiction: 'Two spans of the old causeway come up under levers, and Coldwater has to come at the bridge four abreast where it meant to come at twenty.',
+            effectLine: 'A steady help. The road narrows.',
+            bandProse: {
+              failure: 'The spans came up, and with them the only road the Ashmoor horse could have come back over.',
+            },
+          },
+          {
+            // Trait-only card: cost 0, the price paid by being this person.
+            id: 'banner.stand_in_the_front_rank',
+            name: 'Stand in the front rank',
+            requiredTrait: 'trait.core.core_hope.virtue',
+            essenceCost: 0,
+            forecastDelta: 0.08,
+            imageTag: 'generic.strength',
+            fiction: '{actor} takes a place in the first rank at the seam, on foot, where both houses can count {them} among the spent.',
+            effectLine: 'A steady help, and it costs no essence.',
+            bandProse: {
+              near_miss: 'They stood in the front rank. Both houses saw it, and both houses had to be told twice to fall back around {them}.',
+            },
+          },
+        ],
         onSuccess: {
-          narrative: '{actor}\'s {adj} leadership {verb}s the factions {adj}. {They} {verb} {adj} and triumphant.',
+          narrative: 'The seam holds through the morning. Coldwater breaks on the bridge head and goes back up the causeway, and two banners come off the same field with the same story to carry home.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: '{actor}\'s {adj} leadership {verb}s {adj}. The factions {verb} scattered, {adj} and {adj} broken.',
+          narrative: 'The seam opens at the third push. Both houses fall back over their own ground, and Coldwater takes the bridge, the mill and the far bank in one afternoon.',
           reputationDelta: -0.08,
         },
       },

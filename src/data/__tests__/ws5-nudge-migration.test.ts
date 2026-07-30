@@ -48,6 +48,12 @@ export const WS5_MIGRATED: readonly string[] = [
   // it at (THR-838, 2026-07-29)
   'encounter.offer_small_prayer',
   'encounter.shrine_offering',
+  // Batch 1b-i — the civic seats, capital cluster: four rooms where the thing at
+  // stake is a decision somebody has to carry home (THR-860, 2026-07-30)
+  'encounter.council_mediation',
+  'encounter.court_noble',
+  'encounter.faction_unification',
+  'encounter.raise_monument',
 ];
 
 const byId = new Map<string, UnifiedActionTemplate>(
