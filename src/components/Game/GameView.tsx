@@ -147,6 +147,7 @@ import { selectEncounterBadges, type EncounterBadgeModel } from './encounterBadg
 import { selectThreadTugBadges } from './threadTugBadgeModel';
 import { selectEntityNoticeBadges, type EntityNoticeBadgeModel } from './entityNoticeBadgeModel';
 import { toggleAttentionMode } from '../../engine/encounterVisibility';
+import { setForceFullEncounterVisibility } from '../../engine/debugVisibilityOverride';
 import { useTopBarHotkeys } from './hooks/useTopBarHotkeys';
 import { computeEssenceIncome } from '../../engine/essenceIncome';
 import { setHomeSeat as setHomeSeatEngine } from '../../engine/influence';
@@ -295,6 +296,16 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   const [fogDisabled, setFogDisabled] = useState(
     () => new URLSearchParams(window.location.search).has('nofog')
   );
+
+  // ── Debug: force full-prose, always-popup encounter visibility (THR-880) ──
+  // Testing lever for the Encounter Experience project — makes every threaded
+  // agent's encounter render and interrupt as if they were The First, so
+  // background/shaping-tier content isn't invisible during review. Read from
+  // a URL flag (not window.__DEBUG) so it also works on the deployed build.
+  useState(() => {
+    setForceFullEncounterVisibility(new URLSearchParams(window.location.search).has('forceencounters'));
+    return null;
+  });
 
   // ── Debug: omniscience mode (bypass familiarity gating on agent character sheets) ──
   const [omniscienceMode, setOmniscienceMode] = useState(false);
@@ -4241,6 +4252,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
           locationId={meetingState.locationId}
           seed={gameState.seed}
           tick={gameState.tick}
+          // THR-868: the meeting's nudge cards are a real essence spend, so the
+          // stage needs the live pool to know what the player can afford.
+          essencePool={gameState.essencePool}
           onComplete={handleMeetingComplete}
           onClose={handleMeetingClose}
         />
