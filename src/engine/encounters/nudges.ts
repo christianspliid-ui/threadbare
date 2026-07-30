@@ -17,9 +17,11 @@ import type { WorldGraph } from '../graph';
 import type {
   ActionStep,
   NudgeRider,
+  StepCarryoverFactorLine,
   StepNudge,
   StepOutcome,
   TraitVariant,
+  UnifiedAction,
   UnifiedActionTemplate,
 } from '../../types/unifiedAction';
 import type { SphereName } from '../../types/index';
@@ -36,6 +38,8 @@ import { resolveSettingVariant } from '../fragmentResolution';
 export const NUDGE_MODIFIER_SOURCE_PREFIX = 'nudge:';
 /** Source prefix for a trait variant's named forecast modifier. */
 export const TRAIT_MODIFIER_SOURCE_PREFIX = 'trait:';
+/** Source prefix for a carryover line's named forecast modifier (THR-892). */
+export const CARRYOVER_MODIFIER_SOURCE_PREFIX = 'carryover:';
 
 /** Why a nudge card is not playable right now. */
 export type NudgeBlockedCode =
@@ -305,9 +309,10 @@ export function buildNudgeHand(
  * Fail-soft: an `activeNudges` id with no matching authored card is skipped.
  */
 export function collectNudgeModifiers(
-  step: Pick<ActionStep, 'nudges'>,
+  step: Pick<ActionStep, 'nudges' | 'carryoverFactorLines'>,
   activeNudgeIds: readonly string[] | undefined,
   variants: readonly TraitVariant[] = [],
+  priorOutcome?: StepOutcome,
 ): ForecastModifier[] {
   const modifiers: ForecastModifier[] = [];
 
@@ -328,7 +333,47 @@ export function collectNudgeModifiers(
     });
   }
 
+  // THR-892 — the prior step's outcome tilts this one, if the author declared a
+  // delta for the band it landed on. Zero new rng: the draw happened last step.
+  const carryover = resolveCarryoverLine(step, priorOutcome);
+  if (carryover && carryover.line.forecastDelta) {
+    modifiers.push({
+      source: `${CARRYOVER_MODIFIER_SOURCE_PREFIX}${carryover.outcome}`,
+      delta: carryover.line.forecastDelta,
+    });
+  }
+
   return modifiers;
+}
+
+/**
+ * The carryover line this step draws, given the outcome the previous step landed
+ * on (THR-892).
+ *
+ * Fail-soft (NFP #4): no prior outcome (this is step 0), no authored map, or an
+ * outcome band the author left unwritten all yield `undefined` — the panel renders
+ * one line fewer rather than inventing a fallback sentence for a band nobody wrote.
+ */
+export function resolveCarryoverLine(
+  step: Pick<ActionStep, 'carryoverFactorLines'>,
+  priorOutcome: StepOutcome | undefined,
+): { outcome: StepOutcome; line: StepCarryoverFactorLine } | undefined {
+  if (!priorOutcome) return undefined;
+  const line = step.carryoverFactorLines?.[priorOutcome];
+  if (!line) return undefined;
+  return { outcome: priorOutcome, line };
+}
+
+/**
+ * The outcome the step *before* `currentStep` resolved on, or `undefined` at the
+ * head of an encounter. One reader so the adapter and resolution can never
+ * disagree about which band the carryover keys off.
+ */
+export function priorStepOutcome(
+  action: Pick<UnifiedAction, 'currentStep' | 'stepOutcomes'>,
+): StepOutcome | undefined {
+  if (action.currentStep <= 0) return undefined;
+  return action.stepOutcomes?.[action.currentStep - 1];
 }
 
 /** Sum of a modifier list — the single additive term resolution consumes. */

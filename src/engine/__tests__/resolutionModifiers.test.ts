@@ -462,3 +462,79 @@ describe('computeResolutionModifiers', () => {
     expect(result.divineInterventionModifier).toBe(0);
   });
 });
+
+// ─── Named contributions (THR-892) ───────────────────────────────
+//
+// The load-bearing invariant of the contribution refactor: the named list and
+// the numeric total are produced by ONE walk, so they can never disagree. If
+// these drift, a test panel starts naming causes the roll did not apply.
+
+describe('named modifier contributions', () => {
+  it('sums each contribution kind to exactly the total it explains', () => {
+    const graph = makeGraph();
+    addAgent(graph, 'a1');
+    addLocation(graph, 'loc1', 'mountains');
+    addArtifact(graph, 'art1', { iron: 0.05 });
+    addArtifact(graph, 'art2', { iron: 0.04 });
+    graph.addEdge({ id: edgeId(), source: 'a1', target: 'art1', type: 'possesses', properties: {} });
+    graph.addEdge({ id: edgeId(), source: 'a1', target: 'art2', type: 'possesses', properties: {} });
+    addTrait(graph, 't1', { iron: 0.03 });
+    graph.addEdge({ id: edgeId(), source: 'a1', target: 't1', type: 'has_trait', properties: {} });
+
+    const result = computeResolutionModifiers(graph, 'a1', 'loc1', 'iron', 'force');
+    const sumOf = (kind: string) =>
+      result.contributions.filter((c) => c.kind === kind).reduce((t, c) => t + c.value, 0);
+
+    // Pin the population — an empty contribution list would pass every sum
+    // below by vacuous arithmetic (0 === 0).
+    expect(result.contributions.length).toBeGreaterThan(0);
+    expect(sumOf('equipment')).toBeCloseTo(result.equipmentModifier, 10);
+    expect(sumOf('trait')).toBeCloseTo(result.traitBonus, 10);
+    expect(sumOf('terrain') + sumOf('faction')).toBeCloseTo(result.terrainModifier, 10);
+  });
+
+  it('still sums to the capped total when contributions overflow their cap', () => {
+    // Three items well past EQUIPMENT_MODIFIER_CAP — the emitted lines must sum
+    // to the capped number, not to the raw one, or the panel would name a
+    // contribution the roll never received.
+    const graph = makeGraph();
+    addAgent(graph, 'a1');
+    addLocation(graph, 'loc1');
+    for (const id of ['art1', 'art2', 'art3']) {
+      addArtifact(graph, id, { iron: EQUIPMENT_PER_ITEM_CAP });
+      graph.addEdge({ id: edgeId(), source: 'a1', target: id, type: 'possesses', properties: {} });
+    }
+
+    const result = computeResolutionModifiers(graph, 'a1', 'loc1', 'iron', undefined);
+    const equipment = result.contributions.filter((c) => c.kind === 'equipment');
+
+    expect(result.equipmentModifier).toBe(EQUIPMENT_MODIFIER_CAP);
+    expect(equipment.length).toBeGreaterThan(0);
+    expect(equipment.reduce((t, c) => t + c.value, 0)).toBeCloseTo(EQUIPMENT_MODIFIER_CAP, 10);
+  });
+
+  it('names every contribution it emits', () => {
+    const graph = makeGraph();
+    addAgent(graph, 'a1');
+    addLocation(graph, 'loc1', 'mountains');
+    addArtifact(graph, 'art1', { iron: 0.05 });
+    graph.addEdge({ id: edgeId(), source: 'a1', target: 'art1', type: 'possesses', properties: {} });
+
+    const result = computeResolutionModifiers(graph, 'a1', 'loc1', 'iron', 'force');
+    expect(result.contributions.length).toBeGreaterThan(0);
+    for (const contribution of result.contributions) {
+      expect(contribution.sourceName).toBeTruthy();
+      expect(contribution.sourceId).toBeTruthy();
+      expect(contribution.value).not.toBe(0);
+    }
+  });
+
+  it('emits no contributions when nothing tilts the step', () => {
+    const graph = makeGraph();
+    addAgent(graph, 'a1');
+    addLocation(graph, 'loc1');
+    const result = computeResolutionModifiers(graph, 'a1', 'loc1', 'iron', undefined);
+    expect(result.contributions).toEqual([]);
+    expect(result.totalModifier).toBe(0);
+  });
+});

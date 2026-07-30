@@ -897,6 +897,47 @@ A hook on a dead ref is a gate that never opens. It is invisible to every test t
 
 ---
 
+### Capability 17: Carryover Factor Lines — How the Last Step Tilts This One (THR-892)
+
+**What it is:** an outcome-keyed line on `ActionStep` describing how the *previous* step's resolution changes this one — the only authored factor surface besides trait lines that survives the variance rule.
+
+**The variance rule, because it decides what you may write.** A test-panel factor line earns its place only if it **could have read differently on another run**. A static line ("The vault door is iron-bound") reads the same every time the encounter fires, so it informs no decision — it is priced into the step's authored `difficulty` and belongs in the prose. This is why static `factorLines` are retired for new content and why most of the panel is now *derived* rather than authored: the actor's Reach capability and every named world modifier (equipment, terrain, faction, sphere, conditions, divine attention, rule overrides) become lines automatically, with no authoring at all.
+
+**Why you care:** a carryover line is the one place you can hand-write a factor and still obey the rule, because it is keyed on a band the run actually rolled. Write it and a player who scraped through step 1 reads a different panel on step 2 than a player who sailed through.
+
+**How you author it** — one optional field, additive:
+
+```ts
+carryoverFactorLines: {
+  success_at_cost: {
+    text: 'The last door cost her a knuckle.',
+    polarity: 'against',
+    forecastDelta: -0.04,   // optional
+  },
+  critical_success: {
+    text: 'The first lock gave up its pattern.',
+    polarity: 'for',
+    forecastDelta: 0.06,
+  },
+}
+```
+
+| Field | What it does |
+|---|---|
+| `text` | One sentence, ≤ `NUDGE_WORD_BUDGETS.factorLine` (12) words. Names its cause **in the sentence** (canon rule 1) — never a label beside a number. |
+| `polarity` | `'for'` / `'against'`. Authored, never inferred. |
+| `forecastDelta` | Optional. Rides the named-modifier channel as `carryover:<outcome>`, reaching **both** the panel's forecast floor and live resolution. Takes **zero** new rng — the draw it reads happened last step. |
+
+**The rule that catches people: you key on the outcome the *previous* step landed on, not this one.** Resolution is `UnifiedAction.stepOutcomes[currentStep − 1]` via `priorStepOutcome`. So a carryover map on a template's **first step is dead by construction** — `checkNudgeHand` flags it — and you never need to author all six bands: an unwritten band simply draws no line.
+
+**Fail-soft:** no prior outcome, no authored map, or an unauthored band all yield no line rather than a fallback sentence. A derived line whose source read fails is omitted, never thrown. A step with no variance at all renders the skill line and difficulty alone, which is an honest report ("nothing here tilts this but you"), not a degraded one.
+
+**What does *not* derive, and why that is correct:** omens, doom stage, and season contribute nothing. `forecastAction` reads only `ResolutionInput.actionModifiers`, which `computeResolutionModifiers` fills, and that pipeline reads no omen, doom, or season — so a line for them would name a cause the roll never applied. If those should tilt a step, the fix is wiring them into the modifier pipeline, not into the panel.
+
+**Where to find the implementation:** `src/engine/encounters/stepFactorLines.ts` (derivation); `resolveCarryoverLine` + `priorStepOutcome` + `collectNudgeModifiers` in `src/engine/encounters/nudges.ts`; `ModifierBreakdown.contributions` in `src/engine/resolutionModifiers.ts` (the named list, emitted by the same walk as the totals); sentence templates in `src/data/nudge-stage-content.ts` (`DERIVED_FACTOR_SENTENCES`); budgets in `src/data/content-eval/nudgeHandChecklist.ts`.
+
+---
+
 ## Part 3: The Wiring Checklist — Ask These Before You Write
 
 Before writing any encounter, answer these questions. If the answer to most of them is "not applicable," you may be writing a book page, not game content.

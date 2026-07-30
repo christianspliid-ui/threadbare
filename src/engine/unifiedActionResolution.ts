@@ -150,6 +150,7 @@ import {
   applyRider,
   collectHeldTraitIds,
   collectNudgeModifiers,
+  priorStepOutcome,
   resolveTraitVariants,
   selectActiveRider,
   sumModifiers,
@@ -397,7 +398,15 @@ export function resolveUncontestedStep(
   const nudgeTraitVariants = template.traitVariants?.length
     ? resolveTraitVariants(template, collectHeldTraitIds(state.graph, action.actorId))
     : [];
-  const nudgeModifiers = collectNudgeModifiers(step, action.activeNudges, nudgeTraitVariants);
+  // THR-892 — a carryover line declared for the band the *previous* step landed on
+  // rides the same named channel as `carryover:<outcome>`. Zero new rng: the draw
+  // it reads happened last step.
+  const nudgeModifiers = collectNudgeModifiers(
+    step,
+    action.activeNudges,
+    nudgeTraitVariants,
+    priorStepOutcome(action),
+  );
   const nudgeModifierTotal = sumModifiers(nudgeModifiers);
   // A trait variant may also ease (or steepen) the step itself, before the
   // scale adjustment below reads the difficulty.

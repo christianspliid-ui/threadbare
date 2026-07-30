@@ -74,6 +74,35 @@ import {
 
 // ─── Types ───────────────────────────────────────────────────────
 
+/**
+ * Where a single modifier came from, by name (THR-892).
+ *
+ * The numeric totals below say *how much* the world tilted the step; these say
+ * *what did the tilting*, so a surface can name the cause in a sentence instead
+ * of printing a labelled number. Produced by the same walks that compute the
+ * totals — never a second pass — so a contribution list and its total can not
+ * disagree.
+ */
+export type ModifierSourceKind =
+  | 'equipment'
+  | 'trait'
+  | 'terrain'
+  | 'faction'
+  | 'sphere'
+  | 'divine'
+  | 'rule'
+  | 'effect';
+
+export interface NamedModifierContribution {
+  readonly kind: ModifierSourceKind;
+  /** Node id where resolvable; otherwise a stable synthetic key (e.g. a terrain type). */
+  readonly sourceId: string;
+  /** Human-readable name for prose — an artifact's name, a terrain word, a faction. */
+  readonly sourceName: string;
+  /** Signed contribution, already capped exactly as the total capped it. */
+  readonly value: number;
+}
+
 export interface ModifierBreakdown {
   sphereAlignmentBonus: number;
   equipmentModifier: number;
@@ -89,6 +118,75 @@ export interface ModifierBreakdown {
   /** Modifier from modify_rules encounter_difficulty_modifier on the agent */
   ruleModifier: number;
   totalModifier: number;
+  /**
+   * THR-892 — the named causes behind the totals above, for surfaces that must
+   * say *why* rather than *how much*. Always present; empty when nothing tilted
+   * the step. Adding a contribution never changes `totalModifier`.
+   */
+  contributions: NamedModifierContribution[];
+}
+
+// ─── Contribution helpers (THR-892) ──────────────────────────────
+
+/** Sum of a contribution list — the single number the legacy callers consumed. */
+export function sumContributions(list: readonly NamedModifierContribution[]): number {
+  return list.reduce((total, c) => total + c.value, 0);
+}
+
+/**
+ * Apply a one-sided total cap by trimming the overflowing tail.
+ *
+ * Reproduces `Math.min(sum, cap)` on the total exactly, which is what the
+ * pre-THR-892 code did — so this refactor is behavior-preserving for resolution
+ * while making the surviving contributions nameable. Entries past the cap are
+ * dropped (or partially trimmed) rather than scaled, because a scaled item would
+ * name a real artifact beside a number that artifact never contributed.
+ */
+function capContributions(
+  list: readonly NamedModifierContribution[],
+  cap: number,
+): NamedModifierContribution[] {
+  const total = sumContributions(list);
+  if (total <= cap) return [...list];
+
+  const kept: NamedModifierContribution[] = [];
+  let running = 0;
+  for (const entry of list) {
+    const remaining = cap - running;
+    if (remaining <= 0) break;
+    const value = Math.min(entry.value, remaining);
+    kept.push(value === entry.value ? entry : { ...entry, value });
+    running += value;
+  }
+  return kept;
+}
+
+/**
+ * Apply a two-sided total clamp by trimming the tail, mirroring
+ * `Math.max(-cap, Math.min(cap, sum))` on the total exactly.
+ */
+function clampContributions(
+  list: readonly NamedModifierContribution[],
+  cap: number,
+): NamedModifierContribution[] {
+  const total = sumContributions(list);
+  const clamped = Math.max(-cap, Math.min(cap, total));
+  if (clamped === total) return [...list];
+
+  const kept: NamedModifierContribution[] = [];
+  let running = 0;
+  for (const entry of list) {
+    const remaining = clamped - running;
+    // Once the budget is spent (or would reverse sign), stop rather than emit a
+    // part whose printed value contradicts its own direction.
+    if (remaining === 0) break;
+    const value =
+      remaining > 0 ? Math.min(entry.value, remaining) : Math.max(entry.value, remaining);
+    if (value === 0) continue;
+    kept.push(value === entry.value ? entry : { ...entry, value });
+    running += value;
+  }
+  return kept;
 }
 
 // ─── Sub-functions ───────────────────────────────────────────────
@@ -167,7 +265,23 @@ export function computeEquipmentModifier(
   agentId: string,
   stepReach: ReachDomain,
 ): number {
-  let total = 0;
+  return sumContributions(collectEquipmentContributions(graph, agentId, stepReach));
+}
+
+/**
+ * The named items behind {@link computeEquipmentModifier} (THR-892).
+ *
+ * The per-item cap is applied to each entry, and the total cap is applied by
+ * trimming the *last* entries that overflow it — so the emitted values always sum
+ * to exactly what `computeEquipmentModifier` returns. That is the invariant a
+ * caller relies on when it prints one line per contribution.
+ */
+export function collectEquipmentContributions(
+  graph: WorldGraph,
+  agentId: string,
+  stepReach: ReachDomain,
+): NamedModifierContribution[] {
+  const raw: NamedModifierContribution[] = [];
 
   for (const edgeType of ['possesses', 'bonded_to'] as const) {
     const edges = graph.getOutgoingEdges(agentId, edgeType);
@@ -183,12 +297,16 @@ export function computeEquipmentModifier(
       if (bonus === 0) continue;
 
       // Cap each individual item's contribution
-      total += Math.min(bonus, EQUIPMENT_PER_ITEM_CAP);
+      raw.push({
+        kind: 'equipment',
+        sourceId: artifactNode.id,
+        sourceName: artifactNode.name ?? artifactNode.id,
+        value: Math.min(bonus, EQUIPMENT_PER_ITEM_CAP),
+      });
     }
   }
 
-  // Cap total equipment modifier
-  return Math.min(total, EQUIPMENT_MODIFIER_CAP);
+  return capContributions(raw, EQUIPMENT_MODIFIER_CAP);
 }
 
 /**
@@ -205,8 +323,23 @@ export function computeTerrainModifier(
   agentId: string,
   locationId: string,
 ): number {
+  return sumContributions(collectTerrainContributions(graph, agentId, locationId));
+}
+
+/**
+ * The named place-and-politics parts behind {@link computeTerrainModifier} (THR-892).
+ *
+ * The two-sided total clamp is applied by trimming the larger-magnitude entry, so
+ * the emitted values sum to exactly the clamped total. Both parts are nameable:
+ * the terrain word, and the faction whose control tilts the ground.
+ */
+export function collectTerrainContributions(
+  graph: WorldGraph,
+  agentId: string,
+  locationId: string,
+): NamedModifierContribution[] {
   const locationNode = graph.getNode(locationId);
-  if (!locationNode) return 0;
+  if (!locationNode) return [];
 
   // Get terrain type
   const terrainType = (locationNode.properties.terrainType ?? locationNode.properties.terrain) as string | undefined;
@@ -214,6 +347,7 @@ export function computeTerrainModifier(
 
   // Check faction control
   let factionModifier = 0;
+  let factionId: string | undefined;
   const controlEdges = graph.getIncomingEdges(locationId, 'controls');
   if (controlEdges.length > 0) {
     // Get agent's faction membership
@@ -226,6 +360,7 @@ export function computeTerrainModifier(
       if (agentFactionIds.has(controllingFactionId)) {
         // Agent's faction controls this location
         factionModifier = FACTION_CONTROL_BONUS;
+        factionId = controllingFactionId;
         break;
       } else {
         // Check if agent has negative sentiment toward controlling faction
@@ -235,6 +370,7 @@ export function computeTerrainModifier(
             const sentiment = (relEdge.properties.sentiment as number) ?? 0;
             if (sentiment < 0) {
               factionModifier = HOSTILE_TERRITORY_PENALTY;
+              factionId = controllingFactionId;
               break;
             }
           }
@@ -244,10 +380,27 @@ export function computeTerrainModifier(
     }
   }
 
-  const total = baseModifier + factionModifier;
+  const parts: NamedModifierContribution[] = [];
+  if (baseModifier !== 0 && terrainType) {
+    parts.push({
+      kind: 'terrain',
+      sourceId: terrainType,
+      sourceName: terrainType,
+      value: baseModifier,
+    });
+  }
+  if (factionModifier !== 0 && factionId) {
+    parts.push({
+      kind: 'faction',
+      sourceId: factionId,
+      sourceName: graph.getNode(factionId)?.name ?? factionId,
+      value: factionModifier,
+    });
+  }
 
-  // Cap total terrain modifier (clamp between -CAP and +CAP)
-  return Math.max(-TERRAIN_MODIFIER_CAP, Math.min(TERRAIN_MODIFIER_CAP, total));
+  // Cap total terrain modifier (clamp between -CAP and +CAP), preserving the
+  // pre-THR-892 total exactly by trimming the overflow off the last part.
+  return clampContributions(parts, TERRAIN_MODIFIER_CAP);
 }
 
 /**
@@ -261,7 +414,16 @@ export function computeTraitBonus(
   agentId: string,
   stepReach: ReachDomain,
 ): number {
-  let total = 0;
+  return sumContributions(collectTraitContributions(graph, agentId, stepReach));
+}
+
+/** The named traits behind {@link computeTraitBonus} (THR-892). Same walk, same caps. */
+export function collectTraitContributions(
+  graph: WorldGraph,
+  agentId: string,
+  stepReach: ReachDomain,
+): NamedModifierContribution[] {
+  const raw: NamedModifierContribution[] = [];
 
   const traitEdges = graph.getOutgoingEdges(agentId, 'has_trait');
   for (const edge of traitEdges) {
@@ -275,10 +437,15 @@ export function computeTraitBonus(
     const bonus = resolutionBonus[stepReach] ?? 0;
     if (bonus === 0) continue;
 
-    total += Math.min(bonus, TRAIT_PER_BONUS_CAP);
+    raw.push({
+      kind: 'trait',
+      sourceId: traitNode.id,
+      sourceName: traitNode.name ?? traitNode.id,
+      value: Math.min(bonus, TRAIT_PER_BONUS_CAP),
+    });
   }
 
-  return Math.min(total, TRAIT_BONUS_CAP);
+  return capContributions(raw, TRAIT_BONUS_CAP);
 }
 
 /**
@@ -329,14 +496,13 @@ export function computeResolutionModifiers(
   effectStates?: ReadonlyMap<string, EffectRuntimeState>,
 ): ModifierBreakdown {
   const sphereAlignmentBonus = computeSphereAlignmentBonus(graph, agentId, encounterSphereAffinity);
-  const terrainModifier = computeTerrainModifier(graph, agentId, locationId);
+  const terrainContributions = collectTerrainContributions(graph, agentId, locationId);
+  const terrainModifier = sumContributions(terrainContributions);
   const divineInterventionModifier = computeDivineInterventionModifier(graph, agentId);
 
   // Check if agent has any attachments using the new effects[] format.
   // If so, use the generic effect resolver for equipment+trait modifiers.
   // If not, fall back to legacy reachBonus/resolutionBonus path.
-  let equipmentModifier = 0;
-  let traitBonus = 0;
   let effectModifier = 0;
   let effectResult: EffectModifierResult | undefined;
 
@@ -345,14 +511,13 @@ export function computeResolutionModifiers(
     const ctx = buildPredicateContext(graph, agentId, stepReach);
     effectResult = resolveEffectModifiers(graph, agentId, stepReach, ctx, effectStates);
     effectModifier = effectResult.reachModifiers[stepReach] ?? 0;
-    // Legacy modifiers still contribute for attachments without effects[]
-    equipmentModifier = computeEquipmentModifier(graph, agentId, stepReach);
-    traitBonus = computeTraitBonus(graph, agentId, stepReach);
-  } else {
-    // Legacy path: no effects[], use reachBonus/resolutionBonus
-    equipmentModifier = computeEquipmentModifier(graph, agentId, stepReach);
-    traitBonus = computeTraitBonus(graph, agentId, stepReach);
   }
+  // Legacy modifiers contribute on both paths — attachments without effects[]
+  // still carry reachBonus/resolutionBonus.
+  const equipmentContributions = collectEquipmentContributions(graph, agentId, stepReach);
+  const traitContributions = collectTraitContributions(graph, agentId, stepReach);
+  const equipmentModifier = sumContributions(equipmentContributions);
+  const traitBonus = sumContributions(traitContributions);
 
   // Rule override: modify_rules encounter_difficulty_modifier shifts the agent's effective difficulty
   const ruleModifier = getActiveRuleOverride(graph, agentId, 'encounter_difficulty_modifier', effectStates);
@@ -366,6 +531,48 @@ export function computeResolutionModifiers(
     effectModifier +
     ruleModifier;
 
+  // THR-892 — the named causes, in the same order the totals are summed above.
+  // `effectResult.contributions` is already named and already reach-filtered, so
+  // it is projected rather than recomputed; inactive entries are dropped because
+  // they contributed nothing to `effectModifier`.
+  const contributions: NamedModifierContribution[] = [
+    ...(sphereAlignmentBonus !== 0 && encounterSphereAffinity
+      ? [{
+          kind: 'sphere' as const,
+          sourceId: encounterSphereAffinity,
+          sourceName: encounterSphereAffinity,
+          value: sphereAlignmentBonus,
+        }]
+      : []),
+    ...equipmentContributions,
+    ...terrainContributions,
+    ...traitContributions,
+    ...(effectResult?.contributions ?? [])
+      .filter((c) => c.active && c.reach === stepReach && c.value !== 0)
+      .map((c) => ({
+        kind: 'effect' as const,
+        sourceId: c.attachmentId,
+        sourceName: c.attachmentName,
+        value: c.value,
+      })),
+    ...(divineInterventionModifier !== 0
+      ? [{
+          kind: 'divine' as const,
+          sourceId: 'divine_attention',
+          sourceName: 'divine attention',
+          value: divineInterventionModifier,
+        }]
+      : []),
+    ...(ruleModifier !== 0
+      ? [{
+          kind: 'rule' as const,
+          sourceId: 'encounter_difficulty_modifier',
+          sourceName: 'an altered rule',
+          value: ruleModifier,
+        }]
+      : []),
+  ];
+
   return {
     sphereAlignmentBonus,
     equipmentModifier,
@@ -377,5 +584,6 @@ export function computeResolutionModifiers(
     testShapers: effectResult?.testShapers ?? [],
     ruleModifier,
     totalModifier,
+    contributions,
   };
 }
