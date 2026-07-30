@@ -378,6 +378,17 @@ export interface DilemmaInstance {
   godVoice: string;
   /** Choices with enriched text */
   choices: DilemmaChoiceTemplate[];
+  /**
+   * Present when the source template has been converted to a formative test
+   * (THR-868). The beat branches on presence: carrying a `test` renders the
+   * nudge stage, absent renders the legacy choice scene.
+   *
+   * Declared here because `selectDilemmas` maps templates to instances through
+   * an explicit field list — a converted template's `test` is dropped at that
+   * boundary unless the instance type carries it, which would make the whole
+   * converted path silently unreachable.
+   */
+  test?: FormativeTest;
 }
 
 /**

@@ -30,6 +30,14 @@ export const SENSING_REST_PROMPT = 'Something stirs in the web of fate. Who call
 export const TESTING_TRANSITION_IN = 'The thread tightens. You look closer...';
 export const TESTING_BETWEEN_DILEMMAS = 'Another moment surfaces...';
 
+/**
+ * Button that closes a formative test's fate reveal (THR-868).
+ *
+ * Deliberately not "Continue": the player is acknowledging what fate did, not
+ * approving it. The register is plain and descriptive per the WS6 mandate.
+ */
+export const MEETING_FATE_REVEAL_CONTINUE = 'Let it stand';
+
 /** Beat 3 transition prose. */
 export const SPARK_TRANSITION_IN = 'Something has changed in them. You can feel it — a crack where the light gets in. What will you pour through it?';
 

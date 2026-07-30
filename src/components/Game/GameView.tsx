@@ -4241,6 +4241,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
           locationId={meetingState.locationId}
           seed={gameState.seed}
           tick={gameState.tick}
+          // THR-868: the meeting's nudge cards are a real essence spend, so the
+          // stage needs the live pool to know what the player can afford.
+          essencePool={gameState.essencePool}
           onComplete={handleMeetingComplete}
           onClose={handleMeetingClose}
         />
