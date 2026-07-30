@@ -1,6 +1,6 @@
 # Briefing
 
-**Generated:** 2026-07-30 05:57 local (2026-07-30 03:57 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-07-30 06:58 local (2026-07-30 04:58 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
@@ -10,29 +10,27 @@ This is your inbox. It's rewritten every hour by a Claude Code task. Standing sw
 
 ## Queue
 
-**Fifty-two jobs ready, one in progress, nothing gone cold.** Sixteen medium, thirty-six small, none urgent. The longest anything has waited is a bit over five days — inside the week we allow.
+**Fifty-three jobs ready, none in progress, nothing gone cold.** Eighteen medium, thirty-five small, none urgent. The longest anything has waited is a bit over five days — inside the week we allow.
 
-**The shelf grew again, from fifty-one to fifty-two, and this hour it grew for a plainer reason than last hour's.** Nothing finished and nothing new was picked up; one new encounter-content batch was filed on schedule. So the count moved by one, in one direction, for one reason.
+**For the first time this week, finishing kept pace with filing.** One job finished and landed; one new job was added. Every previous hour added faster than it cleared. One hour is not a trend, but it is the first hour that did not lose ground.
 
-**Two of the fifty-two carry your name on them, and that is harmless now.** Your name on a job means nothing — you told us so on the 29th, and since last night the robot that picks up work no longer looks at that field at all. It now takes the top job whatever name is attached, and wipes the name as it goes. Worth a line only because the thing that *writes* those stray names is still doing it, at about one an hour, and last night's brief said it would. It is cosmetic: nothing is hidden, nothing is skipped.
+**One thing on the shelf is worth a line, because it is the job most likely to be picked up next.** A cleanup job was promoted to the top of the queue this hour, and its whole description is built around tidying thirty-eight parked drafts. There are two, and there have been roughly two for about nine days — the pile it was written about was cleared long ago. Whoever takes it will find almost nothing to do. Nothing is broken and nothing is lost; the ticket just needs rewriting before someone spends a session on it. That is a robot's job, not yours, and it is now written down for them.
 
 ## Freshness
 
-**Home tree healthy** — on the main line, nothing stranded, fully up to date. The only local edits are your own tool-permission settings, which block nothing.
+**Home tree healthy, with one thing being watched.** You are on the main line with nothing stranded, and the only local edits are your own tool-permission settings, which block nothing. Your copy is ten commits behind the shared one — that sounds worse than it is: ten changes landed in the last hour and the sync runs hourly, so it is normal timing rather than drift. The watch item: this hour's sync was eight minutes late, where the previous seven were exact to the second. If it catches up next hour it was noise. If it does not, next hour's brief will say so plainly and give you the one command that fixes it.
 
-**Everything else checked clean.** The merge safety net is healthy with zero failed starts — the fourteenth clean check since you sorted the billing page. The tidy-up robot ran at 05:40 with nothing awaiting a human call. All eight scheduled robots are on time. The live site is correctly unchanged for a second hour: only notes and docs landed, so there was nothing to rebuild.
+**Everything else checked clean.** The merge safety net is healthy with zero failed starts — the fifteenth clean check since you sorted the billing page. The tidy-up robot ran at 06:40 with nothing awaiting a human call. All eight scheduled robots are on time. The live site is correctly unchanged for a third hour: only notes and docs landed, so there was nothing to rebuild.
 
 ## What's moving
 
-**Last hour's brief made a prediction about the faction-notifications job, and the answer is: it did not go in by itself.** The finished change has been sitting green and queued to self-merge for an hour and a half, and it is still sitting there. It needs one mechanical refresh against the current main line before it can land.
+**The faction-notifications job went in on its own, and that settles a question two briefs have been chasing.** Faction news no longer shouts from the global feed; it sits on the faction's own row, matching how agents already work. It had been sitting finished-but-queued for about an hour and three-quarters. Last hour's brief said honestly that it could not yet tell "waiting" from "stuck", and named the moment that would settle it — and it landed by itself before that moment, with nobody intervening. So the queue-itself-to-merge mechanism does work; it is just slower than it looks.
 
-**But the brief promised more certainty from that answer than it can actually deliver, and that is worth saying plainly.** The checkpoint was set at ninety minutes. The one previous time we watched this happen, the change took just over two hours to sort itself out — so "still stuck at ninety minutes" is exactly what *both* outcomes look like at ninety minutes. The test could not tell them apart, and it was written as though it could. The honest position is that we do not yet know, and the moment that would settle it is around 04:36 UTC. Next hour's brief lands after that.
+**The encounter-content migration finished its main run of batches.** The sacred-and-arcane sites are now filed — shrines, then ruins and towers — completing every one of the five groups the work was divided into. What remains is a single apex piece, the ascension encounter, deliberately held back because it needs a design look rather than another routine pass. Nothing is blocked; it is queued for a design session.
 
-**Nothing is at risk here** — the work is complete and passing. This is only about whether it merges on its own or wants a nudge.
+**The work-picking robot is now idle with a full shelf, and next hour is a real test.** It last woke while the faction job was still in progress, so it correctly took nothing. It wakes again with fifty-three jobs available and nothing in progress — the same conditions under which it claimed a job in seventy-six seconds two hours ago. If it claims again, the queue is genuinely draining. If it takes nothing, the cause is something other than what we fixed last night, and next hour's brief will say which.
 
-**The encounter-content migration keeps moving one batch an hour.** Tonight's filing finishes the sacred-and-arcane sites with the ruins-and-tower half, which completes the whole five-part set the grooming pass laid out two days ago. Two items remain behind it, and no design gate is blocking that pipeline.
-
-One piece of housekeeping still waits on a session with permission to do it: an obsolete pull request (#1031) wants closing and has now been idle about thirty-two hours. Nothing is lost by the wait.
+One piece of housekeeping still waits on a session with permission to do it: an obsolete pull request (#1031) wants closing and has now been idle about thirty-three hours. Nothing is lost by the wait.
 
 ---
 *Standing asks live in `Design/user-actions.md`. This file is regenerated hourly by the `keep-work-flowing-cc` scheduled task; staleness is visible from the Generated timestamp above and the task's `lastRunAt` in `list_scheduled_tasks`.*
