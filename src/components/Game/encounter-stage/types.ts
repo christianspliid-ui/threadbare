@@ -267,6 +267,12 @@ export type NudgeCardState = 'playable' | 'dimmed';
 
 export interface EncounterStageNudgeCardModel {
   id: string;
+  /**
+   * Library card this option instances (THR-887). Carried through the view model
+   * purely so the commit path can tally it for the twilight echo card — never
+   * rendered. Absent on a one-off authored option.
+   */
+  libraryCardId?: string;
   name: string;
   /** Card body — a concrete, witnessed effect. */
   fiction: string;

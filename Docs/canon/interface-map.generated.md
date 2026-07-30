@@ -17,10 +17,10 @@ remediation ticket or the build fails.
 |---|---|
 | 🟢 LIVE | 42 |
 | 🟠 PARTIAL | 1 |
-| 🔴 LEAKED | 7 |
+| 🔴 LEAKED | 6 |
 | ⚫ UNWIRED | 0 |
-| 🔵 UNVERIFIED-OK | 4 |
-| **Total** | **54** |
+| 🔵 UNVERIFIED-OK | 7 |
+| **Total** | **56** |
 
 ## Contracts by producing subsystem
 
@@ -47,6 +47,7 @@ remediation ticket or the build fails.
 
 | Contract | Intent | Mechanism | Consumer | Status | Ticket |
 |---|---|---|---|---|---|
+| `milestone-grants-unlock-repertoire-cards` | Earning something as a god changes what you can play as a god — a milestone hands you a new way to use a power you already had, not a bigger number on the one you have. | function: `buildRepertoire`, `isMemberUnlocked`, `memberAccess` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `secrets-player-verbs-reachable` | The god can plant and reveal secrets — the Eye identity’s signature verbs enter the hand via a beat grant (player-loop links 2–4). | function: `action.secrets.plant_secret`, `action.secrets.reveal_secret` | Secrets & Favors | 🟢 LIVE | — |
 
 ### Attachments, Items & Possessions
@@ -64,6 +65,12 @@ remediation ticket or the build fails.
 | `attachment-slot-caps-suppress` | Slot caps suppress overflow attachments via a single suppression seam. | edge-prop: `attachmentSlotResolver` | Effects & Conditions | 🟢 LIVE | — |
 | `attachment-tier-advancement` | Tier advancement strengthens an item over time. | function: `advanceAttachmentTier`, `canAdvanceTier` | Attachments, Items & Possessions | 🔴 LEAKED | THR-723 |
 | `attachment-trait-grant-effects` | Items grant abilities to their bearer (e.g. cavalry_charge). | node-prop: `trait_grant`, `collectGrantedTraits` | Encounters & Dilemmas | 🟢 LIVE | — |
+
+### Attention, Chronicle & Narrative
+
+| Contract | Intent | Mechanism | Consumer | Status | Ticket |
+|---|---|---|---|---|---|
+| `twilight-harvest-preserves-defining-card` | A god who dies is not wholly gone: the trick they were known for survives the age and turns up in the next god's hand, whole after a triumph and scarred after a defeat. | function: `selectEchoCard`, `buildCardEcho`, `echoCardsFromDefinitions` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 
 ### Companies & Group Travel
 
@@ -130,7 +137,7 @@ remediation ticket or the build fails.
 
 | Contract | Intent | Mechanism | Consumer | Status | Ticket |
 |---|---|---|---|---|---|
-| `nudge-hand-runtime-filters-and-sphere-discount` | The hand the player is dealt reflects the world as it actually is — group cards only in groups, favor calls only when a favor is owed — and a sphere the god is aligned to makes its own work cheaper. | function: `buildNudgeHand`, `effectiveNudgeCost`, `totalNudgeCost` | Encounters & Dilemmas | 🔴 LEAKED | THR-883 |
+| `nudge-hand-runtime-filters-and-sphere-discount` | The hand the player is dealt reflects the world as it actually is — group cards only in groups, favor calls only when a favor is owed — and a sphere the god is aligned to makes its own work cheaper. | function: `buildNudgeHand`, `effectiveNudgeCost`, `totalNudgeCost` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | THR-883 |
 | `quintessence-threshold-gates-candidacy-and-movement` | A mortal worn to nothing goes out of the story rather than grinding on unchanged — the previously missing consumer of the weakened/critical threshold states. Without it, quintessence loss has no behavioural consequence at all. | node-prop: `isBrokenMortal`, `brokenGateActive`, `computeBrokenDriftBonus`, `brokenSince` | Encounters & Dilemmas | 🟠 PARTIAL | THR-778 |
 
 ## Evidence
@@ -503,10 +510,10 @@ remediation ticket or the build fails.
 - **Producer → Consumer:** Companies & Group Travel → Attention, Chronicle & Narrative
 - **UL terms:** *Company*
 - **Module:** `src/engine/agentDetail.ts`
-- **Production hits:** 50 total — 1 write, 2 read, 47 unclassified
+- **Production hits:** 51 total — 1 write, 2 read, 48 unclassified
 - **Write sites:** `src/engine/groups/bandOpposition.ts`
 - **Read sites:** `src/components/Game/tabs/OverviewTab.tsx`, `src/engine/agentDetail.ts`
-- **Other hits:** `src/components/Game/Encounter/DetectionThread.tsx`, `src/components/Game/GameView/GameViewTopBar.tsx`, `src/components/HexMapV2/HexMapV2.tsx`, `src/data/action-template-content.ts`, `src/data/agenda-consequence-templates.ts` +42 more
+- **Other hits:** `src/components/Game/Encounter/DetectionThread.tsx`, `src/components/Game/GameView/GameViewTopBar.tsx`, `src/components/HexMapV2/HexMapV2.tsx`, `src/data/action-template-content.ts`, `src/data/agenda-consequence-templates.ts` +43 more
 - **Verdict:** Verified 2026-07-25: Live CLI run, seed 42 medium: a company relocated into a Great Silverhold guild hall resolved encounter.confront_guild_falls against a colocated Arcane Circle defender band at t61 — company cohesion 0.54 → 0.70, band 0.70 → 0.46 — and the contest wrote mutual grudges, read straight off the graph: "The Watch of the Nameless Road -> The Errant Keys of The Arcane Circle since t61 (group_engagement)" and the reverse. agentDetail reads both edge directions off the group node and dedupes the mutual pair; OverviewTab renders it as one sentence with no numbers and no `since` tick. Locked by src/engine/groups/__tests__/bandDebugSurfaces.test.ts § "Company panel — Rivals" (7 tests: absent when no grudge, outgoing, incoming-only, mutual-dedupe, dangling-target drop, deterministic multi-rival order).
 
 ### `guild-rank-gates-senior-content` — 🟢 LIVE
@@ -520,6 +527,18 @@ remediation ticket or the build fails.
 - **Read sites:** `src/engine/encounterFilterPipeline.ts`
 - **Other hits:** `src/data/arcane-circle-encounter-content.ts`, `src/data/builders-fellowship-encounter-content.ts`, `src/data/civic-guard-encounter-content.ts`, `src/data/holy-order-dawn-encounter-content.ts`, `src/data/lorekeepers-covenant-encounter-content.ts` +10 more
 - **Verdict:** Verified 2026-07-26: THR-805. `FACTION_ENCOUNTER_META.minRank` was authored on ~150 template metas and typed at types/faction.ts:72, with NO production reader — its only non-data references were three tests asserting the data round-trips — so every tier-restricted guild template was drawable by any agent at the right location. filterByPrerequisites now consults it for entries whose questType is senior/elite/leadership (RANK_GATED_QUEST_TYPES); the 123 `standard` quest/social metas stay ungated, since minRank is a REQUIRED field and gating on its presence would have closed the entry tier behind mere membership. Rank is derived from member_of.reputation via computeRankFromReputation on every check, never read from the edge's cached rank/role (those refresh only on a tier change, so a decay in progress reads stale). Non-membership closes the gate; unresolvable data (unknown factionDefId, or a minRank naming no tier) fails OPEN, because a typo that silently orphans content is the worse failure. Two adjacent substrates were rejected and are recorded so they are not revived: the `faction_rank:` predicate in effectPredicates.ts reads agentNode.properties.factionRank, which NOTHING writes (grep the assignment side — every other hit is a local display string), so it is permanently 0 and false for any threshold; and FactionRankTier.encounterAccess prefix allowlists are equally unread AND already drifted (merchant_consortium declares mc_trade.* while its templates are mct.*). Non-vacuous by live payload intersection and measured blast radius: 60 rank-gated metas exist, exactly 12 are present in a live tick-150 seed-42 cache (the guild tail THR-779/THR-803 registered), and a live sweep shows the gate closed for a real low-rank member and open for that same member once promoted past the floor. Locked by src/engine/__tests__/factionRankGate.test.ts (14 tests), falsified at 2-of-14 red with the gate disabled. The gate deliberately does NOT depend on resolving the template — it needs only the id and its meta. That independence was load-bearing when it shipped, because the pipeline's `getAnyEncounterById` returned undefined for every cache-registered regional template, leaving the sibling trait/broken/group gates in the same loop inert for those ids. THR-811 closed that gap on 2026-07-27: the loop now resolves via getUnifiedTemplateById, which covers all 213 cache-registrable ids (43 of them were unresolvable before), so the sibling gates are live for this id set too.
+
+### `milestone-grants-unlock-repertoire-cards` — 🔵 UNVERIFIED-OK
+
+- **Intent:** Earning something as a god changes what you can play as a god — a milestone hands you a new way to use a power you already had, not a bigger number on the one you have.
+- **Producer → Consumer:** Ascendant Beats & Progression → Encounters & Dilemmas
+- **UL terms:** *Nudge*, *Ascendant Beat*
+- **Module:** `src/engine/nudgeCardRepertoire.ts`
+- **Production hits:** 3 total — 1 write, 1 read, 1 unclassified
+- **Write sites:** `src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts`
+- **Read sites:** `src/engine/encounters/nudges.ts`
+- **Other hits:** `src/engine/nudgeCardRepertoire.ts`
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `minted-ambition-provenance` — 🟢 LIVE
 
@@ -555,17 +574,17 @@ remediation ticket or the build fails.
 - **Other hits:** `src/engine/encounters/nudgeDispatch.ts`, `src/types/unifiedAction.ts`
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
-### `nudge-hand-runtime-filters-and-sphere-discount` — 🔴 LEAKED
+### `nudge-hand-runtime-filters-and-sphere-discount` — 🔵 UNVERIFIED-OK
 
 - **Intent:** The hand the player is dealt reflects the world as it actually is — group cards only in groups, favor calls only when a favor is owed — and a sphere the god is aligned to makes its own work cheaper.
 - **Producer → Consumer:** Spheres & Quintessence → Encounters & Dilemmas
 - **UL terms:** *Nudge*, *Sphere*, *Essence*
 - **Module:** `src/engine/encounters/nudges.ts`
-- **Production hits:** 7 total — 0 write, 2 read, 5 unclassified
-- **Write sites:** —
+- **Production hits:** 9 total — 1 write, 2 read, 6 unclassified
+- **Write sites:** `src/data/nudge-constants.ts`
 - **Read sites:** `src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts`, `src/engine/meetingEncounter.ts`
-- **Other hits:** `src/components/Game/encounter-stage/nudgeCommit.ts`, `src/debug-bridge.ts`, `src/engine/encounters/nudgeDispatch.ts`, `src/engine/encounters/nudges.ts`, `src/types/meetingEncounter.ts`
-- **Verdict:** Tier 2: read sites present, declared write sites empty — nothing produces this contract. — or the declared symbol does not appear at the declared site: grep 'buildNudgeHand' src/types/unifiedAction.ts before treating this as a leak.
+- **Other hits:** `src/components/Game/encounter-stage/nudgeCommit.ts`, `src/debug-bridge.ts`, `src/engine/encounters/nudgeDispatch.ts`, `src/engine/encounters/nudges.ts`, `src/engine/nudgeCardRepertoire.ts` +1 more
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `player-action-aftermath-read` — 🔵 UNVERIFIED-OK
 
@@ -710,6 +729,18 @@ remediation ticket or the build fails.
 - **Read sites:** `src/debug-bridge.ts`, `src/engine/traitRefValidation.ts`
 - **Other hits:** `src/data/__fixtures__/nudge-exemplar/swollen-ford-exemplar.ts`, `src/data/anomaly-reward-catalog.ts`, `src/data/encounter-content.ts`, `src/data/starter-attachments.ts`, `src/engine/nudgeGrantLiveness.ts` +2 more
 - **Verdict:** Pinned by badgeOverride: Detector shipped and measured (THR-786): 62 of the authored trait refs resolve to no trait definition, so those gates can never pass. Reconciling the authoring vocabulary against the minted definitions is content work outside the predicate floor.
+
+### `twilight-harvest-preserves-defining-card` — 🔵 UNVERIFIED-OK
+
+- **Intent:** A god who dies is not wholly gone: the trick they were known for survives the age and turns up in the next god's hand, whole after a triumph and scarred after a defeat.
+- **Producer → Consumer:** Attention, Chronicle & Narrative → Encounters & Dilemmas
+- **UL terms:** *Nudge*, *Echo*, *World-Soul*
+- **Module:** `src/engine/nudgeCardRepertoire.ts`
+- **Production hits:** 6 total — 1 write, 1 read, 4 unclassified
+- **Write sites:** `src/engine/cycleEnd.ts`
+- **Read sites:** `src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts`
+- **Other hits:** `src/engine/echo.ts`, `src/engine/nudgeCardRepertoire.ts`, `src/types/echo.ts`, `src/types/gameState.ts`
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `world-events-mint-ambitions` — 🟢 LIVE
 

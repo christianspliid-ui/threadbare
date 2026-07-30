@@ -87,6 +87,17 @@ export interface NudgeHandContext {
    * `requiresFavor` cards (The Favor, call variant). Absent ⇒ no favor.
    */
   readonly hasCallableFavor?: boolean;
+  /**
+   * THR-887 — library card ids this god's repertoire actually holds, from
+   * `buildRepertoire`. This is where sphere gating becomes lock/unlock rather
+   * than only a discount: an authored option whose `libraryCardId` is not in
+   * this set is signed by a sphere the god does not hold, and is withheld.
+   *
+   * **Absent ⇒ every card passes** (NFP #6), which is what keeps every
+   * pre-THR-887 caller — and every authored option with no `libraryCardId` —
+   * behaving exactly as it does today.
+   */
+  readonly repertoireCardIds?: ReadonlySet<string>;
 }
 
 /**
@@ -251,6 +262,20 @@ export function buildNudgeHand(
     }
 
     if (nudge.sphere && !context.accessibleSpheres.includes(nudge.sphere)) {
+      dimmed.push({ nudge, blocked: 'sphere_locked' });
+      continue;
+    }
+
+    // THR-887 — the repertoire gate. Checked *after* the per-encounter sphere
+    // check because they answer different questions: that one asks whether the
+    // god can pay in this sphere right now, this one whether the god owns the
+    // card at all. `sphere_locked` is the right code for both — the stage
+    // withholds it and the designer view still lists it.
+    if (
+      context.repertoireCardIds
+      && nudge.libraryCardId
+      && !context.repertoireCardIds.has(nudge.libraryCardId)
+    ) {
       dimmed.push({ nudge, blocked: 'sphere_locked' });
       continue;
     }
