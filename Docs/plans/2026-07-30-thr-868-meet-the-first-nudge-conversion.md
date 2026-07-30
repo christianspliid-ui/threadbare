@@ -203,6 +203,14 @@ interface MeetingBondResolvedTrace {
 | Thread edge `bondReception` | **add** | Written at bond; read site: agent detail / backstory surfaces (executor names the first reader; if none lands in this PR, file a `Deferral`) |
 | Legacy dilemma choice path | **preserve (fail-soft only)** | Retired per-template as batches convert; never retired wholesale in this ticket |
 
+## Blast Radius
+
+No ≥100-importer file is edited — stated affirmatively because the plan *names* one to firewall it:
+
+| File | Importer count | Cascade-risk note |
+|------|---------------|-------------------|
+| `src/types/unifiedAction.ts` | 278 importers | **NOT touched.** `MeetingStepNudge` extends `StepNudge` structurally in `src/types/meetingEncounter.ts`; the WS2 hand machinery consumes it unchanged. Any executor edit to this file is out of plan scope. |
+
 ## Three-pillar check
 
 - [x] Engine pillar present
@@ -212,11 +220,13 @@ interface MeetingBondResolvedTrace {
 
 ## Vision audit
 
-- [x] Strengthens the core premise — the first thing the game teaches becomes "the god acts in physics; fate decides." The formative tests are present-tense trials (Christian's verdict 13); no new fiction premise is introduced.
+- [x] This plan does not contradict any Vision premise — it strengthens the core one: the first thing the game teaches becomes "the god acts in physics; fate decides." The formative tests are present-tense trials (Christian's verdict 13); no new fiction premise is introduced.
+- [x] The one Vision-adjacent edit it forces (vault `taste-profile.md` quality-bar entry, which names the retired lyrical meeting prose) is part of this ticket's scope — see Notes for the executor.
 
 ## Rulebook impact
 
-- [ ] **Changes a rule of play** — the first-encounter structure and bond formation are rules of play. `Docs/canon/rulebook.md` (+ quick-reference if the meeting is mentioned) update lands in the implementation PR, not as a follow-up. `Docs/canon/encounters.md` gains a line noting the meeting is nudge-native. New UL terms (**Formative Test**, **Bond Reception**) go through a `UL-proposal` issue filed by the executor. ("Unset weave" was rejected by Christian 2026-07-30 — do not introduce the term.)
+- [x] **This plan changes a rule of play** — the first-encounter structure and bond formation are rules of play.
+- [ ] `Docs/canon/rulebook.md` (+ quick-reference if the meeting is mentioned) update lands in the implementation PR, not as a follow-up. `Docs/canon/encounters.md` gains a line noting the meeting is nudge-native. New UL terms (**Formative Test**, **Bond Reception**) go through a `UL-proposal` issue filed by the executor. ("Unset weave" was rejected by Christian 2026-07-30 — do not introduce the term.)
 
 ## Kill criteria
 
