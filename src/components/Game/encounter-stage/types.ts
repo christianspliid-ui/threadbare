@@ -5,6 +5,7 @@ import type { SphereName } from '../../../types/index';
 import type { ResolutionInput } from '../../../types/resolution';
 import type { ForecastTier } from '../../../types/traces/encounter-traces';
 import type { NudgeBlockedCode } from '../../../engine/encounters/nudges';
+import type { NudgeCostChannelId } from '../../../data/nudge-card-display';
 import type { MotiveSource } from '../../../engine/encounters/motiveClassifier';
 import { isForceFullEncounterVisibility } from '../../../engine/debugVisibilityOverride';
 
@@ -265,22 +266,59 @@ export interface EncounterStageAftermathModel {
  */
 export type NudgeCardState = 'playable' | 'dimmed';
 
+/**
+ * A non-essence price this card charges (THR-885 cost channels), already read
+ * into display form by the adapter (THR-890). The magnitude renders as penalty
+ * pips; the label states the price in words.
+ */
+export interface EncounterStageCostChannelModel {
+  id: NudgeCostChannelId;
+  icon: string;
+  /** Plain-language price — never a numeral. */
+  label: string;
+  /**
+   * Raw signed delta, for the penalty-pip row. Negative deltas are *relief*
+   * (a card that calms the doom clock), which is why the label carries the
+   * direction rather than the sign alone.
+   */
+  delta: number;
+}
+
 export interface EncounterStageNudgeCardModel {
   id: string;
   /**
-   * Library card this option instances (THR-887). Carried through the view model
-   * purely so the commit path can tally it for the twilight echo card — never
-   * rendered. Absent on a one-off authored option.
+   * Library card this option instances (THR-887). Carried so the commit path can
+   * tally it for the twilight echo card, and — since THR-890 — so the card row
+   * can print the family's keyword. Absent on a one-off authored option, which
+   * renders chipless rather than inventing a type.
    */
   libraryCardId?: string;
+  /**
+   * Player-facing library keyword ("Boost", "Gambit"), derived from
+   * {@link libraryCardId}. Absent ⇒ no chip.
+   */
+  keyword?: string;
+  /** Single glyph drawn on the keyword chip. Present whenever `keyword` is. */
+  keywordIcon?: string;
   name: string;
   /** Card body — a concrete, witnessed effect. */
   fiction: string;
   /** Player guidance, words only — never a number. */
   effectLine: string;
+  /**
+   * **Effective** essence price — after any sphere discount (THR-885).
+   *
+   * This is deliberately the discounted number rather than the authored one:
+   * `buildNudgeHand` prices affordability off it and `totalNudgeCost` charges it,
+   * so quoting the authored cost here would show a card dear and bill it cheap.
+   */
   essenceCost: number;
+  /** True when a sphere alignment brought {@link essenceCost} below the authored price. */
+  discounted?: boolean;
   /** Cost rendered in words; absent on a free (trait) option. */
   costLabel?: string;
+  /** Prices charged outside the essence pool. Empty ⇒ essence is the whole price. */
+  costChannels?: EncounterStageCostChannelModel[];
   sphere?: SphereName;
   /** WS4 image-library tag. Absent ⇒ the fallback chain ends at EntityVisual. */
   imageTag?: string;

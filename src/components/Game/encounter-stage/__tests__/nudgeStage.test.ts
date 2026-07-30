@@ -21,6 +21,20 @@ import { buildNudgePhaseModel } from '../adapters/buildNudgePhaseModel';
 import { NUDGE_GOLDEN_EXEMPLAR } from '../../../../data/__fixtures__/nudge-exemplar/darkhollow-vault-exemplar';
 import { spendNudgeEssence, type EssencePool } from '../nudgeCommit';
 import { forecastWithNudges } from '../useNudgeHand';
+import {
+  PIP_ODDS_TIERS,
+  PIP_PENALTY_TIER,
+  PIP_STEP_PERCENT,
+  PIPS_PER_TIER,
+  oddsPips,
+  pipReadingLabel,
+} from '../../../../data/nudge-pip-vocabulary';
+import {
+  NUDGE_CARD_TYPE_ICONS,
+  nudgeCardKeyword,
+} from '../../../../data/nudge-card-display';
+import { NUDGE_CARD_TYPES, NUDGE_CARD_LIBRARY } from '../../../../data/nudge-card-library';
+import { effectiveNudgeCost } from '../../../../engine/encounters/nudges';
 
 // ─── Fixtures ─────────────────────────────────────────────────────
 
@@ -68,6 +82,18 @@ const NUDGES: StepNudge[] = [
     forecastDelta: 0.1,
     fiction: 'She has walked this stone before, in worse weather.',
     effectLine: 'Only for one who has walked it.',
+  },
+  // THR-890 fixtures: a library-backed card (prints a keyword chip) that is also
+  // paid for outside the essence pool (prints alternate-cost rows).
+  {
+    id: 'library_card',
+    name: 'Press the hinge',
+    libraryCardId: 'card.boost.core',
+    essenceCost: 1,
+    forecastDelta: 0.06,
+    costs: { detectionDelta: 0.1, doomDelta: 0 },
+    fiction: 'Something in the dark leans with her.',
+    effectLine: 'Better odds, and someone notices.',
   },
 ];
 
@@ -271,6 +297,149 @@ describe('buildNudgePhaseModel — authored purpose line and factor lines', () =
     for (const factor of phase.testPanel.factors) {
       expect(factor.polarity).toBe('neutral');
     }
+  });
+});
+
+// ─── Card display model (THR-890) ─────────────────────────────────
+
+describe('buildNudgePhaseModel — card-row display model', () => {
+  it('quotes the DISCOUNTED price, because that is the price the commit path charges', () => {
+    // `force` is the only sphere in the pool, so a force-signed card is the
+    // ascendant's own signature and discounts. Quoting `nudge.essenceCost` here
+    // would show the card dear and bill it cheap — the exact bug
+    // `effectiveNudgeCost` is exported to make impossible.
+    const phase = buildPhase()!;
+    const card = phase.cards.find((c) => c.id === 'force_surge')!;
+    const authored = NUDGES.find((n) => n.id === 'force_surge')!.essenceCost;
+    const expected = effectiveNudgeCost({ sphere: 'force', essenceCost: authored }, ['force']);
+
+    expect(expected).toBeLessThan(authored);
+    expect(card.essenceCost).toBe(expected);
+    expect(card.discounted).toBe(true);
+    expect(card.costLabel).toBe(`${expected} essence`);
+  });
+
+  it('leaves an undiscounted card at its authored price', () => {
+    const card = buildPhase()!.cards.find((c) => c.id === 'steady_hand')!;
+    expect(card.essenceCost).toBe(1);
+    expect(card.discounted).toBe(false);
+  });
+
+  it('bills a reopened committed hand at the same discounted total the cards quoted', () => {
+    const phase = buildPhase(undefined, buildAction({ activeNudges: ['force_surge'] }))!;
+    const card = phase.cards.find((c) => c.id === 'force_surge')!;
+    expect(phase.committedCost).toBe(card.essenceCost);
+  });
+
+  it('prints the library keyword and its icon on a library-backed card', () => {
+    const card = buildPhase()!.cards.find((c) => c.id === 'library_card')!;
+    // Derived from the library, not from a parallel field on `StepNudge`.
+    const boost = NUDGE_CARD_TYPES.find((t) => t.id === 'boost')!;
+    expect(card.keyword).toBe(boost.keyword);
+    expect(card.keywordIcon).toBe(NUDGE_CARD_TYPE_ICONS.boost);
+  });
+
+  it('leaves a one-off authored option chipless rather than inventing a type', () => {
+    const card = buildPhase()!.cards.find((c) => c.id === 'steady_hand')!;
+    expect(card.libraryCardId).toBeUndefined();
+    expect(card.keyword).toBeUndefined();
+  });
+
+  it('renders a declared-but-zero cost channel as no channel at all', () => {
+    // `doomDelta: 0` is a channel the card named and did not use. Drawing it
+    // would promise a price that never arrives.
+    const card = buildPhase()!.cards.find((c) => c.id === 'library_card')!;
+    expect(card.costChannels?.map((c) => c.id)).toEqual(['detection']);
+    expect(card.costChannels![0].delta).toBeGreaterThan(0);
+    expect(card.costChannels![0].label).toMatch(/[a-z]/);
+    expect(card.costChannels![0].label).not.toMatch(/\d/);
+  });
+
+  it('gives a card with no cost channels none, rather than an empty row', () => {
+    const card = buildPhase()!.cards.find((c) => c.id === 'steady_hand')!;
+    expect(card.costChannels).toBeUndefined();
+  });
+
+  it('resolves a keyword for every card in the shipped library', () => {
+    // A library member whose type carries no icon would render a blank chip.
+    // Pin the whole library rather than a sample, and pin its population first
+    // so an empty library cannot pass this vacuously.
+    expect(NUDGE_CARD_LIBRARY.length).toBeGreaterThan(0);
+    for (const member of NUDGE_CARD_LIBRARY) {
+      const keyword = nudgeCardKeyword(member.id);
+      expect(keyword, `no keyword for ${member.id}`).toBeDefined();
+      expect(keyword!.keyword.length).toBeGreaterThan(0);
+      expect(keyword!.icon.length).toBeGreaterThan(0);
+    }
+  });
+
+  it('fails soft on a libraryCardId that names no member', () => {
+    expect(nudgeCardKeyword('card.retired.long_ago')).toBeUndefined();
+    expect(nudgeCardKeyword(undefined)).toBeUndefined();
+  });
+});
+
+// ─── The odds pip vocabulary (THR-890) ────────────────────────────
+
+describe('oddsPips', () => {
+  it('walks the ladder one tier at a time, five steps per tier', () => {
+    // The whole contract in one pass: step N of the ladder lands in tier
+    // floor((N-1)/5) with ((N-1)%5)+1 pips filled.
+    for (const [tierIndex, tier] of PIP_ODDS_TIERS.entries()) {
+      for (let step = 1; step <= PIPS_PER_TIER; step += 1) {
+        const percent = tier.minPercent + (step - 1) * PIP_STEP_PERCENT;
+        const reading = oddsPips(percent / 100);
+        expect(reading, `${percent}% read as nothing`).toBeDefined();
+        expect(reading!.tier.id, `${percent}%`).toBe(PIP_ODDS_TIERS[tierIndex].id);
+        expect(reading!.filled, `${percent}%`).toBe(step);
+        expect(reading!.total).toBe(PIPS_PER_TIER);
+        expect(reading!.polarity).toBe('gain');
+      }
+    }
+  });
+
+  it('rounds to the nearest ~5% rather than flooring', () => {
+    // 0.08 is the commonest authored delta. Flooring would read it as one pip;
+    // "to the nearest 5%" makes it two.
+    expect(oddsPips(0.08)!.filled).toBe(2);
+    expect(oddsPips(0.12)!.filled).toBe(2);
+    expect(oddsPips(0.13)!.filled).toBe(3);
+  });
+
+  it('reads every authored delta in the shipped corpus as a drawable row', () => {
+    // Today's corpus runs 0.03–0.18, all inside the faint tier. If a later batch
+    // authors past it, this keeps saying so rather than silently clamping.
+    for (const nudge of NUDGES) {
+      if (nudge.forecastDelta === 0) continue;
+      expect(oddsPips(nudge.forecastDelta), `${nudge.id}`).toBeDefined();
+    }
+  });
+
+  it('reads a negative magnitude as filled penalty triangles with no hollow remainder', () => {
+    const reading = oddsPips(-0.1)!;
+    expect(reading.tier.id).toBe(PIP_PENALTY_TIER.id);
+    expect(reading.polarity).toBe('penalty');
+    // A penalty is not progress toward anything, so it draws no empty slots.
+    expect(reading.total).toBe(reading.filled);
+  });
+
+  it('clamps past the top of the ladder instead of overflowing into a tier with no glyph', () => {
+    const top = oddsPips(1)!;
+    const past = oddsPips(4)!;
+    expect(top.tier.id).toBe('fated');
+    expect(top.filled).toBe(PIPS_PER_TIER);
+    expect(past).toEqual(top);
+  });
+
+  it('draws nothing for zero, and nothing for a value that is not a number', () => {
+    expect(oddsPips(0)).toBeUndefined();
+    expect(oddsPips(Number.NaN)).toBeUndefined();
+    expect(oddsPips(Number.POSITIVE_INFINITY)).toBeUndefined();
+  });
+
+  it('states the reading in words for a screen reader, with no glyphs in the label', () => {
+    expect(pipReadingLabel(oddsPips(0.4)!)).toBe('Strong, 3 of 5');
+    expect(pipReadingLabel(oddsPips(-0.1)!)).toBe('Penalty, 2');
   });
 });
 

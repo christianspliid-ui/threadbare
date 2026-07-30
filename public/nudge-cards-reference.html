@@ -151,16 +151,18 @@
       <li><strong>Picture</strong> — one small painted image per library card, generic like the title. Manifest + fallback chain (type icon on a tinted band until painted); rides the encounter image library pattern.</li>
       <li><strong>Keyword + icon</strong> — the card's type, player-facing vocabulary learned once.</li>
       <li><strong>Title</strong> — two or three generic words, reusable everywhere.</li>
-      <li><strong>Cost</strong> — essence pips, <em>Free</em>, or alternate-cost icons (detection, doom, obligation).</li>
+      <li><strong>Cost</strong> — essence pips, <em>Free</em>, or alternate-cost icons (detection, doom, obligation). A sphere-discounted card prints the <em>effective</em> price: the pips are what the commit path charges, never the authored number.</li>
       <li><strong>Effect</strong> — one plain mechanical sentence; odds shown in the pip vocabulary below.</li>
       <li><strong>Flavor quote</strong> — one short generic line in the serif voice. The card's only prose.</li>
     </ul>
   </div>
 </div>
 
-<h2>The odds pip vocabulary <span class="flag design">DESIGN</span></h2>
+<h2>The odds pip vocabulary <span class="flag impl">IMPL</span></h2>
 
-<p>Approved 2026-07-30. Magnitude to the nearest ~5%: five pips per color tier, tier colors matching the attachment-rarity ladder, <strong>pip shape changes with tier</strong> so magnitude survives colorblindness — and shape escalation doubles as rarity feel. Stored values are raw numbers; the tiering is purely display (recorded on THR-885).</p>
+<p>Approved 2026-07-30, shipped in THR-890. Magnitude to the nearest ~5%: five pips per color tier, tier colors matching the attachment-rarity ladder, <strong>pip shape changes with tier</strong> so magnitude survives colorblindness — and shape escalation doubles as rarity feel. Stored values are raw numbers; the tiering is purely display (recorded on THR-885).</p>
+
+<p>The ladder is twenty ~5% steps grouped into four tiers of five, so the tier index is <span class="mono">floor((step&nbsp;−&nbsp;1)&nbsp;/&nbsp;5)</span> and the filled count is <span class="mono">((step&nbsp;−&nbsp;1)&nbsp;mod&nbsp;5)&nbsp;+&nbsp;1</span>. Tier bounds and glyphs are named constants in <span class="mono">src/data/nudge-pip-vocabulary.ts</span>; the rows are drawn by the shared <span class="mono">OddsPips</span> / <span class="mono">CostPips</span> primitives, both registered in <span class="mono">?view=styleguide</span>. Shape is the accessibility channel and color is secondary; each row carries its reading as an <span class="mono">aria-label</span> ("Strong, 3 of 5") because a screen reader spelling out geometric characters is worse than silence.</p>
 
 <div class="legend">
   <span><span class="pips pip-g">●●●○○</span>&nbsp; Faint — circles, +5 to +25</span>
@@ -276,7 +278,7 @@
 <h3>Card content status</h3>
 <p>The library ships <strong>structure without prose</strong>: every member is gated, priced, and dealable, and <span class="mono">title</span>/<span class="mono">quote</span> are optional and currently absent. An unauthored card renders as its own keyword rather than blank. Titles, flavor quotes, and art are authored under THR-883 once the authoring format locks — no schema change needed when they arrive.</p>
 
-<p style="margin-top: 28px; font-size: 0.88rem; color: var(--ink-faint);">Maintained under THR-883. Engine shipped in THR-887 (library data model, per-member sphere gating, unlock resolution, echo-card harvest); the card row and pip rendering are THR-890. This page's tables are freshness-gated against <span class="mono">src/data/nudge-card-library.ts</span>.</p>
+<p style="margin-top: 28px; font-size: 0.88rem; color: var(--ink-faint);">Maintained under THR-883. Engine shipped in THR-887 (library data model, per-member sphere gating, unlock resolution, echo-card harvest); the card row and pip rendering shipped in THR-890 (<span class="mono">NudgePhaseShell</span> draws the anatomy above; <span class="mono">OddsPips</span>/<span class="mono">CostPips</span>/<span class="mono">CardKeywordChip</span> are shared primitives). Keywords are derived from this library — no card type is declared anywhere else. This page's tables are freshness-gated against <span class="mono">src/data/nudge-card-library.ts</span>.</p>
 
 </div>
 </body>
