@@ -1,5 +1,5 @@
 /**
- * Force-full-encounter-visibility override — THR-880.
+ * Force-full-encounter-visibility override — THR-878.
  *
  * A testing lever for the Encounter Experience project: while WS5 content is
  * mid-migration, most encounters are authored at background/shaping tier and
