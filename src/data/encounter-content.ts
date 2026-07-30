@@ -9,7 +9,9 @@
 
 import { ENCOUNTER_TYPE_MOTIVATIONS } from '../types/encounter';
 import type { LocationSubtype } from '../types/index';
-import type { UnifiedActionTemplate } from '../types/unifiedAction';
+import type { ContextFragmentSet, UnifiedActionTemplate } from '../types/unifiedAction';
+import { OPENING_FRAGMENT_SLOT } from '../engine/fragmentResolution';
+import { expandSettings, type SettingClass } from './settingClasses';
 import { getSocialEncounterById } from './social-encounter-content';
 import { getFactionEncounterById } from './faction-encounter-content';
 import { getMercenaryEncounterById } from './mercenary-encounter-content';
@@ -115,8 +117,30 @@ export const ENCOUNTER_DIFFICULTY_TIERS: Record<string, EncounterDifficultyTier>
 type EncounterEntry = {
   id: string;
   name: string;
-  locationTypes: LocationSubtype[];
+  /**
+   * THR-884: the setting envelope — the preferred way to place an encounter.
+   * Declare classes (`['rural', 'wayside']`); the converter expands them through
+   * `SETTING_CLASS_MAP` into `locationSubtypes`, which the encounter cache filters
+   * on unchanged. Write toward the *widest honest envelope* and keep it honest with
+   * per-class `openings` rather than by narrowing.
+   */
+  settings?: readonly SettingClass[];
+  /**
+   * Exact-subtype placement. Now the **override** for genuinely specific encounters
+   * (a temple rite that belongs at `temple` and nowhere else); every other template
+   * should prefer `settings`. Optional since THR-884 — an entry must carry at least
+   * one of `settings` / `locationTypes`, enforced by `settingClasses.test.ts`.
+   * Unioned with the expanded envelope when both are present.
+   */
+  locationTypes?: LocationSubtype[];
   sublocationTypes?: string[];
+  /**
+   * THR-884: per-setting-class opening paragraphs. Compiled by the converter into a
+   * `{frag:opening}` fragment set on the `setting` axis, with the first step's
+   * authored narrative as the `'*'` default. Must cover every class `settings`
+   * declares (build-time test).
+   */
+  openings?: Readonly<Partial<Record<SettingClass, string>>>;
   reachPrimary: string;
   reachSecondary?: string;
   encounterType: string;
@@ -226,11 +250,36 @@ function toOutcomeMeta(
   return { rewardPool: outcome.rewardPool, tierPromotionEligible: outcome.tierPromotionEligible, reputationDelta: outcome.reputationDelta };
 }
 
+/**
+ * THR-884 — compile a raw entry's `openings` table into the reserved `opening`
+ * fragment set. The first step's authored narrative becomes the `'*'` default, so a
+ * scene playing out at an unclassed subtype reads exactly as it does today.
+ *
+ * Returns `undefined` when the entry authored no openings, which keeps
+ * `contextFragments` absent (and the whole layer opt-in) for every un-migrated
+ * template — the byte-identical guarantee (NFP #6).
+ */
+function toOpeningFragments(e: EncounterEntry, baseNarrative: string): ContextFragmentSet | undefined {
+  if (!e.openings) return undefined;
+  const authored = Object.entries(e.openings).filter(([, text]) => text != null && text !== '');
+  if (authored.length === 0) return undefined;
+  return {
+    slot: OPENING_FRAGMENT_SLOT,
+    axis: 'setting',
+    variants: { ...Object.fromEntries(authored), '*': baseNarrative },
+  };
+}
+
 function toUnifiedTemplate(e: EncounterEntry): UnifiedActionTemplate {
   const motivations = (ENCOUNTER_TYPE_MOTIVATIONS as Record<string, readonly import('../types/agent').ValuePair[]>)[e.encounterType]
     ?? (e.motivations as readonly import('../types/agent').ValuePair[] ?? []);
   const firstStep = e.steps[0];
   const lastStep = e.steps[e.steps.length - 1];
+  // THR-884: envelope expansion happens here, once, at conversion — never per tick.
+  const openingFragments = toOpeningFragments(e, firstStep?.narrative ?? `${e.name} begins.`);
+  // When openings are authored the first step renders through the fragment token;
+  // otherwise it keeps its literal narrative, untouched.
+  const openingProse = openingFragments ? `{frag:${OPENING_FRAGMENT_SLOT}}` : undefined;
   return {
     id: e.id,
     name: e.name,
@@ -246,7 +295,9 @@ function toUnifiedTemplate(e: EncounterEntry): UnifiedActionTemplate {
         onSuccess: [],
         onFailure: [],
         failBehavior: (index < e.steps.length - 1 ? 'continue_weakened' : 'fail_action') as 'continue_weakened' | 'fail_action',
-        narrativeTemplate: step.narrative,
+        // THR-884: only step 0 carries the per-class opening; later steps are the
+        // setting-neutral spine and keep their authored prose verbatim.
+        narrativeTemplate: index === 0 && openingProse ? openingProse : step.narrative,
         successAfterimage: step.onSuccess.narrative,
         failureAfterimage: step.onFailure.narrative,
         criticalSuccessAfterimage: step.criticalSuccessAfterimage,
@@ -270,10 +321,21 @@ function toUnifiedTemplate(e: EncounterEntry): UnifiedActionTemplate {
     minGroupMembers: e.minGroupMembers,
     requiresOpposingBand: e.requiresOpposingBand,
     contestNonLethal: e.contestNonLethal,
+    // THR-884: the envelope expands first (canonical class order), then any
+    // exact-subtype override, then sublocations. Deduplicated so a template
+    // declaring both `settings: ['sacred']` and `locationTypes: ['temple']`
+    // registers `temple` once — the cache filter uses `includes`, but a duplicated
+    // entry would double-count in the coverage matrix.
     locationSubtypes: [
-      ...e.locationTypes,
-      ...(e.sublocationTypes ?? []),
+      ...new Set<string>([
+        ...expandSettings(e.settings),
+        ...(e.locationTypes ?? []),
+        ...(e.sublocationTypes ?? []),
+      ]),
     ],
+    settings: e.settings,
+    openings: e.openings,
+    ...(openingFragments ? { contextFragments: [openingFragments] } : {}),
     sphereAffinity: e.sphereAffinity as UnifiedActionTemplate['sphereAffinity'],
     motivations,
     narrativeTemplates: {

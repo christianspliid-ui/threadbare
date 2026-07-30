@@ -5679,6 +5679,19 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "**Before redirecting any doc to a generated surface, grep the generated file for the specific nouns being redirected and require a hit for each.** A generated file is only ground truth for the domain its generator enumerates — read the generator's stated inputs (here `scripts/generate-systems-inventory.ts` + `ENGINE_PHASES` + `src/engine/**`, none of which enumerate `src/types/effects.ts` variants). When coverage fails, the correct fix is to keep the list and add a **dated freshness caveat naming the real ground truth** (`src/types/effects.ts` for declarations, `effectResolver.ts`/`effectExecutors.ts` for dispatch), which is what shipped. Note the ticket framed this as \"a judgement call for the executor, not a requirement\" — that framing is what made verifying it optional, and it is exactly the kind of suggestion that should be verified rather than adopted or declined on taste.",
     "session": "THR-763 roadmap substrate-check drift, hourly `tb-opus-pickup`, worktree priceless-boyd-b07fa4."
+  },
+  {
+    "num": "321",
+    "id": 321,
+    "count": 1,
+    "date": "2026-07-30",
+    "category": "process",
+    "description": "**A `Ready for Dev` ticket's plan doc existed only on an unmerged PR branch, so `pull-work` Step 6 (\"read the plan doc before touching code\") had nothing to read on `main`.** THR-884's description and handoff comment both correctly named `Docs/plans/2026-07-30-encounter-authoring-frameworks.md` — the two-place rule working as designed — but the `docs/plan-*` PR carrying it (#1122) was still open and, worse, `BEHIND`, so the path 404'd in a fresh worktree cut from `origin/main`.",
+    "consequence": "An executor that trusts the named path and finds it missing has three bad options: search `Docs/plans/` for a near-match (may find a stale predecessor), re-derive the design from the ticket description alone (loses every decision the doc records), or bounce a ticket whose handoff is actually complete.",
+    "impact": "Medium — costs a fetch and risks implementing against a re-derived design; the ticket is not defective, so a bounce would be wrong.",
+    "workaroundFound": true,
+    "workaround": "Fetch the PR head ref directly rather than the branch name (the head branch may not exist on `origin` under that name): `git fetch origin pull/<N>/head:pr-<N>` then `git checkout pr-<N> -- <path>`. Read it, then `git rm --cached` + `rm` the file so the plan doc ships under its own PR and is not duplicated by the implementation PR. The design session's Step 0.8 armed-PR sweep is the structural fix — it updated #1122 this same run — but the plan PR merging is not sequenced before the ticket it unblocks.",
+    "session": "THR-884 pickup (tb-opus-pickup, 2026-07-30). Plan-doc PR #1122 opened 15:14Z, ticket filed 15:14Z, pickup 16:02Z — under an hour, so the race is routine rather than exceptional."
   }
 ];
 // ── End data ──
