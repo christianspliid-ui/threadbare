@@ -208,12 +208,20 @@ writing, in the file's doc comment, before the first sentence of prose**:
 5. **What are the rewards, and where does the tension sit?** Prizes, tolls, and seeds
    (step 6's object references) sketched now, with the quintessence stakes — the
    erosion class failing here costs.
-6. **Does the mortal make a choice in this scene?** If yes, name the value axis it runs
-   on (`motivations`) and how it resolves: **the mortal decides, driven by their own
-   values and the god's lean — never the player.** (Mechanism note: the shipped pattern
-   is Meet The First's pole lean — the hand's net lean plus the mortal's axes pick the
-   direction, fate picks how cleanly; generalizing that selector to `ActionStepBranch`
-   is pending design. Until it lands, do not author a branch whose key nothing writes.)
+6. **Does the mortal make a choice in this scene?** "None — this is a test" is a valid
+   written answer, but **a healthy corpus slice runs on choices, and some encounters
+   should be designed for one** — a fork is where personality becomes story. If yes:
+   name the value axis it runs on (`motivations`), the two poles as concrete courses of
+   action, and what each pole's path changes downstream. **The mortal decides, driven
+   by their own values and the god's lean — never the player.** Mechanism: the
+   agent-decided branch selector (generalized from Meet The First's pole lean — the
+   mortal's axiological profile on the axis plus the net lean of the committed cards
+   picks the pole, which is recorded as the branch key; fate still rolls how cleanly
+   the chosen course goes). Engine ticket: the *agent-decided branches* ticket filed
+   from THR-883; until it lands, choice-designed encounters are authored with the axis
+   and both pole-paths on paper, and their branch wiring rides the ticket. A choice
+   scene wants pole-leaning cards in its hand (Undertow, Compulsion, Kindled Ambition,
+   trait cards) so the god has levers on the direction, not only on the cleanliness.
 7. **Every promise pays off.** Anything the opening makes the player lean toward the
    screen for — what bends the reeds — has its reveal designed *now*, in a later step,
    a band, or the aftermath, before the promise is written down.
