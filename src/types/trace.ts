@@ -2103,7 +2103,10 @@ export type TraceEntry =
   // Nudge Model — WS0 engine substrate (THR-773)
   | NudgePlayedTrace
   | AgentBrokenTrace
-  | AgentMendedTrace;
+  | AgentMendedTrace
+  // Nudge Model — WS6 Meet The First conversion (THR-868)
+  | MeetingTestResolvedTrace
+  | MeetingBondResolvedTrace;
 
 /**
  * Trace: residence observed across every individual actor this interval (THR-822).
@@ -2167,6 +2170,57 @@ export interface AgentMendedTrace extends TraceBase {
   category: 'agent_mended';
   agentId: string;
   ticksBroken: number;
+}
+
+/**
+ * Trace: a formative test's fate roll resolved during Meet The First (THR-868).
+ *
+ * Player-driven and once-per-game: at most `MEETING_FORMATIVE_TEST_COUNT` of
+ * these ever exist in a run, so one entry per resolution — the aggregate-batching
+ * rule governs all-agents tick phases, and the meeting is neither.
+ *
+ * `netLean` against `writtenPole` is the diagnostic that matters: the two
+ * disagreeing is the design working (fate overrode the god's argument), and
+ * `netLean: 'none'` on every entry across a session means the authored hands are
+ * not carrying pole leans at all.
+ */
+export interface MeetingTestResolvedTrace extends TraceBase {
+  category: 'meeting.test_resolved';
+  /** Which formative test in the sequence (0-indexed). */
+  testIndex: number;
+  /** Converted dilemma template this test was drawn from. */
+  templateId: string;
+  valuePair: import('./agent').ValuePair;
+  /** Pole lean of the played hand, before fate. */
+  netLean: 'a' | 'b' | 'none';
+  playedNudgeIds: string[];
+  /** Resolved band on the shared six-value ladder. */
+  band: import('./unifiedAction').StepOutcome;
+  /** The pole the band actually wrote. */
+  writtenPole: 'a' | 'b';
+  /** Signed shift applied, relative to pole `a`. */
+  shift: number;
+  /** Erosion this band cost, before the floor clamp. 0 on non-scarring bands. */
+  quintessenceErosion: number;
+  essenceSpent: number;
+}
+
+/**
+ * Trace: the bond test resolved, closing Meet The First (THR-868).
+ *
+ * Exactly one per completed meeting. `startingQuintessence` is the post-clamp
+ * value actually written to the agent node — if it ever equals
+ * `MEETING_QUINTESSENCE_FLOOR`, the floor did real work and the scar constants
+ * are worth a look.
+ */
+export interface MeetingBondResolvedTrace extends TraceBase {
+  category: 'meeting.bond_resolved';
+  band: import('./unifiedAction').StepOutcome;
+  /** awe | devotion | bargain | doubt | defiance */
+  receptionId: string;
+  playedNudgeIds: string[];
+  /** Starting quintessence after scarring, post-floor. */
+  startingQuintessence: number;
 }
 
 /**

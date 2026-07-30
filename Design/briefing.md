@@ -1,38 +1,38 @@
 # Briefing
 
-**Generated:** 2026-07-30 08:57 local (2026-07-30 06:57 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-07-30 10:58 local (2026-07-30 08:58 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
 ## Needs Christian
 
-**Nothing needs you right now.** No open question, no switch waiting on you, nothing stuck on a decision. Every health check came back clean, and both of the other planning robots that reported recently had nothing for you either.
+**Nothing needs you right now.** No open question, no switch waiting on you, nothing stuck on a decision. Every health check came back clean, and both of the other planning robots that reported recently had nothing for you either — including the one that re-checked your call to leave the ascendant power-curve rework parked. That call stands and needs no revisiting.
 
 ## Queue
 
-**Fifty-two jobs ready, one in progress, nothing gone cold.** No urgent or high-priority work is waiting — it is eighteen medium and thirty-four small. The longest anything has sat is about five and a half days, inside the week we allow.
+**Fifty-six jobs ready, one in progress, nothing gone cold.** The shelf grew by four over the last two hours. Nothing has sat longer than about five and a half days, inside the week we allow.
 
-**A job was picked up while this brief was being written**, at 08:57 exactly — the worktree-tidying job, which had been waiting since Tuesday evening. So the queue is being worked, not just watched.
+**The shape of the queue changed more than its size, and that is the real news.** Two hours ago nothing on the shelf was marked urgent or high. Now nine jobs are urgent and three are high. The nine are all one piece of work: rewriting the encounter text and choices for the places mortals actually travel through — hamlets, roadsides, wilds, civic seats, shrines and ruins. They were already written and waiting; someone moved them to the front. So the picker no longer has to guess what matters most.
 
-**Over the last two hours: one job finished, one new one filed.** Filing and finishing are keeping pace. That is now the second stretch running where the shelf did not grow — worth noting, but fifty-two is still a deep shelf, and two data points is not a trend.
+**Those nine have to be taken one at a time**, because they all edit the same two files. That is not a jam — only one job runs at a time anyway. It means the front of the queue is now about nine passes of unambiguous, clearly-ordered work, which is the healthiest the shelf has looked in days. The first one is unblocked and ready to go.
 
 ## Freshness
 
 **Home tree healthy.** You are on the main line, fully up to date, nothing stranded. The only local edits are your own tool-permission settings, which block nothing.
 
-**Last hour's watch item resolved, and in resolving it corrected itself.** The previous brief flagged that the hourly sync looked eight minutes late and promised a plain answer this hour. The answer: **there was probably never a delay.** When the sync has nothing new to fetch, it does its work and leaves no record — so an hour with no entry looks identical to an hour where it failed to run. Your copy is exactly current, which is the outcome that actually matters. The alarm was a misreading of the evidence rather than a fault in the machinery, and the reasoning is now written down so it is not raised a third time.
+**The live site published again this hour** — it is now serving the newest commit, having correctly sat still for the previous few hours when only notes and docs had changed. So the publish check has now been seen working in both directions, which is what makes it trustworthy rather than merely quiet.
 
-**Everything else checked clean.** The merge safety net is healthy with zero failed starts — the sixteenth clean check since you sorted the billing page. The tidy-up robot ran at 08:40 with nothing awaiting a human call, and the leftover drafts it tracks are now at zero. All eight scheduled robots are on time. The live site is correctly unchanged: only notes and docs have landed since the last publish, so there was nothing to rebuild.
+**Everything else checked clean.** The merge safety net is healthy with zero failed starts — the seventeenth clean check since you sorted the billing page. All eight scheduled robots are on time. The tidy-up robot ran at 10:40 with nothing awaiting a human call, and no leftover drafts.
 
 ## What's moving
 
-**The stash-triage job shipped, and the warning in the last brief was right.** That brief said the job's whole description was built around tidying thirty-eight parked drafts that no longer existed, and that whoever took it would find almost nothing to do. Someone took it, found exactly that, disposed of the small residue, and recorded that most of the work had already shipped under a parent job. It closed cleanly and cost nobody a wasted session — the pile is now at zero.
+**The Meet The First encounter is being rebuilt, and half of it has landed.** This is the first thing a player meets — the moment a mortal becomes *your* First. The engine half shipped this morning: the meeting now runs as a set of small formative tests, with the bond itself as the climax rather than a foregone conclusion. The screen half — actually rendering those tests as cards the player reads and nudges — is written and waiting to merge. Three follow-ups were split out and filed rather than bolted on: making the meeting's inherited traits actually land on the new character, rewriting the remaining sixty-three dilemma templates as formative tests, and fixing the fact that no shortcut URL currently drops a tester straight into that encounter.
 
-**The work-picking robot claimed a job that had your name on it.** That sounds like nothing, but it settles a question that ran for eight briefs. The picker used to skip anything with an assignee, and the filing robot kept stamping your name on things — so work went invisible. The fix landed Tuesday night; this is the first time we have watched an assigned job actually get claimed, rather than inferring it from the code. The old failure is genuinely closed.
+**The worktree-tidying job finished** and the pile it was tracking is at zero.
 
-**One new job was filed to chase the last of that same bug** — the name-stamping still happens, it just no longer costs anything. Fittingly, the job about the stamping bug got stamped with your name too. Harmless, and noted for the humour.
+**A correction to last hour's brief.** It reported that this briefing task had silently produced nothing at 07:53, and treated that as a new fault worth chasing. That was wrong in a specific and useful way: the task *did* do its work — it wrote the brief and queued it — but the queued change had not merged yet, so looking only at what had landed made a working run look like a dead one. Last hour's brief has since gone through and is now live. The lesson is the one that has come up repeatedly this week: reading a machine's leftovers instead of its actual output invents faults that were never there.
 
-**One piece of housekeeping still waits on a session with permission to do it:** an obsolete pull request (#1031) wants closing and has now been idle about thirty-five hours. Nothing is lost by the wait.
+**And this hour's run then walked into a smaller version of the same trap, which is worth recording honestly.** Because last hour's brief was stuck behind a busy day of merges, this run tried to be clever and attach its own update to that stuck change so the two would land together. Unstickng it made it merge *instantly* — carrying only the older text, and leaving this hour's update behind. No content was lost and nothing needed a human, but the tidy plan was wrong and the plain approach (a change of its own) is what actually worked. Noted rather than quietly fixed, because the write-up of the clever plan had already been drafted as though it had succeeded.
 
 ---
 *Standing asks live in `Design/user-actions.md`. This file is regenerated hourly by the `keep-work-flowing-cc` scheduled task; staleness is visible from the Generated timestamp above and the task's `lastRunAt` in `list_scheduled_tasks`.*
