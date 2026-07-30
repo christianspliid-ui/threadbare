@@ -1,7 +1,7 @@
 ---
 name: vault-enrich
 description: Improve existing vault pages — add missing cross-references, expand thin sections, flag contradictions, improve summaries. Run with /kb-enrich. Can target specific pages or auto-select from lint results.
-last_validated_against: 2026-05-08
+last_validated_against: 2026-07-30
 ---
 
 # Vault Enrich — Knowledge Base Improvement
@@ -52,7 +52,7 @@ When enriching a page, DON'T just add links to the target page. Also update the 
 
 ## Logging
 
-After each enrichment, append to `TheFantasyWorldSimulator/log.md` following the **vault-log** skill procedure (MCP first, filesystem fallback if MCP is unreachable, loud failure if neither path is available).
+After each enrichment, append to `TheFantasyWorldSimulator/log.md` following the **vault-log** skill procedure (direct filesystem write via `OBSIDIAN_VAULT_PATH`, loud failure if that variable is unset).
 
 ```
 - **enrichment** | Enriched [[Page Name]] — added N cross-references, expanded N sections, fixed N issues
@@ -62,24 +62,22 @@ After each enrichment, append to `TheFantasyWorldSimulator/log.md` following the
 
 | Tool | Use For |
 |------|---------|
-| `obsidian_get_file_contents` | Read pages |
-| `obsidian_simple_search` | Find mentions of a concept |
-| `obsidian_patch_content` | Edit existing content (simple targets) |
-| `obsidian_append_content` | Add new sections, create See Also |
-| `obsidian_list_files_in_dir` | Discover related pages |
+| `Read` | Read pages |
+| `Grep` | Find mentions of a concept across the vault |
+| `Edit` | Edit existing content, add See Also |
+| `Write` | Create a new page |
+| `Glob` | Discover related pages |
 
-## Important: Obsidian MCP Quirks
+## Vault Access Protocol
 
-- **Always prefer `obsidian_append_content`** for adding new sections
-- `obsidian_patch_content` fails on complex targets — use simple, unique heading text
-- For Index.md edits, ONLY use `obsidian_append_content`
-- After enriching, verify with `obsidian_get_file_contents` that changes took effect
-
-## Filesystem Fallback Protocol
-
-When any `obsidian_*` MCP call fails (unreachable, connection refused, timeout):
+> **Filesystem only (THR-654, 2026-07-21).** There is no Obsidian MCP server — `.mcp.json`
+> configures `codesight` and nothing else, so `obsidian_get_file_contents`,
+> `obsidian_append_content`, `obsidian_patch_content` and every other `obsidian_*` tool is
+> simply absent. The former MCP-first ordering silently dropped ~12 `log.md` appends over
+> 8 days (impediments #66, #71, #75, #86). Read and write vault files directly.
 
 1. **Resolve vault path** — Run `Bash: echo $OBSIDIAN_VAULT_PATH`. This must be the absolute path to the Obsidian vault root folder (the folder *containing* `TheFantasyWorldSimulator/`).
-2. **Fail loud if missing** — If `OBSIDIAN_VAULT_PATH` is empty and the MCP is also unavailable, stop immediately and report: `"Obsidian MCP is unreachable and OBSIDIAN_VAULT_PATH is not configured. Vault write failed."` Do not silently skip.
-3. **Filesystem write** — If `OBSIDIAN_VAULT_PATH` is set, construct the full path by joining: `$OBSIDIAN_VAULT_PATH/<vault-relative-path>` (e.g., `$OBSIDIAN_VAULT_PATH/TheFantasyWorldSimulator/log.md`). Use `Read` then `Edit` to append, or `Write` to create new files. Write the exact same content the MCP path would have written.
-4. **Note the fallback** — Mention in your response that the filesystem fallback was used and which files were written, so the user knows the MCP was unavailable.
+2. **Fail loud if missing** — If `OBSIDIAN_VAULT_PATH` is empty, stop immediately and report: `"OBSIDIAN_VAULT_PATH is not configured. Vault write failed."` Do not silently skip.
+3. **Read / write** — Join `$OBSIDIAN_VAULT_PATH/<vault-relative-path>` (e.g. `$OBSIDIAN_VAULT_PATH/TheFantasyWorldSimulator/log.md`). Use `Read` to read, `Edit` to append to an existing file, `Write` to create a new one.
+4. **Report what was written** — Name the vault files you touched in your response.
+5. **Verify** — After enriching, `Read` the page back and confirm the change landed.

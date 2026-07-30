@@ -5,7 +5,7 @@ description: >
   or any content-authoring pipeline. Triggers on "content package", "graph node", "graph edge",
   "world model", "constraint layer", "category", "World-Soul", "rival gods",
   or when designing new game content or narrative systems.
-last_validated_against: 2026-05-08
+last_validated_against: 2026-07-30
 ---
 
 # Content & Worldbuilding — Domain Context
@@ -55,9 +55,15 @@ Player iteration options: regenerate, lock+regenerate, edit, parameter nudge. Pl
 
 > Graph-first principle covered by `state-of-game-design/reference/architectural-decisions.md`. Load the router first; it routes to that shard for architectural context.
 
-Current stats: 244 nodes, 371 typed edges, 18 categories, 19 content packages.
+`src/data/world-model.json` is the canonical data file. Validate with `npm run validate-model`.
 
-`world-model.json` is the canonical data file. Validate with `npm run validate-model`.
+Its `meta` block is self-describing — **read it rather than trusting a number quoted here**, which
+rots between validations (THR-688 rule A). As of 2026-07-30: 253 nodes, 371 typed edges,
+19 node categories, 18 distinct edge types.
+
+```bash
+node -e "const m=require('./src/data/world-model.json'); console.log(m.meta.nodeCount, m.meta.edgeCount, m.meta.categories.length)"
+```
 
 ## World-Soul & Metaprogression
 
@@ -74,8 +80,8 @@ Generated, not fixed. 2-4 per run, derived from:
 
 ## Key Files
 
-- `world-model.json` — canonical graph data
-- Obsidian vault (`TheFantasyWorldSimulator/`) — system specs with wikilinks, read `Index.md` first
+- `src/data/world-model.json` — canonical graph data (not at the repo root)
+- Obsidian vault (`$OBSIDIAN_VAULT_PATH/TheFantasyWorldSimulator/`) — system specs with wikilinks, read `Index.md` first. Filesystem access only; there is no Obsidian MCP (THR-654).
 - `Docs/plans/` — design rationale documents
 - `src/engine/` — content generation and constraint system code
 
