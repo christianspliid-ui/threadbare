@@ -5731,6 +5731,32 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "Resolve candidate paths against **both** the repo root and the owning skill's directory before reporting, and drop any path containing a `YYYY-MM-DD`-style placeholder. Standing rule: a path-existence sweep produces *candidates*, never findings — confirm each by locating the real file before writing it down.",
     "session": "THR-795 skill-freshness sweep — mechanical drift detection across `.claude/skills/*/SKILL.md`."
+  },
+  {
+    "num": "325",
+    "id": 325,
+    "count": 1,
+    "date": "2026-07-30",
+    "category": "process",
+    "description": "**A ticket was promoted to Ready for Dev while its plan doc and its required wiki page existed only on an unmerged PR branch.** THR-887's description named `Docs/plans/2026-07-30-nudge-card-repertoire.md` and required updating `public/nudge-cards-reference.html` in the same PR; both lived solely on PR #1129, still open. From `main` the plan doc did not exist and the wiki page it had to update did not exist, so the Done-when was unsatisfiable by construction from the branch point the executor would naturally take.",
+    "consequence": "Executor branched from `main`, found no plan doc, and had to discover the dependency through `gh pr view`. Stacking cost a mid-session branch relocation after ~15 edits were already made.",
+    "impact": "Medium",
+    "workaroundFound": true,
+    "workaround": "Read the plan doc out of the PR branch (`git show origin/<branch>:<path>`), then stack the work branch on that branch rather than on `main`, so the wiki page is present and the freshness gate is satisfiable. PR #1129 was also `BEHIND`, so `gh pr update-branch` was run as pull-work Step 0.8 prescribes.",
+    "session": "THR-887 execution, tb-opus-pickup"
+  },
+  {
+    "num": "326",
+    "id": 326,
+    "count": 1,
+    "date": "2026-07-30",
+    "category": "process",
+    "description": "**A blessed design doc and its wiki page both asserted a count the type system contradicts.** The Repertoire plan (Decision 7.3) and `nudge-cards-reference.html` both state **12 hungers**, naming `haunt` and `illuminate`; `HungerId` is a 10-member union and neither exists. Christian blessed the doc in chat, so the number carries design authority — but implementing it means minting two `HungerDefinition`s (perception style, emotional tone, reach bias, dilemma tags) that worldgen and the remembrance flow then seed against.",
+    "consequence": "An implementation ticket cannot satisfy a count that only a design decision can create, and inventing the two silently would have been a design decision made inside an implementation ticket — the THR-614 failure mode.",
+    "impact": "Medium",
+    "workaroundFound": true,
+    "workaround": "Ship the map keyed on the live union (`Record<HungerId, string>`) so it is exhaustive over what exists and cannot fall behind; file the discrepancy (THR-891) for the design call; state the gap on the wiki page rather than papering it. The `Record` keying means adding a `HungerId` member fails the build until its card is named.",
+    "session": "THR-887 execution, tb-opus-pickup"
   }
 ];
 // ── End data ──

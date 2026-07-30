@@ -154,6 +154,36 @@ export const SPHERE_DISCOUNT = 1;
  */
 export const SPHERE_DISCOUNT_MIN_COST = 1;
 
+// ─── The Repertoire (THR-887) ────────────────────────────────────────
+
+/**
+ * Essence knocked off a card signed by the ascendant's **secondary** sphere.
+ *
+ * Distinct from {@link SPHERE_DISCOUNT} by *layer*, not by arithmetic — both are
+ * 1, and that is a coincidence worth keeping visible rather than collapsing.
+ * `SPHERE_DISCOUNT` is THR-885's per-encounter price cut, applied by
+ * `effectiveNudgeCost` to a card in an authored step hand. This one is the
+ * repertoire layer: it prices a *library* card the god holds because their
+ * secondary sphere signs its type. Tuning one should not silently move the other.
+ *
+ * Primary-sphere cards are full strength (no discount, no surcharge) — the
+ * primary's reward is *access*, per plan Decision 7.1.
+ */
+export const SECONDARY_SPHERE_DISCOUNT = 1;
+
+/**
+ * Forecast penalty carried by an echo card returned from a **somber** age
+ * (plan Decision 7.4). The scarred card is cheaper — a dead god's favorite
+ * trick, come back wrong — and pays for it here.
+ *
+ * In pip terms this is one red down-triangle. Stored as a raw forecast delta;
+ * the pip tiering is display-only (recorded on THR-885).
+ */
+export const ECHO_CARD_SCAR_PENALTY = 5;
+
+/** Essence knocked off a scarred echo card. Pairs with {@link ECHO_CARD_SCAR_PENALTY}. */
+export const ECHO_CARD_SCAR_DISCOUNT = 1;
+
 // ─── Motive classification ───────────────────────────────────────────
 
 /** Receipt share that claims the motive as `choice` or `mission`. */

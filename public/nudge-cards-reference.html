@@ -224,8 +224,12 @@
 <p><strong>Blessed by Christian, 2026-07-30</strong> (all four verdicts, chat session; spec: <span class="mono">Docs/plans/2026-07-30-nudge-card-repertoire.md</span>). The fantasy in one line: <em>your spheres decide what magic you have, your play decides what it becomes, and your past lives haunt your hand.</em></p>
 </div>
 
+<div class="callout">
+<p><strong>Live as of THR-887.</strong> The tables in this section are the human-readable face of <span class="mono">src/data/nudge-card-library.ts</span> — <span class="mono">UNIVERSAL_CORE_TYPES</span>, <span class="mono">SPHERE_SIGNATURES</span>, and <span class="mono">HUNGER_UNIQUE_CARDS</span>. The engine reads that file; this page and it are held together by the wiki freshness gate, so a signature moved in one and not the other fails CI rather than drifting quietly.</p>
+</div>
+
 <h3>Birth — identity deals the deck</h3>
-<p>Every god holds the <strong>universal core</strong> (Boost, Insurance, Mercy, trait cards). Each of the 12 spheres owns <strong>signature types</strong> — primary sphere at full strength, secondary discounted, off-sphere locked. First-cut mapping, iterated here:</p>
+<p>Every god holds the <strong>universal core</strong> (Boost, Insurance, Mercy, trait cards). Each of the 12 spheres owns <strong>signature types</strong> — primary sphere at full strength, secondary discounted (<span class="mono">SECONDARY_SPHERE_DISCOUNT</span>), off-sphere locked. First-cut mapping, iterated here:</p>
 
 <table>
   <tr><th>Sphere</th><th>Signature types</th><th>Sphere</th><th>Signature types</th></tr>
@@ -237,7 +241,22 @@
   <tr><td>matter</td><td>Cache</td><td>energy</td><td>Boost⁺</td></tr>
 </table>
 
-<p><strong>Hunger uniques:</strong> each of the 12 hungers (witness, kindle, sever, bind, consume, gather, haunt, illuminate, preserve, reclaim, reshape, wander) contributes exactly one unique starting card no other god holds — a Witness gets <em>Seen</em> (the mortal briefly knows a god watched); a Sever god holds the game's only mid-encounter bond-cutting card. Twelve cards of content, a run-defining amount of identity.</p>
+<p><strong>The "⁺" is not decoration.</strong> <em>order</em> signs Insurance and <em>energy</em> signs Boost — types that are also universal core. The <em>type</em> is common; the <em>signature member</em> of it is not. Every god plays the core Insurance; only an order god plays order's. Access is read per member, never per type.</p>
+
+<p><strong>Hunger uniques:</strong> each hunger contributes exactly one unique starting card no other god holds — a Witness gets <em>Seen</em> (the mortal briefly knows a god watched); a Sever god holds the game's only mid-encounter bond-cutting card. A hunger unique ignores sphere entirely: it is identity, not alignment, so a chaos god still holds a Whisper-shaped Witness card that chaos does not sign.</p>
+
+<table>
+  <tr><th>Hunger</th><th>Unique card's type</th><th>Hunger</th><th>Unique card's type</th></tr>
+  <tr><td>witness</td><td>Whisper</td><td>gather</td><td>Cache</td></tr>
+  <tr><td>kindle</td><td>Kindled ambition</td><td>preserve</td><td>Insurance</td></tr>
+  <tr><td>sever</td><td>Long game</td><td>reclaim</td><td>Balm</td></tr>
+  <tr><td>bind</td><td>Favor</td><td>reshape</td><td>Stumble</td></tr>
+  <tr><td>consume</td><td>Undertow</td><td>wander</td><td>Omen</td></tr>
+</table>
+
+<div class="callout open-space">
+<p><strong>Ten, not twelve <span class="flag open">OPEN</span>.</strong> This section and the plan doc both said twelve hungers, naming <em>haunt</em> and <em>illuminate</em>. Neither exists in <span class="mono">HungerId</span>, and minting one means authoring a full <span class="mono">HungerDefinition</span> that worldgen and the remembrance flow then seed against — a design decision, not an implementation detail. THR-887 shipped the map keyed on the live ten so it cannot silently fall behind; <strong>THR-891</strong> decides whether to mint the two or correct the design surfaces to ten.</p>
+</div>
 
 <h3>The run — broad start, progression as variation</h3>
 <ul>
@@ -246,10 +265,18 @@
   <li><strong>Pips as seasoning, not the arc</strong> — sphere alignment still discounts and occasionally sharpens a card, but power growth is deliberately minor.</li>
 </ul>
 
-<h3>Between runs — the echo card</h3>
-<p>At twilight the harvest preserves a fourth thing beside Legacy, Monument, and Relic: <strong>the card that defined the run</strong> — most played, or played at the chronicle's biggest moment — enters the World-Soul and joins the next run's starting repertoire regardless of sphere. A triumphant age returns it at full tier; a somber one returns it scarred — cheaper, carrying a penalty pip. Your dead gods leave you their favorite trick.</p>
+<h3>Between runs — the echo card <span class="flag impl">IMPL</span></h3>
+<p>At twilight the harvest preserves a fourth thing beside Legacy, Monument, and Relic: <strong>the card that defined the run</strong> — most played, ties broken by the most climactic moment it was played at — enters the World-Soul as a fourth <span class="mono">EchoType</span> and joins the next run's starting repertoire <em>regardless of sphere</em>. A triumphant age returns it whole; a somber one returns it scarred — cheaper by <span class="mono">ECHO_CARD_SCAR_DISCOUNT</span>, carrying an <span class="mono">ECHO_CARD_SCAR_PENALTY</span> red pip. A bittersweet age returns it whole: the scar is the price of a failed age, not a mixed one. Your dead gods leave you their favorite trick.</p>
 
-<p style="margin-top: 28px; font-size: 0.88rem; color: var(--ink-faint);">Maintained under THR-883. Implementation is queued behind the two framework tickets (THR-884, THR-885); when the card library data file lands, this page's tables gain their source-of-truth and join the freshness gate against it.</p>
+<p>Selection is <strong>chosen, never rolled</strong> — no PRNG draw — and its final tie-break is card id, so a saved run replays to the same echo card. A card id that no longer exists in the library drops at world-seed with one warning and the rest of the harvest stands.</p>
+
+<h3>What "most storied" currently measures</h3>
+<p>The plan says the run's card is the most-played one, or the one played at <em>the chronicle's biggest moment</em>. The chronicle does not record which cards a beat was won with, so there is no direct signal to read. The tie-break uses <strong>doom-clock progress at the moment of play</strong> — the run's own tension curve, monotone and deterministic — as a first-cut proxy. Refine when the chronicle carries card provenance.</p>
+
+<h3>Card content status</h3>
+<p>The library ships <strong>structure without prose</strong>: every member is gated, priced, and dealable, and <span class="mono">title</span>/<span class="mono">quote</span> are optional and currently absent. An unauthored card renders as its own keyword rather than blank. Titles, flavor quotes, and art are authored under THR-883 once the authoring format locks — no schema change needed when they arrive.</p>
+
+<p style="margin-top: 28px; font-size: 0.88rem; color: var(--ink-faint);">Maintained under THR-883. Engine shipped in THR-887 (library data model, per-member sphere gating, unlock resolution, echo-card harvest); the card row and pip rendering are THR-890. This page's tables are freshness-gated against <span class="mono">src/data/nudge-card-library.ts</span>.</p>
 
 </div>
 </body>

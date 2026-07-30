@@ -197,6 +197,26 @@ export interface PendingChoiceCommit {
   consumesItemId?: string;
 }
 
+/**
+ * How often, and how climactically, one library card was played this run.
+ * Consumed by `selectEchoCard` at twilight (THR-887).
+ */
+export interface CardPlayTallyEntry {
+  /** Times this card was committed across the whole run. */
+  timesPlayed: number;
+  /**
+   * How far into the run's dramatic clock the most climactic play landed —
+   * doom-clock progress (0–1) at commit time, taken as a max.
+   *
+   * A **first-cut proxy** for the plan's "played at the chronicle's biggest
+   * moment": the chronicle does not record which cards a beat was won with, so
+   * there is no direct signal to read. Doom progress is the run's own tension
+   * curve, is monotone, and is deterministic — which is what the tie-break
+   * needs. Refine when the chronicle carries card provenance.
+   */
+  peakSignificance: number;
+}
+
 // ─── Game State ─────────────────────────────────────────────────
 
 export interface GameState {
@@ -263,8 +283,23 @@ export interface GameState {
    */
   chapterArchive?: readonly ChapterRecord[];
   /** Run-scoped unlocked actions (Starter actions are always available regardless).
-   *  Grown by the `unlock_action` aftermath effect when a beat is resolved (THR-500). */
+   *  Grown by the `unlock_action` aftermath effect when a beat is resolved (THR-500).
+   *  Also the grant set milestone *card* unlocks ride (THR-887) — one ledger, not two. */
   unlockedActionIds?: readonly string[];
+
+  /**
+   * Run-scoped tally of which library cards this god actually played (THR-887) —
+   * the input the twilight harvest selects the echo card from.
+   *
+   * Keyed by `StepNudge.libraryCardId`, so a card dealt by four different
+   * encounters accumulates one entry rather than four. Written at nudge commit
+   * (`GameView.handleCommitNudges`); an authored option with no `libraryCardId`
+   * is never tallied.
+   *
+   * Optional so old saves load with no tally, which the harvest reads as "this
+   * god never nudged" — a real state, and the fail-soft path.
+   */
+  cardPlayTally?: Readonly<Record<string, CardPlayTallyEntry>>;
 
   /** Ascendant Beat Director state — scheduling for encounters addressed to the
    *  player-god. Optional/additive (THR-500); the Director no-ops when absent. */

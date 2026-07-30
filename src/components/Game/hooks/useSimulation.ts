@@ -172,7 +172,16 @@ export function useSimulation({
   const handleBeginNextCycle = useCallback(() => {
     if (!harvestResult) return;
     const cosmicEchoes = harvestResult.cosmicEchoCandidates.map(c => c.echoDefinition);
-    const nextState = transitionToNewCycle(gameStateRef.current, cosmicEchoes, [], harvestResult.chronicleSummary);
+    // THR-887 — the echo card rides the divine-echo slot it already belongs in
+    // (`source: 'divine'`), rather than a fourth parameter. Absent when the god
+    // played no library card this run.
+    const divineEchoes = harvestResult.cardEcho ? [harvestResult.cardEcho] : [];
+    const nextState = transitionToNewCycle(
+      gameStateRef.current,
+      cosmicEchoes,
+      divineEchoes,
+      harvestResult.chronicleSummary,
+    );
     setGameState({ ...nextState, phase: 'playing' });
     setHarvestResult(null);
     resetEventCounter();

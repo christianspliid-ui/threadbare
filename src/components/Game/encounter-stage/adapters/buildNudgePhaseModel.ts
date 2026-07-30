@@ -30,6 +30,11 @@
 import type { WorldGraph } from '../../../../engine/graph';
 import type { GameState } from '../../../../types/gameState';
 import type { SphereName } from '../../../../types/index';
+import type { HungerId } from '../../../../types/hunger';
+import {
+  buildRepertoire,
+  echoCardsFromDefinitions,
+} from '../../../../engine/nudgeCardRepertoire';
 import type { ResolutionInput } from '../../../../types/resolution';
 import type { ForecastTier } from '../../../../types/traces/encounter-traces';
 import type {
@@ -200,11 +205,33 @@ export function buildNudgePhaseModel(
   // rather than throwing — the fail-soft path, not a special case.
   const accessibleSpheres = SPHERE_NAMES.filter((s) => (pool?.[s] ?? 0) > 0);
 
+  // THR-887 — the god's repertoire, so an authored option signed by a sphere
+  // this god does not hold is withheld rather than merely priced.
+  //
+  // Gated on a *present* `ascendantIdentity`, and deliberately left `undefined`
+  // without one. A legacy archetype-based run has no sphere identity to read,
+  // and defaulting it to "no spheres" would silently withhold every signature
+  // card from those runs — a behavior change dressed as a fallback. Absent
+  // identity ⇒ absent gate ⇒ today's behavior exactly (NFP #6).
+  const identity = gameState?.ascendantIdentity;
+  const repertoireCardIds = identity
+    ? new Set(
+        buildRepertoire({
+          primary: identity.sphereAlignment?.primary,
+          secondary: identity.sphereAlignment?.secondary,
+          hunger: identity.hungerId as HungerId | undefined,
+          unlockedActionIds: new Set(gameState?.unlockedActionIds ?? []),
+          echoCards: echoCardsFromDefinitions(gameState?.echoDefinitions ?? []),
+        }).map((entry) => entry.member.id),
+      )
+    : undefined;
+
   const hand = buildNudgeHand(step, template, {
     availableEssence: availableEssenceFor,
     accessibleSpheres,
     unlockedTemplateIds: new Set(gameState?.unlockedActionIds ?? []),
     heldTraits,
+    repertoireCardIds,
     // THR-884 — the setting class the scene plays out in, so a card that authored
     // `fictionBySetting` shows the line written for *this* kind of place. Resolved
     // through the cache's own precedence helper, so it is the same class the
@@ -270,6 +297,7 @@ export function buildNudgePhaseModel(
     const { nudge } = entry;
     cards.push({
       id: nudge.id,
+      libraryCardId: nudge.libraryCardId,
       name: nudge.name,
       fiction: nudge.fiction,
       effectLine: nudge.effectLine,
@@ -291,6 +319,7 @@ export function buildNudgePhaseModel(
     }
     cards.push({
       id: nudge.id,
+      libraryCardId: nudge.libraryCardId,
       name: nudge.name,
       fiction: nudge.fiction,
       effectLine: nudge.effectLine,
