@@ -1036,6 +1036,20 @@ export function createMeetingEncounterState(
 }
 
 /**
+ * Location subtypes where the Meet-The-First beat can open.
+ *
+ * The dilemmas describe merchants, guards, children and councils, so the beat
+ * needs a place people actually live. Exported (THR-874) because the GameView
+ * auto-trigger and the `?firstunmet` dev seeder both gate on it — they held
+ * separate inline copies, and a drift between them silently made the beat
+ * unreachable from the one dev URL built to reach it.
+ */
+export const MEETING_SETTLED_LOCATION_SUBTYPES: readonly string[] = [
+  'town', 'city', 'hamlet', 'village', 'capital',
+  'port', 'outpost', 'fortress', 'monastery', 'trading_post',
+];
+
+/**
  * Check if the Meet The First action is available.
  * Requires: no active First, cooldown expired, location has agents.
  */
