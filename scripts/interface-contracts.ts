@@ -1190,6 +1190,39 @@ export const CONTRACTS: readonly Contract[] = [
     // structure, so it degrades, fades, and threads the chronicle on the same
     // paths as Legacy, Monument, and Relic.
   },
+
+  // ── Agent-decided branches (THR-894) ──────────────────────────────────────
+  {
+    id: 'branch-decision-writes-archetype-drift',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: TRAITS,
+    intent:
+      'A fork the mortal took becomes part of who they are: taking the cunning branch drifts them cunning, so a mortal the player keeps leaning one way visibly becomes that person instead of resetting each encounter.',
+    ulTerms: ['Archetype Drift', 'Nudge'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['applyAgentDecidedBranches', 'decideBranchPole', 'driftAxisIdForValuePair'],
+      module: 'src/engine/encounters/branchDecision.ts',
+    },
+    writeSites: ['src/engine/unifiedActionResolution.ts'],
+    readSites: [
+      'src/engine/encounters/driftAccumulator.ts',
+      'src/engine/orchestrator/phaseDriftDecay.ts',
+      'src/engine/encounterAftermath.ts',
+    ],
+    // The decision writes through `applyDriftMagnitude` — the same accumulator
+    // `phaseChoiceResolution` writes — so decay, threshold crossings, and the
+    // `archetype_drift_register` reveal all read it without a second path. The
+    // meta pair `courage_prudence` has no canonical `${reach}_axis` id, so it
+    // keys the drift store on its own pair name; canonical readers simply do
+    // not find it, which is the fail-soft the decision needs to stay decidable.
+    //
+    // No `verifiedLive`: the engine side is wired and falsified (9-of-23 red
+    // with the call removed), but no shipped template authors a `decidedBy`
+    // branch yet — THR-883 owns that content. Badging LIVE here would badge a
+    // path nothing travels (the THR-614 error class).
+    deferralTicket: 'THR-883',
+  },
 ];
 
 /** A malformed row — surfaced in the generated output rather than thrown (NFP #4). */

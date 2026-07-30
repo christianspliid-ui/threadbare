@@ -67,6 +67,7 @@ import {
 } from '../data/meeting-nudge-constants';
 import { QUINTESSENCE_DEFAULT } from '../types/quintessence';
 import { applyRider, selectActiveRider, totalNudgeCost } from './encounters/nudges';
+import { classifyNetLean, sumHandLean } from './encounters/poleLean';
 import { mapResolverOutcomeToStep } from './unifiedActionResolution';
 import { resolveAction } from './resolutionService';
 import { CANDIDATE_VIGNETTES, type CandidateVignette } from '../data/candidate-vignettes';
@@ -488,17 +489,12 @@ export function computeNetPoleLean(
   nudges: readonly MeetingStepNudge[],
   playedNudgeIds: readonly string[],
 ): MeetingPoleLean {
-  const byId = new Map(nudges.map((n) => [n.id, n]));
-  let a = 0;
-  let b = 0;
-  for (const id of playedNudgeIds) {
-    const lean = byId.get(id)?.poleLean;
-    if (lean === 'a') a++;
-    else if (lean === 'b') b++;
-  }
-  if (a > b) return 'a';
-  if (b > a) return 'b';
-  return 'none';
+  // THR-894: the summing itself lives in `poleLean.ts`, shared with agent-decided
+  // branches. The meeting passes no axis — a `FormativeTest` declares one
+  // `valuePair` for the whole beat, which is what makes its cards' `'a' | 'b'`
+  // shorthand meaningful — and no epsilon, because unweighted cards make an exact
+  // tie the only neutral case. Same rule, one implementation.
+  return classifyNetLean(sumHandLean(nudges, playedNudgeIds));
 }
 
 /**
