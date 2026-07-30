@@ -6,7 +6,7 @@ This is your inbox. It's rewritten every hour by a Claude Code task. Standing sw
 
 ## Needs Christian
 
-**Nothing needs you right now.** No open question, no switch waiting on you, nothing stuck on a decision. Every health check came back clean, and all three of the other planning robots that reported recently had nothing for you either.
+**Nothing needs you right now.** No open question, no switch waiting on you, nothing stuck on a decision. Every health check came back clean, and the other planning robots that reported recently raised nothing you have to answer.
 
 One thing worth knowing rather than deciding: the **god-power rework you parked this morning** is correctly parked. The grooming robot re-checked it, agrees with leaving it alone, and recorded why — the rework re-keys which god cards unlock from *what your mortal past was* to *which cosmic energy you serve*, and that is cheaper to design once the mortal-side power curve settles, which is exactly the reason you gave. The design work is written up and waiting. It stays asleep until you say otherwise.
 
