@@ -1,6 +1,6 @@
 # Briefing
 
-**Generated:** 2026-07-30 02:54 local (2026-07-30 00:54 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-07-30 03:58 local (2026-07-30 01:58 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
@@ -8,31 +8,31 @@ This is your inbox. It's rewritten every hour by a Claude Code task. Standing sw
 
 **Nothing needs you right now.** No open questions, no switch waiting on you, nothing stuck. Every health check came back clean, and both of the other planning robots that reported this hour had nothing for you either.
 
-Worth knowing, not acting on: **the machine stayed awake through the night this time.** Every lane fired on its slot — midnight, half past, and just now — so Wednesday's overnight-throughput question answered itself by simply working. Nothing to flip.
+The one question that had been sitting on a safe default — whether the machine should stay awake overnight — **is being retired this run.** It answered itself twice over: the machine has now stayed awake through a second full night, every lane firing on its own slot, so overnight throughput is simply happening. Nothing to flip, and it will not be raised again unless a fresh pause appears.
 
 ## Queue
 
-**Forty-nine jobs ready, one in progress, nothing gone cold.** Fourteen medium, thirty-five small, none urgent. The longest anything has waited is just over four days — comfortably inside the week we allow.
+**Fifty jobs ready, none in progress, nothing gone cold.** Fifteen medium, thirty-five small, none urgent. The longest anything has waited is just over five days — inside the week we allow.
 
-**The hidden-queue problem broke open this hour.** For three hours running the shelf had been growing while the number of jobs the picker could actually *see* stayed frozen at forty-five. This hour four of those hidden jobs came unstuck: **the picker can now see forty-eight of the forty-nine.** That is the first real movement in four hours.
+**The hidden-queue problem is fixed, and it was your sentence that fixed it.** For eight runs the robots chased this from the writing side: three separate attempts to stop your name being stamped on new jobs, each one dying in turn. Last night you said in one line that you don't use Linear or GitHub at all, so anything wearing your name is ours. That reframed the whole thing — **the bug was never the stamping, it was that the picker treated your name as "a person already took this."** The fix landed at 03:21 and does three things: the picker now ignores the name entirely, the filing robot got tightened anyway, and a nightly sweep clears leftovers.
 
-**But the cause is confirmed not-yet-fixed, and this hour proved it the hard way.** The filing robot has a documented workaround for the naming problem — file the job, clear the name, then read it back to confirm. Tonight it did exactly that, confirmed the new job clean at 02:32, and **the name was back on it twenty-two minutes later.** So the workaround does not hold even when correctly applied and verified. That is useful rather than annoying: it rules out the last of the write-side fixes and leaves only the one you already pointed us at on Wednesday — teach the picker that your name never means a person took something. That job is the one currently in progress.
+**What that means concretely: the gap this file has been reporting for hours no longer exists.** There is no longer a "shelf of fifty, but the picker can only see forty-five" — the picker sees all fifty, because the filter that was hiding them is gone. Two jobs filed tonight still wear your name; under the new rules that is cosmetic noise, not a blockage, and the sweep will tidy them.
 
-Nothing in any of this is for you.
+**The next thing in the way is a different bottleneck, and it is now the binding one.** Most jobs on the shelf are small follow-ups filed without the short "safe to run alongside / conflicts with" note the picker insists on, so it declines them for want of that note rather than for want of visibility. That is already written up as its own job and sits fairly high on the shelf. Nothing here is for you.
 
 ## Freshness
 
 **Home tree healthy** — on the main line, nothing stranded, fully up to date. The only local edits are your own tool-permission settings, which block nothing.
 
-**The merge safety net is healthy**, zero failed starts — the eleventh clean check since you sorted the billing page. **The tidy-up robot ran at 02:40** with nothing awaiting a human call, and **all eight scheduled robots are on time.** The live site is current: only notes and docs have landed since the last publish, so there was correctly nothing to rebuild.
+**The merge safety net is healthy**, zero failed starts — the twelfth clean check since you sorted the billing page. **The tidy-up robot ran at 03:40** with nothing awaiting a human call, and pruned two stale branches, which is how we know its log is live rather than frozen. **All eight scheduled robots are on time.** The live site is current: only notes and docs have landed since the last publish, so there was correctly nothing to rebuild.
 
 ## What's moving
 
-**The artifact card art landed.** The pull request that had been sitting green-but-waiting merged at 02:01 — about an hour and a half after it armed, inside the self-repair window we had measured once before. Last hour's brief wrote down the exact deadline past which a robot would step in by hand; it never came due. The habit of writing that deadline down *before* the hour was up is what kept anyone from fiddling with it prematurely. The wider art job stays open — encounter illustrations, sublocation art and character portraits are still to come.
+**The queue-visibility fix shipped — that is the hour's real event.** It had been the one job in progress; it merged at 03:21 and the shelf is now fully visible to the picker for the first time. The picker's next attempt at 04:00 will be the first one to run under the new rules, so next hour's brief is where we find out whether the shelf actually starts draining. Worth saying plainly: **that is a prediction, not a result.**
 
-**The encounter-content migration keeps moving one batch an hour.** Tonight's filing opens the civic-seats set with its capital half: council mediation, the noble court, faction unification, raising a monument. Four more cells are queued behind it, and no design gate is blocking that pipeline.
+**The encounter-content migration keeps moving one batch an hour.** Tonight's filing completes the civic-seats set with its town, castle and fort half — debt collection, the loan, fortification engineering, reading the wards. Two cells remain behind it (the sacred-and-arcane set, which wants splitting, and one structural one-off held for a closer look), and no design gate is blocking that pipeline.
 
-One piece of housekeeping still waits on a session with permission to do it: an obsolete pull request (#1031) wants closing and has been idle about twenty-nine hours. Nothing is lost by the wait.
+One piece of housekeeping still waits on a session with permission to do it: an obsolete pull request (#1031) wants closing and has now been idle about thirty hours. Nothing is lost by the wait.
 
 ---
 *Standing asks live in `Design/user-actions.md`. This file is regenerated hourly by the `keep-work-flowing-cc` scheduled task; staleness is visible from the Generated timestamp above and the task's `lastRunAt` in `list_scheduled_tasks`.*
