@@ -405,6 +405,16 @@ const STEP_1_HAND: readonly StepNudge[] = [
  * Step 0 — Eye. Purpose line: "Read the water". Difficulty 0.35 → `fair`,
  * inside the open-draw ceiling.
  *
+ * **No authored `factorLines` — the variance rule (Christian, chat
+ * 2026-07-30).** A factor line earns its place only if it could have read
+ * differently: it reports the broader game context — the agent (skill, traits,
+ * equipment), the hex, global modifiers, earlier steps of this encounter.
+ * Everything this step's earlier draft listed ("Floodwater carries silt…",
+ * "The rain has not stopped…") is true on every run, so it is priced into
+ * `difficulty: 0.35` and carried by the prose, and listing it was clutter.
+ * The panel's variance lines (reach skill, trait deltas, carryovers) are
+ * derived, not authored here.
+ *
  * `continue_weakened`: a failed reading does not end the encounter — they can
  * still put a foot in on a bad line, which is exactly what the step 1 prose
  * then has to carry.
@@ -414,11 +424,6 @@ const step0ReadTheWater: ActionStep = {
   duration: { min: 1, max: 2 },
   difficulty: 0.35,
   purposeLine: 'Read the water',
-  factorLines: [
-    { text: 'The guide-rope’s dip marks where the bed still stands firm.', polarity: 'for' },
-    { text: 'Floodwater carries silt, and silt hides the bottom.', polarity: 'against' },
-    { text: 'The rain has not stopped, and the river is still rising.', polarity: 'against' },
-  ],
   onSuccess: [],
   onFailure: [],
   failBehavior: 'continue_weakened',
@@ -449,12 +454,12 @@ const step1MakeTheCrossing: ActionStep = {
   reach: 'stone',
   duration: { min: 1, max: 2 },
   difficulty: 0.4,
+  // Same variance rule as step 0: the rope's record and the drop at midstream
+  // are every-run facts, priced into 0.4. The one line an earlier draft had
+  // that would qualify — cold from an hour lost in step 0's rain — is a
+  // *carryover* from a prior step outcome, which is derived state, not a
+  // static authored string (schema for carryover lines is ticketed).
   purposeLine: 'Make the crossing',
-  factorLines: [
-    { text: 'The guide-rope has held every flood since it was strung.', polarity: 'for' },
-    { text: 'The drowned bed drops a hand’s depth at midstream.', polarity: 'against' },
-    { text: 'Three days of rain sit cold in their clothes already.', polarity: 'against' },
-  ],
   onSuccess: [],
   onFailure: [],
   failBehavior: 'fail_action',

@@ -167,9 +167,16 @@ export const ALL_BAND_OUTCOMES: readonly StepOutcome[] = [
 // ─── Test panel ──────────────────────────────────────────────────────
 
 /**
- * For/against factor lines per step. Two is the floor for a *weighing* (one
- * line is an assertion); four is where the panel stops being readable at a
- * glance.
+ * For/against factor lines per step.
+ *
+ * **The floor is retired for authoring (variance rule, Christian 2026-07-30):**
+ * a factor line must report state that could have been otherwise — agent, hex,
+ * global modifiers, earlier steps — and all of that is derived, so new content
+ * authors NO static `factorLines` (a line true on every run is priced into
+ * `difficulty` and belongs in the prose). `FACTOR_LINES_MIN` survives only as
+ * the historical guardrail un-migrated templates were written against; the cap
+ * still bounds what the panel will readably show, and the both-signs rule
+ * still binds any step that carries 2+ authored lines.
  */
 export const FACTOR_LINES_MIN = 2;
 export const FACTOR_LINES_MAX = 4;

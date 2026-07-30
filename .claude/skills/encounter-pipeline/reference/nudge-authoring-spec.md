@@ -212,31 +212,41 @@ Per step:
 - **Difficulty** 0–1. Never write the number into prose: `DIFFICULTY_WORD_BANDS` renders
   it as *severe / steep / fair / gentle*, and the word is the only surface the player
   sees (ruling 1).
-- **`FACTOR_LINES_MIN`–`FACTOR_LINES_MAX` (2–4) factor lines** — `ActionStep.factorLines`,
-  each a `{ text, polarity }` pair. Author **both** signs: a step whose lines all cut one
-  way is an assertion, not a weighing, and two is the floor for the same reason. Each line
-  concrete, each one **naming its source**.
+- **Factor lines: variance only** — see the rule below. New content authors **no**
+  static `factorLines`; the retired 2–4-lines-both-signs instruction produced exactly
+  the clutter the rule bans.
 
-**Canon rule 1 — a factor names its source in the sentence.** A factor line the player
-cannot trace back to a cause is noise, and the source belongs *in the prose* rather than
-in a label beside it — "The mason cut his mark beside the third pin", not
-`Source: mason's mark`. Trait-derived lines are the same rule: they live on
-`TraitVariant.factorLine` and the trait's name appears in the sentence.
+**The variance rule (Christian, chat 2026-07-30 — supersedes the 2–4 authored-lines
+instruction).** A factor line earns its place only if it **could have read
+differently** on another run. The list reports **modifiers from the broader game
+context**:
 
-**Both fields are schema (THR-820).** They sit on the step, and `buildNudgePhaseModel`
-reads them straight onto the rendered test panel. A step that authors no `factorLines`
-falls back to the contract's unsigned `beat.forecast_factors`, which can only render
-`neutral` — that fallback is for un-migrated legacy templates, not a place to author.
+- the **agent** — skill in the step's reach, traits, conditions, equipment;
+- the **hex / location** — terrain and place modifiers;
+- **global modifiers** — omens, doom stage, season, world state;
+- **earlier steps of this encounter** — carryovers from how a prior step resolved.
 
-**The panel's factor list is complete, not curated (Christian, chat 2026-07-30).**
-Every large factor that moves the step's outcome appears in the list — including the
-**mortal's own skill in the step's reach**, which is a derived line the panel adds, not
-an authored one. Derived lines (reach skill, trait variants, committed nudges) carry the
-canonical modifier-pip language for their magnitude; authored scene lines carry their
-polarity. The authored `factorLines` are the *scene's* share of that list — do not
-author a line for the mortal's skill, and do not leave a scene factor out because a
-derived line already covers the same ground. Rendering the derived lines is THR-890's
-scope; authoring assumes they will be there.
+Every one of those is state, so every one is **derived by the panel**, rendered in the
+canonical modifier-pip language — none of them is a string an author writes on the step.
+What an author must **not** do is list the scene's own description as factors:
+"Floodwater carries silt", "the bed drops at midstream" are true on *every* run, so they
+are already priced into the authored `difficulty` and belong in the prose. **The litmus
+test: if the line would read identically every time this encounter runs, it is not a
+factor — it is clutter, and the difficulty word already said it.** The one authored
+surface that remains is `TraitVariant.factorLine` (variance by construction: it only
+renders for the trait-holder) — and pick the trait that best *fits the step's action*
+from the live trait set; a better-fitting trait that does not exist yet is a content
+proposal, not an authoring-session invention.
+
+**Canon rule 1 still binds every line that does render — a factor names its source in
+the sentence.** "Being True, they will not turn back at midstream", not
+`Source: trait`. The cause lives in the prose of the line, never in a label beside it.
+
+**Schema note (THR-820 / transition).** `ActionStep.factorLines` remains in the schema
+for un-migrated templates; new content leaves it unauthored. Derived agent/hex/global
+lines and outcome-keyed carryover lines are engine work (ticketed — see the carryover
+ticket; panel rendering is THR-890). Until they land, a step with no authored lines
+falls back to the contract's unsigned `beat.forecast_factors`.
 
 ### 3. The hand — cut from the 21-type library
 

@@ -30,7 +30,6 @@ import type {
 import {
   ALL_BAND_OUTCOMES,
   FACTOR_LINES_MAX,
-  FACTOR_LINES_MIN,
   FAILURE_BAND_OUTCOMES,
   HAND_COMMON_OPTIONS_MIN,
   HAND_SPHERE_COVERAGE_MIN,
@@ -162,15 +161,20 @@ export function checkNudgeHand(template: UnifiedActionTemplate): string[] {
       );
     }
 
+    // The variance rule (Christian, 2026-07-30): factor lines report state
+    // that could have been otherwise — agent, hex, global modifiers, earlier
+    // steps — all of which the panel derives. New content authors NO static
+    // factorLines; a line true on every run is priced into `difficulty` and
+    // belongs in the prose. The floor this block used to enforce
+    // (FACTOR_LINES_MIN) is retired for authoring; the cap and the both-signs
+    // rule still bind the un-migrated templates that carry authored lines.
     const factorLines = step.factorLines ?? [];
-    if (factorLines.length < FACTOR_LINES_MIN || factorLines.length > FACTOR_LINES_MAX) {
+    if (factorLines.length > FACTOR_LINES_MAX) {
       violations.push(
-        `${where}: ${factorLines.length} factor lines, outside ${FACTOR_LINES_MIN}–${FACTOR_LINES_MAX}`,
+        `${where}: ${factorLines.length} factor lines, over FACTOR_LINES_MAX ${FACTOR_LINES_MAX}`,
       );
     }
-    // Author both signs: a step whose lines all cut one way is an assertion,
-    // not a weighing.
-    if (factorLines.length > 0) {
+    if (factorLines.length >= 2) {
       const polarities = new Set(factorLines.map(l => l.polarity));
       if (polarities.size < 2) {
         violations.push(

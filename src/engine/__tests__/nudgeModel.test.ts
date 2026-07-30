@@ -42,8 +42,6 @@ import {
   ALL_BAND_OUTCOMES,
   ANNOTATION_MAX_PER_ENCOUNTER,
   ANNOTATION_PATTERNS,
-  FACTOR_LINES_MAX,
-  FACTOR_LINES_MIN,
   FAILURE_BAND_OUTCOMES,
   HAND_COMMON_OPTIONS_MIN,
   HAND_SPHERE_COVERAGE_MIN,
@@ -698,32 +696,31 @@ describe('golden exemplar — authoring checklist (locked THR-883 format)', () =
     }
   });
 
-  it('authors factor lines and reach purpose lines inside the panel budgets', () => {
-    // THR-820: read off the step schema, not a fixture constant. Before the
-    // schema landed these lines lived in two exported arrays that no render
-    // path consumed, so this test could pass while the panel showed nothing.
+  it('authors purpose lines, and no static factor lines (the variance rule)', () => {
+    // Variance rule (Christian, chat 2026-07-30): a factor line must report
+    // state that could have been otherwise — agent, hex, global modifiers,
+    // earlier steps — and all of that is derived by the panel, never authored
+    // on the step. A static authored line ("Floodwater carries silt") is true
+    // on every run, so it is priced into `difficulty` and belongs in the
+    // prose; the earlier form of this test *required* 2–4 of exactly those
+    // lines, which is the clutter pattern the rule retires. The exemplar is
+    // the reference authors copy, so it authors none.
     const steps = NUDGE_GOLDEN_EXEMPLAR.steps as readonly ActionStep[];
 
     for (const [i, step] of steps.entries()) {
       expect(step.purposeLine, `step ${i} authors no purpose line`).toBeTruthy();
       expect(wordCount(step.purposeLine!)).toBeLessThanOrEqual(REACH_PURPOSE_MAX_WORDS);
 
-      const lines = step.factorLines ?? [];
-      expect(lines.length, `step ${i} factor-line count`).toBeGreaterThanOrEqual(FACTOR_LINES_MIN);
-      expect(lines.length, `step ${i} factor-line count`).toBeLessThanOrEqual(FACTOR_LINES_MAX);
-      for (const line of lines) {
-        expect(wordCount(line.text), `factor line over budget: "${line.text}"`).toBeLessThanOrEqual(
-          NUDGE_WORD_BUDGETS.factorLine,
-        );
-      }
+      expect(
+        step.factorLines ?? [],
+        `step ${i} authors static factor lines — the variance rule retires these`,
+      ).toEqual([]);
+    }
 
-      // "For and against" is the point of the panel: a step whose lines all cut
-      // one way is an assertion, not a weighing. The exemplar is the reference
-      // authors copy, so it demonstrates both signs on every step.
-      const polarities = new Set(lines.map((l) => l.polarity));
-      expect(polarities, `step ${i} factor lines are one-sided`).toEqual(
-        new Set(['for', 'against']),
-      );
+    // The one authored factor surface left is the trait variant's line —
+    // variance by construction — and it holds the line budget.
+    for (const variant of NUDGE_GOLDEN_EXEMPLAR.traitVariants ?? []) {
+      expect(wordCount(variant.factorLine)).toBeLessThanOrEqual(NUDGE_WORD_BUDGETS.factorLine);
     }
   });
 

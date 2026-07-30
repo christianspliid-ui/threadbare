@@ -244,21 +244,36 @@ describe('buildNudgePhaseModel — authored purpose line and factor lines', () =
     }
   });
 
-  it('surfaces every authored factor line with its authored polarity', () => {
+  it('surfaces authored factor lines with their authored polarity (legacy templates)', () => {
+    // The exemplar authors no static factor lines (the variance rule,
+    // Christian 2026-07-30) — but un-migrated templates still carry them, so
+    // the THR-820 pass-through path stays covered by a synthetic step built
+    // from exemplar step 0 plus authored lines.
+    const base = NUDGE_GOLDEN_EXEMPLAR.steps[0] as ActionStep;
+    const authored = [
+      { text: 'A carried lantern gives them light to read by.', polarity: 'for' as const },
+      { text: 'The dark is coming down faster than the reading.', polarity: 'against' as const },
+    ];
+    const step: ActionStep = { ...base, factorLines: authored };
+    const phase = buildNudgePhaseModel({
+      template: { ...NUDGE_GOLDEN_EXEMPLAR, steps: [step] },
+      activeAction: buildAction({ templateId: NUDGE_GOLDEN_EXEMPLAR.id, currentStep: 0 }),
+      step,
+      graph: buildGraph(),
+      gameState: buildState() as GameState,
+    })!;
+
+    const rendered = phase.testPanel.factors;
+    // The agent holds no traits here, so no live `trait:*` line is appended
+    // and the panel is exactly the authored set, in authored order.
+    expect(rendered.map((f) => f.text)).toEqual(authored.map((l) => l.text));
+    expect(rendered.map((f) => f.polarity)).toEqual(authored.map((l) => l.polarity));
+    expect(rendered.some((f) => f.polarity === 'neutral')).toBe(false);
+  });
+
+  it('the exemplar itself authors no static factor lines (the variance rule)', () => {
     for (const [i, step] of NUDGE_GOLDEN_EXEMPLAR.steps.entries()) {
-      const authored = (step as ActionStep).factorLines ?? [];
-      const rendered = exemplarPhase(i).testPanel.factors;
-
-      // Two empty arrays compare equal, so pin the population before comparing
-      // it — otherwise this passes just as happily against an exemplar that
-      // authored nothing and a panel that rendered nothing.
-      expect(authored.length, `step ${i} authors no factor lines`).toBeGreaterThan(0);
-
-      // The agent holds no traits here, so no live `trait:*` line is appended
-      // and the panel is exactly the authored set, in authored order.
-      expect(rendered.map((f) => f.text)).toEqual(authored.map((l) => l.text));
-      expect(rendered.map((f) => f.polarity)).toEqual(authored.map((l) => l.polarity));
-      expect(rendered.some((f) => f.polarity === 'neutral')).toBe(false);
+      expect((step as ActionStep).factorLines ?? [], `step ${i}`).toEqual([]);
     }
   });
 

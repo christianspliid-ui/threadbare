@@ -255,6 +255,7 @@ The editorial agent:
 20. **A zero-essence non-trait card with no other cost channel**, or a grant naming content that does not exist (`validateNudgeGrantRefs`)
 21. **Two encounters in the same family with an identical card-type composition**
 22. **A seam echo** — a repeated image, repeated sentence shape, or near-identical phrasing across a paragraph boundary (the class the automated detectors cannot see; check every opening→spine and spine→band seam explicitly)
+23. **A static authored factor line** — any `factorLines` entry that would read identically on every run of the encounter (the variance rule: factors come from the broader game context — agent, hex, global modifiers, earlier steps — all derived; scene facts are priced into the difficulty and live in the prose)
 
 ### Pass 3: Systems Audit + Final Merge
 
