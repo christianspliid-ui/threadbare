@@ -5523,6 +5523,19 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "`await new Promise(r => setTimeout(r, 120))` between clicks inside a single `async` evaluate, re-querying `[role=\"dialog\"]` each pass and always taking the **last** one (the topmost). Four awaited clicks cleared what six synchronous ones could not. Read the button labels back — the beats are choices (\"Reach Down\", \"Watch and wait\"), not just acknowledgements, so a blind `buttons[last]` click makes a real game decision.",
     "session": "THR-667 browser-verify; seeded game view."
+  },
+  {
+    "num": "310",
+    "id": 310,
+    "count": 1,
+    "date": "2026-07-30",
+    "category": "process",
+    "description": "**A split-out child ticket whose scope is then executed under the *parent's* id is invisible to `pull-work`'s upstream-shipped check.** THR-680 (\"Stash triage — bulk-classify the 38-deep home-tree stash stack\") was split out of THR-674 on 2026-07-21 07:12Z when an executor stopped a pass. At 13:12Z **the same day**, a later session completed exactly that scope — 38 SHAs recorded with verdicts in `Docs/ops/2026-07-21-thr-674-stash-worktree-disposal.md`, 25 files salvaged across four stashes — and closed it with `Fixes THR-674`. Nobody moved THR-680, so it sat in `Todo` for 9 days until the orchestrator's T1 sweep promoted it as an unblocked item with a self-contained Done-when (which it was — the Done-when just happened to already be satisfied). Step 4.4 greps `origin/main` for `Fixes\\|Closes\\|Resolves THR-680` and was **correctly clean**: the commits say THR-674.",
+    "consequence": "A full hourly run was spent re-deriving a disposal that already existed. Worse than the wasted run: the ticket's premise (\"26 entries were never inspected — cannot be executed without destroying uninspected work\") reads as an *active data-loss risk*, so the natural first move is a forensic hunt for 36 vanished stashes. `git fsck --unreachable` surfaces 369 unreachable stash-shaped commits — months of ordinary `pop`/`drop` residue — which looks like corroboration of mass destruction and is not.",
+    "impact": "Low — one run, and the residual 2 entries were genuine work; but the false-data-loss framing is the expensive part and would recur on any split ticket.",
+    "workaroundFound": true,
+    "workaround": "**Immediate:** when a ticket body says \"Split from THR-XXX\", grep the upstream-shipped check for the **parent's** id too, not only the claimed issue's — one extra `git log --grep` at Step 4.4, and it would have short-circuited this run in seconds. Also read the parent's *state*: THR-674 was `Done`, which is itself the signal. **Durable:** the closing session should move or comment the split-out children it also satisfied — a `Fixes THR-674` commit that discharges THR-680's scope leaves THR-680 with no mechanical link to the work. Related but distinct from [[stale_ticket_gate]] (a named human gate already resolved) — here the *whole ticket* is already resolved, under another number. **Verify before the forensic hunt:** unreachable stash-shaped commits are the normal residue of `git stash pop`, not evidence of loss; check `git log origin/main --grep=<parent-id>` before concluding anything was destroyed.",
+    "session": "THR-680 hourly `tb-opus-pickup` pickup."
   }
 ];
 // ── End data ──
