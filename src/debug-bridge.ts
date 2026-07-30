@@ -1608,6 +1608,30 @@ if (import.meta.env.DEV) {
     },
 
     /**
+     * THR-868 — where the Meet-The-First flow currently is, and what its
+     * formative/bond tests have resolved to.
+     *
+     * Unlike every other method here this does **not** read `GameState`: the
+     * meeting runs before the candidate is a graph node, so its progress lives
+     * in React state. `MeetTheFirstFlow` publishes a flat snapshot on each beat
+     * transition and clears it on unmount, and this returns that snapshot.
+     *
+     * `null` means no meeting is on screen. `usingFormativeTests: false` during
+     * a meeting means this run drew only unconverted templates and is showing
+     * the legacy choice scene — a real rollout state, not a fault.
+     *
+     * **Async** — this module has no static imports (it is tree-shaken whole in
+     * production), so the snapshot module is pulled in on call. `await` it; an
+     * unawaited call logs a Promise, not the snapshot.
+     */
+    getMeetingState: async () => {
+      const { readMeetingDebugState } = await import(
+        './components/MeetTheFirst/meetingDebugState'
+      );
+      return readMeetingDebugState();
+    },
+
+    /**
      * THR-773 — every mortal currently in the **broken state**, with how long
      * they have been there. The pacing falsifier's measurement hook: the plan's
      * kill criterion is ">5% of living mortals simultaneously broken, or median

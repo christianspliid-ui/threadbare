@@ -854,6 +854,43 @@ export interface DebugBridge {
     }
   >;
 
+  /** THR-868 — Where the Meet-The-First flow is, and what its tests resolved to.
+   *
+   *  The only bridge method that does **not** read `GameState`: the meeting runs before
+   *  the candidate exists as a graph node, so `MeetTheFirstFlow` publishes a snapshot to
+   *  a module-local store on each beat transition and clears it on unmount.
+   *
+   *  Resolves `null` when no meeting is on screen. During a meeting,
+   *  `usingFormativeTests: false` means every drawn template is unconverted and the
+   *  legacy choice scene is showing — a real state during the THR-868 rollout, not a
+   *  fault. `convertedCount` is how many of `dilemmaIds` carried a `test`.
+   *
+   *  **Async** (`await` it) — the bridge has no static imports, so the store module is
+   *  pulled in on call. An unawaited call logs a Promise. */
+  getMeetingState: () => Promise<
+    | null
+    | {
+      beat: 'sensing' | 'testing' | 'spark' | 'bond';
+      candidateName?: string;
+      dilemmaIds: string[];
+      convertedCount: number;
+      usingFormativeTests: boolean;
+      formativeOutcomes: Array<{
+        templateId: string;
+        band: string;
+        writtenPole: 'a' | 'b';
+        netLean: 'a' | 'b' | 'none';
+        shift: number;
+        playedNudgeIds: string[];
+      }>;
+      bondOutcome?: {
+        band: string;
+        reception: string;
+        playedNudgeIds: string[];
+      };
+    }
+  >;
+
   /** THR-775 — Toggle the nudge stage's **designer view**.
    *
    *  Off (the default) the encounter stage is the player surface: words only, and the

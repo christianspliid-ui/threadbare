@@ -251,21 +251,56 @@ Over budget is a signal the field is carrying another field's job, not an error.
 
 ## Detector spec (verbatim)
 
-Three detectors. Constants live in `nudgeAuthoringConstants.ts`; the wording here is the
-contract.
+Three detectors. Constants live in **two** modules — authoring guardrails in
+`nudgeAuthoringConstants.ts`, the audit's own thresholds and term lists in
+`nudgeAuditDetectors.ts` — and where they disagree, **the code is the contract, not this
+page.** The table below names which module each detector reads.
 
 ### Vagueness lexicon — target **zero**
+
+**There are two lists and they do not agree.** Know which one is scoring you (THR-868
+finding, 2026-07-30 — this cost a full rewrite cycle). Reconciliation is tracked in
+[THR-877](https://linear.app/threadbare/issue/THR-877); until it lands, write against the
+**union**, because either can be the one that fails you.
+
+| Constant | Module | What reads it |
+|---|---|---|
+| `VAGUENESS_LEXICON` (10 terms) | `nudgeAuthoringConstants.ts` | `nudgeModel.test.ts` golden-exemplar assertions only |
+| `AUDIT_VAGUENESS_TERMS` (~35 terms) | `nudgeAuditDetectors.ts` | `countVagueness()` — the **audit and scoring path**, i.e. the number quoted as evidence |
+
+`VAGUENESS_LEXICON` — the historical list this page documented:
 
 ```
 something · anything · nothing · thing · things · way · ways · somehow · whatever · somewhere
 ```
 
-Each is a word standing where a picturable noun belongs. *"It cost them something"* has a
-sentence's shape and no image in it.
+`AUDIT_VAGUENESS_TERMS` — what `countVagueness()` actually matches, in four groups:
 
-Watch the compounds — the detector matches on word boundaries, so **"all the way"**,
-**"either way"**, **"it costs you nothing"**, and **"in a way"** all trip it. They are
-supposed to.
+```
+hedges          somehow · somewhat · seems to · appears to · a kind of · a sort of ·
+                something like · in some way
+stand-ins       something · someone · somewhere · things · stuff
+nominalised     the situation · the matter · the moment · the atmosphere · the tension ·
+                the dynamic · the connection · the understanding · the balance ·
+                the energy · the presence · the experience · the process
+intensifiers    very · really · quite · rather · truly · deeply · profoundly · utterly
+```
+
+**The overlap is only four words** (`somehow`, `something`, `somewhere`, `things`). Two
+traps follow:
+
+- **`someone` and the intensifiers trip the audit but appear nowhere on the older list.**
+  Innocuous-looking prose — "You look for someone who…", "she felt it deeply" — scores as
+  vagueness. This is the one that bites: it is not a word you would flag by eye.
+- **`thing`, `way`, `ways`, `anything`, `nothing`, `whatever` are on the older list but the
+  audit does not catch them.** The previous version of this page additionally claimed
+  "all the way", "either way", "it costs you nothing" and "in a way" all trip the detector.
+  Three of those four do not — `way` and `nothing` are not in `AUDIT_VAGUENESS_TERMS`, and
+  only `in some way` is, not `in a way`. Do not rely on that claim.
+
+Each term is a word standing where a picturable noun belongs. *"It cost them something"*
+has a sentence's shape and no image in it. Matching is on word boundaries, so `someone`
+fires inside `someone's`.
 
 ### Annotation patterns — ≤ `ANNOTATION_MAX_PER_ENCOUNTER` (1) across the encounter
 
