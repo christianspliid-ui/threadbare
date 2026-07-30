@@ -39,6 +39,7 @@ import type { ResolutionInput } from '../../../../types/resolution';
 import type { ForecastTier } from '../../../../types/traces/encounter-traces';
 import type {
   ActionStep,
+  StepNudge,
   UnifiedAction,
   UnifiedActionTemplate,
 } from '../../../../types/unifiedAction';
@@ -52,12 +53,21 @@ import {
   collectHeldTraitIds,
   collectNudgeModifiers,
   difficultyWord,
+  effectiveNudgeCost,
+  priorStepOutcome,
+  resolveCarryoverLine,
   resolveTraitVariants,
   sumModifiers,
   sumVariantDifficultyDelta,
   totalNudgeCost,
   type NudgeBlockedCode,
 } from '../../../../engine/encounters/nudges';
+import { deriveStepFactorLines } from '../../../../engine/encounters/stepFactorLines';
+import {
+  NUDGE_COST_CHANNEL_DISPLAY,
+  nudgeCardKeyword,
+  type NudgeCostChannelId,
+} from '../../../../data/nudge-card-display';
 import { classifyMotive, readMotiveReceipt } from '../../../../engine/encounters/motiveClassifier';
 import { computeForecast } from '../../../../engine/encounters/outcomeForecast';
 import { adaptUnifiedActionTemplateToEncounterContract } from '../../../../engine/encounter-contract-adapter';
@@ -72,6 +82,7 @@ import {
 } from '../../../../data/nudge-stage-content';
 import { SPHERE_NAMES } from '../../../../types/index';
 import type {
+  EncounterStageCostChannelModel,
   EncounterStageFactorLineModel,
   EncounterStageForecastModel,
   EncounterStageNudgeCardModel,
@@ -131,6 +142,74 @@ function settingClassForAction(
 function costLabelFor(cost: number): string | undefined {
   if (cost <= 0) return NUDGE_FREE_COST_LABEL;
   return `${cost} essence`;
+}
+
+/**
+ * THR-890 — the non-essence prices a card charges, in display form.
+ *
+ * A zero delta contributes no row: an authored `{ doomDelta: 0 }` is a channel
+ * the card declared and then did not use, and drawing it would promise a price
+ * that never arrives. Direction, not just sign, picks the wording — a card that
+ * *slows* the doom clock is charging nothing and should not read as a cost.
+ */
+function costChannelsFor(nudge: StepNudge): EncounterStageCostChannelModel[] | undefined {
+  const costs = nudge.costs;
+  if (!costs) return undefined;
+
+  const deltas: readonly [NudgeCostChannelId, number | undefined][] = [
+    ['detection', costs.detectionDelta],
+    ['doom', costs.doomDelta],
+  ];
+
+  const channels: EncounterStageCostChannelModel[] = [];
+  for (const [id, delta] of deltas) {
+    if (delta === undefined || delta === 0) continue;
+    const display = NUDGE_COST_CHANNEL_DISPLAY[id][delta > 0 ? 'worse' : 'better'];
+    channels.push({ id, icon: display.icon, label: display.label, delta });
+  }
+  return channels.length > 0 ? channels : undefined;
+}
+
+/**
+ * One authored option as a card the row can draw.
+ *
+ * Shared by the playable and dimmed passes so the two can never drift on price,
+ * keyword, or cost channels — the only thing that differs between them is the
+ * `state`/`blocked` pair the caller supplies.
+ *
+ * **Price is the effective price.** `effectiveNudgeCost` is what `buildNudgeHand`
+ * used to judge affordability and what `totalNudgeCost` will charge at commit, so
+ * anything else here would quote one number and bill another (THR-885's whole
+ * reason for exporting that helper).
+ */
+function cardModelFor(
+  nudge: StepNudge,
+  accessibleSpheres: readonly SphereName[],
+  state: 'playable' | 'dimmed',
+  blocked?: NudgeBlockedCode,
+): EncounterStageNudgeCardModel {
+  const cost = effectiveNudgeCost(nudge, accessibleSpheres);
+  const keyword = nudgeCardKeyword(nudge.libraryCardId);
+  return {
+    id: nudge.id,
+    libraryCardId: nudge.libraryCardId,
+    keyword: keyword?.keyword,
+    keywordIcon: keyword?.icon,
+    name: nudge.name,
+    fiction: nudge.fiction,
+    effectLine: nudge.effectLine,
+    essenceCost: cost,
+    discounted: cost < Math.max(0, nudge.essenceCost),
+    costLabel: costLabelFor(cost),
+    costChannels: costChannelsFor(nudge),
+    sphere: nudge.sphere,
+    imageTag: nudge.imageTag,
+    state,
+    blockedCode: blocked,
+    blockedReason: blocked ? NUDGE_BLOCKED_REASONS[blocked] : undefined,
+    riderLabel: nudge.rider ? NUDGE_RIDER_LABELS[nudge.rider] : undefined,
+    forecastDelta: nudge.forecastDelta,
+  };
 }
 
 function forecastModelFrom(tier: ForecastTier, probability: number): EncounterStageForecastModel {
@@ -258,7 +337,13 @@ export function buildNudgePhaseModel(
     step.reach,
     template.sphereAffinity,
   );
-  const traitModifierTotal = sumModifiers(collectNudgeModifiers(step, undefined, variants));
+  // THR-892 — the carryover line the prior step's band earned, if the author wrote
+  // one. It contributes to the floor exactly as a trait variant does, so the hand
+  // adds its selected deltas on top of a forecast that already carries it.
+  const carryover = resolveCarryoverLine(step, priorStepOutcome(activeAction));
+  const traitModifierTotal = sumModifiers(
+    collectNudgeModifiers(step, undefined, variants, priorStepOutcome(activeAction)),
+  );
   const variantDifficultyDelta = sumVariantDifficultyDelta(variants);
   const effectiveDifficulty = Math.max(0, Math.min(1, step.difficulty + variantDifficultyDelta));
 
@@ -294,21 +379,7 @@ export function buildNudgePhaseModel(
   const withheld: EncounterStageWithheldNudgeModel[] = [];
 
   for (const entry of hand.playable) {
-    const { nudge } = entry;
-    cards.push({
-      id: nudge.id,
-      libraryCardId: nudge.libraryCardId,
-      name: nudge.name,
-      fiction: nudge.fiction,
-      effectLine: nudge.effectLine,
-      essenceCost: nudge.essenceCost,
-      costLabel: costLabelFor(nudge.essenceCost),
-      sphere: nudge.sphere,
-      imageTag: nudge.imageTag,
-      state: 'playable',
-      riderLabel: nudge.rider ? NUDGE_RIDER_LABELS[nudge.rider] : undefined,
-      forecastDelta: nudge.forecastDelta,
-    });
+    cards.push(cardModelFor(entry.nudge, accessibleSpheres, 'playable'));
   }
 
   for (const entry of hand.dimmed) {
@@ -317,22 +388,7 @@ export function buildNudgePhaseModel(
       withheld.push({ id: nudge.id, name: nudge.name, blockedCode: blocked });
       continue;
     }
-    cards.push({
-      id: nudge.id,
-      libraryCardId: nudge.libraryCardId,
-      name: nudge.name,
-      fiction: nudge.fiction,
-      effectLine: nudge.effectLine,
-      essenceCost: nudge.essenceCost,
-      costLabel: costLabelFor(nudge.essenceCost),
-      sphere: nudge.sphere,
-      imageTag: nudge.imageTag,
-      state: 'dimmed',
-      blockedCode: blocked,
-      blockedReason: blocked ? NUDGE_BLOCKED_REASONS[blocked] : undefined,
-      riderLabel: nudge.rider ? NUDGE_RIDER_LABELS[nudge.rider] : undefined,
-      forecastDelta: nudge.forecastDelta,
-    });
+    cards.push(cardModelFor(nudge, accessibleSpheres, 'dimmed', blocked));
   }
 
   // Trait-gated cards the agent cannot hold: never in the player stage, listed
@@ -378,6 +434,34 @@ export function buildNudgePhaseModel(
       text: variant.factorLine,
       polarity: helps ? 'for' : 'against',
       source: `trait:${variant.traitId}`,
+      // THR-892 — the model carries the number beside the text so the row can
+      // draw pips. A variant that declares no delta contributes no pips rather
+      // than a zero row.
+      delta: variant.forecastDelta,
+    });
+  }
+
+  // ── Derived lines (THR-892) ─────────────────────────────────────
+  // The variance rule: a line earns its place only if it could have read
+  // differently on another run. These are projections of the numbers resolution
+  // already computed — `capability` and `standing.contributions` — so the panel
+  // can never quote a factor the roll did not apply.
+  //
+  // Appended after the authored/trait lines so the encounter's own account leads
+  // and the world's contribution follows.
+  for (const line of deriveStepFactorLines({
+    actorName: graph.getNode(actorId)?.name,
+    reach: step.reach,
+    capability,
+    contributions: standing.contributions,
+    carryover,
+  })) {
+    factors.push({
+      id: line.id,
+      text: line.text,
+      polarity: line.polarity,
+      source: line.source,
+      delta: line.delta === 0 ? undefined : line.delta,
     });
   }
 
@@ -428,6 +512,10 @@ export function buildNudgePhaseModel(
     withheld,
     committedIds,
     availableEssence: availableEssenceFor(undefined),
-    committedCost: totalNudgeCost(step, committedIds),
+    // `accessibleSpheres` threaded through for the same reason the card models
+    // quote the effective price: omitting it re-quotes a discounted hand at its
+    // authored cost, so a reopened stage would report a total the commit path
+    // never charged (THR-890).
+    committedCost: totalNudgeCost(step, committedIds, accessibleSpheres),
   };
 }

@@ -40,6 +40,23 @@ Pure-UI feature — **no engine module, no orchestrator phase, no `GameState` fi
 | Player controls connected | N/A by design. This path is autonomous world behaviour with no player verb; the god's existing faction verbs (anoint, stir dissent, whisper, schism) already act on the same reputation surface and now have a live economy to act on. |
 | Acceptance instrument | `npm run sweep:rank-reach` reports the member-work resolution census and the NFP #7 cost, and **exits 0** as a live gate. Its `unowned` category (faction seeded with zero members, THR-816) is reported but excluded from the verdict — it answers a different question than rank reachability. |
 
+## Derived factor lines — the variance rule (THR-892)
+
+| Surface | Wiring |
+|---|---|
+| Schema | `src/types/unifiedAction.ts` — **additive optional only** (278 importers; zero signature changes). `StepCarryoverFactorLine` (extends `StepFactorLine` with `forecastDelta?`) and `ActionStep.carryoverFactorLines?`, keyed on the six-value `StepOutcome` |
+| Derivation | `src/engine/encounters/stepFactorLines.ts` (new) — **pure projection, walks nothing and scores nothing.** Takes only numbers resolution already computed (`capability`, `ModifierBreakdown.contributions`) and turns them into sentences. `deriveStepFactorLines` / `deriveSkillLine` / `deriveContributionLines`; `FACTOR_LINE_EPSILON` (0.005 = one pip) drops contributions too small to observe |
+| Named contributions | `src/engine/resolutionModifiers.ts` — `NamedModifierContribution`, `ModifierBreakdown.contributions`, and `collectEquipmentContributions` / `collectTraitContributions` / `collectTerrainContributions`. The three `compute*` functions now **sum the list they collect**, so there is exactly one walk; caps applied by trimming the overflowing tail, so the emitted values sum to precisely the previously-returned total (all 30 pre-existing modifier tests unchanged) |
+| Carryover resolution | `resolveCarryoverLine` + `priorStepOutcome` (`nudges.ts`) — **one shared reader**, so the adapter and the resolver cannot disagree about which band the carryover keys off. `collectNudgeModifiers` gains an optional `priorOutcome`; `CARRYOVER_MODIFIER_SOURCE_PREFIX = 'carryover:'` |
+| Resolution | `resolveUncontestedStep` (`unifiedActionResolution.ts`) — passes `priorStepOutcome(action)` so a declared `forecastDelta` joins the same named channel as `nudge:<id>` / `trait:<id>`. **Zero new PRNG draws** — the draw the carryover reads happened on the prior step |
+| UI model | `EncounterStageFactorLineModel.delta` (`encounter-stage/types.ts`) — **absent, never zero**, on a line with no measurable contribution, so the row draws no pips rather than an empty track promising a magnitude |
+| UI adapter | `buildNudgePhaseModel.ts` — derived lines appended **after** the authored/trait set, so the encounter's own account leads. Reads `standing.contributions` from the `computeResolutionModifiers` call that already fed the forecast |
+| Content | `src/data/nudge-stage-content.ts` — `DERIVED_FACTOR_SENTENCES` (8 kinds × for/against), `DERIVED_SKILL_SENTENCE`, `DERIVED_FACTOR_ACTOR_FALLBACK`. Authored as **half-sentences** (`'{actor} carries {source}.'`), which is what makes canon rule 1 structurally unviolatable — a `{label}: {value}` shape has nowhere to form |
+| Authoring guardrails | `checkNudgeHand` (`nudgeHandChecklist.ts`) — carryover word budget, `NUDGE_BIG_DELTA` ceiling, and rejection on a template's first step. Position resolved via `template.steps.indexOf(step)`, **not** the loop index, because the loop runs over the nudge-bearing subset |
+| GameState | **Zero new fields** — the whole feature lives on the template, the action's existing `stepOutcomes`, and a projection of the existing modifier breakdown |
+| Traces | **None added.** The derivation is a read; nothing here mutates or resolves |
+| Not derived (deliberate) | Omens, doom stage, season — `forecastAction` consumes only `ResolutionInput.actionModifiers`, which `computeResolutionModifiers` fills, and that pipeline contains no omen/doom/season read. Recorded N/A with the read path cited rather than faked; wiring them into the modifier pipeline is the prerequisite, not a panel change |
+
 ## Nudge Model — WS0 engine substrate (THR-773)
 
 | Surface | Wiring |

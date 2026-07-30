@@ -39,6 +39,7 @@ import {
   NUDGE_HAND_MIN,
   NUDGE_NAME_MAX_WORDS,
   NUDGE_OFF_REACH_MAX_DIFFICULTY,
+  NUDGE_WORD_BUDGETS,
   OPEN_DRAW_ATTENTION_TIER,
   REACH_PURPOSE_MAX_WORDS,
 } from './nudgeAuthoringConstants';
@@ -179,6 +180,43 @@ export function checkNudgeHand(template: UnifiedActionTemplate): string[] {
       if (polarities.size < 2) {
         violations.push(
           `${where}: factor lines all cut '${[...polarities][0]}' — a weighing needs both signs`,
+        );
+      }
+    }
+
+    // ─── Carryover lines (THR-892) ────────────────────────────────
+    // The one authored factor surface besides trait lines that survives the
+    // variance rule, because it is keyed on a band the run actually rolled.
+    //
+    // Budgets, not requirements: a step may author none (the first step of an
+    // encounter has no predecessor, so a carryover map there is dead by
+    // construction). What is checked is that a declared line is *usable* —
+    // within the word budget, and not so large it swamps the hand.
+    const carryoverEntries = Object.entries(step.carryoverFactorLines ?? {}) as
+      ReadonlyArray<[StepOutcome, { text: string; forecastDelta?: number }]>;
+    // Position in the *template's* step list, not in the nudge-bearing subset —
+    // a template whose step 0 authors no hand would otherwise make its step 1
+    // look like the head of the encounter.
+    const templateStepIndex = (template.steps ?? []).indexOf(step);
+    if (templateStepIndex === 0 && carryoverEntries.length > 0) {
+      violations.push(
+        `${where}: authors carryoverFactorLines on the first step, which has no prior outcome to key off`,
+      );
+    }
+    for (const [outcome, line] of carryoverEntries) {
+      if (!line?.text || line.text.trim() === '') {
+        violations.push(`${where}: carryover line for '${outcome}' has no text`);
+        continue;
+      }
+      if (words(line.text) > NUDGE_WORD_BUDGETS.factorLine) {
+        violations.push(
+          `${where}: carryover line for '${outcome}' is ${words(line.text)} words, over ${NUDGE_WORD_BUDGETS.factorLine}`,
+        );
+      }
+      const delta = Math.abs(line.forecastDelta ?? 0);
+      if (delta > NUDGE_BIG_DELTA) {
+        violations.push(
+          `${where}: carryover line for '${outcome}' moves ${delta}, over NUDGE_BIG_DELTA ${NUDGE_BIG_DELTA}`,
         );
       }
     }

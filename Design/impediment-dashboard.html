@@ -5770,6 +5770,45 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "Ship the map keyed on the live union (`Record<HungerId, string>`) so it is exhaustive over what exists and cannot fall behind; file the discrepancy (THR-891) for the design call; state the gap on the wiki page rather than papering it. The `Record` keying means adding a `HungerId` member fails the build until its card is named.",
     "session": "THR-887 execution, tb-opus-pickup"
+  },
+  {
+    "num": "327",
+    "id": 327,
+    "count": 1,
+    "date": "2026-07-30",
+    "category": "tooling",
+    "description": "**Playwright MCP's viewport does not survive `browser_navigate` — it silently reverts, and every later screenshot is off-contract with no error.** THR-890's browser pass opened with `browser_resize(1920, 1080)`, verified `innerWidth`/`innerHeight` read exactly `1920x1080`, then navigated a few times while staging the encounter. A pre-screenshot readout showed the viewport had become **1689×1221** — a size never requested, on a run that had already proved the resize worked. Nothing reported a change: `browser_navigate` returns its normal page block, and `browser_take_screenshot` captures happily at whatever the viewport now is. This is a *different* failure from #199b (resize had no effect at all) and #251 (Claude-in-Chrome resize inert): here the resize genuinely works and then quietly stops holding.",
+    "consequence": "A DoD screenshot taken after any navigation silently documents a viewport the Viewport Contract never specified, while the session's earlier successful resize sits in the transcript as false corroboration. The capture looks compliant and is not.",
+    "impact": "Medium — silent, and the earlier successful measurement actively argues the capture is fine.",
+    "workaroundFound": false,
+    "workaround": "**Re-assert the viewport immediately before the contractual capture, and measure `innerWidth`/`innerHeight` in the same call that takes the screenshot — never trust a resize from earlier in the session.** Treat `browser_resize` as scoped to the current document, not the session. Generalises the standing rule from #251 (\"the success string is not evidence\") one step further: on Playwright even a *verified* success is not evidence once you have navigated. Cheap permanent fix (unticketed): fold the resize + `innerWidth`/`innerHeight` readout into a single pre-capture step in the DoD's unattended-route rung.",
+    "session": "THR-890 card-row browser verification, hourly `tb-opus-pickup`, worktree priceless-boyd-b07fa4."
+  },
+  {
+    "num": "328",
+    "id": 328,
+    "count": 1,
+    "date": "2026-07-30",
+    "category": "tooling",
+    "description": "**`spawnNudgeExemplar` is documented as \"the sanctioned browser-verify path for the nudge stage\", but the companion reader `getEncounterNudges` cannot see what it spawns.** With the exemplar staged and the encounter stage visibly rendering (`getActiveUIState().openModals` includes `EncounterVeil`, and the DOM carries every `nudge-factor-*` node), `getEncounterNudges('@hero')` returned `no actor matched \"@hero\"` and then `no unified action for Vara`, while `getState().unifiedActions` read **length 0**. So the two halves of the documented verification route disagree: the spawner opens a stage the reader denies exists.",
+    "consequence": "The DoD's required `__DEBUG.*` state assertion cannot be taken from the nudge-specific reader on an exemplar-spawned encounter — the one path the bridge doc names for this surface. Costs a detour to find a different bridge call mid-verification.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Assert via `getActiveUIState()` (proves the stage is mounted) plus a direct DOM read of `[data-testid^=\"nudge-factor-\"]` (proves the model's output, ids and text). Both are stable and arguably stronger for a factor-line change, since they show the rendered strings rather than the hand summary. **Durable fix:** have `spawnNudgeExemplar` register its action into the same `unifiedActions` collection `getEncounterNudges` reads, or have the reader fall back to the live stage model — otherwise the bridge doc's \"sanctioned path\" claim is only half true. Note the THR-892 verification did *not* need the nudge hand itself, so this was cheap here; a ticket verifying card pricing would be blocked harder.",
+    "session": "THR-892 derived-factor-lines browser verification, hourly `tb-opus-pickup`, worktree reverent-haslett-e28ee2."
+  },
+  {
+    "num": "329",
+    "id": 329,
+    "count": 1,
+    "date": "2026-07-30",
+    "category": "tooling",
+    "description": "**A quoted heredoc (`cat >> file << 'EOF'`) failed to parse in the Bash tool with ``unexpected EOF while looking for matching `'`` `` when the payload was a ~180-line TypeScript test block.** The delimiter was single-quoted (so the body should be literal and apostrophes inert), and the same shape works for short payloads; the failure appears to come from how the multi-line command is assembled before reaching `sh`, not from the heredoc semantics themselves. The error names a quote, which sends you hunting for an apostrophe in the payload — the wrong place to look.",
+    "consequence": "One wasted tool call and a misleading diagnostic on a routine \"append a test block to an existing file\" operation.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Use the `Edit` tool with a unique trailing anchor from the target file instead of shell append — it needs no quoting at all, and it verifies the anchor exists, so a silent append to the wrong file is impossible. Reserve heredocs for short, single-quote-free payloads. This is a specific instance of the general rule already in CLAUDE.md's Bash-tool guidance (prefer dedicated file tools over shell redirection); worth remembering that the failure mode is a *parse* error blaming quotes, not an obvious \"payload too large\".",
+    "session": "THR-892 derived-factor-lines test authoring, hourly `tb-opus-pickup`, worktree reverent-haslett-e28ee2."
   }
 ];
 // ── End data ──
