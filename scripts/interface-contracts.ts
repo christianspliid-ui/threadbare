@@ -103,6 +103,7 @@ const FACTIONS = 'Factions & Succession';
 const NARRATIVE = 'Attention, Chronicle & Narrative';
 const QUINTESSENCE = 'Spheres & Quintessence';
 const TRAITS = 'Personality & Emergent Traits';
+const PROGRESSION = 'Ascendant Beats & Progression';
 
 export const CONTRACTS: readonly Contract[] = [
   // ── Personality & Emergent Traits → outbound (THR-786 first slice) ─────────
@@ -1141,6 +1142,53 @@ export const CONTRACTS: readonly Contract[] = [
     // purpose: quoting a discounted card and charging the authored price (or the
     // reverse) is the one bug a discount feature reliably ships with.
     deferralTicket: 'THR-883',
+  },
+
+  // ── The Repertoire (THR-887) ──────────────────────────────────────────────
+  {
+    id: 'milestone-grants-unlock-repertoire-cards',
+    producerSystem: PROGRESSION,
+    consumerSystem: ENCOUNTERS,
+    intent:
+      'Earning something as a god changes what you can play as a god — a milestone hands you a new way to use a power you already had, not a bigger number on the one you have.',
+    ulTerms: ['Nudge', 'Ascendant Beat'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['buildRepertoire', 'isMemberUnlocked', 'memberAccess'],
+      module: 'src/engine/nudgeCardRepertoire.ts',
+    },
+    writeSites: ['src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts'],
+    readSites: ['src/engine/encounters/nudges.ts'],
+    // Milestone card unlocks read `GameState.unlockedActionIds` — the set
+    // `unlock_action` already writes and `StepNudge.requiredUnlock` already
+    // reads. One grant ledger, deliberately: a second one would be a parallel
+    // path to a place that already has an owner.
+    //
+    // The `god_trait` unlock kind is live and currently resolves to nothing,
+    // because god-earned traits do not exist until THR-791 lands. That is the
+    // stub, and it is exercised by test rather than left commented out.
+  },
+  {
+    id: 'twilight-harvest-preserves-defining-card',
+    producerSystem: NARRATIVE,
+    consumerSystem: ENCOUNTERS,
+    intent:
+      'A god who dies is not wholly gone: the trick they were known for survives the age and turns up in the next god\'s hand, whole after a triumph and scarred after a defeat.',
+    ulTerms: ['Nudge', 'Echo', 'World-Soul'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['selectEchoCard', 'buildCardEcho', 'echoCardsFromDefinitions'],
+      module: 'src/engine/nudgeCardRepertoire.ts',
+    },
+    writeSites: ['src/engine/cycleEnd.ts'],
+    readSites: ['src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts'],
+    // The tally the selection reads (`GameState.cardPlayTally`) is written at
+    // nudge commit and reset at `transitionToNewCycle` — both sides land
+    // together, so this is not an optional field with no writer.
+    //
+    // The card echo rides `EchoDefinition` rather than a parallel carry
+    // structure, so it degrades, fades, and threads the chronicle on the same
+    // paths as Legacy, Monument, and Relic.
   },
 ];
 

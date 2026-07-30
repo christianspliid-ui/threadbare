@@ -845,6 +845,20 @@ export type NudgeRider =
 export interface StepNudge {
   /** Unique within the owning template. */
   readonly id: string;
+  /**
+   * The library card this authored option *is* an instance of (THR-887) — an id
+   * in `NUDGE_CARD_LIBRARY`.
+   *
+   * `id` is unique within its template; this is the shared identity across every
+   * template that deals the same card. Two encounters both dealing the core
+   * Boost carry different `id`s and the same `libraryCardId`, which is what lets
+   * the twilight harvest tally "how often did this god play Boost" across a
+   * whole run rather than counting per-template aliases as distinct cards.
+   *
+   * Absent ⇒ a one-off authored option that is not in the library: playable and
+   * fully supported, simply never a candidate for the echo card.
+   */
+  readonly libraryCardId?: string;
   /** ≤6 words, plain language (interactivePlainness applies). */
   readonly name: string;
   /** Sphere gate; absent ⇒ common pool. */

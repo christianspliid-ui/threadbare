@@ -2115,3 +2115,91 @@ inside the encounter. A card you cannot ever reach is noise, not a goal.
 `src/engine/nudgeGrantLiveness.ts` (the build gate), constants in
 `src/data/nudge-constants.ts`. Dispatch fires from `phaseAutonomousAftermath`, after the
 encounter's own aftermath, so a card's grant lands on the world the encounter left behind.
+
+## Capability: The Repertoire — a card library, gated by who the god is (THR-887)
+
+THR-885 gave you cards that cost, grant, and filter *inside one encounter*. This capability
+is the layer above: which cards a god holds **at all**, across a whole run and into the next
+one. Author against it whenever you write a hand — a card the god cannot hold is withheld
+before the player ever sees it.
+
+### Point an authored card at its library member
+
+Add `libraryCardId` to a `StepNudge`:
+
+```ts
+{
+  id: 'steady',                       // unique within this template
+  libraryCardId: 'card.boost.core',   // shared identity across every template
+  name: 'Steady his hand',
+  essenceCost: 2,
+  forecastDelta: 15,
+  fiction: '…',
+  effectLine: '…',
+}
+```
+
+`id` is local; `libraryCardId` is the card's identity everywhere. Two encounters that both
+deal the core Boost carry different `id`s and the *same* `libraryCardId`, which is what lets
+the twilight harvest ask "how often did this god play Boost" across a run instead of counting
+per-template aliases as different cards.
+
+**`libraryCardId` is optional and its absence is supported.** A card without one is a one-off
+authored option: fully playable, never withheld by the repertoire gate, and never a candidate
+for the echo card. Use one when the option is a library card; leave it off when it genuinely
+belongs to this template alone.
+
+### What the repertoire withholds
+
+A card whose `libraryCardId` names a member the god does not hold is dimmed `sphere_locked`,
+which the player stage withholds and the designer view still lists. A god holds a member when:
+
+| Held because | Rule |
+|---|---|
+| universal core | `UNIVERSAL_CORE_TYPES` — Boost, Insurance, Mercy, trait cards. Every god, always. |
+| primary sphere | the member's `sphere` is the god's primary. Full price. |
+| secondary sphere | the member's `sphere` is the god's secondary. `SECONDARY_SPHERE_DISCOUNT` off. |
+| hunger unique | the member's `hunger` is the god's hunger. **Ignores sphere entirely.** |
+| milestone | `unlock.unlockActionId` is in `unlockedActionIds` — the same grant set `unlock_action` writes. |
+| god trait | `unlock.traitId` is a god-earned trait (THR-791 — live, resolves to nothing today). |
+| echo | carried in from a previous run. **Ignores sphere entirely.** |
+
+**Access is read per member, not per type.** `order` signs Insurance and `energy` signs Boost,
+both of which are also universal core. If you read access off the type you hand `order`'s
+signature Insurance to every god in the game — the bug the "⁺" notation exists to prevent, and
+which a test now pins.
+
+### Progression is variation, not power
+
+A milestone grants a new *member* of a family the god already plays — same verb, different
+twist or cost channel. Almost nothing is strictly stronger. When you add a variation member,
+add it to `VARIATION_MEMBERS` in `src/data/nudge-card-library.ts` against the milestone that
+grants it; do not invent a second unlock ledger, and do not make it a bigger number on a card
+that already exists.
+
+### The echo card
+
+At twilight the harvest picks the run's defining card — most played, ties broken by the most
+climactic moment it was played at, then by card id so a saved run replays identically — and
+carries it into the next run's starting repertoire regardless of sphere. A triumphant or
+bittersweet age returns it whole; a **somber** one returns it scarred: cheaper by
+`ECHO_CARD_SCAR_DISCOUNT`, carrying an `ECHO_CARD_SCAR_PENALTY` forecast penalty.
+
+Nothing to author — it rides the tally written at nudge commit. What you *do* owe it is
+**stable library ids**: renaming a member id retires the card, and a save that carries it
+drops the echo with one warning at world-seed. Rename deliberately, or not at all.
+
+### Content is optional, structure is not
+
+`title` and `quote` are optional and currently absent on every member — card content is
+authored under THR-883. An unauthored card is dealable, gated, priced, and renders as its own
+keyword. Add prose without touching the schema; `unauthoredCardCount()` is the backlog number.
+
+### Where it lives
+
+`src/data/nudge-card-library.ts` (the library: types, signatures, hunger uniques, members),
+`src/engine/nudgeCardRepertoire.ts` (access, unlock resolution, echo selection and carry),
+`src/engine/encounters/nudges.ts` (`repertoireCardIds` on `NudgeHandContext` — the gate),
+`src/engine/cycleEnd.ts` (harvest selection), constants in `src/data/nudge-constants.ts`.
+The catalog's human surface is `public/nudge-cards-reference.html`, freshness-gated against
+the library file.

@@ -3,7 +3,12 @@ import type { ValuePair } from './agent';
 
 // ── Echo Types ──────────────────────────────────────────────────
 
-export const ECHO_TYPES = ['legacy', 'monument', 'relic'] as const;
+/**
+ * `card` is the fourth preserved thing (THR-887): the nudge card that defined a
+ * run, carried into the next one. It is the only echo type not derived from a
+ * graph node — see {@link EchoDefinition.originNodeId}.
+ */
+export const ECHO_TYPES = ['legacy', 'monument', 'relic', 'card'] as const;
 export type EchoType = typeof ECHO_TYPES[number];
 
 /** How the echo was selected */
@@ -40,7 +45,12 @@ export interface EchoDefinition {
   id: string;
   echoType: EchoType;
   source: EchoSource;
-  /** The graph node this echo was derived from */
+  /**
+   * What this echo is of. A graph node id for every type except `card`, where
+   * it holds the **library card id** — a card is not a node, and giving the
+   * field a second meaning was the cheaper honesty than a parallel id field
+   * that three of four echo types would leave empty.
+   */
   originNodeId: string;
   /** Which cycle this echo was created in */
   originCycle: number;
@@ -50,6 +60,12 @@ export interface EchoDefinition {
   /** 0.0–1.0 how significant the source event/node was */
   significance: number;
   injection: EchoInjection;
+  /**
+   * Present only on `echoType: 'card'` (THR-887) — the card carried forward and
+   * whether a somber age scarred it. Read by `echoCardsFromDefinitions` when
+   * dealing the next run's starting repertoire.
+   */
+  cardEcho?: { cardId: string; scarred: boolean };
 }
 
 // ── Echo Runtime State ──────────────────────────────────────────

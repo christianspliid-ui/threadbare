@@ -11,6 +11,7 @@ import type { ScryState } from '../../types/scry';
 import { createScryState } from '../../engine/scry';
 import { useSimulation } from './hooks/useSimulation';
 import type { UnifiedActionTemplate } from '../../types/unifiedAction';
+import type { CardPlayTallyEntry } from '../../types/gameState';
 import { getEncountersForLocation, getAnyEncounterById } from '../../data/encounter-content';
 import { SUBTYPE_SUBLOCATION_MAP } from '../../engine/sublocation';
 import { useHexZoomData } from './hooks/useHexZoomData';
@@ -2893,15 +2894,34 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       return;
     }
 
-    setGameState(prev => ({
-      ...prev,
-      essencePool: spend.pool,
-      unifiedActions: (prev.unifiedActions ?? []).map(action =>
-        action.actionId === phase.actionId
-          ? { ...action, activeNudges: [...nudgeIds] }
-          : action,
-      ),
-    }));
+    setGameState(prev => {
+      // THR-887 — tally the library cards this hand played, so the twilight
+      // harvest has something to select the run's defining card from. Cards
+      // with no `libraryCardId` are one-off authored options and are skipped:
+      // an echo can only carry a card the next run's library still builds.
+      const tally: Record<string, CardPlayTallyEntry> = { ...(prev.cardPlayTally ?? {}) };
+      const climax = prev.doomClock?.progress ?? 0;
+      for (const id of nudgeIds) {
+        const libraryCardId = cardsById.get(id)?.libraryCardId;
+        if (!libraryCardId) continue;
+        const existing = tally[libraryCardId];
+        tally[libraryCardId] = {
+          timesPlayed: (existing?.timesPlayed ?? 0) + 1,
+          peakSignificance: Math.max(existing?.peakSignificance ?? 0, climax),
+        };
+      }
+
+      return {
+        ...prev,
+        essencePool: spend.pool,
+        cardPlayTally: tally,
+        unifiedActions: (prev.unifiedActions ?? []).map(action =>
+          action.actionId === phase.actionId
+            ? { ...action, activeNudges: [...nudgeIds] }
+            : action,
+        ),
+      };
+    });
 
     // One trace per played card (player-driven, low volume — not an
     // all-agents phase, so the aggregate-batching rule does not apply).
