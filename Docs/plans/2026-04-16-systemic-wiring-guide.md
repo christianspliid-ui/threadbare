@@ -805,7 +805,7 @@ At most one rider applies per step — the strongest wins (`NUDGE_RIDER_PRIORITY
 
 **Where to find the implementation:** `src/engine/encounters/nudges.ts` (hand partitioning, modifiers, riders, band prose), applied in `unifiedActionResolution.resolveUncontestedStep`. Constants in `src/data/nudge-constants.ts`. Inspect a live hand with `window.__DEBUG.getEncounterNudges(agentRef)`.
 
-**Authoring quality rules (THR-774 / WS1) — the schema lets you write a bad hand; these do not.** Full contract in [`.claude/skills/encounter-pipeline/reference/nudge-authoring-spec.md`](../../.claude/skills/encounter-pipeline/reference/nudge-authoring-spec.md); guardrail numbers in `src/data/content-eval/nudgeAuthoringConstants.ts`; worked example in `src/data/__fixtures__/nudge-exemplar/darkhollow-vault-exemplar.ts`.
+**Authoring quality rules (THR-774 / WS1, format locked by THR-883) — the schema lets you write a bad hand; these do not.** Full contract in [`.claude/skills/encounter-pipeline/reference/nudge-authoring-spec.md`](../../.claude/skills/encounter-pipeline/reference/nudge-authoring-spec.md); guardrail numbers in `src/data/content-eval/nudgeAuthoringConstants.ts`; worked example in `src/data/__fixtures__/nudge-exemplar/swollen-ford-exemplar.ts` (The Swollen Ford — supersedes the Darkhollow Vault).
 
 | Rule | Value | Why |
 |---|---|---|
@@ -816,11 +816,15 @@ At most one rider applies per step — the strongest wins (`NUDGE_RIDER_PRIORITY
 | Big delta | `forecastDelta ≥ 0.15` ⇒ **both** `failure` and `critical_failure` | A nudge that moved the odds that far and still lost owes a distinct reading of *how* it lost at each depth. |
 | Band coverage | the hand's fragments cover all six `StepOutcome`s between them | `near_miss` has no afterimage field on `ActionStep`; fragments are the only place it gets paid off. |
 | Base-text independence | nudge-specific payoffs live in `bandProse`, never in `narrativeTemplate` | The base text must read correctly with **any** subset of the hand active, including none. |
-| `effectLine` | words, zero digits or `%` | Ruling 1: odds are legible in words only. |
-| Riders | rare; justify each in a code comment | A rider on every card turns the outcome ladder into a floor. |
+| `effectLine` | words, zero digits or `%`; **states mechanism, not mood** | Ruling 1: odds are legible in words only (pips render magnitude). The pivot: the effect line is the rules text — what the god does and why that moves the odds. |
+| Card faces | library-generic: 2–4 word title, one-line flavor quote, zero scene-bespoke prose | The THR-883 communication pivot: prose does the scene, cards do the rules. Band fragments stay bespoke — they are outcome prose, not card prose. |
+| Riders | ≤1 per hand; justify each in a code comment | Two riders answer the same question twice; a rider on every card turns the outcome ladder into a floor. |
 | Trait options | `essenceCost: 0` | The price was paid by being that person. |
+| Zero essence otherwise | only with another cost channel (`costs.doomDelta` / `costs.detectionDelta` / obligation) | A card that is simply free is a pricing bug (THR-885 cost channels). |
+| Grants | ids resolve against built catalogs (`validateNudgeGrantRefs`) | Supporting content ships with the card; dead refs no-op silently at runtime (THR-844). |
+| Setting envelope | `settings` from the 8-class vocabulary + one opening per class | THR-884: authors never hand-write the 20-subtype list; `validateSettingEnvelope` holds the honesty rules. |
 
-**Reuse is the exception, not the default.** Options are per-encounter authored content. The only cross-encounter families are the six in `SHARED_GENERIC_NUDGE_FAMILIES` — focus, luck, blessing, oath, light, strength — and extending that list is a code change with a reviewer, not a judgement an authoring session makes alone. A candidate generic must read correctly in ≥3 *unrelated* encounters.
+**Card faces are shared; hands are bespoke.** Post-pivot (THR-883), every card face is written library-generic — it must read correctly wherever its type deals (genericity bar: ≥3 *unrelated* encounters) — while the *hand* (type mix, gates, fragments, grants) is authored per encounter. `SHARED_GENERIC_NUDGE_FAMILIES` — focus, luck, blessing, oath, light, strength — survives as the Boost-family seed vocabulary until THR-887 lands `src/data/nudge-card-library.ts` as the canonical card list; extending the library is a code change with a reviewer, not a judgement an authoring session makes alone.
 
 **Where you author it depends on the table, and one of them used to swallow your work silently (THR-838).** Files that build `UnifiedActionTemplate` literals directly — `encounter-anomaly-content.ts`, `effect-shell-proof-templates.ts`, `ascendant-trap-encounters.ts` — take `nudges` on the step and `traitVariants` on the template, and that is the whole story. Files with a `toUnifiedTemplate` converter do **not**: `src/data/encounter-content.ts` (115 templates) and `src/data/faction-encounter-content.ts` each build their `ActionStep`s field by field from a private raw-entry type, so a field the converter does not name never reaches `UNIFIED_ACTION_TEMPLATES`. Until THR-838 that converter named none of the nudge fields, so a hand authored in the largest encounter table was dropped between the literal and the shipped template with no type error. It now forwards `nudges`, `purposeLine`, `factorLines`, `successAtCostAfterimage` and template-level `traitVariants`.
 

@@ -2,12 +2,12 @@
 name: encounter-pipeline
 description: Automated encounter pipeline v2. Runs draft → editorial+revision → systems+merge → implementation for complete encounter delivery. Triggers on "encounter pipeline", "draft encounter", "run encounter pipeline", "author encounter", or "/encounter-pipeline".
 model: opus
-last_validated_against: 2026-07-27
+last_validated_against: 2026-07-30
 ---
 
 > **Load before authoring:** `Docs/canon/rulebook-quick-reference.md` (always — the synthesis layer for rules of play). Load `Docs/canon/rulebook.md` (full rulebook) when the work touches a specific rule of play and you need depth, status flags, or source citations.
 >
-> **Load before drafting a single card:** [`reference/nudge-authoring-spec.md`](reference/nudge-authoring-spec.md) — the canonical 8-step authoring contract, the prose rubric, the verbatim detector spec, and the shared generic pool. It is shared verbatim with `template-encounter-rewrite`; where this skill and that spec appear to disagree, **the spec wins**.
+> **Load before drafting a single card:** [`reference/nudge-authoring-spec.md`](reference/nudge-authoring-spec.md) — the canonical authoring contract in the locked THR-883 format: the communication pivot (prose does the scene, cards do the rules), the scene-writer's 14-question checklist, setting envelopes, the 21-type card library, the prose rubric, and the verbatim detector spec. It is shared verbatim with `template-encounter-rewrite`; where this skill and that spec appear to disagree, **the spec wins**.
 
 # Encounter Pipeline v2 — nudge-native
 
@@ -24,6 +24,12 @@ Premise → Draft (Opus) → Editorial+Revised (Opus) → Systems+Final (Sonnet)
 Encounters authored here ship **nudge-native**. The player is handed a hand of authored,
 essence-priced **nudges** that shift the named odds; **fate rolls the outcome** on the
 five-band ladder; prose pays the nudge off at *every* band, misfires included.
+
+**The communication pivot (THR-883, locked 2026-07-30): prose does the scene, cards do
+the rules.** The scene lives in the per-class openings, the setting-neutral spine, and
+the outcome prose. A card face is generic and reusable — 2–4 word title, one plain
+mechanical `effectLine` (what the god does and why that moves the odds), one short flavor
+quote — cut from the 21-type card library. Zero scene-bespoke prose on a card face.
 
 Choosing between authored futures for a mortal ("Forge the truth" / "Temper the
 narrative") is the **rejected** model this replaced. A draft whose player-facing decision
@@ -72,14 +78,15 @@ If `Docs/canon/encounters.md` is missing or inaccessible, fall back to the pre-r
 
 ## Quality Exemplar
 
-**The golden exemplar is `src/data/__fixtures__/nudge-exemplar/darkhollow-vault-exemplar.ts`** — the Darkhollow Vault, authored end-to-end against the 8-step checklist, with every rule visible once. Read it before drafting. It is registered in no pool; it exists to be copied. `nudgeModel.test.ts` § *WS1 golden exemplar* asserts the checklist against it, so the exemplar and the spec cannot drift apart silently.
+**The golden exemplar is `src/data/__fixtures__/nudge-exemplar/swollen-ford-exemplar.ts`** — The Swollen Ford, authored end-to-end against the locked THR-883 format, with every rule visible once. Read it before drafting. It is registered in no pool; it exists to be copied. `nudgeModel.test.ts` § *golden exemplar* asserts the checklist against it, so the exemplar and the spec cannot drift apart silently.
 
 Every encounter must meet its bar:
 
-- Opening with concept art + literary scene prose — a moment already in motion
+- A declared setting envelope with one scene-built opening per class, and a setting-neutral spine — the scene-writer's 14 questions answered in writing
 - Threads discovered inside the prose, not in a separate menu
-- A **4–8 card hand on every nudge-bearing step**, spanning ≥4 spheres, with ≥1 common option
-- Scene-specific card names ("Steady the hands", not "Help them")
+- A **4–8 card authored hand on every nudge-bearing step** (dealt 4–6 after filters), spanning ≥4 spheres, with ≥1 ungated common option, no two cards answering the same question
+- Generic card faces ("Steady Breath", not "Steady the hands against the vault lock") — the scene grounds the card, the face never carries the scene
+- Effect lines that state mechanism: what the god does and why that moves the odds
 - **Every card pays off in failure** — at least one failure-band fragment per nudge, both failure bands for a big-delta card
 - Aftermath with reflective prose, actor-centered consequences, and reaction choices (medium+)
 - **Cool failure at every band** — the failure path must be as narratively interesting as the success path. If the failure outcome reads like punishment, it's not done.
@@ -126,7 +133,8 @@ Before dispatching any agent, the orchestrator reads `Docs/canon/encounters.md` 
 Then the orchestrator reads the files the Canon page links to and injects them as context into agent prompts:
 
 0. [`reference/nudge-authoring-spec.md`](reference/nudge-authoring-spec.md) — **mandatory**, the authoring contract every card is written against.
-0b. `src/data/__fixtures__/nudge-exemplar/darkhollow-vault-exemplar.ts` — the worked example. Read it, do not re-derive it.
+0b. `src/data/__fixtures__/nudge-exemplar/swollen-ford-exemplar.ts` — the worked example. Read it, do not re-derive it.
+0c. `public/nudge-cards-reference.html` — the 21-type card library and pip vocabulary the hand is cut from.
 1. `Docs/authoring-brief.md` — compiled capability + principle preamble (preferred). If missing or stale, fall back: read `Docs/plans/2026-04-16-systemic-wiring-guide.md` and `Docs/plans/2026-04-16-game-design-direction.md` instead.
 2. `Docs/encounter-building-checklist.md` — structural packet template. **Its per-step "approach card" sections describe the pre-nudge model**; where it conflicts with the spec above, the spec wins.
 3. `Docs/encounter-branching-templates.md`
@@ -197,14 +205,14 @@ Tell the user: encounter deployed. Provide the spawn command: `spawn encounter @
 The draft agent produces a complete encounter packet by walking the **8-step checklist**
 in [`reference/nudge-authoring-spec.md`](reference/nudge-authoring-spec.md) in order:
 
-1. **Vignette** — scene prose; motive hooks, quintessence stakes, and scene tag declared
+1. **Envelope + vignette** — setting envelope declared; one opening per class + setting-neutral spine, written under the 14-question scene-writer's checklist; motive hooks, quintessence stakes, and scene tag declared
 2. **Test panel data** — per step: reach(es) + ≤4-word purpose line, difficulty, 2–4 factor lines each naming its source
-3. **The hand** — 4–8 `StepNudge`s per nudge-bearing step, ≥4 spheres, ≥1 common option, trait-only cards at cost 0
+3. **The hand** — 4–8 `StepNudge`s per nudge-bearing step cut from the 21-type library: generic faces, mechanism-stating effect lines, ≥4 spheres, ≥1 ungated common option, ≤1 rider per hand, trait-only cards at cost 0, zero-essence cards priced on another channel, grants naming only built content
 4. **Band prose** — all six `StepOutcome`s covered; every nudge ≥1 failure-band fragment; big-delta cards cover both failure bands
 5. **Trait hooks** — all four questions answered explicitly (gate / variant / trait-only nudge / trait fragment); live refs only
 6. **Aftermath** — prizes, tolls, seeds as object references; tolls in words
-7. **Images** — `imageTag` per nudge + scene tag; genericity test documented
-8. **Evidence** — register scorer + detectors clean
+7. **Images** — one generic image tag per library card + scene tag; genericity test documented
+8. **Evidence** — register scorer + detectors clean; 14-question answers recorded in the file doc comment
 
 Plus: all structural sections (inspiration anchors, pressure knot, cast, beat structure,
 branching profile, outcome ladder, support bundle, self-audit), a sample opening
@@ -231,15 +239,21 @@ The editorial agent:
 4. Missing aftermath reaction choices (medium+)
 5. Reporter prose
 6. No concept art recommendation
-7. **A hand outside 4–8 cards on a nudge-bearing step**
-8. **Fewer than 4 distinct spheres, or no common (sphere-less) option, in a hand**
+7. **A hand outside 4–8 authored cards on a nudge-bearing step**
+8. **Fewer than 4 distinct spheres, or no ungated common (sphere-less) option, in a hand**
 9. **Any nudge with no failure-band fragment** — or a big-delta nudge (`forecastDelta ≥ 0.15`) missing either failure band
 10. **A `StepOutcome` band no fragment in the hand covers**
-11. **A number or `%` in an `effectLine`** — words only
+11. **A number or `%` in an `effectLine`** — words only; the pip row renders magnitude
 12. **Trait-hook step skipped**, or a hook naming a ref `validateTraitRefs()` reports dead
 13. **A nudge-specific payoff written into the base band text** — it must read correctly with any subset of the hand active
 14. **A player-facing option that instructs the mortal** rather than changing the physics of the scene — the rejected authored-futures model
 15. **Any detector hit**: a vagueness-lexicon word, or more than one annotation clause across the encounter
+16. **Scene-bespoke prose on a card face** — a title, effect line, or flavor quote that only reads in this encounter (the communication pivot: prose does the scene, cards do the rules)
+17. **An effect line that states mood instead of mechanism** — it must say what the god does and why that moves the odds
+18. **No setting envelope, or a declared class with no opening** — or a spine/afterimage that names class scenery
+19. **Two rider cards in one hand**, or a rider with no justifying comment
+20. **A zero-essence non-trait card with no other cost channel**, or a grant naming content that does not exist (`validateNudgeGrantRefs`)
+21. **Two encounters in the same family with an identical card-type composition**
 
 ### Pass 3: Systems Audit + Final Merge
 

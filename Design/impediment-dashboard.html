@@ -5731,6 +5731,19 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "Resolve candidate paths against **both** the repo root and the owning skill's directory before reporting, and drop any path containing a `YYYY-MM-DD`-style placeholder. Standing rule: a path-existence sweep produces *candidates*, never findings — confirm each by locating the real file before writing it down.",
     "session": "THR-795 skill-freshness sweep — mechanical drift detection across `.claude/skills/*/SKILL.md`."
+  },
+  {
+    "num": "325",
+    "id": 325,
+    "count": 1,
+    "date": "2026-07-30",
+    "category": "process",
+    "description": "**A skill's sub-agent prompt files drift independently of its SKILL.md, and the sub-agent reads only the prompt.** `encounter-pipeline/SKILL.md` went nudge-native on 2026-07-27 and states plainly that new encounters do not author `authoredChoices` — but its `agents/draft-prompt.md`, `agents/editorial-prompt.md`, and `agents/implementation-prompt.md` still *mandated* the rejected model: \"Approach Cards Per Step … one card per branch\" (draft), \"Choice labels are scene-specific?\" as a gate question (editorial), and \"Authored choice cards — REQUIRED FOR EVERY PLAYER-FACING STEP\" (implementation). A pipeline run dispatches those prompts verbatim, so every pass would have produced and enforced the authored-futures model the orchestrating skill forbids. Same class THR-888 records for the typecheck no-op in the same prompt set: the subagent reads the prompt, not the SKILL.md warning above it.",
+    "consequence": "Discovered mid-THR-883 skill rewrite; the locked-format pass had to widen from SKILL.md + spec to all four prompt files, and any pipeline run between 2026-07-27 and this fix would have drafted rejected-model encounters that Pass 2 then *approved* rather than rejected.",
+    "impact": "M",
+    "workaroundFound": true,
+    "workaround": "Converted the three prompts to the locked format in the THR-883 skill-rewrite PR. Generalisable check: when a skill's model or contract changes, grep the skill's whole directory — `grep -rn \"<retired-term>\" .claude/skills/<skill>/` — not just SKILL.md; every `agents/*.md` hit is a required edit site because prompts are dispatched without the SKILL.md context.",
+    "session": "THR-883 encounter-pipeline skill rewrite against the locked card format"
   }
 ];
 // ── End data ──

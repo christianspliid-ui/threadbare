@@ -708,7 +708,7 @@ remediation ticket or the build fails.
 - **Production hits:** 12 total — 3 write, 2 read, 7 unclassified
 - **Write sites:** `src/data/artifact-templates.ts`, `src/data/choice-set-catalog.ts`, `src/data/reward-attachment-catalog.ts`
 - **Read sites:** `src/debug-bridge.ts`, `src/engine/traitRefValidation.ts`
-- **Other hits:** `src/data/__fixtures__/nudge-exemplar/darkhollow-vault-exemplar.ts`, `src/data/anomaly-reward-catalog.ts`, `src/data/encounter-content.ts`, `src/data/starter-attachments.ts`, `src/engine/nudgeGrantLiveness.ts` +2 more
+- **Other hits:** `src/data/__fixtures__/nudge-exemplar/swollen-ford-exemplar.ts`, `src/data/anomaly-reward-catalog.ts`, `src/data/encounter-content.ts`, `src/data/starter-attachments.ts`, `src/engine/nudgeGrantLiveness.ts` +2 more
 - **Verdict:** Pinned by badgeOverride: Detector shipped and measured (THR-786): 62 of the authored trait refs resolve to no trait definition, so those gates can never pass. Reconciling the authoring vocabulary against the minted definitions is content work outside the predicate floor.
 
 ### `world-events-mint-ambitions` — 🟢 LIVE

@@ -1,15 +1,23 @@
 # The Nudge Authoring Spec
 
-**The canonical authoring contract for nudge-native encounters.** THR-774 (WS1).
+**The canonical authoring contract for nudge-native encounters**, in the locked THR-883
+format. THR-774 (WS1) established this document; the 2026-07-30 THR-883 prototype
+sessions locked the format it now records: the communication pivot, setting envelopes
+(THR-884), and the card system (THR-885), with the card library progression designed in
+`Docs/plans/2026-07-30-nudge-card-repertoire.md`.
 
 Both authoring skills load this file: `encounter-pipeline` (branching encounters) and
 `template-encounter-rewrite` (linear templates). They differ in structure, scale, and
 orchestration; they do **not** differ on anything in this document. If the two skills
 ever appear to disagree about a rule below, this file wins.
 
-- Executable half: `src/engine/__tests__/nudgeModel.test.ts` § *WS1 golden exemplar*.
-- Worked example: `src/data/__fixtures__/nudge-exemplar/darkhollow-vault-exemplar.ts`.
+- Executable half: `src/engine/__tests__/nudgeModel.test.ts` § *golden exemplar*.
+- Worked example: `src/data/__fixtures__/nudge-exemplar/swollen-ford-exemplar.ts`
+  (The Swollen Ford — supersedes the pre-pivot Darkhollow Vault).
 - Tunable numbers: `src/data/content-eval/nudgeAuthoringConstants.ts`.
+- Card-type catalog: `public/nudge-cards-reference.html` (the wiki page where the
+  21-type library and the Repertoire are iterated) +
+  `Docs/plans/2026-07-30-encounter-authoring-frameworks.md` § Decision 3.
 
 Read the exemplar before authoring. Every rule here is visible in it once.
 
@@ -34,10 +42,129 @@ not interchangeable:
 
 | Term | What it is | Where it lives |
 |---|---|---|
-| **rider** | A mechanical remap of the resolved band (`no_crit_fail`, `floor_at_cost`). Deterministic, zero PRNG draws, at most one applies. | `StepNudge.rider` |
+| **rider** | A mechanical remap of the resolved band (`no_crit_fail`, `floor_at_cost`, `all_or_nothing`). Deterministic, zero PRNG draws, at most one applies. | `StepNudge.rider` |
 | **band fragment** | A line of prose appended to the step's outcome text when this nudge was active for that band. | `StepNudge.bandProse[outcome]` |
 
 A rider changes what happened. A fragment says the god was there when it did.
+
+---
+
+## The communication pivot — prose does the scene, cards do the rules
+
+Locked 2026-07-30 (Christian: "we have tried and failed enough to pivot"). Card prose
+that tried to carry the scene read as euphemistic mood even when every detector passed.
+So the jobs are split:
+
+- **Prose does the scene.** The openings, the step spine, the stake block, and the
+  outcome prose (base text + band fragments) are fully written, scene-built, and carry
+  all the fiction.
+- **Cards do the rules.** A card face is **generic and reusable** — the same face reads
+  correctly in any encounter its type fits. Zero scene-bespoke prose on the face.
+
+The card face and how the schema carries it:
+
+| Card element | Field | Rule |
+|---|---|---|
+| Picture | `imageTag` | One generic image per library card; fallback chain ends at a type icon on a tinted band |
+| Keyword + icon | *(code comment until THR-887 lands the library schema)* | The card's library type — player-facing vocabulary |
+| Title | `name` | 2–4 generic words, reusable everywhere ("Steady Breath", "Pay It Later") |
+| Cost | `essenceCost` + `costs` | Essence pips · free · alternate channels (detection, doom, obligation) |
+| Effect | `effectLine` | **One plain mechanical sentence: what the god does and why that moves the odds.** No digits, no `%` — the pip row renders magnitude |
+| Flavor quote | `fiction` | One short generic line, the card's only prose |
+
+**The effect line states mechanism, not mood** (checklist Q14). Eldritch Horror register:
+"Send restful dreams — you quiet their mind while they sleep, so the rest actually
+counts." Take the space the reasoning needs; never take refuge in atmosphere.
+
+**Grounding moved from prose to binding** (checklist Q13). A generic card is grounded
+because it *acts on* a target the scene established — the light on the water, the rope,
+the opposition — and because dealing is self-grounding: under THR-887, cards carry typed
+text slots (`{condition}`, `{host}`, `{target}`) and **target selectors** resolved at
+deal time; a card whose selector binds to nothing is not dealt. Until the library data
+model lands, authored hand instances name their targets directly (the exemplar's Balm
+names the condition it lifts) — but write every face as if it were already a library
+card, because the retrofit will make it one.
+
+**Band fragments stay bespoke.** They render in the *outcome prose*, never on the card
+face — they are the scene's account of the god's hand, so they are written per encounter
+like the rest of the scene.
+
+**Odds are pips, authored as raw numbers.** `forecastDelta` and the cost deltas stay
+numeric in data; the UI renders the approved pip vocabulary (five pips per color tier at
+~5% steps — green circles, blue squares, purple diamonds, gold stars, red down-triangles
+for penalties; see the wiki page). The pivot changes no part of the no-digits rule for
+`effectLine`.
+
+---
+
+## The scene-writer's checklist (14 questions + the envelope question)
+
+Locked 2026-07-30 (frameworks plan § Decision 1). Every encounter's prose is validated
+against these before it ships. The authoring agent answers each **in writing, per
+scene** — the exemplar's header comment is the template; any "no" means rewrite first.
+
+**A. Build the scene, in this order**
+1. *Where are we?* Place described concretely enough to sketch — ground, structures,
+   light — before anything else happens.
+2. *How does it feel?* At least two senses beyond sight: sound, smell, temperature, the
+   hour.
+3. *Who is here?* Everyone present or implied is shown or accounted for. If a fire is
+   lit, we know who lit it.
+4. *What must we know?* Relevant context — why the character is here, what state they're
+   in — before it matters.
+5. *Does the complication come last*, landing on a scene already built?
+
+**B. Internal logic**
+6. *Nothing referred to before it's introduced.* Every object/person/feature a sentence
+   uses already exists in the text.
+7. *Every event has a visible cause.*
+8. *Nothing contradicts what's established* — time of day, weather, who's present, what's
+   in hand.
+
+**C. Human realism, fantasy-adjusted**
+9. *Would a real person in this world do this?* Strangers' camps aren't walked into;
+   doors are knocked on; space has owners.
+10. *Do people react to each other like people?* Greetings, wariness, permission,
+    obligation.
+11. *Do actions carry their true cost* — fatigue, hunger, fear, time?
+
+**D. The interactive layer**
+12. *Can the player restate the stake in one sentence* — what's being decided, what a
+    good and a bad outcome each concretely look like? (Stake lines are several sentences
+    and concrete — "will the rest take?" is too thin.)
+13. *Is every card grounded?* It acts on a target the scene established — deleting the
+    card's target from the prose should make the card senseless in this hand.
+14. *Does every card state mechanism, not mood?* What the god does, and why that moves
+    the odds, in the plain mechanical `effectLine`.
+15. *Does every setting class the envelope declares have an opening written for it?*
+    (Enforced by `validateSettingEnvelope` — build-time, fail loud.)
+
+---
+
+## Setting envelopes (THR-884)
+
+Authors never touch the 20-subtype list. Declare a **setting envelope** from the closed
+8-class vocabulary (`src/data/settingClasses.ts`): `rural · urban · stronghold · sacred ·
+arcane · ruin · wayside · battlefield`. One table expands classes to subtypes; the
+existing cache filter enforces it unchanged.
+
+- **Write toward the widest honest envelope** (Christian's explicit direction:
+  flexibility is the default, enforced by prose, never by narrowing).
+- **One opening per declared class** (~1 paragraph, scene word budget). Checklist
+  questions 1–4 live in the opening; the complication, stakes, and hand are
+  setting-neutral. The spine below the opening may not name class scenery.
+- **Per-card `fictionBySetting`** for the rare card whose flavor quote names class
+  scenery — one line per declared class, generic quote as default. Post-pivot most cards
+  never need it.
+- **Exact-subtype override** (`locationTypes`) remains for genuinely specific encounters
+  (a temple rite).
+- **Raw entries** declare `settings` + `openings` and the converter derives
+  `locationSubtypes` and compiles openings onto the reserved `opening` fragment slot.
+  Direct-authored templates derive the subtype list with `expandSettings()` — never by
+  hand (the exemplar shows this).
+- **Coverage matrix** (THR-884 generator + committed report): settings × reaches →
+  drawable-template counts plus per-family card-type composition. Check it before picking
+  an envelope — feed the starving cells.
 
 ---
 
@@ -45,9 +172,11 @@ A rider changes what happened. A fragment says the god was there when it did.
 
 Author in this order. Each step assumes the one before it is settled.
 
-### 1. Vignette
+### 1. Envelope + vignette
 
-Scene prose per the prose rubric below. Declare three things before writing a card:
+Declare the setting envelope, then write the scene prose per class (openings) and the
+setting-neutral spine, all under the scene-writer's checklist above. Declare three things
+before writing a card:
 
 - **Motive hooks** — which sources may route an agent here (`choice` / `mission` /
   `chance` / `divine`, from `classifyMotive`). Naming them is how you learn whose
@@ -88,52 +217,67 @@ reads them straight onto the rendered test panel. A step that authors no `factor
 falls back to the contract's unsigned `beat.forecast_factors`, which can only render
 `neutral` — that fallback is for un-migrated legacy templates, not a place to author.
 
-### 3. The hand
+### 3. The hand — cut from the 21-type library
 
-`NUDGE_HAND_MIN`–`NUDGE_HAND_MAX` (**4–8**) authored `StepNudge`s per nudge-bearing step.
+**Hands are fully authored at encounter design time.** No runtime generic deck: runtime
+only *filters* the authored hand (trait, group, favor-availability, sphere access,
+target binding). Variation comes from world state, not shuffling.
+
+Pick each card as an instance of one of the **21 library types** (Boost, Heavy Hand,
+Insurance, Mercy, Gambit, Side-Bet, Long Game, Whisper, Trait card, Signature, Bargain,
+Undertow, Stumble, Kindled Ambition, Omen, Cache, Balm, Veil, Favor, Fellowship,
+Compulsion — statuses and mechanics on the wiki page). Name the type in a code comment
+per card until THR-887 gives it a schema key.
+
+Author `NUDGE_HAND_MIN`–`NUDGE_HAND_MAX` (**4–8**) cards per nudge-bearing step; gated
+cards (trait, group, favor) hide when unmet, so the **dealt** hand lands at the 4–6 the
+card-row is designed around.
 
 > These are **authoring** guardrails at warn level, not the rejected "fixed action count
 > / capped action slots". The renderer draws whatever `NudgeHand.playable` contains,
-> uncapped; the pool stays open-ended and data-driven. Nine cards is a lint warning, not
-> a truncation.
+> uncapped; the pool stays open-ended and data-driven.
 
-Rules:
+Hand-building rules:
 
-- **Per-encounter specific by default.** Options are authored content, not a shared
-  library (ruling 3). Reuse comes only from the generic pool below.
-- **Sphere coverage ≥ `HAND_SPHERE_COVERAGE_MIN` (4) distinct spheres** across the hand.
-  The hand is the replayability engine — different gods see different subsets — and that
-  only holds if the spread is wide enough for gods to differ on it.
-- **≥ `HAND_COMMON_OPTIONS_MIN` (1) common option** — sphere-less, so a god with no
-  matching sphere is never handed an empty step.
+- **No two cards in a hand answer the same question.** Two Boosts are legal only when
+  they buy different certainties (nerve vs light vs memory); two rider cards never are —
+  **at most one rider per hand**, justified in a code comment. (Pre-pivot this rule was
+  one rider per encounter; the library made Insurance, Mercy, and Gambit first-class
+  repertoire members, so the honest unit is the hand.)
+- **No two encounters in a family repeat a type composition** — audited by the coverage
+  matrix, never hoped for.
+- **Sphere coverage ≥ `HAND_SPHERE_COVERAGE_MIN` (4) distinct spheres** across the hand,
+  and **≥ `HAND_COMMON_OPTIONS_MIN` (1) ungated common (sphere-less) option**, so no god
+  is ever handed an empty step. Sphere-keyed cards honor the sphere-signature table
+  (chaos → Gambit/Stumble, order → Favor/Insurance, entropy → Bargain, …) from the
+  Repertoire plan.
 - **Trait-only options where a `traitVariant` exists.** Cost **0**: the price was paid by
-  being that person. A trait-only card is *hidden*, never dimmed, for an agent who cannot
-  hold the trait — a card you can never unlock is noise, not a goal.
-- **Every `fiction` line passes the concreteness rubric** — a witnessed physical cause.
-  "Their nerve steadies" is a claim; "The tremor in their fingers goes out of them" is a
-  thing the reader can see happen.
-- **`effectLine` in words, never percentages.** No digits at all. "A large help", not
-  "+15%". The numbers exist behind the words and stay there (ruling 1; designer view is
-  the stated exception).
-- **Costs ≥ 0.** Zero is reserved for trait options.
-- **Riders rare and justified in a code comment.** A rider on every card turns the
-  outcome ladder into a floor. Write why *this* card earns one.
-- **Match the step's reach to an actor who plausibly holds it, or keep the difficulty
-  under `NUDGE_OFF_REACH_MAX_DIFFICULTY` (0.45 — the `steep` floor).** This is the one
+  being that person. Hidden, never dimmed, for an agent who cannot hold the trait.
+- **Zero essence outside a trait card is legal only when another channel carries the
+  price** — `costs.doomDelta` (The Bargain), `costs.detectionDelta` (The Heavy Hand pays
+  up, The Veil pays down), or an obligation the card creates. A card that is simply free
+  is a pricing bug, and the exemplar test enforces this.
+- **Grants ship with their content built** (the supporting-content rule). Any card
+  granting an item / trait / ambition / omen / condition names ids that resolve against
+  built catalogs — `validateNudgeGrantRefs` fails the build otherwise (THR-844's lesson:
+  names referencing unbuilt content rot silently). Grants ride the existing
+  `EncounterAftermathReactionEffect` vocabulary — never mint a card-specific effect
+  language.
+- **`effectLine` in words, never digits or `%`.** The pip row renders magnitude.
+- **Match the step's reach to an actor who plausibly holds it, or keep the difficulty at
+  or under `NUDGE_OFF_REACH_MAX_DIFFICULTY` (0.45 — the `steep` floor).** This is the one
   rule that decides whether the hand *does anything*, and it is invisible while
   authoring: a hand can pass every rule above and still be inert.
 
   Measured (THR-821, `npm run measure:nudge-headroom`, seeds 42/99;
-  `Docs/audits/2026-07-27-thr-821-nudge-headroom.md`): a `notable`-tier mortal — the
-  tier a newly-threaded NPC lands in — has capability **0.027–0.119** in a reach that
-  is neither its primary nor its secondary. At difficulty 0.45 that floors at
-  `PROBABILITY_FLOOR` and stays floored through the entire hand — 0% of the cohort
-  clears the floor unaided, with two cards, or with all of them. The player spends
-  essence and the forecast word does not move.
+  `Docs/audits/2026-07-27-thr-821-nudge-headroom.md`): a `notable`-tier mortal has
+  capability 0.027–0.119 in a reach that is neither its primary nor its secondary. At
+  difficulty 0.45 that floors at `PROBABILITY_FLOOR` and stays floored through the
+  entire hand — the player spends essence and the forecast word does not move.
 
   So either **gate the encounter to actors who hold the reach** (role, faction, or
-  late-run capability — what the golden exemplar does, drawing a thief into an
-  `eye`/`shadow` vault), **or** keep an open-draw step at `fair` or below. A `severe`
+  late-run capability — what the retired Darkhollow Vault demonstrated), **or** keep an
+  open-draw step at `fair` or below (what The Swollen Ford demonstrates). A `severe`
   step drawn by anyone is a decorative hand.
 
 ### 4. Band prose
@@ -149,6 +293,8 @@ Rules:
 - **Every nudge carries at least one failure-band fragment.** The god's hand must be
   traceable in failure at any size — payoff at every band, program ruling. Failure is
   plot, not punishment, and a nudge that vanishes on a loss is the god's hand vanishing.
+  For a `floor_at_cost` card the reachable failure band is `critical_failure` — put the
+  fragment there, since the rider erases `failure` and `near_miss` while active.
 - **`forecastDelta ≥ NUDGE_BIG_DELTA` (0.15) ⇒ cover BOTH `failure` and
   `critical_failure`.** A nudge that moved the odds this far and still lost owes the
   player a distinct reading of *how* it lost at each depth.
@@ -173,7 +319,7 @@ For every encounter, ask four questions and answer each one explicitly:
 
 **Hard constraint: hooks may only name traits that `validateTraitRefs()` does not report
 as dead.** A ref is matched ANY-of across node id / short id / display name / tag
-(THR-786), so the full node id is the form least likely to rot. THR-800 tracks the 62
+(THR-786), so the full node id is the form least likely to rot. THR-800 tracks the
 authored refs that currently fail the sweep; the allowed set is everything that passes,
 and it grows as those repairs land. A hook on a dead ref is a gate that never opens —
 invisible to every test that does not enumerate values.
@@ -182,26 +328,31 @@ invisible to every test that does not enumerate values.
 
 Prizes, tolls, and seeds as **object references** — ids the modal system resolves — not
 inline prose descriptions. Every game object is a clickable modal (ruling 6), and that
-only works if the aftermath names objects rather than describing them.
+only works if the aftermath names objects rather than describing them. Card-carried world
+changes (`grants`) fire once per committed card, after the step resolves, through the
+host system's own API.
 
 **Tolls in words.** "A heavy toll", "tremendous exertion". Never a number.
 
 ### 7. Images
 
-- **`imageTag` per nudge**, from the manifest vocabulary.
-- **Scene tag per encounter** (see step 1).
-- Until WS4's manifest lands, the fallback chain runs: specific art → `imageTag` lookup
-  *when the manifest exists* → category generic → EntityVisual gradient + glyph. An
-  unresolvable tag degrades; it never blocks a render.
+- **`imageTag` per card**, from the manifest vocabulary — **one generic image per
+  library card**, shared by every hand that deals it. Until painted, the fallback chain
+  runs: `imageTag` lookup *when the manifest exists* → category generic → type icon on a
+  tinted band (EntityVisual).
+- **Scene tag per encounter** (see step 1) — scene art stays encounter-specific; card
+  art does not.
 
 **The genericity test.** A tag belongs in the shared vocabulary only if it reads
 correctly in at least `GENERIC_POOL_UNRELATED_ENCOUNTERS_MIN` (3) *unrelated* encounters.
-Below that bar it is encounter-specific art wearing a generic name.
+Post-pivot every card face must pass it — a face that only reads in dungeons is a
+dungeon card, whatever you name it.
 
 ### 8. Evidence
 
-Run the register scorer and the detectors below on all new prose. An encounter is not
-finished until they are clean.
+Run the register scorer and the detectors below on all new prose — openings included. An
+encounter is not finished until they are clean, and until the scene-writer's checklist is
+answered in writing in the file's doc comment.
 
 ---
 
@@ -212,12 +363,14 @@ Absent declaration ⇒ **baseline**. Canon: `Docs/canon/prose.md` § the registe
 | Field | Register |
 |---|---|
 | `name`, `effectLine`, factor lines, purpose lines | **interactive-plain** |
-| Scene prose, `fiction`, band base text | **baseline** |
+| Openings, spine, band base text, `fiction` (the flavor quote) | **baseline** |
 | Final-step band prose, the fate-reveal line | **peak-eligible** |
 
 **The hard plainness rule.** Interactive text is always plain — no metaphor, no ambiguity
 about what the click does. The picturable-anchor rule below applies to *prose* fields;
-it never applies to a label. A label's job is to be unmistakable.
+it never applies to a label. A label's job is to be unmistakable. The flavor quote is the
+one card element allowed a dry aphorism ("Rest is armor.") — still one plain idea, never
+stacked metaphor.
 
 "Peak-eligible" means permitted, not required. Most encounters never need it.
 
@@ -225,25 +378,28 @@ it never applies to a label. A label's job is to be unmistakable.
 
 ## Prose rubric (hard rules)
 
-From the 2026-07-25 prose pilot and abstraction assessment.
+From the 2026-07-25 prose pilot and abstraction assessment. Applies to scene prose:
+openings, spine, stakes, band text, fragments, afterimages.
 
 1. **Every sentence carries a picturable anchor.** If the reader cannot see it, rewrite it.
 2. **Abstractions only as stakes, and cashed in-sentence.** You may stake "their
    reputation"; you may not leave it uncashed. Name what reputation *looks like* here.
 3. **"something / thing / way" target zero.** See the detector.
 4. **≤1 not-X-but-Y construction per encounter.** See the detector.
-5. **God-action as witnessed effect.** Not "the god grants courage" — write the thing
-   that happens in the room.
+5. **God-action as witnessed effect.** In *scene-side prose* (band fragments, outcome
+   text), never "the god grants courage" — write what happens in the room. The
+   `effectLine` is the exception by design: it is the rules text, and it says what the
+   god does plainly.
 6. **Card-discipline budgets** (`NUDGE_WORD_BUDGETS`, warn-level):
 
 | Field | Budget |
 |---|---|
-| Scene | 60 words |
+| Scene / each opening | 60 words |
 | Factor line | 12 words |
-| `fiction` | 30 words |
+| `fiction` (flavor quote) | 30 words — aim far lower; a quote is one line |
 | Band base | 60 words |
 | Band fragment | 25 words |
-| `name` | 6 words (`NUDGE_NAME_MAX_WORDS`) |
+| `name` | 6 words (`NUDGE_NAME_MAX_WORDS`) — aim for 2–4 |
 
 Over budget is a signal the field is carrying another field's job, not an error.
 
@@ -291,7 +447,8 @@ traps follow:
 
 - **`someone` and the intensifiers trip the audit but appear nowhere on the older list.**
   Innocuous-looking prose — "You look for someone who…", "she felt it deeply" — scores as
-  vagueness. This is the one that bites: it is not a word you would flag by eye.
+  vagueness. This is the one that bites: it is not a word you would flag by eye. Note
+  `rather` fires inside "rather than".
 - **`thing`, `way`, `ways`, `anything`, `nothing`, `whatever` are on the older list but the
   audit does not catch them.** The previous version of this page additionally claimed
   "all the way", "either way", "it costs you nothing" and "in a way" all trip the detector.
@@ -323,27 +480,24 @@ This one is a judgement call, not a regex. Run it by hand.
 
 ---
 
-## Shared generic pool
+## Reusable card faces, bespoke hands
 
-The **only** nudge families reusable across encounters. Everything else is written for
-the encounter it sits in (ruling 3).
+Pre-pivot, ruling 3 made every card per-encounter authored content with a narrow shared
+pool of six generic families. The communication pivot inverts the default for **faces**
+while keeping it for **hands**:
 
-| Family | What it covers |
-|---|---|
-| `focus` | Focus / steady-breath — the mortal's own nerve, held a moment longer |
-| `luck` | Moment's luck — the coin lands the right way up |
-| `blessing` | Unlock-gated; the god's overt favour |
-| `oath` | Oath / word — a promise already made, remembered on cue |
-| `light` | Light in dark — literal illumination where there was none |
-| `strength` | Strength surge — the body finds one more pull |
+- **Every card face is library-generic** (title, effect, quote, art) — written to read
+  correctly wherever its type deals, and passing the genericity test.
+- **Every hand is bespoke** — which types, which spheres, which gates, what the band
+  fragments say, what the grants ship. Cutting the hand *is* the encounter-specific
+  authoring.
 
-Six families. **The canonical list is `SHARED_GENERIC_NUDGE_FAMILIES` in
-`nudgeAuthoringConstants.ts`** — extending the pool means editing that array, which is
-deliberately a code change with a reviewer rather than a judgement an authoring session
-makes alone.
-
-A generic card still has to pass the genericity test (≥3 unrelated encounters). A card
-that only reads in dungeons is a dungeon card, whatever you name it.
+`SHARED_GENERIC_NUDGE_FAMILIES` in `nudgeAuthoringConstants.ts` (`focus · luck ·
+blessing · oath · light · strength`) survives as the seed vocabulary for Boost-family
+member cards until THR-887 lands the library data file
+(`src/data/nudge-card-library.ts`), which becomes the canonical card list. Extending the
+library is a code change with a reviewer, never a judgement an authoring session makes
+alone.
 
 ---
 

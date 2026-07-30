@@ -59,9 +59,11 @@ import {
 } from '../../data/content-eval/nudgeAuthoringConstants';
 import { computeResolutionThreshold, PROBABILITY_FLOOR } from '../resolutionService';
 import { NPC_CONSTANTS } from '../../types/npc';
-import { NUDGE_GOLDEN_EXEMPLAR } from '../../data/__fixtures__/nudge-exemplar/darkhollow-vault-exemplar';
+import { NUDGE_GOLDEN_EXEMPLAR } from '../../data/__fixtures__/nudge-exemplar/swollen-ford-exemplar';
 import { CORE_TRAIT_DEFINITIONS } from '../../data/core-trait-content';
 import { scoreRegisterCompliance } from '../content-eval/registerCompliance';
+import { expandSettings, validateSettingEnvelope } from '../../data/settingClasses';
+import { validateNudgeGrantRefs } from '../nudgeGrantLiveness';
 
 const ALL_OUTCOMES: readonly StepOutcome[] = [
   'critical_success', 'success', 'success_at_cost', 'near_miss', 'failure', 'critical_failure',
@@ -505,6 +507,11 @@ function wordCount(text: string): number {
 function exemplarProse(): Array<[string, string]> {
   const out: Array<[string, string]> = [['name.template', NUDGE_GOLDEN_EXEMPLAR.name]];
 
+  // THR-884 openings are scene prose and sweep with the rest of it.
+  for (const [cls, text] of Object.entries(NUDGE_GOLDEN_EXEMPLAR.openings ?? {})) {
+    out.push([`narrative.opening_${cls}`, text]);
+  }
+
   for (const [i, step] of NUDGE_GOLDEN_EXEMPLAR.steps.entries()) {
     if (!('nudges' in step)) continue;
     const s = step as ActionStep;
@@ -529,6 +536,12 @@ function exemplarProse(): Array<[string, string]> {
       out.push([`name.${nudge.id}`, nudge.name]);
       out.push([`fiction.${nudge.id}`, nudge.fiction]);
       out.push([`effect.${nudge.id}`, nudge.effectLine]);
+      for (const [cls, variant] of Object.entries(nudge.fictionBySetting ?? {})) {
+        out.push([`fiction.${nudge.id}.${cls}`, variant]);
+      }
+      for (const grant of nudge.grants ?? []) {
+        if (grant.kind === 'emit_omen') out.push([`narrative.${nudge.id}.omen_hook`, grant.narrativeHook]);
+      }
       for (const [band, fragment] of Object.entries(nudge.bandProse ?? {})) {
         out.push([`fragment.${nudge.id}.${band}`, fragment]);
       }
@@ -548,17 +561,19 @@ function exemplarProse(): Array<[string, string]> {
   return out;
 }
 
-// ─── WS1: the golden exemplar against the authoring checklist ──────
+// ─── The golden exemplar against the authoring checklist ───────────
 //
-// THR-774. These are the executable half of the authoring rules: every
-// assertion here mirrors a rule the two authoring skills state in prose. A rule
-// that drifts out of a skill and a rule that drifts out of the exemplar both
-// break a test, which is the only reason the exemplar is worth shipping.
+// THR-774 established the executable-checklist pattern; THR-883 locked the
+// format these assertions now encode (communication pivot, setting envelopes,
+// cost channels, grants). Every assertion here mirrors a rule the two
+// authoring skills state in prose. A rule that drifts out of a skill and a
+// rule that drifts out of the exemplar both break a test, which is the only
+// reason the exemplar is worth shipping.
 //
 // The checks are written over the *template*, not over hand-listed ids, so
 // re-authoring a card cannot silently drop it from coverage.
 
-describe('WS1 golden exemplar — authoring checklist', () => {
+describe('golden exemplar — authoring checklist (locked THR-883 format)', () => {
   /** Steps that actually carry a hand. A step without `nudges` is opt-out, not a violation. */
   const nudgeSteps = NUDGE_GOLDEN_EXEMPLAR.steps.filter(
     (s): s is ActionStep & { nudges: readonly StepNudge[] } =>
@@ -740,9 +755,62 @@ describe('WS1 golden exemplar — authoring checklist', () => {
     }
   });
 
-  it('riders stay rare — at most one card in the encounter carries one', () => {
-    const withRiders = allNudges.filter((n) => n.rider !== undefined);
-    expect(withRiders.length).toBeLessThanOrEqual(1);
+  it('riders stay rare — at most one card per hand carries one', () => {
+    // Pre-pivot this was one per encounter. The card library makes the three
+    // rider types (Insurance, Mercy, Gambit) first-class members of the
+    // repertoire, so the honest rule is per hand: two riders in one hand answer
+    // the same question — what shape does the outcome take — twice.
+    for (const step of nudgeSteps) {
+      const withRiders = step.nudges.filter((n) => n.rider !== undefined);
+      expect(withRiders.length, `step ${step.reach} carries ${withRiders.length} riders`).toBeLessThanOrEqual(1);
+    }
+    // Population guard: the rule is demonstrated, not vacuously satisfied.
+    expect(allNudges.some((n) => n.rider !== undefined)).toBe(true);
+  });
+
+  // ── The locked THR-883 format (communication pivot + envelopes + cards) ──
+
+  it('declares an honest setting envelope, and derives its subtype list', () => {
+    // THR-884: authors declare classes; the subtype list is derived. All four
+    // envelope honesty rules run through the shared validator.
+    expect(validateSettingEnvelope(NUDGE_GOLDEN_EXEMPLAR)).toEqual([]);
+    expect(NUDGE_GOLDEN_EXEMPLAR.settings?.length ?? 0).toBeGreaterThan(0);
+    expect(NUDGE_GOLDEN_EXEMPLAR.locationSubtypes).toEqual(
+      expandSettings(NUDGE_GOLDEN_EXEMPLAR.settings ?? []),
+    );
+    // Openings are scene prose and hold the scene budget.
+    for (const [cls, text] of Object.entries(NUDGE_GOLDEN_EXEMPLAR.openings ?? {})) {
+      expect(wordCount(text), `opening for ${cls} over scene budget`).toBeLessThanOrEqual(
+        NUDGE_WORD_BUDGETS.scene,
+      );
+    }
+  });
+
+  it('prices zero-essence cards somewhere real, and demonstrates a cost channel', () => {
+    // THR-885 cost channels: free-in-essence is an authored decision only when
+    // the price lands on a trait (paid by being that person) or on another
+    // channel (doom, detection, obligation). A card that is simply free is a
+    // pricing bug.
+    for (const nudge of allNudges) {
+      if (nudge.essenceCost > 0) continue;
+      const paidElsewhere =
+        nudge.requiredTrait !== undefined ||
+        (nudge.costs !== undefined && Object.keys(nudge.costs).length > 0);
+      expect(paidElsewhere, `${nudge.id} costs no essence and charges no other channel`).toBe(true);
+    }
+    // Population guards: both channel shapes are demonstrated in the exemplar.
+    expect(allNudges.some((n) => (n.costs?.detectionDelta ?? 0) !== 0)).toBe(true);
+    expect(allNudges.some((n) => (n.costs?.doomDelta ?? 0) !== 0)).toBe(true);
+  });
+
+  it('grants resolve against built content (the supporting-content rule)', () => {
+    // Any card granting an item/trait/ambition/omen/condition ships with that
+    // content built — THR-885's liveness gate, run here over the exemplar so
+    // the reference implementation can never model a dead ref.
+    const report = validateNudgeGrantRefs([NUDGE_GOLDEN_EXEMPLAR]);
+    expect(report.cardsWithGrants).toBeGreaterThan(0);
+    expect(report.checkedRefs).toBeGreaterThan(0);
+    expect(report.dead, 'exemplar grants name unbuilt content').toEqual([]);
   });
 
   it('every card declares an image tag for the WS4 fallback chain', () => {
@@ -861,9 +929,13 @@ describe('nudge reachability against the probability floor (THR-821)', () => {
     expect(p).toBeGreaterThan(PROBABILITY_FLOOR);
   });
 
-  it('leaves a spotlight-tier mortal above the floor unaided on the exemplar steps', () => {
-    // Finding B: the exemplar is not too brutal for the audience that can
-    // actually be attended. A spotlight mortal's primary reach sits near 1.0.
+  it('keeps the open-draw exemplar under the off-reach ceiling, and a spotlight mortal above the floor', () => {
+    // The Swollen Ford is open-draw ambient content (`intrinsicTier:
+    // 'background'`), so it demonstrates the open-draw branch of the THR-821
+    // rule: every step at or under the ceiling. (The retired Darkhollow Vault
+    // demonstrated the other branch — steep steps gated to actors who hold the
+    // reach.) If a step ever rises past the ceiling, either gate the encounter
+    // or put the difficulty back.
     const spotlightPrimary = capabilityOf(
       NPC_CONSTANTS.NOTABLE_PRIMARY_BASE + NPC_CONSTANTS.SPOTLIGHT_PRIMARY_BOOST,
     );
@@ -872,9 +944,11 @@ describe('nudge reachability against the probability floor (THR-821)', () => {
     const difficulties = NUDGE_GOLDEN_EXEMPLAR.steps
       .map((s) => (s as Partial<ActionStep>).difficulty)
       .filter((d): d is number => typeof d === 'number');
-    expect(difficulties).toEqual([0.45, 0.6]);
+    expect(difficulties).toEqual([0.35, 0.4]);
 
     for (const difficulty of difficulties) {
+      expect(difficulty).toBeLessThanOrEqual(NUDGE_OFF_REACH_MAX_DIFFICULTY);
+
       const p = computeResolutionThreshold({
         capability: spotlightPrimary,
         difficulty,

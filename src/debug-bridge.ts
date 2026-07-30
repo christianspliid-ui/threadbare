@@ -796,7 +796,7 @@ if (import.meta.env.DEV) {
       ?? { success: false, message: 'Encounter bridge not registered' },
 
     /**
-     * THR-775 — stage the nudge golden exemplar (`The Darkhollow Vault`) on an
+     * THR-775 — stage the nudge golden exemplar (`The Swollen Ford`) on an
      * agent, at the attended tier so the hand is actually in play.
      *
      * The exemplar is a fixture deliberately absent from every pool, so it has to
@@ -809,7 +809,7 @@ if (import.meta.env.DEV) {
      */
     spawnNudgeExemplar: async (agentQuery: string) => {
       const [{ NUDGE_GOLDEN_EXEMPLAR }, { registerDebugTemplate }] = await Promise.all([
-        import('./data/__fixtures__/nudge-exemplar/darkhollow-vault-exemplar'),
+        import('./data/__fixtures__/nudge-exemplar/swollen-ford-exemplar'),
         import('./data/unified-action-templates'),
       ]);
       registerDebugTemplate(NUDGE_GOLDEN_EXEMPLAR);

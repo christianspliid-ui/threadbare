@@ -18,7 +18,7 @@ import type {
   UnifiedActionTemplate,
 } from '../../../../types/unifiedAction';
 import { buildNudgePhaseModel } from '../adapters/buildNudgePhaseModel';
-import { NUDGE_GOLDEN_EXEMPLAR } from '../../../../data/__fixtures__/nudge-exemplar/darkhollow-vault-exemplar';
+import { NUDGE_GOLDEN_EXEMPLAR } from '../../../../data/__fixtures__/nudge-exemplar/swollen-ford-exemplar';
 import { spendNudgeEssence, type EssencePool } from '../nudgeCommit';
 import { forecastWithNudges } from '../useNudgeHand';
 
