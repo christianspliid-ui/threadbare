@@ -183,24 +183,44 @@ existing cache filter enforces it unchanged.
 
 Author in this order. Each step assumes the one before it is settled.
 
-### 1. Envelope + vignette
+### 1. Design before prose — the mechanical design block
 
-Declare the setting envelope, then write the scene prose per class (openings) and the
-setting-neutral spine, all under the scene-writer's checklist above. Declare three things
-before writing a card:
+**Mechanics are designed first; prose is written to them (Christian, chat 2026-07-30 —
+the five-draft review).** The failure this step exists to prevent: a well-built scene
+the acting agent merely watches, testing no reach anyone chose, referring to no game
+object, promising a mystery nobody designed the payoff for. Answer all of these **in
+writing, in the file's doc comment, before the first sentence of prose**:
 
-- **Motive hooks** — which sources may route an agent here (`choice` / `mission` /
-  `chance` / `divine`, from `classifyMotive`). Naming them is how you learn whose
-  encounter this is. An encounter nobody can arrive at by any route is unreachable
-  content.
-- **Quintessence stakes** — the erosion class. How badly does failing here wear the
-  mortal? Two hard steps with a lethal trap is a different promise than one gentle
-  social test, and the aftermath owes the difference.
-- **Scene tag** — from the WS4 manifest vocabulary. Until that manifest exists the
-  fallback chain ends at EntityVisual, so an unresolvable tag never blocks a render —
-  but decide it now, or the encounter ships imageless by omission rather than by choice.
+1. **Whose problem is this?** The acting agent is the **protagonist**: the opportunity,
+   complication, or danger lands on *them* or in their path (the Swollen Ford shape —
+   the river is in their road). A scene the agent merely witnesses is the rare
+   exception and must say what makes watching the strongest seat in the house.
+2. **Which reach does each step test, and why is that the theme?** The reach is chosen
+   before writing and the scene grows from it — a Stone scene is *about* endurance,
+   an Eye scene is *about* reading truly. Never retrofit a reach onto finished prose.
+3. **Why is the agent here?** Motive hooks (`choice` / `mission` / `chance` / `divine`,
+   from `classifyMotive`) — and for each declared route, the concrete opportunity or
+   event that puts a traveling hero in this scene, not just the category name.
+4. **Which mechanics and objects play?** Traits, items/attachments, conditions,
+   factions, favors, prior-step carryovers — decided now, so the prose can refer to
+   them and lead to the outcomes they gate. A hook designed after the prose is written
+   is decoration; a hook designed before is structure.
+5. **What are the rewards, and where does the tension sit?** Prizes, tolls, and seeds
+   (step 6's object references) sketched now, with the quintessence stakes — the
+   erosion class failing here costs.
+6. **Does the mortal make a choice in this scene?** If yes, name the value axis it runs
+   on (`motivations`) and how it resolves: **the mortal decides, driven by their own
+   values and the god's lean — never the player.** (Mechanism note: the shipped pattern
+   is Meet The First's pole lean — the hand's net lean plus the mortal's axes pick the
+   direction, fate picks how cleanly; generalizing that selector to `ActionStepBranch`
+   is pending design. Until it lands, do not author a branch whose key nothing writes.)
+7. **Every promise pays off.** Anything the opening makes the player lean toward the
+   screen for — what bends the reeds — has its reveal designed *now*, in a later step,
+   a band, or the aftermath, before the promise is written down.
 
-None of the three has a schema field yet. Record them in the file's doc comment.
+Then declare the **setting envelope**, the **scene tag** (WS4 vocabulary; fallback
+chain ends at EntityVisual), and write the openings + spine under the scene-writer's
+checklist above.
 
 ### 2. Test panel data
 
@@ -388,14 +408,20 @@ answered in writing in the file's doc comment.
 **Then a second agent reads it (mandatory — Christian, chat 2026-07-30).** Before any
 encounter prose is delivered — to the corpus, to a review, or to Christian in chat — a
 **fresh-context critique agent** (a dispatched subagent that has not seen the drafting
-session) reads the full prose top to bottom and reports against:
+session) reads the full prose top to bottom **together with the step-1 mechanical
+design block** and reports against:
 
 1. the 14-question scene-writer's checklist, answered independently;
-2. the **echo check** — repeated images, repeated sentence shapes, or near-identical
+2. **design conformance** — the prose held to the design block: is the agent the
+   protagonist; does each step actually test its declared reach; does every designed
+   mechanic and object appear in the prose or gate an outcome (an unused hook is a
+   finding); does every promise the prose makes have its designed payoff; is any
+   outcome mechanic announced instead of foreshadowed?
+3. the **echo check** — repeated images, repeated sentence shapes, or near-identical
    phrasing across paragraph seams (the class the detectors cannot see: "The water runs
    loud and brown." ending one paragraph while "The river runs brown and loud…" opens
    the next shipped through every automated gate);
-3. read-aloud flow — any sentence the critic stumbles on gets flagged.
+4. read-aloud flow — any sentence the critic stumbles on gets flagged.
 
 The author fixes what the critique surfaces, then delivers. In the `encounter-pipeline`
 this is Pass 2's job (its editorial prompt now carries the echo check); in
@@ -433,6 +459,12 @@ openings, spine, stakes, band text, fragments, afterimages.
 1. **Every sentence carries a picturable anchor.** If the reader cannot see it, rewrite it.
 2. **Abstractions only as stakes, and cashed in-sentence.** You may stake "their
    reputation"; you may not leave it uncashed. Name what reputation *looks like* here.
+2b. **Foreshadow, never announce (Christian, 2026-07-30).** Scene prose does not state
+   outcome mechanics — "Pass, and the seal opens every site; fail, and the arch goes to
+   the rubble cart" is rules text wearing prose. Show the stakes in the scene's
+   furniture (the rubble cart already standing by the door) and let afterimages and
+   band prose carry the concrete outcomes. The on-the-nose register belongs to
+   `effectLine` alone.
 3. **"something / thing / way" target zero.** See the detector.
 4. **≤1 not-X-but-Y construction per encounter.** See the detector.
 5. **God-action as witnessed effect.** In *scene-side prose* (band fragments, outcome

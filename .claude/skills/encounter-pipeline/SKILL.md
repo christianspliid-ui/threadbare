@@ -256,6 +256,9 @@ The editorial agent:
 21. **Two encounters in the same family with an identical card-type composition**
 22. **A seam echo** — a repeated image, repeated sentence shape, or near-identical phrasing across a paragraph boundary (the class the automated detectors cannot see; check every opening→spine and spine→band seam explicitly)
 23. **A static authored factor line** — any `factorLines` entry that would read identically on every run of the encounter (the variance rule: factors come from the broader game context — agent, hex, global modifiers, earlier steps — all derived; scene facts are priced into the difficulty and live in the prose)
+24. **The agent as bystander** — a set-piece scene the acting agent merely watches, without the design block's written justification; the default shape is the opportunity/complication/danger landing on the agent or in their path
+25. **Announced outcome mechanics in scene prose** — explicit "pass and X / fail and Y" framing; stakes are foreshadowed in the scene's furniture, outcomes live in afterimages and band prose
+26. **A design-block breach** — a declared mechanic or object the prose never uses, a step whose prose does not test its declared reach, a mortal choice with no named value axis, or a promise (mystery, hook) with no designed payoff
 
 ### Pass 3: Systems Audit + Final Merge
 

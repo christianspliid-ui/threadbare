@@ -306,6 +306,7 @@ Before submitting rewritten prose, check every field against these questions. If
 - **0k.** Is every **zero-essence non-trait card** priced on another channel (`costs` / obligation), and does every grant survive `validateNudgeGrantRefs`?
 - **0l.** Has a **fresh-context critique subagent** read the full prose before delivery (spec step 8: independent 14-question pass, seam-echo check, read-aloud flow)? Self-review does not discharge this gate.
 - **0m.** Does the step author **zero static factor lines**? The variance rule: factors are derived from the broader game context (agent, hex, global modifiers, earlier steps); a line true on every run is priced into the difficulty and belongs in the prose.
+- **0n.** Was the **mechanical design block** (spec step 1) answered in writing before the prose — protagonist agent, reach-as-theme per step, motive routes with concrete opportunities, mechanics/objects designed in, rewards + tension, choice axis (or "none"), every promise's payoff — and does the prose conform to it?
 
 **Detectors.** Zero vagueness-lexicon hits (`something / anything / nothing / thing / things / way / ways / somehow / whatever / somewhere` — watch the compounds: *all the way*, *either way*, *costs you nothing*). At most one annotation clause across the whole encounter. Verbatim spec in the shared authoring spec.
 

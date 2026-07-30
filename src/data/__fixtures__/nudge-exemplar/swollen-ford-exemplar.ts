@@ -87,6 +87,28 @@
  *  D15 Openings cover the envelope? `settings: ['rural','wayside']`, one
  *                          opening each, enforced by `validateSettingEnvelope`.
  *
+ * ─── Mechanical design block (spec step 1 — designed before the prose) ─
+ *   Whose problem?   The agent's, by construction: the flooded river is in
+ *                    their road. Protagonist, never bystander.
+ *   Reach = theme?   Step 0 tests Eye and is *about* reading truly; step 1
+ *                    tests Stone and is *about* endurance. Chosen first; the
+ *                    scene grew from them.
+ *   Mechanics in play? Trait hook (core_integrity.virtue → the trait card and
+ *                    variant), condition (exhausted → the Balm's target),
+ *                    group state (the Fellowship card's gate), doom clock and
+ *                    detection pressure (the two cost channels), omen system
+ *                    (the Omen card's grant). All decided before writing;
+ *                    every one surfaces in a card or a gate.
+ *   Rewards/tension? No prize object — the reward is passage, time, and dry
+ *                    gear; the toll on failure is cold, lost days, lost kit.
+ *                    Tension sits on the crossing itself (step 1).
+ *   Mortal choice?   None — this scene is a test, not a fork. (A choice would
+ *                    name its value axis and resolve by the mortal's values
+ *                    plus the god's lean, never by the player.)
+ *   Promises pay off? The opening promises exactly what the steps deliver: a
+ *                    reading and a crossing. No mystery is opened that the
+ *                    bands do not close.
+ *
  * ─── Vignette record (checklist step 1 declarations) ─────────────────
  *   Motive hooks   — all four routes are honest here: `mission` (sent across),
  *                    `choice` (their own errand), `chance` (the road put the
