@@ -22,7 +22,10 @@ import { REACH_COPY, COVENANT_UPKEEP_COPY } from '../../../data/ascendant-bar-co
 import type { SignaturePathState } from '../../../data/ascendant-bar-content';
 import { REACH_SIGNATURE_CONTENT_TEMPLATES } from '../../../data/reach-signature-content';
 import { getAscendantProgress } from '../../../engine/phaseAscendantProgression';
-import { getNarrativeLabel } from '../../../engine/domainCapability';
+import {
+  getAscendantTierWord,
+  getAscendantEchoLine,
+} from '../../../data/ascendant-reach-register';
 import { classifyTrayTier, type AscendantTrayTier } from '../../../engine/ascendantTray';
 import { isActionRevealed } from '../../../engine/actionUnlock';
 import type { UnifiedActionTemplate } from '../../../types/unifiedAction';
@@ -237,8 +240,13 @@ export interface ReachRowView {
   label: string;
   /** Tooltip body — what this reach is. */
   body: string;
-  /** Prose tier word from NARRATIVE_LEXICON, e.g. "Tempered". Never a number. */
+  /**
+   * God-scale tier word from `ASCENDANT_REACH_REGISTER`, e.g. "Load-Bearing" (THR-869).
+   * Never a number, and never a mortal capability word — the god is not "Trained".
+   */
   tierWord: string;
+  /** Mortal-past echo line for this reach — the sheet renders it as row body. */
+  echoLine: string;
   rank: 'primary' | 'secondary';
   /** A Deepening beat is queued for this reach — the tier-up is waiting to be entered. */
   pendingDeepening: boolean;
@@ -267,7 +275,8 @@ export function selectReachRows(gameState: GameState): ReachRowView[] {
       reach: r.reach,
       label: copy?.label ?? r.reach,
       body: copy?.body ?? '',
-      tierWord: getNarrativeLabel(r.reach, safeTier),
+      tierWord: getAscendantTierWord(r.reach, safeTier),
+      echoLine: getAscendantEchoLine(r.reach),
       rank: r.isPrimary ? 'primary' : 'secondary',
       pendingDeepening: r.pendingDeepening,
     };

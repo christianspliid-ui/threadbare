@@ -5640,6 +5640,19 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "**Workaround:** the guard covers `Edit`/`Write` only, so perform the edit with `Bash` (`sed -i` here) after proving the target tree explicitly — `cd` into the sibling worktree and echo `git rev-parse --show-toplevel`, confirming it resolves to the sibling and not to the home tree. That check is what the guard is trying to approximate, and it is exact rather than prefix-based. **Durable fix:** the guard should compare `git rev-parse --show-toplevel` (or `--git-common-dir` plus worktree registration) for the *target* path against the home tree, rather than string-prefixing against the home-tree root; a path under `.claude/worktrees/<name>/` belongs to that worktree, never to the home tree. Worth a ticket against `.claude/hooks/worktree-write-guard.sh`.",
     "session": "Hourly `tb-opus-pickup`, 2026-07-30, hit while repairing PR #1103's red generated-freshness check from a sibling worktree."
+  },
+  {
+    "num": "318",
+    "id": 318,
+    "count": 1,
+    "date": "2026-07-30",
+    "category": "tooling",
+    "description": "**`browser_take_screenshot` with the DoD-sanctioned absolute in-worktree path fails `ENOENT` when `.playwright-mcp/` does not yet exist — Playwright MCP does not create the parent directory.** THR-869's browser pass passed `…/compassionate-proskuriakova-bd2449/.playwright-mcp/thr-869-…png` exactly as THR-754's unattended route prescribes and got `ENOENT: no such file or directory, open '…'`. The directory is gitignored (`.gitignore:55`), so a *fresh* worktree never has it and the very first capture of every new session hits this. **The more useful half is the negative result: the allowed-roots failure of impediments #228 and #264 did NOT recur** — once `mkdir -p .playwright-mcp` ran, the identical absolute path was accepted and written. Those two entries describe roots pinned to a stale worktree; this run's roots tracked the live session, so an agent reading #228/#264 may wrongly conclude the sanctioned path is unusable and pre-emptively fall back to the copy-from-allowed-root dance.",
+    "consequence": "One failed call per fresh worktree. The real cost is misdiagnosis: `ENOENT` on a path the DoD tells you to use reads like the #228/#264 allowed-roots wall, and the documented workaround for *that* (screenshot into the MCP's reported root, then `cp`) is more elaborate than needed and silently trains the lane off the sanctioned route.",
+    "impact": "Low — one command, but recurs on every new worktree and invites the wrong fix.",
+    "workaroundFound": true,
+    "workaround": "**`mkdir -p .playwright-mcp` in the session worktree before the first `browser_take_screenshot`.** Distinguish the two failures by reading the error text, not by assuming: `ENOENT … open '<your path>'` is a missing parent directory (create it and retry the same path); `File access denied … Allowed roots: <other path>` is #228/#264 (screenshot into the named root, then `cp`). Only the second warrants the copy workaround.",
+    "session": "THR-869 sheet/bar legibility fix, hourly `tb-opus-pickup`, worktree compassionate-proskuriakova-bd2449."
   }
 ];
 // ── End data ──
