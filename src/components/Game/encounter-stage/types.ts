@@ -6,11 +6,20 @@ import type { ResolutionInput } from '../../../types/resolution';
 import type { ForecastTier } from '../../../types/traces/encounter-traces';
 import type { NudgeBlockedCode } from '../../../engine/encounters/nudges';
 import type { MotiveSource } from '../../../engine/encounters/motiveClassifier';
+import { isForceFullEncounterVisibility } from '../../../engine/debugVisibilityOverride';
 
 export type ThreadTier = 'strong' | 'light' | 'watched';
 
-/** Map engine CourtPosition to UI thread tier */
+/**
+ * Map engine CourtPosition to UI thread tier.
+ *
+ * THR-880: while the force-full-visibility debug override is active, a
+ * Watched agent's encounter renders through the same 'strong' path as The
+ * First — otherwise the veil would still show the stripped-down Watched
+ * screen even after the notification/choices override gave it full prose.
+ */
 export function courtPositionToThreadTier(pos: CourtPosition | null): ThreadTier {
+  if (isForceFullEncounterVisibility() && pos && pos !== 'dormant') return 'strong';
   switch (pos) {
     case 'the_first': return 'strong';
     case 'retinue': return 'light';

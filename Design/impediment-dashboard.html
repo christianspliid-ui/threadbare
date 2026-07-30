@@ -5562,6 +5562,19 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "Prefix any `git show <rev>:<path>` (and `git cat-file`, `git log <rev> -- <path>`) with `export MSYS_NO_PATHCONV=1`, or run it via the PowerShell tool instead. **Independently, never let a `0` from a piped `grep -c` stand as evidence of absence:** assert the stream was non-empty first (`git show … \\| wc -c` > 0), or drop the pipe and read the failure. A grep whose input might be empty proves nothing about the haystack — same shape as the vacuous-probe class, one layer lower.",
     "session": "daily-backlog-grooming 2026-07-30; verifying THR-681's already-shipped claim against `origin/main`."
+  },
+  {
+    "num": "312",
+    "id": 312,
+    "count": 1,
+    "date": "2026-07-30",
+    "category": "process",
+    "description": "**Two `tb-orchestrator` sessions fired within minutes of each other and independently ran a full T1 sweep to the same conclusion, discovered only by accident.** This run entered its worktree, scanned `Todo`/`Ready for Dev`, and pulled THR-873's full description via `get_issue` — whose response included an `attachments` entry for PR #1102, \"orchestrator run i — promote THR-872, hold THR-873\", opened ~4 minutes earlier by a sibling session that had reached the identical verdict (promote THR-872, no blocker; hold THR-873, blocked on THR-868 still being In Dev). Both sessions independently picked the letter \"i\" for their report filename and worktree name, which is what made the collision visible — `get_issue` surfacing the sibling's PR as an attachment was the only signal; nothing in the skill's Step 1 scan checks for an already-open same-purpose PR before starting work. The registry (`Docs/ops/scheduled-tasks-registry.md`) documents `tb-orchestrator` firing once at `~:26:16`; this pair fired closer together than that implies, either a backfill/manual trigger or a scheduler double-dispatch.",
+    "consequence": "A full hourly run's tool and token budget spent reproducing a decision already made and already merging. Here the two runs agreed, so no incorrect Linear state resulted — but had they disagreed (e.g. each picked a different candidate against the same one-promotion ceiling, or each independently spent the promotion-ceiling budget), Linear would have received two promotions in one nominal \"slot\" with no arbitration between them.",
+    "impact": "Low this occurrence (no state divergence), but the failure mode it exposes is Medium — a genuine race has no guard today.",
+    "workaroundFound": true,
+    "workaround": "**Immediate:** before doing T1 work, check `gh pr list --search \"orchestrator\" --state open` for a same-day PR already claiming the sweep, and read any candidate's `get_issue` `attachments` for a sibling PR link — either is a stand-down signal, not just evidence for the report. This run stood down on exactly that basis rather than re-promoting or opening a competing PR. **Durable fix:** needs the same class of guard the worktree reaper uses against concurrent claims — either a lock file/marker the first run writes before starting its scan (checked and honoured by a second run within some short window), or tightening the scheduler so `tb-orchestrator` cannot double-dispatch inside one `:25` slot. Worth a ticket against `.claude/skills/orchestrator/SKILL.md` (add a Step 0 pre-check) and the scheduled-tasks registry (record the observed double-fire) together.",
+    "session": "`tb-orchestrator` hourly run, 2026-07-30 ~08:3xZ, discovered via THR-873's `get_issue` attachment linking PR #1102."
   }
 ];
 // ── End data ──
