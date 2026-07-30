@@ -1,40 +1,36 @@
 # Briefing
 
-**Generated:** 2026-07-30 09:54 local (2026-07-30 07:54 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-07-30 10:58 local (2026-07-30 08:58 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
 ## Needs Christian
 
-**Nothing needs you right now.** No open question, no switch waiting on you, nothing stuck on a decision. Every health check came back clean, and the other planning robots that reported recently raised nothing you have to answer.
-
-One thing worth knowing rather than deciding: the **god-power rework you parked this morning** is correctly parked. The grooming robot re-checked it, agrees with leaving it alone, and recorded why — the rework re-keys which god cards unlock from *what your mortal past was* to *which cosmic energy you serve*, and that is cheaper to design once the mortal-side power curve settles, which is exactly the reason you gave. The design work is written up and waiting. It stays asleep until you say otherwise.
+**Nothing needs you right now.** No open question, no switch waiting on you, nothing stuck on a decision. Every health check came back clean, and both of the other planning robots that reported recently had nothing for you either — including the one that re-checked your call to leave the ascendant power-curve rework parked. That call stands and needs no revisiting.
 
 ## Queue
 
-**Fifty-two jobs ready, one in progress, nothing gone cold.** No urgent work waiting — eighteen medium and thirty-four small. The longest anything has sat is about five and a half days, inside the week we allow.
+**Fifty-six jobs ready, one in progress, nothing gone cold.** The shelf grew by four over the last two hours. Nothing has sat longer than about five and a half days, inside the week we allow.
 
-**The one job in progress is the interesting one: Meet The First.** It is the biggest piece of work on the board right now and touches all four parts of the game at once — the rules underneath, the writing, a new piece of screen, and the plumbing between them. Handed over at 09:05 this morning, picked up five minutes later, and being worked as this brief was written.
+**The shape of the queue changed more than its size, and that is the real news.** Two hours ago nothing on the shelf was marked urgent or high. Now nine jobs are urgent and three are high. The nine are all one piece of work: rewriting the encounter text and choices for the places mortals actually travel through — hamlets, roadsides, wilds, civic seats, shrines and ruins. They were already written and waiting; someone moved them to the front. So the picker no longer has to guess what matters most.
 
-**The shelf is deep but not stuck.** Fifty-two jobs against one worker who starts a new one every hour is about fifty-two hours of work queued. Filing and finishing have kept pace for three stretches running now.
-
-**One structural oddity got written up rather than papered over.** The rulebook says small deferred jobs should be picked first, but the picker sorts purely by priority — and every one of the twenty-five deferred jobs is marked small while the current writing batch keeps medium work in the queue continuously. So the deferred pile can never surface. That is now a filed decision with four options on it, waiting for the planning robot rather than for you.
+**Those nine have to be taken one at a time**, because they all edit the same two files. That is not a jam — only one job runs at a time anyway. It means the front of the queue is now about nine passes of unambiguous, clearly-ordered work, which is the healthiest the shelf has looked in days. The first one is unblocked and ready to go.
 
 ## Freshness
 
 **Home tree healthy.** You are on the main line, fully up to date, nothing stranded. The only local edits are your own tool-permission settings, which block nothing.
 
-**Everything else checked clean.** The merge safety net is healthy with zero failed starts — the seventeenth clean check since you sorted the billing page. The tidy-up robot ran at 09:40 with nothing awaiting a human call and no leftover drafts. All eight scheduled robots are on time. The live site is correctly unchanged: only notes and docs have landed since the last publish, so there was nothing to rebuild.
+**The live site published again this hour** — it is now serving the newest commit, having correctly sat still for the previous few hours when only notes and docs had changed. So the publish check has now been seen working in both directions, which is what makes it trustworthy rather than merely quiet.
 
-**Last hour's watch item did not recur.** The previous brief flagged that one earlier run had gone quiet and published nothing, leaving your inbox two hours stale instead of one. This hour published on schedule, as did the one before it. One occurrence, not a pattern — but the gap in the machinery that let it pass unnoticed is real and is written down for a fix.
+**Everything else checked clean.** The merge safety net is healthy with zero failed starts — the seventeenth clean check since you sorted the billing page. All eight scheduled robots are on time. The tidy-up robot ran at 10:40 with nothing awaiting a human call, and no leftover drafts.
 
 ## What's moving
 
-**A job was closed because the work already existed.** Someone picked it up, discovered its content had shipped weeks earlier under a larger parent job, verified that properly rather than taking the note at face value, and stood down without burning the slot. That is the second time in three hours the same pattern has appeared — two different children of the same parent job, both already done. It is logged as a known class now, so the third one should be caught before anyone picks it up.
+**The Meet The First encounter is being rebuilt, and half of it has landed.** This is the first thing a player meets — the moment a mortal becomes *your* First. The engine half shipped this morning: the meeting now runs as a set of small formative tests, with the bond itself as the climax rather than a foregone conclusion. The screen half — actually rendering those tests as cards the player reads and nudges — is written and waiting to merge. Three follow-ups were split out and filed rather than bolted on: making the meeting's inherited traits actually land on the new character, rewriting the remaining sixty-three dilemma templates as formative tests, and fixing the fact that no shortcut URL currently drops a tester straight into that encounter.
 
-**A whole project finished quietly.** The divine economy work — where your power actually comes from and how it flows — had both of its remaining pieces done while the project itself still read as active. Now closed.
+**The worktree-tidying job finished** and the pile it was tracking is at zero.
 
-**Three finished pull requests are waiting on the merge queue** rather than on a person: one has a genuine conflict from the live work, one is waiting on its checks, and one has been idle about two days and simply wants closing. None of them loses anything by waiting, and all three are the robots' problem, not yours.
+**A correction to last hour's brief.** It reported that this briefing task had silently produced nothing at 07:53, and treated that as a new fault worth chasing. That was wrong in a specific and useful way: the task *did* do its work — it wrote the brief and queued it — but the queued change had not merged yet, so looking only at what had landed made a working run look like a dead one. Last hour's brief is still sitting in that queue now, waiting its turn, which is normal and self-resolving. The lesson is the one that has come up repeatedly this week: reading a machine's leftovers instead of its actual output invents faults that were never there. This hour's brief goes out attached to that same waiting change, so both land together rather than fighting each other.
 
 ---
 *Standing asks live in `Design/user-actions.md`. This file is regenerated hourly by the `keep-work-flowing-cc` scheduled task; staleness is visible from the Generated timestamp above and the task's `lastRunAt` in `list_scheduled_tasks`.*
