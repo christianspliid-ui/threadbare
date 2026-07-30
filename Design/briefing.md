@@ -1,6 +1,6 @@
 # Briefing
 
-**Generated:** 2026-07-30 15:53 local (2026-07-30 13:53 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-07-30 16:53 local (2026-07-30 14:53 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
@@ -14,31 +14,31 @@ Everything else came back clean and needs nothing from you.
 
 ## Queue
 
-**Forty-eight jobs ready, one in progress, nothing gone cold.** The shelf is one shorter than last hour and the reason is a genuine finish rather than another stoppage: **the legibility fix on your ascendant sheet shipped at 15:37** — the sheet and the bar now agree about which axis is sphere and which is reach. That was one of the two higher-priority jobs on the shelf; the other, a missing test URL for the Meet-The-First moment, is still waiting.
+**Forty-seven jobs ready, one in progress, nothing gone cold.** The shelf is one shorter than last hour and — for the second hour running — the reason is a genuine finish rather than a stoppage: **the Meet-The-First test route shipped at 16:40.** There is now a web address that drops you straight into the moment where you first meet your First, instead of that moment being unreachable on demand. That was the last of the two higher-priority jobs on the shelf; **both are now done, and nothing left on the shelf is urgent or high.**
 
-**Everything left is pickable and none of it is content writing** — engine work, tooling, and housekeeping, with the longest-waiting item at about six days, inside the week we allow. No urgent items, which is still your pause holding rather than a shortfall.
+**Everything remaining is pickable and none of it is content writing** — engine work, tooling, and housekeeping. The longest-waiting item has been sitting about **six days and twenty hours**, which crosses our one-week line tomorrow evening if nobody touches it; it is a low-priority tidy-up, so that is a note rather than a problem.
 
-**The one job in progress is the finished-but-unmerged batch above,** and its merge has now genuinely snagged — see below. Nothing for you to do; it's ours.
+**The one job in progress is still the finished-but-unmerged batch above**, and it is still stuck. Nothing for you to do; it's ours.
 
 ## Freshness
 
 **Home tree healthy.** You're on the main line, fully up to date, nothing stranded. The only local edits are your own tool-permission settings, which block nothing.
 
-**Everything else checked clean, and the live site caught up this hour** — it now serves the newest commit rather than trailing on docs-only changes. The merge safety net is healthy with zero failed starts, the twenty-third clean check since you sorted the billing page. All eight scheduled robots are on time. The tidy-up robot ran at 15:40 with nothing awaiting a human call, and the pile it tracks has held at zero for an eighth straight hour.
+**Everything else checked clean.** The merge safety net is healthy with zero failed starts — the twenty-fourth clean check since you sorted the billing page. All eight scheduled robots are on time, the twenty-third straight clean sweep. The tidy-up robot ran at 16:40 with nothing awaiting a human call, and the pile it tracks has held at zero for a ninth straight hour.
 
 ## What's moving
 
 **The pause is still holding cleanly.** No content job has been picked up since you called it, and each one carries an instruction that its writing brief must be rewritten to the new format before anyone starts.
 
-**The batch that finished mid-pause is worth a look when you run the session, because its executor reached your conclusion independently.** Writing those four capital encounters, it found the abstraction problem wasn't a word-choice failure but a structural one: the scenes were written in civic abstractions — "hear grievances from factions seeking resolution" — and so **contained no physical objects at all**. A nudge is something you do to a thing in the world, so a scene made of abstractions can't carry one, and no amount of rewording would have fixed it. Its answer was to give each scene a concrete spine first: a millrace dispute with two tally-sticks and a boy who drowned under the miller bridge; a ford toll house where a steward writes down your boots before you speak; a monument that stopped being about significance and became about a three-mile haul of rock on eight oak rollers while the frost holds. **That is close to the bar you set** — take the space to explain the reasoning — reached from the other direction, and it's the most useful raw material in the repo for the session ahead.
-
-**The see-the-encounters switch is still live and is how you'll review new writing** once the format is locked:
+**Your see-the-encounters switch was re-checked against the live site this hour rather than assumed** — the page loads and the switch is present in what the site actually serves. It is how you'll review new writing once the format is locked:
 
 ```
 https://threadbare.vercel.app/?view=game&seeded&forceencounters
 ```
 
-**Three housekeeping pull requests of ours are now stuck and want a session with write access** — one more than last hour. The newest is that finished batch: its changes were fine an hour ago and have since collided with other work that landed in between, so it needs a merge by hand rather than any more waiting. The other two are a notes-only change stuck since this morning and a stale one from Tuesday that is safe to simply discard. None of them touches the game, and none needs you.
+**The job that shipped this hour is a testing convenience with a real consequence for you:** until now there was no way to jump straight to the first-meeting scene — the shortcut everyone uses starts you with your First already bonded, so the scene had been skipped before you arrived. It is now reachable on its own address, which matters because that scene is one of the sixty-three the paused conversion work is going to rewrite. When you run the format session, you can look at the current version of it rather than describing it from memory.
+
+**Three housekeeping pull requests of ours are stuck and all three want a session with write access** — unchanged in number from last hour, but one got quietly worse: the finished batch's request has now **lost its automatic-merge arming**, so it will not land even if its conflict clears. All three now need a person. None of them touches the game, and none needs you.
 
 ---
 *Standing asks live in `Design/user-actions.md`. This file is regenerated hourly by the `keep-work-flowing-cc` scheduled task; staleness is visible from the Generated timestamp above and the task's `lastRunAt` in `list_scheduled_tasks`.*
