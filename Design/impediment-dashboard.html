@@ -5588,6 +5588,32 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "Retuned to `MEETING_TEST_CAPABILITY = 0.8`: difficulty 0.5 now opens at p=0.40 (`uncertain`) and a modest two-card lean reaches p=0.62 (`favorable`) — an unled moment sits mid-ladder and leaning moves it without demanding the whole hand. Rationale recorded on the constant. **The durable part is the test, not the number:** added assertions pinning the *shape* — an unled mid-difficulty moment must not forecast `doomed` and must sit in 0.25–0.60, and a two-card lean must move it a tier. Those pin playability while leaving retuning free, which a test asserting `capability === 0.8` would not. **Class:** whenever a constant feeds a curve rather than a comparison, probe the curve across its input range before trusting the intuitive value — `0.5 vs 0.5` is only \"even odds\" if the sigmoid is centred, and here it was off by four tiers.",
     "session": "THR-868 WS6 UI slice, hourly `tb-opus-pickup`."
+  },
+  {
+    "num": "314",
+    "id": 314,
+    "count": 1,
+    "date": "2026-07-30",
+    "category": "tooling",
+    "description": "**Two vagueness lexicons disagree, the authoring spec documents the one the audit does not use, and following the doc still fails the detector.** `VAGUENESS_LEXICON` (`nudgeAuthoringConstants.ts`, 10 terms) is read *only* by `nudgeModel.test.ts`'s golden-exemplar assertions. `AUDIT_VAGUENESS_TERMS` (`nudgeAuditDetectors.ts`, ~35 terms) is what `countVagueness()` matches — i.e. the number an author quotes as evidence. **The overlap is four words** (`somehow`, `something`, `somewhere`, `things`). The spec doc printed the 10-term list under a heading reading *“Detector spec (verbatim) … the wording here is the contract”*, and additionally claimed “all the way”, “either way”, “it costs you nothing” and “in a way” all trip the detector — **three of those four do not** (`way` and `nothing` are not in the audit list; only `in some way` is, not `in a way`).",
+    "consequence": "Cost a full rewrite cycle on the THR-868 register pass: the first rewrite cleaned every term on the documented list and still scored **14** vagueness hits. The words that actually bit were `someone` (12 hits — every per-hunger sensing line opened “You look for someone who…”) and one `someone's` inside an epithet. Neither is a word an author flags by eye, and neither appears on the list the spec calls the contract.",
+    "impact": "Medium — one wasted rewrite pass per author who trusts the doc; recurs on every register-sensitive content ticket.",
+    "workaroundFound": true,
+    "workaround": "**Immediate:** score with the real `countVagueness()` and iterate against *its* output rather than reading the doc's list — the detector is the authority, and it is cheap to run. **Fixed this run:** the spec doc's § *Detector spec* now names both constants, prints both lists in full, states which code path reads each, calls out both traps by name, and says the code is the contract where they disagree. **Deferred (THR-877):** unifying them is a real decision, not a merge — widening the authoring list changes what the WS1 golden-exemplar test asserts, and widening the audit list adds `way`/`thing`/`nothing`, which would light up a large share of shipped content and needs a measured before/after first. **Class:** a doc that says “verbatim” and “the contract” is still prose; when a detector has a constant, read the constant.",
+    "session": "THR-868 WS6 register rewrite, hourly `tb-opus-pickup`."
+  },
+  {
+    "num": "315",
+    "id": 315,
+    "count": 1,
+    "date": "2026-07-30",
+    "category": "process",
+    "description": "**Scene art can encode the game mechanic the code just removed, and no test in the repo can see it — a wrong picture type-checks.** The THR-868 scene-art audit inspected all 32 files in `public/assets/meeting/scenes/` and found three defect classes. Two are hard violations of image doctrine ruling 10 (a scene omits or silhouettes the agent; the Sensing portrait is the only likeness in the flow): **`prison-cell.jpg` has two UI buttons painted into the image — “GRANT MERCY” / “IMPOSE JUDGMENT”** — a rendered picture of the authored-choice mechanic THR-868 exists to delete, sitting on the `axiological` tag that formative test 1 draws from; and **`plague-ward.jpg`** renders a fully individuated emaciated child's face, front-lit and facing the viewer. The third class is baked-in caption text (`healing-tent.jpg` — “A Threadbare Mercy”; `burning-palace.jpg` — “The Fall of Aethelgaard”).",
+    "consequence": "`plague-ward` was **reachable and rendering**, not a theoretical risk: `selectDilemmaScene` scores tag overlap, so any dilemma tagged `sacrifice` or `compassion` scored it top. The prison-cell case is worse in kind — the code stops teaching the rejected model and the art keeps teaching it, in the game's first five minutes, with every test green. Also surfaced: only **8 of 32** assets were registered, so thin-tag draws cycled the same two backdrops.",
+    "impact": "Medium — shipped and player-visible for an unknown period; invisible to the whole test suite.",
+    "workaroundFound": true,
+    "workaround": "**Method, and this is the transferable part: a per-image glance missed all three text defects.** What found them was a **strip sweep** — crop the bottom ~20% of every asset, tile them into one labelled contact sheet, and read the column; then repeat for the top. Baked-in text is small, low-contrast and corner-anchored, which is exactly what the eye skips when looking at a full-frame thumbnail for composition. **Fixed:** 5 quarantined behind `QUARANTINED_SCENE_ASSETS` (each with its stated reason), re-pointed to compliant assets already on disk, pool widened 8 → 16, and pinned by `meetingSceneDoctrine.test.ts` — which asserts both non-registration **and** selector-unreachability across every authored tag × both seeds, so a re-registration fails on behaviour, not just on a list. The guard was falsified by re-injecting the defect: it independently reproduced the original finding (`selector reaches quarantined art: plague-ward`). Replacement art is THR-876. **Class:** art is content, and content that encodes a retired mechanic is a correctness bug, not a style note — audit the asset pool whenever a mechanic is retired, not just the code that drove it.",
+    "session": "THR-868 WS6 closeout, hourly `tb-opus-pickup`."
   }
 ];
 // ── End data ──
