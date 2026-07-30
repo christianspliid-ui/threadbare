@@ -58,6 +58,12 @@ const STEP_0_HAND: readonly StepNudge[] = [
     // where a mortal's own nerve is the variable, which is the genericity bar.
     id: 'darkhollow.vault.steady_the_hands',
     name: 'Steady the hands',
+    // THR-890 — a universal-core library id, so the card prints its keyword.
+    // Core members are held by every god regardless of sphere, so tagging one
+    // adds the chip without changing which cards this hand deals (a
+    // sphere-signature id would engage THR-887's repertoire gate and withhold
+    // the card from any god not aligned to that sphere).
+    libraryCardId: 'card.boost.core',
     essenceCost: 1,
     forecastDelta: 0.06,
     imageTag: 'generic.focus',
@@ -143,6 +149,9 @@ const STEP_0_HAND: readonly StepNudge[] = [
     // trait directly, or the template's traitVariant naming it in addNudgeIds.
     id: 'darkhollow.vault.the_true_hand',
     name: 'Read it honestly',
+    // THR-890 — `trait_card` is the universal-core type for exactly this shape:
+    // gated on who the mortal is, priced at nothing.
+    libraryCardId: 'card.trait_card.core',
     requiredTrait: EXEMPLAR_TRAIT_REF,
     essenceCost: 0,
     forecastDelta: 0.08,
@@ -211,11 +220,17 @@ const STEP_1_HAND: readonly StepNudge[] = [
     },
   },
   {
+    // THR-890 — the hand's detection-cost card. The band prose already said
+    // running is loud on wet stone and the warden had been a soldier; the cost
+    // channel makes the card charge for it instead of only regretting it
+    // afterwards. Paid through the region detection API (THR-885), never a
+    // second path to the same place.
     id: 'darkhollow.vault.quicken_the_step',
     name: 'Quicken the step',
     sphere: 'energy',
     essenceCost: 2,
     forecastDelta: 0.1,
+    costs: { detectionDelta: 0.1 },
     imageTag: 'generic.strength',
     fiction:
       'Their legs find the speed of a much younger runner for the length of one room and one stair.',
@@ -234,6 +249,10 @@ const STEP_1_HAND: readonly StepNudge[] = [
     // stay rare because a rider on every card turns the ladder into a floor.
     id: 'darkhollow.vault.keep_the_thread_taut',
     name: 'Keep the thread taut',
+    // THR-890 — `no_crit_fail` *is* Mercy ("critical failure becomes ordinary
+    // failure"), and Mercy is universal core, so the keyword names the trade the
+    // comment above spells out.
+    libraryCardId: 'card.mercy.core',
     sphere: 'spirit',
     essenceCost: 4,
     forecastDelta: 0.09,
@@ -248,11 +267,16 @@ const STEP_1_HAND: readonly StepNudge[] = [
   },
   {
     // Second big-delta card (0.17 ≥ NUDGE_BIG_DELTA): both failure bands owed.
+    //
+    // THR-890 — the hand's doom-cost card. Entropy signs the Bargain, and this
+    // is the bargain's shape: the largest help on the step, bought partly off
+    // the clock rather than out of the pool. Paid through the doom API.
     id: 'darkhollow.vault.unmake_the_seal',
     name: 'Unmake the seal',
     sphere: 'entropy',
     essenceCost: 3,
     forecastDelta: 0.17,
+    costs: { doomDelta: 0.05 },
     imageTag: 'darkhollow.seal',
     fiction:
       "The wax and lead around the reliquary's base give up their grip and run, and the case lifts free.",

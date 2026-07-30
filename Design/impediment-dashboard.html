@@ -5757,6 +5757,19 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "Ship the map keyed on the live union (`Record<HungerId, string>`) so it is exhaustive over what exists and cannot fall behind; file the discrepancy (THR-891) for the design call; state the gap on the wiki page rather than papering it. The `Record` keying means adding a `HungerId` member fails the build until its card is named.",
     "session": "THR-887 execution, tb-opus-pickup"
+  },
+  {
+    "num": "327",
+    "id": 327,
+    "count": 1,
+    "date": "2026-07-30",
+    "category": "tooling",
+    "description": "**Playwright MCP's viewport does not survive `browser_navigate` — it silently reverts, and every later screenshot is off-contract with no error.** THR-890's browser pass opened with `browser_resize(1920, 1080)`, verified `innerWidth`/`innerHeight` read exactly `1920x1080`, then navigated a few times while staging the encounter. A pre-screenshot readout showed the viewport had become **1689×1221** — a size never requested, on a run that had already proved the resize worked. Nothing reported a change: `browser_navigate` returns its normal page block, and `browser_take_screenshot` captures happily at whatever the viewport now is. This is a *different* failure from #199b (resize had no effect at all) and #251 (Claude-in-Chrome resize inert): here the resize genuinely works and then quietly stops holding.",
+    "consequence": "A DoD screenshot taken after any navigation silently documents a viewport the Viewport Contract never specified, while the session's earlier successful resize sits in the transcript as false corroboration. The capture looks compliant and is not.",
+    "impact": "Medium — silent, and the earlier successful measurement actively argues the capture is fine.",
+    "workaroundFound": false,
+    "workaround": "**Re-assert the viewport immediately before the contractual capture, and measure `innerWidth`/`innerHeight` in the same call that takes the screenshot — never trust a resize from earlier in the session.** Treat `browser_resize` as scoped to the current document, not the session. Generalises the standing rule from #251 (\"the success string is not evidence\") one step further: on Playwright even a *verified* success is not evidence once you have navigated. Cheap permanent fix (unticketed): fold the resize + `innerWidth`/`innerHeight` readout into a single pre-capture step in the DoD's unattended-route rung.",
+    "session": "THR-890 card-row browser verification, hourly `tb-opus-pickup`, worktree priceless-boyd-b07fa4."
   }
 ];
 // ── End data ──
