@@ -312,6 +312,14 @@ If the result is non-empty, the work has already landed. Do not proceed.
 2. Post a one-line comment on the issue noting the upstream commit hash + first-line message and that the auto-close did not fire.
 3. Exit cleanly.
 
+**Also grep the parent's id when the ticket is a split-out child (impediment #310).** This grep only ever asks about *this* issue's id, so a child ticket whose scope is then executed under the **parent's** id is invisible to it by construction — the check reads clean and is correct to. THR-680 was split out of THR-674 at 07:12Z on 2026-07-21; a later session finished exactly its scope at 13:12Z the same day and closed it with `Fixes THR-674`, and THR-680 sat in `Todo` for 9 days before being promoted and picked up as live work. If the issue body contains a "Split from THR-XXX" (or "Split out of", "Parent:") reference, run the same grep for that id, and read the parent's state — a parent already in `Done` is itself the signal:
+
+```bash
+git log origin/main --grep="Fixes ${parent_id}" --grep="Closes ${parent_id}" --grep="Resolves ${parent_id}" --regexp-ignore-case --extended-regexp --oneline
+```
+
+A hit here is **not** automatically a stand-down — the parent may have shipped only its own scope. Read the parent's closing commit body and any disposal/verdict doc it names, confirm it covers *this* ticket's Done-when, and only then release with a comment pointing at the evidence. Note also that this class can masquerade as data loss: THR-680's body warned that "26 entries were never inspected", and `git fsck --unreachable` shows hundreds of unreachable stash-shaped commits that are simply ordinary `git stash pop` residue. Check the parent grep **before** starting any forensic recovery hunt.
+
 **Trace lines** (NFP #2):
 
 ```
