@@ -19,6 +19,7 @@ import { Tooltip } from '../shared/Tooltip';
 import { SectionHeading } from '../shared/SectionHeading';
 import { StepDots } from '../shared/StepDots';
 import { getSublocationConceptArt } from '../../data/sublocation-concept-art';
+import { getSublocationArtUrl } from '../../data/sublocation-category-art';
 import { EntityVisual } from '../shared/EntityVisual';
 import type { TerrainType } from '../../types';
 import type { RivalDefinition } from '../../types/rival';
@@ -103,6 +104,8 @@ const SublocationCard = memo(function SublocationCard({
   // Concept art for this sublocation type
   const subProps = (sublocation.properties ?? {}) as Partial<SublocationProperties>;
   const conceptArt = getSublocationConceptArt(subProps.sublocationTypeId ?? '');
+  // Category plate (THR-638). Null ⇒ the gradient + glyph tile below stands in.
+  const categoryArt = getSublocationArtUrl(subProps.sublocationTypeId, subProps.genomeTags);
 
   // Determine divine styling
   const isDivine = divineOrigin !== undefined;
@@ -138,12 +141,19 @@ const SublocationCard = memo(function SublocationCard({
       aria-label={`Enter ${sublocation.name}`}
     >
       <div style={{ display: 'flex' }}>
-        {/* Concept Art Thumbnail — left column */}
+        {/* Category art thumbnail — left column; gradient + glyph when unresolved.
+            When a plate resolves the column widens to 142px (16:9 at 80px tall) and
+            stops stretching to card height: an 80px-wide column on a tall card
+            crops a 16:9 landscape to a ~20%-width vertical slice, which reads as
+            noise rather than a place. The gradient tier keeps the original 80px
+            square, since a gradient tiles at any aspect. */}
         <div
           style={{
             background: conceptArt.gradient,
-            width: '80px',
+            width: categoryArt ? '142px' : '80px',
+            height: categoryArt ? '80px' : undefined,
             minHeight: '80px',
+            alignSelf: categoryArt ? 'flex-start' : undefined,
             flexShrink: 0,
             display: 'flex',
             alignItems: 'center',
@@ -152,35 +162,51 @@ const SublocationCard = memo(function SublocationCard({
             overflow: 'hidden',
           }}
         >
-          <span
-            style={{
-              fontSize: '28px',
-              color: conceptArt.glyphColor,
-              opacity: 0.6,
-              filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.5))',
-              userSelect: 'none',
-            }}
-            aria-hidden="true"
-          >
-            {conceptArt.glyph}
-          </span>
-          <span
-            style={{
-              position: 'absolute',
-              bottom: '4px',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              fontSize: 'var(--text-xs)',
-              color: conceptArt.glyphColor,
-              opacity: 0.35,
-              fontFamily: 'var(--font-display)',
-              letterSpacing: '1px',
-              textTransform: 'uppercase',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            Concept Art
-          </span>
+          {categoryArt ? (
+            <img
+              src={categoryArt}
+              alt=""
+              style={{
+                position: 'absolute',
+                inset: 0,
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+              }}
+            />
+          ) : (
+            <>
+              <span
+                style={{
+                  fontSize: '28px',
+                  color: conceptArt.glyphColor,
+                  opacity: 0.6,
+                  filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.5))',
+                  userSelect: 'none',
+                }}
+                aria-hidden="true"
+              >
+                {conceptArt.glyph}
+              </span>
+              <span
+                style={{
+                  position: 'absolute',
+                  bottom: '4px',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  fontSize: 'var(--text-xs)',
+                  color: conceptArt.glyphColor,
+                  opacity: 0.35,
+                  fontFamily: 'var(--font-display)',
+                  letterSpacing: '1px',
+                  textTransform: 'uppercase',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                Concept Art
+              </span>
+            </>
+          )}
         </div>
 
         {/* Content — right column */}
@@ -471,6 +497,14 @@ interface SublocationDetailViewProps {
   getAgentName: (id: string) => string;
   onAgentClick: (agentId: string) => void;
   onBack: () => void;
+  /**
+   * Click-to-open for an active encounter here. The body already referenced this
+   * identifier while the interface omitted it and the parent never passed it, so
+   * the active-encounter branch threw `ReferenceError: onEncounterClick is not
+   * defined` and blanked the whole detail view. Declared + threaded in the
+   * THR-638 sublocation batch; see `Docs/impediments.md`.
+   */
+  onEncounterClick?: (agentId: string, progress: EncounterProgress, template: UnifiedActionTemplate) => void;
   badgeColor: string;
   badgeBg: string;
   badgeText: string;
@@ -492,6 +526,7 @@ const SublocationDetailView = memo(function SublocationDetailView({
   getAgentName,
   onAgentClick,
   onBack,
+  onEncounterClick,
   badgeColor,
   badgeBg,
   badgeText,
@@ -503,6 +538,11 @@ const SublocationDetailView = memo(function SublocationDetailView({
   // Concept art for this sublocation type
   const detailSubProps = (sublocation.properties ?? {}) as Partial<SublocationProperties>;
   const conceptArt = getSublocationConceptArt(detailSubProps.sublocationTypeId ?? '');
+  // Category plate (THR-638). Null ⇒ the gradient + glyph tile below stands in.
+  const categoryArt = getSublocationArtUrl(
+    detailSubProps.sublocationTypeId,
+    detailSubProps.genomeTags,
+  );
 
   // Generate prose for sublocation
   const sublocationProse = useMemo(() => {
@@ -576,9 +616,9 @@ const SublocationDetailView = memo(function SublocationDetailView({
         </button>
       </div>
 
-      {/* Concept art (16:9 landscape, left) + optional prose (right) */}
+      {/* Category art (16:9 landscape, left) + optional prose (right) */}
       <div className="mx-6 mt-5 flex gap-4" style={{ minHeight: '140px', maxHeight: '200px' }}>
-        {/* Concept art placeholder — 16:9 landscape, always visible, left side */}
+        {/* 16:9 landscape, always visible; gradient + glyph when art is unresolved */}
         <div
           className="rounded-lg border overflow-hidden flex items-center justify-center"
           style={{
@@ -590,33 +630,43 @@ const SublocationDetailView = memo(function SublocationDetailView({
             position: 'relative',
           }}
         >
-          <span
-            style={{
-              fontSize: '48px',
-              color: conceptArt.glyphColor,
-              opacity: 0.5,
-              filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.6))',
-              userSelect: 'none',
-            }}
-            aria-hidden="true"
-          >
-            {conceptArt.glyph}
-          </span>
-          <span
-            style={{
-              position: 'absolute',
-              bottom: '6px',
-              right: '10px',
-              fontSize: 'var(--text-xs)',
-              color: conceptArt.glyphColor,
-              opacity: 0.35,
-              fontFamily: 'var(--font-display)',
-              letterSpacing: '1.5px',
-              textTransform: 'uppercase',
-            }}
-          >
-            Concept Art
-          </span>
+          {categoryArt ? (
+            <img
+              src={categoryArt}
+              alt={sublocation.name}
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            />
+          ) : (
+            <>
+              <span
+                style={{
+                  fontSize: '48px',
+                  color: conceptArt.glyphColor,
+                  opacity: 0.5,
+                  filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.6))',
+                  userSelect: 'none',
+                }}
+                aria-hidden="true"
+              >
+                {conceptArt.glyph}
+              </span>
+              <span
+                style={{
+                  position: 'absolute',
+                  bottom: '6px',
+                  right: '10px',
+                  fontSize: 'var(--text-xs)',
+                  color: conceptArt.glyphColor,
+                  opacity: 0.35,
+                  fontFamily: 'var(--font-display)',
+                  letterSpacing: '1.5px',
+                  textTransform: 'uppercase',
+                }}
+              >
+                Concept Art
+              </span>
+            </>
+          )}
         </div>
         {/* Prose column — only when prose exists */}
         {sublocationProse && (
@@ -1110,6 +1160,7 @@ export const LocationView = memo(function LocationView({
         getAgentName={getAgentName}
         onAgentClick={onAgentClick}
         onBack={handleBackToLocation}
+        onEncounterClick={onEncounterClick}
         badgeColor={badgeColor}
         badgeBg={badgeBg}
         badgeText={badgeText}

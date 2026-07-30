@@ -10,6 +10,7 @@ import {
   gradientIndexForId,
   fallbackGlyphFor,
 } from '../../../data/entity-visual-fallbacks';
+import { SUBLOCATION_CATEGORY_ART } from '../../../data/sublocation-category-art';
 
 function node(partial: Partial<GraphNode> & Pick<GraphNode, 'id' | 'type'>): GraphNode {
   return { name: partial.id, properties: {}, ...partial };
@@ -66,7 +67,11 @@ describe('resolveEntityVisual — per-kind resolution', () => {
     expect(d.glyph).toBe(fallbackGlyphFor('location', 'Nowhere'));
   });
 
-  it('classifies a parented location node as a sublocation (glyph tier, no registry yet)', () => {
+  it('resolves a parented location node to its sublocation category plate', () => {
+    // Repointed in the THR-638 sublocation batch: this asserted the glyph tier
+    // back when `sublocation` had no registry. `crypt` is a religious type, so
+    // leaving the old assertion green would have been a test guarding a dead
+    // contract rather than the live one.
     const g = graphWith(
       node({
         id: 'sub1',
@@ -76,6 +81,21 @@ describe('resolveEntityVisual — per-kind resolution', () => {
       }),
     );
     const d = resolveEntityVisual({ id: 'sub1' }, g);
+    expect(d.kind).toBe('sublocation');
+    expect(d.tier).toBe('art');
+    expect(d.src).toBe(SUBLOCATION_CATEGORY_ART.religious);
+  });
+
+  it('falls to the glyph tier for a sublocation whose type has no category', () => {
+    const g = graphWith(
+      node({
+        id: 'sub2',
+        type: 'location',
+        name: 'Somewhere Odd',
+        properties: { parentLocationId: 'loc1', sublocationTypeId: 'not-a-real-type' },
+      }),
+    );
+    const d = resolveEntityVisual({ id: 'sub2' }, g);
     expect(d.kind).toBe('sublocation');
     expect(d.tier).toBe('fallback');
   });

@@ -9,7 +9,7 @@ import type { AttachmentFullEntry } from '../../../engine/agentAttachments';
 import { getAttachmentGlyph } from '../attachmentGlyphs';
 import { resolveAttachmentTooltip } from '../../../engine/attachmentTooltip';
 import { SLOT_CAPS, CONDITION_CAPS, SLOT_TAG_DISPLAY_NAMES } from '../../../data/attachment-slot-constants';
-import { getItemArt } from '../../../data/item-art-registry';
+import { getAttachmentArtUrl } from '../../../data/artifact-category-art';
 
 interface AttachmentsTabProps {
   card: AgentInfoCardData;
@@ -68,7 +68,8 @@ export function AttachmentsTab({ card, onAttachmentClick }: AttachmentsTabProps)
       totalTicks: entry.totalTicks,
     });
 
-    const artPath = getItemArt(entry.id);
+    // Bespoke plate, else the plate for this item's category (THR-638).
+    const artPath = getAttachmentArtUrl(entry.id, entry.subcategory);
 
     return (
       <div
