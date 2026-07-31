@@ -1,42 +1,46 @@
 # Briefing
 
-**Generated:** 2026-07-31 18:15 local (16:15 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-07-31 19:05 local (17:05 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
 ## Needs Christian
 
-**One thing, and it is the same one as last hour: which five encounters make up the vertical slice?** Nothing has moved on it — no new information, no new pressure, and it has not gone stale. An agent will propose a roster with a coverage table and say what each pick uniquely covers; you rule. Two further pieces of work are still stalled waiting on this single pick. When you have the appetite: open a chat and say *"work the map"*.
+**Nothing needs you right now — and that is new.** The one thing that had been sitting on your plate for three hours straight, *which five encounters make up the vertical slice*, you settled yourself in chat about half an hour ago. Shrine Offering, the Unsafe Bridge, Snow on the Pass, the Crossroads bargain with its full-moon sequel, and the swindled family with its two payoffs. Five different shapes of decision, five reaches, and between them they touch items, reputation, traits, tier promotion, conditions, seeds, artifact spawning, and the favour economy — which was the whole point of picking for spread rather than for taste.
 
-**The four older finished encounters stay parked, unchanged, and still need nothing from you today.** The capital-cluster batch — the millrace dispute, the ford toll house, the two feuding houses, the monument that became a problem with a rock — is written and passing every check, but in the old style. Whether those four land as-is and get tidied up alongside the seven earlier ones, or get rewritten in the locked format, is a question for the session that closes out the format work. Nothing is lost either way. It is named here only so it does not look forgotten.
+**You also chose the harder-to-see thing correctly:** keeping Shrine Offering, the one encounter already live in the real pipeline, instead of swapping it for a freshly written combat piece. That is the pick that proves the machinery actually works end to end rather than only in a branch. Combat has no nudge-native encounter anywhere in the game yet; it is written down as the first authoring job after the slice returns its verdict, so it is deferred rather than dropped.
 
-*No doorbell sent this hour: nothing new needs you, and the one open item is word-for-word the one you were pinged about at twenty past four. You will hear one when that changes.*
+**What happens next is ours, not yours.** The slice now needs building and checking before it can be played — that is agent work with no decision in it. The next time the map wants you is the verdict session, when the five are actually playable and you rule on whether each one lands. You will hear about it here when it is genuinely ready; asking you before the thing exists would waste the trip.
+
+**One older item is still parked and still not yours today.** The four finished capital-cluster encounters — the millrace dispute, the ford toll house, the feuding houses, the monument that turned into a problem with a rock — remain written, passing every check, and held in the old style. Whether they land as-is and get tidied up with the seven earlier ones, or get rewritten under the locked format, belongs to the session that closes out the format work. Nothing is lost either way. Named here only so it does not look forgotten.
+
+*No doorbell sent this hour. The list went from one item to none, and a ping that says "nothing needs you" is just noise on your phone. You will hear one when something genuinely arrives.*
 
 ## Queue
 
-**Forty-nine jobs ready, one being worked, one parked.** Two arrived this hour, both from this morning's weekly review, and both aimed at our own machinery rather than the game: one to cut how long the automated tests take to run, one to stop half-formed design notes cluttering the repo before they are ready. Neither touches anything you would see. Nothing left the shelf. It is well past comfortable, which is expected while the content side is paused.
+**Fifty jobs ready, one being worked, one parked.** One arrived this hour and nothing left. The new arrival went straight to the top as the only urgent item on the shelf, and it is pointed squarely at our own housekeeping: the two hourly note-writing jobs — this briefing is one of them — have been merging small updates to the main line even on hours when they had nothing new to say, and that traffic is what keeps shoving everyone else's finished work back into the queue. Worth knowing because it explains a recurring irritation you have seen described here for days as work "slipping one step back". This run had real news, so it earns its merge; the fix will stop the empty ones.
 
-**The oldest high-priority job still leads:** narrowing an over-eager prose check so it flags evasive writing rather than ordinary writing.
+**Beneath it:** three high-priority jobs (narrowing an over-eager prose check, cutting how long the automated tests take, and keeping half-formed design notes out of the repo), five medium, and forty low-priority tidy-ups. Fifty is well past comfortable, which is expected while the content side stays paused behind the format work.
 
-**One job on the shelf is already finished** — the housekeeping rescue filed yesterday afternoon. The thing it was meant to rescue landed on its own nine minutes after the job was written, and I confirmed the entry is now in place. Whoever picks it up will find nothing to do; that check happens automatically at pickup, so nothing is wasted, but forty-nine is one higher than the real work.
+**One job on the shelf is already finished** — yesterday's housekeeping rescue. What it was meant to rescue landed on its own; whoever picks it up will find nothing to do. That check happens automatically at pickup, so nothing is wasted, but the real number is forty-nine.
 
-**The one job in progress** is the fix for a sweep that only rescues stuck work in one of the two ways it can get stuck. Picked up at the top of the hour and moving.
+**The one job in progress** is the fix for a sweep that only rescues stuck work in one of the two ways it can get stuck — closely related to the new urgent item above. Moving.
 
-**The parked job** is the finished-but-held encounter batch described above — a day and a half parked now, holding no one up.
+**The parked job** is the finished-but-held encounter batch described above, thirty hours parked now, holding no one up.
 
-The longest-waiting item crosses our one-week line around half past eight this evening. Low-priority tidy-up, so a note rather than a problem.
+The longest-waiting item crosses our one-week line late tonight. Low-priority tidy-up, so a note rather than a problem.
 
 ## Freshness
 
-**Your working copy is healthy.** Two changes behind, both landed in the last few minutes — ordinary lag between hourly syncs, not a stall. Right branch, nothing stranded, no work of yours at risk. The two Claude permission files you edited are still sitting there uncommitted; harmless, have never blocked anything, no action wanted.
+**Your working copy is healthy and fully current.** Right branch, nothing missing, nothing of yours stranded. Two files briefly appeared modified this run and turned out not to be — a stale internal cache, not real changes; they read clean the moment they were checked properly. The two Claude permission files you edited are still sitting there uncommitted, as they have been for days; harmless, have never blocked anything, no action wanted.
 
-**The live site is current** for what has actually been published; nothing game-facing has merged since the last release, so no rebuild was needed. Automated checks normal.
+**The live site is current** for what has been published; nothing game-facing has merged since the last release, so no rebuild was needed. Automated checks normal.
 
-**All eight scheduled jobs are running on time.** The cleanup job ran half an hour ago and found nothing needing a human call.
+**All eight scheduled jobs are running on time.** The cleanup job ran within the last half hour and found nothing needing a human call.
 
 ## What's moving
 
-**The pull request carrying everything you would want to look at has slipped one step back, and that is routine.** The eight new encounters, the click-straight-into-one link and the balanced test character all ride on it. Last hour it was clean with its checks running; since then other work landed ahead of it, so it now needs nudging back into line before it can merge. An hourly sweep does exactly that, and it is still set to merge itself once it clears. This is a treadmill rather than a fault — it has to keep pace with everything else landing. Still hands work, still not yours.
+**The pull request carrying everything you would want to look at is green and waiting its turn.** It holds the eight new encounters — including four of the five you just picked — plus the click-straight-into-one link and the balanced test character. Every check on it passes. It is only waiting because other work keeps landing ahead of it, which is exactly the irritation the new urgent job above is meant to end. You nudged it back into line yourself during the roster session; the line has moved again since. It is still set to merge itself once it clears, and it still needs no hands.
 
 **Four other pull requests are open** — this briefing, the stuck-work sweep fix, this morning's review write-up, and a housekeeping report. All queued to merge themselves.
 
