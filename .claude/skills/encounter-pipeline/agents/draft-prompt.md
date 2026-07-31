@@ -67,10 +67,10 @@ Write a complete encounter packet to `Docs/plans/encounters/{{SLUG}}-draft.md` w
 
 10. **Sample Opening Paragraph** — Continuous prose. Must feel like a scene already in motion. Must have cadence, atmosphere, and tension. This is not a summary — it is fiction.
 
-11. **Approach Cards Per Step** — For EVERY step that presents choices to the player, write authored approach cards. The runtime shows choices at every step, not just the branch-selection step. If you don't author them, the player sees generic god-verbs.
-   - **Step 0 (branch selection):** One card per branch. Each card has: scene-specific label, full prose paragraph (the `intent`), essence cost with narrative justification, narrative risk (the `likelyBurden`), and intervention type (supportive/coercive/withdrawn).
-   - **Step 1+ (branch resolution):** For each branch variant, write 2-3 approach cards describing how the god executes that specific intervention. These are branch-specific — the approach cards for "Break the Bargain" should be different from the approach cards for "Steady the Courier". Each card follows the same format: scene-specific label, prose paragraph, cost, risk, type.
-   - **Linear encounters (branch count 0):** Write 2-3 approach cards for the single resolution step.
+11. **The Hand Per Step (nudge-native — the only player-facing choice surface)** — For EVERY nudge-bearing step, author a hand per the shared spec's step 3: 4–8 cards cut from the 21-type library, each with its library type named, a generic 2–4 word title, one plain mechanical `effectLine` (what the god does and why that moves the odds), a one-line generic flavor quote, and band fragments. ≥4 spheres, ≥1 ungated common option, ≤1 rider per hand, trait cards at cost 0, zero-essence cards priced on another channel, grants naming only built content.
+   - **Branch selection is never a player choice.** The player plays nudges; the mortal and the world pick the path. A "one card per branch, player picks the future" structure is the rejected authored-futures model — Pass 2 rejects it outright.
+   - **Branch-bearing steps still get bespoke band fragments** — the fragments and outcome prose are where a branch proves itself, since the card faces are generic by rule.
+   - **Linear encounters (branch count 0):** same hand rules on the resolution step(s).
 
 12. **Branch-Dependent Later Paragraph(s)** — If the encounter branches (count 2+), write **one later-paragraph variant per declared branch**. A 2-branch encounter needs 2 variants. A 3-branch encounter needs 3 variants. Every branch must prove itself in scene prose, not just in a label or summary — the editorial reviewer will use these to assess branch seduction, and an unwritten branch cannot be evaluated. If the encounter is linear (branch count 0), write a single later paragraph instead and label it "Linear continuation."
 
@@ -97,10 +97,10 @@ Write a complete encounter packet to `Docs/plans/encounters/{{SLUG}}-draft.md` w
 These are not aspirations — they are hard requirements. If your packet fails any of these, revise before submitting.
 
 - **Scene prose must have narrative voice.** The god's perspective should be felt, not stated. If the opening reads like a briefing — "A healer sits outside a gate. Inside, a child is sick." — rewrite it until the player is inside a moment. Cadence, atmosphere, tension. The scene is already in motion.
-- **Approach cards must have prose bodies at EVERY player-facing step.** The runtime presents choices at every step — not just the branch-selection step. If the encounter has a choice step (step 0) and a resolution step (step 1), BOTH steps need authored approach cards. Step 0 cards are the branch choices ("Break the Bargain" / "Steady the Courier"). Step 1 cards are the approach choices within the chosen branch — how the god executes the chosen intervention. These must be branch-specific: a "Break the Bargain" resolution step might offer "Sever it gently" (supportive) vs "Rip the contract apart" (coercive). Without authored cards at the resolution step, the player sees generic god-verbs ("Tip the scales" / "Pour divine power" / "Let it play out") which destroys the authored quality of the encounter.
-- **Costs must be narratively justified.** "Cost: 1 essence" is mechanical. "Barely a breath of essence to steady her" is fiction. Every approach must explain through prose why this thread is cheaper or harder to pull.
-- **Risks must be narrative.** Each approach card must include what might cling, shift, or recoil from the intervention. "Her panic may cling to you afterward as strain" — not just a probability.
-- **Choice labels must be scene-specific.** "Steady the Courier" not "Help them." "Force the Captain" not "Tip the scales." Generic god-verbs are a quality failure.
+- **Every nudge-bearing step gets a full authored hand.** A step with two token cards is a half-authored hand, which is worse than no hand — the god's absence reads as a bug rather than a decision (spec § fail-soft contract).
+- **Card faces are generic; effect lines state mechanism.** "Send restful dreams — you quiet their mind while they sleep, so the rest actually counts." A card face that carries scene prose, or an effect line that states mood, is a quality failure (the communication pivot). The scene's account of the card lives in its band fragments.
+- **Costs are channels, not adjectives.** Essence is rendered as pips; a cheap-in-essence card is priced in doom, detection, or obligation through `costs`/grants. The effect line says where the price lands.
+- **Risks live in the fragments and the ladder.** What might cling, shift, or recoil is written into the card's failure-band fragments and the outcome ladder — witnessed on loss, never a probability adjective.
 - **Threads must be discoverable in scene prose.** The scene text names the people, objects, and tensions that become choices. The player discovers them by reading — not by scrolling past the scene to a separate menu.
 - **Aftermath reaction choices are required for medium+ scale.** The player decides which consequence thread to carry forward. Each choice represents a different philosophical stance about consequence — not a mechanical variant. "Follow the Rumor While It Is Still Warm" / "Keep the Captain in Your Sights" / "Let the District Decide What It Remembers."
 - **Aftermath outcomes must be actor-centered.** Named agents with faces and specific attachments ("Ashara gained Ill Luck"), not anonymous stat deltas ("Heart grew 0.05").
@@ -119,13 +119,13 @@ Before submitting your packet, answer every question below YES or NO. **If ANY a
 3. Does the scene prose name and introduce the specific elements (people, objects, tensions) that later become player choices?
 4. Would a reader feel something from the prose alone, before seeing any mechanical choices?
 
-**Choices & Intervention**
-5. Does each approach card have its own prose paragraph describing what the intervention feels like from the god's perspective?
-6. Does each approach card narratively justify its cost — not just "Cost: N essence" but prose that explains why this thread is cheaper/harder to pull?
-7. Does each approach card include a narrative risk — what might cling, shift, or recoil from this intervention?
-8. Are the choice labels scene-specific rather than generic god-verbs? ("Steady the Courier" not "Help them"; "Force the Captain" not "Tip the scales")
-9. Do the choices feel like graduated options with different intervention philosophies, not a binary help/ignore toggle?
-9b. Does EVERY player-facing step have authored approach cards? The runtime shows choices at every step — if a resolution step after branching has no authored cards, the player sees generic god-verbs ("Tip the scales" / "Pour divine power" / "Let it play out"), destroying the authored quality.
+**Choices & Intervention (the nudge hand)**
+5. Does every card state its mechanism in the `effectLine` — what the god does and why that moves the odds — with a generic 2–4 word title and a one-line flavor quote, and zero scene-bespoke prose on the face?
+6. Is every card's price real and legible — essence, or a named alternate channel (doom, detection, obligation, being the person the trait names)?
+7. Does every card pay off in failure — at least one failure-band fragment, both failure bands for a big-delta card?
+8. Is the hand grounded — does every card act on a target the scene established, so deleting the target from the prose makes the card senseless here?
+9. Do the cards answer different questions (no two cards in the hand buying the same certainty), so the hand is a decision rather than a menu of synonyms?
+9b. Does EVERY nudge-bearing step carry a full authored hand per the spec's guardrails — and does no step ask the player to pick a branch or an ending?
 
 **Aftermath & Consequence**
 10. Does the aftermath have its own prose — a reflective landing that wraps the experience before showing mechanics?

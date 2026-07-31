@@ -9,12 +9,12 @@ description: >
   quality", "social encounter rewrite", "tavern encounter rewrite", "template
   encounter", "encounter quality pass", "prose quality pass", "write encounter".
 model: opus
-last_validated_against: 2026-07-27
+last_validated_against: 2026-07-30
 ---
 
 > **Load before authoring:** `Docs/canon/rulebook-quick-reference.md` (always — the synthesis layer for rules of play). Load `Docs/canon/rulebook.md` (full rulebook) when the work touches a specific rule of play and you need depth, status flags, or source citations.
 >
-> **Load before drafting a single card:** [`../encounter-pipeline/reference/nudge-authoring-spec.md`](../encounter-pipeline/reference/nudge-authoring-spec.md) — the canonical 8-step authoring contract, the register table, the prose rubric, the verbatim detector spec, and the shared generic pool. It is shared verbatim with `encounter-pipeline`; where this skill and that spec appear to disagree, **the spec wins**.
+> **Load before drafting a single card:** [`../encounter-pipeline/reference/nudge-authoring-spec.md`](../encounter-pipeline/reference/nudge-authoring-spec.md) — the canonical authoring contract in the locked THR-883 format: the communication pivot (prose does the scene, cards do the rules — generic card faces, mechanism-stating effect lines), the scene-writer's 14-question checklist, setting envelopes (raw entries declare `settings` + `openings`), the 21-type card library, the register table, the prose rubric, and the verbatim detector spec. It is shared verbatim with `encounter-pipeline`; where this skill and that spec appear to disagree, **the spec wins**.
 
 # Template Encounter Write/Rewrite — nudge-native prose + systemic wiring
 
@@ -71,7 +71,7 @@ If the Canon page disagrees with this skill, the Canon page wins until this skil
 Read these in order. Skipping any of them produces content that fails the quality bar:
 
 0. **[`../encounter-pipeline/reference/nudge-authoring-spec.md`](../encounter-pipeline/reference/nudge-authoring-spec.md)** — the authoring contract. Mandatory, and mandatory *first* once the Canon page has pointed you here.
-0b. **`src/data/__fixtures__/nudge-exemplar/darkhollow-vault-exemplar.ts`** — the golden exemplar. Every rule in the spec is visible in it once; copy the shape.
+0b. **`src/data/__fixtures__/nudge-exemplar/swollen-ford-exemplar.ts`** — the golden exemplar (The Swollen Ford). Every rule in the spec is visible in it once — including the raw-entry envelope fields this skill authors (`settings` + `openings`) in their direct-template form; copy the shape.
 1. **`Docs/canon/encounters.md`** — Canon Step-0 entrypoint for encounter authoring. Read this first.
 2. **`Docs/plans/2026-04-16-systemic-wiring-guide.md`** — The engine capabilities that should shape your creative decisions. If you don't know what encounter seeds, hidden marks, and conditional blocks can do, you'll write hardcoded fiction.
 3. **`Docs/plans/2026-04-16-design-quality-gate.md`** — Section 9 benchmark moments. Your output must meet this standard.
@@ -300,7 +300,13 @@ Before submitting rewritten prose, check every field against these questions. If
 - **0e.** Do the hand's fragments cover **all six** `StepOutcome` bands between them?
 - **0f.** Does the base band text read correctly with **no** nudges active — i.e. is every nudge-specific payoff in a fragment rather than the base?
 - **0g.** Is the **trait-hook step** answered explicitly (gate / variant / trait-only nudge / trait fragment — "none" is a valid written answer), and does every ref survive `validateTraitRefs()`?
-- **0h.** Are all `effectLine`s **words with no digits or `%`**, and is at most one card in the encounter carrying a rider (with its justification in a code comment)?
+- **0h.** Are all `effectLine`s **words with no digits or `%`**, and is at most one card **per hand** carrying a rider (with its justification in a code comment)?
+- **0i.** Is every card face **library-generic** (2–4 word title, mechanism-stating effect line, one-line flavor quote — zero scene-bespoke prose), with its 21-type library type named in a comment?
+- **0j.** Does the template declare a **setting envelope** (`settings` from the 8-class vocabulary) with one opening per declared class, and does the spine stay setting-neutral (`validateSettingEnvelope` returns clean)?
+- **0k.** Is every **zero-essence non-trait card** priced on another channel (`costs` / obligation), and does every grant survive `validateNudgeGrantRefs`?
+- **0l.** Has a **fresh-context critique subagent** read the full prose before delivery (spec step 8: independent 14-question pass, seam-echo check, read-aloud flow)? Self-review does not discharge this gate.
+- **0m.** Does the step author **zero static factor lines**? The variance rule: factors are derived from the broader game context (agent, hex, global modifiers, earlier steps); a line true on every run is priced into the difficulty and belongs in the prose.
+- **0n.** Was the **mechanical design block** (spec step 1) answered in writing before the prose — protagonist agent, reach-as-theme per step, motive routes with concrete opportunities, mechanics/objects designed in, rewards + tension, choice axis (or "none"), every promise's payoff — and does the prose conform to it?
 
 **Detectors.** Zero vagueness-lexicon hits (`something / anything / nothing / thing / things / way / ways / somehow / whatever / somewhere` — watch the compounds: *all the way*, *either way*, *costs you nothing*). At most one annotation clause across the whole encounter. Verbatim spec in the shared authoring spec.
 
@@ -484,9 +490,9 @@ For each encounter file you write or rewrite:
 2. **Read the systemic wiring guide** — know what the capabilities can do
 3. **Identify the guild voice** — use the voice guide above
 4. **For each template, write the scene first** — before touching the TypeScript, write the moment as prose. What is the agent doing? What goes wrong (or right)? What does the player read? Then fit the prose into the template fields.
-4b. **Author the hand** — walk steps 3–5 of the [shared authoring spec](../encounter-pipeline/reference/nudge-authoring-spec.md): the 4–8 cards, the band fragments, the trait hook. Copy the shape from `src/data/__fixtures__/nudge-exemplar/darkhollow-vault-exemplar.ts` rather than re-deriving it.
+4b. **Author the hand** — walk steps 3–5 of the [shared authoring spec](../encounter-pipeline/reference/nudge-authoring-spec.md): 4–8 cards cut from the 21-type library with generic faces, the band fragments, the trait hook. Copy the shape from `src/data/__fixtures__/nudge-exemplar/swollen-ford-exemplar.ts` rather than re-deriving it.
 5. **Wire the dynamics** — add enrichment placeholders, conditional blocks, and ensure success/failure produce structurally different persistence
-6. **Run the editorial checklist** — the nudge gates (0a–0h) and all prose questions must pass
+6. **Run the editorial checklist** — the nudge gates (0a–0l) and all prose questions must pass
 7. **Preserve the TypeScript skeleton** — same IDs, same reaches, same difficulties, same reward pools unless clearly wrong. You're upgrading prose and adding wiring, not restructuring encounters.
 8. **Author `aftermathConfig`** — even simple encounters deserve 1-2 reaction choices. The aftermath is where the player-god touches the world.
 

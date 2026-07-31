@@ -52,9 +52,9 @@ export const NUDGE_HAND_MAX = 8;
  * Counted over **every authored card**, including trait-gated and sphere-gated
  * ones: what any single god can actually play is a subset (their accessible
  * spheres and essence decide which), so the authored total is the only figure an
- * author can see while writing. The golden exemplar's two hands sum to 0.63
- * (step 0, six cards) and 0.68 (step 1, six cards); 0.70 admits the reference
- * implementation with a little headroom and still rejects a hand that would carry
+ * author can see while writing. The golden exemplar's two hands sum to 0.46
+ * (step 0, six cards) and 0.53 (step 1, six cards); 0.70 admits the reference
+ * implementation with headroom and still rejects a hand that would carry
  * a competent actor from any difficulty straight to `PROBABILITY_CEILING`.
  *
  * Warn-level, director-tunable, and **not** a runtime clamp: the renderer draws
@@ -91,19 +91,22 @@ export const HAND_COMMON_OPTIONS_MIN = 1;
  * with the +0.37 subset the measured ascendant's accessible spheres allowed.
  *
  * That +0.37 is one god's playable subset, **not** the hand's ceiling (corrected
- * THR-827; it previously read here as "the full hand"). The exemplar's five
- * non-trait-gated cards sum to 0.55, and sphere access is pool-driven
- * (`buildNudgePhaseModel`: any sphere with essence > 0), so a god holding light,
- * mind, time and entropy plays all five. At 0.55 the whole cohort clears the floor
- * (0.127..0.219) — this ceiling is calibrated to the common case, not to the
- * reachable worst case. Whether that is the intended calibration is THR-831.
+ * THR-827; it previously read here as "the full hand"). The measurement was
+ * taken against the retired Darkhollow Vault exemplar, whose five
+ * non-trait-gated step-0 cards summed to 0.55 — at that total the whole cohort
+ * cleared the floor (0.127..0.219). Sphere access is pool-driven
+ * (`buildNudgePhaseModel`: any sphere with essence > 0). The ceiling is
+ * calibrated to the common case, not the reachable worst case; whether that is
+ * the intended calibration is THR-831.
  *
  * A hand that cannot move the forecast word is decorative — the player spends
- * essence and watches nothing change. So: an off-reach step stays at `fair` or
- * below. A step that *wants* to be `steep`/`severe` is fine, but it must be
- * authored for actors who plausibly hold the reach (role-gated, faction-gated, or
- * late-run) — which is what the golden exemplar does, drawing a thief into an
- * `eye`/`shadow` vault.
+ * essence and watches the forecast word hold still. So: an off-reach step stays
+ * at `fair` or below. A step that *wants* to be `steep`/`severe` is fine, but it
+ * must be authored for actors who plausibly hold the reach (role-gated,
+ * faction-gated, or late-run). The current golden exemplar (The Swollen Ford)
+ * demonstrates the open-draw branch — ambient content with every step at or
+ * under this ceiling; the retired Darkhollow Vault demonstrated the gated
+ * branch, drawing a thief into an `eye`/`shadow` vault.
  *
  * Value is the `steep` band floor from `DIFFICULTY_WORD_BANDS`, so the rule reads
  * in the same vocabulary the author sees: "off-reach steps stay under `steep`".
@@ -164,9 +167,16 @@ export const ALL_BAND_OUTCOMES: readonly StepOutcome[] = [
 // ─── Test panel ──────────────────────────────────────────────────────
 
 /**
- * For/against factor lines per step. Two is the floor for a *weighing* (one
- * line is an assertion); four is where the panel stops being readable at a
- * glance.
+ * For/against factor lines per step.
+ *
+ * **The floor is retired for authoring (variance rule, Christian 2026-07-30):**
+ * a factor line must report state that could have been otherwise — agent, hex,
+ * global modifiers, earlier steps — and all of that is derived, so new content
+ * authors NO static `factorLines` (a line true on every run is priced into
+ * `difficulty` and belongs in the prose). `FACTOR_LINES_MIN` survives only as
+ * the historical guardrail un-migrated templates were written against; the cap
+ * still bounds what the panel will readably show, and the both-signs rule
+ * still binds any step that carries 2+ authored lines.
  */
 export const FACTOR_LINES_MIN = 2;
 export const FACTOR_LINES_MAX = 4;

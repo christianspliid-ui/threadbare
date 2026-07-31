@@ -146,19 +146,38 @@ npm run check:actions --silent -- --json
 
 **Fail-soft:** the probe degrades to `verdict: "unknown"` on any network/auth failure and never exits non-zero without `--strict`. An unreadable probe is not a reason to refuse work — `unknown` continues.
 
-### Step 0.8 — Armed-PR reconciliation sweep (THR-702)
+### Step 0.8 — Armed-PR reconciliation sweep (THR-702, classification fixed THR-897)
 
 Auto-merge does **not** update a stale branch: under strict branch protection, an armed PR whose base moves sits at `mergeStateStatus: BEHIND` forever, green and silent (THR-702 found 9 such PRs, oldest 19 days). This sweep is the recurring surface that catches them.
 
-**Constant:** `ARMED_SWEEP_MAX_UPDATES = 1` — update at most one PR per run. Updating several at once is a losing race: each merge re-stales the others and re-triggers their CI (O(N²) runs). The hourly cadence drains a queue one per cycle.
+**An armed PR can be stuck in more than one way, and only one of them is yours to fix.** Until THR-897 this step matched on `BEHIND` alone. A PR at `DIRTY` — a real merge conflict — is not `BEHIND`, so it was skipped, and `update-branch` would not have fixed it anyway. Measured 2026-07-31: **3 of 4 armed PRs were `DIRTY`**, one of them armed 19 hours earlier carrying THR-883's authoring-contract rewrite (the deliverable that unblocked 11 content tickets), while three consecutive sweeps each reported success. The old step 4 did name `DIRTY` in prose — but with no mechanism and a log line that mentioned only `BEHIND`, so in practice every run stepped past it.
 
-1. List armed-but-open PRs: `gh pr list --state open --json number,autoMergeRequest,mergeStateStatus,createdAt --jq '[.[] | select(.autoMergeRequest != null)]'`.
-2. `mergeStateStatus` is computed lazily — a first read of `UNKNOWN` means "not computed yet", not "fine". Re-query that PR up to 3 times a few seconds apart before classifying.
-3. For the **oldest** PR reading `BEHIND`: run `gh pr update-branch <N>` and stop (respect `ARMED_SWEEP_MAX_UPDATES`). CI re-runs on the updated branch and auto-merge fires on green — no polling.
-4. A PR reading `DIRTY`/`CONFLICTING` is the closeout-docs union case — route to "Closeout — resolving a conflicted closeout-docs PR" below, or surface it if it isn't yours.
-5. Log one line: `[pull-work] Step 0.8: <N> armed PRs, updated #<X> (BEHIND) / none BEHIND — continuing.`
+**Constant:** `ARMED_SWEEP_MAX_UPDATES = 1` — update at most one PR per run. Updating several at once is a losing race: each merge re-stales the others and re-triggers their CI (O(N²) runs). The hourly cadence drains a queue one per cycle. (The rate at which that loses to `main`'s merge rate is THR-735, a separate defect in the same mechanism.)
 
-**Fail-soft:** any `gh` error → log one warning and continue to Step 1. The sweep must never block pickup.
+Run the probe — it does the listing, the `UNKNOWN` re-query, and the classification in one call:
+
+```bash
+npm run check:armed-prs --silent -- --json
+```
+
+One line of JSON: `{ verdict, summary, needsChristian, needsSession, updateCandidate, prs, counts }`. Act on it:
+
+1. **`updateCandidate` is non-null** → `gh pr update-branch <updateCandidate>` and stop (respect `ARMED_SWEEP_MAX_UPDATES`). This is the oldest `BEHIND` PR. CI re-runs on the updated branch and auto-merge fires on green — no polling.
+2. **`verdict: "conflicted"` or `"abandoned"`** → those PRs cannot merge and no sweep action will change that. Each `prs[]` entry carries `conflictFiles`, already computed. If a conflicted PR is **yours**, route to "Closeout — resolving a conflicted closeout-docs PR" below and fix it now. If it is not yours, **report it in the run log with its number and conflicting files** — do not silently continue.
+3. **`needsSession: true`** → the conflict has outlived at least one sweep interval. Name it in the run report so the next pickup sees it even if this run ends on an unrelated ticket.
+4. **`verdict: "healthy"` / `"drainable"` / `"unknown"`** → nothing conflicted; continue to Step 1.
+
+Log one line, and include the conflicted count — a sweep that reports only what it drained is how THR-897 stayed invisible:
+
+```
+[pull-work] Step 0.8: <N> armed PRs (<D> drainable, <C> conflicted, <W> waiting), updated #<X> / none BEHIND — continuing.
+```
+
+**Do not classify on a single read of `mergeStateStatus`.** GitHub computes it lazily, so a first read of `UNKNOWN` means "not computed yet", not "fine" — measured 2026-07-31, PRs #1132 and #1166 each read `DIRTY` and then `UNKNOWN` minutes apart with no intervening push. The probe re-queries `UNKNOWN` up to `ARMED_UNKNOWN_REQUERIES` (3) times before believing it; a hand-rolled sweep must do the same or it will call a conflicted PR healthy on roughly every other run.
+
+**`needsChristian: true` (verdict `abandoned`) is not a merge-gate failure.** It means a conflict has survived ~12 hourly sessions, so the stall is systemic rather than waiting its turn. Surface the `summary` verbatim; do not stand down, and do not treat it as a reason to skip pickup.
+
+**Fail-soft:** the probe degrades to `verdict: "unknown"` on any `gh`/network failure and never exits non-zero without `--strict`. Any error → log one warning and continue to Step 1. The sweep must never block pickup.
 
 ### Step 1 — Two state-filtered board scans
 
