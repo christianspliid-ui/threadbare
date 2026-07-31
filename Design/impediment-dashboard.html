@@ -5991,6 +5991,32 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "Restore from the registry: the `Fires` column plus each task's stable `jitterSeconds` uniquely identify the original cron (observed fire time minus jitter = cron minute). Applied via `update_scheduled_task` with the registry cron and verified with `list_scheduled_tasks` after write. After any pause/resume cycle, diff `list_scheduled_tasks` crons against the registry before trusting the lanes.",
     "session": "Attended session 2026-07-31, restoring lane sequencing after a pause/resume cycle."
+  },
+  {
+    "num": "360",
+    "id": 360,
+    "count": 1,
+    "date": "2026-07-31",
+    "category": "tooling",
+    "description": "**A file authored with the `Write` tool contained a stray NUL byte, which made `grep` report `Binary file matches` and made the line permanently unmatchable by `Edit`.** Writing `scripts/check-substantive-change.ts`, one constant landed as `const PROTECT_SENTINEL = \"\\0\";` where a printable placeholder was intended. Every later `Edit` targeting that line failed with *String to replace not found* even when the string was copied verbatim from a `Read` — because `Read` renders the NUL as a space, so the text I could see and the bytes on disk differed by one invisible character. `grep -n` compounded it by refusing to print any line number at all (`Binary file … matches`), which reads like a path or permissions problem rather than a content one.",
+    "consequence": "Three failed `Edit` calls and one misdiagnosis before the cause was found — the natural reading of a verbatim-copied `old_string` failing is that the file changed underneath you, so the first instinct is to re-`Read` and retry, which cannot succeed.",
+    "impact": "Low, but high-confusion: the failure mode is invisible in every tool that displays the file.",
+    "workaroundFound": true,
+    "workaround": "**When `grep` says `Binary file … matches` on a source file you just wrote, suspect a control character before anything else.** Confirm with `tr -dc '\\000' < file \\| wc -c` (or `grep -aPn '[\\x00-\\x08]'`), and repair by deleting the line by number (`sed -i '<n>d' file`) rather than by content — line-number addressing does not depend on matching bytes you cannot type. Re-insert via `Edit` anchored on a *neighbouring* clean line.",
+    "session": "THR-920, `tb-opus-pickup` hourly run."
+  },
+  {
+    "num": "361",
+    "id": 361,
+    "count": 1,
+    "date": "2026-07-31",
+    "category": "tooling",
+    "description": "**A resume session could not check out its own ticket's branch, because the previous run's worktree still held it.** THR-920's work sat finished on `thr-920/substantive-change-gate` in PR #1188, which had gone `DIRTY` against a `main` that moved 41 commits. Resuming meant merging `origin/main` into that branch — but `git checkout -B thr-920/substantive-change-gate` failed with `fatal: 'thr-920/substantive-change-gate' is already used by worktree at .claude/worktrees/fervent-mahavira-836c71`. Git refuses to check out one branch in two worktrees, and the prior session's worktree is still registered even though that session has ended. The hourly reaper owns `.claude/worktrees/` (THR-674) and had not yet collected it.",
+    "consequence": "The obvious repair — check out the PR branch and merge — is unavailable to the very next run that needs it. An agent that reads the error as \"the branch is locked\" may conclude the work is unrecoverable, or worse, delete the sibling worktree to free it, which is the reaper's call and not the session's (THR-797 shows what removing a live worktree costs).",
+    "impact": "Medium — blocks the standard `DIRTY`-PR repair documented in `pull-work` § \"resolving a conflicted closeout-docs PR\", which assumes the branch is checkoutable.",
+    "workaroundFound": true,
+    "workaround": "**Do not touch the sibling worktree. Work on a local alias branch and push to the remote ref by name.** `git fetch origin <branch>` then `git checkout -B <branch>-resume FETCH_HEAD`, resolve the merge there, and push with an explicit refspec: `git push origin HEAD:<branch>`. Pushing to `origin` is unaffected by which local worktree holds the branch — only the local checkout is exclusive. The sibling worktree is left for the reaper.",
+    "session": "THR-920, `tb-opus-pickup` hourly run — resume pass."
   }
 ];
 // ── End data ──
