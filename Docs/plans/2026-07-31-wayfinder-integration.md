@@ -74,6 +74,8 @@ UI: N/A — no player-facing or debug surface. (Linear's own UI renders the map/
 
 ## Wiring
 
+> See checklist: Docs/plans/wiring-checklist.md — N/A per row (no engine module, no UI component, no GameState field); the process wiring below is the analogue.
+
 Process wiring (in place of the module table — no code modules):
 
 | Piece | Producer | Consumer |
@@ -93,7 +95,7 @@ Process wiring (in place of the module table — no code modules):
 
 ## Tracing
 
-No engine traces. The orchestrator's T1.5 emits its one-line-per-decision report entries (`[orchestrator] T1.5 …`), same discipline as T1; resolution comments are the per-ticket audit trail.
+N/A — no engine trace types; this change ships no runtime code. The process-level audit trail: the orchestrator's T1.5 emits one-line-per-decision report entries (`[orchestrator] T1.5 …`), same discipline as T1, and resolution comments are the per-ticket record.
 
 ## Fail-soft table
 
@@ -115,11 +117,17 @@ No engine traces. The orchestrator's T1.5 emits its one-line-per-decision report
 
 ## Vision audit
 
-- [x] No Vision premise touched — pure process. (If anything, it strengthens the "we create the vision together" mandate: HITL tickets are structurally Christian's.)
+- [x] This plan does not contradict any Vision premise — pure process. (If anything, it strengthens the "we create the vision together" mandate: HITL tickets are structurally Christian's.)
+- [x] No Vision edit needed, so none is in scope.
 
 ## Rulebook impact
 
-- [x] No rule of play changed.
+- [x] This plan does not change a rule of play (turn structure, action verbs, prerequisites, resources, encounters, clocks, win/loss).
+- [x] No `Docs/canon/rulebook.md` update needed.
+
+## Interface impact
+
+N/A — no cross-system code contract touched; the lint's subsystem match ([Mandate; Companies & Group Travel]) is a prose-keyword false positive on the words "mandate" (the D1–D7 orchestrator mandate) and travel-adjacent wayfinding vocabulary. `Docs/canon/interface-map.md` and `scripts/interface-contracts.ts` are unchanged.
 
 > Brainstorm companion: N/A — process integration; the decision exchange happened live in chat and is recorded verbatim in § Decision record.
 
@@ -141,6 +149,24 @@ No engine traces. The orchestrator's T1.5 emits its one-line-per-decision report
 - [x] Guards in place: T1 skip, no Ready-for-Dev path, HITL untouchable by scheduled lanes
 - [ ] PR green on `Test · Typecheck · Build` and merged (closing PR carries the auto-close keyword for THR-900)
 - [ ] First real map charted on the next large design effort (the live validation — not gated here)
+
+## Coordination block
+
+N/A as a handoff — this shipped from the attended session itself (no Ready-for-Dev transition). Recorded for the audit trail:
+
+**Suggested model:** opus — process/skill authoring, no code.
+
+**Parallel-safe with:** everything not editing the three skill files below.
+
+**Mutex with:** any issue editing `.claude/skills/orchestrator/SKILL.md` or `.claude/skills/design-session/SKILL.md` (both edited here).
+
+**Files to touch:**
+- Create: `.claude/skills/wayfinder/SKILL.md`, `Docs/plans/2026-07-31-wayfinder-integration.md`
+- Edit: `.claude/skills/orchestrator/SKILL.md` (T1.5, T1 skip, constants, report template), `.claude/skills/design-session/SKILL.md` (scale gate), closeout docs
+
+## Notes for the executor
+
+- Nothing to execute — this PR is the implementation. For future sessions: the first live validation is charting a real map on the next large design effort; if the frontier query or the map-body patch flow fights the Linear MCP in practice, log the impediment and adjust the operations table in the wayfinder skill, not the process.
 
 ## Forked-audit verdicts
 
