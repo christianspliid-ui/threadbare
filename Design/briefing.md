@@ -1,6 +1,6 @@
 # Briefing
 
-**Generated:** 2026-07-31 03:54 local (2026-07-31 01:54 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-07-31 04:54 local (2026-07-31 02:54 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
@@ -14,13 +14,13 @@ This is your inbox. It's rewritten every hour by a Claude Code task. Standing sw
 
 ## Queue
 
-**Forty-seven jobs ready, one in progress, nothing gone cold.** One job finished and published this hour: **the planning lane now writes one report per run instead of one per day** — two runs in the same hour used to fight over the same file and jam the merge. A report that had been stranded by exactly that collision was recovered in the same change.
+**Forty-six jobs ready, one in progress, nothing gone cold.** One job finished and published this hour, and it is pure insurance: **the instructions that tell the hourly working lane what to do now have a copy inside the project.** Until this morning the only copy lived on one disk, and losing that disk would have taken the worker with it.
 
-That is the whole change to the shelf — **one out, nothing in: forty-eight to forty-seven.** No high-priority job for a fourth hour, with seven medium and forty low behind it: engine work, tooling, housekeeping. **Still no content writing on the shelf, by design** — that pause holds until you've read the five prototypes.
+That is the whole change to the shelf — **one out, nothing in: forty-seven to forty-six.** No high-priority job for a fifth hour, with six medium and forty low behind it: engine work, tooling, housekeeping. **Still no content writing on the shelf, by design** — that pause holds until you've read the five prototypes.
 
-The longest-waiting item has now been sitting **six days and five hours**. It crosses our one-week line tomorrow evening and is a low-priority tidy-up, so that's a note, not a problem.
+The longest-waiting item crosses our one-week line **this evening**. It is a low-priority tidy-up, so that is a note rather than a problem.
 
-**One ready job has been invisible to the picker for two and a half days** — it is sitting on the shelf with a name attached to it, and the picker only takes jobs with no name on them. Nobody is working it and nobody can pick it up. That's a mechanical slip for a working session to clear, not something for you.
+**One ready job has been invisible to the picker for two and a half days** — it sits on the shelf with a name attached to it, and the picker only takes jobs with no name on them. Nobody is working it and nobody can pick it up. That is a mechanical slip for a working session to clear, not something for you.
 
 **The one job in progress is the finished-but-parked batch** described above. It holds a slot and blocks nothing.
 
@@ -32,9 +32,9 @@ The longest-waiting item has now been sitting **six days and five hours**. It cr
 
 ## What's moving
 
-**The format work itself is still the centre of gravity** — everything shipped over the last two nights feeds the thing you're being asked to sign off on. Nothing new landed on that front this hour; the work that shipped was housekeeping on the planning lane.
+**The format work is still the centre of gravity, and nothing new landed on it this hour.** The job that shipped was infrastructure — making the working lane survivable — not content.
 
-**Three pull requests need a pair of hands, and none of those pairs is yours.** One fewer than last hour — a stale one was closed with nothing lost. The one worth naming still carries **the locked writing format itself** — the golden exemplar and the rewritten rules — and has now been queued to merge itself for **seven hours** without doing so. That is well past the point where waiting works, so it needs a hand rather than more patience. The other two are ordinary merge-conflict chores. All three are for a working session; noted here only so the shelf's shape makes sense.
+**Three pull requests need a pair of hands, and none of those pairs is yours.** The one worth naming carries **the locked writing format itself** — the golden exemplar and the rewritten rules — and has now been queued to merge itself for **eight hours** without doing so. That is well past the point where waiting works, so it needs a hand rather than more patience. The other two are ordinary merge-conflict chores. All three are for a working session; noted here only so the shelf's shape makes sense.
 
 ---
 *Standing asks live in `Design/user-actions.md`. This file is regenerated hourly by
