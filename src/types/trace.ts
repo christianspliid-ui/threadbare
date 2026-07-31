@@ -115,6 +115,9 @@ export type TraceCategory =
   | 'condition_applied'
   | 'condition_removed'
   | 'aftermath_target_invalid'
+  // Nudge card dispatch (THR-885)
+  | 'nudge_cost_charged'
+  | 'nudge_dispatch_failed'
   // World-shaping aftermath traces (THR-115)
   | 'artifact_spawned'
   | 'omen_emitted'
@@ -402,6 +405,9 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'condition_applied',
   'condition_removed',
   'aftermath_target_invalid',
+  // Nudge card dispatch (THR-885)
+  'nudge_cost_charged',
+  'nudge_dispatch_failed',
   // World-shaping aftermath traces (THR-115)
   'artifact_spawned',
   'omen_emitted',
@@ -1724,6 +1730,40 @@ export interface ConditionRemovedTrace extends TraceBase {
   reactionId: string;
 }
 
+/**
+ * Trace: a committed nudge card charged a non-essence cost (THR-885).
+ *
+ * One per channel per commit, not one per card — the channels are summed across
+ * the hand before they are charged, so a per-card trace would report deltas that
+ * were never individually applied.
+ */
+export interface NudgeCostChargedTrace extends TraceBase {
+  category: 'nudge_cost_charged';
+  encounterId: string;
+  channel: 'detection' | 'doom';
+  /** Delta actually applied after clamping — not necessarily the one requested. */
+  appliedDelta: number;
+  /** Detection channel only. */
+  regionId?: string;
+  fromPressure?: number;
+  toPressure?: number;
+  /** Doom channel only. */
+  tickModifier?: number;
+}
+
+/**
+ * Trace: a nudge card's grant or cost failed to apply (THR-885).
+ *
+ * Fail-soft evidence. A host API that throws must not take the step's outcome or
+ * the rest of the hand with it, so the throw is caught and recorded here instead.
+ */
+export interface NudgeDispatchFailedTrace extends TraceBase {
+  category: 'nudge_dispatch_failed';
+  encounterId: string;
+  channel: 'grants' | 'detection' | 'doom';
+  failReason: string;
+}
+
 /** Trace: aftermath effect target could not be resolved or effect kind does not support the target kind */
 export interface AftermathTargetInvalidTrace extends TraceBase {
   category: 'aftermath_target_invalid';
@@ -1967,6 +2007,9 @@ export type TraceEntry =
   | ConditionAppliedTrace
   | ConditionRemovedTrace
   | AftermathTargetInvalidTrace
+  // Nudge card dispatch (THR-885)
+  | NudgeCostChargedTrace
+  | NudgeDispatchFailedTrace
   // Scene-targeting aftermath sentinels + bond_change (THR-695, Slice B)
   | AftermathSentinelBoundTrace
   | BondChangeAppliedTrace
@@ -2103,7 +2146,10 @@ export type TraceEntry =
   // Nudge Model — WS0 engine substrate (THR-773)
   | NudgePlayedTrace
   | AgentBrokenTrace
-  | AgentMendedTrace;
+  | AgentMendedTrace
+  // Nudge Model — WS6 Meet The First conversion (THR-868)
+  | MeetingTestResolvedTrace
+  | MeetingBondResolvedTrace;
 
 /**
  * Trace: residence observed across every individual actor this interval (THR-822).
@@ -2167,6 +2213,57 @@ export interface AgentMendedTrace extends TraceBase {
   category: 'agent_mended';
   agentId: string;
   ticksBroken: number;
+}
+
+/**
+ * Trace: a formative test's fate roll resolved during Meet The First (THR-868).
+ *
+ * Player-driven and once-per-game: at most `MEETING_FORMATIVE_TEST_COUNT` of
+ * these ever exist in a run, so one entry per resolution — the aggregate-batching
+ * rule governs all-agents tick phases, and the meeting is neither.
+ *
+ * `netLean` against `writtenPole` is the diagnostic that matters: the two
+ * disagreeing is the design working (fate overrode the god's argument), and
+ * `netLean: 'none'` on every entry across a session means the authored hands are
+ * not carrying pole leans at all.
+ */
+export interface MeetingTestResolvedTrace extends TraceBase {
+  category: 'meeting.test_resolved';
+  /** Which formative test in the sequence (0-indexed). */
+  testIndex: number;
+  /** Converted dilemma template this test was drawn from. */
+  templateId: string;
+  valuePair: import('./agent').ValuePair;
+  /** Pole lean of the played hand, before fate. */
+  netLean: 'a' | 'b' | 'none';
+  playedNudgeIds: string[];
+  /** Resolved band on the shared six-value ladder. */
+  band: import('./unifiedAction').StepOutcome;
+  /** The pole the band actually wrote. */
+  writtenPole: 'a' | 'b';
+  /** Signed shift applied, relative to pole `a`. */
+  shift: number;
+  /** Erosion this band cost, before the floor clamp. 0 on non-scarring bands. */
+  quintessenceErosion: number;
+  essenceSpent: number;
+}
+
+/**
+ * Trace: the bond test resolved, closing Meet The First (THR-868).
+ *
+ * Exactly one per completed meeting. `startingQuintessence` is the post-clamp
+ * value actually written to the agent node — if it ever equals
+ * `MEETING_QUINTESSENCE_FLOOR`, the floor did real work and the scar constants
+ * are worth a look.
+ */
+export interface MeetingBondResolvedTrace extends TraceBase {
+  category: 'meeting.bond_resolved';
+  band: import('./unifiedAction').StepOutcome;
+  /** awe | devotion | bargain | doubt | defiance */
+  receptionId: string;
+  playedNudgeIds: string[];
+  /** Starting quintessence after scarring, post-floor. */
+  startingQuintessence: number;
 }
 
 /**

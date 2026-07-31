@@ -24,6 +24,15 @@ import { StepDots } from '../shared/StepDots';
 import { RarityBadge } from '../shared/RarityBadge';
 import { RarityBorderBox } from '../shared/RarityBorderBox';
 import { SphereIcon } from '../shared/SphereIcon';
+import { CardKeywordChip } from '../shared/CardKeywordChip';
+import { CostPips, OddsPips } from '../shared/OddsPips';
+import {
+  PIP_ODDS_TIERS,
+  PIP_PENALTY_TIER,
+  PIP_STEP_PERCENT,
+} from '../../data/nudge-pip-vocabulary';
+import { NUDGE_CARD_TYPE_ICONS } from '../../data/nudge-card-display';
+import { NUDGE_CARD_TYPES } from '../../data/nudge-card-library';
 import { RivalIcon } from '../shared/RivalIcon';
 import { SectionHeading } from '../shared/SectionHeading';
 import { AnimateMount } from '../shared/AnimateMount';
@@ -119,6 +128,8 @@ const SECTIONS = [
   { id: 'stepdots', label: 'StepDots' },
   { id: 'rarity', label: 'Rarity' },
   { id: 'spheres', label: 'SphereIcon' },
+  { id: 'odds-pips', label: 'OddsPips / CostPips (THR-890)' },
+  { id: 'card-keyword-chip', label: 'CardKeywordChip (THR-890)' },
   { id: 'rivalicon', label: 'RivalIcon' },
   { id: 'sectionheading', label: 'SectionHeading' },
   { id: 'animatemount', label: 'AnimateMount' },
@@ -819,6 +830,73 @@ export default function StyleGuide() {
                     </div>
                   ))}
                 </div>
+              </GameErrorBoundary>
+            </div>
+          </section>
+
+          {/* ── OddsPips / CostPips (THR-890) ──────────────────── */}
+          <section id="section-odds-pips" style={{ marginBottom: SECTION_GAP }}>
+            <SectionHeading ornamental>OddsPips / CostPips — the odds vocabulary</SectionHeading>
+            <div style={{ marginTop: '1.25rem' }}>
+              <GameErrorBoundary>
+                <Label>
+                  Four tiers, five ~{PIP_STEP_PERCENT}% steps each. Shape carries magnitude
+                  (colourblind-safe); colour reinforces it.
+                </Label>
+                {[...PIP_ODDS_TIERS, PIP_PENALTY_TIER].map((tier) => (
+                  <div
+                    key={tier.id}
+                    style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '0.5rem' }}
+                  >
+                    <span style={{ width: 70, fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
+                      {tier.label}
+                    </span>
+                    {[1, 2, 3, 4, 5].map((step) => {
+                      // Reconstruct each step's raw magnitude from the tier's own
+                      // band, so this gallery cannot drift from the tiering rule.
+                      const percent = tier.minPercent + (step - 1) * PIP_STEP_PERCENT;
+                      const value = (tier.id === 'penalty' ? -percent : percent) / 100;
+                      return <OddsPips key={step} value={value} />;
+                    })}
+                  </div>
+                ))}
+
+                <Label>CostPips — essence price, never a digit on the card face</Label>
+                <Row>
+                  {[0, 1, 2, 3, 8].map((cost) => (
+                    <span key={cost} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <CostPips cost={cost} />
+                      <code style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>cost={cost}</code>
+                    </span>
+                  ))}
+                </Row>
+                <Label>CostPips — emphasised (an unaffordable card)</Label>
+                <Row>
+                  <CostPips cost={3} emphasised />
+                </Row>
+              </GameErrorBoundary>
+            </div>
+          </section>
+
+          {/* ── CardKeywordChip (THR-890) ──────────────────────── */}
+          <section id="section-card-keyword-chip" style={{ marginBottom: SECTION_GAP }}>
+            <SectionHeading ornamental>CardKeywordChip — the 21 card keywords</SectionHeading>
+            <div style={{ marginTop: '1.25rem' }}>
+              <GameErrorBoundary>
+                <Label>One chip per library card type — the player&apos;s vocabulary</Label>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '1rem' }}>
+                  {NUDGE_CARD_TYPES.map((type) => (
+                    <CardKeywordChip
+                      key={type.id}
+                      keyword={type.keyword}
+                      icon={NUDGE_CARD_TYPE_ICONS[type.id]}
+                    />
+                  ))}
+                </div>
+                <Label>muted — an unaffordable card</Label>
+                <Row>
+                  <CardKeywordChip keyword="Boost" icon={NUDGE_CARD_TYPE_ICONS.boost} muted />
+                </Row>
               </GameErrorBoundary>
             </div>
           </section>

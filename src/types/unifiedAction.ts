@@ -14,6 +14,7 @@ import type { EncounterChoiceMemory, EncounterSupportBinding, EncounterSupportBu
 import type { ClearanceGateConfig } from './contentShells';
 import type { EffectPredicate } from './effects';
 import type { EncounterForeshadowingDefinition } from './foreshadowing';
+import type { AmbitionPriority } from './ambition';
 
 export type ActionScale = 'cosmic' | 'regional' | 'local' | 'personal';
 export type ActionSource = 'agent' | 'player' | 'system';
@@ -340,6 +341,31 @@ export type EncounterAftermathReactionEffect =
     readonly targetAgentId?: string;
     readonly targetFactionId?: string;
     readonly targetSublocationId?: string;
+    readonly when?: EffectPredicate;
+  }
+  | {
+    /**
+     * The Kindled Ambition (THR-885) — plant or wake an ambition on an actor.
+     *
+     * This is the **missing dispatcher**, not a new system. Reactive ambition
+     * templates have had no assignment path at all (THR-812 / THR-726): the world
+     * mints ambitions from events during `ambitionTick`, but nothing outside that
+     * phase could ever assign one, so a whole class of authored templates was
+     * unreachable. This effect calls `assignAmbitionToActor` — the shared helper
+     * extracted from the three in-phase copies of the node+edge write — so a
+     * card-planted ambition is byte-identical to a world-minted one.
+     */
+    readonly kind: 'assign_ambition';
+    /** Ambition template id (`AMBITION_TEMPLATES[].id`). Pinned live by the grant-liveness test. */
+    readonly templateId: string;
+    /**
+     * Priority to assign at. Omitted ⇒ `primary` when the actor pursues nothing
+     * active, `secondary` otherwise — the same slot rule `ambitionTick` uses.
+     */
+    readonly priority?: AmbitionPriority;
+    /** Short prose for the chronicle entry. Falls back to the template's own selection prose. */
+    readonly narrativeHook?: string;
+    readonly targetAgentId?: string;
     readonly when?: EffectPredicate;
   }
   | {
@@ -797,7 +823,57 @@ export type NudgeRider =
   /** `critical_failure` → `failure`. Every other outcome passes through. */
   | 'no_crit_fail'
   /** `failure` → `success_at_cost` **and** `near_miss` → `success_at_cost`. */
-  | 'floor_at_cost';
+  | 'floor_at_cost'
+  /**
+   * The Gambit (THR-885). Widens **both** ends: every non-critical band moves one
+   * step away from the middle, so a good result gets better and a bad one gets
+   * worse. The crits are already at the ends and pass through.
+   *
+   * This is the one rider that can make an outcome *worse*, which is the point —
+   * it is a card the player chooses, not a hazard the world applies.
+   */
+  | 'all_or_nothing';
+
+/**
+ * Which pole of a value axis a nudge card argues for (THR-894).
+ *
+ * Two authoring forms, one meaning:
+ *
+ * - **Axis-explicit** `{ axis, toward, weight? }` — the general form. Names the
+ *   `ValuePair` it argues on, so it counts only toward a branch deciding on
+ *   *that* axis and abstains everywhere else. `toward: 'positive'` is the
+ *   first-named pole of the pair (the `+1` direction in `AxiologicalProfile`);
+ *   `'negative'` is the second-named pole.
+ * - **Axis-implicit** `'a' | 'b'` — the shorthand, legal only where the *host*
+ *   declares the axis for the whole beat. Today that is exactly one host: a
+ *   meeting `FormativeTest`, whose `valuePair` supplies the axis for every card
+ *   in the test (`MeetingStepNudge` narrows to this form). A bare shorthand on
+ *   an ordinary encounter step names no axis and therefore abstains from every
+ *   branch decision — the template validator warns rather than guessing.
+ *
+ * `weight` scales the card's pull; omitted ⇒ {@link POLE_LEAN_DEFAULT_WEIGHT}.
+ * A heavier card is a louder argument, not a better one — it moves the
+ * direction the moment takes, never the odds it takes it at (that is
+ * `forecastDelta`, deliberately a separate field).
+ */
+export type StepNudgePoleLean =
+  | {
+      readonly axis: ValuePair;
+      readonly toward: BranchPoleKey;
+      readonly weight?: number;
+    }
+  | 'a'
+  | 'b';
+
+/**
+ * The two keys a `decidedBy` branch may name (THR-894).
+ *
+ * Deliberately not free strings: a `decidedBy` branch whose variants key
+ * anything else fails template validation at build time rather than silently
+ * falling through to `fallback` forever — the THR-844 lesson, where a typo'd
+ * family id made 66 of 138 entries permanently unreachable and nothing noticed.
+ */
+export type BranchPoleKey = 'positive' | 'negative';
 
 /**
  * Authored per-encounter nudge option (THR-772 ruling 3).
@@ -810,6 +886,20 @@ export type NudgeRider =
 export interface StepNudge {
   /** Unique within the owning template. */
   readonly id: string;
+  /**
+   * The library card this authored option *is* an instance of (THR-887) — an id
+   * in `NUDGE_CARD_LIBRARY`.
+   *
+   * `id` is unique within its template; this is the shared identity across every
+   * template that deals the same card. Two encounters both dealing the core
+   * Boost carry different `id`s and the same `libraryCardId`, which is what lets
+   * the twilight harvest tally "how often did this god play Boost" across a
+   * whole run rather than counting per-template aliases as distinct cards.
+   *
+   * Absent ⇒ a one-off authored option that is not in the library: playable and
+   * fully supported, simply never a candidate for the echo card.
+   */
+  readonly libraryCardId?: string;
   /** ≤6 words, plain language (interactivePlainness applies). */
   readonly name: string;
   /** Sphere gate; absent ⇒ common pool. */
@@ -818,20 +908,95 @@ export interface StepNudge {
   readonly requiredUnlock?: string;
   /** Trait-only option; pairs with `UnifiedActionTemplate.traitVariants`. */
   readonly requiredTrait?: string;
+  /**
+   * The Fellowship (THR-885) — dealt only when the acting mortal is in a group.
+   * Like `requiredTrait`, an unmet requirement *hides* the card rather than
+   * dimming it: a card the player cannot make true from here is noise, not a goal.
+   */
+  readonly requiresGroup?: boolean;
+  /**
+   * The Favor, call variant (THR-885) — dealt only when the acting mortal is owed
+   * an unredeemed, unbroken favor by someone. Hides when there is none, same
+   * reasoning as {@link requiresGroup}.
+   */
+  readonly requiresFavor?: boolean;
   /** Essence price at commit. 0 is allowed (trait options). */
   readonly essenceCost: number;
   /** Named forecast modifier contributed as `{ source: 'nudge:<id>', delta }`. */
   readonly forecastDelta: number;
   /** Optional band rider applied at step-outcome selection. */
   readonly rider?: NudgeRider;
+  /**
+   * Which pole of a value axis this card argues for (THR-894).
+   *
+   * A card with no lean **abstains**: it moves the odds without arguing for a
+   * direction, which is a legitimate and common way to author. Absent ⇒ every
+   * shipped card behaves byte-for-byte as it does today (NFP #6).
+   *
+   * See {@link StepNudgePoleLean} for the two authoring forms.
+   */
+  readonly poleLean?: StepNudgePoleLean;
   /** WS4 image-library tag; absent ⇒ category generic. */
   readonly imageTag?: string;
   /** Card body — a concrete, witnessed effect. */
   readonly fiction: string;
+  /**
+   * Per-setting-class rewrites of {@link fiction} (THR-884). A card whose fiction
+   * names class-specific scenery ("the threshing floor") carries one line per class
+   * its template's envelope declares, so a wide envelope stays honest without
+   * narrowing to one subtype.
+   *
+   * Resolved through `resolveSettingVariant` — the same lookup chain as `{frag:*}`,
+   * with `fiction` as the default. Absent → the card reads exactly as today (NFP #6).
+   */
+  readonly fictionBySetting?: Readonly<Record<string, string>>;
   /** Player guidance, words only (never a number). */
   readonly effectLine: string;
   /** Appended to the step's prose when this nudge was active for that outcome. */
   readonly bandProse?: Partial<Record<StepOutcome, string>>;
+  /**
+   * Cost channels beyond essence (THR-885). A card may be cheap or free in
+   * essence and paid for somewhere else entirely — that is the whole design of
+   * The Heavy Hand, The Veil, and The Bargain.
+   *
+   * Applied once, at commit, through each host system's own API. Absent ⇒ the
+   * card costs only its `essenceCost`, exactly as every shipped card does.
+   */
+  readonly costs?: NudgeCostChannels;
+  /**
+   * World changes this card makes when it was committed, expressed in the
+   * **existing aftermath effect vocabulary** and dispatched through the existing
+   * applier (THR-885).
+   *
+   * Sharing the vocabulary is the design, not a shortcut: every grant a card can
+   * make (omen, condition lift, item, mark, favor, ambition) already has exactly
+   * one host system that owns it, and reusing `EncounterAftermathReactionEffect`
+   * routes the card to that owner instead of minting a second path to the same
+   * place — the failure mode the systems inventory exists to prevent.
+   *
+   * Grants fire once per committed card, *after* the step resolves, so a card's
+   * fiction and its world change cannot disagree about whether it happened.
+   */
+  readonly grants?: readonly EncounterAftermathReactionEffect[];
+}
+
+/**
+ * Non-essence prices a nudge card charges (THR-885).
+ *
+ * Both deltas are signed: The Heavy Hand raises detection, The Veil lowers it;
+ * The Bargain pushes doom forward. Zero and absent are the same thing.
+ */
+export interface NudgeCostChannels {
+  /**
+   * Detection-pressure delta in the acting mortal's region, applied through
+   * `applyDetectionDelta`. Positive = more visible to rivals.
+   */
+  readonly detectionDelta?: number;
+  /**
+   * Doom-clock delta, applied through `accelerateDoomClock` / `decelerateDoomClock`.
+   * Positive = the clock runs faster.
+   */
+  readonly doomDelta?: number;
 }
 
 /**
@@ -879,6 +1044,25 @@ export interface StepFactorLine {
   readonly polarity: 'for' | 'against';
 }
 
+/**
+ * A carryover line — how the *previous* step's resolution tilts this one (THR-892).
+ *
+ * The variance rule says a test-panel factor line earns its place only if it could
+ * have read differently on another run. A static authored line cannot: it is the
+ * same sentence every time, so it is priced into `difficulty` and belongs in the
+ * prose. A carryover line is the one authored factor surface besides trait lines
+ * that is **variant by construction** — it is keyed on an outcome the run rolled,
+ * so a different roll shows a different line, or none.
+ *
+ * `forecastDelta` is optional and, when declared, rides the existing named-modifier
+ * channel as `carryover:<outcome>` (see {@link CARRYOVER_MODIFIER_SOURCE_PREFIX}).
+ * It takes no rng draw of its own — the draw already happened, on the prior step.
+ */
+export interface StepCarryoverFactorLine extends StepFactorLine {
+  /** Additive forecast contribution, same 0–1 channel as a nudge or trait delta. */
+  readonly forecastDelta?: number;
+}
+
 export interface ActionStep {
   readonly reach: ReachDomain;
   readonly duration: { readonly min: number; readonly max: number };
@@ -919,6 +1103,16 @@ export interface ActionStep {
    * authored here.
    */
   readonly factorLines?: readonly StepFactorLine[];
+  /**
+   * THR-892: outcome-keyed lines describing how the *previous* step's resolution
+   * tilts this one. Resolved against `UnifiedAction.stepOutcomes[currentStep - 1]`,
+   * so the first step of an encounter never draws one and a step whose predecessor
+   * landed on an unauthored band draws nothing rather than a fallback.
+   *
+   * This is the one authored factor surface besides trait lines that survives the
+   * variance rule — see {@link StepCarryoverFactorLine}.
+   */
+  readonly carryoverFactorLines?: Partial<Record<StepOutcome, StepCarryoverFactorLine>>;
 }
 
 // ─── Branching step support ────────────────────────────────────
@@ -945,6 +1139,34 @@ export interface ActionStepBranch {
   readonly variants: Readonly<Record<string, ActionStep>>;
   /** Fallback step if the choice was not recorded (e.g., disregarded). */
   readonly fallback: ActionStep;
+  /**
+   * Opt-in: let the **acting mortal** decide this fork from who they are,
+   * instead of waiting for a recorded `choiceId` (THR-894).
+   *
+   * Absent ⇒ today's behavior exactly: the branch reads `choiceHistory` for a
+   * `choiceId` and falls back when none is there. That path is why branches
+   * authored *today* can only ever take `fallback` — the one thing that ever
+   * recorded a `choiceId` was the retired player-pick (`authoredChoices`).
+   *
+   * Present ⇒ at the moment `branchOnStep` resolves, the engine reads the
+   * mortal's live position on {@link BranchDecision.axis} (their standing
+   * `AxiologicalProfile` baseline plus accumulated drift), adds the net
+   * {@link StepNudge.poleLean} of the cards the god committed on that step, and
+   * records the resulting pole through the **existing** choice-history path.
+   * `variants` must then key exactly `'positive'` and `'negative'` — so the
+   * decision arrives at `resolveStepDefinition` as an ordinary recorded choice
+   * and no second branch-resolution path exists.
+   *
+   * The player never picks. They lean; the mortal chooses; the choice is theirs
+   * to keep — it drifts their axis toward the pole they took.
+   */
+  readonly decidedBy?: BranchDecision;
+}
+
+/** Configuration for an agent-decided branch (THR-894). */
+export interface BranchDecision {
+  /** The value axis this fork is a question about. */
+  readonly axis: ValuePair;
 }
 
 /**
@@ -991,7 +1213,7 @@ export interface ContextFragmentSet {
   /** Slot name referenced from prose as `{frag:<slot>}`, e.g. 'opening'. */
   readonly slot: string;
   /** Identity axis this slot varies on — see `SURFACE_FRAGMENT_AXES`. */
-  readonly axis: 'place' | 'counterpartRole';
+  readonly axis: 'place' | 'counterpartRole' | 'setting';
   /** axisValue -> authored prose. MUST contain the `'*'` default key. */
   readonly variants: Readonly<Record<string, string>>;
 }
@@ -1220,6 +1442,30 @@ export interface UnifiedActionTemplate {
    * the whole layer is opt-in per template. See `src/engine/fragmentResolution.ts`.
    */
   readonly contextFragments?: readonly ContextFragmentSet[];
+
+  /**
+   * Setting envelope (THR-884) — the `SettingClass` list this template was authored
+   * for. Advisory metadata on the converted template: the *enforcing* field is
+   * `locationSubtypes`, which the converter expands this into and which
+   * `encounterCache` filters on unchanged. Kept here so the coverage matrix and the
+   * envelope-completeness test can read an envelope back off a live template
+   * without re-deriving it from 20 subtypes.
+   */
+  readonly settings?: readonly string[];
+
+  /**
+   * Per-setting-class opening paragraphs (THR-884). Checklist questions 1–4 (where
+   * are we, how does it feel, who is here, what must we know) live in the opening;
+   * the complication, stakes, and hand are setting-neutral. So one template is one
+   * shared spine plus one authored opening per declared class.
+   *
+   * The converter compiles this into a `ContextFragmentSet` on the reserved
+   * `opening` slot and points the first step's prose at `{frag:opening}`, so
+   * resolution is the existing THR-573 path with no second mechanism. A template
+   * that declares `openings` must cover every class in its `settings` — enforced
+   * build-time, fail loud (`settingClasses.test.ts`).
+   */
+  readonly openings?: Readonly<Record<string, string>>;
 
   /** Encounter-network support that should be resolved at action start. */
   readonly supportBundle?: EncounterSupportBundle;

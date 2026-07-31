@@ -16,6 +16,8 @@
 import { useSyncExternalStore } from 'react';
 import { EntityVisual } from '../../../shared/EntityVisual';
 import { SphereIcon } from '../../../shared/SphereIcon';
+import { CardKeywordChip } from '../../../shared/CardKeywordChip';
+import { CostPips, OddsPips } from '../../../shared/OddsPips';
 import { gradientIndexForId } from '../../../../data/entity-visual-fallbacks';
 import { resolveEncounterImagePath } from '../../../../data/encounterImageResolver';
 import {
@@ -52,6 +54,21 @@ const FACTOR_POLARITY_COLORS: Record<string, string> = {
   against: 'rgba(248, 113, 113, 0.7)',
   neutral: TEXT_WARM,
 };
+
+// ── Card-row layout (THR-890) ──────────────────────────────────────
+// The locked card format: picture band, keyword chip, title, cost, effect,
+// quote. Sizes are constants so re-proportioning the row is a number change.
+
+/** Card width. Four fit the encounter stage's column at 1920×1080 without wrap. */
+const CARD_WIDTH_PX = 210;
+/** Picture band height — "small generic image", not a hero illustration. */
+const CARD_ART_HEIGHT_PX = 78;
+/**
+ * Tallest the hand may grow. The viewport contract forbids page scroll, so this
+ * caps the row rather than letting a tall card push the commit button below the
+ * fold; the row itself scrolls horizontally (see the row container).
+ */
+const HAND_MAX_HEIGHT_PX = 460;
 
 export interface NudgePhaseShellProps {
   phase: EncounterStageNudgePhaseModel;
@@ -91,101 +108,172 @@ function NudgeCard({
       data-testid={`nudge-card-${card.id}`}
       data-nudge-state={card.selected ? 'selected' : card.state}
       data-nudge-blocked={card.blockedCode ?? ''}
+      data-nudge-keyword={card.keyword ?? ''}
       aria-pressed={card.selected}
       disabled={!card.interactive}
       onClick={onToggle}
       style={{
         display: 'flex',
         flexDirection: 'column',
-        alignItems: 'flex-start',
-        gap: 6,
-        width: 200,
-        padding: '12px 14px',
+        alignItems: 'stretch',
+        gap: 0,
+        width: CARD_WIDTH_PX,
+        // The row does not wrap, so a card must hold its width rather than
+        // compressing into illegibility as the hand grows.
+        flexShrink: 0,
+        padding: 0,
         textAlign: 'left',
-        borderRadius: 8,
+        borderRadius: 10,
+        overflow: 'hidden',
         background: card.selected
           ? 'rgba(212, 175, 55, 0.12)'
           : 'rgba(255, 255, 255, 0.02)',
         border: `1px solid ${card.selected ? GOLD : 'rgba(212, 175, 55, 0.18)'}`,
-        opacity: dimmed ? 0.4 : 1,
+        boxShadow: card.selected ? `0 0 12px rgba(212, 175, 55, 0.22)` : undefined,
+        opacity: dimmed ? 0.45 : 1,
         cursor: card.interactive ? 'pointer' : 'not-allowed',
-        transition: 'opacity 0.2s ease, border-color 0.2s ease, background 0.2s ease',
+        transition: 'opacity 0.2s ease, border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease',
       }}
     >
-      {/* Art — the fallback chain (THR-777/WS4, generated THR-832 batch 2). The
+      {/* ── Picture band ──────────────────────────────────────────
+          The fallback chain (THR-777/WS4, generated THR-832 batch 2). The
           manifest lookup runs on `imageTag`; an unresolved tag falls to the
           `nudge` category generic and, failing even that, returns null and ends
           at the EntityVisual gradient+glyph, which never blocks the render (plan
           fail-soft row). Art is the common path now that batch 2 has shipped,
           but the fallback branch stays load-bearing: it is what a 404 on a
-          registered path degrades into, via the glyph `onError` swap below. */}
+          registered path degrades into, via the glyph `onError` swap. The card's
+          keyword icon is the fallback glyph, so an artless card still shows the
+          right *kind* of thing rather than a generic lozenge. */}
       <EntityVisual
-        size="chip"
+        size="hero"
         shape="rounded"
+        data-testid={`nudge-card-art-${card.id}`}
         descriptor={{
           tier: artPath ? 'art' : 'fallback',
-          // `src` present ⇒ art tier; the glyph below stays populated either way
+          // `src` present ⇒ art tier; the glyph stays populated either way
           // because EntityVisual uses it as the <img> onError swap target.
           ...(artPath ? { src: artPath } : {}),
-          glyph: card.sphere ? '◈' : '◇',
+          glyph: card.keywordIcon ?? (card.sphere ? '◈' : '◇'),
           gradientIndex: gradientIndexForId(card.id),
           alt: card.name,
           kind: 'encounter',
         }}
         aria-label={card.name}
+        style={{
+          height: CARD_ART_HEIGHT_PX,
+          aspectRatio: 'auto',
+          borderRadius: 0,
+          borderWidth: '0 0 1px 0',
+        }}
       />
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6, width: '100%' }}>
-        {card.sphere && <SphereIcon sphere={card.sphere} size={14} />}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6, padding: '10px 12px 12px', flex: 1 }}>
+        {/* ── Keyword chip + cost ─────────────────────────────── */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
+          {card.keyword ? (
+            <CardKeywordChip
+              keyword={card.keyword}
+              icon={card.keywordIcon}
+              muted={dimmed}
+              data-testid={`nudge-card-keyword-${card.id}`}
+            />
+          ) : (
+            // A one-off authored option is not in the library and prints no
+            // keyword. The slot still holds its ground so the cost stays right-
+            // aligned across the row.
+            <span />
+          )}
+          <span style={{ display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0 }}>
+            {card.sphere && <SphereIcon sphere={card.sphere} size={13} />}
+            <CostPips
+              cost={card.essenceCost}
+              emphasised={dimmed && card.blockedCode === 'essence_unavailable'}
+              data-testid={`nudge-card-cost-${card.id}`}
+            />
+          </span>
+        </div>
+
+        {/* ── Title ───────────────────────────────────────────── */}
         <span
           style={{
             fontFamily: FONT_DISPLAY,
             fontSize: 'var(--text-sm)',
+            lineHeight: 1.25,
             color: card.selected ? GOLD : 'rgba(212, 196, 158, 0.95)',
           }}
         >
           {card.name}
         </span>
-      </div>
 
-      <p
-        style={{
-          margin: 0,
-          fontFamily: FONT_PROSE,
-          fontStyle: 'italic',
-          fontSize: 'var(--text-xs)',
-          lineHeight: 1.6,
-          color: TEXT_WARM,
-        }}
-      >
-        {card.fiction}
-      </p>
+        {/* ── Alternate costs — a card paid for outside the pool says so ── */}
+        {card.costChannels && card.costChannels.length > 0 && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            {card.costChannels.map((channel) => (
+              <span
+                key={channel.id}
+                data-testid={`nudge-card-channel-${card.id}-${channel.id}`}
+                style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 'var(--text-xs)', color: TEXT_WARM }}
+              >
+                <span aria-hidden="true">{channel.icon}</span>
+                {channel.label}
+                {/* Only a worsening delta earns penalty pips; relief is stated
+                    in the label alone rather than drawn as a price. */}
+                {channel.delta > 0 && <OddsPips value={-channel.delta} size={10} muted={dimmed} />}
+              </span>
+            ))}
+          </div>
+        )}
 
-      <span style={{ fontSize: 'var(--text-xs)', color: TEXT_WHISPER }}>
-        {card.effectLine}
-      </span>
+        {/* ── Effect + its odds, in the one pip vocabulary ─────── */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <span style={{ fontSize: 'var(--text-xs)', lineHeight: 1.5, color: TEXT_WHISPER }}>
+            {card.effectLine}
+          </span>
+          <OddsPips
+            value={card.forecastDelta}
+            muted={dimmed}
+            data-testid={`nudge-card-odds-${card.id}`}
+          />
+        </div>
 
-      <span style={{ fontSize: 'var(--text-xs)', color: GOLD, letterSpacing: '0.04em' }}>
-        {card.costLabel}
-      </span>
-
-      {/* A dimmed card always says why. This is the whole reason
-          `essence_unavailable` dims instead of hiding. */}
-      {dimmed && card.blockedReason && (
-        <span
-          data-testid={`nudge-card-reason-${card.id}`}
-          style={{ fontSize: 'var(--text-xs)', color: 'rgba(248, 113, 113, 0.7)' }}
+        {/* ── Flavor quote — the card's only prose ─────────────── */}
+        {/* `marginTop: auto` seats the quote at the card's foot, so cards of
+            different body lengths still line their quotes up across the row. */}
+        <p
+          style={{
+            margin: 0,
+            marginTop: 'auto',
+            paddingTop: 2,
+            fontFamily: FONT_PROSE,
+            fontStyle: 'italic',
+            fontSize: 'var(--text-xs)',
+            lineHeight: 1.55,
+            color: TEXT_WARM,
+          }}
         >
-          {card.blockedReason}
-        </span>
-      )}
+          {card.fiction}
+        </p>
 
-      {designerView && (
-        <span style={{ fontSize: 'var(--text-xs)', color: TEXT_WHISPER, fontFamily: 'monospace' }}>
-          Δ{card.forecastDelta.toFixed(3)}
-          {card.riderLabel ? ` · ${card.riderLabel}` : ''}
-        </span>
-      )}
+        {/* A dimmed card always says why. This is the whole reason
+            `essence_unavailable` dims instead of hiding. */}
+        {dimmed && card.blockedReason && (
+          <span
+            data-testid={`nudge-card-reason-${card.id}`}
+            style={{ fontSize: 'var(--text-xs)', color: 'rgba(248, 113, 113, 0.7)' }}
+          >
+            {card.blockedReason}
+          </span>
+        )}
+
+        {designerView && (
+          <span style={{ fontSize: 'var(--text-xs)', color: TEXT_WHISPER, fontFamily: 'monospace' }}>
+            Δ{card.forecastDelta.toFixed(3)}
+            {card.discounted ? ' · discounted' : ''}
+            {card.riderLabel ? ` · ${card.riderLabel}` : ''}
+          </span>
+        )}
+      </div>
     </button>
   );
 }
@@ -337,6 +425,16 @@ export function NudgePhaseShell({
           >
             {hand.forecast.word}
           </div>
+          {/* THR-890 — the forecast joins the card row's odds language, so the
+              player reads one vocabulary across the whole surface instead of
+              comparing a word against a pip row. */}
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 3 }}>
+            <OddsPips
+              value={hand.forecast.probability}
+              size={13}
+              data-testid="nudge-forecast-pips"
+            />
+          </div>
           {hand.forecastMoved && (
             <div data-testid="nudge-forecast-moved" style={{ fontSize: 'var(--text-xs)', color: TEXT_WHISPER, fontStyle: 'italic' }}>
               was {hand.baseForecast.word}
@@ -368,7 +466,28 @@ export function NudgePhaseShell({
             {NUDGE_EMPTY_HAND_LINE}
           </p>
         ) : (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
+          <div
+            data-testid="nudge-card-row"
+            style={{
+              display: 'flex',
+              // One line, scrolled sideways — a *row*, not a grid.
+              //
+              // Wrapping was tried first and measured worse: the stage column
+              // fits four cards, so a five-card hand wrapped to a second line
+              // that the height cap then clipped mid-card. Scrolling the axis the
+              // cards are laid out along keeps every card whole and legible, and
+              // still satisfies the viewport contract — what that contract forbids
+              // is the *page* scrolling, which this prevents by capping height.
+              flexWrap: 'nowrap',
+              // Cards match the tallest in the row, so quotes line up across it.
+              alignItems: 'stretch',
+              gap: 12,
+              maxHeight: HAND_MAX_HEIGHT_PX,
+              overflowX: 'auto',
+              overflowY: 'hidden',
+              paddingBottom: 6,
+            }}
+          >
             {hand.cards.map((card) => (
               <NudgeCard
                 key={card.id}
@@ -425,9 +544,17 @@ export function NudgePhaseShell({
         >
           {NUDGE_COMMIT_LABEL}
         </button>
+        {/* The running price of the selection, in the same pips the cards quote —
+            the player should never have to convert between two cost notations to
+            check what they are about to spend. The remaining-essence counter above
+            stays a numeral: it is a pool balance, not a card face, and a
+            forty-glyph row would be unreadable. */}
         {hand.selectedCost > 0 && (
-          <span data-testid="nudge-selected-cost" style={{ fontSize: 'var(--text-xs)', color: TEXT_WARM }}>
-            {hand.selectedCost} essence
+          <span
+            data-testid="nudge-selected-cost"
+            style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 'var(--text-xs)', color: TEXT_WARM }}
+          >
+            <CostPips cost={hand.selectedCost} size={13} />
           </span>
         )}
       </div>

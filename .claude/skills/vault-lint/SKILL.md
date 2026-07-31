@@ -1,7 +1,7 @@
 ---
 name: vault-lint
 description: Audit Obsidian vault health — orphan pages, broken links, stale content, missing frontmatter, cross-link gaps, index drift. Run with /kb-lint. Produces a health report in output/audits/ and logs to log.md.
-last_validated_against: 2026-05-08
+last_validated_against: 2026-07-30
 ---
 
 # Vault Lint — Knowledge Base Health Check
@@ -20,10 +20,10 @@ Load the `state-of-game-design` router first if you need cosmology/system contex
 
 ### Step 1: Inventory
 
-Build a complete file inventory using Obsidian MCP:
+Build a complete file inventory from the filesystem under `$OBSIDIAN_VAULT_PATH`:
 
-1. `obsidian_list_files_in_dir` recursively through `TheFantasyWorldSimulator/` and all subdirectories
-2. For each `.md` file, read its content with `obsidian_get_file_contents`
+1. `Glob` recursively through `TheFantasyWorldSimulator/` and all subdirectories
+2. For each `.md` file, read its content with `Read`
 3. Parse:
    - YAML frontmatter (tags, status, updated, created, aliases)
    - First blockquote line (summary)
@@ -77,7 +77,7 @@ Pages that exist in the vault but are NOT listed in Index.md.
 
 ### Step 3: Generate Report
 
-Write the health report to `TheFantasyWorldSimulator/output/audits/vault-health-YYYY-MM-DD.md` via `obsidian_append_content`. If the MCP call fails, apply the **Filesystem Fallback Protocol** below — construct the full path as `$OBSIDIAN_VAULT_PATH/TheFantasyWorldSimulator/output/audits/vault-health-YYYY-MM-DD.md` and use the `Write` tool.
+Write the health report to `TheFantasyWorldSimulator/output/audits/vault-health-YYYY-MM-DD.md` with `Write`, per the **Vault Access Protocol** below — construct the full path as `$OBSIDIAN_VAULT_PATH/TheFantasyWorldSimulator/output/audits/vault-health-YYYY-MM-DD.md` and use the `Write` tool.
 
 ```markdown
 ---
@@ -125,29 +125,35 @@ tags: [kb-infrastructure, audit, output]
 
 ### Step 4: Log the Lint Pass
 
-Append to `TheFantasyWorldSimulator/log.md` following the **vault-log** skill procedure (MCP first, filesystem fallback if MCP is unreachable, loud failure if neither path is available).
+Append to `TheFantasyWorldSimulator/log.md` following the **vault-log** skill procedure (direct filesystem write via `OBSIDIAN_VAULT_PATH`, loud failure if that variable is unset).
 
 ```
 - **lint** | Health check: found N orphans, N broken links, N stale pages, N missing frontmatter. Grade: X. Report: [[vault-health-YYYY-MM-DD]]
 ```
 
-## Filesystem Fallback Protocol
+## Vault Access Protocol
 
-When any `obsidian_*` MCP call fails (unreachable, connection refused, timeout):
+> **Filesystem only (THR-654, 2026-07-21).** There is no Obsidian MCP server — `.mcp.json`
+> configures `codesight` and nothing else, so `obsidian_get_file_contents`,
+> `obsidian_append_content`, `obsidian_patch_content` and every other `obsidian_*` tool is
+> simply absent. The former MCP-first ordering silently dropped ~12 `log.md` appends over
+> 8 days (impediments #66, #71, #75, #86). Read and write vault files directly.
+
+Every vault read and write follows this path:
 
 1. **Resolve vault path** — Run `Bash: echo $OBSIDIAN_VAULT_PATH`. This must be the absolute path to the Obsidian vault root folder (the folder *containing* `TheFantasyWorldSimulator/`).
-2. **Fail loud if missing** — If `OBSIDIAN_VAULT_PATH` is empty and the MCP is also unavailable, stop immediately and report: `"Obsidian MCP is unreachable and OBSIDIAN_VAULT_PATH is not configured. Vault write failed."` Do not silently skip.
-3. **Filesystem write** — If `OBSIDIAN_VAULT_PATH` is set, construct the full path by joining: `$OBSIDIAN_VAULT_PATH/<vault-relative-path>`. Use `Write` to create new files, `Read` then `Edit` to append. Write the exact same content the MCP path would have written.
+2. **Fail loud if missing** — If `OBSIDIAN_VAULT_PATH` is empty, stop immediately and report: `"OBSIDIAN_VAULT_PATH is not configured. Vault write failed."` Do not silently skip.
+3. **Read / write** — Join `$OBSIDIAN_VAULT_PATH/<vault-relative-path>`. Use `Read` to read, `Write` to create new files, `Edit` to append.
 4. **Note the fallback** — Mention in your response that the filesystem fallback was used and which files were written.
 
 ## Tool Reference
 
 | Tool | Use For |
 |------|---------|
-| `obsidian_list_files_in_dir` | Recursive directory listing |
-| `obsidian_get_file_contents` | Read file content + frontmatter |
-| `obsidian_append_content` | Create report file, append to log |
-| `obsidian_simple_search` | Find text across vault |
+| `Glob` | Recursive directory listing |
+| `Read` | Read file content + frontmatter |
+| `Write` / `Edit` | Create report file, append to log |
+| `Grep` | Find text across vault |
 
 ## Limitations
 

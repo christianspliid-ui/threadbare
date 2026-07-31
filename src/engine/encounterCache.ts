@@ -295,19 +295,31 @@ function buildEntriesForLocationAndSublocations(
   return entries;
 }
 
-function getLocationType(
-  graph: WorldGraph,
-  locationId: string,
+/**
+ * The subtype token a location registers encounters under.
+ *
+ * Exported (THR-884) because the setting-envelope binding must resolve a location to
+ * the *same* token the cache filtered on — the prose the player reads has to be bound
+ * to the class the template was drawn in under. Two copies of this precedence would be
+ * two things to drift apart, so callers outside the cache use this one.
+ */
+export function locationTypeFromProperties(
+  props: Record<string, unknown> | undefined,
 ): string | undefined {
-  const node = graph.getNode(locationId);
-  if (!node) return undefined;
-  const props = node.properties as Record<string, unknown>;
+  if (!props) return undefined;
   // Check locationType first, fall back to locationSubtype (worldSeed uses both)
   const locType = props.locationType as string | undefined;
   const locSubtype = props.locationSubtype as string | undefined;
   // Skip generic 'location' — it doesn't match any encounter template
   if (locType && locType !== 'location') return locType;
   return locSubtype ?? undefined;
+}
+
+export function getLocationType(
+  graph: WorldGraph,
+  locationId: string,
+): string | undefined {
+  return locationTypeFromProperties(graph.getNode(locationId)?.properties as Record<string, unknown> | undefined);
 }
 
 // ─── Danger Map ─────────────────────────────────────────────────

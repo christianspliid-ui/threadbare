@@ -1,7 +1,7 @@
 ---
 name: orchestrator
 description: The lane that decides what happens next — reads the Blocked by half of coordination blocks and promotes unblocked work to Ready for Dev (T1), authors design when the program shelf runs thin (T2), and owns architecture-health surfacing as a standing daily duty (T3). Runs hourly as tb-orchestrator. Never claims an issue, never sets In Dev, never writes Design/briefing.md.
-last_validated_against: 2026-07-30
+last_validated_against: 2026-07-31
 ---
 
 # Orchestrator
@@ -15,6 +15,7 @@ This skill is the decider. Three tiers, cheapest first:
 | Tier | Cadence | What it does |
 |------|---------|--------------|
 | **T1** unblock sweep | every run | Reads `Blocked by`, resolves against issue states, promotes unblocked work to `Ready for Dev` |
+| **T1.5** wayfinder sweep | every run, only when an open map exists | Burns down frontier AFK decision tickets via subagents; surfaces the HITL frontier to Christian (THR-900) |
 | **T2** design authoring | when the program shelf is thin | Runs `design-session` on agreed-but-undesigned work, hands off with a coordination block |
 | **T3** architecture health | daily, first run after `ORCH_HEALTH_SWEEP_HOUR` | Runs existing detectors, diffs against the last sweep, reports **new** findings |
 
@@ -24,7 +25,7 @@ This skill is the decider. Three tiers, cheapest first:
 
 These four are the difference between an orchestrator and a second executor. Breaking any of them breaks the thing this lane exists to feed.
 
-- **Never claim an issue. Never set `In Dev`. Never assign yourself.** `tb-opus-pickup` owns the single WIP=1 slot. An orchestrator that claims work starves the executor it exists to keep fed.
+- **Never claim an issue. Never set `In Dev`. Never assign yourself.** `tb-opus-pickup` owns the single WIP=1 slot. An orchestrator that claims work starves the executor it exists to keep fed. *Sole exception:* AFK `wayfinder:*` decision tickets in T1.5 — those can never reach the executor queue, so claiming one starves nothing (THR-900).
 - **Never write `Design/briefing.md` or `Design/user-actions.md`.** `keep-work-flowing-cc` owns both files; a second writer produces merge conflicts (CLAUDE.md hard rule). Christian-facing items go under `## Needs Christian` in this lane's own report and reach him via the hourly briefing (see § Reporting).
 - **Never choose direction.** Promoting *agreed* work is the remit (D2). Picking an un-agreed roadmap item is choosing direction, which is Christian's. When agreed work is exhausted, **stop and ask** — do not fall through.
 - **Never nominate a feature as unfun** (D6 case 3). Christian initiates those dialogues from a gameplay point of view. *Redundant / unused / unreachable* is a technical judgement and **is** yours to raise, unprompted and continuously (D7).
@@ -39,8 +40,9 @@ These four are the difference between an orchestrator and a second executor. Bre
 | `ORCH_PROMOTE_BATCH_MAX` | `5` | Promotions per run; caps the blast radius of a parsing bug |
 | `ORCH_HEALTH_SWEEP_HOUR` | `6` | Local hour after which the daily T3 sweep runs once |
 | `ORCH_STALLED_PICKUP_THRESHOLD` | `3` | Claims without a merge before an issue is surfaced as stalled |
+| `ORCH_WAYFINDER_AFK_MAX` | `2` | Frontier AFK wayfinder tickets (research / agent-doable task) resolved per run |
 | `ORCH_ESCALATION_CHANNEL` | Discord `1530183488333152287` | Non-blocking question channel |
-| `ORCH_REPORT_DIR` | `Docs/ops/` | Where `orchestrator-YYYY-MM-DD.md` is written |
+| `ORCH_REPORT_DIR` | `Docs/ops/` | Where `orchestrator-YYYY-MM-DD[letter].md` is written — one file per run, never appended to (§ Reporting) |
 
 ## T1 — Unblock sweep (every run)
 
@@ -81,6 +83,7 @@ Four decline reasons, all of which must name their evidence in the report:
 - **Unmet time gate** — the interval has not elapsed. Name the date it opens.
 - **Unresolvable reference** — the blocker names a non-existent issue, or an alias you cannot resolve. Log the line **verbatim**. Never promote on an unread dependency.
 - **Wrong destination** — the ticket says it needs design first (`Needs its own design finalization before Ready for Dev`). Blockers being met does not make it dev-ready; it makes it **T2's** input. Route it there, do not promote it.
+- **Wayfinder issue** — anything carrying a `wayfinder:*` label (map or decision ticket, THR-900). These are decisions, not executor work, and **never enter `Ready for Dev`** — they are T1.5's input, not T1's. Skip unconditionally, whatever its blockers say.
 
 **Promotion ceiling.** Cap at `ORCH_PROMOTE_BATCH_MAX` per run. Additionally: **do not promote into a backed-up shelf.** If Ready for Dev already holds more than `QUEUE_BACKED_UP_MIN` (15, the threshold `keep-work-flowing-cc` uses) items, promote at most one per run — planning is already outrunning execution, and adding to the pile makes the executor's ordering problem worse, not better. Say in the report that the ceiling applied and which candidates it held back. **A held-back candidate is named, with its evidence, so a throttled promotion is visibly deferred rather than silently dropped.**
 
@@ -111,7 +114,9 @@ get_issue(id)                                                      # verify: no 
 
 **This is not optional bookkeeping; it is what makes the promotion usable.** `pull-work` Step 3 validates the *latest comment* on a candidate for three required lines — `Suggested model`, `Parallel-safe with`, `Mutex with` — and **bounces the issue without claiming it** when any is missing. An issue promoted into `Ready for Dev` with no coordination block therefore sits at the top of the queue being refused every hour, which is worse than leaving it in `Todo`: it looks available, blocks nothing, and silently starves the lane.
 
-So every T1 promotion posts a comment carrying:
+**This binds the create path too, not only promotions (THR-836).** Filing a T1/T2 child *straight into* `Ready for Dev` (the two-write create above) produces an issue with zero comments — born failing this same gate, and with no later promotion step that would ever author one. So the create sequence is three writes, not two: create, clear the assignee, **post the block**. `pull-work` Step 3 now derives a block at claim time for a self-scoped ticket rather than bouncing it, so the failure is no longer a stalled lane — but a derived block is a guess reconstructed from the description, where yours is written by the party that actually chose the scope.
+
+So every T1 promotion — and every direct filing into `Ready for Dev` — posts a comment carrying:
 
 - **The promotion evidence** — which blocker, what state, what date it cleared. This is the audit trail that makes a wrong promotion diagnosable.
 - **The three coordination lines.** Derive `Mutex with` from the files the ticket will actually touch and **state the reason inline** (`Mutex with: THR-XXX (both edit <file>)`) — THR-688 rule B, and an executor may only reverse a mutex whose reason is verifiably inapplicable.
@@ -129,6 +134,53 @@ Every decision emits one line, naming the issue and the evidence, so a wrong pro
 [orchestrator] T1 skip THR-655: time gate — THR-654 completed 2026-07-21T08:48Z, window opens 2026-07-28T08:48Z
 [orchestrator] T1 skip THR-790: blocker THR-786(Done) met, but ticket requires design finalization first → T2
 [orchestrator] T1 hold THR-621: promotion ceiling reached (shelf 24 > 15, 1 promoted this run)
+```
+
+## T1.5 — Wayfinder sweep (every run there is an open map)
+
+Wayfinder maps (THR-900, `wayfinder` skill) are multi-session design efforts charted as
+decision tickets in Linear. Christian's standing decision (chat, 2026-07-31): the
+orchestrator **auto-resolves AFK tickets** and routes **HITL tickets to him via the
+hourly briefing**. This tier is that decision, operationalised.
+
+### 1. Find open maps
+
+`list_issues(team:"Threadbare", label:"wayfinder:map", state:"Todo", limit:25)`. No open
+map → skip the tier entirely and say so in one report line.
+
+### 2. Compute each map's frontier
+
+List the map's open children (state-filtered `list_issues`, bucketed by `parentId` in
+memory), then drop any with an assignee or an open blocker — blocking is **native Linear
+relations** here, so read `get_issue(id, includeRelations:true)` per candidate. What
+remains is the frontier: open, unblocked, unclaimed.
+
+### 3. Burn down AFK tickets
+
+For up to `ORCH_WAYFINDER_AFK_MAX` frontier tickets labelled `wayfinder:research` (or
+`wayfinder:task` where the checklist is agent-doable): **claim** (`assignee:"me"`,
+verify — the one exception to "never assign yourself", because a wayfinder ticket can
+never reach the executor queue), spawn a research subagent per the wayfinder skill's
+ticket-type rules, post the findings as the resolution comment, close (`Done` — the
+wayfinder carve-out), verify, and append the gist line to the map's Decisions-so-far.
+A subagent that fails or times out: unassign, leave open, log — never post a guessed
+resolution. **Never touch grilling/prototype tickets** — resolving one AFK is the
+broken-HITL failure mode the wayfinder skill names.
+
+### 4. Surface the HITL frontier
+
+Frontier `wayfinder:grilling` / `wayfinder:prototype` (and HITL-task) tickets go under
+`## Needs Christian` in this run's report, **by name, in plain language, framed in game
+terms** — e.g. *"The Dynamic Economy map has two questions waiting for you: [Should
+trade routes decay without caravan encounters?](url) and [React to the unrest mock-up](url).
+Open a chat and say 'work the map' when ready."* The existing briefing link
+(`keep-work-flowing-cc` step 2.6) carries it from there; no new plumbing.
+
+### 5. Trace
+
+```
+[orchestrator] T1.5 map "Dynamic Economy — wayfinder": frontier 4 (2 HITL surfaced, 2 AFK), resolved research "What does the market system already simulate?" (THR-9XX)
+[orchestrator] T1.5 skip: no open wayfinder maps
 ```
 
 ## T2 — Design authoring (when the shelf runs thin)
@@ -176,16 +228,25 @@ Report **new** findings only, diffed against the previous `orchestrator-*.md` in
 
 ## Reporting
 
-Write `Docs/ops/orchestrator-YYYY-MM-DD.md`. Structure:
+**One file per run — never append to a file a previous run created.** The first run of a UTC day writes `Docs/ops/orchestrator-YYYY-MM-DD.md`; every later run that day writes `Docs/ops/orchestrator-YYYY-MM-DD<letter>.md`, starting at `b` and continuing `c`, `d`, …. Pick the letter by listing `ORCH_REPORT_DIR` for today's prefix and taking the next unused one.
+
+This is structural, not stylistic (THR-849). The lane used to prepend each run's section to the **top** of one dated file, which made that first line a shared anchor: when two runs' PRs overlap, both edit it and the second lands at `mergeStateStatus: DIRTY`. Armed auto-merge cannot resolve a conflict, so such a PR sits open indefinitely — PR #1031 sat that way for two days holding the only copy of its run's T1 sweep, and had to be recovered by hand. Separate files share no anchor, so the conflict becomes impossible rather than merely unlikely, and the filename carries the ordering that `merge=union` cannot (union keeps both sides of a hunk, in no guaranteed order).
+
+`.gitattributes` also grants `Docs/ops/orchestrator-*.md merge=union` as a backstop for anything that still shares a file. That is what catches a mistake; one-file-per-run is what prevents it. Do not read the backstop as permission to append.
+
+Structure:
 
 ```markdown
-# Orchestrator — YYYY-MM-DD
+# Orchestrator — YYYY-MM-DD (run <letter>, ~HH:MMZ)
 
 ## Needs Christian
 (plain language, THR-608 — or "nothing needs you")
 
 ## T1 — unblock sweep
 (promoted / declined / held, one line each, every line naming its evidence)
+
+## T1.5 — wayfinder sweep
+(per map: frontier size, AFK tickets resolved, HITL tickets surfaced — or "no open maps")
 
 ## T2 — design authoring
 (triggered or not, with the shelf count that decided it)
@@ -206,6 +267,7 @@ Write in plain language (THR-608). Christian does not read Linear, diffs, or PRs
 - **Never run a git state op with the home tree as CWD** (THR-672). `C:\Users\chris\Dev\Projects\TheFantasyWorldSimulator` is a read-only mirror of `main` owned by `threadbare-autosync.ps1`. Work in this session's own worktree; branches are repo-global.
 - Commit the report with **no** `Fixes` / `Closes` / `Resolves THR-XX` keyword — that would auto-close unrelated issues (impediment #140). The workflow is line-anchored (THR-738), but the safe habit is unconditional: reference issues as bare `THR-XXX` tokens.
 - Open a PR, queue it with `gh pr merge --auto --merge`, and move on. Do not poll-wait on CI (THR-675).
+- **If a prior run's report PR is still open, leave it and its branch alone.** Write your own per-run file and carry on — never append to the file that PR touches, and never push to its branch: another lane may still have it checked out, which is the THR-671/672/797 hazard class. If it reads `DIRTY`, note it under `## Escalations` and file a ticket for the executor lane to salvage the stranded section; do not resolve it in-run. That is how THR-849 itself was filed, and why its section survived.
 - A no-change run skips the commit entirely; the task's `lastRunAt` is the heartbeat.
 
 ## Fail-soft

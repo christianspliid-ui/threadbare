@@ -20,8 +20,17 @@ import type { ContextFragmentSet, UnifiedActionTemplate } from '../types/unified
 
 // ─── Constants (NFP #1) ────────────────────────────────────────────
 
-/** Identity axes that may carry fragment tables (v1). */
-export const SURFACE_FRAGMENT_AXES = ['place', 'counterpartRole'] as const;
+/**
+ * Identity axes that may carry fragment tables.
+ *
+ * `setting` (THR-884) is the setting-envelope axis: the `SettingClass` of the
+ * location the scene plays out in. It is deliberately the *same* mechanism as the
+ * v1 axes rather than a parallel one — per-class openings and per-card fiction are
+ * the same "one authored skeleton, several authored variants, one deterministic
+ * lookup" shape, and a second resolver would give them a second fallback chain to
+ * drift from.
+ */
+export const SURFACE_FRAGMENT_AXES = ['place', 'counterpartRole', 'setting'] as const;
 
 export type SurfaceFragmentAxis = (typeof SURFACE_FRAGMENT_AXES)[number];
 
@@ -53,6 +62,12 @@ export interface BoundFragmentAxes {
   readonly place?: string | null;
   /** `npcRole` of the social counterpart, null for non-social templates. */
   readonly counterpartRole?: string | null;
+  /**
+   * `SettingClass` of the location the scene plays out in (THR-884). Null for the
+   * ~30 worldgen overlay subtypes outside the authorable set, which take the `'*'`
+   * path exactly as an unbound `place` does.
+   */
+  readonly setting?: string | null;
 }
 
 /** One resolved slot: which fragment won, and whether it fell back to the default. */
@@ -181,6 +196,49 @@ export function resolveTemplateFragments(
   return bindings;
 }
 
+// ─── Setting variants (THR-884) ────────────────────────────────────
+
+/** Reserved slot name the converter compiles a template's `openings` table into. */
+export const OPENING_FRAGMENT_SLOT = 'opening';
+
+/**
+ * Resolve a per-setting-class variant table against the bound setting.
+ *
+ * This is **not** a second resolution mechanism — it builds the same
+ * {@link ContextFragmentSet} shape the `{frag:*}` path uses (with `base` playing the
+ * role of the required `'*'` default) and delegates to {@link resolveFragment}. One
+ * lookup chain, one fallback rule, one warn-once memo, whether the variant reached
+ * the reader through a prose token or through a card field.
+ *
+ * Used by per-card `fictionBySetting`, where the variant is a whole field rather
+ * than a token spliced into a paragraph. Template-level `openings` take the token
+ * route instead: the converter compiles them into a real fragment set on the
+ * {@link OPENING_FRAGMENT_SLOT} slot, so they cost nothing extra at render time.
+ *
+ * Returns `base` unchanged whenever the table is absent, empty, or has no entry for
+ * the bound class — so a card that authored no variants reads exactly as it does
+ * today (NFP #6), and an unbound setting is a fallback rather than a blank (NFP #4).
+ */
+export function resolveSettingVariant(
+  bySetting: Readonly<Record<string, string>> | undefined,
+  base: string,
+  bound: BoundFragmentAxes,
+  templateId = 'unknown',
+  slot = 'settingVariant',
+): string {
+  if (!bySetting) return base;
+  const keys = Object.keys(bySetting);
+  if (keys.length === 0) return base;
+
+  const set: ContextFragmentSet = {
+    slot,
+    axis: 'setting',
+    variants: { ...bySetting, [FRAGMENT_DEFAULT_KEY]: base },
+  };
+  const binding = resolveFragment([set], slot, bound, templateId);
+  return binding?.text ?? base;
+}
+
 // ─── Enumeration ───────────────────────────────────────────────────
 
 /**
@@ -203,6 +261,7 @@ export function enumerateTemplateSurfaces(
   const perAxis: Record<SurfaceFragmentAxis, Set<string>> = {
     place: new Set<string>(),
     counterpartRole: new Set<string>(),
+    setting: new Set<string>(),
   };
 
   const fragments = template.contextFragments ?? [];
@@ -250,6 +309,7 @@ export function enumerateTemplateSurfaces(
   const axisValues = {
     place: [...perAxis.place].sort(),
     counterpartRole: [...perAxis.counterpartRole].sort(),
+    setting: [...perAxis.setting].sort(),
   };
 
   const surfaceCount = SURFACE_FRAGMENT_AXES.reduce(

@@ -68,6 +68,10 @@ function echoTypeToInjectionType(echoType: EchoType): InjectionType {
     case 'legacy': return 'cultural_template';
     case 'monument': return 'location_feature';
     case 'relic': return 'quest_seed';
+    // A card echo (THR-887) is never built through this path — it comes from
+    // `buildCardEcho`, which has no graph node to map from. The case exists so
+    // the switch stays exhaustive rather than falling through to `undefined`.
+    case 'card': return 'quest_seed';
   }
 }
 

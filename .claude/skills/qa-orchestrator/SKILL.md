@@ -1,7 +1,7 @@
 ---
 name: qa-orchestrator
 description: Use when running a QA sweep of The Fantasy World Simulator UI. Trigger on "run QA", "check the UI", "visual audit", "find UI bugs", "frontend QA", "QA sweep", or after completing a major implementation phase. Dispatches specialist sub-agents for visual style, information architecture, interaction flows, and React code quality.
-last_validated_against: 2026-05-08
+last_validated_against: 2026-07-30
 ---
 
 # QA Orchestrator
@@ -255,7 +255,7 @@ This is the rigid flow for a full QA sweep. Do not skip steps. Do not reorder.
 No browser needed. Run these CLI checks and parse output for failures:
 
 1. `npm test` — vitest suite. Parse for FAIL lines.
-2. `npx tsc --noEmit` — type checking. Parse for error lines.
+2. `npm run check:typecheck` — type checking. Parse for the ratchet verdict. **Never `npx tsc --noEmit`**: the root `tsconfig.json` sets `files: []`, so it exits 0 unconditionally and proves nothing (gate theater, THR-686). `check:typecheck` is the ratchet CI runs — it fails only on an *increase* over `typecheck-baseline.json`, so treat a pass as green even though ~3529 pre-existing errors remain (THR-489).
 3. `npm run validate-model` — world model integrity. Parse for validation failures.
 4. If playtest runner is available: `npm run playtest -- --seeds 1,42,100,999 --ticks 100` — multi-seed stability. Parse for anomalies (doom stall, zero dilemmas, population collapse).
 

@@ -2,7 +2,7 @@
  * Tests for Universal Encounter Visibility — TB-035 Phase 4.
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, afterEach } from 'vitest';
 import {
   getVisibilityDepth,
   generateInterventionChoices,
@@ -18,6 +18,7 @@ import {
 } from '../../types/encounterVisibility';
 import { WorldGraph } from '../graph';
 import type { ThreadEdgeProperties } from '../../types/influence';
+import { setForceFullEncounterVisibility } from '../debugVisibilityOverride';
 
 function createTestGraph(): WorldGraph {
   const g = new WorldGraph();
@@ -166,6 +167,53 @@ describe('buildEncounterNotification', () => {
     expect(notif).not.toBeNull();
     expect(notif!.choices.length).toBe(0);
     expect(notif!.prose.length).toBeLessThan(100);
+  });
+});
+
+// ─── Force-Full-Visibility Debug Override (THR-880) ────────────────
+
+describe('force-full-encounter-visibility override', () => {
+  afterEach(() => {
+    setForceFullEncounterVisibility(false);
+  });
+
+  it('upgrades watched depth to full while active', () => {
+    expect(getVisibilityDepth('watched')).toBe('peek');
+    setForceFullEncounterVisibility(true);
+    expect(getVisibilityDepth('watched')).toBe('full');
+  });
+
+  it('leaves dormant/null invisible while active', () => {
+    setForceFullEncounterVisibility(true);
+    expect(getVisibilityDepth(null)).toBe('none');
+    expect(getVisibilityDepth('dormant')).toBe('none');
+  });
+
+  it('upgrades watched to the_first-level choices while active', () => {
+    setForceFullEncounterVisibility(true);
+    const choices = generateInterventionChoices('watched', 'Battle');
+    expect(choices.length).toBe(3);
+    expect(choices.some(c => c.interventionType === 'coercive')).toBe(true);
+  });
+
+  it('forces autoResolveTick to null for a threaded auto_resolve notification', () => {
+    setForceFullEncounterVisibility(true);
+    const notif = buildEncounterNotification(
+      'agent_1', 'Kira', 'enc_1', 'a duel', 'Ashenmoor',
+      'watched', 'auto_resolve', 10,
+    );
+    expect(notif).not.toBeNull();
+    expect(notif!.autoResolveTick).toBeNull();
+    expect(notif!.choices.length).toBe(3);
+  });
+
+  it('still returns null for a dormant/null court position while active', () => {
+    setForceFullEncounterVisibility(true);
+    const notif = buildEncounterNotification(
+      'agent_1', 'Kira', 'enc_1', 'a duel', 'Ashenmoor',
+      null, 'auto_resolve', 10,
+    );
+    expect(notif).toBeNull();
   });
 });
 

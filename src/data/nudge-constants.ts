@@ -129,7 +129,60 @@ export const BROKEN_DRIFT_SAFE_SUBTYPES: ReadonlySet<string> = new Set([
  * nudges carrying riders, exactly one applies — the earliest in this list.
  * Riders never stack, and they never touch the d100.
  */
-export const NUDGE_RIDER_PRIORITY: readonly NudgeRider[] = ['no_crit_fail', 'floor_at_cost'];
+export const NUDGE_RIDER_PRIORITY: readonly NudgeRider[] = [
+  'no_crit_fail',
+  'floor_at_cost',
+  // The Gambit sits last on purpose (THR-885). It is the only rider that can
+  // worsen an outcome, so when a player has also committed a protective card the
+  // protection wins — a hand cannot accidentally cancel its own safety net.
+  'all_or_nothing',
+];
+
+// ─── Sphere signature discount ───────────────────────────────────────
+
+/**
+ * The Signature (THR-885) — essence knocked off a card whose sphere matches one
+ * the ascendant is aligned to. A discount, not a gate: full sphere *gating*
+ * stays parked with THR-870.
+ */
+export const SPHERE_DISCOUNT = 1;
+
+/**
+ * Floor the discount can never push a card below. Free is an authored decision
+ * (`essenceCost: 0` on a trait card), never something a discount arrives at —
+ * otherwise a sphere-matched card silently becomes a different kind of card.
+ */
+export const SPHERE_DISCOUNT_MIN_COST = 1;
+
+// ─── The Repertoire (THR-887) ────────────────────────────────────────
+
+/**
+ * Essence knocked off a card signed by the ascendant's **secondary** sphere.
+ *
+ * Distinct from {@link SPHERE_DISCOUNT} by *layer*, not by arithmetic — both are
+ * 1, and that is a coincidence worth keeping visible rather than collapsing.
+ * `SPHERE_DISCOUNT` is THR-885's per-encounter price cut, applied by
+ * `effectiveNudgeCost` to a card in an authored step hand. This one is the
+ * repertoire layer: it prices a *library* card the god holds because their
+ * secondary sphere signs its type. Tuning one should not silently move the other.
+ *
+ * Primary-sphere cards are full strength (no discount, no surcharge) — the
+ * primary's reward is *access*, per plan Decision 7.1.
+ */
+export const SECONDARY_SPHERE_DISCOUNT = 1;
+
+/**
+ * Forecast penalty carried by an echo card returned from a **somber** age
+ * (plan Decision 7.4). The scarred card is cheaper — a dead god's favorite
+ * trick, come back wrong — and pays for it here.
+ *
+ * In pip terms this is one red down-triangle. Stored as a raw forecast delta;
+ * the pip tiering is display-only (recorded on THR-885).
+ */
+export const ECHO_CARD_SCAR_PENALTY = 5;
+
+/** Essence knocked off a scarred echo card. Pairs with {@link ECHO_CARD_SCAR_PENALTY}. */
+export const ECHO_CARD_SCAR_DISCOUNT = 1;
 
 // ─── Motive classification ───────────────────────────────────────────
 
@@ -159,3 +212,50 @@ export const REKINDLE_ESSENCE_COST = 6;
  * the `BROKEN_EXIT_STATE` hysteresis, so the restore actually clears the state.
  */
 export const REKINDLE_RESTORE_TO_RATIO = 0.6;
+
+// ─── Agent-decided branches (THR-894) ────────────────────────────────
+//
+// A `decidedBy` fork asks the mortal a question about themselves. The answer is
+// their live axis position (baseline + drift) plus whatever the god argued for
+// with the cards committed on the deciding step. These four numbers are the
+// whole feel of that: how loud one card is, how close to the middle counts as
+// "undecided", which way an undecided mortal falls, and how much taking the
+// fork moves them. Changing the feel is changing a number here (NFP #1).
+
+/**
+ * Pull of a `poleLean` card that names no explicit `weight`.
+ *
+ * Sized to the ±1 axis scale so a *single* leaning card can carry a mortal who
+ * sits near neutral, but not one who is already committed the other way. A god
+ * who wants to turn a convinced mortal must argue harder — more cards, or a
+ * heavier one.
+ */
+export const POLE_LEAN_DEFAULT_WEIGHT = 0.35;
+
+/**
+ * Half-width of the "undecided" band around zero net lean.
+ *
+ * Inside it the mortal genuinely has no answer and the fork resolves by a seeded
+ * coin. Deliberately small: a mortal with any real conviction, or a god with one
+ * committed card, should land on a pole rather than a shrug.
+ */
+export const BRANCH_DECISION_NEUTRAL_EPSILON = 0.05;
+
+/**
+ * Coin threshold for an undecided fork. `rng() < this` ⇒ `'positive'`.
+ *
+ * A true coin at 0.5: neither pole is the safe default, because a silent
+ * tiebreak toward one of them would quietly bias every neutral mortal in the
+ * world the same way — the failure the meeting's `'none'` lean was written to
+ * avoid.
+ */
+export const BRANCH_DECISION_COIN_THRESHOLD = 0.5;
+
+/**
+ * Signed drift the decided pole writes onto the mortal's axis.
+ *
+ * This is the loop that makes repeated choices become character: below the
+ * `soft` drift threshold on its own, so one fork is a lean and not a rebrand,
+ * but three in the same direction register as who this person is becoming.
+ */
+export const BRANCH_DECISION_DRIFT_MAGNITUDE = 0.08;

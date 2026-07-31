@@ -36,6 +36,7 @@ import {
   resolveStepDefinition,
 } from './unifiedActionLifecycle';
 import { isStepSuccess, isStepFailure, isActionStepBranch } from '../types/unifiedAction';
+import { applyAgentDecidedBranches } from './encounters/branchDecision';
 import { computeCapability, computeCapabilityWithRawBonus } from './domainCapability';
 import { getAscendantDomainAffinities } from './ascendant';
 import { getGroupOf } from './groups/groupQueries';
@@ -150,6 +151,7 @@ import {
   applyRider,
   collectHeldTraitIds,
   collectNudgeModifiers,
+  priorStepOutcome,
   resolveTraitVariants,
   selectActiveRider,
   sumModifiers,
@@ -397,7 +399,15 @@ export function resolveUncontestedStep(
   const nudgeTraitVariants = template.traitVariants?.length
     ? resolveTraitVariants(template, collectHeldTraitIds(state.graph, action.actorId))
     : [];
-  const nudgeModifiers = collectNudgeModifiers(step, action.activeNudges, nudgeTraitVariants);
+  // THR-892 — a carryover line declared for the band the *previous* step landed on
+  // rides the same named channel as `carryover:<outcome>`. Zero new rng: the draw
+  // it reads happened last step.
+  const nudgeModifiers = collectNudgeModifiers(
+    step,
+    action.activeNudges,
+    nudgeTraitVariants,
+    priorStepOutcome(action),
+  );
   const nudgeModifierTotal = sumModifiers(nudgeModifiers);
   // A trait variant may also ease (or steepen) the step itself, before the
   // scale adjustment below reads the difficulty.
@@ -1785,8 +1795,17 @@ export function executeStepResult(
     }
   }
 
+  // THR-894: agent-decided branches. Any `decidedBy` fork keying off the step
+  // that just resolved is decided here — the last moment a choice can land and
+  // still be visible when `advanceStep` resolves the next step's definition.
+  // No-op for every template with no such branch, which is every template
+  // shipped today.
+  const branchDecision = applyAgentDecidedBranches(state, action, template, step, tick, rng);
+  state.archetypeDrift = branchDecision.archetypeDrift;
+  const decidedAction = branchDecision.action;
+
   // Advance step or complete action
-  let finalAction = advanceStep(action, outcome, template, rng);
+  let finalAction = advanceStep(decidedAction, outcome, template, rng);
 
   // Partial_progress complication: give the next step a head start (THR-119).
   // Read fraction directly from the ComplicationResult effects — no transient node property needed.

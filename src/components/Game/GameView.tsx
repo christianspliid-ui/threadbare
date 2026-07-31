@@ -11,6 +11,7 @@ import type { ScryState } from '../../types/scry';
 import { createScryState } from '../../engine/scry';
 import { useSimulation } from './hooks/useSimulation';
 import type { UnifiedActionTemplate } from '../../types/unifiedAction';
+import type { CardPlayTallyEntry } from '../../types/gameState';
 import { getEncountersForLocation, getAnyEncounterById } from '../../data/encounter-content';
 import { SUBTYPE_SUBLOCATION_MAP } from '../../engine/sublocation';
 import { useHexZoomData } from './hooks/useHexZoomData';
@@ -138,7 +139,7 @@ import type { JourneyVignetteData, PendingVignette } from '../../types/journeyEn
 import { applyBeatChoice } from '../../engine/journeyEngine';
 import { getThreadsFrom, getFactionMembershipEdges } from '../../engine/graphQueries';
 import type { ThreadEdgeProperties } from '../../types/influence';
-import { createMeetingEncounterState, createAgentFromMeeting, isMeetTheFirstAvailable } from '../../engine/meetingEncounter';
+import { createMeetingEncounterState, createAgentFromMeeting, isMeetTheFirstAvailable, MEETING_SETTLED_LOCATION_SUBTYPES } from '../../engine/meetingEncounter';
 import { buildStubAscendantLens } from '../../types/hunger';
 import type { AscendantLens } from '../../types/hunger';
 import { useNotifications } from './hooks/useNotifications';
@@ -147,6 +148,7 @@ import { selectEncounterBadges, type EncounterBadgeModel } from './encounterBadg
 import { selectThreadTugBadges } from './threadTugBadgeModel';
 import { selectEntityNoticeBadges, type EntityNoticeBadgeModel } from './entityNoticeBadgeModel';
 import { toggleAttentionMode } from '../../engine/encounterVisibility';
+import { setForceFullEncounterVisibility } from '../../engine/debugVisibilityOverride';
 import { useTopBarHotkeys } from './hooks/useTopBarHotkeys';
 import { computeEssenceIncome } from '../../engine/essenceIncome';
 import { setHomeSeat as setHomeSeatEngine } from '../../engine/influence';
@@ -221,7 +223,12 @@ interface GameViewProps {
   seed: number;
   mapSize?: import('../../engine/gameInit').MapSizePreset;
   ascendantIdentity?: import('../../types/remembrance').AscendantIdentity;
-  preSeeded?: boolean;
+  /** Dev-only: bond The First at init. Split from `preSeeded` by THR-874. */
+  seedFirst?: boolean;
+  /** Dev-only: inject the ascendant test package. Split from `preSeeded` by THR-874. */
+  seedTestPackage?: boolean;
+  /** Dev-only: move the avatar to a settlement so the meeting can auto-trigger (THR-874). */
+  placeAvatarForMeeting?: boolean;
 }
 
 function formatJourneyPhaseLabel(
@@ -238,7 +245,7 @@ function formatJourneyPhaseLabel(
   }
 }
 
-export function GameView({ archetype, avatarName, cosmology, seed, mapSize, ascendantIdentity, preSeeded }: GameViewProps) {
+export function GameView({ archetype, avatarName, cosmology, seed, mapSize, ascendantIdentity, seedFirst, seedTestPackage, placeAvatarForMeeting }: GameViewProps) {
   // ── Resume theme music if it was started on the start screen ──
   useEffect(() => {
     resumeTheme();
@@ -262,7 +269,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     running, speed, harvestResult, doTick, runTicksSync, handleBeginNextCycle,
     handleToggleRunning, setRunning, setSpeed, seasonName, year, maxEssence, COLS, ROWS,
     runtime,
-  } = useSimulation({ archetype, avatarName, cosmology, seed, scryState, mapSize, ascendantIdentity, preSeeded });
+  } = useSimulation({ archetype, avatarName, cosmology, seed, scryState, mapSize, ascendantIdentity, seedFirst, seedTestPackage, placeAvatarForMeeting });
 
   // O(1) tile lookup by hex coordinate (tiles array is stable — created once at init)
   const tileMap = useMemo(() => {
@@ -295,6 +302,16 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   const [fogDisabled, setFogDisabled] = useState(
     () => new URLSearchParams(window.location.search).has('nofog')
   );
+
+  // ── Debug: force full-prose, always-popup encounter visibility (THR-880) ──
+  // Testing lever for the Encounter Experience project — makes every threaded
+  // agent's encounter render and interrupt as if they were The First, so
+  // background/shaping-tier content isn't invisible during review. Read from
+  // a URL flag (not window.__DEBUG) so it also works on the deployed build.
+  useState(() => {
+    setForceFullEncounterVisibility(new URLSearchParams(window.location.search).has('forceencounters'));
+    return null;
+  });
 
   // ── Debug: omniscience mode (bypass familiarity gating on agent character sheets) ──
   const [omniscienceMode, setOmniscienceMode] = useState(false);
@@ -2877,15 +2894,34 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       return;
     }
 
-    setGameState(prev => ({
-      ...prev,
-      essencePool: spend.pool,
-      unifiedActions: (prev.unifiedActions ?? []).map(action =>
-        action.actionId === phase.actionId
-          ? { ...action, activeNudges: [...nudgeIds] }
-          : action,
-      ),
-    }));
+    setGameState(prev => {
+      // THR-887 — tally the library cards this hand played, so the twilight
+      // harvest has something to select the run's defining card from. Cards
+      // with no `libraryCardId` are one-off authored options and are skipped:
+      // an echo can only carry a card the next run's library still builds.
+      const tally: Record<string, CardPlayTallyEntry> = { ...(prev.cardPlayTally ?? {}) };
+      const climax = prev.doomClock?.progress ?? 0;
+      for (const id of nudgeIds) {
+        const libraryCardId = cardsById.get(id)?.libraryCardId;
+        if (!libraryCardId) continue;
+        const existing = tally[libraryCardId];
+        tally[libraryCardId] = {
+          timesPlayed: (existing?.timesPlayed ?? 0) + 1,
+          peakSignificance: Math.max(existing?.peakSignificance ?? 0, climax),
+        };
+      }
+
+      return {
+        ...prev,
+        essencePool: spend.pool,
+        cardPlayTally: tally,
+        unifiedActions: (prev.unifiedActions ?? []).map(action =>
+          action.actionId === phase.actionId
+            ? { ...action, activeNudges: [...nudgeIds] }
+            : action,
+        ),
+      };
+    });
 
     // One trace per played card (player-driven, low volume — not an
     // all-agents phase, so the aggregate-batching rule does not apply).
@@ -3070,8 +3106,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     const locNode = gameState.graph.getNode(locationId);
     if (!locNode) return;
     const subtype = locNode.properties.locationSubtype as string | undefined;
-    const settledTypes = ['town', 'city', 'hamlet', 'village', 'capital', 'port', 'outpost', 'fortress', 'monastery', 'trading_post'];
-    if (!subtype || !settledTypes.includes(subtype)) return;
+    if (!subtype || !MEETING_SETTLED_LOCATION_SUBTYPES.includes(subtype)) return;
 
     // All conditions met — auto-trigger once
     gameState.meetTheFirstAutoTriggered = true;
@@ -4241,6 +4276,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
           locationId={meetingState.locationId}
           seed={gameState.seed}
           tick={gameState.tick}
+          // THR-868: the meeting's nudge cards are a real essence spend, so the
+          // stage needs the live pool to know what the player can afford.
+          essencePool={gameState.essencePool}
           onComplete={handleMeetingComplete}
           onClose={handleMeetingClose}
         />

@@ -15,12 +15,12 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 42 |
+| 🟢 LIVE | 43 |
 | 🟠 PARTIAL | 1 |
-| 🔴 LEAKED | 5 |
+| 🔴 LEAKED | 7 |
 | ⚫ UNWIRED | 0 |
-| 🔵 UNVERIFIED-OK | 3 |
-| **Total** | **51** |
+| 🔵 UNVERIFIED-OK | 7 |
+| **Total** | **58** |
 
 ## Contracts by producing subsystem
 
@@ -47,6 +47,7 @@ remediation ticket or the build fails.
 
 | Contract | Intent | Mechanism | Consumer | Status | Ticket |
 |---|---|---|---|---|---|
+| `milestone-grants-unlock-repertoire-cards` | Earning something as a god changes what you can play as a god — a milestone hands you a new way to use a power you already had, not a bigger number on the one you have. | function: `buildRepertoire`, `isMemberUnlocked`, `memberAccess` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `secrets-player-verbs-reachable` | The god can plant and reveal secrets — the Eye identity’s signature verbs enter the hand via a beat grant (player-loop links 2–4). | function: `action.secrets.plant_secret`, `action.secrets.reveal_secret` | Secrets & Favors | 🟢 LIVE | — |
 
 ### Attachments, Items & Possessions
@@ -64,6 +65,12 @@ remediation ticket or the build fails.
 | `attachment-slot-caps-suppress` | Slot caps suppress overflow attachments via a single suppression seam. | edge-prop: `attachmentSlotResolver` | Effects & Conditions | 🟢 LIVE | — |
 | `attachment-tier-advancement` | Tier advancement strengthens an item over time. | function: `advanceAttachmentTier`, `canAdvanceTier` | Attachments, Items & Possessions | 🔴 LEAKED | THR-723 |
 | `attachment-trait-grant-effects` | Items grant abilities to their bearer (e.g. cavalry_charge). | node-prop: `trait_grant`, `collectGrantedTraits` | Encounters & Dilemmas | 🟢 LIVE | — |
+
+### Attention, Chronicle & Narrative
+
+| Contract | Intent | Mechanism | Consumer | Status | Ticket |
+|---|---|---|---|---|---|
+| `twilight-harvest-preserves-defining-card` | A god who dies is not wholly gone: the trick they were known for survives the age and turns up in the next god's hand, whole after a triumph and scarred after a defeat. | function: `selectEchoCard`, `buildCardEcho`, `echoCardsFromDefinitions` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 
 ### Companies & Group Travel
 
@@ -90,6 +97,10 @@ remediation ticket or the build fails.
 | `attachment-encounter-rewards` | Encounters grant rewards, which become possessions. | function: `assembleRewardPool` | Attachments, Items & Possessions | 🟢 LIVE | — |
 | `authored-nudge-hand-reaches-resolution` | A god may bend the odds of an attended encounter step with authored, essence-priced cards — the mechanical form of "the intervention shifted the odds, not the outcome". Without this read, an attended encounter offers the player nothing to do but watch. | function: `collectNudgeModifiers`, `selectActiveRider`, `applyRider`, `buildNudgeHand` | Encounters & Dilemmas | 🔴 LEAKED | THR-774 |
 | `authored-step-difficulty-player-resolution` | Authored step difficulty finally prices a player cast. 82 of 136 ascendant-castable templates carried difficulties 0.1–0.6 that the player branch discarded before this contract existed; the same value now feeds the shared capability-vs-difficulty roll, floored at success-at-cost. | function: `resolveUncontestedStep`, `difficulty` | Encounters & Dilemmas | 🟢 LIVE | — |
+| `branch-decision-writes-archetype-drift` | A fork the mortal took becomes part of who they are: taking the cunning branch drifts them cunning, so a mortal the player keeps leaning one way visibly becomes that person instead of resetting each encounter. | function: `applyAgentDecidedBranches`, `decideBranchPole`, `driftAxisIdForValuePair` | Personality & Emergent Traits | 🔴 LEAKED | THR-883 |
+| `meeting-trait-seeds-land-as-narrative-descriptors` | The choices you made while meeting your First stay visible in who they are — the descriptors the meeting authored read back on their character sheet and in their backstory, instead of every First being described in the same default words. | node-prop: `narrativeDescriptors` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
+| `nudge-card-cost-channels-detection-and-doom` | A card can be cheap in essence and expensive somewhere else — visibility to rivals, or the doom clock — so the price of divine help is not always the same currency. | function: `collectNudgeCostChannels`, `applyRawDetectionDelta`, `accelerateDoomClock` | Spheres & Quintessence | 🔴 LEAKED | THR-883 |
+| `nudge-card-grants-dispatch-to-host-systems` | A card that says it changed the world actually changes it, through the system that owns that change — so the fiction the player is shown and the state the world holds cannot disagree. | function: `dispatchNudgeCommitments`, `collectNudgeGrants`, `assignAmbitionToActor` | Ambitions & Initiatives | 🔵 UNVERIFIED-OK | THR-883 |
 | `player-action-aftermath-read` | The aftermath a player action already produces finally reaches the player — the receipt phase reads the summary that was built and discarded for player casts. | function: `processPlayerReceipts`, `aftermathSummary` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
 | `player-action-receipts-queue` | A resolved player cast queues a Divine Receipt the UI surfaces as a toast or a receipt dialogue. | node-prop: `playerActionReceipts` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
 | `receipt-event-band-toast` | A receipt toast carries its outcome band so the toast accent matches how the cast landed. | event: `band` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
@@ -128,6 +139,7 @@ remediation ticket or the build fails.
 
 | Contract | Intent | Mechanism | Consumer | Status | Ticket |
 |---|---|---|---|---|---|
+| `nudge-hand-runtime-filters-and-sphere-discount` | The hand the player is dealt reflects the world as it actually is — group cards only in groups, favor calls only when a favor is owed — and a sphere the god is aligned to makes its own work cheaper. | function: `buildNudgeHand`, `effectiveNudgeCost`, `totalNudgeCost` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | THR-883 |
 | `quintessence-threshold-gates-candidacy-and-movement` | A mortal worn to nothing goes out of the story rather than grinding on unchanged — the previously missing consumer of the weakened/critical threshold states. Without it, quintessence loss has no behavioural consequence at all. | node-prop: `isBrokenMortal`, `brokenGateActive`, `computeBrokenDriftBonus`, `brokenSince` | Encounters & Dilemmas | 🟠 PARTIAL | THR-778 |
 
 ## Evidence
@@ -341,10 +353,10 @@ remediation ticket or the build fails.
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Nudge*, *Encounter*, *UnifiedActionTemplate*
 - **Module:** `src/engine/encounters/nudges.ts`
-- **Production hits:** 5 total — 0 write, 2 read, 3 unclassified
+- **Production hits:** 9 total — 0 write, 2 read, 7 unclassified
 - **Write sites:** —
 - **Read sites:** `src/debug-bridge.ts`, `src/engine/unifiedActionResolution.ts`
-- **Other hits:** `src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts`, `src/components/Game/encounter-stage/nudgeCommit.ts`, `src/engine/encounters/nudges.ts`
+- **Other hits:** `src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts`, `src/components/Game/encounter-stage/nudgeCommit.ts`, `src/components/Game/encounter-stage/types.ts`, `src/engine/encounters/nudgeDispatch.ts`, `src/engine/encounters/nudges.ts` +2 more
 - **Verdict:** Tier 2: read sites present, declared write sites empty — nothing produces this contract. — or the declared symbol does not appear at the declared site: grep 'collectNudgeModifiers' src/types/unifiedAction.ts before treating this as a leak.
 
 ### `authored-step-difficulty-player-resolution` — 🟢 LIVE
@@ -353,10 +365,10 @@ remediation ticket or the build fails.
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Domain Capability*, *UnifiedActionTemplate*
 - **Module:** `src/engine/unifiedActionResolution.ts`
-- **Production hits:** 129 total — 1 write, 2 read, 126 unclassified
+- **Production hits:** 136 total — 1 write, 2 read, 133 unclassified
 - **Write sites:** `src/data/unified-action-templates.ts`
 - **Read sites:** `src/engine/targetActions.ts`, `src/engine/unifiedActionResolution.ts`
-- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/ActionDrawer.tsx`, `src/components/Game/debug/NudgeDesignerTab.tsx`, `src/components/Game/debug/TraceFeed.tsx` +121 more
+- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/ActionDrawer.tsx`, `src/components/Game/debug/NudgeDesignerTab.tsx`, `src/components/Game/debug/TraceFeed.tsx` +128 more
 - **Verdict:** Verified 2026-07-25: THR-728: `unified-action-templates.ts` authors `steps[].difficulty`; `resolveUncontestedStep` reads it for `source === 'player'` (the auto-success early-return is now gated behind `PLAYER_CAST_VARIANCE_ENABLED`), and `targetActions.ts` reads the same field via `maxStepDifficulty` to render the focused card's risk line. Measured over 400 seeds: the outcome set for a positive-difficulty cast is >1 band.
 
 ### `band-opposition-pairs-contested-resolution` — 🟢 LIVE
@@ -370,6 +382,18 @@ remediation ticket or the build fails.
 - **Read sites:** `src/engine/unifiedActionResolution.ts`
 - **Other hits:** `src/engine/encounterSeeding.ts`
 - **Verdict:** Verified 2026-07-25: Organic 150-tick CLI run, seed 42 medium (no forcing, no debug spawns): the Temple of the Spheres fielded a defender band, "The Temple of the Spheres' Sparrows", which was met by Company of the Inn at t81 and by Flintlock's Band at t84. Trace at t81: [group_contested] "Company of the Inn came off best against The Temple of the Spheres' Sparrows. Bagaabraa did not walk away." Both companies carry hostile_to edges with cause group_engagement; the band fell 0.70 → 0.19 cohesion and disbanded through the shipped phaseGroups cascade. Unit-locked by src/engine/groups/__tests__/bandOpposition.test.ts (22 tests) incl. the fail-soft degradation rows.
+
+### `branch-decision-writes-archetype-drift` — 🔴 LEAKED
+
+- **Intent:** A fork the mortal took becomes part of who they are: taking the cunning branch drifts them cunning, so a mortal the player keeps leaning one way visibly becomes that person instead of resetting each encounter.
+- **Producer → Consumer:** Encounters & Dilemmas → Personality & Emergent Traits
+- **UL terms:** *Archetype Drift*, *Nudge*
+- **Module:** `src/engine/encounters/branchDecision.ts`
+- **Production hits:** 2 total — 1 write, 0 read, 1 unclassified
+- **Write sites:** `src/engine/unifiedActionResolution.ts`
+- **Read sites:** —
+- **Other hits:** `src/engine/encounters/branchDecision.ts`
+- **Verdict:** Tier 2: write sites present, declared read sites empty — the consumer is starving. — or the declared symbol does not appear at the declared site: grep 'applyAgentDecidedBranches' src/engine/encounters/driftAccumulator.ts before treating this as a leak.
 
 ### `company-assist-shapes-resolution` — 🟢 LIVE
 
@@ -500,10 +524,10 @@ remediation ticket or the build fails.
 - **Producer → Consumer:** Companies & Group Travel → Attention, Chronicle & Narrative
 - **UL terms:** *Company*
 - **Module:** `src/engine/agentDetail.ts`
-- **Production hits:** 49 total — 1 write, 2 read, 46 unclassified
+- **Production hits:** 51 total — 1 write, 2 read, 48 unclassified
 - **Write sites:** `src/engine/groups/bandOpposition.ts`
 - **Read sites:** `src/components/Game/tabs/OverviewTab.tsx`, `src/engine/agentDetail.ts`
-- **Other hits:** `src/components/Game/Encounter/DetectionThread.tsx`, `src/components/Game/GameView/GameViewTopBar.tsx`, `src/components/HexMapV2/HexMapV2.tsx`, `src/data/action-template-content.ts`, `src/data/agenda-consequence-templates.ts` +41 more
+- **Other hits:** `src/components/Game/Encounter/DetectionThread.tsx`, `src/components/Game/GameView/GameViewTopBar.tsx`, `src/components/HexMapV2/HexMapV2.tsx`, `src/data/action-template-content.ts`, `src/data/agenda-consequence-templates.ts` +43 more
 - **Verdict:** Verified 2026-07-25: Live CLI run, seed 42 medium: a company relocated into a Great Silverhold guild hall resolved encounter.confront_guild_falls against a colocated Arcane Circle defender band at t61 — company cohesion 0.54 → 0.70, band 0.70 → 0.46 — and the contest wrote mutual grudges, read straight off the graph: "The Watch of the Nameless Road -> The Errant Keys of The Arcane Circle since t61 (group_engagement)" and the reverse. agentDetail reads both edge directions off the group node and dedupes the mutual pair; OverviewTab renders it as one sentence with no numbers and no `since` tick. Locked by src/engine/groups/__tests__/bandDebugSurfaces.test.ts § "Company panel — Rivals" (7 tests: absent when no grudge, outgoing, incoming-only, mutual-dedupe, dangling-target drop, deterministic multi-rival order).
 
 ### `guild-rank-gates-senior-content` — 🟢 LIVE
@@ -518,6 +542,29 @@ remediation ticket or the build fails.
 - **Other hits:** `src/data/arcane-circle-encounter-content.ts`, `src/data/builders-fellowship-encounter-content.ts`, `src/data/civic-guard-encounter-content.ts`, `src/data/holy-order-dawn-encounter-content.ts`, `src/data/lorekeepers-covenant-encounter-content.ts` +10 more
 - **Verdict:** Verified 2026-07-26: THR-805. `FACTION_ENCOUNTER_META.minRank` was authored on ~150 template metas and typed at types/faction.ts:72, with NO production reader — its only non-data references were three tests asserting the data round-trips — so every tier-restricted guild template was drawable by any agent at the right location. filterByPrerequisites now consults it for entries whose questType is senior/elite/leadership (RANK_GATED_QUEST_TYPES); the 123 `standard` quest/social metas stay ungated, since minRank is a REQUIRED field and gating on its presence would have closed the entry tier behind mere membership. Rank is derived from member_of.reputation via computeRankFromReputation on every check, never read from the edge's cached rank/role (those refresh only on a tier change, so a decay in progress reads stale). Non-membership closes the gate; unresolvable data (unknown factionDefId, or a minRank naming no tier) fails OPEN, because a typo that silently orphans content is the worse failure. Two adjacent substrates were rejected and are recorded so they are not revived: the `faction_rank:` predicate in effectPredicates.ts reads agentNode.properties.factionRank, which NOTHING writes (grep the assignment side — every other hit is a local display string), so it is permanently 0 and false for any threshold; and FactionRankTier.encounterAccess prefix allowlists are equally unread AND already drifted (merchant_consortium declares mc_trade.* while its templates are mct.*). Non-vacuous by live payload intersection and measured blast radius: 60 rank-gated metas exist, exactly 12 are present in a live tick-150 seed-42 cache (the guild tail THR-779/THR-803 registered), and a live sweep shows the gate closed for a real low-rank member and open for that same member once promoted past the floor. Locked by src/engine/__tests__/factionRankGate.test.ts (14 tests), falsified at 2-of-14 red with the gate disabled. The gate deliberately does NOT depend on resolving the template — it needs only the id and its meta. That independence was load-bearing when it shipped, because the pipeline's `getAnyEncounterById` returned undefined for every cache-registered regional template, leaving the sibling trait/broken/group gates in the same loop inert for those ids. THR-811 closed that gap on 2026-07-27: the loop now resolves via getUnifiedTemplateById, which covers all 213 cache-registrable ids (43 of them were unresolvable before), so the sibling gates are live for this id set too.
 
+### `meeting-trait-seeds-land-as-narrative-descriptors` — 🟢 LIVE
+
+- **Intent:** The choices you made while meeting your First stay visible in who they are — the descriptors the meeting authored read back on their character sheet and in their backstory, instead of every First being described in the same default words.
+- **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
+- **UL terms:** *Meet The First*, *Bond Reception*
+- **Module:** `src/engine/meetingEncounter.ts`
+- **Production hits:** 3 total — 1 write, 2 read, 0 unclassified
+- **Write sites:** `src/engine/meetingEncounter.ts`
+- **Read sites:** `src/engine/agentDetail.ts`, `src/engine/profileGenerator.ts`
+- **Verdict:** Verified 2026-07-31: src/engine/__tests__/meetingTraitSeedLanding.test.ts enumerates the authored population from all four catalogs (each asserted non-empty individually, so the sweep cannot pass vacuously), lands it through createAgentFromMeeting, and asserts zero unconsumed values. Reader pinned on both sides: getAgentInfoCard(…, "intimate").allTraits contains the humanized descriptor, and generateBackstory fills the {trait} slot from it instead of the hardcoded "resolute" fallback that previously covered every freshly-created First.
+
+### `milestone-grants-unlock-repertoire-cards` — 🔵 UNVERIFIED-OK
+
+- **Intent:** Earning something as a god changes what you can play as a god — a milestone hands you a new way to use a power you already had, not a bigger number on the one you have.
+- **Producer → Consumer:** Ascendant Beats & Progression → Encounters & Dilemmas
+- **UL terms:** *Nudge*, *Ascendant Beat*
+- **Module:** `src/engine/nudgeCardRepertoire.ts`
+- **Production hits:** 3 total — 1 write, 1 read, 1 unclassified
+- **Write sites:** `src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts`
+- **Read sites:** `src/engine/encounters/nudges.ts`
+- **Other hits:** `src/engine/nudgeCardRepertoire.ts`
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
+
 ### `minted-ambition-provenance` — 🟢 LIVE
 
 - **Intent:** Motive receipts name the origin of a minted want — "she seeks vengeance for the blighted fields."
@@ -527,6 +574,42 @@ remediation ticket or the build fails.
 - **Read sites:** `src/engine/foreshadowing/motiveReceipt.ts`
 - **Other hits:** `src/types/ambition.ts`
 - **Verdict:** Verified 2026-07-24: THR-726: `ambitionTick.ts` writes `mintedByEventId`/`mintedByLabel` on the minted `pursues` edge; `motiveReceipt.ts` `resolveMintedAmbitionProvenance` reads them and overrides the ambition contribution's provenance detail so the receipt names the origin event.
+
+### `nudge-card-cost-channels-detection-and-doom` — 🔴 LEAKED
+
+- **Intent:** A card can be cheap in essence and expensive somewhere else — visibility to rivals, or the doom clock — so the price of divine help is not always the same currency.
+- **Producer → Consumer:** Encounters & Dilemmas → Spheres & Quintessence
+- **UL terms:** *Nudge*, *Detection Pressure*, *Doom Clock*
+- **Module:** `src/engine/encounters/nudgeDispatch.ts`
+- **Production hits:** 4 total — 0 write, 2 read, 2 unclassified
+- **Write sites:** —
+- **Read sites:** `src/engine/doomClock.ts`, `src/engine/encounters/detectionPressure.ts`
+- **Other hits:** `src/engine/encounters/nudgeDispatch.ts`, `src/types/unifiedAction.ts`
+- **Verdict:** Tier 2: read sites present, declared write sites empty — nothing produces this contract. — or the declared symbol does not appear at the declared site: grep 'collectNudgeCostChannels' src/engine/phases/phaseAutonomousAftermath.ts before treating this as a leak.
+
+### `nudge-card-grants-dispatch-to-host-systems` — 🔵 UNVERIFIED-OK
+
+- **Intent:** A card that says it changed the world actually changes it, through the system that owns that change — so the fiction the player is shown and the state the world holds cannot disagree.
+- **Producer → Consumer:** Encounters & Dilemmas → Ambitions & Initiatives
+- **UL terms:** *Nudge*, *Ambition*
+- **Module:** `src/engine/encounters/nudgeDispatch.ts`
+- **Production hits:** 6 total — 1 write, 2 read, 3 unclassified
+- **Write sites:** `src/engine/phases/phaseAutonomousAftermath.ts`
+- **Read sites:** `src/engine/ambitionAssignment.ts`, `src/engine/encounterAftermath.ts`
+- **Other hits:** `src/engine/encounters/nudgeDispatch.ts`, `src/engine/encounters/poleLean.ts`, `src/types/unifiedAction.ts`
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
+
+### `nudge-hand-runtime-filters-and-sphere-discount` — 🔵 UNVERIFIED-OK
+
+- **Intent:** The hand the player is dealt reflects the world as it actually is — group cards only in groups, favor calls only when a favor is owed — and a sphere the god is aligned to makes its own work cheaper.
+- **Producer → Consumer:** Spheres & Quintessence → Encounters & Dilemmas
+- **UL terms:** *Nudge*, *Sphere*, *Essence*
+- **Module:** `src/engine/encounters/nudges.ts`
+- **Production hits:** 10 total — 1 write, 2 read, 7 unclassified
+- **Write sites:** `src/data/nudge-constants.ts`
+- **Read sites:** `src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts`, `src/engine/meetingEncounter.ts`
+- **Other hits:** `src/components/Game/encounter-stage/nudgeCommit.ts`, `src/components/Game/encounter-stage/types.ts`, `src/debug-bridge.ts`, `src/engine/encounters/nudgeDispatch.ts`, `src/engine/encounters/nudges.ts` +2 more
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `player-action-aftermath-read` — 🔵 UNVERIFIED-OK
 
@@ -566,10 +649,10 @@ remediation ticket or the build fails.
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 159 total — 1 write, 1 read, 157 unclassified
+- **Production hits:** 178 total — 1 write, 1 read, 176 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/Game/ActionCard.tsx`, `src/components/Game/ascendant-bar/IdentityStrip.tsx`, `src/components/Game/ascendant-bar/selectors.ts`, `src/components/Game/ChapterView.tsx` +152 more
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/Game/ActionCard.tsx`, `src/components/Game/ascendant-bar/IdentityStrip.tsx`, `src/components/Game/ascendant-bar/selectors.ts`, `src/components/Game/ChapterView.tsx` +171 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `reunion-reads-the-edges-not-the-roster` — 🟢 LIVE
@@ -654,10 +737,10 @@ remediation ticket or the build fails.
 - **Producer → Consumer:** Personality & Emergent Traits → Encounters & Dilemmas
 - **UL terms:** *Trait*
 - **Module:** `src/engine/traitRefIndex.ts`
-- **Production hits:** 10 total — 2 write, 5 read, 3 unclassified
+- **Production hits:** 11 total — 2 write, 5 read, 4 unclassified
 - **Write sites:** `src/engine/traitRefIndex.ts`, `src/engine/traits.ts`
 - **Read sites:** `src/engine/ambitionTick.ts`, `src/engine/effects/effectPredicates.ts`, `src/engine/encounterFilterPipeline.ts`, `src/engine/graphConditions.ts`, `src/engine/spellActivation.ts`
-- **Other hits:** `src/engine/kpi/branchingDistance.ts`, `src/engine/simulationRuntime.ts`, `src/types/traits.ts`
+- **Other hits:** `src/engine/kpi/branchingDistance.ts`, `src/engine/meetingEncounter.ts`, `src/engine/simulationRuntime.ts`, `src/types/traits.ts`
 - **Verdict:** Verified 2026-07-26: THR-786. All six pre-existing trait vocabularies now route through `collectBearerTraitRefs` + `bearerMatchesPredicate`: encounter filter pipeline (`requiredTraits`/`blockedByTraits`), effect-predicate context builder (`has_trait:`/`lacks_trait:` sugar), graphConditions (`agent_has_trait`/`agent_lacks_trait`), ambition snapshot eligibility (`buildAmbitionAgentSnapshot`), spell prerequisites (`checkPrerequisites`), and item-granted keys. Non-vacuous by the unchanged-behavior contract suite `src/engine/__tests__/contracts/traitPredicate.contract.test.ts`, which pins each site's pre-migration vocabulary (31 PRESERVED assertions, all green pre- and post-migration) and separately asserts the 4 deliberate widenings + 2 dead-read repairs, each of which was verified failing before the migration. Reach note (THR-811, 2026-07-27): the encounter read site resolved its template via `getAnyEncounterById`, so `requiredTraits`/`blockedByTraits` were unreadable on 43 of the 213 cache-registrable template ids — the predicate was shared but the encounter site could not see the authoring on that id set. It now resolves via getUnifiedTemplateById; no production encounter template declares either field yet, so this widened reach rather than changing any current verdict. Seventh consumer added (THR-802, 2026-07-27): `src/engine/kpi/branchingDistance.ts` was a production reader the THR-786 migration could not see — both its `requiredTraits` reads sat inside the THR-489 red typecheck baseline as `Property 'requiredTraits' does not exist`, so the grep for typed readers missed them and it kept comparing `e.target` to `req.traitId`. It now routes through the shared pair like every other site. Diagnostic-only (the `kpi:branching-audit` CLI path, never the tick loop), so this changes what the readout reports rather than any gate outcome; covered by `src/engine/kpi/__tests__/branchingDistanceTraitGate.thr802.test.ts`, falsified 5-of-6-red against the pre-fix build.
 
 ### `trait-ref-authoring-vocabulary` — 🔴 LEAKED
@@ -666,11 +749,23 @@ remediation ticket or the build fails.
 - **Producer → Consumer:** Personality & Emergent Traits → Ambitions & Initiatives
 - **UL terms:** *Trait*
 - **Module:** `src/engine/traitRefValidation.ts` — **no production importers**
-- **Production hits:** 11 total — 3 write, 2 read, 6 unclassified
+- **Production hits:** 14 total — 3 write, 2 read, 9 unclassified
 - **Write sites:** `src/data/artifact-templates.ts`, `src/data/choice-set-catalog.ts`, `src/data/reward-attachment-catalog.ts`
 - **Read sites:** `src/debug-bridge.ts`, `src/engine/traitRefValidation.ts`
-- **Other hits:** `src/data/__fixtures__/nudge-exemplar/darkhollow-vault-exemplar.ts`, `src/data/anomaly-reward-catalog.ts`, `src/data/encounter-content.ts`, `src/data/starter-attachments.ts`, `src/engine/simulationRuntime.ts` +1 more
+- **Other hits:** `src/data/__fixtures__/nudge-exemplar/darkhollow-vault-exemplar.ts`, `src/data/anomaly-reward-catalog.ts`, `src/data/encounter-content.ts`, `src/data/starter-attachments.ts`, `src/engine/agentDetail.ts` +4 more
 - **Verdict:** Pinned by badgeOverride: Detector shipped and measured (THR-786): 62 of the authored trait refs resolve to no trait definition, so those gates can never pass. Reconciling the authoring vocabulary against the minted definitions is content work outside the predicate floor.
+
+### `twilight-harvest-preserves-defining-card` — 🔵 UNVERIFIED-OK
+
+- **Intent:** A god who dies is not wholly gone: the trick they were known for survives the age and turns up in the next god's hand, whole after a triumph and scarred after a defeat.
+- **Producer → Consumer:** Attention, Chronicle & Narrative → Encounters & Dilemmas
+- **UL terms:** *Nudge*, *Echo*, *World-Soul*
+- **Module:** `src/engine/nudgeCardRepertoire.ts`
+- **Production hits:** 6 total — 1 write, 1 read, 4 unclassified
+- **Write sites:** `src/engine/cycleEnd.ts`
+- **Read sites:** `src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts`
+- **Other hits:** `src/engine/echo.ts`, `src/engine/nudgeCardRepertoire.ts`, `src/types/echo.ts`, `src/types/gameState.ts`
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `world-events-mint-ambitions` — 🟢 LIVE
 

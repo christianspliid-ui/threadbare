@@ -7,7 +7,7 @@ description: >
   src/components/HexMapV2/. Triggers on "hex map", "HexMapV2", "Three.js scene",
   "zoom", "coastline", "river overlay", "region labels", "elevation ticks",
   "InstancedMesh", "d3-zoom", or any hex renderer work.
-last_validated_against: 2026-05-08
+last_validated_against: 2026-07-30
 ---
 
 # Hex Map Renderer — Domain Context
@@ -32,7 +32,7 @@ Playwright/preview tools **cannot** see WebGL canvas content — snapshots and i
 
 | What to check | Tool |
 |----------------|------|
-| Console errors, network, DOM UI around canvas | Playwright `preview_console_logs`, `preview_network`, `preview_snapshot` |
+| Console errors, network, DOM UI around canvas | Playwright `browser_console_messages`, `browser_network_requests`, `browser_snapshot` |
 | Actual rendered hex map visuals (terrain, coastlines, signifiers, colors) | **Claude in Chrome** — `tabs_context_mcp` → `navigate` to `localhost:5173/?view=game&seeded` → `computer` with `action: "screenshot"` or `action: "zoom"` for detail. |
 
 When verifying hex map changes, always check both: Playwright for errors, Claude in Chrome for visual correctness.

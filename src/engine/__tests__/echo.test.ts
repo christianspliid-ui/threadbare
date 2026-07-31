@@ -20,7 +20,11 @@ import {
 
 describe('echo types', () => {
   it('exports ECHO_TYPES', () => {
-    expect(ECHO_TYPES).toEqual(['legacy', 'monument', 'relic']);
+    // Closed set on purpose: adding an echo kind has to be a deliberate edit
+    // here, because `echoTypeToInjectionType` switches exhaustively over it.
+    // `card` joined in THR-887 — the nudge card that defined a run, and the only
+    // echo type not derived from a graph node.
+    expect(ECHO_TYPES).toEqual(['legacy', 'monument', 'relic', 'card']);
   });
 
   it('exports ECHO_DEGRADATION_RATE', () => {

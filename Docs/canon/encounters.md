@@ -36,6 +36,48 @@ the resolved band. A **band fragment** (`bandProse[outcome]`) is prose appended 
 nudge was active for that band. A rider changes what happened; a fragment says the god
 was there when it did. Both are UL entries (Encounters shard).
 
+**The variance rule — do not author static factor lines (THR-892).** A test-panel factor
+line earns its place only if it **could have read differently on another run**. A static
+line reads the same every time the encounter fires, so it informs no decision: price it
+into the step's `difficulty` and put the fact in the prose, where scene facts belong.
+Static `ActionStep.factorLines` are therefore **retired for new content** — the exemplar
+authors none. What fills the panel instead is *derived*: the actor's capability in the
+step's reach, plus one line per named modifier the world contributed (equipment, terrain,
+faction, sphere, conditions/attachment effects, divine attention, rule overrides). Those
+come from `ModifierBreakdown.contributions`, emitted by the **same** `computeResolutionModifiers`
+walk that feeds the roll — never a parallel computation, so a line and the outcome cannot
+disagree. Omens, doom stage, and season derive **nothing**, and that is correct rather than
+missing: no omen/doom/season read exists anywhere in the modifier pipeline `forecastAction`
+consumes. The two authored factor surfaces that survive the rule are **trait lines**
+(`TraitVariant.factorLine`) and **carryover lines** (`ActionStep.carryoverFactorLines`),
+which key on the band the *previous* step rolled — variant by construction. Full authoring
+detail: systemic wiring guide § Capability 17.
+
+**Meet The First is nudge-native (WS6, THR-868).** The game's first interactive surface
+used to *be* the rejected model — two authored formative moments, player picks which one
+is true. It now runs three fate rolls: two **formative tests** and a **bond test** as the
+climax. A meeting nudge additionally carries a **pole lean** (`MeetingStepNudge`), because
+a nudge shifts odds and never picks the ending, so the *direction* a success writes cannot
+come from a choice: the played hand's net lean picks which pole of the value pair a success
+writes, and fate picks how cleanly it resolves. That is what makes "you nudged toward
+mercy, fate landed ruthlessness" a real outcome rather than a slogan.
+
+- **Types + resolvers:** `src/types/meetingEncounter.ts`, `src/engine/meetingEncounter.ts`
+  (`resolveFormativeTest` / `resolveBondTest` / `applyMeetingOutcomes`). No parallel
+  resolver — the shared attended ladder does the rolling.
+- **Constants:** `src/data/meeting-nudge-constants.ts`. Note `MEETING_TEST_CAPABILITY` is
+  **0.8, not 0.5**: measured through the live resolver, 0.5 against authored difficulty
+  0.5 forecasts `doomed` (p=0.09), because the attended sigmoid is not centred at equal
+  capability/difficulty. Retuning is free; the tests pin the *shape* (an unled
+  mid-difficulty moment must not read `doomed`), not the number.
+- **Bands are `StepOutcome`, not `ForecastTier`.** `fated / favorable / uncertain /
+  perilous / doomed` are the **pre-roll** forecast words. A nudge resolves onto the
+  six-value `StepOutcome` ladder. Substituting one for the other type-checks and is wrong.
+- **Register + image doctrine are enforced, not advisory:**
+  `src/data/__tests__/meetingProseRegister.test.ts` (zero vagueness-lexicon words across
+  the sensing vignettes and god-voice tables, with negative controls) and
+  `src/data/__tests__/meetingSceneDoctrine.test.ts` (`QUARANTINED_SCENE_ASSETS`).
+
 ## Current spec
 
 - **Format:** `UnifiedActionTemplate` — the single format for all encounter types since THR-108 (2026-04-XX). `EncounterTemplate` is removed; it no longer exists anywhere in the codebase.
@@ -96,6 +138,8 @@ Source: `Docs/plans/2026-05-04-encounter-experience-design-plan.md` §2.2 and `B
 - ❌ **Choosing between authored futures** ("Forge the truth" / "Temper the narrative") — rejected 2026-07-26 (THR-772, Christian, chat). The player must never pick an ending. The god plays concrete, sphere-flavoured **nudges** that shift the odds; fate rolls the outcome. Superseded the `authoredChoices` layer at design level; code retirement is staged (WS5 conversion, THR-778). Do not author `authoredChoices` on a new encounter.
 - ❌ **A percentage anywhere on the mortal-facing surface** — rejected 2026-07-26 (THR-772 ruling 1). Odds are legible in words only: the five forecast tier words and the four difficulty words (`severe / steep / fair / gentle`). Numbers exist behind the words; the designer/debug view is the sole exception. An `effectLine` carrying a digit is an editorial reject, not a nit.
 - ❌ **A nudge with no failure-band payoff** — the god's hand must be traceable in failure at any size (THR-772 program ruling: payoff at every band). A card that vanishes on a loss makes failure read as punishment, which inverts the design.
+- ❌ **Scene art that depicts the interaction, or a second human likeness** — rejected 2026-07-30 (THR-868 audit). Image doctrine ruling 10: a scene omits or silhouettes the agent, because the portrait chosen at Sensing is the only likeness across the flow. The audit of all 32 meeting scene files found five violations, and the reachable one was rendering: `plague-ward.jpg` (an individuated child's face) won any dilemma tagged `sacrifice` or `compassion`. `prison-cell.jpg` had the retired choice mechanic painted in as two UI buttons — "GRANT MERCY" / "IMPOSE JUDGMENT" — so the art taught the rejected model even after the code stopped. Two more carried baked-in caption text. Quarantine list + enforcement: `QUARANTINED_SCENE_ASSETS` in `src/data/meeting-art-library.ts`, pinned by `src/data/__tests__/meetingSceneDoctrine.test.ts`. **A wrong picture type-checks** — this class is invisible to every test that does not look at the pool.
+- ❌ **The lyrical register, game-wide** — rejected 2026-07-30 (Christian, chat; THR-868 WS6 mandate). "Something inside them settles into place like a stone dropped into still water" is the register being retired. Player-facing prose is plain and descriptive of **events, people, and motivations**: every sentence carries a picturable anchor, abstractions are cashed in-sentence, and the vagueness lexicon (`someone` and `very` included — see `AUDIT_VAGUENESS_TERMS`, which is wider than the spec doc's list) targets zero. Do not close a paragraph on an abstraction.
 - ❌ Spirit as a Reach — Spirit is a **Sphere** (one of the 12 Creation Spheres), not a Reach. Using "Spirit reach" in encounter authoring is a drift error. Use the correct Reach (Iron, Gold, etc.) for the action domain.
 - ❌ Voice as a Reach — Voice does not exist. The persuasion/communication domain maps to **Gold** (influence, patronage, social capital) depending on the action type.
 - ❌ Intelligence/visibility gating of encounter candidates — rejected 2026-05-07 (project-level direction from Christian, THR-138 closed). All encounter content is fully visible to the player at all times; intel never *hides* candidates. Intel may still *enrich* an encounter when present (prose recognition per THR-139, mechanical bonus per THR-140, cross-agent sharing per THR-142) — additive, never subtractive. Do not propose `requiresIntelligence` template fields, hidden-candidate filters, or "fog of intel" mechanics; the design space is closed.
@@ -109,4 +153,7 @@ Source: `Docs/plans/2026-05-04-encounter-experience-design-plan.md` §2.2 and `B
 
 ## Last-reviewed
 
-2026-07-27 by Claude Code (THR-774 / WS1: nudge model recorded as the current authoring spec — spec pointer, golden exemplar, authoring guardrails, three new rejected approaches). Review trigger: monthly, or when any listed plan moves to `superseded`. Previous edit: 2026-05-16 by Cowork (populated-variants framework reference, THR-447).
+2026-07-30 by Claude Code (THR-892: the variance rule recorded — static `factorLines`
+retired for new content, the derived-line set and its one read path, the omen/doom/season
+N/A with its read path cited, and `carryoverFactorLines` as the surviving authored factor
+surface). Previous edit: 2026-07-30 by Claude Code (THR-868 / WS6: Meet The First recorded as nudge-native — pole lean, the retuned `MEETING_TEST_CAPABILITY`, the `StepOutcome`-not-`ForecastTier` trap, and two new rejected approaches covering scene-art doctrine and the retired lyrical register). Review trigger: monthly, or when any listed plan moves to `superseded`. Previous edit: 2026-07-27 by Claude Code (THR-774 / WS1: nudge model recorded as the current authoring spec — spec pointer, golden exemplar, authoring guardrails, three new rejected approaches).

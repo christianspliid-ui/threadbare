@@ -1,36 +1,51 @@
 # Briefing
 
-**Generated:** 2026-07-30 06:58 local (2026-07-30 04:58 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-07-31 14:39 local (2026-07-31 12:39 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
 ## Needs Christian
 
-**Nothing needs you right now.** No open questions, no switch waiting on you, nothing stuck on a decision. Every health check came back clean, and both of the other planning robots that reported recently had nothing for you either.
+**Your read on the five prototype encounters is still the one thing holding the content pipeline — and this hour the tools you asked for to make that read easy got built.** Two things landed on the format branch this morning:
+
+- **A direct link that opens one named encounter.** You asked for a way to jump straight into a specific encounter instead of hunting for one. That now exists as a URL you can paste — it drops you into a seeded game with that encounter already open.
+- **A fair test character.** You pointed out that the seeded avatar is lopsided — strong in one area, hopeless in others — so every encounter testing a weak area came back doomed before you could judge the writing. There is now a balanced character, even across all eight areas and all twelve spheres, so an encounter reads on its own merits rather than on the avatar's bad luck. The number behind it was measured rather than guessed: the first value tried still read *perilous* on a fair test, so it was raised until the forecast landed mid-range with room to move both ways.
+
+**Neither is usable by you yet, and the reason is small.** Both ride on the same pull request as the locked writing format itself, and that request is currently failing its checks — not over anything to do with the format, but because two background tasks each wrote a note into the friction log and both grabbed the number 325. It is a renumbering, a couple of minutes for a working session, and it is already identified. **You don't need to do anything about it** — it's named here only because it's the last thing between you and the review tools.
+
+**So the honest status: your read is still the gate, and the gate is about to get easier to walk through.** If you want to wait the short while for the click-straight-in links, that is a reasonable call. If you'd rather read the five prototypes as text now, ask for the **five design-first prototypes by name** — they're a different set from the five category drafts you already gave guidance on.
+
+**The four finished encounters are still riding on that same read, still parked, still nothing lost.** The capital-cluster batch — a millrace dispute, a ford toll house, two feuding houses, and a monument that turned into a three-mile problem with a rock — is written and passed every check, but in the old style, nineteen minutes before you called the pause. When you sign off on the format, that session decides whether those four go in as-is and get tidied alongside the seven earlier ones, or get rewritten. One question inside the format session, not a separate decision for you today.
+
+**The trait question stays parked and stays not urgent.** You said a Tenacious-style trait would suit a river crossing better than the one used. There are five trait families today, so minting a sixth is a content decision rather than a fix. It waits unless you say otherwise.
 
 ## Queue
 
-**Fifty-three jobs ready, none in progress, nothing gone cold.** Eighteen medium, thirty-five small, none urgent. The longest anything has waited is a bit over five days — inside the week we allow.
+**Forty-five jobs ready, one in progress, nothing gone cold.** The shelf grew by one this hour, and the growth is the good kind: **two high-priority engine jobs arrived this morning — the first high-priority work on the shelf in about ten hours.** One extends encounter branching from two outcomes to several; the other narrows an over-eager prose check so it flags evasive writing rather than ordinary writing. Four medium and thirty-nine low sit behind them.
 
-**For the first time this week, finishing kept pace with filing.** One job finished and landed; one new job was added. Every previous hour added faster than it cleared. One hour is not a trend, but it is the first hour that did not lose ground.
+**Still no content writing on the shelf, by design** — that pause holds until you've read the prototypes.
 
-**One thing on the shelf is worth a line, because it is the job most likely to be picked up next.** A cleanup job was promoted to the top of the queue this hour, and its whole description is built around tidying thirty-eight parked drafts. There are two, and there have been roughly two for about nine days — the pile it was written about was cleared long ago. Whoever takes it will find almost nothing to do. Nothing is broken and nothing is lost; the ticket just needs rewriting before someone spends a session on it. That is a robot's job, not yours, and it is now written down for them.
+**A job that had been invisible to the work-picker for four days is now visible again.** It sat on the shelf with a name attached, and the picker only takes unnamed jobs; the morning grooming pass cleared the name. Nothing for you — noting it because previous briefings flagged it.
+
+**The one job in progress is the finished-but-parked batch** described above. Parked about a day, holding a slot, blocking nothing.
+
+The longest-waiting item crosses our one-week line **this evening**. Low-priority tidy-up, so a note rather than a problem.
 
 ## Freshness
 
-**Home tree healthy, with one thing being watched.** You are on the main line with nothing stranded, and the only local edits are your own tool-permission settings, which block nothing. Your copy is ten commits behind the shared one — that sounds worse than it is: ten changes landed in the last hour and the sync runs hourly, so it is normal timing rather than drift. The watch item: this hour's sync was eight minutes late, where the previous seven were exact to the second. If it catches up next hour it was noise. If it does not, next hour's brief will say so plainly and give you the one command that fixes it.
+**Home tree healthy** — on the main line, nothing behind, nothing stranded. The only local edits are your own tool-permission settings and Friday's retro draft; neither blocks anything.
 
-**Everything else checked clean.** The merge safety net is healthy with zero failed starts — the fifteenth clean check since you sorted the billing page. The tidy-up robot ran at 06:40 with nothing awaiting a human call. All eight scheduled robots are on time. The live site is correctly unchanged for a third hour: only notes and docs landed, so there was nothing to rebuild.
+**The live site is current.** Nothing has been published since the last release because everything merged since then was notes and documentation — the game itself didn't need rebuilding. Automated checks report normal, and the hourly cleanup job ran an hour ago.
+
+**One health probe cried wolf, and I'm not passing it on as an alarm.** The fleet monitor flagged the hourly work-picker as stalled — five slots missed. The evidence says otherwise: a Monday-only task shows a timestamp from this Friday afternoon, which is only possible if the machine woke and stamped several tasks at once. The machine was asleep from about 07:00 to 12:38, so the picker didn't fail, it simply wasn't running. Its next slot is about twenty minutes out. **If it misses that one, the next briefing will say so with real evidence.**
 
 ## What's moving
 
-**The faction-notifications job went in on its own, and that settles a question two briefs have been chasing.** Faction news no longer shouts from the global feed; it sits on the faction's own row, matching how agents already work. It had been sitting finished-but-queued for about an hour and three-quarters. Last hour's brief said honestly that it could not yet tell "waiting" from "stuck", and named the moment that would settle it — and it landed by itself before that moment, with nobody intervening. So the queue-itself-to-merge mechanism does work; it is just slower than it looks.
+**The format work moved further this hour than in the previous twelve.** The pull request carrying the locked writing format had been stuck for half a day behind a collision with newer work; that was untangled this morning, and the two review levers above were added on top. It is now cleared to merge the moment its checks go green — which is the numbering fix described above, and nothing else.
 
-**The encounter-content migration finished its main run of batches.** The sacred-and-arcane sites are now filed — shrines, then ruins and towers — completing every one of the five groups the work was divided into. What remains is a single apex piece, the ascension encounter, deliberately held back because it needs a design look rather than another routine pass. Nothing is blocked; it is queued for a design session.
-
-**The work-picking robot is now idle with a full shelf, and next hour is a real test.** It last woke while the faction job was still in progress, so it correctly took nothing. It wakes again with fifty-three jobs available and nothing in progress — the same conditions under which it claimed a job in seventy-six seconds two hours ago. If it claims again, the queue is genuinely draining. If it takes nothing, the cause is something other than what we fixed last night, and next hour's brief will say which.
-
-One piece of housekeeping still waits on a session with permission to do it: an obsolete pull request (#1031) wants closing and has now been idle about thirty-three hours. Nothing is lost by the wait.
+**Three pull requests are open, none needs a decision from you.** One is the format work just described. One is the parked encounter batch, deliberately held. The third is a small housekeeping change that has been tangled with newer work for two days and wants a few minutes of hands.
 
 ---
-*Standing asks live in `Design/user-actions.md`. This file is regenerated hourly by the `keep-work-flowing-cc` scheduled task; staleness is visible from the Generated timestamp above and the task's `lastRunAt` in `list_scheduled_tasks`.*
+*Standing asks live in `Design/user-actions.md`. This file is regenerated hourly by
+the `keep-work-flowing-cc` scheduled task; staleness is visible from the Generated
+timestamp above and the task's `lastRunAt` in `list_scheduled_tasks`.*

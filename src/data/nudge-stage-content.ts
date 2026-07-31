@@ -66,6 +66,7 @@ export const NUDGE_BLOCKED_REASONS: Readonly<Record<NudgeBlockedCode, string>> =
 export const NUDGE_RIDER_LABELS: Readonly<Record<NudgeRider, string>> = {
   no_crit_fail: 'No catastrophe',
   floor_at_cost: 'Floors at a cost',
+  all_or_nothing: 'Widens both ends',
 };
 
 /** Cost rendered in words. A free card says so rather than showing a zero. */
@@ -85,3 +86,69 @@ export const NUDGE_EMPTY_HAND_LINE = 'Nothing here answers to you. Let it play o
  * enough that it is gone before the next encounter surfaces.
  */
 export const NUDGE_REJECT_TOAST_MS = 6000;
+
+// ─── Derived factor lines (THR-892) ────────────────────────────────
+
+/**
+ * How a derived factor line reads, per modifier source and direction.
+ *
+ * **Canon rule 1 lives here.** Every template names its source *inside the
+ * sentence* — "Sera Vance carries the Rusted Key" — never as a label beside a
+ * number. That is why these are sentence templates rather than a `{label}:
+ * {value}` pair: the key:value shape is the unfinished-UX pattern the project
+ * rejects, and a table of half-sentences is the only way to keep it impossible.
+ *
+ * `{actor}` is the acting mortal's name, `{source}` the named cause. Both are
+ * always substituted; a template referencing neither is legal (the rule line).
+ *
+ * Register is plain and descriptive on purpose — these sit under the prose, not
+ * beside it, and a lyrical factor line competes with the scene for attention.
+ */
+export const DERIVED_FACTOR_SENTENCES: Readonly<
+  Record<string, { readonly for: string; readonly against: string }>
+> = {
+  equipment: {
+    for: '{actor} carries {source}.',
+    against: '{source} hampers {actor}.',
+  },
+  trait: {
+    for: '{actor} is {source}.',
+    against: 'Being {source} tells against {actor}.',
+  },
+  terrain: {
+    for: 'The {source} favours the attempt.',
+    against: 'The {source} works against it.',
+  },
+  faction: {
+    for: '{source} holds this ground.',
+    against: '{source} holds this ground, and no friend of {actor}.',
+  },
+  sphere: {
+    for: 'The {source} sphere runs with this.',
+    against: 'The {source} sphere runs against this.',
+  },
+  effect: {
+    for: '{source} steadies {actor}.',
+    against: '{source} drags at {actor}.',
+  },
+  divine: {
+    for: 'Your attention rests on {actor}.',
+    against: 'Your attention weighs on {actor}.',
+  },
+  rule: {
+    for: 'Something has bent the rules of this place.',
+    against: 'Something has bent the rules of this place.',
+  },
+};
+
+/**
+ * The agent's own capability in the step's reach — the "first line" of the panel.
+ *
+ * `{word}` is the reach's tier word (`DOMAIN_WORD_SCALES`), `{reach}` the reach
+ * itself. Rendered lowercase so the sentence reads as prose rather than as a
+ * stat readout.
+ */
+export const DERIVED_SKILL_SENTENCE = '{actor} is {word} in {reach}.';
+
+/** Stand-in when the acting node has no resolvable name (NFP #4, never throws). */
+export const DERIVED_FACTOR_ACTOR_FALLBACK = 'The acting hand';

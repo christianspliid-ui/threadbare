@@ -5,12 +5,22 @@ import type { SphereName } from '../../../types/index';
 import type { ResolutionInput } from '../../../types/resolution';
 import type { ForecastTier } from '../../../types/traces/encounter-traces';
 import type { NudgeBlockedCode } from '../../../engine/encounters/nudges';
+import type { NudgeCostChannelId } from '../../../data/nudge-card-display';
 import type { MotiveSource } from '../../../engine/encounters/motiveClassifier';
+import { isForceFullEncounterVisibility } from '../../../engine/debugVisibilityOverride';
 
 export type ThreadTier = 'strong' | 'light' | 'watched';
 
-/** Map engine CourtPosition to UI thread tier */
+/**
+ * Map engine CourtPosition to UI thread tier.
+ *
+ * THR-880: while the force-full-visibility debug override is active, a
+ * Watched agent's encounter renders through the same 'strong' path as The
+ * First — otherwise the veil would still show the stripped-down Watched
+ * screen even after the notification/choices override gave it full prose.
+ */
 export function courtPositionToThreadTier(pos: CourtPosition | null): ThreadTier {
+  if (isForceFullEncounterVisibility() && pos && pos !== 'dormant') return 'strong';
   switch (pos) {
     case 'the_first': return 'strong';
     case 'retinue': return 'light';
@@ -256,16 +266,59 @@ export interface EncounterStageAftermathModel {
  */
 export type NudgeCardState = 'playable' | 'dimmed';
 
+/**
+ * A non-essence price this card charges (THR-885 cost channels), already read
+ * into display form by the adapter (THR-890). The magnitude renders as penalty
+ * pips; the label states the price in words.
+ */
+export interface EncounterStageCostChannelModel {
+  id: NudgeCostChannelId;
+  icon: string;
+  /** Plain-language price — never a numeral. */
+  label: string;
+  /**
+   * Raw signed delta, for the penalty-pip row. Negative deltas are *relief*
+   * (a card that calms the doom clock), which is why the label carries the
+   * direction rather than the sign alone.
+   */
+  delta: number;
+}
+
 export interface EncounterStageNudgeCardModel {
   id: string;
+  /**
+   * Library card this option instances (THR-887). Carried so the commit path can
+   * tally it for the twilight echo card, and — since THR-890 — so the card row
+   * can print the family's keyword. Absent on a one-off authored option, which
+   * renders chipless rather than inventing a type.
+   */
+  libraryCardId?: string;
+  /**
+   * Player-facing library keyword ("Boost", "Gambit"), derived from
+   * {@link libraryCardId}. Absent ⇒ no chip.
+   */
+  keyword?: string;
+  /** Single glyph drawn on the keyword chip. Present whenever `keyword` is. */
+  keywordIcon?: string;
   name: string;
   /** Card body — a concrete, witnessed effect. */
   fiction: string;
   /** Player guidance, words only — never a number. */
   effectLine: string;
+  /**
+   * **Effective** essence price — after any sphere discount (THR-885).
+   *
+   * This is deliberately the discounted number rather than the authored one:
+   * `buildNudgeHand` prices affordability off it and `totalNudgeCost` charges it,
+   * so quoting the authored cost here would show a card dear and bill it cheap.
+   */
   essenceCost: number;
+  /** True when a sphere alignment brought {@link essenceCost} below the authored price. */
+  discounted?: boolean;
   /** Cost rendered in words; absent on a free (trait) option. */
   costLabel?: string;
+  /** Prices charged outside the essence pool. Empty ⇒ essence is the whole price. */
+  costChannels?: EncounterStageCostChannelModel[];
   sphere?: SphereName;
   /** WS4 image-library tag. Absent ⇒ the fallback chain ends at EntityVisual. */
   imageTag?: string;
@@ -313,6 +366,15 @@ export interface EncounterStageFactorLineModel {
   polarity: FactorPolarity;
   /** Named modifier source (`trait:*` / `nudge:*`) when the line is live-derived. */
   source?: string;
+  /**
+   * THR-892 — the line's raw 0–1 forecast contribution, signed, for the pip row.
+   *
+   * Absent on any line with no measurable contribution: an authored static line,
+   * a contract `forecast_factors` string, or a carryover line the author declared
+   * without a delta. Absent means "draw no pips", never "draw zero pips" — a row
+   * of empty slots would promise a magnitude the line does not have.
+   */
+  delta?: number;
 }
 
 export interface EncounterStageTestPanelModel {

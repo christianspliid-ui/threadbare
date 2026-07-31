@@ -20,7 +20,7 @@ import type { CooperationStrategy, InteractionRecord } from '../types/dispositio
 import { DEFAULT_REPUTATION } from '../types/disposition';
 import type { KnowledgeLevel } from '../types/familiarity';
 import { getDomainWord, getDomainTier, getValueWord, getReputationWord, getBondStrengthWord } from '../data/domain-words';
-import { generateQuotes, generateBackstory } from './profileGenerator';
+import { generateQuotes, generateBackstory, humanizeDescriptor } from './profileGenerator';
 import type { AmbitionCategory, ReactiveAmbitionTemplate } from '../types/ambition';
 import { generateTieredBackstory } from './backstoryGenerator';
 import type { BackstoryResult } from '../types/prose';
@@ -645,6 +645,27 @@ function getAgentTraitNames(graph: WorldGraph, agentId: string): string[] {
 }
 
 /**
+ * Narrative descriptors landed by the Meet-The-First meeting (THR-872), rendered
+ * for display. Empty for every agent the meeting did not create.
+ *
+ * Kept deliberately separate from `getAgentTraitNames`: these are free-text
+ * character description, not trait refs, and must never reach the trait
+ * predicate or `validateTraitRefs` (see `createAgentFromMeeting`).
+ *
+ * Fail-soft (NFP #4): a property of the wrong shape yields an empty list rather
+ * than throwing inside the profile build.
+ * @private
+ */
+function getAgentNarrativeDescriptors(graph: WorldGraph, agentId: string): string[] {
+  const raw = (graph.getNode(agentId)?.properties as Record<string, unknown> | undefined)
+    ?.narrativeDescriptors;
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .filter((d): d is string => typeof d === 'string' && d.trim().length > 0)
+    .map(humanizeDescriptor);
+}
+
+/**
  * Emergent personality traits, shaped for the character-sheet Personality section
  * (THR-562). Filters the agent's has_trait edges to the `personality` subcategory and
  * parses pole/reach from the canonical id `trait.personality.<reach>.<pole>`. A malformed
@@ -902,6 +923,7 @@ export function getAgentInfoCard(
   const agentGender = agentProps.gender as string | undefined;
   const cultureName = getAgentCultureName(graph, agentId);
   const traitNames = getAgentTraitNames(graph, agentId);
+  const narrativeDescriptors = getAgentNarrativeDescriptors(graph, agentId);
 
   // Base card (always visible)
   const card: AgentInfoCardData = {
@@ -1121,10 +1143,17 @@ export function getAgentInfoCard(
       card.personalityContributors = personalityContributors;
     }
 
-    // All (non-personality) traits
+    // All (non-personality) traits, plus the meeting's narrative descriptors
+    // (THR-872) — the character-sheet trait list is the first production reader
+    // of the landed field. Descriptors follow the earned traits: what the world
+    // has since made of this person reads before how they were first drawn.
     const genericTraitNames = traitNames.filter(n => !personalityNames.has(n));
-    if (genericTraitNames.length > 0) {
-      card.allTraits = genericTraitNames;
+    const displayTraits = [
+      ...genericTraitNames,
+      ...narrativeDescriptors.filter(d => !genericTraitNames.includes(d)),
+    ];
+    if (displayTraits.length > 0) {
+      card.allTraits = displayTraits;
     }
 
     // Generate backstory paragraph 1
@@ -1137,6 +1166,7 @@ export function getAgentInfoCard(
         archetypeId: detail.archetype?.id ?? 'sage',
         cultureName: cultureNameForBackstory,
         traitNames,
+        narrativeDescriptors,
         bondNames,
         name: detail.name,
         primarySphere: primarySphere ?? 'eye',
@@ -1231,6 +1261,7 @@ export function getAgentFullProfile(
 
   const primarySphere = (agentNode.properties as Record<string, unknown>).primarySphere as string | undefined;
   const traitNames = getAgentTraitNames(graph, agentId);
+  const narrativeDescriptors = getAgentNarrativeDescriptors(graph, agentId);
   const cultureName = getAgentCultureName(graph, agentId) ?? 'The Forgotten Lands';
   const dominantValueLabels = detail.topValues
     .slice(0, 3)
@@ -1257,6 +1288,7 @@ export function getAgentFullProfile(
         archetypeId: detail.archetype?.id ?? 'sage',
         cultureName,
         traitNames,
+        narrativeDescriptors,
         bondNames,
         name: detail.name,
         primarySphere: primarySphere ?? 'eye',
@@ -1278,6 +1310,7 @@ export function getAgentFullProfile(
         archetypeId: detail.archetype?.id ?? 'sage',
         cultureName,
         traitNames,
+        narrativeDescriptors,
         bondNames,
         name: detail.name,
         primarySphere: primarySphere ?? 'eye',

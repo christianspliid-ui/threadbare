@@ -33,6 +33,7 @@ import { getAnyEncounterById } from '../data/encounter-content';
 import { getUnifiedTemplateById } from '../data/unified-action-templates';
 import { resolveStepDefinition } from './unifiedActionLifecycle';
 import { resolveLocationToHex } from './encounterAwareness';
+import { isForceFullEncounterVisibility } from './debugVisibilityOverride';
 import { stepOutcomeToOutcomeBand } from '../data/outcome-band-content';
 
 // ─── Notification Generation ───────────────────────────────────────
@@ -42,11 +43,17 @@ import { stepOutcomeToOutcomeBand } from '../data/outcome-band-content';
  */
 export function getVisibilityDepth(courtPosition: CourtPosition | null): EncounterVisibilityDepth {
   if (!courtPosition) return 'none';
+  if (isForceFullEncounterVisibility() && courtPosition !== 'dormant') return 'full';
   return VISIBILITY_BY_POSITION[courtPosition]?.proseDepth ?? 'none';
 }
 
 /**
  * Generate encounter intervention choices based on court position.
+ *
+ * THR-880: while the force-full-visibility debug override is active, every
+ * threaded (non-dormant) position gets treated as `the_first` here — the
+ * full 3-choice set — so testing sessions aren't limited to Watched's
+ * observation-only view.
  */
 export function generateInterventionChoices(
   courtPosition: CourtPosition | null,
@@ -54,12 +61,15 @@ export function generateInterventionChoices(
 ): EncounterInterventionChoice[] {
   if (!courtPosition) return [];
 
-  const config = VISIBILITY_BY_POSITION[courtPosition];
+  const effectivePosition: CourtPosition =
+    isForceFullEncounterVisibility() && courtPosition !== 'dormant' ? 'the_first' : courtPosition;
+
+  const config = VISIBILITY_BY_POSITION[effectivePosition];
   if (!config || config.maxChoices === 0) return [];
 
   const choices: EncounterInterventionChoice[] = [];
 
-  if (courtPosition === 'the_first' || courtPosition === 'retinue') {
+  if (effectivePosition === 'the_first' || effectivePosition === 'retinue') {
     // Supportive intervention
     choices.push({
       id: 'intervene_support',
@@ -70,7 +80,7 @@ export function generateInterventionChoices(
       godVoice: 'The thread hums with divine purpose.',
     });
 
-    if (courtPosition === 'the_first') {
+    if (effectivePosition === 'the_first') {
       // Coercive intervention (First only)
       choices.push({
         id: 'intervene_force',
@@ -158,7 +168,12 @@ export function buildEncounterNotification(
   const prose = generateEncounterProse(depth, agentName, encounterName, locationName);
   const choices = generateInterventionChoices(courtPosition, encounterName);
 
-  const autoResolveTick = attentionMode === 'auto_resolve'
+  // THR-880: forced full visibility always pops the modal immediately rather
+  // than silently auto-resolving after RETINUE_VIGNETTE_TIMEOUT ticks —
+  // `shouldAutoOpenEncounterNotification` treats `autoResolveTick === null`
+  // as "open now."
+  const forceFull = isForceFullEncounterVisibility() && courtPosition !== 'dormant';
+  const autoResolveTick = !forceFull && attentionMode === 'auto_resolve'
     ? tick + RETINUE_VIGNETTE_TIMEOUT
     : null;
 

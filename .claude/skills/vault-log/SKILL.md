@@ -1,7 +1,7 @@
 ---
 name: vault-log
-description: Append an entry to TheFantasyWorldSimulator/log.md. Tries Obsidian MCP first; falls back to direct filesystem write using OBSIDIAN_VAULT_PATH if MCP is unreachable. Fails loud if neither path is available. Used by vault-ingest, vault-enrich, vault-lint, and vault-query.
-last_validated_against: 2026-05-08
+description: Append an entry to TheFantasyWorldSimulator/log.md via a direct filesystem write using OBSIDIAN_VAULT_PATH. Fails loud if that variable is unset. Used by vault-ingest, vault-enrich, vault-lint, and vault-query.
+last_validated_against: 2026-07-30
 ---
 
 # Vault Log — Append with Fallback
@@ -16,19 +16,13 @@ Single-responsibility skill for appending log entries to `TheFantasyWorldSimulat
 
 ## Procedure
 
-### Step 1: Try Obsidian MCP
+> **Filesystem only (THR-654, 2026-07-21).** There is no Obsidian MCP server — `.mcp.json`
+> configures `codesight` and nothing else, so `obsidian_append_content` and every other
+> `obsidian_*` tool is simply absent. The former "try MCP first, fall back to the filesystem"
+> ordering is what silently dropped ~12 `log.md` appends over 8 days (impediments #66, #71,
+> #75, #86). Write directly to `OBSIDIAN_VAULT_PATH`; if it is unset, fail loud.
 
-Call `obsidian_append_content`:
-- `filepath`: `TheFantasyWorldSimulator/log.md`
-- `content`: the entry text
-
-**If it succeeds → done. Stop here.**
-
-### Step 2: Filesystem fallback
-
-If `obsidian_append_content` throws a tool error, times out, or returns an MCP-unreachable error:
-
-**2a. Resolve vault path**
+**Step 1. Resolve vault path**
 
 ```bash
 echo "$OBSIDIAN_VAULT_PATH"
@@ -37,7 +31,7 @@ echo "$OBSIDIAN_VAULT_PATH"
 If the output is empty or unset → **fail loud** and stop with this message:
 
 ```
-VAULT-LOG ERROR: Obsidian MCP is unreachable AND OBSIDIAN_VAULT_PATH is not configured.
+VAULT-LOG ERROR: OBSIDIAN_VAULT_PATH is not configured.
 Cannot write to log.md. Set OBSIDIAN_VAULT_PATH to the vault root and retry.
 Example: add to .claude/settings.local.json:
   { "env": { "OBSIDIAN_VAULT_PATH": "C:\\Users\\chris\\Dev\\Obsidian" } }
@@ -45,7 +39,7 @@ Example: add to .claude/settings.local.json:
 
 Do NOT silently drop the log entry.
 
-**2b. Verify log.md exists**
+**Step 2. Verify log.md exists**
 
 ```bash
 LOG_PATH="$OBSIDIAN_VAULT_PATH/TheFantasyWorldSimulator/log.md"
@@ -54,7 +48,7 @@ test -f "$LOG_PATH" && echo "OK: $LOG_PATH" || echo "MISSING: $LOG_PATH"
 
 If missing → fail loud: vault path is misconfigured or vault is not on this machine.
 
-**2c. Append the entry**
+**Step 3. Append the entry**
 
 Read the current tail to confirm the file position, then append:
 
@@ -63,9 +57,9 @@ echo "" >> "$LOG_PATH"     # ensure file ends with newline
 echo "<entry>" >> "$LOG_PATH"
 ```
 
-Or use the `Edit` tool: read the last few lines of the file via `Read`, then use `Edit` to append the new line at the end. Content must be **identical** to what the MCP path would have written.
+Or use the `Edit` tool: read the last few lines of the file via `Read`, then use `Edit` to append the new line at the end.
 
-**2d. Confirm**
+**Step 4. Confirm**
 
 ```bash
 tail -3 "$LOG_PATH"
@@ -106,9 +100,8 @@ Set `OBSIDIAN_VAULT_PATH` to the vault root — the directory that contains `.ob
 
 The path is the vault root, not the project subfolder. `TheFantasyWorldSimulator/log.md` is resolved by appending to this root.
 
-## Parity Guarantee
+## Write Discipline
 
-The filesystem fallback must produce content identical to the MCP path:
 - Same line text, no extra trailing whitespace
 - Append-only — never overwrite existing lines
 - `log.md` has no frontmatter; do not add any

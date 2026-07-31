@@ -11,6 +11,7 @@ import { WorldGraph } from '../../../../engine/graph';
 import { selectReachRows } from '../selectors';
 import { getAscendantProgress } from '../../../../engine/phaseAscendantProgression';
 import { getNarrativeLabel } from '../../../../engine/domainCapability';
+import { getAscendantTierWord } from '../../../../data/ascendant-reach-register';
 import { createInitialAscendantBeatState } from '../../../../engine/ascendantBeat';
 import { deepeningBeatIdForReach } from '../../../../data/player-progression';
 import type { GameState } from '../../../../types/gameState';
@@ -69,8 +70,31 @@ describe('selectReachRows — the two permanent domains', () => {
     const progress = getAscendantProgress(state)!;
     for (const row of rows) {
       const engineReach = progress.reaches.find(r => r.reach === row.reach)!;
-      expect(row.tierWord).toBe(getNarrativeLabel(engineReach.reach, engineReach.tier));
+      expect(row.tierWord).toBe(getAscendantTierWord(engineReach.reach, engineReach.tier));
     }
+  });
+
+  it('dresses the god in the register, never the mortal lexicon (THR-869)', () => {
+    const state = barState({ domainCapabilities: { iron: 8, gold: 3 } });
+    const rows = selectReachRows(state);
+    const progress = getAscendantProgress(state)!;
+    expect(rows.length).toBeGreaterThan(0);
+    for (const row of rows) {
+      const engineReach = progress.reaches.find(r => r.reach === row.reach)!;
+      const mortalWord = getNarrativeLabel(engineReach.reach, engineReach.tier);
+      // Non-vacuous: the mortal ladder really does return a word for this tier, and the
+      // register deliberately returns a different one.
+      expect(mortalWord.length).toBeGreaterThan(0);
+      expect(row.tierWord).not.toBe(mortalWord);
+    }
+  });
+
+  it('carries the mortal-past echo line for the sheet to render', () => {
+    const rows = selectReachRows(barState({ domainAffinities: { iron: 5, gold: 3 } }));
+    expect(rows.map(r => r.echoLine)).toEqual([
+      'You held a line in life. It has not moved since.',
+      'In life no one could out-bargain you. Death has not settled your accounts.',
+    ]);
   });
 
   it('renders the tier as a prose word, never a number', () => {

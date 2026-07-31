@@ -2,16 +2,16 @@
 name: frontend-ui
 description: >
   Use when building UI components, styling, accessibility work, debug panel features,
-  or any code that lives in src/ui/ or src/components/. Triggers on "component",
+  or any code that lives in src/components/ or index.css. Triggers on "component",
   "UI", "frontend", "panel", "layout", "accessibility", "style tile", "CSS",
   "responsive", "interaction", or when the task involves visual presentation.
   Also load when designing the **UI pillar** of any feature.
-last_validated_against: 2026-05-08
+last_validated_against: 2026-07-30
 ---
 
 # Frontend & UI — Domain Context
 
-This skill is the **single-load context** for designing and building UI in Threadbearer. It inlines the critical decision-making content so you can design the UI pillar of any feature without reading additional files. Deep-dive references are linked for specialized work.
+This skill is the **single-load context** for designing and building UI in Threadbare. It inlines the critical decision-making content so you can design the UI pillar of any feature without reading additional files. Deep-dive references are linked for specialized work.
 
 ---
 
@@ -290,12 +290,20 @@ Load these only when doing specialized work in that domain:
 
 ## 10. Verification
 
-After implementing, verify at 1920×1080:
+After implementing, verify at 1920×1080 with the Playwright MCP:
 ```
-preview_start('dev')
-preview_resize({ width: 1920, height: 1080 })
+browser_navigate('http://localhost:5173/?view=game&seeded&size=medium')
+browser_resize(1920, 1080)
+browser_take_screenshot({ filename: '<absolute path inside the session worktree>' })
+browser_console_messages()
 ```
 
-For WebGL/Three.js content (HexMap), use Claude in Chrome tools — Playwright cannot see WebGL canvas content.
+Pass `filename` as an **absolute** path inside the session worktree — a bare filename writes
+outside the repo and is unrecoverable (impediment #199c).
+
+For WebGL/Three.js content (HexMap), use Claude in Chrome instead — Playwright cannot see WebGL
+canvas content. Note that Claude-in-Chrome's `resize_window` is **inert**: it reports success
+while the viewport does not move (THR-796). Measure `innerWidth`/`innerHeight` in the same pass
+and report those actual numbers; never present such a capture as 1920×1080.
 
 Check: nothing scrolls, nothing renders below the fold, all interaction states work, keyboard navigation functional, debug panel shows relevant traces.

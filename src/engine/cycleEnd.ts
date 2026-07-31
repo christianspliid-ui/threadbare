@@ -22,6 +22,7 @@ import {
 } from './chronicle';
 import type { EchoDefinition } from '../types/echo';
 import type { GraphNode } from '../types/graph';
+import { buildCardEcho, selectEchoCard } from './nudgeCardRepertoire';
 
 // ─── Seeded PRNG ──────────────────────────────────────────────────
 
@@ -84,6 +85,11 @@ export interface HarvestResult {
   cosmicEchoCandidates: HarvestEchoCandidate[];
   divineEchoSlots: number;
   chronicleSummary: string;
+  /**
+   * The run's defining nudge card, preserved into the next cycle (THR-887).
+   * Absent when the god never played a library card — a real state, not an error.
+   */
+  cardEcho?: EchoDefinition;
 }
 
 export interface HarvestEchoCandidate {
@@ -154,11 +160,36 @@ export function computeHarvest(state: GameState): HarvestResult {
     ? `A somber age. ${topName} faded into memory.`
     : `A bittersweet age. ${topName} left a lasting mark.`;
 
+  // THR-887 — the fourth preserved thing: the card that defined the run.
+  // Selected, never rolled, so a saved run replays to the same echo card.
+  const topSpheres = [...SPHERE_NAMES]
+    .sort((a, b) => (state.cosmology[b] ?? 0) - (state.cosmology[a] ?? 0))
+    .slice(0, 2);
+  const defining = selectEchoCard(
+    Object.entries(state.cardPlayTally ?? {}).map(([cardId, entry]) => ({
+      cardId,
+      timesPlayed: entry.timesPlayed,
+      peakSignificance: entry.peakSignificance,
+    })),
+  );
+  const cardEcho = defining
+    ? buildCardEcho(
+        defining.cardId,
+        harvestType,
+        state.cycle,
+        // The card's own significance is how climactic its best moment was —
+        // the same number the selection tie-broke on.
+        defining.peakSignificance,
+        topSpheres,
+      )
+    : undefined;
+
   return {
     harvestType,
     cosmicEchoCandidates: candidates.slice(0, cosmicCounts[harvestType]),
     divineEchoSlots: divineCounts[harvestType],
     chronicleSummary,
+    cardEcho,
   };
 }
 
@@ -232,5 +263,8 @@ export function transitionToNewCycle(
     tickEvents: [],
     recentEvents: [],
     stealthExposure: 0,
+    // THR-887 — the tally is run-scoped. Carrying it across the transition would
+    // let the first cycle's favorite card keep winning every later harvest.
+    cardPlayTally: {},
   };
 }
