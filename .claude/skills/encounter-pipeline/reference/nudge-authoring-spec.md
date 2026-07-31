@@ -203,9 +203,16 @@ before the first sentence of prose**:
    player reading only the title knows the complication or the objective — nothing
    more is needed, and no poetry is allowed to get in the tunnel between title and
    understanding.
-0c. **Pick the encounter's shape** from the shape catalog (section below) before
-   designing steps. The shape decides step count and structure; do not invent
-   structure per encounter.
+0c. **Pick one entry per catalog** — shape (section below), setting, pressure, form,
+   objective, stakes, system — from [`Docs/canon/encounter-catalogs.md`](../../../Docs/canon/encounter-catalogs.md).
+   Closed lists, one line each in the block; do not invent structure or vocabulary
+   per encounter. **The system pick is maturity-gated**: target the mature tier (the
+   traveling-agent core — movement, cards, traits, conditions, items, forks,
+   carryover); middling systems sparingly; deferred systems (economy, war, factions,
+   agent-magic) never load-bearing, flavor at most (Christian, 2026-07-31).
+0d. **Cite the hook**: `Hook: #NNN` from `Design/research/quest-hooks/` or
+   `Hook: original`. The corpus is the idea bank — steal from it, argue with it; a
+   hook aimed at a thin coverage cell beats an original aimed at a fat one.
 1. **Whose problem is this?** The acting agent is the **protagonist**, and the
    complication is *seen from their point of view* — prefer problems that originate
    with the agent or their journey (their wheel breaks; their name is asked after;
