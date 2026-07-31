@@ -141,8 +141,14 @@ describe('vertical slice — agent-decided forks (THR-894)', () => {
     const leans = hand.filter((n) => n.poleLean !== undefined);
     // At least one argument in each direction — a fork the god can only push
     // one way is a lever with half a handle.
+    // THR-898 widened object-form poleLean to {toward} | {route}; the slice's
+    // forks are all two-pole, so a route-form lean here would itself be a bug.
     const directions = new Set(
-      leans.map((l) => (typeof l.poleLean === 'string' ? l.poleLean : l.poleLean!.toward)),
+      leans.map((l) => {
+        const lean = l.poleLean!;
+        if (typeof lean === 'string') return lean;
+        return 'toward' in lean ? lean.toward : lean.route;
+      }),
     );
     expect(directions.has('positive'), `${template.id}: no card leans positive`).toBe(true);
     expect(directions.has('negative'), `${template.id}: no card leans negative`).toBe(true);
