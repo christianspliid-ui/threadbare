@@ -1,6 +1,13 @@
+---
+needsChristian: thr-924-broken-test-links, thr-860-capital-cluster-verdict
+queue: backed-up
+freshness: healthy
+deploy: deployed
+tasks: ok
+---
 # Briefing
 
-**Generated:** 2026-07-31 20:55 local (18:55 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-07-31 21:55 local (19:55 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
@@ -30,37 +37,35 @@ What you'd see is not an error message. The game hides the failure and quietly r
 
 **Still parked and still yours, unchanged from earlier: the four finished capital-cluster encounters.** The millrace dispute, the ford toll house, the feuding houses, and the monument that turned into a problem with a rock. They're written, they pass every check, and they're held in the old style. The call is whether they land as-is and get tidied up alongside the seven earlier ones, or get dropped and rewritten under the locked format. Nothing is lost either way, and it needn't be tonight — it belongs with the session that closes out the format work. Named so it doesn't look forgotten.
 
-*Doorbell sent this hour — the broken-links warning is time-sensitive and you may be about to click them.*
+*No doorbell this hour. Both items are unchanged from the ping you got at 21:02 — you were rung once, and ringing again would tell you nothing new.*
 
 ## Queue
 
-**Fifty-three jobs ready, three being worked, one parked.** Bands: one urgent, five high, four medium, three unranked, forty low-priority tidy-ups. Fifty-three is well past comfortable, which is expected while the content side stays paused behind the format work.
+**Fifty-three jobs ready, two being worked, two parked.** Bands unchanged from last hour: one urgent, five high, four medium, three unranked, forty low-priority tidy-ups. Fifty-three is well past comfortable, which is expected while the content side stays paused behind the format work.
 
-**The urgent one is the encounter bug above** — the reason your test links stall. It arrived twenty minutes ago and is top of the shelf.
+**The urgent one is still the encounter bug above, and it is still unclaimed** — an hour old now. The pickup lane's next pass is due within minutes and this sits at the top of its list, so the expected outcome is that it gets claimed with nothing needed from you.
 
-**Two new jobs were filed and picked up in the same breath, by a session working right now** — both fixes to the encounter screen itself: prose getting clipped at the top when there's a lot of it, and the odds panel gaining proper explanations so the numbers stop being bare labels. That second one is a direct descendant of your "key:value is unfinished" note.
+**A second job parked itself this hour.** The sweep fix for stuck pull requests finished its work and stepped aside deliberately — its own note explains it needs nothing but a merge. That merge has since snagged on a file conflict, so it now wants about ten minutes from a working session. Not yours.
 
-**One job in progress is finished and only waiting to merge** — the sweep fix for stuck pull requests. Nobody needs to touch it.
+**The two encounter-screen fixes are still in flight** — the clipped prose and the odds-panel explanations, the latter descending from your "key:value is unfinished" note. Their branch has picked up the same kind of conflict.
 
-**The parked one** is the finished-but-held encounter batch described above, about thirty hours parked, holding no one up.
+**The other parked job** is the finished-but-held encounter batch described above, about thirty-one hours parked, holding no one up.
 
-**Five of the fifty-three have your name attached, up from four.** Same known cosmetic filing bug as previous hours. It does not hide them — the pickup lane ignores the name entirely — so it's a number, not a blockage.
+**Five of the fifty-three still have your name attached.** I re-checked the underlying question this hour rather than repeating last hour's answer, and it holds: the pickup lane's own instructions say it considers *every* ready job and that a name on one is noise rather than a claim. So the stray name genuinely cannot hide the urgent bug. It stays a number, not a blockage.
 
 ## Freshness
 
 **Your working copy is healthy and fully current.** Right branch, nothing missing, nothing of yours stranded. The two Claude permission files you edited are still sitting there uncommitted, as they have been for days — harmless, have never blocked anything, no action wanted.
 
-**The live site is current** for what has been published; nothing game-facing has merged since the last release, so no rebuild was needed. Automated checks normal.
+**The live site is serving the newest code.** Automated checks normal.
 
-**All eight scheduled jobs are running on time.** The cleanup job ran at 20:40 and found nothing needing a human call.
+**All eight scheduled jobs are running on time.** The cleanup job ran at 21:40 and found nothing needing a human call.
 
 ## What's moving
 
-**The branch carrying the eight new encounters landed.** That's the one that was mid-checks last hour — the click-straight-into-an-encounter links and the balanced test character came with it. Its merging is what made tonight's test links possible, and also what exposed the multi-scene bug, since it's the first time anyone drove these encounters all the way through.
+**The fix for the robot merge congestion landed.** This morning's measurement found that more than half of everything reaching the project was two hourly automated lanes filing reports about their own activity — and because of how the merge queue works, each one knocked every other pending change back to the start of the line. Those lanes now check whether they have anything worth saying before filing. This brief is the first written under that rule.
 
-**A readiness check then ran across your five picks and found the stall.** That check existing is the only reason you're reading this warning instead of discovering it yourself at the keyboard.
-
-**An attended session is live on the encounter screen right now**, doing the two UI fixes noted above.
+**Nothing else merged this hour**, which is the backlog that congestion created working its way through: several finished changes are queued behind each other rather than stuck.
 
 ---
 *Standing asks live in `Design/user-actions.md`. This file is regenerated hourly by
