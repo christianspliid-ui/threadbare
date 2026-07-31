@@ -118,10 +118,16 @@ describe('{{EncounterName}} — template structure', () => {
 After writing all files, run these commands and fix any issues:
 
 ```bash
-npx tsc --noEmit          # type check
+npm run check:typecheck    # type check
 npm test                   # all tests pass
 npx vite build             # production build succeeds
 ```
+
+> **Never `npx tsc --noEmit`** — the root `tsconfig.json` sets `files: []`, so it exits 0
+> unconditionally no matter how broken the code is, and citing that exit 0 as evidence is
+> gate theater (THR-686). `npm run check:typecheck` is the identical ratchet CI runs: it
+> compares the error count against `typecheck-baseline.json` and fails only on an *increase*
+> (THR-693), so treat a pass as green even though pre-existing errors remain (THR-489).
 
 If any verification step fails, read the error, fix the code, and re-run. Do not submit with failing checks.
 

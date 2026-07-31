@@ -33,6 +33,13 @@ export interface BackstoryParams {
   bondNames: string[];
   name: string;
   primarySphere: string;
+  /**
+   * Narrative descriptors landed by the Meet-The-First meeting (THR-872), in
+   * authored order. Free-text character description — deliberately NOT trait
+   * refs (see `createAgentFromMeeting`), so they are carried separately from
+   * `traitNames` and never reach the trait predicate.
+   */
+  narrativeDescriptors?: readonly string[];
 }
 
 export interface PortraitParams {
@@ -73,9 +80,28 @@ export function generateQuotes(params: QuoteParams, prng: () => number): string[
 
 // ─── Backstory Generation ────────────────────────────────────────
 
+/**
+ * Render an authored descriptor id as prose: `cold_clarity` → `cold clarity`,
+ * `oath-keeper` → `oath-keeper`.
+ *
+ * Only `_` is a separator. Hyphens are load-bearing in this vocabulary
+ * (`silver-tongued`, `god-touched`, `truth-seeker`) and are left alone.
+ */
+export function humanizeDescriptor(descriptor: string): string {
+  return descriptor.replace(/_/g, ' ').trim();
+}
+
 export function generateBackstory(params: BackstoryParams, prng: () => number): string {
   const sphereWord = SPHERE_FLAVOR[params.primarySphere] ?? params.primarySphere;
-  const trait = params.traitNames[0] ?? 'resolute';
+  // Registered traits win when the agent has earned any: they are the live,
+  // emergent character. A meeting descriptor fills the slot only when there is
+  // no trait yet — which is every freshly-created First, and precisely the case
+  // that used to render the hardcoded `'resolute'` over the top of five
+  // authored descriptors (THR-872).
+  const descriptor = params.narrativeDescriptors?.[0];
+  const trait = params.traitNames[0]
+    ?? (descriptor ? humanizeDescriptor(descriptor) : undefined)
+    ?? 'resolute';
   const bond = params.bondNames[0] ?? 'those they trusted';
 
   const origin = pick(ORIGIN_TEMPLATES, prng);

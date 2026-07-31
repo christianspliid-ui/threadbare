@@ -169,19 +169,6 @@ const DATA = [
     "session": "TB-016 verification"
   },
   {
-    "num": "9",
-    "id": 9,
-    "count": 1,
-    "date": "2026-03-25",
-    "category": "process-friction",
-    "description": "Committed and pushed code changes without running dev server verification first. A pre-commit hook (\"Preview Required\") blocked the workflow, requiring backtracking to start the dev server and verify visually after already committing.",
-    "consequence": "Had to do post-commit verification. Wasted time re-verifying after the fact instead of catching issues before commit.",
-    "impact": "S",
-    "workaroundFound": true,
-    "workaround": "Always run preview_start and follow verification_workflow after code edits, before committing. Added to memory as feedback_preview_verify.md.",
-    "session": "TB-016 HexMapV2 improvements"
-  },
-  {
     "num": "10",
     "id": 10,
     "count": 1,
@@ -206,6 +193,19 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "Reset corrupted files from HEAD (`git checkout HEAD -- src/ Docs/ .planning/`). Re-apply any Cowork-only changes (BACKLOG edits) manually. Root prevention: Cowork VM sync needs integrity checks or post-sync validation.",
     "session": "File corruption cleanup session"
+  },
+  {
+    "num": "336",
+    "id": 336,
+    "count": 1,
+    "date": "2026-03-25",
+    "category": "process-friction",
+    "description": "Committed and pushed code changes without running dev server verification first. A pre-commit hook (\"Preview Required\") blocked the workflow, requiring backtracking to start the dev server and verify visually after already committing.",
+    "consequence": "Had to do post-commit verification. Wasted time re-verifying after the fact instead of catching issues before commit.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Always run preview_start and follow verification_workflow after code edits, before committing. Added to memory as feedback_preview_verify.md.",
+    "session": "TB-016 HexMapV2 improvements **Renumbered from #9 to #336 by THR-881** (duplicate-number repair — #9 was claimed by two unrelated rows; the earlier row in the file keeps the original number)."
   },
   {
     "num": "12",
@@ -884,8 +884,8 @@ const DATA = [
     "session": "THR-24 closeout + Cowork-side retry"
   },
   {
-    "num": "67",
-    "id": 67,
+    "num": "337",
+    "id": 337,
     "count": 1,
     "date": "2026-04-19",
     "category": "environment",
@@ -894,11 +894,11 @@ const DATA = [
     "impact": "S",
     "workaroundFound": true,
     "workaround": "Keep using %USERPROFILE%\\\\.codex\\\\automations\\\\<automation-id>\\\\memory.md fallback when $CODEX_HOME is null; consider exporting $CODEX_HOME in automation shell profile.",
-    "session": "THR-25 closeout automation run"
+    "session": "THR-25 closeout automation run **Renumbered from #67 to #337 by THR-881** (duplicate-number repair — #67 was claimed by two unrelated rows; the earlier row in the file keeps the original number)."
   },
   {
-    "num": "68",
-    "id": 68,
+    "num": "338",
+    "id": 338,
     "count": 1,
     "date": "2026-04-19",
     "category": "process-friction",
@@ -907,7 +907,7 @@ const DATA = [
     "impact": "S",
     "workaroundFound": true,
     "workaround": "Check for orphan git.exe processes, stop them, then remove stale .git/index.lock before retrying staging. Consider adding a pre-stage helper in automation scripts.",
-    "session": "THR-25 closeout automation run"
+    "session": "THR-25 closeout automation run **Renumbered from #68 to #338 by THR-881** (duplicate-number repair — #68 was claimed by two unrelated rows; the earlier row in the file keeps the original number)."
   },
   {
     "num": "69",
@@ -1079,19 +1079,6 @@ const DATA = [
     "session": "THR-259 closeout + scheduled task 2026-04-24"
   },
   {
-    "num": "82",
-    "id": 82,
-    "count": 1,
-    "date": "2026-04-24",
-    "category": "process-friction",
-    "description": "Exact-string replacement scripting for protocol/CLAUDE doc edits failed because the target sentence had drifted from the handoff's expected text.",
-    "consequence": "First edit attempt aborted and required a second pass with line-level patching.",
-    "impact": "S",
-    "workaroundFound": true,
-    "workaround": "Read nearby context first and patch by line-level hunks instead of strict whole-line equality for long coordination docs.",
-    "session": "THR-234 documentation edits"
-  },
-  {
     "num": "83",
     "id": 83,
     "count": 1,
@@ -1168,6 +1155,19 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "Keep claim-release-safe fallback and require clean worktree (or explicit proceed-in-dirty-tree instruction) before attempting code edits.",
     "session": "THR-256 hourly automation pickup (repeat blocker)"
+  },
+  {
+    "num": "339",
+    "id": 339,
+    "count": 1,
+    "date": "2026-04-24",
+    "category": "process-friction",
+    "description": "Exact-string replacement scripting for protocol/CLAUDE doc edits failed because the target sentence had drifted from the handoff's expected text.",
+    "consequence": "First edit attempt aborted and required a second pass with line-level patching.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Read nearby context first and patch by line-level hunks instead of strict whole-line equality for long coordination docs.",
+    "session": "THR-234 documentation edits **Renumbered from #82 to #339 by THR-881** (duplicate-number repair — #82 was claimed by two unrelated rows; the earlier row in the file keeps the original number)."
   },
   {
     "num": "68",
@@ -1417,19 +1417,6 @@ const DATA = [
     "session": "GitHub MCP Codex setup"
   },
   {
-    "num": "90",
-    "id": 90,
-    "count": 2,
-    "date": "2026-04-30",
-    "category": "environment",
-    "description": "`mcp__scheduled-tasks__create_scheduled_task` returns \"Cannot create scheduled tasks from within a scheduled task session.\" when THR-291 tried to register the `flush-plan-docs` cron from inside the `check-slack-for-new-dev-work` scheduled task run.",
-    "consequence": "THR-291 (register flush-plan-docs hourly cron) cannot be completed from a scheduled task context; requires an interactive CC session. Issue left In Dev.",
-    "impact": "S",
-    "workaroundFound": true,
-    "workaround": "Run `create_scheduled_task` in a regular (non-scheduled) interactive CC session. All parameters are in the THR-291 issue body: taskId=flush-plan-docs, cronExpression=\"15 * * * *\", description and prompt both documented.",
-    "session": "THR-291 scheduled pickup attempt (2026-04-30)"
-  },
-  {
     "num": "107",
     "id": 107,
     "count": 1,
@@ -1454,6 +1441,19 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "Per pull-work Step 0 protocol: paused, retried once, still limited — logged impediment and exited cleanly. Next cycle should succeed if rate limit window resets. May compound if CC and Codex pollers run concurrently at :00. Stagger pollers or add jitter. **Resolved 2026-05-15 (THR-425):** canonical slot table in `CLAUDE.md § Scheduled Tasks` assigns four quarter-hour bands; in-repo edits landed; out-of-repo cron edits (items 5–7) pending user confirmation.",
     "session": "check-slack-for-new-dev-work scheduled task (2026-04-30)"
+  },
+  {
+    "num": "340",
+    "id": 340,
+    "count": 2,
+    "date": "2026-04-30",
+    "category": "environment",
+    "description": "`mcp__scheduled-tasks__create_scheduled_task` returns \"Cannot create scheduled tasks from within a scheduled task session.\" when THR-291 tried to register the `flush-plan-docs` cron from inside the `check-slack-for-new-dev-work` scheduled task run.",
+    "consequence": "THR-291 (register flush-plan-docs hourly cron) cannot be completed from a scheduled task context; requires an interactive CC session. Issue left In Dev.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Run `create_scheduled_task` in a regular (non-scheduled) interactive CC session. All parameters are in the THR-291 issue body: taskId=flush-plan-docs, cronExpression=\"15 * * * *\", description and prompt both documented.",
+    "session": "THR-291 scheduled pickup attempt (2026-04-30) **Renumbered from #90 to #340 by THR-881** (duplicate-number repair — #90 was claimed by two unrelated rows; the earlier row in the file keeps the original number)."
   },
   {
     "num": "110",
@@ -1599,19 +1599,6 @@ const DATA = [
     "session": "THR-176 visual verification"
   },
   {
-    "num": "117",
-    "id": 117,
-    "count": 1,
-    "date": "2026-05-07",
-    "category": "environment",
-    "description": "Fresh THR-362 worktree hit recurring startup friction: rg.exe access denied in Codex desktop sandbox and dependencies absent until local install.",
-    "consequence": "Discovery and verification startup paused for fallback search + install prep before implementation.",
-    "impact": "S",
-    "workaroundFound": true,
-    "workaround": "Use PowerShell `Get-ChildItem` + `Select-String` when `rg` fails and run `npm install` once in each fresh worktree before verification.",
-    "session": "THR-362 automation run"
-  },
-  {
     "num": "118",
     "id": 118,
     "count": 1,
@@ -1623,6 +1610,19 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "Run `npm run check:skill-sync:sync` once at session start (or when the hook fails); the script's normalization is idempotent and writes only line-ending fixes. **Permanent fix needed:** either add `.gitattributes` `* text=auto` or `* eol=lf` so Windows clients commit LF, or update the skill-sync script to compare canonical newline-normalized contents instead of byte-for-byte.",
     "session": "THR-176 commit attempt"
+  },
+  {
+    "num": "341",
+    "id": 341,
+    "count": 1,
+    "date": "2026-05-07",
+    "category": "environment",
+    "description": "Fresh THR-362 worktree hit recurring startup friction: rg.exe access denied in Codex desktop sandbox and dependencies absent until local install.",
+    "consequence": "Discovery and verification startup paused for fallback search + install prep before implementation.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Use PowerShell `Get-ChildItem` + `Select-String` when `rg` fails and run `npm install` once in each fresh worktree before verification.",
+    "session": "THR-362 automation run **Renumbered from #117 to #341 by THR-881** (duplicate-number repair — #117 was claimed by two unrelated rows; the earlier row in the file keeps the original number)."
   },
   {
     "num": "99",
@@ -1937,8 +1937,8 @@ const DATA = [
     "session": "THR-108 handoff rejection closeout + THR-322 completion closeout + THR-352 closeout + THR-341 closeout + THR-450 pickup"
   },
   {
-    "num": "122",
-    "id": 122,
+    "num": "342",
+    "id": 342,
     "count": 5,
     "date": "2026-06-11",
     "category": "environment",
@@ -1947,7 +1947,7 @@ const DATA = [
     "impact": "S",
     "workaroundFound": true,
     "workaround": "Run `npm install` once per fresh worktree before any verification commands.",
-    "session": "THR-353 + THR-361 + THR-374 + THR-268 automation runs + THR-450 automation run"
+    "session": "THR-353 + THR-361 + THR-374 + THR-268 automation runs + THR-450 automation run **Renumbered from #122 to #342 by THR-881** (duplicate-number repair — #122 was claimed by two unrelated rows; the earlier row in the file keeps the original number)."
   },
   {
     "num": "75",
@@ -1976,19 +1976,6 @@ const DATA = [
     "session": "THR-453 Sonnet scheduled pickup, 2026-06-12"
   },
   {
-    "num": "141",
-    "id": 141,
-    "count": 1,
-    "date": "2026-06-12",
-    "category": "process-friction",
-    "description": "**Sonnet scheduled automation cannot execute THR-417 — session-type mismatch.** THR-417 requires `mcp__scheduled-tasks__create_scheduled_task` which is blocked from within scheduled-task sessions (root cause documented in impediments #130 and #133). THR-417 was designed to require an interactive CC session for exactly this reason, but the handoff moved it to Ready for Dev where the scheduled automation will repeatedly pick it up and bounce it every hour until a human opens an interactive CC session. The issue will remain in the queue visible to the :00 automation indefinitely.",
-    "consequence": "Each Sonnet automation cycle wastes one pickup slot attempting to claim and release THR-417 with no progress made. If there is no other work in the queue, the automation will stall until the user interactively opens a CC session.",
-    "impact": "S",
-    "workaroundFound": false,
-    "workaround": "**This session:** posted bounce comment on THR-417 explaining the session-type restriction; released claim back to Ready for Dev. **Permanent fix:** either (a) add a `require-interactive` label to issues that need interactive sessions, and have the pickup protocol skip them when running as a scheduled task; or (b) add a note to the CLAUDE.md scheduled-task table row that THR-417 must be picked up interactively — so Cowork's next grooming cycle can route it differently.",
-    "session": "THR-417 Sonnet scheduled pickup, 2026-06-12"
-  },
-  {
     "num": "142",
     "id": 142,
     "count": 1,
@@ -2000,6 +1987,19 @@ const DATA = [
     "workaroundFound": false,
     "workaround": "",
     "session": ""
+  },
+  {
+    "num": "343",
+    "id": 343,
+    "count": 1,
+    "date": "2026-06-12",
+    "category": "process-friction",
+    "description": "**Sonnet scheduled automation cannot execute THR-417 — session-type mismatch.** THR-417 requires `mcp__scheduled-tasks__create_scheduled_task` which is blocked from within scheduled-task sessions (root cause documented in impediments #130 and #133). THR-417 was designed to require an interactive CC session for exactly this reason, but the handoff moved it to Ready for Dev where the scheduled automation will repeatedly pick it up and bounce it every hour until a human opens an interactive CC session. The issue will remain in the queue visible to the :00 automation indefinitely.",
+    "consequence": "Each Sonnet automation cycle wastes one pickup slot attempting to claim and release THR-417 with no progress made. If there is no other work in the queue, the automation will stall until the user interactively opens a CC session.",
+    "impact": "S",
+    "workaroundFound": false,
+    "workaround": "**This session:** posted bounce comment on THR-417 explaining the session-type restriction; released claim back to Ready for Dev. **Permanent fix:** either (a) add a `require-interactive` label to issues that need interactive sessions, and have the pickup protocol skip them when running as a scheduled task; or (b) add a note to the CLAUDE.md scheduled-task table row that THR-417 must be picked up interactively — so Cowork's next grooming cycle can route it differently.",
+    "session": "THR-417 Sonnet scheduled pickup, 2026-06-12 **Renumbered from #141 to #343 by THR-881** (duplicate-number repair — #141 was claimed by two unrelated rows; the earlier row in the file keeps the original number)."
   },
   {
     "num": "141",
@@ -2639,19 +2639,6 @@ const DATA = [
     "session": "THR-611 Slice 4 find/claim templates commit."
   },
   {
-    "num": "180",
-    "id": 180,
-    "count": 1,
-    "date": "2026-07-05",
-    "category": "tooling",
-    "description": "`window.__DEBUG.getHealthReport()` returns null and `toggleFog()` returns `false` on both flips when called from Claude-in-Chrome `javascript_tool` in a live seeded game (GameView had registered providers — `listActions()`/`getOutcomeDistribution()` worked in the same session). The fog toggle DID take effect visually despite the false return; the return value comes from GameView's registered callback and is unreliable as an assertion source. Also: an async IIFE wrapping the calls serialized to `{}` — use top-level `await` REPL form instead.",
-    "consequence": "~3 min retrying DoD `__DEBUG` assertion forms during THR-635 browser-verify.",
-    "impact": "S",
-    "workaroundFound": true,
-    "workaround": "**Workaround:** for DoD `__DEBUG` wiring evidence prefer data-returning bridge calls (`listActions()`, `getOutcomeDistribution()`, `getEssenceSources()`) over `getHealthReport()`/`toggleFog()` return values; verify fog toggles visually (screenshot) rather than by return value; write page JS as top-level-await expressions, not async IIFEs.",
-    "session": "THR-635 hex-map color fix browser-verify."
-  },
-  {
     "num": "181",
     "id": 181,
     "count": 46,
@@ -2691,6 +2678,19 @@ const DATA = [
     "session": "THR-613 Slice 2 deepening-beat-content commit."
   },
   {
+    "num": "344",
+    "id": 344,
+    "count": 1,
+    "date": "2026-07-05",
+    "category": "tooling",
+    "description": "`window.__DEBUG.getHealthReport()` returns null and `toggleFog()` returns `false` on both flips when called from Claude-in-Chrome `javascript_tool` in a live seeded game (GameView had registered providers — `listActions()`/`getOutcomeDistribution()` worked in the same session). The fog toggle DID take effect visually despite the false return; the return value comes from GameView's registered callback and is unreliable as an assertion source. Also: an async IIFE wrapping the calls serialized to `{}` — use top-level `await` REPL form instead.",
+    "consequence": "~3 min retrying DoD `__DEBUG` assertion forms during THR-635 browser-verify.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "**Workaround:** for DoD `__DEBUG` wiring evidence prefer data-returning bridge calls (`listActions()`, `getOutcomeDistribution()`, `getEssenceSources()`) over `getHealthReport()`/`toggleFog()` return values; verify fog toggles visually (screenshot) rather than by return value; write page JS as top-level-await expressions, not async IIFEs.",
+    "session": "THR-635 hex-map color fix browser-verify. **Renumbered from #180 to #344 by THR-881** (duplicate-number repair — #180 was claimed by two unrelated rows; the earlier row in the file keeps the original number)."
+  },
+  {
     "num": "143",
     "id": 143,
     "count": 12,
@@ -2717,19 +2717,6 @@ const DATA = [
     "session": "THR-613 Slice 2b milestone-beat commit."
   },
   {
-    "num": "184",
-    "id": 184,
-    "count": 49,
-    "date": "2026-07-17",
-    "category": "environment",
-    "description": "49th `check:skill-sync` false-positive (THR-613 rulebook legibility slice, **docs-only** 4-file commit touching **zero** skill files — `git diff --cached --name-only \\| grep skills/` → 0). Same pre-existing `image-manipulation-workspace/**/outputs/*.png` mirror drift under `.claude/` only (verified the flagged `badlands_hex.png` is untracked via `git ls-files --error-unmatch` → no match, and `git check-ignore` confirms it is gitignored; tracked counts balanced 61=61 on `origin/main` → untracked local scratch, not repo state). Used the preferred `npm run check:skill-sync:sync` path (per #174–183): \"Synced 39 shared skills\" on disk, `git status` stayed at the intended 4 docs files (gitignored `**/outputs/**` copy into `.agents/` and stage nothing), commit passed the full hook — no `--no-verify`. Notable: this hit even a **pure-docs** commit, underscoring the hook fails on every change regardless of scope. THR-540 (skip gitignored `**/outputs/**` in the hook) still unshipped after **49** recurrences; every auto-pickup closeout keeps paying ~2 min.",
-    "consequence": "Clean docs commit blocked at the pre-commit gate again (~2 min).",
-    "impact": "S",
-    "workaroundFound": true,
-    "workaround": "**Workaround (confirmed again):** `npm run check:skill-sync:sync` then re-commit — honest verify chain intact, no bypass. **THR-540 is badly overdue** — 49 recurrences of a known one-line hook fix; the count is the priority argument.",
-    "session": "THR-613 rulebook legibility commit."
-  },
-  {
     "num": "185",
     "id": 185,
     "count": 3,
@@ -2743,8 +2730,21 @@ const DATA = [
     "session": "THR-613 Slice 3b Signatures-section browser-verify; recurred THR-613 Slice 4 Covenants-panel browser-verify (2026-07-17) — same substitution used, screenshot again timed out at 30s; recurred again THR-613 Slice 3b-tail Codex-overlay browser-verify (2026-07-18) — the Codex overlay is a **DOM** surface (not WebGL), yet `computer{action:\"screenshot\"}` still timed out at 30s in the headless Browser pane (the underlying game view's RAF loop is still live beneath the overlay), and `list_connected_browsers` was again empty, so the same computed-style + layout + `__DEBUG` substitution was used (all 3 states asserted, dimming/opacity read, no-page-scroll @1920×1080, 0 console errors). Confirms the hang is the Browser-pane renderer, independent of whether the *verified* surface is DOM or WebGL."
   },
   {
-    "num": "185",
-    "id": 185,
+    "num": "345",
+    "id": 345,
+    "count": 49,
+    "date": "2026-07-17",
+    "category": "environment",
+    "description": "49th `check:skill-sync` false-positive (THR-613 rulebook legibility slice, **docs-only** 4-file commit touching **zero** skill files — `git diff --cached --name-only \\| grep skills/` → 0). Same pre-existing `image-manipulation-workspace/**/outputs/*.png` mirror drift under `.claude/` only (verified the flagged `badlands_hex.png` is untracked via `git ls-files --error-unmatch` → no match, and `git check-ignore` confirms it is gitignored; tracked counts balanced 61=61 on `origin/main` → untracked local scratch, not repo state). Used the preferred `npm run check:skill-sync:sync` path (per #174–183): \"Synced 39 shared skills\" on disk, `git status` stayed at the intended 4 docs files (gitignored `**/outputs/**` copy into `.agents/` and stage nothing), commit passed the full hook — no `--no-verify`. Notable: this hit even a **pure-docs** commit, underscoring the hook fails on every change regardless of scope. THR-540 (skip gitignored `**/outputs/**` in the hook) still unshipped after **49** recurrences; every auto-pickup closeout keeps paying ~2 min.",
+    "consequence": "Clean docs commit blocked at the pre-commit gate again (~2 min).",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "**Workaround (confirmed again):** `npm run check:skill-sync:sync` then re-commit — honest verify chain intact, no bypass. **THR-540 is badly overdue** — 49 recurrences of a known one-line hook fix; the count is the priority argument.",
+    "session": "THR-613 rulebook legibility commit. **Renumbered from #184 to #345 by THR-881** (duplicate-number repair — #184 was claimed by two unrelated rows; the earlier row in the file keeps the original number)."
+  },
+  {
+    "num": "347",
+    "id": 347,
     "count": 50,
     "date": "2026-07-17",
     "category": "environment",
@@ -2753,7 +2753,7 @@ const DATA = [
     "impact": "S",
     "workaroundFound": true,
     "workaround": "**Workaround (preferred, per #174–184):** `npm run check:skill-sync:sync` then re-commit — the gitignored `**/outputs/**` copy into `.agents/` and stage nothing, so the hook passes with the honest verify chain (no `--no-verify`). **THR-540 is badly overdue** — 50 recurrences of a known one-line hook fix; the round number is the priority argument.",
-    "session": "THR-637 entity-visual-header commit."
+    "session": "THR-637 entity-visual-header commit. **Renumbered from #185 to #347 by THR-881** (duplicate-number repair — #185 was claimed by two unrelated rows; the earlier row in the file keeps the original number)."
   },
   {
     "num": "186",
@@ -2767,32 +2767,6 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "**Workaround (two-step):** (1) `npm run check:skill-sync:sync` clears the PNG mirror false-positive using only Node built-ins (works without `node_modules`), verify `git status` still shows only real files; (2) commit with `--no-verify` because the esbuild-based `lint:plan-doc` step cannot run without deps. CI (`Test · Typecheck · Build`) is the authoritative gate. **Durable fix:** either `npm install` in the pickup worktree during Step 4.5 (the pull-work skill already does this when it creates a fresh worktree — the gap is pre-existing worktrees reused without install), or make the hook skip esbuild-based steps gracefully when `esbuild` is absent. **Recurrence 2026-07-27 (`daily-backlog-grooming`) — identical shape; it blocked the commit twice before yielding, and the obvious PATH fix does not work.** A fresh worktree off `origin/main` carrying one `Docs/ops/` report died on `'esbuild' is not recognized`. Prepending the home tree's `node_modules/.bin` to `PATH` from Git Bash did **not** help: the failing hook step runs under `cmd.exe`, which cannot consume a POSIX-form `PATH` and wants `esbuild.cmd`. **Better workaround than `--no-verify` (new this run):** junction the home tree's `node_modules` into the worktree via PowerShell `New-Item -ItemType Junction`, after which the hook ran properly and reported `lint:plan-doc skipped (no candidate files found)`. That last line is the substantive finding — the lint had **nothing to check**, since a `Docs/ops/` file is not a dated `Docs/plans/YYYY-MM-DD-*.md`, so an advisory lint with zero candidate files hard-blocked a commit twice purely on a missing binary. Remove the junction before `git worktree remove` (memory `reference_fresh_worktree_node_modules_junction`). This strengthens the durable fix already named above: CLAUDE.md classes `lint:plan-doc` advisory/non-blocking, but husky makes it hard-blocking, so the hook should skip esbuild-based steps when `esbuild` is absent rather than fail the commit.",
     "session": "THR-575 docs-only diet commit (deps-free `friendly-stonebraker-1b875d` worktree); 2026-07-27 `daily-backlog-grooming` report commit."
-  },
-  {
-    "num": "186",
-    "id": 186,
-    "count": 51,
-    "date": "2026-07-18",
-    "category": "environment",
-    "description": "51st `check:skill-sync` false-positive (THR-649 design-session skill, 5-file skills+docs commit — the new `.claude/skills/design-session/SKILL.md` is CC-only, not a *shared* skill, so it introduces zero sync obligation; `git diff --cached` skill file present but sync-clean). Same pre-existing `image-manipulation-workspace/**/outputs/*.png` mirror drift under `.claude/` only (`git check-ignore` → IGNORED; tracked counts balanced 61=61). Used the preferred `npm run check:skill-sync:sync` path (per #174–184): \"Synced 39 shared skills\" on disk, staged set stayed at the intended 5 files, commit passed the full hook — no `--no-verify`. **Adjacent note:** the advisory `lint:plan-doc` pre-commit hook fired 31 findings on `Docs/plans/2026-04-13-linear-coordination-protocol.md` because it lives in `Docs/plans/` but is a process-infrastructure doc predating the feature-plan-doc template — non-blocking (commit succeeded), pre-existing, not introduced by this edit; a future `lint:plan-doc` exclusion for non-plan process docs in `Docs/plans/` would remove the noise. THR-540 (skip gitignored `**/outputs/**` in the hook) still unshipped after **51** recurrences.",
-    "consequence": "Clean skills+docs commit blocked at the pre-commit gate again (~1 min).",
-    "impact": "S",
-    "workaroundFound": true,
-    "workaround": "**Workaround (confirmed again):** `npm run check:skill-sync:sync` then re-commit — honest verify chain intact, no bypass. **THR-540 is badly overdue** — 51 recurrences.",
-    "session": "THR-649 design-session skill commit."
-  },
-  {
-    "num": "187",
-    "id": 187,
-    "count": 52,
-    "date": "2026-07-18",
-    "category": "environment",
-    "description": "52nd `check:skill-sync` false-positive (THR-650 keep-work-flowing-cc, 4-file skills+docs+gitignore commit). The new `.claude/skills/keep-work-flowing-cc/SKILL.md` is CC-only, not a *shared* skill, so it adds zero sync obligation (`check:skill-sync` grep for the new skill name → 0; not present in `.agents/`). Same pre-existing `image-manipulation-workspace/**/outputs/*.png` mirror drift under `.claude/` only (`git check-ignore` → IGNORED; neither the `.claude` nor `.agents` copy tracked on `origin/main`). Used the preferred `npm run check:skill-sync:sync` path (per #174–186): \"Synced 39 shared skills\" on disk, `git status` showed **zero** `.agents` changes (copied PNGs gitignored on both sides), commit passed the full hook — no `--no-verify`. THR-540 (skip gitignored `**/outputs/**` in the hook) still unshipped after **52** recurrences.",
-    "consequence": "Clean skills+docs commit blocked at the pre-commit gate again (~1 min).",
-    "impact": "S",
-    "workaroundFound": true,
-    "workaround": "**Workaround (confirmed again):** `npm run check:skill-sync:sync` then re-commit — honest verify chain intact, no bypass. **THR-540 is badly overdue** — 52 recurrences.",
-    "session": "THR-650 keep-work-flowing-cc commit."
   },
   {
     "num": "188",
@@ -2845,6 +2819,32 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "**Workaround (confirmed again):** `npm run check:skill-sync:sync` then re-commit — honest verify chain intact, no bypass. **THR-540 is badly overdue** — 54 recurrences of a known one-line hook fix.",
     "session": "THR-640 Phase C foreshadowing commit."
+  },
+  {
+    "num": "346",
+    "id": 346,
+    "count": 51,
+    "date": "2026-07-18",
+    "category": "environment",
+    "description": "51st `check:skill-sync` false-positive (THR-649 design-session skill, 5-file skills+docs commit — the new `.claude/skills/design-session/SKILL.md` is CC-only, not a *shared* skill, so it introduces zero sync obligation; `git diff --cached` skill file present but sync-clean). Same pre-existing `image-manipulation-workspace/**/outputs/*.png` mirror drift under `.claude/` only (`git check-ignore` → IGNORED; tracked counts balanced 61=61). Used the preferred `npm run check:skill-sync:sync` path (per #174–184): \"Synced 39 shared skills\" on disk, staged set stayed at the intended 5 files, commit passed the full hook — no `--no-verify`. **Adjacent note:** the advisory `lint:plan-doc` pre-commit hook fired 31 findings on `Docs/plans/2026-04-13-linear-coordination-protocol.md` because it lives in `Docs/plans/` but is a process-infrastructure doc predating the feature-plan-doc template — non-blocking (commit succeeded), pre-existing, not introduced by this edit; a future `lint:plan-doc` exclusion for non-plan process docs in `Docs/plans/` would remove the noise. THR-540 (skip gitignored `**/outputs/**` in the hook) still unshipped after **51** recurrences.",
+    "consequence": "Clean skills+docs commit blocked at the pre-commit gate again (~1 min).",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "**Workaround (confirmed again):** `npm run check:skill-sync:sync` then re-commit — honest verify chain intact, no bypass. **THR-540 is badly overdue** — 51 recurrences.",
+    "session": "THR-649 design-session skill commit. **Renumbered from #186 to #346 by THR-881** (duplicate-number repair — #186 was claimed by two unrelated rows; the earlier row in the file keeps the original number)."
+  },
+  {
+    "num": "348",
+    "id": 348,
+    "count": 52,
+    "date": "2026-07-18",
+    "category": "environment",
+    "description": "52nd `check:skill-sync` false-positive (THR-650 keep-work-flowing-cc, 4-file skills+docs+gitignore commit). The new `.claude/skills/keep-work-flowing-cc/SKILL.md` is CC-only, not a *shared* skill, so it adds zero sync obligation (`check:skill-sync` grep for the new skill name → 0; not present in `.agents/`). Same pre-existing `image-manipulation-workspace/**/outputs/*.png` mirror drift under `.claude/` only (`git check-ignore` → IGNORED; neither the `.claude` nor `.agents` copy tracked on `origin/main`). Used the preferred `npm run check:skill-sync:sync` path (per #174–186): \"Synced 39 shared skills\" on disk, `git status` showed **zero** `.agents` changes (copied PNGs gitignored on both sides), commit passed the full hook — no `--no-verify`. THR-540 (skip gitignored `**/outputs/**` in the hook) still unshipped after **52** recurrences.",
+    "consequence": "Clean skills+docs commit blocked at the pre-commit gate again (~1 min).",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "**Workaround (confirmed again):** `npm run check:skill-sync:sync` then re-commit — honest verify chain intact, no bypass. **THR-540 is badly overdue** — 52 recurrences.",
+    "session": "THR-650 keep-work-flowing-cc commit. **Renumbered from #187 to #348 by THR-881** (duplicate-number repair — #187 was claimed by two unrelated rows; the earlier row in the file keeps the original number)."
   },
   {
     "num": "192",
@@ -4953,19 +4953,6 @@ const DATA = [
     "session": "`daily-backlog-grooming`, 2026-07-28 report run"
   },
   {
-    "num": "267",
-    "id": 267,
-    "count": 1,
-    "date": "2026-07-28",
-    "category": "tooling",
-    "description": "**The required `Test · Typecheck · Build` check now runs at 80–90% of its own `timeout-minutes: 20`, so ordinary runner variance turns a correct PR red — and the cap that misfires was itself the fix for the opposite failure.** THR-804's PR #992 died at **20m13s** mid-typecheck-ratchet with tests already green. Blaming the diff was the obvious move and would have been wrong: the newly-added lint test measures **213 ms** in isolation (`npx vitest run` on the file), while `actions/checkout` on the failing runner took **3m38s** against 39s on the green run 40 minutes earlier — a 5.6× slowdown no `scripts/` import fix can cause. Every full run of that job in the preceding 6 h: 16m34s, 17m32s, 17m07s, 16m09s, 17m44s, 17m22s, 17m08s, 13m42s — roughly **two minutes of margin** on the sole required check gating every merge in the repo. THR-557 (Done, 2026-06-30) recorded the suite at 737 test files / ~12 min; it is now **909**. The cap never moved; the suite grew into it. Note impediment **#94** (2026-04-27): this same check once **hung indefinitely** because it had *no* timeout guard, which is precisely why the cap exists — it was sized against a suite that stalled, not one that legitimately takes 17 minutes.",
-    "consequence": "A correct, fully-verified ship sat un-mergeable and consumed a second hourly run to diagnose. Because the symptom is \"required check red\", it is indistinguishable at a glance from a real defect, so the first instinct is to suspect the diff — which spends the diagnosis budget before anyone looks at the runner data. Left unaddressed it recurs on arbitrary unrelated PRs at whatever rate runners happen to be slow.",
-    "impact": "M",
-    "workaroundFound": true,
-    "workaround": "**Workaround:** before touching the diff, pull per-step timings for the failed job *and* a recent green one and compare step by step — `gh api repos/<owner>/<repo>/actions/runs/<id>/jobs --jq '.jobs[]\\|select(.name==\"Test · Typecheck · Build\")\\|.steps[]\\|\"\\(.name)\\t\\(.started_at)\\t\\(.completed_at)\"'`. A slowdown in `checkout`/`npm ci` exonerates the change immediately, since no source diff can affect them. Then measure any newly-added test in isolation rather than inferring its cost from the suite total. Recovery is `gh pr update-branch <N>` — it re-triggers CI on a fresh head *and* clears the `BEHIND` state that silently prevents armed auto-merge from ever firing — **not** `gh run rerun --failed`, which re-runs against the stale head and leaves the PR behind. **Durable fix:** THR-835 — keep a tight per-job bound but stop one job carrying the entire budget (split tests from typecheck/build), and watch the median-vs-cap ratio so the next closure surfaces before it lands as a red check on unrelated work. Simply raising the number is the weakest option: it loosens the #94 anti-hang guard, and the next 20% of suite growth eats the new margin the same way.",
-    "session": "THR-804 resume pass, hourly Opus pickup lane, 2026-07-28 07:05 UTC."
-  },
-  {
     "num": "268",
     "id": 268,
     "count": 1,
@@ -5159,6 +5146,19 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "**Rule: a boolean guard whose subject is drawn from the same collection it is being tested against is vacuous by construction — check the derivation before trusting the green.** This is `vacuous_probe_empty_population` narrowed from a population to a single predicate: the failure is identical (a check that cannot fail reads exactly like a check that passes), but there is no empty list to notice, so the usual \"pin the population first\" reflex does not reach it. Repaired by binding the ceiling to `OPEN_DRAW_ATTENTION_TIER` (`background`) — a property of the template rather than a restatement of the step — and pinned with three liveness cases, the first of which is red against the old predicate. **Generalizable companion rule: repairing a vacuous check earns an obligation to demonstrate the new predicate can fail, in the same commit.** Without it the repair is unfalsifiable and the next reader inherits the same untrustworthy green.",
     "session": "THR-838 pass 2, hourly `tb-opus-pickup` run, 2026-07-28"
+  },
+  {
+    "num": "349",
+    "id": 349,
+    "count": 1,
+    "date": "2026-07-28",
+    "category": "tooling",
+    "description": "**The required `Test · Typecheck · Build` check now runs at 80–90% of its own `timeout-minutes: 20`, so ordinary runner variance turns a correct PR red — and the cap that misfires was itself the fix for the opposite failure.** THR-804's PR #992 died at **20m13s** mid-typecheck-ratchet with tests already green. Blaming the diff was the obvious move and would have been wrong: the newly-added lint test measures **213 ms** in isolation (`npx vitest run` on the file), while `actions/checkout` on the failing runner took **3m38s** against 39s on the green run 40 minutes earlier — a 5.6× slowdown no `scripts/` import fix can cause. Every full run of that job in the preceding 6 h: 16m34s, 17m32s, 17m07s, 16m09s, 17m44s, 17m22s, 17m08s, 13m42s — roughly **two minutes of margin** on the sole required check gating every merge in the repo. THR-557 (Done, 2026-06-30) recorded the suite at 737 test files / ~12 min; it is now **909**. The cap never moved; the suite grew into it. Note impediment **#94** (2026-04-27): this same check once **hung indefinitely** because it had *no* timeout guard, which is precisely why the cap exists — it was sized against a suite that stalled, not one that legitimately takes 17 minutes.",
+    "consequence": "A correct, fully-verified ship sat un-mergeable and consumed a second hourly run to diagnose. Because the symptom is \"required check red\", it is indistinguishable at a glance from a real defect, so the first instinct is to suspect the diff — which spends the diagnosis budget before anyone looks at the runner data. Left unaddressed it recurs on arbitrary unrelated PRs at whatever rate runners happen to be slow.",
+    "impact": "M",
+    "workaroundFound": true,
+    "workaround": "**Workaround:** before touching the diff, pull per-step timings for the failed job *and* a recent green one and compare step by step — `gh api repos/<owner>/<repo>/actions/runs/<id>/jobs --jq '.jobs[]\\|select(.name==\"Test · Typecheck · Build\")\\|.steps[]\\|\"\\(.name)\\t\\(.started_at)\\t\\(.completed_at)\"'`. A slowdown in `checkout`/`npm ci` exonerates the change immediately, since no source diff can affect them. Then measure any newly-added test in isolation rather than inferring its cost from the suite total. Recovery is `gh pr update-branch <N>` — it re-triggers CI on a fresh head *and* clears the `BEHIND` state that silently prevents armed auto-merge from ever firing — **not** `gh run rerun --failed`, which re-runs against the stale head and leaves the PR behind. **Durable fix:** THR-835 — keep a tight per-job bound but stop one job carrying the entire budget (split tests from typecheck/build), and watch the median-vs-cap ratio so the next closure surfaces before it lands as a red check on unrelated work. Simply raising the number is the weakest option: it loosens the #94 anti-hang guard, and the next 20% of suite growth eats the new margin the same way.",
+    "session": "THR-804 resume pass, hourly Opus pickup lane, 2026-07-28 07:05 UTC. **Renumbered from #267 to #349 by THR-881** (duplicate-number repair — #267 was claimed by two unrelated rows; the earlier row in the file keeps the original number)."
   },
   {
     "num": "283",
@@ -5538,19 +5538,6 @@ const DATA = [
     "session": "THR-868 WS6 engine slice, hourly `tb-opus-pickup`."
   },
   {
-    "num": "311",
-    "id": 311,
-    "count": 1,
-    "date": "2026-07-30",
-    "category": "tooling",
-    "description": "**`git show <rev>:<path>` fails silently in the PASSING direction under Git Bash on this sandbox — MSYS path conversion rewrites the `rev:path` argument, and a piped `grep -c` then counts an empty stream as a legitimate `0`.** Verifying THR-681's stand-down claim that a paragraph was live on `origin/main`, `git show origin/main:.claude/skills/pull-work/SKILL.md \\| grep -c \"Ownership of\"` returned **0**, which reads exactly like \"the claim is false\". The command never ran: MSYS rewrote the argument to `origin\\main;.claude\\skills\\pull-work\\SKILL.md` and git aborted with *\"fatal: ambiguous argument\"*. With `MSYS_NO_PATHCONV=1` the same `git show` returns 45133 bytes and the paragraph is present at line 91. Distinct from impediment #15/#28/#33/#37 (`rg.exe` blocked) — here a *permitted* command is corrupted at the argument level, and the corruption is only visible on stderr, which `2>/dev/null` or a pipe discards.",
-    "consequence": "An agent verifying an upstream-shipped claim gets a confident false negative and reaches the opposite verdict — here it would have rejected a correct stand-down, reopened a satisfied ticket, and burned an executor slot re-deriving work already on `main`. The failure mode is worse than a crash because the wrong answer is the *plausible* one: \"grep found nothing in the file\" is indistinguishable from \"the file does not contain it\".",
-    "impact": "High — silently inverts verification verdicts on any `git show <rev>:<path>` check, which is the standard way to prove a claim about a remote ref without checking it out.",
-    "workaroundFound": true,
-    "workaround": "Prefix any `git show <rev>:<path>` (and `git cat-file`, `git log <rev> -- <path>`) with `export MSYS_NO_PATHCONV=1`, or run it via the PowerShell tool instead. **Independently, never let a `0` from a piped `grep -c` stand as evidence of absence:** assert the stream was non-empty first (`git show … \\| wc -c` > 0), or drop the pipe and read the failure. A grep whose input might be empty proves nothing about the haystack — same shape as the vacuous-probe class, one layer lower.",
-    "session": "daily-backlog-grooming 2026-07-30; verifying THR-681's already-shipped claim against `origin/main`."
-  },
-  {
     "num": "312",
     "id": 312,
     "count": 1,
@@ -5785,6 +5772,19 @@ const DATA = [
     "session": "THR-892 derived-factor-lines test authoring, hourly `tb-opus-pickup`, worktree reverent-haslett-e28ee2."
   },
   {
+    "num": "350",
+    "id": 350,
+    "count": 1,
+    "date": "2026-07-30",
+    "category": "tooling",
+    "description": "**`git show <rev>:<path>` fails silently in the PASSING direction under Git Bash on this sandbox — MSYS path conversion rewrites the `rev:path` argument, and a piped `grep -c` then counts an empty stream as a legitimate `0`.** Verifying THR-681's stand-down claim that a paragraph was live on `origin/main`, `git show origin/main:.claude/skills/pull-work/SKILL.md \\| grep -c \"Ownership of\"` returned **0**, which reads exactly like \"the claim is false\". The command never ran: MSYS rewrote the argument to `origin\\main;.claude\\skills\\pull-work\\SKILL.md` and git aborted with *\"fatal: ambiguous argument\"*. With `MSYS_NO_PATHCONV=1` the same `git show` returns 45133 bytes and the paragraph is present at line 91. Distinct from impediment #15/#28/#33/#37 (`rg.exe` blocked) — here a *permitted* command is corrupted at the argument level, and the corruption is only visible on stderr, which `2>/dev/null` or a pipe discards.",
+    "consequence": "An agent verifying an upstream-shipped claim gets a confident false negative and reaches the opposite verdict — here it would have rejected a correct stand-down, reopened a satisfied ticket, and burned an executor slot re-deriving work already on `main`. The failure mode is worse than a crash because the wrong answer is the *plausible* one: \"grep found nothing in the file\" is indistinguishable from \"the file does not contain it\".",
+    "impact": "High — silently inverts verification verdicts on any `git show <rev>:<path>` check, which is the standard way to prove a claim about a remote ref without checking it out.",
+    "workaroundFound": true,
+    "workaround": "Prefix any `git show <rev>:<path>` (and `git cat-file`, `git log <rev> -- <path>`) with `export MSYS_NO_PATHCONV=1`, or run it via the PowerShell tool instead. **Independently, never let a `0` from a piped `grep -c` stand as evidence of absence:** assert the stream was non-empty first (`git show … \\| wc -c` > 0), or drop the pipe and read the failure. A grep whose input might be empty proves nothing about the haystack — same shape as the vacuous-probe class, one layer lower.",
+    "session": "daily-backlog-grooming 2026-07-30; verifying THR-681's already-shipped claim against `origin/main`. **Renumbered from #311 to #350 by THR-881** (duplicate-number repair — #311 was claimed by two unrelated rows; the earlier row in the file keeps the original number)."
+  },
+  {
     "num": "167",
     "id": 167,
     "count": 2,
@@ -5861,6 +5861,58 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "Treat the live file as the source and edit it **first**, then mirror in the same PR — the ordering in `Docs/ops/scheduled-task-prompts/README.md`. The mirror does not deploy, so a mirror-only edit changes nothing operationally; the reverse ordering is the failure this rule exists to prevent. Once mirrored, ordinary review catches the next drift, which is the actual value of mirroring — recoverability is the lesser half.",
     "session": "THR-850, hourly `tb-opus-pickup` run, 2026-07-31"
+  },
+  {
+    "num": "334",
+    "id": 334,
+    "count": 1,
+    "date": "2026-07-31",
+    "category": "codebase",
+    "description": "**Copying a test fixture from the adjacent suite imported four fields that no longer exist on the type, and the copy typechecked as \"fine\" because the file it came from is inside the THR-489 red baseline.** Building a `MeetingChoiceRecord` fixture for the new THR-872 test, the obvious move was to copy the one in `src/engine/__tests__/meetingEncounter.test.ts:374`. That fixture declares `intentPrimaryReach`, `intentSecondaryReach`, `intentSphere`, `investmentChoice`, `sparkTraitId` and `shapePath` — **none of which are on the interface**, which today has `sparkVisionId` and no intent fields at all. The source file is already red in the baseline, so its errors are invisible in normal work and it reads as a working example.",
+    "consequence": "The typecheck **ratchet** caught it (3493 → 3494, +1) rather than the copy shipping: the gate is a delta, so a *new* file inherits none of the baseline's amnesty and one stale field failed the build. Cost was one gate cycle plus a `tsc -b --pretty false` grep to isolate the line. Had the fixture been added to the already-red source file instead of a new one, the increase would have been indistinguishable from baseline noise.",
+    "impact": "Low",
+    "workaroundFound": true,
+    "workaround": "Read the interface, never the neighbouring fixture: `grep -n \"export interface <T>\" -A 45 src/types/<mod>.ts`. Isolate a ratchet failure with `npx tsc -b --force --pretty false 2>&1 \\| grep <newfile>` — the ratchet names the file whose count rose but not the error.",
+    "session": "THR-872, `tb-opus-pickup` hourly run. Recurrence of the `red_baseline_fixture` class: a red-baseline file is a *worse* copy source than an unfamiliar one, because it silently certifies stale shapes."
+  },
+  {
+    "num": "335",
+    "id": 335,
+    "count": 1,
+    "date": "2026-07-31",
+    "category": "process",
+    "description": "**`check:wiki-freshness:blocking` was recorded green in a closeout evidence block and failed the same work in CI — because the gate ran before the edit that trips it existed.** THR-872's ship pasted `check:wiki-freshness:blocking OK — 24 pages, no stale`; CI failed on `public/system-interface-map-reference.html is stale — changed files match its sources (scripts/interface-contracts.ts)`. **Two tempting explanations were checked and both eliminated:** the base did move (`4427d3e3..a64582a1`) between the run and CI, but `git diff --name-only 4427d3e3 a64582a1` is a single unrelated ops doc — it touches neither the page nor `interface-contracts.ts`, so neither the page-in-diff nor the exemption-laundering route of THR-819 applies (`git log --grep=\"Wiki-freshness-exempt\"` over the range is empty), and THR-819 made the script self-fetch anyway, so both the local and CI runs printed `base=origin/main (refreshed)`. What remains and fits every observation: the script diffs the **working tree** against the base (`scripts/check-wiki-freshness.ts:279`, committed + uncommitted + untracked), so it answers only about edits that exist *at the moment it runs* — and the Definition of Done lists \"Update the interface map\" **after** the verification gates. A run that follows the checklist in order runs the gate, then makes the contract edit, and the green it recorded was true when captured and false by the time it pushed.",
+    "consequence": "The PR merged nothing: auto-merge was armed but the required `Test · Typecheck · Build` check was `FAILURE`, so it sat open overnight with the issue still In Dev, and a full hourly run went to diagnosis and repair. The evidence block asserted a gate state that the pushed tree did not have.",
+    "impact": "Medium — structural, not a slip: any DoD step that edits a `sources`-globbed file after the gates reproduces it, and the failure is invisible until CI.",
+    "workaroundFound": true,
+    "workaround": "**Re-run every diff-based gate as the last action before `git push`, not at its numbered position** — the same rule impediment #201 established for `check:generated-freshness` (whose source `Docs/impediments.md` is edited during closeout) generalises to `check:wiki-freshness`, whose sources include `scripts/interface-contracts.ts`, edited during closeout by the \"update the interface map\" step. Treat \"gate ran green\" as scoped to the tree at that instant. Corollary: when a change touches `scripts/interface-contracts.ts`, author the `public/system-interface-map-reference.html` row in the same edit — regenerating `Docs/canon/interface-map.generated.md` does not satisfy the gate, because the wiki page is hand-authored.",
+    "session": "THR-872 resume, `tb-opus-pickup` hourly run. Ordering-trap sibling of #201; `interface_two_file_edit` is the content half. Note the diagnosis initially reached for the familiar `wiki_freshness_false_pass` stale-base story and had to be walked back — the base provenance label said `(refreshed)` on both runs, which is exactly the signal that rules it out."
+  },
+  {
+    "num": "351",
+    "id": 351,
+    "count": 1,
+    "date": "2026-07-31",
+    "category": "process",
+    "description": "**A defect recorded in a retro action item and a user-facing doc, but never filed as a ticket, stayed unfixed for four months and grew 5×.** THR-881 was filed on a single observed duplicate (`#311`) and asserted `#312` \"nearly followed\". Running the ticket's own membership predicate instead of its prose found **15** duplicate impediment numbers, the oldest dating to 2026-03-25. Three of them had already been noticed and written down — `Docs/retrospectives/2026-03-29-retro.md` documents the `#9` collision explicitly, `Design/retros/retro-2026-07-20.md` carries \"Duplicate impediment row numbers (#180 ×2, #184 ×2, #185 ×2)\" as unactioned item **E5** and even notes \"the collision family grew\", and `Design/user-actions.md` records \"#267 is used twice\". None became a Linear issue, and the executor lane reads Linear.",
+    "consequence": "Four months of silent corruption of the dashboard's primary key, growing monotonically because every same-day concurrent append adds another. Every retrospective that reads an impediment by number in that window may have read the wrong row. The repair cost one run once ticketed — the cost was entirely in the not-filing.",
+    "impact": "Medium",
+    "workaroundFound": true,
+    "workaround": "**Two rules, both cheap.** (1) THR-688 rule A — *predicates, not counts* — earned its keep here: the ticket's predicate was correct and its prose was 5× low, so **run the predicate as a command before believing the ticket's numbers**, and treat the delta as a finding rather than a surprise. (2) A retro action item or a `Design/` note is **not** a work queue: the only surface the executor lane polls is Linear `Ready for Dev`. When a retro names a concrete defect, file it in the same pass — an action item that outlives two retros without a ticket is evidence the retro cannot schedule its own output.",
+    "session": "THR-881 duplicate-impediment-number repair, `tb-opus-pickup` hourly run. Generalises the `sweep_own_feed` and `upstream_grep_misses_partial_ship` class: the authoritative answer comes from running the check, never from the prose describing it."
+  },
+  {
+    "num": "352",
+    "id": 352,
+    "count": 1,
+    "date": "2026-07-31",
+    "category": "sandbox",
+    "description": "**A quoted heredoc (`cat > f << 'EOF'`) silently ate backslashes from regex literals in the Bash tool, producing a file that differs from what was written and fails to parse.** Writing a throwaway Node script containing `/\\.(md",
+    "consequence": "ts)$/` and `.replace(/\\\\/g, \"/\")` through a *quoted* heredoc — the form whose entire contract is \"no expansion\" — delivered `/.(md",
+    "impact": "ts)$/` and `.replace(/\\/g, \"/\")` to disk, the second of which is a syntax error. Distinct from #329, which is a heredoc that fails to *parse*: this one succeeds and corrupts, so the first symptom is a `SyntaxError` pointing at a line the author never wrote.",
+    "workaroundFound": false,
+    "workaround": "Small",
+    "session": "Yes | **Do not use heredocs to write code containing backslashes from the Bash tool.** Use the `Write` tool for any throwaway script (it writes bytes literally and needs no escaping), then invoke it with `node <path>`. Reserve heredocs for prose and for commit-message bodies, where a lost backslash is visible on sight. The scratchpad directory is the natural home for these — session-isolated and permission-free. | THR-881 duplicate-impediment-number repair, `tb-opus-pickup` hourly run. Sibling of #329 (same transport, louder failure mode). Also observed this run: `rev` is absent from the sandbox's Git Bash, so `… \\| rev \\| cut \\| rev` tail-extraction idioms fail with `command not found`."
   }
 ];
 // ── End data ──
