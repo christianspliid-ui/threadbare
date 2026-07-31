@@ -6043,6 +6043,32 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "Drain order + tight loop: update the short-CI (docs) armed PRs first and wait each to merge so main settles, then hold a ~20s poll on the code PR that re-runs `update-branch` the moment it reads BEHIND — the fresh window starts seconds after the disruption instead of minutes. Landed on the second window. Recorded for THR-897's next iteration: drain short-CI before long-CI, or serialize so only one armed PR has checks in flight.",
     "session": "Attended session 2026-07-31 evening, landing PR #1132 for the THR-902 slice roster. Full account on THR-897. — renumbered from #360 (union-merge collision with the NUL-byte row already on main; #361/#362 taken)."
+  },
+  {
+    "num": "364",
+    "id": 364,
+    "count": 1,
+    "date": "2026-08-01",
+    "category": "tooling",
+    "description": "**`preview_start` reported a port the dev server was not listening on, so every navigation to it failed.** The tool returned `port: 61693` with `http://localhost:61693`, while the server's own log read `Port 5173 is in use, trying another one... ➜ Local: http://localhost:5174`. Two `navigate` calls to the reported port returned \"navigation to http://localhost:61693 was denied or failed\" before `preview_logs` revealed the real port. Separately, the tab later drifted from `5174` back to the dead `61693` on its own, landing on `chrome-error://chromewebdata/` with `window.__DEBUG` undefined — which reads exactly like a broken debug bridge rather than a navigation failure.",
+    "consequence": "Two wasted navigation attempts plus a misdiagnosis detour when the bridge appeared to vanish mid-session.",
+    "impact": "low",
+    "workaroundFound": true,
+    "workaround": "Read `preview_logs` immediately after `preview_start` and trust the server's own `Local:` line over the tool's reported port. Re-assert `location.href` in the same call as any `__DEBUG` query, so a silent renavigation is visible in the result rather than looking like a missing bridge.",
+    "session": "THR-924 browser verification, worktree `fervent-mahavira-836c71`, autoPort enabled with another vite already on 5173."
+  },
+  {
+    "num": "365",
+    "id": 365,
+    "count": 1,
+    "date": "2026-08-01",
+    "category": "tooling",
+    "description": "**The Browser pane's console reader returns a buffer that survives navigation and `console.clear()`, so \"errors are present\" is not evidence they are current.** After reverting a fix to reproduce a crash, then restoring it and reloading the same URL, `read_console_messages` still returned the crash stacks — every one carrying the *same* `?t=1785536071575` vite cache-bust token as the reverted load, i.e. the old module's frames retained verbatim. `console.clear()` returned success and purged nothing from the reader. An agent doing before/after console comparison will conclude its fix did not work.",
+    "consequence": "Nearly recorded a false negative on a verified-good fix; cost several extra verification cycles establishing which signal was trustworthy.",
+    "impact": "medium",
+    "workaroundFound": true,
+    "workaround": "Do not use console presence/absence as the before/after signal across reloads on this surface. Assert on **state the crash would have prevented** instead — here `__DEBUG.tick(n)` returning `{ticksRun: 8, tick: 0}` (world frozen, every tick reverted) versus `{ticksRun: 8, tick: 8}`, which a caught-and-reverted tick cannot fake. When console output must be used, check the `?t=` cache-bust token in the stack frames to tell a stale entry from a fresh one.",
+    "session": "THR-924 browser falsification, Browser pane, vite dev server with HMR."
   }
 ];
 // ── End data ──

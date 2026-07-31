@@ -1,6 +1,7 @@
 import type { GraphOp } from '../types/graphOp';
 import type { ValuePair } from '../types/agent';
-import type { ActionStep, AuthoredChoiceCard, UnifiedActionTemplate } from '../types/unifiedAction';
+import type { ActionStep, ActionStepOrBranch, AuthoredChoiceCard, UnifiedActionTemplate } from '../types/unifiedAction';
+import { isActionStepBranch } from '../types/unifiedAction';
 import type {
   EncounterArchetypePole,
   EncounterChoiceContract,
@@ -17,7 +18,13 @@ import {
 } from '../types/encounter-contract';
 import { parseEncounterContract } from '../data/encounter-contract-validators';
 
-const ADAPTER_CONTRACT_METADATA_KEY = '__encounter_contract_v1';
+/**
+ * Prefix marking an `illustrationAlt` that carries a round-trip-encoded contract.
+ * A template holding one is adapted by decoding that contract verbatim; a
+ * template without one is adapted by `fallbackContractFromTemplate`. Exported so
+ * tests can tell the two paths apart without re-declaring the literal (THR-924).
+ */
+export const ADAPTER_CONTRACT_METADATA_KEY = '__encounter_contract_v1';
 const DEFAULT_STEP_DIFFICULTY = 0.5;
 const DEFAULT_STEP_DURATION_MIN = 1;
 const DEFAULT_STEP_DURATION_MAX = 1;
@@ -63,7 +70,7 @@ const COST_TO_INTERVENTION_TYPE: Record<EncounterChoiceCost, AuthoredChoiceCard[
 };
 
 const EMPTY_GRAPH_OPS: readonly GraphOp[] = [];
-const EMPTY_STEPS: readonly ActionStep[] = [];
+const EMPTY_STEP_OR_BRANCH: readonly ActionStepOrBranch[] = [];
 
 function cloneContract(contract: EncounterContract): EncounterContract {
   return parseEncounterContract(JSON.parse(JSON.stringify(contract)));
@@ -92,11 +99,38 @@ function toUnifiedReach(reach: EncounterChoiceReach): UnifiedActionTemplate['rea
   return reach;
 }
 
+/**
+ * Pole used when a step's reach is absent or outside the eight Reach domains.
+ * The adapter runs inside the tick loop (`phaseAscendantHandFilter`), where NFP #4
+ * forbids throwing — an unresolvable reach must degrade to a pole, not kill the
+ * tick. See {@link defaultPoleForReach} (THR-924).
+ */
+const FALLBACK_MORAL_AXIS_POLE: EncounterArchetypePole = MORAL_AXIS_POLES_BY_REACH.iron[0];
+
 function defaultPoleForReach(reach: EncounterChoiceReach): EncounterArchetypePole {
   if (reach === 'quintessence') {
     return QUINTESSENCE_POLES[0];
   }
-  return MORAL_AXIS_POLES_BY_REACH[reach][0];
+  // Indexed access is optional-chained deliberately: `reach` is typed as a
+  // ReachDomain, but this path is reached from runtime content whose shape the
+  // compiler does not police (THR-924 — a branch step arrived here with no
+  // `reach` at all, and `undefined[0]` crashed every tick with a pending
+  // multi-step encounter).
+  return MORAL_AXIS_POLES_BY_REACH[reach]?.[0] ?? FALLBACK_MORAL_AXIS_POLE;
+}
+
+/**
+ * Collapse a branch point to the concrete step the contract should describe.
+ *
+ * `template.steps` is `ActionStepOrBranch[]`: a branch carries its reach on each
+ * variant, never on itself. The adapter is template-level and has no
+ * `choiceHistory` to pick a variant with, so it takes `fallback` — the same
+ * choice `resolveStepDefinition` makes when no choice has been recorded yet, and
+ * the idiom already used by `encounterCache`, `encounterEventNode`, and the
+ * encounter-stage adapters.
+ */
+function toConcreteStep(stepOrBranch: ActionStepOrBranch): ActionStep {
+  return isActionStepBranch(stepOrBranch) ? stepOrBranch.fallback : stepOrBranch;
 }
 
 function makeChoiceId(beatIndex: number, choiceIndex: number): string {
@@ -175,8 +209,11 @@ export function adaptEncounterContractToUnifiedActionTemplate(contract: Encounte
 }
 
 function fallbackContractFromTemplate(template: UnifiedActionTemplate): EncounterContract {
-  const steps = template.steps as readonly ActionStep[];
-  const mappedSteps = (steps.length > 0 ? steps : EMPTY_STEPS).map((step, stepIndex) => {
+  // NOT `template.steps as readonly ActionStep[]` — that cast asserted away the
+  // branch half of the union, so a branch step reached `defaultPoleForReach` with
+  // `reach === undefined` and threw out of the tick (THR-924).
+  const steps: readonly ActionStep[] = (template.steps ?? EMPTY_STEP_OR_BRANCH).map(toConcreteStep);
+  const mappedSteps = steps.map((step, stepIndex) => {
     const label = `choice-${stepIndex + 1}`;
     const fallbackReach: EncounterChoiceReach = step.reach === QUINTESSENCE_REACH_FALLBACK ? 'quintessence' : step.reach;
     const fallbackPole = defaultPoleForReach(fallbackReach);
