@@ -1,6 +1,6 @@
 # Briefing
 
-**Generated:** 2026-07-31 00:54 local (2026-07-30 22:54 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-07-31 01:54 local (2026-07-30 23:54 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
@@ -14,25 +14,27 @@ This is your inbox. It's rewritten every hour by a Claude Code task. Standing sw
 
 ## Queue
 
-**Forty-nine jobs ready, one in progress, nothing gone cold.** The job this brief named as the new top pick last hour — **agent-decided branches**, letting a mortal's own leanings choose which way a fork in an encounter goes — **was picked up, finished and published inside the hour.** It is live on the site now.
+**Forty-nine jobs ready, one in progress, nothing gone cold.** One job finished and published this hour: a **fix to the job-handoff check** that had been refusing most of the queue — the gate meant to protect the work was turning away the very jobs it guards. It shipped and is live.
 
-**That leaves no high-priority job on the shelf for the first time in four hours.** The top slot had turned over three hours running, each time because whoever held it shipped; this hour it emptied because the last one shipped and nothing arrived to replace it. That is a clean board rather than a stall — ten medium jobs sit directly behind it.
+**It left one small tidy-up behind it**, filed by the same work: that check reads a job's coordination notes from only one of the two places they get written, so a correctly-written job can still be reported as missing them. Low priority, and it no longer stops anything being picked up.
 
-The rest is ten medium and thirty-nine low: engine work, tooling, housekeeping. **Still no content writing, by design** — that pause holds until you've read the five drafts.
+That is the whole change to the shelf — one out, one in, still forty-nine. **No high-priority job on the shelf for a second hour**, with nine medium and forty low behind it: engine work, tooling, housekeeping. **Still no content writing, by design** — that pause holds until you've read the five drafts.
 
-The longest-waiting item has been sitting **six days and two hours**. It crosses our one-week line tomorrow evening and is a low-priority tidy-up, so that's a note, not a problem.
+The longest-waiting item has now been sitting **six days and three hours**. It crosses our one-week line tomorrow evening and is a low-priority tidy-up, so that's a note, not a problem.
+
+**The one job in progress is finished work that cannot close.** Its writing is done, but it is one of the eleven waiting on your format verdict, so it would be held regardless.
 
 ## Freshness
 
 **Home tree healthy** — on the main line, nothing behind, nothing stranded. The only local edits are your own tool-permission settings and Friday's retro draft, and neither blocks anything.
 
-**The live site is serving the very latest change**, including this hour's ship. Nothing is lagging.
+**The live site is serving the very latest change**, including this hour's fix. Nothing is lagging.
 
 ## What's moving
 
-**One job finished this hour and is already published.** Agent-decided branches went from top-of-shelf to live in roughly an hour.
+**One job shipped this hour** and is already published.
 
-**Two older pull requests need a pair of hands, and neither pair is yours.** One carries the paused content batch and has drifted into a real conflict; the other carries the golden-exemplar work and has fallen far enough behind the main line that it will no longer merge itself. Both are ordinary engineering chores for a working session — noted here only so the shelf's shape makes sense.
+**Four pull requests need a pair of hands, and none of those pairs is yours.** Three are now confirmed to have genuinely drifted out of step with the main line — two of the three had been unreadable for most of the day and answered clearly for the first time this hour. The fourth is queued to merge itself but has sat five hours without doing so, which is well past the point where that normally works. All four are ordinary engineering chores for a working session — noted here only so the shelf's shape makes sense.
 
 ---
 *Standing asks live in `Design/user-actions.md`. This file is regenerated hourly by
