@@ -1144,6 +1144,36 @@ export const CONTRACTS: readonly Contract[] = [
     deferralTicket: 'THR-883',
   },
 
+  // ── Meet The First trait seeds (THR-872) ──────────────────────────────────
+  {
+    id: 'meeting-trait-seeds-land-as-narrative-descriptors',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: NARRATIVE,
+    intent:
+      'The choices you made while meeting your First stay visible in who they are — the descriptors the meeting authored read back on their character sheet and in their backstory, instead of every First being described in the same default words.',
+    ulTerms: ['Meet The First', 'Bond Reception'],
+    mechanism: {
+      kind: 'node-prop',
+      symbols: ['narrativeDescriptors'],
+      module: 'src/engine/meetingEncounter.ts',
+    },
+    writeSites: ['src/engine/meetingEncounter.ts'],
+    readSites: ['src/engine/agentDetail.ts', 'src/engine/profileGenerator.ts'],
+    // This row exists because the contract shipped LEAKED for its whole life and
+    // nothing noticed: four producers (legacy dilemmas, enriched dilemmas, spark
+    // visions, bond reception) wrote `MeetingEncounterResult.traitSeeds` and
+    // `createAgentFromMeeting` never read it, so every descriptor was discarded
+    // at the graph boundary. The seeds are free-text description, NOT trait refs
+    // — they must never reach `resolveTraitPredicate` or `validateTraitRefs`,
+    // which is why `agentDetail` keeps them in a list separate from
+    // `getAgentTraitNames`.
+    verifiedLive: {
+      date: '2026-07-31',
+      evidence:
+        'src/engine/__tests__/meetingTraitSeedLanding.test.ts enumerates the authored population from all four catalogs (each asserted non-empty individually, so the sweep cannot pass vacuously), lands it through createAgentFromMeeting, and asserts zero unconsumed values. Reader pinned on both sides: getAgentInfoCard(…, "intimate").allTraits contains the humanized descriptor, and generateBackstory fills the {trait} slot from it instead of the hardcoded "resolute" fallback that previously covered every freshly-created First.',
+    },
+  },
+
   // ── The Repertoire (THR-887) ──────────────────────────────────────────────
   {
     id: 'milestone-grants-unlock-repertoire-cards',

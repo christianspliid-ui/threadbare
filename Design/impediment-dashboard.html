@@ -5848,6 +5848,19 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "Treat the live file as the source and edit it **first**, then mirror in the same PR — the ordering in `Docs/ops/scheduled-task-prompts/README.md`. The mirror does not deploy, so a mirror-only edit changes nothing operationally; the reverse ordering is the failure this rule exists to prevent. Once mirrored, ordinary review catches the next drift, which is the actual value of mirroring — recoverability is the lesser half.",
     "session": "THR-850, hourly `tb-opus-pickup` run, 2026-07-31"
+  },
+  {
+    "num": "334",
+    "id": 334,
+    "count": 1,
+    "date": "2026-07-31",
+    "category": "codebase",
+    "description": "**Copying a test fixture from the adjacent suite imported four fields that no longer exist on the type, and the copy typechecked as \"fine\" because the file it came from is inside the THR-489 red baseline.** Building a `MeetingChoiceRecord` fixture for the new THR-872 test, the obvious move was to copy the one in `src/engine/__tests__/meetingEncounter.test.ts:374`. That fixture declares `intentPrimaryReach`, `intentSecondaryReach`, `intentSphere`, `investmentChoice`, `sparkTraitId` and `shapePath` — **none of which are on the interface**, which today has `sparkVisionId` and no intent fields at all. The source file is already red in the baseline, so its errors are invisible in normal work and it reads as a working example.",
+    "consequence": "The typecheck **ratchet** caught it (3493 → 3494, +1) rather than the copy shipping: the gate is a delta, so a *new* file inherits none of the baseline's amnesty and one stale field failed the build. Cost was one gate cycle plus a `tsc -b --pretty false` grep to isolate the line. Had the fixture been added to the already-red source file instead of a new one, the increase would have been indistinguishable from baseline noise.",
+    "impact": "Low",
+    "workaroundFound": true,
+    "workaround": "Read the interface, never the neighbouring fixture: `grep -n \"export interface <T>\" -A 45 src/types/<mod>.ts`. Isolate a ratchet failure with `npx tsc -b --force --pretty false 2>&1 \\| grep <newfile>` — the ratchet names the file whose count rose but not the error.",
+    "session": "THR-872, `tb-opus-pickup` hourly run. Recurrence of the `red_baseline_fixture` class: a red-baseline file is a *worse* copy source than an unfamiliar one, because it silently certifies stale shapes."
   }
 ];
 // ── End data ──
