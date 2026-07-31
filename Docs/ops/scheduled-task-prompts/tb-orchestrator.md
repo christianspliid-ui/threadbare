@@ -90,11 +90,30 @@ Two things no detector does, both of which you own:
 
 ## Report
 
+**A no-op run writes no file at all (THR-920).** Promoted nothing, filed nothing, resolved no blocker, no *new* T3 finding, nothing for Christian → write no report and open no PR. Your session output is already a complete record of a run that did nothing, and every advance of `main` costs every other open PR a full ~18-minute CI re-run under strict branch protection. Declines are **not** substantive: "we looked and it stayed blocked" is the healthy steady state. Measured 2026-07-31 — this lane merged on 7 of the last 32 advances of `main`, three of them titled "no promotions".
+
+The old rule ("a no-change run skips the commit") could never fire here, because one-file-per-run makes every run a change by construction. So the verdict is now the script's:
+
+```bash
+npm run check:substantive --silent -- --lane report --file Docs/ops/orchestrator-<run>.md --json
+```
+
+`{"verdict":"skip"}` → delete the drafted file, commit nothing. Fail-soft: a missing or unparseable frontmatter block returns `commit`, so a malformed report is published rather than lost.
+
 **One file per run — never append to a file a previous run created.** The first run of a UTC day writes `Docs/ops/orchestrator-YYYY-MM-DD.md`; every later run that day writes `Docs/ops/orchestrator-YYYY-MM-DD<letter>.md` (`b`, `c`, `d`, …). List `Docs/ops/` for today's prefix and take the next unused letter.
 
 Prepending to one shared dated file is what made PR #1031 sit `DIRTY` for two days holding the only copy of its run's T1 sweep (THR-849): two overlapping runs both edit the same top-of-file anchor, and armed auto-merge cannot resolve a conflict. Separate files have no shared anchor, and the filename preserves order — which `merge=union` does not. `.gitattributes` grants `Docs/ops/orchestrator-*.md merge=union` as a backstop only; it catches a mistake, it is not permission to append.
 
 ```markdown
+---
+lane: tb-orchestrator
+run: YYYY-MM-DD<letter>
+promoted: <n>
+filed: <n>
+resolved: <n>
+newFindings: <n>
+needsChristian: <true | false>
+---
 # Orchestrator — YYYY-MM-DD (run <letter>, ~HH:MMZ)
 
 ## Needs Christian
@@ -124,7 +143,7 @@ Plain language throughout the Christian-facing section (THR-608): he does not re
 - Commit the report with **no** `Fixes`/`Closes`/`Resolves THR-XX` keyword — that auto-closes unrelated issues (impediment #140). Reference issues as bare `THR-XXX` tokens.
 - Open a PR and queue it with `gh pr merge --auto --merge`. Do not poll-wait on CI (THR-675).
 - **If a prior run's report PR is still open, leave it and its branch alone.** Write your own per-run file and carry on — never append to the file that PR touches, and never push to its branch (another lane may have it checked out: the THR-671/672/797 hazard class). If it reads `DIRTY`, note it under `## Escalations` and file a ticket for the executor lane to salvage the stranded section rather than resolving it in-run.
-- A no-change run skips the commit entirely; the task's `lastRunAt` is the heartbeat.
+- A no-op run writes no artifact and opens no PR (THR-920, § Report) — decided by `npm run check:substantive`, not by eye. The task's `lastRunAt` is the heartbeat.
 
 ## Escalation
 

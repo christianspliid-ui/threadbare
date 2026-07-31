@@ -2470,19 +2470,6 @@ const DATA = [
     "session": "Cowork worktree rescue → THR-583 salvage | Cowork worktree rescue, logged during THR-583 doc salvage."
   },
   {
-    "num": "167",
-    "id": 167,
-    "count": 1,
-    "date": "2026-07-04",
-    "category": "environment",
-    "description": "Browser-verify of a static wiki page went to the WRONG server: `npx vite preview --port 5199 --strictPort` was already bound by a stale server from another pool worktree, so `--strictPort` made my instance exit silently in the background — but the port still answered (the stale server's different `dist/`), so `curl` returned 200 and Playwright got the SPA `index.html` fallback (title \"Threadbearer\", empty `.section`) instead of my page. Compounds the known \"preview MCP serves the HOME worktree\" quirk ([[feedback_worktree_preview_server]]).",
-    "consequence": "~10 min lost chasing a phantom \"empty DOM\" before realizing the port was hijacked.",
-    "impact": "M",
-    "workaroundFound": true,
-    "workaround": "**Workaround:** don't trust a shared fixed preview port in a multi-worktree setup. Either (a) `cat` the preview log to confirm the server actually bound (mine logged `Port 5199 is already in use`), or (b) serve the freshly-built `dist/` with a tiny literal Node static server (no SPA fallback) on a unique port and probe a page-specific marker string (`curl …",
-    "session": "grep -c \"<known title>\"`) before pointing Playwright at it. Verified page content byte-for-byte via the marker grep, not just an HTTP 200. | THR-587 Game Manual Wiki W2 browser-verify."
-  },
-  {
     "num": "168",
     "id": 168,
     "count": 1,
@@ -5712,12 +5699,12 @@ const DATA = [
     "count": 1,
     "date": "2026-07-30",
     "category": "process",
-    "description": "**A ticket was promoted to Ready for Dev while its plan doc and its required wiki page existed only on an unmerged PR branch.** THR-887's description named `Docs/plans/2026-07-30-nudge-card-repertoire.md` and required updating `public/nudge-cards-reference.html` in the same PR; both lived solely on PR #1129, still open. From `main` the plan doc did not exist and the wiki page it had to update did not exist, so the Done-when was unsatisfiable by construction from the branch point the executor would naturally take.",
-    "consequence": "Executor branched from `main`, found no plan doc, and had to discover the dependency through `gh pr view`. Stacking cost a mid-session branch relocation after ~15 edits were already made.",
-    "impact": "Medium",
+    "description": "**A skill's sub-agent prompt files drift independently of its SKILL.md, and the sub-agent reads only the prompt.** `encounter-pipeline/SKILL.md` went nudge-native on 2026-07-27 and states plainly that new encounters do not author `authoredChoices` — but its `agents/draft-prompt.md`, `agents/editorial-prompt.md`, and `agents/implementation-prompt.md` still *mandated* the rejected model: \"Approach Cards Per Step … one card per branch\" (draft), \"Choice labels are scene-specific?\" as a gate question (editorial), and \"Authored choice cards — REQUIRED FOR EVERY PLAYER-FACING STEP\" (implementation). A pipeline run dispatches those prompts verbatim, so every pass would have produced and enforced the authored-futures model the orchestrating skill forbids. Same class THR-888 records for the typecheck no-op in the same prompt set: the subagent reads the prompt, not the SKILL.md warning above it.",
+    "consequence": "Discovered mid-THR-883 skill rewrite; the locked-format pass had to widen from SKILL.md + spec to all four prompt files, and any pipeline run between 2026-07-27 and this fix would have drafted rejected-model encounters that Pass 2 then *approved* rather than rejected.",
+    "impact": "M",
     "workaroundFound": true,
-    "workaround": "Read the plan doc out of the PR branch (`git show origin/<branch>:<path>`), then stack the work branch on that branch rather than on `main`, so the wiki page is present and the freshness gate is satisfiable. PR #1129 was also `BEHIND`, so `gh pr update-branch` was run as pull-work Step 0.8 prescribes.",
-    "session": "THR-887 execution, tb-opus-pickup"
+    "workaround": "Converted the three prompts to the locked format in the THR-883 skill-rewrite PR. Generalisable check: when a skill's model or contract changes, grep the skill's whole directory — `grep -rn \"<retired-term>\" .claude/skills/<skill>/` — not just SKILL.md; every `agents/*.md` hit is a required edit site because prompts are dispatched without the SKILL.md context.",
+    "session": "THR-883 encounter-pipeline skill rewrite against the locked card format"
   },
   {
     "num": "326",
@@ -5796,6 +5783,32 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "Byte-compare the untracked file against the incoming version before removing: `diff <(git show FETCH_HEAD:<path>) <path>` — delete only on IDENTICAL, surface on DIFFERS. Root pattern: a lane that writes its report into the home tree working copy AND commits it from a worktree leaves this landmine every run; lanes should write reports only inside their worktree.",
     "session": "THR-868 design session, 2026-07-30"
+  },
+  {
+    "num": "356",
+    "id": 356,
+    "count": 1,
+    "date": "2026-07-30",
+    "category": "process",
+    "description": "*(Renumbered from #325, then again from #353 — THR-881 uniqueness rule applied reference-preserving: the other lane’s #353 is cited by THR-910/user-actions, this row is cited by nothing.)* **A ticket was promoted to Ready for Dev while its plan doc and its required wiki page existed only on an unmerged PR branch.** THR-887's description named `Docs/plans/2026-07-30-nudge-card-repertoire.md` and required updating `public/nudge-cards-reference.html` in the same PR; both lived solely on PR #1129, still open. From `main` the plan doc did not exist and the wiki page it had to update did not exist, so the Done-when was unsatisfiable by construction from the branch point the executor would naturally take.",
+    "consequence": "Executor branched from `main`, found no plan doc, and had to discover the dependency through `gh pr view`. Stacking cost a mid-session branch relocation after ~15 edits were already made.",
+    "impact": "Medium",
+    "workaroundFound": true,
+    "workaround": "Read the plan doc out of the PR branch (`git show origin/<branch>:<path>`), then stack the work branch on that branch rather than on `main`, so the wiki page is present and the freshness gate is satisfiable. PR #1129 was also `BEHIND`, so `gh pr update-branch` was run as pull-work Step 0.8 prescribes.",
+    "session": "THR-887 execution, tb-opus-pickup"
+  },
+  {
+    "num": "167",
+    "id": 167,
+    "count": 2,
+    "date": "2026-07-31",
+    "category": "environment",
+    "description": "Browser-verify of a static wiki page went to the WRONG server: `npx vite preview --port 5199 --strictPort` was already bound by a stale server from another pool worktree, so `--strictPort` made my instance exit silently in the background — but the port still answered (the stale server's different `dist/`), so `curl` returned 200 and Playwright got the SPA `index.html` fallback (title \"Threadbearer\", empty `.section`) instead of my page. Compounds the known \"preview MCP serves the HOME worktree\" quirk ([[feedback_worktree_preview_server]]).",
+    "consequence": "~10 min lost chasing a phantom \"empty DOM\" before realizing the port was hijacked.",
+    "impact": "M",
+    "workaroundFound": true,
+    "workaround": "**Workaround:** don't trust a shared fixed preview port in a multi-worktree setup. Either (a) `cat` the preview log to confirm the server actually bound (mine logged `Port 5199 is already in use`), or (b) serve the freshly-built `dist/` with a tiny literal Node static server (no SPA fallback) on a unique port and probe a page-specific marker string (`curl …",
+    "session": "grep -c \"<known title>\"`) before pointing Playwright at it. Verified page content byte-for-byte via the marker grep, not just an HTTP 200. | THR-587 Game Manual Wiki W2 browser-verify."
   },
   {
     "num": "322",
@@ -5978,6 +5991,32 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "Restore from the registry: the `Fires` column plus each task's stable `jitterSeconds` uniquely identify the original cron (observed fire time minus jitter = cron minute). Applied via `update_scheduled_task` with the registry cron and verified with `list_scheduled_tasks` after write. After any pause/resume cycle, diff `list_scheduled_tasks` crons against the registry before trusting the lanes.",
     "session": "Attended session 2026-07-31, restoring lane sequencing after a pause/resume cycle."
+  },
+  {
+    "num": "360",
+    "id": 360,
+    "count": 1,
+    "date": "2026-07-31",
+    "category": "tooling",
+    "description": "**A file authored with the `Write` tool contained a stray NUL byte, which made `grep` report `Binary file matches` and made the line permanently unmatchable by `Edit`.** Writing `scripts/check-substantive-change.ts`, one constant landed as `const PROTECT_SENTINEL = \"\\0\";` where a printable placeholder was intended. Every later `Edit` targeting that line failed with *String to replace not found* even when the string was copied verbatim from a `Read` — because `Read` renders the NUL as a space, so the text I could see and the bytes on disk differed by one invisible character. `grep -n` compounded it by refusing to print any line number at all (`Binary file … matches`), which reads like a path or permissions problem rather than a content one.",
+    "consequence": "Three failed `Edit` calls and one misdiagnosis before the cause was found — the natural reading of a verbatim-copied `old_string` failing is that the file changed underneath you, so the first instinct is to re-`Read` and retry, which cannot succeed.",
+    "impact": "Low, but high-confusion: the failure mode is invisible in every tool that displays the file.",
+    "workaroundFound": true,
+    "workaround": "**When `grep` says `Binary file … matches` on a source file you just wrote, suspect a control character before anything else.** Confirm with `tr -dc '\\000' < file \\| wc -c` (or `grep -aPn '[\\x00-\\x08]'`), and repair by deleting the line by number (`sed -i '<n>d' file`) rather than by content — line-number addressing does not depend on matching bytes you cannot type. Re-insert via `Edit` anchored on a *neighbouring* clean line.",
+    "session": "THR-920, `tb-opus-pickup` hourly run."
+  },
+  {
+    "num": "361",
+    "id": 361,
+    "count": 1,
+    "date": "2026-07-31",
+    "category": "tooling",
+    "description": "**A resume session could not check out its own ticket's branch, because the previous run's worktree still held it.** THR-920's work sat finished on `thr-920/substantive-change-gate` in PR #1188, which had gone `DIRTY` against a `main` that moved 41 commits. Resuming meant merging `origin/main` into that branch — but `git checkout -B thr-920/substantive-change-gate` failed with `fatal: 'thr-920/substantive-change-gate' is already used by worktree at .claude/worktrees/fervent-mahavira-836c71`. Git refuses to check out one branch in two worktrees, and the prior session's worktree is still registered even though that session has ended. The hourly reaper owns `.claude/worktrees/` (THR-674) and had not yet collected it.",
+    "consequence": "The obvious repair — check out the PR branch and merge — is unavailable to the very next run that needs it. An agent that reads the error as \"the branch is locked\" may conclude the work is unrecoverable, or worse, delete the sibling worktree to free it, which is the reaper's call and not the session's (THR-797 shows what removing a live worktree costs).",
+    "impact": "Medium — blocks the standard `DIRTY`-PR repair documented in `pull-work` § \"resolving a conflicted closeout-docs PR\", which assumes the branch is checkoutable.",
+    "workaroundFound": true,
+    "workaround": "**Do not touch the sibling worktree. Work on a local alias branch and push to the remote ref by name.** `git fetch origin <branch>` then `git checkout -B <branch>-resume FETCH_HEAD`, resolve the merge there, and push with an explicit refspec: `git push origin HEAD:<branch>`. Pushing to `origin` is unaffected by which local worktree holds the branch — only the local checkout is exclusive. The sibling worktree is left for the reaper.",
+    "session": "THR-920, `tb-opus-pickup` hourly run — resume pass."
   }
 ];
 // ── End data ──

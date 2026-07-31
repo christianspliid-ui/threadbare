@@ -17,6 +17,10 @@ import { selectDefaultTrackedHero } from './balanceTelemetry';
 import { moveDebugAgent, spawnDebugLocationAtHex } from './debugWorldSpawnTools';
 import type { DebugWorldSpawnResult } from './debugWorldSpawnTools';
 import type { EncounterSupportBinding } from '../types/encounter';
+import type { EssencePool } from '../types/influence';
+import { REACH_DOMAINS } from '../types/traits';
+import { SPHERE_NAMES } from '../types/index';
+import { ARCHETYPE_NAMES } from '../types/agent';
 
 export interface DebugSpawnEncounterOptions {
   courtPosition?: CourtPosition;
@@ -465,5 +469,76 @@ export function prepareDebugEncounterContext(
     createdAnchor: anchor.createdAnchor,
     movedAgent,
     message: parts.join(' | '),
+  };
+}
+
+// ─── Balanced test avatar (THR-883 review lever) ─────────────────────
+
+/**
+ * Raw domain-capability score the balanced test avatar carries in every reach.
+ * The attended sigmoid sits at midpoint 10 but is not centred against equal
+ * difficulty (the MEETING_TEST_CAPABILITY lesson, THR-868): raw 12 still reads
+ * `perilous` on a `fair` step. 14 (capability ~0.83) lands the forecast
+ * mid-word on `fair`, with room for a hand to move it in either direction —
+ * the whole point of balanced review. Measured live 2026-07-31.
+ */
+export const DEV_TEST_AVATAR_REACH_RAW = 14;
+
+/**
+ * Minimum essence per sphere for balanced review — every sphere-gated card in
+ * every hand is playable, so no card is invisible for pool reasons.
+ */
+export const DEV_TEST_AVATAR_ESSENCE_PER_SPHERE = 12;
+
+export interface BalancedTestAvatarResult {
+  success: boolean;
+  message: string;
+  agentId?: string;
+  agentName?: string;
+  /** Caller merges this into gameState (the pool lives on state, not the graph). */
+  essencePool?: EssencePool;
+}
+
+/**
+ * Stamp an agent as the balanced test avatar (Christian, 2026-07-31): equal
+ * mid-competent raw capability in all eight reaches, a neutral zero on every
+ * value axis (so THR-894 forks resolve from the seeded coin and both poles
+ * stay reachable across seeds), and an essence floor in all twelve spheres.
+ *
+ * Dev-only review tooling: mutates the agent node in place (caller calls
+ * `touchWorld` and merges the returned pool via its own state setter). Traits
+ * are deliberately untouched — a trait-gated card staying hidden on the test
+ * avatar is correct behavior, not a gap.
+ */
+export function applyBalancedTestAvatar(
+  state: GameState,
+  agentQuery: string,
+): BalancedTestAvatarResult {
+  const agent = findAgent(state, agentQuery);
+  if (!agent) {
+    return { success: false, message: `No agent matches '${agentQuery}'` };
+  }
+
+  const domainCapabilities: Record<string, number> = {};
+  for (const reach of REACH_DOMAINS) domainCapabilities[reach] = DEV_TEST_AVATAR_REACH_RAW;
+  agent.properties.domainCapabilities = domainCapabilities;
+
+  const axiologicalProfile: Record<string, number> = {};
+  for (const axis of Object.keys(ARCHETYPE_NAMES)) axiologicalProfile[axis] = 0;
+  agent.properties.axiologicalProfile = axiologicalProfile;
+
+  const essencePool = { ...state.essencePool };
+  for (const sphere of SPHERE_NAMES) {
+    essencePool[sphere] = Math.max(essencePool[sphere] ?? 0, DEV_TEST_AVATAR_ESSENCE_PER_SPHERE);
+  }
+
+  return {
+    success: true,
+    agentId: agent.id,
+    agentName: agent.name,
+    essencePool,
+    message:
+      `Stamped '${agent.name}' as the balanced test avatar: raw ${DEV_TEST_AVATAR_REACH_RAW} in all reaches, `
+      + `neutral value axes, essence floor ${DEV_TEST_AVATAR_ESSENCE_PER_SPHERE} in all spheres`,
   };
 }

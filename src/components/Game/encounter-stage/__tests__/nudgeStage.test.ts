@@ -18,7 +18,7 @@ import type {
   UnifiedActionTemplate,
 } from '../../../../types/unifiedAction';
 import { buildNudgePhaseModel } from '../adapters/buildNudgePhaseModel';
-import { NUDGE_GOLDEN_EXEMPLAR } from '../../../../data/__fixtures__/nudge-exemplar/darkhollow-vault-exemplar';
+import { NUDGE_GOLDEN_EXEMPLAR } from '../../../../data/__fixtures__/nudge-exemplar/swollen-ford-exemplar';
 import { spendNudgeEssence, type EssencePool } from '../nudgeCommit';
 import { forecastWithNudges } from '../useNudgeHand';
 import {
@@ -270,25 +270,44 @@ describe('buildNudgePhaseModel — authored purpose line and factor lines', () =
     }
   });
 
-  it('surfaces every authored factor line with its authored polarity', () => {
+  it('surfaces authored factor lines with their authored polarity (legacy templates)', () => {
+    // The exemplar authors no static factor lines (the variance rule,
+    // Christian 2026-07-30) — but un-migrated templates still carry them, so
+    // the THR-820 pass-through path stays covered by a synthetic step built
+    // from exemplar step 0 plus authored lines.
+    const base = NUDGE_GOLDEN_EXEMPLAR.steps[0] as ActionStep;
+    const authored = [
+      { text: 'A carried lantern gives them light to read by.', polarity: 'for' as const },
+      { text: 'The dark is coming down faster than the reading.', polarity: 'against' as const },
+    ];
+    const step: ActionStep = { ...base, factorLines: authored };
+    const phase = buildNudgePhaseModel({
+      template: { ...NUDGE_GOLDEN_EXEMPLAR, steps: [step] },
+      activeAction: buildAction({ templateId: NUDGE_GOLDEN_EXEMPLAR.id, currentStep: 0 }),
+      step,
+      graph: buildGraph(),
+      gameState: buildState() as GameState,
+    })!;
+
+    const rendered = phase.testPanel.factors;
+    // The agent holds no traits here, so no live `trait:*` line is appended.
+    // Derived lines (THR-892 — the reach-skill line and friends) ARE appended
+    // and carry their own ids, so the authored slice is compared on its own —
+    // it must still lead the panel, in authored order, unchanged.
+    const authoredRendered = rendered.filter((f) => f.id.startsWith('authored:'));
+    expect(authoredRendered.map((f) => f.text)).toEqual(authored.map((l) => l.text));
+    expect(authoredRendered.map((f) => f.polarity)).toEqual(authored.map((l) => l.polarity));
+    expect(authoredRendered.some((f) => f.polarity === 'neutral')).toBe(false);
+    expect(rendered.slice(0, authored.length)).toEqual(authoredRendered);
+  });
+
+  it('the exemplar itself authors no static factor lines (the variance rule)', () => {
     for (const [i, step] of NUDGE_GOLDEN_EXEMPLAR.steps.entries()) {
-      const authored = (step as ActionStep).factorLines ?? [];
-      const rendered = exemplarPhase(i).testPanel.factors;
-
-      // Two empty arrays compare equal, so pin the population before comparing
-      // it — otherwise this passes just as happily against an exemplar that
-      // authored nothing and a panel that rendered nothing.
-      expect(authored.length, `step ${i} authors no factor lines`).toBeGreaterThan(0);
-
-      // The agent holds no traits here, so no live `trait:*` line is appended.
-      // Derived lines (THR-892) ARE appended and carry their own ids, so the
-      // authored slice is compared on its own — it must still lead the panel,
-      // in authored order, unchanged.
-      const authoredRendered = rendered.filter((f) => f.id.startsWith('authored:'));
-      expect(authoredRendered.map((f) => f.text)).toEqual(authored.map((l) => l.text));
-      expect(authoredRendered.map((f) => f.polarity)).toEqual(authored.map((l) => l.polarity));
-      expect(authoredRendered.some((f) => f.polarity === 'neutral')).toBe(false);
-      expect(rendered.slice(0, authored.length)).toEqual(authoredRendered);
+      // The Swollen Ford authors none (the variance rule); the authored-slice
+      // pass-through that origin's version exercised here lives in the
+      // synthetic-step test above, and THR-892's derived lines carry their own
+      // ids and coverage.
+      expect((step as ActionStep).factorLines ?? [], `step ${i}`).toEqual([]);
     }
   });
 
