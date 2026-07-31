@@ -5822,6 +5822,32 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "Retry the identical `save_issue` once before moving to the next candidate, then verify with `get_issue` as usual. Verified-after-write here: `assignee=Christian Spliid`, `state=In Dev`, both stuck.",
     "session": "`tb-opus-pickup` hourly run, 2026-07-31, claiming THR-836."
+  },
+  {
+    "num": "332",
+    "id": 332,
+    "count": 1,
+    "date": "2026-07-31",
+    "category": "process",
+    "description": "**A backup stored outside the path its audit scans is worse than no backup, because it reports as missing while quietly rotting into a trap.** `tb-opus-pickup`'s prompt was mirrored at `Docs/ops/cc-hourly-opus-pickup-prompt.md` — outside `Docs/ops/scheduled-task-prompts/` and outside the filename-equals-task-id convention. `weekly-project-hygiene` check 3 scans the directory, so it looked in the wrong place and reported the lane unmirrored anyway; THR-850 was then filed on that reading. Both states produce the same audit output, so nothing could distinguish \"never mirrored\" from \"mirrored somewhere unwatched\" — and the second is strictly more dangerous, because it looks recoverable.",
+    "consequence": "Unread ~5 weeks, the copy drifted into a liability: it encoded the `assignee:null` queue filter that hid 19 of 41 queue items including the board's only Urgent (THR-845), told the lane to poll-wait on CI instead of arming auto-merge (THR-675), and opened \"until THR-486 lands\" for a ticket landed 2026-06-23. A disk-loss recovery from it would have silently reinstated two fixed defects in the only lane that ships anything.",
+    "impact": "High",
+    "workaroundFound": true,
+    "workaround": "Mirror only at the conforming path (`Docs/ops/scheduled-task-prompts/<task-id>.md`), and **delete** any copy elsewhere rather than leaving it as a second source. Verify byte-identity against the live file after copying (`diff` exits 0), since a mirror nobody diffs is only a claim. The generalization worth carrying: **an audit that can't tell \"absent\" from \"present but unwatched\" gives the same answer to the safe case and the dangerous one** — so the fix is to make the path itself the thing being checked, not the existence of a file somewhere.",
+    "session": "THR-850, hourly `tb-opus-pickup` run, 2026-07-31"
+  },
+  {
+    "num": "333",
+    "id": 333,
+    "count": 1,
+    "date": "2026-07-31",
+    "category": "process",
+    "description": "**The one scheduled-task prompt that is unversioned is also the one no gate can correct, so repo-side fixes to its documented behavior silently do not reach it.** THR-846 corrected `pull-work`'s park destinations on 2026-07-30; the `tb-opus-pickup` prompt carried the same stale routing (four passages addressed to Cowork, retired 2026-07-21 by THR-654) and received none of it, because it lives at `C:\\Users\\chris\\.claude\\scheduled-tasks\\<id>\\SKILL.md` and no PR touches that path. The same gap had let its verify list fall behind *both* blocking CI gates — `check:generated-freshness` (THR-690) and `check:wiki-freshness:blocking` (THR-730) — neither of which it names.",
+    "consequence": "A run following the prompt faithfully ships a PR that fails a required check it was never instructed to run, and parks unfinished work in states no live lane reads (THR-838 sat ~13 h that way). Drift is undetectable by construction: with no mirror there is nothing to diff against, so the divergence is invisible to every gate rather than merely unfixed.",
+    "impact": "Medium",
+    "workaroundFound": true,
+    "workaround": "Treat the live file as the source and edit it **first**, then mirror in the same PR — the ordering in `Docs/ops/scheduled-task-prompts/README.md`. The mirror does not deploy, so a mirror-only edit changes nothing operationally; the reverse ordering is the failure this rule exists to prevent. Once mirrored, ordinary review catches the next drift, which is the actual value of mirroring — recoverability is the lesser half.",
+    "session": "THR-850, hourly `tb-opus-pickup` run, 2026-07-31"
   }
 ];
 // ── End data ──
