@@ -5421,19 +5421,6 @@ const DATA = [
     "session": "THR-638 artifact batch; world-population coverage test."
   },
   {
-    "num": "282",
-    "id": 282,
-    "count": 1,
-    "date": "2026-07-30",
-    "category": "tooling",
-    "description": "**A scheduled lane's report file existed twice — once untracked in the home tree, once committed to origin/main via its worktree PR — and the ff-pull refused to cross it.** `Docs/ops/orchestrator-2026-07-30g.md` sat untracked in the home tree while the same file arrived on `origin/main` through the orchestrator lane's merged worktree branch; `git pull --ff-only origin main` aborted with 'untracked working tree files would be overwritten by merge'.",
-    "consequence": "A design session opening on freshness=behind:17 could not take the sanctioned repair (pull main) until it diagnosed the collision; a hasty `rm` without comparing contents would silently discard any local-only divergence.",
-    "impact": "S",
-    "workaroundFound": true,
-    "workaround": "Byte-compare the untracked file against the incoming version before removing: `diff <(git show FETCH_HEAD:<path>) <path>` — delete only on IDENTICAL, surface on DIFFERS. Root pattern: a lane that writes its report into the home tree working copy AND commits it from a worktree leaves this landmine every run; lanes should write reports only inside their worktree.",
-    "session": "THR-868 design session, 2026-07-30"
-  },
-  {
     "num": "302",
     "id": 302,
     "count": 1,
@@ -5796,6 +5783,19 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "Prefix any `git show <rev>:<path>` (and `git cat-file`, `git log <rev> -- <path>`) with `export MSYS_NO_PATHCONV=1`, or run it via the PowerShell tool instead. **Independently, never let a `0` from a piped `grep -c` stand as evidence of absence:** assert the stream was non-empty first (`git show … \\| wc -c` > 0), or drop the pipe and read the failure. A grep whose input might be empty proves nothing about the haystack — same shape as the vacuous-probe class, one layer lower.",
     "session": "daily-backlog-grooming 2026-07-30; verifying THR-681's already-shipped claim against `origin/main`. **Renumbered from #311 to #350 by THR-881** (duplicate-number repair — #311 was claimed by two unrelated rows; the earlier row in the file keeps the original number)."
+  },
+  {
+    "num": "353",
+    "id": 353,
+    "count": 1,
+    "date": "2026-07-30",
+    "category": "tooling",
+    "description": "**A scheduled lane's report file existed twice — once untracked in the home tree, once committed to origin/main via its worktree PR — and the ff-pull refused to cross it.** `Docs/ops/orchestrator-2026-07-30g.md` sat untracked in the home tree while the same file arrived on `origin/main` through the orchestrator lane's merged worktree branch; `git pull --ff-only origin main` aborted with 'untracked working tree files would be overwritten by merge'.",
+    "consequence": "A design session opening on freshness=behind:17 could not take the sanctioned repair (pull main) until it diagnosed the collision; a hasty `rm` without comparing contents would silently discard any local-only divergence.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Byte-compare the untracked file against the incoming version before removing: `diff <(git show FETCH_HEAD:<path>) <path>` — delete only on IDENTICAL, surface on DIFFERS. Root pattern: a lane that writes its report into the home tree working copy AND commits it from a worktree leaves this landmine every run; lanes should write reports only inside their worktree.",
+    "session": "THR-868 design session, 2026-07-30"
   },
   {
     "num": "322",
