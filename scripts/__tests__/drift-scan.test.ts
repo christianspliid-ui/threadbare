@@ -259,3 +259,27 @@ describe("drift-scan S5", () => {
     }
   });
 });
+
+describe("drift-scan S10 (quick-ref vs rulebook)", () => {
+  it("stops doom-stage capture at a close-paren instead of inventing a phantom stage (THR-914)", async () => {
+    const { lintQuickReferenceVsRulebook } = await import("../lint-rulebook");
+    const quickRef =
+      "**Doom** (7 archetypes × 5 stages: Whispers, Signs, Tremors, Crisis, Culmination) ticks toward an Unmaking.";
+    const rulebook =
+      "Doom advances through Whispers, Signs, Tremors, Crisis, and Culmination before the Unmaking.";
+    const result = lintQuickReferenceVsRulebook(quickRef, rulebook);
+    expect(result.status).toBe("green");
+  });
+
+  it("still reports a stage genuinely missing from the rulebook", async () => {
+    const { lintQuickReferenceVsRulebook } = await import("../lint-rulebook");
+    const quickRef = "Doom (5 stages: Whispers, Signs, Tremors, Crisis, Culmination) ticks onward.";
+    const rulebook = "Doom advances through Whispers, Signs, Tremors, and Crisis.";
+    const result = lintQuickReferenceVsRulebook(quickRef, rulebook);
+    expect(result.status).toBe("red");
+    if (result.status === "red") {
+      expect(result.body).toContain("Culmination");
+      expect(result.body).not.toContain("ticks onward");
+    }
+  });
+});
