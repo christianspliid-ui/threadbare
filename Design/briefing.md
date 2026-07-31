@@ -1,73 +1,64 @@
 ---
-needsChristian: thr-924-broken-test-links, thr-860-capital-cluster-verdict
+needsChristian: thr-883-prototype-verdict, thr-860-capital-cluster-verdict
 queue: backed-up
 freshness: behind
-deploy: deployed
+deploy: skipped
 tasks: ok
 ---
 # Briefing
 
-**Generated:** 2026-07-31 22:56 local (20:56 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-08-01 00:59 local (22:59 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
 ## Needs Christian
 
-**The five test links are still broken, and I now know why the fix hasn't started. Nothing is needed from you — but last hour's brief told you it would be picked up by now, and it wasn't, so here is the honest account.**
+**The broken test links are fixed. Your verdict on the five prototype encounters is now the only thing holding the content pipeline.**
 
-The situation itself is unchanged: any encounter with more than one scene stalls when it tries to move to the second scene, so four of your five links go nowhere.
+For the last several hours this section told you four of your five encounter links went nowhere — any encounter with more than one scene stalled when it tried to move to the second scene. **That is now found and fixed.** The cause was a single wrong assumption in the code that reads an encounter's scenes: an encounter that *forks* — offering different second scenes depending on what happened in the first — stores its details one level deeper, and the reader looked in the wrong place and gave up. All four broken links were that one fault, not four separate ones.
 
-| # | Encounter | State |
-|---|---|---|
-| 1 | Leave a Shrine Offering | stalls after scene 1 |
-| 2 | **The Unsafe Bridge** | **plays end to end — safe to look at** |
-| 3 | Snow on the Pass | stalls after scene 1 |
-| 4 | A Bargain at the Crossroads | stalls after scene 1 |
-| 5 | The Swindled Family | stalls |
+**One honest caveat: the fix has not gone live yet.** It is written, every automated check passes, and it is queued behind a routine mechanical step that another hourly task performs. Expected within the hour. A falsifiable test for the next brief: if it is still unmerged at 01:00, that step is not doing its job and it becomes something to chase rather than something to wait for.
 
-**Why the fix hasn't started.** Two hourly passes of the automatic work-taker have now gone by without it taking the job, and last hour I said that shouldn't happen. It has a mechanical cause, and I traced it rather than predicting again. Tonight's live session with you opened two jobs of its own — the clipped prose and the tooltips — and the work-taker is built to refuse to start anything while more than one job is already in progress. It doesn't step past them to reach the urgent one; it stops entirely. So the queue has effectively been shut since 20:52 this evening, and the encounter bug has been sitting at the top of a list nobody was reading.
+**So the ask is the one that was always underneath it.** THR-883 — the encounter-writing prototype — is waiting on your read of the five encounters written in the new format. Only you can clear that, and eleven content tickets stay paused until you do.
 
-**It should clear itself within the hour.** Those two jobs are finished and sitting in a change that is already approved to go in automatically the moment its checks pass — they started six minutes ago. When it lands, both jobs close, the work-taker's objection disappears, and the next pass at the top of the hour should take the encounter bug. Nothing in that needs an instruction from you.
+**One decision travels with it, and it is a creative call, not a mechanical one.** Four capital-city encounters — a council mediation, a noble's court, a house unification, a monument raising — were written before the pause and are sitting finished but deliberately unlanded. When you lock the format they go one of two ways:
 
-**So the ask is what it was: don't form a verdict on these links yet.** The prose in those four may be perfectly good — you simply can't reach past their opening scene. If you want a look tonight anyway, link #2 (The Unsafe Bridge) is genuinely whole.
+- **Land them as they are**, and retrofit them later alongside the seven other already-written encounters. Cheaper now; makes the eventual retrofit pile eleven instead of seven.
+- **Drop them and rewrite** the four under the locked format. More work now, nothing to retrofit later, and they come out matching the new bar exactly.
 
----
-
-**Still parked and still yours, unchanged: the four finished capital-cluster encounters.** The millrace dispute, the ford toll house, the feuding houses, and the monument that turned into a problem with a rock. They're written, they pass every check, and they're held in the old style. The call is whether they land as-is and get tidied up alongside the seven earlier ones, or get dropped and rewritten under the locked format. Nothing is lost either way, and it needn't be tonight — it belongs with the session that closes out the format work.
-
-*No doorbell this hour. Both asks are the same ones you were rung about at 21:02 — what changed is my explanation, not what I need from you, and ringing again for that would be noise.*
+Nothing is lost on the "drop" path — the writing is preserved and recoverable either way. That question belongs in the same sitting as the format verdict.
 
 ## Queue
 
-**Fifty-three jobs ready, two being worked, one parked.** Bands unchanged: one urgent, five high, four medium, three unranked, forty low-priority tidy-ups. Fifty-three is well past comfortable, which is expected while the content side stays paused behind the format work.
+**Backed up** — 54 items ready for work, well over the healthy ceiling of 15. Planning is comfortably outrunning execution, which is the good version of this problem: no risk of the executor going idle.
 
-**The queue has been shut for two hours, and that is this hour's real finding.** Explained above: the automatic work-taker halts rather than picks while tonight's two session jobs are open, so the urgent encounter bug has never actually been considered. Last hour left this as an open question with a stated test — *if the second pass also skips it, stop asking "when" and ask "why"*. The second pass did skip it, so I went and found the why. It is mechanical, and it is not a sign anything is wrong with the ticket.
-
-**The two encounter-screen fixes are the ones holding the gate** — the clipped prose and the odds-panel explanations, the latter descending from your "key:value is unfinished" note. Their change is armed and waiting on its checks.
-
-**The parked job** is the finished-but-held encounter batch described above, now about thirty-two hours parked and holding no one up.
-
-**Five ready jobs still carry your name.** Confirmed harmless again this hour, from the work-taker's own instructions: it considers every ready job and treats a name on one as noise. That is genuinely not what is blocking the urgent bug — the count above is.
+- **One stranded pull request wants about ten minutes from an agent session, not from you.** The weekly retrospective write-up has a merge conflict, so it cannot land on its own however long it waits. Flagged for the next executor session.
+- **One item has gone cold:** THR-739, unifying the two ways a player-cast action gets dispatched, has sat untouched for seven days. Not urgent — just worth knowing it stopped moving.
+- Six ready items still carry your name as assignee. **Known and harmless** — the lane that picks up work does not filter on assignee, so they remain pickable. Tracked separately as hygiene.
 
 ## Freshness
 
-**Your working copy is on the right branch with nothing of yours stranded, but it is twenty-four commits behind.** All twenty-four landed in the last fifty-odd minutes — it has been an unusually busy merge hour — and the hourly sync should absorb them on its next pass. If you start a session before then, this brings it current:
+**Your working copy is 41 commits behind and has stopped advancing.** The repo you open in the morning last moved at 22:01 local; the shared main branch has taken 41 commits since. Starting a session now would mean working on roughly three-hour-old state.
 
+The fix is one command, and your local settings edits survive it untouched:
+
+```bash
+git -C "C:/Users/chris/Dev/Projects/TheFantasyWorldSimulator" pull --ff-only origin main
 ```
-git switch main && git pull --ff-only origin main
-```
 
-The two Claude permission files you edited are still sitting there uncommitted, as they have been for days — harmless, have never blocked anything, no action wanted.
+**The background sync that normally does this has stopped, and that is now confirmed rather than suspected.** It had been fast-forwarding your copy reliably on the hour — eight consecutive ticks — and its last one was at 21:50. It has missed three since, while 41 commits piled up waiting. A working sync could not have sat through that without moving.
 
-**The live site is serving the newest code.** Automated checks normal.
+I also checked whether your two modified settings files were to blame — **they are not.** None of the incoming commits touch them, so nothing conflicts and your edits are safe.
 
-**All eight scheduled jobs are running on time.** The cleanup job ran at 22:40 and found nothing needing a human call.
+**Deliberately not treated as a wake-you-up item.** The one command above fixes it whenever you next sit down, and the session-start check in your own workflow reports the same thing and offers the same fix — so learning this at 08:00 instead of 00:00 costs you one command. What it does mean is that it **will not fix itself**: expect to run that line at the start of your next session, and expect the same tomorrow until the sync is restarted.
+
+Everything else is healthy. The live site is current — recent commits only touched notes and docs, so no rebuild was needed. The automated merge checks are running normally, all eight scheduled tasks are on time, and the repo cleanup task ran 19 minutes ago with nothing needing a decision.
 
 ## What's moving
 
-**The stuck-change classifier landed at 22:42** — the fix that tells apart a change merely waiting its turn from one genuinely snagged on a conflict, so the sweep stops idling on the ones it can't help.
-
-**Tonight's two encounter-screen fixes are minutes from landing**, and their landing is what reopens the work queue.
+- **The multi-scene encounter crash is solved** — root cause found, fix written, full test suite green at 14,572 tests, and a regression test added so it cannot come back silently.
+- A small engine cleanup item was promoted into the ready queue in the last hour.
+- Content work remains paused behind your format verdict, by design.
 
 ---
 *Standing asks live in `Design/user-actions.md`. This file is regenerated hourly by
