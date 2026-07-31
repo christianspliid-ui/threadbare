@@ -2248,3 +2248,104 @@ keyword. Add prose without touching the schema; `unauthoredCardCount()` is the b
 `src/engine/cycleEnd.ts` (harvest selection), constants in `src/data/nudge-constants.ts`.
 The catalog's human surface is `public/nudge-cards-reference.html`, freshness-gated against
 the library file.
+
+---
+
+## Capability: Agent-decided branches — the mortal picks the fork (THR-894)
+
+**Author a branch the acting mortal resolves from who they are, and let taking it
+change who they become.** Before this, `ActionStepBranch` selected a variant by a
+recorded `choiceId`, and the only thing that ever recorded one was the retired
+player-pick. A branch you authored today could only ever take `fallback` — the
+fork was in the schema and unreachable in every run.
+
+### What you can author
+
+Two opt-in fields. Absent, everything behaves exactly as it does today.
+
+**On the branch — `decidedBy`:**
+
+```ts
+{
+  branchOnStep: 0,
+  decidedBy: { axis: 'honesty_cunning' },   // any live ValuePair
+  variants: {
+    positive: { /* the honest arm */ },     // first-named pole of the pair
+    negative: { /* the cunning arm */ },    // second-named pole
+  },
+  fallback: { /* still required — used when no decision was recorded */ },
+}
+```
+
+The variant keys are **not free strings**. A `decidedBy` branch must key exactly
+`positive` and `negative`; a typo fails template validation at build time rather
+than sending every decision silently into `fallback` forever (the THR-844 shape,
+where 66 of 138 entries were dead and nothing noticed).
+
+**On a card — `poleLean`:**
+
+```ts
+nudges: [{
+  id: 'steady_their_hand',
+  // …the usual card fields…
+  poleLean: { axis: 'honesty_cunning', toward: 'positive', weight: 0.5 },
+}]
+```
+
+`weight` is optional (defaults to `POLE_LEAN_DEFAULT_WEIGHT`). A card with no
+`poleLean` **abstains** — it moves the odds without arguing for a direction,
+which is the common and correct way to author most cards.
+
+### How the decision is made
+
+At the moment `branchOnStep` resolves:
+
+1. **The mortal's live position** on the axis — their standing `AxiologicalProfile`
+   baseline *plus* accumulated `archetypeDrift`. Reading the live value, not the raw
+   baseline, is what makes the loop close.
+2. **Plus the god's argument** — the net signed `poleLean` of the cards actually
+   committed on that step (`activeNudges`). A card dealt but not played counts for
+   nothing.
+3. **The sign picks the pole.** Inside `BRANCH_DECISION_NEUTRAL_EPSILON` of zero the
+   mortal genuinely has no answer, and a seeded coin settles it.
+4. **The pole is recorded as an ordinary choice** through the existing
+   choice-history path, so `resolveStepDefinition` reads it exactly as it reads a
+   player pick. There is no second branch-resolution route.
+5. **The pole drifts the mortal toward itself** by `BRANCH_DECISION_DRIFT_MAGNITUDE`,
+   through the same `applyDriftMagnitude` accumulator `phaseChoiceResolution` uses —
+   so decay, threshold crossings, and the `archetype_drift_register` reveal all see it.
+
+### The axis must match, and that is the point
+
+A card's `poleLean` counts **only** toward a branch deciding on the *same* axis. A
+card arguing about mercy has nothing to say about a fork between courage and
+prudence, and silently counting it would be the worst kind of wrong: plausible,
+invisible, and load-bearing. If a deciding step deals no card leaning on its
+branch's axis, validation **warns** — legal (the mortal decides alone), but far
+more often it means a card names the wrong axis and is abstaining silently.
+
+### The player never picks
+
+This is the design, not an implementation detail. The god *leans*; the mortal
+*chooses*; the choice is theirs to keep. Do not author a `decidedBy` fork as a
+disguised player choice — the surface for a player decision is the card they
+commit, and the fork is what the mortal does with it.
+
+### Determinism
+
+The coin is drawn **only** inside the neutral band — the one branch where its
+value is used, mirroring the meeting's `resolveWrittenPole`. Drawing it
+unconditionally would advance the stream on decided forks too, desynchronising
+two runs that differ only in how convinced a mortal was.
+
+### Where it lives
+
+`src/types/unifiedAction.ts` (`StepNudgePoleLean`, `BranchDecision`, `BranchPoleKey`),
+`src/engine/encounters/poleLean.ts` (the shared lean arithmetic — **the meeting calls
+this too**; do not copy the summing loop),
+`src/engine/encounters/branchDecision.ts` (the decision, the drift write, the trace),
+`src/engine/unifiedActionResolution.ts` (the one call site, immediately before
+`advanceStep`), constants in `src/data/nudge-constants.ts`, validation in
+`src/testing/contentInvariants.ts`. One `branch_decided` trace per decision carries
+axis, profile lean, card lean, resolved pole, and whether conviction or the coin
+settled it.

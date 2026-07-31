@@ -1,7 +1,7 @@
 ---
 name: orchestrator
 description: The lane that decides what happens next — reads the Blocked by half of coordination blocks and promotes unblocked work to Ready for Dev (T1), authors design when the program shelf runs thin (T2), and owns architecture-health surfacing as a standing daily duty (T3). Runs hourly as tb-orchestrator. Never claims an issue, never sets In Dev, never writes Design/briefing.md.
-last_validated_against: 2026-07-30
+last_validated_against: 2026-07-31
 ---
 
 # Orchestrator
@@ -40,7 +40,7 @@ These four are the difference between an orchestrator and a second executor. Bre
 | `ORCH_HEALTH_SWEEP_HOUR` | `6` | Local hour after which the daily T3 sweep runs once |
 | `ORCH_STALLED_PICKUP_THRESHOLD` | `3` | Claims without a merge before an issue is surfaced as stalled |
 | `ORCH_ESCALATION_CHANNEL` | Discord `1530183488333152287` | Non-blocking question channel |
-| `ORCH_REPORT_DIR` | `Docs/ops/` | Where `orchestrator-YYYY-MM-DD.md` is written |
+| `ORCH_REPORT_DIR` | `Docs/ops/` | Where `orchestrator-YYYY-MM-DD[letter].md` is written — one file per run, never appended to (§ Reporting) |
 
 ## T1 — Unblock sweep (every run)
 
@@ -111,7 +111,9 @@ get_issue(id)                                                      # verify: no 
 
 **This is not optional bookkeeping; it is what makes the promotion usable.** `pull-work` Step 3 validates the *latest comment* on a candidate for three required lines — `Suggested model`, `Parallel-safe with`, `Mutex with` — and **bounces the issue without claiming it** when any is missing. An issue promoted into `Ready for Dev` with no coordination block therefore sits at the top of the queue being refused every hour, which is worse than leaving it in `Todo`: it looks available, blocks nothing, and silently starves the lane.
 
-So every T1 promotion posts a comment carrying:
+**This binds the create path too, not only promotions (THR-836).** Filing a T1/T2 child *straight into* `Ready for Dev` (the two-write create above) produces an issue with zero comments — born failing this same gate, and with no later promotion step that would ever author one. So the create sequence is three writes, not two: create, clear the assignee, **post the block**. `pull-work` Step 3 now derives a block at claim time for a self-scoped ticket rather than bouncing it, so the failure is no longer a stalled lane — but a derived block is a guess reconstructed from the description, where yours is written by the party that actually chose the scope.
+
+So every T1 promotion — and every direct filing into `Ready for Dev` — posts a comment carrying:
 
 - **The promotion evidence** — which blocker, what state, what date it cleared. This is the audit trail that makes a wrong promotion diagnosable.
 - **The three coordination lines.** Derive `Mutex with` from the files the ticket will actually touch and **state the reason inline** (`Mutex with: THR-XXX (both edit <file>)`) — THR-688 rule B, and an executor may only reverse a mutex whose reason is verifiably inapplicable.
@@ -176,10 +178,16 @@ Report **new** findings only, diffed against the previous `orchestrator-*.md` in
 
 ## Reporting
 
-Write `Docs/ops/orchestrator-YYYY-MM-DD.md`. Structure:
+**One file per run — never append to a file a previous run created.** The first run of a UTC day writes `Docs/ops/orchestrator-YYYY-MM-DD.md`; every later run that day writes `Docs/ops/orchestrator-YYYY-MM-DD<letter>.md`, starting at `b` and continuing `c`, `d`, …. Pick the letter by listing `ORCH_REPORT_DIR` for today's prefix and taking the next unused one.
+
+This is structural, not stylistic (THR-849). The lane used to prepend each run's section to the **top** of one dated file, which made that first line a shared anchor: when two runs' PRs overlap, both edit it and the second lands at `mergeStateStatus: DIRTY`. Armed auto-merge cannot resolve a conflict, so such a PR sits open indefinitely — PR #1031 sat that way for two days holding the only copy of its run's T1 sweep, and had to be recovered by hand. Separate files share no anchor, so the conflict becomes impossible rather than merely unlikely, and the filename carries the ordering that `merge=union` cannot (union keeps both sides of a hunk, in no guaranteed order).
+
+`.gitattributes` also grants `Docs/ops/orchestrator-*.md merge=union` as a backstop for anything that still shares a file. That is what catches a mistake; one-file-per-run is what prevents it. Do not read the backstop as permission to append.
+
+Structure:
 
 ```markdown
-# Orchestrator — YYYY-MM-DD
+# Orchestrator — YYYY-MM-DD (run <letter>, ~HH:MMZ)
 
 ## Needs Christian
 (plain language, THR-608 — or "nothing needs you")
@@ -206,6 +214,7 @@ Write in plain language (THR-608). Christian does not read Linear, diffs, or PRs
 - **Never run a git state op with the home tree as CWD** (THR-672). `C:\Users\chris\Dev\Projects\TheFantasyWorldSimulator` is a read-only mirror of `main` owned by `threadbare-autosync.ps1`. Work in this session's own worktree; branches are repo-global.
 - Commit the report with **no** `Fixes` / `Closes` / `Resolves THR-XX` keyword — that would auto-close unrelated issues (impediment #140). The workflow is line-anchored (THR-738), but the safe habit is unconditional: reference issues as bare `THR-XXX` tokens.
 - Open a PR, queue it with `gh pr merge --auto --merge`, and move on. Do not poll-wait on CI (THR-675).
+- **If a prior run's report PR is still open, leave it and its branch alone.** Write your own per-run file and carry on — never append to the file that PR touches, and never push to its branch: another lane may still have it checked out, which is the THR-671/672/797 hazard class. If it reads `DIRTY`, note it under `## Escalations` and file a ticket for the executor lane to salvage the stranded section; do not resolve it in-run. That is how THR-849 itself was filed, and why its section survived.
 - A no-change run skips the commit entirely; the task's `lastRunAt` is the heartbeat.
 
 ## Fail-soft

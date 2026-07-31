@@ -212,3 +212,50 @@ export const REKINDLE_ESSENCE_COST = 6;
  * the `BROKEN_EXIT_STATE` hysteresis, so the restore actually clears the state.
  */
 export const REKINDLE_RESTORE_TO_RATIO = 0.6;
+
+// ─── Agent-decided branches (THR-894) ────────────────────────────────
+//
+// A `decidedBy` fork asks the mortal a question about themselves. The answer is
+// their live axis position (baseline + drift) plus whatever the god argued for
+// with the cards committed on the deciding step. These four numbers are the
+// whole feel of that: how loud one card is, how close to the middle counts as
+// "undecided", which way an undecided mortal falls, and how much taking the
+// fork moves them. Changing the feel is changing a number here (NFP #1).
+
+/**
+ * Pull of a `poleLean` card that names no explicit `weight`.
+ *
+ * Sized to the ±1 axis scale so a *single* leaning card can carry a mortal who
+ * sits near neutral, but not one who is already committed the other way. A god
+ * who wants to turn a convinced mortal must argue harder — more cards, or a
+ * heavier one.
+ */
+export const POLE_LEAN_DEFAULT_WEIGHT = 0.35;
+
+/**
+ * Half-width of the "undecided" band around zero net lean.
+ *
+ * Inside it the mortal genuinely has no answer and the fork resolves by a seeded
+ * coin. Deliberately small: a mortal with any real conviction, or a god with one
+ * committed card, should land on a pole rather than a shrug.
+ */
+export const BRANCH_DECISION_NEUTRAL_EPSILON = 0.05;
+
+/**
+ * Coin threshold for an undecided fork. `rng() < this` ⇒ `'positive'`.
+ *
+ * A true coin at 0.5: neither pole is the safe default, because a silent
+ * tiebreak toward one of them would quietly bias every neutral mortal in the
+ * world the same way — the failure the meeting's `'none'` lean was written to
+ * avoid.
+ */
+export const BRANCH_DECISION_COIN_THRESHOLD = 0.5;
+
+/**
+ * Signed drift the decided pole writes onto the mortal's axis.
+ *
+ * This is the loop that makes repeated choices become character: below the
+ * `soft` drift threshold on its own, so one fork is a lean and not a rebrand,
+ * but three in the same direction register as who this person is becoming.
+ */
+export const BRANCH_DECISION_DRIFT_MAGNITUDE = 0.08;

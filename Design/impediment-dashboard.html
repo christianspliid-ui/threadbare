@@ -5694,19 +5694,6 @@ const DATA = [
     "session": "THR-884 pickup (tb-opus-pickup, 2026-07-30). Plan-doc PR #1122 opened 15:14Z, ticket filed 15:14Z, pickup 16:02Z — under an hour, so the race is routine rather than exceptional."
   },
   {
-    "num": "322",
-    "id": 322,
-    "count": 1,
-    "date": "2026-07-30",
-    "category": "tooling",
-    "description": "**A correctly-declared new trace interface is still rejected at every `emitTrace` call, because `emitTrace` takes `Omit<TraceEntry, 'id' \\| 'timestamp'>` and `Omit` over a *discriminated union* collapses it to only the keys every member shares.** Adding `nudge_cost_charged` / `nudge_dispatch_failed` to the category union, declaring both trace interfaces, and joining them to the `TraceEntry` union was all correct — and every category-specific field (`encounterId`, `channel`, `appliedDelta`) still errored as an excess property. The error text names the field, not the collapse, so it reads as \"you declared the interface wrong\" and invites a second (also failing) attempt at the declaration.",
-    "consequence": "Two typecheck cycles spent re-checking a correct declaration; the same pathology is the standing source of ~140 baseline errors in `encounterAftermath.ts`, which is how it stays invisible — the file is already red, so nobody reads the cause.",
-    "impact": "Low per occurrence — but it is a permanent tax on every new trace category, and it silently pushes authors toward the untyped `as unknown as` cast, which is why that baseline keeps growing.",
-    "workaroundFound": true,
-    "workaround": "Declare the payload against the *real* trace union in a small local wrapper and cast only at the `emitTrace` boundary (`emitNudgeTrace` in `src/engine/encounters/nudgeDispatch.ts`). Call sites stay fully checked against the specific interface; the cast crosses the collapsed boundary once, in one commented place, instead of at every call. Cheaper permanent fix (unticketed): give `emitTrace` an overload accepting the union itself rather than an `Omit` of it.",
-    "session": "THR-885 nudge card system — adding two trace categories for card cost channels and dispatch failures."
-  },
-  {
     "num": "323",
     "id": 323,
     "count": 1,
@@ -5809,6 +5796,71 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "Use the `Edit` tool with a unique trailing anchor from the target file instead of shell append — it needs no quoting at all, and it verifies the anchor exists, so a silent append to the wrong file is impossible. Reserve heredocs for short, single-quote-free payloads. This is a specific instance of the general rule already in CLAUDE.md's Bash-tool guidance (prefer dedicated file tools over shell redirection); worth remembering that the failure mode is a *parse* error blaming quotes, not an obvious \"payload too large\".",
     "session": "THR-892 derived-factor-lines test authoring, hourly `tb-opus-pickup`, worktree reverent-haslett-e28ee2."
+  },
+  {
+    "num": "322",
+    "id": 322,
+    "count": 2,
+    "date": "2026-07-31",
+    "category": "tooling",
+    "description": "**A correctly-declared new trace interface is still rejected at every `emitTrace` call, because `emitTrace` takes `Omit<TraceEntry, 'id' \\| 'timestamp'>` and `Omit` over a *discriminated union* collapses it to only the keys every member shares.** Adding `nudge_cost_charged` / `nudge_dispatch_failed` to the category union, declaring both trace interfaces, and joining them to the `TraceEntry` union was all correct — and every category-specific field (`encounterId`, `channel`, `appliedDelta`) still errored as an excess property. The error text names the field, not the collapse, so it reads as \"you declared the interface wrong\" and invites a second (also failing) attempt at the declaration.",
+    "consequence": "Two typecheck cycles spent re-checking a correct declaration; the same pathology is the standing source of ~140 baseline errors in `encounterAftermath.ts`, which is how it stays invisible — the file is already red, so nobody reads the cause.",
+    "impact": "Low per occurrence — but it is a permanent tax on every new trace category, and it silently pushes authors toward the untyped `as unknown as` cast, which is why that baseline keeps growing.",
+    "workaroundFound": true,
+    "workaround": "Declare the payload against the *real* trace union in a small local wrapper and cast only at the `emitTrace` boundary (`emitNudgeTrace` in `src/engine/encounters/nudgeDispatch.ts`). Call sites stay fully checked against the specific interface; the cast crosses the collapsed boundary once, in one commented place, instead of at every call. Cheaper permanent fix (unticketed): give `emitTrace` an overload accepting the union itself rather than an `Omit` of it.",
+    "session": "THR-885 nudge card system — adding two trace categories for card cost channels and dispatch failures."
+  },
+  {
+    "num": "330",
+    "id": 330,
+    "count": 1,
+    "date": "2026-07-31",
+    "category": "codebase",
+    "description": "**`ActionStep` declares no `id` field, but four production sites in the resolution path read `step.id`** — `unifiedActionResolution.ts` (×3, incl. the `getEffectiveUnifiedActionChoiceMemory` call that passes it as the required `stepId`) and the clearance-gate path. Every one is a `Property 'id' does not exist on type 'ActionStep'` error sitting inside the THR-489 red baseline, so they evaluate to `undefined` at runtime and nothing surfaces. `EncounterChoiceMemory.stepId` is a *required* string used for history lookups, so those entries are being written with an undefined key.",
+    "consequence": "Writing a new choice-history entry looked like a one-liner (`step.id`) and would have silently propagated an `undefined` stepId into a lookup key. Cost one typecheck cycle to notice the field does not exist at all rather than being optional.",
+    "impact": "Medium — invisible while the baseline is red. Any future reader that keys choice history on `stepId` (rather than `stepIndex`, which every current reader uses) will find `undefined` for every engine-written entry.",
+    "workaroundFound": true,
+    "workaround": "Derive the id from the index (`step_<index>`) instead of propagating the bug; documented inline in `branchDecision.ts`. The real fix is either declaring `id` on `ActionStep` or repointing the four reads — not attempted here, since both are outside this ticket and the field's intended semantics (authored id vs positional) is a design call.",
+    "session": "THR-894 agent-decided branches — recording the decided pole as an ordinary `EncounterChoiceMemory`."
+  },
+  {
+    "num": "331",
+    "id": 331,
+    "count": 1,
+    "date": "2026-07-31",
+    "category": "tooling",
+    "description": "**Linear `save_issue` returned HTTP 502 `upstream_unavailable` on the pickup claim, then succeeded verbatim on immediate retry.** The first mutating call of the run (`save_issue(THR-836, assignee:\"me\", state:\"In Dev\")`) failed with `{\"error\":\"upstream_unavailable\",\"message\":\"Linear is temporarily unavailable.\",\"status\":502,\"requestId\":\"a237fd9b6b662449\"}`. The identical call one moment later returned the full updated issue. Distinct from impediment #48 (silent drop: HTTP 200, write does not land) — this is the honest inverse, a loud failure with no write.",
+    "consequence": "A run that treats a 502 as terminal exits with nothing claimed and the hourly slot wasted, even though the queue was healthy and the very next attempt would have worked.",
+    "impact": "Low — one retry. Worth recording because `pull-work`'s documented retry ladder (`MAX_CLAIM_RETRIES`) is written against #48's silent-drop shape and moves to the *next candidate* on mismatch; a transient 502 wants the *same* candidate retried instead.",
+    "workaroundFound": true,
+    "workaround": "Retry the identical `save_issue` once before moving to the next candidate, then verify with `get_issue` as usual. Verified-after-write here: `assignee=Christian Spliid`, `state=In Dev`, both stuck.",
+    "session": "`tb-opus-pickup` hourly run, 2026-07-31, claiming THR-836."
+  },
+  {
+    "num": "332",
+    "id": 332,
+    "count": 1,
+    "date": "2026-07-31",
+    "category": "process",
+    "description": "**A backup stored outside the path its audit scans is worse than no backup, because it reports as missing while quietly rotting into a trap.** `tb-opus-pickup`'s prompt was mirrored at `Docs/ops/cc-hourly-opus-pickup-prompt.md` — outside `Docs/ops/scheduled-task-prompts/` and outside the filename-equals-task-id convention. `weekly-project-hygiene` check 3 scans the directory, so it looked in the wrong place and reported the lane unmirrored anyway; THR-850 was then filed on that reading. Both states produce the same audit output, so nothing could distinguish \"never mirrored\" from \"mirrored somewhere unwatched\" — and the second is strictly more dangerous, because it looks recoverable.",
+    "consequence": "Unread ~5 weeks, the copy drifted into a liability: it encoded the `assignee:null` queue filter that hid 19 of 41 queue items including the board's only Urgent (THR-845), told the lane to poll-wait on CI instead of arming auto-merge (THR-675), and opened \"until THR-486 lands\" for a ticket landed 2026-06-23. A disk-loss recovery from it would have silently reinstated two fixed defects in the only lane that ships anything.",
+    "impact": "High",
+    "workaroundFound": true,
+    "workaround": "Mirror only at the conforming path (`Docs/ops/scheduled-task-prompts/<task-id>.md`), and **delete** any copy elsewhere rather than leaving it as a second source. Verify byte-identity against the live file after copying (`diff` exits 0), since a mirror nobody diffs is only a claim. The generalization worth carrying: **an audit that can't tell \"absent\" from \"present but unwatched\" gives the same answer to the safe case and the dangerous one** — so the fix is to make the path itself the thing being checked, not the existence of a file somewhere.",
+    "session": "THR-850, hourly `tb-opus-pickup` run, 2026-07-31"
+  },
+  {
+    "num": "333",
+    "id": 333,
+    "count": 1,
+    "date": "2026-07-31",
+    "category": "process",
+    "description": "**The one scheduled-task prompt that is unversioned is also the one no gate can correct, so repo-side fixes to its documented behavior silently do not reach it.** THR-846 corrected `pull-work`'s park destinations on 2026-07-30; the `tb-opus-pickup` prompt carried the same stale routing (four passages addressed to Cowork, retired 2026-07-21 by THR-654) and received none of it, because it lives at `C:\\Users\\chris\\.claude\\scheduled-tasks\\<id>\\SKILL.md` and no PR touches that path. The same gap had let its verify list fall behind *both* blocking CI gates — `check:generated-freshness` (THR-690) and `check:wiki-freshness:blocking` (THR-730) — neither of which it names.",
+    "consequence": "A run following the prompt faithfully ships a PR that fails a required check it was never instructed to run, and parks unfinished work in states no live lane reads (THR-838 sat ~13 h that way). Drift is undetectable by construction: with no mirror there is nothing to diff against, so the divergence is invisible to every gate rather than merely unfixed.",
+    "impact": "Medium",
+    "workaroundFound": true,
+    "workaround": "Treat the live file as the source and edit it **first**, then mirror in the same PR — the ordering in `Docs/ops/scheduled-task-prompts/README.md`. The mirror does not deploy, so a mirror-only edit changes nothing operationally; the reverse ordering is the failure this rule exists to prevent. Once mirrored, ordinary review catches the next drift, which is the actual value of mirroring — recoverability is the lesser half.",
+    "session": "THR-850, hourly `tb-opus-pickup` run, 2026-07-31"
   }
 ];
 // ── End data ──

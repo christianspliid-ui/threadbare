@@ -835,6 +835,47 @@ export type NudgeRider =
   | 'all_or_nothing';
 
 /**
+ * Which pole of a value axis a nudge card argues for (THR-894).
+ *
+ * Two authoring forms, one meaning:
+ *
+ * - **Axis-explicit** `{ axis, toward, weight? }` — the general form. Names the
+ *   `ValuePair` it argues on, so it counts only toward a branch deciding on
+ *   *that* axis and abstains everywhere else. `toward: 'positive'` is the
+ *   first-named pole of the pair (the `+1` direction in `AxiologicalProfile`);
+ *   `'negative'` is the second-named pole.
+ * - **Axis-implicit** `'a' | 'b'` — the shorthand, legal only where the *host*
+ *   declares the axis for the whole beat. Today that is exactly one host: a
+ *   meeting `FormativeTest`, whose `valuePair` supplies the axis for every card
+ *   in the test (`MeetingStepNudge` narrows to this form). A bare shorthand on
+ *   an ordinary encounter step names no axis and therefore abstains from every
+ *   branch decision — the template validator warns rather than guessing.
+ *
+ * `weight` scales the card's pull; omitted ⇒ {@link POLE_LEAN_DEFAULT_WEIGHT}.
+ * A heavier card is a louder argument, not a better one — it moves the
+ * direction the moment takes, never the odds it takes it at (that is
+ * `forecastDelta`, deliberately a separate field).
+ */
+export type StepNudgePoleLean =
+  | {
+      readonly axis: ValuePair;
+      readonly toward: BranchPoleKey;
+      readonly weight?: number;
+    }
+  | 'a'
+  | 'b';
+
+/**
+ * The two keys a `decidedBy` branch may name (THR-894).
+ *
+ * Deliberately not free strings: a `decidedBy` branch whose variants key
+ * anything else fails template validation at build time rather than silently
+ * falling through to `fallback` forever — the THR-844 lesson, where a typo'd
+ * family id made 66 of 138 entries permanently unreachable and nothing noticed.
+ */
+export type BranchPoleKey = 'positive' | 'negative';
+
+/**
  * Authored per-encounter nudge option (THR-772 ruling 3).
  *
  * Lives on `ActionStep.nudges`. `bandProse` keys on the six-value `StepOutcome`
@@ -885,6 +926,16 @@ export interface StepNudge {
   readonly forecastDelta: number;
   /** Optional band rider applied at step-outcome selection. */
   readonly rider?: NudgeRider;
+  /**
+   * Which pole of a value axis this card argues for (THR-894).
+   *
+   * A card with no lean **abstains**: it moves the odds without arguing for a
+   * direction, which is a legitimate and common way to author. Absent ⇒ every
+   * shipped card behaves byte-for-byte as it does today (NFP #6).
+   *
+   * See {@link StepNudgePoleLean} for the two authoring forms.
+   */
+  readonly poleLean?: StepNudgePoleLean;
   /** WS4 image-library tag; absent ⇒ category generic. */
   readonly imageTag?: string;
   /** Card body — a concrete, witnessed effect. */
@@ -1088,6 +1139,34 @@ export interface ActionStepBranch {
   readonly variants: Readonly<Record<string, ActionStep>>;
   /** Fallback step if the choice was not recorded (e.g., disregarded). */
   readonly fallback: ActionStep;
+  /**
+   * Opt-in: let the **acting mortal** decide this fork from who they are,
+   * instead of waiting for a recorded `choiceId` (THR-894).
+   *
+   * Absent ⇒ today's behavior exactly: the branch reads `choiceHistory` for a
+   * `choiceId` and falls back when none is there. That path is why branches
+   * authored *today* can only ever take `fallback` — the one thing that ever
+   * recorded a `choiceId` was the retired player-pick (`authoredChoices`).
+   *
+   * Present ⇒ at the moment `branchOnStep` resolves, the engine reads the
+   * mortal's live position on {@link BranchDecision.axis} (their standing
+   * `AxiologicalProfile` baseline plus accumulated drift), adds the net
+   * {@link StepNudge.poleLean} of the cards the god committed on that step, and
+   * records the resulting pole through the **existing** choice-history path.
+   * `variants` must then key exactly `'positive'` and `'negative'` — so the
+   * decision arrives at `resolveStepDefinition` as an ordinary recorded choice
+   * and no second branch-resolution path exists.
+   *
+   * The player never picks. They lean; the mortal chooses; the choice is theirs
+   * to keep — it drifts their axis toward the pole they took.
+   */
+  readonly decidedBy?: BranchDecision;
+}
+
+/** Configuration for an agent-decided branch (THR-894). */
+export interface BranchDecision {
+  /** The value axis this fork is a question about. */
+  readonly axis: ValuePair;
 }
 
 /**

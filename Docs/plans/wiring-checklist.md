@@ -1936,3 +1936,54 @@ The **rival-side driver** for the essence-source contestation interface THR-611 
 **Counter-play inversion (the load-bearing wiring detail).** `detectSchemeCounter` now takes the family. For `requiresPlayerSource` families the generic ascendant-`controls` read is **wrong** — the target is player-controlled by definition — so it reads the Defend leg instead. Any future family acting on player property must do the same or it will counter itself on tick one.
 
 **Known scope edges (filed, not absorbed):** ambient event ids collide, producing duplicate React keys (**THR-853**, same class as THR-781). The `sponsors_scheme` marker input remains dead by construction because rivals are not graph nodes — kept, documented, and pinned by a test asserting the `addEdge` throw.
+
+---
+
+## Agent-decided branches (THR-894)
+
+**Engine module → call site.** `src/engine/encounters/branchDecision.ts`
+(`applyAgentDecidedBranches`, `decideBranchPole`, `readLiveAxisLean`,
+`driftAxisIdForValuePair`) is called from `executeStepResult` in
+`src/engine/unifiedActionResolution.ts`, **immediately before `advanceStep`**. That
+position is load-bearing, not incidental: `advanceStep` calls
+`resolveStepDefinition(template, nextStepIndex, action.choiceHistory)`, so it is the
+last moment a decision can land and still be visible when the next step's definition
+is resolved. Moving the call after `advanceStep` would leave every decided branch
+taking `fallback` — the exact bug this ticket closes, silently reintroduced.
+
+**Shared helper, not a copy.** `src/engine/encounters/poleLean.ts` owns the lean
+arithmetic, and `meetingEncounter.ts`'s `computeNetPoleLean` now *calls* it rather
+than carrying its own summing loop. A future change that re-inlines either side
+recreates the `assignAmbitionToActor` two-implementations drift (THR-885).
+
+**Type → validator.** `StepNudge.poleLean` and `ActionStepBranch.decidedBy` are both
+opt-in on `src/types/unifiedAction.ts`. `assertValidStep` in
+`src/testing/contentInvariants.ts` enforces the pole keys and the axis; a typo'd
+variant key is a build failure, not a silent permanent `fallback`.
+`collectUnleanableBranchWarnings` is the warn half — a decided fork whose deciding
+step deals no card on that axis.
+
+**Choice history is the only carrier.** The decision is written as an ordinary
+`EncounterChoiceMemory` (with `interventionType: 'agent_decided'`). There is
+deliberately **no** parallel recorder and no second branch-resolution path. Any
+future surface that renders choice history sees these for free.
+
+**Drift write → existing accumulator.** The decided pole calls `applyDriftMagnitude`,
+the same function `phaseChoiceResolution` writes through — so decay
+(`phaseDriftDecay`), threshold crossings, and the `archetype_drift_register` reveal
+all read it with no new store. Note `archetype_drift_register` *reveals* a held drift
+band; it does not write one. The write is the accumulator.
+
+**Trace.** `branch_decided`, registered in `src/types/traces/encounter-traces.ts` and
+in `traceBuffer.ts`'s `TRACE_CATEGORIES` + `EncounterTraceEntry`. Emitted with the
+same cast every encounter-trace emitter uses — those interfaces are not members of
+the `TraceEntry` union, a pre-existing gap shared with `phaseChoiceResolution`.
+
+**No content yet, and that is recorded.** Zero shipped templates author a `decidedBy`
+branch; the interface-map row is badged **LEAKED** with `deferralTicket: THR-883`
+rather than LIVE, because badging a path nothing travels is the THR-614 error class.
+
+**Known scope edge (filed, not absorbed):** `ActionStep` carries no `id` field — the
+several `step.id` reads in the resolution path are long-standing type errors inside
+the THR-489 baseline that evaluate to `undefined`. `branchDecision.ts` derives
+`step_<index>` instead of propagating that bug.
