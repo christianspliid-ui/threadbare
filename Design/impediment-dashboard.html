@@ -6017,6 +6017,19 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "**Do not touch the sibling worktree. Work on a local alias branch and push to the remote ref by name.** `git fetch origin <branch>` then `git checkout -B <branch>-resume FETCH_HEAD`, resolve the merge there, and push with an explicit refspec: `git push origin HEAD:<branch>`. Pushing to `origin` is unaffected by which local worktree holds the branch — only the local checkout is exclusive. The sibling worktree is left for the reaper.",
     "session": "THR-920, `tb-opus-pickup` hourly run — resume pass."
+  },
+  {
+    "num": "362",
+    "id": 362,
+    "count": 1,
+    "date": "2026-07-31",
+    "category": "tooling",
+    "description": "**`git merge-tree --write-tree` exits non-zero *because* there are conflicts, and a fail-soft `execFileSync` wrapper that returns `null` on throw therefore discards the conflict list for exactly the case the probe exists to detect.** THR-897's probe computes conflicting file names read-only with `git merge-tree --write-tree --name-only origin/main <head>`. On a clean merge it exits 0 and prints the tree oid; on a conflict it exits 1 **and still writes the full conflicting-path list to stdout**. The repo's standard probe idiom (copied from `check-deploy-health.ts`) catches the throw and returns `null`, which the caller reads as \"could not tell\". So the conflicted case — the only case with an answer worth having — degraded to `unknown` while the clean case worked perfectly, i.e. the probe was silently inverted with respect to its own purpose.",
+    "consequence": "Would have shipped a probe reporting `conflictFiles: []` for every genuinely conflicted PR, making the THR-897 fix look like it worked (verdict `conflicted` is set from `mergeStateStatus`, not from this call) while delivering none of the diagnosis it promised. Caught before commit only because the live run was checked against a real DIRTY PR rather than trusted from the unit tests, which inject `conflictFilesFor` and never exercise the wrapper.",
+    "impact": "Small",
+    "workaroundFound": true,
+    "workaround": "**Recover `stdout` from the thrown error rather than treating a non-zero exit as no answer:** `catch (error) { const stdout = error?.stdout; if (stdout?.length) return stdout.toString().trim(); return null; }`. Generally — before wrapping a git plumbing command in the repo's fail-soft `run()` helper, check whether it uses exit status to *report a result* rather than to report failure. `merge-tree`, `diff --quiet`, and `grep` all do; for those, exit code and stdout carry different halves of the answer and discarding either one is a silent defect.",
+    "session": "THR-897 armed-PR classification, `tb-opus-pickup` hourly run. Note the unit tests could not have caught this: they inject the conflict-file lookup for determinism (NFP #3), which is correct design and also means the IO wrapper is only ever exercised by a live run. *(Renumbered from #356 during the union-merge duplicate repair: `main` had already published a different row as #356, and the rule is keep the number on the row already on `main`, renumber the unmerged newcomer — following the checker's literal \"keep the row that appears FIRST in the file\" advice would have renumbered the published row and broken its existing cross-references.)*"
   }
 ];
 // ── End data ──
