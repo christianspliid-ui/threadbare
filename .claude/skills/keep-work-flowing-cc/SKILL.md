@@ -183,6 +183,26 @@ One line of JSON: `{ verdict, summary, needsChristian, standDown, startupFailure
 
 **Fail-soft:** the probe never exits non-zero without `--strict`, and degrades to `verdict: "unknown"` on any network/auth failure. If it fails to run at all, note one line under Freshness and continue.
 
+### 2.5c Armed-PR merge health — conflicted PRs that can never merge (THR-897)
+
+An armed auto-merge PR reads *green, open, and actively swept* right up until you notice it has a merge conflict, at which point it turns out to have been structurally incapable of merging the whole time. `gh pr update-branch` — the only remedy pull-work Step 0.8 applies — does not fix a conflict, and until THR-897 the sweep matched on `BEHIND` only, so conflicted PRs were skipped without a word.
+
+Measured 2026-07-31: 3 of 4 armed PRs were conflicted, the oldest armed 19 hours earlier carrying THR-883's authoring-contract rewrite — the deliverable that unblocked 11 content tickets — while three consecutive orchestrator sweeps each reported "no promotions, THR-883 pause". The lane spun waiting on work that was finished and stuck.
+
+```bash
+npm run check:armed-prs --silent -- --json
+```
+
+One line of JSON: `{ verdict, summary, needsChristian, needsSession, updateCandidate, prs, counts }`.
+
+- **`needsChristian: true`** (verdict `abandoned` — a conflict older than `ARMED_DIRTY_ABANDONED_HOURS`) → put the `summary` verbatim into **`## Needs Christian`**. It is already written in plain language and names no git jargon (THR-608); do not re-word it into merge-state terms.
+- **`needsSession: true` but `needsChristian: false`** → one line under **Freshness** naming the PR numbers and their `conflictFiles`. This is a job for the executor lane, not for Christian — a conflicted PR is a technical verdict an agent can settle, and routing it to him would be the mislabelling THR-608 forbids.
+- **`verdict: "healthy"` / `"drainable"` / `"unknown"`** → omit, or one line under **Freshness** when something is drainable. A PR that will merge on green is not news.
+
+**Why this lane and not only pull-work.** Step 0.8 reports a conflicted PR in its run log, but that log lives inside one hourly pickup and is gone by the next. This lane owns the durable surface (`Design/briefing.md`), so a conflict that outlives its session still has somewhere to be seen. The two consume the same probe, so they cannot drift into disagreeing about what "stuck" means.
+
+**Fail-soft:** the probe never exits non-zero without `--strict`, and degrades to `verdict: "unknown"` on any `gh`/network failure. If it fails to run at all, note one line under Freshness and continue — a broken probe must never abort the brief.
+
 ### 2.6 Sibling-report `## Needs Christian` sections (THR-826)
 
 Several scheduled tasks write a dated report under `Docs/ops/` with a `## Needs Christian` heading, on the documented understanding that *"Christian-facing items go in each task's own report under a `## Needs Christian` heading, and reach him via the hourly briefing"* (`Docs/ops/scheduled-tasks-registry.md` § Output-surface rule).
@@ -302,6 +322,8 @@ Direct `git push origin main` is rejected by branch protection. Use the branch �
 | `DISCORD_ALLOWLIST_FILE` | `~/.claude/channels/discord/access.json` | Source of truth for which authors step 0 will act on (`allowFrom`) |
 | `DEPLOY_STALE_GRACE_MINUTES` | 20 | Step 2.5 — how long an undeployed `main` commit is "probably still building" rather than a stoppage. Lives in `scripts/check-deploy-health.ts`; change it there, not here. |
 | `DEPLOY_LOOKBACK` | 10 | Step 2.5 — Production deployments walked back looking for the newest successful one |
+| `ARMED_DIRTY_ESCALATE_MINUTES` | 90 | Step 2.5c — how long an armed PR may sit conflicted before it needs a session (one sweep interval + slack). Lives in `scripts/check-armed-prs.ts`; change it there, not here. |
+| `ARMED_DIRTY_ABANDONED_HOURS` | 12 | Step 2.5c — how long a conflict may survive hourly sessions before it becomes Christian's rather than the lane's |
 | `SIBLING_REPORT_MAX_AGE_HOURS` | 36 | Step 2.6 — age past which a sibling task's `## Needs Christian` section is stale and not folded in |
 | `STALL_SLOT_THRESHOLD` | 2 | Step 2.7 — cron slots a task may fall behind before it counts as stalled. Lives in `scripts/check-scheduled-task-heartbeat.ts`; change it there, not here. |
 | `SIBLING_REPORT_GLOBS` | `Docs/ops/orchestrator-*.md`, `Docs/ops/backlog-grooming-*.md`, `Docs/ops/weekly-hygiene-*.md` | Step 2.6 — reports whose Christian-facing sections this task consumes; newest one per producing task |
