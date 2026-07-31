@@ -225,7 +225,7 @@ before the first sentence of prose**:
    is decoration; a hook designed before is structure. **Classify every fact the
    prose will state about the agent's connections** as scene-local, a state *read*
    (name the surface: gate, placeholder, variant), or a state *write* (name the
-   grant/aftermath that mints it) — prose rule 6: base prose may never assert agent
+   grant/aftermath that mints it) — prose rule 7: base prose may never assert agent
    history the graph does not hold.
 5. **What are the rewards, and where does the tension sit?** Prizes, tolls, and seeds
    (step 6's object references) sketched now, with the quintessence stakes — the
@@ -477,12 +477,15 @@ design block** and reports against:
    finding); does every promise the prose makes have its designed payoff; is any
    outcome mechanic announced instead of foreshadowed; does any base-prose sentence
    assert agent history — a relationship, debt, prior visit, standing — with no
-   backing state read (prose rule 6)?
+   backing state read (prose rule 7)?
 3. the **echo check** — repeated images, repeated sentence shapes, or near-identical
    phrasing across paragraph seams (the class the detectors cannot see: "The water runs
    loud and brown." ending one paragraph while "The river runs brown and loud…" opens
    the next shipped through every automated gate);
-4. read-aloud flow — any sentence the critic stumbles on gets flagged.
+4. read-aloud flow, sentence by sentence — any sentence the critic stumbles on gets
+   flagged, and for each sentence the critic names its job (what the player feels or
+   learns from it); a sentence whose only job is satisfying a design rule is a
+   finding (prose rule 6).
 
 The author fixes what the critique surfaces, then delivers. In the `encounter-pipeline`
 this is Pass 2's job (its editorial prompt now carries the echo check); in
@@ -558,7 +561,15 @@ zero wins.
    text), never "the god grants courage" — write what happens in the room. The
    `effectLine` is the exception by design: it is the rules text, and it says what the
    god does plainly.
-6. **Prose may not invent game state (Christian, 2026-07-31).** Base scene prose may
+6. **Every sentence has a job the player can feel (Christian, 2026-07-31).** For each
+   sentence, name what the player should feel or understand from it. "It satisfies a
+   design rule" is not an answer: pole staging, mechanic seeding, and payoff planting
+   must still read as story — "Nobody sits between the traveler and the door" stages
+   the exit as a *feeling*; "The back stair is behind the third door, and the yard
+   door stands open" is a floor plan installed to tick the staging rule. A sentence
+   with no nameable job is cut, and detail that belongs to one branch's road moves
+   into that branch's own prose.
+7. **Prose may not invent game state (Christian, 2026-07-31).** Base scene prose may
    only claim facts that are either **scene-local** (the wainwright of this scene, the
    stranger's two cups — inventions with no life outside the encounter) or **actual
    reads of game state** through a sanctioned surface (cast binding, enrichment
