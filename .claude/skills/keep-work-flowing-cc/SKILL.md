@@ -1,7 +1,7 @@
 ---
 name: keep-work-flowing-cc
 description: Hourly headless Claude Code PM brief — reads Christian's Discord replies, scans the Linear queue, pings home-tree freshness, and rewrites Design/briefing.md + refreshes Design/user-actions.md. The CC replacement for the Cowork keep-work-flowing task (Pure Claude Code Migration, THR-650). The briefing file IS the inbox; the Discord DM is a two-way channel — a change-gated ping out (step 6), an author-verified read in (step 0).
-last_validated_against: 2026-07-28
+last_validated_against: 2026-07-31
 ---
 
 # Keep Work Flowing (CC)
@@ -86,6 +86,10 @@ The full board overflows the response budget in one call — query per state.
 
 - `list_issues(team:"Threadbare", state:"Ready for Dev", limit:100)` → queue depth + top items by priority (sort in memory; `orderBy:"priority"` errors at runtime, impediment #49).
 - `list_issues(team:"Threadbare", state:"In Dev", limit:50)` → is the executor mid-flight? Is anything parked (assignee null but In Dev)?
+- **Report every park you find — this scan is the only one that looks (THR-846).** An issue that is `In Dev` with a null `assignee` is owned by no lane: `tb-orchestrator` reads `Todo` and `Ready for Dev` only and is forbidden from touching `In Dev`, and `stale-claim-sweep` keys off *stale claims*, which a deliberate unassigned park is not. Until THR-846 this step computed the answer and dropped it — there was no slot in the brief for it, so the park was scanned by one lane and acted on by none (THR-838 sat ~13 h that way). For each park, check the issue's latest comment for the reason and route it:
+  - **Shipped, awaiting close** (latest comment is `pull-work` Step 1.7's upstream-shipped note naming a commit SHA) → `## Needs Christian`, worded as the literal action: *"THR-XXX shipped as commit `abc1234` but Linear still shows it in progress — it needs closing."* No CC lane may write `Done`, so he is the only one who can clear it.
+  - **Held pending a decision only he can make** (latest comment records a hold, a blocks-relation onto an issue still open, or a director directive) → `## Needs Christian`, in game terms per THR-608, stating the decision and what each answer costs. Live example: THR-860 sits parked with PR #1114 open and auto-merge deliberately disarmed, held behind THR-883 until the encounter-writing format is locked; the open question — land the batch and retrofit it with the other seven, or drop the branch and re-author under the new spec — is creative, not mechanical, and no lane can resolve it.
+  - **Any other park** → one line under `## Queue`, naming the issue and how long it has been parked. A park with no explanatory comment is itself worth a line — it usually means a session died mid-flight.
 - Note **blocked** items: a Ready-for-Dev issue whose description says "blocked by THR-YY" where THR-YY is **not** itself in Ready for Dev. A blocked top-of-queue item silently starves the lane — flag it.
 - Note **stale** items: anything in Ready for Dev with `updatedAt` older than `STALE_ISSUE_DAYS` (7) — it may have gone cold or lost its plan doc.
 
@@ -243,7 +247,9 @@ inbox was empty — do not print an empty heading every hour.>
 
 ## Queue
 <One line: starved / healthy / backed up, with the ready count. Then any blocked or
-stale top-of-queue items, one line each.>
+stale top-of-queue items, one line each. Then any parked In-Dev issue (assignee null)
+that did not go to "Needs Christian" — one line each, naming how long it has been
+parked; no lane but this scan is looking at those (THR-846).>
 
 ## Freshness
 <Home-tree ping result — one or two lines. Then the step-2.5 deploy line, unless
