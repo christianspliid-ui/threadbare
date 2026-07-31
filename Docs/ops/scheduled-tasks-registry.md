@@ -2,7 +2,7 @@
 
 > **Authoritative home for the recurring-task registry** (moved out of `CLAUDE.md` § Scheduled Tasks by THR-760, 2026-07-26). CLAUDE.md keeps a pointer here plus the two rules that gate live session behavior; everything else — the lane tables, slot-allocation policy, reaper guardrails, prompt-mirror rule — lives on this page.
 
-Current recurring task registry. **Verified against `list_scheduled_tasks` and `Get-ScheduledTask` on 2026-07-27 (THR-794 — both lanes re-checked row by row); `flush-plan-docs` removed 2026-07-21 (THR-654 demolition).** The scheduler adds a deterministic per-task jitter of a few minutes to the cron minute, so **the slot name, the cron minute, and the actual fire time are three different things** — the `Fires` column is the one that matters operationally.
+Current recurring task registry. **Verified against `list_scheduled_tasks` and `Get-ScheduledTask` on 2026-07-27 (THR-794 — both lanes re-checked row by row); `flush-plan-docs` removed 2026-07-21 (THR-654 demolition). Re-verified 2026-07-31 after a pause/resume cycle in the desktop app silently reset four tasks' crons to generic defaults (impediment #359) — `tb-orchestrator`, `keep-work-flowing-cc`, `weekly-retro`, and `daily-backlog-grooming` were restored from this file's crons; after any pause/resume, diff `list_scheduled_tasks` against these tables before trusting the lanes.** The scheduler adds a deterministic per-task jitter of a few minutes to the cron minute, so **the slot name, the cron minute, and the actual fire time are three different things** — the `Fires` column is the one that matters operationally.
 
 **The audit is two-directional and runs on both lanes.** Every entry `list_scheduled_tasks` returns needs a row here — including disabled and out-of-scope ones, which otherwise read as "not registered" rather than "registered, deliberately dormant" — and every host task `Get-ScheduledTask` returns needs a row in the Windows lane table. THR-794 found one miss in each direction (`website-code-work`, `ThreadbareRepoAutoSync`); both are now carried below.
 
@@ -33,6 +33,25 @@ It carries no cron and fires only when invoked by hand, so it never contends for
 **Output-surface rule for all three (and for `tb-orchestrator`):** none of them writes `Design/briefing.md` or `Design/user-actions.md` — `keep-work-flowing-cc` owns those two files, and a second writer produces merge conflicts. Christian-facing items go in each task's own report under a `## Needs Christian` heading, and reach him via the hourly briefing.
 
 **That last clause was aspirational until 2026-07-27 (THR-826).** No step in `keep-work-flowing-cc` read those sections — the reports were being written into a channel with no consumer, which is the same defect as recording *"routed to an executor"* when no lane reads that sentence. `keep-work-flowing-cc` **step 2.6** is now the consumer: it takes the newest report per producing task (within `SIBLING_REPORT_MAX_AGE_HOURS`, 36), extracts `## Needs Christian` verbatim, and folds the items into the briefing attributed to the task that raised them. If that step is ever removed, every sibling task's Christian-facing output goes silently nowhere again.
+
+## Substantive-change gate — a lane may only move `main` when it has something to say (THR-920)
+
+Under strict branch protection every merge invalidates every other open PR, which then re-runs CI (~18 min for a code PR, ~1 min for a docs one). The drain ceiling is therefore **one PR per advance of `main`'s tip**, and what governs throughput is how often the tip moves. Measured 2026-07-31 over the last 32 merges: **17 (53%) came from the two hourly lanes reporting on their own activity** — `keep-work-flowing-cc` 10, `tb-orchestrator` 7, three of those titled "no promotions". A finished code change (PR #1175) sat green and unmergeable for over three hours behind that traffic.
+
+Both lanes already carried a prose rule against it and neither could enforce it: the briefing's body genuinely differs every hour (live counts, PR numbers, ages), and the orchestrator writes a *new file per run*, so "no-change run" was unreachable by construction. **The gate now lives in `scripts/check-substantive-change.ts`**, invoked as `npm run check:substantive`:
+
+| Lane | Invocation | Substantive when |
+|---|---|---|
+| `keep-work-flowing-cc` | `--lane briefing --file Design/briefing.md` | the frontmatter **digest** (stable `needsChristian` item keys + `queue`/`freshness`/`deploy`/`tasks` verdicts) differs from `origin/main` |
+| `tb-orchestrator` | `--lane report --file Docs/ops/orchestrator-<run>.md` | declared outcome counters (`promoted`/`filed`/`resolved`/`newFindings`) are non-zero, or `needsChristian: true` |
+| `daily-backlog-grooming` | `--lane report --file Docs/ops/backlog-grooming-<date>.md` | same as above |
+
+Two properties worth preserving if this is ever revised:
+
+- **The briefing keys on a declared digest, not on its text.** The brief is rewritten prose, so a text comparison would fire nearly every hour — failing the same way the prose rule failed, one level in. Reword freely; change a key only when the *item* changes.
+- **Every failure path returns `commit`.** Missing baseline, unreadable file, absent or unparseable frontmatter all mean "cannot prove this is noise". A spurious commit costs one merge; a wrongly-skipped one costs an audit trail, or an item stranded in Christian's unmerged inbox.
+
+`weekly-project-hygiene` and `weekly-workflow-retro` share the same per-run-report construction but were **deliberately left alone** — at roughly one merge each per week they are not measurable traffic, and adding a frontmatter contract to them would be cost without benefit. `daily-backlog-grooming` was wired despite also being low-traffic, because it already claimed the rule in prose and could not enforce it, and a rule that reads as enforced while being void is worse than no rule.
 
 The `weekly-retro` task is **registered and live** in the CC lane (created 2026-07-20, THR-653) — `0 17 * * 5`, fires ~17:09 local. It had been documented as a task-to-create since the continuous-improvement cycle was written, but had never actually been registered with the scheduler. Prompt: `C:\Users\chris\.claude\scheduled-tasks\weekly-retro\SKILL.md`.
 

@@ -89,6 +89,15 @@ Verify the board reflects this ordering. Flag inversions.
 Write to `Docs/ops/backlog-grooming-YYYY-MM-DD.md`, under 35 lines:
 
 ```
+---
+lane: daily-backlog-grooming
+run: YYYY-MM-DD
+promoted: <n>
+filed: <n>
+resolved: <n>
+newFindings: <n>
+needsChristian: <true | false>
+---
 # Backlog Grooming — YYYY-MM-DD
 
 ## Needs Christian
@@ -118,7 +127,7 @@ You are Claude Code and CAN commit — but observe the git rules:
 - Fetch first and branch off current `origin/main`.
 - Commit the report with **no** `Fixes`/`Closes`/`Resolves THR-XX` keyword — that would auto-close unrelated issues (impediment #140).
 - Open a PR and queue it with `gh pr merge --auto --merge`. Do not poll-wait on CI (THR-675).
-- If the report is a no-change no-op, skip the commit entirely; the task's `lastRunAt` is the heartbeat.
+- If the report is a no-change no-op, write no file and open no PR; the task's `lastRunAt` is the heartbeat. **Decide it with the script, not by eye** (THR-920): `npm run check:substantive --silent -- --lane report --file Docs/ops/backlog-grooming-<date>.md --json`, and obey the verdict. This lane is daily rather than hourly, so it is not what jams the queue — but it carried the same unenforceable prose rule as the two hourly lanes, and a rule that cannot fire is worse than no rule because it reads as enforced.
 
 ## Known traps
 
