@@ -677,11 +677,10 @@ export function applyMeetingOutcomes(
     erosion += outcome.quintessenceErosion;
   }
 
-  // TODO(THR-872): `traitSeeds` has three producers and no consumer —
-  // `createAgentFromMeeting` never lands it on the graph, so the reception seed
-  // appended here is currently discarded along with every dilemma and spark
-  // seed. Appending it anyway keeps the reception's authored seed in one place
-  // for when THR-872 gives the channel a reader; it is not new dead weight.
+  // The reception seed joins the dilemma and spark seeds in the one accumulator
+  // `createAgentFromMeeting` lands on the agent node as `narrativeDescriptors`
+  // (THR-872). Producers stay generic — none of them needs to know where the
+  // channel terminates.
   const traitSeeds = [...result.traitSeeds];
   if (bondOutcome?.traitSeed) traitSeeds.push(bondOutcome.traitSeed);
 
@@ -706,6 +705,26 @@ export function applyMeetingOutcomes(
 // ─── Step 4: Create Agent ─────────────────────────────────────────
 
 /**
+ * Order-preserving dedupe of the meeting's accumulated `traitSeeds`.
+ *
+ * A First can reach the same descriptor twice — two dilemmas in different
+ * categories may both seed `steadfast` — and the landed list is read as a set of
+ * things true about this person, not a tally. Blank entries are dropped so a
+ * content typo cannot put an empty chip on the profile.
+ */
+function normalizeNarrativeDescriptors(seeds: readonly string[]): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const seed of seeds) {
+    const trimmed = seed?.trim();
+    if (!trimmed || seen.has(trimmed)) continue;
+    seen.add(trimmed);
+    out.push(trimmed);
+  }
+  return out;
+}
+
+/**
  * Create the final agent from a completed meeting encounter.
  * Adds the agent node, thread edge, and located_at edge to the graph.
  * Returns the new agent's node ID.
@@ -718,6 +737,8 @@ export function createAgentFromMeeting(
 ): string {
   // NFP #3: Determinism — use tick+sequence counter instead of Math.random() for agent IDs.
   const agentId = `ind_meeting_${tick}_${meetingCounter++}`;
+
+  const descriptors = normalizeNarrativeDescriptors(result.traitSeeds ?? []);
 
   // Create agent node with standard individual properties
   graph.addNode({
@@ -748,6 +769,27 @@ export function createAgentFromMeeting(
       ...(result.startingQuintessence !== undefined
         ? { quintessence: result.startingQuintessence }
         : {}),
+      // The meeting's accumulated `traitSeeds`, landed (THR-872). Before this
+      // the field had three producers and no consumer, so every descriptor the
+      // meeting authored — across 167 dilemma templates, every spark vision, and
+      // the bond reception — was discarded at the graph boundary.
+      //
+      // ─── Why a property and not `has_trait` edges (load-bearing) ───────────
+      // These are free-text narrative descriptors, not trait refs: 366 distinct
+      // authored values (`cold_clarity`, `market_eye`, `oath-keeper`) against a
+      // registered trait vocabulary that is namespaced (`trait.core.*`) and
+      // deliberately closed. Landing them as traits would mean either minting 366
+      // trait definitions that carry none of the scoring or domain semantics a
+      // trait is defined by, or mapping-and-killing — discarding authored content
+      // to fit a vocabulary it was never written against (NFP #6, additive over
+      // destructive). They are character description, so they land as description
+      // and surface in prose (NFP #5).
+      //
+      // Consequence to keep true: these values are NOT trait refs and must never
+      // be fed to `resolveTraitPredicate` or `validateTraitRefs` — doing so would
+      // register 366 dead refs. `agentDetail.ts` keeps them in their own list,
+      // separate from `getAgentTraitNames`, for exactly that reason.
+      ...(descriptors.length > 0 ? { narrativeDescriptors: descriptors } : {}),
     },
   });
 

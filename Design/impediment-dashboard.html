@@ -5848,6 +5848,32 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "Treat the live file as the source and edit it **first**, then mirror in the same PR — the ordering in `Docs/ops/scheduled-task-prompts/README.md`. The mirror does not deploy, so a mirror-only edit changes nothing operationally; the reverse ordering is the failure this rule exists to prevent. Once mirrored, ordinary review catches the next drift, which is the actual value of mirroring — recoverability is the lesser half.",
     "session": "THR-850, hourly `tb-opus-pickup` run, 2026-07-31"
+  },
+  {
+    "num": "334",
+    "id": 334,
+    "count": 1,
+    "date": "2026-07-31",
+    "category": "codebase",
+    "description": "**Copying a test fixture from the adjacent suite imported four fields that no longer exist on the type, and the copy typechecked as \"fine\" because the file it came from is inside the THR-489 red baseline.** Building a `MeetingChoiceRecord` fixture for the new THR-872 test, the obvious move was to copy the one in `src/engine/__tests__/meetingEncounter.test.ts:374`. That fixture declares `intentPrimaryReach`, `intentSecondaryReach`, `intentSphere`, `investmentChoice`, `sparkTraitId` and `shapePath` — **none of which are on the interface**, which today has `sparkVisionId` and no intent fields at all. The source file is already red in the baseline, so its errors are invisible in normal work and it reads as a working example.",
+    "consequence": "The typecheck **ratchet** caught it (3493 → 3494, +1) rather than the copy shipping: the gate is a delta, so a *new* file inherits none of the baseline's amnesty and one stale field failed the build. Cost was one gate cycle plus a `tsc -b --pretty false` grep to isolate the line. Had the fixture been added to the already-red source file instead of a new one, the increase would have been indistinguishable from baseline noise.",
+    "impact": "Low",
+    "workaroundFound": true,
+    "workaround": "Read the interface, never the neighbouring fixture: `grep -n \"export interface <T>\" -A 45 src/types/<mod>.ts`. Isolate a ratchet failure with `npx tsc -b --force --pretty false 2>&1 \\| grep <newfile>` — the ratchet names the file whose count rose but not the error.",
+    "session": "THR-872, `tb-opus-pickup` hourly run. Recurrence of the `red_baseline_fixture` class: a red-baseline file is a *worse* copy source than an unfamiliar one, because it silently certifies stale shapes."
+  },
+  {
+    "num": "335",
+    "id": 335,
+    "count": 1,
+    "date": "2026-07-31",
+    "category": "process",
+    "description": "**`check:wiki-freshness:blocking` was recorded green in a closeout evidence block and failed the same work in CI — because the gate ran before the edit that trips it existed.** THR-872's ship pasted `check:wiki-freshness:blocking OK — 24 pages, no stale`; CI failed on `public/system-interface-map-reference.html is stale — changed files match its sources (scripts/interface-contracts.ts)`. **Two tempting explanations were checked and both eliminated:** the base did move (`4427d3e3..a64582a1`) between the run and CI, but `git diff --name-only 4427d3e3 a64582a1` is a single unrelated ops doc — it touches neither the page nor `interface-contracts.ts`, so neither the page-in-diff nor the exemption-laundering route of THR-819 applies (`git log --grep=\"Wiki-freshness-exempt\"` over the range is empty), and THR-819 made the script self-fetch anyway, so both the local and CI runs printed `base=origin/main (refreshed)`. What remains and fits every observation: the script diffs the **working tree** against the base (`scripts/check-wiki-freshness.ts:279`, committed + uncommitted + untracked), so it answers only about edits that exist *at the moment it runs* — and the Definition of Done lists \"Update the interface map\" **after** the verification gates. A run that follows the checklist in order runs the gate, then makes the contract edit, and the green it recorded was true when captured and false by the time it pushed.",
+    "consequence": "The PR merged nothing: auto-merge was armed but the required `Test · Typecheck · Build` check was `FAILURE`, so it sat open overnight with the issue still In Dev, and a full hourly run went to diagnosis and repair. The evidence block asserted a gate state that the pushed tree did not have.",
+    "impact": "Medium — structural, not a slip: any DoD step that edits a `sources`-globbed file after the gates reproduces it, and the failure is invisible until CI.",
+    "workaroundFound": true,
+    "workaround": "**Re-run every diff-based gate as the last action before `git push`, not at its numbered position** — the same rule impediment #201 established for `check:generated-freshness` (whose source `Docs/impediments.md` is edited during closeout) generalises to `check:wiki-freshness`, whose sources include `scripts/interface-contracts.ts`, edited during closeout by the \"update the interface map\" step. Treat \"gate ran green\" as scoped to the tree at that instant. Corollary: when a change touches `scripts/interface-contracts.ts`, author the `public/system-interface-map-reference.html` row in the same edit — regenerating `Docs/canon/interface-map.generated.md` does not satisfy the gate, because the wiki page is hand-authored.",
+    "session": "THR-872 resume, `tb-opus-pickup` hourly run. Ordering-trap sibling of #201; `interface_two_file_edit` is the content half. Note the diagnosis initially reached for the familiar `wiki_freshness_false_pass` stale-base story and had to be walked back — the base provenance label said `(refreshed)` on both runs, which is exactly the signal that rules it out."
   }
 ];
 // ── End data ──

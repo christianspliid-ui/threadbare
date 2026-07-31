@@ -15,12 +15,12 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 42 |
+| 🟢 LIVE | 43 |
 | 🟠 PARTIAL | 1 |
 | 🔴 LEAKED | 7 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 7 |
-| **Total** | **57** |
+| **Total** | **58** |
 
 ## Contracts by producing subsystem
 
@@ -98,6 +98,7 @@ remediation ticket or the build fails.
 | `authored-nudge-hand-reaches-resolution` | A god may bend the odds of an attended encounter step with authored, essence-priced cards — the mechanical form of "the intervention shifted the odds, not the outcome". Without this read, an attended encounter offers the player nothing to do but watch. | function: `collectNudgeModifiers`, `selectActiveRider`, `applyRider`, `buildNudgeHand` | Encounters & Dilemmas | 🔴 LEAKED | THR-774 |
 | `authored-step-difficulty-player-resolution` | Authored step difficulty finally prices a player cast. 82 of 136 ascendant-castable templates carried difficulties 0.1–0.6 that the player branch discarded before this contract existed; the same value now feeds the shared capability-vs-difficulty roll, floored at success-at-cost. | function: `resolveUncontestedStep`, `difficulty` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `branch-decision-writes-archetype-drift` | A fork the mortal took becomes part of who they are: taking the cunning branch drifts them cunning, so a mortal the player keeps leaning one way visibly becomes that person instead of resetting each encounter. | function: `applyAgentDecidedBranches`, `decideBranchPole`, `driftAxisIdForValuePair` | Personality & Emergent Traits | 🔴 LEAKED | THR-883 |
+| `meeting-trait-seeds-land-as-narrative-descriptors` | The choices you made while meeting your First stay visible in who they are — the descriptors the meeting authored read back on their character sheet and in their backstory, instead of every First being described in the same default words. | node-prop: `narrativeDescriptors` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
 | `nudge-card-cost-channels-detection-and-doom` | A card can be cheap in essence and expensive somewhere else — visibility to rivals, or the doom clock — so the price of divine help is not always the same currency. | function: `collectNudgeCostChannels`, `applyRawDetectionDelta`, `accelerateDoomClock` | Spheres & Quintessence | 🔴 LEAKED | THR-883 |
 | `nudge-card-grants-dispatch-to-host-systems` | A card that says it changed the world actually changes it, through the system that owns that change — so the fiction the player is shown and the state the world holds cannot disagree. | function: `dispatchNudgeCommitments`, `collectNudgeGrants`, `assignAmbitionToActor` | Ambitions & Initiatives | 🔵 UNVERIFIED-OK | THR-883 |
 | `player-action-aftermath-read` | The aftermath a player action already produces finally reaches the player — the receipt phase reads the summary that was built and discarded for player casts. | function: `processPlayerReceipts`, `aftermathSummary` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
@@ -541,6 +542,17 @@ remediation ticket or the build fails.
 - **Other hits:** `src/data/arcane-circle-encounter-content.ts`, `src/data/builders-fellowship-encounter-content.ts`, `src/data/civic-guard-encounter-content.ts`, `src/data/holy-order-dawn-encounter-content.ts`, `src/data/lorekeepers-covenant-encounter-content.ts` +10 more
 - **Verdict:** Verified 2026-07-26: THR-805. `FACTION_ENCOUNTER_META.minRank` was authored on ~150 template metas and typed at types/faction.ts:72, with NO production reader — its only non-data references were three tests asserting the data round-trips — so every tier-restricted guild template was drawable by any agent at the right location. filterByPrerequisites now consults it for entries whose questType is senior/elite/leadership (RANK_GATED_QUEST_TYPES); the 123 `standard` quest/social metas stay ungated, since minRank is a REQUIRED field and gating on its presence would have closed the entry tier behind mere membership. Rank is derived from member_of.reputation via computeRankFromReputation on every check, never read from the edge's cached rank/role (those refresh only on a tier change, so a decay in progress reads stale). Non-membership closes the gate; unresolvable data (unknown factionDefId, or a minRank naming no tier) fails OPEN, because a typo that silently orphans content is the worse failure. Two adjacent substrates were rejected and are recorded so they are not revived: the `faction_rank:` predicate in effectPredicates.ts reads agentNode.properties.factionRank, which NOTHING writes (grep the assignment side — every other hit is a local display string), so it is permanently 0 and false for any threshold; and FactionRankTier.encounterAccess prefix allowlists are equally unread AND already drifted (merchant_consortium declares mc_trade.* while its templates are mct.*). Non-vacuous by live payload intersection and measured blast radius: 60 rank-gated metas exist, exactly 12 are present in a live tick-150 seed-42 cache (the guild tail THR-779/THR-803 registered), and a live sweep shows the gate closed for a real low-rank member and open for that same member once promoted past the floor. Locked by src/engine/__tests__/factionRankGate.test.ts (14 tests), falsified at 2-of-14 red with the gate disabled. The gate deliberately does NOT depend on resolving the template — it needs only the id and its meta. That independence was load-bearing when it shipped, because the pipeline's `getAnyEncounterById` returned undefined for every cache-registered regional template, leaving the sibling trait/broken/group gates in the same loop inert for those ids. THR-811 closed that gap on 2026-07-27: the loop now resolves via getUnifiedTemplateById, which covers all 213 cache-registrable ids (43 of them were unresolvable before), so the sibling gates are live for this id set too.
 
+### `meeting-trait-seeds-land-as-narrative-descriptors` — 🟢 LIVE
+
+- **Intent:** The choices you made while meeting your First stay visible in who they are — the descriptors the meeting authored read back on their character sheet and in their backstory, instead of every First being described in the same default words.
+- **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
+- **UL terms:** *Meet The First*, *Bond Reception*
+- **Module:** `src/engine/meetingEncounter.ts`
+- **Production hits:** 3 total — 1 write, 2 read, 0 unclassified
+- **Write sites:** `src/engine/meetingEncounter.ts`
+- **Read sites:** `src/engine/agentDetail.ts`, `src/engine/profileGenerator.ts`
+- **Verdict:** Verified 2026-07-31: src/engine/__tests__/meetingTraitSeedLanding.test.ts enumerates the authored population from all four catalogs (each asserted non-empty individually, so the sweep cannot pass vacuously), lands it through createAgentFromMeeting, and asserts zero unconsumed values. Reader pinned on both sides: getAgentInfoCard(…, "intimate").allTraits contains the humanized descriptor, and generateBackstory fills the {trait} slot from it instead of the hardcoded "resolute" fallback that previously covered every freshly-created First.
+
 ### `milestone-grants-unlock-repertoire-cards` — 🔵 UNVERIFIED-OK
 
 - **Intent:** Earning something as a god changes what you can play as a god — a milestone hands you a new way to use a power you already had, not a bigger number on the one you have.
@@ -725,10 +737,10 @@ remediation ticket or the build fails.
 - **Producer → Consumer:** Personality & Emergent Traits → Encounters & Dilemmas
 - **UL terms:** *Trait*
 - **Module:** `src/engine/traitRefIndex.ts`
-- **Production hits:** 10 total — 2 write, 5 read, 3 unclassified
+- **Production hits:** 11 total — 2 write, 5 read, 4 unclassified
 - **Write sites:** `src/engine/traitRefIndex.ts`, `src/engine/traits.ts`
 - **Read sites:** `src/engine/ambitionTick.ts`, `src/engine/effects/effectPredicates.ts`, `src/engine/encounterFilterPipeline.ts`, `src/engine/graphConditions.ts`, `src/engine/spellActivation.ts`
-- **Other hits:** `src/engine/kpi/branchingDistance.ts`, `src/engine/simulationRuntime.ts`, `src/types/traits.ts`
+- **Other hits:** `src/engine/kpi/branchingDistance.ts`, `src/engine/meetingEncounter.ts`, `src/engine/simulationRuntime.ts`, `src/types/traits.ts`
 - **Verdict:** Verified 2026-07-26: THR-786. All six pre-existing trait vocabularies now route through `collectBearerTraitRefs` + `bearerMatchesPredicate`: encounter filter pipeline (`requiredTraits`/`blockedByTraits`), effect-predicate context builder (`has_trait:`/`lacks_trait:` sugar), graphConditions (`agent_has_trait`/`agent_lacks_trait`), ambition snapshot eligibility (`buildAmbitionAgentSnapshot`), spell prerequisites (`checkPrerequisites`), and item-granted keys. Non-vacuous by the unchanged-behavior contract suite `src/engine/__tests__/contracts/traitPredicate.contract.test.ts`, which pins each site's pre-migration vocabulary (31 PRESERVED assertions, all green pre- and post-migration) and separately asserts the 4 deliberate widenings + 2 dead-read repairs, each of which was verified failing before the migration. Reach note (THR-811, 2026-07-27): the encounter read site resolved its template via `getAnyEncounterById`, so `requiredTraits`/`blockedByTraits` were unreadable on 43 of the 213 cache-registrable template ids — the predicate was shared but the encounter site could not see the authoring on that id set. It now resolves via getUnifiedTemplateById; no production encounter template declares either field yet, so this widened reach rather than changing any current verdict. Seventh consumer added (THR-802, 2026-07-27): `src/engine/kpi/branchingDistance.ts` was a production reader the THR-786 migration could not see — both its `requiredTraits` reads sat inside the THR-489 red typecheck baseline as `Property 'requiredTraits' does not exist`, so the grep for typed readers missed them and it kept comparing `e.target` to `req.traitId`. It now routes through the shared pair like every other site. Diagnostic-only (the `kpi:branching-audit` CLI path, never the tick loop), so this changes what the readout reports rather than any gate outcome; covered by `src/engine/kpi/__tests__/branchingDistanceTraitGate.thr802.test.ts`, falsified 5-of-6-red against the pre-fix build.
 
 ### `trait-ref-authoring-vocabulary` — 🔴 LEAKED
@@ -737,10 +749,10 @@ remediation ticket or the build fails.
 - **Producer → Consumer:** Personality & Emergent Traits → Ambitions & Initiatives
 - **UL terms:** *Trait*
 - **Module:** `src/engine/traitRefValidation.ts` — **no production importers**
-- **Production hits:** 12 total — 3 write, 2 read, 7 unclassified
+- **Production hits:** 14 total — 3 write, 2 read, 9 unclassified
 - **Write sites:** `src/data/artifact-templates.ts`, `src/data/choice-set-catalog.ts`, `src/data/reward-attachment-catalog.ts`
 - **Read sites:** `src/debug-bridge.ts`, `src/engine/traitRefValidation.ts`
-- **Other hits:** `src/data/__fixtures__/nudge-exemplar/darkhollow-vault-exemplar.ts`, `src/data/anomaly-reward-catalog.ts`, `src/data/encounter-content.ts`, `src/data/starter-attachments.ts`, `src/engine/nudgeGrantLiveness.ts` +2 more
+- **Other hits:** `src/data/__fixtures__/nudge-exemplar/darkhollow-vault-exemplar.ts`, `src/data/anomaly-reward-catalog.ts`, `src/data/encounter-content.ts`, `src/data/starter-attachments.ts`, `src/engine/agentDetail.ts` +4 more
 - **Verdict:** Pinned by badgeOverride: Detector shipped and measured (THR-786): 62 of the authored trait refs resolve to no trait definition, so those gates can never pass. Reconciling the authoring vocabulary against the minted definitions is content work outside the predicate floor.
 
 ### `twilight-harvest-preserves-defining-card` — 🔵 UNVERIFIED-OK
