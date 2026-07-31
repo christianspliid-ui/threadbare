@@ -5952,6 +5952,32 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "**Recover `stdout` from the thrown error rather than treating a non-zero exit as no answer:** `catch (error) { const stdout = error?.stdout; if (stdout?.length) return stdout.toString().trim(); return null; }`. Generally — before wrapping a git plumbing command in the repo's fail-soft `run()` helper, check whether it uses exit status to *report a result* rather than to report failure. `merge-tree`, `diff --quiet`, and `grep` all do; for those, exit code and stdout carry different halves of the answer and discarding either one is a silent defect.",
     "session": "THR-897 armed-PR classification, `tb-opus-pickup` hourly run. Note the unit tests could not have caught this: they inject the conflict-file lookup for determinism (NFP #3), which is correct design and also means the IO wrapper is only ever exercised by a live run."
+  },
+  {
+    "num": "357",
+    "id": 357,
+    "count": 1,
+    "date": "2026-07-31",
+    "category": "process",
+    "description": "**The wayfinder skill's claim discipline (\"claim before work, verify after write\") cannot distinguish the orchestrator claiming a ticket from Christian claiming it live, because both act through the same Linear seat.** Working THR-902's frontier, the orchestrator claimed and resolved THR-903 (`assignee:\"me\"` → resolves to \"Christian Spliid,\" the only account behind the API key) at the same time Christian was independently working the same map live. Both sessions researched and posted a resolution comment on THR-903 five seconds apart; both patched the map's Decisions-so-far, and the orchestrator's patch landed second, inserting a duplicate section next to the one Christian's session had already written moments earlier. Nothing in the claim step could have caught this — the ticket looked assigned-to-Christian to both parties before either wrote anything, because assigning it *to the orchestrator* and assigning it *to Christian* are the identical write.",
+    "consequence": "A few minutes of duplicated research effort, and a map description that briefly held two divergent gists for the same closed ticket until the collision was noticed (by comparing comment timestamps) and the map body repaired by hand. Distinct from a normal AFK/AFK orchestrator-vs-orchestrator race (which the claim-then-verify sequence does catch, since two automated writes are still distinguishable in timing) — this is specifically the human-vs-automation case, where the identity itself is shared.",
+    "impact": "Medium — silent by construction; the only tell is near-simultaneous comment timestamps on the same ticket, which nothing currently surfaces automatically.",
+    "workaroundFound": true,
+    "workaround": "After claiming a wayfinder ticket and before posting a resolution, re-read the ticket's comment list once more — if a comment appeared after the claim timestamp that isn't yours, another session (very likely Christian, live) got there first; reconcile by diffing the two resolutions rather than blindly patching the map. No structural fix exists without a second Linear seat or a distinguishing field the API doesn't expose; treat this as a standing hazard specific to this lane rather than a bug to close.",
+    "session": "tb-orchestrator hourly run, 2026-07-31, T1.5 wayfinder sweep on THR-902 (Encounter experience redesign — vertical slice). — renumbered from #353 by THR-897 pickup (union-merge duplicate-number repair; #353 was already published on main by the 2026-07-30 tooling row, and #356 is taken by the concurrent retro branch)."
+  },
+  {
+    "num": "358",
+    "id": 358,
+    "count": 2,
+    "date": "2026-07-31",
+    "category": "tooling",
+    "description": "**Resolving a `merge=union` closeout PR reliably produces a *duplicate impediment number*, and the generated `Design/impediment-dashboard.html` conflicts every time because it is a committed generated artifact with no merge driver.** Union is the right driver for `Docs/impediments.md` — it keeps both appended rows — but two lanes that both append \"the next number\" append the *same* number, so union yields two rows claiming one id. Meanwhile the dashboard is derived from that file and is committed, so it conflicts on the same hunk with no union semantics available (it is HTML, not an append-only table). Hit twice in one run, on PR #1166 and PR #1169, both colliding on `#353`.",
+    "consequence": "Every concurrent closeout pair costs a manual renumber plus a dashboard regeneration. `check:impediment-ids` catches the duplicate — so it fails closed, not silently — but only after the union merge has already been made, and the conflicted dashboard blocks auto-merge until a session resolves it by hand.",
+    "impact": "M",
+    "workaroundFound": true,
+    "workaround": "Resolve the union merge, then run `npm run check:impediment-ids` **before** regenerating: it names the duplicate and the two line numbers. Keep the number on the row already published on `main` (not the positionally-first row — the checker's stated rule assumes one branch, and following it literally renumbers the *shipped* row and breaks existing cross-references), renumber the unmerged newcomer, and when resolving several PRs in one pass assign distinct numbers across them so they cannot re-collide once both land. Never hand-edit the dashboard — `npm run generate-impediment-dashboard` reproduces it from the merged source.",
+    "session": "tb-opus-pickup, 2026-07-31 ~15:00Z, resuming THR-897"
   }
 ];
 // ── End data ──
