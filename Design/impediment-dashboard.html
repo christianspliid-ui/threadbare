@@ -5991,6 +5991,19 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "Restore from the registry: the `Fires` column plus each task's stable `jitterSeconds` uniquely identify the original cron (observed fire time minus jitter = cron minute). Applied via `update_scheduled_task` with the registry cron and verified with `list_scheduled_tasks` after write. After any pause/resume cycle, diff `list_scheduled_tasks` crons against the registry before trusting the lanes.",
     "session": "Attended session 2026-07-31, restoring lane sequencing after a pause/resume cycle."
+  },
+  {
+    "num": "360",
+    "id": 360,
+    "count": 1,
+    "date": "2026-07-31",
+    "category": "process",
+    "description": "**After the same-day cron restoration (#359), `weekly-retro` fired twice in one day, and the second run found the first's report PR green, armed, and stalled `BEHIND` — the exact shape impediment #270 warns reads as a stale duplicate.** The first fire ran at ~12:40 UTC (off-slot, pre-restore, before the 14:57 drift scan); the second fired on the restored `0 17 * * 5` slot. PR #1166 carried the first run's complete report but had idled `BEHIND` for hours (auto-merge never fires from BEHIND under strict protection, THR-735), and its impediment-entry citation had silently renumbered (#353 → #356) during a sweep's freshening merge, so the committed report cited a row that no longer said what it claimed.",
+    "consequence": "Without #270's lesson the second run would have re-authored the entire retro — duplicate report, duplicate tickets, and a second union-merge collision on `Docs/impediments.md` (#358's mode). The real losses were smaller but real: a stale citation about to ship to `main`, and a report missing the half of the cycle's actions that happened after 12:40.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "A second firing of a scheduled task must begin by searching for the first firing's open PR/branch (`gh pr list --search`) and adopt it as its own late output: verify content, amend stale citations, append an addendum on the same branch, leave auto-merge armed. Expect same-day double-fires after any cron pause/resume repair (#359) and apply this rule preemptively.",
+    "session": "`weekly-retro` second run, 2026-07-31 ~17:00Z."
   }
 ];
 // ── End data ──
