@@ -5707,19 +5707,6 @@ const DATA = [
     "session": "THR-883 encounter-pipeline skill rewrite against the locked card format"
   },
   {
-    "num": "325",
-    "id": 325,
-    "count": 1,
-    "date": "2026-07-30",
-    "category": "process",
-    "description": "**A ticket was promoted to Ready for Dev while its plan doc and its required wiki page existed only on an unmerged PR branch.** THR-887's description named `Docs/plans/2026-07-30-nudge-card-repertoire.md` and required updating `public/nudge-cards-reference.html` in the same PR; both lived solely on PR #1129, still open. From `main` the plan doc did not exist and the wiki page it had to update did not exist, so the Done-when was unsatisfiable by construction from the branch point the executor would naturally take.",
-    "consequence": "Executor branched from `main`, found no plan doc, and had to discover the dependency through `gh pr view`. Stacking cost a mid-session branch relocation after ~15 edits were already made.",
-    "impact": "Medium",
-    "workaroundFound": true,
-    "workaround": "Read the plan doc out of the PR branch (`git show origin/<branch>:<path>`), then stack the work branch on that branch rather than on `main`, so the wiki page is present and the freshness gate is satisfiable. PR #1129 was also `BEHIND`, so `gh pr update-branch` was run as pull-work Step 0.8 prescribes.",
-    "session": "THR-887 execution, tb-opus-pickup"
-  },
-  {
     "num": "326",
     "id": 326,
     "count": 1,
@@ -5783,6 +5770,19 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "Prefix any `git show <rev>:<path>` (and `git cat-file`, `git log <rev> -- <path>`) with `export MSYS_NO_PATHCONV=1`, or run it via the PowerShell tool instead. **Independently, never let a `0` from a piped `grep -c` stand as evidence of absence:** assert the stream was non-empty first (`git show … \\| wc -c` > 0), or drop the pipe and read the failure. A grep whose input might be empty proves nothing about the haystack — same shape as the vacuous-probe class, one layer lower.",
     "session": "daily-backlog-grooming 2026-07-30; verifying THR-681's already-shipped claim against `origin/main`. **Renumbered from #311 to #350 by THR-881** (duplicate-number repair — #311 was claimed by two unrelated rows; the earlier row in the file keeps the original number)."
+  },
+  {
+    "num": "353",
+    "id": 353,
+    "count": 1,
+    "date": "2026-07-30",
+    "category": "process",
+    "description": "*(Renumbered from #325 — THR-881 uniqueness rule: the agent-prompt-drift row above kept the number as first in file order.)* **A ticket was promoted to Ready for Dev while its plan doc and its required wiki page existed only on an unmerged PR branch.** THR-887's description named `Docs/plans/2026-07-30-nudge-card-repertoire.md` and required updating `public/nudge-cards-reference.html` in the same PR; both lived solely on PR #1129, still open. From `main` the plan doc did not exist and the wiki page it had to update did not exist, so the Done-when was unsatisfiable by construction from the branch point the executor would naturally take.",
+    "consequence": "Executor branched from `main`, found no plan doc, and had to discover the dependency through `gh pr view`. Stacking cost a mid-session branch relocation after ~15 edits were already made.",
+    "impact": "Medium",
+    "workaroundFound": true,
+    "workaround": "Read the plan doc out of the PR branch (`git show origin/<branch>:<path>`), then stack the work branch on that branch rather than on `main`, so the wiki page is present and the freshness gate is satisfiable. PR #1129 was also `BEHIND`, so `gh pr update-branch` was run as pull-work Step 0.8 prescribes.",
+    "session": "THR-887 execution, tb-opus-pickup"
   },
   {
     "num": "167",

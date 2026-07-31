@@ -365,10 +365,10 @@ remediation ticket or the build fails.
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Domain Capability*, *UnifiedActionTemplate*
 - **Module:** `src/engine/unifiedActionResolution.ts`
-- **Production hits:** 137 total — 1 write, 2 read, 134 unclassified
+- **Production hits:** 138 total — 1 write, 2 read, 135 unclassified
 - **Write sites:** `src/data/unified-action-templates.ts`
 - **Read sites:** `src/engine/targetActions.ts`, `src/engine/unifiedActionResolution.ts`
-- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/ActionDrawer.tsx`, `src/components/Game/debug/NudgeDesignerTab.tsx`, `src/components/Game/debug/TraceFeed.tsx` +129 more
+- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/ActionDrawer.tsx`, `src/components/Game/debug/NudgeDesignerTab.tsx`, `src/components/Game/debug/TraceFeed.tsx` +130 more
 - **Verdict:** Verified 2026-07-25: THR-728: `unified-action-templates.ts` authors `steps[].difficulty`; `resolveUncontestedStep` reads it for `source === 'player'` (the auto-success early-return is now gated behind `PLAYER_CAST_VARIANCE_ENABLED`), and `targetActions.ts` reads the same field via `maxStepDifficulty` to render the focused card's risk line. Measured over 400 seeds: the outcome set for a positive-difficulty cast is >1 band.
 
 ### `band-opposition-pairs-contested-resolution` — 🟢 LIVE
