@@ -5941,6 +5941,19 @@ const DATA = [
     "session": "THR-898 N-route forks, `tb-opus-pickup` hourly run. Same class as the outcome-ladder tuning traps: a game constant tuned for play makes a range of test inputs indistinguishable, and the test never says which range it assumed."
   },
   {
+    "num": "357",
+    "id": 357,
+    "count": 1,
+    "date": "2026-07-31",
+    "category": "process",
+    "description": "**The wayfinder skill's claim discipline (\"claim before work, verify after write\") cannot distinguish the orchestrator claiming a ticket from Christian claiming it live, because both act through the same Linear seat.** Working THR-902's frontier, the orchestrator claimed and resolved THR-903 (`assignee:\"me\"` → resolves to \"Christian Spliid,\" the only account behind the API key) at the same time Christian was independently working the same map live. Both sessions researched and posted a resolution comment on THR-903 five seconds apart; both patched the map's Decisions-so-far, and the orchestrator's patch landed second, inserting a duplicate section next to the one Christian's session had already written moments earlier. Nothing in the claim step could have caught this — the ticket looked assigned-to-Christian to both parties before either wrote anything, because assigning it *to the orchestrator* and assigning it *to Christian* are the identical write.",
+    "consequence": "A few minutes of duplicated research effort, and a map description that briefly held two divergent gists for the same closed ticket until the collision was noticed (by comparing comment timestamps) and the map body repaired by hand. Distinct from a normal AFK/AFK orchestrator-vs-orchestrator race (which the claim-then-verify sequence does catch, since two automated writes are still distinguishable in timing) — this is specifically the human-vs-automation case, where the identity itself is shared.",
+    "impact": "Medium — silent by construction; the only tell is near-simultaneous comment timestamps on the same ticket, which nothing currently surfaces automatically.",
+    "workaroundFound": true,
+    "workaround": "After claiming a wayfinder ticket and before posting a resolution, re-read the ticket's comment list once more — if a comment appeared after the claim timestamp that isn't yours, another session (very likely Christian, live) got there first; reconcile by diffing the two resolutions rather than blindly patching the map. No structural fix exists without a second Linear seat or a distinguishing field the API doesn't expose; treat this as a standing hazard specific to this lane rather than a bug to close.",
+    "session": "tb-orchestrator hourly run, 2026-07-31, T1.5 wayfinder sweep on THR-902 (Encounter experience redesign — vertical slice). — renumbered from #353 by THR-897 pickup (union-merge duplicate-number repair; #353 was already published on main by the 2026-07-30 tooling row, and #356 is taken by the concurrent retro branch)."
+  },
+  {
     "num": "358",
     "id": 358,
     "count": 2,
