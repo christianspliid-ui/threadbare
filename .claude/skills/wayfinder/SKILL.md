@@ -21,7 +21,10 @@ not slices of a build to execute — one at a time until the route is clear.
 The destination varies per effort, and naming it is the first act of charting — it
 shapes every ticket. For Threadbare it is usually *"a plan doc (or set of plan docs)
 ready for the normal design-session → Ready for Dev handoff"*, but it can also be a
-decision to lock (a THR-870-style verdict) or a migration done in place.
+decision to lock (a THR-870-style verdict) or a migration done in place. The map is
+**domain-agnostic** — game systems are the motivating case, but content pipelines,
+the marketing site, or ops efforts chart the same way (the author plans course
+content and building projects with it).
 
 ## Where this sits in the Threadbare workflow
 
@@ -127,13 +130,20 @@ AFK) — plus nothing that would attract other lanes.
 
 ## Ticket types
 
-- **Grilling** (HITL, default): conversation with Christian via the `grill-me` skill,
+- **Grilling** (HITL): conversation with Christian via the `grill-me` skill,
   one question at a time, agent recommends and interrogates, Christian decides.
+  The default **only when there is nothing concrete to react to**.
   Terminology disagreements route through `ubiquitous-language` (UL wins).
 - **Prototype** (HITL): raise the fidelity of the discussion with a cheap concrete
   artifact Christian can react to — an outline, a mock screen (`?view=styleguide`
   conventions), a CLI-driven simulation sketch, a throwaway branch. Link it as an
-  asset. Use when "how should it look/behave" is the question. Rough by design.
+  asset. Rough by design. **Bias toward prototype over another grilling round**
+  whenever the question *could* be answered by reacting to something concrete:
+  prototypes are what keeps a big map from becoming waterfall — low-fidelity
+  planning punctuated by high-fidelity artifacts — and for a chat-only creative
+  director a mock to react to is a better interface than more questions. (This is
+  also how Threadbare already works: terrain-lab before hex vignettes, the nudge
+  test panel before the real card.)
 - **Research** (AFK): surface a fact a decision waits on — codebase reality
   (`systems-inventory`, interface map, actual wiring), prior plan docs/canon, or
   external primary sources. Fired as a **background subagent**; findings land as the
@@ -193,11 +203,27 @@ Two modes. Either way, never resolve more than one HITL ticket per session.
 
 ### Closing the map
 
-When no open tickets remain and no fog is left, the way is clear. Post a closing
-comment summarising the route (the Decisions-so-far index), close the map (`Done`),
-and spin up the handoff: one `design-session` per plan doc the destination named.
-Those sessions cite the map — its decisions are settled input, not things to
-re-litigate.
+When no open tickets remain and no fog is left, the way is clear. Closing is a
+deliberate compression step, not just a state change:
+
+1. **Propose the carve-up in the closing comment**: how the map's decisions divide
+   into plan docs (how many, which decisions each draws on). The map→plan-docs
+   compression is itself a decision, so it gets recorded like one — on the map,
+   where a later session can see why the seams fall where they do.
+2. Close the map (`Done`). The Decisions-so-far index is the route summary.
+3. Spin up the handoff: one `design-session` per plan doc from the carve-up. Those
+   sessions cite the map — its decisions are settled input, not things to
+   re-litigate.
+
+**Plan docs link their primary sources.** A plan doc is a summary, and a summary
+loses nuance — so each plan doc produced from a map links the specific decision
+tickets it draws from, **inline where each decision is used**, not just a blanket
+"see the map" at the top. A confused executor (or a later design session) zooms to
+the ticket and reads the original exchange.
+
+**A closed map never reopens.** It is a record of the route walked. If the
+destination is later redrawn — scope grows, a settled decision is overturned — that
+is a **fresh effort with a fresh map**, which may cite the old one as input.
 
 ## Who works the map
 
