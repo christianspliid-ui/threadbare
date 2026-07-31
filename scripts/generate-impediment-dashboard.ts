@@ -32,7 +32,10 @@ function findRetroFiles(): RetroInfo[] {
     if (!fs.existsSync(dir)) continue;
     for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
       if (!entry.isFile()) continue;
-      const match = entry.name.match(/(\d{4}-\d{2}-\d{2})-retro(?:-draft)?\.md$/);
+      // Two naming eras: Docs/retrospectives/YYYY-MM-DD-retro.md and Design/retros/retro-YYYY-MM-DD.md
+      const match =
+        entry.name.match(/^(\d{4}-\d{2}-\d{2})-retro(?:-draft)?\.md$/) ??
+        entry.name.match(/^retro-(\d{4}-\d{2}-\d{2})(?:-draft)?\.md$/);
       if (!match) continue;
       retros.push({
         date: match[1] ?? "",
