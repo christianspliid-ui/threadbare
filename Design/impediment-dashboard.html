@@ -5861,6 +5861,19 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "Read the interface, never the neighbouring fixture: `grep -n \"export interface <T>\" -A 45 src/types/<mod>.ts`. Isolate a ratchet failure with `npx tsc -b --force --pretty false 2>&1 \\| grep <newfile>` — the ratchet names the file whose count rose but not the error.",
     "session": "THR-872, `tb-opus-pickup` hourly run. Recurrence of the `red_baseline_fixture` class: a red-baseline file is a *worse* copy source than an unfamiliar one, because it silently certifies stale shapes."
+  },
+  {
+    "num": "335",
+    "id": 335,
+    "count": 1,
+    "date": "2026-07-31",
+    "category": "tooling",
+    "description": "**`check:wiki-freshness:blocking` passed locally and failed the same commit in CI, because the local run compared against a stale `origin/main`.** The THR-872 ship recorded `check:wiki-freshness:blocking OK — 24 pages, no stale` as closeout evidence; CI failed the identical tree on the identical gate. The check prints its base — locally `base=origin/main`, in CI `base=origin/main (refreshed)` after the workflow's own `git fetch origin main`. Main had moved (`4427d3e3..a64582a1`) between the session's last fetch and the push, and the widened diff is what surfaced the real defect: `scripts/interface-contracts.ts` was edited without the hand-authored row in `public/system-interface-map-reference.html`, which the manifest lists as one of that page's `sources`. The generated `Docs/canon/interface-map.generated.md` updating is **not** sufficient — the wiki page is hand-authored and the gate is glob-based, so adding a contract is always a two-file edit.",
+    "consequence": "The PR merged nothing: auto-merge was armed but the required `Test · Typecheck · Build` check was `FAILURE`, so it sat open with the issue still In Dev. Cost was one full hourly run to diagnose and repair, and the closeout comment on THR-872 asserted a green gate that was not green — the evidence block was wrong at the moment it was written, not merely stale.",
+    "impact": "Medium — the gate works, but a local pass is not transitive to CI, so any run can ship a false green in its evidence block.",
+    "workaroundFound": true,
+    "workaround": "Run `git fetch origin main` **immediately before** `npm run check:wiki-freshness:blocking`, and read the printed base — treat a base without `(refreshed)` as an unverified result. Same applies to any gate that diffs against `origin/main`. When the change touches `scripts/interface-contracts.ts`, edit `public/system-interface-map-reference.html` in the same commit as a matter of course rather than waiting for the gate to ask.",
+    "session": "THR-872 resume, `tb-opus-pickup` hourly run. Recurrence of the `wiki_freshness_false_pass` and `interface_two_file_edit` classes together — the stale base is what let the missing row through."
   }
 ];
 // ── End data ──
