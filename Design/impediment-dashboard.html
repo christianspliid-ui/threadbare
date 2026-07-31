@@ -5785,6 +5785,19 @@ const DATA = [
     "session": "daily-backlog-grooming 2026-07-30; verifying THR-681's already-shipped claim against `origin/main`. **Renumbered from #311 to #350 by THR-881** (duplicate-number repair — #311 was claimed by two unrelated rows; the earlier row in the file keeps the original number)."
   },
   {
+    "num": "353",
+    "id": 353,
+    "count": 1,
+    "date": "2026-07-30",
+    "category": "tooling",
+    "description": "**A scheduled lane's report file existed twice — once untracked in the home tree, once committed to origin/main via its worktree PR — and the ff-pull refused to cross it.** `Docs/ops/orchestrator-2026-07-30g.md` sat untracked in the home tree while the same file arrived on `origin/main` through the orchestrator lane's merged worktree branch; `git pull --ff-only origin main` aborted with 'untracked working tree files would be overwritten by merge'.",
+    "consequence": "A design session opening on freshness=behind:17 could not take the sanctioned repair (pull main) until it diagnosed the collision; a hasty `rm` without comparing contents would silently discard any local-only divergence.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Byte-compare the untracked file against the incoming version before removing: `diff <(git show FETCH_HEAD:<path>) <path>` — delete only on IDENTICAL, surface on DIFFERS. Root pattern: a lane that writes its report into the home tree working copy AND commits it from a worktree leaves this landmine every run; lanes should write reports only inside their worktree.",
+    "session": "THR-868 design session, 2026-07-30"
+  },
+  {
     "num": "322",
     "id": 322,
     "count": 2,
@@ -5902,8 +5915,34 @@ const DATA = [
     "session": "Yes | **Do not use heredocs to write code containing backslashes from the Bash tool.** Use the `Write` tool for any throwaway script (it writes bytes literally and needs no escaping), then invoke it with `node <path>`. Reserve heredocs for prose and for commit-message bodies, where a lost backslash is visible on sight. The scratchpad directory is the natural home for these — session-isolated and permission-free. | THR-881 duplicate-impediment-number repair, `tb-opus-pickup` hourly run. Sibling of #329 (same transport, louder failure mode). Also observed this run: `rev` is absent from the sandbox's Git Bash, so `… \\| rev \\| cut \\| rev` tail-extraction idioms fail with `command not found`."
   },
   {
-    "num": "353",
-    "id": 353,
+    "num": "354",
+    "id": 354,
+    "count": 1,
+    "date": "2026-07-31",
+    "category": "tooling",
+    "description": "**The three CI gates that police *documentation* artifacts all live inside the one job that is skipped for documentation-only PRs.** `ci.yml`'s `detect` job computes `code` with `predicate-quantifier: every` over `'**', '!**/*.md', '!Docs/**', '!.planning/**', '!Design/**'`, so a PR touching only docs yields `code == 'false'` and the `Test · Typecheck · Build` job is skipped by its `if:`. That job is where `check:generated-freshness` (line 143), `check:impediment-ids` (line 153) and `check:wiki-freshness:blocking` (line 164) run. Net effect: a PR editing `Docs/impediments.md` — the *only* kind of PR that can introduce a duplicate impediment id or a stale `Design/impediment-dashboard.html` — is exactly the PR shape on which those checks never execute. Found via PR #1096, which carried two rows with id `282` from authoring on 2026-07-30 and reported `Test · Typecheck · Build: skipping`; `check:impediment-ids` run locally on its head commit fails immediately.",
+    "consequence": "A docs-only PR can merge a duplicate impediment id or a stale generated dashboard with a fully green required check, because the check that would catch it never ran. Same family as THR-768 (a required check that is `skipped` still satisfies branch protection) but one layer down: there the gate was void due to an outage, here it is void **by design** for its own subject matter. PR #1096 also sat 30h reading `DIRTY`, so the id collision was masked by a conflict nobody had to resolve to know the PR was broken.",
+    "impact": "Low per occurrence, but it is silent and unbounded — nothing surfaces the miss.",
+    "workaroundFound": false,
+    "workaround": "**Diagnosis only; not fixed here.** The `code` filter is doing its intended job (keep docs PRs fast) — the defect is that doc-*validating* steps were added to the code-gated job rather than to a job gated on docs changing. Candidate fix: a second `detect` output (`docs`) and a small always-cheap job running `check:impediment-ids` + `check:generated-freshness` + `check:wiki-freshness:blocking` whenever `docs == 'true'`, leaving the heavy suite code-gated. Interim manual check when touching `Docs/impediments.md`: run `npm run check:impediment-ids` and `npm run check:generated-freshness` locally before pushing — neither will run in CI. Filed as THR-909.",
+    "session": "`tb-opus-pickup` hourly run 2026-07-31, Step 0.8 armed-PR sweep on PR #1096."
+  },
+  {
+    "num": "355",
+    "id": 355,
+    "count": 1,
+    "date": "2026-07-31",
+    "category": "testing",
+    "description": "**A \"clear leader\" test fixture was silently a coin flip, because domain capability saturates and the test compared post-sigmoid values.** THR-898 scores routes on `computeCapability`, which is `sigmoid(rawScore, midpoint 10, k 0.4)`. Fixtures written as `{ gold: 30, iron: 24 }` read as an obvious 6-point lead in raw terms and resolve to capabilities of 0.99966 and 0.99631 — a difference of 0.0034, well inside the decision's `ROUTE_DECISION_TIE_EPSILON` of 0.02. The fork therefore took the seeded tiebreak path, and the assertion failed against a route chosen by the rng stub rather than by the term under test. Three of eleven fixtures were affected, and the failure presented as a wrong-winner assertion, which invites debugging the scorer instead of the fixture.",
+    "consequence": "Two verification cycles. The dangerous direction is the inverse, which does not fail: a fixture that happens to assert the route the tiebreak picks would pass while proving nothing about capability at all — a vacuous test with a green tick, the shape `reference_vacuous_probe_empty_population` describes.",
+    "impact": "Small",
+    "workaroundFound": true,
+    "workaround": "**When a fixture feeds a saturating transform, pick inputs in the responsive band and say so in the fixture.** For `computeCapability` that is raw ~4–16; above ~20 the curve is flat and raw differences of any size compress below any sane epsilon. The fix here names the constant (`GOLD_LEADS`) with a comment stating the band and why, so the next author does not re-derive it. Generally: assert on the value the code actually compares (post-transform), not the input that looks decisive.",
+    "session": "THR-898 N-route forks, `tb-opus-pickup` hourly run. Same class as the outcome-ladder tuning traps: a game constant tuned for play makes a range of test inputs indistinguishable, and the test never says which range it assumed."
+  },
+  {
+    "num": "356",
+    "id": 356,
     "count": 1,
     "date": "2026-07-31",
     "category": "process",
@@ -5912,7 +5951,7 @@ const DATA = [
     "impact": "S",
     "workaroundFound": true,
     "workaround": "Checked the scan workflow's run history explicitly and recorded the staleness in the report instead of implying fresh data. Durable fix is a registry-side schedule nudge (retro ≥15:00 UTC) or a Step 0 same-day-run check in the retrospective skill; recommended in the 2026-07-31 retro's Tuning Recommendations.",
-    "session": "weekly-retro scheduled run, 2026-07-31"
+    "session": "weekly-retro scheduled run, 2026-07-31. Renumbered from #353 by THR-897 pickup (union-merge duplicate-number repair; #353 was already published on main by the 2026-07-30 tooling row)."
   }
 ];
 // ── End data ──

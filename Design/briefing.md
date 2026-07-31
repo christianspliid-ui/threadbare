@@ -1,40 +1,50 @@
 # Briefing
 
-**Generated:** 2026-07-31 08:54 local (2026-07-31 06:54 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-07-31 16:16 local (14:16 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
 ## Needs Christian
 
-**Five prototype encounters are written and waiting for your read.** These are the first encounters written under the new design-first process — the mechanics decided in writing before a word of prose. They were delivered to chat, and the format ticket's own closing line still reads *"awaiting Christian's feedback on the five prototypes."* **Your read on these five is the last thing between here and writing the whole corpus.** If you don't have them at hand, ask for the **five design-first prototypes by name** — they are a different set from the five category drafts you already read and gave guidance on.
+**A new question is waiting, and it's a genuine creative call: which five encounters make up the vertical slice?** The groundwork it was waiting on finished at lunchtime — someone catalogued every encounter that exists today and every game system encounter content can currently reach. The next move is picking the five that between them touch the widest spread of the game. An agent will propose a roster with a coverage table and say what each pick uniquely covers; you rule. **Two further pieces of work are already stalled waiting on this one pick.** When you have the appetite: open a chat and say *"work the map"*.
 
-**Four finished encounters are riding on that same read.** The capital-cluster batch — a millrace dispute, a ford toll house, two feuding houses, and a monument that turned into a three-mile problem with a rock — is written and passed every check, but it was written in the old style nineteen minutes before you called the pause. When you sign off on the format, that session decides whether those four go in as-is and get tidied alongside the seven earlier ones, or get thrown back and rewritten. **Nothing is lost either way** — the work is parked, not discarded, and it is one question inside the format session rather than a separate decision for you today.
+**Your read of the five prototype encounters is done and no longer an open ask.** You approved the first three outright, and your notes on the last two became two permanent rules — one about encounters personalising themselves to the agent involved, one about an encounter being allowed to plant a designed sequel that fires later. That gate is cleared; the writing format is locked. **Eight encounters have since been written in it**, including a bridge crossing, a night after a mountain climb that reads how the climb went, riders following a caravan, a bargain at a crossroads, and a swindled family whose story continues in two different later encounters depending on what you do.
 
-**The trait question is still parked and still not urgent.** You said a Tenacious-style trait would suit a river crossing better than the one used. There are five trait families today, so minting a sixth is a content decision rather than a fix. It stays parked unless you say otherwise.
+**You cannot play any of those eight yet, and I want to correct an earlier note that implied you could.** A previous checkpoint said the new encounters would show up on the live site. **I checked the live site's contents directly: they are not there.** All eight — plus the click-straight-into-one link and the balanced test character built for you this morning — are riding on a single pull request that has gone tangled again and is failing its checks. **This is hands work, not a decision, and it is not yours to fix.** It is named here only because it is the sole thing standing between you and being able to play what was written. Until it lands, there is nothing new for you to look at in the game itself.
+
+**One command on your machine, and it is worth doing before your next session.** Your working copy stopped receiving updates about two and a half hours ago and is now 22 changes behind. The cause is this very task: an earlier run left two of its own files sitting in your working copy, and the sync refuses to write over them. **Nothing can be lost by clearing them** — I compared them byte for byte against what is already published, and they are identical. Run this and the sync will catch up on its own within the hour:
+
+```bash
+git -C "C:/Users/chris/Dev/Projects/TheFantasyWorldSimulator" restore Design/briefing.md Design/user-actions.md
+```
+
+**The four older finished encounters stay parked, unchanged.** The capital-cluster batch — the millrace dispute, the ford toll house, the two feuding houses, the monument that became a problem with a rock — is written and passing every check, but in the old style. Whether those four land as-is and get tidied up alongside the seven earlier ones, or get rewritten in the locked format, is a question for the session that closes out the format work. Nothing lost either way, and nothing for you today.
 
 ## Queue
 
-**Forty-four jobs ready, one in progress, nothing gone cold.** One job went from the shelf to the live site inside this single hour — picked up, written, checked, merged and deployed in about half an hour. It was a fix to our own record-keeping: when two background tasks wrote to the friction log at the same moment, they could both grab the same entry number. Fifteen collided entries were repaired and the number is now a checked key, so it cannot happen again. **Shipped, shut, and live.**
+**Forty-six jobs ready, one being worked, one parked.** The shelf is well past comfortable, which means planning is running ahead of building — expected while the content side is paused. One high-priority job leads (narrowing an over-eager prose check so it flags evasive writing rather than ordinary writing), four medium behind it, the rest low.
 
-**Forty-five to forty-four, and the drop is that finish** — work leaving by being done, not by quietly slipping off the shelf. **No high-priority job for a ninth hour**, with four medium and forty low behind it: engine work, tooling, housekeeping. **Still no content writing on the shelf, by design** — that pause holds until you've read the five prototypes.
+**Two jobs arrived this hour and one shipped** — the one that shipped extends encounter branching from two outcomes to several, which is machinery the new encounters depend on.
 
-The longest-waiting item crosses our one-week line **this evening**. It is a low-priority tidy-up, so that is a note rather than a problem.
+**The one job in progress** is a fix for a sweep that only rescues stuck work in one of the two ways it can get stuck. Picked up at the top of the hour and moving.
 
-**One ready job has been invisible to the picker for a fourth day** — it sits on the shelf with a name attached to it, and the picker only takes jobs with no name on them. Nobody is working it and nobody can pick it up. That is a mechanical slip for a working session to clear, not something for you.
+**The parked job** is the finished-but-held encounter batch described above — about a day parked, holding no one up.
 
-**The single job in progress is the finished-but-parked batch** described above. It has been parked eighteen hours, it holds a slot, and it blocks nothing.
+The longest-waiting item crosses our one-week line late this evening. Low-priority tidy-up, so a note rather than a problem.
 
 ## Freshness
 
-**Home tree healthy** — on the main line, nothing behind, nothing stranded. The only local edits are your own tool-permission settings and Friday's retro draft, and neither blocks anything.
+**Your working copy is stalled** — 22 changes behind, cause identified, one command above. Everything else about it is healthy: right branch, nothing stranded, no work of yours at risk.
 
-**The live site is current** — it is serving the newest commit on the main line, which is this hour's finish. Automated checks, the background task fleet, and the hourly cleanup job all report normal.
+**The live site is current** for what has actually been published; nothing game-facing has merged since the last release, so no rebuild was needed. Automated checks normal.
+
+**All eight scheduled jobs are running on time.** Last hour's briefing reported one of them as possibly stalled and said it would say so with real evidence if it missed its next slot. **It did not miss it** — it ran at the top of the hour. That alarm is closed, and it was right not to have been passed to you as a problem. The cleanup job ran half an hour ago and collected a large batch: workspaces down from 44 to 23, branches from 63 to 40.
 
 ## What's moving
 
-**The format work is still the centre of gravity, and nothing new landed on it this hour.** The one job that finished was record-keeping housekeeping.
+**Three pull requests are open.** One is the encounter work described above, which needs hands. One is this briefing. One is a housekeeping report from an earlier automated run.
 
-**Three pull requests are open, none of them needs you, and all three have collided with newer work on the main line.** The one worth naming carries **the locked writing format itself** — the golden exemplar and the rewritten rules. It has now been stuck for twelve hours and cannot go in on its own; **it needs a working session to untangle it by hand.** That is hands, not a decision, and it is named here only because it is the format work's paper trail. A second has been stuck a full day. The third is the parked batch, held on purpose.
+**A two-day-old tangle cleared this morning** — the housekeeping change that had been stuck since Wednesday is merged.
 
 ---
 *Standing asks live in `Design/user-actions.md`. This file is regenerated hourly by
