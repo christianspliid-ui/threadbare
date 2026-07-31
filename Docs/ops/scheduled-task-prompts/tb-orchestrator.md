@@ -81,10 +81,12 @@ Two things no detector does, both of which you own:
 
 ## Report
 
-Write `Docs/ops/orchestrator-YYYY-MM-DD.md`:
+**One file per run — never append to a file a previous run created.** The first run of a UTC day writes `Docs/ops/orchestrator-YYYY-MM-DD.md`; every later run that day writes `Docs/ops/orchestrator-YYYY-MM-DD<letter>.md` (`b`, `c`, `d`, …). List `Docs/ops/` for today's prefix and take the next unused letter.
+
+Prepending to one shared dated file is what made PR #1031 sit `DIRTY` for two days holding the only copy of its run's T1 sweep (THR-849): two overlapping runs both edit the same top-of-file anchor, and armed auto-merge cannot resolve a conflict. Separate files have no shared anchor, and the filename preserves order — which `merge=union` does not. `.gitattributes` grants `Docs/ops/orchestrator-*.md merge=union` as a backstop only; it catches a mistake, it is not permission to append.
 
 ```markdown
-# Orchestrator — YYYY-MM-DD
+# Orchestrator — YYYY-MM-DD (run <letter>, ~HH:MMZ)
 
 ## Needs Christian
 (plain language — or "nothing needs you")
@@ -109,6 +111,7 @@ Plain language throughout the Christian-facing section (THR-608): he does not re
 - **Never run a git state op with the home tree as CWD** (THR-672). `C:\Users\chris\Dev\Projects\TheFantasyWorldSimulator` is a read-only mirror of `main` owned by `threadbare-autosync.ps1` — no `checkout`/`switch`/`commit`/`merge`/`rebase`/`reset` there. Work in this session's own worktree; branches are repo-global and `git push` works from any worktree.
 - Commit the report with **no** `Fixes`/`Closes`/`Resolves THR-XX` keyword — that auto-closes unrelated issues (impediment #140). Reference issues as bare `THR-XXX` tokens.
 - Open a PR and queue it with `gh pr merge --auto --merge`. Do not poll-wait on CI (THR-675).
+- **If a prior run's report PR is still open, leave it and its branch alone.** Write your own per-run file and carry on — never append to the file that PR touches, and never push to its branch (another lane may have it checked out: the THR-671/672/797 hazard class). If it reads `DIRTY`, note it under `## Escalations` and file a ticket for the executor lane to salvage the stranded section rather than resolving it in-run.
 - A no-change run skips the commit entirely; the task's `lastRunAt` is the heartbeat.
 
 ## Escalation
