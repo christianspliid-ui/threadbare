@@ -259,3 +259,60 @@ export const BRANCH_DECISION_COIN_THRESHOLD = 0.5;
  * but three in the same direction register as who this person is becoming.
  */
 export const BRANCH_DECISION_DRIFT_MAGNITUDE = 0.08;
+
+// ─── N-route decided forks (THR-898) ─────────────────────────────────
+//
+// A route fork asks a different question than a pole fork. A pole fork asks
+// "which way do you lean?"; a route fork asks "which of these is *your* way in?"
+// — bribe, intimidate, or persuade the same wainwright. The dominant term is
+// therefore competence, not conviction: a mortal takes the course they are good
+// at. The three weights below are that priority made tunable (NFP #1), and they
+// are deliberately on comparable scales — capability is a 0–1 sigmoid, an axis
+// position is ±1, and a card lean is ~±POLE_LEAN_DEFAULT_WEIGHT each.
+
+/**
+ * Weight on the mortal's capability in the route's reach.
+ *
+ * The largest of the three: what makes a course *theirs* is being able to walk
+ * it. A thief bribes because bribery works when they do it, not because bribery
+ * expresses a value they hold.
+ */
+export const ROUTE_DECISION_CAPABILITY_WEIGHT = 1;
+
+/**
+ * Weight on the mortal's standing on a route's declared axis, signed toward the
+ * route's pole. Zero contribution for a route that declares no axis.
+ *
+ * Half of capability: character colors which course a mortal reaches for, but
+ * does not override being good at one and hopeless at another.
+ */
+export const ROUTE_DECISION_AXIS_WEIGHT = 0.5;
+
+/**
+ * Weight on the cards the god committed — both those naming the route directly
+ * and those arguing on the route's axis.
+ *
+ * Sized so that a single committed card is a real argument on a fork where two
+ * routes sit close, and not enough to send a mortal down a course they have no
+ * capability for. The god leans; the mortal still chooses.
+ */
+export const ROUTE_DECISION_CARD_WEIGHT = 1;
+
+/**
+ * How close two route scores must be to count as tied.
+ *
+ * Inside this band the mortal genuinely has no preference and a seeded draw
+ * settles it, mirroring `BRANCH_DECISION_NEUTRAL_EPSILON` in pole mode. Small,
+ * for the same reason: any real difference should decide the fork itself.
+ */
+export const ROUTE_DECISION_TIE_EPSILON = 0.02;
+
+/**
+ * Most routes one fork may declare.
+ *
+ * Not a technical limit — a cap on authoring. Past a handful of courses the
+ * scoring stops being legible to a reader of the encounter, and the variants
+ * stop being distinguishable in play. Validation fails a branch that exceeds it
+ * rather than shipping a fork nobody can reason about.
+ */
+export const MAX_BRANCH_ROUTES = 6;

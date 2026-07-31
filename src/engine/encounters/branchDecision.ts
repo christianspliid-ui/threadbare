@@ -28,13 +28,30 @@
  * branch-resolution path to keep in sync. `variants` key `'positive'` /
  * `'negative'` for the same reason: the pole *is* the choice id.
  *
+ * ## Two modes (THR-898)
+ *
+ * A fork is either **two poles** or **N routes**, and the difference is what the
+ * fork is *asking*:
+ *
+ * - **Pole mode** (THR-894) — one axis, two opposed answers. "Which way do you
+ *   lean?" Decided by a signed lean collapsed to a side.
+ * - **Route mode** (THR-898) — several courses toward one objective. "Which of
+ *   these is *your* way in?" Bribe the wainwright, intimidate him, or win him
+ *   over: three routes, one door. Decided primarily on **capability**, because
+ *   what makes a course someone's is being able to walk it — with the mortal's
+ *   axis standing and the god's committed cards as the finer adjustments.
+ *
+ * Both modes land in the same place: a key written to choice history, matching a
+ * `variants` key. Only the scoring differs.
+ *
  * ## Determinism (NFP #3)
  *
- * The profile read and the card sum are pure. The seeded coin is drawn **only**
- * inside the neutral band — the one branch where its value is used — mirroring
- * the meeting's `resolveWrittenPole`. Drawing it unconditionally would advance
- * the stream on decided forks too, desynchronising two runs that differ only in
- * how convinced a mortal was.
+ * The profile read, the capability read, and the card sums are pure. The seeded
+ * draw is taken **only** where its value is used — inside the neutral band in
+ * pole mode, and only among tied leaders in route mode — mirroring the meeting's
+ * `resolveWrittenPole`. Drawing it unconditionally would advance the stream on
+ * decided forks too, desynchronising two runs that differ only in how convinced
+ * a mortal was.
  */
 
 import type { GameState } from '../../types/gameState';
@@ -43,19 +60,25 @@ import type {
   ActionStepBranch,
   ActionStep,
   BranchPoleKey,
+  BranchRoute,
   UnifiedAction,
   UnifiedActionTemplate,
 } from '../../types/unifiedAction';
-import { isActionStepBranch } from '../../types/unifiedAction';
+import { isActionStepBranch, isRouteDecision } from '../../types/unifiedAction';
 import type { EncounterChoiceMemory } from '../../types/encounter';
 import { getAxisByValuePair } from '../../types/axisRegistry';
 import {
   BRANCH_DECISION_COIN_THRESHOLD,
   BRANCH_DECISION_DRIFT_MAGNITUDE,
   BRANCH_DECISION_NEUTRAL_EPSILON,
+  ROUTE_DECISION_AXIS_WEIGHT,
+  ROUTE_DECISION_CAPABILITY_WEIGHT,
+  ROUTE_DECISION_CARD_WEIGHT,
+  ROUTE_DECISION_TIE_EPSILON,
 } from '../../data/nudge-constants';
 import { applyDriftMagnitude, driftDeltaFor, liveAxisPosition } from './driftAccumulator';
-import { sumHandLean } from './poleLean';
+import { sumHandLean, sumRouteLean } from './poleLean';
+import { computeCapability } from '../domainCapability';
 import { emitTrace } from '../traceBuffer';
 
 /** Prefix marking a choice-history entry as engine-decided rather than player-picked. */
@@ -140,6 +163,121 @@ export function decideBranchPole(
   return { pole, profileLean: safeProfile, cardLean: safeCards, netLean, decidedBy: 'coin' };
 }
 
+// ─── N-route decisions (THR-898) ─────────────────────────────────────
+
+/** What one route scored, and why — the whole audit trail for a route fork. */
+export interface RouteScore {
+  readonly key: string;
+  /** Mortal's capability in the route's reach, 0–1. */
+  readonly capability: number;
+  /** Their standing on the route's axis, signed toward the route's pole; 0 if it declares none. */
+  readonly axisLean: number;
+  /** Committed cards backing this route, by name and by its axis. */
+  readonly cardLean: number;
+  /** The weighted sum the comparison actually uses. */
+  readonly score: number;
+}
+
+/** The chosen route, with every rival's score kept for the trace. */
+export interface RouteDecisionResult {
+  readonly routeKey: string;
+  readonly scores: readonly RouteScore[];
+  /** Whether one route won outright, or a seeded draw settled a tie. */
+  readonly decidedBy: 'fit' | 'tiebreak';
+}
+
+/**
+ * Sign a value toward a route's declared pole.
+ *
+ * A route sitting at the `negative` pole is *better* served by a mortal who
+ * leans negative, so the axis term flips with the route. Without this the two
+ * ends of one axis would both score as "positive is good" and the axis term
+ * would silently be noise on half the routes.
+ */
+function towardRoute(value: number, route: BranchRoute): number {
+  if (route.axis === undefined) return 0;
+  const signed = route.toward === 'negative' ? -value : value;
+  return Number.isFinite(signed) ? signed : 0;
+}
+
+/**
+ * Score every route for one mortal. Pure, and consumes no randomness.
+ *
+ * The three terms are the three things that make a course *theirs*: what they
+ * can do (capability in the route's reach — the same `computeCapability` read
+ * resolution itself uses, so a route the mortal would actually succeed at is the
+ * route they reach for), who they are (axis standing, when the route declares an
+ * axis), and what the god argued (cards naming the route, plus cards arguing on
+ * its axis). Weights are named constants — changing the feel is changing a
+ * number (NFP #1).
+ */
+export function scoreRoutes(
+  state: GameState,
+  agentId: string,
+  routes: readonly BranchRoute[],
+  nudges: ActionStep['nudges'],
+  playedNudgeIds: readonly string[] | undefined,
+): RouteScore[] {
+  return routes.map((route) => {
+    const capability = computeCapability(state.graph, agentId, route.reach);
+    const safeCapability = Number.isFinite(capability) ? capability : 0;
+
+    const axisLean = route.axis === undefined
+      ? 0
+      : towardRoute(readLiveAxisLean(state, agentId, route.axis), route);
+
+    // Both ways a card can back this course: naming it, or arguing on its axis.
+    const namedLean = sumRouteLean(nudges, playedNudgeIds, route.key);
+    const axisCardLean = route.axis === undefined
+      ? 0
+      : towardRoute(sumHandLean(nudges, playedNudgeIds, route.axis), route);
+    const cardLean = namedLean + axisCardLean;
+
+    const score = ROUTE_DECISION_CAPABILITY_WEIGHT * safeCapability
+      + ROUTE_DECISION_AXIS_WEIGHT * axisLean
+      + ROUTE_DECISION_CARD_WEIGHT * cardLean;
+
+    return {
+      key: route.key,
+      capability: safeCapability,
+      axisLean,
+      cardLean,
+      score: Number.isFinite(score) ? score : 0,
+    };
+  });
+}
+
+/**
+ * Pick the winning route. Pure.
+ *
+ * `rng` is consumed at most once, and only when the leaders are tied — the same
+ * discipline as the two-pole coin, and for the same reason: drawing
+ * unconditionally would advance the stream on decided forks too, desynchronising
+ * two runs that differ only in how clear-cut a mortal's best course was.
+ */
+export function decideBranchRoute(
+  scores: readonly RouteScore[],
+  rng: () => number,
+): RouteDecisionResult {
+  // Fail-soft (NFP #4): validation rejects an empty route list at build time, so
+  // this is unreachable through authored content — but the tick loop must never
+  // throw, and an empty decision is recoverable where an exception is not.
+  if (scores.length === 0) {
+    return { routeKey: '', scores, decidedBy: 'fit' };
+  }
+
+  const best = scores.reduce((a, b) => (b.score > a.score ? b : a));
+  const tied = scores.filter((s) => Math.abs(s.score - best.score) <= ROUTE_DECISION_TIE_EPSILON);
+
+  if (tied.length <= 1) {
+    return { routeKey: best.key, scores, decidedBy: 'fit' };
+  }
+
+  // Index off a single draw, clamped so an rng returning exactly 1 stays in range.
+  const index = Math.min(tied.length - 1, Math.floor(rng() * tied.length));
+  return { routeKey: tied[index].key, scores, decidedBy: 'tiebreak' };
+}
+
 /**
  * Every `decidedBy` branch in a template that forks on `stepIndex`.
  *
@@ -165,7 +303,42 @@ function decidedBranchesForStep(
 export interface BranchDecisionApplication {
   readonly action: UnifiedAction;
   readonly archetypeDrift: GameState['archetypeDrift'];
+  /** Present when the fork ran in two-pole mode (THR-894). */
   readonly decision?: BranchDecisionResult;
+  /** Present when the fork ran in N-route mode (THR-898). */
+  readonly routeDecision?: RouteDecisionResult;
+}
+
+/**
+ * Drift a mortal toward the pole they just took, emitting any threshold
+ * crossings. Shared by both decision modes — a route that declares an axis
+ * drifts exactly as a pole decision does, because it *is* the same claim about
+ * who this person is becoming.
+ */
+function driftTowardPole(
+  drift: GameState['archetypeDrift'],
+  agentId: string,
+  axis: ValuePair,
+  pole: BranchPoleKey,
+  tick: number,
+): { drift: GameState['archetypeDrift']; driftAxisId: string } {
+  const driftAxisId = driftAxisIdForValuePair(axis);
+  const signedMagnitude = pole === 'positive'
+    ? BRANCH_DECISION_DRIFT_MAGNITUDE
+    : -BRANCH_DECISION_DRIFT_MAGNITUDE;
+  const result = applyDriftMagnitude(drift, agentId, driftAxisId, signedMagnitude, tick);
+
+  // Same emission shape as `phaseChoiceResolution` — the encounter trace types are
+  // not members of the `TraceEntry` union, so every caller casts here.
+  for (const driftTrace of result.traces) {
+    emitTrace({
+      ...driftTrace,
+      summary: `Drift threshold ${driftTrace.thresholdCrossed}: ${driftTrace.axisId} `
+        + `${driftTrace.fromPosition.toFixed(2)} → ${driftTrace.toPosition.toFixed(2)} (${driftTrace.pole})`,
+    } as unknown as Parameters<typeof emitTrace>[0]);
+  }
+
+  return { drift: result.drift, driftAxisId };
 }
 
 /**
@@ -193,30 +366,32 @@ export function applyAgentDecidedBranches(
     return { action, archetypeDrift: drift };
   }
 
-  // Every branch off this step asks about the same moment; the first one's axis
-  // is the question. A template whose branches disagree about the axis is a
+  // Every branch off this step asks about the same moment; the first one's
+  // configuration is the question. A template whose branches disagree is a
   // content error the validator reports — here it resolves fail-soft on the
   // first, rather than recording two contradictory choices for one step.
-  const axis = branches[0].decidedBy!.axis;
+  const decidedBy = branches[0].decidedBy!;
 
+  return isRouteDecision(decidedBy)
+    ? applyRouteDecision(state, action, decidedBy.routes, resolvedStep, tick, rng, drift)
+    : applyPoleDecision(state, action, decidedBy.axis, resolvedStep, tick, rng, drift);
+}
+
+/** Two-pole mode (THR-894): one axis, a signed lean, a side. */
+function applyPoleDecision(
+  state: GameState,
+  action: UnifiedAction,
+  axis: ValuePair,
+  resolvedStep: ActionStep,
+  tick: number,
+  rng: () => number,
+  drift: GameState['archetypeDrift'],
+): BranchDecisionApplication {
   const profileLean = readLiveAxisLean(state, action.actorId, axis);
   const cardLean = sumHandLean(resolvedStep.nudges, action.activeNudges, axis);
   const decision = decideBranchPole(profileLean, cardLean, rng);
 
-  const driftAxisId = driftAxisIdForValuePair(axis);
-  const signedMagnitude = decision.pole === 'positive'
-    ? BRANCH_DECISION_DRIFT_MAGNITUDE
-    : -BRANCH_DECISION_DRIFT_MAGNITUDE;
-  const driftResult = applyDriftMagnitude(drift, action.actorId, driftAxisId, signedMagnitude, tick);
-  // Same emission shape as `phaseChoiceResolution` — the encounter trace types are
-  // not members of the `TraceEntry` union, so every caller casts here.
-  for (const driftTrace of driftResult.traces) {
-    emitTrace({
-      ...driftTrace,
-      summary: `Drift threshold ${driftTrace.thresholdCrossed}: ${driftTrace.axisId} `
-        + `${driftTrace.fromPosition.toFixed(2)} → ${driftTrace.toPosition.toFixed(2)} (${driftTrace.pole})`,
-    } as unknown as Parameters<typeof emitTrace>[0]);
-  }
+  const drifted = driftTowardPole(drift, action.actorId, axis, decision.pole, tick);
 
   emitTrace({
     category: 'branch_decided',
@@ -224,22 +399,78 @@ export function applyAgentDecidedBranches(
     agentId: action.actorId,
     templateId: action.templateId,
     stepIndex: action.currentStep,
+    mode: 'pole',
     axis,
     profileLean: decision.profileLean,
     cardLean: decision.cardLean,
     netLean: decision.netLean,
     resolvedPole: decision.pole,
     decidedBy: decision.decidedBy,
-    driftAxisId,
+    driftAxisId: drifted.driftAxisId,
     summary: `branch_decided: ${action.actorId} took '${decision.pole}' on ${axis} `
       + `(profile ${decision.profileLean.toFixed(2)} + cards ${decision.cardLean.toFixed(2)} `
       + `= ${decision.netLean.toFixed(2)}, by ${decision.decidedBy})`,
   } as unknown as Parameters<typeof emitTrace>[0]);
 
+  const choiceText = decision.decidedBy === 'coin'
+    ? 'The moment found them undecided.'
+    : 'They chose as they are.';
+
   return {
-    action: recordDecidedChoice(action, stepIdFor(action.currentStep), decision, tick),
-    archetypeDrift: driftResult.drift,
+    action: recordDecidedChoice(action, stepIdFor(action.currentStep), decision.pole, choiceText, tick),
+    archetypeDrift: drifted.drift,
     decision,
+  };
+}
+
+/** N-route mode (THR-898): several courses, scored on fit, one taken. */
+function applyRouteDecision(
+  state: GameState,
+  action: UnifiedAction,
+  routes: readonly BranchRoute[],
+  resolvedStep: ActionStep,
+  tick: number,
+  rng: () => number,
+  drift: GameState['archetypeDrift'],
+): BranchDecisionApplication {
+  const scores = scoreRoutes(
+    state, action.actorId, routes, resolvedStep.nudges, action.activeNudges,
+  );
+  const decision = decideBranchRoute(scores, rng);
+
+  // A route that declares an axis drifts the mortal toward its pole, exactly as
+  // a two-pole decision does. A pure-competence route declares none and drifts
+  // nothing — there is no claim about character to record.
+  const taken = routes.find((r) => r.key === decision.routeKey);
+  const drifted = taken?.axis !== undefined
+    ? driftTowardPole(drift, action.actorId, taken.axis, taken.toward ?? 'positive', tick)
+    : { drift, driftAxisId: undefined as string | undefined };
+
+  emitTrace({
+    category: 'branch_decided',
+    tick,
+    agentId: action.actorId,
+    templateId: action.templateId,
+    stepIndex: action.currentStep,
+    mode: 'route',
+    resolvedRoute: decision.routeKey,
+    decidedBy: decision.decidedBy,
+    routeScores: decision.scores,
+    driftAxisId: drifted.driftAxisId,
+    summary: `branch_decided: ${action.actorId} took route '${decision.routeKey}' `
+      + `by ${decision.decidedBy} (${decision.scores
+        .map((s) => `${s.key} ${s.score.toFixed(2)}`)
+        .join(', ')})`,
+  } as unknown as Parameters<typeof emitTrace>[0]);
+
+  const choiceText = decision.decidedBy === 'tiebreak'
+    ? 'Either way would have suited them.'
+    : 'They went the way that was theirs.';
+
+  return {
+    action: recordDecidedChoice(action, stepIdFor(action.currentStep), decision.routeKey, choiceText, tick),
+    archetypeDrift: drifted.drift,
+    routeDecision: decision,
   };
 }
 
@@ -256,26 +487,25 @@ function stepIdFor(stepIndex: number): string {
 }
 
 /**
- * Write the decided pole as an ordinary choice-history entry.
+ * Write the decided key as an ordinary choice-history entry.
  *
- * `choiceId` is the bare pole key because that is what `variants` are keyed by —
- * the whole point of routing through the existing path. The decision is still
- * distinguishable from a player pick by `interventionType`, and reads as one in
- * any surface that renders choice history.
+ * `choiceId` is the bare pole key or route key, because that is what `variants`
+ * are keyed by — the whole point of routing through the existing path. The
+ * decision is still distinguishable from a player pick by `interventionType`,
+ * and reads as one in any surface that renders choice history.
  */
 function recordDecidedChoice(
   action: UnifiedAction,
   stepId: string,
-  decision: BranchDecisionResult,
+  choiceId: string,
+  choiceText: string,
   tick: number,
 ): UnifiedAction {
   const entry: EncounterChoiceMemory = {
     stepIndex: action.currentStep,
     stepId,
-    choiceId: decision.pole,
-    choiceText: decision.decidedBy === 'coin'
-      ? 'The moment found them undecided.'
-      : 'They chose as they are.',
+    choiceId,
+    choiceText,
     interventionType: BRANCH_DECISION_INTERVENTION_TYPE,
     essenceSpent: 0,
     probabilityBoost: 0,
