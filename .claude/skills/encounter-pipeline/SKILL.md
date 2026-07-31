@@ -259,6 +259,10 @@ The editorial agent:
 24. **The agent as bystander** — a set-piece scene the acting agent merely watches, without the design block's written justification; the default shape is the opportunity/complication/danger landing on the agent or in their path
 25. **Announced outcome mechanics in scene prose** — explicit "pass and X / fail and Y" framing; stakes are foreshadowed in the scene's furniture, outcomes live in afterimages and band prose
 26. **A design-block breach** — a declared mechanic or object the prose never uses, a step whose prose does not test its declared reach, a mortal choice with no named value axis, or a promise (mystery, hook) with no designed payoff
+27. **A title that fails the glance test** — a player reading only the title cannot say what the complication or objective is ("The Broken Wheel" passes; "The Held Commission" does not)
+28. **A missing or verbose crux** — the design block does not open with the one plain-grammar sentence stating the complication from the agent's point of view, or needs a paragraph to say it
+29. **Unreadable compression** — a sentence that needs two readings, a paragraph carrying a larger story than its word count can hold, or clue information front-loaded in the opening that the shape puts behind an investigation gate (rule zero: game prose, not novel prose — clarity beats compression, dialogue welcome)
+30. **A shape invented on the fly** — the encounter does not name its shape from the catalog, or its step structure contradicts the shape it names
 
 ### Pass 3: Systems Audit + Final Merge
 

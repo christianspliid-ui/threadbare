@@ -188,13 +188,31 @@ Author in this order. Each step assumes the one before it is settled.
 **Mechanics are designed first; prose is written to them (Christian, chat 2026-07-30 —
 the five-draft review).** The failure this step exists to prevent: a well-built scene
 the acting agent merely watches, testing no reach anyone chose, referring to no game
-object, promising a mystery nobody designed the payoff for. Answer all of these **in
-writing, in the file's doc comment, before the first sentence of prose**:
+object, promising a mystery nobody designed the payoff for.
 
-1. **Whose problem is this?** The acting agent is the **protagonist**: the opportunity,
-   complication, or danger lands on *them* or in their path (the Swollen Ford shape —
-   the river is in their road). A scene the agent merely witnesses is the rare
-   exception and must say what makes watching the strongest seat in the house.
+**The block is terse.** One line per row. A design block that runs long is hiding that
+the crux is unclear. Answer all of these **in writing, in the file's doc comment,
+before the first sentence of prose**:
+
+0. **The crux, in one plain sentence, from the agent's point of view.** "The wagon
+   wheel has broken, and the wainwright is the only fix within a day." "Someone is
+   asking around after the agent, and not in a good way." Simple grammar: who, does
+   what, about what, and the vibe. If the crux needs a second sentence, the encounter
+   is not designed yet.
+0b. **The title states the crux.** *The Broken Wheel*, not *The Held Commission*. A
+   player reading only the title knows the complication or the objective — nothing
+   more is needed, and no poetry is allowed to get in the tunnel between title and
+   understanding.
+0c. **Pick the encounter's shape** from the shape catalog (section below) before
+   designing steps. The shape decides step count and structure; do not invent
+   structure per encounter.
+1. **Whose problem is this?** The acting agent is the **protagonist**, and the
+   complication is *seen from their point of view* — prefer problems that originate
+   with the agent or their journey (their wheel breaks; their name is asked after;
+   their road is blocked), where the location and its people are the place the
+   solution lives, not the subject of the scene. A scene the agent merely witnesses is
+   the rare exception and must say what makes watching the strongest seat in the
+   house.
 2. **Which reach does each step test, and why is that the theme?** The reach is chosen
    before writing and the scene grows from it — a Stone scene is *about* endurance,
    an Eye scene is *about* reading truly. Never retrofit a reach onto finished prose.
@@ -207,7 +225,12 @@ writing, in the file's doc comment, before the first sentence of prose**:
    is decoration; a hook designed before is structure.
 5. **What are the rewards, and where does the tension sit?** Prizes, tolls, and seeds
    (step 6's object references) sketched now, with the quintessence stakes — the
-   erosion class failing here costs.
+   erosion class failing here costs. **Penalty-avoidance is a valid reward shape**
+   (Christian, 2026-07-30): for an everyday complication, the baseline reward is
+   simply *no penalty* (the delay avoided, the toll unpaid), the failure penalty is
+   concrete and game-legible (stand still N ticks, minus to move for a while), and a
+   critical success may add one small boon (a better wagon: +1 move). Not every
+   encounter pays out treasure.
 6. **Does the mortal make a choice in this scene?** "None — this is a test" is a valid
    written answer, but **a healthy corpus slice runs on choices, and some encounters
    should be designed for one** — a fork is where personality becomes story. If yes:
@@ -229,6 +252,30 @@ writing, in the file's doc comment, before the first sentence of prose**:
 Then declare the **setting envelope**, the **scene tag** (WS4 vocabulary; fallback
 chain ends at EntityVisual), and write the openings + spine under the scene-writer's
 checklist above.
+
+---
+
+## The shape catalog — pick a structure, never invent one
+
+**Why a closed catalog (Christian, 2026-07-30):** deciding single-step vs multi-step
+vs fork on the fly is where structure quality leaks. The shape is picked in the design
+block (question 0c) and the steps follow it. The first two are Christian's own;
+the rest generalize the prototypes and are open for iteration on this list.
+
+| Shape | Steps | Use when |
+|---|---|---|
+| **Single Test** | 1 | One complication, one skill answers it. The smallest honest encounter. |
+| **Test & Consequence** | 2, carryover | The second step inherits how the first went (read the water → cross the river). |
+| **Puzzle – Investigation – Resolution** | 2–3 | Information is the prize: an Eye-type gate *reveals* the clues (behind the test, never front-loaded in the opening), and the resolution step uses — or must do without — what was found. |
+| **Danger – Confrontation – Aftermath** | 2–3 | A threat announces itself, then arrives. The watch, then the rush; the reading, then the meeting. |
+| **Personality Fork** | 1 + branch | The mortal makes a choice: a test, then an agent-decided branch on a value axis (THR-894), pole-specific continuations. |
+| **Opt-in Complication** | gate + shape | The agent can decline: waiting/walking away is a cheap, legible exit (a delay, a toll), and engaging opens one of the shapes above. The engage/decline gate is itself agent-decided (personality). |
+
+Rules: a route-flavored objective (bribe with Gold, intimidate with Iron, persuade
+with Heart, toward the same door) is a **Personality Fork** whose poles are routes.
+Information the player should discover lives behind the Investigation gate's outcome
+bands, never in the opening prose. Extending this catalog is a design-session
+decision with Christian, not an authoring-session judgement.
 
 ### 2. Test panel data
 
@@ -461,10 +508,31 @@ stacked metaphor.
 
 ## Prose rubric (hard rules)
 
-From the 2026-07-25 prose pilot and abstraction assessment. Applies to scene prose:
-openings, spine, stakes, band text, fragments, afterimages.
+### Rule zero — game prose, not novel prose (Christian, 2026-07-30, supersedes anything below that conflicts)
 
-1. **Every sentence carries a picturable anchor.** If the reader cannot see it, rewrite it.
+**We are not writing novels; we are making a game.** The prose exists so the player
+understands the scene, the complication, and what is happening — fast, on one read.
+
+- **Simple grammar carries the crux.** A subject, a verb, an object, and the vibe:
+  "Someone is asking around after the agent, and not in a good way." If the natural
+  plain sentence uses an everyday word, use it — do not contort a sentence to satisfy
+  a detector. The detectors exist to kill *evasive* vagueness in outcome prose ("it
+  cost them something"), never to ban ordinary language from scene setup.
+- **Clarity beats compression.** A sentence that needs two readings is a defect, even
+  if every word in it is good. Splitting a dense sentence into two plain ones is
+  always the right trade. Cool words lose to clear words.
+- **Dialogue is welcome.** A guard saying "No one crosses at night — we have lost two
+  travelers in a fortnight" beats a paragraph implying it.
+- **One thought per sentence, complication stated early.** The player should know what
+  the scene is about by the end of the first paragraph without effort.
+
+The older rules below still apply *inside* that frame — concrete beats abstract, shown
+beats told — but where any of them pushes a sentence away from plain readability, rule
+zero wins.
+
+1. **Concrete anchors by default.** Prefer sentences the reader can see. Plain
+   functional sentences that move the scene along are fine — the anchor rule is a
+   default, not a per-sentence quota.
 2. **Abstractions only as stakes, and cashed in-sentence.** You may stake "their
    reputation"; you may not leave it uncashed. Name what reputation *looks like* here.
 2b. **Foreshadow, never announce (Christian, 2026-07-30).** Scene prose does not state
@@ -473,7 +541,12 @@ openings, spine, stakes, band text, fragments, afterimages.
    furniture (the rubble cart already standing by the door) and let afterimages and
    band prose carry the concrete outcomes. The on-the-nose register belongs to
    `effectLine` alone.
-3. **"something / thing / way" target zero.** See the detector.
+3. **Evasive vagueness targets zero in outcome prose.** "It cost them something" hides
+   what happened — that is the detector's real prey. Scope note: the enforced lexicons
+   currently also match natural indefinites ("someone", "anyone") anywhere they
+   appear; reconciliation to the rule-zero scope is tracked on THR-877. Until it
+   lands, drafts follow rule zero and flag lexicon collisions instead of writing
+   around them.
 4. **≤1 not-X-but-Y construction per encounter.** See the detector.
 5. **God-action as witnessed effect.** In *scene-side prose* (band fragments, outcome
    text), never "the god grants courage" — write what happens in the room. The
