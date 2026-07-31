@@ -20,12 +20,25 @@ outcome** on the five-band ladder; prose pays the nudge off at *every* band, mis
 included. Choosing between authored futures for a mortal is the **rejected** model this
 replaced (see Rejected approaches).
 
-- **Authoring contract (load first, both pipelines):** [`.claude/skills/encounter-pipeline/reference/nudge-authoring-spec.md`](../../.claude/skills/encounter-pipeline/reference/nudge-authoring-spec.md) — the 8-step checklist, register table, prose rubric, verbatim detector spec, shared generic pool.
-- **Golden exemplar:** `src/data/__fixtures__/nudge-exemplar/darkhollow-vault-exemplar.ts` — the Darkhollow Vault, authored end-to-end, every rule visible once. In no shipped pool.
+**The format was locked 2026-07-30 (THR-883, the communication pivot): prose does the
+scene, cards do the rules.** Scene prose (per-class openings + setting-neutral spine +
+outcome prose) is fully written under the 14-question scene-writer's checklist; a card
+face is **library-generic** — 2–4 word title, one plain mechanical `effectLine`, one
+flavor quote, cut from the 21-type card library — with zero scene-bespoke prose.
+Templates declare **setting envelopes** (THR-884: `settings` from the 8-class
+vocabulary + one opening per class); cards may charge **cost channels** and carry
+**grants** (THR-885: doom/detection deltas, world changes in the existing aftermath
+effect vocabulary, grant-liveness gated). Odds render as pips (display-side; raw numbers
+in data).
+
+- **Authoring contract (load first, both pipelines):** [`.claude/skills/encounter-pipeline/reference/nudge-authoring-spec.md`](../../.claude/skills/encounter-pipeline/reference/nudge-authoring-spec.md) — the communication pivot, the 14-question checklist, setting envelopes, the 21-type library hand rules, register table, prose rubric, verbatim detector spec.
+- **Golden exemplar:** `src/data/__fixtures__/nudge-exemplar/swollen-ford-exemplar.ts` — The Swollen Ford, authored end-to-end in the locked format, every rule visible once. In no shipped pool. (Supersedes the pre-pivot Darkhollow Vault, deleted 2026-07-30.)
+- **Card library + pip vocabulary:** `public/nudge-cards-reference.html` (wiki page — the surface the repertoire is iterated on) · Repertoire progression: [2026-07-30-nudge-card-repertoire.md](../plans/2026-07-30-nudge-card-repertoire.md).
+- **Encounter catalogs (design-block vocabularies):** [encounter-catalogs.md](encounter-catalogs.md) — shape, setting, pressure, form, objective, stakes, system (maturity-gated to the vertical slice); companion idea bank `Design/research/quest-hooks/` (1,200 tagged hooks).
 - **Tunable authoring guardrails:** `src/data/content-eval/nudgeAuthoringConstants.ts` (authoring/lint-side; **not** the client bundle). Runtime numbers stay in `src/data/nudge-constants.ts`.
-- **Executable half:** `src/engine/__tests__/nudgeModel.test.ts` § *WS1 golden exemplar* — the checklist as assertions, so spec and exemplar cannot drift apart silently.
-- **Schema:** `StepNudge` / `ActionStep.nudges` / `TraitVariant` / `UnifiedActionTemplate.traitVariants` (`src/types/unifiedAction.ts`); hand resolution in `src/engine/encounters/nudges.ts`.
-- **Program plan:** [2026-07-26-nudge-model-encounter-system.md](../plans/2026-07-26-nudge-model-encounter-system.md) (THR-772) · WS0 substrate [2026-07-26-nudge-model-ws0-engine-substrate.md](../plans/2026-07-26-nudge-model-ws0-engine-substrate.md) · WS1/WS2 [2026-07-27-nudge-encounter-experience-ws1-ws2.md](../plans/2026-07-27-nudge-encounter-experience-ws1-ws2.md).
+- **Executable half:** `src/engine/__tests__/nudgeModel.test.ts` § *golden exemplar* — the checklist as assertions (envelope validity, cost channels, grant liveness included), so spec and exemplar cannot drift apart silently.
+- **Schema:** `StepNudge` (incl. `costs`, `grants`, `fictionBySetting`, `requiresGroup`/`requiresFavor`) / `ActionStep.nudges` / `TraitVariant` / template-level `settings` + `openings` (`src/types/unifiedAction.ts`); hand resolution in `src/engine/encounters/nudges.ts`, dispatch in `src/engine/encounters/nudgeDispatch.ts`, envelopes in `src/data/settingClasses.ts`.
+- **Program plan:** [2026-07-26-nudge-model-encounter-system.md](../plans/2026-07-26-nudge-model-encounter-system.md) (THR-772) · WS0 substrate [2026-07-26-nudge-model-ws0-engine-substrate.md](../plans/2026-07-26-nudge-model-ws0-engine-substrate.md) · WS1/WS2 [2026-07-27-nudge-encounter-experience-ws1-ws2.md](../plans/2026-07-27-nudge-encounter-experience-ws1-ws2.md) · frameworks [2026-07-30-encounter-authoring-frameworks.md](../plans/2026-07-30-encounter-authoring-frameworks.md) (THR-884/THR-885, both shipped 2026-07-30).
 
 **Migration state.** `authoredChoices` still *renders* — the stage branches on data
 presence, so the rollout is per-template and reversible, with no flag day. But no new
@@ -153,7 +166,4 @@ Source: `Docs/plans/2026-05-04-encounter-experience-design-plan.md` §2.2 and `B
 
 ## Last-reviewed
 
-2026-07-30 by Claude Code (THR-892: the variance rule recorded — static `factorLines`
-retired for new content, the derived-line set and its one read path, the omen/doom/season
-N/A with its read path cited, and `carryoverFactorLines` as the surviving authored factor
-surface). Previous edit: 2026-07-30 by Claude Code (THR-868 / WS6: Meet The First recorded as nudge-native — pole lean, the retuned `MEETING_TEST_CAPABILITY`, the `StepOutcome`-not-`ForecastTier` trap, and two new rejected approaches covering scene-art doctrine and the retired lyrical register). Review trigger: monthly, or when any listed plan moves to `superseded`. Previous edit: 2026-07-27 by Claude Code (THR-774 / WS1: nudge model recorded as the current authoring spec — spec pointer, golden exemplar, authoring guardrails, three new rejected approaches).
+2026-07-30 (merged edits) by Claude Code + Claude Fable: THR-892 recorded the variance rule — static `factorLines` retired for new content, the derived-line set and its one read path (`computeResolutionModifiers`), the omen/doom/season N/A with its read path cited, and `carryoverFactorLines` as the surviving authored factor surface. THR-883 recorded the format lock — the communication pivot, setting envelopes, cost channels/grants, and the Swollen Ford golden exemplar replacing the Darkhollow Vault. Previous edits: 2026-07-30 by Claude Code (THR-868 / WS6: Meet The First recorded as nudge-native); 2026-07-27 by Claude Code (THR-774 / WS1: nudge model recorded as the current authoring spec). Review trigger: monthly, or when any listed plan moves to `superseded`.
