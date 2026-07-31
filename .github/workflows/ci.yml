@@ -142,6 +142,16 @@ jobs:
       - name: Generated artifact freshness
         run: npm run check:generated-freshness
 
+      # `Docs/impediments.md` is `merge=union` (THR-691) so concurrent appends from
+      # different lanes merge without conflict — and union keeps BOTH sides of a
+      # conflicting hunk, which is right for the rows and wrong for their hand-assigned
+      # numbers. The freshness gate above only proves the dashboard matches its source,
+      # never that the source's keys are distinct, so a duplicate regenerates cleanly
+      # and ships green; 15 had accumulated undetected (THR-881). This step is what
+      # stops the second lane's PR from landing a number `main` already uses.
+      - name: Impediment id uniqueness
+        run: npm run check:impediment-ids
+
       # Blocking wiki-freshness gate (THR-730, user verdict 2026-07-23). Fails the
       # required check if a PR changes a file matched by a wiki page's `sources`
       # without updating that page/payload — unless a commit body carries
