@@ -5952,6 +5952,19 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "After claiming a wayfinder ticket and before posting a resolution, re-read the ticket's comment list once more — if a comment appeared after the claim timestamp that isn't yours, another session (very likely Christian, live) got there first; reconcile by diffing the two resolutions rather than blindly patching the map. No structural fix exists without a second Linear seat or a distinguishing field the API doesn't expose; treat this as a standing hazard specific to this lane rather than a bug to close.",
     "session": "tb-orchestrator hourly run, 2026-07-31, T1.5 wayfinder sweep on THR-902 (Encounter experience redesign — vertical slice). — renumbered from #353 by THR-897 pickup (union-merge duplicate-number repair; #353 was already published on main by the 2026-07-30 tooling row, and #356 is taken by the concurrent retro branch)."
+  },
+  {
+    "num": "358",
+    "id": 358,
+    "count": 2,
+    "date": "2026-07-31",
+    "category": "tooling",
+    "description": "**Resolving a `merge=union` closeout PR reliably produces a *duplicate impediment number*, and the generated `Design/impediment-dashboard.html` conflicts every time because it is a committed generated artifact with no merge driver.** Union is the right driver for `Docs/impediments.md` — it keeps both appended rows — but two lanes that both append \"the next number\" append the *same* number, so union yields two rows claiming one id. Meanwhile the dashboard is derived from that file and is committed, so it conflicts on the same hunk with no union semantics available (it is HTML, not an append-only table). Hit twice in one run, on PR #1166 and PR #1169, both colliding on `#353`.",
+    "consequence": "Every concurrent closeout pair costs a manual renumber plus a dashboard regeneration. `check:impediment-ids` catches the duplicate — so it fails closed, not silently — but only after the union merge has already been made, and the conflicted dashboard blocks auto-merge until a session resolves it by hand.",
+    "impact": "M",
+    "workaroundFound": true,
+    "workaround": "Resolve the union merge, then run `npm run check:impediment-ids` **before** regenerating: it names the duplicate and the two line numbers. Keep the number on the row already published on `main` (not the positionally-first row — the checker's stated rule assumes one branch, and following it literally renumbers the *shipped* row and breaks existing cross-references), renumber the unmerged newcomer, and when resolving several PRs in one pass assign distinct numbers across them so they cannot re-collide once both land. Never hand-edit the dashboard — `npm run generate-impediment-dashboard` reproduces it from the merged source.",
+    "session": "tb-opus-pickup, 2026-07-31 ~15:00Z, resuming THR-897"
   }
 ];
 // ── End data ──
