@@ -5776,19 +5776,6 @@ const DATA = [
     "id": 353,
     "count": 1,
     "date": "2026-07-30",
-    "category": "process",
-    "description": "*(Renumbered from #325 — THR-881 uniqueness rule: the agent-prompt-drift row above kept the number as first in file order.)* **A ticket was promoted to Ready for Dev while its plan doc and its required wiki page existed only on an unmerged PR branch.** THR-887's description named `Docs/plans/2026-07-30-nudge-card-repertoire.md` and required updating `public/nudge-cards-reference.html` in the same PR; both lived solely on PR #1129, still open. From `main` the plan doc did not exist and the wiki page it had to update did not exist, so the Done-when was unsatisfiable by construction from the branch point the executor would naturally take.",
-    "consequence": "Executor branched from `main`, found no plan doc, and had to discover the dependency through `gh pr view`. Stacking cost a mid-session branch relocation after ~15 edits were already made.",
-    "impact": "Medium",
-    "workaroundFound": true,
-    "workaround": "Read the plan doc out of the PR branch (`git show origin/<branch>:<path>`), then stack the work branch on that branch rather than on `main`, so the wiki page is present and the freshness gate is satisfiable. PR #1129 was also `BEHIND`, so `gh pr update-branch` was run as pull-work Step 0.8 prescribes.",
-    "session": "THR-887 execution, tb-opus-pickup"
-  },
-  {
-    "num": "353",
-    "id": 353,
-    "count": 1,
-    "date": "2026-07-30",
     "category": "tooling",
     "description": "**A scheduled lane's report file existed twice — once untracked in the home tree, once committed to origin/main via its worktree PR — and the ff-pull refused to cross it.** `Docs/ops/orchestrator-2026-07-30g.md` sat untracked in the home tree while the same file arrived on `origin/main` through the orchestrator lane's merged worktree branch; `git pull --ff-only origin main` aborted with 'untracked working tree files would be overwritten by merge'.",
     "consequence": "A design session opening on freshness=behind:17 could not take the sanctioned repair (pull main) until it diagnosed the collision; a hasty `rm` without comparing contents would silently discard any local-only divergence.",
@@ -5796,6 +5783,19 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "Byte-compare the untracked file against the incoming version before removing: `diff <(git show FETCH_HEAD:<path>) <path>` — delete only on IDENTICAL, surface on DIFFERS. Root pattern: a lane that writes its report into the home tree working copy AND commits it from a worktree leaves this landmine every run; lanes should write reports only inside their worktree.",
     "session": "THR-868 design session, 2026-07-30"
+  },
+  {
+    "num": "356",
+    "id": 356,
+    "count": 1,
+    "date": "2026-07-30",
+    "category": "process",
+    "description": "*(Renumbered from #325, then again from #353 — THR-881 uniqueness rule applied reference-preserving: the other lane’s #353 is cited by THR-910/user-actions, this row is cited by nothing.)* **A ticket was promoted to Ready for Dev while its plan doc and its required wiki page existed only on an unmerged PR branch.** THR-887's description named `Docs/plans/2026-07-30-nudge-card-repertoire.md` and required updating `public/nudge-cards-reference.html` in the same PR; both lived solely on PR #1129, still open. From `main` the plan doc did not exist and the wiki page it had to update did not exist, so the Done-when was unsatisfiable by construction from the branch point the executor would naturally take.",
+    "consequence": "Executor branched from `main`, found no plan doc, and had to discover the dependency through `gh pr view`. Stacking cost a mid-session branch relocation after ~15 edits were already made.",
+    "impact": "Medium",
+    "workaroundFound": true,
+    "workaround": "Read the plan doc out of the PR branch (`git show origin/<branch>:<path>`), then stack the work branch on that branch rather than on `main`, so the wiki page is present and the freshness gate is satisfiable. PR #1129 was also `BEHIND`, so `gh pr update-branch` was run as pull-work Step 0.8 prescribes.",
+    "session": "THR-887 execution, tb-opus-pickup"
   },
   {
     "num": "167",
