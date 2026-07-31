@@ -1,52 +1,66 @@
 # Briefing
 
-**Generated:** 2026-07-31 19:54 local (17:54 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-07-31 20:55 local (18:55 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
 ## Needs Christian
 
-**Nothing needs you right now — second hour running, and this time for a better reason than last hour.** Last hour the list was empty because you had just cleared it. This hour it is empty because the thing you cleared is actually being built: the branch carrying the eight new encounters — including four of the five you picked — is running its checks *right now*, and it is set to merge itself the moment they come back green. That is the last mechanical step between your roster decision and a playable slice.
+**The five test links you were sent at 20:30 are mostly broken. Don't judge the encounters on them.**
 
-**The verdict session still is not askable, and asking early would waste the trip.** The five have to exist and be playable before you can rule on whether they land. When they are, you will hear it here.
+Twenty-five minutes ago you got a Discord message with five links, one per encounter, saying each had been tested clean. Fourteen minutes after that message went out, a bug was found that contradicts it: **any encounter with more than one scene stalls when it tries to move to the second scene.** Four of your five are affected:
 
-**One older thing is still parked and still not yours today.** The four finished capital-cluster encounters — the millrace dispute, the ford toll house, the feuding houses, the monument that turned into a problem with a rock — are written, passing every check, and held in the old style. Whether they land as-is and get tidied up alongside the seven earlier ones, or get rewritten under the locked format, is a call that belongs to the session that closes out the format work. Nothing is lost either way. Named so it does not look forgotten.
+| # | Encounter | State |
+|---|---|---|
+| 1 | Leave a Shrine Offering | stalls after scene 1 |
+| 2 | **The Unsafe Bridge** | **plays end to end — safe to look at** |
+| 3 | Snow on the Pass | stalls after scene 1 |
+| 4 | A Bargain at the Crossroads | stalls after scene 1 |
+| 5 | The Swindled Family | stalls |
 
-**Two automated reports written earlier today still say you owe an answer. You do not.** One from this morning says the whole content pipeline is waiting on your feedback on five prototype encounters; four written this afternoon say a roster pick is waiting on you. Every one of those was true when written and all of them were overtaken — the prototypes shipped, and you made the roster pick yourself at 16:35Z. Checked against the tickets themselves rather than the reports, and not carried into this list.
+What you'd see is not an error message. The game hides the failure and quietly rewinds, so a stalled encounter just goes nowhere — or an unrelated tutorial pops up over the top of it. That's also why the earlier "clean console on every one" claim was written in good faith and was still wrong: it confirmed each link *opened*, not that the encounter *finished*.
 
-*No doorbell sent this hour. Nothing needs you, and a ping that says so is just noise on your phone.*
+**This is machinery, not writing.** The prose in those four may be perfectly good — you simply can't reach past their opening scene yet. Forming a verdict tonight would mean judging a broken delivery rather than the format.
+
+**Recommendation: hold the verdict session until the fix lands.** If you want a look tonight anyway, link #2 (The Unsafe Bridge) is genuinely whole. The fix is filed as urgent and sits at the top of the work queue, so it should be picked up on the next hourly pass with nothing needed from you.
+
+**Worth knowing separately:** "Leave a Shrine Offering" is not new slice content — it's already in the shipped game. So if a multi-scene encounter has felt oddly inert in your own playtests recently, this is very likely why, and it has been true for a while rather than being introduced tonight.
+
+---
+
+**Still parked and still yours, unchanged from earlier: the four finished capital-cluster encounters.** The millrace dispute, the ford toll house, the feuding houses, and the monument that turned into a problem with a rock. They're written, they pass every check, and they're held in the old style. The call is whether they land as-is and get tidied up alongside the seven earlier ones, or get dropped and rewritten under the locked format. Nothing is lost either way, and it needn't be tonight — it belongs with the session that closes out the format work. Named so it doesn't look forgotten.
+
+*Doorbell sent this hour — the broken-links warning is time-sensitive and you may be about to click them.*
 
 ## Queue
 
-**Fifty-three jobs ready, one being worked, one parked.** Three arrived this hour and nothing left — one about untangling documentation work from the code checks it does not need, and two from the automated planner: a rule that would stop a job being marked ready before its plan actually exists, and a real content bug where the encounter text skips the step that fills in names, so raw placeholders can reach a shipped encounter.
+**Fifty-three jobs ready, three being worked, one parked.** Bands: one urgent, five high, four medium, three unranked, forty low-priority tidy-ups. Fifty-three is well past comfortable, which is expected while the content side stays paused behind the format work.
 
-**Bands:** one urgent, five high, four medium, three unranked, forty low-priority tidy-ups. Fifty-three is well past comfortable, which is expected while the content side stays paused behind the format work.
+**The urgent one is the encounter bug above** — the reason your test links stall. It arrived twenty minutes ago and is top of the shelf.
 
-**The urgent one is still ours, not yours,** and unchanged from last hour: the two hourly note-writing jobs — this briefing is one of them — have been merging updates to the main line even on hours with nothing new to say, and that traffic is what keeps shoving everyone else's finished work back into the queue. This run has real news, so its own merge is within the rule it is reporting on.
+**Two new jobs were filed and picked up in the same breath, by a session working right now** — both fixes to the encounter screen itself: prose getting clipped at the top when there's a lot of it, and the odds panel gaining proper explanations so the numbers stop being bare labels. That second one is a direct descendant of your "key:value is unfinished" note.
 
-**Four of the fifty-three have your name attached, up from two.** Both new ones were filed in the last twenty minutes by the automated planner, which is a known cosmetic bug in how it files. It does not hide them — the pickup lane was fixed weeks ago to ignore the name entirely — so this is a number, not a blockage.
+**One job in progress is finished and only waiting to merge** — the sweep fix for stuck pull requests. Nobody needs to touch it.
 
-**The one job in progress** is the fix for a sweep that only rescues stuck work in one of the two ways it can get stuck. Moving; its pull request is queued to merge itself.
+**The parked one** is the finished-but-held encounter batch described above, about thirty hours parked, holding no one up.
 
-**The parked job** is the finished-but-held encounter batch described above, about twenty-nine hours parked, holding no one up.
-
-**One job on the shelf is already finished** — yesterday's housekeeping rescue landed on its own. Whoever picks it up will find nothing to do; that check happens automatically at pickup, so nothing is wasted. The real number is fifty-two.
-
-The longest-waiting item crosses our one-week line at about 22:30 tonight. Low-priority tidy-up, so a note rather than a problem.
+**Five of the fifty-three have your name attached, up from four.** Same known cosmetic filing bug as previous hours. It does not hide them — the pickup lane ignores the name entirely — so it's a number, not a blockage.
 
 ## Freshness
 
 **Your working copy is healthy and fully current.** Right branch, nothing missing, nothing of yours stranded. The two Claude permission files you edited are still sitting there uncommitted, as they have been for days — harmless, have never blocked anything, no action wanted.
 
-**The live site is current** for what has been published; nothing game-facing has merged since the last release, so no rebuild was needed. Automated checks normal — forty-sixth consecutive clean hour.
+**The live site is current** for what has been published; nothing game-facing has merged since the last release, so no rebuild was needed. Automated checks normal.
 
-**All eight scheduled jobs are running on time.** The cleanup job ran fifteen minutes ago and found nothing needing a human call.
+**All eight scheduled jobs are running on time.** The cleanup job ran at 20:40 and found nothing needing a human call.
 
 ## What's moving
 
-**The pull request you would actually want to look at has stopped waiting and started running.** It holds the eight new encounters, the click-straight-into-one link, and the balanced test character. Last hour it was green but stale, stuck behind other work landing ahead of it. It has since been brought up to date and is mid-checks now, still set to merge itself. Once it lands, the readiness check ahead of your verdict session is the only step left.
+**The branch carrying the eight new encounters landed.** That's the one that was mid-checks last hour — the click-straight-into-an-encounter links and the balanced test character came with it. Its merging is what made tonight's test links possible, and also what exposed the multi-scene bug, since it's the first time anyone drove these encounters all the way through.
 
-**Five other pull requests are open** — this briefing, the stuck-work sweep fix, two planner write-ups, and this morning's retro. All queued to merge themselves.
+**A readiness check then ran across your five picks and found the stall.** That check existing is the only reason you're reading this warning instead of discovering it yourself at the keyboard.
+
+**An attended session is live on the encounter screen right now**, doing the two UI fixes noted above.
 
 ---
 *Standing asks live in `Design/user-actions.md`. This file is regenerated hourly by
