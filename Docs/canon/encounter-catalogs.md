@@ -28,7 +28,10 @@ combination across these catalogs plus a prose seed; the design block cites it a
 
 Authority: `nudge-authoring-spec.md` § the shape catalog. Single Test · Test &
 Consequence · Puzzle–Investigation–Resolution · Danger–Confrontation–Aftermath ·
-Personality Fork (THR-894; N-route form pending THR-898) · Opt-in Complication.
+Personality Fork (THR-894; N-route form pending THR-898) · Opt-in Complication ·
+**Seeded Sequel** (a parent's outcome plants a designed follow-up via
+`encounter_seed` — templateId + delayTicks + inheritContext — with the sequel
+authored alongside the parent; the sanctioned home for earned history).
 
 ## 2. Setting — where it fires (one or more classes)
 
@@ -111,6 +114,12 @@ only by design-session decision as systems mature.
 
 Also not yet targetable: `ambitions` (reactive dispatcher new, unproven) and
 `compulsion` (no dispatcher — THR-886 open).
+
+**Connected-systems minimum (Christian, 2026-07-31):** the design block lists and
+counts every system the encounter touches (personalized cast address, attribute-read
+rewards, bespoke supporting content, conditions, items, seeds, …). Target **≥3 beyond
+the core test**, warn-level; the critique pass reports the count. An encounter that
+touches only its own step is a flat one.
 
 ## Coverage
 

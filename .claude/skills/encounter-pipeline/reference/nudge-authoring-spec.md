@@ -259,6 +259,21 @@ before the first sentence of prose**:
 7. **Every promise pays off.** Anything the opening makes the player lean toward the
    screen for — what bends the reeds — has its reveal designed *now*, in a later step,
    a band, or the aftermath, before the promise is written down.
+8. **Personalization + supporting content — how many systems does this encounter
+   touch? (Christian, 2026-07-31.)** List the connections and count them; **target
+   ≥3 beyond the core test** (warn-level). The levers:
+   - **Names and cast**: an NPC who would use the agent's name uses the cast/
+     placeholder surface ("Evening, `{cast:agent}`"), never a generic address the
+     engine could have personalized.
+   - **Attribute-read rewards**: a gift, prize, or offer keyed to who the agent *is* —
+     primary reach, archetype, held traits — resolved from the attachment/content
+     libraries (treasure for a Gold-reach agent; a keepsake for a Heart one).
+   - **Bespoke supporting content, authored with the encounter**: the encounter ships
+     its own attachments, minted actors, traits, or creatures where stock content
+     does not fit — liveness-pinned (the supporting-content rule), never named and
+     left unbuilt. Creating supporting content in supporting systems is what makes
+     the world feel alive; an encounter that touches only its own step is a flat one.
+   - **Seeds**: outcomes that plant designed futures (see the Seeded Sequel shape).
 
 Then declare the **setting envelope**, the **scene tag** (WS4 vocabulary; fallback
 chain ends at EntityVisual), and write the openings + spine under the scene-writer's
@@ -281,6 +296,7 @@ the rest generalize the prototypes and are open for iteration on this list.
 | **Danger – Confrontation – Aftermath** | 2–3 | A threat announces itself, then arrives. The watch, then the rush; the reading, then the meeting. |
 | **Personality Fork** | 1 + branch | The mortal makes a choice: a test, then an agent-decided branch on a value axis (THR-894), pole-specific continuations. |
 | **Opt-in Complication** | gate + shape | The agent can decline: waiting/walking away is a cheap, legible exit (a delay, a toll), and engaging opens one of the shapes above. The engage/decline gate is itself agent-decided (personality). |
+| **Seeded Sequel** | parent + authored follow-up(s) | A specific outcome or chosen course plants a **designed** future encounter that fires later, elsewhere (`encounter_seed`: `templateId` + `delayTicks` + `inheritContext` to carry the cast). The sequel is authored *with* the parent — a seed naming an unbuilt template is the THR-844 rot — and the sequel is where earned history legitimately appears in prose: the swindler recognized in another town, the grateful kin with a gift. Prose rule 7 by construction: the sequel reads state the parent minted. |
 
 Rules: a route-flavored objective (bribe with Gold, intimidate with Iron, persuade
 with Heart, toward the same door) is a **Personality Fork** whose poles are routes.
@@ -484,7 +500,10 @@ design block** and reports against:
    finding); does every promise the prose makes have its designed payoff; is any
    outcome mechanic announced instead of foreshadowed; does any base-prose sentence
    assert agent history — a relationship, debt, prior visit, standing — with no
-   backing state read (prose rule 7)?
+   backing state read (prose rule 7)? **Count the connected systems** (design-block
+   question 8) and report the number — under three beyond the core test is a
+   finding; a personalization the engine could have made but the prose hard-coded
+   (a generic address where the cast surface exists) is a finding.
 3. the **echo check** — repeated images, repeated sentence shapes, or near-identical
    phrasing across paragraph seams (the class the detectors cannot see: "The water runs
    loud and brown." ending one paragraph while "The river runs brown and loud…" opens
