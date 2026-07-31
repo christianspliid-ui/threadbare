@@ -210,3 +210,68 @@ describe('parseImpedimentLog on synthetic fixtures', () => {
     expect(parseImpedimentLog(doc).entries).toEqual([]);
   });
 });
+
+/**
+ * THR-881 — the impediment number is the dashboard's primary key, and nothing
+ * checked it was distinct.
+ *
+ * `Docs/impediments.md` is `merge=union` (THR-691) so concurrent appends from
+ * different lanes merge without conflict; union keeps BOTH sides of a conflicting
+ * hunk, which is right for the rows and wrong for their hand-assigned numbers.
+ * Fifteen duplicates had accumulated — the oldest since March — each noticed at
+ * least three separate times and never repaired, because a duplicate regenerates
+ * cleanly and ships green.
+ */
+describe('impediment number uniqueness', () => {
+  it('reports no duplicate numbers in the live log', () => {
+    // The live-log invariant THR-881 established. This is the assertion that
+    // fails if two lanes ever land the same number again.
+    expect(parseImpedimentLog(markdown).duplicateNums).toEqual([]);
+  });
+
+  it('has table rows to assert against, so the live-log pin is not vacuous', () => {
+    // A log that parsed to zero rows would satisfy the assertion above for the
+    // wrong reason.
+    expect(parseImpedimentLog(markdown).tableCount).toBeGreaterThan(300);
+  });
+
+  it('detects two rows claiming the same number, and names the lines', () => {
+    const doc = [
+      '| # | Count | Date | Category | Description |',
+      '|---|---|---|---|---|',
+      '| 41 | 1 | 2026-07-09 | tooling | first row to claim the number |',
+      '| 42 | 1 | 2026-07-09 | process | an unrelated row in between |',
+      '| 41 | 1 | 2026-07-10 | environment | a second lane picked the same number |',
+    ].join('\n');
+
+    const { duplicateNums, tableCount } = parseImpedimentLog(doc);
+    expect(tableCount).toBe(3);
+    expect(duplicateNums).toEqual([{ num: '41', lines: [3, 5] }]);
+  });
+
+  it('orders duplicates numerically, not lexically', () => {
+    const doc = [
+      '| # | Count | Date | Category | Description |',
+      '|---|---|---|---|---|',
+      '| 90 | 1 | 2026-07-09 | tooling | a |',
+      '| 90 | 1 | 2026-07-09 | tooling | b |',
+      '| 9 | 1 | 2026-07-09 | tooling | c |',
+      '| 9 | 1 | 2026-07-09 | tooling | d |',
+    ].join('\n');
+
+    // Lexical order would put "90" before "9"; the report reads in log order.
+    expect(parseImpedimentLog(doc).duplicateNums.map((d) => d.num)).toEqual(['9', '90']);
+  });
+
+  it('does not flag paragraph entries, whose synthetic ids cannot collide', () => {
+    const doc = [
+      '**New 2026-07-09 (session-a) — tooling (S): first paragraph entry.** body | consequence | S | Yes | workaround | context.',
+      '',
+      '**New 2026-07-09 (session-b) — tooling (S): second paragraph entry.** body | consequence | S | Yes | workaround | context.',
+    ].join('\n');
+
+    const { paragraphCount, duplicateNums } = parseImpedimentLog(doc);
+    expect(paragraphCount).toBe(2);
+    expect(duplicateNums).toEqual([]);
+  });
+});
