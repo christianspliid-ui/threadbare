@@ -166,7 +166,7 @@ import { CRUD_TO_ENCOUNTER_TYPE } from '../../engine/encounterCache';
 import { createUnifiedAction } from '../../engine/unifiedActionLifecycle';
 import { mulberry32 } from '../../lib/prng';
 import { DIVINE_INFLUENCE_CONSTANTS } from '../../data/intervention-feedback-content';
-import { prepareDebugEncounterContext, prepareDebugEncounterSpawn } from '../../engine/debugEncounterTools';
+import { applyBalancedTestAvatar, prepareDebugEncounterContext, prepareDebugEncounterSpawn } from '../../engine/debugEncounterTools';
 import {
   moveDebugAgent,
   spawnDebugAttachment,
@@ -1994,10 +1994,11 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
   // ^ Runs once — live deps accessed via _actionStateRef; setGameState is a stable dispatcher
 
-  useEffect(() => {
-    if (!import.meta.env.DEV || !window.__DEBUG) return;
-    window.__DEBUG._registerEncounterBridge({
-      spawnEncounter: (agentId: string, templateId: string, options) => {
+  // Shared by the __DEBUG encounter bridge and the `?spawn=` URL lever
+  // (THR-883). Stable: reads live state via _gameStateRef; the two setters are
+  // stable dispatchers.
+  const debugSpawnEncounter = useCallback(
+    (agentId: string, templateId: string, options?: Parameters<typeof prepareDebugEncounterSpawn>[3]) => {
         const prepared = prepareDebugEncounterSpawn(_gameStateRef.current, agentId, templateId, options);
         if (!prepared.success || !prepared.template || !prepared.notification || !prepared.agent) {
           return {
@@ -2064,7 +2065,74 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
             ? `${prepared.message} and opened it`
             : prepared.message,
         };
-      },
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  );
+
+  // ── Debug: direct-URL encounter spawn (`?spawn=<templateId>`) — THR-883 ──
+  // A shareable review link that stages one named encounter on The First and
+  // opens it, e.g. `?view=game&seeded&size=medium&spawn=encounter.slice.
+  // unsafe_bridge`. Read from the URL (not window.__DEBUG) so it also works on
+  // the deployed build — the THR-880 `?forceencounters` pattern. Retries across
+  // early renders until the seeded world can resolve `@hero`; capped, one spawn
+  // per page load, fail-soft: a bad id logs its message and the game proceeds.
+  //
+  // `?spawn` first stamps its target as the **balanced test avatar** (equal
+  // mid-competent capability in all eight reaches, neutral value axes, an
+  // essence floor in all twelve spheres) so review is not skewed by the seeded
+  // identity's reach spread (Christian, 2026-07-31). `?testavatar` applies the
+  // same stamp without spawning, for balanced free play.
+  const urlSpawnDoneRef = useRef(false);
+  const urlSpawnAttemptsRef = useRef(0);
+  useEffect(() => {
+    if (urlSpawnDoneRef.current) return;
+    const params = new URLSearchParams(window.location.search);
+    const templateId = params.get('spawn');
+    const wantsTestAvatar = params.has('testavatar') || templateId !== null;
+    if (!templateId && !wantsTestAvatar) {
+      urlSpawnDoneRef.current = true;
+      return;
+    }
+    if (urlSpawnAttemptsRef.current >= 30) return;
+    urlSpawnAttemptsRef.current += 1;
+
+    if (wantsTestAvatar) {
+      const stamped = applyBalancedTestAvatar(_gameStateRef.current, '@hero');
+      if (stamped.success) {
+        touchWorld(runtime);
+        if (stamped.essencePool) {
+          const pool = stamped.essencePool;
+          setGameState(prev => ({ ...prev, essencePool: pool }));
+        }
+        if (!templateId) {
+          urlSpawnDoneRef.current = true;
+          return;
+        }
+      } else if (!templateId) {
+        if (urlSpawnAttemptsRef.current === 30) {
+          console.warn(`[?testavatar] gave up after 30 attempts: ${stamped.message}`);
+        }
+        return;
+      }
+    }
+
+    const result = debugSpawnEncounter('@hero', templateId!, {
+      open: true,
+      courtPosition: 'the_first',
+    });
+    if (result.success) {
+      urlSpawnDoneRef.current = true;
+    } else if (urlSpawnAttemptsRef.current === 30) {
+      console.warn(`[?spawn] gave up after 30 attempts: ${result.message}`);
+    }
+  }, [debugSpawnEncounter, gameState]);
+
+  useEffect(() => {
+    if (!import.meta.env.DEV || !window.__DEBUG) return;
+    window.__DEBUG._registerEncounterBridge({
+      spawnEncounter: (agentId: string, templateId: string, options) =>
+        debugSpawnEncounter(agentId, templateId, options),
       spawnEncounterContext: (templateId, options) => {
         const result = prepareDebugEncounterContext(_gameStateRef.current, templateId, options);
         if (result.success) {

@@ -141,7 +141,15 @@ When in tension, higher priorities win.
 
 Cross-boundary testing rules, contract test patterns, pre-commit verification checklist, and anti-patterns are all in the **`testing-patterns` skill**. Load it when writing tests or before committing engine/HexMapV2 changes.
 
-**Pre-commit minimum (always do these):**
+**First, classify the diff (THR-917).** Run:
+
+```bash
+git diff --name-only origin/main...HEAD | grep -vE '(\.md$|^Docs/|^Design/|^\.planning/)'
+```
+
+Empty output means **docs-only**: owe `npm run check:generated-freshness`, `npm run lint:plan-doc`, and `npm run check:impediment-ids` — and nothing else. Do **not** run the test suite, typecheck, or build on a change with no code in it; CI skips the entire `Test · Typecheck · Build` job on exactly this predicate, and Vercel skips the build too. Any output means **code**, and the full gate below applies. If the diff turns out to contain a stray source file, re-classify rather than trusting an earlier answer.
+
+**Code diffs — the full gate (do all of these):**
 1. `npm test` — all tests pass
 2. **Typecheck — do NOT run `npx tsc --noEmit`.** Root `tsconfig.json` sets `files: []`, so it exits 0 unconditionally and proves nothing (THR-686). CI's `Test · Typecheck · Build` is the authoritative gate; for local evidence run `npx tsc -b --force` and show zero *net-new* errors against the (heavily red) baseline.
 3. `npx vite build` — production build succeeds (confirms Vercel will deploy)

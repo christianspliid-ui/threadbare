@@ -234,9 +234,22 @@ This is structural, not stylistic (THR-849). The lane used to prepend each run's
 
 `.gitattributes` also grants `Docs/ops/orchestrator-*.md merge=union` as a backstop for anything that still shares a file. That is what catches a mistake; one-file-per-run is what prevents it. Do not read the backstop as permission to append.
 
+**A no-op run writes no file at all (THR-920).** If the run promoted nothing, filed nothing, resolved no blocker, surfaced no *new* T3 finding and has nothing for Christian, do not create the report and do not open a PR — the session output is already a complete record of a run that did nothing. This is the rule that used to exist only as "a no-change run skips the commit", which could never fire here: one file per run means *every* run is a change by construction, so the lane merged on 7 of the last 32 advances of `main` — three of them titled "no promotions" — and each merge re-staled every open PR under strict branch protection.
+
+Declines are **not** substantive. "We looked and it stayed blocked" is the expected steady state of a healthy board, and reporting it hourly is what trained the reader to skip this file.
+
 Structure:
 
 ```markdown
+---
+lane: tb-orchestrator
+run: YYYY-MM-DD<letter>
+promoted: <n>
+filed: <n>
+resolved: <n>
+newFindings: <n>
+needsChristian: <true | false>
+---
 # Orchestrator — YYYY-MM-DD (run <letter>, ~HH:MMZ)
 
 ## Needs Christian
@@ -258,6 +271,14 @@ Structure:
 (questions asked, items parked)
 ```
 
+**The frontmatter counters are facts, not a judgement (THR-920).** Each is a count of actions this run actually took — `promoted` is verified `save_issue` state changes, `filed` is issues created, `resolved` is blockers cleared, `newFindings` is T3 findings not present in the previous sweep. Fill them from what you did, then let the script decide whether that is worth a merge:
+
+```bash
+npm run check:substantive --silent -- --lane report --file Docs/ops/orchestrator-<run>.md --json
+```
+
+`{"verdict":"skip"}` means delete the drafted file and commit nothing. Keeping the judgement in a script rather than in this sentence is the point: the previous rule *was* a sentence, and it never fired. The probe is fail-soft — a missing or unparseable frontmatter block returns `commit`, so a malformed report is published rather than lost.
+
 **`## Needs Christian` is the interface to him** — `keep-work-flowing-cc` step 2.6 reads this section out of the newest sibling report and folds it into the briefing. That link was **missing** until THR-826 added it: reports were being written under `Docs/ops/` with `## Needs Christian` headings that nothing read, which is the same defect as "routed to an executor" with no consumer. If a change ever breaks that step, this lane's Christian-facing output goes silently nowhere — treat it as load-bearing.
 
 Write in plain language (THR-608). Christian does not read Linear, diffs, or PRs. Technical verdicts — CI state, merge mechanics, not-a-defect calls — are the agent's to make and do not belong in this section.
@@ -268,7 +289,7 @@ Write in plain language (THR-608). Christian does not read Linear, diffs, or PRs
 - Commit the report with **no** `Fixes` / `Closes` / `Resolves THR-XX` keyword — that would auto-close unrelated issues (impediment #140). The workflow is line-anchored (THR-738), but the safe habit is unconditional: reference issues as bare `THR-XXX` tokens.
 - Open a PR, queue it with `gh pr merge --auto --merge`, and move on. Do not poll-wait on CI (THR-675).
 - **If a prior run's report PR is still open, leave it and its branch alone.** Write your own per-run file and carry on — never append to the file that PR touches, and never push to its branch: another lane may still have it checked out, which is the THR-671/672/797 hazard class. If it reads `DIRTY`, note it under `## Escalations` and file a ticket for the executor lane to salvage the stranded section; do not resolve it in-run. That is how THR-849 itself was filed, and why its section survived.
-- A no-change run skips the commit entirely; the task's `lastRunAt` is the heartbeat.
+- **A no-op run writes no artifact and opens no PR** (THR-920) — not merely "skips the commit", which was unreachable when every run creates a new file. Decide it with `npm run check:substantive -- --lane report --file <report> --json` and obey the verdict; the task's `lastRunAt` is the heartbeat. Every advance of `main` costs every other open PR a full CI re-run, so an hour with nothing to say is worth exactly nothing to publish.
 
 ## Fail-soft
 

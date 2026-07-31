@@ -1,15 +1,23 @@
 # The Nudge Authoring Spec
 
-**The canonical authoring contract for nudge-native encounters.** THR-774 (WS1).
+**The canonical authoring contract for nudge-native encounters**, in the locked THR-883
+format. THR-774 (WS1) established this document; the 2026-07-30 THR-883 prototype
+sessions locked the format it now records: the communication pivot, setting envelopes
+(THR-884), and the card system (THR-885), with the card library progression designed in
+`Docs/plans/2026-07-30-nudge-card-repertoire.md`.
 
 Both authoring skills load this file: `encounter-pipeline` (branching encounters) and
 `template-encounter-rewrite` (linear templates). They differ in structure, scale, and
 orchestration; they do **not** differ on anything in this document. If the two skills
 ever appear to disagree about a rule below, this file wins.
 
-- Executable half: `src/engine/__tests__/nudgeModel.test.ts` § *WS1 golden exemplar*.
-- Worked example: `src/data/__fixtures__/nudge-exemplar/darkhollow-vault-exemplar.ts`.
+- Executable half: `src/engine/__tests__/nudgeModel.test.ts` § *golden exemplar*.
+- Worked example: `src/data/__fixtures__/nudge-exemplar/swollen-ford-exemplar.ts`
+  (The Swollen Ford — supersedes the pre-pivot Darkhollow Vault).
 - Tunable numbers: `src/data/content-eval/nudgeAuthoringConstants.ts`.
+- Card-type catalog: `public/nudge-cards-reference.html` (the wiki page where the
+  21-type library and the Repertoire are iterated) +
+  `Docs/plans/2026-07-30-encounter-authoring-frameworks.md` § Decision 3.
 
 Read the exemplar before authoring. Every rule here is visible in it once.
 
@@ -34,10 +42,140 @@ not interchangeable:
 
 | Term | What it is | Where it lives |
 |---|---|---|
-| **rider** | A mechanical remap of the resolved band (`no_crit_fail`, `floor_at_cost`). Deterministic, zero PRNG draws, at most one applies. | `StepNudge.rider` |
+| **rider** | A mechanical remap of the resolved band (`no_crit_fail`, `floor_at_cost`, `all_or_nothing`). Deterministic, zero PRNG draws, at most one applies. | `StepNudge.rider` |
 | **band fragment** | A line of prose appended to the step's outcome text when this nudge was active for that band. | `StepNudge.bandProse[outcome]` |
 
 A rider changes what happened. A fragment says the god was there when it did.
+
+---
+
+## The communication pivot — prose does the scene, cards do the rules
+
+Locked 2026-07-30 (Christian: "we have tried and failed enough to pivot"). Card prose
+that tried to carry the scene read as euphemistic mood even when every detector passed.
+So the jobs are split:
+
+- **Prose does the scene.** The openings, the step spine, the stake block, and the
+  outcome prose (base text + band fragments) are fully written, scene-built, and carry
+  all the fiction.
+- **Cards do the rules.** A card face is **generic and reusable** — the same face reads
+  correctly in any encounter its type fits. Zero scene-bespoke prose on the face.
+
+The card face and how the schema carries it:
+
+| Card element | Field | Rule |
+|---|---|---|
+| Picture | `imageTag` | One generic image per library card; fallback chain ends at a type icon on a tinted band |
+| Keyword + icon | *(code comment until THR-887 lands the library schema)* | The card's library type — player-facing vocabulary |
+| Title | `name` | 2–4 generic words, reusable everywhere ("Steady Breath", "Pay It Later") |
+| Cost | `essenceCost` + `costs` | Essence pips · free · alternate channels (detection, doom, obligation) |
+| Effect | `effectLine` | **One plain mechanical sentence: what the god does and why that moves the odds.** No digits, no `%` — the pip row renders magnitude |
+| Flavor quote | `fiction` | One short generic line, the card's only prose |
+
+**The effect line states mechanism, not mood** (checklist Q14). Eldritch Horror register:
+"Send restful dreams — you quiet their mind while they sleep, so the rest actually
+counts." Take the space the reasoning needs; never take refuge in atmosphere.
+
+**Grounding moved from prose to binding** (checklist Q13). A generic card is grounded
+because it *acts on* a target the scene established — the light on the water, the rope,
+the opposition — and because dealing is self-grounding: under THR-887, cards carry typed
+text slots (`{condition}`, `{host}`, `{target}`) and **target selectors** resolved at
+deal time; a card whose selector binds to nothing is not dealt. Until the library data
+model lands, authored hand instances name their targets directly (the exemplar's Balm
+names the condition it lifts) — but write every face as if it were already a library
+card, because the retrofit will make it one.
+
+**Band fragments stay bespoke.** They render in the *outcome prose*, never on the card
+face — they are the scene's account of the god's hand, so they are written per encounter
+like the rest of the scene.
+
+**Odds are pips, authored as raw numbers.** `forecastDelta` and the cost deltas stay
+numeric in data; the UI renders the approved pip vocabulary (five pips per color tier at
+~5% steps — green circles, blue squares, purple diamonds, gold stars, red down-triangles
+for penalties; see the wiki page). The pivot changes no part of the no-digits rule for
+`effectLine`.
+
+**Player-facing labels (Christian, chat approval 2026-07-30 — the mockup review):**
+
+- The step panel's likelihood line is labelled **"Outcome"** (e.g. *Outcome: uncertain*),
+  never "Forecast" — "forecast" survives only as engine vocabulary (`ForecastTier`,
+  `forecastDelta`). The five tier words themselves are unchanged.
+- A card's pip row shows the **magnitude of the nudge** — how hard the god is leaning —
+  and is labelled accordingly (**"Nudge"**), never "Odds": a card does not have odds,
+  the step does.
+- The difficulty word is **per step**, and the surface must make that legible ("this
+  step: a fair test"), not imply it describes the whole encounter.
+
+---
+
+## The scene-writer's checklist (14 questions + the envelope question)
+
+Locked 2026-07-30 (frameworks plan § Decision 1). Every encounter's prose is validated
+against these before it ships. The authoring agent answers each **in writing, per
+scene** — the exemplar's header comment is the template; any "no" means rewrite first.
+
+**A. Build the scene, in this order**
+1. *Where are we?* Place described concretely enough to sketch — ground, structures,
+   light — before anything else happens.
+2. *How does it feel?* At least two senses beyond sight: sound, smell, temperature, the
+   hour.
+3. *Who is here?* Everyone present or implied is shown or accounted for. If a fire is
+   lit, we know who lit it.
+4. *What must we know?* Relevant context — why the character is here, what state they're
+   in — before it matters.
+5. *Does the complication come last*, landing on a scene already built?
+
+**B. Internal logic**
+6. *Nothing referred to before it's introduced.* Every object/person/feature a sentence
+   uses already exists in the text.
+7. *Every event has a visible cause.*
+8. *Nothing contradicts what's established* — time of day, weather, who's present, what's
+   in hand.
+
+**C. Human realism, fantasy-adjusted**
+9. *Would a real person in this world do this?* Strangers' camps aren't walked into;
+   doors are knocked on; space has owners.
+10. *Do people react to each other like people?* Greetings, wariness, permission,
+    obligation.
+11. *Do actions carry their true cost* — fatigue, hunger, fear, time?
+
+**D. The interactive layer**
+12. *Can the player restate the stake in one sentence* — what's being decided, what a
+    good and a bad outcome each concretely look like? (Stake lines are several sentences
+    and concrete — "will the rest take?" is too thin.)
+13. *Is every card grounded?* It acts on a target the scene established — deleting the
+    card's target from the prose should make the card senseless in this hand.
+14. *Does every card state mechanism, not mood?* What the god does, and why that moves
+    the odds, in the plain mechanical `effectLine`.
+15. *Does every setting class the envelope declares have an opening written for it?*
+    (Enforced by `validateSettingEnvelope` — build-time, fail loud.)
+
+---
+
+## Setting envelopes (THR-884)
+
+Authors never touch the 20-subtype list. Declare a **setting envelope** from the closed
+8-class vocabulary (`src/data/settingClasses.ts`): `rural · urban · stronghold · sacred ·
+arcane · ruin · wayside · battlefield`. One table expands classes to subtypes; the
+existing cache filter enforces it unchanged.
+
+- **Write toward the widest honest envelope** (Christian's explicit direction:
+  flexibility is the default, enforced by prose, never by narrowing).
+- **One opening per declared class** (~1 paragraph, scene word budget). Checklist
+  questions 1–4 live in the opening; the complication, stakes, and hand are
+  setting-neutral. The spine below the opening may not name class scenery.
+- **Per-card `fictionBySetting`** for the rare card whose flavor quote names class
+  scenery — one line per declared class, generic quote as default. Post-pivot most cards
+  never need it.
+- **Exact-subtype override** (`locationTypes`) remains for genuinely specific encounters
+  (a temple rite).
+- **Raw entries** declare `settings` + `openings` and the converter derives
+  `locationSubtypes` and compiles openings onto the reserved `opening` fragment slot.
+  Direct-authored templates derive the subtype list with `expandSettings()` — never by
+  hand (the exemplar shows this).
+- **Coverage matrix** (THR-884 generator + committed report): settings × reaches →
+  drawable-template counts plus per-family card-type composition. Check it before picking
+  an envelope — feed the starving cells.
 
 ---
 
@@ -45,22 +183,126 @@ A rider changes what happened. A fragment says the god was there when it did.
 
 Author in this order. Each step assumes the one before it is settled.
 
-### 1. Vignette
+### 1. Design before prose — the mechanical design block
 
-Scene prose per the prose rubric below. Declare three things before writing a card:
+**Mechanics are designed first; prose is written to them (Christian, chat 2026-07-30 —
+the five-draft review).** The failure this step exists to prevent: a well-built scene
+the acting agent merely watches, testing no reach anyone chose, referring to no game
+object, promising a mystery nobody designed the payoff for.
 
-- **Motive hooks** — which sources may route an agent here (`choice` / `mission` /
-  `chance` / `divine`, from `classifyMotive`). Naming them is how you learn whose
-  encounter this is. An encounter nobody can arrive at by any route is unreachable
-  content.
-- **Quintessence stakes** — the erosion class. How badly does failing here wear the
-  mortal? Two hard steps with a lethal trap is a different promise than one gentle
-  social test, and the aftermath owes the difference.
-- **Scene tag** — from the WS4 manifest vocabulary. Until that manifest exists the
-  fallback chain ends at EntityVisual, so an unresolvable tag never blocks a render —
-  but decide it now, or the encounter ships imageless by omission rather than by choice.
+**The block is terse.** One line per row. A design block that runs long is hiding that
+the crux is unclear. Answer all of these **in writing, in the file's doc comment,
+before the first sentence of prose**:
 
-None of the three has a schema field yet. Record them in the file's doc comment.
+0. **The crux, in one plain sentence, from the agent's point of view.** "The wagon
+   wheel has broken, and the wainwright is the only fix within a day." "Someone is
+   asking around after the agent, and not in a good way." Simple grammar: who, does
+   what, about what, and the vibe. If the crux needs a second sentence, the encounter
+   is not designed yet.
+0b. **The title states the crux.** *The Broken Wheel*, not *The Held Commission*. A
+   player reading only the title knows the complication or the objective — nothing
+   more is needed, and no poetry is allowed to get in the tunnel between title and
+   understanding.
+0c. **Pick one entry per catalog** — shape (section below), setting, pressure, form,
+   objective, stakes, system — from [`Docs/canon/encounter-catalogs.md`](../../../Docs/canon/encounter-catalogs.md).
+   Closed lists, one line each in the block; do not invent structure or vocabulary
+   per encounter. **The system pick is maturity-gated**: target the mature tier (the
+   traveling-agent core — movement, cards, traits, conditions, items, forks,
+   carryover); middling systems sparingly; deferred systems (economy, war, factions,
+   agent-magic) never load-bearing, flavor at most (Christian, 2026-07-31).
+0d. **Cite the hook**: `Hook: #NNN` from `Design/research/quest-hooks/` or
+   `Hook: original`. The corpus is the idea bank — steal from it, argue with it; a
+   hook aimed at a thin coverage cell beats an original aimed at a fat one.
+1. **Whose problem is this?** The acting agent is the **protagonist**, and the
+   complication is *seen from their point of view* — prefer problems that originate
+   with the agent or their journey (their wheel breaks; their name is asked after;
+   their road is blocked), where the location and its people are the place the
+   solution lives, not the subject of the scene. A scene the agent merely witnesses is
+   the rare exception and must say what makes watching the strongest seat in the
+   house.
+2. **Which reach does each step test, and why is that the theme?** The reach is chosen
+   before writing and the scene grows from it — a Stone scene is *about* endurance,
+   an Eye scene is *about* reading truly. Never retrofit a reach onto finished prose.
+3. **Why is the agent here?** Motive hooks (`choice` / `mission` / `chance` / `divine`,
+   from `classifyMotive`) — and for each declared route, the concrete opportunity or
+   event that puts a traveling hero in this scene, not just the category name.
+4. **Which mechanics and objects play?** Traits, items/attachments, conditions,
+   factions, favors, prior-step carryovers — decided now, so the prose can refer to
+   them and lead to the outcomes they gate. A hook designed after the prose is written
+   is decoration; a hook designed before is structure. **Classify every fact the
+   prose will state about the agent's connections** as scene-local, a state *read*
+   (name the surface: gate, placeholder, variant), or a state *write* (name the
+   grant/aftermath that mints it) — prose rule 7: base prose may never assert agent
+   history the graph does not hold.
+5. **What are the rewards, and where does the tension sit?** Prizes, tolls, and seeds
+   (step 6's object references) sketched now, with the quintessence stakes — the
+   erosion class failing here costs. **Penalty-avoidance is a valid reward shape**
+   (Christian, 2026-07-30): for an everyday complication, the baseline reward is
+   simply *no penalty* (the delay avoided, the toll unpaid), the failure penalty is
+   concrete and game-legible (stand still N ticks, minus to move for a while), and a
+   critical success may add one small boon (a better wagon: +1 move). Not every
+   encounter pays out treasure.
+6. **Does the mortal make a choice in this scene?** "None — this is a test" is a valid
+   written answer, but **a healthy corpus slice runs on choices, and some encounters
+   should be designed for one** — a fork is where personality becomes story. If yes:
+   name the value axis it runs on (`motivations`), the two poles as concrete courses of
+   action, and what each pole's path changes downstream. **The mortal decides, driven
+   by their own values and the god's lean — never the player.** Mechanism: the
+   agent-decided branch selector (generalized from Meet The First's pole lean — the
+   mortal's axiological profile on the axis plus the net lean of the committed cards
+   picks the pole, which is recorded as the branch key; fate still rolls how cleanly
+   the chosen course goes). Engine ticket: the *agent-decided branches* ticket filed
+   from THR-883; until it lands, choice-designed encounters are authored with the axis
+   and both pole-paths on paper, and their branch wiring rides the ticket. A choice
+   scene wants pole-leaning cards in its hand (Undertow, Compulsion, Kindled Ambition,
+   trait cards) so the god has levers on the direction, not only on the cleanliness.
+7. **Every promise pays off.** Anything the opening makes the player lean toward the
+   screen for — what bends the reeds — has its reveal designed *now*, in a later step,
+   a band, or the aftermath, before the promise is written down.
+8. **Personalization + supporting content — how many systems does this encounter
+   touch? (Christian, 2026-07-31.)** List the connections and count them; **target
+   ≥3 beyond the core test** (warn-level). The levers:
+   - **Names and cast**: an NPC who would use the agent's name uses the cast/
+     placeholder surface ("Evening, `{cast:agent}`"), never a generic address the
+     engine could have personalized.
+   - **Attribute-read rewards**: a gift, prize, or offer keyed to who the agent *is* —
+     primary reach, archetype, held traits — resolved from the attachment/content
+     libraries (treasure for a Gold-reach agent; a keepsake for a Heart one).
+   - **Bespoke supporting content, authored with the encounter**: the encounter ships
+     its own attachments, minted actors, traits, or creatures where stock content
+     does not fit — liveness-pinned (the supporting-content rule), never named and
+     left unbuilt. Creating supporting content in supporting systems is what makes
+     the world feel alive; an encounter that touches only its own step is a flat one.
+   - **Seeds**: outcomes that plant designed futures (see the Seeded Sequel shape).
+
+Then declare the **setting envelope**, the **scene tag** (WS4 vocabulary; fallback
+chain ends at EntityVisual), and write the openings + spine under the scene-writer's
+checklist above.
+
+---
+
+## The shape catalog — pick a structure, never invent one
+
+**Why a closed catalog (Christian, 2026-07-30):** deciding single-step vs multi-step
+vs fork on the fly is where structure quality leaks. The shape is picked in the design
+block (question 0c) and the steps follow it. The first two are Christian's own;
+the rest generalize the prototypes and are open for iteration on this list.
+
+| Shape | Steps | Use when |
+|---|---|---|
+| **Single Test** | 1 | One complication, one skill answers it. The smallest honest encounter. |
+| **Test & Consequence** | 2, carryover | The second step inherits how the first went (read the water → cross the river). |
+| **Puzzle – Investigation – Resolution** | 2–3 | Information is the prize: an Eye-type gate *reveals* the clues (behind the test, never front-loaded in the opening), and the resolution step uses — or must do without — what was found. |
+| **Danger – Confrontation – Aftermath** | 2–3 | A threat announces itself, then arrives. The watch, then the rush; the reading, then the meeting. |
+| **Personality Fork** | 1 + branch | The mortal makes a choice: a test, then an agent-decided branch on a value axis (THR-894), pole-specific continuations. |
+| **Opt-in Complication** | gate + shape | The agent can decline: waiting/walking away is a cheap, legible exit (a delay, a toll), and engaging opens one of the shapes above. The engage/decline gate is itself agent-decided (personality). |
+| **Seeded Sequel** | parent + authored follow-up(s) | A specific outcome or chosen course plants a **designed** future encounter that fires later, elsewhere (`encounter_seed`: `templateId` + `delayTicks` + `inheritContext` to carry the cast). The sequel is authored *with* the parent — a seed naming an unbuilt template is the THR-844 rot — and the sequel is where earned history legitimately appears in prose: the swindler recognized in another town, the grateful kin with a gift. Prose rule 7 by construction: the sequel reads state the parent minted. |
+
+Rules: a route-flavored objective (bribe with Gold, intimidate with Iron, persuade
+with Heart, toward the same door) is a **Personality Fork** whose poles are routes.
+Information the player should discover lives behind the Investigation gate's outcome
+bands, never in the opening prose. Extending this catalog is a design-session
+decision with Christian, not an authoring-session judgement.
 
 ### 2. Test panel data
 
@@ -72,68 +314,103 @@ Per step:
 - **Difficulty** 0–1. Never write the number into prose: `DIFFICULTY_WORD_BANDS` renders
   it as *severe / steep / fair / gentle*, and the word is the only surface the player
   sees (ruling 1).
-- **`FACTOR_LINES_MIN`–`FACTOR_LINES_MAX` (2–4) factor lines** — `ActionStep.factorLines`,
-  each a `{ text, polarity }` pair. Author **both** signs: a step whose lines all cut one
-  way is an assertion, not a weighing, and two is the floor for the same reason. Each line
-  concrete, each one **naming its source**.
+- **Factor lines: variance only** — see the rule below. New content authors **no**
+  static `factorLines`; the retired 2–4-lines-both-signs instruction produced exactly
+  the clutter the rule bans.
 
-**Canon rule 1 — a factor names its source in the sentence.** A factor line the player
-cannot trace back to a cause is noise, and the source belongs *in the prose* rather than
-in a label beside it — "The mason cut his mark beside the third pin", not
-`Source: mason's mark`. Trait-derived lines are the same rule: they live on
-`TraitVariant.factorLine` and the trait's name appears in the sentence.
+**The variance rule (Christian, chat 2026-07-30 — supersedes the 2–4 authored-lines
+instruction).** A factor line earns its place only if it **could have read
+differently** on another run. The list reports **modifiers from the broader game
+context**:
 
-**Both fields are schema (THR-820).** They sit on the step, and `buildNudgePhaseModel`
-reads them straight onto the rendered test panel. A step that authors no `factorLines`
-falls back to the contract's unsigned `beat.forecast_factors`, which can only render
-`neutral` — that fallback is for un-migrated legacy templates, not a place to author.
+- the **agent** — skill in the step's reach, traits, conditions, equipment;
+- the **hex / location** — terrain and place modifiers;
+- **global modifiers** — omens, doom stage, season, world state;
+- **earlier steps of this encounter** — carryovers from how a prior step resolved.
 
-### 3. The hand
+Every one of those is state, so every one is **derived by the panel**, rendered in the
+canonical modifier-pip language — none of them is a string an author writes on the step.
+What an author must **not** do is list the scene's own description as factors:
+"Floodwater carries silt", "the bed drops at midstream" are true on *every* run, so they
+are already priced into the authored `difficulty` and belong in the prose. **The litmus
+test: if the line would read identically every time this encounter runs, it is not a
+factor — it is clutter, and the difficulty word already said it.** The one authored
+surface that remains is `TraitVariant.factorLine` (variance by construction: it only
+renders for the trait-holder) — and pick the trait that best *fits the step's action*
+from the live trait set; a better-fitting trait that does not exist yet is a content
+proposal, not an authoring-session invention.
 
-`NUDGE_HAND_MIN`–`NUDGE_HAND_MAX` (**4–8**) authored `StepNudge`s per nudge-bearing step.
+**Canon rule 1 still binds every line that does render — a factor names its source in
+the sentence.** "Being True, they will not turn back at midstream", not
+`Source: trait`. The cause lives in the prose of the line, never in a label beside it.
+
+**Schema note (THR-820 / transition).** `ActionStep.factorLines` remains in the schema
+for un-migrated templates; new content leaves it unauthored. Derived agent/hex/global
+lines and outcome-keyed carryover lines are engine work (ticketed — see the carryover
+ticket; panel rendering is THR-890). Until they land, a step with no authored lines
+falls back to the contract's unsigned `beat.forecast_factors`.
+
+### 3. The hand — cut from the 21-type library
+
+**Hands are fully authored at encounter design time.** No runtime generic deck: runtime
+only *filters* the authored hand (trait, group, favor-availability, sphere access,
+target binding). Variation comes from world state, not shuffling.
+
+Pick each card as an instance of one of the **21 library types** (Boost, Heavy Hand,
+Insurance, Mercy, Gambit, Side-Bet, Long Game, Whisper, Trait card, Signature, Bargain,
+Undertow, Stumble, Kindled Ambition, Omen, Cache, Balm, Veil, Favor, Fellowship,
+Compulsion — statuses and mechanics on the wiki page). Name the type in a code comment
+per card until THR-887 gives it a schema key.
+
+Author `NUDGE_HAND_MIN`–`NUDGE_HAND_MAX` (**4–8**) cards per nudge-bearing step; gated
+cards (trait, group, favor) hide when unmet, so the **dealt** hand lands at the 4–6 the
+card-row is designed around.
 
 > These are **authoring** guardrails at warn level, not the rejected "fixed action count
 > / capped action slots". The renderer draws whatever `NudgeHand.playable` contains,
-> uncapped; the pool stays open-ended and data-driven. Nine cards is a lint warning, not
-> a truncation.
+> uncapped; the pool stays open-ended and data-driven.
 
-Rules:
+Hand-building rules:
 
-- **Per-encounter specific by default.** Options are authored content, not a shared
-  library (ruling 3). Reuse comes only from the generic pool below.
-- **Sphere coverage ≥ `HAND_SPHERE_COVERAGE_MIN` (4) distinct spheres** across the hand.
-  The hand is the replayability engine — different gods see different subsets — and that
-  only holds if the spread is wide enough for gods to differ on it.
-- **≥ `HAND_COMMON_OPTIONS_MIN` (1) common option** — sphere-less, so a god with no
-  matching sphere is never handed an empty step.
+- **No two cards in a hand answer the same question.** Two Boosts are legal only when
+  they buy different certainties (nerve vs light vs memory); two rider cards never are —
+  **at most one rider per hand**, justified in a code comment. (Pre-pivot this rule was
+  one rider per encounter; the library made Insurance, Mercy, and Gambit first-class
+  repertoire members, so the honest unit is the hand.)
+- **No two encounters in a family repeat a type composition** — audited by the coverage
+  matrix, never hoped for.
+- **Sphere coverage ≥ `HAND_SPHERE_COVERAGE_MIN` (4) distinct spheres** across the hand,
+  and **≥ `HAND_COMMON_OPTIONS_MIN` (1) ungated common (sphere-less) option**, so no god
+  is ever handed an empty step. Sphere-keyed cards honor the sphere-signature table
+  (chaos → Gambit/Stumble, order → Favor/Insurance, entropy → Bargain, …) from the
+  Repertoire plan.
 - **Trait-only options where a `traitVariant` exists.** Cost **0**: the price was paid by
-  being that person. A trait-only card is *hidden*, never dimmed, for an agent who cannot
-  hold the trait — a card you can never unlock is noise, not a goal.
-- **Every `fiction` line passes the concreteness rubric** — a witnessed physical cause.
-  "Their nerve steadies" is a claim; "The tremor in their fingers goes out of them" is a
-  thing the reader can see happen.
-- **`effectLine` in words, never percentages.** No digits at all. "A large help", not
-  "+15%". The numbers exist behind the words and stay there (ruling 1; designer view is
-  the stated exception).
-- **Costs ≥ 0.** Zero is reserved for trait options.
-- **Riders rare and justified in a code comment.** A rider on every card turns the
-  outcome ladder into a floor. Write why *this* card earns one.
-- **Match the step's reach to an actor who plausibly holds it, or keep the difficulty
-  under `NUDGE_OFF_REACH_MAX_DIFFICULTY` (0.45 — the `steep` floor).** This is the one
+  being that person. Hidden, never dimmed, for an agent who cannot hold the trait.
+- **Zero essence outside a trait card is legal only when another channel carries the
+  price** — `costs.doomDelta` (The Bargain), `costs.detectionDelta` (The Heavy Hand pays
+  up, The Veil pays down), or an obligation the card creates. A card that is simply free
+  is a pricing bug, and the exemplar test enforces this.
+- **Grants ship with their content built** (the supporting-content rule). Any card
+  granting an item / trait / ambition / omen / condition names ids that resolve against
+  built catalogs — `validateNudgeGrantRefs` fails the build otherwise (THR-844's lesson:
+  names referencing unbuilt content rot silently). Grants ride the existing
+  `EncounterAftermathReactionEffect` vocabulary — never mint a card-specific effect
+  language.
+- **`effectLine` in words, never digits or `%`.** The pip row renders magnitude.
+- **Match the step's reach to an actor who plausibly holds it, or keep the difficulty at
+  or under `NUDGE_OFF_REACH_MAX_DIFFICULTY` (0.45 — the `steep` floor).** This is the one
   rule that decides whether the hand *does anything*, and it is invisible while
   authoring: a hand can pass every rule above and still be inert.
 
   Measured (THR-821, `npm run measure:nudge-headroom`, seeds 42/99;
-  `Docs/audits/2026-07-27-thr-821-nudge-headroom.md`): a `notable`-tier mortal — the
-  tier a newly-threaded NPC lands in — has capability **0.027–0.119** in a reach that
-  is neither its primary nor its secondary. At difficulty 0.45 that floors at
-  `PROBABILITY_FLOOR` and stays floored through the entire hand — 0% of the cohort
-  clears the floor unaided, with two cards, or with all of them. The player spends
-  essence and the forecast word does not move.
+  `Docs/audits/2026-07-27-thr-821-nudge-headroom.md`): a `notable`-tier mortal has
+  capability 0.027–0.119 in a reach that is neither its primary nor its secondary. At
+  difficulty 0.45 that floors at `PROBABILITY_FLOOR` and stays floored through the
+  entire hand — the player spends essence and the forecast word does not move.
 
   So either **gate the encounter to actors who hold the reach** (role, faction, or
-  late-run capability — what the golden exemplar does, drawing a thief into an
-  `eye`/`shadow` vault), **or** keep an open-draw step at `fair` or below. A `severe`
+  late-run capability — what the retired Darkhollow Vault demonstrated), **or** keep an
+  open-draw step at `fair` or below (what The Swollen Ford demonstrates). A `severe`
   step drawn by anyone is a decorative hand.
 
 ### 4. Band prose
@@ -149,6 +426,8 @@ Rules:
 - **Every nudge carries at least one failure-band fragment.** The god's hand must be
   traceable in failure at any size — payoff at every band, program ruling. Failure is
   plot, not punishment, and a nudge that vanishes on a loss is the god's hand vanishing.
+  For a `floor_at_cost` card the reachable failure band is `critical_failure` — put the
+  fragment there, since the rider erases `failure` and `near_miss` while active.
 - **`forecastDelta ≥ NUDGE_BIG_DELTA` (0.15) ⇒ cover BOTH `failure` and
   `critical_failure`.** A nudge that moved the odds this far and still lost owes the
   player a distinct reading of *how* it lost at each depth.
@@ -173,7 +452,7 @@ For every encounter, ask four questions and answer each one explicitly:
 
 **Hard constraint: hooks may only name traits that `validateTraitRefs()` does not report
 as dead.** A ref is matched ANY-of across node id / short id / display name / tag
-(THR-786), so the full node id is the form least likely to rot. THR-800 tracks the 62
+(THR-786), so the full node id is the form least likely to rot. THR-800 tracks the
 authored refs that currently fail the sweep; the allowed set is everything that passes,
 and it grows as those repairs land. A hook on a dead ref is a gate that never opens —
 invisible to every test that does not enumerate values.
@@ -182,26 +461,63 @@ invisible to every test that does not enumerate values.
 
 Prizes, tolls, and seeds as **object references** — ids the modal system resolves — not
 inline prose descriptions. Every game object is a clickable modal (ruling 6), and that
-only works if the aftermath names objects rather than describing them.
+only works if the aftermath names objects rather than describing them. Card-carried world
+changes (`grants`) fire once per committed card, after the step resolves, through the
+host system's own API.
 
 **Tolls in words.** "A heavy toll", "tremendous exertion". Never a number.
 
 ### 7. Images
 
-- **`imageTag` per nudge**, from the manifest vocabulary.
-- **Scene tag per encounter** (see step 1).
-- Until WS4's manifest lands, the fallback chain runs: specific art → `imageTag` lookup
-  *when the manifest exists* → category generic → EntityVisual gradient + glyph. An
-  unresolvable tag degrades; it never blocks a render.
+- **`imageTag` per card**, from the manifest vocabulary — **one generic image per
+  library card**, shared by every hand that deals it. Until painted, the fallback chain
+  runs: `imageTag` lookup *when the manifest exists* → category generic → type icon on a
+  tinted band (EntityVisual).
+- **Scene tag per encounter** (see step 1) — scene art stays encounter-specific; card
+  art does not.
 
 **The genericity test.** A tag belongs in the shared vocabulary only if it reads
 correctly in at least `GENERIC_POOL_UNRELATED_ENCOUNTERS_MIN` (3) *unrelated* encounters.
-Below that bar it is encounter-specific art wearing a generic name.
+Post-pivot every card face must pass it — a face that only reads in dungeons is a
+dungeon card, whatever you name it.
 
-### 8. Evidence
+### 8. Evidence + the independent critique pass
 
-Run the register scorer and the detectors below on all new prose. An encounter is not
-finished until they are clean.
+Run the register scorer and the detectors below on all new prose — openings included. An
+encounter is not finished until they are clean, and until the scene-writer's checklist is
+answered in writing in the file's doc comment.
+
+**Then a second agent reads it (mandatory — Christian, chat 2026-07-30).** Before any
+encounter prose is delivered — to the corpus, to a review, or to Christian in chat — a
+**fresh-context critique agent** (a dispatched subagent that has not seen the drafting
+session) reads the full prose top to bottom **together with the step-1 mechanical
+design block** and reports against:
+
+1. the 14-question scene-writer's checklist, answered independently;
+2. **design conformance** — the prose held to the design block: is the agent the
+   protagonist; does each step actually test its declared reach; does every designed
+   mechanic and object appear in the prose or gate an outcome (an unused hook is a
+   finding); does every promise the prose makes have its designed payoff; is any
+   outcome mechanic announced instead of foreshadowed; does any base-prose sentence
+   assert agent history — a relationship, debt, prior visit, standing — with no
+   backing state read (prose rule 7)? **Count the connected systems** (design-block
+   question 8) and report the number — under three beyond the core test is a
+   finding; a personalization the engine could have made but the prose hard-coded
+   (a generic address where the cast surface exists) is a finding.
+3. the **echo check** — repeated images, repeated sentence shapes, or near-identical
+   phrasing across paragraph seams (the class the detectors cannot see: "The water runs
+   loud and brown." ending one paragraph while "The river runs brown and loud…" opens
+   the next shipped through every automated gate);
+4. read-aloud flow, sentence by sentence — any sentence the critic stumbles on gets
+   flagged, and for each sentence the critic names its job (what the player feels or
+   learns from it); a sentence whose only job is satisfying a design rule is a
+   finding (prose rule 6).
+
+The author fixes what the critique surfaces, then delivers. In the `encounter-pipeline`
+this is Pass 2's job (its editorial prompt now carries the echo check); in
+`template-encounter-rewrite` and in direct authoring sessions, dispatch the critique
+subagent explicitly. Self-review does not discharge this step — the drafting context is
+exactly what makes seam echoes invisible to their author.
 
 ---
 
@@ -212,12 +528,14 @@ Absent declaration ⇒ **baseline**. Canon: `Docs/canon/prose.md` § the registe
 | Field | Register |
 |---|---|
 | `name`, `effectLine`, factor lines, purpose lines | **interactive-plain** |
-| Scene prose, `fiction`, band base text | **baseline** |
+| Openings, spine, band base text, `fiction` (the flavor quote) | **baseline** |
 | Final-step band prose, the fate-reveal line | **peak-eligible** |
 
 **The hard plainness rule.** Interactive text is always plain — no metaphor, no ambiguity
 about what the click does. The picturable-anchor rule below applies to *prose* fields;
-it never applies to a label. A label's job is to be unmistakable.
+it never applies to a label. A label's job is to be unmistakable. The flavor quote is the
+one card element allowed a dry aphorism ("Rest is armor.") — still one plain idea, never
+stacked metaphor.
 
 "Peak-eligible" means permitted, not required. Most encounters never need it.
 
@@ -225,25 +543,84 @@ it never applies to a label. A label's job is to be unmistakable.
 
 ## Prose rubric (hard rules)
 
-From the 2026-07-25 prose pilot and abstraction assessment.
+### Rule zero — game prose, not novel prose (Christian, 2026-07-30, supersedes anything below that conflicts)
 
-1. **Every sentence carries a picturable anchor.** If the reader cannot see it, rewrite it.
+**We are not writing novels; we are making a game.** The prose exists so the player
+understands the scene, the complication, and what is happening — fast, on one read.
+
+- **Simple grammar carries the crux.** A subject, a verb, an object, and the vibe:
+  "Someone is asking around after the agent, and not in a good way." If the natural
+  plain sentence uses an everyday word, use it — do not contort a sentence to satisfy
+  a detector. The detectors exist to kill *evasive* vagueness in outcome prose ("it
+  cost them something"), never to ban ordinary language from scene setup.
+- **Clarity beats compression.** A sentence that needs two readings is a defect, even
+  if every word in it is good. Splitting a dense sentence into two plain ones is
+  always the right trade. Cool words lose to clear words.
+- **Dialogue is welcome.** A guard saying "No one crosses at night — we have lost two
+  travelers in a fortnight" beats a paragraph implying it.
+- **One thought per sentence, complication stated early.** The player should know what
+  the scene is about by the end of the first paragraph without effort.
+
+The older rules below still apply *inside* that frame — concrete beats abstract, shown
+beats told — but where any of them pushes a sentence away from plain readability, rule
+zero wins.
+
+1. **Concrete anchors by default.** Prefer sentences the reader can see. Plain
+   functional sentences that move the scene along are fine — the anchor rule is a
+   default, not a per-sentence quota.
 2. **Abstractions only as stakes, and cashed in-sentence.** You may stake "their
    reputation"; you may not leave it uncashed. Name what reputation *looks like* here.
-3. **"something / thing / way" target zero.** See the detector.
+2b. **Foreshadow, never announce (Christian, 2026-07-30).** Scene prose does not state
+   outcome mechanics — "Pass, and the seal opens every site; fail, and the arch goes to
+   the rubble cart" is rules text wearing prose. Show the stakes in the scene's
+   furniture (the rubble cart already standing by the door) and let afterimages and
+   band prose carry the concrete outcomes. The on-the-nose register belongs to
+   `effectLine` alone.
+3. **Evasive vagueness targets zero in outcome prose.** "It cost them something" hides
+   what happened — that is the detector's real prey. Scope note: the enforced lexicons
+   currently also match natural indefinites ("someone", "anyone") anywhere they
+   appear; reconciliation to the rule-zero scope is tracked on THR-877. Until it
+   lands, drafts follow rule zero and flag lexicon collisions instead of writing
+   around them.
 4. **≤1 not-X-but-Y construction per encounter.** See the detector.
-5. **God-action as witnessed effect.** Not "the god grants courage" — write the thing
-   that happens in the room.
+5. **God-action as witnessed effect.** In *scene-side prose* (band fragments, outcome
+   text), never "the god grants courage" — write what happens in the room. The
+   `effectLine` is the exception by design: it is the rules text, and it says what the
+   god does plainly.
+6. **Every sentence has a job the player can feel (Christian, 2026-07-31).** For each
+   sentence, name what the player should feel or understand from it. "It satisfies a
+   design rule" is not an answer: pole staging, mechanic seeding, and payoff planting
+   must still read as story — "Nobody sits between the traveler and the door" stages
+   the exit as a *feeling*; "The back stair is behind the third door, and the yard
+   door stands open" is a floor plan installed to tick the staging rule. A sentence
+   with no nameable job is cut, and detail that belongs to one branch's road moves
+   into that branch's own prose.
+7. **Prose may not invent game state (Christian, 2026-07-31).** Base scene prose may
+   only claim facts that are either **scene-local** (the wainwright of this scene, the
+   stranger's two cups — inventions with no life outside the encounter) or **actual
+   reads of game state** through a sanctioned surface (cast binding, enrichment
+   placeholders, trait variants, favor/group/trait card gates, carryover lines). The
+   agent's history with the world — relationships, debts, prior visits, standings —
+   is game state: if the graph holds it, *consume* it through a gate or placeholder;
+   if the encounter should create it, *produce* it through grants or aftermath (spawn
+   the innkeeper agent, write the favor edge) — the prose narrates the new
+   relationship only after the mechanics mint it. "The landlord owes them a favor
+   from the winter the cellar flooded", written into base prose of a random
+   encounter, asserts an edge no node holds: the player clicks the landlord and finds
+   no relationship, a later favor-reading encounter finds no debt, and the template
+   fires in towns the agent has never entered. A favor-gated card
+   (`requiresFavor` — dealt only when a real favor edge exists) is the correct home
+   for exactly that fiction.
 6. **Card-discipline budgets** (`NUDGE_WORD_BUDGETS`, warn-level):
 
 | Field | Budget |
 |---|---|
-| Scene | 60 words |
+| Scene / each opening | 60 words |
 | Factor line | 12 words |
-| `fiction` | 30 words |
+| `fiction` (flavor quote) | 30 words — aim far lower; a quote is one line |
 | Band base | 60 words |
 | Band fragment | 25 words |
-| `name` | 6 words (`NUDGE_NAME_MAX_WORDS`) |
+| `name` | 6 words (`NUDGE_NAME_MAX_WORDS`) — aim for 2–4 |
 
 Over budget is a signal the field is carrying another field's job, not an error.
 
@@ -291,7 +668,8 @@ traps follow:
 
 - **`someone` and the intensifiers trip the audit but appear nowhere on the older list.**
   Innocuous-looking prose — "You look for someone who…", "she felt it deeply" — scores as
-  vagueness. This is the one that bites: it is not a word you would flag by eye.
+  vagueness. This is the one that bites: it is not a word you would flag by eye. Note
+  `rather` fires inside "rather than".
 - **`thing`, `way`, `ways`, `anything`, `nothing`, `whatever` are on the older list but the
   audit does not catch them.** The previous version of this page additionally claimed
   "all the way", "either way", "it costs you nothing" and "in a way" all trip the detector.
@@ -323,27 +701,24 @@ This one is a judgement call, not a regex. Run it by hand.
 
 ---
 
-## Shared generic pool
+## Reusable card faces, bespoke hands
 
-The **only** nudge families reusable across encounters. Everything else is written for
-the encounter it sits in (ruling 3).
+Pre-pivot, ruling 3 made every card per-encounter authored content with a narrow shared
+pool of six generic families. The communication pivot inverts the default for **faces**
+while keeping it for **hands**:
 
-| Family | What it covers |
-|---|---|
-| `focus` | Focus / steady-breath — the mortal's own nerve, held a moment longer |
-| `luck` | Moment's luck — the coin lands the right way up |
-| `blessing` | Unlock-gated; the god's overt favour |
-| `oath` | Oath / word — a promise already made, remembered on cue |
-| `light` | Light in dark — literal illumination where there was none |
-| `strength` | Strength surge — the body finds one more pull |
+- **Every card face is library-generic** (title, effect, quote, art) — written to read
+  correctly wherever its type deals, and passing the genericity test.
+- **Every hand is bespoke** — which types, which spheres, which gates, what the band
+  fragments say, what the grants ship. Cutting the hand *is* the encounter-specific
+  authoring.
 
-Six families. **The canonical list is `SHARED_GENERIC_NUDGE_FAMILIES` in
-`nudgeAuthoringConstants.ts`** — extending the pool means editing that array, which is
-deliberately a code change with a reviewer rather than a judgement an authoring session
-makes alone.
-
-A generic card still has to pass the genericity test (≥3 unrelated encounters). A card
-that only reads in dungeons is a dungeon card, whatever you name it.
+`SHARED_GENERIC_NUDGE_FAMILIES` in `nudgeAuthoringConstants.ts` (`focus · luck ·
+blessing · oath · light · strength`) survives as the seed vocabulary for Boost-family
+member cards until THR-887 lands the library data file
+(`src/data/nudge-card-library.ts`), which becomes the canonical card list. Extending the
+library is a code change with a reviewer, never a judgement an authoring session makes
+alone.
 
 ---
 

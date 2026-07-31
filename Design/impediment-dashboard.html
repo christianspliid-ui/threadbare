@@ -2470,19 +2470,6 @@ const DATA = [
     "session": "Cowork worktree rescue → THR-583 salvage | Cowork worktree rescue, logged during THR-583 doc salvage."
   },
   {
-    "num": "167",
-    "id": 167,
-    "count": 1,
-    "date": "2026-07-04",
-    "category": "environment",
-    "description": "Browser-verify of a static wiki page went to the WRONG server: `npx vite preview --port 5199 --strictPort` was already bound by a stale server from another pool worktree, so `--strictPort` made my instance exit silently in the background — but the port still answered (the stale server's different `dist/`), so `curl` returned 200 and Playwright got the SPA `index.html` fallback (title \"Threadbearer\", empty `.section`) instead of my page. Compounds the known \"preview MCP serves the HOME worktree\" quirk ([[feedback_worktree_preview_server]]).",
-    "consequence": "~10 min lost chasing a phantom \"empty DOM\" before realizing the port was hijacked.",
-    "impact": "M",
-    "workaroundFound": true,
-    "workaround": "**Workaround:** don't trust a shared fixed preview port in a multi-worktree setup. Either (a) `cat` the preview log to confirm the server actually bound (mine logged `Port 5199 is already in use`), or (b) serve the freshly-built `dist/` with a tiny literal Node static server (no SPA fallback) on a unique port and probe a page-specific marker string (`curl …",
-    "session": "grep -c \"<known title>\"`) before pointing Playwright at it. Verified page content byte-for-byte via the marker grep, not just an HTTP 200. | THR-587 Game Manual Wiki W2 browser-verify."
-  },
-  {
     "num": "168",
     "id": 168,
     "count": 1,
@@ -5712,12 +5699,12 @@ const DATA = [
     "count": 1,
     "date": "2026-07-30",
     "category": "process",
-    "description": "**A ticket was promoted to Ready for Dev while its plan doc and its required wiki page existed only on an unmerged PR branch.** THR-887's description named `Docs/plans/2026-07-30-nudge-card-repertoire.md` and required updating `public/nudge-cards-reference.html` in the same PR; both lived solely on PR #1129, still open. From `main` the plan doc did not exist and the wiki page it had to update did not exist, so the Done-when was unsatisfiable by construction from the branch point the executor would naturally take.",
-    "consequence": "Executor branched from `main`, found no plan doc, and had to discover the dependency through `gh pr view`. Stacking cost a mid-session branch relocation after ~15 edits were already made.",
-    "impact": "Medium",
+    "description": "**A skill's sub-agent prompt files drift independently of its SKILL.md, and the sub-agent reads only the prompt.** `encounter-pipeline/SKILL.md` went nudge-native on 2026-07-27 and states plainly that new encounters do not author `authoredChoices` — but its `agents/draft-prompt.md`, `agents/editorial-prompt.md`, and `agents/implementation-prompt.md` still *mandated* the rejected model: \"Approach Cards Per Step … one card per branch\" (draft), \"Choice labels are scene-specific?\" as a gate question (editorial), and \"Authored choice cards — REQUIRED FOR EVERY PLAYER-FACING STEP\" (implementation). A pipeline run dispatches those prompts verbatim, so every pass would have produced and enforced the authored-futures model the orchestrating skill forbids. Same class THR-888 records for the typecheck no-op in the same prompt set: the subagent reads the prompt, not the SKILL.md warning above it.",
+    "consequence": "Discovered mid-THR-883 skill rewrite; the locked-format pass had to widen from SKILL.md + spec to all four prompt files, and any pipeline run between 2026-07-27 and this fix would have drafted rejected-model encounters that Pass 2 then *approved* rather than rejected.",
+    "impact": "M",
     "workaroundFound": true,
-    "workaround": "Read the plan doc out of the PR branch (`git show origin/<branch>:<path>`), then stack the work branch on that branch rather than on `main`, so the wiki page is present and the freshness gate is satisfiable. PR #1129 was also `BEHIND`, so `gh pr update-branch` was run as pull-work Step 0.8 prescribes.",
-    "session": "THR-887 execution, tb-opus-pickup"
+    "workaround": "Converted the three prompts to the locked format in the THR-883 skill-rewrite PR. Generalisable check: when a skill's model or contract changes, grep the skill's whole directory — `grep -rn \"<retired-term>\" .claude/skills/<skill>/` — not just SKILL.md; every `agents/*.md` hit is a required edit site because prompts are dispatched without the SKILL.md context.",
+    "session": "THR-883 encounter-pipeline skill rewrite against the locked card format"
   },
   {
     "num": "326",
@@ -5796,6 +5783,32 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "Byte-compare the untracked file against the incoming version before removing: `diff <(git show FETCH_HEAD:<path>) <path>` — delete only on IDENTICAL, surface on DIFFERS. Root pattern: a lane that writes its report into the home tree working copy AND commits it from a worktree leaves this landmine every run; lanes should write reports only inside their worktree.",
     "session": "THR-868 design session, 2026-07-30"
+  },
+  {
+    "num": "356",
+    "id": 356,
+    "count": 1,
+    "date": "2026-07-30",
+    "category": "process",
+    "description": "*(Renumbered from #325, then again from #353 — THR-881 uniqueness rule applied reference-preserving: the other lane’s #353 is cited by THR-910/user-actions, this row is cited by nothing.)* **A ticket was promoted to Ready for Dev while its plan doc and its required wiki page existed only on an unmerged PR branch.** THR-887's description named `Docs/plans/2026-07-30-nudge-card-repertoire.md` and required updating `public/nudge-cards-reference.html` in the same PR; both lived solely on PR #1129, still open. From `main` the plan doc did not exist and the wiki page it had to update did not exist, so the Done-when was unsatisfiable by construction from the branch point the executor would naturally take.",
+    "consequence": "Executor branched from `main`, found no plan doc, and had to discover the dependency through `gh pr view`. Stacking cost a mid-session branch relocation after ~15 edits were already made.",
+    "impact": "Medium",
+    "workaroundFound": true,
+    "workaround": "Read the plan doc out of the PR branch (`git show origin/<branch>:<path>`), then stack the work branch on that branch rather than on `main`, so the wiki page is present and the freshness gate is satisfiable. PR #1129 was also `BEHIND`, so `gh pr update-branch` was run as pull-work Step 0.8 prescribes.",
+    "session": "THR-887 execution, tb-opus-pickup"
+  },
+  {
+    "num": "167",
+    "id": 167,
+    "count": 2,
+    "date": "2026-07-31",
+    "category": "environment",
+    "description": "Browser-verify of a static wiki page went to the WRONG server: `npx vite preview --port 5199 --strictPort` was already bound by a stale server from another pool worktree, so `--strictPort` made my instance exit silently in the background — but the port still answered (the stale server's different `dist/`), so `curl` returned 200 and Playwright got the SPA `index.html` fallback (title \"Threadbearer\", empty `.section`) instead of my page. Compounds the known \"preview MCP serves the HOME worktree\" quirk ([[feedback_worktree_preview_server]]).",
+    "consequence": "~10 min lost chasing a phantom \"empty DOM\" before realizing the port was hijacked.",
+    "impact": "M",
+    "workaroundFound": true,
+    "workaround": "**Workaround:** don't trust a shared fixed preview port in a multi-worktree setup. Either (a) `cat` the preview log to confirm the server actually bound (mine logged `Port 5199 is already in use`), or (b) serve the freshly-built `dist/` with a tiny literal Node static server (no SPA fallback) on a unique port and probe a page-specific marker string (`curl …",
+    "session": "grep -c \"<known title>\"`) before pointing Playwright at it. Verified page content byte-for-byte via the marker grep, not just an HTTP 200. | THR-587 Game Manual Wiki W2 browser-verify."
   },
   {
     "num": "322",
@@ -5941,8 +5954,73 @@ const DATA = [
     "session": "THR-898 N-route forks, `tb-opus-pickup` hourly run. Same class as the outcome-ladder tuning traps: a game constant tuned for play makes a range of test inputs indistinguishable, and the test never says which range it assumed."
   },
   {
-    "num": "356",
-    "id": 356,
+    "num": "357",
+    "id": 357,
+    "count": 1,
+    "date": "2026-07-31",
+    "category": "process",
+    "description": "**The wayfinder skill's claim discipline (\"claim before work, verify after write\") cannot distinguish the orchestrator claiming a ticket from Christian claiming it live, because both act through the same Linear seat.** Working THR-902's frontier, the orchestrator claimed and resolved THR-903 (`assignee:\"me\"` → resolves to \"Christian Spliid,\" the only account behind the API key) at the same time Christian was independently working the same map live. Both sessions researched and posted a resolution comment on THR-903 five seconds apart; both patched the map's Decisions-so-far, and the orchestrator's patch landed second, inserting a duplicate section next to the one Christian's session had already written moments earlier. Nothing in the claim step could have caught this — the ticket looked assigned-to-Christian to both parties before either wrote anything, because assigning it *to the orchestrator* and assigning it *to Christian* are the identical write.",
+    "consequence": "A few minutes of duplicated research effort, and a map description that briefly held two divergent gists for the same closed ticket until the collision was noticed (by comparing comment timestamps) and the map body repaired by hand. Distinct from a normal AFK/AFK orchestrator-vs-orchestrator race (which the claim-then-verify sequence does catch, since two automated writes are still distinguishable in timing) — this is specifically the human-vs-automation case, where the identity itself is shared.",
+    "impact": "Medium — silent by construction; the only tell is near-simultaneous comment timestamps on the same ticket, which nothing currently surfaces automatically.",
+    "workaroundFound": true,
+    "workaround": "After claiming a wayfinder ticket and before posting a resolution, re-read the ticket's comment list once more — if a comment appeared after the claim timestamp that isn't yours, another session (very likely Christian, live) got there first; reconcile by diffing the two resolutions rather than blindly patching the map. No structural fix exists without a second Linear seat or a distinguishing field the API doesn't expose; treat this as a standing hazard specific to this lane rather than a bug to close.",
+    "session": "tb-orchestrator hourly run, 2026-07-31, T1.5 wayfinder sweep on THR-902 (Encounter experience redesign — vertical slice). — renumbered from #353 by THR-897 pickup (union-merge duplicate-number repair; #353 was already published on main by the 2026-07-30 tooling row, and #356 is taken by the concurrent retro branch)."
+  },
+  {
+    "num": "358",
+    "id": 358,
+    "count": 2,
+    "date": "2026-07-31",
+    "category": "tooling",
+    "description": "**Resolving a `merge=union` closeout PR reliably produces a *duplicate impediment number*, and the generated `Design/impediment-dashboard.html` conflicts every time because it is a committed generated artifact with no merge driver.** Union is the right driver for `Docs/impediments.md` — it keeps both appended rows — but two lanes that both append \"the next number\" append the *same* number, so union yields two rows claiming one id. Meanwhile the dashboard is derived from that file and is committed, so it conflicts on the same hunk with no union semantics available (it is HTML, not an append-only table). Hit twice in one run, on PR #1166 and PR #1169, both colliding on `#353`.",
+    "consequence": "Every concurrent closeout pair costs a manual renumber plus a dashboard regeneration. `check:impediment-ids` catches the duplicate — so it fails closed, not silently — but only after the union merge has already been made, and the conflicted dashboard blocks auto-merge until a session resolves it by hand.",
+    "impact": "M",
+    "workaroundFound": true,
+    "workaround": "Resolve the union merge, then run `npm run check:impediment-ids` **before** regenerating: it names the duplicate and the two line numbers. Keep the number on the row already published on `main` (not the positionally-first row — the checker's stated rule assumes one branch, and following it literally renumbers the *shipped* row and breaks existing cross-references), renumber the unmerged newcomer, and when resolving several PRs in one pass assign distinct numbers across them so they cannot re-collide once both land. Never hand-edit the dashboard — `npm run generate-impediment-dashboard` reproduces it from the merged source.",
+    "session": "tb-opus-pickup, 2026-07-31 ~15:00Z, resuming THR-897"
+  },
+  {
+    "num": "359",
+    "id": 359,
+    "count": 1,
+    "date": "2026-07-31",
+    "category": "environment",
+    "description": "**Pausing scheduled tasks in the desktop app wiped their `cronExpression`, resetting them to generic defaults on resume.** After Christian paused and resumed the CC-lane tasks, four of the nine registered tasks came back with crons that no longer matched `Docs/ops/scheduled-tasks-registry.md`: `tb-orchestrator` `25 * * * *` → `0 * * * *` (firing ~:01:16, directly on top of `tb-opus-pickup`'s ~:00:53), `keep-work-flowing-cc` `45 * * * *` → `0 * * * *` (briefing at ~:08, before the hour's work instead of after it), `weekly-retro` `0 17 * * 5` → `0 9 * * 1` (detached from the Friday drift-scan it exists to read), `daily-backlog-grooming` `7 9 * * *` → `0 9 * * *`. The prompts, descriptions, and per-task jitter values survived — only the cron field reverted.",
+    "consequence": "The promote → execute → report ordering the registry's slot-allocation section builds the hour around was destroyed: orchestrator and executor fired simultaneously (Linear MCP contention plus promotions waiting a full hour to be claimed), and the PM brief ran before pickup so every briefing described pre-work state.",
+    "impact": "M",
+    "workaroundFound": true,
+    "workaround": "Restore from the registry: the `Fires` column plus each task's stable `jitterSeconds` uniquely identify the original cron (observed fire time minus jitter = cron minute). Applied via `update_scheduled_task` with the registry cron and verified with `list_scheduled_tasks` after write. After any pause/resume cycle, diff `list_scheduled_tasks` crons against the registry before trusting the lanes.",
+    "session": "Attended session 2026-07-31, restoring lane sequencing after a pause/resume cycle."
+  },
+  {
+    "num": "360",
+    "id": 360,
+    "count": 1,
+    "date": "2026-07-31",
+    "category": "tooling",
+    "description": "**A file authored with the `Write` tool contained a stray NUL byte, which made `grep` report `Binary file matches` and made the line permanently unmatchable by `Edit`.** Writing `scripts/check-substantive-change.ts`, one constant landed as `const PROTECT_SENTINEL = \"\\0\";` where a printable placeholder was intended. Every later `Edit` targeting that line failed with *String to replace not found* even when the string was copied verbatim from a `Read` — because `Read` renders the NUL as a space, so the text I could see and the bytes on disk differed by one invisible character. `grep -n` compounded it by refusing to print any line number at all (`Binary file … matches`), which reads like a path or permissions problem rather than a content one.",
+    "consequence": "Three failed `Edit` calls and one misdiagnosis before the cause was found — the natural reading of a verbatim-copied `old_string` failing is that the file changed underneath you, so the first instinct is to re-`Read` and retry, which cannot succeed.",
+    "impact": "Low, but high-confusion: the failure mode is invisible in every tool that displays the file.",
+    "workaroundFound": true,
+    "workaround": "**When `grep` says `Binary file … matches` on a source file you just wrote, suspect a control character before anything else.** Confirm with `tr -dc '\\000' < file \\| wc -c` (or `grep -aPn '[\\x00-\\x08]'`), and repair by deleting the line by number (`sed -i '<n>d' file`) rather than by content — line-number addressing does not depend on matching bytes you cannot type. Re-insert via `Edit` anchored on a *neighbouring* clean line.",
+    "session": "THR-920, `tb-opus-pickup` hourly run."
+  },
+  {
+    "num": "361",
+    "id": 361,
+    "count": 1,
+    "date": "2026-07-31",
+    "category": "tooling",
+    "description": "**A resume session could not check out its own ticket's branch, because the previous run's worktree still held it.** THR-920's work sat finished on `thr-920/substantive-change-gate` in PR #1188, which had gone `DIRTY` against a `main` that moved 41 commits. Resuming meant merging `origin/main` into that branch — but `git checkout -B thr-920/substantive-change-gate` failed with `fatal: 'thr-920/substantive-change-gate' is already used by worktree at .claude/worktrees/fervent-mahavira-836c71`. Git refuses to check out one branch in two worktrees, and the prior session's worktree is still registered even though that session has ended. The hourly reaper owns `.claude/worktrees/` (THR-674) and had not yet collected it.",
+    "consequence": "The obvious repair — check out the PR branch and merge — is unavailable to the very next run that needs it. An agent that reads the error as \"the branch is locked\" may conclude the work is unrecoverable, or worse, delete the sibling worktree to free it, which is the reaper's call and not the session's (THR-797 shows what removing a live worktree costs).",
+    "impact": "Medium — blocks the standard `DIRTY`-PR repair documented in `pull-work` § \"resolving a conflicted closeout-docs PR\", which assumes the branch is checkoutable.",
+    "workaroundFound": true,
+    "workaround": "**Do not touch the sibling worktree. Work on a local alias branch and push to the remote ref by name.** `git fetch origin <branch>` then `git checkout -B <branch>-resume FETCH_HEAD`, resolve the merge there, and push with an explicit refspec: `git push origin HEAD:<branch>`. Pushing to `origin` is unaffected by which local worktree holds the branch — only the local checkout is exclusive. The sibling worktree is left for the reaper.",
+    "session": "THR-920, `tb-opus-pickup` hourly run — resume pass."
+  },
+  {
+    "num": "362",
+    "id": 362,
     "count": 1,
     "date": "2026-07-31",
     "category": "tooling",
@@ -5951,7 +6029,7 @@ const DATA = [
     "impact": "Small",
     "workaroundFound": true,
     "workaround": "**Recover `stdout` from the thrown error rather than treating a non-zero exit as no answer:** `catch (error) { const stdout = error?.stdout; if (stdout?.length) return stdout.toString().trim(); return null; }`. Generally — before wrapping a git plumbing command in the repo's fail-soft `run()` helper, check whether it uses exit status to *report a result* rather than to report failure. `merge-tree`, `diff --quiet`, and `grep` all do; for those, exit code and stdout carry different halves of the answer and discarding either one is a silent defect.",
-    "session": "THR-897 armed-PR classification, `tb-opus-pickup` hourly run. Note the unit tests could not have caught this: they inject the conflict-file lookup for determinism (NFP #3), which is correct design and also means the IO wrapper is only ever exercised by a live run."
+    "session": "THR-897 armed-PR classification, `tb-opus-pickup` hourly run. Note the unit tests could not have caught this: they inject the conflict-file lookup for determinism (NFP #3), which is correct design and also means the IO wrapper is only ever exercised by a live run. *(Renumbered from #356 during the union-merge duplicate repair: `main` had already published a different row as #356, and the rule is keep the number on the row already on `main`, renumber the unmerged newcomer — following the checker's literal \"keep the row that appears FIRST in the file\" advice would have renumbered the published row and broken its existing cross-references.)*"
   }
 ];
 // ── End data ──

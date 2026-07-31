@@ -47,14 +47,15 @@ You write TWO files:
    2. Prose has own voice — cadence, rhythm, sentence variety?
    3. Scene prose names elements that become player choices?
    4. Reader feels something from prose alone?
+   4b. No seam echoes? Read every paragraph boundary (each opening→spine, spine→band prose) for a repeated image, repeated sentence shape, or near-identical phrasing — the automated detectors cannot see this class, so it is checked by reading, sentence against sentence.
 
-   **Choices & Intervention**
-   5. Each approach card has prose paragraph from god's perspective?
-   6. Each approach card narratively justifies its cost?
-   7. Each approach card includes narrative risk?
-   8. Choice labels are scene-specific, not generic god-verbs?
-   9. Choices feel like graduated intervention philosophies?
-   9b. Every player-facing step has authored approach cards? (No step falls back to generic god-verbs)
+   **Choices & Intervention (the nudge hand)**
+   5. Every card face is library-generic (2–4 word title, one-line flavor quote) with zero scene-bespoke prose?
+   6. Every effect line states mechanism — what the god does and why that moves the odds — and every price is real (essence, or a named alternate channel)?
+   7. Every card pays off in failure (≥1 failure-band fragment; both failure bands when big-delta)?
+   8. Every card is grounded in the scene — its target established in prose before the hand is dealt?
+   9. The cards answer different questions (no two buying the same certainty)?
+   9b. Every nudge-bearing step carries a full authored hand, and no step asks the player to pick a branch or an ending?
 
    **Aftermath & Consequence**
    10. Aftermath has reflective prose landing?
