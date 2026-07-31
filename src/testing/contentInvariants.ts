@@ -4,13 +4,15 @@ import type {
   ActionStepBranch,
   ActionStepOrBranch,
   BranchPoleKey,
+  BranchRoute,
   EncounterAftermathReactionEffect,
   UnifiedActionTemplate,
 } from '../types/unifiedAction';
-import { isActionStepBranch } from '../types/unifiedAction';
+import { isActionStepBranch, isRouteDecision } from '../types/unifiedAction';
 import { REACH_DOMAINS } from '../types/traits';
 import { VALUE_PAIRS } from '../types/agent';
-import { leansOnAxis } from '../engine/encounters/poleLean';
+import { leansOnAxis, leansOnRoute } from '../engine/encounters/poleLean';
+import { MAX_BRANCH_ROUTES } from '../data/nudge-constants';
 
 const VALID_REACHES = new Set<string>(REACH_DOMAINS);
 const VALID_VALUE_PAIRS = new Set<string>(VALUE_PAIRS);
@@ -177,6 +179,11 @@ export function assertValidStep(step: ActionStepOrBranch, templateId: string): v
 function assertValidBranchDecision(step: ActionStepBranch, templateId: string): void {
   if (!step.decidedBy) return;
 
+  if (isRouteDecision(step.decidedBy)) {
+    assertValidRouteDecision(step, step.decidedBy.routes, templateId);
+    return;
+  }
+
   expect(
     VALID_VALUE_PAIRS.has(step.decidedBy.axis),
     `${templateId} branch decidedBy names an unknown axis: ${step.decidedBy.axis}`,
@@ -189,11 +196,88 @@ function assertValidBranchDecision(step: ActionStepBranch, templateId: string): 
   ).toBe(true);
 }
 
-/** A card's `poleLean`, where axis-explicit, must name a live `ValuePair`. */
+/**
+ * An N-route branch must declare a coherent, reachable set of courses (THR-898).
+ *
+ * Same reasoning as the two-pole key check, one step wider: a route key that
+ * matches no variant is a course the mortal can score highest on and never
+ * actually take, and a variant keyed to no route is dead content that reads as
+ * live. Both fail here rather than at the fallback, forever.
+ */
+function assertValidRouteDecision(
+  step: ActionStepBranch,
+  routes: readonly BranchRoute[],
+  templateId: string,
+): void {
+  expect(
+    routes.length >= 2,
+    `${templateId} route branch must declare at least 2 routes (got ${routes.length})`,
+  ).toBe(true);
+
+  expect(
+    routes.length <= MAX_BRANCH_ROUTES,
+    `${templateId} route branch declares ${routes.length} routes, over the MAX_BRANCH_ROUTES cap of ${MAX_BRANCH_ROUTES}`,
+  ).toBe(true);
+
+  const seen = new Set<string>();
+  for (const route of routes) {
+    expect(
+      isNonEmptyString(route.key),
+      `${templateId} route key must be a non-empty string`,
+    ).toBe(true);
+    expect(
+      seen.has(route.key),
+      `${templateId} declares duplicate route key: ${route.key}`,
+    ).toBe(false);
+    seen.add(route.key);
+
+    assertValidReach(route.reach, `${templateId} route '${route.key}'`);
+
+    if (route.axis !== undefined) {
+      expect(
+        VALID_VALUE_PAIRS.has(route.axis),
+        `${templateId} route '${route.key}' names an unknown axis: ${route.axis}`,
+      ).toBe(true);
+      // Without `toward`, an axis cannot be signed and the axis term would read
+      // one end of the pair as good on every route that shares it.
+      expect(
+        route.toward === 'positive' || route.toward === 'negative',
+        `${templateId} route '${route.key}' declares an axis but no toward pole`,
+      ).toBe(true);
+    }
+  }
+
+  const routeKeys = [...seen].sort();
+  const variantKeys = Object.keys(step.variants).sort();
+  expect(
+    routeKeys.length === variantKeys.length && routeKeys.every((k, i) => k === variantKeys[i]),
+    `${templateId} route branch variants must key exactly its routes `
+    + `(routes: ${routeKeys.join(', ') || 'none'}; variants: ${variantKeys.join(', ') || 'none'})`,
+  ).toBe(true);
+}
+
+/**
+ * A card's `poleLean`, where axis-explicit, must name a live `ValuePair`.
+ *
+ * A route-explicit lean (THR-898) is checked for shape only. Whether its route
+ * key is *live* cannot be answered here — the routes live on the branch step,
+ * the card on the deciding step — so that half is caught one layer up: a card
+ * naming a route that does not exist leans nothing, and every route it failed to
+ * back is reported by {@link collectUnleanableBranchWarnings}.
+ */
 function assertValidPoleLeans(step: ActionStep, templateId: string): void {
   for (const nudge of step.nudges ?? []) {
     const lean = nudge.poleLean;
     if (lean === undefined || lean === 'a' || lean === 'b') continue;
+
+    if ('route' in lean) {
+      expect(
+        isNonEmptyString(lean.route),
+        `${templateId} nudge '${nudge.id}' poleLean route must be a non-empty string`,
+      ).toBe(true);
+      continue;
+    }
+
     expect(
       VALID_VALUE_PAIRS.has(lean.axis),
       `${templateId} nudge '${nudge.id}' poleLean names an unknown axis: ${lean.axis}`,
@@ -222,12 +306,28 @@ export function collectUnleanableBranchWarnings(
     const decidingStep = template.steps[step.branchOnStep];
     if (decidingStep === undefined || isActionStepBranch(decidingStep)) continue;
 
-    const leaning = (decidingStep.nudges ?? []).filter(
-      (n) => leansOnAxis(n.poleLean, step.decidedBy!.axis),
-    );
+    const decidedBy = step.decidedBy;
+    const cards = decidingStep.nudges ?? [];
+
+    if (isRouteDecision(decidedBy)) {
+      // Route mode warns per *route*, not per branch: a fork where the god can
+      // argue for two of three courses and not the third is exactly as steerable
+      // as it looks on two of them, and silently unsteerable on the third.
+      for (const route of decidedBy.routes) {
+        if (!cards.some((n) => leansOnRoute(n.poleLean, route))) {
+          warnings.push(
+            `${template.id} step ${step.branchOnStep} offers route '${route.key}' `
+            + 'but deals no card arguing for it — the god has no lever on that course.',
+          );
+        }
+      }
+      continue;
+    }
+
+    const leaning = cards.filter((n) => leansOnAxis(n.poleLean, decidedBy.axis));
     if (leaning.length === 0) {
       warnings.push(
-        `${template.id} step ${step.branchOnStep} decides '${step.decidedBy.axis}' `
+        `${template.id} step ${step.branchOnStep} decides '${decidedBy.axis}' `
         + 'but deals no card leaning on that axis — the god has no lever on direction.',
       );
     }

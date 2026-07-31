@@ -2345,3 +2345,97 @@ this too**; do not copy the summing loop),
 `src/testing/contentInvariants.ts`. One `branch_decided` trace per decision carries
 axis, profile lean, card lean, resolved pole, and whether conviction or the coin
 settled it.
+
+## Capability: N-route forks — several ways in, one door (THR-898)
+
+**When a fork is not two ends of one question but several different courses toward
+the same objective, author it as routes.** The canonical case is *The Broken
+Wheel*: bribe the wainwright, intimidate him, or win him over. Three ways in, one
+door, and the mortal — never the player — takes the one that is theirs.
+
+A pole fork asks *"which way do you lean?"*. A route fork asks *"which of these is
+your way in?"*. If you can name a single axis whose two ends are your two arms,
+use `decidedBy: { axis }` (above). If your arms are three unrelated approaches,
+use routes.
+
+### What you can author
+
+```ts
+{
+  branchOnStep: 0,
+  decidedBy: {
+    routes: [
+      { key: 'bribe',      reach: 'gold' },
+      { key: 'intimidate', reach: 'iron' },
+      // A route may ALSO speak to a value axis — then it drifts, like a pole.
+      { key: 'persuade',   reach: 'heart', axis: 'honesty_cunning', toward: 'positive' },
+    ],
+  },
+  variants: {
+    bribe:      { /* … */ },
+    intimidate: { /* … */ },
+    persuade:   { /* … */ },
+  },
+  fallback: { /* still required */ },
+}
+```
+
+`variants` must key **exactly** the declared route keys — same contract as pole
+mode, same reason: a key matching nothing is a course the mortal can score
+highest on and never actually take. Validation also enforces unique keys, live
+reaches, a `toward` wherever a route declares an `axis`, at least 2 routes, and at
+most `MAX_BRANCH_ROUTES`.
+
+**On a card — a route-explicit `poleLean`:**
+
+```ts
+poleLean: { route: 'bribe', weight: 0.5 }   // names a course, not an axis
+```
+
+A route-explicit card counts **only** toward the route it names, and abstains
+from every two-pole decision — a route key is not an axis and must never be read
+as one. Route leans are *unsigned*: a card arguing for "bribe" is not thereby
+arguing against "intimidate", it simply says nothing about it.
+
+### How the route is chosen
+
+Three terms, each a named constant (NFP #1):
+
+1. **Capability in the route's reach** × `ROUTE_DECISION_CAPABILITY_WEIGHT` — the
+   dominant term, via the same `computeCapability` read resolution itself uses. What
+   makes a course someone's is being able to walk it: a thief bribes because bribery
+   *works* when they do it.
+2. **Axis standing** × `ROUTE_DECISION_AXIS_WEIGHT`, signed toward the route's pole —
+   zero for a route that declares no axis. Character colors which course a mortal
+   reaches for; it does not override being hopeless at one.
+3. **Committed cards** × `ROUTE_DECISION_CARD_WEIGHT` — cards naming the route, plus
+   cards arguing on the route's axis. Cards dealt but not played count for nothing.
+
+Highest score wins. Leaders within `ROUTE_DECISION_TIE_EPSILON` are genuinely tied
+and a single seeded draw settles it — drawn **only** when tied, mirroring the pole
+coin. The winning key is recorded through the same choice-history path, and a
+winning route that declares an axis drifts the mortal toward its pole by
+`BRANCH_DECISION_DRIFT_MAGNITUDE`, exactly as a pole decision does. A
+pure-competence route drifts nothing — there is no claim about character in "they
+were good at this."
+
+**Tuning note:** capability runs through a sigmoid with midpoint 10, k 0.4, so raw
+domain scores above ~20 saturate. Two routes at raw 30 and 24 differ by 0.003
+capability — inside the tie band. If you want capability to actually separate your
+routes, the interesting range is raw ~4–16.
+
+### The warn is per route
+
+If the deciding step deals no card arguing for a given route — by name, or on that
+route's axis — validation warns **for that route**. A fork where the god can argue
+for two of three courses is exactly as steerable as it looks on two of them, and
+silently unsteerable on the third.
+
+### Where it lives
+
+Same modules as pole mode. `src/types/unifiedAction.ts` adds `BranchRoute`,
+`BranchRouteDecision`, and `isRouteDecision` (`BranchDecision` is now a union);
+`poleLean.ts` adds `routeLeanWeight` / `sumRouteLean` / `leansOnRoute` over the
+*same* summing loop as `sumHandLean` — do not copy it; `branchDecision.ts` adds
+`scoreRoutes` / `decideBranchRoute`. The `branch_decided` trace carries
+`mode: 'route'`, the resolved route, and every rival's per-term score.
