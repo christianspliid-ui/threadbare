@@ -166,6 +166,7 @@ import { IMBUE_ESSENCE_COST, CONSECRATE_ESTABLISH_COST, CONSECRATE_PERTICK, CONS
 import { REACH_SIGNATURE_CONTENT_TEMPLATES } from './reach-signature-content';
 import { CONSECRATE_DEVOTION_PER_TICK } from '../types/ascendantPrimitives';
 import { RIVAL_SHRINE_BETRAYAL_TEMPLATE } from './encounters/rival-shrine-betrayal';
+import { VERTICAL_SLICE_TEMPLATES } from './encounters/vertical-slice';
 import { WANDERING_HEALER_SHRINE_ACCESS_TEMPLATE } from './encounters/wandering-healer-shrine-access';
 import { FLAWED_STEEL_TEMPLATE } from './encounters/flawed-steel';
 // Non-local-scale branching encounters — THR-466 (cosmic Star, regional Stone/Veil/Eye/Gold)
@@ -5499,6 +5500,9 @@ const RAW_UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   ...FACTION_GOVERNANCE_ENCOUNTER_TEMPLATES,
   // Ascendant Trap encounter — THR-605 Slice 4 (the beat sub.trap's planted snare springs)
   ...ASCENDANT_TRAP_ENCOUNTER_TEMPLATES,
+  // Vertical slice — THR-883 (the first eight locked-format encounters:
+  // five shapes + three authored Seeded Sequels; mature systems only)
+  ...VERTICAL_SLICE_TEMPLATES,
   RIVAL_SHRINE_BETRAYAL_TEMPLATE,
   WANDERING_HEALER_SHRINE_ACCESS_TEMPLATE,
   FLAWED_STEEL_TEMPLATE,
@@ -5584,6 +5588,8 @@ export const UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] =
  * dynamically by generateSocialCandidates).
  */
 export const LOCATION_BRANCHING_ENCOUNTER_TEMPLATES: readonly UnifiedActionTemplate[] = [
+  // Vertical slice — THR-883: envelope-declared, cache-drawable at their subtypes.
+  ...VERTICAL_SLICE_TEMPLATES,
   RIVAL_SHRINE_BETRAYAL_TEMPLATE,
   WANDERING_HEALER_SHRINE_ACCESS_TEMPLATE,
   FLAWED_STEEL_TEMPLATE,
