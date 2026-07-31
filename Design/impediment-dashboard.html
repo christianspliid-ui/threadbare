@@ -5978,6 +5978,19 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "Resolve the union merge, then run `npm run check:impediment-ids` **before** regenerating: it names the duplicate and the two line numbers. Keep the number on the row already published on `main` (not the positionally-first row — the checker's stated rule assumes one branch, and following it literally renumbers the *shipped* row and breaks existing cross-references), renumber the unmerged newcomer, and when resolving several PRs in one pass assign distinct numbers across them so they cannot re-collide once both land. Never hand-edit the dashboard — `npm run generate-impediment-dashboard` reproduces it from the merged source.",
     "session": "tb-opus-pickup, 2026-07-31 ~15:00Z, resuming THR-897"
+  },
+  {
+    "num": "359",
+    "id": 359,
+    "count": 1,
+    "date": "2026-07-31",
+    "category": "environment",
+    "description": "**Pausing scheduled tasks in the desktop app wiped their `cronExpression`, resetting them to generic defaults on resume.** After Christian paused and resumed the CC-lane tasks, four of the nine registered tasks came back with crons that no longer matched `Docs/ops/scheduled-tasks-registry.md`: `tb-orchestrator` `25 * * * *` → `0 * * * *` (firing ~:01:16, directly on top of `tb-opus-pickup`'s ~:00:53), `keep-work-flowing-cc` `45 * * * *` → `0 * * * *` (briefing at ~:08, before the hour's work instead of after it), `weekly-retro` `0 17 * * 5` → `0 9 * * 1` (detached from the Friday drift-scan it exists to read), `daily-backlog-grooming` `7 9 * * *` → `0 9 * * *`. The prompts, descriptions, and per-task jitter values survived — only the cron field reverted.",
+    "consequence": "The promote → execute → report ordering the registry's slot-allocation section builds the hour around was destroyed: orchestrator and executor fired simultaneously (Linear MCP contention plus promotions waiting a full hour to be claimed), and the PM brief ran before pickup so every briefing described pre-work state.",
+    "impact": "M",
+    "workaroundFound": true,
+    "workaround": "Restore from the registry: the `Fires` column plus each task's stable `jitterSeconds` uniquely identify the original cron (observed fire time minus jitter = cron minute). Applied via `update_scheduled_task` with the registry cron and verified with `list_scheduled_tasks` after write. After any pause/resume cycle, diff `list_scheduled_tasks` crons against the registry before trusting the lanes.",
+    "session": "Attended session 2026-07-31, restoring lane sequencing after a pause/resume cycle."
   }
 ];
 // ── End data ──
