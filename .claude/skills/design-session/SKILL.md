@@ -1,7 +1,7 @@
 ---
 name: design-session
-description: Use when running a Claude Code session that designs or plans rather than implements — authoring a plan doc, running the design-governance checklist, moving a Linear issue toward Ready for Dev, or writing a handoff for the executor lane. The CC replacement for the Cowork design role.
-last_validated_against: 2026-07-29
+description: Use when running a Claude Code session that designs or plans rather than implements — authoring a plan doc, running the design-governance checklist, moving a Linear issue toward Ready for Dev, or writing a handoff for the executor lane. The CC replacement for the Cowork design role. For efforts too big for one session, see the scale gate — suggest a wayfinder map (THR-900).
+last_validated_against: 2026-07-31
 ---
 
 # design-session
@@ -33,6 +33,19 @@ needs a plan doc before code; grooming an issue from Idea/Todo into Ready for De
 **Do NOT use when:** the task is to *build* something already planned (use `pull-work`); a trivial one-file
 fix with no design surface (just do it in an executor session); pure content authoring against an existing
 pipeline (use the content/prose/encounter skills directly).
+
+**Scale gate — too big for one session? Suggest a wayfinder map (THR-900).** If, during Step 0/1, the effort
+turns out to be **more than one design session can hold and still foggy** — it would need several plan docs,
+or the grill-me pass keeps surfacing open decisions faster than it closes them, or it spans multiple connected
+game systems whose interactions are undecided — stop drafting and recommend charting a **wayfinder map**
+(`wayfinder` skill): *"This looks bigger than one session — want me to chart it as a wayfinder map instead of
+forcing one plan doc?"* Christian decides; **never auto-chart**. A cleared map later feeds one design-session
+per plan doc, each citing the map's decisions as settled input.
+
+**Resolving a wayfinder ticket is NOT a full design session.** When the session's task is one decision ticket
+off a map, follow the `wayfinder` skill's work-the-map flow (claim → resolve → resolution comment → close →
+update map) — no plan doc, no intent-judge, no handoff. The plan-doc machinery fires later, when the cleared
+map hands off.
 
 ## The one thing that changed from Cowork
 
