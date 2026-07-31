@@ -105,6 +105,27 @@ The 2026-07-20 10:22 `keep-work-flowing-cc` run already replaced "77 behind, cli
 - **Forked audits / intent-judge:** consciously not spawned — those gates exist for game-design plan docs heading into the Cowork handoff; this is an infra investigation executed under the Fable planning-only protocol, and the originating intent is quoted verbatim in § header. If a reviewer wants the judge pass anyway, run `/intent-judge Docs/plans/2026-07-20-git-cicd-clean-delivery.md`.
 - **Substrate check:** no engine systems involved; the "existing substrate" here is the script/skill inventory audited in § 1 (autosync, reaper, precheck, pull-work, kwf) — all extended, none green-fielded. THR-660's `.codesight` untracking is prior art already landed.
 
+## 9b. Armed-PR stall classification (THR-897, added 2026-07-31)
+
+H6 kept branch protection and removed the waiting cost via `gh pr merge --auto` (THR-675). That trade assumed an armed PR eventually merges on its own. Two defects in the same mechanism say otherwise, and they are **not** the same defect:
+
+| | THR-735 (open) | THR-897 (this section) |
+|---|---|---|
+| Nature | **Drain rate** — `BEHIND` PRs drain at 1/hour vs `main`'s ~4 merges/hour | **Classification** — `DIRTY` PRs were never in the drain set at all |
+| Symptom | A PR that loses a race it usually loses | A PR that cannot merge by any amount of sweeping |
+| Remedy | Merge queue / drop strict mode / batch docs traffic (undecided) | Classify and report — shipped |
+
+**The classification gap.** pull-work Step 0.8 matched `mergeStateStatus === "BEHIND"` and applied `gh pr update-branch`. A conflicted PR is not `BEHIND`, so it was skipped; `update-branch` would not have helped anyway. The step's prose did mention `DIRTY`, but with no mechanism and a log line reporting only what it drained — so every run stepped past it truthfully claiming success.
+
+Measured 2026-07-31 during THR-897's own pickup: **3 of 4 armed PRs were `DIRTY`**, the oldest armed 19 hours carrying THR-883's authoring-contract rewrite (the deliverable unblocking 11 content tickets), across three consecutive sweeps that each reported success.
+
+**Shipped:** `scripts/check-armed-prs.ts` (`npm run check:armed-prs`) classifies each armed PR into `drainable` / `conflicted` / `waiting` / `indeterminate` and computes conflicting file names read-only via `git merge-tree --write-tree`. Consumed by pull-work Step 0.8 (per-run action) and `keep-work-flowing-cc` step 2.5c (durable surface in `Design/briefing.md`), so the two cannot drift about what "stuck" means.
+
+**Two design points worth keeping:**
+
+- **`UNKNOWN` is not "fine".** GitHub computes `mergeStateStatus` lazily; a first read returns `UNKNOWN` and merely schedules the computation. PRs #1132 and #1166 each read `DIRTY` then `UNKNOWN` minutes apart with no intervening push — a single-read classifier would call a conflicted PR healthy on roughly every other run. Unrecognised states classify `indeterminate`, never `waiting`, because `waiting` asserts nobody needs to act.
+- **A conflict is an agent's job until it isn't.** Per THR-608, technical verdicts are the agent's, so the first age tier escalates to a *session* (`needsSession`), not to Christian. Only past `ARMED_DIRTY_ABANDONED_HOURS` — ~12 hourly runs that each had a chance and none took it — does the stall become systemic enough to be his.
+
 ## 10. Constants
 
 | Constant | Default | Where | Purpose |
@@ -114,6 +135,10 @@ The 2026-07-20 10:22 `keep-work-flowing-cc` run already replaced "77 behind, cli
 | `STALENESS_BEHIND_THRESHOLD` | 5 (existing) | session-precheck.ts | Behind-count that flips freshness to warning |
 | Autosync reattach guard | detached ∧ unique-commits=0 ∧ tracked-clean | threadbare-autosync.ps1 (THR-672) | Only self-heal the provably-loss-free case |
 | `FRESHNESS_BEHIND_THRESHOLD` | 10 (existing) | kwf skill | Briefing flag threshold — applies to `main..origin/main` only after THR-671 |
+| `ARMED_SWEEP_MAX_UPDATES` | 1 (existing) | pull-work Step 0.8 (THR-702) | Drains one PR per run; more re-stales the rest (O(N²) CI) |
+| `ARMED_DIRTY_ESCALATE_MINUTES` | 90 | check-armed-prs.ts (THR-897) | Conflict age at which a session must pick the PR up |
+| `ARMED_DIRTY_ABANDONED_HOURS` | 12 | check-armed-prs.ts (THR-897) | Conflict age at which the stall becomes Christian's |
+| `ARMED_UNKNOWN_REQUERIES` | 3 | check-armed-prs.ts (THR-897) | Re-reads before believing an `UNKNOWN` merge state |
 
 ## 11. Fail-soft table
 
@@ -125,6 +150,9 @@ The 2026-07-20 10:22 `keep-work-flowing-cc` run already replaced "77 behind, cli
 | Plan doc not yet flushed when a pickup claims a ticket | Ticket descriptions carry the § summary + "defer one cycle" note |
 | Harness re-parks the tree despite everything | Contained: autosync reattaches within the hour; freshness reports `parked-at-ancestor` with the repair, not a behind-count |
 | Deleting salvage debris that later proves wanted | THR-674 requires per-item verdicts in the PR body; stashes/branches verified against origin/main before drop |
+| `check-armed-prs` cannot reach GitHub | Degrades to `verdict: "unknown"`, exits 0; Step 0.8 logs one warning and continues to pickup (THR-897) |
+| A PR head ref is unfetchable, so conflicting files cannot be computed | `conflictFiles: []` with the `conflicted` verdict intact — the stall is still reported, just without the diagnosis |
+| GitHub returns an enum member the probe does not know | Classified `indeterminate`, never `waiting` — the probe declines to assert nobody needs to act |
 
 ## NFP Compliance
 

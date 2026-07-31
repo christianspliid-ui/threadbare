@@ -1,52 +1,71 @@
+---
+needsChristian: thr-924-broken-test-links, thr-860-capital-cluster-verdict
+queue: backed-up
+freshness: healthy
+deploy: deployed
+tasks: ok
+---
 # Briefing
 
-**Generated:** 2026-07-31 19:54 local (17:54 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-07-31 21:55 local (19:55 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
 ## Needs Christian
 
-**Nothing needs you right now — second hour running, and this time for a better reason than last hour.** Last hour the list was empty because you had just cleared it. This hour it is empty because the thing you cleared is actually being built: the branch carrying the eight new encounters — including four of the five you picked — is running its checks *right now*, and it is set to merge itself the moment they come back green. That is the last mechanical step between your roster decision and a playable slice.
+**The five test links you were sent at 20:30 are mostly broken. Don't judge the encounters on them.**
 
-**The verdict session still is not askable, and asking early would waste the trip.** The five have to exist and be playable before you can rule on whether they land. When they are, you will hear it here.
+Twenty-five minutes ago you got a Discord message with five links, one per encounter, saying each had been tested clean. Fourteen minutes after that message went out, a bug was found that contradicts it: **any encounter with more than one scene stalls when it tries to move to the second scene.** Four of your five are affected:
 
-**One older thing is still parked and still not yours today.** The four finished capital-cluster encounters — the millrace dispute, the ford toll house, the feuding houses, the monument that turned into a problem with a rock — are written, passing every check, and held in the old style. Whether they land as-is and get tidied up alongside the seven earlier ones, or get rewritten under the locked format, is a call that belongs to the session that closes out the format work. Nothing is lost either way. Named so it does not look forgotten.
+| # | Encounter | State |
+|---|---|---|
+| 1 | Leave a Shrine Offering | stalls after scene 1 |
+| 2 | **The Unsafe Bridge** | **plays end to end — safe to look at** |
+| 3 | Snow on the Pass | stalls after scene 1 |
+| 4 | A Bargain at the Crossroads | stalls after scene 1 |
+| 5 | The Swindled Family | stalls |
 
-**Two automated reports written earlier today still say you owe an answer. You do not.** One from this morning says the whole content pipeline is waiting on your feedback on five prototype encounters; four written this afternoon say a roster pick is waiting on you. Every one of those was true when written and all of them were overtaken — the prototypes shipped, and you made the roster pick yourself at 16:35Z. Checked against the tickets themselves rather than the reports, and not carried into this list.
+What you'd see is not an error message. The game hides the failure and quietly rewinds, so a stalled encounter just goes nowhere — or an unrelated tutorial pops up over the top of it. That's also why the earlier "clean console on every one" claim was written in good faith and was still wrong: it confirmed each link *opened*, not that the encounter *finished*.
 
-*No doorbell sent this hour. Nothing needs you, and a ping that says so is just noise on your phone.*
+**This is machinery, not writing.** The prose in those four may be perfectly good — you simply can't reach past their opening scene yet. Forming a verdict tonight would mean judging a broken delivery rather than the format.
+
+**Recommendation: hold the verdict session until the fix lands.** If you want a look tonight anyway, link #2 (The Unsafe Bridge) is genuinely whole. The fix is filed as urgent and sits at the top of the work queue, so it should be picked up on the next hourly pass with nothing needed from you.
+
+**Worth knowing separately:** "Leave a Shrine Offering" is not new slice content — it's already in the shipped game. So if a multi-scene encounter has felt oddly inert in your own playtests recently, this is very likely why, and it has been true for a while rather than being introduced tonight.
+
+---
+
+**Still parked and still yours, unchanged from earlier: the four finished capital-cluster encounters.** The millrace dispute, the ford toll house, the feuding houses, and the monument that turned into a problem with a rock. They're written, they pass every check, and they're held in the old style. The call is whether they land as-is and get tidied up alongside the seven earlier ones, or get dropped and rewritten under the locked format. Nothing is lost either way, and it needn't be tonight — it belongs with the session that closes out the format work. Named so it doesn't look forgotten.
+
+*No doorbell this hour. Both items are unchanged from the ping you got at 21:02 — you were rung once, and ringing again would tell you nothing new.*
 
 ## Queue
 
-**Fifty-three jobs ready, one being worked, one parked.** Three arrived this hour and nothing left — one about untangling documentation work from the code checks it does not need, and two from the automated planner: a rule that would stop a job being marked ready before its plan actually exists, and a real content bug where the encounter text skips the step that fills in names, so raw placeholders can reach a shipped encounter.
+**Fifty-three jobs ready, two being worked, two parked.** Bands unchanged from last hour: one urgent, five high, four medium, three unranked, forty low-priority tidy-ups. Fifty-three is well past comfortable, which is expected while the content side stays paused behind the format work.
 
-**Bands:** one urgent, five high, four medium, three unranked, forty low-priority tidy-ups. Fifty-three is well past comfortable, which is expected while the content side stays paused behind the format work.
+**The urgent one is still the encounter bug above, and it is still unclaimed** — an hour old now. The pickup lane's next pass is due within minutes and this sits at the top of its list, so the expected outcome is that it gets claimed with nothing needed from you.
 
-**The urgent one is still ours, not yours,** and unchanged from last hour: the two hourly note-writing jobs — this briefing is one of them — have been merging updates to the main line even on hours with nothing new to say, and that traffic is what keeps shoving everyone else's finished work back into the queue. This run has real news, so its own merge is within the rule it is reporting on.
+**A second job parked itself this hour.** The sweep fix for stuck pull requests finished its work and stepped aside deliberately — its own note explains it needs nothing but a merge. That merge has since snagged on a file conflict, so it now wants about ten minutes from a working session. Not yours.
 
-**Four of the fifty-three have your name attached, up from two.** Both new ones were filed in the last twenty minutes by the automated planner, which is a known cosmetic bug in how it files. It does not hide them — the pickup lane was fixed weeks ago to ignore the name entirely — so this is a number, not a blockage.
+**The two encounter-screen fixes are still in flight** — the clipped prose and the odds-panel explanations, the latter descending from your "key:value is unfinished" note. Their branch has picked up the same kind of conflict.
 
-**The one job in progress** is the fix for a sweep that only rescues stuck work in one of the two ways it can get stuck. Moving; its pull request is queued to merge itself.
+**The other parked job** is the finished-but-held encounter batch described above, about thirty-one hours parked, holding no one up.
 
-**The parked job** is the finished-but-held encounter batch described above, about twenty-nine hours parked, holding no one up.
-
-**One job on the shelf is already finished** — yesterday's housekeeping rescue landed on its own. Whoever picks it up will find nothing to do; that check happens automatically at pickup, so nothing is wasted. The real number is fifty-two.
-
-The longest-waiting item crosses our one-week line at about 22:30 tonight. Low-priority tidy-up, so a note rather than a problem.
+**Five of the fifty-three still have your name attached.** I re-checked the underlying question this hour rather than repeating last hour's answer, and it holds: the pickup lane's own instructions say it considers *every* ready job and that a name on one is noise rather than a claim. So the stray name genuinely cannot hide the urgent bug. It stays a number, not a blockage.
 
 ## Freshness
 
 **Your working copy is healthy and fully current.** Right branch, nothing missing, nothing of yours stranded. The two Claude permission files you edited are still sitting there uncommitted, as they have been for days — harmless, have never blocked anything, no action wanted.
 
-**The live site is current** for what has been published; nothing game-facing has merged since the last release, so no rebuild was needed. Automated checks normal — forty-sixth consecutive clean hour.
+**The live site is serving the newest code.** Automated checks normal.
 
-**All eight scheduled jobs are running on time.** The cleanup job ran fifteen minutes ago and found nothing needing a human call.
+**All eight scheduled jobs are running on time.** The cleanup job ran at 21:40 and found nothing needing a human call.
 
 ## What's moving
 
-**The pull request you would actually want to look at has stopped waiting and started running.** It holds the eight new encounters, the click-straight-into-one link, and the balanced test character. Last hour it was green but stale, stuck behind other work landing ahead of it. It has since been brought up to date and is mid-checks now, still set to merge itself. Once it lands, the readiness check ahead of your verdict session is the only step left.
+**The fix for the robot merge congestion landed.** This morning's measurement found that more than half of everything reaching the project was two hourly automated lanes filing reports about their own activity — and because of how the merge queue works, each one knocked every other pending change back to the start of the line. Those lanes now check whether they have anything worth saying before filing. This brief is the first written under that rule.
 
-**Five other pull requests are open** — this briefing, the stuck-work sweep fix, two planner write-ups, and this morning's retro. All queued to merge themselves.
+**Nothing else merged this hour**, which is the backlog that congestion created working its way through: several finished changes are queued behind each other rather than stuck.
 
 ---
 *Standing asks live in `Design/user-actions.md`. This file is regenerated hourly by

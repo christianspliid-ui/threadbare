@@ -183,6 +183,26 @@ One line of JSON: `{ verdict, summary, needsChristian, standDown, startupFailure
 
 **Fail-soft:** the probe never exits non-zero without `--strict`, and degrades to `verdict: "unknown"` on any network/auth failure. If it fails to run at all, note one line under Freshness and continue.
 
+### 2.5c Armed-PR merge health — conflicted PRs that can never merge (THR-897)
+
+An armed auto-merge PR reads *green, open, and actively swept* right up until you notice it has a merge conflict, at which point it turns out to have been structurally incapable of merging the whole time. `gh pr update-branch` — the only remedy pull-work Step 0.8 applies — does not fix a conflict, and until THR-897 the sweep matched on `BEHIND` only, so conflicted PRs were skipped without a word.
+
+Measured 2026-07-31: 3 of 4 armed PRs were conflicted, the oldest armed 19 hours earlier carrying THR-883's authoring-contract rewrite — the deliverable that unblocked 11 content tickets — while three consecutive orchestrator sweeps each reported "no promotions, THR-883 pause". The lane spun waiting on work that was finished and stuck.
+
+```bash
+npm run check:armed-prs --silent -- --json
+```
+
+One line of JSON: `{ verdict, summary, needsChristian, needsSession, updateCandidate, prs, counts }`.
+
+- **`needsChristian: true`** (verdict `abandoned` — a conflict older than `ARMED_DIRTY_ABANDONED_HOURS`) → put the `summary` verbatim into **`## Needs Christian`**. It is already written in plain language and names no git jargon (THR-608); do not re-word it into merge-state terms.
+- **`needsSession: true` but `needsChristian: false`** → one line under **Freshness** naming the PR numbers and their `conflictFiles`. This is a job for the executor lane, not for Christian — a conflicted PR is a technical verdict an agent can settle, and routing it to him would be the mislabelling THR-608 forbids.
+- **`verdict: "healthy"` / `"drainable"` / `"unknown"`** → omit, or one line under **Freshness** when something is drainable. A PR that will merge on green is not news.
+
+**Why this lane and not only pull-work.** Step 0.8 reports a conflicted PR in its run log, but that log lives inside one hourly pickup and is gone by the next. This lane owns the durable surface (`Design/briefing.md`), so a conflict that outlives its session still has somewhere to be seen. The two consume the same probe, so they cannot drift into disagreeing about what "stuck" means.
+
+**Fail-soft:** the probe never exits non-zero without `--strict`, and degrades to `verdict: "unknown"` on any `gh`/network failure. If it fails to run at all, note one line under Freshness and continue — a broken probe must never abort the brief.
+
 ### 2.6 Sibling-report `## Needs Christian` sections (THR-826)
 
 Several scheduled tasks write a dated report under `Docs/ops/` with a `## Needs Christian` heading, on the documented understanding that *"Christian-facing items go in each task's own report under a `## Needs Christian` heading, and reach him via the hourly briefing"* (`Docs/ops/scheduled-tasks-registry.md` § Output-surface rule).
@@ -198,6 +218,7 @@ ls -1 Docs/ops/orchestrator-*.md Docs/ops/backlog-grooming-*.md Docs/ops/weekly-
 - **Take one newest file per producing task**, not every file matching the glob. A week of `backlog-grooming-*.md` all carry a `## Needs Christian` section; only the latest is current.
 - **Extract the `## Needs Christian` section verbatim** and fold its items into the briefing's own `## Needs Christian`, **attributed to the task that raised them** (`— from daily-backlog-grooming`). Do not re-word: those items are already written in plain language per THR-608, and re-wording is how a specific ask becomes a vague one.
 - **Skip the empty state.** A section whose only content is "nothing needs you" contributes nothing — do not propagate it as an item.
+- **A gap in a sibling's reports is not a fault (THR-920).** Since no-op runs now write no file at all, the newest `orchestrator-*.md` may be several hours old on a quiet board — and it is still the current one, because its Needs-Christian items are the live ones. Do not read the absence of a fresh report as a stalled lane; step 2.7's heartbeat probe is what detects that, and it reads `lastRunAt`, not report filenames.
 - **De-duplicate against your own items.** If a sibling raised something this task also detected (a stale queue item, a deploy failure), keep one line, not two.
 
 Items folded in this way flow into the step-6 change hash like any other, so a genuinely new sibling ask pings Christian and an unchanged standing one does not.
@@ -230,6 +251,13 @@ One line of JSON: `{ verdict, needsChristian, checked, stalled[], neverRun[], su
 Overwrite the file. Structure (keep it short — this is a brief, not a report):
 
 ```markdown
+---
+needsChristian: <comma-separated stable keys, or the literal `none`>
+queue: <starved | healthy | backed-up>
+freshness: <healthy | behind | parked | dirty | unknown>
+deploy: <deployed | skipped | failed | stale | unknown>
+tasks: <ok | stalled | unknown>
+---
 # Briefing
 
 **Generated:** <YYYY-MM-DD HH:MM local (HH:MM UTC)> · by keep-work-flowing-cc
@@ -267,6 +295,11 @@ timestamp above and the task's `lastRunAt` in `list_scheduled_tasks`.*
 
 The **generated-at timestamp is mandatory** — it is how staleness is self-evident (plan Constants table).
 
+**The frontmatter digest is mandatory too (THR-920)** — it is what step 5's predicate compares, and a brief without one falls back to a text comparison that will commit almost every hour. Two rules make it work:
+
+- **Keys are stable across hours, and describe the *item*, not this hour's wording.** `thr-883-verdict-session`, `home-tree-parked`, `deploy-stale`. The same ask carries the same key next hour even if you rewrite the paragraph completely; a genuinely new ask gets a new key. Never key on a number, a duration or a PR state — those change hourly and would defeat the gate.
+- **The digest must agree with the prose.** It is a declaration about the section below it, not an independent field: if `## Needs Christian` says something needs him, `needsChristian:` names it. A digest reading `none` above a section carrying a real ask is the one failure mode that could strand an item in an unmerged file — which is why the coordination block on THR-920 called this out specifically. When in doubt, name the key; a spurious commit costs one merge, a dropped ask costs Christian.
+
 ### 4. Refresh `Design/user-actions.md`
 
 This is the standing Christian-owned list, not the hourly brief. Refresh, don't rebuild:
@@ -283,7 +316,17 @@ This is the standing Christian-owned list, not the hourly brief. Refresh, don't 
 
 Direct `git push origin main` is rejected by branch protection. Use the branch → PR → CI → merge pattern:
 
-- **Commit only on substantive change.** If the only diff in `Design/briefing.md` is the generated-at timestamp line (and `user-actions.md` is unchanged), **do not commit** — the scheduled-task `lastRunAt` is the "task fired" heartbeat; a timestamp-only commit every hour is pure noise. Trace `[keep-work-flowing-cc] no substantive change — skipping commit (heartbeat via lastRunAt).`
+- **Commit only on substantive change — decided by the script, not by eye (THR-920).** Run the predicate and obey its verdict:
+
+  ```bash
+  npm run check:substantive --silent -- --lane briefing --file Design/briefing.md --json
+  ```
+
+  `{"verdict":"skip"}` → **do not commit**; trace `[keep-work-flowing-cc] no substantive change (<reason>) — skipping commit (heartbeat via lastRunAt).` and go to step 6. `{"verdict":"commit"}` → proceed to the branch/PR flow below. The probe is fail-soft: every failure path returns `commit`, so a broken predicate costs one extra merge, never a dropped brief.
+
+  **This replaced a prose rule that never fired.** The old wording — *"a timestamp-only diff means skip the commit"* — tested **file-changed**, and the briefing's body genuinely differs every hour because it embeds live counts, PR numbers, merge states and ages. So the gate read as enforced while this lane merged on 10 of the last 32 advances of `main`, each one re-staling every open PR under strict branch protection (THR-920 measurement, 2026-07-31). Do not re-express this as a judgement call in prose; that is the exact failure being fixed.
+
+  **The gate keys on the digest you declare in the briefing's frontmatter**, not on the wording — you rewrite that wording every hour, so a text comparison would report a change on nearly every run and the gate would fail the same way one level in. Declare items by stable key; reword freely.
 - On substantive change: from this worktree, `git fetch origin main`, create/reset a `docs/briefing-<date>` branch off `origin/main`, stage **only** `Design/briefing.md` and `Design/user-actions.md`, commit as `docs(briefing): refresh Design/briefing.md` (NO THR keyword), push the branch and open a PR (docs-only → CI passes fast). Let it merge on green. Do **not** attempt `git push origin main` from a session — branch protection always rejects it (impediment #110), and the retry dance is what tempted earlier runs into home-tree checkouts.
 
 **Constants:**
@@ -294,7 +337,7 @@ Direct `git push origin main` is rejected by branch protection. Use the branch �
 | `FRESHNESS_BEHIND_THRESHOLD` | 10 | Home-tree `HEAD..origin/main` commit count that trips the freshness flag |
 | `QUEUE_STARVED_MAX` | 1 | Ready count at or below which the queue is "starved" |
 | `QUEUE_BACKED_UP_MIN` | 15 | Ready count above which planning is outrunning execution |
-| `COMMIT_ON_SUBSTANTIVE_CHANGE_ONLY` | true | Skip timestamp-only commits to keep `main` clean |
+| `COMMIT_ON_SUBSTANTIVE_CHANGE_ONLY` | true | Skip non-substantive commits to keep `main`'s tip still. Enforced by `npm run check:substantive` (step 5), **not** by judgement — see `scripts/check-substantive-change.ts` (THR-920) |
 | `DISCORD_CHAT_ID` | `1530183488333152287` | Christian's Discord DM channel — ping out (step 6), read in (step 0) |
 | `PING_STATE_FILE` | `~/.claude/channels/discord/kwf-last-ping.hash` | Hash of the last-pinged Needs-Christian content (change gate) |
 | `DISCORD_INBOX_STATE_FILE` | `~/.claude/channels/discord/kwf-last-read.id` | Newest Discord message id already processed by step 0 |
@@ -302,6 +345,8 @@ Direct `git push origin main` is rejected by branch protection. Use the branch �
 | `DISCORD_ALLOWLIST_FILE` | `~/.claude/channels/discord/access.json` | Source of truth for which authors step 0 will act on (`allowFrom`) |
 | `DEPLOY_STALE_GRACE_MINUTES` | 20 | Step 2.5 — how long an undeployed `main` commit is "probably still building" rather than a stoppage. Lives in `scripts/check-deploy-health.ts`; change it there, not here. |
 | `DEPLOY_LOOKBACK` | 10 | Step 2.5 — Production deployments walked back looking for the newest successful one |
+| `ARMED_DIRTY_ESCALATE_MINUTES` | 90 | Step 2.5c — how long an armed PR may sit conflicted before it needs a session (one sweep interval + slack). Lives in `scripts/check-armed-prs.ts`; change it there, not here. |
+| `ARMED_DIRTY_ABANDONED_HOURS` | 12 | Step 2.5c — how long a conflict may survive hourly sessions before it becomes Christian's rather than the lane's |
 | `SIBLING_REPORT_MAX_AGE_HOURS` | 36 | Step 2.6 — age past which a sibling task's `## Needs Christian` section is stale and not folded in |
 | `STALL_SLOT_THRESHOLD` | 2 | Step 2.7 — cron slots a task may fall behind before it counts as stalled. Lives in `scripts/check-scheduled-task-heartbeat.ts`; change it there, not here. |
 | `SIBLING_REPORT_GLOBS` | `Docs/ops/orchestrator-*.md`, `Docs/ops/backlog-grooming-*.md`, `Docs/ops/weekly-hygiene-*.md` | Step 2.6 — reports whose Christian-facing sections this task consumes; newest one per producing task |
