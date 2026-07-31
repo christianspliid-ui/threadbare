@@ -1,33 +1,52 @@
 # Briefing
 
-**Generated:** 2026-07-31 15:15 local (2026-07-31 13:15 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-07-31 16:16 local (14:16 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
 ## Needs Christian
 
-**Your read on the five prototype encounters is still the only thing gating the content pipeline.** Eleven content tickets are stopped behind the encounter-writing format, and the format can't be locked until you've said whether the five prototypes read right. Nothing else on the board is waiting on you. *(Also raised this morning by the daily backlog grooming run.)*
+**A new question is waiting, and it's a genuine creative call: which five encounters make up the vertical slice?** The groundwork it was waiting on finished at lunchtime — someone catalogued every encounter that exists today and every game system encounter content can currently reach. The next move is picking the five that between them touch the widest spread of the game. An agent will propose a roster with a coverage table and say what each pick uniquely covers; you rule. **Two further pieces of work are already stalled waiting on this one pick.** When you have the appetite: open a chat and say *"work the map"*.
 
-Two things worth knowing before you decide:
+**Your read of the five prototype encounters is done and no longer an open ask.** You approved the first three outright, and your notes on the last two became two permanent rules — one about encounters personalising themselves to the agent involved, one about an encounter being allowed to plant a designed sequel that fires later. That gate is cleared; the writing format is locked. **Eight encounters have since been written in it**, including a bridge crossing, a night after a mountain climb that reads how the climb went, riders following a caravan, a bargain at a crossroads, and a swindled family whose story continues in two different later encounters depending on what you do.
 
-- **The click-straight-in review links still aren't usable.** Both levers you asked for — a link that opens one named encounter, and an even-across-all-eight-areas test character so an encounter isn't judged "doomed" just because the avatar is weak in that area — are built and sitting on the same pull request as the locked format. That request is red on a check for a trivial reason: our notes log has two rows accidentally given the same number. It's minutes of work for a session and it's already identified. **Nothing for you to do.** If you'd rather not wait, ask for the **five design-first prototypes by name** and they can be read as text now.
-- **One finished batch of four encounters is parked pending your call.** It was written in the old format, passed every check, and was deliberately held back rather than merged. When the format is locked: does it land as-is and get fixed up alongside the seven others already written that way, or is it thrown out and re-written under the new format? Either is cheap from here. That question belongs in the format session, not in this inbox.
+**You cannot play any of those eight yet, and I want to correct an earlier note that implied you could.** A previous checkpoint said the new encounters would show up on the live site. **I checked the live site's contents directly: they are not there.** All eight — plus the click-straight-into-one link and the balanced test character built for you this morning — are riding on a single pull request that has gone tangled again and is failing its checks. **This is hands work, not a decision, and it is not yours to fix.** It is named here only because it is the sole thing standing between you and being able to play what was written. Until it lands, there is nothing new for you to look at in the game itself.
+
+**One command on your machine, and it is worth doing before your next session.** Your working copy stopped receiving updates about two and a half hours ago and is now 22 changes behind. The cause is this very task: an earlier run left two of its own files sitting in your working copy, and the sync refuses to write over them. **Nothing can be lost by clearing them** — I compared them byte for byte against what is already published, and they are identical. Run this and the sync will catch up on its own within the hour:
+
+```bash
+git -C "C:/Users/chris/Dev/Projects/TheFantasyWorldSimulator" restore Design/briefing.md Design/user-actions.md
+```
+
+**The four older finished encounters stay parked, unchanged.** The capital-cluster batch — the millrace dispute, the ford toll house, the two feuding houses, the monument that became a problem with a rock — is written and passing every check, but in the old style. Whether those four land as-is and get tidied up alongside the seven earlier ones, or get rewritten in the locked format, is a question for the session that closes out the format work. Nothing lost either way, and nothing for you today.
 
 ## Queue
 
-**Backed up — 44 items ready, well over the healthy ceiling of 15.** Planning is outrunning execution, which is expected while the content half is frozen. One High-priority item at the top (the vagueness-detector rescope), three Medium, the rest Low. Nothing at the top of the queue is blocked and nothing has gone stale.
+**Forty-six jobs ready, one being worked, one parked.** The shelf is well past comfortable, which means planning is running ahead of building — expected while the content side is paused. One high-priority job leads (narrowing an over-eager prose check so it flags evasive writing rather than ordinary writing), four medium behind it, the rest low.
+
+**Two jobs arrived this hour and one shipped** — the one that shipped extends encounter branching from two outcomes to several, which is machinery the new encounters depend on.
+
+**The one job in progress** is a fix for a sweep that only rescues stuck work in one of the two ways it can get stuck. Picked up at the top of the hour and moving.
+
+**The parked job** is the finished-but-held encounter batch described above — about a day parked, holding no one up.
+
+The longest-waiting item crosses our one-week line late this evening. Low-priority tidy-up, so a note rather than a problem.
 
 ## Freshness
 
-- **Home tree is on `main` and 7 commits behind — all seven landed in a burst between 14:45 and 14:52 local.** That is this hour's merge rate, not decay. The hourly sync last succeeded at 13:50 local.
-- **Watch item, not an alarm.** The sync tick at 14:50 local left no trace, and two files it needs to update (`Design/briefing.md`, `Design/user-actions.md`) are sitting modified in the home tree. Their content is *identical* to what is already published, so nothing can be lost either way. Whether that tick was blocked or simply had nothing to fetch yet is not decidable from here — the commits landed within twenty seconds of it firing. **The 15:50 local tick settles it, and the next brief will say which.** If it was blocked, the repair is one safe command and the next brief will hand it over.
-- Housekeeping job healthy — ran 14:40 local: 44 worktrees, 63 branches, 0 stashes, nothing awaiting a human call.
-- Live site up to date; automated checks running normally; every scheduled lane on time.
+**Your working copy is stalled** — 22 changes behind, cause identified, one command above. Everything else about it is healthy: right branch, nothing stranded, no work of yours at risk.
+
+**The live site is current** for what has actually been published; nothing game-facing has merged since the last release, so no rebuild was needed. Automated checks normal.
+
+**All eight scheduled jobs are running on time.** Last hour's briefing reported one of them as possibly stalled and said it would say so with real evidence if it missed its next slot. **It did not miss it** — it ran at the top of the hour. That alarm is closed, and it was right not to have been passed to you as a problem. The cleanup job ran half an hour ago and collected a large batch: workspaces down from 44 to 23, branches from 63 to 40.
 
 ## What's moving
 
-- **The N-route forks work is actively in development** with a pull request open — an executor is on it right now.
-- The format pull request carries the golden exemplar, the rewritten authoring rules, and both of your review levers. One renumber away from green.
+**Three pull requests are open.** One is the encounter work described above, which needs hands. One is this briefing. One is a housekeeping report from an earlier automated run.
+
+**A two-day-old tangle cleared this morning** — the housekeeping change that had been stuck since Wednesday is merged.
 
 ---
-*Standing asks live in [`Design/user-actions.md`](user-actions.md). This file is regenerated hourly by the `keep-work-flowing-cc` scheduled task; staleness is visible from the Generated timestamp above and the task's `lastRunAt` in `list_scheduled_tasks`.*
+*Standing asks live in `Design/user-actions.md`. This file is regenerated hourly by
+the `keep-work-flowing-cc` scheduled task; staleness is visible from the Generated
+timestamp above and the task's `lastRunAt` in `list_scheduled_tasks`.*
