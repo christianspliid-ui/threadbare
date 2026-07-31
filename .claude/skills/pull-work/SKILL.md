@@ -1,7 +1,7 @@
 ---
 name: pull-work
 description: Canonical Claude Code pickup workflow for claiming Linear work safely from Ready for Dev.
-last_validated_against: 2026-07-30
+last_validated_against: 2026-07-31
 ---
 
 # Pull Work
@@ -278,9 +278,27 @@ If collision or uncertainty remains, run serially instead of claiming concurrent
 
 ### Step 3 - Validate coordination block on latest comment
 
+**The block is required of a *handoff*, not of every ticket (THR-836).** A design session or a T1 promotion coordinates work that a *different* party will pick up, and the three lines — `Suggested model`, `Parallel-safe with`, `Mutex with` — are that coordination made legible. A ticket the lane filed for itself, naming the file and symbol it means to change, was never coordinated by a second party; demanding the artifact of coordination from it is a category error. Applied without that distinction the gate produced one of two outcomes on nearly every candidate — a lost run, or a per-pickup ritual reversal. THR-836's evidence: THR-834 and THR-817 sat zero-comment; THR-804 was claimed past the gate by hand, spending a full comment on the reasoning; THR-778 bounced outright and was re-offered as top candidate on the very next run, hourly.
+
 1. Read the latest comment on the candidate issue.
-2. Confirm it includes all required lines: `Suggested model`, `Parallel-safe with`, `Mutex with`.
-3. If missing, add a bounce note for Cowork and stop without claiming.
+2. If it carries all three lines, proceed to Step 4.
+3. If any line is missing, **classify the ticket before deciding** — the missing block is a symptom, not the verdict:
+   - **Self-scoped** — the description names a concrete surface: a repo-relative path (`src/…`, `scripts/…`, `Docs/…`, `.claude/…`) or a backticked file/symbol. **Claim it.** Derive the three lines yourself from the surfaces the description names, and post them in the claim comment under the heading `Coordination block (derived at claim — no handoff author)`. This is the documented path, not an improvisation to be re-argued each pickup.
+   - **Unscoped** — no named surface anywhere in the description. **Bounce without claiming**, naming what is missing — then **move it to `Todo`** and continue to the next candidate in the same run.
+
+**A bounce must remove the ticket from the queue, or it is not a bounce (THR-836).** Leaving a refused issue in `Ready for Dev` re-offers it as top candidate on the next run, and the hour after that, forever: THR-778 was bounced at 05:03 and re-offered at 06:03, and only stopped because a human-shaped grooming pass moved it to `Todo` by hand. A gate that refuses without routing is a spin loop wearing a gate's clothes. So a bounce is three actions, not one:
+
+```
+save_comment(issueId: id, body: "Bounced by pull-work Step 3: unscoped — the description names no file or symbol, so no coordination block can be derived. Moving to Todo for re-authoring. Add the surface this touches and the three coordination lines, then promote.")
+save_issue(id, state: "Todo")
+get_issue(id)   # verify the move stuck (impediment #48)
+```
+
+Then **carry on to the next candidate** — a bounce costs a candidate, not a run. Only an empty queue ends the run.
+
+`npm run check:process` encodes exactly this split, so the rule and the lint cannot drift apart silently: a Ready-for-Dev issue missing the block reports `handoff-keywords` at `error` when unscoped and at `warn` when self-scoped (`SELF_SCOPED_SURFACE_PATTERN` in `scripts/check-process.ts` is the shared predicate).
+
+**Deriving a block is not skipping the thinking.** Read the surfaces the description names, check them against the Step 1 "In Dev" slice for a genuine collision, and write `Mutex with: none — <surface> untouched by the In Dev slice` when there is none. A derived block that asserts `none` without having looked is worth less than the bounce it replaced.
 
 **Mutex reversal (THR-688 Rule B).** A `Mutex with` line should carry its reason — `Mutex with: THR-XXX (both edit <file>)`. You **may** claim past a mutex when the stated reason is *verifiably* inapplicable: the named partner issue has since merged, or the named surface is provably outside this ticket's scope. Verify it (`get_issue` on the partner; confirm `Done` + a merged PR), then record the reversal and its evidence in a Linear comment on the issue you claim. A mutex whose reason is a bare identifier with no stated surface cannot be cleared by inspection — bounce it for re-authoring rather than guessing (THR-673 precedent).
 
@@ -519,7 +537,7 @@ If the issue has label `Reopened`, read all comments back to the original handof
 ## Refuses To Proceed When
 
 - The "In Dev" slice for the executor's own assignee (computed in Step 1) is non-empty (Rule 6: WIP=1 across all sessions).
-- The latest handoff comment is missing any required coordination line (`Suggested model`, `Parallel-safe with`, `Mutex with`).
+- The latest handoff comment is missing a required coordination line (`Suggested model`, `Parallel-safe with`, `Mutex with`) **and** the description names no concrete surface — an unscoped ticket (Step 3). A *self-scoped* ticket missing the block is claimed, not refused: the executor derives the block (THR-836).
 - `save_issue` claim cannot be verified by `get_issue` after one retry.
 - The upstream-shipped check (Step 4.4 fresh-claim or Step 1.7 resume) finds a `Fixes <issue-id>` / `Closes <issue-id>` / `Resolves <issue-id>` commit on `origin/main`. Pickup exits with a comment noting the upstream commit hash. Step 4.4 releases the fresh claim back to Ready for Dev; Step 1.7 unassigns but keeps the issue In Dev so the hourly `keep-work-flowing` Cowork triage verifies the SHA and closes it as Done.
 

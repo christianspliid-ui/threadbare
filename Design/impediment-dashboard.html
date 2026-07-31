@@ -5822,6 +5822,19 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "Derive the id from the index (`step_<index>`) instead of propagating the bug; documented inline in `branchDecision.ts`. The real fix is either declaring `id` on `ActionStep` or repointing the four reads — not attempted here, since both are outside this ticket and the field's intended semantics (authored id vs positional) is a design call.",
     "session": "THR-894 agent-decided branches — recording the decided pole as an ordinary `EncounterChoiceMemory`."
+  },
+  {
+    "num": "331",
+    "id": 331,
+    "count": 1,
+    "date": "2026-07-31",
+    "category": "tooling",
+    "description": "**Linear `save_issue` returned HTTP 502 `upstream_unavailable` on the pickup claim, then succeeded verbatim on immediate retry.** The first mutating call of the run (`save_issue(THR-836, assignee:\"me\", state:\"In Dev\")`) failed with `{\"error\":\"upstream_unavailable\",\"message\":\"Linear is temporarily unavailable.\",\"status\":502,\"requestId\":\"a237fd9b6b662449\"}`. The identical call one moment later returned the full updated issue. Distinct from impediment #48 (silent drop: HTTP 200, write does not land) — this is the honest inverse, a loud failure with no write.",
+    "consequence": "A run that treats a 502 as terminal exits with nothing claimed and the hourly slot wasted, even though the queue was healthy and the very next attempt would have worked.",
+    "impact": "Low — one retry. Worth recording because `pull-work`'s documented retry ladder (`MAX_CLAIM_RETRIES`) is written against #48's silent-drop shape and moves to the *next candidate* on mismatch; a transient 502 wants the *same* candidate retried instead.",
+    "workaroundFound": true,
+    "workaround": "Retry the identical `save_issue` once before moving to the next candidate, then verify with `get_issue` as usual. Verified-after-write here: `assignee=Christian Spliid`, `state=In Dev`, both stuck.",
+    "session": "`tb-opus-pickup` hourly run, 2026-07-31, claiming THR-836."
   }
 ];
 // ── End data ──
