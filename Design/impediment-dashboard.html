@@ -2470,19 +2470,6 @@ const DATA = [
     "session": "Cowork worktree rescue → THR-583 salvage | Cowork worktree rescue, logged during THR-583 doc salvage."
   },
   {
-    "num": "167",
-    "id": 167,
-    "count": 1,
-    "date": "2026-07-04",
-    "category": "environment",
-    "description": "Browser-verify of a static wiki page went to the WRONG server: `npx vite preview --port 5199 --strictPort` was already bound by a stale server from another pool worktree, so `--strictPort` made my instance exit silently in the background — but the port still answered (the stale server's different `dist/`), so `curl` returned 200 and Playwright got the SPA `index.html` fallback (title \"Threadbearer\", empty `.section`) instead of my page. Compounds the known \"preview MCP serves the HOME worktree\" quirk ([[feedback_worktree_preview_server]]).",
-    "consequence": "~10 min lost chasing a phantom \"empty DOM\" before realizing the port was hijacked.",
-    "impact": "M",
-    "workaroundFound": true,
-    "workaround": "**Workaround:** don't trust a shared fixed preview port in a multi-worktree setup. Either (a) `cat` the preview log to confirm the server actually bound (mine logged `Port 5199 is already in use`), or (b) serve the freshly-built `dist/` with a tiny literal Node static server (no SPA fallback) on a unique port and probe a page-specific marker string (`curl …",
-    "session": "grep -c \"<known title>\"`) before pointing Playwright at it. Verified page content byte-for-byte via the marker grep, not just an HTTP 200. | THR-587 Game Manual Wiki W2 browser-verify."
-  },
-  {
     "num": "168",
     "id": 168,
     "count": 1,
@@ -5796,6 +5783,19 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "Use the `Edit` tool with a unique trailing anchor from the target file instead of shell append — it needs no quoting at all, and it verifies the anchor exists, so a silent append to the wrong file is impossible. Reserve heredocs for short, single-quote-free payloads. This is a specific instance of the general rule already in CLAUDE.md's Bash-tool guidance (prefer dedicated file tools over shell redirection); worth remembering that the failure mode is a *parse* error blaming quotes, not an obvious \"payload too large\".",
     "session": "THR-892 derived-factor-lines test authoring, hourly `tb-opus-pickup`, worktree reverent-haslett-e28ee2."
+  },
+  {
+    "num": "167",
+    "id": 167,
+    "count": 2,
+    "date": "2026-07-31",
+    "category": "environment",
+    "description": "Browser-verify of a static wiki page went to the WRONG server: `npx vite preview --port 5199 --strictPort` was already bound by a stale server from another pool worktree, so `--strictPort` made my instance exit silently in the background — but the port still answered (the stale server's different `dist/`), so `curl` returned 200 and Playwright got the SPA `index.html` fallback (title \"Threadbearer\", empty `.section`) instead of my page. Compounds the known \"preview MCP serves the HOME worktree\" quirk ([[feedback_worktree_preview_server]]).",
+    "consequence": "~10 min lost chasing a phantom \"empty DOM\" before realizing the port was hijacked.",
+    "impact": "M",
+    "workaroundFound": true,
+    "workaround": "**Workaround:** don't trust a shared fixed preview port in a multi-worktree setup. Either (a) `cat` the preview log to confirm the server actually bound (mine logged `Port 5199 is already in use`), or (b) serve the freshly-built `dist/` with a tiny literal Node static server (no SPA fallback) on a unique port and probe a page-specific marker string (`curl …",
+    "session": "grep -c \"<known title>\"`) before pointing Playwright at it. Verified page content byte-for-byte via the marker grep, not just an HTTP 200. | THR-587 Game Manual Wiki W2 browser-verify."
   },
   {
     "num": "322",
