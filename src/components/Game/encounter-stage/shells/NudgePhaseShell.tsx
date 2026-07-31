@@ -15,6 +15,7 @@
 
 import { useSyncExternalStore } from 'react';
 import { EntityVisual } from '../../../shared/EntityVisual';
+import { Tooltip } from '../../../shared/Tooltip';
 import { SphereIcon } from '../../../shared/SphereIcon';
 import { CardKeywordChip } from '../../../shared/CardKeywordChip';
 import { CostPips, OddsPips } from '../../../shared/OddsPips';
@@ -306,27 +307,31 @@ export function NudgePhaseShell({
           data-testid="nudge-motive-strip"
           style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 18 }}
         >
-          <button
-            type="button"
-            data-testid="nudge-motive-chip"
-            onClick={onOpenMotive ? () => onOpenMotive(phase) : undefined}
-            disabled={!onOpenMotive}
-            style={{
-              padding: '3px 10px',
-              borderRadius: 999,
-              border: `1px solid ${GOLD}`,
-              background: 'rgba(212, 175, 55, 0.08)',
-              color: GOLD,
-              fontSize: 'var(--text-xs)',
-              letterSpacing: '0.12em',
-              cursor: onOpenMotive ? 'pointer' : 'default',
-            }}
-          >
-            {motive.chipLabel}
-          </button>
-          <span style={{ fontFamily: FONT_PROSE, fontStyle: 'italic', fontSize: 'var(--text-sm)', color: TEXT_WARM }}>
-            {motive.sentence}
-          </span>
+          <Tooltip id="ui.nudge_motive">
+            <button
+              type="button"
+              data-testid="nudge-motive-chip"
+              onClick={onOpenMotive ? () => onOpenMotive(phase) : undefined}
+              disabled={!onOpenMotive}
+              style={{
+                padding: '3px 10px',
+                borderRadius: 999,
+                border: `1px solid ${GOLD}`,
+                background: 'rgba(212, 175, 55, 0.08)',
+                color: GOLD,
+                fontSize: 'var(--text-xs)',
+                letterSpacing: '0.12em',
+                cursor: onOpenMotive ? 'pointer' : 'default',
+              }}
+            >
+              {motive.chipLabel}
+            </button>
+          </Tooltip>
+          <Tooltip id="ui.nudge_motive">
+            <span style={{ fontFamily: FONT_PROSE, fontStyle: 'italic', fontSize: 'var(--text-sm)', color: TEXT_WARM }}>
+              {motive.sentence}
+            </span>
+          </Tooltip>
         </div>
       )}
 
@@ -358,30 +363,40 @@ export function NudgePhaseShell({
 
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-            {testPanel.reachIconUrl && (
-              <img
-                src={testPanel.reachIconUrl}
-                alt=""
-                width={28}
-                height={28}
-                style={{ borderRadius: 4 }}
-                onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
-              />
-            )}
-            <span style={{ fontFamily: FONT_DISPLAY, fontSize: 'var(--text-sm)', color: 'rgba(212, 196, 158, 0.95)' }}>
-              {testPanel.reachLabel}
-            </span>
-            {testPanel.purposeLine && (
-              <span style={{ fontSize: 'var(--text-xs)', color: TEXT_WHISPER }}>
-                {testPanel.purposeLine}
+            {/* The reach chip chains to the world-model reach tooltip — the
+                "what is Stone" answer lives there already (THR-926). */}
+            <Tooltip id={`reach.${testPanel.reach}`}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                {testPanel.reachIconUrl && (
+                  <img
+                    src={testPanel.reachIconUrl}
+                    alt=""
+                    width={28}
+                    height={28}
+                    style={{ borderRadius: 4 }}
+                    onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+                  />
+                )}
+                <span style={{ fontFamily: FONT_DISPLAY, fontSize: 'var(--text-sm)', color: 'rgba(212, 196, 158, 0.95)' }}>
+                  {testPanel.reachLabel}
+                </span>
               </span>
+            </Tooltip>
+            {testPanel.purposeLine && (
+              <Tooltip id="ui.nudge_objective">
+                <span style={{ fontSize: 'var(--text-xs)', color: TEXT_WHISPER }}>
+                  {testPanel.purposeLine}
+                </span>
+              </Tooltip>
             )}
-            <span
-              data-testid="nudge-difficulty-word"
-              style={{ fontSize: 'var(--text-xs)', color: TEXT_WARM, letterSpacing: '0.08em', textTransform: 'uppercase' }}
-            >
-              {testPanel.difficultyWord}
-            </span>
+            <Tooltip id="ui.nudge_difficulty">
+              <span
+                data-testid="nudge-difficulty-word"
+                style={{ fontSize: 'var(--text-xs)', color: TEXT_WARM, letterSpacing: '0.08em', textTransform: 'uppercase' }}
+              >
+                {testPanel.difficultyWord}
+              </span>
+            </Tooltip>
             {designerView && (
               <span style={{ fontSize: 'var(--text-xs)', color: TEXT_WHISPER, fontFamily: 'monospace' }}>
                 d={testPanel.difficultyValue.toFixed(2)}
@@ -401,7 +416,9 @@ export function NudgePhaseShell({
                     color: FACTOR_POLARITY_COLORS[factor.polarity] ?? TEXT_WARM,
                   }}
                 >
-                  {factor.text}
+                  <Tooltip id="ui.nudge_factors">
+                    <span>{factor.text}</span>
+                  </Tooltip>
                 </li>
               ))}
             </ul>
@@ -410,6 +427,7 @@ export function NudgePhaseShell({
 
         {/* Forecast — the tier word is the only probability surface. */}
         <div style={{ textAlign: 'right', flexShrink: 0 }}>
+          <Tooltip id="ui.nudge_forecast">
           <div style={{ fontSize: 'var(--text-xs)', color: TEXT_WHISPER, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
             Forecast
           </div>
@@ -440,6 +458,7 @@ export function NudgePhaseShell({
               was {hand.baseForecast.word}
             </div>
           )}
+          </Tooltip>
           {designerView && (
             <div style={{ fontSize: 'var(--text-xs)', color: TEXT_WHISPER, fontFamily: 'monospace' }}>
               p={hand.forecast.probability.toFixed(3)}
@@ -451,14 +470,18 @@ export function NudgePhaseShell({
       {/* ── The hand ───────────────────────────────────────────── */}
       <div style={{ marginTop: 22 }}>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 10 }}>
-          <span style={{ fontFamily: FONT_DISPLAY, fontSize: 'var(--text-sm)', color: TEXT_WARM, letterSpacing: '0.08em' }}>
-            {NUDGE_HAND_HEADING}
-          </span>
+          <Tooltip id="ui.nudge_hand">
+            <span style={{ fontFamily: FONT_DISPLAY, fontSize: 'var(--text-sm)', color: TEXT_WARM, letterSpacing: '0.08em' }}>
+              {NUDGE_HAND_HEADING}
+            </span>
+          </Tooltip>
           {/* Rounded down: promising essence the player cannot actually spend
               is worse than under-reporting a fraction of it. */}
-          <span data-testid="nudge-remaining-essence" style={{ fontSize: 'var(--text-xs)', color: TEXT_WHISPER }}>
-            {Math.floor(hand.remainingEssence)} essence left
-          </span>
+          <Tooltip id="ui.nudge_essence">
+            <span data-testid="nudge-remaining-essence" style={{ fontSize: 'var(--text-xs)', color: TEXT_WHISPER }}>
+              {Math.floor(hand.remainingEssence)} essence left
+            </span>
+          </Tooltip>
         </div>
 
         {hand.cards.length === 0 ? (
