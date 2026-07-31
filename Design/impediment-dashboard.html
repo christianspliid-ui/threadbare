@@ -6030,6 +6030,19 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "**Recover `stdout` from the thrown error rather than treating a non-zero exit as no answer:** `catch (error) { const stdout = error?.stdout; if (stdout?.length) return stdout.toString().trim(); return null; }`. Generally — before wrapping a git plumbing command in the repo's fail-soft `run()` helper, check whether it uses exit status to *report a result* rather than to report failure. `merge-tree`, `diff --quiet`, and `grep` all do; for those, exit code and stdout carry different halves of the answer and discarding either one is a silent defect.",
     "session": "THR-897 armed-PR classification, `tb-opus-pickup` hourly run. Note the unit tests could not have caught this: they inject the conflict-file lookup for determinism (NFP #3), which is correct design and also means the IO wrapper is only ever exercised by a live run. *(Renumbered from #356 during the union-merge duplicate repair: `main` had already published a different row as #356, and the rule is keep the number on the row already on `main`, renumber the unmerged newcomer — following the checker's literal \"keep the row that appears FIRST in the file\" advice would have renumbered the published row and broken its existing cross-references.)*"
+  },
+  {
+    "num": "363",
+    "id": 363,
+    "count": 1,
+    "date": "2026-07-31",
+    "category": "process",
+    "description": "**Multiple armed auto-merge PRs starve the long-CI one: every fast docs merge re-knocks the code PR to BEHIND, and it loses the race indefinitely.** PR #1132 (code, ~15-min required check) sat armed while four other armed PRs shared the queue. Each `gh pr update-branch` bought a fresh CI window, and each window was stolen seconds before auto-merge could fire — a docs PR (CI-skipped, ~1-min merge) or another code PR landed on main mid-run, six consecutive windows over ~2h (2 manual updates + a 4-attempt scripted loop, all lost). Sibling of THR-897's armed-BEHIND idling, but a distinct shape: the sweep that updates armed PRs one at a time in arbitrary order *causes* it, because each fast merge invalidates every other armed PR's window.",
+    "consequence": "The one PR a human was waiting on (the vertical-slice content) merged ~2h late; the sweep-fix PR #1175 was itself among the starved.",
+    "impact": "M",
+    "workaroundFound": true,
+    "workaround": "Drain order + tight loop: update the short-CI (docs) armed PRs first and wait each to merge so main settles, then hold a ~20s poll on the code PR that re-runs `update-branch` the moment it reads BEHIND — the fresh window starts seconds after the disruption instead of minutes. Landed on the second window. Recorded for THR-897's next iteration: drain short-CI before long-CI, or serialize so only one armed PR has checks in flight.",
+    "session": "Attended session 2026-07-31 evening, landing PR #1132 for the THR-902 slice roster. Full account on THR-897. — renumbered from #360 (union-merge collision with the NUL-byte row already on main; #361/#362 taken)."
   }
 ];
 // ── End data ──

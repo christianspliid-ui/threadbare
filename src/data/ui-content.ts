@@ -287,6 +287,39 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     label: 'Divine Actions',
     desc: 'Open the wheel of interventions available from your current position.',
   },
+
+  // ─── Nudge stage — test panel (THR-926) ───────────────────────────
+  // What-and-why explanations for the encounter test panel. Plain register,
+  // words only — these explain the surface's vocabulary, they never leak the
+  // numbers behind it (ruling 6).
+  'ui.nudge_motive': {
+    label: 'Why They Are Here',
+    desc: 'How this moment found the mortal. BY CHOICE — they sought it. A MISSION — duty sent them. CHANCE — the road delivered it. THE GOD\'S HAND — your influence led here. The sentence tells the story.',
+  },
+  'ui.nudge_objective': {
+    label: 'The Objective',
+    desc: 'What the mortal is trying to do in this step. When you let fate decide, fate rolls against exactly this — every outcome, from disaster to triumph, is an ending of this one attempt.',
+  },
+  'ui.nudge_difficulty': {
+    label: 'Difficulty',
+    desc: 'How demanding the objective is: gentle, fair, steep, or severe. Difficulty belongs to the situation — your nudges improve the mortal\'s chances against it, they never shrink the mountain.',
+  },
+  'ui.nudge_factors': {
+    label: 'The Balance',
+    desc: 'The circumstances weighing on this attempt. Green works in the mortal\'s favor, red against them; unmarked is context without a pull. Factors come from who they are, their state, and the place itself.',
+  },
+  'ui.nudge_forecast': {
+    label: 'Fate\'s Forecast',
+    desc: 'How the attempt looks before the roll: doomed, perilous, uncertain, favorable, or fated. Nudge cards move the forecast — but it is never a promise. You nudge; fate rolls; the ending is fate\'s alone.',
+  },
+  'ui.nudge_essence': {
+    label: 'Essence to Spend',
+    desc: 'Your reserve of divine power, shared across the whole world — not a per-encounter allowance. Cards cost essence to play; the reserve refills with time. Deep spending here is thin spending elsewhere.',
+  },
+  'ui.nudge_hand': {
+    label: 'The Nudge Hand',
+    desc: 'The ways you can lean on this moment. Each card is one push — steadying a hand, bracing a beam — bought with essence. Play any or none: the cards tilt the forecast, then fate rolls the ending.',
+  },
 };
 
 /** Lookup a UI tooltip by ID. Returns null if not found. */
