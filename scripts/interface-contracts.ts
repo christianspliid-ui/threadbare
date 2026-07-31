@@ -1231,7 +1231,12 @@ export const CONTRACTS: readonly Contract[] = [
     ulTerms: ['Archetype Drift', 'Nudge'],
     mechanism: {
       kind: 'function',
-      symbols: ['applyAgentDecidedBranches', 'decideBranchPole', 'driftAxisIdForValuePair'],
+      symbols: [
+        'applyAgentDecidedBranches',
+        'decideBranchPole',
+        'decideBranchRoute',
+        'driftAxisIdForValuePair',
+      ],
       module: 'src/engine/encounters/branchDecision.ts',
     },
     writeSites: ['src/engine/unifiedActionResolution.ts'],

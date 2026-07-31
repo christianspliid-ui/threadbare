@@ -851,6 +851,13 @@ export type NudgeRider =
  *   an ordinary encounter step names no axis and therefore abstains from every
  *   branch decision — the template validator warns rather than guessing.
  *
+ * - **Route-explicit** `{ route, weight? }` — the N-route form (THR-898). Names a
+ *   {@link BranchRoute.key} directly rather than a value axis, for the case a
+ *   card argues for one *course* among several toward the same objective
+ *   ("slip him a purse") where no axis cleanly separates the options. It counts
+ *   only toward the route it names, and abstains from every two-pole decision —
+ *   a route key is not an axis and must never be read as one.
+ *
  * `weight` scales the card's pull; omitted ⇒ {@link POLE_LEAN_DEFAULT_WEIGHT}.
  * A heavier card is a louder argument, not a better one — it moves the
  * direction the moment takes, never the odds it takes it at (that is
@@ -860,6 +867,10 @@ export type StepNudgePoleLean =
   | {
       readonly axis: ValuePair;
       readonly toward: BranchPoleKey;
+      readonly weight?: number;
+    }
+  | {
+      readonly route: string;
       readonly weight?: number;
     }
   | 'a'
@@ -1149,11 +1160,12 @@ export interface ActionStepBranch {
    * recorded a `choiceId` was the retired player-pick (`authoredChoices`).
    *
    * Present ⇒ at the moment `branchOnStep` resolves, the engine reads the
-   * mortal's live position on {@link BranchDecision.axis} (their standing
+   * mortal's live position on {@link BranchPoleDecision.axis} (their standing
    * `AxiologicalProfile` baseline plus accumulated drift), adds the net
    * {@link StepNudge.poleLean} of the cards the god committed on that step, and
-   * records the resulting pole through the **existing** choice-history path.
-   * `variants` must then key exactly `'positive'` and `'negative'` — so the
+   * records the resulting key through the **existing** choice-history path.
+   * `variants` must then key exactly the decision's keys — `'positive'` /
+   * `'negative'` in pole mode, the declared route keys in route mode — so the
    * decision arrives at `resolveStepDefinition` as an ordinary recorded choice
    * and no second branch-resolution path exists.
    *
@@ -1163,10 +1175,63 @@ export interface ActionStepBranch {
   readonly decidedBy?: BranchDecision;
 }
 
-/** Configuration for an agent-decided branch (THR-894). */
-export interface BranchDecision {
+/**
+ * A two-pole agent-decided fork (THR-894): one axis, two opposed answers.
+ *
+ * The question is *which way* a mortal leans, so `variants` key `'positive'` and
+ * `'negative'` and the decision is a signed number collapsed to a side.
+ */
+export interface BranchPoleDecision {
   /** The value axis this fork is a question about. */
   readonly axis: ValuePair;
+}
+
+/**
+ * One course toward the objective in an N-route fork (THR-898).
+ *
+ * A route is not a pole. Poles are the two ends of one question; routes are
+ * several *different* questions pointing at the same door — bribe the wainwright
+ * (Gold), intimidate him (Iron), win him over (Heart). What separates them is
+ * primarily **capability**: the mortal takes the course they are actually good
+ * at, which is why {@link reach} is required and {@link axis} is not.
+ */
+export interface BranchRoute {
+  /** Variant key this route selects. Unique within the branch. */
+  readonly key: string;
+  /** The reach whose capability makes this course come naturally to the mortal. */
+  readonly reach: ReachDomain;
+  /**
+   * Optional value axis this course *also* speaks to. Present ⇒ the mortal's
+   * standing on it counts toward the route, and taking the route drifts them —
+   * exactly as a two-pole decision does. Absent ⇒ the route is a pure question
+   * of competence and nothing drifts.
+   */
+  readonly axis?: ValuePair;
+  /** Which pole of {@link axis} this course sits at. Required when `axis` is present. */
+  readonly toward?: BranchPoleKey;
+}
+
+/**
+ * An N-route agent-decided fork (THR-898): several courses, one objective.
+ *
+ * `variants` must key exactly the declared route keys — same contract as pole
+ * mode, same reason (a key that matches nothing is silently unreachable
+ * forever, the THR-844 shape).
+ */
+export interface BranchRouteDecision {
+  readonly routes: readonly BranchRoute[];
+}
+
+/**
+ * Configuration for an agent-decided branch: two poles (THR-894) or N routes
+ * (THR-898). Discriminated by the presence of `routes` — see
+ * {@link isRouteDecision}.
+ */
+export type BranchDecision = BranchPoleDecision | BranchRouteDecision;
+
+/** Type guard: distinguish an N-route decision from a two-pole one. */
+export function isRouteDecision(decision: BranchDecision): decision is BranchRouteDecision {
+  return 'routes' in decision;
 }
 
 /**

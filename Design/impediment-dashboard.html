@@ -5926,6 +5926,19 @@ const DATA = [
     "workaroundFound": false,
     "workaround": "**Diagnosis only; not fixed here.** The `code` filter is doing its intended job (keep docs PRs fast) — the defect is that doc-*validating* steps were added to the code-gated job rather than to a job gated on docs changing. Candidate fix: a second `detect` output (`docs`) and a small always-cheap job running `check:impediment-ids` + `check:generated-freshness` + `check:wiki-freshness:blocking` whenever `docs == 'true'`, leaving the heavy suite code-gated. Interim manual check when touching `Docs/impediments.md`: run `npm run check:impediment-ids` and `npm run check:generated-freshness` locally before pushing — neither will run in CI. Filed as THR-909.",
     "session": "`tb-opus-pickup` hourly run 2026-07-31, Step 0.8 armed-PR sweep on PR #1096."
+  },
+  {
+    "num": "355",
+    "id": 355,
+    "count": 1,
+    "date": "2026-07-31",
+    "category": "testing",
+    "description": "**A \"clear leader\" test fixture was silently a coin flip, because domain capability saturates and the test compared post-sigmoid values.** THR-898 scores routes on `computeCapability`, which is `sigmoid(rawScore, midpoint 10, k 0.4)`. Fixtures written as `{ gold: 30, iron: 24 }` read as an obvious 6-point lead in raw terms and resolve to capabilities of 0.99966 and 0.99631 — a difference of 0.0034, well inside the decision's `ROUTE_DECISION_TIE_EPSILON` of 0.02. The fork therefore took the seeded tiebreak path, and the assertion failed against a route chosen by the rng stub rather than by the term under test. Three of eleven fixtures were affected, and the failure presented as a wrong-winner assertion, which invites debugging the scorer instead of the fixture.",
+    "consequence": "Two verification cycles. The dangerous direction is the inverse, which does not fail: a fixture that happens to assert the route the tiebreak picks would pass while proving nothing about capability at all — a vacuous test with a green tick, the shape `reference_vacuous_probe_empty_population` describes.",
+    "impact": "Small",
+    "workaroundFound": true,
+    "workaround": "**When a fixture feeds a saturating transform, pick inputs in the responsive band and say so in the fixture.** For `computeCapability` that is raw ~4–16; above ~20 the curve is flat and raw differences of any size compress below any sane epsilon. The fix here names the constant (`GOLD_LEADS`) with a comment stating the band and why, so the next author does not re-derive it. Generally: assert on the value the code actually compares (post-transform), not the input that looks decisive.",
+    "session": "THR-898 N-route forks, `tb-opus-pickup` hourly run. Same class as the outcome-ladder tuning traps: a game constant tuned for play makes a range of test inputs indistinguishable, and the test never says which range it assumed."
   }
 ];
 // ── End data ──
