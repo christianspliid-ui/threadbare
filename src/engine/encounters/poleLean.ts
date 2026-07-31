@@ -54,6 +54,12 @@ export function signedLeanWeight(
     return lean === 'a' ? POLE_LEAN_DEFAULT_WEIGHT : -POLE_LEAN_DEFAULT_WEIGHT;
   }
 
+  // A route-explicit card (THR-898) names a course, not an axis. It has no
+  // signed direction on any axis and must abstain from every pole decision —
+  // reading a route key as an axis is precisely the plausible-and-wrong sum
+  // this module's axis check exists to prevent.
+  if ('route' in lean) return 0;
+
   if (axis !== undefined && lean.axis !== axis) return 0;
 
   const weight = lean.weight ?? POLE_LEAN_DEFAULT_WEIGHT;
@@ -63,24 +69,69 @@ export function signedLeanWeight(
 }
 
 /**
- * Net signed lean of a played hand, on the ±1 axis scale.
+ * The unsigned pull one card contributes toward a named route (THR-898).
  *
- * Fail-soft: a played id with no matching authored card is skipped, matching
- * every other `activeNudges` reader in `nudges.ts`.
+ * Routes are not opposed the way poles are — a card arguing for "bribe" is not
+ * thereby arguing against "intimidate", it simply says nothing about it. So this
+ * is unsigned and per-route: a card either backs this course or abstains.
+ *
+ * Fail-soft on a non-finite authored `weight`, same as {@link signedLeanWeight}.
  */
-export function sumHandLean(
+export function routeLeanWeight(
+  lean: StepNudgePoleLean | undefined,
+  routeKey: string,
+): number {
+  if (lean === undefined || lean === 'a' || lean === 'b') return 0;
+  if (!('route' in lean)) return 0;
+  if (lean.route !== routeKey) return 0;
+
+  const weight = lean.weight ?? POLE_LEAN_DEFAULT_WEIGHT;
+  if (!Number.isFinite(weight)) return 0;
+
+  return Math.abs(weight);
+}
+
+/**
+ * Sum a per-card weight over the cards the god actually committed.
+ *
+ * The one loop behind both {@link sumHandLean} and {@link sumRouteLean}. Two
+ * copies of this loop is how the pole sum and the route sum would drift apart
+ * the first time either is tuned — the `assignAmbitionToActor` failure THR-885
+ * recorded, and the reason the meeting delegates here rather than keeping its
+ * own. Fail-soft: a played id with no matching authored card is skipped,
+ * matching every other `activeNudges` reader in `nudges.ts`.
+ */
+function sumOverPlayedCards(
   nudges: readonly StepNudge[] | undefined,
   playedNudgeIds: readonly string[] | undefined,
-  axis?: ValuePair,
+  weightOf: (lean: StepNudgePoleLean | undefined) => number,
 ): number {
   if (!nudges || !playedNudgeIds || playedNudgeIds.length === 0) return 0;
 
   const byId = new Map(nudges.map((n) => [n.id, n]));
   let total = 0;
   for (const id of playedNudgeIds) {
-    total += signedLeanWeight(byId.get(id)?.poleLean, axis);
+    total += weightOf(byId.get(id)?.poleLean);
   }
   return total;
+}
+
+/** Net signed lean of a played hand, on the ±1 axis scale. */
+export function sumHandLean(
+  nudges: readonly StepNudge[] | undefined,
+  playedNudgeIds: readonly string[] | undefined,
+  axis?: ValuePair,
+): number {
+  return sumOverPlayedCards(nudges, playedNudgeIds, (lean) => signedLeanWeight(lean, axis));
+}
+
+/** Total pull a played hand exerts toward one named route (THR-898). */
+export function sumRouteLean(
+  nudges: readonly StepNudge[] | undefined,
+  playedNudgeIds: readonly string[] | undefined,
+  routeKey: string,
+): number {
+  return sumOverPlayedCards(nudges, playedNudgeIds, (lean) => routeLeanWeight(lean, routeKey));
 }
 
 /**
@@ -102,4 +153,20 @@ export function classifyNetLean(signedLean: number, epsilon = 0): NetPoleLean {
 /** Whether a card argues on a given axis at all — the validator's warn predicate. */
 export function leansOnAxis(lean: StepNudgePoleLean | undefined, axis: ValuePair): boolean {
   return signedLeanWeight(lean, axis) !== 0;
+}
+
+/**
+ * Whether a card argues for a given route at all (THR-898).
+ *
+ * Two ways to argue for a course: name it outright, or argue on the axis the
+ * course declares. Both count here, because both are levers the god actually
+ * has — the validator's warn is about whether the fork is *steerable*, not about
+ * which authoring form was used.
+ */
+export function leansOnRoute(
+  lean: StepNudgePoleLean | undefined,
+  route: { readonly key: string; readonly axis?: ValuePair },
+): boolean {
+  if (routeLeanWeight(lean, route.key) !== 0) return true;
+  return route.axis !== undefined && leansOnAxis(lean, route.axis);
 }

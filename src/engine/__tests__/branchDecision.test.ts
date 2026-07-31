@@ -24,15 +24,31 @@
  */
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { executeStepResult } from '../unifiedActionResolution';
-import { decideBranchPole, driftAxisIdForValuePair, readLiveAxisLean } from '../encounters/branchDecision';
-import { classifyNetLean, signedLeanWeight, sumHandLean } from '../encounters/poleLean';
+import {
+  decideBranchPole,
+  decideBranchRoute,
+  driftAxisIdForValuePair,
+  readLiveAxisLean,
+  scoreRoutes,
+} from '../encounters/branchDecision';
+import {
+  classifyNetLean,
+  routeLeanWeight,
+  signedLeanWeight,
+  sumHandLean,
+  sumRouteLean,
+} from '../encounters/poleLean';
 import { WorldGraph } from '../graph';
 import { clearTraces, enableTracing, disableTracing, getTraces } from '../traceBuffer';
 import { assertValidStep, collectUnleanableBranchWarnings } from '../../testing/contentInvariants';
 import {
   BRANCH_DECISION_DRIFT_MAGNITUDE,
   BRANCH_DECISION_NEUTRAL_EPSILON,
+  MAX_BRANCH_ROUTES,
   POLE_LEAN_DEFAULT_WEIGHT,
+  ROUTE_DECISION_AXIS_WEIGHT,
+  ROUTE_DECISION_CAPABILITY_WEIGHT,
+  ROUTE_DECISION_CARD_WEIGHT,
 } from '../../data/nudge-constants';
 import type { GameState } from '../../types/gameState';
 import type {
@@ -369,6 +385,374 @@ describe('THR-894 — pole lean arithmetic', () => {
     expect(result.decidedBy).toBe('coin');
     expect(result.pole).toBe('positive');
     expect(undecided.draws()).toBe(1);
+  });
+});
+
+// ─── THR-898: N-route agent-decided forks ────────────────────────────
+
+/**
+ * Three routes to one door, separated primarily by which reach the mortal is
+ * good at. `capabilities` seeds the actor's raw domain scores so a route can be
+ * made genuinely theirs — the same `computeCapability` read resolution uses.
+ */
+function buildRouteState(
+  capabilities: Partial<Record<string, number>>,
+  profile: Partial<Record<string, number>> = {},
+): GameState {
+  const state = buildState(0);
+  state.graph.updateNode(ACTOR, {
+    properties: {
+      actorType: 'individual',
+      axiologicalProfile: profile,
+      domainCapabilities: capabilities,
+    },
+  });
+  return state;
+}
+
+function routeCard(id: string, route: string, weight?: number): StepNudge {
+  return {
+    id,
+    name: 'Nudge a course',
+    essenceCost: 0,
+    forecastDelta: 0,
+    fiction: 'A purse, or a threat, or a kindness.',
+    effectLine: 'Argues for one way in.',
+    poleLean: { route, ...(weight === undefined ? {} : { weight }) },
+  } as unknown as StepNudge;
+}
+
+/** The Broken Wheel shape: bribe (gold) / intimidate (iron) / persuade (heart). */
+function routeTemplate(nudges: readonly StepNudge[] = []): UnifiedActionTemplate {
+  const branch: ActionStepBranch = {
+    branchOnStep: 0,
+    decidedBy: {
+      routes: [
+        { key: 'bribe', reach: 'gold' },
+        { key: 'intimidate', reach: 'iron' },
+        { key: 'persuade', reach: 'heart', axis: AXIS, toward: 'positive' },
+      ],
+    },
+    variants: {
+      bribe: concreteStep({ duration: { min: 7, max: 7 } }),
+      intimidate: concreteStep({ duration: { min: 5, max: 5 } }),
+      persuade: concreteStep({ duration: { min: 3, max: 3 } }),
+    },
+    fallback: concreteStep({ duration: { min: 1, max: 1 } }),
+  } as unknown as ActionStepBranch;
+
+  return {
+    ...decidedTemplate(nudges),
+    id: 'encounter.route-decision-test',
+    steps: [concreteStep({ nudges }), branch],
+  } as unknown as UnifiedActionTemplate;
+}
+
+/** Drive the real resolution and report which route the branch became. */
+function resolveRoute(
+  capabilities: Partial<Record<string, number>>,
+  options: {
+    profile?: Partial<Record<string, number>>;
+    nudges?: readonly StepNudge[];
+    activeNudges?: string[];
+    rng?: () => number;
+  } = {},
+): { route: string; state: GameState; action: UnifiedAction } {
+  const state = buildRouteState(capabilities, options.profile ?? {});
+  const template = routeTemplate(options.nudges ?? []);
+  const action = makeAction(template, options.activeNudges ?? []);
+
+  const { updatedAction } = executeStepResult(
+    action, template, 'success', [], state, options.rng ?? (() => 0.99), START_TICK,
+  );
+
+  const byDuration: Record<number, string> = { 7: 'bribe', 5: 'intimidate', 3: 'persuade', 1: 'fallback' };
+  return { route: byDuration[updatedAction.stepDuration] ?? 'unknown', state, action: updatedAction };
+}
+
+describe('THR-898 — N-route forks reach their variants', () => {
+  beforeEach(() => { clearTraces(); enableTracing(); });
+  afterEach(() => { disableTracing(); });
+
+  it('the mortal takes the course they are actually good at — and it is NOT the fallback', () => {
+    const { route, action } = resolveRoute({ gold: 40, iron: 10, heart: 10 });
+    expect(route).toBe('bribe');
+    expect(action.currentStep).toBe(1);
+    expect(action.choiceHistory?.find(c => c.stepIndex === 0)?.choiceId).toBe('bribe');
+  });
+
+  it('FALSIFIER 1 — flipping the capability ranking flips the route', () => {
+    expect(resolveRoute({ gold: 40, iron: 10, heart: 10 }).route).toBe('bribe');
+    expect(resolveRoute({ gold: 10, iron: 40, heart: 10 }).route).toBe('intimidate');
+    expect(resolveRoute({ gold: 10, iron: 10, heart: 40 }).route).toBe('persuade');
+  });
+
+  // Raw scores sit near the sigmoid's midpoint (10, k=0.4) deliberately: above
+  // ~20 the curve saturates and a 6-point raw gap compresses to <0.01
+  // capability, which lands inside ROUTE_DECISION_TIE_EPSILON and makes a
+  // "clear leader" fixture silently a tie.
+  const GOLD_LEADS = { gold: 12, iron: 10, heart: 4 };
+
+  it('FALSIFIER 2 — one route card carries a mortal across to a rival course', () => {
+    expect(resolveRoute(GOLD_LEADS).route).toBe('bribe');
+
+    // The same mortal, with one committed card arguing for the harder line.
+    const card = routeCard('n1', 'intimidate', 1);
+    expect(resolveRoute(GOLD_LEADS, { nudges: [card], activeNudges: ['n1'] }).route).toBe('intimidate');
+  });
+
+  it('a route card the god did NOT commit does not move the decision', () => {
+    const card = routeCard('n1', 'intimidate', 1);
+    expect(resolveRoute(GOLD_LEADS, { nudges: [card] }).route).toBe('bribe');
+  });
+
+  it('a card naming a DIFFERENT route abstains from this one', () => {
+    // Backs persuade, which trails far enough that a default-weight card cannot
+    // close the gap — so the winner is unchanged, and neither bribe nor
+    // intimidate absorbed any of it.
+    const card = routeCard('n1', 'persuade');
+    expect(
+      resolveRoute(GOLD_LEADS, { nudges: [card], activeNudges: ['n1'] }).route,
+    ).toBe('bribe');
+
+    // ...and the card is not merely inert: weighted enough, it does carry its
+    // own route. Without this the assertion above would pass on a card that
+    // contributed nothing anywhere.
+    const heavy = routeCard('n1', 'persuade', 1);
+    expect(
+      resolveRoute(GOLD_LEADS, { nudges: [heavy], activeNudges: ['n1'] }).route,
+    ).toBe('persuade');
+  });
+
+  it('a route-explicit card abstains from every two-pole decision', () => {
+    // The pole fork asks about an axis; a route key names no axis and must not
+    // be read as one. Same mortal, same card, decided by profile alone.
+    const card = routeCard('n1', 'positive', 1);
+    expect(resolveFork(-0.2, [card], ['n1']).pole).toBe('negative');
+  });
+
+  it('a route declaring an axis is moved by the mortal standing on it', () => {
+    // Heart and iron tie on capability; persuade also asks about honesty.
+    const capabilities = { gold: 2, iron: 22, heart: 22 };
+    expect(resolveRoute(capabilities, { profile: { [AXIS]: 0.9 } }).route).toBe('persuade');
+    expect(resolveRoute(capabilities, { profile: { [AXIS]: -0.9 } }).route).toBe('intimidate');
+  });
+
+  it('FALSIFIER 3 — a tie is settled by the seed, and the same seed replays it', () => {
+    const tied = { gold: 25, iron: 25, heart: 25 };
+    const low = () => 0;
+    const high = () => 0.99;
+
+    const first = resolveRoute(tied, { rng: low }).route;
+    expect(resolveRoute(tied, { rng: low }).route).toBe(first);
+
+    const other = resolveRoute(tied, { rng: high }).route;
+    expect(resolveRoute(tied, { rng: high }).route).toBe(other);
+    // The draw must actually select — two ends of the stream reaching the same
+    // route would pass a tiebreak that ignored its input entirely.
+    expect(other).not.toBe(first);
+  });
+
+  it('takes no draw when one route wins outright', () => {
+    const decisive = countingRng();
+    executeStepResult(
+      makeAction(routeTemplate()), routeTemplate(), 'success', [],
+      buildRouteState({ gold: 40, iron: 5, heart: 5 }), decisive.rng, START_TICK,
+    );
+    const outrightDraws = decisive.draws();
+
+    const tiedCounter = countingRng();
+    executeStepResult(
+      makeAction(routeTemplate()), routeTemplate(), 'success', [],
+      buildRouteState({ gold: 25, iron: 25, heart: 25 }), tiedCounter.rng, START_TICK,
+    );
+
+    expect(tiedCounter.draws()).toBeGreaterThan(outrightDraws);
+  });
+
+  it('an axis-declaring route drifts the mortal; a pure-competence route does not', () => {
+    const axisId = driftAxisIdForValuePair(AXIS);
+
+    const persuaded = resolveRoute({ gold: 2, iron: 2, heart: 40 }, { profile: { [AXIS]: 0.5 } });
+    expect(persuaded.route).toBe('persuade');
+    const entry = persuaded.state.archetypeDrift.find(d => d.agentId === ACTOR && d.axisId === axisId);
+    expect(entry?.toPosition).toBeCloseTo(BRANCH_DECISION_DRIFT_MAGNITUDE, 6);
+
+    // Bribe declares no axis — there is no claim about character to record.
+    const bribed = resolveRoute({ gold: 40, iron: 5, heart: 5 });
+    expect(bribed.route).toBe('bribe');
+    expect(bribed.state.archetypeDrift).toHaveLength(0);
+  });
+
+  it('emits one branch_decided trace carrying every route score', () => {
+    resolveRoute({ gold: 40, iron: 10, heart: 10 });
+    const decided = tracesOfCategory('branch_decided');
+    expect(decided).toHaveLength(1);
+    expect(decided[0].mode).toBe('route');
+    expect(decided[0].resolvedRoute).toBe('bribe');
+    expect(decided[0].decidedBy).toBe('fit');
+
+    const scores = decided[0].routeScores as Array<Record<string, unknown>>;
+    expect(scores.map(s => s.key)).toEqual(['bribe', 'intimidate', 'persuade']);
+    expect(scores[0].capability as number).toBeGreaterThan(scores[1].capability as number);
+  });
+});
+
+describe('THR-898 — route scoring and lean arithmetic', () => {
+  it('scoreRoutes weights capability, axis standing, and cards by their constants', () => {
+    const state = buildRouteState({ gold: 20, heart: 20 }, { [AXIS]: 1 });
+    const cards = [routeCard('n1', 'bribe', 1)];
+    const scores = scoreRoutes(
+      state, ACTOR,
+      [{ key: 'bribe', reach: 'gold' }, { key: 'persuade', reach: 'heart', axis: AXIS, toward: 'positive' }],
+      cards, ['n1'],
+    );
+
+    const bribe = scores.find(s => s.key === 'bribe')!;
+    const persuade = scores.find(s => s.key === 'persuade')!;
+
+    expect(bribe.axisLean).toBe(0);            // declares no axis
+    expect(bribe.cardLean).toBeCloseTo(1, 6);  // one card, weight 1
+    expect(bribe.score).toBeCloseTo(
+      ROUTE_DECISION_CAPABILITY_WEIGHT * bribe.capability + ROUTE_DECISION_CARD_WEIGHT * 1, 6,
+    );
+
+    expect(persuade.axisLean).toBeCloseTo(1, 6); // profile +1, toward positive
+    expect(persuade.cardLean).toBe(0);           // the card names another route
+    expect(persuade.score).toBeCloseTo(
+      ROUTE_DECISION_CAPABILITY_WEIGHT * persuade.capability + ROUTE_DECISION_AXIS_WEIGHT * 1, 6,
+    );
+  });
+
+  it('a route at the negative pole is served by a mortal leaning negative', () => {
+    const state = buildRouteState({ shadow: 20 }, { [AXIS]: -1 });
+    const [negative] = scoreRoutes(
+      state, ACTOR, [{ key: 'cunning', reach: 'shadow', axis: AXIS, toward: 'negative' }], [], [],
+    );
+    // Without the toward-sign, a -1 standing would *subtract* from a route built
+    // for exactly that mortal.
+    expect(negative.axisLean).toBeCloseTo(1, 6);
+  });
+
+  it('sumRouteLean counts only cards naming the route, and skips unknown ids', () => {
+    const cards = [routeCard('n1', 'bribe'), routeCard('n2', 'intimidate')];
+    expect(sumRouteLean(cards, ['n1'], 'bribe')).toBeCloseTo(POLE_LEAN_DEFAULT_WEIGHT, 6);
+    expect(sumRouteLean(cards, ['n2'], 'bribe')).toBe(0);
+    expect(sumRouteLean(cards, ['nope'], 'bribe')).toBe(0);
+  });
+
+  it('a non-finite route weight abstains rather than poisoning the sum', () => {
+    const bad = { ...routeCard('n1', 'bribe'), poleLean: { route: 'bribe', weight: Number.NaN } } as unknown as StepNudge;
+    expect(routeLeanWeight(bad.poleLean, 'bribe')).toBe(0);
+    expect(sumRouteLean([bad], ['n1'], 'bribe')).toBe(0);
+  });
+
+  it('an axis-explicit card contributes nothing to a route lean by name', () => {
+    expect(routeLeanWeight({ axis: AXIS, toward: 'positive' }, 'bribe')).toBe(0);
+    expect(routeLeanWeight('a', 'bribe')).toBe(0);
+  });
+
+  it('decideBranchRoute draws once for a tie and never for a clear winner', () => {
+    const clear = countingRng();
+    const won = decideBranchRoute(
+      [{ key: 'a', capability: 0.9, axisLean: 0, cardLean: 0, score: 0.9 },
+       { key: 'b', capability: 0.2, axisLean: 0, cardLean: 0, score: 0.2 }],
+      clear.rng,
+    );
+    expect(won.routeKey).toBe('a');
+    expect(won.decidedBy).toBe('fit');
+    expect(clear.draws()).toBe(0);
+
+    const tie = countingRng(0);
+    const drawn = decideBranchRoute(
+      [{ key: 'a', capability: 0.5, axisLean: 0, cardLean: 0, score: 0.5 },
+       { key: 'b', capability: 0.5, axisLean: 0, cardLean: 0, score: 0.5 }],
+      tie.rng,
+    );
+    expect(drawn.decidedBy).toBe('tiebreak');
+    expect(tie.draws()).toBe(1);
+  });
+
+  it('an rng returning exactly 1 stays inside the tied set', () => {
+    const result = decideBranchRoute(
+      [{ key: 'a', capability: 0.5, axisLean: 0, cardLean: 0, score: 0.5 },
+       { key: 'b', capability: 0.5, axisLean: 0, cardLean: 0, score: 0.5 }],
+      () => 1,
+    );
+    expect(['a', 'b']).toContain(result.routeKey);
+  });
+
+  it('an empty route list resolves fail-soft rather than throwing (NFP #4)', () => {
+    expect(() => decideBranchRoute([], () => 0.5)).not.toThrow();
+    expect(decideBranchRoute([], () => 0.5).routeKey).toBe('');
+  });
+});
+
+describe('THR-898 — route branch validation', () => {
+  it('accepts a route branch whose variants key exactly its routes', () => {
+    expect(() => assertValidStep(routeTemplate().steps[1], 'ok')).not.toThrow();
+  });
+
+  it('rejects a route branch with a variant key matching no route', () => {
+    const branch = routeTemplate().steps[1] as ActionStepBranch;
+    const typo = {
+      ...branch,
+      variants: { bribe: branch.variants.bribe, intimidat: branch.variants.intimidate, persuade: branch.variants.persuade },
+    } as unknown as ActionStepBranch;
+    expect(() => assertValidStep(typo, 'typo')).toThrow(/must key exactly its routes/);
+  });
+
+  it('rejects duplicate route keys', () => {
+    const branch = routeTemplate().steps[1] as ActionStepBranch;
+    const dupe = {
+      ...branch,
+      decidedBy: { routes: [{ key: 'bribe', reach: 'gold' }, { key: 'bribe', reach: 'iron' }] },
+      variants: { bribe: branch.variants.bribe },
+    } as unknown as ActionStepBranch;
+    expect(() => assertValidStep(dupe, 'dupe')).toThrow(/duplicate route key/);
+  });
+
+  it('rejects a route naming a reach that does not exist', () => {
+    const branch = routeTemplate().steps[1] as ActionStepBranch;
+    const bogus = {
+      ...branch,
+      decidedBy: { routes: [{ key: 'bribe', reach: 'coin' }, { key: 'intimidate', reach: 'iron' }] },
+      variants: { bribe: branch.variants.bribe, intimidate: branch.variants.intimidate },
+    } as unknown as ActionStepBranch;
+    expect(() => assertValidStep(bogus, 'bogus')).toThrow(/invalid reach/);
+  });
+
+  it('rejects a route declaring an axis with no toward pole', () => {
+    const branch = routeTemplate().steps[1] as ActionStepBranch;
+    const unsigned = {
+      ...branch,
+      decidedBy: { routes: [{ key: 'bribe', reach: 'gold' }, { key: 'persuade', reach: 'heart', axis: AXIS }] },
+      variants: { bribe: branch.variants.bribe, persuade: branch.variants.persuade },
+    } as unknown as ActionStepBranch;
+    expect(() => assertValidStep(unsigned, 'unsigned')).toThrow(/no toward pole/);
+  });
+
+  it('rejects a route branch over the MAX_BRANCH_ROUTES cap', () => {
+    const branch = routeTemplate().steps[1] as ActionStepBranch;
+    const routes = Array.from({ length: MAX_BRANCH_ROUTES + 1 }, (_, i) => ({ key: `r${i}`, reach: 'gold' }));
+    const variants = Object.fromEntries(routes.map(r => [r.key, branch.variants.bribe]));
+    const tooMany = { ...branch, decidedBy: { routes }, variants } as unknown as ActionStepBranch;
+    expect(() => assertValidStep(tooMany, 'toomany')).toThrow(/over the MAX_BRANCH_ROUTES cap/);
+  });
+
+  it('warns per route the god cannot argue for', () => {
+    // No cards at all: all three routes unsteerable.
+    expect(collectUnleanableBranchWarnings(routeTemplate())).toHaveLength(3);
+    // One card for bribe leaves the other two.
+    expect(collectUnleanableBranchWarnings(routeTemplate([routeCard('n1', 'bribe')]))).toHaveLength(2);
+  });
+
+  it('an axis card counts as a lever on the route that declares that axis', () => {
+    // `persuade` declares AXIS, so an axis-explicit card steers it without
+    // naming it — the warn is about steerability, not authoring form.
+    const warnings = collectUnleanableBranchWarnings(routeTemplate([leaningCard('n1', 'positive')]));
+    expect(warnings.map(w => w.includes("route 'persuade'"))).not.toContain(true);
+    expect(warnings).toHaveLength(2);
   });
 });
 
