@@ -166,7 +166,7 @@ import { CRUD_TO_ENCOUNTER_TYPE } from '../../engine/encounterCache';
 import { createUnifiedAction } from '../../engine/unifiedActionLifecycle';
 import { mulberry32 } from '../../lib/prng';
 import { DIVINE_INFLUENCE_CONSTANTS } from '../../data/intervention-feedback-content';
-import { prepareDebugEncounterContext, prepareDebugEncounterSpawn } from '../../engine/debugEncounterTools';
+import { applyBalancedTestAvatar, prepareDebugEncounterContext, prepareDebugEncounterSpawn } from '../../engine/debugEncounterTools';
 import {
   moveDebugAgent,
   spawnDebugAttachment,
@@ -2077,18 +2077,47 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   // the deployed build — the THR-880 `?forceencounters` pattern. Retries across
   // early renders until the seeded world can resolve `@hero`; capped, one spawn
   // per page load, fail-soft: a bad id logs its message and the game proceeds.
+  //
+  // `?spawn` first stamps its target as the **balanced test avatar** (equal
+  // mid-competent capability in all eight reaches, neutral value axes, an
+  // essence floor in all twelve spheres) so review is not skewed by the seeded
+  // identity's reach spread (Christian, 2026-07-31). `?testavatar` applies the
+  // same stamp without spawning, for balanced free play.
   const urlSpawnDoneRef = useRef(false);
   const urlSpawnAttemptsRef = useRef(0);
   useEffect(() => {
     if (urlSpawnDoneRef.current) return;
-    const templateId = new URLSearchParams(window.location.search).get('spawn');
-    if (!templateId) {
+    const params = new URLSearchParams(window.location.search);
+    const templateId = params.get('spawn');
+    const wantsTestAvatar = params.has('testavatar') || templateId !== null;
+    if (!templateId && !wantsTestAvatar) {
       urlSpawnDoneRef.current = true;
       return;
     }
     if (urlSpawnAttemptsRef.current >= 30) return;
     urlSpawnAttemptsRef.current += 1;
-    const result = debugSpawnEncounter('@hero', templateId, {
+
+    if (wantsTestAvatar) {
+      const stamped = applyBalancedTestAvatar(_gameStateRef.current, '@hero');
+      if (stamped.success) {
+        touchWorld(runtime);
+        if (stamped.essencePool) {
+          const pool = stamped.essencePool;
+          setGameState(prev => ({ ...prev, essencePool: pool }));
+        }
+        if (!templateId) {
+          urlSpawnDoneRef.current = true;
+          return;
+        }
+      } else if (!templateId) {
+        if (urlSpawnAttemptsRef.current === 30) {
+          console.warn(`[?testavatar] gave up after 30 attempts: ${stamped.message}`);
+        }
+        return;
+      }
+    }
+
+    const result = debugSpawnEncounter('@hero', templateId!, {
       open: true,
       courtPosition: 'the_first',
     });
