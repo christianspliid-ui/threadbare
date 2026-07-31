@@ -222,7 +222,11 @@ before the first sentence of prose**:
 4. **Which mechanics and objects play?** Traits, items/attachments, conditions,
    factions, favors, prior-step carryovers — decided now, so the prose can refer to
    them and lead to the outcomes they gate. A hook designed after the prose is written
-   is decoration; a hook designed before is structure.
+   is decoration; a hook designed before is structure. **Classify every fact the
+   prose will state about the agent's connections** as scene-local, a state *read*
+   (name the surface: gate, placeholder, variant), or a state *write* (name the
+   grant/aftermath that mints it) — prose rule 6: base prose may never assert agent
+   history the graph does not hold.
 5. **What are the rewards, and where does the tension sit?** Prizes, tolls, and seeds
    (step 6's object references) sketched now, with the quintessence stakes — the
    erosion class failing here costs. **Penalty-avoidance is a valid reward shape**
@@ -471,7 +475,9 @@ design block** and reports against:
    protagonist; does each step actually test its declared reach; does every designed
    mechanic and object appear in the prose or gate an outcome (an unused hook is a
    finding); does every promise the prose makes have its designed payoff; is any
-   outcome mechanic announced instead of foreshadowed?
+   outcome mechanic announced instead of foreshadowed; does any base-prose sentence
+   assert agent history — a relationship, debt, prior visit, standing — with no
+   backing state read (prose rule 6)?
 3. the **echo check** — repeated images, repeated sentence shapes, or near-identical
    phrasing across paragraph seams (the class the detectors cannot see: "The water runs
    loud and brown." ending one paragraph while "The river runs brown and loud…" opens
@@ -552,6 +558,22 @@ zero wins.
    text), never "the god grants courage" — write what happens in the room. The
    `effectLine` is the exception by design: it is the rules text, and it says what the
    god does plainly.
+6. **Prose may not invent game state (Christian, 2026-07-31).** Base scene prose may
+   only claim facts that are either **scene-local** (the wainwright of this scene, the
+   stranger's two cups — inventions with no life outside the encounter) or **actual
+   reads of game state** through a sanctioned surface (cast binding, enrichment
+   placeholders, trait variants, favor/group/trait card gates, carryover lines). The
+   agent's history with the world — relationships, debts, prior visits, standings —
+   is game state: if the graph holds it, *consume* it through a gate or placeholder;
+   if the encounter should create it, *produce* it through grants or aftermath (spawn
+   the innkeeper agent, write the favor edge) — the prose narrates the new
+   relationship only after the mechanics mint it. "The landlord owes them a favor
+   from the winter the cellar flooded", written into base prose of a random
+   encounter, asserts an edge no node holds: the player clicks the landlord and finds
+   no relationship, a later favor-reading encounter finds no debt, and the template
+   fires in towns the agent has never entered. A favor-gated card
+   (`requiresFavor` — dealt only when a real favor edge exists) is the correct home
+   for exactly that fiction.
 6. **Card-discipline budgets** (`NUDGE_WORD_BUDGETS`, warn-level):
 
 | Field | Budget |

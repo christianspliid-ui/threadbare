@@ -392,8 +392,11 @@ const STEP_1_HAND: readonly StepNudge[] = [
     essenceCost: 0,
     forecastDelta: 0.08,
     imageTag: 'generic.oath',
+    // Prose rule 6: the card reads only the trait it is gated on — no invented
+    // promise or errand the graph does not hold. Setting out to cross is
+    // scene-local fact; being True is the state read.
     effectLine:
-      'No essence. A promise waits on the far bank, and they have never yet broken one.',
+      'No essence. They set out to cross, and being True, they do not turn back.',
     fiction: 'A kept word weighs more than the current.',
     bandProse: {
       success: 'The promise pulled from the far bank, and they went to it.',
@@ -573,9 +576,11 @@ export const NUDGE_GOLDEN_EXEMPLAR: UnifiedActionTemplate = {
     success:
       'The river gave up the crossing: wet to the ribs, rope-burned, across. The road runs ' +
       'on from the far bank.',
+    // Prose rule 6: no invented errand — a chance wanderer draws this encounter
+    // too, so the failure text claims only the road itself.
     failure:
-      'The river kept the crossing. The errand on the far bank waits, and the water between ' +
-      'has not gotten kinder.',
+      'The river kept the crossing. The road on the far bank will wait, and the water ' +
+      'between has not gotten kinder.',
   },
 
   description:

@@ -263,6 +263,7 @@ The editorial agent:
 28. **A missing or verbose crux** — the design block does not open with the one plain-grammar sentence stating the complication from the agent's point of view, or needs a paragraph to say it
 29. **Unreadable compression** — a sentence that needs two readings, a paragraph carrying a larger story than its word count can hold, or clue information front-loaded in the opening that the shape puts behind an investigation gate (rule zero: game prose, not novel prose — clarity beats compression, dialogue welcome)
 30. **A shape invented on the fly** — the encounter does not name its shape from the catalog, or its step structure contradicts the shape it names
+31. **Invented game state in base prose** — a relationship, debt, prior visit, or standing between the agent and the world asserted in scene prose with no backing state read (prose rule 6: consume state through a gate or placeholder, produce it through grants/aftermath, never declare it in narration)
 
 ### Pass 3: Systems Audit + Final Merge
 
