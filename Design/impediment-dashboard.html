@@ -1937,19 +1937,6 @@ const DATA = [
     "session": "THR-108 handoff rejection closeout + THR-322 completion closeout + THR-352 closeout + THR-341 closeout + THR-450 pickup"
   },
   {
-    "num": "342",
-    "id": 342,
-    "count": 5,
-    "date": "2026-06-11",
-    "category": "environment",
-    "description": "Fresh worktrees can lack installed dependencies, so initial test runs fail (`Cannot find package 'vitest'` / `'esbuild' is not recognized`) until local install completes.",
-    "consequence": "Verification sequence pauses before tests can run.",
-    "impact": "S",
-    "workaroundFound": true,
-    "workaround": "Run `npm install` once per fresh worktree before any verification commands.",
-    "session": "THR-353 + THR-361 + THR-374 + THR-268 automation runs + THR-450 automation run **Renumbered from #122 to #342 by THR-881** (duplicate-number repair — #122 was claimed by two unrelated rows; the earlier row in the file keeps the original number)."
-  },
-  {
     "num": "75",
     "id": 75,
     "count": 11,
@@ -6084,6 +6071,19 @@ const DATA = [
     "session": "weekly-retro scheduled run, 2026-07-31. Renumbered from #353 by THR-897 pickup (union-merge duplicate-number repair; #353 was already published on main by the 2026-07-30 tooling row), then from #356 → #363 resolving PR #1166's union merge — #356 was by then published on `main` by the 2026-07-30 promotion-gate row, and this row is cited by nothing."
   },
   {
+    "num": "342",
+    "id": 342,
+    "count": 6,
+    "date": "2026-08-01",
+    "category": "environment",
+    "description": "Fresh worktrees can lack installed dependencies, so initial test runs fail (`Cannot find package 'vitest'` / `'esbuild' is not recognized`) until local install completes. (Recurred 2026-08-01, `tb-orchestrator` run b — distinct root cause this time: the **home tree's shared `node_modules` had no `.bin` directory at all** (`ls node_modules/.bin` → No such file or directory), so every `npm run` script that bare-invokes a CLI (`esbuild`, and by extension the husky `pre-commit` hook's `lint:plan-doc`) failed with `'esbuild' is not recognized`, even though `node_modules/esbuild` itself was present and invokable directly via `node node_modules/esbuild/bin/esbuild`. This blocked the `git commit` pre-commit hook, not just verification commands — the first commit attempt failed hook-side.)",
+    "consequence": "Verification sequence pauses before tests can run; on 2026-08-01 also blocked `git commit` via the pre-commit hook.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "Run `npm install` once per fresh worktree before any verification commands. **Faster fix for the missing-`.bin`-only case (deps present, just unlinked):** `npm rebuild --ignore-scripts` — relinks all package bins without re-running install/build scripts (a bare `npm rebuild` failed here because an unrelated devDependency's own `build` script needed `run-s`, itself missing from the same broken `.bin`). Fixed via the junction target, so it repairs every worktree sharing that `node_modules`, not just the one that hit it.",
+    "session": "THR-353 + THR-361 + THR-374 + THR-268 automation runs + THR-450 automation run + `tb-orchestrator` run 2026-08-01b (THR-929 promotion + T3 sweep) **Renumbered from #122 to #342 by THR-881** (duplicate-number repair — #122 was claimed by two unrelated rows; the earlier row in the file keeps the original number)."
+  },
+  {
     "num": "367",
     "id": 367,
     "count": 1,
@@ -6147,6 +6147,32 @@ const DATA = [
     "workaroundFound": false,
     "workaround": "Before `update-branch`, read the clock against the scheduled-merge slots (`git log origin/main --format=\"%h %ci\"` shows the ~:03/~:31 UTC cadence) and prefer the middle of a quiet window — here, updating at 04:04Z after main had been quiet for an hour. Then **verify the landing rather than assuming it**: a single bounded watch loop on `gh pr view --json state` for ~1 CI duration costs one wait but converts a reported ship into an observed one. Do not treat \"`update-branch` succeeded\" as evidence the PR will merge; the two are independent. Durable fix belongs to THR-735.",
     "session": "`tb-opus-pickup` hourly run, 2026-08-01 ~04:00Z, resuming THR-899 — third consecutive run to drain the same PR."
+  },
+  {
+    "num": "372",
+    "id": 372,
+    "count": 1,
+    "date": "2026-08-01",
+    "category": "tooling",
+    "description": "**The home tree node_modules was missing 36 packages, so the full suite reported 827 failed test FILES with zero tests run — and the failure looked like a catastrophic code regression rather than a broken install.** Every failure was `MODULE_NOT_FOUND` deep in jsdom, resolving to `@asamuzakjp/css-color` absent under `cssstyle`. Compounding it: piping npm test into `tail` returns tail's exit code, not npm's, so the run reported `exit 0` while 827 files were red.",
+    "consequence": "A YAML-only change appeared to break the entire test suite. Worse, the piped exit code said 0, so a session trusting the exit status would have recorded a green gate on an 827-file failure and cited it as verification evidence.",
+    "impact": "High — the false-green is the dangerous half. This is the documented verification-evidence path, and the pipe silently inverts its verdict.",
+    "workaroundFound": true,
+    "workaround": "Two parts. (1) Probe the install rather than the directory: `node -e require.resolve(pkg)` on the failing module names the gap in one command, where `[ -d node_modules ]` and even `[ -e node_modules/.bin/vitest ]` both pass. Repair with `npm install` in the HOME tree (non-destructive, adds only what is missing) — never `npm ci` through a junction, which deletes the target's contents. (2) Never read an exit code through a pipe: redirect to a log file, echo `$?`, then tail the file. `PIPESTATUS[0]` also works.",
+    "session": "THR-909, `tb-opus-pickup` hourly run. Session precheck had already reported `test: no ... Failed Suites 1` before any edit, which is what made the pre-existing diagnosis cheap."
+  },
+  {
+    "num": "373",
+    "id": 373,
+    "count": 1,
+    "date": "2026-08-01",
+    "category": "process",
+    "description": "**A ticket Done-when instructed the executor to write a file that CLAUDE.md gives another lane sole ownership of.** THR-909 Done-when 4 required the branch-protection change to be surfaced in `Design/user-actions.md`. CLAUDE.md states `keep-work-flowing-cc` owns that file and no other scheduled task writes it, because a second writer produces merge conflicts.",
+    "consequence": "The executor must either violate the ownership rule or fail the Done-when as literally written. Silently picking either one hides a real contradiction between a ticket and the standing rules.",
+    "impact": "Low — one ticket, resolved in-session, but the class recurs whenever a filing session writes a Done-when naming a Christian-facing surface without checking who owns it.",
+    "workaroundFound": true,
+    "workaround": "Honour the INTENT (surface it, do not assume it) through a non-conflicting route, and say so explicitly. Filed the branch-protection change as its own tracked Linear ticket THR-931, answered the question in the PR body as the Done-when also required, and recorded the deviation in the completion comment. General rule worth inheriting: a Done-when that names a written artifact should name the lane that owns it, and when it does not, the ownership rule wins and the deviation is recorded rather than quietly taken.",
+    "session": "THR-909, `tb-opus-pickup` hourly run."
   }
 ];
 // ── End data ──
