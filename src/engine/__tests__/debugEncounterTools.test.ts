@@ -1,7 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { GameState } from '../../types/gameState';
 import { WorldGraph } from '../graph';
-import { prepareDebugEncounterContext, prepareDebugEncounterSpawn } from '../debugEncounterTools';
+import { ensureDebugSpawnThread, prepareDebugEncounterContext, prepareDebugEncounterSpawn } from '../debugEncounterTools';
+import { phaseEncounterVisibility } from '../encounterVisibility';
 import { ENCOUNTER_TEMPLATES } from '../../data/encounter-content';
 import * as unifiedActionTemplates from '../../data/unified-action-templates';
 
@@ -315,5 +316,143 @@ describe('alias resolution and output clarity', () => {
     expect(result.success).toBe(true);
     // Exact name match — no resolution note needed
     expect(result.message).not.toContain('resolved');
+  });
+});
+
+describe('debug spawn threads its target (THR-934)', () => {
+  const GATE_DUTY = 'cg.quest.gate_duty';
+
+  /**
+   * The real `?spawn` shape: the ascendant has an avatar (what `@hero` resolves
+   * to) and that avatar carries NO thread edge. Before THR-934 the spawn only
+   * overrode the court position on its own notification, so every later tick
+   * fell back to `collectThreadedAgents`' synthetic avatar entry — which stamps
+   * `auto_resolve`, giving steps 2+ a notification that never auto-opened.
+   */
+  function makeUnthreadedAvatarState(): GameState {
+    const state = makeGateDutyState();
+    const graph = state.graph;
+    graph.addNode({
+      id: 'avatar_1',
+      type: 'actor',
+      name: 'Ashara',
+      properties: { actorType: 'individual', spotlightTier: 'spotlight' },
+    });
+    graph.addEdge({ id: 'avatar_of_edge', source: 'avatar_1', target: 'asc_1', type: 'avatar_of', properties: {} });
+    graph.addEdge({ id: 'avatar_1_loc', source: 'avatar_1', target: 'loc_town', type: 'located_at', properties: {} });
+    return state;
+  }
+
+  function threadEdgeFor(state: GameState, agentId: string) {
+    return state.graph.getOutgoingEdges('asc_1', 'thread').find(edge => edge.target === agentId);
+  }
+
+  it('writes a the_first/pause thread edge for an unthreaded spawn target', () => {
+    const state = makeUnthreadedAvatarState();
+    expect(threadEdgeFor(state, 'avatar_1')).toBeUndefined();
+
+    const result = prepareDebugEncounterSpawn(state, '@hero', GATE_DUTY, { courtPosition: 'the_first' });
+
+    expect(result.success).toBe(true);
+    expect(result.agent?.id).toBe('avatar_1');
+    expect(result.threadWrite?.created).toBe(true);
+
+    const edge = threadEdgeFor(state, 'avatar_1');
+    expect(edge).toBeDefined();
+    expect(edge!.properties.courtPosition).toBe('the_first');
+    expect(edge!.properties.attentionMode).toBe('pause');
+  });
+
+  it('retunes an existing auto_resolve thread rather than inheriting the setting that suppresses continuation', () => {
+    const state = makeUnthreadedAvatarState();
+    // `?seeded` writes exactly this shape for Kael — threaded, but auto_resolve.
+    state.graph.addEdge({
+      id: 'edge_thread_asc_1_avatar_1',
+      source: 'asc_1',
+      target: 'avatar_1',
+      type: 'thread',
+      properties: { courtPosition: 'the_first', attentionMode: 'auto_resolve', tier: 1 },
+    });
+
+    const result = prepareDebugEncounterSpawn(state, '@hero', GATE_DUTY, { courtPosition: 'the_first' });
+
+    expect(result.success).toBe(true);
+    expect(result.threadWrite?.created).toBe(false);
+    expect(result.threadWrite?.retuned).toBe(true);
+    expect(threadEdgeFor(state, 'avatar_1')!.properties.attentionMode).toBe('pause');
+    // Merge semantics: untouched properties survive the retune.
+    expect(threadEdgeFor(state, 'avatar_1')!.properties.tier).toBe(1);
+  });
+
+  it('leaves the graph alone when no court position is requested', () => {
+    const state = makeUnthreadedAvatarState();
+    const before = state.graph.getOutgoingEdges('asc_1', 'thread').length;
+
+    const result = prepareDebugEncounterSpawn(state, '@hero', GATE_DUTY);
+
+    expect(result.success).toBe(true);
+    expect(result.threadWrite).toBeUndefined();
+    expect(state.graph.getOutgoingEdges('asc_1', 'thread')).toHaveLength(before);
+  });
+
+  it('fails soft in a world with no ascendant', () => {
+    const state = makeUnthreadedAvatarState();
+    (state as { ascendantId: string | null }).ascendantId = null;
+
+    const write = ensureDebugSpawnThread(state, 'avatar_1', 'the_first', 3);
+
+    expect(write).toEqual({ threadEdgeId: null, created: false, retuned: false });
+    expect(threadEdgeFor(state, 'avatar_1')).toBeUndefined();
+  });
+
+  /**
+   * The defect itself, driven through the real harness: after the spawn commits
+   * step 1, `phaseEncounterVisibility` must produce a step-2 notification that
+   * *auto-opens*. `shouldAutoOpenEncounterNotification` treats a non-null
+   * `autoResolveTick` as "do not open now", so a notification that merely exists
+   * is not evidence — the null tick is the thing that pops the stage.
+   */
+  it('generates an auto-opening step-2 notification after the spawn advances', () => {
+    const state = makeUnthreadedAvatarState();
+    const prepared = prepareDebugEncounterSpawn(state, '@hero', GATE_DUTY, { courtPosition: 'the_first' });
+    expect(prepared.success).toBe(true);
+    expect(prepared.unifiedAction).toBeDefined();
+
+    // Advance to step 2 the way phaseEncounterProgressionV2 would, then let the
+    // visibility phase decide what the player sees.
+    const action = { ...prepared.unifiedAction!, currentStep: 1 };
+    state.unifiedActions = [action];
+    state.encounterNotifications = [];
+
+    const { notifications } = phaseEncounterVisibility(state);
+    const stepTwo = notifications.find(
+      n => n.agentId === 'avatar_1' && n.stepIndex === 1 && n.sourceSystem === 'unified_action',
+    );
+
+    expect(stepTwo).toBeDefined();
+    expect(stepTwo!.courtPosition).toBe('the_first');
+    expect(stepTwo!.autoResolveTick).toBeNull();
+  });
+
+  it('would not auto-open without the thread write — guard falsification', () => {
+    const state = makeUnthreadedAvatarState();
+    const prepared = prepareDebugEncounterSpawn(state, '@hero', GATE_DUTY, { courtPosition: 'the_first' });
+    expect(prepared.success).toBe(true);
+
+    // Drop the edge the spawn wrote: this reproduces the pre-THR-934 world, where
+    // only `collectThreadedAgents`' synthetic auto_resolve avatar entry remains.
+    state.graph.removeEdge(threadEdgeFor(state, 'avatar_1')!.id);
+
+    const action = { ...prepared.unifiedAction!, currentStep: 1 };
+    state.unifiedActions = [action];
+    state.encounterNotifications = [];
+
+    const { notifications } = phaseEncounterVisibility(state);
+    const stepTwo = notifications.find(n => n.agentId === 'avatar_1' && n.stepIndex === 1);
+
+    // The notification is still generated — it just never surfaces. That is
+    // precisely why the bug read as "steps 2+ resolve silently".
+    expect(stepTwo).toBeDefined();
+    expect(stepTwo!.autoResolveTick).not.toBeNull();
   });
 });

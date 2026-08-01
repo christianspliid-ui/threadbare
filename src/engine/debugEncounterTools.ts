@@ -72,7 +72,36 @@ export interface PreparedDebugEncounterSpawn {
   encounterProgress?: EncounterProgress;
   unifiedAction?: UnifiedAction;
   clearanceGateStates?: Map<string, import('../types/contentShells').ClearanceGateRuntimeState>;
+  /**
+   * Set when the spawn wrote or retuned a `thread` edge on its target (THR-934).
+   * The caller must `touchWorld` on a truthy value — the graph mutates in place,
+   * so ThreadsPanel's `worldVersion`-keyed selectors otherwise serve a stale roster
+   * and the new row (with its encounter badge) never appears.
+   */
+  threadWrite?: DebugSpawnThreadWrite;
 }
+
+/** Outcome of the thread upsert a debug spawn performs on its target (THR-934). */
+export interface DebugSpawnThreadWrite {
+  threadEdgeId: string | null;
+  created: boolean;
+  retuned: boolean;
+}
+
+/**
+ * Thread properties a debug spawn stamps on its target (THR-934).
+ *
+ * `pause` is the load-bearing value, not a preference. An `auto_resolve` thread
+ * gives every generated notification a non-null `autoResolveTick`
+ * (`buildEncounterNotification`), and `shouldAutoOpenEncounterNotification`
+ * treats a non-null tick as "do not open now" — so steps 2+ of a spawned
+ * encounter build a notification that silently times out instead of popping.
+ * Tier sits at `PAUSE_MODE_MIN_TIER` or above so `toggleAttentionMode` will not
+ * refuse the mode if a session flips it in the UI.
+ */
+const DEBUG_SPAWN_THREAD_TIER = 5;
+const DEBUG_SPAWN_ATTENTION_MODE = 'pause' as const;
+const DEBUG_SPAWN_THREAD_AWARENESS = 'faith' as const;
 
 function findAgent(state: GameState, agentQuery: string) {
   const actors = state.graph.getNodesByType('actor');
@@ -224,6 +253,79 @@ function chooseAnchorLocation(
   return { error: 'spawn encounter-context requires --agent <agent>, --at <location|actor>, or --hex <col> <row>.' };
 }
 
+/**
+ * Upsert the `thread` edge a debug spawn needs on its target (THR-934).
+ *
+ * Before this existed, `?spawn` passed `courtPosition: 'the_first'` as a
+ * *notification-time override* and wrote nothing to the graph, so only the
+ * spawn-time notification carried it. Every later tick re-derived visibility
+ * from the graph: `collectThreadedAgents` does synthesize a `the_first` entry
+ * for the ascendant's avatar (which is what `@hero` resolves to), but it stamps
+ * `attentionMode: 'auto_resolve'` — so steps 2+ generated a notification that
+ * never auto-opened, and the Threads panel, which lists real thread edges, had
+ * no row to hang the encounter badge on.
+ *
+ * Writing the edge makes every downstream phase read the same truth. The edge
+ * is left in place after the encounter ends: cleanup is a non-goal, since the
+ * only routes here are `?spawn` and the debug bridge, where a permanently
+ * threaded hero is the desired testing posture.
+ *
+ * Fail-soft: a world with no ascendant returns a null edge id and no mutation.
+ */
+export function ensureDebugSpawnThread(
+  state: GameState,
+  agentId: string,
+  courtPosition: CourtPosition,
+  tick: number,
+): DebugSpawnThreadWrite {
+  const ascendantId = state.ascendantId;
+  if (!ascendantId) return { threadEdgeId: null, created: false, retuned: false };
+
+  const existing = state.graph
+    .getOutgoingEdges(ascendantId, 'thread')
+    .find(candidate => candidate.target === agentId);
+
+  if (existing) {
+    // A genuinely threaded target (e.g. `?seeded`'s Kael) still arrives on
+    // `auto_resolve` — retune rather than skip, or the spawn inherits the very
+    // setting that suppresses its own continuation. Read the two fields straight
+    // off the property bag: `ThreadEdgeProperties` does not overlap
+    // `Record<string, unknown>` enough for a direct cast.
+    const retuned =
+      existing.properties.courtPosition !== courtPosition
+      || existing.properties.attentionMode !== DEBUG_SPAWN_ATTENTION_MODE;
+    if (retuned) {
+      state.graph.updateEdge(existing.id, {
+        properties: { courtPosition, attentionMode: DEBUG_SPAWN_ATTENTION_MODE },
+      });
+    }
+    return { threadEdgeId: existing.id, created: false, retuned };
+  }
+
+  const threadEdgeId = `edge_thread_${ascendantId}_${agentId}`;
+  state.graph.addEdge({
+    id: threadEdgeId,
+    source: ascendantId,
+    target: agentId,
+    type: 'thread',
+    properties: {
+      courtPosition,
+      tier: DEBUG_SPAWN_THREAD_TIER,
+      ticksAtCurrentTier: 0,
+      establishedTick: tick,
+      totalEssenceSpent: 0,
+      maintenanceCurrent: true,
+      awareness: DEBUG_SPAWN_THREAD_AWARENESS,
+      readBackstoryTier: 0,
+      attentionMode: DEBUG_SPAWN_ATTENTION_MODE,
+      storyPhase: 'call',
+      meetingChoiceRecord: null,
+      beatHistory: [],
+    },
+  });
+  return { threadEdgeId, created: true, retuned: false };
+}
+
 function getThreadContext(
   state: GameState,
   agentId: string,
@@ -295,6 +397,11 @@ export function prepareDebugEncounterSpawn(
   }
 
   const locationName = state.graph.getNode(locationId)?.name ?? 'unknown location';
+  // Thread the target before reading its context, so the spawn-time notification
+  // and every later tick's notification derive from the same edge (THR-934).
+  const threadWrite = options.courtPosition
+    ? ensureDebugSpawnThread(state, agent.id, options.courtPosition, state.tick)
+    : undefined;
   const { courtPosition, attentionMode } = getThreadContext(state, agent.id, options.courtPosition);
   const notification = buildEncounterNotification(
     agent.id,
@@ -362,6 +469,7 @@ export function prepareDebugEncounterSpawn(
       notification: unifiedNotification,
       unifiedAction: action,
       clearanceGateStates: gateInit.clearanceGateStates,
+      threadWrite,
     };
   }
 
@@ -379,6 +487,7 @@ export function prepareDebugEncounterSpawn(
     template,
     notification,
     encounterProgress: progress,
+    threadWrite,
   };
 }
 
