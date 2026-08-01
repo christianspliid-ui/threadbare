@@ -75,7 +75,7 @@ Host-machine tasks; invisible to `list_scheduled_tasks`.
 | Slot | Cadence | Task | Trigger | Fires |
 |------|---------|------|---------|-------|
 | **:40** | Hourly | `Threadbare Git Cleanup` — runs `C:/Users/chris/Dev/Projects/clean-stale-git.sh` (prunes merged worktrees/branches, escalates stale unmerged ones) | Once at 00:40, repeat every 1h | :40 (no jitter) |
-| **:50** | Hourly | `ThreadbareRepoAutoSync` — runs `C:\Users\chris\bin\threadbare-autosync.ps1`: fast-forwards the home tree to `origin/main`, and reattaches a **provably loss-free** detached park (THR-671/672) | Once at 00:50, repeat every 1h | :50 (no jitter) |
+| **:50** | Hourly | `ThreadbareRepoAutoSync` — runs `C:\Users\chris\bin\threadbare-autosync.ps1`: fast-forwards the home tree to `origin/main`, reattaches a **provably loss-free** detached park (THR-671/672), and clears a **provably loss-free** untracked-file collision (THR-937) | Once at 00:50, repeat every 1h | :50 (no jitter) |
 
 Neither host task carries a `RandomDelay`, so unlike the CC lane their slot minute *is* their fire time. Both run `Interactive`-only at `Limited` run level with `StartWhenAvailable: True`.
 
@@ -83,6 +83,8 @@ Neither host task carries a `RandomDelay`, so unlike the CC lane their slot minu
 
 - Execution time limit is **5 minutes** (the reaper's is 30) — a sync that overruns is killed rather than left to overlap the next hour's run.
 - It logs one line per run to `C:\Users\chris\bin\threadbare-autosync.log` (`synced: fast-forwarded N commit(s) -> <sha>` / `ok: already up to date`), which is the fastest way to confirm the home tree is current without touching it.
+- **A repeating `skip:` or `MANUAL REPAIR NEEDED` line is the signal that matters** — it means the tree has stopped syncing and *will not resume on its own*, because every later hour re-hits the same condition. Read the newest line, not the newest run: THR-937's collision produced 11 identical skips while the gap grew `24 → 88` commits. Timestamps are pinned to `InvariantCulture`, so the separator is always `:` regardless of which culture invoked the script.
+- **The script body is mirrored to [`threadbare-autosync.ps1.md`](threadbare-autosync.ps1.md)** with its test harness ([`threadbare-autosync.test.ps1`](threadbare-autosync.test.ps1), 6 scenarios / 17 assertions). It is not tracked at its live path, so a change made only on disk is unreviewable and unrecoverable — update the mirror in the same PR (THR-824, THR-937).
 - The script body lives **outside version control**, same as the reaper's. Unlike the reaper's, it has no repo mirror yet — tracked as [THR-824](https://linear.app/threadbare/issue/THR-824).
 - Only autosync may move the home tree's git state. Scheduled sessions must never run git state ops with the home tree as CWD (THR-672) — a session that parks it on a branch stalls autosync for days.
 
