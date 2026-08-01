@@ -19,7 +19,7 @@ Threadbare has an executor (`tb-opus-pickup`, hourly, WIP=1) and several observe
 These are the difference between an orchestrator and a second executor:
 
 1. **Never claim an issue. Never set `In Dev`. Never assign yourself or anyone.** `tb-opus-pickup` owns the single WIP=1 slot. An orchestrator that claims work starves the thing it exists to feed. *Sole exception:* AFK `wayfinder:*` decision tickets in T1.5 — those can never reach the executor queue, so claiming one starves nothing (THR-900).
-2. **Never write `Design/briefing.md` or `Design/user-actions.md`.** `keep-work-flowing-cc` owns both; a second writer produces merge conflicts. Christian-facing items go under `## Needs Christian` in your own report — its step 2.6 reads that section and folds it into the briefing.
+2. **Never write `Design/briefing.md` or `Design/user-actions.md`.** `keep-work-flowing-cc` owns both; a second writer produces lost updates (they live on the `ops` branch, where a push is last-writer-wins). Christian-facing items go under `## Needs Christian` in your own report — its step 2.6 reads that section and folds it into the briefing.
 3. **Never choose direction.** Promoting *agreed* work is the remit. Picking an un-agreed roadmap item is choosing direction, which is Christian's. When agreed work is exhausted, **stop and ask** on Discord and do nothing else — do not fall through to un-agreed work to stay busy.
 4. **Never nominate a feature as unfun.** Christian initiates those dialogues from a gameplay point of view. *Redundant / unused / unreachable* is a technical judgement and **is** yours to raise, unprompted and continuously.
 
@@ -68,7 +68,7 @@ There is deliberately **no `agreed` label**. An item belonging to a program Chri
 
 ### T3 — architecture health (daily, first run after 06:00 local)
 
-Skip entirely if a sweep already ran today (check for today's `Docs/ops/orchestrator-*.md` T3 section).
+Skip entirely if a sweep already ran today (check today's `Docs/ops/orchestrator-*.md` T3 section **on `origin/ops`**, per § Report).
 
 Run the detectors that already exist — **do not build a new sweep**:
 
@@ -79,7 +79,7 @@ npm run check:process                 # plan index, systems inventory, wiki fres
 npm run check:canon-staleness         # canon pages aged past their sources
 ```
 
-Report **new** findings only, diffed against the previous `Docs/ops/orchestrator-*.md`. A tier that re-lists the same forty findings daily trains its reader to skip it.
+Report **new** findings only, diffed against the previous `Docs/ops/orchestrator-*.md` — read from `origin/ops` (`git show origin/ops:<path>`), not the working tree (THR-947). A tier that re-lists the same forty findings daily trains its reader to skip it; diffing against the frozen archive would re-report the whole standing set as new every run.
 
 Two things no detector does, both of which you own:
 
@@ -104,8 +104,6 @@ No new tooling — import graph from codesight or an ad-hoc grep sweep, timings 
 - **A prune ticket must prove the *tested code* is dead.** "The test is slow" is never grounds for deletion — keep the two lists separate.
 - **Deleting live coverage is the failure mode to be paranoid about**, not a cost worth paying. When in doubt, leave it and say why.
 
-**Output goes in its own file** — `Docs/ops/test-suite-health-YYYY-MM-DD.md` — and the run report's `## T3` section carries one line: the three counts plus a pointer. The tables would bury the run report, a standalone file gives the sweep a diffable history, and it shares no anchor with the run report so the THR-849 conflict class cannot reach it.
-
 Three traps that will recur: a **test-only helper** (`src/testing/contentInvariants.ts`) has zero production importers by design; a **type-only import** (`engine/activitySummary.ts` → `AgentDetailPanel.tsx`) marks dead runtime code reachable; and a **test named after a dead module may not test it** — of THR-941's 8 deleted files, `AgentDots.test.tsx` imported only the live `src/data/agent-visual-content`. Read the test's imports, never its filename.
 
 ## Report
@@ -120,7 +118,7 @@ npm run check:substantive --silent -- --lane report --file Docs/ops/orchestrator
 
 `{"verdict":"skip"}` → delete the drafted file, commit nothing. Fail-soft: a missing or unparseable frontmatter block returns `commit`, so a malformed report is published rather than lost.
 
-**One file per run — never append to a file a previous run created.** The first run of a UTC day writes `Docs/ops/orchestrator-YYYY-MM-DD.md`; every later run that day writes `Docs/ops/orchestrator-YYYY-MM-DD<letter>.md` (`b`, `c`, `d`, …). List `Docs/ops/` for today's prefix and take the next unused letter.
+**One file per run — never append to a file a previous run created.** The first run of a UTC day writes `Docs/ops/orchestrator-YYYY-MM-DD.md`; every later run that day writes `Docs/ops/orchestrator-YYYY-MM-DD<letter>.md` (`b`, `c`, `d`, …). **Take the next unused letter by listing the `ops` branch, not the working tree** (THR-947): `git fetch origin ops --quiet && git ls-tree -r --name-only origin/ops -- Docs/ops/ | grep "orchestrator-$(date -u +%F)"`. Listing the local directory returns only the frozen pre-cutover archive, so it reports "no runs today" and every run of the day picks the same filename, each silently overwriting the last.
 
 Prepending to one shared dated file is what made PR #1031 sit `DIRTY` for two days holding the only copy of its run's T1 sweep (THR-849): two overlapping runs both edit the same top-of-file anchor, and armed auto-merge cannot resolve a conflict. Separate files have no shared anchor, and the filename preserves order — which `merge=union` does not. `.gitattributes` grants `Docs/ops/orchestrator-*.md merge=union` as a backstop only; it catches a mistake, it is not permission to append.
 
@@ -160,10 +158,11 @@ Plain language throughout the Christian-facing section (THR-608): he does not re
 ## Committing
 
 - **Never run a git state op with the home tree as CWD** (THR-672). `C:\Users\chris\Dev\Projects\TheFantasyWorldSimulator` is a read-only mirror of `main` owned by `threadbare-autosync.ps1` — no `checkout`/`switch`/`commit`/`merge`/`rebase`/`reset` there. Work in this session's own worktree; branches are repo-global and `git push` works from any worktree.
-- Commit the report with **no** `Fixes`/`Closes`/`Resolves THR-XX` keyword — that auto-closes unrelated issues (impediment #140). Reference issues as bare `THR-XXX` tokens.
-- Open a PR and queue it with `gh pr merge --auto --merge`. Do not poll-wait on CI (THR-675).
-- **If a prior run's report PR is still open, leave it and its branch alone.** Write your own per-run file and carry on — never append to the file that PR touches, and never push to its branch (another lane may have it checked out: the THR-671/672/797 hazard class). If it reads `DIRTY`, note it under `## Escalations` and file a ticket for the executor lane to salvage the stranded section rather than resolving it in-run.
-- A no-op run writes no artifact and opens no PR (THR-920, § Report) — decided by `npm run check:substantive`, not by eye. The task's `lastRunAt` is the heartbeat.
+- **The report goes to the `ops` branch, not `main`** (THR-947, cutover 2026-08-02) — no branch, no PR, no CI, and `main`'s tip does not move. From this worktree's **repository root**: `bash scripts/ops-publish.sh -m "docs(ops): orchestrator <summary> (<date> run <letter>)" Docs/ops/orchestrator-<run>.md`. Pass the T3 weekly file in the same call when a run writes both. The script commits via git plumbing and checks nothing out, so it touches no working tree and leaves this session's branch/HEAD alone.
+- Publish with **no** `Fixes`/`Closes`/`Resolves THR-XX` keyword (impediment #140). Reference issues as bare `THR-XXX` tokens.
+- **Do not open a PR against `main` for the report**, and do not fall back to one on failure — note one line under `## Escalations`; the next run reconciles.
+- **The stranded-report-PR rule is retired with the hazard it managed.** Reports no longer travel by PR, so there is no prior run's branch to avoid and no `DIRTY` report PR to salvage (THR-849 cannot recur). One file per run still holds — on `ops` a push is last-writer-wins, so two runs sharing a filename lose one report silently.
+- A no-op run writes and publishes nothing (THR-920, § Report) — decided by `npm run check:substantive`, not by eye. The task's `lastRunAt` is the heartbeat.
 
 ## Escalation
 
