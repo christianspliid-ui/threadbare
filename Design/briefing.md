@@ -2,67 +2,50 @@
 needsChristian: thr-883-prototype-verdict, thr-860-capital-cluster-verdict, home-tree-ff-blocked
 queue: backed-up
 freshness: behind
-deploy: skipped
+deploy: deployed
 tasks: ok
 ---
 # Briefing
 
-**Generated:** 2026-08-01 01:54 local (23:54 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-08-01 02:54 local (00:54 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
 ## Needs Christian
 
-**Correction: the command this brief gave you an hour ago does not work. Here is the one that does.**
+**Nothing here is new, and nothing here needs you tonight.** All three items are ones you already have. They are restated so they don't look forgotten — not because anything moved.
 
-Last hour's brief said your working copy had stopped updating and gave you a one-line fix. I ran that exact line before repeating it, and it fails:
+**1. Your verdict on the five prototype encounters.** THR-883, the encounter-writing prototype, waits on your read of the five encounters written in the new format. Eleven content tickets stay paused until it clears. **Still don't judge them on the one-click links** — the crash fix that repairs them has not landed, and it went backwards this hour rather than forwards (details under *What's moving*; it's an agent's job, not yours).
 
-```
-error: The following untracked working tree files would be overwritten by merge:
-        Docs/ops/orchestrator-2026-07-31g.md
-Please move or remove them before you merge.
-Aborting
-```
+**2. The four capital-city encounters that travel with that verdict.** A council mediation, a noble's court, a house unification, a monument raising — written, finished, deliberately unlanded in the old style. When you lock the format they either land as they are and get retrofitted later alongside the other seven, or get dropped and rewritten under the locked format. Nothing is lost either way. Same sitting as the verdict.
 
-**That same file is why the background sync stopped.** An automated session left a copy of one of its reports sitting loose in your folder, and the same report has since been committed properly by another session. Git refuses to overwrite a loose file it isn't tracking, so every hourly sync since 21:50 has hit this and given up quietly. It is **not** your settings edits — I checked those separately and nothing incoming touches them. And it is not a real conflict: **the loose copy is byte-for-byte identical to the committed one**, so deleting it loses nothing.
-
-The command that actually works — removes the stray file, then catches you up:
+**3. One line to run when you next sit down.** Your working copy stopped updating and is now **58 commits behind**, last advanced 22:01 last night. Cause unchanged: an automated session left a loose copy of one of its reports in your folder, and the same report has since been committed properly, so git refuses to overwrite the loose one and gives up on every sync.
 
 ```bash
 cd "C:/Users/chris/Dev/Projects/TheFantasyWorldSimulator" && rm "Docs/ops/orchestrator-2026-07-31g.md" && git pull --ff-only origin main
 ```
 
-Your copy is **43 commits behind**, last advanced 22:01 local. Still not a wake-you-up item — it costs one line at the start of your next session. But it will not fix itself, and the gap grows every hour until that line is run.
-
----
-
-**Unchanged, and still the main thing: your verdict on the five prototype encounters.**
-
-THR-883, the encounter-writing prototype, waits on your read of the five encounters written in the new format. Eleven content tickets stay paused until it clears. Nothing has moved on this since the message you got at 01:06 — restated so it doesn't look forgotten, not because anything changed.
-
-**And the decision that travels with it**, also unchanged: four capital-city encounters — a council mediation, a noble's court, a house unification, a monument raising — are written, finished, and deliberately unlanded in the old style. When you lock the format they either land as they are and get retrofitted later alongside the other seven, or get dropped and rewritten under the locked format. Nothing is lost either way. Same sitting as the verdict.
+**I re-verified both halves of that command this hour rather than repeating it on trust:** the loose file is byte-for-byte identical to the committed one (same content hash), so deleting it loses nothing; and your own settings edits are *not* touched by anything incoming, so they survive the pull untouched. It costs one line at the start of your next session, and the gap grows every hour until it's run.
 
 ## Queue
 
-**Backed up — 54 ready, 1 being worked, 1 parked.** Bands: 5 high, 4 medium, 3 unranked, 42 low-priority tidy-ups. **No urgent items left** — the encounter crash was the only one and it has now been claimed, which is the pickup lane working as intended.
+**Backed up — 54 ready, 1 being worked, 1 parked.** Bands: 5 high, 4 medium, 3 unranked, 42 low-priority tidy-ups. **No urgent items** — flat on every count against last hour.
 
-- **Last hour's brief set itself a test, and it resolved the wrong way.** It said: *if the encounter fix is still unmerged at 01:00, that step is not doing its job and it becomes something to chase.* It is now 01:54 and **it is still unmerged.** The fix itself is finished and verified — it is stuck at the final mechanical step, waiting on a routine branch refresh that has not come. That makes it something to chase rather than wait for, and it needs an agent session, not you.
-- **The stranded retrospective write-up is still stranded** — same merge conflict as last hour, still about ten minutes of agent time.
-- **THR-739 has gone cold** — seven days untouched. Not urgent, just noted.
-- **The parked item** is the held capital-cluster encounter batch described above, now ~37 hours parked and holding nobody up.
-- Six ready items still carry your name as assignee. Harmless — the pickup lane does not filter on assignee, so they stay pickable.
+- **The parked item** is the held capital-cluster encounter batch described above, now ~38 hours parked and holding nobody up.
+- **THR-739 is the only cold item** — seven days untouched. Not urgent, just noted before it becomes thirty.
+- **Small improvement worth recording: none of the 54 ready items carries an assignee any more.** Six did last hour. That was always harmless — the pickup lane ignores assignees — but it is cleaner now.
 
 ## Freshness
 
-**Your working copy: 43 behind, stalled, cause found.** Full diagnosis and the corrected command are in the first section, because the instruction you were given needs replacing.
+**Your working copy: 58 behind, stalled, cause and fix in the first section.** That is the only unhealthy signal.
 
-**Everything else is healthy.** The live site is current — commits since the last publish only touched notes and docs, so no rebuild was needed. The automated merge checks are running normally. All eight scheduled jobs are on time. The repo cleanup task ran at 01:40 and found nothing needing a decision.
+**Everything else is green.** The live site is serving the newest commit on main. The automated merge checks are running normally. All eight scheduled jobs are on time. The repo cleanup task ran at 02:40 and found nothing needing a decision.
 
 ## What's moving
 
-- **The multi-scene encounter crash is solved and verified** — root cause found, full suite green at 14,572 tests, and a regression test added so it cannot come back silently. Only the merge is outstanding.
-- **Nothing merged from the work queue this hour** — the encounter fix is at the head of that line, and it is the one that is stuck.
-- Content work remains paused behind your format verdict, by design.
+- **The stranded retrospective write-up finally landed** at 02:31 — that was last hour's ten-minute chore, and it is done.
+- **The multi-scene encounter crash fix went backwards.** It is finished and fully green, but its branch has now drifted far enough that the automated merge step can no longer release it on its own: an hour ago it needed one command, now it needs a short session. That is two hours running in which an automated step failed to pick it up. It is the only thing between the deployed game and a fix for every multi-scene encounter — **an agent chase, not yours** — but it is why your five test links are still broken.
+- **Nothing else merged from the work queue this hour.** Content work remains paused behind your format verdict, by design.
 
 ---
 *Standing asks live in `Design/user-actions.md`. This file is regenerated hourly by
