@@ -59,6 +59,29 @@ jobs:
               - '!Docs/**'
               - '!.planning/**'
               - '!Design/**'
+              # Doc-sourced artifacts that land outside the doc paths (THR-922).
+              # Both are generated FROM documentation but written to src/ or
+              # public/, so without these two lines a UL-shard or canon-page edit
+              # regenerates a non-doc file and the PR stops classifying as
+              # docs-only — a pure documentation deliverable paying the full
+              # ~15-minute code gate (measured on commit cc7a61ca).
+              #
+              # Excluding the ARTIFACT cannot weaken detection: a code source is
+              # its own path and stays in the filter, so editing
+              # scripts/interface-contracts.ts still yields code == 'true'. This
+              # only stops the artifact manufacturing code-ness on a PR whose
+              # real content is documentation. Their freshness guarantee is
+              # unchanged — check:generated-freshness re-runs the whole prebuild
+              # and, since THR-909, runs in the docs-check job below.
+              #
+              # Exact paths, never globs: the point is to exclude these two
+              # artifacts, not to carve a hole in src/ or public/. The list is
+              # mirrored by DOC_TO_CODE_ALLOWLIST in
+              # scripts/generated-artifact-sources.ts, and
+              # scripts/__tests__/docs-code-decoupling.test.ts fails if the two
+              # ever disagree.
+              - '!src/data/ul-dashboard.generated.json'
+              - '!public/system-interface-map-reference.html'
 
       # A SECOND filter step, deliberately not merged into the one above (THR-909).
       # `predicate-quantifier` is a step-level input applying to every filter in
@@ -81,6 +104,16 @@ jobs:
               - 'Docs/**'
               - '.planning/**'
               - 'Design/**'
+              # The same two exclusions the `code` filter carries (THR-922), so
+              # the two predicates stay complementary. Without these, a PR
+              # touching ONLY a doc-sourced artifact — no shard, no canon page —
+              # would read code == 'false' AND docs == 'false', and neither job
+              # would run: the artifact would ship with no freshness check at
+              # all. That shape should not occur (the artifact only changes when
+              # its source does), but "should not occur" is what the skipped
+              # required check said too (THR-768).
+              - 'src/data/ul-dashboard.generated.json'
+              - 'public/system-interface-map-reference.html'
 
   # The doc-validating gates, on the one PR shape that can trip them (THR-909).
   #

@@ -8,14 +8,36 @@
  * retrospective draft. The retro is the project's only mechanism for noticing
  * recurring friction, and it had been running on pre-July data.
  *
- * These tests pin the parse population against an oracle counted independently
- * from the raw markdown, so a future regression to a single-format gate fails the
- * required CI check instead of silently shrinking the corpus again.
+ * These tests pin the parser's **behaviour** against committed fixtures, so a
+ * regression to a single-format gate fails the required CI check instead of
+ * silently shrinking the corpus again.
+ *
+ * ## Why the live log is no longer read here (THR-922)
+ *
+ * Until THR-922 this file read `Docs/impediments.md` at test time and asserted
+ * against it — parse population against an oracle, no dropped lines, no duplicate
+ * ids. That made `npm test`'s outcome a function of **documentation content**:
+ * appending an impediment could redden the suite, so logging one was never really
+ * a doc update. Worse, CI *skips* tests on the docs-only PR that carries the
+ * append (THR-491), so a log edit that broke these assertions landed green and
+ * failed the next unrelated code PR — a red suite misattributed to whoever
+ * touched code next.
+ *
+ * The split now is: **behaviour here, population there.** Every live-log invariant
+ * moved to `scripts/check-impediment-ids.ts`, which is blocking in CI and — since
+ * THR-909's `docs-check` job — runs on documentation PRs, which is exactly where a
+ * change to the log can break them. Nothing was dropped; see that file's
+ * `LIVE_LOG_FLOORS` and the assertions beneath it.
+ *
+ * Adding a case? Put it in a fixture. Reading the live log from a test here
+ * reintroduces the coupling, and a *copy* of the live log is the same mistake with
+ * an extra step — it rots, and its floors drift back toward vacuity.
  */
 
 import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import {
   PARAGRAPH_ID_BASE,
@@ -25,30 +47,33 @@ import {
   splitParagraphTail,
 } from '../impediment-log.ts';
 
-const LOG_PATH = path.join(process.cwd(), 'Docs', 'impediments.md');
-const markdown = fs.readFileSync(LOG_PATH, 'utf8');
-const lines = markdown.split(/\r?\n/);
+const TEST_DIR = path.dirname(fileURLToPath(import.meta.url));
+const FIXTURE_PATH = path.join(TEST_DIR, 'fixtures', 'impediment-log-sample.md');
+const fixture = fs.readFileSync(FIXTURE_PATH, 'utf8');
+const fixtureLines = fixture.split(/\r?\n/);
 
 /**
- * Oracle: count each form straight off the raw file, independent of the parser
+ * Oracle: count each form straight off the raw fixture, independent of the parser
  * under test. If the parser and the oracle disagree, entries are being dropped.
  */
 const oracle = {
-  table: lines.filter((line) => isTableEntryLine(line)).length,
-  paragraph: lines.filter((line) => isParagraphEntryLine(line)).length,
+  table: fixtureLines.filter((line) => isTableEntryLine(line)).length,
+  paragraph: fixtureLines.filter((line) => isParagraphEntryLine(line)).length,
 };
 
 describe('impediment log parser', () => {
-  const result = parseImpedimentLog(markdown);
+  const result = parseImpedimentLog(fixture);
 
   it('has a non-empty population of BOTH forms to assert against', () => {
     // Without this, every assertion below would pass vacuously against an empty
-    // or single-format log — the exact failure mode that hid this bug for a month.
-    expect(oracle.table).toBeGreaterThan(100);
-    expect(oracle.paragraph).toBeGreaterThan(50);
+    // or single-format fixture — the exact failure mode that hid THR-764 for a
+    // month. The floors are small because this is a fixture; the *live* log's
+    // population floors live in check-impediment-ids.ts (THR-922).
+    expect(oracle.table).toBeGreaterThan(3);
+    expect(oracle.paragraph).toBeGreaterThan(3);
   });
 
-  it('parses every table row and every paragraph entry in the log', () => {
+  it('parses every table row and every paragraph entry', () => {
     expect(result.tableCount).toBe(oracle.table);
     expect(result.paragraphCount).toBe(oracle.paragraph);
     expect(result.entries.length).toBe(oracle.table + oracle.paragraph);
@@ -61,11 +86,15 @@ describe('impediment log parser', () => {
     expect(result.entries.length).toBe(recognised);
   });
 
-  it('surfaces previously-invisible July paragraph entries', () => {
-    const julyParagraphs = result.entries.filter(
-      (entry) => entry.form === 'paragraph' && entry.date.startsWith('2026-07'),
-    );
-    expect(julyParagraphs.length).toBeGreaterThan(50);
+  it('parses paragraph entries under BOTH header conventions', () => {
+    // The regression THR-764 fixed: the pre-2026-07-04 legacy header (no category,
+    // no impact) and the modern one must both yield entries.
+    const paragraphs = result.entries.filter((entry) => entry.form === 'paragraph');
+    const legacy = paragraphs.filter((entry) => entry.category === 'uncategorized');
+    const modern = paragraphs.filter((entry) => entry.category !== 'uncategorized');
+
+    expect(legacy.length).toBeGreaterThan(0);
+    expect(modern.length).toBeGreaterThan(0);
   });
 
   it('gives paragraph entries collision-free synthetic ids', () => {
@@ -90,16 +119,20 @@ describe('impediment log parser', () => {
     const paragraphs = result.entries.filter((entry) => entry.form === 'paragraph');
 
     // The dominant authored shape declares a category and an impact in the header.
-    const categorised = paragraphs.filter((entry) => entry.category !== 'uncategorized');
-    const withImpact = paragraphs.filter((entry) => entry.impact !== 'Unknown');
-    expect(categorised.length).toBeGreaterThan(paragraphs.length * 0.8);
-    expect(withImpact.length).toBeGreaterThan(paragraphs.length * 0.8);
+    expect(paragraphs.some((entry) => entry.category !== 'uncategorized')).toBe(true);
+    expect(paragraphs.some((entry) => entry.impact !== 'Unknown')).toBe(true);
 
     // Every entry carries a date and a non-empty description.
     for (const entry of paragraphs) {
       expect(entry.date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
       expect(entry.description.length).toBeGreaterThan(0);
     }
+  });
+
+  it('keeps an escaped pipe inside a description cell', () => {
+    const escaped = result.entries.find((entry) => entry.num === '13');
+    expect(escaped?.description).toContain('|');
+    expect(escaped?.impact).toBe('S');
   });
 });
 
@@ -221,18 +254,14 @@ describe('parseImpedimentLog on synthetic fixtures', () => {
  * Fifteen duplicates had accumulated — the oldest since March — each noticed at
  * least three separate times and never repaired, because a duplicate regenerates
  * cleanly and ships green.
+ *
+ * The **live-log** half of this invariant now runs in `check:impediment-ids`
+ * (THR-922), so a duplicate fails on the docs PR that introduces it rather than on
+ * the next code PR. What stays here is the detector's behaviour.
  */
 describe('impediment number uniqueness', () => {
-  it('reports no duplicate numbers in the live log', () => {
-    // The live-log invariant THR-881 established. This is the assertion that
-    // fails if two lanes ever land the same number again.
-    expect(parseImpedimentLog(markdown).duplicateNums).toEqual([]);
-  });
-
-  it('has table rows to assert against, so the live-log pin is not vacuous', () => {
-    // A log that parsed to zero rows would satisfy the assertion above for the
-    // wrong reason.
-    expect(parseImpedimentLog(markdown).tableCount).toBeGreaterThan(300);
+  it('reports no duplicate numbers in a clean document', () => {
+    expect(parseImpedimentLog(fixture).duplicateNums).toEqual([]);
   });
 
   it('detects two rows claiming the same number, and names the lines', () => {
@@ -275,3 +304,6 @@ describe('impediment number uniqueness', () => {
     expect(duplicateNums).toEqual([]);
   });
 });
+
+// The decoupling itself is asserted repo-wide in `docs-code-decoupling.test.ts`
+// (THR-922 Done-when 1), which sweeps every test file rather than just this one.
