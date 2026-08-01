@@ -33,6 +33,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       code: ${{ steps.filter.outputs.code }}
+      docs: ${{ steps.filter-docs.outputs.docs }}
     steps:
       - uses: actions/checkout@v4
       - uses: dorny/paths-filter@v3
@@ -58,6 +59,93 @@ jobs:
               - '!Docs/**'
               - '!.planning/**'
               - '!Design/**'
+
+      # A SECOND filter step, deliberately not merged into the one above (THR-909).
+      # `predicate-quantifier` is a step-level input applying to every filter in
+      # the step, and the two predicates need opposite quantifiers: `code` is
+      # "some file matches ALL of (is-a-file, not-a-doc)", while `docs` is "some
+      # file matches ANY of (md, Docs/, .planning/, Design/)". Expressing `docs`
+      # under `every` would demand a single file be simultaneously *.md AND under
+      # Docs/ AND under .planning/ — a predicate almost nothing satisfies, which
+      # would read as a working filter and silently never fire.
+      - uses: dorny/paths-filter@v3
+        id: filter-docs
+        # Same workflow_dispatch carve-out as above: no diff base on that event.
+        if: github.event_name != 'workflow_dispatch'
+        with:
+          # Default quantifier ('some') is correct here — a file is a doc if it
+          # matches any one of these.
+          filters: |
+            docs:
+              - '**/*.md'
+              - 'Docs/**'
+              - '.planning/**'
+              - 'Design/**'
+
+  # The doc-validating gates, on the one PR shape that can trip them (THR-909).
+  #
+  # Three of the steps in `check` below exist purely to police documentation:
+  # generated-artifact freshness (whose sources include `Docs/impediments.md` and
+  # the UL shards), impediment-id uniqueness, and wiki freshness. They lived in a
+  # job gated on `code == 'true'` — so on a documentation-only PR, the only kind
+  # that can introduce a duplicate impediment id or a stale dashboard, all three
+  # were skipped. Measured on PR #1096, which carried two rows with id `282` from
+  # the moment it was authored and reported `Test · Typecheck · Build  skipping`;
+  # and again on PR #1173, which documented the defect while demonstrating it.
+  #
+  # This is NOT the THR-768 case. There, `detect` *died* and the required check
+  # recorded `skipped` while branch protection accepted it. Here `detect` succeeds
+  # and `code == 'false'` is correct — the skip is working as designed. The defect
+  # was upstream of that guard: doc gates placed in a code-gated job.
+  #
+  # Why `code != 'true'` rather than plain `docs == 'true'`: on a mixed PR the
+  # `check` job below already runs all three gates, so firing this job too would
+  # duplicate them on nearly every code PR (closeout commits almost always touch
+  # `Docs/`). Exactly one of the two jobs runs the doc gates, never both, never
+  # neither:
+  #
+  #   detect ok, docs-only PR       → this job runs the three gates
+  #   detect ok, mixed or code-only → skipped; `check` runs them instead
+  #   detect ok, nothing changed    → both skip (no PR has an empty diff)
+  #   detect did NOT succeed        → skipped, and `check` fails loudly via its
+  #                                   own guard, so the merge is blocked anyway
+  #   event is workflow_dispatch    → skipped; `check` runs unconditionally
+  #
+  # Deliberately cheap: no full test suite, no typecheck, no vite build. It is
+  # `npm ci` plus three fast scripts, which preserves the fast-docs-PR property
+  # that made the original gating attractive.
+  docs-check:
+    name: Docs gates
+    needs: detect
+    if: ${{ !cancelled() && needs.detect.result == 'success' && needs.detect.outputs.docs == 'true' && needs.detect.outputs.code != 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      # fetch-depth: 0 for the same reason as `check`: the wiki-freshness gate
+      # diffs against origin/main and scans commit bodies for the exemption token.
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # Ordered cheapest-first so the most common failure surfaces fastest.
+      - name: Impediment id uniqueness
+        run: npm run check:impediment-ids
+
+      - name: Generated artifact freshness
+        run: npm run check:generated-freshness
+
+      - name: Wiki freshness (blocking)
+        run: |
+          git fetch origin main
+          npm run check:wiki-freshness:blocking
 
   check:
     name: Test · Typecheck · Build
