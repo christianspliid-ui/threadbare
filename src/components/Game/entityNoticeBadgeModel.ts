@@ -127,6 +127,81 @@ export interface EntityNoticeBadgeModel {
   ariaLabel: string;
 }
 
+// ─── Revealed notices (THR-935) ────────────────────────────────────
+
+/**
+ * Heading for the revealed list on a person's detail surface.
+ *
+ * The badge promised "word of them"; the surface it opens keeps that promise by
+ * carrying the same words. NFP #1: retune the wording here without touching logic.
+ */
+export const REVEALED_NOTICES_TITLE = 'Word of them';
+
+/** The same heading, written for an institution rather than a person (THR-667). */
+export const REVEALED_NOTICES_FACTION_TITLE = 'Word from the order';
+
+/** One notice as the detail surface renders it. */
+export interface RevealedNoticeLine {
+  /** Source notice id — the React key, and what a test asserts on. */
+  id: string;
+  /** The news itself. */
+  message: string;
+  /** Tick the beat happened on. Ordering key; not rendered as a field. */
+  tick: number;
+  /** What kind of news this is — the same heading the tooltip led with. */
+  kindLabel: string;
+  /** Category tint, shared with the badge that revealed it. */
+  accentColor: string;
+}
+
+/**
+ * The notices a badge click reveals, snapshotted at click time.
+ *
+ * Snapshotted rather than read live because clicking clears the underlying
+ * notices — the whole point of THR-935 is that the reader sees what was cleared.
+ * Holding a copy is what lets the clear stay immediate while the news stays
+ * readable on the surface the click opened.
+ */
+export interface RevealedNoticeGroup {
+  anchorId: string;
+  anchorKind: EntityNoticeAnchorKind;
+  /** Section heading, fit to the anchor kind. */
+  title: string;
+  /** Every revealed notice, newest first — most recent news reads first. */
+  lines: RevealedNoticeLine[];
+}
+
+/**
+ * Snapshot a badge's notices into the list its detail surface renders (THR-935).
+ *
+ * Newest first, which inverts the badge model's newest-last bucket: the tooltip
+ * leads with the most recent notice, so the list it expands into must too.
+ * Ties keep input order, so the same notices always produce the same list.
+ *
+ * Pure and deterministic: same badge in, same group out.
+ */
+export function buildRevealedNotices(badge: EntityNoticeBadgeModel): RevealedNoticeGroup {
+  const lines = badge.notices
+    .map((notice, index) => ({ notice, index }))
+    // Sort on a copy with the original index carried, so equal ticks keep input
+    // order regardless of the engine's sort stability.
+    .sort((a, b) => (b.notice.tick - a.notice.tick) || (a.index - b.index))
+    .map(({ notice }) => ({
+      id: notice.id,
+      message: notice.message,
+      tick: notice.tick,
+      kindLabel: resolveNoticeLabel(notice.category, badge.anchorKind),
+      accentColor: NOTICE_CATEGORY_ACCENT[notice.category] ?? NOTICE_DEFAULT_ACCENT,
+    }));
+
+  return {
+    anchorId: badge.anchorId,
+    anchorKind: badge.anchorKind,
+    title: badge.anchorKind === 'faction' ? REVEALED_NOTICES_FACTION_TITLE : REVEALED_NOTICES_TITLE,
+    lines,
+  };
+}
+
 // ─── Selector ──────────────────────────────────────────────────────
 
 /**

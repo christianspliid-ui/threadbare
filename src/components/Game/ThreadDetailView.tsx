@@ -28,6 +28,7 @@ import { getEncounterForeshadowing } from '../../engine/foreshadowing/encounterF
 import { AgentIntelligencePanel } from './AgentIntelligencePanel';
 import type { IntelligenceRecord } from '../../types/unifiedAction';
 import type { ForeshadowingResult } from '../../engine/foreshadowing/types';
+import type { RevealedNoticeGroup } from './entityNoticeBadgeModel';
 
 // Domain display names (8 reaches after flesh removal)
 const DOMAIN_NAMES: Record<ReachDomain, string> = {
@@ -74,6 +75,12 @@ interface ThreadDetailViewProps {
   intelligenceRecords?: readonly IntelligenceRecord[];
   /** Resolver for encounter foreshadowing prose (THR-389). Called on row click, results cached in runtime. */
   getForeshadowing?: (agentId: string, encounterId: string) => ForeshadowingResult;
+  /**
+   * Notices revealed by a notice-badge click (THR-935) — rendered at the top of
+   * the body, because the click that cleared them promised to show them. Absent
+   * on every other route into this surface.
+   */
+  revealedNotices?: RevealedNoticeGroup | null;
 }
 
 export const ThreadDetailView = React.memo(function ThreadDetailView({
@@ -91,6 +98,7 @@ export const ThreadDetailView = React.memo(function ThreadDetailView({
   strategicState,
   intelligenceRecords,
   getForeshadowing,
+  revealedNotices,
 }: ThreadDetailViewProps) {
   const tierColor = TIER_COLORS[node.tier] ?? '#6b7280';
   const tierBgColor = `color-mix(in srgb, ${tierColor} 20%, transparent)`;
@@ -189,6 +197,13 @@ export const ThreadDetailView = React.memo(function ThreadDetailView({
           gap: 'var(--space-2)',
         }}
       >
+        {/* THR-935: the news the badge click just cleared, read first. The badge
+            promised "word of them" and then destroyed it unread; this section is
+            where that promise is kept. Only present on the badge route. */}
+        {revealedNotices && revealedNotices.anchorId === node.id && (
+          <RevealedNoticesSection group={revealedNotices} />
+        )}
+
         {node.category === 'agent' && (
           <AgentDetailBody
             node={node}
@@ -293,6 +308,59 @@ function DetailSection({ title, children }: { title: string; children: React.Rea
       <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
         {children}
       </div>
+    </div>
+  );
+}
+
+/**
+ * The notices a notice-badge click revealed (THR-935).
+ *
+ * Built from `DetailSection`, so it reads as one of this surface's own sections
+ * rather than a new styling vocabulary. Each line keeps its category tint and the
+ * heading the tooltip led with, so a reader recognises the badge they clicked.
+ */
+function RevealedNoticesSection({ group }: { group: RevealedNoticeGroup }) {
+  if (group.lines.length === 0) return null;
+  return (
+    <div data-testid="thread-detail-revealed-notices" data-notice-count={group.lines.length}>
+      <DetailSection title={group.title}>
+        {group.lines.map(line => (
+          <div
+            key={line.id}
+            data-testid="thread-detail-revealed-notice"
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '1px',
+              paddingLeft: 'var(--space-2)',
+              borderLeft: `2px solid ${line.accentColor}`,
+              marginBottom: '2px',
+            }}
+          >
+            <span
+              style={{
+                fontSize: 'var(--text-xs)',
+                color: line.accentColor,
+                fontFamily: 'var(--font-display)',
+                fontVariant: 'small-caps',
+                letterSpacing: '0.05em',
+              }}
+            >
+              {line.kindLabel}
+            </span>
+            <span
+              style={{
+                fontSize: 'var(--text-base)',
+                color: 'var(--text-primary)',
+                fontFamily: 'var(--font-body)',
+                lineHeight: 1.5,
+              }}
+            >
+              {line.message}
+            </span>
+          </div>
+        ))}
+      </DetailSection>
     </div>
   );
 }

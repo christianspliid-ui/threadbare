@@ -5,6 +5,7 @@ import { ThreadDetailView } from '../ThreadDetailView';
 import type { ThreadedAgent, ThreadedLocation, ThreadedFaction, ThreadedArmy, ThreadedArtifact } from '../../../engine/retinue';
 import type { AgentInfoCardData } from '../../../engine/agentDetail';
 import type { BalanceEvent } from '../../../types/balanceEval';
+import type { RevealedNoticeGroup } from '../entityNoticeBadgeModel';
 
 // ─── Test fixtures ─────────────────────────────────────────────────────────────
 
@@ -422,5 +423,103 @@ describe('ThreadDetailView', () => {
       />
     );
     expect(screen.getByText('Knows nothing of consequence.')).toBeInTheDocument();
+  });
+});
+
+// ─── THR-935: revealed notices ─────────────────────────────────────────────────
+
+describe('ThreadDetailView — revealed notices (THR-935)', () => {
+  const makeGroup = (
+    overrides?: Partial<RevealedNoticeGroup>,
+  ): RevealedNoticeGroup => ({
+    anchorId: 'agent-1',
+    anchorKind: 'agent',
+    title: 'Word of them',
+    lines: [
+      {
+        id: 'n2', message: 'Seraphel has become Guiding', tick: 19,
+        kindLabel: 'A life turns', accentColor: 'var(--accent-gold)',
+      },
+      {
+        id: 'n1', message: 'Her ambition reaches its second turn', tick: 11,
+        kindLabel: 'Their ambition moves', accentColor: 'var(--accent-gold-dim)',
+      },
+    ],
+    ...overrides,
+  });
+
+  it('renders every revealed notice line, so a count of N is readable as N', () => {
+    render(
+      <ThreadDetailView
+        node={makeAgent()}
+        agentInfoCard={makeAgentInfoCard()}
+        onClose={noop}
+        onViewProfile={noop}
+        revealedNotices={makeGroup()}
+      />
+    );
+    expect(screen.getAllByTestId('thread-detail-revealed-notice')).toHaveLength(2);
+    expect(screen.getByText('Seraphel has become Guiding')).toBeInTheDocument();
+    expect(screen.getByText('Her ambition reaches its second turn')).toBeInTheDocument();
+    expect(screen.getByText('Word of them')).toBeInTheDocument();
+  });
+
+  it('renders nothing when no notices were revealed — the ordinary route is unchanged', () => {
+    render(
+      <ThreadDetailView
+        node={makeAgent()}
+        agentInfoCard={makeAgentInfoCard()}
+        onClose={noop}
+        onViewProfile={noop}
+      />
+    );
+    expect(screen.queryByTestId('thread-detail-revealed-notices')).not.toBeInTheDocument();
+  });
+
+  it('renders nothing when the snapshot belongs to a different row', () => {
+    render(
+      <ThreadDetailView
+        node={makeAgent({ id: 'agent-2' })}
+        agentInfoCard={makeAgentInfoCard()}
+        onClose={noop}
+        onViewProfile={noop}
+        revealedNotices={makeGroup({ anchorId: 'agent-1' })}
+      />
+    );
+    expect(screen.queryByTestId('thread-detail-revealed-notices')).not.toBeInTheDocument();
+  });
+
+  it('renders on a faction row too, with the institution\'s heading (THR-667)', () => {
+    render(
+      <ThreadDetailView
+        node={makeFaction()}
+        onClose={noop}
+        onViewProfile={noop}
+        revealedNotices={makeGroup({
+          anchorId: 'faction-1',
+          anchorKind: 'faction',
+          title: 'Word from the order',
+          lines: [{
+            id: 'f1', message: 'The Iron Legion\'s ranks shift', tick: 8,
+            kindLabel: 'Their ranks shift', accentColor: 'var(--accent-gold-dim)',
+          }],
+        })}
+      />
+    );
+    expect(screen.getByText('Word from the order')).toBeInTheDocument();
+    expect(screen.getByText('The Iron Legion\'s ranks shift')).toBeInTheDocument();
+  });
+
+  it('renders no section for an empty snapshot rather than an empty box', () => {
+    render(
+      <ThreadDetailView
+        node={makeAgent()}
+        agentInfoCard={makeAgentInfoCard()}
+        onClose={noop}
+        onViewProfile={noop}
+        revealedNotices={makeGroup({ lines: [] })}
+      />
+    );
+    expect(screen.queryByTestId('thread-detail-revealed-notices')).not.toBeInTheDocument();
   });
 });

@@ -55,7 +55,7 @@ import { buildRivalInfluenceMarkers } from '../../engine/rivalInfluenceMarkers';
 import { buildTradeRouteLines, buildRouteTooltipsByHex } from '../../engine/tradeRouteMarkers';
 import { getRetinueAgents, getSustainedControlNodes } from '../../engine/retinue';
 import { TIER_NAMES } from '../../data/influence-content';
-import type { ThreadedNode, ThreadedFaction, SustainedControlNode } from '../../engine/retinue';
+import type { ThreadedNode, ThreadedFaction, ThreadCategory, SustainedControlNode } from '../../engine/retinue';
 import { getAgentPortraitUrlFromProperties } from '../../data/portrait-assets';
 import { getOriginPortraitUrl } from '../../data/avatar-portrait-assets';
 import { HEX_CONSTANTS } from '../HexMapV2/scene/HexFillMesh';
@@ -146,7 +146,10 @@ import { useNotifications } from './hooks/useNotifications';
 import { useInterruptAutoPause } from './hooks/useInterruptAutoPause';
 import { selectEncounterBadges, type EncounterBadgeModel } from './encounterBadgeModel';
 import { selectThreadTugBadges } from './threadTugBadgeModel';
-import { selectEntityNoticeBadges, type EntityNoticeBadgeModel } from './entityNoticeBadgeModel';
+import {
+  selectEntityNoticeBadges, buildRevealedNotices,
+  type EntityNoticeBadgeModel, type RevealedNoticeGroup,
+} from './entityNoticeBadgeModel';
 import { toggleAttentionMode } from '../../engine/encounterVisibility';
 import { setForceFullEncounterVisibility } from '../../engine/debugVisibilityOverride';
 import { useTopBarHotkeys } from './hooks/useTopBarHotkeys';
@@ -1386,16 +1389,88 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   );
 
   /**
-   * Notice-badge click — open the anchor's thread, then clear its notices. This
-   * is only news, so reading it is the whole interaction; there is nothing to
-   * resolve and nothing to pay. `anchorKind` is a `ThreadCategory` by
-   * construction, so it selects the right panel section for agents and factions
-   * alike (THR-667).
+   * Resolve the node the thread-detail surface will render for a selection, or
+   * `undefined` when nothing can render.
+   *
+   * Hoisted out of the detail panel's JSX (THR-935) so the notice badge's
+   * "will this open?" guard and the panel's own render consult one predicate.
+   * As two separate expressions they could disagree, and a badge clearing its
+   * news against a surface that then declined to render is exactly the
+   * destroy-unread failure this ticket exists to close.
+   */
+  const resolveThreadDetailNode = useCallback((nodeId: string, category: ThreadCategory) => {
+    const detailNode: ThreadedNode | undefined =
+      threadedNodes.find(n => n.id === nodeId)
+      ?? (() => {
+        // Fallback for non-threaded nodes (e.g. unbound agents clicked on map)
+        const graphNode = gameState.graph.getNode(nodeId);
+        if (!graphNode) return undefined;
+        if (category === 'agent') {
+          const locEdges = gameState.graph.getOutgoingEdges(graphNode.id, 'located_at');
+          const locNode = locEdges.length > 0 ? gameState.graph.getNode(locEdges[0].target) : null;
+          const locationName = locNode?.name ?? '(unknown)';
+          return {
+            id: graphNode.id,
+            name: graphNode.name,
+            tier: 0 as import('../../types/influence').InfluenceTier,
+            tierName: TIER_NAMES[0],
+            category: 'agent' as const,
+            threadEdgeId: '',
+            attentionMode: 'auto_resolve' as const,
+            courtPosition: null,
+            locationName,
+            activityLabel: 'Unknown',
+          } satisfies ThreadedNode;
+        }
+        if (category === 'faction') {
+          const memberEdges = gameState.graph.getIncomingEdges(graphNode.id, 'member_of');
+          return {
+            id: graphNode.id,
+            name: graphNode.name,
+            tier: 0 as import('../../types/influence').InfluenceTier,
+            tierName: TIER_NAMES[0],
+            category: 'faction' as const,
+            threadEdgeId: '',
+            attentionMode: 'auto_resolve' as const,
+            courtPosition: null,
+            dominantSphere: null,
+            territoryCount: 0,
+            memberCount: memberEdges.length,
+          } satisfies ThreadedFaction;
+        }
+        return undefined;
+      })();
+    return detailNode;
+  }, [threadedNodes, gameState.graph]);
+
+  /**
+   * The notices a badge click revealed, snapshotted at click time (THR-935).
+   *
+   * Held here rather than read live because the click clears the source notices.
+   * The snapshot is what the detail surface renders, so the news survives exactly
+   * as long as the surface that was opened to show it.
+   */
+  const [revealedNotices, setRevealedNotices] = useState<RevealedNoticeGroup | null>(null);
+
+  /**
+   * Notice-badge click — reveal the anchor's news on its thread surface, then
+   * clear the badge. This is only news, so reading it is the whole interaction;
+   * there is nothing to resolve and nothing to pay. `anchorKind` is a
+   * `ThreadCategory` by construction, so it selects the right panel section for
+   * agents and factions alike (THR-667).
+   *
+   * THR-935: the clear used to be unconditional, and the surface it opened showed
+   * the notices nowhere — so the only observable effect of a click was N pieces of
+   * news being destroyed unread. Now the snapshot is taken first and the clear is
+   * guarded, mirroring `handleOpenEncounterBadge` one function down: if the target
+   * surface cannot render, the badge stays and the news keeps waiting.
    */
   const handleOpenNoticeBadge = useCallback((badge: EntityNoticeBadgeModel) => {
+    if (!resolveThreadDetailNode(badge.anchorId, badge.anchorKind)) return;
+    setRevealedNotices(buildRevealedNotices(badge));
     handleThreadNodeSelect(badge.anchorId, badge.anchorKind);
     handleClearEntityNotices(badge.anchorId);
-  }, [handleThreadNodeSelect, handleClearEntityNotices]);
+  }, [resolveThreadDetailNode, handleThreadNodeSelect, handleClearEntityNotices]);
 
   /**
    * Badge click — open the encounter modal, then mark that notification read so
@@ -3526,6 +3601,17 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     window.__DEBUG._registerActiveUIStateProvider(getDebugActiveUIState);
   }, [getDebugActiveUIState, getDebugOpenModals]);
 
+  /**
+   * THR-935: a revealed-notice snapshot belongs to the surface the badge opened.
+   * Once the selection moves elsewhere — or the panel closes — it is news held
+   * past its welcome, so drop it rather than let it resurface on a later visit to
+   * the same row. The render also gates on the anchor id, so nothing flashes.
+   */
+  useEffect(() => {
+    if (!revealedNotices) return;
+    if (selectedThreadNode?.nodeId !== revealedNotices.anchorId) setRevealedNotices(null);
+  }, [selectedThreadNode, revealedNotices]);
+
   // Close detail panel on Escape key
   useEffect(() => {
     if (!selectedThreadNode && !selectedHexCoord) return;
@@ -3997,47 +4083,12 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                   }}
                 >
                   {selectedThreadNode && (() => {
-                    const detailNode: ThreadedNode | undefined =
-                      threadedNodes.find(n => n.id === selectedThreadNode.nodeId)
-                      ?? (() => {
-                        // Fallback for non-threaded nodes (e.g. unbound agents clicked on map)
-                        const graphNode = gameState.graph.getNode(selectedThreadNode.nodeId);
-                        if (!graphNode) return undefined;
-                        if (selectedThreadNode.category === 'agent') {
-                          const locEdges = gameState.graph.getOutgoingEdges(graphNode.id, 'located_at');
-                          const locNode = locEdges.length > 0 ? gameState.graph.getNode(locEdges[0].target) : null;
-                          const locationName = locNode?.name ?? '(unknown)';
-                          return {
-                            id: graphNode.id,
-                            name: graphNode.name,
-                            tier: 0 as import('../../types/influence').InfluenceTier,
-                            tierName: TIER_NAMES[0],
-                            category: 'agent' as const,
-                            threadEdgeId: '',
-                            attentionMode: 'auto_resolve' as const,
-                            courtPosition: null,
-                            locationName,
-                            activityLabel: 'Unknown',
-                          } satisfies ThreadedNode;
-                        }
-                        if (selectedThreadNode.category === 'faction') {
-                          const memberEdges = gameState.graph.getIncomingEdges(graphNode.id, 'member_of');
-                          return {
-                            id: graphNode.id,
-                            name: graphNode.name,
-                            tier: 0 as import('../../types/influence').InfluenceTier,
-                            tierName: TIER_NAMES[0],
-                            category: 'faction' as const,
-                            threadEdgeId: '',
-                            attentionMode: 'auto_resolve' as const,
-                            courtPosition: null,
-                            dominantSphere: null,
-                            territoryCount: 0,
-                            memberCount: memberEdges.length,
-                          } satisfies ThreadedFaction;
-                        }
-                        return undefined;
-                      })();
+                    // THR-935: one predicate, shared with the notice badge's
+                    // "will this open?" guard — see resolveThreadDetailNode.
+                    const detailNode = resolveThreadDetailNode(
+                      selectedThreadNode.nodeId,
+                      selectedThreadNode.category,
+                    );
                     if (!detailNode) return null;
                     return (
                       <ThreadDetailView
@@ -4055,6 +4106,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                         strategicState={selectedThreadNode.category === 'agent' ? gameState.strategicState : undefined}
                         intelligenceRecords={selectedThreadNode.category === 'agent' ? (gameState.intelligenceRecords ?? []) : undefined}
                         getForeshadowing={selectedThreadNode.category === 'agent' ? handleGetForeshadowing : undefined}
+                        revealedNotices={revealedNotices}
                       />
                     );
                   })()}
