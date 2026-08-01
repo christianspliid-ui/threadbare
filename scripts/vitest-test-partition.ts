@@ -67,6 +67,15 @@ export const MODULE_MOCK_CALL = /\bvi\s*\.\s*(mock|doMock)\s*\(/;
  * Each entry is tracked by **THR-949**, which owns removing it. Do not add to
  * this list without filing a Deferral naming the specific failure — an unexplained
  * pin is indistinguishable from a test that was quietly opted out of the fast path.
+ *
+ * **A green local run does not prove this list is complete.** Under `isolate: false`
+ * *which* files share a worker depends on worker count and on the order files finish,
+ * so a fast many-core dev box groups them differently than a 2-core CI runner. Two of
+ * the four entries below passed locally — including at CI's worker count — and failed
+ * only on CI. When adding a pin, prefer evidence from a constrained run
+ * (`npx vitest run --maxWorkers=2`) over a default local run, and treat a
+ * scheduling-dependent failure as a real leak rather than as flakiness: the test is
+ * reporting that production state outlived its session.
  */
 export const ISOLATED_PINS: readonly string[] = [
   // THR-949: `completedActors.size` is 0 after 100 ticks under shared workers.
@@ -74,6 +83,14 @@ export const ISOLATED_PINS: readonly string[] = [
   'src/engine/__tests__/contracts/resolution-to-growth.contract.test.ts',
   // THR-949: `action.currentStep` reads 0 where the test expects 1 after two ticks.
   'src/engine/__tests__/gateDutyDirectSpawnProgression.test.ts',
+  // THR-949: `evaluateIdentityMilestones` yields 0 milestones where >= 1 is expected.
+  // Surfaced only on CI, not on a 32-core dev box — see the scheduling note below.
+  'src/engine/__tests__/doomIdentityMilestones.test.ts',
+  // THR-949: asserts a 500ms wall-clock budget, which a shared worker's added
+  // allocation pressure pushes over (539ms on CI). A timing assertion is
+  // isolation-sensitive by nature; the budget was already marginal on a 2-core
+  // runner, so this pin restores its pre-existing behaviour rather than fixing it.
+  'src/engine/__tests__/coastline-integration.test.ts',
 ];
 
 /** What the scan learned about one test file. */
