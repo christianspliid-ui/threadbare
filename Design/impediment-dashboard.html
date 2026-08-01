@@ -6082,6 +6082,19 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "Checked the scan workflow's run history explicitly and recorded the staleness in the report instead of implying fresh data. Durable fix is a registry-side schedule nudge (retro ≥15:00 UTC) or a Step 0 same-day-run check in the retrospective skill; recommended in the 2026-07-31 retro's Tuning Recommendations.",
     "session": "weekly-retro scheduled run, 2026-07-31. Renumbered from #353 by THR-897 pickup (union-merge duplicate-number repair; #353 was already published on main by the 2026-07-30 tooling row), then from #356 → #363 resolving PR #1166's union merge — #356 was by then published on `main` by the 2026-07-30 promotion-gate row, and this row is cited by nothing."
+  },
+  {
+    "num": "367",
+    "id": 367,
+    "count": 1,
+    "date": "2026-08-01",
+    "category": "process",
+    "description": "**A union-merge resolution can pass `check:impediment-ids` and still be wrong three ways the gates cannot see — including deleting a row that `main` owns.** PR #1166's first resolution renumbered its own colliding impediment row onto `#363`, which `main` had already assigned to a different entry, and settled that second collision by dropping `main`'s row (\"Multiple armed auto-merge PRs starve the long-CI one\") out of the log entirely. `check:impediment-ids` passed — it tests uniqueness, not preservation, and a log with a row deleted is perfectly unique. Two further defects rode along: the retro report's three citations of its own entry still read `#356`, a number that on `main` belongs to an unrelated impediment, so the report silently pointed at the wrong row; and the conflict that actually blocked the PR (the generated `Design/impediment-dashboard.html`) was never resolved at all, so the PR still read `mergeStateStatus: DIRTY` after the push that claimed to fix it. This is the sibling of #358: #358 is the *duplicate number* that union merges produce, this is the *repair* going wrong.",
+    "consequence": "An impediment entry is destroyed with every automated gate green. The log is the input to every retrospective, so a dropped row is invisible loss — nothing downstream reports a missing number. Meanwhile the PR stays blocked, and the next sweep re-reports it as conflicted, so the run that 'fixed' it spent its budget and changed nothing.",
+    "impact": "High — silent data loss in the log that governs continuous improvement, plus a stalled merge queue that reads as handled.",
+    "workaroundFound": true,
+    "workaround": "**Resolve by re-merging `origin/main`, never by hand-picking rows, and check three things the gates do not.** (1) Re-run `git merge origin/main` from the remote branch tip: the union driver restores any row the previous resolution dropped, then renumber your *own* row to the next free id — never `main`'s. (2) Diff row counts and grep `main`'s tail rows by content, not by number: `git show origin/main:Docs/impediments.md",
+    "session": "grep -c '<phrase>'` against the merged file. (3) Grep every citation of the renumbered row (`grep -n '#<old>' Design/retros/ Docs/`) and repoint it — `check:impediment-ids` never reads citations. Finally confirm the PR is genuinely unblocked with `git merge-tree --write-tree origin/main HEAD` (exit 0), not by assuming the push fixed it. | THR-924 resume, `tb-opus-pickup` hourly run — `pull-work` Step 0.8 armed-PR sweep, PR #1166."
   }
 ];
 // ── End data ──
