@@ -412,10 +412,10 @@ remediation ticket or the build fails.
 - **Intent:** A company travels as one — members share a destination instead of wandering off separately.
 - **Producer → Consumer:** Companies & Group Travel → Movement & Colocation
 - **UL terms:** *Company*
-- **Production hits:** 15 total — 1 write, 1 read, 13 unclassified
+- **Production hits:** 14 total — 1 write, 1 read, 12 unclassified
 - **Write sites:** `src/engine/groups/groupMovement.ts`
 - **Read sites:** `src/engine/phaseMovement.ts`
-- **Other hits:** `src/components/AgentInfoCard/AgentInfoCard.tsx`, `src/components/Game/GameView.tsx`, `src/components/HexMap/MovementTrails.tsx`, `src/data/action-technical-effects.ts`, `src/engine/agentActivity.ts` +8 more
+- **Other hits:** `src/components/AgentInfoCard/AgentInfoCard.tsx`, `src/components/Game/GameView.tsx`, `src/data/action-technical-effects.ts`, `src/engine/agentActivity.ts`, `src/engine/agentValidation.ts` +7 more
 - **Verdict:** Verified 2026-07-24: phaseGroups writes members' MovementState and phaseMovement (next phase in runTick) executes it. 72-tick CLI smoke, seed 42 medium: "The Watch of the Nameless Road" members Nareth and Hestia both at Wolfton; "The Steadfast Sparrows" both at Shadow-shade.
 
 ### `company-gates-exclusive-content-reachability` — 🟢 LIVE
