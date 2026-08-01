@@ -14,8 +14,10 @@ import { describe, expect, it } from 'vitest';
 import { scoreProseEntry } from '../../engine/content-eval/proseQualityScore';
 import {
   countVagueness,
+  countIntensifiers,
   countNotXButY,
   NOT_X_BUT_Y_FAIL,
+  type ProseFieldClass,
 } from '../content-eval/nudgeAuditDetectors';
 import { CANDIDATE_VIGNETTES } from '../candidate-vignettes';
 import {
@@ -51,6 +53,13 @@ const HUNGERS = [
 interface Entry {
   id: string;
   fields: Record<string, string>;
+  /**
+   * Which vagueness scope this entry is read under (THR-899). Scene-setup prose
+   * is held to the evasive terms only; prose that reports a result is held to
+   * the natural indefinites as well, because after the roll an indefinite is the
+   * writer withholding what the player is owed.
+   */
+  scope: ProseFieldClass;
 }
 
 /**
@@ -59,15 +68,25 @@ interface Entry {
  * — an auto-discovered corpus silently stops covering whatever it fails to see.
  */
 const CORPUS: Entry[] = [
+  // Vignettes and sensing openings are the player looking at a life before
+  // choosing — scene prose in the THR-899 sense.
   ...CANDIDATE_VIGNETTES.map((v) => ({
     id: v.id,
     fields: { narrative: v.prose, epithet: v.epithet },
+    scope: 'scene' as const,
   })),
   ...HUNGERS.map((h) => ({
     id: `prose.sensing_opening.${h}`,
     fields: { narrative: SENSING_OPENING_PROSE[h] },
+    scope: 'scene' as const,
   })),
-  ...HUNGERS.map((h) => ({ id: `prose.bond.${h}`, fields: { narrative: BOND_PROSE[h] } })),
+  // The bond is the result the meeting resolves to, so it is read as outcome
+  // prose: "something settles" is exactly the withholding this scope exists for.
+  ...HUNGERS.map((h) => ({
+    id: `prose.bond.${h}`,
+    fields: { narrative: BOND_PROSE[h] },
+    scope: 'outcome' as const,
+  })),
   {
     id: 'prose.sensing_misc',
     fields: {
@@ -75,6 +94,7 @@ const CORPUS: Entry[] = [
       focus: SENSING_FOCUS_PROMPT,
       rest: SENSING_REST_PROMPT,
     },
+    scope: 'scene' as const,
   },
   {
     id: 'prose.transitions',
@@ -83,10 +103,12 @@ const CORPUS: Entry[] = [
       between: TESTING_BETWEEN_DILEMMAS,
       sparkIn: SPARK_TRANSITION_IN,
     },
+    scope: 'scene' as const,
   },
   {
     id: 'prose.bond_misc',
     fields: { fallback: BOND_PROSE_FALLBACK },
+    scope: 'outcome' as const,
   },
 ];
 
@@ -162,12 +184,14 @@ describe('Meet The First prose corpus — register compliance', () => {
 });
 
 describe('Meet The First prose corpus — nudge-spec detectors', () => {
-  it('carries zero vagueness-lexicon words', () => {
+  it('carries zero vagueness-lexicon words in its own scope', () => {
     // Spec target is zero, not a density budget: each of these words stands where a
     // picturable noun belongs, and the meeting is the game's teaching surface.
-    const hits = CORPUS.map((e) => ({ id: e.id, n: countVagueness(textOf(e)) }))
+    // Scoped per THR-899 — scene entries are held to the evasive set, bond prose
+    // (a result) to the indefinites as well.
+    const hits = CORPUS.map((e) => ({ id: e.id, scope: e.scope, n: countVagueness(textOf(e), e.scope) }))
       .filter(({ n }) => n > 0)
-      .map(({ id, n }) => `${id}: ${n}`);
+      .map(({ id, scope, n }) => `${id} [${scope}]: ${n}`);
     expect(hits, `vagueness hits:\n${hits.join('\n')}`).toEqual([]);
   });
 
@@ -190,7 +214,9 @@ describe('the guard itself is falsifiable', () => {
     // The plan doc names this exact sentence as "the register being retired".
     const retired =
       'Something inside them settles into place like a stone dropped into still water.';
-    expect(countVagueness(retired)).toBeGreaterThan(0);
+    // Asserted in the *loosest* scope: this register stays retired even where the
+    // rescope relaxed the most, because its fault is evasion and not indefiniteness.
+    expect(countVagueness(retired, 'scene')).toBeGreaterThan(0);
 
     // The pre-rewrite sensing opening: weave metaphor, no picturable subject.
     const oldSensing =
@@ -203,12 +229,46 @@ describe('the guard itself is falsifiable', () => {
     expect(r.registerCompliance.band).toBe('fail');
   });
 
-  it('catches vague intensifiers and abstract stand-ins the lexicon covers', () => {
+  it('catches the evasive stand-ins in every scope', () => {
     // These are the lexicon groups the corpus is asserted clean of; if the detector
-    // stopped matching them, the zero above would be meaningless.
-    for (const bad of ['someone', 'something', 'things', 'very', 'deeply', 'the tension']) {
-      expect(countVagueness(`The guard waited, ${bad} in the dark.`), bad).toBeGreaterThan(0);
+    // stopped matching them, the zero above would be meaningless. Evasive terms
+    // have no plain-English defence, so they are caught in scene scope too — the
+    // looser of the two, which makes this the stronger assertion.
+    for (const bad of ['something', 'somehow', 'the tension', 'seems to']) {
+      expect(countVagueness(`The guard waited, ${bad} in the dark.`, 'scene'), bad).toBeGreaterThan(0);
     }
+  });
+
+  it('catches natural indefinites in outcome scope and permits them in scene scope', () => {
+    // The rescope itself, pinned in both directions. Only asserting the loosening
+    // would let the detector go inert on outcome prose and still read green.
+    for (const bad of ['someone', 'things', 'nothing', 'anything', 'whatever', 'way']) {
+      expect(countVagueness(`They left with ${bad} of it.`, 'outcome'), bad).toBeGreaterThan(0);
+      expect(countVagueness(`They left with ${bad} of it.`, 'scene'), bad).toBe(0);
+    }
+  });
+
+  it('demotes intensifiers to a warning rather than a vagueness hit', () => {
+    // THR-899 moved these off the fail path in every scope. They must still be
+    // *countable* — a demotion that loses the signal entirely is not a demotion.
+    for (const weak of ['very', 'deeply', 'profoundly', 'utterly']) {
+      const sentence = `The guard waited, ${weak} still in the dark.`;
+      expect(countVagueness(sentence, 'outcome'), weak).toBe(0);
+      expect(countIntensifiers(sentence), weak).toBeGreaterThan(0);
+    }
+  });
+
+  it('accepts the reference sentences the rescope was written for', () => {
+    // THR-899 acceptance fixtures, verbatim from the ticket. The first is
+    // Christian's canonical example of *correct* prose and used to fail; the
+    // second is rule zero's canonical example of the detector's real prey.
+    const good = 'someone is asking around after the agent, and not in a good way';
+    expect(countVagueness(good, 'scene'), 'the reference scene sentence must pass').toBe(0);
+
+    const bad = 'it cost them something';
+    expect(countVagueness(bad, 'outcome'), 'the reference outcome sentence must fail').toBeGreaterThan(0);
+    // …and it is evasive, not merely indefinite: it fails in every scope.
+    expect(countVagueness(bad, 'scene')).toBeGreaterThan(0);
   });
 
   it('catches an over-budget not-X-but-Y run', () => {
@@ -228,7 +288,12 @@ describe('Meet The First labels — hard plainness rule', () => {
       });
       const plainness = r.registerCompliance.metrics.find((m) => m.name === 'interactivePlainness');
       expect(plainness?.band, `${name} = "${value}" → ${plainness?.detail}`).not.toBe('fail');
-      expect(countVagueness(value), `${name} = "${value}" carries a vagueness word`).toBe(0);
+      // Labels are interactive-class: evasive terms only. Their real guardrail is
+      // `interactivePlainness` above, which THR-899 deliberately left alone.
+      expect(
+        countVagueness(value, 'interactive'),
+        `${name} = "${value}" carries an evasive word`,
+      ).toBe(0);
     }
   });
 });

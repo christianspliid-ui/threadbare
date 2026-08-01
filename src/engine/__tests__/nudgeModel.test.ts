@@ -53,8 +53,13 @@ import {
   NUDGE_OFF_REACH_MAX_DIFFICULTY,
   NUDGE_WORD_BUDGETS,
   REACH_PURPOSE_MAX_WORDS,
-  VAGUENESS_LEXICON,
 } from '../../data/content-eval/nudgeAuthoringConstants';
+import {
+  countIntensifiers,
+  countVagueness,
+  NATURAL_INDEFINITE_TERMS,
+  type ProseFieldClass,
+} from '../../data/content-eval/nudgeAuditDetectors';
 import { computeResolutionThreshold, PROBABILITY_FLOOR } from '../resolutionService';
 import { NPC_CONSTANTS } from '../../types/npc';
 import { NUDGE_GOLDEN_EXEMPLAR } from '../../data/__fixtures__/nudge-exemplar/swollen-ford-exemplar';
@@ -502,6 +507,31 @@ function wordCount(text: string): number {
  * under the interactive-plainness rule and `fiction.<id>` scores as narrative,
  * with no second mapping to keep in step.
  */
+/**
+ * Which enforcement scope an `exemplarProse()` label falls under (THR-899).
+ *
+ * The labels already encode the field they came from, so the mapping is read off
+ * the prefix rather than maintained as a second list that could drift from the
+ * collector. Order matters: the outcome-side `narrative.*` cases are tested
+ * before the generic `narrative.` → scene fallback.
+ */
+function fieldClassOfLabel(label: string): ProseFieldClass {
+  // Band fragments and afterimages are the result, after the dice.
+  if (label.startsWith('fragment.') || label.startsWith('afterimage.')) return 'outcome';
+  // `narrativeTemplates.success` / `.failure`, and an omen's fire-time hook.
+  if (
+    label === 'narrative.success' ||
+    label === 'narrative.failure' ||
+    label.endsWith('.omen_hook')
+  ) {
+    return 'outcome';
+  }
+  // Openings, step narratives, `initiation`, and a card's fiction body.
+  if (label.startsWith('narrative.') || label.startsWith('fiction.')) return 'scene';
+  // Labels and rules text: name, effectLine, factor lines, purpose lines.
+  return 'interactive';
+}
+
 function exemplarProse(): Array<[string, string]> {
   const out: Array<[string, string]> = [['name.template', NUDGE_GOLDEN_EXEMPLAR.name]];
 
@@ -818,14 +848,40 @@ describe('golden exemplar — authoring checklist (locked THR-883 format)', () =
 
   // ── Detectors (the verbatim spec the skills carry) ──────────────
 
-  it('scores zero on the vagueness lexicon', () => {
+  it('scores zero on the vagueness lexicon, scoped by field class', () => {
+    // THR-899: the sweep is scoped, not flat. Outcome prose is held to evasive
+    // terms AND natural indefinites; scene and interactive prose to evasive
+    // terms only. A flat sweep here is what made "someone" a defect in a card's
+    // fiction, and the contortions that produced are the reason for the rescope.
     const offenders: string[] = [];
     for (const [label, text] of exemplarProse()) {
-      for (const word of VAGUENESS_LEXICON) {
-        if (new RegExp(`\\b${word}\\b`, 'i').test(text)) offenders.push(`${label}: "${word}"`);
-      }
+      const hits = countVagueness(text, fieldClassOfLabel(label));
+      if (hits > 0) offenders.push(`${label} [${fieldClassOfLabel(label)}] x${hits}: ${text}`);
     }
     expect(offenders, `vagueness lexicon hits:\n${offenders.join('\n')}`).toEqual([]);
+  });
+
+  it('still catches an indefinite planted in the exemplar\'s outcome prose', () => {
+    // Negative control. Every assertion above could be green because the
+    // detector went inert rather than because the exemplar is clean — and this
+    // rescope only ever loosens, which is exactly the change that can go inert
+    // without anyone noticing. Plant the prey; watch it get caught.
+    for (const term of NATURAL_INDEFINITE_TERMS) {
+      expect(
+        countVagueness(`They walked away with ${term} of it.`, 'outcome'),
+        `outcome scope stopped matching "${term}"`,
+      ).toBeGreaterThan(0);
+    }
+    // And the same sentence must be clean in scene scope — that is the point.
+    expect(countVagueness('Someone is asking around after the agent.', 'scene')).toBe(0);
+  });
+
+  it('reports intensifiers as a warning, never as a vagueness failure', () => {
+    // THR-899 moved these off the fail path. Both halves need pinning: they must
+    // stop counting as vagueness, and they must still be visible as a warning.
+    const sentence = 'She was very tired and he was deeply unsure.';
+    expect(countVagueness(sentence, 'outcome')).toBe(0);
+    expect(countIntensifiers(sentence)).toBe(2);
   });
 
   it('stays inside the annotation-clause budget for the whole encounter', () => {
