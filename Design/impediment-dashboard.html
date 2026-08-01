@@ -6121,6 +6121,32 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "Do not use console presence/absence as the before/after signal across reloads on this surface. Assert on **state the crash would have prevented** instead — here `__DEBUG.tick(n)` returning `{ticksRun: 8, tick: 0}` (world frozen, every tick reverted) versus `{ticksRun: 8, tick: 8}`, which a caught-and-reverted tick cannot fake. When console output must be used, check the `?t=` cache-bust token in the stack frames to tell a stale entry from a fresh one.",
     "session": "THR-924 browser falsification, Browser pane, vite dev server with HMR. Renumbered from #365 by THR-924 resolving PR #1199’s union merge — #365 was published on `main` by the WIP=1 false-positive row; the THR-924 completion comment cites it under its old number."
+  },
+  {
+    "num": "370",
+    "id": 370,
+    "count": 1,
+    "date": "2026-08-01",
+    "category": "tooling",
+    "description": "**Both the worktree *and* the home tree had unusable `node_modules` at the same time, so the documented junction workaround had no healthy donor.** The known family (#203, #207, #283, #287, #294) assumes the home tree is the fallback: junction the worktree's `node_modules` to it. Here the fresh worktree had no `node_modules` at all, and the home tree's held 276 packages with `.bin/` entirely absent — packages intact, binaries gone, which is the #294 shape but on the *donor* side. `session-precheck.ts` surfaced it as `test=fail` (`'vitest' is not recognized`), not as a dependency problem, so the signal names the symptom rather than the cause.",
+    "consequence": "Every npm-script gate (`npm test`, `check:typecheck`, `check:generated-freshness`, the CLI smoke) is unrunnable until repaired, and the one-command repair in CLAUDE.md § Known Sandbox Limitations silently cannot apply. A session that reads only the precheck's `test=fail` line may conclude the test suite is red rather than that the toolchain is missing.",
+    "impact": "M",
+    "workaroundFound": true,
+    "workaround": "Probe the donor before trusting it, not just the worktree: `[ -e node_modules/.bin/vitest ]` in **both** trees. If neither is healthy, skip the junction entirely and run a plain `npm install` in the worktree — it succeeded here in ~4 min, exit 0, and is the only path when no healthy donor exists. Do not junction to a `.bin`-less home tree: it propagates the fault and looks like it worked.",
+    "session": "`tb-opus-pickup` hourly run, 2026-08-01 ~04:00Z, resuming THR-899. Detected at Step 0 before the board scan; install kicked off in background during the Linear scan so it cost no serial time."
+  },
+  {
+    "num": "371",
+    "id": 371,
+    "count": 1,
+    "date": "2026-08-01",
+    "category": "tooling",
+    "description": "**`gh pr update-branch` fired 43 seconds before a scheduled doc-lane merge, so the PR went `BEHIND` 18 minutes before its own CI could go green — auto-merge could never fire, and three consecutive hourly runs each reported success.** Measured on PR #1205 (THR-899): `update-branch` at 03:02:28Z; the hourly `docs/briefing` lane merged to `main` at 03:03:11Z; that branch's CI ran 03:02:28Z -> 03:21:12Z (**18m44s**) and concluded `SUCCESS` against a base that had already moved. This is the THR-735 shape with the timing finally pinned: CI is ~19 min, the scheduled lanes merge on ~:03 and ~:31 UTC slots (~28 min apart), so the landing window after green is only ~9 min — and firing `update-branch` inside a slot boundary collapses it to zero. The prior runs' checkpoints all read \"updated, auto-merge fires on green\", which was true of the command and false of the outcome.",
+    "consequence": "The armed PR is green, mergeable and conflict-free yet never lands; each hourly run spends its Step 0.8 drain on the same PR and reports a success that did not happen. THR-899 sat armed ~102 minutes across three runs. The failure is invisible in every per-run log because each run's own action genuinely succeeded.",
+    "impact": "M",
+    "workaroundFound": false,
+    "workaround": "Before `update-branch`, read the clock against the scheduled-merge slots (`git log origin/main --format=\"%h %ci\"` shows the ~:03/~:31 UTC cadence) and prefer the middle of a quiet window — here, updating at 04:04Z after main had been quiet for an hour. Then **verify the landing rather than assuming it**: a single bounded watch loop on `gh pr view --json state` for ~1 CI duration costs one wait but converts a reported ship into an observed one. Do not treat \"`update-branch` succeeded\" as evidence the PR will merge; the two are independent. Durable fix belongs to THR-735.",
+    "session": "`tb-opus-pickup` hourly run, 2026-08-01 ~04:00Z, resuming THR-899 — third consecutive run to drain the same PR."
   }
 ];
 // ── End data ──
