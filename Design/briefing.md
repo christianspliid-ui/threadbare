@@ -1,5 +1,5 @@
 ---
-needsChristian: thr-883-prototype-verdict-ready, thr-860-capital-cluster-verdict, home-tree-ff-blocked
+needsChristian: thr-883-prototype-verdict-ready, thr-860-capital-cluster-verdict, home-tree-ff-blocked, thr-931-docs-gates-required-check
 queue: backed-up
 freshness: behind
 deploy: skipped
@@ -7,56 +7,57 @@ tasks: ok
 ---
 # Briefing
 
-**Generated:** 2026-08-01 04:58 local (02:58 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-08-01 07:57 local (05:57 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
 ## Needs Christian
 
-**Nothing new since the last hour.** The same three things are waiting, unchanged — the good news arrived at 03:58 and this hour adds nothing to it. Repeated here so the list stays complete, not because anything moved.
+**One new item this hour, and it is deliberately not yet actionable.** The three you already know about are unchanged.
 
-**1. The verdict on the five prototype encounters.**
+**1. The verdict on the five prototype encounters.** *(unchanged)*
 
-Still the one thing everything else is waiting behind. Your five review links work on the live site — that was confirmed last hour, on the deployed build rather than on the merge, and it still holds. **Read the five and tell me if the format is right.** Eleven content jobs are paused until you do.
+Still the one thing everything else waits behind. **Play the five and tell me if the format is right.** Eleven content jobs are paused until you do.
 
-One useful addition from the planning lane this hour: the crash that was breaking four of the five links is now formally closed out, so the session that walks you through this has nothing left in front of it. It's set up as a single sitting — you play the five end-to-end and give a plain-language verdict on the prose, the rhythm of when things fire, whether the world visibly reacts, how it looks, and whether it's fun. That sitting is the last step of the encounter-slice plan; finishing it finishes the plan.
+The sitting is fully clear now — I checked the two pieces of work that were in front of it, and both are finished and closed. It's one session: you play the five end-to-end and give a plain-language verdict on the prose, on the rhythm of when things fire, on whether the world visibly reacts, on how it looks, and on whether it's fun. That's the last step of the encounter-slice plan; finishing it finishes the plan.
 
-**2. The four capital-city encounters that ride along with that verdict.**
+**2. The four capital-city encounters that ride along with that verdict.** *(unchanged)*
 
-A council mediation over a millrace, a noble's court at a ford toll house, two feuding houses and the seam where their banners meet, and a monument that turned into a problem with a rock. Written, finished, deliberately not landed — they're in the *old* style. When you lock the format they either go in as they are and get tidied up later alongside the seven earlier ones, or get dropped and rewritten under the new rules. **Nothing is lost either way** — the work is safe on its own branch, and has been for about 38 hours. Same sitting as the verdict, not a separate visit.
+A council mediation over a millrace, a noble's court at a ford toll house, two feuding houses and the seam where their banners meet, and a monument that turned into a problem with a rock. Written, finished, deliberately not landed — they're in the *old* style. When you lock the format they either go in as they are and get tidied up later alongside the seven earlier ones, or get dropped and rewritten under the new rules. **Nothing is lost either way** — the work is safe on its own branch, and has been for about 43 hours. Same sitting as the verdict, not a separate visit.
 
-**3. One line to run when you next sit down.**
+**3. One line to run when you next sit down.** *(unchanged cause, larger number)*
 
-Your working copy has stopped updating and is now **70 commits behind** — four further behind than last hour, same single cause.
+Your working copy has stopped updating and is now **84 commits behind** — fourteen further than last hour, same single cause.
 
 ```bash
 cd "C:/Users/chris/Dev/Projects/TheFantasyWorldSimulator" && rm "Docs/ops/orchestrator-2026-07-31g.md" && git pull --ff-only origin main
 ```
 
-An automated session left a loose copy of one of its reports in your folder; that report has since been committed properly, and git refuses to overwrite the loose one, so it abandons every sync. I re-checked all three parts of this from scratch this hour rather than reprinting last hour's answer: the loose file is **byte-for-byte identical** to the committed one, so deleting it loses nothing; it is the **only** collision in all 70 commits; and **nothing arriving touches your settings files or your two retrospective drafts**, so your own edits survive untouched.
+An automated session left a loose copy of one of its reports in your folder; that report has since been committed properly, and git refuses to overwrite the loose one, so it abandons every sync. I re-derived all three parts from scratch this hour rather than reprinting last hour's answer: the loose file is **byte-for-byte identical** to the committed one, so deleting it loses nothing; it is the **only** collision in all 84 commits; and **nothing arriving touches your settings files or your two retrospective drafts**, so your own edits survive untouched.
+
+**4. NEW — a documentation safety net that will need one click from you, but not yet.**
+
+We added a second, much faster automated check that catches broken documentation on documentation-only changes — the kind that until now went through with nothing checking them at all. For it to actually *block* a bad change rather than just show a red mark, it needs switching on in a GitHub setting, and that setting is yours alone: no agent can change it.
+
+**Don't do it yet, and there is nothing to do this hour.** The change that creates the check hasn't reached the main line yet — it's queued and merging on its own. Switching it on before that lands would block *every* change from merging, including the one we're waiting for. I'll say plainly in a future briefing when it's ready, with the exact click path. This is here so it isn't a surprise, not because it's waiting on you today.
 
 ## Queue
 
-**Backed up — 53 ready, 1 parked, 1 actively being worked.** No urgent items, 4 high, 4 medium, 3 unranked, 42 low-priority tidy-ups.
+**Backed up — 54 ready, 2 parked, 1 actively being worked.** No urgent items, 3 high, 4 medium, 3 unranked, 44 low-priority tidy-ups. Both parked items are the two decisions above, so nothing is sitting parked without a reason.
 
-- **One job left the queue and is being worked** — a narrowing of the prose-quality checks, picked up at 04:01 and already finished and waiting to merge. That's the "actively being worked" count going 0 → 1.
-- **The parked item** is the held capital-city batch described above, ~38 hours parked and holding nobody up.
-- **One cold item:** the job to unify the two spell-casting paths, now seven days untouched. Not urgent, just noted before it becomes thirty.
-- Fifty-three is well past comfortable, which is expected while the content side stays paused behind your verdict.
+- **One item has been waiting 7 days** — merging two duplicate code paths for casting. The only one past the staleness bound, and low priority.
+- **One newly-filed item is invisible to the pickup lane.** It was created with a name attached, and the lane only picks up unclaimed work, so it will sit unnoticed. Agent-side bookkeeping, already tracked as a known defect — not yours.
+- **The change carrying item 4 above is queued and stalled on a mechanical technicality** — it needs refreshing against the main line before it can merge. An automatic sweep does exactly this and hasn't had its turn yet. Not an escalation, and not yours.
 
 ## Freshness
 
-**Your working copy: 70 behind and still stalled** — cause and the one-line fix are in the section above. That is the only unhealthy signal.
+Home tree is on the main line but **84 commits behind**, blocked by the single file collision in item 3. Your two settings files show local edits — those are *not* the cause and are in no danger. Housekeeping ran 15 minutes ago and is healthy: 29 worktrees, 47 branches, nothing awaiting a decision.
 
-**Everything else is green.** The live site is current: nothing since the last publish touched the game itself, only notes and docs, so no rebuild was needed. The automated merge checks are running normally. All eight scheduled jobs are on time. The repo cleanup task ran at 04:40 and found nothing needing a human call.
+Live site is fine — everything published since the last build touched only notes and documentation, so no rebuild was needed. Automated checks are running normally, and all 8 scheduled jobs are on time.
 
 ## What's moving
 
-- **The prose-check narrowing was picked up and finished within the hour** — its changes pass every gate, but the merge is stalled on a mechanical quirk we already have a ticket for: the automatic merge won't fire while the branch is a few commits out of date, and the sweep that refreshes those branches only runs once an hour. It'll land on its own; no action needed.
-- **The planning lane ran and promoted nothing**, deliberately — it recorded that your slice verdict is now unblocked and left the queue alone.
-- **Nothing else merged from the work queue this hour.** Content work remains paused behind your format verdict, by design.
+Fourteen changes landed on the main line in the last eight hours. The notable one: **the crash that was breaking four of the five prototype encounter links is fixed, merged, deployed, and its ticket closed** — which is what cleared the way for your verdict sitting. The rest is planning-lane bookkeeping and these hourly briefings.
 
 ---
-*Standing asks live in `Design/user-actions.md`. This file is regenerated hourly by
-the `keep-work-flowing-cc` scheduled task; staleness is visible from the Generated
-timestamp above and the task's `lastRunAt` in `list_scheduled_tasks`.*
+*Standing asks live in `Design/user-actions.md`. This file is regenerated hourly by the `keep-work-flowing-cc` scheduled task; staleness is visible from the Generated timestamp above and the task's `lastRunAt` in `list_scheduled_tasks`.*
