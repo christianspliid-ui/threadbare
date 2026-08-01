@@ -6251,6 +6251,19 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "**Never assert on the first words of a rendered paragraph.** Match on an interior substring (`\"he bridge sags where the river runs deepest\"`), or normalise before comparing — `innerText.replace(/\\n/g,' ').replace(/\\s+/g,' ')` — which also absorbs soft-wrap and pseudo-element noise. Assert **ordering** via `indexOf(a) < indexOf(b)` rather than presence alone, so the check still proves composition. General rule: a DOM text assertion is testing the *rendered* string, not the authored one, and any first-letter typographic treatment (drop cap, small-caps run-in, `::first-letter`) breaks the two apart — when a text probe returns -1, dump the surrounding text before believing the negative.",
     "session": "THR-932, `tb-opus-pickup` hourly run, browser-verifying the slice opening paragraphs."
+  },
+  {
+    "num": "380",
+    "id": 380,
+    "count": 1,
+    "date": "2026-08-01",
+    "category": "tooling",
+    "description": "**`save_issue(id, assignee:null)` as the *sole* changed field silently no-ops on an issue that already carries a long-standing assignee — three consecutive calls returned 200 with the mutated issue echoed back, but a fresh `get_issue` and a `list_issues assignee:null` scan both showed the assignee unchanged every time.** Distinct from impediment #306/THR-845 (create-path defaults `assignee` to the API actor): this was an *update* on an old ticket (THR-735, created 2026-07-23, assignee set since creation), not a create. Combining the identical `assignee:null` with an unrelated, value-unchanged field in the same call (`priority:2`, already 2) made the null apply immediately — verified by the `assignee`/`assigneeId` keys disappearing from the next `get_issue` response.",
+    "consequence": "THR-735 would have been promoted to Ready for Dev but remained invisible to `pull-work`'s `assignee:null` candidate query — silently unpickable, same failure shape as THR-845 but via a different code path. ~5 min of retries and cross-checks (get_issue re-reads, a full `list_issues assignee:null` scan to confirm the field truly hadn't moved) before finding the workaround.",
+    "impact": "M",
+    "workaroundFound": true,
+    "workaround": "If a standalone `save_issue(id, assignee:null)` doesn't stick (verify via `get_issue` — absence of the `assignee` key is the only reliable positive, per #306), retry bundled with one other field set to its own current value (e.g. `priority` unchanged). Don't trust a single assignee-only null write on a ticket that has carried an assignee since creation; always re-verify via a fresh `get_issue`, not the mutation response, which can echo pre-write state.",
+    "session": "`tb-orchestrator` run j, 2026-08-01, promoting THR-735."
   }
 ];
 // ── End data ──
