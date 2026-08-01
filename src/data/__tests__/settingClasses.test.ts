@@ -27,9 +27,11 @@ import {
   settingClassForSubtype,
   unknownSettingClasses,
   validateSettingEnvelope,
+  compileOpeningEnvelope,
   type SettingClass,
 } from '../settingClasses';
 import { ENCOUNTER_TEMPLATES } from '../encounter-content';
+import { UNIFIED_ACTION_TEMPLATES } from '../unified-action-templates';
 import { resolveFragment, resolveSettingVariant } from '../../engine/fragmentResolution';
 import type { UnifiedActionTemplate } from '../../types/unifiedAction';
 
@@ -244,5 +246,127 @@ describe('authored encounter envelopes', () => {
       expect(t.contextFragments?.some(f => f.slot === 'opening') ?? false).toBe(false);
       expect(firstStepProse(t)).not.toBe('{frag:opening}');
     }
+  });
+});
+
+// ─── THR-932 — openings must reach the reader ──────────────────────
+
+/**
+ * The bug this block locks: `openings` was compiled only inside the raw-entry
+ * converter, so a *direct-authored* template (every vertical-slice encounter) had the
+ * field validated and then read by nothing. All eight slice encounters shipped their
+ * approved scene-setting paragraph and rendered only the close-up step prose.
+ *
+ * The corpus sweep below is deliberately written to fail on an empty population — a
+ * "no template declares openings" state would otherwise pass this file while proving
+ * nothing, which is exactly how the original gap survived a green suite.
+ */
+describe('compileOpeningEnvelope (THR-932)', () => {
+  const makeTemplate = (
+    over: Partial<UnifiedActionTemplate> & Pick<UnifiedActionTemplate, 'openings'>,
+  ): UnifiedActionTemplate =>
+    ({
+      id: 'test.opening',
+      name: 'Test',
+      reach: 'stone',
+      crudType: 'read',
+      scale: 'local',
+      apCost: 1,
+      steps: [{ reach: 'stone', narrativeTemplate: 'The step paragraph.' }],
+      narrativeTemplates: { initiation: 'x', success: 'y', failure: 'z' },
+      ...over,
+    }) as unknown as UnifiedActionTemplate;
+
+  it('prepends the opening token rather than replacing the authored step prose', () => {
+    // The divergence THR-932 resolved: the converter used to *replace* step-0 prose,
+    // which discards the authored paragraph. Authoring intent is opening ¶ + step ¶.
+    const compiled = compileOpeningEnvelope(
+      makeTemplate({ settings: ['wayside'], openings: { wayside: 'The bridge sags.' } }),
+    );
+    expect(firstStepProse(compiled)).toBe('{frag:opening}\n\nThe step paragraph.');
+    // ...and the step paragraph is still there, which is the half that used to be lost.
+    expect(firstStepProse(compiled)).toContain('The step paragraph.');
+  });
+
+  it('compiles the table onto the reserved opening slot, bound to the setting axis', () => {
+    const compiled = compileOpeningEnvelope(
+      makeTemplate({
+        settings: ['rural', 'urban'],
+        openings: { rural: 'The threshing floor.', urban: 'The street narrows.' },
+      }),
+    );
+    const set = compiled.contextFragments?.find(f => f.slot === 'opening');
+    expect(set, 'expected a compiled opening fragment set').toBeDefined();
+    expect(set?.axis).toBe('setting');
+    expect(resolveFragment(compiled.contextFragments, 'opening', { setting: 'urban' })?.text)
+      .toBe('The street narrows.');
+  });
+
+  it('falls back to a declared opening when the setting axis is unbound', () => {
+    // The `?spawn` review route places the encounter at the agent's current location,
+    // which may be outside the declared classes. Dropping the paragraph there would
+    // reproduce the very bug for the surface used to review the fix.
+    const compiled = compileOpeningEnvelope(
+      makeTemplate({
+        settings: ['rural', 'urban'],
+        openings: { rural: 'The threshing floor.', urban: 'The street narrows.' },
+      }),
+    );
+    // `rural` precedes `urban` in canonical SETTING_CLASSES order, so the fallback is
+    // deterministic rather than declaration-order dependent.
+    expect(resolveFragment(compiled.contextFragments, 'opening', { setting: null })?.text)
+      .toBe('The threshing floor.');
+    expect(resolveFragment(compiled.contextFragments, 'opening', { setting: 'arcane' })?.text)
+      .toBe('The threshing floor.');
+  });
+
+  it('is idempotent and leaves an openings-less template untouched (NFP #6)', () => {
+    const withOpenings = compileOpeningEnvelope(
+      makeTemplate({ settings: ['wayside'], openings: { wayside: 'An opening.' } }),
+    );
+    // Applying twice must not double-prepend — the catalog spreads this array more once.
+    expect(firstStepProse(compileOpeningEnvelope(withOpenings))).toBe(firstStepProse(withOpenings));
+    expect(compileOpeningEnvelope(withOpenings).contextFragments).toHaveLength(1);
+
+    const none = makeTemplate({ openings: undefined });
+    expect(compileOpeningEnvelope(none)).toBe(none);
+  });
+
+  it('every shipped template that authors openings actually renders them', () => {
+    // The live corpus guard. A direct-authored template added later without going
+    // through a compile point fails here instead of silently losing its first paragraph.
+    const withOpenings = UNIFIED_ACTION_TEMPLATES.filter(
+      t => t.openings && Object.keys(t.openings).length > 0,
+    );
+    expect(
+      withOpenings.length,
+      'expected shipped templates authoring openings — an empty population would make this vacuous',
+    ).toBeGreaterThan(0);
+
+    for (const t of withOpenings) {
+      expect(
+        t.contextFragments?.some(f => f.slot === 'opening') ?? false,
+        `${t.id} authors openings but compiled no opening fragment set`,
+      ).toBe(true);
+      expect(
+        firstStepProse(t) ?? '',
+        `${t.id} compiled an opening but step 0 never references it`,
+      ).toContain('{frag:opening}');
+    }
+  });
+
+  it('renders opening + step prose for the slice encounter named in the THR-932 report', () => {
+    const bridge = UNIFIED_ACTION_TEMPLATES.find(t => t.id === 'encounter.slice.unsafe_bridge');
+    expect(bridge, 'expected the Unsafe Bridge slice template').toBeDefined();
+
+    const prose = firstStepProse(bridge!) ?? '';
+    const opening = resolveFragment(bridge!.contextFragments, 'opening', { setting: 'wayside' });
+    expect(opening?.usedDefault).toBe(false);
+
+    // Compose the way `enrichProse` does, and assert BOTH approved paragraphs survive.
+    const rendered = prose.replace('{frag:opening}', opening?.text ?? '');
+    expect(rendered).toContain('The bridge sags');
+    expect(rendered).toContain('The nails have risen');
+    expect(rendered.indexOf('The bridge sags')).toBeLessThan(rendered.indexOf('The nails have risen'));
   });
 });

@@ -19,6 +19,8 @@
  */
 
 import type { LocationSubtype } from '../types/index';
+import type { ContextFragmentSet, UnifiedActionTemplate } from '../types/unifiedAction';
+import { FRAGMENT_DEFAULT_KEY, OPENING_FRAGMENT_SLOT } from '../engine/fragmentResolution';
 
 // ─── Vocabulary (NFP #1) ───────────────────────────────────────────
 
@@ -131,6 +133,97 @@ export interface SettingEnvelopeView {
   readonly settings?: readonly string[];
   readonly openings?: Readonly<Record<string, string>>;
   readonly locationSubtypes?: readonly string[];
+}
+
+// ─── Opening compilation (THR-932) ─────────────────────────────────
+
+/**
+ * Compile a template's `openings` table into the reserved `opening` fragment set and
+ * **prepend** its token to step 0, so the authored scene-setting paragraph actually
+ * reaches the reader.
+ *
+ * **Why this exists.** `openings` used to be compiled only inside the raw-entry
+ * converter (`encounter-content.ts` `toUnifiedTemplate`). A *direct-authored*
+ * `UnifiedActionTemplate` — every vertical-slice encounter — had its `openings`
+ * validated by {@link validateSettingEnvelope} and then read by nothing at render
+ * time: a field with no reader. All eight slice encounters shipped their approved
+ * opening paragraph and rendered only the close-up step prose (THR-932).
+ *
+ * **Prepend, not replace.** The converter's original semantics *replaced* step-0 prose
+ * with the opening token, which discards the authored step paragraph. The authoring
+ * intent (and Christian's approved slice text) is opening ¶ + step ¶ — the approved
+ * Bridge screen is exactly `openings.wayside + '\n\n' + BRIDGE_STEP.narrativeTemplate`.
+ * Both paths now run through this one function, so there is a single semantic rather
+ * than two that drift. Unifying is behavior-neutral for shipped content: no raw
+ * `EncounterEntry` in the corpus authors `openings` (verified 2026-08-01), so the
+ * replace path had zero shipped users to change.
+ *
+ * **Unbound fallback.** The `'*'` default is the opening of the first *declared* class
+ * in canonical {@link SETTING_CLASSES} order — for the sole-declared case (all five
+ * roster picks) that is simply "the class this template declares". A template only
+ * registers at its declared classes' subtypes, so in normal play the axis binds to one
+ * of them; the unbound case is the `?spawn` debug route, which places at the agent's
+ * current location (e.g. a Sacred Grove). Falling back to a declared opening there is
+ * what keeps the debug/review route from reproducing this very bug (NFP #4, #5).
+ *
+ * Pure, deterministic, and applied once at module load — never per tick (NFP #3).
+ * Idempotent and byte-identical for a template that authored no openings (NFP #6), so
+ * it is safe on a catalog assembled from several spreads.
+ */
+export function compileOpeningEnvelope<T extends UnifiedActionTemplate>(template: T): T {
+  const openings = template.openings;
+  if (!openings) return template;
+
+  const authored = Object.entries(openings).filter(([, text]) => text != null && text !== '');
+  if (authored.length === 0) return template;
+
+  // Idempotence: a template that already carries a compiled opening slot is returned
+  // untouched, so applying this at more than one assembly point cannot double-prepend.
+  const existing = template.contextFragments ?? [];
+  if (existing.some(set => set.slot === OPENING_FRAGMENT_SLOT)) return template;
+
+  // `steps[0]` is an `ActionStepOrBranch`; only the plain-step arm carries prose, and a
+  // branch has no step-0 paragraph to prepend to. Returning unchanged rather than
+  // guessing keeps this fail-loud: the corpus guard in `settingClasses.test.ts` asserts
+  // every openings-authoring template ends up with the token, so such a template fails
+  // the suite instead of silently dropping its opening the way THR-932 did.
+  const firstStep = template.steps[0];
+  if (!firstStep || !('narrativeTemplate' in firstStep)) return template;
+
+  // Canonical-order fallback, so two templates declaring the same classes in different
+  // order compile to byte-identical variants (NFP #3).
+  const fallbackClass = SETTING_CLASSES.find(cls => {
+    const text = openings[cls];
+    return text != null && text !== '';
+  });
+  const fallbackText = fallbackClass ? openings[fallbackClass] : undefined;
+
+  const openingSet: ContextFragmentSet = {
+    slot: OPENING_FRAGMENT_SLOT,
+    axis: 'setting',
+    variants: {
+      ...Object.fromEntries(authored),
+      // A missing default is an authoring error the resolver warns on; an authored
+      // fallback is always available here because `authored` is non-empty.
+      [FRAGMENT_DEFAULT_KEY]: fallbackText ?? '',
+    },
+  };
+
+  const token = `{frag:${OPENING_FRAGMENT_SLOT}}`;
+  const stepProse = firstStep.narrativeTemplate ?? '';
+  // Already tokenized (a hand-authored opening reference) → compile the table but leave
+  // the author's placement alone.
+  const narrativeTemplate = stepProse.includes(token)
+    ? stepProse
+    : stepProse === ''
+      ? token
+      : `${token}\n\n${stepProse}`;
+
+  const steps = template.steps.map((step, index) =>
+    index === 0 ? { ...step, narrativeTemplate } : step,
+  );
+
+  return { ...template, steps, contextFragments: [...existing, openingSet] };
 }
 
 /**

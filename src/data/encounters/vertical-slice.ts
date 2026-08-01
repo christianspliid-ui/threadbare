@@ -39,7 +39,7 @@ import type {
   StepNudge,
   UnifiedActionTemplate,
 } from '../../types/unifiedAction';
-import { expandSettings } from '../settingClasses';
+import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
 
 // ─── Slice tuning (NFP #1) ───────────────────────────────────────────
 
@@ -1882,6 +1882,14 @@ export const SLICE_GRATEFUL_KIN: UnifiedActionTemplate = {
 
 // ─── The slice, assembled ────────────────────────────────────────────
 
+/**
+ * THR-932: `compileOpeningEnvelope` turns each template's authored `openings` table
+ * into the reserved `opening` fragment set and prepends its token to step 0. Without
+ * it, `openings` on a direct-authored template is a field with no reader and every
+ * approved scene-setting paragraph here ships but never renders. Applied once, at
+ * module load — the two catalog spreads in `unified-action-templates.ts` both consume
+ * this already-compiled array.
+ */
 export const VERTICAL_SLICE_TEMPLATES: readonly UnifiedActionTemplate[] = [
   SLICE_UNSAFE_BRIDGE,
   SLICE_SNOW_ON_THE_PASS,
@@ -1891,4 +1899,4 @@ export const VERTICAL_SLICE_TEMPLATES: readonly UnifiedActionTemplate[] = [
   SLICE_SWINDLED_FAMILY,
   SLICE_SWINDLER_FOUND,
   SLICE_GRATEFUL_KIN,
-];
+].map(compileOpeningEnvelope);

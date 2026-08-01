@@ -6203,7 +6203,7 @@ const DATA = [
   {
     "num": "376",
     "id": 376,
-    "count": 1,
+    "count": 2,
     "date": "2026-08-01",
     "category": "tooling",
     "description": "**`preview_start` reported a port the dev server was not listening on, and the first Playwright navigation died on `ERR_CONNECTION_REFUSED`.** The tool returned `\"port\": 56333` with `The preview is available at http://localhost:56333`, but `preview_logs` on the same `serverId` showed Vite's own banner reading `Local: http://localhost:5174/` — 5173 was taken by another session's Vite, and `autoPort` picked 5174 while the wrapper advertised an unrelated number. Navigating to the reported port refused the connection outright.",
@@ -6211,7 +6211,7 @@ const DATA = [
     "impact": "M",
     "workaroundFound": true,
     "workaround": "**Never trust `preview_start`'s advertised port — read Vite's own banner.** Immediately after `preview_start`, run `preview_logs` on the returned `serverId` and take the port from the `Local: http://localhost:<port>/` line; that is the authoritative binding. The `cwd` field in `preview_list` is worth reading in the same pass, since it independently confirms the server is serving *this* worktree rather than the home tree (impediment class around worktree previews). Then navigate, and keep the unique-symbol probe from the DoD Playwright ritual — it is what proves the page you reached is the build you changed, whichever port answered.",
-    "session": "THR-934, `tb-opus-pickup` hourly run."
+    "session": "THR-934, `tb-opus-pickup` hourly run. **Recurrence 2026-08-01 (THR-932):** identical shape, different numbers — `preview_start` advertised `64078` while `preview_logs` showed Vite bound to `5174` (5173 taken by a parallel session). The in-app Browser pane additionally *reverted the tab* to the dead advertised URL between two tool calls, so a probe that had just succeeded on the real port came back `chrome-error://chromewebdata/` with `__DEBUG` undefined — read the echoed URL on every call, not just after navigating."
   },
   {
     "num": "377",
@@ -6238,6 +6238,19 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "**Never revert a deliberate falsification with `git checkout --`. Snapshot and restore the exact bytes instead:** `cp <file> /tmp/f.bak` before the edit, `cp /tmp/f.bak <file>` after — correct for tracked and untracked files alike, and independent of what HEAD holds. If `git checkout --` has already been run on a file carrying session edits, the work is recoverable only from the tool transcript, so re-apply immediately rather than continuing. General rule: a falsification pass mutates files that already contain uncommitted work, which makes HEAD the wrong restore point by construction — the right one is the working tree as it stood one command earlier.",
     "session": "THR-922, `tb-opus-pickup` hourly run, falsifying the doc→code coupling guard and the ci.yml/allowlist drift test."
+  },
+  {
+    "num": "379",
+    "id": 379,
+    "count": 1,
+    "date": "2026-08-01",
+    "category": "tooling",
+    "description": "**A drop-cap split the first letter of a paragraph into its own element, so `innerText` search for the paragraph's opening words returned -1 and the fix under test read as broken.** The encounter stage renders the first paragraph with a decorative drop cap, so `document.body.innerText` contains `\"T\\nhe bridge sags where the river runs deepest\"` — searching for the authored string `\"The bridge sags\"` finds nothing. The step paragraph (no drop cap) matched normally, which made the result maximally misleading: it read as *\"the opening is still missing and only the step prose renders\"* — precisely the bug being fixed — when both paragraphs were on screen and correct. Only a wider context dump around the *matching* paragraph revealed the opening sitting directly above it.",
+    "consequence": "Roughly three wasted verification cycles chasing a non-existent failure, and a near-miss on the far worse outcome: the false negative pointed at exactly the symptom under repair, so the natural next move was to go re-open working engine code. Had the run trusted it, it would have reported the fix as not working, or \"repaired\" a correct implementation.",
+    "impact": "M",
+    "workaroundFound": true,
+    "workaround": "**Never assert on the first words of a rendered paragraph.** Match on an interior substring (`\"he bridge sags where the river runs deepest\"`), or normalise before comparing — `innerText.replace(/\\n/g,' ').replace(/\\s+/g,' ')` — which also absorbs soft-wrap and pseudo-element noise. Assert **ordering** via `indexOf(a) < indexOf(b)` rather than presence alone, so the check still proves composition. General rule: a DOM text assertion is testing the *rendered* string, not the authored one, and any first-letter typographic treatment (drop cap, small-caps run-in, `::first-letter`) breaks the two apart — when a text probe returns -1, dump the surrounding text before believing the negative.",
+    "session": "THR-932, `tb-opus-pickup` hourly run, browser-verifying the slice opening paragraphs."
   }
 ];
 // ── End data ──
