@@ -30,7 +30,13 @@ It carries no cron and fires only when invoked by hand, so it never contends for
 
 `daily-backlog-grooming`, `weekly-workflow-retro`, and `weekly-project-hygiene` were enabled 2026-07-22 after their attended trials passed with Christian's chat approval (THR-677); their trial reports are `Docs/ops/backlog-grooming-2026-07-22.md`, `Design/retros/workflow-retro-2026-07-22.md`, and `Docs/ops/weekly-hygiene-2026-07-22.md`. The corresponding Cowork counterparts are now cut over — Christian disables them (tracked in `Design/user-actions.md`).
 
-**Output-surface rule for all three (and for `tb-orchestrator`):** none of them writes `Design/briefing.md` or `Design/user-actions.md` — `keep-work-flowing-cc` owns those two files, and a second writer produces merge conflicts. Christian-facing items go in each task's own report under a `## Needs Christian` heading, and reach him via the hourly briefing.
+**Output-surface rule for all three (and for `tb-orchestrator`):** none of them writes `Design/briefing.md` or `Design/user-actions.md` — `keep-work-flowing-cc` owns those two files, and a second writer produces lost updates. Christian-facing items go in each task's own report under a `## Needs Christian` heading, and reach him via the hourly briefing.
+
+**Where the output lands (THR-947, cutover 2026-08-02).** Every artifact in the `Output` column above is published to the unprotected **`ops` branch**, not `main`. Branch protection covers `main` only, so publishing there costs no PR, no CI run, and no advance of `main`'s tip — which is what was knocking every in-flight PR to `BEHIND` (8 merges in four hours on 2026-08-01, only 3 of them product code).
+
+- **Write:** `bash scripts/ops-publish.sh -m "<message>" <repo-relative-path>...` from a session worktree's repository root. One entry point for every lane; it commits via plumbing and checks nothing out.
+- **Read:** `git fetch origin ops --quiet && git show origin/ops:<path>`, or `git ls-tree -r --name-only origin/ops` to browse. A lane reading a sibling's report **must** read it from `ops` — the copies in a worktree's `Docs/ops/` are the frozen pre-cutover archive and will pass a filename freshness check while being months old.
+- **This registry and the prompt mirrors stay on `main`** — they document lane behaviour durably. Only lane *output* moves. Full membership predicate and the list of what deliberately did not move: [`Docs/ops/README.md`](README.md).
 
 **That last clause was aspirational until 2026-07-27 (THR-826).** No step in `keep-work-flowing-cc` read those sections — the reports were being written into a channel with no consumer, which is the same defect as recording *"routed to an executor"* when no lane reads that sentence. `keep-work-flowing-cc` **step 2.6** is now the consumer: it takes the newest report per producing task (within `SIBLING_REPORT_MAX_AGE_HOURS`, 36), extracts `## Needs Christian` verbatim, and folds the items into the briefing attributed to the task that raised them. If that step is ever removed, every sibling task's Christian-facing output goes silently nowhere again.
 
@@ -42,7 +48,7 @@ Both lanes already carried a prose rule against it and neither could enforce it:
 
 | Lane | Invocation | Substantive when |
 |---|---|---|
-| `keep-work-flowing-cc` | `--lane briefing --file Design/briefing.md` | the frontmatter **digest** (stable `needsChristian` item keys + `queue`/`freshness`/`deploy`/`tasks` verdicts) differs from `origin/main` |
+| `keep-work-flowing-cc` | `--lane briefing --file Design/briefing.md` | the frontmatter **digest** (stable `needsChristian` item keys + `queue`/`freshness`/`deploy`/`tasks` verdicts) differs from `origin/ops` — the baseline follows the file (THR-947); reading it from `origin/main` would compare against the pointer stub and return `commit` every run |
 | `tb-orchestrator` | `--lane report --file Docs/ops/orchestrator-<run>.md` | declared outcome counters (`promoted`/`filed`/`resolved`/`newFindings`) are non-zero, or `needsChristian: true` |
 | `daily-backlog-grooming` | `--lane report --file Docs/ops/backlog-grooming-<date>.md` | same as above |
 

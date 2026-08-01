@@ -45,7 +45,8 @@
  *
  * The briefing is *rewritten* every hour, so at first glance this looks like a
  * diff question answered by a projection: strip the volatile fields, keep the
- * parts a reader acts on, compare against `origin/main`. That backstop exists
+ * parts a reader acts on, compare against the last published copy. That backstop
+ * exists
  * (`projectBriefing`) and is used when nothing better is available — but it
  * cannot be the primary signal, because the briefing's body is **rewritten
  * prose**, not a rendered template. The lane composes fresh wording every hour,
@@ -105,8 +106,10 @@
  *   node --experimental-strip-types scripts/check-substantive-change.ts \
  *     --lane report --file Docs/ops/orchestrator-2026-07-31k.md [--json]
  *
- * The briefing baseline defaults to `git show origin/main:<file>`; pass
- * `--baseline <path>` to compare against a file instead (used by the tests).
+ * The briefing baseline defaults to `git show origin/ops:<file>` — the briefing
+ * is published to the `ops` branch, not `main` (THR-947). Pass `--baseline-ref
+ * <ref>` to read it from a different ref, or `--baseline <path>` to compare
+ * against a file instead (used by the tests).
  *
  * Exit code is 0 in all non-`--strict` cases. With `--strict`, a `skip` verdict
  * exits 1 so a shell `if` can branch on it without parsing JSON.
@@ -523,9 +526,38 @@ export function evaluateReport(markdown: string): Result {
   };
 }
 
-function readBaselineFromGit(file: string): string | null {
+/**
+ * Where the previously-published briefing lives (THR-947).
+ *
+ * This tracks the file, and it has to. Since the 2026-08-02 cutover the briefing
+ * is published to the unprotected `ops` branch and `main` carries only a pointer
+ * stub. Reading the baseline from `main` would compare every hour's real brief
+ * against that stub, never match, and return `commit` on every single run —
+ * silently un-doing THR-920, which exists precisely to keep this lane from
+ * advancing `main`'s tip on unchanged content.
+ *
+ * Overridable via `--baseline-ref` so the ref is a parameter rather than a
+ * recompile, and `git fetch`ed before reading because a session worktree's
+ * remote-tracking ref for a branch it never checks out is otherwise arbitrarily
+ * old.
+ */
+const DEFAULT_BASELINE_REF = "origin/ops";
+
+function readBaselineFromGit(file: string, ref: string): string | null {
+  const slash = ref.indexOf("/");
+  if (slash > 0) {
+    const remote = ref.slice(0, slash);
+    const branch = ref.slice(slash + 1);
+    try {
+      execFileSync("git", ["fetch", remote, branch, "--quiet"], {
+        stdio: ["ignore", "ignore", "ignore"],
+      });
+    } catch {
+      // Offline or no such branch — fall through and read whatever ref we have.
+    }
+  }
   try {
-    return execFileSync("git", ["show", `origin/main:${file}`], {
+    return execFileSync("git", ["show", `${ref}:${file}`], {
       encoding: "utf8",
       stdio: ["ignore", "pipe", "ignore"],
     });
@@ -583,7 +615,7 @@ function main(): void {
                 return null;
               }
             })()
-          : readBaselineFromGit(file);
+          : readBaselineFromGit(file, arg("baseline-ref") ?? DEFAULT_BASELINE_REF);
       result = evaluateBriefing(current, baseline);
     }
   }
