@@ -1,7 +1,7 @@
 ---
 name: orchestrator
 description: The lane that decides what happens next — reads the Blocked by half of coordination blocks and promotes unblocked work to Ready for Dev (T1), authors design when the program shelf runs thin (T2), and owns architecture-health surfacing as a standing daily duty (T3). Runs hourly as tb-orchestrator. Never claims an issue, never sets In Dev, never writes Design/briefing.md.
-last_validated_against: 2026-07-31
+last_validated_against: 2026-08-02
 ---
 
 # Orchestrator
@@ -17,7 +17,7 @@ This skill is the decider. Three tiers, cheapest first:
 | **T1** unblock sweep | every run | Reads `Blocked by`, resolves against issue states, promotes unblocked work to `Ready for Dev` |
 | **T1.5** wayfinder sweep | every run, only when an open map exists | Burns down frontier AFK decision tickets via subagents; surfaces the HITL frontier to Christian (THR-900) |
 | **T2** design authoring | when the program shelf is thin | Runs `design-session` on agreed-but-undesigned work, hands off with a coordination block |
-| **T3** architecture health | daily, first run after `ORCH_HEALTH_SWEEP_HOUR` | Runs existing detectors, diffs against the last sweep, reports **new** findings |
+| **T3** architecture health | daily, first run after `ORCH_HEALTH_SWEEP_HOUR` | Runs existing detectors, diffs against the last sweep, reports **new** findings. Weekly on `ORCH_TESTHEALTH_DOW` it also runs the test-suite health pass (THR-942) |
 
 **Design doc:** `Docs/plans/2026-07-27-thr-826-orchestrator-lane.md`. **Authority boundary (D1–D7):** `Docs/plans/2026-07-27-orchestrator-lane-grill-me.md`, recorded as a mandate in `Docs/ways-of-working.md` § *Agent initiative — what may begin without being asked*. Read the mandate before acting; it is what authorises this lane to begin work unprompted.
 
@@ -40,6 +40,8 @@ These four are the difference between an orchestrator and a second executor. Bre
 | `ORCH_PROMOTE_BATCH_MAX` | `5` | Promotions per run; caps the blast radius of a parsing bug |
 | `ORCH_HEALTH_SWEEP_HOUR` | `6` | Local hour after which the daily T3 sweep runs once |
 | `ORCH_STALLED_PICKUP_THRESHOLD` | `3` | Claims without a merge before an issue is surfaced as stalled |
+| `ORCH_TESTHEALTH_DOW` | `1` (Monday) | Day of week the test-suite health pass runs inside T3 — weekly, not daily |
+| `ORCH_TESTHEALTH_SLOW_FILE_COUNT` | `10` | Slowest test files listed in the weekly pass |
 | `ORCH_WAYFINDER_AFK_MAX` | `2` | Frontier AFK wayfinder tickets (research / agent-doable task) resolved per run |
 | `ORCH_ESCALATION_CHANNEL` | Discord `1530183488333152287` | Non-blocking question channel |
 | `ORCH_REPORT_DIR` | `Docs/ops/` | Where `orchestrator-YYYY-MM-DD[letter].md` is written — one file per run, never appended to (§ Reporting) |
@@ -225,6 +227,32 @@ Report **new** findings only, diffed against the previous `orchestrator-*.md` in
    **Do not ship a reachability result labelled as a redundancy result.** That is a green check on an uncovered condition — the pathology this repo has logged eleven times in four days. When the judgement pass did not happen in a given sweep, the report says *"redundancy: not assessed this sweep"*. Accept that this is the weaker half and say so, rather than implying coverage.
 
 2. **Stalled-work detection.** An issue claimed `ORCH_STALLED_PICKUP_THRESHOLD` times without a merge is failing repeatedly and nothing currently notices. Read `stateHistory` for repeated `Ready for Dev → In Dev` transitions with no `Done`, and surface the count.
+
+### Test-suite health (weekly, `ORCH_TESTHEALTH_DOW`)
+
+**Nobody owns test-suite health** (THR-942). `testing-patterns` governs authoring, but no lane prunes or profiles, so the suite only ever grows — 931 test files as of the inaugural sweep, and the dead V1 SVG hex map ran 8 test files on every CI cycle for months before THR-941 removed it. Measured CI spend 2026-07-18 → 2026-08-01 was ~2,700 full-suite runner-minutes.
+
+**Weekly, not daily.** A 931-file suite does not decay on a daily timescale, and re-listing the same candidates every morning is precisely the "dump" this tier already forbids. Run it on the first T3 sweep whose local day-of-week is `ORCH_TESTHEALTH_DOW`; on other days say nothing about it rather than reporting a stale result.
+
+Produce three sections. **No new tooling** — the import graph comes from codesight or an ad-hoc grep sweep, and timings from the latest full run:
+
+1. **Dead-coverage candidates.** Test files whose subject modules have no production importer outside their own directory *and* are unreachable from a real entry point (`src/main.tsx`, `src/App.tsx`, `src/cli/`, `scripts/`, `vite`/`vitest` config, `src/debug-bridge.ts`). Report the test file, its subjects, each subject's importer count, and when the test was last touched.
+2. **Slowest test files.** Top `ORCH_TESTHEALTH_SLOW_FILE_COUNT` by duration from the latest full run, with each file's share of summed file time.
+3. **Duplicated coverage.** Multiple test files exercising one module with overlapping assertions. Report-only, judgement allowed.
+
+**Guardrails — non-negotiable:**
+
+- **The duty never deletes anything.** Not a test, not a module, not a directory. Each prune candidate becomes **its own ticket** with the import-graph evidence attached, and an executor does the deleting after re-verifying. A sweep that deletes is a sweep with no reviewer.
+- **A prune ticket must prove the *tested code* is dead — never that the test is slow.** Slowness ranks work; it is never grounds for deletion. The two lists exist for different purposes and must not be merged into one "cut these" list.
+- **Deleting live coverage is the failure mode to be paranoid about, not a cost worth paying.** When in doubt, leave it and say why. Losing a real regression test costs more than every runner-minute this duty could ever save.
+
+**Where the output goes.** The weekly pass writes its own file, `Docs/ops/test-suite-health-YYYY-MM-DD.md`, and the run report's `## T3` section carries **one line**: the three counts and a pointer to it. Two reasons — the candidate tables would bury the rest of a run report, and a standalone file gives the sweep a diffable history so next week's pass can say what is *new* rather than re-listing. It shares no anchor with the run report, so the THR-849 conflict class cannot reach it.
+
+Three traps the inaugural sweep hit, all of which will recur:
+
+- **A test-only helper looks dead.** `src/testing/contentInvariants.ts` has zero *production* importers because only tests import it — by design. Exclude test-only modules before calling anything a candidate.
+- **A type-only import is not a live rendering path.** `src/components/Game/AgentDetailPanel.tsx` is never rendered, but `src/engine/activitySummary.ts` imports a *type* from it, so a naive graph marks it reachable. Reachability via `import type` alone means the runtime code is still dead.
+- **A test file named after a dead module may not test it.** Of the 8 test files THR-941 deleted with the V1 hex map, one (`AgentDots.test.tsx`) imported no V1 component at all — only the live `src/data/agent-visual-content`. Its coverage survived elsewhere, so that deletion was safe, but the general case is a silent coverage loss. **Read the test's imports, never its filename.**
 
 ## Reporting
 
