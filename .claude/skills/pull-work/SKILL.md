@@ -17,6 +17,7 @@ Run as `/pull-work` (auto-pick top Ready for Dev issue) or `/pull-work THR-123` 
 - Queue: `Ready for Dev` only
 - Audience: Claude Code executor
 - Outcome: either a verified `In Dev` claim, or a safe refusal with a bounce note
+- A run may additionally **drain** `docs-only` tickets after its primary ticket — see "Closeout — drain the `docs-only` queue" (THR-938)
 
 ## pullNextReadyForDev — Atomic Pickup Procedure
 
@@ -212,7 +213,17 @@ If a specific issue id was provided, skip to Step 3.
 
 If the Step 1 board scan's "In Dev" slice filtered to `assignee:"me"` is empty, continue to Step 2.
 
-If the slice has more than one entry, this is a Rule 6 violation (cross-session leak — Rule 6 says WIP=1 across all sessions). Output the surface message and exit 1 so the failure is visible in cron logs. Do not attempt to claim more.
+**Subtract shipped claims before counting (THR-938).** An issue whose PR is already open and carries its `Fixes THR-XXX` line is a *shipped* claim, not a concurrent implementation — it sits `In Dev` only because auto-merge has not fired yet, which by design happens after the session ends. Without this subtraction the docs-only drain below would leave two or three such claims behind and red-exit the *next* hourly run on a leak that does not exist. One `gh` call does it:
+
+```bash
+gh pr list --state open --json number,body --jq '.[] | .body' | grep -oE '(Fixes|Closes|Resolves) THR-[0-9]+'
+```
+
+Any In-Dev id appearing in that output is subtracted from the WIP count. This is a narrow, mechanical carve-out for claims the session has already discharged; the broader framing of what WIP=1 should count remains **THR-927**'s scope and is not settled here.
+
+If the *remaining* slice has more than one entry, this is a Rule 6 violation (cross-session leak — Rule 6 says WIP=1 across all sessions). Output the surface message and exit 1 so the failure is visible in cron logs. Do not attempt to claim more.
+
+**Fail-soft:** if the `gh` call errors, subtract nothing and fall back to the raw count. Over-reporting a leak is recoverable; under-reporting one is not.
 
 ```
 [pull-work] Step 1.5: WIP=1 gate — multiple In Dev assigned to me ({issueIds}). Cross-session leak. Surface and stop.
@@ -678,3 +689,71 @@ git branch -D "$WORKTREE_BRANCH" 2>/dev/null || true
 Both commands are non-fatal: if the worktree directory is still in use (e.g., we can't remove the directory we're running from), the error is swallowed and Step 0 of the next session will collect it via `git worktree prune` or the age-based sweep.
 
 **Why immediate cleanup matters:** the old "after merge-to-main fires" timing was never reliable. The CC session ends before the PR merges; the auto-close fires on GitHub with no session alive to run cleanup. Step 0 of the next pickup is the backstop — but immediate post-push cleanup reduces the graveyard before it accumulates.
+
+## Closeout — drain the `docs-only` queue (THR-938)
+
+Roughly a dozen Ready-for-Dev tickets at any time are docs/process-only: CLAUDE.md corrections, UL proposals, wiring-guide updates, index cleanups, skill-doc fixes. Under one-issue-per-run each of those consumed a whole hourly slot, so source-code tickets queued behind paperwork. The drain lets a single run clear several of them **after** its primary ticket, without adding a lane.
+
+**Why no separate docs lane** (Option A, deferred not rejected): under strict branch protection every merge advances `main`'s tip and re-stales in-flight code PRs, forcing an ~18-min CI re-run each time (THR-920; PR #1175 sat green-but-unmergeable 3+ hours behind hourly-lane traffic). A second scheduled lane buys throughput with tip churn plus ~24–48 billed runs/day.
+
+**Constants:**
+
+| Constant | Default | Purpose |
+|---|---|---|
+| `DOCS_ONLY_LABEL` | `docs-only` | Linear label marking drain-eligible tickets |
+| `DRAIN_MAX_TICKETS` | 3 | Tickets drained per run. Bounds context/wall-clock so a drain never ends mid-ticket; raise only if runs finish with headroom to spare |
+
+### When the drain runs
+
+Run it in either of two places:
+
+- **After the primary ticket's PR is armed** and the worktree cleaned (the normal case), or
+- **Immediately**, when Step 1 found no claimable code ticket — a docs drain is the run's whole output rather than an "exit clean, no ready work".
+
+### Merge-yield gate — check before draining, not after (THR-920)
+
+**Skip the drain entirely when any open PR whose diff contains code is armed and waiting on checks.** Landing a docs merge in front of it re-stales it and costs an ~18-min gate re-run — more than the drain saves. Step 0.8's probe already listed the open armed PRs; classify each one's diff and stop if any is code:
+
+```bash
+for n in $(gh pr list --state open --json number --jq '.[].number'); do
+  gh pr diff "$n" --name-only | grep -qvE '(\.md$|^Docs/|^Design/|^\.planning/|^src/data/ul-dashboard\.generated\.json$|^public/system-interface-map-reference\.html$)' \
+    && echo "code PR #$n — yield"
+done
+```
+
+Any output ⇒ log the yield line and skip the drain; there is always a next hour. No output ⇒ drain freely: docs PRs re-stale only each other, and a docs PR's required check records `SKIPPED` by design, so re-staling one costs seconds rather than the full code gate.
+
+### Per-ticket loop
+
+For each `docs-only` ticket, up to `DRAIN_MAX_TICKETS`, **sequentially — never in parallel**:
+
+1. `list_issues(team:"Threadbare", state:"Ready for Dev", label:"docs-only", limit:50, includeArchived:false)`, sorted by priority then oldest `createdAt`, exactly as Step 1.
+2. Claim and verify per Step 4 (`save_issue` → `get_issue`), run the Step 4.4 upstream-shipped check, and validate the coordination block per Step 3. **The drain relaxes no discipline** — it only removes the one-ticket-per-run ceiling.
+3. Implement, then close out on the **docs-only track** of CLAUDE.md § Testing: steps 3b, 5, and `npm run check:impediment-ids`, and nothing else. Do not run `npm test` / `check:typecheck` / `vite build` on a diff with no code in it.
+4. Ship per the closeout above — `Fixes THR-XXX` alone on its own line in both the commit body and the PR body, then `gh pr merge --auto --merge`.
+
+One In Dev at a time: finish a ticket's ship before claiming the next. The Step 1.5 shipped-claim subtraction is what keeps the resulting armed-but-unmerged claims from reading as a leak next run.
+
+### Mis-tag guard — run at every drained ticket's closeout (THR-917)
+
+The label is a **predicate, not a promise** (THR-688 rule A): a ticket may carry `docs-only` iff its Done-when is satisfiable with a diff matching CI's docs filter. Verify the actual diff before shipping, using the same predicate CI uses:
+
+```bash
+git diff --name-only origin/main...HEAD | grep -vE '(\.md$|^Docs/|^Design/|^\.planning/|^src/data/ul-dashboard\.generated\.json$|^public/system-interface-map-reference\.html$)'
+```
+
+Empty ⇒ genuinely docs-only, ship on the docs track. **Non-empty ⇒ mis-tagged:** remove the `docs-only` label, comment why on the issue, and finish that ticket on the **code track with the full gate**. Never ship code on the docs track. Then end the drain — a mis-tag means the label's membership is untrustworthy this run.
+
+Note the two trailing exact paths: `src/data/ul-dashboard.generated.json` and `public/system-interface-map-reference.html` are generated *from* documentation but written outside the doc paths (THR-922), so a UL-shard or canon-page edit regenerates them and would otherwise classify a pure documentation deliverable as code.
+
+**Trace lines** (NFP #2 — exactly one of the first three fires, then one per ticket):
+
+```
+[pull-work] drain: yielding — code PR #<N> armed and waiting. Skipped.
+[pull-work] drain: no docs-only tickets in Ready for Dev. Nothing to drain.
+[pull-work] drain: <N> docs-only candidates, draining up to 3.
+[pull-work] drain: THR-XXX shipped (PR #<N>, docs track: 3b/5/impediment-ids).
+[pull-work] drain: THR-XXX MIS-TAGGED (<file>) — label removed, finishing on code track, drain ended.
+```
+
+**Fail-soft:** any error inside the drain ends the drain and exits the run clean. The primary ticket has already shipped by then, so a failed drain costs the drained tickets' progress and nothing else.
