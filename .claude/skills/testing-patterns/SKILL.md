@@ -6,7 +6,7 @@ description: >
   "movement test", "hexmap test", "regression test", or when implementing changes that touch
   3+ files across src/engine/ and src/components/. Also load when reviewing test coverage
   or diagnosing why a change broke downstream systems.
-last_validated_against: 2026-07-30
+last_validated_against: 2026-07-31
 ---
 
 # Testing Patterns — Domain Context
@@ -195,6 +195,31 @@ test('hop takes 800ms', () => {
 ```
 
 **Fix:** Contract test: "engine tick produces hex change → animation system creates valid hop → hop duration is compatible with tick interval."
+
+### ❌ Probes and guards that cannot fail (vacuous verification)
+
+The 2026-07-31 retro found 16 fresh instances of one shape: a check whose pass condition is
+"no bad rows found", run against a population that is silently empty — so it passes when the
+feature works, *and* passes when the feature is entirely disconnected.
+
+```typescript
+// BAD: passes vacuously when selector() matches nothing (impediment #241)
+const bad = candidates.filter(selector).filter(isBroken);
+expect(bad).toHaveLength(0);
+
+// BAD: both sides authored by the test — cannot detect the wiring being dead (#288, #296)
+expect(myLabelTable[key]).toBe(EXPECTED_LABELS[key]); // both defined in this test file
+
+// BAD: the guard filters out its own population in the expression that tests it (#282)
+```
+
+**Fix — falsify the probe before trusting it:** first assert the population is non-empty
+(`expect(candidates.filter(selector).length).toBeGreaterThan(0)`), then assert the property.
+For a manual verification probe (CLI `eval`, `__DEBUG` query), make it fail once on purpose —
+break the thing it checks, or query a known-bad row — before believing its PASS. A green
+check you have never seen red proves only that the check ran. Related: assert against the
+*production* export, never a fixture copy of it (a copied table verifies fiction), and pin
+closed sets with `toEqual` on the real producer's output so a new member fails loud.
 
 ## Checklist: Before Submitting Engine/HexMap Changes
 
