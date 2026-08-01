@@ -77,6 +77,15 @@ Log any blocker or workaround to Docs/impediments.md (impediment-reporter skill)
 Verify new modules against Docs/plans/wiring-checklist.md.
 
 
+7. Drain the docs-only queue (THR-938)
+
+After the primary ticket is closed out — or immediately, when step 2 found no claimable code ticket — drain up to DRAIN_MAX_TICKETS (3) tickets labeled `docs-only` from Ready for Dev, sequentially. Full procedure: pull-work SKILL.md § "Closeout — drain the `docs-only` queue". The three rules that matter:
+
+Merge-yield first. Skip the drain entirely if any open PR whose diff contains code is armed and waiting on checks — landing a docs merge in front of it re-stales it and costs an ~18-min gate re-run, more than the drain saves (THR-920). Classify each open PR's diff with `gh pr diff <N> --name-only` against CI's docs filter; any code PR means yield and move on. There is always a next hour.
+Same discipline, no ceiling. Each drained ticket gets the normal claim → verify → upstream-shipped → coordination-block → closeout sequence, one In Dev at a time. The drain removes the one-ticket-per-run limit, not the gates.
+Mis-tag guard at every drained closeout. Run the THR-917 classification (`git diff --name-only origin/main...HEAD | grep -vE '(\.md$|^Docs/|^Design/|^\.planning/|^src/data/ul-dashboard\.generated\.json$|^public/system-interface-map-reference\.html$)'`). Empty means genuinely docs-only: close out on the docs track — steps 3b, 5, and `npm run check:impediment-ids` only, never `npm test` / `check:typecheck` / `vite build` on a diff with no code in it. Non-empty means mis-tagged: strip the label, comment why, finish that ticket on the code track with the full gate, and end the drain.
+
+
 Human-gated issues (settled 2026-07-04, THR-608)
 
 Christian does not review code diffs or PRs and does not read Linear. Never write a Done-when that requires him to diff-review, and never park the lane waiting on one. If a Done-when requires human judgment: look for a comment recording "human gate satisfied via chat review <date>" - that satisfies the gate, proceed to merge. If no such comment exists, post ONE plain-language summary comment for the audit trail, unassign yourself (issue stays In Dev), and exit clean so the WIP slot stays free - `keep-work-flowing-cc` scans the In-Dev slice for exactly this shape (assignee null, state In Dev) and surfaces it to Christian in `Design/briefing.md` under `## Needs Christian`. Technical verdicts (not-a-defect, CI assessment, merge mechanics) are agent calls: recommend closure in a comment. Note that `keep-work-flowing-cc` is read-mostly and never closes anything — closing is a one-click action only Christian can take, because no CC lane may write `Done` (THR-846).
@@ -97,4 +106,4 @@ Exit conditions
 Nothing in Ready for Dev: exit cleanly with a one-line "no ready work" log. This is success, not failure.
 Rate-limited by Linear: pause, retry once, then log an impediment and exit clean.
 Claim unverifiable after retries / coordination block missing: bounce note, exit clean.
-One issue per run. Ship it, then stop — the next hourly run picks up the next item.
+One code issue per run, plus an optional docs-only drain (step 7). Ship the code ticket, drain up to three `docs-only` tickets if the merge-yield gate allows, then stop — the next hourly run picks up the next item.
