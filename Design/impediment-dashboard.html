@@ -6212,6 +6212,19 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "**Never trust `preview_start`'s advertised port — read Vite's own banner.** Immediately after `preview_start`, run `preview_logs` on the returned `serverId` and take the port from the `Local: http://localhost:<port>/` line; that is the authoritative binding. The `cwd` field in `preview_list` is worth reading in the same pass, since it independently confirms the server is serving *this* worktree rather than the home tree (impediment class around worktree previews). Then navigate, and keep the unique-symbol probe from the DoD Playwright ritual — it is what proves the page you reached is the build you changed, whichever port answered.",
     "session": "THR-934, `tb-opus-pickup` hourly run."
+  },
+  {
+    "num": "377",
+    "id": 377,
+    "count": 1,
+    "date": "2026-08-01",
+    "category": "tooling",
+    "description": "**MSYS Git Bash rewrites a leading-slash `gh api` endpoint into a Windows filesystem path, so the call fails with a message that names the wrong culprit.** `gh api /users/<login>/settings/billing/actions` returned `invalid API endpoint: \"C:/Program Files/Git/users/<login>/settings/billing/actions\"` — the shell expanded the leading `/` against the MSYS root before `gh` ever saw it. Same for `gh api /user`. The error text does at least hint at the cause (\"Your shell might be rewriting URL paths as filesystem paths\"), but only after the reader notices the `C:/Program Files/Git` prefix; read quickly it looks like a malformed-endpoint or auth problem. Dropping the leading slash (`gh api users/<login>/...`) works. Related to the known MSYS mangling of `git show <rev>:<path>` and of junction targets, but distinct: this one corrupts an argument that is not a path at all.",
+    "consequence": "Two failed probes and a moment spent doubting the endpoint rather than the shell. Cheap here because the message self-diagnoses; expensive in the shape where the rewritten path happens to *exist*, since the command then succeeds against the wrong thing instead of erroring.",
+    "impact": "S",
+    "workaroundFound": true,
+    "workaround": "**Never write a leading slash in a `gh api` endpoint from Git Bash — `gh api users/...`, not `gh api /users/...`.** `gh` accepts both forms and only the slashless one survives MSYS. Where a leading slash is unavoidable, prefix the command with `MSYS_NO_PATHCONV=1`. Generalisable rule: in this sandbox, any shell argument that *looks* like an absolute POSIX path but is not one (API routes, container paths, JSON pointers, `sed` addresses) should be assumed rewritten until proven otherwise. Note the billing endpoint additionally needs the `user` OAuth scope and 404s without it — a separate wall, and one worth distinguishing from this rewrite before reaching for `gh auth refresh`.",
+    "session": "THR-919, `tb-opus-pickup` hourly run, probing GitHub Actions billing to answer the ticket's cost caveat."
   }
 ];
 // ── End data ──
