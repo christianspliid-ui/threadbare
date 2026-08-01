@@ -577,11 +577,12 @@ zero wins.
    band prose carry the concrete outcomes. The on-the-nose register belongs to
    `effectLine` alone.
 3. **Evasive vagueness targets zero in outcome prose.** "It cost them something" hides
-   what happened — that is the detector's real prey. Scope note: the enforced lexicons
-   currently also match natural indefinites ("someone", "anyone") anywhere they
-   appear; reconciliation to the rule-zero scope is tracked on THR-877. Until it
-   lands, drafts follow rule zero and flag lexicon collisions instead of writing
-   around them.
+   what happened — that is the detector's real prey. **The detectors now enforce
+   exactly this scope** (THR-899, shipped 2026-08-01): natural indefinites like
+   `someone` are enforced in *outcome* prose only, and are ordinary English in scene
+   setup. Write the plain sentence; do not write around the detector. The older
+   guidance to "flag lexicon collisions instead of writing around them" is retired —
+   there is no longer a collision to flag.
 4. **≤1 not-X-but-Y construction per encounter.** See the detector.
 5. **God-action as witnessed effect.** In *scene-side prose* (band fragments, outcome
    text), never "the god grants courage" — write what happens in the room. The
@@ -628,57 +629,64 @@ Over budget is a signal the field is carrying another field's job, not an error.
 
 ## Detector spec (verbatim)
 
-Three detectors. Constants live in **two** modules — authoring guardrails in
-`nudgeAuthoringConstants.ts`, the audit's own thresholds and term lists in
-`nudgeAuditDetectors.ts` — and where they disagree, **the code is the contract, not this
-page.** The table below names which module each detector reads.
+Three detectors. **`nudgeAuditDetectors.ts` is the single authority for the vagueness
+term lists**; `nudgeAuthoringConstants.ts` re-exports from it and derives
+`VAGUENESS_LEXICON` rather than keeping a second copy. Where this page and the code
+disagree, **the code is the contract, not this page.**
 
-### Vagueness lexicon — target **zero**
+### Vagueness lexicon — scoped by field class, target **zero**
 
-**There are two lists and they do not agree.** Know which one is scoring you (THR-868
-finding, 2026-07-30 — this cost a full rewrite cycle). Reconciliation is tracked in
-[THR-877](https://linear.app/threadbare/issue/THR-877); until it lands, write against the
-**union**, because either can be the one that fails you.
+**There used to be two disagreeing lists.** There is now one, split by *intent* and
+enforced by *field class* (THR-899, executing THR-877's reconciliation). This matters to
+you as an author because the same word is a defect in one slot and the plainest available
+English in another.
 
-| Constant | Module | What reads it |
+| Field class | What it covers | Enforced at zero |
 |---|---|---|
-| `VAGUENESS_LEXICON` (10 terms) | `nudgeAuthoringConstants.ts` | `nudgeModel.test.ts` golden-exemplar assertions only |
-| `AUDIT_VAGUENESS_TERMS` (~35 terms) | `nudgeAuditDetectors.ts` | `countVagueness()` — the **audit and scoring path**, i.e. the number quoted as evidence |
+| `outcome` | band base text, band fragments, all five afterimages, aftermath overviews, `narrativeTemplates.success`/`.failure` | evasive **and** natural indefinites |
+| `scene` | openings, the spine/`initiation` narrative, step narratives, scene vignettes, a card's `fiction` | evasive only |
+| `interactive` | `name`, `effectLine`, factor lines, purpose lines | evasive only (their real bar is `interactivePlainness`) |
 
-`VAGUENESS_LEXICON` — the historical list this page documented:
-
-```
-something · anything · nothing · thing · things · way · ways · somehow · whatever · somewhere
-```
-
-`AUDIT_VAGUENESS_TERMS` — what `countVagueness()` actually matches, in four groups:
+**Evasive** — no plain-English defence, banned everywhere:
 
 ```
 hedges          somehow · somewhat · seems to · appears to · a kind of · a sort of ·
                 something like · in some way
-stand-ins       something · someone · somewhere · things · stuff
+outcome-hider   something
 nominalised     the situation · the matter · the moment · the atmosphere · the tension ·
                 the dynamic · the connection · the understanding · the balance ·
                 the energy · the presence · the experience · the process
-intensifiers    very · really · quite · rather · truly · deeply · profoundly · utterly
 ```
 
-**The overlap is only four words** (`somehow`, `something`, `somewhere`, `things`). Two
-traps follow:
+**Natural indefinites** — ordinary English in scene setup, evasion after the roll. Enforced
+in `outcome` only:
 
-- **`someone` and the intensifiers trip the audit but appear nowhere on the older list.**
-  Innocuous-looking prose — "You look for someone who…", "she felt it deeply" — scores as
-  vagueness. This is the one that bites: it is not a word you would flag by eye. Note
-  `rather` fires inside "rather than".
-- **`thing`, `way`, `ways`, `anything`, `nothing`, `whatever` are on the older list but the
-  audit does not catch them.** The previous version of this page additionally claimed
-  "all the way", "either way", "it costs you nothing" and "in a way" all trip the detector.
-  Three of those four do not — `way` and `nothing` are not in `AUDIT_VAGUENESS_TERMS`, and
-  only `in some way` is, not `in a way`. Do not rely on that claim.
+```
+someone · somewhere · things · stuff · thing · way · ways · nothing · anything · whatever
+```
 
-Each term is a word standing where a picturable noun belongs. *"It cost them something"*
-has a sentence's shape and no image in it. Matching is on word boundaries, so `someone`
-fires inside `someone's`.
+**Intensifiers** — reported as a **warning** in every class, counted into no failure:
+
+```
+very · really · quite · rather · truly · deeply · profoundly · utterly
+```
+
+Two things follow, and they are the whole point of the rescope:
+
+- **Write the plain sentence.** "Someone is asking around after the agent, and not in a
+  good way" is *correct* scene prose and passes. It used to fail, and the contortions that
+  produced — "the stranger is asking the room for them by name" — were the detector
+  damaging the prose it existed to protect.
+- **Name the result.** "It cost them something" still fails, in every class: `something` is
+  evasive, not merely indefinite. After the dice, an indefinite is you withholding what the
+  player has no other source for.
+
+Matching is on word boundaries, so `someone` fires inside `someone's` but not inside
+`somersault`. Note `rather` fires inside "rather than" — a warning, not a failure.
+
+`countVagueness(text, fieldClass)` defaults to `'outcome'`, the strictest reading, so a
+caller that has not thought about scope gets the conservative answer rather than a silent
+loosening.
 
 ### Annotation patterns — ≤ `ANNOTATION_MAX_PER_ENCOUNTER` (1) across the encounter
 

@@ -28,6 +28,15 @@
  */
 
 import type { StepOutcome } from '../../types/unifiedAction';
+import { vaguenessTermsFor } from './nudgeAuditDetectors';
+
+export type { ProseFieldClass } from './nudgeAuditDetectors';
+export {
+  EVASIVE_VAGUENESS_TERMS,
+  NATURAL_INDEFINITE_TERMS,
+  VAGUE_INTENSIFIERS,
+  vaguenessTermsFor,
+} from './nudgeAuditDetectors';
 
 // ─── Hand shape ──────────────────────────────────────────────────────
 
@@ -209,24 +218,32 @@ export const NUDGE_NAME_MAX_WORDS = 6;
 // ─── Abstraction / vagueness detectors ───────────────────────────────
 
 /**
- * Vagueness lexicon — target **zero** occurrences in authored encounter prose.
+ * Vagueness lexicon — target **zero** occurrences in *outcome* prose.
  *
  * Each of these is a word that stands where a picturable noun belongs. "It cost
  * them something" is the failure mode this list exists to catch: the sentence
  * has a shape but no image, and the reader has nothing to see.
+ *
+ * ─── This is now a derivation, not a second list (THR-877 / THR-899) ──
+ * It used to be a hand-written array of ten terms, and `nudgeAuditDetectors.ts`
+ * carried a *different* hand-written array of ~35. They overlapped on four
+ * words. Authors were told to write against the union because either could be
+ * the one that failed them, and THR-868 lost a full rewrite cycle to cleaning
+ * the wrong one.
+ *
+ * Two lists cannot be kept in step by discipline, so there are no longer two:
+ * `nudgeAuditDetectors.ts` is the single authority for the terms, and this is
+ * the strictest scope it defines — exactly `vaguenessTermsFor('outcome')`,
+ * i.e. evasive terms plus natural indefinites. Adding a term there changes this
+ * automatically, and `vagueness-scope.test.ts` pins the identity so the two can
+ * never silently re-diverge.
+ *
+ * **Scope matters when you read a violation.** This is the *outcome*-prose bar.
+ * Scene setup is held only to {@link EVASIVE_VAGUENESS_TERMS} — "someone is
+ * asking around after the agent" is correct prose there, and was never the
+ * detector's prey.
  */
-export const VAGUENESS_LEXICON: readonly string[] = [
-  'something',
-  'anything',
-  'nothing',
-  'thing',
-  'things',
-  'way',
-  'ways',
-  'somehow',
-  'whatever',
-  'somewhere',
-];
+export const VAGUENESS_LEXICON: readonly string[] = vaguenessTermsFor('outcome');
 
 /**
  * Annotation patterns — the writer stepping in to gloss their own image.

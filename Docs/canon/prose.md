@@ -85,7 +85,29 @@ Register is an **additive optional field** on content entries / template prose f
 
 The prose-QA audit ([`registerCompliance`](../../src/engine/content-eval/registerCompliance.ts) in the THR-490 harness — `window.__DEBUG.proseQualityReport()`) measures register drift deterministically: average sentence length, rare-word density, figurative-image density per paragraph, and interactive-label plainness. A `warn` with editorial sign-off may still ship (NFP #5 — the scorer serves the voice, not the reverse); a `fail` requires either a rewrite or an honest register re-declaration. Thresholds are named constants in [`registerRubric.ts`](../../src/data/content-eval/registerRubric.ts) — tune the constant, never special-case the prose.
 
-### Before / after (authoring reference)
+### The vagueness detectors are scoped, not flat (THR-899, 2026-08-01)
+
+A second, narrower detector family runs beside the register scorer — the nudge-spec
+vagueness lexicon in [`nudgeAuditDetectors.ts`](../../src/data/content-eval/nudgeAuditDetectors.ts),
+which is the **single authority** for those term lists. Read it in three parts, because
+which part applies depends on what the field is doing:
+
+| Term set | Enforced in | Example |
+|---|---|---|
+| **Evasive** — hedges, nominalised placeholders, `something` | every field class, at zero | *"it cost them something"* ✗ |
+| **Natural indefinites** — `someone`, `somewhere`, `way`, `nothing`, `thing`, … | **outcome prose only** | *"someone is asking around after the agent"* ✓ in scene, ✗ in an afterimage |
+| **Intensifiers** — `very`, `deeply`, `utterly`, … | nowhere — reported as a **warning** | weak, not a failure |
+
+"Outcome prose" is what the player reads *after* the roll: band base text and fragments,
+afterimages, aftermath overviews, `narrativeTemplates.success`/`.failure`. Everything else
+— openings, step narratives, vignettes, a card's `fiction` — is scene prose and holds only
+to the evasive set.
+
+**This exists because the flat version damaged the prose it was protecting.** It failed
+Christian's canonical example of *correct* prose and produced contortions like "the
+stranger is asking the room for them by name" written solely to dodge a banned `someone`.
+Rule zero governs: write the plain sentence. `countVagueness(text, fieldClass)` defaults to
+the strictest scope, so pass the real class.
 
 - **Label** — wrong: *"Beseech the Sundered Veil."* right: *"Part the Veil."*
 - **Baseline** — wrong: *"The merchant's ambit had grown parlous, freighted with the weight of unspoken covenants."* right: *"The merchant owed too many people too much. He'd started checking the door."*
@@ -138,4 +160,4 @@ If a draft has the player choosing what the mortal does, it is wrong even if the
 
 ## Last-reviewed
 
-2026-07-05 by Claude Code (THR-609 — added the register model section). Review trigger: monthly, or when any linked plan moves to `superseded`, or when the systemic wiring guide gains a new capability that prose authors must respect.
+2026-08-01 by Claude Code (THR-899 — recorded the scoped vagueness model: evasive terms everywhere, natural indefinites in outcome prose only, intensifiers at warn; `nudgeAuditDetectors.ts` named the single authority). Previous edit: 2026-07-05 by Claude Code (THR-609 — added the register model section). Review trigger: monthly, or when any linked plan moves to `superseded`, or when the systemic wiring guide gains a new capability that prose authors must respect.
