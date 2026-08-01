@@ -119,7 +119,7 @@ window.__DEBUG.tick(40)      // 40 ticks
 
 Four surfaces, each with a distinct purpose. Full ownership rules and duplication policy: **`Docs/documentation-ownership.md`**
 
-- **Obsidian vault** — Domain model: systems, mechanics, terminology (wikilinks). Read `Index.md` first.
+- **Obsidian vault** — Two roles. (a) Domain model: systems, mechanics, terminology (wikilinks) — read `Index.md` first. (b) **Exploratory design drafts** (`Brainstorms/YYYY-MM-DD-<topic>.md`): brainstorming and rapid-prototyping thinking lives here, not in the repo — no git, no PR, no CI, no lint, rewrite freely. It is promoted into `Docs/plans/` **only when its issue moves toward Ready for Dev**, and governance applies from that moment (THR-918). The vault is not git-backed, so an unpromoted draft has no history — that is the accepted price of zero ceremony. See `Docs/canon/process.md` § Plan-doc lifecycle.
 - **Repo `.planning/`** — Legacy milestone roadmap, phase history (backlog and handover retired — use Linear)
 - **Repo `Docs/`** — Implementation rationale (`plans/`), changelog, UI patterns, project status
 - **Canon pages** (`Docs/canon/`) — Per-domain navigation layer (current spec pointers, rejected approaches, open questions). **Agent Step 0 for authoring tasks.** See `Docs/canon/README.md` for the schema.

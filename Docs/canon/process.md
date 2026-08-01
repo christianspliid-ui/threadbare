@@ -61,6 +61,19 @@ Christian's interface to the development system is **chat only, plain language o
 
 ## Plan-doc lifecycle
 
+**Two stages, and which one an artifact is in determines which rules apply to it** (THR-918). Authoritative detail: [`.claude/skills/design-session/SKILL.md`](../../.claude/skills/design-session/SKILL.md) § Two lifecycle stages.
+
+| | **Exploratory** | **Committed** |
+|---|---|---|
+| Where | Obsidian vault — `Brainstorms/YYYY-MM-DD-<topic>.md` | `Docs/plans/YYYY-MM-DD-<topic>.md` |
+| How written | filesystem via `OBSIDIAN_VAULT_PATH` — no git, no PR, no CI | `docs/plan-*` PR, CI-gated, merged immediately |
+| Governance | **none applies** — every gate binds an artifact the executor acts on | full: `lint:plan-doc`, intent-judge, design-audit, three-pillar |
+| Linear line | `**Draft:** \`Brainstorms/….md\`` | `**Plan doc:** \`Docs/plans/….md\`` |
+| Durability | **not git-backed** — no history, no recovery. Accepted for exploration. | versioned |
+
+- **Telling them apart:** read the path. A `Brainstorms/` path is exploratory and owes nothing; a `Docs/plans/` path is committed and owes everything. There is no third state and no partial application of the gates.
+- **The promotion trigger is exactly one event:** the issue is about to move toward Ready for Dev. Not length, not confidence, not session count. Promotion writes the plan doc *and* its Brainstorm companion from the draft, then runs the gates; the vault draft stays in place as the iteration record (`status: complete`) — canon pages cite drafts this way already (e.g. [`cosmology.md`](cosmology.md) cites `Brainstorms/brainstorm-cosmological-symmetry.md`).
+- **Committed docs did not get cheaper.** THR-918 removed ceremony from *thinking* only; everything below this line is unchanged.
 - **Plan authoring (design session):** plan docs land in `Docs/plans/YYYY-MM-DD-<topic>.md` with frontmatter `status: proposal | current | implementation-log | superseded | historical`. The design session commits the file directly via its own `docs/plan-*` PR — CI-gated, merged immediately.
 - **Hand off as soon as the plan doc is written.** Move the issue to Ready for Dev with the coordination block; do not delay the handoff waiting for the plan-doc PR to merge.
 - **Strategy plan:** [`Docs/plans/2026-05-05-canonical-documentation-strategy.md`](../plans/2026-05-05-canonical-documentation-strategy.md) — the three-layer canonicality model (UL → Canon → Plans) this page is part of.
@@ -102,4 +115,4 @@ The `pull-work` skill (CC) is the canonical pickup entrypoint and links back to 
 
 ## Last-reviewed
 
-2026-07-29 (THR-842 — recorded the verdict on a `SKIPPED` required check satisfying branch protection under § Current spec — coordination; the guard shipped in THR-768 and the residual risk is accepted). Previously 2026-07-26 (THR-760 CLAUDE.md slimming — Design Governance + Per-system required sections repointed to `design-governance.md`, which is now authoritative; scheduled-task registry moved to `Docs/ops/scheduled-tasks-registry.md`; vault conventions moved to `Docs/documentation-ownership.md`. Previously 2026-07-21 THR-654 demolition pass; originally 2026-05-06). Review trigger: monthly, or when CLAUDE.md's Process / Coordination / Documentation Strategy / Definition of Done sections change shape, or when any linked plan moves to `superseded`.
+2026-08-01 (THR-918 — § Plan-doc lifecycle now carries the exploratory/committed two-stage table and the promotion trigger; the vault is the exploratory home, `Docs/plans/` the committed one). Previously 2026-07-29 (THR-842 — recorded the verdict on a `SKIPPED` required check satisfying branch protection under § Current spec — coordination; the guard shipped in THR-768 and the residual risk is accepted). Previously 2026-07-26 (THR-760 CLAUDE.md slimming — Design Governance + Per-system required sections repointed to `design-governance.md`, which is now authoritative; scheduled-task registry moved to `Docs/ops/scheduled-tasks-registry.md`; vault conventions moved to `Docs/documentation-ownership.md`. Previously 2026-07-21 THR-654 demolition pass; originally 2026-05-06). Review trigger: monthly, or when CLAUDE.md's Process / Coordination / Documentation Strategy / Definition of Done sections change shape, or when any linked plan moves to `superseded`.

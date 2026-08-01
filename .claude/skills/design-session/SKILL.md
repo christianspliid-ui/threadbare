@@ -1,7 +1,7 @@
 ---
 name: design-session
 description: Use when running a Claude Code session that designs or plans rather than implements — authoring a plan doc, running the design-governance checklist, moving a Linear issue toward Ready for Dev, or writing a handoff for the executor lane. The CC replacement for the Cowork design role. For efforts too big for one session, see the scale gate — suggest a wayfinder map (THR-900).
-last_validated_against: 2026-07-31
+last_validated_against: 2026-08-01
 ---
 
 # design-session
@@ -59,6 +59,68 @@ Cowork could not commit, so plan docs rode the `plan-pending-commit` label + hou
 Everything else — design-governance checklist, canon Step 0, intent-judge, design-audit-pipeline, the
 three-pillar rule, handoff coordination block, Linear state transitions — is unchanged.
 
+## Two lifecycle stages: exploratory vs committed (THR-918)
+
+A design artifact has two stages. **Promotion between them is a deliberate act, not a default.**
+
+| | **Exploratory** | **Committed** |
+|---|---|---|
+| Lives in | Obsidian vault — `Brainstorms/YYYY-MM-DD-<topic>.md` | `Docs/plans/YYYY-MM-DD-<topic>.md` |
+| Written via | filesystem, `OBSIDIAN_VAULT_PATH` | `docs/plan-*` PR (Step 4 below) |
+| Ceremony | none — no git, no PR, no CI, no lint | full: CI-gated PR, `lint:plan-doc`, governance gates |
+| Rewrite cost | free; rewrite it five times a day | a PR per revision |
+| Governance | **does not apply** (see below) | applies in full — unchanged |
+| Linear line | `**Draft:** \`Brainstorms/….md\`` | `**Plan doc:** \`Docs/plans/….md\`` |
+
+**The promotion trigger is exactly one event: the issue is about to move toward Ready for Dev.** That is the
+moment the artifact stops being thinking and becomes a contract an executor will act on. Nothing else promotes —
+not length, not confidence, not how many sessions have touched it. A concept that is rewritten for a week and
+never reaches an executor correctly never enters the repo at all.
+
+**Start exploratory by default when the work is genuinely open** — brainstorming, concept churn, rapid
+prototyping, "what if we". Start committed when you already know this is going to hand off this session (a
+groomed ticket with a settled shape). When in doubt, start in the vault; promoting is cheap, un-committing is not.
+
+**Why the vault:** it already exists for exactly this, carries none of the ceremony, and canon pages already
+cite it as a source — `Docs/canon/cosmology.md` cites `Brainstorms/brainstorm-cosmological-symmetry.md` as its
+canonical iteration record. Use the **existing** `Brainstorms/` folder; do not create a parallel `Drafts/`.
+Use the dated `YYYY-MM-DD-<topic>.md` form (the folder holds an older undated `brainstorm-<topic>.md` set —
+match the dated one, which lines up with `Docs/plans/`). Hand-curated frontmatter convention (`tags`, `status:
+stub | draft | complete`, `created`, `updated`) is in `Docs/documentation-ownership.md`.
+
+### What promotion actually does
+
+Promotion is not a file move. The vault draft is the **source**; the committed pair is the **product**:
+
+1. Write `Docs/plans/YYYY-MM-DD-<topic>.md` from the draft — the plan doc proper, all three pillars.
+2. Write its **Brainstorm companion** (`…-brainstorm.md`) — the considered alternatives, tensions, and Vision
+   premises the draft accumulated. This is where exploratory thinking becomes durable, and it is why the
+   companion requirement in `Docs/canon/design-governance.md` is unaffected by this rule.
+3. Run the governance gates (Step 1), then Step 3's intent-judge and design-audit, then commit (Step 4).
+4. Leave the vault draft in place and set its frontmatter `status: complete`. It is the iteration record —
+   canon pages cite drafts this way already. Do not delete it.
+
+**The committed side does not get cheaper.** This rule removes ceremony from *thinking*, not rigor from
+*handoff artifacts*. If a change makes committed plan docs easier to produce, it has drifted from the intent.
+
+### The four questions this settles
+
+1. **Where in the vault?** `Brainstorms/` — existing folder, existing convention, already cited by canon. Not a new `Drafts/`.
+2. **Discoverability.** A vault draft is invisible to `Docs/plans/INDEX.md` and to `lint:plan-doc`, **and nothing
+   breaks** — verified: `lint:plan-doc` only lints staged files under `Docs/plans/`, `rebuild-plans-index` globs
+   that same directory, and `check:process` invokes `lint:plan-doc --staged`. None of the three requires a
+   `Plan doc:` line to resolve. An exploratory issue therefore carries a **`Draft:`** line naming the vault path,
+   and `Plan doc:` stays reserved for the committed doc — which keeps a promotion-time plan-doc-liveness gate
+   (THR-921) valid, since `Plan doc:` never names a vault path.
+3. **Does governance apply to exploratory drafts?** **No.** Confirmed against `Docs/canon/design-governance.md`
+   rather than assumed: every gate there binds an artifact the executor acts on — intent-judge scores the plan
+   doc, design-audit writes verdicts into the plan-doc tail, `lint:plan-doc` lints `Docs/plans/`, the three-pillar
+   rule gates the handoff. None of them can even run against a vault draft. Governance attaches **at promotion**,
+   in full, unchanged.
+4. **Loss risk — stated explicitly so nobody is surprised.** The vault is **not** git-backed. An exploratory
+   draft has no history, no diff, no recovery if overwritten or deleted. That is the accepted price of zero
+   ceremony, and it is one more reason promotion is the durability boundary: if losing it would hurt, promote it.
+
 ## Workflow
 
 ### Step 0 — Session start
@@ -72,6 +134,9 @@ three-pillar rule, handoff coordination block, Linear state transitions — is u
 4. **Canon Step 0 (authoring/content tasks):** load `Docs/canon/<domain>.md` **before any other reference
    material** — `encounters.md`, `cosmology.md`, `prose.md`, `hex-map.md`, `rulebook.md` as the task dictates.
    For design work, also load the `state-of-game-design` router and `game-design-direction` (player-facing).
+5. **Pick the lifecycle stage** (see § Two lifecycle stages). Genuinely open work starts **exploratory** in the
+   vault — skip Steps 1–4 entirely until it promotes, and put a `**Draft:** \`Brainstorms/….md\`` line on the
+   issue. Work that will hand off this session starts **committed** and runs the full flow below.
 
 ### Step 1 — Design-governance checklist (single internal pass)
 
@@ -186,6 +251,9 @@ Only after the plan doc is merged to `main`:
 
 - **A design session never writes `src/`.** Design and plan only; hand off to the executor. (Session-type role
   boundary — coordination protocol § Role Boundaries.)
+- **Promotion happens when the issue moves toward Ready for Dev — and only then** (THR-918). An exploratory
+  draft never enters `Docs/plans/` on length or confidence alone, and a committed plan doc is never demoted to
+  the vault to dodge a gate. Governance applies in full from the moment of promotion.
 - **Commit plan docs directly via a `docs/plan-*` PR.** Never apply `plan-pending-commit`; never route a CC
   design session through the flush pipeline.
 - **Never emit a closeable issue reference on the plan-doc PR** — no `Fixes/Closes/Resolves`, no bare
@@ -201,6 +269,9 @@ Only after the plan doc is merged to `main`:
 
 | Mistake | Fix |
 |---|---|
+| Opened a `docs/plan-*` PR for a half-formed concept | Start it exploratory in `Brainstorms/`; promote when it heads for Ready for Dev (THR-918). |
+| Put a vault path on the issue's `Plan doc:` line | Exploratory drafts use a `Draft:` line; `Plan doc:` names a committed doc on `main`. |
+| Deleted the vault draft after promoting it | Leave it, set `status: complete` — it is the iteration record canon pages cite. |
 | Started implementing the feature in the same session | Stop at the plan doc + handoff; the executor implements. |
 | Applied `plan-pending-commit` out of habit | CC commits directly — no label, no flush. |
 | Put `Fixes THR-XX` on the plan-doc PR | Scrub it — that closes the issue before any code exists (THR-510). |
