@@ -6,7 +6,7 @@ description: >
   "movement test", "hexmap test", "regression test", or when implementing changes that touch
   3+ files across src/engine/ and src/components/. Also load when reviewing test coverage
   or diagnosing why a change broke downstream systems.
-last_validated_against: 2026-07-31
+last_validated_against: 2026-08-01
 ---
 
 # Testing Patterns — Domain Context
@@ -220,6 +220,43 @@ break the thing it checks, or query a known-bad row — before believing its PAS
 check you have never seen red proves only that the check ran. Related: assert against the
 *production* export, never a fixture copy of it (a copied table verifies fiction), and pin
 closed sets with `toEqual` on the real producer's output so a new member fails loud.
+
+## Your test does not get a fresh module registry (THR-940)
+
+Most tests now share a worker. `vitest.config.ts` runs the suite as three projects and the
+big one — every node-environment test that does not mock modules, ~86% of the suite — sets
+`isolate: false`, so the module graph is imported **once per worker** rather than once per
+file. That is the whole speedup: a full run used to spend more time importing (`573s`) than
+running tests (`341s`).
+
+**Routing is automatic. You do not annotate anything.** `scripts/vitest-test-partition.ts`
+scans every test file and routes it by two mechanical predicates: a non-node
+`@vitest-environment` docblock sends it to the isolated `dom` project, and any use of
+`vi.mock` / `vi.doMock` sends it to the isolated `node-isolated` project. Both are scanned
+rather than inferred from paths, because the paths do not agree with reality — 68
+node-environment tests live under `src/components/` and 6 jsdom tests live outside it.
+
+What this changes for you, when you write a node test that does not mock:
+
+- **Module-scope mutable state leaks between test files.** A module-level cache, counter, or
+  registry populated by an earlier file is still populated when yours runs. This is the same
+  hazard CLAUDE.md names under *Load-Bearing Architectural Decisions* — engine caches must be
+  owned per session, not stored at module scope — and `isolate: false` is what makes it
+  observable. If your test only passes alone, that is the finding, not an inconvenience:
+  something outlives its session. Prefer a reset hook on the offending cache over a
+  `beforeEach` that hides it.
+- **`vi.mock` is not an option in the shared pool**, and adding one moves your file to the
+  isolated project automatically. This matters because the failure it prevents is silent: with
+  a shared registry the first importer of the real module wins and the mock never applies, so
+  an assertion can **pass for the wrong reason** rather than crash (see
+  `grantedTraitConsumers.test.ts`, THR-940).
+- **A file that genuinely cannot be fixed cheaply may be pinned** via `ISOLATED_PINS` in the
+  partition module — but only with an inline comment naming the observed failure and a
+  Deferral issue tracking its removal (THR-949 holds the current two). An unexplained pin is
+  indistinguishable from a test quietly opted out of the fast path.
+
+`npm test` still runs all three projects as one command; the CI job name
+`Test · Typecheck · Build` is a required status check and must not move.
 
 ## Checklist: Before Submitting Engine/HexMap Changes
 
