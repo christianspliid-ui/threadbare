@@ -6199,6 +6199,19 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "**Probe the probe before trusting silence.** Verify every external binary a watch depends on exists (`command -v jq`) *before* arming it, and prefer `gh --jq` (built in) over standalone `jq` in this sandbox. Structurally: a monitor whose filter can only match on success-shaped states cannot distinguish \"healthy\" from \"broken\" — give the loop a heartbeat line or an explicit `else` arm that emits the raw unparsed status, so a parse failure is loud. Same family as the vacuous-gate class (a lever that cannot fail is not evidence). **A second instance surfaced in the same session, in the replacement watch, and is the more generalisable half:** `.conclusion` on an in-flight check is an **empty string**, not null, and jq `//` falls through only on null/false — so `(.conclusion // .status)` short-circuits to empty and every red-check arm was unreachable, meaning the repaired watch still could not have reported a failing build. Test emptiness explicitly (`if ((.conclusion//\"\")",
     "session": "length)>0`), and select the check by name **substring** rather than the full `Test · Typecheck · Build` literal so a separator-character encoding difference cannot silently empty the match. | THR-909 resume, `tb-opus-pickup` hourly run, resolving PR #1210's `DIRTY` state."
+  },
+  {
+    "num": "376",
+    "id": 376,
+    "count": 1,
+    "date": "2026-08-01",
+    "category": "tooling",
+    "description": "**`preview_start` reported a port the dev server was not listening on, and the first Playwright navigation died on `ERR_CONNECTION_REFUSED`.** The tool returned `\"port\": 56333` with `The preview is available at http://localhost:56333`, but `preview_logs` on the same `serverId` showed Vite's own banner reading `Local: http://localhost:5174/` — 5173 was taken by another session's Vite, and `autoPort` picked 5174 while the wrapper advertised an unrelated number. Navigating to the reported port refused the connection outright.",
+    "consequence": "Two wasted navigations and a misleading first failure mode: `ERR_CONNECTION_REFUSED` on a port the tool just reported as ready reads as \"the server died\", not \"the server is fine and the number is wrong\", so the natural next move is to restart the server rather than to check its log. On a machine where 5173 is routinely occupied by a parallel session, this is not a one-off.",
+    "impact": "M",
+    "workaroundFound": true,
+    "workaround": "**Never trust `preview_start`'s advertised port — read Vite's own banner.** Immediately after `preview_start`, run `preview_logs` on the returned `serverId` and take the port from the `Local: http://localhost:<port>/` line; that is the authoritative binding. The `cwd` field in `preview_list` is worth reading in the same pass, since it independently confirms the server is serving *this* worktree rather than the home tree (impediment class around worktree previews). Then navigate, and keep the unique-symbol probe from the DoD Playwright ritual — it is what proves the page you reached is the build you changed, whichever port answered.",
+    "session": "THR-934, `tb-opus-pickup` hourly run."
   }
 ];
 // ── End data ──

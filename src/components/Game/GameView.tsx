@@ -2007,6 +2007,14 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
           };
         }
 
+        // The spawn threads its target in place on the graph (THR-934). The graph
+        // mutates without changing identity, so ThreadsPanel's worldVersion-keyed
+        // selectors need an explicit bump or the new row — and the encounter badge
+        // anchored to it — never appears.
+        if (prepared.threadWrite?.created || prepared.threadWrite?.retuned) {
+          touchWorld(runtime);
+        }
+
         const shouldOpen = options?.open ?? true;
         const notificationForState = {
           ...prepared.notification,
