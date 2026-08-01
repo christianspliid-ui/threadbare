@@ -88,6 +88,7 @@ The vault follows the Karpathy LLM Knowledge Base pattern — a persistent, comp
 - **Wiki** (`Systems/`, `Cosmology/`, etc.) — LLM-compiled and maintained pages. The LLM owns this content.
 - **`output/`** — Generated reports, query results, audit outputs filed back into the vault.
 - **`Ubiquitous-Language/`** — Auto-mirrored glossary shard pages generated from `Docs/ubiquitous-language/` via `npm run mirror-ul`. Never hand-edit; edit the shard in `Docs/ubiquitous-language/` and re-mirror.
+- **`Brainstorms/`** — Hand-curated **exploratory design drafts** (`YYYY-MM-DD-<topic>.md`), the pre-repo stage of the plan-doc lifecycle (THR-918). Rewritten freely with no git/PR/CI/lint; promoted into `Docs/plans/` only when the owning issue moves toward Ready for Dev, at which point design governance applies in full. Not git-backed — an unpromoted draft has no history. Canon pages may cite these paths as iteration records. See `Docs/canon/process.md` § Plan-doc lifecycle.
 
 **Infrastructure files:**
 - **`Index.md`** — Comprehensive catalog of ALL vault pages with one-line summaries. LLM-maintained. Read this first to navigate.
