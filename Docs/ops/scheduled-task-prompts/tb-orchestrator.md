@@ -88,6 +88,26 @@ Two things no detector does, both of which you own:
 
 `__DEBUG.validateTraitRefs()` is browser-only and **cannot run headless** — do not report it as run.
 
+#### Test-suite health (weekly — only when today is `ORCH_TESTHEALTH_DOW`, Monday)
+
+Nobody owns test-suite health (THR-942): `testing-patterns` governs authoring, but no lane prunes or profiles. Weekly, not daily — a 931-file suite does not decay daily, and re-listing the same candidates every morning is the "dump" this tier forbids. On other days, say nothing about it rather than reporting a stale result.
+
+No new tooling — import graph from codesight or an ad-hoc grep sweep, timings from the latest full run. Three sections:
+
+1. **Dead-coverage candidates** — test files whose subjects have no production importer outside their own directory *and* are unreachable from a real entry point (`src/main.tsx`, `src/App.tsx`, `src/cli/`, `scripts/`, vite/vitest config, `src/debug-bridge.ts`).
+2. **Slowest test files** — top `ORCH_TESTHEALTH_SLOW_FILE_COUNT` (10) by duration, with each file's share of summed file time.
+3. **Duplicated coverage** — several test files exercising one module with overlapping assertions. Report-only.
+
+**Guardrails — non-negotiable:**
+
+- **Never delete anything.** Each prune candidate becomes its own ticket with the import-graph evidence attached; an executor deletes after re-verifying.
+- **A prune ticket must prove the *tested code* is dead.** "The test is slow" is never grounds for deletion — keep the two lists separate.
+- **Deleting live coverage is the failure mode to be paranoid about**, not a cost worth paying. When in doubt, leave it and say why.
+
+**Output goes in its own file** — `Docs/ops/test-suite-health-YYYY-MM-DD.md` — and the run report's `## T3` section carries one line: the three counts plus a pointer. The tables would bury the run report, a standalone file gives the sweep a diffable history, and it shares no anchor with the run report so the THR-849 conflict class cannot reach it.
+
+Three traps that will recur: a **test-only helper** (`src/testing/contentInvariants.ts`) has zero production importers by design; a **type-only import** (`engine/activitySummary.ts` → `AgentDetailPanel.tsx`) marks dead runtime code reachable; and a **test named after a dead module may not test it** — of THR-941's 8 deleted files, `AgentDots.test.tsx` imported only the live `src/data/agent-visual-content`. Read the test's imports, never its filename.
+
 ## Report
 
 **A no-op run writes no file at all (THR-920).** Promoted nothing, filed nothing, resolved no blocker, no *new* T3 finding, nothing for Christian → write no report and open no PR. Your session output is already a complete record of a run that did nothing, and every advance of `main` costs every other open PR a full ~18-minute CI re-run under strict branch protection. Declines are **not** substantive: "we looked and it stayed blocked" is the healthy steady state. Measured 2026-07-31 — this lane merged on 7 of the last 32 advances of `main`, three of them titled "no promotions".
