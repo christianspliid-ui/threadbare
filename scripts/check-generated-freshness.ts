@@ -64,8 +64,33 @@ import {
 const STATIC_GENERATED_PATHS: readonly string[] = [
   "public/action-catalog.generated.json", // generate-action-catalog
   "src/data/ul-dashboard.generated.json", // generate-ul-dashboard
-  "Design/impediment-dashboard.html", // generate-impediment-dashboard
   "Docs/canon/interface-map.generated.md", // generate-interface-map (THR-717)
+];
+
+/**
+ * Artifacts `prebuild` writes that are deliberately **not** committed (THR-916).
+ *
+ * A generated file only needs to be in the tree if something reads it from there.
+ * When nothing does, committing it buys nothing and costs a merge conflict on every
+ * PR that touches its source: `Design/impediment-dashboard.html` re-rendered ~6,200
+ * data lines on every impediment append, and since HTML has no union merge driver,
+ * each merge to `main` conflicted every other open PR on that one file. Untracking
+ * it removes the collision at source.
+ *
+ * These are still checked here — dropping an artifact from the tree must not drop it
+ * from coverage, which is precisely how a gate gets quietly weakened. What changes is
+ * the *question*. A committed artifact is asked "does your content match HEAD?"; an
+ * uncommitted one has no HEAD copy to be stale against, so it is asked the two
+ * questions that still have teeth:
+ *
+ * 1. **Does the generator still produce it?** Catches a generator that silently
+ *    stopped writing, which for a committed artifact would have surfaced as staleness.
+ * 2. **Is it still untracked?** Catches someone re-adding it with `git add -f` — the
+ *    exact move (impediment #139) that committed the dashboard in the first place.
+ *    Without this, the treadmill grows back and the gate says nothing.
+ */
+const UNCOMMITTED_GENERATED_PATHS: readonly string[] = [
+  "Design/impediment-dashboard.html", // generate-impediment-dashboard (THR-916)
 ];
 
 /**
@@ -173,7 +198,10 @@ function checkDocToCodeCouplings(
 ): string[] {
   const problems: string[] = [];
 
-  const undeclared = everyArtifactDeclaresSources(STATIC_GENERATED_PATHS);
+  const undeclared = everyArtifactDeclaresSources([
+    ...STATIC_GENERATED_PATHS,
+    ...UNCOMMITTED_GENERATED_PATHS,
+  ]);
   for (const relPath of undeclared) {
     problems.push(
       `${relPath} — registered generated artifact with no declared sources. ` +
@@ -183,7 +211,11 @@ function checkDocToCodeCouplings(
   }
 
   const wikiSources = new Map(wikiArtifacts.map((page) => [page.file, page.sources]));
-  const all = [...STATIC_GENERATED_PATHS, ...wikiArtifacts.map((page) => page.file)];
+  const all = [
+    ...STATIC_GENERATED_PATHS,
+    ...UNCOMMITTED_GENERATED_PATHS,
+    ...wikiArtifacts.map((page) => page.file),
+  ];
 
   const couplings = classifyArtifacts(
     all,
@@ -204,6 +236,11 @@ function checkDocToCodeCouplings(
   }
 
   return problems;
+}
+
+/** True when git tracks the path — the re-adding guard for UNCOMMITTED_GENERATED_PATHS. */
+function isTracked(relPath: string): boolean {
+  return git(["ls-files", "--", relPath]).trim() !== "";
 }
 
 /** Tracked files currently differing from HEAD. */
@@ -240,7 +277,9 @@ function normalize(content: string, relPath: string): string {
 function main(): void {
   const wikiArtifacts = designWikiArtifacts();
   const generatedPaths = [...STATIC_GENERATED_PATHS, ...wikiArtifacts.map((page) => page.file)];
-  const generatedSet = new Set(generatedPaths);
+  // Uncommitted artifacts join the "known generator output" set so they can never be
+  // reported as unregistered, but they are compared by a different rule below.
+  const generatedSet = new Set([...generatedPaths, ...UNCOMMITTED_GENERATED_PATHS]);
 
   // Structural check, run before the expensive regeneration: it reads the
   // registry and the manifest only, so a coupling failure surfaces in a second
@@ -297,6 +336,29 @@ function main(): void {
       stale.push(`${relPath} — regenerating changed it`);
     } else if (fresh !== committed) {
       volatileOnly++;
+    }
+  }
+
+  // Deliberately-uncommitted artifacts (THR-916): assert the generator still writes
+  // them, and that nobody has re-added them to the tree.
+  for (const relPath of UNCOMMITTED_GENERATED_PATHS) {
+    checked++;
+    if (!fs.existsSync(path.join(REPO_ROOT, relPath))) {
+      stale.push(
+        `${relPath} — declared an uncommitted generated artifact, but \`${GENERATOR_COMMAND}\` did not produce it. ` +
+          `Its generator either failed or stopped writing this path.`,
+      );
+      continue;
+    }
+    if (isTracked(relPath)) {
+      stale.push(
+        `${relPath} — declared an uncommitted generated artifact, but git tracks it. ` +
+          `Committing it reintroduces the merge-conflict treadmill THR-916 removed: it re-renders on every ` +
+          `edit to its source, and HTML has no union merge driver, so each merge to main conflicts every ` +
+          `other open PR on this file.\n` +
+          `    Fix: \`git rm --cached ${relPath}\` (\`.gitignore\` already covers it), or — if it genuinely ` +
+          `needs committing again — move it back to STATIC_GENERATED_PATHS and say why.`,
+      );
     }
   }
 

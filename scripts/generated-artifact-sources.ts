@@ -71,7 +71,15 @@ export const STATIC_ARTIFACT_SOURCES: Readonly<Record<string, readonly string[]>
   // generate-ul-dashboard-data reads only Docs/ubiquitous-language/ — the pure member.
   "src/data/ul-dashboard.generated.json": ["Docs/ubiquitous-language/"],
   // generate-impediment-dashboard: doc in, doc out (Design/ is doc-excluded). Fine.
-  "Design/impediment-dashboard.html": ["Docs/impediments.md"],
+  // The output itself is uncommitted (THR-916) — see UNCOMMITTED_GENERATED_PATHS in
+  // check-generated-freshness.ts — but it still declares its sources here, because the
+  // coupling question is about which *edits* regenerate it, not about whether the
+  // result is tracked.
+  "Design/impediment-dashboard.html": [
+    "Docs/impediments.md",
+    "Design/impediment-dashboard.template.html",
+    "Design/retros/",
+  ],
   // generate-interface-map: code in, doc out. The harmless direction.
   "Docs/canon/interface-map.generated.md": [
     "scripts/interface-contracts.ts",

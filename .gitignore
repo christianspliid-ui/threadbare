@@ -76,6 +76,21 @@ Design/*
 !Design/briefing.md
 !Design/user-actions.md
 !Design/retros/
+# ...and the impediment dashboard's TEMPLATE — but deliberately NOT its render.
+#
+# `Design/impediment-dashboard.html` is generated from this template plus
+# `Docs/impediments.md` on every `prebuild`. It was committed until THR-916, which
+# made it a tracked file whose ~6,200 data lines changed on every impediment
+# append. `Docs/impediments.md` tolerates that because it is `merge=union`; HTML
+# has no such driver, so the moment any impediment-appending PR merged, every other
+# open PR conflicted on this one file and the resolutions re-staled each other —
+# four hand-resolutions across three PRs in one 40-minute run.
+#
+# Do NOT `git add -f` the rendered dashboard back (impediment #139 is how it got
+# committed the first time). It is reproducible from committed inputs, and
+# `check:generated-freshness` asserts both that the generator still produces it and
+# that it stays untracked.
+!Design/impediment-dashboard.template.html
 
 # Python TTS server
 .venv/
