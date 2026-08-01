@@ -561,6 +561,15 @@ export function enrichProse(
 
   // Simple replacements
   result = result.replace(/{name}/g, ctx.agentName);
+  // THR-933 — `{actor}` is an alias of `{name}`, not a second concept. The
+  // background/event path in orchestrator.ts substitutes it directly
+  // (`.replace(/{actor}/g, actor.name)`) and the content corpus adopted it as the
+  // dominant convention (~1.3k uses in encounter-content.ts alone), but this
+  // enricher — the attended stage's path — never learned the token, so an attended
+  // render leaked it raw beside a correctly-resolved `{they}`. Same semantics as
+  // the orchestrator: the actor's name. `{Actor}` is the sentence-initial form.
+  result = result.replace(/{actor}/g, ctx.agentName);
+  result = result.replace(/{Actor}/g, capitalize(ctx.agentName));
   result = result.replace(/{location}/g, ctx.currentLocationName);
   result = result.replace(/{culture}/g, ctx.cultureName);
   result = result.replace(/{they}/g, ctx.pronouns.they);
