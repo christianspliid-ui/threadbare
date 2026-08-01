@@ -1,50 +1,59 @@
 ---
-needsChristian: thr-883-prototype-verdict-ready, thr-860-capital-cluster-verdict
+needsChristian: none
 queue: backed-up
 freshness: healthy
-deploy: skipped
+deploy: deployed
 tasks: ok
 ---
 # Briefing
 
-**Generated:** 2026-08-01 11:55 local (09:55 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-08-01 13:55 local (11:55 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
 ## Needs Christian
 
-**Nothing new this hour — the same two, and they're still one sitting.** You cleared the last non-creative item yourself this morning, so everything below is a judgement only you can make.
+**Nothing — and this hour that's because you answered, not because nothing happened.**
 
-**1. The verdict on the five prototype encounters.** *(unchanged)*
+You wrote: *"The content cannot be approved until some defect tickets for the encounter interface lands."* I've taken that as the answer to the standing ask and stopped asking. The verdict on the five encounters is off your plate until the interface is fixed, and both halves of that sitting — the five prototypes and the four capital-city encounters riding along behind them — go quiet with it.
 
-Still the one thing everything else waits behind. **Play the five and tell me if the format is right.** Eleven content jobs are paused until you do.
+**Two of the four faults you filed this morning are already fixed and live:** encounters no longer crash when they move from one step to the next, and a jumped-to encounter no longer goes silent after the first choice. **Three remain**, and they are exactly the ones that would have corrupted what you'd be judging:
 
-It's one sitting: you play the five end-to-end and give a plain-language verdict on the prose, on the rhythm of when things fire, on whether the world visibly reacts, on how it looks, and on whether it's fun. **"Needs another go" is a perfectly good answer** — it settles the question and charters the next round. That is the last step of the encounter-slice plan; finishing it finishes the plan.
+- The **scene-setting first paragraph never appears** — the approved opening is written and shipped, but nothing on screen ever reads it, so every encounter starts mid-scene.
+- **Raw placeholder text leaks into the prose** where a character's name should be.
+- The **notice badge erases its own news** when clicked, so you can't read what it was telling you.
 
-One thing that was in the way is now fixed: the demo links that let you jump straight to a specific encounter used to go silent after the first step. That shipped this morning and is live, so the five will play through properly.
+Judging prose through those three would have been judging a broken copy of it. Your call to wait is the right one, and nothing here needs you until they land.
 
-**2. The four capital-city encounters that ride along with that verdict.** *(unchanged)*
+## From Christian
 
-A council mediation over a millrace, a noble's court at a ford toll house, two feuding houses and the seam where their banners meet, and a monument that turned into a problem with a rock. Written, finished, deliberately not landed — they're in the *old* style. When you lock the format they either go in as they are and get tidied up later alongside the seven earlier ones, or get dropped and rewritten under the new rules. **Nothing is lost either way** — the work is safe on its own branch, and has been for nearly two days. Same sitting as the verdict, not a separate visit.
+**What you said:** the content can't be approved until some encounter-interface defect tickets land. **Understood as:** don't bring the five-encounter verdict back until the interface is fixed. The standing ask is pruned, not carried — it is not being re-surfaced hourly any more.
+
+**One thing routed onward, because I can't do it myself.** Your message makes those three defects the thing everything else waits behind — they gate the content verdict, which gates eleven paused content jobs. **Nothing in the tracker says so.** They sit at the same rank as five infrastructure and build-cost tickets, and the last two work sessions both went to build-cost work while the three defects sat untouched. An executor session should drain **THR-932, THR-933 and THR-935 ahead of the other high-priority items**; this task is read-only on the tracker and cannot re-rank them itself.
+
+**One question, and it blocks nothing:** those three are the encounter-interface defects I can see. If you hit anything else while testing that you haven't filed, it isn't on the list.
 
 ## Queue
 
-**Backed up — 64 ready, 2 parked, none actively being worked.** 10 high, 4 medium, 4 unranked, 46 low-priority tidy-ups, and **no urgent items.** Both parked items are decisions 1–2 above, so nothing is parked without a reason.
+**Backed up — 62 ready** (was 64), 2 parked, none actively being worked. 8 high, 4 medium, 4 unranked, 46 low-priority tidy-ups, no urgent items.
 
-- **The count is flat at 64, and that hides two real movements.** A high-priority job **finished and shipped** this hour — brainstorming and early design notes now live in the design vault instead of the code repository, so rough thinking no longer has to clear a full review to be written down. A new low-priority tidy-up took the freed slot. A flat number is not a quiet hour.
-- **Three ready items are invisible to the pickup lane** *(was two)*. They were filed with a name attached, and the lane only picks up unclaimed work, so they will sit unnoticed. The new one was filed an hour ago — **which is the useful part: the fault showed up on a fresh filing, so it is still live rather than historical.** Agent-side bookkeeping, already tracked. Not yours.
-- **One item has been waiting 8 days** — merging two duplicate code paths for casting. The only one past the staleness bound, and low priority.
-- **One finished item needs closing in the tracker** — the ticket behind the GitHub setting you ticked this morning. An automated lane can close it with an ordinary commit. No action from you.
+- **The drop of two is fully accounted for**: both were build-cost jobs that shipped this hour — one cutting how long the automated test suite takes, one letting documentation changes skip the code checks entirely. Real completions, not items quietly leaving the board.
+- **Three ready items are invisible to the pickup lane** — filed with your name attached, and the lane only takes unclaimed work. Unchanged at three. Agent-side bookkeeping, already tracked, not yours.
+- **Both parked items are the ones your message just settled** — the capital-city encounter batch, and the branch-protection ticket below. Neither is stuck for want of a decision from you.
+- **One finished item still needs closing in the tracker** — the ticket behind the GitHub setting you ticked this morning. I re-checked the setting itself for a third run running: it is genuinely live. An automated lane can close the ticket with an ordinary commit. **Not yours**, despite a sibling report still listing it as yours.
+- **One item has been waiting 8 days** — merging two duplicate code paths for casting. Still the only one past the staleness bound, still low priority.
 
 ## Freshness
 
-**Home tree is current and healthy** — on the main line, nothing behind, and the automatic sync ran on time at 11:50 and picked up the latest seven changes. Your two settings files still show local edits; they are safe, and nothing arriving touches them. Housekeeping ran at 11:40 and is healthy: 29 worktrees, 48 branches, nothing awaiting a decision.
+**Home tree is current and healthy** — on the main line, nothing behind, automatic sync ran on time at 13:50. Your two settings files still show local edits; they are safe, and nothing arriving touches them. Housekeeping ran at 13:40: 30 worktrees, 48 branches, nothing awaiting a decision.
 
-**The live site is serving the latest game code.** The seven changes since the last publish are all notes and process documents, which don't need a rebuild — so no deployment was expected this hour and none is missing. Automated checks are running normally, nothing is stuck waiting to merge, and all 9 scheduled jobs are on time.
+**The live site is serving the latest code** (`1d73e36f`). Automated checks are running normally, all 9 scheduled jobs are on time, and one pending change is queued to merge on its own.
 
 ## What's moving
 
-One change of substance landed since the last brief: **early design work no longer needs repo ceremony.** Brainstorms and rough drafts now live in the Obsidian vault and move into the repository only when the work is actually ready to be built — which removes the review overhead from exactly the stage where thinking should be cheapest. It also turned up one loose end about where the adversarial "grill me" notes belong; that's filed and queued. The rest is this briefing.
+Two build-cost jobs landed since the last brief, and together they cut what routine work costs: the test suite was spending more time loading code than running it, and documentation-only changes were paying a full code review to prove that a markdown edit hadn't broken the game. Both fixed. Earlier this morning, two of the four encounter faults you filed were diagnosed and shipped within about ninety minutes of you reporting them.
 
 ---
-*Standing asks live in `Design/user-actions.md`. This file is regenerated hourly by the `keep-work-flowing-cc` scheduled task; staleness is visible from the Generated timestamp above and the task's `lastRunAt` in `list_scheduled_tasks`.*
+*Standing asks live in `Design/user-actions.md`. This file is regenerated hourly by the
+`keep-work-flowing-cc` scheduled task; staleness is visible from the Generated
+timestamp above and the task's `lastRunAt` in `list_scheduled_tasks`.*
