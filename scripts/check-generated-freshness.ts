@@ -54,6 +54,12 @@ import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 
+import {
+  STATIC_ARTIFACT_SOURCES,
+  classifyArtifacts,
+  everyArtifactDeclaresSources,
+} from "./generated-artifact-sources.ts";
+
 /** Artifacts written by `prebuild` that are not derivable from a manifest. */
 const STATIC_GENERATED_PATHS: readonly string[] = [
   "public/action-catalog.generated.json", // generate-action-catalog
@@ -118,26 +124,86 @@ function gitShow(ref: string, relPath: string): string | null {
 /**
  * The design-wiki pages generate-design-wiki rewrites (hub + every registered
  * page), read from the manifest so adding a page needs no change here.
+ *
+ * Each page's declared `sources` come back alongside its path, so the doc→code
+ * coupling guard (THR-922) can classify a page without a second manifest read.
+ * The hub has no `sources` of its own — it is derived from the manifest — so it
+ * carries an empty list and classifies as uncoupled.
  */
-function designWikiPaths(): string[] {
+function designWikiArtifacts(): Array<{ file: string; sources: readonly string[] }> {
   const absolute = path.join(REPO_ROOT, WIKI_MANIFEST_PATH);
   if (!fs.existsSync(absolute)) return [];
   try {
     const manifest = JSON.parse(fs.readFileSync(absolute, "utf8")) as {
       home?: unknown;
-      pages?: ReadonlyArray<{ file?: unknown }>;
+      pages?: ReadonlyArray<{ file?: unknown; sources?: unknown }>;
     };
-    const files: string[] = [];
-    if (typeof manifest.home === "string" && manifest.home.trim() !== "") files.push(`public/${manifest.home}`);
-    for (const page of manifest.pages ?? []) {
-      if (typeof page.file === "string" && page.file.trim() !== "") files.push(`public/${page.file}`);
+    const artifacts: Array<{ file: string; sources: readonly string[] }> = [];
+    if (typeof manifest.home === "string" && manifest.home.trim() !== "") {
+      artifacts.push({ file: `public/${manifest.home}`, sources: [] });
     }
-    return files;
+    for (const page of manifest.pages ?? []) {
+      if (typeof page.file !== "string" || page.file.trim() === "") continue;
+      const sources = Array.isArray(page.sources)
+        ? page.sources.filter((source): source is string => typeof source === "string")
+        : [];
+      artifacts.push({ file: `public/${page.file}`, sources });
+    }
+    return artifacts;
   } catch (err) {
     // check:design-wiki owns manifest validity; refuse to guess rather than
     // silently narrow the checked set.
     bail(`${WIKI_MANIFEST_PATH} is not valid JSON — cannot enumerate design-wiki artifacts.`, (err as Error).message);
   }
+}
+
+/**
+ * The doc→code coupling guard (THR-922 Done-when 4).
+ *
+ * A generator whose inputs are documentation but whose output lands in `src/` or
+ * `public/` silently revokes the fast docs-only CI path for every edit to those
+ * inputs. The two current members are excluded by exact path from `ci.yml`'s
+ * `code` filter; this refuses to let a third grow back unnoticed.
+ *
+ * Reported as a hard failure, consistent with the rest of this gate: a coupling
+ * that is merely warned about is a coupling nobody fixes.
+ */
+function checkDocToCodeCouplings(
+  wikiArtifacts: ReadonlyArray<{ file: string; sources: readonly string[] }>,
+): string[] {
+  const problems: string[] = [];
+
+  const undeclared = everyArtifactDeclaresSources(STATIC_GENERATED_PATHS);
+  for (const relPath of undeclared) {
+    problems.push(
+      `${relPath} — registered generated artifact with no declared sources. ` +
+        `Add its generator's inputs to STATIC_ARTIFACT_SOURCES in scripts/generated-artifact-sources.ts ` +
+        `so its source→output direction can be classified.`,
+    );
+  }
+
+  const wikiSources = new Map(wikiArtifacts.map((page) => [page.file, page.sources]));
+  const all = [...STATIC_GENERATED_PATHS, ...wikiArtifacts.map((page) => page.file)];
+
+  const couplings = classifyArtifacts(
+    all,
+    (artifact) => STATIC_ARTIFACT_SOURCES[artifact] ?? wikiSources.get(artifact) ?? [],
+  );
+
+  for (const coupling of couplings) {
+    if (!coupling.unlisted) continue;
+    problems.push(
+      `${coupling.artifact} — ${coupling.kind}: generated from documentation ` +
+        `(${coupling.sources.filter((s) => s.endsWith(".md") || /^(Docs|Design|\.planning)\//.test(s)).join(", ")}) ` +
+        `but lands outside the doc-excluded paths, so every edit to those docs pays the full code gate.\n` +
+        `    Fix: exclude this exact path from the \`code\` filter in .github/workflows/ci.yml and from the ` +
+        `docs-only predicate in CLAUDE.md, then add it to DOC_TO_CODE_ALLOWLIST in ` +
+        `scripts/generated-artifact-sources.ts. Excluding the ARTIFACT is safe — its code sources, if any, ` +
+        `remain in the filter under their own paths (see that file's header for why).`,
+    );
+  }
+
+  return problems;
 }
 
 /** Tracked files currently differing from HEAD. */
@@ -172,8 +238,27 @@ function normalize(content: string, relPath: string): string {
 }
 
 function main(): void {
-  const generatedPaths = [...STATIC_GENERATED_PATHS, ...designWikiPaths()];
+  const wikiArtifacts = designWikiArtifacts();
+  const generatedPaths = [...STATIC_GENERATED_PATHS, ...wikiArtifacts.map((page) => page.file)];
   const generatedSet = new Set(generatedPaths);
+
+  // Structural check, run before the expensive regeneration: it reads the
+  // registry and the manifest only, so a coupling failure surfaces in a second
+  // rather than after a full `prebuild`.
+  const couplingProblems = checkDocToCodeCouplings(wikiArtifacts);
+  if (couplingProblems.length > 0) {
+    console.error(
+      "check-generated-freshness: FAIL — a generator couples documentation to the code track (THR-922).",
+    );
+    for (const line of couplingProblems) console.error(`  - ${line}`);
+    console.error("");
+    console.error(
+      "Why this is blocking: an artifact generated FROM docs but landing OUTSIDE them makes every\n" +
+        "edit to those docs classify as a code change, costing the full ~15-minute required check for\n" +
+        "a documentation-only PR.",
+    );
+    process.exit(1);
+  }
 
   // Files already dirty before generation: pre-existing work in progress, which
   // must not be reported as unregistered generator output.

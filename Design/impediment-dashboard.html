@@ -6225,6 +6225,19 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "**Never write a leading slash in a `gh api` endpoint from Git Bash — `gh api users/...`, not `gh api /users/...`.** `gh` accepts both forms and only the slashless one survives MSYS. Where a leading slash is unavoidable, prefix the command with `MSYS_NO_PATHCONV=1`. Generalisable rule: in this sandbox, any shell argument that *looks* like an absolute POSIX path but is not one (API routes, container paths, JSON pointers, `sed` addresses) should be assumed rewritten until proven otherwise. Note the billing endpoint additionally needs the `user` OAuth scope and 404s without it — a separate wall, and one worth distinguishing from this rewrite before reaching for `gh auth refresh`.",
     "session": "THR-919, `tb-opus-pickup` hourly run, probing GitHub Actions billing to answer the ticket's cost caveat."
+  },
+  {
+    "num": "378",
+    "id": 378,
+    "count": 1,
+    "date": "2026-08-01",
+    "category": "process",
+    "description": "**`git checkout -- <file>` used to undo a temporary falsification silently discarded the session's own uncommitted work in that file.** Falsifying a new CI guard means breaking it on purpose, checking it fails, then reverting — and `git checkout --` reverts to **HEAD**, not to the pre-falsification state. Where the falsified file also carried this session's real edits (`.github/workflows/ci.yml`, ~40 lines of new filter entries and comments), the restore wiped both, and the command printed nothing. It was caught only because the tool surfaced the reverted file contents unprompted; a later `git diff` would have shown the work simply absent, with no event to attribute it to. The sibling case is the opposite and equally quiet: the same command on an **untracked** new file errors with `pathspec … did not match any file(s) known to git`, so the falsification is left in place.",
+    "consequence": "One near-loss of ~40 lines of authored CI config, and one guard (the allowlist) left temporarily emptied because its file was untracked and the revert no-opped. Both failure directions are silent in the shape that matters: one deletes real work, the other leaves sabotage behind.",
+    "impact": "M",
+    "workaroundFound": true,
+    "workaround": "**Never revert a deliberate falsification with `git checkout --`. Snapshot and restore the exact bytes instead:** `cp <file> /tmp/f.bak` before the edit, `cp /tmp/f.bak <file>` after — correct for tracked and untracked files alike, and independent of what HEAD holds. If `git checkout --` has already been run on a file carrying session edits, the work is recoverable only from the tool transcript, so re-apply immediately rather than continuing. General rule: a falsification pass mutates files that already contain uncommitted work, which makes HEAD the wrong restore point by construction — the right one is the working tree as it stood one command earlier.",
+    "session": "THR-922, `tb-opus-pickup` hourly run, falsifying the doc→code coupling guard and the ci.yml/allowlist drift test."
   }
 ];
 // ── End data ──
