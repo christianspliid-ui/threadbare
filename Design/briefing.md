@@ -2,44 +2,50 @@
 needsChristian: none
 queue: backed-up
 freshness: healthy
-deploy: skipped
+deploy: deployed
 tasks: ok
 ---
 # Briefing
 
-**Generated:** 2026-08-01 17:57 local (15:57 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-08-01 19:08 local (17:08 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
 ## Needs Christian
 
-**Nothing needs a decision from you right now.**
+**Nothing needs you this minute — but you are one defect away from the content verdict being askable again.**
 
-Your answer still governs: no content verdict until the encounter interface is fixed. Of the three defects standing between you and that verdict, **one shipped and is live**. **Two remain, and both are still unclaimed** — the raw placeholder text showing where a character's name should be, and the notice badge that erases its own news when clicked. Neither has been picked up in the nine hours since they were written up.
+You named three things that had to land before you'd rule on the encounter prose. **Two of them landed today:**
 
-That is the whole critical path. Nothing else on the board is waiting on you.
+- **The missing opening paragraph** — the scene-setting text you wrote for The Unsafe Bridge was shipping but never rendering. Fixed and merged at 16:13.
+- **The name coming out as raw code** mid-sentence. Fixed and merged at 18:25, and the live site is serving it now.
+
+**One remains: the badge that erases its own news when you click it.** It is unclaimed, ranked high, and has been sitting eleven hours. When it lands, your condition is met and the verdict is yours to give.
+
+**One caveat you should hear before you play.** There is a fourth defect of the same family that was never on your list: the nudge cards themselves still don't run their text through the name-substitution step at all, so a card can show a bare `{they}` where a name belongs — about 28 places in the shipped text. I verified this in the code rather than trusting the ticket. **It is not part of your stated condition, so nothing is waiting on it** — but if you play the slice and see raw code on a card, that is this, not a regression of what was just fixed.
 
 ## Queue
 
-**Backed up — 63 ready, but the work lane can only see 61.** The slot is free, so the next pickup is a live choice. 8 high, 4 medium, 4 unranked, 47 low-priority tidy-ups, none urgent.
+**Backed up — 62 ready, and the work lane can see 60.** 6 high, 4 medium, 4 unranked, 46 low-priority tidy-ups, none urgent. The queue shrank by exactly one: the name fix shipped, nothing new was filed.
 
-- **The filing fault got sharper this hour, on the ticket I used as the clean control last hour.** Two tickets are hidden from the automated lane because they carry your name, and that lane only picks up unclaimed work. The interesting one is the scaffolding ticket written from your note today: **last hour I recorded it as filed clean, with no name on it. It has your name on it now.** The only write to it in between was the promotion lane's, at 17:32. That is the first time the same ticket has been observed clean and then dirty with a single known write between — which means the fault is not in how tickets are *created*, as I reported last hour, but in what the promotion lane does when it touches *any* ticket. **Nothing is lost and nothing here is yours** — two tickets are queue-jumped to the back until someone clears the names. It is here because it corrects my own report from last hour.
-- **The two defects on your critical path are ranked level with six build-cost tickets.** They sit "high", alongside six repo-plumbing tickets at the same rank. With the slot free, the lane may reasonably take any of the eight — and six of them do nothing for the thing you are waiting on. Raising the two is an ordinary board action; this lane may not do it.
-- **One finished ticket has now been stuck for eleven hours with no route out.** The branch-protection setting is genuinely live — I have re-checked the real GitHub setting for a sixth run and it is correct. All that is left is one stale sentence in a docs file and a closing commit. **But it sits in a column no automated lane reads**, so no lane will ever pick it up, and I can only report it, not move it. This is the sixth run reporting it and the first one where the parking is clearly the reason nothing has happened.
-- **The other parked ticket is parked correctly** — the capital-city encounter batch waits behind the format question, which waits behind the two remaining interface defects.
+- **The last defect on your critical path shares its rank with six repo-plumbing tickets.** With the work slot free, the next pickup is a seven-way choice in which six options do nothing for the thing you are waiting on. Raising it is an ordinary board action; this lane may not do it.
+- **The fourth defect is ranked below all of them** — unranked entirely, despite being player-visible on the first card anyone opens. It also still advertises work that already shipped this morning under a different ticket, so whoever takes it will redo the finished half before noticing.
+- **The finished ticket is still stuck, twelfth hour.** The branch-protection setting is genuinely live — re-checked against the real GitHub setting for a seventh run. All that remains is one stale sentence in a docs file and a closing commit. **It sits in a column no automated lane reads**, so nothing will pick it up on its own. One session frees it in a single move.
+- **The parked encounter batch is parked correctly** — the capital-city templates wait behind the format question, which waits behind that last defect.
+- **Two tickets are hidden from the work lane** because they carry your name, and that lane only takes unclaimed work. Nothing is lost; they are queue-jumped to the back until someone clears the names.
 - **One item has been waiting 8 days** — merging two duplicate code paths for casting. Still the only one past the staleness bound, still low priority.
 
 ## Freshness
 
-**Home tree is current and healthy** — on the main line, nothing behind, nothing stranded, for a sixth consecutive run. Your two settings files still show local edits; they are safe, and nothing arriving touches them. Automatic syncing is demonstrably working: it pulled 7 changes at 17:50, seven minutes ago. Housekeeping ran at 17:40 — 35 worktrees, 53 branches, one item awaiting a decision from a future session, not yours.
+**Home tree is current and healthy** — on the main line, nothing behind, nothing stranded, for a seventh consecutive run. Your two settings files still show local edits; they are safe and nothing arriving touches them. Housekeeping ran at 18:40 — 35 worktrees, 54 branches, one item awaiting a decision from a future session, not yours.
 
-**The live site is up to date.** Everything merged since the last publish was notes and documentation, so the game itself did not need rebuilding — that is the healthy reading, not a missed deploy. Automated checks are running normally, all 9 scheduled jobs are on time, and nothing is stuck waiting to merge.
+**The live site is serving the newest change.** Automated checks are running normally, all 9 scheduled jobs are on time, and nothing is stuck waiting to merge.
 
 ## What's moving
 
-**Quiet hour on the product, busy one on the plumbing.** Your decision about the hourly status documents — *"I don't see a need for having all the building documents as part of the source code. It is just scaffolding"* — has now been written up as a ticket, and two follow-on tickets have been re-sequenced behind it. A separate decision about how stuck pull requests should be handled was settled and shipped. One more repo ticket was promoted to the ready list.
+**Two thirds of your critical path cleared inside eight hours**, after ten hours of nothing. The opening-paragraph fix turned out not to be missing prose at all — the text was shipping correctly and simply had no code path that drew it on screen. The name fix was a single word the attended encounter screen had never been taught.
 
-**Nothing on your critical path moved this hour.** The two remaining interface defects are exactly where they were nine hours ago.
+Elsewhere: one repo ticket promoted to the ready list, and the hourly plumbing work continues in the background. No content was written — that remains paused behind your format question, as you asked.
 
 ---
 *Standing asks live in `Design/user-actions.md`. This file is regenerated hourly by the
