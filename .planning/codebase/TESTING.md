@@ -6,8 +6,7 @@
 
 **Runner:**
 - Vitest 4.0.18 (testing library built on Vite)
-- Main config: `vitest.config.ts`
-- Isolated config: `vitest.config.isolated.ts` (for node-only tests without jsdom overhead)
+- Main config: `vitest.config.ts` (the only config; `npm test` runs `vitest run` with no `--config`)
 
 **Assertion Library:**
 - Vitest's built-in `expect()` (compatible with Jest assertions)

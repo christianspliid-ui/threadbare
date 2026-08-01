@@ -88,7 +88,7 @@
 - `tsconfig.json` - Composite TypeScript config referencing `tsconfig.app.json` and `tsconfig.node.json`
 - `eslint.config.js` - Flat ESLint config with React and TypeScript rules
 - `vercel.json` - Production build command: `vite build`
-- `vitest.config.ts` and `vitest.config.isolated.ts` - Test runner configuration (node environment with jsdom available)
+- `vitest.config.ts` - Test runner configuration (node environment with jsdom available)
 
 **Development Scripts:**
 - `npm run dev` - Start Vite dev server with hot reload (default port 5173)
