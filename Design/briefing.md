@@ -2,56 +2,43 @@
 needsChristian: none
 queue: backed-up
 freshness: healthy
-deploy: deployed
+deploy: skipped
 tasks: ok
 ---
 # Briefing
 
-**Generated:** 2026-08-01 13:55 local (11:55 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-08-01 14:55 local (12:55 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
 ## Needs Christian
 
-**Nothing — and this hour that's because you answered, not because nothing happened.**
+**Nothing — and the wait you called for is now actually being worked.**
 
-You wrote: *"The content cannot be approved until some defect tickets for the encounter interface lands."* I've taken that as the answer to the standing ask and stopped asking. The verdict on the five encounters is off your plate until the interface is fixed, and both halves of that sitting — the five prototypes and the four capital-city encounters riding along behind them — go quiet with it.
+Your answer last hour still stands: no content verdict until the encounter interface is fixed. Three defects were in the way. **The first of them is now being fixed** — the one where the scene-setting opening paragraph never appears, so every encounter starts mid-scene. A fix is written and queued to go live on its own. Two remain untouched: the raw placeholder text leaking in where a character's name should be, and the notice badge erasing its own news when clicked.
 
-**Two of the four faults you filed this morning are already fixed and live:** encounters no longer crash when they move from one step to the next, and a jumped-to encounter no longer goes silent after the first choice. **Three remain**, and they are exactly the ones that would have corrupted what you'd be judging:
-
-- The **scene-setting first paragraph never appears** — the approved opening is written and shipped, but nothing on screen ever reads it, so every encounter starts mid-scene.
-- **Raw placeholder text leaks into the prose** where a character's name should be.
-- The **notice badge erases its own news** when clicked, so you can't read what it was telling you.
-
-Judging prose through those three would have been judging a broken copy of it. Your call to wait is the right one, and nothing here needs you until they land.
-
-## From Christian
-
-**What you said:** the content can't be approved until some encounter-interface defect tickets land. **Understood as:** don't bring the five-encounter verdict back until the interface is fixed. The standing ask is pruned, not carried — it is not being re-surfaced hourly any more.
-
-**One thing routed onward, because I can't do it myself.** Your message makes those three defects the thing everything else waits behind — they gate the content verdict, which gates eleven paused content jobs. **Nothing in the tracker says so.** They sit at the same rank as five infrastructure and build-cost tickets, and the last two work sessions both went to build-cost work while the three defects sat untouched. An executor session should drain **THR-932, THR-933 and THR-935 ahead of the other high-priority items**; this task is read-only on the tracker and cannot re-rank them itself.
-
-**One question, and it blocks nothing:** those three are the encounter-interface defects I can see. If you hit anything else while testing that you haven't filed, it isn't on the list.
+Nothing here needs a decision from you. When all three land, the verdict on the five encounters comes back to you — and not before.
 
 ## Queue
 
-**Backed up — 62 ready** (was 64), 2 parked, none actively being worked. 8 high, 4 medium, 4 unranked, 46 low-priority tidy-ups, no urgent items.
+**Backed up — 61 ready** (was 62), 2 parked, and **one actively being worked**, which it has not been for most of today. 7 high, 4 medium, 4 unranked, 46 low-priority tidy-ups, no urgent items.
 
-- **The drop of two is fully accounted for**: both were build-cost jobs that shipped this hour — one cutting how long the automated test suite takes, one letting documentation changes skip the code checks entirely. Real completions, not items quietly leaving the board.
-- **Three ready items are invisible to the pickup lane** — filed with your name attached, and the lane only takes unclaimed work. Unchanged at three. Agent-side bookkeeping, already tracked, not yours.
-- **Both parked items are the ones your message just settled** — the capital-city encounter batch, and the branch-protection ticket below. Neither is stuck for want of a decision from you.
-- **One finished item still needs closing in the tracker** — the ticket behind the GitHub setting you ticked this morning. I re-checked the setting itself for a third run running: it is genuinely live. An automated lane can close the ticket with an ordinary commit. **Not yours**, despite a sibling report still listing it as yours.
+- **The drop of one is the good kind.** The opening-paragraph defect left the queue because a work session took it, not because it was shelved. It is the highest-value thing on the board and it is moving.
+- **A long-standing bookkeeping fault has cleared.** For weeks a handful of ready items were filed with your name attached, which made them invisible to the automated pickup lane — that lane only takes unclaimed work. **It is now zero.** I checked it the way the lane itself checks rather than by eye: the lane's own query returns all 61 items, so nothing is hiding from it.
+- **Both parked items are parked for good reasons, neither of them yours.** The capital-city encounter batch waits behind the format question, which waits behind the interface fixes. The branch-protection ticket is finished work that only needs closing in the tracker — I re-checked the GitHub setting itself for a fourth run and it is genuinely live. An automated lane closes that one with an ordinary commit.
 - **One item has been waiting 8 days** — merging two duplicate code paths for casting. Still the only one past the staleness bound, still low priority.
 
 ## Freshness
 
-**Home tree is current and healthy** — on the main line, nothing behind, automatic sync ran on time at 13:50. Your two settings files still show local edits; they are safe, and nothing arriving touches them. Housekeeping ran at 13:40: 30 worktrees, 48 branches, nothing awaiting a decision.
+**Home tree is current and healthy** — on the main line, nothing behind, automatic sync ran on time at 14:50. Your two settings files still show local edits; they are safe, and nothing arriving touches them. Housekeeping ran at 14:40: 30 worktrees, 50 branches, one item awaiting a decision from a future session — not yours.
 
-**The live site is serving the latest code** (`1d73e36f`). Automated checks are running normally, all 9 scheduled jobs are on time, and one pending change is queued to merge on its own.
+**The live site is serving the latest game code.** Everything merged since the last publish was notes and process documents, which don't need a rebuild, so no deployment was expected this hour and none is missing. Automated checks are running normally, all 9 scheduled jobs are on time, and two pending changes are queued to merge on their own.
 
 ## What's moving
 
-Two build-cost jobs landed since the last brief, and together they cut what routine work costs: the test suite was spending more time loading code than running it, and documentation-only changes were paying a full code review to prove that a markdown edit hadn't broken the game. Both fixed. Earlier this morning, two of the four encounter faults you filed were diagnosed and shipped within about ninety minutes of you reporting them.
+**The interface repair started.** A work session picked up the missing-opening-paragraph defect just after 14:00 and has a fix open and queued to land. Worth being precise about why, because it flatters the process less than it looks: **that session began one minute before last hour's note asking for exactly this went out**, so it chose the ticket on its own, not because I asked. The request to take the other two defects ahead of the build-cost work is still untested — the next work session is the first one that could act on it.
+
+**A piece of self-repair worked in production for the first time.** The automatic sync used to stall permanently when a stray file in the home tree collided with an incoming change — a fault that took days to notice and a person to clear. The guard built for it fired on its own at 14:50, cleared the collision, and synced normally. Nobody had to look.
 
 ---
 *Standing asks live in `Design/user-actions.md`. This file is regenerated hourly by the
