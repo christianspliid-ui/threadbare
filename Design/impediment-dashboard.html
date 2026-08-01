@@ -6186,6 +6186,19 @@ const DATA = [
     "workaroundFound": true,
     "workaround": "Two parts. (1) Probe the install rather than the directory: `node -e require.resolve(pkg)` on the failing module names the gap in one command, where `[ -d node_modules ]` and even `[ -e node_modules/.bin/vitest ]` both pass. Repair with `npm install` in the HOME tree (non-destructive, adds only what is missing) — never `npm ci` through a junction, which deletes the target's contents. (2) Never read an exit code through a pipe: redirect to a log file, echo `$?`, then tail the file. `PIPESTATUS[0]` also works.",
     "session": "THR-909, `tb-opus-pickup` hourly run. Session precheck had already reported `test: no ... Failed Suites 1` before any edit, which is what made the pre-existing diagnosis cheap. Renumbered from #372 → #374 resolving PR #1210's union merge — `main` independently assigned #372 to the `threadbare-autosync.ps1` row; nothing cites this row."
+  },
+  {
+    "num": "375",
+    "id": 375,
+    "count": 1,
+    "date": "2026-08-01",
+    "category": "tooling",
+    "description": "**`jq` is absent from the agent Git Bash shell, so a Monitor watch built on it evaluated nothing for 25 minutes and reported the silence as a clean run.** A bounded watch on PR #1210 parsed `gh pr view --json` output through standalone `jq`; `jq` is not on PATH (only `gh --jq`, which embeds it, works). Every variable came back empty, no `case` arm matched, and the loop slept 30s and repeated until the timeout. The watch was designed to emit on merge, red check, `BEHIND` and `DIRTY` — and the PR did go `DIRTY` during the window — but the probe could not read any of those states, so it emitted nothing. A timeout with zero events is indistinguishable from \"condition never occurred\".",
+    "consequence": "25 minutes lost, and worse, the silence actively misled: the natural reading of \"monitor ran to timeout with no events\" is \"still building, nothing wrong\", when in fact the PR had become conflicted minutes in. Had the run trusted it, the checkpoint comment would have reported a healthy in-flight PR that was actually blocked.",
+    "impact": "M",
+    "workaroundFound": true,
+    "workaround": "**Probe the probe before trusting silence.** Verify every external binary a watch depends on exists (`command -v jq`) *before* arming it, and prefer `gh --jq` (built in) over standalone `jq` in this sandbox. Structurally: a monitor whose filter can only match on success-shaped states cannot distinguish \"healthy\" from \"broken\" — give the loop a heartbeat line or an explicit `else` arm that emits the raw unparsed status, so a parse failure is loud. Same family as the vacuous-gate class (a lever that cannot fail is not evidence).",
+    "session": "THR-909 resume, `tb-opus-pickup` hourly run, resolving PR #1210's `DIRTY` state."
   }
 ];
 // ── End data ──
