@@ -1,7 +1,7 @@
 ---
 name: pull-work
 description: Canonical Claude Code pickup workflow for claiming Linear work safely from Ready for Dev.
-last_validated_against: 2026-07-31
+last_validated_against: 2026-08-01
 ---
 
 # Pull Work
@@ -152,7 +152,9 @@ Auto-merge does **not** update a stale branch: under strict branch protection, a
 
 **An armed PR can be stuck in more than one way, and only one of them is yours to fix.** Until THR-897 this step matched on `BEHIND` alone. A PR at `DIRTY` — a real merge conflict — is not `BEHIND`, so it was skipped, and `update-branch` would not have fixed it anyway. Measured 2026-07-31: **3 of 4 armed PRs were `DIRTY`**, one of them armed 19 hours earlier carrying THR-883's authoring-contract rewrite (the deliverable that unblocked 11 content tickets), while three consecutive sweeps each reported success. The old step 4 did name `DIRTY` in prose — but with no mechanism and a log line that mentioned only `BEHIND`, so in practice every run stepped past it.
 
-**Constant:** `ARMED_SWEEP_MAX_UPDATES = 1` — update at most one PR per run. Updating several at once is a losing race: each merge re-stales the others and re-triggers their CI (O(N²) runs). The hourly cadence drains a queue one per cycle. (The rate at which that loses to `main`'s merge rate is THR-735, a separate defect in the same mechanism.)
+**Constant:** `ARMED_SWEEP_MAX_UPDATES = 1` — update at most one PR per run. Updating several at once is a losing race: each merge re-stales the others and re-triggers their CI (O(N²) runs).
+
+**This whole step is a stopgap with a known ceiling, and raising the constant cannot lift it (THR-735, decided 2026-08-01).** The ceiling is **one merge per advance of `main`'s tip**, not N per hour: measured 2026-07-31, PRs `#1166`, `#1175`, `#1176` all sat `BEHIND` at the *same* base, and the instant one merged, strict mode returned the others to `BEHIND`. So at N updates per run, N−1 are invalidated by construction — the defect is serialization, not throughput. The durable fix is **GitHub's merge queue** (THR-946), which builds each merge group on latest `main` and tests that exact tree, so `BEHIND` stops being a state anyone waits in; the decision record and the rejected alternatives are in `Docs/plans/2026-07-20-git-cicd-clean-delivery.md` § 9c. Until the queue is live this sweep remains the mechanism — run it, but do not spend a session trying to tune it, and do not re-litigate the remedy.
 
 Run the probe — it does the listing, the `UNKNOWN` re-query, and the classification in one call:
 
