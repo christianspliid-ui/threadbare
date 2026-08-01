@@ -575,6 +575,13 @@ export function buildUnifiedEncounterStageModel(
       // action's bindings supply who each key actually resolved to.
       supportBundle: args.template.supportBundle,
       supportBindings: activeAction.supportBindings,
+      // THR-932 — the attended stage never threaded these, so every `{frag:*}` token
+      // in step prose stripped to an empty string here while the same template
+      // rendered correctly on the resolution path (`unifiedActionResolution.ts`).
+      // That is the second half of the missing-opening bug: compiling the envelope is
+      // not enough if the surface that shows it cannot resolve the token.
+      contextFragments: args.template.contextFragments,
+      contextFragmentTemplateId: args.template.id,
     },
   );
 

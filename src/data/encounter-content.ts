@@ -9,9 +9,8 @@
 
 import { ENCOUNTER_TYPE_MOTIVATIONS } from '../types/encounter';
 import type { LocationSubtype } from '../types/index';
-import type { ContextFragmentSet, UnifiedActionTemplate } from '../types/unifiedAction';
-import { OPENING_FRAGMENT_SLOT } from '../engine/fragmentResolution';
-import { expandSettings, type SettingClass } from './settingClasses';
+import type { UnifiedActionTemplate } from '../types/unifiedAction';
+import { compileOpeningEnvelope, expandSettings, type SettingClass } from './settingClasses';
 import { getSocialEncounterById } from './social-encounter-content';
 import { getFactionEncounterById } from './faction-encounter-content';
 import { getMercenaryEncounterById } from './mercenary-encounter-content';
@@ -250,37 +249,20 @@ function toOutcomeMeta(
   return { rewardPool: outcome.rewardPool, tierPromotionEligible: outcome.tierPromotionEligible, reputationDelta: outcome.reputationDelta };
 }
 
-/**
- * THR-884 — compile a raw entry's `openings` table into the reserved `opening`
- * fragment set. The first step's authored narrative becomes the `'*'` default, so a
- * scene playing out at an unclassed subtype reads exactly as it does today.
- *
- * Returns `undefined` when the entry authored no openings, which keeps
- * `contextFragments` absent (and the whole layer opt-in) for every un-migrated
- * template — the byte-identical guarantee (NFP #6).
- */
-function toOpeningFragments(e: EncounterEntry, baseNarrative: string): ContextFragmentSet | undefined {
-  if (!e.openings) return undefined;
-  const authored = Object.entries(e.openings).filter(([, text]) => text != null && text !== '');
-  if (authored.length === 0) return undefined;
-  return {
-    slot: OPENING_FRAGMENT_SLOT,
-    axis: 'setting',
-    variants: { ...Object.fromEntries(authored), '*': baseNarrative },
-  };
-}
-
 function toUnifiedTemplate(e: EncounterEntry): UnifiedActionTemplate {
   const motivations = (ENCOUNTER_TYPE_MOTIVATIONS as Record<string, readonly import('../types/agent').ValuePair[]>)[e.encounterType]
     ?? (e.motivations as readonly import('../types/agent').ValuePair[] ?? []);
   const firstStep = e.steps[0];
   const lastStep = e.steps[e.steps.length - 1];
   // THR-884: envelope expansion happens here, once, at conversion — never per tick.
-  const openingFragments = toOpeningFragments(e, firstStep?.narrative ?? `${e.name} begins.`);
-  // When openings are authored the first step renders through the fragment token;
-  // otherwise it keeps its literal narrative, untouched.
-  const openingProse = openingFragments ? `{frag:${OPENING_FRAGMENT_SLOT}}` : undefined;
-  return {
+  // THR-932: the openings *compile* is no longer done here. It moved to the shared
+  // `compileOpeningEnvelope` applied to the finished template below, so the raw-entry
+  // and direct-authored paths have one semantic instead of two. The old local version
+  // *replaced* step-0 prose with the token (discarding the authored step paragraph);
+  // the shared one prepends. Behavior-neutral for shipped content — no raw entry in
+  // this corpus authors `openings` (verified 2026-08-01), so the replace path had no
+  // shipped users.
+  return compileOpeningEnvelope({
     id: e.id,
     name: e.name,
     reach: normalizeReach(e.reachPrimary),
@@ -295,9 +277,10 @@ function toUnifiedTemplate(e: EncounterEntry): UnifiedActionTemplate {
         onSuccess: [],
         onFailure: [],
         failBehavior: (index < e.steps.length - 1 ? 'continue_weakened' : 'fail_action') as 'continue_weakened' | 'fail_action',
-        // THR-884: only step 0 carries the per-class opening; later steps are the
-        // setting-neutral spine and keep their authored prose verbatim.
-        narrativeTemplate: index === 0 && openingProse ? openingProse : step.narrative,
+        // THR-884/THR-932: every step keeps its authored prose verbatim here. Step 0
+        // additionally gets the `{frag:opening}` token *prepended* by
+        // `compileOpeningEnvelope` below, when and only when the entry authored openings.
+        narrativeTemplate: step.narrative,
         successAfterimage: step.onSuccess.narrative,
         failureAfterimage: step.onFailure.narrative,
         criticalSuccessAfterimage: step.criticalSuccessAfterimage,
@@ -335,7 +318,6 @@ function toUnifiedTemplate(e: EncounterEntry): UnifiedActionTemplate {
     ],
     settings: e.settings,
     openings: e.openings,
-    ...(openingFragments ? { contextFragments: [openingFragments] } : {}),
     sphereAffinity: e.sphereAffinity as UnifiedActionTemplate['sphereAffinity'],
     motivations,
     narrativeTemplates: {
@@ -353,7 +335,7 @@ function toUnifiedTemplate(e: EncounterEntry): UnifiedActionTemplate {
     traitVariants: e.traitVariants,
     rarityTier: 1,
     intrinsicTier: 'background',
-  };
+  });
 }
 
 // ─── Encounter Templates ──────────────────────────────────────
