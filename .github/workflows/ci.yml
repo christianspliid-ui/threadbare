@@ -191,6 +191,7 @@ jobs:
     # measured end to end on PR #853 (2026-07-25) and PR #1022 (2026-07-28, which
     # carried engine + content changes).
     #
+    #   event is push to main             → skip               (THR-939, see below)
     #   detect succeeded, code == 'true'  → run the suite      (unchanged)
     #   detect succeeded, code == 'false' → skip               (unchanged: docs-only PRs stay fast)
     #   detect did NOT succeed            → run, and FAIL loudly via the guard step below
@@ -198,7 +199,38 @@ jobs:
     #
     # `!cancelled()` rather than `always()` deliberately: a run superseded by
     # `cancel-in-progress` must stay cancelled, not be reported as a failure.
-    if: ${{ !cancelled() && (github.event_name == 'workflow_dispatch' || needs.detect.result != 'success' || needs.detect.outputs.code == 'true') }}
+    #
+    # The `push` exclusion (THR-939). Branch protection runs in **strict mode** —
+    # a branch must be up to date with `main` before it can merge — so the tree
+    # that lands on `main` is byte-identical to the tree this job already
+    # validated on the `pull_request` event minutes earlier. The post-merge run
+    # re-derives a known answer.
+    #
+    # The reason to cut it is THROUGHPUT, not money. An earlier framing costed
+    # these runs as ~22% of the CI bill; that premise is void — the repository is
+    # public and every job here runs on `ubuntu-latest`, a standard runner, which
+    # GitHub bills at $0 (audit: `Docs/audits/2026-08-01-ci-cost-and-wall-time.md`).
+    # What the redundant run actually costs is a ~10-minute occupancy of the
+    # Actions queue immediately after every merge, which delays the NEXT PR's
+    # feedback. Under strict protection the merge ceiling is already one PR per
+    # advance of `main`'s tip (THR-920), so anything lengthening the post-merge
+    # window slows the lane directly.
+    #
+    # This does NOT touch the merge gate: the required `Test · Typecheck · Build`
+    # status branch protection consumes is produced by the `pull_request` run on
+    # the PR's head SHA. Nothing downstream reads a push-event conclusion.
+    #
+    # The clause is ANDed OUTSIDE the parenthesised group deliberately, so it also
+    # suppresses the `detect.result != 'success'` guard path on push. That guard
+    # exists to refuse a merge it cannot vouch for; on push the merge has already
+    # happened and no gate is listening, so firing there would be an unactionable
+    # red on `main` rather than a protection. On `pull_request` — where it is
+    # load-bearing — it is untouched.
+    #
+    # `workflow_dispatch` is unaffected and becomes MORE load-bearing: it is now
+    # the only way to execute the full suite against a `main` commit, which is
+    # exactly the retro-verification path THR-842 added it for.
+    if: ${{ !cancelled() && github.event_name != 'push' && (github.event_name == 'workflow_dispatch' || needs.detect.result != 'success' || needs.detect.outputs.code == 'true') }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
