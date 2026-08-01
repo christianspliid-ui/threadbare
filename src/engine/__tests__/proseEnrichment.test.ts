@@ -274,6 +274,22 @@ describe('enrichProse', () => {
     expect(enrichProse('{name} walks forward.', ctx)).toBe('Kira walks forward.');
   });
 
+  // THR-933 — `{actor}` is the content corpus's dominant name token (~1.3k uses in
+  // encounter-content.ts) and the orchestrator's background path already substitutes
+  // it. It leaked raw through the attended stage until this enricher learned it.
+  it('replaces {actor} with the agent name (alias of {name})', () => {
+    const ctx = createMinimalContext();
+    expect(enrichProse('{actor} stands', ctx)).toBe('Kira stands');
+    expect(enrichProse('{actor} and {name}', ctx)).toBe('Kira and Kira');
+  });
+
+  it('replaces {Actor} with the capitalized agent name', () => {
+    const ctx = createMinimalContext();
+    expect(enrichProse('{Actor} has produced something remarkable.', ctx))
+      .toBe('Kira has produced something remarkable.');
+    expect(enrichProse('{Actor}', { ...ctx, agentName: 'the mortal' })).toBe('The mortal');
+  });
+
   it('replaces {location}', () => {
     const ctx = createMinimalContext();
     expect(enrichProse('at {location}', ctx)).toBe('at Ashenmoor');
