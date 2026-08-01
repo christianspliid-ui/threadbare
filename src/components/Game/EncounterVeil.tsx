@@ -334,7 +334,11 @@ export function EncounterVeil({
             transform: hasArt ? undefined : 'translateX(-50%)',
             display: 'flex',
             flexDirection: 'column',
-            justifyContent: 'center',
+            // 'safe' keeps the column top reachable when content overflows the
+            // scroll zone — plain 'center' strands the first lines above an
+            // unscrollable edge (THR-925). Engines without 'safe' drop the
+            // declaration and fall back to flex-start, which scrolls correctly.
+            justifyContent: 'safe center',
             padding: '10vh 5vw 10vh 3vw',
             background: hasArt
               ? 'linear-gradient(to right, transparent 0%, rgba(10,10,15,0.55) 10%, rgba(10,10,15,0.82) 28%, rgba(10,10,15,0.93) 50%, rgba(10,10,15,0.97) 100%)'
@@ -1202,7 +1206,11 @@ export function EncounterVeil({
           transform: hasArt ? undefined : 'translateX(-50%)',
           display: 'flex',
           flexDirection: 'column',
-          justifyContent: 'center',
+          // 'safe' keeps the column top reachable when content overflows the
+          // scroll zone — plain 'center' strands the first lines above an
+          // unscrollable edge (THR-925). Engines without 'safe' drop the
+          // declaration and fall back to flex-start, which scrolls correctly.
+          justifyContent: 'safe center',
           padding: '6vh 5vw 8vh 3vw',
           background: hasArt
             ? 'linear-gradient(to right, transparent 0%, rgba(10,10,15,0.55) 10%, rgba(10,10,15,0.82) 28%, rgba(10,10,15,0.93) 50%, rgba(10,10,15,0.97) 100%)'
