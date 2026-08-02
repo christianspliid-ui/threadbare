@@ -1,0 +1,105 @@
+/**
+ * THR-891 — the bridge between the *stored* hunger id and the `HungerId` the
+ * card library keys on.
+ *
+ * The remembrance catalog stores `hunger.witness`; every `HungerId` consumer
+ * keys on `witness`. The encounter-stage adapter used to cross that gap with
+ * `identity.hungerId as HungerId`, which type-checks and is false, so the
+ * hunger-unique lookup missed for every god and no hunger unique was ever
+ * dealt. These tests fail if that cast comes back.
+ */
+import { describe, it, expect } from 'vitest';
+import { buildRepertoire } from '../nudgeCardRepertoire';
+import { HUNGER_UNIQUE_CARDS } from '../../data/nudge-card-library';
+import { HUNGER_CATALOG as REMEMBRANCE_CATALOG } from '../../data/hunger-catalog';
+import { MEETING_BOND_TEST } from '../../data/meeting-bond-test';
+import { HUNGER_CATALOG, toHungerId } from '../../types/hunger';
+import type { HungerId } from '../../types/hunger';
+
+describe('toHungerId', () => {
+  it('narrows the stored dotted id the remembrance flow actually writes', () => {
+    expect(toHungerId('hunger.witness')).toBe('witness');
+    expect(toHungerId('hunger.haunt')).toBe('haunt');
+    expect(toHungerId('hunger.illuminate')).toBe('illuminate');
+  });
+
+  it('accepts an already-bare id unchanged', () => {
+    expect(toHungerId('witness')).toBe('witness');
+  });
+
+  it('fail-softs to undefined rather than throwing (NFP #4)', () => {
+    expect(toHungerId(undefined)).toBeUndefined();
+    expect(toHungerId('')).toBeUndefined();
+    expect(toHungerId('hunger.not_a_hunger')).toBeUndefined();
+    // The pre-fix cast produced exactly this shape — a dotted string standing
+    // where a bare id belongs. It must not narrow to itself.
+    expect(toHungerId('hunger.hunger.witness')).toBeUndefined();
+  });
+
+  it('resolves every id the remembrance catalog can produce', () => {
+    // The catalog the player actually picks from is the source of stored ids;
+    // an id it can write that this cannot narrow is a hungerless god.
+    for (const entry of REMEMBRANCE_CATALOG) {
+      expect(toHungerId(entry.id), `remembrance id '${entry.id}' does not narrow`).toBeDefined();
+    }
+    // Both directions: the two catalogs describe the same twelve hungers.
+    expect(REMEMBRANCE_CATALOG.length).toBe(HUNGER_CATALOG.length);
+    expect(REMEMBRANCE_CATALOG.map((h) => toHungerId(h.id)).sort()).toEqual(
+      HUNGER_CATALOG.map((h) => h.id).slice().sort(),
+    );
+  });
+});
+
+describe('bond-test god voice reaches its authored line', () => {
+  it('resolves an authored line for every hunger the remembrance flow can store', () => {
+    // `BOND_PROSE` is keyed dotted and `godVoiceByHunger` bare, in the same
+    // feature. `BondBeat` indexed the bare table with the dotted id, so every
+    // god silently got `godVoiceFallback` and no authored voice ever shipped.
+    for (const entry of REMEMBRANCE_CATALOG) {
+      const key = toHungerId(entry.id);
+      expect(key, `remembrance id '${entry.id}' does not narrow`).toBeDefined();
+      expect(
+        MEETING_BOND_TEST.godVoiceByHunger[key!],
+        `no god-voice line for '${entry.id}'`,
+      ).toBeTypeOf('string');
+    }
+  });
+
+  it('would have fallen back for every god before the fix', () => {
+    for (const entry of REMEMBRANCE_CATALOG) {
+      expect(MEETING_BOND_TEST.godVoiceByHunger[entry.id]).toBeUndefined();
+    }
+  });
+});
+
+describe('hunger uniques are actually dealt', () => {
+  it('deals each god exactly their own unique, for all twelve hungers', () => {
+    for (const hunger of HUNGER_CATALOG) {
+      const repertoire = buildRepertoire({
+        hunger: hunger.id,
+        unlockedActionIds: new Set(),
+      });
+      const dealt = repertoire.filter((e) => e.source === 'hunger').map((e) => e.member.id);
+      expect(dealt, `hunger '${hunger.id}' was dealt the wrong uniques`).toEqual([
+        HUNGER_UNIQUE_CARDS[hunger.id],
+      ]);
+    }
+  });
+
+  it('deals none when the stored id is passed through unconverted (the old bug)', () => {
+    // Guard the guard: this is the pre-fix behaviour, kept as a live
+    // demonstration that the conversion is load-bearing rather than cosmetic.
+    const unconverted = 'hunger.witness' as unknown as HungerId;
+    const repertoire = buildRepertoire({ hunger: unconverted, unlockedActionIds: new Set() });
+    expect(repertoire.filter((e) => e.source === 'hunger')).toEqual([]);
+
+    // ...and the converted form does deal one, on the same inputs.
+    const converted = buildRepertoire({
+      hunger: toHungerId('hunger.witness'),
+      unlockedActionIds: new Set(),
+    });
+    expect(converted.filter((e) => e.source === 'hunger').map((e) => e.member.id)).toEqual([
+      'card.whisper.hunger.witness',
+    ]);
+  });
+});

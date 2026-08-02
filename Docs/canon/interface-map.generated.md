@@ -208,10 +208,10 @@ remediation ticket or the build fails.
 - **Intent:** The ascendant's persisted reach affinities become its capability for a cast — the god's innate aptitude is not on the raw scale `computeRawScore` walks, so a literal read left every cast at capability 0.02 and one reachable outcome band.
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Domain Capability*, *Reach*
-- **Production hits:** 16 total — 1 write, 1 read, 14 unclassified
+- **Production hits:** 17 total — 1 write, 1 read, 15 unclassified
 - **Write sites:** `src/engine/ascendant.ts`
 - **Read sites:** `src/engine/unifiedActionResolution.ts`
-- **Other hits:** `src/App.tsx`, `src/components/Remembrance/RemembranceFlow.tsx`, `src/data/__fixtures__/ascendant-reach-fixtures.ts`, `src/data/ascendant-beat-content.ts`, `src/data/hunger-catalog.ts` +9 more
+- **Other hits:** `src/App.tsx`, `src/components/Remembrance/RemembranceFlow.tsx`, `src/data/__fixtures__/ascendant-reach-fixtures.ts`, `src/data/ascendant-beat-content.ts`, `src/data/hunger-catalog.ts` +10 more
 - **Verdict:** Verified 2026-07-25: THR-728: `createAscendant` writes `domainAffinities` (2–5 per reach); `resolveUncontestedStep` reads it via `getAscendantDomainAffinities` and maps it onto the raw scale with `ascendantCastRawBonus` before `computeCapabilityWithRawBonus`. Deliberately NOT wired into `computeRawScore`, so THR-613's Deepening tier-crossings keep reading the score they were tuned against (pinned by a test).
 
 ### `attachment-activated-effects` — 🔴 LEAKED

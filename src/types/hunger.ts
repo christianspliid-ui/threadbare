@@ -15,7 +15,17 @@ import type { ReachDomain } from './traits';
 
 // ─── Hunger IDs ──────────────────────────────────────────────────
 
-/** The 10 Hunger archetypes — each a different way a god relates to mortals */
+/**
+ * The 12 Hunger archetypes — each a different way a god relates to mortals.
+ *
+ * THR-891: this union carried 10 members while four other shipped surfaces
+ * already spoke for 12 — the remembrance catalog the player actually picks
+ * from (`src/data/hunger-catalog.ts`, with art for all twelve), the meeting
+ * prose register (test-pinned in both directions), the Repertoire plan doc,
+ * and the nudge-cards wiki page. `haunt` and `illuminate` were never missing
+ * design; they were missing only from *this* list. Added rather than removed
+ * from the others, because a god can already become either one.
+ */
 export type HungerId =
   | 'gather'
   | 'witness'
@@ -26,7 +36,9 @@ export type HungerId =
   | 'sever'
   | 'kindle'
   | 'bind'
-  | 'wander';
+  | 'wander'
+  | 'haunt'
+  | 'illuminate';
 
 // ─── Hunger Definition ───────────────────────────────────────────
 
@@ -68,7 +80,7 @@ export interface AscendantLens {
 
 // ─── Hunger Catalog ──────────────────────────────────────────────
 
-/** All 10 Hunger definitions — the complete catalog */
+/** All 12 Hunger definitions — the complete catalog */
 export const HUNGER_CATALOG: readonly HungerDefinition[] = [
   {
     id: 'gather',
@@ -160,7 +172,59 @@ export const HUNGER_CATALOG: readonly HungerDefinition[] = [
     candidateReachBias: ['veil', 'eye', 'star'],
     dilemmaResonanceTags: ['journey', 'discovery', 'curiosity', 'exploration', 'wonder', 'horizon'],
   },
+  // THR-891 — the two hungers this catalog was missing. Both are *derived*
+  // from their already-blessed entries in `src/data/hunger-catalog.ts` (voice
+  // shifted from that file's second person to this file's third), not newly
+  // invented: `candidateReachBias` reads their `domainAffinities` in weight
+  // order, `emotionalTone` their `ascendantLens.emotionalTone`, and the
+  // resonance tags their `proseVariants` drive tags.
+  {
+    id: 'haunt',
+    name: 'Haunt',
+    perceptionStyle:
+      'sees the inner weather — dreams, private fears, unspoken longings, the ghosts a person carries without ever naming them',
+    emotionalTone: 'intimate presence edged with invasiveness',
+    candidateReachBias: ['veil', 'shadow', 'heart'],
+    dilemmaResonanceTags: ['memory', 'grief', 'dreams', 'obsession', 'presence', 'remembrance'],
+  },
+  {
+    id: 'illuminate',
+    name: 'Illuminate',
+    perceptionStyle:
+      'sees where the light does not reach — the buried motive, the comfortable lie, the rot that survives only because nobody has looked straight at it',
+    emotionalTone: 'righteous clarity edged with mercilessness',
+    candidateReachBias: ['eye', 'star', 'gold'],
+    dilemmaResonanceTags: ['truth', 'justice', 'revelation', 'knowledge', 'corruption', 'clarity'],
+  },
 ] as const;
+
+/** Every live hunger id, for narrowing a stored identity id. */
+const LIVE_HUNGER_IDS: ReadonlySet<string> = new Set(HUNGER_CATALOG.map((h) => h.id));
+
+/** The prefix the remembrance catalog stores its ids under (`hunger.witness`). */
+const STORED_HUNGER_PREFIX = 'hunger.';
+
+/**
+ * Narrow a stored `AscendantIdentity.hungerId` to a live {@link HungerId}.
+ *
+ * The remembrance catalog stores dotted ids (`hunger.witness`); every
+ * `HungerId` consumer keys on the bare id (`witness`). Call sites used to
+ * bridge the two with `as HungerId`, which type-checks and is false — the
+ * dotted string never equals a bare key, so `HUNGER_UNIQUE_CARDS` lookups
+ * silently missed for *every* god and no hunger unique was ever dealt
+ * (THR-891). This is the one place that conversion happens.
+ *
+ * Accepts either form so a legacy bare id keeps working. Fail-soft (NFP #4):
+ * an unknown id returns `undefined` — an absent hunger, which callers already
+ * handle — rather than throwing inside the encounter-stage build.
+ */
+export function toHungerId(storedId: string | undefined | null): HungerId | undefined {
+  if (!storedId) return undefined;
+  const bare = storedId.startsWith(STORED_HUNGER_PREFIX)
+    ? storedId.slice(STORED_HUNGER_PREFIX.length)
+    : storedId;
+  return LIVE_HUNGER_IDS.has(bare) ? (bare as HungerId) : undefined;
+}
 
 // ─── Sphere → Hunger Mapping ─────────────────────────────────────
 

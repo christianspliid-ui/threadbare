@@ -256,10 +256,12 @@
   <tr><td>sever</td><td>Long game</td><td>reclaim</td><td>Balm</td></tr>
   <tr><td>bind</td><td>Favor</td><td>reshape</td><td>Stumble</td></tr>
   <tr><td>consume</td><td>Undertow</td><td>wander</td><td>Omen</td></tr>
+  <tr><td>haunt</td><td>Compulsion</td><td>illuminate</td><td>Heavy hand</td></tr>
 </table>
 
-<div class="callout open-space">
-<p><strong>Ten, not twelve <span class="flag open">OPEN</span>.</strong> This section and the plan doc both said twelve hungers, naming <em>haunt</em> and <em>illuminate</em>. Neither exists in <span class="mono">HungerId</span>, and minting one means authoring a full <span class="mono">HungerDefinition</span> that worldgen and the remembrance flow then seed against — a design decision, not an implementation detail. THR-887 shipped the map keyed on the live ten so it cannot silently fall behind; <strong>THR-891</strong> decides whether to mint the two or correct the design surfaces to ten.</p>
+<div class="callout">
+<p><strong>Twelve, settled <span class="flag impl">IMPL</span>.</strong> This section and the plan doc said twelve hungers, naming <em>haunt</em> and <em>illuminate</em>, while <span class="mono">HungerId</span> listed ten — and THR-887 keyed the unique-card map on the live ten so it could not silently fall behind. <strong>THR-891</strong> settled it at <strong>twelve</strong>, because the two were never missing design: both are fully authored in the remembrance catalog the player actually picks from (with art), and the meeting prose register speaks for all twelve under a test that pins the set in both directions. <span class="mono">HungerId</span> was the only surface still saying ten, and was corrected to match rather than the four surfaces already saying twelve.</p>
+<p>Their two card types are read from the existing table, not minted: <em>haunt</em>'s blessed mandate is to influence "through dreams, omens, and unseen presence", which is <strong>Compulsion</strong> almost verbatim; <em>illuminate</em>'s is to "make the invisible visible" from a court that has "no shadows", so it takes <strong>Heavy hand</strong> — the one card whose defining trade is acting conspicuously, the exact inverse of Veil.</p>
 </div>
 
 <h3>The run — broad start, progression as variation</h3>
