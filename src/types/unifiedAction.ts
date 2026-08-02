@@ -1262,6 +1262,86 @@ export interface AftermathVariant {
   readonly changes: readonly EncounterAftermathChange[];
   readonly reactionPrompt?: string;
   readonly reactions?: readonly EncounterAftermathReaction[];
+  /**
+   * Outcome-banded overrides of this variant (THR-969) — the ending reflects how
+   * the encounter ended, not only which route was taken.
+   *
+   * Optional and additive (NFP #6): a variant without it resolves exactly as it
+   * did before this field existed. Authored on the variant itself, so both a
+   * choice-keyed `variants[choiceId]` entry and the `fallback` may carry bands —
+   * which is what lets a choice-less encounter (`encounter.slice.unsafe_bridge`)
+   * have distinct endings at all.
+   */
+  readonly byOutcome?: Readonly<Partial<Record<UnifiedActionOutcome, AftermathOutcomeOverride>>>;
+}
+
+/**
+ * One outcome band's authored overrides of an {@link AftermathVariant} (THR-969).
+ *
+ * Every field is optional and layers over the un-banded variant field by field,
+ * so a band may restate only what actually differs — a band that changes the
+ * closing paragraph but keeps the same consequences authors `overview` alone.
+ */
+export interface AftermathOutcomeOverride {
+  readonly overview?: string;
+  readonly changes?: readonly EncounterAftermathChange[];
+  readonly reactionPrompt?: string;
+  readonly reactions?: readonly EncounterAftermathReaction[];
+}
+
+/**
+ * Layer an outcome band's overrides onto an already-chosen aftermath variant (THR-969).
+ *
+ * A band the variant does not author leaves every field as the un-banded variant
+ * had it — fail-soft by construction (NFP #4), so an encounter ending in an
+ * outcome nobody wrote prose for still renders its base ending rather than
+ * throwing or blanking.
+ *
+ * Keyed on `UnifiedActionOutcome` — the value `UnifiedAction.outcome` actually
+ * carries at the aftermath assembly site. Deliberately NOT the five-band
+ * `EncounterOutcomeBand` (a trace type), NOT the six-value `StepOutcome`, and NOT
+ * `OutcomeBand` from `outcomeConsequences.ts`; each would type-check while being
+ * the wrong domain — the same trap {@link StepNudge}'s `bandProse` documents.
+ */
+export function applyAftermathOutcomeBand(
+  variant: AftermathVariant,
+  outcome?: UnifiedActionOutcome,
+): AftermathVariant {
+  if (!outcome) return variant;
+  const band = variant.byOutcome?.[outcome];
+  if (!band) return variant;
+  return {
+    ...variant,
+    overview: band.overview ?? variant.overview,
+    changes: band.changes ?? variant.changes,
+    reactionPrompt: band.reactionPrompt ?? variant.reactionPrompt,
+    reactions: band.reactions ?? variant.reactions,
+  };
+}
+
+/**
+ * Resolve the authored aftermath variant for a finished encounter (THR-969).
+ *
+ * Resolution order is **choice → outcome band → base variant → fallback**: the
+ * choice keying (THR-191) picks the variant, then {@link applyAftermathOutcomeBand}
+ * layers the band on top of it. Pure lookup, no PRNG — the band is read from the
+ * already-resolved outcome, so this adds no rng to the tick (NFP #3).
+ *
+ * Single implementation on purpose. The engine's aftermath assembly and the stage
+ * adapter each had their own copy of the choice lookup; two resolvers over one
+ * authored config is the shape that silently drifts, and a UI copy that missed the
+ * band would render the un-banded ending the engine had already resolved past.
+ */
+export function resolveAftermathVariant(
+  config: BranchAwareAftermathConfig,
+  choiceHistory?: readonly EncounterChoiceMemory[],
+  outcome?: UnifiedActionOutcome,
+): AftermathVariant {
+  const branchChoice = choiceHistory?.find(c => c.stepIndex === config.branchOnStep);
+  const base = branchChoice
+    ? config.variants[branchChoice.choiceId] ?? config.fallback
+    : config.fallback;
+  return applyAftermathOutcomeBand(base, outcome);
 }
 
 /**

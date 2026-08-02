@@ -22,6 +22,7 @@ import type {
   EncounterAftermathReaction,
   EncounterAftermathSummary,
   UnifiedAction,
+  UnifiedActionOutcome,
   UnifiedActionTemplate,
   StepOutcome,
 } from '../types/unifiedAction';
@@ -35,7 +36,12 @@ import {
   sortByPriority,
   resolveStepDefinition,
 } from './unifiedActionLifecycle';
-import { isStepSuccess, isStepFailure, isActionStepBranch } from '../types/unifiedAction';
+import {
+  isStepSuccess,
+  isStepFailure,
+  isActionStepBranch,
+  resolveAftermathVariant,
+} from '../types/unifiedAction';
 import { applyAgentDecidedBranches } from './encounters/branchDecision';
 import { computeCapability, computeCapabilityWithRawBonus } from './domainCapability';
 import { getAscendantDomainAffinities } from './ascendant';
@@ -700,20 +706,21 @@ function appendAftermathChanges(
 }
 
 /**
- * Resolve branch-aware aftermath variant from template config and choice history.
- * Returns undefined if the template has no aftermathConfig.
+ * Resolve branch-aware aftermath variant from template config, choice history, and
+ * final outcome. Returns undefined if the template has no aftermathConfig.
+ *
+ * The lookup itself lives in `types/unifiedAction` (THR-969) so the stage adapter
+ * resolves through the identical code path; this wrapper only adds the
+ * "no config ⇒ no authored variant" case the engine call site wants.
  */
-function resolveAftermathVariant(
+function resolveTemplateAftermathVariant(
   template: UnifiedActionTemplate,
   choiceHistory?: readonly EncounterChoiceMemory[],
+  outcome?: UnifiedActionOutcome,
 ): AftermathVariant | undefined {
   const config = template.aftermathConfig;
   if (!config) return undefined;
-
-  const branchChoice = choiceHistory?.find(c => c.stepIndex === config.branchOnStep);
-  if (!branchChoice) return config.fallback;
-
-  return config.variants[branchChoice.choiceId] ?? config.fallback;
+  return resolveAftermathVariant(config, choiceHistory, outcome);
 }
 
 function buildEncounterAftermathOverview(
@@ -2295,7 +2302,11 @@ export function executeStepResult(
 
     // Branch-aware aftermath: if the template has an aftermathConfig,
     // resolve the variant from choice history and use its authored content.
-    const aftermathVariant = resolveAftermathVariant(template, finalAction.choiceHistory);
+    const aftermathVariant = resolveTemplateAftermathVariant(
+      template,
+      finalAction.choiceHistory,
+      finalAction.outcome,
+    );
 
     const reactions = aftermathVariant?.reactions
       ?? buildEncounterAftermathReactions(finalAction, template);

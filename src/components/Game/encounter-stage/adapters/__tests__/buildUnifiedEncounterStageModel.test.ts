@@ -333,6 +333,66 @@ describe('buildUnifiedEncounterStageModel', () => {
       expect(model.aftermath!.reactions![0].label).toContain('permanent bridge');
     });
 
+    // THR-969: the rendered ending must reflect how the encounter ended. The adapter
+    // resolves the authored variant itself, so a band the engine resolved past would
+    // still render un-banded here unless the outcome is threaded through.
+    describe('outcome-keyed aftermath (THR-969)', () => {
+      /** A choice-less banded template — the `encounter.slice.unsafe_bridge` shape. */
+      const BANDED_TEMPLATE: UnifiedActionTemplate = {
+        ...LINEAR_TEMPLATE,
+        id: 'test.banded_encounter',
+        aftermathConfig: {
+          branchOnStep: 0,
+          variants: {},
+          fallback: {
+            overview: 'The crossing is behind them either way.',
+            changes: [],
+            byOutcome: {
+              critical_success: { overview: 'Not a plank complained; the far bank came up dry.' },
+              critical_failure: { overview: 'The third plank went, and the river kept the afternoon.' },
+            },
+          },
+        },
+      };
+
+      function buildBandedModel(outcome: UnifiedAction['outcome']) {
+        return buildUnifiedEncounterStageModel({
+          template: BANDED_TEMPLATE,
+          activeAction: {
+            ...buildLinearAction(),
+            resolved: true,
+            outcome,
+            stepOutcomes: ['success', 'success'],
+            aftermathSummary: {
+              encounterId: BANDED_TEMPLATE.id,
+              outcome,
+              overview: 'Engine-built overview that the authored variant replaces.',
+              changes: [],
+            },
+          },
+          notification: buildNotification(),
+          agentName: 'Kael the Scout',
+          threadTier: 'strong',
+          graph: buildGraph(),
+          essence: 10,
+        });
+      }
+
+      it('renders a different ending for a different outcome on the same template', () => {
+        const clean = buildBandedModel('critical_success');
+        const fell = buildBandedModel('critical_failure');
+
+        expect(clean.aftermath!.overview).toContain('Not a plank complained');
+        expect(fell.aftermath!.overview).toContain('the river kept the afternoon');
+        expect(clean.aftermath!.overview).not.toBe(fell.aftermath!.overview);
+      });
+
+      it('falls back to the un-banded overview for an outcome with no authored band', () => {
+        const plain = buildBandedModel('success');
+        expect(plain.aftermath!.overview).toContain('behind them either way');
+      });
+    });
+
     it('populates fallout preview from step metadata', () => {
       const graph = buildGraph();
       const model = buildUnifiedEncounterStageModel({

@@ -21,6 +21,7 @@ import { resolveStepDefinition } from '../../../../engine/unifiedActionLifecycle
 import { getPortraitUrl } from '../../../../data/portrait-assets';
 import { getAttachmentGlyph } from '../../attachmentGlyphs';
 import type {
+  EncounterChoiceMemory,
   EncounterSupportActorSpec,
   EncounterSupportBinding,
 } from '../../../../types/encounter';
@@ -29,10 +30,12 @@ import type { StepProseRecord } from '../../../../types/stepProseRecord';
 import {
   isActionStepBranch,
   isStepSuccess,
+  resolveAftermathVariant,
   type ActionStep,
   type AftermathVariant,
   type BranchAwareAftermathConfig,
   type UnifiedAction,
+  type UnifiedActionOutcome,
   type UnifiedActionTemplate,
 } from '../../../../types/unifiedAction';
 import type { ThreadTier } from '../types';
@@ -386,14 +389,17 @@ const KIND_GLYPHS: Record<string, string> = {
 /**
  * Resolve the authored aftermath variant from the template's aftermathConfig,
  * bypassing the engine-merged summary.changes which includes raw mechanical deltas.
+ *
+ * Delegates to the shared resolver in `types/unifiedAction` (THR-969) so this
+ * surface and the engine's aftermath assembly cannot disagree about which variant
+ * — or which outcome band — an encounter ended on.
  */
 function resolveAuthoredAftermath(
   config: BranchAwareAftermathConfig,
-  choiceHistory?: readonly { stepIndex: number; choiceId: string }[],
+  choiceHistory?: readonly EncounterChoiceMemory[],
+  outcome?: UnifiedActionOutcome,
 ): AftermathVariant {
-  const branchChoice = choiceHistory?.find(c => c.stepIndex === config.branchOnStep);
-  if (!branchChoice) return config.fallback;
-  return config.variants[branchChoice.choiceId] ?? config.fallback;
+  return resolveAftermathVariant(config, choiceHistory, outcome);
 }
 
 function buildAftermath(
@@ -408,7 +414,11 @@ function buildAftermath(
   // The engine-merged summary.changes includes raw mechanical deltas (growth,
   // reputation shifts) that we want to suppress in favor of curated content.
   const authoredVariant = template.aftermathConfig
-    ? resolveAuthoredAftermath(template.aftermathConfig, activeAction.choiceHistory)
+    ? resolveAuthoredAftermath(
+        template.aftermathConfig,
+        activeAction.choiceHistory,
+        activeAction.outcome,
+      )
     : undefined;
   const displayChanges = authoredVariant?.changes ?? summary.changes;
   const rawOverview = authoredVariant?.overview ?? summary.overview;
