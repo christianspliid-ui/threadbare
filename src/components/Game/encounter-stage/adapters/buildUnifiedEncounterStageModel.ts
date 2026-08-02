@@ -650,6 +650,12 @@ export function buildUnifiedEncounterStageModel(
         step: getCurrentStep(args.template, activeAction),
         graph,
         gameState: args.gameState,
+        // THR-923 — hand the nudge adapter the context this builder already
+        // gathered, so card fiction and factor lines resolve their placeholders
+        // against the same actor/target/cast the header above them does, at no
+        // extra traversal cost.
+        narrativeContext: ctx,
+        runtime: args.runtime,
       });
 
   return {
