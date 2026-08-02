@@ -1,19 +1,19 @@
 ---
-needsChristian: thr-907-verdict-links-ready, thr-961-sound-feel, thr-962-nudge-stage-cues, thr-946-settings-visit, thr-947-stuck-closeout, thr-931-stuck-closeout, thr-792-stuck-closeout
+needsChristian: thr-907-verdict-links-ready, thr-961-sound-feel, thr-962-nudge-stage-cues, thr-946-settings-visit
 queue: backed-up
-freshness: dirty
+freshness: healthy
 deploy: deployed
 tasks: ok
 ---
 # Briefing
 
-**Generated:** 2026-08-02 17:54 local (2026-08-02 15:54 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-08-02 18:55 local (2026-08-02 16:55 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
 ## Needs Christian
 
-Nothing new arrived this hour — the same seven items are waiting. The links you asked for are still good, and the live site is confirmed serving the current build.
+**You cleared three of the seven in the last few minutes.** THR-947, THR-931 and THR-792 all went Done at 16:52–16:53Z — that whole bookkeeping section is gone from this brief. Four items remain, and none of them is new.
 
 ### 1. The encounter verdict — the links are ready, one click each
 
@@ -40,24 +40,16 @@ Both are stuck until you've heard them. Neither is urgent.
 
 ### 3. One settings visit, two clicks — this one unsticks merges
 
-Both live in GitHub's settings for the `main` branch. I checked the current state myself this run rather than trusting an older note:
+Both live in GitHub's settings for the `main` branch. I re-checked the live state this run rather than trusting the ticket's own list:
 
-- **Turn on the merge queue.** Confirmed not yet switched on. This is the structural fix for finished work getting stuck behind other finished work — the thing that has been costing repeated hour-long stalls.
-- **Delete the older, duplicate branch-protection rule.** There are two overlapping rules that disagree; the old one is the single reason a finished change gets knocked back whenever someone else's change lands first.
+- **Turn on the merge queue.** Confirmed still off. This is the structural fix for finished work getting stuck behind other finished work — the thing that has been costing repeated hour-long stalls.
+- **Delete the older, duplicate branch-protection rule.** There are two overlapping rules that disagree; the old one is the single reason a finished change gets knocked back whenever someone else's change lands first. Confirmed still present.
 
-*Already done — off your list:* the "Docs gates" click. It's live; I confirmed the rule is active and enforcing.
-
-### 4. Three finished tickets need closing — bookkeeping no automated lane may do
-
-Each is verified finished. None needs work; each needs the state flipped to Done, and no agent is permitted to do that.
-
-- **THR-947** — moving the hourly paperwork off the main branch. Shipped and measured: paperwork merges that were disturbing real work went from 4 to 0 in matched four-hour windows, with the lanes proven still running. Every acceptance criterion passes.
-- **THR-931** — the "Docs gates" check. You flipped it; it's live and verified. Its last loose end (a stale sentence in the instructions) shipped this afternoon.
-- **THR-792** — a wrong claim in a maintenance script. Fixed six days ago under a different ticket's number, so nothing ever closed this one.
+*Already off your list:* the "Docs gates" click — live and enforcing, and you closed its ticket this afternoon.
 
 ## Queue
 
-**Backed up — 57 items ready for work**, down 3 from last hour. Planning is comfortably ahead of execution; nothing is starving.
+**Backed up — 55 items ready for work**, down 2 from last hour. Planning is comfortably ahead of execution; nothing is starving.
 
 - Top of the queue is THR-982, a documentation correction. Everything else sits at low or no priority.
 - **Five items have been untouched for a week or more** (THR-771, THR-770, THR-769, THR-740, THR-739) — small deferrals in the social-systems and action-card areas. Worth a grooming pass, not an alarm.
@@ -65,14 +57,13 @@ Each is verified finished. None needs work; each needs the state flipped to Done
 
 ## Freshness
 
-- **Home tree: current.** On `main`, fully up to date, nothing stranded. Two of your own tool-settings files show as modified — harmless; the auto-sync fast-forwarded 2 commits at 17:50 with them in place, so nothing is stuck.
+- **Home tree: current.** On `main`, fully up to date, nothing stranded. Two of your own tool-settings files still show as modified — harmless, and the auto-sync has been fast-forwarding straight past them.
 - **Live site: healthy**, serving the latest commit.
-- **Automated checks, merge health, and all nine scheduled lanes: healthy.** Nothing is waiting to merge.
-- Cleanup task ran 14 minutes ago. Two old work directories are flagged for a human call — a standing note, not a fault.
+- **Automated checks, merge health, and all nine scheduled lanes: healthy.** Nothing is waiting to merge; the cleanup lane ran fifteen minutes ago.
 
 ## What's moving
 
-Three tickets closed this hour. The executor and orchestrator lanes are both firing on schedule and drawing work normally.
+Three closures landed this hour, all yours. The executor lane is drawing normally — the ready queue has fallen 60 → 57 → 55 across the last three hours, which is real throughput rather than grooming.
 
 ---
 *Standing asks live in `Design/user-actions.md`. This file is regenerated hourly by the `keep-work-flowing-cc` scheduled task; staleness is visible from the Generated timestamp above and the task's `lastRunAt` in `list_scheduled_tasks`.*
