@@ -202,6 +202,33 @@ export function EncounterVeil({
     }
   }, [selectedChoiceId, model.choices, onIntervene]);
 
+  // THR-636 — the resolved step being replayed (read-only past), or null for "the present".
+  const replayEntry =
+    replayStepIndex !== null && model.history[replayStepIndex]?.status === 'resolved'
+      ? model.history[replayStepIndex]
+      : null;
+
+  // THR-348 — the prose currently on screen, as ordered paragraphs for TTS.
+  // Tracks the replay toggle so the narrator reads what the player is reading.
+  //
+  // Hoisted above the early returns below (THR-971). It used to sit just before
+  // the final `createPortal`, *after* the `!open` / aftermath / mid-encounter
+  // returns — so the moment a mounted veil crossed into aftermath mode React
+  // saw one fewer hook than the previous render and threw "Rendered fewer hooks
+  // than expected", taking the whole aftermath screen to the error boundary.
+  // That is the natural play path (resolve an encounter, watch the ending), so
+  // the surface this ticket rebuilds could not render at all.
+  const narratableProse = useMemo<string[]>(() => {
+    if (replayEntry) {
+      return [replayEntry.replayNarrative || replayEntry.afterimage || ''].filter(Boolean);
+    }
+    const paragraphs = model.narrative.paragraphs.map((para) =>
+      para.segments.map((s) => s.text).join(''),
+    );
+    if (model.scene.momentLine) paragraphs.push(model.scene.momentLine);
+    return paragraphs.filter((p) => p.trim().length > 0);
+  }, [replayEntry, model.narrative.paragraphs, model.scene.momentLine]);
+
   if (!open) return null;
 
   // ── Aftermath rendering path ───────────────────────────────────
@@ -212,6 +239,18 @@ export function EncounterVeil({
       if (polarity === 'gain') return 'rgba(134, 239, 172, 0.65)';
       if (polarity === 'loss') return 'rgba(248, 113, 113, 0.65)';
       if (polarity === 'mixed') return 'rgba(251, 191, 36, 0.65)';
+      return 'rgba(180, 170, 150, 0.45)';
+    };
+
+    /**
+     * THR-971 — consequence chip toning. `seed` takes the veil's gold rather
+     * than a gain/loss hue on purpose: a planted sequel is neither good news
+     * nor bad, it is a debt the world now owes the story.
+     */
+    const consequenceToneColor = (tone: 'gain' | 'loss' | 'seed' | 'info') => {
+      if (tone === 'seed') return GOLD;
+      if (tone === 'gain') return 'rgba(134, 239, 172, 0.65)';
+      if (tone === 'loss') return 'rgba(248, 113, 113, 0.65)';
       return 'rgba(180, 170, 150, 0.45)';
     };
 
@@ -470,8 +509,104 @@ export function EncounterVeil({
             </div>
           )}
 
-          {/* Highlights */}
-          {aftermath.highlights && aftermath.highlights.length > 0 && (
+          {/* Consequence chips (THR-971) — what you got, what it cost, what it
+              planted. Built from the same authored change set the legacy
+              highlights/changes blocks below use, so exactly one of the two
+              renders; drawing both would say everything twice. */}
+          {aftermath.consequences && aftermath.consequences.length > 0 && (
+            <div
+              data-testid="aftermath-consequences"
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 12,
+                marginBottom: 22,
+                maxWidth: 540,
+                ...aftermathEntrance(1.3, 0.9),
+              }}
+            >
+              {aftermath.consequences.map((chip) => (
+                <div
+                  key={chip.id}
+                  data-testid={`consequence-chip-${chip.kind}`}
+                  data-consequence-kind={chip.kind}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'baseline',
+                    gap: 12,
+                    // A hairline, not a card — the ending stays dissolved into
+                    // the void rather than resolving into a grid of boxes.
+                    borderLeft: `2px solid ${consequenceToneColor(chip.tone)}`,
+                    paddingLeft: 12,
+                  }}
+                >
+                  <span
+                    style={{
+                      fontFamily: FONT_DISPLAY,
+                      fontSize: 'var(--text-xs)',
+                      letterSpacing: '0.16em',
+                      color: consequenceToneColor(chip.tone),
+                      flexShrink: 0,
+                      minWidth: 74,
+                    }}
+                  >
+                    {chip.kindLabel}
+                  </span>
+                  <span
+                    style={{
+                      fontFamily: FONT_PROSE,
+                      fontStyle: 'italic',
+                      fontSize: 'var(--text-xs)',
+                      lineHeight: 1.7,
+                      color: TEXT_WARM,
+                    }}
+                  >
+                    {chip.sentence.segments.map((seg, i) => {
+                      // Clickable only where a page actually exists: a resolved
+                      // node id plus a host that wired the handler. Anything
+                      // else stays emphasised text — fail-open, never a dead link.
+                      const clickable = Boolean(seg.entityId && onSelectAgent);
+                      if (clickable) {
+                        return (
+                          <button
+                            key={i}
+                            type="button"
+                            onClick={() => onSelectAgent?.(seg.entityId!)}
+                            style={{
+                              background: 'none',
+                              border: 'none',
+                              padding: 0,
+                              font: 'inherit',
+                              color: GOLD,
+                              borderBottom: `1px solid ${GOLD_DIM}`,
+                              cursor: 'pointer',
+                            }}
+                          >
+                            {seg.text}
+                          </button>
+                        );
+                      }
+                      return (
+                        <span
+                          key={i}
+                          style={
+                            seg.referenceId
+                              ? { color: TEXT_WARM, borderBottom: `1px solid ${GOLD_DIM}` }
+                              : undefined
+                          }
+                        >
+                          {seg.text}
+                        </span>
+                      );
+                    })}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Highlights — legacy presentation, suppressed once chips exist */}
+          {!aftermath.consequences?.length && aftermath.highlights && aftermath.highlights.length > 0 && (
             <div
               style={{
                 display: 'flex',
@@ -520,8 +655,8 @@ export function EncounterVeil({
             </div>
           )}
 
-          {/* Changes */}
-          {aftermath.changes && aftermath.changes.length > 0 && (
+          {/* Changes — legacy presentation, suppressed once chips exist */}
+          {!aftermath.consequences?.length && aftermath.changes && aftermath.changes.length > 0 && (
             <div
               style={{
                 display: 'flex',
@@ -1034,24 +1169,8 @@ export function EncounterVeil({
 
   const selectedChoice = model.choices.find((c) => c.id === selectedChoiceId);
 
-  // THR-636 — the resolved step being replayed (read-only past), or null for "the present".
-  const replayEntry =
-    replayStepIndex !== null && model.history[replayStepIndex]?.status === 'resolved'
-      ? model.history[replayStepIndex]
-      : null;
-
-  // THR-348 — the prose currently on screen, as ordered paragraphs for TTS.
-  // Tracks the replay toggle so the narrator reads what the player is reading.
-  const narratableProse = useMemo<string[]>(() => {
-    if (replayEntry) {
-      return [replayEntry.replayNarrative || replayEntry.afterimage || ''].filter(Boolean);
-    }
-    const paragraphs = model.narrative.paragraphs.map((para) =>
-      para.segments.map((s) => s.text).join(''),
-    );
-    if (model.scene.momentLine) paragraphs.push(model.scene.momentLine);
-    return paragraphs.filter((p) => p.trim().length > 0);
-  }, [replayEntry, model.narrative.paragraphs, model.scene.momentLine]);
+  // `replayEntry` / `narratableProse` are computed once near the top of the
+  // component (THR-971) so no early return can change the hook count.
 
   // ── Inline style helpers ───────────────────────────────────────
   function entranceStyle(

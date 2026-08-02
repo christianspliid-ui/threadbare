@@ -314,4 +314,91 @@ describe('aftermath mode', () => {
     fireEvent.click(screen.getByText('Return to the world'));
     expect(onAcknowledge).toHaveBeenCalled();
   });
+
+  // ── Consequence chips (THR-971) ──────────────────────────────────
+  //
+  // The mockup's ending: what you got, what it cost, what it planted.
+
+  const chipModel: EncounterStageModel = {
+    ...aftermathModel,
+    aftermath: {
+      ...aftermathModel.aftermath!,
+      consequences: [
+        {
+          id: 'c-prize',
+          kind: 'prize',
+          kindLabel: 'PRIZE',
+          sentence: { id: 'c-prize', segments: [{ text: 'A wrapped parcel changed hands.' }] },
+          tone: 'gain',
+        },
+        {
+          id: 'c-seed',
+          kind: 'seed',
+          kindLabel: 'SEED',
+          sentence: {
+            id: 'c-seed',
+            segments: [
+              { text: 'A promise made by ' },
+              { text: 'Vasara', referenceId: 'cast:vasara', emphasis: 'strong', entityId: 'actor-1' },
+              { text: ' falls due at the full moon.' },
+            ],
+          },
+          tone: 'seed',
+        },
+      ],
+    },
+  };
+
+  it('renders a chip per consequence, tagged with its kind', () => {
+    render(<EncounterVeil {...defaultProps} model={chipModel} />);
+    expect(screen.getByTestId('aftermath-consequences')).toBeInTheDocument();
+    expect(screen.getByTestId('consequence-chip-prize')).toBeInTheDocument();
+    expect(screen.getByTestId('consequence-chip-seed')).toBeInTheDocument();
+    expect(screen.getByText('PRIZE')).toBeInTheDocument();
+    expect(screen.getByText('SEED')).toBeInTheDocument();
+  });
+
+  it('names the planted follow-up in the seed chip', () => {
+    render(<EncounterVeil {...defaultProps} model={chipModel} />);
+    expect(screen.getByText(/falls due at the full moon/)).toBeInTheDocument();
+  });
+
+  it('suppresses the legacy changes block once chips render — never both', () => {
+    render(<EncounterVeil {...defaultProps} model={chipModel} />);
+    // Same underlying change set; the chip row replaces the old presentation.
+    expect(screen.queryByText("The Merchant's Debt")).not.toBeInTheDocument();
+  });
+
+  it('still renders the legacy changes block when no chips are present', () => {
+    render(<EncounterVeil {...defaultProps} model={aftermathModel} />);
+    expect(screen.queryByTestId('aftermath-consequences')).not.toBeInTheDocument();
+    expect(screen.getByText("The Merchant's Debt")).toBeInTheDocument();
+  });
+
+  it('makes a resolved entity inside a chip clickable', () => {
+    const onSelectAgent = vi.fn();
+    render(<EncounterVeil {...defaultProps} model={chipModel} onSelectAgent={onSelectAgent} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Vasara' }));
+    expect(onSelectAgent).toHaveBeenCalledWith('actor-1');
+  });
+
+  it('REGRESSION: a mounted veil can cross into aftermath without dropping a hook', () => {
+    // The natural play path — an open encounter resolves and the same mounted
+    // component re-renders in aftermath mode. `narratableProse` used to be
+    // memoised *after* the aftermath early return, so this transition changed
+    // the hook count and React threw "Rendered fewer hooks than expected",
+    // sending the whole ending to the error boundary (THR-971).
+    const { rerender } = render(<EncounterVeil {...defaultProps} model={mockModel} />);
+    expect(() =>
+      rerender(<EncounterVeil {...defaultProps} model={chipModel} />),
+    ).not.toThrow();
+    expect(screen.getByTestId('aftermath-consequences')).toBeInTheDocument();
+  });
+
+  it('FAIL-OPEN: renders an entity as plain text when no handler is wired', () => {
+    render(<EncounterVeil {...defaultProps} model={chipModel} onSelectAgent={undefined} />);
+    // Present as text, but never a dead link.
+    expect(screen.getByText('Vasara', { selector: 'span' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Vasara' })).not.toBeInTheDocument();
+  });
 });

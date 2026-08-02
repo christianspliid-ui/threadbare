@@ -16,6 +16,7 @@ import type { NarrativeContext } from '../../../../engine/proseEnrichment';
 import type { SimulationRuntime } from '../../../../engine/simulationRuntime';
 import { stepOutcomeToOutcomeBand, stepOutcomeWord } from '../../../../data/outcome-band-content';
 import { autoLinkNarrative, collectSupportBundleEntities } from '../narrativeLinker';
+import { buildAftermathConsequences } from './buildAftermathConsequences';
 import { buildNudgePhaseModel } from './buildNudgePhaseModel';
 import { resolveStepDefinition } from '../../../../engine/unifiedActionLifecycle';
 import { getPortraitUrl } from '../../../../data/portrait-assets';
@@ -521,12 +522,31 @@ function buildAftermath(
 
   const actorMomentArray = Array.from(actorMoments.values());
 
+  // THR-971 — the mockup's consequence chips. Built from the same authored
+  // change set the highlights above use, plus the seeds the ending actually
+  // plants (reachable only through the reaction effects). The stage renders
+  // these instead of highlights/changes; both are kept on the model so a
+  // consumer that has not adopted chips still gets the old shape.
+  const { linkEntries: aftermathLinkEntries } = collectSupportBundleEntities(
+    graph,
+    template.supportBundle ?? [],
+    bindings,
+    activeAction.targetId,
+  );
+  const consequences = buildAftermathConsequences({
+    changes: displayChanges,
+    reactions: displayReactions,
+    enrich: (text) => enrichProse(text, ctx),
+    link: (id, text) => autoLinkNarrative(id, text, aftermathLinkEntries),
+  });
+
   return {
     title: 'Aftermath',
     overview: displayOverview,
     // Use actorMoments + highlights instead of raw changes — suppresses mechanical deltas
     actorMoments: actorMomentArray.length > 0 ? actorMomentArray : undefined,
     highlights: highlights.length > 0 ? highlights : undefined,
+    consequences: consequences.length > 0 ? consequences : undefined,
     reactionPrompt: authoredVariant?.reactionPrompt ?? summary.reactionPrompt,
     reactions: reactions && reactions.length > 0 ? reactions : undefined,
   };

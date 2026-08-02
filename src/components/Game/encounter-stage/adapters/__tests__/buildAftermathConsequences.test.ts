@@ -1,0 +1,225 @@
+/**
+ * THR-971 — the aftermath consequence taxonomy.
+ *
+ * These tests pin the mapping table, not the styling: the defect this ticket
+ * exists to kill is a consequence the ending never admits to, so every case
+ * below asks "does this survive into a chip?" and one asks the falsification
+ * question — "does a nothing-planted ending correctly show no seed?"
+ */
+
+import { describe, it, expect } from 'vitest';
+import {
+  buildAftermathConsequences,
+  classifyChangeKind,
+  CONSEQUENCE_KIND_LABELS,
+} from '../buildAftermathConsequences';
+import type {
+  EncounterAftermathChange,
+  EncounterAftermathReaction,
+} from '../../../../../types/unifiedAction';
+
+/** Identity enrich + single-segment link — isolates the taxonomy from prose plumbing. */
+const passthrough = {
+  enrich: (text: string) => text,
+  link: (id: string, text: string) => ({ id, segments: [{ text }] }),
+};
+
+function change(
+  over: Partial<EncounterAftermathChange> & Pick<EncounterAftermathChange, 'kind' | 'polarity'>,
+): EncounterAftermathChange {
+  return {
+    id: over.id ?? `chg-${over.kind}-${over.polarity}`,
+    kind: over.kind,
+    title: over.title ?? 'A thing happened',
+    detail: over.detail ?? 'A thing happened, and it is worth saying out loud.',
+    polarity: over.polarity,
+  };
+}
+
+function seedReaction(
+  id: string,
+  seeds: Array<{ seedLabel: string; delayTicks?: number }>,
+): EncounterAftermathReaction {
+  return {
+    id,
+    label: 'Carry it',
+    effects: seeds.map((s) => ({
+      kind: 'encounter_seed' as const,
+      templateId: 'encounter.slice.full_moon_collection',
+      delayTicks: s.delayTicks ?? 132,
+      seedLabel: s.seedLabel,
+    })),
+  };
+}
+
+describe('classifyChangeKind — the mapping table', () => {
+  it('maps a gained item to a prize and a lost one to a toll', () => {
+    expect(classifyChangeKind('item', 'gain')).toBe('prize');
+    expect(classifyChangeKind('item', 'loss')).toBe('toll');
+  });
+
+  it('maps every reputation flavour to standing', () => {
+    expect(classifyChangeKind('reputation', 'gain')).toBe('standing');
+    expect(classifyChangeKind('faction_reputation', 'loss')).toBe('standing');
+    expect(classifyChangeKind('reputation_tally', 'info')).toBe('standing');
+  });
+
+  it('maps a costly trait to a wound and a free one to a mark', () => {
+    expect(classifyChangeKind('trait', 'loss')).toBe('wound');
+    expect(classifyChangeKind('trait', 'mixed')).toBe('wound');
+    expect(classifyChangeKind('trait', 'gain')).toBe('mark');
+  });
+
+  it('maps a future hook to a seed', () => {
+    expect(classifyChangeKind('future_hook', 'info')).toBe('seed');
+  });
+
+  it('maps growth and shell_state by whether they cost something', () => {
+    expect(classifyChangeKind('growth', 'gain')).toBe('mark');
+    expect(classifyChangeKind('growth', 'loss')).toBe('toll');
+    expect(classifyChangeKind('shell_state', 'loss')).toBe('toll');
+  });
+
+  it('degrades an unknown kind to a mark rather than dropping it (fail-soft)', () => {
+    expect(classifyChangeKind('a_kind_invented_next_year', 'info')).toBe('mark');
+  });
+});
+
+describe('buildAftermathConsequences — chips', () => {
+  it('renders one chip per authored change, in authored order', () => {
+    const chips = buildAftermathConsequences({
+      changes: [
+        change({ kind: 'item', polarity: 'gain', id: 'a', detail: 'A wrapped parcel changed hands.' }),
+        change({ kind: 'reputation', polarity: 'loss', id: 'b', detail: 'The village remembers the refusal.' }),
+      ],
+      ...passthrough,
+    });
+
+    expect(chips.map((c) => c.kind)).toEqual(['prize', 'standing']);
+    expect(chips.map((c) => c.kindLabel)).toEqual([
+      CONSEQUENCE_KIND_LABELS.prize,
+      CONSEQUENCE_KIND_LABELS.standing,
+    ]);
+    expect(chips[0].sentence.segments[0].text).toBe('A wrapped parcel changed hands.');
+    expect(chips[0].tone).toBe('gain');
+    expect(chips[1].tone).toBe('loss');
+  });
+
+  it('gives a toll and a wound loss tone regardless of how the change reads', () => {
+    const chips = buildAftermathConsequences({
+      changes: [
+        change({ kind: 'item', polarity: 'loss', id: 'a' }),
+        change({ kind: 'trait', polarity: 'mixed', id: 'b' }),
+      ],
+      ...passthrough,
+    });
+
+    expect(chips.map((c) => c.tone)).toEqual(['loss', 'loss']);
+  });
+
+  it('never prints a magnitude — the chip carries only authored prose', () => {
+    const chips = buildAftermathConsequences({
+      changes: [change({ kind: 'reputation', polarity: 'loss', detail: 'Standing slipped, and it was noticed.' })],
+      ...passthrough,
+    });
+
+    const rendered = chips[0].sentence.segments.map((s) => s.text).join('');
+    expect(rendered).toBe('Standing slipped, and it was noticed.');
+    expect(rendered).not.toMatch(/\d/);
+  });
+
+  it('surfaces a planted sequel as a seed chip, read from the reaction effect', () => {
+    const chips = buildAftermathConsequences({
+      changes: [],
+      reactions: [
+        seedReaction('slice.crossroads.carry_the_promise', [
+          { seedLabel: 'A promise made at the crossroads falls due at the full moon.' },
+        ]),
+      ],
+      ...passthrough,
+    });
+
+    expect(chips).toHaveLength(1);
+    expect(chips[0].kind).toBe('seed');
+    expect(chips[0].tone).toBe('seed');
+    expect(chips[0].sentence.segments.map((s) => s.text).join('')).toBe(
+      'A promise made at the crossroads falls due at the full moon.',
+    );
+  });
+
+  it('surfaces every seed when one reaction plants more than one', () => {
+    const chips = buildAftermathConsequences({
+      changes: [],
+      reactions: [
+        seedReaction('slice.family.help', [
+          { seedLabel: 'The man who sold the paper is still working.' },
+          { seedLabel: 'Word of a kindness on the fen road is traveling ahead.' },
+        ]),
+      ],
+      ...passthrough,
+    });
+
+    expect(chips.filter((c) => c.kind === 'seed')).toHaveLength(2);
+  });
+
+  it('FALSIFICATION: an ending that plants nothing shows no seed chip', () => {
+    const chips = buildAftermathConsequences({
+      changes: [change({ kind: 'reputation', polarity: 'gain' })],
+      reactions: [{ id: 'slice.crossroads.walk_on', label: 'Walk on', effects: [] }],
+      ...passthrough,
+    });
+
+    expect(chips.some((c) => c.kind === 'seed')).toBe(false);
+    expect(chips).toHaveLength(1);
+  });
+
+  it('de-duplicates seeds that repeat the same label across reactions', () => {
+    const label = 'A promise falls due at the full moon.';
+    const chips = buildAftermathConsequences({
+      changes: [],
+      reactions: [seedReaction('r1', [{ seedLabel: label }]), seedReaction('r2', [{ seedLabel: label }])],
+      ...passthrough,
+    });
+
+    expect(chips).toHaveLength(1);
+  });
+
+  it('skips a label-less seed rather than rendering an empty chip', () => {
+    const chips = buildAftermathConsequences({
+      changes: [],
+      reactions: [seedReaction('r1', [{ seedLabel: '   ' }])],
+      ...passthrough,
+    });
+
+    expect(chips).toHaveLength(0);
+  });
+
+  it('orders changes before seeds — what happened, then what it set in motion', () => {
+    const chips = buildAftermathConsequences({
+      changes: [change({ kind: 'item', polarity: 'gain' })],
+      reactions: [seedReaction('r1', [{ seedLabel: 'Something is coming.' }])],
+      ...passthrough,
+    });
+
+    expect(chips.map((c) => c.kind)).toEqual(['prize', 'seed']);
+  });
+
+  it('returns nothing for an ending with no changes and no reactions', () => {
+    expect(buildAftermathConsequences({ changes: [], ...passthrough })).toEqual([]);
+  });
+
+  it('passes chip prose through enrichment before segmenting it', () => {
+    const chips = buildAftermathConsequences({
+      changes: [change({ kind: 'item', polarity: 'gain', detail: '{actor} took the parcel.' })],
+      enrich: (text) => text.replace('{actor}', 'Kael'),
+      link: (id, text) => ({
+        id,
+        segments: text.startsWith('Kael')
+          ? [{ text: 'Kael', entityId: 'agent-1' }, { text: ' took the parcel.' }]
+          : [{ text }],
+      }),
+    });
+
+    expect(chips[0].sentence.segments[0]).toMatchObject({ text: 'Kael', entityId: 'agent-1' });
+  });
+});
