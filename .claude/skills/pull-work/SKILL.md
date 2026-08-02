@@ -1,7 +1,7 @@
 ---
 name: pull-work
 description: Canonical Claude Code pickup workflow for claiming Linear work safely from Ready for Dev.
-last_validated_against: 2026-08-01
+last_validated_against: 2026-08-02
 ---
 
 # Pull Work
@@ -337,6 +337,23 @@ Then **carry on to the next candidate** — a bounce costs a candidate, not a ru
 **Deriving a block is not skipping the thinking.** Read the surfaces the description names, check them against the Step 1 "In Dev" slice for a genuine collision, and write `Mutex with: none — <surface> untouched by the In Dev slice` when there is none. A derived block that asserts `none` without having looked is worth less than the bounce it replaced.
 
 **Mutex reversal (THR-688 Rule B).** A `Mutex with` line should carry its reason — `Mutex with: THR-XXX (both edit <file>)`. You **may** claim past a mutex when the stated reason is *verifiably* inapplicable: the named partner issue has since merged, or the named surface is provably outside this ticket's scope. Verify it (`get_issue` on the partner; confirm `Done` + a merged PR), then record the reversal and its evidence in a Linear comment on the issue you claim. A mutex whose reason is a bare identifier with no stated surface cannot be cleared by inspection — bounce it for re-authoring rather than guessing (THR-673 precedent).
+
+**Mutex-partner liveness — always read the partner's state before honouring a mutex (THR-908, impediment #224 ×3).** The reversal rule above asks one question ("has the partner *merged*?") and treats every other answer as "wait". But a mutex is a reason to wait only while the partner is actually *moving*, and one state breaks that premise silently: a partner parked in `Todo` is not moving, because nothing promotes it while the mutex holder occupies the top of the queue. The pair deadlocks, and the top queue item is re-offered unpickable every hour — from inside the queue this is indistinguishable from a healthy wait, which is why it took three occurrences to name.
+
+So spend one `get_issue` on the partner and branch on its state — never on the mutex line alone:
+
+| Partner state | Verdict | Action |
+|---|---|---|
+| `Done` (merged PR confirmed) | Reason inapplicable | Claim past it; record the reversal per THR-688 Rule B above |
+| `In Dev` / `Ready for Dev` | Genuinely live and moving | Honour the mutex — serialize, bounce, continue to the next candidate |
+| `Todo` / `Backlog` | **Deadlock, not a queue** | Resolve per the paragraph below — do not bounce on this alone |
+
+On a `Todo`/`Backlog` partner, check whether the partner's *own* blocker has shipped — `git log origin/main --grep="Fixes THR-YYY" --regexp-ignore-case --extended-regexp --oneline`, or `get_issue` on the blocker:
+
+- **Blocker shipped** → the partner is promotable and only nobody's attention was missing. `save_issue(partnerId, state:"Ready for Dev")`, verify-after-write, and record the evidence (blocker id + merge SHA) in a comment on the partner. Then continue with the candidate rather than bouncing it — bouncing a candidate for a partner nobody was going to promote is the deadlock, not a defence against it.
+- **Blocker genuinely unshipped** → bounce the candidate as usual, but name the blocker the *pair* is waiting on in the bounce comment. A wait someone can read is recoverable; an unattributed one is what produced the three occurrences.
+
+Per THR-688 Rule B this whole branch is a **technical verdict** — a merge either happened or it did not — so it is the executor's to make, not a coordination decision to escalate. Note the promotion writes `Ready for Dev` on the *partner*, never on the candidate you are claiming, and never `Done` (Rule 3 forbids CC closing).
 
 **Done-when reachability (THR-688 Rule C).** Before starting work, check that the ticket's Done-when is satisfiable through the pillar it touches. Browser evidence is required for UI-pillar surfaces only; engine/content acceptance runs through `npm run cli` / `__DEBUG` sweeps. If a Done-when demands N ticks in an automated browser tab, it is unreachable by construction (`document.hidden` throttles the rAF loop to 1 tick/click) until THR-689 lands — substitute a headless CLI sweep and say so in the completion comment.
 

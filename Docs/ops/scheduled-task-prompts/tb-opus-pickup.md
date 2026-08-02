@@ -33,6 +33,8 @@ Coordination block: the latest handoff comment should carry a Suggested model li
 
 If /pull-work refuses, do not force it — but read what it refused. A *self-scoped* ticket missing its coordination block is claimed, not bounced: derive the three lines from the surfaces the description names and post them in the claim comment (THR-836). Only an *unscoped* ticket bounces, and a bounce is three actions, not one — comment why, `save_issue(id, state:"Todo")`, then `get_issue(id)` to verify the move stuck. Leaving a refused issue in Ready for Dev re-offers it as top candidate every hour forever. Then carry on to the next candidate: a bounce costs a candidate, not a run. Only an empty queue ends the run.
 
+**A refusal on a live `Mutex with` costs one `get_issue` before you accept it (THR-908, impediment #224 ×3).** A mutex is a reason to *wait* only while the partner is moving. A partner parked in `Todo` is not moving — nothing promotes it while the mutex holder sits atop the queue — so the pair deadlocks and the top item is re-offered unpickable every hour, invisibly. Read the partner's state: `Done`/merged → the reason is inapplicable, claim past it and record the reversal; `In Dev`/`Ready for Dev` → genuinely live, serialize as written; `Todo`/`Backlog` → check whether the partner's *own* blocker has shipped (`git log origin/main --grep="THR-YYY"`), and if it has, promote the partner to `Ready for Dev` with the evidence rather than bouncing a candidate for a partner nobody was going to promote. Per THR-688 Rule B a merge either happened or it did not — this is a technical verdict, yours to make.
+
 3. Implement
 
 
