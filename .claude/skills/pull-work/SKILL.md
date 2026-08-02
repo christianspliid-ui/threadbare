@@ -25,7 +25,7 @@ Run as `/pull-work` (auto-pick top Ready for Dev issue) or `/pull-work THR-123` 
 
 **Constant:** `MAX_CLAIM_RETRIES = 3`
 
-1. **Board scan** — consume the Step 1 board-scan (already built): **two state-filtered `list_issues` calls**, not one unfiltered 250-issue sweep. Sort Ready-for-Dev candidates by priority (1=Urgent first), then oldest `createdAt` as tie-break. Pick the top candidate — **every** queue item, not only the unassigned ones (THR-845: an assignee on `Ready for Dev` is noise, not a claim, and filtering on it hid the board's two highest-priority issues).
+1. **Board scan** — consume the Step 1 board-scan (already built): **two state-filtered `list_issues` calls**, not one unfiltered 250-issue sweep. Partition candidates by **Rule 0** (flow impediments with demonstrated cost outrank everything, whatever their `priority` field — see Step 1), then sort each partition by priority (1=Urgent first), then oldest `createdAt` as tie-break. Pick the top of partition 1 if non-empty, else the top of partition 2 — considering **every** queue item, not only the unassigned ones (THR-845: an assignee on `Ready for Dev` is noise, not a claim, and filtering on it hid the board's two highest-priority issues).
 1.5. **WIP gate** — if the "In Dev" slice filtered to `assignee:"me"` is empty, continue to step 2. If exactly one entry, route to Step 1.7 (resume-from-In-Dev upstream-shipped check) instead of exiting clean. If more than one entry, this is a Rule 6 violation — output the cross-session-leak trace line and exit 1.
 2. **Claim** — `save_issue(id, assignee:"me", state:"In Dev")`.
 3. **Verify** — `get_issue(id)`. Confirm both `assignee` and `state` match.
@@ -214,6 +214,20 @@ Instead, **count it and say so.** Partition the queue response and emit one line
 `A > 0` means the writer-side leak has reopened (the create path in the orchestrator prompt's T1 step 5a, or a new filer that does not know the rule). Treat those issues as **candidates anyway**, and clear the stray assignee with `save_issue(id, assignee:null)` on the one you pick — it is a one-line repair, and `stale-claim-sweep`'s queue-assignee pass will catch the rest within 12 hours. Do not skip them and do not stop; a non-zero `A` is a number to report, not a blocker.
 
 Sort the Ready-for-Dev candidates by priority **in memory** (impediment #49 — `orderBy:"priority"` is accepted by the schema but rejected at runtime; `orderBy` defaults to `updatedAt`, which is fine). Oldest `createdAt` is the tie-break. Pick the top.
+
+**Apply Rule 0 before the priority sort** (CLAUDE.md § Prioritization, director decision 2026-08-02). A **flow impediment with demonstrated cost** outranks every other candidate regardless of its `priority` field — which is exactly the point, since these tickets are routinely filed `Low` or `No priority` by the lanes that find them. Partition the candidates in two passes:
+
+1. **Qualifying** — the ticket's body or comments record that the delivery machine **already lost work**: a lane that stopped firing, a PR that could never merge, a gate that reported success while broken, a ticket silently dropped or re-done, or measured rework. The evidence must be quotable from the ticket — a count, a duration, a commit SHA, a log line.
+2. **Everything else** — including hardening, dead-code pruning, doc drift, naming fixes and test tidying. Prevention does not qualify; neither does an `Infrastructure` / `Improvement` label on its own.
+
+Sort each partition by priority as above, then take the top of partition 1 if it is non-empty, otherwise the top of partition 2. **State which partition your pick came from in the Step 1 line, and for a partition-1 pick quote the sentence that qualified it** — one clause, so the claim is auditable and the predicate cannot quietly widen into "anything labelled Infrastructure":
+
+```
+[pull-work] Step 1: Rule 0 pick — THR-834 ("hid 88 consecutive failures for six weeks").
+[pull-work] Step 1: no Rule 0 candidates; normal priority pick — THR-971.
+```
+
+If you cannot produce that quote, the ticket belongs in partition 2. An empty partition 1 is the healthy steady state, not a sign you searched wrong.
 
 If a specific issue id was provided, skip to Step 3.
 
@@ -760,7 +774,7 @@ Any output ⇒ log the yield line and skip the drain; there is always a next hou
 
 For each `docs-only` ticket, up to `DRAIN_MAX_TICKETS`, **sequentially — never in parallel**:
 
-1. `list_issues(team:"Threadbare", state:"Ready for Dev", label:"docs-only", limit:50, includeArchived:false)`, sorted by priority then oldest `createdAt`, exactly as Step 1.
+1. `list_issues(team:"Threadbare", state:"Ready for Dev", label:"docs-only", limit:50, includeArchived:false)`, **Rule 0-partitioned then sorted by priority, then oldest `createdAt` — exactly as Step 1.** The partition matters here more than anywhere: a documentation defect that misroutes sessions is a flow impediment carrying real cost (a stale instruction that makes every session redo work), and the drain is where those tickets actually get picked up.
 2. Claim and verify per Step 4 (`save_issue` → `get_issue`), run the Step 4.4 upstream-shipped check, and validate the coordination block per Step 3. **The drain relaxes no discipline** — it only removes the one-ticket-per-run ceiling.
 3. Implement, then close out on the **docs-only track** of CLAUDE.md § Testing: steps 3b, 5, and `npm run check:impediment-ids`, and nothing else. Do not run `npm test` / `check:typecheck` / `vite build` on a diff with no code in it.
 4. Ship per the closeout above — `Fixes THR-XXX` alone on its own line in both the commit body and the PR body, then `gh pr merge --auto --merge`.
