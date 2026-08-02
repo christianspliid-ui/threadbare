@@ -56,6 +56,13 @@ const FACTOR_POLARITY_COLORS: Record<string, string> = {
   neutral: TEXT_WARM,
 };
 
+/**
+ * Factor-line pip row (THR-970). One notch below the card row's default so the
+ * pips read as an annotation on the sentence rather than a second card face.
+ */
+const FACTOR_PIP_SIZE = 10;
+const FACTOR_PIP_GAP = 6;
+
 // ── Card-row layout (THR-890) ──────────────────────────────────────
 // The locked card format: picture band, keyword chip, title, cost, effect,
 // quote. Sizes are constants so re-proportioning the row is a number change.
@@ -414,11 +421,28 @@ export function NudgePhaseShell({
                     fontFamily: FONT_PROSE,
                     fontSize: 'var(--text-xs)',
                     color: FACTOR_POLARITY_COLORS[factor.polarity] ?? TEXT_WARM,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: FACTOR_PIP_GAP,
                   }}
                 >
                   <Tooltip id="ui.nudge_factors">
                     <span>{factor.text}</span>
                   </Tooltip>
+                  {/* THR-970 — the magnitude beside the sentence, in the same pip
+                      vocabulary the cards use. Polarity stays on the text colour;
+                      the pips carry size. An absent delta draws nothing at all
+                      (the model's documented contract) rather than an empty row
+                      promising a magnitude the line does not have — and OddsPips
+                      independently returns null below the vocabulary's epsilon,
+                      so a sub-threshold delta is silent too. */}
+                  {factor.delta !== undefined && (
+                    <OddsPips
+                      value={factor.delta}
+                      size={FACTOR_PIP_SIZE}
+                      data-testid={`nudge-factor-pips-${factor.id}`}
+                    />
+                  )}
                 </li>
               ))}
             </ul>
