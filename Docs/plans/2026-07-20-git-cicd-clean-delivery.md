@@ -184,6 +184,27 @@ Remedy 2 stays documented as the fallback for one case: if merge queue turns out
 
 THR-735's Done-when #2 — *an armed green PR merges unattended across an hour in which `main` receives ≥2 merges, at least one landing while the PR's own CI runs* — is a demonstration of the chosen mechanism **in production**, so it cannot be discharged before the mechanism exists. It is the same clause as THR-946's Done-when #2 and belongs there; THR-735 owns the decision, THR-946 owns the proof.
 
+### Implementation status — agent half landed 2026-08-02 (THR-946)
+
+The workflow half is in `main` and is **inert until the settings click**: no merge groups exist before the queue is enabled, so the `merge_group` trigger cannot fire. This is the order § 11 requires (trigger before click, never the reverse).
+
+What landed:
+
+| Piece | Where | Note |
+|---|---|---|
+| `merge_group: types: [checks_requested]` trigger | `ci.yml` `on:` | Both required checks — `Test · Typecheck · Build` **and** `Docs gates` — hang off the same workflow, so one trigger reports both |
+| Merge-group change detection | `ci.yml` `detect` job, step `filter-merge-group` | `git diff --name-only <base_sha> HEAD` piped through one ERE. `paths-filter` sits the event out: it has no diff base there |
+| Conditional `fetch-depth` | `detect` job checkout | `0` on `merge_group` (the base must be reachable), `1` everywhere else. Quoted `'0'`/`'1'` — unquoted, `A && 0 \|\| 1` yields `1` on both branches because `0` is falsy |
+| Drift pin for the third predicate copy | `scripts/__tests__/docs-code-decoupling.test.ts` | Structural *and* behavioural: the pattern string is executed as a `RegExp` against doc/code fixtures, and cross-checked against `isDocPath` |
+
+**The docs-only decision, made deliberately: the skip is preserved inside the queue.** Running the full suite on every merge group is simpler, but it would put each hourly briefing and orchestrator sweep through the ~10.5-minute suite and batch them behind one another — the same lane congestion the queue is adopted to remove. Free runners make this a latency argument, not a cost one.
+
+That is only safe if a merge group can never be *skipped for a change nobody classified*, which is THR-768's vacuous-gate concern re-derived for this event. It holds because every failure mode in the new step — unresolvable `base_sha`, a `git diff` error, a malformed pattern — exits non-zero under `set -euo pipefail`, which fails `detect`, which the `check` job's existing guard converts into a **failing** required check. `skipped` therefore means "classified, and there is no code in it", never "could not tell".
+
+Still open, and both belong to the settings visit: Done-when #2 (a real code PR and a real docs PR landing through the queue) and #3 (`linear-autoclose` firing on a queue-produced merge). Autoclose is expected to be unaffected by inspection — it triggers on `pull_request: [closed]` and on `push` to `main`, and a queue merge produces both — but "expected by inspection" is exactly what Done-when #3 exists to convert into a measurement.
+
+**THR-945's script is retired by never having been written.** No disturber-pays script exists in `scripts/` — the only armed-PR tooling there is `check-armed-prs.ts`, which is THR-702/THR-897's classifier and stays. Christian's 2026-08-02 re-assessment recommends retiring THR-945 unbuilt, since THR-947 moved the exhaust that was its whole premise. Nothing to delete; recorded here so the Done-when is answered rather than assumed.
+
 ## 10. Constants
 
 | Constant | Default | Where | Purpose |

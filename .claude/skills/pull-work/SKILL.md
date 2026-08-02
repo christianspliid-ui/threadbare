@@ -157,6 +157,14 @@ Auto-merge does **not** update a stale branch: under strict branch protection, a
 
 **This whole step is a stopgap with a known ceiling, and raising the constant cannot lift it (THR-735, decided 2026-08-01).** The ceiling is **one merge per advance of `main`'s tip**, not N per hour: measured 2026-07-31, PRs `#1166`, `#1175`, `#1176` all sat `BEHIND` at the *same* base, and the instant one merged, strict mode returned the others to `BEHIND`. So at N updates per run, N−1 are invalidated by construction — the defect is serialization, not throughput. The durable fix is **GitHub's merge queue** (THR-946), which builds each merge group on latest `main` and tests that exact tree, so `BEHIND` stops being a state anyone waits in; the decision record and the rejected alternatives are in `Docs/plans/2026-07-20-git-cicd-clean-delivery.md` § 9c. Until the queue is live this sweep remains the mechanism — run it, but do not spend a session trying to tune it, and do not re-litigate the remedy.
 
+**Status as of 2026-08-02: the workflow half has landed, the queue is not yet on.** `ci.yml` now reports both required checks on `merge_group` events, so the click is unblocked — but until Christian makes it (tracked in `Design/user-actions.md` on the `ops` branch), no merge groups exist, nothing about this sweep changes, and `BEHIND` is still terminal. **Do not read the trigger's presence as the queue being live.** The cheap check, if a run needs to know:
+
+```bash
+gh api repos/christianspliid-ui/threadbare/rulesets --jq '[.[] | select(.name)] | length' >/dev/null && gh api graphql -f query='{repository(owner:"christianspliid-ui",name:"threadbare"){mergeQueue(branch:"main"){id}}}' --jq '.data.repository.mergeQueue'
+```
+
+`null` means *not configured* (today's state); an object means the queue is live and the `BEHIND` half of this sweep has become vestigial. The `DIRTY`/conflicted half stays load-bearing under a queue either way — a conflict is still a conflict.
+
 Run the probe — it does the listing, the `UNKNOWN` re-query, and the classification in one call:
 
 ```bash
@@ -651,6 +659,14 @@ gh pr merge --auto --merge
 ```
 
 The gate is unchanged: branch protection stays on, the required check still has to pass, and a red check simply means the PR never merges. Auto-merge removes the *waiting*, not the *gate* — this is the H6 verdict from `Docs/plans/2026-07-20-git-cicd-clean-delivery.md`, which kept the PR gate precisely because it caught a phantom 3,379-line reversal before it reached `main`.
+
+**The command does not change when the merge queue goes live (THR-946), but what it does changes.** With a queue configured on `main`, `gh pr merge --auto --merge` enqueues the PR instead of merging it directly: GitHub builds a merge group on top of latest `main`, runs the required checks against *that* tree, and lands the group in order. Three consequences for a closing session, all of which make the closeout shorter rather than longer:
+
+- **`BEHIND` stops occurring**, so the `gh pr view <N> --json mergeStateStatus` freshness check below becomes a formality and `gh pr update-branch` should never be needed. Keep reading the field — `DIRTY` is unaffected and still yours to resolve.
+- **The rollup you read after arming is the PR's own**, produced by the `pull_request` run, and is unchanged. The merge group runs its own checks later, with no session present. `SKIPPED` on the required check means the same thing it does today and is refused the same way.
+- **`Fixes THR-XXX` must still be in the PR body**, not only the commit — a queue merge produces a merge commit the same way `--merge` does, so impediment #140 applies unchanged.
+
+Until Christian enables the queue none of this is active; the workflow side landed 2026-08-02 and is inert without the settings click. See Step 0.8 for the one-line liveness probe.
 
 `Fixes THR-XXX` must still appear in **both** the commit body and the PR body — on a non-squash merge the merge commit drops the commit body and Linear's auto-close misses it (impediment #140). `--merge` (not `--squash`) keeps the feature commit's body in history.
 
