@@ -13,6 +13,98 @@ export const LEGACY_MUSIC_MUTE_KEY = 'threadbearer_muted';
 
 export const MUSIC_SRC_DEFAULT = '/audio/music/theme-drone.mp3';
 
+// ── Encounter sound design (THR-346, post-v1 H1) ────────────────────
+// Spec: Docs/plans/2026-05-04-encounter-ui-canonical.md §3.3 (Moment 1)
+// and §4.1/§4.3 (Moment 2 registration cues).
+//
+// These cues are SYNTHESIZED via the Web Audio API rather than sampled —
+// no assets ship with them. The spec calls for a cello drone and struck-string
+// notes at named intervals; deriving those from oscillators keeps the sphere
+// tinting exact (an interval is a frequency ratio, not a mix decision) and
+// keeps every value below a tunable number per NFP #1.
+
+/** Master trim applied to every encounter cue, on top of the UI channel volume. */
+export const ENCOUNTER_CUE_MASTER_GAIN = 0.9;
+
+// Levels in dBFS, straight from the §3.3 spec table.
+/** Held breath. Spec: "-28dB, mono center, low-pass at 800Hz". */
+export const ENCOUNTER_INHALE_DB = -28;
+/** Cello drone peak on the taut beat. Spec: "Peaks at -16dB". */
+export const ENCOUNTER_THRUM_PEAK_DB = -16;
+/** Struck-string resolve node. Sits between breath and thrum peak. */
+export const ENCOUNTER_RESOLVE_DB = -18;
+/** Slackening-thread release. Spec: "barely-audible". */
+export const ENCOUNTER_RELEASE_DB = -34;
+/** Moment 2 first-registration cue. Quieter than the resolve it follows. */
+export const ENCOUNTER_REGISTRATION_DB = -22;
+
+// Cue timings in ms from commit, matching the §3.3 table and the
+// useThreadReveal beat clock (60+380+520+420+240 = 1620ms total).
+export const ENCOUNTER_INHALE_START_MS = 0;
+export const ENCOUNTER_INHALE_DURATION_MS = 380;
+export const ENCOUNTER_THRUM_START_MS = 380;
+export const ENCOUNTER_THRUM_PEAK_MS = 1320;
+export const ENCOUNTER_THRUM_RELEASE_MS = 1560;
+export const ENCOUNTER_RESOLVE_DURATION_MS = 240;
+
+/** Low-pass corner for the inhale, per spec. */
+export const ENCOUNTER_INHALE_LOWPASS_HZ = 800;
+/** Low-pass corner for the cello drone — keeps it bowed, not buzzing. */
+export const ENCOUNTER_THRUM_LOWPASS_HZ = 520;
+
+/** Cello root. C2 = 65.41Hz — the low open register the spec's "root only" implies. */
+export const ENCOUNTER_CELLO_ROOT_HZ = 65.41;
+/** Struck-string notes sound an octave above the drone root so they read as separate. */
+export const ENCOUNTER_RESOLVE_OCTAVE_MULTIPLIER = 4;
+
+/** Struck string: near-instant attack, long decay. */
+export const ENCOUNTER_RESOLVE_ATTACK_MS = 4;
+export const ENCOUNTER_RESOLVE_DECAY_MS = 900;
+export const ENCOUNTER_REGISTRATION_ATTACK_MS = 3;
+export const ENCOUNTER_REGISTRATION_DECAY_MS = 420;
+
+/**
+ * Sphere tinting for the resolve note, in semitones above the cello root.
+ *
+ * The spec names three exactly — "low fourth on Iron, open fifth on Eye,
+ * soft minor third on Heart" — and those three are reproduced literally.
+ * The remaining six reaches are extrapolated to keep the same consonance
+ * gradient the named three establish (stable intervals for grounded reaches,
+ * unresolved ones for reaches that withhold). They are tuning numbers, not
+ * spec claims; change them freely if the feel is wrong.
+ */
+export const ENCOUNTER_RESOLVE_SEMITONES: Readonly<Record<string, number>> = {
+  iron: 5, // perfect fourth — spec-exact ("low fourth")
+  eye: 7, // perfect fifth — spec-exact ("open fifth")
+  heart: 3, // minor third — spec-exact ("soft minor third")
+  stone: 0, // unison — heaviest, most grounded
+  gold: 9, // major sixth — open and generous
+  veil: 10, // minor seventh — deliberately unresolved
+  star: 12, // octave — a return rather than an arrival
+  shadow: 6, // tritone — unstable
+  quintessence: 4, // major third — the only unambiguously bright one
+};
+
+/** Fallback interval when a reach is missing from the map (fail-soft). */
+export const ENCOUNTER_RESOLVE_SEMITONES_FALLBACK = 0;
+
+/**
+ * Sphere tinting for Moment 2 registration cues, in semitones above the root.
+ * Keyed by effect kind; each kind's sphere follows canonical UI spec §4.1.
+ */
+export const ENCOUNTER_REGISTRATION_SEMITONES: Readonly<Record<string, number>> = {
+  intelligence: 7, // eye / mind
+  condition_attachment: 3, // spirit
+  reputation_tally: 5, // iron / force
+  reputation_score: 5, // iron / force
+  encounter_seed: 12, // time
+  hidden_mark: 6, // darkness
+  recent_event: 3, // heart / spirit
+  spawn_artifact: 0, // matter
+  faction: 9, // order
+  archetype_drift_register: 10, // chaos
+};
+
 /**
  * Pool of in-game music tracks. MusicChannel shuffles through these,
  * advancing to the next track when the current one ends.

@@ -34,6 +34,7 @@ export function SpawnArtifactLanding({ data, ...common }: SpawnArtifactLandingPr
   const phase = useLandingLifecycle({
     ...common,
     motionDurationMs: REGISTRATION_FLIP_SPAWN_ARTIFACT_MS,
+    cueKind: 'spawn_artifact',
   });
   const sphereColor = sphereBrightVar('matter');
 

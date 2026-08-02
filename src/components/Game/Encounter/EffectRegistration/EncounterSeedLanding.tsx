@@ -30,6 +30,7 @@ export function EncounterSeedLanding({ data, ...common }: EncounterSeedLandingPr
   const phase = useLandingLifecycle({
     ...common,
     motionDurationMs: REGISTRATION_FLIP_ENCOUNTER_SEED_MS,
+    cueKind: 'encounter_seed',
   });
   const sphereColor = sphereBrightVar('time');
 

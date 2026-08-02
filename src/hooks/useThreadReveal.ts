@@ -1,5 +1,10 @@
 import React from 'react';
 import type { EncounterChoiceReach } from '../types/encounter-contract';
+import {
+  beginTensionReveal,
+  endTensionReveal,
+  playResolveNote,
+} from '../audio/encounterSoundDesign';
 
 /**
  * Beat durations for the Moment 1 tension reveal sequence.
@@ -31,6 +36,15 @@ export interface ThreadRevealState {
   outcomeBand: string | null;
 }
 
+export interface UseThreadRevealOptions {
+  /**
+   * Play the Moment 1 sound design (THR-346) alongside the visual sequence.
+   * Defaults to true. Set false for silent consumers — style-guide demos that
+   * replay on a loop, or tests that assert timing without audio side effects.
+   */
+  enableAudio?: boolean;
+}
+
 export interface UseThreadRevealResult {
   state: ThreadRevealState;
   /** Call when player commits a choice */
@@ -50,8 +64,13 @@ export interface UseThreadRevealResult {
  *
  * Transitions are time-driven (no requestAnimationFrame) — `setTimeout`
  * chains at the durations defined above. The hook fires `onResolveBeat`
- * once when entering the `resolving` phase. Post-v1 this is where audio
- * cues hook in.
+ * once when entering the `resolving` phase.
+ *
+ * Sound design (THR-346) is driven from here rather than from `ThreadOverlay`,
+ * because this hook owns the beat clock the §3.3 cue table is written against.
+ * `beginTensionReveal()` schedules the inhale + thrum envelope on the Web Audio
+ * clock at commit; the sphere-tinted resolve note fires at the resolving beat,
+ * where the chosen reach is first known. Pass `{ enableAudio: false }` to opt out.
  *
  * After `settled`, the hook holds the state for `THREAD_REVEAL_UNMOUNT_DELAY_MS`
  * before auto-resetting to `idle` so the caller can swap to the next beat.
@@ -61,7 +80,9 @@ export interface UseThreadRevealResult {
  */
 export function useThreadReveal(
   onResolveBeat?: (reach: EncounterChoiceReach, outcomeBand: string) => void,
+  options?: UseThreadRevealOptions,
 ): UseThreadRevealResult {
+  const enableAudio = options?.enableAudio ?? true;
   const [state, setState] = React.useState<ThreadRevealState>({
     phase: 'idle',
     chosenReach: null,
@@ -70,6 +91,11 @@ export function useThreadReveal(
 
   const timeoutsRef = React.useRef<ReturnType<typeof setTimeout>[]>([]);
   const onResolveBeatRef = React.useRef(onResolveBeat);
+  const enableAudioRef = React.useRef(enableAudio);
+
+  React.useEffect(() => {
+    enableAudioRef.current = enableAudio;
+  }, [enableAudio]);
 
   // Keep the latest onResolveBeat in a ref so timer callbacks see the
   // current value without re-running the effect.
@@ -86,6 +112,7 @@ export function useThreadReveal(
 
   const reset = React.useCallback(() => {
     clearAllTimeouts();
+    if (enableAudioRef.current) endTensionReveal();
     setState({ phase: 'idle', chosenReach: null, outcomeBand: null });
   }, [clearAllTimeouts]);
 
@@ -93,6 +120,10 @@ export function useThreadReveal(
     (reach: EncounterChoiceReach, outcomeBand: string) => {
       // Cancel any in-flight reveal before starting a new one.
       clearAllTimeouts();
+
+      // Schedule the inhale + thrum bed on the Web Audio clock. Also re-arms
+      // the Moment 2 first-registration gate for this resolution.
+      if (enableAudioRef.current) beginTensionReveal();
 
       // idle → committed (immediate)
       setState({ phase: 'committed', chosenReach: reach, outcomeBand });
@@ -112,6 +143,8 @@ export function useThreadReveal(
       // taut → resolving (fires onResolveBeat callback)
       const toResolving = setTimeout(() => {
         setState((prev) => ({ ...prev, phase: 'resolving' }));
+        // Sphere-tinted struck-string node + slackening-thread release.
+        if (enableAudioRef.current) playResolveNote(reach);
         onResolveBeatRef.current?.(reach, outcomeBand);
       }, THREAD_REVEAL_COMMIT_MS + THREAD_REVEAL_INHALE_MS + THREAD_REVEAL_DRAW_MS + THREAD_REVEAL_TAUT_MS);
       timeoutsRef.current.push(toResolving);
@@ -139,10 +172,12 @@ export function useThreadReveal(
     [clearAllTimeouts],
   );
 
-  // Clear timers on unmount.
+  // Clear timers on unmount. Also stop any in-flight cue so a torn-down
+  // encounter never leaves the drone hanging.
   React.useEffect(() => {
     return () => {
       clearAllTimeouts();
+      if (enableAudioRef.current) endTensionReveal();
     };
   }, [clearAllTimeouts]);
 

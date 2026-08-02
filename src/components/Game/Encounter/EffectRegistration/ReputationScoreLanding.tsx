@@ -34,6 +34,7 @@ export function ReputationScoreLanding({ data, ...common }: ReputationScoreLandi
   const phase = useLandingLifecycle({
     ...common,
     motionDurationMs: REGISTRATION_FLIP_REPUTATION_SCORE_MS,
+    cueKind: 'reputation_score',
   });
   const sphereColor = sphereBrightVar('force');
 

@@ -32,6 +32,7 @@ export function RecentEventLanding({ data, ...common }: RecentEventLandingProps)
   const phase = useLandingLifecycle({
     ...common,
     motionDurationMs: REGISTRATION_FLIP_RECENT_EVENT_MS,
+    cueKind: 'recent_event',
   });
   const sphereColor = sphereBrightVar('spirit');
 

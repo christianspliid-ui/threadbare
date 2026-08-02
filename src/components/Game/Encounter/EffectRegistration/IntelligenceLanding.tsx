@@ -31,6 +31,7 @@ export function IntelligenceLanding({ data, ...common }: IntelligenceLandingProp
   const phase = useLandingLifecycle({
     ...common,
     motionDurationMs: REGISTRATION_FLIP_INTELLIGENCE_MS,
+    cueKind: 'intelligence',
   });
   const sphereColor = sphereBrightVar('mind');
 

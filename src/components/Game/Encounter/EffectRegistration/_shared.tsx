@@ -1,4 +1,5 @@
 import React from 'react';
+import { playRegistrationCue } from '../../../../audio/encounterSoundDesign';
 
 /**
  * Shared types + helpers for Phase D2 EffectRegistration components (THR-335).
@@ -68,10 +69,23 @@ export type LandingPhase = 'pending' | 'animating' | 'settled';
 export interface UseLandingLifecycleArgs extends EffectLandingCommonProps {
   /** Duration of the kind-specific motion (settle delay) in ms. */
   motionDurationMs: number;
+  /**
+   * Effect kind, used to pick the sphere-tinted registration cue (THR-346).
+   * Omit to land silently. Only the FIRST registration of a resolution is
+   * cued — the latch lives in `encounterSoundDesign`, so passing this from
+   * every landing is correct and does not produce a cumulative jingle.
+   */
+  cueKind?: string;
 }
 
 export function useLandingLifecycle(args: UseLandingLifecycleArgs): LandingPhase {
-  const { delay = 0, motionDurationMs, onEffectLand, skipAnimation = false } = args;
+  const {
+    delay = 0,
+    motionDurationMs,
+    onEffectLand,
+    skipAnimation = false,
+    cueKind,
+  } = args;
   const [phase, setPhase] = React.useState<LandingPhase>(
     skipAnimation ? 'settled' : 'pending',
   );
@@ -83,9 +97,21 @@ export function useLandingLifecycle(args: UseLandingLifecycleArgs): LandingPhase
     onEffectLandRef.current = onEffectLand;
   }, [onEffectLand]);
 
+  // Kept in a ref for the same reason as onEffectLand — a changed cue kind
+  // must not restart the landing timers mid-motion.
+  const cueKindRef = React.useRef(cueKind);
+  React.useEffect(() => {
+    cueKindRef.current = cueKind;
+  }, [cueKind]);
+
+  const settle = React.useCallback(() => {
+    if (cueKindRef.current) playRegistrationCue(cueKindRef.current);
+    onEffectLandRef.current?.();
+  }, []);
+
   React.useEffect(() => {
     if (skipAnimation) {
-      onEffectLandRef.current?.();
+      settle();
       setPhase('settled');
       return undefined;
     }
@@ -97,7 +123,7 @@ export function useLandingLifecycle(args: UseLandingLifecycleArgs): LandingPhase
       setPhase('animating');
       settleTimer = window.setTimeout(() => {
         setPhase('settled');
-        onEffectLandRef.current?.();
+        settle();
       }, motionDurationMs);
     }, Math.max(0, delay));
 
@@ -105,7 +131,7 @@ export function useLandingLifecycle(args: UseLandingLifecycleArgs): LandingPhase
       window.clearTimeout(startTimer);
       if (settleTimer !== null) window.clearTimeout(settleTimer);
     };
-  }, [delay, motionDurationMs, skipAnimation]);
+  }, [delay, motionDurationMs, skipAnimation, settle]);
 
   return phase;
 }
