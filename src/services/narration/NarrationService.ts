@@ -61,6 +61,14 @@ class NarrationServiceImpl {
   get error(): string | null { return this._error; }
   get isSpeaking(): boolean { return this._status === 'speaking'; }
   get backendType(): 'server' | 'worker' | null { return this.backend?.type ?? null; }
+  /**
+   * Generation id of the utterance currently owning playback. Callers that
+   * dispatch an utterance can capture this immediately after calling `speak`
+   * and later cancel *only* if they still own playback — without this, a
+   * stale handle's `cancel()` would stop whatever unrelated narration had
+   * started since (THR-348).
+   */
+  get currentUtteranceId(): number { return this.currentSpeakId; }
 
   getState(): NarrationState {
     return this._cachedState;

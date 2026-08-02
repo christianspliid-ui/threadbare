@@ -33,3 +33,16 @@ export const NARRATION_SERVER_PROBE_TIMEOUT = 5000;
 
 /** Silence duration between sections in worker mode (seconds). */
 export const NARRATION_WORKER_SECTION_SILENCE = 0.6;
+
+// ── Encounter narration (THR-348) ───────────────────────────────────
+// Consumed by src/services/narration/encounterNarration.ts, which implements
+// the D3 interface spec in Docs/plans/2026-05-05-tts-encounter-ui-spec.md.
+
+/** Canonical encounter narration voice (D3 spec line 2). */
+export const ENCOUNTER_NARRATION_VOICE = NARRATION_VOICE;
+
+/** Max paragraphs narrated in one encounter utterance — bounds inference time. */
+export const ENCOUNTER_NARRATION_MAX_SECTIONS = 12;
+
+/** Max characters per encounter section before truncation. */
+export const ENCOUNTER_NARRATION_MAX_SECTION_LENGTH = NARRATION_MAX_TEXT_LENGTH;
