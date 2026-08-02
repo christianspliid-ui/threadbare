@@ -10,6 +10,7 @@ import type {
   EncounterStageHistoryModel,
 } from './encounter-stage/types';
 import { NudgePhaseShell } from './encounter-stage/shells/NudgePhaseShell';
+import { ProseTtsButton } from './Encounter/ProseTtsButton';
 
 // ── Thread tier types ──────────────────────────────────────────────
 type ThreadTier = 'strong' | 'light' | 'watched';
@@ -1039,6 +1040,19 @@ export function EncounterVeil({
       ? model.history[replayStepIndex]
       : null;
 
+  // THR-348 — the prose currently on screen, as ordered paragraphs for TTS.
+  // Tracks the replay toggle so the narrator reads what the player is reading.
+  const narratableProse = useMemo<string[]>(() => {
+    if (replayEntry) {
+      return [replayEntry.replayNarrative || replayEntry.afterimage || ''].filter(Boolean);
+    }
+    const paragraphs = model.narrative.paragraphs.map((para) =>
+      para.segments.map((s) => s.text).join(''),
+    );
+    if (model.scene.momentLine) paragraphs.push(model.scene.momentLine);
+    return paragraphs.filter((p) => p.trim().length > 0);
+  }, [replayEntry, model.narrative.paragraphs, model.scene.momentLine]);
+
   // ── Inline style helpers ───────────────────────────────────────
   function entranceStyle(
     delay: number,
@@ -1230,19 +1244,35 @@ export function EncounterVeil({
           />
         </div>
 
-        {/* Encounter title */}
+        {/* Encounter title + narrate control (THR-348) */}
         <div
           style={{
-            fontFamily: FONT_DISPLAY,
-            fontSize: 'var(--text-xs)',
-            letterSpacing: '0.14em',
-            textTransform: 'uppercase',
-            color: TEXT_GHOST,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
             marginBottom: 6,
             ...entranceStyle(ENTRANCE_DELAYS.title, 0.8),
           }}
         >
-          {model.header.title}
+          <div
+            style={{
+              fontFamily: FONT_DISPLAY,
+              fontSize: 'var(--text-xs)',
+              letterSpacing: '0.14em',
+              textTransform: 'uppercase',
+              color: TEXT_GHOST,
+            }}
+          >
+            {model.header.title}
+          </div>
+          <ProseTtsButton
+            text={narratableProse}
+            label="Narrate this scene"
+            context={{
+              encounterId: model.header.title,
+              threadTier,
+            }}
+          />
         </div>
 
         {/* Context strip — character (portrait + name), location + Show on map, reach chip */}
