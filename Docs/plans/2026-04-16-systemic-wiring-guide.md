@@ -2443,3 +2443,72 @@ Same modules as pole mode. `src/types/unifiedAction.ts` adds `BranchRoute`,
 *same* summing loop as `sumHandLean` — do not copy it; `branchDecision.ts` adds
 `scoreRoutes` / `decideBranchRoute`. The `branch_decided` trace carries
 `mode: 'route'`, the resolved route, and every rival's per-term score.
+
+## Capability: The world mints ambitions — events write desire into mortals (THR-726)
+
+**What you can now author:** an `AmbitionTemplate` that a *world event* plants in a mortal, rather than one the mortal drifts into on their own. A hometown is razed and the survivors mint avengers and refugees; a bond is torn and the bereaved mint their own answer to it.
+
+**These live in their own pool, and that is the whole mechanism.** Author them in `EVENT_MINTED_AMBITION_TEMPLATES` (`src/data/ambition-templates.ts`), **not** `AMBITION_TEMPLATES`. The spontaneous re-evaluation loop draws only from `AMBITION_TEMPLATES`, so a template in the minted pool can never be assigned without a triggering event — the separation *is* the gate. Nothing else marks them: they are ordinary funnel-gated templates, **not** reactive/skip-filter templates.
+
+**The world supplies candidates; personality still chooses.** `mintAmbitionsFromEvents` gathers recent nearby events, expands `AMBITION_MINTING_RULES[eventClass][relation]` into weighted candidates, and then hands them to the same `selectAmbitions` funnel every other ambition goes through. A craven agent flees where a proud one avenges, from the identical event. Author the template so it reads correctly for whoever the funnel picks — you do not get to assume the avenger.
+
+**Four gates stand between an event and a minted ambition,** all tunable constants (NFP #1) — a template that seems never to mint is usually meeting one of them, in this order:
+
+| Gate | Rule |
+| -- | -- |
+| Free slot | The agent must hold fewer than 2 active `pursues` edges. Minting runs *before* spontaneous drift so events get first claim on a free slot. |
+| Per-event cap | `MINT_MAX_PER_EVENT` — one event cannot mint the same ambition across a whole crowd. |
+| Already pursued | A template the agent already pursues is dropped from candidacy. |
+| Base chance | `MINT_BASE_CHANCE`, drawn from a seeded `mintRng` — deterministic per NFP #3, so the same seed mints the same desire. |
+
+**Do not author a `target_agent_eliminated` milestone.** No code binds a per-instance target, so a `$`-ref milestone tracks nothing the agent can act on. This is repo-wide since THR-812, not a rule local to this pool: the condition now fails soft to `false` on a missing node, so a stray `$`-ref is *inert* rather than a free milestone, and `ambition-templates.test` asserts across **all three** pools that none is reintroduced. Milestones here use agent-self predicates only — reach, bonds, controls, trait. (Earlier framings of this capability described `target_agent_eliminated` as its completion semantics; that is the pre-THR-812 reading and is wrong.)
+
+**The minted node carries the template's `reachAffinity`,** copied at mint time along with `displayName` and `category`, so a minted ambition biases the agent's later encounter scoring exactly as an authored one does. Give the template a real affinity or the desire will not steer anything.
+
+**Check it before you ship it:**
+
+```javascript
+// which ambitions an agent actually holds, and how they got there
+window.__DEBUG.getAgent('Kael')
+```
+
+```bash
+# headless: run a world long enough for events to accumulate, then inspect
+printf "tick 60\nagent @hero\nevents 20\nexit\n" | npm run cli -- --seed 42 --map medium
+```
+
+**Where it lives:** `src/engine/ambitionTick.ts` — `mintAmbitionsFromEvents` (pure: reads graph + snapshot, returns the winning assignment or `null`) and its caller on the all-actor walk, which writes the `pursues` edge and records the per-event cap. Rules table and the pool itself: `src/data/ambition-templates.ts`. The card-granted route into the *same* pool is `assign_ambition` — see the nudge-card capability above; both paths end at one assignment, so a template authored here is reachable from a played card too.
+
+## Capability: The Divine Receipt — the god learns how a cast landed (THR-727)
+
+**What you can now author:** framing prose for the moment a *player-sourced* action resolves. Every paid cast now produces a receipt, and since THR-728 (player casts roll the outcome ladder, floored at `success_at_cost`) the band it reports genuinely varies — before that a cast always returned `success` and the receipt could only say *what* happened, never *how well*.
+
+**Two presentation tiers, and content decides which.** The receipt surfaces as a band-accented completion toast for minor casts, or a full dialogue for the ones worth stopping on. You do not set the tier directly — you author the properties that trigger it (all constants in `src/data/receipt-content.ts`, NFP #1):
+
+| Any one of these forces the dialogue | Constant |
+| -- | -- |
+| The template has ≥ 2 steps | `RECEIPT_MODAL_MIN_STEPS` |
+| Rarity at or above Mythic | `RECEIPT_MODAL_RARITY_FLOOR` (3), read against `action.effectiveRarityTier ?? template.rarityTier` |
+| The aftermath carries a world-shifting change kind | `RECEIPT_MODAL_CHANGE_KINDS` (`trait`, `faction_reputation`, `future_hook`, …) |
+| Event significance clears the modal bar | `RECEIPT_EVENT_SIGNIFICANCE_MODAL` (toast bar: `…_TOAST`) |
+
+Everything else takes the toast. A one-step Mundane cast whose aftermath changes nothing structural is *meant* to be a toast — do not raise its rarity to get a dialogue.
+
+**Voice: frame the witnessed consequence, never the verdict.** Framing lines are player-as-god register, and THR-609's peak register is acceptable here because the receipt is a rare, deliberate reflection surface rather than at-a-glance UI. The fortunate band says *"the world bent, but only just"* — **not** "Success!". No numbers, no `key: value`.
+
+**Ascendant Beats are excluded by construction.** Beat templates keep their own `AscendantBeatModal`, so the receipt phase skips any template id in `ASCENDANT_POOL_BEAT_TEMPLATES` (matched against a lazily-built id set). Authoring a beat does not get you a receipt, and should not.
+
+**The queue is capped and drops oldest** at `RECEIPT_QUEUE_MAX` (5), so a headless or CLI run where nothing acknowledges receipts never grows unbounded. `playerActionReceipts` is optional/additive on `GameState` — old saves load as an empty queue. Receipts are transient presentation state, deliberately **not** graph nodes: the world-side record already exists as the encounter event node.
+
+**Check it before you ship it:**
+
+```javascript
+window.__DEBUG.listPlayerReceipts()
+// -> { receipts: [ { templateName, band, tier, essencePaid, … } ] }
+```
+
+Fail-soft paths emit their own traces rather than throwing — `fallback_receipt` when no template resolves for a resolved action, `queue_capped` when the cap drops one.
+
+**Where it lives:** `src/engine/playerReceipts.ts` — the phase is registered as `playerReceiptsPhase` (id `player_receipts`, slot `post-resolution`) and the exported entry point is **`processPlayerReceipts`**. Note that several code comments, and older tickets, call this `phasePlayerReceipts`; **no such symbol exists** — grep for `processPlayerReceipts`. Content and tuning: `src/data/receipt-content.ts`. UI: `DivineReceiptModal` (dialogue tier, rendered from `GameView`) and the `ToastStack` click-through (toast tier).
+
+**Not the Motive Receipt.** Capability 11 above covers `MotiveReceipt` — decision-causality contributions behind an agent's encounter *selection* (`__DEBUG.getMotiveReceipt`). This one is resolution-time feedback on a *player* cast. Different system, different surface, unfortunately similar name.
