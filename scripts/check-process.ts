@@ -7,6 +7,13 @@ import process from "node:process";
 import { fileURLToPath } from "node:url";
 
 import { classifyCoordinationBlockGap } from "./coordination-block-predicate.ts";
+import {
+  LINEAR_BACKED_CHECK_NAMES,
+  LINEAR_KEY_MISSING_REASON,
+  type SkippedCheck,
+  formatSummaryLine,
+  resolveVerdict,
+} from "./process-check-verdict.ts";
 
 type Severity = "error" | "warn";
 
@@ -81,11 +88,21 @@ function shouldSkipTodoCheck(repoPath: string): boolean {
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const findings: Finding[] = [];
+/**
+ * Sub-checks that did not execute this run (THR-828). Separate from `findings` because a skip is
+ * not a finding — it is the absence of one, and conflating the two is how a run with three
+ * un-executed assertions reported a pass.
+ */
+const skippedChecks: SkippedCheck[] = [];
 const NPM_EXECUTABLE = process.execPath;
 const NPM_RUNNER = process.env.npm_execpath;
 
 function addFinding(finding: Finding): void {
   findings.push(finding);
+}
+
+function addSkippedCheck(check: string, reason: string): void {
+  skippedChecks.push({ check, reason });
 }
 
 function normalizeRepoPath(value: string): string {
@@ -283,11 +300,14 @@ function chooseLatestComment(comments: Array<{ body?: string | null; createdAt?:
 async function runLinearChecks(planFilesMissingInlineRef: string[]): Promise<void> {
   const apiKey = process.env.LINEAR_API_KEY?.trim();
   if (!apiKey) {
+    for (const checkName of LINEAR_BACKED_CHECK_NAMES) {
+      addSkippedCheck(checkName, LINEAR_KEY_MISSING_REASON);
+    }
     addFinding({
       check: "linear-auth",
       severity: "warn",
       message:
-        "LINEAR_API_KEY is unset; skipped Linear-backed checks (recent plan references, orphan issues, Ready-for-Dev handoff keywords).",
+        `LINEAR_API_KEY is unset; skipped Linear-backed checks (${LINEAR_BACKED_CHECK_NAMES.join(", ")}).`,
     });
     for (const planFile of planFilesMissingInlineRef) {
       addFinding({
@@ -349,6 +369,14 @@ async function runLinearChecks(planFilesMissingInlineRef: string[]): Promise<voi
 
   let recentIssueNodes: LinearIssueSummary[] = [];
   let readyForDevIssueNodes: ReadyForDevIssue[] = [];
+  /**
+   * Whether the recent-issues fetch actually returned. Two sub-checks consume it — orphan issues
+   * and the plan-reference fallback — and the latter reports an *error* when it finds no match. A
+   * failed fetch leaves the node list empty, which is indistinguishable from "searched and found
+   * nothing", so without this flag a network blip manufactures a hard error against every plan
+   * file. A check that did not run must not report a verdict (THR-828).
+   */
+  let recentIssuesAvailable = false;
 
   try {
     const recentIssueData = await linearGql<{ issues?: { nodes?: LinearIssueSummary[] } }>(
@@ -356,7 +384,11 @@ async function runLinearChecks(planFilesMissingInlineRef: string[]): Promise<voi
       recentIssuesQuery,
     );
     recentIssueNodes = recentIssueData.issues?.nodes ?? [];
+    recentIssuesAvailable = true;
   } catch (error) {
+    const reason = `Linear fetch failed: ${(error as Error).message}`;
+    addSkippedCheck("recent plan references", reason);
+    addSkippedCheck("orphan issues", reason);
     addFinding({
       check: "linear-recent-issues",
       severity: "warn",
@@ -371,6 +403,7 @@ async function runLinearChecks(planFilesMissingInlineRef: string[]): Promise<voi
     );
     readyForDevIssueNodes = readyIssueData.issues?.nodes ?? [];
   } catch (error) {
+    addSkippedCheck("Ready-for-Dev handoff keywords", `Linear fetch failed: ${(error as Error).message}`);
     addFinding({
       check: "linear-ready-for-dev",
       severity: "warn",
@@ -392,7 +425,7 @@ async function runLinearChecks(planFilesMissingInlineRef: string[]): Promise<voi
     }
   }
 
-  if (planFilesMissingInlineRef.length > 0) {
+  if (planFilesMissingInlineRef.length > 0 && recentIssuesAvailable) {
     for (const planFile of planFilesMissingInlineRef) {
       const hasRecentReference = recentIssueNodes.some((issue) => {
         const ageMs = toRelativeAgeMs(issue.createdAt);
@@ -443,11 +476,6 @@ function printFindingsAndExit(): never {
   const errors = findings.filter((finding) => finding.severity === "error");
   const warns = findings.filter((finding) => finding.severity === "warn");
 
-  if (findings.length === 0) {
-    console.log("check:process passed (no findings).");
-    process.exit(0);
-  }
-
   const printOne = (finding: Finding): void => {
     const location = finding.file ? `${finding.file}${finding.line ? `:${finding.line}` : ""}` : "global";
     const level = finding.severity.toUpperCase();
@@ -457,13 +485,13 @@ function printFindingsAndExit(): never {
   errors.forEach(printOne);
   warns.forEach(printOne);
 
-  if (errors.length > 0) {
-    console.log(`check:process failed with ${errors.length} error(s) and ${warns.length} warning(s).`);
-    process.exit(1);
-  }
+  console.log(
+    formatSummaryLine({ errorCount: errors.length, warnCount: warns.length, skipped: skippedChecks }),
+  );
 
-  console.log(`check:process passed with ${warns.length} warning(s).`);
-  process.exit(0);
+  // Exit-code semantics are unchanged by THR-828: `passed-with-gaps` is still a pass. The verdict
+  // changes what the run *says* about its coverage, not whether it blocks.
+  process.exit(resolveVerdict(errors.length, skippedChecks.length) === "failed" ? 1 : 0);
 }
 
 async function main(): Promise<void> {
@@ -482,6 +510,7 @@ async function main(): Promise<void> {
   const unresolvedPlanFiles = checkPlanFilesForInlineLinearLinks(files);
   await runLinearChecks(unresolvedPlanFiles);
   if (!NPM_RUNNER) {
+    addSkippedCheck("plan-doc structure lint", "npm_execpath unavailable");
     addFinding({
       check: "lint-plan-doc",
       severity: "warn",
