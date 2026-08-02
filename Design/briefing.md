@@ -1,5 +1,5 @@
 ---
-needsChristian: thr-907-verdict-links-ready, thr-961-sound-feel, thr-962-nudge-stage-cues, thr-946-settings-visit
+needsChristian: thr-907-verdict-links-ready, thr-961-sound-feel, thr-962-nudge-stage-cues
 queue: backed-up
 freshness: healthy
 deploy: deployed
@@ -7,13 +7,13 @@ tasks: ok
 ---
 # Briefing
 
-**Generated:** 2026-08-02 18:55 local (2026-08-02 16:55 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-08-02 19:55 local (2026-08-02 17:55 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
 ## Needs Christian
 
-**You cleared three of the seven in the last few minutes.** THR-947, THR-931 and THR-792 all went Done at 16:52–16:53Z — that whole bookkeeping section is gone from this brief. Four items remain, and none of them is new.
+**The settings visit is done and off this list — you made it about an hour ago.** Three items remain, all decisions, none urgent.
 
 ### 1. The encounter verdict — the links are ready, one click each
 
@@ -38,32 +38,33 @@ This is your inbox. It's rewritten every hour by a Claude Code task. Standing sw
 
 Both are stuck until you've heard them. Neither is urgent.
 
-### 3. One settings visit, two clicks — this one unsticks merges
+### Closed since last hour: the merge settings
 
-Both live in GitHub's settings for the `main` branch. I re-checked the live state this run rather than trusting the ticket's own list:
+You made that visit around 19:00 local, and it went differently from what this brief had been predicting — worth a paragraph, because the brief had been telling you the wrong thing for three hours.
 
-- **Turn on the merge queue.** Confirmed still off. This is the structural fix for finished work getting stuck behind other finished work — the thing that has been costing repeated hour-long stalls.
-- **Delete the older, duplicate branch-protection rule.** There are two overlapping rules that disagree; the old one is the single reason a finished change gets knocked back whenever someone else's change lands first. Confirmed still present.
+**The merge queue turned out not to exist for this project.** GitHub only offers it on repositories owned by an *organisation*, and yours is owned by your personal account — the repo going public was necessary but not sufficient. The earlier "it's just switched off" reading came from an API answer that cannot tell "switched off" apart from "not available here". So that click was never yours to make.
 
-*Already off your list:* the "Docs gates" click — live and enforcing, and you closed its ticket this afternoon.
+**The underlying problem is fixed anyway, by the other route.** You deleted the older duplicate rule and added the missing check to the surviving one. I re-verified both directly this run rather than trusting the ticket: the old rule is gone, and the rule that remains no longer demands a change be rebuilt on top of whatever landed most recently. That demand was the whole reason finished work used to get knocked back and stall for hours. It cannot happen now. What you gave up is small and reversible in one click.
 
 ## Queue
 
-**Backed up — 55 items ready for work**, down 2 from last hour. Planning is comfortably ahead of execution; nothing is starving.
+**Backed up — 56 items ready for work**, up 1 from last hour. Planning is comfortably ahead of execution; nothing is starving.
 
-- Top of the queue is THR-982, a documentation correction. Everything else sits at low or no priority.
+- Top of the queue is documentation cleanup (THR-983, THR-982). Everything else sits at low or no priority.
+- **THR-983 is new this hour** — it sweeps the lane instructions that still describe the merge problem you just fixed as though it were live. Housekeeping behind your settings visit.
 - **Five items have been untouched for a week or more** (THR-771, THR-770, THR-769, THR-740, THR-739) — small deferrals in the social-systems and action-card areas. Worth a grooming pass, not an alarm.
-- **Two tickets are parked mid-flight by design.** THR-946 (the merge-queue work) has shipped its automated half and waits on your settings visit above. **THR-860** — four finished capital-city encounter templates — is held behind your format decision: when the format locks, do those four land as-is and get rewritten later alongside the other seven, or is the branch dropped and all four re-written under the new format? Either is cheap. That question belongs in the format session, so it isn't a separate ask here.
+- **One ticket is parked mid-flight by design.** **THR-860** — four finished capital-city encounter templates — is held behind your format decision: when the format locks, do those four land as-is and get rewritten later alongside the other seven, or is the branch dropped and all four re-written under the new format? Either is cheap. That question belongs in the format session, so it isn't a separate ask here.
 
 ## Freshness
 
-- **Home tree: current.** On `main`, fully up to date, nothing stranded. Two of your own tool-settings files still show as modified — harmless, and the auto-sync has been fast-forwarding straight past them.
+- **Home tree: current.** On `main`, fully up to date, nothing stranded. Two of your own tool-settings files still show as modified — harmless, and the auto-sync has been fast-forwarding straight past them (three more commits pulled in at 19:50).
 - **Live site: healthy**, serving the latest commit.
-- **Automated checks, merge health, and all nine scheduled lanes: healthy.** Nothing is waiting to merge; the cleanup lane ran fifteen minutes ago.
+- **Merge health, armed PRs, and all nine scheduled lanes: healthy.** Nothing is waiting to merge; the cleanup lane ran fifteen minutes ago.
+- **One lane is limping, and it's ours rather than yours:** the weekly drift scan has failed 3 of its last 5 scheduled runs. It still runs, so no alarm fired — but that scan is the first input to the weekly retro, so it is worth an agent's time.
 
 ## What's moving
 
-Three closures landed this hour, all yours. The executor lane is drawing normally — the ready queue has fallen 60 → 57 → 55 across the last three hours, which is real throughput rather than grooming.
+Three more closures landed this hour — the merge-settings ticket (THR-946), the docs-only fast track (THR-938), and the workflow-failure alarm (THR-834). The executor lane is drawing normally; the ready queue rose by one only because grooming filed the follow-up sweep behind your settings visit.
 
 ---
 *Standing asks live in `Design/user-actions.md`. This file is regenerated hourly by the `keep-work-flowing-cc` scheduled task; staleness is visible from the Generated timestamp above and the task's `lastRunAt` in `list_scheduled_tasks`.*
