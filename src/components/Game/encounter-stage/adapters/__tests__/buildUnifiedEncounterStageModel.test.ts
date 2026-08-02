@@ -2,7 +2,12 @@ import { describe, expect, it } from 'vitest';
 import { WorldGraph } from '../../../../../engine/graph';
 import { RIVAL_SHRINE_BETRAYAL_TEMPLATE } from '../../../../../data/encounters/rival-shrine-betrayal';
 import type { EncounterNotification } from '../../../../../types/encounterVisibility';
-import type { UnifiedAction, UnifiedActionTemplate, ActionStep } from '../../../../../types/unifiedAction';
+import type {
+  UnifiedAction,
+  UnifiedActionOutcome,
+  UnifiedActionTemplate,
+  ActionStep,
+} from '../../../../../types/unifiedAction';
 import { buildUnifiedEncounterStageModel } from '../buildUnifiedEncounterStageModel';
 import { enrichProse, gatherNarrativeContext } from '../../../../../engine/proseEnrichment';
 
@@ -355,7 +360,9 @@ describe('buildUnifiedEncounterStageModel', () => {
         },
       };
 
-      function buildBandedModel(outcome: UnifiedAction['outcome']) {
+      // `UnifiedAction['outcome']` is optional, but `aftermathSummary.outcome` is not —
+      // the helper only ever takes a concrete band, so narrow rather than widen.
+      function buildBandedModel(outcome: UnifiedActionOutcome) {
         return buildUnifiedEncounterStageModel({
           template: BANDED_TEMPLATE,
           activeAction: {
