@@ -3,7 +3,7 @@
 > **linear_issue:** THR-347
 > **author:** `Claude Code`
 > **created:** 2026-05-05 (plan lineage) · **measured:** 2026-08-02
-> **three_pillars:** Engine `done — measurement only, no engine change` · Content `N/A — no content authored` · UI `N/A — the constants drive debug traces only; player-facing scene-state indicators were never landed (C4/THR-333)`
+> **three_pillars:** Engine `done — measurement only, no engine change` · Content `N/A — no content authored` · UI `N/A — the constants reach no mounted surface; see "Finding 4"`
 
 # Encounter constants tuning playtest — findings (THR-347)
 
@@ -74,6 +74,21 @@ Measured drift at tick 120, all six entries in the world:
 
 Every value is consistent with exactly **one** fork decaying since it landed (0.048 ≈ 0.08 − 32 × 0.001). No agent took a second fork in 120 ticks. Tracked as **THR-965**, which carries the creative-direction question.
 
+## Finding 4 — the player-facing surface was built, then orphaned
+
+*Correction to this doc's first revision, which said the scene-state indicators "were never landed (C4/THR-333)". They were: THR-333 is `Done`. The conclusion is unchanged — the constants reach no player — but the reason is different, and the difference matters to THR-964's retire-or-wire decision.*
+
+`SceneStatePanel`, the C4 surface that would render drift and detection state to the player, has **zero importers** — not one, not test-only:
+
+```
+grep -rn "SceneStatePanel" src/ --include=*.ts --include=*.tsx | grep -v __tests__ | grep -iE "import|from"
+(no output)
+```
+
+So the ladder is dead at both ends: no producer feeds the state (Findings 1–2), and no mounted component displays it. This is the same class as impediment #397, logged hours earlier by the sibling ticket THR-346 — the Nudge Model pivot (THR-775) rebuilt the encounter interface under `encounter-stage/` and `GameView` mounts that instead, leaving the Phase C/D surfaces built, tested, and unrendered. Tracked as a prune candidate in THR-951.
+
+Practical consequence for THR-964: "retire the pipeline" is the cheaper option than it first appears, because the UI half of it is already unreachable and separately queued for pruning. "Wire the producer" would mean reviving a display surface too, not just an engine path.
+
 ## Calibration verdict, per constant
 
 The ticket asks for "calibration adjustments documented with rationale per constant". The rationale for every one is *no change, and why*:
@@ -107,7 +122,7 @@ No constant was added or changed by this pass. The table under "Calibration verd
 
 - [x] Engine pillar present — measurement of three orchestrator phases; no engine change, findings routed to THR-963 / THR-964 / THR-965
 - [x] Content pillar — N/A, no content authored
-- [x] UI pillar — N/A; these constants currently feed debug traces and `DriftVisualiser` only. Player-facing scene-state indicators were scoped to C4 (THR-333) and never landed, which is why no browser-verify applies
+- [x] UI pillar — N/A; these constants currently feed debug traces and `DriftVisualiser` only. The player-facing C4 surface (`SceneStatePanel`, THR-333) shipped but has zero importers and is not mounted — see Finding 4 — which is why no browser-verify applies
 - [x] Wiring section — no new module to wire
 
 ## Vision audit
