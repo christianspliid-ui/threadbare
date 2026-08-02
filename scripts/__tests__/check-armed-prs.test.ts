@@ -8,6 +8,7 @@ import {
   classifyArmedPrs,
   classifyMergeState,
   parseConflictFiles,
+  parseHoldMarker,
   type ArmedPrInput,
   type ArmedPrRecord,
   type MergeStateStatus,
@@ -27,6 +28,7 @@ function pr(overrides: Partial<ArmedPrRecord> = {}): ArmedPrRecord {
     // Clock started one minute ago unless a test says otherwise.
     clockStartMs: NOW_MS - 60 * 1000,
     headRefOid: `oid${number}`,
+    holdReason: null,
     ...overrides,
   };
 }
@@ -34,6 +36,14 @@ function pr(overrides: Partial<ArmedPrRecord> = {}): ArmedPrRecord {
 /** An unarmed PR — the set THR-930 made visible. */
 function unarmedPr(overrides: Partial<ArmedPrRecord> = {}): ArmedPrRecord {
   return pr({ armed: false, ...overrides });
+}
+
+/**
+ * A PR parked on purpose — unarmed with a declared reason (THR-985). The shape
+ * of PR #1114: disarmed deliberately, conflicted, and days old.
+ */
+function heldPr(overrides: Partial<ArmedPrRecord> = {}): ArmedPrRecord {
+  return pr({ armed: false, holdReason: "THR-883 — content migration paused", ...overrides });
 }
 
 function minutesAgo(n: number): number {
@@ -396,6 +406,195 @@ describe("classifyArmedPrs — the THR-930 defect (unarmed PRs are in the set)",
     );
 
     expect(result.summary).toContain("#1114 (unarmed)");
+  });
+});
+
+describe("parseHoldMarker — the signal a hold is declared with (THR-985)", () => {
+  it("reads the reason off a plain marker line", () => {
+    expect(parseHoldMarker("Hold: THR-883 — authoring format not locked yet")).toBe(
+      "THR-883 — authoring format not locked yet",
+    );
+  });
+
+  it("accepts the marker anywhere in a multi-line body", () => {
+    const body = ["## Summary", "", "Four templates migrated.", "", "Hold: THR-883 blocks this", ""].join(
+      "\n",
+    );
+
+    expect(parseHoldMarker(body)).toBe("THR-883 blocks this");
+  });
+
+  it.each([
+    ["bold-after-colon", "**Hold:** THR-883 blocks this"],
+    ["bold-before-colon", "**Hold**: THR-883 blocks this"],
+    ["fully-bolded", "**Hold: THR-883 blocks this**"],
+    ["blockquote", "> Hold: THR-883 blocks this"],
+    ["bullet", "- Hold: THR-883 blocks this"],
+    ["lowercase", "hold: THR-883 blocks this"],
+    ["Paused synonym", "Paused: THR-883 blocks this"],
+    ["indented", "   Hold: THR-883 blocks this"],
+  ])("accepts a %s marker", (_label, body) => {
+    expect(parseHoldMarker(body)).toBe("THR-883 blocks this");
+  });
+
+  it("ignores the keyword mid-sentence, exactly as linear-autoclose does", () => {
+    // THR-738's lesson, applied here: an unanchored keyword turns prose that
+    // *describes* a hold into a hold — which would silently suppress a real
+    // stall, the one direction this probe must never fail in.
+    const body = "This does not put anything on hold: the branch merges normally.";
+
+    expect(parseHoldMarker(body)).toBeNull();
+  });
+
+  it("rejects a marker with no reason — a hold must say why", () => {
+    expect(parseHoldMarker("Hold:")).toBeNull();
+    expect(parseHoldMarker("Hold:    ")).toBeNull();
+  });
+
+  it("returns null for a missing or empty body rather than assuming a hold", () => {
+    expect(parseHoldMarker(null)).toBeNull();
+    expect(parseHoldMarker(undefined)).toBeNull();
+    expect(parseHoldMarker("")).toBeNull();
+  });
+
+  it("returns null for an ordinary PR body", () => {
+    expect(parseHoldMarker("## Summary\n\nFixes THR-985\n")).toBeNull();
+  });
+});
+
+describe("classifyArmedPrs — the THR-985 defect (a parked PR is not a stuck one)", () => {
+  /** PR #1114's live shape: unarmed, conflicted, days old, held on purpose. */
+  const pr1114 = {
+    number: 1114,
+    mergeStateStatus: "DIRTY" as const,
+    clockStartMs: hoursAgo(78),
+  };
+
+  it("classifies a held PR as held and does not escalate it to Christian", () => {
+    // The measured case: for 78 hours this reported `abandoned` /
+    // `needsChristian: true` onto the briefing, raising a decision Christian
+    // had already made.
+    const result = classifyArmedPrs(input({ prs: [heldPr(pr1114)] }));
+
+    expect(result.prs[0].klass).toBe("held");
+    expect(result.verdict).toBe("held");
+    expect(result.needsChristian).toBe(false);
+    expect(result.needsSession).toBe(false);
+    expect(result.counts).toMatchObject({ held: 1, conflicted: 0 });
+  });
+
+  it("carries the hold reason into the report and the summary", () => {
+    const result = classifyArmedPrs(input({ prs: [heldPr(pr1114)] }));
+
+    expect(result.prs[0].holdReason).toBe("THR-883 — content migration paused");
+    expect(result.summary).toContain("#1114");
+    expect(result.summary).toContain("THR-883");
+  });
+
+  it("still reports the held PR's conflicting files", () => {
+    // Resolving a held PR's conflict is legitimate maintenance; only re-arming
+    // it is not. The diagnosis must survive the reclassification.
+    const result = classifyArmedPrs(
+      input({
+        prs: [heldPr(pr1114)],
+        conflictFilesFor: () => ["Docs/project-status.md"],
+      }),
+    );
+
+    expect(result.prs[0].conflictFiles).toEqual(["Docs/project-status.md"]);
+  });
+
+  it("never offers a held PR as the update-branch candidate", () => {
+    const result = classifyArmedPrs(
+      input({ prs: [heldPr({ number: 1114, mergeStateStatus: "BEHIND", armed: true })] }),
+    );
+
+    expect(result.prs[0].klass).toBe("held");
+    expect(result.updateCandidate).toBeNull();
+  });
+
+  it("STILL escalates a genuinely stuck PR — the same age and state, no hold", () => {
+    // The falsifying arm. If this ever goes quiet, the fix has become a
+    // suppression: a stall silently relabelled as a decision.
+    const stuck = classifyArmedPrs(input({ prs: [unarmedPr(pr1114)] }));
+
+    expect(stuck.verdict).toBe("abandoned");
+    expect(stuck.needsChristian).toBe(true);
+    expect(stuck.prs[0].klass).toBe("conflicted");
+
+    // Same PR, same clock, one marker's difference.
+    const held = classifyArmedPrs(input({ prs: [heldPr(pr1114)] }));
+    expect(held.needsChristian).toBe(false);
+  });
+
+  it("surfaces a real conflict alongside a held one instead of being quieted by it", () => {
+    const result = classifyArmedPrs(
+      input({
+        prs: [
+          heldPr(pr1114),
+          unarmedPr({ number: 1200, mergeStateStatus: "DIRTY", clockStartMs: hoursAgo(30) }),
+        ],
+      }),
+    );
+
+    expect(result.verdict).toBe("abandoned");
+    expect(result.summary).toContain("#1200");
+    expect(result.counts).toMatchObject({ held: 1, conflicted: 1 });
+  });
+});
+
+describe("classifyArmedPrs — an unarmed PR is not waiting on checks (THR-985)", () => {
+  it("classifies an unarmed CLEAN PR as idle, not waiting", () => {
+    // The second-order bug: once #1114's conflict cleared, the probe said it
+    // was "waiting on checks and will merge on green". It was unarmed and held,
+    // so nothing was waiting on it and it would not merge on anything.
+    const result = classifyArmedPrs(input({ prs: [unarmedPr({ number: 1114, mergeStateStatus: "CLEAN" })] }));
+
+    expect(result.prs[0].klass).toBe("idle");
+    expect(result.verdict).toBe("idle");
+    expect(result.counts).toMatchObject({ idle: 1, waiting: 0 });
+  });
+
+  it("never claims an unarmed PR will merge on green", () => {
+    const result = classifyArmedPrs(
+      input({
+        prs: [unarmedPr({ mergeStateStatus: "CLEAN" }), unarmedPr({ mergeStateStatus: "BLOCKED" })],
+      }),
+    );
+
+    expect(result.summary).not.toContain("will merge on green");
+    expect(result.summary).toContain("not armed for auto-merge");
+  });
+
+  it("keeps calling an ARMED green PR waiting — the claim is true for those", () => {
+    const result = classifyArmedPrs(input({ prs: [pr({ mergeStateStatus: "CLEAN" })] }));
+
+    expect(result.prs[0].klass).toBe("waiting");
+    expect(result.verdict).toBe("healthy");
+    expect(result.summary).toContain("will merge on green");
+  });
+
+  it("describes a mixed board without asserting one story about all of it", () => {
+    const result = classifyArmedPrs(
+      input({
+        prs: [
+          pr({ mergeStateStatus: "CLEAN" }),
+          unarmedPr({ mergeStateStatus: "CLEAN" }),
+          heldPr({ number: 1114, mergeStateStatus: "DIRTY", clockStartMs: hoursAgo(78) }),
+        ],
+      }),
+    );
+
+    expect(result.verdict).toBe("healthy");
+    expect(result.counts).toMatchObject({ waiting: 1, idle: 1, held: 1 });
+    expect(result.summary).toContain("will merge on green");
+    expect(result.summary).toContain("not armed for auto-merge");
+    expect(result.summary).toContain("on hold on purpose");
+    expect(result.needsChristian).toBe(false);
+  });
+
+  it("leaves the no-PRs summary exactly as it was", () => {
+    expect(classifyArmedPrs(input({ prs: [] })).summary).toBe("No PRs are waiting to merge.");
   });
 });
 

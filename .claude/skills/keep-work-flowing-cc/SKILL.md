@@ -195,11 +195,14 @@ Measured 2026-07-31: 3 of 4 armed PRs were conflicted, the oldest armed 19 hours
 npm run check:armed-prs --silent -- --json
 ```
 
+**A PR parked on purpose no longer reaches him at all (THR-985).** The probe used to classify on merge state and age alone, which cannot tell a *stuck* PR from a *parked* one — both read conflicted, unarmed and old. PR #1114 was disarmed deliberately on 2026-07-30 (THR-883 blocks its issue; Christian's directive paused content migration), and this brief raised it under `## Needs Christian` **hourly for 78 hours**, asking him to decide something he had already decided. A PR whose body carries a line-anchored `Hold: <reason>` marker now classifies `held` and never sets `needsChristian`. The fail-soft runs one way only: an absent or malformed marker means *not held*, so a genuinely stuck PR still escalates.
+
 One line of JSON: `{ verdict, summary, needsChristian, needsSession, updateCandidate, prs, counts, armedCount, unarmedCount }`.
 
 - **`needsChristian: true`** (verdict `abandoned` — a conflict older than `ARMED_DIRTY_ABANDONED_HOURS`, or `UNARMED_DIRTY_ABANDONED_HOURS` when unarmed) → put the `summary` verbatim into **`## Needs Christian`**. It is already written in plain language and names no git jargon (THR-608); do not re-word it into merge-state terms.
 - **`needsSession: true` but `needsChristian: false`** → one line under **Freshness** naming the PR numbers and their `conflictFiles`. This is a job for the executor lane, not for Christian — a conflicted PR is a technical verdict an agent can settle, and routing it to him would be the mislabelling THR-608 forbids.
-- **`verdict: "healthy"` / `"drainable"` / `"unknown"`** → omit, or one line under **Freshness** when something is drainable. A PR that will merge on green is not news.
+- **`verdict: "held"`** → **omit entirely.** A decision already taken is not an open question, and re-raising it is the exact defect THR-985 closed. The `holdReason` is in the run log if anyone needs it.
+- **`verdict: "healthy"` / `"drainable"` / `"idle"` / `"unknown"`** → omit, or one line under **Freshness** when something is drainable. A PR that will merge on green is not news, and an `idle` one — unarmed, so nothing is waiting on it — is less so.
 
 **Why this lane and not only pull-work.** Step 0.8 reports a conflicted PR in its run log, but that log lives inside one hourly pickup and is gone by the next. This lane owns the durable surface (`Design/briefing.md`), so a conflict that outlives its session still has somewhere to be seen. The two consume the same probe, so they cannot drift into disagreeing about what "stuck" means.
 

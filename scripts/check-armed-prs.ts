@@ -43,11 +43,13 @@
  * Classifies every open non-draft PR into what it actually needs, rather than
  * testing one value for equality:
  *
- * | class           | `mergeStateStatus`             | who can clear it |
+ * | class           | derived from                   | who can clear it |
  * |-----------------|--------------------------------|------------------|
+ * | `held`          | a `Hold:` marker in the PR body (any merge state) | nobody — it is parked on purpose |
  * | `drainable`     | `BEHIND`                       | the sweep — `gh pr update-branch`, **armed only** |
  * | `conflicted`    | `DIRTY`                        | **a session** — `git merge origin/main`, resolve, push |
- * | `waiting`       | `CLEAN` `BLOCKED` `HAS_HOOKS` `UNSTABLE` | nobody; auto-merge fires on green |
+ * | `waiting`       | `CLEAN` `BLOCKED` `HAS_HOOKS` `UNSTABLE`, **armed** | nobody; auto-merge fires on green |
+ * | `idle`          | the same states, **unarmed**   | nobody; nothing is waiting on it |
  * | `indeterminate` | `UNKNOWN` `DRAFT`              | nobody; re-query (see below) |
  *
  * Only `drainable` is the sweep's to fix, and only when the PR is **armed** —
@@ -56,6 +58,54 @@
  * is the class that was silently dropped, and it is reported with **the
  * conflicting file names** (via a read-only `git merge-tree`) so the session
  * that picks it up starts with the diagnosis already done.
+ *
+ * ## `held` — a parked PR is not a stuck one (THR-985)
+ *
+ * THR-897 fixed classification inside the armed set; THR-930 widened the set.
+ * Both left the probe reading only *mechanical* state, and two situations share
+ * one signature exactly:
+ *
+ * * a PR that is **stuck** — conflicted, unarmed, old, nobody coming; and
+ * * a PR that is **parked** — conflicted, unarmed, old, *because someone decided
+ *   it should be*.
+ *
+ * `autoMergeRequest: null` means "not armed". It never means "should be armed",
+ * yet that is how it was read. Measured: PR #1114 (THR-860) was deliberately
+ * disarmed on 2026-07-30 — THR-883 holds a `blocks` relation onto its issue and
+ * Christian's directive paused all content migration until the encounter-writing
+ * format is locked. The probe called it `abandoned` / `needsChristian: true`
+ * **hourly for 78 hours**, onto the one surface Christian actually reads,
+ * raising a decision he had already made. Three separate sessions (impediments
+ * #393, #406, #411) re-derived the hold by hand from Linear comments, and a
+ * fourth hit it before this fix landed.
+ *
+ * **The signal is a `Hold:` line in the PR body**, not a Linear round-trip. The
+ * Linear `blocks` relation is the authoritative *decision*; the marker is that
+ * decision written where the probe can see it, and writing it is part of
+ * disarming a PR on purpose. Reasons for preferring it here: this script's every
+ * other input is `gh` or `git`, `LINEAR_API_KEY` is unset in the hourly lanes
+ * that run this probe (so a Linear-backed branch would be dead code that never
+ * executes — untestable against the live case it exists for), and a marker is
+ * auditable in the PR itself rather than in a system the reader must go query.
+ *
+ * **The marker is line-anchored**, for the reason `linear-autoclose.yml` is
+ * (THR-738): a keyword that matches mid-sentence turns prose *describing* a hold
+ * into a hold. A line must read `Hold: <reason>` — with a non-empty reason, so a
+ * held PR always says why — or it does not count.
+ *
+ * **Fail-soft direction matters here and runs one way only.** An unreadable body,
+ * an absent marker, or a malformed one all yield "not held", so the PR escalates
+ * exactly as it does today. A held PR misread as stuck is the status quo and
+ * merely noisy; a genuinely stuck PR silently suppressed as held is a
+ * regression, and this probe must never fail in that direction.
+ *
+ * ## `idle` — an unarmed PR is not "waiting on checks" (THR-985)
+ *
+ * The same blindness pointed the other way. Once #1114's conflict was cleared it
+ * reported `klass: "waiting"` and *"will merge on green"* — but it is unarmed and
+ * held, so nothing was waiting on it and it would not merge on anything. Any
+ * unarmed PR in a green-ish state is `idle`: open, mergeable, and going nowhere
+ * until someone arms it.
  *
  * ## Naming
  *
@@ -168,6 +218,23 @@ export const ARMED_CONFLICT_FILE_LIMIT = 10;
 /** GitHub `owner/repo` these PRs belong to. */
 export const GH_REPO = "christianspliid-ui/threadbare";
 
+/**
+ * Line-anchored marker declaring a PR deliberately parked (THR-985).
+ *
+ * Matches a whole line reading `Hold: <reason>` or `Paused: <reason>`, allowing
+ * a leading blockquote (`> `), list bullet, or bold wrapper so the marker can
+ * sit naturally in a formatted PR body. Bold may close on either side of the
+ * colon — `**Hold:** x` and `**Hold**: x` are both idiomatic markdown and both
+ * count. The reason is captured and must be non-empty — see `parseHoldMarker`.
+ *
+ * Anchored to line start for the same reason `linear-autoclose.yml` is
+ * (THR-738): an unanchored keyword makes prose *about* a hold into a hold, which
+ * is precisely how a well-meant explanatory sentence becomes a silent
+ * suppression of a real stall.
+ */
+export const HOLD_MARKER_PATTERN =
+  /^[ \t]*(?:>[ \t]*)?(?:[-*][ \t]+)?\*{0,2}(?:hold|paused)\*{0,2}[ \t]*:\*{0,2}[ \t]*(.+)$/im;
+
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
@@ -186,14 +253,22 @@ export type MergeStateStatus =
   | "UNKNOWN"
   | "UNSTABLE";
 
-/** What an armed PR needs in order to reach `main`. */
-export type ArmedPrClass = "drainable" | "conflicted" | "waiting" | "indeterminate";
+/** What an open PR needs in order to reach `main`. */
+export type ArmedPrClass =
+  | "drainable"
+  | "conflicted"
+  | "waiting"
+  | "idle"
+  | "held"
+  | "indeterminate";
 
 export type ArmedPrVerdict =
   | "healthy"
   | "drainable"
   | "conflicted"
   | "abandoned"
+  | "idle"
+  | "held"
   | "unknown";
 
 export interface ArmedPrRecord {
@@ -218,6 +293,14 @@ export interface ArmedPrRecord {
   clockStartMs: number;
   /** Head commit, used to compute conflicting files. */
   headRefOid: string;
+  /**
+   * Why this PR is deliberately parked, or `null` when it is not (THR-985).
+   *
+   * Carries the reason rather than a boolean so the report can say *what* the
+   * PR is waiting on. A held PR is reported and never escalated — see the
+   * header note on why the fail-soft direction runs toward escalating.
+   */
+  holdReason: string | null;
 }
 
 export interface ArmedPrReport {
@@ -232,12 +315,18 @@ export interface ArmedPrReport {
    * arming when armed, from creation when not (see `clockStartMs`).
    */
   ageMinutes: number;
-  /** Conflicting file names — populated for `conflicted` only. */
+  /**
+   * Conflicting file names. Populated whenever `mergeStateStatus` is `DIRTY` —
+   * including on a `held` PR, because resolving a held PR's conflict is
+   * legitimate maintenance even though re-arming it is not.
+   */
   conflictFiles: string[];
   /** True when a `conflicted` PR is past its escalate tier (armed or unarmed). */
   escalated: boolean;
   /** True when a `conflicted` PR is past its abandoned tier (armed or unarmed). */
   abandoned: boolean;
+  /** Why this PR is parked, or `null`. Non-null exactly when `klass` is `held`. */
+  holdReason: string | null;
 }
 
 export interface ArmedPrInput {
@@ -299,6 +388,28 @@ export function classifyMergeState(state: string): ArmedPrClass {
   return CLASS_BY_STATE[state as MergeStateStatus] ?? "indeterminate";
 }
 
+/**
+ * Extract the reason from a `Hold:` / `Paused:` marker line in a PR body, or
+ * `null` when the PR is not declared held (THR-985).
+ *
+ * A marker with an empty reason does **not** count. The reason is the whole
+ * value of the marker — it is what turns "this PR is parked" from an assertion
+ * into something a reader can check — so a bare `Hold:` is treated as absent
+ * rather than as a hold nobody can justify.
+ *
+ * Returns `null` for a missing or unreadable body, which is the escalating
+ * direction: a stall must never be suppressed by the absence of information.
+ */
+export function parseHoldMarker(body: string | null | undefined): string | null {
+  if (typeof body !== "string" || body.length === 0) {
+    return null;
+  }
+  // Trailing `*`s come from a fully-bolded marker (`**Hold: reason**`) and are
+  // formatting, not reason.
+  const reason = HOLD_MARKER_PATTERN.exec(body)?.[1]?.replace(/\*+$/, "").trim();
+  return reason ? reason : null;
+}
+
 // ---------------------------------------------------------------------------
 // Classification — pure, dependency-injected, the whole testable surface
 // ---------------------------------------------------------------------------
@@ -334,10 +445,27 @@ export function classifyArmedPrs(input: ArmedPrInput): ArmedPrResult {
         };
 
   const reports: ArmedPrReport[] = prs.map((pr) => {
-    const klass = classifyMergeState(pr.mergeStateStatus);
+    const stateClass = classifyMergeState(pr.mergeStateStatus);
+    const held = pr.holdReason !== null;
+
+    // Class precedence (THR-985). A declared hold outranks every mechanical
+    // state: a held PR is not drainable (updating it refreshes a branch nobody
+    // will merge), not conflicted-in-the-actionable-sense (its conflict is
+    // real, but the stall is a decision rather than a defect), and not waiting.
+    // Below that, `waiting` splits on arming — an unarmed PR in a green state
+    // is `idle`, because nothing is waiting on checks that no merge depends on.
+    const klass: ArmedPrClass = held
+      ? "held"
+      : stateClass === "waiting" && !pr.armed
+        ? "idle"
+        : stateClass;
+
     const ageMs = Math.max(0, nowMs - pr.clockStartMs);
+    // Keyed off the raw merge state, not `klass`, so a held PR still reports
+    // its conflicting files — resolving them is legitimate maintenance even
+    // while re-arming the PR is not.
     const conflictFiles =
-      klass === "conflicted" ? (conflictFilesFor(pr.headRefOid) ?? []) : [];
+      pr.mergeStateStatus === "DIRTY" ? (conflictFilesFor(pr.headRefOid) ?? []) : [];
     const { escalateMs, abandonedMs } = tiersFor(pr.armed);
 
     return {
@@ -350,6 +478,7 @@ export function classifyArmedPrs(input: ArmedPrInput): ArmedPrResult {
       conflictFiles: conflictFiles.slice(0, ARMED_CONFLICT_FILE_LIMIT),
       escalated: klass === "conflicted" && ageMs >= escalateMs,
       abandoned: klass === "conflicted" && ageMs >= abandonedMs,
+      holdReason: pr.holdReason,
     };
   });
 
@@ -357,6 +486,8 @@ export function classifyArmedPrs(input: ArmedPrInput): ArmedPrResult {
     drainable: 0,
     conflicted: 0,
     waiting: 0,
+    idle: 0,
+    held: 0,
     indeterminate: 0,
   };
   for (const r of reports) {
@@ -450,8 +581,14 @@ export function classifyArmedPrs(input: ArmedPrInput): ArmedPrResult {
     };
   }
 
-  // 4. Nothing actionable, but some state could not be determined.
-  if (counts.indeterminate > 0 && counts.waiting === 0) {
+  // 4. Nothing actionable, and nothing informative either — every remaining PR
+  //    is in a state GitHub had not finished computing.
+  if (
+    counts.indeterminate > 0 &&
+    counts.waiting === 0 &&
+    counts.idle === 0 &&
+    counts.held === 0
+  ) {
     return {
       verdict: "unknown",
       summary:
@@ -467,12 +604,48 @@ export function classifyArmedPrs(input: ArmedPrInput): ArmedPrResult {
     };
   }
 
+  // 5. Nothing needs doing. Report what is actually true of what is left rather
+  //    than asserting every open PR "will merge on green" (THR-985) — that
+  //    claim is false for an unarmed PR, which nothing is waiting on, and false
+  //    for a held one, which must not merge at all.
+  const parts: string[] = [];
+  if (counts.waiting > 0) {
+    parts.push(
+      `${counts.waiting} ${plural(counts.waiting, "is", "are")} waiting on checks and will merge on green`,
+    );
+  }
+  if (counts.idle > 0) {
+    parts.push(
+      `${counts.idle} ${plural(counts.idle, "is", "are")} not armed for auto-merge, so ` +
+        `${plural(counts.idle, "it", "they")} will not merge without a session`,
+    );
+  }
+  if (counts.held > 0) {
+    const heldNames = reports
+      .filter((r) => r.klass === "held")
+      .map((r) => `#${r.number} (${r.holdReason})`)
+      .join(", ");
+    parts.push(`${counts.held} ${plural(counts.held, "is", "are")} on hold on purpose: ${heldNames}`);
+  }
+  if (counts.indeterminate > 0) {
+    parts.push(
+      `${counts.indeterminate} ${plural(counts.indeterminate, "is", "are")} in a state ` +
+        "GitHub had not finished computing",
+    );
+  }
+
+  // Verdict names the most informative remaining category. Anything genuinely
+  // waiting on green is the healthy steady state; absent that, say plainly that
+  // what is left is idle or parked instead of calling a stalled board healthy.
+  const verdict: ArmedPrVerdict =
+    counts.waiting > 0 ? "healthy" : counts.idle > 0 ? "idle" : counts.held > 0 ? "held" : "healthy";
+
   return {
-    verdict: "healthy",
+    verdict,
     summary:
       prs.length === 0
         ? "No PRs are waiting to merge."
-        : `${prs.length} open ${plural(prs.length, "PR is", "PRs are")} waiting on checks and will merge on green.`,
+        : `${prs.length} open ${plural(prs.length, "PR", "PRs")}: ${parts.join("; ")}.`,
     needsChristian: false,
     needsSession: false,
     updateCandidate,
@@ -550,6 +723,8 @@ interface RawPr {
   createdAt: string;
   isDraft: boolean;
   autoMergeRequest: { enabledAt: string } | null;
+  /** PR description — searched for the `Hold:` marker (THR-985). */
+  body: string;
 }
 
 /**
@@ -570,7 +745,7 @@ function listOpenPrs(): RawPr[] | null {
     "--limit",
     "100",
     "--json",
-    "number,title,mergeStateStatus,headRefOid,createdAt,isDraft,autoMergeRequest",
+    "number,title,mergeStateStatus,headRefOid,createdAt,isDraft,autoMergeRequest,body",
   ]);
   if (raw === null) {
     return null;
@@ -663,7 +838,7 @@ function main(): void {
       needsSession: false,
       updateCandidate: null,
       prs: [],
-      counts: { drainable: 0, conflicted: 0, waiting: 0, indeterminate: 0 },
+      counts: { drainable: 0, conflicted: 0, waiting: 0, idle: 0, held: 0, indeterminate: 0 },
       armedCount: 0,
       unarmedCount: 0,
     };
@@ -690,6 +865,9 @@ function main(): void {
           armed,
           clockStartMs,
           headRefOid: pr.headRefOid,
+          // An absent or unreadable body yields `null` — not held — so the PR
+          // escalates as it does today (THR-985 fail-soft direction).
+          holdReason: parseHoldMarker(pr.body),
         };
       }),
     });
@@ -710,10 +888,11 @@ function main(): void {
     );
     for (const pr of result.prs) {
       const files = pr.conflictFiles.length > 0 ? ` — conflicts: ${pr.conflictFiles.join(", ")}` : "";
+      const hold = pr.holdReason !== null ? ` — HELD: ${pr.holdReason}` : "";
       console.log(
         `[armed-prs]   #${pr.number} ${pr.klass} (${pr.mergeStateStatus}, ` +
           `${pr.armed ? "armed" : "UNARMED"}, ${pr.ageMinutes}m` +
-          `${pr.abandoned ? ", ABANDONED" : pr.escalated ? ", ESCALATED" : ""})${files}`,
+          `${pr.abandoned ? ", ABANDONED" : pr.escalated ? ", ESCALATED" : ""})${hold}${files}`,
       );
     }
   }
