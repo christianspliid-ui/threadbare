@@ -115,6 +115,12 @@ export interface EncounterStageNarrativeSegment {
   text: string;
   referenceId?: string;
   emphasis?: 'default' | 'strong' | 'accent';
+  /**
+   * THR-971 — graph node id behind this segment's text, when one is known.
+   * Present only on a linked segment whose entity resolved to a real node;
+   * a renderer without it emphasises the name but does not make it clickable.
+   */
+  entityId?: string;
 }
 
 export interface EncounterStageNarrativeParagraph {
@@ -235,12 +241,59 @@ export interface EncounterStageAftermathReactionModel {
   disabled?: boolean;
 }
 
+/**
+ * The consequence taxonomy the ending renders in (THR-971) — what you got, what
+ * it cost, what it planted.
+ *
+ * These are **presentation** classes, not a new engine vocabulary: every kind
+ * maps from an `EncounterAftermathChange.kind` that already exists, or from an
+ * `encounter_seed` effect the encounter already declares. Authors never write a
+ * consequence twice — see `buildAftermathConsequences.ts` for the mapping table
+ * and why `toll` does not read the source the ticket originally named.
+ *
+ * `mark` is the fail-soft bucket: an unrecognised change kind lands here rather
+ * than being dropped, because a consequence the screen does not admit is the
+ * defect this taxonomy exists to kill.
+ */
+export type EncounterStageConsequenceKind =
+  | 'prize'
+  | 'standing'
+  | 'toll'
+  | 'wound'
+  | 'seed'
+  | 'mark';
+
+export type EncounterStageConsequenceTone = 'gain' | 'loss' | 'seed' | 'info';
+
+export interface EncounterStageConsequenceChipModel {
+  id: string;
+  kind: EncounterStageConsequenceKind;
+  /** Short kind tag drawn on the chip (PRIZE / TOLL / STANDING / WOUND / SEED). */
+  kindLabel: string;
+  /**
+   * One sentence, pre-segmented so any named entity in it links to its page.
+   * A sentence naming nothing linkable is a single plain segment — fail-open,
+   * never a dead link.
+   *
+   * Always authored prose. The chip surface never prints a magnitude: a toll is
+   * stated in words, per the nudge-model surface rules.
+   */
+  sentence: EncounterStageNarrativeParagraph;
+  tone: EncounterStageConsequenceTone;
+}
+
 export interface EncounterStageAftermathModel {
   title: string;
   overview: string;
   actorMoments?: EncounterStageAftermathActorModel[];
   highlights?: EncounterStageAftermathHighlightModel[];
   changes?: EncounterStageAftermathChangeModel[];
+  /**
+   * THR-971 — the mockup's chip taxonomy. When present the stage renders these
+   * *instead of* `highlights` + `changes`: all three are built from the same
+   * authored change set, so drawing them together would say everything twice.
+   */
+  consequences?: EncounterStageConsequenceChipModel[];
   reactionPrompt?: string;
   reactions?: EncounterStageAftermathReactionModel[];
 }
