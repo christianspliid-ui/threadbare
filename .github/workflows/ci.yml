@@ -15,6 +15,20 @@ on:
   # on `main` runs the whole suite unconditionally — see the `detect` and `check`
   # conditions below for how the filter is bypassed.
   workflow_dispatch:
+  # Merge queue (THR-946). Without this trigger the required checks never report
+  # on a merge group and EVERY queued PR stalls until the group times out — so
+  # this line is a hard prerequisite of enabling the queue, not an enhancement.
+  #
+  # Inert until the queue is enabled on `main` in branch protection (a
+  # Christian-owned settings click, tracked in `Design/user-actions.md`): no
+  # merge groups exist before that, so no run can fire from here.
+  #
+  # `checks_requested` is the only type this event has; naming it explicitly
+  # documents that. No `branches:` filter — a merge group's own ref is
+  # `refs/heads/gh-readonly-queue/main/pr-N-<sha>`, not `main`, and the queue
+  # exists on `main` alone anyway.
+  merge_group:
+    types: [checks_requested]
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -32,10 +46,27 @@ jobs:
     name: Detect code changes
     runs-on: ubuntu-latest
     outputs:
-      code: ${{ steps.filter.outputs.code }}
-      docs: ${{ steps.filter-docs.outputs.docs }}
+      # Two producers, never both (THR-946): `paths-filter` on push/pull_request,
+      # the git-diff step on `merge_group`. Whichever did not run contributes an
+      # EMPTY string, and `||` in a GitHub expression casts operands to boolean
+      # where '' is the only falsy string — so an empty output falls through to
+      # the other producer while a genuine 'false' (a non-empty string, hence
+      # TRUTHY) short-circuits and is returned intact. That asymmetry is the
+      # whole reason this reads correctly; do not "fix" it to `fromJSON`.
+      code: ${{ steps.filter.outputs.code || steps.filter-merge-group.outputs.code }}
+      docs: ${{ steps.filter-docs.outputs.docs || steps.filter-merge-group.outputs.docs }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Full history only where it is needed: the merge-group step below diffs
+          # against `base_sha`, which a depth-1 clone does not contain. On
+          # pull_request, paths-filter reads the changed-file list from the API and
+          # never touches local history, so the shallow default stays correct.
+          #
+          # Quoted deliberately: `A && 0 || 1` evaluates to 1 for BOTH branches,
+          # because the number 0 is falsy and loses the `||`. The strings '0'/'1'
+          # are both non-empty, hence both truthy, so the ternary works.
+          fetch-depth: ${{ github.event_name == 'merge_group' && '0' || '1' }}
       - uses: dorny/paths-filter@v3
         id: filter
         # Skipped on a manual dispatch (THR-842): paths-filter derives its diff
@@ -43,7 +74,12 @@ jobs:
         # does not carry. Skipping the step leaves `code` empty and the job still
         # `success`, so the vacuous-gate guard below stays quiet — the `check`
         # job's own `workflow_dispatch` clause is what forces the full suite.
-        if: github.event_name != 'workflow_dispatch'
+        #
+        # `merge_group` is excluded for the same missing-diff-base reason, but the
+        # consequence differs: there IS a diff to compute, so leaving `code` empty
+        # would skip the suite on a real code merge — the vacuous gate THR-768
+        # exists to prevent. The step below computes it from `base_sha` instead.
+        if: github.event_name != 'workflow_dispatch' && github.event_name != 'merge_group'
         with:
           # 'code' is true if ANY changed file is not a doc.
           # predicate-quantifier: every is REQUIRED — under the default 'some'
@@ -93,8 +129,8 @@ jobs:
       # would read as a working filter and silently never fire.
       - uses: dorny/paths-filter@v3
         id: filter-docs
-        # Same workflow_dispatch carve-out as above: no diff base on that event.
-        if: github.event_name != 'workflow_dispatch'
+        # Same carve-outs as above: neither event carries a diff base.
+        if: github.event_name != 'workflow_dispatch' && github.event_name != 'merge_group'
         with:
           # Default quantifier ('some') is correct here — a file is a doc if it
           # matches any one of these.
@@ -114,6 +150,67 @@ jobs:
               # required check said too (THR-768).
               - 'src/data/ul-dashboard.generated.json'
               - 'public/system-interface-map-reference.html'
+
+      # The THIRD producer of `code`/`docs`, for merge groups only (THR-946).
+      #
+      # A `merge_group` event carries no changed-file list and no diff base that
+      # `paths-filter` knows how to read, so both steps above sit this event out.
+      # The decision made here — deliberately, per the ticket — is to PRESERVE the
+      # docs-only skip inside the queue rather than run the full suite on every
+      # merge group. Preserving it keeps a docs merge at ~1 minute; dropping it
+      # would put every hourly briefing and orchestrator sweep through the ~10.5
+      # minute suite and batch them behind each other, which is the same lane
+      # congestion the queue is being adopted to remove. The suite is free on
+      # public runners, so this is a latency argument, not a cost one.
+      #
+      # Re-deriving THR-768's vacuous-gate reasoning for this event, since the
+      # skip is only safe if "skipped" can never mean "unknown": every failure
+      # mode here — an unresolvable base, a `git diff` error, a broken pattern —
+      # exits non-zero and fails `detect`, and `check`'s guard turns a non-success
+      # `detect` into a FAILING required check. There is no path on which this
+      # step quietly yields `code=false` for a change it could not classify.
+      - name: Detect changes (merge group)
+        id: filter-merge-group
+        if: github.event_name == 'merge_group'
+        env:
+          BASE_SHA: ${{ github.event.merge_group.base_sha }}
+          # The same predicate as the two filters above and as CLAUDE.md's
+          # documented classification grep, expressed as one ERE because that is
+          # what `git diff --name-only` output can be matched with. Pinned against
+          # DOC_EXCLUDED_GLOBS + DOC_TO_CODE_ALLOWLIST — structurally AND
+          # behaviourally, by running this exact string as a RegExp — in
+          # scripts/__tests__/docs-code-decoupling.test.ts, so it cannot drift
+          # away from the other two copies unnoticed.
+          DOC_PATTERN: '(\.md$|^Docs/|^\.planning/|^Design/|^src/data/ul-dashboard\.generated\.json$|^public/system-interface-map-reference\.html$)'
+        run: |
+          set -euo pipefail
+
+          # An unresolvable base is a DETECTION FAILURE, not "nothing changed".
+          # Explicit because the difference is the whole gate: exiting non-zero
+          # fails `detect` and turns the required check red, whereas continuing
+          # with an empty diff would wave a real code merge through as docs-only.
+          git rev-parse --verify --quiet "${BASE_SHA}^{commit}" >/dev/null \
+            || { echo "::error::merge_group base_sha '${BASE_SHA}' is not a commit in this checkout — refusing to classify a diff I cannot compute (THR-768)."; exit 1; }
+
+          CHANGED="$(git diff --name-only "${BASE_SHA}" HEAD)"
+          echo "Merge group diff against ${BASE_SHA}:"
+          printf '%s\n' "${CHANGED:-  (empty)}"
+
+          CODE=false
+          DOCS=false
+          if [ -n "$CHANGED" ]; then
+            # `code` mirrors the `every`-quantified filter: true when ANY changed
+            # file is not a doc. `docs` mirrors the `some`-quantified one: true
+            # when ANY changed file is a doc. A mixed group sets both, and the
+            # job conditions below already resolve that case the same way they do
+            # for a mixed PR (`check` runs and carries the doc gates itself).
+            if printf '%s\n' "$CHANGED" | grep -qvE "$DOC_PATTERN"; then CODE=true; fi
+            if printf '%s\n' "$CHANGED" | grep -qE  "$DOC_PATTERN"; then DOCS=true; fi
+          fi
+
+          echo "code=$CODE" >> "$GITHUB_OUTPUT"
+          echo "docs=$DOCS" >> "$GITHUB_OUTPUT"
+          echo "Classified merge group: code=$CODE docs=$DOCS"
 
   # The doc-validating gates, on the one PR shape that can trip them (THR-909).
   #
@@ -143,6 +240,9 @@ jobs:
   #   detect did NOT succeed        → skipped, and `check` fails loudly via its
   #                                   own guard, so the merge is blocked anyway
   #   event is workflow_dispatch    → skipped; `check` runs unconditionally
+  #   event is merge_group          → the four `detect` rows above apply
+  #                                   unchanged, classified from `base_sha`
+  #                                   instead of a paths-filter payload (THR-946)
   #
   # Deliberately cheap: no full test suite, no typecheck, no vite build. It is
   # `npm ci` plus three fast scripts, which preserves the fast-docs-PR property
@@ -196,6 +296,16 @@ jobs:
     #   detect succeeded, code == 'false' → skip               (unchanged: docs-only PRs stay fast)
     #   detect did NOT succeed            → run, and FAIL loudly via the guard step below
     #   event is workflow_dispatch        → run unconditionally (THR-842 retro-verification)
+    #
+    # The condition needed NO change for merge queues (THR-946) and that is worth
+    # stating rather than leaving to be re-derived: `merge_group` is not `push`,
+    # so the THR-939 exclusion does not catch it, and `detect` now classifies the
+    # group from `base_sha`, so the three `detect`-based rows above apply to a
+    # merge group exactly as they do to a PR. A docs-only group skips this job and
+    # reports `skipped`, which branch protection accepts — the same rule that made
+    # THR-768 dangerous is the rule that keeps docs merges fast here, and it is
+    # safe in this direction only because `detect` cannot silently answer "false"
+    # for a change it failed to classify.
     #
     # `!cancelled()` rather than `always()` deliberately: a run superseded by
     # `cancel-in-progress` must stay cancelled, not be reported as a failure.
