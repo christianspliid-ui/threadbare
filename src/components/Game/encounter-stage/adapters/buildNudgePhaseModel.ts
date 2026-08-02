@@ -76,6 +76,12 @@ import {
 import { computeForecast } from '../../../../engine/encounters/outcomeForecast';
 import { adaptUnifiedActionTemplateToEncounterContract } from '../../../../engine/encounter-contract-adapter';
 import {
+  enrichProse,
+  gatherNarrativeContext,
+  type NarrativeContext,
+} from '../../../../engine/proseEnrichment';
+import type { SimulationRuntime } from '../../../../engine/simulationRuntime';
+import {
   FORECAST_TIER_WORDS,
   MOTIVE_CHIP_LABELS,
   MOTIVE_FALLBACK_SENTENCES,
@@ -125,6 +131,18 @@ export interface BuildNudgePhaseModelArgs {
   step: ActionStep;
   graph: WorldGraph;
   gameState?: GameState;
+  /**
+   * THR-923 — the enrichment context authored nudge prose is resolved against.
+   *
+   * Optional so no caller *breaks*, but never load-bearing: absent, the builder
+   * gathers its own from `graph` + the acting id. Enrichment is therefore a
+   * property of this builder rather than of remembering to pass something, which
+   * is the whole reason the gap existed — every field below was assigned straight
+   * off the template and no caller had a reason to notice.
+   */
+  narrativeContext?: NarrativeContext;
+  /** Phrase-dedup history for `{outcome_phrase}` / `{q_flavor}`; fail-soft when absent. */
+  runtime?: SimulationRuntime;
 }
 
 /**
@@ -194,11 +212,19 @@ function costChannelsFor(nudge: StepNudge): EncounterStageCostChannelModel[] | u
  * used to judge affordability and what `totalNudgeCost` will charge at commit, so
  * anything else here would quote one number and bill another (THR-885's whole
  * reason for exporting that helper).
+ *
+ * **Every authored string leaves here enriched (THR-923).** `name`, `fiction` and
+ * `effectLine` are authored prose and carry the same placeholder vocabulary the
+ * rest of the encounter does; assigning them straight off the template shipped
+ * literal `{they}` / `{actor}` onto the stage. `fiction` is already the
+ * setting-resolved string by this point — `buildNudgeHand` folds `fictionBySetting`
+ * into it — so enriching here covers the variant as well as the default.
  */
 function cardModelFor(
   nudge: StepNudge,
   accessibleSpheres: readonly SphereName[],
   state: 'playable' | 'dimmed',
+  enrich: (text: string) => string,
   blocked?: NudgeBlockedCode,
 ): EncounterStageNudgeCardModel {
   const cost = effectiveNudgeCost(nudge, accessibleSpheres);
@@ -208,9 +234,9 @@ function cardModelFor(
     libraryCardId: nudge.libraryCardId,
     keyword: keyword?.keyword,
     keywordIcon: keyword?.icon,
-    name: nudge.name,
-    fiction: nudge.fiction,
-    effectLine: nudge.effectLine,
+    name: enrich(nudge.name),
+    fiction: enrich(nudge.fiction),
+    effectLine: enrich(nudge.effectLine),
     essenceCost: cost,
     discounted: cost < Math.max(0, nudge.essenceCost),
     costLabel: costLabelFor(cost),
@@ -369,6 +395,37 @@ export function buildNudgePhaseModel(
   if (!authored || authored.length === 0) return undefined;
 
   const actorId = activeAction.actorId;
+
+  // THR-923 — every authored string this builder emits goes through here.
+  //
+  // The gap this closes was structural, not a typo: the nudge adapter assigned
+  // card fiction, effect lines, factor lines and the purpose line straight off
+  // the template, so an encounter that resolved `{they}` correctly in its header
+  // (built by `buildUnifiedEncounterStageModel`, which does enrich) shipped the
+  // raw token two inches below it on the same card. Reusing the caller's context
+  // when it threads one keeps this to zero extra graph traversals on the live
+  // path; gathering our own otherwise means a test or a future caller cannot
+  // silently reopen the hole.
+  const ctx =
+    args.narrativeContext ??
+    gatherNarrativeContext(
+      graph,
+      actorId,
+      undefined,
+      undefined,
+      undefined,
+      gameState,
+      undefined,
+      {
+        targetId: activeAction.targetId,
+        supportBundle: template.supportBundle,
+        supportBindings: activeAction.supportBindings,
+        contextFragments: template.contextFragments,
+        contextFragmentTemplateId: template.id,
+      },
+    );
+  const enrich = (text: string): string => enrichProse(text, ctx, { runtime: args.runtime });
+
   const heldTraits = collectHeldTraitIds(graph, actorId);
   const pool = gameState?.essencePool as Readonly<Record<string, number>> | undefined;
   const availableEssenceFor = essenceReader(pool);
@@ -477,16 +534,16 @@ export function buildNudgePhaseModel(
   const withheld: EncounterStageWithheldNudgeModel[] = [];
 
   for (const entry of hand.playable) {
-    cards.push(cardModelFor(entry.nudge, accessibleSpheres, 'playable'));
+    cards.push(cardModelFor(entry.nudge, accessibleSpheres, 'playable', enrich));
   }
 
   for (const entry of hand.dimmed) {
     const { nudge, blocked } = entry;
     if (blocked && WITHHELD_CODES.has(blocked)) {
-      withheld.push({ id: nudge.id, name: nudge.name, blockedCode: blocked });
+      withheld.push({ id: nudge.id, name: enrich(nudge.name), blockedCode: blocked });
       continue;
     }
-    cards.push(cardModelFor(nudge, accessibleSpheres, 'dimmed', blocked));
+    cards.push(cardModelFor(nudge, accessibleSpheres, 'dimmed', enrich, blocked));
   }
 
   // Trait-gated cards the agent cannot hold: never in the player stage, listed
@@ -515,12 +572,12 @@ export function buildNudgePhaseModel(
   const factors: EncounterStageFactorLineModel[] = [];
   if (step.factorLines && step.factorLines.length > 0) {
     for (const [index, line] of step.factorLines.entries()) {
-      factors.push({ id: `authored:${index}`, text: line.text, polarity: line.polarity });
+      factors.push({ id: `authored:${index}`, text: enrich(line.text), polarity: line.polarity });
     }
   } else {
     for (const [index, text] of authoredFactorLines(template, activeAction.currentStep,
       baseSummary.successProbability).entries()) {
-      factors.push({ id: `authored:${index}`, text, polarity: 'neutral' });
+      factors.push({ id: `authored:${index}`, text: enrich(text), polarity: 'neutral' });
     }
   }
   for (const variant of variants) {
@@ -529,7 +586,7 @@ export function buildNudgePhaseModel(
     const helps = (variant.forecastDelta ?? 0) >= 0 && (variant.difficultyDelta ?? 0) <= 0;
     factors.push({
       id: `trait:${variant.traitId}`,
-      text: variant.factorLine,
+      text: enrich(variant.factorLine),
       polarity: helps ? 'for' : 'against',
       source: `trait:${variant.traitId}`,
       // THR-892 — the model carries the number beside the text so the row can
@@ -607,7 +664,7 @@ export function buildNudgePhaseModel(
     testPanel: {
       reach: step.reach,
       reachLabel: step.reach.charAt(0).toUpperCase() + step.reach.slice(1),
-      purposeLine: step.purposeLine,
+      purposeLine: step.purposeLine != null ? enrich(step.purposeLine) : undefined,
       difficultyWord: difficultyWord(effectiveDifficulty),
       difficultyValue: effectiveDifficulty,
       factors,
