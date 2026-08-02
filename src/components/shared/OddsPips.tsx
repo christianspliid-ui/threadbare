@@ -79,12 +79,34 @@ export const OddsPips = memo(function OddsPips({
   );
 });
 
+/**
+ * The framed badge's chrome (THR-972). Kept beside the pip constants so the
+ * price treatment is re-tuned in one place (NFP #1).
+ */
+const COST_FRAME_BORDER = 'rgba(212, 175, 55, 0.4)';
+const COST_FRAME_BACKGROUND = 'rgba(212, 175, 55, 0.1)';
+
 export interface CostPipsProps {
   /** Essence price — the *effective* cost, after any sphere discount. */
   cost: number;
   size?: number;
   /** Emphasise the price, as an unaffordable card does. */
   emphasised?: boolean;
+  /**
+   * Draw the price inside a bordered badge (THR-972).
+   *
+   * The director's find, 2026-08-02: a card's essence *price* and its odds
+   * *contribution* both rendered as a small row of repeated glyphs, so two
+   * vocabularies meaning opposite things — what you spend versus what you gain —
+   * were separated only by glyph shape at 12px. Shape alone was not enough.
+   *
+   * The frame is the fix: a price now reads as a discrete token stamped on the
+   * card, the way a cost pip reads on a physical card, while bare pip rows come
+   * to mean one thing everywhere — effect on the odds. Off by default so the
+   * running-total row at the commit bar, which is already labelled by position
+   * and has no odds row to be confused with, stays unchanged.
+   */
+  framed?: boolean;
   'data-testid'?: string;
 }
 
@@ -97,21 +119,37 @@ export const CostPips = memo(function CostPips({
   cost,
   size = 12,
   emphasised = false,
+  framed = false,
   'data-testid': dataTestId,
 }: CostPipsProps) {
   const rounded = Math.max(0, Math.round(cost));
+
+  // The badge chrome, shared by the "Free" and priced branches so a free card
+  // and a two-essence card read as the same *kind* of token.
+  const frameStyle: React.CSSProperties = framed
+    ? {
+        display: 'inline-flex',
+        alignItems: 'center',
+        padding: '2px 7px',
+        borderRadius: 5,
+        border: `1px solid ${COST_FRAME_BORDER}`,
+        background: COST_FRAME_BACKGROUND,
+      }
+    : {};
 
   if (rounded === 0) {
     return (
       <span
         data-testid={dataTestId}
         data-cost-pips={0}
+        data-cost-framed={framed || undefined}
         style={{
           fontSize: size,
           lineHeight: 1,
           color: ESSENCE_COLOR,
           letterSpacing: '0.06em',
           opacity: emphasised ? 1 : 0.85,
+          ...frameStyle,
         }}
       >
         {NUDGE_FREE_COST_LABEL}
@@ -127,6 +165,7 @@ export const CostPips = memo(function CostPips({
     <span
       data-testid={dataTestId}
       data-cost-pips={rounded}
+      data-cost-framed={framed || undefined}
       role="img"
       aria-label={label}
       title={label}
@@ -137,6 +176,7 @@ export const CostPips = memo(function CostPips({
         color: ESSENCE_COLOR,
         textShadow: emphasised ? `0 0 6px ${ESSENCE_COLOR}` : undefined,
         whiteSpace: 'nowrap',
+        ...frameStyle,
       }}
     >
       <span aria-hidden="true">

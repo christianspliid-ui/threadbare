@@ -19,7 +19,10 @@ import { autoLinkNarrative, collectSupportBundleEntities } from '../narrativeLin
 import { buildAftermathConsequences } from './buildAftermathConsequences';
 import { buildNudgePhaseModel } from './buildNudgePhaseModel';
 import { resolveStepDefinition } from '../../../../engine/unifiedActionLifecycle';
-import { getPortraitUrl } from '../../../../data/portrait-assets';
+import {
+  getAgentPortraitUrlFromProperties,
+  getPortraitUrl,
+} from '../../../../data/portrait-assets';
 import { getAttachmentGlyph } from '../../attachmentGlyphs';
 import type {
   EncounterChoiceMemory,
@@ -137,8 +140,15 @@ function buildHeader(
   const rawSubtitle = template.description ?? template.narrativeTemplates.initiation;
 
   // Portrait for the focal agent — same resolution the aftermath actor-moments use.
+  //
+  // THR-972: this read `getPortraitUrl(narrativeArchetype)`, which covers only the
+  // generic archetype registry. An agent carrying a bespoke `portraitAssetPath`
+  // — every meeting-generated mortal, The First included — resolved to null and
+  // fell to a gradient tile, which is what made the test panel's portrait slot
+  // read as an unfilled placeholder rather than as the acting agent. The helper
+  // below is the superset the resolver itself uses: bespoke path first, archetype
+  // second, null only when the agent genuinely has neither.
   const actorNode = graph.getNode(activeAction.actorId);
-  const archetypeId = actorNode?.properties?.narrativeArchetype as string | undefined;
 
   return {
     title: template.name,
@@ -149,7 +159,7 @@ function buildHeader(
     familyLabel: agentName,
     agentName,
     focalActorId: activeAction.actorId,
-    portraitUrl: getPortraitUrl(archetypeId),
+    portraitUrl: getAgentPortraitUrlFromProperties(actorNode?.properties),
     hexCol: notification.hexCol,
     hexRow: notification.hexRow,
     reachLabel: reachLabelFor(currentStep.reach),

@@ -10,6 +10,7 @@ import type {
   EncounterStageHistoryModel,
 } from './encounter-stage/types';
 import { NudgePhaseShell } from './encounter-stage/shells/NudgePhaseShell';
+import { NudgeMotiveIntro } from './encounter-stage/shells/NudgeMotiveIntro';
 import { ProseTtsButton } from './Encounter/ProseTtsButton';
 
 // ── Thread tier types ──────────────────────────────────────────────
@@ -1438,6 +1439,14 @@ export function EncounterVeil({
             <StepReplayView entry={replayEntry} onReturn={() => setReplayStepIndex(null)} />
           ) : (
           <>
+          {/* THR-972 — the motive as the scene's opening line. Above the prose
+              by directive: as a chip below it, the answer to "why is this mortal
+              here" arrived after the scene it was supposed to frame. Renders
+              nothing when the phase carries no motive. */}
+          {model.nudgePhase && (
+            <NudgeMotiveIntro phase={model.nudgePhase} onOpen={onOpenMotive} />
+          )}
+
           {model.narrative.paragraphs.map((para, pIdx) => {
             const text = para.segments.map((s) => s.text).join('');
             // Drop cap on first paragraph
@@ -1553,8 +1562,12 @@ export function EncounterVeil({
               phase={model.nudgePhase}
               portraitUrl={model.header.portraitUrl}
               agentName={model.header.agentName}
+              focalActorId={model.header.focalActorId}
               onCommit={onCommitNudges ?? (() => {})}
               onOpenMotive={onOpenMotive}
+              // THR-972 — the motive intro renders above the prose block, which
+              // is a different subtree; the shell must not draw it a second time.
+              renderMotiveIntro={false}
             />
           ) : (
             model.choices.map((choice) => (

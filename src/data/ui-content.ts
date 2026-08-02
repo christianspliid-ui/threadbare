@@ -320,6 +320,10 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     label: 'The Nudge Hand',
     desc: 'The ways you can lean on this moment. Each card is one push — steadying a hand, bracing a beam — bought with essence. Play any or none: the cards tilt the forecast, then fate rolls the ending.',
   },
+  'ui.nudge_glyphs': {
+    label: 'Reading a Card',
+    desc: 'A card marks three things. The framed gold token is its price in essence. The pip row under the effect is how far it moves the odds. Red triangles are a setback the card brings with it.',
+  },
 };
 
 /** Lookup a UI tooltip by ID. Returns null if not found. */

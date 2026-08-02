@@ -17,16 +17,21 @@ import { useSyncExternalStore } from 'react';
 import { EntityVisual } from '../../../shared/EntityVisual';
 import { Tooltip } from '../../../shared/Tooltip';
 import { SphereIcon } from '../../../shared/SphereIcon';
+import { ReachIcon } from '../../../icons';
 import { CardKeywordChip } from '../../../shared/CardKeywordChip';
 import { CostPips, OddsPips } from '../../../shared/OddsPips';
 import { gradientIndexForId } from '../../../../data/entity-visual-fallbacks';
 import { resolveEncounterImagePath } from '../../../../data/encounterImageResolver';
+import { NUDGE_GLYPH_LEGEND } from '../../../../data/nudge-card-display';
 import {
   NUDGE_BLOCKED_REASONS,
   NUDGE_COMMIT_LABEL,
   NUDGE_EMPTY_HAND_LINE,
   NUDGE_HAND_HEADING,
+  TEST_GLYPH,
+  TEST_UNIT_LABEL,
 } from '../../../../data/nudge-stage-content';
+import { NudgeMotiveIntro } from './NudgeMotiveIntro';
 import {
   isNudgeDesignerViewEnabled,
   subscribeNudgeDesignerView,
@@ -63,6 +68,33 @@ const FACTOR_POLARITY_COLORS: Record<string, string> = {
 const FACTOR_PIP_SIZE = 10;
 const FACTOR_PIP_GAP = 6;
 
+// ── Test-panel iconography (THR-972) ───────────────────────────────
+
+/**
+ * Reach chip edge. Larger than the 28px PNG it replaces: the icon now carries the
+ * reach *alone*, with no text label beside it, so it has to be readable as a
+ * symbol rather than merely present as a decoration.
+ */
+const REACH_ICON_PX = 34;
+
+/** Scales glyph, sized to sit level with the difficulty word inside the frame. */
+const TEST_GLYPH_PX = 15;
+
+// ── Card glyph sizes (THR-972 directive 5) ─────────────────────────
+// The director's find was that three glyph vocabularies were "quite small and
+// difficult to read" at 13px and indistinguishable from one another. Sizes are
+// constants so re-tuning legibility stays a number change (NFP #1); the
+// *distinguishing* work is done by the framed price badge below, not by size.
+
+/** Sphere mark on the card's cost row. */
+const CARD_SPHERE_ICON_PX = 16;
+/** Essence price glyphs, inside the framed badge. */
+const CARD_COST_PIP_PX = 14;
+/** The card's odds contribution. */
+const CARD_ODDS_PIP_PX = 14;
+/** Legend glyphs under the hand heading. */
+const LEGEND_GLYPH_PX = 12;
+
 // ── Card-row layout (THR-890) ──────────────────────────────────────
 // The locked card format: picture band, keyword chip, title, cost, effect,
 // quote. Sizes are constants so re-proportioning the row is a number change.
@@ -83,10 +115,26 @@ export interface NudgePhaseShellProps {
   /** Focal agent portrait, when the header resolved one. */
   portraitUrl?: string | null;
   agentName?: string;
+  /**
+   * Focal agent's node id, for the portrait's resolver lookup and its stable
+   * fallback-gradient identity. Absent ⇒ the action id stands in, which still
+   * renders but gives the tile a per-encounter colour rather than a per-agent one.
+   */
+  focalActorId?: string;
   /** Commit the selected hand and let the step resolve. */
   onCommit: (nudgeIds: string[], essenceCost: number) => void;
-  /** Open the motive explainer. Absent ⇒ the chip renders inert. */
+  /** Open the motive explainer. Absent ⇒ the line renders as static text. */
   onOpenMotive?: (phase: EncounterStageNudgePhaseModel) => void;
+  /**
+   * Render the motive intro line inside this shell (THR-972).
+   *
+   * Defaults to true so a host that mounts the shell whole — the meeting beats —
+   * keeps the line without changing. `EncounterVeil` passes **false**, because it
+   * renders `NudgeMotiveIntro` itself, above its prose block, which is the
+   * placement the directive asked for and which this shell cannot reach from
+   * inside its own subtree.
+   */
+  renderMotiveIntro?: boolean;
 }
 
 // ── Card ───────────────────────────────────────────────────────────
@@ -192,10 +240,17 @@ function NudgeCard({
             // aligned across the row.
             <span />
           )}
-          <span style={{ display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0 }}>
-            {card.sphere && <SphereIcon sphere={card.sphere} size={13} />}
+          {/* THR-972 directive 5 — the sphere mark and the price are two
+              different vocabularies sitting side by side, so they are sized to be
+              read (not 13px) and the price is framed as a token. The frame is
+              what stops the essence row and the odds row below from reading as
+              the same kind of thing. */}
+          <span style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+            {card.sphere && <SphereIcon sphere={card.sphere} size={CARD_SPHERE_ICON_PX} />}
             <CostPips
               cost={card.essenceCost}
+              size={CARD_COST_PIP_PX}
+              framed
               emphasised={dimmed && card.blockedCode === 'essence_unavailable'}
               data-testid={`nudge-card-cost-${card.id}`}
             />
@@ -240,6 +295,7 @@ function NudgeCard({
           </span>
           <OddsPips
             value={card.forecastDelta}
+            size={CARD_ODDS_PIP_PX}
             muted={dimmed}
             data-testid={`nudge-card-odds-${card.id}`}
           />
@@ -292,8 +348,10 @@ export function NudgePhaseShell({
   phase,
   portraitUrl,
   agentName,
+  focalActorId,
   onCommit,
   onOpenMotive,
+  renderMotiveIntro = true,
 }: NudgePhaseShellProps) {
   const designerView = useSyncExternalStore(
     subscribeNudgeDesignerView,
@@ -304,41 +362,23 @@ export function NudgePhaseShell({
   );
 
   const hand = useNudgeHand(phase);
-  const { testPanel, motive } = phase;
+  const { testPanel } = phase;
 
   return (
     <div data-testid="nudge-phase-shell" style={{ marginTop: 24 }}>
-      {/* ── Motive strip ───────────────────────────────────────── */}
-      {motive && (
-        <div
-          data-testid="nudge-motive-strip"
-          style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 18 }}
-        >
-          <Tooltip id="ui.nudge_motive">
-            <button
-              type="button"
-              data-testid="nudge-motive-chip"
-              onClick={onOpenMotive ? () => onOpenMotive(phase) : undefined}
-              disabled={!onOpenMotive}
-              style={{
-                padding: '3px 10px',
-                borderRadius: 999,
-                border: `1px solid ${GOLD}`,
-                background: 'rgba(212, 175, 55, 0.08)',
-                color: GOLD,
-                fontSize: 'var(--text-xs)',
-                letterSpacing: '0.12em',
-                cursor: onOpenMotive ? 'pointer' : 'default',
-              }}
-            >
-              {motive.chipLabel}
-            </button>
-          </Tooltip>
-          <Tooltip id="ui.nudge_motive">
-            <span style={{ fontFamily: FONT_PROSE, fontStyle: 'italic', fontSize: 'var(--text-sm)', color: TEXT_WARM }}>
-              {motive.sentence}
-            </span>
-          </Tooltip>
+      {/* ── Motive ──────────────────────────────────────────────
+          THR-972 moved the motive out of this shell entirely. It now renders as
+          the scene's opening line *above* the veil's prose (`NudgeMotiveIntro`),
+          which is a different subtree — the chip+sentence strip that used to sit
+          here could only ever appear below the fiction it was framing.
+
+          `renderMotiveIntro` lets a host that has no prose block of its own (the
+          meeting beats, which mount this shell whole) keep the line inside the
+          shell rather than losing it. EncounterVeil passes false and mounts the
+          line itself. */}
+      {renderMotiveIntro && (
+        <div style={{ marginBottom: 18 }}>
+          <NudgeMotiveIntro phase={phase} onOpen={onOpenMotive} />
         </div>
       )}
 
@@ -354,39 +394,47 @@ export function NudgePhaseShell({
           background: 'rgba(255, 255, 255, 0.015)',
         }}
       >
+        {/* ── The acting mortal ──────────────────────────────────
+            THR-972 directive 1, option (a): the slot is the *agent's* portrait,
+            not an encounter-image placeholder, so it resolves like one. The
+            resolver path (`entity`) replaces a hand-built descriptor, which means
+            this tile now inherits the shared knowledge gate and the same bespoke →
+            archetype source chain the veil header uses; the companion fix in
+            `buildUnifiedEncounterStageModel` is what actually makes `portraitUrl`
+            arrive populated for slice-visible agents. Gradient identity keys on
+            the agent rather than the action, so the same mortal keeps their
+            fallback colour across encounters. */}
         <EntityVisual
           size="portrait"
-          descriptor={{
-            tier: portraitUrl ? 'art' : 'fallback',
-            src: portraitUrl ?? undefined,
-            glyph: '☖',
-            gradientIndex: gradientIndexForId(phase.actionId),
-            alt: agentName ?? 'The mortal',
+          entity={{
+            id: focalActorId ?? phase.actionId,
             kind: 'agent',
+            name: agentName ?? 'The mortal',
+            knownSrc: portraitUrl,
           }}
+          data-testid="nudge-actor-portrait"
           aria-label={agentName ?? 'The mortal'}
           style={{ width: 64, flexShrink: 0 }}
         />
 
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-            {/* The reach chip chains to the world-model reach tooltip — the
-                "what is Stone" answer lives there already (THR-926). */}
+            {/* ── Reach ────────────────────────────────────────
+                THR-972 directive 2: the shared icon set's `ReachIcon`, which
+                draws the reach's own heraldic charge in its sphere colour, in
+                place of the tiered PNG *and* the text label beside it. The name
+                is not lost — it is the chip's accessible name and title, and the
+                `reach.*` tooltip chain (THR-926) still answers "what is Stone". */}
             <Tooltip id={`reach.${testPanel.reach}`}>
-              <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                {testPanel.reachIconUrl && (
-                  <img
-                    src={testPanel.reachIconUrl}
-                    alt=""
-                    width={28}
-                    height={28}
-                    style={{ borderRadius: 4 }}
-                    onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
-                  />
-                )}
-                <span style={{ fontFamily: FONT_DISPLAY, fontSize: 'var(--text-sm)', color: 'rgba(212, 196, 158, 0.95)' }}>
-                  {testPanel.reachLabel}
-                </span>
+              <span
+                data-testid="nudge-reach-chip"
+                data-reach={testPanel.reach}
+                role="img"
+                aria-label={testPanel.reachLabel}
+                title={testPanel.reachLabel}
+                style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}
+              >
+                <ReachIcon reach={testPanel.reach} size={REACH_ICON_PX} />
               </span>
             </Tooltip>
             {testPanel.purposeLine && (
@@ -396,12 +444,45 @@ export function NudgePhaseShell({
                 </span>
               </Tooltip>
             )}
+            {/* ── The test ─────────────────────────────────────
+                THR-972 directive 4: glyph and word inside one frame, so `FAIR`
+                reads as the bar being cleared rather than as an adjective on the
+                scene. The frame is the whole point — the word alone was the
+                director's find ("the difficulty cant stand alone"), and binding
+                it to the scales makes the category legible without spending a
+                sentence on it. The numeral stays designer-view only (ruling 6). */}
             <Tooltip id="ui.nudge_difficulty">
               <span
-                data-testid="nudge-difficulty-word"
-                style={{ fontSize: 'var(--text-xs)', color: TEXT_WARM, letterSpacing: '0.08em', textTransform: 'uppercase' }}
+                data-testid="nudge-test-unit"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  padding: '3px 9px',
+                  borderRadius: 6,
+                  border: '1px solid rgba(212, 175, 55, 0.35)',
+                  background: 'rgba(212, 175, 55, 0.07)',
+                  flexShrink: 0,
+                }}
               >
-                {testPanel.difficultyWord}
+                <span
+                  aria-hidden="true"
+                  style={{ fontSize: TEST_GLYPH_PX, lineHeight: 1, color: GOLD }}
+                >
+                  {TEST_GLYPH}
+                </span>
+                <span
+                  data-testid="nudge-difficulty-word"
+                  aria-label={`${TEST_UNIT_LABEL}: ${testPanel.difficultyWord}`}
+                  style={{
+                    fontSize: 'var(--text-xs)',
+                    color: 'rgba(212, 196, 158, 0.95)',
+                    letterSpacing: '0.1em',
+                    textTransform: 'uppercase',
+                  }}
+                >
+                  {testPanel.difficultyWord}
+                </span>
               </span>
             </Tooltip>
             {designerView && (
@@ -504,6 +585,33 @@ export function NudgePhaseShell({
           <Tooltip id="ui.nudge_essence">
             <span data-testid="nudge-remaining-essence" style={{ fontSize: 'var(--text-xs)', color: TEXT_WHISPER }}>
               {Math.floor(hand.remainingEssence)} essence left
+            </span>
+          </Tooltip>
+
+          {/* ── Glyph legend (THR-972 directive 5) ────────────────
+              *"help me understand which is which."* Naming the three vocabularies
+              once, where the hand begins, costs one line and removes the guess.
+              Each entry pairs the glyph with the noun it means, so this is a key
+              *to a symbol set* rather than a `label: value` readout — the pattern
+              the project treats as unfinished UX. Sits at the right of the
+              heading row so it reads as chrome on the hand, not as a card. */}
+          <Tooltip id="ui.nudge_glyphs">
+            <span
+              data-testid="nudge-glyph-legend"
+              style={{ display: 'flex', alignItems: 'center', gap: 10, marginLeft: 'auto' }}
+            >
+              {NUDGE_GLYPH_LEGEND.map((entry) => (
+                <span
+                  key={entry.id}
+                  data-testid={`nudge-legend-${entry.id}`}
+                  style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 'var(--text-xs)', color: TEXT_WHISPER }}
+                >
+                  <span aria-hidden="true" style={{ fontSize: LEGEND_GLYPH_PX, lineHeight: 1 }}>
+                    {entry.glyph}
+                  </span>
+                  {entry.label}
+                </span>
+              ))}
             </span>
           </Tooltip>
         </div>

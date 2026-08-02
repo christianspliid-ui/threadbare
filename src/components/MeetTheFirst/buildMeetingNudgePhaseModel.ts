@@ -55,8 +55,6 @@ import type {
   EncounterStageNudgePhaseModel,
 } from '../Game/encounter-stage/types';
 
-/** Reach art is 1-indexed on disk; the meeting always shows the base tier. */
-const MEETING_REACH_ICON_TIER = 1;
 
 /** Synthetic action id — the meeting has no `UnifiedAction` to borrow one from. */
 const MEETING_ACTION_ID = 'meeting:formative';
@@ -196,7 +194,6 @@ export function buildMeetingNudgePhaseModel(
     testPanel: {
       reach: MEETING_TEST_REACH,
       reachLabel: MEETING_TEST_REACH.charAt(0).toUpperCase() + MEETING_TEST_REACH.slice(1),
-      reachIconUrl: `/assets/reaches/${MEETING_TEST_REACH}-${MEETING_REACH_ICON_TIER}.png`,
       purposeLine: fill(test.purposeLine, agentName, locationName),
       difficultyWord: difficultyWord(difficulty),
       difficultyValue: difficulty,
