@@ -30,6 +30,7 @@ export function HiddenMarkLanding({ data, ...common }: HiddenMarkLandingProps) {
   const phase = useLandingLifecycle({
     ...common,
     motionDurationMs: REGISTRATION_FLIP_HIDDEN_MARK_MS,
+    cueKind: 'hidden_mark',
   });
   const sphereColor = sphereBrightVar('darkness');
 

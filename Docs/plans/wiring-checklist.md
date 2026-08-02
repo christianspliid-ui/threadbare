@@ -1434,6 +1434,7 @@ Eight new `EncounterAftermathReactionEffect` kinds that change world topology fr
 | `UiChannel` | Fire-and-forget; called at SFX trigger sites | No persistent state; no orchestrator phase |
 | `AudioMaster` | `useAmbientContext` — exposes global mute/unmute | Consumed by SettingsPanel master mute toggle |
 | `useAmbientContext` | Mounted in `GameView.tsx`; receives `centerHex`, `activeEncounter`, `activeLocation` | Drives all three channel instances |
+| `encounterSoundDesign` (THR-346) | **Moment 1:** `useThreadReveal` — `beginTensionReveal()` at commit, `playResolveNote(reach)` at the resolving beat, `endTensionReveal()` on reset/unmount. **Moment 2:** `useLandingLifecycle` in `EffectRegistration/_shared.tsx` — `playRegistrationCue(cueKind)` at settle, passed by all 10 landing components. | Web Audio synthesis, no assets. Not orchestrator-driven. Mute follows `UiChannel.isUiMuted()`, so `AudioMaster.muteAll()` already covers it with no extra wiring. Scheduled on the Web Audio clock (not React effects) so cues hold the §3.3 millisecond boundaries under main-thread load. The §4.3 #3 first-registration-only latch lives in this module, not in `useEffectSequencing`. **Neither consuming surface is mounted in `GameView` yet** — `ThreadOverlay` and the landings render only in `?view=styleguide` pending the Phase F2/C4 integration, so these cues are live-but-unreachable in normal play until that lands. |
 
 ---
 

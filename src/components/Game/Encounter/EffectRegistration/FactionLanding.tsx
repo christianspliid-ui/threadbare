@@ -45,6 +45,7 @@ export function FactionLanding({ data, ...common }: FactionLandingProps) {
   const phase = useLandingLifecycle({
     ...common,
     motionDurationMs: REGISTRATION_FLIP_FACTION_MS,
+    cueKind: 'faction',
   });
   const sphere = data.sphere ?? 'order';
   const sphereColor = sphereBrightVar(sphere);

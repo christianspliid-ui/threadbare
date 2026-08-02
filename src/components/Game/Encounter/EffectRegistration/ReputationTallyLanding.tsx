@@ -61,6 +61,7 @@ export function ReputationTallyLanding({ data, ...common }: ReputationTallyLandi
   const phase = useLandingLifecycle({
     ...common,
     motionDurationMs: FADE_OUT_MS + TYPE_DURATION_MS,
+    cueKind: 'reputation_tally',
   });
   const sphereColor = sphereBrightVar('force');
 
