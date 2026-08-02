@@ -144,8 +144,10 @@ Cross-boundary testing rules, contract test patterns, pre-commit verification ch
 **First, classify the diff (THR-917).** Run:
 
 ```bash
-git diff --name-only origin/main...HEAD | grep -vE '(\.md$|^Docs/|^Design/|^\.planning/)'
+git diff --name-only origin/main...HEAD | grep -vE '(\.md$|^Docs/|^Design/|^\.planning/|^src/data/ul-dashboard\.generated\.json$|^public/system-interface-map-reference\.html$)'
 ```
+
+**CLAUDE.md § Testing is authoritative for this predicate; the line above is a copy and must match it byte for byte.** The two trailing exact paths are load-bearing, not clutter (THR-922): both are **generated from documentation but written outside the doc paths** — `src/data/ul-dashboard.generated.json` from the UL shards, `public/system-interface-map-reference.html` from `Docs/canon/interface-map.md`. Drop them and a UL-shard or canon-page edit regenerates a `src/` file, the diff classifies as code, and a pure documentation deliverable pays the full ~15-minute gate — which is the exact cost this classification exists to remove. Excluding the *artifact* cannot weaken detection, because a code source is its own path and stays in the filter.
 
 Empty output means **docs-only**: owe `npm run check:generated-freshness`, `npm run lint:plan-doc`, and `npm run check:impediment-ids` — and nothing else. Do **not** run the test suite, typecheck, or build on a change with no code in it; CI skips the entire `Test · Typecheck · Build` job on exactly this predicate, and Vercel skips the build too. Any output means **code**, and the full gate below applies. If the diff turns out to contain a stray source file, re-classify rather than trusting an earlier answer.
 
