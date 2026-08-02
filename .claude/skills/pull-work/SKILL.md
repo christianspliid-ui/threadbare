@@ -147,11 +147,15 @@ npm run check:actions --silent -- --json
 
 **Fail-soft:** the probe degrades to `verdict: "unknown"` on any network/auth failure and never exits non-zero without `--strict`. An unreadable probe is not a reason to refuse work — `unknown` continues.
 
-### Step 0.8 — Armed-PR reconciliation sweep (THR-702, classification fixed THR-897)
+### Step 0.8 — Open-PR reconciliation sweep (THR-702, classification fixed THR-897, membership fixed THR-930)
 
 Auto-merge does **not** update a stale branch: under strict branch protection, an armed PR whose base moves sits at `mergeStateStatus: BEHIND` forever, green and silent (THR-702 found 9 such PRs, oldest 19 days). This sweep is the recurring surface that catches them.
 
-**An armed PR can be stuck in more than one way, and only one of them is yours to fix.** Until THR-897 this step matched on `BEHIND` alone. A PR at `DIRTY` — a real merge conflict — is not `BEHIND`, so it was skipped, and `update-branch` would not have fixed it anyway. Measured 2026-07-31: **3 of 4 armed PRs were `DIRTY`**, one of them armed 19 hours earlier carrying THR-883's authoring-contract rewrite (the deliverable that unblocked 11 content tickets), while three consecutive sweeps each reported success. The old step 4 did name `DIRTY` in prose — but with no mechanism and a log line that mentioned only `BEHIND`, so in practice every run stepped past it.
+**An open PR can be stuck in more than one way, and only one of them is yours to fix.** Until THR-897 this step matched on `BEHIND` alone. A PR at `DIRTY` — a real merge conflict — is not `BEHIND`, so it was skipped, and `update-branch` would not have fixed it anyway. Measured 2026-07-31: **3 of 4 armed PRs were `DIRTY`**, one of them armed 19 hours earlier carrying THR-883's authoring-contract rewrite (the deliverable that unblocked 11 content tickets), while three consecutive sweeps each reported success. The old step 4 did name `DIRTY` in prose — but with no mechanism and a log line that mentioned only `BEHIND`, so in practice every run stepped past it.
+
+**The sweep covers every open non-draft PR, armed or not (THR-930).** THR-897 fixed classification *within* the armed set and left the set itself as a filter, so an unarmed conflicted PR was not misclassified — it was **absent from the input**, and the probe reported a clean bill while being correct against its own contract. Measured 2026-08-02: the repo's only open PR was #1114 (`DIRTY`, unarmed, 77 hours old, holding THR-860's In-Dev slot the whole time) and the probe answered `counts.conflicted: 0` with the summary *"No PRs are waiting to merge."* Arming says *how* a PR intends to merge; it says nothing about whether it is stuck. Drafts stay excluded — that is the one case where "not trying to merge yet" is the author's explicit signal.
+
+Two consequences for how you read the output. **`updateCandidate` is still armed-only** — `gh pr update-branch` on an unarmed PR refreshes a branch nothing is waiting to merge, so the probe will never name one, and an unarmed `BEHIND` PR is reported without being proposed. And **unarmed conflicts run slower age tiers** (`UNARMED_DIRTY_ESCALATE_HOURS` 6, `UNARMED_DIRTY_ABANDONED_HOURS` 24, against 90 minutes / 12 hours for armed), because an unarmed PR has made no promise to merge *now* — which justifies patience, not silence.
 
 **Constant:** `ARMED_SWEEP_MAX_UPDATES = 1` — update at most one PR per run. Updating several at once is a losing race: each merge re-stales the others and re-triggers their CI (O(N²) runs).
 
@@ -171,22 +175,22 @@ Run the probe — it does the listing, the `UNKNOWN` re-query, and the classific
 npm run check:armed-prs --silent -- --json
 ```
 
-One line of JSON: `{ verdict, summary, needsChristian, needsSession, updateCandidate, prs, counts }`. Act on it:
+One line of JSON: `{ verdict, summary, needsChristian, needsSession, updateCandidate, prs, counts, armedCount, unarmedCount }`. Each `prs[]` entry carries `armed`, `ageMinutes`, `conflictFiles`, `escalated`, and `abandoned`. Act on it:
 
-1. **`updateCandidate` is non-null** → `gh pr update-branch <updateCandidate>` and stop (respect `ARMED_SWEEP_MAX_UPDATES`). This is the oldest `BEHIND` PR. CI re-runs on the updated branch and auto-merge fires on green — no polling.
+1. **`updateCandidate` is non-null** → `gh pr update-branch <updateCandidate>` and stop (respect `ARMED_SWEEP_MAX_UPDATES`). This is the oldest **armed** `BEHIND` PR. CI re-runs on the updated branch and auto-merge fires on green — no polling.
 2. **`verdict: "conflicted"` or `"abandoned"`** → those PRs cannot merge and no sweep action will change that. Each `prs[]` entry carries `conflictFiles`, already computed. If a conflicted PR is **yours**, route to "Closeout — resolving a conflicted closeout-docs PR" below and fix it now. If it is not yours, **report it in the run log with its number and conflicting files** — do not silently continue.
-3. **`needsSession: true`** → the conflict has outlived at least one sweep interval. Name it in the run report so the next pickup sees it even if this run ends on an unrelated ticket.
+3. **`needsSession: true`** → the conflict has outlived at least one sweep interval (or, for an unarmed PR, `UNARMED_DIRTY_ESCALATE_HOURS`). Name it in the run report so the next pickup sees it even if this run ends on an unrelated ticket.
 4. **`verdict: "healthy"` / `"drainable"` / `"unknown"`** → nothing conflicted; continue to Step 1.
 
-Log one line, and include the conflicted count — a sweep that reports only what it drained is how THR-897 stayed invisible:
+Log one line, and include the conflicted count **and the unarmed count** — a sweep that reports only what it drained is how THR-897 stayed invisible, and one that reports only the armed set is how THR-930 did:
 
 ```
-[pull-work] Step 0.8: <N> armed PRs (<D> drainable, <C> conflicted, <W> waiting), updated #<X> / none BEHIND — continuing.
+[pull-work] Step 0.8: <N> open PRs (<A> armed / <U> unarmed; <D> drainable, <C> conflicted, <W> waiting), updated #<X> / none drainable — continuing.
 ```
 
 **Do not classify on a single read of `mergeStateStatus`.** GitHub computes it lazily, so a first read of `UNKNOWN` means "not computed yet", not "fine" — measured 2026-07-31, PRs #1132 and #1166 each read `DIRTY` and then `UNKNOWN` minutes apart with no intervening push. The probe re-queries `UNKNOWN` up to `ARMED_UNKNOWN_REQUERIES` (3) times before believing it; a hand-rolled sweep must do the same or it will call a conflicted PR healthy on roughly every other run.
 
-**`needsChristian: true` (verdict `abandoned`) is not a merge-gate failure.** It means a conflict has survived ~12 hourly sessions, so the stall is systemic rather than waiting its turn. Surface the `summary` verbatim; do not stand down, and do not treat it as a reason to skip pickup.
+**`needsChristian: true` (verdict `abandoned`) is not a merge-gate failure.** It means a conflict has survived ~12 hourly sessions — or ~24 hours for an unarmed PR — so the stall is systemic rather than waiting its turn. Surface the `summary` verbatim; do not stand down, and do not treat it as a reason to skip pickup.
 
 **Fail-soft:** the probe degrades to `verdict: "unknown"` on any `gh`/network failure and never exits non-zero without `--strict`. Any error → log one warning and continue to Step 1. The sweep must never block pickup.
 
@@ -759,7 +763,7 @@ Run it in either of two places:
 
 ### Merge-yield gate — check before draining, not after (THR-920)
 
-**Skip the drain entirely when any open PR whose diff contains code is armed and waiting on checks.** Landing a docs merge in front of it re-stales it and costs an ~18-min gate re-run — more than the drain saves. Step 0.8's probe already listed the open armed PRs; classify each one's diff and stop if any is code:
+**Skip the drain entirely when any open PR whose diff contains code is armed and waiting on checks.** Landing a docs merge in front of it re-stales it and costs an ~18-min gate re-run — more than the drain saves. Step 0.8's probe already listed every open PR with its `armed` flag; classify each one's diff and stop if any is code:
 
 ```bash
 for n in $(gh pr list --state open --json number --jq '.[].number'); do
