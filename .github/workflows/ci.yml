@@ -15,6 +15,20 @@ on:
   # on `main` runs the whole suite unconditionally — see the `detect` and `check`
   # conditions below for how the filter is bypassed.
   workflow_dispatch:
+  # Merge queue (THR-946). Without this trigger the required checks never report
+  # on a merge group and EVERY queued PR stalls until the group times out — so
+  # this line is a hard prerequisite of enabling the queue, not an enhancement.
+  #
+  # Inert until the queue is enabled on `main` in branch protection (a
+  # Christian-owned settings click, tracked in `Design/user-actions.md`): no
+  # merge groups exist before that, so no run can fire from here.
+  #
+  # `checks_requested` is the only type this event has; naming it explicitly
+  # documents that. No `branches:` filter — a merge group's own ref is
+  # `refs/heads/gh-readonly-queue/main/pr-N-<sha>`, not `main`, and the queue
+  # exists on `main` alone anyway.
+  merge_group:
+    types: [checks_requested]
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -32,9 +46,27 @@ jobs:
     name: Detect code changes
     runs-on: ubuntu-latest
     outputs:
-      code: ${{ steps.filter.outputs.code }}
+      # Two producers, never both (THR-946): `paths-filter` on push/pull_request,
+      # the git-diff step on `merge_group`. Whichever did not run contributes an
+      # EMPTY string, and `||` in a GitHub expression casts operands to boolean
+      # where '' is the only falsy string — so an empty output falls through to
+      # the other producer while a genuine 'false' (a non-empty string, hence
+      # TRUTHY) short-circuits and is returned intact. That asymmetry is the
+      # whole reason this reads correctly; do not "fix" it to `fromJSON`.
+      code: ${{ steps.filter.outputs.code || steps.filter-merge-group.outputs.code }}
+      docs: ${{ steps.filter-docs.outputs.docs || steps.filter-merge-group.outputs.docs }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Full history only where it is needed: the merge-group step below diffs
+          # against `base_sha`, which a depth-1 clone does not contain. On
+          # pull_request, paths-filter reads the changed-file list from the API and
+          # never touches local history, so the shallow default stays correct.
+          #
+          # Quoted deliberately: `A && 0 || 1` evaluates to 1 for BOTH branches,
+          # because the number 0 is falsy and loses the `||`. The strings '0'/'1'
+          # are both non-empty, hence both truthy, so the ternary works.
+          fetch-depth: ${{ github.event_name == 'merge_group' && '0' || '1' }}
       - uses: dorny/paths-filter@v3
         id: filter
         # Skipped on a manual dispatch (THR-842): paths-filter derives its diff
@@ -42,7 +74,12 @@ jobs:
         # does not carry. Skipping the step leaves `code` empty and the job still
         # `success`, so the vacuous-gate guard below stays quiet — the `check`
         # job's own `workflow_dispatch` clause is what forces the full suite.
-        if: github.event_name != 'workflow_dispatch'
+        #
+        # `merge_group` is excluded for the same missing-diff-base reason, but the
+        # consequence differs: there IS a diff to compute, so leaving `code` empty
+        # would skip the suite on a real code merge — the vacuous gate THR-768
+        # exists to prevent. The step below computes it from `base_sha` instead.
+        if: github.event_name != 'workflow_dispatch' && github.event_name != 'merge_group'
         with:
           # 'code' is true if ANY changed file is not a doc.
           # predicate-quantifier: every is REQUIRED — under the default 'some'
@@ -58,6 +95,190 @@ jobs:
               - '!Docs/**'
               - '!.planning/**'
               - '!Design/**'
+              # Doc-sourced artifacts that land outside the doc paths (THR-922).
+              # Both are generated FROM documentation but written to src/ or
+              # public/, so without these two lines a UL-shard or canon-page edit
+              # regenerates a non-doc file and the PR stops classifying as
+              # docs-only — a pure documentation deliverable paying the full
+              # ~15-minute code gate (measured on commit cc7a61ca).
+              #
+              # Excluding the ARTIFACT cannot weaken detection: a code source is
+              # its own path and stays in the filter, so editing
+              # scripts/interface-contracts.ts still yields code == 'true'. This
+              # only stops the artifact manufacturing code-ness on a PR whose
+              # real content is documentation. Their freshness guarantee is
+              # unchanged — check:generated-freshness re-runs the whole prebuild
+              # and, since THR-909, runs in the docs-check job below.
+              #
+              # Exact paths, never globs: the point is to exclude these two
+              # artifacts, not to carve a hole in src/ or public/. The list is
+              # mirrored by DOC_TO_CODE_ALLOWLIST in
+              # scripts/generated-artifact-sources.ts, and
+              # scripts/__tests__/docs-code-decoupling.test.ts fails if the two
+              # ever disagree.
+              - '!src/data/ul-dashboard.generated.json'
+              - '!public/system-interface-map-reference.html'
+
+      # A SECOND filter step, deliberately not merged into the one above (THR-909).
+      # `predicate-quantifier` is a step-level input applying to every filter in
+      # the step, and the two predicates need opposite quantifiers: `code` is
+      # "some file matches ALL of (is-a-file, not-a-doc)", while `docs` is "some
+      # file matches ANY of (md, Docs/, .planning/, Design/)". Expressing `docs`
+      # under `every` would demand a single file be simultaneously *.md AND under
+      # Docs/ AND under .planning/ — a predicate almost nothing satisfies, which
+      # would read as a working filter and silently never fire.
+      - uses: dorny/paths-filter@v3
+        id: filter-docs
+        # Same carve-outs as above: neither event carries a diff base.
+        if: github.event_name != 'workflow_dispatch' && github.event_name != 'merge_group'
+        with:
+          # Default quantifier ('some') is correct here — a file is a doc if it
+          # matches any one of these.
+          filters: |
+            docs:
+              - '**/*.md'
+              - 'Docs/**'
+              - '.planning/**'
+              - 'Design/**'
+              # The same two exclusions the `code` filter carries (THR-922), so
+              # the two predicates stay complementary. Without these, a PR
+              # touching ONLY a doc-sourced artifact — no shard, no canon page —
+              # would read code == 'false' AND docs == 'false', and neither job
+              # would run: the artifact would ship with no freshness check at
+              # all. That shape should not occur (the artifact only changes when
+              # its source does), but "should not occur" is what the skipped
+              # required check said too (THR-768).
+              - 'src/data/ul-dashboard.generated.json'
+              - 'public/system-interface-map-reference.html'
+
+      # The THIRD producer of `code`/`docs`, for merge groups only (THR-946).
+      #
+      # A `merge_group` event carries no changed-file list and no diff base that
+      # `paths-filter` knows how to read, so both steps above sit this event out.
+      # The decision made here — deliberately, per the ticket — is to PRESERVE the
+      # docs-only skip inside the queue rather than run the full suite on every
+      # merge group. Preserving it keeps a docs merge at ~1 minute; dropping it
+      # would put every hourly briefing and orchestrator sweep through the ~10.5
+      # minute suite and batch them behind each other, which is the same lane
+      # congestion the queue is being adopted to remove. The suite is free on
+      # public runners, so this is a latency argument, not a cost one.
+      #
+      # Re-deriving THR-768's vacuous-gate reasoning for this event, since the
+      # skip is only safe if "skipped" can never mean "unknown": every failure
+      # mode here — an unresolvable base, a `git diff` error, a broken pattern —
+      # exits non-zero and fails `detect`, and `check`'s guard turns a non-success
+      # `detect` into a FAILING required check. There is no path on which this
+      # step quietly yields `code=false` for a change it could not classify.
+      - name: Detect changes (merge group)
+        id: filter-merge-group
+        if: github.event_name == 'merge_group'
+        env:
+          BASE_SHA: ${{ github.event.merge_group.base_sha }}
+          # The same predicate as the two filters above and as CLAUDE.md's
+          # documented classification grep, expressed as one ERE because that is
+          # what `git diff --name-only` output can be matched with. Pinned against
+          # DOC_EXCLUDED_GLOBS + DOC_TO_CODE_ALLOWLIST — structurally AND
+          # behaviourally, by running this exact string as a RegExp — in
+          # scripts/__tests__/docs-code-decoupling.test.ts, so it cannot drift
+          # away from the other two copies unnoticed.
+          DOC_PATTERN: '(\.md$|^Docs/|^\.planning/|^Design/|^src/data/ul-dashboard\.generated\.json$|^public/system-interface-map-reference\.html$)'
+        run: |
+          set -euo pipefail
+
+          # An unresolvable base is a DETECTION FAILURE, not "nothing changed".
+          # Explicit because the difference is the whole gate: exiting non-zero
+          # fails `detect` and turns the required check red, whereas continuing
+          # with an empty diff would wave a real code merge through as docs-only.
+          git rev-parse --verify --quiet "${BASE_SHA}^{commit}" >/dev/null \
+            || { echo "::error::merge_group base_sha '${BASE_SHA}' is not a commit in this checkout — refusing to classify a diff I cannot compute (THR-768)."; exit 1; }
+
+          CHANGED="$(git diff --name-only "${BASE_SHA}" HEAD)"
+          echo "Merge group diff against ${BASE_SHA}:"
+          printf '%s\n' "${CHANGED:-  (empty)}"
+
+          CODE=false
+          DOCS=false
+          if [ -n "$CHANGED" ]; then
+            # `code` mirrors the `every`-quantified filter: true when ANY changed
+            # file is not a doc. `docs` mirrors the `some`-quantified one: true
+            # when ANY changed file is a doc. A mixed group sets both, and the
+            # job conditions below already resolve that case the same way they do
+            # for a mixed PR (`check` runs and carries the doc gates itself).
+            if printf '%s\n' "$CHANGED" | grep -qvE "$DOC_PATTERN"; then CODE=true; fi
+            if printf '%s\n' "$CHANGED" | grep -qE  "$DOC_PATTERN"; then DOCS=true; fi
+          fi
+
+          echo "code=$CODE" >> "$GITHUB_OUTPUT"
+          echo "docs=$DOCS" >> "$GITHUB_OUTPUT"
+          echo "Classified merge group: code=$CODE docs=$DOCS"
+
+  # The doc-validating gates, on the one PR shape that can trip them (THR-909).
+  #
+  # Three of the steps in `check` below exist purely to police documentation:
+  # generated-artifact freshness (whose sources include `Docs/impediments.md` and
+  # the UL shards), impediment-id uniqueness, and wiki freshness. They lived in a
+  # job gated on `code == 'true'` — so on a documentation-only PR, the only kind
+  # that can introduce a duplicate impediment id or a stale dashboard, all three
+  # were skipped. Measured on PR #1096, which carried two rows with id `282` from
+  # the moment it was authored and reported `Test · Typecheck · Build  skipping`;
+  # and again on PR #1173, which documented the defect while demonstrating it.
+  #
+  # This is NOT the THR-768 case. There, `detect` *died* and the required check
+  # recorded `skipped` while branch protection accepted it. Here `detect` succeeds
+  # and `code == 'false'` is correct — the skip is working as designed. The defect
+  # was upstream of that guard: doc gates placed in a code-gated job.
+  #
+  # Why `code != 'true'` rather than plain `docs == 'true'`: on a mixed PR the
+  # `check` job below already runs all three gates, so firing this job too would
+  # duplicate them on nearly every code PR (closeout commits almost always touch
+  # `Docs/`). Exactly one of the two jobs runs the doc gates, never both, never
+  # neither:
+  #
+  #   detect ok, docs-only PR       → this job runs the three gates
+  #   detect ok, mixed or code-only → skipped; `check` runs them instead
+  #   detect ok, nothing changed    → both skip (no PR has an empty diff)
+  #   detect did NOT succeed        → skipped, and `check` fails loudly via its
+  #                                   own guard, so the merge is blocked anyway
+  #   event is workflow_dispatch    → skipped; `check` runs unconditionally
+  #   event is merge_group          → the four `detect` rows above apply
+  #                                   unchanged, classified from `base_sha`
+  #                                   instead of a paths-filter payload (THR-946)
+  #
+  # Deliberately cheap: no full test suite, no typecheck, no vite build. It is
+  # `npm ci` plus three fast scripts, which preserves the fast-docs-PR property
+  # that made the original gating attractive.
+  docs-check:
+    name: Docs gates
+    needs: detect
+    if: ${{ !cancelled() && needs.detect.result == 'success' && needs.detect.outputs.docs == 'true' && needs.detect.outputs.code != 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      # fetch-depth: 0 for the same reason as `check`: the wiki-freshness gate
+      # diffs against origin/main and scans commit bodies for the exemption token.
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # Ordered cheapest-first so the most common failure surfaces fastest.
+      - name: Impediment id uniqueness
+        run: npm run check:impediment-ids
+
+      - name: Generated artifact freshness
+        run: npm run check:generated-freshness
+
+      - name: Wiki freshness (blocking)
+        run: |
+          git fetch origin main
+          npm run check:wiki-freshness:blocking
 
   check:
     name: Test · Typecheck · Build
@@ -70,14 +291,56 @@ jobs:
     # measured end to end on PR #853 (2026-07-25) and PR #1022 (2026-07-28, which
     # carried engine + content changes).
     #
+    #   event is push to main             → skip               (THR-939, see below)
     #   detect succeeded, code == 'true'  → run the suite      (unchanged)
     #   detect succeeded, code == 'false' → skip               (unchanged: docs-only PRs stay fast)
     #   detect did NOT succeed            → run, and FAIL loudly via the guard step below
     #   event is workflow_dispatch        → run unconditionally (THR-842 retro-verification)
     #
+    # The condition needed NO change for merge queues (THR-946) and that is worth
+    # stating rather than leaving to be re-derived: `merge_group` is not `push`,
+    # so the THR-939 exclusion does not catch it, and `detect` now classifies the
+    # group from `base_sha`, so the three `detect`-based rows above apply to a
+    # merge group exactly as they do to a PR. A docs-only group skips this job and
+    # reports `skipped`, which branch protection accepts — the same rule that made
+    # THR-768 dangerous is the rule that keeps docs merges fast here, and it is
+    # safe in this direction only because `detect` cannot silently answer "false"
+    # for a change it failed to classify.
+    #
     # `!cancelled()` rather than `always()` deliberately: a run superseded by
     # `cancel-in-progress` must stay cancelled, not be reported as a failure.
-    if: ${{ !cancelled() && (github.event_name == 'workflow_dispatch' || needs.detect.result != 'success' || needs.detect.outputs.code == 'true') }}
+    #
+    # The `push` exclusion (THR-939). Branch protection runs in **strict mode** —
+    # a branch must be up to date with `main` before it can merge — so the tree
+    # that lands on `main` is byte-identical to the tree this job already
+    # validated on the `pull_request` event minutes earlier. The post-merge run
+    # re-derives a known answer.
+    #
+    # The reason to cut it is THROUGHPUT, not money. An earlier framing costed
+    # these runs as ~22% of the CI bill; that premise is void — the repository is
+    # public and every job here runs on `ubuntu-latest`, a standard runner, which
+    # GitHub bills at $0 (audit: `Docs/audits/2026-08-01-ci-cost-and-wall-time.md`).
+    # What the redundant run actually costs is a ~10-minute occupancy of the
+    # Actions queue immediately after every merge, which delays the NEXT PR's
+    # feedback. Under strict protection the merge ceiling is already one PR per
+    # advance of `main`'s tip (THR-920), so anything lengthening the post-merge
+    # window slows the lane directly.
+    #
+    # This does NOT touch the merge gate: the required `Test · Typecheck · Build`
+    # status branch protection consumes is produced by the `pull_request` run on
+    # the PR's head SHA. Nothing downstream reads a push-event conclusion.
+    #
+    # The clause is ANDed OUTSIDE the parenthesised group deliberately, so it also
+    # suppresses the `detect.result != 'success'` guard path on push. That guard
+    # exists to refuse a merge it cannot vouch for; on push the merge has already
+    # happened and no gate is listening, so firing there would be an unactionable
+    # red on `main` rather than a protection. On `pull_request` — where it is
+    # load-bearing — it is untouched.
+    #
+    # `workflow_dispatch` is unaffected and becomes MORE load-bearing: it is now
+    # the only way to execute the full suite against a `main` commit, which is
+    # exactly the retro-verification path THR-842 added it for.
+    if: ${{ !cancelled() && github.event_name != 'push' && (github.event_name == 'workflow_dispatch' || needs.detect.result != 'success' || needs.detect.outputs.code == 'true') }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
@@ -141,6 +404,16 @@ jobs:
       # regenerates and fails if the commit's copies differ. Adds a few seconds.
       - name: Generated artifact freshness
         run: npm run check:generated-freshness
+
+      # `Docs/impediments.md` is `merge=union` (THR-691) so concurrent appends from
+      # different lanes merge without conflict — and union keeps BOTH sides of a
+      # conflicting hunk, which is right for the rows and wrong for their hand-assigned
+      # numbers. The freshness gate above only proves the dashboard matches its source,
+      # never that the source's keys are distinct, so a duplicate regenerates cleanly
+      # and ships green; 15 had accumulated undetected (THR-881). This step is what
+      # stops the second lane's PR from landing a number `main` already uses.
+      - name: Impediment id uniqueness
+        run: npm run check:impediment-ids
 
       # Blocking wiki-freshness gate (THR-730, user verdict 2026-07-23). Fails the
       # required check if a PR changes a file matched by a wiki page's `sources`

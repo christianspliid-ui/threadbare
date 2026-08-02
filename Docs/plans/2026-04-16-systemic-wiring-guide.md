@@ -805,7 +805,7 @@ At most one rider applies per step — the strongest wins (`NUDGE_RIDER_PRIORITY
 
 **Where to find the implementation:** `src/engine/encounters/nudges.ts` (hand partitioning, modifiers, riders, band prose), applied in `unifiedActionResolution.resolveUncontestedStep`. Constants in `src/data/nudge-constants.ts`. Inspect a live hand with `window.__DEBUG.getEncounterNudges(agentRef)`.
 
-**Authoring quality rules (THR-774 / WS1) — the schema lets you write a bad hand; these do not.** Full contract in [`.claude/skills/encounter-pipeline/reference/nudge-authoring-spec.md`](../../.claude/skills/encounter-pipeline/reference/nudge-authoring-spec.md); guardrail numbers in `src/data/content-eval/nudgeAuthoringConstants.ts`; worked example in `src/data/__fixtures__/nudge-exemplar/darkhollow-vault-exemplar.ts`.
+**Authoring quality rules (THR-774 / WS1, format locked by THR-883) — the schema lets you write a bad hand; these do not.** Full contract in [`.claude/skills/encounter-pipeline/reference/nudge-authoring-spec.md`](../../.claude/skills/encounter-pipeline/reference/nudge-authoring-spec.md); guardrail numbers in `src/data/content-eval/nudgeAuthoringConstants.ts`; worked example in `src/data/__fixtures__/nudge-exemplar/swollen-ford-exemplar.ts` (The Swollen Ford — supersedes the Darkhollow Vault).
 
 | Rule | Value | Why |
 |---|---|---|
@@ -816,11 +816,15 @@ At most one rider applies per step — the strongest wins (`NUDGE_RIDER_PRIORITY
 | Big delta | `forecastDelta ≥ 0.15` ⇒ **both** `failure` and `critical_failure` | A nudge that moved the odds that far and still lost owes a distinct reading of *how* it lost at each depth. |
 | Band coverage | the hand's fragments cover all six `StepOutcome`s between them | `near_miss` has no afterimage field on `ActionStep`; fragments are the only place it gets paid off. |
 | Base-text independence | nudge-specific payoffs live in `bandProse`, never in `narrativeTemplate` | The base text must read correctly with **any** subset of the hand active, including none. |
-| `effectLine` | words, zero digits or `%` | Ruling 1: odds are legible in words only. |
-| Riders | rare; justify each in a code comment | A rider on every card turns the outcome ladder into a floor. |
+| `effectLine` | words, zero digits or `%`; **states mechanism, not mood** | Ruling 1: odds are legible in words only (pips render magnitude). The pivot: the effect line is the rules text — what the god does and why that moves the odds. |
+| Card faces | library-generic: 2–4 word title, one-line flavor quote, zero scene-bespoke prose | The THR-883 communication pivot: prose does the scene, cards do the rules. Band fragments stay bespoke — they are outcome prose, not card prose. |
+| Riders | ≤1 per hand; justify each in a code comment | Two riders answer the same question twice; a rider on every card turns the outcome ladder into a floor. |
 | Trait options | `essenceCost: 0` | The price was paid by being that person. |
+| Zero essence otherwise | only with another cost channel (`costs.doomDelta` / `costs.detectionDelta` / obligation) | A card that is simply free is a pricing bug (THR-885 cost channels). |
+| Grants | ids resolve against built catalogs (`validateNudgeGrantRefs`) | Supporting content ships with the card; dead refs no-op silently at runtime (THR-844). |
+| Setting envelope | `settings` from the 8-class vocabulary + one opening per class | THR-884: authors never hand-write the 20-subtype list; `validateSettingEnvelope` holds the honesty rules. |
 
-**Reuse is the exception, not the default.** Options are per-encounter authored content. The only cross-encounter families are the six in `SHARED_GENERIC_NUDGE_FAMILIES` — focus, luck, blessing, oath, light, strength — and extending that list is a code change with a reviewer, not a judgement an authoring session makes alone. A candidate generic must read correctly in ≥3 *unrelated* encounters.
+**Card faces are shared; hands are bespoke.** Post-pivot (THR-883), every card face is written library-generic — it must read correctly wherever its type deals (genericity bar: ≥3 *unrelated* encounters) — while the *hand* (type mix, gates, fragments, grants) is authored per encounter. `SHARED_GENERIC_NUDGE_FAMILIES` — focus, luck, blessing, oath, light, strength — survives as the Boost-family seed vocabulary until THR-887 lands `src/data/nudge-card-library.ts` as the canonical card list; extending the library is a code change with a reviewer, not a judgement an authoring session makes alone.
 
 **Where you author it depends on the table, and one of them used to swallow your work silently (THR-838).** Files that build `UnifiedActionTemplate` literals directly — `encounter-anomaly-content.ts`, `effect-shell-proof-templates.ts`, `ascendant-trap-encounters.ts` — take `nudges` on the step and `traitVariants` on the template, and that is the whole story. Files with a `toUnifiedTemplate` converter do **not**: `src/data/encounter-content.ts` (115 templates) and `src/data/faction-encounter-content.ts` each build their `ActionStep`s field by field from a private raw-entry type, so a field the converter does not name never reaches `UNIFIED_ACTION_TEMPLATES`. Until THR-838 that converter named none of the nudge fields, so a hand authored in the largest encounter table was dropped between the literal and the shipped template with no type error. It now forwards `nudges`, `purposeLine`, `factorLines`, `successAtCostAfterimage` and template-level `traitVariants`.
 
@@ -854,6 +858,136 @@ A hook on a dead ref is a gate that never opens. It is invisible to every test t
 **Fail-soft:** a variant naming a trait the agent does not hold is simply absent (no warn — not holding a trait is the ordinary case). An `addNudgeIds` entry naming no existing card is inert with one warning per template.
 
 **Where to find the implementation:** `resolveTraitVariants` / `collectHeldTraitIds` / `buildNudgeHand` in `src/engine/encounters/nudges.ts`; the gate in `filterByPrerequisites` (stage 3 of the encounter filter pipeline); the shared resolver in `src/engine/traitRefValidation.ts`. UL: `Docs/ubiquitous-language/Traits.md`.
+
+---
+
+### Capability 16: Setting Envelopes — Where the Scene Is Allowed to Happen (THR-884)
+
+**What it is:** a closed 8-class vocabulary for placing an encounter, plus per-class opening paragraphs so one template can span several kinds of place without going placeless.
+
+**Why you care:** the engine has always gated templates per location (`locationSubtypes`, enforced by `encounterCache`). What failed was authoring *practice* — placeless prose stamped with all 20 subtypes. Scene-built prose makes that a lie: a hamlet rest scene cannot happen in a capital. Envelopes let you keep the widest **honest** reach.
+
+| Class | Expands to |
+|---|---|
+| `rural` | hamlet, farmland, mining |
+| `urban` | town, city, capital |
+| `stronghold` | castle, fort |
+| `sacred` | shrine, temple |
+| `arcane` | tower |
+| `ruin` | ruins, ruined_tower, ruined_city, ruined_village, unexplored_poi |
+| `wayside` | camp, oasis, wilderness |
+| `battlefield` | battleground |
+
+**How you author it** — three optional fields, all additive (a template that declares none behaves byte-identically):
+
+| Field | Where | What it does |
+|---|---|---|
+| `settings` | raw entry | The envelope. The converter expands it through `SETTING_CLASS_MAP` into `locationSubtypes`; the cache filter is untouched. |
+| `locationTypes` | raw entry | Now the **override** for genuinely specific encounters (a temple rite). Unioned with the envelope when both are present. |
+| `openings` | raw entry | One paragraph per declared class. Compiled into a `{frag:opening}` fragment set on the `setting` axis, with the first step's authored narrative as the `'*'` default. |
+| `fictionBySetting` | `StepNudge` | Per-class rewrite of a card's `fiction`, for a card that names class-specific scenery. Bound at hand assembly, so every downstream reader keeps reading `nudge.fiction`. |
+
+**Write flexibly, then make it honest.** Flexibility is the default (Christian's explicit direction): reach for the widest envelope you can defend, and pay for it with openings rather than by narrowing to one subtype. Checklist questions 1–4 (where are we, how does it feel, who is here, what must we know) live in the opening; the complication, stakes, and hand are setting-neutral.
+
+**The rule that catches people: declare a class, write its opening.** A template that authors `openings` must cover every class in its `settings` — build-time, fail loud (`validateSettingEnvelope`, `src/data/__tests__/settingClasses.test.ts`). The reverse also fails: an opening for a class the envelope never declares is prose that can never render.
+
+**This is the same resolution mechanism as Capability 12, not a second one.** `setting` is a third identity axis on the THR-573 fragment path, so an opening and a card variant share one lookup chain and one fallback rule.
+
+**Where to look before authoring:** `Docs/canon/setting-coverage.generated.md` (regenerate with `npm run generate-setting-coverage`) reports settings × reach drawable counts and per-family hand composition. Thin cells are scenes not yet written — the floors are **advisory and unset** by design.
+
+**Fail-soft:** an unknown class expands to nothing, so a typo'd template registers *nowhere* rather than everywhere (the safe direction), and the validation test names it. An unclassed location — the ~30 worldgen overlay subtypes (wonders, lairs, anomalies) that no class claims — takes the `'*'` default opening, never a blank.
+
+**Where to find the implementation:** `src/data/settingClasses.ts` (vocabulary, expansion, validator); `toUnifiedTemplate` in `src/data/encounter-content.ts` (expansion + opening compilation); `resolveSettingVariant` in `src/engine/fragmentResolution.ts`; the binding in `gatherNarrativeContext` (`proseEnrichment.ts`) and `buildNudgeHand` (`nudges.ts`).
+
+---
+
+### Capability 17: Carryover Factor Lines — How the Last Step Tilts This One (THR-892)
+
+**What it is:** an outcome-keyed line on `ActionStep` describing how the *previous* step's resolution changes this one — the only authored factor surface besides trait lines that survives the variance rule.
+
+**The variance rule, because it decides what you may write.** A test-panel factor line earns its place only if it **could have read differently on another run**. A static line ("The vault door is iron-bound") reads the same every time the encounter fires, so it informs no decision — it is priced into the step's authored `difficulty` and belongs in the prose. This is why static `factorLines` are retired for new content and why most of the panel is now *derived* rather than authored: the actor's Reach capability and every named world modifier (equipment, terrain, faction, sphere, conditions, divine attention, rule overrides) become lines automatically, with no authoring at all.
+
+**Why you care:** a carryover line is the one place you can hand-write a factor and still obey the rule, because it is keyed on a band the run actually rolled. Write it and a player who scraped through step 1 reads a different panel on step 2 than a player who sailed through.
+
+**How you author it** — one optional field, additive:
+
+```ts
+carryoverFactorLines: {
+  success_at_cost: {
+    text: 'The last door cost her a knuckle.',
+    polarity: 'against',
+    forecastDelta: -0.04,   // optional
+  },
+  critical_success: {
+    text: 'The first lock gave up its pattern.',
+    polarity: 'for',
+    forecastDelta: 0.06,
+  },
+}
+```
+
+| Field | What it does |
+|---|---|
+| `text` | One sentence, ≤ `NUDGE_WORD_BUDGETS.factorLine` (12) words. Names its cause **in the sentence** (canon rule 1) — never a label beside a number. |
+| `polarity` | `'for'` / `'against'`. Authored, never inferred. |
+| `forecastDelta` | Optional. Rides the named-modifier channel as `carryover:<outcome>`, reaching **both** the panel's forecast floor and live resolution. Takes **zero** new rng — the draw it reads happened last step. |
+
+**The rule that catches people: you key on the outcome the *previous* step landed on, not this one.** Resolution is `UnifiedAction.stepOutcomes[currentStep − 1]` via `priorStepOutcome`. So a carryover map on a template's **first step is dead by construction** — `checkNudgeHand` flags it — and you never need to author all six bands: an unwritten band simply draws no line.
+
+**Fail-soft:** no prior outcome, no authored map, or an unauthored band all yield no line rather than a fallback sentence. A derived line whose source read fails is omitted, never thrown. A step with no variance at all renders the skill line and difficulty alone, which is an honest report ("nothing here tilts this but you"), not a degraded one.
+
+**What does *not* derive, and why that is correct:** omens, doom stage, and season contribute nothing. `forecastAction` reads only `ResolutionInput.actionModifiers`, which `computeResolutionModifiers` fills, and that pipeline reads no omen, doom, or season — so a line for them would name a cause the roll never applied. If those should tilt a step, the fix is wiring them into the modifier pipeline, not into the panel.
+
+**Where to find the implementation:** `src/engine/encounters/stepFactorLines.ts` (derivation); `resolveCarryoverLine` + `priorStepOutcome` + `collectNudgeModifiers` in `src/engine/encounters/nudges.ts`; `ModifierBreakdown.contributions` in `src/engine/resolutionModifiers.ts` (the named list, emitted by the same walk as the totals); sentence templates in `src/data/nudge-stage-content.ts` (`DERIVED_FACTOR_SENTENCES`); budgets in `src/data/content-eval/nudgeHandChecklist.ts`.
+
+---
+
+### Capability 18: Outcome-Keyed Aftermath — The Ending Reflects How It Ended (THR-969)
+
+**What it is:** an optional `byOutcome` map on any `AftermathVariant` (both a choice-keyed `variants[choiceId]` entry and the `fallback`), letting one authored ending fork on the outcome the encounter actually landed on.
+
+**The gap it closes.** `BranchAwareAftermathConfig` keyed only on the `choiceId` of one step. An encounter with no mid-encounter choice — `encounter.slice.unsafe_bridge`, and most linear templates, which ship `variants: {}` — could therefore only ever render its single `fallback`. "Crossed clean" and "fell in the river" produced **identical** aftermath prose and chips, and no amount of content skill could fix it: the ending was inexpressible by construction.
+
+**Why you care:** this is the cheapest way to make a linear, choice-less encounter feel like it noticed what happened. You do not need to promote it to a branching encounter, and you do not need to author all seven bands — write the two or three that actually read differently.
+
+**How you author it** — one optional field, additive:
+
+```ts
+aftermathConfig: {
+  branchOnStep: 0,
+  variants: {},
+  fallback: {
+    overview: 'The river keeps moving under the bridge, and the keeper keeps taking coppers.',
+    changes: [],
+    reactions: [{ id: 'slice.bridge.walk_on', label: 'Walk on', intent: '…', effects: [] }],
+    byOutcome: {
+      critical_success: {
+        overview: 'Not a plank complained, and the far bank came up dry.',
+      },
+      critical_failure: {
+        overview: 'The third plank went, and the river kept the rest of the afternoon.',
+        reactionPrompt: 'Count what the water kept.',
+        reactions: [{ id: 'slice.bridge.haul_out', label: 'Haul out', intent: '…', effects: [] }],
+      },
+    },
+  },
+}
+```
+
+| Field | What it does |
+|---|---|
+| `overview` | Optional. Replaces the variant's closing paragraph for this band only. |
+| `changes` | Optional. Replaces the variant's authored `changes` — omit it to keep them. |
+| `reactionPrompt` | Optional. Replaces the prompt above the reaction buttons. |
+| `reactions` | Optional. Replaces the whole reaction set — a disaster can offer different exits than a clean win. |
+
+**Resolution order is choice → outcome band → base variant → fallback.** The choice keying (THR-191) picks the variant *first*, then the band layers on top of **that** variant, field by field. So a band authored on `variants.paid` fires only when the player took the `paid` route and hit that outcome — the two axes compose rather than compete.
+
+**The rule that catches people: you key on `UnifiedActionOutcome`, the seven-value action outcome** (`success`, `failure`, `contested_won`, `contested_lost`, `critical_success`, `critical_failure`, `success_at_cost`). Deliberately **not** the five-band `EncounterOutcomeBand` (a trace type), **not** the six-value `StepOutcome` (which has `near_miss`), and **not** `OutcomeBand` from `outcomeConsequences.ts`. Each of those would type-check while being the wrong domain — the same trap `StepNudge.bandProse` documents.
+
+**Fail-soft:** an outcome with no authored band, or no outcome at all, renders the un-banded variant unchanged — never a blank ending and never a throw. A band that restates only `overview` keeps the variant's prompt, reactions, and changes. Takes **zero** new rng: the band is read from the already-resolved outcome.
+
+**Where to find the implementation:** `resolveAftermathVariant` + `applyAftermathOutcomeBand` in `src/types/unifiedAction.ts` — one shared resolver, called by both the engine's aftermath assembly (`resolveTemplateAftermathVariant` in `src/engine/unifiedActionResolution.ts`) and the stage adapter (`buildUnifiedEncounterStageModel.ts::resolveAuthoredAftermath`). It is deliberately one function: those two surfaces each had their own copy of the choice lookup, and a UI copy that missed the band would render the un-banded ending the engine had already resolved past.
 
 ---
 
@@ -1967,3 +2101,463 @@ window.__DEBUG.getAgentResidence('Kael')
 **Fail-soft, in the safe direction.** No clock in the evaluation context, no arrival ever observed, or (for the origin variant) no origin recorded all evaluate to `false`. Absent evidence must never end an ambition — a trigger that fired on missing data would abandon for the least-observed agents first.
 
 **Where it lives:** `src/engine/agentResidence.ts` (primitive + constants), `graphConditions.ts` (the two cases), `ambitionLifecycle.ts` (builds the window from `assignedTick`), `ambitionTick.ts` (calls the observer on its existing all-actor walk). Shipped consumers: the abandonment triggers on `ambition_flee_the_ravaged_land` and `ambition_reclaim_homeland`.
+
+## Capability: Nudge cards that cost, grant, and filter (THR-885)
+
+A nudge card used to do exactly one thing — shift the forecast, and optionally remap the
+outcome band through a rider. It can now **charge non-essence costs**, **change the world**,
+and **be dealt conditionally on world state**. This is the god's hand as an activation
+surface: several systems sat idle because nothing dispatched them, and the hand is a natural
+dispatcher for nearly all of them.
+
+### What you can author on a `StepNudge`
+
+```ts
+{
+  id: 'quiet_their_mind',
+  name: 'Send restful dreams',
+  essenceCost: 2,
+  forecastDelta: 0.15,
+  fiction: 'You quiet their mind while they sleep, so the rest actually counts.',
+  effectLine: 'Helps them wake steady.',
+
+  // Cost channels — paid in something other than essence.
+  costs: { detectionDelta: 0.08, doomDelta: 0.05 },
+
+  // Grants — expressed in the ORDINARY aftermath effect vocabulary.
+  grants: [
+    { kind: 'remove_condition', conditionTraitId: 'trait.condition.exhausted' },
+  ],
+
+  // Runtime filters — the hand reflects the world as it is.
+  requiresGroup: true,     // dealt only inside a group
+  requiresFavor: true,     // dealt only when a favor is owed to the mortal
+  requiredTrait: 'trait.…' // (pre-existing) dealt only to a mortal who holds it
+}
+```
+
+### Grants are the aftermath vocabulary — do not invent a card vocabulary
+
+`grants` is `EncounterAftermathReactionEffect[]`, the *same* list an aftermath reaction
+carries, dispatched by the *same* applier. So everything you already know how to author works
+unchanged, and every card reaches the system that owns the change:
+
+| Card type | Effect kind you author | System it reaches |
+|---|---|---|
+| The Omen | `emit_omen` | omens (biases future encounter draws) |
+| The Balm | `remove_condition` | conditions |
+| The Cache | `spawn_artifact` | artifacts / attachments |
+| The Long Game | `hidden_mark` | traits & marks |
+| The Favor / The Bargain | `favor_creation` | secrets & favors |
+| The Kindled Ambition | `assign_ambition` | ambitions |
+
+`assign_ambition` is the only new kind, and it exists because it was genuinely missing:
+reactive ambition templates had **no assignment path at all** outside `ambitionTick`
+(THR-812 / THR-726), so a whole class of authored templates was unreachable. It takes an
+`AMBITION_TEMPLATES[].id`, an optional `priority`, and an optional `narrativeHook` (omit the
+hook and the planting is silent — desire is interior).
+
+### A card that names unbuilt content fails the build
+
+Every id a card grants — ambition, artifact, condition — is checked against the shipped
+catalogs by `validateNudgeGrantRefs` (`src/engine/nudgeGrantLiveness.ts`), pinned by
+`src/engine/__tests__/nudgeCardSystem.test.ts`. This is not optional politeness: a dead
+reference no-ops silently deep inside the applier while the card's fiction still prints, so
+the player is told a thing happened that did not. THR-844 is the standing evidence — 66 of
+138 hidden-mark entries pointed at a reveal family that never existed. **Ship the content
+with the card.**
+
+### Cost channels
+
+`detectionDelta` is signed. Positive is The Heavy Hand (help that is *seen* — rivals notice);
+negative is The Veil (the same help, unwitnessed). It lands on the acting mortal's region and
+clamps to `[0, 1]`, and the trace reports what was *actually* applied after clamping, not what
+you asked for. `doomDelta` pushes the doom clock's tick modifier — positive runs it faster.
+
+Channels **sum across the committed hand** before they are charged, which is what lets a
+player pair The Veil against The Heavy Hand and net off. A net-zero channel is not charged.
+
+### The Signature — sphere discount
+
+A card whose `sphere` the ascendant is aligned to costs `SPHERE_DISCOUNT` (1) less, floored at
+`SPHERE_DISCOUNT_MIN_COST` (1). **An authored-free card stays free** — free is a decision you
+make, never a number a discount arrives at. Author the full price; the discount is applied by
+`effectiveNudgeCost`, which both the affordability check and the deduction share (quoting one
+number and charging another is the bug this feature otherwise ships with).
+
+Full sphere *gating* stays parked with THR-870. This is a discount only.
+
+### The Gambit — `all_or_nothing`
+
+The third rider. It widens **both** ends: `success` → `critical_success`, `success_at_cost` →
+`success`, `near_miss` → `failure`, `failure` → `critical_failure`; crits pass through. It is
+the only rider that can make an outcome *worse*, which is why it sits last in
+`NUDGE_RIDER_PRIORITY` — a hand holding both The Gambit and a protective card keeps the
+protection. Like every rider it takes **zero** rng draws (NFP #3).
+
+### Filters hide, they do not dim
+
+`requiresGroup` and `requiresFavor` *hide* an unmet card, matching `requiredTrait`. The rule:
+dim when the player could pay the price, hide when they could not possibly make it true from
+inside the encounter. A card you cannot ever reach is noise, not a goal.
+
+### Where it lives
+
+`src/engine/encounters/nudgeDispatch.ts` (routing + cost channels),
+`src/engine/encounters/nudges.ts` (hand assembly, filters, discount, rider maps),
+`src/engine/ambitionAssignment.ts` (`assignAmbitionToActor`),
+`src/engine/nudgeGrantLiveness.ts` (the build gate), constants in
+`src/data/nudge-constants.ts`. Dispatch fires from `phaseAutonomousAftermath`, after the
+encounter's own aftermath, so a card's grant lands on the world the encounter left behind.
+
+## Capability: The Repertoire — a card library, gated by who the god is (THR-887)
+
+THR-885 gave you cards that cost, grant, and filter *inside one encounter*. This capability
+is the layer above: which cards a god holds **at all**, across a whole run and into the next
+one. Author against it whenever you write a hand — a card the god cannot hold is withheld
+before the player ever sees it.
+
+### Point an authored card at its library member
+
+Add `libraryCardId` to a `StepNudge`:
+
+```ts
+{
+  id: 'steady',                       // unique within this template
+  libraryCardId: 'card.boost.core',   // shared identity across every template
+  name: 'Steady his hand',
+  essenceCost: 2,
+  forecastDelta: 15,
+  fiction: '…',
+  effectLine: '…',
+}
+```
+
+`id` is local; `libraryCardId` is the card's identity everywhere. Two encounters that both
+deal the core Boost carry different `id`s and the *same* `libraryCardId`, which is what lets
+the twilight harvest ask "how often did this god play Boost" across a run instead of counting
+per-template aliases as different cards.
+
+**`libraryCardId` is optional and its absence is supported.** A card without one is a one-off
+authored option: fully playable, never withheld by the repertoire gate, and never a candidate
+for the echo card. Use one when the option is a library card; leave it off when it genuinely
+belongs to this template alone.
+
+### What the repertoire withholds
+
+A card whose `libraryCardId` names a member the god does not hold is dimmed `sphere_locked`,
+which the player stage withholds and the designer view still lists. A god holds a member when:
+
+| Held because | Rule |
+|---|---|
+| universal core | `UNIVERSAL_CORE_TYPES` — Boost, Insurance, Mercy, trait cards. Every god, always. |
+| primary sphere | the member's `sphere` is the god's primary. Full price. |
+| secondary sphere | the member's `sphere` is the god's secondary. `SECONDARY_SPHERE_DISCOUNT` off. |
+| hunger unique | the member's `hunger` is the god's hunger. **Ignores sphere entirely.** |
+| milestone | `unlock.unlockActionId` is in `unlockedActionIds` — the same grant set `unlock_action` writes. |
+| god trait | `unlock.traitId` is a god-earned trait (THR-791 — live, resolves to nothing today). |
+| echo | carried in from a previous run. **Ignores sphere entirely.** |
+
+**Access is read per member, not per type.** `order` signs Insurance and `energy` signs Boost,
+both of which are also universal core. If you read access off the type you hand `order`'s
+signature Insurance to every god in the game — the bug the "⁺" notation exists to prevent, and
+which a test now pins.
+
+### Progression is variation, not power
+
+A milestone grants a new *member* of a family the god already plays — same verb, different
+twist or cost channel. Almost nothing is strictly stronger. When you add a variation member,
+add it to `VARIATION_MEMBERS` in `src/data/nudge-card-library.ts` against the milestone that
+grants it; do not invent a second unlock ledger, and do not make it a bigger number on a card
+that already exists.
+
+### The echo card
+
+At twilight the harvest picks the run's defining card — most played, ties broken by the most
+climactic moment it was played at, then by card id so a saved run replays identically — and
+carries it into the next run's starting repertoire regardless of sphere. A triumphant or
+bittersweet age returns it whole; a **somber** one returns it scarred: cheaper by
+`ECHO_CARD_SCAR_DISCOUNT`, carrying an `ECHO_CARD_SCAR_PENALTY` forecast penalty.
+
+Nothing to author — it rides the tally written at nudge commit. What you *do* owe it is
+**stable library ids**: renaming a member id retires the card, and a save that carries it
+drops the echo with one warning at world-seed. Rename deliberately, or not at all.
+
+### Content is optional, structure is not
+
+`title` and `quote` are optional and currently absent on every member — card content is
+authored under THR-883. An unauthored card is dealable, gated, priced, and renders as its own
+keyword. Add prose without touching the schema; `unauthoredCardCount()` is the backlog number.
+
+### Where it lives
+
+`src/data/nudge-card-library.ts` (the library: types, signatures, hunger uniques, members),
+`src/engine/nudgeCardRepertoire.ts` (access, unlock resolution, echo selection and carry),
+`src/engine/encounters/nudges.ts` (`repertoireCardIds` on `NudgeHandContext` — the gate),
+`src/engine/cycleEnd.ts` (harvest selection), constants in `src/data/nudge-constants.ts`.
+The catalog's human surface is `public/nudge-cards-reference.html`, freshness-gated against
+the library file.
+
+---
+
+## Capability: Agent-decided branches — the mortal picks the fork (THR-894)
+
+**Author a branch the acting mortal resolves from who they are, and let taking it
+change who they become.** Before this, `ActionStepBranch` selected a variant by a
+recorded `choiceId`, and the only thing that ever recorded one was the retired
+player-pick. A branch you authored today could only ever take `fallback` — the
+fork was in the schema and unreachable in every run.
+
+### What you can author
+
+Two opt-in fields. Absent, everything behaves exactly as it does today.
+
+**On the branch — `decidedBy`:**
+
+```ts
+{
+  branchOnStep: 0,
+  decidedBy: { axis: 'honesty_cunning' },   // any live ValuePair
+  variants: {
+    positive: { /* the honest arm */ },     // first-named pole of the pair
+    negative: { /* the cunning arm */ },    // second-named pole
+  },
+  fallback: { /* still required — used when no decision was recorded */ },
+}
+```
+
+The variant keys are **not free strings**. A `decidedBy` branch must key exactly
+`positive` and `negative`; a typo fails template validation at build time rather
+than sending every decision silently into `fallback` forever (the THR-844 shape,
+where 66 of 138 entries were dead and nothing noticed).
+
+**On a card — `poleLean`:**
+
+```ts
+nudges: [{
+  id: 'steady_their_hand',
+  // …the usual card fields…
+  poleLean: { axis: 'honesty_cunning', toward: 'positive', weight: 0.5 },
+}]
+```
+
+`weight` is optional (defaults to `POLE_LEAN_DEFAULT_WEIGHT`). A card with no
+`poleLean` **abstains** — it moves the odds without arguing for a direction,
+which is the common and correct way to author most cards.
+
+### How the decision is made
+
+At the moment `branchOnStep` resolves:
+
+1. **The mortal's live position** on the axis — their standing `AxiologicalProfile`
+   baseline *plus* accumulated `archetypeDrift`. Reading the live value, not the raw
+   baseline, is what makes the loop close.
+2. **Plus the god's argument** — the net signed `poleLean` of the cards actually
+   committed on that step (`activeNudges`). A card dealt but not played counts for
+   nothing.
+3. **The sign picks the pole.** Inside `BRANCH_DECISION_NEUTRAL_EPSILON` of zero the
+   mortal genuinely has no answer, and a seeded coin settles it.
+4. **The pole is recorded as an ordinary choice** through the existing
+   choice-history path, so `resolveStepDefinition` reads it exactly as it reads a
+   player pick. There is no second branch-resolution route.
+5. **The pole drifts the mortal toward itself** by `BRANCH_DECISION_DRIFT_MAGNITUDE`,
+   through the same `applyDriftMagnitude` accumulator `phaseChoiceResolution` uses —
+   so decay, threshold crossings, and the `archetype_drift_register` reveal all see it.
+
+### The axis must match, and that is the point
+
+A card's `poleLean` counts **only** toward a branch deciding on the *same* axis. A
+card arguing about mercy has nothing to say about a fork between courage and
+prudence, and silently counting it would be the worst kind of wrong: plausible,
+invisible, and load-bearing. If a deciding step deals no card leaning on its
+branch's axis, validation **warns** — legal (the mortal decides alone), but far
+more often it means a card names the wrong axis and is abstaining silently.
+
+### The player never picks
+
+This is the design, not an implementation detail. The god *leans*; the mortal
+*chooses*; the choice is theirs to keep. Do not author a `decidedBy` fork as a
+disguised player choice — the surface for a player decision is the card they
+commit, and the fork is what the mortal does with it.
+
+### Determinism
+
+The coin is drawn **only** inside the neutral band — the one branch where its
+value is used, mirroring the meeting's `resolveWrittenPole`. Drawing it
+unconditionally would advance the stream on decided forks too, desynchronising
+two runs that differ only in how convinced a mortal was.
+
+### Where it lives
+
+`src/types/unifiedAction.ts` (`StepNudgePoleLean`, `BranchDecision`, `BranchPoleKey`),
+`src/engine/encounters/poleLean.ts` (the shared lean arithmetic — **the meeting calls
+this too**; do not copy the summing loop),
+`src/engine/encounters/branchDecision.ts` (the decision, the drift write, the trace),
+`src/engine/unifiedActionResolution.ts` (the one call site, immediately before
+`advanceStep`), constants in `src/data/nudge-constants.ts`, validation in
+`src/testing/contentInvariants.ts`. One `branch_decided` trace per decision carries
+axis, profile lean, card lean, resolved pole, and whether conviction or the coin
+settled it.
+
+## Capability: N-route forks — several ways in, one door (THR-898)
+
+**When a fork is not two ends of one question but several different courses toward
+the same objective, author it as routes.** The canonical case is *The Broken
+Wheel*: bribe the wainwright, intimidate him, or win him over. Three ways in, one
+door, and the mortal — never the player — takes the one that is theirs.
+
+A pole fork asks *"which way do you lean?"*. A route fork asks *"which of these is
+your way in?"*. If you can name a single axis whose two ends are your two arms,
+use `decidedBy: { axis }` (above). If your arms are three unrelated approaches,
+use routes.
+
+### What you can author
+
+```ts
+{
+  branchOnStep: 0,
+  decidedBy: {
+    routes: [
+      { key: 'bribe',      reach: 'gold' },
+      { key: 'intimidate', reach: 'iron' },
+      // A route may ALSO speak to a value axis — then it drifts, like a pole.
+      { key: 'persuade',   reach: 'heart', axis: 'honesty_cunning', toward: 'positive' },
+    ],
+  },
+  variants: {
+    bribe:      { /* … */ },
+    intimidate: { /* … */ },
+    persuade:   { /* … */ },
+  },
+  fallback: { /* still required */ },
+}
+```
+
+`variants` must key **exactly** the declared route keys — same contract as pole
+mode, same reason: a key matching nothing is a course the mortal can score
+highest on and never actually take. Validation also enforces unique keys, live
+reaches, a `toward` wherever a route declares an `axis`, at least 2 routes, and at
+most `MAX_BRANCH_ROUTES`.
+
+**On a card — a route-explicit `poleLean`:**
+
+```ts
+poleLean: { route: 'bribe', weight: 0.5 }   // names a course, not an axis
+```
+
+A route-explicit card counts **only** toward the route it names, and abstains
+from every two-pole decision — a route key is not an axis and must never be read
+as one. Route leans are *unsigned*: a card arguing for "bribe" is not thereby
+arguing against "intimidate", it simply says nothing about it.
+
+### How the route is chosen
+
+Three terms, each a named constant (NFP #1):
+
+1. **Capability in the route's reach** × `ROUTE_DECISION_CAPABILITY_WEIGHT` — the
+   dominant term, via the same `computeCapability` read resolution itself uses. What
+   makes a course someone's is being able to walk it: a thief bribes because bribery
+   *works* when they do it.
+2. **Axis standing** × `ROUTE_DECISION_AXIS_WEIGHT`, signed toward the route's pole —
+   zero for a route that declares no axis. Character colors which course a mortal
+   reaches for; it does not override being hopeless at one.
+3. **Committed cards** × `ROUTE_DECISION_CARD_WEIGHT` — cards naming the route, plus
+   cards arguing on the route's axis. Cards dealt but not played count for nothing.
+
+Highest score wins. Leaders within `ROUTE_DECISION_TIE_EPSILON` are genuinely tied
+and a single seeded draw settles it — drawn **only** when tied, mirroring the pole
+coin. The winning key is recorded through the same choice-history path, and a
+winning route that declares an axis drifts the mortal toward its pole by
+`BRANCH_DECISION_DRIFT_MAGNITUDE`, exactly as a pole decision does. A
+pure-competence route drifts nothing — there is no claim about character in "they
+were good at this."
+
+**Tuning note:** capability runs through a sigmoid with midpoint 10, k 0.4, so raw
+domain scores above ~20 saturate. Two routes at raw 30 and 24 differ by 0.003
+capability — inside the tie band. If you want capability to actually separate your
+routes, the interesting range is raw ~4–16.
+
+### The warn is per route
+
+If the deciding step deals no card arguing for a given route — by name, or on that
+route's axis — validation warns **for that route**. A fork where the god can argue
+for two of three courses is exactly as steerable as it looks on two of them, and
+silently unsteerable on the third.
+
+### Where it lives
+
+Same modules as pole mode. `src/types/unifiedAction.ts` adds `BranchRoute`,
+`BranchRouteDecision`, and `isRouteDecision` (`BranchDecision` is now a union);
+`poleLean.ts` adds `routeLeanWeight` / `sumRouteLean` / `leansOnRoute` over the
+*same* summing loop as `sumHandLean` — do not copy it; `branchDecision.ts` adds
+`scoreRoutes` / `decideBranchRoute`. The `branch_decided` trace carries
+`mode: 'route'`, the resolved route, and every rival's per-term score.
+
+## Capability: The world mints ambitions — events write desire into mortals (THR-726)
+
+**What you can now author:** an `AmbitionTemplate` that a *world event* plants in a mortal, rather than one the mortal drifts into on their own. A hometown is razed and the survivors mint avengers and refugees; a bond is torn and the bereaved mint their own answer to it.
+
+**These live in their own pool, and that is the whole mechanism.** Author them in `EVENT_MINTED_AMBITION_TEMPLATES` (`src/data/ambition-templates.ts`), **not** `AMBITION_TEMPLATES`. The spontaneous re-evaluation loop draws only from `AMBITION_TEMPLATES`, so a template in the minted pool can never be assigned without a triggering event — the separation *is* the gate. Nothing else marks them: they are ordinary funnel-gated templates, **not** reactive/skip-filter templates.
+
+**The world supplies candidates; personality still chooses.** `mintAmbitionsFromEvents` gathers recent nearby events, expands `AMBITION_MINTING_RULES[eventClass][relation]` into weighted candidates, and then hands them to the same `selectAmbitions` funnel every other ambition goes through. A craven agent flees where a proud one avenges, from the identical event. Author the template so it reads correctly for whoever the funnel picks — you do not get to assume the avenger.
+
+**Four gates stand between an event and a minted ambition,** all tunable constants (NFP #1) — a template that seems never to mint is usually meeting one of them, in this order:
+
+| Gate | Rule |
+| -- | -- |
+| Free slot | The agent must hold fewer than 2 active `pursues` edges. Minting runs *before* spontaneous drift so events get first claim on a free slot. |
+| Per-event cap | `MINT_MAX_PER_EVENT` — one event cannot mint the same ambition across a whole crowd. |
+| Already pursued | A template the agent already pursues is dropped from candidacy. |
+| Base chance | `MINT_BASE_CHANCE`, drawn from a seeded `mintRng` — deterministic per NFP #3, so the same seed mints the same desire. |
+
+**Do not author a `target_agent_eliminated` milestone.** No code binds a per-instance target, so a `$`-ref milestone tracks nothing the agent can act on. This is repo-wide since THR-812, not a rule local to this pool: the condition now fails soft to `false` on a missing node, so a stray `$`-ref is *inert* rather than a free milestone, and `ambition-templates.test` asserts across **all three** pools that none is reintroduced. Milestones here use agent-self predicates only — reach, bonds, controls, trait. (Earlier framings of this capability described `target_agent_eliminated` as its completion semantics; that is the pre-THR-812 reading and is wrong.)
+
+**The minted node carries the template's `reachAffinity`,** copied at mint time along with `displayName` and `category`, so a minted ambition biases the agent's later encounter scoring exactly as an authored one does. Give the template a real affinity or the desire will not steer anything.
+
+**Check it before you ship it:**
+
+```javascript
+// which ambitions an agent actually holds, and how they got there
+window.__DEBUG.getAgent('Kael')
+```
+
+```bash
+# headless: run a world long enough for events to accumulate, then inspect
+printf "tick 60\nagent @hero\nevents 20\nexit\n" | npm run cli -- --seed 42 --map medium
+```
+
+**Where it lives:** `src/engine/ambitionTick.ts` — `mintAmbitionsFromEvents` (pure: reads graph + snapshot, returns the winning assignment or `null`) and its caller on the all-actor walk, which writes the `pursues` edge and records the per-event cap. Rules table and the pool itself: `src/data/ambition-templates.ts`. The card-granted route into the *same* pool is `assign_ambition` — see the nudge-card capability above; both paths end at one assignment, so a template authored here is reachable from a played card too.
+
+## Capability: The Divine Receipt — the god learns how a cast landed (THR-727)
+
+**What you can now author:** framing prose for the moment a *player-sourced* action resolves. Every paid cast now produces a receipt, and since THR-728 (player casts roll the outcome ladder, floored at `success_at_cost`) the band it reports genuinely varies — before that a cast always returned `success` and the receipt could only say *what* happened, never *how well*.
+
+**Two presentation tiers, and content decides which.** The receipt surfaces as a band-accented completion toast for minor casts, or a full dialogue for the ones worth stopping on. You do not set the tier directly — you author the properties that trigger it (all constants in `src/data/receipt-content.ts`, NFP #1):
+
+| Any one of these forces the dialogue | Constant |
+| -- | -- |
+| The template has ≥ 2 steps | `RECEIPT_MODAL_MIN_STEPS` |
+| Rarity at or above Mythic | `RECEIPT_MODAL_RARITY_FLOOR` (3), read against `action.effectiveRarityTier ?? template.rarityTier` |
+| The aftermath carries a world-shifting change kind | `RECEIPT_MODAL_CHANGE_KINDS` (`trait`, `faction_reputation`, `future_hook`, …) |
+| Event significance clears the modal bar | `RECEIPT_EVENT_SIGNIFICANCE_MODAL` (toast bar: `…_TOAST`) |
+
+Everything else takes the toast. A one-step Mundane cast whose aftermath changes nothing structural is *meant* to be a toast — do not raise its rarity to get a dialogue.
+
+**Voice: frame the witnessed consequence, never the verdict.** Framing lines are player-as-god register, and THR-609's peak register is acceptable here because the receipt is a rare, deliberate reflection surface rather than at-a-glance UI. The fortunate band says *"the world bent, but only just"* — **not** "Success!". No numbers, no `key: value`.
+
+**Ascendant Beats are excluded by construction.** Beat templates keep their own `AscendantBeatModal`, so the receipt phase skips any template id in `ASCENDANT_POOL_BEAT_TEMPLATES` (matched against a lazily-built id set). Authoring a beat does not get you a receipt, and should not.
+
+**The queue is capped and drops oldest** at `RECEIPT_QUEUE_MAX` (5), so a headless or CLI run where nothing acknowledges receipts never grows unbounded. `playerActionReceipts` is optional/additive on `GameState` — old saves load as an empty queue. Receipts are transient presentation state, deliberately **not** graph nodes: the world-side record already exists as the encounter event node.
+
+**Check it before you ship it:**
+
+```javascript
+window.__DEBUG.listPlayerReceipts()
+// -> { receipts: [ { templateName, band, tier, essencePaid, … } ] }
+```
+
+Fail-soft paths emit their own traces rather than throwing — `fallback_receipt` when no template resolves for a resolved action, `queue_capped` when the cap drops one.
+
+**Where it lives:** `src/engine/playerReceipts.ts` — the phase is registered as `playerReceiptsPhase` (id `player_receipts`, slot `post-resolution`) and the exported entry point is **`processPlayerReceipts`**. Note that several code comments, and older tickets, call this `phasePlayerReceipts`; **no such symbol exists** — grep for `processPlayerReceipts`. Content and tuning: `src/data/receipt-content.ts`. UI: `DivineReceiptModal` (dialogue tier, rendered from `GameView`) and the `ToastStack` click-through (toast tier).
+
+**Not the Motive Receipt.** Capability 11 above covers `MotiveReceipt` — decision-causality contributions behind an agent's encounter *selection* (`__DEBUG.getMotiveReceipt`). This one is resolution-time feedback on a *player* cast. Different system, different surface, unfortunately similar name.

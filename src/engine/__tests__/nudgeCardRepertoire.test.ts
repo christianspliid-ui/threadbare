@@ -1,0 +1,430 @@
+/**
+ * The Repertoire — library liveness, sphere gating, unlock determinism, and
+ * echo-card selection. THR-887.
+ *
+ * The liveness tests here are deliberately written so they can *fail*: each one
+ * asserts a non-zero population before asserting the property over it. A sweep
+ * that matched nothing and printed PASS is the failure mode these gates exist
+ * to catch, not a shape they are allowed to take.
+ */
+
+import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
+import {
+  HUNGER_UNIQUE_CARDS,
+  NUDGE_CARD_LIBRARY,
+  NUDGE_CARD_TYPES,
+  SPHERE_SIGNATURES,
+  UNIVERSAL_CORE_TYPES,
+  cardDisplayTitle,
+  nudgeCardFamily,
+  nudgeCardMember,
+  nudgeCardType,
+} from '../../data/nudge-card-library';
+import {
+  buildCardEcho,
+  buildRepertoire,
+  cardTypeAccess,
+  echoCardsFromDefinitions,
+  isMemberUnlocked,
+  memberAccess,
+  repertoireCardCost,
+  resetRepertoireWarnings,
+  selectEchoCard,
+  startingRepertoire,
+  validateRepertoire,
+} from '../nudgeCardRepertoire';
+import {
+  ECHO_CARD_SCAR_DISCOUNT,
+  ECHO_CARD_SCAR_PENALTY,
+  SECONDARY_SPHERE_DISCOUNT,
+} from '../../data/nudge-constants';
+import { buildNudgeHand } from '../encounters/nudges';
+import { SPHERE_NAMES } from '../../types/index';
+import type { HungerId } from '../../types/hunger';
+import type { EchoDefinition } from '../../types/echo';
+
+beforeEach(() => {
+  resetRepertoireWarnings();
+});
+
+afterEach(() => {
+  vi.restoreAllMocks();
+});
+
+// ─── Library liveness ────────────────────────────────────────────────
+
+describe('library liveness', () => {
+  it('sweeps a non-empty key set and finds every key live', () => {
+    const report = validateRepertoire();
+
+    // Guard the guard: a zero here would make the two assertions below vacuous.
+    expect(report.checkedKeys).toBeGreaterThan(20);
+    expect(report.deadHungerCards).toEqual([]);
+    expect(report.unbuiltSignatureTypes).toEqual([]);
+  });
+
+  it('hunger uniques cover every live hunger, one card each, all distinct', () => {
+    const entries = Object.entries(HUNGER_UNIQUE_CARDS) as [HungerId, string][];
+    expect(entries.length).toBeGreaterThan(0);
+
+    // Pinned as a closed set: adding a HungerId member without its unique card
+    // must fail here rather than silently shipping a hungerless god. THR-891
+    // closed the 10-vs-12 gap in favour of 12 — the number the remembrance
+    // catalog, the meeting prose register, the plan doc and the wiki page all
+    // already used.
+    expect(entries.map(([h]) => h).sort()).toEqual([
+      'bind', 'consume', 'gather', 'haunt', 'illuminate', 'kindle',
+      'preserve', 'reclaim', 'reshape', 'sever', 'wander', 'witness',
+    ]);
+
+    const ids = entries.map(([, id]) => id);
+    expect(new Set(ids).size).toBe(ids.length);
+    for (const [hunger, id] of entries) {
+      const member = nudgeCardMember(id);
+      expect(member, `hunger '${hunger}' names unbuilt card '${id}'`).toBeDefined();
+      expect(member!.hunger).toBe(hunger);
+    }
+  });
+
+  it('every sphere signs at least one type, and every signed type is built', () => {
+    expect(SPHERE_NAMES.length).toBe(12);
+    const built = new Set(NUDGE_CARD_LIBRARY.map((m) => m.typeId));
+
+    for (const sphere of SPHERE_NAMES) {
+      const types = SPHERE_SIGNATURES[sphere];
+      expect(types.length, `sphere '${sphere}' signs nothing`).toBeGreaterThan(0);
+      for (const typeId of types) {
+        expect(nudgeCardType(typeId), `'${typeId}' is not a card type`).toBeDefined();
+        expect(built.has(typeId), `'${typeId}' signed but unbuilt`).toBe(true);
+      }
+    }
+  });
+
+  it('library member ids are unique and every member names a real type', () => {
+    expect(NUDGE_CARD_LIBRARY.length).toBeGreaterThan(20);
+    const ids = NUDGE_CARD_LIBRARY.map((m) => m.id);
+    expect(new Set(ids).size).toBe(ids.length);
+    for (const member of NUDGE_CARD_LIBRARY) {
+      expect(nudgeCardType(member.typeId), `${member.id} → ${member.typeId}`).toBeDefined();
+    }
+  });
+
+  it('carries all 21 player-facing types, with unique ids', () => {
+    expect(NUDGE_CARD_TYPES.length).toBe(21);
+    const ids = NUDGE_CARD_TYPES.map((t) => t.id);
+    expect(new Set(ids).size).toBe(21);
+  });
+
+  it('an unauthored card is legible — it reads as its own keyword', () => {
+    const unauthored = NUDGE_CARD_LIBRARY.find((m) => m.title === undefined);
+    expect(unauthored, 'expected at least one card awaiting THR-883 content').toBeDefined();
+    expect(cardDisplayTitle(unauthored!)).toBe(nudgeCardType(unauthored!.typeId)!.keyword);
+  });
+
+  it('a family gathers every member sharing its type', () => {
+    // Insurance is signed by `order` *and* universal core, so its family has to
+    // hold more than one member — the case that would break a 1:1 assumption.
+    const family = nudgeCardFamily('insurance');
+    expect(family.length).toBeGreaterThan(1);
+    expect(family.every((m) => m.typeId === 'insurance')).toBe(true);
+  });
+});
+
+// ─── Sphere gating ───────────────────────────────────────────────────
+
+describe('sphere access', () => {
+  it('universal core is full for a god with no spheres at all', () => {
+    for (const typeId of UNIVERSAL_CORE_TYPES) {
+      expect(cardTypeAccess(typeId, {})).toBe('full');
+    }
+  });
+
+  it('primary signs at full strength, secondary discounts, off-sphere locks', () => {
+    // chaos signs gambit+stumble; life signs balm; force signs heavy_hand.
+    expect(cardTypeAccess('gambit', { primary: 'chaos', secondary: 'life' })).toBe('full');
+    expect(cardTypeAccess('balm', { primary: 'chaos', secondary: 'life' })).toBe('discounted');
+    expect(cardTypeAccess('heavy_hand', { primary: 'chaos', secondary: 'life' })).toBe('locked');
+  });
+
+  it('a type signed by both spheres resolves full, never stacked', () => {
+    // `order` signs insurance, which is also universal core — the overlap case.
+    const access = cardTypeAccess('insurance', { primary: 'order', secondary: 'order' });
+    expect(access).toBe('full');
+    expect(repertoireCardCost(3, access)).toBe(3);
+  });
+
+  it("a signature member of a core type belongs to its sphere, not to everyone", () => {
+    // The "⁺" case: `order` signs Insurance and `energy` signs Boost, both of
+    // which are *also* universal core types. Reading access off the type alone
+    // handed order's signature Insurance to every god in the game.
+    const orderSignature = nudgeCardMember('card.insurance.signature.order')!;
+
+    expect(memberAccess(orderSignature, { primary: 'order' })).toBe('full');
+    expect(memberAccess(orderSignature, { secondary: 'order' })).toBe('discounted');
+    expect(memberAccess(orderSignature, { primary: 'chaos' })).toBe('locked');
+    // …while the core Insurance stays universal.
+    expect(memberAccess(nudgeCardMember('card.insurance.core')!, { primary: 'chaos' })).toBe('full');
+  });
+
+  it('a hunger unique ignores sphere entirely — it is identity, not alignment', () => {
+    // witness → a Whisper card, and Whisper is signed by `light`. A chaos/life
+    // god must still hold it.
+    const witnessCard = nudgeCardMember(HUNGER_UNIQUE_CARDS.witness)!;
+    expect(cardTypeAccess(witnessCard.typeId, { primary: 'chaos', secondary: 'life' }))
+      .toBe('locked');
+    expect(memberAccess(witnessCard, { primary: 'chaos', secondary: 'life' })).toBe('full');
+  });
+
+  it('discount comes off a discounted card and off nothing else', () => {
+    expect(repertoireCardCost(3, 'discounted')).toBe(3 - SECONDARY_SPHERE_DISCOUNT);
+    expect(repertoireCardCost(3, 'full')).toBe(3);
+  });
+
+  it('never prices a card below zero', () => {
+    expect(repertoireCardCost(0, 'discounted')).toBe(0);
+    expect(repertoireCardCost(-5, 'full')).toBe(0);
+  });
+});
+
+// ─── Unlock determinism ──────────────────────────────────────────────
+
+describe('unlock resolution', () => {
+  const milestoneCard = NUDGE_CARD_LIBRARY.find((m) => m.unlock?.kind === 'milestone')!;
+  const godTraitCard = NUDGE_CARD_LIBRARY.find((m) => m.unlock?.kind === 'god_trait')!;
+
+  it('has a member for every unlock kind, so none of these tests is vacuous', () => {
+    expect(milestoneCard).toBeDefined();
+    expect(godTraitCard).toBeDefined();
+  });
+
+  it('a milestone card is locked until its grant id is in unlockedActionIds', () => {
+    const grantId = (milestoneCard.unlock as { unlockActionId: string }).unlockActionId;
+    expect(isMemberUnlocked(milestoneCard, {})).toBe(false);
+    expect(isMemberUnlocked(milestoneCard, { unlockedActionIds: new Set([grantId]) })).toBe(true);
+  });
+
+  it('a god-trait card stays locked today — the THR-791 hook is live and inert', () => {
+    expect(isMemberUnlocked(godTraitCard, {})).toBe(false);
+    const traitId = (godTraitCard.unlock as { traitId: string }).traitId;
+    expect(isMemberUnlocked(godTraitCard, { godTraitIds: new Set([traitId]) })).toBe(true);
+  });
+
+  it('a hunger unique is held only by its own hunger', () => {
+    const witnessCard = nudgeCardMember(HUNGER_UNIQUE_CARDS.witness)!;
+    expect(isMemberUnlocked(witnessCard, { hunger: 'witness' })).toBe(true);
+    expect(isMemberUnlocked(witnessCard, { hunger: 'sever' })).toBe(false);
+    expect(isMemberUnlocked(witnessCard, {})).toBe(false);
+  });
+
+  it('is deterministic — the same context twice yields the same repertoire', () => {
+    const context = {
+      primary: 'chaos' as const,
+      secondary: 'life' as const,
+      hunger: 'witness' as const,
+      unlockedActionIds: new Set(['divine.rekindle_thread']),
+    };
+    const a = buildRepertoire(context).map((e) => e.member.id);
+    const b = buildRepertoire(context).map((e) => e.member.id);
+    expect(a).toEqual(b);
+    expect(a.length).toBeGreaterThan(0);
+  });
+
+  it('a milestone grant only ever adds cards — it never takes one away', () => {
+    const base = { primary: 'chaos' as const, hunger: 'witness' as const };
+    const before = buildRepertoire(base).map((e) => e.member.id);
+    const after = buildRepertoire({
+      ...base,
+      unlockedActionIds: new Set(['divine.rekindle_thread']),
+    }).map((e) => e.member.id);
+
+    expect(after.length).toBeGreaterThan(before.length);
+    for (const id of before) expect(after).toContain(id);
+  });
+
+  it('a starting repertoire holds core + signatures + its hunger unique, and no off-sphere card', () => {
+    const entries = startingRepertoire({ primary: 'chaos', secondary: 'life', hunger: 'witness' });
+    const ids = entries.map((e) => e.member.id);
+
+    expect(ids).toContain('card.boost.core');
+    expect(ids).toContain('card.gambit.signature.chaos');
+    expect(ids).toContain(HUNGER_UNIQUE_CARDS.witness);
+    // `force` signs heavy_hand and this god holds neither sphere.
+    expect(ids).not.toContain('card.heavy_hand.signature.force');
+    // Another god's hunger unique is never dealt.
+    expect(ids).not.toContain(HUNGER_UNIQUE_CARDS.sever);
+  });
+
+  it('a god with no identity at all still holds a playable hand', () => {
+    const ids = startingRepertoire({}).map((e) => e.member.id);
+    expect(ids.length).toBe(UNIVERSAL_CORE_TYPES.length);
+    expect(ids).toContain('card.mercy.core');
+  });
+});
+
+// ─── The hand gate ───────────────────────────────────────────────────
+
+describe('repertoire gates the dealt hand', () => {
+  const step = {
+    nudges: [
+      { id: 'n1', libraryCardId: 'card.boost.core', name: 'Held', essenceCost: 0, forecastDelta: 5, fiction: '', effectLine: '' },
+      { id: 'n2', libraryCardId: 'card.heavy_hand.signature.force', name: 'Not held', essenceCost: 0, forecastDelta: 5, fiction: '', effectLine: '' },
+      { id: 'n3', name: 'One-off', essenceCost: 0, forecastDelta: 5, fiction: '', effectLine: '' },
+    ],
+  } as Parameters<typeof buildNudgeHand>[0];
+  const template = { id: 't1' } as Parameters<typeof buildNudgeHand>[1];
+  const base = {
+    availableEssence: () => 99,
+    accessibleSpheres: [...SPHERE_NAMES],
+    unlockedTemplateIds: new Set<string>(),
+    heldTraits: new Set<string>(),
+  };
+
+  it('withholds a card the god does not hold, keeps the ones it does', () => {
+    const repertoireCardIds = new Set(
+      buildRepertoire({ primary: 'chaos' }).map((e) => e.member.id),
+    );
+    // Guard: the fixture only means something if the god really lacks n2's card.
+    expect(repertoireCardIds.has('card.boost.core')).toBe(true);
+    expect(repertoireCardIds.has('card.heavy_hand.signature.force')).toBe(false);
+
+    const hand = buildNudgeHand(step, template, { ...base, repertoireCardIds });
+    expect(hand.playable.map((e) => e.nudge.id)).toEqual(['n1', 'n3']);
+    expect(hand.dimmed.map((e) => e.nudge.id)).toEqual(['n2']);
+    expect(hand.dimmed[0].blocked).toBe('sphere_locked');
+  });
+
+  it('passes every card when no repertoire is supplied (NFP #6)', () => {
+    const hand = buildNudgeHand(step, template, base);
+    expect(hand.playable.map((e) => e.nudge.id)).toEqual(['n1', 'n2', 'n3']);
+    expect(hand.dimmed).toEqual([]);
+  });
+
+  it('an echo card unlocks an otherwise off-sphere authored option', () => {
+    const repertoireCardIds = new Set(
+      buildRepertoire({
+        primary: 'chaos',
+        echoCards: [{ cardId: 'card.heavy_hand.signature.force', scarred: false }],
+      }).map((e) => e.member.id),
+    );
+    const hand = buildNudgeHand(step, template, { ...base, repertoireCardIds });
+    expect(hand.playable.map((e) => e.nudge.id)).toEqual(['n1', 'n2', 'n3']);
+  });
+});
+
+// ─── Echo card ───────────────────────────────────────────────────────
+
+describe('echo card selection', () => {
+  it('picks the most-played card', () => {
+    const picked = selectEchoCard([
+      { cardId: 'card.boost.core', timesPlayed: 2, peakSignificance: 0.9 },
+      { cardId: 'card.mercy.core', timesPlayed: 7, peakSignificance: 0.1 },
+    ]);
+    expect(picked?.cardId).toBe('card.mercy.core');
+  });
+
+  it('breaks a play-count tie on the more storied moment', () => {
+    const picked = selectEchoCard([
+      { cardId: 'card.boost.core', timesPlayed: 3, peakSignificance: 0.2 },
+      { cardId: 'card.mercy.core', timesPlayed: 3, peakSignificance: 0.8 },
+    ]);
+    expect(picked?.cardId).toBe('card.mercy.core');
+  });
+
+  it('breaks a total tie on card id, so a saved run replays identically', () => {
+    const tied = [
+      { cardId: 'card.mercy.core', timesPlayed: 3, peakSignificance: 0.5 },
+      { cardId: 'card.boost.core', timesPlayed: 3, peakSignificance: 0.5 },
+    ];
+    expect(selectEchoCard(tied)?.cardId).toBe('card.boost.core');
+    // Same set, opposite enumeration order — the whole point of the tie-break.
+    expect(selectEchoCard([...tied].reverse())?.cardId).toBe('card.boost.core');
+  });
+
+  it('returns nothing for a god who never played a card', () => {
+    expect(selectEchoCard([])).toBeUndefined();
+    expect(selectEchoCard([
+      { cardId: 'card.boost.core', timesPlayed: 0, peakSignificance: 0 },
+    ])).toBeUndefined();
+  });
+});
+
+describe('echo card carry', () => {
+  it('a triumphant age returns the card whole', () => {
+    const echo = buildCardEcho('card.boost.core', 'triumphant', 3, 0.8, ['chaos']);
+    expect(echo?.echoType).toBe('card');
+    expect(echo?.cardEcho).toEqual({ cardId: 'card.boost.core', scarred: false });
+  });
+
+  it('a somber age returns it scarred; a bittersweet one does not', () => {
+    expect(buildCardEcho('card.boost.core', 'somber', 3, 0.8, [])?.cardEcho?.scarred).toBe(true);
+    expect(buildCardEcho('card.boost.core', 'bittersweet', 3, 0.8, [])?.cardEcho?.scarred).toBe(false);
+  });
+
+  it('fails soft on a retired card id — one warn, no echo, no throw', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    expect(buildCardEcho('card.retired.gone', 'triumphant', 3, 0.8, [])).toBeUndefined();
+    expect(warn).toHaveBeenCalledTimes(1);
+  });
+
+  it('deals a carried card in regardless of sphere', () => {
+    // `force` signs heavy_hand; this god holds chaos only, so the card would be
+    // locked if the echo respected access — it must not.
+    const entries = buildRepertoire({
+      primary: 'chaos',
+      echoCards: [{ cardId: 'card.heavy_hand.signature.force', scarred: false }],
+    });
+    const echoed = entries.find((e) => e.member.id === 'card.heavy_hand.signature.force');
+    expect(echoed?.source).toBe('echo');
+    expect(echoed?.forecastPenalty).toBeUndefined();
+  });
+
+  it('a scarred card comes back cheaper, carrying its penalty', () => {
+    const entries = buildRepertoire({
+      primary: 'chaos',
+      echoCards: [{ cardId: 'card.heavy_hand.signature.force', scarred: true }],
+    });
+    const echoed = entries.find((e) => e.member.id === 'card.heavy_hand.signature.force')!;
+    expect(echoed.access).toBe('discounted');
+    expect(echoed.forecastPenalty).toBe(ECHO_CARD_SCAR_PENALTY);
+    expect(echoed.costRelief).toBe(ECHO_CARD_SCAR_DISCOUNT);
+  });
+
+  it('never duplicates a card the god already holds', () => {
+    const entries = buildRepertoire({
+      echoCards: [{ cardId: 'card.boost.core', scarred: false }],
+    });
+    expect(entries.filter((e) => e.member.id === 'card.boost.core')).toHaveLength(1);
+  });
+
+  it('drops a retired echo id at world-seed with one warn, harvest otherwise intact', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const entries = buildRepertoire({
+      echoCards: [
+        { cardId: 'card.retired.gone', scarred: false },
+        { cardId: 'card.heavy_hand.signature.force', scarred: false },
+      ],
+    });
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(entries.some((e) => e.member.id === 'card.heavy_hand.signature.force')).toBe(true);
+  });
+
+  it('reads carries off card echoes only, ignoring node-derived ones', () => {
+    const defs = [
+      {
+        id: 'e1', echoType: 'relic', source: 'cosmic', originNodeId: 'artifact_1',
+        originCycle: 1, name: 'A blade', summary: '', sphereAffinities: [], significance: 0.5,
+        injection: { injectionType: 'quest_seed', description: '' },
+      },
+      {
+        id: 'e2', echoType: 'card', source: 'divine', originNodeId: 'card.boost.core',
+        originCycle: 1, name: 'Boost', summary: '', sphereAffinities: [], significance: 0.5,
+        injection: { injectionType: 'quest_seed', description: '' },
+        cardEcho: { cardId: 'card.boost.core', scarred: true },
+      },
+    ] as EchoDefinition[];
+
+    expect(echoCardsFromDefinitions(defs)).toEqual([
+      { cardId: 'card.boost.core', scarred: true },
+    ]);
+  });
+});

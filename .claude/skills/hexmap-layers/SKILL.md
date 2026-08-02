@@ -10,7 +10,7 @@ description: >
   "visual verification", "hex click", "hex hover", "hex tooltip",
   "movement trail", "location icon", "border mesh", "river mesh",
   "road mesh", "label overlay".
-last_validated_against: 2026-05-08
+last_validated_against: 2026-07-30
 ---
 
 # HexMap Layers — Visual Layer Reference
@@ -159,25 +159,36 @@ npm run test:watch                  # Watch mode
 
 ### Playwright/Preview Tools CANNOT See WebGL
 
-Playwright `preview_snapshot` and `preview_inspect` see only a blank `<canvas>` element — they cannot read WebGL canvas content. Use this two-tier approach:
+Playwright `browser_snapshot` sees only a blank `<canvas>` element — it cannot read WebGL canvas
+content. Use this two-tier approach:
 
 | What to Verify | Tool |
 |---------------|------|
-| Console errors, network requests, DOM UI | Playwright: `preview_console_logs`, `preview_network`, `preview_snapshot` |
-| Actual rendered hex map visuals | **Claude in Chrome**: `tabs_context_mcp` → `navigate` to `localhost:5173/?view=game&seeded` → `computer` with `action: "screenshot"` or `action: "zoom"` |
+| Console errors, network requests, DOM UI | Playwright: `browser_console_messages`, `browser_network_requests`, `browser_snapshot` |
+| Actual rendered hex map visuals | **Claude in Chrome**: `tabs_context_mcp` → `navigate` to `localhost:5173/?view=game&seeded&size=medium` → `computer` with `action: "screenshot"` or `action: "zoom"` |
 
 ### Dev URLs for Testing
 
 | URL | Purpose |
 |-----|---------|
-| `?view=game&seeded` | **Primary.** Full game with HexMapV2, pre-seeded identity + The First agent. Use for all testing. |
-| `?view=game&seeded&nofog` | Game view with fog-of-war disabled |
-| `?view=game` | Quick-start without identity/First — only for testing MeetTheFirst flow or identity-less paths. |
+| `?view=game&seeded&size=medium` | **Primary.** Full game with HexMapV2, pre-seeded identity + The First agent. Prefer `size=medium` — the seeded identity derives a `large` map (48×36, ~1010 agents) that stalls the tick loop (THR-162/163/164/165). |
+| `?view=game&seeded&nofog` | Game view with fog-of-war disabled (fog is ON by default) |
+| `?view=game&firstunmet&size=medium` | **The Meet-The-First route.** Seeded identity *without* a pre-bonded First. |
+| `?view=game` | Quick-start, archetype only — **no identity**, no First. Identity-less paths only. |
+
+> **Bare `?view=game` cannot reach the MeetTheFirst flow (THR-874).** `GameView` mounts that beat
+> only on `meetingState && ascendantIdentity`, and this URL supplies no identity — so the beat can
+> never render. Use `?view=game&firstunmet&size=medium` instead; `&seeded` pre-bonds The First and
+> also makes the beat unreachable.
 
 ### Screenshot Tips
 
-- Always `preview_resize` to **1920x1080** before screenshots — default viewport varies
-- `preview_screenshot` times out on WebGL content (headless compositing too slow) — use Claude in Chrome or Playwright MCP instead
+- Always `browser_resize(1920, 1080)` before screenshots — the default viewport varies
+- Claude-in-Chrome's `resize_window` is **inert** (THR-796): it reports success while the viewport
+  does not move, and the resting size differs per session. Measure `innerWidth`/`innerHeight` in
+  the same pass and report those actual numbers — never present the capture as 1920×1080.
+- To advance the simulation, use `window.__DEBUG.tick(n)` only. An automated tab reports
+  `document.hidden`, which throttles the interval loop to ~1 tick/click (THR-689).
 - For detail inspection, use `action: "zoom"` with a region parameter in Claude in Chrome
 
 ---

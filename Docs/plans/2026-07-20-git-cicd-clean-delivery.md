@@ -105,6 +105,106 @@ The 2026-07-20 10:22 `keep-work-flowing-cc` run already replaced "77 behind, cli
 - **Forked audits / intent-judge:** consciously not spawned — those gates exist for game-design plan docs heading into the Cowork handoff; this is an infra investigation executed under the Fable planning-only protocol, and the originating intent is quoted verbatim in § header. If a reviewer wants the judge pass anyway, run `/intent-judge Docs/plans/2026-07-20-git-cicd-clean-delivery.md`.
 - **Substrate check:** no engine systems involved; the "existing substrate" here is the script/skill inventory audited in § 1 (autosync, reaper, precheck, pull-work, kwf) — all extended, none green-fielded. THR-660's `.codesight` untracking is prior art already landed.
 
+## 9b. Armed-PR stall classification (THR-897, added 2026-07-31)
+
+H6 kept branch protection and removed the waiting cost via `gh pr merge --auto` (THR-675). That trade assumed an armed PR eventually merges on its own. Two defects in the same mechanism say otherwise, and they are **not** the same defect:
+
+| | THR-735 (decided — § 9c) | THR-897 (this section) |
+|---|---|---|
+| Nature | **Drain rate** — `BEHIND` PRs drain at 1/hour vs `main`'s ~4 merges/hour | **Classification** — `DIRTY` PRs were never in the drain set at all |
+| Symptom | A PR that loses a race it usually loses | A PR that cannot merge by any amount of sweeping |
+| Remedy | **Merge queue** — decided 2026-08-01, § 9c; executed by THR-946 | Classify and report — shipped |
+
+**The classification gap.** pull-work Step 0.8 matched `mergeStateStatus === "BEHIND"` and applied `gh pr update-branch`. A conflicted PR is not `BEHIND`, so it was skipped; `update-branch` would not have helped anyway. The step's prose did mention `DIRTY`, but with no mechanism and a log line reporting only what it drained — so every run stepped past it truthfully claiming success.
+
+Measured 2026-07-31 during THR-897's own pickup: **3 of 4 armed PRs were `DIRTY`**, the oldest armed 19 hours carrying THR-883's authoring-contract rewrite (the deliverable unblocking 11 content tickets), across three consecutive sweeps that each reported success.
+
+**Shipped:** `scripts/check-armed-prs.ts` (`npm run check:armed-prs`) classifies each armed PR into `drainable` / `conflicted` / `waiting` / `indeterminate` and computes conflicting file names read-only via `git merge-tree --write-tree`. Consumed by pull-work Step 0.8 (per-run action) and `keep-work-flowing-cc` step 2.5c (durable surface in `Design/briefing.md`), so the two cannot drift about what "stuck" means.
+
+**Two design points worth keeping:**
+
+- **`UNKNOWN` is not "fine".** GitHub computes `mergeStateStatus` lazily; a first read returns `UNKNOWN` and merely schedules the computation. PRs #1132 and #1166 each read `DIRTY` then `UNKNOWN` minutes apart with no intervening push — a single-read classifier would call a conflicted PR healthy on roughly every other run. Unrecognised states classify `indeterminate`, never `waiting`, because `waiting` asserts nobody needs to act.
+- **A conflict is an agent's job until it isn't.** Per THR-608, technical verdicts are the agent's, so the first age tier escalates to a *session* (`needsSession`), not to Christian. Only past `ARMED_DIRTY_ABANDONED_HOURS` — ~12 hourly runs that each had a chance and none took it — does the stall become systemic enough to be his.
+
+## 9c. The `BEHIND` livelock — remedy decision (THR-735, decided 2026-08-01)
+
+§ 9b left THR-735's remedy "undecided" across the four candidates its ticket body listed. This section makes the call and states the trade-off, which is THR-735's whole remaining scope; the implementation is THR-946 and the interim relief is THR-945.
+
+> **Decision: adopt GitHub's merge queue (remedy 1).** Remedy 2 (drop strict mode) is kept as the named fallback, not the choice. Remedy 3 (raise `ARMED_SWEEP_MAX_UPDATES`) is **retired** — it is arithmetically incapable, not merely expensive. Remedy 4 (batch the lane's docs traffic) is **retired as a remedy** while proceeding as work in its own right under THR-947, because it reduces the collision rate without removing `BEHIND` as a terminal state.
+
+### Why the call could not be made before
+
+The ticket sat six occurrences deep (2026-07-23 → 08-01) without a verdict because the four candidates were genuinely balanced on the evidence then available. Three inputs since have unbalanced them, and each is checkable rather than argued:
+
+1. **The drain ceiling is one PR per advance of `main`'s tip — not N per run** (measured 2026-07-31: `#1166`, `#1175`, `#1176` all sat `BEHIND` at the *same* base; updating two moved both to green, and the first to merge returned the other to `BEHIND`). This retires remedy 3 by construction: at N updates per run, N−1 are invalidated no matter how the cap is tuned. The problem is serialization, not throughput.
+2. **`main`'s traffic stopped being bursty and became two scheduled lanes at fixed minutes** (~:03 briefing, ~:31 orchestrator — stable since 2026-07-29). That is what makes remedy 4 look attractive and is exactly why it is not sufficient: measured 2026-07-28, `main` took only ~2 merges/hour and the sweep *still* lost. Halving a collision probability leaves a silent failure mode intact.
+3. **The repo went public on 2026-08-01, which puts merge queue in reach at all.** It was inaccessible while private, which is the single reason remedy 1 was theoretical for the ticket's whole life.
+
+### The finding that decides remedy 2's real cost
+
+`main` is protected by **two overlapping surfaces**, and they disagree about strict mode. Verify both in one pass:
+
+```bash
+gh api repos/christianspliid-ui/threadbare/branches/main/protection --jq '.required_status_checks | {strict, contexts}'
+gh api repos/christianspliid-ui/threadbare/rulesets/15479914 --jq '.rules[] | select(.type=="required_status_checks") | .parameters | {strict_required_status_checks_policy, required_status_checks}'
+```
+
+Measured 2026-08-01:
+
+| Surface | strict | required check |
+|---|---|---|
+| Classic branch protection (legacy) | **`true`** | `Test · Typecheck · Build` |
+| Ruleset "Main" (`15479914`, active, edited 2026-08-01 10:16 CEST) | **`false`** | `Docs gates` |
+
+GitHub layers the two and applies the **most restrictive** version of each rule, so `strict: true` governs and both checks are required. The `BEHIND` livelock this whole ticket describes is therefore produced *entirely* by the classic rule — the modern surface, which is the one actually being maintained, already asks for no strict policy.
+
+This reframes remedy 2 substantially. It is not "trade away the up-to-date guarantee as a governance decision"; it is "retire a duplicate legacy rule that a deliberately-configured ruleset has already superseded on every other axis." That makes it much cheaper than the ticket assumed — cheap enough to be a credible fallback, and cheap enough that it must be chosen deliberately rather than drifted into.
+
+### Why remedy 1 over remedy 2 anyway
+
+| | Remedy 1 — merge queue | Remedy 2 — drop strict |
+|---|---|---|
+| Removes `BEHIND` as a terminal state | Yes — the queue builds each group on latest `main` and tests that exact tree | Yes — nothing is ever "behind" |
+| Keeps "the merged tree was tested" | **Yes** — the check runs against the post-merge tree, which is strictly stronger than what strict mode gives today | **No** — a PR can merge green against a base that has since moved |
+| Batches the lane's own docs traffic for free | Yes — queued entries merge as one group | No |
+| Survives an hour with no session present | Yes | Yes |
+| Cost to adopt | `merge_group` trigger in `ci.yml` + a docs-only-detection decision + one settings click | One settings click |
+| Reversibility | Disable the queue; PRs fall back to today's behaviour | Re-enable strict |
+
+The deciding column is the second. H6 (§ 4) kept branch protection precisely because the required check caught a phantom 3,379-line reversal before it reached `main`; remedy 2 weakens exactly that guarantee, while remedy 1 **strengthens** it — GitHub tests the merged result rather than the PR head. Choosing 2 would spend the guarantee H6 deliberately paid for, to fix a problem 1 fixes without spending it.
+
+Remedy 2 stays documented as the fallback for one case: if merge queue turns out to be unavailable on this repo's plan, or its docs-only-skip interaction with THR-768's vacuous-gate reasoning cannot be made safe, dropping strict on the legacy rule is the next-best move and is now a well-understood one-field change rather than an open question.
+
+### What is gated on Christian, and what is not
+
+- **Agent-side, no settings needed (THR-946):** `merge_group` in `ci.yml`'s `on:`, the merge-group docs-only detection (`git diff --name-only ${{ github.event.merge_group.base_sha }}..HEAD`), lane-doc updates for `gh pr merge --auto` semantics under a queue, and a `linear-autoclose` check on the first queue-landed merge.
+- **Christian-side, one settings visit:** enabling the queue on `main`. Entitlement is confirmed at that screen by whether the option appears — the API surface already resolves on this repo (`Repository.mergeQueue(branch:"main")` returns `null`, i.e. *not configured*, not *unavailable*). Same visit can retire the duplicate classic rule, which is the cleanup this section's finding exposes regardless of which remedy lands.
+
+### What this section does not decide
+
+THR-735's Done-when #2 — *an armed green PR merges unattended across an hour in which `main` receives ≥2 merges, at least one landing while the PR's own CI runs* — is a demonstration of the chosen mechanism **in production**, so it cannot be discharged before the mechanism exists. It is the same clause as THR-946's Done-when #2 and belongs there; THR-735 owns the decision, THR-946 owns the proof.
+
+### Implementation status — agent half landed 2026-08-02 (THR-946)
+
+The workflow half is in `main` and is **inert until the settings click**: no merge groups exist before the queue is enabled, so the `merge_group` trigger cannot fire. This is the order § 11 requires (trigger before click, never the reverse).
+
+What landed:
+
+| Piece | Where | Note |
+|---|---|---|
+| `merge_group: types: [checks_requested]` trigger | `ci.yml` `on:` | Both required checks — `Test · Typecheck · Build` **and** `Docs gates` — hang off the same workflow, so one trigger reports both |
+| Merge-group change detection | `ci.yml` `detect` job, step `filter-merge-group` | `git diff --name-only <base_sha> HEAD` piped through one ERE. `paths-filter` sits the event out: it has no diff base there |
+| Conditional `fetch-depth` | `detect` job checkout | `0` on `merge_group` (the base must be reachable), `1` everywhere else. Quoted `'0'`/`'1'` — unquoted, `A && 0 \|\| 1` yields `1` on both branches because `0` is falsy |
+| Drift pin for the third predicate copy | `scripts/__tests__/docs-code-decoupling.test.ts` | Structural *and* behavioural: the pattern string is executed as a `RegExp` against doc/code fixtures, and cross-checked against `isDocPath` |
+
+**The docs-only decision, made deliberately: the skip is preserved inside the queue.** Running the full suite on every merge group is simpler, but it would put each hourly briefing and orchestrator sweep through the ~10.5-minute suite and batch them behind one another — the same lane congestion the queue is adopted to remove. Free runners make this a latency argument, not a cost one.
+
+That is only safe if a merge group can never be *skipped for a change nobody classified*, which is THR-768's vacuous-gate concern re-derived for this event. It holds because every failure mode in the new step — unresolvable `base_sha`, a `git diff` error, a malformed pattern — exits non-zero under `set -euo pipefail`, which fails `detect`, which the `check` job's existing guard converts into a **failing** required check. `skipped` therefore means "classified, and there is no code in it", never "could not tell".
+
+Still open, and both belong to the settings visit: Done-when #2 (a real code PR and a real docs PR landing through the queue) and #3 (`linear-autoclose` firing on a queue-produced merge). Autoclose is expected to be unaffected by inspection — it triggers on `pull_request: [closed]` and on `push` to `main`, and a queue merge produces both — but "expected by inspection" is exactly what Done-when #3 exists to convert into a measurement.
+
+**THR-945's script is retired by never having been written.** No disturber-pays script exists in `scripts/` — the only armed-PR tooling there is `check-armed-prs.ts`, which is THR-702/THR-897's classifier and stays. Christian's 2026-08-02 re-assessment recommends retiring THR-945 unbuilt, since THR-947 moved the exhaust that was its whole premise. Nothing to delete; recorded here so the Done-when is answered rather than assumed.
+
 ## 10. Constants
 
 | Constant | Default | Where | Purpose |
@@ -114,6 +214,10 @@ The 2026-07-20 10:22 `keep-work-flowing-cc` run already replaced "77 behind, cli
 | `STALENESS_BEHIND_THRESHOLD` | 5 (existing) | session-precheck.ts | Behind-count that flips freshness to warning |
 | Autosync reattach guard | detached ∧ unique-commits=0 ∧ tracked-clean | threadbare-autosync.ps1 (THR-672) | Only self-heal the provably-loss-free case |
 | `FRESHNESS_BEHIND_THRESHOLD` | 10 (existing) | kwf skill | Briefing flag threshold — applies to `main..origin/main` only after THR-671 |
+| `ARMED_SWEEP_MAX_UPDATES` | 1 (existing) | pull-work Step 0.8 (THR-702) | Drains one PR per run. **Not tunable upward to any effect** — the true ceiling is one merge per advance of `main`'s tip, so at N updates per run N−1 are invalidated by construction (§ 9c). Superseded by the merge queue (THR-946) |
+| `ARMED_DIRTY_ESCALATE_MINUTES` | 90 | check-armed-prs.ts (THR-897) | Conflict age at which a session must pick the PR up |
+| `ARMED_DIRTY_ABANDONED_HOURS` | 12 | check-armed-prs.ts (THR-897) | Conflict age at which the stall becomes Christian's |
+| `ARMED_UNKNOWN_REQUERIES` | 3 | check-armed-prs.ts (THR-897) | Re-reads before believing an `UNKNOWN` merge state |
 
 ## 11. Fail-soft table
 
@@ -125,6 +229,11 @@ The 2026-07-20 10:22 `keep-work-flowing-cc` run already replaced "77 behind, cli
 | Plan doc not yet flushed when a pickup claims a ticket | Ticket descriptions carry the § summary + "defer one cycle" note |
 | Harness re-parks the tree despite everything | Contained: autosync reattaches within the hour; freshness reports `parked-at-ancestor` with the repair, not a behind-count |
 | Deleting salvage debris that later proves wanted | THR-674 requires per-item verdicts in the PR body; stashes/branches verified against origin/main before drop |
+| `check-armed-prs` cannot reach GitHub | Degrades to `verdict: "unknown"`, exits 0; Step 0.8 logs one warning and continues to pickup (THR-897) |
+| A PR head ref is unfetchable, so conflicting files cannot be computed | `conflictFiles: []` with the `conflicted` verdict intact — the stall is still reported, just without the diagnosis |
+| GitHub returns an enum member the probe does not know | Classified `indeterminate`, never `waiting` — the probe declines to assert nobody needs to act |
+| Merge queue turns out unavailable on this repo's plan (§ 9c) | Fall back to remedy 2 — drop `strict` on the **classic** rule only, which the active ruleset already declines to require. One field, reversible; the decision record states the cost so the fallback is a choice, not a drift |
+| Merge queue enabled but `ci.yml` lacks the `merge_group` trigger | Every queued PR stalls with the required check never reporting. THR-946 lands the trigger **before** the settings click; if the order inverts, disable the queue rather than merging past a check that cannot report |
 
 ## NFP Compliance
 

@@ -2,7 +2,7 @@
 
 > **Authoritative home for the recurring-task registry** (moved out of `CLAUDE.md` § Scheduled Tasks by THR-760, 2026-07-26). CLAUDE.md keeps a pointer here plus the two rules that gate live session behavior; everything else — the lane tables, slot-allocation policy, reaper guardrails, prompt-mirror rule — lives on this page.
 
-Current recurring task registry. **Verified against `list_scheduled_tasks` and `Get-ScheduledTask` on 2026-07-27 (THR-794 — both lanes re-checked row by row); `flush-plan-docs` removed 2026-07-21 (THR-654 demolition).** The scheduler adds a deterministic per-task jitter of a few minutes to the cron minute, so **the slot name, the cron minute, and the actual fire time are three different things** — the `Fires` column is the one that matters operationally.
+Current recurring task registry. **Verified against `list_scheduled_tasks` and `Get-ScheduledTask` on 2026-07-27 (THR-794 — both lanes re-checked row by row); `flush-plan-docs` removed 2026-07-21 (THR-654 demolition). Re-verified 2026-07-31 after a pause/resume cycle in the desktop app silently reset four tasks' crons to generic defaults (impediment #359) — `tb-orchestrator`, `keep-work-flowing-cc`, `weekly-retro`, and `daily-backlog-grooming` were restored from this file's crons; after any pause/resume, diff `list_scheduled_tasks` against these tables before trusting the lanes.** The scheduler adds a deterministic per-task jitter of a few minutes to the cron minute, so **the slot name, the cron minute, and the actual fire time are three different things** — the `Fires` column is the one that matters operationally.
 
 **The audit is two-directional and runs on both lanes.** Every entry `list_scheduled_tasks` returns needs a row here — including disabled and out-of-scope ones, which otherwise read as "not registered" rather than "registered, deliberately dormant" — and every host task `Get-ScheduledTask` returns needs a row in the Windows lane table. THR-794 found one miss in each direction (`website-code-work`, `ThreadbareRepoAutoSync`); both are now carried below.
 
@@ -30,9 +30,34 @@ It carries no cron and fires only when invoked by hand, so it never contends for
 
 `daily-backlog-grooming`, `weekly-workflow-retro`, and `weekly-project-hygiene` were enabled 2026-07-22 after their attended trials passed with Christian's chat approval (THR-677); their trial reports are `Docs/ops/backlog-grooming-2026-07-22.md`, `Design/retros/workflow-retro-2026-07-22.md`, and `Docs/ops/weekly-hygiene-2026-07-22.md`. The corresponding Cowork counterparts are now cut over — Christian disables them (tracked in `Design/user-actions.md`).
 
-**Output-surface rule for all three (and for `tb-orchestrator`):** none of them writes `Design/briefing.md` or `Design/user-actions.md` — `keep-work-flowing-cc` owns those two files, and a second writer produces merge conflicts. Christian-facing items go in each task's own report under a `## Needs Christian` heading, and reach him via the hourly briefing.
+**Output-surface rule for all three (and for `tb-orchestrator`):** none of them writes `Design/briefing.md` or `Design/user-actions.md` — `keep-work-flowing-cc` owns those two files, and a second writer produces lost updates. Christian-facing items go in each task's own report under a `## Needs Christian` heading, and reach him via the hourly briefing.
+
+**Where the output lands (THR-947, cutover 2026-08-02).** Every artifact in the `Output` column above is published to the unprotected **`ops` branch**, not `main`. Branch protection covers `main` only, so publishing there costs no PR, no CI run, and no advance of `main`'s tip — which is what was knocking every in-flight PR to `BEHIND` (8 merges in four hours on 2026-08-01, only 3 of them product code).
+
+- **Write:** `bash scripts/ops-publish.sh -m "<message>" <repo-relative-path>...` from a session worktree's repository root. One entry point for every lane; it commits via plumbing and checks nothing out.
+- **Read:** `git fetch origin ops --quiet && git show origin/ops:<path>`, or `git ls-tree -r --name-only origin/ops` to browse. A lane reading a sibling's report **must** read it from `ops` — the copies in a worktree's `Docs/ops/` are the frozen pre-cutover archive and will pass a filename freshness check while being months old.
+- **This registry and the prompt mirrors stay on `main`** — they document lane behaviour durably. Only lane *output* moves. Full membership predicate and the list of what deliberately did not move: [`Docs/ops/README.md`](README.md).
 
 **That last clause was aspirational until 2026-07-27 (THR-826).** No step in `keep-work-flowing-cc` read those sections — the reports were being written into a channel with no consumer, which is the same defect as recording *"routed to an executor"* when no lane reads that sentence. `keep-work-flowing-cc` **step 2.6** is now the consumer: it takes the newest report per producing task (within `SIBLING_REPORT_MAX_AGE_HOURS`, 36), extracts `## Needs Christian` verbatim, and folds the items into the briefing attributed to the task that raised them. If that step is ever removed, every sibling task's Christian-facing output goes silently nowhere again.
+
+## Substantive-change gate — a lane may only move `main` when it has something to say (THR-920)
+
+Under strict branch protection every merge invalidates every other open PR, which then re-runs CI (~18 min for a code PR, ~1 min for a docs one). The drain ceiling is therefore **one PR per advance of `main`'s tip**, and what governs throughput is how often the tip moves. Measured 2026-07-31 over the last 32 merges: **17 (53%) came from the two hourly lanes reporting on their own activity** — `keep-work-flowing-cc` 10, `tb-orchestrator` 7, three of those titled "no promotions". A finished code change (PR #1175) sat green and unmergeable for over three hours behind that traffic.
+
+Both lanes already carried a prose rule against it and neither could enforce it: the briefing's body genuinely differs every hour (live counts, PR numbers, ages), and the orchestrator writes a *new file per run*, so "no-change run" was unreachable by construction. **The gate now lives in `scripts/check-substantive-change.ts`**, invoked as `npm run check:substantive`:
+
+| Lane | Invocation | Substantive when |
+|---|---|---|
+| `keep-work-flowing-cc` | `--lane briefing --file Design/briefing.md` | the frontmatter **digest** (stable `needsChristian` item keys + `queue`/`freshness`/`deploy`/`tasks` verdicts) differs from `origin/ops` — the baseline follows the file (THR-947); reading it from `origin/main` would compare against the pointer stub and return `commit` every run |
+| `tb-orchestrator` | `--lane report --file Docs/ops/orchestrator-<run>.md` | declared outcome counters (`promoted`/`filed`/`resolved`/`newFindings`) are non-zero, or `needsChristian: true` |
+| `daily-backlog-grooming` | `--lane report --file Docs/ops/backlog-grooming-<date>.md` | same as above |
+
+Two properties worth preserving if this is ever revised:
+
+- **The briefing keys on a declared digest, not on its text.** The brief is rewritten prose, so a text comparison would fire nearly every hour — failing the same way the prose rule failed, one level in. Reword freely; change a key only when the *item* changes.
+- **Every failure path returns `commit`.** Missing baseline, unreadable file, absent or unparseable frontmatter all mean "cannot prove this is noise". A spurious commit costs one merge; a wrongly-skipped one costs an audit trail, or an item stranded in Christian's unmerged inbox.
+
+`weekly-project-hygiene` and `weekly-workflow-retro` share the same per-run-report construction but were **deliberately left alone** — at roughly one merge each per week they are not measurable traffic, and adding a frontmatter contract to them would be cost without benefit. `daily-backlog-grooming` was wired despite also being low-traffic, because it already claimed the rule in prose and could not enforce it, and a rule that reads as enforced while being void is worse than no rule.
 
 The `weekly-retro` task is **registered and live** in the CC lane (created 2026-07-20, THR-653) — `0 17 * * 5`, fires ~17:09 local. It had been documented as a task-to-create since the continuous-improvement cycle was written, but had never actually been registered with the scheduler. Prompt: `C:\Users\chris\.claude\scheduled-tasks\weekly-retro\SKILL.md`.
 
@@ -56,7 +81,7 @@ Host-machine tasks; invisible to `list_scheduled_tasks`.
 | Slot | Cadence | Task | Trigger | Fires |
 |------|---------|------|---------|-------|
 | **:40** | Hourly | `Threadbare Git Cleanup` — runs `C:/Users/chris/Dev/Projects/clean-stale-git.sh` (prunes merged worktrees/branches, escalates stale unmerged ones) | Once at 00:40, repeat every 1h | :40 (no jitter) |
-| **:50** | Hourly | `ThreadbareRepoAutoSync` — runs `C:\Users\chris\bin\threadbare-autosync.ps1`: fast-forwards the home tree to `origin/main`, and reattaches a **provably loss-free** detached park (THR-671/672) | Once at 00:50, repeat every 1h | :50 (no jitter) |
+| **:50** | Hourly | `ThreadbareRepoAutoSync` — runs `C:\Users\chris\bin\threadbare-autosync.ps1`: fast-forwards the home tree to `origin/main`, reattaches a **provably loss-free** detached park (THR-671/672), and clears a **provably loss-free** untracked-file collision (THR-937) | Once at 00:50, repeat every 1h | :50 (no jitter) |
 
 Neither host task carries a `RandomDelay`, so unlike the CC lane their slot minute *is* their fire time. Both run `Interactive`-only at `Limited` run level with `StartWhenAvailable: True`.
 
@@ -64,6 +89,8 @@ Neither host task carries a `RandomDelay`, so unlike the CC lane their slot minu
 
 - Execution time limit is **5 minutes** (the reaper's is 30) — a sync that overruns is killed rather than left to overlap the next hour's run.
 - It logs one line per run to `C:\Users\chris\bin\threadbare-autosync.log` (`synced: fast-forwarded N commit(s) -> <sha>` / `ok: already up to date`), which is the fastest way to confirm the home tree is current without touching it.
+- **A repeating `skip:` or `MANUAL REPAIR NEEDED` line is the signal that matters** — it means the tree has stopped syncing and *will not resume on its own*, because every later hour re-hits the same condition. Read the newest line, not the newest run: THR-937's collision produced 11 identical skips while the gap grew `24 → 88` commits. Timestamps are pinned to `InvariantCulture`, so the separator is always `:` regardless of which culture invoked the script.
+- **The script body is mirrored to [`threadbare-autosync.ps1.md`](threadbare-autosync.ps1.md)** with its test harness ([`threadbare-autosync.test.ps1`](threadbare-autosync.test.ps1), 6 scenarios / 17 assertions). It is not tracked at its live path, so a change made only on disk is unreviewable and unrecoverable — update the mirror in the same PR (THR-824, THR-937).
 - The script body lives **outside version control**, same as the reaper's. Unlike the reaper's, it has no repo mirror yet — tracked as [THR-824](https://linear.app/threadbare/issue/THR-824).
 - Only autosync may move the home tree's git state. Scheduled sessions must never run git state ops with the home tree as CWD (THR-672) — a session that parks it on a branch stalls autosync for days.
 
@@ -112,3 +139,7 @@ Because the fix is unversioned, the detector is the durable part: `keep-work-flo
 ## Prompt sources are mirrored into the repo
 
 Scheduled-task prompts live at `C:\Users\chris\.claude\scheduled-tasks\<id>\SKILL.md`, which is **outside** version control — merging a repo change does not deploy them, and a disk loss takes them with it. Copies are kept under `Docs/ops/scheduled-task-prompts/` so the prompts are reviewable and recoverable. **When you edit a live prompt, update its mirror in the same PR**; the mirror is a copy, not the source of truth.
+
+**The rule names its own exceptions (THR-850).** Every registered task above is mirrored except `website-code-work`, which is deliberately unmirrored for the reason its row already gives — personal site, out of scope, never to be ported. That exception is recorded in `Docs/ops/scheduled-task-prompts/README.md` § *Deliberately unmirrored*, so an auditor counting the directory can tell a **missing** mirror from an **absent-by-design** one without re-deriving the judgment. A rule with unnamed exceptions produces a recurring false finding: `weekly-project-hygiene` check 3 flags any registered-but-unmirrored task, and with nothing to match against it flagged this one every week.
+
+**Mirror at the conforming path only.** `tb-opus-pickup` was mirrored from 2026-06 at the non-conforming path `Docs/ops/cc-hourly-opus-pickup-prompt.md`, outside this directory and outside the filename-equals-task-id convention. Because no audit looked there, it drifted ~5 weeks unnoticed and still encoded two since-fixed defects as rules — the `assignee:null` queue filter (THR-845) and poll-waiting on CI instead of auto-merge (THR-675) — so recovering the lane from it after a disk loss would have reinstated both. It was replaced by `Docs/ops/scheduled-task-prompts/tb-opus-pickup.md` and deleted (THR-850). A mirror somewhere no audit reads is not a mirror.

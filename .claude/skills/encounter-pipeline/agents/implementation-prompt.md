@@ -52,24 +52,18 @@ const vesikSpec: EncounterSupportActorSpec = {
 - Each variant's `onSuccess`/`onFailure` = graph ops from the Outcome Ladder
 - `fallback` = first variant (safety)
 
-**Authored choice cards — REQUIRED FOR EVERY PLAYER-FACING STEP:**
+**The nudge hand — REQUIRED FOR EVERY NUDGE-BEARING STEP (never `authoredChoices`):**
 
-The runtime presents choices at every step. If a step has no `authoredChoices` entry, the player sees generic god-verbs ("Tip the scales" / "Pour divine power" / "Let it play out"). This is a quality failure.
+New encounters do **not** author `authoredChoices` — that is the rejected authored-futures model, retained in the schema only for un-migrated legacy templates. The player-facing surface is the hand.
 
-**Step 0 (branch selection):**
-- `id` must match the variant key in the branch step
-- `label` = scene-specific choice label from the design doc
-- `intent` = the approach card prose paragraph from the design doc
-- `essenceCost` = from the design doc's cost structure
-- `likelyBurden` = the narrative risk text from the design doc
-- `interventionType` = 'supportive' | 'coercive' | 'withdrawn' as appropriate
-
-**Step 1+ (branch resolution) — ALSO REQUIRED:**
-- For each branch variant, add 2-3 approach cards under `authoredChoices: { 1: [...] }`
-- These cards describe HOW the god executes the chosen intervention (e.g., gently vs forcefully)
-- Use the design doc's "Approach Cards Per Step" section for step 1+ cards
-- If the design doc doesn't have step 1+ approach cards (older designs), write them yourself based on the branch prose and outcome ladder — a supportive approach (lower cost, lower difficulty), a coercive approach (higher cost, higher power), and optionally a withdrawn approach
-- Each card's `id` should be prefixed with the branch variant key (e.g., `break_the_bargain_gentle`, `break_the_bargain_force`)
+Per nudge-bearing step, translate the design doc's hand onto `ActionStep.nudges` as `StepNudge` entries, verbatim from the final doc:
+- `id` prefixed with the encounter slug (e.g. `ford.steady_breath`)
+- `name` = the generic 2–4 word title · `effectLine` = the mechanical sentence (no digits) · `fiction` = the flavor quote
+- `sphere` / `requiredTrait` / `requiresGroup` / `requiresFavor` gates as designed; trait cards at `essenceCost: 0`, unlocked via the template's `traitVariants[].addNudgeIds`
+- `forecastDelta`, `rider` (≤1 per hand, justification comment), `costs` (doom/detection channels), `grants` (existing aftermath effect vocabulary only — run `validateNudgeGrantRefs` thinking: every granted id must exist)
+- `bandProse` fragments per the coverage rules; `imageTag` per card
+- Step-level `purposeLine` + `factorLines` from the design doc's test-panel section
+- Template-level `settings` + `openings` from the envelope section; derive `locationSubtypes` with `expandSettings()` for direct-authored templates
 
 **Aftermath config** — translate using `BranchAwareAftermathConfig`:
 - `branchOnStep: 0`
@@ -124,10 +118,16 @@ describe('{{EncounterName}} — template structure', () => {
 After writing all files, run these commands and fix any issues:
 
 ```bash
-npx tsc --noEmit          # type check
+npm run check:typecheck    # type check
 npm test                   # all tests pass
 npx vite build             # production build succeeds
 ```
+
+> **Never `npx tsc --noEmit`** — the root `tsconfig.json` sets `files: []`, so it exits 0
+> unconditionally no matter how broken the code is, and citing that exit 0 as evidence is
+> gate theater (THR-686). `npm run check:typecheck` is the identical ratchet CI runs: it
+> compares the error count against `typecheck-baseline.json` and fails only on an *increase*
+> (THR-693), so treat a pass as green even though pre-existing errors remain (THR-489).
 
 If any verification step fails, read the error, fix the code, and re-run. Do not submit with failing checks.
 

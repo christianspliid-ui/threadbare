@@ -61,12 +61,36 @@ export type ImpedimentEntry = {
   line: number;
 };
 
+/**
+ * A `#` value carried by more than one table row, with every source line that
+ * claims it. See {@link ParseResult.duplicateNums}.
+ */
+export type DuplicateNum = {
+  num: string;
+  lines: number[];
+};
+
 export type ParseResult = {
   entries: ImpedimentEntry[];
   tableCount: number;
   paragraphCount: number;
   /** Non-fatal parse notes (malformed rows). Never thrown — the log must stay readable. */
   warnings: string[];
+  /**
+   * Table rows whose `#` collides with another row's, ordered by number.
+   *
+   * The number is the dashboard's primary key, and nothing used to check it was
+   * distinct: `Docs/impediments.md` is marked `merge=union` (THR-691) so that
+   * concurrent appends from different lanes merge without conflict, and union
+   * keeps **both** sides of every conflicting hunk. That is right for the rows
+   * and wrong for their numbers — two lanes appending on the same day each pick
+   * "the next number" independently, and union preserves both. A duplicate then
+   * regenerates cleanly and ships green (THR-881).
+   *
+   * Only table rows are considered. Paragraph entries carry synthetic `P<n>`
+   * ids assigned from a running ordinal, so they cannot collide by construction.
+   */
+  duplicateNums: DuplicateNum[];
 };
 
 /**
@@ -377,5 +401,35 @@ export function parseImpedimentLog(markdown: string): ParseResult {
     (a, b) => a.date.localeCompare(b.date) || a.id - b.id || a.num.localeCompare(b.num),
   );
 
-  return { entries, tableCount, paragraphCount, warnings };
+  return { entries, tableCount, paragraphCount, warnings, duplicateNums: findDuplicateNums(entries) };
+}
+
+/**
+ * Groups table-form entries by their `#` and returns those claimed more than once.
+ *
+ * Sorted numerically where possible so a report reads in log order; non-numeric
+ * `#` values (none today, but the column is free text) fall back to string order.
+ */
+export function findDuplicateNums(entries: ImpedimentEntry[]): DuplicateNum[] {
+  const byNum = new Map<string, number[]>();
+
+  for (const entry of entries) {
+    if (entry.form !== "table") continue;
+    const lines = byNum.get(entry.num);
+    if (lines) {
+      lines.push(entry.line);
+    } else {
+      byNum.set(entry.num, [entry.line]);
+    }
+  }
+
+  return [...byNum]
+    .filter(([, lines]) => lines.length > 1)
+    .map(([num, lines]) => ({ num, lines: [...lines].sort((a, b) => a - b) }))
+    .sort((a, b) => {
+      const left = Number.parseInt(a.num, 10);
+      const right = Number.parseInt(b.num, 10);
+      if (Number.isFinite(left) && Number.isFinite(right)) return left - right;
+      return a.num.localeCompare(b.num);
+    });
 }

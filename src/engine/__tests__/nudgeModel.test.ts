@@ -42,8 +42,6 @@ import {
   ALL_BAND_OUTCOMES,
   ANNOTATION_MAX_PER_ENCOUNTER,
   ANNOTATION_PATTERNS,
-  FACTOR_LINES_MAX,
-  FACTOR_LINES_MIN,
   FAILURE_BAND_OUTCOMES,
   HAND_COMMON_OPTIONS_MIN,
   HAND_SPHERE_COVERAGE_MIN,
@@ -55,13 +53,20 @@ import {
   NUDGE_OFF_REACH_MAX_DIFFICULTY,
   NUDGE_WORD_BUDGETS,
   REACH_PURPOSE_MAX_WORDS,
-  VAGUENESS_LEXICON,
 } from '../../data/content-eval/nudgeAuthoringConstants';
+import {
+  countIntensifiers,
+  countVagueness,
+  NATURAL_INDEFINITE_TERMS,
+  type ProseFieldClass,
+} from '../../data/content-eval/nudgeAuditDetectors';
 import { computeResolutionThreshold, PROBABILITY_FLOOR } from '../resolutionService';
 import { NPC_CONSTANTS } from '../../types/npc';
-import { NUDGE_GOLDEN_EXEMPLAR } from '../../data/__fixtures__/nudge-exemplar/darkhollow-vault-exemplar';
+import { NUDGE_GOLDEN_EXEMPLAR } from '../../data/__fixtures__/nudge-exemplar/swollen-ford-exemplar';
 import { CORE_TRAIT_DEFINITIONS } from '../../data/core-trait-content';
 import { scoreRegisterCompliance } from '../content-eval/registerCompliance';
+import { expandSettings, validateSettingEnvelope } from '../../data/settingClasses';
+import { validateNudgeGrantRefs } from '../nudgeGrantLiveness';
 
 const ALL_OUTCOMES: readonly StepOutcome[] = [
   'critical_success', 'success', 'success_at_cost', 'near_miss', 'failure', 'critical_failure',
@@ -502,8 +507,38 @@ function wordCount(text: string): number {
  * under the interactive-plainness rule and `fiction.<id>` scores as narrative,
  * with no second mapping to keep in step.
  */
+/**
+ * Which enforcement scope an `exemplarProse()` label falls under (THR-899).
+ *
+ * The labels already encode the field they came from, so the mapping is read off
+ * the prefix rather than maintained as a second list that could drift from the
+ * collector. Order matters: the outcome-side `narrative.*` cases are tested
+ * before the generic `narrative.` → scene fallback.
+ */
+function fieldClassOfLabel(label: string): ProseFieldClass {
+  // Band fragments and afterimages are the result, after the dice.
+  if (label.startsWith('fragment.') || label.startsWith('afterimage.')) return 'outcome';
+  // `narrativeTemplates.success` / `.failure`, and an omen's fire-time hook.
+  if (
+    label === 'narrative.success' ||
+    label === 'narrative.failure' ||
+    label.endsWith('.omen_hook')
+  ) {
+    return 'outcome';
+  }
+  // Openings, step narratives, `initiation`, and a card's fiction body.
+  if (label.startsWith('narrative.') || label.startsWith('fiction.')) return 'scene';
+  // Labels and rules text: name, effectLine, factor lines, purpose lines.
+  return 'interactive';
+}
+
 function exemplarProse(): Array<[string, string]> {
   const out: Array<[string, string]> = [['name.template', NUDGE_GOLDEN_EXEMPLAR.name]];
+
+  // THR-884 openings are scene prose and sweep with the rest of it.
+  for (const [cls, text] of Object.entries(NUDGE_GOLDEN_EXEMPLAR.openings ?? {})) {
+    out.push([`narrative.opening_${cls}`, text]);
+  }
 
   for (const [i, step] of NUDGE_GOLDEN_EXEMPLAR.steps.entries()) {
     if (!('nudges' in step)) continue;
@@ -529,6 +564,12 @@ function exemplarProse(): Array<[string, string]> {
       out.push([`name.${nudge.id}`, nudge.name]);
       out.push([`fiction.${nudge.id}`, nudge.fiction]);
       out.push([`effect.${nudge.id}`, nudge.effectLine]);
+      for (const [cls, variant] of Object.entries(nudge.fictionBySetting ?? {})) {
+        out.push([`fiction.${nudge.id}.${cls}`, variant]);
+      }
+      for (const grant of nudge.grants ?? []) {
+        if (grant.kind === 'emit_omen') out.push([`narrative.${nudge.id}.omen_hook`, grant.narrativeHook]);
+      }
       for (const [band, fragment] of Object.entries(nudge.bandProse ?? {})) {
         out.push([`fragment.${nudge.id}.${band}`, fragment]);
       }
@@ -548,17 +589,19 @@ function exemplarProse(): Array<[string, string]> {
   return out;
 }
 
-// ─── WS1: the golden exemplar against the authoring checklist ──────
+// ─── The golden exemplar against the authoring checklist ───────────
 //
-// THR-774. These are the executable half of the authoring rules: every
-// assertion here mirrors a rule the two authoring skills state in prose. A rule
-// that drifts out of a skill and a rule that drifts out of the exemplar both
-// break a test, which is the only reason the exemplar is worth shipping.
+// THR-774 established the executable-checklist pattern; THR-883 locked the
+// format these assertions now encode (communication pivot, setting envelopes,
+// cost channels, grants). Every assertion here mirrors a rule the two
+// authoring skills state in prose. A rule that drifts out of a skill and a
+// rule that drifts out of the exemplar both break a test, which is the only
+// reason the exemplar is worth shipping.
 //
 // The checks are written over the *template*, not over hand-listed ids, so
 // re-authoring a card cannot silently drop it from coverage.
 
-describe('WS1 golden exemplar — authoring checklist', () => {
+describe('golden exemplar — authoring checklist (locked THR-883 format)', () => {
   /** Steps that actually carry a hand. A step without `nudges` is opt-out, not a violation. */
   const nudgeSteps = NUDGE_GOLDEN_EXEMPLAR.steps.filter(
     (s): s is ActionStep & { nudges: readonly StepNudge[] } =>
@@ -683,32 +726,31 @@ describe('WS1 golden exemplar — authoring checklist', () => {
     }
   });
 
-  it('authors factor lines and reach purpose lines inside the panel budgets', () => {
-    // THR-820: read off the step schema, not a fixture constant. Before the
-    // schema landed these lines lived in two exported arrays that no render
-    // path consumed, so this test could pass while the panel showed nothing.
+  it('authors purpose lines, and no static factor lines (the variance rule)', () => {
+    // Variance rule (Christian, chat 2026-07-30): a factor line must report
+    // state that could have been otherwise — agent, hex, global modifiers,
+    // earlier steps — and all of that is derived by the panel, never authored
+    // on the step. A static authored line ("Floodwater carries silt") is true
+    // on every run, so it is priced into `difficulty` and belongs in the
+    // prose; the earlier form of this test *required* 2–4 of exactly those
+    // lines, which is the clutter pattern the rule retires. The exemplar is
+    // the reference authors copy, so it authors none.
     const steps = NUDGE_GOLDEN_EXEMPLAR.steps as readonly ActionStep[];
 
     for (const [i, step] of steps.entries()) {
       expect(step.purposeLine, `step ${i} authors no purpose line`).toBeTruthy();
       expect(wordCount(step.purposeLine!)).toBeLessThanOrEqual(REACH_PURPOSE_MAX_WORDS);
 
-      const lines = step.factorLines ?? [];
-      expect(lines.length, `step ${i} factor-line count`).toBeGreaterThanOrEqual(FACTOR_LINES_MIN);
-      expect(lines.length, `step ${i} factor-line count`).toBeLessThanOrEqual(FACTOR_LINES_MAX);
-      for (const line of lines) {
-        expect(wordCount(line.text), `factor line over budget: "${line.text}"`).toBeLessThanOrEqual(
-          NUDGE_WORD_BUDGETS.factorLine,
-        );
-      }
+      expect(
+        step.factorLines ?? [],
+        `step ${i} authors static factor lines — the variance rule retires these`,
+      ).toEqual([]);
+    }
 
-      // "For and against" is the point of the panel: a step whose lines all cut
-      // one way is an assertion, not a weighing. The exemplar is the reference
-      // authors copy, so it demonstrates both signs on every step.
-      const polarities = new Set(lines.map((l) => l.polarity));
-      expect(polarities, `step ${i} factor lines are one-sided`).toEqual(
-        new Set(['for', 'against']),
-      );
+    // The one authored factor surface left is the trait variant's line —
+    // variance by construction — and it holds the line budget.
+    for (const variant of NUDGE_GOLDEN_EXEMPLAR.traitVariants ?? []) {
+      expect(wordCount(variant.factorLine)).toBeLessThanOrEqual(NUDGE_WORD_BUDGETS.factorLine);
     }
   });
 
@@ -740,9 +782,62 @@ describe('WS1 golden exemplar — authoring checklist', () => {
     }
   });
 
-  it('riders stay rare — at most one card in the encounter carries one', () => {
-    const withRiders = allNudges.filter((n) => n.rider !== undefined);
-    expect(withRiders.length).toBeLessThanOrEqual(1);
+  it('riders stay rare — at most one card per hand carries one', () => {
+    // Pre-pivot this was one per encounter. The card library makes the three
+    // rider types (Insurance, Mercy, Gambit) first-class members of the
+    // repertoire, so the honest rule is per hand: two riders in one hand answer
+    // the same question — what shape does the outcome take — twice.
+    for (const step of nudgeSteps) {
+      const withRiders = step.nudges.filter((n) => n.rider !== undefined);
+      expect(withRiders.length, `step ${step.reach} carries ${withRiders.length} riders`).toBeLessThanOrEqual(1);
+    }
+    // Population guard: the rule is demonstrated, not vacuously satisfied.
+    expect(allNudges.some((n) => n.rider !== undefined)).toBe(true);
+  });
+
+  // ── The locked THR-883 format (communication pivot + envelopes + cards) ──
+
+  it('declares an honest setting envelope, and derives its subtype list', () => {
+    // THR-884: authors declare classes; the subtype list is derived. All four
+    // envelope honesty rules run through the shared validator.
+    expect(validateSettingEnvelope(NUDGE_GOLDEN_EXEMPLAR)).toEqual([]);
+    expect(NUDGE_GOLDEN_EXEMPLAR.settings?.length ?? 0).toBeGreaterThan(0);
+    expect(NUDGE_GOLDEN_EXEMPLAR.locationSubtypes).toEqual(
+      expandSettings(NUDGE_GOLDEN_EXEMPLAR.settings ?? []),
+    );
+    // Openings are scene prose and hold the scene budget.
+    for (const [cls, text] of Object.entries(NUDGE_GOLDEN_EXEMPLAR.openings ?? {})) {
+      expect(wordCount(text), `opening for ${cls} over scene budget`).toBeLessThanOrEqual(
+        NUDGE_WORD_BUDGETS.scene,
+      );
+    }
+  });
+
+  it('prices zero-essence cards somewhere real, and demonstrates a cost channel', () => {
+    // THR-885 cost channels: free-in-essence is an authored decision only when
+    // the price lands on a trait (paid by being that person) or on another
+    // channel (doom, detection, obligation). A card that is simply free is a
+    // pricing bug.
+    for (const nudge of allNudges) {
+      if (nudge.essenceCost > 0) continue;
+      const paidElsewhere =
+        nudge.requiredTrait !== undefined ||
+        (nudge.costs !== undefined && Object.keys(nudge.costs).length > 0);
+      expect(paidElsewhere, `${nudge.id} costs no essence and charges no other channel`).toBe(true);
+    }
+    // Population guards: both channel shapes are demonstrated in the exemplar.
+    expect(allNudges.some((n) => (n.costs?.detectionDelta ?? 0) !== 0)).toBe(true);
+    expect(allNudges.some((n) => (n.costs?.doomDelta ?? 0) !== 0)).toBe(true);
+  });
+
+  it('grants resolve against built content (the supporting-content rule)', () => {
+    // Any card granting an item/trait/ambition/omen/condition ships with that
+    // content built — THR-885's liveness gate, run here over the exemplar so
+    // the reference implementation can never model a dead ref.
+    const report = validateNudgeGrantRefs([NUDGE_GOLDEN_EXEMPLAR]);
+    expect(report.cardsWithGrants).toBeGreaterThan(0);
+    expect(report.checkedRefs).toBeGreaterThan(0);
+    expect(report.dead, 'exemplar grants name unbuilt content').toEqual([]);
   });
 
   it('every card declares an image tag for the WS4 fallback chain', () => {
@@ -753,14 +848,40 @@ describe('WS1 golden exemplar — authoring checklist', () => {
 
   // ── Detectors (the verbatim spec the skills carry) ──────────────
 
-  it('scores zero on the vagueness lexicon', () => {
+  it('scores zero on the vagueness lexicon, scoped by field class', () => {
+    // THR-899: the sweep is scoped, not flat. Outcome prose is held to evasive
+    // terms AND natural indefinites; scene and interactive prose to evasive
+    // terms only. A flat sweep here is what made "someone" a defect in a card's
+    // fiction, and the contortions that produced are the reason for the rescope.
     const offenders: string[] = [];
     for (const [label, text] of exemplarProse()) {
-      for (const word of VAGUENESS_LEXICON) {
-        if (new RegExp(`\\b${word}\\b`, 'i').test(text)) offenders.push(`${label}: "${word}"`);
-      }
+      const hits = countVagueness(text, fieldClassOfLabel(label));
+      if (hits > 0) offenders.push(`${label} [${fieldClassOfLabel(label)}] x${hits}: ${text}`);
     }
     expect(offenders, `vagueness lexicon hits:\n${offenders.join('\n')}`).toEqual([]);
+  });
+
+  it('still catches an indefinite planted in the exemplar\'s outcome prose', () => {
+    // Negative control. Every assertion above could be green because the
+    // detector went inert rather than because the exemplar is clean — and this
+    // rescope only ever loosens, which is exactly the change that can go inert
+    // without anyone noticing. Plant the prey; watch it get caught.
+    for (const term of NATURAL_INDEFINITE_TERMS) {
+      expect(
+        countVagueness(`They walked away with ${term} of it.`, 'outcome'),
+        `outcome scope stopped matching "${term}"`,
+      ).toBeGreaterThan(0);
+    }
+    // And the same sentence must be clean in scene scope — that is the point.
+    expect(countVagueness('Someone is asking around after the agent.', 'scene')).toBe(0);
+  });
+
+  it('reports intensifiers as a warning, never as a vagueness failure', () => {
+    // THR-899 moved these off the fail path. Both halves need pinning: they must
+    // stop counting as vagueness, and they must still be visible as a warning.
+    const sentence = 'She was very tired and he was deeply unsure.';
+    expect(countVagueness(sentence, 'outcome')).toBe(0);
+    expect(countIntensifiers(sentence)).toBe(2);
   });
 
   it('stays inside the annotation-clause budget for the whole encounter', () => {
@@ -861,9 +982,13 @@ describe('nudge reachability against the probability floor (THR-821)', () => {
     expect(p).toBeGreaterThan(PROBABILITY_FLOOR);
   });
 
-  it('leaves a spotlight-tier mortal above the floor unaided on the exemplar steps', () => {
-    // Finding B: the exemplar is not too brutal for the audience that can
-    // actually be attended. A spotlight mortal's primary reach sits near 1.0.
+  it('keeps the open-draw exemplar under the off-reach ceiling, and a spotlight mortal above the floor', () => {
+    // The Swollen Ford is open-draw ambient content (`intrinsicTier:
+    // 'background'`), so it demonstrates the open-draw branch of the THR-821
+    // rule: every step at or under the ceiling. (The retired Darkhollow Vault
+    // demonstrated the other branch — steep steps gated to actors who hold the
+    // reach.) If a step ever rises past the ceiling, either gate the encounter
+    // or put the difficulty back.
     const spotlightPrimary = capabilityOf(
       NPC_CONSTANTS.NOTABLE_PRIMARY_BASE + NPC_CONSTANTS.SPOTLIGHT_PRIMARY_BOOST,
     );
@@ -872,9 +997,11 @@ describe('nudge reachability against the probability floor (THR-821)', () => {
     const difficulties = NUDGE_GOLDEN_EXEMPLAR.steps
       .map((s) => (s as Partial<ActionStep>).difficulty)
       .filter((d): d is number => typeof d === 'number');
-    expect(difficulties).toEqual([0.45, 0.6]);
+    expect(difficulties).toEqual([0.35, 0.4]);
 
     for (const difficulty of difficulties) {
+      expect(difficulty).toBeLessThanOrEqual(NUDGE_OFF_REACH_MAX_DIFFICULTY);
+
       const p = computeResolutionThreshold({
         capability: spotlightPrimary,
         difficulty,

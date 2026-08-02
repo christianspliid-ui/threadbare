@@ -172,6 +172,40 @@ The node an action is performed on or with (`action.targetId`) — distinct from
 
 The authored, template-side declaration of an encounter's supporting entities: `EncounterSupportBundle` is a list of `EncounterSupportSpec`s (in use since 2026-04-03), each describing a keyed supporting actor or location — how it is delivered (reused from the graph or spawned), its `spawnName` fallback, and its persistence after the encounter. At instantiation the bundle resolves into the action's `supportBindings` — the Cast. The bundle is the recipe; the Cast is the dish.
 
+---
+
+### Surface
+
+**Aliases:** Encounter Surface, SurfaceKey
+**Also see:** `[[Context Fragment]]`, `[[EncounterTemplate]]`, `[[UnifiedActionTemplate]]`, `[[Encounter]]`
+**Status:** canonical
+
+A template **bound to its context axes** — the player-facing unit of encounter identity, and the granularity at which novelty and recency are tracked (THR-475). One template yields many surfaces: the same template at a market district, on a road, and against a shadow-court counterpart are three surfaces, and a player who has seen one has not seen the others.
+
+Identity is a canonical string, `SurfaceKey`, of the form `templateId|axis=val|axis=val` — `templateId` always first, axis components in alphabetical axis-name order, absent axes **omitted rather than serialised as `null`**, so the same inputs always produce the same byte sequence. The participating axes are `SURFACE_KEY_AXES` in `src/engine/encounterSurface.ts`: `sublocationTypeId`, `reachPrimary`, `socialRole`. Every axis must map to a closed enum, which is what bounds surface cardinality by construction. `computeSurfaceKey` is fail-soft per NFP #4 — any malformed or missing axis degrades to a templateId-only key and it never throws.
+
+The volume model's tunable constants live beside it (`SURFACES_PER_RUN_TARGET`, `RELEVANT_FRACTION`, `RUNS_BEFORE_REPETITION`) — read them from the file rather than quoting a figure here, since a number copied into prose is the thing that rots.
+
+**A surface is not a variant of the prose.** It is an identity: what the recency tracker counts. What *changes the words* at that identity is a `[[Context Fragment]]`, and the two use different axis vocabularies — see the warning in that entry.
+
+---
+
+### Context Fragment
+
+**Aliases:** ContextFragmentSet, surface fragment, Fragment
+**Also see:** `[[Surface]]`, `[[Band Fragment]]`, `[[UnifiedActionTemplate]]`, `[[Scene]]`
+**Status:** canonical
+
+A **context-keyed authored prose variant**, declared on a template as `contextFragments: ContextFragmentSet[]` and spliced into prose at render through a `{frag:<slot>}` token. Each set names a `slot` (the token it answers to), an `axis` it varies on, and a `variants` map of axis-value → authored prose.
+
+The **declared-default invariant** is the load-bearing rule: every `variants` map MUST contain the `'*'` key (`FRAGMENT_DEFAULT_KEY`), so a declared slot always resolves and an unmatched context falls through to the default instead of rendering empty. `fragmentResolution.ts` errors when a `{frag:}` token references a slot the template does not declare, and `proseEnrichment.ts` strips malformed tokens as a residual so none can leak to the player. Authoring is capped for compactness (`MAX_FRAGMENT_SLOTS_PER_TEMPLATE`).
+
+**⚠ Fragment axes are not Surface-key axes.** `SURFACE_FRAGMENT_AXES` is `place | counterpartRole | setting` (`setting` added by THR-884's envelopes); `SURFACE_KEY_AXES` is `sublocationTypeId | reachPrimary | socialRole`. Both are called "axes" and they are different closed sets — treating a fragment axis as a surface axis type-checks nowhere but reads plausibly in prose and in review, which is why the two lists are named here together.
+
+**Not a `[[Band Fragment]]`.** A Context Fragment varies prose by **where and with whom** the encounter happens, chosen before the step resolves. A Band Fragment varies prose by **how the roll landed** with a given `[[Nudge]]` active, chosen after. They are authored on different objects and keyed on different things.
+
+**Prefer the two-word term.** The bare word *Fragment* is ambiguous inside this shard — `[[Band Fragment]]` predates it and is also "an authored prose variant selected by a key" — so `Context Fragment` is canonical and `Fragment` is recorded only as an alias. Use the bare form solely where a `contextFragments` field or a `{frag:}` token is already in view.
+
 ### Nudge
 
 **Aliases:** StepNudge, nudge card
@@ -203,12 +237,14 @@ Riders take **zero draws** from any PRNG stream — they are pure band-mapping a
 ### Band Fragment
 
 **Aliases:** bandProse entry
-**Also see:** `[[Nudge]]`, `[[Rider]]`
+**Also see:** `[[Nudge]]`, `[[Rider]]`, `[[Context Fragment]]`
 **Status:** canonical
 
 A line of **prose** appended to a step's outcome text when a given `[[Nudge]]` was active for that band. Authored as `StepNudge.bandProse`, keyed on the six-value `StepOutcome` — *not* the five-band `EncounterOutcomeBand` and *not* `OutcomeBand` from `outcomeConsequences.ts`, either of which would type-check while being the wrong domain.
 
 **Not a `[[Rider]]`.** A fragment says the god was there when it happened. The two words are not interchangeable, and the disambiguation is load-bearing because both are authored on the same object.
+
+**Not a `[[Context Fragment]]` either.** This one is keyed on **how the roll landed**, after resolution, and is authored on a `[[Nudge]]`. A Context Fragment is keyed on **where and with whom**, before resolution, and is authored on the template. Both are "an authored prose variant selected by a key", which is exactly why the bare word *Fragment* is not used alone for either.
 
 Every nudge must carry at least one fragment in a failure band (`near_miss`, `failure`, `critical_failure`): the god's hand has to be traceable in failure at any size. Nudge-specific payoffs belong in fragments and never in the step's base text, which must read correctly with any subset of the hand active.
 

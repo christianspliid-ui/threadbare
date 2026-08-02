@@ -46,6 +46,7 @@ import { AMBITION_TEMPLATES } from '../data/ambition-templates';
 import type { AmbitionAgentSnapshot } from './ambitionSelection';
 import { computeSphereAggregate, normalizeAggregate } from './phaseSphereAggregation';
 import { getDoomIdentityMatrix } from '../data/doom-identity-matrices';
+import { MEETING_SETTLED_LOCATION_SUBTYPES } from './meetingEncounter';
 
 /** PRNG offset for pre-worldgen culture identity generation. Unique prime — no collision with worldgen passes. */
 const CULTURE_SEED_OFFSET = 87671;
@@ -459,6 +460,51 @@ export function initializeGameStateFromIdentity(
  *
  * Only call from dev quick-start paths — never from production flows.
  */
+/**
+ * Dev-only (THR-874): move the avatar to the nearest settled location so the
+ * Meet-The-First auto-trigger can fire.
+ *
+ * The ascendant starts at `loc.start` — a `shrine` — which is deliberately not in
+ * `MEETING_SETTLED_LOCATION_SUBTYPES`, so the beat never opens from a standing
+ * start. `?view=game&firstunmet` exists to reach that beat, so the dev entry
+ * relocates rather than loosening the production gate.
+ *
+ * Fail-soft (NFP #4): if no settled location or no avatar exists, the avatar is
+ * left where it is and the caller sees `null`. Never throws.
+ *
+ * @returns the location id the avatar was moved to, or `null` if unchanged.
+ */
+export function devPlaceAvatarAtSettlement(state: GameState): string | null {
+  const { graph, ascendantId } = state;
+
+  const avatarId = graph.getIncomingEdges(ascendantId, 'avatar_of')[0]?.source;
+  if (!avatarId) return null;
+
+  const settlement = graph
+    .getNodesByType('location')
+    .find(n => MEETING_SETTLED_LOCATION_SUBTYPES.includes(n.properties.locationSubtype as string));
+  if (!settlement) return null;
+
+  const existing = graph.getOutgoingEdges(avatarId, 'located_at')[0];
+  if (existing) {
+    if (existing.target === settlement.id) return settlement.id;
+    graph.removeEdge(existing.id);
+  }
+
+  graph.addEdge({
+    id: `${avatarId}_located_at_${settlement.id}`,
+    source: avatarId,
+    target: settlement.id,
+    type: 'located_at',
+    properties: {},
+  });
+
+  const avatarNode = graph.getNode(avatarId);
+  if (avatarNode) avatarNode.properties.locationId = settlement.id;
+
+  return settlement.id;
+}
+
 export function devSeedTheFirst(state: GameState): string {
   const { graph, ascendantId, tick } = state;
 
@@ -747,7 +793,10 @@ export const DEV_ASCENDANT_IDENTITY: AscendantIdentity = {
  * Populates quintessence (Rooted), mandate progress (~2/3), essence pool, conditions,
  * clues, and agreements to stress-test the ascendant bar UI across all valences.
  *
- * Call after devSeedTheFirst so the Thornweaver counterparty node exists.
+ * Safe to call with or without devSeedTheFirst: the Thornweaver pact resolves its
+ * counterparty to `ind_dev_the_first` when that node exists and falls back to
+ * `dev_entity_still_hour` otherwise. `?view=game&firstunmet` (THR-874) takes the
+ * fallback path so the Meet-The-First beat stays reachable.
  * Only call from dev quick-start paths — never from production flows.
  */
 export function devSeedAscendantTestPackage(state: GameState): void {

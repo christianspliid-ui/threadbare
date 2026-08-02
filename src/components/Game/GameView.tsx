@@ -11,6 +11,7 @@ import type { ScryState } from '../../types/scry';
 import { createScryState } from '../../engine/scry';
 import { useSimulation } from './hooks/useSimulation';
 import type { UnifiedActionTemplate } from '../../types/unifiedAction';
+import type { CardPlayTallyEntry } from '../../types/gameState';
 import { getEncountersForLocation, getAnyEncounterById } from '../../data/encounter-content';
 import { SUBTYPE_SUBLOCATION_MAP } from '../../engine/sublocation';
 import { useHexZoomData } from './hooks/useHexZoomData';
@@ -54,7 +55,7 @@ import { buildRivalInfluenceMarkers } from '../../engine/rivalInfluenceMarkers';
 import { buildTradeRouteLines, buildRouteTooltipsByHex } from '../../engine/tradeRouteMarkers';
 import { getRetinueAgents, getSustainedControlNodes } from '../../engine/retinue';
 import { TIER_NAMES } from '../../data/influence-content';
-import type { ThreadedNode, ThreadedFaction, SustainedControlNode } from '../../engine/retinue';
+import type { ThreadedNode, ThreadedFaction, ThreadCategory, SustainedControlNode } from '../../engine/retinue';
 import { getAgentPortraitUrlFromProperties } from '../../data/portrait-assets';
 import { getOriginPortraitUrl } from '../../data/avatar-portrait-assets';
 import { HEX_CONSTANTS } from '../HexMapV2/scene/HexFillMesh';
@@ -138,14 +139,17 @@ import type { JourneyVignetteData, PendingVignette } from '../../types/journeyEn
 import { applyBeatChoice } from '../../engine/journeyEngine';
 import { getThreadsFrom, getFactionMembershipEdges } from '../../engine/graphQueries';
 import type { ThreadEdgeProperties } from '../../types/influence';
-import { createMeetingEncounterState, createAgentFromMeeting, isMeetTheFirstAvailable } from '../../engine/meetingEncounter';
+import { createMeetingEncounterState, createAgentFromMeeting, isMeetTheFirstAvailable, MEETING_SETTLED_LOCATION_SUBTYPES } from '../../engine/meetingEncounter';
 import { buildStubAscendantLens } from '../../types/hunger';
 import type { AscendantLens } from '../../types/hunger';
 import { useNotifications } from './hooks/useNotifications';
 import { useInterruptAutoPause } from './hooks/useInterruptAutoPause';
 import { selectEncounterBadges, type EncounterBadgeModel } from './encounterBadgeModel';
 import { selectThreadTugBadges } from './threadTugBadgeModel';
-import { selectEntityNoticeBadges, type EntityNoticeBadgeModel } from './entityNoticeBadgeModel';
+import {
+  selectEntityNoticeBadges, buildRevealedNotices,
+  type EntityNoticeBadgeModel, type RevealedNoticeGroup,
+} from './entityNoticeBadgeModel';
 import { toggleAttentionMode } from '../../engine/encounterVisibility';
 import { setForceFullEncounterVisibility } from '../../engine/debugVisibilityOverride';
 import { useTopBarHotkeys } from './hooks/useTopBarHotkeys';
@@ -165,7 +169,7 @@ import { CRUD_TO_ENCOUNTER_TYPE } from '../../engine/encounterCache';
 import { createUnifiedAction } from '../../engine/unifiedActionLifecycle';
 import { mulberry32 } from '../../lib/prng';
 import { DIVINE_INFLUENCE_CONSTANTS } from '../../data/intervention-feedback-content';
-import { prepareDebugEncounterContext, prepareDebugEncounterSpawn } from '../../engine/debugEncounterTools';
+import { applyBalancedTestAvatar, prepareDebugEncounterContext, prepareDebugEncounterSpawn } from '../../engine/debugEncounterTools';
 import {
   moveDebugAgent,
   spawnDebugAttachment,
@@ -222,7 +226,12 @@ interface GameViewProps {
   seed: number;
   mapSize?: import('../../engine/gameInit').MapSizePreset;
   ascendantIdentity?: import('../../types/remembrance').AscendantIdentity;
-  preSeeded?: boolean;
+  /** Dev-only: bond The First at init. Split from `preSeeded` by THR-874. */
+  seedFirst?: boolean;
+  /** Dev-only: inject the ascendant test package. Split from `preSeeded` by THR-874. */
+  seedTestPackage?: boolean;
+  /** Dev-only: move the avatar to a settlement so the meeting can auto-trigger (THR-874). */
+  placeAvatarForMeeting?: boolean;
 }
 
 function formatJourneyPhaseLabel(
@@ -239,7 +248,7 @@ function formatJourneyPhaseLabel(
   }
 }
 
-export function GameView({ archetype, avatarName, cosmology, seed, mapSize, ascendantIdentity, preSeeded }: GameViewProps) {
+export function GameView({ archetype, avatarName, cosmology, seed, mapSize, ascendantIdentity, seedFirst, seedTestPackage, placeAvatarForMeeting }: GameViewProps) {
   // ── Resume theme music if it was started on the start screen ──
   useEffect(() => {
     resumeTheme();
@@ -263,7 +272,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     running, speed, harvestResult, doTick, runTicksSync, handleBeginNextCycle,
     handleToggleRunning, setRunning, setSpeed, seasonName, year, maxEssence, COLS, ROWS,
     runtime,
-  } = useSimulation({ archetype, avatarName, cosmology, seed, scryState, mapSize, ascendantIdentity, preSeeded });
+  } = useSimulation({ archetype, avatarName, cosmology, seed, scryState, mapSize, ascendantIdentity, seedFirst, seedTestPackage, placeAvatarForMeeting });
 
   // O(1) tile lookup by hex coordinate (tiles array is stable — created once at init)
   const tileMap = useMemo(() => {
@@ -1380,16 +1389,88 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   );
 
   /**
-   * Notice-badge click — open the anchor's thread, then clear its notices. This
-   * is only news, so reading it is the whole interaction; there is nothing to
-   * resolve and nothing to pay. `anchorKind` is a `ThreadCategory` by
-   * construction, so it selects the right panel section for agents and factions
-   * alike (THR-667).
+   * Resolve the node the thread-detail surface will render for a selection, or
+   * `undefined` when nothing can render.
+   *
+   * Hoisted out of the detail panel's JSX (THR-935) so the notice badge's
+   * "will this open?" guard and the panel's own render consult one predicate.
+   * As two separate expressions they could disagree, and a badge clearing its
+   * news against a surface that then declined to render is exactly the
+   * destroy-unread failure this ticket exists to close.
+   */
+  const resolveThreadDetailNode = useCallback((nodeId: string, category: ThreadCategory) => {
+    const detailNode: ThreadedNode | undefined =
+      threadedNodes.find(n => n.id === nodeId)
+      ?? (() => {
+        // Fallback for non-threaded nodes (e.g. unbound agents clicked on map)
+        const graphNode = gameState.graph.getNode(nodeId);
+        if (!graphNode) return undefined;
+        if (category === 'agent') {
+          const locEdges = gameState.graph.getOutgoingEdges(graphNode.id, 'located_at');
+          const locNode = locEdges.length > 0 ? gameState.graph.getNode(locEdges[0].target) : null;
+          const locationName = locNode?.name ?? '(unknown)';
+          return {
+            id: graphNode.id,
+            name: graphNode.name,
+            tier: 0 as import('../../types/influence').InfluenceTier,
+            tierName: TIER_NAMES[0],
+            category: 'agent' as const,
+            threadEdgeId: '',
+            attentionMode: 'auto_resolve' as const,
+            courtPosition: null,
+            locationName,
+            activityLabel: 'Unknown',
+          } satisfies ThreadedNode;
+        }
+        if (category === 'faction') {
+          const memberEdges = gameState.graph.getIncomingEdges(graphNode.id, 'member_of');
+          return {
+            id: graphNode.id,
+            name: graphNode.name,
+            tier: 0 as import('../../types/influence').InfluenceTier,
+            tierName: TIER_NAMES[0],
+            category: 'faction' as const,
+            threadEdgeId: '',
+            attentionMode: 'auto_resolve' as const,
+            courtPosition: null,
+            dominantSphere: null,
+            territoryCount: 0,
+            memberCount: memberEdges.length,
+          } satisfies ThreadedFaction;
+        }
+        return undefined;
+      })();
+    return detailNode;
+  }, [threadedNodes, gameState.graph]);
+
+  /**
+   * The notices a badge click revealed, snapshotted at click time (THR-935).
+   *
+   * Held here rather than read live because the click clears the source notices.
+   * The snapshot is what the detail surface renders, so the news survives exactly
+   * as long as the surface that was opened to show it.
+   */
+  const [revealedNotices, setRevealedNotices] = useState<RevealedNoticeGroup | null>(null);
+
+  /**
+   * Notice-badge click — reveal the anchor's news on its thread surface, then
+   * clear the badge. This is only news, so reading it is the whole interaction;
+   * there is nothing to resolve and nothing to pay. `anchorKind` is a
+   * `ThreadCategory` by construction, so it selects the right panel section for
+   * agents and factions alike (THR-667).
+   *
+   * THR-935: the clear used to be unconditional, and the surface it opened showed
+   * the notices nowhere — so the only observable effect of a click was N pieces of
+   * news being destroyed unread. Now the snapshot is taken first and the clear is
+   * guarded, mirroring `handleOpenEncounterBadge` one function down: if the target
+   * surface cannot render, the badge stays and the news keeps waiting.
    */
   const handleOpenNoticeBadge = useCallback((badge: EntityNoticeBadgeModel) => {
+    if (!resolveThreadDetailNode(badge.anchorId, badge.anchorKind)) return;
+    setRevealedNotices(buildRevealedNotices(badge));
     handleThreadNodeSelect(badge.anchorId, badge.anchorKind);
     handleClearEntityNotices(badge.anchorId);
-  }, [handleThreadNodeSelect, handleClearEntityNotices]);
+  }, [resolveThreadDetailNode, handleThreadNodeSelect, handleClearEntityNotices]);
 
   /**
    * Badge click — open the encounter modal, then mark that notification read so
@@ -1988,16 +2069,25 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
   // ^ Runs once — live deps accessed via _actionStateRef; setGameState is a stable dispatcher
 
-  useEffect(() => {
-    if (!import.meta.env.DEV || !window.__DEBUG) return;
-    window.__DEBUG._registerEncounterBridge({
-      spawnEncounter: (agentId: string, templateId: string, options) => {
+  // Shared by the __DEBUG encounter bridge and the `?spawn=` URL lever
+  // (THR-883). Stable: reads live state via _gameStateRef; the two setters are
+  // stable dispatchers.
+  const debugSpawnEncounter = useCallback(
+    (agentId: string, templateId: string, options?: Parameters<typeof prepareDebugEncounterSpawn>[3]) => {
         const prepared = prepareDebugEncounterSpawn(_gameStateRef.current, agentId, templateId, options);
         if (!prepared.success || !prepared.template || !prepared.notification || !prepared.agent) {
           return {
             success: false,
             message: prepared.message,
           };
+        }
+
+        // The spawn threads its target in place on the graph (THR-934). The graph
+        // mutates without changing identity, so ThreadsPanel's worldVersion-keyed
+        // selectors need an explicit bump or the new row — and the encounter badge
+        // anchored to it — never appears.
+        if (prepared.threadWrite?.created || prepared.threadWrite?.retuned) {
+          touchWorld(runtime);
         }
 
         const shouldOpen = options?.open ?? true;
@@ -2058,7 +2148,74 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
             ? `${prepared.message} and opened it`
             : prepared.message,
         };
-      },
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  );
+
+  // ── Debug: direct-URL encounter spawn (`?spawn=<templateId>`) — THR-883 ──
+  // A shareable review link that stages one named encounter on The First and
+  // opens it, e.g. `?view=game&seeded&size=medium&spawn=encounter.slice.
+  // unsafe_bridge`. Read from the URL (not window.__DEBUG) so it also works on
+  // the deployed build — the THR-880 `?forceencounters` pattern. Retries across
+  // early renders until the seeded world can resolve `@hero`; capped, one spawn
+  // per page load, fail-soft: a bad id logs its message and the game proceeds.
+  //
+  // `?spawn` first stamps its target as the **balanced test avatar** (equal
+  // mid-competent capability in all eight reaches, neutral value axes, an
+  // essence floor in all twelve spheres) so review is not skewed by the seeded
+  // identity's reach spread (Christian, 2026-07-31). `?testavatar` applies the
+  // same stamp without spawning, for balanced free play.
+  const urlSpawnDoneRef = useRef(false);
+  const urlSpawnAttemptsRef = useRef(0);
+  useEffect(() => {
+    if (urlSpawnDoneRef.current) return;
+    const params = new URLSearchParams(window.location.search);
+    const templateId = params.get('spawn');
+    const wantsTestAvatar = params.has('testavatar') || templateId !== null;
+    if (!templateId && !wantsTestAvatar) {
+      urlSpawnDoneRef.current = true;
+      return;
+    }
+    if (urlSpawnAttemptsRef.current >= 30) return;
+    urlSpawnAttemptsRef.current += 1;
+
+    if (wantsTestAvatar) {
+      const stamped = applyBalancedTestAvatar(_gameStateRef.current, '@hero');
+      if (stamped.success) {
+        touchWorld(runtime);
+        if (stamped.essencePool) {
+          const pool = stamped.essencePool;
+          setGameState(prev => ({ ...prev, essencePool: pool }));
+        }
+        if (!templateId) {
+          urlSpawnDoneRef.current = true;
+          return;
+        }
+      } else if (!templateId) {
+        if (urlSpawnAttemptsRef.current === 30) {
+          console.warn(`[?testavatar] gave up after 30 attempts: ${stamped.message}`);
+        }
+        return;
+      }
+    }
+
+    const result = debugSpawnEncounter('@hero', templateId!, {
+      open: true,
+      courtPosition: 'the_first',
+    });
+    if (result.success) {
+      urlSpawnDoneRef.current = true;
+    } else if (urlSpawnAttemptsRef.current === 30) {
+      console.warn(`[?spawn] gave up after 30 attempts: ${result.message}`);
+    }
+  }, [debugSpawnEncounter, gameState]);
+
+  useEffect(() => {
+    if (!import.meta.env.DEV || !window.__DEBUG) return;
+    window.__DEBUG._registerEncounterBridge({
+      spawnEncounter: (agentId: string, templateId: string, options) =>
+        debugSpawnEncounter(agentId, templateId, options),
       spawnEncounterContext: (templateId, options) => {
         const result = prepareDebugEncounterContext(_gameStateRef.current, templateId, options);
         if (result.success) {
@@ -2888,15 +3045,34 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       return;
     }
 
-    setGameState(prev => ({
-      ...prev,
-      essencePool: spend.pool,
-      unifiedActions: (prev.unifiedActions ?? []).map(action =>
-        action.actionId === phase.actionId
-          ? { ...action, activeNudges: [...nudgeIds] }
-          : action,
-      ),
-    }));
+    setGameState(prev => {
+      // THR-887 — tally the library cards this hand played, so the twilight
+      // harvest has something to select the run's defining card from. Cards
+      // with no `libraryCardId` are one-off authored options and are skipped:
+      // an echo can only carry a card the next run's library still builds.
+      const tally: Record<string, CardPlayTallyEntry> = { ...(prev.cardPlayTally ?? {}) };
+      const climax = prev.doomClock?.progress ?? 0;
+      for (const id of nudgeIds) {
+        const libraryCardId = cardsById.get(id)?.libraryCardId;
+        if (!libraryCardId) continue;
+        const existing = tally[libraryCardId];
+        tally[libraryCardId] = {
+          timesPlayed: (existing?.timesPlayed ?? 0) + 1,
+          peakSignificance: Math.max(existing?.peakSignificance ?? 0, climax),
+        };
+      }
+
+      return {
+        ...prev,
+        essencePool: spend.pool,
+        cardPlayTally: tally,
+        unifiedActions: (prev.unifiedActions ?? []).map(action =>
+          action.actionId === phase.actionId
+            ? { ...action, activeNudges: [...nudgeIds] }
+            : action,
+        ),
+      };
+    });
 
     // One trace per played card (player-driven, low volume — not an
     // all-agents phase, so the aggregate-batching rule does not apply).
@@ -3081,8 +3257,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     const locNode = gameState.graph.getNode(locationId);
     if (!locNode) return;
     const subtype = locNode.properties.locationSubtype as string | undefined;
-    const settledTypes = ['town', 'city', 'hamlet', 'village', 'capital', 'port', 'outpost', 'fortress', 'monastery', 'trading_post'];
-    if (!subtype || !settledTypes.includes(subtype)) return;
+    if (!subtype || !MEETING_SETTLED_LOCATION_SUBTYPES.includes(subtype)) return;
 
     // All conditions met — auto-trigger once
     gameState.meetTheFirstAutoTriggered = true;
@@ -3425,6 +3600,17 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     window.__DEBUG._registerOpenModalsProvider(getDebugOpenModals);
     window.__DEBUG._registerActiveUIStateProvider(getDebugActiveUIState);
   }, [getDebugActiveUIState, getDebugOpenModals]);
+
+  /**
+   * THR-935: a revealed-notice snapshot belongs to the surface the badge opened.
+   * Once the selection moves elsewhere — or the panel closes — it is news held
+   * past its welcome, so drop it rather than let it resurface on a later visit to
+   * the same row. The render also gates on the anchor id, so nothing flashes.
+   */
+  useEffect(() => {
+    if (!revealedNotices) return;
+    if (selectedThreadNode?.nodeId !== revealedNotices.anchorId) setRevealedNotices(null);
+  }, [selectedThreadNode, revealedNotices]);
 
   // Close detail panel on Escape key
   useEffect(() => {
@@ -3897,47 +4083,12 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                   }}
                 >
                   {selectedThreadNode && (() => {
-                    const detailNode: ThreadedNode | undefined =
-                      threadedNodes.find(n => n.id === selectedThreadNode.nodeId)
-                      ?? (() => {
-                        // Fallback for non-threaded nodes (e.g. unbound agents clicked on map)
-                        const graphNode = gameState.graph.getNode(selectedThreadNode.nodeId);
-                        if (!graphNode) return undefined;
-                        if (selectedThreadNode.category === 'agent') {
-                          const locEdges = gameState.graph.getOutgoingEdges(graphNode.id, 'located_at');
-                          const locNode = locEdges.length > 0 ? gameState.graph.getNode(locEdges[0].target) : null;
-                          const locationName = locNode?.name ?? '(unknown)';
-                          return {
-                            id: graphNode.id,
-                            name: graphNode.name,
-                            tier: 0 as import('../../types/influence').InfluenceTier,
-                            tierName: TIER_NAMES[0],
-                            category: 'agent' as const,
-                            threadEdgeId: '',
-                            attentionMode: 'auto_resolve' as const,
-                            courtPosition: null,
-                            locationName,
-                            activityLabel: 'Unknown',
-                          } satisfies ThreadedNode;
-                        }
-                        if (selectedThreadNode.category === 'faction') {
-                          const memberEdges = gameState.graph.getIncomingEdges(graphNode.id, 'member_of');
-                          return {
-                            id: graphNode.id,
-                            name: graphNode.name,
-                            tier: 0 as import('../../types/influence').InfluenceTier,
-                            tierName: TIER_NAMES[0],
-                            category: 'faction' as const,
-                            threadEdgeId: '',
-                            attentionMode: 'auto_resolve' as const,
-                            courtPosition: null,
-                            dominantSphere: null,
-                            territoryCount: 0,
-                            memberCount: memberEdges.length,
-                          } satisfies ThreadedFaction;
-                        }
-                        return undefined;
-                      })();
+                    // THR-935: one predicate, shared with the notice badge's
+                    // "will this open?" guard — see resolveThreadDetailNode.
+                    const detailNode = resolveThreadDetailNode(
+                      selectedThreadNode.nodeId,
+                      selectedThreadNode.category,
+                    );
                     if (!detailNode) return null;
                     return (
                       <ThreadDetailView
@@ -3955,6 +4106,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                         strategicState={selectedThreadNode.category === 'agent' ? gameState.strategicState : undefined}
                         intelligenceRecords={selectedThreadNode.category === 'agent' ? (gameState.intelligenceRecords ?? []) : undefined}
                         getForeshadowing={selectedThreadNode.category === 'agent' ? handleGetForeshadowing : undefined}
+                        revealedNotices={revealedNotices}
                       />
                     );
                   })()}

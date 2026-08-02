@@ -44,11 +44,25 @@ function parseMapSizeParam(): MapSizePreset {
   return DEFAULT_MAP_SIZE;
 }
 
+/**
+ * Dev quick-start flags parsed from the URL (THR-874).
+ *
+ * `seeded` and `firstunmet` both take the identity path; they differ only in
+ * whether The First is pre-bonded. Pre-bonding makes `isMeetTheFirstAvailable`
+ * false, which is why `?view=game&seeded` can never reach the Meet-The-First
+ * beat and `?view=game&firstunmet` exists.
+ */
+function parseDevSeedFlags(): { seeded: boolean; firstUnmet: boolean; wantsIdentity: boolean } {
+  const params = new URLSearchParams(window.location.search);
+  const seeded = params.has('seeded');
+  const firstUnmet = params.has('firstunmet');
+  return { seeded, firstUnmet, wantsIdentity: seeded || firstUnmet };
+}
+
 /** Pick a random archetype and avatar name for dev quick-start. */
 function quickStartPhase(seed: number): GamePhase {
-  const seeded = new URLSearchParams(window.location.search).has('seeded');
-  if (seeded) {
-    // Full identity path — ascendant + The First pre-seeded
+  if (parseDevSeedFlags().wantsIdentity) {
+    // Full identity path — ascendant seeded; The First bonded unless ?firstunmet
     return { phase: 'playing-remembrance', identity: DEV_ASCENDANT_IDENTITY };
   }
   const archetypes = generateArchetypes(4, seed);
@@ -180,7 +194,12 @@ function App() {
       hungerId: gamePhase.identity.hungerId,
     });
 
-    const isDevSeeded = viewParam === 'game' && new URLSearchParams(window.location.search).has('seeded');
+    // THR-874: the two dev seeding actions are switched independently. `?firstunmet`
+    // seeds the ascendant test package but leaves The First unbonded, which is the
+    // only way any dev URL can reach the Meet-The-First beat.
+    const devFlags = parseDevSeedFlags();
+    const isDevQuickStart = viewParam === 'game' && devFlags.wantsIdentity;
+    const devSeedFirst = isDevQuickStart && !devFlags.firstUnmet;
 
     // Allow ?size= URL param to override the hunger-derived map size.
     // Useful for dev testing: ?view=game&seeded&size=medium avoids the large-map stall (THR-162).
@@ -196,7 +215,9 @@ function App() {
         seed={seed}
         mapSize={resolvedMapSize}
         ascendantIdentity={gamePhase.identity}
-        preSeeded={isDevSeeded}
+        seedFirst={devSeedFirst}
+        seedTestPackage={isDevQuickStart}
+        placeAvatarForMeeting={isDevQuickStart && devFlags.firstUnmet}
       />
     );
   }

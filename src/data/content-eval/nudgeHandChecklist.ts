@@ -30,7 +30,6 @@ import type {
 import {
   ALL_BAND_OUTCOMES,
   FACTOR_LINES_MAX,
-  FACTOR_LINES_MIN,
   FAILURE_BAND_OUTCOMES,
   HAND_COMMON_OPTIONS_MIN,
   HAND_SPHERE_COVERAGE_MIN,
@@ -40,6 +39,7 @@ import {
   NUDGE_HAND_MIN,
   NUDGE_NAME_MAX_WORDS,
   NUDGE_OFF_REACH_MAX_DIFFICULTY,
+  NUDGE_WORD_BUDGETS,
   OPEN_DRAW_ATTENTION_TIER,
   REACH_PURPOSE_MAX_WORDS,
 } from './nudgeAuthoringConstants';
@@ -162,19 +162,61 @@ export function checkNudgeHand(template: UnifiedActionTemplate): string[] {
       );
     }
 
+    // The variance rule (Christian, 2026-07-30): factor lines report state
+    // that could have been otherwise — agent, hex, global modifiers, earlier
+    // steps — all of which the panel derives. New content authors NO static
+    // factorLines; a line true on every run is priced into `difficulty` and
+    // belongs in the prose. The floor this block used to enforce
+    // (FACTOR_LINES_MIN) is retired for authoring; the cap and the both-signs
+    // rule still bind the un-migrated templates that carry authored lines.
     const factorLines = step.factorLines ?? [];
-    if (factorLines.length < FACTOR_LINES_MIN || factorLines.length > FACTOR_LINES_MAX) {
+    if (factorLines.length > FACTOR_LINES_MAX) {
       violations.push(
-        `${where}: ${factorLines.length} factor lines, outside ${FACTOR_LINES_MIN}–${FACTOR_LINES_MAX}`,
+        `${where}: ${factorLines.length} factor lines, over FACTOR_LINES_MAX ${FACTOR_LINES_MAX}`,
       );
     }
-    // Author both signs: a step whose lines all cut one way is an assertion,
-    // not a weighing.
-    if (factorLines.length > 0) {
+    if (factorLines.length >= 2) {
       const polarities = new Set(factorLines.map(l => l.polarity));
       if (polarities.size < 2) {
         violations.push(
           `${where}: factor lines all cut '${[...polarities][0]}' — a weighing needs both signs`,
+        );
+      }
+    }
+
+    // ─── Carryover lines (THR-892) ────────────────────────────────
+    // The one authored factor surface besides trait lines that survives the
+    // variance rule, because it is keyed on a band the run actually rolled.
+    //
+    // Budgets, not requirements: a step may author none (the first step of an
+    // encounter has no predecessor, so a carryover map there is dead by
+    // construction). What is checked is that a declared line is *usable* —
+    // within the word budget, and not so large it swamps the hand.
+    const carryoverEntries = Object.entries(step.carryoverFactorLines ?? {}) as
+      ReadonlyArray<[StepOutcome, { text: string; forecastDelta?: number }]>;
+    // Position in the *template's* step list, not in the nudge-bearing subset —
+    // a template whose step 0 authors no hand would otherwise make its step 1
+    // look like the head of the encounter.
+    const templateStepIndex = (template.steps ?? []).indexOf(step);
+    if (templateStepIndex === 0 && carryoverEntries.length > 0) {
+      violations.push(
+        `${where}: authors carryoverFactorLines on the first step, which has no prior outcome to key off`,
+      );
+    }
+    for (const [outcome, line] of carryoverEntries) {
+      if (!line?.text || line.text.trim() === '') {
+        violations.push(`${where}: carryover line for '${outcome}' has no text`);
+        continue;
+      }
+      if (words(line.text) > NUDGE_WORD_BUDGETS.factorLine) {
+        violations.push(
+          `${where}: carryover line for '${outcome}' is ${words(line.text)} words, over ${NUDGE_WORD_BUDGETS.factorLine}`,
+        );
+      }
+      const delta = Math.abs(line.forecastDelta ?? 0);
+      if (delta > NUDGE_BIG_DELTA) {
+        violations.push(
+          `${where}: carryover line for '${outcome}' moves ${delta}, over NUDGE_BIG_DELTA ${NUDGE_BIG_DELTA}`,
         );
       }
     }

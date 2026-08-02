@@ -182,6 +182,14 @@ export function buildSimpleEncounterStageModel(
     null,
     args.gameState,
     args.tick,
+    {
+      // THR-932 — same threading gap as the unified adapter: without the template's
+      // fragment tables, `{frag:*}` in this surface's prose resolves to nothing. The
+      // enricher only enters that branch when a token is present, so this is a no-op
+      // for every template that declares no fragments.
+      contextFragments: template.contextFragments,
+      contextFragmentTemplateId: template.id,
+    },
   );
   const depth = proseDepthForTier(threadTier);
 

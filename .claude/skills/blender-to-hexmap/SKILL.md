@@ -1,7 +1,7 @@
 ---
 name: blender-to-hexmap
 description: Build 3D models in Blender via MCP and import them into the HexMapV2 Three.js hex renderer. Use this skill EVERY TIME you create, modify, or re-export a 3D model for the hex map — including city models, fortress models, landmark models, or any GLTF/GLB asset destined for HexMapV2. Triggers on "blender", "3D model", "city model", "GLB", "GLTF", "import model", "hex signifier model", "build in blender", or any task involving creating 3D assets for the game map.
-last_validated_against: 2026-05-08
+last_validated_against: 2026-07-30
 ---
 
 # Blender → HexMap Pipeline
@@ -254,7 +254,7 @@ Before committing a new model:
 - [ ] No runtime rotation on the clone
 - [ ] Wired into `useZoomLayerVisibility` hook
 - [ ] Disposal function implemented and called in cleanup
-- [ ] `npx tsc --noEmit` passes
+- [ ] `npm run check:typecheck` passes (**never `npx tsc --noEmit`** — it is a no-op here, THR-686)
 - [ ] `npx vite build` succeeds
 
 ## Lessons Learned (Do Not Repeat)

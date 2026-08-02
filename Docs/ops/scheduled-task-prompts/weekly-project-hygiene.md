@@ -192,9 +192,10 @@ Write to `Docs/ops/weekly-hygiene-YYYY-MM-DD.md`:
 You are Claude Code and CAN commit — Cowork could not, which is why the original version of this sweep ended at "share the report path". Observe the git rules:
 
 - **Never run git state operations with the home tree as CWD** (THR-672). `C:\Users\chris\Dev\Projects\TheFantasyWorldSimulator` is a read-only mirror of `main` owned by `threadbare-autosync.ps1`. No `checkout`/`switch`/`commit`/`merge`/`rebase`/`reset` there. Work in this session's own worktree; branches are repo-global.
-- Fetch first, branch off current `origin/main`.
+- **The sweep report goes to the `ops` branch, not `main`** (THR-947, cutover 2026-08-02) — no branch, no PR, no CI, and `main`'s tip does not move. From this worktree's **repository root**: `bash scripts/ops-publish.sh -m "docs(ops): weekly hygiene sweep <date>" Docs/ops/weekly-hygiene-<date>.md`.
+- **Only the report moves.** Anything durable this sweep changes — a CLAUDE.md correction, a registry fix, a prompt mirror — is a normal `main` change: fetch first, branch off current `origin/main`, PR it. Do not publish durable edits to `ops`; it is not merged into anything.
 - Commit with **no** `Fixes`/`Closes`/`Resolves THR-XX` keyword — it would auto-close unrelated issues (impediment #140).
-- Open a PR, queue with `gh pr merge --auto --merge`, do not poll-wait on CI (THR-675).
+- For those durable changes: queue with `gh pr merge --auto --merge`, do not poll-wait on CI (THR-675).
 
 ## Known traps
 
@@ -207,7 +208,7 @@ You are Claude Code and CAN commit — Cowork could not, which is why the origin
 
 ## When to run a light sweep
 
-If the last sweep ran less than 4 days ago (check `Docs/ops/weekly-hygiene-*.md` filenames), run a **light sweep** instead: Linear queue audit + impediment log review + three-pillar compliance only. Say so in the report.
+If the last sweep ran less than 4 days ago (check `weekly-hygiene-*.md` filenames on the `ops` branch: `git ls-tree -r --name-only origin/ops -- Docs/ops/`; the working tree holds only the frozen pre-cutover archive), run a **light sweep** instead: Linear queue audit + impediment log review + three-pillar compliance only. Say so in the report.
 
 ## References
 

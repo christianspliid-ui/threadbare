@@ -11,6 +11,9 @@ import {
   NOTICE_FACTION_CATEGORY_LABEL,
   NOTICE_FACTION_DEFAULT_LABEL,
   NOTICE_ARIA_OPEN_SUFFIX,
+  buildRevealedNotices,
+  REVEALED_NOTICES_TITLE,
+  REVEALED_NOTICES_FACTION_TITLE,
 } from '../entityNoticeBadgeModel';
 
 function notice(overrides: Partial<EntityNotice> = {}): EntityNotice {
@@ -160,5 +163,77 @@ describe('resolveNoticeLabel', () => {
     expect(NOTICE_CATEGORY_LABEL.movement).toBeUndefined();
     expect(resolveNoticeLabel('movement', 'agent')).toBe(NOTICE_DEFAULT_LABEL);
     expect(resolveNoticeLabel('movement', 'faction')).toBe(NOTICE_FACTION_DEFAULT_LABEL);
+  });
+});
+
+// ─── THR-935: revealed notices ─────────────────────────────────────
+
+describe('buildRevealedNotices', () => {
+  it('reveals every notice the badge counted, not just the primary', () => {
+    const badge = selectEntityNoticeBadges([
+      notice({ id: 'a', tick: 4, message: 'earlier' }),
+      notice({ id: 'b', tick: 19, message: 'latest' }),
+      notice({ id: 'c', tick: 11, message: 'middle' }),
+    ]).get('kael')!;
+
+    const group = buildRevealedNotices(badge);
+
+    // The defect this closes: the badge said 3 and the click showed none of them.
+    expect(badge.count).toBe(3);
+    expect(group.lines).toHaveLength(3);
+    expect(group.lines.map(l => l.message)).toEqual(['latest', 'middle', 'earlier']);
+  });
+
+  it('orders newest first, so the list opens on what the tooltip led with', () => {
+    const badge = selectEntityNoticeBadges([
+      notice({ id: 'a', tick: 4 }),
+      notice({ id: 'b', tick: 19 }),
+    ]).get('kael')!;
+
+    const group = buildRevealedNotices(badge);
+    expect(group.lines[0].id).toBe(badge.primary.id);
+  });
+
+  it('breaks tick ties on input order, so the same notices always read the same', () => {
+    const bucket = [
+      notice({ id: 'first', tick: 7, message: 'one' }),
+      notice({ id: 'second', tick: 7, message: 'two' }),
+      notice({ id: 'third', tick: 7, message: 'three' }),
+    ];
+    const badge = selectEntityNoticeBadges(bucket).get('kael')!;
+    expect(buildRevealedNotices(badge).lines.map(l => l.id))
+      .toEqual(['first', 'second', 'third']);
+  });
+
+  it('carries each line\'s own kind label and tint, not the primary\'s', () => {
+    const badge = selectEntityNoticeBadges([
+      notice({ id: 'life', tick: 9, category: 'lifecycle' }),
+      notice({ id: 'amb', tick: 3, category: 'ambitions' }),
+    ]).get('kael')!;
+
+    const [newest, older] = buildRevealedNotices(badge).lines;
+    expect(newest.kindLabel).toBe(NOTICE_CATEGORY_LABEL.lifecycle);
+    expect(older.kindLabel).toBe(NOTICE_CATEGORY_LABEL.ambitions);
+    expect(newest.accentColor).not.toBe(older.accentColor);
+  });
+
+  it('titles the list for a person or an institution, per anchor kind', () => {
+    const agentBadge = selectEntityNoticeBadges([notice()]).get('kael')!;
+    expect(buildRevealedNotices(agentBadge).title).toBe(REVEALED_NOTICES_TITLE);
+
+    const factionBadge = selectEntityNoticeBadges([
+      notice({ anchorId: 'faction_iron_guard', anchorKind: 'faction', category: 'social' }),
+    ]).get('faction_iron_guard')!;
+    const group = buildRevealedNotices(factionBadge);
+    expect(group.title).toBe(REVEALED_NOTICES_FACTION_TITLE);
+    expect(group.lines[0].kindLabel).toBe(NOTICE_FACTION_CATEGORY_LABEL.social);
+  });
+
+  it('is pure — the same badge yields an equal group every call', () => {
+    const badge = selectEntityNoticeBadges([
+      notice({ id: 'a', tick: 4 }),
+      notice({ id: 'b', tick: 19 }),
+    ]).get('kael')!;
+    expect(buildRevealedNotices(badge)).toEqual(buildRevealedNotices(badge));
   });
 });

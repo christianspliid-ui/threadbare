@@ -79,6 +79,17 @@ export interface EntityLinkEntry {
   referenceId: string;
   /** Visual emphasis when rendered */
   emphasis: 'strong' | 'accent';
+  /**
+   * THR-971 — graph node id behind this name, when one is known.
+   *
+   * `referenceId` identifies the *tooltip*, not the entity: a cast reference is
+   * keyed `cast:<bundleKey>`, which no surface can resolve back to a node. A
+   * renderer that wants to open the entity's page needs the id itself, so it is
+   * carried here. Optional by design — a name with no node behind it stays
+   * emphasised but unclickable, which is the fail-open behaviour (never a dead
+   * link).
+   */
+  entityId?: string;
 }
 
 /**
@@ -145,6 +156,7 @@ export function autoLinkNarrative(
         text: matchedText,
         referenceId: entity.referenceId,
         emphasis: entity.emphasis,
+        entityId: entity.entityId,
       });
     }
 
@@ -313,6 +325,7 @@ export function collectSupportBundleEntities(
         name: resolvedName,
         referenceId: ref.id,
         emphasis: 'strong',
+        entityId: binding.nodeId,
       });
 
       // Also add the spawnName if different from resolved name
@@ -321,6 +334,7 @@ export function collectSupportBundleEntities(
           name: actorSpec.spawnName,
           referenceId: ref.id,
           emphasis: 'strong',
+          entityId: binding.nodeId,
         });
       }
 
@@ -332,6 +346,7 @@ export function collectSupportBundleEntities(
           name: firstName,
           referenceId: ref.id,
           emphasis: 'strong',
+          entityId: binding.nodeId,
         });
       }
     } else if (spec.kind === 'location') {
@@ -360,11 +375,21 @@ export function collectSupportBundleEntities(
     const targetRef = buildTargetReference(graph, targetId);
     if (targetRef) {
       references.push(targetRef);
-      linkEntries.push({ name: targetRef.label, referenceId: targetRef.id, emphasis: 'strong' });
+      linkEntries.push({
+        name: targetRef.label,
+        referenceId: targetRef.id,
+        emphasis: 'strong',
+        entityId: targetId,
+      });
 
       const firstName = targetRef.label.split(' ')[0];
       if (firstName && firstName !== targetRef.label && firstName.length >= 3) {
-        linkEntries.push({ name: firstName, referenceId: targetRef.id, emphasis: 'strong' });
+        linkEntries.push({
+          name: firstName,
+          referenceId: targetRef.id,
+          emphasis: 'strong',
+          entityId: targetId,
+        });
       }
     }
   }

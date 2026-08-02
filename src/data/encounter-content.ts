@@ -10,6 +10,7 @@
 import { ENCOUNTER_TYPE_MOTIVATIONS } from '../types/encounter';
 import type { LocationSubtype } from '../types/index';
 import type { UnifiedActionTemplate } from '../types/unifiedAction';
+import { compileOpeningEnvelope, expandSettings, type SettingClass } from './settingClasses';
 import { getSocialEncounterById } from './social-encounter-content';
 import { getFactionEncounterById } from './faction-encounter-content';
 import { getMercenaryEncounterById } from './mercenary-encounter-content';
@@ -115,8 +116,30 @@ export const ENCOUNTER_DIFFICULTY_TIERS: Record<string, EncounterDifficultyTier>
 type EncounterEntry = {
   id: string;
   name: string;
-  locationTypes: LocationSubtype[];
+  /**
+   * THR-884: the setting envelope — the preferred way to place an encounter.
+   * Declare classes (`['rural', 'wayside']`); the converter expands them through
+   * `SETTING_CLASS_MAP` into `locationSubtypes`, which the encounter cache filters
+   * on unchanged. Write toward the *widest honest envelope* and keep it honest with
+   * per-class `openings` rather than by narrowing.
+   */
+  settings?: readonly SettingClass[];
+  /**
+   * Exact-subtype placement. Now the **override** for genuinely specific encounters
+   * (a temple rite that belongs at `temple` and nowhere else); every other template
+   * should prefer `settings`. Optional since THR-884 — an entry must carry at least
+   * one of `settings` / `locationTypes`, enforced by `settingClasses.test.ts`.
+   * Unioned with the expanded envelope when both are present.
+   */
+  locationTypes?: LocationSubtype[];
   sublocationTypes?: string[];
+  /**
+   * THR-884: per-setting-class opening paragraphs. Compiled by the converter into a
+   * `{frag:opening}` fragment set on the `setting` axis, with the first step's
+   * authored narrative as the `'*'` default. Must cover every class `settings`
+   * declares (build-time test).
+   */
+  openings?: Readonly<Partial<Record<SettingClass, string>>>;
   reachPrimary: string;
   reachSecondary?: string;
   encounterType: string;
@@ -231,7 +254,15 @@ function toUnifiedTemplate(e: EncounterEntry): UnifiedActionTemplate {
     ?? (e.motivations as readonly import('../types/agent').ValuePair[] ?? []);
   const firstStep = e.steps[0];
   const lastStep = e.steps[e.steps.length - 1];
-  return {
+  // THR-884: envelope expansion happens here, once, at conversion — never per tick.
+  // THR-932: the openings *compile* is no longer done here. It moved to the shared
+  // `compileOpeningEnvelope` applied to the finished template below, so the raw-entry
+  // and direct-authored paths have one semantic instead of two. The old local version
+  // *replaced* step-0 prose with the token (discarding the authored step paragraph);
+  // the shared one prepends. Behavior-neutral for shipped content — no raw entry in
+  // this corpus authors `openings` (verified 2026-08-01), so the replace path had no
+  // shipped users.
+  return compileOpeningEnvelope({
     id: e.id,
     name: e.name,
     reach: normalizeReach(e.reachPrimary),
@@ -246,6 +277,9 @@ function toUnifiedTemplate(e: EncounterEntry): UnifiedActionTemplate {
         onSuccess: [],
         onFailure: [],
         failBehavior: (index < e.steps.length - 1 ? 'continue_weakened' : 'fail_action') as 'continue_weakened' | 'fail_action',
+        // THR-884/THR-932: every step keeps its authored prose verbatim here. Step 0
+        // additionally gets the `{frag:opening}` token *prepended* by
+        // `compileOpeningEnvelope` below, when and only when the entry authored openings.
         narrativeTemplate: step.narrative,
         successAfterimage: step.onSuccess.narrative,
         failureAfterimage: step.onFailure.narrative,
@@ -270,10 +304,20 @@ function toUnifiedTemplate(e: EncounterEntry): UnifiedActionTemplate {
     minGroupMembers: e.minGroupMembers,
     requiresOpposingBand: e.requiresOpposingBand,
     contestNonLethal: e.contestNonLethal,
+    // THR-884: the envelope expands first (canonical class order), then any
+    // exact-subtype override, then sublocations. Deduplicated so a template
+    // declaring both `settings: ['sacred']` and `locationTypes: ['temple']`
+    // registers `temple` once — the cache filter uses `includes`, but a duplicated
+    // entry would double-count in the coverage matrix.
     locationSubtypes: [
-      ...e.locationTypes,
-      ...(e.sublocationTypes ?? []),
+      ...new Set<string>([
+        ...expandSettings(e.settings),
+        ...(e.locationTypes ?? []),
+        ...(e.sublocationTypes ?? []),
+      ]),
     ],
+    settings: e.settings,
+    openings: e.openings,
     sphereAffinity: e.sphereAffinity as UnifiedActionTemplate['sphereAffinity'],
     motivations,
     narrativeTemplates: {
@@ -291,7 +335,7 @@ function toUnifiedTemplate(e: EncounterEntry): UnifiedActionTemplate {
     traitVariants: e.traitVariants,
     rarityTier: 1,
     intrinsicTier: 'background',
-  };
+  });
 }
 
 // ─── Encounter Templates ──────────────────────────────────────

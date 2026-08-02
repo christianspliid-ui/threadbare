@@ -6,7 +6,7 @@ description: >
   "movement test", "hexmap test", "regression test", or when implementing changes that touch
   3+ files across src/engine/ and src/components/. Also load when reviewing test coverage
   or diagnosing why a change broke downstream systems.
-last_validated_against: 2026-05-08
+last_validated_against: 2026-08-01
 ---
 
 # Testing Patterns — Domain Context
@@ -196,12 +196,82 @@ test('hop takes 800ms', () => {
 
 **Fix:** Contract test: "engine tick produces hex change → animation system creates valid hop → hop duration is compatible with tick interval."
 
+### ❌ Probes and guards that cannot fail (vacuous verification)
+
+The 2026-07-31 retro found 16 fresh instances of one shape: a check whose pass condition is
+"no bad rows found", run against a population that is silently empty — so it passes when the
+feature works, *and* passes when the feature is entirely disconnected.
+
+```typescript
+// BAD: passes vacuously when selector() matches nothing (impediment #241)
+const bad = candidates.filter(selector).filter(isBroken);
+expect(bad).toHaveLength(0);
+
+// BAD: both sides authored by the test — cannot detect the wiring being dead (#288, #296)
+expect(myLabelTable[key]).toBe(EXPECTED_LABELS[key]); // both defined in this test file
+
+// BAD: the guard filters out its own population in the expression that tests it (#282)
+```
+
+**Fix — falsify the probe before trusting it:** first assert the population is non-empty
+(`expect(candidates.filter(selector).length).toBeGreaterThan(0)`), then assert the property.
+For a manual verification probe (CLI `eval`, `__DEBUG` query), make it fail once on purpose —
+break the thing it checks, or query a known-bad row — before believing its PASS. A green
+check you have never seen red proves only that the check ran. Related: assert against the
+*production* export, never a fixture copy of it (a copied table verifies fiction), and pin
+closed sets with `toEqual` on the real producer's output so a new member fails loud.
+
+## Your test does not get a fresh module registry (THR-940)
+
+Most tests now share a worker. `vitest.config.ts` runs the suite as three projects and the
+big one — every node-environment test that does not mock modules, ~86% of the suite — sets
+`isolate: false`, so the module graph is imported **once per worker** rather than once per
+file. That is the whole speedup: a full run used to spend more time importing (`573s`) than
+running tests (`341s`).
+
+**Routing is automatic. You do not annotate anything.** `scripts/vitest-test-partition.ts`
+scans every test file and routes it by two mechanical predicates: a non-node
+`@vitest-environment` docblock sends it to the isolated `dom` project, and any use of
+`vi.mock` / `vi.doMock` sends it to the isolated `node-isolated` project. Both are scanned
+rather than inferred from paths, because the paths do not agree with reality — 68
+node-environment tests live under `src/components/` and 6 jsdom tests live outside it.
+
+What this changes for you, when you write a node test that does not mock:
+
+- **Module-scope mutable state leaks between test files.** A module-level cache, counter, or
+  registry populated by an earlier file is still populated when yours runs. This is the same
+  hazard CLAUDE.md names under *Load-Bearing Architectural Decisions* — engine caches must be
+  owned per session, not stored at module scope — and `isolate: false` is what makes it
+  observable. If your test only passes alone, that is the finding, not an inconvenience:
+  something outlives its session. Prefer a reset hook on the offending cache over a
+  `beforeEach` that hides it.
+- **`vi.mock` is not an option in the shared pool**, and adding one moves your file to the
+  isolated project automatically. This matters because the failure it prevents is silent: with
+  a shared registry the first importer of the real module wins and the mock never applies, so
+  an assertion can **pass for the wrong reason** rather than crash (see
+  `grantedTraitConsumers.test.ts`, THR-940).
+- **A file that genuinely cannot be fixed cheaply may be pinned** via `ISOLATED_PINS` in the
+  partition module — but only with an inline comment naming the observed failure and a
+  Deferral issue tracking its removal (THR-949 holds the current two). An unexplained pin is
+  indistinguishable from a test quietly opted out of the fast path.
+
+`npm test` still runs all three projects as one command; the CI job name
+`Test · Typecheck · Build` is a required status check and must not move.
+
 ## Checklist: Before Submitting Engine/HexMap Changes
 
 Run through this before marking a task as done:
 
 - [ ] All unit tests pass (`npm test`)
-- [ ] Type check clean (`npx tsc --noEmit`)
+- [ ] Type check via `npm run check:typecheck` — **never `npx tsc --noEmit`**, which is a
+      no-op here (the root `tsconfig.json` sets `files: []`, so it exits 0 unconditionally
+      no matter how broken the code is; citing that exit 0 is gate theater, THR-686).
+      `check:typecheck` is the same ratchet CI runs (THR-693): it compares the error count
+      against `typecheck-baseline.json` and fails only on an **increase**, so a local pass
+      means CI passes. The ~3529 pre-existing errors (THR-489) are not yours to fix. If you
+      legitimately change the count, refresh with `npm run check:typecheck -- --update` and
+      commit the baseline, saying why.
+- [ ] Production build succeeds (`npx vite build`)
 - [ ] Contract tests pass for affected boundaries (`npm test -- --grep "contract"`)
 - [ ] If phase ordering changed → orchestrator integration test exists and passes
 - [ ] If `MovementState` changed → verified all 15 consumer files handle new shape (see blast radius in road-aware-movement design doc)

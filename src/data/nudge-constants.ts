@@ -129,7 +129,60 @@ export const BROKEN_DRIFT_SAFE_SUBTYPES: ReadonlySet<string> = new Set([
  * nudges carrying riders, exactly one applies — the earliest in this list.
  * Riders never stack, and they never touch the d100.
  */
-export const NUDGE_RIDER_PRIORITY: readonly NudgeRider[] = ['no_crit_fail', 'floor_at_cost'];
+export const NUDGE_RIDER_PRIORITY: readonly NudgeRider[] = [
+  'no_crit_fail',
+  'floor_at_cost',
+  // The Gambit sits last on purpose (THR-885). It is the only rider that can
+  // worsen an outcome, so when a player has also committed a protective card the
+  // protection wins — a hand cannot accidentally cancel its own safety net.
+  'all_or_nothing',
+];
+
+// ─── Sphere signature discount ───────────────────────────────────────
+
+/**
+ * The Signature (THR-885) — essence knocked off a card whose sphere matches one
+ * the ascendant is aligned to. A discount, not a gate: full sphere *gating*
+ * stays parked with THR-870.
+ */
+export const SPHERE_DISCOUNT = 1;
+
+/**
+ * Floor the discount can never push a card below. Free is an authored decision
+ * (`essenceCost: 0` on a trait card), never something a discount arrives at —
+ * otherwise a sphere-matched card silently becomes a different kind of card.
+ */
+export const SPHERE_DISCOUNT_MIN_COST = 1;
+
+// ─── The Repertoire (THR-887) ────────────────────────────────────────
+
+/**
+ * Essence knocked off a card signed by the ascendant's **secondary** sphere.
+ *
+ * Distinct from {@link SPHERE_DISCOUNT} by *layer*, not by arithmetic — both are
+ * 1, and that is a coincidence worth keeping visible rather than collapsing.
+ * `SPHERE_DISCOUNT` is THR-885's per-encounter price cut, applied by
+ * `effectiveNudgeCost` to a card in an authored step hand. This one is the
+ * repertoire layer: it prices a *library* card the god holds because their
+ * secondary sphere signs its type. Tuning one should not silently move the other.
+ *
+ * Primary-sphere cards are full strength (no discount, no surcharge) — the
+ * primary's reward is *access*, per plan Decision 7.1.
+ */
+export const SECONDARY_SPHERE_DISCOUNT = 1;
+
+/**
+ * Forecast penalty carried by an echo card returned from a **somber** age
+ * (plan Decision 7.4). The scarred card is cheaper — a dead god's favorite
+ * trick, come back wrong — and pays for it here.
+ *
+ * In pip terms this is one red down-triangle. Stored as a raw forecast delta;
+ * the pip tiering is display-only (recorded on THR-885).
+ */
+export const ECHO_CARD_SCAR_PENALTY = 5;
+
+/** Essence knocked off a scarred echo card. Pairs with {@link ECHO_CARD_SCAR_PENALTY}. */
+export const ECHO_CARD_SCAR_DISCOUNT = 1;
 
 // ─── Motive classification ───────────────────────────────────────────
 
@@ -159,3 +212,107 @@ export const REKINDLE_ESSENCE_COST = 6;
  * the `BROKEN_EXIT_STATE` hysteresis, so the restore actually clears the state.
  */
 export const REKINDLE_RESTORE_TO_RATIO = 0.6;
+
+// ─── Agent-decided branches (THR-894) ────────────────────────────────
+//
+// A `decidedBy` fork asks the mortal a question about themselves. The answer is
+// their live axis position (baseline + drift) plus whatever the god argued for
+// with the cards committed on the deciding step. These four numbers are the
+// whole feel of that: how loud one card is, how close to the middle counts as
+// "undecided", which way an undecided mortal falls, and how much taking the
+// fork moves them. Changing the feel is changing a number here (NFP #1).
+
+/**
+ * Pull of a `poleLean` card that names no explicit `weight`.
+ *
+ * Sized to the ±1 axis scale so a *single* leaning card can carry a mortal who
+ * sits near neutral, but not one who is already committed the other way. A god
+ * who wants to turn a convinced mortal must argue harder — more cards, or a
+ * heavier one.
+ */
+export const POLE_LEAN_DEFAULT_WEIGHT = 0.35;
+
+/**
+ * Half-width of the "undecided" band around zero net lean.
+ *
+ * Inside it the mortal genuinely has no answer and the fork resolves by a seeded
+ * coin. Deliberately small: a mortal with any real conviction, or a god with one
+ * committed card, should land on a pole rather than a shrug.
+ */
+export const BRANCH_DECISION_NEUTRAL_EPSILON = 0.05;
+
+/**
+ * Coin threshold for an undecided fork. `rng() < this` ⇒ `'positive'`.
+ *
+ * A true coin at 0.5: neither pole is the safe default, because a silent
+ * tiebreak toward one of them would quietly bias every neutral mortal in the
+ * world the same way — the failure the meeting's `'none'` lean was written to
+ * avoid.
+ */
+export const BRANCH_DECISION_COIN_THRESHOLD = 0.5;
+
+/**
+ * Signed drift the decided pole writes onto the mortal's axis.
+ *
+ * This is the loop that makes repeated choices become character: below the
+ * `soft` drift threshold on its own, so one fork is a lean and not a rebrand,
+ * but three in the same direction register as who this person is becoming.
+ */
+export const BRANCH_DECISION_DRIFT_MAGNITUDE = 0.08;
+
+// ─── N-route decided forks (THR-898) ─────────────────────────────────
+//
+// A route fork asks a different question than a pole fork. A pole fork asks
+// "which way do you lean?"; a route fork asks "which of these is *your* way in?"
+// — bribe, intimidate, or persuade the same wainwright. The dominant term is
+// therefore competence, not conviction: a mortal takes the course they are good
+// at. The three weights below are that priority made tunable (NFP #1), and they
+// are deliberately on comparable scales — capability is a 0–1 sigmoid, an axis
+// position is ±1, and a card lean is ~±POLE_LEAN_DEFAULT_WEIGHT each.
+
+/**
+ * Weight on the mortal's capability in the route's reach.
+ *
+ * The largest of the three: what makes a course *theirs* is being able to walk
+ * it. A thief bribes because bribery works when they do it, not because bribery
+ * expresses a value they hold.
+ */
+export const ROUTE_DECISION_CAPABILITY_WEIGHT = 1;
+
+/**
+ * Weight on the mortal's standing on a route's declared axis, signed toward the
+ * route's pole. Zero contribution for a route that declares no axis.
+ *
+ * Half of capability: character colors which course a mortal reaches for, but
+ * does not override being good at one and hopeless at another.
+ */
+export const ROUTE_DECISION_AXIS_WEIGHT = 0.5;
+
+/**
+ * Weight on the cards the god committed — both those naming the route directly
+ * and those arguing on the route's axis.
+ *
+ * Sized so that a single committed card is a real argument on a fork where two
+ * routes sit close, and not enough to send a mortal down a course they have no
+ * capability for. The god leans; the mortal still chooses.
+ */
+export const ROUTE_DECISION_CARD_WEIGHT = 1;
+
+/**
+ * How close two route scores must be to count as tied.
+ *
+ * Inside this band the mortal genuinely has no preference and a seeded draw
+ * settles it, mirroring `BRANCH_DECISION_NEUTRAL_EPSILON` in pole mode. Small,
+ * for the same reason: any real difference should decide the fork itself.
+ */
+export const ROUTE_DECISION_TIE_EPSILON = 0.02;
+
+/**
+ * Most routes one fork may declare.
+ *
+ * Not a technical limit — a cap on authoring. Past a handful of courses the
+ * scoring stops being legible to a reader of the encounter, and the variants
+ * stop being distinguishable in play. Validation fails a branch that exceeds it
+ * rather than shipping a fork nobody can reason about.
+ */
+export const MAX_BRANCH_ROUTES = 6;

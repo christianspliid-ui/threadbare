@@ -33,6 +33,7 @@ export function ConditionAttachmentLanding({
   const phase = useLandingLifecycle({
     ...common,
     motionDurationMs: REGISTRATION_FLIP_CONDITION_ATTACHMENT_MS,
+    cueKind: 'condition_attachment',
   });
   const sphereColor = sphereBrightVar('spirit');
 

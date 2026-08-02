@@ -1,7 +1,7 @@
 ---
 name: pull-work
 description: Canonical Claude Code pickup workflow for claiming Linear work safely from Ready for Dev.
-last_validated_against: 2026-07-30
+last_validated_against: 2026-08-02
 ---
 
 # Pull Work
@@ -17,6 +17,7 @@ Run as `/pull-work` (auto-pick top Ready for Dev issue) or `/pull-work THR-123` 
 - Queue: `Ready for Dev` only
 - Audience: Claude Code executor
 - Outcome: either a verified `In Dev` claim, or a safe refusal with a bounce note
+- A run may additionally **drain** `docs-only` tickets after its primary ticket — see "Closeout — drain the `docs-only` queue" (THR-938)
 
 ## pullNextReadyForDev — Atomic Pickup Procedure
 
@@ -24,7 +25,7 @@ Run as `/pull-work` (auto-pick top Ready for Dev issue) or `/pull-work THR-123` 
 
 **Constant:** `MAX_CLAIM_RETRIES = 3`
 
-1. **Board scan** — consume the Step 1 board-scan (already built): **two state-filtered `list_issues` calls**, not one unfiltered 250-issue sweep. Sort Ready-for-Dev candidates by priority (1=Urgent first), then oldest `createdAt` as tie-break. Pick the top candidate — **every** queue item, not only the unassigned ones (THR-845: an assignee on `Ready for Dev` is noise, not a claim, and filtering on it hid the board's two highest-priority issues).
+1. **Board scan** — consume the Step 1 board-scan (already built): **two state-filtered `list_issues` calls**, not one unfiltered 250-issue sweep. Partition candidates by **Rule 0** (flow impediments with demonstrated cost outrank everything, whatever their `priority` field — see Step 1), then sort each partition by priority (1=Urgent first), then oldest `createdAt` as tie-break. Pick the top of partition 1 if non-empty, else the top of partition 2 — considering **every** queue item, not only the unassigned ones (THR-845: an assignee on `Ready for Dev` is noise, not a claim, and filtering on it hid the board's two highest-priority issues).
 1.5. **WIP gate** — if the "In Dev" slice filtered to `assignee:"me"` is empty, continue to step 2. If exactly one entry, route to Step 1.7 (resume-from-In-Dev upstream-shipped check) instead of exiting clean. If more than one entry, this is a Rule 6 violation — output the cross-session-leak trace line and exit 1.
 2. **Claim** — `save_issue(id, assignee:"me", state:"In Dev")`.
 3. **Verify** — `get_issue(id)`. Confirm both `assignee` and `state` match.
@@ -146,19 +147,52 @@ npm run check:actions --silent -- --json
 
 **Fail-soft:** the probe degrades to `verdict: "unknown"` on any network/auth failure and never exits non-zero without `--strict`. An unreadable probe is not a reason to refuse work — `unknown` continues.
 
-### Step 0.8 — Armed-PR reconciliation sweep (THR-702)
+### Step 0.8 — Open-PR reconciliation sweep (THR-702, classification fixed THR-897, membership fixed THR-930)
 
 Auto-merge does **not** update a stale branch: under strict branch protection, an armed PR whose base moves sits at `mergeStateStatus: BEHIND` forever, green and silent (THR-702 found 9 such PRs, oldest 19 days). This sweep is the recurring surface that catches them.
 
-**Constant:** `ARMED_SWEEP_MAX_UPDATES = 1` — update at most one PR per run. Updating several at once is a losing race: each merge re-stales the others and re-triggers their CI (O(N²) runs). The hourly cadence drains a queue one per cycle.
+**An open PR can be stuck in more than one way, and only one of them is yours to fix.** Until THR-897 this step matched on `BEHIND` alone. A PR at `DIRTY` — a real merge conflict — is not `BEHIND`, so it was skipped, and `update-branch` would not have fixed it anyway. Measured 2026-07-31: **3 of 4 armed PRs were `DIRTY`**, one of them armed 19 hours earlier carrying THR-883's authoring-contract rewrite (the deliverable that unblocked 11 content tickets), while three consecutive sweeps each reported success. The old step 4 did name `DIRTY` in prose — but with no mechanism and a log line that mentioned only `BEHIND`, so in practice every run stepped past it.
 
-1. List armed-but-open PRs: `gh pr list --state open --json number,autoMergeRequest,mergeStateStatus,createdAt --jq '[.[] | select(.autoMergeRequest != null)]'`.
-2. `mergeStateStatus` is computed lazily — a first read of `UNKNOWN` means "not computed yet", not "fine". Re-query that PR up to 3 times a few seconds apart before classifying.
-3. For the **oldest** PR reading `BEHIND`: run `gh pr update-branch <N>` and stop (respect `ARMED_SWEEP_MAX_UPDATES`). CI re-runs on the updated branch and auto-merge fires on green — no polling.
-4. A PR reading `DIRTY`/`CONFLICTING` is the closeout-docs union case — route to "Closeout — resolving a conflicted closeout-docs PR" below, or surface it if it isn't yours.
-5. Log one line: `[pull-work] Step 0.8: <N> armed PRs, updated #<X> (BEHIND) / none BEHIND — continuing.`
+**The sweep covers every open non-draft PR, armed or not (THR-930).** THR-897 fixed classification *within* the armed set and left the set itself as a filter, so an unarmed conflicted PR was not misclassified — it was **absent from the input**, and the probe reported a clean bill while being correct against its own contract. Measured 2026-08-02: the repo's only open PR was #1114 (`DIRTY`, unarmed, 77 hours old, holding THR-860's In-Dev slot the whole time) and the probe answered `counts.conflicted: 0` with the summary *"No PRs are waiting to merge."* Arming says *how* a PR intends to merge; it says nothing about whether it is stuck. Drafts stay excluded — that is the one case where "not trying to merge yet" is the author's explicit signal.
 
-**Fail-soft:** any `gh` error → log one warning and continue to Step 1. The sweep must never block pickup.
+Two consequences for how you read the output. **`updateCandidate` is still armed-only** — `gh pr update-branch` on an unarmed PR refreshes a branch nothing is waiting to merge, so the probe will never name one, and an unarmed `BEHIND` PR is reported without being proposed. And **unarmed conflicts run slower age tiers** (`UNARMED_DIRTY_ESCALATE_HOURS` 6, `UNARMED_DIRTY_ABANDONED_HOURS` 24, against 90 minutes / 12 hours for armed), because an unarmed PR has made no promise to merge *now* — which justifies patience, not silence.
+
+**Constant:** `ARMED_SWEEP_MAX_UPDATES = 1` — update at most one PR per run. Updating several at once is a losing race: each merge re-stales the others and re-triggers their CI (O(N²) runs).
+
+**This whole step is a stopgap with a known ceiling, and raising the constant cannot lift it (THR-735, decided 2026-08-01).** The ceiling is **one merge per advance of `main`'s tip**, not N per hour: measured 2026-07-31, PRs `#1166`, `#1175`, `#1176` all sat `BEHIND` at the *same* base, and the instant one merged, strict mode returned the others to `BEHIND`. So at N updates per run, N−1 are invalidated by construction — the defect is serialization, not throughput. The durable fix is **GitHub's merge queue** (THR-946), which builds each merge group on latest `main` and tests that exact tree, so `BEHIND` stops being a state anyone waits in; the decision record and the rejected alternatives are in `Docs/plans/2026-07-20-git-cicd-clean-delivery.md` § 9c. Until the queue is live this sweep remains the mechanism — run it, but do not spend a session trying to tune it, and do not re-litigate the remedy.
+
+**Status as of 2026-08-02: the workflow half has landed, the queue is not yet on.** `ci.yml` now reports both required checks on `merge_group` events, so the click is unblocked — but until Christian makes it (tracked in `Design/user-actions.md` on the `ops` branch), no merge groups exist, nothing about this sweep changes, and `BEHIND` is still terminal. **Do not read the trigger's presence as the queue being live.** The cheap check, if a run needs to know:
+
+```bash
+gh api repos/christianspliid-ui/threadbare/rulesets --jq '[.[] | select(.name)] | length' >/dev/null && gh api graphql -f query='{repository(owner:"christianspliid-ui",name:"threadbare"){mergeQueue(branch:"main"){id}}}' --jq '.data.repository.mergeQueue'
+```
+
+`null` means *not configured* (today's state); an object means the queue is live and the `BEHIND` half of this sweep has become vestigial. The `DIRTY`/conflicted half stays load-bearing under a queue either way — a conflict is still a conflict.
+
+Run the probe — it does the listing, the `UNKNOWN` re-query, and the classification in one call:
+
+```bash
+npm run check:armed-prs --silent -- --json
+```
+
+One line of JSON: `{ verdict, summary, needsChristian, needsSession, updateCandidate, prs, counts, armedCount, unarmedCount }`. Each `prs[]` entry carries `armed`, `ageMinutes`, `conflictFiles`, `escalated`, and `abandoned`. Act on it:
+
+1. **`updateCandidate` is non-null** → `gh pr update-branch <updateCandidate>` and stop (respect `ARMED_SWEEP_MAX_UPDATES`). This is the oldest **armed** `BEHIND` PR. CI re-runs on the updated branch and auto-merge fires on green — no polling.
+2. **`verdict: "conflicted"` or `"abandoned"`** → those PRs cannot merge and no sweep action will change that. Each `prs[]` entry carries `conflictFiles`, already computed. If a conflicted PR is **yours**, route to "Closeout — resolving a conflicted closeout-docs PR" below and fix it now. If it is not yours, **report it in the run log with its number and conflicting files** — do not silently continue.
+3. **`needsSession: true`** → the conflict has outlived at least one sweep interval (or, for an unarmed PR, `UNARMED_DIRTY_ESCALATE_HOURS`). Name it in the run report so the next pickup sees it even if this run ends on an unrelated ticket.
+4. **`verdict: "healthy"` / `"drainable"` / `"unknown"`** → nothing conflicted; continue to Step 1.
+
+Log one line, and include the conflicted count **and the unarmed count** — a sweep that reports only what it drained is how THR-897 stayed invisible, and one that reports only the armed set is how THR-930 did:
+
+```
+[pull-work] Step 0.8: <N> open PRs (<A> armed / <U> unarmed; <D> drainable, <C> conflicted, <W> waiting), updated #<X> / none drainable — continuing.
+```
+
+**Do not classify on a single read of `mergeStateStatus`.** GitHub computes it lazily, so a first read of `UNKNOWN` means "not computed yet", not "fine" — measured 2026-07-31, PRs #1132 and #1166 each read `DIRTY` and then `UNKNOWN` minutes apart with no intervening push. The probe re-queries `UNKNOWN` up to `ARMED_UNKNOWN_REQUERIES` (3) times before believing it; a hand-rolled sweep must do the same or it will call a conflicted PR healthy on roughly every other run.
+
+**`needsChristian: true` (verdict `abandoned`) is not a merge-gate failure.** It means a conflict has survived ~12 hourly sessions — or ~24 hours for an unarmed PR — so the stall is systemic rather than waiting its turn. Surface the `summary` verbatim; do not stand down, and do not treat it as a reason to skip pickup.
+
+**Fail-soft:** the probe degrades to `verdict: "unknown"` on any `gh`/network failure and never exits non-zero without `--strict`. Any error → log one warning and continue to Step 1. The sweep must never block pickup.
 
 ### Step 1 — Two state-filtered board scans
 
@@ -185,13 +219,37 @@ Instead, **count it and say so.** Partition the queue response and emit one line
 
 Sort the Ready-for-Dev candidates by priority **in memory** (impediment #49 — `orderBy:"priority"` is accepted by the schema but rejected at runtime; `orderBy` defaults to `updatedAt`, which is fine). Oldest `createdAt` is the tie-break. Pick the top.
 
+**Apply Rule 0 before the priority sort** (CLAUDE.md § Prioritization, director decision 2026-08-02). A **flow impediment with demonstrated cost** outranks every other candidate regardless of its `priority` field — which is exactly the point, since these tickets are routinely filed `Low` or `No priority` by the lanes that find them. Partition the candidates in two passes:
+
+1. **Qualifying** — the ticket's body or comments record that the delivery machine **already lost work**: a lane that stopped firing, a PR that could never merge, a gate that reported success while broken, a ticket silently dropped or re-done, or measured rework. The evidence must be quotable from the ticket — a count, a duration, a commit SHA, a log line.
+2. **Everything else** — including hardening, dead-code pruning, doc drift, naming fixes and test tidying. Prevention does not qualify; neither does an `Infrastructure` / `Improvement` label on its own.
+
+Sort each partition by priority as above, then take the top of partition 1 if it is non-empty, otherwise the top of partition 2. **State which partition your pick came from in the Step 1 line, and for a partition-1 pick quote the sentence that qualified it** — one clause, so the claim is auditable and the predicate cannot quietly widen into "anything labelled Infrastructure":
+
+```
+[pull-work] Step 1: Rule 0 pick — THR-834 ("hid 88 consecutive failures for six weeks").
+[pull-work] Step 1: no Rule 0 candidates; normal priority pick — THR-971.
+```
+
+If you cannot produce that quote, the ticket belongs in partition 2. An empty partition 1 is the healthy steady state, not a sign you searched wrong.
+
 If a specific issue id was provided, skip to Step 3.
 
 ### Step 1.5 — WIP=1 gate (Rule 6 enforcement) + resume routing
 
 If the Step 1 board scan's "In Dev" slice filtered to `assignee:"me"` is empty, continue to Step 2.
 
-If the slice has more than one entry, this is a Rule 6 violation (cross-session leak — Rule 6 says WIP=1 across all sessions). Output the surface message and exit 1 so the failure is visible in cron logs. Do not attempt to claim more.
+**Subtract shipped claims before counting (THR-938).** An issue whose PR is already open and carries its `Fixes THR-XXX` line is a *shipped* claim, not a concurrent implementation — it sits `In Dev` only because auto-merge has not fired yet, which by design happens after the session ends. Without this subtraction the docs-only drain below would leave two or three such claims behind and red-exit the *next* hourly run on a leak that does not exist. One `gh` call does it:
+
+```bash
+gh pr list --state open --json number,body --jq '.[] | .body' | grep -oE '(Fixes|Closes|Resolves) THR-[0-9]+'
+```
+
+Any In-Dev id appearing in that output is subtracted from the WIP count. This is a narrow, mechanical carve-out for claims the session has already discharged; the broader framing of what WIP=1 should count remains **THR-927**'s scope and is not settled here.
+
+If the *remaining* slice has more than one entry, this is a Rule 6 violation (cross-session leak — Rule 6 says WIP=1 across all sessions). Output the surface message and exit 1 so the failure is visible in cron logs. Do not attempt to claim more.
+
+**Fail-soft:** if the `gh` call errors, subtract nothing and fall back to the raw count. Over-reporting a leak is recoverable; under-reporting one is not.
 
 ```
 [pull-work] Step 1.5: WIP=1 gate — multiple In Dev assigned to me ({issueIds}). Cross-session leak. Surface and stop.
@@ -221,7 +279,9 @@ git log origin/main --grep="Fixes <resumed-issue-id>" --grep="Closes <resumed-is
 
 **If the result is non-empty:** the commit landed but the auto-close did not fire. Do not park the WIP=1 slot waiting on a review that never comes (THR-608: Christian doesn't read Linear, so the retired "human reviewer" never closes it).
 1. Post a comment on the issue: `Upstream-shipped check during resume found commit {sha} "{first-line}". Auto-close did not fire.`
-2. Unassign to free the WIP=1 slot: `save_issue(id, assignee: null)` — keep state In Dev, verify-after-write per impediment #48. Do NOT release to Ready for Dev, and do NOT call `save_issue(state: "Done")` — Rule 3 forbids CC closing. The hourly `keep-work-flowing` Cowork task triages unassigned In Dev issues: it verifies the SHA on origin/main and closes the issue as Done (Cowork owns state transitions; the merge-gated-Done rule binds CC, not Cowork cleanup of verified-shipped work).
+2. Unassign to free the WIP=1 slot: `save_issue(id, assignee: null)` — keep state In Dev, verify-after-write per impediment #48. Do NOT release to Ready for Dev, and do NOT call `save_issue(state: "Done")` — Rule 3 forbids CC closing.
+
+   **Who reads this park (THR-846).** Unlike the Step 1.8 churn park — which routes to `Todo` because it needs *re-scoping* — this one stays `In Dev` deliberately: the work is **verified shipped**, so what it needs is closing, and no CC lane may write `Done`. The lane that reads it is **`keep-work-flowing-cc`**, whose board scan reads the In-Dev slice for exactly this shape (`assignee` null, state `In Dev`) and surfaces it to Christian in `Design/briefing.md` under `## Needs Christian`, closing being a one-click action only he can take. The predecessor text named the retired Cowork task (THR-654) as both scanner *and* closer; that lane no longer exists, and its CC successor is read-mostly by design (it never calls `save_issue(state:…)`).
 3. Exit cleanly.
 
 **Trace lines** (NFP #2):
@@ -247,7 +307,9 @@ Reached only on the Step 1.7 upstream-clean path (work still in flight). Before 
 > **Never quote the close keyword in a checkpoint comment (THR-738).** A checkpoint is explicitly *not* a handoff and must not close the issue — yet a comment saying "`Fixes THR-XX` still rides the final PR" once did exactly that (the merge that later carried the comment's prose swept the issue to Done). Since the workflow is now line-anchored, an in-prose keyword is inert on its own; but the safe habit is unconditional: reference the in-flight issue as a bare `THR-XX` token, with no `Fixes/Closes/Resolves` in front of it, in any checkpoint or non-closing comment.
 
 - **If a checkpoint exists:** continue from it — do not re-implement from scratch. Resume on the named branch/worktree and pick up at the recorded next step, then proceed to Step 5.
-- **If `MAX_CHECKPOINTS_BEFORE_SPLIT` (3) or more checkpoint comments exist without a ship:** the issue is churning and needs re-scoping. Post a recommend-split comment, unassign (`save_issue(id, assignee: null)` — keep state In Dev, verify-after-write per impediment #48), and exit clean. Cowork re-scopes.
+- **If `MAX_CHECKPOINTS_BEFORE_SPLIT` (3) or more checkpoint comments exist without a ship:** the issue is churning and needs re-scoping. Post a recommend-split comment naming the seams, then **move it to `Todo` and unassign** — `save_issue(id, state: "Todo", assignee: null)`, verify-after-write per impediment #48 — and exit clean. `tb-orchestrator` re-scopes from there (T2), and T1 promotes it back to `Ready for Dev` once the split is authored.
+
+  **`Todo`, not `In Dev` — the destination is the whole point (THR-846).** This line used to read "keep state In Dev … Cowork re-scopes", naming a lane retired 2026-07-21 (THR-654) *and* a state its successor never reads: `tb-orchestrator` scans `Todo` and `Ready for Dev` only and is forbidden from touching `In Dev` at all, while `stale-claim-sweep` keys off **stale claims**, which a deliberate unassigned park is not. THR-838 escalated exactly as instructed at 2026-07-29T00:12Z and then sat ~13 h holding a finished, well-argued split proposal that no lane could see, as the orchestrator promoted other work past it twice. Two grooming runs had already applied this same move by hand (THR-838; THR-778 on 2026-07-28) before it was written down here. The general rule the line is an instance of: **every park must name the lane that reads the destination.**
 - **If no checkpoint exists:** fall through to Step 5 and re-read the plan doc as normal.
 
 **Constant:**
@@ -261,7 +323,7 @@ Reached only on the Step 1.7 upstream-clean path (work still in flight). Before 
 ```
 [pull-work] Step 1.8: checkpoint found (branch pickup/thr-247, next: wire phase). Resuming from checkpoint.
 [pull-work] Step 1.8: no checkpoint — falling through to Step 5 plan-doc re-read.
-[pull-work] Step 1.8: 3 checkpoints without ship — recommend-split, unassign, exit.
+[pull-work] Step 1.8: 3 checkpoints without ship — recommend-split, moved to Todo + unassigned for tb-orchestrator re-scope, exit.
 ```
 
 **Fail-soft:** if `list_comments` errors, log a warning and fall through to Step 5 (re-read the plan doc). A comment-read failure must not strand a genuinely in-flight issue.
@@ -278,11 +340,46 @@ If collision or uncertainty remains, run serially instead of claiming concurrent
 
 ### Step 3 - Validate coordination block on latest comment
 
+**The block is required of a *handoff*, not of every ticket (THR-836).** A design session or a T1 promotion coordinates work that a *different* party will pick up, and the three lines — `Suggested model`, `Parallel-safe with`, `Mutex with` — are that coordination made legible. A ticket the lane filed for itself, naming the file and symbol it means to change, was never coordinated by a second party; demanding the artifact of coordination from it is a category error. Applied without that distinction the gate produced one of two outcomes on nearly every candidate — a lost run, or a per-pickup ritual reversal. THR-836's evidence: THR-834 and THR-817 sat zero-comment; THR-804 was claimed past the gate by hand, spending a full comment on the reasoning; THR-778 bounced outright and was re-offered as top candidate on the very next run, hourly.
+
 1. Read the latest comment on the candidate issue.
-2. Confirm it includes all required lines: `Suggested model`, `Parallel-safe with`, `Mutex with`.
-3. If missing, add a bounce note for Cowork and stop without claiming.
+2. If it carries all three lines, proceed to Step 4.
+3. If any line is missing, **classify the ticket before deciding** — the missing block is a symptom, not the verdict:
+   - **Self-scoped** — the description names a concrete surface: a repo-relative path (`src/…`, `scripts/…`, `Docs/…`, `.claude/…`) or a backticked file/symbol. **Claim it.** Derive the three lines yourself from the surfaces the description names, and post them in the claim comment under the heading `Coordination block (derived at claim — no handoff author)`. This is the documented path, not an improvisation to be re-argued each pickup.
+   - **Unscoped** — no named surface anywhere in the description. **Bounce without claiming**, naming what is missing — then **move it to `Todo`** and continue to the next candidate in the same run.
+
+**A bounce must remove the ticket from the queue, or it is not a bounce (THR-836).** Leaving a refused issue in `Ready for Dev` re-offers it as top candidate on the next run, and the hour after that, forever: THR-778 was bounced at 05:03 and re-offered at 06:03, and only stopped because a human-shaped grooming pass moved it to `Todo` by hand. A gate that refuses without routing is a spin loop wearing a gate's clothes. So a bounce is three actions, not one:
+
+```
+save_comment(issueId: id, body: "Bounced by pull-work Step 3: unscoped — the description names no file or symbol, so no coordination block can be derived. Moving to Todo for re-authoring. Add the surface this touches and the three coordination lines, then promote.")
+save_issue(id, state: "Todo")
+get_issue(id)   # verify the move stuck (impediment #48)
+```
+
+Then **carry on to the next candidate** — a bounce costs a candidate, not a run. Only an empty queue ends the run.
+
+`npm run check:process` encodes exactly this split, so the rule and the lint cannot drift apart silently: a Ready-for-Dev issue missing the block reports `handoff-keywords` at `error` when unscoped and at `warn` when self-scoped (`SELF_SCOPED_SURFACE_PATTERN` in `scripts/check-process.ts` is the shared predicate).
+
+**Deriving a block is not skipping the thinking.** Read the surfaces the description names, check them against the Step 1 "In Dev" slice for a genuine collision, and write `Mutex with: none — <surface> untouched by the In Dev slice` when there is none. A derived block that asserts `none` without having looked is worth less than the bounce it replaced.
 
 **Mutex reversal (THR-688 Rule B).** A `Mutex with` line should carry its reason — `Mutex with: THR-XXX (both edit <file>)`. You **may** claim past a mutex when the stated reason is *verifiably* inapplicable: the named partner issue has since merged, or the named surface is provably outside this ticket's scope. Verify it (`get_issue` on the partner; confirm `Done` + a merged PR), then record the reversal and its evidence in a Linear comment on the issue you claim. A mutex whose reason is a bare identifier with no stated surface cannot be cleared by inspection — bounce it for re-authoring rather than guessing (THR-673 precedent).
+
+**Mutex-partner liveness — always read the partner's state before honouring a mutex (THR-908, impediment #224 ×3).** The reversal rule above asks one question ("has the partner *merged*?") and treats every other answer as "wait". But a mutex is a reason to wait only while the partner is actually *moving*, and one state breaks that premise silently: a partner parked in `Todo` is not moving, because nothing promotes it while the mutex holder occupies the top of the queue. The pair deadlocks, and the top queue item is re-offered unpickable every hour — from inside the queue this is indistinguishable from a healthy wait, which is why it took three occurrences to name.
+
+So spend one `get_issue` on the partner and branch on its state — never on the mutex line alone:
+
+| Partner state | Verdict | Action |
+|---|---|---|
+| `Done` (merged PR confirmed) | Reason inapplicable | Claim past it; record the reversal per THR-688 Rule B above |
+| `In Dev` / `Ready for Dev` | Genuinely live and moving | Honour the mutex — serialize, bounce, continue to the next candidate |
+| `Todo` / `Backlog` | **Deadlock, not a queue** | Resolve per the paragraph below — do not bounce on this alone |
+
+On a `Todo`/`Backlog` partner, check whether the partner's *own* blocker has shipped — `git log origin/main --grep="Fixes THR-YYY" --regexp-ignore-case --extended-regexp --oneline`, or `get_issue` on the blocker:
+
+- **Blocker shipped** → the partner is promotable and only nobody's attention was missing. `save_issue(partnerId, state:"Ready for Dev")`, verify-after-write, and record the evidence (blocker id + merge SHA) in a comment on the partner. Then continue with the candidate rather than bouncing it — bouncing a candidate for a partner nobody was going to promote is the deadlock, not a defence against it.
+- **Blocker genuinely unshipped** → bounce the candidate as usual, but name the blocker the *pair* is waiting on in the bounce comment. A wait someone can read is recoverable; an unattributed one is what produced the three occurrences.
+
+Per THR-688 Rule B this whole branch is a **technical verdict** — a merge either happened or it did not — so it is the executor's to make, not a coordination decision to escalate. Note the promotion writes `Ready for Dev` on the *partner*, never on the candidate you are claiming, and never `Done` (Rule 3 forbids CC closing).
 
 **Done-when reachability (THR-688 Rule C).** Before starting work, check that the ticket's Done-when is satisfiable through the pillar it touches. Browser evidence is required for UI-pillar surfaces only; engine/content acceptance runs through `npm run cli` / `__DEBUG` sweeps. If a Done-when demands N ticks in an automated browser tab, it is unreachable by construction (`document.hidden` throttles the rAF loop to 1 tick/click) until THR-689 lands — substitute a headless CLI sweep and say so in the completion comment.
 
@@ -513,15 +610,15 @@ If the issue has label `Reopened`, read all comments back to the original handof
 ### Step 7 - Surface model suggestion (advisory)
 
 1. Read the `model:*` label and `Suggested model:` line from the handoff block.
-2. They are advisory only — the scheduled CC automation always runs Opus, and the label does not gate pickup. Treat the suggestion as a signal of the work type Cowork sized the issue for.
+2. They are advisory only — the scheduled CC automation always runs Opus, and the label does not gate pickup. Treat the suggestion as a signal of the work type the filing lane (`tb-orchestrator` T1/T2, a design session, or the executor's own deferral) sized the issue for.
 3. An interactive session started by the user may run any model — the user's judgment supersedes the suggestion.
 
 ## Refuses To Proceed When
 
 - The "In Dev" slice for the executor's own assignee (computed in Step 1) is non-empty (Rule 6: WIP=1 across all sessions).
-- The latest handoff comment is missing any required coordination line (`Suggested model`, `Parallel-safe with`, `Mutex with`).
+- The latest handoff comment is missing a required coordination line (`Suggested model`, `Parallel-safe with`, `Mutex with`) **and** the description names no concrete surface — an unscoped ticket (Step 3). A *self-scoped* ticket missing the block is claimed, not refused: the executor derives the block (THR-836).
 - `save_issue` claim cannot be verified by `get_issue` after one retry.
-- The upstream-shipped check (Step 4.4 fresh-claim or Step 1.7 resume) finds a `Fixes <issue-id>` / `Closes <issue-id>` / `Resolves <issue-id>` commit on `origin/main`. Pickup exits with a comment noting the upstream commit hash. Step 4.4 releases the fresh claim back to Ready for Dev; Step 1.7 unassigns but keeps the issue In Dev so the hourly `keep-work-flowing` Cowork triage verifies the SHA and closes it as Done.
+- The upstream-shipped check (Step 4.4 fresh-claim or Step 1.7 resume) finds a `Fixes <issue-id>` / `Closes <issue-id>` / `Resolves <issue-id>` commit on `origin/main`. Pickup exits with a comment noting the upstream commit hash. Step 4.4 releases the fresh claim back to Ready for Dev; Step 1.7 unassigns but keeps the issue In Dev, where `keep-work-flowing-cc` picks the park up in its In-Dev scan and surfaces it to Christian to close (THR-846 — no CC lane may write `Done`).
 
 ## Output Contract
 
@@ -581,6 +678,14 @@ gh pr merge --auto --merge
 
 The gate is unchanged: branch protection stays on, the required check still has to pass, and a red check simply means the PR never merges. Auto-merge removes the *waiting*, not the *gate* — this is the H6 verdict from `Docs/plans/2026-07-20-git-cicd-clean-delivery.md`, which kept the PR gate precisely because it caught a phantom 3,379-line reversal before it reached `main`.
 
+**The command does not change when the merge queue goes live (THR-946), but what it does changes.** With a queue configured on `main`, `gh pr merge --auto --merge` enqueues the PR instead of merging it directly: GitHub builds a merge group on top of latest `main`, runs the required checks against *that* tree, and lands the group in order. Three consequences for a closing session, all of which make the closeout shorter rather than longer:
+
+- **`BEHIND` stops occurring**, so the `gh pr view <N> --json mergeStateStatus` freshness check below becomes a formality and `gh pr update-branch` should never be needed. Keep reading the field — `DIRTY` is unaffected and still yours to resolve.
+- **The rollup you read after arming is the PR's own**, produced by the `pull_request` run, and is unchanged. The merge group runs its own checks later, with no session present. `SKIPPED` on the required check means the same thing it does today and is refused the same way.
+- **`Fixes THR-XXX` must still be in the PR body**, not only the commit — a queue merge produces a merge commit the same way `--merge` does, so impediment #140 applies unchanged.
+
+Until Christian enables the queue none of this is active; the workflow side landed 2026-08-02 and is inert without the settings click. See Step 0.8 for the one-line liveness probe.
+
 `Fixes THR-XXX` must still appear in **both** the commit body and the PR body — on a non-squash merge the merge commit drops the commit body and Linear's auto-close misses it (impediment #140). `--merge` (not `--squash`) keeps the feature commit's body in history.
 
 **The keyword must stand ALONE on its own line (THR-738).** `linear-autoclose.yml` is line-anchored: it closes only when a full line reads exactly `Fixes|Closes|Resolves THR-XXX`. The keyword inside a prose sentence (`Fixes THR-74 still rides the final PR`), a markdown bullet, or the PR *title* does **not** close. **Corollary for checkpoint and any non-closing comment:** never write `Fixes/Closes/Resolves` in front of an issue id you are *not* closing — reference it as a bare `THR-XXX` token. The phantom-Done recurrences (THR-74 ×2 on 2026-07-24) were prose that quoted the keyword to *document* the discipline. Vectors 2/3 (branch name, bare title token) come from Linear's native integration and are killed by the Christian-owned settings change in `Design/user-actions.md`, not by this workflow.
@@ -635,3 +740,71 @@ git branch -D "$WORKTREE_BRANCH" 2>/dev/null || true
 Both commands are non-fatal: if the worktree directory is still in use (e.g., we can't remove the directory we're running from), the error is swallowed and Step 0 of the next session will collect it via `git worktree prune` or the age-based sweep.
 
 **Why immediate cleanup matters:** the old "after merge-to-main fires" timing was never reliable. The CC session ends before the PR merges; the auto-close fires on GitHub with no session alive to run cleanup. Step 0 of the next pickup is the backstop — but immediate post-push cleanup reduces the graveyard before it accumulates.
+
+## Closeout — drain the `docs-only` queue (THR-938)
+
+Roughly a dozen Ready-for-Dev tickets at any time are docs/process-only: CLAUDE.md corrections, UL proposals, wiring-guide updates, index cleanups, skill-doc fixes. Under one-issue-per-run each of those consumed a whole hourly slot, so source-code tickets queued behind paperwork. The drain lets a single run clear several of them **after** its primary ticket, without adding a lane.
+
+**Why no separate docs lane** (Option A, deferred not rejected): under strict branch protection every merge advances `main`'s tip and re-stales in-flight code PRs, forcing an ~18-min CI re-run each time (THR-920; PR #1175 sat green-but-unmergeable 3+ hours behind hourly-lane traffic). A second scheduled lane buys throughput with tip churn plus ~24–48 billed runs/day.
+
+**Constants:**
+
+| Constant | Default | Purpose |
+|---|---|---|
+| `DOCS_ONLY_LABEL` | `docs-only` | Linear label marking drain-eligible tickets |
+| `DRAIN_MAX_TICKETS` | 3 | Tickets drained per run. Bounds context/wall-clock so a drain never ends mid-ticket; raise only if runs finish with headroom to spare |
+
+### When the drain runs
+
+Run it in either of two places:
+
+- **After the primary ticket's PR is armed** and the worktree cleaned (the normal case), or
+- **Immediately**, when Step 1 found no claimable code ticket — a docs drain is the run's whole output rather than an "exit clean, no ready work".
+
+### Merge-yield gate — check before draining, not after (THR-920)
+
+**Skip the drain entirely when any open PR whose diff contains code is armed and waiting on checks.** Landing a docs merge in front of it re-stales it and costs an ~18-min gate re-run — more than the drain saves. Step 0.8's probe already listed every open PR with its `armed` flag; classify each one's diff and stop if any is code:
+
+```bash
+for n in $(gh pr list --state open --json number --jq '.[].number'); do
+  gh pr diff "$n" --name-only | grep -qvE '(\.md$|^Docs/|^Design/|^\.planning/|^src/data/ul-dashboard\.generated\.json$|^public/system-interface-map-reference\.html$)' \
+    && echo "code PR #$n — yield"
+done
+```
+
+Any output ⇒ log the yield line and skip the drain; there is always a next hour. No output ⇒ drain freely: docs PRs re-stale only each other, and a docs PR's required check records `SKIPPED` by design, so re-staling one costs seconds rather than the full code gate.
+
+### Per-ticket loop
+
+For each `docs-only` ticket, up to `DRAIN_MAX_TICKETS`, **sequentially — never in parallel**:
+
+1. `list_issues(team:"Threadbare", state:"Ready for Dev", label:"docs-only", limit:50, includeArchived:false)`, **Rule 0-partitioned then sorted by priority, then oldest `createdAt` — exactly as Step 1.** The partition matters here more than anywhere: a documentation defect that misroutes sessions is a flow impediment carrying real cost (a stale instruction that makes every session redo work), and the drain is where those tickets actually get picked up.
+2. Claim and verify per Step 4 (`save_issue` → `get_issue`), run the Step 4.4 upstream-shipped check, and validate the coordination block per Step 3. **The drain relaxes no discipline** — it only removes the one-ticket-per-run ceiling.
+3. Implement, then close out on the **docs-only track** of CLAUDE.md § Testing: steps 3b, 5, and `npm run check:impediment-ids`, and nothing else. Do not run `npm test` / `check:typecheck` / `vite build` on a diff with no code in it.
+4. Ship per the closeout above — `Fixes THR-XXX` alone on its own line in both the commit body and the PR body, then `gh pr merge --auto --merge`.
+
+One In Dev at a time: finish a ticket's ship before claiming the next. The Step 1.5 shipped-claim subtraction is what keeps the resulting armed-but-unmerged claims from reading as a leak next run.
+
+### Mis-tag guard — run at every drained ticket's closeout (THR-917)
+
+The label is a **predicate, not a promise** (THR-688 rule A): a ticket may carry `docs-only` iff its Done-when is satisfiable with a diff matching CI's docs filter. Verify the actual diff before shipping, using the same predicate CI uses:
+
+```bash
+git diff --name-only origin/main...HEAD | grep -vE '(\.md$|^Docs/|^Design/|^\.planning/|^src/data/ul-dashboard\.generated\.json$|^public/system-interface-map-reference\.html$)'
+```
+
+Empty ⇒ genuinely docs-only, ship on the docs track. **Non-empty ⇒ mis-tagged:** remove the `docs-only` label, comment why on the issue, and finish that ticket on the **code track with the full gate**. Never ship code on the docs track. Then end the drain — a mis-tag means the label's membership is untrustworthy this run.
+
+Note the two trailing exact paths: `src/data/ul-dashboard.generated.json` and `public/system-interface-map-reference.html` are generated *from* documentation but written outside the doc paths (THR-922), so a UL-shard or canon-page edit regenerates them and would otherwise classify a pure documentation deliverable as code.
+
+**Trace lines** (NFP #2 — exactly one of the first three fires, then one per ticket):
+
+```
+[pull-work] drain: yielding — code PR #<N> armed and waiting. Skipped.
+[pull-work] drain: no docs-only tickets in Ready for Dev. Nothing to drain.
+[pull-work] drain: <N> docs-only candidates, draining up to 3.
+[pull-work] drain: THR-XXX shipped (PR #<N>, docs track: 3b/5/impediment-ids).
+[pull-work] drain: THR-XXX MIS-TAGGED (<file>) — label removed, finishing on code track, drain ended.
+```
+
+**Fail-soft:** any error inside the drain ends the drain and exits the run clean. The primary ticket has already shipped by then, so a failed drain costs the drained tickets' progress and nothing else.

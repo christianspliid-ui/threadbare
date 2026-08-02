@@ -20,12 +20,25 @@ outcome** on the five-band ladder; prose pays the nudge off at *every* band, mis
 included. Choosing between authored futures for a mortal is the **rejected** model this
 replaced (see Rejected approaches).
 
-- **Authoring contract (load first, both pipelines):** [`.claude/skills/encounter-pipeline/reference/nudge-authoring-spec.md`](../../.claude/skills/encounter-pipeline/reference/nudge-authoring-spec.md) — the 8-step checklist, register table, prose rubric, verbatim detector spec, shared generic pool.
-- **Golden exemplar:** `src/data/__fixtures__/nudge-exemplar/darkhollow-vault-exemplar.ts` — the Darkhollow Vault, authored end-to-end, every rule visible once. In no shipped pool.
+**The format was locked 2026-07-30 (THR-883, the communication pivot): prose does the
+scene, cards do the rules.** Scene prose (per-class openings + setting-neutral spine +
+outcome prose) is fully written under the 14-question scene-writer's checklist; a card
+face is **library-generic** — 2–4 word title, one plain mechanical `effectLine`, one
+flavor quote, cut from the 21-type card library — with zero scene-bespoke prose.
+Templates declare **setting envelopes** (THR-884: `settings` from the 8-class
+vocabulary + one opening per class); cards may charge **cost channels** and carry
+**grants** (THR-885: doom/detection deltas, world changes in the existing aftermath
+effect vocabulary, grant-liveness gated). Odds render as pips (display-side; raw numbers
+in data).
+
+- **Authoring contract (load first, both pipelines):** [`.claude/skills/encounter-pipeline/reference/nudge-authoring-spec.md`](../../.claude/skills/encounter-pipeline/reference/nudge-authoring-spec.md) — the communication pivot, the 14-question checklist, setting envelopes, the 21-type library hand rules, register table, prose rubric, verbatim detector spec.
+- **Golden exemplar:** `src/data/__fixtures__/nudge-exemplar/swollen-ford-exemplar.ts` — The Swollen Ford, authored end-to-end in the locked format, every rule visible once. In no shipped pool. (Supersedes the pre-pivot Darkhollow Vault, deleted 2026-07-30.)
+- **Card library + pip vocabulary:** `public/nudge-cards-reference.html` (wiki page — the surface the repertoire is iterated on) · Repertoire progression: [2026-07-30-nudge-card-repertoire.md](../plans/2026-07-30-nudge-card-repertoire.md).
+- **Encounter catalogs (design-block vocabularies):** [encounter-catalogs.md](encounter-catalogs.md) — shape, setting, pressure, form, objective, stakes, system (maturity-gated to the vertical slice); companion idea bank `Design/research/quest-hooks/` (1,200 tagged hooks).
 - **Tunable authoring guardrails:** `src/data/content-eval/nudgeAuthoringConstants.ts` (authoring/lint-side; **not** the client bundle). Runtime numbers stay in `src/data/nudge-constants.ts`.
-- **Executable half:** `src/engine/__tests__/nudgeModel.test.ts` § *WS1 golden exemplar* — the checklist as assertions, so spec and exemplar cannot drift apart silently.
-- **Schema:** `StepNudge` / `ActionStep.nudges` / `TraitVariant` / `UnifiedActionTemplate.traitVariants` (`src/types/unifiedAction.ts`); hand resolution in `src/engine/encounters/nudges.ts`.
-- **Program plan:** [2026-07-26-nudge-model-encounter-system.md](../plans/2026-07-26-nudge-model-encounter-system.md) (THR-772) · WS0 substrate [2026-07-26-nudge-model-ws0-engine-substrate.md](../plans/2026-07-26-nudge-model-ws0-engine-substrate.md) · WS1/WS2 [2026-07-27-nudge-encounter-experience-ws1-ws2.md](../plans/2026-07-27-nudge-encounter-experience-ws1-ws2.md).
+- **Executable half:** `src/engine/__tests__/nudgeModel.test.ts` § *golden exemplar* — the checklist as assertions (envelope validity, cost channels, grant liveness included), so spec and exemplar cannot drift apart silently.
+- **Schema:** `StepNudge` (incl. `costs`, `grants`, `fictionBySetting`, `requiresGroup`/`requiresFavor`) / `ActionStep.nudges` / `TraitVariant` / template-level `settings` + `openings` (`src/types/unifiedAction.ts`); hand resolution in `src/engine/encounters/nudges.ts`, dispatch in `src/engine/encounters/nudgeDispatch.ts`, envelopes in `src/data/settingClasses.ts`.
+- **Program plan:** [2026-07-26-nudge-model-encounter-system.md](../plans/2026-07-26-nudge-model-encounter-system.md) (THR-772) · WS0 substrate [2026-07-26-nudge-model-ws0-engine-substrate.md](../plans/2026-07-26-nudge-model-ws0-engine-substrate.md) · WS1/WS2 [2026-07-27-nudge-encounter-experience-ws1-ws2.md](../plans/2026-07-27-nudge-encounter-experience-ws1-ws2.md) · frameworks [2026-07-30-encounter-authoring-frameworks.md](../plans/2026-07-30-encounter-authoring-frameworks.md) (THR-884/THR-885, both shipped 2026-07-30).
 
 **Migration state.** `authoredChoices` still *renders* — the stage branches on data
 presence, so the rollout is per-template and reversible, with no flag day. But no new
@@ -35,6 +48,23 @@ encounter authors it. Conversion of the existing 28 branching encounters is WS5.
 the resolved band. A **band fragment** (`bandProse[outcome]`) is prose appended when a
 nudge was active for that band. A rider changes what happened; a fragment says the god
 was there when it did. Both are UL entries (Encounters shard).
+
+**The variance rule — do not author static factor lines (THR-892).** A test-panel factor
+line earns its place only if it **could have read differently on another run**. A static
+line reads the same every time the encounter fires, so it informs no decision: price it
+into the step's `difficulty` and put the fact in the prose, where scene facts belong.
+Static `ActionStep.factorLines` are therefore **retired for new content** — the exemplar
+authors none. What fills the panel instead is *derived*: the actor's capability in the
+step's reach, plus one line per named modifier the world contributed (equipment, terrain,
+faction, sphere, conditions/attachment effects, divine attention, rule overrides). Those
+come from `ModifierBreakdown.contributions`, emitted by the **same** `computeResolutionModifiers`
+walk that feeds the roll — never a parallel computation, so a line and the outcome cannot
+disagree. Omens, doom stage, and season derive **nothing**, and that is correct rather than
+missing: no omen/doom/season read exists anywhere in the modifier pipeline `forecastAction`
+consumes. The two authored factor surfaces that survive the rule are **trait lines**
+(`TraitVariant.factorLine`) and **carryover lines** (`ActionStep.carryoverFactorLines`),
+which key on the band the *previous* step rolled — variant by construction. Full authoring
+detail: systemic wiring guide § Capability 17.
 
 **Meet The First is nudge-native (WS6, THR-868).** The game's first interactive surface
 used to *be* the rejected model — two authored formative moments, player picks which one
@@ -60,6 +90,15 @@ mercy, fate landed ruthlessness" a real outcome rather than a slogan.
   `src/data/__tests__/meetingProseRegister.test.ts` (zero vagueness-lexicon words across
   the sensing vignettes and god-voice tables, with negative controls) and
   `src/data/__tests__/meetingSceneDoctrine.test.ts` (`QUARANTINED_SCENE_ASSETS`).
+- **The vagueness lexicon is scoped by field class, not flat** (THR-899, 2026-08-01).
+  Evasive terms (hedges, nominalised placeholders, `something`) are banned everywhere;
+  natural indefinites (`someone`, `way`, `nothing`, …) are enforced in **outcome prose
+  only** and are ordinary English in scene setup; intensifiers are a warning, never a
+  failure. `countVagueness(text, fieldClass)` takes the scope. Write the plain sentence —
+  "someone is asking around after the agent" is correct scene prose. The two-list era
+  (`VAGUENESS_LEXICON` vs `AUDIT_VAGUENESS_TERMS`) is over: `nudgeAuditDetectors.ts` is the
+  single authority and `VAGUENESS_LEXICON` derives from it. Partition pinned by
+  `src/data/__tests__/vagueness-scope.test.ts`.
 
 ## Current spec
 
@@ -122,11 +161,12 @@ Source: `Docs/plans/2026-05-04-encounter-experience-design-plan.md` §2.2 and `B
 - ❌ **A percentage anywhere on the mortal-facing surface** — rejected 2026-07-26 (THR-772 ruling 1). Odds are legible in words only: the five forecast tier words and the four difficulty words (`severe / steep / fair / gentle`). Numbers exist behind the words; the designer/debug view is the sole exception. An `effectLine` carrying a digit is an editorial reject, not a nit.
 - ❌ **A nudge with no failure-band payoff** — the god's hand must be traceable in failure at any size (THR-772 program ruling: payoff at every band). A card that vanishes on a loss makes failure read as punishment, which inverts the design.
 - ❌ **Scene art that depicts the interaction, or a second human likeness** — rejected 2026-07-30 (THR-868 audit). Image doctrine ruling 10: a scene omits or silhouettes the agent, because the portrait chosen at Sensing is the only likeness across the flow. The audit of all 32 meeting scene files found five violations, and the reachable one was rendering: `plague-ward.jpg` (an individuated child's face) won any dilemma tagged `sacrifice` or `compassion`. `prison-cell.jpg` had the retired choice mechanic painted in as two UI buttons — "GRANT MERCY" / "IMPOSE JUDGMENT" — so the art taught the rejected model even after the code stopped. Two more carried baked-in caption text. Quarantine list + enforcement: `QUARANTINED_SCENE_ASSETS` in `src/data/meeting-art-library.ts`, pinned by `src/data/__tests__/meetingSceneDoctrine.test.ts`. **A wrong picture type-checks** — this class is invisible to every test that does not look at the pool.
-- ❌ **The lyrical register, game-wide** — rejected 2026-07-30 (Christian, chat; THR-868 WS6 mandate). "Something inside them settles into place like a stone dropped into still water" is the register being retired. Player-facing prose is plain and descriptive of **events, people, and motivations**: every sentence carries a picturable anchor, abstractions are cashed in-sentence, and the vagueness lexicon (`someone` and `very` included — see `AUDIT_VAGUENESS_TERMS`, which is wider than the spec doc's list) targets zero. Do not close a paragraph on an abstraction.
+- ❌ **The lyrical register, game-wide** — rejected 2026-07-30 (Christian, chat; THR-868 WS6 mandate). "Something inside them settles into place like a stone dropped into still water" is the register being retired. Player-facing prose is plain and descriptive of **events, people, and motivations**: every sentence carries a picturable anchor, abstractions are cashed in-sentence, and the vagueness lexicon targets zero **within its field class** (THR-899: evasive terms everywhere, natural indefinites in outcome prose only, intensifiers at warn — the flat "`someone` and `very` included" reading was retired 2026-08-01 because it failed the reference sentence it was meant to protect). Do not close a paragraph on an abstraction.
 - ❌ Spirit as a Reach — Spirit is a **Sphere** (one of the 12 Creation Spheres), not a Reach. Using "Spirit reach" in encounter authoring is a drift error. Use the correct Reach (Iron, Gold, etc.) for the action domain.
 - ❌ Voice as a Reach — Voice does not exist. The persuasion/communication domain maps to **Gold** (influence, patronage, social capital) depending on the action type.
 - ❌ Intelligence/visibility gating of encounter candidates — rejected 2026-05-07 (project-level direction from Christian, THR-138 closed). All encounter content is fully visible to the player at all times; intel never *hides* candidates. Intel may still *enrich* an encounter when present (prose recognition per THR-139, mechanical bonus per THR-140, cross-agent sharing per THR-142) — additive, never subtractive. Do not propose `requiresIntelligence` template fields, hidden-candidate filters, or "fog of intel" mechanics; the design space is closed.
 - ❌ Step-level `ActionStepBranch` in linear-template encounters — rejected 2026-05-15 (THR-191). `ActionStepBranch` is exclusive to *branching encounters* (`src/data/encounters/`). Linear-template encounters (guild, social, tavern, combat, borderland) use aftermath reactions + optional `BranchAwareAftermathConfig.variants` as their choice surface. A linear template that wants a mid-quest fork should be promoted to a branching encounter via `encounter-pipeline`, not retrofitted with step branching. Supersedes the "use ActionStepBranch on ≥3 templates" instruction in `Docs/plans/2026-04-19-thr-96-lorekeepers-covenant-migration.md`.
+- ✅ **Outcome-keyed aftermath — `AftermathVariant.byOutcome`** (THR-969, 2026-08-02). An aftermath variant (choice-keyed *or* the `fallback`) may carry per-outcome overrides of `overview` / `changes` / `reactionPrompt` / `reactions`, so the ending reflects **how** the encounter ended and not only which route was taken. This closes a structural gap, not a content one: because most linear templates ship `variants: {}`, a choice-less encounter could previously render only its single `fallback` — "crossed clean" and "fell in the river" produced byte-identical aftermath by construction. Resolution order is **choice → outcome band → base variant → fallback**; the band layers onto the variant the choice already picked, field by field. Key on the seven-value `UnifiedActionOutcome` — **not** the five-band `EncounterOutcomeBand`, the six-value `StepOutcome`, or `OutcomeBand` from `outcomeConsequences.ts`, each of which type-checks while being the wrong domain. Optional and additive: a band-less config resolves exactly as before (pinned by an identity assertion in `src/types/__tests__/aftermathOutcomeBands.test.ts`). Authoring surface: `Docs/plans/2026-04-16-systemic-wiring-guide.md` § Capability 18.
 - ✅ **Populated `BranchAwareAftermathConfig.variants` on linear templates — opt-in, signal-gated** (THR-447, 2026-05-16). The `fallback`-only default stays correct for the majority of linear templates. A family becomes a candidate for populated `variants` only when ≥3 of 5 signals fire (recurring thematic tension, distinct downstream graph consequences, saga-scale weight, multi-actor reaction surface, player-legible cue). Per-template authoring is budget-capped (2 choices × ~45 min); editorial gates G1–G4 are mandatory. See `Docs/plans/2026-05-16-thr-447-aftermath-variants-format-decision.md` for the full framework and the family scoring matrix.
 
 ## Open questions
@@ -136,4 +176,4 @@ Source: `Docs/plans/2026-05-04-encounter-experience-design-plan.md` §2.2 and `B
 
 ## Last-reviewed
 
-2026-07-30 by Claude Code (THR-868 / WS6: Meet The First recorded as nudge-native — pole lean, the retuned `MEETING_TEST_CAPABILITY`, the `StepOutcome`-not-`ForecastTier` trap, and two new rejected approaches covering scene-art doctrine and the retired lyrical register). Review trigger: monthly, or when any listed plan moves to `superseded`. Previous edit: 2026-07-27 by Claude Code (THR-774 / WS1: nudge model recorded as the current authoring spec — spec pointer, golden exemplar, authoring guardrails, three new rejected approaches).
+2026-08-02 by Claude Code (THR-969 — outcome-keyed aftermath recorded as the new authoring axis on `AftermathVariant`). Previous edits: 2026-08-01 by Claude Code (THR-899 — the vagueness lexicon recorded as scoped by field class, the two-list era closed). Previous edits: 2026-07-30 (merged edits) by Claude Code + Claude Fable: THR-892 recorded the variance rule — static `factorLines` retired for new content, the derived-line set and its one read path (`computeResolutionModifiers`), the omen/doom/season N/A with its read path cited, and `carryoverFactorLines` as the surviving authored factor surface. THR-883 recorded the format lock — the communication pivot, setting envelopes, cost channels/grants, and the Swollen Ford golden exemplar replacing the Darkhollow Vault. Previous edits: 2026-07-30 by Claude Code (THR-868 / WS6: Meet The First recorded as nudge-native); 2026-07-27 by Claude Code (THR-774 / WS1: nudge model recorded as the current authoring spec). Review trigger: monthly, or when any listed plan moves to `superseded`.

@@ -68,7 +68,7 @@ Also `list_projects team:"Threadbare"`.
 - **Completed projects still open.** If every issue in a project is Done, move the project status to Done.
 - **State/priority contradictions.** Projects marked "Now" should be High or Urgent. Projects marked "Idea" or "Next" shouldn't have issues in active states. Fix or flag.
 - **Stale design work.** Issues in "In Design" or "Implementation Planning" for more than 7 days with no updates may be stuck. Flag them.
-- **Deferrals in the wrong state.** `Deferral`-labeled issues should be in Idea or Todo unless actively worked.
+- **Deferrals that are not claimable.** A `Deferral`-labeled issue sitting in Ready for Dev is correct and expected — CLAUDE.md § *Prioritization: Finish Before You Start* names Ready-for-Dev deferrals in active projects as the **first** place the executor looks for work. **Never move one out of Ready for Dev on account of the label** (this bullet said the opposite until THR-968; obeyed literally it would have emptied most of the queue in one pass, each move looking individually justified). Flag only deferrals that are genuinely unclaimable — no Done-when, or no coordination block in the description or any comment, which is what `pull-work` Step 3 bounces. Report those; do not re-state them yourself.
 - **Pipeline gaps.** If Ready for Dev and In Dev are both empty, the executor has nothing to pick up — say so prominently and identify the issue closest to Ready for Dev.
 
 ### 3. Cross-reference the legacy roadmap
@@ -89,6 +89,15 @@ Verify the board reflects this ordering. Flag inversions.
 Write to `Docs/ops/backlog-grooming-YYYY-MM-DD.md`, under 35 lines:
 
 ```
+---
+lane: daily-backlog-grooming
+run: YYYY-MM-DD
+promoted: <n>
+filed: <n>
+resolved: <n>
+newFindings: <n>
+needsChristian: <true | false>
+---
 # Backlog Grooming — YYYY-MM-DD
 
 ## Needs Christian
@@ -115,10 +124,9 @@ Write to `Docs/ops/backlog-grooming-YYYY-MM-DD.md`, under 35 lines:
 You are Claude Code and CAN commit — but observe the git rules:
 
 - **Never run git state operations with the home tree as CWD** (THR-672). `C:\Users\chris\Dev\Projects\TheFantasyWorldSimulator` is a read-only mirror of `main` owned by `threadbare-autosync.ps1`. No `checkout`/`switch`/`commit`/`merge`/`rebase`/`reset` there. Work in this session's own worktree; branches are repo-global.
-- Fetch first and branch off current `origin/main`.
+- **The report goes to the `ops` branch, not `main`** (THR-947, cutover 2026-08-02) — no branch, no PR, no CI, and `main`'s tip does not move. From this worktree's **repository root**: `bash scripts/ops-publish.sh -m "docs(ops): backlog grooming <date>" Docs/ops/backlog-grooming-<date>.md`. It commits via git plumbing and checks nothing out, so no working tree is touched. **Do not open a PR against `main` for the report**, and do not fall back to one on failure — note one line; the next run reconciles.
 - Commit the report with **no** `Fixes`/`Closes`/`Resolves THR-XX` keyword — that would auto-close unrelated issues (impediment #140).
-- Open a PR and queue it with `gh pr merge --auto --merge`. Do not poll-wait on CI (THR-675).
-- If the report is a no-change no-op, skip the commit entirely; the task's `lastRunAt` is the heartbeat.
+- If the report is a no-change no-op, write no file and publish nothing; the task's `lastRunAt` is the heartbeat. **Decide it with the script, not by eye** (THR-920): `npm run check:substantive --silent -- --lane report --file Docs/ops/backlog-grooming-<date>.md --json`, and obey the verdict. This lane is daily rather than hourly, so it is not what jams the queue — but it carried the same unenforceable prose rule as the two hourly lanes, and a rule that cannot fire is worse than no rule because it reads as enforced.
 
 ## Known traps
 

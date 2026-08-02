@@ -1,7 +1,7 @@
 ---
 name: ubiquitous-language
 description: Maintain the canonical glossary in `Docs/ubiquitous-language`, including proposal, retirement, and arbitration workflows.
-last_validated_against: 2026-05-08
+last_validated_against: 2026-07-30
 ---
 
 # Ubiquitous Language Skill
@@ -29,6 +29,7 @@ Maintain and enforce the canonical glossary at `Docs/ubiquitous-language/`. Load
 - Touching agents, factions, actor nodes → load `Agents.md`
 - Coordination protocol questions → load `Coordination.md`
 - NFPs, design governance, process → load `Process.md`
+- Traits, marks, conditions, predicates → load `Traits.md`
 
 ## Propose a new term
 
@@ -55,7 +56,7 @@ save_issue({
 ## Proposed Term
 
 **Term:** <exact term as used in the codebase>
-**Proposed shard:** <Cosmology | Agents | Encounters | Prose | Graph | Coordination | Process>
+**Proposed shard:** <Cosmology | Agents | Encounters | Prose | Graph | Coordination | Process | Traits>
 **Content-adjacent:** <yes | no>
 
 ## Where encountered

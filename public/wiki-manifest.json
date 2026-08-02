@@ -392,6 +392,17 @@
         "scripts/interface-contracts.ts",
         "scripts/generate-interface-map.ts"
       ]
+    },
+    {
+      "id": "nudge-cards-reference",
+      "file": "nudge-cards-reference.html",
+      "title": "The Nudge Card Library",
+      "blurb": "The living catalog of nudge card types — card anatomy (picture, keyword, title, cost, effect, flavor quote), the tiered odds-pip vocabulary, all 21 types with IMPL/DESIGN/OPEN badges, the binding model that keeps generic cards specific in play, hand-building doctrine, and the open design space connecting cards to roguelike progression and ascendant identity. Iterate the repertoire here before content is authored against it.",
+      "section": "Deep Reference",
+      "sources": [
+        "src/engine/encounters/nudges.ts",
+        "src/data/nudge-card-library*.ts"
+      ]
     }
   ],
   "backlog": []

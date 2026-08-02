@@ -12,14 +12,12 @@ import { useMemo, useEffect, useState } from 'react';
 import type { SphereName } from '../../types';
 import { FOUNDATION_SPHERE_NAMES, CREATION_SPHERE_NAMES } from '../../types';
 import type { AscendantArchetype } from '../../types/influence';
-import type { ReachDomain } from '../../types/traits';
-import { REACH_DOMAINS } from '../../types/traits';
 import type { GameState } from '../../types/gameState';
-import { getDomainTier } from '../../data/domain-words';
 import { Modal } from '../shared/Modal';
 import { SphereIcon } from '../shared/SphereIcon';
-import { DomainCard } from '../shared/DomainCard';
 import { SectionHeading } from '../shared/SectionHeading';
+import { selectReachRows } from './ascendant-bar/selectors';
+import { REACH_RANK_LABEL, REACH_EMPTY_COPY } from '../../data/ascendant-bar-content';
 import { ProseKeyword } from '../ProseKeyword';
 import { Tooltip } from '../shared/Tooltip';
 import { IconButton } from '../shared/IconButton';
@@ -142,6 +140,15 @@ function capitalize(s: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
+/**
+ * Axis-teaching microcopy (THR-869). The sheet used to show spheres and reaches without
+ * naming either axis, so "Primary Matter" (sphere) beside the bar's "Primary Stone"
+ * (reach) read as a contradiction rather than two orthogonal axes. Naming them is the
+ * fix; the orthogonality itself is unchanged.
+ */
+const SPHERE_AXIS_CAPTION = 'Spheres · the currents that fuel you';
+const REACH_AXIS_CAPTION = 'Reaches · the domains your godhood works through';
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export function AscendantSheet({
@@ -191,6 +198,15 @@ export function AscendantSheet({
   );
 
   const naturePhrase = DIVINE_NATURE_PHRASES[primarySphere] ?? DIVINE_NATURE_PHRASES.force;
+
+  // THR-869: the god's live ranked reaches — the SAME read the Ascendant Bar uses, so the
+  // sheet and the bar can never again disagree about which reaches the god holds or how
+  // deep they run. Replaces the old all-8-reaches render off frozen day-one affinities.
+  const reachRows = useMemo(
+    () => selectReachRows(gameState),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- graph mutates in place; worldVersion is the change signal
+    [gameState, gameState.worldVersion],
+  );
 
   // ── Composed portrait (origin + sphere frame) ──
   const [portraitDataUrl, setPortraitDataUrl] = useState<string | null>(null);
@@ -269,7 +285,14 @@ export function AscendantSheet({
         </div>
 
         {/* Sphere alignment (like "Attuned to" on agents) */}
-        <div className="flex gap-4 items-center pt-2">
+        <p
+          data-testid="sheet-sphere-axis-caption"
+          className="text-xs pt-2"
+          style={{ color: 'var(--text-tertiary)', fontStyle: 'italic' }}
+        >
+          {SPHERE_AXIS_CAPTION}
+        </p>
+        <div className="flex gap-4 items-center pt-1">
           <div className="flex gap-2 items-center">
             <span className="text-xs" style={{ color: 'var(--accent-gold)' }}>Primary</span>
             <div className="w-2 h-2 rounded-full" style={{ backgroundColor: sphereColor }} />
@@ -310,20 +333,77 @@ export function AscendantSheet({
           {/* Dominion — matches ProwessTab domain cards exactly */}
           <section className="anim-fade-up-enter" style={{ animationDelay: '50ms', animationFillMode: 'backwards' }}>
             <SectionHeading as="h2">Dominion</SectionHeading>
-            <div className="flex flex-col gap-2">
-              {REACH_DOMAINS.map((reach) => {
-                const level = archetype.startingDomainAffinities[reach] ?? 0;
-                return (
-                  <DomainCard
-                    key={reach}
-                    reach={reach}
-                    tier={getDomainTier(level)}
-                    agentName={avatarName ?? 'The Ascendant'}
-                    revealed={true}
-                  />
-                );
-              })}
-            </div>
+            <p
+              data-testid="sheet-reach-axis-caption"
+              className="text-xs mb-2"
+              style={{ color: 'var(--text-tertiary)', fontStyle: 'italic' }}
+            >
+              {REACH_AXIS_CAPTION}
+            </p>
+            {reachRows.length === 0 ? (
+              <p className="text-sm italic" style={{ color: 'var(--text-muted)' }}>
+                {REACH_EMPTY_COPY}
+              </p>
+            ) : (
+              <div className="flex flex-col gap-2">
+                {reachRows.map((row) => (
+                  <div
+                    key={row.reach}
+                    data-testid={`sheet-reach-row-${row.reach}`}
+                    className="rounded"
+                    style={{
+                      borderBottom: '1px solid var(--border-subtle)',
+                      paddingLeft: 'var(--space-2)',
+                      paddingRight: 'var(--space-2)',
+                      paddingTop: 'var(--space-1)',
+                      paddingBottom: 'var(--space-2)',
+                    }}
+                  >
+                    <div className="flex items-baseline gap-2">
+                      <span
+                        className="text-xs"
+                        style={{
+                          fontFamily: 'var(--font-display)',
+                          fontWeight: 600,
+                          color: 'var(--text-muted)',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.18em',
+                          minWidth: 68,
+                        }}
+                      >
+                        {REACH_RANK_LABEL[row.rank]}
+                      </span>
+                      <Tooltip id={`reach.${row.reach}`}>
+                        <span
+                          className="text-sm underline decoration-dotted cursor-help"
+                          style={{
+                            fontFamily: 'var(--font-display)',
+                            fontWeight: 600,
+                            color: 'var(--text-primary)',
+                          }}
+                        >
+                          {row.label}
+                        </span>
+                      </Tooltip>
+                      <span style={{ color: 'var(--border-medium)' }}>·</span>
+                      <span
+                        data-testid={`sheet-reach-tier-${row.reach}`}
+                        className="text-sm italic"
+                        style={{ color: 'var(--text-secondary)' }}
+                      >
+                        {row.tierWord}
+                      </span>
+                    </div>
+                    <p
+                      className="text-xs mt-1"
+                      style={{ color: 'var(--text-secondary)', lineHeight: 1.45 }}
+                    >
+                      {row.echoLine}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
             {onOpenCodex && (
               <button
                 type="button"

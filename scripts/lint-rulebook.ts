@@ -406,7 +406,9 @@ function extractTicksPerDay(text: string): number | null {
 
 function extractDoomStageNames(text: string): string[] {
   // Matches "N stages: Name1, Name2, ..." or "stages: Name1, Name2, ..."
-  const m = text.match(/\d+\s+stages?:\s*\*?\*?([^\n*]+)\*?\*?/i);
+  // Capture stops at ')' — the quick-ref lists stages inside parens, and running
+  // past the close-paren invented a phantom stage name every weekly scan (THR-914).
+  const m = text.match(/\d+\s+stages?:\s*\*?\*?([^\n*)]+)\*?\*?/i);
   if (!m) return [];
   return m[1]
     .split(",")

@@ -107,14 +107,22 @@ if (wantsJson) {
     `  requested ${ids.length}   resolved ${resolved.length}   missing ${missing.length}`,
   );
   console.log('');
-  console.log('  id                                        words  abstr  vague  nXbY  2nd  hand');
-  console.log('  ────────────────────────────────────────  ─────  ─────  ─────  ────  ───  ────');
+  console.log('  id                                        words  abstr  vague  o/s/i     nXbY  2nd  int  hand');
+  console.log('  ────────────────────────────────────────  ─────  ─────  ─────  ────────  ────  ───  ───  ────');
   for (const { scores, hasHand } of rows) {
     const mark = scores.failures.length === 0 ? ' ' : '✗';
+    // `o/s/i` is the THR-899 scope breakdown: which field class the vagueness
+    // hits actually landed in. A hit in `o` (outcome) is the detector's real
+    // prey; `s` and `i` can only ever be evasive terms, never indefinites.
+    const byClass =
+      `${scores.vaguenessByClass.outcome}/${scores.vaguenessByClass.scene}/` +
+      `${scores.vaguenessByClass.interactive}`;
     console.log(
       `${mark} ${scores.templateId.padEnd(40).slice(0, 40)}  ${String(scores.words).padStart(5)}  ` +
         `${scores.abstractDensity.toFixed(2).padStart(5)}  ${scores.vaguenessDensity.toFixed(2).padStart(5)}  ` +
+        `${byClass.padStart(8)}  ` +
         `${String(scores.notXButY).padStart(4)}  ${String(scores.secondPerson).padStart(3)}  ` +
+        `${String(scores.intensifiers).padStart(3)}  ` +
         `${(hasHand ? 'yes' : '—').padStart(4)}`,
     );
   }
@@ -125,6 +133,18 @@ if (wantsJson) {
     for (const { scores } of detectorFailures) {
       console.log(`  ✗ ${scores.templateId}`);
       for (const failure of scores.failures) console.log(`      ${failure}`);
+    }
+    console.log('');
+  }
+
+  // Warnings are advisory and never gate a batch — printed after the failures so
+  // a clean run still surfaces the weak-word count an author may want to act on.
+  const warned = rows.filter(r => r.scores.warnings.length > 0);
+  if (warned.length > 0) {
+    console.log(`  ── Warnings (${warned.length}, advisory) ──`);
+    for (const { scores } of warned) {
+      console.log(`  · ${scores.templateId}`);
+      for (const warning of scores.warnings) console.log(`      ${warning}`);
     }
     console.log('');
   }

@@ -37,6 +37,7 @@ export function ArchetypeDriftLanding({ data, ...common }: ArchetypeDriftLanding
   const phase = useLandingLifecycle({
     ...common,
     motionDurationMs: REGISTRATION_FLIP_ARCHETYPE_DRIFT_MS,
+    cueKind: 'archetype_drift_register',
   });
   const bandColor = sphereBrightVar(data.bandSphere);
   const chaosColor = sphereBrightVar('chaos');

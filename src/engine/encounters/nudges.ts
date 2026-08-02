@@ -17,19 +17,29 @@ import type { WorldGraph } from '../graph';
 import type {
   ActionStep,
   NudgeRider,
+  StepCarryoverFactorLine,
   StepNudge,
   StepOutcome,
   TraitVariant,
+  UnifiedAction,
   UnifiedActionTemplate,
 } from '../../types/unifiedAction';
 import type { SphereName } from '../../types/index';
 import type { ForecastModifier } from './outcomeForecast';
-import { NUDGE_RIDER_PRIORITY, DIFFICULTY_WORD_BANDS } from '../../data/nudge-constants';
+import {
+  NUDGE_RIDER_PRIORITY,
+  DIFFICULTY_WORD_BANDS,
+  SPHERE_DISCOUNT,
+  SPHERE_DISCOUNT_MIN_COST,
+} from '../../data/nudge-constants';
+import { resolveSettingVariant } from '../fragmentResolution';
 
 /** Source prefix for a nudge's named forecast modifier. */
 export const NUDGE_MODIFIER_SOURCE_PREFIX = 'nudge:';
 /** Source prefix for a trait variant's named forecast modifier. */
 export const TRAIT_MODIFIER_SOURCE_PREFIX = 'trait:';
+/** Source prefix for a carryover line's named forecast modifier (THR-892). */
+export const CARRYOVER_MODIFIER_SOURCE_PREFIX = 'carryover:';
 
 /** Why a nudge card is not playable right now. */
 export type NudgeBlockedCode =
@@ -60,6 +70,59 @@ export interface NudgeHandContext {
   readonly unlockedTemplateIds: ReadonlySet<string>;
   /** Trait ids the acting mortal holds. */
   readonly heldTraits: ReadonlySet<string>;
+  /**
+   * `SettingClass` of the location the encounter plays out in (THR-884). When set,
+   * a card's `fictionBySetting` variant for that class replaces its `fiction` here,
+   * at hand assembly — so every downstream reader (the stage adapter, the audit
+   * detectors, the meeting model) keeps reading `nudge.fiction` and sees the
+   * setting-correct line without threading a new parameter.
+   *
+   * Absent → cards read exactly as authored (NFP #6).
+   */
+  readonly settingClass?: string;
+  /**
+   * THR-885 — is the acting mortal in a group right now? Gates `requiresGroup`
+   * cards (The Fellowship). Absent is treated as "not in a group", so a caller
+   * that does not know cannot accidentally deal a group card outside one.
+   */
+  readonly inGroup?: boolean;
+  /**
+   * THR-885 — is the acting mortal owed at least one live favor? Gates
+   * `requiresFavor` cards (The Favor, call variant). Absent ⇒ no favor.
+   */
+  readonly hasCallableFavor?: boolean;
+  /**
+   * THR-887 — library card ids this god's repertoire actually holds, from
+   * `buildRepertoire`. This is where sphere gating becomes lock/unlock rather
+   * than only a discount: an authored option whose `libraryCardId` is not in
+   * this set is signed by a sphere the god does not hold, and is withheld.
+   *
+   * **Absent ⇒ every card passes** (NFP #6), which is what keeps every
+   * pre-THR-887 caller — and every authored option with no `libraryCardId` —
+   * behaving exactly as it does today.
+   */
+  readonly repertoireCardIds?: ReadonlySet<string>;
+}
+
+/**
+ * THR-885 — The Signature. A card whose sphere the ascendant is aligned to costs
+ * {@link SPHERE_DISCOUNT} less essence, floored at {@link SPHERE_DISCOUNT_MIN_COST}.
+ *
+ * Exported because the commit path must charge the same number the hand quoted:
+ * `buildNudgeHand` uses it to decide affordability and `totalNudgeCost` uses it to
+ * deduct, so a discounted card cannot be shown cheap and billed full.
+ *
+ * A card with no sphere is common-pool and never discounts.
+ */
+export function effectiveNudgeCost(
+  nudge: Pick<StepNudge, 'sphere' | 'essenceCost'>,
+  accessibleSpheres: readonly SphereName[] | undefined,
+): number {
+  const authored = Math.max(0, nudge.essenceCost);
+  if (!nudge.sphere || !accessibleSpheres?.includes(nudge.sphere)) return authored;
+  // Never discount an authored-free card up or down — free is a decision.
+  if (authored <= 0) return authored;
+  return Math.max(SPHERE_DISCOUNT_MIN_COST, authored - SPHERE_DISCOUNT);
 }
 
 // ─── Trait variants ──────────────────────────────────────────────────
@@ -109,6 +172,31 @@ export function resetNudgeWarnings(): void {
 }
 
 /**
+ * THR-884 — swap in a card's per-setting-class fiction, if it authored one.
+ *
+ * Delegates to `resolveSettingVariant`, the same lookup chain `{frag:*}` uses, so a
+ * card variant and a template opening cannot disagree about what "no entry for this
+ * class" means. Returns the *original object* when nothing applies, which is what
+ * keeps un-migrated cards byte-identical (NFP #6) and keeps `===` comparisons in
+ * downstream code intact.
+ */
+function bindSettingFiction(
+  nudge: StepNudge,
+  settingClass: string | undefined,
+  templateId: string,
+): StepNudge {
+  if (!settingClass || !nudge.fictionBySetting) return nudge;
+  const fiction = resolveSettingVariant(
+    nudge.fictionBySetting,
+    nudge.fiction,
+    { setting: settingClass },
+    templateId,
+    `nudge:${nudge.id}`,
+  );
+  return fiction === nudge.fiction ? nudge : { ...nudge, fiction };
+}
+
+/**
  * Partition a step's authored nudge hand into playable / dimmed / hidden.
  *
  * Trait-gated cards the agent cannot hold are *hidden* rather than dimmed —
@@ -146,11 +234,28 @@ export function buildNudgeHand(
   const dimmed: NudgeHandEntry[] = [];
   const hidden: string[] = [];
 
-  for (const nudge of nudges) {
+  for (const authored of nudges) {
+    // THR-884 — bind the card's per-setting fiction once, before partitioning, so
+    // playable and dimmed cards read identically. Identity is preserved when the
+    // card authored no variants: no spread, no new object, no behavior change.
+    const nudge = bindSettingFiction(authored, context.settingClass, template.id);
     // Trait-only card: held trait or a variant that unlocked it, else hidden.
     if (nudge.requiredTrait
       && !context.heldTraits.has(nudge.requiredTrait)
       && !traitUnlockedIds.has(nudge.id)) {
+      hidden.push(nudge.id);
+      continue;
+    }
+
+    // THR-885 — world-state gates. These *hide* rather than dim, for the same
+    // reason `requiredTrait` does: the player cannot make themselves in a group,
+    // or owed a favor, from inside the encounter, so showing the price is noise.
+    if (nudge.requiresGroup && !context.inGroup) {
+      hidden.push(nudge.id);
+      continue;
+    }
+
+    if (nudge.requiresFavor && !context.hasCallableFavor) {
       hidden.push(nudge.id);
       continue;
     }
@@ -165,7 +270,24 @@ export function buildNudgeHand(
       continue;
     }
 
-    const cost = Math.max(0, nudge.essenceCost);
+    // THR-887 — the repertoire gate. Checked *after* the per-encounter sphere
+    // check because they answer different questions: that one asks whether the
+    // god can pay in this sphere right now, this one whether the god owns the
+    // card at all. `sphere_locked` is the right code for both — the stage
+    // withholds it and the designer view still lists it.
+    if (
+      context.repertoireCardIds
+      && nudge.libraryCardId
+      && !context.repertoireCardIds.has(nudge.libraryCardId)
+    ) {
+      dimmed.push({ nudge, blocked: 'sphere_locked' });
+      continue;
+    }
+
+    // THR-885 — the discounted price is the price. Quoting the authored cost here
+    // and charging the discounted one at commit (or the reverse) is the bug this
+    // shared helper exists to make impossible.
+    const cost = effectiveNudgeCost(nudge, context.accessibleSpheres);
     if (context.availableEssence(nudge.sphere) + 1e-9 < cost) {
       dimmed.push({ nudge, blocked: 'essence_unavailable' });
       continue;
@@ -187,9 +309,10 @@ export function buildNudgeHand(
  * Fail-soft: an `activeNudges` id with no matching authored card is skipped.
  */
 export function collectNudgeModifiers(
-  step: Pick<ActionStep, 'nudges'>,
+  step: Pick<ActionStep, 'nudges' | 'carryoverFactorLines'>,
   activeNudgeIds: readonly string[] | undefined,
   variants: readonly TraitVariant[] = [],
+  priorOutcome?: StepOutcome,
 ): ForecastModifier[] {
   const modifiers: ForecastModifier[] = [];
 
@@ -210,7 +333,47 @@ export function collectNudgeModifiers(
     });
   }
 
+  // THR-892 — the prior step's outcome tilts this one, if the author declared a
+  // delta for the band it landed on. Zero new rng: the draw happened last step.
+  const carryover = resolveCarryoverLine(step, priorOutcome);
+  if (carryover && carryover.line.forecastDelta) {
+    modifiers.push({
+      source: `${CARRYOVER_MODIFIER_SOURCE_PREFIX}${carryover.outcome}`,
+      delta: carryover.line.forecastDelta,
+    });
+  }
+
   return modifiers;
+}
+
+/**
+ * The carryover line this step draws, given the outcome the previous step landed
+ * on (THR-892).
+ *
+ * Fail-soft (NFP #4): no prior outcome (this is step 0), no authored map, or an
+ * outcome band the author left unwritten all yield `undefined` — the panel renders
+ * one line fewer rather than inventing a fallback sentence for a band nobody wrote.
+ */
+export function resolveCarryoverLine(
+  step: Pick<ActionStep, 'carryoverFactorLines'>,
+  priorOutcome: StepOutcome | undefined,
+): { outcome: StepOutcome; line: StepCarryoverFactorLine } | undefined {
+  if (!priorOutcome) return undefined;
+  const line = step.carryoverFactorLines?.[priorOutcome];
+  if (!line) return undefined;
+  return { outcome: priorOutcome, line };
+}
+
+/**
+ * The outcome the step *before* `currentStep` resolved on, or `undefined` at the
+ * head of an encounter. One reader so the adapter and resolution can never
+ * disagree about which band the carryover keys off.
+ */
+export function priorStepOutcome(
+  action: Pick<UnifiedAction, 'currentStep' | 'stepOutcomes'>,
+): StepOutcome | undefined {
+  if (action.currentStep <= 0) return undefined;
+  return action.stepOutcomes?.[action.currentStep - 1];
 }
 
 /** Sum of a modifier list — the single additive term resolution consumes. */
@@ -247,6 +410,22 @@ const RIDER_MAPS: Readonly<Record<NudgeRider, Readonly<Record<StepOutcome, StepO
     success_at_cost: 'success_at_cost',
     near_miss: 'success_at_cost',
     failure: 'success_at_cost',
+    critical_failure: 'critical_failure',
+  },
+  /**
+   * The Gambit (THR-885) — widen both ends. Every non-critical band steps one
+   * further from the middle; the crits are already at the ends and pass through.
+   *
+   * `success_at_cost` widens *upward* to `success` (the cost is what falls away)
+   * and `near_miss` widens *downward* to `failure`, which is the pairing that
+   * keeps the map symmetric: the two middle bands move apart, not both up.
+   */
+  all_or_nothing: {
+    critical_success: 'critical_success',
+    success: 'critical_success',
+    success_at_cost: 'success',
+    near_miss: 'failure',
+    failure: 'critical_failure',
     critical_failure: 'critical_failure',
   },
 };
@@ -318,12 +497,23 @@ export function difficultyWord(difficulty: number): string {
   return DIFFICULTY_WORD_BANDS[DIFFICULTY_WORD_BANDS.length - 1].word;
 }
 
-/** Total essence a committed hand costs — what the commit path must deduct. */
+/**
+ * Total essence a committed hand costs — what the commit path must deduct.
+ *
+ * `accessibleSpheres` is optional so every pre-THR-885 caller keeps charging the
+ * authored price unchanged (NFP #6). Pass it wherever the hand was *built* with
+ * spheres, or the player is quoted a discount they never receive.
+ */
 export function totalNudgeCost(
   step: Pick<ActionStep, 'nudges'>,
   activeNudgeIds: readonly string[] | undefined,
+  accessibleSpheres?: readonly SphereName[],
 ): number {
   if (!activeNudgeIds || activeNudgeIds.length === 0 || !step.nudges) return 0;
   const byId = new Map(step.nudges.map((n) => [n.id, n]));
-  return activeNudgeIds.reduce((total, id) => total + Math.max(0, byId.get(id)?.essenceCost ?? 0), 0);
+  return activeNudgeIds.reduce((total, id) => {
+    const nudge = byId.get(id);
+    if (!nudge) return total;
+    return total + effectiveNudgeCost(nudge, accessibleSpheres);
+  }, 0);
 }

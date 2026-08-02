@@ -166,6 +166,30 @@ describe('buildSimpleEncounterStageModel', () => {
     expect(model.resolutionReadout!.current?.threshold).toBeGreaterThan(0);
   });
 
+  // THR-933 — the unified adapter has carried a no-raw-braces lock since THR-694; this
+  // adapter, which is the path that actually leaked `{actor}` to a player, had none.
+  // Removing the `{actor}` / `{Actor}` alias lines from enrichProse must turn this red.
+  it('regression: no raw braces remain in any narrative surface after enrichment', () => {
+    const model = buildSimpleEncounterStageModel({
+      ...baseArgs,
+      notification: buildNotification({
+        prose: '{actor} turns out what {they} carry. {Actor} waits, and {name} does not look away.',
+      }),
+    });
+
+    const surfaces = [
+      model.scene.situationProse,
+      model.scene.pressureProse,
+      ...model.narrative.paragraphs.flatMap(p => p.segments).map(s => s.text),
+    ];
+
+    for (const surface of surfaces) {
+      expect(surface, `raw brace in: "${surface}"`).not.toMatch(/\{[a-zA-Z?/]/);
+    }
+    // Positive assertion: the tokens resolved to the actor, they did not merely vanish.
+    expect(model.scene.situationProse).toContain('Vasara the Unbowed');
+  });
+
   it('maps stored legacy roll history into previous resolution checks', () => {
     const model = buildSimpleEncounterStageModel({
       ...baseArgs,

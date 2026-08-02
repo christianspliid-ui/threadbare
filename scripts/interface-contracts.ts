@@ -103,6 +103,7 @@ const FACTIONS = 'Factions & Succession';
 const NARRATIVE = 'Attention, Chronicle & Narrative';
 const QUINTESSENCE = 'Spheres & Quintessence';
 const TRAITS = 'Personality & Emergent Traits';
+const PROGRESSION = 'Ascendant Beats & Progression';
 
 export const CONTRACTS: readonly Contract[] = [
   // ── Personality & Emergent Traits → outbound (THR-786 first slice) ─────────
@@ -1065,6 +1066,197 @@ export const CONTRACTS: readonly Contract[] = [
       deferralTicket: 'THR-778',
     },
     deferralTicket: 'THR-778',
+  },
+  // ── Nudge card dispatch → host systems (THR-885) ───────────────────────────
+  // The god's hand is the activation surface several idle systems were missing.
+  // Each row is a card→system write; all three are wired and tested but not yet
+  // LIVE, because no shipped card authors a grant — content lands under THR-883.
+  {
+    id: 'nudge-card-grants-dispatch-to-host-systems',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: AMBITIONS,
+    intent:
+      'A card that says it changed the world actually changes it, through the system that owns that change — so the fiction the player is shown and the state the world holds cannot disagree.',
+    ulTerms: ['Nudge', 'Ambition'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['dispatchNudgeCommitments', 'collectNudgeGrants', 'assignAmbitionToActor'],
+      module: 'src/engine/encounters/nudgeDispatch.ts',
+    },
+    writeSites: ['src/engine/phases/phaseAutonomousAftermath.ts'],
+    readSites: ['src/engine/encounterAftermath.ts', 'src/engine/ambitionAssignment.ts'],
+    // Card grants ride the existing `EncounterAftermathReactionEffect` vocabulary and
+    // are applied by the existing applier, so `emit_omen` / `remove_condition` /
+    // `spawn_artifact` / `hidden_mark` / `favor_creation` needed no new path at all.
+    // `assign_ambition` is the one genuinely new kind: reactive ambition templates had
+    // no assignment path outside `ambitionTick` (THR-812 / THR-726), which is why the
+    // shared `assignAmbitionToActor` helper was extracted from the three in-phase copies.
+    //
+    // Not LIVE: no shipped card authors `grants`, so nothing travels this path yet
+    // (badging it LIVE would be the THR-614 error class). The grant-liveness gate
+    // (`validateNudgeGrantRefs`) is what stops the first authored card from naming
+    // content nobody built.
+    deferralTicket: 'THR-883',
+  },
+  {
+    id: 'nudge-card-cost-channels-detection-and-doom',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: QUINTESSENCE,
+    intent:
+      'A card can be cheap in essence and expensive somewhere else — visibility to rivals, or the doom clock — so the price of divine help is not always the same currency.',
+    ulTerms: ['Nudge', 'Detection Pressure', 'Doom Clock'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['collectNudgeCostChannels', 'applyRawDetectionDelta', 'accelerateDoomClock'],
+      module: 'src/engine/encounters/nudgeDispatch.ts',
+    },
+    writeSites: ['src/engine/phases/phaseAutonomousAftermath.ts'],
+    readSites: [
+      'src/engine/encounters/detectionPressure.ts',
+      'src/engine/doomClock.ts',
+    ],
+    // `applyRawDetectionDelta` is a signed entry point added to the detection module
+    // itself, not a parallel writer: every prior writer priced by `EncounterChoiceCost`
+    // band, which can only *raise* pressure, so The Veil (help given unwitnessed) had
+    // no channel to write through. Both entry points share the module's clamp.
+    deferralTicket: 'THR-883',
+  },
+  {
+    id: 'nudge-hand-runtime-filters-and-sphere-discount',
+    producerSystem: QUINTESSENCE,
+    consumerSystem: ENCOUNTERS,
+    intent:
+      'The hand the player is dealt reflects the world as it actually is — group cards only in groups, favor calls only when a favor is owed — and a sphere the god is aligned to makes its own work cheaper.',
+    ulTerms: ['Nudge', 'Sphere', 'Essence'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['buildNudgeHand', 'effectiveNudgeCost', 'totalNudgeCost'],
+      module: 'src/engine/encounters/nudges.ts',
+    },
+    writeSites: ['src/types/unifiedAction.ts', 'src/data/nudge-constants.ts'],
+    readSites: [
+      'src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts',
+      'src/engine/meetingEncounter.ts',
+    ],
+    // `effectiveNudgeCost` is shared by the affordability check and the deduction on
+    // purpose: quoting a discounted card and charging the authored price (or the
+    // reverse) is the one bug a discount feature reliably ships with.
+    deferralTicket: 'THR-883',
+  },
+
+  // ── Meet The First trait seeds (THR-872) ──────────────────────────────────
+  {
+    id: 'meeting-trait-seeds-land-as-narrative-descriptors',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: NARRATIVE,
+    intent:
+      'The choices you made while meeting your First stay visible in who they are — the descriptors the meeting authored read back on their character sheet and in their backstory, instead of every First being described in the same default words.',
+    ulTerms: ['Meet The First', 'Bond Reception'],
+    mechanism: {
+      kind: 'node-prop',
+      symbols: ['narrativeDescriptors'],
+      module: 'src/engine/meetingEncounter.ts',
+    },
+    writeSites: ['src/engine/meetingEncounter.ts'],
+    readSites: ['src/engine/agentDetail.ts', 'src/engine/profileGenerator.ts'],
+    // This row exists because the contract shipped LEAKED for its whole life and
+    // nothing noticed: four producers (legacy dilemmas, enriched dilemmas, spark
+    // visions, bond reception) wrote `MeetingEncounterResult.traitSeeds` and
+    // `createAgentFromMeeting` never read it, so every descriptor was discarded
+    // at the graph boundary. The seeds are free-text description, NOT trait refs
+    // — they must never reach `resolveTraitPredicate` or `validateTraitRefs`,
+    // which is why `agentDetail` keeps them in a list separate from
+    // `getAgentTraitNames`.
+    verifiedLive: {
+      date: '2026-07-31',
+      evidence:
+        'src/engine/__tests__/meetingTraitSeedLanding.test.ts enumerates the authored population from all four catalogs (each asserted non-empty individually, so the sweep cannot pass vacuously), lands it through createAgentFromMeeting, and asserts zero unconsumed values. Reader pinned on both sides: getAgentInfoCard(…, "intimate").allTraits contains the humanized descriptor, and generateBackstory fills the {trait} slot from it instead of the hardcoded "resolute" fallback that previously covered every freshly-created First.',
+    },
+  },
+
+  // ── The Repertoire (THR-887) ──────────────────────────────────────────────
+  {
+    id: 'milestone-grants-unlock-repertoire-cards',
+    producerSystem: PROGRESSION,
+    consumerSystem: ENCOUNTERS,
+    intent:
+      'Earning something as a god changes what you can play as a god — a milestone hands you a new way to use a power you already had, not a bigger number on the one you have.',
+    ulTerms: ['Nudge', 'Ascendant Beat'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['buildRepertoire', 'isMemberUnlocked', 'memberAccess'],
+      module: 'src/engine/nudgeCardRepertoire.ts',
+    },
+    writeSites: ['src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts'],
+    readSites: ['src/engine/encounters/nudges.ts'],
+    // Milestone card unlocks read `GameState.unlockedActionIds` — the set
+    // `unlock_action` already writes and `StepNudge.requiredUnlock` already
+    // reads. One grant ledger, deliberately: a second one would be a parallel
+    // path to a place that already has an owner.
+    //
+    // The `god_trait` unlock kind is live and currently resolves to nothing,
+    // because god-earned traits do not exist until THR-791 lands. That is the
+    // stub, and it is exercised by test rather than left commented out.
+  },
+  {
+    id: 'twilight-harvest-preserves-defining-card',
+    producerSystem: NARRATIVE,
+    consumerSystem: ENCOUNTERS,
+    intent:
+      'A god who dies is not wholly gone: the trick they were known for survives the age and turns up in the next god\'s hand, whole after a triumph and scarred after a defeat.',
+    ulTerms: ['Nudge', 'Echo', 'World-Soul'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['selectEchoCard', 'buildCardEcho', 'echoCardsFromDefinitions'],
+      module: 'src/engine/nudgeCardRepertoire.ts',
+    },
+    writeSites: ['src/engine/cycleEnd.ts'],
+    readSites: ['src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts'],
+    // The tally the selection reads (`GameState.cardPlayTally`) is written at
+    // nudge commit and reset at `transitionToNewCycle` — both sides land
+    // together, so this is not an optional field with no writer.
+    //
+    // The card echo rides `EchoDefinition` rather than a parallel carry
+    // structure, so it degrades, fades, and threads the chronicle on the same
+    // paths as Legacy, Monument, and Relic.
+  },
+
+  // ── Agent-decided branches (THR-894) ──────────────────────────────────────
+  {
+    id: 'branch-decision-writes-archetype-drift',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: TRAITS,
+    intent:
+      'A fork the mortal took becomes part of who they are: taking the cunning branch drifts them cunning, so a mortal the player keeps leaning one way visibly becomes that person instead of resetting each encounter.',
+    ulTerms: ['Archetype Drift', 'Nudge'],
+    mechanism: {
+      kind: 'function',
+      symbols: [
+        'applyAgentDecidedBranches',
+        'decideBranchPole',
+        'decideBranchRoute',
+        'driftAxisIdForValuePair',
+      ],
+      module: 'src/engine/encounters/branchDecision.ts',
+    },
+    writeSites: ['src/engine/unifiedActionResolution.ts'],
+    readSites: [
+      'src/engine/encounters/driftAccumulator.ts',
+      'src/engine/orchestrator/phaseDriftDecay.ts',
+      'src/engine/encounterAftermath.ts',
+    ],
+    // The decision writes through `applyDriftMagnitude` — the same accumulator
+    // `phaseChoiceResolution` writes — so decay, threshold crossings, and the
+    // `archetype_drift_register` reveal all read it without a second path. The
+    // meta pair `courage_prudence` has no canonical `${reach}_axis` id, so it
+    // keys the drift store on its own pair name; canonical readers simply do
+    // not find it, which is the fail-soft the decision needs to stay decidable.
+    //
+    // No `verifiedLive`: the engine side is wired and falsified (9-of-23 red
+    // with the call removed), but no shipped template authors a `decidedBy`
+    // branch yet — THR-883 owns that content. Badging LIVE here would badge a
+    // path nothing travels (the THR-614 error class).
+    deferralTicket: 'THR-883',
   },
 ];
 

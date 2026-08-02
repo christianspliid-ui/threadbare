@@ -32,7 +32,8 @@ working-agreement facts that had no home in the repo.
   invalid; human review = a plain-language chat summary + one yes/no question, and chat approval
   satisfies the gate.
 - **Christian-owned blockers live in `Design/user-actions.md`**, not buried in retros or issue
-  comments — the things only he can unblock, in one place.
+  comments — the things only he can unblock, in one place. The live copy is on the `ops` branch
+  (THR-947): `git show origin/ops:Design/user-actions.md`.
 
 ## Decision authority — he verdicts, agents recommend
 

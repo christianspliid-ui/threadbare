@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Threadbearer — The Nudge Card Library</title>
+<!--
+  The Nudge Card Library (Design Reference Wiki / THR-883) — the living catalog of
+  nudge card types: anatomy, odds-pip vocabulary, the 21 types with status badges,
+  the binding model (text slots + target selectors), hand-building doctrine, and the
+  open design space (roguelike progression + ascendant-type connections).
+  Spec authority: Docs/plans/2026-07-30-encounter-authoring-frameworks.md (Decision 3
+  + the communication pivot recorded in THR-883). Engine substrate: THR-885
+  (src/engine/encounters/nudges.ts riders/filters; dispatch hooks). Iterate here —
+  this page is deliberately the surface where the card repertoire is expanded and
+  discussed before content is authored.
+  The shared wiki nav between the WIKI-NAV markers is injected by
+  scripts/generate-design-wiki.ts — do not hand-write it.
+-->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --parchment: #f4edd8;
+    --parchment-dark: #e8dfc8;
+    --ink: #2c1810;
+    --ink-light: #5a3d2b;
+    --ink-faint: #8a7060;
+    --gold: #b8860b;
+    --gold-light: #daa520;
+    --card-bg: #fff8e7;
+    --red: #8b2500;
+    --blue: #1a3a5c;
+    --purple: #4a2d6a;
+    --green: #2d5a27;
+    --flag-impl: #2d5a27;
+    --flag-design: #8a4a00;
+    --flag-open: #4a2d6a;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--parchment);
+    color: var(--ink);
+    font-family: 'Crimson Text', Georgia, serif;
+    font-size: 16px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+  .page-wrapper { max-width: 960px; margin: 0 auto; padding: 40px 32px 72px; }
+  .header { text-align: center; margin-bottom: 36px; padding-bottom: 26px; border-bottom: 2px solid var(--gold); }
+  .header .eyebrow { font-family: 'Cinzel', Georgia, serif; font-size: 0.72rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold); margin-bottom: 10px; }
+  .header h1 { font-family: 'Cinzel', Georgia, serif; font-size: 2rem; color: var(--ink); }
+  .header .subtitle { font-style: italic; color: var(--ink-light); margin-top: 8px; }
+  h2 { font-family: 'Cinzel', Georgia, serif; font-size: 1.3rem; margin: 40px 0 14px; color: var(--ink); border-bottom: 1px solid var(--gold-light); padding-bottom: 6px; }
+  h3 { font-family: 'Cinzel', Georgia, serif; font-size: 1.02rem; margin: 22px 0 8px; color: var(--ink-light); }
+  p { margin-bottom: 12px; }
+  .flag { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; padding: 1px 7px; border-radius: 3px; color: #fff; vertical-align: 1px; }
+  .flag.impl { background: var(--flag-impl); }
+  .flag.design { background: var(--flag-design); }
+  .flag.open { background: var(--flag-open); }
+  table { width: 100%; border-collapse: collapse; margin: 14px 0 20px; font-size: 0.92rem; background: var(--card-bg); }
+  th { font-family: 'Cinzel', Georgia, serif; font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase; text-align: left; padding: 8px 10px; border-bottom: 2px solid var(--gold); color: var(--ink-light); }
+  td { padding: 7px 10px; border-bottom: 1px solid var(--parchment-dark); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  .callout { background: var(--card-bg); border-left: 3px solid var(--gold); padding: 12px 16px; margin: 16px 0; font-size: 0.95rem; }
+  .callout.open-space { border-left-color: var(--purple); }
+  .mono { font-family: 'JetBrains Mono', monospace; font-size: 0.85em; }
+  .anatomy { display: flex; gap: 20px; flex-wrap: wrap; margin: 18px 0; }
+  .anatomy-card { background: var(--card-bg); border: 1px solid var(--gold-light); border-radius: 10px; width: 240px; overflow: hidden; box-shadow: 0 2px 6px rgba(44,24,16,0.12); }
+  .anatomy-art { height: 84px; background: linear-gradient(135deg, #2d5a27, #1a3a5c); display: flex; align-items: center; justify-content: center; color: #f4edd8; font-family: 'Cinzel', Georgia, serif; font-size: 0.75rem; letter-spacing: 0.1em; }
+  .anatomy-body { padding: 10px 14px 12px; }
+  .anatomy-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.78rem; color: var(--ink-light); margin-bottom: 4px; }
+  .kw { font-family: 'Cinzel', Georgia, serif; letter-spacing: 0.06em; color: var(--blue); }
+  .anatomy-title { font-family: 'Cinzel', Georgia, serif; font-size: 1.02rem; margin: 2px 0 6px; }
+  .anatomy-effect { font-size: 0.88rem; margin-bottom: 8px; }
+  .anatomy-quote { font-style: italic; font-size: 0.82rem; color: var(--ink-faint); }
+  .pips { letter-spacing: 2px; font-size: 0.95em; }
+  .pip-g { color: var(--green); }
+  .pip-b { color: var(--blue); }
+  .pip-p { color: var(--purple); }
+  .pip-o { color: #b8600b; }
+  .pip-r { color: var(--red); }
+  .legend { display: flex; flex-wrap: wrap; gap: 10px 26px; background: var(--card-bg); padding: 12px 16px; margin: 12px 0 18px; font-size: 0.92rem; border: 1px solid var(--parchment-dark); }
+  ul { margin: 0 0 14px 22px; }
+  li { margin-bottom: 6px; }
+</style>
+</head>
+<body>
+<div class="page-wrapper">
+
+<!--WIKI-NAV-->
+<style>
+  .wiki-nav { font-family: 'Cinzel', Georgia, serif; background: #2c1810; border-bottom: 2px solid #b8860b; padding: 0.6rem 1.2rem; display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.4rem 1.1rem; }
+  .wiki-nav__brand { color: #daa520; font-weight: 700; letter-spacing: 0.04em; margin-right: 0.6rem; font-size: 0.95rem; }
+  .wiki-nav__link { color: #f4edd8; text-decoration: none; font-size: 0.85rem; letter-spacing: 0.02em; padding: 0.15rem 0.1rem; border-bottom: 2px solid transparent; transition: color 0.15s, border-color 0.15s; }
+  .wiki-nav__link:hover { color: #daa520; }
+  .wiki-nav__link.is-active { color: #daa520; border-bottom-color: #b8860b; font-weight: 700; }
+</style>
+<nav class="wiki-nav" aria-label="Design Reference Wiki">
+  <span class="wiki-nav__brand">⌖ Design Reference Wiki</span>
+  <a class="wiki-nav__link" href="design-wiki.html">Design Wiki</a>
+  <a class="wiki-nav__link" href="run-lifecycle-reference.html">A Run, Start to Finish</a>
+      <a class="wiki-nav__link" href="cosmology-reference.html">Reaches, Spheres &amp; Quintessence</a>
+      <a class="wiki-nav__link" href="turn-structure-reference.html">The Three-Beat Turn</a>
+      <a class="wiki-nav__link" href="divine-actions-reference.html">Divine Actions &amp; Prerequisites</a>
+      <a class="wiki-nav__link" href="threads-court-reference.html">Threads, the Court &amp; The First</a>
+      <a class="wiki-nav__link" href="essence-control-reference.html">Essence, Control &amp; Sustained Power</a>
+      <a class="wiki-nav__link" href="encounters-manual-reference.html">Encounters &amp; Aftermath</a>
+      <a class="wiki-nav__link" href="clocks-reference.html">Doom, the Mandate &amp; Omens</a>
+      <a class="wiki-nav__link" href="interface-reference.html">Reading the Interface</a>
+      <a class="wiki-nav__link" href="agents-reference.html">The Mortals</a>
+      <a class="wiki-nav__link" href="traits-marks-reference.html">Traits &amp; Marks</a>
+      <a class="wiki-nav__link" href="factions-cultures-reference.html">Factions, Cultures &amp; Secrets</a>
+      <a class="wiki-nav__link" href="world-map-reference.html">The World: Hexes, Terrain &amp; Sight</a>
+      <a class="wiki-nav__link" href="settlements-economy-reference.html">Settlements, Prosperity &amp; Trade</a>
+      <a class="wiki-nav__link" href="livelihoods-reference.html">Livelihoods &amp; the Resource Web</a>
+      <a class="wiki-nav__link" href="armies-battles-reference.html">Armies, Battles &amp; Lairs</a>
+      <a class="wiki-nav__link" href="stealth-rivals-reference.html">Stealth, Detection &amp; Rival Gods</a>
+      <a class="wiki-nav__link" href="attention-story-reference.html">Attention, the Digest &amp; the Chronicle</a>
+      <a class="wiki-nav__link" href="twilight-worldsoul-reference.html">Twilight, Echoes &amp; the World-Soul</a>
+      <a class="wiki-nav__link" href="encounters-agents-reference.html">Encounters, Agents &amp; Resolution</a>
+      <a class="wiki-nav__link" href="tick-cycle-reference.html">Tick Cycle Reference</a>
+      <a class="wiki-nav__link" href="action-catalog.html">Action Catalog</a>
+      <a class="wiki-nav__link" href="system-interface-map-reference.html">Systems &amp; Interfaces Map</a>
+      <a class="wiki-nav__link is-active" href="nudge-cards-reference.html" aria-current="page">The Nudge Card Library</a>
+</nav>
+<!--/WIKI-NAV-->
+
+<div class="header">
+  <div class="eyebrow">Design reference · living catalog</div>
+  <h1>The Nudge Card Library</h1>
+  <div class="subtitle">Every choice the god can play into a mortal's moment — the types, the odds language, and the room left to grow</div>
+</div>
+
+<p><strong>Doctrine (THR-883, 2026-07-30):</strong> prose does the scene, cards do the rules. The scene opening, stake block, and post-roll outcome prose carry the storytelling; each choice is a <em>card</em> — generic, reusable, mechanically plain. This page is the library's home surface: iterate the repertoire here before any content is authored against it. Spec authority: <span class="mono">Docs/plans/2026-07-30-encounter-authoring-frameworks.md</span>; engine substrate: THR-885.</p>
+
+<h2>Card anatomy</h2>
+
+<div class="anatomy">
+  <div class="anatomy-card">
+    <div class="anatomy-art">small generic picture</div>
+    <div class="anatomy-body">
+      <div class="anatomy-row"><span class="kw">◈ Insurance</span><span>⚡ 3</span></div>
+      <div class="anatomy-title">Restful dreams</div>
+      <div class="anatomy-effect">Cannot resolve worse than success at a cost</div>
+      <div class="anatomy-quote">"No dreams tonight but kind ones."</div>
+    </div>
+  </div>
+  <div style="flex: 1; min-width: 260px;">
+    <ul>
+      <li><strong>Picture</strong> — one small painted image per library card, generic like the title. Manifest + fallback chain (type icon on a tinted band until painted); rides the encounter image library pattern.</li>
+      <li><strong>Keyword + icon</strong> — the card's type, player-facing vocabulary learned once.</li>
+      <li><strong>Title</strong> — two or three generic words, reusable everywhere.</li>
+      <li><strong>Cost</strong> — essence pips, <em>Free</em>, or alternate-cost icons (detection, doom, obligation). A sphere-discounted card prints the <em>effective</em> price: the pips are what the commit path charges, never the authored number.</li>
+      <li><strong>Effect</strong> — one plain mechanical sentence; odds shown in the pip vocabulary below.</li>
+      <li><strong>Flavor quote</strong> — one short generic line in the serif voice. The card's only prose.</li>
+    </ul>
+  </div>
+</div>
+
+<h2>The odds pip vocabulary <span class="flag impl">IMPL</span></h2>
+
+<p>Approved 2026-07-30, shipped in THR-890. Magnitude to the nearest ~5%: five pips per color tier, tier colors matching the attachment-rarity ladder, <strong>pip shape changes with tier</strong> so magnitude survives colorblindness — and shape escalation doubles as rarity feel. Stored values are raw numbers; the tiering is purely display (recorded on THR-885).</p>
+
+<p>The ladder is twenty ~5% steps grouped into four tiers of five, so the tier index is <span class="mono">floor((step&nbsp;−&nbsp;1)&nbsp;/&nbsp;5)</span> and the filled count is <span class="mono">((step&nbsp;−&nbsp;1)&nbsp;mod&nbsp;5)&nbsp;+&nbsp;1</span>. Tier bounds and glyphs are named constants in <span class="mono">src/data/nudge-pip-vocabulary.ts</span>; the rows are drawn by the shared <span class="mono">OddsPips</span> / <span class="mono">CostPips</span> primitives, both registered in <span class="mono">?view=styleguide</span>. Shape is the accessibility channel and color is secondary; each row carries its reading as an <span class="mono">aria-label</span> ("Strong, 3 of 5") because a screen reader spelling out geometric characters is worse than silence.</p>
+
+<div class="legend">
+  <span><span class="pips pip-g">●●●○○</span>&nbsp; Faint — circles, +5 to +25</span>
+  <span><span class="pips pip-b">■■□□□</span>&nbsp; Strong — squares, +30 to +50</span>
+  <span><span class="pips pip-p">◆◇◇◇◇</span>&nbsp; Potent — diamonds, +55 to +75</span>
+  <span><span class="pips pip-o">★★☆☆☆</span>&nbsp; Fated — stars, +80 to +100</span>
+  <span><span class="pips pip-r">▼▼</span>&nbsp; Penalty — red down-triangles (costs, gambit downsides)</span>
+</div>
+
+<p>The step's own base forecast renders in the same vocabulary — one odds language across the whole encounter surface.</p>
+
+<p><strong>Test-panel factor lines carry a magnitude too</strong> (THR-892). Each line the panel draws now ships with a signed raw delta on <span class="mono">EncounterStageFactorLineModel.delta</span>, so a factor can be read in the same pip language as a card: the actor's Reach capability, each named world modifier (equipment, terrain, faction, sphere, conditions, divine attention), and any carryover from the previous step. The field is <em>absent</em> — never zero — on a line with no measurable contribution, because an empty pip row would promise a magnitude the line does not have. A contribution below <span class="mono">FACTOR_LINE_EPSILON</span> (0.005, one pip) draws no line at all. Carryover deltas ride the named-modifier channel as <span class="mono">carryover:&lt;outcome&gt;</span> alongside <span class="mono">nudge:&lt;id&gt;</span> and <span class="mono">trait:&lt;id&gt;</span>, and take no rng of their own.</p>
+
+<h2>The 21 card types</h2>
+
+<p>Status: <span class="flag impl">IMPL</span> engine mechanics shipped · <span class="flag design">DESIGN</span> specced in THR-885, being built · <span class="flag open">OPEN</span> direction agreed, design pending. Content (titles, quotes, art) is authored under THR-883 for all types.</p>
+
+<table>
+  <tr><th style="width:12%">Type</th><th style="width:30%">Effect shape</th><th style="width:24%">The decision it creates</th><th style="width:22%">Host system</th><th style="width:12%">Status</th></tr>
+  <tr><td><strong>Boost</strong></td><td>Success chance up, priced fairly</td><td>Do I want this to go well?</td><td>Resolution</td><td><span class="flag impl">IMPL</span></td></tr>
+  <tr><td><strong>Heavy hand</strong></td><td>Large boost + detection pressure rises</td><td>Power now, attention later</td><td>Stealth &amp; detection</td><td><span class="flag design">DESIGN</span></td></tr>
+  <tr><td><strong>Insurance</strong></td><td>Outcome cannot land worse than success at a cost</td><td>Buy the floor, not the ceiling</td><td>Riders (<span class="mono">floor_at_cost</span>)</td><td><span class="flag impl">IMPL</span></td></tr>
+  <tr><td><strong>Mercy</strong></td><td>Critical failure becomes ordinary failure</td><td>Cheap disaster-proofing</td><td>Riders (<span class="mono">no_crit_fail</span>)</td><td><span class="flag impl">IMPL</span></td></tr>
+  <tr><td><strong>Gambit</strong></td><td>Middling outcomes vanish — very well or badly</td><td>Double or nothing</td><td>Riders (<span class="mono">all_or_nothing</span>)</td><td><span class="flag design">DESIGN</span></td></tr>
+  <tr><td><strong>Side-bet</strong></td><td>Modest boost + a worldly extra, win or lose</td><td>Value beyond this moment</td><td>Per-card aftermath</td><td><span class="flag impl">IMPL</span></td></tr>
+  <tr><td><strong>Long game</strong></td><td>Plants a trait or hidden mark future encounters fire on</td><td>Sacrifice now for story later</td><td>Traits trigger layer</td><td><span class="flag design">DESIGN</span></td></tr>
+  <tr><td><strong>Whisper</strong></td><td>Reveals a hidden factor or the next step's demand</td><td>Pay to see before you spend</td><td>Intelligence</td><td><span class="flag open">OPEN</span> (needs reveal UI)</td></tr>
+  <tr><td><strong>Trait card</strong></td><td>Free; exists because of who this mortal is</td><td>Character as resource</td><td>Agent traits</td><td><span class="flag impl">IMPL</span></td></tr>
+  <tr><td><strong>Signature</strong></td><td>Keyed to the god's spheres — discounted in-sphere</td><td>Your divine identity shapes your hand</td><td>Spheres (full gating waits on THR-870)</td><td><span class="flag design">DESIGN</span></td></tr>
+  <tr><td><strong>Bargain</strong></td><td>No essence — paid in doom, detection, or obligation</td><td>Free power, priced elsewhere</td><td>Doom / detection / favors</td><td><span class="flag design">DESIGN</span></td></tr>
+  <tr><td><strong>Undertow</strong></td><td>Strong boost through an ugly method; shifts the mortal's values</td><td>Effective, and it changes who they are</td><td>Pole-shift (WS6)</td><td><span class="flag design">DESIGN</span></td></tr>
+  <tr><td><strong>Stumble</strong></td><td>Physics turns against the scene's opposition</td><td>Weaken them instead of strengthening yours</td><td>Encounter cast</td><td><span class="flag design">DESIGN</span></td></tr>
+  <tr><td><strong>Kindled ambition</strong></td><td>The mortal wakes wanting something lasting</td><td>Give them a drive, not a bonus</td><td>Ambitions (the missing dispatcher — THR-812)</td><td><span class="flag design">DESIGN</span></td></tr>
+  <tr><td><strong>Omen</strong></td><td>Future encounter draws bend toward what this uncovered</td><td>Steer the story, not the roll</td><td>Omens (bias path live)</td><td><span class="flag design">DESIGN</span></td></tr>
+  <tr><td><strong>Cache</strong></td><td>Something is left for them to find; ships with the item built</td><td>A keepsake that persists</td><td>Attachments &amp; items</td><td><span class="flag design">DESIGN</span></td></tr>
+  <tr><td><strong>Balm</strong></td><td>Removes one condition (wound, fever, dread)</td><td>End a suffering directly</td><td>Effects &amp; conditions</td><td><span class="flag design">DESIGN</span></td></tr>
+  <tr><td><strong>Veil</strong></td><td>Same help, unwitnessed — no detection, invisible to rivals</td><td>Pay extra for silence</td><td>Stealth + rival scans</td><td><span class="flag design">DESIGN</span></td></tr>
+  <tr><td><strong>Favor</strong></td><td>Creates or calls in a favor owed</td><td>Debts as currency</td><td>Secrets &amp; favors (dormant system, first live consumer)</td><td><span class="flag design">DESIGN</span></td></tr>
+  <tr><td><strong>Fellowship</strong></td><td>Steadies or strains the traveling group's bond</td><td>The company, not the individual</td><td>Groups &amp; cohesion (dealt only in groups)</td><td><span class="flag design">DESIGN</span></td></tr>
+  <tr><td><strong>Compulsion</strong></td><td>A dream-sent urge shaping the mortal's next decision</td><td>Steer them, not the world</td><td>Premonition / compulsion</td><td><span class="flag design">DESIGN</span></td></tr>
+</table>
+
+<h2>How generic cards become specific — the binding model</h2>
+
+<ul>
+  <li><strong>Text slots</strong> — effect and flavor strings carry typed placeholders (<span class="mono">{condition}</span>, <span class="mono">{host}</span>, <span class="mono">{target}</span>) filled at deal time from the live encounter, through the same resolution as <span class="mono">{cast:*}</span> placeholders.</li>
+  <li><strong>Target selectors</strong> — a card declares how to find its target, never the target itself: <em>the agent's worst active condition</em>, <em>the owner of the place they're staying</em>, <em>the opposition slot in the scene's cast</em>. Binding failure = the card is not dealt, so dealing is self-grounding: no Mend card where nothing needs mending.</li>
+  <li><strong>Ascendant scaling</strong> — sphere discounts and (later) progression bonuses bend the effective numbers; the pips render the result. Same card, three pips for one god and four for another.</li>
+</ul>
+
+<h2>Hand-building doctrine</h2>
+
+<ul>
+  <li>Hands are <strong>fully authored at encounter design time</strong> — 4–6 cards per step, picked from this library. No runtime generic deck; runtime only <em>filters</em> (trait, group, favor-availability, target binding).</li>
+  <li><strong>No two cards in a hand answer the same question</strong> — at most one Boost per cost tier.</li>
+  <li><strong>No two encounters in a family repeat a type composition</strong> — variety is audited by the coverage matrix (THR-884), not hoped for.</li>
+  <li><strong>Supporting content ships with the card</strong> — a card granting an item, trait, ambition, or omen is only legal when that content exists; enforced by the grant-liveness build gate.</li>
+</ul>
+
+<h2>The Repertoire — progression design <span class="flag design">DESIGN</span></h2>
+
+<div class="callout open-space">
+<p><strong>Blessed by Christian, 2026-07-30</strong> (all four verdicts, chat session; spec: <span class="mono">Docs/plans/2026-07-30-nudge-card-repertoire.md</span>). The fantasy in one line: <em>your spheres decide what magic you have, your play decides what it becomes, and your past lives haunt your hand.</em></p>
+</div>
+
+<div class="callout">
+<p><strong>Live as of THR-887.</strong> The tables in this section are the human-readable face of <span class="mono">src/data/nudge-card-library.ts</span> — <span class="mono">UNIVERSAL_CORE_TYPES</span>, <span class="mono">SPHERE_SIGNATURES</span>, and <span class="mono">HUNGER_UNIQUE_CARDS</span>. The engine reads that file; this page and it are held together by the wiki freshness gate, so a signature moved in one and not the other fails CI rather than drifting quietly.</p>
+</div>
+
+<h3>Birth — identity deals the deck</h3>
+<p>Every god holds the <strong>universal core</strong> (Boost, Insurance, Mercy, trait cards). Each of the 12 spheres owns <strong>signature types</strong> — primary sphere at full strength, secondary discounted (<span class="mono">SECONDARY_SPHERE_DISCOUNT</span>), off-sphere locked. First-cut mapping, iterated here:</p>
+
+<table>
+  <tr><th>Sphere</th><th>Signature types</th><th>Sphere</th><th>Signature types</th></tr>
+  <tr><td>chaos</td><td>Gambit · Stumble</td><td>life</td><td>Balm</td></tr>
+  <tr><td>order</td><td>Favor · Insurance⁺</td><td>mind</td><td>Compulsion</td></tr>
+  <tr><td>light</td><td>Whisper</td><td>spirit</td><td>Kindled ambition</td></tr>
+  <tr><td>darkness</td><td>Veil · Undertow</td><td>time</td><td>Omen</td></tr>
+  <tr><td>force</td><td>Heavy hand</td><td>entropy</td><td>Bargain</td></tr>
+  <tr><td>matter</td><td>Cache</td><td>energy</td><td>Boost⁺</td></tr>
+</table>
+
+<p><strong>The "⁺" is not decoration.</strong> <em>order</em> signs Insurance and <em>energy</em> signs Boost — types that are also universal core. The <em>type</em> is common; the <em>signature member</em> of it is not. Every god plays the core Insurance; only an order god plays order's. Access is read per member, never per type.</p>
+
+<p><strong>Hunger uniques:</strong> each hunger contributes exactly one unique starting card no other god holds — a Witness gets <em>Seen</em> (the mortal briefly knows a god watched); a Sever god holds the game's only mid-encounter bond-cutting card. A hunger unique ignores sphere entirely: it is identity, not alignment, so a chaos god still holds a Whisper-shaped Witness card that chaos does not sign.</p>
+
+<table>
+  <tr><th>Hunger</th><th>Unique card's type</th><th>Hunger</th><th>Unique card's type</th></tr>
+  <tr><td>witness</td><td>Whisper</td><td>gather</td><td>Cache</td></tr>
+  <tr><td>kindle</td><td>Kindled ambition</td><td>preserve</td><td>Insurance</td></tr>
+  <tr><td>sever</td><td>Long game</td><td>reclaim</td><td>Balm</td></tr>
+  <tr><td>bind</td><td>Favor</td><td>reshape</td><td>Stumble</td></tr>
+  <tr><td>consume</td><td>Undertow</td><td>wander</td><td>Omen</td></tr>
+  <tr><td>haunt</td><td>Compulsion</td><td>illuminate</td><td>Heavy hand</td></tr>
+</table>
+
+<div class="callout">
+<p><strong>Twelve, settled <span class="flag impl">IMPL</span>.</strong> This section and the plan doc said twelve hungers, naming <em>haunt</em> and <em>illuminate</em>, while <span class="mono">HungerId</span> listed ten — and THR-887 keyed the unique-card map on the live ten so it could not silently fall behind. <strong>THR-891</strong> settled it at <strong>twelve</strong>, because the two were never missing design: both are fully authored in the remembrance catalog the player actually picks from (with art), and the meeting prose register speaks for all twelve under a test that pins the set in both directions. <span class="mono">HungerId</span> was the only surface still saying ten, and was corrected to match rather than the four surfaces already saying twelve.</p>
+<p>Their two card types are read from the existing table, not minted: <em>haunt</em>'s blessed mandate is to influence "through dreams, omens, and unseen presence", which is <strong>Compulsion</strong> almost verbatim; <em>illuminate</em>'s is to "make the invisible visible" from a court that has "no shadows", so it takes <strong>Heavy hand</strong> — the one card whose defining trade is acting conspicuously, the exact inverse of Veil.</p>
+</div>
+
+<h3>The run — broad start, progression as variation</h3>
+<ul>
+  <li><strong>Broad toolbox from turn one</strong> — every sphere-unlocked type is playable immediately, so hands are interesting from the first encounter.</li>
+  <li><strong>Each type is a family that deepens</strong> — milestones (riding the existing progression card-grant machinery), god-earned traits (THR-791), and alignment add new <em>member cards</em>: same verb, different twist or cost channel. Almost nothing is strictly stronger — late-run hands contain cards an early-run god has never seen, but encounters stay decisions. Variation is the progression fantasy <em>and</em> the anti-boredom engine.</li>
+  <li><strong>Pips as seasoning, not the arc</strong> — sphere alignment still discounts and occasionally sharpens a card, but power growth is deliberately minor.</li>
+</ul>
+
+<h3>Between runs — the echo card <span class="flag impl">IMPL</span></h3>
+<p>At twilight the harvest preserves a fourth thing beside Legacy, Monument, and Relic: <strong>the card that defined the run</strong> — most played, ties broken by the most climactic moment it was played at — enters the World-Soul as a fourth <span class="mono">EchoType</span> and joins the next run's starting repertoire <em>regardless of sphere</em>. A triumphant age returns it whole; a somber one returns it scarred — cheaper by <span class="mono">ECHO_CARD_SCAR_DISCOUNT</span>, carrying an <span class="mono">ECHO_CARD_SCAR_PENALTY</span> red pip. A bittersweet age returns it whole: the scar is the price of a failed age, not a mixed one. Your dead gods leave you their favorite trick.</p>
+
+<p>Selection is <strong>chosen, never rolled</strong> — no PRNG draw — and its final tie-break is card id, so a saved run replays to the same echo card. A card id that no longer exists in the library drops at world-seed with one warning and the rest of the harvest stands.</p>
+
+<h3>What "most storied" currently measures</h3>
+<p>The plan says the run's card is the most-played one, or the one played at <em>the chronicle's biggest moment</em>. The chronicle does not record which cards a beat was won with, so there is no direct signal to read. The tie-break uses <strong>doom-clock progress at the moment of play</strong> — the run's own tension curve, monotone and deterministic — as a first-cut proxy. Refine when the chronicle carries card provenance.</p>
+
+<h3>Card content status</h3>
+<p>The library ships <strong>structure without prose</strong>: every member is gated, priced, and dealable, and <span class="mono">title</span>/<span class="mono">quote</span> are optional and currently absent. An unauthored card renders as its own keyword rather than blank. Titles, flavor quotes, and art are authored under THR-883 once the authoring format locks — no schema change needed when they arrive.</p>
+
+<p style="margin-top: 28px; font-size: 0.88rem; color: var(--ink-faint);">Maintained under THR-883. Engine shipped in THR-887 (library data model, per-member sphere gating, unlock resolution, echo-card harvest); the card row and pip rendering shipped in THR-890 (<span class="mono">NudgePhaseShell</span> draws the anatomy above; <span class="mono">OddsPips</span>/<span class="mono">CostPips</span>/<span class="mono">CardKeywordChip</span> are shared primitives). Keywords are derived from this library — no card type is declared anywhere else. This page's tables are freshness-gated against <span class="mono">src/data/nudge-card-library.ts</span>.</p>
+
+</div>
+</body>
+</html>

@@ -30,14 +30,22 @@
 import type { WorldGraph } from '../../../../engine/graph';
 import type { GameState } from '../../../../types/gameState';
 import type { SphereName } from '../../../../types/index';
+import { toHungerId } from '../../../../types/hunger';
+import {
+  buildRepertoire,
+  echoCardsFromDefinitions,
+} from '../../../../engine/nudgeCardRepertoire';
 import type { ResolutionInput } from '../../../../types/resolution';
 import type { ForecastTier } from '../../../../types/traces/encounter-traces';
 import type {
   ActionStep,
+  StepNudge,
   UnifiedAction,
   UnifiedActionTemplate,
 } from '../../../../types/unifiedAction';
 import { computeCapability } from '../../../../engine/domainCapability';
+import { locationTypeFromProperties } from '../../../../engine/encounterCache';
+import { settingClassForSubtype } from '../../../../data/settingClasses';
 import { computeResolutionModifiers } from '../../../../engine/resolutionModifiers';
 import { forecastAction } from '../../../../engine/resolutionService';
 import {
@@ -45,26 +53,41 @@ import {
   collectHeldTraitIds,
   collectNudgeModifiers,
   difficultyWord,
+  effectiveNudgeCost,
+  priorStepOutcome,
+  resolveCarryoverLine,
   resolveTraitVariants,
   sumModifiers,
   sumVariantDifficultyDelta,
   totalNudgeCost,
   type NudgeBlockedCode,
 } from '../../../../engine/encounters/nudges';
-import { classifyMotive, readMotiveReceipt } from '../../../../engine/encounters/motiveClassifier';
+import { deriveStepFactorLines } from '../../../../engine/encounters/stepFactorLines';
+import {
+  NUDGE_COST_CHANNEL_DISPLAY,
+  nudgeCardKeyword,
+  type NudgeCostChannelId,
+} from '../../../../data/nudge-card-display';
+import {
+  classifyMotive,
+  readMotiveReceipt,
+  type MotiveSource,
+} from '../../../../engine/encounters/motiveClassifier';
 import { computeForecast } from '../../../../engine/encounters/outcomeForecast';
 import { adaptUnifiedActionTemplateToEncounterContract } from '../../../../engine/encounter-contract-adapter';
-import { getDomainTier } from '../../../../data/domain-words';
 import {
   FORECAST_TIER_WORDS,
   MOTIVE_CHIP_LABELS,
   MOTIVE_FALLBACK_SENTENCES,
+  MOTIVE_INTRO_VARIANTS,
+  MOTIVE_MISSION_FALLBACK,
   NUDGE_BLOCKED_REASONS,
   NUDGE_FREE_COST_LABEL,
   NUDGE_RIDER_LABELS,
 } from '../../../../data/nudge-stage-content';
 import { SPHERE_NAMES } from '../../../../types/index';
 import type {
+  EncounterStageCostChannelModel,
   EncounterStageFactorLineModel,
   EncounterStageForecastModel,
   EncounterStageNudgeCardModel,
@@ -72,11 +95,19 @@ import type {
   EncounterStageWithheldNudgeModel,
 } from '../types';
 
-/** Domain capability is 0–1; the reach word scales are indexed off 0–10. */
-const CAPABILITY_TO_DOMAIN_SCALE = 10;
+/**
+ * Stand-in when the acting node has no resolvable name, so a motive intro line
+ * substitutes a noun rather than leaking `{actor}` onto the stage (NFP #4).
+ */
+const MOTIVE_ACTOR_FALLBACK = 'The mortal';
 
-/** Reach art is 1-indexed on disk (`iron-1.png` … `iron-5.png`). */
-const REACH_ICON_TIER_OFFSET = 1;
+/** Contribution kinds that read as assigned work — the errand `{mission}` names. */
+const MOTIVE_MISSION_KINDS: ReadonlySet<string> = new Set([
+  'ambition',
+  'chain',
+  'reputation',
+  'bond',
+]);
 
 /**
  * Codes the player stage withholds entirely. `essence_unavailable` is
@@ -96,10 +127,102 @@ export interface BuildNudgePhaseModelArgs {
   gameState?: GameState;
 }
 
+/**
+ * THR-884 — the `SettingClass` an in-flight encounter is playing out in.
+ *
+ * Walks the actor's `located_at` edge one tier at a time: an agent standing in a
+ * sublocation resolves up to its parent location, because the setting envelope is a
+ * property of the *place* (a temple), not of the room inside it. Returns undefined
+ * off the authorable set, which is the `'*'` fallback rather than an error (NFP #4).
+ */
+function settingClassForAction(
+  graph: WorldGraph,
+  action: UnifiedAction,
+): string | undefined {
+  const actorId = action.actorId;
+  if (!actorId) return undefined;
+  const locatedAt = graph.getOutgoingEdges(actorId, 'located_at')[0];
+  if (!locatedAt) return undefined;
+  let node = graph.getNode(locatedAt.target);
+  const parentId = node?.properties?.parentLocationId as string | undefined;
+  if (parentId) node = graph.getNode(parentId) ?? node;
+  return settingClassForSubtype(
+    locationTypeFromProperties(node?.properties as Record<string, unknown> | undefined),
+  );
+}
+
 /** Cost in words — a free (trait) option says so rather than showing a zero. */
 function costLabelFor(cost: number): string | undefined {
   if (cost <= 0) return NUDGE_FREE_COST_LABEL;
   return `${cost} essence`;
+}
+
+/**
+ * THR-890 — the non-essence prices a card charges, in display form.
+ *
+ * A zero delta contributes no row: an authored `{ doomDelta: 0 }` is a channel
+ * the card declared and then did not use, and drawing it would promise a price
+ * that never arrives. Direction, not just sign, picks the wording — a card that
+ * *slows* the doom clock is charging nothing and should not read as a cost.
+ */
+function costChannelsFor(nudge: StepNudge): EncounterStageCostChannelModel[] | undefined {
+  const costs = nudge.costs;
+  if (!costs) return undefined;
+
+  const deltas: readonly [NudgeCostChannelId, number | undefined][] = [
+    ['detection', costs.detectionDelta],
+    ['doom', costs.doomDelta],
+  ];
+
+  const channels: EncounterStageCostChannelModel[] = [];
+  for (const [id, delta] of deltas) {
+    if (delta === undefined || delta === 0) continue;
+    const display = NUDGE_COST_CHANNEL_DISPLAY[id][delta > 0 ? 'worse' : 'better'];
+    channels.push({ id, icon: display.icon, label: display.label, delta });
+  }
+  return channels.length > 0 ? channels : undefined;
+}
+
+/**
+ * One authored option as a card the row can draw.
+ *
+ * Shared by the playable and dimmed passes so the two can never drift on price,
+ * keyword, or cost channels — the only thing that differs between them is the
+ * `state`/`blocked` pair the caller supplies.
+ *
+ * **Price is the effective price.** `effectiveNudgeCost` is what `buildNudgeHand`
+ * used to judge affordability and what `totalNudgeCost` will charge at commit, so
+ * anything else here would quote one number and bill another (THR-885's whole
+ * reason for exporting that helper).
+ */
+function cardModelFor(
+  nudge: StepNudge,
+  accessibleSpheres: readonly SphereName[],
+  state: 'playable' | 'dimmed',
+  blocked?: NudgeBlockedCode,
+): EncounterStageNudgeCardModel {
+  const cost = effectiveNudgeCost(nudge, accessibleSpheres);
+  const keyword = nudgeCardKeyword(nudge.libraryCardId);
+  return {
+    id: nudge.id,
+    libraryCardId: nudge.libraryCardId,
+    keyword: keyword?.keyword,
+    keywordIcon: keyword?.icon,
+    name: nudge.name,
+    fiction: nudge.fiction,
+    effectLine: nudge.effectLine,
+    essenceCost: cost,
+    discounted: cost < Math.max(0, nudge.essenceCost),
+    costLabel: costLabelFor(cost),
+    costChannels: costChannelsFor(nudge),
+    sphere: nudge.sphere,
+    imageTag: nudge.imageTag,
+    state,
+    blockedCode: blocked,
+    blockedReason: blocked ? NUDGE_BLOCKED_REASONS[blocked] : undefined,
+    riderLabel: nudge.rider ? NUDGE_RIDER_LABELS[nudge.rider] : undefined,
+    forecastDelta: nudge.forecastDelta,
+  };
 }
 
 function forecastModelFrom(tier: ForecastTier, probability: number): EncounterStageForecastModel {
@@ -132,6 +255,87 @@ function authoredFactorLines(
   } catch {
     return [];
   }
+}
+
+/**
+ * The named errand behind a `mission`-classified motive, for `{mission}`.
+ *
+ * Reads the heaviest mission-kind contribution's provenance node and returns its
+ * name. Fail-soft at every hop (NFP #4): no receipt, no mission contribution, no
+ * node id, or a node the graph has since culled all yield `undefined`, and the
+ * caller substitutes {@link MOTIVE_MISSION_FALLBACK} rather than leaking a raw
+ * placeholder onto the stage.
+ */
+function missionNameFor(
+  graph: WorldGraph,
+  receipt: ReturnType<typeof readMotiveReceipt>,
+): string | undefined {
+  const contributions = receipt?.contributions;
+  if (!contributions || contributions.length === 0) return undefined;
+
+  let best: { weight: number; nodeId: string } | undefined;
+  for (const c of contributions) {
+    if (!MOTIVE_MISSION_KINDS.has(c.kind)) continue;
+    const nodeId = c.provenance?.nodeId;
+    if (!nodeId) continue;
+    if (!best || c.weight > best.weight) best = { weight: c.weight, nodeId };
+  }
+  if (!best) return undefined;
+
+  const name = graph.getNode(best.nodeId)?.name;
+  return name && name.length > 0 ? name : undefined;
+}
+
+/**
+ * FNV-1a, 32-bit. Deterministic; same input → same output, every session.
+ *
+ * **Not `hashEntityId` (djb2), and the difference is load-bearing.** djb2's
+ * multiplier is 33, and 33 ≡ 0 (mod 3) — so every positional term above the last
+ * character vanishes modulo 3, and any two seeds differing only in an earlier
+ * character land on the *same* index. The intro pools are exactly 3 variants
+ * long, so djb2 pinned every encounter to one line: 24 distinct action ids
+ * selected one variant, which the variant-spread test caught. The same trap waits
+ * at any pool length divisible by 3 or 11. FNV-1a's 16777619 multiplier is
+ * coprime to both and mixes into the low bits, so a small modulo stays uniform.
+ *
+ * djb2 remains correct where it is used today — `gradientIndexForId` takes it
+ * modulo a gradient count with no such factor.
+ */
+function hashSeed(seed: string): number {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < seed.length; i++) {
+    h ^= seed.charCodeAt(i);
+    h = Math.imul(h, 0x01000193);
+  }
+  return h >>> 0;
+}
+
+/**
+ * Pick and fill this encounter's motive intro line.
+ *
+ * **Deterministic by construction (NFP #3).** The variant index is a hash of the
+ * action id and step index, so the same encounter opens with the same line in
+ * every session and on every re-render. No rng draw is taken here; taking one
+ * would make the opening line of a scene differ between the forecast the player
+ * read and the stage they are looking at.
+ *
+ * Substitution is total: every placeholder resolves to a real string, so the
+ * Done-when's "no raw `{actor}` leaks" holds even when the graph knows neither
+ * the actor's name nor the errand's.
+ */
+function motiveIntroLine(args: {
+  source: MotiveSource;
+  actorName?: string;
+  missionName?: string;
+  seed: string;
+}): string {
+  const variants = MOTIVE_INTRO_VARIANTS[args.source];
+  const template = variants[hashSeed(args.seed) % variants.length];
+  const values: Record<string, string> = {
+    actor: args.actorName && args.actorName.length > 0 ? args.actorName : MOTIVE_ACTOR_FALLBACK,
+    mission: args.missionName ?? MOTIVE_MISSION_FALLBACK,
+  };
+  return template.replace(/\{(\w+)\}/g, (whole, key: string) => values[key] ?? whole);
 }
 
 /**
@@ -174,11 +378,43 @@ export function buildNudgePhaseModel(
   // rather than throwing — the fail-soft path, not a special case.
   const accessibleSpheres = SPHERE_NAMES.filter((s) => (pool?.[s] ?? 0) > 0);
 
+  // THR-887 — the god's repertoire, so an authored option signed by a sphere
+  // this god does not hold is withheld rather than merely priced.
+  //
+  // Gated on a *present* `ascendantIdentity`, and deliberately left `undefined`
+  // without one. A legacy archetype-based run has no sphere identity to read,
+  // and defaulting it to "no spheres" would silently withhold every signature
+  // card from those runs — a behavior change dressed as a fallback. Absent
+  // identity ⇒ absent gate ⇒ today's behavior exactly (NFP #6).
+  const identity = gameState?.ascendantIdentity;
+  const repertoireCardIds = identity
+    ? new Set(
+        buildRepertoire({
+          primary: identity.sphereAlignment?.primary,
+          secondary: identity.sphereAlignment?.secondary,
+          // THR-891 — `hungerId` is stored dotted (`hunger.witness`) while the
+          // library keys on the bare id. This was an `as HungerId` cast, which
+          // type-checks and is false: the lookup missed for every god, so no
+          // hunger unique was ever dealt. `toHungerId` is the real conversion.
+          hunger: toHungerId(identity.hungerId),
+          unlockedActionIds: new Set(gameState?.unlockedActionIds ?? []),
+          echoCards: echoCardsFromDefinitions(gameState?.echoDefinitions ?? []),
+        }).map((entry) => entry.member.id),
+      )
+    : undefined;
+
   const hand = buildNudgeHand(step, template, {
     availableEssence: availableEssenceFor,
     accessibleSpheres,
     unlockedTemplateIds: new Set(gameState?.unlockedActionIds ?? []),
     heldTraits,
+    repertoireCardIds,
+    // THR-884 — the setting class the scene plays out in, so a card that authored
+    // `fictionBySetting` shows the line written for *this* kind of place. Resolved
+    // through the cache's own precedence helper, so it is the same class the
+    // template was filtered in under. A card without variants is untouched, which
+    // is why threading this changes no rendered output for today's corpus.
+    settingClass: settingClassForAction(graph, activeAction),
   });
 
   const variants = resolveTraitVariants(template, heldTraits);
@@ -199,7 +435,13 @@ export function buildNudgePhaseModel(
     step.reach,
     template.sphereAffinity,
   );
-  const traitModifierTotal = sumModifiers(collectNudgeModifiers(step, undefined, variants));
+  // THR-892 — the carryover line the prior step's band earned, if the author wrote
+  // one. It contributes to the floor exactly as a trait variant does, so the hand
+  // adds its selected deltas on top of a forecast that already carries it.
+  const carryover = resolveCarryoverLine(step, priorStepOutcome(activeAction));
+  const traitModifierTotal = sumModifiers(
+    collectNudgeModifiers(step, undefined, variants, priorStepOutcome(activeAction)),
+  );
   const variantDifficultyDelta = sumVariantDifficultyDelta(variants);
   const effectiveDifficulty = Math.max(0, Math.min(1, step.difficulty + variantDifficultyDelta));
 
@@ -235,20 +477,7 @@ export function buildNudgePhaseModel(
   const withheld: EncounterStageWithheldNudgeModel[] = [];
 
   for (const entry of hand.playable) {
-    const { nudge } = entry;
-    cards.push({
-      id: nudge.id,
-      name: nudge.name,
-      fiction: nudge.fiction,
-      effectLine: nudge.effectLine,
-      essenceCost: nudge.essenceCost,
-      costLabel: costLabelFor(nudge.essenceCost),
-      sphere: nudge.sphere,
-      imageTag: nudge.imageTag,
-      state: 'playable',
-      riderLabel: nudge.rider ? NUDGE_RIDER_LABELS[nudge.rider] : undefined,
-      forecastDelta: nudge.forecastDelta,
-    });
+    cards.push(cardModelFor(entry.nudge, accessibleSpheres, 'playable'));
   }
 
   for (const entry of hand.dimmed) {
@@ -257,21 +486,7 @@ export function buildNudgePhaseModel(
       withheld.push({ id: nudge.id, name: nudge.name, blockedCode: blocked });
       continue;
     }
-    cards.push({
-      id: nudge.id,
-      name: nudge.name,
-      fiction: nudge.fiction,
-      effectLine: nudge.effectLine,
-      essenceCost: nudge.essenceCost,
-      costLabel: costLabelFor(nudge.essenceCost),
-      sphere: nudge.sphere,
-      imageTag: nudge.imageTag,
-      state: 'dimmed',
-      blockedCode: blocked,
-      blockedReason: blocked ? NUDGE_BLOCKED_REASONS[blocked] : undefined,
-      riderLabel: nudge.rider ? NUDGE_RIDER_LABELS[nudge.rider] : undefined,
-      forecastDelta: nudge.forecastDelta,
-    });
+    cards.push(cardModelFor(nudge, accessibleSpheres, 'dimmed', blocked));
   }
 
   // Trait-gated cards the agent cannot hold: never in the player stage, listed
@@ -317,10 +532,36 @@ export function buildNudgePhaseModel(
       text: variant.factorLine,
       polarity: helps ? 'for' : 'against',
       source: `trait:${variant.traitId}`,
+      // THR-892 — the model carries the number beside the text so the row can
+      // draw pips. A variant that declares no delta contributes no pips rather
+      // than a zero row.
+      delta: variant.forecastDelta,
     });
   }
 
-  const reachTier = getDomainTier(capability * CAPABILITY_TO_DOMAIN_SCALE);
+  // ── Derived lines (THR-892) ─────────────────────────────────────
+  // The variance rule: a line earns its place only if it could have read
+  // differently on another run. These are projections of the numbers resolution
+  // already computed — `capability` and `standing.contributions` — so the panel
+  // can never quote a factor the roll did not apply.
+  //
+  // Appended after the authored/trait lines so the encounter's own account leads
+  // and the world's contribution follows.
+  for (const line of deriveStepFactorLines({
+    actorName: graph.getNode(actorId)?.name,
+    reach: step.reach,
+    capability,
+    contributions: standing.contributions,
+    carryover,
+  })) {
+    factors.push({
+      id: line.id,
+      text: line.text,
+      polarity: line.polarity,
+      source: line.source,
+      delta: line.delta === 0 ? undefined : line.delta,
+    });
+  }
 
   // ── Motive ──────────────────────────────────────────────────────
   // Fail-soft: any throw inside classification renders CHANCE with the generic
@@ -335,12 +576,24 @@ export function buildNudgePhaseModel(
       source,
       chipLabel: MOTIVE_CHIP_LABELS[source],
       sentence: MOTIVE_FALLBACK_SENTENCES[source],
+      // THR-972 — the line that introduces the scene, fully substituted here so
+      // the shell never has to know about placeholders.
+      introLine: motiveIntroLine({
+        source,
+        actorName: graph.getNode(actorId)?.name,
+        missionName: missionNameFor(graph, receipt),
+        seed: `${activeAction.actionId}:${activeAction.currentStep}`,
+      }),
     };
   } catch {
     motive = {
       source: 'chance',
       chipLabel: MOTIVE_CHIP_LABELS.chance,
       sentence: MOTIVE_FALLBACK_SENTENCES.chance,
+      introLine: motiveIntroLine({
+        source: 'chance',
+        seed: `${activeAction.actionId}:${activeAction.currentStep}`,
+      }),
     };
   }
 
@@ -354,7 +607,6 @@ export function buildNudgePhaseModel(
     testPanel: {
       reach: step.reach,
       reachLabel: step.reach.charAt(0).toUpperCase() + step.reach.slice(1),
-      reachIconUrl: `/assets/reaches/${step.reach}-${reachTier + REACH_ICON_TIER_OFFSET}.png`,
       purposeLine: step.purposeLine,
       difficultyWord: difficultyWord(effectiveDifficulty),
       difficultyValue: effectiveDifficulty,
@@ -367,6 +619,10 @@ export function buildNudgePhaseModel(
     withheld,
     committedIds,
     availableEssence: availableEssenceFor(undefined),
-    committedCost: totalNudgeCost(step, committedIds),
+    // `accessibleSpheres` threaded through for the same reason the card models
+    // quote the effective price: omitting it re-quotes a discounted hand at its
+    // authored cost, so a reopened stage would report a total the commit path
+    // never charged (THR-890).
+    committedCost: totalNudgeCost(step, committedIds, accessibleSpheres),
   };
 }

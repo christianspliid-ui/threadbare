@@ -10,6 +10,8 @@ import type {
   EncounterStageHistoryModel,
 } from './encounter-stage/types';
 import { NudgePhaseShell } from './encounter-stage/shells/NudgePhaseShell';
+import { NudgeMotiveIntro } from './encounter-stage/shells/NudgeMotiveIntro';
+import { ProseTtsButton } from './Encounter/ProseTtsButton';
 
 // ── Thread tier types ──────────────────────────────────────────────
 type ThreadTier = 'strong' | 'light' | 'watched';
@@ -201,6 +203,33 @@ export function EncounterVeil({
     }
   }, [selectedChoiceId, model.choices, onIntervene]);
 
+  // THR-636 — the resolved step being replayed (read-only past), or null for "the present".
+  const replayEntry =
+    replayStepIndex !== null && model.history[replayStepIndex]?.status === 'resolved'
+      ? model.history[replayStepIndex]
+      : null;
+
+  // THR-348 — the prose currently on screen, as ordered paragraphs for TTS.
+  // Tracks the replay toggle so the narrator reads what the player is reading.
+  //
+  // Hoisted above the early returns below (THR-971). It used to sit just before
+  // the final `createPortal`, *after* the `!open` / aftermath / mid-encounter
+  // returns — so the moment a mounted veil crossed into aftermath mode React
+  // saw one fewer hook than the previous render and threw "Rendered fewer hooks
+  // than expected", taking the whole aftermath screen to the error boundary.
+  // That is the natural play path (resolve an encounter, watch the ending), so
+  // the surface this ticket rebuilds could not render at all.
+  const narratableProse = useMemo<string[]>(() => {
+    if (replayEntry) {
+      return [replayEntry.replayNarrative || replayEntry.afterimage || ''].filter(Boolean);
+    }
+    const paragraphs = model.narrative.paragraphs.map((para) =>
+      para.segments.map((s) => s.text).join(''),
+    );
+    if (model.scene.momentLine) paragraphs.push(model.scene.momentLine);
+    return paragraphs.filter((p) => p.trim().length > 0);
+  }, [replayEntry, model.narrative.paragraphs, model.scene.momentLine]);
+
   if (!open) return null;
 
   // ── Aftermath rendering path ───────────────────────────────────
@@ -211,6 +240,18 @@ export function EncounterVeil({
       if (polarity === 'gain') return 'rgba(134, 239, 172, 0.65)';
       if (polarity === 'loss') return 'rgba(248, 113, 113, 0.65)';
       if (polarity === 'mixed') return 'rgba(251, 191, 36, 0.65)';
+      return 'rgba(180, 170, 150, 0.45)';
+    };
+
+    /**
+     * THR-971 — consequence chip toning. `seed` takes the veil's gold rather
+     * than a gain/loss hue on purpose: a planted sequel is neither good news
+     * nor bad, it is a debt the world now owes the story.
+     */
+    const consequenceToneColor = (tone: 'gain' | 'loss' | 'seed' | 'info') => {
+      if (tone === 'seed') return GOLD;
+      if (tone === 'gain') return 'rgba(134, 239, 172, 0.65)';
+      if (tone === 'loss') return 'rgba(248, 113, 113, 0.65)';
       return 'rgba(180, 170, 150, 0.45)';
     };
 
@@ -334,7 +375,11 @@ export function EncounterVeil({
             transform: hasArt ? undefined : 'translateX(-50%)',
             display: 'flex',
             flexDirection: 'column',
-            justifyContent: 'center',
+            // 'safe' keeps the column top reachable when content overflows the
+            // scroll zone — plain 'center' strands the first lines above an
+            // unscrollable edge (THR-925). Engines without 'safe' drop the
+            // declaration and fall back to flex-start, which scrolls correctly.
+            justifyContent: 'safe center',
             padding: '10vh 5vw 10vh 3vw',
             background: hasArt
               ? 'linear-gradient(to right, transparent 0%, rgba(10,10,15,0.55) 10%, rgba(10,10,15,0.82) 28%, rgba(10,10,15,0.93) 50%, rgba(10,10,15,0.97) 100%)'
@@ -465,8 +510,104 @@ export function EncounterVeil({
             </div>
           )}
 
-          {/* Highlights */}
-          {aftermath.highlights && aftermath.highlights.length > 0 && (
+          {/* Consequence chips (THR-971) — what you got, what it cost, what it
+              planted. Built from the same authored change set the legacy
+              highlights/changes blocks below use, so exactly one of the two
+              renders; drawing both would say everything twice. */}
+          {aftermath.consequences && aftermath.consequences.length > 0 && (
+            <div
+              data-testid="aftermath-consequences"
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 12,
+                marginBottom: 22,
+                maxWidth: 540,
+                ...aftermathEntrance(1.3, 0.9),
+              }}
+            >
+              {aftermath.consequences.map((chip) => (
+                <div
+                  key={chip.id}
+                  data-testid={`consequence-chip-${chip.kind}`}
+                  data-consequence-kind={chip.kind}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'baseline',
+                    gap: 12,
+                    // A hairline, not a card — the ending stays dissolved into
+                    // the void rather than resolving into a grid of boxes.
+                    borderLeft: `2px solid ${consequenceToneColor(chip.tone)}`,
+                    paddingLeft: 12,
+                  }}
+                >
+                  <span
+                    style={{
+                      fontFamily: FONT_DISPLAY,
+                      fontSize: 'var(--text-xs)',
+                      letterSpacing: '0.16em',
+                      color: consequenceToneColor(chip.tone),
+                      flexShrink: 0,
+                      minWidth: 74,
+                    }}
+                  >
+                    {chip.kindLabel}
+                  </span>
+                  <span
+                    style={{
+                      fontFamily: FONT_PROSE,
+                      fontStyle: 'italic',
+                      fontSize: 'var(--text-xs)',
+                      lineHeight: 1.7,
+                      color: TEXT_WARM,
+                    }}
+                  >
+                    {chip.sentence.segments.map((seg, i) => {
+                      // Clickable only where a page actually exists: a resolved
+                      // node id plus a host that wired the handler. Anything
+                      // else stays emphasised text — fail-open, never a dead link.
+                      const clickable = Boolean(seg.entityId && onSelectAgent);
+                      if (clickable) {
+                        return (
+                          <button
+                            key={i}
+                            type="button"
+                            onClick={() => onSelectAgent?.(seg.entityId!)}
+                            style={{
+                              background: 'none',
+                              border: 'none',
+                              padding: 0,
+                              font: 'inherit',
+                              color: GOLD,
+                              borderBottom: `1px solid ${GOLD_DIM}`,
+                              cursor: 'pointer',
+                            }}
+                          >
+                            {seg.text}
+                          </button>
+                        );
+                      }
+                      return (
+                        <span
+                          key={i}
+                          style={
+                            seg.referenceId
+                              ? { color: TEXT_WARM, borderBottom: `1px solid ${GOLD_DIM}` }
+                              : undefined
+                          }
+                        >
+                          {seg.text}
+                        </span>
+                      );
+                    })}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Highlights — legacy presentation, suppressed once chips exist */}
+          {!aftermath.consequences?.length && aftermath.highlights && aftermath.highlights.length > 0 && (
             <div
               style={{
                 display: 'flex',
@@ -515,8 +656,8 @@ export function EncounterVeil({
             </div>
           )}
 
-          {/* Changes */}
-          {aftermath.changes && aftermath.changes.length > 0 && (
+          {/* Changes — legacy presentation, suppressed once chips exist */}
+          {!aftermath.consequences?.length && aftermath.changes && aftermath.changes.length > 0 && (
             <div
               style={{
                 display: 'flex',
@@ -1029,11 +1170,8 @@ export function EncounterVeil({
 
   const selectedChoice = model.choices.find((c) => c.id === selectedChoiceId);
 
-  // THR-636 — the resolved step being replayed (read-only past), or null for "the present".
-  const replayEntry =
-    replayStepIndex !== null && model.history[replayStepIndex]?.status === 'resolved'
-      ? model.history[replayStepIndex]
-      : null;
+  // `replayEntry` / `narratableProse` are computed once near the top of the
+  // component (THR-971) so no early return can change the hook count.
 
   // ── Inline style helpers ───────────────────────────────────────
   function entranceStyle(
@@ -1202,7 +1340,11 @@ export function EncounterVeil({
           transform: hasArt ? undefined : 'translateX(-50%)',
           display: 'flex',
           flexDirection: 'column',
-          justifyContent: 'center',
+          // 'safe' keeps the column top reachable when content overflows the
+          // scroll zone — plain 'center' strands the first lines above an
+          // unscrollable edge (THR-925). Engines without 'safe' drop the
+          // declaration and fall back to flex-start, which scrolls correctly.
+          justifyContent: 'safe center',
           padding: '6vh 5vw 8vh 3vw',
           background: hasArt
             ? 'linear-gradient(to right, transparent 0%, rgba(10,10,15,0.55) 10%, rgba(10,10,15,0.82) 28%, rgba(10,10,15,0.93) 50%, rgba(10,10,15,0.97) 100%)'
@@ -1222,19 +1364,35 @@ export function EncounterVeil({
           />
         </div>
 
-        {/* Encounter title */}
+        {/* Encounter title + narrate control (THR-348) */}
         <div
           style={{
-            fontFamily: FONT_DISPLAY,
-            fontSize: 'var(--text-xs)',
-            letterSpacing: '0.14em',
-            textTransform: 'uppercase',
-            color: TEXT_GHOST,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
             marginBottom: 6,
             ...entranceStyle(ENTRANCE_DELAYS.title, 0.8),
           }}
         >
-          {model.header.title}
+          <div
+            style={{
+              fontFamily: FONT_DISPLAY,
+              fontSize: 'var(--text-xs)',
+              letterSpacing: '0.14em',
+              textTransform: 'uppercase',
+              color: TEXT_GHOST,
+            }}
+          >
+            {model.header.title}
+          </div>
+          <ProseTtsButton
+            text={narratableProse}
+            label="Narrate this scene"
+            context={{
+              encounterId: model.header.title,
+              threadTier,
+            }}
+          />
         </div>
 
         {/* Context strip — character (portrait + name), location + Show on map, reach chip */}
@@ -1281,6 +1439,14 @@ export function EncounterVeil({
             <StepReplayView entry={replayEntry} onReturn={() => setReplayStepIndex(null)} />
           ) : (
           <>
+          {/* THR-972 — the motive as the scene's opening line. Above the prose
+              by directive: as a chip below it, the answer to "why is this mortal
+              here" arrived after the scene it was supposed to frame. Renders
+              nothing when the phase carries no motive. */}
+          {model.nudgePhase && (
+            <NudgeMotiveIntro phase={model.nudgePhase} onOpen={onOpenMotive} />
+          )}
+
           {model.narrative.paragraphs.map((para, pIdx) => {
             const text = para.segments.map((s) => s.text).join('');
             // Drop cap on first paragraph
@@ -1396,8 +1562,12 @@ export function EncounterVeil({
               phase={model.nudgePhase}
               portraitUrl={model.header.portraitUrl}
               agentName={model.header.agentName}
+              focalActorId={model.header.focalActorId}
               onCommit={onCommitNudges ?? (() => {})}
               onOpenMotive={onOpenMotive}
+              // THR-972 — the motive intro renders above the prose block, which
+              // is a different subtree; the shell must not draw it a second time.
+              renderMotiveIntro={false}
             />
           ) : (
             model.choices.map((choice) => (

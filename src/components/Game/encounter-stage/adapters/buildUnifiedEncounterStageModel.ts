@@ -16,11 +16,16 @@ import type { NarrativeContext } from '../../../../engine/proseEnrichment';
 import type { SimulationRuntime } from '../../../../engine/simulationRuntime';
 import { stepOutcomeToOutcomeBand, stepOutcomeWord } from '../../../../data/outcome-band-content';
 import { autoLinkNarrative, collectSupportBundleEntities } from '../narrativeLinker';
+import { buildAftermathConsequences } from './buildAftermathConsequences';
 import { buildNudgePhaseModel } from './buildNudgePhaseModel';
 import { resolveStepDefinition } from '../../../../engine/unifiedActionLifecycle';
-import { getPortraitUrl } from '../../../../data/portrait-assets';
+import {
+  getAgentPortraitUrlFromProperties,
+  getPortraitUrl,
+} from '../../../../data/portrait-assets';
 import { getAttachmentGlyph } from '../../attachmentGlyphs';
 import type {
+  EncounterChoiceMemory,
   EncounterSupportActorSpec,
   EncounterSupportBinding,
 } from '../../../../types/encounter';
@@ -29,10 +34,12 @@ import type { StepProseRecord } from '../../../../types/stepProseRecord';
 import {
   isActionStepBranch,
   isStepSuccess,
+  resolveAftermathVariant,
   type ActionStep,
   type AftermathVariant,
   type BranchAwareAftermathConfig,
   type UnifiedAction,
+  type UnifiedActionOutcome,
   type UnifiedActionTemplate,
 } from '../../../../types/unifiedAction';
 import type { ThreadTier } from '../types';
@@ -133,8 +140,15 @@ function buildHeader(
   const rawSubtitle = template.description ?? template.narrativeTemplates.initiation;
 
   // Portrait for the focal agent — same resolution the aftermath actor-moments use.
+  //
+  // THR-972: this read `getPortraitUrl(narrativeArchetype)`, which covers only the
+  // generic archetype registry. An agent carrying a bespoke `portraitAssetPath`
+  // — every meeting-generated mortal, The First included — resolved to null and
+  // fell to a gradient tile, which is what made the test panel's portrait slot
+  // read as an unfilled placeholder rather than as the acting agent. The helper
+  // below is the superset the resolver itself uses: bespoke path first, archetype
+  // second, null only when the agent genuinely has neither.
   const actorNode = graph.getNode(activeAction.actorId);
-  const archetypeId = actorNode?.properties?.narrativeArchetype as string | undefined;
 
   return {
     title: template.name,
@@ -145,7 +159,7 @@ function buildHeader(
     familyLabel: agentName,
     agentName,
     focalActorId: activeAction.actorId,
-    portraitUrl: getPortraitUrl(archetypeId),
+    portraitUrl: getAgentPortraitUrlFromProperties(actorNode?.properties),
     hexCol: notification.hexCol,
     hexRow: notification.hexRow,
     reachLabel: reachLabelFor(currentStep.reach),
@@ -386,14 +400,17 @@ const KIND_GLYPHS: Record<string, string> = {
 /**
  * Resolve the authored aftermath variant from the template's aftermathConfig,
  * bypassing the engine-merged summary.changes which includes raw mechanical deltas.
+ *
+ * Delegates to the shared resolver in `types/unifiedAction` (THR-969) so this
+ * surface and the engine's aftermath assembly cannot disagree about which variant
+ * — or which outcome band — an encounter ended on.
  */
 function resolveAuthoredAftermath(
   config: BranchAwareAftermathConfig,
-  choiceHistory?: readonly { stepIndex: number; choiceId: string }[],
+  choiceHistory?: readonly EncounterChoiceMemory[],
+  outcome?: UnifiedActionOutcome,
 ): AftermathVariant {
-  const branchChoice = choiceHistory?.find(c => c.stepIndex === config.branchOnStep);
-  if (!branchChoice) return config.fallback;
-  return config.variants[branchChoice.choiceId] ?? config.fallback;
+  return resolveAftermathVariant(config, choiceHistory, outcome);
 }
 
 function buildAftermath(
@@ -408,7 +425,11 @@ function buildAftermath(
   // The engine-merged summary.changes includes raw mechanical deltas (growth,
   // reputation shifts) that we want to suppress in favor of curated content.
   const authoredVariant = template.aftermathConfig
-    ? resolveAuthoredAftermath(template.aftermathConfig, activeAction.choiceHistory)
+    ? resolveAuthoredAftermath(
+        template.aftermathConfig,
+        activeAction.choiceHistory,
+        activeAction.outcome,
+      )
     : undefined;
   const displayChanges = authoredVariant?.changes ?? summary.changes;
   const rawOverview = authoredVariant?.overview ?? summary.overview;
@@ -511,12 +532,31 @@ function buildAftermath(
 
   const actorMomentArray = Array.from(actorMoments.values());
 
+  // THR-971 — the mockup's consequence chips. Built from the same authored
+  // change set the highlights above use, plus the seeds the ending actually
+  // plants (reachable only through the reaction effects). The stage renders
+  // these instead of highlights/changes; both are kept on the model so a
+  // consumer that has not adopted chips still gets the old shape.
+  const { linkEntries: aftermathLinkEntries } = collectSupportBundleEntities(
+    graph,
+    template.supportBundle ?? [],
+    bindings,
+    activeAction.targetId,
+  );
+  const consequences = buildAftermathConsequences({
+    changes: displayChanges,
+    reactions: displayReactions,
+    enrich: (text) => enrichProse(text, ctx),
+    link: (id, text) => autoLinkNarrative(id, text, aftermathLinkEntries),
+  });
+
   return {
     title: 'Aftermath',
     overview: displayOverview,
     // Use actorMoments + highlights instead of raw changes — suppresses mechanical deltas
     actorMoments: actorMomentArray.length > 0 ? actorMomentArray : undefined,
     highlights: highlights.length > 0 ? highlights : undefined,
+    consequences: consequences.length > 0 ? consequences : undefined,
     reactionPrompt: authoredVariant?.reactionPrompt ?? summary.reactionPrompt,
     reactions: reactions && reactions.length > 0 ? reactions : undefined,
   };
@@ -575,6 +615,13 @@ export function buildUnifiedEncounterStageModel(
       // action's bindings supply who each key actually resolved to.
       supportBundle: args.template.supportBundle,
       supportBindings: activeAction.supportBindings,
+      // THR-932 — the attended stage never threaded these, so every `{frag:*}` token
+      // in step prose stripped to an empty string here while the same template
+      // rendered correctly on the resolution path (`unifiedActionResolution.ts`).
+      // That is the second half of the missing-opening bug: compiling the envelope is
+      // not enough if the surface that shows it cannot resolve the token.
+      contextFragments: args.template.contextFragments,
+      contextFragmentTemplateId: args.template.id,
     },
   );
 

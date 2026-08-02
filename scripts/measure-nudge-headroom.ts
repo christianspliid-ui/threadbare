@@ -28,7 +28,7 @@ import { createSimulationRuntime } from '../src/engine/simulationRuntime';
 import { computeCapability } from '../src/engine/domainCapability';
 import { PROBABILITY_FLOOR } from '../src/engine/resolutionService';
 import { UNIFIED_ACTION_TEMPLATES } from '../src/data/unified-action-templates';
-import { NUDGE_GOLDEN_EXEMPLAR } from '../src/data/__fixtures__/nudge-exemplar/darkhollow-vault-exemplar';
+import { NUDGE_GOLDEN_EXEMPLAR } from '../src/data/__fixtures__/nudge-exemplar/swollen-ford-exemplar';
 import { REACH_DOMAINS } from '../src/types/traits';
 import type { ReachDomain } from '../src/types/traits';
 import { NPC_CONSTANTS } from '../src/types/npc';

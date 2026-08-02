@@ -1,7 +1,7 @@
 ---
 name: vault-ingest
 description: Compile raw source material into structured wiki pages in the Obsidian vault. Reads from raw/ or user-provided sources, creates/updates wiki pages, updates Index.md, and logs the ingest. Run with /kb-ingest.
-last_validated_against: 2026-05-08
+last_validated_against: 2026-07-30
 ---
 
 # Vault Ingest — Source Compilation
@@ -33,7 +33,7 @@ The user provides one of:
 
 ### Step 2: Read Index.md
 
-Read `TheFantasyWorldSimulator/Index.md` via `obsidian_get_file_contents` to understand current vault structure and find related pages.
+Read `TheFantasyWorldSimulator/Index.md` with `Read` to understand current vault structure and find related pages.
 
 ### Step 3: Read Related Pages
 
@@ -48,7 +48,7 @@ For each significant concept in the source:
 - Add new information, cite the source
 - Add cross-references to related pages
 - Update the `updated` date in frontmatter
-- Use `obsidian_patch_content` for small edits, or `obsidian_append_content` for new sections
+- Use `Edit` for small edits and for new sections
 
 **If a wiki page should be created:**
 - Determine the correct folder (Systems/ for game systems, Cosmology/ for spheres, etc.)
@@ -64,7 +64,7 @@ For each significant concept in the source:
   ```
 - Include a blockquote summary as the first paragraph
 - Add wikilinks to related existing pages
-- Use `obsidian_append_content` to create the file
+- Use `Write` to create the file
 
 **Cross-references:**
 - Add `[[wikilinks]]` from existing pages TO the new/updated pages
@@ -74,13 +74,13 @@ For each significant concept in the source:
 ### Step 5: Update Index.md
 
 Add any new pages to the appropriate category section in Index.md.
-Use `obsidian_append_content` or `obsidian_patch_content` on `TheFantasyWorldSimulator/Index.md`.
+Use `Edit` on `TheFantasyWorldSimulator/Index.md`.
 
 Format: `- [[Page Name]] — one-line summary`
 
 ### Step 6: Log the Ingest
 
-Append to `TheFantasyWorldSimulator/log.md` following the **vault-log** skill procedure (MCP first, filesystem fallback if MCP is unreachable, loud failure if neither path is available).
+Append to `TheFantasyWorldSimulator/log.md` following the **vault-log** skill procedure (direct filesystem write via `OBSIDIAN_VAULT_PATH`, loud failure if that variable is unset).
 
 ```
 - **ingest** | Source: <source title/path> → Created: [[New Page 1]], [[New Page 2]]. Updated: [[Existing Page 1]], [[Existing Page 2]]
@@ -107,26 +107,22 @@ When ingesting game design documents:
 
 | Tool | Use For |
 |------|---------|
-| `obsidian_get_file_contents` | Read existing vault pages |
-| `obsidian_append_content` | Create new pages, add sections |
-| `obsidian_patch_content` | Edit existing content (simple targets only) |
-| `obsidian_list_files_in_dir` | Check what exists before creating |
-| `obsidian_simple_search` | Find related content across vault |
-| `Read` | Read repo files (Docs/plans/, raw source files) |
+| `Read` | Read existing vault pages, and repo files (Docs/plans/, raw source files) |
+| `Write` | Create new pages |
+| `Edit` | Edit existing content, add sections |
+| `Glob` | Check what exists before creating |
+| `Grep` | Find related content across vault |
 | `WebFetch` | Fetch URL sources |
 
-## Important: Obsidian MCP Quirks
+## Vault Access Protocol
 
-- **Always prefer `obsidian_append_content`** over `obsidian_patch_content` for reliability
-- `obsidian_patch_content` fails on headings with special characters like `*(added 2026-03-06)*`
-- Block targets containing wikilinks `[[like this]]` cause errors
-- For Index.md edits, ONLY use `obsidian_append_content`
-
-## Filesystem Fallback Protocol
-
-When any `obsidian_*` MCP call fails (unreachable, connection refused, timeout):
+> **Filesystem only (THR-654, 2026-07-21).** There is no Obsidian MCP server — `.mcp.json`
+> configures `codesight` and nothing else, so `obsidian_get_file_contents`,
+> `obsidian_append_content`, `obsidian_patch_content` and every other `obsidian_*` tool is
+> simply absent. The former MCP-first ordering silently dropped ~12 `log.md` appends over
+> 8 days (impediments #66, #71, #75, #86). Read and write vault files directly.
 
 1. **Resolve vault path** — Run `Bash: echo $OBSIDIAN_VAULT_PATH`. This must be the absolute path to the Obsidian vault root folder (the folder *containing* `TheFantasyWorldSimulator/`).
-2. **Fail loud if missing** — If `OBSIDIAN_VAULT_PATH` is empty and the MCP is also unavailable, stop immediately and report: `"Obsidian MCP is unreachable and OBSIDIAN_VAULT_PATH is not configured. Vault write failed."` Do not silently skip.
-3. **Filesystem write** — If `OBSIDIAN_VAULT_PATH` is set, construct the full path by joining: `$OBSIDIAN_VAULT_PATH/<vault-relative-path>` (e.g., `$OBSIDIAN_VAULT_PATH/TheFantasyWorldSimulator/log.md`). Use `Read` then `Edit` to append, or `Write` to create new files. Write the exact same content the MCP path would have written.
-4. **Note the fallback** — Mention in your response that the filesystem fallback was used and which files were written, so the user knows the MCP was unavailable.
+2. **Fail loud if missing** — If `OBSIDIAN_VAULT_PATH` is empty, stop immediately and report: `"OBSIDIAN_VAULT_PATH is not configured. Vault write failed."` Do not silently skip.
+3. **Read / write** — Join `$OBSIDIAN_VAULT_PATH/<vault-relative-path>` (e.g. `$OBSIDIAN_VAULT_PATH/TheFantasyWorldSimulator/log.md`). Use `Read` to read, `Edit` to append to an existing file, `Write` to create a new one.
+4. **Report what was written** — Name the vault files you touched in your response.

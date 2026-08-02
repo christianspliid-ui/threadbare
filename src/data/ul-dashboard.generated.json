@@ -22,7 +22,7 @@
       "filename": "Encounters.md",
       "title": "Encounters",
       "contentAdjacent": true,
-      "termCount": 21,
+      "termCount": 23,
       "blurb": "Content-adjacent shard. Terms covering the encounter pipeline: templates, resolution, aftermath, awareness, and causation."
     },
     {
@@ -664,7 +664,7 @@
         "Mentor Agent"
       ],
       "status": "canonical",
-      "oneLiner": "An agent at Domain Capability tier ≥ `MENTOR_MIN_TIER` (currently 6) in any Reach, on the source end of an active `mentors` graph edge.",
+      "oneLiner": "agent at Domain Capability tier ≥ `MENTOR_MIN_TIER` (6) on the source end of an active `mentors` edge; teaches via Train Apprentice",
       "body": "An agent at Domain Capability tier ≥ `MENTOR_MIN_TIER` (currently 6) in any Reach, on the source end of an active `mentors` graph edge. A mentor actively teaches an apprentice through the Train Apprentice initiative. The minimum tier ensures the mentor has genuine mastery to pass on rather than shallow familiarity.\n\nCode anchor: `src/data/mentorship-constants.ts:17`.",
       "seeAlso": [
         {
@@ -699,7 +699,7 @@
         "Apprentice Agent"
       ],
       "status": "canonical",
-      "oneLiner": "An agent at Domain Capability tier between `APPRENTICE_MIN_TIER` and `APPRENTICE_MAX_TIER` (currently 2–4) in the taught Reach, on the target end of a `mentors` edge in `offered` or `training` phase.",
+      "oneLiner": "agent at tier 2–4 in the taught Reach, on the target end of a `mentors` edge in `offered` or `training` phase",
       "body": "An agent at Domain Capability tier between `APPRENTICE_MIN_TIER` and `APPRENTICE_MAX_TIER` (currently 2–4) in the taught Reach, on the target end of a `mentors` edge in `offered` or `training` phase. The tier window ensures the apprentice has enough foundation to learn but still needs a mentor's guidance.\n\nCode anchor: `src/data/mentorship-constants.ts:21,25`.",
       "seeAlso": [
         {
@@ -735,7 +735,7 @@
         "MentorsEdgeProperties"
       ],
       "status": "canonical",
-      "oneLiner": "Directed graph edge from `mentor → apprentice` carrying the persistent mentorship relationship.",
+      "oneLiner": "directed `mentor → apprentice` edge carrying domain, progress, phase, and bondQuality; outlives the backing initiative",
       "body": "Directed graph edge from `mentor → apprentice` carrying the persistent mentorship relationship. Required properties: `domain` (ReachDomain), `progress` (0–1), `phase` (`offered` | `training` | `graduated` | `estranged`), `startedTick`, `lessonsCompleted` (0–4), `bondQuality` (−1..+1). Optional: `initiativeId`, `severedByDivineWill`. The edge persists even after the backing initiative ends — a `graduated` or `estranged` phase is the lasting record of the relationship.\n\nCode anchors: `src/types/graph.ts` `MentorsEdgeProperties`, `src/types/edgeSchema.ts`.",
       "seeAlso": [
         {
@@ -771,7 +771,7 @@
         "Bond Health"
       ],
       "status": "canonical",
-      "oneLiner": "The narrative-derived health of a mentor↔apprentice bond, clamped to `[−1, +1]`.",
+      "oneLiner": "narrative health of a mentorship bond, clamped `[−1, +1]`; failures cut deeper than successes heal; decides the terminal arc",
       "body": "The narrative-derived health of a mentor↔apprentice bond, clamped to `[−1, +1]`. Initial value `BOND_QUALITY_INITIAL` (currently 0.0). Drifts on backing-initiative checkpoints: `BOND_DRIFT_ON_SUCCESS` (currently +0.15) on pass, `BOND_DRIFT_ON_FAILURE` (currently −0.20) on fail. Failures cut deeper than successes heal, reflecting the asymmetry of trust. Decides the terminal arc at graduation: ≥ `GRADUATION_BOND_THRESHOLD` → Graduation or The Surpassing; < `FALLING_OUT_BOND_THRESHOLD` → Falling Out; between the thresholds → Quiet Parting. Force-floored to `SEVER_BOND_QUALITY_FLOOR` (currently −1.0) by the Sever the Bond divine action.\n\nCode anchor: `src/data/mentorship-constants.ts:47–55,59,63,94`.",
       "seeAlso": [
         {
@@ -812,7 +812,7 @@
         "Apprenticeship Initiative"
       ],
       "status": "canonical",
-      "oneLiner": "A multi-tick `social`-category initiative of type `initiative.train-apprentice` that wraps the mentorship relationship.",
+      "oneLiner": "the multi-tick `social` initiative wrapping a mentorship; the edge is the relationship, the initiative is the occupation",
       "body": "A multi-tick `social`-category initiative of type `initiative.train-apprentice` that wraps the mentorship relationship. The `mentors` edge is the persistent relationship; the initiative is the occupation wrapper that drives `progress` toward 1.0 over `MENTORSHIP_BASE_DURATION ± MENTORSHIP_DURATION_VARIANCE` (currently 8 ± 3) ticks, with `MENTORSHIP_CHECK_INTERVAL`-tick (currently 2) checkpoints. An apprentice straying beyond `MENTORSHIP_MAX_SEPARATION_HEXES` hexes (currently 3) fails the initiative.\n\nCode anchor: `src/data/mentorship-constants.ts:29–41`.",
       "seeAlso": [
         {
@@ -848,7 +848,7 @@
         "mentorship.the-surpassing"
       ],
       "status": "canonical",
-      "oneLiner": "Terminal mentorship arc reached when the apprentice's Domain Capability tier in the trained Reach meets or exceeds the mentor's (by `SURPASSING_TIER_DELTA`, currently 0 — equal-or-greater triggers) AND `bondQuality ≥ GRADUATION_BOND_THRESHOLD`.",
+      "oneLiner": "terminal mentorship arc: apprentice matches or passes the mentor's tier on a good bond; pride and loss in the same breath",
       "body": "Terminal mentorship arc reached when the apprentice's Domain Capability tier in the trained Reach meets or exceeds the mentor's (by `SURPASSING_TIER_DELTA`, currently 0 — equal-or-greater triggers) AND `bondQuality ≥ GRADUATION_BOND_THRESHOLD`. Bittersweet: pride and loss in the same breath. Resolved via `mentorship.graduation` encounter seed with the `mentorship_surpassing` flavor in Phase 1; promoted to its own template `mentorship.the-surpassing` in Phase 2.\n\nCode anchor: `src/engine/mentorshipOutcomes.ts:82–88`.",
       "seeAlso": [
         {
@@ -889,7 +889,7 @@
         "mentorship.the-falling-out"
       ],
       "status": "canonical",
-      "oneLiner": "Terminal mentorship arc reached when `bondQuality < FALLING_OUT_BOND_THRESHOLD` (currently −0.3) at resolution time.",
+      "oneLiner": "terminal mentorship arc below `FALLING_OUT_BOND_THRESHOLD`; seeds hostility, apprentice keeps half the Mastery gain",
       "body": "Terminal mentorship arc reached when `bondQuality < FALLING_OUT_BOND_THRESHOLD` (currently −0.3) at resolution time. Cool failure: seeds the `mentorship.the-falling-out` encounter and creates a `hostile_to` edge if sentiment is below `HOSTILE_THRESHOLD` (currently −0.6), or a negative `relates_to` edge otherwise. The apprentice retains `FALLING_OUT_TRANSFER_FRACTION` (currently 0.5) of the partial Mastery gain — the learning was real even when the relationship wasn't.\n\nCode anchor: `src/engine/mentorshipOutcomes.ts:89–90, 182–204`.",
       "seeAlso": [
         {
@@ -929,7 +929,7 @@
         "Quiet Parting Arc"
       ],
       "status": "canonical",
-      "oneLiner": "Terminal mentorship arc reached when the Train Apprentice initiative completes (`progress ≥ 1.0`) AND `bondQuality` falls between `FALLING_OUT_BOND_THRESHOLD` and `GRADUATION_BOND_THRESHOLD` — neither a proud graduation nor a dramatic rupture.",
+      "oneLiner": "terminal mentorship arc on a completed initiative with a middling bond; neither graduation nor rupture",
       "body": "Terminal mentorship arc reached when the Train Apprentice initiative completes (`progress ≥ 1.0`) AND `bondQuality` falls between `FALLING_OUT_BOND_THRESHOLD` and `GRADUATION_BOND_THRESHOLD` — neither a proud graduation nor a dramatic rupture. The default \"neither great nor terrible\" outcome: a competent professional relationship that simply ran its course. The apprentice graduates with partial Mastery gain.\n\nCode anchor: `src/engine/mentorshipOutcomes.ts:92, 218`.",
       "seeAlso": [
         {
@@ -969,7 +969,7 @@
         "Dissolution Arc"
       ],
       "status": "canonical",
-      "oneLiner": "Terminal mentorship arc reached when the backing `train-apprentice` initiative status is `failed`.",
+      "oneLiner": "terminal mentorship arc when the backing initiative fails (death, exile, separation); carries no hostility, unlike Falling Out",
       "body": "Terminal mentorship arc reached when the backing `train-apprentice` initiative status is `failed`. Bond dissolved by external cause — death, exile, or separation beyond `MENTORSHIP_MAX_SEPARATION_HEXES` tolerance — rather than a natural completion. Unlike Falling Out, Dissolution carries no hostility; both parties were willing but circumstance intervened.\n\nCode anchor: `src/engine/mentorshipOutcomes.ts:79–80, 241`.",
       "seeAlso": [
         {
@@ -1640,7 +1640,7 @@
         "Scene Context"
       ],
       "status": "canonical",
-      "oneLiner": "The world context of one action or encounter: its Target, its Cast, and its place.",
+      "oneLiner": "the world context of one action or encounter: its Target, its Cast, and its place; what makes prose name real graph entities",
       "body": "The world context of one action or encounter: its Target, its Cast, and its place. The Scene is what makes an encounter's prose refer to real graph entities rather than invented ones — target enrichment placeholders (THR-694), `{cast:*}` tokens (THR-696), aftermath scene sentinels (THR-695), and seed `inheritContext` (THR-697) are all mechanisms for carrying Scene through the pipeline. A continuation seed that inherits its source's target and cast preserves Scene across encounters, so the same people and places return.",
       "seeAlso": [
         {
@@ -1681,7 +1681,7 @@
         "Cast Bindings"
       ],
       "status": "canonical",
-      "oneLiner": "An encounter's support-bundle bindings viewed as characters: the keyed `supportBindings` on a `UnifiedAction` (`EncounterSupportBinding` — key, bound node id, actor/location kind, delivery, persistence, reuse flag).",
+      "oneLiner": "an encounter's `supportBindings` viewed as characters; prose uses `{cast:<key>}`, aftermath effects use `$cast:<key>`; declared keys always resolve",
       "body": "An encounter's support-bundle bindings viewed as characters: the keyed `supportBindings` on a `UnifiedAction` (`EncounterSupportBinding` — key, bound node id, actor/location kind, delivery, persistence, reuse flag). Prose references cast members with `{cast:<key>}` tokens; the declared-key invariant guarantees a declared key always resolves — bound keys render the live graph node's name, unbound keys fall back to the spec's `spawnName`. Aftermath effects may address cast members via `$cast:<key>` / `role:<key>` sentinels.",
       "seeAlso": [
         {
@@ -1712,7 +1712,7 @@
         "Encounter Target"
       ],
       "status": "canonical",
-      "oneLiner": "The node an action is performed on or with (`action.targetId`) — distinct from the actor performing it.",
+      "oneLiner": "the node an action is performed on (`action.targetId`), distinct from the actor; addressable in aftermath via the `$target` sentinel",
       "body": "The node an action is performed on or with (`action.targetId`) — distinct from the actor performing it. Targets are bound at action creation, enrichable in prose via target placeholders, and addressable in aftermath effects via the `$target` sentinel (kind-checked at fire time, per the reach-signature binding pattern). Seeds created with `inheritContext` copy the source action's target so follow-on encounters stay about the same entity.",
       "seeAlso": [
         {
@@ -1743,7 +1743,7 @@
         "Support Specs"
       ],
       "status": "canonical",
-      "oneLiner": "The authored, template-side declaration of an encounter's supporting entities: `EncounterSupportBundle` is a list of `EncounterSupportSpec`s (in use since 2026-04-03), each describing a keyed supporting actor or location — how it is delivered (reused from the graph or spawned), its `spawnName` fallback, and its persistence after the encounter.",
+      "oneLiner": "the template-side declaration of supporting entities, resolved into the Cast at instantiation; the bundle is the recipe, the Cast is the dish",
       "body": "The authored, template-side declaration of an encounter's supporting entities: `EncounterSupportBundle` is a list of `EncounterSupportSpec`s (in use since 2026-04-03), each describing a keyed supporting actor or location — how it is delivered (reused from the graph or spawned), its `spawnName` fallback, and its persistence after the encounter. At instantiation the bundle resolves into the action's `supportBindings` — the Cast. The bundle is the recipe; the Cast is the dish.",
       "seeAlso": [
         {
@@ -1763,6 +1763,79 @@
         }
       ],
       "sourcePath": "Docs/ubiquitous-language/Encounters.md#support-bundle",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "encounters",
+      "slug": "surface",
+      "name": "Surface",
+      "aliases": [
+        "Encounter Surface",
+        "SurfaceKey"
+      ],
+      "status": "canonical",
+      "oneLiner": "a template bound to its context axes (`SurfaceKey`); the unit novelty and recency are tracked at, not a prose variant",
+      "body": "A template **bound to its context axes** — the player-facing unit of encounter identity, and the granularity at which novelty and recency are tracked (THR-475). One template yields many surfaces: the same template at a market district, on a road, and against a shadow-court counterpart are three surfaces, and a player who has seen one has not seen the others.\n\nIdentity is a canonical string, `SurfaceKey`, of the form `templateId|axis=val|axis=val` — `templateId` always first, axis components in alphabetical axis-name order, absent axes **omitted rather than serialised as `null`**, so the same inputs always produce the same byte sequence. The participating axes are `SURFACE_KEY_AXES` in `src/engine/encounterSurface.ts`: `sublocationTypeId`, `reachPrimary`, `socialRole`. Every axis must map to a closed enum, which is what bounds surface cardinality by construction. `computeSurfaceKey` is fail-soft per NFP #4 — any malformed or missing axis degrades to a templateId-only key and it never throws.\n\nThe volume model's tunable constants live beside it (`SURFACES_PER_RUN_TARGET`, `RELEVANT_FRACTION`, `RUNS_BEFORE_REPETITION`) — read them from the file rather than quoting a figure here, since a number copied into prose is the thing that rots.\n\n**A surface is not a variant of the prose.** It is an identity: what the recency tracker counts. What *changes the words* at that identity is a `[[Context Fragment]]`, and the two use different axis vocabularies — see the warning in that entry.",
+      "seeAlso": [
+        {
+          "raw": "Context Fragment",
+          "termName": "Context Fragment",
+          "resolvedSlug": "encounters#context-fragment"
+        },
+        {
+          "raw": "EncounterTemplate",
+          "termName": "EncounterTemplate",
+          "resolvedSlug": "encounters#encountertemplate"
+        },
+        {
+          "raw": "UnifiedActionTemplate",
+          "termName": "UnifiedActionTemplate",
+          "resolvedSlug": "encounters#unifiedactiontemplate"
+        },
+        {
+          "raw": "Encounter",
+          "termName": "Encounter",
+          "resolvedSlug": "encounters#encounter"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Encounters.md#surface",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "encounters",
+      "slug": "context-fragment",
+      "name": "Context Fragment",
+      "aliases": [
+        "ContextFragmentSet",
+        "surface fragment",
+        "Fragment"
+      ],
+      "status": "canonical",
+      "oneLiner": "context-keyed authored prose spliced via `{frag:<slot>}`, `'*'` default required; **not** a Band Fragment, and its axes are not Surface-key axes",
+      "body": "A **context-keyed authored prose variant**, declared on a template as `contextFragments: ContextFragmentSet[]` and spliced into prose at render through a `{frag:<slot>}` token. Each set names a `slot` (the token it answers to), an `axis` it varies on, and a `variants` map of axis-value → authored prose.\n\nThe **declared-default invariant** is the load-bearing rule: every `variants` map MUST contain the `'*'` key (`FRAGMENT_DEFAULT_KEY`), so a declared slot always resolves and an unmatched context falls through to the default instead of rendering empty. `fragmentResolution.ts` errors when a `{frag:}` token references a slot the template does not declare, and `proseEnrichment.ts` strips malformed tokens as a residual so none can leak to the player. Authoring is capped for compactness (`MAX_FRAGMENT_SLOTS_PER_TEMPLATE`).\n\n**⚠ Fragment axes are not Surface-key axes.** `SURFACE_FRAGMENT_AXES` is `place | counterpartRole | setting` (`setting` added by THR-884's envelopes); `SURFACE_KEY_AXES` is `sublocationTypeId | reachPrimary | socialRole`. Both are called \"axes\" and they are different closed sets — treating a fragment axis as a surface axis type-checks nowhere but reads plausibly in prose and in review, which is why the two lists are named here together.\n\n**Not a `[[Band Fragment]]`.** A Context Fragment varies prose by **where and with whom** the encounter happens, chosen before the step resolves. A Band Fragment varies prose by **how the roll landed** with a given `[[Nudge]]` active, chosen after. They are authored on different objects and keyed on different things.\n\n**Prefer the two-word term.** The bare word *Fragment* is ambiguous inside this shard — `[[Band Fragment]]` predates it and is also \"an authored prose variant selected by a key\" — so `Context Fragment` is canonical and `Fragment` is recorded only as an alias. Use the bare form solely where a `contextFragments` field or a `{frag:}` token is already in view.",
+      "seeAlso": [
+        {
+          "raw": "Surface",
+          "termName": "Surface",
+          "resolvedSlug": "encounters#surface"
+        },
+        {
+          "raw": "Band Fragment",
+          "termName": "Band Fragment",
+          "resolvedSlug": "encounters#band-fragment"
+        },
+        {
+          "raw": "UnifiedActionTemplate",
+          "termName": "UnifiedActionTemplate",
+          "resolvedSlug": "encounters#unifiedactiontemplate"
+        },
+        {
+          "raw": "Scene",
+          "termName": "Scene",
+          "resolvedSlug": "encounters#scene"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Encounters.md#context-fragment",
       "contentAdjacent": true
     },
     {
@@ -1835,8 +1908,8 @@
         "bandProse entry"
       ],
       "status": "canonical",
-      "oneLiner": "prose appended when a nudge was active for that band; **not** a Rider",
-      "body": "A line of **prose** appended to a step's outcome text when a given `[[Nudge]]` was active for that band. Authored as `StepNudge.bandProse`, keyed on the six-value `StepOutcome` — *not* the five-band `EncounterOutcomeBand` and *not* `OutcomeBand` from `outcomeConsequences.ts`, either of which would type-check while being the wrong domain.\n\n**Not a `[[Rider]]`.** A fragment says the god was there when it happened. The two words are not interchangeable, and the disambiguation is load-bearing because both are authored on the same object.\n\nEvery nudge must carry at least one fragment in a failure band (`near_miss`, `failure`, `critical_failure`): the god's hand has to be traceable in failure at any size. Nudge-specific payoffs belong in fragments and never in the step's base text, which must read correctly with any subset of the hand active.",
+      "oneLiner": "prose appended when a nudge was active for that band; **not** a Rider, **not** a Context Fragment",
+      "body": "A line of **prose** appended to a step's outcome text when a given `[[Nudge]]` was active for that band. Authored as `StepNudge.bandProse`, keyed on the six-value `StepOutcome` — *not* the five-band `EncounterOutcomeBand` and *not* `OutcomeBand` from `outcomeConsequences.ts`, either of which would type-check while being the wrong domain.\n\n**Not a `[[Rider]]`.** A fragment says the god was there when it happened. The two words are not interchangeable, and the disambiguation is load-bearing because both are authored on the same object.\n\n**Not a `[[Context Fragment]]` either.** This one is keyed on **how the roll landed**, after resolution, and is authored on a `[[Nudge]]`. A Context Fragment is keyed on **where and with whom**, before resolution, and is authored on the template. Both are \"an authored prose variant selected by a key\", which is exactly why the bare word *Fragment* is not used alone for either.\n\nEvery nudge must carry at least one fragment in a failure band (`near_miss`, `failure`, `critical_failure`): the god's hand has to be traceable in failure at any size. Nudge-specific payoffs belong in fragments and never in the step's base text, which must read correctly with any subset of the hand active.",
       "seeAlso": [
         {
           "raw": "Nudge",
@@ -1847,6 +1920,11 @@
           "raw": "Rider",
           "termName": "Rider",
           "resolvedSlug": "encounters#rider"
+        },
+        {
+          "raw": "Context Fragment",
+          "termName": "Context Fragment",
+          "resolvedSlug": "encounters#context-fragment"
         }
       ],
       "sourcePath": "Docs/ubiquitous-language/Encounters.md#band-fragment",
@@ -2636,7 +2714,7 @@
         "touchWorld"
       ],
       "status": "canonical",
-      "oneLiner": "The version counter that increments on any meaningful graph mutation.",
+      "oneLiner": "version counter bumped on graph mutations; UI selectors depend on this, not object reference",
       "body": "The version counter that increments on any meaningful graph mutation. UI selectors must depend on `worldVersion`, not on the graph object reference (which never changes). Call `touchWorld()` after every mutation that should trigger a UI update. `worldVersion` bumps nearly every tick during active simulation — that is intentional.",
       "seeAlso": [
         {
@@ -2662,7 +2740,7 @@
         "touchStructure"
       ],
       "status": "canonical",
-      "oneLiner": "The version counter for structural caches — the distance matrix and encounter cache.",
+      "oneLiner": "version counter for distance matrix and encounter cache; call after structural mutations",
       "body": "The version counter for structural caches — the distance matrix and encounter cache. Call `touchStructure()` after mutations that affect structural relationships (e.g., location subtype changes, new locations). Intentionally over-invalidates for v1; split into finer-grained versions only after profiling reveals unnecessary rebuilds.",
       "seeAlso": [
         {
@@ -3307,7 +3385,7 @@
         "Canon Page"
       ],
       "status": "canonical",
-      "oneLiner": "A short (<=200 lines) navigation document at `Docs/canon/<domain>.md` used as the agent Step 0 entrypoint for authoring work in that domain.",
+      "oneLiner": "≤200-line navigation doc at `Docs/canon/<domain>.md`; agent Step 0 for authoring; points at specs, never owns definitions",
       "body": "A short (<=200 lines) navigation document at `Docs/canon/<domain>.md` used as the agent Step 0 entrypoint for authoring work in that domain. A Domain Canon Page does not own term definitions (UL owns those) or implementation rationale (plan docs own that). It lists current spec pointers, current rejected approaches, current open questions, and a `last_reviewed` field with reviewer attribution. Authoring skills load the relevant Domain Canon Page before any other reference material.",
       "seeAlso": [
         {
