@@ -68,7 +68,7 @@ Also `list_projects team:"Threadbare"`.
 - **Completed projects still open.** If every issue in a project is Done, move the project status to Done.
 - **State/priority contradictions.** Projects marked "Now" should be High or Urgent. Projects marked "Idea" or "Next" shouldn't have issues in active states. Fix or flag.
 - **Stale design work.** Issues in "In Design" or "Implementation Planning" for more than 7 days with no updates may be stuck. Flag them.
-- **Deferrals in the wrong state.** `Deferral`-labeled issues should be in Idea or Todo unless actively worked.
+- **Deferrals that are not claimable.** A `Deferral`-labeled issue sitting in Ready for Dev is correct and expected — CLAUDE.md § *Prioritization: Finish Before You Start* names Ready-for-Dev deferrals in active projects as the **first** place the executor looks for work. **Never move one out of Ready for Dev on account of the label** (this bullet said the opposite until THR-968; obeyed literally it would have emptied most of the queue in one pass, each move looking individually justified). Flag only deferrals that are genuinely unclaimable — no Done-when, or no coordination block in the description or any comment, which is what `pull-work` Step 3 bounces. Report those; do not re-state them yourself.
 - **Pipeline gaps.** If Ready for Dev and In Dev are both empty, the executor has nothing to pick up — say so prominently and identify the issue closest to Ready for Dev.
 
 ### 3. Cross-reference the legacy roadmap
