@@ -1,7 +1,7 @@
 ---
 name: retrospective
 description: Review the impediment log (Docs/impediments.md) and conduct a structured retrospective. Reads this week's drift-scan Linear issues as the first input, then analyzes patterns, proposes concrete improvements to tools, skills, CLAUDE.md, and processes. Trigger with "/retrospective" or "run a retro" or "review impediments" or "continuous improvement review".
-last_validated_against: 2026-07-27
+last_validated_against: 2026-08-03
 ---
 
 # Retrospective
@@ -164,19 +164,23 @@ If none needed, write "No tuning needed this cycle.">
 <emerging patterns that aren't yet actionable but worth tracking>
 ```
 
-### Step 7: Update the Impediment Log
+### Step 7: RETIRED — do not write a footer into `Docs/impediments.md` (THR-825)
 
-Add a horizontal rule and note at the bottom of `Docs/impediments.md`:
+**Write nothing to `Docs/impediments.md`. Go to Step 8.** The step numbering is kept so Rule 8 and the Step-8/9 cross-references stay valid.
 
-```markdown
----
-**Retrospective conducted: YYYY-MM-DD** — N impediments reviewed, N improvements implemented, N backlogged. Scan issues consumed: <IDs or "none">. Report: `Design/retros/retro-YYYY-MM-DD.md`
----
-```
+This step used to append a `---`-delimited `**Retrospective conducted: YYYY-MM-DD**` footer to the log. It is retired for two reasons, and the second is the decisive one:
+
+1. **Its guarantee is now held better elsewhere.** The footer's job was to prove a retro happened. Step 8 (THR-798) makes the *report* the proof: it is committed before anything may cite it, and Step 9's citation gate verifies every cited path. `git log --diff-filter=A -- Design/retros/` is a stronger liveness record than a line the run writes about itself — a run that skips the footer still leaves a commit, whereas a run that writes the footer and skips the commit leaves a citation pointing at nothing, which is the exact failure THR-798 exists to catch.
+
+2. **The format became structurally incompatible with the file.** `Docs/impediments.md` was prose-structured when this step was written; the log is now a markdown table appended by `impediment-reporter`. A `---` fence inside a table **terminates it**, so every row after the footer is orphaned from its header for any renderer. The step was skipped for 11 consecutive reports (2026-05-04 → 2026-07-24), and the one run that did follow it — 2026-07-31 — landed its fence between rows 366 and 353 and split the row list. The instruction could not be obeyed correctly as written, which is why "just start doing it again" was never the fix. (All five historical footers were relocated above the table; note the file carries *other* non-row interruptions of its own — paragraph-form entries and a "Resolution Candidates" section — which are pre-existing and out of scope here.)
+
+**What is deliberately NOT solved by retiring this.** The footer never answered "which impediment entries has a retro already triaged" — it was one global marker per run, not a per-entry one, so an untriaged entry and a triaged one have always been indistinguishable in this file. That is a real gap, but it is a *new feature* (a per-row triage marker), not a regression introduced here. Do not re-add a global footer believing it addresses it.
+
+**Do not re-add this step from the old instruction.** The historical footers, including the 2026-07-31 one, were relocated out of the table into `Docs/impediments.md` § *Retrospective ledger* by THR-825; that section is a historical record and is not appended to by this skill.
 
 ### Step 8: Commit the report — BEFORE anything cites it
 
-**Blocking. The run may not file a ticket, or write the Step 7 footer citation, until this step has succeeded.**
+**Blocking. The run may not file a ticket citing the report until this step has succeeded.**
 
 Writing the file is not the deliverable — *committing* it is. `Design/` was gitignored for months, and `git log --diff-filter=A -- Design/retros/` shows only three commits ever added a retro: one path reconciliation, one attended trial, and one bulk rescue literally titled *"back up 10 retro write-ups stranded on home machine"*. Every report before 2026-07-24 survived by luck, not by process.
 
@@ -184,10 +188,10 @@ Writing the file is not the deliverable — *committing* it is. `Design/` was gi
 
 ```bash
 git switch -c "docs/retro-$(date +%Y-%m-%d)"
-git add Design/retros/retro-YYYY-MM-DD.md Docs/impediments.md
+git add Design/retros/retro-YYYY-MM-DD.md
 git commit -m "docs(retro): weekly retrospective YYYY-MM-DD"
 git push -u origin HEAD
-gh pr create --title "docs(retro): weekly retrospective YYYY-MM-DD" --body "Weekly retrospective report + impediment-log footer."
+gh pr create --title "docs(retro): weekly retrospective YYYY-MM-DD" --body "Weekly retrospective report."
 gh pr merge --auto --merge
 ```
 
