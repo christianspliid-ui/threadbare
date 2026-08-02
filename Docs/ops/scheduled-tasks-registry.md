@@ -42,7 +42,9 @@ It carries no cron and fires only when invoked by hand, so it never contends for
 
 ## Substantive-change gate — a lane may only move `main` when it has something to say (THR-920)
 
-Under strict branch protection every merge invalidates every other open PR, which then re-runs CI (~18 min for a code PR, ~1 min for a docs one). The drain ceiling is therefore **one PR per advance of `main`'s tip**, and what governs throughput is how often the tip moves. Measured 2026-07-31 over the last 32 merges: **17 (53%) came from the two hourly lanes reporting on their own activity** — `keep-work-flowing-cc` 10, `tb-orchestrator` 7, three of those titled "no promotions". A finished code change (PR #1175) sat green and unmergeable for over three hours behind that traffic.
+**Superseded 2026-08-02 (THR-983): strict mode was dropped, so a merge no longer invalidates any other open PR.** There is no drain ceiling tied to tip movement, and a green PR merges from behind. The measurement below is retained as the historical record of why lane chatter was worth curbing, and the *self-reporting* concern still stands on its own — a lane that merges a report about having done nothing is noise regardless of what it costs other PRs.
+
+> Historical (pre-2026-08-02): under strict protection every merge invalidated every other open PR, which then re-ran CI (~18 min for a code PR, ~1 min for a docs one), making the ceiling **one PR per advance of `main`'s tip**. Measured 2026-07-31 over the last 32 merges: **17 (53%) came from the two hourly lanes reporting on their own activity** — `keep-work-flowing-cc` 10, `tb-orchestrator` 7, three of those titled "no promotions". A finished code change (PR #1175) sat green and unmergeable for over three hours behind that traffic.
 
 Both lanes already carried a prose rule against it and neither could enforce it: the briefing's body genuinely differs every hour (live counts, PR numbers, ages), and the orchestrator writes a *new file per run*, so "no-change run" was unreachable by construction. **The gate now lives in `scripts/check-substantive-change.ts`**, invoked as `npm run check:substantive`:
 

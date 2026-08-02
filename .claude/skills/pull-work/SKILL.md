@@ -149,25 +149,17 @@ npm run check:actions --silent -- --json
 
 ### Step 0.8 — Open-PR reconciliation sweep (THR-702, classification fixed THR-897, membership fixed THR-930)
 
-Auto-merge does **not** update a stale branch: under strict branch protection, an armed PR whose base moves sits at `mergeStateStatus: BEHIND` forever, green and silent (THR-702 found 9 such PRs, oldest 19 days). This sweep is the recurring surface that catches them.
+This sweep is the recurring surface that catches open PRs which cannot merge on their own. **Its original reason is gone: strict mode was dropped on 2026-08-02 (THR-983), so `BEHIND` no longer blocks anything** — a green PR merges regardless of tip movement, and the livelock THR-702 found (9 armed PRs sitting `BEHIND` forever, oldest 19 days) can no longer occur. The sweep survives for the failure it did *not* originally target: **`DIRTY` — a real merge conflict**, which no protection setting fixes.
 
 **An open PR can be stuck in more than one way, and only one of them is yours to fix.** Until THR-897 this step matched on `BEHIND` alone. A PR at `DIRTY` — a real merge conflict — is not `BEHIND`, so it was skipped, and `update-branch` would not have fixed it anyway. Measured 2026-07-31: **3 of 4 armed PRs were `DIRTY`**, one of them armed 19 hours earlier carrying THR-883's authoring-contract rewrite (the deliverable that unblocked 11 content tickets), while three consecutive sweeps each reported success. The old step 4 did name `DIRTY` in prose — but with no mechanism and a log line that mentioned only `BEHIND`, so in practice every run stepped past it.
 
 **The sweep covers every open non-draft PR, armed or not (THR-930).** THR-897 fixed classification *within* the armed set and left the set itself as a filter, so an unarmed conflicted PR was not misclassified — it was **absent from the input**, and the probe reported a clean bill while being correct against its own contract. Measured 2026-08-02: the repo's only open PR was #1114 (`DIRTY`, unarmed, 77 hours old, holding THR-860's In-Dev slot the whole time) and the probe answered `counts.conflicted: 0` with the summary *"No PRs are waiting to merge."* Arming says *how* a PR intends to merge; it says nothing about whether it is stuck. Drafts stay excluded — that is the one case where "not trying to merge yet" is the author's explicit signal.
 
-Two consequences for how you read the output. **`updateCandidate` is still armed-only** — `gh pr update-branch` on an unarmed PR refreshes a branch nothing is waiting to merge, so the probe will never name one, and an unarmed `BEHIND` PR is reported without being proposed. And **unarmed conflicts run slower age tiers** (`UNARMED_DIRTY_ESCALATE_HOURS` 6, `UNARMED_DIRTY_ABANDONED_HOURS` 24, against 90 minutes / 12 hours for armed), because an unarmed PR has made no promise to merge *now* — which justifies patience, not silence.
+One consequence for how you read the output: **unarmed conflicts run slower age tiers** (`UNARMED_DIRTY_ESCALATE_HOURS` 6, `UNARMED_DIRTY_ABANDONED_HOURS` 24, against 90 minutes / 12 hours for armed), because an unarmed PR has made no promise to merge *now* — which justifies patience, not silence.
 
-**Constant:** `ARMED_SWEEP_MAX_UPDATES = 1` — update at most one PR per run. Updating several at once is a losing race: each merge re-stales the others and re-triggers their CI (O(N²) runs).
+**`updateCandidate` and the `BEHIND` drain arm are vestigial (THR-983).** With strict mode gone a `BEHIND` PR merges on green by itself, so `gh pr update-branch` rescues nothing. The probe may still name a candidate; running it is harmless but pointless, and **a `BEHIND` PR is no longer a finding**. `ARMED_SWEEP_MAX_UPDATES = 1` survives only as a bound on that vestigial path. Do not build new logic on either.
 
-**This whole step is a stopgap with a known ceiling, and raising the constant cannot lift it (THR-735, decided 2026-08-01).** The ceiling is **one merge per advance of `main`'s tip**, not N per hour: measured 2026-07-31, PRs `#1166`, `#1175`, `#1176` all sat `BEHIND` at the *same* base, and the instant one merged, strict mode returned the others to `BEHIND`. So at N updates per run, N−1 are invalidated by construction — the defect is serialization, not throughput. The durable fix is **GitHub's merge queue** (THR-946), which builds each merge group on latest `main` and tests that exact tree, so `BEHIND` stops being a state anyone waits in; the decision record and the rejected alternatives are in `Docs/plans/2026-07-20-git-cicd-clean-delivery.md` § 9c. Until the queue is live this sweep remains the mechanism — run it, but do not spend a session trying to tune it, and do not re-litigate the remedy.
-
-**Status as of 2026-08-02: the workflow half has landed, the queue is not yet on.** `ci.yml` now reports both required checks on `merge_group` events, so the click is unblocked — but until Christian makes it (tracked in `Design/user-actions.md` on the `ops` branch), no merge groups exist, nothing about this sweep changes, and `BEHIND` is still terminal. **Do not read the trigger's presence as the queue being live.** The cheap check, if a run needs to know:
-
-```bash
-gh api repos/christianspliid-ui/threadbare/rulesets --jq '[.[] | select(.name)] | length' >/dev/null && gh api graphql -f query='{repository(owner:"christianspliid-ui",name:"threadbare"){mergeQueue(branch:"main"){id}}}' --jq '.data.repository.mergeQueue'
-```
-
-`null` means *not configured* (today's state); an object means the queue is live and the `BEHIND` half of this sweep has become vestigial. The `DIRTY`/conflicted half stays load-bearing under a queue either way — a conflict is still a conflict.
+**The livelock this step was built for cannot recur, and its remedy is settled — do not re-litigate it (THR-735 → THR-983).** The old ceiling was **one merge per advance of `main`'s tip**: measured 2026-07-31, PRs `#1166`, `#1175`, `#1176` all sat `BEHIND` at the same base, and the instant one merged, strict mode returned the others to `BEHIND`. THR-946 pursued **GitHub's merge queue** as the structural fix; the queue proved **unavailable on a personal-account repo**, so THR-735's fallback was taken instead and strict mode was dropped outright on 2026-08-02. That removed the livelock at the source. `ci.yml` retains a `merge_group` trigger which is inert — no merge groups are ever built. **There is no queue to probe for and no queue coming**; a liveness probe here would be dead code, and the decision record is `Docs/plans/2026-07-20-git-cicd-clean-delivery.md` § 9c.
 
 Run the probe — it does the listing, the `UNKNOWN` re-query, and the classification in one call:
 
@@ -177,8 +169,9 @@ npm run check:armed-prs --silent -- --json
 
 One line of JSON: `{ verdict, summary, needsChristian, needsSession, updateCandidate, prs, counts, armedCount, unarmedCount }`. Each `prs[]` entry carries `armed`, `ageMinutes`, `conflictFiles`, `escalated`, and `abandoned`. Act on it:
 
-1. **`updateCandidate` is non-null** → `gh pr update-branch <updateCandidate>` and stop (respect `ARMED_SWEEP_MAX_UPDATES`). This is the oldest **armed** `BEHIND` PR. CI re-runs on the updated branch and auto-merge fires on green — no polling.
+1. **`updateCandidate` is non-null** → **ignore it and continue** (THR-983). It names the oldest armed `BEHIND` PR, which since 2026-08-02 merges on green without help. Running `gh pr update-branch` is a harmless no-op that costs a CI re-run; do not.
 2. **`verdict: "conflicted"` or `"abandoned"`** → those PRs cannot merge and no sweep action will change that. Each `prs[]` entry carries `conflictFiles`, already computed. If a conflicted PR is **yours**, route to "Closeout — resolving a conflicted closeout-docs PR" below and fix it now. If it is not yours, **report it in the run log with its number and conflicting files** — do not silently continue.
+   - **First check whether it is *held* rather than stuck (THR-985, impediment #411).** `DIRTY` + unarmed + old is the signature of a dead PR *and* of one deliberately parked. `gh pr view` cannot tell them apart and `autoMergeRequest: null` never means "should be armed". Read the linked Linear issue's comments and `blocks` relations before acting: a PR held behind a live blocker is parked, and resolving its conflict is fine while **re-arming it is not**. PR #1114 burned three sessions this way.
 3. **`needsSession: true`** → the conflict has outlived at least one sweep interval (or, for an unarmed PR, `UNARMED_DIRTY_ESCALATE_HOURS`). Name it in the run report so the next pickup sees it even if this run ends on an unrelated ticket.
 4. **`verdict: "healthy"` / `"drainable"` / `"unknown"`** → nothing conflicted; continue to Step 1.
 
@@ -678,19 +671,13 @@ gh pr merge --auto --merge
 
 The gate is unchanged: branch protection stays on, the required check still has to pass, and a red check simply means the PR never merges. Auto-merge removes the *waiting*, not the *gate* — this is the H6 verdict from `Docs/plans/2026-07-20-git-cicd-clean-delivery.md`, which kept the PR gate precisely because it caught a phantom 3,379-line reversal before it reached `main`.
 
-**The command does not change when the merge queue goes live (THR-946), but what it does changes.** With a queue configured on `main`, `gh pr merge --auto --merge` enqueues the PR instead of merging it directly: GitHub builds a merge group on top of latest `main`, runs the required checks against *that* tree, and lands the group in order. Three consequences for a closing session, all of which make the closeout shorter rather than longer:
-
-- **`BEHIND` stops occurring**, so the `gh pr view <N> --json mergeStateStatus` freshness check below becomes a formality and `gh pr update-branch` should never be needed. Keep reading the field — `DIRTY` is unaffected and still yours to resolve.
-- **The rollup you read after arming is the PR's own**, produced by the `pull_request` run, and is unchanged. The merge group runs its own checks later, with no session present. `SKIPPED` on the required check means the same thing it does today and is refused the same way.
-- **`Fixes THR-XXX` must still be in the PR body**, not only the commit — a queue merge produces a merge commit the same way `--merge` does, so impediment #140 applies unchanged.
-
-Until Christian enables the queue none of this is active; the workflow side landed 2026-08-02 and is inert without the settings click. See Step 0.8 for the one-line liveness probe.
+**No merge queue exists and none is coming (THR-983).** THR-946 pursued one as the fix for the `BEHIND` livelock; it is **unavailable on a personal-account repo**, so THR-735's fallback shipped instead — **strict mode was dropped on 2026-08-02**. `gh pr merge --auto --merge` merges directly on green, as it always did, and now succeeds regardless of whether the branch is up to date. **`BEHIND` no longer occurs as a blocking state**, so `gh pr update-branch` is not part of any closeout. `DIRTY` is unaffected and still yours to resolve.
 
 `Fixes THR-XXX` must still appear in **both** the commit body and the PR body — on a non-squash merge the merge commit drops the commit body and Linear's auto-close misses it (impediment #140). `--merge` (not `--squash`) keeps the feature commit's body in history.
 
 **The keyword must stand ALONE on its own line (THR-738).** `linear-autoclose.yml` is line-anchored: it closes only when a full line reads exactly `Fixes|Closes|Resolves THR-XXX`. The keyword inside a prose sentence (`Fixes THR-74 still rides the final PR`), a markdown bullet, or the PR *title* does **not** close. **Corollary for checkpoint and any non-closing comment:** never write `Fixes/Closes/Resolves` in front of an issue id you are *not* closing — reference it as a bare `THR-XXX` token. The phantom-Done recurrences (THR-74 ×2 on 2026-07-24) were prose that quoted the keyword to *document* the discipline. Vectors 2/3 (branch name, bare title token) come from Linear's native integration and are killed by the Christian-owned settings change in `Design/user-actions.md`, not by this workflow.
 
-**After arming, run one freshness check — `gh pr view <N> --json mergeStateStatus`.** Branch freshness at session start does not imply freshness at arm time: THR-696's PR went `BEHIND` seconds after opening because main had moved during the session. If it reads `BEHIND`, run `gh pr update-branch <N>` once and re-arm if needed; if `UNKNOWN`, re-query 2–3 times a few seconds apart (GitHub computes mergeability lazily — the first read only schedules it). This is one query, not a poll loop; a PR missed here is caught by the Step 0.8 sweep next hour.
+**After arming, run one freshness check — `gh pr view <N> --json mergeStateStatus`.** It is looking for **`DIRTY`** only: a conflict that arrived while the session ran, which auto-merge cannot clear and which is yours to resolve now (see the conflicted-PR closeout below). **`BEHIND` is no longer actionable** since strict mode was dropped (THR-983) — a green PR merges from behind, so do not run `gh pr update-branch`. If it reads `UNKNOWN`, re-query 2–3 times a few seconds apart (GitHub computes mergeability lazily — the first read only schedules it). This is one query, not a poll loop; a PR missed here is caught by the Step 0.8 sweep next hour.
 
 **Read the check rollup once after arming, and never accept `SKIPPED` on the required check (THR-768).** This is the single step that sits between finished work and an unguarded `main`, and it is one `gh` call:
 
@@ -745,7 +732,7 @@ Both commands are non-fatal: if the worktree directory is still in use (e.g., we
 
 Roughly a dozen Ready-for-Dev tickets at any time are docs/process-only: CLAUDE.md corrections, UL proposals, wiring-guide updates, index cleanups, skill-doc fixes. Under one-issue-per-run each of those consumed a whole hourly slot, so source-code tickets queued behind paperwork. The drain lets a single run clear several of them **after** its primary ticket, without adding a lane.
 
-**Why no separate docs lane** (Option A, deferred not rejected): under strict branch protection every merge advances `main`'s tip and re-stales in-flight code PRs, forcing an ~18-min CI re-run each time (THR-920; PR #1175 sat green-but-unmergeable 3+ hours behind hourly-lane traffic). A second scheduled lane buys throughput with tip churn plus ~24–48 billed runs/day.
+**Why no separate docs lane** (Option A, deferred not rejected): a second scheduled lane costs ~24–48 billed runs/day for throughput the drain already provides inside an existing run. (Its original and stronger argument — that every merge re-staled in-flight code PRs under strict protection, THR-920 — **no longer applies**: strict mode was dropped 2026-08-02, THR-983. The billing argument stands on its own.)
 
 **Constants:**
 
@@ -761,18 +748,15 @@ Run it in either of two places:
 - **After the primary ticket's PR is armed** and the worktree cleaned (the normal case), or
 - **Immediately**, when Step 1 found no claimable code ticket — a docs drain is the run's whole output rather than an "exit clean, no ready work".
 
-### Merge-yield gate — check before draining, not after (THR-920)
+### Merge-yield gate — RETIRED (THR-920 → THR-983)
 
-**Skip the drain entirely when any open PR whose diff contains code is armed and waiting on checks.** Landing a docs merge in front of it re-stales it and costs an ~18-min gate re-run — more than the drain saves. Step 0.8's probe already listed every open PR with its `armed` flag; classify each one's diff and stop if any is code:
+**There is no yield gate. Drain whenever there are `docs-only` tickets.**
 
-```bash
-for n in $(gh pr list --state open --json number --jq '.[].number'); do
-  gh pr diff "$n" --name-only | grep -qvE '(\.md$|^Docs/|^Design/|^\.planning/|^src/data/ul-dashboard\.generated\.json$|^public/system-interface-map-reference\.html$)' \
-    && echo "code PR #$n — yield"
-done
-```
+The gate existed for one reason: under strict branch protection, landing a docs merge in front of an armed code PR knocked it `BEHIND` and cost an ~18-min gate re-run (THR-920; PR #1175 sat green-but-unmergeable 3+ hours). **Strict mode was dropped on 2026-08-02** (THR-983), so advancing `main`'s tip no longer stales anything — a green PR merges from behind. The cost the gate was avoiding is now zero, and a gate that guards against nothing is pure tax.
 
-Any output ⇒ log the yield line and skip the drain; there is always a next hour. No output ⇒ drain freely: docs PRs re-stale only each other, and a docs PR's required check records `SKIPPED` by design, so re-staling one costs seconds rather than the full code gate.
+Retiring it also removes, at the source, the contradiction logged three times as impediments **#393**, **#406**, and **#411** and ticketed as **THR-953**: the gate's stated rationale named PRs *"armed and waiting on checks"* while its mechanism classified the diff of **every** open PR. Under the literal mechanism a single permanently-conflicted or deliberately-held code PR — #1114 has been exactly that since 2026-07-30 — suppressed the drain **forever**, since such a PR never leaves the open list. Three consecutive sessions each re-derived the same override by hand and recorded it. THR-953 asked for a durable fix; deleting the gate is that fix, and the ticket should be closed as resolved-by-removal rather than implemented.
+
+Drain freely. A docs PR's required check records `SKIPPED` by design and merges in ~30–60 seconds.
 
 ### Per-ticket loop
 
@@ -800,7 +784,6 @@ Note the two trailing exact paths: `src/data/ul-dashboard.generated.json` and `p
 **Trace lines** (NFP #2 — exactly one of the first three fires, then one per ticket):
 
 ```
-[pull-work] drain: yielding — code PR #<N> armed and waiting. Skipped.
 [pull-work] drain: no docs-only tickets in Ready for Dev. Nothing to drain.
 [pull-work] drain: <N> docs-only candidates, draining up to 3.
 [pull-work] drain: THR-XXX shipped (PR #<N>, docs track: 3b/5/impediment-ids).
