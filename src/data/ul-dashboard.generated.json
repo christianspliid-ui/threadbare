@@ -22,7 +22,7 @@
       "filename": "Encounters.md",
       "title": "Encounters",
       "contentAdjacent": true,
-      "termCount": 21,
+      "termCount": 23,
       "blurb": "Content-adjacent shard. Terms covering the encounter pipeline: templates, resolution, aftermath, awareness, and causation."
     },
     {
@@ -1767,6 +1767,79 @@
     },
     {
       "shardId": "encounters",
+      "slug": "surface",
+      "name": "Surface",
+      "aliases": [
+        "Encounter Surface",
+        "SurfaceKey"
+      ],
+      "status": "canonical",
+      "oneLiner": "a template bound to its context axes (`SurfaceKey`); the unit novelty and recency are tracked at, not a prose variant",
+      "body": "A template **bound to its context axes** — the player-facing unit of encounter identity, and the granularity at which novelty and recency are tracked (THR-475). One template yields many surfaces: the same template at a market district, on a road, and against a shadow-court counterpart are three surfaces, and a player who has seen one has not seen the others.\n\nIdentity is a canonical string, `SurfaceKey`, of the form `templateId|axis=val|axis=val` — `templateId` always first, axis components in alphabetical axis-name order, absent axes **omitted rather than serialised as `null`**, so the same inputs always produce the same byte sequence. The participating axes are `SURFACE_KEY_AXES` in `src/engine/encounterSurface.ts`: `sublocationTypeId`, `reachPrimary`, `socialRole`. Every axis must map to a closed enum, which is what bounds surface cardinality by construction. `computeSurfaceKey` is fail-soft per NFP #4 — any malformed or missing axis degrades to a templateId-only key and it never throws.\n\nThe volume model's tunable constants live beside it (`SURFACES_PER_RUN_TARGET`, `RELEVANT_FRACTION`, `RUNS_BEFORE_REPETITION`) — read them from the file rather than quoting a figure here, since a number copied into prose is the thing that rots.\n\n**A surface is not a variant of the prose.** It is an identity: what the recency tracker counts. What *changes the words* at that identity is a `[[Context Fragment]]`, and the two use different axis vocabularies — see the warning in that entry.",
+      "seeAlso": [
+        {
+          "raw": "Context Fragment",
+          "termName": "Context Fragment",
+          "resolvedSlug": "encounters#context-fragment"
+        },
+        {
+          "raw": "EncounterTemplate",
+          "termName": "EncounterTemplate",
+          "resolvedSlug": "encounters#encountertemplate"
+        },
+        {
+          "raw": "UnifiedActionTemplate",
+          "termName": "UnifiedActionTemplate",
+          "resolvedSlug": "encounters#unifiedactiontemplate"
+        },
+        {
+          "raw": "Encounter",
+          "termName": "Encounter",
+          "resolvedSlug": "encounters#encounter"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Encounters.md#surface",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "encounters",
+      "slug": "context-fragment",
+      "name": "Context Fragment",
+      "aliases": [
+        "ContextFragmentSet",
+        "surface fragment",
+        "Fragment"
+      ],
+      "status": "canonical",
+      "oneLiner": "context-keyed authored prose spliced via `{frag:<slot>}`, `'*'` default required; **not** a Band Fragment, and its axes are not Surface-key axes",
+      "body": "A **context-keyed authored prose variant**, declared on a template as `contextFragments: ContextFragmentSet[]` and spliced into prose at render through a `{frag:<slot>}` token. Each set names a `slot` (the token it answers to), an `axis` it varies on, and a `variants` map of axis-value → authored prose.\n\nThe **declared-default invariant** is the load-bearing rule: every `variants` map MUST contain the `'*'` key (`FRAGMENT_DEFAULT_KEY`), so a declared slot always resolves and an unmatched context falls through to the default instead of rendering empty. `fragmentResolution.ts` errors when a `{frag:}` token references a slot the template does not declare, and `proseEnrichment.ts` strips malformed tokens as a residual so none can leak to the player. Authoring is capped for compactness (`MAX_FRAGMENT_SLOTS_PER_TEMPLATE`).\n\n**⚠ Fragment axes are not Surface-key axes.** `SURFACE_FRAGMENT_AXES` is `place | counterpartRole | setting` (`setting` added by THR-884's envelopes); `SURFACE_KEY_AXES` is `sublocationTypeId | reachPrimary | socialRole`. Both are called \"axes\" and they are different closed sets — treating a fragment axis as a surface axis type-checks nowhere but reads plausibly in prose and in review, which is why the two lists are named here together.\n\n**Not a `[[Band Fragment]]`.** A Context Fragment varies prose by **where and with whom** the encounter happens, chosen before the step resolves. A Band Fragment varies prose by **how the roll landed** with a given `[[Nudge]]` active, chosen after. They are authored on different objects and keyed on different things.\n\n**Prefer the two-word term.** The bare word *Fragment* is ambiguous inside this shard — `[[Band Fragment]]` predates it and is also \"an authored prose variant selected by a key\" — so `Context Fragment` is canonical and `Fragment` is recorded only as an alias. Use the bare form solely where a `contextFragments` field or a `{frag:}` token is already in view.",
+      "seeAlso": [
+        {
+          "raw": "Surface",
+          "termName": "Surface",
+          "resolvedSlug": "encounters#surface"
+        },
+        {
+          "raw": "Band Fragment",
+          "termName": "Band Fragment",
+          "resolvedSlug": "encounters#band-fragment"
+        },
+        {
+          "raw": "UnifiedActionTemplate",
+          "termName": "UnifiedActionTemplate",
+          "resolvedSlug": "encounters#unifiedactiontemplate"
+        },
+        {
+          "raw": "Scene",
+          "termName": "Scene",
+          "resolvedSlug": "encounters#scene"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Encounters.md#context-fragment",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "encounters",
       "slug": "nudge",
       "name": "Nudge",
       "aliases": [
@@ -1835,8 +1908,8 @@
         "bandProse entry"
       ],
       "status": "canonical",
-      "oneLiner": "prose appended when a nudge was active for that band; **not** a Rider",
-      "body": "A line of **prose** appended to a step's outcome text when a given `[[Nudge]]` was active for that band. Authored as `StepNudge.bandProse`, keyed on the six-value `StepOutcome` — *not* the five-band `EncounterOutcomeBand` and *not* `OutcomeBand` from `outcomeConsequences.ts`, either of which would type-check while being the wrong domain.\n\n**Not a `[[Rider]]`.** A fragment says the god was there when it happened. The two words are not interchangeable, and the disambiguation is load-bearing because both are authored on the same object.\n\nEvery nudge must carry at least one fragment in a failure band (`near_miss`, `failure`, `critical_failure`): the god's hand has to be traceable in failure at any size. Nudge-specific payoffs belong in fragments and never in the step's base text, which must read correctly with any subset of the hand active.",
+      "oneLiner": "prose appended when a nudge was active for that band; **not** a Rider, **not** a Context Fragment",
+      "body": "A line of **prose** appended to a step's outcome text when a given `[[Nudge]]` was active for that band. Authored as `StepNudge.bandProse`, keyed on the six-value `StepOutcome` — *not* the five-band `EncounterOutcomeBand` and *not* `OutcomeBand` from `outcomeConsequences.ts`, either of which would type-check while being the wrong domain.\n\n**Not a `[[Rider]]`.** A fragment says the god was there when it happened. The two words are not interchangeable, and the disambiguation is load-bearing because both are authored on the same object.\n\n**Not a `[[Context Fragment]]` either.** This one is keyed on **how the roll landed**, after resolution, and is authored on a `[[Nudge]]`. A Context Fragment is keyed on **where and with whom**, before resolution, and is authored on the template. Both are \"an authored prose variant selected by a key\", which is exactly why the bare word *Fragment* is not used alone for either.\n\nEvery nudge must carry at least one fragment in a failure band (`near_miss`, `failure`, `critical_failure`): the god's hand has to be traceable in failure at any size. Nudge-specific payoffs belong in fragments and never in the step's base text, which must read correctly with any subset of the hand active.",
       "seeAlso": [
         {
           "raw": "Nudge",
@@ -1847,6 +1920,11 @@
           "raw": "Rider",
           "termName": "Rider",
           "resolvedSlug": "encounters#rider"
+        },
+        {
+          "raw": "Context Fragment",
+          "termName": "Context Fragment",
+          "resolvedSlug": "encounters#context-fragment"
         }
       ],
       "sourcePath": "Docs/ubiquitous-language/Encounters.md#band-fragment",
