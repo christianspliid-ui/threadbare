@@ -35,6 +35,7 @@
     "check:authoring-brief": "esbuild scripts/check-authoring-brief.ts --bundle --platform=node --format=esm --outfile=.cache/check-authoring-brief.mjs --external:crypto --external:fs --external:path --external:process --external:url && node .cache/check-authoring-brief.mjs",
     "check:canon-staleness": "node --experimental-strip-types scripts/check-canon-staleness.ts",
     "check:deploy": "node --experimental-strip-types scripts/check-deploy-health.ts",
+    "check:workflows": "node --experimental-strip-types scripts/check-workflow-health.ts",
     "check:actions": "node --experimental-strip-types scripts/check-actions-health.ts",
     "check:armed-prs": "node --experimental-strip-types scripts/check-armed-prs.ts",
     "check:task-heartbeat": "node --experimental-strip-types scripts/check-scheduled-task-heartbeat.ts",
