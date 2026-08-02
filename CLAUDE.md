@@ -22,7 +22,15 @@ This is the reference card. The full protocol — and why each rule is non-negot
 
 ### Prioritization: Finish Before You Start
 
-Choose work in this order — finish projects before starting new ones:
+**Rule 0 — a flow impediment with demonstrated cost outranks everything below, including Urgent feature work** (director decision, 2026-08-02). Rules 1–3 order *feature* delivery; Rule 0 sits above all of them and is checked first.
+
+**The membership predicate** (THR-688 rule A — a predicate, never a snapshot list): a ticket qualifies when its body or comments record that the delivery machine **already lost work**. Qualifying evidence is a lane that stopped firing, a PR that could never merge, a gate that reported success while broken, a ticket that was silently dropped or re-done, or measured rework. **The evidence must be in the ticket and quotable** — a count, a duration, a commit SHA, a log line. If you cannot point at the sentence recording the loss, the ticket does not qualify and sorts at rule 3.
+
+**Explicitly not qualifying**, and this half is what keeps the rule from eating the roadmap: dead-code pruning, doc drift, comment and naming corrections, test tidying, and hardening against a failure that has not happened yet. Prevention is valuable and still sorts by priority — it just does not jump the queue. `Infrastructure`, `Improvement` and project `Continuous Improvement` are **not** qualifying signals; the label says what a ticket is about, not what it has cost.
+
+**Why demonstrated loss rather than category.** This board mints infrastructure tickets faster than it burns them, because the lanes inspect themselves and always find more. A rule keyed on category would be a permanent feature freeze that nobody chose. A rule keyed on demonstrated loss is self-limiting — the qualifying set only grows when something actually breaks, and shrinks as fixes land. The failure it corrects is real and has precedent: as of 2026-08-02 every High-priority Ready-for-Dev item was feature work while every flow defect sat at Low or No priority, including one that hid 88 consecutive workflow failures for six weeks (THR-834). The same inversion stalled the test-suite repair (TB-120) across three consecutive retros in April, for the reason recorded there — "Finish Before You Start" covered projects but not infrastructure. Rule 0 is the missing clause.
+
+Then, choose work in this order — finish projects before starting new ones:
 
 1. **Deferrals in active projects** — `Deferral`-labeled issues belonging to a project with active work (`list_issues label:"Deferral" state:"Ready for Dev"`).
 2. **Remaining issues in active projects** — clear a project's Ready-for-Dev backlog before pulling from a different project.

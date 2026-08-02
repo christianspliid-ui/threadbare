@@ -98,7 +98,9 @@ get_issue(id)          # confirm the state actually stuck
 
 `save_issue` returns 200 without always persisting (impediment #48). **Re-query after every write.** On mismatch: log it, leave the issue alone, let the next run reconcile. Never assume the write landed.
 
-**Do not set priority.** The existing priority field already sequences the executor correctly; a second ordering mechanism would drift from it (settled scope trap — do not re-litigate). Promotion changes state only.
+**Do not set priority.** A second ordering mechanism would drift from the existing field (settled scope trap — do not re-litigate). Promotion changes state only.
+
+**Corrected 2026-08-02:** this rule used to justify itself with *"the existing priority field already sequences the executor correctly."* That premise is now false — CLAUDE.md § Prioritization **Rule 0** puts flow impediments with demonstrated cost ahead of the priority field entirely, precisely because the lanes that find them file them `Low` or `No priority`. The *instruction* is unchanged and still right (do not set priority; Rule 0 is applied at pickup, by the executor, from evidence in the ticket). Only the reasoning needed repair — left standing, it would read as an argument against Rule 0.
 
 **Do not set assignee.** Promoted issues enter the queue `assignee:null`, which is what the executor's pickup filter requires.
 
