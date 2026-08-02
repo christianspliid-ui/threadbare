@@ -108,7 +108,7 @@ Three traps that will recur: a **test-only helper** (`src/testing/contentInvaria
 
 ## Report
 
-**A no-op run writes no file at all (THR-920).** Promoted nothing, filed nothing, resolved no blocker, no *new* T3 finding, nothing for Christian → write no report and open no PR. Your session output is already a complete record of a run that did nothing, and every advance of `main` costs every other open PR a full ~18-minute CI re-run under strict branch protection. Declines are **not** substantive: "we looked and it stayed blocked" is the healthy steady state. Measured 2026-07-31 — this lane merged on 7 of the last 32 advances of `main`, three of them titled "no promotions".
+**A no-op run writes no file at all (THR-920).** Promoted nothing, filed nothing, resolved no blocker, no *new* T3 finding, nothing for Christian → write no report and open no PR. Your session output is already a complete record of a run that did nothing. (The original cost argument — that every advance of `main` forced a ~18-minute CI re-run on every other open PR under strict protection — **died with strict mode on 2026-08-02**, THR-983. The rule stands on the remaining reason: a merge that reports having done nothing is noise in the history and on every reviewer's list.) Declines are **not** substantive: "we looked and it stayed blocked" is the healthy steady state. Measured 2026-07-31 — this lane merged on 7 of the last 32 advances of `main`, three of them titled "no promotions".
 
 The old rule ("a no-change run skips the commit") could never fire here, because one-file-per-run makes every run a change by construction. So the verdict is now the script's:
 

@@ -67,7 +67,7 @@ Sample the issues that entered Ready for Dev this week:
 
 - Did every merged PR carrying a `Fixes THR-XX` actually auto-close its issue? A merged PR whose issue stayed open means the keyword was missing from the PR **body** (impediment #140).
 - Any issue auto-closed *without* a landing commit? That is the THR-540 false-close pattern — a bare `close|fix|resolve THR-XX` substring, a `thr-XXX-*` branch name, or the ID in a PR title is enough to trigger it.
-- Open-PR backlog: how many PRs are open, and how old is the oldest? Rot from strict-mode branch protection is a known failure mode.
+- Open-PR backlog: how many PRs are open, and how old is the oldest? Since strict mode was dropped (2026-08-02, THR-983) staleness no longer rots a PR — a green PR merges from behind — so an old open PR now means a **conflict**, a **red check**, or a **deliberate hold**. Distinguish the three before calling it rot; a held PR is not a defect (THR-985).
 
 ### 5. Checkpoint hygiene (THR-632)
 
