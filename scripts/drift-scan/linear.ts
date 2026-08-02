@@ -88,6 +88,92 @@ export async function resolveBacklogStateId(): Promise<string | null> {
   return triageLike?.id ?? null;
 }
 
+/**
+ * Upper bound on the open `drift-scan` issues fetched for signal-scoped dedup.
+ * The scan emits at most one issue per signal (11 signals as of THR-756), so a
+ * page this size covers the live set many times over; a larger backlog means
+ * triage has stalled, which is a separate problem from duplicate filing.
+ */
+export const OPEN_DRIFT_ISSUE_LOOKUP_LIMIT = 100;
+
+export interface OpenDriftIssue {
+  id: string;
+  identifier: string;
+  title: string;
+}
+
+/**
+ * Every open (neither completed nor canceled) issue carrying the `drift-scan`
+ * label on the Threadbare team.
+ *
+ * Fetched once per run rather than once per signal: the scan needs to ask
+ * "is there already an open issue for this signal?" up to 11 times, and the
+ * answer comes from the same small set every time.
+ */
+export async function listOpenDriftIssues(): Promise<OpenDriftIssue[]> {
+  const data = await linearGql<{
+    issues: { nodes: Array<{ id: string; identifier: string; title: string }> };
+  }>(
+    // "Open" is asserted three ways on purpose. The state-type test is the
+    // direct one, but Linear's *Duplicate* state — where the five THR-756
+    // duplicates were parked — reports a `duplicate` status through some
+    // surfaces while setting `canceledAt`. Testing the timestamps as well makes
+    // exclusion independent of how any terminal state happens to be typed: an
+    // issue that was closed in any manner is never a refresh target.
+    `query($label: String!, $teamId: ID!, $limit: Int!) {
+      issues(
+        first: $limit
+        filter: {
+          labels: { name: { eq: $label } }
+          team: { id: { eq: $teamId } }
+          state: { type: { nin: ["completed", "canceled"] } }
+          completedAt: { null: true }
+          canceledAt: { null: true }
+        }
+      ) {
+        nodes { id identifier title }
+      }
+    }`,
+    { label: DRIFT_SCAN_LABEL_NAME, teamId: LINEAR_TEAM_ID, limit: OPEN_DRIFT_ISSUE_LOOKUP_LIMIT },
+  );
+
+  return data.issues.nodes;
+}
+
+/** Refresh an existing drift issue in place with the current run's title and body. */
+export async function updateDriftIssue(params: {
+  id: string;
+  title: string;
+  body: string;
+}): Promise<void> {
+  await linearGql<{ issueUpdate: { success: boolean } }>(
+    `mutation($id: String!, $input: IssueUpdateInput!) {
+      issueUpdate(id: $id, input: $input) {
+        success
+      }
+    }`,
+    { id: params.id, input: { title: params.title, description: params.body } },
+  );
+}
+
+/**
+ * Record one refresh on an existing drift issue.
+ *
+ * The description is overwritten by `updateDriftIssue`, so without this the
+ * week-over-week movement in a signal's counts would be unrecoverable — the
+ * issue would only ever show its latest state (NFP #2, inspectability).
+ */
+export async function commentOnDriftIssue(params: { id: string; body: string }): Promise<void> {
+  await linearGql<{ commentCreate: { success: boolean } }>(
+    `mutation($input: CommentCreateInput!) {
+      commentCreate(input: $input) {
+        success
+      }
+    }`,
+    { input: { issueId: params.id, body: params.body } },
+  );
+}
+
 export async function findIssueByExactTitle(title: string): Promise<string | null> {
   const data = await linearGql<{
     issues: { nodes: Array<{ id: string; identifier: string; title: string }> };

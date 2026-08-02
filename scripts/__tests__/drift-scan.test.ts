@@ -15,6 +15,9 @@ import {
   parseCodesightImporters,
   type SkillFreshnessEntry,
   parseUlShardTerms,
+  formatIssueTitle,
+  driftIssueSignalName,
+  isDriftIssueForSignal,
 } from "../drift-scan/index";
 
 describe("drift-scan S1", () => {
@@ -281,5 +284,102 @@ describe("drift-scan S10 (quick-ref vs rulebook)", () => {
       expect(result.body).toContain("Culmination");
       expect(result.body).not.toContain("ticks onward");
     }
+  });
+});
+
+describe("drift-scan signal-scoped dedup (THR-756)", () => {
+  // The eleven signal names main() actually files under, including the three
+  // that carry an arrow so the arrow/em-dash distinction stays pinned.
+  const SIGNAL_NAMES = [
+    "coupling creep",
+    "broken-windows tally",
+    "test suite health",
+    "UL drift",
+    "Skill freshness",
+    "rulebook → UL",
+    "rulebook → Canon pages",
+    "rulebook IMPL tags",
+    "rulebook → Vision",
+    "quick-ref vs rulebook",
+    "interface-map coverage",
+  ];
+
+  it("round-trips every signal name through the generated title", () => {
+    for (const name of SIGNAL_NAMES) {
+      const title = formatIssueTitle("2026-07-24", name, "3 things drifted");
+      expect(driftIssueSignalName(title)).toBe(name);
+    }
+  });
+
+  it("matches the same signal across run dates — the duplicate-filing regression", () => {
+    const lastWeek = formatIssueTitle(
+      "2026-07-22",
+      "UL drift",
+      "6 canonical-unused, 15 used-uncanonical",
+    );
+    const thisWeek = formatIssueTitle(
+      "2026-07-24",
+      "UL drift",
+      "6 canonical-unused, 15 used-uncanonical",
+    );
+
+    // The pre-fix dedup compared titles for equality. The embedded run date
+    // makes that comparison false even when the drift is identical, which is
+    // exactly how THR-706↔THR-746 (and four more pairs) came to be filed.
+    expect(lastWeek).not.toBe(thisWeek);
+    expect(isDriftIssueForSignal(lastWeek, "UL drift")).toBe(true);
+  });
+
+  it("does not match a different signal", () => {
+    const ulDrift = formatIssueTitle("2026-07-24", "UL drift", "6 canonical-unused");
+    const rulebookUl = formatIssueTitle("2026-07-24", "rulebook → UL", "8 broken references");
+
+    expect(isDriftIssueForSignal(ulDrift, "rulebook → UL")).toBe(false);
+    expect(isDriftIssueForSignal(rulebookUl, "UL drift")).toBe(false);
+    expect(isDriftIssueForSignal(ulDrift, "interface-map coverage")).toBe(false);
+  });
+
+  it("ignores a signal name that appears in the summary rather than the name slot", () => {
+    // The Linear query filters on the `drift-scan` label only, so the matcher is
+    // the sole guard against adopting — and then overwriting — the wrong issue.
+    // A substring test would match both of these; the position-anchored parse
+    // must not.
+    const otherSignal = formatIssueTitle(
+      "2026-07-24",
+      "coupling creep",
+      "3 file(s) grew, worst offender tracked in the UL drift shard",
+    );
+    expect(isDriftIssueForSignal(otherSignal, "UL drift")).toBe(false);
+    expect(isDriftIssueForSignal(otherSignal, "coupling creep")).toBe(true);
+
+    // A human-filed ticket that merely names a signal is not that signal's issue.
+    expect(isDriftIssueForSignal("Rework the UL drift signal thresholds", "UL drift")).toBe(false);
+  });
+
+  it("takes the first em dash as the name boundary when the summary carries one too", () => {
+    const title = formatIssueTitle("2026-07-24", "test suite health", "runtime up 22% — 3 flaky");
+    expect(driftIssueSignalName(title)).toBe("test suite health");
+    expect(isDriftIssueForSignal(title, "test suite health")).toBe(true);
+  });
+
+  it("is case-insensitive on the signal name", () => {
+    const title = formatIssueTitle("2026-07-24", "Skill freshness", "23 stale");
+    expect(isDriftIssueForSignal(title, "skill freshness")).toBe(true);
+  });
+
+  it("returns null for titles the scan did not generate", () => {
+    expect(driftIssueSignalName("Drift scan: UL drift — 6 canonical-unused")).toBeNull();
+    expect(driftIssueSignalName("UL drift — 6 canonical-unused")).toBeNull();
+    expect(
+      driftIssueSignalName("Prune candidate: 5 engine modules have zero importers"),
+    ).toBeNull();
+    // A hand-written ticket that merely mentions the scan must not be adopted
+    // as a signal's issue and silently overwritten.
+    expect(
+      isDriftIssueForSignal(
+        "Drift scan: update open signal issues instead of filing weekly duplicates",
+        "UL drift",
+      ),
+    ).toBe(false);
   });
 });
