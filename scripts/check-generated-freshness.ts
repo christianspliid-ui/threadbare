@@ -65,6 +65,7 @@ const STATIC_GENERATED_PATHS: readonly string[] = [
   "public/action-catalog.generated.json", // generate-action-catalog
   "src/data/ul-dashboard.generated.json", // generate-ul-dashboard
   "Docs/canon/interface-map.generated.md", // generate-interface-map (THR-717)
+  "Docs/canon/setting-coverage.generated.md", // generate-setting-coverage (THR-884, registered THR-948)
 ];
 
 /**
