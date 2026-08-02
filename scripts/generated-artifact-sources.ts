@@ -85,6 +85,18 @@ export const STATIC_ARTIFACT_SOURCES: Readonly<Record<string, readonly string[]>
     "scripts/interface-contracts.ts",
     "scripts/generate-interface-map.ts",
   ],
+  // generate-setting-coverage: code in, doc out — the harmless direction again, so no
+  // DOC_TO_CODE_ALLOWLIST entry is needed. Registered by THR-948: its generator lived
+  // outside `prebuild`, so BOTH halves of check:generated-freshness missed it (absent
+  // from STATIC_GENERATED_PATHS, and invisible to the unregistered-output detector,
+  // which can only see paths `prebuild` writes). The gate reported OK for weeks while
+  // the committed copy was stale — it still claimed "declaring a setting envelope | 0"
+  // after THR-884 shipped 8 of them.
+  "Docs/canon/setting-coverage.generated.md": [
+    "src/data/unified-action-templates.ts",
+    "src/data/settingClasses.ts",
+    "scripts/generate-setting-coverage.ts",
+  ],
 };
 
 /**
