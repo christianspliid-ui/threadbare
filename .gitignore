@@ -76,6 +76,20 @@ Design/*
 !Design/briefing.md
 !Design/user-actions.md
 !Design/retros/
+# ...and the approved design mockups (THR-980).
+#
+# `Design/mockups/2026-07-26-nudge-model-encounters.html` is the visual bar THR-969,
+# THR-971 and THR-972 are all measured against, and THR-969 cites line ranges in it.
+# It had sat on disk since 2026-07-26 while `Design/*` hid it from every git query,
+# so THR-980's forensics ("not on main, not on ops, not in any branch's history")
+# were blind by construction and reasonably concluded it had never existed. An
+# acceptance bar that only one machine can see is not an acceptance bar.
+#
+# The assets need their own negation because `*.png` above ignores them a second
+# time, and re-including the directory does not re-include files a separate
+# pattern excludes.
+!Design/mockups/
+!Design/mockups/**/*.png
 # ...and the impediment dashboard's TEMPLATE — but deliberately NOT its render.
 #
 # `Design/impediment-dashboard.html` is generated from this template plus

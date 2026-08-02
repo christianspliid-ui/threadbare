@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Threadbare — Nudge Model Encounter Mockups v3</title>
+<style>
+  :root{
+    --bg:#14110e; --panel:#1d1915; --panel2:#241f19; --ink:#e8dcc4; --dim:#9a8c74;
+    --line:#3a322a; --mind:#7fb4d9; --entropy:#8aa66b; --common:#a29a8c; --bless:#d9b96a;
+    --spirit:#c9a3d9; --trait:#8fc9c0; --bad:#c96a5a; --good:#9dc98a;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-family:Georgia,'Times New Roman',serif;line-height:1.55;padding:2rem 1rem 6rem}
+  .wrap{max-width:880px;margin:0 auto}
+  h1{font-size:1.5rem;font-weight:normal;letter-spacing:.04em;margin-bottom:.25rem}
+  h2{font-size:1.2rem;font-weight:normal;letter-spacing:.03em}
+  .sub{color:var(--dim);font-size:.85rem;font-family:system-ui,sans-serif;margin-bottom:1.5rem}
+  .flow{font-family:system-ui,sans-serif;font-size:.72rem;color:var(--dim);letter-spacing:.06em;text-transform:uppercase;margin-bottom:2rem}
+  .flow b{color:var(--ink);font-weight:600}
+  .agentbar{position:sticky;top:0;z-index:5;background:var(--panel);border:1px solid var(--line);border-radius:8px;
+    padding:.6rem .9rem;display:flex;gap:1.1rem;align-items:center;flex-wrap:wrap;font-family:system-ui,sans-serif;font-size:.8rem;margin-bottom:2rem}
+  .agentbar .name{font-family:Georgia,serif;font-size:.95rem}
+  .qword{font-family:Georgia,serif;font-style:italic;cursor:pointer;border-bottom:1px dotted var(--dim)}
+  .qicon{width:14px;height:14px;display:inline-block;border-radius:50%;background:radial-gradient(circle at 35% 35%,#b9a8ff,#5a4a9c 70%);vertical-align:-2px;margin-right:.25rem}
+  .pool{padding:.15rem .55rem;border-radius:10px;border:1px solid var(--line);font-size:.75rem;display:flex;align-items:center;gap:.3rem}
+  .pool img{width:15px;height:15px;border-radius:3px}
+  .pool.mind{color:var(--mind)} .pool.entropy{color:var(--entropy)}
+  .brokenflag{color:var(--bad);font-weight:600;display:none}
+  .broken .brokenflag{display:inline}
+  button{font-family:system-ui,sans-serif;cursor:pointer;border-radius:6px;border:1px solid var(--line);background:var(--panel2);color:var(--ink);padding:.45rem .9rem;font-size:.82rem}
+  button:hover{border-color:var(--dim)}
+  button.fate{background:#2c2117;border-color:#6a5335;font-size:.9rem;letter-spacing:.05em}
+  button:disabled{opacity:.35;cursor:default}
+  .enc{border:1px solid var(--line);border-radius:10px;background:var(--panel);margin-bottom:2.5rem;overflow:hidden}
+  .hero{position:relative;aspect-ratio:16/6.5;overflow:hidden}
+  .hero img{width:100%;height:100%;object-fit:cover;object-position:center 30%;display:block}
+  .hero .shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(20,17,14,.08) 40%,rgba(20,17,14,.92) 96%)}
+  .hero h2{position:absolute;left:1.4rem;bottom:.55rem;text-shadow:0 2px 8px #000}
+  .hero .godchip{position:absolute;right:1.4rem;bottom:.75rem;font-family:system-ui,sans-serif;font-size:.7rem;color:#cfc2a8;text-shadow:0 1px 4px #000}
+  .encbody{padding:1.2rem 1.6rem 1.4rem}
+  .motive{display:flex;gap:.7rem;align-items:baseline;font-size:.92rem;color:#cfc2a8;margin-bottom:1rem;font-family:Georgia,serif}
+  .motivechip{font-family:system-ui,sans-serif;font-size:.62rem;letter-spacing:.1em;padding:.15rem .5rem;border:1px solid var(--bless);color:var(--bless);border-radius:9px;cursor:pointer;white-space:nowrap}
+  .scene{font-size:1.02rem;margin-bottom:1.1rem}
+  .testpanel{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:.9rem 1.1rem;font-family:system-ui,sans-serif;font-size:.84rem;margin-bottom:1.1rem;display:flex;gap:1.1rem}
+  .tportrait{width:86px;height:114px;border-radius:8px;border:1px solid #5a4c38;object-fit:cover;flex-shrink:0}
+  .tmain{flex:1;display:flex;flex-direction:column;gap:.55rem;min-width:0}
+  .trow{display:flex;gap:1.3rem;flex-wrap:wrap;align-items:center}
+  .reach{display:inline-flex;align-items:center;gap:.5rem}
+  .reach img{width:44px;height:44px;border-radius:7px;border:1px solid var(--line)}
+  .reach i{color:var(--dim);font-size:.74rem}
+  .difficulty{color:var(--dim)}
+  .difficulty b{color:var(--ink);font-weight:600}
+  .factors{list-style:none;display:flex;flex-direction:column;gap:.15rem;font-size:.78rem;color:#cfc2a8}
+  .factors .pm{display:inline-block;width:14px;font-weight:700}
+  .factors .for .pm{color:var(--good)} .factors .against .pm{color:var(--bad)}
+  .abportrait{width:36px;height:36px;border-radius:50%;object-fit:cover;border:1px solid #5a4c38}
+  .card .art{width:calc(100% + 1.6rem);margin:-.65rem -.8rem .5rem;aspect-ratio:16/6;object-fit:cover;border-radius:8px 8px 0 0;display:block}
+  .fateimg{display:none;width:100%;aspect-ratio:16/5.5;object-fit:cover;border-radius:8px;border:1px solid var(--line);margin-bottom:.6rem}
+  .forecast{font-family:Georgia,serif;font-size:1rem;font-style:italic}
+  .f-doomed{color:#c9524a} .f-perilous{color:#cd8a4b} .f-uncertain{color:#c9b45a} .f-favorable{color:#a3c97f} .f-fated{color:#9de0c8}
+  .numbers{display:none;color:var(--dim);font-size:.72rem}
+  .designer .numbers{display:inline}
+  .designeronly{display:none}
+  .designer .designeronly{display:block}
+  .handlabel{font-family:system-ui,sans-serif;font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);margin:.2rem 0 .5rem}
+  .hand{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:.7rem;margin-bottom:1.1rem}
+  .card{border:1px solid var(--line);border-radius:8px;background:var(--panel2);padding:.65rem .8rem;cursor:pointer;transition:border-color .15s}
+  .card:hover{border-color:var(--dim)}
+  .card.on{border-color:var(--bless);background:#2a2318}
+  .card.dimmed{opacity:.45;cursor:default}
+  .card h4{font-family:Georgia,serif;font-weight:normal;font-size:.95rem;margin-bottom:.2rem}
+  .card .meta{font-family:system-ui,sans-serif;font-size:.7rem;margin-bottom:.35rem;display:flex;gap:.5rem;align-items:center}
+  .tag{padding:.1rem .45rem;border-radius:8px;border:1px solid var(--line);font-size:.68rem;display:inline-flex;align-items:center;gap:.3rem}
+  .tag img{width:13px;height:13px;border-radius:2px}
+  .tag.mind{color:var(--mind)} .tag.entropy{color:var(--entropy)} .tag.common{color:var(--common)}
+  .tag.bless{color:var(--bless)} .tag.spirit{color:var(--spirit)} .tag.trait{color:var(--trait)}
+  .card p{font-size:.85rem;color:#cfc2a8}
+  .card .fx{font-family:system-ui,sans-serif;font-size:.72rem;color:var(--dim);margin-top:.35rem}
+  .traitbanner{border:1px solid #3d5a55;background:#17211f;border-radius:8px;padding:.6rem .9rem;font-size:.9rem;margin-bottom:1.1rem}
+  .rollrow{display:flex;gap:1rem;align-items:center;margin-bottom:1rem;font-family:system-ui,sans-serif;font-size:.85rem}
+  .bandchip{padding:.2rem .7rem;border-radius:12px;border:1px solid var(--line);font-style:italic;font-family:Georgia,serif}
+  .b-crit_success{color:#9de0c8;border-color:#9de0c8} .b-success{color:var(--good);border-color:var(--good)}
+  .b-at_cost{color:#c9b45a;border-color:#c9b45a} .b-failure{color:#cd8a4b;border-color:#cd8a4b} .b-crit_failure{color:#c9524a;border-color:#c9524a}
+  .outcome{border-left:3px solid var(--line);padding:.4rem 0 .4rem 1rem;margin-bottom:1.1rem;font-size:1.02rem;display:none}
+  .aftermath{display:none;background:#191c17;border:1px solid #2c3327;border-radius:8px;padding:1rem 1.2rem;margin-bottom:.6rem}
+  .aftermath h3{font-family:system-ui,sans-serif;text-transform:uppercase;font-size:.72rem;letter-spacing:.05em;color:var(--dim);font-weight:normal;margin-bottom:.6rem}
+  .aftermath .over{margin-bottom:.8rem}
+  .chips{display:flex;flex-direction:column;gap:.45rem;font-family:system-ui,sans-serif;font-size:.82rem}
+  .chip{display:flex;gap:.6rem;align-items:baseline}
+  .chip .k{min-width:86px;font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;color:var(--dim)}
+  .chip.plus .k{color:var(--good)} .chip.minus .k{color:var(--bad)} .chip.seed .k{color:var(--bless)}
+  .obj{color:var(--bless);cursor:pointer;border-bottom:1px dotted var(--bless)}
+  .obj:hover{color:#f0d48a}
+  .resetrow{margin:.8rem 1.6rem 1.4rem}
+  .rebuildmenu{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.6rem;margin-bottom:1.2rem;font-family:system-ui,sans-serif;font-size:.8rem}
+  .rb{border:1px solid var(--line);border-radius:8px;padding:.55rem .7rem;color:var(--dim)}
+  .rb b{color:var(--ink);font-weight:600;display:block;font-family:Georgia,serif;font-size:.9rem}
+  .rb.live{border-color:#4a5a43;color:var(--ink)}
+  .step2{display:none;border-top:1px dashed var(--line);margin-top:1.2rem;padding-top:1.2rem}
+  .brokennote{display:none;border:1px solid #5a3733;background:#241715;border-radius:8px;padding:.8rem 1rem;font-size:.9rem;margin:0 1.6rem 1rem}
+  .toggle{position:fixed;bottom:1rem;right:1rem;z-index:20;font-family:system-ui,sans-serif;font-size:.72rem;color:var(--dim);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:.4rem .7rem;display:flex;gap:.4rem;align-items:center}
+  /* modal */
+  .overlay{position:fixed;inset:0;background:rgba(8,6,4,.75);z-index:30;display:none;align-items:center;justify-content:center;padding:1rem}
+  .overlay.open{display:flex}
+  .modal{max-width:430px;width:100%;background:var(--panel);border:1px solid #5a4c38;border-radius:10px;padding:1.2rem 1.4rem;box-shadow:0 10px 60px #000}
+  .modal .visual{width:100%;aspect-ratio:16/7;border-radius:8px;margin-bottom:.9rem;display:flex;align-items:center;justify-content:center;font-size:2.6rem;border:1px solid var(--line);overflow:hidden}
+  .modal .visual img{width:100%;height:100%;object-fit:cover}
+  .modal h3{font-weight:normal;font-size:1.15rem;margin-bottom:.15rem}
+  .modal .kind{font-family:system-ui,sans-serif;font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);margin-bottom:.7rem}
+  .modal p{font-size:.95rem;margin-bottom:.8rem;color:#d8cbb0}
+  .modal .stats{font-family:system-ui,sans-serif;font-size:.8rem;display:flex;flex-direction:column;gap:.35rem;margin-bottom:.9rem}
+  .modal .stats div{display:flex;gap:.6rem}
+  .modal .stats .k{min-width:100px;color:var(--dim);font-size:.68rem;text-transform:uppercase;letter-spacing:.06em}
+  .modal .close{width:100%}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>The Nudge Model — three encounters, full flow <span style="font-size:.8rem;color:var(--dim)">v3</span></h1>
+  <div class="sub">Design mockup, 2026-07-26 · every game object clicks open · unavailable options hidden as in the final game · numbers live behind words</div>
+  <div class="flow"><b>Why they're here</b> → <b>Scene</b> → <b>Test &amp; Forecast</b> → <b>The Hand</b> → <b>Fate</b> → <b>Outcome</b> → <b>Aftermath</b> (prizes · tolls · seeds — all clickable)</div>
+
+  <div class="agentbar" id="agentbar">
+    <img class="abportrait" src="assets/agent-portrait-generic.png" alt="Kael Thornweaver">
+    <span class="name">Kael Thornweaver</span>
+    <span><span class="qicon"></span><span class="qword obj" data-m="quint" id="qword"></span> <span id="qval" class="numbers"></span></span>
+    <span class="brokenflag">BROKEN</span>
+    <span class="obj" data-m="trustworthy" style="font-family:system-ui,sans-serif;font-size:.72rem">#trustworthy</span>
+    <span style="margin-left:auto">Essence:</span>
+    <span class="pool mind"><img src="assets/mind.png" alt="Mind">Mind <b id="poolMind">5</b></span>
+    <span class="pool entropy"><img src="assets/entropy.png" alt="Entropy">Entropy <b id="poolEntropy">4</b></span>
+    <button onclick="resetAll()" style="font-size:.72rem;padding:.25rem .6rem">reset demo</button>
+  </div>
+
+  <!-- ══════════ ENCOUNTER 1 ══════════ -->
+  <section class="enc" id="e1">
+    <div class="hero"><img src="assets/darkhollow-vault-encounter.png" alt="The Darkhollow Vault"><div class="shade"></div>
+      <h2>I · The Darkhollow Vault</h2><span class="godchip">god of MIND + ENTROPY</span></div>
+    <div class="encbody">
+    <div class="motive"><span class="motivechip obj" data-m="motive">BY CHOICE</span><span>The rumor of the sword has pulled at Kael since Kelra. When the road forked toward the Darkhollow, Kael did not pretend to hesitate.</span></div>
+    <p class="scene">Dusk. Kael slips through the fallen gate of the Darkhollow, where the sword of Mufasa was sealed in the vault with its last bearer. The things below wake at full dark. The search must be quiet, and it must be fast.</p>
+
+    <div class="testpanel">
+      <img class="tportrait" src="assets/agent-portrait-generic.png" alt="Kael Thornweaver">
+      <div class="tmain">
+        <div class="trow">
+          <span class="reach"><img src="assets/shadow-2.png" alt="Shadow"><span>Shadow II<br><i>move unseen</i></span></span>
+          <span class="reach"><img src="assets/eye-1.png" alt="Eye"><span>Eye I<br><i>find the vault</i></span></span>
+          <span style="margin-left:auto">Forecast: <span class="forecast" id="e1s1-forecast"></span> <span class="numbers" id="e1s1-num"></span></span>
+        </div>
+        <div class="difficulty">Difficulty: <b>severe</b> — a deep ruin at the edge of full dark</div>
+        <ul class="factors">
+          <li class="against"><span class="pm">−</span>The Darkhollow is deep, and older than its maps</li>
+          <li class="against"><span class="pm">−</span>The sleepers below wake at full dark</li>
+          <li class="for"><span class="pm">+</span>Dusk still holds — a thin margin of quiet</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="handlabel">The god's hand — stack what you can afford, or hold back</div>
+    <div class="hand" id="e1s1-hand"></div>
+
+    <div class="rollrow">
+      <button class="fate" id="e1s1-go" onclick="rollStep('e1s1')">Let fate decide</button>
+      <span id="e1s1-roll"></span>
+    </div>
+    <img class="fateimg" id="e1s1-fimg" alt="fate">
+    <div class="outcome" id="e1s1-out"></div>
+
+    <div class="step2" id="e1s2">
+      <p class="scene">The sword is heavier than its size; old iron drinks the torchlight. Between Kael and the gate: the long gallery, and whatever the hinge woke.</p>
+      <div class="testpanel">
+        <img class="tportrait" src="assets/agent-portrait-generic.png" alt="Kael Thornweaver">
+        <div class="tmain">
+          <div class="trow">
+            <span class="reach"><img src="assets/shadow-2.png" alt="Shadow"><span>Shadow II<br><i>slip out</i></span></span>
+            <span class="reach"><img src="assets/iron-2.png" alt="Iron"><span>Iron II<br><i>carry the blade</i></span></span>
+            <span style="margin-left:auto">Forecast: <span class="forecast" id="e1s2-forecast"></span> <span class="numbers" id="e1s2-num"></span></span>
+          </div>
+          <div class="difficulty">Difficulty: <b>steep</b> — a woken ruin between Kael and the gate</div>
+          <ul class="factors">
+            <li class="against"><span class="pm">−</span>The hinge was heard; the dark is moving</li>
+            <li class="against"><span class="pm">−</span>The blade is heavy, and wants carrying</li>
+            <li class="for"><span class="pm">+</span>The way is known now — every turning walked once</li>
+          </ul>
+        </div>
+      </div>
+      <div class="handlabel">The god's hand</div>
+      <div class="hand" id="e1s2-hand"></div>
+      <div class="rollrow">
+        <button class="fate" id="e1s2-go" onclick="rollStep('e1s2')">Let fate decide</button>
+        <span id="e1s2-roll"></span>
+      </div>
+      <img class="fateimg" id="e1s2-fimg" alt="fate">
+      <div class="outcome" id="e1s2-out"></div>
+    </div>
+
+    <div class="aftermath" id="e1-after"></div>
+    </div>
+    <div class="brokennote" id="e1-broken">Kael is <b>broken</b> — <span class="obj" data-m="hollowmark">Hollow-Marked</span>, drifting, declining every encounter the world offers. Scroll to <b>III · The Long Way Back</b>.</div>
+    <div class="resetrow"><button onclick="resetE1()">run this encounter again</button></div>
+  </section>
+
+  <!-- ══════════ ENCOUNTER 2 ══════════ -->
+  <section class="enc" id="e2">
+    <div class="hero"><img src="assets/grain-factor-encounter.png" alt="The Grain Factor"><div class="shade"></div>
+      <h2>II · The Grain Factor</h2><span class="godchip">god of MIND + ENTROPY</span></div>
+    <div class="encbody">
+    <div class="motive"><span class="motivechip obj" data-m="motive">A MISSION</span><span>The Ferry's granary count came up short at the autumn moot. Kael carried the purse and the errand downriver.</span></div>
+    <p class="scene">The grain factor Oswin Pell keeps his ledger open on the counter the way other men keep dogs — teeth showing. Kael needs four wagons of winter grain for Halden's Ferry, and Pell's asking price would empty the village that eats it.</p>
+
+    <div class="traitbanner">Trait variant — <span class="obj" data-m="trustworthy">#trustworthy</span>: Pell has heard that Kael's word is good on this river. The table opens easier, and one option exists here for Kael alone.</div>
+
+    <div class="testpanel">
+      <img class="tportrait" src="assets/agent-portrait-generic.png" alt="Kael Thornweaver">
+      <div class="tmain">
+        <div class="trow">
+          <span class="reach"><img src="assets/gold-1.png" alt="Gold"><span>Gold I<br><i>strike the deal</i></span></span>
+          <span style="margin-left:auto">Forecast: <span class="forecast" id="e2s1-forecast"></span> <span class="numbers" id="e2s1-num"></span></span>
+        </div>
+        <div class="difficulty">Difficulty: <b>fair</b> — a hard table, honestly set</div>
+        <ul class="factors">
+          <li class="against"><span class="pm">−</span>Pell haggles for a living, and his ledger is his home ground</li>
+          <li class="for"><span class="pm">+</span><span class="obj" data-m="trustworthy">#trustworthy</span>&nbsp;— Kael's word is known on this river</li>
+          <li class="for"><span class="pm">+</span>The errand is honest, and reads that way</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="handlabel">The god's hand</div>
+    <div class="hand" id="e2s1-hand"></div>
+
+    <div class="rollrow">
+      <button class="fate" id="e2s1-go" onclick="rollStep('e2s1')">Let fate decide</button>
+      <span id="e2s1-roll"></span>
+    </div>
+    <img class="fateimg" id="e2s1-fimg" alt="fate">
+    <div class="outcome" id="e2s1-out"></div>
+    <div class="aftermath" id="e2-after"></div>
+    </div>
+    <div class="resetrow"><button onclick="resetE2()">run this encounter again</button></div>
+  </section>
+
+  <!-- ══════════ ENCOUNTER 3 ══════════ -->
+  <section class="enc" id="e3">
+    <div class="hero"><img src="assets/ferry-long-way-back-encounter.png" alt="The Long Way Back"><div class="shade"></div>
+      <h2>III · The Long Way Back</h2><span class="godchip">quintessence rebuilding · slow by design</span></div>
+    <div class="encbody">
+    <div class="motive"><span class="motivechip obj" data-m="motive">THE GOD'S HAND</span><span>Kael did not choose this road. The god set it under Kael's feet, and Kael — broken — did not argue.</span></div>
+    <p class="scene">A broken mortal cannot be commanded whole. The rebuilding encounters are theirs to walk — a few roads per Reach, each giving quintessence back slowly. The god picks the road and keeps the weather kind.</p>
+
+    <div class="handlabel">The roads (one playable in this mockup)</div>
+    <div class="rebuildmenu">
+      <div class="rb live"><b>Old Friends at the Ferry</b>Heart · playable below</div>
+      <div class="rb"><b>A Long Drunk at the Quiet Cup</b>Gold · the tavern cure</div>
+      <div class="rb"><b>Absolution at the Wayside Shrine</b>Star · say it out loud</div>
+      <div class="rb"><b>A Roof Rebuilt</b>Stone · retire home a while</div>
+      <div class="rb"><b>Wood to Split</b>Iron · the body remembers first</div>
+    </div>
+
+    <p class="scene">Marta Weir still keeps the ferry house, and still owes Kael for the winter of the broken oar. She asks nothing about the Darkhollow. She hands over a net that wants mending.</p>
+    <div class="testpanel">
+      <img class="tportrait" src="assets/agent-portrait-generic.png" alt="Kael Thornweaver">
+      <div class="tmain">
+        <div class="trow">
+          <span class="reach"><img src="assets/heart-1.png" alt="Heart"><span>Heart I<br><i>let people close</i></span></span>
+          <span style="margin-left:auto">Forecast: <span class="forecast" id="e3s1-forecast"></span> <span class="numbers" id="e3s1-num"></span></span>
+        </div>
+        <div class="difficulty">Difficulty: <b>gentle</b> — a kind road, chosen for that</div>
+        <ul class="factors">
+          <li class="for"><span class="pm">+</span>Marta owes the winter of the broken oar</li>
+          <li class="for"><span class="pm">+</span>Nothing here wants anything from Kael</li>
+          <li class="against"><span class="pm">−</span>The Darkhollow is still close under the skin</li>
+        </ul>
+      </div>
+    </div>
+    <div class="handlabel">The god's hand — holding back is the honest play here</div>
+    <div class="hand" id="e3s1-hand"></div>
+    <div class="rollrow">
+      <button class="fate" id="e3s1-go" onclick="rollStep('e3s1')">Let fate decide</button>
+      <span id="e3s1-roll"></span>
+    </div>
+    <img class="fateimg" id="e3s1-fimg" alt="fate">
+    <div class="outcome" id="e3s1-out"></div>
+    <div class="aftermath" id="e3-after"></div>
+
+    <div class="designeronly">
+      <div class="handlabel" style="margin-top:1.2rem">Hidden in the final game (unlock-gated god action — designer view)</div>
+      <div class="hand">
+        <div class="card dimmed">
+          <h4>Rekindle the Thread</h4>
+          <div class="meta"><span class="tag bless">god power</span><span>6 essence (Spirit)</span></div>
+          <p>The god pours their own fire back into a broken mortal, all at once. The mortal wakes whole — and knows exactly whose fire is in them now.</p>
+          <div class="fx">not unlocked — would arrive via a milestone god-power card</div>
+        </div>
+      </div>
+    </div>
+    </div>
+    <div class="resetrow"><button onclick="resetE3()">visit the ferry again</button></div>
+  </section>
+</div>
+
+<div class="overlay" id="overlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal" id="modalbox"></div>
+</div>
+
+<label class="toggle"><input type="checkbox" onchange="document.body.classList.toggle('designer',this.checked); rerenderAll()"> designer view: numbers behind fate + options the game hides</label>
+
+<script>
+// ─── shared state ───
+const S = { mind:5, entropy:4, quint:0.72, broken:false };
+const BROKEN_AT = 0.25, MEND_AT = 0.5;
+
+function fmt(n){ return Math.round(n*100)+'%'; }
+function tier(p){ return p<=.2?'doomed':p<=.4?'perilous':p<=.6?'uncertain':p<=.8?'favorable':'fated'; }
+function bandName(b){ return {crit_success:'a clean triumph',success:'success',at_cost:'success, at cost',failure:'failure',crit_failure:'catastrophe'}[b]; }
+function qWord(){ if(S.broken) return 'broken'; const q=S.quint;
+  return q>=.85?'unworn':q>=.6?'steady':q>=.4?'worn':q>=.25?'strained':'broken'; }
+
+function renderAgent(){
+  document.getElementById('qword').textContent = qWord();
+  document.getElementById('qval').textContent = '('+S.quint.toFixed(2)+')';
+  document.getElementById('poolMind').textContent = S.mind;
+  document.getElementById('poolEntropy').textContent = S.entropy;
+  document.getElementById('agentbar').classList.toggle('broken', S.broken);
+}
+function spend(pool,cost){ if(pool==='mind')S.mind-=cost; else if(pool==='entropy')S.entropy-=cost; else if(pool==='common'){ if(S.mind>=S.entropy)S.mind-=cost; else S.entropy-=cost; } }
+function refund(pool,cost){ spend(pool,-cost); }
+function canAfford(pool,cost){ if(cost===0)return true; if(pool==='mind')return S.mind>=cost; if(pool==='entropy')return S.entropy>=cost; if(pool==='common')return Math.max(S.mind,S.entropy)>=cost; return true; }
+function erode(d){ S.quint=Math.max(0,+(S.quint+d).toFixed(2)); if(S.quint<BROKEN_AT)S.broken=true; renderAgent(); }
+function mendQ(d){ S.quint=Math.min(1,+(S.quint+d).toFixed(2)); if(S.quint>=MEND_AT)S.broken=false; renderAgent(); }
+
+// ─── modal registry ───
+const MODALS = {
+  sword:{title:'The Sword of Mufasa',kind:'possession · Iron relic',glyph:'⚔',grad:'linear-gradient(135deg,#3a3f4a,#6a7280)',
+    desc:'Sixty years under the Darkhollow did not rust it. Old iron remembers being carried, and it steadies the hand that carries it.',
+    stats:[['Reach','Iron'],['Effect','Iron capability rises one step while borne'],['Rarity','storied']],
+    con:'Storied blades draw stories: bearers attract challenges, offers, and thieves.'},
+  signet:{title:'The Bearer’s Signet',kind:'possession',glyph:'◉',grad:'linear-gradient(135deg,#4a3a2a,#8a6a3a)',
+    desc:'A dead marshal’s seal, heavier in the pocket than its size explains.',
+    stats:[['Effect','doors open in the old families’ halls'],['Reach affinity','Gold · Eye'],['Rarity','rare']],
+    con:'Someone, somewhere, still recognizes this seal — and remembers who last wore it.'},
+  provisions:{title:'Winter Provisions',kind:'possession · supply',glyph:'❖',grad:'linear-gradient(135deg,#4a4030,#7a6a40)',
+    desc:'Four wagons of sound grain under oilcloth, bound for Halden’s Ferry.',
+    stats:[['Effect','the Ferry’s prosperity holds through winter'],['Consumed','over the cold months']],
+    con:'A fed village is a calm village. A hungry one makes desperate encounters.'},
+  hollowmark:{title:'Hollow-Marked',kind:'condition',glyph:'☾',grad:'linear-gradient(135deg,#241f2e,#42395a)',
+    desc:'The dark has a claim on Kael now. Sleep comes shallow, and lightless places know it.',
+    stats:[['Consequence','forecasts in dark places read one word worse'],['Lifts','when quintessence mends past worn']],
+    con:'Conditions are clocks, not sentences — every one of them can be walked off, mended, or outlived.'},
+  hobbled:{title:'Hobbled',kind:'condition · wound',glyph:'⌇',grad:'linear-gradient(135deg,#2e2420,#5a4232)',
+    desc:'A landing the Darkhollow stair will be remembered by.',
+    stats:[['Consequence','Iron and Shadow tests read one word worse'],['Duration','a month of days']],
+    con:'Wounds heal. The habit of favoring the ankle takes longer.'},
+  quint:{title:'Quintessence',kind:'the thread-stuff of mortals',glyph:'✦',grad:'radial-gradient(circle at 40% 35%,#8a78d0,#2e2848)',
+    desc:'How much story a mortal can still carry. Ordeal spends it; living rebuilds it. It is read in words — unworn, steady, worn, strained, broken — never counted aloud.',
+    stats:[['Kael, now','—'],['Broken','below strained: the mortal leaves the story a while'],['Death','rare — breaking is the common ruin']],
+    con:'The god sees the wear on every threaded mortal, and chooses what it is worth.'},
+  seed_sleepers:{title:'The Sleepers Remember',kind:'seed · a promise the world keeps',glyph:'✸',grad:'linear-gradient(135deg,#1e2420,#38443a)',
+    desc:'The Darkhollow marks what robbed it. One night, somewhere far from here, the scraping finds a window.',
+    stats:[['Fires','some nights or weeks from now'],['Shape','a dark encounter that comes to Kael']],
+    con:'Seeds are why tonight’s luck is next month’s story.'},
+  seed_favor:{title:'The Factor’s Favor',kind:'seed · a debt with no date',glyph:'✸',grad:'linear-gradient(135deg,#242018,#4a4028)',
+    desc:'At a time of his choosing, Pell names the return. The request will not be optional.',
+    stats:[['Held by','Oswin Pell'],['Shape','a demand encounter, terms his']],con:''},
+  seed_door:{title:'The Sword Lies Near the Door',kind:'seed',glyph:'✸',grad:'linear-gradient(135deg,#20242a,#3a4450)',
+    desc:'Set down three corridors from the gate — whoever tries next will not have far to go. The dark knows it too.',
+    stats:[['Shape','a retry with better odds, or a rival’s prize']],con:''},
+  seed_spring:{title:'A Hungry Spring',kind:'seed',glyph:'✸',grad:'linear-gradient(135deg,#242018,#503a28)',
+    desc:'The Ferry’s granary runs out before the thaw does.',
+    stats:[['Shape','scarcity encounters around Halden’s Ferry'],['Fires','late winter']],con:''},
+  trustworthy:{title:'#trustworthy',kind:'personality trait',glyph:'✓',grad:'linear-gradient(135deg,#1e2a28,#3a5a54)',
+    desc:'Word once given is kept. The river knows it, and the world reacts: deals open easier, some doors open only for Kael, and betrayal-shaped options simply never appear.',
+    stats:[['Source','Kael’s personality'],['Here','the Grain Factor opens at better odds, plus one trait-only option']],
+    con:'Traits make the same encounter a different encounter for a different mortal — that, plus a different god’s hand, is the replay.'},
+  motive:{title:'The Thread That Led Here',kind:'motive engine',glyph:'☙',grad:'linear-gradient(135deg,#241f18,#4a3c28)',
+    desc:'The engine records why an agent entered every encounter — chosen ambition, an assigned mission, drifting chance, or the god’s own hand — and shows the receipt, so the player never wonders why their mortal is standing here.',
+    stats:[['BY CHOICE','the agent’s own scoring picked it'],['A MISSION','duty or faction errand'],['CHANCE','the world happened to them'],['THE GOD’S HAND','you put them here']],con:''},
+};
+function openModal(id){
+  const m=MODALS[id]; if(!m)return;
+  if(id==='quint')m.stats[0][1]=qWord()+(document.body.classList.contains('designer')?' ('+S.quint.toFixed(2)+')':'');
+  const box=document.getElementById('modalbox');
+  box.innerHTML='<div class="visual" style="background:'+m.grad+'">'+m.glyph+'</div>'+
+    '<h3>'+m.title+'</h3><div class="kind">'+m.kind+'</div><p>'+m.desc+'</p>'+
+    '<div class="stats">'+m.stats.map(s=>'<div><span class="k">'+s[0]+'</span><span>'+s[1]+'</span></div>').join('')+'</div>'+
+    (m.con?'<p style="font-size:.85rem;color:var(--dim)">'+m.con+'</p>':'')+
+    '<button class="close" onclick="closeModal()">close</button>';
+  document.getElementById('overlay').classList.add('open');
+}
+function closeModal(){ document.getElementById('overlay').classList.remove('open'); }
+document.addEventListener('click',e=>{ const t=e.target.closest('.obj'); if(t)openModal(t.dataset.m); });
+
+// ─── step definitions ───
+const STEPS = {
+  e1s1: {
+    base:0.12,
+    nudges:[
+      {id:'map',img:'assets/lib-glean-scroll.png',name:'A Remembered Map',pool:'mind',cost:2,delta:0.18,
+        desc:'The archive plan Kael half-read in Kelra surfaces whole — every corridor in its place.',fx:'forecast rises sharply'},
+      {id:'stair',img:'assets/lib-entropy-rot.png',name:'Rot the West Stair',pool:'entropy',cost:2,delta:0.08,rider:'no_crit_fail',
+        desc:'Forty years of damp finish their work in one heartbeat; the collapse seals the sleepers’ warren.',fx:'small rise · a bad night cannot become the worst night'},
+      {id:'breath',img:'assets/lib-focus-still.png',name:'Steady Breath',pool:'common',cost:1,delta:0.06,
+        desc:'Kael’s heartbeat slows. The hands stop shaking.',fx:'small rise'},
+      {id:'bless',img:'assets/lib-artifact-call.png',name:'The Sword Wants to Be Found',pool:'bless',cost:3,poolFor:'common',delta:0.20,
+        desc:'Under the dust, old iron remembers being carried.',fx:'sharp rise · unlocked god-power'},
+    ],
+    bands:{
+      crit_success:'The map holds turn for turn. The vault door stands open on its counterweight, and the sword lies where the last bearer set it. Kael lifts it without a sound, and beside it — the bearer’s signet ring, unlooked for. The dark never learns a name was here.',
+      success:'The map holds. One bad turning — a gallery fallen since the plan was drawn — costs a quarter hour of feeling along stone. Then the vault door gives, and the sword comes off the bier into Kael’s hands.',
+      at_cost:'The map holds true to the vault door — and the door’s hinge screams. Kael takes the sword at a run, three floors of stairs with a dry scraping closing behind, and is out the gate at full dark: bleeding, blade in hand.',
+      failure:'Where the map shows a passage, forty years of collapse show a wall. Kael backtracks twice, loses the plan’s line, and is still empty-handed when the light dies. The sword stays below. The way in, at least, is known now.',
+      crit_failure:'The map is perfect — but the Darkhollow has not read it. The turning back from the false passage is where the sleepers are. Kael drops the torch and runs by feel, and comes out at moonrise without the sword, without the pack, and without the part of Kael that believed the dark can be beaten.',
+    },
+    quint:{crit_success:0,success:0,at_cost:-0.08,failure:-0.18,crit_failure:-0.5},
+    tollWord:{at_cost:'worn by the escape',failure:'a heavy toll',crit_failure:'tremendous exertion'},
+  },
+  e1s2: {
+    base:0.30,
+    nudges:[
+      {id:'floor',img:'assets/lib-entropy-rot.png',name:'Drop the Gallery Floor',pool:'entropy',cost:2,delta:0.15,
+        desc:'Stone lets go where Kael has already passed. The way behind becomes no way at all.',fx:'strong rise'},
+      {id:'reverse',img:'assets/lib-glean-scroll.png',name:'Every Turning in Reverse',pool:'mind',cost:1,delta:0.10,
+        desc:'The map runs backward through Kael — vault to stair, stair to gate.',fx:'moderate rise'},
+      {id:'luck',img:'assets/lib-fortune-flicker.png',name:'A Moment’s Luck',pool:'common',cost:1,delta:0.06,
+        desc:'The scrape passes on the far side of the pillar hall.',fx:'small rise'},
+    ],
+    bands:{
+      crit_success:'Kael is through the long gallery before the dark agrees on a direction, over the gate-rubble in two moves, and gone. Behind, the Darkhollow settles — cheated, and aware of it.',
+      success:'Twice Kael waits, back to a pillar, while the scraping crosses the gallery. Twice it passes. The gate shows grey ahead; Kael walks out of the Darkhollow carrying a sword that has not seen the sky in sixty years.',
+      at_cost:'The last stair takes its price — a drop through rotten boards, a landing the ankle will remember for a month. But the gate is there, and the sword is still in hand when the moon finds them both.',
+      failure:'Three corridors from the gate, the scraping stops being behind. Kael sets the sword down on the stones — slowly, loudly — and backs out empty-handed while the dark takes stock of its prize.',
+      crit_failure:'The gallery floor drops — under Kael. The fall knocks the torch dead and the sword loose, and the long crawl out is done in blind black with the ankle screaming and the dark unhurried behind. Kael leaves the Darkhollow with breath, and with little else.',
+    },
+    quint:{crit_success:0,success:0,at_cost:-0.08,failure:-0.15,crit_failure:-0.45},
+    tollWord:{at_cost:'worn by the fall',failure:'a heavy toll',crit_failure:'tremendous exertion'},
+  },
+  e2s1: {
+    base:0.30, traitBonus:0.12,
+    nudges:[
+      {id:'ledger',img:'assets/lib-glean-scroll.png',name:'The Toll-House Ledger',pool:'mind',cost:2,delta:0.18,
+        desc:'Kael recalls the tally glimpsed at the toll house: eleven wagons through Pell’s yard this month, not the four he pleads.',fx:'sharp rise'},
+      {id:'weevil',img:'assets/lib-entropy-rot.png',name:'Weevils in the Back Stacks',pool:'entropy',cost:2,delta:0.14,
+        desc:'A dry smell rises from the rearmost sacks. Pell needs this grain moved more than he needs to win.',fx:'strong rise'},
+      {id:'tongue',img:'assets/lib-focus-still.png',name:'A Steady Tongue',pool:'common',cost:1,delta:0.06,
+        desc:'The numbers come to Kael in the right order, and stay there.',fx:'small rise'},
+      {id:'word',img:'assets/lib-oath-hands.png',name:'On Kael’s Word',pool:'trait',cost:0,delta:0.10,
+        desc:'No paper, no seal — Kael offers the Ferry’s word as bond. Pell studies the face across the counter and finds the rumor true.',fx:'trait option · costs nothing but the promise'},
+      {id:'mood',name:'An Unnaturally Good Mood',pool:'spirit',cost:2,delta:0.2,locked:'requires the SPIRIT sphere — this god does not warm souls',
+        desc:'Pell wakes generous and cannot say why. The first offer is already fair.',fx:'sharp rise'},
+    ],
+    bands:{
+      crit_success:'Pell laughs once — at himself — closes the ledger, and throws in a fifth wagon “for the story.” The Ferry eats well past thaw, and Pell tells the tale of being out-traded like a man showing off a scar.',
+      success:'The price lands fair on the second pass. Hands are shaken; the grain moves within the week. Pell walks Kael to the yard gate himself, which on this river is a signature.',
+      at_cost:'The deal lands at a fair price. Pell signs slowly, and looks at Kael the way a man memorizes a face. He does not forget being out-argued at his own counter.',
+      failure:'Pell’s price stands. Kael signs anyway — winter does not negotiate — and covers the gap with a favor Pell will name later, at a time of Pell’s choosing.',
+      crit_failure:'Kael pushes the weevil-smell one sentence too far. Pell’s voice drops to counting-house quiet: no deal, at any price — and every factor on the river hears why before the month is out.',
+    },
+    quint:{crit_success:0,success:0,at_cost:0,failure:0,crit_failure:-0.05},
+    tollWord:{crit_failure:'a hard day’s wear'},
+  },
+  e3s1: {
+    base:0.72,
+    nudges:[
+      {id:'rain',img:'assets/lib-fortune-flicker.png',name:'The Rain Holds',pool:'common',cost:1,delta:0.06,
+        desc:'Till nightfall, at least.',fx:'small rise'},
+    ],
+    bands:{
+      crit_success:'By the second evening the net is mended and Kael is arguing about oar-lengths. By the third, Kael tells the story of the broken oar — the old one, the good one — and laughs in the usual place.',
+      success:'The net gets mended. Marta gets the firewood stacked without asking. On the fourth morning Kael wakes before the gulls and lies there listening to the river, and it is only the river.',
+      at_cost:'The days are good. One night is not — Marta hears the chair scrape at moonset and finds the lamp lit and Kael watching the window. She pretends she came down for the kettle. They let it be morning.',
+      failure:'Kael mends the net, speaks when spoken to, and leaves on the third day with the goodbye of a person still mostly elsewhere. The ferry house stands where it stood. The road back runs through it again next month.',
+      crit_failure:'',
+    },
+    quint:{crit_success:0.09,success:0.06,at_cost:0.03,failure:0.01,crit_failure:0},
+    mendWord:{crit_success:'laughter again',success:'good days',at_cost:'a quiet mending',failure:'barely a stitch'},
+    noCrit:true,
+  },
+};
+
+const sel = {};
+const FATE_IMG={crit_success:'assets/fate-triumph.png',success:'assets/fate-success.png',at_cost:'assets/fate-at-cost.png',failure:'assets/fate-failure.png',crit_failure:'assets/fate-catastrophe.png'};
+
+function stepP(id){
+  const st=STEPS[id]; let p=st.base+(st.traitBonus||0);
+  (sel[id]||new Set()).forEach(nid=>{ const n=st.nudges.find(x=>x.id===nid); p+=n.delta; });
+  return Math.min(0.95,p);
+}
+function renderStep(id){
+  const st=STEPS[id]; const p=stepP(id);
+  const f=document.getElementById(id+'-forecast');
+  f.textContent=tier(p); f.className='forecast f-'+tier(p);
+  document.getElementById(id+'-num').textContent='('+fmt(p)+')';
+  const hand=document.getElementById(id+'-hand'); hand.innerHTML='';
+  const designer=document.body.classList.contains('designer');
+  st.nudges.forEach(n=>{
+    const on=(sel[id]||new Set()).has(n.id);
+    const pool=n.poolFor||n.pool;
+    const affordable=on||canAfford(pool,n.cost);
+    const unavailable=n.locked||!affordable;
+    if(unavailable&&!designer)return; // final-game rule: hidden entirely
+    const div=document.createElement('div');
+    div.className='card'+(on?' on':'')+(unavailable?' dimmed':'');
+    const icon={mind:'assets/mind.png',entropy:'assets/entropy.png',spirit:'assets/spirit.png'}[n.pool];
+    const tagTxt={common:'any sphere',bless:'god power',trait:'#trustworthy',spirit:'spirit',mind:'mind',entropy:'entropy'}[n.pool];
+    div.innerHTML=(n.img?'<img class="art" src="'+n.img+'" alt="">':'')+'<h4>'+n.name+'</h4><div class="meta"><span class="tag '+n.pool+'">'+(icon?'<img src="'+icon+'" alt="">':'')+tagTxt+'</span>'+
+      '<span>'+(n.cost?n.cost+' essence':'free')+'</span></div><p>'+n.desc+'</p>'+
+      '<div class="fx">'+(n.locked?n.locked:(!affordable&&!on)?'not enough essence':n.fx+' <span class="numbers">(+'+Math.round(n.delta*100)+')</span>')+'</div>';
+    if(!unavailable) div.onclick=()=>{
+      sel[id]=sel[id]||new Set();
+      if(on){ sel[id].delete(n.id); refund(pool,n.cost); } else { sel[id].add(n.id); spend(pool,n.cost); }
+      renderAgent(); rerenderAll();
+    };
+    hand.appendChild(div);
+  });
+}
+function rerenderAll(){ ['e1s1','e1s2','e2s1','e3s1'].forEach(id=>{ if(document.getElementById(id+'-hand'))renderStep(id); }); renderAgent(); }
+
+function rollStep(id){
+  const st=STEPS[id]; const p=stepP(id); const r=Math.random();
+  let band;
+  if(r<p){ band = r<p*0.15?'crit_success' : r<p*0.6?'success' : 'at_cost'; }
+  else { band = r>1-(1-p)*0.25?'crit_failure':'failure'; }
+  if(st.noCrit&&band==='crit_failure')band='failure';
+  let riderFired=false;
+  if(band==='crit_failure'&&(sel[id]||new Set()).has('stair')){ band='failure'; riderFired=true; }
+  document.getElementById(id+'-go').disabled=true;
+  document.getElementById(id+'-roll').innerHTML='fate: <span class="bandchip b-'+band+'">'+bandName(band)+'</span> <span class="numbers">d100='+Math.round(r*100)+' vs '+fmt(p)+'</span>';
+  const fi=document.getElementById(id+'-fimg'); if(fi){fi.src=FATE_IMG[band]; fi.style.display='block';}
+  const out=document.getElementById(id+'-out');
+  let prose=st.bands[band];
+  if(riderFired) prose+=' Behind the new collapse, the sleepers scrape at sealed stone — and stay sealed.';
+  out.textContent=prose; out.style.display='block';
+  const dq=st.quint[band]||0;
+  if(dq<0)erode(dq); else if(dq>0)mendQ(dq);
+  afterStep(id,band);
+}
+
+// ─── per-encounter flow ───
+let e1={s1:null,s2:null};
+function afterStep(id,band){
+  if(id==='e1s1'){
+    e1.s1=band;
+    if(band==='crit_success'||band==='success'||band==='at_cost'){
+      document.getElementById('e1s2').style.display='block';
+      STEPS.e1s2.base = band==='at_cost'?0.26:0.34;
+      renderStep('e1s2');
+    } else finishE1(band,null);
+  }
+  if(id==='e1s2'){ e1.s2=band; finishE1(e1.s1,band); }
+  if(id==='e2s1') finishE2(band);
+  if(id==='e3s1') finishE3(band);
+}
+function chip(cls,k,txt){ return '<div class="chip '+cls+'"><span class="k">'+k+'</span><span>'+txt+'</span></div>'; }
+function obj(id,txt){ return '<span class="obj" data-m="'+id+'">'+txt+'</span>'; }
+function tollChip(st,band){ const w=st.tollWord&&st.tollWord[band]; if(!w)return '';
+  return chip('minus','toll','Quintessence: '+obj('quint',qWord())+' — '+w+'.'); }
+
+function finishE1(b1,b2){
+  const a=document.getElementById('e1-after'); let h='<h3>Aftermath — what leaves the Darkhollow</h3>';
+  const gotSword = b2 && b2!=='failure' && b2!=='crit_failure';
+  if(gotSword){
+    h+='<div class="over">The sword of Mufasa is above ground for the first time in sixty years, and it is in Kael’s hand.</div><div class="chips">';
+    h+=chip('plus','prize',obj('sword','The Sword of Mufasa')+' — old iron steadies the hand that carries it.');
+    if(b1==='crit_success')h+=chip('plus','prize',obj('signet','The Bearer’s Signet')+' — a door-opener in the old families’ halls.');
+    h+=chip('plus','standing','The story travels ahead of Kael; the Ferry towns retell it by the third night.');
+    h+=tollChip(STEPS.e1s2,b2)||tollChip(STEPS.e1s1,b1);
+    if(b2==='at_cost')h+=chip('minus','wound',obj('hobbled','Hobbled')+' — a month of the ankle remembering the stair.');
+    h+=chip('seed','seed',obj('seed_sleepers','The Sleepers Remember')+' — the Darkhollow marks what robbed it.');
+    h+='</div>';
+  } else if(b2){
+    h+='<div class="over">Kael is out, and alive. The sword is not.</div><div class="chips">';
+    h+=tollChip(STEPS.e1s2,b2);
+    h+=chip('seed','seed',obj('seed_door','The Sword Lies Near the Door')+' — whoever tries next will not have far to go.');
+    h+='</div>';
+  } else {
+    h+='<div class="over">'+(b1==='crit_failure'
+      ?'Kael came out with breath and nothing else. The pack, the torch, the sword, and a season of nerve stay below.'
+      :'The light died before the vault was found. The Darkhollow keeps its prize; Kael keeps the map, and the knowledge of how far it can be trusted.')+'</div><div class="chips">';
+    h+=tollChip(STEPS.e1s1,b1);
+    if(S.broken)h+=chip('minus','broken','Kael leaves the story for a while. The rebuilding roads (below) are the way back.');
+    if(b1==='crit_failure')h+=chip('minus','condition',obj('hollowmark','Hollow-Marked')+' — sleep comes shallow; the dark has a claim.');
+    h+=chip('seed','seed',obj('seed_door','The Way In Is Known')+' — the route survives in Kael’s memory.');
+    h+='</div>';
+  }
+  a.innerHTML=h; a.style.display='block';
+  if(S.broken)document.getElementById('e1-broken').style.display='block';
+}
+function finishE2(b){
+  const a=document.getElementById('e2-after'); let h='<h3>Aftermath — the counter closes</h3>';
+  const rows={
+    crit_success:['Five wagons roll for Halden’s Ferry. Pell tells the story on Kael’s behalf, free of charge.',
+      [ ['plus','prize',obj('provisions','Winter Provisions ×5')+' — the Ferry eats past thaw; prosperity rises.'],
+        ['plus','bond','Oswin Pell, improbably, likes Kael now. A factor’s regard opens yards up and down the river.'] ]],
+    success:['Four wagons at a fair price. The village eats.',
+      [ ['plus','prize',obj('provisions','Winter Provisions ×4')+' — prosperity holds through winter.'],
+        ['plus','standing','A deal fairly struck; Kael’s name is good on this stretch of river.'] ]],
+    at_cost:['Four wagons at a fair price — and a factor who memorized Kael’s face on the way out.',
+      [ ['plus','prize',obj('provisions','Winter Provisions ×4')+' — the Ferry eats.'],
+        ['minus','bond','Pell’s regard drops. Next season’s first offer will not be fair.'] ]],
+    failure:['The grain moves at Pell’s price, and the gap is papered with a promise.',
+      [ ['plus','prize',obj('provisions','Winter Provisions ×4')+' — bought dear.'],
+        ['seed','seed',obj('seed_favor','The Factor’s Favor')+' — the request will not be optional.'] ]],
+    crit_failure:['No grain. Halden’s Ferry faces winter on what it holds, and the river’s factors close ranks.',
+      [ ['minus','standing','Every factor on the river has heard Pell’s version by month’s end.'],
+        ['seed','seed',obj('seed_spring','A Hungry Spring')+' — hungry places make desperate encounters.'] ]],
+  };
+  h+='<div class="over">'+rows[b][0]+'</div><div class="chips">'+rows[b][1].map(c=>chip(c[0],c[1],c[2])).join('')+(tollChip(STEPS.e2s1,b)||'')+'</div>';
+  a.innerHTML=h; a.style.display='block';
+}
+function finishE3(b){
+  const a=document.getElementById('e3-after'); let h='<h3>Aftermath — the slow ledger</h3>';
+  const w=STEPS.e3s1.mendWord[b]||'a stitch';
+  h+='<div class="over">The ferry house does what ferry houses do. No single visit mends a broken mortal; the road back is walked in weeks.</div><div class="chips">';
+  h+=chip('plus','mending','Quintessence: '+obj('quint',qWord())+' — '+w+'.'+(S.broken?' Still short of mended; visit again.':' <b>The mark lifts</b> — Kael takes encounters again.'));
+  h+=chip('seed','texture','Each road leaves its trace: the Ferry road rebuilds a bond with Marta Weir alongside the quintessence.');
+  h+='</div>';
+  a.innerHTML=h; a.style.display='block';
+}
+
+// ─── resets ───
+function resetStep(id){ (sel[id]||new Set()).forEach(nid=>{const n=STEPS[id].nudges.find(x=>x.id===nid); refund(n.poolFor||n.pool,n.cost);}); sel[id]=new Set();
+  document.getElementById(id+'-go').disabled=false; document.getElementById(id+'-roll').innerHTML='';
+  const o=document.getElementById(id+'-out'); o.style.display='none'; o.textContent='';
+  const fi=document.getElementById(id+'-fimg'); if(fi)fi.style.display='none';
+  renderStep(id); }
+function resetE1(){ resetStep('e1s1'); resetStep('e1s2'); document.getElementById('e1s2').style.display='none';
+  document.getElementById('e1-after').style.display='none'; document.getElementById('e1-broken').style.display='none'; e1={s1:null,s2:null}; renderAgent(); }
+function resetE2(){ resetStep('e2s1'); document.getElementById('e2-after').style.display='none'; }
+function resetE3(){ resetStep('e3s1'); document.getElementById('e3-after').style.display='none'; }
+function resetAll(){ S.mind=5;S.entropy=4;S.quint=0.72;S.broken=false; resetE1(); resetE2(); resetE3(); renderAgent(); }
+
+renderAgent(); rerenderAll();
+</script>
+</body>
+</html>
