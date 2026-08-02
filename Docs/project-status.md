@@ -50,7 +50,7 @@ Tracked in [Linear Projects](https://linear.app/threadbare/projects). Active: Th
 - Rationale: `Docs/changelog.md`
 - Wiring: `Docs/plans/wiring-checklist.md` + `Docs/plans/2026-04-16-systemic-wiring-guide.md`
 - Rules of play: `Docs/canon/rulebook.md` (+ quick-reference)
-- Christian-facing: `Design/briefing.md` / `Design/user-actions.md` (hourly refresh)
+- Christian-facing: `Design/briefing.md` / `Design/user-actions.md` — **on the `ops` branch**, not `main` (THR-947): `git fetch origin ops --quiet && git show origin/ops:Design/briefing.md`
 
 ## Active Backlog Ideas
 
