@@ -10,7 +10,7 @@ description: >
   by Cowork after writing any plan doc in Docs/plans/ or Docs/audits/ and
   before the Linear state transitions to Ready for Dev.
   Also callable manually via `/intent-judge <plan-doc-path>`.
-last_validated_against: 2026-07-27
+last_validated_against: 2026-08-02
 ---
 
 # Intent Judge
@@ -215,11 +215,43 @@ Per judgment, aggregate per week:
 - **Time-to-judgment** — wall clock from spawn to verdict
 - **Block-then-revise loops** — 3+ on same plan = Escalate
 
-Persist to `Docs/judge-metrics/YYYY-WW.md`. `retrospective` skill consumes Fridays.
+**The spawning (author) session persists these, not the judge.** The judge is
+read-only by hard rule below; it emits the `### Metrics (judge instrumentation)`
+block inside its verdict and the spawner transcribes one row. Two of the seven
+columns are the spawner's to measure anyway — it is the only party that observes
+spawn-to-verdict latency, and a judge asked to timestamp its own run has no clock
+before it starts.
+
+Append one row to `Docs/judge-metrics/YYYY-Www.md` — ISO week, `W` literal, two
+digits (`2026-W31.md`). Two early files were written `2026-20.md` / `2026-27.md`
+against the older `YYYY-WW` spelling of this line; both carry the `W` form in
+their own `#` heading, so the `W` filename is canonical and those two are simply
+misnamed. Create the file with the standard heading and table header if the week
+has no file yet.
+
+| Column | Source |
+|---|---|
+| Date | Date of the judgment |
+| Plan doc | Basename of the judged plan doc |
+| Verdict | `Allow` / `Revise` / `Block` / `Escalate` from the verdict block |
+| Impact class | The proposal's impact class; note corrections, e.g. `High-risk (corrected from Reversible)` |
+| Findings | `Findings emitted` from the verdict's metrics block |
+| Latency (s) | Spawner-measured wall clock, `~` prefix |
+| Anti-corr slipped | `Anti-correlation guard slipped` from the verdict's metrics block |
+
+**Nothing reads this directory automatically today.** Until 2026-08-02 this line
+claimed "`retrospective` skill consumes Fridays"; `.claude/skills/retrospective/SKILL.md`
+contains no reference to judge-metrics and never has, so the weekly aggregation
+those metrics exist to feed has never run. The rows are still worth writing — they
+are the only record of judge behaviour against the kill criteria below — but read
+them by hand until the consumer is wired (THR-957).
 
 ## Hard rules
 
-- **Never edits any file.** Output is the verdict block only.
+- **Never edits any file.** Output is the verdict block only — including the
+  judge-metrics row, which the spawner writes (§ Metrics to track). This is the
+  anti-rubber-stamp property: a judge that writes nothing cannot quietly launder
+  its own record.
 - **Never moves Linear issues.** State transitions are Cowork's job, gated on the verdict.
 - **Never approves a High-risk plan without explicit user sign-off line.** Default to Escalate.
 - **Never silently widens scope.** Extra coverage = GAP on dimension 1.
@@ -250,8 +282,15 @@ auto-invocation from Cowork's plan-doc workflow.
    evidence. Read auxiliary files (Vision, UL, canon, wiring-checklist,
    CLAUDE.md) only if the dimension demands it.
 6. Apply the aggregation rubric — first match wins.
-7. Emit the verdict block in exactly the specified shape.
-8. Append a single line to `Docs/judge-metrics/YYYY-WW.md` with metrics.
+7. Emit the verdict block in exactly the specified shape. **This is the last
+   step — the procedure ends with output, never with a write.**
+
+Do not re-add a metrics-file step here. Until 2026-08-02 this procedure carried
+an eighth step telling the judge to append to `Docs/judge-metrics/`, which the
+hard rule below forbids. The judge correctly obeyed the hard rule and wrote
+nothing, so the contradiction was silent: no error, no metrics, for as long as
+the skill existed (THR-762). Persisting the row belongs to the spawner — see
+§ Metrics to track.
 
 ## Relationship to design governance
 
