@@ -210,6 +210,108 @@ describe('the allowlist and the CI filter cannot drift apart', () => {
   });
 });
 
+/**
+ * THR-946 — the merge-queue copy of the docs-only predicate.
+ *
+ * A `merge_group` event carries no changed-file list and no diff base
+ * `dorny/paths-filter` can read, so `ci.yml` classifies merge groups itself with
+ * a shell `grep` over `git diff --name-only <base_sha> HEAD`. That makes a THIRD
+ * copy of a rule already written twice above it and described a fourth time in
+ * CLAUDE.md.
+ *
+ * A drifted third copy fails nothing on its own — it just reclassifies merge
+ * groups. One direction is merely wasteful (a docs group paying the full suite);
+ * the other is the vacuous gate THR-768 is about, because a code group reading
+ * as docs-only skips `Test · Typecheck · Build` on the exact tree that lands on
+ * `main`. Structural containment is checked first, then the string is executed as
+ * a RegExp — inspection alone cannot prove the fragments compose.
+ */
+describe('the merge-group predicate cannot drift from the paths-filter one (THR-946)', () => {
+  const workflow = fs.readFileSync(CI_WORKFLOW, 'utf8');
+
+  function mergeGroupDocPattern(): string {
+    const match = workflow.match(/^\s*DOC_PATTERN:\s*'(.+)'$/m);
+    expect(match, 'ci.yml no longer defines DOC_PATTERN in the merge-group detect step').not.toBeNull();
+    return match![1];
+  }
+
+  /** The ERE fragment a given doc glob must contribute to the shell predicate. */
+  function ereFragmentForGlob(glob: string): string {
+    if (glob === '**/*.md') return '\\.md$';
+    return `^${glob.replace(/\/\*\*$/, '').replaceAll('.', '\\.')}/`;
+  }
+
+  it('the workflow is actually triggered on merge_group', () => {
+    // Without the trigger the predicate below is dead code — and, worse, every
+    // queued PR stalls waiting on a required check that never reports at all.
+    expect(workflow).toMatch(/^ {2}merge_group:$/m);
+  });
+
+  it('covers every base doc pattern', () => {
+    const pattern = mergeGroupDocPattern();
+    for (const glob of DOC_EXCLUDED_GLOBS) {
+      expect(pattern, `${glob} is not represented`).toContain(ereFragmentForGlob(glob));
+    }
+  });
+
+  it('covers every allowlisted doc-sourced artifact', () => {
+    const pattern = mergeGroupDocPattern();
+    for (const artifact of DOC_TO_CODE_ALLOWLIST) {
+      expect(pattern, `${artifact} is not represented`).toContain(`^${artifact.replaceAll('.', '\\.')}$`);
+    }
+  });
+
+  describe('behaviour — the pattern is executed, not merely inspected', () => {
+    const isDoc = (file: string) => new RegExp(mergeGroupDocPattern()).test(file);
+
+    const DOC_FIXTURES = [
+      'Docs/impediments.md',
+      'Docs/canon/process.md',
+      'Design/briefing.md',
+      '.planning/ROADMAP.md',
+      'README.md',
+      ...DOC_TO_CODE_ALLOWLIST,
+    ];
+
+    const CODE_FIXTURES = [
+      'src/engine/graph.ts',
+      'scripts/interface-contracts.ts',
+      '.github/workflows/ci.yml',
+      'package.json',
+      'src/data/unified-action-templates.ts',
+      // Adjacent to an allowlisted artifact but not it. The exclusions are exact
+      // paths, never globs — the point is to exclude two named artifacts, not to
+      // carve a hole in src/ — so this must stay code.
+      'src/data/other.generated.json',
+    ];
+
+    it('sweeps a non-empty population on both sides', () => {
+      // Without this both it.each blocks below pass vacuously if a list empties.
+      expect(DOC_FIXTURES.length).toBeGreaterThan(4);
+      expect(CODE_FIXTURES.length).toBeGreaterThan(4);
+    });
+
+    it.each(DOC_FIXTURES)('classifies %s as documentation', (file) => {
+      expect(isDoc(file)).toBe(true);
+    });
+
+    it.each(CODE_FIXTURES)('classifies %s as code', (file) => {
+      expect(isDoc(file)).toBe(false);
+    });
+
+    it('answers identically to isDocPath outside the allowlist', () => {
+      // The allowlist is where the two deliberately differ: isDocPath asks "is
+      // this a documentation path" (an artifact in src/ is not), while the CI
+      // predicate asks "does this keep a PR on the docs track" (it does). Every
+      // other path must get the same answer from both.
+      for (const file of [...DOC_FIXTURES, ...CODE_FIXTURES]) {
+        if ((DOC_TO_CODE_ALLOWLIST as readonly string[]).includes(file)) continue;
+        expect(isDoc(file), file).toBe(isDocPath(file));
+      }
+    });
+  });
+});
+
 describe('every registered generated artifact declares its sources', () => {
   it('covers each STATIC_GENERATED_PATHS entry', () => {
     // Read the registry from its own module rather than duplicating it, so a new
