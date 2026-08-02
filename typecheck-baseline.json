@@ -1,5 +1,5 @@
 {
-  "total": 3481,
+  "total": 3478,
   "command": "npx tsc -b --force --pretty false",
   "perFile": {
     "scripts/lint-encounter-content.ts": 2,
@@ -712,7 +712,7 @@
     "src/engine/trustMechanics.ts": 1,
     "src/engine/unifiedActionLifecycle.ts": 1,
     "src/engine/unifiedActionPhases.ts": 1,
-    "src/engine/unifiedActionResolution.ts": 33,
+    "src/engine/unifiedActionResolution.ts": 30,
     "src/engine/unifiedCandidates.ts": 1,
     "src/engine/vignetteNotification.ts": 2,
     "src/engine/worldgen/__tests__/biome.test.ts": 4,

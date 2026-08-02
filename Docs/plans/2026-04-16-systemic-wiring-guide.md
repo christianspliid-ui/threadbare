@@ -942,6 +942,55 @@ carryoverFactorLines: {
 
 ---
 
+### Capability 18: Outcome-Keyed Aftermath — The Ending Reflects How It Ended (THR-969)
+
+**What it is:** an optional `byOutcome` map on any `AftermathVariant` (both a choice-keyed `variants[choiceId]` entry and the `fallback`), letting one authored ending fork on the outcome the encounter actually landed on.
+
+**The gap it closes.** `BranchAwareAftermathConfig` keyed only on the `choiceId` of one step. An encounter with no mid-encounter choice — `encounter.slice.unsafe_bridge`, and most linear templates, which ship `variants: {}` — could therefore only ever render its single `fallback`. "Crossed clean" and "fell in the river" produced **identical** aftermath prose and chips, and no amount of content skill could fix it: the ending was inexpressible by construction.
+
+**Why you care:** this is the cheapest way to make a linear, choice-less encounter feel like it noticed what happened. You do not need to promote it to a branching encounter, and you do not need to author all seven bands — write the two or three that actually read differently.
+
+**How you author it** — one optional field, additive:
+
+```ts
+aftermathConfig: {
+  branchOnStep: 0,
+  variants: {},
+  fallback: {
+    overview: 'The river keeps moving under the bridge, and the keeper keeps taking coppers.',
+    changes: [],
+    reactions: [{ id: 'slice.bridge.walk_on', label: 'Walk on', intent: '…', effects: [] }],
+    byOutcome: {
+      critical_success: {
+        overview: 'Not a plank complained, and the far bank came up dry.',
+      },
+      critical_failure: {
+        overview: 'The third plank went, and the river kept the rest of the afternoon.',
+        reactionPrompt: 'Count what the water kept.',
+        reactions: [{ id: 'slice.bridge.haul_out', label: 'Haul out', intent: '…', effects: [] }],
+      },
+    },
+  },
+}
+```
+
+| Field | What it does |
+|---|---|
+| `overview` | Optional. Replaces the variant's closing paragraph for this band only. |
+| `changes` | Optional. Replaces the variant's authored `changes` — omit it to keep them. |
+| `reactionPrompt` | Optional. Replaces the prompt above the reaction buttons. |
+| `reactions` | Optional. Replaces the whole reaction set — a disaster can offer different exits than a clean win. |
+
+**Resolution order is choice → outcome band → base variant → fallback.** The choice keying (THR-191) picks the variant *first*, then the band layers on top of **that** variant, field by field. So a band authored on `variants.paid` fires only when the player took the `paid` route and hit that outcome — the two axes compose rather than compete.
+
+**The rule that catches people: you key on `UnifiedActionOutcome`, the seven-value action outcome** (`success`, `failure`, `contested_won`, `contested_lost`, `critical_success`, `critical_failure`, `success_at_cost`). Deliberately **not** the five-band `EncounterOutcomeBand` (a trace type), **not** the six-value `StepOutcome` (which has `near_miss`), and **not** `OutcomeBand` from `outcomeConsequences.ts`. Each of those would type-check while being the wrong domain — the same trap `StepNudge.bandProse` documents.
+
+**Fail-soft:** an outcome with no authored band, or no outcome at all, renders the un-banded variant unchanged — never a blank ending and never a throw. A band that restates only `overview` keeps the variant's prompt, reactions, and changes. Takes **zero** new rng: the band is read from the already-resolved outcome.
+
+**Where to find the implementation:** `resolveAftermathVariant` + `applyAftermathOutcomeBand` in `src/types/unifiedAction.ts` — one shared resolver, called by both the engine's aftermath assembly (`resolveTemplateAftermathVariant` in `src/engine/unifiedActionResolution.ts`) and the stage adapter (`buildUnifiedEncounterStageModel.ts::resolveAuthoredAftermath`). It is deliberately one function: those two surfaces each had their own copy of the choice lookup, and a UI copy that missed the band would render the un-banded ending the engine had already resolved past.
+
+---
+
 ## Part 3: The Wiring Checklist — Ask These Before You Write
 
 Before writing any encounter, answer these questions. If the answer to most of them is "not applicable," you may be writing a book page, not game content.
