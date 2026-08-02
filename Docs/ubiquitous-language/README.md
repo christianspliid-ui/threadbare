@@ -51,6 +51,15 @@ Load this file at session start (referenced from CLAUDE.md). Load specific shard
 - **[Avatar](./Agents.md#avatar)** — a physical Ascendant manifestation connected via `avatar_of` edge
 - **[AxiologicalProfile](./Agents.md#axiologicalprofile)** — signed score across every ValuePair; drives epithet, social response, ambition selection
 - **[ValuePair](./Agents.md#valuepair)** — a single virtue/flaw axis (e.g. mercy_ruthlessness); nine pairs total, eight Reach-bound plus one meta
+- **[mentor](./Agents.md#mentor)** — agent at Domain Capability tier ≥ `MENTOR_MIN_TIER` (6) on the source end of an active `mentors` edge; teaches via Train Apprentice
+- **[apprentice](./Agents.md#apprentice)** — agent at tier 2–4 in the taught Reach, on the target end of a `mentors` edge in `offered` or `training` phase
+- **[mentors (edge)](./Agents.md#mentors-edge)** — directed `mentor → apprentice` edge carrying domain, progress, phase, and bondQuality; outlives the backing initiative
+- **[bondQuality](./Agents.md#bondquality)** — narrative health of a mentorship bond, clamped `[−1, +1]`; failures cut deeper than successes heal; decides the terminal arc
+- **[Train Apprentice](./Agents.md#train-apprentice)** — the multi-tick `social` initiative wrapping a mentorship; the edge is the relationship, the initiative is the occupation
+- **[The Surpassing](./Agents.md#the-surpassing)** — terminal mentorship arc: apprentice matches or passes the mentor's tier on a good bond; pride and loss in the same breath
+- **[Falling Out](./Agents.md#falling-out)** — terminal mentorship arc below `FALLING_OUT_BOND_THRESHOLD`; seeds hostility, apprentice keeps half the Mastery gain
+- **[Quiet Parting](./Agents.md#quiet-parting)** — terminal mentorship arc on a completed initiative with a middling bond; neither graduation nor rupture
+- **[Dissolution](./Agents.md#dissolution)** — terminal mentorship arc when the backing initiative fails (death, exile, separation); carries no hostility, unlike Falling Out
 - **[Group](./Agents.md#group)** — engine-layer collective of 2–10 named agents; `actorType: 'group'` + `groupType`, no `located_at` edge
 - **[Company](./Agents.md#company)** — the player-facing word for a Group; prose and UI never say "party"
 - **[Group Cohesion](./Agents.md#group-cohesion)** — event-driven 0–1 aggregate on a group node; UI renders bound/holding/frayed/breaking, never the number
@@ -74,6 +83,10 @@ Load this file at session start (referenced from CLAUDE.md). Load specific shard
 - **[Chapter](./Encounters.md#chapter)** — the reading unit of a resolved or in-progress encounter; opening, steps, interventions, aftermath
 - **[Chapter Record](./Encounters.md#chapter-record)** — compact post-`enrichProse()` snapshot of a resolved encounter (`ChapterRecord`) appended to `chapterArchive`
 - **[Chapter Ledger](./Encounters.md#chapter-ledger)** — always-readable list (`game.chapter-ledger`) merging active encounters and resolved chapters
+- **[Scene](./Encounters.md#scene)** — the world context of one action or encounter: its Target, its Cast, and its place; what makes prose name real graph entities
+- **[Cast](./Encounters.md#cast)** — an encounter's `supportBindings` viewed as characters; prose uses `{cast:<key>}`, aftermath effects use `$cast:<key>`; declared keys always resolve
+- **[Target](./Encounters.md#target)** — the node an action is performed on (`action.targetId`), distinct from the actor; addressable in aftermath via the `$target` sentinel
+- **[Support Bundle](./Encounters.md#support-bundle)** — the template-side declaration of supporting entities, resolved into the Cast at instantiation; the bundle is the recipe, the Cast is the dish
 - **[Nudge](./Encounters.md#nudge)** — authored, essence-priced micro-intervention played into an attended step; shifts the odds, never picks the outcome
 - **[Rider](./Encounters.md#rider)** — mechanical remap of an already-resolved band (`no_crit_fail`, `floor_at_cost`); zero PRNG draws, never stacks
 - **[Band Fragment](./Encounters.md#band-fragment)** — prose appended when a nudge was active for that band; **not** a Rider, **not** a Context Fragment
@@ -114,8 +127,8 @@ Load this file at session start (referenced from CLAUDE.md). Load specific shard
 - **[Property-vs-Edge Rule](./Graph.md#property-vs-edge-rule)** — relationships are edges, not property fields; traversal is the default
 - **[Three-tier Position Model](./Graph.md#three-tier-position-model)** — spatial hierarchy: hex → location → sublocation; agent occupies exactly one tier via a single `located_at` edge
 - **[located_at Edge](./Graph.md#located_at-edge)** — the single edge connecting an agent to their current position; authoritative source of agent location
-- **[worldVersion / touchWorld()](./Graph.md#worldversion--touchworld)** — version counter bumped on graph mutations; UI selectors depend on this, not object reference
-- **[structuralCacheVersion / touchStructure()](./Graph.md#structuralcacheversion--touchstructure)** — version counter for distance matrix and encounter cache; call after structural mutations
+- **[worldVersion / touchWorld()](./Graph.md#worldversion-touchworld)** — version counter bumped on graph mutations; UI selectors depend on this, not object reference
+- **[structuralCacheVersion / touchStructure()](./Graph.md#structuralcacheversion-touchstructure)** — version counter for distance matrix and encounter cache; call after structural mutations
 - **[SimulationRuntime](./Graph.md#simulationruntime)** — per-session cache owner; scoped to playthrough; module-level singletons were rejected
 - **[GameState](./Graph.md#gamestate)** — per-session simulation container; mutated in place per tick; UI reads via worldVersion
 - **[HexTile](./Graph.md#hextile)** — one cell on the world's hex grid; top tier of the three-tier position model
@@ -145,6 +158,7 @@ Load this file at session start (referenced from CLAUDE.md). Load specific shard
 - **[Definition of Done](./Process.md#definition-of-done)** — mandatory closeout: commit, push, merge, deploy, update docs, log deferrals + impediments
 - **[Design Governance](./Process.md#design-governance)** — 8-step checklist: grill-me → draft → brainstorm → audit → revise → NFP table → three-pillar check → Vision audit → present
 - **[Ubiquitous Language (UL)](./Process.md#ubiquitous-language-ul)** — this sharded glossary; authority on terminology when sources disagree
+- **[Domain Canon Page](./Process.md#domain-canon-page)** — ≤200-line navigation doc at `Docs/canon/<domain>.md`; agent Step 0 for authoring; points at specs, never owns definitions
 - **[Grill-me](./Process.md#grill-me)** — adversarial pre-design questioning skill; Design Governance step 0 for non-trivial work
 - **[Vision Audit](./Process.md#vision-audit)** — Design Governance step 7; verify design doesn't silently contradict a Vision premise
 - **[Wiring Checklist](./Process.md#wiring-checklist)** — `Docs/plans/wiring-checklist.md`; verification that new modules are connected across all surfaces
@@ -155,6 +169,8 @@ Load this file at session start (referenced from CLAUDE.md). Load specific shard
 
 ---
 
-*v1.5 — 8 shards, 118 canonical terms (THR-715 added the encounter-volume vocabulary to Encounters: Surface, Context Fragment — the latter declared two-word because bare *Fragment* collides with the pre-existing Band Fragment. THR-782/774 added the nudge-model vocabulary: Nudge, Rider, Band Fragment, Rebuild Road in Encounters; Broken, Dissolution Threshold in Agents. THR-788 added the Traits shard: Trait, Trait Assignment, Trait Category, Destiny, Trait Ref, TraitPredicate, Trait Visibility, Trait Hook, Selection-Competence Separation). Coverage expands via the propose-new-term flow. UL wins on terminology disagreements.*
+*v1.6 — 8 shards, 118 canonical terms (THR-715 added the encounter-volume vocabulary to Encounters: Surface, Context Fragment — the latter declared two-word because bare *Fragment* collides with the pre-existing Band Fragment. THR-782/774 added the nudge-model vocabulary: Nudge, Rider, Band Fragment, Rebuild Road in Encounters; Broken, Dissolution Threshold in Agents. THR-788 added the Traits shard: Trait, Trait Assignment, Trait Category, Destiny, Trait Ref, TraitPredicate, Trait Visibility, Trait Hook, Selection-Competence Separation). Coverage expands via the propose-new-term flow. UL wins on terminology disagreements.*
 
-*Index coverage: 102 of the 116 shard terms are listed above (all six THR-782 terms are indexed). The unindexed remainder — mentorship terms in Agents, scene terms in Encounters, versioning terms in Graph, one in Process — is defined in the shards but absent here, so a session that loads only this file cannot see those terms exist. The dashboard is unaffected (it falls back to each term's first body sentence). Backfill tracked as THR-806, which should also reconcile the tally: the previous revision of this note claimed both "96 of 110" (14 unindexed) and "16 pre-existing entries", which cannot both be right.*
+*Index coverage: **118 of 118** — every shard term is listed above, and every index anchor resolves to a live shard heading (THR-806, 2026-08-02). Backfilled in that pass: the nine mentorship terms in Agents, the four scene-cast terms in Encounters, and Domain Canon Page in Process. The two Graph versioning terms were a different defect — they were already indexed, but under hand-typed double-hyphen anchors (`#worldversion--touchworld`) that no heading slugifies to, so both links were dead; they were repaired rather than duplicated.*
+
+*Keeping it at 118 of 118: verify with the shard-vs-index diff described in THR-806 — slugify every shard `### ` heading with `slugifyHeading` (`scripts/generate-ul-dashboard-data.ts`) and diff both directions against the anchors here. **Do not use the dashboard generator's warning list for this** — its `missing_one_liner` warning falls back to each term's first body sentence, so it stays silent on an unindexed term. That fallback is why this drift accumulated across three separate waves unnoticed. A self-detecting guard is tracked as THR-959.*
