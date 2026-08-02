@@ -155,6 +155,11 @@ const GOD_VOICE_BY_HUNGER: Record<string, string> = {
   kindle: 'You have set fires in dry country. This one will burn on its own once lit.',
   bind: 'You have bound rivers and roads to their courses. This is the first that can refuse.',
   wander: 'You have never stayed anywhere. This is the first thing you would come back for.',
+  // THR-891 — the two hungers this table was missing when `HungerId` still
+  // said ten. Keyed bare, like every line above; `BondBeat` narrows the
+  // stored dotted id before the lookup.
+  haunt: 'You have sat at the edge of a thousand sleeps and never been named. This is the first one you want awake.',
+  illuminate: 'You have burned the shadows out of whole houses. This is the first thing you are slow to look straight at.',
 };
 
 /** Used for any hunger with no authored variant — never a blank beat. */

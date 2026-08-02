@@ -30,7 +30,7 @@
 import type { WorldGraph } from '../../../../engine/graph';
 import type { GameState } from '../../../../types/gameState';
 import type { SphereName } from '../../../../types/index';
-import type { HungerId } from '../../../../types/hunger';
+import { toHungerId } from '../../../../types/hunger';
 import {
   buildRepertoire,
   echoCardsFromDefinitions,
@@ -298,7 +298,11 @@ export function buildNudgePhaseModel(
         buildRepertoire({
           primary: identity.sphereAlignment?.primary,
           secondary: identity.sphereAlignment?.secondary,
-          hunger: identity.hungerId as HungerId | undefined,
+          // THR-891 — `hungerId` is stored dotted (`hunger.witness`) while the
+          // library keys on the bare id. This was an `as HungerId` cast, which
+          // type-checks and is false: the lookup missed for every god, so no
+          // hunger unique was ever dealt. `toHungerId` is the real conversion.
+          hunger: toHungerId(identity.hungerId),
           unlockedActionIds: new Set(gameState?.unlockedActionIds ?? []),
           echoCards: echoCardsFromDefinitions(gameState?.echoDefinitions ?? []),
         }).map((entry) => entry.member.id),

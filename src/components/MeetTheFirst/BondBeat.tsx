@@ -6,6 +6,7 @@ import type { SphereName } from '../../types/graph';
 import { NudgePhaseShell } from '../Game/encounter-stage/shells/NudgePhaseShell';
 import { buildMeetingNudgePhaseModel } from './buildMeetingNudgePhaseModel';
 import { resolveBondTest } from '../../engine/meetingEncounter';
+import { toHungerId } from '../../types/hunger';
 import { MEETING_FORMATIVE_TEST_COUNT } from '../../data/meeting-nudge-constants';
 
 interface BondBeatProps {
@@ -94,7 +95,12 @@ export function BondBeat({
 
   // ── The bond test ──────────────────────────────────────────────
   if (stage === 'test' && bondTest && testPhase) {
-    const godVoice = bondTest.godVoiceByHunger[hungerId] ?? bondTest.godVoiceFallback;
+    // THR-891 — `hungerId` is stored dotted (`hunger.witness`) and `BOND_PROSE`
+    // above is keyed that way, but `godVoiceByHunger` is keyed bare. Indexing it
+    // with the dotted id missed every time, so the authored per-hunger voice
+    // never surfaced and every god got the fallback. Narrow before the lookup.
+    const godVoice =
+      bondTest.godVoiceByHunger[toHungerId(hungerId) ?? ''] ?? bondTest.godVoiceFallback;
     return (
       <div
         className="h-screen flex flex-col items-center justify-center overflow-y-auto"

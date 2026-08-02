@@ -11,4 +11,6 @@ export const CLOSING_VIGNETTES: Record<HungerId, string> = {
   kindle: `He hums the melody again as he walks home. But this time, the notes come easier. The spaces between them feel deliberate instead of accidental. He doesn't know he's composing. He just knows the song isn't finished.`,
   bind: `She stands up from the dispute and brushes the dirt from her knees. Both families are nodding. The line she drew is still there, and it looks more permanent than it should. She files it away: this is how you solve things. With geometry and patience.`,
   wander: `He picks up the bag by the door. This time, he doesn't put it down. The road is still empty, but it feels different now — not lonely, but waiting. He steps through the doorway and doesn't close it behind him.`,
+  haunt: `She clears both bowls the way she always does. But she leaves the chair pulled out, and tonight she will dream of him so clearly she wakes with his name already in her mouth. She won't call it grief after this. She'll call it company, and she won't be entirely wrong.`,
+  illuminate: `He puts the floorboards back and scatters chaff over the seam. But he is already composing the sentence he'll say when somebody finally asks him, and it's a good sentence — short, and impossible to misunderstand. He doesn't know yet who he'll say it to. He knows he won't soften it.`,
 };

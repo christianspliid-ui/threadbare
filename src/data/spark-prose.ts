@@ -1,7 +1,7 @@
 /**
  * spark-prose.ts — The Spark as Recognition
  *
- * One prose passage per Hunger (all 10). This is the highest prose budget
+ * One prose passage per Hunger (all 12). This is the highest prose budget
  * beat in the meeting encounter — 4-6 sentences each. The god recognizes
  * something in The First that echoes their own mortal Drive.
  */
@@ -26,6 +26,10 @@ export const SPARK_PROSE: Record<HungerId, string> = {
   kindle: `He's singing. Not well — his voice cracks on the high notes and he doesn't know all the words. But the children have stopped playing to listen, and the old woman by the well has closed her eyes. Something in the melody reaches past craft into something raw and true.\n\nYou feel the spark. Not in his voice — in the space between the notes, where something wants to exist that doesn't yet. The thread wraps around that empty space and holds it open.`,
 
   bind: `She's mediating a dispute between two families over a well. She's not taking sides — she's drawing a line in the dirt, showing where the water table runs, making both parties see the geometry of the situation. When one man raises his voice, she doesn't flinch. She just points at the line.\n\nYou see the architecture of obligation forming around her. She doesn't know she's building a covenant. You do. The thread settles into the structure she's creating, and it holds.`,
+
+  haunt: `She sets the second bowl down out of habit, the way she has every evening for two winters, and only notices when the steam stops rising. She doesn't take it away. She reports the day to the empty side of the table — not loudly, not madly, just the small business of who came to the door and what the weather did. You kept a chair like that once.\n\nThe hunger stirs. Not for her grief — for her refusal, the way she holds a dead man present by nothing but attention. The thread settles over her like a draught from a door nobody opened. She stops mid-sentence and looks at the chair.`,
+
+  illuminate: `He was told to burn the tithe ledger, and he has burned a ledger, carefully, where the steward could watch him do it. The real one is under the granary floor, copied out in a hand so small it reads like water damage. He doesn't understand half of what the columns mean. He understands exactly what they will mean to somebody who does.\n\nYou feel it — not the courage, the intolerance. The flat refusal to let a comfortable lie stand in a place where a true thing could stand instead. The thread finds him in the dark under the floorboards, and the dark gets measurably less dark.`,
 
   wander: `He's packed his bag three times this week. Each time, he unpacks it. But this time he's left it by the door, and he keeps looking at it while he eats. The road outside the window is empty. It won't be for long.\n\nYou feel the pull. The same pull that dragged you across the boundary between mortal and divine — not toward something, but away from everything that insists you stay. The thread finds him at the threshold, and it whispers: go.`,
 };

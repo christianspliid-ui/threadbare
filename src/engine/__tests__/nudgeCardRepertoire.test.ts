@@ -68,11 +68,13 @@ describe('library liveness', () => {
     expect(entries.length).toBeGreaterThan(0);
 
     // Pinned as a closed set: adding a HungerId member without its unique card
-    // must fail here rather than silently shipping a hungerless god (THR-891
-    // tracks the 10-vs-12 gap between the code and the design docs).
+    // must fail here rather than silently shipping a hungerless god. THR-891
+    // closed the 10-vs-12 gap in favour of 12 — the number the remembrance
+    // catalog, the meeting prose register, the plan doc and the wiki page all
+    // already used.
     expect(entries.map(([h]) => h).sort()).toEqual([
-      'bind', 'consume', 'gather', 'kindle', 'preserve',
-      'reclaim', 'reshape', 'sever', 'wander', 'witness',
+      'bind', 'consume', 'gather', 'haunt', 'illuminate', 'kindle',
+      'preserve', 'reclaim', 'reshape', 'sever', 'wander', 'witness',
     ]);
 
     const ids = entries.map(([, id]) => id);

@@ -395,6 +395,20 @@ export const HUNGER_UNIQUE_CARDS: Readonly<Record<HungerId, string>> = {
   reclaim: 'card.balm.hunger.reclaim',
   reshape: 'card.stumble.hunger.reshape',
   wander: 'card.omen.hunger.wander',
+  // THR-891 — the two hungers added to `HungerId` when it was reconciled with
+  // the remembrance catalog. Both types are picked from the *existing* table
+  // above rather than minted, and each is the closest read of its hunger's
+  // already-blessed mandate:
+  //   haunt      → its mandate is "influence through dreams, omens, and unseen
+  //                presence"; `compulsion` is "a dream-sent urge shaping the
+  //                mortal's next decision". Near-verbatim.
+  //   illuminate → its mandate is to "make the invisible visible", its court a
+  //                beacon with "no shadows"; `heavy_hand` is the library's one
+  //                card whose defining trade is acting conspicuously
+  //                (detection pressure rises) — the exact inverse of `veil`,
+  //                as Illuminate is the inverse of a concealment god.
+  haunt: 'card.compulsion.hunger.haunt',
+  illuminate: 'card.heavy_hand.hunger.illuminate',
 };
 
 /**
