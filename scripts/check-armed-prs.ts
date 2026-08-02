@@ -1,41 +1,68 @@
 #!/usr/bin/env node
 
 /**
- * Armed auto-merge PR health probe (THR-897).
+ * Open-PR merge health probe (THR-897, membership widened by THR-930).
  *
- * Answers one question: **of the PRs that are armed and waiting to merge, which
- * ones can never get there on their own?**
+ * Answers one question: **of the PRs that are open and expected to reach
+ * `main`, which ones can never get there on their own?**
  *
  * ## The gap this closes
  *
- * pull-work Step 0.8 (shipped by THR-702) sweeps armed PRs and runs
+ * pull-work Step 0.8 (shipped by THR-702) sweeps PRs and runs
  * `gh pr update-branch` on the oldest one at `mergeStateStatus: BEHIND`. That
  * matches on `BEHIND` **only**. A PR that goes `DIRTY` — a real merge conflict —
  * is not `BEHIND`, so the sweep skips it, and `update-branch` would not fix it
  * anyway. Auto-merge never fires on a conflicted PR.
  *
- * The result is the worst shape a stall can take: a PR that reads *armed, open,
- * and actively swept* while being structurally incapable of merging, with
- * nothing surfacing it. Measured 2026-07-31: 2 of 3 open PRs were in that
- * state, one of them carrying the deliverable that unblocked 11 content
- * tickets, un-drained for ~12h across three sweeps that each reported success.
+ * The result is the worst shape a stall can take: a PR that reads *open and
+ * actively swept* while being structurally incapable of merging, with nothing
+ * surfacing it. Measured 2026-07-31: 2 of 3 open PRs were in that state, one of
+ * them carrying the deliverable that unblocked 11 content tickets, un-drained
+ * for ~12h across three sweeps that each reported success.
+ *
+ * ## Why the input set is every open PR, not just the armed ones (THR-930)
+ *
+ * THR-897 fixed the *classification* of PRs inside the armed set. It left the
+ * set itself as a filter, so a PR that was conflicted **and never armed** was
+ * not merely misclassified — it was absent from the input, and the probe was
+ * correct against its stated contract while being wrong as a health signal.
+ *
+ * Measured 2026-08-02, on a repo whose only open PR was #1114 (`DIRTY`,
+ * unarmed, 3+ days old, holding THR-860's In-Dev slot the whole time), this
+ * probe reported `counts.conflicted: 0` and the summary *"No PRs are waiting to
+ * merge."* Arming is a statement about *how* a PR intends to merge; it is not a
+ * statement about whether it is stuck. So membership is now **open and
+ * non-draft**, and `armed` is carried per-PR instead of gating entry.
+ *
+ * Draft PRs stay out: a draft is deliberately not trying to merge yet, which is
+ * the one case where "no promise to merge" is an author's explicit signal
+ * rather than an inference.
  *
  * ## What this probe does instead
  *
- * Classifies every armed PR into what it actually needs, rather than testing
- * one value for equality:
+ * Classifies every open non-draft PR into what it actually needs, rather than
+ * testing one value for equality:
  *
  * | class           | `mergeStateStatus`             | who can clear it |
  * |-----------------|--------------------------------|------------------|
- * | `drainable`     | `BEHIND`                       | the sweep — `gh pr update-branch` |
+ * | `drainable`     | `BEHIND`                       | the sweep — `gh pr update-branch`, **armed only** |
  * | `conflicted`    | `DIRTY`                        | **a session** — `git merge origin/main`, resolve, push |
  * | `waiting`       | `CLEAN` `BLOCKED` `HAS_HOOKS` `UNSTABLE` | nobody; auto-merge fires on green |
  * | `indeterminate` | `UNKNOWN` `DRAFT`              | nobody; re-query (see below) |
  *
- * Only `drainable` is the sweep's to fix. `conflicted` is the class that was
- * silently dropped, and it is reported with **the conflicting file names**
- * (via a read-only `git merge-tree`) so the session that picks it up starts
- * with the diagnosis already done.
+ * Only `drainable` is the sweep's to fix, and only when the PR is **armed** —
+ * `update-branch` on an unarmed PR refreshes a branch that nothing is waiting
+ * to merge, so `updateCandidate` stays armed-only by construction. `conflicted`
+ * is the class that was silently dropped, and it is reported with **the
+ * conflicting file names** (via a read-only `git merge-tree`) so the session
+ * that picks it up starts with the diagnosis already done.
+ *
+ * ## Naming
+ *
+ * The file, the npm script, and the exported symbols keep their `armed` names.
+ * The scope they describe has widened, but renaming them would ripple through
+ * `package.json`, two skill docs, and a plan doc for no behavioural gain — the
+ * docstrings and the per-PR `armed` field carry the real contract.
  *
  * ## `UNKNOWN` is not "fine" — it means "not computed yet"
  *
@@ -56,6 +83,13 @@
  * - past `ARMED_DIRTY_ABANDONED_HOURS` → `needsChristian: true`. At this point
  *   ~12 hourly sessions have each had a chance and none cleared it, so the
  *   stall is systemic rather than a task waiting for its turn.
+ *
+ * **Unarmed conflicts run the same two tiers on a slower clock** — see
+ * `UNARMED_DIRTY_ESCALATE_HOURS` / `UNARMED_DIRTY_ABANDONED_HOURS`. Arming is a
+ * promise that a PR is trying to merge *now*, so its absence justifies patience,
+ * not silence: THR-930's motivating case sat 3+ days. The clock also starts from
+ * a different event, because an unarmed PR has no `enabledAt` — see
+ * `clockStartMs`.
  *
  * ## Fail-soft (NFP #4)
  *
@@ -95,6 +129,25 @@ export const ARMED_DIRTY_ESCALATE_MINUTES = 90;
  * than a queue waiting its turn.
  */
 export const ARMED_DIRTY_ABANDONED_HOURS = 12;
+
+/**
+ * How long an **unarmed** PR may sit conflicted before a session must pick it
+ * up (THR-930). Longer than the armed tier because arming is a promise that a
+ * PR is trying to merge right now, and an unarmed PR has made no such promise —
+ * it may legitimately be mid-authoring. Six hours is past the point where that
+ * reading survives: an author actively working a branch resolves a conflict in
+ * the session that created it.
+ */
+export const UNARMED_DIRTY_ESCALATE_HOURS = 6;
+
+/**
+ * How long an unarmed PR may sit conflicted before it becomes Christian's
+ * (THR-930). Double the armed tier, for the same reason the escalate tier is
+ * longer. The motivating case — PR #1114, unarmed and conflicted for 3+ days
+ * while holding THR-860's In-Dev slot — clears this by a wide margin, which is
+ * the point: no threshold in this file should let that go unreported.
+ */
+export const UNARMED_DIRTY_ABANDONED_HOURS = 24;
 
 /**
  * How many times to re-query a PR reading `UNKNOWN` before believing it.
@@ -147,8 +200,22 @@ export interface ArmedPrRecord {
   number: number;
   title: string;
   mergeStateStatus: MergeStateStatus;
-  /** When auto-merge was armed, epoch ms. */
-  enabledAtMs: number;
+  /**
+   * Whether auto-merge is armed on this PR (THR-930). Chooses the age tier and
+   * gates `updateCandidate`; it no longer gates membership.
+   */
+  armed: boolean;
+  /**
+   * Start of this PR's staleness clock, epoch ms — `autoMergeRequest.enabledAt`
+   * when armed, `createdAt` when not.
+   *
+   * The two events are not interchangeable and the field is deliberately not
+   * called `enabledAtMs` any more: an unarmed PR has no `enabledAt`, and the
+   * pre-THR-930 code defaulted a missing one to `Date.now()`, which would have
+   * read every unarmed PR as zero minutes old — a conflicted PR reporting as
+   * brand new on every single run.
+   */
+  clockStartMs: number;
   /** Head commit, used to compute conflicting files. */
   headRefOid: string;
 }
@@ -158,12 +225,19 @@ export interface ArmedPrReport {
   title: string;
   klass: ArmedPrClass;
   mergeStateStatus: MergeStateStatus;
-  /** How long it has been armed, in minutes. */
-  armedForMinutes: number;
+  /** Whether auto-merge is armed — keeps the split legible downstream. */
+  armed: boolean;
+  /**
+   * How long the PR has been on its staleness clock, in minutes. Measured from
+   * arming when armed, from creation when not (see `clockStartMs`).
+   */
+  ageMinutes: number;
   /** Conflicting file names — populated for `conflicted` only. */
   conflictFiles: string[];
-  /** True when a `conflicted` PR is past `ARMED_DIRTY_ESCALATE_MINUTES`. */
+  /** True when a `conflicted` PR is past its escalate tier (armed or unarmed). */
   escalated: boolean;
+  /** True when a `conflicted` PR is past its abandoned tier (armed or unarmed). */
+  abandoned: boolean;
 }
 
 export interface ArmedPrInput {
@@ -185,11 +259,19 @@ export interface ArmedPrResult {
   needsChristian: boolean;
   /** A session must pick this up — surfaced to the lane, not to Christian. */
   needsSession: boolean;
-  /** PR the sweep should `update-branch` this run, or `null`. */
+  /**
+   * PR the sweep should `update-branch` this run, or `null`. **Armed and
+   * `drainable` only** — `update-branch` on an unarmed PR refreshes a branch
+   * that nothing is waiting to merge (THR-930 Done-when #2).
+   */
   updateCandidate: number | null;
-  /** Every armed PR, classified. */
+  /** Every open non-draft PR, classified. */
   prs: ArmedPrReport[];
   counts: Record<ArmedPrClass, number>;
+  /** How many of `prs` have auto-merge armed. */
+  armedCount: number;
+  /** How many of `prs` do not — the set THR-930 made visible. */
+  unarmedCount: number;
 }
 
 /**
@@ -236,23 +318,38 @@ function plural(n: number, one: string, many: string): string {
 export function classifyArmedPrs(input: ArmedPrInput): ArmedPrResult {
   const { prs, nowMs, conflictFilesFor } = input;
 
-  const escalateMs = ARMED_DIRTY_ESCALATE_MINUTES * 60 * 1000;
-  const abandonedMs = ARMED_DIRTY_ABANDONED_HOURS * 60 * 60 * 1000;
+  /**
+   * Escalate / abandoned thresholds in ms, chosen by arming. Armed PRs run the
+   * original THR-897 tiers; unarmed PRs run the slower THR-930 ones.
+   */
+  const tiersFor = (armed: boolean): { escalateMs: number; abandonedMs: number } =>
+    armed
+      ? {
+          escalateMs: ARMED_DIRTY_ESCALATE_MINUTES * 60 * 1000,
+          abandonedMs: ARMED_DIRTY_ABANDONED_HOURS * 60 * 60 * 1000,
+        }
+      : {
+          escalateMs: UNARMED_DIRTY_ESCALATE_HOURS * 60 * 60 * 1000,
+          abandonedMs: UNARMED_DIRTY_ABANDONED_HOURS * 60 * 60 * 1000,
+        };
 
   const reports: ArmedPrReport[] = prs.map((pr) => {
     const klass = classifyMergeState(pr.mergeStateStatus);
-    const armedForMs = Math.max(0, nowMs - pr.enabledAtMs);
+    const ageMs = Math.max(0, nowMs - pr.clockStartMs);
     const conflictFiles =
       klass === "conflicted" ? (conflictFilesFor(pr.headRefOid) ?? []) : [];
+    const { escalateMs, abandonedMs } = tiersFor(pr.armed);
 
     return {
       number: pr.number,
       title: pr.title,
       klass,
       mergeStateStatus: pr.mergeStateStatus,
-      armedForMinutes: Math.round(armedForMs / 60000),
+      armed: pr.armed,
+      ageMinutes: Math.round(ageMs / 60000),
       conflictFiles: conflictFiles.slice(0, ARMED_CONFLICT_FILE_LIMIT),
-      escalated: klass === "conflicted" && armedForMs >= escalateMs,
+      escalated: klass === "conflicted" && ageMs >= escalateMs,
+      abandoned: klass === "conflicted" && ageMs >= abandonedMs,
     };
   });
 
@@ -266,41 +363,49 @@ export function classifyArmedPrs(input: ArmedPrInput): ArmedPrResult {
     counts[r.klass] += 1;
   }
 
+  const armedCount = reports.filter((r) => r.armed).length;
+  const unarmedCount = reports.length - armedCount;
+
   // Oldest drainable PR is the sweep's single update candidate
   // (ARMED_SWEEP_MAX_UPDATES = 1 — updating several re-stales the others).
+  // Armed-only: `update-branch` on an unarmed PR refreshes a branch that
+  // nothing is waiting to merge, so proposing one would be a no-op dressed as
+  // progress (THR-930 Done-when #2).
   const updateCandidate =
     reports
-      .filter((r) => r.klass === "drainable")
-      .sort((a, b) => b.armedForMinutes - a.armedForMinutes)[0]?.number ?? null;
+      .filter((r) => r.klass === "drainable" && r.armed)
+      .sort((a, b) => b.ageMinutes - a.ageMinutes)[0]?.number ?? null;
 
   const conflicted = reports
     .filter((r) => r.klass === "conflicted")
-    .sort((a, b) => b.armedForMinutes - a.armedForMinutes);
+    .sort((a, b) => b.ageMinutes - a.ageMinutes);
 
-  const abandoned = conflicted.filter((r) => r.armedForMinutes * 60000 >= abandonedMs);
+  const abandoned = conflicted.filter((r) => r.abandoned);
 
   // 1. Conflicted past the abandoned threshold. Loudest case: sessions have had
   //    their chance and the stall outlived them.
   if (abandoned.length > 0) {
     const oldest = abandoned[0];
-    const hours = Math.floor(oldest.armedForMinutes / 60);
+    const hours = Math.floor(oldest.ageMinutes / 60);
     return {
       verdict: "abandoned",
       summary:
         `A finished change has been stuck for ${hours} hours and cannot merge on its own: PR #${oldest.number} ` +
-        `("${oldest.title}") has a conflict that ${ARMED_DIRTY_ABANDONED_HOURS}+ automated attempts have not cleared. ` +
+        `("${oldest.title}") has a conflict that repeated automated attempts have not cleared. ` +
         "Nothing is broken on the live site, but that work is not reaching it.",
       needsChristian: true,
       needsSession: true,
       updateCandidate,
       prs: reports,
       counts,
+      armedCount,
+      unarmedCount,
     };
   }
 
   // 2. Conflicted. Session work — reported, never silently skipped.
   if (conflicted.length > 0) {
-    const names = conflicted.map((r) => `#${r.number}`).join(", ");
+    const names = conflicted.map((r) => `#${r.number}${r.armed ? "" : " (unarmed)"}`).join(", ");
     const oldest = conflicted[0];
     const files =
       oldest.conflictFiles.length > 0
@@ -309,29 +414,39 @@ export function classifyArmedPrs(input: ArmedPrInput): ArmedPrResult {
     return {
       verdict: "conflicted",
       summary:
-        `${conflicted.length} armed ${plural(conflicted.length, "PR has", "PRs have")} a merge conflict and cannot ` +
-        `auto-merge: ${names}. These need a session to run \`git merge origin/main\`, resolve, and push — ` +
+        `${conflicted.length} open ${plural(conflicted.length, "PR has", "PRs have")} a merge conflict and cannot ` +
+        `merge: ${names}. These need a session to run \`git merge origin/main\`, resolve, and push — ` +
         `\`update-branch\` does not fix a conflict.${files}`,
       needsChristian: false,
       needsSession: conflicted.some((r) => r.escalated),
       updateCandidate,
       prs: reports,
       counts,
+      armedCount,
+      unarmedCount,
     };
   }
 
-  // 3. Drainable only — the sweep's normal, healthy job.
+  // 3. Drainable only — the sweep's normal, healthy job. An unarmed BEHIND PR
+  //    counts as drainable but yields no `updateCandidate`, so say so rather
+  //    than printing "oldest first (#null)".
   if (counts.drainable > 0) {
     return {
       verdict: "drainable",
       summary:
-        `${counts.drainable} armed ${plural(counts.drainable, "PR is", "PRs are")} behind main and will be ` +
-        `updated one per run, oldest first (#${updateCandidate}).`,
+        updateCandidate !== null
+          ? `${counts.drainable} open ${plural(counts.drainable, "PR is", "PRs are")} behind main and will be ` +
+            `updated one per run, oldest first (#${updateCandidate}).`
+          : `${counts.drainable} open ${plural(counts.drainable, "PR is", "PRs are")} behind main, but ` +
+            `${plural(counts.drainable, "it is", "none are")} armed for auto-merge, so the sweep will not ` +
+            `update ${plural(counts.drainable, "it", "them")}.`,
       needsChristian: false,
       needsSession: false,
       updateCandidate,
       prs: reports,
       counts,
+      armedCount,
+      unarmedCount,
     };
   }
 
@@ -340,13 +455,15 @@ export function classifyArmedPrs(input: ArmedPrInput): ArmedPrResult {
     return {
       verdict: "unknown",
       summary:
-        `Could not determine the merge state of ${counts.indeterminate} armed ` +
+        `Could not determine the merge state of ${counts.indeterminate} open ` +
         `${plural(counts.indeterminate, "PR", "PRs")} — GitHub had not finished computing it.`,
       needsChristian: false,
       needsSession: false,
       updateCandidate,
       prs: reports,
       counts,
+      armedCount,
+      unarmedCount,
     };
   }
 
@@ -355,12 +472,14 @@ export function classifyArmedPrs(input: ArmedPrInput): ArmedPrResult {
     summary:
       prs.length === 0
         ? "No PRs are waiting to merge."
-        : `${prs.length} armed ${plural(prs.length, "PR is", "PRs are")} waiting on checks and will merge on green.`,
+        : `${prs.length} open ${plural(prs.length, "PR is", "PRs are")} waiting on checks and will merge on green.`,
     needsChristian: false,
     needsSession: false,
     updateCandidate,
     prs: reports,
     counts,
+    armedCount,
+    unarmedCount,
   };
 }
 
@@ -428,10 +547,21 @@ interface RawPr {
   title: string;
   mergeStateStatus: string;
   headRefOid: string;
+  createdAt: string;
+  isDraft: boolean;
   autoMergeRequest: { enabledAt: string } | null;
 }
 
-function listArmedPrs(): RawPr[] | null {
+/**
+ * Every open, non-draft PR — armed or not (THR-930).
+ *
+ * The `autoMergeRequest !== null` filter that used to live here was the whole
+ * defect: it made an unarmed conflicted PR absent from the input rather than
+ * misclassified, so the probe could report a clean bill with an unmergeable PR
+ * sitting in front of it. Drafts stay excluded because a draft is the one case
+ * where "not trying to merge yet" is the author's explicit signal.
+ */
+function listOpenPrs(): RawPr[] | null {
   const raw = run("gh", [
     "pr",
     "list",
@@ -440,14 +570,14 @@ function listArmedPrs(): RawPr[] | null {
     "--limit",
     "100",
     "--json",
-    "number,title,mergeStateStatus,headRefOid,autoMergeRequest",
+    "number,title,mergeStateStatus,headRefOid,createdAt,isDraft,autoMergeRequest",
   ]);
   if (raw === null) {
     return null;
   }
   try {
     const all = JSON.parse(raw) as RawPr[];
-    return all.filter((pr) => pr.autoMergeRequest !== null);
+    return all.filter((pr) => !pr.isDraft);
   } catch {
     return null;
   }
@@ -521,7 +651,7 @@ function main(): void {
 
   run("git", ["fetch", "origin", "main", "--quiet"]);
 
-  const raw = listArmedPrs();
+  const raw = listOpenPrs();
 
   let result: ArmedPrResult;
 
@@ -534,19 +664,34 @@ function main(): void {
       updateCandidate: null,
       prs: [],
       counts: { drainable: 0, conflicted: 0, waiting: 0, indeterminate: 0 },
+      armedCount: 0,
+      unarmedCount: 0,
     };
   } else {
     const settled = resolveIndeterminate(raw);
     result = classifyArmedPrs({
       nowMs: Date.now(),
       conflictFilesFor,
-      prs: settled.map((pr) => ({
-        number: pr.number,
-        title: pr.title,
-        mergeStateStatus: pr.mergeStateStatus as MergeStateStatus,
-        enabledAtMs: Date.parse(pr.autoMergeRequest?.enabledAt ?? "") || Date.now(),
-        headRefOid: pr.headRefOid,
-      })),
+      prs: settled.map((pr) => {
+        const armed = pr.autoMergeRequest !== null;
+        // Armed PRs date from arming; unarmed ones from creation. Falling back
+        // to `Date.now()` would read a stale PR as brand new every run, which
+        // is the failure this probe exists to prevent — so fall back to the
+        // other timestamp instead, and only then to now.
+        const clockStartMs =
+          (armed ? Date.parse(pr.autoMergeRequest?.enabledAt ?? "") : NaN) ||
+          Date.parse(pr.createdAt) ||
+          Date.now();
+
+        return {
+          number: pr.number,
+          title: pr.title,
+          mergeStateStatus: pr.mergeStateStatus as MergeStateStatus,
+          armed,
+          clockStartMs,
+          headRefOid: pr.headRefOid,
+        };
+      }),
     });
   }
 
@@ -559,11 +704,16 @@ function main(): void {
         (result.updateCandidate !== null ? ` update-candidate=#${result.updateCandidate}` : ""),
     );
     console.log(`[armed-prs] ${result.summary}`);
+    console.log(
+      `[armed-prs] ${result.prs.length} open non-draft PR(s): ` +
+        `${result.armedCount} armed, ${result.unarmedCount} unarmed.`,
+    );
     for (const pr of result.prs) {
       const files = pr.conflictFiles.length > 0 ? ` — conflicts: ${pr.conflictFiles.join(", ")}` : "";
       console.log(
-        `[armed-prs]   #${pr.number} ${pr.klass} (${pr.mergeStateStatus}, armed ${pr.armedForMinutes}m` +
-          `${pr.escalated ? ", ESCALATED" : ""})${files}`,
+        `[armed-prs]   #${pr.number} ${pr.klass} (${pr.mergeStateStatus}, ` +
+          `${pr.armed ? "armed" : "UNARMED"}, ${pr.ageMinutes}m` +
+          `${pr.abandoned ? ", ABANDONED" : pr.escalated ? ", ESCALATED" : ""})${files}`,
       );
     }
   }

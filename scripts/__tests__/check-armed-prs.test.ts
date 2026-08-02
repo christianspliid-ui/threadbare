@@ -3,6 +3,8 @@ import {
   ARMED_CONFLICT_FILE_LIMIT,
   ARMED_DIRTY_ABANDONED_HOURS,
   ARMED_DIRTY_ESCALATE_MINUTES,
+  UNARMED_DIRTY_ABANDONED_HOURS,
+  UNARMED_DIRTY_ESCALATE_HOURS,
   classifyArmedPrs,
   classifyMergeState,
   parseConflictFiles,
@@ -21,11 +23,17 @@ function pr(overrides: Partial<ArmedPrRecord> = {}): ArmedPrRecord {
     number,
     title: `PR ${number}`,
     mergeStateStatus: "CLEAN",
-    // Armed one minute ago unless a test says otherwise.
-    enabledAtMs: NOW_MS - 60 * 1000,
+    armed: true,
+    // Clock started one minute ago unless a test says otherwise.
+    clockStartMs: NOW_MS - 60 * 1000,
     headRefOid: `oid${number}`,
     ...overrides,
   };
+}
+
+/** An unarmed PR — the set THR-930 made visible. */
+function unarmedPr(overrides: Partial<ArmedPrRecord> = {}): ArmedPrRecord {
+  return pr({ armed: false, ...overrides });
 }
 
 function minutesAgo(n: number): number {
@@ -146,7 +154,7 @@ describe("classifyArmedPrs — age tiers", () => {
   it("does not escalate a freshly-conflicted PR to a session", () => {
     const result = classifyArmedPrs(
       input({
-        prs: [pr({ mergeStateStatus: "DIRTY", enabledAtMs: minutesAgo(10) })],
+        prs: [pr({ mergeStateStatus: "DIRTY", clockStartMs: minutesAgo(10) })],
       }),
     );
 
@@ -159,7 +167,7 @@ describe("classifyArmedPrs — age tiers", () => {
     const result = classifyArmedPrs(
       input({
         prs: [
-          pr({ mergeStateStatus: "DIRTY", enabledAtMs: minutesAgo(ARMED_DIRTY_ESCALATE_MINUTES + 1) }),
+          pr({ mergeStateStatus: "DIRTY", clockStartMs: minutesAgo(ARMED_DIRTY_ESCALATE_MINUTES + 1) }),
         ],
       }),
     );
@@ -177,7 +185,7 @@ describe("classifyArmedPrs — age tiers", () => {
           pr({
             number: 1132,
             mergeStateStatus: "DIRTY",
-            enabledAtMs: hoursAgo(ARMED_DIRTY_ABANDONED_HOURS + 1),
+            clockStartMs: hoursAgo(ARMED_DIRTY_ABANDONED_HOURS + 1),
           }),
         ],
       }),
@@ -193,7 +201,7 @@ describe("classifyArmedPrs — age tiers", () => {
     // THR-608: Christian reads this verbatim in the briefing.
     const result = classifyArmedPrs(
       input({
-        prs: [pr({ mergeStateStatus: "DIRTY", enabledAtMs: hoursAgo(ARMED_DIRTY_ABANDONED_HOURS + 1) })],
+        prs: [pr({ mergeStateStatus: "DIRTY", clockStartMs: hoursAgo(ARMED_DIRTY_ABANDONED_HOURS + 1) })],
       }),
     );
 
@@ -204,8 +212,8 @@ describe("classifyArmedPrs — age tiers", () => {
     const result = classifyArmedPrs(
       input({
         prs: [
-          pr({ number: 200, mergeStateStatus: "DIRTY", enabledAtMs: minutesAgo(30) }),
-          pr({ number: 100, mergeStateStatus: "DIRTY", enabledAtMs: hoursAgo(ARMED_DIRTY_ABANDONED_HOURS + 2) }),
+          pr({ number: 200, mergeStateStatus: "DIRTY", clockStartMs: minutesAgo(30) }),
+          pr({ number: 100, mergeStateStatus: "DIRTY", clockStartMs: hoursAgo(ARMED_DIRTY_ABANDONED_HOURS + 2) }),
         ],
       }),
     );
@@ -220,9 +228,9 @@ describe("classifyArmedPrs — drain path (THR-702 behaviour preserved)", () => 
     const result = classifyArmedPrs(
       input({
         prs: [
-          pr({ number: 300, mergeStateStatus: "BEHIND", enabledAtMs: minutesAgo(10) }),
-          pr({ number: 100, mergeStateStatus: "BEHIND", enabledAtMs: minutesAgo(90) }),
-          pr({ number: 200, mergeStateStatus: "BEHIND", enabledAtMs: minutesAgo(50) }),
+          pr({ number: 300, mergeStateStatus: "BEHIND", clockStartMs: minutesAgo(10) }),
+          pr({ number: 100, mergeStateStatus: "BEHIND", clockStartMs: minutesAgo(90) }),
+          pr({ number: 200, mergeStateStatus: "BEHIND", clockStartMs: minutesAgo(50) }),
         ],
       }),
     );
@@ -271,6 +279,123 @@ describe("classifyArmedPrs — indeterminate handling", () => {
     );
 
     expect(result.verdict).toBe("conflicted");
+  });
+});
+
+describe("classifyArmedPrs — the THR-930 defect (unarmed PRs are in the set)", () => {
+  it("reports an unarmed conflicted PR instead of leaving it out of the input", () => {
+    // The measured case, 2026-08-02: the repo's only open PR was #1114 —
+    // DIRTY, unarmed, 3+ days old — and the probe answered
+    // `counts.conflicted: 0` / "No PRs are waiting to merge."
+    const result = classifyArmedPrs(
+      input({
+        prs: [unarmedPr({ number: 1114, mergeStateStatus: "DIRTY", clockStartMs: hoursAgo(76) })],
+      }),
+    );
+
+    expect(result.verdict).toBe("abandoned");
+    expect(result.counts.conflicted).toBe(1);
+    expect(result.summary).toContain("#1114");
+    expect(result.summary).not.toBe("No PRs are waiting to merge.");
+  });
+
+  it("never proposes an unarmed BEHIND PR as the update candidate", () => {
+    // Done-when #2: `update-branch` on an unarmed PR refreshes a branch that
+    // nothing is waiting to merge, so it must not be dressed up as progress.
+    const result = classifyArmedPrs(
+      input({ prs: [unarmedPr({ number: 1114, mergeStateStatus: "BEHIND", clockStartMs: hoursAgo(50) })] }),
+    );
+
+    expect(result.counts.drainable).toBe(1);
+    expect(result.updateCandidate).toBeNull();
+    expect(result.summary).toContain("armed");
+  });
+
+  it("still prefers the oldest ARMED PR when both kinds are BEHIND", () => {
+    const result = classifyArmedPrs(
+      input({
+        prs: [
+          unarmedPr({ number: 900, mergeStateStatus: "BEHIND", clockStartMs: hoursAgo(72) }),
+          pr({ number: 901, mergeStateStatus: "BEHIND", clockStartMs: minutesAgo(30) }),
+        ],
+      }),
+    );
+
+    // The unarmed one is far older but auto-merge will never act on it.
+    expect(result.updateCandidate).toBe(901);
+  });
+
+  it("keeps the armed/unarmed split legible in the output", () => {
+    const result = classifyArmedPrs(
+      input({ prs: [pr({ mergeStateStatus: "CLEAN" }), unarmedPr({ mergeStateStatus: "CLEAN" })] }),
+    );
+
+    expect(result.armedCount).toBe(1);
+    expect(result.unarmedCount).toBe(1);
+    expect(result.prs.map((r) => r.armed)).toEqual([true, false]);
+  });
+
+  it("gives an unarmed conflict a slower escalate clock than an armed one", () => {
+    // Same age, different arming: past the armed tier, short of the unarmed one.
+    const age = { mergeStateStatus: "DIRTY" as const, clockStartMs: hoursAgo(2) };
+
+    expect(classifyArmedPrs(input({ prs: [pr(age)] })).prs[0].escalated).toBe(true);
+    expect(classifyArmedPrs(input({ prs: [unarmedPr(age)] })).prs[0].escalated).toBe(false);
+  });
+
+  it("escalates an unarmed conflict to a session past UNARMED_DIRTY_ESCALATE_HOURS", () => {
+    const result = classifyArmedPrs(
+      input({
+        prs: [unarmedPr({ mergeStateStatus: "DIRTY", clockStartMs: hoursAgo(UNARMED_DIRTY_ESCALATE_HOURS + 1) })],
+      }),
+    );
+
+    expect(result.verdict).toBe("conflicted");
+    expect(result.needsSession).toBe(true);
+    // Not Christian's yet — an agent can still settle this (THR-608).
+    expect(result.needsChristian).toBe(false);
+  });
+
+  it("escalates an unarmed conflict to Christian past UNARMED_DIRTY_ABANDONED_HOURS", () => {
+    const result = classifyArmedPrs(
+      input({
+        prs: [
+          unarmedPr({
+            number: 1114,
+            mergeStateStatus: "DIRTY",
+            clockStartMs: hoursAgo(UNARMED_DIRTY_ABANDONED_HOURS + 1),
+          }),
+        ],
+      }),
+    );
+
+    expect(result.verdict).toBe("abandoned");
+    expect(result.needsChristian).toBe(true);
+    expect(result.prs[0].abandoned).toBe(true);
+  });
+
+  it("does not escalate an unarmed conflict that is only past the ARMED abandoned tier", () => {
+    // The distinction is real, not cosmetic: 13h is abandoned for an armed PR
+    // and merely escalated for an unarmed one.
+    const clockStartMs = hoursAgo(ARMED_DIRTY_ABANDONED_HOURS + 1);
+
+    expect(classifyArmedPrs(input({ prs: [pr({ mergeStateStatus: "DIRTY", clockStartMs })] })).verdict).toBe(
+      "abandoned",
+    );
+
+    const unarmed = classifyArmedPrs(input({ prs: [unarmedPr({ mergeStateStatus: "DIRTY", clockStartMs })] }));
+    expect(unarmed.verdict).toBe("conflicted");
+    expect(unarmed.needsChristian).toBe(false);
+  });
+
+  it("marks an unarmed conflict in the summary so the reader knows why it idled", () => {
+    const result = classifyArmedPrs(
+      input({
+        prs: [unarmedPr({ number: 1114, mergeStateStatus: "DIRTY", clockStartMs: hoursAgo(7) })],
+      }),
+    );
+
+    expect(result.summary).toContain("#1114 (unarmed)");
   });
 });
 
