@@ -36,10 +36,7 @@ Run as `/pull-work` (auto-pick top Ready for Dev issue) or `/pull-work THR-123` 
     git fetch origin main
     git log origin/main --grep="Fixes ${id}" --grep="Closes ${id}" --grep="Resolves ${id}" --regexp-ignore-case --extended-regexp --oneline
 
-If the result is non-empty, the work has already landed but Linear's auto-close either lagged or failed. Do NOT proceed to read the plan doc or write code. Release the claim, post a one-line comment on the issue noting the upstream commit hash + first-line message, and exit cleanly.
-
-    save_issue(id, assignee: null, state: "Ready for Dev")
-    save_comment(issueId: id, body: "Upstream-shipped check found commit {sha} on origin/main: \"{first-line}\". Auto-close did not fire — please verify the keyword in the merge commit body and close manually if appropriate.")
+If the result is non-empty, the work has already landed but Linear's auto-close either lagged or failed. Do NOT proceed to read the plan doc or write code. Apply the disposition in § *The verified-shipped park* above — comment the SHA, `save_issue(id, assignee: null)` with the state **staying** `In Dev`, verify-after-write, exit cleanly. Do not release to `Ready for Dev`.
 
 **Fail-soft:** if `git fetch origin main` errors (network down, auth issue, sandbox limitation), log the error and continue to step 4 anyway. The upstream-shipped check is best-effort — a fetch failure must not block pickup of genuinely open work. Surface a one-line warning in the session log.
 
@@ -59,7 +56,7 @@ Upstream-shipped path:
 ```
 [pullNextReadyForDev] Attempt 1/3: claiming THR-247... OK
 [pullNextReadyForDev] Verify: assignee=Christian Spliid, state=In Dev ✓ — claim confirmed
-[pullNextReadyForDev] Upstream check: found commit a1b2c3d "feat(thr-247): ..." — releasing claim, posting comment. Exiting clean.
+[pullNextReadyForDev] Upstream check: found commit a1b2c3d "feat(thr-247): ..." — posting comment, unassigning (state stays In Dev). Exiting clean.
 ```
 
 Silent-drop retry:
@@ -74,6 +71,30 @@ All retries exhausted:
 ```
 [pullNextReadyForDev] All 3/3 attempts failed — silent drops on all candidates. Surfacing error. Use hand-rolled Rule 1 path and log impediment via impediment-reporter.
 ```
+
+---
+
+## The verified-shipped park — one state, one disposition
+
+Two checks can discover the identical state — **the work is verified on `origin/main`, but Linear's auto-close never fired**. Step 1.7 reaches it by resuming an existing `In Dev` claim; Step 4.4 reaches it by claiming fresh from the queue. **Both get the same answer**, because disposition follows the *state discovered*, never the *path taken to discover it*. Until THR-958 the two diverged — 1.7 kept the issue `In Dev`, 4.4 released it to `Ready for Dev` — on no difference except how the session arrived, which has no bearing on what the issue now needs.
+
+**The disposition — this is the only place it is stated:**
+
+```
+save_comment(issueId: id, body: "Upstream-shipped check found commit {sha} on origin/main: \"{first-line}\". Auto-close did not fire.")
+save_issue(id, assignee: null)     # state STAYS In Dev
+get_issue(id)                      # verify-after-write (impediment #48)
+```
+
+Then exit cleanly. Do **not** write `state: "Ready for Dev"`, and do **not** write `save_issue(state: "Done")` — Rule 3 forbids CC closing.
+
+**Who reads this park (THR-846) — the reason, not just the rule.** The work is verified shipped, so what the issue needs is *closing*, an action no CC lane may take. The lane that reads it is **`keep-work-flowing-cc`**, whose board scan reads the In-Dev slice for exactly this shape (`assignee` null, state `In Dev`) and surfaces it to Christian in `Design/briefing.md` under `## Needs Christian` — closing being a one-click action only he can take. **Every park must name the lane that reads the destination.** An edit that changes this destination without naming a lane that reads the new one is the defect, not the fix.
+
+**Why `Ready for Dev` is the wrong destination.** It puts a **completed** ticket back at the top of the queue. The next hourly run claims it, runs the same investigation, reaches the same conclusion, and releases it again — every hour, forever, with no lane able to break the cycle. That is the re-offer loop THR-836 identified for bounces ("a gate that refuses without routing is a spin loop wearing a gate's clothes"), and it costs a full drain slot per occurrence. It is also *invisible*: each individual run looks like correct protocol adherence, and the released ticket looks like healthy queue membership.
+
+**Measured.** THR-792 hit this on 2026-08-02. Its fix had shipped six days earlier under THR-793's id (`15fc10f0`), so the Step 4.4 grep for `Fixes THR-792` was clean and correct to be — shipped-under-a-sibling-id is exactly when 4.4 fires without 1.7 having had a chance to. That run deviated from 4.4 and applied this disposition instead, recording the reason in a comment; THR-958 made it the rule so no later run has to re-derive it.
+
+**Not to be confused with the churn park**, which is a *different* discovered state and correctly gets a different answer: Step 1.8's three-checkpoints-without-a-ship escalation routes to `Todo` + unassign, because that issue needs **re-scoping** and the lane that reads `Todo` is `tb-orchestrator` (T2). Verified-shipped needs closing; churning needs re-scoping. Same shape of park, different reader, different destination.
 
 ---
 
@@ -271,12 +292,7 @@ git log origin/main --grep="Fixes <resumed-issue-id>" --grep="Closes <resumed-is
 
 **If the result is empty:** the work is genuinely still in flight. Continue to Step 1.8 (checkpoint-resume), then Step 5 (Reopened safety check) — skip Steps 2–4 (concurrent-session parallel, coordination block, claim) because the claim already exists.
 
-**If the result is non-empty:** the commit landed but the auto-close did not fire. Do not park the WIP=1 slot waiting on a review that never comes (THR-608: Christian doesn't read Linear, so the retired "human reviewer" never closes it).
-1. Post a comment on the issue: `Upstream-shipped check during resume found commit {sha} "{first-line}". Auto-close did not fire.`
-2. Unassign to free the WIP=1 slot: `save_issue(id, assignee: null)` — keep state In Dev, verify-after-write per impediment #48. Do NOT release to Ready for Dev, and do NOT call `save_issue(state: "Done")` — Rule 3 forbids CC closing.
-
-   **Who reads this park (THR-846).** Unlike the Step 1.8 churn park — which routes to `Todo` because it needs *re-scoping* — this one stays `In Dev` deliberately: the work is **verified shipped**, so what it needs is closing, and no CC lane may write `Done`. The lane that reads it is **`keep-work-flowing-cc`**, whose board scan reads the In-Dev slice for exactly this shape (`assignee` null, state `In Dev`) and surfaces it to Christian in `Design/briefing.md` under `## Needs Christian`, closing being a one-click action only he can take. The predecessor text named the retired Cowork task (THR-654) as both scanner *and* closer; that lane no longer exists, and its CC successor is read-mostly by design (it never calls `save_issue(state:…)`).
-3. Exit cleanly.
+**If the result is non-empty:** the commit landed but the auto-close did not fire. Apply the disposition in § *The verified-shipped park* above — it is the same one Step 4.4 applies, stated once there. Unassigning frees the WIP=1 slot, so the lane does not park it waiting on a review that never comes (THR-608: Christian doesn't read Linear, so the retired "human reviewer" never closes it).
 
 **Trace lines** (NFP #2):
 
@@ -397,11 +413,7 @@ git fetch origin main
 git log origin/main --grep="Fixes <issue-id>" --grep="Closes <issue-id>" --grep="Resolves <issue-id>" --regexp-ignore-case --extended-regexp --oneline
 ```
 
-If the result is non-empty, the work has already landed. Do not proceed.
-
-1. Release the claim: `save_issue(id, assignee: null, state: "Ready for Dev")`.
-2. Post a one-line comment on the issue noting the upstream commit hash + first-line message and that the auto-close did not fire.
-3. Exit cleanly.
+If the result is non-empty, the work has already landed. Do not proceed. Apply the disposition in § *The verified-shipped park* above — it is the same one Step 1.7 applies, stated once there. In particular the claim is **not** released back to `Ready for Dev`: the state stays `In Dev` with the assignee cleared, because a completed ticket returned to the queue is re-claimed and re-investigated every hour forever (THR-958).
 
 **Also grep the parent's id when the ticket is a split-out child (impediment #310).** This grep only ever asks about *this* issue's id, so a child ticket whose scope is then executed under the **parent's** id is invisible to it by construction — the check reads clean and is correct to. THR-680 was split out of THR-674 at 07:12Z on 2026-07-21; a later session finished exactly its scope at 13:12Z the same day and closed it with `Fixes THR-674`, and THR-680 sat in `Todo` for 9 days before being promoted and picked up as live work. If the issue body contains a "Split from THR-XXX" (or "Split out of", "Parent:") reference, run the same grep for that id, and read the parent's state — a parent already in `Done` is itself the signal:
 
@@ -415,7 +427,7 @@ A hit here is **not** automatically a stand-down — the parent may have shipped
 
 ```
 [pull-work] Step 4.4: upstream-clean. Continuing to worktree isolation.
-[pull-work] Step 4.4: upstream-shipped — commit a1b2c3d "feat(thr-247): ..." on origin/main. Releasing claim, exit.
+[pull-work] Step 4.4: upstream-shipped — commit a1b2c3d "feat(thr-247): ..." on origin/main. Unassigning, state stays In Dev, exit.
 ```
 
 **Fail-soft:** if `git fetch origin main` errors (network down, auth issue, sandbox limitation), log the error and proceed to Step 4.5 anyway. The upstream-shipped check is best-effort — a fetch failure must not block pickup of genuinely open work. Surface a one-line warning in the session log.
@@ -612,7 +624,7 @@ If the issue has label `Reopened`, read all comments back to the original handof
 - The "In Dev" slice for the executor's own assignee (computed in Step 1) is non-empty (Rule 6: WIP=1 across all sessions).
 - The latest handoff comment is missing a required coordination line (`Suggested model`, `Parallel-safe with`, `Mutex with`) **and** the description names no concrete surface — an unscoped ticket (Step 3). A *self-scoped* ticket missing the block is claimed, not refused: the executor derives the block (THR-836).
 - `save_issue` claim cannot be verified by `get_issue` after one retry.
-- The upstream-shipped check (Step 4.4 fresh-claim or Step 1.7 resume) finds a `Fixes <issue-id>` / `Closes <issue-id>` / `Resolves <issue-id>` commit on `origin/main`. Pickup exits with a comment noting the upstream commit hash. Step 4.4 releases the fresh claim back to Ready for Dev; Step 1.7 unassigns but keeps the issue In Dev, where `keep-work-flowing-cc` picks the park up in its In-Dev scan and surfaces it to Christian to close (THR-846 — no CC lane may write `Done`).
+- The upstream-shipped check (Step 4.4 fresh-claim or Step 1.7 resume) finds a `Fixes <issue-id>` / `Closes <issue-id>` / `Resolves <issue-id>` commit on `origin/main`. Pickup exits with a comment noting the upstream commit hash. **Both paths apply the same disposition** — unassign, state stays `In Dev` — per § *The verified-shipped park*, where `keep-work-flowing-cc` picks the park up in its In-Dev scan and surfaces it to Christian to close (THR-846 — no CC lane may write `Done`).
 
 ## Output Contract
 
