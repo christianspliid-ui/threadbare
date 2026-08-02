@@ -51,6 +51,76 @@ export const MOTIVE_FALLBACK_SENTENCES: Readonly<Record<MotiveSource, string>> =
 };
 
 /**
+ * The motive as an **introductory line**, printed above the scene's opening
+ * prose (THR-972, director review 2026-08-02).
+ *
+ * The chip+sentence pair these replace sat *below* the prose, where it read as a
+ * footnote on a scene the player had already finished reading. As an introduction
+ * it does the job the classifier was built for: it frames the scene before the
+ * scene arrives, so "why is this mortal here" is answered on the way in.
+ *
+ * **Register.** Plain and declarative — game prose, not novel prose
+ * (`Docs/canon/prose.md` rule zero). These lines lead into authored fiction, so
+ * anything lyrical here competes with the scene it is introducing. The director's
+ * own examples set the ceiling for ornament and are preserved as the first variant
+ * of `chance`, `mission`, and `divine`; only grammar and capitalization were
+ * polished. The `choice` set is new authorship in the same register.
+ *
+ * `{actor}` is the acting mortal's name and `{mission}` the named errand — both
+ * always substituted by the adapter, never rendered raw.
+ *
+ * Selection is a stable hash of the action id and step index — same encounter,
+ * same line, every session. No rng draw (NFP #3).
+ */
+export const MOTIVE_INTRO_VARIANTS: Readonly<Record<MotiveSource, readonly string[]>> = {
+  chance: [
+    'While travelling, {actor} is faced with this:',
+    'The road put this in front of {actor}.',
+    '{actor} was simply here when it started.',
+  ],
+  mission: [
+    'As part of {mission}, {actor} faces a challenge.',
+    '{mission} brought {actor} to this.',
+    'This stands between {actor} and {mission}.',
+  ],
+  divine: [
+    'You have led {actor} to this moment.',
+    'Your hand set {actor} on this road.',
+    '{actor} stands here because you willed it.',
+  ],
+  choice: [
+    '{actor} chose this road.',
+    '{actor} came here wanting this.',
+    'No one sent {actor}. They came anyway.',
+  ],
+};
+
+/**
+ * Stands in for `{mission}` when a mission-classified motive names no errand the
+ * graph can resolve — a contribution whose provenance node has been culled, or a
+ * receipt that recorded a weight without a node id.
+ *
+ * A generic noun rather than a raw placeholder: the classification is still true
+ * (they were sent), only the errand's name is missing, and leaking `{mission}`
+ * onto the stage would be worse than naming it vaguely (NFP #4).
+ */
+export const MOTIVE_MISSION_FALLBACK = 'the work they took on';
+
+/**
+ * Drawn immediately before the difficulty word, inside one frame (THR-972).
+ *
+ * The director's find: *"The difficulty cant stand alone without some
+ * explanation."* A bare `FAIR` beside the reach reads as a description of the
+ * scene rather than as the bar the mortal must clear. The scales say "this is
+ * being weighed" without spending a word, and the frame binds glyph and word into
+ * a single unit the eye takes in at once.
+ */
+export const TEST_GLYPH = '⚖';
+
+/** Accessible name for the framed test unit — the glyph alone says nothing aloud. */
+export const TEST_UNIT_LABEL = 'Test difficulty';
+
+/**
  * Why a dimmed card cannot be played. Only `essence_unavailable` reaches the
  * player stage — the other codes are withheld (ruling 4) and read in the
  * designer view, where the full lexicon is still wanted.

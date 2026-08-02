@@ -1988,3 +1988,16 @@ rather than LIVE, because badging a path nothing travels is the THR-614 error cl
 several `step.id` reads in the resolution path are long-standing type errors inside
 the THR-489 baseline that evaluate to `undefined`. `branchDecision.ts` derives
 `step_<index>` instead of propagating that bug.
+
+## THR-972 — encounter test panel + card iconography (director review 2026-08-02)
+
+| Surface | Wiring |
+|---|---|
+| New component | `src/components/Game/encounter-stage/shells/NudgeMotiveIntro.tsx` — **mounted in two places, deliberately.** `EncounterVeil` renders it directly above its prose block (the placement the directive asked for); `NudgePhaseShell` renders it behind `renderMotiveIntro`, default **true**, for hosts that mount the shell whole. The veil passes `false`, so exactly one copy draws. A component mounted from one subtree could not reach above prose rendered in another — that is why this is not a section of the shell. |
+| Model field | `EncounterStageMotiveModel.introLine?` — written by `buildNudgePhaseModel` only, **already substituted** (`{actor}`/`{mission}` resolved by the adapter), so no consumer needs placeholder logic. Absent ⇒ renders nothing; the meeting model (`buildMeetingNudgePhaseModel`) deliberately builds no motive at all, so both beats are unaffected. |
+| Retired field | `EncounterStageTestPanelModel.reachIconUrl` — **removed, not deprecated.** Its only reader was the shell's `<img>`, replaced by the icon set's `ReachIcon`; both writers (`buildNudgePhaseModel`, `buildMeetingNudgePhaseModel`) were removed with it, along with the now-dead `REACH_ICON_TIER_OFFSET` / `MEETING_REACH_ICON_TIER` / `getDomainTier` derivation. Guarded by a test asserting `/assets/reaches/` appears nowhere in the rendered panel. |
+| Icon set | `ReachIcon` from `src/components/icons` (the shared SVG set, `index.ts` barrel) — derives the reach's heraldic charge and sphere colour from the reach id alone, so no per-tier asset path is threaded. |
+| Content | `MOTIVE_INTRO_VARIANTS` / `MOTIVE_MISSION_FALLBACK` / `TEST_GLYPH` / `TEST_UNIT_LABEL` in `nudge-stage-content.ts`; `NUDGE_GLYPH_LEGEND` in `nudge-card-display.ts`. All player-facing strings and glyphs stay in data (NFP #1). |
+| Determinism | `hashSeed` (FNV-1a, local to `buildNudgePhaseModel`) — **not** the shared djb2 `hashEntityId`, whose multiplier 33 ≡ 0 (mod 3) collapses a 3-long variant pool to a single index. Zero PRNG draws; the seed is `${actionId}:${currentStep}`. |
+| Tooltip | `ui.nudge_glyphs` in `ui-content.ts`, chained from the legend. Subject to the 200-char cap `tooltipValidation.test.ts` enforces. |
+| Portrait | `buildUnifiedEncounterStageModel.buildHeader` now calls `getAgentPortraitUrlFromProperties` (bespoke → archetype) rather than archetype-only `getPortraitUrl`; the shell consumes `EntityVisual`'s **resolver** path (`entity`) instead of a hand-built descriptor, inheriting the shared knowledge gate. Remaining gap is content, not wiring — THR-981. |

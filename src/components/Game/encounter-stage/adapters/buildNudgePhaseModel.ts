@@ -68,14 +68,19 @@ import {
   nudgeCardKeyword,
   type NudgeCostChannelId,
 } from '../../../../data/nudge-card-display';
-import { classifyMotive, readMotiveReceipt } from '../../../../engine/encounters/motiveClassifier';
+import {
+  classifyMotive,
+  readMotiveReceipt,
+  type MotiveSource,
+} from '../../../../engine/encounters/motiveClassifier';
 import { computeForecast } from '../../../../engine/encounters/outcomeForecast';
 import { adaptUnifiedActionTemplateToEncounterContract } from '../../../../engine/encounter-contract-adapter';
-import { getDomainTier } from '../../../../data/domain-words';
 import {
   FORECAST_TIER_WORDS,
   MOTIVE_CHIP_LABELS,
   MOTIVE_FALLBACK_SENTENCES,
+  MOTIVE_INTRO_VARIANTS,
+  MOTIVE_MISSION_FALLBACK,
   NUDGE_BLOCKED_REASONS,
   NUDGE_FREE_COST_LABEL,
   NUDGE_RIDER_LABELS,
@@ -90,11 +95,19 @@ import type {
   EncounterStageWithheldNudgeModel,
 } from '../types';
 
-/** Domain capability is 0–1; the reach word scales are indexed off 0–10. */
-const CAPABILITY_TO_DOMAIN_SCALE = 10;
+/**
+ * Stand-in when the acting node has no resolvable name, so a motive intro line
+ * substitutes a noun rather than leaking `{actor}` onto the stage (NFP #4).
+ */
+const MOTIVE_ACTOR_FALLBACK = 'The mortal';
 
-/** Reach art is 1-indexed on disk (`iron-1.png` … `iron-5.png`). */
-const REACH_ICON_TIER_OFFSET = 1;
+/** Contribution kinds that read as assigned work — the errand `{mission}` names. */
+const MOTIVE_MISSION_KINDS: ReadonlySet<string> = new Set([
+  'ambition',
+  'chain',
+  'reputation',
+  'bond',
+]);
 
 /**
  * Codes the player stage withholds entirely. `essence_unavailable` is
@@ -242,6 +255,87 @@ function authoredFactorLines(
   } catch {
     return [];
   }
+}
+
+/**
+ * The named errand behind a `mission`-classified motive, for `{mission}`.
+ *
+ * Reads the heaviest mission-kind contribution's provenance node and returns its
+ * name. Fail-soft at every hop (NFP #4): no receipt, no mission contribution, no
+ * node id, or a node the graph has since culled all yield `undefined`, and the
+ * caller substitutes {@link MOTIVE_MISSION_FALLBACK} rather than leaking a raw
+ * placeholder onto the stage.
+ */
+function missionNameFor(
+  graph: WorldGraph,
+  receipt: ReturnType<typeof readMotiveReceipt>,
+): string | undefined {
+  const contributions = receipt?.contributions;
+  if (!contributions || contributions.length === 0) return undefined;
+
+  let best: { weight: number; nodeId: string } | undefined;
+  for (const c of contributions) {
+    if (!MOTIVE_MISSION_KINDS.has(c.kind)) continue;
+    const nodeId = c.provenance?.nodeId;
+    if (!nodeId) continue;
+    if (!best || c.weight > best.weight) best = { weight: c.weight, nodeId };
+  }
+  if (!best) return undefined;
+
+  const name = graph.getNode(best.nodeId)?.name;
+  return name && name.length > 0 ? name : undefined;
+}
+
+/**
+ * FNV-1a, 32-bit. Deterministic; same input → same output, every session.
+ *
+ * **Not `hashEntityId` (djb2), and the difference is load-bearing.** djb2's
+ * multiplier is 33, and 33 ≡ 0 (mod 3) — so every positional term above the last
+ * character vanishes modulo 3, and any two seeds differing only in an earlier
+ * character land on the *same* index. The intro pools are exactly 3 variants
+ * long, so djb2 pinned every encounter to one line: 24 distinct action ids
+ * selected one variant, which the variant-spread test caught. The same trap waits
+ * at any pool length divisible by 3 or 11. FNV-1a's 16777619 multiplier is
+ * coprime to both and mixes into the low bits, so a small modulo stays uniform.
+ *
+ * djb2 remains correct where it is used today — `gradientIndexForId` takes it
+ * modulo a gradient count with no such factor.
+ */
+function hashSeed(seed: string): number {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < seed.length; i++) {
+    h ^= seed.charCodeAt(i);
+    h = Math.imul(h, 0x01000193);
+  }
+  return h >>> 0;
+}
+
+/**
+ * Pick and fill this encounter's motive intro line.
+ *
+ * **Deterministic by construction (NFP #3).** The variant index is a hash of the
+ * action id and step index, so the same encounter opens with the same line in
+ * every session and on every re-render. No rng draw is taken here; taking one
+ * would make the opening line of a scene differ between the forecast the player
+ * read and the stage they are looking at.
+ *
+ * Substitution is total: every placeholder resolves to a real string, so the
+ * Done-when's "no raw `{actor}` leaks" holds even when the graph knows neither
+ * the actor's name nor the errand's.
+ */
+function motiveIntroLine(args: {
+  source: MotiveSource;
+  actorName?: string;
+  missionName?: string;
+  seed: string;
+}): string {
+  const variants = MOTIVE_INTRO_VARIANTS[args.source];
+  const template = variants[hashSeed(args.seed) % variants.length];
+  const values: Record<string, string> = {
+    actor: args.actorName && args.actorName.length > 0 ? args.actorName : MOTIVE_ACTOR_FALLBACK,
+    mission: args.missionName ?? MOTIVE_MISSION_FALLBACK,
+  };
+  return template.replace(/\{(\w+)\}/g, (whole, key: string) => values[key] ?? whole);
 }
 
 /**
@@ -469,8 +563,6 @@ export function buildNudgePhaseModel(
     });
   }
 
-  const reachTier = getDomainTier(capability * CAPABILITY_TO_DOMAIN_SCALE);
-
   // ── Motive ──────────────────────────────────────────────────────
   // Fail-soft: any throw inside classification renders CHANCE with the generic
   // sentence rather than losing the header (plan's fail-soft table).
@@ -484,12 +576,24 @@ export function buildNudgePhaseModel(
       source,
       chipLabel: MOTIVE_CHIP_LABELS[source],
       sentence: MOTIVE_FALLBACK_SENTENCES[source],
+      // THR-972 — the line that introduces the scene, fully substituted here so
+      // the shell never has to know about placeholders.
+      introLine: motiveIntroLine({
+        source,
+        actorName: graph.getNode(actorId)?.name,
+        missionName: missionNameFor(graph, receipt),
+        seed: `${activeAction.actionId}:${activeAction.currentStep}`,
+      }),
     };
   } catch {
     motive = {
       source: 'chance',
       chipLabel: MOTIVE_CHIP_LABELS.chance,
       sentence: MOTIVE_FALLBACK_SENTENCES.chance,
+      introLine: motiveIntroLine({
+        source: 'chance',
+        seed: `${activeAction.actionId}:${activeAction.currentStep}`,
+      }),
     };
   }
 
@@ -503,7 +607,6 @@ export function buildNudgePhaseModel(
     testPanel: {
       reach: step.reach,
       reachLabel: step.reach.charAt(0).toUpperCase() + step.reach.slice(1),
-      reachIconUrl: `/assets/reaches/${step.reach}-${reachTier + REACH_ICON_TIER_OFFSET}.png`,
       purposeLine: step.purposeLine,
       difficultyWord: difficultyWord(effectiveDifficulty),
       difficultyValue: effectiveDifficulty,

@@ -399,6 +399,22 @@ export interface EncounterStageMotiveModel {
   chipLabel: string;
   /** One authored sentence naming why this mortal is here. */
   sentence: string;
+  /**
+   * THR-972 — the motive as a line that *introduces* the scene, printed above the
+   * opening prose rather than below it.
+   *
+   * Already substituted: `{actor}` and `{mission}` are resolved by the adapter, so
+   * the shell renders this verbatim and a raw placeholder can never reach the
+   * stage. Variant choice is a stable hash of the action id and step index
+   * (`MOTIVE_INTRO_VARIANTS`), so re-opening an encounter never re-rolls its
+   * opening line.
+   *
+   * Optional because a caller may build a motive without one — the meeting beats
+   * carry no motive at all, and an absent intro renders nothing rather than a
+   * blank line. {@link sentence} is retained alongside it for the motive
+   * explainer modal, which still quotes the un-substituted fallback.
+   */
+  introLine?: string;
 }
 
 /**
@@ -432,9 +448,20 @@ export interface EncounterStageFactorLineModel {
 
 export interface EncounterStageTestPanelModel {
   reach: ReachDomain;
+  /**
+   * Reach name, title-cased.
+   *
+   * THR-972 moved the panel's reach chip to the shared `ReachIcon` (the SVG icon
+   * set), which draws the reach's own heraldic charge from {@link reach} alone —
+   * so this label no longer renders as text beside it. It survives as the chip's
+   * accessible name and title, which is what a glyph-only affordance owes.
+   *
+   * The tiered PNG (`/assets/reaches/iron-3.png`) this replaced carried a second
+   * signal the SVG does not: the acting agent's *capability tier*. That is not
+   * lost — the panel states it in words on its own derived factor line
+   * ("Vara is skilled in iron"), which is where a capability claim belongs.
+   */
   reachLabel: string;
-  /** Icon for the reach at the acting agent's tier. */
-  reachIconUrl?: string;
   /**
    * ≤`REACH_PURPOSE_MAX_WORDS` (4) words, plain — what this step is testing.
    * Produced from `ActionStep.purposeLine` (THR-820). Absent on any step that

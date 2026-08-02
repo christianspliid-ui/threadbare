@@ -95,6 +95,38 @@ export function nudgeCardKeyword(libraryCardId: string | undefined): NudgeCardKe
   };
 }
 
+// ─── Glyph legend (THR-972) ─────────────────────────────────────────
+
+/**
+ * The three glyph vocabularies a card draws, named.
+ *
+ * The director's find, 2026-08-02: *"on the cards there are three different icon
+ * types. help me understand which is which."* They were genuinely ambiguous —
+ * an essence price and an odds contribution both rendered as a small row of
+ * repeated glyphs, so two vocabularies meaning **opposite** things (what you
+ * spend vs. what you gain) were distinguishable only by glyph shape at 12px.
+ *
+ * The structural half of the fix is in the components: cost now renders as a
+ * framed price badge rather than a pip row, so the two stop sharing a silhouette.
+ * This legend is the naming half — a player who wants the vocabulary spelled out
+ * gets it in one glance instead of inferring it from context.
+ *
+ * Ordered as the card reads them: price first (top-right), then the odds row,
+ * then the setback that only some cards carry.
+ */
+export interface NudgeGlyphLegendEntry {
+  readonly id: 'price' | 'odds' | 'setback';
+  readonly glyph: string;
+  /** One or two words. This is a legend, not an explanation — the tooltip explains. */
+  readonly label: string;
+}
+
+export const NUDGE_GLYPH_LEGEND: readonly NudgeGlyphLegendEntry[] = [
+  { id: 'price', glyph: ESSENCE_PIP_GLYPH, label: 'price' },
+  { id: 'odds', glyph: '●', label: 'odds' },
+  { id: 'setback', glyph: '▼', label: 'setback' },
+];
+
 /** Cost channels beyond essence — the keys of `NudgeCostChannels`. */
 export type NudgeCostChannelId = 'detection' | 'doom';
 
