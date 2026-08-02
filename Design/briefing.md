@@ -1,5 +1,5 @@
 ---
-needsChristian: thr-907-verdict-askable, thr-931-stuck-closeout
+needsChristian: thr-907-verdict-askable, thr-931-stuck-closeout, thr-792-stuck-closeout
 queue: backed-up
 freshness: healthy
 deploy: skipped
@@ -7,62 +7,51 @@ tasks: ok
 ---
 # Briefing
 
-**Generated:** 2026-08-02 02:55 local (2026-08-02 00:55 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-08-02 04:55 local (2026-08-02 02:55 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
 ## Needs Christian
 
-**Two things now — the encounter verdict, unchanged, and one small stuck ticket that has finally been routed to you properly.**
+**Three items. One is the real one; two are bookkeeping only you can clear.**
 
-### 1. The encounter verdict — still the one that matters
+### 1. The encounter verdict — play the five-encounter slice and rule on it
 
-**What's waiting is one play session.** You open the five-encounter slice and rule on five things: does the prose read clear and grounded; does the firing rhythm work as a starting point; is the world-change visible after a hand resolves; is the new interface gamey enough; and is it actually fun to decide. *"Needs another iteration"* is a perfectly good ruling on any of them — it closes the question and charters the follow-up work.
+*Unchanged from the last several runs, and still the only thing that moves the game forward.* Everything it was waiting on is finished and live on the site. What's left is a sitting, not a decision made cold: play the slice and rule on five things — does the prose read right, does the firing rhythm feel right, can you see the consequences of what you did, is the interface out of the way, and **is deciding actually fun**. "Needs another iteration" is a perfectly good ruling on any of the five; it closes the question and charters the follow-up.
 
-**Your conditions for playing it were met and still hold.** The three interface defects you named are fixed, merged and live, and the crash that used to kill multi-step encounters at step two is fixed too. The written-out example encounter and the rewritten authoring rules have both landed, so the format question is now waiting on your read of them *in play*, not on more drafting.
+**What it holds:** all encounter-writing work — eleven content tickets — plus one downstream question about four finished capital-city templates (a council mediation, a noble's court, a house unification, and raising a monument). Those four are written, tested, and sitting on a shelf; once the format is settled they either land as-is and get tidied up alongside the seven earlier ones, or the branch is dropped and they're re-written to the new standard. Both are cheap from here. **Nothing decays while you decide** — say the word in chat whenever you want it prepped.
 
-**Two things unlock behind the verdict:**
+**One caveat, so a sighting during play isn't misread:** there's a known cosmetic defect where a nudge card can print a raw `{they}` instead of a name. It is *not* one of the interface defects you enumerated, it's already ticketed, and it doesn't affect the five things you'd be ruling on.
 
-- **All content writing is still paused**, as you asked — eleven encounter tickets held shut behind the format sign-off.
-- **Four finished capital-city encounters sit on a held branch**, written in the old style. When the format is settled: land them and retrofit, or drop the branch and re-author. Nothing is lost either way, and it isn't urgent until you've ruled.
+*— the orchestrator lane's 02:27Z run raises this same single item.*
 
-**One caveat before you play, unchanged.** There's a fourth defect of the same family that was never on your list: nudge cards still don't run their text through the name-substitution step, so a card can show a bare `{they}` where a name belongs — around 28 places. **It's not part of what you asked for and nothing is waiting on it.** If you see raw code on a card, that's this, not a return of what was just fixed.
+### 2. Two finished jobs are stuck in the "in progress" column
 
-### 2. One finished ticket is stuck where no automated worker can reach it
+Neither needs work. Both are done. The automated lanes are structurally forbidden from marking anything finished, so these sit until you clear them:
 
-*(Also flagged by the daily backlog review yesterday — this is the first hour it has reached you here rather than sitting in the queue notes.)*
+- **The documentation-check switch you flipped yesterday.** You turned it on; it was verified working in both directions. The row still reads as in-progress. *(One stale sentence in the project's own instructions still claims the switch is off — that part is an agent's job, and it's noted for whoever picks it up next.)*
+- **A wrong claim in a weekly-checklist prompt** — it said one of the repo's files had been deleted when it hadn't. That correction shipped six days ago under a neighbouring ticket's number, so nothing ever closed this one. Verified this run against the actual commit.
 
-**The work is done.** You already switched on the documentation safety-check in GitHub — re-verified against the live setting again this hour, and it behaves correctly in both directions. All that's actually left is one outdated sentence in a rules file that still claims the switch is off.
-
-**But the ticket sits in a column none of the automated workers read**, so it has been describing itself accurately every hour for twenty hours and nothing has picked it up. Precision was never the missing ingredient.
-
-**The ask is one small move:** put it back in the work queue and a worker will fix the sentence and close it in a single pass. (Closing it outright also works, but then the outdated sentence stays and will mislead the next session that reads it.) This task isn't permitted to move tickets itself, which is the whole reason it's reaching you.
+These are the only two of their kind on the board.
 
 ## Queue
 
-**Backed up — 59 ready, and the work lane can see all 59.** 2 medium, 4 unranked, 53 low-priority tidy-ups. **Nothing urgent or high-priority is waiting.**
+**Backed up — 56 items ready for work, all visible and unclaimed.** No urgent or high-priority work is waiting; the single medium item is a mismatch between a design document and the code (a list assumes twelve of something where there are ten). Planning is comfortably ahead of execution, which is the healthy direction to be wrong in.
 
-- **The queue is fully visible again.** Last hour one ticket was hidden from the work lane because it carried your name; that name has since been cleared, so nothing is queue-jumped to the back any more.
-- **The parked encounter batch is parked correctly** — the capital-city templates wait behind your format question, not behind a defect. Thirty-six hours parked, which is fine; it's a hold, not a stall.
-- **Five items are past the staleness bound**, unchanged in count; the oldest is 8.2 days (merging two duplicate code paths for casting). All low priority. *(Last hour's brief said 9.2 days for that same ticket — an arithmetic slip, not a change.)*
+- **Five items have gone quiet for over a week** — the oldest at 8.3 days, the other four at ~7.4 days. All low priority, all cosmetic or tidy-up (a doc comment that contradicts the code, a mostly-dead name pool, four action cards with no artwork, two overlapping art registries). Same five as recent runs; no new entrant, and none due to age in before 2026-08-04.
+- **One held branch, deliberately.** The four capital-city templates above sit on an open branch with auto-merge switched *off* on purpose. It's a hold, not a stall — no sweep should re-arm it until the format verdict lands. Parked ~2 days. *(The armed-PR check reports "healthy / nothing waiting" and structurally cannot see this branch — that blindness is intended here, but "healthy" shouldn't be read as coverage.)*
 
 ## Freshness
 
-**Home tree current** — on `main`, exactly level with the shared copy, so the hourly sync is keeping up. Two local settings files carry uncommitted edits and two draft retro notes sit alongside them; neither has blocked anything, and they only could if an update happened to land on those same filenames.
-
-**The live site is current.** Nothing published this hour because everything that merged was notes and documentation — the game itself didn't need rebuilding.
-
-**Housekeeping healthy.** The hourly cleanup ran 15 minutes ago; one old workspace is flagged as needing a human call on whether to keep it, which is a note rather than a problem. All nine scheduled jobs are running on time, the automated checks are running normally, and no pull requests are waiting to merge.
+- **Home tree current** — on `main`, nothing behind, nothing stranded. Fourteenth consecutive clean run. Two config files carry local edits (your tool-permission settings); those don't stall anything unless an incoming change touches the same files, which it hasn't. Two untracked retro drafts still sit there — inert, but worth a glance eventually.
+- **Site up to date.** The last few changes were notes and documentation only, so the game itself didn't need rebuilding. Nothing to do.
+- **Automated checks, scheduled tasks and the branch cleaner are all healthy** — the cleaner ran 15 minutes ago and flags one leftover workspace as needing a human decision, which is normal rather than a fault.
 
 ## What's moving
 
-**Last hour's open question is answered: the change that stops hourly paperwork clogging the build queue is working.**
-
-The doubt was real — a lane with nothing to say and a lane that *can't publish* look identical from outside, so half an hour of silence proved nothing. The discriminator was the next lane run that actually had something to publish. **Two of those have now happened.** This briefing published at 02:01, and the planning lane published a genuine run report at 02:34, both over the new side path. Neither touched the main codebase.
-
-**The before-and-after is clean.** In the two hours before the change, the main codebase absorbed four paperwork merges from these two lanes — each one knocking every genuinely in-flight change back to the start of its ~18-minute check queue. In the ninety minutes since, it has absorbed **zero**. The three things that did merge in that window were all real ticketed work.
-
-That's the measurement the ticket's observation window was left open for. It stays open until a session can read a full day rather than an evening, but the mechanism is now demonstrated rather than assumed.
+- The pickup lane ran at 02:01Z, claimed the weekly-checklist correction, found it had already shipped, and parked it for closing rather than redoing it — the right call, and the reason item 2 exists.
+- The orchestrator ran at 02:27Z and promoted one item into the ready queue.
+- The move of hourly status files off the main branch is live and working — this brief is among the first published through it. That change stops routine paperwork from knocking every in-flight code change out of date.
 
 ---
 *Standing asks live in `Design/user-actions.md`. This file is regenerated hourly by the `keep-work-flowing-cc` scheduled task; staleness is visible from the Generated timestamp above and the task's `lastRunAt` in `list_scheduled_tasks`.*
