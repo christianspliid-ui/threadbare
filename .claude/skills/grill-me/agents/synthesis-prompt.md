@@ -2,9 +2,13 @@
 
 ## Synthesis Artifact
 
-Write synthesis to:
+Write synthesis to the Obsidian vault (via `OBSIDIAN_VAULT_PATH`, not the repo):
 
-`Docs/plans/YYYY-MM-DD-<topic>-grill-me.md`
+`Brainstorms/YYYY-MM-DD-<topic>-grill-me.md`
+
+Exploratory artifact — no git, no PR, no CI, no lint (THR-944; lifecycle rule in
+`Docs/canon/process.md` § Plan-doc lifecycle). It is never promoted into `Docs/plans/` as its own
+committed file; at promotion its surviving conclusions ride the plan doc's argument.
 
 Minimum sections:
 
