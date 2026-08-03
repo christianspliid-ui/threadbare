@@ -1042,7 +1042,12 @@ export const SLICE_BARGAIN_AT_CROSSROADS: UnifiedActionTemplate = {
     },
   ],
   aftermathConfig: {
-    branchOnStep: 1,
+    // The *deciding* step, not the fork's own index (THR-979). CROSSROADS_FORK
+    // sits at index 1 but declares `branchOnStep: 0`, and the engine records the
+    // decision against the step that resolved — index 0. Naming 1 here read a
+    // step no choice is ever written to, so both endings below were unreachable
+    // and the Full Moon seed was never planted.
+    branchOnStep: 0,
     variants: {
       negative: {
         overview:
@@ -1476,7 +1481,9 @@ export const SLICE_SWINDLED_FAMILY: UnifiedActionTemplate = {
     },
   ],
   aftermathConfig: {
-    branchOnStep: 1,
+    // The deciding step, not the fork's own index — see THR-979 on the
+    // crossroads config. FAMILY_FORK declares `branchOnStep: 0`.
+    branchOnStep: 0,
     variants: {
       positive: {
         overview:
@@ -1734,7 +1741,9 @@ export const SLICE_SWINDLER_FOUND: UnifiedActionTemplate = {
   },
   locationSubtypes: expandSettings(['urban']),
   aftermathConfig: {
-    branchOnStep: 1,
+    // The deciding step, not the fork's own index — see THR-979 on the
+    // crossroads config. SWINDLER_FORK declares `branchOnStep: 0`.
+    branchOnStep: 0,
     variants: {
       positive: {
         overview:

@@ -389,10 +389,10 @@ remediation ticket or the build fails.
 - **Producer → Consumer:** Encounters & Dilemmas → Personality & Emergent Traits
 - **UL terms:** *Archetype Drift*, *Nudge*
 - **Module:** `src/engine/encounters/branchDecision.ts`
-- **Production hits:** 2 total — 1 write, 0 read, 1 unclassified
+- **Production hits:** 3 total — 1 write, 0 read, 2 unclassified
 - **Write sites:** `src/engine/unifiedActionResolution.ts`
 - **Read sites:** —
-- **Other hits:** `src/engine/encounters/branchDecision.ts`
+- **Other hits:** `src/engine/encounters/branchDecision.ts`, `src/testing/contentInvariants.ts`
 - **Verdict:** Tier 2: write sites present, declared read sites empty — the consumer is starving. — or the declared symbol does not appear at the declared site: grep 'applyAgentDecidedBranches' src/engine/encounters/driftAccumulator.ts before treating this as a leak.
 
 ### `company-assist-shapes-resolution` — 🟢 LIVE
