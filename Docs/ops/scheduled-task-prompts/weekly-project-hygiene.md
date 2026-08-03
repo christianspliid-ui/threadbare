@@ -86,6 +86,10 @@ Enforce `CLAUDE.md § Skill Tree Layout`. **`.claude/skills/` is the only skill 
 - `Docs/documentation-ownership.md` — any rule it asserts that has been superseded?
 - **Orphan root-level markdown — enumerate, do not recall.** Run `ls -1 *.md` at the repo root (PowerShell: `Get-ChildItem -Filter *.md -File`) and diff the actual output against the allowlist below. Asserting "no orphan root-level markdown" without running the command is how this check reported a false PASS on 2026-07-22 while 16 orphans sat there since March (THR-793). Anything present but not on the list is a finding; anything on the list but missing is also a finding.
 
+  **Check tracking status before flagging (THR-975).** A root-level `.md` file that is *both* gitignored and untracked is not an orphan on its own: nothing can accidentally commit it, no collaborator ever sees it, and `git status` is silent on it. Run both probes before writing a finding — `git check-ignore -v <file>` (prints the matching rule, or nothing) and `git ls-files <file>` (prints the path if tracked, or nothing). A rule *and* no tracking means accepted; record it in the table below rather than as a finding. Without this, an unremovable false positive is re-derived from scratch every run — the same self-referential drift as THR-792 and THR-850 in this very check family.
+
+  **An untracked root file lives in exactly one tree.** It is created in whichever working tree ran the command and does not propagate — a sweep run from a fresh `.claude/worktrees/` checkout will not see it at all, while one run against the home tree will. So a disagreement between two runs about the root-markdown set is expected rather than alarming, and neither run is wrong. Say which tree the enumeration ran in when reporting this check.
+
   **Known-accepted root markdown (the complete allowlist):**
 
   | File | Why it is allowed to sit at the repo root |
@@ -94,6 +98,7 @@ Enforce `CLAUDE.md § Skill Tree Layout`. **`.claude/skills/` is the only skill 
   | `AGENTS.md` | **Intentionally kept.** THR-654 did *not* delete it — commit `0f777823` reduced it to a slim "Read CLAUDE.md First" pointer plus prototype/tooling notes. Flag it only if it balloons back into full duplicated instructions, which is the regression THR-654 actually guarded against (THR-792). |
   | `STYLE.md` | **Root-anchored by contract.** `Assets/concept-art/skill-files/SKILL.md` resolves it by looking for "a `STYLE.md` file in the project root (same level as `CLAUDE.md`)"; `art-direction`, `frontend-ui`, `qa-orchestrator`, and `state-of-game-design` all cite it as `STYLE.md` (repo root). Moving it silently breaks that lookup. |
   | `README.md` | Not currently present. Accepted without a finding if added. |
+  | `Index.md` | **Gitignored leftover — not an orphan (THR-975).** Untracked, and matched by the `/Index.md` rule in `.gitignore`, so both probes above say "accepted". It survives from the vault-in-repo era: tracked through `d797f048` (2026-03-05) → `b9fa288a` (2026-04-05) → `8ee0a966` (2026-04-14), then dropped from tracking when the Obsidian vault moved to the external `OBSIDIAN_VAULT_PATH` (THR-654) while the physical 294-line file stayed on the working tree. Safe to leave; equally safe to delete, since it is untracked and nothing regenerates from it. **Present only in the home tree** — worktree-based sweeps will not enumerate it. |
 - Obsidian vault: writes go through the filesystem at `OBSIDIAN_VAULT_PATH`, not the MCP (THR-654). Spot-check that `Index.md` lists recently created pages. If the path is unset or unreachable, skip gracefully and say so in the report.
 
 ### 5. Impediment log review
