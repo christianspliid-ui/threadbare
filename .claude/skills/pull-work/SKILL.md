@@ -1,7 +1,7 @@
 ---
 name: pull-work
 description: Canonical Claude Code pickup workflow for claiming Linear work safely from Ready for Dev.
-last_validated_against: 2026-08-02
+last_validated_against: 2026-08-03
 ---
 
 # Pull Work
@@ -254,23 +254,34 @@ If a specific issue id was provided, skip to Step 3.
 
 If the Step 1 board scan's "In Dev" slice filtered to `assignee:"me"` is empty, continue to Step 2.
 
-**Subtract shipped claims before counting (THR-938).** An issue whose PR is already open and carries its `Fixes THR-XXX` line is a *shipped* claim, not a concurrent implementation — it sits `In Dev` only because auto-merge has not fired yet, which by design happens after the session ends. Without this subtraction the docs-only drain below would leave two or three such claims behind and red-exit the *next* hourly run on a leak that does not exist. One `gh` call does it:
+**Count in-flight implementations, not open claims (THR-927 — supersedes THR-938's flat subtraction).** The gate protects an invariant about *concurrent implementation*: one thing being built at a time. A claim whose PR is already open and carries its close keyword is **discharged** — the building is finished, and the merge fires with no session present, by design after this run ends. Counting it as work-in-progress red-exits the *next* run on a leak that does not exist. That is not hypothetical; it is how the rule was found (`tb-opus-pickup`, 2026-07-31 ~19:00Z, impediment #365: THR-925 and THR-926 both sat `In Dev`, both shipped by the single armed PR #1191, and the documented response to a count above 1 is "surface and stop").
+
+Resolve each `In Dev` claim assigned to you to the open PR that closes it, then count only the claims that resolve to nothing:
 
 ```bash
-gh pr list --state open --json number,body --jq '.[] | .body' | grep -oE '(Fixes|Closes|Resolves) THR-[0-9]+'
+gh pr list --state open --json number,body \
+  --jq '.[] | .number as $n | .body | split("\n")[] | select(test("^(Fixes|Closes|Resolves) THR-[0-9]+[[:space:]]*$")) | "PR#\($n)\t\(.)"'
 ```
 
-Any In-Dev id appearing in that output is subtracted from the WIP count. This is a narrow, mechanical carve-out for claims the session has already discharged; the broader framing of what WIP=1 should count remains **THR-927**'s scope and is not settled here.
+| In-flight claims (those resolving to **no** open PR) | Verdict |
+|---|---|
+| 0 | Nothing is being built. Continue to Step 2 and claim. |
+| 1 | Route to Step 1.7 (resume — upstream-shipped check). |
+| >1 | Genuine cross-session leak (Rule 6). Surface and exit 1 so it is visible in cron logs. Do not claim more. |
 
-If the *remaining* slice has more than one entry, this is a Rule 6 violation (cross-session leak — Rule 6 says WIP=1 across all sessions). Output the surface message and exit 1 so the failure is visible in cron logs. Do not attempt to claim more.
+**Match the closer's predicate exactly — the keyword alone on its own line (THR-738).** `linear-autoclose.yml` is line-anchored, so a body that merely *mentions* `Fixes THR-XXX` mid-sentence will never close that issue. A gate that discharges a claim on such a mention has declared finished a ticket that nothing will close — and the superseded `grep -oE '(Fixes|Closes|Resolves) THR-[0-9]+'` matched exactly that prose, because it was unanchored. The two predicates must not drift apart again; this one is the workflow's.
 
-**Fail-soft:** if the `gh` call errors, subtract nothing and fall back to the raw count. Over-reporting a leak is recoverable; under-reporting one is not.
+**Discharged claims never gate, however many there are — this deviates from THR-927's own proposal, deliberately.** The ticket (filed 2026-07-31) specified counting *distinct PRs* plus no-PR claims, and asked that two claims across two PRs still exit 1. The `docs-only` drain shipped afterwards (THR-938) and **deliberately produces that state**: it ships the primary ticket, then claims and ships up to three more, each leaving a claim `In Dev` until auto-merge fires. Under the literal formula the next run red-exits on a board the drain exists to create. The formula also fails on the board that was live while this was being written — one discharged claim (THR-582 → PR #1299) plus one genuine in-flight claim (THR-927) scores `1 + 1 = 2` and exits 1, red-exiting the very run that fixed it. Two open PRs are two finished ships, not two implementations. The ticket's "worse bookkeeping" concern is real but is bookkeeping; losing an hourly slot is lost delivery, and Rule 0 ranks those in that order.
+
+**Fail-soft:** if the `gh` call errors, discharge nothing and fall back to the raw claim count. Over-reporting a leak costs an hour; under-reporting one costs the invariant.
 
 ```
-[pull-work] Step 1.5: WIP=1 gate — multiple In Dev assigned to me ({issueIds}). Cross-session leak. Surface and stop.
+[pull-work] Step 1.5: WIP gate — 0 in flight (discharged: THR-582→PR#1299). Continuing to Step 2.
+[pull-work] Step 1.5: WIP gate — 1 in flight (THR-927). Routing to Step 1.7 resume.
+[pull-work] Step 1.5: WIP gate — 2 in flight ({issueIds}), neither carried by an open PR. Cross-session leak. Surface and stop.
 ```
 
-If the slice has exactly one entry, route to Step 1.7 (resume-from-In-Dev upstream-shipped check) instead of exiting clean. The resumed issue may have shipped while the session was paused; the upstream-shipped check decides whether to resume work or stand down.
+The single-in-flight case routes to Step 1.7 (resume-from-In-Dev upstream-shipped check) rather than exiting clean. The resumed issue may have shipped while the session was paused; the upstream-shipped check decides whether to resume work or stand down.
 
 **Constants:**
 
@@ -780,7 +791,7 @@ For each `docs-only` ticket, up to `DRAIN_MAX_TICKETS`, **sequentially — never
 3. Implement, then close out on the **docs-only track** of CLAUDE.md § Testing: steps 3b, 5, and `npm run check:impediment-ids`, and nothing else. Do not run `npm test` / `check:typecheck` / `vite build` on a diff with no code in it.
 4. Ship per the closeout above — `Fixes THR-XXX` alone on its own line in both the commit body and the PR body, then `gh pr merge --auto --merge`.
 
-One In Dev at a time: finish a ticket's ship before claiming the next. The Step 1.5 shipped-claim subtraction is what keeps the resulting armed-but-unmerged claims from reading as a leak next run.
+One In Dev at a time: finish a ticket's ship before claiming the next. Step 1.5's in-flight count is what keeps the resulting armed-but-unmerged claims from reading as a leak next run — each one resolves to its own open PR, so all of them are discharged and none of them gate.
 
 ### Mis-tag guard — run at every drained ticket's closeout (THR-917)
 
