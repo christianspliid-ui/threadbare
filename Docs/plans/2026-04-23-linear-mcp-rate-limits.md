@@ -23,7 +23,7 @@ The Cowork session-start checklist in `Docs/plans/2026-04-13-linear-coordination
 
 ### 2. Per-state loops encoded into plans
 
-`Docs/plans/2026-04-23-opus-46-vs-47-label-split.md` (THR-234) instructs the executor to run `list_issues label:"model:opus"` **five times** (once per workflow state). This is a common pattern because the MCP does not accept `state: ["A", "B"]` — authors substitute a loop. The draft weekly-hygiene skill (`Docs/drafts/weekly-project-hygiene-SKILL.md`) does the same thing (7+ state queries per run) and additionally runs a "duplicate check" that issues one `list_issues project:X state:"Done"` per suspect title.
+`Docs/plans/2026-04-23-opus-46-vs-47-label-split.md` (THR-234) instructs the executor to run `list_issues label:"model:opus"` **five times** (once per workflow state). This is a common pattern because the MCP does not accept `state: ["A", "B"]` — authors substitute a loop. The draft weekly-hygiene skill (`Docs/drafts/weekly-project-hygiene-SKILL.md`, deleted 2026-08-03 — THR-823) did the same thing (7+ state queries per run) and additionally runs a "duplicate check" that issues one `list_issues project:X state:"Done"` per suspect title.
 
 ### 3. Verify-after-write amplification (Rule 7)
 
@@ -169,6 +169,8 @@ N/A — infrastructure only. Rationale above.
 
 7. **Edit `Docs/drafts/weekly-project-hygiene-SKILL.md`** — rewrite the per-state queries to a single board-scan plus in-memory bucketing. The skill is in `drafts/` and not installed yet; editing it now prevents the pattern from shipping.
 
+   > **Superseded (THR-823, 2026-08-03).** The premise "in `drafts/` and not installed yet" was true when written and is no longer — `weekly-project-hygiene` is installed, and the draft was deleted as a stale third copy that diverged from the live prompt. Edit **`Docs/ops/scheduled-task-prompts/weekly-project-hygiene.md`** and the live path at `C:\Users\chris\.claude\scheduled-tasks\weekly-project-hygiene\SKILL.md` together, per CLAUDE.md § Scheduled Tasks. An edit landing in `Docs/drafts/` changed nothing the scheduler ran **and reported success**.
+
 8. **Edit `CLAUDE.md` § Session Workflow.** Where the Cowork bullet lists `list_issues state:"In Design"` / `Implementation Planning` / `Ready for Dev` / `Todo`, replace with a pointer to the Cowork Session Start § in the coordination protocol doc (now single-call) to avoid drift between the two files.
 
 9. **Log impediment #59 in `Docs/impediments.md`** with category `api-quirk`, impact `M`, description pointing to this plan doc. Use the `impediment-reporter` skill format.
@@ -190,7 +192,7 @@ N/A — infrastructure only. Rationale above.
 - `.agents/skills/pull-work/SKILL.md`
 - `Docs/plans/2026-04-19-codex-automation-prompt.md`
 - `Docs/plans/2026-04-23-opus-46-vs-47-label-split.md`
-- `Docs/drafts/weekly-project-hygiene-SKILL.md`
+- ~~`Docs/drafts/weekly-project-hygiene-SKILL.md`~~ — deleted 2026-08-03 (THR-823); edit `Docs/ops/scheduled-task-prompts/weekly-project-hygiene.md` and the live prompt instead
 - `CLAUDE.md`
 - `Docs/impediments.md`
 - `Docs/changelog.md` (append closing row)
