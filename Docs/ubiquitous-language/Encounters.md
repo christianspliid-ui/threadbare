@@ -259,3 +259,49 @@ Every nudge must carry at least one fragment in a failure band (`near_miss`, `fa
 A quintessence-rebuilding encounter — the road back out of the `[[Broken]]` state. A few per Reach (the tavern drunk, absolution, retiring home, old friends, hard labour), each restoring slowly over repeat visits rather than in one beat.
 
 Rebuild Roads are the **only** content a Broken mortal may draw, via `UnifiedActionTemplate.drawableWhileBroken`. This is why `BROKEN_GATE_ENABLED` ships `false`: a mortal locked out of all candidacy with no road back is stun-locked, not broken. Flipping the gate is a WS5 Done-when, gated on these encounters actually existing.
+
+---
+
+### Formative Test
+
+**Aliases:** formative moment, FormativeTest
+**Also see:** `[[Nudge]]`, `[[Band Fragment]]`, `[[Bond Reception]]`, `[[The First]]`, `[[Thread]]`
+**Status:** canonical
+
+A **present-tense** trial during the Meet The First encounter, in which the god's played `[[Nudge]]` hand leans one pole of the candidate's value pair and **fate resolves which pole is actually written** into the mortal. Schema: `FormativeTest` (`src/types/meetingEncounter.ts`); resolver: `resolveFormativeTest` (`src/engine/meetingEncounter.ts`).
+
+**The player never picks which way the moment goes.** They lean the odds; fate resolves the band; the band writes the pole. This is the `[[Nudge]]` contract applied to character formation, and it is the whole reason the term exists.
+
+**Replaces the retired "Defining Moment" choice scene**, in which the player picked which of two authored formative moments was true. That is the authored-futures model the nudge pivot rejected.
+
+Band prose is keyed by **which pole the band wrote** (`FormativeBandProse`: `cleanA`, `cleanB`, `tempered`, and the broke-the-other-way slots) rather than by raw band — the same band writes a different pole depending on how the hand leaned, so the prose has to follow the pole, not the roll. Contrast `[[Band Fragment]]`, which is keyed on the six-value `StepOutcome` directly.
+
+---
+
+### Bond Reception
+
+**Aliases:** reception, BondReception
+**Also see:** `[[Formative Test]]`, `[[Nudge]]`, `[[Thread]]`, `[[The First]]`
+**Status:** canonical
+
+**How the mortal receives the god** at the bond test's climax: one of `awe | devotion | bargain | doubt | defiance`. Written to the thread edge as `bondReception`.
+
+**The bond always forms; the reception colors it.** A reception is never a refusal — the band colors the relationship, it does not deny it. This is what makes the bond test safe to lose.
+
+Derived from the resolved band by `BOND_RECEPTION_BY_BAND` (`src/data/meeting-nudge-constants.ts`), a total map over the six-value `StepOutcome` onto five receptions: `bargain` is the image of **both** middle textures (`success_at_cost` and `near_miss`), since either way the moment did not land cleanly and the mortal negotiates. Every one of the five is reachable from some band — a reception no band can produce is dead content, and a unit test pins that. Malformed templates fall back to `BOND_RECEPTION_FALLBACK` (`bargain`), neutral rather than a refusal.
+
+---
+
+### Unset Weave
+
+**Aliases:** unset-weave framing, still-settling past
+**Also see:** `[[Formative Test]]`, `[[Nudge]]`
+**Status:** deprecated
+
+*Rejected 2026-07-30 (THR-868 grill verdict 13; recorded in code at `src/types/meetingEncounter.ts`).* The framing in which the god nudges **inside a still-settling past** — the candidate's history not yet fixed, the player reaching back into it.
+
+Rejected by Christian in favour of **present-tense trials**: the moment happens now, while the god's attention rests on the mortal. `[[Formative Test]]` is the term that replaced it.
+
+Recorded here rather than left in the brainstorm doc because the rejected framing is *more* evocative than the one that shipped, which is exactly why a later session reading the exploratory draft would reintroduce it.
+
+**This term was never canonical — read the status field as "do not use", not as "retired from canon".** The shard vocabulary has no `rejected` value: `ULTermStatus` (`scripts/generate-ul-dashboard-data.ts`) is the closed set `canonical | proposed | deprecated`, and an unrecognised value degrades the entry to `unknown`, which renders as though nobody ever classified it. `deprecated` is the nearest supported value carrying the right affordance for a reader. Adding a real `rejected` status is tracked as THR-991.
