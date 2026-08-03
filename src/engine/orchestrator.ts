@@ -2722,6 +2722,40 @@ function runInlinePhase(
   return { next, eventDelta };
 }
 
+/**
+ * THR-582: companion to `runInlinePhase` for the inline phases that do NOT follow the
+ * `s = { ...s, ...phaseX(s) }` merge shape — the in-place mutators (`phaseSlotCaps`,
+ * `emitColocationRevelations`, the TB-073 army/battle cluster) and the phases that
+ * return a bespoke result object the caller destructures itself (`phaseEncounterVisibility`,
+ * `phaseDetectionPressure`, `phaseChoiceResolution`). Those cannot be expressed as a
+ * `Partial<GameState>` thunk, so before this helper they were the phases `tick_profile`
+ * could not see at all.
+ *
+ * Times the thunk and passes its return value straight through, so the call site keeps
+ * its own state handling and its own `phaseEventCounts` expression **unchanged** — this
+ * helper never touches `s` and never changes accounting (additive — NFP #6). `eventDelta`
+ * in the emitted trace is measured off the same `s.tickEvents` reference, so it is exact
+ * for in-place mutators and 0 for phases that merge their events after the thunk returns.
+ * Timing never feeds a seed or a branch (determinism — NFP #3), and no try/catch is added
+ * (crash semantics unchanged, matching `runInlinePhase`).
+ */
+function timeInlinePhase<T>(phaseId: string, s: GameState, run: () => T): T {
+  if (!tickProfilingEnabled) return run();
+  const start = performance.now();
+  const prevEvents = s.tickEvents.length;
+  const result = run();
+  const durationMs = performance.now() - start;
+  const eventDelta = s.tickEvents.length - prevEvents;
+  emitPhaseTiming({
+    tick: s.tick,
+    phase: phaseId,
+    summary: `${phaseId}: ${eventDelta} events in ${durationMs.toFixed(2)}ms`,
+    durationMs,
+    eventDelta,
+  });
+  return result;
+}
+
 export function runTick(state: GameState, scryTargets: import('../types').HexCoord[] = [], runtime?: SimulationRuntime): GameState {
   try {
   // Start with clean tick events
@@ -2797,13 +2831,19 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   prevEventCount = s.tickEvents.length;
 
   // Phase 1.5: Journey Beat — check if doom clock crossed a beat threshold for The First
-  s = { ...s, ...phaseJourneyBeat(s, JOURNEY_BEAT_TEMPLATES) };
-  phaseEventCounts['journey_beat'] = s.tickEvents.length - prevEventCount;
+  {
+    const r = runInlinePhase('journey_beat', s, () => phaseJourneyBeat(s, JOURNEY_BEAT_TEMPLATES));
+    s = r.next;
+    phaseEventCounts['journey_beat'] = r.eventDelta;
+  }
   prevEventCount = s.tickEvents.length;
 
   // Phase 1.7: Omen Agenda — select/rotate atmospheric pressure tracks, emit beats (THR-19)
-  s = { ...s, ...phaseOmenAgenda(s) };
-  phaseEventCounts['omen_agenda'] = s.tickEvents.length - prevEventCount;
+  {
+    const r = runInlinePhase('omen_agenda', s, () => phaseOmenAgenda(s));
+    s = r.next;
+    phaseEventCounts['omen_agenda'] = r.eventDelta;
+  }
   prevEventCount = s.tickEvents.length;
 
   // Slot anchor: post-doom — fires between phaseOmenAgenda and phaseComposition.
@@ -2817,21 +2857,30 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   // it sets `ascendantBeats.pending` to a Deepening beat, so the Director (which skips
   // when `pending` is set) yields the turn to it — Deepening beats take priority over
   // the cadence draw without any change to the Director itself.
-  s = { ...s, ...phaseAscendantProgression(s) };
-  phaseEventCounts['ascendant_progression'] = s.tickEvents.length - prevEventCount;
+  {
+    const r = runInlinePhase('ascendant_progression', s, () => phaseAscendantProgression(s));
+    s = r.next;
+    phaseEventCounts['ascendant_progression'] = r.eventDelta;
+  }
   prevEventCount = s.tickEvents.length;
 
   // Phase 1.75: Ascendant Beat Director — decide which beat (if any) to OFFER this
   // turn (spine-first, then cadence-gated pool). Runs after the world settles and
   // before encounter resolution; only offers, never resolves. (THR-500)
   const beatRng = mulberry32(state.seed + state.tick * 59 + 503);
-  s = { ...s, ...phaseAscendantBeatDirector(s, beatRng) };
-  phaseEventCounts['ascendant_beat_director'] = s.tickEvents.length - prevEventCount;
+  {
+    const r = runInlinePhase('ascendant_beat_director', s, () => phaseAscendantBeatDirector(s, beatRng));
+    s = r.next;
+    phaseEventCounts['ascendant_beat_director'] = r.eventDelta;
+  }
   prevEventCount = s.tickEvents.length;
 
   // Phase 1.8: Composition phase runner — advance phased event recipes tied to doom clock (THR-225)
-  s = { ...s, ...phaseComposition(s) };
-  phaseEventCounts['composition'] = s.tickEvents.length - prevEventCount;
+  {
+    const r = runInlinePhase('composition', s, () => phaseComposition(s));
+    s = r.next;
+    phaseEventCounts['composition'] = r.eventDelta;
+  }
   prevEventCount = s.tickEvents.length;
 
   // ─── Unified Action Pipeline (replaces old phaseAgentActions + phaseEncounterProgression + phaseActionProgress) ───
@@ -2848,7 +2897,7 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   // Phase 2a.1: Thread-bind familiarity grant — when a bind_thread_* action resolves
   // successfully, grant the matching worship familiarity so knowledge level updates
   // immediately (mirrors the initial familiarity set in gameInit for existing threads).
-  {
+  timeInlinePhase('thread_bind_familiarity', s, () => {
     const prevActions = state.unifiedActions ?? [];
     const nextActions = s.unifiedActions ?? [];
     let famMap = s.familiarityMap;
@@ -2870,11 +2919,15 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
     if (famMap !== s.familiarityMap) {
       s = { ...s, familiarityMap: famMap };
     }
-  }
+  });
 
   // Phase 2a.4: Effect Tick — per-agent effect bookkeeping (duration, cooldown, decay, stacking,
   //             axiological_drift, hex_effect, resource_manipulate)
   {
+    // THR-582: the legacy actor-counter emitters (`effect_tick`, `mastery_decay`) already
+    // land in the `tick_phase_profile` ring but carried no `durationMs`, so the `tick_profile`
+    // rollup read them as 0ms and they could never surface as `slowestPhase`. Time them too.
+    const effectStart = tickProfilingEnabled ? performance.now() : 0;
     const effectStates = s.effectStates ?? new Map();
     const agents = s.graph.getNodesByType('actor')
       .filter(n => n.properties.actorType === 'individual' || n.properties.actorType === 'ascendant');
@@ -2913,6 +2966,7 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
       totalActors: agents.length,
       processedActors: processedEffectActors,
       skippedActors: agents.length - processedEffectActors,
+      durationMs: tickProfilingEnabled ? performance.now() - effectStart : undefined,
       summary: `effect_tick: ${processedEffectActors}/${agents.length} actors processed`,
     });
     const existingHexMutations = s.pendingHexMutations ?? [];
@@ -2930,23 +2984,31 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
 
   // Phase 2a.52: Effect Shells — process non-step-outcome flip_table triggers (THR-53)
   // step_outcome triggers are handled inline in executeStepResult; this phase handles the rest.
-  s = { ...s, ...phaseEffectShells(s) };
+  {
+    const r = runInlinePhase('effect_shells', s, () => phaseEffectShells(s));
+    s = r.next;
+    phaseEventCounts['effect_shells'] = r.eventDelta;
+  }
+  prevEventCount = s.tickEvents.length;
 
   // Phase 2a.55: Strategic Projects — advance multi-tick projects and tick control degradation
   {
     const stratProjRng = mulberry32(state.seed + state.tick * 59);
-    s = { ...s, ...phaseStrategicProjects(s, stratProjRng) };
-    phaseEventCounts['strategic_projects'] = s.tickEvents.length - prevEventCount;
+    {
+      const r = runInlinePhase('strategic_projects', s, () => phaseStrategicProjects(s, stratProjRng));
+      s = r.next;
+      phaseEventCounts['strategic_projects'] = r.eventDelta;
+    }
     prevEventCount = s.tickEvents.length;
   }
 
   // Phase 2a.7: Encounter Revelations (knowledge facets from encounter observations)
-  emitEncounterRevelations(s);
+  timeInlinePhase('encounter_revelations', s, () => emitEncounterRevelations(s));
   phaseEventCounts['encounter_revelations'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
 
   // Phase 2a.6: Encounter Visibility — generate notifications for threaded agents in encounters
-  const encVisResult = phaseEncounterVisibility(s);
+  const encVisResult = timeInlinePhase('encounter_visibility', s, () => phaseEncounterVisibility(s));
   s = {
     ...s,
     tickEvents: [...s.tickEvents, ...encVisResult.events],
@@ -2960,7 +3022,7 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
 
   // Phase 2a.605: Detection Pressure — regional escalation from committed choices + passive decay
   {
-    const detectionResult = phaseDetectionPressure(s);
+    const detectionResult = timeInlinePhase('detection_pressure', s, () => phaseDetectionPressure(s));
     s = {
       ...s,
       regionalDetectionPressure: detectionResult.regionalDetectionPressure,
@@ -2973,7 +3035,7 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   // Phase 2a.61: Choice Resolution — process pending player choice commits (THR-323)
   {
     const choiceRng = libMulberry32(state.seed + state.tick * 89);
-    const choiceResult = phaseChoiceResolution(s, choiceRng);
+    const choiceResult = timeInlinePhase('choice_resolution', s, () => phaseChoiceResolution(s, choiceRng));
     s = {
       ...s,
       archetypeDrift: choiceResult.archetypeDrift,
@@ -2983,43 +3045,53 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   }
 
   // Phase 2a.62: Ascendant Hand Filter — encounter-scoped hand partitioning
-  const handFilterStats = phaseAscendantHandFilter(s);
+  const handFilterStats = timeInlinePhase('ascendant_hand_filter', s, () => phaseAscendantHandFilter(s));
   phaseEventCounts['ascendant_hand_filter'] = handFilterStats.filteredCount;
 
   // Phase 2a.65: Attention Pool — regen pool, expire tugs, generate new tugs for shaping encounters
   {
     const attentionRng = mulberry32(state.seed + state.tick * 71);
-    s = { ...s, ...phaseAttention(s, UNIFIED_ACTION_TEMPLATES, attentionRng) };
+    const r = runInlinePhase('attention', s, () => phaseAttention(s, UNIFIED_ACTION_TEMPLATES, attentionRng));
+    s = r.next;
+    phaseEventCounts['attention'] = r.eventDelta;
   }
 
   // Phase 2a.78: Apotheosis Eligibility — seed the capstone onto tier-4 mortals
   // that have held the top rung long enough (THR-479). Runs before seed
   // evaluation so a freshly-seeded apotheosis is picked up the same tick.
   {
-    s = { ...s, ...seedApotheosisEncounters(s, s.tick, runtime) };
-    phaseEventCounts['apotheosis_seeding'] = s.tickEvents.length - prevEventCount;
+    {
+      const r = runInlinePhase('apotheosis_seeding', s, () => seedApotheosisEncounters(s, s.tick, runtime));
+      s = r.next;
+      phaseEventCounts['apotheosis_seeding'] = r.eventDelta;
+    }
     prevEventCount = s.tickEvents.length;
   }
 
   // Phase 2a.8: Evaluate encounter seeds planted by aftermath reactions
   {
     const seedRng = mulberry32(state.seed + state.tick * 53);
-    s = evaluateEncounterSeeds(s, s.tick, seedRng, runtime);
-    phaseEventCounts['encounter_seeding'] = s.tickEvents.length - prevEventCount;
+    // `evaluateEncounterSeeds` returns a whole GameState rather than a Partial; spreading it
+    // over `s` inside runInlinePhase yields the identical object it used to be assigned to.
+    const r = runInlinePhase('encounter_seeding', s, () => evaluateEncounterSeeds(s, s.tick, seedRng, runtime));
+    s = r.next;
+    phaseEventCounts['encounter_seeding'] = r.eventDelta;
     prevEventCount = s.tickEvents.length;
   }
 
   // Phase 2a.85: Slot Cap Enforcement — deactivate overflow possessions, handle condition overflow
-  phaseSlotCaps(s);
-  phaseDisposalTimeout(s);
+  timeInlinePhase('slot_caps', s, () => { phaseSlotCaps(s); phaseDisposalTimeout(s); });
   phaseEventCounts['slot_caps'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
 
   // Phase 2a.9: Divine Premonition (Whisper) — subconscious nudges for idle threaded agents
   {
     const whisperRng = mulberry32(state.seed + state.tick * 67);
-    s = { ...s, ...phaseDivinePremonition(s, whisperRng) };
-    phaseEventCounts['divine_premonition'] = s.tickEvents.length - prevEventCount;
+    {
+      const r = runInlinePhase('divine_premonition', s, () => phaseDivinePremonition(s, whisperRng));
+      s = r.next;
+      phaseEventCounts['divine_premonition'] = r.eventDelta;
+    }
     prevEventCount = s.tickEvents.length;
   }
 
@@ -3040,16 +3112,22 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
 
   // Phase 2.32: Initiative Progress — advance active agent initiatives, expire temporary boosts
   const initiativeRng = mulberry32(state.seed + state.tick * 53);
-  s = { ...s, ...phaseInitiativeProgress(s, initiativeRng, runtime) };
-  phaseEventCounts['initiative_progress'] = s.tickEvents.length - prevEventCount;
+  {
+    const r = runInlinePhase('initiative_progress', s, () => phaseInitiativeProgress(s, initiativeRng, runtime));
+    s = r.next;
+    phaseEventCounts['initiative_progress'] = r.eventDelta;
+  }
   // touchStructure removed (THR-187): create_sublocation outcomes now call applyEncounterCacheUpdate
   // internally; other outcome kinds (bonds, boosts, faction) don't require cache invalidation.
   prevEventCount = s.tickEvents.length;
 
   // Phase 2.33: Mentorship Lifecycle (THR-75) — couples train-apprentice initiatives to mentors edges
   const mentorshipRng = mulberry32(state.seed + state.tick * 59);
-  s = { ...s, ...phaseMentorship(s, mentorshipRng, runtime) };
-  phaseEventCounts['mentorship'] = s.tickEvents.length - prevEventCount;
+  {
+    const r = runInlinePhase('mentorship', s, () => phaseMentorship(s, mentorshipRng, runtime));
+    s = r.next;
+    phaseEventCounts['mentorship'] = r.eventDelta;
+  }
   prevEventCount = s.tickEvents.length;
 
   // Phase 2.34: Companies (THR-74) — dissolution/leave, cohesion, shared movement,
@@ -3072,30 +3150,38 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   prevEventCount = s.tickEvents.length;
 
   // Phase 2.352: Army Movement (TB-073 — armies advance toward objectives)
-  phaseArmyMovement(s);
+  timeInlinePhase('army_movement', s, () => phaseArmyMovement(s));
 
   // Phase 2.355: Army Attrition (TB-073 — cohesion degradation during march)
-  phaseArmyAttrition(s);
+  timeInlinePhase('army_attrition', s, () => phaseArmyAttrition(s));
 
   // Phase 2.356: Battle Detection (TB-073 — hostile army colocation → battle node)
-  phaseBattleDetection(s);
+  timeInlinePhase('battle_detection', s, () => phaseBattleDetection(s));
 
   // Phase 2.357: Battle Tick (TB-073 — process active battles: attrition, momentum, resolution)
-  phaseBattleTick(s);
+  timeInlinePhase('battle_tick', s, () => phaseBattleTick(s));
 
   // Phase 2.3575: Lair Escalation (M2.5 — tier upgrades, sphere feedback, spawn)
-  phaseLairEscalation(s);
+  timeInlinePhase('lair_escalation', s, () => phaseLairEscalation(s));
 
   // Phase 2.358: Army Notifications (TB-073 — convert army/battle traces to TickEvents)
-  s = { ...s, ...phaseArmyNotifications(s, nextEventId) };
+  {
+    const r = runInlinePhase('army_notifications', s, () => phaseArmyNotifications(s, nextEventId));
+    s = r.next;
+    phaseEventCounts['army_notifications'] = r.eventDelta;
+  }
+  prevEventCount = s.tickEvents.length;
 
   // Phase 2.36: Colocation Detection (after movement, before sublocation dissolution)
-  s = { ...s, ...phaseColocationDetection(s) };
-  phaseEventCounts['colocation_detection'] = s.tickEvents.length - prevEventCount;
+  {
+    const r = runInlinePhase('colocation_detection', s, () => phaseColocationDetection(s));
+    s = r.next;
+    phaseEventCounts['colocation_detection'] = r.eventDelta;
+  }
   prevEventCount = s.tickEvents.length;
 
   // Phase 2.361: Colocation Aggregation — collapse same-hex same-tick encounter storms (THR-456)
-  {
+  timeInlinePhase('colocation_aggregation', s, () => {
     const aggRng = mulberry32(s.seed + s.tick * 59);
     const locationNodes = s.graph.getNodesByType('location');
     const hexLocationIndex = new Map<string, string>();
@@ -3116,16 +3202,16 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
     if (aggregated !== s.tickEvents) {
       s = { ...s, tickEvents: aggregated };
     }
-  }
+  });
   prevEventCount = s.tickEvents.length;
 
   // Phase 2.37: Colocation Revelations (first-sighting possession reveals, faction bond auto-reveals)
-  emitColocationRevelations(s);
+  timeInlinePhase('colocation_revelations', s, () => emitColocationRevelations(s));
   phaseEventCounts['colocation_revelations'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
 
   // Phase 2.38: NPC Graduation ──
-  const npcGradEvents = phaseNpcGraduation(s);
+  const npcGradEvents = timeInlinePhase('npc_graduation', s, () => phaseNpcGraduation(s));
   if (npcGradEvents.length > 0) {
     s = { ...s, tickEvents: [...s.tickEvents, ...npcGradEvents] };
   }
@@ -3133,7 +3219,8 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   prevEventCount = s.tickEvents.length;
 
   // Phase 2.4: Sublocation Dissolution
-  const dissolutions = checkDissolutions(s.graph, s.tick, s.encounterProgress);
+  const dissolutions = timeInlinePhase('sublocation_dissolution', s, () =>
+    checkDissolutions(s.graph, s.tick, s.encounterProgress));
   for (const dissolution of dissolutions) {
     s = {
       ...s,
@@ -3165,22 +3252,28 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
 
   // Phase 2.5: Dilemma Detection
 
-  s = { ...s, ...phaseDilemmaDetection(s) };
-  phaseEventCounts['dilemma_detection'] = s.tickEvents.length - prevEventCount;
+  {
+    const r = runInlinePhase('dilemma_detection', s, () => phaseDilemmaDetection(s));
+    s = r.next;
+    phaseEventCounts['dilemma_detection'] = r.eventDelta;
+  }
   prevEventCount = s.tickEvents.length;
 
   // Phase 2.55: Dilemma Revelations (knowledge facets from witnessed dilemmas)
-  emitDilemmaRevelations(s);
+  timeInlinePhase('dilemma_revelations', s, () => emitDilemmaRevelations(s));
   phaseEventCounts['dilemma_revelations'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
 
   // Phase 2.75: Familiarity Gain (Proximity)
-  s = { ...s, ...phaseFamiliarityGain(s) };
-  phaseEventCounts['familiarity_gain'] = s.tickEvents.length - prevEventCount;
+  {
+    const r = runInlinePhase('familiarity_gain', s, () => phaseFamiliarityGain(s));
+    s = r.next;
+    phaseEventCounts['familiarity_gain'] = r.eventDelta;
+  }
   prevEventCount = s.tickEvents.length;
 
   // Phase 2.76: Interaction Depth (agent knowledge accumulator)
-  phaseInteractionDepth(s);
+  timeInlinePhase('interaction_depth', s, () => phaseInteractionDepth(s));
   phaseEventCounts['interaction_depth'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
 
@@ -3190,18 +3283,27 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
 
   // Phase 3: Rival Actions
 
-  s = { ...s, ...phaseRivalActions(s) };
-  phaseEventCounts['rival_actions'] = s.tickEvents.length - prevEventCount;
+  {
+    const r = runInlinePhase('rival_actions', s, () => phaseRivalActions(s));
+    s = r.next;
+    phaseEventCounts['rival_actions'] = r.eventDelta;
+  }
   prevEventCount = s.tickEvents.length;
 
   // Phase 3b: Notable Agendas (THR-630) — living-world autonomy on the same runner
-  s = { ...s, ...phaseNotableAgendas(s) };
-  phaseEventCounts['notable_agendas'] = s.tickEvents.length - prevEventCount;
+  {
+    const r = runInlinePhase('notable_agendas', s, () => phaseNotableAgendas(s));
+    s = r.next;
+    phaseEventCounts['notable_agendas'] = r.eventDelta;
+  }
   prevEventCount = s.tickEvents.length;
 
   // Phase 4: Stealth
-  s = { ...s, ...phaseStealth(s) };
-  phaseEventCounts['stealth'] = s.tickEvents.length - prevEventCount;
+  {
+    const r = runInlinePhase('stealth', s, () => phaseStealth(s));
+    s = r.next;
+    phaseEventCounts['stealth'] = r.eventDelta;
+  }
   prevEventCount = s.tickEvents.length;
 
 
@@ -3210,18 +3312,27 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
 
   // Phase 5.9: Essence Sources (THR-611) — migrate/recompute source tiers before
   // income so typed source yields and tier multipliers are fresh this tick.
-  s = { ...s, ...phaseEssenceSources(s) };
-  phaseEventCounts['essence_sources'] = s.tickEvents.length - prevEventCount;
+  {
+    const r = runInlinePhase('essence_sources', s, () => phaseEssenceSources(s));
+    s = r.next;
+    phaseEventCounts['essence_sources'] = r.eventDelta;
+  }
   prevEventCount = s.tickEvents.length;
 
   // Phase 6: Essence
-  s = { ...s, ...phaseEssence(s) };
-  phaseEventCounts['essence'] = s.tickEvents.length - prevEventCount;
+  {
+    const r = runInlinePhase('essence', s, () => phaseEssence(s));
+    s = r.next;
+    phaseEventCounts['essence'] = r.eventDelta;
+  }
   prevEventCount = s.tickEvents.length;
 
   // Phase 6.1: Control Effects (sustained divine effects — drain/income/threshold/lapse)
-  s = { ...s, ...phaseControlEffects(s) };
-  phaseEventCounts['control_effects'] = s.tickEvents.length - prevEventCount;
+  {
+    const r = runInlinePhase('control_effects', s, () => phaseControlEffects(s));
+    s = r.next;
+    phaseEventCounts['control_effects'] = r.eventDelta;
+  }
   prevEventCount = s.tickEvents.length;
 
   // ─── Decay ─────────────────────────────────────────────────────────────────────
@@ -3235,51 +3346,70 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   prevEventCount = s.tickEvents.length;
 
   // Phase 6.55: Faction Reputation Decay (TB-060)
-  s = { ...s, ...phaseFactionReputationDecay(s) };
-  phaseEventCounts['faction_reputation_decay'] = s.tickEvents.length - prevEventCount;
+  {
+    const r = runInlinePhase('faction_reputation_decay', s, () => phaseFactionReputationDecay(s));
+    s = r.next;
+    phaseEventCounts['faction_reputation_decay'] = r.eventDelta;
+  }
   prevEventCount = s.tickEvents.length;
 
   // Phase 6.56: Chosen Faction Powers (THR-513) — the consumer for `anoint`.
   // Runs right after decay so a chosen faction's members net upward: members
   // gain a power-keyed reputation bonus each tick from `faction.chosen.power`.
-  s = { ...s, ...phaseChosenFactionPowers(s) };
-  phaseEventCounts['chosen_faction_powers'] = s.tickEvents.length - prevEventCount;
+  {
+    const r = runInlinePhase('chosen_faction_powers', s, () => phaseChosenFactionPowers(s));
+    s = r.next;
+    phaseEventCounts['chosen_faction_powers'] = r.eventDelta;
+  }
   prevEventCount = s.tickEvents.length;
 
   // Phase 6.6: Divine Influence Decay
-  s = { ...s, ...phaseDivineInfluenceDecay(s) };
-  phaseEventCounts['divine_influence_decay'] = s.tickEvents.length - prevEventCount;
+  {
+    const r = runInlinePhase('divine_influence_decay', s, () => phaseDivineInfluenceDecay(s));
+    s = r.next;
+    phaseEventCounts['divine_influence_decay'] = r.eventDelta;
+  }
   prevEventCount = s.tickEvents.length;
 
   // Phase 6.7: Hidden Mark Decay (THR-112)
-  s = { ...s, ...phaseHiddenMarkDecay(s) };
-  phaseEventCounts['hidden_mark_decay'] = s.tickEvents.length - prevEventCount;
+  {
+    const r = runInlinePhase('hidden_mark_decay', s, () => phaseHiddenMarkDecay(s));
+    s = r.next;
+    phaseEventCounts['hidden_mark_decay'] = r.eventDelta;
+  }
   prevEventCount = s.tickEvents.length;
 
   // Phase 6.71: Intelligence Reliability Decay (THR-137)
-  s = { ...s, ...phaseIntelligenceDecay(s) };
-  phaseEventCounts['intelligence_decay'] = s.tickEvents.length - prevEventCount;
+  {
+    const r = runInlinePhase('intelligence_decay', s, () => phaseIntelligenceDecay(s));
+    s = r.next;
+    phaseEventCounts['intelligence_decay'] = r.eventDelta;
+  }
   prevEventCount = s.tickEvents.length;
 
   // Phase 6.715: Divine Proximity Importance (THR-25)
-  const divineProximityStats = runDivineProximityPhase(s);
+  const divineProximityStats = timeInlinePhase('divine_proximity', s, () => runDivineProximityPhase(s));
   phaseEventCounts['divineProximityScanned'] = divineProximityStats.scanCount;
   phaseEventCounts['divineProximityAccumulated'] = divineProximityStats.accumulatedCount;
 
   // Phase 6.62: Trade Route Decay (stale routes lose volume; dead routes removed)
-  s = { ...s, ...phaseTradeRouteDecay(s) };
-  phaseEventCounts['trade_route_decay'] = s.tickEvents.length - prevEventCount;
+  {
+    const r = runInlinePhase('trade_route_decay', s, () => phaseTradeRouteDecay(s));
+    s = r.next;
+    phaseEventCounts['trade_route_decay'] = r.eventDelta;
+  }
   prevEventCount = s.tickEvents.length;
 
   // Phase 6.625: Condition Decay (tick-based removal of transient condition traits)
   try {
-    decayConditions(s.graph, s.tick);
+    timeInlinePhase('condition_decay', s, () => decayConditions(s.graph, s.tick));
   } catch {
     // fail-soft: condition decay failure is non-fatal
   }
 
   // Phase 6.626: Mastery Trait Decay (mastery traits lose levels without reinforcement)
   try {
+    const masteryStart = tickProfilingEnabled ? performance.now() : 0;
     const masteryAgents = s.graph.getNodesByType('actor');
     let processedMasteryActors = 0;
     for (const agent of masteryAgents) {
@@ -3295,6 +3425,7 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
       totalActors: masteryAgents.length,
       processedActors: processedMasteryActors,
       skippedActors: masteryAgents.length - processedMasteryActors,
+      durationMs: tickProfilingEnabled ? performance.now() - masteryStart : undefined,
       summary: `mastery_decay: ${processedMasteryActors}/${masteryAgents.length} actors processed`,
     });
   } catch {
@@ -3306,79 +3437,126 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   // sphere pressure resolution, quintessence, and sublocation lifecycle.
 
   // Phase 6.63: Settlement Prosperity (economic pulse for all settlements)
-  s = { ...s, ...phaseProsperity(s) };
-  phaseEventCounts['prosperity'] = s.tickEvents.length - prevEventCount;
+  {
+    const r = runInlinePhase('prosperity', s, () => phaseProsperity(s));
+    s = r.next;
+    phaseEventCounts['prosperity'] = r.eventDelta;
+  }
   prevEventCount = s.tickEvents.length;
 
   // Phase 6.632: Economic Traits (mastery/reputation/scar/condition traits from economic activity)
-  s = { ...s, ...phaseEconomicTraits(s) };
-  phaseEventCounts['economic_traits'] = s.tickEvents.length - prevEventCount;
+  {
+    const r = runInlinePhase('economic_traits', s, () => phaseEconomicTraits(s));
+    s = r.next;
+    phaseEventCounts['economic_traits'] = r.eventDelta;
+  }
   prevEventCount = s.tickEvents.length;
 
   // Phase 6.64: Reputation Traits (reach-polarity reputation from encounter accumulation + power renown)
-  s = { ...s, ...phaseReputationTraits(s) };
-  phaseEventCounts['reputation_traits'] = s.tickEvents.length - prevEventCount;
+  {
+    const r = runInlinePhase('reputation_traits', s, () => phaseReputationTraits(s));
+    s = r.next;
+    phaseEventCounts['reputation_traits'] = r.eventDelta;
+  }
   prevEventCount = s.tickEvents.length;
 
   // Phase 6.635: Settlement Tier Promotion/Demotion (hamlet↔town↔city based on sustained prosperity)
-  const prePromoEventCount = s.tickEvents.length;
-  s = { ...s, ...phaseSettlementPromotion(s, runtime) };
-  phaseEventCounts['settlement_tier_change'] = s.tickEvents.length - prePromoEventCount;
+  {
+    const r = runInlinePhase('settlement_tier_change', s, () => phaseSettlementPromotion(s, runtime));
+    s = r.next;
+    phaseEventCounts['settlement_tier_change'] = r.eventDelta;
+  }
   // touchStructure removed (THR-187): phaseSettlementPromotion now calls applyEncounterCacheUpdate
   // per-promotion inside the phase, which syncs encounterCacheBuiltAt to prevent full rebuilds.
   prevEventCount = s.tickEvents.length;
 
   // Phase 6.636: Settlement Genome Reassessment (re-evaluate genome on tier changes or reach shifts)
-  s = { ...s, ...phaseSettlementReassessment(s) };
-  phaseEventCounts['settlement_reassessment'] = s.tickEvents.length - prevEventCount;
+  {
+    const r = runInlinePhase('settlement_reassessment', s, () => phaseSettlementReassessment(s));
+    s = r.next;
+    phaseEventCounts['settlement_reassessment'] = r.eventDelta;
+  }
   prevEventCount = s.tickEvents.length;
 
   // Phase 6.638 (was 6.636): Hex State (divine influence + corruption decay, terrain transformation)
-  s = { ...s, ...phaseHexState(s, s.pendingHexMutations ?? []), pendingHexMutations: [] };
-  phaseEventCounts['hex_state'] = s.tickEvents.length - prevEventCount;
+  {
+    const r = runInlinePhase('hex_state', s, () => ({
+      ...phaseHexState(s, s.pendingHexMutations ?? []),
+      pendingHexMutations: [],
+    }));
+    s = r.next;
+    phaseEventCounts['hex_state'] = r.eventDelta;
+  }
   prevEventCount = s.tickEvents.length;
 
   // Phase 6.637: Unrest (decay, prosperity damper, threshold events)
-  s = { ...s, ...phaseUnrest(s) };
-  phaseEventCounts['unrest'] = s.tickEvents.length - prevEventCount;
+  {
+    const r = runInlinePhase('unrest', s, () => phaseUnrest(s));
+    s = r.next;
+    phaseEventCounts['unrest'] = r.eventDelta;
+  }
   prevEventCount = s.tickEvents.length;
 
   // Phase 6.638: Magical Saturation (decay)
-  s = { ...s, ...phaseMagicalSaturation(s) };
-  phaseEventCounts['magical_saturation'] = s.tickEvents.length - prevEventCount;
+  {
+    const r = runInlinePhase('magical_saturation', s, () => phaseMagicalSaturation(s));
+    s = r.next;
+    phaseEventCounts['magical_saturation'] = r.eventDelta;
+  }
   prevEventCount = s.tickEvents.length;
 
   // Phase 6.639: Sphere Pressure Resolution (consumes pendingSpherePressures accumulated by upstream phases)
-  s = { ...s, ...phaseSpherePressure(s), pendingSpherePressures: [] };
-  phaseEventCounts['sphere_pressure'] = s.tickEvents.length - prevEventCount;
+  {
+    const r = runInlinePhase('sphere_pressure', s, () => ({
+      ...phaseSpherePressure(s),
+      pendingSpherePressures: [],
+    }));
+    s = r.next;
+    phaseEventCounts['sphere_pressure'] = r.eventDelta;
+  }
   prevEventCount = s.tickEvents.length;
 
   // Phase 6.6396: Quintessence Tick (pending erosion/recovery events, passive regen, dissolution)
   // phaseQuintessence returns pendingQuintessenceEvents: [] — no need to clear separately.
-  s = { ...s, ...phaseQuintessence(s, runtime) };
-  phaseEventCounts['quintessence'] = s.tickEvents.length - prevEventCount;
+  {
+    const r = runInlinePhase('quintessence', s, () => phaseQuintessence(s, runtime));
+    s = r.next;
+    phaseEventCounts['quintessence'] = r.eventDelta;
+  }
   prevEventCount = s.tickEvents.length;
 
   // Phase 6.6395: Sphere Aggregation (computes global World-Soul from entity sphere scores)
-  s = { ...s, ...phaseSphereAggregation(s) };
-  phaseEventCounts['sphere_aggregation'] = s.tickEvents.length - prevEventCount;
+  {
+    const r = runInlinePhase('sphere_aggregation', s, () => phaseSphereAggregation(s));
+    s = r.next;
+    phaseEventCounts['sphere_aggregation'] = r.eventDelta;
+  }
   prevEventCount = s.tickEvents.length;
 
   // Phase 6.64: Influence Tier Promotion (backstory unlock events)
-  s = { ...s, ...phaseInfluenceTierPromotion(s) };
-  phaseEventCounts['influence_tier_promotion'] = s.tickEvents.length - prevEventCount;
+  {
+    const r = runInlinePhase('influence_tier_promotion', s, () => phaseInfluenceTierPromotion(s));
+    s = r.next;
+    phaseEventCounts['influence_tier_promotion'] = r.eventDelta;
+  }
   prevEventCount = s.tickEvents.length;
 
   // Phase 6.65: Gold Sublocations (conditional spawn/dissolve based on prosperity and wealth)
-  s = { ...s, ...phaseSublocations(s, activeEncounterCache, runtime) };
-  phaseEventCounts['sublocations'] = s.tickEvents.length - prevEventCount;
+  {
+    const r = runInlinePhase('sublocations', s, () => phaseSublocations(s, activeEncounterCache, runtime));
+    s = r.next;
+    phaseEventCounts['sublocations'] = r.eventDelta;
+  }
   // touchStructure removed (THR-187): phaseSublocations now calls applyEncounterCacheUpdate
   // per spawn/dissolve when runtime is present, syncing encounterCacheBuiltAt incrementally.
   prevEventCount = s.tickEvents.length;
 
   // Phase 6.66: Economic Chronicle (generate chronicle entries for economic state changes)
-  s = { ...s, ...phaseEconomicChronicle(s) };
-  phaseEventCounts['economic_chronicle'] = s.tickEvents.length - prevEventCount;
+  {
+    const r = runInlinePhase('economic_chronicle', s, () => phaseEconomicChronicle(s));
+    s = r.next;
+    phaseEventCounts['economic_chronicle'] = r.eventDelta;
+  }
   prevEventCount = s.tickEvents.length;
 
   // Slot anchor: post-economy — after settlement/prosperity/economic chronicle.
@@ -3398,8 +3576,11 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   prevEventCount = s.tickEvents.length;
 
   // Phase 6.75: Agent Lifecycle (death, birth, migration)
-  s = { ...s, ...phaseAgentLifecycle(s, nextEventId) };
-  phaseEventCounts['agent_lifecycle'] = s.tickEvents.length - prevEventCount;
+  {
+    const r = runInlinePhase('agent_lifecycle', s, () => phaseAgentLifecycle(s, nextEventId));
+    s = r.next;
+    phaseEventCounts['agent_lifecycle'] = r.eventDelta;
+  }
   prevEventCount = s.tickEvents.length;
 
   // ─── Narrative ─────────────────────────────────────────────────────────────────
@@ -3407,8 +3588,11 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   // economic changes, and ambition completions all get the full chronicle treatment.
 
   // Phase 5: Narrative (moved here from before economy — now captures ALL tick events)
-  s = { ...s, ...phaseNarrative(s) };
-  phaseEventCounts['narrative'] = s.tickEvents.length - prevEventCount;
+  {
+    const r = runInlinePhase('narrative', s, () => phaseNarrative(s));
+    s = r.next;
+    phaseEventCounts['narrative'] = r.eventDelta;
+  }
   prevEventCount = s.tickEvents.length;
 
   // Slot anchor: post-narrative — registered phases include `mandate` (THR-238
@@ -3421,8 +3605,11 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   // ─── Victory & Defeat ──────────────────────────────────────────────────────────
 
   // Phase 8: Doom Expiry (kept inline — depends on module-local nextEventId)
-  s = { ...s, ...phaseDoomExpiry(s) };
-  phaseEventCounts['doom_expiry'] = s.tickEvents.length - prevEventCount;
+  {
+    const r = runInlinePhase('doom_expiry', s, () => phaseDoomExpiry(s));
+    s = r.next;
+    phaseEventCounts['doom_expiry'] = r.eventDelta;
+  }
 
   // TB-086: Bump worldVersion at end of tick — catches all property mutations
   // from agent decision, movement, encounters, familiarity, etc.
