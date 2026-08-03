@@ -19,23 +19,46 @@
  * | `seed`     | `future_hook` change **and** `encounter_seed` reaction effects |
  * | `mark`     | everything else (fail-soft)                                    |
  *
- * ## Two deviations from the ticket's stated sources, both forced
+ * ## `toll` reads authored losses, never the quintessence event — settled, THR-978
  *
- * 1. **`toll` does not read `consequence.quintessenceEvent`.** That field lives
- *    on `OutcomeConsequence` in `engine/outcomeConsequences.ts`, is consumed
- *    per-step by the pending-quintessence queue, and is never persisted onto
- *    `UnifiedAction` — so it is unreachable from any UI adapter. Rather than
- *    widen the engine for a display concern, a toll is read from the authored
- *    change set's losses, which is where an encounter states its price in words
- *    anyway. Widening `UnifiedAction` to carry the Q event is tracked separately.
+ * THR-971's taxonomy named `consequence.quintessenceEvent` as the toll source; this
+ * module shipped reading the authored change set's losses instead, and THR-978 was
+ * filed to decide whether to widen `UnifiedAction` to carry the Q event across.
+ * **The verdict is that it should not be. The authored-loss mapping is the correct
+ * source, permanently — this is a design rule now, not an unpaid debt.**
  *
- * 2. **`seed` reads the resolved variant's reaction effects.** `encounter_seed`
- *    is only expressible as an `EncounterAftermathReactionEffect`, so a planted
- *    sequel is attached to a reaction rather than to the ending as a whole. A
- *    variant offering one reaction therefore plants unconditionally; one
- *    offering several plants conditionally on the pick. Both are surfaced the
- *    same way, because "this ending sets X in motion" is true either way and
- *    silence is the failure mode this ticket exists to fix.
+ * `QuintessenceEvent` (`types/quintessence.ts`) carries exactly four fields:
+ * `targetNodeId`, `delta`, `source`, `tick`. None of them is authored prose.
+ *
+ * - `delta` is a magnitude, and the nudge-model surface rules forbid rendering one.
+ *   The type's own header says the same thing: "Displayed prose-only via IPK —
+ *   never show numbers to player."
+ * - `source` is a machine token (`'outcome_success_at_cost'`, …). Drawn on a chip
+ *   that is a key:value label, which is unfinished UX rather than a sentence.
+ * - `targetNodeId` and `tick` say nothing about a price.
+ *
+ * It also adds no information the chip cannot already see. `computeOutcomeConsequence`
+ * derives the event purely from the outcome band — a reward on `critical_success`, a
+ * penalty on `success_at_cost` and `critical_failure`, `null` on the other three — and
+ * the ending already carries that band in `EncounterAftermathSummary.outcome` and
+ * `narrativeTag`. The single thing the Q event adds is the magnitude, which is the one
+ * part that may not be shown.
+ *
+ * So surfacing it would mean authoring a new (band × source) → sentence table: a second
+ * vocabulary, which is precisely what the rule above forbids. On a `success_at_cost`
+ * ending it would also double-report, since the authored change set has already stated
+ * that price in words. Persisting the Q event onto `UnifiedAction` would be engine
+ * surface widened to serve a display that must not exist.
+ *
+ * ## One genuine deviation from the ticket's stated sources
+ *
+ * **`seed` reads the resolved variant's reaction effects.** `encounter_seed`
+ * is only expressible as an `EncounterAftermathReactionEffect`, so a planted
+ * sequel is attached to a reaction rather than to the ending as a whole. A
+ * variant offering one reaction therefore plants unconditionally; one
+ * offering several plants conditionally on the pick. Both are surfaced the
+ * same way, because "this ending sets X in motion" is true either way and
+ * silence is the failure mode this ticket exists to fix.
  *
  * Nothing here prints a magnitude. Chip sentences are authored prose; a toll is
  * stated in words, per the nudge-model surface rules.

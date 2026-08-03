@@ -142,7 +142,17 @@ export interface AttachmentDropIntent {
 export interface OutcomeConsequence {
   /** Multiplier applied to capability growth for this step. 1.0 = default. */
   growthMultiplier: number;
-  /** Quintessence event to add to pending queue, or null for no Q effect. */
+  /**
+   * Quintessence event to add to pending queue, or null for no Q effect.
+   *
+   * Engine-internal accounting — deliberately not persisted onto `UnifiedAction`
+   * and not surfaced to the player (THR-978, settled). It carries a magnitude the
+   * surface rules forbid rendering and a machine `source` token, and is derived
+   * purely from the outcome band the ending already reports, so it has nothing to
+   * say that authored prose does not. Aftermath toll chips read the authored change
+   * set's losses instead — see the header of
+   * `components/Game/encounter-stage/adapters/buildAftermathConsequences.ts`.
+   */
   quintessenceEvent: QuintessenceEvent | null;
   /**
    * Narrative band for prose system.
