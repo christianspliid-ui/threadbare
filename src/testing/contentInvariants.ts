@@ -151,8 +151,80 @@ export function assertValidUnifiedTemplate(template: UnifiedActionTemplate): voi
   }
 
   assertKnownAftermathKinds(template);
+  assertDecidedAftermathReachable(template);
 }
 
+/**
+ * A decided fork's aftermath must read the step the decision is actually written
+ * to (THR-979).
+ *
+ * `ActionStepBranch.branchOnStep` and `BranchAwareAftermathConfig.branchOnStep`
+ * are the same quantity — *the index of the deciding step* — and the engine
+ * honours that: `applyAgentDecidedBranches` records the chosen key against
+ * `action.currentStep`, the step that just resolved. The trap is that a fork
+ * usually sits one slot *after* the step it decides on, so the fork's own index
+ * and the index it declares differ by one, and writing the former here
+ * type-checks perfectly while pointing at a step no choice is ever written to.
+ *
+ * The failure is silent and total: every authored ending becomes unreachable,
+ * `resolveAftermathVariant` returns `fallback` forever, and any `encounter_seed`
+ * riding a variant reaction is never planted. All three shipped slice forks had
+ * it — the crossroads bargain, the swindled family, and the swindler found —
+ * so the Full Moon Collection could not be reached in live play at all.
+ *
+ * Scoped deliberately to templates carrying a `decidedBy` fork, because those
+ * are the ones where a choice demonstrably *is* recorded. Templates with
+ * aftermath variants and no fork at all (the `hod.*` and `mentorship.*` sets)
+ * are dead for a different reason — an aftermath keyed on the retired
+ * player-pick path — which is THR-989, not this invariant's business.
+ *
+ * Exported so it can run over the **whole** catalog, not just the three content
+ * sets `assertValidUnifiedTemplate` happens to be wired to. The slice templates
+ * that carried this bug are in none of those sets, so a template-level-only
+ * invariant would have passed while the defect sat in shipped content — see
+ * `unifiedTemplateAftermathReachability.test.ts`.
+ */
+export function assertDecidedAftermathReachable(template: UnifiedActionTemplate): void {
+  const cfg = template.aftermathConfig;
+  if (!cfg || Object.keys(cfg.variants ?? {}).length === 0) return;
+
+  const decidedForks = template.steps
+    .filter(isActionStepBranch)
+    .filter((step) => step.decidedBy);
+  if (decidedForks.length === 0) return;
+
+  const decidingIndices = decidedForks.map((step) => step.branchOnStep);
+  expect(
+    decidingIndices.includes(cfg.branchOnStep),
+    `${template.id} aftermathConfig.branchOnStep=${cfg.branchOnStep} names a step no `
+    + `decision is recorded at — its decided fork(s) resolve on step(s) `
+    + `[${decidingIndices.join(', ')}]. Every aftermath variant is unreachable and the `
+    + 'ending falls back forever (THR-979). Use the *deciding* step index, not the '
+    + "fork's own position in `steps`.",
+  ).toBe(true);
+
+  // Same silent-death shape one level down: an aftermath variant keyed to
+  // something the decision can never produce is dead on arrival.
+  const decidableKeys = new Set<string>();
+  for (const fork of decidedForks) {
+    if (fork.branchOnStep !== cfg.branchOnStep) continue;
+    const decidedBy = fork.decidedBy!;
+    if (isRouteDecision(decidedBy)) {
+      for (const route of decidedBy.routes) decidableKeys.add(route.key);
+    } else {
+      decidableKeys.add('positive');
+      decidableKeys.add('negative');
+    }
+  }
+
+  for (const key of Object.keys(cfg.variants)) {
+    expect(
+      decidableKeys.has(key),
+      `${template.id} aftermath variant '${key}' is unreachable — the decision on step `
+      + `${cfg.branchOnStep} can only produce [${[...decidableKeys].join(', ')}].`,
+    ).toBe(true);
+  }
+}
 
 export function assertValidStep(step: ActionStepOrBranch, templateId: string): void {
   if (isActionStepBranch(step)) {

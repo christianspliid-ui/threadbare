@@ -15,6 +15,7 @@ import { WorldGraph } from '../../../../../engine/graph';
 import { SLICE_BARGAIN_AT_CROSSROADS } from '../../../../../data/encounters/vertical-slice';
 import type { EncounterNotification } from '../../../../../types/encounterVisibility';
 import type { UnifiedAction } from '../../../../../types/unifiedAction';
+import { isActionStepBranch } from '../../../../../types/unifiedAction';
 import { buildUnifiedEncounterStageModel } from '../buildUnifiedEncounterStageModel';
 
 function buildGraph(): WorldGraph {
@@ -30,8 +31,28 @@ function buildGraph(): WorldGraph {
 }
 
 /**
- * A resolved crossroads action. `choiceHistory` selects the aftermath variant —
- * `branchOnStep: 1`, so the step-1 choice decides which ending resolves.
+ * The step index the engine actually records a decision against — read off the
+ * template's decided fork, not off `aftermathConfig`.
+ *
+ * That direction is the point (THR-979). This fixture originally hardcoded
+ * `stepIndex: 1` to match `aftermathConfig.branchOnStep: 1`, and the config was
+ * wrong: `applyAgentDecidedBranches` writes against the *deciding* step, which
+ * `CROSSROADS_FORK` declares as 0. Both sides of the comparison were invented
+ * here, so the test agreed with a config that could never resolve in live play
+ * and the defect shipped green.
+ *
+ * Deriving from the fork keeps the fixture honest about what the engine does;
+ * the assertions below then genuinely test whether `aftermathConfig` points at
+ * it. Deriving from `aftermathConfig` instead would restore the original trap.
+ */
+const DECIDING_STEP_INDEX = SLICE_BARGAIN_AT_CROSSROADS.steps
+  .filter(isActionStepBranch)
+  .find((step) => step.decidedBy)!.branchOnStep;
+
+/**
+ * A resolved crossroads action, shaped exactly as the engine leaves one — see
+ * `recordDecidedChoice` in `engine/encounters/branchDecision.ts` for the
+ * `step_N` / `agent_decided` fields.
  */
 function buildResolvedAction(choiceId: string): UnifiedAction {
   return {
@@ -50,11 +71,11 @@ function buildResolvedAction(choiceId: string): UnifiedAction {
     stepOutcomes: ['success', 'success'],
     choiceHistory: [
       {
-        stepIndex: 1,
-        stepId: 'step-1',
+        stepIndex: DECIDING_STEP_INDEX,
+        stepId: `step_${DECIDING_STEP_INDEX}`,
         choiceId,
-        choiceText: 'the pick',
-        interventionType: 'withdrawn',
+        choiceText: 'They chose as they are.',
+        interventionType: 'agent_decided',
         essenceSpent: 0,
         probabilityBoost: 0,
         tick: 11,
