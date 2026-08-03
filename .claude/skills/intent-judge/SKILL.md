@@ -10,7 +10,7 @@ description: >
   by Cowork after writing any plan doc in Docs/plans/ or Docs/audits/ and
   before the Linear state transitions to Ready for Dev.
   Also callable manually via `/intent-judge <plan-doc-path>`.
-last_validated_against: 2026-08-02
+last_validated_against: 2026-08-03
 ---
 
 # Intent Judge
@@ -239,12 +239,28 @@ has no file yet.
 | Latency (s) | Spawner-measured wall clock, `~` prefix |
 | Anti-corr slipped | `Anti-correlation guard slipped` from the verdict's metrics block |
 
-**Nothing reads this directory automatically today.** Until 2026-08-02 this line
-claimed "`retrospective` skill consumes Fridays"; `.claude/skills/retrospective/SKILL.md`
-contains no reference to judge-metrics and never has, so the weekly aggregation
-those metrics exist to feed has never run. The rows are still worth writing — they
-are the only record of judge behaviour against the kill criteria below — but read
-them by hand until the consumer is wired (THR-957).
+| Overridden | Optional. `yes` / `no` — did the user override this verdict? Leave blank if unknown |
+
+**`retrospective` § Step 5c reads this directory (THR-957, wired 2026-08-03).** It
+aggregates every file, reports verdict distribution / escalation rate / median
+latency against the Kill criteria below, and records a verdict per criterion.
+Before that step existed the claim on this line was false — it said "`retrospective`
+skill consumes Fridays" while that skill contained no reference to judge-metrics
+and never had, so the aggregation had never run once.
+
+**Two of the four kill criteria are still not computable from these rows**, and the
+consumer reports them as `NOT MEASURABLE` rather than as satisfied. Both are keyed
+on user overrides and nothing recorded one — which is why the `Overridden` column
+above now exists. It is optional because no historical row can be backfilled
+honestly; the criteria become falsifiable once rows carry it, and until then a
+consumer reporting `0% override rate` would be laundering an unmeasured criterion
+into a passing one.
+
+**Write the table in the column order above.** Six historical files carry four
+different shapes — two have an extra `Linear` column, and `2026-W29.md` uses
+lowercase kebab headers with `impact-class` *before* `verdict`. The consumer keys
+on header names precisely so those still parse, but new drift costs nothing to
+avoid.
 
 ## Hard rules
 
@@ -261,12 +277,22 @@ them by hand until the consumer is wired (THR-957).
 
 ## Kill criteria
 
-Retire if any hold for a full month:
+Retire if any hold for a full month. Evaluated by `retrospective` § Step 5c
+(THR-957); the third column says what that consumer can actually decide, because
+a criterion nothing can compute is not a safeguard:
 
-- ≥95% Allow with zero user overrides → rubber-stamping.
-- ≥50% override rate on Revise/Block → judge is mostly wrong.
-- Median time-to-judgment >5min → too slow.
-- User reports zero catches the user wouldn't have caught → no marginal value.
+| Criterion | Retire if | Measurable today? |
+|---|---|---|
+| Rubber-stamping | ≥95% Allow **with zero user overrides** | Allow % yes; override half **no** |
+| Judge is mostly wrong | ≥50% override rate on Revise/Block | **No** — needs the `Overridden` column |
+| Too slow | Median time-to-judgment >5min (300s) | Yes |
+| No marginal value | User reports zero catches they'd have missed | No — user judgement, not a row |
+
+**Standing at the 2026-08-03 dry run** (11 rows, 2026-05-15 → 2026-07-30 — below
+the full month every criterion requires, so directional only): Allow 81.8%,
+escalation 0.0%, median latency 92.5s, override rate not measurable. **No
+criterion met; keep the skill.** The escalation rate sitting under its own
+declared floor of 0.05 is a tuning signal, not a retirement one.
 
 Retirement: archive SKILL.md to `Docs/retired/skills/intent-judge/`, remove
 auto-invocation from Cowork's plan-doc workflow.

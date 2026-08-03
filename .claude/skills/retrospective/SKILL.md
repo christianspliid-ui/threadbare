@@ -117,6 +117,65 @@ If there are undocumented capabilities, flag them as a quick-win improvement (ed
 
 **Why this matters:** The wiring guide is the IKEA manual for content authoring. If it's stale, content agents produce hardcoded fiction instead of systemically alive content. Every undocumented capability is a missed opportunity for dynamic storytelling.
 
+### Step 5c: Judge-Metrics Aggregation — evaluate intent-judge against its own kill criteria (THR-957)
+
+**`Docs/judge-metrics/` is written every judgment and, until this step existed, was read by nothing.** `intent-judge`'s § Metrics to track claimed "`retrospective` skill consumes Fridays"; this file contained no reference to it and never had, so the weekly aggregation had never run once. That matters because intent-judge's **Kill criteria are all defined over aggregates** — they are the only mechanism that would ever retire the skill, and with no consumer they were unfalsifiable by construction.
+
+**Read by header name, never by column index.** Six files carry **four different table shapes**: two have an extra `Linear` column, `2026-W29.md` uses lowercase kebab headers *and swaps `impact-class` before `verdict`*. A positional reader silently produces garbage rather than failing — measured 2026-08-03, it reported verdicts of `THR-75`, `THR-457` and `High-risk`, none of which is a verdict. Glob loosely too (`YYYY-W?ww`): `2026-20.md` and `2026-27.md` predate the `W` filename convention and a strict glob drops them.
+
+```bash
+node -e "
+const fs=require('fs'),p=require('path'),d='Docs/judge-metrics';
+const norm=s=>s.toLowerCase().replace(/[^a-z]/g,'');
+let rows=[];
+for(const f of fs.readdirSync(d).filter(f=>/^\d{4}-W?\d{2}\.md\$/i.test(f)).sort()){
+  let hdr=null;
+  for(const line of fs.readFileSync(p.join(d,f),'utf8').split('\n')){
+    if(!line.trim().startsWith('|')) continue;
+    const c=line.split('|').slice(1,-1).map(s=>s.trim());
+    if(c.every(x=>/^[-: ]*\$/.test(x))) continue;
+    if(!hdr){hdr=c.map(norm);continue;}
+    const r={file:f};hdr.forEach((h,i)=>r[h]=c[i]);rows.push(r);
+  }
+}
+const g=(r,...k)=>{for(const n of k)if(r[n]!==undefined)return r[n];return '';};
+const n=rows.length,vd={};
+for(const r of rows){const v=g(r,'verdict');vd[v]=(vd[v]||0)+1;}
+const lat=rows.map(r=>parseInt(String(g(r,'latencys','latency')).replace(/[^0-9]/g,''),10))
+  .filter(x=>Number.isFinite(x)&&x>0).sort((a,b)=>a-b);
+const med=lat.length?(lat.length%2?lat[(lat.length-1)/2]:(lat[lat.length/2-1]+lat[lat.length/2])/2):null;
+const ov=rows.filter(r=>g(r,'overridden')!=='').length;
+console.log('rows',n,'\nverdicts',JSON.stringify(vd));
+console.log('Allow%',((vd.Allow||0)/n*100).toFixed(1),'Escalate%',((vd.Escalate||0)/n*100).toFixed(1));
+console.log('median latency s',med,'\noverride rows recorded',ov);
+"
+```
+
+Report each kill criterion with an explicit verdict — **`INSUFFICIENT DATA` with the row count is a valid and expected answer**, and is the honest one below the month of data the criteria require. Put the table in the report's § Tuning Recommendations.
+
+| Kill criterion | Computable from the rows? |
+|---|---|
+| ≥95% Allow with zero user overrides | **Partly** — Allow % yes, "zero overrides" no (see below) |
+| ≥50% override rate on Revise/Block | **No** — nothing records an override |
+| Median time-to-judgment >5min (300s) | Yes |
+| Zero catches the user wouldn't have caught | No — a judgement call, not a row |
+
+**Two of the four cannot be computed at all, and saying so is the point.** The row schema has no override column, so the two override-keyed criteria are unfalsifiable no matter how many weeks accumulate — wiring a consumer that silently reported `0%` would have converted an unmeasured criterion into a *passing* one, which is worse than the gap it replaced. `intent-judge` now specifies an optional `Overridden` column so the criterion becomes computable prospectively; until rows carry it, report those two as `NOT MEASURABLE (no override column)`, not as satisfied.
+
+**Dry run, 2026-08-03** — 11 rows across 6 files, 2026-05-15 → 2026-07-30. Verdicts parse as `{Allow: 9, Revise: 2}` — every value a real verdict, which is itself the check that the header-keyed read is working; the positional read of the same files returned `THR-75`, `THR-457` and `High-risk` as verdicts.
+
+| Criterion | Value | Verdict |
+|---|---|---|
+| Allow % | 81.8% (9/11) | Below the 95% floor — **not** rubber-stamping |
+| Escalation rate | 0.0% (0/11) | Below the 0.05 floor — worth watching, not a kill criterion |
+| Median time-to-judgment | 92.5s (n=10) | Well under 300s — **pass** |
+| Override rate | — | **NOT MEASURABLE** (0 rows carry an override column) |
+| Zero marginal catches | — | Not row-derived; user judgement |
+
+Caveats to carry, not to bury: 11 rows over 11 weeks is **below the "full month" of data every criterion requires**, so these are directional, not a verdict on the skill. One row's latency is unparseable and excluded (n=10 of 11).
+
+**Verdict: keep intent-judge.** No criterion is met, and the two that could not be evaluated are now the only open question. Note the escalation rate sits below its own declared floor of 0.05 — that is a *tuning* signal for § Tuning Recommendations, not a retirement one.
+
 ### Step 6: Write the Retrospective Report
 
 Create a dated file: `Design/retros/retro-YYYY-MM-DD.md`
