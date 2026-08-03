@@ -42,7 +42,7 @@ Reaches and Spheres are **orthogonal**. The same Reach at different Sphere align
 ## Your Resources
 
 - **Influence Essence** — per-sphere pools. Regenerates from worshippers / places of power / portfolio depth. Spent on actions, sustained on Control.
-- **Control slots** — sustained-effect cap, scales with Domain Capability tier.
+- **Control slots** — sustained-effect cap, scales with Domain Capability tier [DESIGN — no cap in code; nothing gates how many you hold (THR-936)].
 - **Influence Tiers** — depth of a thread (0–4 in code; five narrative names — Unaware → Curious → Recognized → Devoted → Enthralled — plus 'Aspect' as a separate apex milestone).
 - **Court positions** — `the_first`, `retinue`, `watched`, `dormant`.
 - **Stealth** — detection profile against two audiences: mortals (whose disbelief turns to faith) and rival gods (who scan for divine signatures).
