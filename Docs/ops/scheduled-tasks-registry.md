@@ -4,7 +4,19 @@
 
 Current recurring task registry. **Verified against `list_scheduled_tasks` and `Get-ScheduledTask` on 2026-07-27 (THR-794 — both lanes re-checked row by row); `flush-plan-docs` removed 2026-07-21 (THR-654 demolition). Re-verified 2026-07-31 after a pause/resume cycle in the desktop app silently reset four tasks' crons to generic defaults (impediment #359) — `tb-orchestrator`, `keep-work-flowing-cc`, `weekly-retro`, and `daily-backlog-grooming` were restored from this file's crons; after any pause/resume, diff `list_scheduled_tasks` against these tables before trusting the lanes.** The scheduler adds a deterministic per-task jitter of a few minutes to the cron minute, so **the slot name, the cron minute, and the actual fire time are three different things** — the `Fires` column is the one that matters operationally.
 
-**The audit is two-directional and runs on both lanes.** Every entry `list_scheduled_tasks` returns needs a row here — including disabled and out-of-scope ones, which otherwise read as "not registered" rather than "registered, deliberately dormant" — and every host task `Get-ScheduledTask` returns needs a row in the Windows lane table. THR-794 found one miss in each direction (`website-code-work`, `ThreadbareRepoAutoSync`); both are now carried below.
+**The audit is three-directional and runs on both lanes. A miss in any direction is a finding.**
+
+1. Every entry `list_scheduled_tasks` returns needs a row here — including disabled and out-of-scope ones, which otherwise read as "not registered" rather than "registered, deliberately dormant".
+2. Every host task `Get-ScheduledTask` returns needs a row in the Windows lane table.
+3. **The set of directories under `C:\Users\chris\.claude\scheduled-tasks\` must equal the set `list_scheduled_tasks` returns** (THR-851). Directions 1 and 2 both start from a registration and look for a row, so neither can see a prompt directory that was *never* registered.
+
+THR-794 found one miss in each of directions 1 and 2 (`website-code-work`, `ThreadbareRepoAutoSync`); both are now carried below. THR-851 added direction 3 and found **three** misses on its first run — 13 directories against 10 registered tasks.
+
+**Why direction 3 is not tidiness.** A prompt directory is the artifact the mirror rule below treats as a lane's source of truth, and an orphan is indistinguishable from a live lane's prompt by inspection: same path shape, same `SKILL.md` filename. So the failure is a session reading `check-slack-for-new-dev-work/SKILL.md`, finding instructions to poll Slack for dev work, and acting on a lane dead since the Cowork retirement. Direction 1 exists to stop "registered, deliberately dormant" reading as "not registered"; direction 3 closes the mirror image — *unregistered debris reading as a live lane*.
+
+**Running it:** `ls -1 "C:/Users/chris/.claude/scheduled-tasks/"` against the `taskId`s from `list_scheduled_tasks`. Every extra directory is triaged to one of three dispositions — deleted, mirrored under `Docs/ops/scheduled-task-prompts/retired/`, or explicitly recorded as out-of-scope-and-kept. **Read each orphan's `SKILL.md` before deciding; do not triage from the directory name.** THR-851 recorded two of its three as looking "personal rather than Threadbare"; on inspection all three were Threadbare (`daily-standup` is a one-line restatement of the pickup lane, `keep-website-up-to-date` names Threadbare's own deployed pages). Current dispositions are in that directory's [README](scheduled-task-prompts/retired/README.md).
+
+**Deleting an orphan directory is a Christian action, not an agent one.** The path is outside the repo, and the deletion is not reversible from a session. The agent-side close is the mirror plus the recorded disposition — which is why the three orphans are archived in git first, so removing the directories is loss-free whenever he gets to it.
 
 ## CC automation lane — registered and live
 
