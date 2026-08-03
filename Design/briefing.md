@@ -2,29 +2,24 @@
 needsChristian: thr-907-verdict-links-ready, thr-961-sound-feel, thr-962-nudge-stage-cues, thr-953-needs-closing, thr-910-needs-closing
 queue: backed-up
 freshness: healthy
-deploy: skipped
+deploy: deployed
 tasks: ok
 ---
 # Briefing
 
-**Generated:** 2026-08-03 04:55 local (02:55 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-08-03 05:55 local (03:55 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
 ## Needs Christian
 
-**Nothing new arrived this hour.** The same five items as last hour, unchanged — two clicks, one play session, two listens. Nothing here is urgent and nothing decays while you sleep. Each one was re-checked against the live board this run rather than copied forward.
+**The same five items as last hour — but one of them got materially better while you slept.** The encounter verdict lost both of its caveats: the two bugs that would have made the playthrough read wrong have shipped and are live on the site now. Nothing new arrived. Nothing here is urgent.
 
-### 1. Two finished tickets need closing — about ten seconds each
+### 1. The encounter verdict — now clean, links ready, one click each
 
-Both are verified-finished work sitting in a column no automated lane is allowed to move them out of. **No work is owed on either.**
+*This is the one thing that moves the game forward,* and this hour it stopped having asterisks on it.
 
-- **THR-953** — a piece of lane plumbing was fixed by **deleting** it rather than repairing it. The automated work-drain had a rule telling it to stand back whenever a code change was waiting to merge, and one deliberately-paused change made it stand back *permanently*. Dropping strict merge ordering removed the reason that rule existed, so it was deleted. **Close as resolved by THR-983.**
-- **THR-910** — a stranded pull request needed rescuing, and it turned out to have rescued itself: the request merged normally about an hour after the ticket was written, and the one note worth saving is safely in the log. **Close as already resolved.**
-
-### 2. The encounter verdict — the links are ready, one click each
-
-*This is the one thing that moves the game forward.* You're ruling on **four** things: does the prose read right, does the firing rhythm feel right, is the interface out of the way, and **is deciding actually fun**. "Needs another iteration" is a perfectly good ruling on any of them — it closes the question and charters the follow-up. Ignore how the aftermath feels; that's the building site you deliberately split into a later session.
+You're ruling on **four** things: does the prose read right, does the firing rhythm feel right, is the interface out of the way, and **is deciding actually fun**. "Needs another iteration" is a perfectly good ruling on any of them — it closes the question and charters the follow-up. Ignore how the aftermath *feels*; that's the building site you deliberately split into a later session.
 
 **Play the five encounters:**
 
@@ -36,7 +31,19 @@ Both are verified-finished work sitting in a column no automated lane is allowed
 
 **For the firing-rhythm question only** — [press play and let it run](https://threadbare.vercel.app/?view=game&seeded&size=medium&testavatar&forceencounters).
 
-*A caveat, not something to rule on:* a card may print a raw `{they}` instead of a name. Known, ticketed, and not one of your four. *A second one, new this hour:* the crossroads ending is being repaired right now (THR-979) — if that encounter closes oddly, that's the known bug, not your verdict.
+**Both caveats from last hour are gone**, and that is worth knowing before you sit down:
+
+- Cards were printing a raw `{they}` where a character's name belonged — in *28-plus* places, on the very first card of most encounters. Fixed and live.
+- The crossroads encounter was ending on a generic line instead of one of its two real endings, which also meant a follow-up story it was meant to plant never got planted. Fixed and live.
+
+So what you play now is the real thing, with no "ignore that bit" attached. **That is the whole change this hour.**
+
+### 2. Two finished tickets need closing — about ten seconds each
+
+Both are verified-finished work sitting in a column no automated lane is allowed to move them out of. **No work is owed on either.**
+
+- **THR-953** — a piece of lane plumbing was fixed by **deleting** it rather than repairing it. The automated work-drain had a rule telling it to stand back whenever a code change was waiting to merge, and one deliberately-paused change made it stand back *permanently*. Dropping strict merge ordering removed the reason that rule existed, so it was deleted. **Close as resolved by THR-983.**
+- **THR-910** — a stranded pull request needed rescuing, and it turned out to have rescued itself: the request merged normally about an hour after the ticket was written, and the one note worth saving is safely in the log. **Close as already resolved.**
 
 ### 3. Two sound questions — you need to hear the game
 
@@ -47,25 +54,22 @@ Both are stuck until you've heard them. Neither is urgent.
 
 ## Queue
 
-**Backed up — 48 items ready for work** (down from 49). Planning is comfortably ahead of execution; nothing is starving.
+**Backed up — 45 items ready for work** (down from 48). Planning is comfortably ahead of execution; nothing is starving.
 
-- The board is almost entirely low-priority cleanup. The one High-priority item, **THR-979** (the crossroads encounter falling back to the wrong ending), is actively being worked right now.
-- **Three tickets are parked mid-flight.** Two are the closures above. The third — **THR-860**, four finished capital-city encounter templates — is held behind your format decision, so it isn't a separate ask here. That question belongs in the format session.
-- **The lane caught itself repeating a mistake and filed the fix.** THR-945 (lanes repairing the pull requests they knock stale) was promoted to the top of the queue, bounced as no-longer-needed, then promoted *again* an hour later — because the promotion step reads a ticket's blockers but not its comments. Now ticketed as THR-990. Agent housekeeping, listed so the churn isn't mistaken for progress.
-- **Five items have been untouched for a week or more** (THR-771, THR-770, THR-769, THR-740, THR-739) — small deferrals in the social-systems and action-card areas. A sixth crosses the same line within hours. Worth a grooming pass, not an alarm. Unchanged from last hour.
+- **Nineteen tickets closed overnight** — the busiest stretch in a while, and two of them were the caveats on your verdict above. The rest was lane plumbing and cleanup.
+- The board is now **entirely** low-or-no-priority cleanup. Last hour's one high-priority item finished and nothing replaced it. Not a problem, but worth knowing the queue holds no urgent work at all right now.
+- **Three tickets are parked mid-flight.** Two are the closures above. The third — **THR-860**, four finished capital-city encounter templates — is held behind your format decision, so it isn't a separate ask here. That question belongs in the format session, and the hold is written on the ticket, so nothing is drifting.
+- **Five items have been untouched for a week or more** (THR-771, THR-770, THR-769, THR-740, THR-739) — small deferrals in the social-systems and action-card areas. A sixth crosses the same line in about three hours. Worth a grooming pass, not an alarm.
 
 ## Freshness
 
 - **Home tree: current.** On `main`, fully up to date, nothing stranded. Two of your own tool-settings files still show as modified — harmless, and the auto-sync keeps fast-forwarding straight past them.
-- **Live site: correctly unchanged.** Everything that merged this hour was notes and documentation, so there was nothing to rebuild. Production still serves the newest game code.
-- **All nine scheduled lanes on time; automated checks healthy; the cleanup lane ran fifteen minutes ago.** Two worktrees remain flagged for a human decision — stale but unmerged, so they are never deleted automatically. Agent work, not yours.
-- **The paused encounter batch reads as *held*, not broken,** and is correctly not raised as an ask — second consecutive quiet hour for that fix.
-- **One change in flight has a merge conflict** (the crossroads repair, THR-979). It is 37 minutes old, well inside the window where a lane clears these itself. Noted, not escalated.
-- **One lane is still limping, and it's ours rather than yours:** the weekly drift scan has failed 3 of its last 5 scheduled runs. It still runs, so no alarm fires — but that scan is the first input to the weekly retro, so it's worth an agent's time.
+- **Live site: current.** Production is serving the newest game code, including both fixes named above. That is why the verdict links are safe to click now.
+- **All automated lanes on time** (9 of 9), merge checks healthy, cleanup job ran 15 minutes ago. One background job — the weekly drift scan — has failed 3 of its last 5 runs while still completing; that is agent housekeeping, already noted for the executor lane, and needs nothing from you.
 
 ## What's moving
 
-**THR-979 — the crossroads ending — is being repaired right now**, and it is the one piece of this hour's work you would see in the game: the encounter's decided endings pointed at the wrong step, so the crossroads bargain fell back to a generic close and never planted its seed. Its change is open and mid-conflict-resolution. Otherwise the hour was documentation plumbing — a metrics consumer wired up (THR-957) and one impediment logged.
+Overnight the lane closed THR-923 and THR-979 (your two caveats) plus seventeen more: freshness-gate registry work, the impediment-log tidy-up, several dead-code removals, and the retirement of a merge rule that no longer had a reason to exist. Nothing new was started that needs your input.
 
 ---
 *Standing asks live in `Design/user-actions.md`. This file is regenerated hourly by
