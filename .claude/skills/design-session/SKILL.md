@@ -1,7 +1,7 @@
 ---
 name: design-session
 description: Use when running a Claude Code session that designs or plans rather than implements — authoring a plan doc, running the design-governance checklist, moving a Linear issue toward Ready for Dev, or writing a handoff for the executor lane. The CC replacement for the Cowork design role. For efforts too big for one session, see the scale gate — suggest a wayfinder map (THR-900).
-last_validated_against: 2026-08-01
+last_validated_against: 2026-08-03
 ---
 
 # design-session
@@ -144,8 +144,9 @@ Follow the design-governance checklist in **`Docs/canon/design-governance.md`** 
 CLAUDE.md § Design Governance is now a pointer) — do not re-derive it here; this is
 the spine:
 
-- **Step 0 grill-me** (if scope is large / multi-pillar / ambiguous) — `grill-me`, synthesis to
-  `Docs/plans/YYYY-MM-DD-<topic>-grill-me.md`.
+- **Step 0 grill-me** (if scope is large / multi-pillar / ambiguous) — `grill-me`, synthesis to the vault at
+  `Brainstorms/YYYY-MM-DD-<topic>-grill-me.md`. Exploratory artifact, never promoted as its own committed
+  file — see § Two lifecycle stages and `Docs/canon/design-governance.md` Step 0 (authoritative).
 - **Step 0.5 Codesight pre-flight** (if the change touches `src/`) — blast radius + dependency chain. Any file
   with **≥100 importers** (see CLAUDE.md high-impact list) forces a **Blast Radius** section up front.
 - **Step 0.7 Interface impact check** (any subsystem in `Docs/canon/interface-map.md`, audited **or** ⚪ UNAUDITED)
@@ -192,8 +193,13 @@ executor rightly defers.
 
 ### Step 4 — Commit the plan doc (direct PR — the key difference)
 
-Commit the plan doc (and its brainstorm companion, grill-me synthesis, intent-proposal) yourself. **Do not
+Commit the plan doc (and its brainstorm companion, and the intent-proposal) yourself. **Do not
 apply `plan-pending-commit`. Do not wait for the flush task.**
+
+**The grill-me synthesis is not in that list (THR-944).** It stays in the vault as an exploratory artifact;
+its conclusions ride the plan doc's argument instead. **The intent-proposal is** — it is authored at Step 3
+below, *after* the plan doc exists and as the input to a gate that runs on the committed artifact, so it is
+committed-stage by construction, not by exception.
 
 ```bash
 git checkout -b docs/plan-<basename>          # ID-free, e.g. docs/plan-2026-07-18-some-topic

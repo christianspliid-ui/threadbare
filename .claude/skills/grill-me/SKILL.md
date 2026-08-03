@@ -5,7 +5,7 @@ description: >
   or ambiguous work, asks permission before running, and produces a synthesis
   artifact that feeds plan-doc drafting. Conversational by default, async-batch
   on request.
-last_validated_against: 2026-06-12
+last_validated_against: 2026-08-03
 ---
 
 # Grill Me
@@ -63,12 +63,28 @@ If user declines, skip without friction and continue normal workflow.
 ### Async-batch (on request)
 
 - Trigger phrases: "grill me async", "batch grill", or equivalent
-- Produce a checklist document in:
-  `Docs/plans/YYYY-MM-DD-<topic>-grill-me.md`
-- Use the structure from `Docs/plans/2026-04-24-codebase-health-grill-me.md`
+- Produce a checklist document in the vault:
+  `Brainstorms/YYYY-MM-DD-<topic>-grill-me.md`
+- Use the structure from `Docs/plans/2026-04-24-codebase-health-grill-me.md` (a pre-THR-944 committed
+  example — copy its shape, not its location)
 - Keep grouped sections and inline answer slots
 
 Both modes end with the same synthesis artifact.
+
+## Where the synthesis lives (THR-944)
+
+**The vault, both modes — written via `OBSIDIAN_VAULT_PATH`, not committed to the repo.** A grill-me pass
+runs on work that is still open, before a plan doc exists, which is the *exploratory* stage under the
+two-stage lifecycle (`Docs/canon/process.md` § Plan-doc lifecycle, THR-918). Exploratory artifacts owe no
+git, PR, CI or lint — that is the whole point of the stage, and requiring ceremony from the artifact most
+certain to be generated during exploration was the tension this ticket closed.
+
+**It is not promoted into `Docs/plans/` as its own committed file.** When the owning issue moves toward
+Ready for Dev, what survived the grilling belongs in the plan doc's argument; the vault draft stays in place
+as the iteration record. A committed `-grill-me.md` alongside the plan doc would be a second copy of
+conclusions the plan doc already has to make on its own.
+
+Authoritative statement: `Docs/canon/design-governance.md` Step 0. This section restates it.
 
 ## Question Design Rules
 
