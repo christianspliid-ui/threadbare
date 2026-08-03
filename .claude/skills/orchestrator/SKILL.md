@@ -1,7 +1,7 @@
 ---
 name: orchestrator
 description: The lane that decides what happens next — reads the Blocked by half of coordination blocks and promotes unblocked work to Ready for Dev (T1), authors design when the program shelf runs thin (T2), and owns architecture-health surfacing as a standing daily duty (T3). Runs hourly as tb-orchestrator. Never claims an issue, never sets In Dev, never writes Design/briefing.md.
-last_validated_against: 2026-08-02
+last_validated_against: 2026-08-03
 ---
 
 # Orchestrator
@@ -79,13 +79,20 @@ For each `Todo` / `Idea` candidate, extract blocker references from the descript
 
 Promote to `Ready for Dev` only when **every** named blocker resolves to `Done`. Otherwise decline and record which blocker held it.
 
-Four decline reasons, all of which must name their evidence in the report:
+The decline reasons, all of which must name their evidence in the report (this list is deliberately uncounted — it read "Four decline reasons" over five bullets from the moment THR-900 added the wayfinder one, which is THR-688 rule A rotting in place on the very list that governs promotion):
 
 - **Unmet blocker** — a named blocker is not `Done`. Name it and its current state.
 - **Unmet time gate** — the interval has not elapsed. Name the date it opens.
 - **Unresolvable reference** — the blocker names a non-existent issue, or an alias you cannot resolve. Log the line **verbatim**. Never promote on an unread dependency.
 - **Wrong destination** — the ticket says it needs design first (`Needs its own design finalization before Ready for Dev`). Blockers being met does not make it dev-ready; it makes it **T2's** input. Route it there, do not promote it.
 - **Wayfinder issue** — anything carrying a `wayfinder:*` label (map or decision ticket, THR-900). These are decisions, not executor work, and **never enter `Ready for Dev`** — they are T1.5's input, not T1's. Skip unconditionally, whatever its blockers say.
+- **Standing retire verdict** — the candidate's **latest comment** carries an explicit retire / do-not-build / superseded verdict dated *after* the blocker's `completedAt`. Decline and quote the verdict sentence. **This is the one decline reason the `Blocked by` field cannot express**, which is why it needs its own step below.
+
+**Read the latest comment before promoting — a met blocker is not a live premise (THR-990).** Steps 2–3 above read only the `Blocked by` half of the coordination block, so a ticket whose *premise* died while its blocker went Done still passes every check and promotes clean. Before writing the promotion, call `list_comments(id, orderBy:"createdAt", limit:5)` and read the most recent entry. If it carries a standing retire verdict newer than the blocker's `completedAt`, decline — the blocker clearing is not new information about a ticket that was already judged dead on other grounds.
+
+Measured: THR-945 ("Disturber pays") was re-assessed 2026-08-02T03:33Z, verdict *"retire. Keep filed as a named fallback, do not build"* — its BEHIND-livelock mechanism had been made a no-op by THR-983 dropping strict mode. Its only named blocker, THR-947, went `Done` 2026-08-02T16:52Z. T1's 2026-08-03T00:31Z run read that blocker, saw `Done`, and promoted. `pull-work` bounced it at 02:03Z on the dead premise without claiming it, and the next T1 run declined re-promotion by hand at 02:32Z. Net cost: one top-of-queue slot spent re-deriving a conclusion already on record, and a decline the lane had to improvise because this reason did not exist.
+
+**Do not widen this into general comment-parsing.** The trigger is a verdict about whether the ticket should be *built at all* — retire, do not build, superseded, resolved-by-removal, closure recommended. Design notes, scope questions, and mutex chatter are not verdicts and must not block a promotion; when the latest comment is merely *discouraging* rather than a verdict, promote and let the executor judge at pickup.
 
 **Promotion ceiling.** Cap at `ORCH_PROMOTE_BATCH_MAX` per run. Additionally: **do not promote into a backed-up shelf.** If Ready for Dev already holds more than `QUEUE_BACKED_UP_MIN` (15, the threshold `keep-work-flowing-cc` uses) items, promote at most one per run — planning is already outrunning execution, and adding to the pile makes the executor's ordering problem worse, not better. Say in the report that the ceiling applied and which candidates it held back. **A held-back candidate is named, with its evidence, so a throttled promotion is visibly deferred rather than silently dropped.**
 
