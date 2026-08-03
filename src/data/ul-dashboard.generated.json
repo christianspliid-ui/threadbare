@@ -22,7 +22,7 @@
       "filename": "Encounters.md",
       "title": "Encounters",
       "contentAdjacent": true,
-      "termCount": 23,
+      "termCount": 26,
       "blurb": "Content-adjacent shard. Terms covering the encounter pipeline: templates, resolution, aftermath, awareness, and causation."
     },
     {
@@ -1958,6 +1958,109 @@
         }
       ],
       "sourcePath": "Docs/ubiquitous-language/Encounters.md#rebuild-road",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "encounters",
+      "slug": "formative-test",
+      "name": "Formative Test",
+      "aliases": [
+        "formative moment",
+        "FormativeTest"
+      ],
+      "status": "canonical",
+      "oneLiner": "present-tense trial in Meet The First; the god leans a value pole, fate writes which pole is true; replaces the retired \"Defining Moment\" choice scene",
+      "body": "A **present-tense** trial during the Meet The First encounter, in which the god's played `[[Nudge]]` hand leans one pole of the candidate's value pair and **fate resolves which pole is actually written** into the mortal. Schema: `FormativeTest` (`src/types/meetingEncounter.ts`); resolver: `resolveFormativeTest` (`src/engine/meetingEncounter.ts`).\n\n**The player never picks which way the moment goes.** They lean the odds; fate resolves the band; the band writes the pole. This is the `[[Nudge]]` contract applied to character formation, and it is the whole reason the term exists.\n\n**Replaces the retired \"Defining Moment\" choice scene**, in which the player picked which of two authored formative moments was true. That is the authored-futures model the nudge pivot rejected.\n\nBand prose is keyed by **which pole the band wrote** (`FormativeBandProse`: `cleanA`, `cleanB`, `tempered`, and the broke-the-other-way slots) rather than by raw band — the same band writes a different pole depending on how the hand leaned, so the prose has to follow the pole, not the roll. Contrast `[[Band Fragment]]`, which is keyed on the six-value `StepOutcome` directly.",
+      "seeAlso": [
+        {
+          "raw": "Nudge",
+          "termName": "Nudge",
+          "resolvedSlug": "encounters#nudge"
+        },
+        {
+          "raw": "Band Fragment",
+          "termName": "Band Fragment",
+          "resolvedSlug": "encounters#band-fragment"
+        },
+        {
+          "raw": "Bond Reception",
+          "termName": "Bond Reception",
+          "resolvedSlug": "encounters#bond-reception"
+        },
+        {
+          "raw": "The First",
+          "termName": "The First",
+          "resolvedSlug": "agents#the-first"
+        },
+        {
+          "raw": "Thread",
+          "termName": "Thread",
+          "resolvedSlug": "agents#thread"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Encounters.md#formative-test",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "encounters",
+      "slug": "bond-reception",
+      "name": "Bond Reception",
+      "aliases": [
+        "reception",
+        "BondReception"
+      ],
+      "status": "canonical",
+      "oneLiner": "how the mortal receives the god at the bond climax (`awe | devotion | bargain | doubt | defiance`); the bond always forms, the reception colors it",
+      "body": "**How the mortal receives the god** at the bond test's climax: one of `awe | devotion | bargain | doubt | defiance`. Written to the thread edge as `bondReception`.\n\n**The bond always forms; the reception colors it.** A reception is never a refusal — the band colors the relationship, it does not deny it. This is what makes the bond test safe to lose.\n\nDerived from the resolved band by `BOND_RECEPTION_BY_BAND` (`src/data/meeting-nudge-constants.ts`), a total map over the six-value `StepOutcome` onto five receptions: `bargain` is the image of **both** middle textures (`success_at_cost` and `near_miss`), since either way the moment did not land cleanly and the mortal negotiates. Every one of the five is reachable from some band — a reception no band can produce is dead content, and a unit test pins that. Malformed templates fall back to `BOND_RECEPTION_FALLBACK` (`bargain`), neutral rather than a refusal.",
+      "seeAlso": [
+        {
+          "raw": "Formative Test",
+          "termName": "Formative Test",
+          "resolvedSlug": "encounters#formative-test"
+        },
+        {
+          "raw": "Nudge",
+          "termName": "Nudge",
+          "resolvedSlug": "encounters#nudge"
+        },
+        {
+          "raw": "Thread",
+          "termName": "Thread",
+          "resolvedSlug": "agents#thread"
+        },
+        {
+          "raw": "The First",
+          "termName": "The First",
+          "resolvedSlug": "agents#the-first"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Encounters.md#bond-reception",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "encounters",
+      "slug": "unset-weave",
+      "name": "Unset Weave",
+      "aliases": [
+        "unset-weave framing",
+        "still-settling past"
+      ],
+      "status": "deprecated",
+      "oneLiner": "**rejected** framing (nudging inside a still-settling past); recorded so it is not reintroduced from the brainstorm doc",
+      "body": "*Rejected 2026-07-30 (THR-868 grill verdict 13; recorded in code at `src/types/meetingEncounter.ts`).* The framing in which the god nudges **inside a still-settling past** — the candidate's history not yet fixed, the player reaching back into it.\n\nRejected by Christian in favour of **present-tense trials**: the moment happens now, while the god's attention rests on the mortal. `[[Formative Test]]` is the term that replaced it.\n\nRecorded here rather than left in the brainstorm doc because the rejected framing is *more* evocative than the one that shipped, which is exactly why a later session reading the exploratory draft would reintroduce it.\n\n**This term was never canonical — read the status field as \"do not use\", not as \"retired from canon\".** The shard vocabulary has no `rejected` value: `ULTermStatus` (`scripts/generate-ul-dashboard-data.ts`) is the closed set `canonical | proposed | deprecated`, and an unrecognised value degrades the entry to `unknown`, which renders as though nobody ever classified it. `deprecated` is the nearest supported value carrying the right affordance for a reader. Adding a real `rejected` status is tracked as THR-991.",
+      "seeAlso": [
+        {
+          "raw": "Formative Test",
+          "termName": "Formative Test",
+          "resolvedSlug": "encounters#formative-test"
+        },
+        {
+          "raw": "Nudge",
+          "termName": "Nudge",
+          "resolvedSlug": "encounters#nudge"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Encounters.md#unset-weave",
       "contentAdjacent": true
     },
     {

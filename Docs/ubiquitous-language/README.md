@@ -93,6 +93,9 @@ Load this file at session start (referenced from CLAUDE.md). Load specific shard
 - **[Rebuild Road](./Encounters.md#rebuild-road)** — quintessence-rebuilding encounter; the only content a Broken mortal may draw
 - **[Surface](./Encounters.md#surface)** — a template bound to its context axes (`SurfaceKey`); the unit novelty and recency are tracked at, not a prose variant
 - **[Context Fragment](./Encounters.md#context-fragment)** — context-keyed authored prose spliced via `{frag:<slot>}`, `'*'` default required; **not** a Band Fragment, and its axes are not Surface-key axes
+- **[Formative Test](./Encounters.md#formative-test)** — present-tense trial in Meet The First; the god leans a value pole, fate writes which pole is true; replaces the retired "Defining Moment" choice scene
+- **[Bond Reception](./Encounters.md#bond-reception)** — how the mortal receives the god at the bond climax (`awe | devotion | bargain | doubt | defiance`); the bond always forms, the reception colors it
+- **[Unset Weave](./Encounters.md#unset-weave)** — **rejected** framing (nudging inside a still-settling past); recorded so it is not reintroduced from the brainstorm doc
 
 ### Traits
 
@@ -169,7 +172,7 @@ Load this file at session start (referenced from CLAUDE.md). Load specific shard
 
 ---
 
-*v1.6 — 8 shards, 118 canonical terms (THR-715 added the encounter-volume vocabulary to Encounters: Surface, Context Fragment — the latter declared two-word because bare *Fragment* collides with the pre-existing Band Fragment. THR-782/774 added the nudge-model vocabulary: Nudge, Rider, Band Fragment, Rebuild Road in Encounters; Broken, Dissolution Threshold in Agents. THR-788 added the Traits shard: Trait, Trait Assignment, Trait Category, Destiny, Trait Ref, TraitPredicate, Trait Visibility, Trait Hook, Selection-Competence Separation). Coverage expands via the propose-new-term flow. UL wins on terminology disagreements.*
+*v1.7 — 8 shards, 117 canonical terms + 1 rejected + 2 deprecated, counted from `**Status:**` lines at THR-873 (the previous footer read 118 against an actual 115, which is why this one names how it was measured) (THR-715 added the encounter-volume vocabulary to Encounters: Surface, Context Fragment — the latter declared two-word because bare *Fragment* collides with the pre-existing Band Fragment. THR-782/774 added the nudge-model vocabulary: Nudge, Rider, Band Fragment, Rebuild Road in Encounters; Broken, Dissolution Threshold in Agents. THR-788 added the Traits shard: Trait, Trait Assignment, Trait Category, Destiny, Trait Ref, TraitPredicate, Trait Visibility, Trait Hook, Selection-Competence Separation). THR-873 added the Meet-The-First nudge vocabulary to Encounters: Formative Test, Bond Reception — plus Unset Weave at the new `rejected` status, which unlike `deprecated` marks a term that was never admitted rather than one retired from canon. Coverage expands via the propose-new-term flow. UL wins on terminology disagreements.*
 
 *Index coverage: **118 of 118** — every shard term is listed above, and every index anchor resolves to a live shard heading (THR-806, 2026-08-02). Backfilled in that pass: the nine mentorship terms in Agents, the four scene-cast terms in Encounters, and Domain Canon Page in Process. The two Graph versioning terms were a different defect — they were already indexed, but under hand-typed double-hyphen anchors (`#worldversion--touchworld`) that no heading slugifies to, so both links were dead; they were repaired rather than duplicated.*
 
