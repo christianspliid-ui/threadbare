@@ -97,6 +97,21 @@ export const STATIC_ARTIFACT_SOURCES: Readonly<Record<string, readonly string[]>
     "src/data/settingClasses.ts",
     "scripts/generate-setting-coverage.ts",
   ],
+  // generate-systems-inventory: code in, doc out — harmless direction, no allowlist
+  // entry needed. Registered by THR-987 as an EXTERNAL_GENERATED_ARTIFACTS member: its
+  // generator sits outside `prebuild` (~20s, boots worldgen), which is the same blind
+  // spot THR-948 closed for setting-coverage. It had already drifted — the committed
+  // copy was missing the whole Companies & Group Travel subsystem (THR-74).
+  "Docs/canon/systems-inventory.md": [
+    "src/engine/orchestrator.ts",
+    "src/engine/",
+    "scripts/generate-systems-inventory.ts",
+  ],
+  // rebuild-plans-index: doc in, doc out — `Docs/plans/` on both sides, so the
+  // coupling classifier answers "none" and a plan-doc PR stays on the docs track.
+  // Registered by THR-987; THR-807 deliberately left its own gate advisory pending
+  // this ticket rather than building a second bespoke one.
+  "Docs/plans/INDEX.md": ["Docs/plans/", "scripts/rebuild-plans-index.ts"],
 };
 
 /**

@@ -69,6 +69,60 @@ const STATIC_GENERATED_PATHS: readonly string[] = [
 ];
 
 /**
+ * Committed artifacts whose generators sit **outside** `npm run prebuild` (THR-987).
+ *
+ * The hole this closes is the one THR-948 found and closed for a single artifact:
+ * a generator outside `prebuild` is invisible to *both* halves of this gate — absent
+ * from {@link STATIC_GENERATED_PATHS}, and unreachable by the unregistered-output
+ * detector, which by construction can only see paths `prebuild` writes. So the gate
+ * reported OK while the committed copy rotted, watched only by a `:check` script
+ * chained into the advisory `npm run check:process`.
+ *
+ * That advisory watch is weaker than it looks. `generate-systems-inventory --check`
+ * prints `is STALE` and then **exits 0** unless `SYSTEMS_INVENTORY_CHECK=blocking`
+ * is set, so it cannot redden `check:process` either — the warning scrolls past in a
+ * lint nothing gates on. Measured on a clean `origin/main` tree 2026-08-03:
+ * `Docs/canon/systems-inventory.md` was missing the entire **Companies & Group
+ * Travel** subsystem (THR-74). CLAUDE.md names that file a *required Step-0 load for
+ * any Engine-pillar design work*, whose stated selling point is that it "cannot drift
+ * the way hand-written canon did" — so the drift landed precisely on the surface that
+ * exists to stop a design session green-fielding a system the engine already has
+ * (the THR-614 failure).
+ *
+ * ## Why these run here rather than in `prebuild`
+ *
+ * `prebuild` is a lifecycle hook on `npm run build`, so anything added there is paid
+ * by every build, local and CI. `generate-systems-inventory` measures **~20s** and
+ * boots worldgen to do it; `generate-setting-coverage`, which THR-948 could fold into
+ * `prebuild` in one line, measures ~1s. Running the expensive ones only here keeps
+ * `npm run build` fast while still making staleness blocking, and the cost lands on
+ * the one gate whose whole job is to answer this question.
+ *
+ * ## Why the generator is re-run rather than its `:check` mode consulted
+ *
+ * `:check` compares its output against the file **on disk**, so it passes for an
+ * artifact that has been regenerated but not committed — the exact false pass this
+ * file's header records an earlier draft dying of. Re-running the generator and
+ * comparing against {@link BASELINE_REF} asks the only question that has teeth:
+ * does the *committed* copy match what the generator produces now?
+ */
+type ExternalArtifact = {
+  /** Repo-relative path of the committed artifact. */
+  path: string;
+  /** Command that refreshes it. Must be a real npm script — pinned by a test. */
+  command: string;
+};
+
+const EXTERNAL_GENERATED_ARTIFACTS: readonly ExternalArtifact[] = [
+  // ~20s, boots worldgen. Required Step-0 load for Engine-pillar design work.
+  { path: "Docs/canon/systems-inventory.md", command: "npm run generate-systems-inventory" },
+  // ~1s. THR-807 regenerated it and deliberately left its gate advisory "pending
+  // THR-987" rather than building a bespoke one, so this ticket owns its recurrence
+  // prevention; observed drift rate is ~2 plans/week, which re-rots it continuously.
+  { path: "Docs/plans/INDEX.md", command: "npm run rebuild-plans-index" },
+];
+
+/**
  * Artifacts `prebuild` writes that are deliberately **not** committed (THR-916).
  *
  * A generated file only needs to be in the tree if something reads it from there.
@@ -201,6 +255,7 @@ function checkDocToCodeCouplings(
 
   const undeclared = everyArtifactDeclaresSources([
     ...STATIC_GENERATED_PATHS,
+    ...EXTERNAL_GENERATED_ARTIFACTS.map((artifact) => artifact.path),
     ...UNCOMMITTED_GENERATED_PATHS,
   ]);
   for (const relPath of undeclared) {
@@ -214,6 +269,7 @@ function checkDocToCodeCouplings(
   const wikiSources = new Map(wikiArtifacts.map((page) => [page.file, page.sources]));
   const all = [
     ...STATIC_GENERATED_PATHS,
+    ...EXTERNAL_GENERATED_ARTIFACTS.map((artifact) => artifact.path),
     ...UNCOMMITTED_GENERATED_PATHS,
     ...wikiArtifacts.map((page) => page.file),
   ];
@@ -277,7 +333,12 @@ function normalize(content: string, relPath: string): string {
 
 function main(): void {
   const wikiArtifacts = designWikiArtifacts();
-  const generatedPaths = [...STATIC_GENERATED_PATHS, ...wikiArtifacts.map((page) => page.file)];
+  const externalPaths = EXTERNAL_GENERATED_ARTIFACTS.map((artifact) => artifact.path);
+  const generatedPaths = [
+    ...STATIC_GENERATED_PATHS,
+    ...externalPaths,
+    ...wikiArtifacts.map((page) => page.file),
+  ];
   // Uncommitted artifacts join the "known generator output" set so they can never be
   // reported as unregistered, but they are compared by a different rule below.
   const generatedSet = new Set([...generatedPaths, ...UNCOMMITTED_GENERATED_PATHS]);
@@ -312,6 +373,25 @@ function main(): void {
     });
   } catch (err) {
     bail(`\`${GENERATOR_COMMAND}\` failed — cannot verify artifact freshness.`, (err as Error).message);
+  }
+
+  // Generators that live outside `prebuild` (THR-987). Run after it, and before the
+  // unregistered-output sweep below, so their outputs are already on disk when the
+  // dirty-tree comparison happens. A failure bails rather than warns, for the same
+  // reason `prebuild` failing does: a gate that cannot verify must not pass.
+  for (const artifact of EXTERNAL_GENERATED_ARTIFACTS) {
+    try {
+      execSync(artifact.command, {
+        cwd: REPO_ROOT,
+        stdio: ["ignore", "ignore", "pipe"],
+        maxBuffer: 64 * 1024 * 1024,
+      });
+    } catch (err) {
+      bail(
+        `\`${artifact.command}\` failed — cannot verify ${artifact.path}.`,
+        (err as Error).message,
+      );
+    }
   }
 
   const stale: string[] = [];
@@ -384,10 +464,14 @@ function main(): void {
   console.error("check-generated-freshness: FAIL — committed generated artifacts are out of date.");
   for (const line of stale) console.error(`  - ${line}`);
   console.error("");
-  console.error(`Fix: run \`${GENERATOR_COMMAND}\`, then commit the regenerated files.`);
+  const refreshCommands = [GENERATOR_COMMAND, ...EXTERNAL_GENERATED_ARTIFACTS.map((a) => a.command)];
+  console.error(`Fix: run the generator, then commit the regenerated files:`);
+  for (const command of refreshCommands) console.error(`  ${command}`);
+  console.error("");
   console.error(
-    "Why this is blocking: these artifacts are consumed at runtime but are not rebuilt by " +
-      "`vite build`, so a stale one ships with no test failure and no build error (THR-690).",
+    "Why this is blocking: these artifacts are consumed at runtime, or read as canon by agents, " +
+      "but are not rebuilt by `vite build`, so a stale one ships with no test failure and no build " +
+      "error (THR-690, extended to out-of-prebuild generators by THR-987).",
   );
   process.exit(1);
 }
