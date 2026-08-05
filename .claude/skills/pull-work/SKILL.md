@@ -801,9 +801,11 @@ The label is a **predicate, not a promise** (THR-688 rule A): a ticket may carry
 git diff --name-only origin/main...HEAD | grep -vE '(\.md$|^Docs/|^Design/|^\.planning/|^src/data/ul-dashboard\.generated\.json$|^public/system-interface-map-reference\.html$)'
 ```
 
+Or run **`npm run classify:diff`** (THR-988), which prints the same verdict plus the surviving paths, computed from the constants `ci.yml` is pinned to rather than from a hand-copied grep.
+
 Empty ⇒ genuinely docs-only, ship on the docs track. **Non-empty ⇒ mis-tagged:** remove the `docs-only` label, comment why on the issue, and finish that ticket on the **code track with the full gate**. Never ship code on the docs track. Then end the drain — a mis-tag means the label's membership is untrustworthy this run.
 
-Note the two trailing exact paths: `src/data/ul-dashboard.generated.json` and `public/system-interface-map-reference.html` are generated *from* documentation but written outside the doc paths (THR-922), so a UL-shard or canon-page edit regenerates them and would otherwise classify a pure documentation deliverable as code.
+Note the two trailing exact paths: `src/data/ul-dashboard.generated.json` and `public/system-interface-map-reference.html` are generated *from* documentation but written outside the doc paths (THR-922), so a UL-shard or canon-page edit regenerates them and would otherwise classify a pure documentation deliverable as code. Those two fragments are exactly what went missing in all three recorded drifts of this predicate — including this skill's own drain spec (impediment #386) — which is why `npm run check:predicate-copies` now compiles every copy and fails on any that classifies them differently (THR-988).
 
 **Trace lines** (NFP #2 — exactly one of the first three fires, then one per ticket):
 

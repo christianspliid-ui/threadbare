@@ -29,6 +29,8 @@ import {
   classifyCoupling,
   isDocPath,
 } from '../generated-artifact-sources.ts';
+import { PREDICATE_COPIES, comparePredicate } from '../docs-only-predicate.ts';
+import { checkPredicateCopies } from '../check-predicate-copies.ts';
 
 const TEST_DIR = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(TEST_DIR, '..', '..');
@@ -207,6 +209,69 @@ describe('the allowlist and the CI filter cannot drift apart', () => {
     for (const artifact of DOC_TO_CODE_ALLOWLIST) {
       expect(claudeMd).toContain(artifact.replaceAll('.', '\\.'));
     }
+  });
+});
+
+/**
+ * THR-988 — the prose copies of the docs-only predicate cannot drift from it.
+ *
+ * The assertion directly above covers ONE copy (CLAUDE.md) with a substring check.
+ * There are five, and the same omission occurred three times independently: THR-938's
+ * drain spec, AGENTS.md (THR-955), and THR-922's own chase of the copies after
+ * widening `ci.yml`. A substring check on one file is not a gate over five.
+ *
+ * The real gate is `npm run check:predicate-copies`, wired into CI's `Docs gates`
+ * job — the only job a documentation PR runs, and every copy is a documentation file.
+ * This test calls the same function so the *code* direction is covered too: a PR
+ * editing `ci.yml` or `DOC_TO_CODE_ALLOWLIST` moves the canonical predicate, and that
+ * PR runs `npm test`, not `Docs gates`. One implementation, two invocation surfaces.
+ */
+describe('the prose copies of the docs-only predicate agree with it (THR-988)', () => {
+  const report = checkPredicateCopies(REPO_ROOT);
+
+  it('actually found predicates to compare', () => {
+    // Without this the assertions below pass vacuously if the extraction regex stops
+    // matching — which a reflow of the fenced blocks would do.
+    expect(report.checked).toBeGreaterThanOrEqual(PREDICATE_COPIES.length);
+  });
+
+  it('every registered copy still carries a predicate', () => {
+    expect(report.missing).toEqual([]);
+  });
+
+  it('no copy classifies any fixture differently from the canonical predicate', () => {
+    expect(report.divergences).toEqual([]);
+  });
+
+  it('detects the exact drift that has occurred three times', () => {
+    // Injection proof: drop the two THR-922 artifact exclusions — the omission
+    // behind all three recorded drifts — and confirm the comparison fails. A gate
+    // nobody has watched fail is a gate nobody knows works.
+    const drifted = "(\\.md$|^Docs/|^Design/|^\\.planning/)";
+    const divergences = comparePredicate('fixture.md', drifted);
+
+    expect(divergences.length).toBe(DOC_TO_CODE_ALLOWLIST.length);
+    expect(divergences.map((entry) => entry.fixture).sort()).toEqual([...DOC_TO_CODE_ALLOWLIST].sort());
+    for (const divergence of divergences) {
+      expect(divergence.detail).toContain('would pay the full code gate');
+    }
+  });
+
+  it('detects a predicate that is too permissive', () => {
+    // The opposite direction, which is the dangerous one: a copy that swallows code
+    // paths would tell an agent to skip the suite on a real code diff.
+    const tooWide = "(\\.md$|^Docs/|^Design/|^\\.planning/|^src/)";
+    const divergences = comparePredicate('fixture.md', tooWide);
+
+    expect(divergences.length).toBeGreaterThan(0);
+    expect(divergences.some((entry) => entry.detail.includes('would skip the suite'))).toBe(true);
+  });
+
+  it('rejects a pattern that does not compile', () => {
+    // Inspection cannot prove the fragments compose; only executing them can.
+    const divergences = comparePredicate('fixture.md', '(unclosed');
+    expect(divergences).toHaveLength(1);
+    expect(divergences[0]!.detail).toContain('does not compile');
   });
 });
 

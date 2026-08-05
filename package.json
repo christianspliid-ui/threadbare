@@ -19,6 +19,8 @@
     "check:design-wiki": "esbuild scripts/check-design-wiki.ts --bundle --platform=node --format=esm --outfile=.cache/check-design-wiki.mjs --external:fs --external:path --external:url && node .cache/check-design-wiki.mjs",
     "check:generated-freshness": "node --experimental-strip-types scripts/check-generated-freshness.ts",
     "check:impediment-ids": "node --experimental-strip-types scripts/check-impediment-ids.ts",
+    "check:predicate-copies": "node --experimental-strip-types scripts/check-predicate-copies.ts",
+    "classify:diff": "node --experimental-strip-types scripts/classify-diff.ts",
     "check:typecheck": "node --experimental-strip-types scripts/check-typecheck-ratchet.ts",
     "check:image-library": "node --experimental-strip-types scripts/check-image-library.ts",
     "check:wiki-freshness": "esbuild scripts/check-wiki-freshness.ts --bundle --platform=node --format=esm --outfile=.cache/check-wiki-freshness.mjs --external:child_process --external:fs --external:path --external:process --external:url && node .cache/check-wiki-freshness.mjs",
