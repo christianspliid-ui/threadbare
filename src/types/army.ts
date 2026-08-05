@@ -17,6 +17,18 @@ export const ARMY_SIZE_HEADCOUNT: Record<ArmySizeCategory, number> = {
   host: 10000,
 };
 
+// ─── Supply (THR-626) ───────────────────────────────────────────────────
+
+/**
+ * Public vocabulary for an army's provisioning state (THR-626).
+ *
+ * The larder scalar behind this is private and never rendered — every surface
+ * (prose, DebugPanel, `__DEBUG.getArmies()`) reads the tier, per the Flow Web
+ * commitment that tiers are the only read surface. Derivation lives in
+ * `engine/armySupply.ts`; thresholds in `data/army-supply-config.ts`.
+ */
+export type ArmySupplyTier = 'supplied' | 'strained' | 'starving';
+
 // ─── Army State ─────────────────────────────────────────────────────────
 
 export interface ArmyState {
@@ -36,6 +48,24 @@ export interface ArmyState {
   maintenanceCost: number;
   /** Attrition thresholds already fired (prevents re-firing) */
   thresholdsFired: string[];
+  /**
+   * THR-626 — provisions on hand, in abstract units. Optional: an army raised
+   * before this system reads as full rather than starving (see `readArmySupply`).
+   * Never rendered; `supplyTier` is what surfaces.
+   */
+  supply?: number;
+  /** THR-626 — larder ceiling. Optional, defaults to `ARMY_SUPPLY_MAX`. */
+  supplyMax?: number;
+  /**
+   * THR-626 — derived provisioning state, refreshed by `phaseArmySupply`. Stored
+   * rather than derived on read so UI/debug surfaces and the attrition phase all
+   * see one value per tick, and so a save carries the army's felt condition.
+   */
+  supplyTier?: ArmySupplyTier;
+  /** THR-626 — location id currently provisioning this army; null when cut off. */
+  supplyHostId?: string | null;
+  /** THR-626 — conduit hops to that host; null when cut off. */
+  supplyHops?: number | null;
 }
 
 export interface ArmyObjective {

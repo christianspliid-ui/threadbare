@@ -1,6 +1,18 @@
 import React from 'react';
 import type { WorldGraph } from '../../../engine/graph';
+import type { ArmySupplyTier } from '../../../types/army';
 import { FIELD_BATTLE_COLOR, SIEGE_COLOR } from '../../HexMapV2/scene/BattleIndicatorLayer';
+
+/**
+ * THR-626 — supply tier readout colors. Mirrors the cohesion ramp so the two
+ * army health axes read the same way at a glance: green fed, amber thinning,
+ * battle-red starving.
+ */
+const SUPPLY_TIER_COLOR: Record<ArmySupplyTier, string> = {
+  supplied: '#4ade80',
+  strained: '#fbbf24',
+  starving: FIELD_BATTLE_COLOR,
+};
 
 const EMPTY_STATE_STYLE: React.CSSProperties = {
   padding: '32px 16px',
@@ -74,6 +86,12 @@ export function ArmiesTabContent({ graph, currentTick, onZoomToLocation }: Armie
             const locEdges = graph.getOutgoingEdges(army.id, 'located_at');
             const location = locEdges[0] ? graph.getNode(locEdges[0].target) : null;
             const qPct = ((as.cohesion as number) / Math.max(1, as.cohesionMax as number) * 100);
+            // THR-626 — read the tier the supply phase persisted. An army it has
+            // not scanned yet reads `supplied`: never provisioned is not starving.
+            const supplyTier = (as.supplyTier as ArmySupplyTier | undefined) ?? 'supplied';
+            const supplyHostId = as.supplyHostId as string | null | undefined;
+            const supplyHost = supplyHostId ? graph.getNode(supplyHostId) : null;
+            const supplyHops = as.supplyHops as number | null | undefined;
             const ticksActive = currentTick - (as.raisedTick as number);
 
             return (
@@ -95,6 +113,13 @@ export function ArmiesTabContent({ graph, currentTick, onZoomToLocation }: Armie
                   <span style={DETAIL_LABEL_STYLE}>Cohesion:</span>
                   <span style={{ ...DETAIL_VALUE_STYLE, color: qPct < 30 ? FIELD_BATTLE_COLOR : qPct < 70 ? '#fbbf24' : '#4ade80' }}>
                     {(as.cohesion as number).toFixed(1)} / {as.cohesionMax as number} ({qPct.toFixed(0)}%)
+                  </span>
+                </div>
+                <div style={DETAIL_ROW_STYLE}>
+                  <span style={DETAIL_LABEL_STYLE}>Supply:</span>
+                  <span style={{ ...DETAIL_VALUE_STYLE, color: SUPPLY_TIER_COLOR[supplyTier] }}>
+                    {supplyTier}
+                    {supplyHost ? ` — from ${supplyHost.name}${supplyHops != null ? ` (${supplyHops} hop${supplyHops === 1 ? '' : 's'})` : ''}` : ' — cut off'}
                   </span>
                 </div>
                 <div style={DETAIL_ROW_STYLE}>

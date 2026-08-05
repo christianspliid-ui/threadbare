@@ -991,6 +991,33 @@ aftermathConfig: {
 
 ---
 
+### Capability 19: Army Supply Anomalies — Hunger as a Scene Producer (THR-626)
+
+**What it is:** an army's provisions are a stock fed along the trade web, and the three states of *not being fed* each plant an encounter seed. You do not author the hunger; you author what happens when it arrives.
+
+**The one thing to know before writing for it:** `phaseArmySupply` derives a supply line every 4 ticks — a bounded walk over `road` and `trades_with` edges to the nearest location the army's own faction controls that has food to spare — and turns the result into `ArmySupplyTier`:
+
+| Tier | Meaning | Seeds |
+|---|---|---|
+| `supplied` | Fed. **Nothing at all is produced.** | — |
+| `strained` | The line has thinned — distance, banditry, or famine at the far end | `army.supply.forage` |
+| `starving` | Nothing is getting through | `army.threshold.mutiny` |
+| `starving` + besieging | The besiegers are starving before the city is | `army.supply.siege_lifted` |
+
+**Write to the tier, never to the number.** The larder scalar is private and deliberately unrendered; `supplyTier` is the only read surface, exactly as `stockTier` is for resources. A prose line that says "rations at 12%" is reaching through the abstraction and will read wrong next time the constants are tuned.
+
+**Equilibrium is silence.** A fed army produces no content whatsoever — that is the design, not a gap. If you want more army content, the lever is not more templates on these three hooks; it is that armies get cut off more often, which is an engine tuning question (`ARMY_SUPPLY_MAX_HOPS`, `ARMY_SUPPLY_HOST_MIN_BALANCE`) rather than an authoring one.
+
+**The seed lands on the commander when there is one**, because the commander is the actor a player can actually reach; otherwise on whoever stands at the army's hex. So write these scenes for a named officer with a column behind them, not for an abstraction.
+
+**What the god can do about it is economic, not martial** — and this is the thing worth building content around. Severing a trade route or souring the harvest at the town feeding a host breaks that host without a battle. A `threatened` route (the flag `routeEvents.ts` sets when banditry materializes) *strangles* a line rather than cutting it, so there is a long degrading middle where the army still acts. Scenes that acknowledge an unseen hand on the roads are playing to the actual mechanism.
+
+**A caution learned shipping this:** `army.threshold.mutiny` is prose authored in THR-104 that had **no spawn path at all** until now — `THRESHOLD_ENCOUNTER_TEMPLATES` in `armyAttrition.ts` has zero non-test consumers, so crossing a cohesion threshold only ever produced a notification. Three of those four templates are still unreachable. **Before authoring a template that fires "on a threshold", grep for the thing that actually spawns it.** A template with no producer never renders, and nothing in the pipeline will tell you.
+
+**Where to find the implementation:** `src/engine/armySupply.ts` (pure resolution + `deriveSupplyTier` + `hasReliefLine`), `src/engine/phases/armySupply.ts` (the phase and its seeding), tunables in `src/data/army-supply-config.ts`.
+
+---
+
 ## Part 3: The Wiring Checklist — Ask These Before You Write
 
 Before writing any encounter, answer these questions. If the answer to most of them is "not applicable," you may be writing a book page, not game content.

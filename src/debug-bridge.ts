@@ -2001,6 +2001,18 @@ if (import.meta.env.DEV) {
             raisedTick: as.raisedTick,
             ticksActive: tick - as.raisedTick,
             maintenanceCost: as.maintenanceCost,
+            // THR-626 — supply web. Reads the tier `phaseArmySupply` persists on
+            // the army rather than re-deriving it: this accessor is synchronous
+            // and the module imports engine code dynamically, and re-deriving
+            // would fork the threshold logic in the one place most likely to be
+            // read as ground truth. An army the supply phase has not scanned yet
+            // reads `supplied` — never provisioned is not the same as starving.
+            supplyTier: as.supplyTier ?? 'supplied',
+            supply: as.supply ?? null,
+            supplyMax: as.supplyMax ?? null,
+            supplyHostId: as.supplyHostId ?? null,
+            supplyHost: as.supplyHostId ? (graph.getNode(as.supplyHostId)?.name ?? null) : null,
+            supplyHops: as.supplyHops ?? null,
           };
         });
     },

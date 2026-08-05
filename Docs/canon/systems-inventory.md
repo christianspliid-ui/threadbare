@@ -189,6 +189,7 @@ registry. The wiring ground truth: if it is on the tick path, it is here.
 | `reputation_decay` | reputation_decay | — | registry |
 | `resource_stock_tiers` | resource_stock_tiers | — | registry |
 | `route_events` | route_events | — | registry |
+| `army_supply` | army_supply | — | registry |
 | `economic_power` | economic_power | — | registry |
 | `ambition_progress` | ambition_progress | — | registry |
 | `faction_ambitions` | faction_ambitions | — | registry |
@@ -221,7 +222,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `ambition` (5) | `ambitionAssignment.ts`, `ambitionBoost.ts`, `ambitionLifecycle.ts`, `ambitionSelection.ts`, `ambitionTick.ts` | `THR-885` |
 | `anoint` (1) | `anointSuccessor.ts` | `THR-432`, `THR-74` |
 | `archetype` (1) | `archetypeEpithet.ts` | `Phase 12`, `TB-075` |
-| `army` (4) | `armyAttrition.ts`, `armyMovement.ts`, `armyNotifications.ts`, `armySpawning.ts` | `TB-073`, `Phase 2`, `Phase 7`, `Phase 1` |
+| `army` (5) | `armyAttrition.ts`, `armyMovement.ts`, `armyNotifications.ts`, `armySpawning.ts`, `armySupply.ts` | `TB-073`, `Phase 2`, `Phase 7`, `Phase 1`, `THR-626` |
 | `art` (1) | `artSelection.ts` | — |
 | `ascendant` (9) | `ascendant.ts`, `ascendantBeat.ts`, `ascendantBeatSeeding.ts`, `ascendantBuffs.ts`, `ascendantExpression.ts`, `ascendantFeedback.ts`, `ascendantLens.ts`, `ascendantPrimitives.ts`, `ascendantTray.ts` | `THR-500`, `THR-520`, `THR-517`, `THR-509`, `THR-416`, `THR-508`, `THR-503`, `THR-184` |
 | `aspects` (1) | `aspects.ts` | `THR-479` |
@@ -319,7 +320,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `pathfinding` (1) | `pathfinding.ts` | — |
 | `personality` (2) | `personality/originBaseline.ts`, `personality/originConstants.ts` | `THR-561`, `THR-539` |
 | `phase` (41) | `phaseAgentDecision.ts`, `phaseAscendantProgression.ts`, `phaseAttention.ts`, `phaseColocationDetection.ts`, `phaseComposition.ts`, `phaseControlEffects.ts`, `phaseDivinePremonition.ts`, `phaseDoom.ts`, `phaseEconomicChronicle.ts`, `phaseEconomicTraits.ts`, `phaseEffectShells.ts`, `phaseEncounterTraits.ts`, `phaseEssenceSources.ts`, `phaseFactionActions.ts`, `phaseFactionSuccession.ts`, `phaseHexState.ts`, `phaseHiddenMarkDecay.ts`, `phaseInitiativeProgress.ts`, `phaseIntelligenceDecay.ts`, `phaseInteractionDepth.ts`, `phaseMagicalSaturation.ts`, `phaseMandate.ts`, `phaseMentorship.ts`, `phaseMovement.ts`, `phaseOmenAgenda.ts`, `phaseProsperity.ts`, `phaseQuintessence.ts`, `phaseRegistry.ts`, `phaseReputationDecay.ts`, `phaseReputationTraits.ts`, `phaseSchismResolution.ts`, `phaseSecretsFavors.ts`, `phaseSettlementPromotion.ts`, `phaseSettlementReassessment.ts`, `phaseSlotCaps.ts`, `phaseSphereAggregation.ts`, `phaseSpherePressure.ts`, `phaseStrategicProjects.ts`, `phaseSublocations.ts`, `phaseTradeRouteDecay.ts`, `phaseUnrest.ts` | `THR-613`, `THR-611`, `TB-045`, `THR-53`, `THR-618`, `Phase 6`, `THR-432`, `Phase 7`, `THR-132`, `THR-51`, `THR-137`, `Phase 2`, `THR-75`, `THR-19`, `Phase 1`, `TB-075`, `Phase 12`, `THR-238`, `THR-430`, `THR-30`, `Phase 4`, `THR-469`, `THR-481` |
-| `phases` (24) | `phases/ambitionProgress.ts`, `phases/clueDecay.ts`, `phases/corePersonality.ts`, `phases/delveAdmission.ts`, `phases/delveEmergence.ts`, `phases/delveProgression.ts`, `phases/doom.ts`, `phases/economicPower.ts`, `phases/emittedOmenDecay.ts`, `phases/factionActions.ts`, `phases/factionAmbitions.ts`, `phases/factionSuccession.ts`, `phases/index.ts`, `phases/mandate.ts`, `phases/personalityOriginSeed.ts`, `phases/personalityTraitEmerge.ts`, `phases/phaseAutonomousAftermath.ts`, `phases/popStreams.ts`, `phases/reputationDecay.ts`, `phases/resourceStockTiers.ts`, `phases/routeEvents.ts`, `phases/ruinQuestHooks.ts`, `phases/schismResolution.ts`, `phases/secretsFavors.ts` | `THR-238`, `THR-542`, `THR-544`, `THR-617`, `THR-815`, `THR-432`, `THR-561`, `THR-539`, `THR-527`, `THR-559`, `THR-530`, `THR-615`, `THR-669`, `THR-430` |
+| `phases` (25) | `phases/ambitionProgress.ts`, `phases/armySupply.ts`, `phases/clueDecay.ts`, `phases/corePersonality.ts`, `phases/delveAdmission.ts`, `phases/delveEmergence.ts`, `phases/delveProgression.ts`, `phases/doom.ts`, `phases/economicPower.ts`, `phases/emittedOmenDecay.ts`, `phases/factionActions.ts`, `phases/factionAmbitions.ts`, `phases/factionSuccession.ts`, `phases/index.ts`, `phases/mandate.ts`, `phases/personalityOriginSeed.ts`, `phases/personalityTraitEmerge.ts`, `phases/phaseAutonomousAftermath.ts`, `phases/popStreams.ts`, `phases/reputationDecay.ts`, `phases/resourceStockTiers.ts`, `phases/routeEvents.ts`, `phases/ruinQuestHooks.ts`, `phases/schismResolution.ts`, `phases/secretsFavors.ts` | `THR-238`, `THR-626`, `THR-542`, `THR-544`, `THR-617`, `THR-815`, `THR-432`, `THR-561`, `THR-539`, `THR-527`, `THR-559`, `THR-530`, `THR-615`, `THR-669`, `THR-430` |
 | `planner` (1) | `plannerForecast.ts` | `Phase 4` |
 | `player` (1) | `playerReceipts.ts` | `THR-727` |
 | `portfolio` (1) | `portfolioManager.ts` | — |
@@ -387,4 +388,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 26 registered subsystems (1 dormant) · 98 tick phases · 170 engine domains · 483 modules._
+_Counts: 26 registered subsystems (1 dormant) · 99 tick phases · 170 engine domains · 485 modules._

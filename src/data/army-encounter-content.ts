@@ -56,6 +56,14 @@ const DISBANDMENT_DIFFICULTY = 1.00;
 const REFUGEE_HEART_DIFFICULTY = 0.35;
 const REFUGEE_GOLD_DIFFICULTY = 0.40;
 
+/** THR-626 supply anomalies. Foraging is easy to survey, hard to do decently. */
+const FORAGE_SURVEY = THRESHOLD_BASE_DIFFICULTY;                            // 0.35
+const FORAGE_RESTRAINT = THRESHOLD_BASE_DIFFICULTY + 2 * THRESHOLD_STEP;    // 0.55
+
+/** Reading a failing siege is easy; withdrawing from one in order is not. */
+const SIEGE_LIFTED_READ = THRESHOLD_BASE_DIFFICULTY;                        // 0.35
+const SIEGE_LIFTED_WITHDRAW = THRESHOLD_BASE_DIFFICULTY + 3 * THRESHOLD_STEP; // 0.65
+
 // ─── Army Encounter Metadata ─────────────────────────────────────────────
 
 /**
@@ -68,8 +76,8 @@ const REFUGEE_GOLD_DIFFICULTY = 0.40;
  * ARMY_ENCOUNTER_TEMPLATES, not via this map.
  */
 export interface ArmyEncounterMeta {
-  /** Lifecycle category: 'raise' | 'threshold' | 'aftermath' */
-  category: 'raise' | 'threshold' | 'aftermath';
+  /** Lifecycle category: 'raise' | 'threshold' | 'supply' | 'aftermath' */
+  category: 'raise' | 'threshold' | 'supply' | 'aftermath';
   /** Minimum Iron capability tier required (0 = no gate) */
   minIronTier: number;
   /** Minimum Gold capability tier required (0 = no gate) */
@@ -82,6 +90,8 @@ export const ARMY_ENCOUNTER_META: ReadonlyMap<string, ArmyEncounterMeta> = new M
   ['army.threshold.desertion',          { category: 'threshold', minIronTier: 0, minGoldTier: 0 }],
   ['army.threshold.mutiny',             { category: 'threshold', minIronTier: 0, minGoldTier: 0 }],
   ['army.threshold.disbandment',        { category: 'threshold', minIronTier: 0, minGoldTier: 0 }],
+  ['army.supply.forage',                { category: 'supply',    minIronTier: 0, minGoldTier: 0 }],
+  ['army.supply.siege_lifted',          { category: 'supply',    minIronTier: 0, minGoldTier: 0 }],
   ['army.aftermath.refugees',           { category: 'aftermath', minIronTier: 0, minGoldTier: 0 }],
 ]);
 
@@ -1030,6 +1040,297 @@ export const REFUGEE_AFTERMATH_TEMPLATE: UnifiedActionTemplate = {
   },
 };
 
+// ─── army.supply.forage — The Foraging Parties (THR-626) ─────────────────
+
+/**
+ * Seeded by `phaseArmySupply` when an army's supply tier reaches `strained` —
+ * its line to a provisioning host has thinned, whether by distance, by banditry
+ * on the road, or by famine at the far end.
+ *
+ * The design point of foraging is that it does not solve hunger, it *moves* it:
+ * the column eats by taking, and the countryside it takes from is somebody's
+ * home. Both branches cost something real, which is why this is a decision and
+ * not a resupply timer.
+ */
+export const ARMY_SUPPLY_FORAGE_TEMPLATE: UnifiedActionTemplate = {
+  id: 'army.supply.forage',
+  name: 'The Foraging Parties',
+  rarityTier: 2,
+  intrinsicTier: 'shaping',
+  reach: 'heart',
+  crudType: 'update',
+  scale: 'local',
+  locationSubtypes: [], // programmatically seeded by phaseArmySupply
+  apCost: 1,
+  actorAffinities: ['individual'],
+  motivations: ENCOUNTER_TYPE_MOTIVATIONS.lead,
+  steps: [
+    {
+      reach: 'eye',
+      duration: { min: 1, max: 1 },
+      difficulty: FORAGE_SURVEY,
+      failBehavior: 'continue_weakened',
+      onSuccess: [],
+      onFailure: [],
+      narrativeTemplate:
+        'The road east has been quiet for nine days, and quiet on a supply road means empty. ' +
+        'No carts, no factors, no dust on the horizon at the hour when dust should be there. ' +
+        '{name} walks the length of the baggage train and counts what is left in the open barrels, ' +
+        'and the sergeant walks beside {name} and does not offer a number, ' +
+        'because the sergeant has already done the counting and knows what it comes to. ' +
+        'Beyond the pickets there are farms. That is the whole of the arithmetic.',
+      successAfterimage:
+        '{name} sends riders out along the road before committing to anything, and they come back ' +
+        'with the shape of it: the nearest steading has a full barn and eleven people, ' +
+        'and there is a mill two hours further that is already stripped.',
+      failureAfterimage:
+        'Nobody rides out. The column simply notices, as columns do, that the country ahead is farmland, ' +
+        'and the noticing spreads faster than any order {name} could give.',
+    },
+    {
+      reach: 'heart',
+      duration: { min: 2, max: 2 },
+      difficulty: FORAGE_RESTRAINT,
+      failBehavior: 'continue_weakened',
+      onSuccess: [],
+      onFailure: [],
+      successMetadata: {
+        rewardPool: {
+          categoryWeights: { condition: 0.5, possession: 0.3, bestowed_power: 0.2 },
+          tagFilters: ['#military', '#supply'],
+        },
+        tierPromotionEligible: false,
+        reputationDelta: 0.08,
+      },
+      failureMetadata: { reputationDelta: -0.14 },
+      narrativeTemplate:
+        'There is a way to do this that leaves a country still willing to sell to you next season, ' +
+        'and there is the other way, which is faster. ' +
+        '{name} sets the terms at the first steading with the whole column watching: ' +
+        'what is taken, what is written down, what is paid or promised, and what happens to a man who takes more. ' +
+        'The farmer stands in his own doorway with his hands loose at his sides and does not argue, ' +
+        'and that stillness is worse than argument, and everyone present understands it.',
+      successAfterimage:
+        'The barns give up enough to march on. The tallies are written and sealed and will probably even be honoured. ' +
+        'The country goes hungry this winter but it goes hungry with a grievance it can name, ' +
+        'and a grievance with a name can still be settled.',
+      failureAfterimage:
+        'By dusk the difference between a foraging party and a raid has stopped being visible from the road. ' +
+        'The column marches out fed. Behind it the steadings are quiet in the particular way ' +
+        'that will be remembered here for a generation.',
+    },
+  ],
+  narrativeTemplates: {
+    initiation:
+      'The supply road has gone quiet and the barrels are showing their bottoms. ' +
+      'There is farmland ahead of {name}\'s column, and a choice about how to treat it.',
+    success:
+      'The column eats and the country it ate from can still name what was taken. ' +
+      'That is the best outcome foraging has.',
+    failure:
+      'The column eats. What it leaves behind will not be described as foraging by anyone who lived there.',
+  },
+  aftermathConfig: {
+    branchOnStep: 1,
+    variants: {},
+    fallback: {
+      overview:
+        'Foraging never solves hunger — it moves it onto people who did not raise the army. ' +
+        'What {name} decided at the first steading set the terms for every steading after it, ' +
+        'and the column understood that before the farmers did.',
+      changes: [
+        {
+          id: 'forage_countryside_memory',
+          kind: 'reputation',
+          title: 'What the Country Remembers',
+          detail:
+            'A country that was requisitioned from can be traded with next season. ' +
+            'A country that was stripped remembers differently, and for longer.',
+          polarity: 'mixed',
+        },
+      ],
+      reactionPrompt: 'What does the god take from the foraging?',
+      reactions: [
+        {
+          id: 'forage_discipline_held',
+          label: 'Taking is not the same as ruining. The line held.',
+          intent:
+            '{name} kept a distinction that armies lose almost by default — ' +
+            'the one between requisition and pillage. It cost time and it will be remembered.',
+          effects: [
+            { kind: 'reputation_tally', key: 'army.command.logistics_held', delta: 1 },
+            {
+              kind: 'recent_event',
+              message: 'The country {name} foraged is still willing to sell to that banner.',
+              significance: 0.5,
+            },
+          ],
+        },
+        {
+          id: 'forage_hunger_won',
+          label: 'Hungry men make their own policy.',
+          intent:
+            'The column fed itself and the orders became a formality. ' +
+            'This is how a war stops being fought against an army and starts being fought against a country.',
+          effects: [
+            {
+              kind: 'hidden_mark',
+              category: 'debt',
+              severity: 0.5,
+              label: 'The steadings {name}\'s column stripped remember it — and will not sell to that banner again.',
+              revealFamilies: ['army.threshold', 'army.supply'],
+            },
+          ],
+          closeAfterSelection: true,
+        },
+      ],
+    },
+  },
+};
+
+// ─── army.supply.siege_lifted — The Besiegers Break (THR-626) ────────────
+
+/**
+ * Seeded by `phaseArmySupply` when a *besieging* army reaches `starving` — the
+ * inversion the supply coupling exists to make reachable, where the army outside
+ * the walls runs out before the city inside them does.
+ *
+ * Historically the commonest way sieges actually ended, and mechanically the
+ * payoff for a defender (or a god) who cut the attacker's roads instead of
+ * fighting the attacker's army.
+ */
+export const ARMY_SUPPLY_SIEGE_LIFTED_TEMPLATE: UnifiedActionTemplate = {
+  id: 'army.supply.siege_lifted',
+  name: 'The Besiegers Break',
+  rarityTier: 3,
+  intrinsicTier: 'story_beat',
+  reach: 'iron',
+  crudType: 'update',
+  scale: 'local',
+  locationSubtypes: [], // programmatically seeded by phaseArmySupply
+  apCost: 1,
+  actorAffinities: ['individual'],
+  motivations: ENCOUNTER_TYPE_MOTIVATIONS.lead,
+  steps: [
+    {
+      reach: 'eye',
+      duration: { min: 1, max: 1 },
+      difficulty: SIEGE_LIFTED_READ,
+      failBehavior: 'continue_weakened',
+      onSuccess: [],
+      onFailure: [],
+      narrativeTemplate:
+        'The city has not opened its gates and shows no sign of intending to, ' +
+        'and the siege lines have begun to smell wrong. ' +
+        'Three weeks of the same ground, the same latrines, the same thinning stew. ' +
+        'The lieutenant reports that a picket went missing in the night with its weapons, ' +
+        'and reports it in the flat voice men use when they have decided not to have an opinion. ' +
+        '{name} looks up at the walls, where the defenders are still walking their rounds, unhurried, ' +
+        'and understands with complete clarity who is actually being starved here.',
+      successAfterimage:
+        '{name} reads the camp before the camp reads itself: two more days at this ration ' +
+        'and the question stops being whether to lift the siege and becomes whether anyone will obey the order to stay.',
+      failureAfterimage:
+        'The report is filed and the lines hold and nothing is decided, ' +
+        'which is itself a decision, and the camp makes it without {name}.',
+    },
+    {
+      reach: 'iron',
+      duration: { min: 2, max: 2 },
+      difficulty: SIEGE_LIFTED_WITHDRAW,
+      failBehavior: 'fail_action',
+      onSuccess: [],
+      onFailure: [],
+      successMetadata: {
+        rewardPool: {
+          categoryWeights: { condition: 0.4, possession: 0.2, bestowed_power: 0.4 },
+          tagFilters: ['#military', '#supply'],
+        },
+        tierPromotionEligible: true,
+        reputationDelta: 0.05,
+      },
+      failureMetadata: { reputationDelta: -0.16 },
+      narrativeTemplate:
+        'Breaking a siege from the outside is harder than making one, because a siege is mostly ' +
+        'a promise the army has made to itself and withdrawal is the breaking of it. ' +
+        '{name} gives the order in daylight rather than by night, which costs surprise ' +
+        'and buys the only thing worth more: the men leave as an army instead of as a rumour. ' +
+        'The siege engines are fired where they stand. ' +
+        'On the walls somebody begins ringing a bell, and keeps ringing it long after the column is out of sight.',
+      successAfterimage:
+        'The column withdraws intact and hungry and still recognisably itself. ' +
+        'The city is not taken. It also does not get to say it broke {name}\'s army, ' +
+        'and in the accounting that follows, that distinction will matter more than the walls did.',
+      failureAfterimage:
+        'The withdrawal comes apart in its first hour. What leaves the siege lines is not a column ' +
+        'but a direction, and the sortie that comes out of the gates behind it does not have to work hard.',
+    },
+  ],
+  narrativeTemplates: {
+    initiation:
+      'The city is not starving. {name}\'s army is. ' +
+      'What remains is whether the siege ends as a decision or as a collapse.',
+    success:
+      'The siege lifts on {name}\'s order and the column leaves as an army. The city keeps its walls; {name} keeps a war.',
+    failure:
+      'The withdrawal becomes a rout before it becomes a march, and the gates open behind it.',
+  },
+  aftermathConfig: {
+    branchOnStep: 1,
+    variants: {},
+    fallback: {
+      overview:
+        'Most sieges are not broken by the defenders. They are broken by the roads behind the besiegers, ' +
+        'and by whoever thought to cut them. {name} commanded the army that discovered this from the wrong side.',
+      changes: [
+        {
+          id: 'siege_lifted_command_standing',
+          kind: 'reputation',
+          title: 'The Siege That Failed',
+          detail:
+            'An army that withdraws intact has lost a siege. An army that comes apart withdrawing has lost itself.',
+          polarity: 'mixed',
+        },
+      ],
+      reactionPrompt: 'What does the god take from the broken siege?',
+      reactions: [
+        {
+          id: 'siege_lifted_withdrew_whole',
+          label: 'The walls held. The army did too.',
+          intent:
+            '{name} spent the siege and kept the instrument. ' +
+            'A commander who can call off their own campaign is rarer than one who can start it.',
+          effects: [
+            { kind: 'reputation_tally', key: 'army.command.cohesion_held', delta: 2 },
+            {
+              kind: 'recent_event',
+              message: '{name} lifts the siege and brings the column away intact.',
+              significance: 0.7,
+            },
+          ],
+        },
+        {
+          id: 'siege_lifted_starved_out',
+          label: 'The besiegers were the ones being starved.',
+          intent:
+            'Someone cut the roads and let hunger do the work that assault could not. ' +
+            'The lesson is legible to everyone who watched, and it is about supply, not about walls.',
+          effects: [
+            {
+              kind: 'encounter_seed',
+              templateId: 'army.threshold.desertion',
+              delayTicks: 6,
+              priority: 0.9,
+              seedLabel: 'The siege broke from hunger, and the column that walked away from it is still hungry.',
+            },
+          ],
+          closeAfterSelection: true,
+        },
+      ],
+    },
+  },
+};
+
 // ─── All Army Templates ─────────────────────────────────────────────────
 
 export const ARMY_THRESHOLD_TEMPLATES: readonly UnifiedActionTemplate[] = [
@@ -1039,9 +1340,16 @@ export const ARMY_THRESHOLD_TEMPLATES: readonly UnifiedActionTemplate[] = [
   ARMY_THRESHOLD_DISBANDMENT_TEMPLATE,
 ];
 
+/** THR-626 — supply-web anomalies. Seeded by `phaseArmySupply`, not pool-drawn. */
+export const ARMY_SUPPLY_TEMPLATES: readonly UnifiedActionTemplate[] = [
+  ARMY_SUPPLY_FORAGE_TEMPLATE,
+  ARMY_SUPPLY_SIEGE_LIFTED_TEMPLATE,
+];
+
 export const ARMY_ENCOUNTER_TEMPLATES: readonly UnifiedActionTemplate[] = [
   ARMY_RAISE_TEMPLATE,
   ...ARMY_THRESHOLD_TEMPLATES,
+  ...ARMY_SUPPLY_TEMPLATES,
   REFUGEE_AFTERMATH_TEMPLATE,
 ];
 
