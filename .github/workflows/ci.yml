@@ -272,6 +272,16 @@ jobs:
       - name: Impediment id uniqueness
         run: npm run check:impediment-ids
 
+      # THR-988. Every prose copy of the docs-only predicate lives in a doc, so the
+      # PR that breaks one is a docs PR — which skips `Test · Typecheck · Build` by
+      # design. A guard living only in `npm test` would never see the change that
+      # broke it; it would redden the next unrelated code PR instead. This job is
+      # the only place a docs PR is actually gated, so the check belongs here.
+      # `docs-code-decoupling.test.ts` calls the same function for the code
+      # direction (a PR editing ci.yml or the constants themselves).
+      - name: Docs-only predicate copies agree
+        run: npm run check:predicate-copies
+
       - name: Generated artifact freshness
         run: npm run check:generated-freshness
 
