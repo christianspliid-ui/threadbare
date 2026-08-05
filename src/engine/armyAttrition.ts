@@ -14,6 +14,11 @@ import type { GameState } from '../types/gameState';
 import type { ArmyState } from '../types/army';
 import { getArmyTerrainCost } from './armyMovement';
 import { emitTrace } from './traceBuffer';
+import { deriveSupplyTier, readArmySupply, readArmySupplyMax } from './armySupply';
+import {
+  STRAINED_SUPPLY_ATTRITION_PENALTY,
+  STARVING_SUPPLY_ATTRITION_PENALTY,
+} from '../data/army-supply-config';
 
 // ─── Constants ───────────────────────────────────────────────────────────
 
@@ -31,6 +36,18 @@ export const UNDERFUNDED_ATTRITION_PENALTY = 1.5;
 
 /** Additional Cohesion loss per tick when army occupies a monster-infested hex (active lair present) */
 export const MONSTER_TERRITORY_ATTRITION = 1.2;
+
+/**
+ * THR-626 — additional Cohesion loss per tick by supply tier. `supplied` is
+ * deliberately 0: a fed army pays nothing, so the shipped attrition arithmetic
+ * is unchanged for every army the supply web has not starved. That keeps this an
+ * additive coupling (NFP #6) rather than a retune of TB-073's balance.
+ */
+export const SUPPLY_ATTRITION_PENALTY = {
+  supplied: 0,
+  strained: STRAINED_SUPPLY_ATTRITION_PENALTY,
+  starving: STARVING_SUPPLY_ATTRITION_PENALTY,
+} as const;
 
 /** Cohesion threshold percentages (fraction of max) */
 export const COHESION_THRESHOLDS = {
@@ -89,6 +106,12 @@ export function phaseArmyAttrition(state: GameState): void {
         ? hasActiveLairAtHex(state, locationId)
         : false;
 
+      // THR-626: hunger is a separate axis from pay. `underfunded` is the
+      // faction failing to *pay* the army; `unsupplied` is the trade web failing
+      // to *feed* it. A rich faction whose roads are cut still starves, which is
+      // the state the supply coupling exists to make reachable.
+      const supplyTier = deriveSupplyTier(readArmySupply(armyState), readArmySupplyMax(armyState));
+
       // Calculate attrition
       const terrainCost = getArmyTerrainCost(terrain);
       const attritionSources = {
@@ -97,12 +120,14 @@ export function phaseArmyAttrition(state: GameState): void {
         offRoad: isOnRoad ? 0 : OFF_ROAD_ATTRITION_PENALTY,
         underfunded: isUnderfunded ? UNDERFUNDED_ATTRITION_PENALTY : 0,
         monsterTerritory: hasMonsterTerritory ? MONSTER_TERRITORY_ATTRITION : 0,
+        unsupplied: SUPPLY_ATTRITION_PENALTY[supplyTier],
       };
       const totalAttrition = attritionSources.base
         + attritionSources.terrain
         + attritionSources.offRoad
         + attritionSources.underfunded
-        + attritionSources.monsterTerritory;
+        + attritionSources.monsterTerritory
+        + attritionSources.unsupplied;
 
       const cohesionBefore = armyState.cohesion;
       const cohesionAfter = Math.max(0, cohesionBefore - totalAttrition);

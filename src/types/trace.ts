@@ -307,6 +307,9 @@ export type TraceCategory =
   // Route events — cargo manifests materialize encounters (THR-669)
   | 'route_event_scan'
   | 'route_event_seeded'
+  // Army supply — provisions ride trade conduits (THR-626)
+  | 'army_supply_scan'
+  | 'army_supply_seeded'
   // Economic power — monopoly resolution + sphere drift (THR-617)
   | 'monopoly_transition'
   | 'economic_power_scan'
@@ -603,6 +606,9 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   // Route events (THR-669)
   'route_event_scan',
   'route_event_seeded',
+  // Army supply (THR-626)
+  'army_supply_scan',
+  'army_supply_seeded',
   // Economic power (THR-617)
   'monopoly_transition',
   'economic_power_scan',
@@ -2064,6 +2070,9 @@ export type TraceEntry =
   // Route event traces (THR-669)
   | RouteEventScanTrace
   | RouteEventSeededTrace
+  // Army supply traces (THR-626)
+  | ArmySupplyScanTrace
+  | ArmySupplySeededTrace
   // Economic power traces (THR-617)
   | MonopolyTransitionTrace
   | EconomicPowerScanTrace
@@ -3052,6 +3061,40 @@ export interface RouteEventSeededTrace extends TraceBase {
   eventKind: 'ambush' | 'toll' | 'embargo';
   templateId: string;
   targetAgentId: string;
+}
+
+/**
+ * Trace: one aggregate army-supply scan (THR-626). One per scan tick regardless
+ * of army count — per-army detail rides `supplyLines`, which stays small because
+ * armies are faction-scale and few.
+ */
+export interface ArmySupplyScanTrace extends TraceBase {
+  category: 'army_supply_scan';
+  armiesScanned: number;
+  cutOff: number;
+  strained: number;
+  starving: number;
+  seedsPlanted: number;
+  supplyLines: ReadonlyArray<{
+    armyId: string;
+    hostId: string | null;
+    hops: number | null;
+    threatened: boolean;
+    throughput: number;
+    supplyBefore: number;
+    supplyAfter: number;
+    tier: 'supplied' | 'strained' | 'starving';
+  }>;
+}
+
+/** Trace: a starving-army anomaly materialized into an encounter seed (THR-626). */
+export interface ArmySupplySeededTrace extends TraceBase {
+  category: 'army_supply_seeded';
+  armyId: string;
+  anomaly: 'forage' | 'mutiny' | 'siege_lifted';
+  templateId: string;
+  targetAgentId: string;
+  supplyTier: 'supplied' | 'strained' | 'starving';
 }
 
 // ═══════════════════════════════════════════════════════════════════

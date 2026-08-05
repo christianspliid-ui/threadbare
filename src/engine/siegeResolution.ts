@@ -15,6 +15,8 @@
 import type { GameState } from '../types/gameState';
 import type { BattleState } from '../types/battle';
 import type { ArmyState } from '../types/army';
+import { hasReliefLine } from './armySupply';
+import { SIEGE_SUPPLIED_DEFENDER_STARVATION_FACTOR } from '../data/army-supply-config';
 import {
   SIEGE_INITIAL_INTERVAL,
   SIEGE_ACCELERATION_RATE,
@@ -345,9 +347,22 @@ export function tickSiege(state: GameState, siegeNodeId: string): void {
   }
 
   // 3. Starvation check
+  //
+  // THR-626 — the provisions *source* is now the trade web, not a fixed clock.
+  // TB-073 shipped this as a self-contained countdown that fired at a constant
+  // elapsed tick no matter what the world was doing; the notables plan deferred
+  // the coupling here explicitly ("THR-626 later swaps the provisions source to
+  // the trade web"). A settlement still connected to a fed, faction-controlled
+  // host holds out proportionally longer — so cutting the roads *before*
+  // investing the walls is now the correct siege, and a besieger who skips that
+  // step pays for it in the one currency a siege spends: time.
   const starvationFired = siegeNode.properties.starvationFired as boolean;
   let starvationSpotlightFired = false;
-  if (ticksElapsed >= SIEGE_STARVATION_TICK && !starvationFired) {
+  const defenderSupplied = hasReliefLine(state, bs.settlementId);
+  const starvationTick = defenderSupplied
+    ? SIEGE_STARVATION_TICK * SIEGE_SUPPLIED_DEFENDER_STARVATION_FACTOR
+    : SIEGE_STARVATION_TICK;
+  if (ticksElapsed >= starvationTick && !starvationFired) {
     // Starvation shifts momentum toward attacker
     momentumShift += 1;
     starvationSpotlightFired = true;

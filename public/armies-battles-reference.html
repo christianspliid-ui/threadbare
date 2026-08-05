@@ -29,10 +29,21 @@
     word "quintessence" for both; THR-614 renamed the army field to cohesion to end the
     collision — the field is now armyState.cohesion / cohesionMax throughout.
   - Attrition (phaseArmyAttrition) is deterministic, no PRNG: base + terrain + off-road +
-    underfunded + monster-territory. Crosses four one-way thresholds (strained 70% → supply
-    crisis, weakened 50% → desertion, critical 30% → mutiny, collapse 10% → disband encounter).
-    Q hits 0 → force-disband. "Underfunded" is a simple faction prosperity < 0.2 heuristic,
-    NOT a real treasury — honest DESIGN simplification.
+    underfunded + monster-territory + unsupplied. Crosses four one-way thresholds (strained
+    70% → supply crisis, weakened 50% → desertion, critical 30% → mutiny, collapse 10% →
+    disband encounter). Q hits 0 → force-disband. "Underfunded" is a simple faction prosperity
+    < 0.2 heuristic, NOT a real treasury — honest DESIGN simplification.
+  - Supply (THR-626, phaseArmySupply) is a SEPARATE axis from underfunded: underfunded is the
+    faction failing to PAY, unsupplied is the trade web failing to FEED. A rich faction whose
+    roads are cut still starves. Each scan (4 ticks) a bounded BFS over road + trades_with
+    conduits finds the nearest faction-CONTROLLED location whose resourceBalance clears
+    ARMY_SUPPLY_HOST_MIN_BALANCE; throughput decays per hop and is multiplied by
+    ARMY_SUPPLY_THREATENED_PENALTY when any hop is a `threatened` route (routeEvents' banditry
+    flag). No units move — pull-derived, never token-pushed. Larder is private; supplyTier
+    (supplied | strained | starving) is the ONLY read surface. Anomalies materialize as
+    PendingEncounterSeeds: strained → army.supply.forage, starving → army.threshold.mutiny
+    (SHIPPED content that previously had no spawn path at all), starving + besieging →
+    army.supply.siege_lifted.
   - Battle detection: hostile = DIFFERENT FACTIONS (battleResolution "simplified — no alliance
     system yet"). Flag DESIGN. Two hostile armies at a hex → field battle; an army at a
     hostile settlement → siege. Momentum tug-of-war, resolution at |momentum| >= 8, max 5
@@ -42,7 +53,13 @@
     is IMPL: destruction severity minor/major/total, commander fate retreated/captured/killed,
     settlement prosperity loss, refugees, sphere-pressure erosion.
   - Sieges (siegeResolution): accelerating pacing, wall fortification favors defenders,
-    starvation at tick 15, regional encounters pulled in within hex range 5. IMPL.
+    regional encounters pulled in within hex range 5. IMPL. Starvation was a self-contained
+    clock at a fixed tick 15; THR-626 swapped the provisions SOURCE to the trade web — a
+    defender with an intact, unthreatened relief line to ANOTHER friendly host holds out
+    SIEGE_SUPPLIED_DEFENDER_STARVATION_FACTOR (2) times longer. hasReliefLine deliberately
+    does NOT count the besieged city feeding itself: a besieged city is nearly always a
+    stocked, controlled location, so a self-host check answers "supplied" right up until it
+    doesn't, which is the fixed clock this replaces. Cut the roads before investing the walls.
   - Lairs (lairSeeding + lairEscalation): seeded at worldgen by danger zone density; every 25
     ticks emit sphere pressure, upgrade minor→major (named elite, 30t) → legendary (monster
     faction, 60t), spread to adjacent wilderness/borderland hexes, and cleared lairs reinfest.
@@ -225,6 +242,10 @@
       <div class="tier"><span class="name">Host</span><span class="desc"><span class="who">A great horde.</span> The largest force — hits hardest, crawls slowest, costs the most to keep fed.</span></div>
     </div>
     <p>Every host is <span class="term">wearing down</span> from the day it is raised. Marching costs it; hard terrain costs it more; camping off the roads and going unfed cost it most of all. You never see the number that measures a host's condition — you see the <em>consequences</em> when it slips too far, delivered as encounters: a supply crisis, then desertion, then open mutiny, and finally the host dissolving into a scatter of broken men. A war that drags on does not need to be lost in the field; a host left too long in the wild will simply come apart.</p>
+
+    <p>And an army eats. Not from its own baggage train for long, but along the <span class="term">roads and trade routes</span> that run back to the towns its faction holds — and only from towns that have food to spare. That line is the thing a war is actually fought over. Stretch it too far and it thins with every league; let bandits settle on it and it is strangled rather than cut; take the towns at the far end into famine, or break the road entirely, and the host is simply <span class="term">cut off</span>. What follows is not a number going down. It is foraging parties going out into somebody's farmland and the question of how they behave there; then, if nothing changes, the men deciding for themselves. A besieging army can starve before the city it surrounds does, and when it does, the siege lifts — which is how most sieges in most histories actually ended.</p>
+
+    <p>The consequence worth holding onto: <strong>you can break an army without ever touching it.</strong> Sour the harvest at the town that feeds it, or set bandits on the road that carries the grain, and the host in the field comes apart on its own. War is not only answered with war. A god of gold or shadow has a way into a conflict that a god of iron would never think to use.</p>
     <div class="callout red">
       <div class="callout-title">The land is the third army</div>
       <p>An army that marches through mountains in the rain, far from any road and with an empty treasury behind it, is bleeding strength every single turn — and if its territory is haunted by monsters, it bleeds faster still. You do not have to meet a host in battle to defeat it. Cut its roads, ruin the faction that pays it, or simply let the wilderness do the work.</p>
@@ -297,9 +318,13 @@
 
       <h3>Attrition &amp; threshold encounters <span class="flag impl">IMPL</span> <span class="flag design">DESIGN</span></h3>
       <ul>
-        <li><code>phaseArmyAttrition(state)</code> is deterministic (no PRNG). Per tick a host loses <code>ARMY_BASE_ATTRITION 0.5</code> + terrain (<code>terrainCost × TERRAIN_ATTRITION_FACTOR 0.3</code>) + <code>OFF_ROAD_ATTRITION_PENALTY 0.8</code> when not on a road + <code>UNDERFUNDED_ATTRITION_PENALTY 1.5</code> when the faction can't pay + <code>MONSTER_TERRITORY_ATTRITION 1.2</code> when an active lair sits on the hex. Clamped to 0.</li>
+        <li><code>phaseArmyAttrition(state)</code> is deterministic (no PRNG). Per tick a host loses <code>ARMY_BASE_ATTRITION 0.5</code> + terrain (<code>terrainCost × TERRAIN_ATTRITION_FACTOR 0.3</code>) + <code>OFF_ROAD_ATTRITION_PENALTY 0.8</code> when not on a road + <code>UNDERFUNDED_ATTRITION_PENALTY 1.5</code> when the faction can't pay + <code>MONSTER_TERRITORY_ATTRITION 1.2</code> when an active lair sits on the hex + <code>SUPPLY_ATTRITION_PENALTY[supplyTier]</code> (THR-626: <code>supplied 0</code>, <code>strained 0.6</code>, <code>starving 2.0</code>). Clamped to 0. The <code>supplied</code> term is deliberately <code>0</code> so the shipped TB-073 arithmetic is unchanged for every army the supply web has not starved — an additive coupling, not a rebalance.</li>
         <li>Four one-way <code>COHESION_THRESHOLDS</code> (fractions of max) fire encounters as strength drops: <code>strained 0.70 → army.threshold.supply_crisis</code>, <code>weakened 0.50 → army.threshold.desertion</code>, <code>critical 0.30 → army.threshold.mutiny</code>, <code>collapse 0.10 → army.threshold.disbandment</code>. One per tick, each fires once (tracked in <code>thresholdsFired</code>). Cohesion 0 → <code>disbandArmy</code> removes the node.</li>
         <li><strong>DESIGN — "underfunded" is a heuristic, not a treasury:</strong> <code>checkUnderfunded</code> returns true when the faction's <code>prosperity &lt; 0.2</code> (or no faction). There is no per-tick gold ledger deducting <code>maintenanceCost</code> yet — the maintenance constants exist on <code>armyState</code> but the funding check is a prosperity proxy. Flag it; do not describe a real war chest.</li>
+        <li><strong>IMPL — supply is a second, independent axis (THR-626):</strong> <code>phaseArmySupply</code> (post-economy, <code>afterPhase: ['route_events']</code>, every <code>ARMY_SUPPLY_SCAN_INTERVAL_TICKS 4</code>) resolves each army's supply line with a bounded BFS over <code>road</code> + <code>trades_with</code> conduits, capped at <code>ARMY_SUPPLY_MAX_HOPS 4</code>, to the nearest location the army's own faction <code>controls</code> whose <code>resourceBalance ≥ ARMY_SUPPLY_HOST_MIN_BALANCE −0.2</code>. Throughput is <code>ARMY_SUPPLY_BASE_THROUGHPUT 30 × ARMY_SUPPLY_HOP_DECAY 0.7^hops</code>, multiplied by <code>ARMY_SUPPLY_THREATENED_PENALTY 0.4</code> if any hop carries <code>threatened</code> (banditry <em>strangles</em> a line, it does not sever it). The larder moves toward that number against <code>ARMY_SUPPLY_CONSUMPTION</code> (warband 4 / regiment 9 / host 18 per scan) and is clamped to <code>[0, ARMY_SUPPLY_MAX 100]</code>. <strong>Nothing is simulated in transit</strong> — pull-derived, never token-pushed; there are no wagons.</li>
+        <li><strong>Two axes, not one:</strong> <code>underfunded</code> is the faction failing to <em>pay</em>; <code>unsupplied</code> is the trade web failing to <em>feed</em>. A rich faction whose roads are cut still starves, which is the state this coupling exists to make reachable. Severing a <code>trades_with</code> route is therefore an economic act with a military consequence — a Shadow/Gold answer to an Iron problem.</li>
+        <li><code>ArmySupplyTier</code> (<code>supplied | strained | starving</code>, thresholds <code>0.5</code> / <code>0.2</code> of max) is the <strong>only</strong> read surface; the larder scalar is private and never rendered. Fail-soft direction is load-bearing: an army raised before this system (no <code>supply</code> field) reads <code>supplied</code>, never <code>starving</code> — never provisioned is not the same as starving.</li>
+        <li>Anomalies materialize as <code>PendingEncounterSeed</code>s through the shipped seed system (the web proposes, the curator disposes — nothing interrupts the player): <code>strained → army.supply.forage</code>, <code>starving → army.threshold.mutiny</code>, <code>starving</code> + besieging <code>→ army.supply.siege_lifted</code>. Bounded by <code>ARMY_SUPPLY_MAX_SEEDS_PER_SCAN 2</code> and one live seed per army. <strong>Note <code>army.threshold.mutiny</code> is shipped THR-104 content that had no spawn path at all</strong> — <code>THRESHOLD_ENCOUNTER_TEMPLATES</code> in <code>armyAttrition.ts</code> has zero non-test consumers, so cohesion thresholds only ever produced a <em>notification</em>. THR-626 gives one of the four its first real trigger; the other three remain unspawned.</li>
       </ul>
 
       <h3>Field battles — detection, momentum, resolution <span class="flag impl">IMPL</span> <span class="flag design">DESIGN</span></h3>
@@ -319,7 +344,7 @@
       <h3>Sieges <span class="flag impl">IMPL</span></h3>
       <ul>
         <li><code>siegeResolution.ts</code> reuses the battle node with <code>battleType: 'siege'</code>. Pacing accelerates: spotlight interval = <code>max(1, SIEGE_INITIAL_INTERVAL 5 − floor(elapsed / SIEGE_ACCELERATION_RATE 6))</code>. Defenders open with <code>SIEGE_DEFENDER_MOMENTUM_BONUS 2</code> and bleed less (<code>SIEGE_COMBAT_ATTRITION_DEFENDER 0.5</code> vs attacker <code>1.0</code>). Fortification multiplies effective defender size (<code>FORTIFICATION_BASIC 10</code>, <code>FORTIFICATION_GRAND 30</code>, <code>PREPARED_DEFENSE_MULTIPLIER 3</code>, capped <code>TACTICAL_MAX_MULTIPLIER 20</code>; a breach drops it to <code>BREACH_FORTIFICATION_REDUCTION 0.3</code>).</li>
-        <li>Resolution at <code>|momentum| ≥ SIEGE_RESOLUTION_THRESHOLD 12</code> or <code>SIEGE_MAX_DURATION 40</code> ticks. A starvation beat fires once at <code>SIEGE_STARVATION_TICK 15</code>. Regional encounters (<code>SIEGE_REGIONAL_TEMPLATES</code>, 14 siege-encounter entries total) pull in entities within <code>SIEGE_REGIONAL_ENCOUNTER_RANGE 5</code> hexes; tiers resolve via <code>attentionTier</code> with a <code>retinue</code> court-position fallback so siege beats still surface.</li>
+        <li>Resolution at <code>|momentum| ≥ SIEGE_RESOLUTION_THRESHOLD 12</code> or <code>SIEGE_MAX_DURATION 40</code> ticks. A starvation beat fires once at <code>SIEGE_STARVATION_TICK 15</code> — or at <code>15 × SIEGE_SUPPLIED_DEFENDER_STARVATION_FACTOR 2</code> when <code>hasReliefLine(settlementId)</code> holds (THR-626, swapping the provisions <em>source</em> to the trade web as the notables plan deferred). <code>hasReliefLine</code> deliberately excludes the self-host case: a besieged city is nearly always a stocked, faction-controlled location, so asking whether it can feed <em>itself</em> answers "yes" until the moment it doesn't — precisely the fixed clock being replaced. It asks instead whether anything can still get <em>in</em>, and a <code>threatened</code> line does not count. The consequence for play: cut the roads <em>before</em> investing the walls. Regional encounters (<code>SIEGE_REGIONAL_TEMPLATES</code>, 14 siege-encounter entries total) pull in entities within <code>SIEGE_REGIONAL_ENCOUNTER_RANGE 5</code> hexes; tiers resolve via <code>attentionTier</code> with a <code>retinue</code> court-position fallback so siege beats still surface.</li>
       </ul>
 
       <h3>Lairs — seeding, escalation, reinfestation <span class="flag impl">IMPL</span></h3>

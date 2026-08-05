@@ -482,6 +482,17 @@
   </div>
 
   <div class="section">
+    <h2>Spotlight — The road that feeds the war
+      <span class="lead">Audited 2026-08-05 (audit-on-touch, THR-626). The economy and the war system shared a map and no arrow.</span>
+    </h2>
+
+    <ul class="contracts">
+      <li class="live"><span class="flow">Location resource balance + route <code>threatened</code> flag <span class="arrow">⟶</span> Army supply — an army eats from the towns its faction holds, along the roads that reach them</span><span class="chip live">LIVE</span>
+        <span class="note">THR-626, and it is the <em>second</em> row this map owes to the same deferral: the 2026-07-22 Flow Web extraction checkpoint deferred a general stocks/flows primitive and named army supply as one of two re-open triggers, on the explicit condition that its design "open by comparing against <code>tradeRoute.ts</code> + <code>routeEvents.ts</code> and either reuse or extract — not green-field a third stocks/flows implementation." <strong>It reuses.</strong> Conduits are the shipped <code>trades_with</code> edges including the <code>threatened</code> flag <code>routeEvents.ts</code> already maintains; host stock is the same <code>resourceBalance</code> the prosperity model reads; anomalies materialize as <code>PendingEncounterSeed</code>s exactly as route events do. The only addition is a per-army scalar, which is a stock on its host — the shape the primitive already sanctions. <strong>The mechanism is the node-prop, and there is deliberately no bridge function to name</strong> — the same trap the two rows below record. A supply line is not a durable relationship anyone writes: it is a <em>derived path over relationships that already exist</em>, recomputed each scan by <code>resolveSupplyLine</code> on the consumer's side, which is precisely why severing a trade route is felt at the front rather than requiring a war-system edit. <strong>The design payload is that supply is a second axis, not a rename of the first:</strong> <code>underfunded</code> is the faction failing to <em>pay</em>, <code>unsupplied</code> is the web failing to <em>feed</em>, so "rich faction, cut roads" is a reachable state — and it is the state that makes cutting a road a way to break a host you never fight, a Gold/Shadow answer to an Iron problem. Banditry multiplies throughput by 0.4 rather than zeroing it, so a threatened line is <em>strangled</em> rather than cut, leaving a long degrading middle in which the army still acts. <code>supplied</code> costs zero attrition by construction, keeping the coupling additive over TB-073's shipped balance instead of a retune. <strong>Non-vacuous by measured values, not symbols:</strong> seed 42 / medium, the live army reads <code>strained</code> at 46/100 with a null host by tick 120 and <code>starving</code> at 0/100 by tick 132, where the scan trace plants <code>army.supply.siege_lifted</code>; confirmed on the served browser bundle at 1920×1080 with cohesion dragged 90% → 47% by the coupled term. <strong>Known gap, filed rather than absorbed:</strong> the same unguarded <code>s.seedId.startsWith(...)</code> read that silently disabled this system's own materialization survives in <code>routeEvents.ts</code>, where it throws outright wherever a trade web exists (THR-992).</span></li>
+    </ul>
+  </div>
+
+  <div class="section">
     <h2>Spotlight — The land and the altar
       <span class="lead">Audited 2026-07-28 (audit-on-touch, THR-618). Two economies drawn on the same map that had never once touched.</span>
     </h2>

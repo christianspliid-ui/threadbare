@@ -577,6 +577,34 @@ export const CONTRACTS: readonly Contract[] = [
     deferralTicket: 'THR-725',
   },
   {
+    id: 'economy-provisions-armies',
+    producerSystem: 'Mortal Economy & Prosperity',
+    consumerSystem: 'War, Armies & Battles',
+    intent:
+      'An army eats from the towns its faction holds, along the roads and trade routes that reach them. Sever the line — or let bandits settle on it, or let the far end fall into famine — and the host in the field starves without anyone fighting it. This is what makes cutting a supply route an economic act with a military consequence, and gives a Gold/Shadow god a way into a war that a god of Iron would not think to use.',
+    ulTerms: ['Stock Tier'],
+    // Two values cross this boundary, and both are read on the CONSUMER's side by
+    // `resolveSupplyLine` walking the producer's own state — there is no bridge
+    // function to name, which is deliberate: a supply line is a *derived path over
+    // relationships that already exist*, not a durable edge someone writes.
+    //   1. `resourceBalance` — the aggregate a location carries after
+    //      `phaseResourceStockTiers`, gating whether a town can host an army at all.
+    //   2. `threatened` — the flag `routeEvents.ts` sets when banditry materializes
+    //      on a `trades_with` edge; it multiplies throughput rather than zeroing it,
+    //      so bandits STRANGLE a line instead of cutting it.
+    // Declaring the consumer's own function names here would pin the row LEAKED
+    // forever, for the reason `economy-sustains-essence-sources` records above: the
+    // producing phases have no reason to name a war-system reader.
+    mechanism: { kind: 'node-prop', symbols: ['resourceBalance', 'threatened'] },
+    writeSites: ['src/engine/phases/resourceStockTiers.ts', 'src/engine/phases/routeEvents.ts'],
+    readSites: ['src/engine/armySupply.ts'],
+    verifiedLive: {
+      date: '2026-08-05',
+      evidence:
+        'THR-626: driven end-to-end in a real world, not a fixture. `--seed 42 --map medium`, tick 120: the one live army ("The Civic Guard — Host") resolves `supplyHostId: null` with larder 46/100 and tier `strained`; by tick 132 it is `starving` at 0/100 and the scan trace reads `army-supply scan: 1 armies, 1 cut off, 0 strained, 1 starving, 1 seeded`, planting `army.supply.siege_lifted` because that army is the attacker in an active siege. Browser-confirmed on the served bundle at 1920×1080: `__DEBUG.getArmies()` returns `supplyTier: "starving"`, `supply: 10`, `supplyHost: null`, with cohesion visibly dragged 90% → 47% by the coupled `unsupplied` attrition term. Values and the consequence, not just symbols.',
+    },
+  },
+  {
     id: 'economy-sustains-essence-sources',
     producerSystem: 'Mortal Economy & Prosperity',
     consumerSystem: 'Essence & Divine Economy',

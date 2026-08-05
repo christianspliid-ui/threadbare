@@ -99,6 +99,12 @@ const EXPECTED_PHASE_IDS: readonly string[] = [
   // places it here — any post-economy position is correct (it reads the tick's
   // fresh manifests/stock tiers and only plants seeds consumed later in the tick).
   'route_events',
+  // Army supply (THR-626): `afterPhase: ['route_events']` so supply lines read the
+  // tick's fresh `threatened` flags — banditry planted this tick strangles the line
+  // this tick. That constraint alone fixes its position: it is alphabetically first
+  // among the remaining post-economy phases, so Kahn's tie-break emits it the moment
+  // route_events releases it, i.e. immediately after.
+  'army_supply',
   // Schism resolution runs after faction_actions so it sees same-tick dissent updates (THR-430).
   'schism_resolution',
   'secrets_favors',

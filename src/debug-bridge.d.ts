@@ -1012,6 +1012,21 @@ export interface DebugBridge {
     raisedTick: number;
     ticksActive: number;
     maintenanceCost: number;
+    /**
+     * THR-626 — provisioning state from the supply web. `supplyTier` is the read
+     * surface every non-debug surface uses; `supply`/`supplyMax` are the raw
+     * larder, exposed here because debug is where numbers belong. An army the
+     * supply phase has not scanned yet reads `'supplied'` with null scalars —
+     * never provisioned is not the same as starving.
+     */
+    supplyTier: 'supplied' | 'strained' | 'starving';
+    supply: number | null;
+    supplyMax: number | null;
+    /** Location currently provisioning this army; null when the line is cut. */
+    supplyHostId: string | null;
+    supplyHost: string | null;
+    /** Conduit hops to that host; null when cut off. */
+    supplyHops: number | null;
   }>;
 
   /**
