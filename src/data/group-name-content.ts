@@ -9,6 +9,8 @@
  * appears here by design.
  */
 
+import type { SphereName } from '../types/index';
+
 /** Pattern ids the generator can render. Weighted selection lives in the generator. */
 export type GroupNamePattern =
   | 'the_adjective_nouns'
@@ -82,18 +84,41 @@ export const GROUP_REFORMED_NAME_PATTERNS: readonly string[] = [
 ];
 
 /**
- * Sphere-flavored adjectives, used when Draw Together caused the formation and
- * the casting ascendant's sphere is known. Keys are sphere ids.
+ * Sphere-flavored adjectives, used when a divine verb caused the formation and the
+ * casting ascendant's sphere is known — Draw Together and Reunite both pass one.
+ *
+ * Keyed by **sphere id**, and typed `Record<SphereName, …>` so the compiler refuses a
+ * key the engine cannot produce. Until THR-770 the table was typed `Record<string, …>`
+ * and six of its eight keys (`hunger`, `blood`, `stone`, `tide`, `flame`, `dusk`) were
+ * an older cosmology's vocabulary that no sphere id matches — only `mind` and `spirit`
+ * overlapped. The read site's `?? []` fallback made that silent: a company founded
+ * under any other alignment simply drew no sphere adjective, with no warning. The
+ * closed key set is pinned by `group-name-content.test.ts`; the type is the other half
+ * of the same guard, so a renamed sphere fails to compile rather than going quiet.
+ *
+ * Foundation spheres are included because a caster's primary genuinely can be one —
+ * `hunger-catalog.ts` carries `sphereAlignment: { primary: 'light' }`.
+ *
+ * Where the retired vocabulary had a real home it was salvaged rather than rewritten:
+ * `stone`'s words moved to `matter`, `flame`'s to `energy`, `dusk`'s to `entropy` —
+ * those are exactly the spheres their reaches map to under `REACH_TO_SPHERE`, which is
+ * the drift the old keys were evidence of.
  */
-export const GROUP_NAME_SPHERE_ADJECTIVES: Record<string, readonly string[]> = {
-  hunger: ['Famished', 'Wanting'],
+export const GROUP_NAME_SPHERE_ADJECTIVES: Record<SphereName, readonly string[]> = {
+  // Foundation
+  chaos: ['Unruled', 'Scattering'],
+  order: ['Measured', 'Ranked'],
+  light: ['Bright', 'Unshuttered'],
+  darkness: ['Starless', 'Nightgiven'],
+  // Creation
+  force: ['Unyielding', 'Breaking'],
+  matter: ['Unmoving', 'Deepset'],
+  energy: ['Kindled', 'Scorched'],
+  life: ['Kindred', 'Quickened'],
   mind: ['Reasoned', 'Lettered'],
   spirit: ['Ardent', 'Devout'],
-  blood: ['Kindred', 'Redhanded'],
-  stone: ['Unmoving', 'Deepset'],
-  tide: ['Turning', 'Saltbitten'],
-  flame: ['Kindled', 'Scorched'],
-  dusk: ['Lengthening', 'Dimlit'],
+  time: ['Turning', 'Hourworn'],
+  entropy: ['Lengthening', 'Dimlit'],
 };
 
 /**

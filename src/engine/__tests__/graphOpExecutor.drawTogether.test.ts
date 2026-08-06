@@ -134,3 +134,47 @@ describe('draw_together op', () => {
     expect(pullUntil(graph, 'a.solo')).toBe(TICK + DRAW_TOGETHER_DURATION_TICKS);
   });
 });
+
+/**
+ * Sphere flavor on the pull (THR-770).
+ *
+ * The company gathered by this verb takes its name flavor from the god who called it,
+ * but the company does not exist yet when the op fires — `runFormationScan` mints it
+ * later. So the caster's sphere rides on the *pulled mortals* and is read back off
+ * whichever member the scan gathers. Before THR-770 nothing carried it at all, which
+ * is why `GROUP_NAME_SPHERE_ADJECTIVES` was entirely dead for this verb regardless of
+ * how its keys were spelled.
+ */
+describe('draw_together — sphere flavor for the gathered company', () => {
+  const alignedGraph = (primary: string): WorldGraph => {
+    const graph = makeGraph();
+    graph.updateNode(ascendantId, { properties: { sphereAlignment: { primary } } });
+    return graph;
+  };
+  const pullSphere = (graph: WorldGraph, id: string): unknown =>
+    graph.getNode(id)?.properties.convergePullSphere;
+
+  it("stamps the caster's primary sphere on every mortal it pulls", () => {
+    const graph = alignedGraph('entropy');
+    expect(executeGraphOps(graph, draw('a.anchor'), ctx('a.anchor')).allSucceeded).toBe(true);
+    expect(pullSphere(graph, 'a.anchor')).toBe('entropy');
+    expect(pullSphere(graph, 'a.near')).toBe('entropy');
+  });
+
+  it('stamps no sphere on mortals it did not pull', () => {
+    const graph = alignedGraph('entropy');
+    executeGraphOps(graph, draw('a.anchor'), ctx('a.anchor'));
+    // Out of radius, and unthreaded — neither is gathered, so neither carries flavor.
+    expect(pullSphere(graph, 'a.far')).toBeUndefined();
+    expect(pullSphere(graph, 'a.unthreaded')).toBeUndefined();
+  });
+
+  it('fails soft on an unaligned caster — pull still lands, flavor is simply absent', () => {
+    // makeGraph's ascendant has no sphereAlignment at all. The gathering must not
+    // depend on flavor being available (NFP #4).
+    const graph = makeGraph();
+    expect(executeGraphOps(graph, draw('a.anchor'), ctx('a.anchor')).allSucceeded).toBe(true);
+    expect(pullUntil(graph, 'a.near')).toBe(TICK + DRAW_TOGETHER_DURATION_TICKS);
+    expect(pullSphere(graph, 'a.near')).toBeUndefined();
+  });
+});

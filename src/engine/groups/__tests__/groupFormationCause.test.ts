@@ -12,7 +12,12 @@ import { describe, it, expect } from 'vitest';
 import { WorldGraph } from '../../graph';
 import type { GameState } from '../../../types/gameState';
 import type { GraphNode } from '../../../types/graph';
-import { runFormationScan, isUnderConvergencePull, isAgentThreaded } from '../groupFormation';
+import {
+  runFormationScan,
+  isUnderConvergencePull,
+  isAgentThreaded,
+  convergencePullSphere,
+} from '../groupFormation';
 import { getAllGroups } from '../groupQueries';
 
 function makeState(graph: WorldGraph, tick = 10, ascendantId?: string): GameState {
@@ -127,5 +132,41 @@ describe('isAgentThreaded', () => {
     thread(graph, 'm', 'asc');
     expect(isAgentThreaded(graph, 'm', undefined)).toBe(false);
     expect(isAgentThreaded(graph, 'm', 'other')).toBe(false);
+  });
+});
+
+/**
+ * `convergencePullSphere` — the read half of THR-770's Draw Together flavor hook.
+ *
+ * The op stamps the caster's sphere on each pulled mortal; the scan reads it back off
+ * whichever member it gathered and hands it to the name generator.
+ */
+describe('convergencePullSphere', () => {
+  const member = (id: string, props: Record<string, unknown>): GraphNode =>
+    ({ id, type: 'actor', name: id, properties: { actorType: 'individual', ...props } }) as GraphNode;
+
+  it('reads the sphere off a member whose pull is still open', () => {
+    const members = [member('a', { convergePullUntilTick: 20, convergePullSphere: 'light' })];
+    expect(convergencePullSphere(members, 10)).toBe('light');
+  });
+
+  it('ignores a member whose pull has expired', () => {
+    // A stale stamp from an earlier, lapsed pull did not gather this company, so it
+    // must not colour the name — the same predicate that attributed the cause.
+    const members = [member('a', { convergePullUntilTick: 5, convergePullSphere: 'light' })];
+    expect(convergencePullSphere(members, 10)).toBeUndefined();
+  });
+
+  it('skips members with an open pull but no flavor, and finds a later one that has it', () => {
+    const members = [
+      member('a', { convergePullUntilTick: 20 }),
+      member('b', { convergePullUntilTick: 20, convergePullSphere: 'entropy' }),
+    ];
+    expect(convergencePullSphere(members, 10)).toBe('entropy');
+  });
+
+  it('returns undefined for an unaligned caster rather than throwing', () => {
+    expect(convergencePullSphere([member('a', { convergePullUntilTick: 20 })], 10)).toBeUndefined();
+    expect(convergencePullSphere([], 10)).toBeUndefined();
   });
 });
