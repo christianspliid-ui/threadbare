@@ -79,7 +79,7 @@ export const GROUP_COHESION_DEATH_DELTA = -0.15;
 /** Below this the fray-state drama pool activates (prose state `frayed`). */
 export const GROUP_FRAY_THRESHOLD = 0.4;
 
-/** Below this dissolution triggers; between it and fray the state reads `breaking`. */
+/** Below this dissolution triggers and the state reads `breaking`; between it and fray it reads `frayed`. */
 export const GROUP_DISSOLUTION_THRESHOLD = 0.15;
 
 /** At or above this the prose state is `bound` and the resolution bonus applies. */
