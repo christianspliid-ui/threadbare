@@ -4343,6 +4343,13 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
             onAcknowledgeAftermath={handleEncounterAcknowledgeAftermath}
             onAftermathReaction={handleEncounterAftermathReaction}
             onSelectAgent={handleAgentSelect}
+            onSelectEntity={(entityId, kind) =>
+              // THR-1004 — the UI Law's link half for non-person entities named
+              // on an aftermath chip. Routes to the same stub-modal path the
+              // thread list uses, so a faction or a reward opens its own sheet
+              // rather than the agent drawer.
+              setStubModalState({ nodeId: entityId, category: kind })
+            }
             onCommitNudges={handleCommitNudges}
             onShowOnMap={(col, row) => {
               if (hexMapRef.current) {

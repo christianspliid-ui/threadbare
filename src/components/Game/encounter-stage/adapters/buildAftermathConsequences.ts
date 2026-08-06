@@ -62,18 +62,40 @@
  *
  * Nothing here prints a magnitude. Chip sentences are authored prose; a toll is
  * stated in words, per the nudge-model surface rules.
+ *
+ * ## The sentence was not always prose — THR-1004
+ *
+ * That last paragraph was true of this module and false of the game. Roughly
+ * half the change set is **engine-derived** rather than authored, and those
+ * producers used to hand over debug-grade template literals (`toFixed(2)`, the
+ * raw tally key `star.positive`). This module rendered them faithfully, which
+ * is how two decimal places reached a mortal-facing chip. The fix is at the
+ * source — `engine/aftermathWords.ts` now owns every derived sentence — and the
+ * job here is the other half of the UI Law: a game concept named on a chip
+ * carries its **image**, its **tooltip**, and its **link** where a page exists.
+ *
+ * A producer declares what it named (`EncounterAftermathChange.concepts`)
+ * rather than the surface guessing from English. `applyConceptDecorations`
+ * attaches the tooltip/link; `resolveIcon` turns the first entity-bearing
+ * concept into the chip's tile. Both are fail-open: an undecorated concept
+ * still renders as text, and a chip with no resolvable entity draws its kind
+ * tag alone, exactly as it did before.
  */
 
 import type {
   EncounterAftermathChange,
   EncounterAftermathChangeKind,
   EncounterAftermathChangePolarity,
+  EncounterAftermathConceptRef,
   EncounterAftermathReaction,
 } from '../../../../types/unifiedAction';
 import type {
   EncounterStageConsequenceChipModel,
+  EncounterStageConsequenceIconModel,
   EncounterStageConsequenceKind,
   EncounterStageConsequenceTone,
+  EncounterStageNarrativeParagraph,
+  EncounterStageNarrativeSegment,
 } from '../types';
 
 /** Kind tag drawn on the chip. Uppercased at the data layer so the surface does not have to. */
@@ -146,6 +168,18 @@ export type ChipSentenceLinker = (
   text: string,
 ) => EncounterStageConsequenceChipModel['sentence'];
 
+/**
+ * Resolve a change's declared entity concept into the chip's icon.
+ *
+ * Injected rather than imported for the same reason `link` is: this module must
+ * stay free of graph and React imports. The adapter closes over the world graph
+ * and the entity-visual resolver; a host that passes nothing simply gets chips
+ * without icons, which is the fail-open behaviour (NFP #4).
+ */
+export type ChipIconResolver = (
+  concept: EncounterAftermathConceptRef,
+) => EncounterStageConsequenceIconModel | undefined;
+
 export interface BuildAftermathConsequencesArgs {
   /** The authored change set the ending resolved to. */
   changes: readonly EncounterAftermathChange[];
@@ -158,6 +192,73 @@ export interface BuildAftermathConsequencesArgs {
   enrich: (text: string) => string;
   /** Segment an enriched sentence into linkable parts. */
   link: ChipSentenceLinker;
+  /** THR-1004 — resolve a named entity concept to its chip tile. */
+  resolveIcon?: ChipIconResolver;
+}
+
+/**
+ * THR-1004 — decorate an already-linked sentence with the concepts its producer
+ * declared, so every game concept on a chip carries its tooltip and its link.
+ *
+ * Runs *after* `link()` rather than instead of it: the narrative linker owns
+ * cast and target names (which it finds by scanning), and the concept list owns
+ * the derived vocabulary (reaches, standing, factions, rewards) that no scan
+ * could find. A segment the linker already claimed is left alone — its entity
+ * link is the richer one, and re-splitting it would drop that link.
+ *
+ * Matching is a plain first-occurrence substring search, not a regex: concept
+ * text comes from the engine (a reach name, a faction name, an item name), so
+ * it is literal by construction and a regex would only add escaping bugs.
+ */
+export function applyConceptDecorations(
+  paragraph: EncounterStageNarrativeParagraph,
+  concepts: readonly EncounterAftermathConceptRef[] | undefined,
+): EncounterStageNarrativeParagraph {
+  if (!concepts || concepts.length === 0) return paragraph;
+
+  let segments: EncounterStageNarrativeSegment[] = [...paragraph.segments];
+
+  for (const concept of concepts) {
+    if (!concept.text) continue;
+    // Nothing to draw — a concept with neither a tooltip nor a page would only
+    // split a segment for no visible gain.
+    if (!concept.tooltipId && !concept.entityId) continue;
+
+    const next: EncounterStageNarrativeSegment[] = [];
+    let placed = false;
+
+    for (const segment of segments) {
+      // Already decorated by the linker (or by an earlier concept) — leave it.
+      if (placed || segment.referenceId || segment.entityId || segment.tooltipId) {
+        next.push(segment);
+        continue;
+      }
+      const at = segment.text.indexOf(concept.text);
+      if (at < 0) {
+        next.push(segment);
+        continue;
+      }
+      const before = segment.text.slice(0, at);
+      const after = segment.text.slice(at + concept.text.length);
+      if (before) next.push({ ...segment, text: before });
+      next.push({
+        text: concept.text,
+        emphasis: 'accent',
+        tooltipId: concept.tooltipId,
+        entityId: concept.entityId,
+        // Routes the click to the right sheet. Omitted when the concept names
+        // no visual kind, which leaves the segment on the agent path — the
+        // meaning an absent `entityKind` has always had.
+        entityKind: concept.visualKind,
+      });
+      if (after) next.push({ ...segment, text: after });
+      placed = true;
+    }
+
+    segments = next;
+  }
+
+  return { id: paragraph.id, segments };
 }
 
 /**
@@ -170,18 +271,24 @@ export interface BuildAftermathConsequencesArgs {
 export function buildAftermathConsequences(
   args: BuildAftermathConsequencesArgs,
 ): EncounterStageConsequenceChipModel[] {
-  const { changes, reactions, enrich, link } = args;
+  const { changes, reactions, enrich, link, resolveIcon } = args;
   const chips: EncounterStageConsequenceChipModel[] = [];
 
   for (const change of changes) {
     const kind = classifyChangeKind(change.kind, change.polarity);
     const id = `consequence-${change.id}`;
+    // THR-1004 — the UI Law. Concepts the producer declared get their tooltip
+    // and their link in the sentence; the first that names an entity with art
+    // becomes the chip's tile.
+    const sentence = applyConceptDecorations(link(id, enrich(change.detail)), change.concepts);
+    const iconConcept = change.concepts?.find(c => c.visualKind);
     chips.push({
       id,
       kind,
       kindLabel: CONSEQUENCE_KIND_LABELS[kind],
-      sentence: link(id, enrich(change.detail)),
+      sentence,
       tone: toneFor(kind, change.polarity),
+      icon: iconConcept && resolveIcon ? resolveIcon(iconConcept) : undefined,
     });
   }
 

@@ -28,6 +28,18 @@ import type {
 } from '../types/unifiedAction';
 import type { ActionStepOutcomeMetadata } from '../types/unifiedAction';
 import { applyEncounterAftermathReaction } from './encounterAftermath';
+import {
+  factionStandingSentence,
+  gateFollowOnSentence,
+  gateStateSentence,
+  growthSentence,
+  overviewHighlightPhrase,
+  reachDisplayName,
+  reputationSentence,
+  reputationTallySentence,
+  rewardSentence,
+  traitGrantedSentence,
+} from './aftermathWords';
 import type { GraphOp } from '../types/graphOp';
 import {
   progressUnifiedAction,
@@ -623,13 +635,6 @@ function hashString(input: string): number {
   return hash;
 }
 
-function titleCaseWords(raw: string): string {
-  return raw
-    .split(/[\s._-]+/)
-    .filter(Boolean)
-    .map(part => part[0] ? part[0].toUpperCase() + part.slice(1) : part)
-    .join(' ');
-}
 
 interface EncounterResolutionSnapshot {
   actorName: string;
@@ -733,16 +738,20 @@ function buildEncounterAftermathOverview(
   const traitCount = changes.filter(change => change.kind === 'trait').length;
   const growthCount = changes.filter(change => change.kind === 'growth').length;
   const hookCount = changes.filter(change => change.kind === 'future_hook' || change.kind === 'shell_state').length;
-  const highlightParts: string[] = [];
-  if (traitCount > 0) highlightParts.push(`${traitCount} trait change${traitCount === 1 ? '' : 's'}`);
-  if (rewardCount > 0) highlightParts.push(`${rewardCount} reward${rewardCount === 1 ? '' : 's'}`);
-  if (growthCount > 0) highlightParts.push(`${growthCount} skill shift${growthCount === 1 ? '' : 's'}`);
-  if (hookCount > 0) highlightParts.push(`${hookCount} lasting consequence${hookCount === 1 ? '' : 's'}`);
+  // THR-1004 — counts are spelled out. A numeral on the overview line is the
+  // same violation as a numeral on a chip, and this is the line Christian
+  // quoted first ("Your nudge left 1 reward, 3 skill shifts behind…").
+  const highlightPhrase = overviewHighlightPhrase({
+    traits: traitCount,
+    rewards: rewardCount,
+    growth: growthCount,
+    hooks: hookCount,
+  });
   const outcomeText = describeActionOutcome(outcome);
-  if (highlightParts.length === 0) {
+  if (!highlightPhrase) {
     return `${actorName} ${outcomeText} ${templateName}. The scene moved on quietly, but the world still bent a little around it.`;
   }
-  return `${actorName} ${outcomeText} ${templateName}. Your nudge left ${highlightParts.join(', ')} behind in the world.`;
+  return `${actorName} ${outcomeText} ${templateName}. Your nudge left ${highlightPhrase} behind in the world.`;
 }
 
 function buildEncounterAftermathReactions(
@@ -1155,6 +1164,19 @@ function mapStepOutcomeToRewardOutcome(outcome: StepOutcome): OutcomeType {
   }
 }
 
+/**
+ * A resolved reward: what to call it, and the graph node it became.
+ *
+ * THR-1004 widened this from a bare display name. The instantiated node id is
+ * what lets the aftermath chip honour the UI Law — the item's own art and a
+ * link to its page, rather than a name-hashed fallback tile and no link.
+ */
+interface ResolvedUnifiedReward {
+  readonly displayName: string;
+  /** Instantiated reward node id — the entity the prize chip pictures and links. */
+  readonly instanceId: string;
+}
+
 function resolveUnifiedReward(
   action: UnifiedAction,
   outcome: StepOutcome,
@@ -1162,7 +1184,7 @@ function resolveUnifiedReward(
   state: GameState,
   tick: number,
   runtime?: SimulationRuntime,
-): string | undefined {
+): ResolvedUnifiedReward | undefined {
   if (!metadata?.rewardPool) return undefined;
 
   const rng = mulberry32(
@@ -1252,7 +1274,7 @@ function resolveUnifiedReward(
     });
   }
 
-  return instantiation.displayName;
+  return { displayName: instantiation.displayName, instanceId: instantiation.instanceId };
 }
 
 /**
@@ -1929,9 +1951,10 @@ export function executeStepResult(
     } as any);
   }
 
-  const rewardName = finalAction.resolved
+  const resolvedReward = finalAction.resolved
     ? resolveUnifiedReward(action, outcome, stepMetadata, state, tick, runtime)
     : undefined;
+  const rewardName = resolvedReward?.displayName;
 
   // Phase 5: migrated encounter templates should carry forward the real
   // faction reputation and reputation-tally progression they already had in
@@ -1974,26 +1997,35 @@ export function executeStepResult(
 
   const aftermathChanges: EncounterAftermathChange[] = [];
   const actorName = beforeSnapshot.actorName;
+  // THR-1004 — every derived sentence below is built by `engine/aftermathWords.ts`,
+  // never assembled here. That is what keeps the words-never-numerals rule
+  // testable at one address instead of at eleven template literals.
   if (growthApplied > 0 && growthDomain) {
-    const tierShift = growthTierFrom != null && growthTierTo != null && growthTierTo > growthTierFrom
-      ? ` Tier ${growthTierFrom} -> ${growthTierTo}.`
-      : '';
+    const sentence = growthSentence({
+      actorName,
+      domain: growthDomain,
+      applied: growthApplied,
+      tierCrossed: growthTierFrom != null && growthTierTo != null && growthTierTo > growthTierFrom,
+    });
     aftermathChanges.push({
       id: `${action.actionId}:step:${action.currentStep}:growth:${growthDomain}`,
       kind: 'growth',
-      title: `${titleCaseWords(growthDomain)} grew`,
-      detail: `${actorName} gained ${growthApplied.toFixed(2)} ${growthDomain} growth.${tierShift}`,
+      title: `${reachDisplayName(growthDomain)} grew`,
+      detail: sentence.detail,
+      concepts: sentence.concepts,
       polarity: 'gain',
       actorId: action.actorId,
       actorName,
     });
   }
   if (promotionTraitGranted) {
+    const sentence = traitGrantedSentence({ actorName, traitLabel: promotionTraitGranted });
     aftermathChanges.push({
       id: `${action.actionId}:step:${action.currentStep}:trait:${promotionTraitGranted}`,
       kind: 'trait',
       title: 'A new trait surfaced',
-      detail: `${actorName} gained the trait "${promotionTraitGranted}".`,
+      detail: sentence.detail,
+      concepts: sentence.concepts,
       polarity: 'gain',
       actorId: action.actorId,
       actorName,
@@ -2002,22 +2034,34 @@ export function executeStepResult(
 
   // Add explicit authored reputation shifts before we collapse to the final snapshot.
   if (Math.abs(metadataReputationDelta) > 0.0001) {
+    const sentence = reputationSentence({
+      actorName,
+      delta: metadataReputationDelta,
+      flavour: 'authored',
+    });
     aftermathChanges.push({
       id: `${action.actionId}:step:${action.currentStep}:reputation:authored`,
       kind: 'reputation',
       title: 'Your standing shifted',
-      detail: `${actorName}'s authored reputation moved by ${metadataReputationDelta > 0 ? '+' : ''}${metadataReputationDelta.toFixed(3)}.`,
+      detail: sentence.detail,
+      concepts: sentence.concepts,
       polarity: metadataReputationDelta > 0 ? 'gain' : 'loss',
       actorId: action.actorId,
       actorName,
     });
   }
   if (Math.abs(branchConsequence.reputationDelta) > 0.0001) {
+    const sentence = reputationSentence({
+      actorName,
+      delta: branchConsequence.reputationDelta,
+      flavour: 'branch',
+    });
     aftermathChanges.push({
       id: `${action.actionId}:step:${action.currentStep}:reputation:branch`,
       kind: 'reputation',
       title: 'The checkpoint judged the intervention',
-      detail: `${actorName}'s standing bent by ${branchConsequence.reputationDelta > 0 ? '+' : ''}${branchConsequence.reputationDelta.toFixed(3)} as the branch consequences landed.`,
+      detail: sentence.detail,
+      concepts: sentence.concepts,
       polarity: branchConsequence.reputationDelta > 0 ? 'gain' : 'loss',
       actorId: action.actorId,
       actorName,
@@ -2204,14 +2248,19 @@ export function executeStepResult(
   // Generate tick event
   const actorNode = state.graph.getNode(action.actorId);
   const currentActorName = actorNode?.name ?? actorName;
-  if (rewardName) {
+  if (resolvedReward) {
+    const sentence = rewardSentence({
+      actorName: currentActorName,
+      rewardName: resolvedReward.displayName,
+      rewardId: resolvedReward.instanceId,
+      gained: isStepSuccess(outcome),
+    });
     aftermathChanges.push({
       id: `${action.actionId}:step:${action.currentStep}:item:${rewardName}`,
       kind: 'item',
       title: isStepSuccess(outcome) ? 'A reward changed hands' : 'The scene cost something tangible',
-      detail: isStepSuccess(outcome)
-        ? `${currentActorName} gained ${rewardName}.`
-        : `${currentActorName} came away marked by ${rewardName}.`,
+      detail: sentence.detail,
+      concepts: sentence.concepts,
       polarity: isStepSuccess(outcome) ? 'gain' : 'loss',
       actorId: action.actorId,
       actorName: currentActorName,
@@ -2221,11 +2270,17 @@ export function executeStepResult(
   const finalSnapshot = snapshotEncounterResolutionContext(state, action);
   const reputationDelta = finalSnapshot.reputationScore - beforeSnapshot.reputationScore;
   if (Math.abs(reputationDelta) > 0.0001 && Math.abs(reputationDelta - metadataReputationDelta - branchConsequence.reputationDelta) > 0.0001) {
+    const sentence = reputationSentence({
+      actorName: currentActorName,
+      delta: reputationDelta,
+      flavour: 'residual',
+    });
     aftermathChanges.push({
       id: `${action.actionId}:step:${action.currentStep}:reputation`,
       kind: 'reputation',
       title: 'Personal reputation shifted',
-      detail: `${currentActorName}'s standing changed by ${reputationDelta > 0 ? '+' : ''}${reputationDelta.toFixed(3)}.`,
+      detail: sentence.detail,
+      concepts: sentence.concepts,
       polarity: reputationDelta > 0 ? 'gain' : 'loss',
       actorId: action.actorId,
       actorName: currentActorName,
@@ -2238,14 +2293,20 @@ export function executeStepResult(
     const delta = afterMembership.reputation - beforeMembership.reputation;
     const rankChanged = afterMembership.role !== beforeMembership.role;
     if (Math.abs(delta) <= 0.0001 && !rankChanged) continue;
-    const rankText = rankChanged
-      ? ` Rank: ${beforeMembership.role ?? 'member'} -> ${afterMembership.role ?? 'member'}.`
-      : '';
+    const sentence = factionStandingSentence({
+      actorName: currentActorName,
+      factionId,
+      factionName: afterMembership.factionName,
+      delta: Math.abs(delta) <= 0.0001 ? 0 : delta,
+      beforeRole: beforeMembership.role,
+      afterRole: afterMembership.role,
+    });
     aftermathChanges.push({
       id: `${action.actionId}:step:${action.currentStep}:faction:${factionId}`,
       kind: 'faction_reputation',
       title: `${afterMembership.factionName} changed its measure`,
-      detail: `${currentActorName}'s standing with ${afterMembership.factionName} shifted by ${delta > 0 ? '+' : ''}${delta.toFixed(3)}.${rankText}`,
+      detail: sentence.detail,
+      concepts: sentence.concepts,
       polarity: delta > 0 ? 'gain' : delta < 0 ? 'loss' : 'mixed',
       actorId: action.actorId,
       actorName: currentActorName,
@@ -2261,11 +2322,13 @@ export function executeStepResult(
     const afterValue = finalSnapshot.reputationTallies[key] ?? 0;
     const delta = afterValue - beforeValue;
     if (Math.abs(delta) <= 0.0001) continue;
+    const sentence = reputationTallySentence({ actorName: currentActorName, key, delta });
     aftermathChanges.push({
       id: `${action.actionId}:step:${action.currentStep}:tally:${key}`,
       kind: 'reputation_tally',
       title: 'Reputation memory deepened',
-      detail: `${currentActorName}'s ${key} tally shifted by ${delta > 0 ? '+' : ''}${delta.toFixed(2)}.`,
+      detail: sentence.detail,
+      concepts: sentence.concepts,
       polarity: delta > 0 ? 'gain' : 'loss',
       actorId: action.actorId,
       actorName: currentActorName,
@@ -2280,7 +2343,10 @@ export function executeStepResult(
         id: `${action.actionId}:step:${action.currentStep}:gate:${runtimeId}:state`,
         kind: 'shell_state',
         title: 'The checkpoint changed state',
-        detail: `The gate shifted from ${titleCaseWords(beforeGate.state)} to ${titleCaseWords(afterGate.state)}.`,
+        detail: gateStateSentence({
+          beforeState: beforeGate.state,
+          afterState: afterGate.state,
+        }).detail,
         polarity: 'info',
       });
     }
@@ -2290,7 +2356,7 @@ export function executeStepResult(
         id: `${action.actionId}:step:${action.currentStep}:gate:${runtimeId}:tag:${tag}`,
         kind: 'future_hook',
         title: 'A follow-on thread was seeded',
-        detail: `The gate leaves behind ${tag.replace(/^#/, '').replace(/_/g, ' ')}.`,
+        detail: gateFollowOnSentence(tag).detail,
         polarity: 'info',
       });
     }

@@ -33,6 +33,8 @@ function change(
     title: over.title ?? 'A thing happened',
     detail: over.detail ?? 'A thing happened, and it is worth saying out loud.',
     polarity: over.polarity,
+    // THR-1004 — forwarded, so a test can declare the concepts a producer named.
+    concepts: over.concepts,
   };
 }
 
@@ -221,5 +223,166 @@ describe('buildAftermathConsequences — chips', () => {
     });
 
     expect(chips[0].sentence.segments[0]).toMatchObject({ text: 'Kael', entityId: 'agent-1' });
+  });
+});
+
+// ─── THR-1004 — the UI Law on a chip ───────────────────────────────
+//
+// The rule: every game concept rendered to the player carries its image, its
+// tooltip, and its link where a page exists. These tests ask whether a concept
+// the *producer declared* survives into something the surface can decorate —
+// and, in the falsification case, whether a concept that names nothing
+// decorable correctly leaves the sentence alone rather than splitting it for
+// an affordance that would be dead.
+
+describe('concept decorations (THR-1004)', () => {
+  it('attaches a tooltip to the concept word the producer named', () => {
+    const chips = buildAftermathConsequences({
+      changes: [change({
+        kind: 'growth',
+        polarity: 'gain',
+        detail: "Vara's Star grew a little.",
+        concepts: [{ text: 'Star', tooltipId: 'reach.star' }],
+      })],
+      ...passthrough,
+    });
+
+    expect(chips[0].sentence.segments).toEqual([
+      { text: "Vara's " },
+      { text: 'Star', emphasis: 'accent', tooltipId: 'reach.star', entityId: undefined },
+      { text: ' grew a little.' },
+    ]);
+  });
+
+  it('makes an entity concept both linkable and tooltipped', () => {
+    const chips = buildAftermathConsequences({
+      changes: [change({
+        kind: 'faction_reputation',
+        polarity: 'gain',
+        detail: "Vara's standing with The Mason Guild rose markedly.",
+        concepts: [{
+          text: 'The Mason Guild',
+          entityId: 'faction-mason',
+          visualKind: 'faction',
+          visualName: 'The Mason Guild',
+        }],
+      })],
+      ...passthrough,
+    });
+
+    const linked = chips[0].sentence.segments.find((s) => s.text === 'The Mason Guild');
+    expect(linked?.entityId).toBe('faction-mason');
+    // The kind is what routes the click to the faction sheet rather than the
+    // agent drawer — an entity id without it would be a dead link that looks live.
+    expect(linked?.entityKind).toBe('faction');
+  });
+
+  it('leaves entityKind absent for a cast segment, which has always meant "a person"', () => {
+    const chips = buildAftermathConsequences({
+      changes: [change({ kind: 'item', polarity: 'gain', detail: 'Kael took the parcel.' })],
+      enrich: (t) => t,
+      link: (id) => ({ id, segments: [{ text: 'Kael', entityId: 'agent-1' }, { text: ' took the parcel.' }] }),
+    });
+
+    expect(chips[0].sentence.segments[0].entityKind).toBeUndefined();
+  });
+
+  it('leaves a segment the linker already claimed alone — its link is the richer one', () => {
+    const chips = buildAftermathConsequences({
+      changes: [change({
+        kind: 'growth',
+        polarity: 'gain',
+        detail: 'Vara grew.',
+        concepts: [{ text: 'Vara', tooltipId: 'ui.standing' }],
+      })],
+      enrich: (t) => t,
+      // A linker that has already claimed "Vara" as a cast member — the case
+      // where the concept list must defer rather than overwrite.
+      link: (id) => ({
+        id,
+        segments: [{ text: 'Vara', entityId: 'agent-vara', referenceId: 'cast:vara' }, { text: ' grew.' }],
+      }),
+    });
+
+    // Still the linker's segment: entity link intact, no concept tooltip stamped over it.
+    expect(chips[0].sentence.segments[0]).toMatchObject({
+      text: 'Vara',
+      entityId: 'agent-vara',
+      referenceId: 'cast:vara',
+    });
+    expect(chips[0].sentence.segments[0].tooltipId).toBeUndefined();
+  });
+
+  it('falsification: a concept with nothing to show does not split the sentence', () => {
+    const chips = buildAftermathConsequences({
+      changes: [change({
+        kind: 'trait',
+        polarity: 'gain',
+        detail: 'Vara came away carrying Steady Hands.',
+        // A trait: named, but neither a tooltip concept nor an entity page.
+        concepts: [{ text: 'Steady Hands' }],
+      })],
+      ...passthrough,
+    });
+
+    expect(chips[0].sentence.segments).toEqual([
+      { text: 'Vara came away carrying Steady Hands.' },
+    ]);
+  });
+
+  it('falsification: a concept whose text is absent from the sentence changes nothing', () => {
+    const chips = buildAftermathConsequences({
+      changes: [change({
+        kind: 'growth',
+        polarity: 'gain',
+        detail: "Vara's Iron grew a little.",
+        concepts: [{ text: 'Star', tooltipId: 'reach.star' }],
+      })],
+      ...passthrough,
+    });
+
+    expect(chips[0].sentence.segments).toEqual([{ text: "Vara's Iron grew a little." }]);
+  });
+
+  it('resolves the chip icon from the first concept that names an entity', () => {
+    const chips = buildAftermathConsequences({
+      changes: [change({
+        kind: 'item',
+        polarity: 'gain',
+        detail: 'Vara gained Meditation Stones.',
+        concepts: [
+          { text: 'standing', tooltipId: 'ui.standing' },
+          { text: 'Meditation Stones', visualKind: 'artifact', visualName: 'Meditation Stones' },
+        ],
+      })],
+      ...passthrough,
+      resolveIcon: (concept) => ({
+        entityId: concept.entityId ?? concept.visualName ?? concept.text,
+        kind: concept.visualKind!,
+        name: concept.visualName ?? concept.text,
+        src: 'art/meditation-stones.jpg',
+      }),
+    });
+
+    expect(chips[0].icon).toEqual({
+      entityId: 'Meditation Stones',
+      kind: 'artifact',
+      name: 'Meditation Stones',
+      src: 'art/meditation-stones.jpg',
+    });
+  });
+
+  it('fail-open: a host that wires no icon resolver still gets chips', () => {
+    const chips = buildAftermathConsequences({
+      changes: [change({
+        kind: 'item',
+        polarity: 'gain',
+        concepts: [{ text: 'A thing', visualKind: 'artifact', visualName: 'A thing' }],
+      })],
+      ...passthrough,
+    });
+
+    expect(chips).toHaveLength(1);
+    expect(chips[0].icon).toBeUndefined();
   });
 });

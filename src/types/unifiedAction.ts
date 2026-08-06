@@ -146,6 +146,37 @@ export type EncounterAftermathChangeKind =
 
 export type EncounterAftermathChangePolarity = 'gain' | 'loss' | 'mixed' | 'info';
 
+/**
+ * THR-1004 — one game concept named inside an aftermath change's `detail`.
+ *
+ * The UI Law says every game concept rendered to the player carries its image,
+ * its tooltip, and its link where a page exists. A surface cannot honour that
+ * by reading English, so the producer of the sentence declares what it named.
+ *
+ * All three presentation fields are optional and independent: a reach has a
+ * tooltip and no page, a faction has all three, an item has a visual and no
+ * tooltip. Fail-open (NFP #4) — a concept the surface cannot decorate still
+ * renders as plain text rather than vanishing.
+ */
+export interface EncounterAftermathConceptRef {
+  /** The exact substring of `detail` this concept occupies. */
+  readonly text: string;
+  /** Tooltip concept id (`reach.star`, `ui.standing`, …) when one resolves. */
+  readonly tooltipId?: string;
+  /** Graph node id behind the concept, when the entity has a page to open. */
+  readonly entityId?: string;
+  /**
+   * Entity-visual kind for the chip's icon. Absent ⇒ the chip draws no icon.
+   *
+   * Deliberately a subset of `EntityVisualKind`: only these three name things
+   * the aftermath can produce. A trait is a concept, not an entity with art —
+   * it takes a tooltip and no tile rather than a wrong one.
+   */
+  readonly visualKind?: 'agent' | 'faction' | 'artifact';
+  /** Display name for the visual's alt text and fallback tile. */
+  readonly visualName?: string;
+}
+
 export interface EncounterAftermathChange {
   readonly id: string;
   readonly kind: EncounterAftermathChangeKind;
@@ -154,6 +185,12 @@ export interface EncounterAftermathChange {
   readonly polarity: EncounterAftermathChangePolarity;
   readonly actorId?: string;
   readonly actorName?: string;
+  /**
+   * THR-1004 — the game concepts `detail` names, declared by whoever built the
+   * sentence. Absent on authored changes, which are prose written by a human
+   * and carry their entity links through the narrative linker instead.
+   */
+  readonly concepts?: readonly EncounterAftermathConceptRef[];
 }
 
 // ─── World-shaping aftermath supporting types (THR-115) ─────────────────────

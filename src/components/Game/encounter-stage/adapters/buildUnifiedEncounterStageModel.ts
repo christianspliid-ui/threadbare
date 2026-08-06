@@ -17,6 +17,7 @@ import type { SimulationRuntime } from '../../../../engine/simulationRuntime';
 import { stepOutcomeToOutcomeBand, stepOutcomeWord } from '../../../../data/outcome-band-content';
 import { autoLinkNarrative, collectSupportBundleEntities } from '../narrativeLinker';
 import { buildAftermathConsequences } from './buildAftermathConsequences';
+import { resolveEntityVisual } from '../../../shared/entityVisualResolver';
 import { buildNudgePhaseModel } from './buildNudgePhaseModel';
 import { resolveStepDefinition } from '../../../../engine/unifiedActionLifecycle';
 import {
@@ -548,6 +549,18 @@ function buildAftermath(
     reactions: displayReactions,
     enrich: (text) => enrichProse(text, ctx),
     link: (id, text) => autoLinkNarrative(id, text, aftermathLinkEntries),
+    // THR-1004 — the UI Law's image half. Resolved here because this is the
+    // layer that holds the graph; the veil renders what comes out and stays
+    // graph-free. A concept whose entity has no art resolves to the designed
+    // fallback tile rather than nothing (NFP #4).
+    resolveIcon: (concept) => {
+      const kind = concept.visualKind;
+      if (!kind) return undefined;
+      const entityId = concept.entityId ?? concept.visualName ?? concept.text;
+      const name = concept.visualName ?? concept.text;
+      const descriptor = resolveEntityVisual({ id: entityId, kind, name }, graph);
+      return { entityId, kind, name, src: descriptor.src };
+    },
   });
 
   return {
