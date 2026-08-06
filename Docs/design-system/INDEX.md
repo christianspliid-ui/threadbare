@@ -10,6 +10,7 @@ This folder is the single source of truth for all UI decisions. It is structured
 
 | Task | Read |
 |------|------|
+| **Any UI work — the binding invariants** | `laws.md` (the numbered UI Laws; Done-whens cite them by reference) |
 | Building any new component | `layout.md` + `tokens.md` + `interactions.md` |
 | Positioning/sizing panels or sidebars | `layout.md` |
 | **Choosing which component to use** | `component-selection.md` |
@@ -39,6 +40,7 @@ This folder is the single source of truth for all UI decisions. It is structured
 
 | File | Scope |
 |------|-------|
+| `laws.md` | **The UI Laws** — numbered, binding invariants for every player-facing surface, with provenance and enforcement; the constitution the rest of this folder implements |
 | `component-selection.md` | **Which component to use for what** — decision tree, composition patterns, anti-patterns |
 | `layout-zones.md` | **Where new UI lives** — viewport zones, z-index stacking, insertion points, responsive scaling |
 | `layout.md` | Breakpoints, layout zones, top bar, sidebar, panel rules |
