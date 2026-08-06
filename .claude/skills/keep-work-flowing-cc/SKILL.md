@@ -1,7 +1,7 @@
 ---
 name: keep-work-flowing-cc
 description: Hourly headless Claude Code PM brief — reads Christian's Discord replies, scans the Linear queue, pings home-tree freshness, and rewrites Design/briefing.md + refreshes Design/user-actions.md. The CC replacement for the Cowork keep-work-flowing task (Pure Claude Code Migration, THR-650). The briefing file IS the inbox; the Discord DM is a two-way channel — a change-gated ping out (step 6), an author-verified read in (step 0).
-last_validated_against: 2026-08-02
+last_validated_against: 2026-08-06
 ---
 
 # Keep Work Flowing (CC)
@@ -255,6 +255,29 @@ One line of JSON: `{ verdict, needsChristian, checked, stalled[], neverRun[], su
 
 **Fail-soft:** the probe exits 0 without `--strict` and degrades to `verdict: "unknown"` on missing or unparseable input. If it cannot run, note one line and continue — never treat an unreadable probe as a healthy fleet.
 
+### 2.8 Fleet-wide lane silence, and whether it was on purpose (THR-1001)
+
+Step 2.7 asks whether *a* lane stopped while its siblings kept going. This step asks whether **all of them stopped at once**, which step 2.7 cannot see by construction: its sibling clause requires a witness, and a fleet-wide silence has none. That clause is correct and must not be widened — this is the second probe instead.
+
+```bash
+npm run check:lane-silence --silent -- --json
+```
+
+One line of JSON: `{ verdict, needsChristian, checked, worst, gaps[], pause, summary }`.
+
+- **`needsChristian: true`** (`silent`, `recovered`, `pause-stale`) → `summary` verbatim into **`## Needs Christian`**. Each already names the window and what to do; do not compress `recovered` to "there was an outage", which throws away the dates that make it checkable.
+- **`needsChristian: false`** (`paused`, `active`, `unknown`) → one line under **Freshness** when `paused` (say plainly that the lanes are paused on purpose and why), nothing at all when `active`.
+
+**What happened.** Between `2026-08-03 08:02` and `2026-08-05 22:36` every hourly lane wrote nothing — 62 hours across two weekdays. Nothing noticed until `weekly-workflow-retro` ran a week later and reasonably read it as an outage. It was a deliberate, controlled pause on token/usage limits, and Christian flagged that it will recur.
+
+**The pause marker is the whole point.** A silence detector without one pages on every future usage-limit pause, and an alarm that cries wolf is worse than the silence it replaced. Christian declares a pause by creating `C:\Users\chris\.claude\threadbare-pause.json` — any content, free text is fine, presence is the declaration — and ends it by deleting the file. It lives outside the repo deliberately: **setting it must not require an agent, a session, or a commit**, because token limits are exactly when none of those are available. The same marker also suppresses step 2.7's stall verdict (verdict `paused`).
+
+**Read the two directions of failure, and do not "simplify" either away:**
+- The probe reads **commit history on `origin/main` + `origin/ops`**, not `lastRunAt`. On resume the scheduler fires a catch-up burst and every lane's `lastRunAt` clusters at the wake edge, so at the first post-pause run — the exact moment this check matters — every lane looks current and the gap is invisible. Commits are stamped when the work happened.
+- Detection is **retrospective**. This probe runs inside a lane that goes silent too, so it reports on the first run after resumption, not during. The win is resolution — a repeat is caught within hours instead of at the next weekly retro. Say it that way in the briefing; do not imply the fleet is being watched live.
+
+**Fail-soft:** exits 0 without `--strict` and degrades to `verdict: "unknown"` on any git failure. Note one line under Freshness and continue; never read `unknown` as a healthy fleet.
+
 ### 3. Compose `Design/briefing.md`
 
 Overwrite the file. Structure (keep it short — this is a brief, not a report):
@@ -265,7 +288,8 @@ needsChristian: <comma-separated stable keys, or the literal `none`>
 queue: <starved | healthy | backed-up>
 freshness: <healthy | behind | parked | dirty | unknown>
 deploy: <deployed | skipped | failed | stale | unknown>
-tasks: <ok | stalled | unknown>
+tasks: <ok | stalled | paused | unknown>
+lanes: <active | silent | paused | recovered | pause-stale | unknown>
 ---
 # Briefing
 
@@ -291,7 +315,8 @@ parked; no lane but this scan is looking at those (THR-846).>
 ## Freshness
 <Home-tree ping result — one or two lines. Then the step-2.5 deploy line, unless
 the verdict was `deployed` (a healthy deploy is not news) or the summary already
-went into "Needs Christian".>
+went into "Needs Christian". Then the step-2.8 lane line when the verdict is
+`paused` — "the lanes are paused on purpose (<reason>)" — and nothing when `active`.>
 
 ## What's moving
 <What the executor is working on / shipped since the last brief, if visible. Optional.>
