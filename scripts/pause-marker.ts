@@ -105,7 +105,16 @@ export function readPauseMarker(explicitPath?: string): PauseMarker {
   try {
     if (!fs.existsSync(markerPath)) return { present: false, markerPath };
     raw = fs.readFileSync(markerPath, "utf8");
-    mtimeMs = fs.statSync(markerPath).mtimeMs;
+    // Floor to whole milliseconds. `mtimeMs` carries sub-millisecond precision
+    // (ext4 stores nanoseconds; this machine reports e.g. `...924.74`) while every
+    // clock it is compared against — `Date.now()`, an `--now` override, a parsed
+    // ISO string — is integer ms. Without the floor, a marker created *now* reads
+    // as not-yet-active whenever `Date.now()` truncates below the fraction, which
+    // is a coin flip on each run rather than a platform quirk: the `isPauseActive`
+    // guard `atMs < sinceMs` fires on a difference of less than one millisecond.
+    // A pause is a wall-clock instant; sub-millisecond precision must never decide
+    // whether monitoring is suppressed.
+    mtimeMs = Math.floor(fs.statSync(markerPath).mtimeMs);
   } catch (e) {
     // Fail-soft, and deliberately toward *not* suppressing: see the header note.
     return { present: false, error: (e as Error).message, markerPath };

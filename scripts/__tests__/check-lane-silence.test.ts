@@ -53,9 +53,24 @@ const HEALTHY_HISTORY = [
 
 const tmpFiles: string[] = [];
 
-function writeMarker(content: string): string {
+/**
+ * Write a marker file, optionally pinning its mtime.
+ *
+ * A free-text marker takes its start from the file's mtime, so any test that
+ * evaluates one against a *fabricated* `now` must pin that mtime — otherwise the
+ * marker starts at real wall-clock time and the assertion silently depends on
+ * when the suite runs. That is not hypothetical: the stale-marker case below
+ * evaluates at `2026-08-06T10:00:00Z` and passed in CI at 09:24Z on that date,
+ * then failed from 10:00Z onward, because the real-mtime marker began *after*
+ * the instant it was being judged at.
+ */
+function writeMarker(content: string, mtimeMs?: number): string {
   const p = path.join(fs.mkdtempSync(path.join(os.tmpdir(), "pause-")), "threadbare-pause.json");
   fs.writeFileSync(p, content, "utf8");
+  if (mtimeMs !== undefined) {
+    const seconds = mtimeMs / 1000;
+    fs.utimesSync(p, seconds, seconds);
+  }
   tmpFiles.push(p);
   return p;
 }
@@ -149,8 +164,12 @@ describe("the same window with the pause declared", () => {
 
 describe("a marker left behind after resume", () => {
   it("is flagged as housekeeping rather than silently suppressing monitoring", () => {
-    const marker = readPauseMarker(writeMarker("paused on token limits"));
-    // Free-text marker is open-ended from mtime (now), and the lanes are writing.
+    // Pinned mtime, not real `now`: the marker must start before the instant it is
+    // judged at, or the case tests nothing (see `writeMarker`).
+    const marker = readPauseMarker(
+      writeMarker("paused on token limits", ms("2026-08-06T08:00:00Z")),
+    );
+    // Free-text marker is open-ended from its mtime, and the lanes are writing.
     const r = evaluate(
       [ms("2026-08-06T09:00:00Z"), ms("2026-08-06T09:30:00Z")],
       ms("2026-08-06T10:00:00Z"),
