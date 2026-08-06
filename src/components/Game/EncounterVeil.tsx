@@ -299,44 +299,11 @@ export function EncounterVeil({
           />
         )}
 
-        {/* Step dots — all resolved */}
-        <div
-          style={{
-            position: 'absolute',
-            top: '4vh',
-            left: '5vw',
-            display: 'flex',
-            gap: 8,
-            alignItems: 'center',
-            zIndex: 20,
-            ...aftermathEntrance(0.5, 0.8),
-          }}
-        >
-          {model.history.map((step, i) => (
-            <div
-              key={step.stepId}
-              style={{
-                width: 6,
-                height: 6,
-                borderRadius: '50%',
-                background: 'rgba(134, 239, 172, 0.4)',
-              }}
-              aria-label={`Step ${i + 1}: ${step.stepLabel}`}
-            />
-          ))}
-          <span
-            style={{
-              fontFamily: FONT_PROSE,
-              fontStyle: 'italic',
-              fontSize: 'var(--text-xs)',
-              color: TEXT_GHOST,
-              marginLeft: 6,
-              letterSpacing: '0.04em',
-            }}
-          >
-            resolved
-          </span>
-        </div>
+        {/* THR-1003 — the corner step dots that used to live here moved into the
+            content column below, as the same `StepNavigator` the step view
+            renders. A separate hand-rolled dot row in the corner was the whole
+            reason the ending read as its own screen: it said "resolved" without
+            ever saying resolved *what*. */}
 
         {/* Tier label — top-right */}
         <div
@@ -388,8 +355,24 @@ export function EncounterVeil({
             overflowY: 'auto',
           }}
         >
-          {/* Aftermath title */}
+          {/* ── Encounter identity chrome (THR-1003) ─────────────────
+              The aftermath is the last page of one encounter, not a separate
+              screen, so it wears the header the step view wears: navigator,
+              encounter title, context strip — the same three components, not
+              copies of them, so the two surfaces cannot drift apart. */}
+          <div style={aftermathEntrance(0.5, 0.8)}>
+            <StepNavigator
+              history={model.history}
+              currentStepIndex={currentStepIndex}
+              totalSteps={totalSteps}
+              replayStepIndex={null}
+              mode="resolved"
+            />
+          </div>
+
+          {/* Encounter title — what encounter this was */}
           <div
+            data-testid="aftermath-encounter-title"
             style={{
               fontFamily: FONT_DISPLAY,
               fontSize: 'var(--text-xs)',
@@ -397,10 +380,21 @@ export function EncounterVeil({
               textTransform: 'uppercase',
               color: TEXT_GHOST,
               marginBottom: 6,
-              ...aftermathEntrance(0.7, 0.8),
+              ...aftermathEntrance(0.6, 0.8),
             }}
           >
-            {aftermath.title ?? 'Aftermath'}
+            {model.header.title}
+          </div>
+
+          {/* Context strip — who it happened to, and where */}
+          <div data-testid="aftermath-context-strip" style={aftermathEntrance(0.7, 0.8)}>
+            <ContextStrip
+              header={model.header}
+              threadTier={threadTier}
+              onSelectAgent={onSelectAgent}
+              onShowOnMap={onShowOnMap}
+              onDisregard={onDisregard}
+            />
           </div>
 
           {/* Gold divider */}
@@ -409,11 +403,31 @@ export function EncounterVeil({
               height: 1,
               background:
                 'linear-gradient(to right, transparent, rgba(212, 175, 55, 0.2), transparent)',
-              marginBottom: 22,
+              marginBottom: 18,
               opacity: visible ? 1 : 0,
               transition: `opacity 1s ease 0.9s`,
             }}
           />
+
+          {/* Aftermath section marker — carries the veil's gold rather than the
+              title's ghost tone, so the ending reads as a section *of* the
+              encounter above it instead of a second title (THR-1003). */}
+          <div
+            data-testid="aftermath-section-label"
+            style={{
+              fontFamily: FONT_DISPLAY,
+              fontSize: 'var(--text-xs)',
+              letterSpacing: '0.18em',
+              textTransform: 'uppercase',
+              // Literal rather than GOLD + `opacity`, because the entrance
+              // spread below owns `opacity` and would overwrite it.
+              color: 'rgba(212, 175, 55, 0.45)',
+              marginBottom: 14,
+              ...aftermathEntrance(0.8, 0.8),
+            }}
+          >
+            {aftermath.title ?? 'Aftermath'}
+          </div>
 
           {/* Overview prose — drop cap */}
           <div style={aftermathEntrance(1.0, 1.0)}>
@@ -2098,20 +2112,33 @@ function StepNavigator({
   totalSteps,
   replayStepIndex,
   onSelectStep,
+  mode = 'live',
 }: {
   history: EncounterStageModel['history'];
   currentStepIndex: number;
   totalSteps: number;
   replayStepIndex: number | null;
-  onSelectStep: (index: number | null) => void;
+  onSelectStep?: (index: number | null) => void;
+  /**
+   * THR-1003 — `resolved` is the aftermath's reading of the same flow: every
+   * dot in its outcome colour, the trailing count reading as finished, and no
+   * dot clickable, because the aftermath path renders no replay view and a
+   * control that does nothing is worse than no control.
+   */
+  mode?: 'live' | 'resolved';
 }) {
+  const resolvedMode = mode === 'resolved';
+  // An encounter can end before its last step (early exit, termination), so the
+  // aftermath count reports what actually resolved rather than asserting the
+  // whole flow ran.
+  const resolvedCount = history.filter((step) => step.status === 'resolved').length;
   return (
     <div style={{ display: 'flex', gap: 0, alignItems: 'center', marginBottom: 24 }}>
       {history.map((step, i) => {
         const isCurrent = step.status === 'current';
         const isResolved = step.status === 'resolved';
         const isReplaying = replayStepIndex === i;
-        const clickable = isResolved || isCurrent;
+        const clickable = !resolvedMode && (isResolved || isCurrent);
         const dotColor = isReplaying || isCurrent
           ? GOLD
           : isResolved
@@ -2126,7 +2153,7 @@ function StepNavigator({
         return (
           <button
             key={step.stepId}
-            onClick={clickable ? () => onSelectStep(isCurrent || isReplaying ? null : i) : undefined}
+            onClick={clickable ? () => onSelectStep?.(isCurrent || isReplaying ? null : i) : undefined}
             disabled={!clickable}
             title={title}
             aria-label={title}
@@ -2172,9 +2199,15 @@ function StepNavigator({
           letterSpacing: '0.04em',
         }}
       >
-        {replayStepIndex !== null
-          ? `replaying ${replayStepIndex + 1} of ${totalSteps}`
-          : `${currentStepIndex + 1} of ${totalSteps}`}
+        {resolvedMode
+          ? resolvedCount < totalSteps
+            ? `${resolvedCount} of ${totalSteps} resolved`
+            : totalSteps === 1
+              ? 'resolved'
+              : `all ${totalSteps} resolved`
+          : replayStepIndex !== null
+            ? `replaying ${replayStepIndex + 1} of ${totalSteps}`
+            : `${currentStepIndex + 1} of ${totalSteps}`}
       </span>
     </div>
   );

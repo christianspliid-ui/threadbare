@@ -287,6 +287,75 @@ describe('aftermath mode', () => {
     },
   };
 
+  // ── Encounter identity chrome (THR-1003) ─────────────────────────
+  //
+  // The ending is the last page of one encounter, so it must say which
+  // encounter, whose, and how far the flow got. Before this, the aftermath
+  // carried a bare "resolved" dot row and nothing else — a screen with no
+  // stated relationship to the steps the player had just played.
+
+  const identityModel: EncounterStageModel = {
+    ...aftermathModel,
+    header: {
+      ...mockModel.header,
+      agentName: 'Vasara Enkhet',
+      focalActorId: 'agent-vasara',
+      reachLabel: 'Iron',
+    },
+    history: [
+      { stepId: 'step-1', stepLabel: 'First Step', status: 'resolved', outcome: 'success', outcomeWord: 'held' },
+      { stepId: 'step-2', stepLabel: 'Second Step', status: 'resolved', outcome: 'failure', outcomeWord: 'slipped' },
+    ],
+  };
+
+  it('names the encounter on the aftermath screen', () => {
+    render(<EncounterVeil {...defaultProps} model={identityModel} />);
+    expect(screen.getByTestId('aftermath-encounter-title')).toHaveTextContent('Gate Duty');
+  });
+
+  it('carries the agent context strip into the aftermath', () => {
+    render(<EncounterVeil {...defaultProps} model={identityModel} />);
+    const strip = screen.getByTestId('aftermath-context-strip');
+    expect(strip).toHaveTextContent('Vasara Enkhet');
+    expect(strip).toHaveTextContent('Iron');
+    expect(strip).toHaveTextContent('South Gate');
+  });
+
+  it('shows the step flow as complete rather than as a bare "resolved" tag', () => {
+    render(<EncounterVeil {...defaultProps} model={identityModel} />);
+    expect(screen.getByText('all 2 resolved')).toBeInTheDocument();
+    // Each step keeps its own outcome reading — the flow, not a summary badge.
+    expect(screen.getByRole('button', { name: 'Step 1 — held' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Step 2 — slipped' })).toBeInTheDocument();
+  });
+
+  it('reports the true count when the encounter ended before its last step', () => {
+    render(
+      <EncounterVeil
+        {...defaultProps}
+        model={{
+          ...identityModel,
+          history: [
+            { stepId: 'step-1', stepLabel: 'First Step', status: 'resolved', outcome: 'success', outcomeWord: 'held' },
+            { stepId: 'step-2', stepLabel: 'Second Step', status: 'future' },
+          ],
+        }}
+      />,
+    );
+    expect(screen.getByText('1 of 2 resolved')).toBeInTheDocument();
+  });
+
+  it('leaves the aftermath navigator inert — no dot enters a replay that cannot render', () => {
+    render(<EncounterVeil {...defaultProps} model={identityModel} />);
+    expect(screen.getByRole('button', { name: 'Step 1 — held' })).toBeDisabled();
+  });
+
+  it('keeps the aftermath section marker distinct from the encounter title', () => {
+    render(<EncounterVeil {...defaultProps} model={identityModel} />);
+    expect(screen.getByTestId('aftermath-section-label')).toHaveTextContent('Aftermath');
+    expect(screen.getByTestId('aftermath-encounter-title')).not.toHaveTextContent('Aftermath');
+  });
+
   it('displays aftermath overview prose', () => {
     render(<EncounterVeil {...defaultProps} model={aftermathModel} />);
     expect(screen.getByText(/grain passes through/)).toBeInTheDocument();
