@@ -121,6 +121,20 @@ export interface EncounterStageNarrativeSegment {
    * a renderer without it emphasises the name but does not make it clickable.
    */
   entityId?: string;
+  /**
+   * THR-1004 — tooltip concept id for this segment (`reach.star`, `ui.standing`).
+   * The UI Law says a game concept carries its explanation where it is named;
+   * a renderer without it draws plain text, never a dead affordance.
+   */
+  tooltipId?: string;
+  /**
+   * THR-1004 — what kind of thing `entityId` names, so the surface routes the
+   * click to the right sheet. **Absent means "a person" for backward
+   * compatibility**: every pre-THR-1004 `entityId` came from the narrative
+   * linker's cast scan and was opened through the agent handler, so an absent
+   * kind must keep meaning exactly that.
+   */
+  entityKind?: 'agent' | 'faction' | 'artifact';
 }
 
 export interface EncounterStageNarrativeParagraph {
@@ -280,6 +294,26 @@ export interface EncounterStageConsequenceChipModel {
    */
   sentence: EncounterStageNarrativeParagraph;
   tone: EncounterStageConsequenceTone;
+  /**
+   * THR-1004 — the chip's entity image, per the UI Law. Present when the chip
+   * names an entity the visual resolver could resolve (an item, a faction, an
+   * agent); absent chips draw their kind tag alone, exactly as before.
+   */
+  icon?: EncounterStageConsequenceIconModel;
+}
+
+/**
+ * THR-1004 — the entity a consequence chip names, in the shape `EntityVisual`
+ * takes as its `entity` prop. Built by the adapter (which has the graph) so the
+ * veil stays graph-free, the way it already resolves its illustration.
+ */
+export interface EncounterStageConsequenceIconModel {
+  /** Stable id — graph lookup key when the entity is a node, gradient seed always. */
+  entityId: string;
+  kind: 'agent' | 'faction' | 'artifact';
+  name: string;
+  /** Art the adapter resolved, when any exists. Absent ⇒ the designed fallback tile. */
+  src?: string;
 }
 
 export interface EncounterStageAftermathModel {

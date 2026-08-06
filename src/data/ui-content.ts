@@ -324,6 +324,23 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     label: 'Reading a Card',
     desc: 'A card marks three things. The framed gold token is its price in essence. The pip row under the effect is how far it moves the odds. Red triangles are a setback the card brings with it.',
   },
+
+  // ─── Aftermath chips (THR-1004) ───────────────────────────────────
+  // Every game concept an aftermath chip names has to be explainable where it
+  // is named. These are the concepts the *derived* chips reach for; entities
+  // (people, factions, items) carry their own tooltips instead.
+  'ui.standing': {
+    label: 'Standing',
+    desc: 'How the world reads a mortal — the sum of what they have been seen to do. Standing opens doors and closes them: it gates who will bargain, who will follow, and who remembers a grudge.',
+  },
+  'ui.aftermath_toll': {
+    label: 'A Toll',
+    desc: 'Something the ending took. A toll is a price already paid, not a threat — the scene resolved, and this is what it cost the mortal to get there.',
+  },
+  'ui.aftermath_seed': {
+    label: 'A Seed',
+    desc: 'Something this ending set in motion. A seed is a debt the world now owes the story: it will surface later as an encounter, not as a number on a sheet.',
+  },
 };
 
 /** Lookup a UI tooltip by ID. Returns null if not found. */

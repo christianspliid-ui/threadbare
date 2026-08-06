@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { EntityVisual } from '../shared/EntityVisual';
+import { Tooltip } from '../shared/Tooltip';
 import type {
   EncounterStageModel,
   EncounterStageChoiceModel,
@@ -32,6 +33,16 @@ export interface EncounterVeilProps {
   onAftermathReaction: (reactionId: string) => void;
   /** THR-636 — clicking the character chip opens the agent's detail surface. */
   onSelectAgent?: (agentId: string) => void;
+  /**
+   * THR-1004 — open a non-person entity's sheet (a faction, an artifact). The
+   * UI Law's link half: an aftermath chip that names a faction or a reward is
+   * only fully present when the player can go look at it. Kept separate from
+   * `onSelectAgent` because that handler selects an *agent* and opens the agent
+   * drawer — routing an artifact through it would be a dead link wearing a
+   * live one's clothes. A host that omits this leaves those names emphasised
+   * and unclickable, which is the fail-open behaviour.
+   */
+  onSelectEntity?: (entityId: string, kind: 'faction' | 'artifact') => void;
   /** THR-636 — "Show on map": close the veil and pan the camera to the encounter hex. */
   onShowOnMap?: (col: number, row: number) => void;
   /**
@@ -138,6 +149,7 @@ export function EncounterVeil({
   onAcknowledgeAftermath,
   onAftermathReaction,
   onSelectAgent,
+  onSelectEntity,
   onShowOnMap,
   onCommitNudges,
   onOpenMotive,
@@ -253,6 +265,27 @@ export function EncounterVeil({
       if (tone === 'gain') return 'rgba(134, 239, 172, 0.65)';
       if (tone === 'loss') return 'rgba(248, 113, 113, 0.65)';
       return 'rgba(180, 170, 150, 0.45)';
+    };
+
+    /**
+     * THR-1004 — the UI Law's link half, routed by entity kind.
+     *
+     * Returns the click handler for a named entity, or `undefined` when this
+     * host cannot open that kind — in which case the name stays emphasised
+     * text. Never a dead link: a wrong-surface click (an artifact id handed to
+     * the agent drawer) is worse than no affordance, because it looks live.
+     */
+    const openEntity = (
+      entityId: string | undefined,
+      kind: 'agent' | 'faction' | 'artifact' | undefined,
+    ): (() => void) | undefined => {
+      if (!entityId) return undefined;
+      // Absent kind = the narrative linker's cast scan, which has always been
+      // people. Preserved so pre-THR-1004 segments behave exactly as before.
+      if (!kind || kind === 'agent') {
+        return onSelectAgent ? () => onSelectAgent(entityId) : undefined;
+      }
+      return onSelectEntity ? () => onSelectEntity(entityId, kind) : undefined;
     };
 
     const aftermathEntrance = (delay: number, duration: number): React.CSSProperties => ({
@@ -547,7 +580,9 @@ export function EncounterVeil({
                   data-consequence-kind={chip.kind}
                   style={{
                     display: 'flex',
-                    alignItems: 'baseline',
+                    // THR-1004 — the tile sets the row's height, so the row
+                    // centres on it rather than sitting on the text baseline.
+                    alignItems: chip.icon ? 'center' : 'baseline',
                     gap: 12,
                     // A hairline, not a card — the ending stays dissolved into
                     // the void rather than resolving into a grid of boxes.
@@ -555,6 +590,24 @@ export function EncounterVeil({
                     paddingLeft: 12,
                   }}
                 >
+                  {/* THR-1004 — the UI Law's image half. A chip that names an
+                      entity opens with that entity's picture, the same way
+                      every other detail surface does. */}
+                  {chip.icon && (
+                    <EntityVisual
+                      size="chip"
+                      entity={{
+                        id: chip.icon.entityId,
+                        kind: chip.icon.kind,
+                        name: chip.icon.name,
+                        knownSrc: chip.icon.src,
+                      }}
+                      data-testid={`consequence-chip-icon-${chip.kind}`}
+                      aria-label={chip.icon.name}
+                      title={chip.icon.name}
+                      onClick={openEntity(chip.icon.entityId, chip.icon.kind)}
+                    />
+                  )}
                   <span
                     style={{
                       fontFamily: FONT_DISPLAY,
@@ -578,40 +631,47 @@ export function EncounterVeil({
                   >
                     {chip.sentence.segments.map((seg, i) => {
                       // Clickable only where a page actually exists: a resolved
-                      // node id plus a host that wired the handler. Anything
-                      // else stays emphasised text — fail-open, never a dead link.
-                      const clickable = Boolean(seg.entityId && onSelectAgent);
-                      if (clickable) {
-                        return (
-                          <button
-                            key={i}
-                            type="button"
-                            onClick={() => onSelectAgent?.(seg.entityId!)}
-                            style={{
-                              background: 'none',
-                              border: 'none',
-                              padding: 0,
-                              font: 'inherit',
-                              color: GOLD,
-                              borderBottom: `1px solid ${GOLD_DIM}`,
-                              cursor: 'pointer',
-                            }}
-                          >
-                            {seg.text}
-                          </button>
-                        );
-                      }
-                      return (
+                      // node id plus a host that wired a handler for *that kind*.
+                      // Anything else stays emphasised text — fail-open, never
+                      // a dead link.
+                      const open = openEntity(seg.entityId, seg.entityKind);
+                      const body = open ? (
+                        <button
+                          type="button"
+                          onClick={open}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            padding: 0,
+                            font: 'inherit',
+                            color: GOLD,
+                            borderBottom: `1px solid ${GOLD_DIM}`,
+                            cursor: 'pointer',
+                          }}
+                        >
+                          {seg.text}
+                        </button>
+                      ) : (
                         <span
-                          key={i}
                           style={
-                            seg.referenceId
+                            seg.referenceId || seg.tooltipId
                               ? { color: TEXT_WARM, borderBottom: `1px solid ${GOLD_DIM}` }
                               : undefined
                           }
                         >
                           {seg.text}
                         </span>
+                      );
+
+                      // THR-1004 — the UI Law's tooltip half. A concept word
+                      // explains itself where it is named; a segment with no
+                      // concept id renders exactly as before.
+                      return seg.tooltipId ? (
+                        <Tooltip key={i} id={seg.tooltipId}>
+                          {body}
+                        </Tooltip>
+                      ) : (
+                        <span key={i}>{body}</span>
                       );
                     })}
                   </span>

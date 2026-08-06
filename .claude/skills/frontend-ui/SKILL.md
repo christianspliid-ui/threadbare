@@ -6,7 +6,7 @@ description: >
   "UI", "frontend", "panel", "layout", "accessibility", "style tile", "CSS",
   "responsive", "interaction", or when the task involves visual presentation.
   Also load when designing the **UI pillar** of any feature.
-last_validated_against: 2026-07-30
+last_validated_against: 2026-08-06
 ---
 
 # Frontend & UI — Domain Context
@@ -234,6 +234,7 @@ Full reference: `Docs/design-system/interactions.md` and `Docs/ui-patterns.md`.
 
 **Use this when designing the UI pillar of any feature.** Answer each question or mark N/A with rationale.
 
+- [ ] **The UI Law — does every game concept carry its presentation?** *(THR-1004)* Every game concept rendered to the player carries **its image** (`EntityVisual`), **its tooltip**, and **its link** where a page exists; **magnitudes render as words**, never numerals. This is not one surface's rule — it is what makes a concept feel like part of the world rather than a field in a database, and it holds on chips, rows, toasts, and prose alike. **A UI ticket's Done-when includes it by default**; it does not have to be restated per ticket, and it is not satisfied by "the sentence already says the name". See §8 for the two ways it usually fails.
 - [ ] **What does the player see?** — Which viewport zone(s)? Sidebar panel, modal, map overlay, top-bar indicator, toast?
 - [ ] **Which existing component(s)?** — Check the component selection tree (§3). Never create a new component when a primitive or existing component works.
 - [ ] **Where in the z-stack?** — Which z-index layer? Does it conflict with existing overlays?
@@ -259,6 +260,8 @@ Full reference: `Docs/design-system/interactions.md` and `Docs/ui-patterns.md`.
 - **Don't use `ProgressBar` for discrete steps** — use `StepDots`.
 - **Don't hardcode pixel widths** that duplicate CSS custom properties — use `var(--sidebar-width)` etc.
 - **Don't show numeric stats to the player** — use verbal word scales from `domain-words.ts`.
+- **Don't assume a magnitude is safe because the engine produced it** *(THR-1004)*. The words-never-numerals rule is broken most often not by a component but by an engine template literal whose output the component renders faithfully — `${delta.toFixed(2)}`, or a raw internal key like `star.positive`, arriving as a `detail` string. **Band it at the source**, the way `engine/aftermathWords.ts` does for the aftermath and `difficultyWord` does for the nudge stage; the number stays on the trace. When you find one, ask what *else* that producer emits — the two Christian quoted in THR-1004 were instances, not the membership predicate.
+- **Don't render a bare entity name and call the UI Law satisfied.** A name in a sentence is text; the concept is only present when it carries its image, its tooltip, and its link. If the surface cannot guess which words are concepts, have the **producer declare them** (see `EncounterAftermathChange.concepts`) rather than parsing English at the surface.
 - **Don't suppress `:focus-visible`** — keyboard players need it.
 - **Don't skip the UI pillar** in design plans — an engine system without player-facing display is invisible.
 
