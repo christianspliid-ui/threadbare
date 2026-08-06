@@ -2,20 +2,20 @@
 needsChristian: thr-883-format-session, thr-907-verdict-links-ready, thr-998-risk-word-verdict, thr-961-sound-feel, thr-962-nudge-stage-cues
 queue: backed-up
 freshness: healthy
-deploy: deployed
+deploy: skipped
 tasks: ok
 ---
 # Briefing
 
-**Generated:** 2026-08-06 10:02 local (2026-08-06 08:02 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-08-06 10:50 local (2026-08-06 08:50 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
 ## Needs Christian
 
-**One new question arrived this hour** — about what the action cards promise the player. Four items carried, unchanged. Your enchantment answer from this morning has been acted on and is off the list.
+**Nothing new this hour.** The same five items as at 10:02, all re-checked against the live board rather than carried on the last run's word. **Nothing has been added and nothing has been answered**, so if you read the last brief you already know this list.
 
-**If you have one hour, spend it on item 1. If you have ten minutes, spend them on item 2.** That ordering is a change from earlier briefs, and it's deliberate: the daily backlog review this morning called the format session "the highest-leverage hour available on the board," and the reason is arithmetic — a third of the backlog is frozen behind it.
+**If you have one hour, spend it on item 1. If you have ten minutes, spend them on item 2.**
 
 ### 1. The encounter-writing format session — the cork in the bottle
 
@@ -43,9 +43,9 @@ You're ruling on **four** things: does the prose read right, does the firing rhy
 
 **For the firing-rhythm question only** — [press play and let it run](https://threadbare.vercel.app/?view=game&seeded&size=medium&testavatar&forceencounters).
 
-**The site rebuilt again and again it changes nothing you'd play.** The links now serve build `ee694387`. What landed was interior: a sphere-flavour fix on Draw Together and a documentation note. **No encounter, card, or map asset moved**, so these five are identical to the ones you were offered at 07:55.
+**The links now serve build `50659dd7`, and this time something you'd actually see did change** — but not in these five. The four **company** action cards (the ones about founding and running a trading house) had no artwork and now have it. **The five encounters themselves are unchanged**, so if you were mid-decision on them, nothing has shifted under you.
 
-### 3. The action cards are promising a danger that isn't real *(new — from `daily-backlog-grooming`)*
+### 3. The action cards are promising a danger that isn't real
 
 ([THR-998](https://linear.app/threadbare/issue/THR-998/the-focused-cards-risk-word-is-computed-from-a-difficulty-that-never))
 
@@ -62,7 +62,7 @@ This was found by measurement, not by guesswork — 400 runs per case, and the s
 
 There's a third option — lower the odds floors so authored difficulty matters again — but that governs how *mortals* resolve actions too, so it's a much wider change. It's listed to be ruled out on purpose, not pursued casually.
 
-### 4. Two sound questions — you need to hear the game *(from `tb-orchestrator`)*
+### 4. Two sound questions — you need to hear the game
 
 - **Should the nudge moment carry cue sounds at all?** ([THR-962](https://linear.app/threadbare/issue/THR-962/the-encounter-sound-design-is-wired-to-a-superseded-surface-route-it)) — the cello-drone sounds exist and work, but they were written for the older encounter screen, which the game no longer shows. Re-pointing them is executor work; the part that's yours is whether that beat wants audio at all, and roughly where.
 - **How do the new encounter sounds actually feel?** ([THR-961](https://linear.app/threadbare/issue/THR-961/encounter-sound-design-feel-calibration-pass-thr-346-tuning-tail)) — needs listening, not reading. Three of the nine per-reach tones are written into the spec exactly; the other six were extrapolated to match. Whether they carry the right meaning is a taste call.
@@ -71,24 +71,24 @@ Both are stuck until you've heard them. Neither is urgent.
 
 ## Queue
 
-**Backed up — 33 items ready for work,** up one from 32. Planning stays ahead of execution; nothing is starving.
+**Backed up — 33 items ready for work,** the same count as last hour but not the same list.
 
-- **Your enchantment answer moved.** [THR-996](https://linear.app/threadbare/issue/THR-996/attachmenttieradvancement-has-zero-production-callers-decide-whether) — the "turn the enchantment system on" verdict you gave on Discord this morning — has been promoted into the ready queue and is now claimable by the next working session. That's the loop closing: asked 02:32, answered 05:07, queued for building by 07:29.
-- **One urgent item is now waiting for a session**, which is a change from the last few hours. A test that measures the casting curve runs 13% over its time limit, so it fails intermittently and turns unrelated work red ([THR-1000](https://linear.app/threadbare/issue/THR-1000/playercastbalances-8-call-distribution-test-sits-at-113-of-the-5s)). It's already blocking the company-card artwork from merging. Ours to fix, not yours — flagged only because it's the first non-housekeeping item to reach the front of the queue in a while.
-- **Nothing is parked.** Two items are being worked and both have owners. Seventh consecutive hour with no abandoned work.
-- **Eight items have gone quiet** (untouched for over a week), down from nine — a fifth consecutive fall, matching the explanation offered when the count spiked: it was the content pause showing up in date arithmetic, not fresh neglect.
+- **The urgent item from last hour is already finished.** The test that measured the casting curve was running 13% over its time limit and turning unrelated work red; it was filed at 09:21 local and was done by 10:32 — **71 minutes, start to finish**. With it out of the way, the company action-card artwork it was blocking merged straight through. **Nothing on the board is marked urgent now** except your format session.
+- **One new item replaced it**, and it's ours, not yours: when a background job goes quiet because it hit a usage limit on purpose, nothing currently tells that apart from the job being broken ([THR-1001](https://linear.app/threadbare/issue/THR-1001/nothing-distinguishes-a-deliberate-token-limit-pause-from-a-real)). Everything else in the queue is housekeeping.
+- **Nothing is parked.** One item is being worked, and it has an owner — the capital-city encounters, deliberately held behind your format session. That's the eighth consecutive hour with no abandoned work.
+- **Eight items have gone quiet** (untouched for over a week) — unchanged from last hour, and still explained by the content pause rather than fresh neglect.
 
 ## Freshness
 
-**Home tree is current** — on `main`, nothing behind, nothing stranded. Two settings files show local edits (yours, from tool permissions); they've been there for days and haven't blocked anything.
+**Home tree is current** — on `main`, nothing behind, nothing stranded. The same two settings files show local edits (yours, from tool permissions); they've been there for days and haven't blocked anything.
 
-**Everything automated is running.** The site serves the latest build, the merge checks work, all nine scheduled jobs are on time, and the cleanup job ran 22 minutes ago. Two old work folders are flagged for a human to decide on eventually — not urgent, and deliberately never auto-deleted.
+**Everything automated is running.** The merge checks work, all nine scheduled jobs are on time, and the cleanup job ran ten minutes ago. **No open work is stuck** — the one conflicted branch from last hour merged, leaving only the capital-city branch you're deliberately holding.
 
-**Two agent-side notes, explicitly not yours.** One finished piece of work can't merge because of a file collision in the status doc — that's a session's job to resolve, not a decision. And our background-job monitor still reports the weekly drift scan as "running normally" in the same breath as saying 3 of its last 5 runs failed; it has no setting between "fine" and "completely dead", so a job that half-works reads as healthy. Both are ours.
+**The site did not rebuild this hour, and that's correct** — the only thing that landed since the last publish was a written report, so there was nothing to rebuild. The build serving your play links is `50659dd7`, which includes the new company card art.
 
 ## What's moving
 
-Since the last brief: a sphere-flavour fix on the Draw Together action and the note recording that contract. The company action-card artwork is finished and waiting on the urgent test fix above before it can land.
+Since the last brief: the casting-curve test fix, the company action-card artwork, and this week's workflow review. Three merges in the hour, all of them ours.
 
 ---
 *Standing asks live in `Design/user-actions.md`. This file is regenerated hourly by
