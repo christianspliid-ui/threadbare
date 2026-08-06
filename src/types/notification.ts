@@ -94,22 +94,6 @@ export interface NotificationDirective {
   };
 }
 
-/**
- * Structured encounter-notification card (THR-636). When present on a ToastItem,
- * ToastStack renders this three-line card instead of the raw `message` string,
- * so the player sees "whose encounter, how far, how it's going" at a glance.
- */
-export interface EncounterToastCard {
-  /** Agent whose encounter this is — rendered plain and prominent. */
-  agentName: string;
-  /** Encounter template name. */
-  encounterName: string;
-  /** Meta line, e.g. "step 2 of 4 · faltered" (beat) or "concluded · held" (aftermath). */
-  meta: string;
-  /** First-sentence tease of the prose, clamped to NOTIF_TEASER_MAX_CHARS. */
-  tease: string;
-}
-
 export interface ToastItem {
   id: string;
   message: string;
@@ -125,8 +109,6 @@ export interface ToastItem {
   navigationTarget?: NavigationTarget;
   /** Outcome band for band-keyed accent styling (e.g. 'fortunate', 'setback'). Absent → default gold accent. */
   band?: string;
-  /** THR-636 structured encounter card — when set, ToastStack renders it instead of `message`. */
-  encounterCard?: EncounterToastCard;
 }
 
 export interface AlertItem {
@@ -211,7 +193,3 @@ export const ENTITY_NOTICE_MAX_RETAINED = 60;
 export const TOAST_MAX_VISIBLE = 4;
 export const TOAST_DURATION_MS = 4000;
 export const ALERT_MAX_VISIBLE = 12;
-/** Multiplier applied to TOAST_DURATION_MS for encounter toasts (they last longer). THR-636 names the former magic `* 2`. */
-export const ENCOUNTER_TOAST_DURATION_MULT = 2;
-/** Max characters for the encounter card's one-line prose tease before ellipsis. THR-636. */
-export const NOTIF_TEASER_MAX_CHARS = 90;
