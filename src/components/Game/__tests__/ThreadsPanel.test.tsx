@@ -2,7 +2,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ThreadsPanel } from '../ThreadsPanel';
-import type { ThreadedNode } from '../../../engine/retinue';
+import type { ThreadedNode, SustainedControlNode } from '../../../engine/retinue';
 import type { BalanceEvent } from '../../../types/balanceEval';
 import type { EncounterNotification } from '../../../types/encounterVisibility';
 import { selectEncounterBadges } from '../encounterBadgeModel';
@@ -430,7 +430,12 @@ describe('ThreadsPanel', () => {
 // ─── THR-418: SustainedControl sections ───────────────────────────────────────
 
 describe('ThreadsPanel sustained controls (THR-418)', () => {
-  function makeSustainedHex(overrides?: Partial<Parameters<typeof ThreadsPanel>[0]['sustainedControls']> extends (infer U)[] | undefined ? U : never) {
+  // The override type was `Partial<…['sustainedControls']> extends (infer U)[] |
+  // undefined ? U : never`, which resolves to the *full* node rather than a
+  // partial of it — so every caller passing a subset of fields was a type error
+  // (THR-1008 found it by adding three more). `Partial<SustainedControlNode>` is
+  // what the parameter always meant.
+  function makeSustainedHex(overrides?: Partial<SustainedControlNode>): SustainedControlNode {
     return {
       category: 'hex' as const,
       effectId: 'eff-hex-1',
@@ -449,7 +454,7 @@ describe('ThreadsPanel sustained controls (THR-418)', () => {
     };
   }
 
-  function makeSustainedSource(overrides?: Partial<Parameters<typeof ThreadsPanel>[0]['sustainedControls']> extends (infer U)[] | undefined ? U : never) {
+  function makeSustainedSource(overrides?: Partial<SustainedControlNode>): SustainedControlNode {
     return {
       category: 'source' as const,
       effectId: 'eff-src-1',
