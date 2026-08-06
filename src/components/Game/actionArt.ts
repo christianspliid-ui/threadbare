@@ -6,8 +6,9 @@
  * resolves from either code path.
  *
  * This is the SINGLE UI-side art lookup — ActionCard and DivineReceiptModal both import
- * `getActionArt` from here. (A second parallel map lives in `codexRegistry.ts`; its drift
- * is a known separate issue — do NOT add a third copy here or elsewhere.)
+ * `getActionArt` from here, and since THR-740 `codexRegistry.ts` imports and spreads
+ * `ACTION_ART` rather than hand-copying it. One entry added here reaches every surface;
+ * do NOT reintroduce a parallel copy anywhere.
  */
 export const ACTION_ART: Record<string, string> = {
   // ─── Divine actions (legacy bare + unified prefixed) ────────────────
@@ -101,6 +102,13 @@ export const ACTION_ART: Record<string, string> = {
   'hex.smite': '/assets/actions/divine-smiting.jpg',
   'hex.incite_exodus': '/assets/actions/umbral-exodus.jpg',
   'hex.send_herald': '/assets/actions/herald-sending.jpg',
+
+  // ─── Company actions (company.*) ───────────────────────────────────
+  // THR-769. Filenames derive from each template's `spellName`, not its id.
+  'company.bless': '/assets/actions/blessing-of-the-bound-road.jpg',
+  'company.draw_together': '/assets/actions/the-gathering-thread.jpg',
+  'company.reunite': '/assets/actions/the-unfinished-road.jpg',
+  'company.sunder': '/assets/actions/the-widening-silence.jpg',
 
   // ─── Hex actions — sustained ───────────────────────────────────────
   'hex.claim_dominion': '/assets/actions/sovereign-claim.jpg',
