@@ -166,8 +166,7 @@ import type { WheelSlot } from '../../engine/wheel';
 import { getUnifiedTemplateById, UNIFIED_ACTION_TEMPLATES } from '../../data/unified-action-templates';
 import { isStarterActionId } from '../../engine/actionUnlock';
 import { CRUD_TO_ENCOUNTER_TYPE } from '../../engine/encounterCache';
-import { createUnifiedAction } from '../../engine/unifiedActionLifecycle';
-import { mulberry32 } from '../../lib/prng';
+import { preparePlayerCast, commitPlayerCast } from '../../engine/playerCastDispatch';
 import { DIVINE_INFLUENCE_CONSTANTS } from '../../data/intervention-feedback-content';
 import { applyBalancedTestAvatar, prepareDebugEncounterContext, prepareDebugEncounterSpawn } from '../../engine/debugEncounterTools';
 import {
@@ -182,7 +181,6 @@ import { pinAgent as pinAgentDebug, unpinAgent as unpinAgentDebug } from '../../
 import type { UnifiedAction } from '../../types/unifiedAction';
 import type { ClearanceGateRuntimeState } from '../../types/contentShells';
 import { touchStructure, touchWorld } from '../../engine/simulationRuntime';
-import { applyAscendantBuffs } from '../../engine/ascendantBuffs';
 import { getEncounterForeshadowingById } from '../../engine/foreshadowing/encounterForeshadowing';
 import { executeEffect } from '../../engine/effectExecutors';
 import type { ExecutionContext } from '../../engine/effectExecutors';
@@ -2004,37 +2002,30 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         }
         if (!template) return { success: false, message: `No template matching '${templateId}'` };
 
-        const rng = mulberry32(seed + tick * 43);
-        const action = createUnifiedAction({
-          actorId: ascendantId,
-          templateId: template.id,
+        // Shares the player-cast path (THR-739). Fires at list price and skips
+        // the buff pass — a debug cast must not silently eat the player's
+        // one-shot Recede/Focus. No recentEvents line: this is a dev lever, not
+        // a narrated beat.
+        const tpl = template; // stable reference for closure
+        const cast = preparePlayerCast({
+          graph,
+          ascendantId,
+          template: tpl,
+          templateId: tpl.id,
           targetId: agentMatch.id,
-          scale: template.scale,
-          source: 'player',
           tick,
-          template,
-          rng,
-          essencePaid: template.essenceCost ?? 0,
+          seed,
+          sphere: tpl.sphereAffinity ?? null,
+          applyBuffs: false,
+          essencePaid: tpl.essenceCost ?? 0,
         });
 
-        const tpl = template; // stable reference for closure
-        setGameState(prev => {
-          const newPool = { ...prev.essencePool };
-          const cost = tpl.essenceCost ?? 0;
-          if (cost > 0 && tpl.sphereAffinity) {
-            newPool[tpl.sphereAffinity] = Math.max(0, (newPool[tpl.sphereAffinity] ?? 0) - cost);
-          }
-          return {
-            ...prev,
-            essencePool: newPool,
-            unifiedActions: [...(prev.unifiedActions ?? []), action],
-          };
-        });
+        setGameState(prev => commitPlayerCast(prev, { cast }));
 
         const agentName = (agentMatch.properties.name as string | undefined) ?? agentMatch.id;
         return {
           success: true,
-          actionId: action.actionId,
+          actionId: cast.action.actionId,
           templateName: tpl.name,
           message: `Fired '${tpl.name}' on '${agentName}'`,
         };
@@ -3307,34 +3298,27 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     }
 
     try {
-      const buffResult = applyAscendantBuffs(template, gameState.graph, gameState.ascendantId, gameState.tick);
-      if (buffResult.buffsConsumed) touchWorld(runtime);
-
-      const essenceCost = buffResult.effectiveEssenceCost;
       const sphere = template.sphereAffinity ?? archetype.sphereAlignment.primary;
 
-      const rng = mulberry32(gameState.seed + gameState.tick * 43);
-      const action = createUnifiedAction({
-        actorId: gameState.ascendantId,
+      // Same dispatch path the agent drawer uses (THR-739). Before unification
+      // this branch was a hand-rolled near-copy, and it drifted: it shipped
+      // without a dispatch toast until THR-727, and never wrote the
+      // ACTION_START timeline event at all. Both now come from one place.
+      const cast = preparePlayerCast({
+        graph: gameState.graph,
+        ascendantId: gameState.ascendantId,
+        template,
         templateId,
         targetId: nonAgentTargetContext.nodeId,
-        scale: template.scale,
-        source: 'player',
         tick: gameState.tick,
-        template,
-        rng,
-        essencePaid: essenceCost,
-        ...(buffResult.buffsConsumed && { effectiveRarityTier: buffResult.effectiveRarityTier }),
+        seed: gameState.seed,
+        sphere,
+        runtime,
       });
 
-      const buffParenthetical = buffResult.buffsConsumed
-        ? ` (${[buffResult.discountApplied ? 'after Recede' : '', buffResult.tierBoostApplied ? 'with Focus' : ''].filter(Boolean).join(', ')})`
-        : '';
-
       // Dispatch-time toast — initiation phrasing (present tense; the outcome arrives
-      // later as a Divine Receipt, THR-727). Mirrors the agent-action dispatch path,
-      // which previously toasted while this non-agent path did not.
-      const dispatchMessage = `The Ascendant ${template.narrativeTemplates.initiation}.${buffParenthetical}`;
+      // later as a Divine Receipt, THR-727).
+      const dispatchMessage = `The Ascendant ${template.narrativeTemplates.initiation}.${cast.buffParenthetical}`;
       handlePushToast({
         id: `toast_target_action_${Date.now()}`,
         message: dispatchMessage,
@@ -3344,29 +3328,14 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         expiresAt: Date.now() + 4000,
       });
 
-      setGameState(prev => {
-        const newPool = { ...prev.essencePool };
-        if (essenceCost > 0) {
-          newPool[sphere] = Math.max(0, (newPool[sphere] ?? 0) - essenceCost);
-        }
-        return {
-          ...prev,
-          essencePool: newPool,
-          unifiedActions: [...(prev.unifiedActions ?? []), action],
-          recentEvents: [
-            ...prev.recentEvents.slice(-99),
-            {
-              id: `evt_target_action_${prev.tick}_${Date.now()}`,
-              tick: prev.tick,
-              type: 'narrative' as const,
-              message: dispatchMessage,
-              significance: 0.5,
-              sphere,
-              isInterventionBeat: false,
-            },
-          ],
-        };
-      });
+      setGameState(prev => commitPlayerCast(prev, {
+        cast,
+        event: {
+          idPrefix: 'evt_target_action',
+          message: dispatchMessage,
+          isInterventionBeat: false,
+        },
+      }));
 
       setTimeout(() => {
         setNonAgentDrawerOpen(false);

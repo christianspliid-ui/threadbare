@@ -13,19 +13,16 @@ import { getAgentDetail, getAgentInfoCard, getAgentFullProfile } from '../../../
 import { executeIntervention } from '../../../engine/dream';
 import { applyInterventionEffects } from '../../../engine/interventionEffects';
 import { applyAscendantFeedback } from '../../../engine/ascendantFeedback';
-import { createUnifiedAction } from '../../../engine/unifiedActionLifecycle';
+import { preparePlayerCast, commitPlayerCast } from '../../../engine/playerCastDispatch';
 import { getUnifiedTemplateById, AGENT_INTERVENTION_TEMPLATES } from '../../../data/unified-action-templates';
 import { templateIdFromSlotId, getTargetActionSlots } from '../../../engine/targetActions';
 import { getAscendantDomainAffinities } from '../../../engine/ascendant';
 import { buildActorTargetContext } from '../../../engine/targetContextBuilders';
 import { getAvatarHexPosition } from '../../../engine/visibility';
-import { appendEvent } from '../../../engine/encounterTimeline';
-import { mulberry32 } from '../../../lib/prng';
 import type { ToastItem } from '../../../types/notification';
 import type { HexCoord } from '../../../types';
 import type { SimulationRuntime } from '../../../engine/simulationRuntime';
 import { touchWorld } from '../../../engine/simulationRuntime';
-import { applyAscendantBuffs } from '../../../engine/ascendantBuffs';
 import { getFamiliarity, getKnowledgeLevel } from '../../../engine/familiarity';
 import { generateAgendas } from '../../../engine/agendaGenerator';
 import { DIVINE_INFLUENCE_CONSTANTS } from '../../../data/intervention-feedback-content';
@@ -288,35 +285,20 @@ export function useAgentInteraction({
             return;
           }
 
-          // Apply Recede/Focus buffs before creating the action (THR-416)
-          const buffResult = applyAscendantBuffs(template, gameState.graph, gameState.ascendantId, capturedTick);
-          if (buffResult.buffsConsumed && runtime) touchWorld(runtime);
-
-          const rng = mulberry32(capturedSeed + capturedTick * 43);
-          const action = createUnifiedAction({
-            actorId: gameState.ascendantId,
+          // Single dispatch path for player casts (THR-739): Recede/Focus buffs
+          // (THR-416), the seeded RNG, action construction, and the ACTION_START
+          // timeline event. Toast copy, particles, and drawer close stay here —
+          // those are this surface's concern, not the engine's.
+          const cast = preparePlayerCast({
+            graph: gameState.graph,
+            ascendantId: gameState.ascendantId,
+            template,
             templateId,
             targetId: capturedAgentId,
-            scale: template.scale,
-            source: 'player',
             tick: capturedTick,
-            template,
-            rng,
-            essencePaid: buffResult.effectiveEssenceCost,
-            ...(buffResult.buffsConsumed && { effectiveRarityTier: buffResult.effectiveRarityTier }),
-          });
-
-          // Timeline: ACTION_START for player-sourced action
-          const targetNode = gameState.graph.getNode(capturedAgentId);
-          appendEvent(gameState.ascendantId, {
-            phase: 'ACTION_START',
-            tick: capturedTick,
-            template: template.name,
-            target: targetNode?.name ?? capturedAgentId,
-            reach: template.reach ?? 'unknown',
-            scale: template.scale,
-            steps: template.steps.length,
-            source: 'player',
+            seed: capturedSeed,
+            sphere: capturedSphere ?? null,
+            runtime,
           });
 
           // Dispatch-time phrasing — initiation (present tense; the outcome lands later
@@ -350,33 +332,14 @@ export function useAgentInteraction({
             onParticleBurst(capturedHexCol, capturedHexRow, getSphereColor(capturedSphere));
           }
 
-          setGameState(prev => {
-            const newPool = { ...prev.essencePool };
-            const cost = buffResult.effectiveEssenceCost;
-            if (cost > 0 && capturedSphere) {
-              newPool[capturedSphere] = Math.max(0, (newPool[capturedSphere] ?? 0) - cost);
-            }
-            const buffParenthetical = buffResult.buffsConsumed
-              ? ` (${[buffResult.discountApplied ? 'after Recede' : '', buffResult.tierBoostApplied ? 'with Focus' : ''].filter(Boolean).join(', ')})`
-              : '';
-            return {
-              ...prev,
-              essencePool: newPool,
-              unifiedActions: [...(prev.unifiedActions ?? []), action],
-              recentEvents: [
-                ...prev.recentEvents.slice(-99),
-                {
-                  id: `evt_action_${prev.tick}_${Date.now()}`,
-                  tick: prev.tick,
-                  type: 'narrative' as const,
-                  message: toastMessage + buffParenthetical,
-                  significance: 0.5,
-                  sphere: capturedSphere ?? undefined,
-                  isInterventionBeat: true,
-                },
-              ],
-            };
-          });
+          setGameState(prev => commitPlayerCast(prev, {
+            cast,
+            event: {
+              idPrefix: 'evt_action',
+              message: toastMessage + cast.buffParenthetical,
+              isInterventionBeat: true,
+            },
+          }));
 
           setPlayingCardId(null);
           setDrawerOpen(false);
@@ -448,31 +411,23 @@ export function useAgentInteraction({
         const divineTemplate = getUnifiedTemplateById(divineTemplateId);
 
         if (divineTemplate) {
-          // Create a UnifiedAction — the pipeline resolves it on the next tick
-          const rng = mulberry32(gameState.seed + gameState.tick * 43);
-          const divineAction = createUnifiedAction({
-            actorId: gameState.ascendantId,
+          // Create a UnifiedAction — the pipeline resolves it on the next tick.
+          // Shares the player-cast path (THR-739) but opts out of the buff pass:
+          // `executeIntervention` has already priced this cast, so consuming a
+          // one-shot Recede/Focus here would spend it on a cast that never
+          // asked for it and never saw the discount.
+          const divineCast = preparePlayerCast({
+            graph: gameState.graph,
+            ascendantId: gameState.ascendantId,
+            template: divineTemplate,
             templateId: divineTemplateId,
             targetId: selectedAgentId,
-            scale: 'cosmic',
-            source: 'player',
             tick: gameState.tick,
-            template: divineTemplate,
-            rng,
+            seed: gameState.seed,
+            sphere: slot.sphere,
+            scale: 'cosmic',
+            applyBuffs: false,
             essencePaid: result.essenceSpent[slot.sphere!] ?? 0,
-          });
-
-          // Timeline: ACTION_START for divine intervention
-          const divineTargetNode = gameState.graph.getNode(selectedAgentId);
-          appendEvent(gameState.ascendantId, {
-            phase: 'ACTION_START',
-            tick: gameState.tick,
-            template: divineTemplate.name,
-            target: divineTargetNode?.name ?? selectedAgentId,
-            reach: divineTemplate.reach ?? 'unknown',
-            scale: 'cosmic',
-            steps: divineTemplate.steps.length,
-            source: 'player',
           });
 
           // Apply ascendant feedback (intervention history)
@@ -487,30 +442,15 @@ export function useAgentInteraction({
           // Play audio feedback
           playCastSound(slot.sphere, result.detected);
 
-          setGameState(prev => {
-            const newPool = { ...prev.essencePool };
-            newPool[slot.sphere!] = Math.max(
-              0,
-              newPool[slot.sphere!] - result.essenceSpent[slot.sphere!]
-            );
-            return {
-              ...prev,
-              essencePool: newPool,
-              unifiedActions: [...(prev.unifiedActions ?? []), divineAction],
-              recentEvents: [
-                ...prev.recentEvents.slice(-99),
-                {
-                  id: `evt_intervention_${prev.tick}_${Date.now()}`,
-                  tick: prev.tick,
-                  type: 'narrative' as const,
-                  message: `The Ascendant ${divineTemplate.narrativeTemplates.initiation}. (${result.detected ? 'detected!' : 'undetected'})`,
-                  significance: result.detected ? 0.8 : 0.5,
-                  sphere: slot.sphere!,
-                  isInterventionBeat: true,
-                },
-              ],
-            };
-          });
+          setGameState(prev => commitPlayerCast(prev, {
+            cast: divineCast,
+            event: {
+              idPrefix: 'evt_intervention',
+              message: `The Ascendant ${divineTemplate.narrativeTemplates.initiation}. (${result.detected ? 'detected!' : 'undetected'})`,
+              significance: result.detected ? 0.8 : 0.5,
+              isInterventionBeat: true,
+            },
+          }));
         } else {
           // Fallback: use legacy path if divine template not found
           const effectsResult = applyInterventionEffects({

@@ -21,7 +21,6 @@ import { SphereIcon } from '../icons';
 import { RarityBadge } from '../shared/RarityBadge';
 import type { RarityTier } from '../../types/rarity';
 import type { SphereName } from '../../types/index';
-import { OUTCOME_BAND_CARD_FLAVOR } from '../../data/narrative-content';
 import { getActionArt } from './actionArt';
 
 // ─── Sizing Constants ──────────────────────────────────────────────────────
@@ -53,15 +52,15 @@ const SIZE_CONFIG = {
   },
 } as const;
 
-/** Band-keyed overlay colours for the outcome face. */
-const OUTCOME_BAND_STYLE: Record<string, { bg: string; text: string; icon: string }> = {
-  surge:       { bg: 'rgba(74,222,128,0.15)', text: '#4ade80',                  icon: '✦' },
-  fortunate:   { bg: 'rgba(201,161,74,0.15)', text: 'var(--accent-near-miss)',  icon: '~' },
-  neutral:     { bg: 'rgba(168,152,128,0.12)', text: 'var(--text-tertiary)',    icon: '·' },
-  strained:    { bg: 'rgba(251,191,36,0.12)', text: 'var(--warning)',           icon: '!' },
-  setback:     { bg: 'rgba(248,113,113,0.15)', text: 'var(--negative)',         icon: '✕' },
-  catastrophe: { bg: 'rgba(185,28,28,0.20)',   text: '#b91c1c',                 icon: '☠' },
-};
+/**
+ * The card carried an `outcomeBand` prop and a band-keyed spent overlay until
+ * THR-739 removed both. No production call site ever passed it, and none could:
+ * the card's `playing` state is dispatch-time, and an outcome band is not known
+ * until the action resolves ticks later. THR-727 made the Divine Receipt the
+ * band surface — that is where a band belongs, and where it already is. The
+ * band palette and `OUTCOME_BAND_CARD_FLAVOR` remain available to any surface
+ * that genuinely holds a resolved band (see `outcomeBandAccent.ts`).
+ */
 
 interface ActionCardProps {
   /** The wheel slot to display */
@@ -72,8 +71,6 @@ interface ActionCardProps {
   playing?: boolean;
   /** Card size: 'hand' for fan layout, 'focused' for center screen */
   size?: 'hand' | 'focused';
-  /** Outcome band to display on the spent overlay (e.g. 'fortunate'). Absent → default success overlay. */
-  outcomeBand?: string;
   /**
    * Whether the card is a live play affordance. Default true (all existing call sites).
    * Set false for pure display — e.g. the Ascendant Beat unlock reveal (THR-639): the
@@ -104,7 +101,7 @@ function parseTypeLine(slotId: string): { reach: string; crud: string } {
  * ActionCard component — displays a single action slot as a card.
  */
 export const ActionCard = React.memo(function ActionCard({
-  slot, onClick, playing = false, size = 'hand', outcomeBand, interactive = true,
+  slot, onClick, playing = false, size = 'hand', interactive = true,
 }: ActionCardProps) {
   const glyph = getWheelSlotGlyph(slot.id);
   const sphereColor = slot.sphere ? getSphereColor(slot.sphere) : undefined;
@@ -300,22 +297,16 @@ export const ActionCard = React.memo(function ActionCard({
             </span>
           )}
 
-          {/* Spent overlay */}
-          {playing && (() => {
-            const bandStyle = outcomeBand ? OUTCOME_BAND_STYLE[outcomeBand] : undefined;
-            return (
-              <div
-                data-testid="action-card-spent-overlay"
-                data-outcome-band={outcomeBand}
-                className="absolute inset-0 rounded-lg flex items-center justify-center"
-                style={{ backgroundColor: bandStyle?.bg ?? 'rgba(6,78,59,0.4)' }}
-              >
-                <div style={{ fontSize: '2.25rem', color: bandStyle?.text ?? '#4ade80', fontWeight: 700 }}>
-                  {bandStyle?.icon ?? '✓'}
-                </div>
-              </div>
-            );
-          })()}
+          {/* Spent overlay — dispatch-time only, so it is band-agnostic (THR-739) */}
+          {playing && (
+            <div
+              data-testid="action-card-spent-overlay"
+              className="absolute inset-0 rounded-lg flex items-center justify-center"
+              style={{ backgroundColor: 'rgba(6,78,59,0.4)' }}
+            >
+              <div style={{ fontSize: '2.25rem', color: '#4ade80', fontWeight: 700 }}>✓</div>
+            </div>
+          )}
         </div>
       </>
     );
@@ -595,38 +586,16 @@ export const ActionCard = React.memo(function ActionCard({
           </div>
         )}
 
-        {/* Spent overlay — band-keyed styling when outcomeBand is provided */}
-        {playing && (() => {
-          const bandStyle = outcomeBand ? OUTCOME_BAND_STYLE[outcomeBand] : undefined;
-          const flavor = outcomeBand ? OUTCOME_BAND_CARD_FLAVOR[outcomeBand] : undefined;
-          return (
-            <div
-              data-testid="action-card-spent-overlay"
-              data-outcome-band={outcomeBand}
-              className="absolute inset-0 rounded-lg flex flex-col items-center justify-center gap-2"
-              style={{ backgroundColor: bandStyle?.bg ?? 'rgba(6,78,59,0.4)' }}
-            >
-              <div style={{ fontSize: '2.25rem', color: bandStyle?.text ?? '#4ade80', fontWeight: 700 }}>
-                {bandStyle?.icon ?? '✓'}
-              </div>
-              {flavor && (
-                <div
-                  style={{
-                    fontSize: 'var(--text-xs)',
-                    color: bandStyle?.text ?? '#4ade80',
-                    fontStyle: 'italic',
-                    fontFamily: 'var(--font-body)',
-                    textAlign: 'center',
-                    padding: '0 16px',
-                    opacity: 0.85,
-                  }}
-                >
-                  {flavor}
-                </div>
-              )}
-            </div>
-          );
-        })()}
+        {/* Spent overlay — dispatch-time only, so it is band-agnostic (THR-739) */}
+        {playing && (
+          <div
+            data-testid="action-card-spent-overlay"
+            className="absolute inset-0 rounded-lg flex flex-col items-center justify-center gap-2"
+            style={{ backgroundColor: 'rgba(6,78,59,0.4)' }}
+          >
+            <div style={{ fontSize: '2.25rem', color: '#4ade80', fontWeight: 700 }}>✓</div>
+          </div>
+        )}
       </div>
     </>
   );

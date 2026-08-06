@@ -266,33 +266,28 @@ describe('ActionCard — RarityBadge', () => {
   });
 });
 
-describe('ActionCard — outcome band overlays', () => {
-  it('default playing overlay shows green success icon when no outcomeBand', () => {
+// THR-739 removed the band-keyed spent overlay: the card's `playing` state is
+// dispatch-time and the band is not known until the action resolves, so no
+// production caller ever passed `outcomeBand`. The band lives on the Divine
+// Receipt (THR-727). What remains to assert is that the overlay is band-agnostic.
+describe('ActionCard — spent overlay', () => {
+  it('playing overlay renders the band-agnostic success face (hand)', () => {
     render(<ActionCard slot={baseSlot} onClick={vi.fn()} playing size="hand" />);
     const overlay = screen.getByTestId('action-card-spent-overlay');
     expect(overlay).toBeDefined();
     expect(overlay.getAttribute('data-outcome-band')).toBeNull();
+    expect(overlay.textContent).toContain('✓');
   });
 
-  it('fortunate band overlay uses near-miss amber styling', () => {
-    render(<ActionCard slot={baseSlot} onClick={vi.fn()} playing outcomeBand="fortunate" size="focused" />);
+  it('playing overlay renders the band-agnostic success face (focused)', () => {
+    render(<ActionCard slot={baseSlot} onClick={vi.fn()} playing size="focused" />);
     const overlay = screen.getByTestId('action-card-spent-overlay');
-    expect(overlay.getAttribute('data-outcome-band')).toBe('fortunate');
-    // Flavor text from OUTCOME_BAND_CARD_FLAVOR['fortunate']
-    expect(screen.getByText(/the thread held/i)).toBeDefined();
+    expect(overlay.getAttribute('data-outcome-band')).toBeNull();
+    expect(overlay.textContent).toContain('✓');
   });
 
-  it('setback band overlay renders with setback styling', () => {
-    render(<ActionCard slot={baseSlot} onClick={vi.fn()} playing outcomeBand="setback" size="focused" />);
-    const overlay = screen.getByTestId('action-card-spent-overlay');
-    expect(overlay.getAttribute('data-outcome-band')).toBe('setback');
-    expect(screen.getByText(/the moment passes/i)).toBeDefined();
-  });
-
-  it('unknown band falls back to default success styling', () => {
-    render(<ActionCard slot={baseSlot} onClick={vi.fn()} playing outcomeBand="unknown_band" size="hand" />);
-    const overlay = screen.getByTestId('action-card-spent-overlay');
-    // No crash; overlay still renders
-    expect(overlay).toBeDefined();
+  it('renders no spent overlay when the card is not playing', () => {
+    render(<ActionCard slot={baseSlot} onClick={vi.fn()} size="focused" />);
+    expect(screen.queryByTestId('action-card-spent-overlay')).toBeNull();
   });
 });
