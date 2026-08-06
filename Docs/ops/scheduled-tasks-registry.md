@@ -150,6 +150,27 @@ Three consequences worth internalising:
 
 Because the fix is unversioned, the detector is the durable part: `keep-work-flowing-cc` step 2.7 runs `npm run check:task-heartbeat` hourly and puts any stalled lane in front of Christian within the hour. Its predicate requires a **sibling witness** (another enabled task with an equal-or-tighter cadence fired in the same window) precisely so a powered-off machine does not read as a fleet of broken lanes.
 
+## A pause and an outage look identical — the marker is what separates them (THR-1001)
+
+The sibling clause above has a corollary that cost a week: **a silence that stops every lane at once has no witness, so step 2.7 reports `ok`.** That is not a bug in the predicate — widening it would page on every overnight shutdown — but it does mean the fleet-wide case needs its own detector.
+
+Measured: between `2026-08-03 08:02` and `2026-08-05 22:36` (Monday to Wednesday, not a weekend) every hourly lane wrote nothing to `main` or `ops` — **61.9 hours**, confirmed independently by `npm run check:lane-silence` reading commit history. GitHub Actions was healthy throughout (`Stale Claim Sweep` kept firing on schedule), so nothing CI-side was implicated. No lane self-diagnosed it; `weekly-workflow-retro` found it a week later and reasonably read it as an outage. It was a **deliberate, controlled pause on token/usage limits**, and Christian flagged that it will recur.
+
+**The marker.** A pause is declared by creating a file:
+
+```
+C:\Users\chris\.claude\threadbare-pause.json
+```
+
+Any content is valid — free text (its first line becomes the reason), JSON `{ "reason", "since", "until" }`, or nothing at all. **Presence is the declaration; deleting the file ends the pause.** It lives outside the repo deliberately: setting it must not require an agent, a session, or a commit, and a token-limit pause is precisely when none of those are available. The marker suppresses both the fleet-silence alert (step 2.8) and step 2.7's per-lane stall verdict, which reports `paused` instead.
+
+**Two guards keep the marker from becoming the new silence:**
+
+- A marker with an `until` in the past covers *that window only* — it never blinds the probe to a later gap.
+- A marker still set while the lanes are demonstrably writing again reports `pause-stale` and asks for it to be deleted. A forgotten marker cannot quietly disable monitoring.
+
+**Detection is retrospective, by construction.** `check:lane-silence` runs inside `keep-work-flowing-cc`, which is one of the lanes that goes quiet, so it reports on the first run *after* resumption rather than during the outage. The gain is resolution — a repeat surfaces within `SILENCE_THRESHOLD_HOURS` (6, against a measured healthy maximum gap of 3h00m) of the fleet returning, instead of at the next weekly retro. True during-outage paging would need a watchdog outside the fleet and is deliberately not attempted.
+
 ## Prompt sources are mirrored into the repo
 
 Scheduled-task prompts live at `C:\Users\chris\.claude\scheduled-tasks\<id>\SKILL.md`, which is **outside** version control — merging a repo change does not deploy them, and a disk loss takes them with it. Copies are kept under `Docs/ops/scheduled-task-prompts/` so the prompts are reviewable and recoverable. **When you edit a live prompt, update its mirror in the same PR**; the mirror is a copy, not the source of truth.

@@ -44,7 +44,17 @@
  * |------------|----------------------------------------------------------------|---------------|
  * | `ok`       | no enabled task is behind its siblings                          | no  |
  * | `stalled`  | one or more tasks match the predicate above                     | **yes** |
+ * | `paused`   | tasks are behind, but a pause marker declares it deliberate      | no  |
  * | `unknown`  | input missing or unparseable                                    | no (fail-soft) |
+ *
+ * ## What this probe deliberately does not see (THR-1001)
+ *
+ * Clause 3 means a silence that stops **every** lane at once has no witness and
+ * reports `ok`. That is correct here and is asserted by this probe's own tests —
+ * but it is also exactly the shape of the 62-hour 2026-08-03 → 08-05 gap. The
+ * fleet-wide case belongs to `check-lane-silence.ts`, which reads commit history
+ * instead of `lastRunAt`. Do not widen clause 3 to cover it; that would destroy
+ * the guard this probe exists to be.
  *
  * A task that has never run (`lastRunAt` absent) is reported as `neverRun`
  * context, not a stall — a freshly registered monthly task is not a defect.
@@ -65,10 +75,12 @@
  *   npm run check:task-heartbeat --silent -- --input tasks.json --now 2026-07-28T07:24:00Z
  *
  * Flags: `--input <path>` (default stdin) · `--json` · `--strict` (exit 1 when a
- * human is needed) · `--now <iso>` (deterministic override for tests).
+ * human is needed) · `--now <iso>` (deterministic override for tests) ·
+ * `--pause-marker <path>` (override the deliberate-pause marker location).
  */
 
 import fs from "node:fs";
+import { describePause, isPauseActive, readPauseMarker, type PauseMarker } from "./pause-marker.ts";
 
 // --- Tunable constants (NFP #1) -------------------------------------------
 
@@ -104,7 +116,7 @@ interface StallFinding {
 }
 
 export interface HeartbeatResult {
-  verdict: "ok" | "stalled" | "unknown";
+  verdict: "ok" | "stalled" | "unknown" | "paused";
   needsChristian: boolean;
   checked: number;
   stalled: StallFinding[];
@@ -200,6 +212,38 @@ export function evaluate(tasks: ScheduledTask[], nowMs: number): HeartbeatResult
   };
 }
 
+// --- Deliberate pause (THR-1001) -------------------------------------------
+
+/**
+ * Suppress a stall verdict while a pause marker declares the fleet deliberately down.
+ *
+ * A token-limit pause stops every lane, but not all at the same instant — the last
+ * lane to fire before the pause is a valid witness for the ones whose slot came
+ * next, so the sibling clause can still fire on the way *into* a pause and report a
+ * declared pause as a broken lane. Christian's constraint is explicit: crying wolf
+ * on every future usage-limit pause is worse than the current silence.
+ *
+ * Applied at report time rather than inside `evaluate` so the underlying findings
+ * stay visible in `stalled[]` — the pause changes what needs a human, not what is true.
+ */
+export function applyPause(
+  result: HeartbeatResult,
+  marker: PauseMarker,
+  nowMs: number,
+): HeartbeatResult {
+  if (result.verdict !== "stalled" || !isPauseActive(marker, nowMs)) return result;
+
+  return {
+    ...result,
+    verdict: "paused",
+    needsChristian: false,
+    summary:
+      `Scheduled lanes are paused on purpose ("${marker.reason}") — ${result.stalled.length} lane(s) behind ` +
+      `(${result.stalled.map((s) => s.taskId).join(", ")}), which is expected while paused. Not an outage. ` +
+      `Delete ${marker.markerPath} on resume.`,
+  };
+}
+
 // --- CLI -------------------------------------------------------------------
 
 function unknown(reason: string): HeartbeatResult {
@@ -250,11 +294,16 @@ function main(): void {
     }
   }
 
+  const markerIdx = argv.indexOf("--pause-marker");
+  const marker = readPauseMarker(markerIdx !== -1 ? argv[markerIdx + 1] : undefined);
+  result = applyPause(result, marker, nowMs);
+
   if (asJson) {
     console.log(JSON.stringify(result));
   } else {
     console.log(`verdict: ${result.verdict}`);
     console.log(result.summary);
+    if (marker.present) console.log(describePause(marker));
     if (result.neverRun.length > 0) {
       console.log(`never run (not a stall): ${result.neverRun.join(", ")}`);
     }
