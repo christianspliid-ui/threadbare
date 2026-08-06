@@ -1,5 +1,5 @@
 ---
-needsChristian: thr-883-format-session, thr-907-verdict-links-ready, thr-998-risk-word-verdict, thr-961-sound-feel, thr-962-nudge-stage-cues, thr-1005-repro-question
+needsChristian: thr-883-format-session, thr-907-verdict-links-ready, thr-998-risk-word-verdict, thr-961-sound-feel, thr-962-nudge-stage-cues
 queue: backed-up
 freshness: healthy
 deploy: deployed
@@ -8,15 +8,15 @@ lanes: active
 ---
 # Briefing
 
-**Generated:** 2026-08-06 16:55 local (2026-08-06 14:55 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-08-06 19:00 local (2026-08-06 17:00 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
 ## Needs Christian
 
-**One new question this hour, and it's a short one — item 6.** The other five are the same asks, each re-checked against the live board rather than carried on the last run's word.
+**Down to five — your Discord message answered item 6 and closed it.** Nothing new arrived this hour. The five below are the same asks, each re-checked against the live board rather than carried on the last run's word.
 
-**If you have one hour, spend it on item 1. If you have two minutes, answer item 6** — it unblocks a fix that's currently half-finished for want of one detail only you have.
+**If you have one hour, spend it on item 1.**
 
 ### 1. The encounter-writing format session — the cork in the bottle
 
@@ -44,7 +44,7 @@ You're ruling on **four** things: does the prose read right, does the firing rhy
 
 **For the firing-rhythm question only** — [press play and let it run](https://threadbare.vercel.app/?view=game&seeded&size=medium&testavatar&forceencounters).
 
-**The build moved this afternoon, and one of your instructions is now out of date.** The links serve `979e6fb8`. **The five encounters themselves are untouched** — not one word of their prose changed, so if you were mid-decision, nothing has shifted under you. What *did* change is the aftermath — the screen after a hand resolves, the one you were told to ignore because it was a building site. Three fixes landed there in the last two hours: it now says which encounter you just played, its result chips read as words with pictures instead of raw numbers and internal names, and it tries to appear on its own. **You can look at it now if you want to. You still don't have to** — it isn't part of this verdict, and item 6 says it may still not appear reliably.
+**The build has not moved since the last brief** — the links still serve `979e6fb8`, the same build the previous brief described. Nothing has shifted under you if you were mid-decision.
 
 ### 3. The action cards promise a danger that isn't real
 
@@ -68,37 +68,37 @@ Both yes/no, both carried from the orchestrator lane:
 - **Where the encounter sounds should play.** They're wired to a screen that has since been replaced — should they move to the new encounter screen? ([THR-962](https://linear.app/threadbare/issue/THR-962/the-encounter-sound-design-is-wired-to-a-superseded-surface-route-it))
 - **How those sounds should feel.** A tuning pass on their character. ([THR-961](https://linear.app/threadbare/issue/THR-961/encounter-sound-design-feel-calibration-pass-thr-346-tuning-tail))
 
-### 6. NEW — what were you doing when the aftermath didn't appear?
+## From Christian
 
-You reported that the aftermath screen doesn't pop up on its own — you have to click the badge to get to it. Someone spent this afternoon on it ([THR-1005](https://linear.app/threadbare/issue/THR-1005)) and found **a** real bug on that path: one stale leftover could block every beat queued behind it, forever. That's fixed and shipped.
+**You answered the aftermath question, and it was the one thing that could unblock that ticket.** Your message, 16:04Z:
 
-**But they could not make your symptom happen.** Four different setups on the same world — one-step encounter, three-step encounter, veil closed mid-way, everything forced to pause — and in all four the aftermath appeared by itself, both with and without the fix. So the fix is hardening, not a confirmed cure, and the ticket is deliberately still open rather than being called done.
+> There were other modals waiting in the screen. The start modals where you get your first action cards came through. The second step came automatically but not the aftermath. I had to click the notification
 
-One question would probably settle it:
+**What was done with it:** carried onto [THR-1005](https://linear.app/threadbare/issue/THR-1005) verbatim, with a reading of what it settles. That ticket had been parked since 15:24Z on exactly this question — the session that parked it wrote that an answer "would probably collapse this", then it sat 40 minutes on a channel no working session reads. It is now on the ticket where the next session will find it.
 
-> **When the aftermath failed to appear — was it an encounter you had been clicking through step by step, or one that finished while you were looking somewhere else on the map? And were there other cards or beats stacked up on screen at the time, waiting to be dismissed?**
+**Why it matters, in plain terms.** Two sessions spent this afternoon trying to make your bug happen and couldn't — but both of them **cleared the screen first**, dismissing the stacked cards before driving an encounter. You didn't. That's the difference, and it's the state one of them had already flagged as the likely cause before accidentally destroying it. Your "the second step came automatically but not the aftermath" also confirms the shape they guessed at: a beat that's already finished holds the door open and the aftermath never gets its turn.
 
-The reason it matters: another session hit the same failure this morning and their world looked *different* from every reconstruction — the aftermath had been made and parked with nothing pointing at it, and they had beat cards stacked up unread. If that's your situation too, the bug is in a different place entirely and the search moves upstream. If it isn't, it's somewhere else again. Either answer saves a session.
+**Nothing is being asked of you here** — this is a report that your two sentences probably saved a session. The repro route is now specific enough to work from.
 
 ## Queue
 
-**Backed up — 32 items ready to pick up**, planning still outrunning execution. Two items came *off* the shelf this afternoon rather than joining it, which is the right direction.
+**Backed up — 33 items ready to pick up**, planning still outrunning execution. Two new items joined this afternoon, both from the interface-rules work: one high-priority (a panel showing players raw internal numbers) and one medium (older panels adopting the new rules).
 
-**The queue is back to being entirely low-priority housekeeping.** All three of this morning's high-priority aftermath tickets are now built and merged — that's the work you split out of the verdict session, specified this morning and shipped by this afternoon.
+**Everything else on the shelf is low-priority housekeeping.** Six items have gone quiet for a week or more, all low-priority engine and content cleanups — unchanged in character from last week.
 
-**Two items in progress, no unowned parks** (ninth consecutive hour at zero). One is the format hold you already decided (THR-860, parked on purpose behind item 1 — no action needed); the other is the aftermath ticket in item 6, deliberately held open for your answer. **Seven items have gone quiet for a week or more**, all low-priority engine and content cleanups; unchanged in character from last week.
+**Three items in progress, one of them unowned.** The unowned one is the aftermath ticket above — it was deliberately held open for your answer, which has now landed on it, so it is ready for a session rather than stuck. The other two are yours in name only: the content batch parked on purpose behind item 1, and a small formatting fix whose change is queued to merge.
+
+**One thing needs a working session, not you:** the fix branch for that aftermath ticket has been sitting for an hour and a half set to merge automatically, but its test run is failing rather than pending — so it will never merge on its own. That's a mechanical fact, already recorded on the ticket, and it is an agent's to clear.
 
 ## Freshness
 
-**Home tree is current** — on `main`, nothing behind, nothing stranded. Two settings files show local edits, as they have all week, and autosync is provably keeping up regardless. The worktree reaper ran 15 minutes ago and is healthy (37 worktrees, 2 awaiting a human call).
+**Home tree is current** — on `main`, nothing behind, nothing stranded. Two settings files show local edits, as they have all week, and autosync is provably keeping up regardless. The worktree reaper ran 20 minutes ago and is healthy (38 worktrees, 2 awaiting a human call).
 
-**The live site is serving the newest commit.** Scheduled background jobs all firing on time (9 of 9); automated checks healthy; nothing is stuck waiting to merge.
-
-**The pause detector from the 3–5 August silence is now live.** It merged this afternoon, so a repeat of that window would be caught within hours instead of at the next weekly review — and because you have a way to mark a pause as deliberate, a planned one won't set off any alarms.
+**The live site is serving the newest commit.** Scheduled background jobs all firing on time (9 of 9); automated checks healthy; the lane-silence detector reports normal activity with the early-August pause correctly recognised as deliberate.
 
 ## What's moving
 
-Busy two hours. Three aftermath fixes shipped (the screen now names its encounter, reads its results as words rather than raw numbers, and attempts to appear unprompted), plus the pause-versus-outage detector. The pickup lane ran at 14:01 and the orchestrator swept at 14:27, promoting one small formatting defect.
+Quieter hour than the last. The pickup lane ran at 16:01 and the orchestrator swept at 16:27. Three changes are queued and waiting on their checks: the interface-rules document, a small event-naming fix, and the aftermath fix noted above.
 
 ---
 *Standing asks live in `Design/user-actions.md`. This file is regenerated hourly by the `keep-work-flowing-cc` scheduled task; staleness is visible from the Generated timestamp above and the task's `lastRunAt` in `list_scheduled_tasks`.*
