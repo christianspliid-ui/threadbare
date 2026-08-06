@@ -58,6 +58,22 @@ export const PLAYER_CAST_PUSH_ENABLED: boolean = false;
  * This bonus applies to player-sourced resolution ONLY. It deliberately does not
  * touch `computeRawScore`, so the ascendant's displayed tier and THR-613's
  * Deepening tier-crossing thresholds keep reading the score they were tuned on.
+ *
+ * **THR-766 balance verdict (2026-08-06): keep 6 / 0.5.** Re-measured over 400
+ * seeded streams per cell. A fresh god reads capability 0.168 off-domain, 0.231 on
+ * a secondary reach (affinity 2), 0.354 on a primary (affinity 5); at `local` scale
+ * — 79% of the actor-target slot list — a primary-reach cast lands 64.8%
+ * success-at-cost / 28.0% success / 4.3% near-miss / 3.0% critical-success, and
+ * never fails. That is the rulebook's texture, so the number stays.
+ *
+ * The argument for keeping it is stronger than "it measures fine", and worth
+ * stating because the obvious move is to raise it: at `local` and `personal` scale
+ * the scale floor clamps authored difficulty to zero (THR-998), so this base raw is
+ * the *only* term that moves the outcome distribution there. It is therefore not
+ * just a starting point — it is the entire range `reachPractice` has to walk across
+ * a run. Raising it to 10 puts a fresh god at 50% success-at-cost / 41% clean,
+ * spending most of the Deepening arc before the first cast. Pinned by
+ * `playerCastBalance.test.ts`, which goes red on any change to either constant.
  */
 export const ASCENDANT_CAST_BASE_RAW = 6;
 
@@ -79,6 +95,27 @@ export function ascendantCastRawBonus(affinity: number | undefined): number {
 /**
  * Difficulty cut-points for the focused card's qualitative risk line.
  * `[steady-below, uncertain-below]` — at or above the second value reads perilous.
+ *
+ * **THR-766 balance verdict (2026-08-06): keep [0.25, 0.45].** Re-read against the
+ * live actor-target slot list as the drawer actually builds it — `targetCategories`
+ * including `actor`, positive difficulty, 519 templates — the shipped cut-points
+ * spread 19% steady / 50% uncertain / 30% perilous. THR-766 was filed on a sample
+ * reading 7-of-10 perilous; that does not reproduce, because the sample was drawn
+ * when the pool held ~84 such templates, before the WS5 migration grew it to 519.
+ * Every widening candidate tested makes the spread worse: [0.35, 0.55] → 49/38/13,
+ * [0.40, 0.60] → 61/29/10, both dominated by `steady`.
+ *
+ * Read the pool through `actorAffinities: ['ascendant']` and you get 8 templates
+ * instead of 519 — `getTargetActionSlots` gates on `targetCategories` and never on
+ * `actorAffinities`, so that reading makes any spread measurement vacuous. The
+ * spread assertion in `playerCastBalance.test.ts` guards its own population size
+ * for exactly this reason.
+ *
+ * Known limit — see THR-998: this word is computed from authored difficulty, which
+ * the per-scale probability floor clamps away at `local` and `personal` (85% of the
+ * slot list). The line is therefore truthful about the template and silent about
+ * the player's odds. Re-pricing templates or moving these cut-points changes only
+ * which word prints, never the roll, which is why THR-766 changed neither.
  */
 export const RISK_HINT_THRESHOLDS: readonly [number, number] = [0.25, 0.45];
 
