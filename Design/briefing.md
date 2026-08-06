@@ -2,18 +2,18 @@
 needsChristian: thr-907-verdict-links-ready, thr-883-format-session, thr-961-sound-feel, thr-962-nudge-stage-cues
 queue: backed-up
 freshness: healthy
-deploy: skipped
+deploy: deployed
 tasks: ok
 ---
 # Briefing
 
-**Generated:** 2026-08-06 00:58 local (2026-08-05 22:58 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-08-06 01:55 local (2026-08-05 23:55 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
 ## Needs Christian
 
-**The same four things, and I checked each one directly rather than carrying last hour's word.** Nothing new arrived; nothing cleared. All four are yours to play, judge, or listen to. None is urgent tonight.
+**The same four things, each checked directly against the board rather than carried on last hour's word.** Nothing new arrived; nothing cleared. All four are yours to play, judge, or listen to. None is urgent tonight.
 
 ### 1. The encounter verdict — five encounters, four rulings
 
@@ -31,7 +31,7 @@ You're ruling on **four** things: does the prose read right, does the firing rhy
 
 **For the firing-rhythm question only** — [press play and let it run](https://threadbare.vercel.app/?view=game&seeded&size=medium&testavatar&forceencounters).
 
-**Still the real thing.** Everything that merged in the last hour was notes and documentation, so the live site is unchanged and still serving the same build you'd have played an hour ago — army supply included.
+**The live site did rebuild in the last hour, and the game is unchanged by it.** What shipped was build plumbing and notes — nothing that touches an encounter, a card, or the map. **You would play exactly the same five encounters as an hour ago.** Said plainly because "a new build went out" and "something changed for you" are different claims, and only the first is true.
 
 ### 2. The encounter-writing format session — the biggest bottleneck on the board
 
@@ -52,21 +52,22 @@ Both are stuck until you've heard them. Neither is urgent.
 
 **Backed up — 37 items ready for work.** Planning stays well ahead of execution; nothing is starving.
 
-- **Still no urgent, high, or medium work anywhere in the ready column** — all 37 items are low or no priority. Unchanged for days, and worth knowing rather than acting on.
-- **Nothing is parked.** Both tickets in progress have someone on them.
+- **Still no urgent, high, or medium work anywhere in the ready column** — all 37 items are low or no priority. Unchanged for days, and worth knowing rather than acting on. (The one urgent row on the board is your format session, which sits in design, not in the ready column.)
+- **Nothing is parked.** The single ticket in progress has someone on it.
 - **THR-860** — the four finished capital-city encounter templates — is still held behind your format decision above, deliberately and with the hold written on the ticket. Not a separate ask.
-- **Fifteen items have gone untouched for a week or more** — the same fifteen as the last two hours. Flat for a third hour running, which is the evidence that this was the two-and-a-half-day pause showing up in the arithmetic rather than fresh neglect. Grooming input, not an alarm.
+- **Fourteen items have gone untouched for a week or more,** down from fifteen. Grooming input, not an alarm.
 
 ## Freshness
 
 - **Home tree: current.** On `main`, fully up to date, nothing stranded. Two of your own tool-settings files still show as modified — harmless, and the auto-sync keeps fast-forwarding straight past them.
-- **Live site: unchanged, and correctly so.** Everything merged since the last build was notes and documentation, so no rebuild was needed. The game itself is up to date.
-- **One job for the next executor session, not for you:** the work in progress right now (THR-988) has an open change that has developed a collision with the project-status page — two sessions edited the same file. It needs someone to merge and untangle it by hand; the automatic tools can't. It has been in that state for about an hour and a half, which is inside the normal window, so nobody is late yet.
-- **All automated lanes on time** (9 of 9), merge checks healthy, cleanup job ran 18 minutes ago. Nothing here needs you.
+- **Live site: rebuilt and current,** now serving the newest commit. As noted above, what changed was plumbing and notes, not the game.
+- **Last hour's one job for an executor is done.** The tangled change on the project-status page (THR-988) was untangled, merged, and closed out without needing you. Nothing has replaced it — no change is stuck.
+- **All automated lanes on time** (9 of 9), merge checks healthy, cleanup job ran 15 minutes ago. Nothing here needs you.
+- **One thing to watch, for an agent and not for you:** the weekly drift-scan job has failed 3 of its last 5 scheduled runs, though the two most recent both succeeded. The health check calls it healthy on that basis; it is on the agent-side list as a gap in how that check grades partial failure.
 
 ## What's moving
 
-The executor is on **THR-988**, a workflow-plumbing fix that stops five copies of the same rule drifting apart. Its change is open but tangled with another edit to the same page — noted above as a job for the next session.
+**THR-988 shipped** — the workflow-plumbing fix that stops five copies of the same rule drifting apart. That clears the executor's plate; nothing else is in progress, and the next hourly pickup will draw fresh from the ready column.
 
 Nothing else merged this hour beyond notes and documentation.
 
