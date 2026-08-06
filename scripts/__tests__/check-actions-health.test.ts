@@ -1,8 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
 import {
   BILLING_ANNOTATION_PATTERN,
+  STALL_MIN_SECONDS,
   STARTUP_FAILURE_MAX_SECONDS,
   classifyActionsHealth,
+  isStalledRun,
   isStartupFailure,
   type ActionsHealthInput,
   type ProbeOutcome,
@@ -26,6 +28,7 @@ function run(overrides: Partial<WorkflowRunRecord> = {}): WorkflowRunRecord {
     createdAtMs: NOW_MS,
     updatedAtMs: NOW_MS + 5 * 60 * 1000,
     startupFailure: false,
+    stalled: false,
     ...overrides,
   };
 }
@@ -36,6 +39,16 @@ function startupFailed(overrides: Partial<WorkflowRunRecord> = {}): WorkflowRunR
     conclusion: "failure",
     updatedAtMs: NOW_MS + 3 * 1000,
     startupFailure: true,
+    ...overrides,
+  });
+}
+
+/** A run that hung waiting for a runner — the 2026-08-06 signature (THR-1013). */
+function stalledRun(overrides: Partial<WorkflowRunRecord> = {}): WorkflowRunRecord {
+  return run({
+    conclusion: "cancelled",
+    updatedAtMs: NOW_MS + 15 * 60 * 1000,
+    stalled: true,
     ...overrides,
   });
 }
@@ -142,6 +155,67 @@ describe("classifyActionsHealth", () => {
     expect(result.standDown).toBe(false);
   });
 
+  /**
+   * The regression this whole class exists for. On 2026-08-06 the probe returned
+   * `healthy` twice while six armed PRs could not merge, because a hung run
+   * matches no clause of the billing signature. `healthy` must now be reachable
+   * only when BOTH classes are absent.
+   */
+  it("reports stalled — never healthy — when runs hung waiting for a runner (THR-1013)", () => {
+    const probe = vi.fn<[WorkflowRunRecord], ProbeOutcome>(() => "reproduced");
+
+    const result = classifyActionsHealth(
+      input({ runs: [stalledRun(), stalledRun(), stalledRun()], probe }),
+    );
+
+    expect(result.verdict).toBe("stalled");
+    expect(result.stalledCount).toBe(3);
+    expect(result.startupFailureCount).toBe(0);
+    // A stall has no billing remedy, so it must not burn a re-run to ask.
+    expect(probe).not.toHaveBeenCalled();
+  });
+
+  /**
+   * `cancelled` does NOT satisfy branch protection the way `skipped` does, so
+   * nothing unsafe can merge during a stall — only nothing at all can. Idling the
+   * lane would forfeit delivery to guard a risk that is not present.
+   */
+  it("keeps the lane working during a stall — visibility, not a halt", () => {
+    const result = classifyActionsHealth(input({ runs: [stalledRun()] }));
+
+    expect(result.standDown).toBe(false);
+    expect(result.needsChristian).toBe(false);
+    expect(result.summary).toMatch(/nothing unsafe can merge/i);
+  });
+
+  it("reports recovered when a stall has cleared, without probing", () => {
+    const probe = vi.fn<[WorkflowRunRecord], ProbeOutcome>(() => "reproduced");
+
+    const result = classifyActionsHealth(
+      input({ runs: [run(), stalledRun(), stalledRun()], probe }),
+    );
+
+    expect(result.verdict).toBe("recovered");
+    expect(result.stalledCount).toBe(2);
+    expect(result.summary).toMatch(/hung waiting for a machine/i);
+    expect(probe).not.toHaveBeenCalled();
+  });
+
+  /**
+   * The two classes are independent, and a billing block is the one that makes
+   * the gate vacuous — so it must keep winning when both are in the window.
+   */
+  it("prefers billing-block over stalled when both classes are present", () => {
+    const result = classifyActionsHealth(
+      input({ runs: [startupFailed(), stalledRun()], probe: () => "reproduced" }),
+    );
+
+    expect(result.verdict).toBe("billing-block");
+    expect(result.standDown).toBe(true);
+    expect(result.stalledCount).toBe(1);
+    expect(result.startupFailureCount).toBe(1);
+  });
+
   it("probes the newest completed startup failure, not an older one", () => {
     const newest = startupFailed({ id: 100 });
     const older = startupFailed({ id: 99 });
@@ -216,5 +290,69 @@ describe("isStartupFailure", () => {
     expect(BILLING_ANNOTATION_PATTERN.test("recent account payments have failed")).toBe(true);
     expect(BILLING_ANNOTATION_PATTERN.test("your spending limit needs to be increased")).toBe(true);
     expect(BILLING_ANNOTATION_PATTERN.test("The runner has received a shutdown signal")).toBe(false);
+  });
+});
+
+describe("isStalledRun", () => {
+  /**
+   * Measured from run 31124028840 (PR #1326, THR-1008): `Detect code changes`
+   * cancelled at 15m03s with an empty step list, taking the required check with
+   * it. Both jobs report zero steps.
+   */
+  it("accepts the real 2026-08-06 signature — 15 minutes, zero steps, cancelled", () => {
+    expect(
+      isStalledRun({
+        conclusion: "cancelled",
+        durationSeconds: 903,
+        jobStepCounts: [0, 0, 0],
+      }),
+    ).toBe(true);
+  });
+
+  it("accepts the same shape concluding failure — the run-level conclusion varies", () => {
+    expect(
+      isStalledRun({ conclusion: "failure", durationSeconds: 1808, jobStepCounts: [0, 0, 0] }),
+    ).toBe(true);
+  });
+
+  /** A concurrency supersede reaps a queued run promptly; only duration separates them. */
+  it("rejects a quickly-cancelled run — that is a concurrency supersede, not a stall", () => {
+    expect(
+      isStalledRun({
+        conclusion: "cancelled",
+        durationSeconds: STALL_MIN_SECONDS - 1,
+        jobStepCounts: [0, 0],
+      }),
+    ).toBe(false);
+  });
+
+  /** The healthy 20:05Z dispatch run: detect executed 7 steps. */
+  it("rejects a run where any job executed steps, however long it took", () => {
+    expect(
+      isStalledRun({ conclusion: "failure", durationSeconds: 3600, jobStepCounts: [7, 0, 0] }),
+    ).toBe(false);
+  });
+
+  it("rejects a successful run", () => {
+    expect(
+      isStalledRun({ conclusion: "success", durationSeconds: 900, jobStepCounts: [0] }),
+    ).toBe(false);
+  });
+
+  /**
+   * Fail-soft (NFP #4): `fetchRunJobStepCounts` returns `[]` when the jobs cannot
+   * be read. Without the `length > 0` guard, "every job has zero steps" would be
+   * vacuously true and an unreadable run would manufacture an outage.
+   */
+  it("rejects a run whose jobs could not be read at all", () => {
+    expect(
+      isStalledRun({ conclusion: "cancelled", durationSeconds: 900, jobStepCounts: [] }),
+    ).toBe(false);
+  });
+
+  it("rejects an in-flight run", () => {
+    expect(
+      isStalledRun({ conclusion: null, durationSeconds: 900, jobStepCounts: [0] }),
+    ).toBe(false);
   });
 });

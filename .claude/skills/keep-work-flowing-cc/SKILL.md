@@ -172,10 +172,12 @@ This has now happened four times (impediments #91, #136, plus 2026-07-25 and 202
 npm run check:actions --silent -- --json
 ```
 
-One line of JSON: `{ verdict, summary, needsChristian, standDown, startupFailureCount }`.
+One line of JSON: `{ verdict, summary, needsChristian, standDown, startupFailureCount, stalledCount }`.
 
 - **`needsChristian: true`** (verdict `billing-block`) → put the `summary` verbatim into **`## Needs Christian`**. It already names the account setting to fix; do not re-word it into Actions jargon.
-- **`needsChristian: false`** (`healthy`, `recovered`, `transient`, `unknown`) → one line under **Freshness**, or omit entirely when `healthy`. A working merge gate is not news.
+- **`needsChristian: false`** (`healthy`, `recovered`, `transient`, `stalled`, `unknown`) → one line under **Freshness**, or omit entirely when `healthy`. A working merge gate is not news.
+
+**`stalled` is news, even though it is not Christian's to fix (THR-1013).** It means GitHub accepted our jobs, gave them no machine, and reaped them — so PRs pile up armed and unmerged while everything *looks* fine. Report it under **Freshness** with the `stalledCount`, and do not put it under `## Needs Christian`: there is no setting to change and it clears on its own. Its predecessor shape reported `healthy` for ~4 hours on 2026-08-06 while six armed PRs could not merge, which is the whole reason the verdict exists.
 
 **The probe re-runs a workflow to disambiguate, and that is the point.** A transient resumes; a billing block reproduces in ~3 seconds with the same annotation. Judging by eye instead produced one wrong call on 2026-07-25, retracted four minutes later (`Design/user-actions.md`, 15:16). The re-run fires only when the newest *completed* run died at startup, so a window that has already recovered costs nothing.
 
