@@ -829,6 +829,32 @@ export const CONTRACTS: readonly Contract[] = [
     },
   },
   {
+    id: 'draw-together-carries-caster-sphere-to-the-name',
+    producerSystem: COMPANIES,
+    consumerSystem: COMPANIES,
+    intent:
+      'A company gathered by a god carries that god in its name — the sphere the verb was cast under reaches the naming of the company it produces, one tick later.',
+    ulTerms: ['Company', 'Draw Together', 'Sphere'],
+    // The carrier is a property on the *pulled mortals*, because the company does not
+    // exist when the op fires — the formation scan mints it later and reads the flavor
+    // back off whichever member it gathered. Named here for the reason THR-770 exists:
+    // this whole path failed silently for the life of the feature. `generateGroupName`
+    // ends in `?? []`, so a write/read key mismatch produces a perfectly ordinary name
+    // with no warning, no throw, and no failing test — indistinguishable from a god
+    // who simply had no alignment.
+    mechanism: {
+      kind: 'property',
+      symbols: ['convergePullSphere'],
+    },
+    writeSites: ['src/engine/graphOpExecutor.ts'],
+    readSites: ['src/engine/groups/groupFormation.ts'],
+    verifiedLive: {
+      date: '2026-08-06',
+      evidence:
+        'src/engine/__tests__/graphOpExecutor.drawTogether.test.ts § "stamps the caster\'s primary sphere on every mortal it pulls" asserts the written key; src/engine/groups/__tests__/groupFormationCause.test.ts § convergencePullSphere asserts the read, including that an expired pull is ignored. The read end is falsified independently by src/data/__tests__/group-name-content.test.ts, which requires the sphere pool to change generated output — a dead key leaves it byte-identical, which is exactly the state THR-770 found.',
+    },
+  },
+  {
     id: 'reunion-reads-the-edges-not-the-roster',
     producerSystem: COMPANIES,
     consumerSystem: COMPANIES,

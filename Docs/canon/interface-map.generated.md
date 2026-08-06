@@ -15,12 +15,12 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 44 |
+| 🟢 LIVE | 45 |
 | 🟠 PARTIAL | 1 |
 | 🔴 LEAKED | 7 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 7 |
-| **Total** | **59** |
+| **Total** | **60** |
 
 ## Contracts by producing subsystem
 
@@ -84,6 +84,7 @@ remediation ticket or the build fails.
 | `company-position-derives-from-leader` | A company has no position of its own — asking where it is means asking where its leader is, so there is never a second spatial truth to drift. | function: `getGroupPosition` | Movement & Colocation | 🟢 LIVE | — |
 | `confrontation-content-gated-on-a-live-opponent` | An encounter about fighting a particular band is only offered while that band is standing there — a confrontation never surfaces against nobody. | function: `requiresOpposingBand`, `hasOpposingBand` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `contested-outcome-band-reaches-the-player` | Losing a fight reads differently from merely failing — a contested loss says so in the chronicle and the receipt. | function: `contestedOutcomeFor`, `contested_won` | Encounters & Dilemmas | 🟢 LIVE | — |
+| `draw-together-carries-caster-sphere-to-the-name` | A company gathered by a god carries that god in its name — the sphere the verb was cast under reaches the naming of the company it produces, one tick later. | property: `convergePullSphere` | Companies & Group Travel | 🟢 LIVE | — |
 | `group-grudge-reaches-the-mortal-sheet` | A company that has fought someone carries it visibly — the mortal sheet names the rival in prose, so blood between companies is legible without a trace viewer. | edge-prop: `hostile_to`, `rivals` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
 | `reunion-reads-the-edges-not-the-roster` | Who once rode with a company survives its ending — the record is the membership edges dissolution stamped, never the roster it emptied. | property: `leftAtTick` | Companies & Group Travel | 🟢 LIVE | — |
 | `reunite-rides-draw-together-convergence` | A god calling a dead company back does not invent a new kind of pull — the scattered feel exactly the tug Draw Together uses, so their own encounter choices bend homeward. | property: `convergePullHexCol`, `convergePullHexRow`, `convergePullUntilTick` | Encounters & Dilemmas | 🟢 LIVE | — |
@@ -474,6 +475,16 @@ remediation ticket or the build fails.
 - **Read sites:** `src/components/Game/ChapterView.tsx`, `src/engine/playerReceipts.ts`
 - **Other hits:** `src/types/unifiedAction.ts`
 - **Verdict:** Verified 2026-07-25: contested_won/contested_lost shipped with TB-044 and had display strings in ChapterView, a playerReceipts severity mapping, and an isActionSuccess branch — with ZERO producers until this PR (grep at implementation time: the only non-declaration hits were the consumer-side switch arms). phaseUnifiedActionProgress now stamps the band on both sides of a resolved group contest, so the vocabulary the UI was already built to speak finally gets spoken. Locked by bandOpposition.test.ts § "gives the contested outcome band its first production producer".
+
+### `draw-together-carries-caster-sphere-to-the-name` — 🟢 LIVE
+
+- **Intent:** A company gathered by a god carries that god in its name — the sphere the verb was cast under reaches the naming of the company it produces, one tick later.
+- **Producer → Consumer:** Companies & Group Travel → Companies & Group Travel
+- **UL terms:** *Company*, *Draw Together*, *Sphere*
+- **Production hits:** 2 total — 1 write, 1 read, 0 unclassified
+- **Write sites:** `src/engine/graphOpExecutor.ts`
+- **Read sites:** `src/engine/groups/groupFormation.ts`
+- **Verdict:** Verified 2026-08-06: src/engine/__tests__/graphOpExecutor.drawTogether.test.ts § "stamps the caster's primary sphere on every mortal it pulls" asserts the written key; src/engine/groups/__tests__/groupFormationCause.test.ts § convergencePullSphere asserts the read, including that an expired pull is ignored. The read end is falsified independently by src/data/__tests__/group-name-content.test.ts, which requires the sphere pool to change generated output — a dead key leaves it byte-identical, which is exactly the state THR-770 found.
 
 ### `economy-context-scene-scoring` — 🟢 LIVE
 

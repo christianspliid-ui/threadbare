@@ -91,7 +91,13 @@ export function generateGroupName(ctx: GroupNameContext): string {
   const adjectives: string[] = [
     ...GROUP_NAME_ADJECTIVES,
     ...(ctx.cause ? GROUP_NAME_CAUSE_ADJECTIVES[ctx.cause] ?? [] : []),
-    ...(ctx.sphereId ? GROUP_NAME_SPHERE_ADJECTIVES[ctx.sphereId] ?? [] : []),
+    // Widened to a string index deliberately: `sphereId` arrives from graph properties
+    // as an unvalidated string, while the table is keyed by the closed `SphereName` set
+    // (THR-770). The `?? []` is the fail-soft row for an id outside that set — same
+    // idiom as `sphereFromReach` in components/icons/constants.
+    ...(ctx.sphereId
+      ? (GROUP_NAME_SPHERE_ADJECTIVES as Record<string, readonly string[]>)[ctx.sphereId] ?? []
+      : []),
   ];
 
   // Render every pattern once (each draws from `rng`, so the sequence is fixed),
