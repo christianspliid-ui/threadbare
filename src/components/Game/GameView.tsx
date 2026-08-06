@@ -129,6 +129,7 @@ import { DivineReceiptModal } from './DivineReceiptModal';
 import {
   buildActiveEncounterDisplayFromLegacyProgress,
   buildActiveEncounterDisplayFromUnifiedAction,
+  isStepNotificationSupersededByAftermath,
   runEncounterAutoOpenScan,
   type ActiveEncounterDisplay,
   selectEncounterRuntimeForDisplay,
@@ -1339,6 +1340,15 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     );
     if (!encounter) return false;
     if (notif.stepIndex !== undefined && notif.stepIndex !== encounter.currentStepIndex) return false;
+    // THR-1005: the final step of a resolved action still matches `currentStep`
+    // (it freezes rather than advancing), so the stepIndex check above cannot
+    // catch it. Left openable it eats the one auto-interrupt slot and the
+    // aftermath queued behind it never pops on its own.
+    if (isStepNotificationSupersededByAftermath(
+      notif,
+      activeAction,
+      gameState.encounterNotifications ?? [],
+    )) return false;
     const threadTier = courtPositionToThreadTier(notif.courtPosition);
     const clearanceGateRuntimeId = activeAction?.clearanceGateIds?.[0];
     const clearanceGateStateSnapshot = clearanceGateRuntimeId
@@ -1358,7 +1368,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       clearanceGateStateSnapshot,
     });
     return true;
-  }, [gameState.clearanceGateStates, gameState.encounterProgress, gameState.tick, gameState.unifiedActions]);
+  }, [gameState.clearanceGateStates, gameState.encounterNotifications, gameState.encounterProgress, gameState.tick, gameState.unifiedActions]);
 
   // THR-664: encounter activity is anchored to the entity it concerns. Pending
   // notifications become badges on the agent's thread row instead of toasts in

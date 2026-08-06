@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest';
 import {
+  isStepNotificationSupersededByAftermath,
   runEncounterAutoOpenScan,
   selectEncounterRuntimeForNotification,
   shouldAutoOpenEncounterNotification,
@@ -208,5 +209,83 @@ describe('encounter auto-open scan (THR-1005)', () => {
 
     expect(opened).toBeNull();
     expect(attempts).toHaveLength(3);
+  });
+});
+
+describe('spent final-step notification vs its own aftermath (THR-1005)', () => {
+  /**
+   * The state measured live at `?view=game&seeded&size=medium&spawn=tg.senior.jewel_heist`
+   * after driving the encounter to resolution with `__DEBUG.tick`: the action is
+   * resolved, `currentStep` has frozen at 2, and the queue holds three step
+   * notifications plus the aftermath appended last.
+   *
+   * Steps 0 and 1 decline on the THR-664 stepIndex mismatch. **Step 2 does not** —
+   * its `stepIndex` still equals the frozen `currentStep`. That is the record
+   * that ate the auto-interrupt slot and kept the aftermath behind a badge click.
+   */
+  const resolvedAction = { actionId: 'ua_1', resolved: true } as any;
+  const liveQueueAtResolution = () => [
+    { id: 'n_step0', kind: 'encounter', actionId: 'ua_1', stepIndex: 0, resolved: false, autoResolveTick: null },
+    { id: 'n_step1', kind: 'encounter', actionId: 'ua_1', stepIndex: 1, resolved: false, autoResolveTick: null },
+    { id: 'n_step2', kind: 'encounter', actionId: 'ua_1', stepIndex: 2, resolved: false, autoResolveTick: null },
+    { id: 'n_aftermath', kind: 'aftermath', actionId: 'ua_1', stepIndex: 2, resolved: false, autoResolveTick: null },
+  ] as any[];
+
+  it('supersedes the final step notification once its own aftermath is pending', () => {
+    const queue = liveQueueAtResolution();
+    expect(isStepNotificationSupersededByAftermath(queue[2], resolvedAction, queue)).toBe(true);
+  });
+
+  it('never supersedes the aftermath itself — that is the beat we are routing to', () => {
+    const queue = liveQueueAtResolution();
+    expect(isStepNotificationSupersededByAftermath(queue[3], resolvedAction, queue)).toBe(false);
+  });
+
+  it('leaves a live encounter alone — an unresolved action still owns its steps', () => {
+    const queue = liveQueueAtResolution();
+    const liveAction = { actionId: 'ua_1', resolved: false } as any;
+    expect(isStepNotificationSupersededByAftermath(queue[2], liveAction, queue)).toBe(false);
+  });
+
+  it('cannot strand a beat: a resolved action with no pending aftermath keeps its step', () => {
+    const queue = liveQueueAtResolution().slice(0, 3); // aftermath absent (digest tier)
+    expect(isStepNotificationSupersededByAftermath(queue[2], resolvedAction, queue)).toBe(false);
+
+    const acknowledged = liveQueueAtResolution();
+    acknowledged[3].resolved = true; // player already acknowledged the aftermath
+    expect(isStepNotificationSupersededByAftermath(acknowledged[2], resolvedAction, acknowledged)).toBe(false);
+  });
+
+  it('does not cross-talk between encounters — another action\u2019s aftermath is not this step\u2019s', () => {
+    const queue = [
+      { id: 'n_step2', kind: 'encounter', actionId: 'ua_1', stepIndex: 2, resolved: false, autoResolveTick: null },
+      { id: 'n_other', kind: 'aftermath', actionId: 'ua_9', stepIndex: 0, resolved: false, autoResolveTick: null },
+    ] as any[];
+    expect(isStepNotificationSupersededByAftermath(queue[0], resolvedAction, queue)).toBe(false);
+  });
+
+  it('legacy encounters are untouched — no unified action means no supersession', () => {
+    const queue = liveQueueAtResolution();
+    expect(isStepNotificationSupersededByAftermath(queue[2], undefined, queue)).toBe(false);
+  });
+
+  it('the scan now reaches the aftermath through the real opener predicate', () => {
+    const queue = liveQueueAtResolution();
+    const attempts: string[] = [];
+    // `currentStep` freezes at the final index when the action resolves — this is
+    // the value that makes n_step2 pass THR-664's check while n_step0/1 fail it.
+    const frozenCurrentStep = 2;
+    // The opener as it actually behaves: THR-664 stepIndex decline, then the
+    // THR-1005 supersession check. No stub that assumes steps decline.
+    const realOpener = (notif: any) => {
+      attempts.push(notif.id);
+      if (notif.stepIndex !== undefined && notif.stepIndex !== frozenCurrentStep) return false;
+      if (isStepNotificationSupersededByAftermath(notif, resolvedAction, queue)) return false;
+      return true;
+    };
+    const opened = runEncounterAutoOpenScan(queue, null, realOpener);
+
+    expect(opened).toBe('n_aftermath');
+    expect(attempts).toEqual(['n_step0', 'n_step1', 'n_step2', 'n_aftermath']);
   });
 });
