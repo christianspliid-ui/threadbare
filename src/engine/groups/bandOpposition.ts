@@ -182,11 +182,25 @@ export function hasOpposingBand(graph: WorldGraph, actorId: string): boolean {
 
 // ─── Synthesis ──────────────────────────────────────────────────
 
-let counterCounter = 0;
-
-/** Reset the synthetic-counter id sequence. Test seam only. */
-export function resetBandCounterIds(): void {
-  counterCounter = 0;
+/**
+ * The id a synthesized counter carries.
+ *
+ * Derived from the action it answers rather than drawn from a sequence (THR-817).
+ * A monotonic counter at module scope survives the session boundary, so a second
+ * same-seed run in the same process continued the first run's numbering and two
+ * provably identical simulations serialised different ids — measured at tick 82,
+ * `ua_band_counter_11` against `ua_band_counter_6`, every other field byte-identical.
+ *
+ * Derivation is unique by construction rather than by bookkeeping, which is why it
+ * is preferred here over moving the sequence onto `SimulationRuntime`: relocating a
+ * counter keeps a value that depends on *how many* counters were minted earlier,
+ * while this one depends only on *what* is being answered. Three facts make it
+ * total — `collectBandOppositions` mints at most one counter per initiator action,
+ * a counter never becomes an initiator itself (`counterToActionId` short-circuits
+ * the loop), and the pool holding them is local to a single tick.
+ */
+export function bandCounterIdFor(initiatorActionId: string): string {
+  return `ua_band_counter_${initiatorActionId}`;
 }
 
 /** The template id a band answers with, fail-soft for an unrecognized role. */
@@ -223,7 +237,7 @@ export function synthesizeBandCounter(
   if (!leader || isAgentGone(leader)) return undefined;
 
   return {
-    actionId: `ua_band_counter_${++counterCounter}`,
+    actionId: bandCounterIdFor(action.actionId),
     actorId: leader.id,
     templateId: counterTemplateFor((band.properties as Record<string, unknown>).bandRole),
     // Same target as the action it answers — the fight is over the same thing.

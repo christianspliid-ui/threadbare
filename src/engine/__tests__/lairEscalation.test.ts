@@ -550,6 +550,7 @@ describe('phaseLairEscalation — adjacent spawn', () => {
     // Should not throw
     expect(() => phaseLairEscalation(state)).not.toThrow();
   });
+
 });
 
 // ─── Test 8: Determinism ─────────────────────────────────────────────────────
