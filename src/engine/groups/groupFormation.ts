@@ -81,6 +81,28 @@ export function isUnderConvergencePull(node: GraphNode | undefined, tick: number
 }
 
 /**
+ * The casting ascendant's sphere, read off the Draw Together pull that gathered this
+ * set (THR-770). Returns undefined when the caster had no primary sphere, which is the
+ * fail-soft row — the name generator skips the sphere adjective pool rather than the
+ * founding failing.
+ *
+ * Reads only members whose pull is *still open*, because that is the same predicate
+ * that attributed the `draw_together` cause; a member carrying a stale stamp from an
+ * expired pull did not gather under this one and must not colour its name.
+ */
+export function convergencePullSphere(
+  members: readonly GraphNode[],
+  tick: number,
+): string | undefined {
+  for (const member of members) {
+    if (!isUnderConvergencePull(member, tick)) continue;
+    const sphere = (member.properties as Record<string, unknown>).convergePullSphere;
+    if (typeof sphere === 'string' && sphere.length > 0) return sphere;
+  }
+  return undefined;
+}
+
+/**
  * Every disbanded company an agent once rode with that currently has an open
  * Reunite window (THR-732).
  *
@@ -293,9 +315,15 @@ export function runFormationScan(
       startingCohesion,
       // The re-formed company inherits the old one's name and the caster's sphere
       // flavor, so it reads as *that* company come back rather than a new one.
+      // A Draw Together founding takes its flavor from the pull that gathered it
+      // instead (THR-770) — the god who called these people is the one the name
+      // should carry. Both read the caster's primary sphere; they differ only in
+      // where the verb could park it (the dead company node vs. the pulled mortals).
       sphereId: reunionOf
         ? ((reunionOf.properties as Record<string, unknown>).reuniteSphereFlavor as string | undefined)
-        : undefined,
+        : cause === 'draw_together'
+          ? convergencePullSphere(admitted, state.tick)
+          : undefined,
       predecessorName: reunionOf?.name,
     });
     if (created) {

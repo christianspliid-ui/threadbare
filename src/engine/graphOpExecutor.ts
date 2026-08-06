@@ -1093,6 +1093,13 @@ function executeDrawTogether(
 
   const until = (ctx.tick ?? 0) + DRAW_TOGETHER_DURATION_TICKS;
 
+  // Sphere flavor for the company that gathers out of this pull (THR-770), read the
+  // same way Reunite reads it. It rides on the pulled mortals rather than on a company
+  // node because the company does not exist yet — `runFormationScan` mints it later,
+  // and reads this back off whichever member it gathered. Absent on an unaligned
+  // ascendant, in which case the name generator simply skips the sphere pool.
+  const casterSphere = readActorPrimarySphere(graph, ascId);
+
   for (const node of graph.getNodesByType('actor')) {
     if (node.properties.actorType !== 'individual') continue;
     if (isAgentGone(node)) continue;
@@ -1110,6 +1117,7 @@ function executeDrawTogether(
         convergePullHexCol: convergeHex.col,
         convergePullHexRow: convergeHex.row,
         convergePullUntilTick: until,
+        ...(casterSphere ? { convergePullSphere: casterSphere } : {}),
       },
     });
   }
