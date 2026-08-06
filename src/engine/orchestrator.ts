@@ -120,7 +120,9 @@ import { resetAmbitionEventCounter } from './ambitionTick';
 import { phaseArmyAttrition } from './armyAttrition';
 import { phaseArmyMovement } from './armyMovement';
 import { phaseBattleDetection, phaseBattleTick } from './battleResolution';
-import { phaseLairEscalation } from './lairEscalation';
+import { phaseLairEscalation, resetAdjacentLairCounter } from './lairEscalation';
+import { resetSurveyEventCounter } from './surveyProseComposer';
+import { resetQuestHookEventCounter } from './ruins/questHooks';
 import { phaseArmyNotifications } from './armyNotifications';
 import { phaseProsperity } from './phaseProsperity';
 import { checkTierPromotion } from './influence';
@@ -277,6 +279,8 @@ export function resetDecisionCache(): void {
   resetConditionCounter();
   resetPremonitionCounter();
   _resetNpcCounter();
+  // THR-817: names a persisted graph node, so it belongs here rather than per tick.
+  resetAdjacentLairCounter();
 }
 
 /** Read-only access to the current encounter cache (for debug tooling). */
@@ -329,7 +333,18 @@ export function resetEventCounter(): void {
  * Only counters that generate ephemeral TickEvent.id values are reset here.
  * Counters that generate persistent graph node IDs (e.g. lifecycleCounter,
  * unifiedAction actionCounter) must NOT be reset per-tick — doing so would
- * cause duplicate node IDs when re-used across ticks.
+ * cause duplicate node IDs when re-used across ticks; those are reset at the
+ * session boundary by `resetDecisionCache()` instead.
+ *
+ * **This list is a membership claim, and it has been wrong (THR-817).** The scope
+ * rule above says which counters belong here; it does not enforce it, and two that
+ * qualified (`surveyEventCounter`, `questHookEventCounter`) sat outside the body for
+ * as long as they had existed, each with a reset seam only their own tests called.
+ * Nothing goes red when a counter is missing — the ids stay unique, they just stop
+ * being *reproducible*, so the cost surfaces as a determinism failure somewhere far
+ * from here. When adding a counter that mints a `TickEvent.id`, add it here in the
+ * same commit; `bandOpposition` is the cautionary case, where a missing entry was
+ * papered over with a per-test reset for weeks before the id was made derivable.
  */
 function resetEventCounters(): void {
   // orchestrator.ts own counter (evt_N tick events)
@@ -352,6 +367,12 @@ function resetEventCounters(): void {
   resetRevEventCounter();
   resetFactionEventSeq();
   resetGroupEventCounter();
+  // THR-817: both of these mint TickEvent ids from a module-scope counter and had a
+  // reset seam with *zero* production callers — only their own tests called it. They
+  // fell squarely inside this function's stated scope while sitting outside its body,
+  // which is how the docstring above could claim complete coverage and be wrong.
+  resetSurveyEventCounter();
+  resetQuestHookEventCounter();
 }
 
 // ─── Phase 1: Advance Doom Clock ──────────────────────────────────

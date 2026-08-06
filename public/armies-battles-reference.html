@@ -62,7 +62,8 @@
     doesn't, which is the fixed clock this replaces. Cut the roads before investing the walls.
   - Lairs (lairSeeding + lairEscalation): seeded at worldgen by danger zone density; every 25
     ticks emit sphere pressure, upgrade minor→major (named elite, 30t) → legendary (monster
-    faction, 60t), spread to adjacent wilderness/borderland hexes, and cleared lairs reinfest.
+    faction, 60t), and cleared lairs reinfest. Spread to adjacent wilderness/borderland hexes is
+    authored but unreachable and has never fired — see the phase note below (THR-995).
   - Honest scope: war is a story generator, not a wargame. Keep the scope note; there is no
     tactics screen, no unit micro, no hand-set battle orders.
   - No dedicated UL shard for army/battle/lair/siege terms yet — a known gap, noted not opened.
@@ -350,7 +351,8 @@
       <h3>Lairs — seeding, escalation, reinfestation <span class="flag impl">IMPL</span></h3>
       <ul>
         <li><code>lairSeeding.seedMonsterLairs</code> (called from <code>gameInit</code>) places lairs at worldgen by danger-zone density: wilderness <code>0.08</code>, borderland <code>0.03</code>, heartland <code>0.005</code>, capital <code>0.0</code> (never), boosted by tile danger, min separation 3.</li>
-        <li><code>phaseLairEscalation(state)</code> runs every <code>LAIR_ESCALATION_INTERVAL 25</code> ticks. Each active lair emits <code>LAIR_SPHERE_PRESSURE_EMISSION 8</code> of its dominant sphere onto its site (environmental feedback); upgrades <code>minor→major</code> after <code>LAIR_UPGRADE_MIN_TICKS 30</code> (spawns a named elite actor via <code>createNamedElite</code>, placed to enter the encounter pipeline) and <code>major→legendary</code> after <code>LAIR_LEGENDARY_MIN_TICKS 60</code> (<code>seedMonsterFaction</code>); and rolls adjacent spawning (<code>LAIR_ADJACENT_SPAWN_CHANCE 0.15</code>/neighbor) in wilderness/borderland only. Seeded PRNG (<code>seed + tick × 71</code>).</li>
+        <li><code>phaseLairEscalation(state)</code> runs every <code>LAIR_ESCALATION_INTERVAL 25</code> ticks. Each active lair emits <code>LAIR_SPHERE_PRESSURE_EMISSION 8</code> of its dominant sphere onto its site (environmental feedback); upgrades <code>minor→major</code> after <code>LAIR_UPGRADE_MIN_TICKS 30</code> (spawns a named elite actor via <code>createNamedElite</code>, placed to enter the encounter pipeline) and <code>major→legendary</code> after <code>LAIR_LEGENDARY_MIN_TICKS 60</code> (<code>seedMonsterFaction</code>); and rolls adjacent spawning (<code>LAIR_ADJACENT_SPAWN_CHANCE 0.15</code>/neighbor) in wilderness/borderland only. Seeded PRNG (<code>seed + tick × 71</code>).
+          <br><strong>Adjacent spawning is authored but unreachable, and has never fired (THR-817 finding, filed THR-995).</strong> The guard asks <code>lairExistsNearby(..., ADJACENT_SPAWN_MIN_SEPARATION 3)</code> against a lair list that <em>includes the source lair</em>, and every hex <code>getHexNeighbors</code> returns sits at <code>|Δcol|+|Δrow| ∈ {1,2}</code> — always under 3. So a lair is always too close to its own neighbours, all six <code>continue</code>, and <code>spawnAdjacentLair</code> has no reachable call site. Treat the 0.15 chance as a dormant tunable, not an observed spread rate; the upgrade, elite, monster-faction and reinfestation paths above are live and unaffected.</li>
         <li>Cleared lairs (<code>locationSubtype 'cleared_lair'</code>) reinfest when <code>ticksSinceCleared ≥ LAIR_REINFESTATION_MIN_TICKS 20</code>, the hex's dominant-sphere score ≥ <code>LAIR_SPAWN_SPHERE_THRESHOLD 60</code>, and no non-monster faction controls the site. Armies on an active-lair hex take <code>MONSTER_TERRITORY_ATTRITION 1.2</code> extra attrition (cleared lairs don't count).</li>
       </ul>
 

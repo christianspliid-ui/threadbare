@@ -19,7 +19,7 @@ import {
   applyContestConsequences,
   contestedOutcomeFor,
   counterTemplateFor,
-  resetBandCounterIds,
+  bandCounterIdFor,
   BAND_COUNTER_TEMPLATES,
 } from '../bandOpposition';
 import { detectContestations } from '../../contestation';
@@ -188,8 +188,6 @@ describe('findOpposingBand', () => {
 // ─── Synthesis ──────────────────────────────────────────────────
 
 describe('synthesizeBandCounter', () => {
-  beforeEach(() => resetBandCounterIds());
-
   it('answers with the counter template for the band role', () => {
     const { graph } = confrontationWorld();
     const counter = synthesizeBandCounter(makeAction(), graph.getNode('band')!, 'co', graph)!;
@@ -207,11 +205,52 @@ describe('synthesizeBandCounter', () => {
     expect(counterTemplateFor('quartermaster')).toBe(BAND_COUNTER_TEMPLATES.defender);
     expect(counterTemplateFor('raider')).toBe(BAND_COUNTER_TEMPLATES.raider);
   });
+
+  // ── THR-817: the id carries no session state ──────────────────────
+  //
+  // The defect was a module-scope sequence, so the test that catches its return has
+  // to mint *repeatedly in one process* and assert the ids do not drift. Asserting a
+  // single call's id would pass against the old counter too (the first call returned
+  // `ua_band_counter_1`), which is why the loop rather than one expectation.
+
+  it('derives the counter id from the action it answers, not from a sequence', () => {
+    const { graph } = confrontationWorld();
+    const counter = synthesizeBandCounter(makeAction(), graph.getNode('band')!, 'co', graph)!;
+
+    expect(counter.actionId).toBe('ua_band_counter_ua_1');
+    expect(counter.actionId).toBe(bandCounterIdFor(counter.counterToActionId!));
+  });
+
+  it('mints the same id every time for the same initiator, with no reset seam', () => {
+    const { graph } = confrontationWorld();
+    const band = graph.getNode('band')!;
+
+    const ids = Array.from({ length: 5 }, () =>
+      synthesizeBandCounter(makeAction(), band, 'co', graph)!.actionId,
+    );
+
+    // A monotonic counter would have produced five distinct ids here.
+    expect(new Set(ids).size).toBe(1);
+    expect(ids[0]).toBe('ua_band_counter_ua_1');
+  });
+
+  it('still separates two different initiators answered in the same tick', () => {
+    const { graph } = confrontationWorld();
+    const band = graph.getNode('band')!;
+
+    const first = synthesizeBandCounter(makeAction(), band, 'co', graph)!;
+    const second = synthesizeBandCounter(
+      makeAction({ actionId: 'ua_2' }), band, 'co', graph,
+    )!;
+
+    // Uniqueness within the tick's counter pool is what the sequence used to buy;
+    // derivation has to keep it, or two fights would collide on one id.
+    expect(first.actionId).not.toBe(second.actionId);
+    expect(second.actionId).toBe('ua_band_counter_ua_2');
+  });
 });
 
 describe('collectBandOppositions', () => {
-  beforeEach(() => resetBandCounterIds());
-
   it('pairs a company action against a colocated band', () => {
     const { state } = confrontationWorld();
     const oppositions = collectBandOppositions([makeAction()], state);
@@ -297,7 +336,7 @@ describe('detectContestations — group-opposition pass', () => {
 // ─── Consequences ───────────────────────────────────────────────
 
 describe('applyContestConsequences', () => {
-  beforeEach(() => { clearTraces(); enableTracing(); resetBandCounterIds(); });
+  beforeEach(() => { clearTraces(); enableTracing(); });
   afterEach(() => disableTracing());
 
   function opposition(state: GameState) {

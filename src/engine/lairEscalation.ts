@@ -199,7 +199,31 @@ function getHexSphereScore(hexNode: GraphNode, sphere: SphereName): number {
 
 // ─── Helper: spawn a new minor lair at coordinates ───────────────────────────
 
-let adjacentLairCounter = 0; // module-level counter for unique IDs (reset handled by id format)
+/**
+ * Disambiguates two lairs spawned on the same hex on the same tick.
+ *
+ * This comment used to read "reset handled by id format", which was false (THR-817):
+ * embedding `tick`/`col`/`row` makes the id *readable*, it does not make the counter
+ * stop climbing, so a second same-seed run in one process would continue the first
+ * run's numbering. Because the id names a **persisted graph node**, the reset belongs
+ * at the session boundary rather than per tick, and `resetDecisionCache()` now calls
+ * it alongside the other persistent-id counters.
+ *
+ * **Stated plainly so this is not mistaken for a live repair: the sequence currently
+ * cannot advance at all, because `spawnAdjacentLair` is unreachable.** Its guard asks
+ * `lairExistsNearby(..., ADJACENT_SPAWN_MIN_SEPARATION)` over a list that *includes
+ * the source lair*, and every hex `getHexNeighbors` returns sits at
+ * `|Δcol| + |Δrow| ∈ {1, 2}` — always under the separation of 3. So a lair is always
+ * too close to its own neighbours and the loop `continue`s on all six every time.
+ * The reset is wired now so that determinism is already correct if that guard is ever
+ * fixed; whether lairs *should* metastasize is a design question, filed as THR-995.
+ */
+let adjacentLairCounter = 0;
+
+/** Reset the adjacent-lair id sequence. Session-boundary seam (see above). */
+export function resetAdjacentLairCounter(): void {
+  adjacentLairCounter = 0;
+}
 
 function spawnAdjacentLair(
   state: GameState,
