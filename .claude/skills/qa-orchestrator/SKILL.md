@@ -1,7 +1,7 @@
 ---
 name: qa-orchestrator
 description: Use when running a QA sweep of The Fantasy World Simulator UI. Trigger on "run QA", "check the UI", "visual audit", "find UI bugs", "frontend QA", "QA sweep", or after completing a major implementation phase. Dispatches specialist sub-agents for visual style, information architecture, interaction flows, and React code quality.
-last_validated_against: 2026-07-30
+last_validated_against: 2026-08-06
 ---
 
 # QA Orchestrator
@@ -84,6 +84,7 @@ Before dispatching browser-based agents, verify:
 1. **Start isolated QA server** — run `bash scripts/qa-server.sh start` and capture the URL from the output. This is `QA_URL` for all agent prompts.
 2. **Playwright MCP connected** — `browser_navigate` must respond
 3. **STYLE.md exists** — read it for visual spec reference
+4. **The UI Laws are the audit rubric** — `Docs/design-system/laws.md` (55 numbered laws, ratified 2026-08-06). Every finding any sub-agent reports cites the law number it violates; a finding no law covers is either not a defect or a missing-law proposal for Christian, and the report says which.
 
 **Pre-flight check:** Navigate to `{QA_URL}/?view=game&seeded` via Playwright. This skips worldgen, ascendant selection, AND Meet The First — jumping straight to a fully populated game view with HexMapV2, pre-seeded ascendant identity (Witness/mind+spirit), and The First agent ("Kael Thornweaver") already bonded (seed 42). If the page doesn't load, check `bash scripts/qa-server.sh status` and the log at `/tmp/qa-vite-{port}.log`.
 
