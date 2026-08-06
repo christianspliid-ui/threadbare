@@ -628,6 +628,93 @@ describe('ThreadsPanel sustained controls (THR-418)', () => {
     expect(screen.queryByText('No Threads')).toBeNull();
     expect(screen.getByText('Hexes (1)')).toBeTruthy();
   });
+
+  // ─── THR-1008: UI Laws 13/16/17 on the sustained-control row ───────────────
+  //
+  // The row is player-facing, so it may not print a magnitude. It used to
+  // append `⤓ 2/tick` beside the status prose and carry the whole flow/runway
+  // readout in a `title=` attribute. These pin the row as *composed*, which is
+  // the level the Laws bind at — a green unit test on `sustainFlowWord` alone
+  // would not have caught the row re-adding a numeral around it.
+
+  // These use a non-safe risk so the section auto-expands and the row renders
+  // without a click (same convention as the `__default__` fallback test above).
+  it('prints no numerals on the sustained-control row', () => {
+    const { container } = render(
+      <ThreadsPanel
+        threadedNodes={[]}
+        sustainedControls={[makeSustainedHex({
+          lapseRisk: 'tightening' as const,
+          perTickCostTotal: 12,
+          perTickIncomeTotal: 5,
+          netFlow: -7,
+        })]}
+        selectedNodeId={null}
+        onNodeSelect={noop}
+        onCenterOnHex={noop}
+      />
+    );
+    const row = container.querySelector('[data-testid="sustained-control-row"]')!;
+    expect(row).toBeTruthy();
+    // The section header legitimately carries its count ("Hexes (1)"), so this
+    // asserts on the row itself rather than the panel.
+    expect(row.textContent).not.toMatch(/\d/);
+  });
+
+  it('renders the per-turn flow as words on both sides of the ledger', () => {
+    render(
+      <ThreadsPanel
+        threadedNodes={[]}
+        sustainedControls={[makeSustainedHex({
+          lapseRisk: 'tightening' as const,
+          perTickCostTotal: 12,
+          perTickIncomeTotal: 2,
+          netFlow: -10,
+        })]}
+        selectedNodeId={null}
+        onNodeSelect={noop}
+        onCenterOnHex={noop}
+      />
+    );
+    const line = screen.getByTestId('sustained-status-line').textContent!;
+    expect(line).toContain('ruinous draw');   // 12/tick, top flow rung
+    expect(line).toContain('slight return');  // 2/tick, low flow rung
+  });
+
+  it('carries no title attribute anywhere on the row — tooltips go through the shared component (Law 17)', () => {
+    const { container } = render(
+      <ThreadsPanel
+        threadedNodes={[]}
+        sustainedControls={[makeSustainedSource()]} // critical: the lapse warning path
+        selectedNodeId={null}
+        onNodeSelect={noop}
+        onCenterOnHex={noop}
+      />
+    );
+    const row = container.querySelector('[data-testid="sustained-control-row"]')!;
+    expect(row.querySelectorAll('[title]').length).toBe(0);
+    expect(row.hasAttribute('title')).toBe(false);
+  });
+
+  it('omits the flow words entirely when a hold costs and returns nothing', () => {
+    render(
+      <ThreadsPanel
+        threadedNodes={[]}
+        sustainedControls={[makeSustainedHex({
+          lapseRisk: 'tightening' as const,
+          perTickCostTotal: 0,
+          perTickIncomeTotal: 0,
+          netFlow: 0,
+        })]}
+        selectedNodeId={null}
+        onNodeSelect={noop}
+        onCenterOnHex={noop}
+      />
+    );
+    const line = screen.getByTestId('sustained-status-line').textContent!;
+    expect(line).not.toContain('draw');
+    expect(line).not.toContain('return');
+  });
 });
 
 /**
