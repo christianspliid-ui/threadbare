@@ -1,7 +1,7 @@
 ---
 name: pull-work
 description: Canonical Claude Code pickup workflow for claiming Linear work safely from Ready for Dev.
-last_validated_against: 2026-08-03
+last_validated_against: 2026-08-06
 ---
 
 # Pull Work
@@ -620,9 +620,24 @@ If the issue has label `Reopened`, read all comments back to the original handof
 
 ### Step 6 - Load plan doc
 
-1. Extract plan-doc path from the latest handoff comment.
+1. Extract plan-doc path from the issue description **and** the handoff comment — the two-place rule writes it to both so neither is a single point of failure, and a later checkpoint comment can push the original handoff out of view (the single-surface defect THR-895 found in `check:process`).
 2. If absent, search `Docs/plans/` for a likely match by issue/topic.
 3. Read the plan doc before touching code.
+
+**On a 404, diagnose before bouncing (THR-921).** A named plan doc missing from your worktree is usually not a wrong path — it is a doc still sitting on an unmerged `docs/plan-*` PR, because every worktree is cut from `origin/main`. This happened twice in the week of 2026-07-30 (impediments #321 / THR-884, #325 / THR-887), and in THR-887's case the Done-when *itself* named a wiki page on that PR, so the ticket was unsatisfiable by construction from the natural branch point. One command tells you which case you are in:
+
+```bash
+npm run check:plan-doc-liveness -- Docs/plans/<the-named-doc>.md
+```
+
+| Verdict | What it means | What to do |
+|---|---|---|
+| `LIVE` | Resolves on `origin/main` | You read the wrong path — re-check the name |
+| `STRANDED` | Carried by an open PR, named in the output | Report *"plan doc stranded on unmerged PR #N"*. If that PR is green it merges in minutes, so prefer a checkpoint comment and let the next hourly run resume, over bouncing a ready ticket |
+| `MISSING` | On no branch at all | The promotion was premature. Bounce per Step 3 (comment, `state:"Todo"`, verify) and name the path that does not exist |
+| `UNRESOLVED` | `gh` unavailable, scan did not run | Do not treat as missing — say the scan could not run, and continue on the issue body if it is sufficient |
+
+Never report a bare "plan doc not found": that reads as a bad reference and sends the next session hunting a typo, when the actual fix is to merge a PR that is already open.
 
 ### Step 7 - Surface model suggestion (advisory)
 

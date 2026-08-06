@@ -1,7 +1,7 @@
 ---
 name: design-session
 description: Use when running a Claude Code session that designs or plans rather than implements — authoring a plan doc, running the design-governance checklist, moving a Linear issue toward Ready for Dev, or writing a handoff for the executor lane. The CC replacement for the Cowork design role. For efforts too big for one session, see the scale gate — suggest a wayfinder map (THR-900).
-last_validated_against: 2026-08-03
+last_validated_against: 2026-08-06
 ---
 
 # design-session
@@ -218,6 +218,22 @@ The issue↔PR link lives only in the Linear handoff comment (Step 5). Wait for 
 ### Step 5 — Handoff (Linear)
 
 Only after the plan doc is merged to `main`:
+
+0. **Prove it merged — do not assert it (THR-921).** This step has read "only after the plan doc is
+   merged" since it was written, and twice in the week of 2026-07-30 a handoff went out anyway with the
+   doc still on an open `docs/plan-*` PR (impediments #321 / THR-884, #325 / THR-887). Both named the path
+   correctly in both places; the two-place rule protects against a *missing reference*, not a missing file.
+   One command settles it:
+
+   ```bash
+   npm run check:plan-doc-liveness -- Docs/plans/YYYY-MM-DD-topic.md
+   ```
+
+   `LIVE` → proceed. `STRANDED` → the Step 4 PR has not merged yet; wait for it (CI-gated and auto-merged,
+   so minutes) and re-run. Do not hand off in the meantime: every executor worktree is cut from
+   `origin/main`, so `pull-work` Step 6 would 404 and the run would be spent bouncing, reconstructing the
+   design from the issue body, or chasing an unmerged branch. If the PR is *stuck* rather than slow, that is
+   the signal to surface — not to mask by handing off around it.
 
 1. Verify the Implementation-Planning → Ready-for-Dev exit criteria (coordination protocol § Exit Criteria):
    every pillar has numbered action items or an explicit N/A.
