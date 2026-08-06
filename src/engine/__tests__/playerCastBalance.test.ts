@@ -109,15 +109,31 @@ function seededRng(seed: number): () => number {
   };
 }
 
-/** Drive `SEEDS` independent casts and return the outcome shares plus the pre-roll reads. */
+/**
+ * Drive `SEEDS` independent casts and return the outcome shares plus the pre-roll reads.
+ *
+ * THR-1000: the template and the state are built **once** per call rather than once
+ * per seed. Resolution does not mutate either — a player cast never reaches the
+ * quintessence spend (`PLAYER_CAST_PUSH_ENABLED` is `false`, and `hex.test_working`
+ * is not in `PUSH_ELIGIBLE_PREFIXES` regardless), and the intel branch needs a
+ * `difficultyContext` this template does not set. So the only per-seed state is the
+ * action counter and the rng stream, both of which are still fresh every iteration.
+ * Rebuilding a `WorldGraph` 400 times per call is what put the 8-call test at 113%
+ * of the vitest default and turned unrelated PRs red.
+ *
+ * `preRollStable` is the guard on that reasoning: it goes false the moment any seed
+ * reads a different capability or probability than the first, which is the only way
+ * hoisting could change a result.
+ */
 function castDistribution(difficulty: number, scale: ActionScale, affinity: number | null) {
   const counts: Record<string, number> = {};
+  const template = makeTemplate(difficulty, scale);
+  const state = makeState(affinity);
   let capability = 0;
   let probability = 0;
+  let preRollStable = true;
   for (let seed = 1; seed <= SEEDS; seed++) {
     resetUnifiedActionCounter();
-    const template = makeTemplate(difficulty, scale);
-    const state = makeState(affinity);
     const action = createUnifiedAction({
       actorId: ASCENDANT_ID, templateId: template.id, targetId: 'loc-1',
       scale, source: 'player', tick: 10, template,
@@ -125,11 +141,43 @@ function castDistribution(difficulty: number, scale: ActionScale, affinity: numb
     });
     const result = resolveUncontestedStep(action, template, state, seededRng(seed));
     counts[result.outcome] = (counts[result.outcome] ?? 0) + 1;
-    capability = result.capability;
-    probability = result.probability;
+    if (seed === 1) {
+      capability = result.capability;
+      probability = result.probability;
+    } else if (result.capability !== capability || result.probability !== probability) {
+      preRollStable = false;
+    }
   }
   const share = (band: string) => (counts[band] ?? 0) / SEEDS;
-  return { counts, share, capability, probability };
+  return { counts, share, capability, probability, preRollStable };
+}
+
+/**
+ * The pre-roll reads for one cell — a **single** resolution, not `SEEDS` of them.
+ *
+ * THR-1000: `capability` and `probability` are computed before `resolveActionShared`
+ * touches the rng — capability from the graph, probability from capability, the
+ * scale-adjusted difficulty and the modifier total, then floored at
+ * `MIN_PROBABILITY_BY_SCALE` on a comparison that never reads the roll. The rng
+ * decides only *which outcome* a cast lands on. So a test asserting a pre-roll value
+ * gets the identical answer from one seed as from 400, and the 399 extra casts were
+ * measuring nothing. `castDistribution` stays the right tool for the share
+ * assertions, which genuinely need the spread.
+ *
+ * Seed 1 is deliberate: it is the first iteration of the distribution loop, so the
+ * equivalence guard below compares like with like rather than trusting the argument.
+ */
+function castReadout(difficulty: number, scale: ActionScale, affinity: number | null) {
+  resetUnifiedActionCounter();
+  const template = makeTemplate(difficulty, scale);
+  const state = makeState(affinity);
+  const action = createUnifiedAction({
+    actorId: ASCENDANT_ID, templateId: template.id, targetId: 'loc-1',
+    scale, source: 'player', tick: 10, template,
+    rng: () => 0.5, essencePaid: {} as never,
+  });
+  const result = resolveUncontestedStep(action, template, state, seededRng(1));
+  return { capability: result.capability, probability: result.probability };
 }
 
 /** The hardest non-branch step difficulty — mirrors `targetActions.ts`. */
@@ -162,6 +210,28 @@ beforeEach(() => {
   resetUnifiedActionCounter();
 });
 
+// ─── The harness contract the two verdicts rest on (THR-1000) ───────────────
+
+describe('THR-1000 — the pre-roll reads are seed-invariant', () => {
+  it('reads one capability and one probability across all 400 seeds, so the readout may use one', () => {
+    // This is the assertion that licenses `castReadout` and the hoisted template/state
+    // above. Both rest on the same claim — that the rng reaches the roll and nothing
+    // upstream of it — and a claim load-bearing for a performance change has to be
+    // falsifiable rather than argued. Feed the rng into capability or probability and
+    // `preRollStable` goes false here; break the hoist and the equality below breaks.
+    const d = castDistribution(0.35, 'local', AFFINITY_PRIMARY);
+    expect(d.preRollStable).toBe(true);
+
+    // Non-vacuity: a distribution that resolved nothing would report `preRollStable`
+    // true for want of a second seed to disagree with.
+    expect(Object.values(d.counts).reduce((a, b) => a + b, 0)).toBe(SEEDS);
+
+    const readout = castReadout(0.35, 'local', AFFINITY_PRIMARY);
+    expect(readout.capability).toBe(d.capability);
+    expect(readout.probability).toBe(d.probability);
+  });
+});
+
 // ─── Verdict 1 — the fresh-god power curve ──────────────────────────────────
 
 describe('THR-766 — fresh-god cast curve: keep BASE_RAW 6 / AFFINITY_WEIGHT 0.5', () => {
@@ -171,9 +241,11 @@ describe('THR-766 — fresh-god cast curve: keep BASE_RAW 6 / AFFINITY_WEIGHT 0.
     expect(ASCENDANT_CAST_BASE_RAW).toBe(6);
     expect(ASCENDANT_CAST_AFFINITY_WEIGHT).toBe(0.5);
 
-    const offDomain = castDistribution(0.35, 'local', null).capability;
-    const secondary = castDistribution(0.35, 'local', AFFINITY_SECONDARY).capability;
-    const primary = castDistribution(0.35, 'local', AFFINITY_PRIMARY).capability;
+    // Capability is a pre-roll read, so one resolution per cell answers it exactly
+    // (THR-1000) — the seed-invariance guard above is what makes that substitution safe.
+    const offDomain = castReadout(0.35, 'local', null).capability;
+    const secondary = castReadout(0.35, 'local', AFFINITY_SECONDARY).capability;
+    const primary = castReadout(0.35, 'local', AFFINITY_PRIMARY).capability;
 
     expect(offDomain).toBeCloseTo(0.168, 3);
     expect(secondary).toBeCloseTo(0.231, 3);
@@ -281,9 +353,16 @@ describe('THR-766 — authored difficulty is inert where players actually cast (
     // This asserts a defect on purpose: it is the property THR-998 exists to remove,
     // and this is the test that should go red when it does. Do not relax it to keep
     // it green — delete it, and say so in the commit that fixes THR-998.
+    //
+    // THR-1000: the probability read is pre-roll, so each cell needs one resolution
+    // rather than 400. The assertion is unchanged — same four difficulties, same two
+    // scales, same set-collapse — but the eight cells cost eight casts instead of
+    // 3200, which is what put this test 13% over the vitest default and blocked PR
+    // #1313. The width of the difficulty range is the point of the property and is
+    // deliberately not narrowed to buy time.
     for (const scale of ['local', 'personal'] as ActionScale[]) {
       const probabilities = [0.06, 0.25, 0.5, 1.0].map(
-        (d) => castDistribution(d, scale, AFFINITY_PRIMARY).probability,
+        (d) => castReadout(d, scale, AFFINITY_PRIMARY).probability,
       );
       expect(new Set(probabilities).size).toBe(1);
     }
@@ -293,8 +372,8 @@ describe('THR-766 — authored difficulty is inert where players actually cast (
     // The counterweight to the test above: difficulty is not globally dead, so a
     // fix must not simply delete it. `regional`'s floor is 0.20, which a fresh god
     // clears, leaving a real (if narrow) band where authored difficulty moves P.
-    const easy = castDistribution(0.06, 'regional', AFFINITY_PRIMARY).probability;
-    const hard = castDistribution(0.5, 'regional', AFFINITY_PRIMARY).probability;
+    const easy = castReadout(0.06, 'regional', AFFINITY_PRIMARY).probability;
+    const hard = castReadout(0.5, 'regional', AFFINITY_PRIMARY).probability;
     expect(easy).toBeGreaterThan(hard);
   });
 });
