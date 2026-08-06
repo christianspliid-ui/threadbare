@@ -3,7 +3,7 @@ lane: daily-backlog-grooming
 run: 2026-08-06
 promoted: 1
 filed: 1
-resolved: 2
+resolved: 1
 newFindings: 2
 needsChristian: true
 ---
@@ -17,13 +17,21 @@ needsChristian: true
 ## Work in flight
 
 - **THR-770** (company sphere-name pool) — claimed 07:03Z, PR #1314 open, CI running. Healthy, no action.
-- **THR-769** (company card art) — shipped as PR #1313 at 06:19Z with auto-merge armed, but its required check went red and the merge could not fire. Diagnosed and unblocked this run (below).
+- **THR-769** (company card art) — work is complete and correct; **PR #1313 cannot merge.** Blocked on THR-1000 (below), not on anything in its own diff. Left In Dev with auto-merge armed so it lands on its own once the blocker clears.
 - **THR-860** (WS5 capital cluster) — deliberately held behind THR-883, PR #1114 open with auto-merge off. Not stalled. Labelled `Parked` this run.
+
+## The code track is gated — one test, no margin
+
+PR #1313's required check is red on a **single** test out of 14910, in a file its diff never touches: `playerCastBalance.test.ts > resolves the same probability across the whole difficulty range…`, `Test timed out in 5000ms`.
+
+I called it a flake and re-ran the job. **It failed again, slower** — 5646ms, then 6132ms, against a 5000ms budget. That first call was wrong and the correction matters, because it changes what the fix is: this is not an unlucky runner but a test with no headroom. It passes on `main` at `34c4ff4d` and fails here because #1313 *adds test weight* to the suite (an 80-assertion new test file plus four ~250 KB fixtures), and that is enough to tip something already at 113% of budget. **The next PR that adds test weight inherits the same wall**, so the queue cannot drain past it by waiting.
+
+Filed **THR-1000** at **Urgent** into Ready for Dev, with a hard blocks-relation onto THR-769 and its coordination block as the first comment. Root cause is named in the ticket: `castDistribution` rebuilds a fresh template *and* a fresh `GameState` inside a 400-iteration loop, and the failing test calls it eight times — 3200 state constructions. Hoisting the fixtures or trimming the matrix fixes it; raising the timeout would only move the cliff.
 
 ## Technical gates resolved this run
 
-- **PR #1313's red check is a timeout, not a defect.** Sole failure was `playerCastBalance.test.ts > resolves the same probability across the whole difficulty range…`, `Test timed out in 5000ms` at a measured 5646ms. The same test passed on `main` at `34c4ff4d` — the commit that introduced it — 50 minutes earlier. The PR's diff (four JPEGs plus art wiring) touches nothing that test reads. Re-ran the failed job; verdict recorded on THR-1000.
 - **THR-860 exempted from the stale-claim auto-release.** The sweep had it scheduled to return to Ready for Dev at 14:25Z today. Releasing it would have put a ticket with a live block into the claimable queue, where the hourly lane would have claimed it, read the block, and bounced — burning a WIP slot to rediscover a decision recorded three times since 07-30. Applied `Parked`, the sweep's own documented opt-out, and left everything else untouched.
+- **Not resolved: PR #1313.** Recorded here rather than quietly dropped — one re-run was a reasonable first move, a second would be waste, and the real fix is THR-1000.
 
 ## Counts by state
 
@@ -32,9 +40,10 @@ Idea 73 · Todo 27 · In Design 1 · Implementation Planning 0 · Ready for Dev 
 ## Problems found and fixed
 
 - **Orphan:** THR-998 had no project. Assigned to *Action System & Unlocks*, inherited from its parent THR-766 per CLAUDE.md's deferral rule. The first write returned 200 and silently dropped it — the project name was passed HTML-escaped (`&amp;`), which matches nothing; retried with the project UUID and verified via `get_issue`.
-- **Filed + promoted THR-1000** — the flaky test above, at High into Ready for Dev with its coordination block as the first comment. Promoted rather than parked in Idea on the Rule 0 clause: it records an already-realised loss (a correct PR that could not merge, cleared only by manual intervention), which is the qualifying predicate. **Flagging the deviation explicitly — this lane does not normally promote**; noted on the ticket too so it is auditable either way.
+- **Promoted THR-1000 directly to Ready for Dev.** On the Rule 0 clause: it records an already-realised loss (a correct PR that cannot merge), which is the qualifying predicate. **Flagging the deviation explicitly — this lane does not normally promote**; noted on the ticket too, so it is auditable either way.
+- **Orphan-deferral audit: clean.** All 10 `// TODO` / `// DEFERRED` comments in `src/` carry a `THR-` id. Two cite *closed* issues, though — `attention.ts:149,152,153` → THR-455 (Done) and `CastRail.tsx:133` → THR-338 (Done). A TODO pointing at a closed ticket is an orphan wearing a tracked ticket's clothes. Reported, not filed: comment corrections are explicitly non-qualifying for Rule 0, and this board does not need another Low ticket today.
 - **No other orphans, no completed-project cleanup.** Every project in Now/Next/Discovery still holds open issues; every issue across all six non-Done states carries a project.
-- **Roadmap cross-reference: nothing missing.** Every `.planning/ROADMAP.md` Future Work item resolves to a Linear issue (Phases 3–5 → THR-54/55/56; TB-095/098/099 → THR-74/400/724, all Done; rival activation → THR-66; Codex → THR-52; onboarding → THR-72). Drift runs the *other* way — the v1.2 section still presents shipped work as future. THR-763 added a freshness banner but scoped it to the effect-primitives list only. Reported, not filed: doc drift is explicitly non-qualifying for Rule 0 and does not earn a queue slot.
+- **Roadmap cross-reference: nothing missing.** Every `.planning/ROADMAP.md` Future Work item resolves to a Linear issue (Phases 3–5 → THR-54/55/56; TB-095/098/099 → THR-74/400/724, all Done; rival activation → THR-66; Codex → THR-52; onboarding → THR-72). Drift runs the *other* way — the v1.2 section still presents shipped work as future. THR-763 added a freshness banner but scoped it to the effect-primitives list only.
 
 ## Observation — this lane's own gap
 
@@ -44,4 +53,4 @@ No grooming report exists for 08-03, 08-04, or 08-05; the last was 08-02. 08-04 
 
 Not starved — 32 items in Ready for Dev, 27 of them `Deferral`. But **31 of the 32 are priority Low**, so the lane's priority sort makes the "deferrals in active projects first" rule unreachable in practice. That inversion is already recorded as THR-871 (Idea, Medium) and is the single structural thing most worth fixing about how this board feeds the executor.
 
-**Recommended next pickup: THR-1000** — now the only High item in the queue, small, test-only, and it stops the next correct PR from going red for a reason its author cannot act on.
+**Recommended next pickup: THR-1000**, now the only non-Low item in the queue. It is small and test-only, and until it lands every code-track PR that adds test weight is red on arrival for a reason its author cannot act on.
