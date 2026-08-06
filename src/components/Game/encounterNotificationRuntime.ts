@@ -102,6 +102,53 @@ export function shouldAutoOpenEncounterNotification(
   return !notif.resolved && notif.autoResolveTick === null;
 }
 
+/**
+ * Drive the one auto-interrupt slot down the notification queue until a surface
+ * actually opens (investigated under THR-1005).
+ *
+ * `tryOpen` is `handleOpenEncounterFromNotification`, which *declines* — returns
+ * false — for a stale notification: a missing template, no live runtime, or a
+ * step the encounter has already moved past (THR-664). Only a return of `true`
+ * consumes the slot. `handleOpenEncounterBadge` has always respected that return
+ * value; this scan is what brings the auto-interrupt path in line with it.
+ *
+ * Why this is a scan and not "take the first eligible one": eligibility
+ * (`shouldAutoOpenEncounterNotification`) is a property of the notification
+ * record, while openability is a property of the *world* it points at, and the
+ * two diverge. Nothing marks a spent step notification `resolved`, so a step an
+ * encounter has walked past can leave an eligible-but-unopenable record in the
+ * queue ahead of a beat that *can* open — and the aftermath notification is
+ * appended last of all (`encounterVisibility.ts`), so it sits behind every one
+ * of them. Breaking on the first *attempt* spent the slot on the stale record
+ * and opened nothing, on that render and on every later one, because the stale
+ * record never leaves the queue.
+ *
+ * Scope of what is proven, so nobody over-reads this (THR-1005): the starvation
+ * above is demonstrated by unit test, and it is the only known way a pause-tier
+ * aftermath that *has* a notification and *has* a working badge can fail to
+ * interrupt. It is NOT confirmed to be the cause of the aftermath-does-not-pop
+ * report that prompted the investigation — on the `?spawn=` review route the
+ * aftermath auto-opens with or without this change (checked both arms, 1-step
+ * and 3-step templates, veil open and veil closed). Treat this as hardening on
+ * the suspected path, not as that ticket's fix.
+ *
+ * Returns the id of the notification that opened, or null when none could.
+ */
+export function runEncounterAutoOpenScan(
+  notifications: readonly EncounterNotification[],
+  suppressedNotificationId: string | null,
+  tryOpen: (notif: EncounterNotification) => boolean,
+): string | null {
+  for (const notif of notifications) {
+    if (!shouldAutoOpenEncounterNotification(notif)) continue;
+    if (suppressedNotificationId === notif.id) continue;
+    // Only one auto-interrupt at a time — but a decline opened nothing, so it
+    // has not used the slot up.
+    if (tryOpen(notif)) return notif.id;
+  }
+  return null;
+}
+
 export function selectEncounterRuntimeForDisplay(
   encounter: ActiveEncounterDisplay,
   legacyProgresses: EncounterProgress[],

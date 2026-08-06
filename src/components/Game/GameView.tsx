@@ -129,7 +129,7 @@ import { DivineReceiptModal } from './DivineReceiptModal';
 import {
   buildActiveEncounterDisplayFromLegacyProgress,
   buildActiveEncounterDisplayFromUnifiedAction,
-  shouldAutoOpenEncounterNotification,
+  runEncounterAutoOpenScan,
   type ActiveEncounterDisplay,
   selectEncounterRuntimeForDisplay,
   selectEncounterRuntimeForNotification,
@@ -3139,7 +3139,11 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     });
   }, [setGameState, archetype.sphereAlignment.primary]);
 
-  // Auto-interrupt only pause-mode encounter notifications.
+  // Auto-interrupt only pause-mode encounter notifications. At that tier every
+  // beat should interrupt on its own — each step and the closing aftermath —
+  // with the thread badge as the recovery route, not the primary one. The scan
+  // keeps trying past a notification that declines to open, so one stale record
+  // cannot starve the beats behind it (THR-1005).
   // Pause is handled by the central interrupt auto-pause (useInterruptAutoPause below)
   useEffect(() => {
     if (interruptsSuppressed) return;
@@ -3155,12 +3159,11 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         suppressedEncounterNotificationId.current = null;
       }
     }
-    for (const notif of notifications) {
-      if (!shouldAutoOpenEncounterNotification(notif)) continue;
-      if (suppressedEncounterNotificationId.current === notif.id) continue;
-      handleOpenEncounterFromNotification(notif);
-      break; // Only one auto-interrupt at a time
-    }
+    runEncounterAutoOpenScan(
+      notifications,
+      suppressedEncounterNotificationId.current,
+      handleOpenEncounterFromNotification,
+    );
   }, [gameState.encounterNotifications, handleOpenEncounterFromNotification, interruptsSuppressed, activePremonition]);
 
   // ── Meeting encounter (Meet The First) ──
