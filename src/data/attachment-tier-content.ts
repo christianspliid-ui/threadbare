@@ -8,7 +8,7 @@
  * |-----------------------------------|---------------|--------------------------------------------------|
  * | TIER_ADVANCEMENT_ESSENCE_COST     | {1:4,2:8,3:14}| Essence cost to advance FROM tier N               |
  * | TIER_ADVANCEMENT_DIFFICULTY       | {1:.20,2:.35,3:.50} | Step difficulty by source tier              |
- * | TIER_MODIFIER_SCALE_FACTOR        | 1.5           | Multiplier applied to edge modifiers per tier bump|
+ * | TIER_MODIFIER_SCALE_FACTOR        | 1.5           | Multiplier applied per tier bump (see below)      |
  * | MAX_ATTACHMENT_TIER               | 4             | Hard cap — Legendary                              |
  * | ENCHANT_TEMPLATE_ID               | artifact.enchant | Template ID for magical tier advancement       |
  * | EMPOWER_TEMPLATE_ID               | artifact.empower | Template ID for martial tier advancement       |
@@ -38,10 +38,19 @@ export const TIER_ADVANCEMENT_DIFFICULTY: Record<1 | 2 | 3, number> = {
   3: 0.50,  // Mythic → Legendary: hard
 };
 
-// ─── Modifier Scaling ────────────────────────────────────────────
+// ─── Advancement Scaling ─────────────────────────────────────────
 
-/** When tier advances, all numeric modifiers on the possesses/bonded_to edge
- * are multiplied by this factor. Stacks multiplicatively across tiers.
+/** When tier advances, this factor multiplies two things (THR-723):
+ *
+ *  1. the artifact's `stat_contribution` effects — the live item→capability
+ *     substrate (THR-718), clamped to `ITEM_STAT_BAND_LEGENDARY` so compounding
+ *     bumps cannot escape the authored power budget;
+ *  2. **non-Reach** numeric modifiers on the possesses/bonded_to edge
+ *     (`los_range` and friends), which `modifiers.ts` genuinely reads.
+ *
+ * Reach-domain edge modifiers are deliberately *not* scaled — nothing reads them.
+ *
+ * Stacks multiplicatively across tiers (before the clamp).
  * @range 1.1–2.0 (1.5 = 50% boost per tier) */
 export const TIER_MODIFIER_SCALE_FACTOR = 1.5;
 

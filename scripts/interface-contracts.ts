@@ -265,10 +265,10 @@ export const CONTRACTS: readonly Contract[] = [
     badgeOverride: {
       badge: 'LEAKED',
       reason:
-        'The module has exactly one production importer (visibility.ts, `getModifiedValue`) and it only ever asks for `los_range`. Capability attributes are written but never queried — argument-level deadness a symbol check cannot see.',
-      deferralTicket: 'THR-723',
+        'The module has exactly one production importer (visibility.ts, `getModifiedValue`) and it only ever asks for `los_range`. Capability attributes are written but never queried — argument-level deadness a symbol check cannot see. THR-723 (2026-08-06) removed one writer: `attachmentTierAdvancement` no longer scales Reach-domain keys, only non-Reach ones like `los_range`. The seed writers remain — `gameInit.ts` (4 First-agent possessions) and `seedAttachments.ts` still stamp reach-keyed bags nothing reads — so the row stays LEAKED, now deferred to THR-997.',
+      deferralTicket: 'THR-997',
     },
-    deferralTicket: 'THR-723',
+    deferralTicket: 'THR-997',
   },
   {
     // THR-722 retired the `possesses`-edge `grants[]` property that used to carry this
@@ -358,14 +358,23 @@ export const CONTRACTS: readonly Contract[] = [
       module: 'src/engine/attachmentTierAdvancement.ts',
     },
     writeSites: ['src/engine/attachmentTierAdvancement.ts'],
-    readSites: ['src/engine/orchestrator.ts'],
+    // Was `['src/engine/orchestrator.ts']` until THR-723 — a transcribed intention,
+    // not a verified read. The orchestrator has never imported this module.
+    readSites: [],
     // Correction to the hand audit (THR-717 implementation, 2026-07-23): the canon
     // page badged this 🟠 PARTIAL on the assumption that advancement runs and merely
     // feeds the dead `modifiers` stat path. Tier 1 shows worse — the module's only
     // importer is its own test, so advancement never runs at all. Left to the
     // mechanical verdict rather than pinned, because the mechanical read is the
     // accurate one.
-    deferralTicket: 'THR-723',
+    //
+    // THR-723 (2026-08-06) closed half of that: the resolver now scales the artifact's
+    // `stat_contribution` effects — the live substrate `computeRawScore` reads — instead
+    // of the dead edge `modifiers`, clamped to ITEM_STAT_BAND_LEGENDARY. So its *output*
+    // is no longer wasted. The row stays LEAKED because the remaining half is untouched:
+    // nothing calls it. Whether it should be wired at all is a design call, deferred to
+    // THR-996 rather than decided by an executor.
+    deferralTicket: 'THR-996',
   },
 
   // ── Attachments → inbound ─────────────────────────────────────────────────

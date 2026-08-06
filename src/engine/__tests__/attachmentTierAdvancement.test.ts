@@ -9,15 +9,27 @@ import {
   TIER_MODIFIER_SCALE_FACTOR,
   MAX_ATTACHMENT_TIER,
 } from '../../data/attachment-tier-content';
+import { ITEM_STAT_BAND_LEGENDARY } from '../../data/item-stat-bands';
 import { ATTACHMENT_TIER_NAMES } from '../../types/attachments';
+import type { AttachmentEffect } from '../../types/effects';
 
 // ─── Test Helpers ────────────────────────────────────────────────
+
+/** Read back the `stat_contribution` bag on an artifact node. */
+function contributionsOf(graph: WorldGraph, artifactId: string): Record<string, number> {
+  const effects = graph.getNode(artifactId)?.properties.effects as AttachmentEffect[] | undefined;
+  const entry = effects?.find((e) => e?.type === 'stat_contribution');
+  return (entry && 'contributions' in entry
+    ? entry.contributions
+    : {}) as Record<string, number>;
+}
 
 function makeGraphWithArtifact(
   artifactId: string,
   tier: number,
   ownerId?: string,
   modifiers?: Record<string, number>,
+  effects?: AttachmentEffect[],
 ): WorldGraph {
   const graph = new WorldGraph();
 
@@ -31,6 +43,7 @@ function makeGraphWithArtifact(
       tags: ['#weapon', '#iron'],
       mechanicalSummary: '+Iron',
       lossCondition: 'breakable',
+      ...(effects ? { effects } : {}),
     },
   });
 
@@ -138,50 +151,141 @@ describe('advanceAttachmentTier', () => {
     expect(result.newTier).toBe(2);
   });
 
-  // ─── Modifier Scaling ──────────────────────────────────────
+  // ─── Stat-contribution scaling (THR-723 — the live substrate) ──
 
-  it('scales modifiers on possesses edge by TIER_MODIFIER_SCALE_FACTOR', () => {
-    const graph = makeGraphWithArtifact('sword1', 1, 'agent1', {
-      iron: 0.10,
-      movement_range: 1,
-    });
+  it('scales stat_contribution effects on the artifact node', () => {
+    const graph = makeGraphWithArtifact('sword1', 1, 'agent1', undefined, [
+      { type: 'stat_contribution', contributions: { iron: 0.4, stone: 0.2 } },
+    ]);
 
-    advanceAttachmentTier(graph, 'sword1');
+    const result = advanceAttachmentTier(graph, 'sword1');
 
-    const edge = graph.getEdge('edge_possesses_sword1');
-    const mods = edge?.properties.modifiers as Record<string, number>;
-
-    expect(mods.iron).toBeCloseTo(0.10 * TIER_MODIFIER_SCALE_FACTOR, 3);
-    expect(mods.movement_range).toBeCloseTo(1 * TIER_MODIFIER_SCALE_FACTOR, 3);
+    const contributions = contributionsOf(graph, 'sword1');
+    expect(contributions.iron).toBeCloseTo(0.4 * TIER_MODIFIER_SCALE_FACTOR, 3);
+    expect(contributions.stone).toBeCloseTo(0.2 * TIER_MODIFIER_SCALE_FACTOR, 3);
+    expect(result.scaledContributions).toEqual(expect.arrayContaining(['iron', 'stone']));
   });
 
-  it('scales modifiers on bonded_to edge', () => {
+  it('scales stat_contribution on a bonded_to artifact', () => {
     const graph = new WorldGraph();
     graph.addNode({
       id: 'relic1',
       type: 'artifact_legendary',
       name: 'Bonded Relic',
-      properties: { tier: 2 },
+      properties: {
+        tier: 2,
+        effects: [{ type: 'stat_contribution', contributions: { star: 0.2 } }],
+      },
     });
-    graph.addNode({
-      id: 'agent1',
-      type: 'actor',
-      name: 'Hero',
-      properties: {},
-    });
+    graph.addNode({ id: 'agent1', type: 'actor', name: 'Hero', properties: {} });
     graph.addEdge({
       id: 'edge_bonded',
       source: 'agent1',
       target: 'relic1',
       type: 'bonded_to',
-      properties: { modifiers: { star: 0.20 } },
+      properties: { modifiers: {} },
     });
 
     advanceAttachmentTier(graph, 'relic1');
 
-    const edge = graph.getEdge('edge_bonded');
-    const mods = edge?.properties.modifiers as Record<string, number>;
-    expect(mods.star).toBeCloseTo(0.20 * TIER_MODIFIER_SCALE_FACTOR, 3);
+    expect(contributionsOf(graph, 'relic1').star)
+      .toBeCloseTo(0.2 * TIER_MODIFIER_SCALE_FACTOR, 3);
+  });
+
+  it('compounds across tiers but never exceeds the legendary power band', () => {
+    const graph = makeGraphWithArtifact('sword1', 1, 'agent1', undefined, [
+      { type: 'stat_contribution', contributions: { iron: 1.0 } },
+    ]);
+
+    advanceAttachmentTier(graph, 'sword1'); // 1→2
+    expect(contributionsOf(graph, 'sword1').iron).toBeCloseTo(1.5, 3);
+
+    advanceAttachmentTier(graph, 'sword1'); // 2→3 — 2.25 raw, clamped
+    expect(contributionsOf(graph, 'sword1').iron).toBe(ITEM_STAT_BAND_LEGENDARY);
+
+    advanceAttachmentTier(graph, 'sword1'); // 3→4 — still pinned at the ceiling
+    expect(contributionsOf(graph, 'sword1').iron).toBe(ITEM_STAT_BAND_LEGENDARY);
+  });
+
+  it('advances tier without effects, reporting no scaled contributions', () => {
+    const graph = makeGraphWithArtifact('sword1', 1, 'agent1');
+
+    const result = advanceAttachmentTier(graph, 'sword1');
+
+    expect(result.advanced).toBe(true);
+    expect(result.scaledContributions).toEqual([]);
+    expect(graph.getNode('sword1')?.properties.effects).toBeUndefined();
+  });
+
+  it('preserves a non-numeric contribution value instead of throwing', () => {
+    const graph = makeGraphWithArtifact('sword1', 1, 'agent1', undefined, [
+      {
+        type: 'stat_contribution',
+        contributions: { iron: 0.4, star: 'lots' as unknown as number },
+      },
+    ]);
+
+    const result = advanceAttachmentTier(graph, 'sword1');
+
+    expect(result.advanced).toBe(true);
+    const contributions = contributionsOf(graph, 'sword1');
+    expect(contributions.iron).toBeCloseTo(0.4 * TIER_MODIFIER_SCALE_FACTOR, 3);
+    expect(contributions.star).toBe('lots');
+    expect(result.scaledContributions).not.toContain('star');
+  });
+
+  it('leaves non-stat_contribution effects untouched', () => {
+    const graph = makeGraphWithArtifact('sword1', 1, 'agent1', undefined, [
+      { type: 'passive', reach: 'iron', value: 0.12 } as AttachmentEffect,
+      { type: 'stat_contribution', contributions: { iron: 0.4 } },
+    ]);
+
+    advanceAttachmentTier(graph, 'sword1');
+
+    const effects = graph.getNode('sword1')?.properties.effects as AttachmentEffect[];
+    expect(effects[0]).toEqual({ type: 'passive', reach: 'iron', value: 0.12 });
+  });
+
+  // ─── Edge-modifier scaling (the surviving live seam) ───────────
+
+  it('scales non-Reach attribute modifiers on the possesses edge', () => {
+    const graph = makeGraphWithArtifact('sword1', 1, 'agent1', {
+      los_range: 1,
+      movement_range: 2,
+    });
+
+    const result = advanceAttachmentTier(graph, 'sword1');
+
+    const mods = graph.getEdge('edge_possesses_sword1')
+      ?.properties.modifiers as Record<string, number>;
+    expect(mods.los_range).toBeCloseTo(1 * TIER_MODIFIER_SCALE_FACTOR, 3);
+    expect(mods.movement_range).toBeCloseTo(2 * TIER_MODIFIER_SCALE_FACTOR, 3);
+    expect(result.scaledModifiers).toEqual(
+      expect.arrayContaining(['los_range', 'movement_range']),
+    );
+  });
+
+  // THR-723: `modifiers.ts` has one production reader (visibility.ts) and it only
+  // ever asks for `los_range`, so a scaled `{iron: …}` strengthened nothing. This
+  // test fails against the pre-fix build, which scaled every numeric key.
+  it('leaves Reach-domain modifier keys unscaled — that path is dead', () => {
+    const graph = makeGraphWithArtifact('sword1', 1, 'agent1', {
+      iron: 0.10,
+      star: 0.20,
+      los_range: 1,
+    });
+
+    const result = advanceAttachmentTier(graph, 'sword1');
+
+    const mods = graph.getEdge('edge_possesses_sword1')
+      ?.properties.modifiers as Record<string, number>;
+    expect(mods.iron).toBe(0.10);
+    expect(mods.star).toBe(0.20);
+    expect(mods.los_range).toBeCloseTo(1 * TIER_MODIFIER_SCALE_FACTOR, 3);
+
+    expect(result.scaledModifiers).not.toContain('iron');
+    expect(result.scaledModifiers).not.toContain('star');
+    expect(result.scaledModifiers).toContain('los_range');
   });
 
   it('skips modifier scaling when no possesses/bonded_to edge exists', () => {
@@ -194,70 +298,34 @@ describe('advanceAttachmentTier', () => {
   });
 
   it('skips non-numeric modifier values gracefully', () => {
-    const graph = new WorldGraph();
-    graph.addNode({
-      id: 'art1',
-      type: 'artifact',
-      name: 'Mixed Mods',
-      properties: { tier: 1 },
-    });
-    graph.addNode({
-      id: 'owner1',
-      type: 'actor',
-      name: 'Owner',
-      properties: {},
-    });
-    graph.addEdge({
-      id: 'edge_possesses_art1',
-      source: 'owner1',
-      target: 'art1',
-      type: 'possesses',
-      properties: {
-        modifiers: { iron: 0.10, label: 'sharp' as unknown as number },
-      },
+    const graph = makeGraphWithArtifact('art1', 1, 'owner1', {
+      los_range: 1,
+      label: 'sharp' as unknown as number,
     });
 
     const result = advanceAttachmentTier(graph, 'art1');
 
     expect(result.advanced).toBe(true);
-    const edge = graph.getEdge('edge_possesses_art1');
-    const mods = edge?.properties.modifiers as Record<string, unknown>;
-    expect(mods.iron).toBeCloseTo(0.10 * TIER_MODIFIER_SCALE_FACTOR, 3);
+    const mods = graph.getEdge('edge_possesses_art1')
+      ?.properties.modifiers as Record<string, unknown>;
+    expect(mods.los_range).toBeCloseTo(1 * TIER_MODIFIER_SCALE_FACTOR, 3);
     expect(mods.label).toBe('sharp'); // preserved, not scaled
   });
 
-  it('reports scaled modifier keys in result', () => {
-    const graph = makeGraphWithArtifact('sword1', 2, 'agent1', {
-      iron: 0.10,
-      gold: 0.05,
-    });
+  it('scales the live seam on each tier advancement independently', () => {
+    const graph = makeGraphWithArtifact('sword1', 1, 'agent1', { los_range: 1 });
+    const read = () =>
+      (graph.getEdge('edge_possesses_sword1')?.properties.modifiers as Record<string, number>)
+        .los_range;
 
-    const result = advanceAttachmentTier(graph, 'sword1');
+    advanceAttachmentTier(graph, 'sword1'); // 1→2
+    expect(read()).toBeCloseTo(TIER_MODIFIER_SCALE_FACTOR, 3);
 
-    expect(result.scaledModifiers).toContain('iron');
-    expect(result.scaledModifiers).toContain('gold');
-  });
+    advanceAttachmentTier(graph, 'sword1'); // 2→3
+    expect(read()).toBeCloseTo(TIER_MODIFIER_SCALE_FACTOR ** 2, 2);
 
-  it('scales modifiers on each tier advancement independently', () => {
-    const graph = makeGraphWithArtifact('sword1', 1, 'agent1', { iron: 0.10 });
-
-    // First advancement: 1→2
-    advanceAttachmentTier(graph, 'sword1');
-    let edge = graph.getEdge('edge_possesses_sword1');
-    const tier2Value = (edge?.properties.modifiers as Record<string, number>).iron;
-    expect(tier2Value).toBeCloseTo(0.10 * TIER_MODIFIER_SCALE_FACTOR, 3);
-
-    // Second advancement: 2→3
-    advanceAttachmentTier(graph, 'sword1');
-    edge = graph.getEdge('edge_possesses_sword1');
-    const tier3Value = (edge?.properties.modifiers as Record<string, number>).iron;
-    expect(tier3Value).toBeCloseTo(0.10 * TIER_MODIFIER_SCALE_FACTOR ** 2, 2);
-
-    // Third advancement: 3→4
-    advanceAttachmentTier(graph, 'sword1');
-    edge = graph.getEdge('edge_possesses_sword1');
-    const tier4Value = (edge?.properties.modifiers as Record<string, number>).iron;
-    expect(tier4Value).toBeCloseTo(0.10 * TIER_MODIFIER_SCALE_FACTOR ** 3, 2);
+    advanceAttachmentTier(graph, 'sword1'); // 3→4
+    expect(read()).toBeCloseTo(TIER_MODIFIER_SCALE_FACTOR ** 3, 2);
   });
 
   // ─── Tier Name Mapping ─────────────────────────────────────
