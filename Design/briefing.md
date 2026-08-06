@@ -1,5 +1,5 @@
 ---
-needsChristian: thr-907-verdict-links-ready, thr-883-format-session, thr-961-sound-feel, thr-962-nudge-stage-cues, thr-996-item-advancement
+needsChristian: thr-907-verdict-links-ready, thr-883-format-session, thr-961-sound-feel, thr-962-nudge-stage-cues
 queue: backed-up
 freshness: healthy
 deploy: deployed
@@ -7,13 +7,13 @@ tasks: ok
 ---
 # Briefing
 
-**Generated:** 2026-08-06 04:55 local (2026-08-06 02:55 UTC) · by `keep-work-flowing-cc`
+**Generated:** 2026-08-06 07:55 local (2026-08-06 05:55 UTC) · by `keep-work-flowing-cc`
 
 This is your inbox. It's rewritten every hour by a Claude Code task. Standing switches you need to flip live in [`Design/user-actions.md`](user-actions.md); this file is the fresh-this-hour view.
 
 ## Needs Christian
 
-**Four things carried over, one new.** The new one is a small yes/no about items getting stronger over time. Nothing here is urgent tonight, and three separate fixes shipped without needing you while you were away.
+**One came off the list — you answered it yourself.** Four remain, all carried, none urgent this morning. Nothing new arrived.
 
 ### 1. The encounter verdict — five encounters, four rulings
 
@@ -31,7 +31,7 @@ You're ruling on **four** things: does the prose read right, does the firing rhy
 
 **For the firing-rhythm question only** — [press play and let it run](https://threadbare.vercel.app/?view=game&seeded&size=medium&testavatar&forceencounters).
 
-**The site rebuilt three times in the last few hours, and none of it changes what you'd play.** What shipped was interior engine work — how a stat is read, how ids are minted, a check on our own paperwork. **The five encounters are identical to an hour ago.** Said plainly because "new builds went out" and "something changed for you" are different claims, and only the first is true.
+**The site rebuilt again since the last brief, and again it changes nothing you'd play.** The links now serve build `34c4ff4d`. What landed was interior work — the balance measurement on how often you can cast, and a tidy-up that gave the action artwork a single home instead of two. **No encounter, card, or map asset moved**, so these five are identical to the ones you were offered at 04:55. Said plainly because "the site rebuilt" and "something changed for you" are different claims, and only the first is true.
 
 ### 2. The encounter-writing format session — still the biggest bottleneck
 
@@ -41,44 +41,44 @@ Two things you flagged when you paused the content work, still unanswered: the p
 
 **Worth doing after the five encounters above, not before** — playing them gives you the concrete examples to point at when you say what's wrong with the register.
 
-### 3. Should items ever get stronger over time? *(new — from `tb-orchestrator`)*
-
-The engine has a complete, tested "enchant/empower" system for items that **has never once run**, because nothing calls it. Three ways to go: turn it on, turn it on narrowly (only for rare or story items), or delete it. ([THR-996](https://linear.app/threadbare/issue/THR-996/attachmenttieradvancement-has-zero-production-callers-decide-whether))
-
-This is a genuine design question about whether a sword you've carried for fifty turns should mean something mechanically, or whether items stay fixed and the growth lives entirely in the person. One sentence from you settles it.
-
-### 4. Two sound questions — you need to hear the game *(from `tb-orchestrator`)*
+### 3. Two sound questions — you need to hear the game *(from `tb-orchestrator`)*
 
 - **Should the nudge moment carry cue sounds at all?** ([THR-962](https://linear.app/threadbare/issue/THR-962/the-encounter-sound-design-is-wired-to-a-superseded-surface-route-it)) — the cello-drone sounds exist and work, but they were written for the older encounter screen, which the game no longer shows. Re-pointing them is executor work; the part that's yours is whether that beat wants audio at all, and roughly where.
 - **How do the new encounter sounds actually feel?** ([THR-961](https://linear.app/threadbare/issue/THR-961/encounter-sound-design-feel-calibration-pass-thr-346-tuning-tail)) — needs listening, not reading. Three of the nine per-reach tones are written into the spec exactly; the other six were extrapolated to match. Whether they carry the right meaning is a taste call.
 
 Both are stuck until you've heard them. Neither is urgent.
 
+## From Christian
+
+**You answered the item-progression question on Discord at 07:07 this morning:**
+
+> Turn the enchantment system on
+
+**Read as: turn it on properly, not narrowly.** The ticket offered three ways out — turn it on, turn it on only for rare or story items, or delete it — and its first option is titled, word for word, "Turn it on." Your message carries no narrowing, so that's the reading taken: **Enchant and Empower become real, repeatable actions.** Spend essence, roll against a difficulty that climbs with each tier, and the item permanently gets stronger. A blade you've carried for fifty turns can now become something.
+
+**What was done with it:** the verdict is recorded on the ticket ([THR-996](https://linear.app/threadbare/issue/THR-996/attachmenttieradvancement-has-zero-production-callers-decide-whether)) with your words quoted, so it survives past this brief and an executor session can act on it without asking you again. **The building is not this task's to do** — this lane only reads and reports — so the work itself waits for the next executor session to pick the ticket up.
+
+**Correct me if the reading is wrong.** If you meant the narrow version — only bonded or legendary items, and only through story moments rather than as an action the player can repeat — say so and it'll be re-recorded. Otherwise the general version is what gets built.
+
 ## Queue
 
-**Backed up — 35 items ready for work,** down from 37. Planning stays comfortably ahead of execution; nothing is starving.
+**Backed up — 32 items ready for work,** down from 35. Planning stays comfortably ahead of execution; nothing is starving.
 
-- **Still no urgent, high, or medium work anywhere in the ready column** — all 35 items are low or no priority. Unchanged for days, and worth knowing rather than acting on. (The one urgent row on the board is your format session, which sits in design, not in the ready column.)
-- **Nothing is parked.** The single ticket in progress has someone on it.
-- **THR-860** — the four finished capital-city encounter templates — is still held behind your format decision above, deliberately and with the hold written on the ticket. Not a separate ask, and not waiting on anything you haven't already decided.
-- **Thirteen items have gone untouched for a week or more,** down from fourteen. Grooming input, not an alarm.
+- **Nothing is parked.** One item is being worked (the capital-city encounters, deliberately paused behind the format session above) and it has an owner. Sixth consecutive hour with no abandoned work.
+- **Nine items have gone quiet** (untouched for over a week), down from 13. The count has now fallen four hours running, which matches the explanation offered when it spiked: it was the content pause showing up in date arithmetic, not fresh neglect.
+- **Everything ready is low-priority housekeeping.** No urgent or high-priority work is waiting on a free session — the only urgent row on the board is your format session, which isn't ours to move.
 
 ## Freshness
 
-- **Home tree: current.** On `main`, fully up to date, nothing stranded. Two of your own tool-settings files still show as modified — harmless, and the auto-sync keeps fast-forwarding straight past them.
-- **All automated lanes on time** (9 of 9), merge checks healthy, no stuck changes, cleanup job ran 15 minutes ago. Nothing here needs you.
-- **One thing to watch, for an agent and not for you:** the weekly drift-scan job has failed 3 of its last 5 scheduled runs, though the two most recent both succeeded. The health check calls it healthy on that basis; it stays on the agent-side list as a gap in how that check grades partial failure.
-- **A second agent-side note:** the standing-asks file has grown past 400 lines and 100 KB of carried-forward findings. It's meant to be your short list of switches to flip, and it's drifting into a log. Flagged for an agent to prune; nothing for you to do.
+**Home tree is current** — on `main`, nothing behind, nothing stranded. Two settings files show local edits (yours, from tool permissions); they've been there for days and haven't blocked anything.
+
+**Everything automated is running.** The site serves the latest build, the merge checks work, all nine scheduled jobs are on time, and the cleanup job ran 15 minutes ago. Two old work folders are flagged for a human to decide on eventually — not urgent, and deliberately never auto-deleted.
+
+**One agent-side note, explicitly not yours:** our background-job monitor reports the weekly drift scan as "running normally" in the same breath as saying 3 of its last 5 runs failed. It has no setting between "fine" and "completely dead", so a job that half-works reads as healthy. That's ours to fix, not a decision for you.
 
 ## What's moving
 
-**Three fixes shipped and went live since the last brief, none of which needed you:**
-
-- **THR-723** — item tier advancement was strengthening a stat nobody reads; it now writes to the live one.
-- **THR-921** — a gate that catches a design document going stale before work gets promoted off it.
-- **THR-817** — group band ids are now derived rather than minted from a counter that reset unpredictably.
-
-The executor's plate is clear, nothing is in progress, and the next hourly pickup draws fresh from the ready column.
+Two things shipped since the last brief without needing you: a balance measurement of the casting curve, and a consolidation that gave action artwork one canonical home instead of two drifting copies. Both are interior; neither is visible in play.
 
 ---
 *Standing asks live in `Design/user-actions.md`. This file is regenerated hourly by
