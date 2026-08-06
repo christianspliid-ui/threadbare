@@ -8,6 +8,10 @@ import { fileURLToPath } from "node:url";
 
 import { classifyCoordinationBlockGap } from "./coordination-block-predicate.ts";
 import {
+  classifyPlanDocLiveness,
+  extractPlanDocPathsFromIssue,
+} from "./plan-doc-liveness-predicate.ts";
+import {
   LINEAR_BACKED_CHECK_NAMES,
   LINEAR_KEY_MISSING_REASON,
   type SkippedCheck,
@@ -107,6 +111,37 @@ function addSkippedCheck(check: string, reason: string): void {
 
 function normalizeRepoPath(value: string): string {
   return value.trim().replaceAll("\\", "/");
+}
+
+/**
+ * THR-921 — whether `origin/main` is resolvable at all in this checkout. A shallow or
+ * detached CI clone may not carry the ref, and `git cat-file` would then report every named
+ * plan doc as absent. Reporting a check that could not run is worse than not running it
+ * (THR-828), so the caller registers a skip instead of manufacturing findings.
+ */
+function originMainIsResolvable(): boolean {
+  try {
+    execFileSync("git", ["rev-parse", "--verify", "origin/main"], {
+      cwd: repoRoot,
+      stdio: ["ignore", "pipe", "ignore"],
+    });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** THR-921 — `git cat-file -e` is the cheapest existence probe that does not materialize the blob. */
+function planDocResolvesOnMain(repoPath: string): boolean {
+  try {
+    execFileSync("git", ["cat-file", "-e", `origin/main:${repoPath}`], {
+      cwd: repoRoot,
+      stdio: ["ignore", "pipe", "ignore"],
+    });
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 function runGit(args: string[]): string {
@@ -444,9 +479,42 @@ async function runLinearChecks(planFilesMissingInlineRef: string[]): Promise<voi
     }
   }
 
+  // THR-921 — a Ready-for-Dev issue naming a plan doc that is absent from `origin/main` has an
+  // unreadable handoff: every executor worktree is cut from that branch point, so `pull-work`
+  // Step 6 finds a 404 and the run is spent bouncing, reconstructing the design from the issue
+  // body, or chasing an unmerged branch. Happened twice in one week (impediments #321, #325).
+  const planDocLivenessRunnable = readyForDevIssueNodes.length > 0 && originMainIsResolvable();
+  if (readyForDevIssueNodes.length > 0 && !planDocLivenessRunnable) {
+    addSkippedCheck("plan-doc liveness", "origin/main is not resolvable in this checkout");
+  }
+
   for (const issue of readyForDevIssueNodes) {
     const comments = issue.comments?.nodes ?? [];
     const latestBody = chooseLatestComment(comments);
+
+    if (planDocLivenessRunnable) {
+      // Reads both carrying surfaces (description + every comment), per the two-place rule.
+      const namedPaths = extractPlanDocPathsFromIssue({ description: issue.description, comments });
+      for (const namedPath of namedPaths) {
+        const verdict = classifyPlanDocLiveness({
+          path: namedPath,
+          onMain: planDocResolvesOnMain(namedPath),
+          // The lint stays local and fast; `npm run check:plan-doc-liveness <path>` runs the
+          // open-PR scan that separates "stranded on an open PR" from "does not exist".
+          prScanRan: false,
+        });
+        if (verdict.blocksPromotion) {
+          addFinding({
+            check: "plan-doc-liveness",
+            severity: "error",
+            message:
+              `${issue.identifier} (${issue.title}) names ${namedPath}, which does not resolve on origin/main — ` +
+              `the executor cannot read it from a fresh worktree. Run \`npm run check:plan-doc-liveness ${namedPath}\` ` +
+              `to see whether it is stranded on an open PR or missing entirely.`,
+          });
+        }
+      }
+    }
     // THR-836: a missing block only *stops* the lane when the ticket is also unscoped. A
     // self-scoped one is claimable — the executor derives the three lines from the surfaces the
     // description already names — so it reports `warn` (the filer should still have posted one).

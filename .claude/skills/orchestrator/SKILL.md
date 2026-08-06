@@ -1,7 +1,7 @@
 ---
 name: orchestrator
 description: The lane that decides what happens next — reads the Blocked by half of coordination blocks and promotes unblocked work to Ready for Dev (T1), authors design when the program shelf runs thin (T2), and owns architecture-health surfacing as a standing daily duty (T3). Runs hourly as tb-orchestrator. Never claims an issue, never sets In Dev, never writes Design/briefing.md.
-last_validated_against: 2026-08-03
+last_validated_against: 2026-08-06
 ---
 
 # Orchestrator
@@ -87,6 +87,7 @@ The decline reasons, all of which must name their evidence in the report (this l
 - **Wrong destination** — the ticket says it needs design first (`Needs its own design finalization before Ready for Dev`). Blockers being met does not make it dev-ready; it makes it **T2's** input. Route it there, do not promote it.
 - **Wayfinder issue** — anything carrying a `wayfinder:*` label (map or decision ticket, THR-900). These are decisions, not executor work, and **never enter `Ready for Dev`** — they are T1.5's input, not T1's. Skip unconditionally, whatever its blockers say.
 - **Standing retire verdict** — the candidate's **latest comment** carries an explicit retire / do-not-build / superseded verdict dated *after* the blocker's `completedAt`. Decline and quote the verdict sentence. **This is the one decline reason the `Blocked by` field cannot express**, which is why it needs its own step below.
+- **Stranded plan doc** — the candidate names a plan doc that does not resolve on `origin/main` (THR-921). Hold the promotion, do not decline it: the ticket is fine, its artifact just has not merged yet. See the liveness check below.
 
 **Read the latest comment before promoting — a met blocker is not a live premise (THR-990).** Steps 2–3 above read only the `Blocked by` half of the coordination block, so a ticket whose *premise* died while its blocker went Done still passes every check and promotes clean. Before writing the promotion, call `list_comments(id, orderBy:"createdAt", limit:5)` and read the most recent entry. If it carries a standing retire verdict newer than the blocker's `completedAt`, decline — the blocker clearing is not new information about a ticket that was already judged dead on other grounds.
 
@@ -95,6 +96,14 @@ Measured: THR-945 ("Disturber pays") was re-assessed 2026-08-02T03:33Z, verdict 
 **Do not widen this into general comment-parsing.** The trigger is a verdict about whether the ticket should be *built at all* — retire, do not build, superseded, resolved-by-removal, closure recommended. Design notes, scope questions, and mutex chatter are not verdicts and must not block a promotion; when the latest comment is merely *discouraging* rather than a verdict, promote and let the executor judge at pickup.
 
 **Promotion ceiling.** Cap at `ORCH_PROMOTE_BATCH_MAX` per run. Additionally: **do not promote into a backed-up shelf.** If Ready for Dev already holds more than `QUEUE_BACKED_UP_MIN` (15, the threshold `keep-work-flowing-cc` uses) items, promote at most one per run — planning is already outrunning execution, and adding to the pile makes the executor's ordering problem worse, not better. Say in the report that the ceiling applied and which candidates it held back. **A held-back candidate is named, with its evidence, so a throttled promotion is visibly deferred rather than silently dropped.**
+
+**Check plan-doc liveness before promoting — a promotion whose artifact is unreadable is a lost run (THR-921).** T1 promotes tickets it did not author, so the plan doc named in the description was merged (or not) by somebody else. Twice in the week of 2026-07-30 an issue reached `Ready for Dev` naming a doc that existed only on an unmerged `docs/plan-*` PR (impediments #321 / THR-884, #325 / THR-887) — the path 404'd in every worktree cut from `origin/main`, and in THR-887's case the Done-when itself named a wiki page on that same PR, making it unsatisfiable by construction. Pipe the description through the check before writing the promotion:
+
+```bash
+npm run check:plan-doc-liveness -- Docs/plans/<the-doc-the-issue-names>.md
+```
+
+`LIVE` → promote. `STRANDED` → **hold, do not decline** — the ticket is ready and its doc is minutes away; name the PR number in the report and let the next run promote it once that PR merges. `MISSING` → the path is wrong or the doc was never written; route to T2 rather than promoting a ticket nobody can execute. A ticket naming no plan doc at all passes trivially — the gate is about artifacts that were promised, not about requiring one.
 
 ### 4. Write, then verify
 
