@@ -109,7 +109,13 @@ effect primitives · **THR-720** `activatedEffects` parked · **THR-721** ambiti
 ChronicleTab completed list · ~~**THR-722** retire edge `grants[]`~~ (done 2026-07-24 — the
 edge property is deleted and its authored payload re-expressed as `effects[]` `trait_grant`;
 the intent's row is now `attachment-trait-grant-effects`, still LEAKED because the *consumer*
-is missing, tracked by **THR-737**) · **THR-723** dead stat path.
+is missing, tracked by **THR-737**) · ~~**THR-723** dead stat path~~ (done 2026-08-06 —
+`attachmentTierAdvancement` now scales the artifact's `stat_contribution` effects, the live
+substrate `computeRawScore` reads, clamped to `ITEM_STAT_BAND_LEGENDARY`; it no longer scales
+Reach-domain edge `modifiers`, while non-Reach keys like `los_range` keep working. Both rows
+stay 🔴 LEAKED for the halves THR-723 deliberately did not take: the resolver still has **no
+production caller**, a design call deferred to **THR-996**, and the reach-keyed *seed* writes
+in `gameInit.ts`/`seedAttachments.ts` remain, deferred to **THR-997**).
 
 **Personality & Emergent Traits** — first slice, 2 contracts, audited 2026-07-26 (THR-786),
 audit-on-touch triggered by the trait-predicate unification. `trait-predicate-resolution` is
@@ -182,8 +188,15 @@ draws one box per subsystem listed here — a row without a box there is a wiki 
 see the plan doc § User verdicts.)*
 
 ## Last-reviewed
-2026-07-23 by Claude Code (THR-717 implementation). Rows regenerate mechanically; this page's
-protocol is reviewed monthly. Implementation correction to the original audit: the
-`attachment-tier-advancement` row was badged 🟠 PARTIAL on the assumption advancement runs —
-Tier 1 shows `attachmentTierAdvancement.ts` has **zero production importers**, so it never
-runs at all. Remediation remains THR-723.
+2026-08-06 by Claude Code (THR-723 implementation). Rows regenerate mechanically; this page's
+protocol is reviewed monthly. Implementation correction to the original audit, carried from
+2026-07-23 (THR-717): the `attachment-tier-advancement` row was badged 🟠 PARTIAL on the
+assumption advancement runs — Tier 1 shows `attachmentTierAdvancement.ts` has **zero
+production importers**, so it never runs at all.
+
+THR-723 (2026-08-06) repointed the resolver's output onto the live `stat_contribution`
+substrate and corrected the row's `readSites`, which had claimed `orchestrator.ts` — a
+transcribed intention that was never a real import, and the kind of unverified read site this
+registry exists to catch. The row stays LEAKED: making a resolver correct-if-called does not
+make it called. Wiring is THR-996; the surviving reach-keyed seed writes behind
+`attachment-edge-modifiers` are THR-997.
