@@ -16,6 +16,7 @@ import {
 import { clearTraces } from '../traceBuffer';
 import type { GameState, CosmologyProfile } from '../../types/index';
 import { SPHERE_NAMES } from '../../types/index';
+import { WORLD_SIM_TEST_TIMEOUT_MS } from '../../testing/testTimeouts';
 
 // ─── Helpers ──────────────────────────────────────────────────────
 
@@ -136,7 +137,7 @@ function createTestGameState(): GameState {
 
 // ─── Tests ────────────────────────────────────────────────────────
 
-describe('tick health integration', { timeout: 120000 }, () => {
+describe('tick health integration', { timeout: WORLD_SIM_TEST_TIMEOUT_MS }, () => {
   beforeEach(() => {
     resetDecisionCache();
     resetEventCounter();

@@ -26,6 +26,7 @@ import { resetDiscoveryEventCounter } from '../../revelationResolver';
 import { resetRevEventCounter } from '../../revelationEmitter';
 import { resetPhaseEventCounter } from '../../unifiedActionPhases';
 import { resetUnifiedActionCounter } from '../../unifiedActionLifecycle';
+import { WORLD_SIM_TEST_TIMEOUT_MS } from '../../../testing/testTimeouts';
 import type { GameState } from '../../../types/gameState';
 
 /**
@@ -39,6 +40,12 @@ import type { GameState } from '../../../types/gameState';
 // Agents on a full initializeGameState world need travel time before encountering.
 // The liveness contract (encounter-liveness) uses 100 ticks with seedWorld; we use
 // 50 here as a reasonable middle-ground for initializeGameState with a small map.
+//
+// This is a count of simulation ticks, NOT a wall-clock budget — "within tick
+// budget" in the first test's name means "encounters appear inside 50 ticks".
+// Nothing here asserts how long those ticks take, which is why the per-test
+// timeouts below are the shared hang detector rather than a performance contract
+// (THR-1015).
 const PIPELINE_TICK_BUDGET = 50;
 const SEED = 42;
 
@@ -99,7 +106,7 @@ describe('agent decision pipeline contract', () => {
     state = createFreshState();
   });
 
-  it('cache → filter → score → select produces encounters within tick budget', { timeout: 15_000 }, () => {
+  it('cache → filter → score → select produces encounters within tick budget', { timeout: WORLD_SIM_TEST_TIMEOUT_MS }, () => {
     state = runTicks(state, PIPELINE_TICK_BUDGET);
 
     // Check both legacy encounterProgress and unifiedActions for encounter activity
@@ -122,7 +129,7 @@ describe('agent decision pipeline contract', () => {
     }
   });
 
-  it('scoring is deterministic — same seed produces identical encounters', { timeout: 30_000 }, () => {
+  it('scoring is deterministic — same seed produces identical encounters', { timeout: WORLD_SIM_TEST_TIMEOUT_MS }, () => {
     // Run 1: fresh state from clean module counters
     const state1 = runTicks(createFreshState(), PIPELINE_TICK_BUDGET);
     const encounters1 = [
@@ -144,7 +151,7 @@ describe('agent decision pipeline contract', () => {
     expect(encounters1).toEqual(encounters2);
   });
 
-  it('occupied agents are skipped — no double-booking', { timeout: 15_000 }, () => {
+  it('occupied agents are skipped — no double-booking', { timeout: WORLD_SIM_TEST_TIMEOUT_MS }, () => {
     state = runTicks(state, PIPELINE_TICK_BUDGET);
 
     // Check no agent appears in two active encounters simultaneously (legacy)
