@@ -125,6 +125,11 @@ if (import.meta.env.DEV) {
   // GameView registers modal + UI state providers for playtest assertions
   let _openModalsProvider: (() => string[]) | null = null;
   let _activeUIStateProvider: (() => ActiveUIState) | null = null;
+  // GameView registers the narrative-interrupt dismisser + suppression setter (THR-1019).
+  // One pass over the currently-open beat surfaces; the drain loop lives in `dismissBeats`.
+  let _beatDismisser: (() => import('./components/Game/beatDismissal').BeatDismissalRecord[]) | null = null;
+  let _beatSuppressionSetter: ((enabled: boolean) => void) | null = null;
+  let _beatSuppressionActive = false;
   // GameView registers its omniscience toggle callback here
   let _omniscienceToggle: ((enabled?: boolean) => boolean) | null = null;
   // AscendantBar debug: GameView registers a callback to set ascendant quintessence
@@ -769,6 +774,51 @@ if (import.meta.env.DEV) {
     _registerHexAtViewport: (fn: (x: number, y: number) => { col: number; row: number } | null) => { _hexAtViewport = fn; },
     _registerOpenModalsProvider: (fn: () => string[]) => { _openModalsProvider = fn; },
     _registerActiveUIStateProvider: (fn: () => ActiveUIState) => { _activeUIStateProvider = fn; },
+
+    // ── Narrative-interrupt levers for browser verification (THR-1019) ───────
+    dismissBeats: async () => {
+      const { DEBUG_DISMISS_BEATS_MAX_PASSES, DISMISSABLE_BEAT_SURFACES } =
+        await import('./components/Game/beatDismissal');
+      const surfaces: import('./components/Game/beatDismissal').BeatInterruptSurface[] = [];
+      let passes = 0;
+      let exhausted = false;
+
+      // Beats chain — resolving one can offer the next — and each successor only
+      // becomes visible after React re-renders and GameView re-registers the
+      // dismisser. So drain in passes with a macrotask yield between them rather
+      // than looping inside a single closure over stale state.
+      for (;;) {
+        if (passes >= DEBUG_DISMISS_BEATS_MAX_PASSES) { exhausted = true; break; }
+        const cleared = (_beatDismisser?.() ?? []).filter(record => record.dismissed);
+        passes += 1;
+        if (cleared.length === 0) break;
+        surfaces.push(...cleared.map(record => record.surface));
+        await new Promise(resolve => setTimeout(resolve, 0));
+      }
+
+      const dismissable = new Set<string>(DISMISSABLE_BEAT_SURFACES);
+      return {
+        dismissed: surfaces.length,
+        surfaces,
+        passes,
+        exhausted,
+        remaining: (_openModalsProvider?.() ?? []).filter(modal => dismissable.has(modal)),
+      };
+    },
+    suppressBeats: (enabled = true) => {
+      _beatSuppressionActive = enabled;
+      _beatSuppressionSetter?.(enabled);
+      return _beatSuppressionActive;
+    },
+    isBeatSuppressionActive: () => _beatSuppressionActive,
+    _registerBeatDismisser: (fn: () => import('./components/Game/beatDismissal').BeatDismissalRecord[]) => {
+      _beatDismisser = fn;
+    },
+    _registerBeatSuppression: (fn: (enabled: boolean) => void) => {
+      _beatSuppressionSetter = fn;
+      // Re-assert across remounts so a suppression set before navigation survives.
+      if (_beatSuppressionActive) fn(true);
+    },
 
     // ── Omniscience mode: bypass familiarity gating on agent character sheets ──
     toggleOmniscience: () => _omniscienceToggle?.() ?? false,
