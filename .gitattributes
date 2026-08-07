@@ -22,6 +22,7 @@
 #
 # Deliberately EXCLUDES Docs/project-status.md: it has a 60-line cap and rewrite
 # semantics, so union would duplicate rewritten lines rather than merge them.
+# That file is handled by `merge=ours` further down instead — see THR-1016.
 #
 # Applies to LOCAL `git merge` only. GitHub's server-side merge ignores this
 # attribute — measured 2026-07-21 (THR-691): with these lines present on the
@@ -41,3 +42,25 @@ Docs/impediments.md merge=union
 # guarantee chronological order among the appended sections on a resolved
 # conflict — acceptable for an audit trace, not for anything read in order.
 Docs/ops/orchestrator-*.md merge=union
+
+# Generated closeout page — resolve by regenerating, never by merging (THR-1016).
+#
+# `Docs/project-status.md` is assembled by `npm run generate-project-status` from
+# the one-file-per-entry fragments in `Docs/status/`. Those fragments never
+# conflict: a closeout creates a brand-new path, so two open PRs cannot be writing
+# the same file. Only the assembled page can conflict, and merging its *text* is
+# always the wrong move — the right answer is a function of the merged fragment
+# set, which git has already resolved cleanly one directory over.
+#
+# So `ours` (a built-in driver, like `union`) takes this branch's copy without a
+# conflict, and the regeneration that follows the merge produces the correct page:
+#
+#   git merge origin/main && npm run generate-project-status && git commit -a
+#
+# Skipping that regeneration is NOT silent — `check:generated-freshness` is a
+# blocking CI gate and rejects a page that does not match its fragments. That gate
+# is what makes `ours` safe here; do not apply this driver to a hand-written file,
+# where it would discard the other side's edits with nothing to reconstruct them
+# from. Same caveat as union above: GitHub's server-side merge ignores this
+# attribute, so a conflicted PR is still resolved locally and pushed.
+Docs/project-status.md merge=ours

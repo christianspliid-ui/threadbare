@@ -741,7 +741,9 @@ Every ship appends rows to the same table heads (`Docs/changelog.md`, `Docs/proj
 
 ```bash
 git fetch origin main
-git merge origin/main        # union auto-resolves the three closeout docs
+git merge origin/main                  # union auto-resolves the three closeout docs
+npm run generate-project-status        # rebuild the page from the merged fragment set
+git commit -a --no-edit 2>/dev/null || true
 git push
 ```
 
@@ -749,7 +751,16 @@ The merge prints `Auto-merging Docs/changelog.md` and exits 0 with both sides' r
 
 **Check the result before pushing** — union keeps *both* sides of every conflicting hunk, which is right for appended rows and wrong for an edited one. If the same row was modified on both branches you get it twice, so skim `git diff origin/main -- Docs/` for duplicates rather than trusting the clean exit.
 
-`Docs/project-status.md` is deliberately **excluded** from union: it has a 60-line cap and rewrite semantics, so union would duplicate rewritten lines instead of merging them. Conflicts there are still resolved by hand.
+### `Docs/project-status.md` — regenerate, never resolve (THR-1016)
+
+**There is no longer anything to hand-resolve here, and the regeneration step above is not optional.** Until THR-1016 this file was hand-edited and every closeout wrote it at the same two anchors — an insert at the top of `## Current Focus` and a delete at the tail to hold the 60-line cap — so **any two open closeout PRs conflicted by construction**, whatever either one contained, and `gh pr update-branch` could not help. Measured 2026-08-07: PRs #1322, #1326 and #1327 all sat `DIRTY` for 17, 18 and 20 hours conflicting *only* in closeout docs, `check:armed-prs` reporting `abandoned` / `needsChristian`; #1322 had to be resolved **twice in one session**, because PR #1330 merged minutes after the first resolution and re-staled it with nothing about #1322 having changed. Draining N such PRs cost N sequential CI cycles.
+
+Now the page is **generated** by `npm run generate-project-status` from one-file-per-entry fragments in `Docs/status/`. Two consequences for this section:
+
+- **The content never conflicts.** A closeout creates a brand-new `Docs/status/YYYY-MM-DD-thr-XXXX.md`, so no two branches write the same path. That property survives GitHub's server-side merge, which ignores `.gitattributes` and therefore never benefited from union at all.
+- **The page resolves by regeneration.** `Docs/project-status.md` is `merge=ours` in `.gitattributes`, so the merge takes *your* copy with no conflict — which is wrong until you regenerate, because the correct page is a function of the merged fragment set that git has already resolved one directory over. Run the generator, commit, push. Skipping it is not silent: `check:generated-freshness` is blocking in CI and rejects a page that does not match its fragments.
+
+Never hand-edit the page, and never delete another entry to make room — the generator holds the cap by rendering only the newest fragments that fit, and everything older stays in `Docs/status/`.
 
 ## Closeout — remove the temporary worktree
 

@@ -120,6 +120,12 @@ const EXTERNAL_GENERATED_ARTIFACTS: readonly ExternalArtifact[] = [
   // THR-987" rather than building a bespoke one, so this ticket owns its recurrence
   // prevention; observed drift rate is ~2 plans/week, which re-rots it continuously.
   { path: "Docs/plans/INDEX.md", command: "npm run rebuild-plans-index" },
+  // ~0s, pure fs. Registered by THR-1016, and load-bearing in a way the others are
+  // not: `Docs/project-status.md` is `merge=ours` in `.gitattributes`, so a merge
+  // silently keeps this branch's copy and the page is only correct if the
+  // regeneration that must follow actually ran. This gate IS that guarantee — take
+  // it away and `ours` becomes a way to drop main's entries without a conflict.
+  { path: "Docs/project-status.md", command: "npm run generate-project-status" },
 ];
 
 /**
