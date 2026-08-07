@@ -1,6 +1,6 @@
 ---
 name: orchestrator
-description: The lane that decides what happens next — reads the Blocked by half of coordination blocks and promotes unblocked work to Ready for Dev (T1), authors design when the program shelf runs thin (T2), and owns architecture-health surfacing as a standing daily duty (T3). Runs hourly as tb-orchestrator. Never claims an issue, never sets In Dev, never writes Design/briefing.md.
+description: The lane that decides what happens next — reads the Blocked by half of coordination blocks and promotes unblocked work to Ready for Dev (T1), stages design requests when the program shelf runs thin (T2; Sonnet lane by Christian's ruling 2026-08-06 — never authors plan docs), and owns architecture-health surfacing as a standing daily duty (T3). Runs hourly as tb-orchestrator. Never claims an issue, never sets In Dev, never writes Design/briefing.md.
 last_validated_against: 2026-08-06
 ---
 
@@ -16,7 +16,7 @@ This skill is the decider. Three tiers, cheapest first:
 |------|---------|--------------|
 | **T1** unblock sweep | every run | Reads `Blocked by`, resolves against issue states, promotes unblocked work to `Ready for Dev` |
 | **T1.5** wayfinder sweep | every run, only when an open map exists | Burns down frontier AFK decision tickets via subagents; surfaces the HITL frontier to Christian (THR-900) |
-| **T2** design authoring | when the program shelf is thin | Runs `design-session` on agreed-but-undesigned work, hands off with a coordination block |
+| **T2** design staging | when the program shelf is thin | Stages agreed-but-undesigned work for an attended design session — comment + `In Design` + `## Needs Christian` line. **Never authors plan docs**: this lane runs Sonnet deliberately (Christian, 2026-08-06); authoring is Opus-session work |
 | **T3** architecture health | daily, first run after `ORCH_HEALTH_SWEEP_HOUR` | Runs existing detectors, diffs against the last sweep, reports **new** findings. Weekly on `ORCH_TESTHEALTH_DOW` it also runs the test-suite health pass (THR-942) |
 
 **Design doc:** `Docs/plans/2026-07-27-thr-826-orchestrator-lane.md`. **Authority boundary (D1–D7):** `Docs/plans/2026-07-27-orchestrator-lane-grill-me.md`, recorded as a mandate in `Docs/ways-of-working.md` § *Agent initiative — what may begin without being asked*. Read the mandate before acting; it is what authorises this lane to begin work unprompted.
@@ -203,13 +203,13 @@ Open a chat and say 'work the map' when ready."* The existing briefing link
 [orchestrator] T1.5 skip: no open wayfinder maps
 ```
 
-## T2 — Design authoring (when the shelf runs thin)
+## T2 — Design staging (when the shelf runs thin)
 
 **Trigger:** fewer than `ORCH_PROGRAM_WORK_FLOOR` non-`Deferral` items in `Ready for Dev`. Deferrals are excluded deliberately — the executor files them under itself, so counting them is what let the shelf read "healthy" (19–23 all week) while authored program work sat in `Todo` indefinitely. Counting only program work is the measurement that closes that loop.
 
 **Bound:** never hold more than `ORCH_MAX_IN_DESIGN` issues in `In Design` at once.
 
-**Procedure:** take the top agreed-but-undesigned item, invoke the `design-session` skill, and hand off per its flow — plan doc committed via its own `docs/plan-*` PR, path in **both** the issue description and the handoff comment, coordination block on the handoff.
+**Procedure (amended 2026-08-06 — Christian keeps this lane on Sonnet deliberately, so it stages rather than authors):** take the top agreed-but-undesigned item and post a design-request comment (why now, shelf depth, what makes it agreed, the canon/Step-0 loads the design session will need), move it to `In Design`, and surface `design session wanted: <title>` under `## Needs Christian` in the run report — the briefing carries it to an attended Opus session, which runs `design-session` proper (plan doc via `docs/plan-*` PR, path in description + handoff comment, coordination block). An item still unpicked after 48h is re-surfaced, not re-staged; `ORCH_MAX_IN_DESIGN` counts staged items.
 
 **What counts as agreed** (D2, verbatim): *"expanding on already agreed designs and patterns and fixing bugs is within the remit... we create the vision, the patterns, the overarching architecture, the prototypes, the game systems together, but when that context is clear i am not interested in second guessing."*
 

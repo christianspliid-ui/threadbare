@@ -20,6 +20,9 @@ THR-794 found one miss in each of directions 1 and 2 (`website-code-work`, `Thre
 
 ## CC automation lane — registered and live
 
+> **Models per lane (recorded 2026-08-06; Christian's ruling).** `tb-orchestrator` runs **Sonnet 5 deliberately** — its T2 was amended the same day to *stage* design requests rather than author plan docs, so nothing judgment-critical rides the smaller model; every other CC lane runs **Opus 5** per the standing "CC always runs Opus" doctrine. **The `list_scheduled_tasks` MCP does not expose the model**, so the audit source is the desktop app's task settings or a transcript grep (`grep -o '"model":"[^"]*"' <run>.jsonl | head -1`); the 2026-07-31 pause/resume cycle (impediment #359) proved task settings can silently reset, and the model field lives on that same surface — diff against this note after any pause/resume.
+
+
 | Slot | Cadence | Task | Cron | Fires | Writes |
 |------|---------|------|------|-------|--------|
 | **:00** | Hourly | CC pickup (`tb-opus-pickup` — single Opus executor lane) | `0 * * * *` | ~:00:53 | — |

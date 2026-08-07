@@ -273,6 +273,7 @@ Load these only when doing specialized work in that domain:
 
 | Domain | File |
 |--------|------|
+| **The UI Laws (binding — load for any UI pillar work)** | `Docs/design-system/laws.md` |
 | Design system index | `Docs/design-system/INDEX.md` |
 | Full component selection tree | `Docs/design-system/component-selection.md` |
 | Full layout zone architecture | `Docs/design-system/layout-zones.md` |

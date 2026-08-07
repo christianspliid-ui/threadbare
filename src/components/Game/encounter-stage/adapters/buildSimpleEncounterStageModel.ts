@@ -8,12 +8,13 @@
  * Prose enrichment logic ported from TieredEncounterModal lines 699-722.
  */
 
-import type { UnifiedActionTemplate } from '../../../../types/unifiedAction';
-import { isActionStepBranch } from '../../../../types/unifiedAction';
+import type { ActionStep, UnifiedActionTemplate } from '../../../../types/unifiedAction';
+import { isActionStepBranch, isStepSuccess } from '../../../../types/unifiedAction';
 import type { EncounterNotification } from '../../../../types/encounterVisibility';
 import type { ActiveEncounterDisplay } from '../../encounterNotificationRuntime';
 import type { WorldGraph } from '../../../../engine/graph';
 import type { GameState } from '../../../../types/gameState';
+import type { EncounterResolutionSnapshot } from '../../../../types/encounter';
 import type { ThreadTier } from '../types';
 import type {
   EncounterStageModel,
@@ -23,10 +24,13 @@ import type {
   EncounterStageResolutionCheckModel,
 } from '../types';
 import { enrichProse, gatherNarrativeContext } from '../../../../engine/proseEnrichment';
+import type { NarrativeContext } from '../../../../engine/proseEnrichment';
 import { computeCapability } from '../../../../engine/domainCapability';
 import { computeResolutionModifiers } from '../../../../engine/resolutionModifiers';
 import { forecastAction } from '../../../../engine/resolutionService';
 import { RARITY_TO_THREAT } from '../../../../engine/encounterCache';
+import { stepOutcomeToOutcomeBand, stepOutcomeWord } from '../../../../data/outcome-band-content';
+import { getAgentPortraitUrlFromProperties } from '../../../../data/portrait-assets';
 import type { RarityTier } from '../../../../types/rarity';
 
 // ── Types ────────────────────────────────────────────────
@@ -90,15 +94,44 @@ function formatForecastLabel(raw: string): string {
   return titleCaseWord(raw);
 }
 
+/**
+ * Flatten the step at `index` to a concrete definition.
+ *
+ * The fallback path has no `choiceHistory` to resolve a branch with, so a
+ * branching step reads through its declared fallback — the same reading
+ * `buildCurrentResolutionCheck` has always used, lifted out so the header and
+ * the history rows cannot disagree with it.
+ */
+function stepAt(template: UnifiedActionTemplate, index: number): ActionStep | undefined {
+  const stepOrBranch = template.steps[index];
+  if (!stepOrBranch) return undefined;
+  return isActionStepBranch(stepOrBranch) ? stepOrBranch.fallback : stepOrBranch;
+}
+
+/**
+ * Label for wherever the focal agent currently stands (THR-994).
+ *
+ * The unified adapter resolves this from its action's `targetId`; the fallback
+ * path has no action, so the agent's own `located_at` edge is the equivalent
+ * anchor. Returns `''` rather than a placeholder when nothing resolves —
+ * `ContextStrip` hides the element on an empty string and rejects the literal
+ * 'Unknown Location' by name, so an honest gap is both the truthful and the
+ * better-rendering answer.
+ */
+function resolveAgentLocationLabel(graph: WorldGraph, agentId: string): string {
+  const locEdges = graph.getOutgoingEdges(agentId, 'located_at');
+  if (locEdges.length === 0) return '';
+  return graph.getNode(locEdges[0].target)?.name ?? '';
+}
+
 function buildCurrentResolutionCheck(
   graph: WorldGraph,
   agentId: string,
   template: UnifiedActionTemplate,
   currentStepIndex: number,
 ): EncounterStageResolutionCheckModel | undefined {
-  const stepOrBranch = template.steps[currentStepIndex];
-  if (!stepOrBranch) return undefined;
-  const currentStep = isActionStepBranch(stepOrBranch) ? stepOrBranch.fallback : stepOrBranch;
+  const currentStep = stepAt(template, currentStepIndex);
+  if (!currentStep) return undefined;
   const stepLabel = `Step ${currentStepIndex + 1}`;
 
   const capability = computeCapability(graph, agentId, currentStep.reach);
@@ -165,6 +198,65 @@ function buildResolvedResolutionChecks(
   }));
 }
 
+/**
+ * Step-navigator rows, including the replay record for each resolved step (THR-994).
+ *
+ * Until this filled them in, every row carried nothing but a status, so clicking
+ * a resolved dot entered replay over an empty body — the navigator worked and
+ * had nothing to show. There is no frozen `stepProseHistory` on this path (that
+ * record belongs to a live `UnifiedAction`), so the replay text is the step's
+ * own authored prose re-enriched under that step's outcome band. That is the
+ * documented fallback the unified adapter already uses when a record is absent.
+ */
+function buildHistory(
+  template: UnifiedActionTemplate,
+  encounter: ActiveEncounterDisplay,
+  ctx: NarrativeContext,
+  currentIndex: number,
+  isEncounterFinished: boolean,
+): EncounterStageHistoryModel[] {
+  const snapshotByIndex = new Map<number, EncounterResolutionSnapshot>(
+    (encounter.resolutionHistory ?? []).map((entry) => [entry.stepIndex, entry]),
+  );
+
+  return template.steps.map((_step, i) => {
+    const status = i < currentIndex ? 'resolved' as const
+      : i === currentIndex ? (isEncounterFinished ? 'resolved' as const : 'current' as const)
+      : 'future' as const;
+
+    const entry: EncounterStageHistoryModel = {
+      stepId: snapshotByIndex.get(i)?.stepId ?? `step-${i}`,
+      stepLabel: snapshotByIndex.get(i)?.stepName || `Step ${i + 1}`,
+      status,
+    };
+    if (status !== 'resolved') return entry;
+
+    // Outcome, preferring the resolution snapshot and falling back to the
+    // coarser success flag the display record always carries.
+    const snapshot = snapshotByIndex.get(i);
+    const success = snapshot ? isStepSuccess(snapshot.outcomeType) : encounter.history[i]?.success;
+    if (success === undefined) return entry;
+
+    const step = stepAt(template, i);
+    const outcome = snapshot?.outcomeType;
+    const stepCtx = outcome ? { ...ctx, outcomeBand: stepOutcomeToOutcomeBand(outcome) } : ctx;
+    const rawAfterimage = success
+      ? (step?.successAfterimage ?? 'Succeeded')
+      : (step?.failureAfterimage ?? 'Failed');
+
+    return {
+      ...entry,
+      outcome,
+      outcomeWord: outcome ? stepOutcomeWord(outcome) : undefined,
+      reachLabel: step ? titleCaseWord(step.reach) : undefined,
+      afterimage: enrichProse(rawAfterimage, stepCtx),
+      replayNarrative: step?.narrativeTemplate
+        ? enrichProse(step.narrativeTemplate, stepCtx)
+        : undefined,
+    };
+  });
+}
+
 // ── Main adapter ─────────────────────────────────────────
 
 export function buildSimpleEncounterStageModel(
@@ -218,13 +310,7 @@ export function buildSimpleEncounterStageModel(
   }));
 
   // ── History ──
-  const history: EncounterStageHistoryModel[] = template.steps.map((_step, i) => ({
-    stepId: `step-${i}`,
-    stepLabel: `Step ${i + 1}`,
-    status: i < currentIndex ? 'resolved' as const
-      : i === currentIndex ? (isEncounterFinished ? 'resolved' as const : 'current' as const)
-      : 'future' as const,
-  }));
+  const history = buildHistory(template, encounter, narrativeCtx, currentIndex, isEncounterFinished);
   const previousChecks = buildResolvedResolutionChecks(encounter, template);
   const currentCheck = isEncounterFinished
     ? undefined
@@ -238,12 +324,28 @@ export function buildSimpleEncounterStageModel(
       }
     : undefined;
 
+  // ── Context strip (THR-994) ──
+  // THR-636's strip gates every element on these fields, and this adapter
+  // supplied none of them — so the fallback path, which is what a normal
+  // threaded encounter lands on once its unified action has been reaped,
+  // rendered the strip as a zero-height box with no children. Each field below
+  // is read from data the adapter already receives; nothing new is threaded in.
+  const currentStep = stepAt(template, currentIndex);
+  const focalName = args.agentName || notification.agentName;
+
   return {
     header: {
       title: template.name,
-      locationLabel: '',
+      locationLabel: resolveAgentLocationLabel(graph, agentId),
       threatLabel: RARITY_TO_THREAT[effectiveRarityTier ?? template.rarityTier] ?? 'moderate',
       threadTier,
+      agentName: focalName,
+      familyLabel: focalName,
+      focalActorId: agentId,
+      portraitUrl: getAgentPortraitUrlFromProperties(graph.getNode(agentId)?.properties),
+      hexCol: notification.hexCol,
+      hexRow: notification.hexRow,
+      reachLabel: currentStep ? titleCaseWord(currentStep.reach) : undefined,
     },
     illustration,
     scene: {
