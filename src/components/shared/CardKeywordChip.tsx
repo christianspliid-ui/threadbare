@@ -13,9 +13,11 @@
 
 import { memo } from 'react';
 
-const CHIP_BORDER = 'rgba(212, 175, 55, 0.28)';
-const CHIP_BG = 'rgba(212, 175, 55, 0.07)';
-const CHIP_TEXT = 'rgba(212, 196, 158, 0.85)';
+// Law 30 (THR-1010): chips render inside the nudge stage, so a local gold
+// here paints as a second gold on the veil's composed surface.
+const CHIP_BORDER = 'rgb(var(--veil-gold-rgb) / 0.28)';
+const CHIP_BG = 'rgb(var(--veil-gold-rgb) / 0.07)';
+const CHIP_TEXT = 'var(--veil-text-bright)';
 
 export interface CardKeywordChipProps {
   keyword: string;

@@ -267,11 +267,11 @@ exports[`EncounterScreen layout snapshots > matches snapshots for full 1920x1080
             <div
               aria-label="Stir her resolve."
               aria-pressed="true"
-              class="pulse-gold-on-hover"
+              class="pulse-gold-on-hover focus-ring"
               data-reach="iron"
               data-testid="encounter-choice-card-iron"
               role="button"
-              style="flex: 1 1 0%; padding: 14px; border-radius: 8px; background: var(--bg-surface); border: 1px solid var(--reach-sphere-bright); opacity: 1; transition: opacity 300ms ease-out, border-color 300ms ease-out; position: relative; cursor: pointer; display: flex; flex-direction: column; outline: none;"
+              style="flex: 1 1 0%; padding: 14px; border-radius: 8px; background: var(--bg-surface); border: 1px solid var(--reach-sphere-bright); opacity: 1; transition: opacity 300ms ease-out, border-color 300ms ease-out; position: relative; cursor: pointer; display: flex; flex-direction: column;"
               tabindex="0"
             >
               <div
@@ -344,11 +344,11 @@ exports[`EncounterScreen layout snapshots > matches snapshots for full 1920x1080
             <div
               aria-label="Lay a gentler hand on the thread."
               aria-pressed="false"
-              class="pulse-gold-on-hover"
+              class="pulse-gold-on-hover focus-ring"
               data-reach="charm"
               data-testid="encounter-choice-card-charm"
               role="button"
-              style="flex: 1 1 0%; padding: 14px; border-radius: 8px; background: var(--bg-surface); border: 1px solid var(--border-subtle); opacity: 0.35; transition: opacity 300ms ease-out, border-color 300ms ease-out; position: relative; cursor: pointer; display: flex; flex-direction: column; outline: none;"
+              style="flex: 1 1 0%; padding: 14px; border-radius: 8px; background: var(--bg-surface); border: 1px solid var(--border-subtle); opacity: 0.35; transition: opacity 300ms ease-out, border-color 300ms ease-out; position: relative; cursor: pointer; display: flex; flex-direction: column;"
               tabindex="0"
             >
               <div
@@ -1021,11 +1021,11 @@ exports[`EncounterScreen layout snapshots > matches snapshots for full 1920x1080
             <div
               aria-label="Stir her resolve."
               aria-pressed="true"
-              class="pulse-gold-on-hover"
+              class="pulse-gold-on-hover focus-ring"
               data-reach="iron"
               data-testid="encounter-choice-card-iron"
               role="button"
-              style="flex: 1 1 0%; padding: 14px; border-radius: 8px; background: var(--bg-surface); border: 1px solid var(--reach-sphere-bright); opacity: 1; transition: opacity 300ms ease-out, border-color 300ms ease-out; position: relative; cursor: pointer; display: flex; flex-direction: column; outline: none;"
+              style="flex: 1 1 0%; padding: 14px; border-radius: 8px; background: var(--bg-surface); border: 1px solid var(--reach-sphere-bright); opacity: 1; transition: opacity 300ms ease-out, border-color 300ms ease-out; position: relative; cursor: pointer; display: flex; flex-direction: column;"
               tabindex="0"
             >
               <div
@@ -1098,11 +1098,11 @@ exports[`EncounterScreen layout snapshots > matches snapshots for full 1920x1080
             <div
               aria-label="Lay a gentler hand on the thread."
               aria-pressed="false"
-              class="pulse-gold-on-hover"
+              class="pulse-gold-on-hover focus-ring"
               data-reach="charm"
               data-testid="encounter-choice-card-charm"
               role="button"
-              style="flex: 1 1 0%; padding: 14px; border-radius: 8px; background: var(--bg-surface); border: 1px solid var(--border-subtle); opacity: 0.35; transition: opacity 300ms ease-out, border-color 300ms ease-out; position: relative; cursor: pointer; display: flex; flex-direction: column; outline: none;"
+              style="flex: 1 1 0%; padding: 14px; border-radius: 8px; background: var(--bg-surface); border: 1px solid var(--border-subtle); opacity: 0.35; transition: opacity 300ms ease-out, border-color 300ms ease-out; position: relative; cursor: pointer; display: flex; flex-direction: column;"
               tabindex="0"
             >
               <div
@@ -1765,11 +1765,11 @@ exports[`EncounterScreen layout snapshots > matches snapshots for full 1920x1080
           <div
             aria-label="Stir her resolve."
             aria-pressed="false"
-            class="pulse-gold-on-hover"
+            class="pulse-gold-on-hover focus-ring"
             data-reach="iron"
             data-testid="encounter-choice-card-iron"
             role="button"
-            style="flex: 1 1 0%; padding: 14px; border-radius: 8px; background: var(--bg-surface); border: 1px solid var(--border-subtle); opacity: 1; transition: opacity 300ms ease-out, border-color 300ms ease-out; position: relative; cursor: pointer; display: flex; flex-direction: column; outline: none;"
+            style="flex: 1 1 0%; padding: 14px; border-radius: 8px; background: var(--bg-surface); border: 1px solid var(--border-subtle); opacity: 1; transition: opacity 300ms ease-out, border-color 300ms ease-out; position: relative; cursor: pointer; display: flex; flex-direction: column;"
             tabindex="0"
           >
             <div

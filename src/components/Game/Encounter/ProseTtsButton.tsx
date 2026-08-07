@@ -17,8 +17,15 @@ import {
   type TtsHandle,
 } from '../../../services/narration/encounterNarration';
 
-/** Button edge length in px — matches the HexChronicle narrate control. */
+/** Ring edge length in px — matches the HexChronicle narrate control. */
 const TTS_BUTTON_SIZE = 20;
+/**
+ * Law 46 (THR-1010) — the ring stays 20px so this control still matches its
+ * HexChronicle sibling; the *button* around it grows to the 24px floor. Found
+ * by measuring the composed veil, where this was the only interactive element
+ * under the floor (20x20).
+ */
+const TTS_MIN_HIT_PX = 24;
 /** Icon sizes, keyed to the button edge. */
 const TTS_ICON_SIZE = 10;
 const TTS_STOP_ICON_SIZE = 8;
@@ -109,14 +116,15 @@ export function ProseTtsButton({
       title={title}
       aria-label={title}
       data-testid="prose-tts-button"
+      className="focus-ring"
       style={{
-        width: TTS_BUTTON_SIZE,
-        height: TTS_BUTTON_SIZE,
+        width: TTS_MIN_HIT_PX,
+        height: TTS_MIN_HIT_PX,
         display: 'inline-flex',
         alignItems: 'center',
         justifyContent: 'center',
         borderRadius: '50%',
-        border: '1px solid rgba(212, 175, 55, 0.28)',
+        border: 'none',
         background: 'transparent',
         cursor: busy ? 'wait' : 'pointer',
         color: isSpeaking ? 'var(--accent-gold)' : 'var(--text-tertiary)',
@@ -126,13 +134,29 @@ export function ProseTtsButton({
         ...style,
       }}
     >
-      {busy ? (
-        <Loader2 size={TTS_ICON_SIZE} style={{ animation: 'spin 1s linear infinite' }} />
-      ) : isSpeaking ? (
-        <Square size={TTS_STOP_ICON_SIZE} />
-      ) : (
-        <Play size={TTS_ICON_SIZE} style={{ marginLeft: '1px' }} />
-      )}
+      <span
+        aria-hidden="true"
+        style={{
+          width: TTS_BUTTON_SIZE,
+          height: TTS_BUTTON_SIZE,
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          borderRadius: '50%',
+          // Law 30: token-derived, so this ring cannot drift from the one gold
+          // the surrounding encounter surface paints.
+          border: '1px solid rgb(var(--veil-gold-rgb) / 0.28)',
+          transition: 'border-color 0.2s',
+        }}
+      >
+        {busy ? (
+          <Loader2 size={TTS_ICON_SIZE} style={{ animation: 'spin 1s linear infinite' }} />
+        ) : isSpeaking ? (
+          <Square size={TTS_STOP_ICON_SIZE} />
+        ) : (
+          <Play size={TTS_ICON_SIZE} style={{ marginLeft: '1px' }} />
+        )}
+      </span>
     </button>
   );
 }

@@ -84,7 +84,10 @@ export const PIP_ODDS_TIERS: readonly PipTier[] = [
     label: 'Fated',
     filledGlyph: '★',
     hollowGlyph: '☆',
-    color: 'rgba(212, 175, 55, 0.95)',
+    // Law 30 (THR-1010): the `fated` tier is the veil's gold, so it takes the
+    // token. As a literal it was the last drifted `#d4af37` painting on the
+    // composed nudge stage, sitting a few pixels from the tokenised gold.
+    color: 'rgb(var(--veil-gold-rgb) / 0.95)',
     minPercent: 80,
     maxPercent: 100,
   },

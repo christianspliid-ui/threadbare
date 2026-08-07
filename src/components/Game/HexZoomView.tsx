@@ -303,7 +303,8 @@ export const HexZoomView = memo(function HexZoomView({
               aria-label={isHidden ? 'Unknown location' : `Location: ${loc.name}${agents.length > 0 ? `, ${agents.length} agent${agents.length !== 1 ? 's' : ''}` : ''}`}
               tabIndex={0}
               onKeyDown={(e) => handleLocationKeyDown(e as unknown as React.KeyboardEvent, loc.id)}
-              style={{ cursor: 'pointer', outline: 'none' }}
+              className="focus-ring"
+              style={{ cursor: 'pointer' }}
             >
               {/* Location circle — outer glow ring */}
               {!isHidden && (

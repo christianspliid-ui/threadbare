@@ -10,6 +10,7 @@ import type {
   EncounterStageHeaderModel,
   EncounterStageHistoryModel,
 } from './encounter-stage/types';
+import { usePrefersReducedMotion } from '../../hooks/usePrefersReducedMotion';
 import { NudgePhaseShell } from './encounter-stage/shells/NudgePhaseShell';
 import { NudgeMotiveIntro } from './encounter-stage/shells/NudgeMotiveIntro';
 import { ProseTtsButton } from './Encounter/ProseTtsButton';
@@ -57,14 +58,23 @@ export interface EncounterVeilProps {
 }
 
 // ── Design tokens ──────────────────────────────────────────────────
-const VOID = '#0a0a0f';
+// Law 30 (THR-1010): the ceremonial palette is a sanctioned *variant set*, so
+// it keeps its own names — but the values live in `index.css`, not here. The
+// local hex constants these replaced had drifted from the game-wide token
+// (`GOLD #d4af37` vs `--accent-gold #d4a040`), which is exactly the two-golds
+// drift the law names. `--veil-gold` now resolves to `--accent-gold`.
+const VOID = 'var(--veil-void)';
 const FONT_PROSE = "Georgia, 'Times New Roman', serif";
 const FONT_DISPLAY = "'Palatino Linotype', 'Book Antiqua', Palatino, serif";
-const GOLD = '#d4af37';
-const GOLD_DIM = 'rgba(212, 175, 55, 0.25)';
-const TEXT_WARM = 'rgba(212, 196, 158, 0.75)';
-const TEXT_WHISPER = 'rgba(180, 170, 150, 0.4)';
-const TEXT_GHOST = 'rgba(160, 140, 130, 0.25)';
+const GOLD = 'var(--veil-gold)';
+const GOLD_DIM = 'var(--veil-gold-dim)';
+// Law 45: these three carry subtitles, prompts and step prose, so all three sit
+// at or above WCAG AA 4.5:1 against `--veil-void`. The pre-THR-1010 whisper
+// (~2.2:1) and ghost (~1.4:1) tones survive as `--veil-text-atmosphere`, which
+// is legal only for decoration duplicated elsewhere.
+const TEXT_WARM = 'var(--veil-text-warm)';
+const TEXT_WHISPER = 'var(--veil-text-whisper)';
+const TEXT_GHOST = 'var(--veil-text-ghost)';
 
 /** Art opacity per thread tier */
 const ART_OPACITY: Record<ThreadTier, number> = {
@@ -76,12 +86,29 @@ const ART_OPACITY: Record<ThreadTier, number> = {
 /** Minimum clickable hit area per step dot — visual dot stays small, padding grows (THR-636). */
 const STEP_NAV_MIN_HIT_PX = 24;
 
+/**
+ * Law 46 (THR-1010) — the boost pips are the veil's other small target, and
+ * they were 12px square while the step navigator beside them already honoured
+ * a 24px floor. Same pattern, same floor: the dot keeps its size, the button
+ * grows around it.
+ */
+const BOOST_PIP_MIN_HIT_PX = 24;
+const BOOST_PIP_DOT_PX = 12;
+
+/**
+ * Law 44 (THR-1010) — the one duration reduced motion collapses everything to,
+ * in seconds because the veil's inline transitions are authored in seconds.
+ * Mirrors `--anim-fast: 150ms` in `index.css`; kept as a named constant so
+ * retuning stays a number change (NFP #1).
+ */
+const REDUCED_MOTION_FADE_S = 0.15;
+
 /** Resolved-step outcome → step-dot colour. Success/failure at a glance (THR-636). */
 const OUTCOME_DOT_COLOR: Record<string, string> = {
   critical_success: 'rgba(134, 239, 172, 0.9)',
   success:          'rgba(134, 239, 172, 0.55)',
-  success_at_cost:  'rgba(212, 175, 55, 0.7)',
-  near_miss:        'rgba(212, 160, 55, 0.6)',
+  success_at_cost:  'rgb(var(--veil-gold-rgb) / 0.7)',
+  near_miss:        'var(--accent-near-miss)',
   failure:          'rgba(248, 113, 113, 0.6)',
   critical_failure: '#b91c1c',
 };
@@ -154,6 +181,20 @@ export function EncounterVeil({
   onCommitNudges,
   onOpenMotive,
 }: EncounterVeilProps) {
+  /**
+   * Law 44 (THR-1010). The veil's ceremonial motion is entirely inline, so a
+   * CSS `@media (prefers-reduced-motion: reduce)` block cannot reach it —
+   * inline styles win. Read the query here and fold it into the style objects.
+   *
+   * Reduced motion collapses the *stagger and the zoom*, never the state
+   * change: every beat still appears (Law 44's second clause — no information
+   * carried by motion alone), it simply appears as one `--anim-fast` fade.
+   */
+  const reducedMotion = usePrefersReducedMotion();
+  const ceremonialDelay = (delay: number) => (reducedMotion ? 0 : delay);
+  const ceremonialDuration = (duration: number) =>
+    reducedMotion ? REDUCED_MOTION_FADE_S : duration;
+
   const [visible, setVisible] = useState(false);
   const [selectedChoiceId, setSelectedChoiceId] = useState<string | null>(null);
   // Watched tier state
@@ -252,7 +293,7 @@ export function EncounterVeil({
       if (polarity === 'gain') return 'rgba(134, 239, 172, 0.65)';
       if (polarity === 'loss') return 'rgba(248, 113, 113, 0.65)';
       if (polarity === 'mixed') return 'rgba(251, 191, 36, 0.65)';
-      return 'rgba(180, 170, 150, 0.45)';
+      return TEXT_WHISPER;
     };
 
     /**
@@ -264,7 +305,7 @@ export function EncounterVeil({
       if (tone === 'seed') return GOLD;
       if (tone === 'gain') return 'rgba(134, 239, 172, 0.65)';
       if (tone === 'loss') return 'rgba(248, 113, 113, 0.65)';
-      return 'rgba(180, 170, 150, 0.45)';
+      return TEXT_WHISPER;
     };
 
     /**
@@ -288,11 +329,17 @@ export function EncounterVeil({
       return onSelectEntity ? () => onSelectEntity(entityId, kind) : undefined;
     };
 
-    const aftermathEntrance = (delay: number, duration: number): React.CSSProperties => ({
-      opacity: visible ? 1 : 0,
-      transform: visible ? 'translateY(0)' : 'translateY(8px)',
-      transition: `opacity ${duration}s ease ${delay}s, transform ${duration}s ease ${delay}s`,
-    });
+    const aftermathEntrance = (delay: number, duration: number): React.CSSProperties =>
+      reducedMotion
+        ? {
+            opacity: visible ? 1 : 0,
+            transition: `opacity ${REDUCED_MOTION_FADE_S}s ease`,
+          }
+        : {
+            opacity: visible ? 1 : 0,
+            transform: visible ? 'translateY(0)' : 'translateY(8px)',
+            transition: `opacity ${duration}s ease ${delay}s, transform ${duration}s ease ${delay}s`,
+          };
 
     return createPortal(
       <div
@@ -326,8 +373,12 @@ export function EncounterVeil({
                 'radial-gradient(ellipse 85% 80% at 35% 40%, black 20%, transparent 75%)',
               opacity: visible ? 0.5 : 0,
               filter: 'saturate(0.7)',
-              transform: visible ? 'scale(1)' : 'scale(1.02)',
-              transition: `opacity 1.2s ease ${ENTRANCE_DELAYS.art}s, transform 8s ease-out ${ENTRANCE_DELAYS.art}s`,
+              // Law 44 (THR-1010): reduced motion drops the 8s slow zoom and
+              // fades the art in at --anim-fast. The art still arrives.
+              transform: reducedMotion ? undefined : visible ? 'scale(1)' : 'scale(1.02)',
+              transition: reducedMotion
+                ? `opacity ${REDUCED_MOTION_FADE_S}s ease`
+                : `opacity 1.2s ease ${ENTRANCE_DELAYS.art}s, transform 8s ease-out ${ENTRANCE_DELAYS.art}s`,
             }}
           />
         )}
@@ -435,10 +486,10 @@ export function EncounterVeil({
             style={{
               height: 1,
               background:
-                'linear-gradient(to right, transparent, rgba(212, 175, 55, 0.2), transparent)',
+                'linear-gradient(to right, transparent, rgb(var(--veil-gold-rgb) / 0.2), transparent)',
               marginBottom: 18,
               opacity: visible ? 1 : 0,
-              transition: `opacity 1s ease 0.9s`,
+              transition: `opacity ${ceremonialDuration(1)}s ease ${ceremonialDelay(0.9)}s`,
             }}
           />
 
@@ -453,8 +504,10 @@ export function EncounterVeil({
               letterSpacing: '0.18em',
               textTransform: 'uppercase',
               // Literal rather than GOLD + `opacity`, because the entrance
-              // spread below owns `opacity` and would overwrite it.
-              color: 'rgba(212, 175, 55, 0.45)',
+              // spread below owns `opacity` and would overwrite it. Law 45
+              // (THR-1010): this label is words, so it takes the AA gold —
+              // at 0.45 it measured 2.5:1 on the composed surface.
+              color: 'var(--veil-gold-text)',
               marginBottom: 14,
               ...aftermathEntrance(0.8, 0.8),
             }}
@@ -484,7 +537,7 @@ export function EncounterVeil({
                     lineHeight: 0.75,
                     marginRight: '0.06em',
                     marginTop: '0.08em',
-                    color: 'rgba(212, 196, 158, 0.55)',
+                    color: 'var(--veil-text-warm-dim)',
                     fontStyle: 'normal',
                   }}
                 >
@@ -637,6 +690,7 @@ export function EncounterVeil({
                       const open = openEntity(seg.entityId, seg.entityKind);
                       const body = open ? (
                         <button
+                          className="focus-ring"
                           type="button"
                           onClick={open}
                           style={{
@@ -747,7 +801,7 @@ export function EncounterVeil({
                   key={change.id}
                   style={{
                     padding: '10px 14px',
-                    border: `1px solid rgba(212, 175, 55, 0.1)`,
+                    border: `1px solid rgb(var(--veil-gold-rgb) / 0.1)`,
                     borderRadius: 2,
                     borderLeft: `3px solid ${polarityColor(change.polarity)}`,
                     background: 'rgba(255,255,255,0.02)',
@@ -810,12 +864,13 @@ export function EncounterVeil({
               )}
               {aftermath.reactions.map((reaction) => (
                 <button
+                  className="focus-ring"
                   key={reaction.id}
                   disabled={reaction.disabled}
                   onClick={() => onAftermathReaction(reaction.id)}
                   style={{
-                    background: 'rgba(212, 175, 55, 0.03)',
-                    border: '1px solid rgba(212, 175, 55, 0.1)',
+                    background: 'rgb(var(--veil-gold-rgb) / 0.03)',
+                    border: '1px solid rgb(var(--veil-gold-rgb) / 0.1)',
                     borderRadius: 2,
                     fontFamily: FONT_PROSE,
                     fontStyle: 'italic',
@@ -826,15 +881,15 @@ export function EncounterVeil({
                     padding: '12px 16px',
                     textAlign: 'left',
                     opacity: reaction.disabled ? 0.4 : 1,
-                    transition: 'all 0.4s ease',
+                    transition: 'background-color 0.4s ease, color 0.4s ease, opacity 0.4s ease',
                   }}
                   onMouseEnter={(e) => {
                     if (!reaction.disabled) {
-                      e.currentTarget.style.background = 'rgba(212, 175, 55, 0.06)';
+                      e.currentTarget.style.background = 'rgb(var(--veil-gold-rgb) / 0.06)';
                     }
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'rgba(212, 175, 55, 0.03)';
+                    e.currentTarget.style.background = 'rgb(var(--veil-gold-rgb) / 0.03)';
                   }}
                 >
                   {reaction.label}
@@ -861,6 +916,7 @@ export function EncounterVeil({
           }}
         >
           <button
+            className="focus-ring"
             onClick={onAcknowledgeAftermath}
             style={{
               background: 'transparent',
@@ -873,11 +929,11 @@ export function EncounterVeil({
               opacity: 0.6,
               cursor: 'pointer',
               padding: '8px 0',
-              transition: 'all 0.4s ease',
+              transition: 'opacity 0.4s ease, text-shadow 0.4s ease',
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.opacity = '1';
-              e.currentTarget.style.textShadow = '0 0 20px rgba(212, 175, 55, 0.3)';
+              e.currentTarget.style.textShadow = '0 0 20px rgb(var(--veil-gold-rgb) / 0.3)';
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.opacity = '0.6';
@@ -899,7 +955,7 @@ export function EncounterVeil({
     // Shared entrance style helper for watched (uses same visible state)
     const watchedEntrance = (delay: number, duration: number): React.CSSProperties => ({
       opacity: visible ? 1 : 0,
-      transition: `opacity ${duration}s ease ${delay}s`,
+      transition: `opacity ${ceremonialDuration(duration)}s ease ${ceremonialDelay(delay)}s`,
     });
 
     return createPortal(
@@ -934,8 +990,12 @@ export function EncounterVeil({
                 'radial-gradient(ellipse 85% 80% at 35% 40%, black 20%, transparent 75%)',
               opacity: visible ? ART_OPACITY.watched : 0,
               filter: 'grayscale(40%)',
-              transform: visible ? 'scale(1)' : 'scale(1.02)',
-              transition: `opacity 1.2s ease ${ENTRANCE_DELAYS.art}s, transform 8s ease-out ${ENTRANCE_DELAYS.art}s`,
+              // Law 44 (THR-1010): reduced motion drops the 8s slow zoom and
+              // fades the art in at --anim-fast. The art still arrives.
+              transform: reducedMotion ? undefined : visible ? 'scale(1)' : 'scale(1.02)',
+              transition: reducedMotion
+                ? `opacity ${REDUCED_MOTION_FADE_S}s ease`
+                : `opacity 1.2s ease ${ENTRANCE_DELAYS.art}s, transform 8s ease-out ${ENTRANCE_DELAYS.art}s`,
             }}
           />
         )}
@@ -1018,30 +1078,31 @@ export function EncounterVeil({
 
             {/* Peek button */}
             <button
+              className="focus-ring"
               onClick={() => {
                 setPeeked(true);
                 onPeek();
               }}
               style={{
-                background: 'rgba(212, 175, 55, 0.04)',
-                border: '1px solid rgba(212, 175, 55, 0.12)',
+                background: 'rgb(var(--veil-gold-rgb) / 0.04)',
+                border: '1px solid rgb(var(--veil-gold-rgb) / 0.12)',
                 borderRadius: 2,
                 fontFamily: FONT_PROSE,
                 fontStyle: 'italic',
                 fontSize: 'var(--text-xs)',
                 letterSpacing: '0.06em',
-                color: 'rgba(212, 175, 55, 0.45)',
+                color: 'var(--veil-gold-text)',
                 cursor: 'pointer',
                 padding: '10px 24px',
-                transition: 'all 0.4s ease',
+                transition: 'background-color 0.4s ease, color 0.4s ease',
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(212, 175, 55, 0.08)';
-                e.currentTarget.style.color = 'rgba(212, 175, 55, 0.7)';
+                e.currentTarget.style.background = 'rgb(var(--veil-gold-rgb) / 0.08)';
+                e.currentTarget.style.color = 'rgb(var(--veil-gold-rgb) / 0.7)';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'rgba(212, 175, 55, 0.04)';
-                e.currentTarget.style.color = 'rgba(212, 175, 55, 0.45)';
+                e.currentTarget.style.background = 'rgb(var(--veil-gold-rgb) / 0.04)';
+                e.currentTarget.style.color = 'rgb(var(--veil-gold-rgb) / 0.45)';
               }}
             >
               ◆ 1 — Peer Through the Thread
@@ -1093,7 +1154,7 @@ export function EncounterVeil({
                 height: 1,
                 width: '60%',
                 background:
-                  'linear-gradient(to right, transparent, rgba(212, 175, 55, 0.2), transparent)',
+                  'linear-gradient(to right, transparent, rgb(var(--veil-gold-rgb) / 0.2), transparent)',
               }}
             />
 
@@ -1118,26 +1179,49 @@ export function EncounterVeil({
               >
                 Boost
               </div>
-              <div style={{ display: 'flex', gap: 10 }}>
+              {/* Law 46 (THR-1010): the pip stays a 12px dot, the *button* is
+                  BOOST_PIP_MIN_HIT_PX square — the same visual-dot /
+                  grown-padding pattern the step navigator already used via
+                  STEP_NAV_MIN_HIT_PX. Boosting spends essence, so a misclick
+                  here costs the player something. The gap shrinks by the
+                  padding each button gained so the row's visual rhythm is
+                  unchanged. */}
+              <div style={{ display: 'flex', gap: 10 - (BOOST_PIP_MIN_HIT_PX - BOOST_PIP_DOT_PX) }}>
                 {[1, 2, 3, 4, 5].map((pip) => (
                   <button
                     key={pip}
+                    className="focus-ring"
                     onClick={() => setBoostAmount(pip === boostAmount ? 0 : pip)}
                     style={{
-                      width: 12,
-                      height: 12,
+                      width: BOOST_PIP_MIN_HIT_PX,
+                      height: BOOST_PIP_MIN_HIT_PX,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      background: 'transparent',
+                      border: 'none',
                       borderRadius: '50%',
-                      border: `1px solid ${pip <= boostAmount ? 'rgba(212, 175, 55, 0.6)' : 'rgba(212, 175, 55, 0.2)'}`,
-                      background:
-                        pip <= boostAmount
-                          ? 'rgba(212, 175, 55, 0.4)'
-                          : 'transparent',
                       cursor: 'pointer',
                       padding: 0,
-                      transition: 'all 0.3s ease',
                     }}
                     aria-label={`Boost ${pip}`}
-                  />
+                    aria-pressed={pip <= boostAmount}
+                  >
+                    <span
+                      aria-hidden="true"
+                      style={{
+                        width: BOOST_PIP_DOT_PX,
+                        height: BOOST_PIP_DOT_PX,
+                        borderRadius: '50%',
+                        border: `1px solid ${pip <= boostAmount ? 'rgb(var(--veil-gold-rgb) / 0.6)' : 'rgb(var(--veil-gold-rgb) / 0.2)'}`,
+                        background:
+                          pip <= boostAmount
+                            ? 'rgb(var(--veil-gold-rgb) / 0.4)'
+                            : 'transparent',
+                        transition: 'background-color 0.3s ease, border-color 0.3s ease',
+                      }}
+                    />
+                  </button>
                 ))}
               </div>
             </div>
@@ -1177,6 +1261,7 @@ export function EncounterVeil({
           {/* Action buttons */}
           <div style={{ display: 'flex', gap: 24, alignItems: 'center' }}>
             <button
+              className="focus-ring"
               onClick={onDisregard}
               style={{
                 background: 'transparent',
@@ -1188,7 +1273,7 @@ export function EncounterVeil({
                 color: TEXT_GHOST,
                 cursor: 'pointer',
                 padding: '8px 0',
-                transition: 'all 0.4s ease',
+                transition: 'color 0.4s ease',
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.color = TEXT_WHISPER;
@@ -1201,6 +1286,7 @@ export function EncounterVeil({
             </button>
             {peeked && (
               <button
+                className="focus-ring"
                 onClick={() => onBoost(boostAmount)}
                 disabled={boostAmount === 0}
                 style={{
@@ -1214,13 +1300,13 @@ export function EncounterVeil({
                   opacity: boostAmount > 0 ? 0.7 : 0.3,
                   cursor: boostAmount > 0 ? 'pointer' : 'default',
                   padding: '8px 0',
-                  transition: 'all 0.4s ease',
+                  transition: 'opacity 0.4s ease, text-shadow 0.4s ease',
                 }}
                 onMouseEnter={(e) => {
                   if (boostAmount > 0) {
                     e.currentTarget.style.opacity = '1';
                     e.currentTarget.style.textShadow =
-                      '0 0 20px rgba(212, 175, 55, 0.3)';
+                      '0 0 20px rgb(var(--veil-gold-rgb) / 0.3)';
                   }
                 }}
                 onMouseLeave={(e) => {
@@ -1253,6 +1339,12 @@ export function EncounterVeil({
     duration: number,
     translateY = 8,
   ): React.CSSProperties {
+    if (reducedMotion) {
+      return {
+        opacity: visible ? 1 : 0,
+        transition: `opacity ${REDUCED_MOTION_FADE_S}s ease`,
+      };
+    }
     return {
       opacity: visible ? 1 : 0,
       transform: visible ? 'translateY(0)' : `translateY(${translateY}px)`,
@@ -1294,7 +1386,7 @@ export function EncounterVeil({
             style={{
               flex: 1,
               height: 2,
-              background: 'rgba(212, 160, 55, 0.18)',
+              background: 'rgb(var(--accent-near-miss-rgb) / 0.18)',
               borderRadius: 1,
               overflow: 'hidden',
             }}
@@ -1304,7 +1396,7 @@ export function EncounterVeil({
                 height: '100%',
                 width: '100%',
                 background:
-                  'linear-gradient(to right, rgba(212, 160, 55, 0.5), rgba(212, 175, 55, 0.25))',
+                  'linear-gradient(to right, rgb(var(--accent-near-miss-rgb) / 0.5), rgb(var(--veil-gold-rgb) / 0.25))',
               }}
             />
           </div>
@@ -1315,7 +1407,7 @@ export function EncounterVeil({
               fontStyle: 'italic',
               fontSize: 'var(--text-xs)',
               letterSpacing: '0.06em',
-              color: 'rgba(212, 160, 55, 0.55)',
+              color: 'var(--accent-near-miss)',
               whiteSpace: 'nowrap' as const,
             }}
           >
@@ -1339,8 +1431,12 @@ export function EncounterVeil({
             WebkitMaskImage:
               'radial-gradient(ellipse 85% 80% at 35% 40%, black 20%, transparent 75%)',
             opacity: visible ? ART_OPACITY[threadTier] : 0,
-            transform: visible ? 'scale(1)' : 'scale(1.02)',
-            transition: `opacity 1.2s ease ${ENTRANCE_DELAYS.art}s, transform 8s ease-out ${ENTRANCE_DELAYS.art}s`,
+            // Law 44 (THR-1010): reduced motion drops the 8s slow zoom and
+            // fades the art in at --anim-fast. The art still arrives.
+            transform: reducedMotion ? undefined : visible ? 'scale(1)' : 'scale(1.02)',
+            transition: reducedMotion
+              ? `opacity ${REDUCED_MOTION_FADE_S}s ease`
+              : `opacity 1.2s ease ${ENTRANCE_DELAYS.art}s, transform 8s ease-out ${ENTRANCE_DELAYS.art}s`,
           }}
         />
       )}
@@ -1500,10 +1596,10 @@ export function EncounterVeil({
           style={{
             height: 1,
             background:
-              'linear-gradient(to right, transparent, rgba(212, 175, 55, 0.2), transparent)',
+              'linear-gradient(to right, transparent, rgb(var(--veil-gold-rgb) / 0.2), transparent)',
             marginBottom: 22,
             opacity: visible ? 1 : 0,
-            transition: `opacity 1s ease ${ENTRANCE_DELAYS.divider}s`,
+            transition: `opacity ${ceremonialDuration(1)}s ease ${ceremonialDelay(ENTRANCE_DELAYS.divider)}s`,
           }}
         />
 
@@ -1548,7 +1644,7 @@ export function EncounterVeil({
                         lineHeight: 0.75,
                         marginRight: '0.06em',
                         marginTop: '0.08em',
-                        color: 'rgba(212, 196, 158, 0.55)',
+                        color: 'var(--veil-text-warm-dim)',
                         fontStyle: 'normal',
                       }}
                     >
@@ -1595,11 +1691,11 @@ export function EncounterVeil({
                 style={{
                   marginTop: 16,
                   paddingTop: 12,
-                  borderTop: '1px solid rgba(212, 175, 55, 0.15)',
+                  borderTop: '1px solid rgb(var(--veil-gold-rgb) / 0.15)',
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
-                  <span style={{ fontSize: 'var(--text-xs)', color: 'rgba(212, 175, 55, 0.5)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                  <span style={{ fontSize: 'var(--text-xs)', color: 'rgb(var(--veil-gold-rgb) / 0.5)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
                     ⊘ {mostRecentComplication.name}
                   </span>
                   {mostRecentComplication.severity === 'severe' && (
@@ -1608,7 +1704,7 @@ export function EncounterVeil({
                     </span>
                   )}
                 </div>
-                <p style={{ fontFamily: 'Georgia, "Times New Roman", serif', fontStyle: 'italic', fontSize: 'var(--text-xs)', lineHeight: 1.7, color: 'rgba(212, 175, 55, 0.7)', margin: 0, maxWidth: 500 }}>
+                <p style={{ fontFamily: 'Georgia, "Times New Roman", serif', fontStyle: 'italic', fontSize: 'var(--text-xs)', lineHeight: 1.7, color: 'rgb(var(--veil-gold-rgb) / 0.7)', margin: 0, maxWidth: 500 }}>
                   {mostRecentComplication.prose}
                 </p>
               </div>
@@ -1690,6 +1786,7 @@ export function EncounterVeil({
         {/* Action buttons */}
         <div style={{ display: 'flex', gap: 24, alignItems: 'center' }}>
           <button
+            className="focus-ring"
             onClick={onDisregard}
             style={{
               background: 'transparent',
@@ -1701,7 +1798,7 @@ export function EncounterVeil({
               color: TEXT_GHOST,
               cursor: 'pointer',
               padding: '8px 0',
-              transition: 'all 0.4s ease',
+              transition: 'color 0.4s ease',
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.color = TEXT_WHISPER;
@@ -1713,6 +1810,7 @@ export function EncounterVeil({
             {DISREGARD_LABEL[threadTier]}
           </button>
           <button
+            className="focus-ring"
             onClick={handleIntervene}
             disabled={!selectedChoice || replayEntry !== null}
             style={{
@@ -1726,13 +1824,13 @@ export function EncounterVeil({
               opacity: selectedChoice && !replayEntry ? 0.7 : 0.3,
               cursor: selectedChoice && !replayEntry ? 'pointer' : 'default',
               padding: '8px 0',
-              transition: 'all 0.4s ease',
+              transition: 'opacity 0.4s ease, text-shadow 0.4s ease',
             }}
             onMouseEnter={(e) => {
               if (selectedChoice) {
                 e.currentTarget.style.opacity = '1';
                 e.currentTarget.style.textShadow =
-                  '0 0 20px rgba(212, 175, 55, 0.3)';
+                  '0 0 20px rgb(var(--veil-gold-rgb) / 0.3)';
               }
             }}
             onMouseLeave={(e) => {
@@ -1784,8 +1882,8 @@ function ResolutionReadoutBlock({
         marginTop: 22,
         maxWidth: 540,
         padding: '14px 16px',
-        border: '1px solid rgba(212, 175, 55, 0.12)',
-        background: 'rgba(212, 175, 55, 0.03)',
+        border: '1px solid rgb(var(--veil-gold-rgb) / 0.12)',
+        background: 'rgb(var(--veil-gold-rgb) / 0.03)',
       }}
     >
       <div
@@ -1814,7 +1912,7 @@ function ResolutionCheckCard({ entry }: { entry: EncounterStageResolutionCheckMo
   return (
     <div
       style={{
-        borderLeft: `2px solid ${entry.state === 'pending' ? 'rgba(212, 175, 55, 0.35)' : 'rgba(134, 239, 172, 0.22)'}`,
+        borderLeft: `2px solid ${entry.state === 'pending' ? 'rgb(var(--veil-gold-rgb) / 0.35)' : 'rgba(134, 239, 172, 0.22)'}`,
         paddingLeft: 12,
       }}
     >
@@ -1898,6 +1996,7 @@ function ChoiceBlock({ choice, selected, onClick }: ChoiceBlockProps) {
 
   return (
     <button
+      className="focus-ring"
       onClick={onClick}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -1908,15 +2007,15 @@ function ChoiceBlock({ choice, selected, onClick }: ChoiceBlockProps) {
         borderRadius: 2,
         cursor: 'pointer',
         background: selected
-          ? 'rgba(212, 175, 55, 0.06)'
+          ? 'rgb(var(--veil-gold-rgb) / 0.06)'
           : hovered
-            ? 'rgba(212, 175, 55, 0.03)'
+            ? 'rgb(var(--veil-gold-rgb) / 0.03)'
             : 'transparent',
         border: 'none',
         textAlign: 'left' as const,
         width: '100%',
         maxWidth: 540,
-        transition: 'all 0.5s ease',
+        transition: 'background-color 0.5s ease',
       }}
     >
       {/* Type glow line at top */}
@@ -2017,8 +2116,8 @@ function ChoiceBlock({ choice, selected, onClick }: ChoiceBlockProps) {
             marginTop: selected ? 12 : 0,
             paddingTop: selected ? 2 : 0,
             paddingLeft: 12,
-            borderLeft: '1px solid rgba(212, 175, 55, 0.15)',
-            transition: 'all 0.6s ease',
+            borderLeft: '1px solid rgb(var(--veil-gold-rgb) / 0.15)',
+            transition: 'opacity 0.6s ease, max-height 0.6s ease, margin-top 0.6s ease, padding-top 0.6s ease',
             lineHeight: 1.7,
           }}
         >
@@ -2062,6 +2161,7 @@ function ContextStrip({
       {/* Character — portrait + name (clickable to agent detail) */}
       {name && (
         <button
+          className="focus-ring"
           onClick={canSelectAgent ? () => onSelectAgent!(header.focalActorId!) : undefined}
           disabled={!canSelectAgent}
           style={{
@@ -2109,9 +2209,9 @@ function ContextStrip({
             fontFamily: FONT_PROSE,
             fontStyle: 'italic',
             fontSize: 'var(--text-xs)',
-            color: 'rgba(212, 175, 55, 0.6)',
+            color: 'var(--veil-gold-text)',
             letterSpacing: '0.05em',
-            border: '1px solid rgba(212, 175, 55, 0.15)',
+            border: '1px solid rgb(var(--veil-gold-rgb) / 0.15)',
             borderRadius: 2,
             padding: '2px 8px',
           }}
@@ -2137,6 +2237,7 @@ function ContextStrip({
           {header.locationLabel}
           {canShowOnMap && (
             <button
+              className="focus-ring"
               onClick={() => {
                 onShowOnMap!(header.hexCol!, header.hexRow!);
                 onDisregard();
@@ -2212,6 +2313,7 @@ function StepNavigator({
             : `Step ${i + 1}`;
         return (
           <button
+            className="focus-ring"
             key={step.stepId}
             onClick={clickable ? () => onSelectStep?.(isCurrent || isReplaying ? null : i) : undefined}
             disabled={!clickable}
@@ -2236,14 +2338,14 @@ function StepNavigator({
                 borderRadius: '50%',
                 background: dotColor,
                 boxShadow: isReplaying
-                  ? '0 0 8px rgba(212, 175, 55, 0.4)'
+                  ? '0 0 8px rgb(var(--veil-gold-rgb) / 0.4)'
                   : isCurrent
-                    ? '0 0 8px rgba(212, 175, 55, 0.2)'
+                    ? '0 0 8px rgb(var(--veil-gold-rgb) / 0.2)'
                     : 'none',
-                outline: isReplaying ? '2px solid rgba(212, 175, 55, 0.5)' : 'none',
+                outline: isReplaying ? '2px solid rgb(var(--veil-gold-rgb) / 0.5)' : 'none',
                 outlineOffset: 2,
                 opacity: isCurrent && !isReplaying ? 0.7 : 1,
-                transition: 'all 0.3s ease',
+                transition: 'background-color 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease',
               }}
             />
           </button>
@@ -2325,8 +2427,8 @@ function StepReplayView({
               fontFamily: FONT_PROSE,
               fontStyle: 'italic',
               fontSize: 'var(--text-xs)',
-              color: 'rgba(212, 175, 55, 0.55)',
-              border: '1px solid rgba(212, 175, 55, 0.15)',
+              color: 'rgb(var(--veil-gold-rgb) / 0.55)',
+              border: '1px solid rgb(var(--veil-gold-rgb) / 0.15)',
               borderRadius: 2,
               padding: '1px 7px',
             }}
@@ -2381,7 +2483,7 @@ function StepReplayView({
             opacity: 0.5,
             marginBottom: 14,
             paddingLeft: 12,
-            borderLeft: '1px solid rgba(212, 175, 55, 0.15)',
+            borderLeft: '1px solid rgb(var(--veil-gold-rgb) / 0.15)',
             lineHeight: 1.7,
           }}
         >
@@ -2396,13 +2498,13 @@ function StepReplayView({
             marginTop: 8,
             marginBottom: 14,
             paddingTop: 12,
-            borderTop: '1px solid rgba(212, 175, 55, 0.15)',
+            borderTop: '1px solid rgb(var(--veil-gold-rgb) / 0.15)',
           }}
         >
           <div
             style={{
               fontSize: 'var(--text-xs)',
-              color: 'rgba(212, 175, 55, 0.5)',
+              color: 'rgb(var(--veil-gold-rgb) / 0.5)',
               letterSpacing: '0.08em',
               textTransform: 'uppercase',
               marginBottom: 6,
@@ -2416,7 +2518,7 @@ function StepReplayView({
               fontStyle: 'italic',
               fontSize: 'var(--text-xs)',
               lineHeight: 1.7,
-              color: 'rgba(212, 175, 55, 0.7)',
+              color: 'rgb(var(--veil-gold-rgb) / 0.7)',
               margin: 0,
               maxWidth: 500,
             }}
@@ -2428,6 +2530,7 @@ function StepReplayView({
 
       {/* Return to the present */}
       <button
+        className="focus-ring"
         onClick={onReturn}
         style={{
           background: 'transparent',

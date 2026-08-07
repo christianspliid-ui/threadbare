@@ -25,8 +25,8 @@ import {
 import { NUDGE_FREE_COST_LABEL } from '../../data/nudge-stage-content';
 import { oddsPips, pipReadingLabel } from '../../data/nudge-pip-vocabulary';
 
-/** Gold, matching the veil's essence accent. */
-const ESSENCE_COLOR = '#d4af37';
+/** Gold, matching the veil's essence accent (Law 30 — the token, not a copy). */
+const ESSENCE_COLOR = 'var(--veil-gold)';
 const PIP_LETTER_SPACING = '0.14em';
 
 export interface OddsPipsProps {
@@ -83,8 +83,10 @@ export const OddsPips = memo(function OddsPips({
  * The framed badge's chrome (THR-972). Kept beside the pip constants so the
  * price treatment is re-tuned in one place (NFP #1).
  */
-const COST_FRAME_BORDER = 'rgba(212, 175, 55, 0.4)';
-const COST_FRAME_BACKGROUND = 'rgba(212, 175, 55, 0.1)';
+// Law 30 (THR-1010) — token-derived, so the cost frame cannot drift from the
+// one gold the rest of the encounter surface paints.
+const COST_FRAME_BORDER = 'rgb(var(--veil-gold-rgb) / 0.4)';
+const COST_FRAME_BACKGROUND = 'rgb(var(--veil-gold-rgb) / 0.1)';
 
 export interface CostPipsProps {
   /** Essence price — the *effective* cost, after any sphere discount. */

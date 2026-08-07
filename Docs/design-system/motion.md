@@ -135,3 +135,22 @@ transition: background-color var(--anim-fast) ease,
 ## Ceremonial tier (UI Law 41, amended 2026-08-06)
 
 The duration caps above govern **game-UI chrome**. The **ceremonial tier** — encounter-veil entrance staggers (0.2–1.8s), long art zooms (up to 8s), 1.2s informational fades — is a named exception whose spec is the veil's own constants (`ENTRANCE_DELAYS`, `watchedEntrance`). It exists for arrival ceremony only; it is not a license for `transition: all` (banned everywhere) and it collapses to plain `--anim-fast` fades under `prefers-reduced-motion` (UI Law 44).
+
+### How it is implemented (THR-1010)
+
+The tier lives in `src/components/Game/EncounterVeil.tsx` as **inline** styles, and that one fact decides the shape of everything below.
+
+**Reduced motion is read in JS, not CSS.** An `@media (prefers-reduced-motion: reduce)` block cannot reach an inline `style={{ transition: … }}` — inline wins on specificity — so the veil calls `usePrefersReducedMotion()` (`src/hooks/usePrefersReducedMotion.ts`, a `useSyncExternalStore` over `matchMedia`) and folds the answer into the style objects through two helpers:
+
+| Helper | Full motion | Reduced |
+|---|---|---|
+| `ceremonialDelay(d)` | `d` | `0` |
+| `ceremonialDuration(d)` | `d` | `REDUCED_MOTION_FADE_S` (0.15s, mirroring `--anim-fast`) |
+
+The three entrance helpers (`aftermathEntrance`, `watchedEntrance`, `entranceStyle`) and the three art layers additionally **drop their `transform`** under reduced motion, which is what removes the 8s zoom and the translate-up.
+
+**Every ceremonial fade routes through a helper.** Two gold dividers once wrote `transition: opacity 1s ease 0.9s` inline and so survived the collapse at a ~1s delay — measured in the browser under real `page.emulateMedia({ reducedMotion: 'reduce' })`, not in jsdom. A new ceremonial fade uses `ceremonialDuration`/`ceremonialDelay`; a literal duration in an entrance style is the bug.
+
+**What reduced motion does *not* do:** remove a beat. Law 44's second clause forbids carrying information by motion alone, so every element still appears — as one `--anim-fast` fade instead of a stagger. The regression lock is in `EncounterVeil.test.tsx` § *reduced motion (Law 44)*, which asserts the same beat count in both arms.
+
+**Hover and interaction transitions are not ceremonial** and keep their normal property-scoped durations in both arms.
