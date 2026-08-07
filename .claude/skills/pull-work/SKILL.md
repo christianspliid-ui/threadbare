@@ -751,6 +751,17 @@ The merge prints `Auto-merging Docs/changelog.md` and exits 0 with both sides' r
 
 **Check the result before pushing** — union keeps *both* sides of every conflicting hunk, which is right for appended rows and wrong for an edited one. If the same row was modified on both branches you get it twice, so skim `git diff origin/main -- Docs/` for duplicates rather than trusting the clean exit.
 
+**For `Docs/impediments.md`, do not hand-classify the duplicates — repair them (THR-1018):**
+
+```bash
+npm run check:impediment-ids -- --fix
+npm run generate-impediment-dashboard
+```
+
+Union preserves both lanes' independently-chosen row *numbers*, so a merge touching the log reliably lands duplicate ids that `check:impediment-ids` then rejects — and the two collisions need two *different* remedies. Measured on the 2026-08-07 run that resolved three stuck PRs: `#451` was the same impediment logged on both sides (dedupe) and `#452` was two different impediments sharing an id (renumber), each re-derived by hand. `--fix` classifies and applies both, echoes every row it removes verbatim, and lists the `#N` cross-references a renumber may have made ambiguous. It is biased toward renumbering, because deleting a distinct impediment is unrecoverable while a duplicate row under a fresh number is merely visible.
+
+**Read the renumber list before pushing.** The id stays on the row already published on `origin/main` — not the row that happens to be first after the merge, which is a merge-order artifact (impediment #460 rule 1; the gate's older printed advice said "first in the file" and following it on PR #1327 had to be reversed). If a cited reference meant the row that *moved*, only you can tell. And rule 2 is still open: two branches repairing concurrently allocate the same next-free id, because neither sees the other's unmerged rows — so if another closeout PR is open against the log, check its numbers too.
+
 ### `Docs/project-status.md` — regenerate, never resolve (THR-1016)
 
 **There is no longer anything to hand-resolve here, and the regeneration step above is not optional.** Until THR-1016 this file was hand-edited and every closeout wrote it at the same two anchors — an insert at the top of `## Current Focus` and a delete at the tail to hold the 60-line cap — so **any two open closeout PRs conflicted by construction**, whatever either one contained, and `gh pr update-branch` could not help. Measured 2026-08-07: PRs #1322, #1326 and #1327 all sat `DIRTY` for 17, 18 and 20 hours conflicting *only* in closeout docs, `check:armed-prs` reporting `abandoned` / `needsChristian`; #1322 had to be resolved **twice in one session**, because PR #1330 merged minutes after the first resolution and re-staled it with nothing about #1322 having changed. Draining N such PRs cost N sequential CI cycles.

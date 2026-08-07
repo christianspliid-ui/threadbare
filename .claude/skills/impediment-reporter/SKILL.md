@@ -1,7 +1,7 @@
 ---
 name: impediment-reporter
 description: Loaded by ALL agents on EVERY task. When an agent encounters a blocker, workaround, or unexpected friction, it MUST log the impediment to Docs/impediments.md before continuing. This is part of Definition of Done — work is not complete unless all impediments encountered during the session are logged.
-last_validated_against: 2026-07-30
+last_validated_against: 2026-08-07
 ---
 
 # Impediment Reporter
@@ -84,6 +84,7 @@ The suggestion should be direct:
 5. **Don't filter.** Even "small" impediments matter. Patterns emerge from frequency, not severity.
 6. **Don't editorialize.** State what happened, not how you feel about it.
 7. **Upgrade workarounds.** If you find a better workaround than what's logged, update the existing row's workaround description.
+8. **Never hand-repair a duplicate `#` after a merge.** `Docs/impediments.md` is `merge=union` (THR-691), so two lanes appending on the same day each pick "the next free number" and the merge keeps both. Run `npm run check:impediment-ids -- --fix` (THR-1018), then `npm run generate-impediment-dashboard`. It classifies each collision — dedupe when both rows are the same impediment, renumber when they are different — which is the judgment sessions were re-deriving by hand on every closeout merge. Read its renumber list before pushing: the original number stays on the first row, so a prose reference that meant the row that *moved* now points at the wrong entry, and only the author knows which.
 
 ## Definition of Done Integration
 
