@@ -7,7 +7,7 @@ description: >
   Explicitly invoked (/wayfinder); design sessions may SUGGEST charting a map but
   never auto-chart. Adapted for Threadbare from mattpocock/skills `wayfinder`
   (THR-900). Plans, never builds — cleared maps hand off to design-session plan docs.
-last_validated_against: 2026-07-31
+last_validated_against: 2026-08-06
 ---
 
 # Wayfinder
@@ -87,7 +87,9 @@ One or two lines; every session orients to it before choosing a ticket.>
 ## Notes
 
 <domain; canon pages + skills every session must load (Step 0 for this effort);
-standing preferences Christian has stated>
+standing preferences Christian has stated. **Any effort whose destination touches a
+player-facing surface lists `Docs/design-system/laws.md` here** — the UI Laws bind
+prototype tickets, verdict sessions, and the plan docs the map produces (THR-1007)>
 
 ## Decisions so far
 
@@ -136,7 +138,10 @@ AFK) — plus nothing that would attract other lanes.
   Terminology disagreements route through `ubiquitous-language` (UL wins).
 - **Prototype** (HITL): raise the fidelity of the discussion with a cheap concrete
   artifact Christian can react to — an outline, a mock screen (`?view=styleguide`
-  conventions), a CLI-driven simulation sketch, a throwaway branch. Link it as an
+  conventions **and the UI Laws, `Docs/design-system/laws.md`** — a mock that breaks
+  a law teaches the wrong thing; a mock that *needs* to break one surfaces a joint
+  amendment decision, which is itself a finding worth the ticket), a CLI-driven
+  simulation sketch, a throwaway branch. Link it as an
   asset. Rough by design. **Bias toward prototype over another grilling round**
   whenever the question *could* be answered by reacting to something concrete:
   prototypes are what keeps a big map from becoming waterfall — low-fidelity
