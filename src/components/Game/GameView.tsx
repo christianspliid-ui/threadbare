@@ -157,7 +157,9 @@ import { setForceFullEncounterVisibility } from '../../engine/debugVisibilityOve
 import { useTopBarHotkeys } from './hooks/useTopBarHotkeys';
 import { computeEssenceIncome } from '../../engine/essenceIncome';
 import { setHomeSeat as setHomeSeatEngine } from '../../engine/influence';
-import { forceOfferBeatById, resolvePendingBeat } from '../../engine/ascendantBeat';
+import { forceOfferBeatById, getBeatDefinitionById, resolvePendingBeat } from '../../engine/ascendantBeat';
+import { selectDefaultBeatChoice } from './beatDismissal';
+import type { BeatDismissalRecord, BeatInterruptSurface } from './beatDismissal';
 import { isSpineBeatId } from '../../data/ascendant-beat-content';
 import { gatherNarrativeContext, enrichProse } from '../../engine/proseEnrichment';
 import { AscendantBeatModal, AscendantBeatOfferBanner } from './AscendantBeatModal';
@@ -3635,6 +3637,105 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       pendingVignettes: (prev.pendingVignettes ?? []).filter(v => v.id !== activeVignette.id),
     }));
   }, [activeVignette, gameState.graph, gameState.ascendantId, setGameState]);
+
+  // ── THR-1019: narrative-interrupt levers for browser verification ──────────
+  // Browser-verify runs must reach surfaces *behind* the game's beats, and seven
+  // impediments in one week (#385, #427, #445, #446, #447, #453, #455) were spent
+  // hand-rolling `[role="dialog"]` click loops to get there. These route each surface
+  // through its own handler — and so through the engine's beat state machine — so the
+  // lever works regardless of which component renders the beat, and cannot drift from
+  // the render conditions the way a DOM selector does.
+  //
+  // This is a verification tool, NOT a change to interrupt behavior: nothing here runs
+  // unless a debug caller asks, and the whole path is DEV-only.
+  const [beatSuppressionActive, setBeatSuppressionActive] = useState(false);
+
+  /**
+   * One pass over the currently-open narrative interrupts. The drain loop lives in
+   * `__DEBUG.dismissBeats()`, because a successor beat only becomes visible after React
+   * re-renders — a loop inside this closure would read stale state and miss the chain.
+   *
+   * Each branch mirrors its surface's render condition exactly, for the same reason the
+   * THR-668 auto-pause set does: acting on a surface that cannot render would report a
+   * dismissal that never happened.
+   */
+  const dismissOpenBeatInterrupts = useCallback((): BeatDismissalRecord[] => {
+    const records: BeatDismissalRecord[] = [];
+    const attempt = (surface: BeatInterruptSurface, run: () => void) => {
+      try {
+        run();
+        records.push({ surface, dismissed: true });
+      } catch (err) {
+        // Fail-soft (NFP #4): one stuck surface must not strand the rest of the drain.
+        records.push({ surface, dismissed: false, error: err instanceof Error ? err.message : String(err) });
+      }
+    };
+
+    if (pendingBeat) {
+      const resolveWithDefault = () => handleResolveBeat(
+        selectDefaultBeatChoice(pendingBeat, getBeatDefinitionById),
+      );
+      if (beatEntered) {
+        attempt('AscendantBeatModal', resolveWithDefault);
+      } else if (!interruptsSuppressed) {
+        // The offer banner does not pause the sim, but it gates the beat behind it.
+        // Resolve straight through rather than entering first, so one pass clears it.
+        attempt('AscendantBeatOfferBanner', resolveWithDefault);
+      }
+    }
+
+    if (activeVignette && !interruptsSuppressed) {
+      attempt('JourneyVignetteModal', () => {
+        // Mirrors JourneyVignetteModal's own onClose: dismissing is a withdrawal.
+        const withdrawn = activeVignette.data.choices.find(c => c.effects.interventionType === 'withdrawn');
+        if (withdrawn) {
+          handleJourneyChoice(withdrawn.id);
+        } else {
+          setGameState(prev => ({
+            ...prev,
+            pendingVignettes: (prev.pendingVignettes ?? []).filter(v => v.id !== activeVignette.id),
+          }));
+        }
+      });
+    }
+
+    if (activeStoryBeatId && activeStoryBeatTemplate && !interruptsSuppressed) {
+      attempt('StoryBeatModal', handleStoryBeatDismiss);
+    }
+
+    if (activePremonition && !interruptsSuppressed) {
+      attempt('PremonitionModal', handlePremonitionDismiss);
+    }
+
+    return records;
+  }, [
+    activePremonition,
+    activeStoryBeatId,
+    activeStoryBeatTemplate,
+    activeVignette,
+    beatEntered,
+    handleJourneyChoice,
+    handlePremonitionDismiss,
+    handleResolveBeat,
+    handleStoryBeatDismiss,
+    interruptsSuppressed,
+    pendingBeat,
+    setGameState,
+  ]);
+
+  // While suppression is on, clear interrupts as they arrive — this is what makes a
+  // scripted `__DEBUG.tick(n)` batch survive beats that fire mid-run. Settles on its
+  // own: once nothing is open the pass returns no records and no state changes.
+  useEffect(() => {
+    if (!import.meta.env.DEV || !beatSuppressionActive) return;
+    dismissOpenBeatInterrupts();
+  }, [beatSuppressionActive, dismissOpenBeatInterrupts]);
+
+  useEffect(() => {
+    if (!import.meta.env.DEV || !window.__DEBUG) return;
+    window.__DEBUG._registerBeatDismisser(dismissOpenBeatInterrupts);
+    window.__DEBUG._registerBeatSuppression(setBeatSuppressionActive);
+  }, [dismissOpenBeatInterrupts]);
 
   // IX-013: Wrapped location click closes drawer before drilling down
   const handleLocationClickWithClose = useCallback((locationId: string) => {
