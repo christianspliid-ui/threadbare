@@ -403,6 +403,8 @@ On a `Todo`/`Backlog` partner, check whether the partner's *own* blocker has shi
 
 Per THR-688 Rule B this whole branch is a **technical verdict** — a merge either happened or it did not — so it is the executor's to make, not a coordination decision to escalate. Note the promotion writes `Ready for Dev` on the *partner*, never on the candidate you are claiming, and never `Done` (Rule 3 forbids CC closing).
 
+**UI-pillar tickets carry the UI Laws implicitly (THR-1007, ratified 2026-08-06).** If the ticket touches the UI pillar, load the `frontend-ui` skill before writing code — it binds `Docs/design-system/laws.md`, and the Laws are part of the Done-when whether or not the ticket restates them. Browser-verify is a judgment against the Laws on the composed surface, with law numbers cited in the evidence, not only a screenshot.
+
 **Done-when reachability (THR-688 Rule C).** Before starting work, check that the ticket's Done-when is satisfiable through the pillar it touches. Browser evidence is required for UI-pillar surfaces only; engine/content acceptance runs through `npm run cli` / `__DEBUG` sweeps. If a Done-when demands N ticks in an automated browser tab, it is unreachable by construction (`document.hidden` throttles the rAF loop to 1 tick/click) until THR-689 lands — substitute a headless CLI sweep and say so in the completion comment.
 
 ### Step 4 - Claim before deep read, then verify
