@@ -30,7 +30,7 @@ Every feature must address all three pillars — **Engine** (systems, tick loop,
 **Also see:** `[[Fixes THR-XX]]`, `[[Coordination Block]]`
 **Status:** canonical
 
-The mandatory closeout checklist for every completed issue: commit (with `Fixes THR-XX`), push, merge to main, verify deploy, add a `Docs/status/` fragment and regenerate `project-status.md`, update `project-history.md`, update `changelog.md`, update `wiring-checklist.md` if new surfaces added, update systemic wiring guide if new engine capabilities added, log all deferrals as Linear issues, log impediments. Work is not done until all items are checked.
+The mandatory closeout checklist for every completed issue: commit (with `Fixes THR-XX`), push, merge to main, verify deploy, add a `Docs/status/` fragment (the generated `project-status.md` is untracked), update `project-history.md`, update `changelog.md`, update `wiring-checklist.md` if new surfaces added, update systemic wiring guide if new engine capabilities added, log all deferrals as Linear issues, log impediments. Work is not done until all items are checked.
 
 ---
 

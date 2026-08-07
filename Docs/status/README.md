@@ -30,12 +30,12 @@ helped by the union driver.
 1. Create `Docs/status/YYYY-MM-DD-thr-XXXX.md`. Content is the entry body as it
    should appear under `## Current Focus` — normally one bolded-lede paragraph
    ending in a `(THR-XXXX, YYYY-MM-DD)` attribution.
-2. Run `npm run generate-project-status`.
-3. Commit both the fragment and the regenerated `Docs/project-status.md`.
+2. Commit that file. **That is the whole closeout write.**
 
-Do **not** hand-edit `Docs/project-status.md`, and do **not** trim other entries to
-make room — the generator holds the line cap by rendering only as many of the newest
-fragments as fit. Everything older stays here, readable and uncapped.
+Do **not** hand-edit `Docs/project-status.md` — it is generated and untracked (see
+below) — and do **not** trim other entries to make room. The generator holds the
+line cap by rendering only as many of the newest fragments as fit; everything older
+stays here, readable and uncapped.
 
 ## Files that are not entries
 
@@ -43,12 +43,23 @@ fragments as fit. Everything older stays here, readable and uncapped.
 sections). Any file whose name starts with `_`, and this README, are excluded from
 the entry set.
 
-## Merging
+## Where the assembled page went
 
-Fragments never conflict. The generated `Docs/project-status.md` can, since two
-branches regenerate it differently — so it is marked `merge=ours` in
-`.gitattributes`: a local `git merge origin/main` takes your copy without a
-conflict, and `npm run generate-project-status` then rebuilds it from the **merged**
-fragment set, which is the correct answer by construction. Forgetting that step is
-not silent: `npm run check:generated-freshness` is a blocking CI gate and rejects a
-stale page.
+`Docs/project-status.md` is **generated and untracked** (`.gitignore`). It is
+rebuilt by `npm run prebuild`, so any build produces it, and on demand with
+`npm run generate-project-status`.
+
+It is not committed because committing it puts the shared write straight back: two
+branches regenerate the page differently — different top entry, different dropped
+tail — and conflict exactly as before. No merge driver rescues that:
+
+| Candidate | Why not |
+|---|---|
+| `merge=union` | Keeps *both* sides of a rewritten hunk. The page has a cap, so the generator drops entries as well as adding them. This is why THR-691 excluded the file to begin with. |
+| `merge=ours` | Not a built-in driver — unlike `text`/`binary`/`union` it needs `[merge "ours"] driver = true` in `.git/config`, which no repo file can distribute. Measured 2026-08-07 in a fresh clone with the attribute set: `CONFLICT (content): Merge conflict in Docs/project-status.md`; clean only once the config was added by hand. |
+| any working driver | GitHub's server-side merge ignores `.gitattributes` entirely, so a shared write still strands the PR at `mergeable: CONFLICTING` until a session merges locally. |
+
+So the fragments are committed and the assembly is not — the same trade
+`Design/impediment-dashboard.html` took under THR-916, reached from the other end.
+`npm run check:generated-freshness` keeps it honest: it asserts the generator still
+produces the page, and that nobody has `git add -f`'d it back into the tree.

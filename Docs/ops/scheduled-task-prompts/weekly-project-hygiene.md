@@ -79,7 +79,7 @@ Enforce `CLAUDE.md § Skill Tree Layout`. **`.claude/skills/` is the only skill 
 
 ### 4. Documentation staleness scan
 
-- `Docs/project-status.md` — **generated** since THR-1016; do not hand-edit it and do not move entries out of it to hold the cap. The generator renders only the newest `Docs/status/` fragments that fit the ≤60-line budget, so overflow is normal and self-correcting. What is worth checking: `npm run generate-project-status:check` reports current, and every recent Linear Done issue has a `Docs/status/YYYY-MM-DD-thr-XXXX.md` fragment.
+- `Docs/project-status.md` — **generated and untracked** since THR-1016; do not hand-edit it and do not move entries out of it to hold the cap. The generator renders only the newest `Docs/status/` fragments that fit the ≤60-line budget, so overflow is normal and self-correcting. What is worth checking instead: every recent Linear Done issue has a `Docs/status/YYYY-MM-DD-thr-XXXX.md` fragment.
 - `Docs/project-history.md` — append-only. Spot-check recent `✅` entries against recent Linear Done issues.
 - `Docs/changelog.md` — spot-check recent rows for completeness (`| date | where | what changed | why |`).
 - `Docs/plans/` — plan docs older than 60 days, not referenced from an open Linear issue, whose topic has shipped: flag as archival candidates. **Do not delete.**

@@ -120,12 +120,6 @@ const EXTERNAL_GENERATED_ARTIFACTS: readonly ExternalArtifact[] = [
   // THR-987" rather than building a bespoke one, so this ticket owns its recurrence
   // prevention; observed drift rate is ~2 plans/week, which re-rots it continuously.
   { path: "Docs/plans/INDEX.md", command: "npm run rebuild-plans-index" },
-  // ~0s, pure fs. Registered by THR-1016, and load-bearing in a way the others are
-  // not: `Docs/project-status.md` is `merge=ours` in `.gitattributes`, so a merge
-  // silently keeps this branch's copy and the page is only correct if the
-  // regeneration that must follow actually ran. This gate IS that guarantee — take
-  // it away and `ours` becomes a way to drop main's entries without a conflict.
-  { path: "Docs/project-status.md", command: "npm run generate-project-status" },
 ];
 
 /**
@@ -152,6 +146,16 @@ const EXTERNAL_GENERATED_ARTIFACTS: readonly ExternalArtifact[] = [
  */
 const UNCOMMITTED_GENERATED_PATHS: readonly string[] = [
   "Design/impediment-dashboard.html", // generate-impediment-dashboard (THR-916)
+  // generate-project-status (THR-1016). Same reasoning as above, reached from the
+  // other end: the *sources* are committed (one fragment per ticket in
+  // `Docs/status/`, which is all a closeout writes) and only the assembly is not.
+  // Committing the assembly is what put every closeout on one shared anchor — an
+  // insert at the head of `## Current Focus` plus a tail delete for the line cap —
+  // so any two open closeout PRs conflicted by construction. And no merge driver
+  // rescues it: `union` duplicates the rewritten lines, `ours` is not built-in, and
+  // GitHub ignores `.gitattributes` anyway. The two questions below are exactly the
+  // ones worth asking here, since there is no committed copy to be stale against.
+  "Docs/project-status.md",
 ];
 
 /**

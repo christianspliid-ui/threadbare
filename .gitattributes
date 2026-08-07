@@ -43,24 +43,24 @@ Docs/impediments.md merge=union
 # conflict — acceptable for an audit trace, not for anything read in order.
 Docs/ops/orchestrator-*.md merge=union
 
-# Generated closeout page — resolve by regenerating, never by merging (THR-1016).
+# There is deliberately NO entry here for Docs/project-status.md (THR-1016).
 #
-# `Docs/project-status.md` is assembled by `npm run generate-project-status` from
-# the one-file-per-entry fragments in `Docs/status/`. Those fragments never
-# conflict: a closeout creates a brand-new path, so two open PRs cannot be writing
-# the same file. Only the assembled page can conflict, and merging its *text* is
-# always the wrong move — the right answer is a function of the merged fragment
-# set, which git has already resolved cleanly one directory over.
+# It is now **generated and untracked** — assembled by
+# `npm run generate-project-status` from the one-file-per-entry fragments in
+# `Docs/status/`, which are what a closeout actually writes. Nothing in this file
+# could have fixed it, and two attempts are worth recording so neither is retried:
 #
-# So `ours` (a built-in driver, like `union`) takes this branch's copy without a
-# conflict, and the regeneration that follows the merge produces the correct page:
+#   * `merge=union` — wrong by construction. The page has a line cap, so the
+#     generator *drops* entries as well as adding them, and union keeps both sides
+#     of a rewritten hunk. That is why THR-691 excluded it in the first place.
+#   * `merge=ours` — does not work. Unlike `text`/`binary`/`union`, `ours` is NOT a
+#     built-in driver; it needs `[merge "ours"] driver = true` in `.git/config`,
+#     which no repo file can distribute. Measured 2026-08-07 in a fresh clone with
+#     this attribute set: `CONFLICT (content): Merge conflict in
+#     Docs/project-status.md`, resolving cleanly only once the config was added
+#     by hand.
 #
-#   git merge origin/main && npm run generate-project-status && git commit -a
-#
-# Skipping that regeneration is NOT silent — `check:generated-freshness` is a
-# blocking CI gate and rejects a page that does not match its fragments. That gate
-# is what makes `ours` safe here; do not apply this driver to a hand-written file,
-# where it would discard the other side's edits with nothing to reconstruct them
-# from. Same caveat as union above: GitHub's server-side merge ignores this
-# attribute, so a conflicted PR is still resolved locally and pushed.
-Docs/project-status.md merge=ours
+# And even a working driver would not have been enough, for the reason stated
+# above: GitHub's server-side merge ignores this file entirely, so any shared
+# write still strands the PR at `mergeable: CONFLICTING` until a session merges
+# locally. The only thing that survives that is not sharing the write at all.
