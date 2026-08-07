@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useSyncExternalStore } from 'react';
 import type { AgentInfoCardData } from '../../engine/agentDetail';
 import type { ThreadedNode, ThreadCategory } from '../../engine/retinue';
 import type { WorldGraph } from '../../engine/graph';
@@ -20,6 +20,12 @@ import {
   getAgentStrategicHistory,
   getBehaviorFamilyPresentation,
 } from '../../engine/strategicPresentation';
+import {
+  isNudgeDesignerViewEnabled,
+  subscribeNudgeDesignerView,
+} from './encounter-stage/designerView';
+import { humanizeKeySegment, countWord } from '../../engine/aftermathWords';
+import { groupEncounterPoolCandidates } from './encounterActivityPresentation';
 import {
   buildIntelligenceDisplay,
   INTEL_PANEL_FOG_MIN_TIER,
@@ -408,14 +414,40 @@ function getVisibleEncounterPool(decision?: BalanceEvent | null): number | null 
     ?? null;
 }
 
+/**
+ * THR-1008: the parenthetical used to read `(from 7 options)` unconditionally —
+ * a raw count on a player-facing surface (Law 13). The count is a decision
+ * diagnostic, so it now rides the designer view with the rest of them; normal
+ * play gets the activity label alone.
+ */
 function formatActivityLabel(
   activityLabel: string,
   decision?: BalanceEvent | null,
+  designerView = false,
 ): string {
+  if (!designerView) return activityLabel;
   const visiblePool = getVisibleEncounterPool(decision);
   if (visiblePool === null) return activityLabel;
   const noun = visiblePool === 1 ? 'option' : 'options';
   return `${activityLabel} (from ${visiblePool} ${noun})`;
+}
+
+/**
+ * A `snake_case` engine key as a title-cased phrase — `sacred_grove` reads as
+ * "Sacred Grove", never as the key (Law 14), and matches the casing of the
+ * sibling `formatDecisionType` field beside it.
+ */
+function humanizeKeyTitle(raw: string): string {
+  return humanizeKeySegment(raw).replace(/\b\w/g, c => c.toUpperCase());
+}
+
+/** Subscribe to the DebugPanel's designer-view toggle. */
+function useDesignerView(): boolean {
+  return useSyncExternalStore(
+    subscribeNudgeDesignerView,
+    isNudgeDesignerViewEnabled,
+    isNudgeDesignerViewEnabled,
+  );
 }
 
 function formatDecisionType(decisionType?: string): string {
@@ -490,46 +522,77 @@ function EncounterDecisionPanel({
 
   const isStrategic = decision.decisionType?.startsWith('strategic_');
 
+  // THR-1008. This panel is the *live* home of the leak the ticket was filed
+  // against: the ThreadsPanel copy it named by file:line had been unreachable
+  // since THR-664 removed its opener. Everything below that carries a magnitude,
+  // an internal key, or a funnel strip is decision diagnostics — it belongs in
+  // the designer view, which is where the numbers behind the words already live
+  // (`designerView.ts`: "the player surface must never grow a numbers toggle").
+  // What survives in normal play is what a player can act on: what the mortal
+  // decided, why they are idle if they are, and the options they weighed by
+  // name, each with its authored foreshadowing prose.
+  const designerView = useDesignerView();
+
+  // Rank and score were doing double duty: they leaked magnitudes *and* they
+  // were the only thing telling two rows apart, because the pool routinely
+  // holds the same template at a dozen destinations (measured live at tick 6:
+  // nine consecutive "Confront the Unknown at Wraithwood" rows). Dropping them
+  // alone would leave an undifferentiated wall, so normal play collapses the
+  // pool by template — `groupEncounterPoolCandidates`, the grouping the deleted
+  // ThreadsPanel modal used to offer as a view mode — and says how many other
+  // places share it in words. The designer view keeps the flat ranked list.
+  const displayedPool = useMemo(() => {
+    if (designerView) {
+      return rankedPool.map(candidate => ({ candidate, alsoAt: 0 }));
+    }
+    return groupEncounterPoolCandidates(rankedPool).map(group => ({
+      candidate: group.primary,
+      alsoAt: Math.max(0, group.destinations.length - 1),
+    }));
+  }, [designerView, rankedPool]);
+
   return (
     <DetailSection title={isStrategic ? 'Strategic Action' : 'Encounter Pool'}>
-      {!isStrategic && visiblePool !== null && (
+      {designerView && !isStrategic && visiblePool !== null && (
         <DetailField label="Viable now" value={visiblePool} />
       )}
       <DetailField label="Decision" value={formatDecisionType(decision.decisionType)} />
-      {decision.templateId && (
+      {designerView && decision.templateId && (
         <DetailField label="Template" value={decision.templateId} />
       )}
       {decision.targetLocationSubtype && (
-        <DetailField label="Heading" value={decision.targetLocationSubtype} />
+        <DetailField label="Heading" value={humanizeKeyTitle(decision.targetLocationSubtype)} />
       )}
-      {decision.travelCost !== undefined && decision.travelCost > 0 && (
+      {designerView && decision.travelCost !== undefined && decision.travelCost > 0 && (
         <DetailField label="Travel cost" value={decision.travelCost} />
       )}
-      {decision.bestScore !== undefined && (
+      {designerView && decision.bestScore !== undefined && (
         <DetailField label="Best score" value={decision.bestScore.toFixed(2)} />
       )}
       {formatIdleReason(decision.idleReason) && (
         <DetailField label="Idle reason" value={formatIdleReason(decision.idleReason)!} />
       )}
-      {stages.length > 0 && (
+      {designerView && stages.length > 0 && (
         <DetailField
           label="Funnel"
           value={stages.map(stage => `${stage.label} ${stage.value}`).join(' -> ')}
         />
       )}
-      {!isStrategic && rankedPool.length > 0 && (
+      {!isStrategic && displayedPool.length > 0 && (
         <div style={{ marginTop: 'var(--space-1)' }}>
           <div style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)', marginBottom: '4px' }}>
-            Ranked options
+            {designerView ? 'Ranked options' : 'What they are weighing'}
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            {rankedPool.map(candidate => {
+            {displayedPool.map(({ candidate, alsoAt }) => {
               const key = `${candidate.rank}:${candidate.templateId}:${candidate.locationId}`;
               const prose = foreshadowingByCandidate.get(key);
               return (
                 <details key={key} style={{ border: '1px solid var(--border-subtle)', borderRadius: '6px', padding: '4px 6px' }}>
                   <summary style={{ cursor: 'pointer', color: 'var(--text-secondary)', fontSize: 'var(--text-xs)' }}>
-                    #{candidate.rank} {candidate.templateName} @ {candidate.locationName} (score {candidate.finalScore.toFixed(2)})
+                    {candidate.templateName} at {candidate.locationName}
+                    {alsoAt > 0 && `, and ${countWord(alsoAt)} ${alsoAt === 1 ? 'place' : 'places'} like it`}
+                    {designerView && ` — #${candidate.rank}, score ${candidate.finalScore.toFixed(2)}`}
                   </summary>
                   {prose && (
                     <div style={{ marginTop: '6px', color: 'var(--text-primary)', fontSize: 'var(--text-xs)', lineHeight: 1.4 }}>
@@ -572,8 +635,9 @@ function AgentDetailBody({
   intelligenceRecords?: readonly IntelligenceRecord[];
   getForeshadowing?: (agentId: string, encounterId: string) => ForeshadowingResult;
 }) {
+  const agentDesignerView = useDesignerView();
   const activityLabel = node.activityLabel
-    ? formatActivityLabel(node.activityLabel, agentEncounterDecision)
+    ? formatActivityLabel(node.activityLabel, agentEncounterDecision, agentDesignerView)
     : null;
 
   const strategicSummary = useMemo(() => {

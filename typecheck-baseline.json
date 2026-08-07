@@ -1,5 +1,5 @@
 {
-  "total": 3478,
+  "total": 3477,
   "command": "npx tsc -b --force --pretty false",
   "perFile": {
     "scripts/lint-encounter-content.ts": 2,
@@ -36,7 +36,7 @@
     "src/components/Game/__tests__/ScryOverlay.test.tsx": 10,
     "src/components/Game/__tests__/StorySoFarPanel.test.tsx": 1,
     "src/components/Game/__tests__/ThreadDetailView.test.tsx": 6,
-    "src/components/Game/__tests__/ThreadsPanel.test.tsx": 7,
+    "src/components/Game/__tests__/ThreadsPanel.test.tsx": 6,
     "src/components/Game/__tests__/useAgentInteraction-effects.test.tsx": 4,
     "src/components/Game/ActionCard.tsx": 1,
     "src/components/Game/ActionDrawer.tsx": 2,

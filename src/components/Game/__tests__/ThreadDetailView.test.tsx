@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ThreadDetailView } from '../ThreadDetailView';
+import { setNudgeDesignerView } from '../encounter-stage/designerView';
 import type { ThreadedAgent, ThreadedLocation, ThreadedFaction, ThreadedArmy, ThreadedArtifact } from '../../../engine/retinue';
 import type { AgentInfoCardData } from '../../../engine/agentDetail';
 import type { BalanceEvent } from '../../../types/balanceEval';
@@ -142,6 +143,14 @@ const noop = vi.fn();
 // ─── Tests ─────────────────────────────────────────────────────────────────────
 
 describe('ThreadDetailView', () => {
+  // The designer-view toggle is module-scope state (THR-775). Reset it after
+  // every test so a designer-view case cannot leak into the normal-play cases
+  // that assert the diagnostics are *absent* — those would pass silently
+  // either way if the store were left on.
+  afterEach(() => {
+    setNudgeDesignerView(false);
+  });
+
   it('renders agent detail with domain capabilities grid when agentInfoCard is provided', () => {
     const card = makeAgentInfoCard();
     render(
@@ -171,7 +180,13 @@ describe('ThreadDetailView', () => {
     expect(screen.getByText('Recruiting')).toBeInTheDocument();
   });
 
-  it('renders the encounter pool panel when latest chooser telemetry is provided', () => {
+  // THR-1008 — these two tests asserted the *defect*: they pinned the funnel
+  // strip and the raw option count as always-rendered. Both are decision
+  // diagnostics and now ride the designer view (UI Laws 13/16). Each is
+  // repointed to assert both sides of the gate, which is a stricter contract
+  // than the one-sided assertion it replaces.
+
+  it('renders the encounter pool panel without its diagnostics in normal play', () => {
     render(
       <ThreadDetailView
         node={makeAgent()}
@@ -188,11 +203,54 @@ describe('ThreadDetailView', () => {
 
     expect(screen.getByText('Encounter Pool')).toBeInTheDocument();
     expect(screen.getByText('Queue Movement')).toBeInTheDocument();
-    expect(screen.getByText('ruins')).toBeInTheDocument();
-    expect(screen.getByText(/Cached 12 -> Awareness 8 -> Visibility 6 -> Prereqs 4 -> Threat 4 -> Capability 3 -> Cooldown 2/i)).toBeInTheDocument();
+    // The location subtype renders as words, not as its raw `snake_case` key.
+    expect(screen.getByText('Ruins')).toBeInTheDocument();
+    // Funnel counts, travel cost and best score are designer-view only.
+    expect(screen.queryByText(/Cached 12 -> Awareness 8/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Travel cost/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Best score/)).not.toBeInTheDocument();
   });
 
-  it('adds the viable choice count to the activity line when chooser telemetry is present', () => {
+  it('reveals the funnel and the magnitudes once the designer view is on', () => {
+    setNudgeDesignerView(true);
+    render(
+      <ThreadDetailView
+        node={makeAgent()}
+        agentInfoCard={makeAgentInfoCard()}
+        agentEncounterDecision={makeEncounterDecision({
+          decisionType: 'queue_movement',
+          targetLocationSubtype: 'ruins',
+          travelCost: 2,
+        })}
+        onClose={noop}
+        onViewProfile={noop}
+      />
+    );
+
+    expect(screen.getByText(/Cached 12 -> Awareness 8 -> Visibility 6 -> Prereqs 4 -> Threat 4 -> Capability 3 -> Cooldown 2/i)).toBeInTheDocument();
+    expect(screen.getByText(/Travel cost/)).toBeInTheDocument();
+  });
+
+  it('keeps the viable choice count out of the activity line in normal play', () => {
+    render(
+      <ThreadDetailView
+        node={makeAgent({ activityLabel: 'Going to Green-shroud' })}
+        agentInfoCard={makeAgentInfoCard()}
+        agentEncounterDecision={makeEncounterDecision({
+          decisionType: 'queue_movement',
+          candidatesAfterCooldown: 2,
+        })}
+        onClose={noop}
+        onViewProfile={noop}
+      />
+    );
+
+    expect(screen.getByText('Going to Green-shroud')).toBeInTheDocument();
+    expect(screen.queryByText(/from 2 options/)).not.toBeInTheDocument();
+  });
+
+  it('adds the viable choice count to the activity line under the designer view', () => {
+    setNudgeDesignerView(true);
     render(
       <ThreadDetailView
         node={makeAgent({ activityLabel: 'Going to Green-shroud' })}
