@@ -4,7 +4,6 @@ import type { ToastItem } from '../../types/notification';
 import type { NavigationTarget } from '../../types/notification';
 import { getSphereColor } from '../../data/sphereIcons';
 import { renderProseWithIPK } from '../ProseKeyword';
-import { EncounterNotificationCard } from './EncounterNotificationCard';
 // Band → left-border accent colour. Shared with the thread-row encounter badge
 // (THR-664). Fail-soft: unknown band → undefined, falls through to sphere/gold.
 import { BAND_ACCENT } from './outcomeBandAccent';
@@ -113,29 +112,23 @@ export function ToastStack({ toasts, onDismiss, onSelectAgent, onNavigate }: Toa
               onContextMenu={(e) => handleRightClickDismiss(e, toast.id)}
               role="status"
               aria-label={
-                toast.encounterCard
-                  ? `${toast.encounterCard.agentName} — ${toast.encounterCard.encounterName}. ${toast.encounterCard.meta}`
-                  : navTarget
-                    ? `${toast.message.replace(/\*\*/g, '')} — ${NAV_TOOLTIPS[navTarget.kind]}`
-                    : toast.message.replace(/\*\*/g, '')
+                navTarget
+                  ? `${toast.message.replace(/\*\*/g, '')} — ${NAV_TOOLTIPS[navTarget.kind]}`
+                  : toast.message.replace(/\*\*/g, '')
               }
               aria-description="Right-click to dismiss"
             >
-              {toast.encounterCard ? (
-                <EncounterNotificationCard card={toast.encounterCard} accentColor={accentColor} />
-              ) : (
-                <span
-                  className="flex-1 leading-snug"
-                  style={{
-                    fontSize: 'var(--text-xs)',
-                    color: 'var(--text-secondary)',
-                    fontFamily: 'var(--font-body)',
-                  }}
-                >
-                  {/* IPK-aware: identity for plain text (THR-628) */}
-                  {renderProseWithIPK(toast.message)}
-                </span>
-              )}
+              <span
+                className="flex-1 leading-snug"
+                style={{
+                  fontSize: 'var(--text-xs)',
+                  color: 'var(--text-secondary)',
+                  fontFamily: 'var(--font-body)',
+                }}
+              >
+                {/* IPK-aware: identity for plain text (THR-628) */}
+                {renderProseWithIPK(toast.message)}
+              </span>
               {toast.count > 1 && (
                 <span
                   className="flex-shrink-0 px-1.5 py-0.5 rounded-full font-bold"

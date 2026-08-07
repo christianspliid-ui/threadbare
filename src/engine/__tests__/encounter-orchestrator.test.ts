@@ -7,7 +7,7 @@ import {
 import { phaseEncounterProgressionV2, resetEventCounter } from '../orchestrator';
 import { seedWorld } from '../worldSeed';
 import { createAscendant } from '../ascendant';
-import type { GameState } from '../../types/gameState';
+import type { GameState, TickEvent } from '../../types/gameState';
 import type { CosmologyProfile } from '../../types/index';
 import { SPHERE_NAMES } from '../../types/index';
 import { createGreatChronicle } from '../chronicle';
@@ -16,7 +16,6 @@ import { generateRivals, createRivalState } from '../rival';
 import { generateDoomClock, createDoomClockState } from '../doomClock';
 import { recalcVisibility, collectLOSSources } from '../visibility';
 import { getEncountersByLocationType } from '../../data/encounter-content';
-import { getUnifiedTemplateById } from '../../data/unified-action-templates';
 
 function balancedCosmology(): CosmologyProfile {
   const c = {} as CosmologyProfile;
@@ -135,11 +134,27 @@ function createTestGameState(seed: number = 42): GameState {
 /** Find encounters available at a 'town' location type that are NOT unified templates.
  * phaseEncounterProgressionV2 skips encounters that are unified templates (handled by a separate phase).
  */
+/**
+ * Town encounters usable as legacy `encounterProgress` fixtures.
+ *
+ * This used to additionally filter to templates *absent* from the unified pool
+ * (`getUnifiedTemplateById(e.id) === undefined`). Once the seed-system-v2
+ * migration moved every template into `UNIFIED_ACTION_TEMPLATES`, that predicate
+ * matched nothing — 74 town encounters, 0 survivors — and since each test in this
+ * block opened with `if (available.length === 0) return;`, all three passed by
+ * never executing a single assertion (found under THR-993). The filter is gone
+ * and the early return is now an assertion, so an empty pool fails loudly
+ * instead of silently greening the block.
+ *
+ * `initiateEncounter` drives the legacy path from any `ENCOUNTER_TEMPLATES`
+ * entry regardless of unified-pool membership, which is what this block exercises.
+ */
 function getTestEncounters() {
-  return getEncountersByLocationType('town').filter(
-    e => getUnifiedTemplateById(e.id) === undefined,
-  );
+  return getEncountersByLocationType('town');
 }
+
+/** Bound on how many phase calls a test will make waiting for an encounter to conclude. */
+const MAX_PHASE_DRIVE_TICKS = 40;
 
 describe('phaseEncounterProgressionV2 — retinue notifications', () => {
   beforeEach(() => {
@@ -155,13 +170,31 @@ describe('phaseEncounterProgressionV2 — retinue notifications', () => {
     });
   }
 
-  it('retinue agent completing encounter gets toast notification with actorId', () => {
+  /**
+   * THR-664 retired encounter toasts outright — an encounter's beats and its
+   * conclusion surface as a badge on the agent's thread row, never in the global
+   * queue ("activity about an entity renders on that entity's persistent card in
+   * the Threads panel, not in a global transient queue"). So the retinue event
+   * still carries `actorId` for the event log and the badge's navigation, and
+   * carries **no** `notification` directive at all.
+   *
+   * This assertion is what keeps the toast from coming back: `routeNotifications`
+   * skips any event without a directive (`if (!event.notification) continue`), so
+   * re-adding one here is the single edit that would re-toast encounters.
+   *
+   * Until THR-993 this test asserted the opposite — `notification.channel === 'toast'`,
+   * the pre-THR-664 contract — and passed anyway, because every assertion sat
+   * behind an `if (retinueEvent && ...)` guard that stopped matching once the
+   * directive was removed. Green on a dead contract. The guard is now an
+   * assertion, so the test fails if the population it inspects is ever empty.
+   */
+  it('retinue agent completing encounter gets actorId but NO toast directive (THR-664)', () => {
     const state = createTestGameState(100);
     const actors = state.graph.getNodesByType('actor')
       .filter(n => n.properties.actorType === 'individual');
     const actor = actors[0];
     const available = getTestEncounters();
-    if (available.length === 0) return;
+    expect(available.length).toBeGreaterThan(0);
 
     makeRetinueAgent(state, actor.id);
     const enc = available[0];
@@ -176,10 +209,13 @@ describe('phaseEncounterProgressionV2 — retinue notifications', () => {
     expect(encounterEvents.length).toBeGreaterThanOrEqual(1);
 
     const retinueEvent = encounterEvents.find(e => e.actorId === actor.id);
-    if (retinueEvent && (retinueEvent.type === 'encounter_completed' || retinueEvent.type === 'encounter_step_failure')) {
-      expect(retinueEvent.notification).toBeDefined();
-      expect(retinueEvent.notification?.channel).toBe('toast');
-      expect(retinueEvent.actorId).toBe(actor.id);
+    expect(retinueEvent).toBeDefined();
+    expect(retinueEvent!.actorId).toBe(actor.id);
+    expect(retinueEvent!.notification).toBeUndefined();
+
+    // No encounter event of any kind raises a notification — the badge is the surface.
+    for (const ev of encounterEvents) {
+      expect(ev.notification).toBeUndefined();
     }
   });
 
@@ -189,7 +225,7 @@ describe('phaseEncounterProgressionV2 — retinue notifications', () => {
       .filter(n => n.properties.actorType === 'individual');
     const actor = actors[0];
     const available = getTestEncounters();
-    if (available.length === 0) return;
+    expect(available.length).toBeGreaterThan(0);
 
     const enc = available[0];
     initiateEncounter(state, actor.id, enc.id, 1);
@@ -199,6 +235,9 @@ describe('phaseEncounterProgressionV2 — retinue notifications', () => {
     const encounterEvents = (phaseResult.tickEvents ?? []).filter(
       e => e.type === 'encounter_completed' || e.type === 'encounter_step_failure' || e.type === 'encounter_step_success'
     );
+
+    // Falsify the loop below — an empty array would satisfy it without asserting anything.
+    expect(encounterEvents.length).toBeGreaterThanOrEqual(1);
 
     for (const ev of encounterEvents) {
       expect(ev.notification).toBeUndefined();
@@ -212,17 +251,29 @@ describe('phaseEncounterProgressionV2 — retinue notifications', () => {
       .filter(n => n.properties.actorType === 'individual');
     const actor = actors[0];
     const available = getTestEncounters();
-    if (available.length === 0) return;
+    expect(available.length).toBeGreaterThan(0);
 
     makeRetinueAgent(state, actor.id);
     const enc = available[0];
     initiateEncounter(state, actor.id, enc.id, 1);
-    state.tick = 100;
 
-    const phaseResult = phaseEncounterProgressionV2(state);
-    const encounterEvents = (phaseResult.tickEvents ?? []).filter(
-      e => (e.type === 'encounter_completed' || e.type === 'encounter_step_failure') && e.actorId === actor.id
-    );
+    // Only the terminal branches (completed / abandoned) name the encounter — the
+    // mid-encounter branch reads "<agent> succeeded in their encounter". So drive
+    // the phase until the encounter concludes rather than asserting on one call,
+    // which lands mid-encounter and made this check vacuous.
+    let encounterEvents: TickEvent[] = [];
+    for (let i = 0; i < MAX_PHASE_DRIVE_TICKS && encounterEvents.length === 0; i++) {
+      state.tick = 100 + i;
+      const phaseResult = phaseEncounterProgressionV2(state);
+      state.encounterProgress = phaseResult.encounterProgress ?? state.encounterProgress;
+      state.tickEvents = phaseResult.tickEvents ?? state.tickEvents;
+      encounterEvents = state.tickEvents.filter(
+        e => (e.type === 'encounter_completed' || e.type === 'encounter_step_failure') && e.actorId === actor.id
+      );
+    }
+
+    // Falsify the loop below — an empty array would satisfy it without asserting anything.
+    expect(encounterEvents.length).toBeGreaterThanOrEqual(1);
 
     for (const ev of encounterEvents) {
       expect(ev.message).toContain(enc.name);
