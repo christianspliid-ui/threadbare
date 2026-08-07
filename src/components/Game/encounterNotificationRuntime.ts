@@ -189,6 +189,53 @@ export function runEncounterAutoOpenScan(
   return null;
 }
 
+/**
+ * Does the one-tick interrupt-suppression window still gate the auto-open scan?
+ *
+ * The window (`interruptSuppressedUntilTick = tick + 1`) is armed every time a
+ * veil closes — disregard, acknowledge-aftermath, commit-and-continue — so the
+ * beat the player just dismissed cannot immediately re-pop. It is measured in
+ * **ticks**, and it is cleared by one condition only: `tick` reaching it.
+ *
+ * THR-1017: every path that arms it also leaves the sim paused, because
+ * `useInterruptAutoPause` holds `running === false` while ANY interrupt surface
+ * is open. When a second surface is stacked behind the veil — Christian's
+ * report is the opening action-card beat modal, which auto-enters for spine
+ * beats and is not dismissed — closing the veil does not resume the sim. The
+ * clock stops, so a tick-gated window whose clock is stopped by the very state
+ * that armed it never expires. The scan bails at its first line forever, the
+ * queued aftermath is starved, and only the thread badge can still reach it
+ * (`handleOpenEncounterBadge` calls the open handler directly and never
+ * consults this window) — which is exactly the "I had to click the
+ * notification" report.
+ *
+ * Measured live at `?view=game&seeded&size=medium&forceencounters` with
+ * `beat.spine.opening` left stacked: veil closed at tick 10 with 3 eligible
+ * pause-tier notifications pending and `simRunning: false`; no surface reopened
+ * for as long as the tick was frozen, and a single `__DEBUG.tick(1)` — the tick
+ * a paused sim can never take — opened one immediately.
+ *
+ * So the window applies only while the clock that measures it is actually
+ * running. That is the whole change: a paused sim generates no tick-driven
+ * notification churn to debounce, and the record the player just dismissed is
+ * already held back by `suppressedEncounterNotificationId`, which is keyed on
+ * the notification id rather than on time and is therefore unaffected by a
+ * stopped clock. The tick window was the blunt half of a two-part guard; the
+ * precise half does the real work and keeps doing it here.
+ *
+ * Deliberately NOT folded into `interruptsSuppressed` itself: that predicate
+ * also gates the render conditions of the vignette, story-beat, premonition and
+ * beat-offer surfaces, and pausing for a surface that cannot render is the
+ * "invisible gate" failure THR-668 warns about in its own comment. This one is
+ * scoped to the auto-open scan.
+ */
+export function isEncounterAutoOpenSuppressed(
+  interruptsSuppressed: boolean,
+  simRunning: boolean,
+): boolean {
+  return interruptsSuppressed && simRunning;
+}
+
 export function selectEncounterRuntimeForDisplay(
   encounter: ActiveEncounterDisplay,
   legacyProgresses: EncounterProgress[],

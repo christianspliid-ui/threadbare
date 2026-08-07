@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest';
 import {
+  isEncounterAutoOpenSuppressed,
   isStepNotificationSupersededByAftermath,
   runEncounterAutoOpenScan,
   selectEncounterRuntimeForNotification,
@@ -209,6 +210,80 @@ describe('encounter auto-open scan (THR-1005)', () => {
 
     expect(opened).toBeNull();
     expect(attempts).toHaveLength(3);
+  });
+});
+
+describe('auto-open suppression vs a stopped clock (THR-1017)', () => {
+  /**
+   * The stacked-modal case, which every THR-1005 pass missed by testing a
+   * cleared screen. `interruptSuppressedUntilTick` is armed as `tick + 1` when a
+   * veil closes, and clears only when `tick` reaches it — but closing a veil
+   * while another interrupt surface is stacked (the opening action-card beat
+   * modal) leaves `useInterruptAutoPause` holding the sim paused, so the tick
+   * never arrives and the window never expires.
+   *
+   * Modelled as the predicate the scan consults, with `simRunning` standing in
+   * for the clock: `running === false` is exactly "no tick is coming".
+   */
+  const armedWindow = true;   // interruptSuppressedUntilTick === tick + 1
+  const noWindow = false;
+
+  it('does not suppress while the sim is paused — the tick that would clear the window can never arrive', () => {
+    // The regression. Before THR-1017 the scan read `interruptsSuppressed`
+    // alone, returned early, and starved the queued aftermath for as long as
+    // the player left the opening modal stacked.
+    expect(isEncounterAutoOpenSuppressed(armedWindow, false)).toBe(false);
+  });
+
+  it('still suppresses while the sim runs, so the one-tick debounce is unchanged on a cleared screen', () => {
+    expect(isEncounterAutoOpenSuppressed(armedWindow, true)).toBe(true);
+  });
+
+  it('never suppresses when no window is armed, paused or running', () => {
+    expect(isEncounterAutoOpenSuppressed(noWindow, true)).toBe(false);
+    expect(isEncounterAutoOpenSuppressed(noWindow, false)).toBe(false);
+  });
+
+  it('lets the scan reach a queued aftermath behind a stacked modal with the clock frozen', () => {
+    // End-to-end shape of the live repro: sim paused by the stacked beat modal,
+    // suppression armed by the step veil the player just closed, aftermath
+    // queued behind two spent steps. The scan must run and reach it.
+    const queue = [
+      { id: 'n_step1', kind: 'encounter', stepIndex: 0, resolved: false, autoResolveTick: null },
+      { id: 'n_step2', kind: 'encounter', stepIndex: 1, resolved: false, autoResolveTick: null },
+      { id: 'n_aftermath', kind: 'aftermath', stepIndex: 2, resolved: false, autoResolveTick: null },
+    ] as any[];
+
+    const simRunning = false;                     // paused by the stacked modal
+    expect(isEncounterAutoOpenSuppressed(armedWindow, simRunning)).toBe(false);
+
+    const attempts: string[] = [];
+    const opened = runEncounterAutoOpenScan(queue, null, (notif: any) => {
+      attempts.push(notif.id);
+      return notif.kind === 'aftermath';
+    });
+
+    expect(opened).toBe('n_aftermath');
+    expect(attempts).toEqual(['n_step1', 'n_step2', 'n_aftermath']);
+  });
+
+  it('keeps the just-closed record held back by id, not by the clock', () => {
+    // Why dropping the tick window is safe: the precise half of the guard is
+    // `suppressedEncounterNotificationId`, which is keyed on the notification
+    // id and is therefore unaffected by a stopped clock.
+    const queue = [
+      { id: 'n_justClosed', kind: 'encounter', stepIndex: 0, resolved: false, autoResolveTick: null },
+      { id: 'n_aftermath', kind: 'aftermath', stepIndex: 1, resolved: false, autoResolveTick: null },
+    ] as any[];
+
+    const attempts: string[] = [];
+    const opened = runEncounterAutoOpenScan(queue, 'n_justClosed', (notif: any) => {
+      attempts.push(notif.id);
+      return true;
+    });
+
+    expect(opened).toBe('n_aftermath');
+    expect(attempts).toEqual(['n_aftermath']);
   });
 });
 
