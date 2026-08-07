@@ -9,9 +9,11 @@ import {
   classifyMergeState,
   parseConflictFiles,
   parseHoldMarker,
+  summarizeRequiredChecks,
   type ArmedPrInput,
   type ArmedPrRecord,
   type MergeStateStatus,
+  type RollupCheckNode,
 } from "../check-armed-prs";
 
 const NOW_MS = new Date("2026-07-31T14:00:00Z").getTime();
@@ -29,8 +31,25 @@ function pr(overrides: Partial<ArmedPrRecord> = {}): ArmedPrRecord {
     clockStartMs: NOW_MS - 60 * 1000,
     headRefOid: `oid${number}`,
     holdReason: null,
+    // Green required checks unless a test says otherwise — the pre-THR-1020
+    // behaviour every existing case was written against.
+    checkConclusion: "passing",
     ...overrides,
   };
+}
+
+/** A PR whose required checks are red (THR-1020). */
+function redPr(overrides: Partial<ArmedPrRecord> = {}): ArmedPrRecord {
+  return pr({ checkConclusion: "failing", ...overrides });
+}
+
+/** One `CheckRun` rollup node, in the shape `gh pr list --json` returns. */
+function checkRun(
+  name: string,
+  conclusion: string | null,
+  status = "COMPLETED",
+): RollupCheckNode {
+  return { name, conclusion, status };
 }
 
 /** An unarmed PR — the set THR-930 made visible. */
@@ -595,6 +614,230 @@ describe("classifyArmedPrs — an unarmed PR is not waiting on checks (THR-985)"
 
   it("leaves the no-PRs summary exactly as it was", () => {
     expect(classifyArmedPrs(input({ prs: [] })).summary).toBe("No PRs are waiting to merge.");
+  });
+});
+
+describe("summarizeRequiredChecks — reading the rollup (THR-1020)", () => {
+  // Verbatim shape captured from `gh pr list --json statusCheckRollup` on
+  // 2026-08-07, PR #1335: red required check, green non-required ones.
+  const LIVE_1335: RollupCheckNode[] = [
+    checkRun("Detect code changes", "SUCCESS"),
+    checkRun("Docs gates", "SKIPPED"),
+    checkRun("Test · Typecheck · Build", "FAILURE"),
+    { name: "Vercel", conclusion: "SUCCESS", status: null },
+    checkRun("Vercel Preview Comments", "SUCCESS"),
+  ];
+
+  it("reports failing when a required check is red", () => {
+    expect(summarizeRequiredChecks(LIVE_1335)).toBe("failing");
+  });
+
+  it("reports failing when the OTHER required check is red", () => {
+    // PR #1334 on the same board: docs-only, so the code gate skipped and
+    // `Docs gates` is the one that ran — and failed.
+    expect(
+      summarizeRequiredChecks([
+        checkRun("Detect code changes", "SUCCESS"),
+        checkRun("Docs gates", "FAILURE"),
+        checkRun("Test · Typecheck · Build", "SKIPPED"),
+      ]),
+    ).toBe("failing");
+  });
+
+  it("ignores a red NON-required check", () => {
+    // Vercel is deliberately not a required check and must not become one
+    // (CLAUDE.md § Definition of Done). A failed deploy is a notification
+    // concern; reading it here would report a mergeable PR as unmergeable.
+    expect(
+      summarizeRequiredChecks([
+        checkRun("Test · Typecheck · Build", "SUCCESS"),
+        checkRun("Docs gates", "SUCCESS"),
+        { name: "Vercel", conclusion: "FAILURE", status: null },
+      ]),
+    ).toBe("passing");
+  });
+
+  it("reports skipped, not passing, when a required check was skipped", () => {
+    // A skip satisfies branch protection without inspecting anything — the
+    // shape THR-768 found a merge gate going vacuous through. `passing` would
+    // erase the distinction between "proven green" and "nothing looked".
+    expect(
+      summarizeRequiredChecks([
+        checkRun("Test · Typecheck · Build", "SKIPPED"),
+        checkRun("Docs gates", "SUCCESS"),
+      ]),
+    ).toBe("skipped");
+  });
+
+  it("reports pending while a required check is still running", () => {
+    expect(
+      summarizeRequiredChecks([
+        checkRun("Test · Typecheck · Build", null, "IN_PROGRESS"),
+        checkRun("Docs gates", "SUCCESS"),
+      ]),
+    ).toBe("pending");
+  });
+
+  it("ranks failing above pending when both are present", () => {
+    expect(
+      summarizeRequiredChecks([
+        checkRun("Test · Typecheck · Build", "FAILURE"),
+        checkRun("Docs gates", null, "QUEUED"),
+      ]),
+    ).toBe("failing");
+  });
+
+  it("treats CANCELLED as red — it does not satisfy protection (THR-1013)", () => {
+    expect(summarizeRequiredChecks([checkRun("Test · Typecheck · Build", "CANCELLED")])).toBe(
+      "failing",
+    );
+  });
+
+  it("returns unknown — never failing — when no required check is present", () => {
+    // Checks that have not started yet. Escalating here would fire on every PR
+    // in its opening minutes and be trained away within a day.
+    expect(summarizeRequiredChecks([checkRun("Vercel", "SUCCESS")])).toBe("unknown");
+    expect(summarizeRequiredChecks([])).toBe("unknown");
+  });
+
+  it("returns unknown for an unreadable rollup", () => {
+    expect(summarizeRequiredChecks(null)).toBe("unknown");
+    expect(summarizeRequiredChecks(undefined)).toBe("unknown");
+  });
+
+  it("returns unknown for an enum member GitHub added since this was written", () => {
+    expect(summarizeRequiredChecks([checkRun("Docs gates", "SOME_FUTURE_STATE")])).toBe("unknown");
+  });
+
+  it("reads a StatusContext node, which carries `context`/`state` and no status", () => {
+    expect(summarizeRequiredChecks([{ context: "Docs gates", state: "FAILURE" }])).toBe("failing");
+  });
+});
+
+describe("classifyArmedPrs — the THR-1020 defect (merge state is half the diagnosis)", () => {
+  it("names BOTH blockers on a conflicted PR that is also red", () => {
+    // Impediment #466: PR #1327 reported `conflicted`/`abandoned` at 18h with
+    // one conflicting file — reading as a one-file hand-resolve. It was two
+    // independent blockers, and the second cost a second diagnosis pass.
+    const result = classifyArmedPrs(
+      input({
+        prs: [redPr({ number: 1327, mergeStateStatus: "DIRTY", clockStartMs: minutesAgo(120) })],
+        conflictFilesFor: () => ["Docs/project-status.md"],
+      }),
+    );
+
+    expect(result.verdict).toBe("conflicted");
+    expect(result.summary).toContain("Docs/project-status.md");
+    expect(result.summary).toContain("failing required check");
+    expect(result.summary).toContain("not the whole diagnosis");
+    expect(result.prs[0].checkConclusion).toBe("failing");
+  });
+
+  it("keeps a red conflicted PR in the conflicted class, with its age tiers intact", () => {
+    // `failing` must not displace `conflicted` — the escalate/abandoned tiers
+    // live on the conflict, and losing them would trade one blind spot for
+    // another.
+    const result = classifyArmedPrs(
+      input({ prs: [redPr({ mergeStateStatus: "DIRTY", clockStartMs: hoursAgo(13) })] }),
+    );
+
+    expect(result.prs[0].klass).toBe("conflicted");
+    expect(result.prs[0].abandoned).toBe(true);
+    expect(result.verdict).toBe("abandoned");
+    expect(result.summary).toContain("failing required check");
+  });
+
+  it("does not add the red clause to a conflicted PR whose checks are green", () => {
+    const result = classifyArmedPrs(
+      input({ prs: [pr({ mergeStateStatus: "DIRTY", clockStartMs: minutesAgo(120) })] }),
+    );
+
+    expect(result.verdict).toBe("conflicted");
+    expect(result.summary).not.toContain("failing required check");
+  });
+
+  it("classifies an armed BLOCKED PR with a red check as failing, not waiting", () => {
+    // Impediment #402: PR #1264 sat ~100 minutes reading as shipped from every
+    // surface except the check rollup. `waiting` asserts "auto-merge fires on
+    // green" — a claim the probe had no field capable of falsifying.
+    const result = classifyArmedPrs(
+      input({ prs: [redPr({ number: 1264, mergeStateStatus: "BLOCKED" })] }),
+    );
+
+    expect(result.prs[0].klass).toBe("failing");
+    expect(result.verdict).toBe("failing");
+    expect(result.counts).toMatchObject({ failing: 1, waiting: 0 });
+    expect(result.needsSession).toBe(true);
+    expect(result.needsChristian).toBe(false);
+    expect(result.summary).not.toContain("will merge on green");
+  });
+
+  it("says a failing PR reads as shipped everywhere except the rollup", () => {
+    const result = classifyArmedPrs(input({ prs: [redPr({ mergeStateStatus: "CLEAN" })] }));
+
+    expect(result.summary).toContain("failing required check");
+    expect(result.summary).toContain("check rollup");
+  });
+
+  it("classifies an UNARMED red PR as failing too, and labels it unarmed", () => {
+    // An unarmed red PR is doubly stuck. `idle` alone would understate it.
+    const result = classifyArmedPrs(
+      input({ prs: [redPr({ number: 1300, armed: false, mergeStateStatus: "CLEAN" })] }),
+    );
+
+    expect(result.prs[0].klass).toBe("failing");
+    expect(result.summary).toContain("#1300 (unarmed)");
+  });
+
+  it("leaves a green armed PR waiting — the pre-THR-1020 behaviour is unchanged", () => {
+    const result = classifyArmedPrs(input({ prs: [pr({ mergeStateStatus: "BLOCKED" })] }));
+
+    expect(result.prs[0].klass).toBe("waiting");
+    expect(result.verdict).toBe("healthy");
+    expect(result.summary).toContain("will merge on green");
+  });
+
+  it("does not make a pending, skipped, or unknown check into a failure", () => {
+    for (const conclusion of ["pending", "skipped", "unknown"] as const) {
+      const result = classifyArmedPrs(
+        input({ prs: [pr({ mergeStateStatus: "BLOCKED", checkConclusion: conclusion })] }),
+      );
+      expect(result.prs[0].klass).toBe("waiting");
+      expect(result.verdict).toBe("healthy");
+    }
+  });
+
+  it("keeps a held PR held even when its checks are red", () => {
+    // A hold outranks every mechanical state (THR-985). A red check on a PR
+    // nobody intends to merge is not a stall to escalate.
+    const result = classifyArmedPrs(
+      input({
+        prs: [
+          heldPr({ number: 1114, mergeStateStatus: "DIRTY", checkConclusion: "failing" }),
+        ],
+      }),
+    );
+
+    expect(result.prs[0].klass).toBe("held");
+    expect(result.verdict).toBe("held");
+    expect(result.needsChristian).toBe(false);
+    expect(result.needsSession).toBe(false);
+  });
+
+  it("ranks a conflict above a red check when both PRs are on the board", () => {
+    // Verdict precedence runs worst-first, and a conflict carries the tier that
+    // eventually reaches Christian.
+    const result = classifyArmedPrs(
+      input({
+        prs: [
+          redPr({ number: 1264, mergeStateStatus: "BLOCKED" }),
+          pr({ number: 1327, mergeStateStatus: "DIRTY", clockStartMs: minutesAgo(120) }),
+        ],
+      }),
+    );
+
+    expect(result.verdict).toBe("conflicted");
+    expect(result.counts).toMatchObject({ conflicted: 1, failing: 1 });
   });
 });
 

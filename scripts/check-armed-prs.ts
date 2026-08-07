@@ -48,7 +48,8 @@
  * | `held`          | a `Hold:` marker in the PR body (any merge state) | nobody — it is parked on purpose |
  * | `drainable`     | `BEHIND`                       | the sweep — `gh pr update-branch`, **armed only** |
  * | `conflicted`    | `DIRTY`                        | **a session** — `git merge origin/main`, resolve, push |
- * | `waiting`       | `CLEAN` `BLOCKED` `HAS_HOOKS` `UNSTABLE`, **armed** | nobody; auto-merge fires on green |
+ * | `failing`       | a green-ish merge state + a **red required check** | **a session** — read the check, push a fix |
+ * | `waiting`       | `CLEAN` `BLOCKED` `HAS_HOOKS` `UNSTABLE`, **armed**, checks not red | nobody; auto-merge fires on green |
  * | `idle`          | the same states, **unarmed**   | nobody; nothing is waiting on it |
  * | `indeterminate` | `UNKNOWN` `DRAFT`              | nobody; re-query (see below) |
  *
@@ -106,6 +107,50 @@
  * held, so nothing was waiting on it and it would not merge on anything. Any
  * unarmed PR in a green-ish state is `idle`: open, mergeable, and going nowhere
  * until someone arms it.
+ *
+ * ## The check rollup — merge state is not the whole diagnosis (THR-1020)
+ *
+ * Every fix above widened *which PRs* the probe looked at or *how* it read their
+ * merge state. All of them read merge state **only**, and a PR has two
+ * independent ways to be unmergeable: a conflict, and a red required check. The
+ * probe could not see the second one by construction — `statusCheckRollup` was
+ * absent from its field list — so it reported half a diagnosis with total
+ * confidence. Two measured shapes:
+ *
+ * * **A conflict that is not the whole story.** Impediment #466 (2026-08-07):
+ *   PR #1327 reported `conflicted` / `abandoned` at 18h with
+ *   `conflictFiles: [Docs/project-status.md]`, which reads as a one-file
+ *   hand-resolve. It was two independent blockers — the conflict *and* a red
+ *   `Test · Typecheck · Build`. A session that trusts the row resolves the
+ *   conflict, pushes, and leaves an armed PR that is now `MERGEABLE` and still
+ *   blocked; the next sweep re-reports it under a *different* verdict and the PR
+ *   keeps ageing while looking freshly actionable every hour.
+ * * **A red PR reading as shipped.** Impediment #402 (2026-08-02, THR-969 /
+ *   PR #1264): an armed PR sat ~100 minutes reading as shipped from every
+ *   surface except the check rollup. `BLOCKED` classifies `waiting`, and
+ *   `waiting` asserts *"nobody needs to do anything; auto-merge fires on green"*
+ *   — a claim this probe had no field capable of falsifying.
+ *
+ * So the rollup is read, reduced to a per-PR `checkConclusion`, and used twice:
+ * a red PR in an otherwise-waiting state classifies **`failing`** rather than
+ * `waiting`, and a `conflicted` PR that is *also* red says so in the same row.
+ * `conflictFiles` is a lower bound on what is wrong, never the whole diagnosis,
+ * and the output now words it that way.
+ *
+ * **Only the checks branch protection actually requires are consulted** — see
+ * `REQUIRED_CHECK_NAMES`. Reading every context would make a failed `Vercel`
+ * deploy report a PR as unmergeable when it merges fine, and Vercel is
+ * deliberately not a required check and must not become one (CLAUDE.md
+ * § Definition of Done). The allowlist is the mechanism that keeps a
+ * *notification* concern from turning into a *merge-gate* one.
+ *
+ * **Fail-soft runs toward silence here, opposite to `Hold:`, and deliberately.**
+ * A rollup that cannot be read, or that carries no entry for a required check,
+ * yields `unknown` — not `failing`. A required check with no rollup entry has
+ * almost always not started yet, and a probe that escalated on that would fire
+ * on every PR in its first minutes and be trained away within a day. The
+ * asymmetry is safe because a genuinely red PR *does* produce an entry: the
+ * escalating signal is the presence of a conclusion, not its absence.
  *
  * ## Naming
  *
@@ -219,6 +264,51 @@ export const ARMED_CONFLICT_FILE_LIMIT = 10;
 export const GH_REPO = "christianspliid-ui/threadbare";
 
 /**
+ * The checks branch protection actually requires on `main` (THR-1020).
+ *
+ * Verified against the live ruleset, which is the sole protection surface since
+ * THR-983 deleted the classic branch-protection rule:
+ * `gh api repos/christianspliid-ui/threadbare/rulesets/15479914 --jq
+ * '[.rules[] | select(.type=="required_status_checks")
+ *   | .parameters.required_status_checks[].context]'`
+ * → `["Docs gates","Test · Typecheck · Build"]`.
+ *
+ * An allowlist rather than "every context in the rollup", because the rollup
+ * also carries checks that are deliberately **not** gates. `Vercel` is the
+ * standing example: a failed deploy is a notification concern, and promoting it
+ * to a merge gate is explicitly forbidden (CLAUDE.md § Definition of Done). A
+ * probe that read the whole rollup would report a PR as unmergeable on a red
+ * Vercel and be wrong every time.
+ *
+ * A name here that no longer exists in the ruleset degrades to `unknown`, never
+ * to `failing` — see `summarizeRequiredChecks`. Keep this in step with the
+ * ruleset; the command above is the check.
+ */
+export const REQUIRED_CHECK_NAMES: readonly string[] = [
+  "Test · Typecheck · Build",
+  "Docs gates",
+];
+
+/**
+ * Rollup conclusions that mean a required check is **red** — the PR cannot
+ * merge until something changes.
+ *
+ * `CANCELLED` is red on purpose (THR-1013): unlike `SKIPPED`, a cancelled check
+ * does *not* satisfy branch protection, so a PR carrying one is blocking rather
+ * than vacuously green. `SKIPPED` is deliberately absent — it satisfies
+ * protection and is the *by-design* result on a docs-only PR.
+ */
+export const CHECK_FAILURE_CONCLUSIONS: readonly string[] = [
+  "FAILURE",
+  "ERROR",
+  "TIMED_OUT",
+  "CANCELLED",
+  "STARTUP_FAILURE",
+  "ACTION_REQUIRED",
+  "STALE",
+];
+
+/**
  * Line-anchored marker declaring a PR deliberately parked (THR-985).
  *
  * Matches a whole line reading `Hold: <reason>` or `Paused: <reason>`, allowing
@@ -257,6 +347,7 @@ export type MergeStateStatus =
 export type ArmedPrClass =
   | "drainable"
   | "conflicted"
+  | "failing"
   | "waiting"
   | "idle"
   | "held"
@@ -266,10 +357,38 @@ export type ArmedPrVerdict =
   | "healthy"
   | "drainable"
   | "conflicted"
+  | "failing"
   | "abandoned"
   | "idle"
   | "held"
   | "unknown";
+
+/**
+ * Worst state across the checks branch protection requires (THR-1020).
+ *
+ * `skipped` is its own value rather than folded into `passing` because the two
+ * are not the same fact. A skip satisfies protection *without having inspected
+ * anything* — the shape THR-768 found a merge gate going vacuous through, and
+ * the one pull-work's closeout refuses to accept on a code PR. On a docs-only
+ * PR it is correct and expected. Reporting it distinguishably lets a reader tell
+ * "proven green" from "nothing looked", which `passing` would erase.
+ */
+export type CheckConclusion = "failing" | "pending" | "unknown" | "skipped" | "passing";
+
+/**
+ * Worst-first precedence for reducing several required checks to one value.
+ *
+ * `skipped` outranks `passing` for the reason on `CheckConclusion`: a PR where
+ * one required check passed and another was skipped is less proven than one
+ * where both passed, and the report should say the weaker thing.
+ */
+const CHECK_CONCLUSION_PRECEDENCE: readonly CheckConclusion[] = [
+  "failing",
+  "pending",
+  "unknown",
+  "skipped",
+  "passing",
+];
 
 export interface ArmedPrRecord {
   number: number;
@@ -301,6 +420,13 @@ export interface ArmedPrRecord {
    * header note on why the fail-soft direction runs toward escalating.
    */
   holdReason: string | null;
+  /**
+   * Worst state across the required checks (THR-1020). Required rather than
+   * optional: a caller that cannot determine it must say `"unknown"` out loud,
+   * because an omitted field defaulting to something benign is exactly the
+   * silence this field was added to end.
+   */
+  checkConclusion: CheckConclusion;
 }
 
 export interface ArmedPrReport {
@@ -319,8 +445,14 @@ export interface ArmedPrReport {
    * Conflicting file names. Populated whenever `mergeStateStatus` is `DIRTY` —
    * including on a `held` PR, because resolving a held PR's conflict is
    * legitimate maintenance even though re-arming it is not.
+   *
+   * **A lower bound on what is wrong, never the whole diagnosis** (THR-1020):
+   * read it alongside `checkConclusion`, which is an independent way for the
+   * same PR to be unmergeable.
    */
   conflictFiles: string[];
+  /** Worst state across the required checks (THR-1020). */
+  checkConclusion: CheckConclusion;
   /** True when a `conflicted` PR is past its escalate tier (armed or unarmed). */
   escalated: boolean;
   /** True when a `conflicted` PR is past its abandoned tier (armed or unarmed). */
@@ -410,6 +542,85 @@ export function parseHoldMarker(body: string | null | undefined): string | null 
   return reason ? reason : null;
 }
 
+/**
+ * One entry from GitHub's `statusCheckRollup`, normalised across its two node
+ * shapes. A `CheckRun` carries `name` / `status` / `conclusion`; a
+ * `StatusContext` carries `context` / `state` and no `status` at all (the
+ * `Vercel` entry is one, and reads `status: null`).
+ */
+export interface RollupCheckNode {
+  name?: string | null;
+  context?: string | null;
+  status?: string | null;
+  conclusion?: string | null;
+  state?: string | null;
+}
+
+/**
+ * Reduce a PR's check rollup to the worst state across the checks branch
+ * protection requires (THR-1020).
+ *
+ * Only names in `REQUIRED_CHECK_NAMES` are consulted — see that constant for
+ * why an allowlist rather than the whole rollup.
+ *
+ * Returns `unknown` when the rollup is unreadable or carries no entry for any
+ * required check, which is the non-escalating direction on purpose: a required
+ * check with no entry has almost always not started yet, and escalating on that
+ * would fire on every PR in its opening minutes. A genuinely red check always
+ * produces an entry, so the escalating signal is a conclusion's presence rather
+ * than its absence.
+ */
+export function summarizeRequiredChecks(
+  nodes: readonly RollupCheckNode[] | null | undefined,
+): CheckConclusion {
+  if (!Array.isArray(nodes)) {
+    return "unknown";
+  }
+
+  const required = nodes.filter((node) => {
+    const name = node.name ?? node.context ?? "";
+    return REQUIRED_CHECK_NAMES.includes(name);
+  });
+
+  if (required.length === 0) {
+    return "unknown";
+  }
+
+  const states = required.map((node): CheckConclusion => {
+    const conclusion = (node.conclusion ?? node.state ?? "").toUpperCase();
+    const status = (node.status ?? "").toUpperCase();
+
+    // A check still running reports no conclusion yet. `StatusContext` nodes
+    // have no `status`, so gate on the conclusion being empty rather than on
+    // the status being COMPLETED, or every one of them would read `pending`.
+    if (conclusion === "" || conclusion === "PENDING" || conclusion === "EXPECTED") {
+      return "pending";
+    }
+    if (status === "QUEUED" || status === "IN_PROGRESS" || status === "WAITING") {
+      return "pending";
+    }
+    if (CHECK_FAILURE_CONCLUSIONS.includes(conclusion)) {
+      return "failing";
+    }
+    if (conclusion === "SKIPPED" || conclusion === "NEUTRAL") {
+      return "skipped";
+    }
+    if (conclusion === "SUCCESS") {
+      return "passing";
+    }
+    // An enum member GitHub added since this was written. Not `failing` — an
+    // unrecognised value is an absence of information, not evidence of red.
+    return "unknown";
+  });
+
+  for (const candidate of CHECK_CONCLUSION_PRECEDENCE) {
+    if (states.includes(candidate)) {
+      return candidate;
+    }
+  }
+  return "unknown";
+}
+
 // ---------------------------------------------------------------------------
 // Classification — pure, dependency-injected, the whole testable surface
 // ---------------------------------------------------------------------------
@@ -448,17 +659,29 @@ export function classifyArmedPrs(input: ArmedPrInput): ArmedPrResult {
     const stateClass = classifyMergeState(pr.mergeStateStatus);
     const held = pr.holdReason !== null;
 
-    // Class precedence (THR-985). A declared hold outranks every mechanical
-    // state: a held PR is not drainable (updating it refreshes a branch nobody
-    // will merge), not conflicted-in-the-actionable-sense (its conflict is
-    // real, but the stall is a decision rather than a defect), and not waiting.
-    // Below that, `waiting` splits on arming — an unarmed PR in a green state
-    // is `idle`, because nothing is waiting on checks that no merge depends on.
+    // Class precedence (THR-985, extended THR-1020). A declared hold outranks
+    // every mechanical state: a held PR is not drainable (updating it refreshes
+    // a branch nobody will merge), not conflicted-in-the-actionable-sense (its
+    // conflict is real, but the stall is a decision rather than a defect), and
+    // not waiting.
+    //
+    // Below that, a `waiting` state splits twice. A red required check makes it
+    // `failing` — `waiting` asserts "nobody needs to do anything; auto-merge
+    // fires on green", and a PR that cannot go green is the one case where that
+    // sentence is a lie (THR-1020, impediment #402). Otherwise it splits on
+    // arming, because an unarmed PR in a green state is `idle`: nothing is
+    // waiting on checks that no merge depends on.
+    //
+    // A `conflicted` PR that is also red deliberately stays `conflicted` rather
+    // than becoming `failing`: it keeps its age tiers, and the two blockers are
+    // reported together in one row instead of one displacing the other.
     const klass: ArmedPrClass = held
       ? "held"
-      : stateClass === "waiting" && !pr.armed
-        ? "idle"
-        : stateClass;
+      : stateClass === "waiting" && pr.checkConclusion === "failing"
+        ? "failing"
+        : stateClass === "waiting" && !pr.armed
+          ? "idle"
+          : stateClass;
 
     const ageMs = Math.max(0, nowMs - pr.clockStartMs);
     // Keyed off the raw merge state, not `klass`, so a held PR still reports
@@ -476,6 +699,7 @@ export function classifyArmedPrs(input: ArmedPrInput): ArmedPrResult {
       armed: pr.armed,
       ageMinutes: Math.round(ageMs / 60000),
       conflictFiles: conflictFiles.slice(0, ARMED_CONFLICT_FILE_LIMIT),
+      checkConclusion: pr.checkConclusion,
       escalated: klass === "conflicted" && ageMs >= escalateMs,
       abandoned: klass === "conflicted" && ageMs >= abandonedMs,
       holdReason: pr.holdReason,
@@ -485,6 +709,7 @@ export function classifyArmedPrs(input: ArmedPrInput): ArmedPrResult {
   const counts: Record<ArmedPrClass, number> = {
     drainable: 0,
     conflicted: 0,
+    failing: 0,
     waiting: 0,
     idle: 0,
     held: 0,
@@ -513,6 +738,24 @@ export function classifyArmedPrs(input: ArmedPrInput): ArmedPrResult {
 
   const abandoned = conflicted.filter((r) => r.abandoned);
 
+  /**
+   * The THR-1020 clause: a conflicted PR that is *also* red. Appended to both
+   * conflict summaries so the second blocker travels with the first instead of
+   * waiting for a later sweep to discover it under a different verdict.
+   */
+  const alsoRed = (rows: ArmedPrReport[]): string => {
+    const red = rows.filter((r) => r.checkConclusion === "failing");
+    if (red.length === 0) {
+      return "";
+    }
+    const names = red.map((r) => `#${r.number}`).join(", ");
+    return (
+      ` The conflict is not the whole diagnosis: ${names} also ${plural(red.length, "has", "have")} ` +
+      `a failing required check. Read the failing check before resolving — clearing the conflict ` +
+      `alone leaves ${plural(red.length, "it", "them")} unmergeable.`
+    );
+  };
+
   // 1. Conflicted past the abandoned threshold. Loudest case: sessions have had
   //    their chance and the stall outlived them.
   if (abandoned.length > 0) {
@@ -523,7 +766,8 @@ export function classifyArmedPrs(input: ArmedPrInput): ArmedPrResult {
       summary:
         `A finished change has been stuck for ${hours} hours and cannot merge on its own: PR #${oldest.number} ` +
         `("${oldest.title}") has a conflict that repeated automated attempts have not cleared. ` +
-        "Nothing is broken on the live site, but that work is not reaching it.",
+        "Nothing is broken on the live site, but that work is not reaching it." +
+        alsoRed(abandoned),
       needsChristian: true,
       needsSession: true,
       updateCandidate,
@@ -547,9 +791,37 @@ export function classifyArmedPrs(input: ArmedPrInput): ArmedPrResult {
       summary:
         `${conflicted.length} open ${plural(conflicted.length, "PR has", "PRs have")} a merge conflict and cannot ` +
         `merge: ${names}. These need a session to run \`git merge origin/main\`, resolve, and push — ` +
-        `\`update-branch\` does not fix a conflict.${files}`,
+        `\`update-branch\` does not fix a conflict.${files}${alsoRed(conflicted)}`,
       needsChristian: false,
       needsSession: conflicted.some((r) => r.escalated),
+      updateCandidate,
+      prs: reports,
+      counts,
+      armedCount,
+      unarmedCount,
+    };
+  }
+
+  // 2b. Red required check, no conflict (THR-1020). Session work for the same
+  //     reason a conflict is: nothing clears it on its own, and the PR would
+  //     otherwise report as "waiting on checks and will merge on green" — the
+  //     sentence impediment #402 recorded an armed PR sitting behind for ~100
+  //     minutes. No age tier: a red conclusion is unambiguous the moment it
+  //     exists, and waiting an interval to say so is the delay being fixed.
+  const failing = reports
+    .filter((r) => r.klass === "failing")
+    .sort((a, b) => b.ageMinutes - a.ageMinutes);
+
+  if (failing.length > 0) {
+    const names = failing.map((r) => `#${r.number}${r.armed ? "" : " (unarmed)"}`).join(", ");
+    return {
+      verdict: "failing",
+      summary:
+        `${failing.length} open ${plural(failing.length, "PR has", "PRs have")} a failing required check and ` +
+        `will not merge on green: ${names}. Auto-merge stays armed and never fires, so ${plural(failing.length, "it reads", "they read")} ` +
+        "as shipped everywhere except the check rollup. A session must read the failing check and push a fix.",
+      needsChristian: false,
+      needsSession: true,
       updateCandidate,
       prs: reports,
       counts,
@@ -725,6 +997,12 @@ interface RawPr {
   autoMergeRequest: { enabledAt: string } | null;
   /** PR description — searched for the `Hold:` marker (THR-985). */
   body: string;
+  /**
+   * Every check context on the head commit (THR-1020). Reduced to the required
+   * ones by `summarizeRequiredChecks`; the field's absence was the whole defect,
+   * so it is read here rather than derived from anything else.
+   */
+  statusCheckRollup: RollupCheckNode[] | null;
 }
 
 /**
@@ -745,7 +1023,7 @@ function listOpenPrs(): RawPr[] | null {
     "--limit",
     "100",
     "--json",
-    "number,title,mergeStateStatus,headRefOid,createdAt,isDraft,autoMergeRequest,body",
+    "number,title,mergeStateStatus,headRefOid,createdAt,isDraft,autoMergeRequest,body,statusCheckRollup",
   ]);
   if (raw === null) {
     return null;
@@ -838,7 +1116,15 @@ function main(): void {
       needsSession: false,
       updateCandidate: null,
       prs: [],
-      counts: { drainable: 0, conflicted: 0, waiting: 0, idle: 0, held: 0, indeterminate: 0 },
+      counts: {
+        drainable: 0,
+        conflicted: 0,
+        failing: 0,
+        waiting: 0,
+        idle: 0,
+        held: 0,
+        indeterminate: 0,
+      },
       armedCount: 0,
       unarmedCount: 0,
     };
@@ -868,6 +1154,11 @@ function main(): void {
           // An absent or unreadable body yields `null` — not held — so the PR
           // escalates as it does today (THR-985 fail-soft direction).
           holdReason: parseHoldMarker(pr.body),
+          // An absent or unreadable rollup yields `unknown` — not `failing` —
+          // so a PR whose checks have not started is not reported as red
+          // (THR-1020 fail-soft direction, opposite to `Hold:` and for the
+          // reason given in the header).
+          checkConclusion: summarizeRequiredChecks(pr.statusCheckRollup),
         };
       }),
     });
@@ -889,10 +1180,19 @@ function main(): void {
     for (const pr of result.prs) {
       const files = pr.conflictFiles.length > 0 ? ` — conflicts: ${pr.conflictFiles.join(", ")}` : "";
       const hold = pr.holdReason !== null ? ` — HELD: ${pr.holdReason}` : "";
+      // Both blockers on one row (THR-1020). A conflicted PR that is also red
+      // must not need a second sweep — under a different verdict — to disclose
+      // its second blocker.
+      const checks =
+        pr.checkConclusion === "failing"
+          ? " — REQUIRED CHECKS FAILING"
+          : pr.checkConclusion === "passing"
+            ? ""
+            : ` — checks: ${pr.checkConclusion}`;
       console.log(
         `[armed-prs]   #${pr.number} ${pr.klass} (${pr.mergeStateStatus}, ` +
           `${pr.armed ? "armed" : "UNARMED"}, ${pr.ageMinutes}m` +
-          `${pr.abandoned ? ", ABANDONED" : pr.escalated ? ", ESCALATED" : ""})${hold}${files}`,
+          `${pr.abandoned ? ", ABANDONED" : pr.escalated ? ", ESCALATED" : ""})${hold}${checks}${files}`,
       );
     }
   }

@@ -1,7 +1,7 @@
 ---
 name: pull-work
 description: Canonical Claude Code pickup workflow for claiming Linear work safely from Ready for Dev.
-last_validated_against: 2026-08-06
+last_validated_against: 2026-08-07
 ---
 
 # Pull Work
@@ -189,22 +189,26 @@ Run the probe — it does the listing, the `UNKNOWN` re-query, and the classific
 npm run check:armed-prs --silent -- --json
 ```
 
-One line of JSON: `{ verdict, summary, needsChristian, needsSession, updateCandidate, prs, counts, armedCount, unarmedCount }`. Each `prs[]` entry carries `armed`, `ageMinutes`, `conflictFiles`, `escalated`, `abandoned`, and `holdReason`. Act on it:
+One line of JSON: `{ verdict, summary, needsChristian, needsSession, updateCandidate, prs, counts, armedCount, unarmedCount }`. Each `prs[]` entry carries `armed`, `ageMinutes`, `conflictFiles`, `checkConclusion`, `escalated`, `abandoned`, and `holdReason`. Act on it:
 
 1. **`updateCandidate` is non-null** → **ignore it and continue** (THR-983). It names the oldest armed `BEHIND` PR, which since 2026-08-02 merges on green without help. Running `gh pr update-branch` is a harmless no-op that costs a CI re-run; do not.
 2. **`verdict: "conflicted"` or `"abandoned"`** → those PRs cannot merge and no sweep action will change that. Each `prs[]` entry carries `conflictFiles`, already computed. If a conflicted PR is **yours**, route to "Closeout — resolving a conflicted closeout-docs PR" below and fix it now. If it is not yours, **report it in the run log with its number and conflicting files** — do not silently continue.
    - **The probe now tells you whether a PR is *held* rather than stuck — you no longer read Linear to find out (THR-985, shipped 2026-08-02).** `DIRTY` + unarmed + old is the signature of a dead PR *and* of one deliberately parked, and `autoMergeRequest: null` never means "should be armed". A PR carrying a line-anchored `Hold: <reason>` marker in its body now classifies **`held`**, never escalates, and reports its `holdReason` — so a `conflicted`/`abandoned` verdict once again means what it says. PR #1114 cost four sessions the hand-derivation this replaces (impediments #393, #406, #411, plus the run that fixed it). **Resolving a held PR's conflict is still fine; re-arming it is not.** Only a conflicted PR with a *null* `holdReason` is worth a Linear round-trip — and if you conclude it is genuinely parked, write the `Hold:` line into the PR body so the next run is told rather than having to re-derive it.
-3. **`needsSession: true`** → the conflict has outlived at least one sweep interval (or, for an unarmed PR, `UNARMED_DIRTY_ESCALATE_HOURS`). Name it in the run report so the next pickup sees it even if this run ends on an unrelated ticket.
-4. **`verdict: "held"` / `"idle"`** → nothing to do and nothing to escalate. `held` means every remaining PR is parked on purpose; `idle` means unarmed, so nothing is waiting on it and it will not merge on green. Continue to Step 1.
-5. **`verdict: "healthy"` / `"drainable"` / `"unknown"`** → nothing conflicted; continue to Step 1.
+3. **`verdict: "failing"`, or any `prs[]` entry with `checkConclusion: "failing"`** → that PR has a **red required check** and will never merge, however clean its merge state reads (THR-1020). Auto-merge stays armed and simply never fires, so the PR reads as shipped from every surface except the rollup — impediment #402 recorded ~100 minutes of exactly that. Read the failing check (`gh pr checks <N>`), then treat it like any other blocker: fix it if the PR is yours, report the number and the check name if it is not. **A transient failure is still a permanent stall** — a flaked `npm ci` or a timed-out test does not retry itself; `gh run rerun <run-id> --failed` is the repair, and doing nothing is not.
+   - **`conflictFiles` is a lower bound, never the whole diagnosis.** A `conflicted` PR that is also red keeps its `conflicted` class and its age tiers, and names both blockers in one row. Resolving the conflict and pushing leaves it `MERGEABLE` and still blocked — which then re-reports under a *different* verdict next hour, looking freshly actionable while ageing (impediment #466, ~15 min of second-pass diagnosis).
+4. **`needsSession: true`** → the conflict has outlived at least one sweep interval (or, for an unarmed PR, `UNARMED_DIRTY_ESCALATE_HOURS`), or a required check is red. Name it in the run report so the next pickup sees it even if this run ends on an unrelated ticket.
+5. **`verdict: "held"` / `"idle"`** → nothing to do and nothing to escalate. `held` means every remaining PR is parked on purpose; `idle` means unarmed, so nothing is waiting on it and it will not merge on green. Continue to Step 1.
+6. **`verdict: "healthy"` / `"drainable"` / `"unknown"`** → nothing conflicted and nothing red; continue to Step 1.
 
-Log one line, and include the conflicted count **and the unarmed count** — a sweep that reports only what it drained is how THR-897 stayed invisible, and one that reports only the armed set is how THR-930 did:
+Log one line, and include the conflicted count, the **failing** count, **and the unarmed count** — a sweep that reports only what it drained is how THR-897 stayed invisible, one that reports only the armed set is how THR-930 did, and one that reports only merge state is how THR-1020 did:
 
 ```
-[pull-work] Step 0.8: <N> open PRs (<A> armed / <U> unarmed; <D> drainable, <C> conflicted, <W> waiting, <I> idle, <H> held), updated #<X> / none drainable — continuing.
+[pull-work] Step 0.8: <N> open PRs (<A> armed / <U> unarmed; <D> drainable, <C> conflicted, <F> failing, <W> waiting, <I> idle, <H> held), updated #<X> / none drainable — continuing.
 ```
 
-**Do not classify on a single read of `mergeStateStatus`.** GitHub computes it lazily, so a first read of `UNKNOWN` means "not computed yet", not "fine" — measured 2026-07-31, PRs #1132 and #1166 each read `DIRTY` and then `UNKNOWN` minutes apart with no intervening push. The probe re-queries `UNKNOWN` up to `ARMED_UNKNOWN_REQUERIES` (3) times before believing it; a hand-rolled sweep must do the same or it will call a conflicted PR healthy on roughly every other run.
+**Do not classify on `mergeStateStatus` alone (THR-1020).** A PR has two independent ways to be unmergeable — a conflict and a red required check — and merge state can see only one of them. A sweep that reads merge state alone reports half a diagnosis with total confidence, which is worse than reporting nothing: the missing half is discovered a sweep later, under a different verdict, by a session that believes the first answer was complete.
+
+**Do not classify on a single read of `mergeStateStatus` either.** GitHub computes it lazily, so a first read of `UNKNOWN` means "not computed yet", not "fine" — measured 2026-07-31, PRs #1132 and #1166 each read `DIRTY` and then `UNKNOWN` minutes apart with no intervening push. The probe re-queries `UNKNOWN` up to `ARMED_UNKNOWN_REQUERIES` (3) times before believing it; a hand-rolled sweep must do the same or it will call a conflicted PR healthy on roughly every other run.
 
 **`needsChristian: true` (verdict `abandoned`) is not a merge-gate failure.** It means a conflict has survived ~12 hourly sessions — or ~24 hours for an unarmed PR — so the stall is systemic rather than waiting its turn. Surface the `summary` verbatim; do not stand down, and do not treat it as a reason to skip pickup.
 
