@@ -1,7 +1,7 @@
 ---
 name: keep-work-flowing-cc
 description: Hourly headless Claude Code PM brief — reads Christian's Discord replies, scans the Linear queue, pings home-tree freshness, and rewrites Design/briefing.md + refreshes Design/user-actions.md. The CC replacement for the Cowork keep-work-flowing task (Pure Claude Code Migration, THR-650). The briefing file IS the inbox; the Discord DM is a two-way channel — a change-gated ping out (step 6), an author-verified read in (step 0).
-last_validated_against: 2026-08-06
+last_validated_against: 2026-08-07
 ---
 
 # Keep Work Flowing (CC)
@@ -199,10 +199,13 @@ npm run check:armed-prs --silent -- --json
 
 **A PR parked on purpose no longer reaches him at all (THR-985).** The probe used to classify on merge state and age alone, which cannot tell a *stuck* PR from a *parked* one — both read conflicted, unarmed and old. PR #1114 was disarmed deliberately on 2026-07-30 (THR-883 blocks its issue; Christian's directive paused content migration), and this brief raised it under `## Needs Christian` **hourly for 78 hours**, asking him to decide something he had already decided. A PR whose body carries a line-anchored `Hold: <reason>` marker now classifies `held` and never sets `needsChristian`. The fail-soft runs one way only: an absent or malformed marker means *not held*, so a genuinely stuck PR still escalates.
 
+**A red required check is a stall too, and merge state cannot see it (THR-1020).** Every fix above widened *which* PRs the probe read or *how* it read their merge state; all of them read merge state only, and a PR has two independent ways to be unmergeable. `statusCheckRollup` was absent from the probe's field list, so a red check was invisible by construction: an armed PR sat ~100 minutes reading as shipped from every surface except the rollup (impediment #402), and a conflicted PR reported one conflicting file while *also* carrying a red gate, costing a second diagnosis pass (impediment #466). Each `prs[]` entry now carries `checkConclusion`, and a red PR in an otherwise-green merge state classifies `failing` instead of `waiting`.
+
 One line of JSON: `{ verdict, summary, needsChristian, needsSession, updateCandidate, prs, counts, armedCount, unarmedCount }`.
 
 - **`needsChristian: true`** (verdict `abandoned` — a conflict older than `ARMED_DIRTY_ABANDONED_HOURS`, or `UNARMED_DIRTY_ABANDONED_HOURS` when unarmed) → put the `summary` verbatim into **`## Needs Christian`**. It is already written in plain language and names no git jargon (THR-608); do not re-word it into merge-state terms.
-- **`needsSession: true` but `needsChristian: false`** → one line under **Freshness** naming the PR numbers and their `conflictFiles`. This is a job for the executor lane, not for Christian — a conflicted PR is a technical verdict an agent can settle, and routing it to him would be the mislabelling THR-608 forbids.
+- **`needsSession: true` but `needsChristian: false`** → one line under **Freshness** naming the PR numbers and their `conflictFiles` and `checkConclusion`. This is a job for the executor lane, not for Christian — a conflicted or red PR is a technical verdict an agent can settle, and routing it to him would be the mislabelling THR-608 forbids.
+- **`verdict: "failing"`** → the same treatment: one line under **Freshness** naming the PRs. Do not raise it to Christian. Reading a failing check and pushing a fix (or rerunning a flaked job) is exactly the technical verdict THR-608 leaves with the agent.
 - **`verdict: "held"`** → **omit entirely.** A decision already taken is not an open question, and re-raising it is the exact defect THR-985 closed. The `holdReason` is in the run log if anyone needs it.
 - **`verdict: "healthy"` / `"drainable"` / `"idle"` / `"unknown"`** → omit, or one line under **Freshness** when something is drainable. A PR that will merge on green is not news, and an `idle` one — unarmed, so nothing is waiting on it — is less so.
 
