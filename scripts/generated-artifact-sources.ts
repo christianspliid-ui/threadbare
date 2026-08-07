@@ -112,6 +112,11 @@ export const STATIC_ARTIFACT_SOURCES: Readonly<Record<string, readonly string[]>
   // Registered by THR-987; THR-807 deliberately left its own gate advisory pending
   // this ticket rather than building a second bespoke one.
   "Docs/plans/INDEX.md": ["Docs/plans/", "scripts/rebuild-plans-index.ts"],
+  // generate-project-status: doc in, doc out — `Docs/status/` on one side and
+  // `Docs/project-status.md` on the other, so the classifier answers "none" and a
+  // closeout PR stays on the docs track, which is the whole point of a closeout.
+  // Registered by THR-1016 as an EXTERNAL_GENERATED_ARTIFACTS member.
+  "Docs/project-status.md": ["Docs/status/", "scripts/generate-project-status.ts"],
 };
 
 /**

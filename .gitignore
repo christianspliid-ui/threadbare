@@ -106,6 +106,28 @@ Design/*
 # that it stays untracked.
 !Design/impediment-dashboard.template.html
 
+# The assembled project-status page — generated, deliberately untracked (THR-1016).
+#
+# Same reasoning as the impediment dashboard above, reached from the other end. The
+# page is assembled by `prebuild` from the one-file-per-entry fragments in
+# `Docs/status/`, which ARE committed and are what a closeout writes. Committing the
+# assembly puts every closeout PR back on one shared anchor: each one inserts at the
+# top of `## Current Focus` and drops the tail to hold the line cap, so any two open
+# closeout PRs conflicted by construction. Measured 2026-08-07 — PRs #1322, #1326,
+# #1327 sat DIRTY for 17, 18 and 20 hours conflicting only in closeout docs, and
+# #1322 had to be hand-resolved twice in one session.
+#
+# No merge driver fixes it: `union` duplicates the rewritten lines (why THR-691
+# excluded this file), `ours` is not built-in and needs `.git/config` no repo file
+# can ship, and GitHub's server-side merge ignores `.gitattributes` outright. Not
+# sharing the write is the only thing that survives all three.
+#
+# Read the entries in `Docs/status/` (one file per ticket, newest-first by name), or
+# run `npm run generate-project-status` for the assembled page. Do NOT `git add -f`
+# it back — `check:generated-freshness` asserts both that the generator still
+# produces it and that it stays untracked.
+Docs/project-status.md
+
 # Python TTS server
 .venv/
 
