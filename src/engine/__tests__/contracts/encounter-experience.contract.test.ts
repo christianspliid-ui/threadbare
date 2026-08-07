@@ -13,6 +13,7 @@ import { initializeGameState, MAP_SIZE_PRESETS } from '../../gameInit';
 import { runTick, resetDecisionCache, resetEventCounter } from '../../orchestrator';
 import { createBalancedCosmology } from '../../cosmology';
 import { generateArchetypes } from '../../ascendant';
+import { WORLD_SIM_TEST_TIMEOUT_MS } from '../../../testing/testTimeouts';
 
 const AGENT_ID = 'actor.contract';
 
@@ -147,7 +148,7 @@ function makeTemplate(id: string, overrides: Partial<UnifiedActionTemplate> = {}
   };
 }
 
-describe('encounter-experience contract', { timeout: 120000 }, () => {
+describe('encounter-experience contract', { timeout: WORLD_SIM_TEST_TIMEOUT_MS }, () => {
   beforeEach(() => {
     clearTraces();
     enableTracing();

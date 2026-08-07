@@ -18,6 +18,7 @@ import { recalcVisibility, collectLOSSources } from '../visibility';
 import type { GameState } from '../../types/gameState';
 import type { CosmologyProfile, HexTile, TerrainType } from '../../types/index';
 import { SPHERE_NAMES } from '../../types/index';
+import { WORLD_SIM_TEST_TIMEOUT_MS } from '../../testing/testTimeouts';
 
 // ─── Helpers ──────────────────────────────────────────────────
 
@@ -139,7 +140,7 @@ function createTestGameState(): GameState {
 
 // ─── Tests ────────────────────────────────────────────────────
 
-describe('trace buffer integration', { timeout: 120000 }, () => {
+describe('trace buffer integration', { timeout: WORLD_SIM_TEST_TIMEOUT_MS }, () => {
   let state: GameState;
 
   beforeEach(() => {

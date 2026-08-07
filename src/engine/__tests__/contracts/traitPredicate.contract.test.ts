@@ -36,6 +36,7 @@ import { collectGrantedTraits } from '../../effects/effectQueries';
 import { buildAmbitionAgentSnapshot } from '../../ambitionTick';
 import { passesEligibility } from '../../ambitionSelection';
 import { evaluateGraphCondition } from '../../graphConditions';
+import { HEAVY_IMPORT_TEST_TIMEOUT_MS } from '../../../testing/testTimeouts';
 import { assignTrait, reinforceTrait } from '../../traits';
 
 // ─── Fixtures ───────────────────────────────────────────────────
@@ -186,7 +187,10 @@ async function filterOne(templateId: string, graph: WorldGraph): Promise<number>
 }
 
 describe('site 1 — encounterFilterPipeline trait gate', () => {
-  it('PRESERVED: matches on trait node id', async () => {
+  // First case in the file, so it pays the one-time dynamic import of the filter
+  // pipeline (~2.1s measured; every sibling below is 0–1ms). The timeout is a hang
+  // detector for that import, not a budget for the assertion (THR-1015).
+  it('PRESERVED: matches on trait node id', { timeout: HEAVY_IMPORT_TEST_TIMEOUT_MS }, async () => {
     expect(await filterOne('tmpl-requires-id', withTrait(baseGraph(), 'trait.mastery.smithing'))).toBe(1);
   });
 
