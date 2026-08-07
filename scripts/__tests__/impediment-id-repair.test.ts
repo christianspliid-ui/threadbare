@@ -224,6 +224,47 @@ describe('planRepairs — a clean log', () => {
   });
 });
 
+describe('which row keeps the number (impediment #460 rule 1)', () => {
+  // The merge placed the BRANCH's row first and main's second. File order says
+  // keep the first; publication says keep main's, because it is already out in
+  // the world and may be cited. Impediment #460 records applying the file-order
+  // advice on PR #1327 and having to reverse it.
+  const branchRow = row('452', 1, DIFFERENT_A);
+  const publishedRow = row('452', 1, DIFFERENT_B);
+  const markdown = log(branchRow, publishedRow);
+
+  it('keeps the number on the published row even when it is second in the file', () => {
+    const plan = planRepairs(markdown, { publishedRows: new Set([publishedRow.trim()]) });
+    const [collision] = plan.plans;
+
+    expect(collision.keptBecause).toBe('published');
+    // Line 4 is the published row; line 3 is the branch-only one that must move.
+    expect(collision.keptLine).toBe(4);
+    expect(collision.renumbered).toEqual([{ line: 3, oldNum: '452', newNum: '453' }]);
+
+    const after = parseImpedimentLog(applyRepairs(markdown, plan));
+    expect(after.entries.find((e) => e.num === '452')?.description).toContain('Linear save_issue');
+  });
+
+  it('is falsified by the file-order fallback, which keeps the WRONG row', () => {
+    // The same input with publication unknown produces the opposite answer — so
+    // the assertion above is testing the publication rule, not a coincidence.
+    const plan = planRepairs(markdown);
+    const [collision] = plan.plans;
+
+    expect(collision.keptBecause).toBe('file-order');
+    expect(collision.keptLine).toBe(3);
+    expect(collision.renumbered).toEqual([{ line: 4, oldNum: '452', newNum: '453' }]);
+  });
+
+  it('falls back to file order when no colliding row is published', () => {
+    // Both rows are branch-only — nothing is out in the world, so there is no
+    // publication signal to follow and first-wins is as good as anything.
+    const plan = planRepairs(markdown, { publishedRows: new Set(['| 1 | 1 | unrelated |']) });
+    expect(plan.plans[0].keptBecause).toBe('file-order');
+  });
+});
+
 describe('three-way collisions', () => {
   it('renumbers every later row, allocating distinct ids', () => {
     const markdown = log(

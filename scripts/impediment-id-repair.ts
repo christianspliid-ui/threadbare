@@ -70,6 +70,32 @@
  * friction, which a later reader can merge by hand, rather than one row where an
  * impediment used to be.
  *
+ * ## Which row keeps the number: published, not first (impediment #460 rule 1)
+ *
+ * `check:impediment-ids` has always printed *"keep the number on the row that
+ * appears FIRST in the file"*, and after a union merge that advice is **wrong**:
+ * file order is a merge-order artifact with no meaning. The rule that carries
+ * meaning is **publication**. A row already on `origin/main` is out in the world
+ * and may be cited; a row that exists only on this branch has never appeared
+ * anywhere else, so moving it costs nothing.
+ *
+ * So {@link planRepairs} reads the log as of `origin/main` and keeps the number on
+ * a **published** row, renumbering the branch-only ones — regardless of which side
+ * the merge happened to place first. It falls back to file order only when the
+ * distinction cannot be drawn (no git, or every colliding row is branch-only).
+ *
+ * This mattered enough to be logged three times: impediment #460 records applying
+ * the printed advice on PR #1327 and having to reverse it, and notes that the gate
+ * goes green either way, so nothing catches the wrong direction. Automating the
+ * wrong direction would have been worse than the manual pass it replaces.
+ *
+ * **Its rule 2 is not solved here.** Two *concurrent* branches each repairing in
+ * isolation will still allocate the same next-free id, because neither can see the
+ * other's unmerged rows; the second to merge re-collides. Allocation here is above
+ * the max across `origin/main` *and* the working tree, which is the most a
+ * single-branch tool can do — the run says so in its output rather than implying
+ * the collision class is closed.
+ *
  * ## Cross-references are reported, never rewritten
  *
  * A renumber keeps the original number on the row that appears **first**, so every
@@ -80,6 +106,7 @@
  * THR-1018's Done-when 3 without silently repointing prose at the wrong entry.
  */
 
+import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -136,6 +163,13 @@ export type CollisionPlan = {
   similarity: number;
   /** 1-indexed source line of the row that keeps the number. */
   keptLine: number;
+  /**
+   * Why that row kept it. `published` means it was found on `origin/main` and may
+   * already be cited (impediment #460 rule 1); `file-order` is the fallback when
+   * publication could not be determined, and is worth surfacing because it is the
+   * weaker basis.
+   */
+  keptBecause: "published" | "file-order";
   /**
    * Dedupe only: the line whose *text* survives, which is not always `keptLine` —
    * a count bump leaves the richer variant later in the file, and the repair keeps
@@ -212,6 +246,35 @@ function richest(group: ImpedimentEntry[]): ImpedimentEntry {
   )[0];
 }
 
+/**
+ * The impediment log as of `origin/main`, as a set of trimmed row lines — the
+ * "already published" oracle for {@link planRepairs}.
+ *
+ * Uses `execFileSync` with an argument array rather than a shell string on purpose:
+ * MSYS rewrites anything that looks like a path inside `git show <rev>:<path>` when
+ * it goes through a shell, silently yielding an empty read on Windows. Returns
+ * `null` — not an empty set — when the read fails, so the caller can tell "nothing
+ * is published" apart from "publication is unknown" and fall back rather than
+ * renumbering every row it should have kept.
+ */
+export function readPublishedRows(repoRoot: string, ref = "origin/main"): Set<string> | null {
+  try {
+    const raw = execFileSync("git", ["show", `${ref}:Docs/impediments.md`], {
+      cwd: repoRoot,
+      encoding: "utf8",
+      maxBuffer: 64 * 1024 * 1024,
+      stdio: ["ignore", "pipe", "ignore"],
+    });
+    const rows = raw
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter((line) => line.startsWith("|"));
+    return rows.length > 0 ? new Set(rows) : null;
+  } catch {
+    return null; // Fail-soft (NFP #4): no git, no remote, or a fresh clone.
+  }
+}
+
 /** Highest similarity between any two rows in the group — the classification signal. */
 function peakSimilarity(group: ImpedimentEntry[]): number {
   let peak = 0;
@@ -227,9 +290,22 @@ function peakSimilarity(group: ImpedimentEntry[]): number {
  * Classifies every collision and allocates replacement numbers, without touching
  * the markdown. Pure, so the classification is testable independently of the edit.
  */
-export function planRepairs(markdown: string): RepairPlan {
+export function planRepairs(
+  markdown: string,
+  options: {
+    /**
+     * Trimmed row lines already on `origin/main` — see {@link readPublishedRows}.
+     * `null`/omitted means publication is unknown and file order is used instead.
+     */
+    publishedRows?: Set<string> | null;
+  } = {},
+): RepairPlan {
   const { entries, duplicateNums } = parseImpedimentLog(markdown);
   const tableEntries = entries.filter((entry) => entry.form === "table");
+  const sourceLines = markdown.split(/\r?\n/);
+  const published = options.publishedRows ?? null;
+  const isPublished = (entry: ImpedimentEntry): boolean =>
+    published !== null && published.has((sourceLines[entry.line - 1] ?? "").trim());
 
   const claimed = new Set(tableEntries.map((entry) => entry.num));
   const numeric = tableEntries
@@ -272,6 +348,7 @@ export function planRepairs(markdown: string): RepairPlan {
         // variant supplied its text, so the log's chronological order is
         // untouched by the repair.
         keptLine: group[0].line,
+        keptBecause: "file-order",
         donorLine: keeper.line,
         removed: dropped.map((entry) => ({ line: entry.line, text: "" })),
         resolvedCount:
@@ -282,16 +359,23 @@ export function planRepairs(markdown: string): RepairPlan {
       continue;
     }
 
+    // Impediment #460 rule 1: publication decides, not file order. A row already
+    // on origin/main may be cited; a branch-only row has never existed elsewhere.
+    const publishedRows = group.filter(isPublished);
+    const keeper = publishedRows.length > 0 ? publishedRows[0] : group[0];
+    const movers = group.filter((entry) => entry.line !== keeper.line);
+
     plans.push({
       num: duplicate.num,
       kind: "renumber",
       similarity: peak,
-      keptLine: group[0].line,
+      keptLine: keeper.line,
+      keptBecause: publishedRows.length > 0 ? "published" : "file-order",
       donorLine: null,
       removed: [],
       resolvedCount: null,
       countRule: null,
-      renumbered: group.slice(1).map((entry) => ({
+      renumbered: movers.map((entry) => ({
         line: entry.line,
         oldNum: entry.num,
         newNum: allocate(),
@@ -455,12 +539,16 @@ export function findCrossReferences(repoRoot: string, nums: string[]): CrossRefe
       // A table row in the log is an entry, not a reference to one.
       if (line.trimStart().startsWith("|")) continue;
 
-      for (const match of line.matchAll(/#(\d+)\b/g)) {
-        if (!wanted.has(match[1])) continue;
+      for (const match of line.matchAll(/(\S+\s+)?#(\d+)\b/g)) {
+        if (!wanted.has(match[2])) continue;
+        // A bare `#NNN` token is not necessarily an impediment id — `PR #1327`
+        // and `issue #45` are the common false positives, and reporting them
+        // trains the reader to skim the list.
+        if (/\b(PR|pull request|issue|commit)\s+$/i.test(match[1] ?? "")) continue;
         found.push({
           file: path.relative(repoRoot, file).replaceAll("\\", "/"),
           line: index + 1,
-          num: match[1],
+          num: match[2],
           text: line.trim().slice(0, 160),
         });
       }

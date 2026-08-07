@@ -84,6 +84,7 @@ import {
   attachRemovedText,
   findCrossReferences,
   planRepairs,
+  readPublishedRows,
   type RepairPlan,
 } from "./impediment-id-repair.ts";
 
@@ -231,6 +232,12 @@ function reportRepair(plan: RepairPlan, repoRoot: string): void {
     console.error(
       `    #${collision.num} — RENUMBER (${confidence}): different impediments sharing an id.`,
     );
+    console.error(
+      collision.keptBecause === "published"
+        ? `      Kept the number on line ${collision.keptLine} — that row is already on origin/main and may be cited (#460 rule 1).`
+        : `      Kept the number on line ${collision.keptLine} by FILE ORDER — could not read origin/main, so publication is unknown.\n` +
+            `      Check by hand that the row keeping the number is the published one; file order after a union merge is a merge artifact.`,
+    );
     for (const move of collision.renumbered) {
       console.error(`      line ${move.line}: #${move.oldNum} -> #${move.newNum}`);
     }
@@ -257,6 +264,18 @@ function reportRepair(plan: RepairPlan, repoRoot: string): void {
       console.error(`    ${reference.file}:${reference.line}  #${reference.num}`);
       console.error(`      ${reference.text}`);
     }
+  }
+
+  if (renumberedNums.length > 0) {
+    console.error(
+      [
+        "",
+        "  Still your problem (#460 rule 2): ids were allocated above the highest number on",
+        "  origin/main and in this tree, which cannot see another in-flight branch's unmerged",
+        "  rows. If a second branch repairs concurrently it will pick the same next-free id and",
+        "  whichever merges second re-collides — on a PR whose author touched neither row.",
+      ].join("\n"),
+    );
   }
 
   console.error("\n  Now regenerate the dashboard: npm run generate-impediment-dashboard");
@@ -317,7 +336,9 @@ function main(): void {
     // The repair only ever touches numbering, so a population failure — a dropped
     // or unparsed entry — is a different defect and must not be papered over by a
     // successful renumber. Report both, and stay red on the one --fix cannot fix.
-    const plan = attachRemovedText(markdown, planRepairs(markdown));
+    // Publication, not file order, decides which row keeps the number (#460 rule 1).
+    const publishedRows = readPublishedRows(REPO_ROOT);
+    const plan = attachRemovedText(markdown, planRepairs(markdown, { publishedRows }));
     fs.writeFileSync(IMPEDIMENTS_PATH, applyRepairs(markdown, plan), "utf8");
     reportRepair(plan, REPO_ROOT);
 
