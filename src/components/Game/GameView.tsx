@@ -129,6 +129,7 @@ import { DivineReceiptModal } from './DivineReceiptModal';
 import {
   buildActiveEncounterDisplayFromLegacyProgress,
   buildActiveEncounterDisplayFromUnifiedAction,
+  isEncounterAutoOpenSuppressed,
   isStepNotificationSupersededByAftermath,
   runEncounterAutoOpenScan,
   type ActiveEncounterDisplay,
@@ -3155,8 +3156,12 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   // keeps trying past a notification that declines to open, so one stale record
   // cannot starve the beats behind it (THR-1005).
   // Pause is handled by the central interrupt auto-pause (useInterruptAutoPause below)
+  // THR-1017: the suppression window is gated on `running` here — a paused sim
+  // can never reach the tick that clears it, so behind a stacked modal this
+  // scan would bail forever and strand the aftermath. See
+  // `isEncounterAutoOpenSuppressed` for the full mechanism.
   useEffect(() => {
-    if (interruptsSuppressed) return;
+    if (isEncounterAutoOpenSuppressed(interruptsSuppressed, running)) return;
     // Don't auto-open tiered encounters while a premonition modal is active —
     // compulsion handles encounter selection for that agent
     if (activePremonition) return;
@@ -3174,7 +3179,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       suppressedEncounterNotificationId.current,
       handleOpenEncounterFromNotification,
     );
-  }, [gameState.encounterNotifications, handleOpenEncounterFromNotification, interruptsSuppressed, activePremonition]);
+  }, [gameState.encounterNotifications, handleOpenEncounterFromNotification, interruptsSuppressed, running, activePremonition]);
 
   // ── Meeting encounter (Meet The First) ──
   const [meetingState, setMeetingState] = useState<MeetingEncounterState | null>(null);
