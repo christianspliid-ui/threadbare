@@ -1,7 +1,7 @@
 ---
 name: pull-work
 description: Canonical Claude Code pickup workflow for claiming Linear work safely from Ready for Dev.
-last_validated_against: 2026-08-06
+last_validated_against: 2026-08-07
 ---
 
 # Pull Work
@@ -620,6 +620,8 @@ Either condition is sufficient to classify a commit as zombie. Both conditions m
 ### Step 5 - Reopened safety check
 
 If the issue has label `Reopened`, read all comments back to the original handoff before making implementation decisions.
+
+**The label is not the only trigger (impediment #434).** On any ticket carrying more than one comment, skim every comment's first line before implementing — not only the latest. A scope correction filed by a sibling ticket's implementation never reopens anything; it just sits under whatever was written later. THR-723's promotion comment called it a "clean, scoped technical fix" while its *first* comment recorded that the module in question had zero production importers and the real question was a user-facing design call. `list_comments(limit:10)` already returns the bodies, so the extra cost is reading them, not fetching them. When a correction and the promotion disagree, the correction is usually the one that inspected the code — split the design half out rather than implementing it on executor authority.
 
 ### Step 6 - Load plan doc
 
