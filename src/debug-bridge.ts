@@ -877,11 +877,36 @@ if (import.meta.env.DEV) {
      * Returns thread edges, active encounterProgress entries, and pending encounterNotifications.
      * Use this to diagnose why encounter modals are not appearing.
      */
-    inspectEncounterPipeline: (agentFilter?: string) => {
+    inspectEncounterPipeline: (rawAgentFilter?: string) => {
       const state = _gameStateProvider?.();
       if (!state) return { error: 'Game state not available — is the game loaded?' };
 
       const { graph, ascendantId, encounterProgress, encounterNotifications } = state;
+
+      // THR-1005: `@hero` is the CLI's avatar alias, and callers reasonably assume
+      // it works here too. It did not — every filter below is a raw substring match
+      // on node id/name, and no node contains the literal "@hero", so the probe
+      // returned `{threads:[],activeEncounters:[],notifications:[]}` for ANY world
+      // state. That is a vacuous probe: it cannot report anything else, so it reads
+      // as hard evidence of an empty pipeline while measuring nothing. It was read
+      // exactly that way in impediment #447 and became a whole investigation's
+      // "live lead". Resolve the alias to the ascendant's avatar node instead.
+      let agentFilter = rawAgentFilter;
+      if (rawAgentFilter === '@hero' || rawAgentFilter === '@avatar') {
+        const avatarEdge = graph.getOutgoingEdges(ascendantId, 'avatar_of')[0]
+          ?? graph.getIncomingEdges(ascendantId, 'avatar_of')[0];
+        const avatarId = avatarEdge
+          ? (avatarEdge.source === ascendantId ? avatarEdge.target : avatarEdge.source)
+          : undefined;
+        if (!avatarId) {
+          return {
+            error: `No avatar node found for ascendant ${ascendantId} — '${rawAgentFilter}' cannot resolve. `
+              + 'Call with no argument to inspect the whole pipeline.',
+          };
+        }
+        agentFilter = avatarId;
+      }
+
       const threadEdges = graph.getOutgoingEdges(ascendantId, 'thread');
 
       const threads = threadEdges.map(e => {
