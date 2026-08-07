@@ -119,6 +119,28 @@ window.__DEBUG.tick(40)      // 40 ticks
 // | 'error'; a mid-batch throw returns partial progress, never propagates (fail-soft).
 // Emits exactly ONE aggregate `debug_tick_batch` trace per call, never one per tick.
 
+// Clear the game's narrative interrupts so a capture can reach the surface behind them
+// (THR-1019) — the sanctioned replacement for hand-rolled `[role="dialog"]` click loops.
+await window.__DEBUG.dismissBeats()
+// -> { dismissed, surfaces, passes, exhausted, remaining }
+// Resolves each surface through its own React handler, and so through the engine's beat
+// state machine — never DOM clicks — so it holds regardless of which component renders
+// the beat. A `selection` beat is resolved with its FIRST grant, because the engine
+// refuses one that arrives with no choice and the modal would otherwise never close.
+// Beats chain, so it drains in passes (bound DEBUG_DISMISS_BEATS_MAX_PASSES = 12);
+// hitting the bound returns exhausted:true rather than throwing.
+
+window.__DEBUG.suppressBeats(true)   // auto-resolve beats AS THEY ARRIVE; false restores
+window.__DEBUG.isBeatSuppressionActive()
+// Prefer suppressBeats() over repeated dismissBeats() when driving __DEBUG.tick(n) — it
+// catches beats that fire mid-batch, which a one-shot dismissal cannot.
+//
+// Scope is deliberately narrow: ascendant beats (entered + offer banner), journey
+// vignettes, story beats, premonitions. It does NOT touch the encounter veil, the
+// Meet-The-First flow, choice sets, emergence dilemmas or divine receipts — those are
+// what a verification run is normally there to observe. It is a verification lever, not
+// a change to interrupt behavior.
+
 ```
 
 **`src/debug-bridge.d.ts` is the API reference** — every method carries JSDoc with its match semantics and return shape; `src/debug-bridge.ts` is the implementation. Read the `.d.ts` rather than asking for a list. **Most accessors return Promises — always `await` them** (impediments #405, #459, #436, #463): a forgotten `await` reads as an empty object or `evs.filter is not a function`, which looks like a wrong-shape result rather than a missing `await`; and `getEventsSince(0)` returns the 100-entry rolling `recentEvents` buffer, so a before/after diff by array position is meaningless once more than 100 events have fired. Capability areas available there: debug-panel control (`F1` opens straight to the CLI tab; backtick toggles; the in-game CLI accepts pasted multi-line batches), tracing, profiling, health/crash diagnostics, agent navigation, action listing + firing, aftermath reactions, reach signatures, fog of war, encounter-log TSV export, prose-quality audit, orphaned action cards, outcome-ladder distribution + KPI verdicts, ascendant progression, entity-visual resolution, and the war readout (armies/battles).
@@ -347,6 +369,7 @@ Work is not "done" until it is deployed and documented. Do all of these automati
   - **Honest dimensions.** If the capture's real size differs from 1920×1080 — which for the Claude-in-Chrome route is *always*, per the rule above — state the actual dimensions — never imply the image matched the contract — and evidence the viewport contract separately by DOM assertion from the Browser pane, which resizes correctly even when it cannot composite: `innerWidth`/`innerHeight`, `document.documentElement.scrollWidth <= innerWidth`, and the target's `getBoundingClientRect()` proving it is in-viewport.
   - **Portal-rendered overlay** (shared `Dropdown`, anything portalled over the canvas): CDP omits the late-painted portal layer entirely, so an accessibility-tree capture (`read_page` on the open panel) is the accepted proof of visual content, paired with a closed-state screenshot of the trigger.
   - **Simulation advancement** for any "run N ticks, then observe" evidence: `window.__DEBUG.tick(n)` only — an automated tab reports `document.hidden`, which throttles the interval loop to ~1 tick/click. See §Debug Bridge.
+  - **Clearing narrative interrupts that block a capture** (THR-1019): `await window.__DEBUG.dismissBeats()` for a one-shot clear, or `window.__DEBUG.suppressBeats(true)` before a `tick(n)` batch so beats arriving mid-run are resolved as they appear. **This replaces the hand-rolled dismissal loop** — the `[role="dialog"]` / `aria-label^="Ascendant beat"` click-and-wait loop that impediments #385, #427, #445, #446, #447, #453 and #455 each rediscovered, at 5–15 minutes a run. Do not write a new one: it is fragile against `selection` beats (the engine refuses a choice-less resolve, so the modal never closes), it breaks whenever a beat's markup changes, and it cannot see a beat that arrives after the loop finishes. The lever resolves through the beat state machine instead, and deliberately leaves the encounter veil, Meet-The-First, choice sets, emergence dilemmas and divine receipts alone — clearing those would destroy the capture you came for.
 
   **Three reasons this is binary, not advisory:** (1) snapshot tests miss paint regressions; (2) TypeScript misses overflow/z-index/off-viewport rendering; (3) Playwright cannot see WebGL canvas content. Without a browser pass, those failure modes ship unseen. Pocock: "if you're building a front-end app and you're not giving the LLM access to the browser, that's crazy."
 
