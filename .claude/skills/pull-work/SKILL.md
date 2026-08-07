@@ -1,7 +1,7 @@
 ---
 name: pull-work
 description: Canonical Claude Code pickup workflow for claiming Linear work safely from Ready for Dev.
-last_validated_against: 2026-08-06
+last_validated_against: 2026-08-07
 ---
 
 # Pull Work
@@ -748,6 +748,15 @@ git push
 The merge prints `Auto-merging Docs/changelog.md` and exits 0 with both sides' rows present and the table header intact. Auto-merge then proceeds normally once the PR is no longer conflicting.
 
 **Check the result before pushing** — union keeps *both* sides of every conflicting hunk, which is right for appended rows and wrong for an edited one. If the same row was modified on both branches you get it twice, so skim `git diff origin/main -- Docs/` for duplicates rather than trusting the clean exit.
+
+**For `Docs/impediments.md`, do not hand-classify the duplicates — repair them (THR-1018):**
+
+```bash
+npm run check:impediment-ids -- --fix
+npm run generate-impediment-dashboard
+```
+
+Union preserves both lanes' independently-chosen row *numbers*, so a merge touching the log reliably lands duplicate ids that `check:impediment-ids` then rejects — and the two collisions need two *different* remedies. Measured on the 2026-08-07 run that resolved three stuck PRs: `#451` was the same impediment logged on both sides (dedupe) and `#452` was two different impediments sharing an id (renumber), each re-derived by hand. `--fix` classifies and applies both, echoes every row it removes verbatim, and lists the `#N` cross-references a renumber may have made ambiguous. It is biased toward renumbering, because deleting a distinct impediment is unrecoverable while a duplicate row under a fresh number is merely visible — so **read the renumber list**: the original number stays on the row that appears first, and if a cited reference meant the row that moved, only you can tell.
 
 ### `Docs/project-status.md` — regenerate, never resolve (THR-1016)
 

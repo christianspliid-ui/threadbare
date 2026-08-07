@@ -54,7 +54,19 @@
  * *behaviour* pinned against committed fixtures; this file owns every assertion
  * about the *live corpus*.
  *
- * Run: `npm run check:impediment-ids`
+ * ## The repair (THR-1018)
+ *
+ * Detection alone left every closeout merge needing a session to hand-classify
+ * each collision into one of two remedies — measured at two collisions needing two
+ * different repairs in the single 2026-08-07 run that resolved three stuck PRs.
+ * `--fix` applies them: `scripts/impediment-id-repair.ts` classifies each
+ * collision, dedupes or renumbers it, and reports every `#N` cross-reference the
+ * renumber may have made ambiguous. The classifier is deliberately biased toward
+ * renumbering — see that module's header for why the two mistakes are not
+ * symmetric.
+ *
+ * Run: `npm run check:impediment-ids` — reports.
+ *      `npm run check:impediment-ids -- --fix` — reports and repairs.
  * Exits 0 when every `#` is unique and the log still parses in full, 1 otherwise.
  */
 
@@ -67,6 +79,13 @@ import {
   isTableEntryLine,
   parseImpedimentLog,
 } from "./impediment-log.ts";
+import {
+  applyRepairs,
+  attachRemovedText,
+  findCrossReferences,
+  planRepairs,
+  type RepairPlan,
+} from "./impediment-id-repair.ts";
 
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(SCRIPT_DIR, "..");
@@ -166,18 +185,86 @@ function reportDuplicates(result: ReturnType<typeof parseImpedimentLog>): void {
       "  number render as one entry's id against two different impediments, and every",
       "  later retrospective that reads by number reads the wrong row.",
       "",
-      `  Fix: keep the number on the row that appears FIRST in the file (existing prose`,
-      `  cross-references resolve to it), and renumber each later row from #${suggested} up.`,
-      "  Record the old number in the renumbered row's Session Context column, e.g.",
-      `  "Renumbered from #<old> by THR-881 (duplicate-number repair)", so an existing`,
-      "  reference to the old number is still traceable.",
+      "  Repair automatically (THR-1018):",
       "",
-      "  Then regenerate the dashboard: npm run generate-impediment-dashboard",
+      "    npm run check:impediment-ids -- --fix",
+      "",
+      "  It classifies each collision — dedupe when both rows are the same impediment,",
+      `  renumber from #${suggested} up when they are different — echoes every row it`,
+      "  removes, and lists the cross-references a renumber may have made ambiguous.",
+      "  To repair by hand instead: keep the number on the row that appears FIRST",
+      "  (existing prose cross-references resolve to it), renumber each later row, and",
+      "  record the old number in its Session Context column.",
+      "",
+      "  Either way, regenerate the dashboard afterwards:",
+      "    npm run generate-impediment-dashboard",
     ].join("\n"),
   );
 }
 
+/** Prints what a repair did, in enough detail to audit or reverse it by hand. */
+function reportRepair(plan: RepairPlan, repoRoot: string): void {
+  const renumberedNums = plan.plans
+    .filter((collision) => collision.kind === "renumber")
+    .map((collision) => collision.num);
+
+  console.error("  Repair applied:\n");
+
+  for (const collision of plan.plans) {
+    const confidence = `similarity ${collision.similarity.toFixed(2)}`;
+
+    if (collision.kind === "dedupe") {
+      console.error(
+        `    #${collision.num} — DEDUPE (${confidence}): same impediment on both sides.`,
+      );
+      console.error(
+        `      Kept line ${collision.keptLine}, Count set to ${collision.resolvedCount} ` +
+          `(${collision.countRule === "max" ? "max — identical text, a count bump, not a second observation" : "sum — independently authored observations"}).`,
+      );
+      for (const removed of collision.removed) {
+        console.error(`      Removed line ${removed.line}, verbatim:`);
+        console.error(`        ${removed.text}`);
+      }
+      continue;
+    }
+
+    console.error(
+      `    #${collision.num} — RENUMBER (${confidence}): different impediments sharing an id.`,
+    );
+    for (const move of collision.renumbered) {
+      console.error(`      line ${move.line}: #${move.oldNum} -> #${move.newNum}`);
+    }
+  }
+
+  const references = findCrossReferences(repoRoot, renumberedNums);
+  console.error("");
+
+  if (renumberedNums.length === 0) {
+    console.error("  No renumbering, so no cross-reference can have been invalidated.");
+  } else if (references.length === 0) {
+    console.error(
+      `  No prose cross-references to ${renumberedNums.map((n) => `#${n}`).join(", ")} found.`,
+    );
+  } else {
+    console.error(
+      `  ${references.length} cross-reference(s) to a renumbered id. The original number stayed`,
+    );
+    console.error(
+      "  on the FIRST row, so each still resolves — but if one meant the row that moved,",
+    );
+    console.error("  it now points at the wrong entry. Check these by hand:\n");
+    for (const reference of references) {
+      console.error(`    ${reference.file}:${reference.line}  #${reference.num}`);
+      console.error(`      ${reference.text}`);
+    }
+  }
+
+  console.error("\n  Now regenerate the dashboard: npm run generate-impediment-dashboard");
+}
+
 function main(): void {
+  const fix = process.argv.includes("--fix");
+
   if (!fs.existsSync(IMPEDIMENTS_PATH)) {
     console.error(`check:impediment-ids: missing impediment log at ${IMPEDIMENTS_PATH}`);
     process.exit(1);
@@ -196,7 +283,15 @@ function main(): void {
     return;
   }
 
-  console.error("check:impediment-ids: FAIL — Docs/impediments.md did not pass the live-log gate.\n");
+  // On the --fix path a duplicate is about to be repaired, so announcing FAIL up
+  // front and then exiting 0 misreports the run. A population failure is never
+  // repairable, so it is a FAIL either way.
+  const repairable = fix && duplicateNums.length > 0 && populationFailures.length === 0;
+  console.error(
+    repairable
+      ? "check:impediment-ids: repairing — Docs/impediments.md carries duplicate numbers.\n"
+      : "check:impediment-ids: FAIL — Docs/impediments.md did not pass the live-log gate.\n",
+  );
 
   if (populationFailures.length > 0) {
     console.error("  Parse population / dropped entries:");
@@ -213,7 +308,34 @@ function main(): void {
     );
   }
 
-  if (duplicateNums.length > 0) reportDuplicates(result);
+  if (duplicateNums.length > 0) {
+    if (!fix) {
+      reportDuplicates(result);
+      process.exit(1);
+    }
+
+    // The repair only ever touches numbering, so a population failure — a dropped
+    // or unparsed entry — is a different defect and must not be papered over by a
+    // successful renumber. Report both, and stay red on the one --fix cannot fix.
+    const plan = attachRemovedText(markdown, planRepairs(markdown));
+    fs.writeFileSync(IMPEDIMENTS_PATH, applyRepairs(markdown, plan), "utf8");
+    reportRepair(plan, REPO_ROOT);
+
+    const after = parseImpedimentLog(fs.readFileSync(IMPEDIMENTS_PATH, "utf8"));
+    if (after.duplicateNums.length > 0) {
+      console.error(
+        `\ncheck:impediment-ids: FAIL — ${after.duplicateNums.length} duplicate(s) survived the repair.`,
+      );
+      process.exit(1);
+    }
+    if (populationFailures.length > 0) process.exit(1);
+
+    console.log(
+      `\ncheck:impediment-ids: repaired — ${plan.plans.length} collision(s) resolved, ` +
+        `${after.tableCount} table rows + ${after.paragraphCount} paragraph entries, every # unique.`,
+    );
+    return;
+  }
 
   process.exit(1);
 }

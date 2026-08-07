@@ -22,7 +22,13 @@
 #
 # Deliberately EXCLUDES Docs/project-status.md: it has a 60-line cap and rewrite
 # semantics, so union would duplicate rewritten lines rather than merge them.
-# That file is handled by `merge=ours` further down instead — see THR-1016.
+# That file is not handled here at all — it is generated and untracked since
+# THR-1016. See the closing note at the foot of this file.
+#
+# Union preserves both lanes' independently-chosen row NUMBERS as well as their
+# rows, so a merge touching Docs/impediments.md reliably lands duplicate ids.
+# `check:impediment-ids` rejects them (THR-881) and `--fix` repairs them
+# (THR-1018) — never hand-classify a collision.
 #
 # Applies to LOCAL `git merge` only. GitHub's server-side merge ignores this
 # attribute — measured 2026-07-21 (THR-691): with these lines present on the
