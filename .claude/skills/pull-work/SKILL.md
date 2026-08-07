@@ -625,6 +625,8 @@ Either condition is sufficient to classify a commit as zombie. Both conditions m
 
 If the issue has label `Reopened`, read all comments back to the original handoff before making implementation decisions.
 
+**The label is not the only trigger (impediment #434).** On any ticket carrying more than one comment, skim every comment's first line before implementing — not only the latest. A scope correction filed by a sibling ticket's implementation never reopens anything; it just sits under whatever was written later. THR-723's promotion comment called it a "clean, scoped technical fix" while its *first* comment recorded that the module in question had zero production importers and the real question was a user-facing design call. `list_comments(limit:10)` already returns the bodies, so the extra cost is reading them, not fetching them. When a correction and the promotion disagree, the correction is usually the one that inspected the code — split the design half out rather than implementing it on executor authority.
+
 ### Step 6 - Load plan doc
 
 1. Extract plan-doc path from the issue description **and** the handoff comment — the two-place rule writes it to both so neither is a single point of failure, and a later checkpoint comment can push the original handoff out of view (the single-surface defect THR-895 found in `check:process`).
@@ -752,6 +754,17 @@ git push
 The merge prints `Auto-merging Docs/changelog.md` and exits 0 with both sides' rows present and the table header intact. Auto-merge then proceeds normally once the PR is no longer conflicting.
 
 **Check the result before pushing** — union keeps *both* sides of every conflicting hunk, which is right for appended rows and wrong for an edited one. If the same row was modified on both branches you get it twice, so skim `git diff origin/main -- Docs/` for duplicates rather than trusting the clean exit.
+
+**For `Docs/impediments.md`, do not hand-classify the duplicates — repair them (THR-1018):**
+
+```bash
+npm run check:impediment-ids -- --fix
+npm run generate-impediment-dashboard
+```
+
+Union preserves both lanes' independently-chosen row *numbers*, so a merge touching the log reliably lands duplicate ids that `check:impediment-ids` then rejects — and the two collisions need two *different* remedies. Measured on the 2026-08-07 run that resolved three stuck PRs: `#451` was the same impediment logged on both sides (dedupe) and `#452` was two different impediments sharing an id (renumber), each re-derived by hand. `--fix` classifies and applies both, echoes every row it removes verbatim, and lists the `#N` cross-references a renumber may have made ambiguous. It is biased toward renumbering, because deleting a distinct impediment is unrecoverable while a duplicate row under a fresh number is merely visible.
+
+**Read the renumber list before pushing.** The id stays on the row already published on `origin/main` — not the row that happens to be first after the merge, which is a merge-order artifact (impediment #460 rule 1; the gate's older printed advice said "first in the file" and following it on PR #1327 had to be reversed). If a cited reference meant the row that *moved*, only you can tell. And rule 2 is still open: two branches repairing concurrently allocate the same next-free id, because neither sees the other's unmerged rows — so if another closeout PR is open against the log, check its numbers too.
 
 ### `Docs/project-status.md` — regenerate, never resolve (THR-1016)
 
