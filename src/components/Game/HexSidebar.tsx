@@ -18,8 +18,21 @@ import { getHexTileUrl } from '../../data/hex-tile-assets';
 import { hexPolygonPoints } from '../../lib/hexMath';
 import { IconButton } from '../shared/IconButton';
 import { RarityBadge } from '../shared/RarityBadge';
+import { SphereIcon } from '../shared/SphereIcon';
+import { Tooltip } from '../shared/Tooltip';
 import { clampRarityTier } from '../../types/rarity';
 import { DANGER_ZONE_LABELS } from '../../types/monster';
+
+/**
+ * Collapsed-rail sphere glyph sizing (THR-1009). The rail shipped 8px
+ * colour-only dots with `title={sphere}` raw-key tooltips — below UI Law 11's
+ * 14px floor for a meaning-bearing glyph, and outside the Law 17 tooltip
+ * registry. Colour alone also carried the whole meaning, which Law 31 forbids;
+ * the sphere symbol restores shape as the primary channel.
+ */
+const COLLAPSED_SPHERE_GLYPH_PX = 16;
+/** Law 46 — every interactive element gets a >=24px hit area whatever its visual size. */
+const COLLAPSED_SPHERE_HIT_PX = 24;
 
 export interface HexSidebarProps {
   terrain: TerrainType;
@@ -45,6 +58,28 @@ function getIntensityLabel(value: number): string {
   if (value >= 0.6) return 'strong';
   if (value >= 0.3) return 'faint';
   return 'trace';
+}
+
+/**
+ * Positional danger as a word (UI Law 13 — no percentages anywhere
+ * player-facing). This line read `Danger: 73%` until THR-1009. Distinct from
+ * `DANGER_ZONE_LABELS`, which bands a lair's authored `dangerZone` enum; this
+ * bands the continuous 0–1 distance-from-safety the hex itself carries.
+ *
+ * NFP #1: one table, no logic to edit when the feel changes.
+ */
+const POSITIONAL_DANGER_WORDS: ReadonlyArray<readonly [threshold: number, word: string]> = [
+  [0.25, 'Settled country'],
+  [0.5, 'Uneasy country'],
+  [0.7, 'Dangerous country'],
+  [1.01, 'Deadly country'],
+];
+
+function positionalDangerWord(level: number): string {
+  for (const [threshold, word] of POSITIONAL_DANGER_WORDS) {
+    if (level < threshold) return word;
+  }
+  return POSITIONAL_DANGER_WORDS[POSITIONAL_DANGER_WORDS.length - 1][1];
 }
 
 /**
@@ -206,7 +241,7 @@ export const HexSidebar = React.memo((props: HexSidebarProps) => {
                 fontFamily: 'var(--font-display)',
               }}
             >
-              Danger: {Math.round((props.dangerLevel ?? 0) * 100)}%
+              {positionalDangerWord(props.dangerLevel ?? 0)}
             </div>
           )}
 
@@ -220,16 +255,23 @@ export const HexSidebar = React.memo((props: HexSidebarProps) => {
 
                 return (
                   <div key={sphere} style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                    <div
-                      style={{
-                        fontSize: 'var(--text-xs)',
-                        color: 'var(--text-muted)',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.5px',
-                      }}
-                    >
-                      {sphere}
-                    </div>
+                    <Tooltip id={`sphere.${sphere}`}>
+                      <span
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          fontSize: 'var(--text-xs)',
+                          color: 'var(--text-muted)',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.5px',
+                          cursor: 'help',
+                        }}
+                      >
+                        <SphereIcon sphere={sphere} size={COLLAPSED_SPHERE_GLYPH_PX} />
+                        {sphere}
+                      </span>
+                    </Tooltip>
                     <div
                       style={{
                         background: 'var(--bg-raised)',
@@ -563,18 +605,23 @@ export const HexSidebar = React.memo((props: HexSidebarProps) => {
                 alignItems: 'center',
               }}
             >
-              {sphereBars.map(([sphere]) => (
-                <div
-                  key={sphere}
-                  style={{
-                    width: '8px',
-                    height: '8px',
-                    borderRadius: '50%',
-                    background: getSphereColor(sphere),
-                    boxShadow: '0 0 4px rgba(0, 0, 0, 0.5)',
-                  }}
-                  title={sphere}
-                />
+              {sphereBars.map(([sphere, value]) => (
+                <Tooltip key={sphere} id={`sphere.${sphere}`}>
+                  <span
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      // Law 46: the glyph stays compact, the hit area does not.
+                      minWidth: `${COLLAPSED_SPHERE_HIT_PX}px`,
+                      minHeight: `${COLLAPSED_SPHERE_HIT_PX}px`,
+                      cursor: 'help',
+                    }}
+                    aria-label={`${getIntensityLabel(value)} ${sphere} resonance`}
+                  >
+                    <SphereIcon sphere={sphere} size={COLLAPSED_SPHERE_GLYPH_PX} />
+                  </span>
+                </Tooltip>
               ))}
             </div>
           )}
