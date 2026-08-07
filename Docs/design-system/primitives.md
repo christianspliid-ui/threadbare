@@ -8,33 +8,58 @@ This file is the **spec** for the shared component library in `src/components/sh
 
 ## Inventory
 
-| Primitive | File | Status | Purpose |
-|-----------|------|--------|---------|
-| `SectionHeading` | `SectionHeading.tsx` | Built | Panel/section label |
-| `Button` | `Button.tsx` | Built | All interactive buttons |
-| `IconButton` | `IconButton.tsx` | Built | 32×32 icon-only toolbar buttons |
-| `ListRow` | `ListRow.tsx` | Built | Universal interactive list row |
-| `Card` | `Card.tsx` | Built | Panel/card wrapper with header |
-| `Modal` | `Modal.tsx` | Built | Overlay dialog with backdrop |
-| `Dropdown` | `Dropdown.tsx` | Built | Portal-positioned popover menu |
+**Every** `.tsx` in `src/components/shared/` is a shared primitive and appears below — one row each,
+no exceptions. `src/components/StyleGuide/__tests__/styleguideSync.test.ts` fails when a primitive
+is missing a row here, a row in `component-selection.md`, or a `?view=styleguide` entry, so this
+table cannot drift from the library (UI Law 29, THR-1011).
 
-Build order matters — later primitives depend on earlier ones:
+Read a row as: what it is, the props that decide its shape, and where to *look* at it. The detailed
+specs further down cover the ten primitives with fixed contracts worth stating at length; the rest
+are specified by this table plus their styleguide entry.
+
+| Primitive | Props surface | Sizes / variants / states | Styleguide |
+|-----------|---------------|---------------------------|-----------|
+| `ActivityIcon` | `kind`, `size?`, `color?` | 6 kinds: `boot`, `swords`, `coin`, `hammer`, `bandage`, `hourglass`. One vocabulary per element class (Law 9). | [#section-activityicon](../../src/components/StyleGuide/StyleGuide.tsx) |
+| `AnimateMount` | `show`, `animation`, `duration?`, `children` | Mount/unmount wrapper. Collapses to a plain fade under `prefers-reduced-motion` (Law 44). | #section-animatemount |
+| `Button` | `variant`, `size?`, `icon?`, `loading?`, `fullWidth?` | 4 variants (primary, secondary, ghost, danger) × 3 sizes. `loading` implies disabled. All six interaction states. | #section-buttons |
+| `Card` | `variant?`, `padding?`, `title`, `count?`, `onBack?`, `trailing?`, `scroll?` | Compound: `.Header`, `.Body`, `.Footer`. Variants surface / raised / glass. Never nest `Card` in `Card`. | #section-card |
+| `CardKeywordChip` | `keyword`, `icon?`, `muted?` | Glyph keyed on the live card-type union — a new type without an icon is a **build failure** (Law 9). | #section-card-keyword-chip |
+| `DetailBreadcrumb` | `trail`, `onNavigate` | Collapses to a leading ellipsis past `DETAIL_BREADCRUMB_COLLAPSE_AT` (4). Last crumb is never clickable. Law 24. | #section-detail-page |
+| `DetailModal` | *(none — reads `DetailModalStackContext`)* | Renders the page stack; draws nothing while empty. Escape / ArrowLeft pops. **Unmounted cluster** — see note. | #section-detail-page |
+| `Divider` | `gold?` | Plain rule; gold variant for primary separations. | #section-divider |
+| `DomainCard` | `reach`, `tier`, `agentName`, `gender?`, `revealed` | Reach art + tier prose. `revealed: false` renders the unknown state, not a blank. | #section-domaincard |
+| `Dropdown` | `trigger`, `open`, `onOpenChange`, `align?` | Portal-based (z 9999). Compound: `.Item`. Escape / outside-click close. | #section-dropdown |
+| `EntityCard` | `header`, `sections`, `onBack`, `onViewCodex`, `onZoomToLocation?` | Structured block renderer: member_list, keyword_cloud, trait_grid, bond_list, domain_grid, timeline. Not for plain text. | #section-entitycard |
+| `EntityVisual` | `size`, `descriptor?`, `entity?`, `graph?`, `shape?`, `onClick?` | **The one art path** (Law 3). `hero` 16:9 · `portrait` 3:4 · `chip` 40px. Missing art → authored glyph on id-hashed gradient (Law 4). Person art knowledge-gated, fail-open (Law 8). | #section-entity-visual |
+| `FlavorQuote` | `children?`, `attribution?`, `divider?` | Inset quote well. Renders **nothing** when empty — safe to leave unconditional. | #section-flavorquote |
+| `GameErrorBoundary` | `children` | Error fallback. Wrap any subtree that might crash (NFP #4). Used around every styleguide sample. | used throughout |
+| `IconButton` | `icon`, `badge?`, `active?`, `size?`, `variant?` | 32×32 icon-only. Badge slot for counts. ≥24px hit area regardless of visual size (Law 46). | #section-iconbutton |
+| `ListRow` | `accentColor?`, `selected?`, `onClick?`, `trailing?` | Compound: `.Title`, `.Subtitle`, `.Leading`. The universal selectable row. | #section-listrow |
+| `Medallion` | `size?`, `accentColor?`, `title?`, `children?` | Ringed clipping disc, sm 40 / md 64 / lg 96. **Frames** an already-resolved visual — never a second art path. | #section-medallion |
+| `Modal` | `open`, `onClose`, `maxWidth?`, `animation?` | Compound: `.Header`, `.Body`, `.Footer`. max-height 85vh, default max-width 600px. Escape closes topmost; focus moves in and returns (Law 50). | #section-modal |
+| `OddsPips` / `CostPips` | `value` / `cost`, `size?`, `muted?`, `emphasised?`, `framed?` | The only sanctioned magnitude glyph language (Law 15). Odds = effect on odds; cost = framed badge, deliberately distinct (Law 10). `aria-label` states the reading in words. | #section-odds-pips |
+| `ProgressBand` | `label`, `value`, `prose?`, `color?` | Banded readout — use when the reading is a **word**, not a fraction. | #section-progressband |
+| `ProgressBar` | `progress`, `color`, `glow?` | Continuous 0–1 only. Discrete steps use `StepDots`. | #section-progressbar |
+| `RarityBadge` | `tier`, `opacity?` | Inline rarity tag. | #section-rarity |
+| `RarityBorderBox` | `tier`, `children` | Left-border rarity accent. Wraps anything. | #section-rarity |
+| `RevealCard` | `open`, `onClose`, `maxWidth?` | Ceremonial reveal, composed on `Modal`. Inside an existing modal use `RevealCard.Frame` — `<RevealCard>` portals its own backdrop. | #section-revealcard |
+| `RivalIcon` | `spheres`, `size?`, `title?` | Overlapping sphere circles for rival affinity. | #section-rivalicon |
+| `Section` | `section` (`ProseSection \| ChipsSection \| EventCardSection \| PanelSection \| PortraitSection`) | Dispatches on `kind`. Gold label = primary; `notable`/`chronicle` tiers add a gold underline. **Unmounted cluster** — see note. | #section-detail-page |
+| `SectionHeading` | `children`, `count?`, `as?`, `ornamental?` | Heading with optional count and ornamental rules. | #section-sectionheading |
+| `SphereIcon` | `sphere?`, `sphereName?`, `size?`, `monochrome?`, `useImage?`, `variant?` | SVG primary, PNG fallback. The sphere vocabulary (Law 9). | #section-spheres |
+| `StepDots` | `totalSteps`, `currentStepIndex`, `size?`, `variant?` | Discrete steps. No-op replay dots render **disabled, not clickable** (Law 25, THR-1003). | #section-stepdots |
+| `Tooltip` | `id?`, `label?`, `desc?`, `depth?`, `as?` | Tier 1 of the disclosure ladder. Copy resolves through `resolveTooltip`, ≤200 chars, chains to `TOOLTIP_MAX_CHAIN_DEPTH` (Laws 17–19). Components pass **ids**, never inline copy. | #section-tooltip |
+
+> **The detail-page cluster — `Section`, `DetailBreadcrumb`, `DetailModal` — has no production
+> mount.** All three import only each other; THR-966 defers the mount-vs-prune decision to a
+> coordinated call with THR-951. They carry styleguide entries and rows here so Law 29 holds
+> whichever way that goes. A styleguide entry is **not** evidence a surface is reachable — check
+> importers before building on one.
+
+Build order among the original seven still matters — later primitives depend on earlier ones:
 ```
 SectionHeading → Button → IconButton → ListRow → Card → Modal → Dropdown
 ```
-
----
-
-## Existing Shared Components (keep, do not replace)
-
-| Component | File | Notes |
-|-----------|------|-------|
-| `Tooltip` | `Tooltip.tsx` | Excellent. 30+ consumers. No changes needed. |
-| `ProgressBar` | `ProgressBar.tsx` | Good. Used by DoomBar, MandateTracker, AttachmentRow. |
-| `EntityCard` | `EntityCard.tsx` | Good. Will adopt `Card` internally in future. |
-| `AnimateMount` | `AnimateMount.tsx` | Good. Used by `Modal` internally. |
-| `SphereIcon` | `SphereIcon.tsx` | Good. Used everywhere. |
-| `GameErrorBoundary` | `GameErrorBoundary.tsx` | Fine. Root wrapper only. |
 
 ---
 

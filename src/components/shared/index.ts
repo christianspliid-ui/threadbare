@@ -2,12 +2,20 @@ export { ActivityIcon } from './ActivityIcon';
 export { AnimateMount } from './AnimateMount';
 export { Button } from './Button';
 export { Card } from './Card';
+export { CardKeywordChip } from './CardKeywordChip';
 export { Divider } from './Divider';
 export { DetailBreadcrumb } from './DetailBreadcrumb';
 export { DetailModal } from './DetailModal';
 export { DomainCard } from './DomainCard';
 export { Dropdown } from './Dropdown';
 export { EntityCard } from './EntityCard';
+export {
+  EntityVisual,
+  ENTITY_VISUAL_HERO_ASPECT,
+  ENTITY_VISUAL_PORTRAIT_ASPECT,
+  ENTITY_VISUAL_CHIP_PX,
+} from './EntityVisual';
+export type { EntityVisualSize, EntityVisualProps } from './EntityVisual';
 export { FlavorQuote } from './FlavorQuote';
 export { GameErrorBoundary } from './GameErrorBoundary';
 export { IconButton } from './IconButton';
@@ -19,6 +27,7 @@ export {
   MEDALLION_SIZE_LG,
 } from './Medallion';
 export { Modal } from './Modal';
+export { OddsPips, CostPips } from './OddsPips';
 export {
   RevealCard,
   REVEAL_CARD_MAX_WIDTH,

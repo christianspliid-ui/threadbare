@@ -48,6 +48,15 @@ import { ActivityIcon } from '../shared/ActivityIcon';
 import type { ActivityKind } from '../shared/ActivityIcon';
 import { ProgressBand } from '../shared/ProgressBand';
 import { Divider } from '../shared/Divider';
+import { DetailBreadcrumb } from '../shared/DetailBreadcrumb';
+import { DetailModal } from '../shared/DetailModal';
+import { Section } from '../shared/Section';
+import { DetailModalStackProvider, useDetailStack } from '../../contexts/DetailModalStackContext';
+import {
+  DETAIL_BREADCRUMB_COLLAPSE_AT,
+  type DetailPage,
+  type Section as DetailPageSection,
+} from '../../types/detailPage';
 import { CulturePhoneticsInspector } from '../Game/debug/CulturePhoneticsInspector';
 import { EncounterScreen, ENCOUNTER_SCREEN_LAYOUT } from '../Game/Encounter/EncounterScreen';
 import type { EncounterHeroPanelData } from '../Game/Encounter/EiraHeroPanel';
@@ -137,11 +146,118 @@ const SECTIONS = [
   { id: 'entity-visual', label: 'EntityVisual (THR-637)' },
   { id: 'domaincard', label: 'DomainCard' },
   { id: 'activityicon', label: 'ActivityIcon' },
+  { id: 'detail-page', label: 'DetailBreadcrumb / Section / DetailModal' },
   { id: 'culture-phonetics', label: 'CulturePhoneticsInspector' },
   { id: 'encounter-screen', label: 'EncounterScreen (C1)' },
   { id: 'encounter-choice-c2', label: 'EncounterChoiceCard / OutcomeForecastBand (C2)' },
   { id: 'encounter-effect-d2', label: 'EffectRegistration (D2)' },
 ];
+
+// ─── Detail-page sample data ──────────────────────────────────────────────────
+// The detail-page cluster (DetailBreadcrumb / Section / DetailModal) has no
+// production mount — THR-966 defers that call. These fixtures exist so the
+// cluster still satisfies Law 29's "every shared primitive renders at
+// ?view=styleguide with sample data" while its disposition is open.
+
+const SAMPLE_DETAIL_TRAIL = ['ENCOUNTER', 'CAPTAIN VEIREN'];
+
+/** One crumb past DETAIL_BREADCRUMB_COLLAPSE_AT, so the ellipsis branch renders. */
+const SAMPLE_DETAIL_TRAIL_LONG = [
+  'ENCOUNTER',
+  'THE IRON MARKET',
+  'CAPTAIN VEIREN',
+  'THE ASHEN COMPACT',
+  'HER WRIT OF PASSAGE',
+].slice(0, DETAIL_BREADCRUMB_COLLAPSE_AT + 2);
+
+const SAMPLE_DETAIL_SECTIONS: DetailPageSection[] = [
+  {
+    kind: 'prose',
+    label: 'DISPOSITION TOWARD HER',
+    gold: true,
+    tier: 'notable',
+    typeId: 'disposition_toward_her',
+    source: 'styleguide.sample',
+    prose:
+      'She keeps the gate because someone must, and because the keeping is the only claim she has left on the city.',
+  },
+  {
+    kind: 'chips',
+    label: 'WHAT HOLDS HER',
+    gold: false,
+    tier: 'routine',
+    typeId: 'holds',
+    source: 'styleguide.sample',
+    chips: [
+      { label: 'authority taut', sphere: 'order', sentiment: 'neutral' },
+      { label: 'owed a debt', sphere: 'exchange', sentiment: 'negative', flavour: 'unpaid since the thaw' },
+      { label: 'trusted by the watch', sphere: 'bond', sentiment: 'positive' },
+    ],
+  },
+  {
+    kind: 'event-card',
+    label: 'WHEN YOU LAST TOUCHED HER THREAD',
+    gold: false,
+    tier: 'chronicle',
+    typeId: 'last_touch',
+    source: 'styleguide.sample',
+    whenLabel: 'MANY TURNS AGO · THE IRON MARKET',
+    prose: 'You leaned on the scales and she chose not to see it.',
+    eventRef: { nodeId: 'styleguide-sample-event', pageKind: 'event' },
+  },
+  {
+    kind: 'panel',
+    label: 'STANDING AMONG THE COMPACTS',
+    gold: false,
+    tier: 'routine',
+    typeId: 'standing',
+    source: 'styleguide.sample',
+    rows: [
+      { left: 'The Ashen Compact', right: 'warm', sentiment: 'positive' },
+      { left: 'The Gilded Table', right: 'cooling', sentiment: 'negative' },
+      { left: 'The Watch', right: 'steady', sentiment: 'neutral' },
+    ],
+  },
+  {
+    kind: 'portrait',
+    label: 'AS SHE IS SEEN',
+    gold: false,
+    tier: 'notable',
+    typeId: 'portrait',
+    source: 'styleguide.sample',
+    portraitRef: { subject: 'Captain Veiren', sphere: 'order' },
+    bodyProse: 'Grey at the temple, and unhurried about it.',
+  },
+];
+
+const SAMPLE_DETAIL_PAGE: DetailPage = {
+  kind: 'actor',
+  nodeId: 'styleguide-sample-actor',
+  trail: SAMPLE_DETAIL_TRAIL,
+  kindLabel: 'ACTOR',
+  displayName: 'Captain Veiren',
+  subtitle: 'Gatekeeper of the Iron Market · sworn to Order',
+  sphere: 'order',
+  isShowcase: true,
+  sections: SAMPLE_DETAIL_SECTIONS,
+  hasFullSheet: true,
+};
+
+/**
+ * DetailModal renders from the stack context and draws nothing while the stack
+ * is empty, so a styleguide entry needs a control that pushes a page onto it.
+ */
+function SampleDetailModalLauncher() {
+  const { push, isOpen } = useDetailStack();
+  return (
+    <>
+      <Button variant="secondary" size="sm" onClick={() => push(SAMPLE_DETAIL_PAGE)} disabled={isOpen}>
+        {isOpen ? 'Sample page open — Escape closes it' : 'Open sample detail page'}
+      </Button>
+      <DetailModal />
+    </>
+  );
+}
 
 // ─── Sample data ──────────────────────────────────────────────────────────────
 
@@ -1029,6 +1145,60 @@ export default function StyleGuide() {
                       <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>{k}</span>
                     </div>
                   ))}
+                </div>
+              </GameErrorBoundary>
+            </div>
+          </section>
+
+          {/* ── Detail page cluster ───────────────────────────── */}
+          <section id="section-detail-page" style={{ marginBottom: SECTION_GAP }}>
+            <SectionHeading ornamental>DetailBreadcrumb / Section / DetailModal</SectionHeading>
+            <div style={{ marginTop: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              <GameErrorBoundary>
+                <Label>
+                  The detail-page cluster. Reachability is undecided — THR-966 defers the mount-vs-prune
+                  call to a coordinated decision with THR-951, so these three render here with sample
+                  data to satisfy Law 29 without prejudging that outcome. If the cluster is pruned, this
+                  section goes with it.
+                </Label>
+
+                <div>
+                  <Label>DetailBreadcrumb — trail under the collapse threshold, every crumb but the last clickable</Label>
+                  <DetailBreadcrumb trail={SAMPLE_DETAIL_TRAIL} onNavigate={() => {}} />
+                </div>
+
+                <div>
+                  <Label>
+                    DetailBreadcrumb — trail over DETAIL_BREADCRUMB_COLLAPSE_AT, leading crumbs collapse to an ellipsis
+                  </Label>
+                  <DetailBreadcrumb trail={SAMPLE_DETAIL_TRAIL_LONG} onNavigate={() => {}} />
+                </div>
+
+                <div>
+                  <Label>Section — one renderer per SectionKind, dispatched on `kind`</Label>
+                  <div
+                    style={{
+                      maxWidth: '520px',
+                      padding: '1rem',
+                      backgroundColor: 'var(--bg-surface)',
+                      border: '1px solid var(--border-subtle)',
+                      borderRadius: '4px',
+                    }}
+                  >
+                    {SAMPLE_DETAIL_SECTIONS.map((section) => (
+                      <Section key={section.typeId} section={section} />
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <Label>
+                    DetailModal — reads the stack context and renders nothing while the stack is empty, so the
+                    sample below supplies its own provider and pushes one page
+                  </Label>
+                  <DetailModalStackProvider>
+                    <SampleDetailModalLauncher />
+                  </DetailModalStackProvider>
                 </div>
               </GameErrorBoundary>
             </div>
