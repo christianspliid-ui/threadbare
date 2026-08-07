@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { EncounterVeil } from '../EncounterVeil';
 import type { EncounterStageModel } from '../encounter-stage/types';
@@ -259,6 +259,80 @@ describe('watched tier', () => {
   it('shows Watched label', () => {
     render(<EncounterVeil {...watchedProps} />);
     expect(screen.getByText(/Watched/)).toBeInTheDocument();
+  });
+
+  it('Law 46: every boost pip carries a >=24px hit area around its 12px dot', () => {
+    render(<EncounterVeil {...watchedProps} />);
+    fireEvent.click(screen.getByText(/Peer Through the Thread/));
+    const pips = screen.getAllByRole('button', { name: /^Boost \d$/ });
+    expect(pips).toHaveLength(5);
+    for (const pip of pips) {
+      // jsdom does not lay out, so the assertion is on the declared size —
+      // which is what the fix changed. The composed rect is verified in the
+      // browser pass (`getBoundingClientRect` on the shipped build).
+      expect(pip.style.width).toBe('24px');
+      expect(pip.style.height).toBe('24px');
+      // The dot itself stayed small: padding grew, the visual did not.
+      const dot = pip.querySelector('span');
+      expect(dot?.style.width).toBe('12px');
+    }
+  });
+});
+
+// ── Law 44 — prefers-reduced-motion ────────────────────────────────
+
+describe('reduced motion (Law 44)', () => {
+  /**
+   * jsdom has no `matchMedia`, so each arm installs one. The veil reads the
+   * query through `usePrefersReducedMotion`, which is what makes an
+   * inline-styled surface able to honour a media query at all.
+   */
+  const stubMatchMedia = (matches: boolean) => {
+    vi.stubGlobal('matchMedia', (query: string) => ({
+      matches: query.includes('prefers-reduced-motion') ? matches : false,
+      media: query,
+      onchange: null,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    }));
+  };
+
+  afterEach(() => vi.unstubAllGlobals());
+
+  /** The art layer is the element carrying the 8s zoom Law 44 names. */
+  const artLayer = (container: HTMLElement | Document) =>
+    (container as Document).querySelector<HTMLElement>(
+      '[style*="gate-duty.jpg"]',
+    ) ?? document.body.querySelector<HTMLElement>('[style*="gate-duty.jpg"]');
+
+  it('keeps the ceremonial stagger and the slow zoom at full motion', () => {
+    stubMatchMedia(false);
+    render(<EncounterVeil {...defaultProps} />);
+    const art = artLayer(document);
+    expect(art).not.toBeNull();
+    expect(art!.style.transition).toContain('transform 8s');
+    expect(art!.style.transform).not.toBe('');
+  });
+
+  it('collapses the slow zoom to an --anim-fast fade under reduced motion', () => {
+    stubMatchMedia(true);
+    render(<EncounterVeil {...defaultProps} />);
+    const art = artLayer(document);
+    expect(art).not.toBeNull();
+    expect(art!.style.transition).not.toContain('8s');
+    expect(art!.style.transition).toContain('0.15s');
+    // Law 44's second clause: the art still arrives, it just does not zoom.
+    expect(art!.style.transform).toBe('');
+  });
+
+  it('still renders every beat under reduced motion — no information lost to a dropped stagger', () => {
+    stubMatchMedia(true);
+    render(<EncounterVeil {...defaultProps} />);
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    expect(screen.getByText('Gate Duty')).toBeInTheDocument();
   });
 });
 

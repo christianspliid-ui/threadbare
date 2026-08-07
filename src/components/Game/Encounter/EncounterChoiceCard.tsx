@@ -86,7 +86,7 @@ export function EncounterChoiceCard({
       tabIndex={0}
       aria-pressed={selected}
       aria-label={choice.god_verb}
-      className="pulse-gold-on-hover"
+      className="pulse-gold-on-hover focus-ring"
       onClick={handleActivate}
       onKeyDown={handleKeyDown}
       style={{
@@ -101,7 +101,9 @@ export function EncounterChoiceCard({
         cursor: 'pointer',
         display: 'flex',
         flexDirection: 'column',
-        outline: 'none',
+        // Law 23/46 (THR-1010): the focus ring lives on `.focus-ring` now —
+        // suppressing it inline also killed it for keyboard players, and this
+        // element is explicitly `tabIndex={0}`.
       }}
     >
       {/* Top row: sphere label · cost */}

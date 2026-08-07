@@ -255,6 +255,7 @@ export function BondBeat({
             onBlur={() => setEditingName(false)}
             onKeyDown={e => { if (e.key === 'Enter') setEditingName(false); }}
             autoFocus
+            className="focus-ring"
             style={{
               background: 'transparent',
               border: 'none',
@@ -264,7 +265,6 @@ export function BondBeat({
               color: '#e8e0d0',
               textAlign: 'center',
               width: '400px',
-              outline: 'none',
             }}
           />
         ) : (

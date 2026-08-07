@@ -77,12 +77,11 @@ export function CMSHeader({ searchQuery, onSearchChange, onSelectEntry }: Props)
           onFocus={() => setFocused(true)}
           onBlur={() => setTimeout(() => setFocused(false), 200)}
           placeholder="Search content... (Ctrl+K)"
-          className="w-full px-3 py-1.5 rounded text-sm"
+          className="w-full px-3 py-1.5 rounded text-sm focus-ring"
           style={{
             backgroundColor: 'var(--bg-surface, #1a1a2e)',
             border: '1px solid var(--border-subtle)',
             color: 'var(--text-primary)',
-            outline: 'none',
           }}
         />
         {focused && searchResults.length > 0 && (

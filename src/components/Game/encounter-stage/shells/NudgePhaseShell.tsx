@@ -39,10 +39,15 @@ import {
 import { useNudgeHand, type NudgeHandCard } from '../useNudgeHand';
 import type { EncounterStageNudgePhaseModel } from '../types';
 
-// ── Design tokens (match the veil's existing palette) ──────────────
-const GOLD = '#d4af37';
-const TEXT_WARM = 'rgba(212, 196, 158, 0.75)';
-const TEXT_WHISPER = 'rgba(180, 170, 150, 0.4)';
+// ── Design tokens (the veil's ceremonial palette — Law 30, THR-1010) ───────
+// These name the same tokens `EncounterVeil.tsx` uses; the values live in
+// `index.css`. Previously both files declared their own `#d4af37`, which had
+// drifted from `--accent-gold`. `TEXT_WHISPER` also rose to WCAG AA here
+// (Law 45) — in this shell it carries the forecast qualifier, the factor
+// sentences and the remaining-essence line, all of them information.
+const GOLD = 'var(--veil-gold)';
+const TEXT_WARM = 'var(--veil-text-warm)';
+const TEXT_WHISPER = 'var(--veil-text-whisper)';
 const FONT_PROSE = "Georgia, 'Times New Roman', serif";
 const FONT_DISPLAY = "'Palatino Linotype', 'Book Antiqua', Palatino, serif";
 
@@ -50,7 +55,7 @@ const FONT_DISPLAY = "'Palatino Linotype', 'Book Antiqua', Palatino, serif";
 const FORECAST_TIER_COLORS: Record<string, string> = {
   doomed: '#b91c1c',
   perilous: 'rgba(248, 113, 113, 0.85)',
-  uncertain: 'rgba(212, 175, 55, 0.85)',
+  uncertain: 'rgb(var(--veil-gold-rgb) / 0.85)',
   favorable: 'rgba(134, 239, 172, 0.8)',
   fated: 'rgba(134, 239, 172, 1)',
 };
@@ -161,6 +166,9 @@ function NudgeCard({
   return (
     <button
       type="button"
+      // Law 23 (THR-1010): the hand is the stage's primary control — a
+      // keyboard player must be able to see which card is focused.
+      className="focus-ring"
       data-testid={`nudge-card-${card.id}`}
       data-nudge-state={card.selected ? 'selected' : card.state}
       data-nudge-blocked={card.blockedCode ?? ''}
@@ -182,10 +190,10 @@ function NudgeCard({
         borderRadius: 10,
         overflow: 'hidden',
         background: card.selected
-          ? 'rgba(212, 175, 55, 0.12)'
+          ? 'rgb(var(--veil-gold-rgb) / 0.12)'
           : 'rgba(255, 255, 255, 0.02)',
-        border: `1px solid ${card.selected ? GOLD : 'rgba(212, 175, 55, 0.18)'}`,
-        boxShadow: card.selected ? `0 0 12px rgba(212, 175, 55, 0.22)` : undefined,
+        border: `1px solid ${card.selected ? GOLD : 'rgb(var(--veil-gold-rgb) / 0.18)'}`,
+        boxShadow: card.selected ? `0 0 12px rgb(var(--veil-gold-rgb) / 0.22)` : undefined,
         opacity: dimmed ? 0.45 : 1,
         cursor: card.interactive ? 'pointer' : 'not-allowed',
         transition: 'opacity 0.2s ease, border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease',
@@ -263,7 +271,7 @@ function NudgeCard({
             fontFamily: FONT_DISPLAY,
             fontSize: 'var(--text-sm)',
             lineHeight: 1.25,
-            color: card.selected ? GOLD : 'rgba(212, 196, 158, 0.95)',
+            color: card.selected ? GOLD : 'var(--veil-text-bright)',
           }}
         >
           {card.name}
@@ -390,7 +398,7 @@ export function NudgePhaseShell({
           gap: 18,
           padding: '14px 16px',
           borderRadius: 10,
-          border: '1px solid rgba(212, 175, 55, 0.15)',
+          border: '1px solid rgb(var(--veil-gold-rgb) / 0.15)',
           background: 'rgba(255, 255, 255, 0.015)',
         }}
       >
@@ -460,8 +468,8 @@ export function NudgePhaseShell({
                   gap: 6,
                   padding: '3px 9px',
                   borderRadius: 6,
-                  border: '1px solid rgba(212, 175, 55, 0.35)',
-                  background: 'rgba(212, 175, 55, 0.07)',
+                  border: '1px solid rgb(var(--veil-gold-rgb) / 0.35)',
+                  background: 'rgb(var(--veil-gold-rgb) / 0.07)',
                   flexShrink: 0,
                 }}
               >
@@ -476,7 +484,7 @@ export function NudgePhaseShell({
                   aria-label={`${TEST_UNIT_LABEL}: ${testPanel.difficultyWord}`}
                   style={{
                     fontSize: 'var(--text-xs)',
-                    color: 'rgba(212, 196, 158, 0.95)',
+                    color: 'var(--veil-text-bright)',
                     letterSpacing: '0.1em',
                     textTransform: 'uppercase',
                   }}
@@ -662,7 +670,7 @@ export function NudgePhaseShell({
           style={{
             marginTop: 18,
             padding: '10px 12px',
-            border: '1px dashed rgba(212, 175, 55, 0.25)',
+            border: '1px dashed rgb(var(--veil-gold-rgb) / 0.25)',
             borderRadius: 8,
           }}
         >
@@ -683,13 +691,14 @@ export function NudgePhaseShell({
       <div style={{ marginTop: 24, display: 'flex', alignItems: 'center', gap: 14 }}>
         <button
           type="button"
+          className="focus-ring"
           data-testid="nudge-commit"
           onClick={() => onCommit(hand.selectedIds, hand.selectedCost)}
           style={{
             padding: '10px 22px',
             borderRadius: 8,
             border: `1px solid ${GOLD}`,
-            background: 'rgba(212, 175, 55, 0.1)',
+            background: 'rgb(var(--veil-gold-rgb) / 0.1)',
             color: GOLD,
             fontFamily: FONT_DISPLAY,
             fontSize: 'var(--text-base)',

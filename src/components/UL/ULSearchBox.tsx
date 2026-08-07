@@ -37,13 +37,12 @@ export function ULSearchBox({
         placeholder="Search across all shards..."
         value={draft}
         onChange={(e) => setDraft(e.target.value)}
-        className="flex-1 max-w-md px-3 py-1.5 rounded-md"
+        className="flex-1 max-w-md px-3 py-1.5 rounded-md focus-ring"
         style={{
           fontSize: 'var(--text-sm)',
           backgroundColor: 'var(--bg-surface)',
           border: '1px solid var(--border-subtle)',
           color: 'var(--text-primary)',
-          outline: 'none',
         }}
         data-testid="ul-search-input"
       />
