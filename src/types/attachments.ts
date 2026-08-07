@@ -30,6 +30,22 @@ export const POSSESSION_SUBCATEGORIES: PossessionSubcategory[] = [
   'relics_talismans', 'tools_instruments', 'provisions',
 ];
 
+/**
+ * Player-facing name for each subcategory (UI Law 14 — a `snake_case` union
+ * member never reaches a screen). Exhaustive by type: adding a subcategory
+ * fails to compile until it is named here, the same property
+ * `ARTIFACT_CATEGORY_ART` relies on for its plates.
+ */
+export const POSSESSION_SUBCATEGORY_NAMES: Record<PossessionSubcategory, string> = {
+  arms: 'Arms',
+  mounts_beasts: 'Mounts & Beasts',
+  vestments: 'Vestments',
+  tomes_scrolls: 'Tomes & Scrolls',
+  relics_talismans: 'Relics & Talismans',
+  tools_instruments: 'Tools & Instruments',
+  provisions: 'Provisions',
+};
+
 // ─── Tier System ────────────────────────────────────────────────
 
 /** @deprecated Use RarityTier from ./rarity instead */

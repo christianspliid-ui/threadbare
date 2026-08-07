@@ -4205,6 +4205,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                       onClose={handleHexDetailClose}
                       onGoToChronicle={(coord) => { handleHexClick(coord); handleHexDetailClose(); }}
                       graph={gameState.graph}
+                      onAgentClick={handleAgentSelect}
+                      onLocationClick={(locationId) => setStubModalState({ nodeId: locationId, category: 'location' })}
                     />
                   )}
                 </div>
@@ -4436,7 +4438,14 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
             case 'army':
               return <ArmySheet name={nodeName} onClose={onClose} />;
             case 'artifact':
-              return <ArtifactSheet name={nodeName} onClose={onClose} />;
+              return (
+                <ArtifactSheet
+                  name={nodeName}
+                  artifactId={nodeId}
+                  graph={gameState.graph}
+                  onClose={onClose}
+                />
+              );
             default:
               return null;
           }
