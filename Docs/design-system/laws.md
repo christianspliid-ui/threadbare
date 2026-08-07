@@ -4,7 +4,7 @@
 >
 > **What this file is:** the collated, numbered law book for every player-facing surface. The design-system files describe *how* (tokens, components, motion); this file states *what must always hold*. A law is checkable — a reviewer with a screenshot and this file can say "Law 4 violated" without re-deriving intent.
 >
-> **Ratified:** Christian, chat, 2026-08-06 (THR-1007) — all originally-[P] laws confirmed, the 2026-08-06 review's Laws 44–54 adopted, five amendments applied, Law 55 added by his direction. Future changes and exceptions are decided together (see Enforcement).
+> **Ratified:** Christian, chat, 2026-08-06 (THR-1007) — all originally-[P] laws confirmed, the 2026-08-06 review's Laws 44–54 adopted, five amendments applied, Law 55 added by his direction; Laws 13 and 29 further amended 2026-08-06 (pool-balance numeral exception; library-docs-with-primitive rule), both accepted in chat. Future changes and exceptions are decided together (see Enforcement).
 >
 > **Provenance marks:** **[E]** = established and binding, with source. New proposals enter as **[P]** and are followed until Christian rules; his ratification (chat, dated) flips them to [E].
 >
@@ -35,7 +35,7 @@
 
 ## IV. Words, never numerals
 
-13. **[E] No raw magnitudes on any mortal-facing surface.** Difficulty is `gentle/fair/steep/severe`; forecast is `doomed/perilous/uncertain/favorable/fated`; derived change sentences band their deltas the same way (`engine/aftermathWords.ts`). Numbers live in traces and the designer view only. No percentages anywhere player-facing. (Ruling 6, THR-772/868; THR-1004.)
+13. **[E] No raw magnitudes on any mortal-facing surface.** Difficulty is `gentle/fair/steep/severe`; forecast is `doomed/perilous/uncertain/favorable/fated`; derived change sentences band their deltas the same way (`engine/aftermathWords.ts`). Numbers live in traces and the designer view only. No percentages anywhere player-facing. One exception, ratified 2026-08-06: **resource-pool balances in persistent chrome** (the essence counter) may render as whole-number numerals — a pool balance is not a card face, and forty pips would be unreadable (THR-890). Fractional float noise is still a defect. (Ruling 6, THR-772/868; THR-1004.)
 14. **[E] No raw internal keys, ever.** `star.positive`, template ids, `snake_case` enums — all resolve through display vocabularies before render. A key the vocabulary cannot resolve renders as its best plain-English fallback and warns once, never as the key. (THR-1004; keyvalue precedent THR-608.)
 15. **[E] Pips are the one sanctioned magnitude glyph language** — twenty ~5% steps in four tiers of five, shape changing per tier — and they annotate words, never replace them. (THR-890.)
 16. **[E] Key:value labels bolted onto prose are unfinished UX.** Information reaches the player woven into sentences or as designed chips — never as a debug-style label strip. The factor line carries its source *in the sentence* (THR-820); the chip carries a kind tag *plus a sentence* (mockup chip anatomy). (THR-608 / THR-883 finding 2.)
@@ -60,7 +60,7 @@
 26. **[E] Choose from the decision tree before building; never a new component when a primitive composes.** New modal features use `Modal`; the RevealCard/Modal/EventPopup family is chosen by *what the player must do* (decide / witness a gain / be informed), not by felt importance. (`component-selection.md`.)
 27. **[E] Shared primitives are the only place presentation logic lives** — `EntityVisual`, `Tooltip`, `Medallion`, `ListRow`, `Card`, `EntityCard`, `OddsPips`, `StepDots`, `RarityBorderBox`, `Section`… A surface styling its own tooltip or entity tile is forking the design system. (`primitives.md`; Medallion rule in `artifact-representation.md`.)
 28. **[E] The canonical-presentation registry decides how each artifact class renders** (agent = portrait header, action = its card face, location = hero landscape, …). A new surface whose subject is a registry row states which visual + info source it uses, in its plan's UI pillar. (`artifact-representation.md`.)
-29. **[E] The styleguide is the living contract.** Every shared primitive renders at `?view=styleguide` with sample data; a new primitive lands with its styleguide entry in the same PR. (CLAUDE.md dev routes; THR-637.)
+29. **[E] The styleguide is the living contract, and the library docs land with the primitive.** Every shared primitive renders at `?view=styleguide` with sample data; a new primitive lands with its styleguide entry **and its `component-selection.md` row in the same PR**, enforced by the styleguide-sync test (amended 2026-08-06; test ticketed THR-1011). (CLAUDE.md dev routes; THR-637.)
 
 ## VIII. Color
 
