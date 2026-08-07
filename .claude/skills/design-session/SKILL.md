@@ -170,7 +170,7 @@ appendix), per `Docs/canon/design-governance.md` § Per-system required sections
 |---|---|
 | Engine pillar | systems, graph nodes/edges, tick phases, resolution, PRNG callouts |
 | Content pillar | encounter templates, prose tables, attachment content, data tables |
-| UI pillar | player-facing display, notifications, DebugPanel, HexMapV2 signifiers — **name the browser-verify tool** (Playwright DOM / Claude-in-Chrome WebGL) |
+| UI pillar | player-facing display, notifications, DebugPanel, HexMapV2 signifiers — **name the browser-verify tool** (Playwright DOM / Claude-in-Chrome WebGL) **and state which UI Laws the surface engages** (`Docs/design-system/laws.md`, THR-1007 — the Laws bind every UI Done-when by default; a design that needs an exception is a joint amendment decision with Christian, never a silent deviation) |
 | Wiring | per module: orchestrator phase, UI component, GameState flow, traces, debug visibility, prose pipeline, player controls |
 | Constants table | every tunable number named — default + purpose (NFP #1) |
 | Tracing | trace types + TS interface definitions (NFP #2) |

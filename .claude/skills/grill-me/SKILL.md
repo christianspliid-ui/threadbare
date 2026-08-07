@@ -5,7 +5,7 @@ description: >
   or ambiguous work, asks permission before running, and produces a synthesis
   artifact that feeds plan-doc drafting. Conversational by default, async-batch
   on request.
-last_validated_against: 2026-08-03
+last_validated_against: 2026-08-06
 ---
 
 # Grill Me
@@ -103,6 +103,7 @@ See: `agents/synthesis-prompt.md`
 1. Evaluate invocation triggers
 2. If auto-triggered, ask permission before grilling
 3. Choose mode (default conversational, async on request)
+3b. **If the concept touches a player-facing surface, load `Docs/design-system/laws.md` before interrogating** (THR-1007). The Laws ground the questions two ways: an answer the Laws already settle is not asked (cite the law instead), and a direction Christian describes that would *break* a law is surfaced during the grilling as a joint amendment decision — named law number, his call — never absorbed silently into the synthesis. The synthesis artifact lists which laws the concept engages.
 4. Run interrogation using question design rules
 5. Handle parked questions and revisit once
 6. Generate synthesis artifact in `Docs/plans/`

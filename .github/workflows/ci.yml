@@ -45,6 +45,16 @@ jobs:
   detect:
     name: Detect code changes
     runs-on: ubuntu-latest
+    # The only job here that carried no bound (docs-check has 10, check has 20).
+    # Five minutes is generous for a checkout plus a paths-filter API read, which
+    # take seconds.
+    #
+    # This does NOT address the 2026-08-06 hang (THR-1013), and should not be
+    # mistaken for its fix: `timeout-minutes` bounds a job's *execution*, and that
+    # hang was *queue* time — jobs accepted, given no runner, reaped at ~15 minutes
+    # having executed zero steps. A timeout has nothing to bound in that state.
+    # What surfaces that class is the `stalled` verdict in `check-actions-health.ts`.
+    timeout-minutes: 5
     outputs:
       # Two producers, never both (THR-946): `paths-filter` on push/pull_request,
       # the git-diff step on `merge_group`. Whichever did not run contributes an

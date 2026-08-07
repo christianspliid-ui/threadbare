@@ -129,3 +129,9 @@ transition: background-color var(--anim-fast) ease,
 - ❌ Animate `width`, `height`, `padding`, or `margin`
 - ❌ Run glow animations continuously on elements larger than 8px
 - ❌ Add idle animations to more than 3 elements simultaneously
+
+---
+
+## Ceremonial tier (UI Law 41, amended 2026-08-06)
+
+The duration caps above govern **game-UI chrome**. The **ceremonial tier** — encounter-veil entrance staggers (0.2–1.8s), long art zooms (up to 8s), 1.2s informational fades — is a named exception whose spec is the veil's own constants (`ENTRANCE_DELAYS`, `watchedEntrance`). It exists for arrival ceremony only; it is not a license for `transition: all` (banned everywhere) and it collapses to plain `--anim-fast` fades under `prefers-reduced-motion` (UI Law 44).
