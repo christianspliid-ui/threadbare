@@ -1,11 +1,11 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import type { ThreadedNode, ThreadCategory, SustainedControlNode, SustainedControlCategory } from '../../engine/retinue';
 import { groupThreadedNodes, SUSTAIN_BAR_MIN_VISIBLE_FRACTION, SUSTAIN_LAPSE_RISK_TIGHTENING_TICKS } from '../../engine/retinue';
 import type { UnifiedActionTemplate } from '../../types/unifiedAction';
-import type { BalanceEvent, BalanceEncounterPoolCandidate } from '../../types/balanceEval';
+import type { BalanceEvent } from '../../types/balanceEval';
 import type { ActiveEncounterDisplay } from './encounterNotificationRuntime';
 import { SectionHeading } from '../shared/SectionHeading';
-import { Modal } from '../shared/Modal';
+import { Tooltip } from '../shared/Tooltip';
 import { ActivityIcon, type ActivityKind } from '../shared/ActivityIcon';
 import { EncounterBadge } from './EncounterBadge';
 import type { EncounterBadgeModel } from './encounterBadgeModel';
@@ -17,13 +17,13 @@ import { SphereIcon, sphereFromReach } from '../shared/SphereIcon';
 import {
   getSustainedStatusLabel,
   getChampionBadgeLabel,
+  sustainFlowWord,
+  sustainSummarySentences,
   LAPSE_WARNING_TOOLTIPS,
 } from '../../data/sustained-control-status-prose';
 import {
   getEncounterActivityIconKey,
   getSelectedEncounterPoolCandidate,
-  groupEncounterPoolCandidates,
-  summarizeEncounterPoolDominance,
 } from './encounterActivityPresentation';
 import type { AgentStrategicSummary } from '../../engine/strategicPresentation';
 import { getBehaviorFamilyPresentation, STRATEGIC_BADGE_BG_OPACITY } from '../../engine/strategicPresentation';
@@ -126,13 +126,6 @@ interface ThreadsPanelProps {
   onChampionChipClick?: (agentId: string) => void;
 }
 
-interface EncounterPoolModalState {
-  agentName: string;
-  decision: BalanceEvent;
-}
-
-type EncounterPoolViewMode = 'raw' | 'grouped';
-
 // ─── Compact row props ────────────────────────────────────────────
 
 interface CompactThreadRowProps {
@@ -171,38 +164,21 @@ interface CompactThreadRowProps {
 
 // ─── Utility functions ────────────────────────────────────────────
 
-function getVisibleEncounterPool(decision?: BalanceEvent): number | null {
-  if (!decision) return null;
-  return decision.candidatesAfterCooldown
-    ?? decision.filterAfterCap
-    ?? decision.filterAfterThreat
-    ?? decision.filterAfterPrerequisites
-    ?? decision.filterAfterVisibility
-    ?? decision.filterAfterAwareness
-    ?? decision.filterCacheSize
-    ?? null;
-}
-
-function getEncounterPoolBaseline(decision?: BalanceEvent): number | null {
-  return decision?.filterCacheSize ?? null;
-}
-
-function getEncounterPoolCandidates(decision?: BalanceEvent): BalanceEncounterPoolCandidate[] {
-  return decision?.rankedEncounterPool ?? [];
-}
-
-function formatEncounterPoolMeta(candidate: BalanceEncounterPoolCandidate): string {
-  return `${candidate.reachPrimary}/${candidate.reachSecondary} | ${candidate.encounterType} | ${candidate.threatBand} | ${candidate.stepCount} steps | ~${candidate.totalTickCost} ticks | reward ${candidate.rewardEstimate.toFixed(1)}`;
-}
-
-function formatEncounterPoolDestination(candidate: BalanceEncounterPoolCandidate): string | null {
-  const destination = candidate.sublocationName ?? candidate.locationName;
-  if (!destination) return null;
-  if (candidate.action === 'queue_movement') return `Heading to ${destination}`;
-  if (candidate.action === 'attempt_remote') return `Remote at ${destination}`;
-  if (candidate.sublocationName) return `At ${destination}`;
-  return null;
-}
+// THR-1008: `EncounterPoolModal` and its five formatters lived here until this
+// commit. THR-664 removed the row button that opened them on 2026-07-19 and said
+// so in its own message — "EncounterPoolModal is retained per the ticket's
+// cleanup rule but now has no entry point" — because the agent detail panel's
+// Encounter Pool section was verified a superset. The state was only ever set to
+// `null`, so `<Modal open={state !== null}>` could never open, and the raw
+// magnitudes THR-1008 was filed against ("Score 0.42 · completion 65%", the
+// pipe-delimited meta strip) had not reached a player since. Deleting the copy
+// removes those two findings at source; the live surface they described is
+// `EncounterDecisionPanel` in ThreadDetailView, gated in the same commit.
+//
+// Fallout: `groupEncounterPoolCandidates` survives — ThreadDetailView now uses
+// it to collapse the ranked pool for normal play. `summarizeEncounterPoolDominance`
+// does not, and is left with no production caller — TODO(THR-1012): prune it or
+// wire it into the designer view.
 
 // ─── Sub-components ───────────────────────────────────────────────
 
@@ -289,297 +265,6 @@ function AutoToggle({ on, onToggle }: { on: boolean; onToggle: () => void }) {
       }} />
       Auto
     </button>
-  );
-}
-
-// ─── Encounter Pool Modal ─────────────────────────────────────────
-
-function EncounterPoolModal({
-  state,
-  onClose,
-}: {
-  state: EncounterPoolModalState | null;
-  onClose: () => void;
-}) {
-  const [viewMode, setViewMode] = useState<EncounterPoolViewMode>('raw');
-  const candidates = getEncounterPoolCandidates(state?.decision);
-  const groupedCandidates = groupEncounterPoolCandidates(candidates);
-  const dominance = summarizeEncounterPoolDominance(candidates, 10);
-  const visibleCount = getVisibleEncounterPool(state?.decision);
-  const baselineCount = getEncounterPoolBaseline(state?.decision);
-
-  useEffect(() => {
-    if (state) setViewMode('raw');
-  }, [state?.agentName, state?.decision.seq, state?.decision.tick]);
-
-  return (
-    <Modal
-      open={state !== null}
-      onClose={onClose}
-      maxWidth={720}
-      aria-label={state ? `${state.agentName} encounter pool` : 'Encounter pool'}
-    >
-      <Modal.Header onClose={onClose}>
-        {state ? `${state.agentName}'s Encounter Pool` : 'Encounter Pool'}
-      </Modal.Header>
-      <Modal.Body>
-        {state && (
-          <div
-            style={{
-              marginBottom: 'var(--space-3)',
-              fontFamily: 'var(--font-body)',
-              fontSize: 'var(--text-sm)',
-              color: 'var(--text-secondary)',
-            }}
-          >
-            <div>
-              Pool {visibleCount ?? 0}
-              {baselineCount !== null && baselineCount !== visibleCount ? ` / ${baselineCount}` : ''}
-            </div>
-            <div style={{ marginTop: '4px', color: 'var(--text-tertiary)' }}>
-              Ordered by the agent&apos;s current decision score.
-            </div>
-            <div style={{ marginTop: '8px', color: 'var(--text-secondary)' }}>
-              Unique templates in top {dominance.windowSize}: {dominance.uniqueTemplates}
-            </div>
-            {dominance.dominantTemplateName && (
-              <div style={{ marginTop: '2px', color: 'var(--text-muted)' }}>
-                Top {dominance.windowSize} contains {dominance.dominantTemplateCount} copies of {dominance.dominantTemplateName}
-                {' '}({Math.round(dominance.dominantTemplateShare * 100)}%)
-              </div>
-            )}
-            <div
-              role="tablist"
-              aria-label="Encounter pool display mode"
-              style={{
-                display: 'flex',
-                gap: 'var(--space-2)',
-                marginTop: '10px',
-              }}
-            >
-              {([
-                { mode: 'raw' as const, label: `Raw priority list (${candidates.length})` },
-                { mode: 'grouped' as const, label: `Grouped templates (${groupedCandidates.length})` },
-              ]).map(({ mode, label }) => {
-                const selected = viewMode === mode;
-                return (
-                  <button
-                    key={mode}
-                    type="button"
-                    role="tab"
-                    aria-selected={selected}
-                    onClick={() => setViewMode(mode)}
-                    style={{
-                      borderRadius: '999px',
-                      border: `1px solid ${selected ? 'rgba(212, 160, 64, 0.45)' : 'rgba(255,255,255,0.08)'}`,
-                      backgroundColor: selected ? 'rgba(212, 160, 64, 0.12)' : 'rgba(255,255,255,0.02)',
-                      color: selected ? 'var(--accent-gold)' : 'var(--text-secondary)',
-                      fontFamily: 'var(--font-body)',
-                      fontSize: 'var(--text-xs)',
-                      padding: '4px 10px',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    {label}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {candidates.length === 0 ? (
-          <div
-            style={{
-              fontFamily: 'var(--font-body)',
-              fontSize: 'var(--text-sm)',
-              color: 'var(--text-tertiary)',
-            }}
-          >
-            No ranked encounter pool is available for this agent yet.
-          </div>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
-            {viewMode === 'raw'
-              ? candidates.map((candidate) => {
-                  const destinationLine = formatEncounterPoolDestination(candidate);
-                  return (
-                    <div
-                      key={`${candidate.rank}-${candidate.templateId}-${candidate.locationId}`}
-                      data-testid="encounter-pool-item"
-                      style={{
-                        border: '1px solid rgba(212, 160, 64, 0.18)',
-                        borderRadius: '10px',
-                        padding: '10px 12px',
-                        backgroundColor: candidate.selected ? 'rgba(212, 160, 64, 0.08)' : 'rgba(255,255,255,0.02)',
-                      }}
-                    >
-                      <div
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          gap: 'var(--space-2)',
-                        }}
-                      >
-                        <div
-                          style={{
-                            fontFamily: 'var(--font-display)',
-                            fontSize: 'var(--text-base)',
-                            color: 'var(--accent-gold)',
-                          }}
-                        >
-                          #{candidate.rank} {candidate.templateName}
-                        </div>
-                        {candidate.selected && (
-                          <div
-                            style={{
-                              fontFamily: 'var(--font-body)',
-                              fontSize: 'var(--text-xs)',
-                              color: 'var(--bg-abyss)',
-                              backgroundColor: 'var(--accent-gold)',
-                              borderRadius: '999px',
-                              padding: '2px 8px',
-                              flexShrink: 0,
-                            }}
-                          >
-                            Chosen
-                          </div>
-                        )}
-                      </div>
-
-                      {(destinationLine || candidate.locationName) && (
-                        <div
-                          style={{
-                            marginTop: '4px',
-                            fontFamily: 'var(--font-body)',
-                            fontSize: 'var(--text-xs)',
-                            color: 'var(--text-secondary)',
-                          }}
-                        >
-                          {destinationLine ?? candidate.locationName}
-                        </div>
-                      )}
-
-                      <div
-                        style={{
-                          marginTop: '4px',
-                          fontFamily: 'var(--font-body)',
-                          fontSize: 'var(--text-xs)',
-                          color: 'var(--text-tertiary)',
-                        }}
-                      >
-                        {formatEncounterPoolMeta(candidate)}
-                      </div>
-
-                      <div
-                        style={{
-                          marginTop: '4px',
-                          fontFamily: 'var(--font-body)',
-                          fontSize: 'var(--text-xs)',
-                          color: 'var(--text-muted)',
-                        }}
-                      >
-                        Score {candidate.finalScore.toFixed(2)} · completion {(candidate.completionProb * 100).toFixed(0)}%
-                        {candidate.travelCost > 0 ? ` · travel ${candidate.travelCost.toFixed(2)}` : ''}
-                      </div>
-                    </div>
-                  );
-                })
-              : groupedCandidates.map((groupedCandidate) => {
-                  const { primary } = groupedCandidate;
-                  const destinationLine = formatEncounterPoolDestination(primary);
-                  const extraDestinations = Math.max(0, groupedCandidate.destinations.length - 1);
-                  return (
-                    <div
-                      key={`${primary.rank}-${groupedCandidate.key}`}
-                      data-testid="encounter-pool-item"
-                      style={{
-                        border: '1px solid rgba(212, 160, 64, 0.18)',
-                        borderRadius: '10px',
-                        padding: '10px 12px',
-                        backgroundColor: primary.selected ? 'rgba(212, 160, 64, 0.08)' : 'rgba(255,255,255,0.02)',
-                      }}
-                    >
-                      <div
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          gap: 'var(--space-2)',
-                        }}
-                      >
-                        <div
-                          style={{
-                            fontFamily: 'var(--font-display)',
-                            fontSize: 'var(--text-base)',
-                            color: 'var(--accent-gold)',
-                          }}
-                        >
-                          #{primary.rank} {primary.templateName}
-                        </div>
-                        {primary.selected && (
-                          <div
-                            style={{
-                              fontFamily: 'var(--font-body)',
-                              fontSize: 'var(--text-xs)',
-                              color: 'var(--bg-abyss)',
-                              backgroundColor: 'var(--accent-gold)',
-                              borderRadius: '999px',
-                              padding: '2px 8px',
-                              flexShrink: 0,
-                            }}
-                          >
-                            Chosen
-                          </div>
-                        )}
-                      </div>
-
-                      {(destinationLine || primary.locationName) && (
-                        <div
-                          style={{
-                            marginTop: '4px',
-                            fontFamily: 'var(--font-body)',
-                            fontSize: 'var(--text-xs)',
-                            color: 'var(--text-secondary)',
-                          }}
-                        >
-                          {destinationLine ?? primary.locationName}
-                        </div>
-                      )}
-
-                      <div
-                        style={{
-                          marginTop: '4px',
-                          fontFamily: 'var(--font-body)',
-                          fontSize: 'var(--text-xs)',
-                          color: 'var(--text-tertiary)',
-                        }}
-                      >
-                        {formatEncounterPoolMeta(primary)}
-                      </div>
-
-                      {groupedCandidate.count > 1 && (
-                        <div
-                          style={{
-                            marginTop: '4px',
-                            fontFamily: 'var(--font-body)',
-                            fontSize: 'var(--text-xs)',
-                            color: 'var(--text-muted)',
-                          }}
-                        >
-                          {groupedCandidate.count} destinations
-                          {groupedCandidate.destinations[0] ? ` · best at ${groupedCandidate.destinations[0]}` : ''}
-                          {extraDestinations > 0 ? ` + ${extraDestinations} more` : ''}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-          </div>
-        )}
-      </Modal.Body>
-    </Modal>
   );
 }
 
@@ -738,20 +423,22 @@ function CompactThreadRow({
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
             {/* Priority pip — visible when this thread has a pending encounter (THR-340 §5.8) */}
             {node.category === 'agent' && agentEncounter && (
-              <span
-                data-testid="thread-priority-pip"
-                aria-label="Needs attention"
-                title="Needs attention"
-                style={{
-                  width: 8,
-                  height: 8,
-                  borderRadius: '50%',
-                  backgroundColor: 'var(--accent-gold, #d4a040)',
-                  boxShadow: '0 0 6px var(--accent-gold, #d4a040)',
-                  flexShrink: 0,
-                  animation: 'mark-pulse 1.6s ease-in-out infinite',
-                }}
-              />
+              <Tooltip id="ui.thread_priority_pip">
+                <span
+                  data-testid="thread-priority-pip"
+                  aria-label="Needs attention"
+                  style={{
+                    display: 'inline-block',
+                    width: 8,
+                    height: 8,
+                    borderRadius: '50%',
+                    backgroundColor: 'var(--accent-gold, #d4a040)',
+                    boxShadow: '0 0 6px var(--accent-gold, #d4a040)',
+                    flexShrink: 0,
+                    animation: 'mark-pulse 1.6s ease-in-out infinite',
+                  }}
+                />
+              </Tooltip>
             )}
             <span
               className="truncate"
@@ -771,12 +458,16 @@ function CompactThreadRow({
 
             {/* Strategic behavior glyph */}
             {familyPresentation && (
-              <span
-                title={strategicBadgeText ?? familyPresentation.label}
-                style={{ fontSize: 'var(--text-xs)', color: familyPresentation.color, flexShrink: 0, lineHeight: 1 }}
+              <Tooltip
+                label={familyPresentation.label}
+                desc={strategicBadgeText ?? undefined}
               >
-                {familyPresentation.glyph}
-              </span>
+                <span
+                  style={{ fontSize: 'var(--text-xs)', color: familyPresentation.color, flexShrink: 0, lineHeight: 1 }}
+                >
+                  {familyPresentation.glyph}
+                </span>
+              </Tooltip>
             )}
 
             {/* Activity icon — agents only */}
@@ -896,43 +587,45 @@ function CompactThreadRow({
           {/* THR-479 — Aspect badge on agent rows for living Aspects of the god */}
           {node.category === 'agent' && node.isAspect && (
             <div>
-              <span
-                data-testid="aspect-badge"
-                style={{
-                  display: 'inline-flex', alignItems: 'center', gap: 4,
-                  padding: '1px 6px',
-                  border: '1px solid var(--sphere-star-bright, var(--accent-gold))',
-                  borderRadius: 999,
-                  fontSize: 11, fontFamily: 'var(--font-body)',
-                  fontStyle: 'italic', letterSpacing: '0.04em',
-                  color: 'var(--sphere-star-bright, var(--accent-gold))',
-                  backgroundColor: 'transparent',
-                }}
-                aria-label="An aspect of the god — the apex beyond the five tiers"
-                title="An aspect of the god. Beyond the five tiers; permanent; will outlast the body that holds it."
-              >
-                ❂ Aspect
-              </span>
+              <Tooltip id="ui.aspect_badge">
+                <span
+                  data-testid="aspect-badge"
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 4,
+                    padding: '1px 6px',
+                    border: '1px solid var(--sphere-star-bright, var(--accent-gold))',
+                    borderRadius: 999,
+                    fontSize: 11, fontFamily: 'var(--font-body)',
+                    fontStyle: 'italic', letterSpacing: '0.04em',
+                    color: 'var(--sphere-star-bright, var(--accent-gold))',
+                    backgroundColor: 'transparent',
+                  }}
+                  aria-label="An aspect of the god — the apex beyond the five tiers"
+                >
+                  ❂ Aspect
+                </span>
+              </Tooltip>
             </div>
           )}
 
           {/* Strategic badge row (agents with active strategic activity) */}
           {node.category === 'agent' && strategicBadgeText && familyPresentation && (
-            <div
-              className="truncate"
-              title={strategicBadgeText}
-              style={{
-                padding: '1px 4px',
-                borderRadius: 4,
-                fontFamily: 'var(--font-body)',
-                fontSize: 'var(--text-xs)',
-                lineHeight: 1.2,
-                color: familyPresentation.color,
-                backgroundColor: `color-mix(in srgb, ${familyPresentation.color} ${Math.round(STRATEGIC_BADGE_BG_OPACITY * 100)}%, transparent)`,
-              }}
-            >
-              {familyPresentation.glyph} {strategicBadgeText}
-            </div>
+            <Tooltip label={familyPresentation.label} desc={strategicBadgeText}>
+              <div
+                className="truncate"
+                style={{
+                  padding: '1px 4px',
+                  borderRadius: 4,
+                  fontFamily: 'var(--font-body)',
+                  fontSize: 'var(--text-xs)',
+                  lineHeight: 1.2,
+                  color: familyPresentation.color,
+                  backgroundColor: `color-mix(in srgb, ${familyPresentation.color} ${Math.round(STRATEGIC_BADGE_BG_OPACITY * 100)}%, transparent)`,
+                }}
+              >
+                {familyPresentation.glyph} {strategicBadgeText}
+              </div>
+            </Tooltip>
           )}
 
           {/* Row 3: auto toggle (agents only).
@@ -978,24 +671,61 @@ interface SustainedControlRowProps {
   onCenterOnHex: (hexLabel: string) => void;
 }
 
-function formatRunwayTooltip(node: SustainedControlNode): string {
-  const cost = node.perTickCostTotal === 0 ? '—' : `−${node.perTickCostTotal.toFixed(0)} per tick`;
-  const income = node.perTickIncomeTotal > 0
-    ? `+${node.perTickIncomeTotal.toFixed(0)} per tick`
-    : null;
-  const net = node.netFlow >= 0
-    ? `net +${node.netFlow.toFixed(0)} per tick`
-    : `net ${node.netFlow.toFixed(0)} per tick`;
-  const runway = !Number.isFinite(node.runwayTicks)
-    ? 'Runway: indefinite'
-    : `Runway: ~${Math.max(0, Math.floor(node.runwayTicks))} ticks at current reserves`;
-  const established = `Active ${node.ticksActive} ticks`;
-  const parts = [
-    income ? `${cost} · ${income} (${net})` : `${cost} (${net})`,
-    established,
-    runway,
-  ];
-  return parts.join('\n');
+// THR-1008: the sustain hover used to read
+// `−12 per tick · +5 per tick (net −7) / Active 40 ticks / Runway: ~6 ticks`.
+// Every figure in it is a raw magnitude on a player-facing surface (Law 13), and
+// the `Runway:` / `Active` heads are the key:value strip Law 16 outlaws. It now
+// bands through `sustainSummarySentences`; the raw numbers stay in the trace.
+
+/**
+ * The sustained-control row's status line: authored status prose, then the
+ * per-turn flow as words. The row used to append `⤓ 12/tick` / `⤒ 5/tick` here
+ * — raw magnitudes on a player-facing surface (THR-1008, Law 13). The glyphs
+ * survive as the direction cue; only the figures became words.
+ *
+ * The lapse warning wraps the whole line rather than sitting in a `title=`, so
+ * the copy renders through the one tooltip component (Law 17) — the prose still
+ * lives in its content table, `LAPSE_WARNING_TOOLTIPS`.
+ */
+function StatusLine({
+  statusLabel,
+  lapseTooltip,
+  costWord,
+  incomeWord,
+}: {
+  statusLabel: string;
+  lapseTooltip: string | null;
+  costWord: string | null;
+  incomeWord: string | null;
+}) {
+  const line = (
+    <div
+      className="truncate"
+      data-testid="sustained-status-line"
+      style={{
+        fontFamily: 'var(--font-body)',
+        fontSize: 'var(--text-xs)',
+        fontStyle: 'italic',
+        color: 'var(--text-tertiary)',
+        lineHeight: 1.3,
+      }}
+    >
+      {statusLabel}
+      {costWord && (
+        <span style={{ marginLeft: 6, color: 'var(--text-muted)', fontStyle: 'normal' }}>
+          ⤓ {costWord} draw
+        </span>
+      )}
+      {incomeWord && (
+        <span style={{ marginLeft: 6, color: 'var(--accent-gold)', fontStyle: 'normal' }}>
+          ⤒ {incomeWord} return
+        </span>
+      )}
+    </div>
+  );
+
+  if (!lapseTooltip) return line;
+  return <Tooltip label="Lapsing" desc={lapseTooltip}>{line}</Tooltip>;
 }
 
 function SustainedControlRow({ node, onCenterOnHex }: SustainedControlRowProps) {
@@ -1087,33 +817,16 @@ function SustainedControlRow({ node, onCenterOnHex }: SustainedControlRowProps) 
               </svg>
             </button>
           </div>
-          <div
-            className="truncate"
-            title={showLapseTooltip ? lapseTooltip : undefined}
-            style={{
-              fontFamily: 'var(--font-body)',
-              fontSize: 'var(--text-xs)',
-              fontStyle: 'italic',
-              color: 'var(--text-tertiary)',
-              lineHeight: 1.3,
-            }}
-          >
-            {statusLabel}
-            {node.perTickCostTotal > 0 && (
-              <span style={{ marginLeft: 6, color: 'var(--text-muted)', fontStyle: 'normal' }}>
-                ⤓ {node.perTickCostTotal.toFixed(0)}/tick
-              </span>
-            )}
-            {node.perTickIncomeTotal > 0 && (
-              <span style={{ marginLeft: 6, color: 'var(--accent-gold)', fontStyle: 'normal' }}>
-                ⤒ {node.perTickIncomeTotal.toFixed(0)}/tick
-              </span>
-            )}
-          </div>
+          <StatusLine
+            statusLabel={statusLabel}
+            lapseTooltip={showLapseTooltip ? lapseTooltip : null}
+            costWord={node.perTickCostTotal > 0 ? sustainFlowWord(node.perTickCostTotal) : null}
+            incomeWord={node.perTickIncomeTotal > 0 ? sustainFlowWord(node.perTickIncomeTotal) : null}
+          />
         </div>
       </div>
+      <Tooltip id="ui.sustain_runway" desc={sustainSummarySentences(node)}>
       <div
-        title={formatRunwayTooltip(node)}
         style={{
           position: 'relative', height: 2, borderRadius: 1,
           backgroundColor: 'rgba(255,255,255,0.07)',
@@ -1131,6 +844,7 @@ function SustainedControlRow({ node, onCenterOnHex }: SustainedControlRowProps) 
           }}
         />
       </div>
+      </Tooltip>
     </div>
   );
 }
@@ -1196,7 +910,6 @@ export const ThreadsPanel = React.memo(function ThreadsPanel({
   }, []);
 
   const [expandedSections, setExpandedSections] = useState<Record<ThreadSectionKey, boolean>>(initialExpansion);
-  const [encounterPoolModal, setEncounterPoolModal] = useState<EncounterPoolModalState | null>(null);
 
   // Suppress unused-prop lint for onZoomToLocation — preserved in signature for callers
   void onZoomToLocation;
@@ -1339,10 +1052,6 @@ export const ThreadsPanel = React.memo(function ThreadsPanel({
           );
         })}
       </div>
-      <EncounterPoolModal
-        state={encounterPoolModal}
-        onClose={() => setEncounterPoolModal(null)}
-      />
     </>
   );
 });
