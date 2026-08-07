@@ -22,6 +22,26 @@ import {
 
 const SEEDS = [42, 99, 7, 1];
 
+/**
+ * Wall-clock ceiling for the two fixture sweeps below, each of which rebuilds the
+ * world many times over (32 and 16 full `initializeGameState` builds respectively).
+ *
+ * This is a **hang guard, not a performance budget** — the sweeps assert that the
+ * builds succeed, never that they are fast. Vitest's 5000ms default was never a
+ * ceiling anyone chose for them; it was inherited silently, and it is too small:
+ * this file declares `node` and calls no `vi.mock`, so THR-940's partitioner routes
+ * it to the shared-worker pool (`isolate: false`), where allocation pressure on a
+ * 2-core CI runner stretched the 32-build sweep from 777ms (isolated, dev box) to
+ * 5507ms — over the default, failing the required check on an unrelated PR
+ * (run 31206694260, 2026-08-07; THR-1021).
+ *
+ * Sized ~10x that observed CI worst case so ordinary runner variance cannot reach
+ * it while a genuine hang still fails rather than running forever. Raise it rather
+ * than pinning the file into `ISOLATED_PINS`: a pin would surrender THR-940's
+ * shared-pool economy and grow the very list THR-949 exists to empty.
+ */
+const FIXTURE_SWEEP_TIMEOUT_MS = 60_000;
+
 /** Reset per-run module globals so back-to-back builds share the harness's inputs. */
 function resetRunGlobals(): void {
   resetDecisionCache();
@@ -79,7 +99,7 @@ describe('ascendant-reach fixtures', () => {
         expect(state.ascendantIdentity?.hungerId).toBe(`hunger.reach.${reach}`);
       }
     }
-  });
+  }, FIXTURE_SWEEP_TIMEOUT_MS);
 
   it('is deterministic: same (reach, seed) → identical initial state', () => {
     for (const reach of REPORT_ASCENDANT_REACHES) {
@@ -90,7 +110,7 @@ describe('ascendant-reach fixtures', () => {
       const b = buildAscendantReachState(reach, seed, { mapSize: 'small' });
       expect(fingerprint(a.state)).toBe(fingerprint(b.state));
     }
-  });
+  }, FIXTURE_SWEEP_TIMEOUT_MS);
 
   it('fails soft with a clear error on an unknown reach', () => {
     expect(() => getAscendantReachIdentity('flesh')).toThrowError(/Unknown ascendant reach "flesh"/);
