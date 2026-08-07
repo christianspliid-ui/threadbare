@@ -1,13 +1,16 @@
 import { describe, expect, it, vi } from "vitest";
 import {
   BILLING_ANNOTATION_PATTERN,
+  DISPATCH_SILENCE_MIN_MINUTES,
   STALL_MIN_SECONDS,
   STARTUP_FAILURE_MAX_SECONDS,
   classifyActionsHealth,
+  isDispatchSilenced,
   isStalledRun,
   isStartupFailure,
   type ActionsHealthInput,
   type ProbeOutcome,
+  type PullRequestSuiteRecord,
   type WorkflowRunRecord,
 } from "../check-actions-health";
 
@@ -57,6 +60,17 @@ function input(overrides: Partial<ActionsHealthInput> = {}): ActionsHealthInput 
   return {
     runs: [],
     probe: () => "unavailable",
+    ...overrides,
+  };
+}
+
+/** An open PR whose head got its Actions suite normally (THR-1014). */
+function pr(overrides: Partial<PullRequestSuiteRecord> = {}): PullRequestSuiteRecord {
+  return {
+    number: 1,
+    isDraft: false,
+    headAgeMinutes: 60,
+    hasActionsSuite: true,
     ...overrides,
   };
 }
@@ -354,5 +368,155 @@ describe("isStalledRun", () => {
     expect(
       isStalledRun({ conclusion: null, durationSeconds: 900, jobStepCounts: [0] }),
     ).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Dispatch silence — the run that was never created (THR-1014)
+// ---------------------------------------------------------------------------
+
+describe("isDispatchSilenced", () => {
+  /**
+   * The three PRs measured at 20:06Z on 2026-08-06, which are the ticket's own
+   * Done-when fixture. #1326 got its suite at 17:45:01Z; #1327 and #1328 were
+   * opened at 18:26Z and 19:32Z and never got one at all.
+   */
+  it("matches the two PRs measured silent and clears the one that got a suite", () => {
+    expect(isDispatchSilenced(pr({ number: 1326, headAgeMinutes: 141, hasActionsSuite: true }))).toBe(false);
+    expect(isDispatchSilenced(pr({ number: 1327, headAgeMinutes: 94, hasActionsSuite: false }))).toBe(true);
+    expect(isDispatchSilenced(pr({ number: 1328, headAgeMinutes: 34, hasActionsSuite: false }))).toBe(true);
+  });
+
+  /** A draft not having CI is the author's own signal, not an outage. */
+  it("ignores a draft PR with no suite", () => {
+    expect(isDispatchSilenced(pr({ isDraft: true, hasActionsSuite: false }))).toBe(false);
+  });
+
+  /**
+   * Keyed on the HEAD COMMIT's age, not the PR's. A long-lived PR force-pushed a
+   * moment ago is new work, not a stalled one — measured on the 2026-08-07
+   * recovery pushes, a suite appeared 4 seconds after the push.
+   */
+  it("ignores a freshly pushed head that has not yet had time to get a suite", () => {
+    expect(
+      isDispatchSilenced(pr({ headAgeMinutes: DISPATCH_SILENCE_MIN_MINUTES - 1, hasActionsSuite: false })),
+    ).toBe(false);
+  });
+
+  it("matches exactly at the threshold", () => {
+    expect(
+      isDispatchSilenced(pr({ headAgeMinutes: DISPATCH_SILENCE_MIN_MINUTES, hasActionsSuite: false })),
+    ).toBe(true);
+  });
+});
+
+describe("classifyActionsHealth — dispatch silence", () => {
+  /**
+   * The ticket's central Done-when: `healthy` must be UNREACHABLE while a
+   * qualifying PR exists. This is the exact state three separate lane runs were
+   * told was healthy on 2026-08-06, and that this run was told again 17h later.
+   */
+  it("cannot report healthy while an open PR has no suite", () => {
+    const result = classifyActionsHealth(
+      input({
+        runs: [run(), run()],
+        pullRequests: [pr({ number: 1327, hasActionsSuite: false })],
+      }),
+    );
+
+    expect(result.verdict).toBe("dispatch-silence");
+    expect(result.dispatchSilencedPrs).toEqual([1327]);
+    expect(result.standDown).toBe(false);
+    expect(result.needsChristian).toBe(false);
+  });
+
+  it("names every silenced PR in the summary", () => {
+    const result = classifyActionsHealth(
+      input({
+        runs: [run()],
+        pullRequests: [
+          pr({ number: 1327, hasActionsSuite: false }),
+          pr({ number: 1328, hasActionsSuite: false }),
+          pr({ number: 1326, hasActionsSuite: true }),
+        ],
+      }),
+    );
+
+    expect(result.dispatchSilencedPrs).toEqual([1327, 1328]);
+    expect(result.summary).toContain("#1327");
+    expect(result.summary).toContain("#1328");
+    expect(result.summary).not.toContain("#1326");
+  });
+
+  it("stays healthy when every open PR got its suite", () => {
+    const result = classifyActionsHealth(
+      input({ runs: [run()], pullRequests: [pr({ number: 1326 }), pr({ number: 1330 })] }),
+    );
+
+    expect(result.verdict).toBe("healthy");
+    expect(result.dispatchSilencedPrs).toEqual([]);
+  });
+
+  /**
+   * Omitting the field means "not measured", which must never be read as
+   * "measured clean" — the IO layer passes `undefined` when the PR list could
+   * not be read at all.
+   */
+  it("reports the run-based verdict unchanged when PRs were not measured", () => {
+    const result = classifyActionsHealth(input({ runs: [run()] }));
+
+    expect(result.verdict).toBe("healthy");
+    expect(result.dispatchSilencedPrs).toEqual([]);
+  });
+
+  /**
+   * Silence overrides only benign verdicts. A billing block makes the gate
+   * VACUOUS — untested code can reach `main` — so it outranks a stall and must
+   * keep both its verdict and its stand-down.
+   */
+  it("never masks a live billing block", () => {
+    const result = classifyActionsHealth(
+      input({
+        runs: [startupFailed()],
+        probe: () => "reproduced",
+        pullRequests: [pr({ number: 1327, hasActionsSuite: false })],
+      }),
+    );
+
+    expect(result.verdict).toBe("billing-block");
+    expect(result.standDown).toBe(true);
+    expect(result.needsChristian).toBe(true);
+    // Still reported, just not promoted over the more dangerous finding.
+    expect(result.dispatchSilencedPrs).toEqual([1327]);
+  });
+
+  /** `stalled` is already a non-benign stall verdict; it is not downgraded either. */
+  it("never masks a stall", () => {
+    const result = classifyActionsHealth(
+      input({
+        runs: [stalledRun()],
+        pullRequests: [pr({ number: 1327, hasActionsSuite: false })],
+      }),
+    );
+
+    expect(result.verdict).toBe("stalled");
+    expect(result.dispatchSilencedPrs).toEqual([1327]);
+  });
+
+  /**
+   * `recovered` and `transient` both assert the problem has cleared, which a
+   * silenced PR falsifies — so both are overridden.
+   */
+  it("overrides recovered, which would otherwise claim the problem cleared", () => {
+    const result = classifyActionsHealth(
+      input({
+        runs: [run(), startupFailed()],
+        pullRequests: [pr({ number: 1327, hasActionsSuite: false })],
+      }),
+    );
+
+    expect(result.verdict).toBe("dispatch-silence");
+    // The run-based counts survive the override rather than being reset.
+    expect(result.startupFailureCount).toBe(1);
   });
 });
