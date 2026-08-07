@@ -88,7 +88,7 @@ onMouseLeave={(e) => {
 
 ### Accessibility minimum
 - All `<button>` elements have either visible text or `aria-label`
-- All icon-only buttons have `title` attribute (tooltip) + `aria-label`
+- All icon-only buttons have `aria-label`; a `title` may duplicate it as an assistive-tech fallback, but any hover *explanation* routes through the shared `Tooltip`/`resolveTooltip` registry — the raw-`title` tooltip pattern is retired (UI Law 17, amended 2026-08-06)
 - Interactive rows that are `<div>` elements must have `role="button"` and `tabIndex={0}` with keyboard handler for `Enter`/`Space`
 
 ---
