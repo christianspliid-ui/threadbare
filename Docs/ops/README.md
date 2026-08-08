@@ -52,7 +52,9 @@ written, without anyone amending this page. When in doubt, durable stays.
   prompts that otherwise live unversioned on one disk.
 - **`Docs/ops/clean-stale-git.sh.md`**, **`threadbare-autosync.ps1.md`**,
   **`threadbare-autosync.test.ps1`** — repo mirrors of containment scripts.
-  THR-824 exists to add *more* of these, not fewer.
+  The registry's § *Unversioned sources are mirrored into the repo* requires
+  *more* of these, not fewer, and carries the inventory of what is mirrored
+  and what is deliberately not (THR-824).
 - **`Docs/ops/repo-automation-log.md`** — appended knowledge, not a scheduled
   overwrite.
 - **Dated one-off investigation reports** (`2026-07-21-thr-674-…`,
