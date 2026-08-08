@@ -277,6 +277,38 @@ describe('Law 23 — :focus-visible is never suppressed', () => {
   });
 });
 
+// ── Law 42 / Law 25 — the aftermath's engine-supplied prompts ──────
+
+describe('Law 42 — the aftermath fallback prompts are game prose, not schema prose', () => {
+  const RESOLUTION = 'engine/unifiedActionResolution.ts';
+
+  it('no longer ships the system-register defaults the director quoted back', () => {
+    const src = readCode(RESOLUTION);
+    // "consequence thread" is a schema noun; the second was mood, not mechanism.
+    expect(src, 'the schema-noun prompt is back').not.toMatch(/consequence thread/i);
+    expect(src, 'the mood prompt is back').not.toMatch(/consequences are now loose/i);
+  });
+
+  it('gates the choose-framing on there being more than one reaction (Law 25)', () => {
+    // The defect was a question the player could not answer. `> 0` is the shape
+    // that produced it, so the gate asserts the comparison itself rather than
+    // the copy — a reworded one-option prompt would still be the same bug.
+    const src = readCode(RESOLUTION);
+    expect(src).toMatch(/reactions\.length > 1/);
+    expect(src, 'a one-reaction prompt would render again').not.toMatch(
+      /reactions && reactions\.length > 0\s*$/m,
+    );
+  });
+});
+
+describe('Law 17 — no raw-`title` hover explanations on the aftermath surfaces', () => {
+  it('routes the receipt modal reaction intent through Tooltip, not `title`', () => {
+    const src = readCode('components/Game/DivineReceiptModal.tsx');
+    expect(src, 'the retired raw-title pattern is back').not.toMatch(/title=\{reaction\.intent\}/);
+    expect(src).toMatch(/<Tooltip/);
+  });
+});
+
 function walkComponents(): string[] {
   const { readdirSync, statSync } = require('node:fs') as typeof import('node:fs');
   const out: string[] = [];

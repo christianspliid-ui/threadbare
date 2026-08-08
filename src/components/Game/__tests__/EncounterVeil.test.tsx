@@ -544,4 +544,85 @@ describe('aftermath mode', () => {
     expect(screen.getByText('Vasara', { selector: 'span' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Vasara' })).not.toBeInTheDocument();
   });
+
+  // ── Aftermath reactions (THR-1029) ───────────────────────────────
+  //
+  // Director review of `encounter.slice.unsafe_bridge`: a prompt asking which
+  // consequence to keep, one button under it, and no statement of what the pick
+  // entails. Two defects — the authored `intent` was dropped at render (Law 1 /
+  // Law 16), and a lone reaction posed as a choice (Law 25).
+
+  const reactionModel = (
+    reactions: NonNullable<EncounterStageModel['aftermath']>['reactions'],
+  ): EncounterStageModel => ({
+    ...aftermathModel,
+    aftermath: {
+      ...aftermathModel.aftermath!,
+      reactionPrompt: 'Choose what to carry forward.',
+      reactions,
+    },
+  });
+
+  const loneReaction = [
+    {
+      id: 'slice.bridge.walk_on',
+      label: 'Walk on',
+      intent: 'The road goes on from either bank.',
+    },
+  ];
+
+  const twoReactions = [
+    ...loneReaction,
+    {
+      id: 'slice.bridge.look_back',
+      label: 'Look back at the span',
+      intent: 'Fix the crossing in memory before the planks are gone.',
+    },
+  ];
+
+  it('renders a reaction label AND its authored intent — the sentence is not dropped', () => {
+    render(<EncounterVeil {...defaultProps} model={reactionModel(loneReaction)} />);
+    expect(screen.getByTestId('aftermath-reaction-label-slice.bridge.walk_on'))
+      .toHaveTextContent('Walk on');
+    expect(screen.getByTestId('aftermath-reaction-intent-slice.bridge.walk_on'))
+      .toHaveTextContent('The road goes on from either bank.');
+  });
+
+  it('does not pose a choice when there is only one reaction (Law 25)', () => {
+    render(<EncounterVeil {...defaultProps} model={reactionModel(loneReaction)} />);
+    expect(screen.queryByTestId('aftermath-reaction-prompt')).not.toBeInTheDocument();
+    // Asserted on the copy as well as the testid: a regression that re-rendered
+    // the prompt without the hook would otherwise pass this vacuously.
+    expect(screen.queryByText('Choose what to carry forward.')).not.toBeInTheDocument();
+    // The control itself stays: it consumes marks and resolves the notification,
+    // which the footer's plain acknowledge does not do.
+    expect(screen.getByTestId('aftermath-reaction-label-slice.bridge.walk_on')).toBeInTheDocument();
+  });
+
+  it('renders the prompt once there are genuinely two paths', () => {
+    render(<EncounterVeil {...defaultProps} model={reactionModel(twoReactions)} />);
+    expect(screen.getByTestId('aftermath-reaction-prompt'))
+      .toHaveTextContent('Choose what to carry forward.');
+    expect(screen.getByTestId('aftermath-reaction-intent-slice.bridge.look_back'))
+      .toHaveTextContent('Fix the crossing in memory');
+  });
+
+  it('fires the reaction handler with the chosen id', () => {
+    const onAftermathReaction = vi.fn();
+    render(
+      <EncounterVeil
+        {...defaultProps}
+        model={reactionModel(twoReactions)}
+        onAftermathReaction={onAftermathReaction}
+      />,
+    );
+    fireEvent.click(screen.getByTestId('aftermath-reaction-label-slice.bridge.look_back'));
+    expect(onAftermathReaction).toHaveBeenCalledWith('slice.bridge.look_back');
+  });
+
+  it('FAIL-SOFT: a reaction with no authored intent still renders its label', () => {
+    render(<EncounterVeil {...defaultProps} model={reactionModel([{ id: 'r1', label: 'Move on' }])} />);
+    expect(screen.getByTestId('aftermath-reaction-label-r1')).toHaveTextContent('Move on');
+    expect(screen.queryByTestId('aftermath-reaction-intent-r1')).not.toBeInTheDocument();
+  });
 });

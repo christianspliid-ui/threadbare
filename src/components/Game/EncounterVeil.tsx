@@ -848,8 +848,23 @@ export function EncounterVeil({
                 ...aftermathEntrance(1.5, 0.9),
               }}
             >
-              {aftermath.reactionPrompt && (
+              {/*
+                THR-1029 §2 — the choice prompt renders only when there IS a
+                choice. One reaction with a "choose which one" question above it
+                is an acknowledgment wearing a decision's chrome (Law 25), and
+                the director read the prompt back verbatim as the defect.
+
+                The lone reaction keeps its button rather than folding into the
+                footer's "Return to the world", because it is not inert: the
+                reaction path (`applyAftermathReactionForAgent` in GameView)
+                consumes matching hidden marks, runs `observeResolutionIntelligence`,
+                and resolves the encounter notification — none of which the plain
+                acknowledge path does. So what was wrong was the framing, not the
+                control. Remove the question; keep the affordance.
+              */}
+              {aftermath.reactionPrompt && aftermath.reactions.length > 1 && (
                 <div
+                  data-testid="aftermath-reaction-prompt"
                   style={{
                     fontFamily: FONT_PROSE,
                     fontStyle: 'italic',
@@ -892,7 +907,32 @@ export function EncounterVeil({
                     e.currentTarget.style.background = 'rgb(var(--veil-gold-rgb) / 0.03)';
                   }}
                 >
-                  {reaction.label}
+                  <div data-testid={`aftermath-reaction-label-${reaction.id}`}>
+                    {reaction.label}
+                  </div>
+                  {/*
+                    THR-1029 §1 — the authored `intent` is what the pick means, and
+                    it was being dropped at render while sitting in the data (Law 1;
+                    a bare label is also the key:value-shaped half-sentence Law 16
+                    rejects). Treatment is deliberately the step-choice card's own
+                    intent line further down this file — same font, size, leading
+                    and whisper tone — rather than a second one invented here (Law 27).
+                  */}
+                  {reaction.intent && (
+                    <div
+                      data-testid={`aftermath-reaction-intent-${reaction.id}`}
+                      style={{
+                        fontFamily: FONT_PROSE,
+                        fontStyle: 'italic',
+                        fontSize: 'var(--text-xs)',
+                        lineHeight: 1.75,
+                        color: TEXT_WHISPER,
+                        marginTop: 6,
+                      }}
+                    >
+                      {reaction.intent}
+                    </div>
+                  )}
                 </button>
               ))}
             </div>

@@ -2389,11 +2389,22 @@ export function executeStepResult(
         ? [...changes, ...aftermathVariant.changes]
         : changes,
       narrativeTag: consequence.narrativeTag,
+      // THR-1029 §3 — these two defaults are player-facing prose and were written
+      // in system register. "Consequence thread" is a schema noun, not a game noun,
+      // and the second line was mood rather than mechanism — both fail Law 42
+      // ("UI microcopy explains mechanism, not mood"). The director quoted the
+      // first back verbatim, which is the tell: a default the player notices is a
+      // default that is wrong.
+      //
+      // The choose-framing is also gated on there being more than one reaction, so
+      // the engine never manufactures a question the player cannot answer (Law 25).
+      // The veil suppresses a one-option prompt independently; gating here means
+      // every other surface reading `reactionPrompt` inherits the same honesty.
       reactionPrompt: aftermathVariant?.reactionPrompt
-        ?? (reactions && reactions.length > 0
-          ? 'Choose which consequence thread you keep alive now that the encounter itself is over.'
+        ?? (reactions && reactions.length > 1
+          ? 'Choose what to carry forward.'
           : changes.length > 0
-            ? 'Take stock of what shifted. The encounter is over, but the consequences are now loose in the world.'
+            ? 'What this changed.'
           : undefined),
       reactions,
     };
