@@ -42,6 +42,7 @@ import {
   type ActionStep,
   type AftermathVariant,
   type BranchAwareAftermathConfig,
+  type EncounterAftermathChange,
   type UnifiedAction,
   type UnifiedActionOutcome,
   type UnifiedActionTemplate,
@@ -451,6 +452,62 @@ function resolveAuthoredAftermath(
   return resolveAftermathVariant(config, choiceHistory, outcome);
 }
 
+/**
+ * Structured identity of the game concepts a change declares (THR-1004).
+ *
+ * Deliberately never the English of `detail` — two sentences can state the same
+ * fact in different words, and prose-matching would both miss those and collide
+ * on unrelated changes that happen to share a phrase.
+ */
+function aftermathConceptKeys(change: EncounterAftermathChange): Set<string> {
+  const keys = new Set<string>();
+  for (const concept of change.concepts ?? []) {
+    keys.add((concept.entityId ?? concept.tooltipId ?? concept.text).toLowerCase());
+  }
+  return keys;
+}
+
+/**
+ * THR-1042 — an authored variant overrides the *prose*, it never erases the *facts*.
+ *
+ * The engine already assembles `summary.changes` as `[...engine-derived, ...authored]`
+ * (`unifiedActionResolution.ts`), so a prize the reward pool actually rolled, a growth
+ * shift, or a reputation move is on the summary the moment it happened. This surface
+ * used to replace that whole set with the authored variant's changes alone, which
+ * dropped every derived fact: the world changed and the ending did not say so.
+ *
+ * The merge keeps every fact and still lets the author lead:
+ *   - authored changes first (the curated statement), derived facts beneath them;
+ *   - identical ids collapse, so the engine's own merge is not double-counted — and a
+ *     summary that never went through it (old save, non-engine path) still gains the
+ *     authored half rather than losing it;
+ *   - a derived change is suppressed only when an authored change *declares* the same
+ *     concepts. Authored changes normally carry none, so this fires rarely and by
+ *     design (NFP #4): stating a fact twice is recoverable, hiding it is the defect.
+ */
+function mergeAftermathChanges(
+  summaryChanges: readonly EncounterAftermathChange[],
+  authoredChanges: readonly EncounterAftermathChange[],
+): readonly EncounterAftermathChange[] {
+  const authoredIds = new Set(authoredChanges.map(change => change.id));
+  const authoredConceptSets = authoredChanges
+    .map(aftermathConceptKeys)
+    .filter(keys => keys.size > 0);
+
+  const derived = summaryChanges.filter(change => {
+    // Already present as an authored entry — the engine merged it in for us.
+    if (authoredIds.has(change.id)) return false;
+    const keys = aftermathConceptKeys(change);
+    // Nothing structured to match on: keep it. Never fall back to prose-matching.
+    if (keys.size === 0) return true;
+    return !authoredConceptSets.some(authored =>
+      Array.from(keys).every(key => authored.has(key)),
+    );
+  });
+
+  return [...authoredChanges, ...derived];
+}
+
 function buildAftermath(
   args: BuildUnifiedEncounterStageModelArgs,
   ctx: NarrativeContext,
@@ -459,9 +516,9 @@ function buildAftermath(
   const summary = activeAction.aftermathSummary;
   if (!summary) return undefined;
 
-  // When the template has an aftermathConfig, use ONLY its authored changes.
-  // The engine-merged summary.changes includes raw mechanical deltas (growth,
-  // reputation shifts) that we want to suppress in favor of curated content.
+  // When the template has an aftermathConfig, the authored variant supplies the
+  // curated prose — but the engine-derived changes stay (THR-1042). See
+  // `mergeAftermathChanges` for why suppressing them was the defect.
   const authoredVariant = template.aftermathConfig
     ? resolveAuthoredAftermath(
         template.aftermathConfig,
@@ -469,7 +526,9 @@ function buildAftermath(
         activeAction.outcome,
       )
     : undefined;
-  const displayChanges = authoredVariant?.changes ?? summary.changes;
+  const displayChanges = authoredVariant
+    ? mergeAftermathChanges(summary.changes, authoredVariant.changes)
+    : summary.changes;
   const rawOverview = authoredVariant?.overview ?? summary.overview;
   const displayOverview = enrichProse(rawOverview, ctx);
 

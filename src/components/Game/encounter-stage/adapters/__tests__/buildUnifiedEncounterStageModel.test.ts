@@ -3,6 +3,7 @@ import { WorldGraph } from '../../../../../engine/graph';
 import { RIVAL_SHRINE_BETRAYAL_TEMPLATE } from '../../../../../data/encounters/rival-shrine-betrayal';
 import type { EncounterNotification } from '../../../../../types/encounterVisibility';
 import type {
+  EncounterAftermathChange,
   UnifiedAction,
   UnifiedActionOutcome,
   UnifiedActionTemplate,
@@ -397,6 +398,137 @@ describe('buildUnifiedEncounterStageModel', () => {
       it('falls back to the un-banded overview for an outcome with no authored band', () => {
         const plain = buildBandedModel('success');
         expect(plain.aftermath!.overview).toContain('behind them either way');
+      });
+    });
+
+    // THR-1042: an authored variant overrides the PROSE, never erases the FACTS.
+    // Before this, a template carrying `aftermathConfig` rendered the variant's
+    // changes and dropped `summary.changes` wholesale — so a prize the reward pool
+    // had actually rolled and granted vanished from the ending. The world changed
+    // and the ending did not say so.
+    describe('authored aftermath keeps engine-derived changes (THR-1042)', () => {
+      /** The shape `unifiedActionResolution` pushes when a rewardPool rolls (`kind: 'item'`). */
+      const PRIZE: EncounterAftermathChange = {
+        id: 'act.crossing:step:1:item:riverstone_charm',
+        kind: 'item',
+        title: 'A reward changed hands',
+        detail: 'Kael the Scout came away with the Riverstone Charm.',
+        polarity: 'gain',
+        concepts: [
+          {
+            text: 'Riverstone Charm',
+            entityId: 'artifact.riverstone',
+            visualKind: 'artifact',
+            visualName: 'Riverstone Charm',
+          },
+        ],
+      };
+
+      /** Authored prose carries no `concepts` — it links through the narrative linker. */
+      const AUTHORED: EncounterAftermathChange = {
+        id: 'authored_crossing_note',
+        kind: 'future_hook',
+        title: 'The ford remembers',
+        detail: 'The stones will be easier to read next season.',
+        polarity: 'info',
+      };
+
+      function buildAuthoredModel(options: {
+        authoredChanges: readonly EncounterAftermathChange[];
+        derivedChanges?: readonly EncounterAftermathChange[];
+      }) {
+        const derived = options.derivedChanges ?? [PRIZE];
+        const graph = buildGraph();
+        graph.addNode({
+          id: 'artifact.riverstone',
+          type: 'artifact',
+          name: 'Riverstone Charm',
+          properties: {},
+        });
+
+        const template: UnifiedActionTemplate = {
+          ...LINEAR_TEMPLATE,
+          id: 'test.authored_aftermath',
+          aftermathConfig: {
+            branchOnStep: 0,
+            variants: {},
+            fallback: {
+              overview: 'The crossing is behind them.',
+              changes: options.authoredChanges,
+            },
+          },
+        };
+
+        return buildUnifiedEncounterStageModel({
+          template,
+          activeAction: {
+            ...buildLinearAction(),
+            resolved: true,
+            outcome: 'success',
+            stepOutcomes: ['success', 'success'],
+            aftermathSummary: {
+              encounterId: template.id,
+              outcome: 'success',
+              overview: 'Engine-built overview the authored variant replaces.',
+              // The engine assembles `[...derived, ...authored]` — model that exactly,
+              // so the id-collapse below is tested against the real shape.
+              changes: [...derived, ...options.authoredChanges],
+            },
+          },
+          notification: buildNotification(),
+          agentName: 'Kael the Scout',
+          threadTier: 'strong',
+          graph,
+          essence: 10,
+        });
+      }
+
+      /** `buildAftermathConsequences` keys each chip as `consequence-<changeId>`. */
+      const chipIdFor = (changeId: string) => `consequence-${changeId}`;
+
+      it('keeps a rolled rewardPool prize in the ending beneath the authored overview', () => {
+        const model = buildAuthoredModel({ authoredChanges: [AUTHORED] });
+
+        // The authored prose still leads.
+        expect(model.aftermath!.overview).toContain('The crossing is behind them');
+
+        // ...and the fact the engine recorded survives. This is the assertion that
+        // fails against the pre-fix build, where displayChanges was the authored set alone.
+        expect(model.aftermath!.consequences?.map(chip => chip.id)).toContain(chipIdFor(PRIZE.id));
+        expect(model.aftermath!.highlights?.map(h => h.title)).toContain('A reward changed hands');
+      });
+
+      it('does not double-count the authored change the engine already merged in', () => {
+        const model = buildAuthoredModel({ authoredChanges: [AUTHORED] });
+
+        const authoredChips = model.aftermath!.consequences!.filter(
+          chip => chip.id === chipIdFor(AUTHORED.id),
+        );
+        expect(authoredChips).toHaveLength(1);
+      });
+
+      it('shows every derived change when the variant states nothing (fail-soft)', () => {
+        const model = buildAuthoredModel({ authoredChanges: [] });
+
+        expect(model.aftermath!.consequences?.map(chip => chip.id)).toContain(chipIdFor(PRIZE.id));
+      });
+
+      it('suppresses a derived change an authored change declares the same concepts for', () => {
+        const authoredRestatingPrize: EncounterAftermathChange = {
+          id: 'authored_prize_line',
+          kind: 'item',
+          title: 'The charm changed hands',
+          detail: 'The Riverstone Charm went with Kael, as the ford intended.',
+          polarity: 'gain',
+          // Same structured concept — matched on the ref, never on the English.
+          concepts: PRIZE.concepts,
+        };
+
+        const model = buildAuthoredModel({ authoredChanges: [authoredRestatingPrize] });
+        const ids = model.aftermath!.consequences!.map(chip => chip.id);
+
+        expect(ids).toContain(chipIdFor('authored_prize_line'));
+        expect(ids).not.toContain(chipIdFor(PRIZE.id));
       });
     });
 
