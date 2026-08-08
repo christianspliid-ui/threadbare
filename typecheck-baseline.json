@@ -1,5 +1,5 @@
 {
-  "total": 3477,
+  "total": 3462,
   "command": "npx tsc -b --force --pretty false",
   "perFile": {
     "scripts/lint-encounter-content.ts": 2,
@@ -242,7 +242,7 @@
     "src/data/holy-order-dawn-encounter-content.ts": 10,
     "src/data/lorekeepers-covenant-encounter-content.ts": 1,
     "src/data/mastery-trait-content.ts": 7,
-    "src/data/mercenary-encounter-content.ts": 46,
+    "src/data/mercenary-encounter-content.ts": 31,
     "src/data/monster-encounter-content.ts": 4,
     "src/data/monster-faction-definitions.ts": 4,
     "src/data/movement-content.ts": 1,

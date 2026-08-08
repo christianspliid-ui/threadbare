@@ -76,6 +76,18 @@ BRIEF ─▶ DRAFT ─▶ CRITIC LOOP ─▶ MACHINE GATES ─▶ LIVE PROOF ─
 - Cast prose style: `{cast:*}` tokens everywhere vs named-inline-with-binding (the audit shows the Bridge's keeper reads well inline — the sitting decides whether binding without tokens satisfies the contract).
 - Batch size and Christian's sample rate once the pilot lands.
 
+## Rulings — Christian, chat, 2026-08-08 (grill round; all settled, supersede conflicting text above)
+
+1. **Batch size 6**, and the batch report renders the six side by side so **variance is visible** — shapes, reaches, tones in one view; that is what he reviews for.
+2. **Briefs are agent-drafted, Christian-approved in chat** before a batch runs.
+3. **No exemptions, ever.** The Composition Contract is absolute; the exemption mechanism in §1 is **deleted**. A shape that cannot carry a block is a future *encounter type with its own contract*, not a waiver. The validator hard-fails a missing block.
+4. **Park, don't kill.** Two failed critic loops → the encounter parks for human feedback and salvage (supersedes §2's escalate-and-redraft).
+5. **Contract expression: inline** on the template file (no sibling manifest).
+6. **Cast prose style: named-inline with mandatory binding, tokens where they earn it.** Authors write role-voiced prose ("the keeper waits…"); the template *must* declare the binding that makes her a real spawned person (portrait, cast strip, click, persistence). `{cast:*}` tokens are the available tool for spots where the generated name in the sentence earns something — greetings, reveals, sequel callbacks.
+7. **byOutcome floor is 3 bands** (success / failure / one extreme); a floor, not a norm — author more wherever the encounter warrants.
+8. **Retrofit all 15** nudge-era encounters to the full contract — the slice five (riding THR-973) *and* the camp seven + sequels. The retrofit is the pilot volume.
+9. **The THR-883 sitting collapses into a review**: Fable drafts the amended spec + one full-contract exemplar encounter; Christian's chat review of those two artifacts is the sitting.
+
 ## Done-when (this design)
 
 Plan approved in chat → tickets 1–5 filed with coordination blocks → pilot batch (item 6) produces 6 encounters that pass every gate with ≤2 critic loops each, and Christian's 2-encounter sample verdict is "ship" — that verdict, not the tooling, is what proves "same high quality every time."
