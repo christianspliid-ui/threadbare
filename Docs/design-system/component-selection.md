@@ -2,7 +2,12 @@
 
 > **Purpose:** Help agents choose the right component when designing new UI. Load this when designing the UI pillar of any feature.
 >
-> **Last updated:** 2026-04-13
+> **Last updated:** 2026-08-08 (THR-1011 — nudge-era primitives added; catalog now gated against `src/components/shared/` by `styleguideSync.test.ts`)
+>
+> **This file is machine-checked.** UI Law 29 requires a new primitive to land with its
+> `component-selection.md` row in the same PR. `src/components/StyleGuide/__tests__/styleguideSync.test.ts`
+> fails when any `.tsx` in `src/components/shared/` has no row here — so the catalog below cannot
+> silently fall behind the library again the way it did between 2026-04-13 and 2026-08-06.
 
 ---
 
@@ -84,6 +89,48 @@ Inside a surface that is **already** a `Modal`, embed `RevealCard.Frame` (the zo
 | Rarity tier label | `RarityBadge` (shared primitive) | Inline colored tag. |
 | Doom countdown | `DoomBar` → `DoomClockDetail` | Bar always visible, detail on click. |
 
+**`ProgressBar` vs `ProgressBand` vs `StepDots`** — three different questions:
+
+| The quantity is… | Component |
+|---|---|
+| A continuous 0–1 fraction the player watches fill | `ProgressBar` |
+| A named tier the player reads as a word ("cooling", "taut") | `ProgressBand` — banding it here is what keeps Law 13 off the surface |
+| A discrete count of steps, some already taken | `StepDots` |
+
+### Show a magnitude (Laws 10, 13, 15)
+
+Magnitudes never render as raw numbers on a player-facing surface. Two vocabularies, and they are
+not interchangeable:
+
+| Need | Component | Notes |
+|------|-----------|-------|
+| Effect on the odds | `OddsPips` | Pips mean *only* this, everywhere. Twenty ~5% steps in four tiers of five, shape changing per tier. |
+| A price the player pays | `CostPips` | Framed badge — deliberately unlike `OddsPips`, because at 13px the director could not tell the two apart when they shared a look (THR-972 §5). |
+| The forecast itself | The word | `doomed/perilous/uncertain/favorable/fated`. Pips *annotate* the word; they never stand in for it. |
+| A card's type | `CardKeywordChip` | Glyph keyed on the live type union. |
+
+Every glyph row carries an `aria-label` stating its reading in words ("Strong, 3 of 5") — shape is
+the accessibility channel, colour is secondary (Law 11).
+
+### Show an entity's picture (Laws 1, 3, 5, 8)
+
+| Need | Component | Notes |
+|------|-----------|-------|
+| Any entity's art, anywhere | `EntityVisual` | The single resolver path. Pick `hero` (16:9 — places, scenes, banners), `portrait` (3:4 — people), or `chip` (40px — secondary entities inline). A fourth size is a design decision, not an implementation choice. |
+| A ringed icon disc around an already-resolved visual | `Medallion` | Frames what `EntityVisual` resolved — never a second art path. |
+
+Person imagery is knowledge-gated (Law 8): below `recognised` a person renders the silhouette
+fallback even when art exists. Places, items, and encounters are never gated. The gate fails open
+when unwired.
+
+### Group a long list (Law 36)
+
+Long lists are progressive, not exhaustive. Reach for `Section` + `ListRow` with counts on the group
+header and detail on demand — a panel that needs its own scrollbar within the first screenful should
+be collapsing groups instead. **Note** `Section` currently belongs to the unmounted detail-page
+cluster (see the catalog note below); a live collapse group today composes `SectionHeading` +
+`ListRow` inside a `Card`.
+
 ### Show something on the hex map
 
 | Need | Component | Notes |
@@ -134,6 +181,21 @@ These live in `src/components/shared/` and are the building blocks. **Always che
 | `SectionHeading` | Section label | Heading with optional count and ornamental rules. |
 | `AnimateMount` | Mount/unmount animation | Wrap anything that appears/disappears with animation. |
 | `GameErrorBoundary` | Error fallback | Wrap any subtree that might crash. |
+| `EntityVisual` | Entity art at three sizes | **The one art path** (Law 3). `hero` 16:9 places/scenes · `portrait` 3:4 people · `chip` 40px inline. Never resolve entity art any other way; missing art falls back to an authored glyph on an id-hashed gradient, which is a designed state, not a hole (Law 4). |
+| `OddsPips` / `CostPips` | Magnitude glyph row | The only sanctioned magnitude glyph language (Law 15). `OddsPips` = effect on the odds; `CostPips` = price, which wears a framed badge so the two never read alike (Law 10). They annotate words, never replace them. |
+| `CardKeywordChip` | Nudge card type glyph | Keyed on the live card-type union — a new type without an icon is a **build failure**, not a blank chip (Law 9). |
+| `ProgressBand` | Banded progress readout | Progress shown as a named band rather than a bar. Use when the reading is a tier ("cooling", "taut"), not a fraction; `ProgressBar` when it genuinely is 0–1. |
+| `Divider` | Rule between content groups | Plain separator. Reach for this before inventing a bordered wrapper. |
+| `ActivityIcon` | What an agent is doing | Fixed glyph vocabulary (`boot`, `swords`, `coin`, `hammer`, `bandage`, `hourglass`). One vocabulary per element class (Law 9) — do not add ad-hoc activity emoji beside it. |
+| `Section` | Detail-page section renderer | Dispatches on `SectionKind` (`prose`, `chips`, `event-card`, `panel`, `portrait`). Part of the detail-page cluster — see the note below. |
+| `DetailBreadcrumb` | Depth orientation trail | Law 24: any surface deeper than two levels shows where you are. Collapses to an ellipsis past `DETAIL_BREADCRUMB_COLLAPSE_AT`. Detail-page cluster. |
+| `DetailModal` | Stacked detail-page overlay | Renders the `DetailModalStackContext` stack; draws nothing while empty. Detail-page cluster. |
+
+> **The detail-page cluster (`Section`, `DetailBreadcrumb`, `DetailModal`) has no production mount.**
+> Its three members import only each other, and THR-966 defers the mount-vs-prune decision to a
+> coordinated call with THR-951. They render at `?view=styleguide` with sample data so Law 29 holds
+> either way — do **not** read a styleguide entry as evidence the cluster is reachable, and do not
+> build a new surface on it without resolving THR-966 first.
 
 ---
 

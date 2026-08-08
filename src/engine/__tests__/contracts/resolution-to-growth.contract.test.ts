@@ -19,6 +19,7 @@ import { createSimulationRuntime } from '../../simulationRuntime';
 import { computeFullProfile } from '../../domainCapability';
 import type { GameState } from '../../../types/gameState';
 import type { ReachDomain } from '../../../types/traits';
+import { WORLD_SIM_TEST_TIMEOUT_MS } from '../../../testing/testTimeouts';
 
 // ─── Constants ────────────────────────────────────────────────────
 const SEED = 42;
@@ -38,7 +39,7 @@ function createFreshState(): GameState {
   return state;
 }
 
-describe('resolution → growth contract', { timeout: 120_000 }, () => {
+describe('resolution → growth contract', { timeout: WORLD_SIM_TEST_TIMEOUT_MS }, () => {
   // Shared state — one world gen + 100 tick run for all tests
   const initialState = createFreshState();
 

@@ -103,6 +103,46 @@ export function shouldAutoOpenEncounterNotification(
 }
 
 /**
+ * Has this step notification been superseded by its own encounter's aftermath?
+ *
+ * The blocker THR-1005 actually reports, and the one the auto-open scan alone
+ * could not clear. `runEncounterAutoOpenScan` walks past a notification that
+ * *declines*; a spent step notification only declines because THR-664 compares
+ * `stepIndex` against the action's `currentStep`. That comparison catches every
+ * walked-past step except the last one: when an action resolves, `currentStep`
+ * **freezes at the final index** rather than advancing past it, so the final
+ * step's notification still reports `stepIndex === currentStepIndex` and opens
+ * happily — forever, since nothing marks a spent step notification `resolved`.
+ *
+ * The aftermath is appended last of all (`encounterVisibility.ts`), so it sits
+ * directly behind that one perpetually openable record. The scan reaches the
+ * final step, opens it, consumes the single auto-interrupt slot, and stops —
+ * and the aftermath never interrupts on its own. Measured live at
+ * `?spawn=tg.senior.jewel_heist`: queue `[step0, step1, step2, aftermath]`,
+ * action resolved with `currentStep === 2`; steps 0 and 1 declined on the
+ * stepIndex mismatch, step 2 did not, and the aftermath was never reached.
+ *
+ * Scoped deliberately to "an aftermath for *this action* is still pending"
+ * rather than the broader "a resolved action cannot open any step". A resolved
+ * action with no aftermath notification — a digest-tier record, or one whose
+ * aftermath the player has already acknowledged — keeps today's behaviour, so
+ * this can never strand a beat with nothing left to show.
+ */
+export function isStepNotificationSupersededByAftermath(
+  notif: Pick<EncounterNotification, 'kind'>,
+  activeAction: Pick<UnifiedAction, 'actionId' | 'resolved'> | undefined,
+  notifications: readonly Pick<EncounterNotification, 'kind' | 'actionId' | 'resolved'>[],
+): boolean {
+  if (notif.kind === 'aftermath') return false;
+  if (!activeAction?.resolved) return false;
+  return notifications.some(
+    candidate => candidate.kind === 'aftermath'
+      && !candidate.resolved
+      && candidate.actionId === activeAction.actionId,
+  );
+}
+
+/**
  * Drive the one auto-interrupt slot down the notification queue until a surface
  * actually opens (investigated under THR-1005).
  *
@@ -147,6 +187,53 @@ export function runEncounterAutoOpenScan(
     if (tryOpen(notif)) return notif.id;
   }
   return null;
+}
+
+/**
+ * Does the one-tick interrupt-suppression window still gate the auto-open scan?
+ *
+ * The window (`interruptSuppressedUntilTick = tick + 1`) is armed every time a
+ * veil closes — disregard, acknowledge-aftermath, commit-and-continue — so the
+ * beat the player just dismissed cannot immediately re-pop. It is measured in
+ * **ticks**, and it is cleared by one condition only: `tick` reaching it.
+ *
+ * THR-1017: every path that arms it also leaves the sim paused, because
+ * `useInterruptAutoPause` holds `running === false` while ANY interrupt surface
+ * is open. When a second surface is stacked behind the veil — Christian's
+ * report is the opening action-card beat modal, which auto-enters for spine
+ * beats and is not dismissed — closing the veil does not resume the sim. The
+ * clock stops, so a tick-gated window whose clock is stopped by the very state
+ * that armed it never expires. The scan bails at its first line forever, the
+ * queued aftermath is starved, and only the thread badge can still reach it
+ * (`handleOpenEncounterBadge` calls the open handler directly and never
+ * consults this window) — which is exactly the "I had to click the
+ * notification" report.
+ *
+ * Measured live at `?view=game&seeded&size=medium&forceencounters` with
+ * `beat.spine.opening` left stacked: veil closed at tick 10 with 3 eligible
+ * pause-tier notifications pending and `simRunning: false`; no surface reopened
+ * for as long as the tick was frozen, and a single `__DEBUG.tick(1)` — the tick
+ * a paused sim can never take — opened one immediately.
+ *
+ * So the window applies only while the clock that measures it is actually
+ * running. That is the whole change: a paused sim generates no tick-driven
+ * notification churn to debounce, and the record the player just dismissed is
+ * already held back by `suppressedEncounterNotificationId`, which is keyed on
+ * the notification id rather than on time and is therefore unaffected by a
+ * stopped clock. The tick window was the blunt half of a two-part guard; the
+ * precise half does the real work and keeps doing it here.
+ *
+ * Deliberately NOT folded into `interruptsSuppressed` itself: that predicate
+ * also gates the render conditions of the vignette, story-beat, premonition and
+ * beat-offer surfaces, and pausing for a surface that cannot render is the
+ * "invisible gate" failure THR-668 warns about in its own comment. This one is
+ * scoped to the auto-open scan.
+ */
+export function isEncounterAutoOpenSuppressed(
+  interruptsSuppressed: boolean,
+  simRunning: boolean,
+): boolean {
+  return interruptsSuppressed && simRunning;
 }
 
 export function selectEncounterRuntimeForDisplay(

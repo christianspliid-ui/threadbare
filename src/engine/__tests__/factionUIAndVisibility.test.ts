@@ -48,12 +48,12 @@ function addAgent(graph: WorldGraph, id: string): void {
   });
 }
 
-function addFaction(graph: WorldGraph): string {
-  const factionId = 'faction_def_adventuring_guild';
+function addFaction(graph: WorldGraph, suffix = ''): string {
+  const factionId = `faction_def_adventuring_guild${suffix}`;
   graph.addNode({
     id: factionId,
     type: 'actor',
-    name: 'The Adventurers Guild',
+    name: `The Adventurers Guild${suffix}`,
     properties: {
       actorType: 'faction',
       factionType: 'guild',
@@ -322,6 +322,39 @@ describe('Faction reputation decay rank events', () => {
     const result = phaseFactionReputationDecay(state);
     // Should return {} (no events)
     expect(result.tickEvents).toBeUndefined();
+  });
+
+  // THR-781: the loop iterates membership edges, so one agent demoted in two
+  // factions on the same tick pushes two events. Before the fix both carried
+  // `faction_decay_rank_{tick}_{agent}` and React dropped or duplicated one.
+  it('mints distinct event ids when one agent is demoted in two factions on the same tick', () => {
+    const graph = makeGraph();
+    addAgent(graph, 'agent_1');
+    // Two chapters of the same guild — the shape factionSeeding mints as
+    // `faction_def_{defId}{suffix}`. Same definition, so the same decay rate
+    // and the same threshold crossing on the same tick.
+    const chapterA = addFaction(graph);
+    const chapterB = addFaction(graph, '_2');
+    addMemberOf(graph, 'agent_1', chapterA, 0.3005, 'sergeant');
+    addMemberOf(graph, 'agent_1', chapterB, 0.3005, 'sergeant');
+
+    const state = {
+      graph,
+      tick: 50,
+      tickEvents: [],
+    } as unknown as GameState;
+
+    const result = phaseFactionReputationDecay(state);
+
+    const demotions = (result.tickEvents ?? []).filter(
+      (e) => e.type === 'faction_rank_changed'
+    );
+    expect(demotions.length).toBe(2);
+    expect(new Set(demotions.map((e) => e.id)).size).toBe(2);
+    // Both factions are named, so neither notice is the other's duplicate.
+    expect(new Set(demotions.map((e) => e.factionId))).toEqual(
+      new Set([chapterA, chapterB])
+    );
   });
 });
 

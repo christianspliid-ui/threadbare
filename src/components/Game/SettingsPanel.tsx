@@ -207,7 +207,8 @@ export function SettingsPanel({
     fontSize: 'var(--text-xs)',
     fontFamily: 'var(--font-body)',
     cursor: 'pointer',
-    outline: 'none',
+    // Law 23 (THR-1010): the focus ring is restored by `.focus-ring` on the
+    // <select> itself; it must not be suppressed inline.
   };
 
   const paletteOptions = Object.values(PALETTE_THEMES);
@@ -250,6 +251,7 @@ export function SettingsPanel({
           <div style={settingRowStyle}>
             <label style={settingLabelStyle}>Map Palette</label>
             <select
+              className="focus-ring"
               value={paletteId}
               onChange={(e) => handlePaletteChange(e.target.value as PaletteThemeId)}
               style={selectStyle}

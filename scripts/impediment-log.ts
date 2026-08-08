@@ -59,6 +59,15 @@ export type ImpedimentEntry = {
   form: ImpedimentForm;
   /** 1-indexed source line, for warning messages. */
   line: number;
+  /**
+   * How many cells the source row actually split into. Table rows only;
+   * paragraph entries carry `null` because they have no column structure.
+   *
+   * This is what makes an unescaped `|` detectable: the log's header documents
+   * {@link TABLE_FULL_CELLS} columns, so anything above that is a pipe inside a
+   * cell rather than a column boundary. See {@link findImpactAnomalies}.
+   */
+  cellCount: number | null;
 };
 
 /**
@@ -250,6 +259,7 @@ function parseTableRow(
     session: normalizeText(cells.slice(9).join(" | ")),
     form: "table",
     line: lineNumber,
+    cellCount: cells.length,
   };
 }
 
@@ -342,6 +352,7 @@ function parseParagraphEntry(
     session: [headerSession, fields.session].filter(Boolean).join(" | "),
     form: "paragraph",
     line: lineNumber,
+    cellCount: null,
   };
 }
 
@@ -402,6 +413,90 @@ export function parseImpedimentLog(markdown: string): ParseResult {
   );
 
   return { entries, tableCount, paragraphCount, warnings, duplicateNums: findDuplicateNums(entries) };
+}
+
+/**
+ * The Impact vocabulary `.claude/skills/impediment-reporter/SKILL.md` documents:
+ * `S` (<2 min), `M` (2–15 min), `L` (15+ min), `Blocked` (could not complete).
+ *
+ * Note this is a **time-lost** axis, not a severity axis. That distinction is the
+ * whole reason {@link findImpactAnomalies} reports the `vocabulary` class rather
+ * than rewriting it — see that function's header.
+ */
+export const ACCEPTED_IMPACT_TOKENS = ["S", "M", "L", "Blocked"] as const;
+
+/**
+ * Why a table row's Impact cell is not one of {@link ACCEPTED_IMPACT_TOKENS}.
+ *
+ * The three kinds are not three severities of the same defect — they have
+ * different causes and different repairs, and conflating them is what made the
+ * problem look like one 30-row mechanical pass when it is not:
+ *
+ * - `overflow` — the row split into **more** than {@link TABLE_FULL_CELLS} cells,
+ *   so an unescaped `|` inside a cell is being read as a column boundary and every
+ *   later field sits one or more positions right of where it belongs. Repair is
+ *   mechanical and lossless: escape the stray pipe as `\|`, which renders
+ *   identically, so no entry text is paraphrased.
+ * - `short` — the row split into **fewer** than {@link TABLE_FULL_CELLS} cells, so
+ *   the Impact column was never authored. Repair needs the original author's
+ *   knowledge, not a transform.
+ * - `vocabulary` — the row has exactly {@link TABLE_FULL_CELLS} cells and its
+ *   columns are correctly aligned; the cell simply holds a value from a different
+ *   vocabulary (`Low` / `Medium` / `High` / `Small`, often with a trailing `—`
+ *   clause, or a qualified `Blocked (workaround available)`).
+ *
+ * **`vocabulary` is deliberately not auto-mapped.** `Low`/`Medium`/`High` is a
+ * severity scale and `S`/`M`/`L` is a time-lost scale, so the obvious mapping is a
+ * semantic guess rather than a translation — and several rows carry the actual
+ * figure in their trailing clause and contradict it. Impediment #311 reads
+ * "Medium — ~25 min to reconcile", which is `L` by the documented time rule, so a
+ * blind `Medium → M` pass would encode a wrong number as if it were authored.
+ * Reconciling these needs per-row reading; this function's job is to make the set
+ * visible and closed, not to guess.
+ */
+export type ImpactAnomalyKind = "overflow" | "short" | "vocabulary";
+
+export type ImpactAnomaly = {
+  /** The row's `#` value. */
+  num: string;
+  /** 1-indexed source line. */
+  line: number;
+  /** The Impact cell exactly as authored, so a report can show what is actually there. */
+  impactRaw: string;
+  /** How many cells the row split into, against {@link TABLE_FULL_CELLS}. */
+  cellCount: number;
+  kind: ImpactAnomalyKind;
+};
+
+/** True when `raw` is exactly one of the documented Impact tokens, case-insensitively. */
+export function isAcceptedImpactToken(raw: string): boolean {
+  const value = normalizeText(raw).toLowerCase();
+  return ACCEPTED_IMPACT_TOKENS.some((token) => token.toLowerCase() === value);
+}
+
+/**
+ * Every table row whose Impact cell is outside {@link ACCEPTED_IMPACT_TOKENS},
+ * classified by cause and carrying its source line.
+ *
+ * Paragraph entries are excluded: they have no columns, so they cannot be
+ * shifted, and their impact is read from a closed-vocabulary header token that
+ * already fails closed to `Unknown`.
+ */
+export function findImpactAnomalies(entries: ImpedimentEntry[]): ImpactAnomaly[] {
+  const anomalies: ImpactAnomaly[] = [];
+
+  for (const entry of entries) {
+    if (entry.form !== "table") continue;
+    if (isAcceptedImpactToken(entry.impactRaw)) continue;
+
+    const cellCount = entry.cellCount ?? TABLE_FULL_CELLS;
+    const kind: ImpactAnomalyKind =
+      cellCount > TABLE_FULL_CELLS ? "overflow" : cellCount < TABLE_FULL_CELLS ? "short" : "vocabulary";
+
+    anomalies.push({ num: entry.num, line: entry.line, impactRaw: entry.impactRaw, cellCount, kind });
+  }
+
+  return anomalies.sort((a, b) => a.line - b.line);
 }
 
 /**

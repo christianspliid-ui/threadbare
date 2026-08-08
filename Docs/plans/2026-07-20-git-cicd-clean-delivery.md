@@ -218,6 +218,8 @@ Still open, and both belong to the settings visit: Done-when #2 (a real code PR 
 | `ARMED_DIRTY_ESCALATE_MINUTES` | 90 | check-armed-prs.ts (THR-897) | Conflict age at which a session must pick the PR up |
 | `ARMED_DIRTY_ABANDONED_HOURS` | 12 | check-armed-prs.ts (THR-897) | Conflict age at which the stall becomes Christian's |
 | `ARMED_UNKNOWN_REQUERIES` | 3 | check-armed-prs.ts (THR-897) | Re-reads before believing an `UNKNOWN` merge state |
+| `REQUIRED_CHECK_NAMES` | `Test · Typecheck · Build`, `Docs gates` | check-armed-prs.ts (THR-1020) | The checks branch protection requires. An allowlist, not the whole rollup — `Vercel` is deliberately not a gate and reading it would report mergeable PRs as stuck |
+| `CHECK_FAILURE_CONCLUSIONS` | `FAILURE` `ERROR` `TIMED_OUT` `CANCELLED` `STARTUP_FAILURE` `ACTION_REQUIRED` `STALE` | check-armed-prs.ts (THR-1020) | Conclusions that mean red. `CANCELLED` is red (THR-1013 — it does not satisfy protection); `SKIPPED` is deliberately absent (it does, and is by design on a docs-only PR) |
 
 ## 11. Fail-soft table
 

@@ -136,13 +136,12 @@ export default function Codex({
             placeholder="Search entries..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full px-3 py-1.5 rounded-md"
+            className="w-full px-3 py-1.5 rounded-md focus-ring"
             style={{
               fontSize: 'var(--text-sm)',
               backgroundColor: 'var(--bg-surface)',
               border: '1px solid var(--border-subtle)',
               color: 'var(--text-primary)',
-              outline: 'none',
             }}
           />
         </div>

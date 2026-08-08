@@ -26,6 +26,7 @@ import { createDefaultFundament, createResonanceState } from '../../worldSoul';
 import type { GameState } from '../../../types/gameState';
 import type { CosmologyProfile } from '../../../types/index';
 import { SPHERE_NAMES } from '../../../types/index';
+import { WORLD_SIM_TEST_TIMEOUT_MS } from '../../../testing/testTimeouts';
 
 function balancedCosmology(): CosmologyProfile {
   const c = {} as CosmologyProfile;
@@ -154,7 +155,7 @@ describe('Pipeline Liveness: encounter initiation → completion → rewards', (
     resetEventCounter();
   });
 
-  it('at least one encounter completes within 50 ticks on a seeded world', { timeout: 120000 }, () => {
+  it('at least one encounter completes within 50 ticks on a seeded world', { timeout: WORLD_SIM_TEST_TIMEOUT_MS }, () => {
     let state = createLivenessGameState(42);
 
     // Run the full orchestrator for LIVENESS_TICK_COUNT ticks
@@ -179,7 +180,7 @@ describe('Pipeline Liveness: encounter initiation → completion → rewards', (
     );
   });
 
-  it('completed encounters produce reward traces (when templates have rewardPool)', { timeout: 120_000 }, () => {
+  it('completed encounters produce reward traces (when templates have rewardPool)', { timeout: WORLD_SIM_TEST_TIMEOUT_MS }, () => {
     let state = createLivenessGameState(42);
 
     // Collect all encounter_completed events across all ticks
@@ -213,7 +214,7 @@ describe('Pipeline Liveness: encounter initiation → completion → rewards', (
     }
   });
 
-  it('pipeline liveness holds across multiple seeds', { timeout: 120_000 }, () => {
+  it('pipeline liveness holds across multiple seeds', { timeout: WORLD_SIM_TEST_TIMEOUT_MS }, () => {
     // Verify this isn't a seed-specific fluke
     const seeds = [42, 123, 777, 1337];
     const results: Array<{ seed: number; initiated: number; completed: number }> = [];

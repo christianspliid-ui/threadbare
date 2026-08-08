@@ -33,6 +33,7 @@ import { SPHERE_NAMES } from '../../../types/index';
 import type { EncounterCacheEntry } from '../../encounterCache';
 import type { ReachDomain } from '../../../types/traits';
 import { WorldGraph } from '../../graph';
+import { WORLD_SIM_TEST_TIMEOUT_MS } from '../../../testing/testTimeouts';
 
 // ─── Shared helpers ───────────────────────────────────────────────
 
@@ -145,7 +146,7 @@ beforeEach(() => {
 describe('Mark reveal liveness: decay path', () => {
   it(
     'a placed mark emits hidden_mark_revealed (decay variant) within 100 ticks',
-    { timeout: 120_000 },
+    { timeout: WORLD_SIM_TEST_TIMEOUT_MS },
     () => {
       // Start at a tick after grace period so decay begins immediately
       const startTick = MARK_DECAY_GRACE_TICKS + 1;

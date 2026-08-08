@@ -7,6 +7,7 @@ import { getCurrentStrength, DECAY_CONSTANTS } from '../decayCurve';
 import type { GameState } from '../../types/gameState';
 import type { AscendantArchetype } from '../../types/influence';
 import type { CosmologyProfile } from '../../types';
+import { WORLD_SIM_TEST_TIMEOUT_MS } from '../../testing/testTimeouts';
 
 const testArchetype: AscendantArchetype = {
   title: 'The Architect',
@@ -37,7 +38,7 @@ describe('intervention effects — full integration', () => {
     clearTraces();
   });
 
-  it('dream intervention → divine influence stored → decays to zero', { timeout: 120000 }, () => {
+  it('dream intervention → divine influence stored → decays to zero', { timeout: WORLD_SIM_TEST_TIMEOUT_MS }, () => {
     // 1. Find an individual actor
     const actors = state.graph.getNodesByType('actor')
       .filter(a => a.properties?.actorType === 'individual');

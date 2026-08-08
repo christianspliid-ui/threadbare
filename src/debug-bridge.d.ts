@@ -292,6 +292,37 @@ export interface DebugFireSignatureResult {
   materialized?: { kind: string; id: string; hexCol: number; hexRow: number } | null;
 }
 
+/** Narrative interrupt surfaces `dismissBeats()` may clear. THR-1019 */
+export type DebugBeatInterruptSurface =
+  | 'AscendantBeatModal'
+  | 'AscendantBeatOfferBanner'
+  | 'JourneyVignetteModal'
+  | 'StoryBeatModal'
+  | 'PremonitionModal';
+
+/** One surface's outcome within a single `dismissBeats()` pass. THR-1019 */
+export interface DebugBeatDismissalRecord {
+  surface: DebugBeatInterruptSurface;
+  /** True when the surface's handler ran without throwing. */
+  dismissed: boolean;
+  /** Present when the handler threw — the drain continues regardless (NFP #4). */
+  error?: string;
+}
+
+/** Result of `dismissBeats()`. THR-1019 */
+export interface DebugBeatDismissalResult {
+  /** How many interrupt surfaces were cleared across every pass. */
+  dismissed: number;
+  /** Surfaces cleared, in order, with repeats across passes. */
+  surfaces: DebugBeatInterruptSurface[];
+  /** How many drain passes ran. */
+  passes: number;
+  /** True when the drain stopped at the pass bound with beats still open. */
+  exhausted: boolean;
+  /** Dismissable interrupt surfaces still open when the drain stopped. */
+  remaining: string[];
+}
+
 export interface DebugBridge {
   openDebugPanel: () => void;
   closeDebugPanel: () => void;
@@ -648,6 +679,48 @@ export interface DebugBridge {
   _registerOpenModalsProvider(fn: () => string[]): void;
   /** @internal GameView registers active UI state provider here */
   _registerActiveUIStateProvider(fn: () => DebugActiveUIState): void;
+
+  /**
+   * THR-1019: clear every currently-open narrative interrupt so a browser-verification
+   * run can reach the surface behind it. **The sanctioned replacement for the
+   * hand-rolled `[role="dialog"]` dismissal loop** (impediments #385, #427, #445, #446,
+   * #447, #453, #455).
+   *
+   * Resolves each surface through its own React handler — and so through the engine's
+   * beat state machine (`resolvePendingBeat`) — never by clicking DOM nodes, so it works
+   * regardless of which component renders the beat. A `selection` beat is resolved with
+   * its first grant, because the engine refuses one that arrives with no choice and the
+   * modal would otherwise stay open (see `selectDefaultBeatChoice`).
+   *
+   * Beats chain, so this drains in passes with a re-render between each, bounded by
+   * `DEBUG_DISMISS_BEATS_MAX_PASSES` (12) — hitting the bound returns `exhausted: true`
+   * rather than throwing (NFP #4).
+   *
+   * **Scope, deliberately narrow:** ascendant beats (entered + offer banner), journey
+   * vignettes, story beats and premonitions. It does **not** touch the encounter veil,
+   * the Meet-The-First flow, choice sets, emergence dilemmas or divine receipts — those
+   * are what a verification run is usually there to observe.
+   */
+  dismissBeats(): Promise<DebugBeatDismissalResult>;
+  /**
+   * THR-1019: while set, newly-arriving narrative interrupts are resolved silently as
+   * they appear, for scripted playthroughs that tick past many beats. Prefer this over
+   * repeated `dismissBeats()` when driving `__DEBUG.tick(n)` — a beat that arrives
+   * mid-batch is cleared without the run having to notice it.
+   *
+   * Off by default and dev-only (the whole bridge is tree-shaken in prod). This is a
+   * verification lever, **not** a change to interrupt behavior — nothing about how the
+   * game presents beats to a player changes.
+   *
+   * Returns the resulting state. Call `suppressBeats(false)` to restore normal beats.
+   */
+  suppressBeats(enabled?: boolean): boolean;
+  /** THR-1019: whether `suppressBeats(true)` is currently in force. */
+  isBeatSuppressionActive(): boolean;
+  /** @internal GameView registers its one-pass narrative-interrupt dismisser here */
+  _registerBeatDismisser(fn: () => DebugBeatDismissalRecord[]): void;
+  /** @internal GameView registers its beat-suppression setter here */
+  _registerBeatSuppression(fn: (enabled: boolean) => void): void;
 
   /** Toggle omniscience mode — bypasses familiarity gating, shows all agent character sheet data. Returns the new enabled state. */
   toggleOmniscience(): boolean;

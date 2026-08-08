@@ -129,6 +129,8 @@ import { DivineReceiptModal } from './DivineReceiptModal';
 import {
   buildActiveEncounterDisplayFromLegacyProgress,
   buildActiveEncounterDisplayFromUnifiedAction,
+  isEncounterAutoOpenSuppressed,
+  isStepNotificationSupersededByAftermath,
   runEncounterAutoOpenScan,
   type ActiveEncounterDisplay,
   selectEncounterRuntimeForDisplay,
@@ -155,7 +157,9 @@ import { setForceFullEncounterVisibility } from '../../engine/debugVisibilityOve
 import { useTopBarHotkeys } from './hooks/useTopBarHotkeys';
 import { computeEssenceIncome } from '../../engine/essenceIncome';
 import { setHomeSeat as setHomeSeatEngine } from '../../engine/influence';
-import { forceOfferBeatById, resolvePendingBeat } from '../../engine/ascendantBeat';
+import { forceOfferBeatById, getBeatDefinitionById, resolvePendingBeat } from '../../engine/ascendantBeat';
+import { selectDefaultBeatChoice } from './beatDismissal';
+import type { BeatDismissalRecord, BeatInterruptSurface } from './beatDismissal';
 import { isSpineBeatId } from '../../data/ascendant-beat-content';
 import { gatherNarrativeContext, enrichProse } from '../../engine/proseEnrichment';
 import { AscendantBeatModal, AscendantBeatOfferBanner } from './AscendantBeatModal';
@@ -1339,6 +1343,15 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     );
     if (!encounter) return false;
     if (notif.stepIndex !== undefined && notif.stepIndex !== encounter.currentStepIndex) return false;
+    // THR-1005: the final step of a resolved action still matches `currentStep`
+    // (it freezes rather than advancing), so the stepIndex check above cannot
+    // catch it. Left openable it eats the one auto-interrupt slot and the
+    // aftermath queued behind it never pops on its own.
+    if (isStepNotificationSupersededByAftermath(
+      notif,
+      activeAction,
+      gameState.encounterNotifications ?? [],
+    )) return false;
     const threadTier = courtPositionToThreadTier(notif.courtPosition);
     const clearanceGateRuntimeId = activeAction?.clearanceGateIds?.[0];
     const clearanceGateStateSnapshot = clearanceGateRuntimeId
@@ -1358,7 +1371,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       clearanceGateStateSnapshot,
     });
     return true;
-  }, [gameState.clearanceGateStates, gameState.encounterProgress, gameState.tick, gameState.unifiedActions]);
+  }, [gameState.clearanceGateStates, gameState.encounterNotifications, gameState.encounterProgress, gameState.tick, gameState.unifiedActions]);
 
   // THR-664: encounter activity is anchored to the entity it concerns. Pending
   // notifications become badges on the agent's thread row instead of toasts in
@@ -3145,8 +3158,12 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   // keeps trying past a notification that declines to open, so one stale record
   // cannot starve the beats behind it (THR-1005).
   // Pause is handled by the central interrupt auto-pause (useInterruptAutoPause below)
+  // THR-1017: the suppression window is gated on `running` here — a paused sim
+  // can never reach the tick that clears it, so behind a stacked modal this
+  // scan would bail forever and strand the aftermath. See
+  // `isEncounterAutoOpenSuppressed` for the full mechanism.
   useEffect(() => {
-    if (interruptsSuppressed) return;
+    if (isEncounterAutoOpenSuppressed(interruptsSuppressed, running)) return;
     // Don't auto-open tiered encounters while a premonition modal is active —
     // compulsion handles encounter selection for that agent
     if (activePremonition) return;
@@ -3164,7 +3181,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       suppressedEncounterNotificationId.current,
       handleOpenEncounterFromNotification,
     );
-  }, [gameState.encounterNotifications, handleOpenEncounterFromNotification, interruptsSuppressed, activePremonition]);
+  }, [gameState.encounterNotifications, handleOpenEncounterFromNotification, interruptsSuppressed, running, activePremonition]);
 
   // ── Meeting encounter (Meet The First) ──
   const [meetingState, setMeetingState] = useState<MeetingEncounterState | null>(null);
@@ -3620,6 +3637,105 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       pendingVignettes: (prev.pendingVignettes ?? []).filter(v => v.id !== activeVignette.id),
     }));
   }, [activeVignette, gameState.graph, gameState.ascendantId, setGameState]);
+
+  // ── THR-1019: narrative-interrupt levers for browser verification ──────────
+  // Browser-verify runs must reach surfaces *behind* the game's beats, and seven
+  // impediments in one week (#385, #427, #445, #446, #447, #453, #455) were spent
+  // hand-rolling `[role="dialog"]` click loops to get there. These route each surface
+  // through its own handler — and so through the engine's beat state machine — so the
+  // lever works regardless of which component renders the beat, and cannot drift from
+  // the render conditions the way a DOM selector does.
+  //
+  // This is a verification tool, NOT a change to interrupt behavior: nothing here runs
+  // unless a debug caller asks, and the whole path is DEV-only.
+  const [beatSuppressionActive, setBeatSuppressionActive] = useState(false);
+
+  /**
+   * One pass over the currently-open narrative interrupts. The drain loop lives in
+   * `__DEBUG.dismissBeats()`, because a successor beat only becomes visible after React
+   * re-renders — a loop inside this closure would read stale state and miss the chain.
+   *
+   * Each branch mirrors its surface's render condition exactly, for the same reason the
+   * THR-668 auto-pause set does: acting on a surface that cannot render would report a
+   * dismissal that never happened.
+   */
+  const dismissOpenBeatInterrupts = useCallback((): BeatDismissalRecord[] => {
+    const records: BeatDismissalRecord[] = [];
+    const attempt = (surface: BeatInterruptSurface, run: () => void) => {
+      try {
+        run();
+        records.push({ surface, dismissed: true });
+      } catch (err) {
+        // Fail-soft (NFP #4): one stuck surface must not strand the rest of the drain.
+        records.push({ surface, dismissed: false, error: err instanceof Error ? err.message : String(err) });
+      }
+    };
+
+    if (pendingBeat) {
+      const resolveWithDefault = () => handleResolveBeat(
+        selectDefaultBeatChoice(pendingBeat, getBeatDefinitionById),
+      );
+      if (beatEntered) {
+        attempt('AscendantBeatModal', resolveWithDefault);
+      } else if (!interruptsSuppressed) {
+        // The offer banner does not pause the sim, but it gates the beat behind it.
+        // Resolve straight through rather than entering first, so one pass clears it.
+        attempt('AscendantBeatOfferBanner', resolveWithDefault);
+      }
+    }
+
+    if (activeVignette && !interruptsSuppressed) {
+      attempt('JourneyVignetteModal', () => {
+        // Mirrors JourneyVignetteModal's own onClose: dismissing is a withdrawal.
+        const withdrawn = activeVignette.data.choices.find(c => c.effects.interventionType === 'withdrawn');
+        if (withdrawn) {
+          handleJourneyChoice(withdrawn.id);
+        } else {
+          setGameState(prev => ({
+            ...prev,
+            pendingVignettes: (prev.pendingVignettes ?? []).filter(v => v.id !== activeVignette.id),
+          }));
+        }
+      });
+    }
+
+    if (activeStoryBeatId && activeStoryBeatTemplate && !interruptsSuppressed) {
+      attempt('StoryBeatModal', handleStoryBeatDismiss);
+    }
+
+    if (activePremonition && !interruptsSuppressed) {
+      attempt('PremonitionModal', handlePremonitionDismiss);
+    }
+
+    return records;
+  }, [
+    activePremonition,
+    activeStoryBeatId,
+    activeStoryBeatTemplate,
+    activeVignette,
+    beatEntered,
+    handleJourneyChoice,
+    handlePremonitionDismiss,
+    handleResolveBeat,
+    handleStoryBeatDismiss,
+    interruptsSuppressed,
+    pendingBeat,
+    setGameState,
+  ]);
+
+  // While suppression is on, clear interrupts as they arrive — this is what makes a
+  // scripted `__DEBUG.tick(n)` batch survive beats that fire mid-run. Settles on its
+  // own: once nothing is open the pass returns no records and no state changes.
+  useEffect(() => {
+    if (!import.meta.env.DEV || !beatSuppressionActive) return;
+    dismissOpenBeatInterrupts();
+  }, [beatSuppressionActive, dismissOpenBeatInterrupts]);
+
+  useEffect(() => {
+    if (!import.meta.env.DEV || !window.__DEBUG) return;
+    window.__DEBUG._registerBeatDismisser(dismissOpenBeatInterrupts);
+    window.__DEBUG._registerBeatSuppression(setBeatSuppressionActive);
+  }, [dismissOpenBeatInterrupts]);
 
   // IX-013: Wrapped location click closes drawer before drilling down
   const handleLocationClickWithClose = useCallback((locationId: string) => {
@@ -4089,6 +4205,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                       onClose={handleHexDetailClose}
                       onGoToChronicle={(coord) => { handleHexClick(coord); handleHexDetailClose(); }}
                       graph={gameState.graph}
+                      onAgentClick={handleAgentSelect}
+                      onLocationClick={(locationId) => setStubModalState({ nodeId: locationId, category: 'location' })}
                     />
                   )}
                 </div>
@@ -4320,7 +4438,14 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
             case 'army':
               return <ArmySheet name={nodeName} onClose={onClose} />;
             case 'artifact':
-              return <ArtifactSheet name={nodeName} onClose={onClose} />;
+              return (
+                <ArtifactSheet
+                  name={nodeName}
+                  artifactId={nodeId}
+                  graph={gameState.graph}
+                  onClose={onClose}
+                />
+              );
             default:
               return null;
           }

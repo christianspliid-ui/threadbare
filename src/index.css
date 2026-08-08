@@ -67,6 +67,49 @@
     --accent-gold-glow: #d4a04030;
     /* Near-miss band — desaturated amber, distinct from success (green) and failure (red) */
     --accent-near-miss: #c9a14a;
+    /* Channels, for the translucent near-miss fills in the encounter veil's
+       resolution strip (THR-1010). Same pattern as --veil-gold-rgb: one value,
+       many alphas, rather than a hex re-typed per opacity — which is how the
+       veil ended up painting `rgba(212, 160, 55, …)` as a third gold. */
+    --accent-near-miss-rgb: 201 161 74;
+
+    /* ── Encounter veil — the ceremonial palette (Law 30, THR-1010) ──────────
+       Law 30 sanctions the veil's palette as a *variant set*, not a second
+       design system: it keeps its own named tokens so the ceremonial surface
+       can be retuned in one place, and `--veil-gold` resolves to the game-wide
+       gold so only ever one gold is live. Before this, `EncounterVeil.tsx` and
+       `NudgePhaseShell.tsx` each declared a local `GOLD = '#d4af37'` that had
+       drifted from `--accent-gold #d4a040` — two golds on one screen, which is
+       precisely the drift Law 30 exists to prevent. `#d4a040` wins because the
+       token is what the rest of the game already renders.
+
+       `--veil-gold-rgb` carries the channels so the veil's many translucent
+       golds (borders, glows, scrims) derive from the same value instead of
+       re-typing a hex per alpha: `rgb(var(--veil-gold-rgb) / 0.25)`.
+
+       Text tones meet WCAG AA 4.5:1 against `--veil-void` (Law 45); the
+       measured ratios are in the comments and locked by
+       `encounterVeilTokens.test.ts`. `--veil-text-atmosphere` is the one
+       sub-floor tone, legal only for decoration whose information is also
+       available elsewhere. */
+    --veil-void: #0a0a0f;
+    --veil-gold-rgb: 212 160 64;
+    --veil-gold: var(--accent-gold);
+    --veil-gold-dim: rgb(var(--veil-gold-rgb) / 0.25);
+    /* Gold that carries *words* rather than an edge or a glow. Law 45 applies
+       to gold exactly as it does to the grey tones, and the veil's dimmed gold
+       labels ("Aftermath", the sphere name, the peek button) were painting at
+       2.5:1 and 3.6:1 — found by measuring the composed surface, not the
+       source, since each is `--veil-gold` at a per-element alpha. 0.75 is the
+       first step above the AA floor (5.1:1); below ~0.7 gold cannot carry text
+       on this background at all. */
+    --veil-gold-text: rgb(var(--veil-gold-rgb) / 0.75); /* 5.1:1 on --veil-void */
+    --veil-text-bright: rgba(212, 196, 158, 0.95); /* 9.5:1 on --veil-void */
+    --veil-text-warm: rgba(212, 196, 158, 0.75);  /* 6.7:1 on --veil-void */
+    --veil-text-warm-dim: #877e6c;                /* 4.9:1 on --veil-void */
+    --veil-text-whisper: #918a78;                 /* 5.7:1 on --veil-void */
+    --veil-text-ghost: #887e74;                   /* 5.0:1 on --veil-void */
+    --veil-text-atmosphere: rgba(160, 140, 130, 0.25); /* sub-floor: decoration only */
 
     /* Borders — subtle warmth with gold threading */
     --border-subtle: #2a2520;
@@ -510,6 +553,25 @@
   .interactive-row-gold:focus-visible {
     outline: 2px solid var(--accent-gold-dim);
     outline-offset: -2px;
+  }
+
+  /* Focus ring — the sanctioned replacement for inline `outline: 'none'`
+     (Law 23, Law 46; THR-1010).
+
+     Several surfaces suppressed the focus ring inline to hide the UA default
+     on mouse click, which also removed it for keyboard players — Law 23 says
+     `:focus-visible` is never suppressed. This class keeps the original
+     intent (no ring on a mouse click) while restoring the keyboard ring, and
+     it has to be a class because `:focus-visible` cannot be expressed inline.
+
+     Ordering is load-bearing: both selectors have equal specificity, so the
+     `:focus-visible` rule must come second to win when both match. */
+  .focus-ring:focus:not(:focus-visible) {
+    outline: none;
+  }
+  .focus-ring:focus-visible {
+    outline: 2px solid var(--accent-gold-dim);
+    outline-offset: 2px;
   }
 }
 

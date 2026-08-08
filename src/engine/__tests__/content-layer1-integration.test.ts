@@ -5,6 +5,7 @@ import { ENCOUNTER_TEMPLATES } from '../../data/encounter-content';
 import { ROUTINE_TEMPLATES, LIFECYCLE_TEMPLATES } from '../../data/narrative-content';
 import { DOOM_VOCABULARY } from '../../data/doom-content';
 import type { AscendantArchetype, CosmologyProfile } from '../../types';
+import { WORLD_SIM_TEST_TIMEOUT_MS } from '../../testing/testTimeouts';
 
 const testArchetype: AscendantArchetype = {
   id: 'arch.test',
@@ -89,7 +90,7 @@ describe('Layer 1 content data', () => {
 // All single-seed assertions share one run to avoid redundant world gen + tick loops.
 // Previously each test ran its own 100-tick sim — 11 separate runs totalling ~7 minutes.
 
-describe('Layer 1 content integration (100-tick simulation)', { timeout: 120_000 }, () => {
+describe('Layer 1 content integration (100-tick simulation)', { timeout: WORLD_SIM_TEST_TIMEOUT_MS }, () => {
   // Run once at describe scope — all it() blocks read from the collected results.
   resetDecisionCache();
   resetEventCounter();
@@ -163,7 +164,7 @@ describe('Layer 1 content integration (100-tick simulation)', { timeout: 120_000
 
 // ─── Multi-seed divergence test ─────────────────────────────────────
 
-describe('Layer 1 seed divergence', { timeout: 120_000 }, () => {
+describe('Layer 1 seed divergence', { timeout: WORLD_SIM_TEST_TIMEOUT_MS }, () => {
   it('different seeds produce different narratives', () => {
     resetDecisionCache();
     resetEventCounter();

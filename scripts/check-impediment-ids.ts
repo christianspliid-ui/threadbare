@@ -54,7 +54,19 @@
  * *behaviour* pinned against committed fixtures; this file owns every assertion
  * about the *live corpus*.
  *
- * Run: `npm run check:impediment-ids`
+ * ## The repair (THR-1018)
+ *
+ * Detection alone left every closeout merge needing a session to hand-classify
+ * each collision into one of two remedies — measured at two collisions needing two
+ * different repairs in the single 2026-08-07 run that resolved three stuck PRs.
+ * `--fix` applies them: `scripts/impediment-id-repair.ts` classifies each
+ * collision, dedupes or renumbers it, and reports every `#N` cross-reference the
+ * renumber may have made ambiguous. The classifier is deliberately biased toward
+ * renumbering — see that module's header for why the two mistakes are not
+ * symmetric.
+ *
+ * Run: `npm run check:impediment-ids` — reports.
+ *      `npm run check:impediment-ids -- --fix` — reports and repairs.
  * Exits 0 when every `#` is unique and the log still parses in full, 1 otherwise.
  */
 
@@ -63,10 +75,21 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import {
+  ACCEPTED_IMPACT_TOKENS,
+  findImpactAnomalies,
   isParagraphEntryLine,
   isTableEntryLine,
   parseImpedimentLog,
+  type ImpactAnomaly,
 } from "./impediment-log.ts";
+import {
+  applyRepairs,
+  attachRemovedText,
+  findCrossReferences,
+  planRepairs,
+  readPublishedRows,
+  type RepairPlan,
+} from "./impediment-id-repair.ts";
 
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(SCRIPT_DIR, "..");
@@ -90,6 +113,72 @@ const LIVE_LOG_FLOORS = {
   /** Trailing paragraph entries — the second form THR-764 taught the parser. */
   paragraphEntries: 50,
 } as const;
+
+/**
+ * Rows whose Impact cell is already outside {@link ACCEPTED_IMPACT_TOKENS}, by `#`
+ * (THR-839).
+ *
+ * **This is a closed set, not a count.** The gate below asserts the live log's
+ * anomaly set is a *subset* of this one: repairing a row is always allowed and
+ * shrinks the list, but a **new** offender fails CI on the PR that introduces it.
+ * A snapshot number would have been the wrong shape — THR-688 rule A — and this
+ * ticket is its own evidence, because it was filed claiming "roughly 30 rows" and
+ * measured at 126 when picked up 11 days later.
+ *
+ * The three kinds have three different repairs and are listed separately so the
+ * follow-up work is legible; see {@link ImpactAnomalyKind} for why `vocabulary`
+ * is reported rather than auto-mapped.
+ */
+const KNOWN_IMPACT_ANOMALIES: readonly string[] = [
+  // `overflow` — an unescaped `|` before the Impact column shifts it right.
+  // Mechanically repairable without paraphrase: escape the stray pipe as `\|`.
+  // (A stray pipe in the *Session* column is not here and is not a defect —
+  // `parseTableRow` rejoins everything from column 9 on.)
+  "28", "50", "168", "352", "367", "466", "469",
+
+  // `short` — the row was authored with fewer than 10 columns, so the Impact
+  // cell does not exist. Needs the original author's knowledge, not a transform.
+  "142", "253", "262", "273", "274", "406", "444", "447", "448", "449", "463",
+
+  // `vocabulary` — columns correctly aligned, value from the severity scale
+  // (`Low`/`Medium`/`High`/`Small`) rather than the documented time-lost scale.
+  // Not auto-mapped: several rows state a figure that contradicts the obvious
+  // mapping (#311 is "Medium — ~25 min", which is `L`).
+  "109", "224", "228", "229", "230", "231", "232", "233", "234", "235", "236", "237",
+  "239", "240", "241", "242", "243", "244", "245", "249", "250", "251", "263", "264",
+  "265", "266", "268", "291", "299", "300", "301", "302", "303", "304", "305", "306",
+  "307", "308", "309", "310", "311", "312", "313", "314", "315", "316", "317", "318",
+  "319", "320", "321", "322", "323", "324", "326", "327", "330", "331", "332", "333",
+  "334", "335", "350", "351", "354", "355", "356", "357", "360", "361", "362", "365",
+  "368", "369", "373", "374", "384", "385", "398", "400", "402", "404", "407", "409",
+  "410", "423", "425", "426", "427", "460", "461", "462", "464", "465", "467", "468",
+  "470", "471", "472", "473", "474", "475", "476", "477", "478", "479", "480", "481",
+];
+
+/**
+ * Impact-cell failures: rows outside the documented vocabulary that are not in the
+ * grandfathered set.
+ *
+ * Returns one failure line per new offender, each carrying its source line number
+ * so a fixer does not have to search for it (THR-839 Done-when 1).
+ */
+function checkImpactCells(result: ReturnType<typeof parseImpedimentLog>): {
+  failures: string[];
+  anomalies: ImpactAnomaly[];
+} {
+  const anomalies = findImpactAnomalies(result.entries);
+  const known = new Set(KNOWN_IMPACT_ANOMALIES);
+  const failures = anomalies
+    .filter((anomaly) => !known.has(anomaly.num))
+    .map(
+      (anomaly) =>
+        `line ${anomaly.line}: #${anomaly.num} Impact is ${JSON.stringify(
+          anomaly.impactRaw,
+        )} (${anomaly.kind}, ${anomaly.cellCount} cells) — expected one of ${ACCEPTED_IMPACT_TOKENS.join(" / ")}`,
+    );
+
+  return { failures, anomalies };
+}
 
 /** Rendered in the failure message so a fixer does not have to derive the next free number. */
 function nextFreeNum(nums: string[]): number {
@@ -166,18 +255,108 @@ function reportDuplicates(result: ReturnType<typeof parseImpedimentLog>): void {
       "  number render as one entry's id against two different impediments, and every",
       "  later retrospective that reads by number reads the wrong row.",
       "",
-      `  Fix: keep the number on the row that appears FIRST in the file (existing prose`,
-      `  cross-references resolve to it), and renumber each later row from #${suggested} up.`,
-      "  Record the old number in the renumbered row's Session Context column, e.g.",
-      `  "Renumbered from #<old> by THR-881 (duplicate-number repair)", so an existing`,
-      "  reference to the old number is still traceable.",
+      "  Repair automatically (THR-1018):",
       "",
-      "  Then regenerate the dashboard: npm run generate-impediment-dashboard",
+      "    npm run check:impediment-ids -- --fix",
+      "",
+      "  It classifies each collision — dedupe when both rows are the same impediment,",
+      `  renumber from #${suggested} up when they are different — echoes every row it`,
+      "  removes, and lists the cross-references a renumber may have made ambiguous.",
+      "  To repair by hand instead: keep the number on the row that appears FIRST",
+      "  (existing prose cross-references resolve to it), renumber each later row, and",
+      "  record the old number in its Session Context column.",
+      "",
+      "  Either way, regenerate the dashboard afterwards:",
+      "    npm run generate-impediment-dashboard",
     ].join("\n"),
   );
 }
 
+/** Prints what a repair did, in enough detail to audit or reverse it by hand. */
+function reportRepair(plan: RepairPlan, repoRoot: string): void {
+  const renumberedNums = plan.plans
+    .filter((collision) => collision.kind === "renumber")
+    .map((collision) => collision.num);
+
+  console.error("  Repair applied:\n");
+
+  for (const collision of plan.plans) {
+    const confidence = `similarity ${collision.similarity.toFixed(2)}`;
+
+    if (collision.kind === "dedupe") {
+      console.error(
+        `    #${collision.num} — DEDUPE (${confidence}): same impediment on both sides.`,
+      );
+      console.error(
+        `      Kept line ${collision.keptLine}, Count set to ${collision.resolvedCount} ` +
+          `(${collision.countRule === "max" ? "max — identical text, a count bump, not a second observation" : "sum — independently authored observations"}).`,
+      );
+      for (const removed of collision.removed) {
+        console.error(`      Removed line ${removed.line}, verbatim:`);
+        console.error(`        ${removed.text}`);
+      }
+      continue;
+    }
+
+    console.error(
+      `    #${collision.num} — RENUMBER (${confidence}): different impediments sharing an id.`,
+    );
+    console.error(
+      collision.keptBecause === "published"
+        ? `      Kept the number on line ${collision.keptLine} — that row is already on origin/main and may be cited (#460 rule 1).`
+        : `      Kept the number on line ${collision.keptLine} by FILE ORDER — could not read origin/main, so publication is unknown.\n` +
+            `      Check by hand that the row keeping the number is the published one; file order after a union merge is a merge artifact.`,
+    );
+    for (const move of collision.renumbered) {
+      console.error(`      line ${move.line}: #${move.oldNum} -> #${move.newNum}`);
+    }
+  }
+
+  const references = findCrossReferences(repoRoot, renumberedNums);
+  console.error("");
+
+  if (renumberedNums.length === 0) {
+    console.error("  No renumbering, so no cross-reference can have been invalidated.");
+  } else if (references.length === 0) {
+    console.error(
+      `  No prose cross-references to ${renumberedNums.map((n) => `#${n}`).join(", ")} found.`,
+    );
+  } else {
+    console.error(
+      `  ${references.length} cross-reference(s) to a renumbered id. The original number stayed`,
+    );
+    console.error(
+      "  on the FIRST row, so each still resolves — but if one meant the row that moved,",
+    );
+    console.error("  it now points at the wrong entry. Check these by hand:\n");
+    for (const reference of references) {
+      console.error(`    ${reference.file}:${reference.line}  #${reference.num}`);
+      console.error(`      ${reference.text}`);
+    }
+  }
+
+  if (renumberedNums.length > 0) {
+    console.error(
+      [
+        "",
+        "  Allocation note (#460 rule 2, closed by THR-1028): the numbers above were allocated",
+        "  from origin/main plus this tree only, which is this tool's own reach. Before you",
+        "  append the NEXT row, use the allocator instead — it reads every local and remote ref:",
+        "",
+        "    npm run impediment:next-id",
+        "",
+        "  It still cannot separate two branches that each append and neither commits first;",
+        "  commit the row, or come back here after the merge.",
+      ].join("\n"),
+    );
+  }
+
+  console.error("\n  Now regenerate the dashboard: npm run generate-impediment-dashboard");
+}
+
 function main(): void {
+  const fix = process.argv.includes("--fix");
+
   if (!fs.existsSync(IMPEDIMENTS_PATH)) {
     console.error(`check:impediment-ids: missing impediment log at ${IMPEDIMENTS_PATH}`);
     process.exit(1);
@@ -188,15 +367,37 @@ function main(): void {
   const { tableCount, paragraphCount, duplicateNums } = result;
 
   const populationFailures = checkPopulation(markdown, result);
+  const { failures: impactFailures, anomalies } = checkImpactCells(result);
 
-  if (duplicateNums.length === 0 && populationFailures.length === 0) {
+  // Advisory on every run, including the green one: the grandfathered set is
+  // outstanding work, and a gate that only speaks when it fails lets a 126-row
+  // backlog sit invisible for the 11 days this one did.
+  if (anomalies.length > 0) {
+    const byKind = (kind: string) => anomalies.filter((a) => a.kind === kind).length;
+    console.log(
+      `check:impediment-ids: ${anomalies.length} row(s) carry a non-canonical Impact cell ` +
+        `(${byKind("overflow")} overflow, ${byKind("short")} short, ${byKind("vocabulary")} vocabulary) — ` +
+        "grandfathered in KNOWN_IMPACT_ANOMALIES, tracked by THR-1027.",
+    );
+  }
+
+  if (duplicateNums.length === 0 && populationFailures.length === 0 && impactFailures.length === 0) {
     console.log(
       `check:impediment-ids: OK — ${tableCount} table rows + ${paragraphCount} paragraph entries parsed, every # unique.`,
     );
     return;
   }
 
-  console.error("check:impediment-ids: FAIL — Docs/impediments.md did not pass the live-log gate.\n");
+  // On the --fix path a duplicate is about to be repaired, so announcing FAIL up
+  // front and then exiting 0 misreports the run. A population failure is never
+  // repairable, so it is a FAIL either way.
+  const repairable =
+    fix && duplicateNums.length > 0 && populationFailures.length === 0 && impactFailures.length === 0;
+  console.error(
+    repairable
+      ? "check:impediment-ids: repairing — Docs/impediments.md carries duplicate numbers.\n"
+      : "check:impediment-ids: FAIL — Docs/impediments.md did not pass the live-log gate.\n",
+  );
 
   if (populationFailures.length > 0) {
     console.error("  Parse population / dropped entries:");
@@ -213,7 +414,59 @@ function main(): void {
     );
   }
 
-  if (duplicateNums.length > 0) reportDuplicates(result);
+  if (impactFailures.length > 0) {
+    console.error("  Impact cells outside the documented vocabulary (THR-839):");
+    for (const failure of impactFailures) console.error(`    - ${failure}`);
+    console.error(
+      [
+        "",
+        `  The Impact column takes one of ${ACCEPTED_IMPACT_TOKENS.join(" / ")} — a time-lost`,
+        "  scale (S <2 min, M 2-15 min, L 15+ min, Blocked), documented in",
+        "  .claude/skills/impediment-reporter/SKILL.md. Two things commonly go wrong:",
+        "",
+        "    - An unescaped `|` inside an earlier cell is read as a column boundary and",
+        "      shifts every later field right. Escape it as `\\|` — it renders identically.",
+        "    - `Low` / `Medium` / `High` is the severity scale, not this one. Pick the token",
+        "      matching the time actually lost, not the one that sounds equivalent.",
+        "",
+        "  Existing offenders are grandfathered in KNOWN_IMPACT_ANOMALIES. Repairing a row",
+        "  and removing its number from that list is always welcome; adding a number to it",
+        "  is not the fix for a row you just wrote.",
+        "",
+      ].join("\n"),
+    );
+  }
+
+  if (duplicateNums.length > 0) {
+    if (!fix) {
+      reportDuplicates(result);
+      process.exit(1);
+    }
+
+    // The repair only ever touches numbering, so a population failure — a dropped
+    // or unparsed entry — is a different defect and must not be papered over by a
+    // successful renumber. Report both, and stay red on the one --fix cannot fix.
+    // Publication, not file order, decides which row keeps the number (#460 rule 1).
+    const publishedRows = readPublishedRows(REPO_ROOT);
+    const plan = attachRemovedText(markdown, planRepairs(markdown, { publishedRows }));
+    fs.writeFileSync(IMPEDIMENTS_PATH, applyRepairs(markdown, plan), "utf8");
+    reportRepair(plan, REPO_ROOT);
+
+    const after = parseImpedimentLog(fs.readFileSync(IMPEDIMENTS_PATH, "utf8"));
+    if (after.duplicateNums.length > 0) {
+      console.error(
+        `\ncheck:impediment-ids: FAIL — ${after.duplicateNums.length} duplicate(s) survived the repair.`,
+      );
+      process.exit(1);
+    }
+    if (populationFailures.length > 0 || impactFailures.length > 0) process.exit(1);
+
+    console.log(
+      `\ncheck:impediment-ids: repaired — ${plan.plans.length} collision(s) resolved, ` +
+        `${after.tableCount} table rows + ${after.paragraphCount} paragraph entries, every # unique.`,
+    );
+    return;
+  }
 
   process.exit(1);
 }

@@ -15,6 +15,7 @@ import { createBalancedCosmology } from '../../cosmology';
 import { generateArchetypes } from '../../ascendant';
 import { createSimulationRuntime } from '../../simulationRuntime';
 import type { GameState } from '../../../types/gameState';
+import { WORLD_SIM_TEST_TIMEOUT_MS } from '../../../testing/testTimeouts';
 
 const SEED = 42;
 const LIFECYCLE_TICK_BUDGET = 100;
@@ -31,7 +32,7 @@ function createFreshState(): GameState {
   return state;
 }
 
-describe('encounter lifecycle contract', { timeout: 120_000 }, () => {
+describe('encounter lifecycle contract', { timeout: WORLD_SIM_TEST_TIMEOUT_MS }, () => {
   // Shared state — one world gen + tick run for all tests
   const initialState = createFreshState();
 

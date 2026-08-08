@@ -21,7 +21,11 @@ import {
   scoreSphereAffinity,
   sustenancePolarity,
 } from '../essenceEconomyBridge';
-import { recomputeControlledSourceTiers, readEssenceSource } from '../essenceSources';
+import {
+  recomputeControlledSourceTiers,
+  readEssenceSource,
+  selectLocationSustenanceVoice,
+} from '../essenceSources';
 import {
   ECON_SANCTITY_DRIFT_PER_TICK,
   ECON_SANCTITY_NURTURE_CEILING,
@@ -328,5 +332,148 @@ describe('recomputeControlledSourceTiers — bridge integration', () => {
     const src = readEssenceSource(graph.getNode('loc.peak')?.properties);
     expect(src?.sanctity).toBe(0);
     expect(src?.tier).toBe('dormant');
+  });
+});
+
+/**
+ * THR-840 — which source's sustenance sentence a location speaks.
+ *
+ * The gap this closes: `resolveEconomicHost` walks a sublocation up one hop, so a
+ * shrine or rite standing inside a settlement drifts off that settlement's larder
+ * every tick — while the Livelihood line, which read only the location's own bag,
+ * said nothing. These pin the selector in both directions (nurturing and withering)
+ * plus the composition rule that decides between several claimants.
+ */
+describe('selectLocationSustenanceVoice (THR-840)', () => {
+  /** Parent settlement with a spirit larder at `tier`, plus n sublocation-borne sources. */
+  function vale(
+    tier: StockTier,
+    subs: { id: string; src?: Partial<EssenceSource> }[] = [],
+    ownSource?: Partial<EssenceSource>,
+  ): WorldGraph {
+    const graph = makeGraph();
+    addLocation(graph, 'loc.vale', {
+      resources: { [SPIRIT_GOOD]: res(80, tier), ore: res(80, 'surplus'), stone: res(10, 'scarce') },
+      ...(ownSource ? { essenceSource: source({ discoveredBy: ascendantId, ...ownSource }) } : {}),
+    });
+    for (const sub of subs) {
+      addLocation(graph, sub.id, {
+        parentLocationId: 'loc.vale',
+        essenceSource: source({ discoveredBy: ascendantId, ...sub.src }),
+      });
+    }
+    return graph;
+  }
+
+  it('gives the clause to a sublocation-borne source the engine is nurturing', () => {
+    const graph = vale('surplus', [{ id: 'sub.shrine' }]);
+
+    // The engine really is drifting it — the premise the UI was blind to.
+    const drift = computeSanctitySustenance(
+      graph,
+      'sub.shrine',
+      readEssenceSource(graph.getNode('sub.shrine')?.properties)!,
+    );
+    expect(drift.drift).toBeGreaterThan(0);
+    expect(drift.economicHostId).toBe('loc.vale');
+
+    const voice = selectLocationSustenanceVoice(graph, 'loc.vale', ['sub.shrine']);
+    expect(voice?.hostId).toBe('sub.shrine');
+    expect(voice?.borrowed).toBe(true);
+    expect(voice?.sphere).toBe('spirit');
+    expect(voice?.sustenance.polarity).toBe('nurturing');
+  });
+
+  it('gives the clause to a sublocation-borne source the engine is withering', () => {
+    const graph = vale('scarce', [{ id: 'sub.shrine' }]);
+
+    const voice = selectLocationSustenanceVoice(graph, 'loc.vale', ['sub.shrine']);
+    expect(voice?.hostId).toBe('sub.shrine');
+    expect(voice?.sustenance.polarity).toBe('withering');
+    expect(voice?.sustenance.drift).toBeLessThan(0);
+  });
+
+  it('renders nothing when the location has no sources at all', () => {
+    const graph = vale('surplus');
+    expect(selectLocationSustenanceVoice(graph, 'loc.vale', [])).toBeUndefined();
+  });
+
+  it('RULE 1: the location\'s own holy ground speaks over a borrowed one', () => {
+    // Own source is `matter` (a mild mixed score); the borrowed one is `spirit` at a
+    // full surplus, i.e. strictly louder. Own still wins — this is what keeps the
+    // change additive: a line that already rendered never changes.
+    const graph = vale('surplus', [{ id: 'sub.shrine' }], { sphereAffinity: 'matter' });
+
+    const voice = selectLocationSustenanceVoice(graph, 'loc.vale', ['sub.shrine']);
+    expect(voice?.hostId).toBe('loc.vale');
+    expect(voice?.borrowed).toBe(false);
+    expect(voice?.sphere).toBe('matter');
+  });
+
+  it('RULE 2: among borrowed sources the loudest drift speaks', () => {
+    // spirit reads the surplus pearls alone -> |1|. matter reads surplus ore against
+    // scarce stone -> a much smaller magnitude. Ids are ordered so the loser sorts
+    // first, proving magnitude decides rather than iteration order.
+    const graph = vale('surplus', [
+      { id: 'sub.a_forge', src: { sphereAffinity: 'matter' } },
+      { id: 'sub.b_shrine', src: { sphereAffinity: 'spirit' } },
+    ]);
+
+    const voice = selectLocationSustenanceVoice(graph, 'loc.vale', ['sub.a_forge', 'sub.b_shrine']);
+    expect(voice?.hostId).toBe('sub.b_shrine');
+    expect(Math.abs(voice!.sustenance.affinityScore)).toBe(1);
+  });
+
+  it('RULE 3: an exact tie breaks on host id ascending, whatever order they arrive in', () => {
+    const graph = vale('surplus', [{ id: 'sub.zeta' }, { id: 'sub.alpha' }]);
+
+    for (const order of [['sub.zeta', 'sub.alpha'], ['sub.alpha', 'sub.zeta']]) {
+      expect(selectLocationSustenanceVoice(graph, 'loc.vale', order)?.hostId).toBe('sub.alpha');
+    }
+  });
+
+  it('CONTRACT: no clause wherever computeSanctitySustenance returns a reason', () => {
+    // `ceiling` is the case the old mirrored guards missed: drift is zero because the
+    // land has stopped giving, so the sentence must not describe generosity.
+    const atCeiling = vale('surplus', [
+      { id: 'sub.shrine', src: { sanctity: ECON_SANCTITY_NURTURE_CEILING } },
+    ]);
+    const ceilingReason = computeSanctitySustenance(
+      atCeiling,
+      'sub.shrine',
+      readEssenceSource(atCeiling.getNode('sub.shrine')?.properties)!,
+    );
+    expect(ceilingReason.reason).toBe('ceiling');
+    expect(selectLocationSustenanceVoice(atCeiling, 'loc.vale', ['sub.shrine'])).toBeUndefined();
+
+    // `untyped` — still on the legacy alignment-distributed income path.
+    const untyped = vale('surplus', [{ id: 'sub.shrine', src: { sphereAffinity: undefined } }]);
+    expect(selectLocationSustenanceVoice(untyped, 'loc.vale', ['sub.shrine'])).toBeUndefined();
+
+    // `no-matching-goods` — a time source in a larder that grows nothing of that sphere.
+    const noGoods = vale('surplus', [{ id: 'sub.shrine', src: { sphereAffinity: 'time' } }]);
+    expect(selectLocationSustenanceVoice(noGoods, 'loc.vale', ['sub.shrine'])).toBeUndefined();
+  });
+
+  it('CONTRACT: undiscovered and desecrated sources stay silent', () => {
+    const undiscovered = vale('surplus', [{ id: 'sub.shrine', src: { discoveredBy: undefined } }]);
+    expect(selectLocationSustenanceVoice(undiscovered, 'loc.vale', ['sub.shrine'])).toBeUndefined();
+
+    // Desecration is the SourceDrainLine's sentence, not this one.
+    const desecrated = vale('surplus', [{ id: 'sub.shrine', src: { desecrated: true } }]);
+    expect(selectLocationSustenanceVoice(desecrated, 'loc.vale', ['sub.shrine'])).toBeUndefined();
+  });
+
+  it('CONTRACT: a source that eats from a different larder is not this location\'s sentence', () => {
+    const graph = vale('surplus', [{ id: 'sub.shrine' }]);
+    // A sublocation of somewhere else entirely, passed in by mistake.
+    addLocation(graph, 'loc.other', { resources: { [SPIRIT_GOOD]: res(80, 'surplus') } });
+    addLocation(graph, 'sub.elsewhere', {
+      parentLocationId: 'loc.other',
+      essenceSource: source({ discoveredBy: ascendantId }),
+    });
+
+    const voice = selectLocationSustenanceVoice(graph, 'loc.vale', ['sub.elsewhere']);
+    expect(voice).toBeUndefined();
   });
 });

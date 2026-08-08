@@ -1,7 +1,7 @@
 ---
 name: pull-work
 description: Canonical Claude Code pickup workflow for claiming Linear work safely from Ready for Dev.
-last_validated_against: 2026-08-06
+last_validated_against: 2026-08-07
 ---
 
 # Pull Work
@@ -160,6 +160,7 @@ npm run check:actions --silent -- --json
 ```
 
 - **`standDown: true`** (verdict `billing-block`) → **do not claim.** Post nothing to Linear (the outage is not a ticket's fault and a comment on an arbitrary issue is noise), log one line, and exit clean. `keep-work-flowing-cc` step 2.5b surfaces the `summary` to Christian within the hour; only he can clear it. A healthy queue loses nothing by waiting one hour — an unguarded `main` is not worth one hour of throughput.
+- **`stalled`** (THR-1013) → **continue to Step 0.8, and name it in the run report** with its `stalledCount`. GitHub is accepting jobs and giving them no machine, so every PR you arm this run will sit unmerged until capacity returns. That is a delay, not a danger — `cancelled` does *not* satisfy branch protection the way `skipped` does, so the gate is blocking rather than vacuous, and auto-merge fires by itself on recovery. Standing the lane down would forfeit an hour of delivery against a risk that is not present; what was missing on 2026-08-06 was the sentence, not the halt.
 - **any other verdict** (`healthy`, `recovered`, `transient`, `unknown`) → continue to Step 0.8.
 
 **Why the gate can be vacuous while reading as enforced:** when Actions cannot start jobs, the required `Test · Typecheck · Build` check records as `skipped`, and **a skipped required check satisfies branch protection** (see the standing `reference_skipped_required_check_merges` finding). Reproduced end to end on PR #853 and again on PR #1022, which carried engine + content changes. The `Guard — change detection health` step in `ci.yml` now closes this at source for every cause *except* a full Actions outage — during which nothing runs at all, including the guard. This step covers that residue.
@@ -188,22 +189,26 @@ Run the probe — it does the listing, the `UNKNOWN` re-query, and the classific
 npm run check:armed-prs --silent -- --json
 ```
 
-One line of JSON: `{ verdict, summary, needsChristian, needsSession, updateCandidate, prs, counts, armedCount, unarmedCount }`. Each `prs[]` entry carries `armed`, `ageMinutes`, `conflictFiles`, `escalated`, `abandoned`, and `holdReason`. Act on it:
+One line of JSON: `{ verdict, summary, needsChristian, needsSession, updateCandidate, prs, counts, armedCount, unarmedCount }`. Each `prs[]` entry carries `armed`, `ageMinutes`, `conflictFiles`, `checkConclusion`, `escalated`, `abandoned`, and `holdReason`. Act on it:
 
 1. **`updateCandidate` is non-null** → **ignore it and continue** (THR-983). It names the oldest armed `BEHIND` PR, which since 2026-08-02 merges on green without help. Running `gh pr update-branch` is a harmless no-op that costs a CI re-run; do not.
 2. **`verdict: "conflicted"` or `"abandoned"`** → those PRs cannot merge and no sweep action will change that. Each `prs[]` entry carries `conflictFiles`, already computed. If a conflicted PR is **yours**, route to "Closeout — resolving a conflicted closeout-docs PR" below and fix it now. If it is not yours, **report it in the run log with its number and conflicting files** — do not silently continue.
    - **The probe now tells you whether a PR is *held* rather than stuck — you no longer read Linear to find out (THR-985, shipped 2026-08-02).** `DIRTY` + unarmed + old is the signature of a dead PR *and* of one deliberately parked, and `autoMergeRequest: null` never means "should be armed". A PR carrying a line-anchored `Hold: <reason>` marker in its body now classifies **`held`**, never escalates, and reports its `holdReason` — so a `conflicted`/`abandoned` verdict once again means what it says. PR #1114 cost four sessions the hand-derivation this replaces (impediments #393, #406, #411, plus the run that fixed it). **Resolving a held PR's conflict is still fine; re-arming it is not.** Only a conflicted PR with a *null* `holdReason` is worth a Linear round-trip — and if you conclude it is genuinely parked, write the `Hold:` line into the PR body so the next run is told rather than having to re-derive it.
-3. **`needsSession: true`** → the conflict has outlived at least one sweep interval (or, for an unarmed PR, `UNARMED_DIRTY_ESCALATE_HOURS`). Name it in the run report so the next pickup sees it even if this run ends on an unrelated ticket.
-4. **`verdict: "held"` / `"idle"`** → nothing to do and nothing to escalate. `held` means every remaining PR is parked on purpose; `idle` means unarmed, so nothing is waiting on it and it will not merge on green. Continue to Step 1.
-5. **`verdict: "healthy"` / `"drainable"` / `"unknown"`** → nothing conflicted; continue to Step 1.
+3. **`verdict: "failing"`, or any `prs[]` entry with `checkConclusion: "failing"`** → that PR has a **red required check** and will never merge, however clean its merge state reads (THR-1020). Auto-merge stays armed and simply never fires, so the PR reads as shipped from every surface except the rollup — impediment #402 recorded ~100 minutes of exactly that. Read the failing check (`gh pr checks <N>`), then treat it like any other blocker: fix it if the PR is yours, report the number and the check name if it is not. **A transient failure is still a permanent stall** — a flaked `npm ci` or a timed-out test does not retry itself; `gh run rerun <run-id> --failed` is the repair, and doing nothing is not.
+   - **`conflictFiles` is a lower bound, never the whole diagnosis.** A `conflicted` PR that is also red keeps its `conflicted` class and its age tiers, and names both blockers in one row. Resolving the conflict and pushing leaves it `MERGEABLE` and still blocked — which then re-reports under a *different* verdict next hour, looking freshly actionable while ageing (impediment #466, ~15 min of second-pass diagnosis).
+4. **`needsSession: true`** → the conflict has outlived at least one sweep interval (or, for an unarmed PR, `UNARMED_DIRTY_ESCALATE_HOURS`), or a required check is red. Name it in the run report so the next pickup sees it even if this run ends on an unrelated ticket.
+5. **`verdict: "held"` / `"idle"`** → nothing to do and nothing to escalate. `held` means every remaining PR is parked on purpose; `idle` means unarmed, so nothing is waiting on it and it will not merge on green. Continue to Step 1.
+6. **`verdict: "healthy"` / `"drainable"` / `"unknown"`** → nothing conflicted and nothing red; continue to Step 1.
 
-Log one line, and include the conflicted count **and the unarmed count** — a sweep that reports only what it drained is how THR-897 stayed invisible, and one that reports only the armed set is how THR-930 did:
+Log one line, and include the conflicted count, the **failing** count, **and the unarmed count** — a sweep that reports only what it drained is how THR-897 stayed invisible, one that reports only the armed set is how THR-930 did, and one that reports only merge state is how THR-1020 did:
 
 ```
-[pull-work] Step 0.8: <N> open PRs (<A> armed / <U> unarmed; <D> drainable, <C> conflicted, <W> waiting, <I> idle, <H> held), updated #<X> / none drainable — continuing.
+[pull-work] Step 0.8: <N> open PRs (<A> armed / <U> unarmed; <D> drainable, <C> conflicted, <F> failing, <W> waiting, <I> idle, <H> held), updated #<X> / none drainable — continuing.
 ```
 
-**Do not classify on a single read of `mergeStateStatus`.** GitHub computes it lazily, so a first read of `UNKNOWN` means "not computed yet", not "fine" — measured 2026-07-31, PRs #1132 and #1166 each read `DIRTY` and then `UNKNOWN` minutes apart with no intervening push. The probe re-queries `UNKNOWN` up to `ARMED_UNKNOWN_REQUERIES` (3) times before believing it; a hand-rolled sweep must do the same or it will call a conflicted PR healthy on roughly every other run.
+**Do not classify on `mergeStateStatus` alone (THR-1020).** A PR has two independent ways to be unmergeable — a conflict and a red required check — and merge state can see only one of them. A sweep that reads merge state alone reports half a diagnosis with total confidence, which is worse than reporting nothing: the missing half is discovered a sweep later, under a different verdict, by a session that believes the first answer was complete.
+
+**Do not classify on a single read of `mergeStateStatus` either.** GitHub computes it lazily, so a first read of `UNKNOWN` means "not computed yet", not "fine" — measured 2026-07-31, PRs #1132 and #1166 each read `DIRTY` and then `UNKNOWN` minutes apart with no intervening push. The probe re-queries `UNKNOWN` up to `ARMED_UNKNOWN_REQUERIES` (3) times before believing it; a hand-rolled sweep must do the same or it will call a conflicted PR healthy on roughly every other run.
 
 **`needsChristian: true` (verdict `abandoned`) is not a merge-gate failure.** It means a conflict has survived ~12 hourly sessions — or ~24 hours for an unarmed PR — so the stall is systemic rather than waiting its turn. Surface the `summary` verbatim; do not stand down, and do not treat it as a reason to skip pickup.
 
@@ -620,6 +625,8 @@ Either condition is sufficient to classify a commit as zombie. Both conditions m
 
 If the issue has label `Reopened`, read all comments back to the original handoff before making implementation decisions.
 
+**The label is not the only trigger (impediment #434).** On any ticket carrying more than one comment, skim every comment's first line before implementing — not only the latest. A scope correction filed by a sibling ticket's implementation never reopens anything; it just sits under whatever was written later. THR-723's promotion comment called it a "clean, scoped technical fix" while its *first* comment recorded that the module in question had zero production importers and the real question was a user-facing design call. `list_comments(limit:10)` already returns the bodies, so the extra cost is reading them, not fetching them. When a correction and the promotion disagree, the correction is usually the one that inspected the code — split the design half out rather than implementing it on executor authority.
+
 ### Step 6 - Load plan doc
 
 1. Extract plan-doc path from the issue description **and** the handoff comment — the two-place rule writes it to both so neither is a single point of failure, and a later checkpoint comment can push the original handoff out of view (the single-surface defect THR-895 found in `check:process`).
@@ -748,7 +755,27 @@ The merge prints `Auto-merging Docs/changelog.md` and exits 0 with both sides' r
 
 **Check the result before pushing** — union keeps *both* sides of every conflicting hunk, which is right for appended rows and wrong for an edited one. If the same row was modified on both branches you get it twice, so skim `git diff origin/main -- Docs/` for duplicates rather than trusting the clean exit.
 
-`Docs/project-status.md` is deliberately **excluded** from union: it has a 60-line cap and rewrite semantics, so union would duplicate rewritten lines instead of merging them. Conflicts there are still resolved by hand.
+**For `Docs/impediments.md`, do not hand-classify the duplicates — repair them (THR-1018):**
+
+```bash
+npm run check:impediment-ids -- --fix
+npm run generate-impediment-dashboard
+```
+
+Union preserves both lanes' independently-chosen row *numbers*, so a merge touching the log reliably lands duplicate ids that `check:impediment-ids` then rejects — and the two collisions need two *different* remedies. Measured on the 2026-08-07 run that resolved three stuck PRs: `#451` was the same impediment logged on both sides (dedupe) and `#452` was two different impediments sharing an id (renumber), each re-derived by hand. `--fix` classifies and applies both, echoes every row it removes verbatim, and lists the `#N` cross-references a renumber may have made ambiguous. It is biased toward renumbering, because deleting a distinct impediment is unrecoverable while a duplicate row under a fresh number is merely visible.
+
+**Read the renumber list before pushing.** The id stays on the row already published on `origin/main` — not the row that happens to be first after the merge, which is a merge-order artifact (impediment #460 rule 1; the gate's older printed advice said "first in the file" and following it on PR #1327 had to be reversed). If a cited reference meant the row that *moved*, only you can tell. Rule 2 — allocating an id against a tree that cannot see `main`'s unmerged rows — was closed by THR-1028: `npm run impediment:next-id` mints the number against every local and remote ref, and the reporter skill now requires it. Two branches *repairing* concurrently can still land on the same next-free id, because `--fix` runs after both rows already exist; if another closeout PR is open against the log, check its numbers too.
+
+### `Docs/project-status.md` — regenerate, never resolve (THR-1016)
+
+**There is no longer anything to hand-resolve here, and the regeneration step above is not optional.** Until THR-1016 this file was hand-edited and every closeout wrote it at the same two anchors — an insert at the top of `## Current Focus` and a delete at the tail to hold the 60-line cap — so **any two open closeout PRs conflicted by construction**, whatever either one contained, and `gh pr update-branch` could not help. Measured 2026-08-07: PRs #1322, #1326 and #1327 all sat `DIRTY` for 17, 18 and 20 hours conflicting *only* in closeout docs, `check:armed-prs` reporting `abandoned` / `needsChristian`; #1322 had to be resolved **twice in one session**, because PR #1330 merged minutes after the first resolution and re-staled it with nothing about #1322 having changed. Draining N such PRs cost N sequential CI cycles.
+
+Now the page is **generated** by `npm run generate-project-status` from one-file-per-entry fragments in `Docs/status/`. Two consequences for this section:
+
+- **The content never conflicts.** A closeout creates a brand-new `Docs/status/YYYY-MM-DD-thr-XXXX.md`, so no two branches write the same path. That property survives GitHub's server-side merge, which ignores `.gitattributes` and therefore never benefited from union at all.
+- **The assembled page is not in the tree.** `Docs/project-status.md` is generated by `prebuild` and gitignored, so no PR carries it and there is nothing to resolve. Committing it would put the shared write straight back — two branches regenerate a different top entry and a different dropped tail. No merge driver rescues that: `union` keeps both sides of a rewritten hunk (why THR-691 excluded it), `ours` is not built-in and needs `.git/config` no repo file can ship (measured 2026-08-07: still `CONFLICT (content)` in a fresh clone with the attribute set), and GitHub ignores `.gitattributes` regardless. `check:generated-freshness` asserts the generator still produces the page and that nobody has `git add -f`'d it back.
+
+Never hand-edit the page, never stage it, and never delete another entry to make room — the generator holds the cap by rendering only the newest fragments that fit, and everything older stays in `Docs/status/`.
 
 ## Closeout — remove the temporary worktree
 

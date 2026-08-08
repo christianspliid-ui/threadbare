@@ -120,7 +120,9 @@ export function EntityVisual({
     alignItems: 'center',
     justifyContent: 'center',
     background: gradient.background,
-    border: '1px solid rgba(212, 175, 55, 0.22)',
+    // Law 30 (THR-1010): the medallion renders inside the encounter veil, so
+    // its edge was the second gold on that composed surface.
+    border: '1px solid rgb(var(--veil-gold-rgb) / 0.22)',
     cursor: onClick ? 'pointer' : undefined,
     ...sizeStyle(size),
     ...style,

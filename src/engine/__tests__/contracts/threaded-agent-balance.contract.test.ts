@@ -16,6 +16,7 @@ import { buildBalanceAgentJourneySummary, buildBalanceRunSummary } from '../../b
 import { IDLE_FORCED_TRAVEL_THRESHOLD } from '../../../data/agent-behavior-constants';
 import { hexDistance } from '../../../lib/hexMath';
 import { REACH_DOMAINS } from '../../../types/traits';
+import { WORLD_SIM_TEST_TIMEOUT_MS } from '../../../testing/testTimeouts';
 
 function moveAgentToLocation(state: ReturnType<typeof initializeGameStateFromIdentity>['state'], agentId: string, locationId: string): void {
   for (const edge of state.graph.getOutgoingEdges(agentId, 'located_at')) {
@@ -109,7 +110,7 @@ describe('threaded agent balance telemetry contract', () => {
     resetEventCounter();
   });
 
-  it('records starvation idles and forced-travel recovery for a threaded hero', () => {
+  it('records starvation idles and forced-travel recovery for a threaded hero', { timeout: WORLD_SIM_TEST_TIMEOUT_MS }, () => {
     const { state } = initializeGameStateFromIdentity(
       DEV_ASCENDANT_IDENTITY,
       42,

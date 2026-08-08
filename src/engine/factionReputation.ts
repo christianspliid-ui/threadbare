@@ -219,7 +219,13 @@ export function phaseFactionReputationDecay(state: GameState): Partial<GameState
       const agentName = graph.getNode(edge.source)?.name ?? '?';
       const factionName = graph.getNode(edge.target)?.name ?? '?';
       events.push({
-        id: `faction_decay_rank_${tick}_${edge.source}`,
+        // The loop key is the membership edge, not the agent — an agent in two
+        // factions decays in both and can be demoted in both on the same tick.
+        // Faction nodes are minted per chapter (`faction_def_{defId}{suffix}`),
+        // so two memberships share a decay rate and demote in lockstep. Without
+        // edge.target both notices carry one id and React drops or duplicates
+        // one of them (THR-781).
+        id: `faction_decay_rank_${tick}_${edge.source}_${edge.target}`,
         tick,
         type: 'faction_rank_changed',
         message: `${agentName} has been demoted to ${newRank.name} in ${factionName}.`,

@@ -341,6 +341,26 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     label: 'A Seed',
     desc: 'Something this ending set in motion. A seed is a debt the world now owes the story: it will surface later as an encounter, not as a number on a sheet.',
   },
+
+  // ─── Threads panel (THR-1008) ─────────────────────────────────
+  // Concepts the thread rows reach for. Registered here rather than written
+  // inline on the row, so the copy has one home and can chain (Law 17).
+  'ui.thread_priority_pip': {
+    label: 'Needs Attention',
+    desc: 'This thread has a beat waiting on you. The pip clears once you have looked at what it marks.',
+  },
+  'ui.aspect_badge': {
+    label: 'Aspect',
+    desc: 'A living aspect of the god — beyond the five tiers of {{ui.standing}}, permanent, and outlasting the body that holds it.',
+  },
+  'ui.sustain_runway': {
+    label: 'Sustain',
+    desc: 'What this hold costs you each turn against what it returns, and how long your reserves can carry it before the bond lapses.',
+  },
+  'ui.strategic_behavior': {
+    label: 'Strategic Behavior',
+    desc: 'The long game this thread is playing — the standing intent behind its move-to-move choices.',
+  },
 };
 
 /** Lookup a UI tooltip by ID. Returns null if not found. */
