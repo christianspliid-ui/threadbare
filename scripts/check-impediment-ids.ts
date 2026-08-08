@@ -339,10 +339,14 @@ function reportRepair(plan: RepairPlan, repoRoot: string): void {
     console.error(
       [
         "",
-        "  Still your problem (#460 rule 2): ids were allocated above the highest number on",
-        "  origin/main and in this tree, which cannot see another in-flight branch's unmerged",
-        "  rows. If a second branch repairs concurrently it will pick the same next-free id and",
-        "  whichever merges second re-collides — on a PR whose author touched neither row.",
+        "  Allocation note (#460 rule 2, closed by THR-1028): the numbers above were allocated",
+        "  from origin/main plus this tree only, which is this tool's own reach. Before you",
+        "  append the NEXT row, use the allocator instead — it reads every local and remote ref:",
+        "",
+        "    npm run impediment:next-id",
+        "",
+        "  It still cannot separate two branches that each append and neither commits first;",
+        "  commit the row, or come back here after the merge.",
       ].join("\n"),
     );
   }

@@ -1,7 +1,7 @@
 ---
 name: impediment-reporter
 description: Loaded by ALL agents on EVERY task. When an agent encounters a blocker, workaround, or unexpected friction, it MUST log the impediment to Docs/impediments.md before continuing. This is part of Definition of Done — work is not complete unless all impediments encountered during the session are logged.
-last_validated_against: 2026-08-07
+last_validated_against: 2026-08-08
 ---
 
 # Impediment Reporter
@@ -44,13 +44,28 @@ This is a **hard rule** — do not skip the suggestion when count crosses 5.
 
 ### Step 2b: If no matching entry exists → add a new row
 
-Append a new row with `Count` = 1. Use the next sequential `#`.
+Append a new row with `Count` = 1. **Get the `#` from the allocator — never by reading the last row:**
+
+```bash
+npm run impediment:next-id
+```
+
+It prints one number on stdout; use that. It is one above the highest `#` on *every* local and remote ref, not just this tree — which is the difference that matters, because the log is `merge=union` and a branch cannot see a row sitting on `main`'s unmerged future or on a sibling lane's committed branch. `max(this tree) + 1` was free when you picked it and duplicated the instant the merge landed, reddening the required check on a PR that authored its row correctly (impediment #460, four occurrences; the last cost ~42 min and one whole hourly run).
+
+The allocator never blocks — it exits 0 with no git and no network, because a tool that helps you log friction must not become friction. Two things it reports, on stderr and in `--json`:
+
+- **`degraded`** — refs were unreadable, so you got the old working-tree-only answer. Usable, but re-check after the merge.
+- **latent collisions** — an id this tree already claims that `origin/main` claims for a *different* impediment. That row fails the gate whatever number you pick next; repair with `npm run check:impediment-ids -- --fix`.
+
+`-- --json` gives the structured form; `-- --no-fetch` skips the `git fetch` when the refs are known current.
+
+**One case it cannot cover, by construction:** two branches that each append a row and *neither commits* before the other allocates. Sequential integers have no collision-free allocation without a coordinator, and this is not one — it widens the observation window rather than closing it. Commit the row, or repair after the merge.
 
 ## Fields
 
 | Field | Description |
 |-------|-------------|
-| **#** | Sequential number (check the last entry and increment) |
+| **#** | Sequential number. Take it from `npm run impediment:next-id` — do **not** read the last entry and increment (see Step 2b). |
 | **Count** | How many times this impediment has been reported. Starts at `1`. Incremented by subsequent agents who hit the same issue. |
 | **Date** | ISO date of most recent occurrence: `2026-03-20` |
 | **Category** | One of: `tool-failure`, `api-quirk`, `permission`, `environment`, `skill-gap`, `process-friction`, `dependency`, `unclear-requirements`, `flaky-test`, `other` |
@@ -84,7 +99,7 @@ The suggestion should be direct:
 5. **Don't filter.** Even "small" impediments matter. Patterns emerge from frequency, not severity.
 6. **Don't editorialize.** State what happened, not how you feel about it.
 7. **Upgrade workarounds.** If you find a better workaround than what's logged, update the existing row's workaround description.
-8. **Never hand-repair a duplicate `#` after a merge.** `Docs/impediments.md` is `merge=union` (THR-691), so two lanes appending on the same day each pick "the next free number" and the merge keeps both. Run `npm run check:impediment-ids -- --fix` (THR-1018), then `npm run generate-impediment-dashboard`. It classifies each collision — dedupe when both rows are the same impediment, renumber when they are different — which is the judgment sessions were re-deriving by hand on every closeout merge. Read its renumber list before pushing: the original number stays on the first row, so a prose reference that meant the row that *moved* now points at the wrong entry, and only the author knows which.
+8. **Never hand-pick a `#`, and never hand-repair a duplicate one after a merge.** Allocation is `npm run impediment:next-id` (Step 2b); repair is below. `Docs/impediments.md` is `merge=union` (THR-691), so two lanes appending on the same day each pick "the next free number" and the merge keeps both. Run `npm run check:impediment-ids -- --fix` (THR-1018), then `npm run generate-impediment-dashboard`. It classifies each collision — dedupe when both rows are the same impediment, renumber when they are different — which is the judgment sessions were re-deriving by hand on every closeout merge. Read its renumber list before pushing: the original number stays on the first row, so a prose reference that meant the row that *moved* now points at the wrong entry, and only the author knows which.
 
 ## Definition of Done Integration
 
