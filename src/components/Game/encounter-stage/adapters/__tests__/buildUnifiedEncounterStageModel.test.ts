@@ -1240,4 +1240,218 @@ describe('buildUnifiedEncounterStageModel', () => {
       }
     });
   });
+
+  // ─── THR-1041 ───────────────────────────────────────────────────
+  //
+  // Two models the adapter has always built and no component read. The
+  // rendering half lives in `EncounterVeil.test.tsx`; these lock the model
+  // fields that half depends on, so a future adapter change cannot quietly
+  // empty the strip while its render test keeps passing on a stub.
+
+  describe('band-specific afterimages in Scene So Far (THR-1041)', () => {
+    /** One step carrying a bespoke line for every band the ladder can land on. */
+    const BANDED_STEP: ActionStep = {
+      reach: 'iron',
+      duration: { min: 1, max: 2 },
+      difficulty: 0.4,
+      onSuccess: [],
+      onFailure: [],
+      failBehavior: 'continue_weakened',
+      narrativeTemplate: 'The ford ran fast.',
+      successAfterimage: 'Crossed, wet to the knee.',
+      failureAfterimage: 'Turned back at the third stone.',
+      criticalSuccessAfterimage: 'Crossed dry, and found the old ford-stones under the silt.',
+      successAtCostAfterimage: 'Crossed, and left a boot to the current.',
+      criticalFailureAfterimage: 'The current took the pack, the map, and very nearly the scout.',
+    };
+
+    const BANDED_TEMPLATE: UnifiedActionTemplate = {
+      ...LINEAR_TEMPLATE,
+      id: 'test.banded_encounter',
+      steps: [BANDED_STEP],
+    };
+
+    function historyAfterimage(outcome: UnifiedActionOutcome): string | undefined {
+      const model = buildUnifiedEncounterStageModel({
+        template: BANDED_TEMPLATE,
+        activeAction: {
+          ...buildLinearAction(),
+          templateId: BANDED_TEMPLATE.id,
+          currentStep: 0,
+          resolved: true,
+          stepOutcomes: [outcome],
+        },
+        notification: buildNotification(),
+        agentName: 'Kael the Scout',
+        threadTier: 'strong',
+        graph: buildGraph(),
+        essence: 10,
+      });
+      return model.history[0].afterimage;
+    }
+
+    // Each band asserts the *bespoke* line, and — critically — that it is not
+    // the coarse success/failure line. Before this ticket every one of these
+    // five resolved to `successAfterimage` or `failureAfterimage`, so an
+    // assertion on the bespoke text alone is what falsifies the old behaviour.
+    it('critical_success renders the critical line, not the plain success line', () => {
+      const afterimage = historyAfterimage('critical_success');
+      expect(afterimage).toBe(BANDED_STEP.criticalSuccessAfterimage);
+      expect(afterimage).not.toBe(BANDED_STEP.successAfterimage);
+    });
+
+    it('success_at_cost renders the at-cost line, not the plain success line', () => {
+      const afterimage = historyAfterimage('success_at_cost');
+      expect(afterimage).toBe(BANDED_STEP.successAtCostAfterimage);
+      expect(afterimage).not.toBe(BANDED_STEP.successAfterimage);
+    });
+
+    it('critical_failure renders the critical line, not the plain failure line', () => {
+      const afterimage = historyAfterimage('critical_failure');
+      expect(afterimage).toBe(BANDED_STEP.criticalFailureAfterimage);
+      expect(afterimage).not.toBe(BANDED_STEP.failureAfterimage);
+    });
+
+    it('success and failure still render their own lines', () => {
+      expect(historyAfterimage('success')).toBe(BANDED_STEP.successAfterimage);
+      expect(historyAfterimage('failure')).toBe(BANDED_STEP.failureAfterimage);
+    });
+
+    it('near_miss reads as a success, because the step advanced', () => {
+      expect(historyAfterimage('near_miss')).toBe(BANDED_STEP.successAfterimage);
+    });
+
+    it('falls back to the coarse line when the band has no bespoke prose', () => {
+      const sparseTemplate: UnifiedActionTemplate = {
+        ...LINEAR_TEMPLATE,
+        id: 'test.sparse_encounter',
+        steps: [{
+          ...BANDED_STEP,
+          criticalSuccessAfterimage: undefined,
+          successAtCostAfterimage: undefined,
+          criticalFailureAfterimage: undefined,
+        }],
+      };
+      const model = buildUnifiedEncounterStageModel({
+        template: sparseTemplate,
+        activeAction: {
+          ...buildLinearAction(),
+          templateId: sparseTemplate.id,
+          currentStep: 0,
+          resolved: true,
+          stepOutcomes: ['critical_failure'],
+        },
+        notification: buildNotification(),
+        agentName: 'Kael the Scout',
+        threadTier: 'strong',
+        graph: buildGraph(),
+        essence: 10,
+      });
+      expect(model.history[0].afterimage).toBe(BANDED_STEP.failureAfterimage);
+    });
+
+    it('never blanks: a step with no authored afterimage at all still says something', () => {
+      const bareTemplate: UnifiedActionTemplate = {
+        ...LINEAR_TEMPLATE,
+        id: 'test.bare_encounter',
+        steps: [LINEAR_TEMPLATE.steps[0]],
+      };
+      const model = buildUnifiedEncounterStageModel({
+        template: bareTemplate,
+        activeAction: {
+          ...buildLinearAction(),
+          templateId: bareTemplate.id,
+          currentStep: 0,
+          resolved: true,
+          stepOutcomes: ['critical_failure'],
+        },
+        notification: buildNotification(),
+        agentName: 'Kael the Scout',
+        threadTier: 'strong',
+        graph: buildGraph(),
+        essence: 10,
+      });
+      expect(model.history[0].afterimage).toBe('Failed');
+    });
+  });
+
+  describe('cast model carries the handles a chip needs (THR-1041)', () => {
+    function buildCastModel() {
+      return buildUnifiedEncounterStageModel({
+        template: RIVAL_SHRINE_BETRAYAL_TEMPLATE,
+        activeAction: {
+          actionId: 'ua_cast_1',
+          actorId: 'agent.scout',
+          templateId: RIVAL_SHRINE_BETRAYAL_TEMPLATE.id,
+          targetId: 'loc.waystation',
+          scale: 'local',
+          source: 'agent',
+          startTick: 10,
+          currentStep: 0,
+          stepProgress: 0,
+          stepDuration: 3,
+          resolved: false,
+          stepOutcomes: [],
+          supportBindings: [
+            { key: 'tessaly', nodeId: 'npc.tessaly', kind: 'actor', delivery: 'lazy-materialize-on-trigger', persistence: 'must-persist', reused: false },
+            { key: 'carin_harken', nodeId: 'npc.carin', kind: 'actor', delivery: 'lazy-materialize-on-trigger', persistence: 'must-persist', reused: true },
+          ],
+        },
+        notification: buildNotification(),
+        agentName: 'Kael the Scout',
+        threadTier: 'strong',
+        graph: buildGraph(),
+        essence: 10,
+      }).cast;
+    }
+
+    it('binds each actor spec to the graph node it resolved to', () => {
+      const cast = buildCastModel();
+      // Only `actor` specs become cast; `meeting_point` is a location.
+      expect(cast.map(c => c.id)).toEqual(['tessaly', 'carin_harken']);
+      expect(cast.find(c => c.id === 'tessaly')?.nodeId).toBe('npc.tessaly');
+      expect(cast.find(c => c.id === 'carin_harken')?.nodeId).toBe('npc.carin');
+    });
+
+    it('takes the bound node\'s live name over the spec\'s spawn name', () => {
+      expect(buildCastModel().find(c => c.id === 'tessaly')?.name).toBe('Tessaly the Broker');
+    });
+
+    it('preserves reuse provenance, which the strip renders as presence', () => {
+      const cast = buildCastModel();
+      expect(cast.find(c => c.id === 'tessaly')?.reused).toBe(false);
+      expect(cast.find(c => c.id === 'carin_harken')?.reused).toBe(true);
+    });
+
+    it('leaves nodeId absent when a spec never bound, so the chip renders unlinked', () => {
+      const model = buildUnifiedEncounterStageModel({
+        template: RIVAL_SHRINE_BETRAYAL_TEMPLATE,
+        activeAction: {
+          actionId: 'ua_cast_2',
+          actorId: 'agent.scout',
+          templateId: RIVAL_SHRINE_BETRAYAL_TEMPLATE.id,
+          targetId: 'loc.waystation',
+          scale: 'local',
+          source: 'agent',
+          startTick: 10,
+          currentStep: 0,
+          stepProgress: 0,
+          stepDuration: 3,
+          resolved: false,
+          stepOutcomes: [],
+          supportBindings: [],
+        },
+        notification: buildNotification(),
+        agentName: 'Kael the Scout',
+        threadTier: 'strong',
+        graph: buildGraph(),
+        essence: 10,
+      });
+      expect(model.cast.length).toBeGreaterThan(0);
+      for (const member of model.cast) {
+        expect(member.nodeId).toBeUndefined();
+        expect(member.name.length).toBeGreaterThan(0);
+      }
+    });
+  });
 });

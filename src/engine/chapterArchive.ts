@@ -33,9 +33,8 @@ import type {
   ChapterParticipant,
 } from '../types/chapterRecord';
 import {
+  afterimageForOutcome,
   isActionStepBranch,
-  type ActionStep,
-  type StepOutcome,
   type UnifiedAction,
   type UnifiedActionTemplate,
 } from '../types/unifiedAction';
@@ -78,24 +77,9 @@ export function getChapterTemplateName(templateId: string): string {
 
 // ─── Prose helpers (mirror buildUnifiedEncounterStageModel) ───────
 
-/** Pick the afterimage authored for a resolved step's outcome band. */
-function afterimageForOutcome(step: ActionStep, outcome: StepOutcome): string | undefined {
-  switch (outcome) {
-    case 'critical_success':
-      return step.criticalSuccessAfterimage ?? step.successAfterimage;
-    case 'success':
-    case 'near_miss':
-      return step.successAfterimage;
-    case 'success_at_cost':
-      return step.successAtCostAfterimage ?? step.successAfterimage;
-    case 'critical_failure':
-      return step.criticalFailureAfterimage ?? step.failureAfterimage;
-    case 'failure':
-      return step.failureAfterimage;
-    default:
-      return undefined;
-  }
-}
+// THR-1041: `afterimageForOutcome` moved to `types/unifiedAction` and is now
+// shared with the encounter stage model builder — the ledger and Scene So Far
+// resolve the same band from the same function instead of drifting apart.
 
 function resolveTemplate(templateId: string): UnifiedActionTemplate | undefined {
   return getUnifiedTemplateById(templateId) ?? getAnyEncounterById(templateId);

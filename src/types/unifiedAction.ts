@@ -1789,6 +1789,43 @@ export function isStepFailure(outcome: StepOutcome): boolean {
 }
 
 /**
+ * THR-1041: pick the afterimage a step authored for a *resolved outcome band*,
+ * falling back to the coarse success/failure line when the band has no bespoke
+ * prose. Returns `undefined` only when the step authored neither — the caller
+ * owns the bare "Succeeded"/"Failed" last resort, because the two callers word
+ * it differently (the veil shows it to a player, the chapter ledger archives it).
+ *
+ * This lives here, next to `isStepSuccess`, because it has **two** consumers and
+ * they used to disagree: `chapterArchive` resolved the band while the encounter
+ * stage model resolved only success-vs-failure, so the same resolved step read
+ * back one way in the ledger and another in Scene So Far. A band-specific
+ * afterimage an author wrote for `critical_failure` reached the archive and
+ * never reached the surface that narrates the scene (audit finding 6,
+ * `Docs/audits/2026-08-08-encounter-composition-audit.md`).
+ *
+ * `near_miss` deliberately maps to `successAfterimage`: `isStepSuccess` counts
+ * it as a success, so the step *advanced*, and prose describing a failure would
+ * contradict the ladder the player just watched.
+ */
+export function afterimageForOutcome(step: ActionStep, outcome: StepOutcome): string | undefined {
+  switch (outcome) {
+    case 'critical_success':
+      return step.criticalSuccessAfterimage ?? step.successAfterimage;
+    case 'success':
+    case 'near_miss':
+      return step.successAfterimage;
+    case 'success_at_cost':
+      return step.successAtCostAfterimage ?? step.successAfterimage;
+    case 'critical_failure':
+      return step.criticalFailureAfterimage ?? step.failureAfterimage;
+    case 'failure':
+      return step.failureAfterimage;
+    default:
+      return undefined;
+  }
+}
+
+/**
  * Step-level outcome from the shared resolution service.
  * Phase 3: expanded from binary success/failure to the full outcome ladder.
  * `success_at_cost` means the step completed but with a penalty attached.
