@@ -89,12 +89,14 @@
  * goes green either way, so nothing catches the wrong direction. Automating the
  * wrong direction would have been worse than the manual pass it replaces.
  *
- * **Its rule 2 is not solved here.** Two *concurrent* branches each repairing in
- * isolation will still allocate the same next-free id, because neither can see the
- * other's unmerged rows; the second to merge re-collides. Allocation here is above
- * the max across `origin/main` *and* the working tree, which is the most a
- * single-branch tool can do — the run says so in its output rather than implying
- * the collision class is closed.
+ * **Its rule 2 is closed elsewhere, not here (THR-1028).** Allocation *in this
+ * module* is above the max across `origin/main` and the working tree, which is the
+ * most a repair pass can reach without changing what it is. Prevention lives in
+ * `scripts/impediment-id-allocation.ts`, which scans every local and remote ref
+ * before a row is written at all; `npm run impediment:next-id` is the entry point,
+ * and the reporter skill now requires it. Two concurrent *repairs* can still pick
+ * the same next-free id — this module runs after the fact, when both rows already
+ * exist — so the run keeps saying so in its output rather than implying otherwise.
  *
  * ## Cross-references are reported, never rewritten
  *
