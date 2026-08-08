@@ -10,6 +10,7 @@ import {
   RUIN_MAGNITUDE_MINOR_MAX,
   RUIN_MAGNITUDE_MAJOR_MAX,
 } from '../../../engine/ruins/constants';
+import { FACTION_DEFINITIONS } from '../../../data/faction-definitions';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -33,12 +34,17 @@ function addSettlement(
   return node;
 }
 
-function addGuildHall(graph: WorldGraph, settlementId: string, subId = 'subloc-guild'): void {
+function addGuildHall(
+  graph: WorldGraph,
+  settlementId: string,
+  subId = 'subloc-guild',
+  factionDefId = 'adventuring_guild',
+): void {
   graph.addNode({
     id: subId,
     type: 'location',
     name: 'Guild Hall',
-    properties: { sublocationTypeId: 'sublocation-type.faction-hall', factionDefId: 'adventuring_guild' },
+    properties: { sublocationTypeId: 'sublocation-type.faction-hall', factionDefId },
   });
   graph.addEdge({ id: `edge-${subId}`, source: settlementId, target: subId, type: 'contains', properties: {} });
 }
@@ -214,5 +220,64 @@ describe('GuildQuestPanel', () => {
 
     renderPanel(graph, settlement, 100);
     expect(screen.getByText('Expedition contract')).toBeTruthy();
+  });
+
+  // ─── Faction-agnostic hall resolution (THR-818) ─────────────────────────────
+
+  // 11. Every faction definition's hall surfaces postings, not adventuring_guild alone.
+  //     Pinned to the full map so a new faction cannot be added without this passing.
+  it.each([...FACTION_DEFINITIONS.keys()])(
+    'renders postings at a %s hall',
+    (factionDefId) => {
+      const graph = makeGraph();
+      const settlement = addSettlement(graph, 'loc-s', 10, 10);
+      addGuildHall(graph, settlement.id, `subloc-${factionDefId}`, factionDefId);
+      addRuin(graph, 'ruin-any', 11, 10, RUIN_MAGNITUDE_MINOR_MAX, 50, 'ag.quest.ruin_delve');
+
+      renderPanel(graph, settlement, 100);
+      expect(screen.getByText('Delve into Ruins')).toBeTruthy();
+    },
+  );
+
+  // 12. The pre-THR-818 regression: a non-adventuring hall rendered nothing at all.
+  it('renders a builders_fellowship hall that would have been empty before THR-818', () => {
+    const graph = makeGraph();
+    const settlement = addSettlement(graph, 'loc-s', 10, 10);
+    addGuildHall(graph, settlement.id, 'subloc-builders', 'builders_fellowship');
+    addRuin(graph, 'ruin-builders', 12, 10, 0.8, 50, 'ag.elite.lost_city');
+
+    const { container } = renderPanel(graph, settlement, 100);
+    expect(container.firstChild).not.toBeNull();
+    expect(screen.getByText('Saga')).toBeTruthy();
+    expect(screen.getByText('Expedition to Lost City')).toBeTruthy();
+  });
+
+  // 13. Legacy fixture shape — locationSubtype: 'guild-hall' — still counts as a hall,
+  //     matching factionQuestGeneration's predicate.
+  it('accepts the legacy locationSubtype guild-hall shape', () => {
+    const graph = makeGraph();
+    const settlement = addSettlement(graph, 'loc-s', 10, 10);
+    graph.addNode({
+      id: 'subloc-legacy',
+      type: 'location',
+      name: 'Old Hall',
+      properties: { locationSubtype: 'guild-hall', factionDefId: 'thieves_guild' },
+    });
+    graph.addEdge({ id: 'edge-legacy', source: settlement.id, target: 'subloc-legacy', type: 'contains', properties: {} });
+    addRuin(graph, 'ruin-legacy', 11, 10, RUIN_MAGNITUDE_MINOR_MAX, 50, 'ag.quest.ruin_delve');
+
+    renderPanel(graph, settlement, 100);
+    expect(screen.getByText('Delve into Ruins')).toBeTruthy();
+  });
+
+  // 14. The widening is bounded by FACTION_DEFINITIONS — an unrecognised owner is not a guild.
+  it('renders null for a faction hall whose factionDefId is not a known definition', () => {
+    const graph = makeGraph();
+    const settlement = addSettlement(graph, 'loc-s', 10, 10);
+    addGuildHall(graph, settlement.id, 'subloc-unknown', 'not_a_real_faction');
+    addRuin(graph, 'ruin-unknown-faction', 11, 10, RUIN_MAGNITUDE_MINOR_MAX, 50, 'ag.quest.ruin_delve');
+
+    const { container } = renderPanel(graph, settlement, 100);
+    expect(container.firstChild).toBeNull();
   });
 });
