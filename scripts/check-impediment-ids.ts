@@ -75,9 +75,12 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import {
+  ACCEPTED_IMPACT_TOKENS,
+  findImpactAnomalies,
   isParagraphEntryLine,
   isTableEntryLine,
   parseImpedimentLog,
+  type ImpactAnomaly,
 } from "./impediment-log.ts";
 import {
   applyRepairs,
@@ -110,6 +113,72 @@ const LIVE_LOG_FLOORS = {
   /** Trailing paragraph entries — the second form THR-764 taught the parser. */
   paragraphEntries: 50,
 } as const;
+
+/**
+ * Rows whose Impact cell is already outside {@link ACCEPTED_IMPACT_TOKENS}, by `#`
+ * (THR-839).
+ *
+ * **This is a closed set, not a count.** The gate below asserts the live log's
+ * anomaly set is a *subset* of this one: repairing a row is always allowed and
+ * shrinks the list, but a **new** offender fails CI on the PR that introduces it.
+ * A snapshot number would have been the wrong shape — THR-688 rule A — and this
+ * ticket is its own evidence, because it was filed claiming "roughly 30 rows" and
+ * measured at 126 when picked up 11 days later.
+ *
+ * The three kinds have three different repairs and are listed separately so the
+ * follow-up work is legible; see {@link ImpactAnomalyKind} for why `vocabulary`
+ * is reported rather than auto-mapped.
+ */
+const KNOWN_IMPACT_ANOMALIES: readonly string[] = [
+  // `overflow` — an unescaped `|` before the Impact column shifts it right.
+  // Mechanically repairable without paraphrase: escape the stray pipe as `\|`.
+  // (A stray pipe in the *Session* column is not here and is not a defect —
+  // `parseTableRow` rejoins everything from column 9 on.)
+  "28", "50", "168", "352", "367", "466", "469",
+
+  // `short` — the row was authored with fewer than 10 columns, so the Impact
+  // cell does not exist. Needs the original author's knowledge, not a transform.
+  "142", "253", "262", "273", "274", "406", "444", "447", "448", "449", "463",
+
+  // `vocabulary` — columns correctly aligned, value from the severity scale
+  // (`Low`/`Medium`/`High`/`Small`) rather than the documented time-lost scale.
+  // Not auto-mapped: several rows state a figure that contradicts the obvious
+  // mapping (#311 is "Medium — ~25 min", which is `L`).
+  "109", "224", "228", "229", "230", "231", "232", "233", "234", "235", "236", "237",
+  "239", "240", "241", "242", "243", "244", "245", "249", "250", "251", "263", "264",
+  "265", "266", "268", "291", "299", "300", "301", "302", "303", "304", "305", "306",
+  "307", "308", "309", "310", "311", "312", "313", "314", "315", "316", "317", "318",
+  "319", "320", "321", "322", "323", "324", "326", "327", "330", "331", "332", "333",
+  "334", "335", "350", "351", "354", "355", "356", "357", "360", "361", "362", "365",
+  "368", "369", "373", "374", "384", "385", "398", "400", "402", "404", "407", "409",
+  "410", "423", "425", "426", "427", "460", "461", "462", "464", "465", "467", "468",
+  "470", "471", "472", "473", "474", "475", "476", "477", "478", "479", "480", "481",
+];
+
+/**
+ * Impact-cell failures: rows outside the documented vocabulary that are not in the
+ * grandfathered set.
+ *
+ * Returns one failure line per new offender, each carrying its source line number
+ * so a fixer does not have to search for it (THR-839 Done-when 1).
+ */
+function checkImpactCells(result: ReturnType<typeof parseImpedimentLog>): {
+  failures: string[];
+  anomalies: ImpactAnomaly[];
+} {
+  const anomalies = findImpactAnomalies(result.entries);
+  const known = new Set(KNOWN_IMPACT_ANOMALIES);
+  const failures = anomalies
+    .filter((anomaly) => !known.has(anomaly.num))
+    .map(
+      (anomaly) =>
+        `line ${anomaly.line}: #${anomaly.num} Impact is ${JSON.stringify(
+          anomaly.impactRaw,
+        )} (${anomaly.kind}, ${anomaly.cellCount} cells) — expected one of ${ACCEPTED_IMPACT_TOKENS.join(" / ")}`,
+    );
+
+  return { failures, anomalies };
+}
 
 /** Rendered in the failure message so a fixer does not have to derive the next free number. */
 function nextFreeNum(nums: string[]): number {
@@ -294,8 +363,21 @@ function main(): void {
   const { tableCount, paragraphCount, duplicateNums } = result;
 
   const populationFailures = checkPopulation(markdown, result);
+  const { failures: impactFailures, anomalies } = checkImpactCells(result);
 
-  if (duplicateNums.length === 0 && populationFailures.length === 0) {
+  // Advisory on every run, including the green one: the grandfathered set is
+  // outstanding work, and a gate that only speaks when it fails lets a 126-row
+  // backlog sit invisible for the 11 days this one did.
+  if (anomalies.length > 0) {
+    const byKind = (kind: string) => anomalies.filter((a) => a.kind === kind).length;
+    console.log(
+      `check:impediment-ids: ${anomalies.length} row(s) carry a non-canonical Impact cell ` +
+        `(${byKind("overflow")} overflow, ${byKind("short")} short, ${byKind("vocabulary")} vocabulary) — ` +
+        "grandfathered in KNOWN_IMPACT_ANOMALIES, tracked by THR-1027.",
+    );
+  }
+
+  if (duplicateNums.length === 0 && populationFailures.length === 0 && impactFailures.length === 0) {
     console.log(
       `check:impediment-ids: OK — ${tableCount} table rows + ${paragraphCount} paragraph entries parsed, every # unique.`,
     );
@@ -305,7 +387,8 @@ function main(): void {
   // On the --fix path a duplicate is about to be repaired, so announcing FAIL up
   // front and then exiting 0 misreports the run. A population failure is never
   // repairable, so it is a FAIL either way.
-  const repairable = fix && duplicateNums.length > 0 && populationFailures.length === 0;
+  const repairable =
+    fix && duplicateNums.length > 0 && populationFailures.length === 0 && impactFailures.length === 0;
   console.error(
     repairable
       ? "check:impediment-ids: repairing — Docs/impediments.md carries duplicate numbers.\n"
@@ -322,6 +405,29 @@ function main(): void {
         "  log fails on the documentation PR that makes it rather than on the next",
         "  unrelated code PR. If the parser genuinely changed, fix the parser; if the log",
         "  genuinely shrank, adjust LIVE_LOG_FLOORS deliberately and say why.",
+        "",
+      ].join("\n"),
+    );
+  }
+
+  if (impactFailures.length > 0) {
+    console.error("  Impact cells outside the documented vocabulary (THR-839):");
+    for (const failure of impactFailures) console.error(`    - ${failure}`);
+    console.error(
+      [
+        "",
+        `  The Impact column takes one of ${ACCEPTED_IMPACT_TOKENS.join(" / ")} — a time-lost`,
+        "  scale (S <2 min, M 2-15 min, L 15+ min, Blocked), documented in",
+        "  .claude/skills/impediment-reporter/SKILL.md. Two things commonly go wrong:",
+        "",
+        "    - An unescaped `|` inside an earlier cell is read as a column boundary and",
+        "      shifts every later field right. Escape it as `\\|` — it renders identically.",
+        "    - `Low` / `Medium` / `High` is the severity scale, not this one. Pick the token",
+        "      matching the time actually lost, not the one that sounds equivalent.",
+        "",
+        "  Existing offenders are grandfathered in KNOWN_IMPACT_ANOMALIES. Repairing a row",
+        "  and removing its number from that list is always welcome; adding a number to it",
+        "  is not the fix for a row you just wrote.",
         "",
       ].join("\n"),
     );
@@ -349,7 +455,7 @@ function main(): void {
       );
       process.exit(1);
     }
-    if (populationFailures.length > 0) process.exit(1);
+    if (populationFailures.length > 0 || impactFailures.length > 0) process.exit(1);
 
     console.log(
       `\ncheck:impediment-ids: repaired — ${plan.plans.length} collision(s) resolved, ` +
