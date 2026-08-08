@@ -139,3 +139,7 @@ You are Claude Code and CAN commit — but observe the git rules:
 ## Provenance
 
 CC-lane port of the Cowork `daily-backlog-grooming` task (THR-677, Pure Claude Code Migration). The source prompt was recovered verbatim from a 2026-07-21 Cowork run and is preserved in THR-677's comments. Deliberate changes from that original: the `In Review` query was dropped (state retired by THR-487); the Cowork/CC two-agent framing collapsed to a single executor lane; the chat-summary output surface replaced with a committed report file plus reliance on `keep-work-flowing-cc` for Christian-facing items; git/commit discipline added (Cowork could not commit).
+
+## Rule-0 minting bar (2026-08-08):
+
+Before filing any process/infrastructure ticket, apply the materiality bar (CLAUDE.md § Prioritization, amended 2026-08-08): quotable loss ≥ ~1 lane/human hour, a corrupted shipped artifact, or ≥3 recurrences in a week. Below the bar: impediment-log row only — no ticket. Every ticket filed carries one cost/benefit line ("costs ~X to fix; not fixing costs ~Y per week"). Grooming additionally demotes any open process ticket lacking that line to Idea with a comment naming this rule. The goal is fewer, denser process tickets — not more receipts.

@@ -226,3 +226,7 @@ If the last sweep ran less than 4 days ago (check `weekly-hygiene-*.md` filename
 ## Provenance
 
 CC-lane port of the Cowork `weekly-project-hygiene` task (THR-677, Pure Claude Code Migration). The source prompt existed on disk but was Cowork-framed in nine places, several concerning machinery THR-654 deleted. Deliberate changes: Cowork role framing → CC auditor; two-queue model and `Ready for Codex` removed (THR-486); `In Review` removed (THR-487); the `.claude/` vs `.agents/` two-tree parity audit inverted into a check that `.agents/skills/` has NOT returned (THR-654); `Codex review` coordination field dropped; report path `outputs/` → `Docs/ops/` (the former never existed); retro path `Docs/retrospectives/` → `Design/retros/`; `/session-handoff` path corrected to `.claude/skills/`; Rules 1–8 → Rules 1–10; git/commit discipline added; scheduled-task registry audit added (new check 3, from the THR-653/THR-654 orphan-task pattern).
+
+## Rule-0 minting bar (2026-08-08):
+
+Before filing any process/infrastructure ticket, apply the materiality bar (CLAUDE.md § Prioritization, amended 2026-08-08): quotable loss ≥ ~1 lane/human hour, a corrupted shipped artifact, or ≥3 recurrences in a week. Below the bar: impediment-log row only — no ticket. Every ticket filed carries one cost/benefit line ("costs ~X to fix; not fixing costs ~Y per week"). Grooming additionally demotes any open process ticket lacking that line to Idea with a comment naming this rule. The goal is fewer, denser process tickets — not more receipts.

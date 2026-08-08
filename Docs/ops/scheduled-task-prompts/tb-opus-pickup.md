@@ -17,6 +17,8 @@ Load the always-on context the project expects: Docs/ubiquitous-language/README.
 
 2. Pick up work — run /pull-work
 
+Process-work budget (Rule 0 as amended 2026-08-08, CLAUDE.md § Prioritization): product work (feature/content/player-visible defect) always outranks process work; take at most one process ticket per three runs while product exists, and on a shelf holding only process work drain at most one per run — an empty product shelf is a supply problem to surface, not a backlog to binge.
+
 Invoke the pull-work skill (.claude/skills/pull-work/SKILL.md) as the canonical pickup path. It handles the full atomic sequence; the key invariants, which you must honor even if you hand-roll:
 
 
