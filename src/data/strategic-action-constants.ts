@@ -56,6 +56,12 @@ export const STRATEGIC_HISTORY_WINDOW_TICKS = 120;
 /** Default chance for eligible completions to emit a follow-up encounter seed */
 export const STRATEGIC_CATALYST_SEED_CHANCE = 0.65;
 
+/** Ticks a planted catalyst seed waits before it may spawn (narrative pacing) */
+export const STRATEGIC_CATALYST_SEED_DELAY_TICKS = 3;
+
+/** Priority carried by catalyst seeds (1.0 = neutral) — a follow-up, not an interrupt */
+export const STRATEGIC_CATALYST_SEED_PRIORITY = 0.6;
+
 /** Ticks before unattended control states begin degrading */
 export const STRATEGIC_CONTROL_NEGLECT_GRACE_TICKS = 10;
 

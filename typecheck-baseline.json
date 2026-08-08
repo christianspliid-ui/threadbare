@@ -1,5 +1,5 @@
 {
-  "total": 3478,
+  "total": 3477,
   "command": "npx tsc -b --force --pretty false",
   "perFile": {
     "scripts/lint-encounter-content.ts": 2,
@@ -697,7 +697,6 @@
     "src/engine/sphereAffinity.ts": 1,
     "src/engine/strands.ts": 1,
     "src/engine/strategicActionCandidates.ts": 2,
-    "src/engine/strategicActionLifecycle.ts": 1,
     "src/engine/strategicGraphOps.ts": 3,
     "src/engine/sublocation.ts": 1,
     "src/engine/targetActions.ts": 1,

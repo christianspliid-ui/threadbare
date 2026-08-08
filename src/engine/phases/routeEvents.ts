@@ -149,9 +149,14 @@ export function phaseRouteEvents(state: GameState, _ctx: PhaseContext): PhaseRes
   for (const route of routes) {
     if (newSeeds.length >= ROUTE_EVENT_MAX_SEEDS_PER_SCAN) break;
 
-    // One live route-event seed per route at a time.
+    // One live route-event seed per route at a time. The id read is guarded
+    // (THR-992): the shared pool is written by many producers, and a malformed
+    // entry with no `seedId` would otherwise throw the whole phase out of the
+    // tick — a bare `.startsWith` on `undefined` (NFP #4, fail-soft).
     const seedPrefix = `route_event_${route.id}_`;
-    if (pending.some((s) => s.seedId.startsWith(seedPrefix)) || newSeeds.some((s) => s.seedId.startsWith(seedPrefix))) {
+    const hasLiveSeed = (s: PendingEncounterSeed): boolean =>
+      typeof s.seedId === 'string' && s.seedId.startsWith(seedPrefix);
+    if (pending.some(hasLiveSeed) || newSeeds.some(hasLiveSeed)) {
       continue;
     }
 

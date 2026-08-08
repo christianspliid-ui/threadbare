@@ -186,6 +186,34 @@ describe('phaseRouteEvents (THR-669)', () => {
     expect(phaseRouteEvents(makeState(SCAN, graph2, seed), ctx).pendingEncounterSeeds).toBeUndefined();
   });
 
+  it('a pool entry with no seedId does not throw the phase — the scan still plants (THR-992)', () => {
+    const graph = new WorldGraph();
+    addTown(graph, 'a', 'Aford'); addTown(graph, 'b', 'Bmark');
+    addRoute(graph, 'r1', 'a', 'b', richManifest);
+    addAgent(graph, 'ag1', 'a');
+    const seed = seedWhereFirstRoll(SCAN, ROUTE_AMBUSH_CHANCE, true);
+
+    // The shared pool is written by many producers. Before the guard, a single
+    // malformed entry made `s.seedId.startsWith` throw a TypeError out of the
+    // phase, and `runRegisteredPhases` turned the whole scan into a tick_crash.
+    const withMalformed = makeState(SCAN, graph, seed, {
+      pendingEncounterSeeds: [{
+        // No `seedId` at all — the live shape observed in seed 42 / medium.
+        templateId: 'encounter_warband_rivalry', targetAgentId: 'ag1',
+        eligibleAfterTick: SCAN + 3, plantedTick: SCAN,
+      }] as unknown as GameState['pendingEncounterSeeds'],
+    });
+
+    let result!: ReturnType<typeof phaseRouteEvents>;
+    expect(() => { result = phaseRouteEvents(withMalformed, ctx); }).not.toThrow();
+
+    // Not merely "did not throw": the route is still scanned and still plants,
+    // and the malformed entry is carried through rather than eaten.
+    const seeds = result.pendingEncounterSeeds ?? [];
+    expect(seeds).toHaveLength(2);
+    expect(seeds.some((s) => s.seedId?.startsWith('route_event_r1_'))).toBe(true);
+  });
+
   it('caps seeds per scan at ROUTE_EVENT_MAX_SEEDS_PER_SCAN', () => {
     const graph = new WorldGraph();
     // Many rich routes, each with its own agent; a seed that passes every roll
