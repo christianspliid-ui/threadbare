@@ -67,6 +67,10 @@ Take the top agreed-but-undesigned item and **stage it for design — never auth
 
 There is deliberately **no `agreed` label**. An item belonging to a program Christian has blessed, or a bug, is agreed; a new direction is not. When unsure, ask well rather than guess.
 
+### Rule-0 discipline at promotion (Christian's correction, 2026-08-08)
+
+Apply the materiality bar (CLAUDE.md § Prioritization) when promoting process work: a process ticket without quotable above-bar loss AND a cost/benefit line does not enter Ready for Dev — route it to the impediment log via a comment and park it Idea. Every run's report states the week's product-vs-process completion ratio in one line; when the product shelf is empty, the headline finding is "feature pipeline needs design/Christian", never another process promotion.
+
 ### T3 — architecture health (daily, first run after 06:00 local)
 
 Skip entirely if a sweep already ran today (check today's `Docs/ops/orchestrator-*.md` T3 section **on `origin/ops`**, per § Report).

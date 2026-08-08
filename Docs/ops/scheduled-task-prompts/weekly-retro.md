@@ -14,3 +14,7 @@ Write output to `Design/retros/retro-YYYY-MM-DD.md`. Implement quick wins. Open 
 **Commit the report before any ticket cites it (THR-798).** The skill's Step 8 is blocking: the report ships as its own `docs/retro-*` PR (`main` is branch-protected) and `git ls-files --error-unmatch` must confirm it is tracked *before* Step 9 files the backlog tickets. The 2026-07-24 run filed five tickets citing a report it never wrote, because the old ordering filed tickets first and had no commit step at all. If this run cannot complete the commit, it must file tickets **without** the report citation rather than pointing at a phantom path.
 
 Registered as a CC-lane task by THR-653 (Pure Claude Code Migration, Phase 3 cutover) — the CLAUDE.md scheduled-task table had claimed this task existed since the weekly continuous-improvement cycle was written, but it had never actually been created.
+
+## Rule-0 minting bar (2026-08-08):
+
+Before filing any process/infrastructure ticket, apply the materiality bar (CLAUDE.md § Prioritization, amended 2026-08-08): quotable loss ≥ ~1 lane/human hour, a corrupted shipped artifact, or ≥3 recurrences in a week. Below the bar: impediment-log row only — no ticket. Every ticket filed carries one cost/benefit line ("costs ~X to fix; not fixing costs ~Y per week"). Grooming additionally demotes any open process ticket lacking that line to Idea with a comment naming this rule. The goal is fewer, denser process tickets — not more receipts.
