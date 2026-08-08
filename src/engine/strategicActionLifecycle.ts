@@ -20,6 +20,8 @@ import {
   STRATEGIC_PROJECT_PROGRESS_PER_TICK,
   STRATEGIC_DEFAULT_PROJECT_TIMEOUT_TICKS,
   STRATEGIC_CATALYST_SEED_CHANCE,
+  STRATEGIC_CATALYST_SEED_DELAY_TICKS,
+  STRATEGIC_CATALYST_SEED_PRIORITY,
   STRATEGIC_CONTROL_NEGLECT_GRACE_TICKS,
   STRATEGIC_CONTROL_DEGRADATION_RATE,
   STRATEGIC_HISTORY_WINDOW_TICKS,
@@ -504,15 +506,28 @@ function maybeSeedCatalyst(
     Math.floor(rng() * template.catalystEncounterIds.length)
   ];
 
-  // Seed it through the existing pending encounter seed mechanism
+  // Seed it through the existing pending encounter seed mechanism.
+  //
+  // THR-992: this literal used to write `id` / `sourceActionId` and omit five
+  // required fields — a shape that is not a `PendingEncounterSeed` at all, and
+  // which the red typecheck baseline (THR-489) hid. It reached the shared pool
+  // live: seed 42 / medium held two such entries at tick 132. Every consumer
+  // that reads `.seedId` inherited the hazard (`phaseRouteEvents` threw its
+  // whole phase on one), and the seeds that did spawn carried `undefined` into
+  // every trace and player-facing label. The actor is part of the id because
+  // two agents can complete the same strategic template on the same tick.
   const seed: PendingEncounterSeed = {
-    id: `catalyst_${candidate.templateId}_${tick}`,
+    seedId: `catalyst_${candidate.templateId}_${candidate.actorId}_${tick}`,
+    // The candidate id is what `sourceActionId` was carrying — kept, in the
+    // field the shared shape actually defines for provenance.
+    sourceEncounterId: candidate.candidateId,
+    sourceReactionId: 'strategic_catalyst',
     templateId: catalystId,
     targetAgentId: candidate.actorId,
-    sourceActionId: candidate.candidateId,
+    eligibleAfterTick: tick + STRATEGIC_CATALYST_SEED_DELAY_TICKS,
+    priority: STRATEGIC_CATALYST_SEED_PRIORITY,
+    seedLabel: `the wake of ${candidate.displayName}`,
     plantedTick: tick,
-    eligibleAfterTick: tick + 3, // Short delay for narrative pacing
-    encounterFamily: undefined,
   };
 
   // Append to pending seeds (mutable state update — consistent with existing pattern)
