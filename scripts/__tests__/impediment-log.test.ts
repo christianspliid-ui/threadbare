@@ -40,7 +40,10 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import {
+  ACCEPTED_IMPACT_TOKENS,
   PARAGRAPH_ID_BASE,
+  findImpactAnomalies,
+  isAcceptedImpactToken,
   isParagraphEntryLine,
   isTableEntryLine,
   parseImpedimentLog,
@@ -307,3 +310,99 @@ describe('impediment number uniqueness', () => {
 
 // The decoupling itself is asserted repo-wide in `docs-code-decoupling.test.ts`
 // (THR-922 Done-when 1), which sweeps every test file rather than just this one.
+
+/**
+ * THR-839 — the Impact-cell classifier.
+ *
+ * These pin the *predicate*, not a count. The live log's actual offender set is
+ * asserted by `check-impediment-ids.ts` against its `KNOWN_IMPACT_ANOMALIES`
+ * allowlist, because per THR-922 an assertion about the live corpus must fail on
+ * the documentation PR that breaks it, not on the next unrelated code PR.
+ */
+describe('findImpactAnomalies', () => {
+  const HEADER = [
+    '| # | Count | Date | Category | Description | Consequence | Impact | Workaround Found? | Workaround Description | Session Context |',
+    '|---|---|---|---|---|---|---|---|---|---|',
+  ];
+
+  const anomaliesFor = (...rows: string[]) =>
+    findImpactAnomalies(parseImpedimentLog([...HEADER, ...rows].join('\n')).entries);
+
+  it('accepts every documented token, in any case', () => {
+    // The negative control. If this ever reports an anomaly, every count below is
+    // measuring the classifier's own noise rather than the corpus.
+    const rows = ACCEPTED_IMPACT_TOKENS.flatMap((token, index) => [
+      `| ${index * 2 + 1} | 1 | 2026-07-01 | tooling | d | c | ${token} | Yes | w | s |`,
+      `| ${index * 2 + 2} | 1 | 2026-07-01 | tooling | d | c | ${token.toLowerCase()} | Yes | w | s |`,
+    ]);
+
+    expect(anomaliesFor(...rows)).toEqual([]);
+    expect(ACCEPTED_IMPACT_TOKENS.every((token) => isAcceptedImpactToken(token))).toBe(true);
+  });
+
+  it('classifies an unescaped pipe before the Impact column as overflow', () => {
+    // The shape of live #28: the stray pipe pushes the real `S` into the
+    // Workaround Found? column and the real `Yes` into Workaround Description.
+    const [anomaly] = anomaliesFor(
+      '| 1 | 1 | 2026-07-01 | sandbox | broad search | timed out | had to retry with narrower scans | S | Yes | w | s |',
+    );
+
+    expect(anomaly.kind).toBe('overflow');
+    expect(anomaly.num).toBe('1');
+    expect(anomaly.cellCount).toBe(11);
+    expect(anomaly.impactRaw).toBe('had to retry with narrower scans');
+  });
+
+  it('does NOT flag a stray pipe in the Session column', () => {
+    // This is the case that makes the classifier worth having rather than a bare
+    // cell count: `parseTableRow` rejoins everything from column 9 on, so a pipe
+    // in the trailing column never displaces Impact. 11 live rows are this shape,
+    // and reporting them would have inflated the backlog by 60%.
+    expect(
+      anomaliesFor('| 1 | 1 | 2026-07-01 | tooling | d | c | M | Yes | w | THR-1 | THR-2 |'),
+    ).toEqual([]);
+  });
+
+  it('classifies a row with no Impact column as short', () => {
+    const [anomaly] = anomaliesFor('| 1 | 1 | 2026-07-01 | tooling | truncated mid-sen');
+
+    expect(anomaly.kind).toBe('short');
+    expect(anomaly.cellCount).toBe(5);
+    expect(anomaly.impactRaw).toBe('');
+  });
+
+  it('classifies a correctly-aligned severity value as vocabulary', () => {
+    const anomalies = anomaliesFor(
+      '| 1 | 1 | 2026-07-01 | tooling | d | c | Low | Yes | w | s |',
+      '| 2 | 1 | 2026-07-01 | tooling | d | c | Medium — ~25 min to reconcile | Yes | w | s |',
+      '| 3 | 1 | 2026-07-01 | config | d | c | Blocked (workaround available) | Yes | w | s |',
+    );
+
+    expect(anomalies.map((a) => a.kind)).toEqual(['vocabulary', 'vocabulary', 'vocabulary']);
+    // Reported verbatim, never coerced: #2 states 25 minutes, which is `L` on the
+    // documented time-lost scale even though it reads "Medium". That contradiction
+    // is why this class is surfaced for a human rather than auto-mapped.
+    expect(anomalies[1].impactRaw).toBe('Medium — ~25 min to reconcile');
+    expect(anomalies.every((a) => a.cellCount === 10)).toBe(true);
+  });
+
+  it('ignores paragraph entries, which have no columns to shift', () => {
+    const doc = [
+      '**New 2026-07-05 (THR-999) — process (M): a headline.** body | consequence | M | Yes | w | c.',
+      '**New 2026-07-02 (THR-000) — a legacy headline with no declared impact:** prose.',
+    ].join('\n');
+
+    expect(findImpactAnomalies(parseImpedimentLog(doc).entries)).toEqual([]);
+  });
+
+  it('reports in source order so a fixer can walk the file top-down', () => {
+    const anomalies = anomaliesFor(
+      '| 1 | 1 | 2026-07-01 | tooling | d | c | S | Yes | w | s |',
+      '| 2 | 1 | 2026-07-01 | tooling | d | c | High | Yes | w | s |',
+      '| 3 | 1 | 2026-07-01 | tooling | d | c | Low | Yes | w | s |',
+    );
+
+    expect(anomalies.map((a) => a.num)).toEqual(['2', '3']);
+    expect(anomalies[0].line).toBeLessThan(anomalies[1].line);
+  });
+});
