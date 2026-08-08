@@ -84,10 +84,57 @@ export const MERCENARY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
       },
     ],
     aftermathConfig: {
-      reactions: [
-        { kind: 'reputation_tally', domain: 'iron.positive', weight: 0.6 },
-        { kind: 'recent_event', label: 'road_patrol', delay: 0 },
-      ],
+      branchOnStep: 0,
+      variants: {},
+      fallback: {
+        overview:
+          'The section is walked and the count is filed. The road is the same road it was yesterday, '
+          + 'which is the result the contract pays for.',
+        changes: [
+          {
+            id: 'mc_patrol_standing',
+            kind: 'reputation',
+            title: 'Company Standing',
+            detail: 'A section walked in full is how the captain learns a name. A short count is how they forget it.',
+            polarity: 'mixed',
+          },
+        ],
+        reactionPrompt: 'What does the god take from the road?',
+        reactions: [
+          {
+            id: 'mc_patrol_clean_work',
+            label: 'The work was done to the line.',
+            intent: 'No commentary, no decoration. The section was walked and the numbers match the ground.',
+            effects: [
+              { kind: 'reputation_tally', key: 'iron.positive', delta: 0.6 },
+              {
+                kind: 'recent_event',
+                message: '{name} walked a road section for the Company and filed a count that matched the ground.',
+              },
+            ],
+            closeAfterSelection: true,
+          },
+          {
+            id: 'mc_patrol_quiet_road',
+            label: 'The road was too quiet.',
+            intent:
+              'Nothing on a stretch that should carry something. Quiet is a number too, and this one is off.',
+            effects: [
+              { kind: 'reputation_tally', key: 'eye.positive', delta: 0.4 },
+              {
+                kind: 'intelligence',
+                category: 'trade_route',
+                label: 'Traffic gone from the road out of {location}',
+                detail:
+                  'A section that should carry carts carried none. Someone is routing around this stretch, '
+                  + 'or has stopped moving entirely.',
+                reliability: 0.5,
+              },
+            ],
+            closeAfterSelection: true,
+          },
+        ],
+      },
     },
   }),
 
@@ -127,11 +174,65 @@ export const MERCENARY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
       },
     ],
     aftermathConfig: {
-      reactions: [
-        { kind: 'reputation_tally', domain: 'iron.positive', weight: 0.5 },
-        { kind: 'reputation_tally', domain: 'gold.positive', weight: 0.3 },
-        { kind: 'recent_event', label: 'caravan_guard', delay: 0 },
-      ],
+      branchOnStep: 0,
+      variants: {},
+      fallback: {
+        overview:
+          'The caravan reached {location} and the split was tallied at the gate. '
+          + 'What arrived intact is the whole of the argument.',
+        changes: [
+          {
+            id: 'mc_caravan_standing',
+            kind: 'reputation',
+            title: 'Contract Kept',
+            detail: 'Goods delivered against a signed clause. The wagon master will name the Company to the next client, or will not.',
+            polarity: 'mixed',
+          },
+          {
+            id: 'mc_caravan_split',
+            kind: 'reputation_tally',
+            title: 'The Split',
+            detail: 'Pay issued per clause, losses docked per clause. The arithmetic is the relationship.',
+            polarity: 'info',
+          },
+        ],
+        reactionPrompt: 'What does the god take from the road to {location}?',
+        reactions: [
+          {
+            id: 'mc_caravan_kept_the_word',
+            label: 'The line held and the goods arrived.',
+            intent: 'The contract said flank position and intact cargo. Both happened. That is the entire report.',
+            effects: [
+              { kind: 'reputation_tally', key: 'iron.positive', delta: 0.5 },
+              { kind: 'reputation_tally', key: 'gold.positive', delta: 0.3 },
+              {
+                kind: 'recent_event',
+                message: '{name} guarded a caravan into {location} and the cargo arrived against the clause.',
+              },
+            ],
+            closeAfterSelection: true,
+          },
+          {
+            id: 'mc_caravan_read_the_cargo',
+            label: 'Somebody paid a great deal to move that.',
+            intent:
+              'The contract price was above the goods. Whoever wrote it was buying discretion as much as blades.',
+            effects: [
+              { kind: 'reputation_tally', key: 'gold.positive', delta: 0.5 },
+              {
+                kind: 'intelligence',
+                category: 'trade_route',
+                label: 'Overpriced escort contract into {location}',
+                detail:
+                  'The pay exceeded the visible value of the cargo. Either the manifest is short, '
+                  + 'or the client expected trouble they did not name in the clause.',
+                reliability: 0.6,
+              },
+            ],
+            closeAfterSelection: true,
+          },
+        ],
+      },
     },
   }),
 
@@ -171,11 +272,70 @@ export const MERCENARY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
       },
     ],
     aftermathConfig: {
-      reactions: [
-        { kind: 'reputation_tally', domain: 'iron.positive', weight: 0.7 },
-        { kind: 'hidden_mark', label: 'bounty_hunter', severity: FACTION_PROSE_HIDDEN_MARK_DEFAULT_SEVERITY },
-        { kind: 'recent_event', label: 'bounty_collected', delay: 2 },
-      ],
+      branchOnStep: 0,
+      variants: {},
+      fallback: {
+        overview:
+          'The mark is delivered and the condition is noted against the clause. '
+          + 'The number was the reason for the walk, and the number is paid.',
+        changes: [
+          {
+            id: 'mc_bounty_standing',
+            kind: 'reputation',
+            title: 'Contract Record',
+            detail: 'Another closed bounty on the Company ledger. The work follows {name} into rooms they have not entered yet.',
+            polarity: 'mixed',
+          },
+          {
+            id: 'mc_bounty_mark',
+            kind: 'trait',
+            title: 'Known for the Work',
+            detail: 'People who collect people are remembered as such. The reputation arrives before the introduction.',
+            polarity: 'mixed',
+          },
+        ],
+        reactionPrompt: 'What does the god take from the collection?',
+        reactions: [
+          {
+            id: 'mc_bounty_professional',
+            label: 'Delivered per contract, condition noted.',
+            intent: 'The description matched, the number was correct, the box stayed empty. Clean work by the clause.',
+            effects: [
+              { kind: 'reputation_tally', key: 'iron.positive', delta: 0.7 },
+              {
+                kind: 'hidden_mark',
+                category: 'reputation_note',
+                label: 'bounty_hunter',
+                severity: FACTION_PROSE_HIDDEN_MARK_DEFAULT_SEVERITY,
+              },
+              {
+                kind: 'recent_event',
+                message: '{name} brought in a bounty for the Company and the condition held to the clause.',
+              },
+            ],
+            closeAfterSelection: true,
+          },
+          {
+            id: 'mc_bounty_heard_the_mark',
+            label: 'The mark talked on the road back.',
+            intent:
+              'A long walk with someone in irons is a long conversation. Most of it is worthless. Some of it is not.',
+            effects: [
+              { kind: 'reputation_tally', key: 'shadow.positive', delta: 0.4 },
+              {
+                kind: 'intelligence',
+                category: 'political_secret',
+                label: 'What the bounty said between {location} and the gate',
+                detail:
+                  'Names, a grievance, and a claim about who actually posted the price. '
+                  + 'A person in irons has reason to lie and reason not to.',
+                reliability: 0.4,
+              },
+            ],
+            closeAfterSelection: true,
+          },
+        ],
+      },
     },
   }),
 
@@ -215,10 +375,57 @@ export const MERCENARY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
       },
     ],
     aftermathConfig: {
-      reactions: [
-        { kind: 'reputation_tally', domain: 'iron.positive', weight: 0.8 },
-        { kind: 'recent_event', label: 'siege_participation', delay: 3 },
-      ],
+      branchOnStep: 0,
+      variants: {},
+      fallback: {
+        overview:
+          'The line outside {location} moved, or it did not, and the pay follows the clause either way. '
+          + 'The ground was wet the whole time. The contract covered wet ground.',
+        changes: [
+          {
+            id: 'mc_siege_work_standing',
+            kind: 'reputation',
+            title: 'Time on the Line',
+            detail: 'Siege work is counted in days held, not in ground taken. The captain counts it that way too.',
+            polarity: 'mixed',
+          },
+        ],
+        reactionPrompt: 'What does the god take from the siege line?',
+        reactions: [
+          {
+            id: 'mc_siege_work_held_section',
+            label: 'The section held its length.',
+            intent: 'Dig, wait, push when called. Three names went on the stone and the work continued, which is the job.',
+            effects: [
+              { kind: 'reputation_tally', key: 'iron.positive', delta: 0.8 },
+              {
+                kind: 'recent_event',
+                message: '{name} worked a siege line outside {location} and the assigned section held its length.',
+              },
+            ],
+            closeAfterSelection: true,
+          },
+          {
+            id: 'mc_siege_work_read_the_walls',
+            label: 'The defenders were rationing something.',
+            intent:
+              'Nobody on that wall was standing a full watch. A garrison that thin is counting stores, not arrows.',
+            effects: [
+              { kind: 'reputation_tally', key: 'eye.positive', delta: 0.5 },
+              {
+                kind: 'intelligence',
+                category: 'military_position',
+                label: 'Garrison strength at {location} is short',
+                detail:
+                  'Watches doubled up and rotations stretched past what a full roster would need. '
+                  + 'The wall is being held by fewer hands than the banners claim.',
+                reliability: 0.65,
+              },
+            ],
+            closeAfterSelection: true,
+          },
+        ],
+      },
     },
   }),
 
@@ -258,10 +465,57 @@ export const MERCENARY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
       },
     ],
     aftermathConfig: {
-      reactions: [
-        { kind: 'reputation_tally', domain: 'iron.positive', weight: 0.5 },
-        { kind: 'recent_event', label: 'prisoner_escort', delay: 0 },
-      ],
+      branchOnStep: 0,
+      variants: {},
+      fallback: {
+        overview:
+          'The prisoner is delivered and the receiving party checks the condition against the clause. '
+          + 'The long box stayed empty, which was the whole of the contract.',
+        changes: [
+          {
+            id: 'mc_escort_standing',
+            kind: 'reputation',
+            title: 'Condition Met',
+            detail: 'A delivery that matches its clause is unremarkable, and unremarkable is what the Company sells.',
+            polarity: 'mixed',
+          },
+        ],
+        reactionPrompt: 'What does the god take from the walk?',
+        reactions: [
+          {
+            id: 'mc_escort_delivered_clean',
+            label: 'Delivered whole, contract closed.',
+            intent: 'The chain was tested early and held. Nothing else happened, and nothing else was supposed to.',
+            effects: [
+              { kind: 'reputation_tally', key: 'iron.positive', delta: 0.5 },
+              {
+                kind: 'recent_event',
+                message: '{name} escorted a prisoner to {location} and the condition matched the clause on delivery.',
+              },
+            ],
+            closeAfterSelection: true,
+          },
+          {
+            id: 'mc_escort_who_wanted_them',
+            label: 'The receiving party was too eager.',
+            intent:
+              'They checked the face before they checked the paperwork. That is not how a clerk takes custody.',
+            effects: [
+              { kind: 'reputation_tally', key: 'eye.positive', delta: 0.4 },
+              {
+                kind: 'intelligence',
+                category: 'political_secret',
+                label: 'Unusual interest in a prisoner at {location}',
+                detail:
+                  'The receiving party identified the prisoner on sight and hurried the transfer. '
+                  + 'Somebody wanted this specific person, not this specific charge.',
+                reliability: 0.55,
+              },
+            ],
+            closeAfterSelection: true,
+          },
+        ],
+      },
     },
   }),
 ];
@@ -319,10 +573,57 @@ export const MERCENARY_SENIOR_TEMPLATES: UnifiedActionTemplate[] = [
       },
     ],
     aftermathConfig: {
-      reactions: [
-        { kind: 'reputation_tally', domain: 'iron.positive', weight: 0.8 },
-        { kind: 'recent_event', label: 'field_command', delay: 4 },
-      ],
+      branchOnStep: 0,
+      variants: {},
+      fallback: {
+        overview:
+          'Three days of ground, held or not held, and a debrief in numbers. '
+          + 'The captain files it and the stone outside the barracks gets whatever it gets.',
+        changes: [
+          {
+            id: 'mc_field_command_standing',
+            kind: 'reputation',
+            title: 'Command Record',
+            detail: 'Ground read, line held, count reported. Two more names want in on the next contract, or they do not.',
+            polarity: 'mixed',
+          },
+        ],
+        reactionPrompt: 'What does the god take from the command?',
+        reactions: [
+          {
+            id: 'mc_field_command_held_three_days',
+            label: 'Three days, line held, clean numbers.',
+            intent: 'The ground was read correctly and the contract was kept to its stated term. Feeling is not a number; this is.',
+            effects: [
+              { kind: 'reputation_tally', key: 'iron.positive', delta: 0.8 },
+              {
+                kind: 'recent_event',
+                message: '{name} held a field command for the Company at {location} and reported the count clean.',
+              },
+            ],
+            closeAfterSelection: true,
+          },
+          {
+            id: 'mc_field_command_cost_of_the_ground',
+            label: 'That ground cost more than it was worth.',
+            intent:
+              'The contract was kept and the arithmetic still does not close. Someone priced this line without walking it.',
+            effects: [
+              { kind: 'reputation_tally', key: 'stone.positive', delta: 0.5 },
+              {
+                kind: 'intelligence',
+                category: 'military_position',
+                label: 'The line at {location} is overpriced ground',
+                detail:
+                  'Held for its full term at a cost the terrain did not justify. '
+                  + 'Whoever commissioned the hold either does not know the ground or is buying time for something else.',
+                reliability: 0.6,
+              },
+            ],
+            closeAfterSelection: true,
+          },
+        ],
+      },
     },
   },
 
@@ -362,11 +663,58 @@ export const MERCENARY_SENIOR_TEMPLATES: UnifiedActionTemplate[] = [
       },
     ],
     aftermathConfig: {
-      reactions: [
-        { kind: 'reputation_tally', domain: 'iron.positive', weight: 0.6 },
-        { kind: 'reputation_tally', domain: 'shadow.positive', weight: 0.3 },
-        { kind: 'recent_event', label: 'hostile_negotiation', delay: 2 },
-      ],
+      branchOnStep: 0,
+      variants: {},
+      fallback: {
+        overview:
+          'Terms were named without decoration and the other side either took them or did not. '
+          + 'Less blood than expected, or preparation for the next step of the contract.',
+        changes: [
+          {
+            id: 'mc_negotiation_standing',
+            kind: 'reputation',
+            title: 'Terms Named',
+            detail: 'What they owe and when, stated plainly at the gate of {location}. Plain terms are harder to argue with later.',
+            polarity: 'mixed',
+          },
+        ],
+        reactionPrompt: 'What does the god take from the parley?',
+        reactions: [
+          {
+            id: 'mc_negotiation_held_the_number',
+            label: 'The number was named and held.',
+            intent: 'No decoration, no softening. The count on the other side was grim and both sides knew it.',
+            effects: [
+              { kind: 'reputation_tally', key: 'iron.positive', delta: 0.6 },
+              { kind: 'reputation_tally', key: 'shadow.positive', delta: 0.3 },
+              {
+                kind: 'recent_event',
+                message: '{name} named the Company\'s terms at {location} and did not move off the number.',
+              },
+            ],
+            closeAfterSelection: true,
+          },
+          {
+            id: 'mc_negotiation_who_they_answer_to',
+            label: 'They were not the ones deciding.',
+            intent:
+              'Every term went to a room the negotiators kept leaving for. The authority is behind that door, not at this table.',
+            effects: [
+              { kind: 'reputation_tally', key: 'eye.positive', delta: 0.5 },
+              {
+                kind: 'intelligence',
+                category: 'political_secret',
+                label: 'Real authority at {location} sits behind the negotiators',
+                detail:
+                  'The party at the table carried no power to accept. Terms were relayed out and answers relayed back. '
+                  + 'Whoever holds the decision did not want to be seen holding it.',
+                reliability: 0.7,
+              },
+            ],
+            closeAfterSelection: true,
+          },
+        ],
+      },
     },
   },
 
@@ -406,11 +754,70 @@ export const MERCENARY_SENIOR_TEMPLATES: UnifiedActionTemplate[] = [
       },
     ],
     aftermathConfig: {
-      reactions: [
-        { kind: 'reputation_tally', domain: 'iron.positive', weight: 0.7 },
-        { kind: 'encounter_seed', templateId: 'mc.senior.hostile_negotiation', delay: FACTION_PROSE_SEED_DELAY_SOCIAL_TICKS },
-        { kind: 'recent_event', label: 'extraction_completed', delay: 3 },
-      ],
+      branchOnStep: 0,
+      variants: {},
+      fallback: {
+        overview:
+          'The asset is out of {location}. The captain still does not use the word rescue — '
+          + 'the contract said bring someone out alive, and the window was the window.',
+        changes: [
+          {
+            id: 'mc_extraction_standing',
+            kind: 'reputation',
+            title: 'Extraction Record',
+            detail: 'Fast is cheaper than careful when the window is small. What that costs shows up on the stone, not the ledger.',
+            polarity: 'mixed',
+          },
+          {
+            id: 'mc_extraction_owed',
+            kind: 'future_hook',
+            title: 'Somebody Owes Somebody',
+            detail: 'An asset out of a place they were being kept is a party that wanted them kept. That conversation is not finished.',
+            polarity: 'info',
+          },
+        ],
+        reactionPrompt: 'What does the god take from the extraction?',
+        reactions: [
+          {
+            id: 'mc_extraction_out_clean',
+            label: 'Out clean, asset intact.',
+            intent: 'The window held long enough. Whoever wanted this person kept will want a word about it.',
+            effects: [
+              { kind: 'reputation_tally', key: 'iron.positive', delta: 0.7 },
+              {
+                kind: 'encounter_seed',
+                templateId: 'mc.senior.hostile_negotiation',
+                delayTicks: FACTION_PROSE_SEED_DELAY_SOCIAL_TICKS,
+                seedLabel: 'mc_extraction_reprisal_talks',
+              },
+              {
+                kind: 'recent_event',
+                message: '{name} brought an asset out of {location} inside the window and the Company closed the contract.',
+              },
+            ],
+            closeAfterSelection: true,
+          },
+          {
+            id: 'mc_extraction_who_was_holding_them',
+            label: 'The asset was not a prisoner.',
+            intent:
+              'No irons, no cell, and they knew the route out better than the plan did. This was someone leaving, not someone taken.',
+            effects: [
+              { kind: 'reputation_tally', key: 'shadow.positive', delta: 0.5 },
+              {
+                kind: 'intelligence',
+                category: 'political_secret',
+                label: 'The asset at {location} left willingly',
+                detail:
+                  'Held without restraint and moved without hesitation on ground they already knew. '
+                  + 'The contract described an extraction. What happened was a defection.',
+                reliability: 0.6,
+              },
+            ],
+            closeAfterSelection: true,
+          },
+        ],
+      },
     },
   },
 ];
@@ -468,11 +875,70 @@ export const MERCENARY_ELITE_TEMPLATES: UnifiedActionTemplate[] = [
       },
     ],
     aftermathConfig: {
-      reactions: [
-        { kind: 'reputation_tally', domain: 'iron.positive', weight: 0.9 },
-        { kind: 'encounter_seed', templateId: 'mc.elite.siege_contract', delay: FACTION_PROSE_SEED_DELAY_SOCIAL_TICKS * 2 },
-        { kind: 'recent_event', label: 'war_council_concluded', delay: 5 },
-      ],
+      branchOnStep: 0,
+      variants: {},
+      fallback: {
+        overview:
+          'The council read the numbers and the captain signed last. '
+          + 'The Company has a war contract, and the stone will have more names before it closes.',
+        changes: [
+          {
+            id: 'mc_war_council_standing',
+            kind: 'reputation',
+            title: 'Terms Held',
+            detail: 'A long contract signed at full rate. Keeping the word goes on both sides of the stone.',
+            polarity: 'mixed',
+          },
+          {
+            id: 'mc_war_council_commitment',
+            kind: 'future_hook',
+            title: 'The Company Is Committed',
+            detail: 'A war contract is not a job. It is a season, and the siege work follows from it.',
+            polarity: 'info',
+          },
+        ],
+        reactionPrompt: 'What does the god take from the council table?',
+        reactions: [
+          {
+            id: 'mc_war_council_signed_at_rate',
+            label: 'Signed at the Company rate.',
+            intent: 'Nobody flinched at the numbers and no clause bent. The captain will hear it was a good contract.',
+            effects: [
+              { kind: 'reputation_tally', key: 'iron.positive', delta: 0.9 },
+              {
+                kind: 'encounter_seed',
+                templateId: 'mc.elite.siege_contract',
+                delayTicks: FACTION_PROSE_SEED_DELAY_SOCIAL_TICKS * 2,
+                seedLabel: 'mc_war_council_first_contract',
+              },
+              {
+                kind: 'recent_event',
+                message: '{name} carried the Company\'s terms through a war council at {location} and the contract was signed.',
+              },
+            ],
+            closeAfterSelection: true,
+          },
+          {
+            id: 'mc_war_council_the_delegate_who_left',
+            label: 'One of them is already planning to break it.',
+            intent:
+              'A delegate who objects to the clause on ground losses has counted the ground they expect to lose. Note the name.',
+            effects: [
+              { kind: 'reputation_tally', key: 'eye.positive', delta: 0.6 },
+              {
+                kind: 'intelligence',
+                category: 'political_secret',
+                label: 'A council member at {location} expects to break the contract',
+                detail:
+                  'The objection was specific to ground losses, which is a clause you only price if you intend to trigger it. '
+                  + 'Next contract, that name adds a clause of its own.',
+                reliability: 0.65,
+              },
+            ],
+            closeAfterSelection: true,
+          },
+        ],
+      },
     },
   },
 
@@ -525,11 +991,70 @@ export const MERCENARY_ELITE_TEMPLATES: UnifiedActionTemplate[] = [
       },
     ],
     aftermathConfig: {
-      reactions: [
-        { kind: 'reputation_tally', domain: 'iron.positive', weight: 1.0 },
-        { kind: 'hidden_mark', label: 'siege_veteran', severity: FACTION_PROSE_HIDDEN_MARK_DEFAULT_SEVERITY },
-        { kind: 'recent_event', label: 'siege_concluded', delay: 7 },
-      ],
+      branchOnStep: 0,
+      variants: {},
+      fallback: {
+        overview:
+          'The gate opened or it did not, and the clause covered it either way. '
+          + 'The stone gets a date and a number, and the Company moves to the next ground.',
+        changes: [
+          {
+            id: 'mc_siege_contract_standing',
+            kind: 'reputation',
+            title: 'Contract Concluded',
+            detail: 'Full pay or partial, paid out per the remaining clauses. Keeping the word on a failed contract is what the Company is for.',
+            polarity: 'mixed',
+          },
+          {
+            id: 'mc_siege_contract_veteran',
+            kind: 'trait',
+            title: 'Siege Veteran',
+            detail: 'Two weeks on a line that the ground said would take three. That is carried afterwards whether or not it is mentioned.',
+            polarity: 'mixed',
+          },
+        ],
+        reactionPrompt: 'What does the god take from the long week?',
+        reactions: [
+          {
+            id: 'mc_siege_contract_full_term',
+            label: 'The Company held its term.',
+            intent: 'Positioned, waited, concluded. The waiting was the contract as much as the gate was.',
+            effects: [
+              { kind: 'reputation_tally', key: 'iron.positive', delta: 1.0 },
+              {
+                kind: 'hidden_mark',
+                category: 'reputation_note',
+                label: 'siege_veteran',
+                severity: FACTION_PROSE_HIDDEN_MARK_DEFAULT_SEVERITY,
+              },
+              {
+                kind: 'recent_event',
+                message: '{name} took the full Company through a siege contract at {location} and closed it on the clause.',
+              },
+            ],
+            closeAfterSelection: true,
+          },
+          {
+            id: 'mc_siege_contract_relief_column',
+            label: 'The relief column was not in the intelligence.',
+            intent:
+              'Somebody sold the Company a two-week contract on three-week ground and left out who was coming. That was not an error.',
+            effects: [
+              { kind: 'reputation_tally', key: 'eye.positive', delta: 0.7 },
+              {
+                kind: 'intelligence',
+                category: 'military_position',
+                label: 'The brief for {location} omitted a relief force',
+                detail:
+                  'A column arrived that the contract intelligence did not mention, on a timetable that says it was always coming. '
+                  + 'The client either did not know their own theatre or priced the Company\'s losses into the split.',
+                reliability: 0.7,
+              },
+            ],
+            closeAfterSelection: true,
+          },
+        ],
+      },
     },
   },
 ];
@@ -561,10 +1086,57 @@ export const MERCENARY_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
       },
     ],
     aftermathConfig: {
-      reactions: [
-        { kind: 'reputation_tally', domain: 'iron.positive', weight: 0.4 },
-        { kind: 'recent_event', label: 'sparring_ring', delay: FACTION_PROSE_SEED_DELAY_SOCIAL_TICKS },
-      ],
+      branchOnStep: 0,
+      variants: {},
+      fallback: {
+        overview:
+          'The ring has two rules and both were kept. '
+          + 'The Company watched how {name} handles ground pressure, which was the entire point of the exercise.',
+        changes: [
+          {
+            id: 'mc_sparring_standing',
+            kind: 'reputation',
+            title: 'Watched in the Ring',
+            detail: 'The roster forms its opinion here, before any contract puts it to the test. The captain says nothing either way.',
+            polarity: 'mixed',
+          },
+        ],
+        reactionPrompt: 'What does the god take from the ring?',
+        reactions: [
+          {
+            id: 'mc_sparring_good_work',
+            label: 'Good work under pressure.',
+            intent: 'No long boxes, no hard feelings, and the roster saw what it needed to see.',
+            effects: [
+              { kind: 'reputation_tally', key: 'iron.positive', delta: 0.4 },
+              {
+                kind: 'recent_event',
+                message: '{name} took the ring in front of the Company roster at {location}.',
+              },
+            ],
+            closeAfterSelection: true,
+          },
+          {
+            id: 'mc_sparring_read_the_room',
+            label: 'The roster is short of good hands.',
+            intent:
+              'Half that ring could not hold a line for three days. The Company is thinner than its contracts assume.',
+            effects: [
+              { kind: 'reputation_tally', key: 'eye.positive', delta: 0.3 },
+              {
+                kind: 'intelligence',
+                category: 'agent_network',
+                label: 'Company roster at {location} is thin on experience',
+                detail:
+                  'The ring showed more new hands than seasoned ones. '
+                  + 'The next long contract will be held by people who have not held one.',
+                reliability: 0.6,
+              },
+            ],
+            closeAfterSelection: true,
+          },
+        ],
+      },
     },
   }),
 
@@ -591,10 +1163,57 @@ export const MERCENARY_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
       },
     ],
     aftermathConfig: {
-      reactions: [
-        { kind: 'reputation_tally', domain: 'iron.positive', weight: 0.3 },
-        { kind: 'recent_event', label: 'war_stories', delay: FACTION_PROSE_SEED_DELAY_SOCIAL_TICKS },
-      ],
+      branchOnStep: 0,
+      variants: {},
+      fallback: {
+        overview:
+          'The sergeants described the siege with professional accuracy and the veterans added clauses to every anecdote. '
+          + 'Listening is how contracts get kept.',
+        changes: [
+          {
+            id: 'mc_war_stories_standing',
+            kind: 'reputation',
+            title: 'Time by the Fire',
+            detail: 'The old hands name the clauses they watch for. Whoever was listening will watch for them too.',
+            polarity: 'gain',
+          },
+        ],
+        reactionPrompt: 'What does the god take from the fire?',
+        reactions: [
+          {
+            id: 'mc_war_stories_listened',
+            label: 'Listened, and learned the clauses.',
+            intent: 'Professional accuracy, no decoration. The stories are a contract manual told sideways.',
+            effects: [
+              { kind: 'reputation_tally', key: 'iron.positive', delta: 0.3 },
+              {
+                kind: 'recent_event',
+                message: '{name} sat with the Company\'s veterans at {location} and listened to how the old contracts went.',
+              },
+            ],
+            closeAfterSelection: true,
+          },
+          {
+            id: 'mc_war_stories_the_names_omitted',
+            label: 'They talked around one siege.',
+            intent:
+              'Every other contract got its full accounting. That one got a change of subject, from men who do not embarrass easily.',
+            effects: [
+              { kind: 'reputation_tally', key: 'shadow.positive', delta: 0.3 },
+              {
+                kind: 'intelligence',
+                category: 'political_secret',
+                label: 'The Company does not discuss one contract',
+                detail:
+                  'A siege the veterans will not describe, in a room where every other loss was counted aloud. '
+                  + 'Whatever the clause said, it is not on the stone.',
+                reliability: 0.45,
+              },
+            ],
+            closeAfterSelection: true,
+          },
+        ],
+      },
     },
   }),
 
@@ -634,11 +1253,58 @@ export const MERCENARY_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
       },
     ],
     aftermathConfig: {
-      reactions: [
-        { kind: 'reputation_tally', domain: 'iron.positive', weight: 0.5 },
-        { kind: 'reputation_tally', domain: 'gold.positive', weight: 0.3 },
-        { kind: 'recent_event', label: 'contract_negotiated', delay: FACTION_PROSE_SEED_DELAY_SOCIAL_TICKS },
-      ],
+      branchOnStep: 0,
+      variants: {},
+      fallback: {
+        overview:
+          'The draft was optimistic on the split and soft on the clauses, and it was read as such. '
+          + 'Keeping the word starts with setting the right word.',
+        changes: [
+          {
+            id: 'mc_negotiation_practice_standing',
+            kind: 'reputation',
+            title: 'Rate Held',
+            detail: 'The Company rate is the Company rate. What gets conceded at the draft stage gets paid for on the ground.',
+            polarity: 'mixed',
+          },
+        ],
+        reactionPrompt: 'What does the god take from the draft?',
+        reactions: [
+          {
+            id: 'mc_negotiation_practice_correct_split',
+            label: 'Three soft clauses named, correct split set.',
+            intent: 'The client revised. That is what a draft is for, and what the captain\'s red ink is otherwise for.',
+            effects: [
+              { kind: 'reputation_tally', key: 'iron.positive', delta: 0.5 },
+              { kind: 'reputation_tally', key: 'gold.positive', delta: 0.3 },
+              {
+                kind: 'recent_event',
+                message: '{name} read a client\'s draft contract at {location} and set the terms at the Company rate.',
+              },
+            ],
+            closeAfterSelection: true,
+          },
+          {
+            id: 'mc_negotiation_practice_who_wrote_this',
+            label: 'This draft was written to be refused.',
+            intent:
+              'Soft clauses in exactly the places a professional checks first. Somebody wanted the Company to walk and to be seen walking.',
+            effects: [
+              { kind: 'reputation_tally', key: 'shadow.positive', delta: 0.4 },
+              {
+                kind: 'intelligence',
+                category: 'political_secret',
+                label: 'A client at {location} drafted a contract meant to fail',
+                detail:
+                  'The weak clauses sit where any Company reader looks first. '
+                  + 'The approach was the point; the contract was never the point.',
+                reliability: 0.5,
+              },
+            ],
+            closeAfterSelection: true,
+          },
+        ],
+      },
     },
   }),
 ];
@@ -681,10 +1347,53 @@ export const MC_JOIN_TEMPLATE: UnifiedActionTemplate = {
     },
   ],
   aftermathConfig: {
-    reactions: [
-      { kind: 'faction_reputation_gain', factionDefId: 'mercenary_company', amount: 0.1 },
-      { kind: 'recent_event', label: 'joined_mercenary_company', delay: 0 },
-    ],
+    branchOnStep: 0,
+    variants: {},
+    fallback: {
+      overview:
+        'The recruiter wrote the name down and the standard contract was signed. No ceremony — '
+        + 'pay per clause, split on delivery, name on the stone if the clause fails.',
+      changes: [
+        {
+          id: 'mc_join_membership',
+          kind: 'faction_reputation',
+          title: 'Signed to the Company',
+          detail: 'The Company keeps the word. Now {name} does too, at the standard rate and the standard risk.',
+          polarity: 'gain',
+        },
+      ],
+      reactionPrompt: 'What does the god take from the signing?',
+      reactions: [
+        {
+          id: 'mc_join_signed',
+          label: 'Callused hands and one honest answer.',
+          intent: 'The recruiter checks hands first and asks one question about the last contract. Both checked out.',
+          effects: [
+            { kind: 'faction_reputation_gain', factionId: 'mercenary_company', amount: 0.1 },
+            {
+              kind: 'recent_event',
+              message: '{name} signed the standard contract with the Mercenary Company at {location}.',
+            },
+          ],
+          closeAfterSelection: true,
+        },
+        {
+          id: 'mc_join_read_the_stone',
+          label: 'Read the stone before signing.',
+          intent:
+            'The names outside the barracks are the contract\'s other half, stated in the only terms that do not negotiate.',
+          effects: [
+            { kind: 'faction_reputation_gain', factionId: 'mercenary_company', amount: 0.1 },
+            { kind: 'reputation_tally', key: 'stone.positive', delta: 0.3 },
+            {
+              kind: 'recent_event',
+              message: '{name} read the names on the barracks stone at {location}, then signed anyway.',
+            },
+          ],
+          closeAfterSelection: true,
+        },
+      ],
+    },
   },
 };
 
@@ -724,10 +1433,53 @@ export const MC_PROMOTION_TEMPLATE: UnifiedActionTemplate = {
     },
   ],
   aftermathConfig: {
-    reactions: [
-      { kind: 'faction_reputation_gain', factionDefId: 'mercenary_company', amount: 0.2 },
-      { kind: 'recent_event', label: 'mercenary_promotion', delay: 1 },
-    ],
+    branchOnStep: 0,
+    variants: {},
+    fallback: {
+      overview:
+        'The captain read the numbers aloud, closed the ledger, and named the rank. '
+        + 'New clauses, more ground to hold, and more weight on the line.',
+      changes: [
+        {
+          id: 'mc_promotion_rank',
+          kind: 'faction_reputation',
+          title: 'New Rank, New Clause',
+          detail: 'The pay goes up. So does what the contract can ask for. The stone outside the barracks has room for the number.',
+          polarity: 'mixed',
+        },
+      ],
+      reactionPrompt: 'What does the god take from the review?',
+      reactions: [
+        {
+          id: 'mc_promotion_numbers_spoke',
+          label: 'The record carried it.',
+          intent: 'Contracts kept, ground held, counts filed clean. The captain does not add commentary and does not need to.',
+          effects: [
+            { kind: 'faction_reputation_gain', factionId: 'mercenary_company', amount: 0.2 },
+            {
+              kind: 'recent_event',
+              message: 'The Company\'s captain at {location} closed the ledger and named {name} to a new rank.',
+            },
+          ],
+          closeAfterSelection: true,
+        },
+        {
+          id: 'mc_promotion_weight_of_it',
+          label: 'The new clause is heavier than the pay.',
+          intent:
+            'That feeling is the job now. Everyone above this rank already knows it and none of them said so during the review.',
+          effects: [
+            { kind: 'faction_reputation_gain', factionId: 'mercenary_company', amount: 0.2 },
+            { kind: 'reputation_tally', key: 'stone.positive', delta: 0.4 },
+            {
+              kind: 'recent_event',
+              message: '{name} took a rank in the Company at {location} and read the new clause twice before accepting it.',
+            },
+          ],
+          closeAfterSelection: true,
+        },
+      ],
+    },
   },
 };
 

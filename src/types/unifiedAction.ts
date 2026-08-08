@@ -1368,6 +1368,17 @@ export function applyAftermathOutcomeBand(
  * adapter each had their own copy of the choice lookup; two resolvers over one
  * authored config is the shape that silently drifts, and a UI copy that missed the
  * band would render the un-banded ending the engine had already resolved past.
+ *
+ * Fail-soft on a config with no reachable base (THR-1038, NFP #4). `fallback` is
+ * declared required, so a config that arrives without one is already outside the
+ * type — but the red baseline (THR-489) means such a literal compiles, and 15
+ * shipped mercenary templates did exactly that. The old body then read `byOutcome`
+ * off `undefined` and threw on *every* resolved action, swallowed by the tick
+ * loop's fail-soft envelope: no crash, no red test, and the authored aftermath
+ * silently reaching nobody. Returning the empty variant keeps the tick loop's
+ * contract without pretending the content is fine — the loud gate is the corpus
+ * test in `unifiedTemplateAftermathReachability.test.ts`, which fails on a config
+ * missing its fallback rather than waiting for a player to walk into it.
  */
 export function resolveAftermathVariant(
   config: BranchAwareAftermathConfig,
@@ -1378,8 +1389,20 @@ export function resolveAftermathVariant(
   const base = branchChoice
     ? config.variants[branchChoice.choiceId] ?? config.fallback
     : config.fallback;
-  return applyAftermathOutcomeBand(base, outcome);
+  return applyAftermathOutcomeBand(base ?? EMPTY_AFTERMATH_VARIANT, outcome);
 }
+
+/**
+ * The variant substituted when a config carries no reachable base (THR-1038).
+ *
+ * Deliberately empty rather than apologetic: an aftermath surface renders nothing
+ * for it, which is what "this template has no authored ending" should look like.
+ * A placeholder sentence here would ship prose no author wrote.
+ */
+export const EMPTY_AFTERMATH_VARIANT: AftermathVariant = Object.freeze({
+  overview: '',
+  changes: Object.freeze([]) as readonly EncounterAftermathChange[],
+});
 
 /**
  * One slot's authored prose variants along one identity axis (THR-573).
