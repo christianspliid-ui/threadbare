@@ -464,6 +464,17 @@ export function bindReachSignatureTargets(
 
 // ─── Scene-targeting sentinels (THR-695, Slice B) ───────────────────────────────
 
+/**
+ * `$actor` sentinel — rebinds to the acting agent (`action.actorId`).
+ *
+ * THR-1025: this was the one member of the authored sentinel vocabulary the bind pass
+ * did not know. `$actor` is the established token everywhere else in the codebase
+ * (`resolveRef` in `src/types/graphOp.ts` maps it for every GraphOp), so content
+ * authored `targetAgentId: '$actor'` on aftermath effects and reasonably expected it to
+ * resolve. It did not: the literal seven-character string passed through the bind pass
+ * untouched and was consumed downstream as if it were a node id.
+ */
+export const AFTERMATH_ACTOR_SENTINEL = '$actor';
 /** `$cast:<key>` sentinel prefix — rebinds via `action.supportBindings`. */
 export const AFTERMATH_CAST_SENTINEL_PREFIX = '$cast:';
 /** Legacy alias for the cast sentinel (the `src/data/encounters/examples/` files use `role:`). */
@@ -524,6 +535,7 @@ export interface SceneSentinelTraceContext {
  *
  * For each field in { targetAgentId, targetFactionId, targetSublocationId, withAgentId }
  * whose value is a sentinel string:
+ *   • `'$actor'`       → `action.actorId`, iff the resolved node kind matches the field.
  *   • `'$target'`      → `action.targetId`, iff the resolved node kind matches the field.
  *   • `'$cast:<key>'`  → `action.supportBindings[key].nodeId` (legacy alias `'role:<key>'`).
  *
@@ -546,14 +558,20 @@ export function bindAftermathSceneTargets(
     const value = source[field];
     if (typeof value !== 'string') continue;
 
+    const isActorSentinel = value === AFTERMATH_ACTOR_SENTINEL;
     const isTargetSentinel = value === AFTERMATH_TARGET_SENTINEL;
     const isCastSentinel =
       value.startsWith(AFTERMATH_CAST_SENTINEL_PREFIX) ||
       value.startsWith(AFTERMATH_CAST_SENTINEL_LEGACY_PREFIX);
-    if (!isTargetSentinel && !isCastSentinel) continue;
+    if (!isActorSentinel && !isTargetSentinel && !isCastSentinel) continue;
 
     let resolvedNodeId: string | null = null;
-    if (isTargetSentinel) {
+    if (isActorSentinel) {
+      const actorId = action?.actorId;
+      if (actorId && nodeMatchesSceneField(graph, actorId, SCENE_SENTINEL_FIELDS[field])) {
+        resolvedNodeId = actorId;
+      }
+    } else if (isTargetSentinel) {
       const targetId = action?.targetId;
       if (targetId && nodeMatchesSceneField(graph, targetId, SCENE_SENTINEL_FIELDS[field])) {
         resolvedNodeId = targetId;
@@ -3531,6 +3549,7 @@ export function applyEncounterAftermathReaction(
         // A sentinel the bind pass could not resolve, a missing/non-actor node, or a
         // self-bond all no-op down the fail-soft path (plan §Fail-soft).
         const unresolvedSentinel =
+          withId === AFTERMATH_ACTOR_SENTINEL ||
           withId === AFTERMATH_TARGET_SENTINEL ||
           withId.startsWith(AFTERMATH_CAST_SENTINEL_PREFIX) ||
           withId.startsWith(AFTERMATH_CAST_SENTINEL_LEGACY_PREFIX);

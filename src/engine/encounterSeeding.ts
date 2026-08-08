@@ -182,6 +182,37 @@ export function evaluateEncounterSeeds(state: GameState, tick: number, rng: () =
   for (const seed of eligible) {
     const ticksSincePlant = tick - (seed.plantedTick ?? tick);
 
+    // THR-1025: a seed whose target does not resolve to a live node can only produce a
+    // phantom action — one that spawns, runs the tick loop, and fails every graph write
+    // it attempts, silently. Discard it here instead. This is the backstop for the
+    // unbound-sentinel class (an aftermath sentinel the bind pass could not resolve stays
+    // a literal token, e.g. the bare string `$actor`), and equally for a target that has
+    // simply died between plant and eligibility.
+    if (!state.graph.getNode(seed.targetAgentId)) {
+      const orphanEvent: TickEvent = {
+        id: `${seed.seedId}_orphaned`,
+        tick,
+        type: 'narrative',
+        message: `A planted thread lost the one it was meant for: ${seed.seedLabel}`,
+        significance: 0.3,
+        actorId: seed.targetAgentId,
+      };
+      nextTickEvents = [...nextTickEvents, orphanEvent];
+      nextRecentEvents = appendRecentEvent(nextRecentEvents, orphanEvent);
+      emitTrace({
+        tick, category: 'encounter_seed_triggered',
+        agentId: seed.targetAgentId,
+        seedId: seed.seedId,
+        targetAgentId: seed.targetAgentId,
+        ticksBetweenPlantAndTrigger: ticksSincePlant,
+        resolvedTemplateId: 'none',
+        outcome: 'discarded',
+        discardReason: 'target_agent_missing',
+        summary: `Seed discarded: target "${seed.targetAgentId}" is not a live node — "${seed.seedLabel}"`,
+      });
+      continue;
+    }
+
     // Resolve the template to spawn: a direct templateId, or (Slice D) a family match.
     let template: UnifiedActionTemplate | undefined;
     let resolvedTemplateId: string | undefined;
