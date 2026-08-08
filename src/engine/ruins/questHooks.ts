@@ -112,7 +112,17 @@ interface GuildLocationEntry {
   hex: { col: number; row: number };
 }
 
-/** Collect all location nodes that contain an Adventurer's Guild hall sublocation. */
+/**
+ * Collect all location nodes that contain an Adventurer's Guild hall sublocation.
+ *
+ * NOTE(THR-1026): this literal is deliberately *not* the same predicate as
+ * `GuildQuestPanel` / `factionQuestGeneration`, which resolve a hall through
+ * FACTION_DEFINITIONS (THR-818). Hooks are posted for the adventuring guild alone
+ * because the three quest templates are that guild's by voice and id
+ * (`ag.quest.*`); widening this without re-authoring them would put the wrong
+ * guild's words on the notice board. Do not "align" the two predicates without
+ * the design call recorded in THR-1026.
+ */
 function findGuildLocations(graph: WorldGraph): GuildLocationEntry[] {
   const results: GuildLocationEntry[] = [];
   for (const locNode of graph.getNodesByType('location')) {

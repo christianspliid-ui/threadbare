@@ -6,6 +6,7 @@ import { hexDirection } from '../../engine/ruins/questHooks';
 import { SectionHeading } from '../shared/SectionHeading';
 import { RARITY_TIER_COLORS } from '../../types/rarity';
 import { FACTION_ENCOUNTER_TEMPLATES } from '../../data/faction-encounter-content';
+import { FACTION_DEFINITIONS } from '../../data/faction-definitions';
 import {
   GUILD_QUEST_RADIUS,
   QUEST_HOOK_COOLDOWN_TICKS,
@@ -33,6 +34,31 @@ interface QuestRow {
 }
 
 const TIER_ORDER: Record<TierLabel, number> = { Saga: 0, Major: 1, Minor: 2 };
+
+/**
+ * Sublocation markers that identify a faction's hall. `factionSeeding` writes
+ * `sublocationTypeId`; older fixtures carry `locationSubtype`. `factionQuestGeneration`
+ * accepts both, so this surface does too — the two must agree on what a hall is.
+ */
+const FACTION_HALL_SUBLOCATION_TYPE_ID = 'sublocation-type.faction-hall';
+const FACTION_HALL_LOCATION_SUBTYPE = 'guild-hall';
+
+/**
+ * A guild hall is any faction hall whose owning faction resolves through
+ * FACTION_DEFINITIONS — not the adventuring guild alone (THR-818). Quest data is
+ * faction-agnostic, so all twelve definitions surface postings at their halls.
+ */
+function isFactionHall(node: GraphNode | undefined): boolean {
+  const props = node?.properties as Record<string, unknown> | undefined;
+  if (!props) return false;
+
+  const isHall =
+    props.sublocationTypeId === FACTION_HALL_SUBLOCATION_TYPE_ID ||
+    props.locationSubtype === FACTION_HALL_LOCATION_SUBTYPE;
+  if (!isHall) return false;
+
+  return typeof props.factionDefId === 'string' && FACTION_DEFINITIONS.has(props.factionDefId);
+}
 
 function getTierLabel(magnitude: number): TierLabel {
   if (magnitude <= RUIN_MAGNITUDE_MINOR_MAX) return 'Minor';
@@ -79,7 +105,7 @@ export function GuildQuestPanel({
   const hasGuildHall = useMemo(() => {
     return graph.getOutgoingEdges(location.id, 'contains')
       .map(e => graph.getNode(e.target))
-      .some(n => n?.properties?.factionDefId === 'adventuring_guild');
+      .some(isFactionHall);
   }, [graph, location.id]);
 
   const rows = useMemo((): QuestRow[] => {
