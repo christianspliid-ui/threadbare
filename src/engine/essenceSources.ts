@@ -16,7 +16,7 @@ import type { EssenceSource } from '../types/essenceSource';
 import type { WorldGraph } from './graph';
 import { hexDistance } from './delivery';
 import { resolveLocationToHex } from './encounterAwareness';
-import { computeSanctitySustenance } from './essenceEconomyBridge';
+import { computeSanctitySustenance, type SanctitySustenance } from './essenceEconomyBridge';
 import {
   BASE_SOURCE_INCOME,
   deriveSourceTier,
@@ -266,4 +266,94 @@ export function recomputeControlledSourceTiers(
   }
 
   return { sourceCount, tierChanges, contestedCount, econNurtured, econWithered };
+}
+
+/** One location's speaking sustenance source — what the Livelihood clause renders (THR-840). */
+export interface LocationSustenanceVoice {
+  /** Node carrying the source: the location itself, or one of its sublocations. */
+  hostId: string;
+  /** The source's sphere — selects the prose table. */
+  sphere: SphereName;
+  /** The engine's own verdict for this source, this tick. Never carries a `reason`. */
+  sustenance: SanctitySustenance;
+  /** True when the speaking source stands on a sublocation rather than the location itself. */
+  borrowed: boolean;
+}
+
+/**
+ * Guarded read of one host's sustenance, or `undefined` when it has nothing to say.
+ *
+ * Three guards the engine's own `computeSanctitySustenance` deliberately does not
+ * apply, because they are about what the *player* may be told rather than what the
+ * land is doing: an undiscovered source stays silent (fog-consistent), a desecrated
+ * one is the `SourceDrainLine`'s sentence and not this one, and an untyped one has
+ * no sphere to speak in. Everything else defers to the engine — including `reason`,
+ * which is what keeps the clause from ever claiming a bargain the drift is not making
+ * (`ceiling` included: at the nurture ceiling the land has stopped giving, so the
+ * line says nothing rather than describing a generosity that is no longer flowing).
+ */
+function readSustenanceVoice(
+  graph: WorldGraph,
+  hostId: string,
+  economicLocationId: string,
+  borrowed: boolean,
+): LocationSustenanceVoice | undefined {
+  const src = readEssenceSource(graph.getNode(hostId)?.properties);
+  if (!src?.discoveredBy || !src.sphereAffinity || src.desecrated) return undefined;
+
+  const sustenance = computeSanctitySustenance(graph, hostId, src);
+  if (sustenance.reason) return undefined;
+  // The clause belongs to the larder it is actually drawn from. A host that resolves
+  // somewhere else is somebody else's sentence.
+  if (sustenance.economicHostId !== economicLocationId) return undefined;
+
+  return { hostId, sphere: src.sphereAffinity, sustenance, borrowed };
+}
+
+/**
+ * Choose the single source whose sustenance sentence a location speaks (THR-840).
+ *
+ * Every source here — the location's own and every sublocation-borne one — eats from
+ * the *same larder*, because `resolveEconomicHost` walks a sublocation up to its
+ * parent's resource bag. They are not independent bargains; they are one bargain read
+ * through different spheres, which is why the line stays one sentence rather than
+ * becoming a list.
+ *
+ * The composition rule, authored rather than incidental:
+ *
+ *   1. **The place's own holy ground speaks first.** A location that carries a source
+ *      is describing its own sanctity, and that is its sentence by right — so this
+ *      never changes a line that already rendered (NFP #6, strictly additive).
+ *   2. **Otherwise the loudest borrowed source speaks for it.** A shrine standing in
+ *      the courtyard draws on the town's larder without owning the town's voice; it
+ *      gets the sentence only when the place itself has no holy ground. Among several,
+ *      the largest `|affinityScore|` wins — whichever direction it pulls — because the
+ *      clause exists to make the drift visible and the loudest drift is the one worth
+ *      seeing.
+ *   3. **Ties break on host id, ascending.** Determinism over presentation: the same
+ *      world must render the same sentence every tick (NFP #3).
+ *
+ * Pure over graph state — no mutation, no PRNG, no traces. `sublocationIds` is the
+ * caller's already fog-filtered list, so an unseen sublocation cannot speak.
+ */
+export function selectLocationSustenanceVoice(
+  graph: WorldGraph,
+  locationId: string,
+  sublocationIds: readonly string[] = [],
+): LocationSustenanceVoice | undefined {
+  const own = readSustenanceVoice(graph, locationId, locationId, false);
+  if (own) return own;
+
+  let loudest: LocationSustenanceVoice | undefined;
+  for (const hostId of [...sublocationIds].sort()) {
+    const candidate = readSustenanceVoice(graph, hostId, locationId, true);
+    if (!candidate) continue;
+    if (
+      !loudest ||
+      Math.abs(candidate.sustenance.affinityScore) > Math.abs(loudest.sustenance.affinityScore)
+    ) {
+      loudest = candidate;
+    }
+  }
+  return loudest;
 }
