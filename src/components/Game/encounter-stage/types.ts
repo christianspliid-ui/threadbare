@@ -81,6 +81,20 @@ export interface EncounterStageCastModel {
   roleLabel?: string;
   description?: string;
   reused?: boolean;
+  /**
+   * THR-1041 — the graph node the support binding resolved to. Absent when the
+   * bundle spec never bound (the world had nobody to reuse and nothing spawned),
+   * in which case the chip renders as an unlinked name: the actor is still in
+   * the prose, so hiding it would be worse than showing it inert.
+   */
+  nodeId?: string;
+  /**
+   * THR-1041 — portrait resolved by `resolveEntityVisual` **through the viewer's
+   * knowledge gate** (Law 8). A stranger's face is withheld the same way it is
+   * on every other surface; the chip falls back to the authored tile, never a
+   * blank. Absent ⇒ no art tier resolved, which `EntityVisual` already handles.
+   */
+  portraitUrl?: string;
 }
 
 export interface EncounterStageFactionModel {

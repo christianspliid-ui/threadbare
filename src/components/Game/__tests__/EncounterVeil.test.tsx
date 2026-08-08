@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { EncounterVeil } from '../EncounterVeil';
 import type { EncounterStageModel } from '../encounter-stage/types';
 
@@ -624,5 +624,139 @@ describe('aftermath mode', () => {
     render(<EncounterVeil {...defaultProps} model={reactionModel([{ id: 'r1', label: 'Move on' }])} />);
     expect(screen.getByTestId('aftermath-reaction-label-r1')).toHaveTextContent('Move on');
     expect(screen.queryByTestId('aftermath-reaction-intent-r1')).not.toBeInTheDocument();
+  });
+});
+
+// ─── THR-1041: cast strip and fallout preview ───────────────────────
+//
+// Both models were built by the adapter and read by no component, so every
+// assertion below fails on the pre-THR-1041 veil — the strips did not exist.
+// The `mockModel` above ships `cast: []` and `falloutPreview: []`, which is
+// also the empty-state arm: absent data must render nothing at all rather than
+// an empty labelled container.
+
+describe('EncounterVeil — cast strip (THR-1041)', () => {
+  const boundCast = [
+    { id: 'tessaly', name: 'Tessaly the Broker', role: 'subject' as const, roleLabel: 'broker', nodeId: 'npc.tessaly', reused: true },
+    { id: 'carin', name: 'Carin Harken', role: 'witness' as const, roleLabel: 'witness', nodeId: 'npc.carin', reused: false },
+  ];
+
+  function castModel(cast: EncounterStageModel['cast']): EncounterStageModel {
+    return { ...mockModel, cast };
+  }
+
+  it('renders nothing when the encounter binds no cast', () => {
+    render(<EncounterVeil {...defaultProps} />);
+    expect(screen.queryByTestId('veil-cast-strip')).not.toBeInTheDocument();
+  });
+
+  it('renders a chip per bound actor, with name and role', () => {
+    render(<EncounterVeil {...defaultProps} model={castModel(boundCast)} />);
+    expect(screen.getByTestId('veil-cast-strip')).toBeInTheDocument();
+    expect(screen.getByTestId('veil-cast-chip-tessaly')).toHaveTextContent('Tessaly the Broker');
+    expect(screen.getByTestId('veil-cast-chip-tessaly')).toHaveTextContent('broker');
+    expect(screen.getByTestId('veil-cast-chip-carin')).toHaveTextContent('Carin Harken');
+  });
+
+  // Law 1's link half: a named concept the player cannot go look at is only
+  // half-present. Law 21's half: the control must not exist when the
+  // destination does not.
+  it('routes a chip click to the agent surface', () => {
+    const onSelectAgent = vi.fn();
+    render(<EncounterVeil {...defaultProps} model={castModel(boundCast)} onSelectAgent={onSelectAgent} />);
+    fireEvent.click(screen.getByTestId('veil-cast-chip-tessaly'));
+    expect(onSelectAgent).toHaveBeenCalledWith('npc.tessaly');
+  });
+
+  it('LAW 21: an unbound cast member renders as a name, not a dead link', () => {
+    const onSelectAgent = vi.fn();
+    render(
+      <EncounterVeil
+        {...defaultProps}
+        model={castModel([{ id: 'ghost', name: 'A waiting stranger', role: 'witness', roleLabel: 'witness' }])}
+        onSelectAgent={onSelectAgent}
+      />,
+    );
+    const chip = screen.getByTestId('veil-cast-chip-ghost');
+    expect(chip).toHaveTextContent('A waiting stranger');
+    expect(chip).toBeDisabled();
+    fireEvent.click(chip);
+    expect(onSelectAgent).not.toHaveBeenCalled();
+  });
+
+  it('LAW 21: no handler wired means no live link, however well-bound the cast', () => {
+    render(<EncounterVeil {...defaultProps} model={castModel(boundCast)} />);
+    expect(screen.getByTestId('veil-cast-chip-tessaly')).toBeDisabled();
+  });
+
+  // LAW 17: the hover explanation goes through the Tooltip primitive; `title`
+  // is permitted only as the assistive-tech duplicate of `aria-label`. A chip
+  // whose `title` says something `aria-label` does not is the retired
+  // raw-`title` tooltip pattern wearing a different name.
+  it('LAW 17: title duplicates aria-label and carries no separate explanation', () => {
+    render(<EncounterVeil {...defaultProps} model={castModel(boundCast)} />);
+    const chip = screen.getByTestId('veil-cast-chip-tessaly');
+    expect(chip.getAttribute('title')).toBe(chip.getAttribute('aria-label'));
+    expect(chip.getAttribute('title')).not.toMatch(/already/i);
+  });
+
+  it('names reuse provenance in the hover explanation', () => {
+    vi.useFakeTimers();
+    try {
+      render(<EncounterVeil {...defaultProps} model={castModel(boundCast)} />);
+      fireEvent.pointerEnter(screen.getByTestId('veil-cast-chip-tessaly'));
+      act(() => { vi.advanceTimersByTime(300); });
+      expect(screen.getByRole('tooltip')).toHaveTextContent('Already part of this world');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('FAIL-SOFT: a member with no roleLabel falls back to the mapped role', () => {
+    render(
+      <EncounterVeil
+        {...defaultProps}
+        model={castModel([{ id: 'plain', name: 'Someone', role: 'authority', nodeId: 'npc.x' }])}
+      />,
+    );
+    expect(screen.getByTestId('veil-cast-chip-plain')).toHaveTextContent('authority');
+  });
+});
+
+describe('EncounterVeil — fallout preview (THR-1041)', () => {
+  it('renders nothing when the step puts nothing on record', () => {
+    render(<EncounterVeil {...defaultProps} />);
+    expect(screen.queryByTestId('veil-fallout-preview')).not.toBeInTheDocument();
+  });
+
+  it('renders one chip per authored stake', () => {
+    render(
+      <EncounterVeil
+        {...defaultProps}
+        model={{
+          ...mockModel,
+          falloutPreview: [
+            { kind: 'reputation', label: 'Reputation may increase on success' },
+            { kind: 'reputation', label: 'Reputation may decrease on failure' },
+          ],
+        }}
+      />,
+    );
+    const preview = screen.getByTestId('veil-fallout-preview');
+    expect(preview).toHaveTextContent('At stake');
+    expect(preview).toHaveTextContent('Reputation may increase on success');
+    expect(preview).toHaveTextContent('Reputation may decrease on failure');
+  });
+
+  // NFP #5 / the veil's whole premise: the stage narrates, it does not report.
+  it('shows the authored label and no numeral', () => {
+    render(
+      <EncounterVeil
+        {...defaultProps}
+        model={{ ...mockModel, falloutPreview: [{ kind: 'reputation', label: 'Reputation may increase on success' }] }}
+      />,
+    );
+    const preview = screen.getByTestId('veil-fallout-preview');
+    expect(preview.textContent).not.toMatch(/[-+]?\d/);
   });
 });

@@ -18,6 +18,8 @@ import { stepOutcomeToOutcomeBand, stepOutcomeWord } from '../../../../data/outc
 import { autoLinkNarrative, collectSupportBundleEntities } from '../narrativeLinker';
 import { buildAftermathConsequences } from './buildAftermathConsequences';
 import { resolveEntityVisual } from '../../../shared/entityVisualResolver';
+import { getFamiliarity, getKnowledgeLevel } from '../../../../engine/familiarity';
+import { supportRoleWord } from '../../../../engine/supportRoleWords';
 import { buildNudgePhaseModel } from './buildNudgePhaseModel';
 import { resolveStepDefinition } from '../../../../engine/unifiedActionLifecycle';
 import {
@@ -33,6 +35,7 @@ import type {
 import type { EncounterNotification } from '../../../../types/encounterVisibility';
 import type { StepProseRecord } from '../../../../types/stepProseRecord';
 import {
+  afterimageForOutcome,
   isActionStepBranch,
   isStepSuccess,
   resolveAftermathVariant,
@@ -222,7 +225,7 @@ function buildNarrative(
 function buildCast(
   args: BuildUnifiedEncounterStageModelArgs,
 ): EncounterStageCastModel[] {
-  const { template, activeAction, graph } = args;
+  const { template, activeAction, graph, gameState } = args;
   if (!template.supportBundle) return [];
 
   const bindings = activeAction.supportBindings ?? [];
@@ -231,18 +234,46 @@ function buildCast(
     .filter((spec): spec is EncounterSupportActorSpec => spec.kind === 'actor')
     .map((spec) => {
       const binding = bindings.find(b => b.key === spec.key);
+      // `spawnName` is optional on the spec, so the placeholder key is the last
+      // resort — a chip with no name at all would be worse than one wearing the
+      // author's binding key (NFP #4).
+      const specName = spec.spawnName ?? spec.key;
       const resolvedName = binding
-        ? getNodeName(graph, binding.nodeId, spec.spawnName)
-        : spec.spawnName;
+        ? getNodeName(graph, binding.nodeId, specName)
+        : specName;
 
       const role: EncounterCastRole = mapSupportRoleToCastRole(spec.supportRole);
+
+      // THR-1041: resolve the chip's art here, where the graph and the
+      // familiarity map are both in hand. Same call the aftermath's actor
+      // moments make, plus the knowledge gate — a scene actor the ascendant has
+      // never met shows the authored fallback tile, not their face (Law 8).
+      // No gameState ⇒ no gate ⇒ the resolver fails open, which is the
+      // documented behaviour and keeps graph-free callers (tests, styleguide)
+      // rendering art rather than nothing.
+      let portraitUrl: string | undefined;
+      if (binding?.nodeId) {
+        const descriptor = resolveEntityVisual(
+          { id: binding.nodeId, kind: 'agent', name: resolvedName },
+          graph,
+          gameState
+            ? { knowledgeLevel: getKnowledgeLevel(getFamiliarity(gameState.familiarityMap, binding.nodeId)) }
+            : undefined,
+        );
+        portraitUrl = descriptor.src;
+      }
 
       return {
         id: spec.key,
         name: resolvedName,
         role,
-        roleLabel: spec.supportRole,
+        // Law 14: `supportRole` is an authoring key (`mct_ledger_clerk`).
+        // Banded here at the source rather than at the surface, so any future
+        // consumer of the cast model gets the player-facing form too.
+        roleLabel: supportRoleWord(spec.supportRole),
         reused: binding?.reused ?? false,
+        nodeId: binding?.nodeId,
+        portraitUrl,
       };
     });
 }
@@ -335,9 +366,15 @@ function buildHistory(
       const success = isStepSuccess(outcome);
       // Use authored afterimage text if available, otherwise fall back to bare status
       const resolvedStep = resolveStepDefinition(template, index, activeAction.choiceHistory);
-      const rawAfterimage = success
-        ? (resolvedStep.successAfterimage ?? 'Succeeded')
-        : (resolvedStep.failureAfterimage ?? 'Failed');
+      // THR-1041: resolve the band the step actually landed on, not just
+      // success-vs-failure. A `critical_failure` afterimage an author wrote was
+      // reaching the chapter ledger and never reaching Scene So Far, because
+      // this line asked a coarser question than `chapterArchive` did. Both now
+      // call the same helper; the bare words stay as the last resort for a step
+      // that authored no prose at all (NFP #4 — never blank).
+      const rawAfterimage =
+        (outcome !== undefined ? afterimageForOutcome(resolvedStep, outcome) : undefined)
+        ?? (success ? 'Succeeded' : 'Failed');
       // Spread ctx to inject per-step outcomeBand without mutating the shared context (THR-460)
       const stepCtx = { ...ctx, outcomeBand: stepOutcomeToOutcomeBand(outcome) };
       afterimage = enrichProse(rawAfterimage, stepCtx, { runtime: args.runtime });

@@ -9,6 +9,8 @@ import type {
   EncounterStageResolutionCheckModel,
   EncounterStageHeaderModel,
   EncounterStageHistoryModel,
+  EncounterStageCastModel,
+  EncounterStageFalloutModel,
 } from './encounter-stage/types';
 import { usePrefersReducedMotion } from '../../hooks/usePrefersReducedMotion';
 import { NudgePhaseShell } from './encounter-stage/shells/NudgePhaseShell';
@@ -1750,6 +1752,14 @@ export function EncounterVeil({
               </div>
             );
           })()}
+
+          {/* THR-1041 — the scene's bound cast as entities, and what the step
+              puts at risk. Both models were built by the adapter and read by
+              nobody; they sit here, after the prose and before the move, in the
+              order the player needs them: who is here, what it costs, what you
+              do. */}
+          <CastStrip cast={model.cast} threadTier={threadTier} onSelectAgent={onSelectAgent} />
+          <FalloutPreview fallout={model.falloutPreview} />
           </>
           )}
         </div>
@@ -2165,6 +2175,187 @@ function ChoiceBlock({ choice, selected, onClick }: ChoiceBlockProps) {
         </div>
       )}
     </button>
+  );
+}
+
+// ── CastStrip sub-component (THR-1041) ─────────────────────────────
+/**
+ * The scene's bound cast, as image + name + role chips.
+ *
+ * `buildCast` has produced this model since the adapter was written and no
+ * component ever read it, so a scene actor the support bundle spawned or reused
+ * reached the player only as a name inside prose — a concept with no image, no
+ * tooltip and no link, which is the Law 1 violation the composition audit
+ * recorded (`Docs/audits/2026-08-08-encounter-composition-audit.md` §3).
+ *
+ * Shape borrowed from the styleguide-only `CastRail`/`CastTile` prototype: the
+ * uppercase section label, the role line under the name, and reduced opacity for
+ * the less-present entries. Not the components themselves — those are built on
+ * `CastTileData` (attention priorities, relationship lines) which this model has
+ * no producer for, so importing them would mean inventing data. A strip rather
+ * than that prototype's full-height right rail, because the veil is a single
+ * centred prose column with no rail to hang one in.
+ */
+function CastStrip({
+  cast,
+  threadTier,
+  onSelectAgent,
+}: {
+  cast: EncounterStageCastModel[];
+  threadTier: ThreadTier;
+  onSelectAgent?: (agentId: string) => void;
+}) {
+  if (cast.length === 0) return null;
+
+  return (
+    <div
+      data-testid="veil-cast-strip"
+      style={{ marginTop: 22, paddingTop: 14, borderTop: '1px solid rgb(var(--veil-gold-rgb) / 0.15)' }}
+    >
+      <div
+        style={{
+          fontFamily: FONT_DISPLAY,
+          fontSize: 'var(--text-xs)',
+          letterSpacing: '0.16em',
+          textTransform: 'uppercase',
+          color: TEXT_WHISPER,
+          marginBottom: 10,
+        }}
+      >
+        In the scene
+      </div>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 14 }}>
+        {cast.map((member) => {
+          // Law 21: the link is live only when there is somewhere to go. An
+          // unbound spec has no node, so the chip stays a plain name rather
+          // than a control that does nothing when clicked.
+          const canSelect = Boolean(member.nodeId && onSelectAgent);
+          const roleLine = member.roleLabel ?? member.role;
+          // Law 17: the hover *explanation* goes through the Tooltip primitive.
+          // `title` survives only as the assistive-tech duplicate of
+          // `aria-label`, which the law explicitly permits — the raw-`title`
+          // tooltip pattern is what it retires.
+          const description = member.reused
+            ? `${roleLine}. Already part of this world before the scene.`
+            : `${roleLine}. Drawn into the scene for this encounter.`;
+          const label = canSelect ? `View ${member.name}` : `${member.name} — ${roleLine}`;
+
+          return (
+            <Tooltip key={member.id} label={member.name} desc={description}>
+            <button
+              type="button"
+              className="focus-ring"
+              data-testid={`veil-cast-chip-${member.id}`}
+              onClick={canSelect ? () => onSelectAgent!(member.nodeId!) : undefined}
+              disabled={!canSelect}
+              title={label}
+              aria-label={label}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                background: 'transparent',
+                border: 'none',
+                padding: 0,
+                cursor: canSelect ? 'pointer' : 'default',
+                // Prototype's priority dimming, on the signal this model
+                // actually carries: a reused local reads as more present than a
+                // walk-on the bundle had to spawn for the scene.
+                opacity: member.reused ? 1 : 0.85,
+              }}
+            >
+              <EntityVisual
+                size="chip"
+                shape="circle"
+                entity={{
+                  id: member.nodeId ?? member.id,
+                  kind: 'agent',
+                  name: member.name,
+                  knownSrc: member.portraitUrl,
+                }}
+                style={{ width: 32, height: 32, opacity: ART_OPACITY[threadTier] }}
+              />
+              <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                <span
+                  style={{
+                    fontFamily: FONT_DISPLAY,
+                    fontSize: 'var(--text-xs)',
+                    letterSpacing: '0.06em',
+                    color: TEXT_WARM,
+                    textDecoration: canSelect ? 'underline' : 'none',
+                    textUnderlineOffset: 3,
+                  }}
+                >
+                  {member.name}
+                </span>
+                <span
+                  style={{
+                    fontFamily: FONT_PROSE,
+                    fontStyle: 'italic',
+                    fontSize: 'var(--text-xs)',
+                    color: TEXT_WHISPER,
+                  }}
+                >
+                  {roleLine}
+                </span>
+              </span>
+            </button>
+            </Tooltip>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ── FalloutPreview sub-component (THR-1041) ────────────────────────
+/**
+ * What the current step puts at risk, read from the step's own success/failure
+ * metadata. `buildFalloutPreview` has produced this model unread for as long as
+ * `buildCast` has; it belongs immediately above the choices, because it is the
+ * stakes half of the decision the player is about to make.
+ *
+ * Deliberately unquantified — the model carries authored labels, never numbers.
+ * A reputation delta rendered as a numeral would be the mechanical readout the
+ * veil exists to keep out of the scene (NFP #5).
+ */
+function FalloutPreview({ fallout }: { fallout: EncounterStageFalloutModel[] }) {
+  if (fallout.length === 0) return null;
+
+  return (
+    <div
+      data-testid="veil-fallout-preview"
+      style={{ marginTop: 18, display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}
+    >
+      <span
+        style={{
+          fontFamily: FONT_DISPLAY,
+          fontSize: 'var(--text-xs)',
+          letterSpacing: '0.16em',
+          textTransform: 'uppercase',
+          color: TEXT_WHISPER,
+        }}
+      >
+        At stake
+      </span>
+      {fallout.map((entry, index) => (
+        <span
+          key={`${entry.kind}-${index}`}
+          style={{
+            fontFamily: FONT_PROSE,
+            fontStyle: 'italic',
+            fontSize: 'var(--text-xs)',
+            color: 'var(--veil-gold-text)',
+            letterSpacing: '0.04em',
+            border: '1px solid rgb(var(--veil-gold-rgb) / 0.15)',
+            borderRadius: 2,
+            padding: '2px 8px',
+          }}
+        >
+          {entry.label}
+        </span>
+      ))}
+    </div>
   );
 }
 
