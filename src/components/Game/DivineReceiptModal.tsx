@@ -10,6 +10,7 @@
  */
 import { Modal } from '../shared/Modal';
 import { Button } from '../shared/Button';
+import { Tooltip } from '../shared/Tooltip';
 import { getActionArt } from './actionArt';
 import { bandAccentColor } from './outcomeBandAccent';
 import { outcomeBandWord } from '../../data/outcome-band-content';
@@ -175,16 +176,24 @@ export function DivineReceiptModal({ open, receipt, onAcknowledge, onReaction }:
       </Modal.Body>
 
       <Modal.Footer>
+        {/*
+          THR-1029 — this was `title={reaction.intent}`, the raw-`title` hover
+          pattern Law 17 explicitly retired; hover explanations route through the
+          shared `Tooltip` primitive (Law 27). Kept as a tooltip rather than
+          promoted inline because this footer is a button row, not the aftermath
+          screen — surfacing the intent as visible prose here is a layout decision
+          for whoever redesigns the receipt body, not a rename.
+        */}
         {reactions.map((reaction) => (
-          <Button
-            key={reaction.id}
-            variant="secondary"
-            size="sm"
-            onClick={() => onReaction?.(reaction.id)}
-            title={reaction.intent}
-          >
-            {reaction.label}
-          </Button>
+          <Tooltip key={reaction.id} label={reaction.label} desc={reaction.intent ?? ''}>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => onReaction?.(reaction.id)}
+            >
+              {reaction.label}
+            </Button>
+          </Tooltip>
         ))}
         <Button variant="primary" size="sm" onClick={onAcknowledge} data-testid="divine-receipt-acknowledge">
           Acknowledge
