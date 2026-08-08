@@ -19,6 +19,9 @@ import { describe, expect, it } from 'vitest';
 import type {
   ActionStep,
   ActionStepBranch,
+  AftermathVariant,
+  EncounterAftermathChange,
+  EncounterAftermathChangeKind,
   EncounterAftermathReactionEffect,
   UnifiedActionTemplate,
 } from '../../../types/unifiedAction';
@@ -28,11 +31,37 @@ import {
   VERTICAL_SLICE_TEMPLATES,
 } from '../vertical-slice';
 import { UNIFIED_ACTION_TEMPLATES } from '../../unified-action-templates';
+import { CONDITION_TRAIT_DEFINITIONS } from '../../condition-trait-content';
 import { expandSettings, validateSettingEnvelope } from '../../settingClasses';
 import { checkNudgeHand, nudgeBearingSteps } from '../../content-eval/nudgeHandChecklist';
 import { validateNudgeGrantRefs, formatDeadNudgeGrantRefs } from '../../../engine/nudgeGrantLiveness';
 
-/** Every aftermath effect authored anywhere on a template. */
+/**
+ * The typed change vocabulary, exhaustively.
+ *
+ * Written as a `Record<EncounterAftermathChangeKind, true>` rather than a bare
+ * `Set<string>` on purpose: adding a kind to the union without adding it here
+ * is a compile error, so this gate cannot silently go blind the way a string
+ * list would.
+ */
+const AFTERMATH_CHANGE_KIND_TABLE: Record<EncounterAftermathChangeKind, true> = {
+  growth: true,
+  trait: true,
+  item: true,
+  reputation: true,
+  faction_reputation: true,
+  reputation_tally: true,
+  shell_state: true,
+  future_hook: true,
+};
+const AFTERMATH_CHANGE_KINDS = new Set<string>(Object.keys(AFTERMATH_CHANGE_KIND_TABLE));
+
+/**
+ * Every aftermath effect authored anywhere on a template — including inside an
+ * outcome band (THR-973). A band may author its own `reactions`, and those
+ * reactions carry effects the pre-band sweep could not see; the family's
+ * `critical_failure` band plants a seed that way.
+ */
 function allAftermathEffects(template: UnifiedActionTemplate): EncounterAftermathReactionEffect[] {
   const out: EncounterAftermathReactionEffect[] = [];
   const config = template.aftermathConfig;
@@ -40,6 +69,9 @@ function allAftermathEffects(template: UnifiedActionTemplate): EncounterAftermat
   const variants = [...Object.values(config.variants), config.fallback];
   for (const variant of variants) {
     for (const reaction of variant.reactions ?? []) out.push(...reaction.effects);
+    for (const band of Object.values(variant.byOutcome ?? {})) {
+      for (const reaction of band?.reactions ?? []) out.push(...reaction.effects);
+    }
   }
   return out;
 }
@@ -152,6 +184,126 @@ describe('vertical slice — agent-decided forks (THR-894)', () => {
     );
     expect(directions.has('positive'), `${template.id}: no card leans positive`).toBe(true);
     expect(directions.has('negative'), `${template.id}: no card leans negative`).toBe(true);
+  });
+});
+
+describe('vertical slice — the April migration bar (THR-973)', () => {
+  /** Every authored variant on a template: the keyed ones and the fallback. */
+  function allVariants(template: UnifiedActionTemplate): AftermathVariant[] {
+    const config = template.aftermathConfig;
+    if (!config) return [];
+    return [...Object.values(config.variants), config.fallback];
+  }
+
+  /** A variant's own changes plus every change any of its outcome bands authors. */
+  function allChanges(variant: AftermathVariant): EncounterAftermathChange[] {
+    const banded = Object.values(variant.byOutcome ?? {}).flatMap((b) => b?.changes ?? []);
+    return [...variant.changes, ...banded];
+  }
+
+  it.each(VERTICAL_SLICE_TEMPLATES.map((t) => [t.name, t] as const))(
+    '%s bands at least one ending on outcome',
+    (_name, template) => {
+      // The finding this ticket implements: every variant shipped `changes: []`
+      // and a single un-banded fallback, so "held" and "fell" read identically.
+      const banded = allVariants(template).filter(
+        (v) => Object.keys(v.byOutcome ?? {}).length > 0,
+      );
+      expect(banded.length, `${template.id}: no variant carries byOutcome`).toBeGreaterThan(0);
+    },
+  );
+
+  it.each(VERTICAL_SLICE_TEMPLATES.map((t) => [t.name, t] as const))(
+    '%s carries at least one typed consequence on every variant',
+    (_name, template) => {
+      for (const variant of allVariants(template)) {
+        const changes = allChanges(variant);
+        expect(
+          changes.length,
+          `${template.id}: a variant still ships changes: [] — the empty-aftermath rot`,
+        ).toBeGreaterThan(0);
+        for (const change of changes) {
+          expect(
+            AFTERMATH_CHANGE_KINDS.has(change.kind),
+            `${template.id}: change ${change.id} has untyped kind "${change.kind}"`,
+          ).toBe(true);
+          expect(change.detail.trim().length, `${template.id}: change ${change.id} has no sentence`).toBeGreaterThan(0);
+        }
+      }
+    },
+  );
+
+  it('every change id is unique across the slice — the chip key is derived from it', () => {
+    const ids = VERTICAL_SLICE_TEMPLATES.flatMap((t) =>
+      allVariants(t).flatMap((v) => allChanges(v).map((c) => c.id)),
+    );
+    // Population guard: a broken sweep reports zero duplicates trivially.
+    expect(ids.length).toBeGreaterThanOrEqual(VERTICAL_SLICE_TEMPLATES.length);
+    expect(ids.length - new Set(ids).size, `duplicate change ids: ${ids.join(', ')}`).toBe(0);
+  });
+
+  it('no band drops a seed its base variant plants, except the one that means to', () => {
+    // `applyAftermathOutcomeBand` replaces `reactions` wholesale, so a band that
+    // authors reactions silently un-plants whatever the base reaction seeded.
+    // One band does this deliberately (the family's critical_failure drops the
+    // Grateful Kin seed, because a failed day of guiding mints no word of a
+    // kindness); every other band must preserve its base's full seed set.
+    //
+    // The waiver names the SEED, not just the band. Keyed on the band alone it
+    // exempted every drop that band could make — including the swindler seed
+    // the band is supposed to keep — so the gate passed a mutant that deleted
+    // it. A waiver coarser than the thing it waives is a hole, not an exception.
+    const deliberate = new Set([
+      `${SLICE_TEMPLATE_IDS.family}::positive::critical_failure::${SLICE_TEMPLATE_IDS.gratefulKin}`,
+    ]);
+    const seedsOf = (v: { reactions?: readonly { effects: readonly EncounterAftermathReactionEffect[] }[] }) =>
+      new Set(
+        (v.reactions ?? []).flatMap((r) =>
+          r.effects.filter((e) => e.kind === 'encounter_seed').map((e) => e.templateId),
+        ),
+      );
+
+    const dropped: string[] = [];
+    for (const template of VERTICAL_SLICE_TEMPLATES) {
+      const config = template.aftermathConfig;
+      if (!config) continue;
+      const named: [string, AftermathVariant][] = [
+        ...Object.entries(config.variants),
+        ['fallback', config.fallback],
+      ];
+      for (const [variantKey, variant] of named) {
+        const base = seedsOf(variant);
+        if (base.size === 0) continue;
+        for (const [outcome, band] of Object.entries(variant.byOutcome ?? {})) {
+          if (!band?.reactions) continue; // no override ⇒ base reactions survive
+          const kept = seedsOf(band);
+          for (const seed of base) {
+            if (kept.has(seed)) continue;
+            const key = `${template.id}::${variantKey}::${outcome}::${seed}`;
+            if (deliberate.has(key)) continue;
+            dropped.push(`${template.id}::${variantKey}::${outcome} drops seed ${seed}`);
+          }
+        }
+      }
+    }
+    expect(dropped, dropped.join('\n')).toEqual([]);
+  });
+
+  it('every condition a band applies names a real condition trait', () => {
+    const known = new Set(CONDITION_TRAIT_DEFINITIONS.map((n) => n.id));
+    const applied: string[] = [];
+    for (const template of VERTICAL_SLICE_TEMPLATES) {
+      for (const effect of allAftermathEffects(template)) {
+        if (effect.kind === 'condition_attachment') applied.push(effect.templateId);
+        if (effect.kind === 'apply_condition') applied.push(effect.conditionTraitId);
+      }
+    }
+    // Population guard: the slice's fail and at-cost bands author conditions, so
+    // zero here means the sweep stopped seeing banded reactions.
+    expect(applied.length).toBeGreaterThan(0);
+    for (const id of applied) {
+      expect(known.has(id), `band applies unbuilt condition: ${id}`).toBe(true);
+    }
   });
 });
 

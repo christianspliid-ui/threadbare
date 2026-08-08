@@ -50,6 +50,34 @@ export const SLICE_SWINDLER_DELAY_TICKS = 96;
 /** Ticks until word of the kindness runs ahead of the traveler (~20 game days). */
 export const SLICE_KIN_DELAY_TICKS = 240;
 
+// ─── Aftermath consequence tuning (THR-973, NFP #1) ──────────────────
+//
+// The slice's endings are outcome-banded (`byOutcome`) and each carries at
+// least one persistent typed consequence, per the April migration bar
+// (`Docs/plans/2026-04-16-encounter-template-migration.md`). Two rules govern
+// every band below, and both are structural rather than editorial:
+//
+//   1. `applyAftermathOutcomeBand` replaces `reactions` WHOLESALE when a band
+//      supplies them. So a band on a variant whose base reaction plants a seed
+//      (the crossroads accept path, the family help path) either restates that
+//      seed or authors no reactions at all. Bands that only need different
+//      words override `overview` + `changes` and leave the base reaction alone.
+//   2. Seeds stay single-sourced (THR-971): a planted `encounter_seed` already
+//      renders its own chip from the effect, so no band re-authors it as a
+//      `future_hook` change. A `future_hook` change with no seed behind it is a
+//      chip promising a sequel that never arrives.
+
+/** Standing tally the slice writes to: the traveler's name on this stretch of road. */
+export const SLICE_ROAD_REPUTE_KEY = 'slice.road_repute';
+/** One step of road-standing earned. */
+export const SLICE_REPUTE_GAIN = 1;
+/** The same step, spent the other way. */
+export const SLICE_REPUTE_LOSS = -1;
+/** The kin's debt when the thanks is taken well. */
+export const SLICE_KIN_FAVOR_RANGE: [number, number] = [0.4, 0.7];
+/** The kin's debt when the thanks is fumbled — still owed, and thinner for it. */
+export const SLICE_KIN_FAVOR_FUMBLED_RANGE: [number, number] = [0.2, 0.4];
+
 export const SLICE_TEMPLATE_IDS = {
   bridge: 'encounter.slice.unsafe_bridge',
   pass: 'encounter.slice.snow_on_the_pass',
@@ -214,7 +242,15 @@ export const SLICE_UNSAFE_BRIDGE: UnifiedActionTemplate = {
       overview:
         'The river keeps moving under the bridge, and the keeper keeps taking coppers. ' +
         'Every crossing is a vote on how long that lasts.',
-      changes: [],
+      changes: [
+        {
+          id: 'slice.bridge.the_planking',
+          kind: 'shell_state',
+          title: 'The Planking',
+          detail: 'The bridge is one crossing older, and the keeper still calls it sound.',
+          polarity: 'info',
+        },
+      ],
       reactions: [
         {
           id: 'slice.bridge.walk_on',
@@ -223,6 +259,104 @@ export const SLICE_UNSAFE_BRIDGE: UnifiedActionTemplate = {
           effects: [],
         },
       ],
+      byOutcome: {
+        critical_success: {
+          overview:
+            'They read the boards the way the keeper’s sons have never dared to, and crossed ' +
+            'like the bridge were new. The two of them watched the whole of it from the near ' +
+            'post, and neither has looked at their mother’s strongbox the same way since.',
+          changes: [
+            {
+              id: 'slice.bridge.read_the_boards',
+              kind: 'reputation_tally',
+              title: 'The Crossing Watched',
+              detail:
+                'A stranger read the keeper’s bridge better than the keeper — the story is ' +
+                'walking upriver already.',
+              polarity: 'gain',
+            },
+          ],
+          reactions: [
+            {
+              id: 'slice.bridge.walk_on_named',
+              label: 'Walk on',
+              intent: 'The road goes on, and this stretch of it knows the name now.',
+              effects: [
+                {
+                  kind: 'reputation_tally',
+                  key: SLICE_ROAD_REPUTE_KEY,
+                  delta: SLICE_REPUTE_GAIN,
+                },
+              ],
+            },
+          ],
+        },
+        success_at_cost: {
+          overview:
+            'The far bank, and behind them a plank going end over end into the water. The ' +
+            'keeper does not look at it. Whoever comes tomorrow will cross a bridge with one ' +
+            'less argument in its favour, and the same two coppers to pay.',
+          changes: [
+            {
+              id: 'slice.bridge.a_plank_short',
+              kind: 'shell_state',
+              title: 'A Plank Short',
+              detail: 'The bridge spent something on this crossing that it will not get back.',
+              polarity: 'loss',
+            },
+          ],
+        },
+        failure: {
+          overview:
+            'The middle span said no, and the ford is half a day upstream and every inch of ' +
+            'it wet. They make the far side eventually, in the dark, with a pack that has ' +
+            'been in the river and legs that have been in it longer.',
+          changes: [
+            {
+              id: 'slice.bridge.the_long_ford',
+              kind: 'trait',
+              title: 'Ford-Worn',
+              detail: 'Ford-worn — the half day the bridge saved is a half day the river took back.',
+              polarity: 'loss',
+            },
+          ],
+          reactions: [
+            {
+              id: 'slice.bridge.dry_out',
+              label: 'Dry out and go on',
+              intent: 'Wet boots walk. They just walk slower.',
+              effects: [
+                { kind: 'condition_attachment', templateId: 'trait.condition.exhausted' },
+              ],
+            },
+          ],
+        },
+        critical_failure: {
+          overview:
+            'The beam went at the worst step of the worst stride, and the river had them ' +
+            'before the shout did. The keeper’s sons pulled them out downstream without ' +
+            'being asked, which is the most honest thing anyone at that bridge did all day.',
+          changes: [
+            {
+              id: 'slice.bridge.the_fall',
+              kind: 'trait',
+              title: 'The Fall',
+              detail: 'Hurt — the leg will carry them, and it will have opinions about stairs.',
+              polarity: 'loss',
+            },
+          ],
+          reactions: [
+            {
+              id: 'slice.bridge.limp_on',
+              label: 'Limp on',
+              intent: 'The road goes on. It just goes on slower, and from the near bank.',
+              effects: [
+                { kind: 'condition_attachment', templateId: 'trait.condition.wounded' },
+              ],
+            },
+          ],
+        },
+      },
     },
   },
   narrativeTemplates: {
@@ -514,7 +648,15 @@ export const SLICE_SNOW_ON_THE_PASS: UnifiedActionTemplate = {
       overview:
         'The pass stays open behind them or closes for the season, and in both tellings the ' +
         'mountain keeps the toll it took.',
-      changes: [],
+      changes: [
+        {
+          id: 'slice.pass.the_season',
+          kind: 'shell_state',
+          title: 'The Season',
+          detail: 'The pass is behind them, and behind them it closes.',
+          polarity: 'info',
+        },
+      ],
       reactions: [
         {
           id: 'slice.pass.walk_down',
@@ -523,6 +665,99 @@ export const SLICE_SNOW_ON_THE_PASS: UnifiedActionTemplate = {
           effects: [],
         },
       ],
+      byOutcome: {
+        critical_success: {
+          overview:
+            'They beat the storm with light to spare, slept warm through the worst of it, and ' +
+            'came out to a pass already clearing. They left the woodpile higher than they ' +
+            'found it, which is the only rent the hut has ever asked of anyone.',
+          changes: [
+            {
+              id: 'slice.pass.the_woodpile',
+              kind: 'shell_state',
+              title: 'The Woodpile',
+              detail: 'The hut is better stocked than they found it — the next traveler will never know why.',
+              polarity: 'gain',
+            },
+          ],
+        },
+        success_at_cost: {
+          overview:
+            'The hut took them in with the first drifts at their heels and nothing dry left ' +
+            'to give it. The night was survived rather than passed, and the far side of the ' +
+            'mountain got a traveler who had already spent the day.',
+          changes: [
+            {
+              id: 'slice.pass.spent_to_the_bone',
+              kind: 'trait',
+              title: 'Spent',
+              detail: 'Spent to the bone — the climb took what the descent was going to need.',
+              polarity: 'loss',
+            },
+          ],
+          reactions: [
+            {
+              id: 'slice.pass.walk_down_spent',
+              label: 'Walk down the far side',
+              intent: 'The road resumes below the snow line, and it will feel every mile of it.',
+              effects: [
+                { kind: 'condition_attachment', templateId: 'trait.condition.exhausted' },
+              ],
+            },
+          ],
+        },
+        failure: {
+          overview:
+            'The snow caught them below the saddle, and the night went to the work of heat: ' +
+            'making it out of wet kindling, keeping it out of wind, and not spending what was ' +
+            'left of it on fear. Morning came. It did not come generously.',
+          changes: [
+            {
+              id: 'slice.pass.a_night_in_the_open',
+              kind: 'trait',
+              title: 'A Night in the Open',
+              detail: 'Worn through — a night bought with everything they had to burn.',
+              polarity: 'loss',
+            },
+          ],
+          reactions: [
+            {
+              id: 'slice.pass.walk_down_worn',
+              label: 'Walk down the far side',
+              intent: 'Down is easier than up. That is all that can be said for it.',
+              effects: [
+                { kind: 'condition_attachment', templateId: 'trait.condition.exhausted' },
+              ],
+            },
+          ],
+        },
+        critical_failure: {
+          overview:
+            'The storm came down the slope to meet them and the climb ended where it stood. ' +
+            'The mountain held them two days on open ground and fed them poorly the whole ' +
+            'stay. They came off it in the end. Less of them came off than went up.',
+          changes: [
+            {
+              id: 'slice.pass.the_mountain_kept_them',
+              kind: 'trait',
+              title: 'What the Mountain Kept',
+              detail: 'Frost-hurt and hollowed out — two days of open ground, paid for in the flesh.',
+              polarity: 'loss',
+            },
+          ],
+          reactions: [
+            {
+              id: 'slice.pass.come_down_hurt',
+              label: 'Come down off it',
+              intent: 'The road is below the snow line. So is everything else.',
+              effects: [
+                { kind: 'condition_attachment', templateId: 'trait.condition.wounded' },
+                { kind: 'condition_attachment', templateId: 'trait.condition.exhausted' },
+              ],
+            },
+          ],
+        },
+      },
     },
   },
   narrativeTemplates: {
@@ -817,7 +1052,15 @@ export const SLICE_RIDERS_BEHIND_CARAVAN: UnifiedActionTemplate = {
       overview:
         'The gates take the column in, one walker lighter or one secret heavier, and the ' +
         'riders on the ridge make their own arithmetic about it.',
-      changes: [],
+      changes: [
+        {
+          id: 'slice.caravan.the_column',
+          kind: 'shell_state',
+          title: 'The Column',
+          detail: 'Thirty went in at the gates, and only the column knows what the number should have been.',
+          polarity: 'info',
+        },
+      ],
       reactions: [
         {
           id: 'slice.caravan.part_ways',
@@ -826,6 +1069,94 @@ export const SLICE_RIDERS_BEHIND_CARAVAN: UnifiedActionTemplate = {
           effects: [],
         },
       ],
+      byOutcome: {
+        critical_success: {
+          overview:
+            'By dawn the hunted one was a day gone on a road with no watchers, and the riders ' +
+            'were following a cart that mattered to no one. The master says nothing at the ' +
+            'gates and means all of it, and twenty-nine people walk through knowing why.',
+          changes: [
+            {
+              id: 'slice.caravan.the_masters_word',
+              kind: 'reputation_tally',
+              title: 'The Master’s Word',
+              detail:
+                'A caravan master owes a debt he cannot name aloud — and caravan masters talk ' +
+                'to caravan masters.',
+              polarity: 'gain',
+            },
+          ],
+          reactions: [
+            {
+              id: 'slice.caravan.part_ways_owed',
+              label: 'Part ways at the gates',
+              intent: 'The column scatters into the town, carrying the story with it.',
+              effects: [
+                {
+                  kind: 'reputation_tally',
+                  key: SLICE_ROAD_REPUTE_KEY,
+                  delta: SLICE_REPUTE_GAIN,
+                },
+              ],
+            },
+          ],
+        },
+        success_at_cost: {
+          overview:
+            'The hunted one got clear, and the getting clear made noise. Somebody in the ' +
+            'column watched the traveler ask the questions, and somebody in the column will ' +
+            'be asked questions of their own once the riders reach the gate.',
+          changes: [
+            {
+              id: 'slice.caravan.a_face_remembered',
+              kind: 'shell_state',
+              title: 'A Face Remembered',
+              detail: 'The leaving is tied to the stranger who asked about it. That knot will not untie itself.',
+              polarity: 'loss',
+            },
+          ],
+        },
+        failure: {
+          overview:
+            'Nobody left the column. The gates take all thirty in, the riders come down off ' +
+            'the ridge at their leisure, and whatever happens next happens inside walls with ' +
+            'the hunted one still standing in the middle of it.',
+          changes: [
+            {
+              id: 'slice.caravan.the_hunt_unbroken',
+              kind: 'shell_state',
+              title: 'The Hunt, Unbroken',
+              detail: 'The riders still have their quarry, and now they have a town to do it in.',
+              polarity: 'loss',
+            },
+          ],
+        },
+        critical_failure: {
+          overview:
+            'The riders came down at the worst hour and the camp woke to shouting. What they ' +
+            'wanted, they took. What stood between them and it got moved. The column reached ' +
+            'the gates in daylight, quiet, and shorter than it had been.',
+          changes: [
+            {
+              id: 'slice.caravan.stood_in_the_way',
+              kind: 'trait',
+              title: 'Stood in the Way',
+              detail: 'Hurt in a river bend at the wrong hour — the riders were not careful about who was between them and the cart.',
+              polarity: 'loss',
+            },
+          ],
+          reactions: [
+            {
+              id: 'slice.caravan.walk_in_hurt',
+              label: 'Walk in with the rest',
+              intent: 'The gates do not ask what happened at the river bend.',
+              effects: [
+                { kind: 'condition_attachment', templateId: 'trait.condition.wounded' },
+              ],
+            },
+          ],
+        },
+      },
     },
   },
   narrativeTemplates: {
@@ -1050,10 +1381,25 @@ export const SLICE_BARGAIN_AT_CROSSROADS: UnifiedActionTemplate = {
     branchOnStep: 0,
     variants: {
       negative: {
+        // The accept path's bands deliberately override `overview` + `changes`
+        // only. A band that authored `reactions` would replace this one — and
+        // with it the Full Moon seed, which is the whole point of the path.
         overview:
           'The bargain is struck. The stranger folds back into the evening like a ledger ' +
           'closing, and the full moon is already on the calendar.',
-        changes: [],
+        changes: [
+          {
+            id: 'slice.crossroads.the_word_given',
+            kind: 'trait',
+            title: 'The Word Given',
+            detail: 'A promise is out in the world now, and it keeps its own calendar.',
+            // MARK, not WOUND. `classifyChangeKind` reads a `trait` at `mixed`
+            // or `loss` as a wound, and a promise given is not an injury — it is
+            // a claim on the bearer. The bands that genuinely cost something
+            // (the night's sleep, the word that stopped being theirs) keep `loss`.
+            polarity: 'info',
+          },
+        ],
         reactions: [
           {
             id: 'slice.crossroads.carry_the_promise',
@@ -1071,25 +1417,126 @@ export const SLICE_BARGAIN_AT_CROSSROADS: UnifiedActionTemplate = {
             ],
           },
         ],
+        byOutcome: {
+          critical_success: {
+            overview:
+              'The word went out clean, with nothing hedged and nothing hidden behind it, and ' +
+              'for a heartbeat the crossroads felt like a signed ledger. He was pleased. ' +
+              'Whatever he is, he is the kind of thing that can be pleased by a plain answer.',
+            changes: [
+              {
+                id: 'slice.crossroads.given_clean',
+                kind: 'trait',
+                title: 'Given Clean',
+                detail: 'The promise sits light — plainly made, and nothing owed under it that was not said aloud.',
+                polarity: 'info',
+              },
+            ],
+          },
+          success_at_cost: {
+            overview:
+              'The promise was given, and it cost a night’s easy sleep on the spot. The road ' +
+              'east is the same road. The evening on it is not, and will not be until a ' +
+              'certain moon comes up.',
+            changes: [
+              {
+                id: 'slice.crossroads.a_nights_sleep',
+                kind: 'trait',
+                title: 'The Night After',
+                detail: 'Given, and paid for at once — the promise takes its first instalment in sleep.',
+                polarity: 'loss',
+              },
+            ],
+          },
+          critical_failure: {
+            overview:
+              'The promise left the traveler’s mouth and did not feel like theirs anymore. He ' +
+              'nodded as if a line had been entered somewhere, stepped back under the dead ' +
+              'tree, and the crossroads got on with being a crossroads.',
+            changes: [
+              {
+                id: 'slice.crossroads.not_theirs_anymore',
+                kind: 'trait',
+                title: 'Spoken Away',
+                detail: 'The word does not answer to the mouth that made it — and the moon is the one that holds the other end.',
+                polarity: 'loss',
+              },
+            ],
+          },
+        },
       },
       positive: {
         overview:
           'The offer was real, and so was the refusal. The road east keeps its ordinary ' +
           'evening, which suddenly counts for more than it did this morning.',
-        changes: [],
+        changes: [
+          {
+            id: 'slice.crossroads.word_unspent',
+            kind: 'reputation_tally',
+            title: 'The Word Unspent',
+            detail: 'They kept their word where it lives, and walked out of the crossroads owing nothing to anyone.',
+            polarity: 'gain',
+          },
+        ],
         reactions: [
           {
             id: 'slice.crossroads.walk_on',
             label: 'Walk on',
             intent: 'An unspent word weighs less with every mile.',
-            effects: [],
+            effects: [
+              {
+                kind: 'reputation_tally',
+                key: SLICE_ROAD_REPUTE_KEY,
+                delta: SLICE_REPUTE_GAIN,
+              },
+            ],
           },
         ],
+        byOutcome: {
+          critical_success: {
+            overview:
+              'The refusal cost them not one copper, which was its own quiet answer about the ' +
+              'man. He did not follow and did not frown. The crossroads dropped behind at the ' +
+              'treeline like any other stretch of road, and that was the whole of it.',
+            changes: [
+              {
+                id: 'slice.crossroads.refused_free',
+                kind: 'reputation_tally',
+                title: 'Refused Free',
+                detail: 'An offer that shaped itself to their wanting, turned down at no price at all.',
+                polarity: 'gain',
+              },
+            ],
+          },
+          critical_failure: {
+            overview:
+              'They refused, and the wanting he had named kept them company far past the ' +
+              'treeline. Nothing was promised. Nothing was taken. He had still got a good ' +
+              'long look at what the traveler would have said yes to.',
+            changes: [
+              {
+                id: 'slice.crossroads.the_wanting_named',
+                kind: 'trait',
+                title: 'The Wanting, Named',
+                detail: 'He never got the word — he got the thing the word was for, which he may find is enough.',
+                polarity: 'loss',
+              },
+            ],
+          },
+        },
       },
     },
     fallback: {
       overview: 'The crossroads empties as crossroads do, one road at a time.',
-      changes: [],
+      changes: [
+        {
+          id: 'slice.crossroads.the_marker',
+          kind: 'shell_state',
+          title: 'The Marker and the Tree',
+          detail: 'The stone, the dead tree, and whoever waits under it next.',
+          polarity: 'info',
+        },
+      ],
       reactions: [
         {
           id: 'slice.crossroads.move_along',
@@ -1170,10 +1617,21 @@ export const SLICE_FULL_MOON_COLLECTION: UnifiedActionTemplate = {
     branchOnStep: 0,
     variants: {},
     fallback: {
+      // As on the crossroads accept path: bands override `overview` + `changes`
+      // only. The gift is a `spawn_artifact` on this reaction, and a band that
+      // authored its own reactions would replace the reaction the gift rides on.
       overview:
         'The promise is spent and the gift is real. What the stranger banks in kept ' +
         'promises, and what he buys with them, stays his side of the ledger.',
-      changes: [],
+      changes: [
+        {
+          id: 'slice.fullmoon.the_gift',
+          kind: 'item',
+          title: 'The Crossroads Gift',
+          detail: 'The parcel, unwrapped: everything he described, and it was described accurately.',
+          polarity: 'gain',
+        },
+      ],
       reactions: [
         {
           id: 'slice.fullmoon.take_the_gift',
@@ -1189,6 +1647,78 @@ export const SLICE_FULL_MOON_COLLECTION: UnifiedActionTemplate = {
           ],
         },
       ],
+      byOutcome: {
+        critical_success: {
+          overview:
+            'The gift was everything he had described, and he left the moonlight first — ' +
+            'which the tales say means the debt is closed for good. He did not look back at ' +
+            'the road, and the road did not feel watched after he had gone.',
+          changes: [
+            {
+              id: 'slice.fullmoon.the_gift_clean',
+              kind: 'item',
+              title: 'The Crossroads Gift',
+              detail: 'Everything he described, handed over and let go of.',
+              polarity: 'gain',
+            },
+            {
+              id: 'slice.fullmoon.he_left_first',
+              kind: 'shell_state',
+              title: 'He Left First',
+              detail: 'The tales are firm about this one: the party who leaves the moonlight first is the party who is finished.',
+              polarity: 'gain',
+            },
+          ],
+        },
+        success_at_cost: {
+          overview:
+            'The gift was given, and with it one more sentence than the traveler wanted to ' +
+            'hear. He said it lightly, the way a man mentions a second appointment while ' +
+            'handing over the first parcel, and then the moonlight had nobody in it but them.',
+          // Two chips, not one mixed chip. A single `item`/`mixed` change
+          // classifies as TOLL and quietly under-reports that the gift was in
+          // fact handed over — the prize and the price are separate facts and
+          // Law 31 wants each one's polarity legible on its own.
+          changes: [
+            {
+              id: 'slice.fullmoon.the_gift_at_cost',
+              kind: 'item',
+              title: 'The Crossroads Gift',
+              detail: 'The parcel, handed over exactly as promised.',
+              polarity: 'gain',
+            },
+            {
+              id: 'slice.fullmoon.one_more_sentence',
+              kind: 'shell_state',
+              title: 'One More Sentence',
+              detail: 'A second appointment, mentioned lightly, that was not part of the terms.',
+              polarity: 'loss',
+            },
+          ],
+        },
+        critical_failure: {
+          overview:
+            'The gift was real. So was the look he gave the traveler afterward — the look of ' +
+            'a man updating a ledger. He bowed. The promise was kept in every particular, and ' +
+            'the moonlight went on feeling occupied long after he was out of it.',
+          changes: [
+            {
+              id: 'slice.fullmoon.the_gift_ledgered',
+              kind: 'item',
+              title: 'The Crossroads Gift',
+              detail: 'Real, and given whole — he shorted them nothing.',
+              polarity: 'gain',
+            },
+            {
+              id: 'slice.fullmoon.the_ledger_open',
+              kind: 'shell_state',
+              title: 'The Ledger, Open',
+              detail: 'The promise was kept in every particular, and the page it was entered on did not close afterwards.',
+              polarity: 'loss',
+            },
+          ],
+        },
+      },
     },
   },
   narrativeTemplates: {
@@ -1490,7 +2020,15 @@ export const SLICE_SWINDLED_FAMILY: UnifiedActionTemplate = {
           'The family turns south with a marked road and a truer map of the world. What ' +
           'was done on this stretch of road will travel: swindles have authors, and ' +
           'kindnesses have kin.',
-        changes: [],
+        changes: [
+          {
+            id: 'slice.family.a_road_that_exists',
+            kind: 'reputation_tally',
+            title: 'A Road That Exists',
+            detail: 'Five people are walking toward water instead of salt, and they know exactly who turned them.',
+            polarity: 'gain',
+          },
+        ],
         reactions: [
           {
             id: 'slice.family.watch_them_go',
@@ -1513,15 +2051,94 @@ export const SLICE_SWINDLED_FAMILY: UnifiedActionTemplate = {
                 seedLabel: 'Word of a kindness on the fen road is traveling ahead of the traveler.',
                 inheritContext: true,
               },
+              {
+                kind: 'reputation_tally',
+                key: SLICE_ROAD_REPUTE_KEY,
+                delta: SLICE_REPUTE_GAIN,
+              },
             ],
           },
         ],
+        byOutcome: {
+          success_at_cost: {
+            overview:
+              'The turn was found late, and finding it late cost the traveler a day of their ' +
+              'own road. The cart went south anyway. Whether the day back is worth five ' +
+              'people not walking into a salt fen is not a question the road asks out loud.',
+            changes: [
+              {
+                id: 'slice.family.a_day_of_their_own',
+                kind: 'shell_state',
+                title: 'A Day of Their Own Road',
+                detail: 'The traveler’s road is a day longer than it was this morning, and it was not a spare day.',
+                polarity: 'loss',
+              },
+              {
+                id: 'slice.family.south_regardless',
+                kind: 'reputation_tally',
+                title: 'South Regardless',
+                detail: 'Late is not the same as never — the turn was found, marked, and taken.',
+                polarity: 'gain',
+              },
+            ],
+          },
+          critical_failure: {
+            // The only band in the slice that deliberately drops a seed. The
+            // Grateful Kin fires on word of a kindness travelling; a day of
+            // failed guiding that thinned the family's faith in strangers does
+            // not mint that word. The swindler seed survives — his face is
+            // known either way, which was never the family's to give or withhold.
+            overview:
+              'The country fought the reading all day and won it. The turn stayed hidden, the ' +
+              'light went, and by dusk the family’s faith in strangers had thinned to about ' +
+              'the thickness of their bread. They will find the river themselves or they will not.',
+            changes: [
+              {
+                id: 'slice.family.faith_thinned',
+                kind: 'reputation_tally',
+                title: 'Faith in Strangers',
+                detail: 'A day given to them and nothing at the end of it — the next stranger they meet starts further back.',
+                polarity: 'loss',
+              },
+            ],
+            reactions: [
+              {
+                id: 'slice.family.leave_them_to_it',
+                label: 'Leave them to it',
+                intent: 'The help is spent. The road east is still wrong, and they still have to walk it.',
+                effects: [
+                  {
+                    kind: 'encounter_seed',
+                    templateId: SLICE_TEMPLATE_IDS.swindlerFound,
+                    targetAgentId: '$actor',
+                    delayTicks: SLICE_SWINDLER_DELAY_TICKS,
+                    seedLabel: 'The man who sold the paper is still working, and his face is known now.',
+                    inheritContext: true,
+                  },
+                  {
+                    kind: 'reputation_tally',
+                    key: SLICE_ROAD_REPUTE_KEY,
+                    delta: SLICE_REPUTE_LOSS,
+                  },
+                ],
+              },
+            ],
+          },
+        },
       },
       negative: {
         overview:
           'The road east keeps the family, and the fen keeps the road. What happens ' +
           'out there now happens without witnesses.',
-        changes: [],
+        changes: [
+          {
+            id: 'slice.family.east_is_theirs',
+            kind: 'shell_state',
+            title: 'East Is Theirs',
+            detail: 'The cart creaks toward a survey post that burned, carrying a paper worth exactly the ink.',
+            polarity: 'info',
+          },
+        ],
         reactions: [
           {
             id: 'slice.family.make_the_town',
@@ -1530,11 +2147,38 @@ export const SLICE_SWINDLED_FAMILY: UnifiedActionTemplate = {
             effects: [],
           },
         ],
+        byOutcome: {
+          critical_failure: {
+            overview:
+              'The town came by dark, as planned, and the bed was where it was meant to be. ' +
+              'All evening the fen kept coming to mind anyway — salt-grey and patient, with ' +
+              'three children’s shoes somewhere out on the road toward it.',
+            changes: [
+              {
+                id: 'slice.family.the_fen_in_mind',
+                kind: 'trait',
+                title: 'The Fen, in Mind',
+                detail: 'The road was walked as planned. The evening was not — and neither, it turns out, is sleep.',
+                // MARK: nothing was taken from them. Something is simply true of
+                // them now that was not true this morning.
+                polarity: 'info',
+              },
+            ],
+          },
+        },
       },
     },
     fallback: {
       overview: 'The two roads part at the meeting point, each taking its own people.',
-      changes: [],
+      changes: [
+        {
+          id: 'slice.family.two_roads',
+          kind: 'shell_state',
+          title: 'Two Roads',
+          detail: 'The meeting point empties in both directions at once.',
+          polarity: 'info',
+        },
+      ],
       reactions: [
         {
           id: 'slice.family.roads_part',
@@ -1749,34 +2393,171 @@ export const SLICE_SWINDLER_FOUND: UnifiedActionTemplate = {
         overview:
           'The town’s justice has the man, the paper, and the pattern. What the fen ' +
           'road started, a lockup finishes — slower than anger, and it holds.',
-        changes: [],
+        changes: [
+          {
+            id: 'slice.swindler.the_ledger_way',
+            kind: 'reputation_tally',
+            title: 'By the Ledger',
+            detail: 'A stranger walked into a market, found the wardens, and made the case stand up. Markets remember that sort of thing.',
+            polarity: 'gain',
+          },
+        ],
         reactions: [
           {
             id: 'slice.swindler.leave_it_to_law',
             label: 'Leave him to the town',
             intent: 'The bell, the wardens, the ledger. Done.',
-            effects: [],
+            effects: [
+              {
+                kind: 'reputation_tally',
+                key: SLICE_ROAD_REPUTE_KEY,
+                delta: SLICE_REPUTE_GAIN,
+              },
+            ],
           },
         ],
+        byOutcome: {
+          critical_success: {
+            overview:
+              'Taken mid-sentence, with the paper still up like a lamp — and the listening ' +
+              'family got their coin back on the spot, in front of the whole square. The ' +
+              'wardens were unhurried about it. That was somehow the worst part for him.',
+            changes: [
+              {
+                id: 'slice.swindler.coin_back_in_public',
+                kind: 'reputation_tally',
+                title: 'Coin Back, in Public',
+                detail: 'One family kept its money and the square watched it happen — the story has a stranger in it, and the stranger comes off well.',
+                polarity: 'gain',
+              },
+            ],
+          },
+          failure: {
+            overview:
+              'Wardens move at the speed of paperwork. The man moved at the speed of a man ' +
+              'who has left markets before. By the time the case was said plainly to anyone ' +
+              'with a badge, the pitch was empty and the satchel was a town away.',
+            changes: [
+              {
+                id: 'slice.swindler.gone_before_the_bell',
+                kind: 'shell_state',
+                title: 'Gone Before the Bell',
+                detail: 'He is still working, still selling the same land, and now he knows a face that watches for him.',
+                polarity: 'loss',
+              },
+            ],
+          },
+        },
       },
       negative: {
         overview:
           'The debt was collected in person. The market will tell the story in its own words, ' +
           'and the story will grow a knife it may or may not have had.',
-        changes: [],
+        changes: [
+          {
+            id: 'slice.swindler.collected_in_person',
+            kind: 'reputation_tally',
+            title: 'Collected in Person',
+            detail: 'The satchel changed hands in an alley, and the market’s version of that will not be the kind one.',
+            polarity: 'mixed',
+          },
+        ],
         reactions: [
           {
             id: 'slice.swindler.walk_away',
             label: 'Walk away',
             intent: 'The alley empties. The road waits.',
-            effects: [],
+            effects: [
+              {
+                kind: 'reputation_tally',
+                key: SLICE_ROAD_REPUTE_KEY,
+                delta: SLICE_REPUTE_LOSS,
+              },
+            ],
           },
         ],
+        byOutcome: {
+          success_at_cost: {
+            overview:
+              'He paid in the alley, all of it, and the traveler carried the argument out of ' +
+              'there on their own body. Behind the corn scales the market noise went on ' +
+              'exactly as before, which is what alleys are for.',
+            changes: [
+              {
+                id: 'slice.swindler.the_argument',
+                kind: 'trait',
+                title: 'The Argument',
+                detail: 'He paid, and he did not pay quietly — the bruises will outlast the satisfaction by a good while.',
+                polarity: 'loss',
+              },
+            ],
+            reactions: [
+              {
+                id: 'slice.swindler.walk_away_sore',
+                label: 'Walk away',
+                intent: 'The alley empties. The road waits, and it will be walked stiffly.',
+                effects: [
+                  { kind: 'condition_attachment', templateId: 'trait.condition.wounded' },
+                  {
+                    kind: 'reputation_tally',
+                    key: SLICE_ROAD_REPUTE_KEY,
+                    delta: SLICE_REPUTE_LOSS,
+                  },
+                ],
+              },
+            ],
+          },
+          critical_failure: {
+            overview:
+              'The alley went wrong. He had a knife, a friend waiting past the turn, and no ' +
+              'interest at all in a fair fight. The satchel left with them. What the market ' +
+              'found afterward was a stranger sitting down where they should not be sitting.',
+            changes: [
+              {
+                id: 'slice.swindler.the_knife',
+                kind: 'trait',
+                title: 'The Knife',
+                detail: 'Cut in an alley behind the corn scales, for a satchel that walked away anyway.',
+                polarity: 'loss',
+              },
+              {
+                id: 'slice.swindler.the_market_talks',
+                kind: 'reputation_tally',
+                title: 'The Market’s Version',
+                detail: 'The square saw a stranger start something in an alley and lose it — that is the only version it needs.',
+                polarity: 'loss',
+              },
+            ],
+            reactions: [
+              {
+                id: 'slice.swindler.get_up',
+                label: 'Get up and go',
+                intent: 'The road waits. It is going to have to wait a little.',
+                effects: [
+                  { kind: 'condition_attachment', templateId: 'trait.condition.wounded' },
+                  {
+                    kind: 'reputation_tally',
+                    key: SLICE_ROAD_REPUTE_KEY,
+                    delta: SLICE_REPUTE_LOSS,
+                  },
+                ],
+              },
+            ],
+          },
+        },
       },
     },
     fallback: {
       overview: 'The market closes around the space where the voice was.',
-      changes: [],
+      changes: [
+        {
+          id: 'slice.swindler.the_square_empties',
+          kind: 'shell_state',
+          title: 'The Square Empties',
+          detail: 'Stalls fold, the corn scales are covered, and the pitch belongs to nobody again.',
+          polarity: 'info',
+        },
+      ],
       reactions: [
         {
           id: 'slice.swindler.market_closes',
@@ -1862,7 +2643,15 @@ export const SLICE_GRATEFUL_KIN: UnifiedActionTemplate = {
       overview:
         'The kindness has kin, and the kin keep accounts. From tonight the traveler has a ' +
         'roof in this family’s memory, which is a currency that holds its value.',
-      changes: [],
+      changes: [
+        {
+          id: 'slice.kin.a_roof_remembered',
+          kind: 'reputation',
+          title: 'A Roof, Remembered',
+          detail: 'This family’s people owe the traveler a bed and a hearing, and they are the sort who pay.',
+          polarity: 'gain',
+        },
+      ],
       reactions: [
         {
           id: 'slice.kin.accept_the_debt',
@@ -1871,12 +2660,99 @@ export const SLICE_GRATEFUL_KIN: UnifiedActionTemplate = {
           effects: [
             {
               kind: 'favor_creation',
-              magnitudeRange: [0.4, 0.7],
+              magnitudeRange: SLICE_KIN_FAVOR_RANGE,
               context: 'The fen-road kindness: the family’s kin owe the traveler a roof and more.',
             },
           ],
         },
       ],
+      byOutcome: {
+        critical_success: {
+          overview:
+            'By the second bowl the whole room owned a piece of the story, and the traveler ' +
+            'owned the room. The letter came out of her apron and got read aloud. Half the ' +
+            'tables will carry some version of the fen road out of here tonight.',
+          changes: [
+            {
+              id: 'slice.kin.a_roof_remembered_well',
+              kind: 'reputation',
+              title: 'A Roof, Remembered',
+              detail: 'The debt is warm and the family is not quiet about it.',
+              polarity: 'gain',
+            },
+            {
+              id: 'slice.kin.the_room_carries_it',
+              kind: 'reputation_tally',
+              title: 'The Room Carries It',
+              detail: 'A taproom’s worth of people heard the fen road told properly, with a stranger at the good end of it.',
+              polarity: 'gain',
+            },
+          ],
+          reactions: [
+            {
+              id: 'slice.kin.accept_the_debt_well',
+              label: 'Accept the thanks',
+              intent: 'A meal, a story told rightly, a standing welcome — and a room that will repeat it.',
+              effects: [
+                {
+                  kind: 'favor_creation',
+                  magnitudeRange: SLICE_KIN_FAVOR_RANGE,
+                  context: 'The fen-road kindness: the family’s kin owe the traveler a roof and more.',
+                },
+                {
+                  kind: 'reputation_tally',
+                  key: SLICE_ROAD_REPUTE_KEY,
+                  delta: SLICE_REPUTE_GAIN,
+                },
+              ],
+            },
+          ],
+        },
+        success_at_cost: {
+          overview:
+            'The thanks was taken, and taken, and taken — three retellings and a toast, each ' +
+            'one a little further from what happened. The bowl went cold twice. The welcome ' +
+            'is real underneath all of it, which is the part worth keeping.',
+          changes: [
+            {
+              id: 'slice.kin.a_roof_and_an_evening',
+              kind: 'reputation',
+              title: 'A Roof, and an Evening Spent',
+              detail: 'The debt stands. So did the traveler, for most of the night, being thanked.',
+              polarity: 'mixed',
+            },
+          ],
+        },
+        critical_failure: {
+          overview:
+            'Public gratitude curdled into public performance, and the traveler wore it all ' +
+            'evening. She meant every word and it landed like a bill. The welcome survives ' +
+            'the awkwardness — kin are stubborn that way — but it survives thinner.',
+          changes: [
+            {
+              id: 'slice.kin.a_thinner_welcome',
+              kind: 'reputation',
+              title: 'A Thinner Welcome',
+              detail: 'The door stays open. It was going to be a wider door than this.',
+              polarity: 'mixed',
+            },
+          ],
+          reactions: [
+            {
+              id: 'slice.kin.accept_the_debt_awkwardly',
+              label: 'Take the thanks anyway',
+              intent: 'Badly received is still received. The letter is still in her apron.',
+              effects: [
+                {
+                  kind: 'favor_creation',
+                  magnitudeRange: SLICE_KIN_FAVOR_FUMBLED_RANGE,
+                  context: 'The fen-road kindness, awkwardly repaid: the debt stands, and so does the memory of the evening.',
+                },
+              ],
+            },
+          ],
+        },
+      },
     },
   },
   narrativeTemplates: {
