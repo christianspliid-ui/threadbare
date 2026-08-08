@@ -1707,6 +1707,29 @@ if (import.meta.env.DEV) {
     },
 
     /**
+     * THR-1030 — what the `?outcome=<band>` review pin actually produced.
+     *
+     * Resolves `null` when no pin is armed, or when one is armed but the pinned
+     * template has not resolved yet. Read `status` before trusting the ending on
+     * screen: only `band_rendered` means the authored band for the requested
+     * outcome is what you are looking at. `unauthored_band` means the encounter
+     * ended where you asked but nobody wrote that band, so the base ending is
+     * showing; `outcome_diverged` means the action aggregated its pinned steps to
+     * a different action-level outcome (a pinned `near_miss` always does, and a
+     * pinned `failure` does unless the step's `failBehavior` is `fail_action`).
+     *
+     * **Async** (`await` it) — the bridge has no static imports, so the pin module
+     * is pulled in on call. An unawaited call logs a Promise, not the verdict.
+     */
+    getOutcomePinVerdict: async () => {
+      const { getOutcomePinVerdict, getOutcomePin } = await import('./engine/debugOutcomePin');
+      const verdict = getOutcomePinVerdict();
+      if (verdict) return verdict;
+      const pin = getOutcomePin();
+      return pin ? { ...pin, status: 'pending' as const } : null;
+    },
+
+    /**
      * THR-773 — every mortal currently in the **broken state**, with how long
      * they have been there. The pacing falsifier's measurement hook: the plan's
      * kill criterion is ">5% of living mortals simultaneously broken, or median
