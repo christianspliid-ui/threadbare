@@ -177,16 +177,29 @@ describe('THR-811 — prerequisite gate template resolution', () => {
 
   // ─── 2. No newly-excluded content ────────────────────────────────────────
 
-  it('where both lookups resolve, they differ only by the appended group affinity', () => {
+  it('where both lookups resolve, they differ only by the registry-assembly transforms', () => {
     const differingBeyondAffinities: string[] = [];
     for (const id of CACHE_SOURCE_IDS) {
       const viaPool = getAnyEncounterById(id);
       if (!viaPool) continue;
       const viaUnified = getUnifiedTemplateById(id)!;
       if (viaUnified === viaPool) continue;
-      // Normalise away the one field `withGroupAffinity` rewrites; anything else
-      // differing means the pipeline started reading a materially different object.
-      const normalised = { ...viaPool, actorAffinities: viaUnified.actorAffinities };
+      // Normalise away the fields the `RAW_UNIFIED_ACTION_TEMPLATES.map` rewrites —
+      // `actorAffinities` (`withGroupAffinity`, THR-74) and `supportBundle`
+      // (`withDefaultSupportBundle`, THR-698/THR-1044). Both are applied only on the
+      // way into UNIFIED_ACTION_TEMPLATES, so the pool object legitimately lacks
+      // them; anything else differing means the pipeline started reading a
+      // materially different object.
+      //
+      // `supportBundle` joined this list at THR-1044: the setting-keyed defaults are
+      // the first ones to land on templates that also live in an encounter pool, so
+      // until then the transform touched nothing in the overlap set and the
+      // normalisation did not need to name it.
+      const normalised = {
+        ...viaPool,
+        actorAffinities: viaUnified.actorAffinities,
+        supportBundle: viaUnified.supportBundle,
+      };
       if (JSON.stringify(normalised) !== JSON.stringify(viaUnified)) {
         differingBeyondAffinities.push(id);
       }
