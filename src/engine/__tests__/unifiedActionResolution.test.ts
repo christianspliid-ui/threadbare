@@ -1,4 +1,5 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { setOutcomePin, clearOutcomePin } from '../debugOutcomePin';
 import * as outcomeConsequencesModule from '../outcomeConsequences';
 import {
   progressAllActions,
@@ -261,6 +262,93 @@ describe('unifiedActionResolution', () => {
       a1 = { ...a1, stepProgress: 2, resolved: true, outcome: 'success' };
 
       expect(collectCompletions([a1])).toHaveLength(0);
+    });
+  });
+
+  // THR-1030 — the `?outcome=<band>` review pin, at the site it overrides.
+  //
+  // The pin's own contract (verdict, scoping, fail-soft) is covered in
+  // `debugOutcomePin.test.ts`. What must be pinned HERE is that the override
+  // actually reaches live step resolution and carries the ops with it — a pin
+  // that no resolution path reads would pass every test in the other file while
+  // doing nothing, which is the vacuity the ticket warns about.
+  describe('resolveUncontestedStep — THR-1030 outcome pin', () => {
+    afterEach(() => clearOutcomePin());
+
+    it('forces the pinned band over a roll that would have succeeded', () => {
+      const template = make1StepTemplate();
+      const state = createMinimalGameState();
+      const action = createUnifiedAction({
+        actorId: 'actor-1', templateId: 'action.iron.test', targetId: 'loc-1',
+        scale: 'personal', source: 'agent', tick: 0, template, rng: fixedRng,
+      });
+
+      // successRng rolls a 2 — a success by any reading. Assert the unpinned
+      // baseline first, so a pinned failure cannot be mistaken for the dice.
+      const unpinned = resolveUncontestedStep(action, template, state, successRng);
+      expect(unpinned.outcome).not.toBe('critical_failure');
+
+      setOutcomePin('action.iron.test', 'critical_failure');
+      const pinned = resolveUncontestedStep(action, template, state, successRng);
+
+      expect(pinned.outcome).toBe('critical_failure');
+      // The band carries the ops with it — the failure branch, not the success one.
+      expect(pinned.opsToExecute).toHaveLength(0);
+      // The roll is still the real roll: the pin substitutes the band, not the dice.
+      expect(pinned.roll).toBe(unpinned.roll);
+    });
+
+    it('leaves every OTHER template resolving on its own dice', () => {
+      const template = make1StepTemplate();
+      const state = createMinimalGameState();
+      const action = createUnifiedAction({
+        actorId: 'actor-1', templateId: 'action.iron.test', targetId: 'loc-1',
+        scale: 'personal', source: 'agent', tick: 0, template, rng: fixedRng,
+      });
+
+      setOutcomePin('some.other.encounter', 'critical_failure');
+      const result = resolveUncontestedStep(action, template, state, successRng);
+
+      expect(result.outcome).not.toBe('critical_failure');
+    });
+
+    it('reaches the difficulty-0 auto-success path too', () => {
+      // Divine actions early-return before the roll. A reviewer asking for a
+      // failure ending on one must not be silently handed a success.
+      const template = make1StepTemplate({
+        steps: [{
+          reach: 'heart', duration: { min: 1, max: 1 }, difficulty: 0.0,
+          onSuccess: [{ op: 'update_node', nodeId: '$target', changes: { blessed: true } }],
+          onFailure: [],
+          failBehavior: 'fail_action',
+        }],
+      });
+      const state = createMinimalGameState();
+      const action = createUnifiedAction({
+        actorId: 'actor-1', templateId: 'divine.test', targetId: 'actor-1',
+        scale: 'cosmic', source: 'player', tick: 0, template, rng: fixedRng,
+      });
+
+      setOutcomePin('divine.test', 'critical_failure');
+      const result = resolveUncontestedStep(action, template, state, fixedRng);
+
+      expect(result.outcome).toBe('critical_failure');
+      expect(result.opsToExecute).toHaveLength(0);
+    });
+
+    it('is inert when nothing is pinned — same seed, same outcome as before it existed', () => {
+      const template = make1StepTemplate();
+      const state = createMinimalGameState();
+      const action = createUnifiedAction({
+        actorId: 'actor-1', templateId: 'action.iron.test', targetId: 'loc-1',
+        scale: 'personal', source: 'agent', tick: 0, template, rng: fixedRng,
+      });
+
+      clearOutcomePin();
+      const a = resolveUncontestedStep(action, template, state, successRng);
+      const b = resolveUncontestedStep(action, template, state, successRng);
+      expect(a.outcome).toBe(b.outcome);
+      expect(a.roll).toBe(b.roll);
     });
   });
 

@@ -66,6 +66,7 @@ import {
 } from './groups/bandOpposition';
 import { resolveAction as resolveActionLegacy } from './resolution';
 import { resolveAction as resolveActionShared, isSuccessOutcome } from './resolutionService';
+import { outcomePinFor, recordOutcomePinVerdict } from './debugOutcomePin';
 import type { OutcomeType } from '../types/resolution';
 import type { ResolutionInput } from '../types/resolution';
 import { executeGraphOps } from './graphOpExecutor';
@@ -296,16 +297,27 @@ export function resolveUncontestedStep(
     return { outcome: 'failure', rawOutcome: 'failure', opsToExecute: [], capability: 0, probability: 0, roll: 0, ...noPushResist };
   }
 
+  // THR-1030 — the outcome-band review pin (`?outcome=<band>`). Read once here so
+  // the two auto-success early returns below honour it too; a reviewer asking for
+  // `critical_failure` on a divine action must not be handed a silent success.
+  // In the main path it is applied at the *tail*, after the roll and every floor,
+  // so the resolution genuinely runs and the trace stays honest.
+  const pinnedBand = outcomePinFor(action.templateId);
+
   // Divine actions (difficulty 0) always succeed
   if (step.difficulty === 0) {
-    return { outcome: 'success', rawOutcome: 'success', opsToExecute: step.onSuccess, capability: 1, probability: 1, roll: 0, ...noPushResist };
+    const outcome = pinnedBand ?? 'success';
+    const ops = isStepSuccess(outcome) ? step.onSuccess : step.onFailure;
+    return { outcome, rawOutcome: 'success', opsToExecute: ops, capability: 1, probability: 1, roll: 0, ...noPushResist };
   }
 
   // THR-728: player casts roll the same ladder mortals do — but never below the
   // floor applied at the tail of this function. With the master switch off, the
   // pre-THR-728 auto-success early-return is restored verbatim (one-flag revert).
   if (!PLAYER_CAST_VARIANCE_ENABLED && action.source === 'player') {
-    return { outcome: 'success', rawOutcome: 'success', opsToExecute: step.onSuccess, capability: 1, probability: 1, roll: 0, ...noPushResist };
+    const outcome = pinnedBand ?? 'success';
+    const ops = isStepSuccess(outcome) ? step.onSuccess : step.onFailure;
+    return { outcome, rawOutcome: 'success', opsToExecute: ops, capability: 1, probability: 1, roll: 0, ...noPushResist };
   }
 
   let effectiveDifficulty = step.difficulty;
@@ -607,6 +619,18 @@ export function resolveUncontestedStep(
   const activeRider = selectActiveRider(step, action.activeNudges, action.templateId);
   if (activeRider) {
     outcome = applyRider(outcome, activeRider);
+  }
+
+  // THR-1030 — the review pin, applied LAST of all, after push/resist/floors and
+  // the riders. Everything above ran for real and was traced for real: the roll,
+  // the probability, the floors and the rider are all what actually happened, and
+  // the trace below still reports them. Only the band the reviewer asked to see is
+  // substituted, so `ops`, the step effects, the prose band and the aftermath band
+  // below all fire off the pinned outcome exactly as a genuinely-rolled one would.
+  // Zero rng draws (pure assignment), so a pinned run and an unpinned run consume
+  // the same stream and stay deterministic under the same seed (NFP #3).
+  if (pinnedBand) {
+    outcome = pinnedBand;
   }
 
   const ops = isStepSuccess(outcome) ? step.onSuccess : step.onFailure;
@@ -2373,6 +2397,12 @@ export function executeStepResult(
       finalAction.choiceHistory,
       finalAction.outcome,
     );
+
+    // THR-1030 — the anti-vacuity half of the `?outcome=` review pin. A pinned band
+    // that no variant authors would otherwise render the *base* ending while the URL
+    // claimed a band, which is precisely the defect THR-989 and THR-973 exist to
+    // find. No-ops entirely when no pin is armed for this template.
+    recordOutcomePinVerdict(template, finalAction.outcome);
 
     const reactions = aftermathVariant?.reactions
       ?? buildEncounterAftermathReactions(finalAction, template);

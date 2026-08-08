@@ -964,6 +964,40 @@ export interface DebugBridge {
     }
   >;
 
+  /** THR-1030 — What the `?outcome=<band>` review pin actually produced.
+   *
+   *  Resolves `null` when no pin is armed. `{ ..., status: 'pending' }` means a pin is
+   *  armed but the template has not resolved yet.
+   *
+   *  Read `status` before trusting the ending on screen — this is the field that keeps
+   *  the lever from laundering the very defect it exists to find:
+   *  - `band_rendered` — the authored band for the requested outcome is on screen.
+   *  - `unauthored_band` — the encounter ended where you asked, but **no variant
+   *    authors that band**, so the base ending is showing under the band's name.
+   *  - `outcome_diverged` — the steps were pinned but the action aggregated to a
+   *    different action-level outcome. A pinned `near_miss` always diverges (it has no
+   *    `UnifiedActionOutcome` counterpart); a pinned `failure` diverges unless the
+   *    step's `failBehavior` is `fail_action`.
+   *  - `no_aftermath_config` — the template authors no aftermath at all.
+   *
+   *  `authoredBands` lists every action outcome any variant of the template authors a
+   *  band for — the quickest way to see which bands are worth asking for.
+   *
+   *  **Async** (`await` it) — the bridge has no static imports, so the pin module is
+   *  pulled in on call. An unawaited call logs a Promise, not the verdict. */
+  getOutcomePinVerdict: () => Promise<
+    | null
+    | { readonly templateId: string; readonly band: string; readonly status: 'pending' }
+    | {
+      readonly templateId: string;
+      readonly requestedBand: 'critical_success' | 'success' | 'success_at_cost' | 'near_miss' | 'failure' | 'critical_failure';
+      readonly actualOutcome: string;
+      readonly status: 'band_rendered' | 'unauthored_band' | 'outcome_diverged' | 'no_aftermath_config';
+      readonly authoredBands: readonly string[];
+      readonly message: string;
+    }
+  >;
+
   /** THR-775 — Toggle the nudge stage's **designer view**.
    *
    *  Off (the default) the encounter stage is the player surface: words only, and the

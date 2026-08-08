@@ -154,6 +154,7 @@ import {
 } from './entityNoticeBadgeModel';
 import { toggleAttentionMode } from '../../engine/encounterVisibility';
 import { setForceFullEncounterVisibility } from '../../engine/debugVisibilityOverride';
+import { clearOutcomePin, setOutcomePin } from '../../engine/debugOutcomePin';
 import { useTopBarHotkeys } from './hooks/useTopBarHotkeys';
 import { computeEssenceIncome } from '../../engine/essenceIncome';
 import { setHomeSeat as setHomeSeatEngine } from '../../engine/influence';
@@ -315,6 +316,27 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   // a URL flag (not window.__DEBUG) so it also works on the deployed build.
   useState(() => {
     setForceFullEncounterVisibility(new URLSearchParams(window.location.search).has('forceencounters'));
+    return null;
+  });
+
+  // ── Debug: outcome-band review pin (`?outcome=<band>`) — THR-1030 ──
+  // Rides on `?spawn=`: the band is pinned for the spawned template only, so the
+  // rest of the world resolves normally and the reviewed ending is the one a
+  // player could actually reach. Armed here rather than inside the spawn effect
+  // below because the effect retries across early renders, and re-arming the pin
+  // on each retry would clear the verdict of a resolution already in flight.
+  // A band the URL misspells is refused with one warning and the game proceeds.
+  useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    const band = params.get('outcome');
+    const spawnTemplateId = params.get('spawn');
+    if (!band) {
+      clearOutcomePin();
+    } else if (!spawnTemplateId) {
+      console.warn('[?outcome] needs a `?spawn=<templateId>` to pin — the band is scoped to one encounter. Resolving normally.');
+    } else {
+      setOutcomePin(spawnTemplateId, band);
+    }
     return null;
   });
 

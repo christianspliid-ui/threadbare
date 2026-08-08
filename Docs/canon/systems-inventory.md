@@ -255,7 +255,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `culture` (5) | `cultureDetail.ts`, `cultureFlag.ts`, `cultureGenerator.ts`, `cultureMores.ts`, `culturePhonetics.ts` | `M50`, `M30`, `M70`, `M20`, `THR-15` |
 | `curator` (1) | `curator.ts` | — |
 | `cycle` (1) | `cycleEnd.ts` | — |
-| `debug` (5) | `debugCommands.ts`, `debugEncounterTools.ts`, `debugTickBatch.ts`, `debugVisibilityOverride.ts`, `debugWorldSpawnTools.ts` | `THR-689`, `THR-878` |
+| `debug` (6) | `debugCommands.ts`, `debugEncounterTools.ts`, `debugOutcomePin.ts`, `debugTickBatch.ts`, `debugVisibilityOverride.ts`, `debugWorldSpawnTools.ts` | `THR-1030`, `THR-689`, `THR-878` |
 | `decay` (1) | `decayCurve.ts` | — |
 | `delivery` (2) | `delivery.ts`, `deliveryBeatAdapter.ts` | `THR-506`, `THR-452`, `THR-514` |
 | `depression` (2) | `depressionFilling.ts`, `depressionLakes.ts` | — |
@@ -389,4 +389,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 26 registered subsystems (1 dormant) · 99 tick phases · 171 engine domains · 487 modules._
+_Counts: 26 registered subsystems (1 dormant) · 99 tick phases · 171 engine domains · 488 modules._
