@@ -1,42 +1,39 @@
 ---
-needsChristian: thr-883-fable-format-lock, demo-readiness-hold, demo-fix-tickets-unqueued, thr-907-slice-verdict, thr-974-consequence-verdict, aftermath-pops-recheck, thr-998-action-card-risk-word, thr-961-sound-feel, thr-962-sound-routing
+needsChristian: thr-883-fable-format-lock, demo-readiness-hold, demo-fix-tickets-unqueued, thr-1042-consequence-suppression, thr-907-slice-verdict, thr-974-consequence-verdict, aftermath-pops-recheck, thr-998-action-card-risk-word, thr-961-sound-feel, thr-962-sound-routing
 queue: backed-up
 freshness: dirty
-deploy: deployed
+deploy: skipped
 tasks: ok
 lanes: recovered
 ci: healthy
 ---
 # Briefing
 
-**Generated:** 2026-08-08 18:55 local (16:55 UTC) · by keep-work-flowing-cc
+**Generated:** 2026-08-08 19:59 local (17:59 UTC) · by keep-work-flowing-cc
 
 ## Needs Christian
 
-**Two things changed since the last brief.** One is good news you asked for directly. The other is a correction to what this file told you an hour ago: the hold on your play sessions has **no end date**, because the four fixes it is waiting on are not actually queued for anyone to do. Details in the second and third items. Everything else carries unchanged and was re-pulled from the board rather than assumed.
+**One new thing this hour, and it sharpens the advice I gave you an hour ago rather than reversing it.** A design pass this afternoon read every content block that builds an encounter, and it found that the ending screen is throwing away half of what the game worked out. That matters specifically for the **consequence session** — one of the two sittings I told you was ready. Details in the third item. Everything else carries unchanged and was re-pulled from the board rather than assumed.
 
 - **The encounter-writing session with Fable is still the largest single blocker on the board.** [Lock the authoring format](https://linear.app/threadbare/issue/THR-883/fable-encounter-writing-prototype-lock-the-exact-authoring-format) — sit down with Fable, write one encounter end-to-end, and sign off on how encounters get written from now on. It is the board's only Urgent row and it has not moved since 2026-08-02. **Twelve content tickets are held waiting on it**, plus one finished batch parked nine days.
 
   The sitting turns on **one question: what does an author write for the *aftermath* of an encounter?** Today's answer is "a paragraph and a button", which you rejected on 2026-08-02 against the approved mockup. **Settle the aftermath half first** — otherwise the twelve held tickets unblock into a format that is missing its back half. — *from daily-backlog-grooming*
 
-- **CORRECTION — the hold on your two play sessions has no end date, so it is now your call rather than a wait.** An hour ago this file told you four small blemishes were found, that fix tickets were "queued for the next working sessions", and to expect them "later this evening or tomorrow". **The first half is true and the second half is not.** The four tickets exist, but they were filed in a holding state that the work-picking lane does not read, so **nothing is scheduled to pick them up** and no session will start on them on its own. Left alone they will sit.
+- **Still your call, unchanged from last hour: play now, or wait for four cosmetic fixes that nothing is scheduled to do.** The four small blemishes found in the readiness check are real, but the tickets for them sit in a holding column the work-picking lane does not read, so **no session will start on them on its own**. Left alone they sit. Either **play now** and mentally discount four surface edges, or **say the word** and they get moved into the work queue on the next pass.
 
-  So the honest position is a straight trade-off rather than a wait:
+  **Recommendation still: play now.** The four edges, so none surprises you: some result labels (like "Star grew" or "standing rose") look clickable but aren't; one screen flashes a long messy decimal where a clean number belongs; one screen prints a raw internal code-word instead of plain English; and one unrelated background encounter leaks a raw text-template glitch into the story log.
 
-  - **Play now** and mentally discount four cosmetic edges (listed below). Nothing is broken, the endings genuinely differ by how the hand went, and none of it changes what you would be ruling *on*.
-  - **Or say the word** and the fixes get moved into the work queue on the next pass, which puts them a session or two away rather than indefinite.
+- **NEW — worth knowing *before* the consequence session: the ending screen is currently hiding the mechanical half of what happened.** When the game finishes working out an encounter it builds one list of everything that changed — the written consequences the author wrote, **plus** what the world actually did: skill growth, standing shifts, anything won. The ending screen then keeps only the written half and drops the rest. I checked the five encounters you'd be playing and all five take that path, so this is live for your session, not theoretical.
 
-  **Recommendation: play now.** The blemishes are all surface, your verdicts are about prose, rhythm, feel and consequence, and an indefinite hold is worse than a slightly rough edge. Getting the four tickets moving is agent-side housekeeping and is being handled either way — it just is not a reason for you to wait.
+  **Why it matters to you specifically:** the consequence session asks *"is the change to the world visible, and does it feel like it happened in the world?"* — and right now part of the change is genuinely not on screen. If you play it as-is and it feels thin, **some of that is this defect rather than the design**, and you'd be ruling on the wrong thing.
 
-  The four edges, so none of them surprises you mid-session: some result labels (like "Star grew" or "standing rose") look clickable but aren't; one screen flashes a long messy decimal where a clean number belongs; one screen prints a raw internal code-word instead of plain English; and one unrelated background encounter leaks a raw text-template glitch into the story log.
+  So, a real choice rather than a warning:
+  - **The slice session ([THR-907](https://linear.app/threadbare/issue/THR-907/slice-verdict-session-christian-rules-on-prose-firing-ui-and-game)) is unaffected — play it now.** Prose, firing rhythm, interface, and whether deciding is fun do not depend on this.
+  - **The consequence session ([THR-974](https://linear.app/threadbare/issue/THR-974/consequence-verdict-session-christian-rules-on-world-graph-consequence)) is the one I'd hold**, or play knowing you are seeing only the authored consequences. **Recommendation: play the slice session now, and give the consequence one a beat** — the fix is filed, small, and top of the ready pile.
 
-- **NEW — you can now see every ending of an encounter from a link, which is the thing you asked for this morning.** Your ask was *"I'd like to test all the different aftermaths."* That shipped about half an hour ago and **is live on the site right now** — I checked the deployed build, not just the merge. Add `&outcome=` to any encounter link and it ends the way you name, instead of you replaying and hoping the dice cooperate. The rare endings — the disasters and the triumphs — were exactly the ones that were hardest to see before, and those are the ones most worth reviewing.
+  One honest limit on what I checked: I confirmed the screen keeps only the authored half and that your five encounters all take that path. I did **not** measure how much the game actually contributes on those five — none of them award a prize, so what's being dropped is growth and standing rather than anything dramatic. It may read as a small thinness rather than an obvious hole. [THR-1042](https://linear.app/threadbare/issue/THR-1042)
 
-  The six endings, on the bridge encounter as an example: [a clean triumph](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge&outcome=critical_success) · [it works](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge&outcome=success) · [it works, but it costs you](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge&outcome=success_at_cost) · [a near miss](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge&outcome=near_miss) · [it fails](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge&outcome=failure) · [it fails badly](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge&outcome=critical_failure). Swap the encounter name for any of the five below.
-
-  **One honest caveat:** not every encounter has all six endings written yet. Where nobody wrote one, you will get the encounter's normal ending rather than an error — so if two links read the same, that is a gap in the writing, not a bug in the lever. Worth knowing, since spotting those gaps is half of what a review pass like this is for.
-
-- **The four-verdict slice session — ready, and now unblocked by the recommendation above.** [Play the 5-encounter slice](https://linear.app/threadbare/issue/THR-907/slice-verdict-session-christian-rules-on-prose-firing-ui-and-game) and rule on four things: does the prose read clear, does the firing rhythm work, is the interface gamey enough, and is deciding actually fun. "Needs another iteration" is valid on any of them. One link each:
+- **The four-verdict slice session — ready, and unaffected by the item above.** [Play the 5-encounter slice](https://linear.app/threadbare/issue/THR-907/slice-verdict-session-christian-rules-on-prose-firing-ui-and-game) and rule on four things: does the prose read clear, does the firing rhythm work, is the interface gamey enough, and is deciding actually fun. "Needs another iteration" is valid on any of them. One link each:
   - [The bargain at the crossroads](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.bargain_at_crossroads)
   - [Riders behind the caravan](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.riders_behind_caravan)
   - [Snow on the pass](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.snow_on_the_pass)
@@ -44,9 +41,9 @@ ci: healthy
   - [The unsafe bridge](https://threadbare.vercel.app/?view=game&seeded&size=medium&spawn=encounter.slice.unsafe_bridge)
   - And for the firing-rhythm verdict, which needs natural play rather than spawn-on-demand: [free play with everything firing](https://threadbare.vercel.app/?view=game&seeded&size=medium&testavatar&forceencounters)
 
-- **The consequence verdict, same sitting if you want it.** You split this out on 2026-08-02 so it would not be ruled against an unfinished aftermath — and the aftermath is now finished and live. [The consequence session](https://linear.app/threadbare/issue/THR-974/consequence-verdict-session-christian-rules-on-world-graph-consequence) asks one thing: play a hand to its ending, and say whether **the change to the world is visible, and whether it feels like it happened in the world** rather than being announced at you. Same encounters as above, so both sittings can be one go — and the new ending links make it much easier to see the consequence of an ending you would rarely roll.
+  **The ending-review links from this morning still work** — add `&outcome=critical_failure` (or `success`, `failure`, `near_miss`, `success_at_cost`, `critical_success`) to any of the above to end it that way instead of replaying and hoping. Where nobody has written that ending yet you'll get the normal one, so two links reading the same means a gap in the writing, not a bug.
 
-- **A two-minute check, not a decision: does the ending of an encounter now appear on its own when you play?** You reported on 2026-08-06 that it didn't — you had to click the badge on the agent's thread. Both halves of that cause shipped and were verified against your exact repro. **No reply needed if it works.** If it doesn't, say so and it gets a fresh ticket — a recurrence now would be a different bug, not the old one. You will pass through this naturally during either session above. — *from daily-backlog-grooming*
+- **A two-minute check, not a decision: does the ending of an encounter now appear on its own when you play?** You reported on 2026-08-06 that it didn't — you had to click the badge on the agent's thread. Both halves of that cause shipped and were verified against your exact repro. **No reply needed if it works.** If it doesn't, say so and it gets a fresh ticket — a recurrence now would be a different bug, not the old one. You'll pass through this naturally during the slice session. — *from daily-backlog-grooming*
 
 - **Action cards are telling players a risk that isn't real.** Each card reads "a steady / uncertain / perilous working", but for 85% of castable cards the underlying number cannot move the odds at all — a "perilous" card and a "steady" card land exactly the same way. Three honest fixes: (a) make the word track the odds the cast will actually roll, which makes the same card read differently for different gods; (b) stop printing a risk word where the odds are flat and say something else instead — what scale the working reaches, or what it costs; (c) lower the floors so the authored danger bites again, which also changes how mortals resolve everything. **Recommendation: (b).** If the danger genuinely doesn't vary, a danger word is the wrong thing to print. [THR-998](https://linear.app/threadbare/issue/THR-998)
 
@@ -54,28 +51,28 @@ ci: healthy
 
 ## Queue
 
-Backed up — **32 items ready for dev, 1 in progress**. Planning is ahead of execution, and nothing is stuck.
+Backed up — **34 items ready for dev, 2 in progress**. Planning is ahead of execution, and nothing is stuck.
 
-- **The four demo-readiness fix tickets are not in the work queue.** They sit in an early holding state that the hourly work-picking lane never reads — it scans two later columns only — so they are filed but unscheduled. This is the finding behind the correction above; it is agent-side housekeeping, not a decision for you.
-- **A new defect reached the top of the pile this afternoon:** fifteen mercenary-company encounters were written against the wrong shape and fail every time their ending is worked out. Filed and queued; it is the highest-priority item now waiting.
-- **No unowned work** — the one in-progress item has an owner, for a ninth consecutive run.
-- The only item in progress is the [civic-seats encounter batch](https://linear.app/threadbare/issue/THR-860), deliberately paused behind the Fable format lock. Nothing to do — it waits on the same decision as everything else in that stack.
+- **This afternoon's design pass turned into three queued repairs, two of them high priority.** A full read of how encounters get built found: the ending screen dropping the mechanical half of what changed (the item above); the encounter screen quietly building a cast list and a stakes preview that **nothing on screen ever shows**; and every mercenary-company encounter crashing the screen outright. All three are filed with fixes described and are the top of the pile.
+- **The four demo-readiness fix tickets are still not in the work queue** — unchanged from last hour. They sit in an early holding state that the hourly work-picking lane never reads. Agent-side housekeeping, not a decision for you.
+- **No unowned work** — both in-progress items have an owner, for a tenth consecutive run.
+- The mercenary-encounter repair picked up an hour ago and already has a pull request open. The other in-progress item is the [civic-seats encounter batch](https://linear.app/threadbare/issue/THR-860), deliberately paused behind the Fable format lock — nothing to do, it waits on the same decision as everything else in that stack.
 - Everything else in the ready pile is small cleanup. **Eight items have been waiting more than a week**, unchanged. None of them blocks anything.
 
 ## Freshness
 
-- **The live site is serving the newest work** (`e329caa2` — the ending-review links above). Worth knowing before you sit down: what you would be ruling on is genuinely deployed, checked against the live build rather than the merge.
 - All nine scheduled jobs are running on time, and the automated checks are healthy.
+- **The live site is up to date.** Nothing has been merged since this morning's ending-review links that changes the game itself, so there was nothing new to publish — what you'd play is current.
+- One pull request has a merge clash, opened half an hour ago (the mercenary-encounter repair). **Too young to be a problem** and it's an agent-side fix; noted so it isn't a surprise if it's still there next hour.
 - **The background jobs went quiet overnight again** and resumed on their own. **Logged as normal per your message on 2026-08-06, not raised.** The detector still flags this shape every night; teaching it that overnight quiet is expected is on the agent-side list, not yours.
-- One pull request is open: the encounter batch paused on purpose. **It needs nothing from you** — the pause is recorded on the PR itself, so it no longer gets re-raised here.
-- The housekeeping job that cleans up old work folders ran fifteen minutes ago. 44 folders open, 2 still need a human decision eventually; neither is urgent.
+- The housekeeping job that cleans up old work folders ran twenty minutes ago. 45 folders open, 2 still need a human decision eventually; neither is urgent.
 - Your working copy is on `main` and fully up to date. The same two settings files still show local edits (`.claude/settings.json`, `.claude/settings.local.json`) — yours, untouched by me.
 
 ## What's moving
 
-- **The ending-review lever shipped and deployed** ([THR-1030](https://linear.app/threadbare/issue/THR-1030)) — filed off your chat ask this morning, merged and live within the day. That is the `&outcome=` links above.
-- The [UX Laws assessment of the encounter popups](https://linear.app/threadbare/issue/THR-1031), your other ask from this morning, is written up and waiting in the ready pile.
-- Two other repairs closed today: encounter history was silently losing entries, and aftermath choices were rendering as bare labels with the authored intent dropped.
+- **The composition audit finished and closed** ([THR-1039](https://linear.app/threadbare/issue/THR-1039)) — the read-everything pass that produced the three repairs above. Worth knowing it exists: it is the first full account of what actually builds an encounter today.
+- **A design ticket opened off it: [The Encounter Factory](https://linear.app/threadbare/issue/THR-1043)** — a way to produce finished encounters at scale with automatic quality gates. It is in design, not built, and it overlaps the Fable format question you're being asked to settle.
+- The [UX Laws assessment of the encounter popups](https://linear.app/threadbare/issue/THR-1031), your ask from this morning, is written up and waiting in the ready pile.
 
 ---
 *Standing asks live in `Design/user-actions.md`. This file is regenerated hourly by
