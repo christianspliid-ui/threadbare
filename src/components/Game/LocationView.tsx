@@ -31,8 +31,7 @@ import type { InitiativeProgress } from '../../types/initiative';
 import type { ResourceInstance, StockTier } from '../../types/resource';
 import { getResourceClass, getResourceTierProse } from '../../data/resource-classes';
 import { getSustenanceProse } from '../../data/essence-sources';
-import { readEssenceSource } from '../../engine/essenceSources';
-import { scoreSphereAffinity, sustenancePolarity } from '../../engine/essenceEconomyBridge';
+import { readEssenceSource, selectLocationSustenanceVoice } from '../../engine/essenceSources';
 import { renderProseWithIPK } from '../ProseKeyword';
 
 interface LocationViewProps {
@@ -906,29 +905,36 @@ const SourceDrainLine = memo(function SourceDrainLine({
 // Prose-first read of the location's resource stock tiers. No numbers — a
 // granary described as full or empty, with Famine/Glut as IPK keywords.
 //
-// When the location also hosts a *discovered*, sphere-typed essence source, the
-// line gains a sustenance clause (THR-618, the essence bridge): what the land is
+// When a *discovered*, sphere-typed essence source draws on this location's larder,
+// the line gains a sustenance clause (THR-618, the essence bridge): what the land is
 // doing to the holy thing standing in it. Economy and divinity read in one breath.
 // Undiscovered sources stay silent here — the clause is fog-consistent.
-const LivelihoodLine = memo(function LivelihoodLine({ location }: { location: GraphNode }) {
+//
+// The source need not be the location's own. A shrine or rite borne by a *sublocation*
+// eats from this same larder (the engine's `resolveEconomicHost` walks it up one hop),
+// and until THR-840 the engine drifted those every tick while this line said nothing.
+// `selectLocationSustenanceVoice` owns which of them speaks — own source first, else
+// the loudest borrowed one — and answers with the engine's own verdict, so the clause
+// can no longer drift away from the drift it describes.
+const LivelihoodLine = memo(function LivelihoodLine({
+  location,
+  graph,
+  sublocationIds,
+}: {
+  location: GraphNode;
+  graph?: WorldGraph;
+  sublocationIds: readonly string[];
+}) {
   const resources = ((location.properties ?? {}).resources ?? {}) as Record<string, ResourceInstance>;
   const entries = Object.entries(resources).filter(([, r]) => r && typeof r.quantity === 'number');
   if (entries.length === 0) return null;
 
-  // Mirrors `computeSanctitySustenance`'s guards: typed, discovered, not desecrated,
-  // and the land must actually grow something of the source's sphere — otherwise
-  // there is no bargain to describe and the clause stays off.
-  const source = readEssenceSource(location.properties);
-  let sustenance: string | null = null;
-  if (source?.discoveredBy && source.sphereAffinity && !source.desecrated) {
-    const { affinityScore, matchedResourceIds } = scoreSphereAffinity(
-      resources,
-      source.sphereAffinity,
-    );
-    if (matchedResourceIds.length > 0) {
-      sustenance = getSustenanceProse(source.sphereAffinity, sustenancePolarity(affinityScore));
-    }
-  }
+  const voice = graph
+    ? selectLocationSustenanceVoice(graph, location.id, sublocationIds)
+    : undefined;
+  const sustenance = voice
+    ? getSustenanceProse(voice.sphere, voice.sustenance.polarity)
+    : null;
 
   const rank = (t: StockTier | undefined) => (t === 'scarce' ? 0 : t === 'surplus' ? 1 : 2);
   const notable = entries
@@ -1114,6 +1120,13 @@ export const LocationView = memo(function LocationView({
 
     return { sublocations: sorted, groupedAgents: grouped };
   }, [graph, location.id, seed]);
+
+  // Stable id list for the Livelihood clause's sustenance selector (THR-840). Already
+  // fog-filtered by `getVisibleSubLocations`, so an unseen sublocation cannot speak.
+  const sublocationIds = useMemo(
+    () => sublocationData.sublocations.map((s) => s.id),
+    [sublocationData],
+  );
 
   // ── If a sublocation is selected, find it and render the detail view ──
   const selectedSublocation = selectedSublocationId
@@ -1338,7 +1351,7 @@ export const LocationView = memo(function LocationView({
       )}
 
       {/* Livelihood line — resource stock tiers as prose (THR-615) */}
-      <LivelihoodLine location={location} />
+      <LivelihoodLine location={location} graph={graph} sublocationIds={sublocationIds} />
       <SourceDrainLine location={location} rivalDefinitions={rivalDefinitions} />
 
       {/* Walls line — fortification state as prose (THR-628) */}
