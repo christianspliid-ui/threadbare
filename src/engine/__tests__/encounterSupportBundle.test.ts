@@ -1,14 +1,18 @@
 import { describe, expect, it } from 'vitest';
 import type { GameState } from '../../types/gameState';
 import { WorldGraph } from '../graph';
-import { getUnifiedTemplateById } from '../../data/unified-action-templates';
+import { getUnifiedTemplateById, UNIFIED_ACTION_TEMPLATES } from '../../data/unified-action-templates';
 import { prepareEncounterSupportBundle } from '../encounterSupportBundle';
 import {
   DEFAULT_BUNDLE_MAX_SPECS,
   DEFAULT_FAMILY_SUPPORT_BUNDLES,
+  DEFAULT_SETTING_SUPPORT_BUNDLES,
+  primarySettingClass,
   withDefaultSupportBundle,
 } from '../../data/default-support-bundles';
-import { NPC_ROLES } from '../../types/npc';
+import { LOCATION_ROLE_ROSTERS, NPC_ROLES } from '../../types/npc';
+import { SETTING_CLASS_MAP } from '../../data/settingClasses';
+import { SLICE_TEMPLATE_IDS } from '../../data/encounters/vertical-slice';
 
 function makeState(graph: WorldGraph): GameState {
   return {
@@ -243,7 +247,16 @@ describe('default family support bundles (THR-698)', () => {
 
   it('every default bundle respects the spec cap, uses real NPC roles, and is bind-only', () => {
     const validRoles = new Set<string>(NPC_ROLES);
-    for (const [family, bundle] of Object.entries(DEFAULT_FAMILY_SUPPORT_BUNDLES)) {
+    const allBundles = {
+      ...DEFAULT_FAMILY_SUPPORT_BUNDLES,
+      // THR-1044: the setting-keyed table obeys the same invariants as the
+      // id-prefix table, so it is swept by the same assertion rather than a
+      // parallel copy that could drift out of step with it.
+      ...Object.fromEntries(
+        Object.entries(DEFAULT_SETTING_SUPPORT_BUNDLES).map(([cls, b]) => [`setting:${cls}`, b]),
+      ),
+    };
+    for (const [family, bundle] of Object.entries(allBundles)) {
       expect(bundle.length, `${family} bundle exceeds cap`).toBeLessThanOrEqual(DEFAULT_BUNDLE_MAX_SPECS);
       const seenRoles = new Set<string>();
       for (const spec of bundle) {
@@ -306,5 +319,128 @@ describe('default family support bundles (THR-698)', () => {
     expect(bindings).toHaveLength(0);
     const nodesAfter = graph.getNodesByType('actor').length + graph.getNodesByType('location').length;
     expect(nodesAfter).toBe(nodesBefore);
+  });
+});
+
+describe('setting-keyed default support bundles — the encounter.* family (THR-1044)', () => {
+  /** A wayside location holding one of the roles worldgen seeds in the wilderness. */
+  function makeWaysideGraph(npcRole: string): WorldGraph {
+    const graph = new WorldGraph();
+    graph.addNode({
+      id: 'loc_camp',
+      type: 'location',
+      name: 'Roadside Camp',
+      properties: { locationSubtype: 'camp' },
+    });
+    addIndividual(graph, 'wayside_npc', 'Sena', npcRole, 'loc_camp');
+    return graph;
+  }
+
+  // The Done-when's five: the slice's parent encounters, all `settings: ['wayside']`.
+  const SLICE_PARENTS = [
+    SLICE_TEMPLATE_IDS.bridge,
+    SLICE_TEMPLATE_IDS.pass,
+    SLICE_TEMPLATE_IDS.caravan,
+    SLICE_TEMPLATE_IDS.crossroads,
+    SLICE_TEMPLATE_IDS.family,
+  ] as const;
+
+  it.each(SLICE_PARENTS)('%s binds at least one real scene actor at a wayside location', (id) => {
+    const graph = makeWaysideGraph('hermit');
+    const state = makeState(graph);
+    const template = getUnifiedTemplateById(id);
+
+    // Falsification anchor: before THR-1044 this was `undefined` for every one of
+    // the five — `withDefaultSupportBundle` keyed on the `encounter` prefix, which
+    // had no entry, so the templates reached the stage carrying no cast at all.
+    expect(template?.supportBundle?.length ?? 0).toBeGreaterThan(0);
+
+    const bindings = prepareEncounterSupportBundle(state, template!, 'loc_camp');
+
+    expect(bindings.length).toBeGreaterThanOrEqual(1);
+    expect(bindings[0]).toMatchObject({ key: 'keeper', nodeId: 'wayside_npc', reused: true });
+  });
+
+  it('binds bind-only: a wayside default adds no node to the world', () => {
+    const graph = makeWaysideGraph('ranger');
+    const state = makeState(graph);
+    const before = graph.getNodesByType('actor').length;
+
+    const bindings = prepareEncounterSupportBundle(
+      state,
+      getUnifiedTemplateById(SLICE_TEMPLATE_IDS.bridge)!,
+      'loc_camp',
+    );
+
+    // The ranger satisfies `outrider`, not `keeper` — a partial bind, no spawn.
+    expect(bindings.map(b => b.key)).toEqual(['outrider']);
+    expect(graph.getNodesByType('actor')).toHaveLength(before);
+  });
+
+  it('resolves the declared envelope, not the declaration order', () => {
+    // `grateful_kin` declares ['rural', 'urban']; canonical vocabulary order wins.
+    expect(primarySettingClass(getUnifiedTemplateById(SLICE_TEMPLATE_IDS.gratefulKin)!)).toBe('rural');
+    expect(getUnifiedTemplateById(SLICE_TEMPLATE_IDS.gratefulKin)?.supportBundle?.map(s => s.key))
+      .toEqual(['elder', 'neighbor', 'bystander']);
+    // `swindler_found` declares ['urban'] — a different class, a different cast.
+    expect(getUnifiedTemplateById(SLICE_TEMPLATE_IDS.swindlerFound)?.supportBundle?.map(s => s.key))
+      .toEqual(['clerk', 'trader', 'watch']);
+  });
+
+  it('leaves a template spanning several setting classes without a default', () => {
+    const spread = {
+      id: 'encounter.everywhere',
+      locationSubtypes: ['hamlet', 'temple', 'battleground'],
+    } as never as Parameters<typeof withDefaultSupportBundle>[0];
+    expect(primarySettingClass(spread)).toBeUndefined();
+    expect(withDefaultSupportBundle(spread)).toBe(spread);
+  });
+
+  it('falls back to the subtype-derived class when one class covers every subtype', () => {
+    const single = {
+      id: 'encounter.only_at_shrines',
+      locationSubtypes: ['shrine', 'temple'],
+    } as never as Parameters<typeof withDefaultSupportBundle>[0];
+    expect(primarySettingClass(single)).toBe('sacred');
+    expect(withDefaultSupportBundle(single).supportBundle?.map(s => s.key))
+      .toEqual(['celebrant', 'attendant', 'supplicant']);
+  });
+
+  it('covers exactly the encounter.* templates whose setting is unambiguous', () => {
+    // A predicate, not a snapshot count (THR-688 rule A): the registry grows, and a
+    // pinned number would rot into a chore. What must hold is the biconditional —
+    // an unambiguous setting class is necessary AND sufficient for a default cast.
+    const encounters = UNIFIED_ACTION_TEMPLATES.filter(t => t.id.startsWith('encounter.'));
+    expect(encounters.length).toBeGreaterThan(0);
+    for (const t of encounters) {
+      const expected = primarySettingClass(t) !== undefined;
+      expect(
+        (t.supportBundle?.length ?? 0) > 0,
+        `${t.id} setting=${primarySettingClass(t) ?? 'ambiguous'}`,
+      ).toBe(expected);
+    }
+    // And the slice roster — the Done-when's population — is inside the covered set.
+    for (const id of Object.values(SLICE_TEMPLATE_IDS)) {
+      expect(getUnifiedTemplateById(id)?.supportBundle?.length ?? 0, id).toBeGreaterThan(0);
+    }
+  });
+
+  it('every reuse role is one worldgen actually seeds somewhere in that setting class', () => {
+    // A reuse list naming roles no roster ever places is a spec that can never
+    // bind — the dead-vocabulary failure. Classes whose subtypes carry no roster
+    // at all (arcane/ruin/battlefield) are exempt: they have nothing to check
+    // against, and their specs stay unresolved rather than spawning.
+    for (const [cls, bundle] of Object.entries(DEFAULT_SETTING_SUPPORT_BUNDLES)) {
+      const seeded = new Set<string>();
+      for (const subtype of SETTING_CLASS_MAP[cls as keyof typeof SETTING_CLASS_MAP]) {
+        for (const entry of LOCATION_ROLE_ROSTERS[subtype] ?? []) seeded.add(entry.role);
+      }
+      if (seeded.size === 0) continue;
+      for (const spec of bundle) {
+        if (spec.kind !== 'actor') continue;
+        const reachable = (spec.reuseNpcRoles ?? []).some(r => seeded.has(r));
+        expect(reachable, `${cls}/${spec.key} names no role seeded at any ${cls} subtype`).toBe(true);
+      }
+    }
   });
 });
