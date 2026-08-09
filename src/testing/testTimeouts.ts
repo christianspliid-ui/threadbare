@@ -75,3 +75,25 @@ export const WORLD_SIM_TEST_TIMEOUT_MS = 120_000;
  * finished importing after 30 s is hung, not slow.
  */
 export const HEAVY_IMPORT_TEST_TIMEOUT_MS = 30_000;
+
+/**
+ * Hang-detector timeout for a test that shells out to a real script or binary.
+ *
+ * A third constant rather than a reuse, because the cost driver is different
+ * again: these cases neither build a world nor import a heavy graph — they pay
+ * `spawnSync` / `execFileSync` process-startup cost, several times per case, and
+ * process startup is precisely what degrades when the machine is already running
+ * a full vitest pool.
+ *
+ * Measured 2026-08-09 (THR-853): `scripts/__tests__/worktree-write-guard.test.ts`
+ * runs 9 cases at 558–866 ms each **standalone** — a ~5.8× margin against the
+ * 5000 ms vitest default, which reads as comfortable. In-suite it is not: adding
+ * one 300-tick engine test to the pool was enough to push its heaviest case past
+ * 5000 ms and turn a green change red, with the guard itself untouched. That is
+ * the same shape as the `threaded-agent-balance` 3.2× in-suite slowdown recorded
+ * above, and it clears the qualifying predicate (local × ~5 exceeds the timeout).
+ *
+ * 30 s rather than 120 s, for the same reason as the constant above: a `bash`
+ * subprocess that has not returned in 30 s is hung, not slow.
+ */
+export const SUBPROCESS_TEST_TIMEOUT_MS = 30_000;

@@ -60,11 +60,26 @@ export const MINT_TRACE_SAMPLE_CAP = 8;
 // ─── ID Generation ───────────────────────────────────────────────
 
 let ambitionEventCounter = 0;
-function nextAmbitionEventId(): string {
-  return `amb_evt_${++ambitionEventCounter}`;
+
+/**
+ * Mint a TickEvent id for an ambition event.
+ *
+ * **The tick is load-bearing, not decoration (THR-853).** The counter is reset
+ * every tick by `orchestrator.resetEventCounters()` so the same seed replays the
+ * same ids (NFP #3), which means the counter alone is only unique *within* a
+ * tick. Events outlive their tick — `recentEvents` is a 100-entry rolling buffer
+ * spanning many — so a tick-less `amb_evt_N` collides with the previous tick's
+ * Nth ambition event, and React renders duplicate keys ("children may be
+ * duplicated and/or omitted"). Measured: `amb_evt_17` minted 9× in one 260-tick
+ * run. Every sibling minter that gets this right encodes the tick the same way
+ * (`evt_${tick}_${n}` in the orchestrator, `faction_join_${tick}_${n}` in
+ * factionOutcome); these three were the ones that did not.
+ */
+function nextAmbitionEventId(tick: number): string {
+  return `amb_evt_${tick}_${++ambitionEventCounter}`;
 }
 
-/** Reset for testing */
+/** Reset per-tick ambition event counter. Called by orchestrator.resetEventCounters(). */
 export function resetAmbitionEventCounter(): void {
   ambitionEventCounter = 0;
 }
@@ -372,7 +387,7 @@ export function phaseAmbitionProgress(state: GameState): Partial<GameState> {
           : template.abandonmentProse[0] ?? `${actor.name} abandoned: ${template.displayName}`;
 
         newEvents.push({
-          id: nextAmbitionEventId(),
+          id: nextAmbitionEventId(tick),
           tick,
           type: eventType,
           message: prose,
@@ -411,7 +426,7 @@ export function phaseAmbitionProgress(state: GameState): Partial<GameState> {
             ?? `${actor.name} progressed toward: ${template.displayName}`;
 
           newEvents.push({
-            id: nextAmbitionEventId(),
+            id: nextAmbitionEventId(tick),
             tick,
             type: 'ambition_milestone',
             message: prose,
@@ -542,7 +557,7 @@ export function phaseAmbitionProgress(state: GameState): Partial<GameState> {
               ?? `${actor.name} takes up a new ambition: ${assignment.templateId}`;
 
             newEvents.push({
-              id: nextAmbitionEventId(),
+              id: nextAmbitionEventId(tick),
               tick,
               type: 'ambition_assigned',
               message: prose,

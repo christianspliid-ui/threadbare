@@ -20,6 +20,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { SUBPROCESS_TEST_TIMEOUT_MS } from "../../src/testing/testTimeouts";
 
 const HOOK = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -68,7 +69,7 @@ beforeAll(() => {
   siblingB = path.join(homeTree, ".claude", "worktrees", "wt-b");
   git(homeTree, "worktree", "add", "-b", "wt-a", siblingA);
   git(homeTree, "worktree", "add", "-b", "wt-b", siblingB);
-});
+}, SUBPROCESS_TEST_TIMEOUT_MS);
 
 afterAll(() => {
   for (const dir of [homeTree, outside]) {
@@ -76,7 +77,11 @@ afterAll(() => {
   }
 });
 
-describe("worktree-write-guard — THR-685 protection is intact", () => {
+// Timeout raised off vitest's 5000 ms default (THR-853): every case shells out to
+// bash, and process-startup cost is what degrades under a loaded vitest pool —
+// these ran 558–866 ms standalone and blew the default in-suite. Hang detector,
+// not a performance budget; see src/testing/testTimeouts.ts.
+describe("worktree-write-guard — THR-685 protection is intact", { timeout: SUBPROCESS_TEST_TIMEOUT_MS }, () => {
   it("blocks a linked-worktree session writing a home-tree path", () => {
     const { status, stderr } = runHook(siblingA, path.join(homeTree, "src", "foo.ts"));
     expect(status).toBe(BLOCK);
@@ -97,7 +102,7 @@ describe("worktree-write-guard — THR-685 protection is intact", () => {
   });
 });
 
-describe("worktree-write-guard — THR-880 false positive is fixed", () => {
+describe("worktree-write-guard — THR-880 false positive is fixed", { timeout: SUBPROCESS_TEST_TIMEOUT_MS }, () => {
   it("allows a linked-worktree session writing into a SIBLING linked worktree", () => {
     const { status, stderr } = runHook(siblingA, path.join(siblingB, "src", "foo.ts"));
     expect(stderr).toBe("");
@@ -110,7 +115,7 @@ describe("worktree-write-guard — THR-880 false positive is fixed", () => {
   });
 });
 
-describe("worktree-write-guard — unaffected cases still allow", () => {
+describe("worktree-write-guard — unaffected cases still allow", { timeout: SUBPROCESS_TEST_TIMEOUT_MS }, () => {
   it("allows a session writing inside its own worktree", () => {
     expect(runHook(siblingA, path.join(siblingA, "src", "foo.ts")).status).toBe(ALLOW);
   });

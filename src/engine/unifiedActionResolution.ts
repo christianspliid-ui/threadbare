@@ -1822,7 +1822,12 @@ export function executeStepResult(
       if (promotion.traitGranted) {
         promotionTraitGranted = promotion.traitGranted;
         events.push({
-          id: `ua_${action.actionId}_promotion`,
+          // Tick embedded (THR-853): the action id alone is not unique here — a
+          // multi-step action resolves one step per tick and can cross a tier on
+          // more than one of them, so `ua_12_promotion` was minted on ticks 26
+          // and 28 of a seed-42 run. Only one step of an action resolves per
+          // tick, so the tick is a sufficient discriminator.
+          id: `ua_${action.actionId}_promotion_${tick}`,
           tick,
           type: 'tier_promotion',
           message: `${agentName} reached ${step.reach} tier ${growthResult.newTier}: "${promotion.traitGranted}"`,

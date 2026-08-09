@@ -40,11 +40,18 @@ const SELECTION_CONFIG = { topN: 5, survivalThreshold: 0.8 };
 // ─── ID Generator ───────────────────────────────────────────────
 
 let phaseEventCounter = 0;
-function nextPhaseEventId(): string {
-  return `ua_evt_${++phaseEventCounter}`;
+
+/**
+ * Mint a TickEvent id for a unified-action phase event. The tick is required —
+ * the counter is reset every tick by `orchestrator.resetEventCounters()`, so it
+ * is unique only *within* a tick while the events it labels outlive theirs. See
+ * the same note on `ambitionTick.nextAmbitionEventId` (THR-853).
+ */
+function nextPhaseEventId(tick: number): string {
+  return `ua_evt_${tick}_${++phaseEventCounter}`;
 }
 
-/** Reset for testing */
+/** Reset per-tick phase event counter. Called by orchestrator.resetEventCounters(). */
 export function resetPhaseEventCounter(): void {
   phaseEventCounter = 0;
 }
@@ -167,7 +174,7 @@ export function phaseIdleSelection(
             } as any);
 
             events.push({
-              id: nextPhaseEventId(),
+              id: nextPhaseEventId(state.tick),
               tick: state.tick,
               type: 'agent_action_resolved',
               message: `${actor.name} begins ${template.name} at ${locationName}.`,
@@ -196,7 +203,7 @@ export function phaseIdleSelection(
       }, state.seed + state.tick * 100 + actors.indexOf(actor), state.graph);
 
       events.push({
-        id: nextPhaseEventId(),
+        id: nextPhaseEventId(state.tick),
         tick: state.tick,
         type: 'agent_action_resolved',
         message: prose.text,
@@ -228,7 +235,7 @@ export function phaseIdleSelection(
     }, state.seed + state.tick * 200, state.graph);
 
     events.push({
-      id: nextPhaseEventId(),
+      id: nextPhaseEventId(state.tick),
       tick: state.tick,
       type: 'agent_action_resolved',
       message: prose.text,
