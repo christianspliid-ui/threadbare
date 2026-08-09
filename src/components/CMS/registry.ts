@@ -596,6 +596,22 @@ export const CONTENT_REGISTRY: ContentRegistryEntry[] = [
     sourceFile: 'src/data/social-encounter-content.ts',
   },
   {
+    // THR-1046 — the Package View, the Encounter Factory's Stage-5 review surface.
+    // `data` is the template registry itself; the viewer builds each package on
+    // demand rather than eagerly, because building all of them up front would
+    // resolve every image tag in the corpus on page load for the one package the
+    // visitor came to read.
+    id: 'encounter-packages',
+    label: 'Encounter Packages',
+    category: 'Encounters',
+    description:
+      'Every composed block of one encounter, resolved — steps, the full afterimage ladder, each hand as the player sees it, cast, the endings a single playthrough never rolls, seeds, art, and the composition verdict. Tick two or more to compare a batch side by side.',
+    data: UNIFIED_ACTION_TEMPLATES,
+    viewer: 'encounter-package',
+    searchFields: ['id', 'name'],
+    sourceFile: 'src/data/unified-action-templates.ts',
+  },
+  {
     id: 'encounter-difficulty-tiers',
     label: 'Difficulty Tiers',
     category: 'Encounters',
