@@ -10,7 +10,7 @@ import type { ControlSpec } from './controlEffect';
 import type { RarityTier } from './rarity';
 import type { AttentionTier } from './attention';
 import type { RewardPoolRecipe } from './attachments';
-import type { EncounterChoiceMemory, EncounterSupportBinding, EncounterSupportBundle } from './encounter';
+import type { EncounterChoiceMemory, EncounterSupportBinding, EncounterSupportBundle, EncounterType } from './encounter';
 import type { ClearanceGateConfig } from './contentShells';
 import type { EffectPredicate } from './effects';
 import type { EncounterForeshadowingDefinition } from './foreshadowing';
@@ -132,6 +132,44 @@ export interface HiddenMark {
   readonly targetAgentId: string;
   /** Encounter families that can trigger reveal checks (prefix-matched). */
   readonly revealFamilies?: readonly string[];
+}
+
+/**
+ * A dream-sent urge planted on one mortal, tilting their *own* next decision.
+ * The Compulsion card's world change (THR-886).
+ *
+ * **Per-agent, where an omen is per-hex** — that difference is the whole card.
+ * An omen stains a place and bends whoever walks through it; a compulsion is
+ * addressed to a person and travels with them. So this cannot reuse
+ * `state.emittedOmens`, and `derivePlantedCompulsionEncounterBias` keys on
+ * `targetAgentId` where the omen path keys on hex distance.
+ *
+ * It expires rather than being consumed on use. The card's printed line says
+ * "shaping the mortal's *next* decision", and a short `expiresTick` says that
+ * without making the scoring path — a read — start writing state, which would
+ * also burn the urge on decisions the strategic-candidate override later
+ * overturns.
+ */
+export interface PlantedCompulsion {
+  readonly compulsionId: string;
+  /** The mortal the urge is addressed to. Never a hex, never a region. */
+  readonly targetAgentId: string;
+  /**
+   * Encounter types the urge leans toward, and (negatively) away from —
+   * the same authoring shape omen templates already use for `encounterBias`,
+   * so a content author meets one vocabulary rather than two.
+   *
+   * Keyed on the closed {@link EncounterType} union rather than `string`, so a
+   * misspelled type is a compile error instead of a card that silently does
+   * nothing — which is the precise defect THR-886 exists to end.
+   */
+  readonly encounterBias: Partial<Record<EncounterType, number>>;
+  /** Short prose; surfaces in the chronicle so the tilt is visible, not silent. */
+  readonly narrativeHook?: string;
+  readonly sourceEncounterId: string;
+  readonly sourceReactionId: string;
+  readonly plantedTick: number;
+  readonly expiresTick: number;
 }
 
 export type EncounterAftermathChangeKind =
@@ -454,6 +492,46 @@ export type EncounterAftermathReactionEffect =
     readonly scope: EmittedOmenScope;
     /** Optional sphere tint — biases sphere_surge category encounters. */
     readonly sphereAlignment?: SphereName;
+    readonly when?: EffectPredicate;
+  }
+  | {
+    /**
+     * The Compulsion (THR-886) — plant a dream-sent urge that tilts one mortal's
+     * *own* next decision, then let the existing pipeline resolve it.
+     *
+     * The card was the last of THR-885's six dispatch hooks left unwired, because
+     * its apparent host — `buildCompulsionEvent` — takes the decision pipeline's
+     * `ScoredCandidate[]`, a list that exists only mid-`phaseAgentDecision` and
+     * that aftermath cannot obtain. Synthesizing fakes to fit that signature would
+     * have been the parallel-path failure `nudgeDispatch` exists to avoid, so the
+     * card waited on a design call instead.
+     *
+     * Christian's ruling (2026-08-09): The Compulsion is *a whisper that tilts
+     * them* — no second choice-screen inside an encounter mid-resolution. So this
+     * plants a **weight**, which is available at the aftermath seam where a
+     * candidate menu is not, and `phaseAgentDecision` folds it into the same
+     * `combinedBias` the omen path already feeds. `premonitionCompulsion` is not
+     * touched: the pick-one-of-three vision stays on the god's own premonition
+     * turn, which is where it already lives.
+     */
+    readonly kind: 'plant_compulsion';
+    /**
+     * Encounter types to lean toward (positive) or away from (negative), before
+     * scaling by `COMPULSION_BIAS_WEIGHT` and clamping. Mirrors the
+     * `encounterBias` shape omen templates already author, and is keyed on the
+     * closed {@link EncounterType} union so a typo cannot ship as a silent no-op.
+     */
+    readonly encounterBias: Partial<Record<EncounterType, number>>;
+    /** Who dreams it. Defaults to `action.actorId`, as every other effect kind does. */
+    readonly targetAgentId?: string;
+    /** How long the urge lasts. Falls back to COMPULSION_DEFAULT_DURATION_TICKS. */
+    readonly durationTicks?: number;
+    /**
+     * Short prose for the chronicle. Optional, but omitting it makes a successful
+     * tilt indistinguishable from the do-nothing behaviour this card had before —
+     * so authors should supply one.
+     */
+    readonly narrativeHook?: string;
     readonly when?: EffectPredicate;
   }
   | {

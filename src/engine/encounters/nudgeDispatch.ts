@@ -13,23 +13,29 @@
  * Grants ride the existing `EncounterAftermathReactionEffect` vocabulary, so the
  * six dispatch hooks the plan names cost almost no new machinery:
  *
- * | Card                 | Effect kind        | Owning system     |
- * |----------------------|--------------------|-------------------|
- * | The Omen             | `emit_omen`        | omens             |
- * | The Balm             | `remove_condition` | conditions        |
- * | The Cache            | `spawn_artifact`   | artifacts         |
- * | The Long Game        | `hidden_mark`      | traits/marks      |
- * | The Favor / Bargain  | `favor_creation`   | secrets & favors  |
- * | The Kindled Ambition | `assign_ambition`  | ambitions (new)   |
+ * | Card                 | Effect kind         | Owning system         |
+ * |----------------------|---------------------|-----------------------|
+ * | The Omen             | `emit_omen`         | omens                 |
+ * | The Balm             | `remove_condition`  | conditions            |
+ * | The Cache            | `spawn_artifact`    | artifacts             |
+ * | The Long Game        | `hidden_mark`       | traits/marks          |
+ * | The Favor / Bargain  | `favor_creation`    | secrets & favors      |
+ * | The Kindled Ambition | `assign_ambition`   | ambitions (new)       |
+ * | The Compulsion       | `plant_compulsion`  | agent decision bias   |
  *
- * Only the last needed a new effect kind, because ambitions genuinely had no
- * dispatcher outside the tick phase (THR-812 / THR-726).
+ * Only the last two needed a new effect kind. Ambitions genuinely had no
+ * dispatcher outside the tick phase (THR-812 / THR-726); The Compulsion had no
+ * *reachable* one (THR-886) — its apparent host, `buildCompulsionEvent`, takes the
+ * decision pipeline's `ScoredCandidate[]`, a list that exists only mid-
+ * `phaseAgentDecision` and that aftermath cannot obtain. Synthesizing fakes to fit
+ * that signature would have been exactly the parallel path this module exists to
+ * avoid, so the card waited on a design call instead of guessing.
  *
- * TODO(THR-886): The Compulsion (card 21) is the one hook still missing. Its host
- * API, `buildCompulsionEvent`, takes the agent decision pipeline's `ScoredCandidate[]`,
- * which aftermath has no way to obtain — and synthesizing fake ones to fit the
- * signature would be the parallel-path failure this module exists to avoid. The
- * three candidate fixes differ in what the card *means*, so it is a design call.
+ * Christian resolved it 2026-08-09: The Compulsion plants a *weight*, not a menu.
+ * A weight is available at the aftermath seam where a candidate list is not, so the
+ * obstacle stopped being one — `plant_compulsion` writes a per-agent bias that
+ * `phaseAgentDecision` folds into the same `combinedBias` the omen path feeds, and
+ * `premonitionCompulsion` is not touched at all.
  *
  * Plan: `Docs/plans/2026-07-30-encounter-authoring-frameworks.md` § Decision 3.
  */

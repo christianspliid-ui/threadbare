@@ -78,6 +78,28 @@ Pure-UI feature — **no engine module, no orchestrator phase, no `GameState` fi
 | Debug | `__DEBUG.getEncounterNudges(agentRef)`, `__DEBUG.getBrokenAgents()` — both in `debug-bridge.ts` + `.d.ts` |
 | Deferred | UI pillar is WS2 (THR-775) — this ships engine + debug surfaces only, browser-verify exempt per plan. Rebuild encounters + the gate flip are WS5. UL entries land via THR-782 |
 
+## The Compulsion — per-agent decision urges (THR-886)
+
+The sixth and last of THR-885's dispatch hooks. Christian ruled 2026-08-09 that the card
+plants a **weight**, not a candidate menu — which is what makes it wireable at all, since a
+weight is obtainable at the aftermath seam and the decision pipeline's `ScoredCandidate[]` is
+not.
+
+| Surface | Wiring |
+|---|---|
+| Schema | `src/types/unifiedAction.ts` — **additive only**: `plant_compulsion` joins the `EncounterAftermathReactionEffect` union, plus a `PlantedCompulsion` interface beside `HiddenMark`. `encounterBias` is keyed on the closed `EncounterType` union, **not** `string` — a misspelled type is a compile error rather than a card that plants an urge pulling nowhere, which is the same silent-no-op class this ticket exists to end |
+| GameState | `plantedCompulsions?: PlantedCompulsion[]` — a **sibling** of `emittedOmens`, deliberately not a reuse of it. An omen is addressed to a place and catches whoever passes; a compulsion is addressed to a person and travels with them. That difference is the card (*"steer them, not the world"*), so the carriers stay separate |
+| Write | `encounterAftermath.ts` `case 'plant_compulsion'` — grants ride the existing applier, so the card reaches the world through the same door as every other. Cap-evicts oldest at `COMPULSION_MAX_ACTIVE`, mirroring `emit_omen`. Fail-soft: faction/sublocation target, absent actor, empty bias and non-finite weights each skip with a trace rather than throwing |
+| Read | `derivePlantedCompulsionEncounterBias` (`src/engine/plantedCompulsion.ts`) — pure, keys on `targetAgentId`, filters lapsed entries, scales by `COMPULSION_BIAS_WEIGHT`, clamps per type at `COMPULSION_BIAS_CAP` |
+| Consumer | `phaseAgentDecision.ts` — folded into the **existing** `combinedBias` alongside the identity and omen terms. One reader, not a second parallel one; the Done-when required exactly this |
+| Decay | `src/engine/phases/plantedCompulsionDecay.ts`, registered in `phases/index.ts`, slot `post-doom`. **No orchestrator edit** — the registry is the wiring. Sorts after `emitted_omen_decay` by the alphabetical tie-break, so `phaseRegistry.equivalence.test.ts`'s baseline moved deliberately and the determinism test still passes |
+| Expiry, not consumption | `expiresTick`, default `COMPULSION_DEFAULT_DURATION_TICKS` (3, against a 12-tick day). Consume-on-use would make the scoring path — a read — write state, and would burn the urge on selections the strategic-candidate override can still overturn later in the same phase |
+| Player-visible | An authored `narrativeHook` emits a `TickEvent` to the chronicle. Optional in the type, near-mandatory in practice: a tilt with no visible trace is indistinguishable from the do-nothing behaviour being fixed |
+| Traces | `compulsion_planted` / `compulsion_decayed` — in `TraceCategory`, `TRACE_CATEGORIES`, **and** the `TraceEntry` union as real payload interfaces, plus `plant_compulsion` added to `EncounterAftermathEffectTrace`'s closed `effectKind` list. Emitted through locally-typed helpers that cast once past `emitTrace`'s `Omit` union-collapse (the `emitNudgeTrace` pattern). Declaring the interfaces rather than the categories alone is what took the ratchet from +15 back to unchanged — see impediment #515 |
+| Untouched | `src/engine/premonitionCompulsion.ts` and `buildCompulsionEvent` — the pick-one-of-three vision stays on the god's own premonition turn. Options 2 (`encounter_seed`) and 3 (widening the builder) are **rejected, not deferred** |
+| Not LIVE | Interface-map row `compulsion-card-plants-agent-decision-bias` carries `deferralTicket: THR-883`. No shipped card authors `grants`, so nothing travels this path until content lands — badging it LIVE would be the THR-614 error class |
+| UI pillar | N/A — no file under `src/components/`, `src/hooks/`, `src/contexts/` or `src/index.css` changes. Player visibility rides the existing chronicle/event feed, which already renders `TickEvent` |
+
 ## Companies — Group Layer, engine core (THR-74)
 
 | Surface | Wiring |

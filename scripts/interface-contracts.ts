@@ -1162,6 +1162,37 @@ export const CONTRACTS: readonly Contract[] = [
     deferralTicket: 'THR-883',
   },
   {
+    id: 'compulsion-card-plants-agent-decision-bias',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: ENCOUNTERS,
+    intent:
+      'A god can steer one mortal without seizing them: the card plants an urge, and that mortal\'s own next decision leans toward it — you steered them, they still chose.',
+    ulTerms: ['Nudge', 'Encounter'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['derivePlantedCompulsionEncounterBias', 'phasePlantedCompulsionDecay'],
+      module: 'src/engine/plantedCompulsion.ts',
+    },
+    writeSites: ['src/engine/encounterAftermath.ts'],
+    readSites: ['src/engine/phaseAgentDecision.ts'],
+    // The sixth of THR-885's dispatch hooks, and the only one that needed a design
+    // call before it could be wired (THR-886). Its apparent host, `buildCompulsionEvent`,
+    // takes the decision pipeline's `ScoredCandidate[]` — a list that exists only
+    // mid-`phaseAgentDecision`, which aftermath cannot obtain. Christian ruled
+    // 2026-08-09 that the card plants a *weight*, not a candidate menu, and a weight
+    // IS available at the aftermath seam: `plant_compulsion` writes a per-agent
+    // `PlantedCompulsion`, and `phaseAgentDecision` folds it into the same
+    // `combinedBias` the omen path already feeds. `premonitionCompulsion` is untouched.
+    //
+    // Per-agent where the omen bias is per-hex — the two carriers stay separate
+    // because that difference is the card ("steer them, not the world").
+    //
+    // Not LIVE: no shipped card authors `grants` yet, so nothing travels this path
+    // until content lands under THR-883 — the same reason the three THR-885 rows
+    // above carry the deferral. Badging it LIVE would be the THR-614 error class.
+    deferralTicket: 'THR-883',
+  },
+  {
     id: 'nudge-card-cost-channels-detection-and-doom',
     producerSystem: ENCOUNTERS,
     consumerSystem: QUINTESSENCE,

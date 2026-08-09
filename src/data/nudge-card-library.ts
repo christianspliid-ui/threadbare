@@ -246,8 +246,11 @@ export const NUDGE_CARD_TYPES: readonly NudgeCardType[] = [
     keyword: 'Compulsion',
     effectShape: "A dream-sent urge shaping the mortal's next decision",
     decision: 'Steer them, not the world',
-    hostSystem: 'Premonition / compulsion',
-    status: 'design',
+    // THR-886: the urge is a per-agent decision bias folded into `phaseAgentDecision`'s
+    // existing scoring, NOT the premonition candidate menu — Christian's 2026-08-09
+    // ruling kept the pick-one-of-three vision on the god's own premonition turn.
+    hostSystem: 'Agent decision bias',
+    status: 'impl',
   },
 ];
 

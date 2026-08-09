@@ -20,6 +20,8 @@
 import { buildPhasePlan, type EnginePhase } from '../phaseRegistry';
 // Land 2 canary migrations.
 import { emittedOmenDecayPhase } from './emittedOmenDecay';
+// THR-886: sibling sweep for The Compulsion's per-agent urges.
+import { plantedCompulsionDecayPhase } from './plantedCompulsionDecay';
 import { reputationDecayPhase } from './reputationDecay';
 // Land 3 sweep (THR-238): phases with clean (state) -> Partial<GameState> shape
 // living between cleanly bracketed slot anchors. Phases that need orchestrator-local
@@ -58,6 +60,8 @@ export const ENGINE_PHASES: readonly EnginePhase[] = [
 
   // post-doom
   emittedOmenDecayPhase,
+  plantedCompulsionDecayPhase, // THR-886: The Compulsion's per-agent urges lapse
+
   // pre-economy
   reputationDecayPhase,
   resourceStockTiersPhase, // THR-615: derive stock tiers before prosperity reads resourceBalance
