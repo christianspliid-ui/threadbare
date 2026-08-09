@@ -123,9 +123,32 @@ export const HOLY_ORDER_DAWN_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         'The vigil breaks. The order will speak of it in the quiet way — which is the way that lasts.',
     },
     aftermathConfig: {
-      branchOnStep: 1,
-      variants: {
-        1: {
+      branchOnStep: 0,
+      variants: {},
+      fallback: {
+        overview:
+          'The vigil is closed. The Dawn takes its record, and {name} takes {theirs}.',
+        changes: [],
+        reactionPrompt: 'What does the god keep from the vigil?',
+        reactions: [
+          {
+            id: 'hod.vigil.default.steady',
+            label: 'Steady the hand that held.',
+            intent: 'You steady {name}. The work was quiet — your mercy is quieter.',
+            effects: [
+              { kind: 'reputation_tally' as const, key: 'star.positive', delta: 1 },
+            ],
+            closeAfterSelection: true,
+          },
+          {
+            id: 'hod.vigil.default.withhold',
+            label: 'Keep your hand back. The Dawn\'s work asks no god.',
+            intent: 'You withdraw. The temple keeps its own weather.',
+            effects: [],
+            closeAfterSelection: true,
+          },
+        ],
+        byOutcome: {
           failure: {
             overview:
               'The reliquary is lighter by one relic. The loss reads, in the second hand, as {name}\'s.',
@@ -181,30 +204,6 @@ export const HOLY_ORDER_DAWN_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
             ],
           },
         },
-      },
-      fallback: {
-        overview:
-          'The vigil is closed. The Dawn takes its record, and {name} takes {theirs}.',
-        changes: [],
-        reactionPrompt: 'What does the god keep from the vigil?',
-        reactions: [
-          {
-            id: 'hod.vigil.default.steady',
-            label: 'Steady the hand that held.',
-            intent: 'You steady {name}. The work was quiet — your mercy is quieter.',
-            effects: [
-              { kind: 'reputation_tally' as const, key: 'star.positive', delta: 1 },
-            ],
-            closeAfterSelection: true,
-          },
-          {
-            id: 'hod.vigil.default.withhold',
-            label: 'Keep your hand back. The Dawn\'s work asks no god.',
-            intent: 'You withdraw. The temple keeps its own weather.',
-            effects: [],
-            closeAfterSelection: true,
-          },
-        ],
       },
     },
   }),
@@ -275,9 +274,31 @@ export const HOLY_ORDER_DAWN_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         'The corruption endures. The order will send someone with more years of rites behind them.',
     },
     aftermathConfig: {
-      branchOnStep: 1,
-      variants: {
-        1: {
+      branchOnStep: 0,
+      variants: {},
+      fallback: {
+        overview: 'The rite is spoken. The road is cleaner for it.',
+        changes: [],
+        reactionPrompt: 'What does the god carry away from the shrine?',
+        reactions: [
+          {
+            id: 'hod.shrine.default.bless',
+            label: 'Bless the hand that held the rite.',
+            intent: 'You strengthen the rite a little — a thumb on the scale of a thing well done.',
+            effects: [
+              { kind: 'reputation_tally' as const, key: 'star.positive', delta: 1 },
+            ],
+            closeAfterSelection: true,
+          },
+          {
+            id: 'hod.shrine.default.pass',
+            label: 'Pass by. The Dawn witnessed it. That is enough.',
+            intent: 'You let it be. The faithful do not need the god in every rite.',
+            effects: [],
+            closeAfterSelection: true,
+          },
+        ],
+        byOutcome: {
           success: {
             overview:
               'A shrine cleansed at {location}. The thing beneath the stone is gone — for now.',
@@ -327,29 +348,6 @@ export const HOLY_ORDER_DAWN_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
             ],
           },
         },
-      },
-      fallback: {
-        overview: 'The rite is spoken. The road is cleaner for it.',
-        changes: [],
-        reactionPrompt: 'What does the god carry away from the shrine?',
-        reactions: [
-          {
-            id: 'hod.shrine.default.bless',
-            label: 'Bless the hand that held the rite.',
-            intent: 'You strengthen the rite a little — a thumb on the scale of a thing well done.',
-            effects: [
-              { kind: 'reputation_tally' as const, key: 'star.positive', delta: 1 },
-            ],
-            closeAfterSelection: true,
-          },
-          {
-            id: 'hod.shrine.default.pass',
-            label: 'Pass by. The Dawn witnessed it. That is enough.',
-            intent: 'You let it be. The faithful do not need the god in every rite.',
-            effects: [],
-            closeAfterSelection: true,
-          },
-        ],
       },
     },
   }),
@@ -421,9 +419,45 @@ export const HOLY_ORDER_DAWN_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         'They arrive. Some do not arrive whole. The rite for what was lost is spoken at the gate.',
     },
     aftermathConfig: {
-      branchOnStep: 1,
-      variants: {
-        1: {
+      branchOnStep: 0,
+      variants: {},
+      fallback: {
+        overview:
+          'The pilgrims are delivered. The road behind {name} is empty.',
+        changes: [],
+        reactionPrompt: 'What does the god leave at the gate of the high temple?',
+        reactions: [
+          {
+            id: 'hod.pilgrims.bless_road',
+            label: 'Bless the road they walked.',
+            intent:
+              'You sanctify the road a little. The next pilgrims will find it slightly easier, ' +
+              'though they will not know why.',
+            effects: [
+              { kind: 'reputation_tally' as const, key: 'star.positive', delta: 1 },
+            ],
+            closeAfterSelection: true,
+          },
+          {
+            id: 'hod.pilgrims.watch_gate',
+            label: 'Watch the gate close. Bear witness.',
+            intent: 'You witness. The Dawn does not need to act in every moment.',
+            effects: [],
+            closeAfterSelection: true,
+          },
+          {
+            id: 'hod.pilgrims.strengthen',
+            label: 'Strengthen {name}\'s hand for the road home.',
+            intent: 'The escort is done. The walk back alone deserves something.',
+            effects: [
+              { kind: 'recent_event' as const, eventType: 'ripple_consequence',
+                message: 'The Dawn steadied {name} on the road. The faith is a little deeper now.',
+                significance: 0.3 },
+            ],
+            closeAfterSelection: true,
+          },
+        ],
+        byOutcome: {
           failure: {
             overview:
               'The attack on the road cost someone. The pilgrims arrived — most of them — but the wound from the road travels with them.',
@@ -474,43 +508,6 @@ export const HOLY_ORDER_DAWN_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
             ],
           },
         },
-      },
-      fallback: {
-        overview:
-          'The pilgrims are delivered. The road behind {name} is empty.',
-        changes: [],
-        reactionPrompt: 'What does the god leave at the gate of the high temple?',
-        reactions: [
-          {
-            id: 'hod.pilgrims.bless_road',
-            label: 'Bless the road they walked.',
-            intent:
-              'You sanctify the road a little. The next pilgrims will find it slightly easier, ' +
-              'though they will not know why.',
-            effects: [
-              { kind: 'reputation_tally' as const, key: 'star.positive', delta: 1 },
-            ],
-            closeAfterSelection: true,
-          },
-          {
-            id: 'hod.pilgrims.watch_gate',
-            label: 'Watch the gate close. Bear witness.',
-            intent: 'You witness. The Dawn does not need to act in every moment.',
-            effects: [],
-            closeAfterSelection: true,
-          },
-          {
-            id: 'hod.pilgrims.strengthen',
-            label: 'Strengthen {name}\'s hand for the road home.',
-            intent: 'The escort is done. The walk back alone deserves something.',
-            effects: [
-              { kind: 'recent_event' as const, eventType: 'ripple_consequence',
-                message: 'The Dawn steadied {name} on the road. The faith is a little deeper now.',
-                significance: 0.3 },
-            ],
-            closeAfterSelection: true,
-          },
-        ],
       },
     },
   }),
@@ -587,9 +584,32 @@ export const HOLY_ORDER_DAWN_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         'The creature endures. The rite of cleansing for a failed hunt is spoken quietly, and without witnesses.',
     },
     aftermathConfig: {
-      branchOnStep: 1,
-      variants: {
-        1: {
+      branchOnStep: 0,
+      variants: {},
+      fallback: {
+        overview:
+          'The hunt is closed. The order\'s record is updated.',
+        changes: [],
+        reactionPrompt: 'What does the god keep from the hunt?',
+        reactions: [
+          {
+            id: 'hod.slay.default.steady',
+            label: 'Steady {name}\'s hand for the next one.',
+            intent: 'The work is done. You strengthen the blade for what follows.',
+            effects: [
+              { kind: 'reputation_tally' as const, key: 'star.positive', delta: 1 },
+            ],
+            closeAfterSelection: true,
+          },
+          {
+            id: 'hod.slay.default.let_be',
+            label: 'Let the order carry this.',
+            intent: 'The order has its rites for a successful hunt. You are not needed here.',
+            effects: [],
+            closeAfterSelection: true,
+          },
+        ],
+        byOutcome: {
           success: {
             overview:
               'The abomination is slain. The order will want to know what made it.',
@@ -639,30 +659,6 @@ export const HOLY_ORDER_DAWN_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
             ],
           },
         },
-      },
-      fallback: {
-        overview:
-          'The hunt is closed. The order\'s record is updated.',
-        changes: [],
-        reactionPrompt: 'What does the god keep from the hunt?',
-        reactions: [
-          {
-            id: 'hod.slay.default.steady',
-            label: 'Steady {name}\'s hand for the next one.',
-            intent: 'The work is done. You strengthen the blade for what follows.',
-            effects: [
-              { kind: 'reputation_tally' as const, key: 'star.positive', delta: 1 },
-            ],
-            closeAfterSelection: true,
-          },
-          {
-            id: 'hod.slay.default.let_be',
-            label: 'Let the order carry this.',
-            intent: 'The order has its rites for a successful hunt. You are not needed here.',
-            effects: [],
-            closeAfterSelection: true,
-          },
-        ],
       },
     },
   }),
@@ -734,9 +730,31 @@ export const HOLY_ORDER_DAWN_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         'Judgment delayed. The order will speak of this as a wound that needs time, but {name} knows what it costs.',
     },
     aftermathConfig: {
-      branchOnStep: 1,
-      variants: {
-        1: {
+      branchOnStep: 0,
+      variants: {},
+      fallback: {
+        overview: 'The judgment is entered in the order\'s second hand. The rite is complete.',
+        changes: [],
+        reactionPrompt: 'What does the god keep from the judgment?',
+        reactions: [
+          {
+            id: 'hod.judgment.default.witness',
+            label: 'Bear witness. The record is true.',
+            intent: 'You mark the moment. The faithful held the rite.',
+            effects: [
+              { kind: 'reputation_tally' as const, key: 'star.positive', delta: 1 },
+            ],
+            closeAfterSelection: true,
+          },
+          {
+            id: 'hod.judgment.default.pass',
+            label: 'Pass by without marking. Justice stands on its own.',
+            intent: 'You withdraw. The verdict is the verdict.',
+            effects: [],
+            closeAfterSelection: true,
+          },
+        ],
+        byOutcome: {
           success: {
             overview:
               'Judgment spoken and entered. The record is clear. The resentment takes longer to settle than the verdict.',
@@ -835,29 +853,6 @@ export const HOLY_ORDER_DAWN_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
           },
         },
       },
-      fallback: {
-        overview: 'The judgment is entered in the order\'s second hand. The rite is complete.',
-        changes: [],
-        reactionPrompt: 'What does the god keep from the judgment?',
-        reactions: [
-          {
-            id: 'hod.judgment.default.witness',
-            label: 'Bear witness. The record is true.',
-            intent: 'You mark the moment. The faithful held the rite.',
-            effects: [
-              { kind: 'reputation_tally' as const, key: 'star.positive', delta: 1 },
-            ],
-            closeAfterSelection: true,
-          },
-          {
-            id: 'hod.judgment.default.pass',
-            label: 'Pass by without marking. Justice stands on its own.',
-            intent: 'You withdraw. The verdict is the verdict.',
-            effects: [],
-            closeAfterSelection: true,
-          },
-        ],
-      },
     },
   }),
 ];
@@ -940,9 +935,31 @@ export const HOLY_ORDER_DAWN_SENIOR_TEMPLATES: UnifiedActionTemplate[] = [
         'The evil endures. The order will speak of it as a wound that requires more rites than one person carries.',
     },
     aftermathConfig: {
-      branchOnStep: 1,
-      variants: {
-        1: {
+      branchOnStep: 0,
+      variants: {},
+      fallback: {
+        overview: 'The rite of purging is spoken. The order\'s record is updated.',
+        changes: [],
+        reactionPrompt: 'What does the god keep from the deep?',
+        reactions: [
+          {
+            id: 'hod.cleanse.default.witness',
+            label: 'Bear witness. {name} has done the work the Dawn requires.',
+            intent: 'You witness. The rite is complete.',
+            effects: [
+              { kind: 'reputation_tally' as const, key: 'star.positive', delta: 1 },
+            ],
+            closeAfterSelection: true,
+          },
+          {
+            id: 'hod.cleanse.default.pass',
+            label: 'Pass by. The rite speaks for itself.',
+            intent: 'You withdraw. The faithful do not need the god in every rite.',
+            effects: [],
+            closeAfterSelection: true,
+          },
+        ],
+        byOutcome: {
           success: {
             overview:
               'The corruption beneath {location} is gone. What remains is the memory of what was there.',
@@ -985,29 +1002,6 @@ export const HOLY_ORDER_DAWN_SENIOR_TEMPLATES: UnifiedActionTemplate[] = [
             ],
           },
         },
-      },
-      fallback: {
-        overview: 'The rite of purging is spoken. The order\'s record is updated.',
-        changes: [],
-        reactionPrompt: 'What does the god keep from the deep?',
-        reactions: [
-          {
-            id: 'hod.cleanse.default.witness',
-            label: 'Bear witness. {name} has done the work the Dawn requires.',
-            intent: 'You witness. The rite is complete.',
-            effects: [
-              { kind: 'reputation_tally' as const, key: 'star.positive', delta: 1 },
-            ],
-            closeAfterSelection: true,
-          },
-          {
-            id: 'hod.cleanse.default.pass',
-            label: 'Pass by. The rite speaks for itself.',
-            intent: 'You withdraw. The faithful do not need the god in every rite.',
-            effects: [],
-            closeAfterSelection: true,
-          },
-        ],
       },
     },
   },
@@ -1083,9 +1077,40 @@ export const HOLY_ORDER_DAWN_SENIOR_TEMPLATES: UnifiedActionTemplate[] = [
         'The assault is turned. The order speaks of it as a strategic withdrawal, which is what you call a defeat when you intend to try again.',
     },
     aftermathConfig: {
-      branchOnStep: 1,
-      variants: {
-        1: {
+      branchOnStep: 0,
+      variants: {},
+      fallback: {
+        overview: 'The crusade is concluded. The order counts its faithful.',
+        changes: [],
+        reactionPrompt: 'What does the god press into the hands that held the order together?',
+        reactions: [
+          {
+            id: 'hod.crusade.strengthen',
+            label: 'Strengthen the hand that bore the banner.',
+            intent: 'The work is done. You strengthen the one who carried it.',
+            effects: [
+              { kind: 'reputation_tally' as const, key: 'star.positive', delta: 2 },
+            ],
+            closeAfterSelection: true,
+          },
+          {
+            id: 'hod.crusade.witness',
+            label: 'Bear witness. Let the faithful carry it.',
+            intent: 'You witness. The order will remember without the god\'s hand in it.',
+            effects: [
+              { kind: 'reputation_tally' as const, key: 'star.positive', delta: 1 },
+            ],
+            closeAfterSelection: true,
+          },
+          {
+            id: 'hod.crusade.pass',
+            label: 'Pass by. The crusade is the order\'s work, not yours.',
+            intent: 'You withdraw. The faithful do not need the god in every battle.',
+            effects: [],
+            closeAfterSelection: true,
+          },
+        ],
+        byOutcome: {
           success: {
             overview:
               'The stronghold falls. The enemy of the faith has lost its house. What was found inside will matter to the order\'s records.',
@@ -1191,38 +1216,6 @@ export const HOLY_ORDER_DAWN_SENIOR_TEMPLATES: UnifiedActionTemplate[] = [
           },
         },
       },
-      fallback: {
-        overview: 'The crusade is concluded. The order counts its faithful.',
-        changes: [],
-        reactionPrompt: 'What does the god press into the hands that held the order together?',
-        reactions: [
-          {
-            id: 'hod.crusade.strengthen',
-            label: 'Strengthen the hand that bore the banner.',
-            intent: 'The work is done. You strengthen the one who carried it.',
-            effects: [
-              { kind: 'reputation_tally' as const, key: 'star.positive', delta: 2 },
-            ],
-            closeAfterSelection: true,
-          },
-          {
-            id: 'hod.crusade.witness',
-            label: 'Bear witness. Let the faithful carry it.',
-            intent: 'You witness. The order will remember without the god\'s hand in it.',
-            effects: [
-              { kind: 'reputation_tally' as const, key: 'star.positive', delta: 1 },
-            ],
-            closeAfterSelection: true,
-          },
-          {
-            id: 'hod.crusade.pass',
-            label: 'Pass by. The crusade is the order\'s work, not yours.',
-            intent: 'You withdraw. The faithful do not need the god in every battle.',
-            effects: [],
-            closeAfterSelection: true,
-          },
-        ],
-      },
     },
   },
 
@@ -1293,9 +1286,31 @@ export const HOLY_ORDER_DAWN_SENIOR_TEMPLATES: UnifiedActionTemplate[] = [
         'The cult scatters. The rite of a failed inquisition is spoken without witnesses, which is the order\'s mercy.',
     },
     aftermathConfig: {
-      branchOnStep: 1,
-      variants: {
-        1: {
+      branchOnStep: 0,
+      variants: {},
+      fallback: {
+        overview: 'The inquisition is recorded. The order files it.',
+        changes: [],
+        reactionPrompt: 'What does the god keep from the inquisition?',
+        reactions: [
+          {
+            id: 'hod.inquisition.default.witness',
+            label: 'Bear witness to what the rite uncovered.',
+            intent: 'You witness. The work was hard and the light held.',
+            effects: [
+              { kind: 'reputation_tally' as const, key: 'star.positive', delta: 1 },
+            ],
+            closeAfterSelection: true,
+          },
+          {
+            id: 'hod.inquisition.default.pass',
+            label: 'Pass by. The inquisition stands on its own authority.',
+            intent: 'You withdraw. The order has its rites.',
+            effects: [],
+            closeAfterSelection: true,
+          },
+        ],
+        byOutcome: {
           success: {
             overview:
               'The cult in {location} is broken. What {name} found in the records will outlast the inquisition.',
@@ -1353,29 +1368,6 @@ export const HOLY_ORDER_DAWN_SENIOR_TEMPLATES: UnifiedActionTemplate[] = [
             ],
           },
         },
-      },
-      fallback: {
-        overview: 'The inquisition is recorded. The order files it.',
-        changes: [],
-        reactionPrompt: 'What does the god keep from the inquisition?',
-        reactions: [
-          {
-            id: 'hod.inquisition.default.witness',
-            label: 'Bear witness to what the rite uncovered.',
-            intent: 'You witness. The work was hard and the light held.',
-            effects: [
-              { kind: 'reputation_tally' as const, key: 'star.positive', delta: 1 },
-            ],
-            closeAfterSelection: true,
-          },
-          {
-            id: 'hod.inquisition.default.pass',
-            label: 'Pass by. The inquisition stands on its own authority.',
-            intent: 'You withdraw. The order has its rites.',
-            effects: [],
-            closeAfterSelection: true,
-          },
-        ],
       },
     },
   },
@@ -1473,9 +1465,44 @@ export const HOLY_ORDER_DAWN_ELITE_TEMPLATES: UnifiedActionTemplate[] = [
         'Defeat. The order retreats. The rite of a failed holy war will have to be written by whoever survives to write it.',
     },
     aftermathConfig: {
-      branchOnStep: 2,
-      variants: {
-        2: {
+      branchOnStep: 0,
+      variants: {},
+      fallback: {
+        overview:
+          'The holy war is concluded. The order counts its faithful and files the record.',
+        changes: [],
+        reactionPrompt: 'What does the god press into the hands that carried the order through the war?',
+        reactions: [
+          {
+            id: 'hod.war.witness',
+            label: 'Bear witness to what the faith cost.',
+            intent: 'You witness without judgment. The war was fought for something real.',
+            effects: [
+              { kind: 'reputation_tally' as const, key: 'star.positive', delta: 2 },
+            ],
+            closeAfterSelection: true,
+          },
+          {
+            id: 'hod.war.carry_grief',
+            label: 'Carry the names of the fallen. The order should not carry them alone.',
+            intent: 'You take the grief that the faithful cannot name. That is what gods are for.',
+            effects: [
+              { kind: 'recent_event' as const, eventType: 'ripple_consequence',
+                message: 'The weight of the fallen in the holy war is carried by the Dawn. {name} walks lighter for it.',
+                significance: 0.6 },
+              { kind: 'reputation_tally' as const, key: 'star.positive', delta: 1 },
+            ],
+            closeAfterSelection: true,
+          },
+          {
+            id: 'hod.war.pass',
+            label: 'Pass by. The order carries its own costs.',
+            intent: 'You withdraw. The faithful have always carried the weight of what they believe.',
+            effects: [],
+            closeAfterSelection: true,
+          },
+        ],
+        byOutcome: {
           success: {
             overview:
               'Victory. The enemy is vanquished and the faith is vindicated in blood and silence. ' +
@@ -1576,42 +1603,6 @@ export const HOLY_ORDER_DAWN_ELITE_TEMPLATES: UnifiedActionTemplate[] = [
           },
         },
       },
-      fallback: {
-        overview:
-          'The holy war is concluded. The order counts its faithful and files the record.',
-        changes: [],
-        reactionPrompt: 'What does the god press into the hands that carried the order through the war?',
-        reactions: [
-          {
-            id: 'hod.war.witness',
-            label: 'Bear witness to what the faith cost.',
-            intent: 'You witness without judgment. The war was fought for something real.',
-            effects: [
-              { kind: 'reputation_tally' as const, key: 'star.positive', delta: 2 },
-            ],
-            closeAfterSelection: true,
-          },
-          {
-            id: 'hod.war.carry_grief',
-            label: 'Carry the names of the fallen. The order should not carry them alone.',
-            intent: 'You take the grief that the faithful cannot name. That is what gods are for.',
-            effects: [
-              { kind: 'recent_event' as const, eventType: 'ripple_consequence',
-                message: 'The weight of the fallen in the holy war is carried by the Dawn. {name} walks lighter for it.',
-                significance: 0.6 },
-              { kind: 'reputation_tally' as const, key: 'star.positive', delta: 1 },
-            ],
-            closeAfterSelection: true,
-          },
-          {
-            id: 'hod.war.pass',
-            label: 'Pass by. The order carries its own costs.',
-            intent: 'You withdraw. The faithful have always carried the weight of what they believe.',
-            effects: [],
-            closeAfterSelection: true,
-          },
-        ],
-      },
     },
   },
 
@@ -1706,9 +1697,31 @@ export const HOLY_ORDER_DAWN_ELITE_TEMPLATES: UnifiedActionTemplate[] = [
         'The light did not answer. The sanctum will not say why. {name} will return when the order decides the time is right.',
     },
     aftermathConfig: {
-      branchOnStep: 2,
-      variants: {
-        2: {
+      branchOnStep: 0,
+      variants: {},
+      fallback: {
+        overview: 'The divine trial is concluded. The sanctum\'s record is kept.',
+        changes: [],
+        reactionPrompt: 'What does the god keep from the trial?',
+        reactions: [
+          {
+            id: 'hod.trial.default.witness',
+            label: 'Bear witness to what {name} endured.',
+            intent: 'You witness. The trial was real and the enduring was real.',
+            effects: [
+              { kind: 'reputation_tally' as const, key: 'star.positive', delta: 1 },
+            ],
+            closeAfterSelection: true,
+          },
+          {
+            id: 'hod.trial.default.pass',
+            label: 'Pass by. The sanctum does not require the god\'s attention.',
+            intent: 'You withdraw. The trial is between the faithful and the Dawn.',
+            effects: [],
+            closeAfterSelection: true,
+          },
+        ],
+        byOutcome: {
           success: {
             overview:
               '{name} has received the divine mandate. The order\'s record is updated.',
@@ -1751,29 +1764,6 @@ export const HOLY_ORDER_DAWN_ELITE_TEMPLATES: UnifiedActionTemplate[] = [
             ],
           },
         },
-      },
-      fallback: {
-        overview: 'The divine trial is concluded. The sanctum\'s record is kept.',
-        changes: [],
-        reactionPrompt: 'What does the god keep from the trial?',
-        reactions: [
-          {
-            id: 'hod.trial.default.witness',
-            label: 'Bear witness to what {name} endured.',
-            intent: 'You witness. The trial was real and the enduring was real.',
-            effects: [
-              { kind: 'reputation_tally' as const, key: 'star.positive', delta: 1 },
-            ],
-            closeAfterSelection: true,
-          },
-          {
-            id: 'hod.trial.default.pass',
-            label: 'Pass by. The sanctum does not require the god\'s attention.',
-            intent: 'You withdraw. The trial is between the faithful and the Dawn.',
-            effects: [],
-            closeAfterSelection: true,
-          },
-        ],
       },
     },
   },
