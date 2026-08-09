@@ -561,10 +561,10 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
           '{?no_faction}No preparation except what {name} assembled from public presence. ' +
           'The first hour is about building a baseline, not drawing conclusions.{/no_faction}',
         successAfterimage:
-          'The target visits the same location twice before midday. They are meeting someone ' +
+          'The target visits the same location twice before midday. They are meeting a contact ' +
           'they don\'t want associated with their public business. {name} note{s} the face.',
         failureAfterimage:
-          'The target changes their pattern mid-morning — either chance or someone tipped them. ' +
+          'The target changes their pattern mid-morning — either chance or a warning that got there first. ' +
           '{name} pull{s} back before the window closes entirely.',
       },
       {
@@ -600,10 +600,10 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
           'The kind of knowledge that changes how the target can be approached.',
         failureAfterimage:
           'The intelligence is thin — suggestive but not actionable. {name} has observations ' +
-          'but not conclusions. Something important happened that {they} was{s} not positioned to see.',
+          'but not conclusions. The meeting that mattered happened where {they} was{s} not positioned to see it.',
         criticalSuccessAfterimage:
-          '{name} depart{s} with something the target could not afford to have seen: not a name or a location, ' +
-          'but the relationship between them — the weight of obligation in the way they said goodbye, ' +
+          '{name} depart{s} with what the target could not afford to have seen: not a name or a location, ' +
+          'but the relationship between them — the weight of obligation in how they said goodbye, ' +
           'the direction they looked before leaving. The intelligence maps a structure, not just a fact.',
         successAtCostAfterimage:
           '{name} has the intelligence, but the extraction was not clean. ' +
@@ -611,7 +611,7 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
           'The data is good. The cover may not be.',
         criticalFailureAfterimage:
           'The target changed their pattern because they saw {name} first — not just spotted: assessed and catalogued. ' +
-          '{name} now appears in whatever account the target is building, ' +
+          '{name} now appears in the account the target is building, ' +
           'and that account is being built with more care than the surveillance that triggered it.',
       },
     ],
@@ -620,7 +620,7 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         '{name} is running surveillance on a target in {location}. ' +
         'The goal is specific intelligence, not general knowledge.',
       success:
-        'The surveillance produced something concrete. {name} knows something the target didn\'t intend to reveal.',
+        'The surveillance produced a name and a place. {name} knows a fact the target didn\'t intend to reveal.',
       failure:
         'The opportunity closed before it fully opened. The intelligence gathered is inconclusive.',
     },
@@ -1119,11 +1119,11 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
               'but whether this is coordinated, and what coordination implies. ' +
               '{name} says nothing yet. Sometimes that is the whole message.',
             successAfterimage:
-              'The presence of two is worth more than the words of one. ' +
-              'The target\'s body language shifts before {name} has said anything specific.',
+              'Two standing is worth more than one speaking. ' +
+              'The target\'s body language shifts before {name} has named a single demand.',
             failureAfterimage:
               'The ally\'s presence was supposed to help, but the target reads them as backup ' +
-              'rather than weight — and backup can be isolated. The dynamic is less favorable than expected.',
+              'rather than weight — and backup can be isolated. Two bodies now read as one target and one straggler.',
           },
         },
         fallback: {
@@ -1147,7 +1147,7 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
             'but they have stopped saying no.',
           failureAfterimage:
             'The target holds. {name} can see the fear — it\'s there, in the stillness — ' +
-            'but the fear and the compliance are not the same thing, and the target knows that.',
+            'but fear and compliance are not the same currency, and the target knows that.',
         },
       },
       {
@@ -1170,11 +1170,11 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
           '{name} does not remark on this. The agreement is what matters. ' +
           'The fear can be its own private business.',
         failureAfterimage:
-          'But {target} finds somewhere in themselves what they came in thinking they didn\'t have. ' +
+          'But {target} finds a floor in themselves that they came in thinking they didn\'t have. ' +
           'Not bravery exactly — more like a calculus that decided the cost of yielding ' +
           'was higher than the cost of refusing. {name} did not account for that arithmetic.',
         criticalSuccessAfterimage:
-          'More than agreement — {target} volunteers more than {name} asked for, in the way that people do ' +
+          'More than agreement — {target} volunteers more than {name} asked for, as people do ' +
           'when they have decided that the safest path is to become useful. ' +
           '{name} now has more leverage than the encounter was designed to produce.',
         successAtCostAfterimage:
@@ -1182,8 +1182,8 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
           'provisional, conditional, already looking for the clause that voids it. ' +
           '{name} got what {they} asked for. Holding it will require more work.',
         criticalFailureAfterimage:
-          'Refusal — and {target} does not leave quietly. Whatever they found in themselves ' +
-          'in the moment of refusal has named {name} an enemy in terms they were not previously using. ' +
+          'Refusal — and {target} does not leave quietly. The floor they found in themselves ' +
+          'has named {name} an enemy in terms they were not previously using. ' +
           'The intimidation attempt created a relationship it did not intend to create.',
       },
     ],
@@ -1194,7 +1194,7 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
       success:
         'The target yields. Fear and compliance landed in the same place.',
       failure:
-        'The target refused. Something in their calculation shifted at the last moment.',
+        'The target refused. Their calculation shifted at the last moment, and the demand did not move it back.',
     },
     aftermathConfig: {
       branchOnStep: 0,

@@ -413,7 +413,7 @@ const LEGACY_FACTION_QUEST_TEMPLATES: FactionEntry[] = [
           },
         },
         onFailure: {
-          narrative: 'The deep yields nothing. The expedition is a costly failure.',
+          narrative: 'The deep yields empty galleries and spoiled rations. The expedition is a costly failure.',
           rewardPool: {
             categoryWeights: { condition: 0.70, possession: 0.30 },
             tagFilters: ['#ancient'],

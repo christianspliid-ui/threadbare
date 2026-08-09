@@ -1048,7 +1048,7 @@ export const BORDERLAND_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
           'Seen, just in time.',
         failureAfterimage:
           'Too late. The strike is fast and accurate; the boot leather is thicker than the fang is patient. ' +
-          'A close thing, with no second chances built in.',
+          'A close call, with no second chances built in.',
       },
       {
         reach: 'iron',
@@ -1074,14 +1074,14 @@ export const BORDERLAND_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
           'A swift, economical strike. The serpent does not have time to be anywhere else. ' +
           '{name} moves on, one small danger crossed off the path.',
         failureAfterimage:
-          'The snake slithers into a fissure between the rocks. {name} takes the long way around the nest, ' +
+          'The snake slithers into a fissure between the rocks. {name} takes the long detour around the nest, ' +
           'and walks more carefully for the rest of the day.',
       },
     ],
     narrativeTemplates: {
       initiation: 'A venomous serpent waits where {name}\'s foot would have fallen on the {location} path.',
       success: 'The serpent is dealt with. The path is open.',
-      failure: 'The serpent withdrew. {name} took the long way around.',
+      failure: 'The serpent withdrew into the rocks. {name} took the long detour around the nest.',
     },
   },
 
@@ -1226,11 +1226,11 @@ export const BORDERLAND_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
           'Gossamer threads catch the light between the crumbled pillars at {location}. Too thick for any common spider, ' +
           'and arranged by something that thinks in geometry. {name} studies the pattern before stepping into it.',
         successAfterimage:
-          '{name} reads the web the way a tracker reads a trail — anchor strands here, signal lines there, ' +
+          '{name} reads the web as a tracker reads a trail — anchor strands here, signal lines there, ' +
           'and the safe seam between. The nest is avoidable. Barely.',
         failureAfterimage:
-          'A strand catches {name}\'s sleeve. The vibration travels the whole web, and somewhere in the dark ' +
-          'a thing the size of a hunting dog stops doing whatever it was doing.',
+          'A strand catches {name}\'s sleeve. The vibration travels the whole web, and deep in the ruin ' +
+          'the spider stops feeding and turns toward the pull.',
       },
       {
         reach: 'iron',
@@ -1260,7 +1260,7 @@ export const BORDERLAND_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
           '{?no_artifact}{name} works with what {they} brought — fire, mostly. Fire and a steady hand.{/no_artifact}',
         successAfterimage:
           'Fire takes the web before the creature does. The nest collapses into itself, a smell like burned hair, ' +
-          'and the creature flees deeper into the ruin to whatever older thing fed it first.',
+          'and the creature flees deeper into the ruin, toward the older dark that fed it first.',
         failureAfterimage:
           'The spider has the angle it wants. {name} backs out of the ruin with the web still on {their} sleeves ' +
           'and chooses not to come back. Some places are best left to what arranged them.',
@@ -1633,8 +1633,8 @@ export const BORDERLAND_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
           'pulsing in a rhythm that is not a heart\'s. It is the sort of light that wants to be followed, ' +
           'and is honest enough to admit it.',
         successAfterimage:
-          '{name} keeps distance. The wisp leads the way it leads — sometimes in a circle, sometimes off the trail, ' +
-          'sometimes straight at something. Tonight is the third kind.',
+          '{name} keeps distance. The wisp leads as wisps lead — sometimes in a circle, sometimes off the trail, ' +
+          'sometimes straight to a buried stone. Tonight is the third kind.',
         failureAfterimage:
           'The light dances away into the bog. {name} finds {them}self ankle-deep in muck ' +
           'and not on any path that can be retraced before dawn.',
@@ -1660,10 +1660,10 @@ export const BORDERLAND_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
           'The wisp hovers over a mossy stone in a clearing of {location}, pulsing slower now. ' +
           'Something is buried here, or bound, or both.',
         successAfterimage:
-          'Beneath the stone — an old offering cache, the kind country folk used to leave for whatever the country was, ' +
+          'Beneath the stone — an old offering cache, the kind country folk used to leave for the older powers of the place, ' +
           'before the country had a name. The wisp fades, purpose served, and the clearing settles.',
         failureAfterimage:
-          'The wisp blinks out. Whatever it wanted to show remains hidden. {name} digs but finds only roots, ' +
+          'The wisp blinks out. What it meant to show stays buried. {name} digs but finds only roots, ' +
           'and the clearing closes its argument without speaking.',
       },
     ],

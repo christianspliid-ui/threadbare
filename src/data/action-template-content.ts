@@ -694,7 +694,7 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     narrativeTemplates: {
       initiation: '{{actor}} senses for magic afoot, reaching out with ethereal perception.',
       success: '{{actor}} feels it. The magic in {{the-target}} is now visible to {{their}} eyes.',
-      failure: '{{actor}} feels nothing. {{the-target}}\'s magic remains cloaked.',
+      failure: '{{actor}} reaches out and finds only still air. {{the-target}}\'s magic remains cloaked.',
     },
   },
   {

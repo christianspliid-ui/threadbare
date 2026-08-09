@@ -1869,7 +1869,7 @@ const LOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     narrativeTemplates: {
       initiation: 'turns the divine gaze downward, reading the land the way mortals read a ledger',
       success: 'a prospector kicks loose a stone and stops walking — by evening the whole settlement knows what the hill has been hiding',
-      failure: 'the ground keeps its counsel; whatever lies beneath declines to be found today',
+      failure: 'the ground keeps its counsel; no prospector stops walking, and the vein stays under the hill another season',
     },
   },
 
@@ -2198,7 +2198,7 @@ const LOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     narrativeTemplates: {
       initiation: 'sets a claim on the place the way a god sets a name — quietly, and past any arguing',
       success: 'the wellspring turns toward you; what it holds, it holds for your sake now',
-      failure: 'the place will not be held; whatever runs beneath it slips your grasp and stays its own',
+      failure: 'the place will not be held; the wellspring slips your grasp and stays its own',
     },
   },
 
@@ -2233,7 +2233,7 @@ const LOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     motivations: ['tradition_novelty', 'preservation_transformation', 'sacrifice_survival'],
     narrativeTemplates: {
       initiation: 'traces the oldest stone in the foundation, finds the name carved beneath the moss, and speaks it aloud',
-      success: 'someone answers; they have always been here — now they are also here in a way that can be seen',
+      success: 'the spirit of the place answers; it has always been here — now it is here in a shape that can be seen',
       failure: 'the name is spoken into a stone that does not yet know how to listen',
     },
   },
@@ -2272,7 +2272,7 @@ const LOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     narrativeTemplates: {
       initiation: 'folds something soft into the water — a name, a refusal, a fragment of grief; the well drinks it',
       success: 'by the third morning, children will not drink; by the fifth, neither will mothers — the healers call it the well-fever',
-      failure: 'the water remains water; whatever was fed it has slid away',
+      failure: 'the water remains water; the affliction folded into it has slid away unswallowed',
     },
   },
 
@@ -3221,7 +3221,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     narrativeTemplates: {
       initiation: 'sends perception deep into the earth, searching for what lies beneath',
       success: 'veins of resource shimmer into divine sight — the land yields its hidden wealth',
-      failure: 'the earth holds its secrets close; nothing of value reveals itself',
+      failure: 'the earth holds its secrets close; no vein, no seam, no buried water answers the search',
     },
   },
   {

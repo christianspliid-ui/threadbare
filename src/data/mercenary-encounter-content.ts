@@ -67,7 +67,7 @@ export const MERCENARY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         onSuccess: [],
         onFailure: [],
         successAfterimage: 'The section is clear. Patrol completed per the contract.',
-        failureAfterimage: 'Something moves in the dark and is gone before {name} can address it. Partial work.',
+        failureAfterimage: 'A shape moves in the dark and is gone before {name} can close on it. Partial work.',
       },
       {
         id: 'mc.quest.patrol.2',
@@ -80,7 +80,7 @@ export const MERCENARY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         onSuccess: [],
         onFailure: [],
         successAfterimage: 'Report delivered. Numbers match the ground. Contract fulfilled.',
-        failureAfterimage: 'The count is off. The captain says nothing, which is worse than words.',
+        failureAfterimage: 'The count is off. The captain reads it twice and lets the silence do the correcting.',
       },
     ],
     aftermathConfig: {

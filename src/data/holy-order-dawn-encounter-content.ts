@@ -2108,9 +2108,9 @@ export const HOD_PROMOTION_TEMPLATE: UnifiedActionTemplate = {
         '{?has_faction}The {faction} order\'s senior knights are present as witnesses. They have seen many of these trials.{/has_faction}' +
         '{?no_faction}The witnesses are the altar, the light, and {name}\'s own account of what they believe.{/no_faction}',
       successAfterimage:
-        '{name} ascends. The order recognizes the devotion — first in the record, then in the way the senior knights speak to {them}.',
+        '{name} ascends. The order recognizes the devotion — first in the record, then in how the senior knights speak to {them}.',
       failureAfterimage:
-        'The trial reveals doubt. Not a flaw — doubt is the order\'s way of checking the work — but this doubt is load-bearing. ' +
+        'The trial reveals doubt. Not a flaw — doubt is how the order checks the work — but this doubt is load-bearing. ' +
         'Meditate and return.',
     },
   ],
@@ -2121,7 +2121,7 @@ export const HOD_PROMOTION_TEMPLATE: UnifiedActionTemplate = {
     success:
       '{name} ascends. The record is updated. The title changes.',
     failure:
-      'The trial found something unready. The order will speak of it in the quiet way, and {name} will know what that means.',
+      'The trial found the faith unready. The order will speak of it quietly, and {name} will know what that means.',
   },
   aftermathConfig: {
     branchOnStep: 0,

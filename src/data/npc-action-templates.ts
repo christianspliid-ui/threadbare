@@ -81,7 +81,7 @@ export const NPC_ACTION_TEMPLATES: readonly UnifiedActionTemplate[] = [
     narrativeTemplates: {
       initiation: 'You extend your awareness like smoke through the cracks of their daily life.',
       success: 'A fragment of truth surfaces — overheard, stolen, yours.',
-      failure: 'They say nothing of consequence. Whatever they know, they keep close.',
+      failure: 'They talk about the weather and the price of grain. What they know stays behind their teeth.',
     },
   },
 
@@ -204,7 +204,7 @@ export const NPC_ACTION_TEMPLATES: readonly UnifiedActionTemplate[] = [
     narrativeTemplates: {
       initiation: 'You make the material case. There is a number for everything.',
       success: 'They take it. What was closed opens.',
-      failure: 'Insulted or principled — either way, they refuse. You have bought nothing but suspicion.',
+      failure: 'Insulted or principled, they refuse. The coin goes back in the purse; the suspicion stays.',
     },
   },
 

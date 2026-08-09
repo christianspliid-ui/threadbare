@@ -256,19 +256,19 @@ export const TAVERN_UNIFIED_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
           '{?no_faction}No one has taught {name} this; {they} ha{s} to learn it from the room itself — which voices pause, which don\'t, which know to be careful.{/no_faction}',
         successAfterimage:
           'A name. A route. A date next week. At the next bench, {cast:regular} and a trading partner have been talking for an hour and do not realise ' +
-          'they gave away the thing they came here to negotiate in private. {name} let{s} the cup rest on the table and does not write anything down.',
+          'they gave away the very terms they came here to negotiate in private. {name} let{s} the cup rest on the table and writes none of it down.',
         failureAfterimage:
           'The loudest man at the table is drunk enough to be interesting but not useful — opinions, not observations. ' +
-          'Two hours pass. {name} leave{s} with an aching head and nothing worth carrying.',
+          'Two hours pass. {name} leave{s} with an aching head and no name worth carrying.',
       },
     ],
     narrativeTemplates: {
       initiation:
         '{name} settle{s} in at {location} to listen. A tavern at the right hour is the cheapest place in the world to learn something that matters.',
       success:
-        'Someone said too much within earshot. {name} leave{s} with a specific piece of intelligence.',
+        'A trader said too much within earshot. {name} leave{s} with a specific piece of intelligence.',
       failure:
-        'The room\'s noise stayed noise. Nothing usable surfaced tonight.',
+        'The room\'s noise stayed noise. No name, no route, no date surfaced tonight.',
     },
     aftermathConfig: {
       branchOnStep: 0,

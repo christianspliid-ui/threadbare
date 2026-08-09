@@ -837,10 +837,10 @@ export const ARCANE_CIRCLE_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
           'It simply waits, with the patience of something that has no concept of time, ' +
           'to see what {name} does next.',
         successAfterimage:
-          'Contact made. Data returns. And something on the other side has taken note.',
+          'Contact made. Data returns. And the watcher on the other side has taken note.',
         failureAfterimage:
           'The probe destabilizes and collapses inward. {name} pulls back intact, ' +
-          'but the connection lasted long enough for notice.',
+          'but the probe stayed open long enough to be traced back.',
       },
     ],
     narrativeTemplates: {
@@ -849,10 +849,10 @@ export const ARCANE_CIRCLE_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         'The circle knows what {they\'re} doing. What waits across the boundary does not need to.',
       success:
         'Data streams back. The circle\'s knowledge of adjacent planar geometry expands. ' +
-        'Something across the boundary now knows this tower\'s position.',
+        'The watcher across the boundary now knows this tower\'s position.',
       failure:
         'The probe collapses before full contact. {name} surfaces intact, with fragments — ' +
-        'and the distinct impression that whatever noticed the probe is still watching.',
+        'and the distinct impression that the watcher across the boundary has not looked away.',
     },
     aftermathConfig: {
       branchOnStep: 0,
