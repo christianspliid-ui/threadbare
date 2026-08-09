@@ -144,7 +144,16 @@ export interface NudgePhaseShellProps {
 
 // ── Card ───────────────────────────────────────────────────────────
 
-function NudgeCard({
+/**
+ * One card of the hand.
+ *
+ * Exported for the Package View (THR-1046), which draws the same row from a
+ * statically-built model so a designer reviewing an encounter sees the card the
+ * *player* will see rather than a second rendering of the same fields. Pass
+ * `card.interactive: false` there — the card is a display of authored content,
+ * not a control, and a designer surface must not offer a commit that cannot fire.
+ */
+export function NudgeCard({
   card,
   designerView,
   onToggle,

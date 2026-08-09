@@ -263,7 +263,16 @@ function allAftermathChanges(
 ): readonly EncounterAftermathChange[] {
   const out: EncounterAftermathChange[] = [];
   for (const variant of aftermathVariants(template)) {
-    out.push(...variant.changes);
+    // `changes` is declared required, so an unguarded spread reads as safe — but
+    // the red baseline (THR-489) lets a mis-shaped literal compile, and ten
+    // `hod.*` templates key `variants` by *step index → band* rather than
+    // `choiceId → AftermathVariant`, which puts an object with no `changes` here.
+    // The spread then threw `changes is not iterable` on every one of them,
+    // against this module's own "never throws" contract (THR-1046 found it by
+    // building a package for every live template). The shape defect itself is
+    // tracked separately; this guard is what keeps a malformed template producing
+    // violations rather than an exception. Shape defect: THR-1054.
+    out.push(...(variant.changes ?? []));
     for (const band of Object.values(variant.byOutcome ?? {})) {
       out.push(...(band?.changes ?? []));
     }
@@ -579,7 +588,10 @@ export function authoredProse(
   for (const [index, variant] of aftermathVariants(template).entries()) {
     push(variant.overview, `aftermath[${index}].overview`);
     push(variant.reactionPrompt, `aftermath[${index}].reactionPrompt`);
-    for (const change of variant.changes) {
+    // Guarded for the same reason as `allAftermathChanges` — see the note there
+    // (mis-shaped `variants` entries, THR-1054). Both readers of `variant.changes`
+    // must guard, or the one that does not is the one that throws.
+    for (const change of variant.changes ?? []) {
       push(change.title, `aftermath[${index}].change[${change.id}].title`);
       push(change.detail, `aftermath[${index}].change[${change.id}].detail`);
     }

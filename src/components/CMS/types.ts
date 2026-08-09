@@ -9,7 +9,16 @@
 // ── Viewer Types ─────────────────────────────────────────────────
 
 /** Available viewer components. Add new viewers here when data shapes diverge. */
-export type ViewerType = 'table' | 'record' | 'tree' | 'constants' | 'prose' | 'config-manager' | 'ia-surface';
+export type ViewerType =
+  | 'table'
+  | 'record'
+  | 'tree'
+  | 'constants'
+  | 'prose'
+  | 'config-manager'
+  | 'ia-surface'
+  /** THR-1046 — the Package View. Reads its own hash parameters (`template`, `batch`). */
+  | 'encounter-package';
 
 // ── Column Definitions ───────────────────────────────────────────
 
