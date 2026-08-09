@@ -200,8 +200,20 @@ describe('phaseAscendantHandFilter — step transition into a fork (THR-924)', (
     // which the orchestrator caught as "Tick crashed, returning previous state".
     expect(() => phaseAscendantHandFilter(state)).not.toThrow();
 
-    // `forecast_computed` is emitted through a cast in `maybeComputeEncounterForecast`
-    // and is not a member of the TraceCategory union, so compare as a plain string.
+    // `forecast_computed` IS a member of the TraceCategory union (since 2026-05-07)
+    // — the cast below is needed for a different reason, corrected in THR-928.
+    //
+    // `getTraces()` returns `TraceEntry`, a discriminated union, so `trace.category`
+    // narrows to the literals declared by the union's *members*, not to whatever
+    // `TraceCategory` happens to list. `ForecastComputedTrace` exists
+    // (src/types/traces/encounter-traces.ts) but was never added to `TraceEntry`, so
+    // `'forecast_computed'` is absent from the narrowed type and the comparison is a
+    // TS2367 "no overlap" error without laundering.
+    //
+    // Removing this cast means wiring that interface (and 19 sibling orphans) into
+    // `TraceEntry`, which first needs them to extend `TraceBase` — they carry no
+    // `id`/`timestamp` and several no `summary`. TODO(THR-1065), with the shrinking
+    // ratchet in src/types/__tests__/trace-vocabulary.test.ts as the predicate.
     const forecastTraces = getTraces().filter(
       (trace) => (trace.category as string) === 'forecast_computed',
     );

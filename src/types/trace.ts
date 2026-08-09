@@ -206,7 +206,12 @@ export type TraceCategory =
   | 'composition.phase_eval_failed'
   // Composition dual-voice story-beat wiring (THR-254)
   | 'composition.story_beat_template_missing'
-  // Encounter Experience traces (THR-339 wiring; emitters in Phase B modules)
+  // Encounter Experience traces (THR-339 wiring — emitters in Phase B modules)
+  // The dash above was a semicolon until THR-928. A naive "read the union" scan
+  // that delimits on the first `;` stopped here and reported the ~120 members
+  // below as unregistered — which is how THR-928 came to be filed against
+  // `forecast_computed`, a member present since 2026-05-07. Keep comments in
+  // this union semicolon-free.
   | 'choice_resolved'
   | 'forecast_computed'
   | 'hand_filtered'
@@ -328,7 +333,70 @@ export type TraceCategory =
   // Nudge Model — WS0 engine substrate (THR-773)
   | 'nudge_played'
   | 'agent_broken'
-  | 'agent_mended';
+  | 'agent_mended'
+  // ─── Emitted-but-unregistered categories (THR-928) ────────────────────
+  // Every category below is emitted by a live `emitTrace` call site and was
+  // absent from this union, so the two vocabularies had silently diverged —
+  // the THR-800 / THR-803 "two vocabularies that never intersected" shape.
+  //
+  // Being absent here is not cosmetic. `TRACE_CATEGORIES` seeds DebugPanel's
+  // enabled-category set, and the panel filters on membership, so a category
+  // missing from the pair was **invisible in the trace inspector** no matter
+  // how faithfully it was emitted. That is an NFP #2 (inspectability) defect,
+  // not a typing nicety.
+  //
+  // Three of these — graph_op_execution, choice_set_player_resolved and
+  // choice_set_player_dismissed — already had a wired TraceEntry member and
+  // already sat in TRACE_CATEGORIES, so their absence here made the
+  // `TRACE_CATEGORIES: TraceCategory[]` annotation itself fail to typecheck.
+  //
+  // Membership predicate, re-runnable: any `category: '<literal>'` inside an
+  // emitTrace call whose literal is not a member of this union. See the
+  // regression gate in src/types/__tests__/trace-vocabulary.test.ts, which
+  // fails if the set ever diverges again.
+  | 'action'
+  | 'aftermath_invalid_tally_key'
+  | 'aftermath_invalid_tally_key_rate_limited'
+  | 'aftermath_sentinel_bound'
+  | 'agent_validation'
+  | 'ambition_progress'
+  | 'bond_change_applied'
+  | 'branch_decided'
+  | 'chain_progress'
+  | 'choice_set_player_dismissed'
+  | 'choice_set_player_resolved'
+  | 'complication_partial_progress'
+  | 'consequence_applied'
+  | 'death_site_spirit_pressure'
+  | 'debug_tick_batch'
+  | 'divine_premonition'
+  | 'economic_trait_acquired'
+  | 'economic_trait_lost'
+  | 'effect_reaction'
+  | 'encounter'
+  | 'encounter_seed_family_matched'
+  | 'encounter_trait'
+  | 'faction_action'
+  | 'faction_bonus'
+  | 'faction_promotion'
+  | 'faction_reputation'
+  | 'faction_reputation_gain_error'
+  | 'faction_reputation_trait'
+  | 'graph_op_execution'
+  | 'reputation_walk'
+  | 'seed_context_inherited'
+  | 'social_encounter_generation'
+  | 'social_outcome'
+  | 'trust_change'
+  // Dotted categories. Each already had a wired TraceEntry member and was still
+  // absent from this union, so the emitted trace could never be selected in the
+  // inspector. Found by the regression gate, not by hand — a first scan keyed on
+  // /[a-z0-9_]+/ misses every dotted name, and the same omission is why these
+  // outlived the 34 above.
+  | 'chronicle.aggregated'
+  | 'chronicle.aggregate_failed'
+  | 'naming.constrained_reject'
+  | 'rival.scheme_phase_advanced';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'action_selection', 'narrative_generation', 'context_harvest',
@@ -628,6 +696,45 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'nudge_played',
   'agent_broken',
   'agent_mended',
+  // Emitted-but-unregistered categories (THR-928). Registering them here is what
+  // makes them selectable — and therefore visible — in the DebugPanel trace
+  // inspector. Until now each was emitted faithfully and then filtered out of
+  // the panel, because DebugPanel seeds its enabled set from this array.
+  'action',
+  'aftermath_invalid_tally_key',
+  'aftermath_invalid_tally_key_rate_limited',
+  'aftermath_sentinel_bound',
+  'agent_validation',
+  'ambition_progress',
+  'bond_change_applied',
+  'branch_decided',
+  'chain_progress',
+  'complication_partial_progress',
+  'consequence_applied',
+  'death_site_spirit_pressure',
+  'debug_tick_batch',
+  'divine_premonition',
+  'economic_trait_acquired',
+  'economic_trait_lost',
+  'effect_reaction',
+  'encounter',
+  'encounter_seed_family_matched',
+  'encounter_trait',
+  'faction_action',
+  'faction_bonus',
+  'faction_promotion',
+  'faction_reputation',
+  'faction_reputation_gain_error',
+  'faction_reputation_trait',
+  'reputation_walk',
+  'seed_context_inherited',
+  'social_encounter_generation',
+  'social_outcome',
+  'trust_change',
+  'chronicle.aggregated',
+  'chronicle.aggregate_failed',
+  'naming.constrained_reject',
+  'rival.scheme_phase_advanced',
 ];
 
 /** Base shape for all trace entries */
