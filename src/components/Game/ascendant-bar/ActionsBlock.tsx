@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { TRAY_EMPTY_COPY } from '../../../data/ascendant-bar-content';
 import type { ActionTrayView, ActionTrayItem } from './selectors';
 import styles from './styles.module.css';
+import { formatEssenceLabel } from '../../shared/formatEssence';
 
 const TIER_LABEL: Record<string, string> = { core: 'Core', self: 'Self', rare: 'Rare' };
 const TIER_NOTE: Record<string, string> = {
@@ -29,7 +30,10 @@ interface ActionCardProps {
 function ActionCard({ item, onFire }: ActionCardProps) {
   const { template, spent, gated } = item;
   const disabled = spent || gated;
-  const cost = template.essenceCost > 0 ? `${template.essenceCost} essence` : 'turn';
+  // `essenceCost` is optional on the template; an absent price is a free action,
+  // which this row already reads as 'turn' (THR-1006).
+  const essenceCost = template.essenceCost ?? 0;
+  const cost = essenceCost > 0 ? formatEssenceLabel(essenceCost) : 'turn';
   const costColor = COST_COLOR[cost] ?? 'var(--text-tertiary)';
 
   return (

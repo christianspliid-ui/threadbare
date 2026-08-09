@@ -32,6 +32,7 @@ import { RARITY_TO_THREAT } from '../../../../engine/encounterCache';
 import { stepOutcomeToOutcomeBand, stepOutcomeWord } from '../../../../data/outcome-band-content';
 import { getAgentPortraitUrlFromProperties } from '../../../../data/portrait-assets';
 import type { RarityTier } from '../../../../types/rarity';
+import { formatEssenceLabel } from '../../../shared/formatEssence';
 
 // ── Types ────────────────────────────────────────────────
 
@@ -303,7 +304,7 @@ export function buildSimpleEncounterStageModel(
     intent: c.text,
     essenceCost: c.essenceCost,
     affordable: c.essenceCost <= essence,
-    costLabel: c.essenceCost > 0 ? `${c.essenceCost.toFixed(2)} essence` : undefined,
+    costLabel: c.essenceCost > 0 ? formatEssenceLabel(c.essenceCost) : undefined,
     interventionType: c.interventionType,
     godVoice: c.godVoice,
     probabilityBoost: c.probabilityBoost,

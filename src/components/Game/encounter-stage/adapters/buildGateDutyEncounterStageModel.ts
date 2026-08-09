@@ -31,6 +31,7 @@ import type {
   EncounterStageSignalModel,
 } from '../types';
 import { buildLinkedParagraph } from '../narrativeLinker';
+import { formatEssenceLabel } from '../../../shared/formatEssence';
 
 interface BuildGateDutyEncounterStageModelArgs {
   template: UnifiedActionTemplate;
@@ -295,7 +296,7 @@ function buildChoiceIntent(args: {
     targetLabel: stepSpecific?.targetLabel,
     essenceCost,
     affordable,
-    costLabel: essenceCost > 0 ? `${essenceCost.toFixed(2)} essence` : undefined,
+    costLabel: essenceCost > 0 ? formatEssenceLabel(essenceCost) : undefined,
     likelyBurden: stepSpecific?.likelyBurden,
     interventionType: choice.interventionType,
     godVoice: choice.godVoice,

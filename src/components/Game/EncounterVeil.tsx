@@ -16,6 +16,7 @@ import { usePrefersReducedMotion } from '../../hooks/usePrefersReducedMotion';
 import { NudgePhaseShell } from './encounter-stage/shells/NudgePhaseShell';
 import { NudgeMotiveIntro } from './encounter-stage/shells/NudgeMotiveIntro';
 import { ProseTtsButton } from './Encounter/ProseTtsButton';
+import { formatEssence, formatEssencePool } from '../shared/formatEssence';
 
 // ── Thread tier types ──────────────────────────────────────────────
 type ThreadTier = 'strong' | 'light' | 'watched';
@@ -1297,7 +1298,9 @@ export function EncounterVeil({
               letterSpacing: '0.04em',
             }}
           >
-            &#9670; {essence} essence
+            {/* THR-1006 — the pool is a float; interpolating it raw put
+                `193.60000000000005` on a mortal-facing surface. */}
+            &#9670; {formatEssencePool(essence)} essence
           </div>
 
           {/* Action buttons */}
@@ -1830,7 +1833,9 @@ export function EncounterVeil({
             letterSpacing: '0.04em',
           }}
         >
-          &#9670; {essence} essence
+          {/* THR-1006 — second of three diamond readouts in this file; this is the
+              branch the nudge stage actually mounts. */}
+          &#9670; {formatEssencePool(essence)} essence
         </div>
 
         {/* Action buttons */}
@@ -2145,7 +2150,7 @@ function ChoiceBlock({ choice, selected, onClick }: ChoiceBlockProps) {
             transition: 'opacity 0.5s ease',
           }}
         >
-          &#9670; {choice.essenceCost} essence
+          &#9670; {formatEssence(choice.essenceCost)} essence
         </span>
         {boostLabel && (
           <span style={{ color: TEXT_GHOST }}>{boostLabel}</span>
