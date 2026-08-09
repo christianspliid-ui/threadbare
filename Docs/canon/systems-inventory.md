@@ -340,7 +340,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `resource` (2) | `resourceEconomy.ts`, `resourceSeeding.ts` | `THR-615` |
 | `retinue` (1) | `retinue.ts` | — |
 | `return` (1) | `returnEngine.ts` | `TB-035`, `Phase 3` |
-| `revelation` (3) | `revelationEmitter.ts`, `revelationHooks.ts`, `revelationResolver.ts` | `TB-043` |
+| `revelation` (3) | `revelationEmitter.ts`, `revelationHooks.ts`, `revelationResolver.ts` | `THR-853`, `TB-043` |
 | `reward` (2) | `rewardHistory.ts`, `rewardPool.ts` | — |
 | `rival` (3) | `rival.ts`, `rivalInfluenceMarkers.ts`, `rivalSourceContestation.ts` | `THR-66`, `THR-621`, `THR-611` |
 | `river` (1) | `riverGeneration.ts` | — |

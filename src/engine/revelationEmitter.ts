@@ -34,8 +34,15 @@ import { emitTrace } from './traceBuffer';
 // ─── ID Generator ──────────────────────────────────────────────────
 
 let revEventCounter = 0;
-function nextRevEventId(): string {
-  return `rev_evt_${++revEventCounter}`;
+
+/**
+ * Mint a TickEvent id for a revelation event. The tick is required — the counter
+ * is reset every tick by `orchestrator.resetEventCounters()`, so it is unique
+ * only *within* a tick while the events it labels outlive theirs. See the same
+ * note on `ambitionTick.nextAmbitionEventId` (THR-853).
+ */
+function nextRevEventId(tick: number): string {
+  return `rev_evt_${tick}_${++revEventCounter}`;
 }
 
 /** Reset per-tick revelation event counter. Called by orchestrator.resetEventCounters(). */
@@ -164,7 +171,7 @@ export function emitEncounterRevelations(state: GameState): void {
           const agentName = agentNode?.name ?? actorId;
 
           state.tickEvents.push({
-            id: nextRevEventId(),
+            id: nextRevEventId(state.tick),
             tick: state.tick,
             type: 'domain_revealed' as TickEvent['type'],
             message: `${agentName}'s skill in ${reach} becomes apparent`,
@@ -361,7 +368,7 @@ export function resolveRevelationAction(
           revealDomain(knowledge, unrevealed);
 
           state.tickEvents.push({
-            id: nextRevEventId(),
+            id: nextRevEventId(state.tick),
             tick: state.tick,
             type: 'domain_revealed' as TickEvent['type'],
             message: `${agentName}'s skill in ${unrevealed} becomes apparent through divine sight`,
@@ -463,7 +470,7 @@ export function resolveRevelationAction(
         }
 
         state.tickEvents.push({
-          id: nextRevEventId(),
+          id: nextRevEventId(state.tick),
           tick: state.tick,
           type: 'domain_revealed' as TickEvent['type'],
           message: `Divine sight pierces the veil around ${agentName}, revealing all`,
@@ -497,7 +504,7 @@ export function resolveRevelationAction(
           revealValue(knowledge, pairId);
 
           state.tickEvents.push({
-            id: nextRevEventId(),
+            id: nextRevEventId(state.tick),
             tick: state.tick,
             type: 'domain_revealed' as TickEvent['type'],
             message: `${agentName}'s ${pairId} nature whispers through the divine connection`,
@@ -544,7 +551,7 @@ export function resolveRevelationAction(
 
           if (newlyRevealed) {
             state.tickEvents.push({
-              id: nextRevEventId(),
+              id: nextRevEventId(state.tick),
               tick: state.tick,
               type: 'domain_revealed' as TickEvent['type'],
               message: `${agentName} reveals their driving ambition in a divine dream`,
@@ -570,7 +577,7 @@ export function resolveRevelationAction(
         const threatNewlyRevealed = revealThreat(knowledge);
         if (threatNewlyRevealed) {
           state.tickEvents.push({
-            id: nextRevEventId(),
+            id: nextRevEventId(state.tick),
             tick: state.tick,
             type: 'domain_revealed' as TickEvent['type'],
             message: `Through dreams, you glimpse what ${agentName} fears`,
