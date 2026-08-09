@@ -17,6 +17,7 @@ import { executeGraphOps, resetOpCounter } from '../graphOpExecutor';
 import type { GraphOpContext, GraphOp } from '../../types/graphOp';
 import type { AttachmentEffect } from '../../types/effects';
 import { SPHERE_EFFECT_TABLE } from '../ascendantPrimitives';
+import { collectAttachmentEffects } from '../effects/effectWalker';
 import { CURSE_QUINTESSENCE_DRAIN } from '../../data/ascendant-expression-constants';
 
 const ascendantId = 'asc.player';
@@ -29,8 +30,12 @@ const ctx: GraphOpContext = {
   tick: 42,
 };
 
-/** Build a graph with an ascendant (optionally sphere-aligned) and a plain artifact. */
-function makeGraph(primarySphere?: string): WorldGraph {
+/** Build a graph with an ascendant (optionally sphere-aligned) and an artifact. */
+function makeGraph(
+  primarySphere?: string,
+  /** THR-843 — the trio acts on both artifact tiers. Defaults to the common tier. */
+  artifactType: 'artifact' | 'artifact_legendary' = 'artifact',
+): WorldGraph {
   const graph = new WorldGraph();
   resetOpCounter();
   graph.addNode({
@@ -42,7 +47,7 @@ function makeGraph(primarySphere?: string): WorldGraph {
       ...(primarySphere ? { sphereAlignment: { primary: primarySphere } } : {}),
     },
   });
-  graph.addNode({ id: artifactId, type: 'artifact', name: 'Grey Blade', properties: {} });
+  graph.addNode({ id: artifactId, type: artifactType, name: 'Grey Blade', properties: {} });
   return graph;
 }
 
@@ -158,5 +163,83 @@ describe('nullify_artifact op', () => {
 
     expect(result.allSucceeded).toBe(false);
     expect(result.results[0].error).toContain('nullify_artifact');
+  });
+});
+
+// ─── THR-843: the legendary tier ────────────────────────────────────────────
+//
+// `artifact_legendary` is a distinct NodeType, and the trio's old `type ===
+// 'artifact'` guard refused it outright — while `artifact.imbue`, `.nullify` and
+// `.curse` all already offered it as a target. A player could spend AP + essence
+// on a legendary relic, watch the card report success, and have the op error out.
+//
+// These cases assert the guard accepts the tier AND that the write lands where a
+// consumer reads it: the last test walks `collectAttachmentEffects` for the bearer,
+// so it fails if the substrate claim is wrong rather than only if the guard is.
+describe('the artifact trio on artifact_legendary targets', () => {
+  const legendary = () => makeGraph('force', 'artifact_legendary');
+
+  it('attunes a legendary artifact', () => {
+    const graph = legendary();
+    const result = executeGraphOps(graph, attune, ctx);
+
+    expect(result.allSucceeded).toBe(true);
+    expect(effectsOf(graph)).toEqual([SPHERE_EFFECT_TABLE.force![0]]);
+    expect(propOf(graph, 'attunedSphere')).toBe('force');
+  });
+
+  it('curses a legendary artifact', () => {
+    const graph = legendary();
+    const result = executeGraphOps(graph, curse, ctx);
+
+    expect(result.allSucceeded).toBe(true);
+    expect(effectsOf(graph)).toHaveLength(1);
+    expect(propOf(graph, 'cursed')).toBe(true);
+    expect(propOf(graph, 'curseConcealed')).toBe(true);
+  });
+
+  it('nullifies a legendary artifact back to inert', () => {
+    const graph = legendary();
+    executeGraphOps(graph, curse, ctx);
+    const result = executeGraphOps(graph, nullify, ctx);
+
+    expect(result.allSucceeded).toBe(true);
+    expect(effectsOf(graph)).toEqual([]);
+    expect(propOf(graph, 'cursed')).toBe(false);
+  });
+
+  it('still refuses a genuine non-artifact — the guard widened, it did not vanish', () => {
+    const graph = legendary();
+    graph.addNode({ id: 'not.art', type: 'location', name: 'A Hill', properties: {} });
+    const result = executeGraphOps(graph, [{ op: 'curse_artifact', nodeId: 'not.art' }], ctx);
+
+    expect(result.allSucceeded).toBe(false);
+    expect(result.results[0].error).toContain('not an artifact');
+  });
+
+  it('the curse drain reaches the bearer of a BONDED legendary artifact', () => {
+    const graph = legendary();
+    const bearerId = 'agent.bearer';
+    graph.addNode({
+      id: bearerId, type: 'actor', name: 'Wren',
+      properties: { actorType: 'individual' },
+    });
+    // `bonded_to` is the schema-declared legendary-holding edge (edgeSchema.ts).
+    graph.addEdge({
+      id: 'bond.1', source: bearerId, target: artifactId,
+      type: 'bonded_to', properties: {},
+    });
+
+    executeGraphOps(graph, curse, ctx);
+
+    const carried = collectAttachmentEffects(graph, bearerId);
+    const drain = carried.find(e => e.effect.type === 'resource_manipulate');
+    expect(drain).toBeDefined();
+    expect(drain!.attachmentId).toBe(artifactId);
+    expect(drain!.effect).toMatchObject({
+      resource: 'quintessence',
+      amount: -CURSE_QUINTESSENCE_DRAIN,
+      mode: 'per_tick',
+    });
   });
 });

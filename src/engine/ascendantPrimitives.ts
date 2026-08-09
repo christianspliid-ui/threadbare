@@ -23,7 +23,7 @@
  */
 
 import type { WorldGraph } from './graph';
-import type { GraphEdge, NodeType } from '../types/graph';
+import type { GraphEdge, GraphNode, NodeType } from '../types/graph';
 import type { ReachDomain } from '../types/traits';
 import type { SphereName } from '../types/index';
 import type { AttachmentEffect } from '../types/effects';
@@ -305,6 +305,38 @@ export function applyChosenStatusGrant(
   } as never);
 
   return { granted: true, nodeId, power, alreadyChosen };
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Shared: artifact-target predicate (THR-843)
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * The node types the artifact verbs act on. Both tiers qualify: `properties.effects`
+ * is the substrate every artifact verb writes, and `collectAttachmentEffects`
+ * (effectWalker.ts) reads that array off **any** node reached by a `possesses` /
+ * `bonded_to` edge with no node-type filter at all. `bonded_to` is in turn declared
+ * against `artifact_legendary` (edgeSchema.ts) and is the characteristic way a
+ * legendary artifact is held — so the tier most worth acting on was the one tier
+ * the verbs refused.
+ *
+ * `artifact_legendary`'s "own trait graph" (types/graph.ts) is *additional* — it
+ * carries `has_trait` edges as well — not a replacement substrate, so the effects
+ * array applies to it verbatim.
+ */
+export const ARTIFACT_NODE_TYPES: readonly NodeType[] = ['artifact', 'artifact_legendary'];
+
+/**
+ * True when `node` is an artifact of either tier.
+ *
+ * Exists as one shared predicate rather than five copies of the type test because
+ * the artifact verbs must widen *together*: THR-661 deliberately declined to widen
+ * `applyCurseMark` alone, since a mark that fires where the drain does not is a
+ * worse split than a consistent refusal. Routing every guard through one predicate
+ * makes that class of split unrepresentable.
+ */
+export function isArtifactNode(node: Pick<GraphNode, 'type'> | undefined | null): boolean {
+  return node != null && ARTIFACT_NODE_TYPES.includes(node.type);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════

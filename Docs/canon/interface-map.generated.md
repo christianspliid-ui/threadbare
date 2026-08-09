@@ -261,10 +261,10 @@ remediation ticket or the build fails.
 - **Intent:** Items shape action resolution rolls — a blade makes its bearer likelier to succeed.
 - **Producer → Consumer:** Attachments, Items & Possessions → Encounters & Dilemmas
 - **UL terms:** *Attachment*, *Test Shaper*
-- **Production hits:** 15 total — 5 write, 1 read, 9 unclassified
+- **Production hits:** 16 total — 5 write, 1 read, 10 unclassified
 - **Write sites:** `src/engine/effectResolver.ts`, `src/engine/effects/effectEvents.ts`, `src/engine/effects/effectQueries.ts`, `src/engine/effects/effectWalker.ts`, `src/engine/effects/index.ts`
 - **Read sites:** `src/engine/unifiedActionResolution.ts`
-- **Other hits:** `src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts`, `src/data/ascendant-expression-constants.ts`, `src/data/unified-action-templates.ts`, `src/engine/ascendantExpression.ts`, `src/engine/attachmentSlotResolver.ts` +4 more
+- **Other hits:** `src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts`, `src/data/ascendant-expression-constants.ts`, `src/data/unified-action-templates.ts`, `src/engine/ascendantExpression.ts`, `src/engine/ascendantPrimitives.ts` +5 more
 - **Verdict:** Verified 2026-07-23: effects[] → effectWalker → collectTestShapers is the live mechanical path (2026-03-31 generic effect system). Docs/plans/2026-07-23-system-interface-map.md § Audit findings (manual audit + independent cold-context review, both grep-verified)
 
 ### `attachment-effects-tick` — 🟢 LIVE

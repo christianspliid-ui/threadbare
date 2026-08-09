@@ -15,7 +15,7 @@ import { resolveLocationToHex } from './encounterAwareness';
 import { getFortificationModifier } from './siegeResolution';
 import { FORTIFY_MULTIPLIER_BONUS, FORTIFY_MULTIPLIER_MAX } from '../types/battle';
 import type { AttachmentEffect } from '../types/effects';
-import { SPHERE_EFFECT_TABLE } from './ascendantPrimitives';
+import { SPHERE_EFFECT_TABLE, isArtifactNode } from './ascendantPrimitives';
 import { CURSE_QUINTESSENCE_DRAIN } from '../data/ascendant-expression-constants';
 import {
   deriveSourceTier,
@@ -943,7 +943,7 @@ function executeAttuneArtifact(
   const targetId = resolveRef(op.nodeId ?? op.target ?? '$target', ctx);
   const artifact = graph.getNode(targetId);
   if (!artifact) return { op, success: false, error: `attune_artifact: artifact ${targetId} not found` };
-  if (artifact.type !== 'artifact') return { op, success: false, error: `attune_artifact: ${targetId} is not an artifact` };
+  if (!isArtifactNode(artifact)) return { op, success: false, error: `attune_artifact: ${targetId} is not an artifact` };
 
   const sphere = readActorPrimarySphere(graph, ctx.actorId);
   if (!sphere) return { op, success: true }; // fail-soft: unaligned ascendant → no-op success
@@ -973,7 +973,7 @@ function executeCurseArtifact(
   const targetId = resolveRef(op.nodeId ?? op.target ?? '$target', ctx);
   const artifact = graph.getNode(targetId);
   if (!artifact) return { op, success: false, error: `curse_artifact: artifact ${targetId} not found` };
-  if (artifact.type !== 'artifact') return { op, success: false, error: `curse_artifact: ${targetId} is not an artifact` };
+  if (!isArtifactNode(artifact)) return { op, success: false, error: `curse_artifact: ${targetId} is not an artifact` };
 
   const curse: AttachmentEffect = {
     type: 'resource_manipulate',
@@ -1005,7 +1005,7 @@ function executeNullifyArtifact(
   const targetId = resolveRef(op.nodeId ?? op.target ?? '$target', ctx);
   const artifact = graph.getNode(targetId);
   if (!artifact) return { op, success: false, error: `nullify_artifact: artifact ${targetId} not found` };
-  if (artifact.type !== 'artifact') return { op, success: false, error: `nullify_artifact: ${targetId} is not an artifact` };
+  if (!isArtifactNode(artifact)) return { op, success: false, error: `nullify_artifact: ${targetId} is not an artifact` };
 
   // updateNode merges properties, so overwrite (don't delete) the keys to inert.
   graph.updateNode(artifact.id, {

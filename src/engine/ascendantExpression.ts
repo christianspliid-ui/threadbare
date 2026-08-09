@@ -33,7 +33,7 @@ import type { SphereName } from '../types/index';
 import type { ReachDomain } from '../types/traits';
 import type { AttachmentEffect } from '../types/effects';
 import type { AscendantProperties } from '../types/influence';
-import { pickSphereFlavoredEffect, applyChosenStatusGrant } from './ascendantPrimitives';
+import { pickSphereFlavoredEffect, applyChosenStatusGrant, isArtifactNode } from './ascendantPrimitives';
 import type { ChosenPower } from './ascendantPrimitives';
 import { resolveLocationToHex } from './encounterAwareness';
 import { getAgentsAtLocation } from './graphQueries';
@@ -113,7 +113,7 @@ export function applyImbueItem(
     emitNoOp(ascendantId, artifactId, 'missing_artifact', tick);
     return { success: false, effect: null, failSoft: 'missing_artifact' };
   }
-  if (artifact.type !== 'artifact') {
+  if (!isArtifactNode(artifact)) {
     emitNoOp(ascendantId, artifactId, 'not_artifact', tick);
     return { success: false, effect: null, failSoft: 'not_artifact' };
   }
@@ -621,7 +621,7 @@ export function applyCurseMark(
     emitCurseMarkNoOp(ascendantId, artifactId, 'missing_artifact', tick);
     return { success: false, markId: null, holderId: null, failSoft: 'missing_artifact' };
   }
-  if (artifact.type !== 'artifact') {
+  if (!isArtifactNode(artifact)) {
     emitCurseMarkNoOp(ascendantId, artifactId, 'not_an_artifact', tick);
     return { success: false, markId: null, holderId: null, failSoft: 'not_an_artifact' };
   }
