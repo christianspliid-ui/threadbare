@@ -446,8 +446,18 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
         prose: ['The body held. Barely, but it held.'],
       },
       {
+        // THR-841: was `agent_not_in_region: 'cursed'`, which was permanently false —
+        // `'cursed'` is a quality of a place, never a region id, and region ids are
+        // generated per world (`region_0…N`) so no authored literal can match one.
+        // With `completion: { requires: 2, of: 2 }` below, that made this ambition
+        // **uncompletable for every agent in every world** — strictly worse than the
+        // 2-of-3 sibling in `ambition_reclaim_homeland`, and the reason the sweep
+        // mattered more than the one site the ticket named.
+        //
+        // Escaping is leaving where you were, which is what the prose says and what
+        // residence already observes. No literal for an author to get wrong.
         id: 'escape_exit',
-        condition: { type: 'agent_not_in_region', region: 'cursed' },
+        condition: { type: 'agent_not_in_origin_region' },
         prose: ['The blighted air thinned. Clean wind. A border crossed.'],
       },
     ],
@@ -827,8 +837,17 @@ export const REACTIVE_AMBITION_TEMPLATES: readonly ReactiveAmbitionTemplate[] = 
         prose: ['Strong enough now. The return can begin.'],
       },
       {
+        // THR-841: was `agent_in_region: 'homeland'` — permanently false, because
+        // region ids are minted per world and `'homeland'` names none of them. The
+        // beat the whole ambition is about ("The old soil underfoot again") could
+        // never fire; the ambition stayed completable only because it is 2-of-3.
+        //
+        // "Homeland" was always agent-relative, not a place name — which is why the
+        // abandonment trigger below already reads residence. This now reads the same
+        // origin from the same observer, one tier coarser: back in the region you came
+        // from, rather than standing on the exact node you left.
         id: 'reclaim_return',
-        condition: { type: 'agent_in_region', region: 'homeland' },
+        condition: { type: 'agent_in_origin_region' },
         prose: ['The old soil underfoot again. Changed, but still home.'],
       },
     ],

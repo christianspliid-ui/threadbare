@@ -1122,21 +1122,42 @@ export function seedWorld(
   }
 
   // ── Region → Location contains edges ────────────────────
-  for (const locId of locationIds) {
-    const locNode = graph.getNode(locId);
-    if (!locNode) continue;
-    const hexCol = locNode.properties.hexCol as number;
-    const hexRow = locNode.properties.hexRow as number;
-    const tile = tiles.find(t => t.coord.col === hexCol && t.coord.row === hexRow);
-    if (tile?.regionId) {
-      graph.addEdge({
-        id: `edge_region_contains_${tile.regionId}_${locId}`,
-        source: tile.regionId,
-        target: locId,
-        type: 'contains',
-        properties: {},
-      });
-    }
+  //
+  // This edge is the *only* location→region linkage that exists. The condition
+  // evaluator reads it (`graphConditions.ts`, THR-841), having previously read a
+  // `properties.regionId` that no code anywhere has ever written.
+  //
+  // Two changes here, neither of which moved coverage — measured 97 of 112 top-level
+  // locations linked on a seed-42 medium run, before and after:
+  //
+  // - Walking `getNodesByType('location')` rather than the `locationIds` array. The
+  //   array happens to hold every location existing at this point, so this is
+  //   robustness against a future pass that adds one without appending, not a fix.
+  // - Indexing tiles by hex key. The `tiles.find` it replaces made this pass
+  //   O(locations × tiles) — ~557k comparisons on a medium map, ~2.9M on an epic one —
+  //   for what is a plain key lookup.
+  //
+  // The 15 unlinked locations are on tiles outside every flood-filled region cluster
+  // (`detectRegions`), which is a worldgen property, not an oversight here: 115 of 768
+  // tiles carry no `regionId` at all. Locations seeded *after* worldSeed — lairs,
+  // elder ruins, transient nodes — are likewise unlinked; a sublocation resolves
+  // through its parent instead, and anything still unresolved fails soft to `false`.
+  const tileByHex = new Map<string, HexTile>();
+  for (const t of tiles) tileByHex.set(`${t.coord.col},${t.coord.row}`, t);
+
+  for (const locNode of graph.getNodesByType('location')) {
+    const hexCol = locNode.properties.hexCol as number | undefined;
+    const hexRow = locNode.properties.hexRow as number | undefined;
+    if (hexCol === undefined || hexRow === undefined) continue; // sublocations resolve via their parent
+    const tile = tileByHex.get(`${hexCol},${hexRow}`);
+    if (!tile?.regionId) continue; // tiles outside every flood-filled cluster carry none
+    graph.addEdge({
+      id: `edge_region_contains_${tile.regionId}_${locNode.id}`,
+      source: tile.regionId,
+      target: locNode.id,
+      type: 'contains',
+      properties: {},
+    });
   }
 
   // ── Eager Base Sublocations ──────────────────────────────

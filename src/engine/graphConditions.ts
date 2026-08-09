@@ -23,7 +23,13 @@ import { readResidence, dwellTicks, isAwayFromOrigin } from './agentResidence';
  * view whose only use is calling these three.
  */
 export interface ConditionGraph {
-  getNode(id: string): { id: string; name?: string; properties: Record<string, unknown> } | undefined;
+  /**
+   * `type` is optional and additive on the same terms as `name` above (THR-841): the
+   * region walk has to tell a `region` node from a `location` one, and node type lives
+   * at the node level. Implementors that omit it keep working — a node with no `type`
+   * simply never satisfies the region test, which fails soft to "region unknown".
+   */
+  getNode(id: string): { id: string; name?: string; type?: string; properties: Record<string, unknown> } | undefined;
   getOutgoingEdges(id: string, type?: string): ReadonlyArray<{
     source: string;
     target: string;
@@ -56,6 +62,67 @@ export interface ConditionGraph {
  */
 function isDeceased(node: { properties: Record<string, unknown> }): boolean {
   return node.properties.deceased === true;
+}
+
+/**
+ * How far up the sublocation chain `resolveRegionId` will walk before giving up.
+ *
+ * The position model is three tiers deep by design (hex → location → sublocation), so
+ * 4 is slack, not a limit anyone should reach. It exists because the walk follows a
+ * mutable property rather than a validated tree: a `parentLocationId` cycle introduced
+ * by a future writer would otherwise hang the tick loop, and a hang inside a milestone
+ * check is a hang inside `phaseAmbitionProgress` (NFP #4 — the tick loop must never
+ * crash, and must never stall either).
+ */
+const MAX_PARENT_WALK_DEPTH = 4;
+
+/** The location (or sublocation) an agent currently stands on, via `located_at`. */
+function agentPositionId(graph: ConditionGraph, agentId: string): string | undefined {
+  if (!graph.getNode(agentId)) return undefined;
+  const edges = graph.getOutgoingEdges(agentId, 'located_at');
+  return edges.length > 0 ? edges[0].target : undefined;
+}
+
+/**
+ * Resolve the region a location sits in, **from the graph alone** (THR-841).
+ *
+ * Region membership is a `contains` edge from a `region` node, minted at seed
+ * (`worldSeed.ts`) — not a property on the location. That is the load-bearing shape:
+ * a relationship between two entities is an edge, and the `regionId` property this
+ * replaces was the property-bag spelling of exactly that relationship, which is why it
+ * never acquired a writer.
+ *
+ * Resolving by *edge* rather than by a stamped property is also what keeps this off
+ * the rake THR-822 named: there are 24 location-creation sites in `src/` today, and
+ * stamping a region onto each would strand every future 25th one at no region at all,
+ * silently. The edge is minted in one pass over every location worldgen creates.
+ *
+ * A sublocation carries no region edge of its own, so the walk climbs
+ * `parentLocationId` to the location that does — bounded by `MAX_PARENT_WALK_DEPTH`.
+ *
+ * Returns `undefined` when the region genuinely cannot be determined; every caller
+ * treats that as "we do not know" and fails soft to `false`.
+ */
+function resolveRegionId(graph: ConditionGraph, locationId: string | undefined): string | undefined {
+  let currentId = locationId;
+
+  for (let depth = 0; depth < MAX_PARENT_WALK_DEPTH; depth++) {
+    if (!currentId) return undefined;
+    const node = graph.getNode(currentId);
+    if (!node) return undefined;
+
+    // `contains` is shared by region→location and location→sublocation (see
+    // `types/graph.ts`), so the source's node type is what distinguishes them. Matching
+    // on the edge alone would resolve a sublocation's parent *location* as its region.
+    const containing = graph.getIncomingEdges(currentId, 'contains')
+      .find((edge) => graph.getNode(edge.source)?.type === 'region');
+    if (containing) return containing.source;
+
+    const parentId = node.properties.parentLocationId;
+    currentId = typeof parentId === 'string' ? parentId : undefined;
+  }
+
+  return undefined;
 }
 
 /**
@@ -181,26 +248,45 @@ export function evaluateGraphCondition(
       });
     }
 
+    // ── Region conditions (THR-841) ──
+    //
+    // All four resolve region through `resolveRegionId`, which walks the `contains`
+    // edge. They previously read `loc.properties.regionId`, a property with **no
+    // writer anywhere in the repo** — measured 0 distinct values across all 727
+    // locations of a live seed-42 run — so both literal conditions were false for
+    // every agent in every world. Eight unit tests covered them green by stamping the
+    // phantom property onto their own fixtures.
+    //
+    // The origin-relative pair is what authored content should use; the literal pair
+    // is only meaningful to a caller holding a runtime-captured region id. See
+    // `types/ambition.ts` for why a literal can never be authored.
     case 'agent_in_region': {
-      const agent = graph.getNode(agentId);
-      if (!agent) return false;
-      const locEdges = graph.getOutgoingEdges(agentId, 'located_at');
-      const locationId = locEdges.length > 0 ? locEdges[0].target : undefined;
-      if (!locationId) return false;
-      const loc = graph.getNode(locationId);
-      if (!loc) return false;
-      return loc.properties.regionId === condition.region;
+      const regionId = resolveRegionId(graph, agentPositionId(graph, agentId));
+      if (regionId === undefined) return false;
+      return regionId === condition.region;
     }
 
     case 'agent_not_in_region': {
-      const agent = graph.getNode(agentId);
-      if (!agent) return false;
-      const locEdges = graph.getOutgoingEdges(agentId, 'located_at');
-      const locationId = locEdges.length > 0 ? locEdges[0].target : undefined;
-      if (!locationId) return false;
-      const loc = graph.getNode(locationId);
-      if (!loc) return false;
-      return loc.properties.regionId !== condition.region;
+      const regionId = resolveRegionId(graph, agentPositionId(graph, agentId));
+      // Unresolvable region is "we do not know", not "somewhere else" — a negative
+      // condition must not read absence as satisfaction, or every agent the graph
+      // cannot place would complete this milestone for free.
+      if (regionId === undefined) return false;
+      return regionId !== condition.region;
+    }
+
+    case 'agent_in_origin_region': {
+      const here = resolveRegionId(graph, agentPositionId(graph, agentId));
+      const origin = resolveRegionId(graph, readResidence(graph, agentId).originLocationId);
+      if (here === undefined || origin === undefined) return false;
+      return here === origin;
+    }
+
+    case 'agent_not_in_origin_region': {
+      const here = resolveRegionId(graph, agentPositionId(graph, agentId));
+      const origin = resolveRegionId(graph, readResidence(graph, agentId).originLocationId);
+      if (here === undefined || origin === undefined) return false;
+      return here !== origin;
     }
 
     // THR-812 repointed this at the real death flag and inverted the missing-node

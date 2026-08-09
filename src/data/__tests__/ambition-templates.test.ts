@@ -250,3 +250,80 @@ describe('REACTIVE_AMBITION_TEMPLATES', () => {
     expect(new Set(ids).size).toBe(ids.length);
   });
 });
+
+/**
+ * THR-841 — no authored ambition may gate on a region *literal*.
+ *
+ * `agent_in_region` / `agent_not_in_region` compare against a region id, and region ids
+ * are minted per world in `worldSeed.ts` as `region_0…region_N` with names generated
+ * from historical-culture ownership. So a literal written into a template names nothing
+ * that will ever exist, in any world, and the condition is false forever.
+ *
+ * Two shipped templates did exactly that and neither was reported by anything: unlike
+ * trait refs, region literals have no `validateTraitRefs` equivalent, so a new dead one
+ * could be authored tomorrow and nothing would notice. This sweep is that missing
+ * reporter. Authors wanting "is the agent home" use the origin-region pair, which needs
+ * no id known in advance.
+ */
+describe('THR-841 — region conditions are not authorable as literals', () => {
+  const ALL_POOLS = [
+    ['AMBITION_TEMPLATES', AMBITION_TEMPLATES],
+    ['REACTIVE_AMBITION_TEMPLATES', REACTIVE_AMBITION_TEMPLATES],
+    ['EVENT_MINTED_AMBITION_TEMPLATES', EVENT_MINTED_AMBITION_TEMPLATES],
+  ] as const;
+
+  /** Every condition authored anywhere in a template, with a readable site label. */
+  function allAuthoredConditions(): Array<{ site: string; type: string; region?: string }> {
+    const out: Array<{ site: string; type: string; region?: string }> = [];
+    for (const [poolName, pool] of ALL_POOLS) {
+      for (const template of pool) {
+        for (const milestone of template.milestones) {
+          const c = milestone.condition as { type: string; region?: string };
+          out.push({ site: `${poolName}/${template.id}/milestone:${milestone.id}`, type: c.type, region: c.region });
+        }
+        for (let i = 0; i < template.abandonmentTriggers.length; i++) {
+          const c = template.abandonmentTriggers[i].condition as { type: string; region?: string };
+          out.push({ site: `${poolName}/${template.id}/abandonment[${i}]`, type: c.type, region: c.region });
+        }
+      }
+    }
+    return out;
+  }
+
+  it('no template authors agent_in_region or agent_not_in_region', () => {
+    const offenders = allAuthoredConditions()
+      .filter((c) => c.type === 'agent_in_region' || c.type === 'agent_not_in_region')
+      .map((c) => `${c.site} → ${c.type}: '${c.region}'`);
+
+    // Named rather than counted, so a failure says which template to fix (THR-688 rule A).
+    expect(offenders).toEqual([]);
+  });
+
+  it('the sweep can actually see authored conditions (guards against a vacuous pass)', () => {
+    // Without this, a refactor that renamed `milestones` would empty the sweep and the
+    // assertion above would pass by inspecting nothing.
+    const all = allAuthoredConditions();
+    expect(all.length).toBeGreaterThan(20);
+    expect(all.some((c) => c.type === 'agent_in_origin_region')).toBe(true);
+    expect(all.some((c) => c.type === 'agent_not_in_origin_region')).toBe(true);
+  });
+
+  it('ambition_escape_cursed_land is completable again — both its milestones can fire', () => {
+    // It is `requires: 2, of: 2`, so the dead `agent_not_in_region: 'cursed'` milestone
+    // made the whole ambition unachievable for every agent in every world.
+    const template = findAmbitionTemplateById('ambition_escape_cursed_land');
+    expect(template).toBeDefined();
+    expect(template!.completion).toEqual({ requires: 2, of: 2 });
+
+    const conditionTypes = template!.milestones.map((m) => m.condition.type);
+    expect(conditionTypes).toContain('agent_not_in_origin_region');
+    expect(conditionTypes).not.toContain('agent_not_in_region');
+  });
+
+  it('ambition_reclaim_homeland\'s return beat reads residence, not a place name', () => {
+    const template = findAmbitionTemplateById('ambition_reclaim_homeland');
+    const returnMilestone = template!.milestones.find((m) => m.id === 'reclaim_return');
+    expect(returnMilestone).toBeDefined();
+    expect(returnMilestone!.condition).toEqual({ type: 'agent_in_origin_region' });
+  });
+});
