@@ -1,6 +1,6 @@
 ---
 name: encounter-pipeline
-description: Automated encounter pipeline v2. Runs draft → editorial+revision → systems+merge → implementation for complete encounter delivery. Triggers on "encounter pipeline", "draft encounter", "run encounter pipeline", "author encounter", or "/encounter-pipeline".
+description: Automated encounter pipeline v3 — the Encounter Factory line. Runs brief → draft → bounded critic loop → machine gates → live proof → batch report for composition-complete encounter delivery, one encounter or a batch of six. Triggers on "encounter pipeline", "draft encounter", "run encounter pipeline", "author encounter", "encounter batch", "run a batch", or "/encounter-pipeline".
 model: opus
 last_validated_against: 2026-08-09
 ---
@@ -9,13 +9,47 @@ last_validated_against: 2026-08-09
 >
 > **Load before drafting a single card:** [`reference/nudge-authoring-spec.md`](reference/nudge-authoring-spec.md) — the canonical authoring contract in the locked THR-883 format: the communication pivot (prose does the scene, cards do the rules), the scene-writer's 14-question checklist, setting envelopes, the 21-type card library, the prose rubric, and the verbatim detector spec. It is shared verbatim with `template-encounter-rewrite`; where this skill and that spec appear to disagree, **the spec wins**.
 
-# Encounter Pipeline v2 — nudge-native
+# Encounter Pipeline v3 — the Encounter Factory line
 
-Automated 4-pass encounter pipeline: premise → deployed code. Each agent pass produces its own outputs — no manual orchestrator assembly between passes.
+Automated encounter pipeline: brief → deployed, proved code. Each agent pass produces its own outputs — no manual orchestrator assembly between passes.
 
 ```
-Premise → Draft (Opus) → Editorial+Revised (Opus) → Systems+Final (Sonnet) → Implementation (Sonnet)
+BRIEF ─▶ DRAFT ─▶ CRITIC LOOP ─▶ MACHINE GATES ─▶ LIVE PROOF ─▶ BATCH REVIEW
+(plan)   (Fable)  (editorial+systems)  (npm run)     (headless)    (Christian samples)
 ```
+
+## What v3 adds to v2, and what it leaves alone
+
+v2's draft → editorial → systems → implementation chain **keeps its shape**; v3 is an
+extension of the same line, not a replacement (plan §"Lineage"). It adds a brief stage
+in front, bounds the critic loop, and puts two machines between the last agent and the
+PR:
+
+| Stage | v2 | v3 |
+|---|---|---|
+| 0 Brief | — | [`reference/batch-brief-format.md`](reference/batch-brief-format.md), agent-drafted, Christian-approved in chat (ruling 2) |
+| 1 Draft | Pass 1 | unchanged, plus the Composition Contract as the draft's skeleton |
+| 2 Critic loop | editorial → systems, retry once | **bounded at two loops, then park** (ruling 4) |
+| 3 Machine gates | tests + build | `npm run check:encounter` — green is a precondition for a PR existing |
+| 4 Live proof | — | `npm run check:encounter-live` — the declared blocks must *arrive* in a running world |
+| 5 Batch review | — | `npm run encounter:batch-report` — six side by side, Christian samples two |
+
+**The load-bearing idea is the Stage 3/4 split.** Stage 3 asks whether a template
+*declares* its blocks; Stage 4 asks whether they *arrive*. A template can pass the
+contract and deliver nothing — an `aftermathConfig` whose variants are unreachable
+renders the fallback forever, a seed on an unreached band never plants. Both stages are
+needed and neither substitutes for the other.
+
+**Park, don't kill (ruling 4).** Two failed critic loops ends the loop, not the
+encounter: the draft is committed to `Docs/plans/encounters/<slug>-parked.md` with the
+critic's outstanding fix-list, and the batch report carries it as parked. An encounter
+that survived two critics is worth salvaging by a human; the previous behaviour
+(escalate and redraft) threw away the work and re-spent the tokens.
+
+**No exemptions (ruling 3).** The Composition Contract is absolute. A shape that cannot
+carry a block is a future encounter *type* with its own contract, not a waiver. The gate
+hard-fails a missing block; the only escape is `RETROFIT_PENDING`, a ratchet that only
+ever shrinks.
 
 ## The model this pipeline authors for (THR-772/774)
 
@@ -108,9 +142,23 @@ The user provides:
 ```
 
 **Modes:**
-- Default → full pipeline (all 4 passes), encounter deployed to code
-- `draft` → Pass 1 only
-- `design` → Passes 1-3 only (no implementation)
+- Default → full line (all stages), encounter deployed to code and proved live
+- `draft` → Stage 1 only
+- `design` → Stages 1–2 only (no implementation)
+- `batch` → **the factory run** (THR-1047): Stage 0 brief → the whole line over N encounters → batch report
+
+### Batch mode
+
+```
+/encounter-pipeline batch --brief Docs/plans/encounters/<slug>-brief.md
+```
+
+Batch size is **6** (ruling 1) — the number at which variance is visible in one view,
+which is what Christian reviews for. The brief is drafted first and **approved in chat
+before the batch runs** (ruling 2); an unapproved brief is not a batch, it is a
+suggestion. Encounters are drafted in sequence, not in parallel: the critic loop for
+encounter *n* reads what the batch has already produced, which is how the batch avoids
+authoring the same hand six times.
 
 ## Slug Generation
 
@@ -175,7 +223,63 @@ Agent writes: `<slug>-systems.md` AND `<slug>-final.md`
 - `READY FOR IMPLEMENTATION` or `READY WITH CAVEATS` → proceed to Step 4.
 - `BLOCKED` → **stop the pipeline** and tell the user. The final file is produced but marked BLOCKED.
 
-### Step 4: Dispatch Pass 4 (Implementation)
+### Step 2b: Bound the critic loop (ruling 4 — park, don't kill)
+
+The editorial and systems passes are **two independent critics over the same draft**, and
+the loop around them is bounded at **two** iterations. Count loops, not passes: one loop
+is editorial + systems + a revision.
+
+- **Loop 1 clean** (editorial `PASS`/`PASS WITH REVISIONS` and systems `READY`/`READY WITH CAVEATS`) → Stage 3.
+- **Loop 1 dirty** → revise, run loop 2.
+- **Loop 2 still dirty** → **park**. Write `Docs/plans/encounters/<slug>-parked.md` containing the latest draft *plus* both critics' outstanding fix-lists, mark the encounter `parked` in the batch report, and continue the batch. Do not redraft, do not delete, do not silently drop it from the batch.
+
+Parking rather than killing is deliberate: an encounter that survived two critics carries
+real authored prose, and the failure is usually one block a human can settle in a minute.
+Redrafting throws that away and re-spends the tokens on the same wall.
+
+### Step 3: Machine gates
+
+```bash
+npm run check:encounter -- <templateId>
+```
+
+**Green is a precondition for a PR existing.** No exemption mechanism (ruling 3) — a
+missing block is a hard fail whose message names the block and the plan section. If the
+template is a not-yet-retrofitted legacy encounter it may sit on the `RETROFIT_PENDING`
+ratchet; the ratchet only ever shrinks, and deleting a name from it is the retrofit's
+proof.
+
+### Step 4: Live proof
+
+```bash
+npm run check:encounter-live -- <templateId>
+```
+
+Spawns the encounter on the ascendant in a seeded world, commits a hand, ticks to
+resolution, and reads the running state for what the template promised — cast bound,
+reward landed, seed planted, a keyed aftermath variant rather than the fallback, concepts
+on every change.
+
+**Read the verdict, not the exit code.** Three verdicts:
+
+| Verdict | Meaning |
+|---|---|
+| `proved` | every declared claim arrived |
+| `failed` | a declared block did not arrive — fix before the PR |
+| `vacuous` | ran clean and **proved nothing**: the template declares no cast, reward, seed, condition or reachable variant, so every claim was skipped |
+
+`vacuous` does not fail the command — refusing a template that declares too little is
+Stage 3's job, and failing it here would report one defect twice. But a batch of vacuous
+encounters is a batch that proved nothing, so the batch report counts them on their own
+line. Treat `vacuous` as unproved, never as a pass.
+
+**A template not in `UNIFIED_ACTION_TEMPLATES` cannot be proved.** The engine resolves
+templates by registry lookup, so an unregistered one stages fine and then never advances
+a step. The sweep detects this up front and says so — register it before Stage 4, or
+prove a registered sibling. This is why the golden exemplar (registered in no pool) is a
+Stage 3 artifact only.
+
+### Step 4b: Dispatch Pass 4 (Implementation)
 
 Dispatch sub-agent with `agents/implementation-prompt.md`, model `sonnet`.
 Agent creates: `src/data/encounters/<slug>.ts`, `src/data/encounters/__tests__/<slug>.test.ts`
@@ -189,9 +293,31 @@ Agent runs: `npm test`, `npm run check:typecheck`, `npx vite build`
 
 **On completion:** commit and push. Report to user.
 
-### Step 5: Done
+### Step 5: Batch review
 
-Tell the user: encounter deployed. Provide the spawn command: `spawn encounter @hero <template-id>`
+```bash
+npm run encounter:batch-report -- <id1> <id2> … --brief Docs/plans/encounters/<slug>-brief.md
+```
+
+Renders the batch **side by side** (ruling 1): one row per encounter carrying gate
+verdict, live verdict, resolved outcome, systems connected, band count, and two review
+links. The per-encounter detail comes after the table, not before — a report that led
+with six dossiers would be six reviews rather than one batch review.
+
+The report **runs neither check itself** — it renders their JSON. That is what keeps it
+from disagreeing with CI, which is the most expensive disagreement available here
+because it surfaces after the director has already approved the batch.
+
+Then Stage 5's human half: post a **plain-language chat summary** naming the two sampled
+encounters, each with its clickable link (Rule Zero), and ask one question. Christian
+never reviews all six — the gates hold the floor, he holds the ceiling. His verdict feeds
+the next brief.
+
+### Step 6: Done
+
+Tell the user: encounter deployed and proved. Provide the review link
+(`?view=game&seeded&size=medium&spawn=<template-id>`) — not the CLI command; per Rule
+Zero every reference he sees is something he can click.
 
 ---
 
@@ -330,6 +456,9 @@ Opus where creative judgment matters. Sonnet where code/systems matters. 2 of 4 
 ## File Dependencies
 
 ```
+Stage 0 (Brief) ──→ Docs/plans/encounters/<slug>-brief.md
+    │                (agent-drafted; Christian-approved in chat before the batch runs)
+    ▼
 Reference material (pre-read by orchestrator)
     │
     ▼
@@ -352,5 +481,19 @@ Pass 4 (Implementation, Sonnet) ──→ src/data/encounters/<slug>.ts
                                      src/data/unified-action-templates.ts (modified)
     │
     ▼
-Commit + Push → Vercel auto-deploys
+Stage 3 (Machine gates) ──→ npm run check:encounter -- <id>          [green = PR may exist]
+    │
+    ▼
+Stage 4 (Live proof) ─────→ npm run check:encounter-live -- <id>     [proved / failed / vacuous]
+    │
+    ▼
+Stage 5 (Batch report) ───→ npm run encounter:batch-report -- <ids…> --brief <path>
+    │                        Docs/plans/encounters/batch-report-<date>.md
+    ▼
+Commit + Push → Vercel auto-deploys → Christian samples 2 in chat
 ```
+
+**Parked encounters** leave the line at Step 2b and land at
+`Docs/plans/encounters/<slug>-parked.md`, carrying both critics' outstanding fix-lists.
+They stay in the batch report, marked parked — a parked encounter is work awaiting a
+human, not work discarded.
