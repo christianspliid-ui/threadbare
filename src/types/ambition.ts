@@ -53,6 +53,38 @@ export type GraphCondition =
    */
   | { type: 'agent_away_from_origin'; minTicks: number }
   | { type: 'target_agent_eliminated'; targetRef: string }
+  /**
+   * The agent is currently in the region it originated from — or is not (THR-841).
+   *
+   * The region-relative twins of `agent_away_from_origin`, and the pair authored
+   * content actually needs. `agent_in_region` below takes a region *literal*, and no
+   * literal can ever match: region ids are minted per world as `region_0…region_N`
+   * (`worldSeed.ts`) with names generated from historical-culture ownership, so an
+   * author writing `'homeland'` or `'cursed'` names nothing that will ever exist. Both
+   * shipped authorings did exactly that and were permanently false.
+   *
+   * These read the agent's own first-observed position instead, so they work for any
+   * agent in any world with nothing for an author to know in advance — the same move
+   * THR-822 made for `agent_away_from_origin`, one tier coarser. Where that condition
+   * is location-exact and durational ("rooted, and not at home"), these are
+   * region-coarse and instantaneous ("back in my own country" / "over the border").
+   *
+   * Fail-soft to `false` whenever either side is unresolvable — no origin recorded, no
+   * current position, or a location whose region the graph cannot resolve. An
+   * unresolvable side is "we do not know", never a measured negative, so a milestone
+   * cannot self-complete on missing data.
+   */
+  | { type: 'agent_in_origin_region' }
+  | { type: 'agent_not_in_origin_region' }
+  /**
+   * Region-literal conditions. **Unusable by authored content** — see the block above:
+   * region ids are generated per world, so a literal written into a template can never
+   * match one. `contentInvariants` pins that no template authors either.
+   *
+   * They remain for callers holding a region id captured at *runtime* — omen scopes
+   * (`{ kind: 'regional'; regionId }`), effect scopes (`{ scope: 'region'; regionId }`)
+   * and stealth all carry real ones.
+   */
   | { type: 'agent_in_region'; region: string }
   | { type: 'agent_not_in_region'; region: string };
 

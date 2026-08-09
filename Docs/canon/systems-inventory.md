@@ -287,7 +287,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `fragment` (1) | `fragmentResolution.ts` | `THR-573`, `THR-475`, `THR-884` |
 | `game` (1) | `gameInit.ts` | — |
 | `ghost` (1) | `ghostDots.ts` | — |
-| `graph` (5) | `graph.ts`, `graphConditions.ts`, `graphOpExecutor.ts`, `graphQueries.ts`, `graphUtils.ts` | `THR-786`, `THR-822` |
+| `graph` (5) | `graph.ts`, `graphConditions.ts`, `graphOpExecutor.ts`, `graphQueries.ts`, `graphUtils.ts` | `THR-786`, `THR-822`, `THR-841` |
 | `groups` (15) | `groups/bandOpposition.ts`, `groups/bandSpawner.ts`, `groups/groupCohesion.ts`, `groups/groupDissolution.ts`, `groups/groupEligibility.ts`, `groups/groupFormation.ts`, `groups/groupFray.ts`, `groups/groupMovement.ts`, `groups/groupNames.ts`, `groups/groupParting.ts`, `groups/groupQueries.ts`, `groups/groupResolution.ts`, `groups/groupReunion.ts`, `groups/groupSeeking.ts`, `groups/phaseGroups.ts` | `THR-731`, `TB-044`, `THR-74`, `THR-732` |
 | `guild` (1) | `guildSeeding.ts` | — |
 | `hex` (8) | `hexActionBridge.ts`, `hexActorIndex.ts`, `hexGrid.ts`, `hexMovementPath.ts`, `hexRegion.ts`, `hexTooltipProse.ts`, `hexVignette.ts`, `hexZoom.ts` | `TB-046`, `THR-188` |
