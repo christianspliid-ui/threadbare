@@ -27,6 +27,9 @@ import {
   type ProseFieldClass,
 } from '../content-eval/nudgeAuditDetectors';
 import { VAGUENESS_LEXICON } from '../content-eval/nudgeAuthoringConstants';
+import { auditTemplate } from '../content-eval/nudgeAuditDetectors';
+import type { UnifiedActionTemplate } from '../../types/unifiedAction';
+import { NUDGE_GOLDEN_EXEMPLAR } from '../__fixtures__/nudge-exemplar/swollen-ford-exemplar';
 
 const ALL_CLASSES: readonly ProseFieldClass[] = ['outcome', 'scene', 'interactive'];
 
@@ -176,5 +179,45 @@ describe('the THR-899 acceptance sentences', () => {
     for (const cls of ALL_CLASSES) {
       expect(countVagueness('it cost them something', cls), cls).toBeGreaterThan(0);
     }
+  });
+});
+
+/**
+ * Second person is scoped the same way vagueness is — THR-1045.
+ *
+ * The rule ("no second person on mortal-drawn content") exists so a scene never
+ * addresses the *mortal* as "you": the player is a god watching a person, not
+ * that person. `interactive` text has a different audience — it is rules text
+ * addressed to the player-god, and the locked THR-883 card format asks an
+ * `effectLine` to say plainly what the god does ("You thin the overcast…").
+ *
+ * Counting that flat failed correctly-authored cards by construction, including
+ * the golden exemplar itself. These assertions pin both halves, so a later edit
+ * cannot quietly re-flatten it OR widen the carve-out past `effectLine`'s class.
+ */
+describe('second person is scoped to the narrative classes (THR-1045)', () => {
+  it('does not fail the exemplar, whose cards address the player-god', () => {
+    // Three `effectLine`s open with "You …". Narrative surfaces are clean, so
+    // the only second person in this template is the correctly-addressed kind.
+    expect(auditTemplate(NUDGE_GOLDEN_EXEMPLAR).failures.filter(f => f.includes('second person')))
+      .toEqual([]);
+  });
+
+  it('still fails a template that addresses the mortal in narrative prose', () => {
+    const addressesTheMortal: UnifiedActionTemplate = {
+      ...NUDGE_GOLDEN_EXEMPLAR,
+      steps: NUDGE_GOLDEN_EXEMPLAR.steps.map(step =>
+        'narrativeTemplate' in step
+          ? {
+            ...step,
+            narrativeTemplate: 'You wade in. The water takes your weight and your footing.',
+            successAfterimage: 'You are across, and your gear is soaked through.',
+          }
+          : step,
+      ),
+    };
+    expect(
+      auditTemplate(addressesTheMortal).failures.some(f => f.includes('second person')),
+    ).toBe(true);
   });
 });

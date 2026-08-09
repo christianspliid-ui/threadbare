@@ -394,7 +394,21 @@ export function auditTemplate(template: UnifiedActionTemplate): NudgeAuditScores
   const vaguenessDensity = density(vaguenessHits, words);
   const intensifiers = countIntensifiers(text);
   const notXButY = countNotXButY(text);
-  const secondPerson = countSecondPerson(text);
+  // Scoped to the NARRATIVE classes, the same way vagueness was scoped by
+  // THR-899 and for the same reason: the rule is about who the prose addresses,
+  // and one field class has a different audience (THR-1045).
+  //
+  // The rule exists so a mortal-drawn scene never addresses the *mortal* as
+  // "you" — the player is a god watching a person, not that person. But
+  // `interactive` text is rules text addressed to the **player-god**, and the
+  // locked THR-883 card format asks an `effectLine` to state plainly what the
+  // god does: "You thin the overcast, and low sun crosses the water." Counting
+  // that as a register defect fails correctly-authored cards by construction —
+  // it failed the golden exemplar itself, which is the format's worked example.
+  //
+  // Narrative classes only, so a second person in an afterimage, a band
+  // fragment, or an opening still trips the threshold exactly as before.
+  const secondPerson = countSecondPerson(`${byClass.outcome} ${byClass.scene}`);
   const mortalDrawn = !(template.actorAffinities ?? []).includes('ascendant');
 
   const failures: string[] = [];
