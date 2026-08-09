@@ -295,7 +295,7 @@ export function processFactionOutcome(
       events.push({
         id: `faction_join_${tick}_${++factionEventSeq}`,
         tick,
-        type: 'faction_founded', // closest existing type for "joined faction"
+        type: 'faction_member_joined',
         message: `${agentName} has joined ${factionName}.`,
         significance: 0.6,
         notification: { channel: 'toast', icon: 'faction' },

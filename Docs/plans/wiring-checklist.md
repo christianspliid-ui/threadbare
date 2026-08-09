@@ -1738,7 +1738,7 @@ THR-666 parked all three faction event types in `ALWAYS_GLOBAL_EVENT_TYPES` behi
 
 | Change | Where | Note |
 |---|---|---|
-| `FACTION_ANCHORED_EVENT_TYPES` (new set) | `src/engine/notificationThreadingGate.ts` | Currently `faction_rank_changed`. `faction_founded` / `faction_dissolved` **stay** in `ALWAYS_GLOBAL_EVENT_TYPES` — world-scale. |
+| `FACTION_ANCHORED_EVENT_TYPES` (new set) | `src/engine/notificationThreadingGate.ts` | `faction_rank_changed` and `faction_member_joined` (THR-862). `faction_founded` / `faction_dissolved` **stay** in `ALWAYS_GLOBAL_EVENT_TYPES` — world-scale. |
 | `isFactionNode` (new) | same | `node.type === 'actor' && actorType === 'faction'`, mirroring `isMortalAgentNode`. Same no-`category`-field warning applies. |
 | `NotificationRouting` replaces `ActorRouting` | same → `notificationRouter.ts` | Discriminated union; the `entity` case carries `anchorId` + `anchorKind`. |
 | `EntityNotice.anchorId` / `.anchorKind` replace `.agentId` | `src/types/notification.ts` | `EntityNoticeAnchorKind = 'agent' \| 'faction'`, a subset of `ThreadCategory`. |
@@ -1756,7 +1756,7 @@ Step 3 is load-bearing: a faction-scoped beat whose faction is *unthreaded* land
 
 **Anchor-aware wording:** `NOTICE_FACTION_CATEGORY_LABEL` overrides the agent tooltip headings for faction rows (falling back to the agent map, then `NOTICE_FACTION_DEFAULT_LABEL`), and `NOTICE_ARIA_OPEN_SUFFIX` keys the aria tail per kind. `EntityNoticeBadge` itself has no anchor branch — the model supplies the wording. Retune voice in those maps without touching logic (NFP #1).
 
-**Known gap (THR-862):** `faction_founded` is emitted for *both* genuine faction founding and "agent joined a faction" (`src/engine/factionOutcome.ts`, with a code comment conceding it), so the join beat cannot be anchored while it shares a type.
+**Gap closed (THR-862).** `faction_founded` used to be emitted for *both* genuine faction founding and "agent joined a faction" (`src/engine/factionOutcome.ts`, with a code comment conceding it), so the join beat could not be anchored while it shared a type: the gate keys on `event.type`, and anchoring the join would have anchored every founding with it. Joining now emits its own `faction_member_joined`, which sits in `FACTION_ANCHORED_EVENT_TYPES`; `faction_founded` retains only genuine founding (`src/engine/initiativeOutcomes.ts`) and stays world-scale. Both `eventTypeToCategory` and `deriveNavigationTarget` in `notificationRouter.ts` match on the `faction_` prefix, so the new type routes and categorizes with no change there.
 
 ## Scene target enrichment placeholders — `{target:*}` (THR-694, Scene Integration Slice A)
 
