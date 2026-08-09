@@ -169,7 +169,10 @@ export function templateToPreviewSlot(template: UnifiedActionTemplate): WheelSlo
     interventionType: null,
     rangeStatus: 'unlimited',
     hexDistance: null,
-    description: template.narrativeTemplates.initiation,
+    // THR-1040: fail-soft — `narrativeTemplates` is required on the type but
+    // omitted by whole faction sets (the `mc.*` set), so an unguarded read
+    // crashes the render rather than degrading it.
+    description: template.narrativeTemplates?.initiation ?? '',
     durationMode: template.durationMode,
     spellName: template.spellName,
     technicalDescription: template.description,

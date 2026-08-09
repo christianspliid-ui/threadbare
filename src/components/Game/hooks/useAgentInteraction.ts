@@ -446,7 +446,8 @@ export function useAgentInteraction({
             cast: divineCast,
             event: {
               idPrefix: 'evt_intervention',
-              message: `The Ascendant ${divineTemplate.narrativeTemplates.initiation}. (${result.detected ? 'detected!' : 'undetected'})`,
+              // THR-1040: fail-soft — see GameView's dispatch toast.
+              message: `The Ascendant ${divineTemplate.narrativeTemplates?.initiation ?? divineTemplate.name}. (${result.detected ? 'detected!' : 'undetected'})`,
               significance: result.detected ? 0.8 : 0.5,
               isInterventionBeat: true,
             },

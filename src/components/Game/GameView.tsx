@@ -3360,7 +3360,11 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
 
       // Dispatch-time toast — initiation phrasing (present tense; the outcome arrives
       // later as a Divine Receipt, THR-727).
-      const dispatchMessage = `The Ascendant ${template.narrativeTemplates.initiation}.${cast.buffParenthetical}`;
+      // THR-1040: fail-soft — falls back to the verb's own name so the toast
+      // reads as a sentence rather than throwing on a template that omits the
+      // (nominally required) narrativeTemplates block.
+      const dispatchVerb = template.narrativeTemplates?.initiation ?? template.name;
+      const dispatchMessage = `The Ascendant ${dispatchVerb}.${cast.buffParenthetical}`;
       handlePushToast({
         id: `toast_target_action_${Date.now()}`,
         message: dispatchMessage,

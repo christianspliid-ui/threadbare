@@ -129,6 +129,44 @@ function getCurrentStep(
   return resolveStepDefinition(template, action.currentStep, action.choiceHistory);
 }
 
+/** Last-resort opening line when a template carries neither template-level nor
+ *  step-level prose. Named rather than inlined so the fallback copy is tunable
+ *  in one place (NFP #1) instead of drifting across four call sites. */
+const MISSING_INITIATION_PROSE = 'The moment arrives.';
+
+/**
+ * The template's opening prose, fail-soft (THR-1040).
+ *
+ * `narrativeTemplates` is declared *required* on `UnifiedActionTemplate`, but
+ * the 15 `mc.*` mercenary templates omit it and type-check anyway only because
+ * of the red baseline (THR-489). Reading `.initiation` off it unguarded threw
+ * during render, so those encounters could never be driven to the aftermath
+ * THR-1038 authored for them — a crash, not a degradation, which NFP #4
+ * forbids.
+ *
+ * The fallback order is honest rather than merely non-throwing: these templates
+ * *do* carry prose, on their steps, so the step's own `narrativeTemplate` is
+ * the right second choice and the constant above is reached only by a template
+ * carrying no prose at all.
+ */
+function resolveInitiationProse(
+  template: UnifiedActionTemplate,
+  currentStep: ActionStep | undefined,
+): string {
+  // `steps[0]` is an `ActionStepOrBranch` — a branch carries no prose of its
+  // own, hence the `in` narrowing rather than a bare optional chain.
+  const firstStep = template.steps?.[0];
+  const firstStepProse =
+    firstStep && 'narrativeTemplate' in firstStep ? firstStep.narrativeTemplate : undefined;
+
+  return (
+    template.narrativeTemplates?.initiation ??
+    currentStep?.narrativeTemplate ??
+    firstStepProse ??
+    MISSING_INITIATION_PROSE
+  );
+}
+
 // ─── Section Builders ─────────────────────────────────────────────
 
 /** Plain keyword label for a reach domain (e.g. 'shadow' → 'Shadow'). */
@@ -142,7 +180,7 @@ function buildHeader(
 ): EncounterStageModel['header'] {
   const { template, activeAction, agentName, threadTier, graph, notification } = args;
   const currentStep = getCurrentStep(template, activeAction);
-  const rawSubtitle = template.description ?? template.narrativeTemplates.initiation;
+  const rawSubtitle = template.description ?? resolveInitiationProse(template, currentStep);
 
   // Portrait for the focal agent — same resolution the aftermath actor-moments use.
   //
@@ -179,7 +217,7 @@ function buildScene(
   const currentStep = getCurrentStep(template, activeAction);
 
   return {
-    situationProse: enrichProse(template.narrativeTemplates.initiation, ctx),
+    situationProse: enrichProse(resolveInitiationProse(template, currentStep), ctx),
     pressureProse: enrichProse(currentStep.narrativeTemplate ?? '', ctx),
     noticeLines: [],
   };
@@ -191,7 +229,7 @@ function buildNarrative(
 ): EncounterStageModel['narrative'] {
   const { template, activeAction, graph } = args;
   const currentStep = getCurrentStep(template, activeAction);
-  const rawSource = currentStep.narrativeTemplate ?? template.narrativeTemplates.initiation;
+  const rawSource = currentStep.narrativeTemplate ?? resolveInitiationProse(template, currentStep);
   const proseSource = enrichProse(rawSource, ctx);
 
   // Collect linkable entities from the support bundle plus the scene target (THR-696).
@@ -213,7 +251,7 @@ function buildNarrative(
   // Ensure at least one paragraph
   if (paragraphs.length === 0) {
     paragraphs.push(
-      autoLinkNarrative('para-0', enrichProse(template.narrativeTemplates.initiation, ctx), linkEntries),
+      autoLinkNarrative('para-0', enrichProse(resolveInitiationProse(template, currentStep), ctx), linkEntries),
     );
   }
 
