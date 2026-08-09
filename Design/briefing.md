@@ -2,20 +2,20 @@
 needsChristian: thr-907-slice-verdict, thr-974-consequence-verdict, aftermath-pops-recheck, thr-998-action-card-risk-word, thr-961-sound-feel, thr-962-sound-routing
 queue: backed-up
 freshness: dirty
-deploy: skipped
+deploy: deployed
 tasks: ok
 lanes: recovered
 ci: healthy
 ---
 # Briefing
 
-**Generated:** 2026-08-09 10:57 local (08:57 UTC) · by keep-work-flowing-cc
+**Generated:** 2026-08-09 11:55 local (09:55 UTC) · by keep-work-flowing-cc
 
 ## Needs Christian
 
-**Your two biggest open items both closed this hour, and both closed because of something you said.** The encounter-writing format is locked, and the process-rule question is answered. What is left is play, not paperwork.
+**Nothing new since the last brief, and nothing has gone wrong.** Your list is the same six items it was an hour ago — all of them play or taste, none of them urgent, none of them blocking anyone. The machine is busy draining the work your format approval released this morning.
 
-- **Both play sessions are ready, and they are now the only things on your list that hold anything up.** Two rulings sharing the same five encounters, so it can be one sitting.
+- **Both play sessions are ready, and they are still the only things on your list that hold anything up.** Two rulings sharing the same five encounters, so it can be one sitting.
 
   **Session A — the four-part verdict** ([THR-907](https://linear.app/threadbare/issue/THR-907/slice-verdict-session-christian-rules-on-prose-firing-ui-and-game)): does the prose read clear, does the firing rhythm work, is the interface gamey enough, and is deciding actually fun. *"Needs another iteration"* is a valid answer on any of the four.
 
@@ -36,44 +36,29 @@ ci: healthy
 
 - **Two small yes/no decisions on encounter sound**, unchanged for several runs: [routing the sound cues to the new screen](https://linear.app/threadbare/issue/THR-962/the-encounter-sound-design-is-wired-to-a-superseded-surface-route-it), and [how those cues actually feel](https://linear.app/threadbare/issue/THR-961/encounter-sound-design-feel-calibration-pass-thr-346-tuning-tail).
 
-## From Christian
-
-**You answered the process-rule question at 10:45 local**, and you rejected the way it was put to you:
-
-> *"your choice is a false dichotomy. its not either of these. it is from now on and existing tickets should be re-read and reprioritized in the light of a cost benefit analysis"*
-
-Recorded as settled, and the question is off your list. Two halves, handled differently:
-
-- **"From now on" is now the standing rule** — the cost-and-benefit requirement binds tickets filed from 2026-08-08 onward. That is what this morning's sweep already did, so nothing has to be undone.
-- **"Existing tickets should be re-read and reprioritized under a cost-benefit analysis"** is a real piece of work and is **not something this lane may do** — it re-orders the board, and I only write these two files. **Routed to the next working session**, which owns the backlog sweep. Roughly 13–17 of the 39 ready items are in scope; none of them gets demoted on age, each gets read on what it costs versus what it saves. You will see the result as a re-ordered queue, not as another question.
-
 ## Queue
 
 Backed up — **39 items ready for dev, 2 in progress**. Nothing is stuck and nothing is unowned.
 
-- **Both in-progress items have an owner**, for a fifteenth consecutive run. One is the [civic-seats encounter batch](https://linear.app/threadbare/issue/THR-860), whose hold was lifted by your format approval this morning — the pipeline picks it up on its own now; the other is [ten encounters whose written endings reach nobody](https://linear.app/threadbare/issue/THR-1054), mid-flight.
-- **Six new housekeeping items were filed this morning** by the weekly sweep — wiki gaps, a plan doc missing its required sections, untracked files piling up in your working copy. All small, all queued. **These are exactly the pile your cost-benefit ruling now applies to.**
-- **About a dozen items have been waiting more than a week.** All small cleanup; none blocks anything.
+- **The content pipeline is moving again for the first time in ten days.** Your format approval this morning released twelve held tickets; the promotion lane took the first of them ([the meeting-batch conversion, THR-875](https://linear.app/threadbare/issue/THR-875)) at 09:26Z and the rest drain over the next several runs. **Nothing needed from you** — this is the thing your approval was for.
+- **Both in-progress items have an owner**, for a sixteenth consecutive run: the [civic-seats encounter batch](https://linear.app/threadbare/issue/THR-860) and [ten encounters whose written endings reach nobody](https://linear.app/threadbare/issue/THR-1054), mid-flight.
+- **One piece of tidying for a working session, not for you:** the civic-seats pull request still carries the "paused until the format is locked" note that stopped it merging. The format *is* locked, so that note is now stale and needs removing by hand before the batch can land.
+- **Four items have been waiting more than a week** (the oldest eleven days). All small cleanup; none blocks anything. These, plus the six housekeeping items filed yesterday morning, are the pile your cost-benefit ruling now governs.
 
 ## Freshness
 
-- All nine scheduled jobs are running on time; the automated checks are healthy; the live site is current — nothing since the last publish touched game code, only notes and docs.
-- **One pull request needs a working session, not you** — the ten-endings fix ([#1364](https://github.com/christianspliid-ui/threadbare/pull/1364)) has both a merge conflict and a failing check, 34 minutes old. Inside the normal window; the next session clears it.
-- **The background jobs went quiet overnight again** (roughly 20:30 to 06:00) and resumed on their own. **Logged as normal per your message on 2026-08-06, not raised.** The detector still flags this shape every night; teaching it that overnight quiet is expected is on the agent-side list, not yours.
-- The housekeeping job that cleans up old work folders ran seventeen minutes ago. 49 folders open, 2 still need a human decision eventually; neither is urgent.
+- All nine scheduled jobs are running on time, the automated checks are healthy, and **the live site is serving the latest code**.
+- **One pull request needs a working session, not you** — the ten-endings fix ([#1364](https://github.com/christianspliid-ui/threadbare/pull/1364)) has both a merge conflict and a failing check, and has now been sitting 94 minutes, just past the point where it stops being normal. Flagged for the next session to clear.
+- **The background jobs went quiet overnight again** (roughly 22:30 to 08:00) and resumed on their own. **Logged as normal per your message on 2026-08-06, not raised** — seventeenth run in a row. The detector still flags this shape every night; teaching it that overnight quiet is expected is on the agent-side list, not yours.
+- The housekeeping job that cleans up old work folders ran fifteen minutes ago. 50 folders open, 2 still need a human decision eventually; neither is urgent.
 - Your working copy is on `main` and fully up to date. The same two settings files still show local edits (`.claude/settings.json`, `.claude/settings.local.json`) — yours, untouched by me.
 
 ## What's moving
 
-**The encounter-writing format is locked.** You read the amended [writing rules](https://github.com/christianspliid-ui/threadbare/blob/main/.claude/skills/encounter-pipeline/reference/nudge-authoring-spec.md) and the [Swollen Ford exemplar](https://github.com/christianspliid-ui/threadbare/blob/main/src/data/__fixtures__/nudge-exemplar/swollen-ford-exemplar.ts) in chat this morning and approved them — *"looks fine."* [THR-883](https://linear.app/threadbare/issue/THR-883/fable-encounter-writing-prototype-lock-the-exact-authoring-format) closed at 10:45 local after ten days as the board's only Urgent row.
+**The ten-day content freeze is over and the queue is acting like it.** [THR-883](https://linear.app/threadbare/issue/THR-883/fable-encounter-writing-prototype-lock-the-exact-authoring-format) closed at 08:45Z on your chat approval of the writing rules and the Swollen Ford exemplar. Since then, without anything further from you:
 
-What that releases, without anything further from you:
-
-- **Eleven paused content tickets and the encounter factory harness unblock** on the next automatic sweep — all the Nudge Model content batches, the Meeting dilemma conversion, and the harness that runs the whole thing.
-- **The retrofit of all fifteen existing nudge-era encounters** becomes the factory's first real batch, rather than a separate cleanup job.
-- **The civic-seats batch that has been parked since 2026-07-30** stops being parked.
-
-Also shipped since the last brief: your Rule Zero — every reference you see carries a clickable link — is now the first section of the project's own instructions, so it binds every agent from here on.
+- The first of the twelve released tickets was promoted and is claimable now; eleven more follow, including the [encounter factory harness](https://linear.app/threadbare/issue/THR-1047) and eight batches of encounter writing.
+- The [ten-endings fix](https://linear.app/threadbare/issue/THR-1054) is mid-flight — the one that makes written endings actually reach players on ten temple-and-quest encounters. Relevant to Session B, though not blocking it: the five encounters in your links are a different set and already work.
 
 ---
 *Standing asks live in `Design/user-actions.md`. This file is regenerated hourly by
