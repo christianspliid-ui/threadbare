@@ -13,6 +13,7 @@ import { ProseViewer } from './viewers/ProseViewer';
 import { TreeViewer } from './viewers/TreeViewer';
 import { ConfigManager } from './viewers/ConfigManager';
 import { IASurfaceViewer } from './viewers/IASurfaceViewer';
+import { EncounterPackageViewer } from './encounter-package/EncounterPackageViewer';
 import type { IASurface } from '../../data/ia-manifest';
 
 interface Props {
@@ -20,9 +21,23 @@ interface Props {
   searchQuery: string;
   selectedItemKey: string | number | null;
   onSelectItem: (key: string | number) => void;
+  /**
+   * Entry-scoped hash parameters (THR-1046). Only viewers that own a route read
+   * them; every other viewer is unaffected by their presence.
+   */
+  routeParams?: Readonly<Record<string, string>>;
+  /** Rewrite this entry's hash parameters. */
+  onRouteChange?: (params: Readonly<Record<string, string | undefined>>) => void;
 }
 
-export function CMSMainPanel({ entry, searchQuery, selectedItemKey, onSelectItem }: Props) {
+export function CMSMainPanel({
+  entry,
+  searchQuery,
+  selectedItemKey,
+  onSelectItem,
+  routeParams,
+  onRouteChange,
+}: Props) {
   if (!entry) {
     return (
       <div className="flex-1 flex items-center justify-center" style={{ color: 'var(--text-muted)' }}>
@@ -58,7 +73,7 @@ export function CMSMainPanel({ entry, searchQuery, selectedItemKey, onSelectItem
 
       {/* Viewer */}
       <div className="flex-1 overflow-y-auto px-4 py-2">
-        {renderViewer(entry, searchQuery, selectedItemKey, onSelectItem)}
+        {renderViewer(entry, searchQuery, selectedItemKey, onSelectItem, routeParams, onRouteChange)}
       </div>
     </div>
   );
@@ -69,6 +84,8 @@ function renderViewer(
   searchQuery: string,
   selectedItemKey: string | number | null,
   onSelectItem: (key: string | number) => void,
+  routeParams?: Readonly<Record<string, string>>,
+  onRouteChange?: (params: Readonly<Record<string, string | undefined>>) => void,
 ) {
   switch (entry.viewer) {
     case 'table':
@@ -127,6 +144,17 @@ function renderViewer(
           searchQuery={searchQuery}
           selectedKey={selectedItemKey}
           onSelectItem={onSelectItem}
+        />
+      );
+    case 'encounter-package':
+      return (
+        <EncounterPackageViewer
+          searchQuery={searchQuery}
+          templateId={routeParams?.template}
+          batch={routeParams?.batch}
+          // Fail-soft: a host that wires no route handler still renders the
+          // picker — navigation is inert rather than throwing (NFP #4).
+          onNavigate={onRouteChange ?? (() => undefined)}
         />
       );
     default:

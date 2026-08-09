@@ -220,7 +220,7 @@ function costChannelsFor(nudge: StepNudge): EncounterStageCostChannelModel[] | u
  * setting-resolved string by this point — `buildNudgeHand` folds `fictionBySetting`
  * into it — so enriching here covers the variant as well as the default.
  */
-function cardModelFor(
+export function buildNudgeCardModel(
   nudge: StepNudge,
   accessibleSpheres: readonly SphereName[],
   state: 'playable' | 'dimmed',
@@ -534,7 +534,7 @@ export function buildNudgePhaseModel(
   const withheld: EncounterStageWithheldNudgeModel[] = [];
 
   for (const entry of hand.playable) {
-    cards.push(cardModelFor(entry.nudge, accessibleSpheres, 'playable', enrich));
+    cards.push(buildNudgeCardModel(entry.nudge, accessibleSpheres, 'playable', enrich));
   }
 
   for (const entry of hand.dimmed) {
@@ -543,7 +543,7 @@ export function buildNudgePhaseModel(
       withheld.push({ id: nudge.id, name: enrich(nudge.name), blockedCode: blocked });
       continue;
     }
-    cards.push(cardModelFor(nudge, accessibleSpheres, 'dimmed', enrich, blocked));
+    cards.push(buildNudgeCardModel(nudge, accessibleSpheres, 'dimmed', enrich, blocked));
   }
 
   // Trait-gated cards the agent cannot hold: never in the player stage, listed
