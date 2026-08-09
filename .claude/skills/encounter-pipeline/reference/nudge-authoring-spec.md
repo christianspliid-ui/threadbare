@@ -4,16 +4,23 @@
 format. THR-774 (WS1) established this document; the 2026-07-30 THR-883 prototype
 sessions locked the format it now records: the communication pivot, setting envelopes
 (THR-884), and the card system (THR-885), with the card library progression designed in
-`Docs/plans/2026-07-30-nudge-card-repertoire.md`.
+`Docs/plans/2026-07-30-nudge-card-repertoire.md`. The 2026-08-08 Encounter Factory
+rulings added the **Composition Contract** (THR-1045) — the section below the pivot —
+which turns "which blocks does an encounter carry?" from a session-by-session judgement
+into a validated schema.
 
 Both authoring skills load this file: `encounter-pipeline` (branching encounters) and
 `template-encounter-rewrite` (linear templates). They differ in structure, scale, and
 orchestration; they do **not** differ on anything in this document. If the two skills
 ever appear to disagree about a rule below, this file wins.
 
-- Executable half: `src/engine/__tests__/nudgeModel.test.ts` § *golden exemplar*.
+- Executable half: `src/engine/__tests__/nudgeModel.test.ts` § *golden exemplar* +
+  `npm run check:encounter -- <templateId>` (the factory gate, THR-1045).
 - Worked example: `src/data/__fixtures__/nudge-exemplar/swollen-ford-exemplar.ts`
   (The Swollen Ford — supersedes the pre-pivot Darkhollow Vault).
+- Composition Contract: `src/data/content-eval/compositionContract.ts` (code is the
+  contract) + `Docs/plans/2026-08-08-encounter-factory-workflow.md` §1 and its
+  Rulings block.
 - Tunable numbers: `src/data/content-eval/nudgeAuthoringConstants.ts`.
 - Card-type catalog: `public/nudge-cards-reference.html` (the wiki page where the
   21-type library and the Repertoire are iterated) +
@@ -108,6 +115,88 @@ for penalties; see the wiki page). The pivot changes no part of the no-digits ru
 
 ---
 
+## The Composition Contract — what every encounter owes (THR-1045)
+
+Locked 2026-08-08 (the Encounter Factory rulings,
+`Docs/plans/2026-08-08-encounter-factory-workflow.md`). The composition audit
+(THR-1039) found the engine resolving nine composition-block classes live while the 15
+nudge-era encounters authored zero cast bundles, zero `rewardPool`, zero `byOutcome`
+bands — richer *within-template* composition than ever, and none of the cross-template
+blocks that make a scene part of a world. The contract is the inverse: **every
+encounter leaves the line composition-complete, enforced by a validator, not hoped
+for.**
+
+**The gate.** `npm run check:encounter -- <templateId>` (or `--all` for the corpus).
+**Green is a precondition for a PR existing.** It stacks five checks, most structural
+first: the Composition Contract → register detectors → grant liveness
+(`validateNudgeGrantRefs`) → an enrichment dry-run (every `{...}` in authored prose is
+a token `enrichProse` resolves; every `{frag:*}` names a declared slot) → forecast
+arithmetic (a step's difficulty plus its full hand stays inside [0, 1] — cards past
+the ceiling buy nothing, and nothing in the UI says why). **Code is the contract**:
+`src/data/content-eval/compositionContract.ts`; every violation names its block and
+the plan section its rule is written in. Where this page and the code disagree, the
+code wins.
+
+| Block | What the validator holds |
+|---|---|
+| **Steps** | 1–3 plain steps, each with a reach, a numeric difficulty, and a `narrativeTemplate` |
+| **Hand** | at least one nudge-bearing step; the hand rules delegate to `checkNudgeHand` (checklist step 3) |
+| **Setting** | `settings` declared and the envelope valid (`validateSettingEnvelope`, § envelopes) |
+| **Cast** | ≥1 actor binding on the *resolved* support bundle — a THR-1044 family default satisfies it exactly as an explicit bundle does; every `{cast:<key>}` token names a declared key |
+| **Rewards** | something persists: a `rewardPool` draw on a step outcome **or** an aftermath effect that leaves a mark on the world (`spawn_artifact`, a condition, a seed, a favor, …). An effect that only prints is scene dressing, not a reward |
+| **Aftermath** | `aftermathConfig` present; the `byOutcome` floor (ruling 7): ≥3 bands — one success-side, one failure-side, one extreme; every variant carries an `overview`; every change declares `concepts` (Law 2) |
+| **Systems** | ≥3 game-system connections, counted from the authored manifest — `cast` / `rewards` / `seeds` / `conditions` / `reputation` / `factions`. Prose counts for nothing: an encounter that *names* a faction but touches no faction surface has not connected to it |
+| **Images** | every card `imageTag` resolves to a library row (the gate resolves, never trusts — a dead tag falls back silently at render); `illustrationUrl`, when declared, is public-absolute |
+
+**No exemptions, ever (ruling 3).** The plan's first draft allowed
+`composition: { cast: { exempt: "…" } }`; Christian deleted it. A shape that cannot
+carry a block is a future *encounter type with its own contract*, never a waiver. The
+only escape is `RETROFIT_PENDING` (`src/data/content-eval/retrofitPending.ts`) — a
+per-template ratchet for the pre-contract corpus that only ever shrinks, checked in
+both directions: an unlisted failure is new rot, a listed pass is a stale entry the
+list must drop. **New content never starts on the ratchet.**
+
+**Expression is inline (ruling 5).** The blocks live on the template file itself —
+fields on the `UnifiedActionTemplate`, code comments where a decision needs recording.
+No sibling manifest file.
+
+### Cast — named-inline with mandatory binding (ruling 6)
+
+Every encounter binds at least one named scene actor. The binding — an actor spec in
+`supportBundle` — is what makes the person *real*: a reused or spawned graph NPC with
+a portrait, a cast-strip entry, a click, and persistence. Prose alone leaves an
+anonymous noun the player cannot touch, which is exactly the "flat encounter" the
+systems quota exists to stop.
+
+- **Role-voiced inline prose is the default.** "The keeper waits at the water";
+  "another traveler stops at the water's edge." Most sentences never need the
+  generated name, and a token in a sentence that doesn't earn it is noise.
+- **`{cast:<key>}` tokens go where the name earns something** — greetings, reveals,
+  sequel callbacks. A declared key always resolves (THR-696): a reused NPC renders
+  their live name, an unbound spec renders its `spawnName`. Two consequences: when a
+  token will render it, `spawnName` must be a real name, never a role phrase; and a
+  token naming an *undeclared* key strips silently, which is why the gate checks
+  declaration.
+- **Never gender a bound cast member in prose.** Reuse binds whoever is standing
+  there. Write around pronouns: the role noun, or restructure the sentence.
+- **Family defaults (THR-1044).** A shipped `encounter.*` template whose envelope
+  resolves to a *single* setting class inherits that class's default bundle
+  (`DEFAULT_SETTING_SUPPORT_BUNDLES`) and satisfies the Cast block with no authored
+  spec. A template spanning several classes inherits nothing — one class's cast on
+  another class's scene is placeless prose — so it declares its own.
+- **Class-honesty.** An explicit bundle must read correctly at *every* class the
+  envelope declares: pick `reuseNpcRoles` from roles the rosters actually seed at
+  those classes (`LOCATION_ROLE_ROSTERS`, `src/types/npc.ts`), and a `supportRole` /
+  `spawnName` that survives the whole envelope. The exemplar's fellow traveler
+  (`wanderer`/`pilgrim` — seeded at rural and wayside alike) is the worked example;
+  its earlier draft's "miller's boy" — rural-honest, wayside-placeless — is the named
+  counter-example.
+- **Conditional prose**: `{?has_cast:<key>}…{/has_cast:<key>}` and
+  `{?no_cast:<key>}…{/no_cast:<key>}` gate a sentence on the binding — rarely needed
+  for a declared key, which always resolves.
+
+---
+
 ## The scene-writer's checklist (14 questions + the envelope question)
 
 Locked 2026-07-30 (frameworks plan § Decision 1). Every encounter's prose is validated
@@ -176,6 +265,10 @@ existing cache filter enforces it unchanged.
 - **Coverage matrix** (THR-884 generator + committed report): settings × reaches →
   drawable-template counts plus per-family card-type composition. Check it before picking
   an envelope — feed the starving cells.
+- **The envelope also decides the cast default (THR-1044).** A single-class
+  `encounter.*` envelope inherits that class's default support bundle; a multi-class
+  envelope inherits nothing and declares its own, class-honest across every declared
+  class — see § Cast under the Composition Contract.
 
 ---
 
@@ -261,7 +354,10 @@ before the first sentence of prose**:
    a band, or the aftermath, before the promise is written down.
 8. **Personalization + supporting content — how many systems does this encounter
    touch? (Christian, 2026-07-31.)** List the connections and count them; **target
-   ≥3 beyond the core test** (warn-level). The levers:
+   ≥3 beyond the core test** — and since THR-1045 the floor is a hard gate, not a
+   warn: `check:encounter` counts ≥3 connections from the *authored manifest*
+   (cast / rewards / seeds / conditions / reputation / factions), so a connection
+   that lives only in prose or in this block's text counts for nothing. The levers:
    - **Names and cast**: an NPC who would use the agent's name uses the cast/
      placeholder surface ("Evening, `{cast:agent}`"), never a generic address the
      engine could have personalized.
@@ -457,15 +553,54 @@ authored refs that currently fail the sweep; the allowed set is everything that 
 and it grows as those repairs land. A hook on a dead ref is a gate that never opens —
 invisible to every test that does not enumerate values.
 
-### 6. Aftermath
+### 6. Aftermath — authored, banded, persistent
 
-Prizes, tolls, and seeds as **object references** — ids the modal system resolves — not
-inline prose descriptions. Every game object is a clickable modal (ruling 6), and that
-only works if the aftermath names objects rather than describing them. Card-carried world
-changes (`grants`) fire once per committed card, after the step resolves, through the
-host system's own API.
+**`aftermathConfig` is mandatory (the contract).** The pre-contract allowance — "a
+background encounter resolves through the default assembly" — is retired: the default
+assembly is where every ending reads the same at `critical_success` and
+`success_at_cost`, the exact gap THR-969 was filed to close. A choice-less encounter
+hangs its bands off `fallback` — which is why `byOutcome` lives *on* the variant
+rather than beside it.
 
-**Tolls in words.** "A heavy toll", "tremendous exertion". Never a number.
+- **The `byOutcome` floor is three bands (ruling 7)**: one success-side, one
+  failure-side, and one extreme (`critical_success` / `critical_failure` /
+  `success_at_cost`). A floor, not a norm — author more wherever the fiction has
+  bands. The tails are the point: they are the endings a playthrough almost never
+  rolls, so they go unwritten unless a contract asks for them. Watch the domain:
+  `byOutcome` keys on `UnifiedActionOutcome` (the *action's* resolved band), not the
+  six-value per-step `StepOutcome` that `bandProse` uses.
+- **Every variant carries an `overview`; every change declares `concepts`** (Law 2) —
+  the substring of `detail` that names a game concept, with its tooltip id, so the
+  chip can explain itself. (`EncounterAftermathChange.concepts`' own type comment
+  still describes the pre-contract convention; the contract's ruling is later and
+  wins — the reconciliation is THR-1053.)
+- **Something must persist** — the Rewards block. Two authoring routes, either
+  sufficient:
+  1. **A `rewardPool` draw** — documented here for the first time; the audit found
+     the whole mechanism untaught while 522 sites in the old corpus used it.
+     `RewardPoolRecipe` on a step's `successMetadata` / `failureMetadata`:
+     `categoryWeights` over the seven attachment categories (`possession · condition
+     · blessing · curse · bestowed_power · agreement · spell`), optional `tagFilters`
+     / `sphereTint`. The draw is seeded and deterministic per (seed, tick, actor,
+     template); the tier curve and bad-outcome chance resolve from the outcome band,
+     so the prize scales with how well it went. It renders as an `item` change — the
+     PRIZE chip — and composes with an authored ending (THR-1042: an authored ending
+     overrides the prose, it no longer erases the facts). `failureMetadata.rewardPool`
+     is the equipment-loss channel. **A `tagFilters` entry must name tags verified
+     live in the attachment library** — a filter matching zero templates is a
+     silently empty pool, the THR-844 rot class in a new place. Note
+     `successMetadata` fires on `isStepSuccess`, which counts `near_miss` as a
+     success.
+  2. **A persistent aftermath effect** — `spawn_artifact`, a condition, an
+     `encounter_seed`, a favor, a hidden mark, …. The validator's list is
+     `PERSISTENT_EFFECT_KINDS` in `compositionContract.ts`; an effect that only
+     prints (`recent_event`, `emit_omen`) is dressing and does not count.
+- **Prizes, tolls, and seeds as object references** — ids the modal system resolves —
+  not inline prose descriptions. Every game object is a clickable modal (format
+  ruling 6), and that only works if the aftermath names objects rather than
+  describing them. Card-carried world changes (`grants`) fire once per committed
+  card, after the step resolves, through the host system's own API.
+- **Tolls in words.** "A heavy toll", "tremendous exertion". Never a number.
 
 ### 7. Images
 
@@ -481,7 +616,18 @@ correctly in at least `GENERIC_POOL_UNRELATED_ENCOUNTERS_MIN` (3) *unrelated* en
 Post-pivot every card face must pass it — a face that only reads in dungeons is a
 dungeon card, whatever you name it.
 
+**Tags must resolve (the contract's Images block).** Every card `imageTag` must name a
+row in `ENCOUNTER_IMAGE_LIBRARY` — the gate resolves, never trusts, because a dead tag
+falls back to the category generic *silently* at render, so the art an author believed
+they picked is simply never seen. `illustrationUrl`, when declared, is a
+public-absolute path (starts with `/`).
+
 ### 8. Evidence + the independent critique pass
+
+**Run the factory gate first**: `npm run check:encounter -- <templateId>`. Green is a
+precondition for a PR existing (Composition Contract § above) — it runs the contract,
+the detectors, grant liveness, the enrichment dry-run, and forecast arithmetic in one
+command, and its output is the evidence a closeout quotes.
 
 Run the register scorer and the detectors below on all new prose — openings included. An
 encounter is not finished until they are clean, and until the scene-writer's checklist is
@@ -732,8 +878,16 @@ alone.
 
 ## Fail-soft contract
 
-Everything in the nudge model is opt-in. A step with no `nudges` resolves exactly as it
-did before the schema landed, and that is a supported authoring choice — not every step
-wants a hand. What is *not* supported is a half-authored hand: four cards with two
-failure fragments between them is worse than no hand at all, because the god's absence
-then reads as a bug rather than a decision.
+Everything in the nudge model is opt-in **for the engine**. A step with no `nudges`
+resolves exactly as it did before the schema landed, and the tick loop never cares. What
+is *not* supported is a half-authored hand: four cards with two failure fragments
+between them is worse than no hand at all, because the god's absence then reads as a bug
+rather than a decision.
+
+Since THR-1045, do not read the engine's tolerance as an authoring license: for
+`encounter.*` corpus content the Composition Contract is not optional. A template with
+no nudge-bearing step, no cast binding, or no `aftermathConfig` is engine-legal and
+gate-failing — the fail-soft contract is about what the runtime survives, the
+Composition Contract is about what the corpus ships. The only templates allowed to fail
+the gate are the pre-contract ones already named on the `RETROFIT_PENDING` ratchet, and
+that list only shrinks.

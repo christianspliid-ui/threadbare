@@ -28,13 +28,21 @@
  *     of essence; the Heavy Hand pays in detection; the Omen and the Balm
  *     change the world through `grants`, in the existing aftermath effect
  *     vocabulary, pinned live by `validateNudgeGrantRefs`.
+ *   - **The Composition Contract** (THR-1045, Encounter Factory rulings
+ *     2026-08-08). Every block present, no exemptions: a cast binding that is
+ *     honest across the whole envelope (the fellow traveler), a reward that
+ *     persists (the rewardPool draw + the condition effects), an aftermath
+ *     banded to the byOutcome floor, and the systems quota met from the
+ *     authored manifest. The gate this file stays green under:
+ *     `npm run check:encounter -- fixture.encounter.swollen_ford`.
  *
  * Authoring skills: `.claude/skills/encounter-pipeline`,
  * `.claude/skills/template-encounter-rewrite` — both defer to
  * `encounter-pipeline/reference/nudge-authoring-spec.md`, which this file is
  * the worked example for.
  * Plans: `Docs/plans/2026-07-30-encounter-authoring-frameworks.md`,
- * `Docs/plans/2026-07-30-nudge-card-repertoire.md`.
+ * `Docs/plans/2026-07-30-nudge-card-repertoire.md`,
+ * `Docs/plans/2026-08-08-encounter-factory-workflow.md` (§1 + Rulings).
  *
  * ─── The scene-writer's checklist, answered in writing ───────────────
  * (Decision 1 of the frameworks plan. Every scene answers all of these before
@@ -50,8 +58,11 @@
  *                          thinning (wayside); slick rope and thigh-deep
  *                          current in the spine.
  *  A3 Who is here?         Rural: a miller's boy with damp sacks, watching the
- *                          water. Wayside: no one — and the cold camp accounts
- *                          for whoever came before. Nothing acts unannounced.
+ *                          water. Wayside: no one at first — the cold camp
+ *                          accounts for whoever came before. In either class, a
+ *                          fellow traveler stops at the water's edge in the
+ *                          spine (the cast binding), introduced before anything
+ *                          refers to them. Nothing acts unannounced.
  *  A4 What must we know?   The flood moved the shallows; the stake line is
  *                          drowned; the mortal's road runs through the water.
  *                          All stated before the first step is asked for.
@@ -68,8 +79,11 @@
  *  C9 Would a real person? Crossing now is motivated (initiation names the
  *                          cost of balking); the ferocity of the alternative
  *                          route makes the attempt human.
- *  C10 People as people?   The miller's boy watches strangers at his crossing;
- *                          the empty camp is the wariness of those who left.
+ *  C10 People as people?   The miller's boy waits out the flood beside his
+ *                          sacks; the empty camp is the wariness of those who
+ *                          left; the fellow traveler keeps a stranger's
+ *                          distance at the water's edge — and wades in only
+ *                          when a life is in the river.
  *  C11 True costs?         Cold, exhaustion, lost gear, skin — carried in
  *                          factor lines, afterimages, and the aftermath note.
  *  D12 Stake in a sentence? "Do they cross tonight with gear and skin intact,
@@ -97,17 +111,28 @@
  *                    variant), condition (exhausted → the Balm's target),
  *                    group state (the Fellowship card's gate), doom clock and
  *                    detection pressure (the two cost channels), omen system
- *                    (the Omen card's grant). All decided before writing;
- *                    every one surfaces in a card or a gate.
- *   Rewards/tension? No prize object — the reward is passage, time, and dry
- *                    gear; the toll on failure is cold, lost days, lost kit.
- *                    Tension sits on the crossing itself (step 1).
+ *                    (the Omen card's grant), cast binding (the fellow
+ *                    traveler), reward pool (the river's snag-line draw). All
+ *                    decided before writing; every one surfaces in a card, a
+ *                    gate, a binding, or an outcome.
+ *   Rewards/tension? Passage, time, and dry gear are the base reward — and the
+ *                    river's snag-line pays a drawn possession scaled by how
+ *                    clean the crossing was (the rewardPool draw; the Omen
+ *                    card's "the flood keeps turning things up" is the same
+ *                    fact in the fiction). The toll on failure is cold, lost
+ *                    days, lost kit. Tension sits on the crossing itself
+ *                    (step 1).
+ *   Systems quota?   cast + rewards + conditions — three from the authored
+ *                    manifest, which is the contract's floor and what
+ *                    `check:encounter` reports for this file.
  *   Mortal choice?   None — this scene is a test, not a fork. (A choice would
  *                    name its value axis and resolve by the mortal's values
  *                    plus the god's lean, never by the player.)
  *   Promises pay off? The opening promises exactly what the steps deliver: a
  *                    reading and a crossing. No mystery is opened that the
- *                    bands do not close.
+ *                    bands do not close. The fellow traveler in the spine is a
+ *                    presence, not a mystery — and at the worst ending they
+ *                    are the hands that pull the agent out of the reeds.
  *
  * ─── Vignette record (checklist step 1 declarations) ─────────────────
  *   Motive hooks   — all four routes are honest here: `mission` (sent across),
@@ -119,11 +144,18 @@
  *                    exhaustion, never a scripted death.
  *   Scene tag      — `river.ford.flooded` (WS4 vocabulary; until the manifest
  *                    exists the fallback chain ends at EntityVisual).
- *   Aftermath      — decided, not schema'd: prizes/tolls stay in the outcome
- *                    prose; the only object references this encounter grants
- *                    are the omen and the condition removal on the two cards
- *                    that carry `grants`. No `aftermathConfig` — a background
- *                    crossing resolves through the default assembly.
+ *   Aftermath      — `aftermathConfig` with the byOutcome floor (ruling 7):
+ *                    success / failure / critical_failure, the fellow-traveler
+ *                    reveal at the worst band, and object references
+ *                    throughout — the rewardPool draw, the omen and condition
+ *                    grants on the cards, exhaustion minted by the step's
+ *                    failure outcome and lifted by the fallback's rest
+ *                    reaction.
+ *                    (An earlier revision of this file read "no
+ *                    aftermathConfig — a background crossing resolves through
+ *                    the default assembly"; the contract retired that
+ *                    allowance, because the default assembly is where every
+ *                    ending reads the same at every band.)
  *
  * ─── Reachability (THR-821) ──────────────────────────────────────────
  * Open-draw ambient content (`intrinsicTier: 'background'`), so both steps sit
@@ -374,8 +406,11 @@ const STEP_1_HAND: readonly StepNudge[] = [
     forecastDelta: 0.05,
     imageTag: 'generic.warmth',
     grants: [{ kind: 'remove_condition', conditionTraitId: 'trait.condition.exhausted' }],
+    // The critique pass rewrote this face: the earlier "three days of
+    // road-weariness" invented agent history the graph does not hold (rule 7)
+    // on an ungated card. The face now assumes only what any Balm target has.
     effectLine:
-      'Three days of road-weariness lift before the first step in. They cross on a rested body.',
+      'Their weariness lifts before the first step in. They cross on a rested body.',
     fiction: 'Rest is armor.',
     bandProse: {
       success: 'A rested body took the drop at midstream like a stair.',
@@ -400,7 +435,10 @@ const STEP_1_HAND: readonly StepNudge[] = [
     fiction: 'A kept word weighs more than the current.',
     bandProse: {
       success: 'The promise pulled from the far bank, and they went to it.',
-      failure: 'The promise held. The riverbed did not.',
+      // "The promise held. The riverbed did not." was the third "The X held.
+      // The Y did not." in twelve cards — a house mannerism the critique's
+      // echo check caught across replays, invisible within any single hand.
+      failure: 'The promise pulled them forward, and the riverbed dropped from under their feet.',
     },
   },
   {
@@ -455,11 +493,17 @@ const step0ReadTheWater: ActionStep = {
   // The setting-neutral spine. The declared openings land above this at
   // instantiation (the converter compiles `openings` onto the reserved
   // `opening` fragment slot), so nothing here may name a mill or a camp.
+  // The fellow traveler (the cast binding) is introduced here, in the
+  // setting-neutral spine, so they exist for both openings before any later
+  // prose refers to them (checklist B6). Role-voiced, no token: no sentence
+  // here earns the generated name — ruling 6's default register. The scene
+  // word budget (60) is why the traveler's sentence displaced the old
+  // dips-are-a-map clause rather than joining it.
   narrativeTemplate:
     'The river runs brown and loud over the drowned ford. The guide-rope dips where the ' +
-    'current pulls hardest, and the dips are a map for anyone patient enough to read one. ' +
-    'The flood has moved the shallows since the stakes were set. Before the first step in, ' +
-    'the water has to be read: where it piles, where it slides.',
+    'current pulls hardest. The flood has moved the shallows since the stakes were set. ' +
+    'Another traveler stops at the water’s edge, weighing the same crossing. Before the ' +
+    'first step in, the water has to be read: where it piles, where it slides.',
   successAfterimage: 'They found the line: stake to stake, following the rope’s dip.',
   failureAfterimage: 'The brown water gave up no line worth trusting.',
   successAtCostAfterimage: 'They read the line true, and paid an hour of cold rain for it.',
@@ -488,6 +532,37 @@ const step1MakeTheCrossing: ActionStep = {
   onSuccess: [],
   onFailure: [],
   failBehavior: 'fail_action',
+  /**
+   * The reward draw (Composition Contract — Rewards). The flood turns things
+   * up — the Omen card's own hook — and a crossing done well comes with what
+   * the river snagged on the rope-line from whoever tried this ford before. A
+   * seeded draw from the possession library: the tier curve and bad-outcome
+   * chance resolve from the outcome band, so a clean crossing draws better
+   * than a ragged one, and the result renders as an item change (the PRIZE
+   * chip), composing with the authored ending since THR-1042.
+   *
+   * No `tagFilters` on purpose: a filter naming a tag no attachment template
+   * carries is a silently empty pool — the THR-844 rot class in a new place —
+   * so filter only on tags verified live. Note `successMetadata` fires on
+   * `isStepSuccess`, which counts `near_miss` as a success.
+   */
+  successMetadata: {
+    rewardPool: { categoryWeights: { possession: 1.0 } },
+  },
+  /**
+   * The failure side mints the state the endings narrate (prose rule 7,
+   * production half): a failed crossing leaves the body spent, so `exhausted`
+   * is applied by the step outcome itself — the THR-783 per-step effect
+   * channel — and the failure-side endings may then speak of it as fact.
+   * (`near_miss` counts as a success under `isStepSuccess`, so it does not
+   * fire this — a near miss got through.) The critique pass forced this
+   * shape: an earlier draft asserted the exhaustion in the critical_failure
+   * change while gating its application behind a mislabeled reaction, which
+   * was prose claiming state the mechanics had not written.
+   */
+  failureMetadata: {
+    effects: [{ kind: 'apply_condition', conditionTraitId: 'trait.condition.exhausted' }],
+  },
   narrativeTemplate:
     'The water takes the first step at the shin and the third at the thigh. The rope runs ' +
     'slick under both hands, and the current leans in with the patience of weight. Midstream, ' +
@@ -536,18 +611,25 @@ export const NUDGE_GOLDEN_EXEMPLAR: UnifiedActionTemplate = {
    * derived — never hand-written. `validateSettingEnvelope` holds all four
    * honesty rules over this trio of fields, and the exemplar test runs it.
    */
+  // The critique pass caught two things here (2026-08-09): both openings and the
+  // initiation opened on the same "Three days of rain…" clause — the seam-echo
+  // class the detectors cannot see — so the initiation now owns the rain and
+  // each opening owns the water. And the wayside opening never introduced the
+  // stakes the spine's "since the stakes were set" refers to (a B6 failure at
+  // one class of a two-class envelope), so it drives them now.
   settings: ['rural', 'wayside'],
   openings: {
     rural:
-      'Three days of rain have filled the valley’s river to its banks. The crossing ' +
-      'serves the village on the far slope: stake line under the water, guide-rope strung ' +
-      'post to post. A miller’s boy waits on the near bank beside sacks going damp, ' +
-      'watching the river climb instead of them. The air is all mud and wet grain.',
+      'The valley’s river is up to its banks and still rising. The crossing serves the ' +
+      'village on the far slope: stake line under the water, guide-rope strung post to ' +
+      'post. A miller’s boy waits on the near bank beside sacks going damp, watching the ' +
+      'water climb the posts. The air is all mud and wet grain.',
     wayside:
-      'Three days of rain have put the river over its banks. Out here the crossing belongs ' +
-      'to no town: a guide-rope strung between leaning posts, tied off by travelers years ' +
-      'gone. A cold camp sits above the waterline, ring of stones, ash beaten flat by the ' +
-      'rain. No roof stands within a day’s walk, and the grey light is thinning.',
+      'The river is over its banks and still climbing. Out here the crossing belongs to ' +
+      'no town: a guide-rope strung between leaning posts, stakes driven at the old ' +
+      'shallow, left by travelers years gone. A cold camp sits above the waterline, ash ' +
+      'beaten flat by the rain. No roof stands within a day’s walk, and the grey light ' +
+      'is thinning.',
   },
   locationSubtypes: expandSettings(['rural', 'wayside']),
 
@@ -584,30 +666,47 @@ export const NUDGE_GOLDEN_EXEMPLAR: UnifiedActionTemplate = {
   },
 
   /**
-   * Cast (Composition Contract, ruling 6 — THR-1045). The openings already name
-   * a keeper of the crossing; this is the binding that makes her a real spawned
-   * person rather than a noun — portrait, cast strip, click, persistence.
+   * Cast (Composition Contract, ruling 6 — THR-1045). The spine introduces a
+   * fellow traveler stopped by the same flood; this is the binding that makes
+   * them a real spawned person rather than a noun — portrait, cast strip,
+   * click, persistence.
    *
-   * Ruling 6's prose style demonstrated in both halves: the openings write her
-   * role-voiced and inline ("a miller's boy waits on the near bank"), and the
-   * `{cast:keeper}` token below is used at the one spot the generated *name*
-   * earns something — the moment she is addressed.
+   * Ruling 6's two halves, both demonstrated:
+   *   - **Role-voiced inline is the default.** The spine writes "another
+   *     traveler stops at the water's edge" — no token, because no sentence
+   *     there earns the generated name.
+   *   - **The token lands where the name earns something.** The
+   *     critical_failure ending names the stranger who pulled the agent out
+   *     of the reeds (`{cast:traveler}` in the byOutcome overview) — ruling
+   *     6's "reveal" case. Greetings and sequel callbacks are the other
+   *     earning spots.
    *
-   * Explicit rather than inherited on purpose: this fixture's id is
-   * `fixture.encounter.*`, so the `encounter.*` setting-keyed family default
-   * (THR-1044) does not reach it. A shipped `encounter.*` template may satisfy
-   * the Cast block either way.
+   * **Class-honesty — the rule this bundle exists to teach.** An explicit
+   * bundle must read correctly at every class the envelope declares. This
+   * template spans rural + wayside, so the bound person is one both classes
+   * seed: `wanderer` / `pilgrim` appear in both rosters
+   * (`LOCATION_ROLE_ROSTERS`). An earlier draft bound "the miller's boy" —
+   * rural-honest, wayside-placeless — exactly the failure that keeps the
+   * THR-1044 family defaults away from multi-class templates, and the reason
+   * a multi-class template must declare its bundle explicitly (the
+   * setting-keyed `encounter.*` default only reaches single-class envelopes;
+   * this fixture's `fixture.encounter.*` id inherits nothing either way).
+   *
+   * `spawnName` is a real name, not a role phrase: a declared key always
+   * resolves (THR-696), so this string is what `{cast:traveler}` renders
+   * whenever no live NPC was reused. And the prose never genders the
+   * traveler — reuse binds whoever is standing there.
    */
   supportBundle: [
     {
       kind: 'actor',
-      key: 'keeper',
+      key: 'traveler',
       delivery: 'lazy-materialize-on-trigger',
       persistence: 'must-persist',
-      reuseNpcRoles: ['miller', 'farmer', 'civilian'],
-      supportRole: 'crossing-keeper',
-      spawnNpcRole: 'civilian',
-      spawnName: 'the miller’s boy',
+      reuseNpcRoles: ['wanderer', 'pilgrim'],
+      supportRole: 'fellow_traveler',
+      spawnNpcRole: 'wanderer',
+      spawnName: 'Maren Ashford',
     },
   ],
 
@@ -650,20 +749,40 @@ export const NUDGE_GOLDEN_EXEMPLAR: UnifiedActionTemplate = {
           effects: [{ kind: 'remove_condition', conditionTraitId: 'trait.condition.exhausted' }],
         },
       ],
+      // The critique pass gave each ending surface its own image: the
+      // afterimage keeps the rope-burn, `narrativeTemplates` keeps "the river
+      // kept the crossing", and these overviews say only what they alone can
+      // say — the same fact three times in three voices is an echo, not an
+      // ending.
       byOutcome: {
         success: {
           overview:
-            'Wet to the ribs and rope-burned, they stand on the far bank. The road runs on.',
+            'The crossing is behind them, gear and skin intact. The far bank road is dry '
+            + 'ground the flood did not reach.',
         },
         failure: {
           overview:
-            'The river kept the crossing. Two days around by the high bridge, and the water between has not gotten kinder.',
+            'The near bank keeps them. It is two days around by the high bridge now, on '
+            + 'legs the river has already taxed.',
         },
         // The extreme the floor asks for. A critical failure is a battering and
-        // exhaustion — never a scripted death (this file's stakes rule).
+        // exhaustion — never a scripted death (this file's stakes rule). This
+        // is also where the cast token earns its place (ruling 6's "reveal"):
+        // the stranger who pulls the agent out of the river becomes a named,
+        // clickable person at the moment it matters.
         critical_failure: {
           overview:
-            'The rope went slack at midstream and the current had them. They came up downstream, in the reeds, with nothing they went in carrying.',
+            'The rope went slack at midstream and the current had them. It is the fellow '
+            + 'traveler — {cast:traveler} — who wades into the reeds and pulls them out, '
+            + 'half-drowned and stripped of all they carried.',
+          // The exhaustion this change narrates is minted by step 1's
+          // `failureMetadata` — narrate only what the mechanics wrote. An
+          // earlier draft carried a reaction here labelled "Let the valley
+          // remember this water" whose effect was `apply_condition:
+          // exhausted` — a click whose label promised memory and delivered
+          // harm, the interactive-plainness violation the critique pass
+          // caught. Bands do not owe reactions; the fallback's rest reaction
+          // is the honest mercy on every band.
           changes: [
             {
               id: 'ford.the_river_took_it',
@@ -672,18 +791,6 @@ export const NUDGE_GOLDEN_EXEMPLAR: UnifiedActionTemplate = {
               detail: 'The current stripped what was carried and left an exhaustion that will not walk off.',
               polarity: 'loss',
               concepts: [{ text: 'exhaustion', tooltipId: 'condition.exhausted' }],
-            },
-          ],
-          reactions: [
-            {
-              id: 'ford.mark_the_water',
-              label: 'Let the valley remember this water',
-              effects: [
-                {
-                  kind: 'apply_condition',
-                  conditionTraitId: 'trait.condition.exhausted',
-                },
-              ],
             },
           ],
         },

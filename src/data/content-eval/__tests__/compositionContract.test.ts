@@ -121,12 +121,18 @@ describe('Composition Contract — each block falsified from the passing exempla
   it('rewards: with no persistent effect anywhere, nothing carries out of the scene', () => {
     const fallback = NUDGE_GOLDEN_EXEMPLAR.aftermathConfig!.fallback;
     // Strip every reward route at once — reactions on the variant, reactions in
-    // the bands, and the card grants — because the block passes on *any* of them.
+    // the bands, the card grants, and the step-outcome rewardPool draws —
+    // because the block passes on *any* of them.
     const noReward: UnifiedActionTemplate = {
       ...NUDGE_GOLDEN_EXEMPLAR,
       steps: NUDGE_GOLDEN_EXEMPLAR.steps.map(step =>
         'nudges' in step
-          ? { ...step, nudges: step.nudges?.map(({ grants: _g, ...n }) => n) }
+          ? {
+              ...step,
+              nudges: step.nudges?.map(({ grants: _g, ...n }) => n),
+              successMetadata: undefined,
+              failureMetadata: undefined,
+            }
           : step,
       ),
       aftermathConfig: {

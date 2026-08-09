@@ -101,7 +101,22 @@
       "PowerShell($content = Get-Content 'C:\\\\Users\\\\chris\\\\.claude\\\\projects\\\\C--Users-chris-Dev-Projects-TheFantasyWorldSimulator--claude-worktrees-intelligent-noyce-302009\\\\0c43e00e-158a-4e67-b074-5d36210f5ed6\\\\tool-results\\\\mcp-7aa97de8-78a2-4b5d-a6e0-0aabc5d0bb68-list_issues-1781164400039.txt' -Raw; $content.Substring\\(0, 80000\\))",
       "mcp__7aa97de8-78a2-4b5d-a6e0-0aabc5d0bb68__list_comments",
       "mcp__7aa97de8-78a2-4b5d-a6e0-0aabc5d0bb68__list_projects",
-      "Bash(node -e ' *)"
+      "Bash(node -e ' *)",
+      "mcp__7aa97de8-78a2-4b5d-a6e0-0aabc5d0bb68__save_issue",
+      "PowerShell(npm run retro-draft)",
+      "mcp__7aa97de8-78a2-4b5d-a6e0-0aabc5d0bb68__save_comment",
+      "Bash(awk '{print $5, $9}')",
+      "mcp__scheduled-tasks__list_scheduled_tasks",
+      "Skill(fewer-permission-prompts)",
+      "Skill(fewer-permission-prompts:*)",
+      "Bash(gh pr *)",
+      "Bash(git log *)",
+      "Bash(git fetch *)",
+      "mcp__7aa97de8-78a2-4b5d-a6e0-0aabc5d0bb68__list_issue_labels",
+      "Bash(git ls-tree *)",
+      "Bash(ls \"C:\\\\Users\\\\chris\\\\.claude\\\\projects\\\\C--Users-chris-Dev-Projects-TheFantasyWorldSimulator\\\\memory\" | wc -l && ls \"C:\\\\Users\\\\chris\\\\AppData\\\\Roaming\\\\Claude\\\\local-agent-mode-sessions\"/*/*/spaces/*/memory/MEMORY.md 2>/dev/null || echo \"COWORK_MISSING\")",
+      "Bash(mkdir -p \"C:\\\\Users\\\\chris\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\C--Users-chris-Dev-Projects-TheFantasyWorldSimulator\\\\65f32fa1-2420-4a9f-bff3-98378f665b70\\\\scratchpad\")",
+      "Bash(node --experimental-strip-types -e ' *)"
     ]
   },
   "hooks": {
