@@ -207,3 +207,109 @@ describe('aftermath resolution across the real corpus (THR-1038)', () => {
     expect(malformed.fallback).toBeUndefined();
   });
 });
+
+/**
+ * THR-1054: every `variants` entry must actually BE an `AftermathVariant`.
+ *
+ * A third instance of the family this file already guards twice (THR-979's
+ * wrong-index keying, THR-1038's wrong-shape config), and the one the other two
+ * cannot see: the config is well-formed at the top level — `branchOnStep`,
+ * `variants` and `fallback` all present — while the *values inside* `variants`
+ * are a second nesting level the resolver has no reader for. Ten `hod.*`
+ * templates authored `variants[<stepIndex>][<band>] = { overview, changes }`,
+ * so `resolveAftermathVariant` looked up `variants[choiceId]`, never matched a
+ * step index, and returned `fallback` — whose `changes: []` was empty on all ten.
+ * Every authored per-band ending (the lost relic, the cleansed corruption, the
+ * delivered judgment) was written, committed, and reachable by nobody.
+ *
+ * The predicate is structural, not a snapshot count (THR-688 rule A): an entry
+ * fails when its `changes` is not an array, which is exactly what a nested
+ * band-map produces. `assertDecidedAftermathReachable` cannot catch this — it
+ * returns early on templates with no decided fork, and these have none.
+ */
+describe('aftermath variant shape across the real corpus (THR-1054)', () => {
+  const withAftermath = UNIFIED_ACTION_TEMPLATES.filter((t) => t.aftermathConfig);
+
+  /** The ten templates the defect was found on, with the bands each authored. */
+  const REKEYED_HOD_BANDS: ReadonlyArray<readonly [string, readonly UnifiedActionOutcome[]]> = [
+    ['hod.quest.temple_vigil', ['failure']],
+    ['hod.quest.purify_shrine', ['success']],
+    ['hod.quest.escort_pilgrims', ['failure']],
+    ['hod.quest.slay_abomination', ['success']],
+    ['hod.quest.deliver_judgment', ['success', 'failure']],
+    ['hod.senior.cleanse_corruption', ['success']],
+    ['hod.senior.lead_crusade', ['success', 'failure']],
+    ['hod.senior.inquisition', ['success']],
+    ['hod.elite.holy_war', ['success', 'failure']],
+    ['hod.elite.divine_trial', ['success']],
+  ];
+
+  it('every variants entry is an AftermathVariant, not a nested band map', () => {
+    const malformed: string[] = [];
+
+    for (const template of withAftermath) {
+      for (const [key, entry] of Object.entries(template.aftermathConfig!.variants ?? {})) {
+        if (!entry || !Array.isArray((entry as { changes?: unknown }).changes)) {
+          malformed.push(`${template.id} variants['${key}']`);
+        }
+      }
+    }
+
+    expect(
+      malformed,
+      `${malformed.length} variants entr(ies) are not an AftermathVariant. `
+      + 'The resolver reads `variants[choiceId].changes`, so an entry that nests '
+      + 'another level (a step index → band map) is unreachable and the ending '
+      + `falls back forever (THR-1054): ${malformed.join(', ')}`,
+    ).toEqual([]);
+  });
+
+  /**
+   * Reachability, not merely well-formedness. The structural check above passes
+   * for a config that simply deleted the authored bands — this pins that each
+   * one still *resolves* to prose distinct from the un-banded fallback.
+   */
+  it('every re-keyed hod template resolves its authored bands to distinct prose', () => {
+    for (const [id, bands] of REKEYED_HOD_BANDS) {
+      const template = withAftermath.find((t) => t.id === id);
+      expect(template, `${id} is not in the catalog`).toBeDefined();
+
+      const config = template!.aftermathConfig!;
+      const base = resolveAftermathVariant(config, undefined, undefined);
+
+      for (const band of bands) {
+        const banded = resolveAftermathVariant(config, undefined, band);
+        expect(banded.overview.length, `${id} @ ${band} resolved to empty prose`).toBeGreaterThan(0);
+        expect(
+          banded.overview,
+          `${id} @ ${band} resolved to the un-banded fallback — the authored ending is unreachable`,
+        ).not.toBe(base.overview);
+        expect(
+          banded.changes.length,
+          `${id} @ ${band} carries no changes; the fallback's empty list is still showing`,
+        ).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  /**
+   * Falsification. A guard that cannot fail is not evidence — reconstruct the
+   * exact shape that shipped and confirm the structural check rejects it, and
+   * that the resolver silently falls back rather than reading through it.
+   */
+  it('rejects the nested step-index → band shape that shipped', () => {
+    const nested = {
+      branchOnStep: 1,
+      variants: {
+        1: { failure: { overview: 'Authored, unreachable.', changes: [{ id: 'x' }] } },
+      },
+      fallback: { overview: 'The base ending.', changes: [] },
+    } as unknown as NonNullable<UnifiedActionTemplate['aftermathConfig']>;
+
+    const entry = Object.values(nested.variants)[0];
+    expect(Array.isArray((entry as { changes?: unknown }).changes)).toBe(false);
+
+    // And the consequence the predicate stands in for: the authored band is invisible.
+    expect(resolveAftermathVariant(nested, undefined, 'failure').overview).toBe('The base ending.');
+  });
+});

@@ -1,5 +1,5 @@
 {
-  "total": 3462,
+  "total": 3458,
   "command": "npx tsc -b --force --pretty false",
   "perFile": {
     "scripts/lint-encounter-content.ts": 2,
@@ -74,10 +74,10 @@
     "src/components/Game/DebugPanel.tsx": 4,
     "src/components/Game/encounter-stage/__tests__/buildGateDutyEncounterStageModel.test.ts": 7,
     "src/components/Game/encounter-stage/adapters/__tests__/buildSimpleEncounterStageModel.test.ts": 1,
-    "src/components/Game/encounter-stage/adapters/__tests__/buildUnifiedEncounterStageModel.test.ts": 1,
+    "src/components/Game/encounter-stage/adapters/__tests__/buildUnifiedEncounterStageModel.test.ts": 3,
     "src/components/Game/encounter-stage/adapters/buildGateDutyEncounterStageModel.ts": 24,
     "src/components/Game/encounter-stage/adapters/buildSimpleEncounterStageModel.ts": 2,
-    "src/components/Game/encounter-stage/adapters/buildUnifiedEncounterStageModel.ts": 5,
+    "src/components/Game/encounter-stage/adapters/buildUnifiedEncounterStageModel.ts": 3,
     "src/components/Game/encounter-stage/narrativeLinker.ts": 1,
     "src/components/Game/Encounter/__tests__/AscendantHandCastRail.test.tsx": 1,
     "src/components/Game/Encounter/__tests__/EncounterChoiceCard.test.tsx": 1,
@@ -239,7 +239,7 @@
     "src/data/faction-encounter-content.ts": 5,
     "src/data/hex-vignette-content.ts": 1,
     "src/data/hidden-mark-prose.ts": 2,
-    "src/data/holy-order-dawn-encounter-content.ts": 10,
+    "src/data/holy-order-dawn-encounter-content.ts": 6,
     "src/data/lorekeepers-covenant-encounter-content.ts": 1,
     "src/data/mastery-trait-content.ts": 7,
     "src/data/mercenary-encounter-content.ts": 31,
