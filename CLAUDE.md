@@ -2,6 +2,17 @@ This folder contains The Fantasy World Simulator — a systemic god-game/rogue-l
 
 [![CI](https://github.com/christianspliid-ui/threadbare/actions/workflows/ci.yml/badge.svg)](https://github.com/christianspliid-ui/threadbare/actions/workflows/ci.yml)
 
+## Rule Zero — every reference Christian sees is a clickable link (Christian, 2026-08-09)
+
+**Any document, PR, Linear issue, file, or game surface you mention in Christian-facing text carries a direct URL he can click.** That covers chat responses, `Design/briefing.md`, `Design/user-actions.md`, Linear comments he will read, and batch-review reports. He is chat-only (THR-608): a bare path like `Docs/plans/2026-08-08-encounter-factory-workflow.md`, a bare "PR #1363", or "the spec" forces him to search a repo and board he deliberately does not work in — and every unlinked reference stalls the exact approval it was asking for. His words: *"i don't want to search for data or documents you refer to. i want direct links."*
+
+- Repo files → the GitHub blob URL, pinned to `main` once merged (e.g. `https://github.com/christianspliid-ui/threadbare/blob/main/Docs/canon/process.md`), the branch URL before.
+- PRs / issues → the full `github.com/...` / `linear.app/threadbare/issue/THR-XXX/...` URL, never a bare number.
+- Game surfaces → the deployed-build URL with its query params (`?view=game&seeded&spawn=...`).
+- **When asking for an approval, the links to the exact artifacts under review come *with* the ask** — not on request, not "in the PR".
+
+Agent-facing text (commit bodies, plan docs, code comments, this file's own internal pointers) may keep bare paths — agents have the repo. The rule binds anything written *for Christian*.
+
 ## Session Types: Design vs Execution — Read This First
 
 **One runtime, one executor queue.** All Threadbare agent work runs in **Claude Code**. The design/execution split is a *session type*, not a runtime: a **design session** (`/design-session`) authors plan docs and hands off; an **execution session** (`/pull-work`) implements, commits with `Fixes THR-XX`, and lets the merge-to-main auto-close fire. One queue: **Ready for Dev**. (Codex and the `Ready for Codex` queue were retired 2026-06-23, THR-486; Cowork was retired from the Threadbare workflow 2026-07-21, THR-654.)
