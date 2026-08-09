@@ -39,7 +39,8 @@ function buildCardViews(hand: AscendantHandPartitionView): HandCardView[] {
   const playable = hand.playable.map((entry) => ({
     templateId: entry.template.id,
     title: entry.template.name,
-    detail: entry.template.description ?? entry.template.narrativeTemplates.initiation,
+    // THR-1040: fail-soft — see buildUnifiedEncounterStageModel.resolveInitiationProse.
+    detail: entry.template.description ?? entry.template.narrativeTemplates?.initiation ?? '',
     costLabel: `${entry.template.essenceCost ?? 0} ESS`,
     state: 'playable' as const,
     rarePulse: rarePulseSet.has(entry.template.id),
@@ -48,7 +49,8 @@ function buildCardViews(hand: AscendantHandPartitionView): HandCardView[] {
   const dimmed = hand.dimmed.map((entry) => ({
     templateId: entry.template.id,
     title: entry.template.name,
-    detail: entry.template.description ?? entry.template.narrativeTemplates.initiation,
+    // THR-1040: fail-soft — see buildUnifiedEncounterStageModel.resolveInitiationProse.
+    detail: entry.template.description ?? entry.template.narrativeTemplates?.initiation ?? '',
     costLabel: `${entry.template.essenceCost ?? 0} ESS`,
     state: 'dimmed' as const,
     prereqMessage: entry.prereq.message,

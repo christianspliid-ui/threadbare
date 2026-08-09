@@ -108,7 +108,8 @@ export const StoryBeatModal = memo(function StoryBeatModal({
             textAlign: 'center',
             margin: '0 0 var(--space-4)',
           }}>
-            {template.narrativeTemplates.initiation}
+            {/* THR-1040: fail-soft — omitted by whole faction sets despite being required on the type. */}
+            {template.narrativeTemplates?.initiation ?? ''}
           </p>
         )}
 
