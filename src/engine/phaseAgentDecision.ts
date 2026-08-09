@@ -62,6 +62,7 @@ import type { PremonitionEvent } from '../types/premonition';
 import { resolveEffectiveTier } from './attentionTier';
 import type { BalanceEncounterPoolCandidate } from '../types/balanceEval';
 import { deriveOmenEncounterBias, deriveEmittedOmenEncounterBias } from './phaseOmenAgenda';
+import { derivePlantedCompulsionEncounterBias } from './plantedCompulsion';
 import { IDENTITY_ENCOUNTER_BIAS_CAP } from '../types/doomIdentity';
 import { ENABLE_STRATEGIC_ACTIONS } from '../data/strategic-action-constants';
 import { generateStrategicCandidates } from './strategicActionCandidates';
@@ -581,13 +582,27 @@ export function phaseAgentDecision(
       const emittedOmenBias = (state.emittedOmens && agentHex)
         ? deriveEmittedOmenEncounterBias(state.emittedOmens, agentHex.col, agentHex.row)
         : {};
+      // The Compulsion (THR-886) — a per-agent urge joins here rather than in a second
+      // reader, so the god's whisper and the world's weather are weighed together once.
+      // It carries its own cap (COMPULSION_BIAS_CAP, applied at derive) because it is
+      // aimed at one mortal and is meant to be felt more than ambient weather.
+      const compulsionBias = derivePlantedCompulsionEncounterBias(
+        state.plantedCompulsions,
+        agentId,
+        state.tick,
+      );
       const combinedBias: Partial<Record<string, number>> = {};
-      const allTypes = new Set([...Object.keys(identityBias), ...Object.keys(omenBias), ...Object.keys(emittedOmenBias)]);
+      const allTypes = new Set([
+        ...Object.keys(identityBias),
+        ...Object.keys(omenBias),
+        ...Object.keys(emittedOmenBias),
+        ...Object.keys(compulsionBias),
+      ]);
       for (const t of allTypes) {
         const id = Math.max(-IDENTITY_ENCOUNTER_BIAS_CAP, Math.min(IDENTITY_ENCOUNTER_BIAS_CAP, identityBias[t] ?? 0));
         const om = Math.max(-IDENTITY_ENCOUNTER_BIAS_CAP, Math.min(IDENTITY_ENCOUNTER_BIAS_CAP, omenBias[t] ?? 0));
         const eo = Math.max(-IDENTITY_ENCOUNTER_BIAS_CAP, Math.min(IDENTITY_ENCOUNTER_BIAS_CAP, emittedOmenBias[t] ?? 0));
-        combinedBias[t] = id + om + eo;
+        combinedBias[t] = id + om + eo + (compulsionBias[t] ?? 0);
       }
 
       // Score and select (hex-distance travel cost, no distance matrix)

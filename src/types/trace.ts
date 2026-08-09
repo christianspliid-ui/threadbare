@@ -122,6 +122,9 @@ export type TraceCategory =
   | 'artifact_spawned'
   | 'omen_emitted'
   | 'omen_decayed'
+  // The Compulsion — per-agent decision urges (THR-886)
+  | 'compulsion_planted'
+  | 'compulsion_decayed'
   | 'faction_splintered'
   | 'faction_absorbed'
   | 'faction_dissolved'
@@ -483,6 +486,9 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'artifact_spawned',
   'omen_emitted',
   'omen_decayed',
+  // The Compulsion — per-agent decision urges (THR-886)
+  'compulsion_planted',
+  'compulsion_decayed',
   'faction_splintered',
   'faction_absorbed',
   'faction_dissolved',
@@ -1595,7 +1601,8 @@ export interface EncounterAftermathEffectTrace extends TraceBase {
     | 'reputation_score' | 'reputation_tally' | 'clearance_gate_tag'
     | 'recent_event' | 'encounter_seed' | 'hidden_mark' | 'intelligence'
     | 'reputation_set' | 'apply_condition' | 'remove_condition' | 'condition_attachment'
-    | 'grant_aspect' | 'signature_warhost';
+    | 'grant_aspect' | 'signature_warhost'
+    | 'plant_compulsion';
   /** Kind-specific payload for inspection */
   effectDetail: Readonly<Record<string, unknown>>;
   success: boolean;
@@ -1877,6 +1884,37 @@ export interface NudgeDispatchFailedTrace extends TraceBase {
   failReason: string;
 }
 
+/**
+ * Trace: The Compulsion planted a decision urge on one mortal (THR-886).
+ *
+ * Carries the bias map rather than a summary number, because "why did this agent
+ * pick a duel?" is answerable only if the weight that tilted them is legible
+ * (NFP #2). Keyed per mortal — `agentId` is the dreamer, not a bystander.
+ */
+export interface CompulsionPlantedTrace extends TraceBase {
+  category: 'compulsion_planted';
+  compulsionId: string;
+  /** Authored weights before scaling — the thing an author can compare to their template. */
+  encounterBias: Readonly<Record<string, number>>;
+  expiresTick: number;
+  sourceEncounterId: string;
+  sourceReactionId: string;
+}
+
+/**
+ * Trace: a planted compulsion lapsed or was evicted at the cap (THR-886).
+ *
+ * `failReason: 'cap_evicted'` distinguishes the two, mirroring how `omen_decayed`
+ * reports the same distinction — an urge that expired did its job, one that was
+ * evicted never got the chance.
+ */
+export interface CompulsionDecayedTrace extends TraceBase {
+  category: 'compulsion_decayed';
+  compulsionId: string;
+  livedTicks: number;
+  failReason?: 'cap_evicted';
+}
+
 /** Trace: aftermath effect target could not be resolved or effect kind does not support the target kind */
 export interface AftermathTargetInvalidTrace extends TraceBase {
   category: 'aftermath_target_invalid';
@@ -2123,6 +2161,8 @@ export type TraceEntry =
   // Nudge card dispatch (THR-885)
   | NudgeCostChargedTrace
   | NudgeDispatchFailedTrace
+  | CompulsionPlantedTrace
+  | CompulsionDecayedTrace
   // Scene-targeting aftermath sentinels + bond_change (THR-695, Slice B)
   | AftermathSentinelBoundTrace
   | BondChangeAppliedTrace

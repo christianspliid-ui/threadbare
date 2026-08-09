@@ -64,8 +64,11 @@ const TICKS = 10;
 const EXPECTED_PHASE_IDS: readonly string[] = [
   // pre-doom slot
   'doom',
-  // post-doom slot
+  // post-doom slot — two sibling sweeps of aftermath-planted state, neither
+  // constraining the other, so the alphabetical tie-break orders them
+  // 'emitted_omen_decay' < 'planted_compulsion_decay' (THR-886).
   'emitted_omen_decay',
+  'planted_compulsion_decay',
   // post-resolution slot — autonomous in-encounter aftermath chooser (THR-530),
   // then Divine Receipt (THR-727). Both post-resolution with no ordering
   // constraint, so the alphabetical tie-break orders them

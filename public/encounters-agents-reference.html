@@ -618,7 +618,7 @@
       </dl>
       <dl class="concept">
         <dt>Decision Pipeline</dt>
-        <dd>Live encounter chooser: merge static + dynamic candidates, run the filter pipeline, apply cooldown/exhaustion, score survivors, then start, move, act remotely, or idle.</dd>
+        <dd>Live encounter chooser: merge static + dynamic candidates, run the filter pipeline, apply cooldown/exhaustion, score survivors, then start, move, act remotely, or idle. Scoring folds four encounter-type biases into one <code>combinedBias</code>: the doom identity matrix, the active omen agenda, emitted omens in range of the agent's hex, and &mdash; since THR-886 &mdash; any <strong>planted compulsion</strong> addressed to that agent. The first three are properties of the world or the place; the compulsion is the only one addressed to a <em>person</em>, which is why it travels with them and a bystander on the same hex feels nothing.</dd>
       </dl>
     </div>
   </div>
@@ -999,7 +999,7 @@ const CHAPTERS = [
             ['<strong>If enabled</strong>', '\u2014', 'Check the encounter\'s threat band against the agent\'s capability band, roughly within a one-tier tolerance window.'],
             ['<strong>Courageous</strong>', 'courage_prudence > 0.3', 'Expand the upper tolerance by one tier.'],
             ['<strong>Prudent</strong>', 'courage_prudence < \u22120.3', 'Raise the minimum accepted capability band by one tier.'],
-            ['<strong>Divine influence</strong>', 'Whispers, compulsions, scoring nudges', 'Biases scoring or final selection elsewhere; does not directly bypass the threat stage.']
+            ['<strong>Divine influence</strong>', 'Whispers, compulsions, scoring nudges', 'Biases scoring or final selection elsewhere; does not directly bypass the threat stage. A Compulsion card (THR-886) plants a per-agent encounter-type weight that joins <code>combinedBias</code> at scoring — it tilts which candidate wins, never which candidates are eligible.']
           ]
         },
         tags: ['threat stage']

@@ -2181,12 +2181,54 @@ unchanged, and every card reaches the system that owns the change:
 | The Long Game | `hidden_mark` | traits & marks |
 | The Favor / The Bargain | `favor_creation` | secrets & favors |
 | The Kindled Ambition | `assign_ambition` | ambitions |
+| The Compulsion | `plant_compulsion` | agent decision bias (THR-886) |
 
-`assign_ambition` is the only new kind, and it exists because it was genuinely missing:
-reactive ambition templates had **no assignment path at all** outside `ambitionTick`
-(THR-812 / THR-726), so a whole class of authored templates was unreachable. It takes an
-`AMBITION_TEMPLATES[].id`, an optional `priority`, and an optional `narrativeHook` (omit the
-hook and the planting is silent — desire is interior).
+`assign_ambition` and `plant_compulsion` are the only new kinds, and both exist because the
+capability was genuinely missing. Reactive ambition templates had **no assignment path at
+all** outside `ambitionTick` (THR-812 / THR-726), so a whole class of authored templates was
+unreachable. `assign_ambition` takes an `AMBITION_TEMPLATES[].id`, an optional `priority`, and
+an optional `narrativeHook` (omit the hook and the planting is silent — desire is interior).
+
+### The Compulsion — plant a weight, not a menu
+
+```ts
+grants: [
+  {
+    kind: 'plant_compulsion',
+    encounterBias: { duel: 0.8, trade: -0.4 },   // lean toward, lean away
+    durationTicks: 3,                             // optional; COMPULSION_DEFAULT_DURATION_TICKS
+    narrativeHook: 'A dream of steel will not leave them.',
+  },
+],
+```
+
+The urge is **addressed to a mortal, not to a place**. That is the whole card — "steer them,
+not the world" — and it is why this does not reuse `emit_omen`: an omen stains a hex and
+catches whoever walks through it, while a compulsion travels with the person it was dreamt
+onto. Two mortals on the same tile can hold different urges, or none.
+
+`encounterBias` is keyed on the closed `EncounterType` union (`explore`, `acquire`, `create`,
+`hire`, `duel`, `steal`, `trade`, `assist`, `build`, `lead`), so a misspelled type is a
+**compile error** rather than a card that silently does nothing — which is exactly the defect
+this card shipped with for a month before THR-886. Weights are scaled by
+`COMPULSION_BIAS_WEIGHT` and clamped per type at `COMPULSION_BIAS_CAP`, then folded into the
+same `combinedBias` in `phaseAgentDecision` that the identity and omen terms feed. One reader,
+not a second parallel one.
+
+**Author the `narrativeHook`.** It is optional in the type and near-mandatory in practice: the
+tilt resolves through the mortal's ordinary decision, so without a chronicle line a successful
+compulsion is indistinguishable from the do-nothing behaviour the card had before it was
+wired. You steered them and nobody can tell.
+
+The urge **expires** (`expiresTick`) rather than being consumed on use. "Their next decision"
+is expressed as a short duration because the scoring path is a read — making it write state
+would both add a mutation to a pure seam and burn the urge on selections the strategic-
+candidate override can still overturn later in the same phase.
+
+Note this does **not** touch `premonitionCompulsion` / `buildCompulsionEvent`. The
+pick-one-of-three Compulsion vision stays on the god's own premonition turn; a card played
+mid-encounter plants a weight instead of nesting a second choice-screen inside a scene the
+player is already resolving (Christian's ruling, 2026-08-09).
 
 ### A card that names unbuilt content fails the build
 

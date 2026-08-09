@@ -47,6 +47,8 @@ import {
   EMITTED_OMEN_DEFAULT_DURATION_TICKS,
   EMITTED_OMEN_MAX_ACTIVE,
   EMITTED_OMEN_LOCAL_DEFAULT_RADIUS,
+  COMPULSION_DEFAULT_DURATION_TICKS,
+  COMPULSION_MAX_ACTIVE,
   FACTION_SPLINTER_DEFAULT_REPUTATION_SHARE,
   FACTION_SPLINTER_INITIAL_SENTIMENT_TO_PARENT,
   FACTION_PEACE_DEFAULT_SENTIMENT_BOOST,
@@ -58,7 +60,13 @@ import {
   WARHOST_FALLBACK_SENTIMENT_SHIFT,
 } from '../data/game-config';
 import type { EmittedOmen } from '../types/omen';
-import type { ArtifactTier, FactionMemberSelection } from '../types/unifiedAction';
+import type { ArtifactTier, FactionMemberSelection, PlantedCompulsion } from '../types/unifiedAction';
+import type {
+  CompulsionPlantedTrace,
+  CompulsionDecayedTrace,
+  AftermathTargetInvalidTrace,
+  EncounterAftermathEffectTrace,
+} from '../types/trace';
 import { mulberry32 } from '../lib/prng';
 import { generateSecret, createSecretEdge, createFavorEdge } from './secretGeneration';
 import { spawnClueFromEvent, findAnyRuinId } from './ruins/clueLifecycle';
@@ -188,6 +196,32 @@ export function appendRecentEvent(
  * Priority: targetAgentId > targetFactionId > targetSublocationId > legacy actorId > action actor.
  * Returns { kind: 'actor_fallback' } when no explicit target is supplied.
  */
+/**
+ * Emit a trace from the `plant_compulsion` branch (THR-886).
+ *
+ * The cast is load-bearing, and the helper exists so this branch does not add to
+ * the standing error count this file already carries. `emitTrace` takes
+ * `Omit<TraceEntry, 'id' | 'timestamp'>`, and `Omit` over a **discriminated union**
+ * distributes into a single object type holding only the keys every member shares
+ * — so `agentId`, `encounterId` and every other category-specific field reads as an
+ * excess property no matter how correctly its interface is declared. That is the
+ * error class running through the rest of this module (and the reason it sits in
+ * the type baseline, THR-489).
+ *
+ * Typing the parameter as the real trace interfaces keeps every payload checked at
+ * the call site; the cast only crosses the collapsed boundary. Same pattern as
+ * `emitNudgeTrace` in `encounters/nudgeDispatch.ts`.
+ */
+function emitCompulsionAftermathTrace(
+  entry:
+    | Omit<CompulsionPlantedTrace, 'id' | 'timestamp'>
+    | Omit<CompulsionDecayedTrace, 'id' | 'timestamp'>
+    | Omit<AftermathTargetInvalidTrace, 'id' | 'timestamp'>
+    | Omit<EncounterAftermathEffectTrace, 'id' | 'timestamp'>,
+): void {
+  emitTrace(entry as Parameters<typeof emitTrace>[0]);
+}
+
 export function resolveAftermathTarget(
   effect: EncounterAftermathReactionEffect,
   action: UnifiedAction | undefined,
@@ -675,6 +709,7 @@ export function applyEncounterAftermathReaction(
   let nextHiddenMarks: HiddenMark[] = [];
   let nextIntelligenceRecords: IntelligenceRecord[] = [];
   let nextEmittedOmens: EmittedOmen[] | undefined = undefined;
+  let nextPlantedCompulsions: PlantedCompulsion[] | undefined = undefined;
   let nextChronicleEntries: ChronicleEntry[] | undefined = undefined;
   // THR-500: run-scoped action unlocks grown by `unlock_action` effects.
   let nextUnlockedActionIds: readonly string[] | undefined = undefined;
@@ -2006,6 +2041,115 @@ export function applyEncounterAftermathReaction(
           effectDetail: { artifactId: saArtifactId, name: saName, tier: saTier, targetAgentId: saAgentId, targetLocationId: saLocationId },
           success: true,
           summary: `spawn_artifact[${i}]: "${saName}" (${saTier})`,
+        });
+        break;
+      }
+
+      case 'plant_compulsion': {
+        // The Compulsion (THR-886). Sibling of emit_omen, addressed to a person
+        // rather than a place — see PlantedCompulsion's doc for why the two
+        // cannot share a carrier.
+        if (target.kind === 'faction' || target.kind === 'sublocation') {
+          emitCompulsionAftermathTrace({
+            tick, category: 'aftermath_target_invalid', agentId: actorAgentId,
+            encounterId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'plant_compulsion', attemptedTargetKind: target.kind, attemptedTargetId: target.id,
+            reason: 'target_kind_not_supported',
+            summary: `plant_compulsion[${i}] skipped: ${target.kind} target not supported — a compulsion needs a mortal`,
+          });
+          break;
+        }
+        const pcTargetAgentId = target.kind === 'agent' ? target.id : (actorAgentId ?? '');
+        if (!pcTargetAgentId) {
+          emitCompulsionAftermathTrace({
+            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'plant_compulsion', effectDetail: {},
+            success: false, failReason: 'no_target_agent',
+            summary: `plant_compulsion[${i}] skipped: no mortal to dream it`,
+          });
+          break;
+        }
+
+        // Drop non-finite authored weights here as well as at read time, so a bad
+        // content row never reaches state (NFP #4).
+        const pcBias: Record<string, number> = {};
+        for (const [encounterType, weight] of Object.entries(effect.encounterBias ?? {})) {
+          if (typeof weight === 'number' && Number.isFinite(weight)) pcBias[encounterType] = weight;
+        }
+        if (Object.keys(pcBias).length === 0) {
+          emitCompulsionAftermathTrace({
+            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'plant_compulsion', effectDetail: { targetAgentId: pcTargetAgentId },
+            success: false, failReason: 'empty_bias',
+            summary: `plant_compulsion[${i}] skipped: no usable encounter bias authored`,
+          });
+          break;
+        }
+
+        const pcId = `compulsion_${encounterId}_${reaction.id}_${i}_${tick}`;
+        const pcDuration = effect.durationTicks ?? COMPULSION_DEFAULT_DURATION_TICKS;
+        const pcEntry: PlantedCompulsion = {
+          compulsionId: pcId,
+          targetAgentId: pcTargetAgentId,
+          encounterBias: pcBias,
+          ...(effect.narrativeHook ? { narrativeHook: effect.narrativeHook } : {}),
+          sourceEncounterId: encounterId,
+          sourceReactionId: reaction.id,
+          plantedTick: tick,
+          expiresTick: tick + pcDuration,
+        };
+
+        const currentCompulsions: PlantedCompulsion[] = nextPlantedCompulsions ?? state.plantedCompulsions ?? [];
+        let updatedCompulsions: PlantedCompulsion[] = [...currentCompulsions, pcEntry];
+        if (updatedCompulsions.length > COMPULSION_MAX_ACTIVE) {
+          const evicted = updatedCompulsions.reduce((oldest, c) =>
+            c.plantedTick < oldest.plantedTick ? c : oldest
+          , updatedCompulsions[0]);
+          emitCompulsionAftermathTrace({
+            tick, category: 'compulsion_decayed', agentId: evicted.targetAgentId,
+            compulsionId: evicted.compulsionId, livedTicks: tick - evicted.plantedTick,
+            failReason: 'cap_evicted',
+            summary: `compulsion_decayed: ${evicted.compulsionId} evicted (cap_evicted)`,
+          });
+          updatedCompulsions = updatedCompulsions.filter(c => c !== evicted);
+        }
+        nextPlantedCompulsions = updatedCompulsions;
+        mutationSummary.touchedWorld = true;
+        touchWorld(runtime);
+
+        // A tilt nobody can see is indistinguishable from the do-nothing behaviour
+        // this card had before the fix, so an authored hook reaches the chronicle.
+        if (effect.narrativeHook) {
+          const pcEvent: TickEvent = {
+            id: `${pcId}_chronicle`,
+            tick,
+            type: 'narrative',
+            message: effect.narrativeHook,
+            significance: 0.4,
+            actorId: pcTargetAgentId,
+          };
+          nextTickEvents = [...nextTickEvents, pcEvent];
+          nextRecentEvents = appendRecentEvent(nextRecentEvents, pcEvent);
+        }
+
+        emitCompulsionAftermathTrace({
+          tick, category: 'compulsion_planted', agentId: pcTargetAgentId,
+          compulsionId: pcId,
+          encounterBias: pcBias,
+          expiresTick: pcEntry.expiresTick,
+          sourceEncounterId: encounterId, sourceReactionId: reaction.id,
+          summary: `compulsion_planted[${i}]: ${pcTargetAgentId} pulled toward ${Object.keys(pcBias).join('/')} until tick ${pcEntry.expiresTick}`,
+        });
+        emitCompulsionAftermathTrace({
+          tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+          encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+          effectKind: 'plant_compulsion',
+          effectDetail: { compulsionId: pcId, targetAgentId: pcTargetAgentId, encounterBias: pcBias },
+          success: true,
+          effectiveTargetId: pcTargetAgentId, effectiveTargetKind: 'agent',
+          summary: `plant_compulsion[${i}]: urge planted on ${pcTargetAgentId}`,
         });
         break;
       }
@@ -3613,6 +3757,7 @@ export function applyEncounterAftermathReaction(
       ? [...(state.intelligenceRecords ?? []), ...nextIntelligenceRecords]
       : state.intelligenceRecords,
     emittedOmens: nextEmittedOmens !== undefined ? nextEmittedOmens : state.emittedOmens,
+    plantedCompulsions: nextPlantedCompulsions !== undefined ? nextPlantedCompulsions : state.plantedCompulsions,
     chronicleEntries: nextChronicleEntries !== undefined ? nextChronicleEntries : state.chronicleEntries,
     unlockedActionIds: nextUnlockedActionIds !== undefined ? nextUnlockedActionIds : state.unlockedActionIds,
     controlEffects: nextControlEffects.length > 0

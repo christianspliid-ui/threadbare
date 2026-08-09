@@ -17,10 +17,10 @@ remediation ticket or the build fails.
 |---|---|
 | 🟢 LIVE | 45 |
 | 🟠 PARTIAL | 1 |
-| 🔴 LEAKED | 7 |
+| 🔴 LEAKED | 8 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 7 |
-| **Total** | **60** |
+| **Total** | **61** |
 
 ## Contracts by producing subsystem
 
@@ -99,6 +99,7 @@ remediation ticket or the build fails.
 | `authored-nudge-hand-reaches-resolution` | A god may bend the odds of an attended encounter step with authored, essence-priced cards — the mechanical form of "the intervention shifted the odds, not the outcome". Without this read, an attended encounter offers the player nothing to do but watch. | function: `collectNudgeModifiers`, `selectActiveRider`, `applyRider`, `buildNudgeHand` | Encounters & Dilemmas | 🔴 LEAKED | THR-774 |
 | `authored-step-difficulty-player-resolution` | Authored step difficulty finally prices a player cast. 82 of 136 ascendant-castable templates carried difficulties 0.1–0.6 that the player branch discarded before this contract existed; the same value now feeds the shared capability-vs-difficulty roll, floored at success-at-cost. | function: `resolveUncontestedStep`, `difficulty` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `branch-decision-writes-archetype-drift` | A fork the mortal took becomes part of who they are: taking the cunning branch drifts them cunning, so a mortal the player keeps leaning one way visibly becomes that person instead of resetting each encounter. | function: `applyAgentDecidedBranches`, `decideBranchPole`, `decideBranchRoute`, `driftAxisIdForValuePair` | Personality & Emergent Traits | 🔴 LEAKED | THR-883 |
+| `compulsion-card-plants-agent-decision-bias` | A god can steer one mortal without seizing them: the card plants an urge, and that mortal's own next decision leans toward it — you steered them, they still chose. | function: `derivePlantedCompulsionEncounterBias`, `phasePlantedCompulsionDecay` | Encounters & Dilemmas | 🔴 LEAKED | THR-883 |
 | `meeting-trait-seeds-land-as-narrative-descriptors` | The choices you made while meeting your First stay visible in who they are — the descriptors the meeting authored read back on their character sheet and in their backstory, instead of every First being described in the same default words. | node-prop: `narrativeDescriptors` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
 | `nudge-card-cost-channels-detection-and-doom` | A card can be cheap in essence and expensive somewhere else — visibility to rivals, or the doom clock — so the price of divine help is not always the same currency. | function: `collectNudgeCostChannels`, `applyRawDetectionDelta`, `accelerateDoomClock` | Spheres & Quintessence | 🔴 LEAKED | THR-883 |
 | `nudge-card-grants-dispatch-to-host-systems` | A card that says it changed the world actually changes it, through the system that owns that change — so the fiction the player is shown and the state the world holds cannot disagree. | function: `dispatchNudgeCommitments`, `collectNudgeGrants`, `assignAmbitionToActor` | Ambitions & Initiatives | 🔵 UNVERIFIED-OK | THR-883 |
@@ -452,6 +453,18 @@ remediation ticket or the build fails.
 - **Read sites:** `src/debug-bridge.ts`
 - **Other hits:** `src/components/Game/debug/CompaniesTabContent.tsx`, `src/components/Game/GameView.tsx`, `src/engine/groups/bandOpposition.ts`, `src/engine/groups/groupFormation.ts`
 - **Verdict:** Verified 2026-07-24: Company nodes carry no located_at edge; locked by src/engine/groups/__tests__/groupLifecycle.test.ts § "never attaches a located_at edge to the company node".
+
+### `compulsion-card-plants-agent-decision-bias` — 🔴 LEAKED
+
+- **Intent:** A god can steer one mortal without seizing them: the card plants an urge, and that mortal's own next decision leans toward it — you steered them, they still chose.
+- **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
+- **UL terms:** *Nudge*, *Encounter*
+- **Module:** `src/engine/plantedCompulsion.ts`
+- **Production hits:** 4 total — 0 write, 1 read, 3 unclassified
+- **Write sites:** —
+- **Read sites:** `src/engine/phaseAgentDecision.ts`
+- **Other hits:** `src/engine/phases/plantedCompulsionDecay.ts`, `src/engine/plantedCompulsion.ts`, `src/types/unifiedAction.ts`
+- **Verdict:** Tier 2: read sites present, declared write sites empty — nothing produces this contract. — or the declared symbol does not appear at the declared site: grep 'derivePlantedCompulsionEncounterBias' src/engine/encounterAftermath.ts before treating this as a leak.
 
 ### `confrontation-content-gated-on-a-live-opponent` — 🟢 LIVE
 

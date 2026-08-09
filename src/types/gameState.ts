@@ -13,7 +13,7 @@ import type { RivalDefinition, RivalState } from './rival';
 import type { DoomClockState, DoomClockDefinition, DoomClockArchetype } from './doomClock';
 import type { NarrativeEvent, ChronicleEntry } from './narrative';
 import type { EncounterProgress } from './encounter';
-import type { UnifiedAction, PendingEncounterSeed, HiddenMark, IntelligenceRecord } from './unifiedAction';
+import type { UnifiedAction, PendingEncounterSeed, HiddenMark, IntelligenceRecord, PlantedCompulsion } from './unifiedAction';
 import type { PlayerActionReceipt } from '../engine/playerReceipts';
 import type { ChapterRecord } from './chapterRecord';
 import type { ActiveDelve, DelveQueueEntry, PendingEmergenceDecision } from '../engine/ruins/delveTypes';
@@ -409,6 +409,11 @@ export interface GameState {
 
   // Emitted omens — aftermath-spawned regional/global omen events (THR-115)
   emittedOmens?: EmittedOmen[];
+
+  // Planted compulsions — per-agent decision urges from The Compulsion card (THR-886).
+  // Sibling of emittedOmens, not a variant of it: an omen is addressed to a place,
+  // a compulsion to a person, so the two cannot share a carrier.
+  plantedCompulsions?: PlantedCompulsion[];
 
   // Composition DSL runtime state (THR-225)
   /** Live phased compositions being tracked by the phase runner. */

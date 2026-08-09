@@ -152,6 +152,34 @@ export const EMITTED_OMEN_LOCAL_DEFAULT_RADIUS = 2;
 /** Chronicle significance for a spawned artifact at common tier. */
 export const SPAWN_ARTIFACT_DEFAULT_SIGNIFICANCE_COMMON = 0.55;
 
+// ─── Planted Compulsion Constants (THR-886) ─────────────────────────────────
+
+/**
+ * How strongly an authored compulsion bias translates into decision weight.
+ * Deliberately above EMITTED_OMEN_SCORE_WEIGHT: an omen stains a place and
+ * catches whoever passes, a compulsion is aimed at one named mortal and should
+ * be felt more than ambient weather.
+ */
+export const COMPULSION_BIAS_WEIGHT = 0.5;
+
+/**
+ * Fallback lifetime in ticks for plant_compulsion when the author omits
+ * durationTicks. Three ticks against a 12-tick game day is "the next few
+ * hours" — long enough to shape the next decision, short enough that a card
+ * played once does not tilt that mortal forever.
+ */
+export const COMPULSION_DEFAULT_DURATION_TICKS = 3;
+
+/** Hard cap on simultaneous planted compulsions; oldest is evicted when exceeded. */
+export const COMPULSION_MAX_ACTIVE = 40;
+
+/**
+ * Per-encounter-type clamp on the summed compulsion bias, applied before it
+ * joins combinedBias. Stacked cards accumulate, but cannot swamp the identity
+ * and omen terms they are added to.
+ */
+export const COMPULSION_BIAS_CAP = 0.5;
+
 /** Chronicle significance for a spawned artifact at shaping tier. */
 export const SPAWN_ARTIFACT_DEFAULT_SIGNIFICANCE_SHAPING = 0.7;
 
