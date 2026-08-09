@@ -48,6 +48,7 @@ import {
   NUDGE_RIDER_LABELS,
 } from '../../data/nudge-stage-content';
 import { SPHERE_NAMES } from '../../types/index';
+import { formatEssenceLabel } from '../shared/formatEssence';
 import type {
   EncounterStageFactorLineModel,
   EncounterStageForecastModel,
@@ -92,7 +93,8 @@ function fill(text: string, agentName?: string, locationName?: string): string {
 
 function costLabelFor(cost: number): string | undefined {
   if (cost <= 0) return NUDGE_FREE_COST_LABEL;
-  return `${cost} essence`;
+  // THR-1006 — shares the nudge stage's formatter; the meeting quotes the same pool.
+  return formatEssenceLabel(cost);
 }
 
 function forecastModelFrom(tier: ForecastTier, probability: number): EncounterStageForecastModel {

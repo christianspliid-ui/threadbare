@@ -28,6 +28,7 @@
  */
 
 import type { WorldGraph } from '../../../../engine/graph';
+import { formatEssenceLabel } from '../../../shared/formatEssence';
 import type { GameState } from '../../../../types/gameState';
 import type { SphereName } from '../../../../types/index';
 import { toHungerId } from '../../../../types/hunger';
@@ -172,7 +173,9 @@ function settingClassForAction(
 /** Cost in words — a free (trait) option says so rather than showing a zero. */
 function costLabelFor(cost: number): string | undefined {
   if (cost <= 0) return NUDGE_FREE_COST_LABEL;
-  return `${cost} essence`;
+  // THR-1006 — never interpolate the raw float: accumulated fractional costs
+  // reach this as `193.60000000000005`.
+  return formatEssenceLabel(cost);
 }
 
 /**

@@ -17,6 +17,7 @@ import { outcomeBandWord } from '../../data/outcome-band-content';
 import { selectReceiptFrameLine } from '../../data/receipt-content';
 import type { PlayerActionReceipt } from '../../engine/playerReceipts';
 import type { EncounterAftermathChangePolarity } from '../../types/unifiedAction';
+import { formatEssence } from '../shared/formatEssence';
 
 interface DivineReceiptModalProps {
   open: boolean;
@@ -42,7 +43,7 @@ function technicalSentence(receipt: PlayerActionReceipt): string {
   const sphereLabel = receipt.sphere ? `${capitalize(receipt.sphere)} ` : '';
   const essenceClause =
     receipt.essencePaid > 0
-      ? `You spent ${receipt.essencePaid} ${sphereLabel}essence`
+      ? `You spent ${formatEssence(receipt.essencePaid)} ${sphereLabel}essence`
       : 'You spent no essence';
   const targetClause =
     receipt.targetName === 'yourself'

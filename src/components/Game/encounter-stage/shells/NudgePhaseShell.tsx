@@ -20,6 +20,7 @@ import { SphereIcon } from '../../../shared/SphereIcon';
 import { ReachIcon } from '../../../icons';
 import { CardKeywordChip } from '../../../shared/CardKeywordChip';
 import { CostPips, OddsPips } from '../../../shared/OddsPips';
+import { formatEssencePool } from '../../../shared/formatEssence';
 import { gradientIndexForId } from '../../../../data/entity-visual-fallbacks';
 import { resolveEncounterImagePath } from '../../../../data/encounterImageResolver';
 import { NUDGE_GLYPH_LEGEND } from '../../../../data/nudge-card-display';
@@ -601,7 +602,7 @@ export function NudgePhaseShell({
               is worse than under-reporting a fraction of it. */}
           <Tooltip id="ui.nudge_essence">
             <span data-testid="nudge-remaining-essence" style={{ fontSize: 'var(--text-xs)', color: TEXT_WHISPER }}>
-              {Math.floor(hand.remainingEssence)} essence left
+              {formatEssencePool(hand.remainingEssence)} essence left
             </span>
           </Tooltip>
 

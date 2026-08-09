@@ -49,6 +49,7 @@ import {
 } from '../../../../types/unifiedAction';
 import type { ThreadTier } from '../types';
 import type { DoomIdentityMatrix } from '../../../../types/doomIdentity';
+import { formatEssenceLabel } from '../../../shared/formatEssence';
 import type {
   EncounterCastRole,
   EncounterStageAftermathActorModel,
@@ -353,7 +354,7 @@ function buildChoices(
       targetLabel: card.targetLabel,
       essenceCost: card.essenceCost,
       affordable: essence + 1e-9 >= card.essenceCost,
-      costLabel: card.essenceCost > 0 ? `${card.essenceCost.toFixed(2)} essence` : undefined,
+      costLabel: card.essenceCost > 0 ? formatEssenceLabel(card.essenceCost) : undefined,
       likelyBurden: card.likelyBurden != null ? enrichProse(card.likelyBurden, ctx) : undefined,
     }));
   }
@@ -365,7 +366,7 @@ function buildChoices(
     intent: choice.interventionType,
     essenceCost: choice.essenceCost,
     affordable: choice.essenceCost <= essence,
-    costLabel: choice.essenceCost > 0 ? `${choice.essenceCost} essence` : 'Free',
+    costLabel: choice.essenceCost > 0 ? formatEssenceLabel(choice.essenceCost) : 'Free',
     interventionType: choice.interventionType,
     godVoice: choice.godVoice,
     probabilityBoost: choice.probabilityBoost,
