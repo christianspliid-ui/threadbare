@@ -1,6 +1,11 @@
 # User Action Required
 
-**Last updated:** 2026-08-09 08:55 local (2026-08-09 06:55 UTC), by the hourly `keep-work-flowing-cc` CC task.
+**Last updated:** 2026-08-09 09:56 local (2026-08-09 07:56 UTC), by the hourly `keep-work-flowing-cc` CC task.
+
+**A SIBLING LANE DECLINED TO OBEY A RULE CHRISTIAN WROTE YESTERDAY, DID THE SAFE THING, AND ROUTED THE QUESTION — AND THAT ROUTING IS THE ONLY REASON IT REACHED HIM.** `daily-backlog-grooming` ran at 07:16Z and found that CLAUDE.md's new demotion clause (*"a process ticket without [a cost/benefit line] is demoted to the log by grooming"*), applied literally, **demotes 13–17 of the 34 Ready-for-Dev items in one automated pass**, because every process ticket on the board predates the rule. **It demoted nothing**, treated the clause as binding from its 2026-08-08 ratification, left the older set to the weekly retro — which the amendment itself assigns that job — and wrote the open question onto THR-871 rather than filing a process ticket about the process-ticket rule. **This lane read that section from `origin/ops` and folded it in verbatim per step 2.6**; without step 2.6 the ruling would have sat in a dated ops file nobody opens. **`process-rule-retroactivity` enters the digest as the run's only membership change** — the eighth key — and it is deliberately framed so silence is safe: "from now on" is what already happened, so a non-answer costs nothing. **`thr-883-producer-gap` holds the lead on duration alone**, now fourteen hours and five work-picking rounds, re-verified this run by a fresh board search rather than carried. Ask set rises **seven → eight**; digest changes, step-6 ping fires. Probes: `check:deploy` **`deployed`** at `13be45f9` (sha compared against `origin/main` tip, equal), `check:actions` **`healthy`**, `check:task-heartbeat` **`ok`** 9/9, `check:armed-prs` **`held`** (#1114 only, correctly silent), `check:lane-silence` **`recovered`**, **declined for the fifteenth run on Christian's direct answer**. Board: Ready for Dev **35 → 34**, In Dev **2 → 1**, **park count 0 for a fourteenth run**. Home tree on `main`, `main..origin/main` **0**, same two tracked settings files dirty, untracked **23**.
+
+<details>
+<summary>Previous run's lead (2026-08-09 06:55 UTC) — the bulk field edit that faked eleven completions</summary>
 
 **A BULK FIELD EDIT MADE ELEVEN TICKETS LOOK LIKE THEY SHIPPED OVERNIGHT, AND THE ONLY THING THAT CAUGHT IT WAS CHECKING ONE `completedAt` INSTEAD OF TRUSTING ELEVEN `updatedAt`s.** The Done query returned eleven rows stamped `2026-08-09T06:45:44Z` and `06:24:05Z` — identical to the second, across unrelated projects — including **THR-489, "get `npm test` green on `main`"**, which would have been the single most reportable line of the night. **`get_issue` returns `completedAt: 2026-06-30T06:07:16Z`.** The cluster is a bulk project/label sweep; nothing in it finished overnight. **`git log origin/main --since` is the falsifier and it returned exactly two non-merge commits** (THR-1044, THR-1045), which is what the brief reports. **The tell was the timestamp collision, not the content** — eleven tickets do not complete in the same second, and a "What's moving" section built from `updatedAt` would have been eleven-twelfths fiction while every row in it was individually real. **`thr-883-producer-gap` survived a third and fourth sweep and is now thirteen hours old**, promoting it from watch-item to the brief's lead ask. **Ask 1's blemish decision retired by delivery** — three of the five player-facing blemishes were promoted into `Ready for Dev` overnight without being asked for, so the play-now-or-wait trade-off he was holding no longer has two sides. Ask set falls **eight → seven**; digest changes, step-6 ping fires. Probes: `check:deploy` **`deployed`** at `2a95dad0`, `check:actions` **`healthy`**, `check:task-heartbeat` **`ok`** 9/9, `check:armed-prs` **`held`** (#1114 only, correctly silent), `check:lane-silence` **`recovered`**, **declined for the fourteenth run on Christian's direct answer**. Board: Ready for Dev **36 → 35**, In Dev **1 → 2**, **park count 0 for a thirteenth run**. Home tree on `main`, `main..origin/main` **0**, same two tracked settings files.
 
@@ -25,7 +30,17 @@
 
 </details>
 
-## This run's measurements (2026-08-09 06:55 UTC)
+</details>
+
+## This run's measurements (2026-08-09 07:56 UTC)
+
+- **THE ONLY MEMBERSHIP CHANGE THIS RUN CAME FROM A SIBLING REPORT, NOT FROM THIS LANE'S OWN SCANS — FINDING 63.** Every probe returned green or correctly-silent, the board moved only in the direction of progress (35 → 34 ready, 2 → 1 in dev, two merges), and the home tree is clean apart from Christian's own two settings files. **A run whose own instruments all read healthy is exactly the run that folds nothing in if step 2.6 is skipped** — and `daily-backlog-grooming`'s 07:16Z section carried the run's single new ask. **Recorded because the twenty-nine previous entries justify the per-row recheck as drift insurance on carried asks; this one is the case for reading the siblings even when nothing of one's own has moved.**
+- **THE NEW ASK WAS READ AT ITS SOURCE BEFORE BEING FOLDED, NOT TAKEN FROM THE REPORT'S SUMMARY.** The grooming report's `## Needs Christian` bullet states the 13–17 demotion figure; `list_comments(THR-871)` returns the full grooming note behind it, including the three things the lane actually did (demoted nothing; treated the clause as binding from ratification; left the retroactive set to the weekly retro). **The brief states the question as backwards-or-from-now-on and says silence is safe**, which is a claim about consequences that only the underlying comment supports — the summary bullet alone would have produced a vaguer ask.
+- **`thr-883-producer-gap`'s ABSENCE WAS RE-VERIFIED RATHER THAN INHERITED, FOR THE SECOND CONSECUTIVE RUN.** `list_issues query:"authoring spec exemplar composition contract"` returns THR-883 itself, THR-1053 (a new `Idea` filed 07:05Z about `concepts` on aftermath changes — **not** the drafting job), and thirteen `Done`/`Canceled` rows; `list_issues state:"In Design"` returns exactly two rows, THR-883 and THR-1043. **Neither is the item that writes the two artifacts.** Asserting an absence is the easiest thing to get wrong, so it is re-run every hour rather than carried.
+- **TWO MERGES WERE READ FROM `git log`, NOT FROM `updatedAt` — THE FALSIFIER FINDING 62 INSTALLED YESTERDAY.** `git log origin/main --since="2026-08-09T05:30Z"` returns THR-1046 (`ee344816`, merged `53df7f1f`) and THR-1040 (`b94763f7`, merged `13be45f9`). **THR-1046's `completedAt` was checked individually** (`2026-08-09T07:14:27Z`) rather than trusted from the same bulk-stamped `updatedAt` field that faked eleven completions last run.
+
+<details>
+<summary>Measurements from the 2026-08-09 06:55Z run</summary>
 
 - **ELEVEN "DONE" ROWS CARRIED THIS MORNING'S TIMESTAMP AND NONE OF THEM COMPLETED THIS MORNING — FINDING 62.** `list_issues state:"Done" updatedAt:-P1D` returned THR-836, THR-844, THR-489, THR-969, THR-1038, THR-899, THR-1004, THR-976, THR-1039 and THR-896 all stamped `06:45:44.613Z` or `06:24:05.381Z`. **Identical to the millisecond, across four unrelated projects.** The cheapest possible check — one `get_issue` on the most reportable row — returned `completedAt: 2026-06-30T06:07:16Z` for THR-489. **The whole cluster is a bulk field sweep.** `git log origin/main --since="2026-08-08T19:58Z" --no-merges` returns **two** commits, and those two are what the brief reports.
 - **THE FAILURE MODE THIS AVOIDED IS THE INVERSE OF THE USUAL ONE, WHICH IS WHY IT IS WORTH A FINDING.** Every prior finding in this file is about *under*-reporting — a fold that missed something, a probe that read healthy while broken. **This one would have been a spectacular over-report**, and every individual row in it was true: the tickets are real, the titles are real, `Done` is real. **Only the implied verb was false.** A "What's moving" built from `updatedAt` would have told Christian the test suite went green last night, eleven days after the fact and six weeks after it actually happened.
@@ -90,7 +105,15 @@
 
 </details>
 
+</details>
+
 ## Open agent work (not Christian's)
+
+- **THE FACTORY'S DRAFTING JOB IS STILL THE ONE ITEM OF FIVE WITH NO TICKET — FIFTH RUN.** Unchanged in substance; what changed is only its age (fourteen hours) and that it has now survived five work-picking rounds and two orchestrator sweeps. **It is carried in the brief as Christian's lead ask** because he is the only reader who can authorise the filing, and simultaneously here because the *failure* is agent-side: two lanes could each have closed it and neither did. **This lane cannot file it.**
+- **A new `Idea` was filed at 07:05Z that reads adjacent to the drafting gap and is not it** — [THR-1053](https://linear.app/threadbare/issue/THR-1053), on whether the Composition Contract's required `concepts` field agrees with what the aftermath type documents. **Checked rather than assumed**, because a plausible-looking row is exactly how an absence stops being re-verified.
+
+<details>
+<summary>Earlier entries for the producer gap</summary>
 
 - **NOTHING IS FILED TO PRODUCE THE TWO ARTIFACTS THR-883'S REVIEW CONSUMES — SECOND RUN, AND IT HAS NOW BEEN PROMOTED TO A CHRISTIAN-FACING WATCH-ITEM.** Re-derived rather than carried: the `createdAt: -P1D` pull returns THR-1044/1045/1046/1047 and **no ticket for item 3**, and `tb-orchestrator`'s 19:26Z sweep filed nothing for it either. **A gap that survives two lanes each capable of closing it is not a backlog item; it is a mechanism failing to self-correct**, and what it blocks is the review that closes his largest ticket. **Raised in the brief with an explicit "nothing needed tonight" and an explicit expiry** — finding 12's open-option shape applied to an agent-side failure. **Still wants a ticket. This lane cannot file it.** Original measurement below.
 
@@ -133,7 +156,14 @@
 - **Impediment #267 is used twice**; **#219 and #228 are duplicate rows for one defect.** Fold at the next retro. **THR-1028 has now SHIPPED**, so the id-allocation *mechanism* that produces this class is fixed (`impediment:next-id` allocates, `check:impediment-ids -- --fix` repairs) — **the three existing duplicate rows are pre-existing data and still need folding by hand.** Recorded as a narrowing, not a closure.
 - **THIS FILE STILL VIOLATES ITS OWN SKILL'S SECTION 4 STRUCTURALLY.** ~490 lines of numbered findings, synthesis the skill assigns to `retrospective`. **Fix shape: split into `Design/lane-findings.md`**, preserving the numbers, which are cited from outside this file. **Wants a ticket.**
 
+</details>
+
 ## Resolved this period
+
+- **07:56Z — NOTHING RESOLVED THIS RUN, AND THE SET GREW BY ONE.** Stated rather than left blank: the previous run retired an ask by delivery, and a reader who sees no Resolved entry after that could reasonably infer the section stopped being maintained. **`process-rule-retroactivity` entered from a sibling report; no carried ask closed.** The two merges of the hour (THR-1046, THR-1040) touched no standing ask — **checked against the ask set rather than assumed from the fact that they were content/UI work.**
+
+<details>
+<summary>Resolved on the 2026-08-09 06:55Z run</summary>
 
 - **06:55Z — AN ASK LEFT THE SET BECAUSE THE MACHINE ANSWERED IT WITHOUT BEING ASKED.** `demo-fix-tickets-unqueued` offered Christian a two-sided choice — play now with five rough edges, or say the word and have them queued. **Three of the five (THR-1006, THR-1050, THR-1051) were promoted into `Ready for Dev` overnight by the ordinary sweep.** The trade-off has one side left, so it is retired rather than restated at a lower count. **Recorded because the tempting move was to keep the slot warm** — "two still unqueued, still your call" — which would have carried a decision he no longer has to make into a fourth run.
 - **06:55Z — AN ELEVEN-ROW OVER-REPORT WAS CAUGHT BY ONE `get_issue`, AND THE BRIEF SAYS SO IN PUBLIC.** The Done query's timestamp cluster would have produced a "What's moving" section headlined by the test suite going green. **The brief instead reports two commits and adds one plain sentence telling Christian the fresh timestamps were a bulk edit, not completions** — because a reader who checks Linear himself will see those same fresh dates and deserves to know why the brief ignored them.
@@ -159,6 +189,8 @@
 - **13:55Z — THE PING FIRES ON A GROWING SET, AND THE GATE WAS VERIFIED BEFORE IT WAS TRUSTED — SECOND CONSECUTIVE RUN.** Digest rises six → seven keys; last run's hash was reproduced from the derivation file (`68c649bf4601…`, byte-exact) before the new one was written. **The doorbell has now been observed firing on both a shrinking and a growing set**, which is finding 28's shape applied to the ping gate itself: a change-detector seen only in one direction has not been tested.
 - **13:55Z — THE STALE-COUNT MEMBERSHIP RULE PAID OUT FOR THE FIRST TIME.** The previous run explicitly recorded THR-929 as *"INSIDE the window and not stale"* and named the risk of carrying a count instead of a set. **Three hours later the cutoff crossed it and the count is eight, not seven.** **A carried number would have been wrong this run and wrong silently** — the first concrete payoff for a discipline this file has asserted for twenty-odd runs on principle alone.
 - **13:55Z — THE TWO `High` ROWS FILED THIS MORNING BOTH SHIPPED THE SAME DAY.** THR-1029 (aftermath reactions rendering a bare label) closed 12:31:58Z; THR-1028 (impediment-id allocation) closed. **Recorded against the previous run's stated worry** that five consecutive runs of an all-Low ready pile made "backed up but not starved" a weak claim. **The board absorbed two High rows in under eight hours**, which is evidence about throughput the worry could not have anticipated.
+
+</details>
 
 </details>
 
@@ -491,9 +523,18 @@ When an item resolves: delete it from this file, mark the corresponding impedime
 
 ## Standing asks
 
+**2026-08-09 07:56Z — SEVEN LIVE, AND THE ONE THAT JOINED CAME FROM A SIBLING LANE REFUSING TO OBEY A RULE.** **`process-rule-retroactivity` ENTERS** — `daily-backlog-grooming` found that Christian's own 2026-08-08 demotion clause, applied literally, empties half the ready queue, so it demoted nothing and routed the backwards-or-from-now-on question to him. **Nothing left the set.** **`thr-883-producer-gap` holds the lead on duration** — fourteen hours, five work-picking rounds, absence re-verified by a fresh board search this run rather than carried. Digest rises **seven → eight**; the step-6 ping fires.
+
+**ALL SEVEN CARRIED ASKS WERE RE-PULLED FROM THE LIVE BOARD on 2026-08-09 07:5xZ rather than carried forward on the previous run's word** — THR-883 (`get_issue` in full: `In Design`, `Urgent`, assigned Christian, `completedAt: null`, **latest comment re-read to confirm the two-artifact deliverable verbatim**), THR-907 and THR-974 (`Todo`, unchanged), THR-998 (`Todo`, `Medium`, three options intact), THR-961 and THR-962 (`Todo`, unchanged). **The new ask was read at its source** (`list_comments(THR-871)`) rather than folded from the sibling report's one-line summary. **Twenty-ninth run of applying by hand a clause step 2.6 still does not contain.**
+
+<details>
+<summary>Superseded header from the 2026-08-09 06:55Z run</summary>
+
 **2026-08-09 06:55Z — SIX LIVE, AND THE ONE THAT LEFT WAS ANSWERED BY THE MACHINE RATHER THAN BY HIM.** **`demo-fix-tickets-unqueued` RETIRED** — three of its five blemishes were promoted into `Ready for Dev` overnight unasked, so the play-now-or-wait trade-off has one side left and is no longer a decision (finding 62's companion, recorded under Resolved). **`thr-883-producer-gap` PROMOTED TO LEAD** on age alone: thirteen hours, four sweeps, no ticket. **Nothing else changed membership.** Digest falls **eight → seven**; the step-6 ping fires.
 
 **ALL SIX CARRIED ASKS WERE RE-PULLED FROM THE LIVE BOARD on 2026-08-09 06:5xZ rather than carried forward on the previous run's word** — THR-883 (`In Design`, assigned Christian, `updatedAt` 2026-08-08T17:57Z, **and its latest comment re-read in full** to confirm the two-artifact deliverable verbatim), THR-907 (`Todo`, `wayfinder:prototype`), THR-974 (`get_issue` in full: `Todo`, `completedAt: null`, `statusType: unstarted`), THR-998 (`Todo`, `Medium`, three options intact), THR-961 and THR-962 (`Todo`, unchanged). **Twenty-eighth run of applying by hand a clause step 2.6 still does not contain.**
+
+</details>
 
 <details>
 <summary>Superseded header from the 2026-08-08 19:58Z run</summary>
@@ -570,6 +611,7 @@ When an item resolves: delete it from this file, mark the corresponding impedime
 
 ### 2. LEAD ASK — nothing is scheduled to write the two things your review reads (THR-883)
 
+- **2026-08-09 07:56Z — FOURTEEN HOURS, FIVE SWEEPS; NOTHING NEW WAS LEARNED AND THE ENTRY SAYS SO INSTEAD OF RESTATING THE CASE.** The gap is unchanged in substance. **What changed is one hour of age and one more work-picking round.** The absence was nonetheless re-verified rather than carried — `list_issues state:"In Design"` returns exactly THR-883 and THR-1043, and the morning's new `Idea` (THR-1053, on `concepts` in the Composition Contract) was checked individually and **is not the drafting job**. **A plausible-looking adjacent row is exactly how a verified absence stops being re-verified**, which is why the check costs one query every run.
 - **2026-08-09 06:55Z — THIRTEEN HOURS, FOUR SWEEPS, STILL NO TICKET; THE ASK IS PROMOTED ON DURATION AND SAYS SO.** Nothing new was learned about the gap this run. **The change is that it survived two more work-picking rounds and an orchestrator sweep**, which is the same predicate that made it an ask at 19:58Z, applied again. **The brief drops the "nothing needed tonight" framing** it carried last night: that framing was correct while the gap was two hours old and is a way of not asking once it is thirteen.
 - **2026-08-09 06:55Z — THE DELIVERABLE WAS RE-READ FROM THE TICKET RATHER THAN CARRIED.** THR-883's latest comment (2026-08-08T17:57Z, Christian's own): *"Fable drafts (1) the amended `nudge-authoring-spec.md` incorporating the Composition Contract, and (2) one exemplar encounter authored to the full contract … Christian's chat review of those two artifacts closes this ticket and unblocks the eleven content tickets paused behind it plus the factory harness (THR-1047)."* **The eleven-plus-harness figure in the brief is his, not this file's arithmetic.**
 - **2026-08-09 06:55Z — A TICKET SEARCH WAS RUN BEFORE THE GAP WAS RE-ASSERTED, BECAUSE ASSERTING AN ABSENCE IS THE EASIEST THING TO GET WRONG.** `list_issues query:"authoring format writing rules worked example Fable"` returns THR-883 itself and fourteen unrelated rows; the four filed factory tickets (THR-1044/1045/1046/1047) were checked individually and none is the drafting job. **The absence is verified this run, not inherited from last run's verification.**
@@ -601,6 +643,14 @@ When an item resolves: delete it from this file, mark the corresponding impedime
 </details>
 
 </details>
+
+### 2b. NEW 2026-08-09 07:56Z — does yesterday's process-ticket rule bind backwards? (THR-871)
+
+- **RAISED BECAUSE A LANE DECLINED TO OBEY IT AND SAID SO, NOT BECAUSE ANYTHING BROKE.** Christian's 2026-08-08 amendment reads *"a process ticket without [a cost/benefit line] is demoted to the log by grooming"*, and the `daily-backlog-grooming` prompt restates it as a demotion to `Idea`. **Applied literally this morning it demotes 13–17 of the 34 Ready-for-Dev items in one pass**, because every process ticket on the board predates the rule and none can carry a line that was not required at filing.
+- **THE LANE DEMOTED NOTHING AND RECORDED WHY.** It treated the clause as binding from ratification; checked the three tickets filed since (THR-1054, THR-1051, THR-1050) and found all three are content/UI defects rather than process tickets, so **zero items qualify either way**; and left the retroactive set to the weekly retro, which the amendment itself assigns the job of batching sub-bar rows. **It deliberately filed no ticket** — *"a process ticket about the process-ticket rule is the recursion the amendment exists to stop."*
+- **WHY IT IS HIS AND NOT A TECHNICAL VERDICT.** THR-608 leaves CI state, merge mechanics and not-a-defect calls with the agent. **This is none of those: it is the scope of a directive he wrote**, and only its author can say which reading he meant. **Framed so silence is safe** — "from now on" is already the operating assumption, so a non-answer changes nothing and costs nothing.
+- **THE SHAPE IS THR-968's, NAMED BY THE GROOMING LANE ITSELF:** a bullet that, obeyed literally, empties most of the queue while each individual move looks justified. **That precedent is what earned this a route to him rather than a queue line** — the previous instance had to be reversed after the fact.
+- **FOLDED VIA STEP 2.6, AND THAT IS THE RUN'S FINDING.** Every probe this lane owns returned green; the board moved only forward. **Without reading the sibling's `## Needs Christian` section this run would have carried nothing new**, and the ruling would have sat in a dated ops file nobody opens.
 
 ### 3. A Tenacious-style trait — open option, explicitly NOT urgent, safe default is "stays parked"
 

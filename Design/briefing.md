@@ -1,5 +1,5 @@
 ---
-needsChristian: thr-883-producer-gap, thr-907-slice-verdict, thr-974-consequence-verdict, aftermath-pops-recheck, thr-998-action-card-risk-word, thr-961-sound-feel, thr-962-sound-routing
+needsChristian: thr-883-producer-gap, process-rule-retroactivity, thr-907-slice-verdict, thr-974-consequence-verdict, aftermath-pops-recheck, thr-998-action-card-risk-word, thr-961-sound-feel, thr-962-sound-routing
 queue: backed-up
 freshness: dirty
 deploy: deployed
@@ -9,17 +9,21 @@ ci: healthy
 ---
 # Briefing
 
-**Generated:** 2026-08-09 08:55 local (06:55 UTC) · by keep-work-flowing-cc
+**Generated:** 2026-08-09 09:56 local (07:56 UTC) · by keep-work-flowing-cc
 
 ## Needs Christian
 
-**Quiet night — two pieces of work shipped, nothing broke, and one thing has now been waiting on nobody for thirteen hours.** That last one is the only item that changed shape since last night, and it is the first below.
+**Two more things shipped this hour, nothing broke, and one new question arrived from the daily backlog sweep.** The lead item is unchanged and is now fourteen hours old.
 
-- **Your biggest blocker is one short read away, and still nothing is scheduled to write it.** You settled the encounter-writing format yesterday afternoon. What closes it is you reading two short things: the amended writing rules, and one worked example encounter written to them. **Neither exists, and no work item exists to make them.** This was flagged at 20:00 last night as "second hour running"; it is now **thirteen hours** and three more work-picking rounds have passed it by, because a thing nobody has written down is a thing no lane can pick up.
+- **Your biggest blocker is still one short read away, and still nothing is scheduled to write it.** You settled the encounter-writing format yesterday afternoon. What closes it is you reading two short things: the amended writing rules, and one worked example encounter written to them. **Neither exists, and no work item exists to make them** — re-checked this run against the board rather than carried over, including the four factory tickets filed alongside it (none of them is the drafting job).
 
-  **Eleven content tickets and the factory harness are held behind it.** Nothing else on the board unblocks that much work.
+  It is now **fourteen hours** and five work-picking rounds have passed it by, because a thing nobody has written down is a thing no lane can pick up. **Eleven content tickets and the factory harness are held behind it** — nothing else on the board unblocks that much work.
 
-  **One word from you fixes it** — say "file it" and the next working session creates the item so the drafting actually gets scheduled. I cannot file work items from this lane. [THR-883](https://linear.app/threadbare/issue/THR-883/fable-encounter-writing-prototype-lock-the-exact-authoring-format) *(also raised by the daily backlog grooming and the orchestrator)*
+  **One word from you fixes it** — say "file it" and the next working session creates the item so the drafting gets scheduled. I cannot file work items from this lane. [THR-883](https://linear.app/threadbare/issue/THR-883/fable-encounter-writing-prototype-lock-the-exact-authoring-format) *(also raised by the daily backlog grooming and the orchestrator)*
+
+- **NEW — a rule you wrote yesterday would empty half the work queue if a lane took it literally, so this morning's sweep paused rather than act.** Your 2026-08-08 correction says a process ticket without a cost-and-benefit line gets demoted. **Every process ticket on the board was filed before that rule existed**, so applied backwards it demotes **13–17 of the 34** ready items in one automated pass — each move looking individually correct.
+
+  **This morning's sweep demoted nothing** and treated the rule as binding only on tickets filed from yesterday onward, leaving the older pile for the weekly review — which your own amendment already assigns that job. **The question is just: backwards or from now on?** One yes/no settles it, and "from now on" is what already happened, so saying nothing is safe. [THR-871](https://linear.app/threadbare/issue/THR-871) *(from the daily backlog grooming)*
 
 - **Both play sessions are still ready and still unplayed.** Two rulings sharing the same five encounters, so it can be one sitting.
 
@@ -44,28 +48,26 @@ ci: healthy
 
 ## Queue
 
-Backed up — **35 items ready for dev, 2 in progress**. Planning is ahead of execution, and nothing is stuck.
+Backed up — **34 items ready for dev, 1 in progress**. Planning is ahead of execution, and nothing is stuck.
 
-- **The cosmetic-fix question from last night has largely answered itself.** Three of the small player-facing text defects that were sitting outside the work queue are now in it (the messy decimal on the nudge screen, the raw internal word in written endings, and the `{cast:*}` placeholders leaking into reaction labels). One remains in the holding column. **Dropping this from your list** — it no longer needs a decision from you.
-- **Both in-progress items have owners; no unowned work**, for a thirteenth consecutive run. One is the [Package View](https://linear.app/threadbare/issue/THR-1046) picked up overnight; the other is the [civic-seats encounter batch](https://linear.app/threadbare/issue/THR-860), deliberately paused and correctly not re-raised.
-- **Twelve items have been waiting more than a week** (up from eight, because time passed rather than because anything decayed). All small cleanup; none blocks anything.
+- **One item in progress and it has an owner; no unowned work**, for a fourteenth consecutive run. That one is the [civic-seats encounter batch](https://linear.app/threadbare/issue/THR-860), deliberately paused behind the format question and correctly not re-raised as a decision.
+- **A new content defect entered the queue this morning** and is the only non-trivial one there: [ten encounters key their written endings the wrong way](https://linear.app/threadbare/issue/THR-1054), so nobody ever sees those endings. Queued, nothing needed from you.
+- **About a dozen items have been waiting more than a week.** All small cleanup; none blocks anything.
 
 ## Freshness
 
-- All nine scheduled jobs are running on time; the automated checks are healthy; the live site is serving the newest code.
+- All nine scheduled jobs are running on time; the automated checks are healthy; the live site is serving the newest code (`13be45f9`, checked against the site rather than assumed from the merge).
 - No pull requests are stuck. The one open request is the paused encounter batch, held on purpose.
 - **The background jobs went quiet overnight again** (roughly 20:30 to 06:00) and resumed on their own. **Logged as normal per your message on 2026-08-06, not raised.** The detector still flags this shape every night; teaching it that overnight quiet is expected is on the agent-side list, not yours.
-- The housekeeping job that cleans up old work folders ran fifteen minutes ago. 46 folders open, 2 still need a human decision eventually; neither is urgent.
+- The housekeeping job that cleans up old work folders ran sixteen minutes ago. 48 folders open, 2 still need a human decision eventually; neither is urgent.
 - Your working copy is on `main` and fully up to date. The same two settings files still show local edits (`.claude/settings.json`, `.claude/settings.local.json`) — yours, untouched by me.
 
 ## What's moving
 
-Two things shipped overnight, both plumbing for the encounter factory rather than anything you'd see on screen:
+Two things shipped in the last hour, both aimed at the encounter factory:
 
-- **Encounters in the new format can now name who's in the scene** ([THR-1044](https://linear.app/threadbare/issue/THR-1044)) — the cast a writer declares gets filled in from the kind of place the encounter happens in.
-- **One command now runs every quality check on a single encounter** ([THR-1045](https://linear.app/threadbare/issue/THR-1045)) — the gate the factory needs so a batch of encounters can be checked by machine instead of by you.
-
-*Note on the board: a large batch of tickets shows a fresh timestamp this morning from a bulk field edit, not from being completed. Nothing else finished overnight.*
+- **You can now see an encounter's entire content package on one page** ([THR-1046](https://linear.app/threadbare/issue/THR-1046)) — every step, hand, cast member, reward, ending and image for a single encounter, side by side, with the quality-gate verdict inline. Six can be shown together so you can see how much they vary. **This is the review surface you asked for**, and it is the one you'll open when the format review finally happens.
+- **The mercenary encounters can be played again** ([THR-1040](https://linear.app/threadbare/issue/THR-1040)) — they were reachable but not playable.
 
 ---
 *Standing asks live in `Design/user-actions.md`. This file is regenerated hourly by
