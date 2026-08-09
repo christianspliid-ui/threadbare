@@ -47,13 +47,22 @@ function makeState(graph: WorldGraph): GameState {
 }
 
 /** An ascendant, a cursed-to-be blade, and (optionally) someone carrying it. */
-function makeGraph(opts: { holdVia?: 'possesses' | 'bonded_to' } = {}): WorldGraph {
+function makeGraph(
+  opts: {
+    holdVia?: 'possesses' | 'bonded_to';
+    /** THR-843 — both artifact tiers are curseable. Defaults to the common tier. */
+    artifactType?: 'artifact' | 'artifact_legendary';
+  } = {},
+): WorldGraph {
   const graph = new WorldGraph();
   graph.addNode({
     id: ascendantId, type: 'actor', name: 'The Warden',
     properties: { actorType: 'ascendant' },
   });
-  graph.addNode({ id: artifactId, type: 'artifact', name: 'Grey Blade', properties: {} });
+  graph.addNode({
+    id: artifactId, type: opts.artifactType ?? 'artifact',
+    name: 'Grey Blade', properties: {},
+  });
   graph.addNode({
     id: holderId, type: 'actor', name: 'Wren',
     properties: { actorType: 'individual' },
@@ -87,17 +96,30 @@ describe('applyCurseMark — placement', () => {
   });
 
   // The graph-schema validator warns here: `bonded_to` is declared against
-  // `artifact_legendary`, and this fixture bonds a plain `artifact`. That is
-  // deliberate — `applyCurseMark` mirrors `executeCurseArtifact`'s `type ===
-  // 'artifact'` guard, so a legendary artifact is out of scope for BOTH halves of
-  // the curse (pre-existing; tracked as THR-843). The fixture exercises the
-  // resolver's second edge type without changing that contract.
+  // `artifact_legendary` and this fixture bonds a plain `artifact`. Kept as-is —
+  // the point of the case is that the *resolver* reads both edge types, whatever
+  // tier hangs off them. The schema-true pairing is covered by the next test.
   it('resolves the bearer through a bonded_to edge as well as possesses', () => {
     const state = makeState(makeGraph({ holdVia: 'bonded_to' }));
     const result = applyCurseMark(state, ascendantId, artifactId, TICK);
 
     expect(result.holderId).toBe(holderId);
     expect(state.hiddenMarks).toHaveLength(1);
+  });
+
+  // THR-843: both halves of the curse accept `artifact_legendary`. This is the
+  // combination the schema actually describes — `bonded_to` is declared against
+  // `artifact_legendary`, and bonding is the characteristic way a legendary
+  // artifact is held — so it was precisely the case the old `type === 'artifact'`
+  // guard refused.
+  it('marks the bearer of a bonded LEGENDARY artifact', () => {
+    const state = makeState(makeGraph({ holdVia: 'bonded_to', artifactType: 'artifact_legendary' }));
+    const result = applyCurseMark(state, ascendantId, artifactId, TICK);
+
+    expect(result.success).toBe(true);
+    expect(result.holderId).toBe(holderId);
+    expect(state.hiddenMarks).toHaveLength(1);
+    expect(state.hiddenMarks![0].targetAgentId).toBe(holderId);
   });
 
   it('marks nobody when the artifact is unpossessed — and the curse still succeeds', () => {

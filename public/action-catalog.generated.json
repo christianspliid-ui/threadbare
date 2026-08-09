@@ -2077,7 +2077,8 @@
       "hasControlSpec": false,
       "aftermathReactionCount": 0,
       "targetCategories": [
-        "artifact"
+        "artifact",
+        "artifact_legendary"
       ],
       "targetSubtypes": [],
       "requiresReach": null,

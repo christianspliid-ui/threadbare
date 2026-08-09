@@ -2325,7 +2325,8 @@ export const LOCATION_ACTION_POST_EFFECT_TEMPLATE_IDS = new Set<string>([
 // ─── Attachment Action Templates ───────────────────────────────────
 //
 // Divine actions targeting artifact nodes (items, relics, etc.).
-// targetCategories: ['artifact'] or ['artifact_legendary'].
+// targetCategories: both artifact tiers — the verbs write `properties.effects`,
+// which the effect walker reads off either tier (THR-843).
 
 const ATTACHMENT_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   // ─── THR-508: Imbue — early expression card (unlockable-generic) ─────────────
@@ -2633,7 +2634,10 @@ const ATTACHMENT_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     apCost: 1,
     essenceCost: 2,
     actorAffinities: ['ascendant'],
-    targetCategories: ['artifact'],
+    // THR-843: both artifact tiers, matching imbue / nullify / curse. Attune was
+    // the one card of the four still declaring the narrow set, which made the
+    // trio's offered targets inconsistent for no authored reason.
+    targetCategories: ['artifact', 'artifact_legendary'],
     motivations: ['loyalty_ambition', 'tradition_novelty'],
     narrativeTemplates: {
       initiation: 'harmonizes this artifact with the divine sphere',
