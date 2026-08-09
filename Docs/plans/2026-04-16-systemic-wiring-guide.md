@@ -2592,3 +2592,43 @@ Fail-soft paths emit their own traces rather than throwing — `fallback_receipt
 **Where it lives:** `src/engine/playerReceipts.ts` — the phase is registered as `playerReceiptsPhase` (id `player_receipts`, slot `post-resolution`) and the exported entry point is **`processPlayerReceipts`**. Note that several code comments, and older tickets, call this `phasePlayerReceipts`; **no such symbol exists** — grep for `processPlayerReceipts`. Content and tuning: `src/data/receipt-content.ts`. UI: `DivineReceiptModal` (dialogue tier, rendered from `GameView`) and the `ToastStack` click-through (toast tier).
 
 **Not the Motive Receipt.** Capability 11 above covers `MotiveReceipt` — decision-causality contributions behind an agent's encounter *selection* (`__DEBUG.getMotiveReceipt`). This one is resolution-time feedback on a *player* cast. Different system, different surface, unfortunately similar name.
+
+## The Composition Contract — what every new encounter owes (THR-1045)
+
+This one is not a capability you may reach for; it is the **checkable floor** every
+factory encounter clears before a PR exists. Run it on anything you author:
+
+```bash
+npm run check:encounter -- <templateId>     # one encounter
+npm run check:encounter -- --all            # the corpus, as CI runs it
+npm run check:encounter -- fixture.encounter.swollen_ford   # the green worked example
+```
+
+Eight blocks, each a hard failure naming itself and the plan section it comes from
+(`Docs/plans/2026-08-08-encounter-factory-workflow.md` §1):
+
+| Block | What it wants | Reach for |
+|---|---|---|
+| Steps | 1–3 plain steps, each with reach, difficulty, prose | — |
+| Hand | the WS1 checklist, per step | `checkNudgeHand` tells you exactly what is short |
+| Setting | a `settings` envelope with one opening per declared class | Capability: setting envelopes (THR-884) |
+| Cast | ≥1 **actor** support binding — explicit, or the `encounter.*` family default your setting class carries | § Family default support bundles (THR-1044) |
+| Rewards | something persistent: a `rewardPool` draw on a step outcome, or an aftermath effect that leaves a mark | Capabilities 3–5, `spawn_artifact`, conditions, seeds |
+| Aftermath | `byOutcome` bands ≥3 — success / failure / **one extreme** — every variant with an overview, `concepts` on every change | Capability 10, THR-969 bands |
+| Systems | ≥3 connections among cast · rewards · seeds · conditions · reputation · factions, **counted from what you authored** | this whole guide |
+| Images | every card `imageTag` resolving to a real `ENCOUNTER_IMAGE_LIBRARY` row | `src/data/encounter-image-library.ts` |
+
+Then the composed stack: register detectors, card-grant liveness, an enrichment
+token dry-run (every `{...}` is one `enrichProse` resolves, every `{frag:*}` and
+`{cast:*}` names something declared), and forecast-band arithmetic.
+
+**There is no exemption mechanism** (Christian's ruling 3, 2026-08-08). A shape
+that cannot carry a block is a future encounter *type* with its own contract, not
+a waiver. The one escape is `RETROFIT_PENDING` in
+`src/data/content-eval/retrofitPending.ts`, which holds the 191 pre-contract
+templates and **only ever shrinks** — deleting a name is the retrofit's proof, and
+CI fails if a listed template starts passing just as it fails on a new one that
+does not.
+
+**The worked example is `swollen-ford-exemplar.ts`**, which passes every block.
+Copy its shape rather than re-deriving the contract from this table.

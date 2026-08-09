@@ -95,7 +95,8 @@
     "generate-interface-map": "esbuild scripts/generate-interface-map.ts --bundle --platform=node --format=esm --outfile=.cache/generate-interface-map.mjs --external:fs --external:path --external:url && node .cache/generate-interface-map.mjs",
     "generate-interface-map:dry": "esbuild scripts/generate-interface-map.ts --bundle --platform=node --format=esm --outfile=.cache/generate-interface-map.mjs --external:fs --external:path --external:url && node .cache/generate-interface-map.mjs --dry-run",
     "generate-setting-coverage": "esbuild scripts/generate-setting-coverage.ts --bundle --platform=node --format=esm --outfile=.cache/generate-setting-coverage.mjs --external:fs --external:path --external:url && node .cache/generate-setting-coverage.mjs",
-    "generate-setting-coverage:check": "esbuild scripts/generate-setting-coverage.ts --bundle --platform=node --format=esm --outfile=.cache/generate-setting-coverage.mjs --external:fs --external:path --external:url && node .cache/generate-setting-coverage.mjs --check"
+    "generate-setting-coverage:check": "esbuild scripts/generate-setting-coverage.ts --bundle --platform=node --format=esm --outfile=.cache/generate-setting-coverage.mjs --external:fs --external:path --external:url && node .cache/generate-setting-coverage.mjs --check",
+    "check:encounter": "esbuild scripts/check-encounter.ts --bundle --platform=node --format=esm --outfile=.cache/check-encounter.mjs --external:fs --external:path --external:process --external:url && node .cache/check-encounter.mjs"
   },
   "dependencies": {
     "@sentry/react": "^10.49.0",

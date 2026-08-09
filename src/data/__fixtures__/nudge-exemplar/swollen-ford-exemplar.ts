@@ -229,7 +229,7 @@ const STEP_0_HAND: readonly StepNudge[] = [
     sphere: 'time',
     essenceCost: 1,
     forecastDelta: 0.05,
-    imageTag: 'generic.omen',
+    imageTag: 'generic.dark',
     effectLine:
       'A faint help now, and the days after bend toward what the flood uncovered here.',
     fiction: 'Every flood is a message; few stop to read one.',
@@ -262,7 +262,7 @@ const STEP_0_HAND: readonly StepNudge[] = [
     sphere: 'entropy',
     essenceCost: 0,
     forecastDelta: 0.12,
-    imageTag: 'generic.bargain',
+    imageTag: 'generic.decay',
     costs: { doomDelta: 0.05 },
     effectLine:
       'No essence changes hands: the world’s doom clock runs a shade faster instead. A strong help.',
@@ -284,7 +284,7 @@ const STEP_0_HAND: readonly StepNudge[] = [
     essenceCost: 1,
     forecastDelta: 0.03,
     rider: 'all_or_nothing',
-    imageTag: 'generic.gambit',
+    imageTag: 'generic.luck',
     effectLine:
       'The middling readings wash out: they find the true line clean, or commit to a false one. The middle drops away.',
     fiction: 'Half a crossing is worse than none.',
@@ -349,7 +349,7 @@ const STEP_1_HAND: readonly StepNudge[] = [
     sphere: 'force',
     essenceCost: 2,
     forecastDelta: 0.16,
-    imageTag: 'generic.force',
+    imageTag: 'generic.energy',
     costs: { detectionDelta: 0.15 },
     effectLine:
       'The current slackens against them the whole width of the river. Rival gods can hardly miss the hand that did it.',
@@ -372,7 +372,7 @@ const STEP_1_HAND: readonly StepNudge[] = [
     sphere: 'life',
     essenceCost: 2,
     forecastDelta: 0.05,
-    imageTag: 'generic.balm',
+    imageTag: 'generic.warmth',
     grants: [{ kind: 'remove_condition', conditionTraitId: 'trait.condition.exhausted' }],
     effectLine:
       'Three days of road-weariness lift before the first step in. They cross on a rested body.',
@@ -413,7 +413,7 @@ const STEP_1_HAND: readonly StepNudge[] = [
     essenceCost: 2,
     forecastDelta: 0.1,
     requiresGroup: true,
-    imageTag: 'generic.fellowship',
+    imageTag: 'generic.blessing',
     effectLine:
       'Only in company: the group crosses as one body, each pair of hands steadying the next through the water.',
     fiction: 'One rope, many hands.',
@@ -583,7 +583,116 @@ export const NUDGE_GOLDEN_EXEMPLAR: UnifiedActionTemplate = {
       'between has not gotten kinder.',
   },
 
+  /**
+   * Cast (Composition Contract, ruling 6 — THR-1045). The openings already name
+   * a keeper of the crossing; this is the binding that makes her a real spawned
+   * person rather than a noun — portrait, cast strip, click, persistence.
+   *
+   * Ruling 6's prose style demonstrated in both halves: the openings write her
+   * role-voiced and inline ("a miller's boy waits on the near bank"), and the
+   * `{cast:keeper}` token below is used at the one spot the generated *name*
+   * earns something — the moment she is addressed.
+   *
+   * Explicit rather than inherited on purpose: this fixture's id is
+   * `fixture.encounter.*`, so the `encounter.*` setting-keyed family default
+   * (THR-1044) does not reach it. A shipped `encounter.*` template may satisfy
+   * the Cast block either way.
+   */
+  supportBundle: [
+    {
+      kind: 'actor',
+      key: 'keeper',
+      delivery: 'lazy-materialize-on-trigger',
+      persistence: 'must-persist',
+      reuseNpcRoles: ['miller', 'farmer', 'civilian'],
+      supportRole: 'crossing-keeper',
+      spawnNpcRole: 'civilian',
+      spawnName: 'the miller’s boy',
+    },
+  ],
+
+  /**
+   * Aftermath (Composition Contract, ruling 7 — THR-1045).
+   *
+   * Supersedes this file's original "no `aftermathConfig` — a background
+   * crossing resolves through the default assembly" note. That was correct
+   * under the pre-contract format and is not under this one: the contract's
+   * floor is three outcome bands (success / failure / one extreme), because the
+   * tails are precisely the endings a single playthrough never rolls and which
+   * therefore go unwritten unless something asks for them.
+   *
+   * Choice-less, so the bands hang off `fallback` — which is the whole reason
+   * THR-969 put `byOutcome` on the variant rather than beside it.
+   *
+   * Every change declares `concepts` (Law 2): the substring of `detail` that
+   * names a game concept, so the chip can carry its tooltip.
+   */
+  aftermathConfig: {
+    branchOnStep: 0,
+    variants: {},
+    fallback: {
+      overview:
+        'The river has had its say. What it took and what it left are both on the far bank now.',
+      changes: [
+        {
+          id: 'ford.the_crossing',
+          kind: 'growth',
+          title: 'The crossing, read',
+          detail: 'A flooded ford teaches the stone reach faster than a dry one ever will.',
+          polarity: 'gain',
+          concepts: [{ text: 'stone reach', tooltipId: 'reach.stone' }],
+        },
+      ],
+      reactions: [
+        {
+          id: 'ford.rest_the_body',
+          label: 'Let them rest before the road',
+          effects: [{ kind: 'remove_condition', conditionTraitId: 'trait.condition.exhausted' }],
+        },
+      ],
+      byOutcome: {
+        success: {
+          overview:
+            'Wet to the ribs and rope-burned, they stand on the far bank. The road runs on.',
+        },
+        failure: {
+          overview:
+            'The river kept the crossing. Two days around by the high bridge, and the water between has not gotten kinder.',
+        },
+        // The extreme the floor asks for. A critical failure is a battering and
+        // exhaustion — never a scripted death (this file's stakes rule).
+        critical_failure: {
+          overview:
+            'The rope went slack at midstream and the current had them. They came up downstream, in the reeds, with nothing they went in carrying.',
+          changes: [
+            {
+              id: 'ford.the_river_took_it',
+              kind: 'item',
+              title: 'What the river took',
+              detail: 'The current stripped what was carried and left an exhaustion that will not walk off.',
+              polarity: 'loss',
+              concepts: [{ text: 'exhaustion', tooltipId: 'condition.exhausted' }],
+            },
+          ],
+          reactions: [
+            {
+              id: 'ford.mark_the_water',
+              label: 'Let the valley remember this water',
+              effects: [
+                {
+                  kind: 'apply_condition',
+                  conditionTraitId: 'trait.condition.exhausted',
+                },
+              ],
+            },
+          ],
+        },
+      },
+    },
+  },
+
   description:
     'A two-step flooded river crossing: read the water, then cross on the rope. The ' +
-    'nudge-model golden exemplar, authored end-to-end against the locked THR-883 card format.',
+    'nudge-model golden exemplar, authored end-to-end against the locked THR-883 card format ' +
+    'and the THR-1045 Composition Contract.',
 };

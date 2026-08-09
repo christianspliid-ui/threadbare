@@ -407,6 +407,23 @@ jobs:
       - name: Lint encounter content
         run: npm run lint:encounter-content
 
+      # The Encounter Factory's machine gate (THR-1045). Sweeps every
+      # `encounter.*` template against the Composition Contract plus the register
+      # detectors, grant liveness, the enrichment token dry-run, and forecast
+      # arithmetic. Fails on a template that is NOT on the `RETROFIT_PENDING`
+      # ratchet — so a new encounter must be composition-complete on arrival —
+      # and on a ratchet entry that has started passing, which is how the list
+      # only ever shrinks.
+      #
+      # Run unconditionally rather than behind a `src/data/encounters/**` path
+      # filter, deliberately. This job already only runs on code changes, the
+      # sweep is sub-second over 191 templates, and the population is defined by
+      # id prefix rather than by directory (`encounter-content.ts` holds most of
+      # the corpus). A fourth paths-filter would buy nothing and add one more
+      # predicate that can silently go vacuous — the THR-768 failure mode.
+      - name: Encounter composition gate
+        run: npm run check:encounter -- --all
+
       # `npx tsc --noEmit` used to live here and was a no-op: root tsconfig.json
       # sets `files: []`, so it exited 0 unconditionally no matter how broken the
       # code was — this required check asserted a type gate in its name while
