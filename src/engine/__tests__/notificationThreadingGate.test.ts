@@ -170,6 +170,20 @@ describe('resolveEventRouting — faction anchoring', () => {
       expect(routing.kind).toBe('global');
     }
   });
+
+  /**
+   * THR-862 — the beat this ticket freed. "Vann has joined The Merchant Consortium"
+   * is faction-scoped, but rode `faction_founded` (world-scale, checked first), so it
+   * toasted globally no matter whose thread the player held. Assert the routing, not
+   * just set membership: the sets are the tuning surface, this is the behaviour.
+   */
+  it('anchors an agent joining a faction to the faction\'s row', () => {
+    const routing = resolveEventRouting(
+      rankEvent({ type: 'faction_member_joined', actorId: 'agent_stranger', factionId: 'faction_threaded' }),
+      THREADED, isMortalAgent, isFaction,
+    );
+    expect(routing).toEqual({ kind: 'entity', anchorId: 'faction_threaded', anchorKind: 'faction' });
+  });
 });
 
 /**
@@ -277,6 +291,21 @@ describe('ALWAYS_GLOBAL_EVENT_TYPES', () => {
 describe('FACTION_ANCHORED_EVENT_TYPES', () => {
   it('anchors the faction-scoped types', () => {
     expect(FACTION_ANCHORED_EVENT_TYPES.has('faction_rank_changed')).toBe(true);
+    expect(FACTION_ANCHORED_EVENT_TYPES.has('faction_member_joined')).toBe(true);
+  });
+
+  /**
+   * THR-862 — the regression this ticket removed. `faction_member_joined` used to be
+   * emitted as `faction_founded`, so asserting only that the join type anchors would
+   * still pass if a later change moved it back: `faction_founded` is checked first
+   * and is global, so the join beat would silently toast world-scale again. Pin both
+   * halves — the join anchors AND founding does not.
+   */
+  it('separates joining a faction from founding one', () => {
+    expect(FACTION_ANCHORED_EVENT_TYPES.has('faction_member_joined')).toBe(true);
+    expect(ALWAYS_GLOBAL_EVENT_TYPES.has('faction_member_joined')).toBe(false);
+    expect(FACTION_ANCHORED_EVENT_TYPES.has('faction_founded')).toBe(false);
+    expect(ALWAYS_GLOBAL_EVENT_TYPES.has('faction_founded')).toBe(true);
   });
 
   it('is disjoint from ALWAYS_GLOBAL_EVENT_TYPES', () => {

@@ -59,6 +59,12 @@ export const ALWAYS_GLOBAL_EVENT_TYPES: ReadonlySet<TickEvent['type']> = new Set
   // or collapsing out of it changes the map for everyone, so both stay loud even
   // when the player holds no thread to the faction. Beats *inside* a faction are
   // faction-scoped and anchor instead — see FACTION_ANCHORED_EVENT_TYPES.
+  //
+  // THR-862: `faction_founded` now means only what its name says. It used to carry
+  // "an agent joined a faction" as well, which is faction-scoped and belonged on the
+  // faction's row — but could not be routed there while it shared a type with genuine
+  // founding, because this gate keys on `event.type` alone. Joining is now
+  // `faction_member_joined` and sits in the anchored set below.
   'faction_founded', 'faction_dissolved',
   // War (TB-073) — army and battle news is world-scale
   'army_mobilization', 'army_disbanded', 'battle_started', 'battle_resolved',
@@ -71,8 +77,8 @@ export const ALWAYS_GLOBAL_EVENT_TYPES: ReadonlySet<TickEvent['type']> = new Set
 /**
  * Event types that anchor to a *faction's* row rather than a mortal's (THR-667).
  *
- * A promotion, a demotion, a shift in someone's standing inside a faction — the
- * faction is the durable subject, so the news waits on the faction's card in the
+ * A promotion, a demotion, someone joining, a shift in standing inside a faction —
+ * the faction is the durable subject, so the news waits on the faction's card in the
  * Threads panel. The mortal named in the event is incidental to the beat: the
  * player following the Iron Guard wants its ranks in one place, not scattered
  * across whichever members happen to be threaded.
@@ -86,6 +92,7 @@ export const ALWAYS_GLOBAL_EVENT_TYPES: ReadonlySet<TickEvent['type']> = new Set
  */
 export const FACTION_ANCHORED_EVENT_TYPES: ReadonlySet<TickEvent['type']> = new Set([
   'faction_rank_changed',
+  'faction_member_joined',
 ]);
 
 /**

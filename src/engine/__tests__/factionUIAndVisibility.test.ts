@@ -222,7 +222,10 @@ describe('Faction TickEvent emission', () => {
     const events = processFactionOutcome(graph, progress, 10, deterministicRng());
 
     expect(events.length).toBe(1);
-    expect(events[0].type).toBe('faction_founded');
+    // THR-862: joining has its own type. It used to ride `faction_founded`, which
+    // is world-scale and stays global, so the join beat could never anchor to the
+    // faction's Threads row while the two shared a type.
+    expect(events[0].type).toBe('faction_member_joined');
     expect(events[0].message).toContain('joined');
     expect(events[0].actorId).toBe('agent_1');
     expect(events[0].notification?.icon).toBe('faction');

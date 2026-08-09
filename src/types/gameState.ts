@@ -90,7 +90,8 @@ export interface TickEvent {
     | 'encounter_completed' | 'encounter_step_success' | 'encounter_step_failure'
     // Social fabric events
     | 'faction_founded' | 'faction_dissolved' | 'trust_shattered' | 'trust_deepened'
-    | 'bond_formed' | 'social_encounter' | 'faction_rank_changed' | 'dilemma_resolved_social'
+    | 'bond_formed' | 'social_encounter' | 'faction_rank_changed' | 'faction_member_joined'
+    | 'dilemma_resolved_social'
     // Journey events
     | 'journey_beat' | 'journey_phase_change'
     // Return events
