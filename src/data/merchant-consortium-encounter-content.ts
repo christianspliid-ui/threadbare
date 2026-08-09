@@ -1481,10 +1481,10 @@ export const MERCHANT_CONSORTIUM_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
           'which conversations cut off when {they} approach, which ones open.{/no_faction}',
         successAfterimage:
           'Three useful contacts by the fourth glass. Two of them come to {name} for the ' +
-          'introduction rather than the other way around, which is the evening\'s quiet tell.',
+          'introduction rather than the reverse, which is the evening\'s quiet tell.',
         failureAfterimage:
-          'A pleasant evening that yielded nothing. {name} spent too long with a man who had ' +
-          'opinions about nothing useful and too much certainty about them.',
+          'A pleasant evening and an empty ledger. {name} spent too long with a man who had ' +
+          'opinions about the vintage and too much certainty about them.',
       },
     ],
     narrativeTemplates: {
@@ -1495,7 +1495,7 @@ export const MERCHANT_CONSORTIUM_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
         'Useful connections on the ledger by morning. The evening paid for itself before the ' +
         'third glass.',
       failure:
-        'The evening passed. Nothing to add to the ledger tomorrow.',
+        'The evening passed. The ledger stays as it was.',
     },
     aftermathConfig: {
       branchOnStep: 0,

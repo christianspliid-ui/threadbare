@@ -1750,10 +1750,10 @@ export const CIVIC_GUARD_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
           '{?no_faction}The geography of the table is legible but not yet fully mapped for {name}. ' +
           'The meal is reconnaissance as much as nourishment.{/no_faction}',
         successAfterimage:
-          'A conversation that starts about nothing and becomes something — the kind ' +
+          'A conversation that starts with the stew and drifts to grievances — the kind ' +
           'that does not happen on duty, which is part of why it happens here. ' +
-          '{name} learns something about one of the guards that {they} could not have ' +
-          'learned any other way.',
+          '{name} learns who at this table owes a favour and who is owed one, ' +
+          'which no duty roster records.',
         failureAfterimage:
           '{name} eats alone at the far end of the table. ' +
           'The others have their circles, and the meal is too short to change that.',
@@ -1764,7 +1764,7 @@ export const CIVIC_GUARD_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
         '{name} takes a meal in the barracks mess of {location}. ' +
         'The food is institutional. The company is what changes.',
       success:
-        'Something was learned over food that could not be learned on duty. ' +
+        'The table gave up over food what the duty roster never would. ' +
         'The barracks geography shifted slightly.',
       failure:
         'Ate alone. The circle did not open. Tomorrow is another chance.',

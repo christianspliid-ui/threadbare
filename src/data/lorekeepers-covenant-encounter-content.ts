@@ -1564,7 +1564,7 @@ export const LOREKEEPERS_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
           '{name} brings a duplicate entry to the exchange at {location}{?has_faction} on behalf of the Covenant{/has_faction}. A duplicate freely given is a small hole closed in another collection.' +
           '{?has_artifact} {artifact:any} raises the exchange value considerably — the other hand has something worth trading for a manuscript of that caliber.{/has_artifact}' +
           '{?no_artifact} Without a notable artifact to sweeten the exchange, the offer stands on the Covenant\'s name alone.{/no_artifact}',
-        successAfterimage: 'The exchange goes both ways. A gap in the Covenant\'s annal closes.',
+        successAfterimage: 'The exchange runs in both directions. A gap in the Covenant\'s annal closes.',
         failureAfterimage: 'The offered entry is not what the other hand needs. The exchange closes without a new record on either side.',
       },
     ],
@@ -1572,7 +1572,7 @@ export const LOREKEEPERS_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
       initiation:
         '{name} brings a duplicate to a manuscript exchange at {location}. A gap on another shelf might close. The Covenant\'s gap might close too.',
       success:
-        'The exchange goes both ways. A gap in the Covenant\'s annal closes.',
+        'The exchange runs in both directions. A gap in the Covenant\'s annal closes.',
       failure:
         'The offered entry is not what the other hand needs. No new record on either side.',
     },
