@@ -1,5 +1,5 @@
 {
-  "total": 3458,
+  "total": 3452,
   "command": "npx tsc -b --force --pretty false",
   "perFile": {
     "scripts/lint-encounter-content.ts": 2,
@@ -743,14 +743,14 @@
     "src/types/__tests__/notification.test.ts": 3,
     "src/types/__tests__/prose.test.ts": 2,
     "src/types/__tests__/sublocation.test.ts": 2,
-    "src/types/__tests__/trace.test.ts": 9,
+    "src/types/__tests__/trace.test.ts": 6,
     "src/types/edgeSchema.ts": 3,
     "src/types/encounter.ts": 2,
     "src/types/gameState.ts": 3,
     "src/types/hexVignette.ts": 1,
     "src/types/returnEngine.ts": 2,
     "src/types/temporal.ts": 1,
-    "src/types/trace.ts": 7,
+    "src/types/trace.ts": 4,
     "src/types/worldModel.ts": 2
   }
 }
